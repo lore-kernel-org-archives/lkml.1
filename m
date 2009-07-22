@@ -1,1094 +1,1208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbZGVTwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754876AbZGVTwl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754846AbZGVTwc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 15:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbZGVTw3
+	id S1754876AbZGVTwl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 15:52:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754866AbZGVTwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 15:52:29 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:48711 "EHLO
+	Wed, 22 Jul 2009 15:52:38 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:48713 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751929AbZGVTre (ORCPT
+	with ESMTP id S1752201AbZGVTre (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 22 Jul 2009 15:47:34 -0400
 From: Sage Weil <sage@newdream.net>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 03/19] ceph: client types
-Date: Wed, 22 Jul 2009 12:51:37 -0700
-Message-Id: <1248292313-31326-4-git-send-email-sage@newdream.net>
+Subject: [PATCH 04/19] ceph: super.c
+Date: Wed, 22 Jul 2009 12:51:38 -0700
+Message-Id: <1248292313-31326-5-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1248292313-31326-3-git-send-email-sage@newdream.net>
+In-Reply-To: <1248292313-31326-4-git-send-email-sage@newdream.net>
 References: <1248292313-31326-1-git-send-email-sage@newdream.net>
  <1248292313-31326-2-git-send-email-sage@newdream.net>
  <1248292313-31326-3-git-send-email-sage@newdream.net>
+ <1248292313-31326-4-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We first define constants, types, and prototypes for the kernel client
-proper.
-
-A few subsystems are defined separately later: the MDS, OSD, and
-monitor clients, and the messaging layer.
+Mount option parsing, client setup and teardown, and a few odds and
+ends (e.g., statfs).
 
 Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- fs/ceph/ceph_debug.h |   34 ++
- fs/ceph/ceph_ver.h   |    6 +
- fs/ceph/super.h      |  955 ++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/ceph/types.h      |   27 ++
- 4 files changed, 1022 insertions(+), 0 deletions(-)
- create mode 100644 fs/ceph/ceph_debug.h
- create mode 100644 fs/ceph/ceph_ver.h
- create mode 100644 fs/ceph/super.h
- create mode 100644 fs/ceph/types.h
+ fs/ceph/super.c | 1162 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 1162 insertions(+), 0 deletions(-)
+ create mode 100644 fs/ceph/super.c
 
-diff --git a/fs/ceph/ceph_debug.h b/fs/ceph/ceph_debug.h
+diff --git a/fs/ceph/super.c b/fs/ceph/super.c
 new file mode 100644
-index 0000000..da473e3
+index 0000000..68d9fd8
 --- /dev/null
-+++ b/fs/ceph/ceph_debug.h
-@@ -0,0 +1,34 @@
-+#ifndef _FS_CEPH_DEBUG_H
-+#define _FS_CEPH_DEBUG_H
-+
-+#ifdef CONFIG_CEPH_FS_PRETTYDEBUG
-+
-+/*
-+ * wrap pr_debug to include a filename:lineno prefix on each line.
-+ * this incurs some overhead (kernel size and execution time) due to
-+ * the extra function call at each call site.
-+ */
-+
-+# if defined(DEBUG) || defined(CONFIG_DYNAMIC_DEBUG)
-+extern const char *ceph_file_part(const char *s, int len);
-+#  define dout(fmt, ...)						\
-+	pr_debug(" %12.12s:%-4d : " fmt,				\
-+		 ceph_file_part(__FILE__, sizeof(__FILE__)),		\
-+		 __LINE__, ##__VA_ARGS__);
-+# else
-+/* faux printk call just to see any compiler warnings. */
-+#  define dout(fmt, ...)	do {				\
-+		if (0) printk(KERN_DEBUG fmt, ##__VA_ARGS__);	\
-+	} while (0)
-+# endif
-+
-+#else
-+
-+/*
-+ * or, just wrap pr_debug
-+ */
-+# define dout(fmt, ...)	pr_debug(" " fmt, ##__VA_ARGS__)
-+
-+#endif
-+
-+#endif
-diff --git a/fs/ceph/ceph_ver.h b/fs/ceph/ceph_ver.h
-new file mode 100644
-index 0000000..96bc0e4
---- /dev/null
-+++ b/fs/ceph/ceph_ver.h
-@@ -0,0 +1,6 @@
-+#ifndef __CEPH_VERSION_H
-+#define __CEPH_VERSION_H
-+
-+#define CEPH_GIT_VER 753fde14da2838f1109e70259655bb92a033b060
-+
-+#endif
-diff --git a/fs/ceph/super.h b/fs/ceph/super.h
-new file mode 100644
-index 0000000..3f9e3e5
---- /dev/null
-+++ b/fs/ceph/super.h
-@@ -0,0 +1,955 @@
-+#ifndef _FS_CEPH_SUPER_H
-+#define _FS_CEPH_SUPER_H
-+
-+#include <asm/unaligned.h>
++++ b/fs/ceph/super.c
+@@ -0,0 +1,1162 @@
++#include <linux/module.h>
++#include <linux/parser.h>
 +#include <linux/fs.h>
-+#include <linux/wait.h>
-+#include <linux/completion.h>
-+#include <linux/pagemap.h>
-+#include <linux/exportfs.h>
++#include <linux/mount.h>
++#include <linux/rwsem.h>
++#include <linux/seq_file.h>
++#include <linux/sched.h>
++#include <linux/string.h>
++#include <linux/version.h>
 +#include <linux/backing-dev.h>
++#include <linux/statfs.h>
++#include <linux/inet.h>
 +
-+#include "types.h"
 +#include "ceph_debug.h"
-+#include "messenger.h"
++#include "ceph_ver.h"
++#include "decode.h"
++#include "super.h"
 +#include "mon_client.h"
-+#include "mds_client.h"
-+#include "osd_client.h"
-+#include "ceph_fs.h"
 +
-+/* f_type in struct statfs */
-+#define CEPH_SUPER_MAGIC 0x00c36400
++/*
++ * Ceph superblock operations
++ *
++ * Handle the basics of mounting, unmounting.  Also dispatch message
++ * types to appropriate handlers and subsystems.
++ */
 +
-+/* large granularity for statfs utilization stats to facilitate
-+ * large volume sizes on 32-bit machines. */
-+#define CEPH_BLOCK_SHIFT   20  /* 1 MB */
-+#define CEPH_BLOCK         (1 << CEPH_BLOCK_SHIFT)
++void ceph_dispatch(void *p, struct ceph_msg *msg);
++void ceph_peer_reset(void *p, struct ceph_entity_addr *peer_addr,
++		     struct ceph_entity_name *peer_name);
++
++/*
++ * find filename portion of a path (/foo/bar/baz -> baz)
++ */
++const char *ceph_file_part(const char *s, int len)
++{
++	const char *e = s + len;
++	
++	while (e != s && *(e-1) != '/')
++		e--;
++	return e;
++}
++
++
++/*
++ * super ops
++ */
++static void ceph_put_super(struct super_block *s)
++{
++	struct ceph_client *cl = ceph_client(s);
++	int rc;
++	int seconds = 15;
++
++	dout("put_super\n");
++	ceph_mdsc_close_sessions(&cl->mdsc);
++	ceph_monc_request_umount(&cl->monc);
++
++	/* don't wait on umount -f */
++	if (cl->mount_state != CEPH_MOUNT_SHUTDOWN) {
++		rc = wait_event_timeout(cl->mount_wq,
++				(cl->mount_state == CEPH_MOUNT_UNMOUNTED),
++				seconds*HZ);
++		if (rc == 0)
++			pr_err("ceph umount timedout after %d s\n", seconds);
++	}
++
++	return;
++}
++
++static int ceph_statfs(struct dentry *dentry, struct kstatfs *buf)
++{
++	struct ceph_client *client = ceph_inode_to_client(dentry->d_inode);
++	struct ceph_monmap *monmap = client->monc.monmap;
++	struct ceph_statfs st;
++	__le64 fsid;
++	int err;
++
++	dout("statfs\n");
++	err = ceph_monc_do_statfs(&client->monc, &st);
++	if (err < 0)
++		return err;
++
++	/* fill in kstatfs */
++	buf->f_type = CEPH_SUPER_MAGIC;  /* ?? */
++
++	/*
++	 * express utilization in terms of large blocks to avoid
++	 * overflow on 32-bit machines.
++	 */
++	buf->f_bsize = 1 << CEPH_BLOCK_SHIFT;
++	buf->f_blocks = le64_to_cpu(st.kb) >> (CEPH_BLOCK_SHIFT-10);
++	buf->f_bfree = (le64_to_cpu(st.kb) - le64_to_cpu(st.kb_used)) >>
++		(CEPH_BLOCK_SHIFT-10);
++	buf->f_bavail = le64_to_cpu(st.kb_avail) >> (CEPH_BLOCK_SHIFT-10);
++
++	buf->f_files = le64_to_cpu(st.num_objects);
++	buf->f_ffree = -1;
++	buf->f_namelen = PATH_MAX;
++	buf->f_frsize = PAGE_CACHE_SIZE;
++
++	/* leave fsid little-endian, regardless of host endianness */
++	fsid = __ceph_fsid_major(&monmap->fsid) ^
++		__ceph_fsid_minor(&monmap->fsid);
++	buf->f_fsid.val[0] = le64_to_cpu(fsid) & 0xffffffff;
++	buf->f_fsid.val[1] = le64_to_cpu(fsid) >> 32;
++
++	return 0;
++}
++
++
++static int ceph_syncfs(struct super_block *sb, int wait)
++{
++	dout("sync_fs %d\n", wait);
++	ceph_osdc_sync(&ceph_client(sb)->osdc);
++	ceph_mdsc_sync(&ceph_client(sb)->mdsc);
++	return 0;
++}
++
++
++/**
++ * ceph_show_options - Show mount options in /proc/mounts
++ * @m: seq_file to write to
++ * @mnt: mount descriptor
++ */
++static int ceph_show_options(struct seq_file *m, struct vfsmount *mnt)
++{
++	struct ceph_client *client = ceph_sb_to_client(mnt->mnt_sb);
++	struct ceph_mount_args *args = &client->mount_args;
++
++	if (args->flags & CEPH_OPT_FSID)
++		seq_printf(m, ",fsidmajor=%llu,fsidminor%llu",
++			   __ceph_fsid_major(&args->fsid),
++			   __ceph_fsid_minor(&args->fsid));
++	if (args->flags & CEPH_OPT_NOSHARE)
++		seq_puts(m, ",noshare");
++	if (args->flags & CEPH_OPT_UNSAFE_WRITEBACK)
++		seq_puts(m, ",unsafewriteback");
++	if (args->flags & CEPH_OPT_DIRSTAT)
++		seq_puts(m, ",dirstat");
++	else
++		seq_puts(m, ",nodirstat");
++	if (args->flags & CEPH_OPT_RBYTES)
++		seq_puts(m, ",rbytes");
++	else
++		seq_puts(m, ",norbytes");
++	if (args->flags & CEPH_OPT_NOCRC)
++		seq_puts(m, ",nocrc");
++	if (args->flags & CEPH_OPT_NOASYNCREADDIR)
++		seq_puts(m, ",noasyncreaddir");
++	return 0;
++}
++
++/*
++ * caches
++ */
++struct kmem_cache *ceph_inode_cachep;
++struct kmem_cache *ceph_cap_cachep;
++struct kmem_cache *ceph_dentry_cachep;
++struct kmem_cache *ceph_file_cachep;
++
++static void ceph_inode_init_once(void *foo)
++{
++	struct ceph_inode_info *ci = foo;
++	inode_init_once(&ci->vfs_inode);
++}
++
++static int init_caches(void)
++{
++	ceph_inode_cachep = kmem_cache_create("ceph_inode_cache",
++					      sizeof(struct ceph_inode_info),
++					      0, (SLAB_RECLAIM_ACCOUNT|
++						  SLAB_MEM_SPREAD),
++					      ceph_inode_init_once);
++	if (ceph_inode_cachep == NULL)
++		return -ENOMEM;
++
++	ceph_cap_cachep = kmem_cache_create("ceph_caps_cache",
++					    sizeof(struct ceph_cap),
++					    0, (SLAB_RECLAIM_ACCOUNT|
++						SLAB_MEM_SPREAD),
++					    NULL);
++	if (ceph_cap_cachep == NULL)
++		goto bad_cap;
++
++	ceph_dentry_cachep = kmem_cache_create("ceph_dentry_cache",
++					       sizeof(struct ceph_dentry_info),
++					       0, (SLAB_RECLAIM_ACCOUNT|
++						   SLAB_MEM_SPREAD),
++					       NULL);
++	if (ceph_dentry_cachep == NULL)
++		goto bad_dentry;
++
++	ceph_file_cachep = kmem_cache_create("ceph_file_cache",
++					     sizeof(struct ceph_file_info),
++					     0, (SLAB_RECLAIM_ACCOUNT|
++						 SLAB_MEM_SPREAD),
++					     NULL);
++	if (ceph_file_cachep == NULL)
++		goto bad_file;
++
++	return 0;
++
++bad_file:
++	kmem_cache_destroy(ceph_dentry_cachep);
++bad_dentry:
++	kmem_cache_destroy(ceph_cap_cachep);
++bad_cap:
++	kmem_cache_destroy(ceph_inode_cachep);
++	return -ENOMEM;
++}
++
++static void destroy_caches(void)
++{
++	kmem_cache_destroy(ceph_inode_cachep);
++	kmem_cache_destroy(ceph_cap_cachep);
++	kmem_cache_destroy(ceph_dentry_cachep);
++	kmem_cache_destroy(ceph_file_cachep);
++}
++
++
++/*
++ * ceph_umount_begin - initiate forced umount.  Tear down down the
++ * mount, skipping steps that may hang while waiting for server(s).
++ */
++static void ceph_umount_begin(struct super_block *sb)
++{
++	struct ceph_client *client = ceph_sb_to_client(sb);
++
++	dout("ceph_umount_begin - starting forced umount\n");
++	if (!client)
++		return;
++	client->mount_state = CEPH_MOUNT_SHUTDOWN;
++	return;
++}
++
++static const struct super_operations ceph_super_ops = {
++	.alloc_inode	= ceph_alloc_inode,
++	.destroy_inode	= ceph_destroy_inode,
++	.write_inode    = ceph_write_inode,
++	.sync_fs        = ceph_syncfs,
++	.put_super	= ceph_put_super,
++	.show_options   = ceph_show_options,
++	.statfs		= ceph_statfs,
++	.umount_begin   = ceph_umount_begin,
++};
++
++
++
++/*
++ * The monitor responds with mount ack indicate mount success.  The
++ * included client ticket allows the client to talk to MDSs and OSDs.
++ */
++static int handle_mount_ack(struct ceph_client *client, struct ceph_msg *msg)
++{
++	struct ceph_monmap *monmap = NULL, *old = client->monc.monmap;
++	void *p, *end;
++	s32 result;
++	u32 len;
++	int err = -EINVAL;
++
++	if (client->signed_ticket) {
++		dout("handle_mount_ack - already mounted\n");
++		return 0;
++	}
++
++	dout("handle_mount_ack\n");
++	p = msg->front.iov_base;
++	end = p + msg->front.iov_len;
++
++	ceph_decode_32_safe(&p, end, result, bad);
++	ceph_decode_32_safe(&p, end, len, bad);
++	if (result) {
++		pr_err("ceph mount denied: %.*s (%d)\n", len, (char *)p,
++		       result);
++		return result;
++	}
++	p += len;
++
++	ceph_decode_32_safe(&p, end, len, bad);
++	ceph_decode_need(&p, end, len, bad);
++	monmap = ceph_monmap_decode(p, p + len);
++	if (IS_ERR(monmap)) {
++		pr_err("ceph problem decoding monmap, %d\n",
++		       (int)PTR_ERR(monmap));
++		return -EINVAL;
++	}
++	p += len;
++
++	ceph_decode_32_safe(&p, end, len, bad);
++	dout("ticket len %d\n", len);
++	ceph_decode_need(&p, end, len, bad);
++
++	client->signed_ticket = kmalloc(len, GFP_KERNEL);
++	if (!client->signed_ticket) {
++		pr_err("ceph ENOMEM allocating %d bytes for client ticket\n",
++		       len);
++		err = -ENOMEM;
++		goto out;
++	}
++
++	memcpy(client->signed_ticket, p, len);
++	client->signed_ticket_len = len;
++
++	client->monc.monmap = monmap;
++	kfree(old);
++
++	client->whoami = le32_to_cpu(msg->hdr.dst.name.num);
++	client->msgr->inst.name = msg->hdr.dst.name;
++	pr_info("ceph mount as client%d fsid is %llx.%llx\n", client->whoami,
++		le64_to_cpu(__ceph_fsid_major(&client->monc.monmap->fsid)),
++		le64_to_cpu(__ceph_fsid_minor(&client->monc.monmap->fsid)));
++	ceph_debugfs_client_init(client);
++	return 0;
++
++bad:
++	pr_err("ceph error decoding mount_ack message\n");
++out:
++	kfree(monmap);
++	return err;
++}
++
++const char *ceph_msg_type_name(int type)
++{
++	switch (type) {
++	case CEPH_MSG_SHUTDOWN: return "shutdown";
++	case CEPH_MSG_PING: return "ping";
++	case CEPH_MSG_MON_MAP: return "mon_map";
++	case CEPH_MSG_MON_GET_MAP: return "mon_get_map";
++	case CEPH_MSG_CLIENT_MOUNT: return "client_mount";
++	case CEPH_MSG_CLIENT_MOUNT_ACK: return "client_mount_ack";
++	case CEPH_MSG_CLIENT_UNMOUNT: return "client_unmount";
++	case CEPH_MSG_STATFS: return "statfs";
++	case CEPH_MSG_STATFS_REPLY: return "statfs_reply";
++	case CEPH_MSG_MDS_GETMAP: return "mds_getmap";
++	case CEPH_MSG_MDS_MAP: return "mds_map";
++	case CEPH_MSG_CLIENT_SESSION: return "client_session";
++	case CEPH_MSG_CLIENT_RECONNECT: return "client_reconnect";
++	case CEPH_MSG_CLIENT_REQUEST: return "client_request";
++	case CEPH_MSG_CLIENT_REQUEST_FORWARD: return "client_request_forward";
++	case CEPH_MSG_CLIENT_REPLY: return "client_reply";
++	case CEPH_MSG_CLIENT_CAPS: return "client_caps";
++	case CEPH_MSG_CLIENT_CAPRELEASE: return "client_cap_release";
++	case CEPH_MSG_CLIENT_SNAP: return "client_snap";
++	case CEPH_MSG_CLIENT_LEASE: return "client_lease";
++	case CEPH_MSG_OSD_GETMAP: return "osd_getmap";
++	case CEPH_MSG_OSD_MAP: return "osd_map";
++	case CEPH_MSG_OSD_OP: return "osd_op";
++	case CEPH_MSG_OSD_OPREPLY: return "osd_opreply";
++	default: return "unknown";
++	}
++}
++
++/*
++ * Called when a message socket is explicitly reset by a peer.
++ */
++void ceph_peer_reset(void *p, struct ceph_entity_addr *peer_addr,
++		     struct ceph_entity_name *peer_name)
++{
++	struct ceph_client *client = p;
++
++	dout("ceph_peer_reset %s%d\n", ENTITY_NAME(*peer_name));
++	switch (le32_to_cpu(peer_name->type)) {
++	case CEPH_ENTITY_TYPE_MDS:
++		ceph_mdsc_handle_reset(&client->mdsc,
++					      le32_to_cpu(peer_name->num));
++		break;
++	case CEPH_ENTITY_TYPE_OSD:
++		ceph_osdc_handle_reset(&client->osdc, peer_addr);
++		break;
++	}
++}
++
 +
 +/*
 + * mount options
 + */
-+#define CEPH_OPT_FSID             (1<<0)
-+#define CEPH_OPT_NOSHARE          (1<<1) /* don't share client with other sbs */
-+#define CEPH_OPT_MYIP             (1<<2) /* specified my ip */
-+#define CEPH_OPT_UNSAFE_WRITEBACK (1<<3)
-+#define CEPH_OPT_DIRSTAT          (1<<4) /* funky `cat dirname` for stats */
-+#define CEPH_OPT_RBYTES           (1<<5) /* dir st_bytes = rbytes */
-+#define CEPH_OPT_NOCRC            (1<<6) /* no data crc on writes */
-+#define CEPH_OPT_NOASYNCREADDIR   (1<<7) /* no dcache readdir */
-+
-+#define CEPH_OPT_DEFAULT   (CEPH_OPT_RBYTES)
-+
-+#define ceph_set_opt(client, opt) \
-+	(client)->mount_args.flags |= CEPH_OPT_##opt;
-+#define ceph_test_opt(client, opt) \
-+	(!!((client)->mount_args.flags & CEPH_OPT_##opt))
-+
-+
-+#define CEPH_MAX_MON_MOUNT_ADDR	5
-+
-+struct ceph_mount_args {
-+	int sb_flags;
-+	int flags;
-+	int mount_timeout;
-+	int caps_wanted_delay_min, caps_wanted_delay_max;
-+	ceph_fsid_t fsid;
-+	struct ceph_entity_addr my_addr;
-+	int num_mon;
-+	struct ceph_entity_addr mon_addr[CEPH_MAX_MON_MOUNT_ADDR];
-+	int wsize;
-+	int rsize;            /* max readahead */
-+	int max_readdir;      /* max readdir size */
-+	int osd_timeout;
-+	char *snapdir_name;   /* default ".snap" */
-+	int cap_release_safety;
-+};
-+
-+/*
-+ * defaults
-+ */
-+#define CEPH_MOUNT_TIMEOUT_DEFAULT  60
-+#define CEPH_MOUNT_RSIZE_DEFAULT    (128*1024) /* readahead */
-+
-+#define CEPH_MSG_MAX_FRONT_LEN	(16*1024*1024)
-+#define CEPH_MSG_MAX_DATA_LEN	(16*1024*1024)
-+
-+/*
-+ * Delay telling the MDS we no longer want caps, in case we reopen
-+ * the file.  Delay a minimum amount of time, even if we send a cap
-+ * message for some other reason.  Otherwise, take the oppotunity to
-+ * update the mds to avoid sending another message later.
-+ */
-+#define CEPH_CAPS_WANTED_DELAY_MIN_DEFAULT      5  /* cap release delay */
-+#define CEPH_CAPS_WANTED_DELAY_MAX_DEFAULT     60  /* cap release delay */
-+
-+
-+/* mount state */
 +enum {
-+	CEPH_MOUNT_MOUNTING,
-+	CEPH_MOUNT_MOUNTED,
-+	CEPH_MOUNT_UNMOUNTING,
-+	CEPH_MOUNT_UNMOUNTED,
-+	CEPH_MOUNT_SHUTDOWN,
++	Opt_fsidmajor,
++	Opt_fsidminor,
++	Opt_monport,
++	Opt_port,
++	Opt_wsize,
++	Opt_rsize,
++	Opt_osdtimeout,
++	Opt_mount_timeout,
++	Opt_caps_wanted_delay_min,
++	Opt_caps_wanted_delay_max,
++	Opt_readdir_max_entries,
++	/* int args above */
++	Opt_ip,
++	Opt_noshare,
++	Opt_unsafewriteback,
++	Opt_safewriteback,
++	Opt_dirstat,
++	Opt_nodirstat,
++	Opt_rbytes,
++	Opt_norbytes,
++	Opt_nocrc,
++	Opt_noasyncreaddir,
 +};
 +
-+/*
-+ * subtract jiffies
-+ */
-+static inline unsigned long time_sub(unsigned long a, unsigned long b)
-+{
-+	BUG_ON(time_after(b, a));
-+	return (long)a - (long)b;
-+}
-+
-+/*
-+ * per-filesystem client state
-+ *
-+ * possibly shared by multiple mount points, if they are
-+ * mounting the same ceph filesystem/cluster.
-+ */
-+struct ceph_client {
-+	u32 whoami;                   /* my client number */
-+	struct dentry *debugfs_fsid, *debugfs_monmap;
-+	struct dentry *debugfs_mdsmap, *debugfs_osdmap;
-+	struct dentry *debugfs_dir, *debugfs_dentry_lru;
-+
-+	struct mutex mount_mutex;       /* serialize mount attempts */
-+	struct ceph_mount_args mount_args;
-+	ceph_fsid_t fsid;
-+
-+	struct super_block *sb;
-+
-+	unsigned long mount_state;
-+	wait_queue_head_t mount_wq;
-+
-+	int mount_err;
-+	void *signed_ticket;           /* our keys to the kingdom */
-+	int signed_ticket_len;
-+
-+	struct ceph_messenger *msgr;   /* messenger instance */
-+	struct ceph_mon_client monc;
-+	struct ceph_mds_client mdsc;
-+	struct ceph_osd_client osdc;
-+
-+	/* writeback */
-+	struct workqueue_struct *wb_wq;
-+	struct workqueue_struct *pg_inv_wq;
-+	struct workqueue_struct *trunc_wq;
-+
-+	struct backing_dev_info backing_dev_info;
++static match_table_t arg_tokens = {
++	{Opt_fsidmajor, "fsidmajor=%ld"},
++	{Opt_fsidminor, "fsidminor=%ld"},
++	{Opt_monport, "monport=%d"},
++	{Opt_port, "port=%d"},
++	{Opt_wsize, "wsize=%d"},
++	{Opt_rsize, "rsize=%d"},
++	{Opt_osdtimeout, "osdtimeout=%d"},
++	{Opt_mount_timeout, "mount_timeout=%d"},
++	{Opt_caps_wanted_delay_min, "caps_wanted_delay_min=%d"},
++	{Opt_caps_wanted_delay_max, "caps_wanted_delay_max=%d"},
++	{Opt_readdir_max_entries, "readdir_max_entries=%d"},
++	/* int args above */
++	{Opt_ip, "ip=%s"},
++	{Opt_noshare, "noshare"},
++	{Opt_unsafewriteback, "unsafewriteback"},
++	{Opt_safewriteback, "safewriteback"},
++	{Opt_dirstat, "dirstat"},
++	{Opt_nodirstat, "nodirstat"},
++	{Opt_rbytes, "rbytes"},
++	{Opt_norbytes, "norbytes"},
++	{Opt_nocrc, "nocrc"},
++	{Opt_noasyncreaddir, "noasyncreaddir"},
++	{-1, NULL}
 +};
-+
-+static inline struct ceph_client *ceph_client(struct super_block *sb)
-+{
-+	return sb->s_fs_info;
-+}
 +
 +
 +/*
-+ * File i/o capability.  This tracks shared state with the metadata
-+ * server that allows us to cache or writeback attributes or to read
-+ * and write data.  For any given inode, we should have one or more
-+ * capabilities, one issued by each metadata server, and our
-+ * cumulative access is the OR of all issued capabilities.
-+ *
-+ * Each cap is referenced by the inode's i_caps rbtree and by per-mds
-+ * session capability lists.
++ * Parse an ip[:port] list into an addr array.  Use the default
++ * monitor port if a port isn't specified.
 + */
-+struct ceph_cap {
-+	struct ceph_inode_info *ci;
-+	struct rb_node ci_node;          /* per-ci cap tree */
-+	struct ceph_mds_session *session;
-+	struct list_head session_caps;   /* per-session caplist */
-+	int mds;
-+	u64 cap_id;       /* unique cap id (mds provided) */
-+	int issued;       /* latest, from the mds */
-+	int implemented;  /* implemented superset of issued (for revocation) */
-+	int mds_wanted;
-+	u32 seq, issue_seq, mseq, gen;
-+	unsigned long last_used;
-+	struct list_head caps_item;
-+};
++#define ADDR_DELIM(c) ((!c) || (c == ':') || (c == ','))
 +
-+#define CHECK_CAPS_NODELAY    1  /* do not delay any further */
-+#define CHECK_CAPS_AUTHONLY   2  /* only check auth cap */
-+#define CHECK_CAPS_FLUSH      4  /* flush any dirty caps */
-+
-+/*
-+ * Snapped cap state that is pending flush to mds.  When a snapshot occurs,
-+ * we first complete any in-process sync writes and writeback any dirty
-+ * data before flushing the snapped state (tracked here) back to the MDS.
-+ */
-+struct ceph_cap_snap {
-+	atomic_t nref;
-+
-+	struct list_head ci_item;
-+	u64 follows, flush_tid;
-+	int issued, dirty;
-+	struct ceph_snap_context *context;
-+
-+	mode_t mode;
-+	uid_t uid;
-+	gid_t gid;
-+
-+	void *xattr_blob;
-+	int xattr_len;
-+	u64 xattr_version;
-+
-+	u64 size;
-+	struct timespec mtime, atime, ctime;
-+	u64 time_warp_seq;
-+	int writing;   /* a sync write is still in progress */
-+	int dirty_pages;     /* dirty pages awaiting writeback */
-+};
-+
-+static inline void ceph_put_cap_snap(struct ceph_cap_snap *capsnap)
++static int parse_ips(const char *c, const char *end,
++		     struct ceph_entity_addr *addr,
++		     int max_count, int *count)
 +{
-+	if (atomic_dec_and_test(&capsnap->nref))
-+		kfree(capsnap);
-+}
++	int mon_count;
++	const char *p = c;
 +
-+/*
-+ * The frag tree describes how a directory is fragmented, potentially across
-+ * multiple metadata servers.  It is also used to indicate points where
-+ * metadata authority is delegated, and whether/where metadata is replicated.
-+ *
-+ * A _leaf_ frag will be present in the i_fragtree IFF there is
-+ * delegation info.  That is, if mds >= 0 || ndist > 0.
-+ */
-+#define CEPH_MAX_DIRFRAG_REP 4
++	dout("parse_ips on '%.*s'\n", (int)(end-c), c);
++	for (mon_count = 0; mon_count < max_count; mon_count++) {
++		const char *ipend;
++		__be32 quad;
 +
-+struct ceph_inode_frag {
-+	struct rb_node node;
++		if (!in4_pton(p, end - p, (u8 *)&quad, ',', &ipend))
++			goto bad;
++		*(__be32 *)&addr[mon_count].ipaddr.sin_addr.s_addr = quad;
++		p = ipend;
 +
-+	/* fragtree state */
-+	u32 frag;
-+	int split_by;         /* i.e. 2^(split_by) children */
++		/* port? */
++		if (p < end && *p == ':') {
++			long port = 0;
 +
-+	/* delegation info */
-+	int mds;              /* -1 if same authority as parent */
-+	int ndist;            /* >0 if replicated */
-+	int dist[CEPH_MAX_DIRFRAG_REP];
-+};
++			p++;
++			while (p < end && *p >= '0' && *p <= '9') {
++				port = (port * 10) + (*p - '0');
++				p++;
++			}
++			if (port > 65535 || port == 0)
++				goto bad;
++			addr[mon_count].ipaddr.sin_port = htons(port);
++		} else
++			addr[mon_count].ipaddr.sin_port = htons(CEPH_MON_PORT);
 +
-+/*
-+ * We cache inode xattrs as an encoded blob until they are first used,
-+ * at which point we parse them into an rbtree.
-+ */
-+struct ceph_inode_xattr {
-+	struct rb_node node;
++		dout("parse_ips got %u.%u.%u.%u:%u\n",
++		     IPQUADPORT(addr[mon_count].ipaddr));
 +
-+	const char *name;
-+	int name_len;
-+	const char *val;
-+	int val_len;
-+	int dirty;
-+
-+	int should_free_name;
-+	int should_free_val;
-+};
-+
-+struct ceph_inode_xattrs_info {
-+	struct rb_root xattrs;
-+
-+	/*
-+	 * (still encoded) xattr blob. we avoid the overhead of parsing
-+	 * this until someone actually calls getxattr, etc.
-+	 *
-+	 * if i_xattrs.len == 0 or 4, i_xattrs.data == NULL.
-+	 * i_xattrs.len == 4 implies there are no xattrs; 0 means we
-+	 * don't know.
-+	*/
-+	int len;
-+	char *data;
-+	int count;
-+	int names_size;
-+	int vals_size;
-+	u64 version;
-+	u64 index_version;
-+	int dirty;
-+
-+	void *prealloc_blob;
-+	int prealloc_size;
-+};
-+
-+/*
-+ * Ceph inode.
-+ */
-+#define CEPH_I_COMPLETE  1  /* we have complete directory cached */
-+#define CEPH_I_NODELAY   4  /* do not delay cap release */
-+#define CEPH_I_FLUSH     8  /* do not delay flush of dirty metadata */
-+
-+struct ceph_inode_info {
-+	struct ceph_vino i_vino;   /* ceph ino + snap */
-+
-+	u64 i_version;
-+	u32 i_time_warp_seq;
-+
-+	unsigned i_ceph_flags;
-+	unsigned long i_release_count;
-+
-+	struct ceph_file_layout i_layout;
-+	char *i_symlink;
-+
-+	/* for dirs */
-+	struct timespec i_rctime;
-+	u64 i_rbytes, i_rfiles, i_rsubdirs;
-+	u64 i_files, i_subdirs;
-+	u64 i_max_offset;  /* largest readdir offset, set with I_COMPLETE */
-+
-+	struct rb_root i_fragtree;
-+	struct mutex i_fragtree_mutex;
-+
-+	struct ceph_inode_xattrs_info i_xattrs;
-+
-+	/* capabilities.  protected _both_ by i_lock and cap->session's
-+	 * s_mutex. */
-+	struct rb_root i_caps;           /* cap list */
-+	struct ceph_cap *i_auth_cap;     /* authoritative cap, if any */
-+	unsigned i_dirty_caps, i_flushing_caps;     /* mask of dirtied fields */
-+	struct list_head i_dirty_item, i_flushing_item;
-+	u64 i_cap_flush_seq, i_cap_flush_tid;
-+	wait_queue_head_t i_cap_wq;      /* threads waiting on a capability */
-+	unsigned long i_hold_caps_min; /* jiffies */
-+	unsigned long i_hold_caps_max; /* jiffies */
-+	struct list_head i_cap_delay_list;  /* for delayed cap release to mds */
-+	int i_cap_exporting_mds;         /* to handle cap migration between */
-+	unsigned i_cap_exporting_mseq;   /*  mds's. */
-+	unsigned i_cap_exporting_issued;
-+	struct ceph_cap_reservation i_cap_migration_resv;
-+	struct list_head i_cap_snaps;   /* snapped state pending flush to mds */
-+	struct ceph_snap_context *i_head_snapc;  /* set if wr_buffer_head > 0 */
-+	unsigned i_snap_caps;           /* cap bits for snapped files */
-+
-+	int i_nr_by_mode[CEPH_FILE_MODE_NUM];  /* open file counts */
-+
-+	u32 i_truncate_seq;        /* last truncate to smaller size */
-+	u64 i_truncate_size;       /*  and the size we last truncated down to */
-+	int i_truncate_pending;    /*  still need to call vmtruncate */
-+
-+	u64 i_max_size;            /* max file size authorized by mds */
-+	u64 i_reported_size; /* (max_)size reported to or requested of mds */
-+	u64 i_wanted_max_size;     /* offset we'd like to write too */
-+	u64 i_requested_max_size;  /* max_size we've requested */
-+
-+	/* held references to caps */
-+	int i_pin_ref;
-+	int i_rd_ref, i_rdcache_ref, i_wr_ref;
-+	int i_wrbuffer_ref, i_wrbuffer_ref_head;
-+	u32 i_rdcache_gen;      /* we increment this each time we get RDCACHE.
-+				   If it's non-zero, we _may_ have cached
-+				   pages. */
-+	u32 i_rdcache_revoking; /* RDCACHE gen to async invalidate, if any */
-+
-+	struct list_head i_unsafe_writes; /* uncommitted sync writes */
-+	struct list_head i_unsafe_dirops; /* uncommitted mds dir ops */
-+	spinlock_t i_unsafe_lock;
-+
-+	struct ceph_snap_realm *i_snap_realm; /* snap realm (if caps) */
-+	int i_snap_realm_counter; /* snap realm (if caps) */
-+	struct list_head i_snap_realm_item;
-+	struct list_head i_snap_flush_item;
-+
-+	struct work_struct i_wb_work;  /* writeback work */
-+	struct work_struct i_pg_inv_work;  /* page invalidation work */
-+
-+	struct work_struct i_vmtruncate_work;
-+
-+	struct inode vfs_inode; /* at end */
-+};
-+
-+static inline struct ceph_inode_info *ceph_inode(struct inode *inode)
-+{
-+	return list_entry(inode, struct ceph_inode_info, vfs_inode);
-+}
-+
-+static inline void ceph_i_clear(struct inode *inode, unsigned mask)
-+{
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+
-+	spin_lock(&inode->i_lock);
-+	ci->i_ceph_flags &= ~mask;
-+	spin_unlock(&inode->i_lock);
-+}
-+
-+static inline void ceph_i_set(struct inode *inode, unsigned mask)
-+{
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+
-+	spin_lock(&inode->i_lock);
-+	ci->i_ceph_flags |= mask;
-+	spin_unlock(&inode->i_lock);
-+}
-+
-+static inline bool ceph_i_test(struct inode *inode, unsigned mask)
-+{
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+	bool r;
-+
-+	spin_lock(&inode->i_lock);
-+	r = (ci->i_ceph_flags & mask) == mask;
-+	spin_unlock(&inode->i_lock);
-+	return r;
-+}
-+
-+
-+/* find a specific frag @f */
-+static inline struct ceph_inode_frag *
-+__ceph_find_frag(struct ceph_inode_info *ci, u32 f)
-+{
-+	struct rb_node *n = ci->i_fragtree.rb_node;
-+
-+	while (n) {
-+		struct ceph_inode_frag *frag =
-+			rb_entry(n, struct ceph_inode_frag, node);
-+		int c = frag_compare(f, frag->frag);
-+		if (c < 0)
-+			n = n->rb_left;
-+		else if (c > 0)
-+			n = n->rb_right;
-+		else
-+			return frag;
++		if (p == end)
++			break;
++		if (*p != ',')
++			goto bad;
++		p++;
 +	}
-+	return NULL;
++
++	if (p != end)
++		goto bad;
++
++	if (count)
++		*count = mon_count + 1;
++	return 0;
++
++bad:
++	pr_err("ceph parse_ips bad ip '%s'\n", c);
++	return -EINVAL;
 +}
 +
-+/*
-+ * choose fragment for value @v.  copy frag content to pfrag, if leaf
-+ * exists
-+ */
-+extern u32 ceph_choose_frag(struct ceph_inode_info *ci, u32 v,
-+			    struct ceph_inode_frag *pfrag,
-+			    int *found);
-+
-+/*
-+ * Ceph dentry state
-+ */
-+struct ceph_dentry_info {
-+	struct ceph_mds_session *lease_session;
-+	u32 lease_gen, lease_rdcache_gen;
-+	u32 lease_seq;
-+	unsigned long lease_renew_after, lease_renew_from;
-+	struct list_head lru;
-+	struct dentry *dentry;
-+	u64 time;
-+	u64 offset;
-+};
-+
-+static inline struct ceph_dentry_info *ceph_dentry(struct dentry *dentry)
++static int parse_mount_args(int flags, char *options, const char *dev_name,
++			    struct ceph_mount_args *args, const char **path)
 +{
-+	return (struct ceph_dentry_info *)dentry->d_fsdata;
-+}
++	const char *c;
++	int err;
++	substring_t argstr[MAX_OPT_ARGS];
++	int i;
 +
-+static inline loff_t ceph_make_fpos(unsigned frag, unsigned off)
-+{
-+	return ((loff_t)frag << 32) | (loff_t)off;
-+}
++	dout("parse_mount_args dev_name '%s'\n", dev_name);
++	memset(args, 0, sizeof(*args));
 +
-+/*
-+ * ino_t is <64 bits on many architectures, blech.
-+ *
-+ * don't include snap in ino hash, at least for now.
-+ */
-+static inline ino_t ceph_vino_to_ino(struct ceph_vino vino)
-+{
-+	ino_t ino = (ino_t)vino.ino;  /* ^ (vino.snap << 20); */
-+#if BITS_PER_LONG == 32
-+	ino ^= vino.ino >> (sizeof(u64)-sizeof(ino_t)) * 8;
-+	if (!ino)
-+		ino = 1;
-+#endif
-+	return ino;
-+}
++	/* start with defaults */
++	args->sb_flags = flags;
++	args->flags = CEPH_OPT_DEFAULT;
++	args->osd_timeout = 5;    /* seconds */
++	args->mount_timeout = CEPH_MOUNT_TIMEOUT_DEFAULT; /* seconds */
++	args->caps_wanted_delay_min = CEPH_CAPS_WANTED_DELAY_MIN_DEFAULT;
++	args->caps_wanted_delay_max = CEPH_CAPS_WANTED_DELAY_MAX_DEFAULT;
++	args->snapdir_name = ".snap";
++	args->cap_release_safety = CEPH_CAPS_PER_RELEASE * 4;
++	args->max_readdir = 1024;
 +
-+static inline int ceph_set_ino_cb(struct inode *inode, void *data)
-+{
-+	ceph_inode(inode)->i_vino = *(struct ceph_vino *)data;
-+	inode->i_ino = ceph_vino_to_ino(*(struct ceph_vino *)data);
++	/* ip1[:port1][,ip2[:port2]...]:/subdir/in/fs */
++	if (!dev_name)
++		return -EINVAL;
++	*path = strstr(dev_name, ":/");
++	if (*path == NULL) {
++		pr_err("ceph device name is missing path (no :/ in %s)\n",
++		       dev_name);
++		return -EINVAL;
++	}
++
++	/* get mon ip(s) */
++	err = parse_ips(dev_name, *path, args->mon_addr,
++			CEPH_MAX_MON_MOUNT_ADDR, &args->num_mon);
++	if (err < 0)
++		return err;
++
++	for (i = 0; i < args->num_mon; i++) {
++		args->mon_addr[i].ipaddr.sin_family = AF_INET;
++		args->mon_addr[i].erank = 0;
++		args->mon_addr[i].nonce = 0;
++	}
++	args->my_addr.ipaddr.sin_family = AF_INET;
++	args->my_addr.ipaddr.sin_addr.s_addr = htonl(0);
++	args->my_addr.ipaddr.sin_port = htons(0);
++
++	/* path on server */
++	*path += 2;
++	dout("server path '%s'\n", *path);
++
++	/* parse mount options */
++	while ((c = strsep(&options, ",")) != NULL) {
++		int token, intval, ret;
++		if (!*c)
++			continue;
++		token = match_token((char *)c, arg_tokens, argstr);
++		if (token < 0) {
++			pr_err("ceph bad mount option at '%s'\n", c);
++			return -EINVAL;
++
++		}
++		if (token < Opt_ip) {
++			ret = match_int(&argstr[0], &intval);
++			if (ret < 0) {
++				pr_err("ceph bad mount option arg (not int) "
++				       "at '%s'\n", c);
++				continue;
++			}
++			dout("got token %d intval %d\n", token, intval);
++		}
++		switch (token) {
++		case Opt_fsidmajor:
++			__ceph_fsid_set_major(&args->fsid, cpu_to_le64(intval));
++			break;
++		case Opt_fsidminor:
++			__ceph_fsid_set_minor(&args->fsid, cpu_to_le64(intval));
++			break;
++		case Opt_port:
++			args->my_addr.ipaddr.sin_port = htons(intval);
++			break;
++		case Opt_ip:
++			err = parse_ips(argstr[0].from,
++					argstr[0].to,
++					&args->my_addr,
++					1, NULL);
++			if (err < 0)
++				return err;
++			args->flags |= CEPH_OPT_MYIP;
++			break;
++
++			/* misc */
++		case Opt_wsize:
++			args->wsize = intval;
++			break;
++		case Opt_rsize:
++			args->rsize = intval;
++			break;
++		case Opt_osdtimeout:
++			args->osd_timeout = intval;
++			break;
++		case Opt_mount_timeout:
++			args->mount_timeout = intval;
++			break;
++		case Opt_caps_wanted_delay_min:
++			args->caps_wanted_delay_min = intval;
++			break;
++		case Opt_caps_wanted_delay_max:
++			args->caps_wanted_delay_max = intval;
++			break;
++		case Opt_readdir_max_entries:
++			args->max_readdir = intval;
++			break;
++
++		case Opt_noshare:
++			args->flags |= CEPH_OPT_NOSHARE;
++			break;
++		case Opt_unsafewriteback:
++			args->flags |= CEPH_OPT_UNSAFE_WRITEBACK;
++			break;
++		case Opt_safewriteback:
++			args->flags &= ~CEPH_OPT_UNSAFE_WRITEBACK;
++			break;
++
++		case Opt_dirstat:
++			args->flags |= CEPH_OPT_DIRSTAT;
++			break;
++		case Opt_nodirstat:
++			args->flags &= ~CEPH_OPT_DIRSTAT;
++			break;
++		case Opt_rbytes:
++			args->flags |= CEPH_OPT_RBYTES;
++			break;
++		case Opt_norbytes:
++			args->flags &= ~CEPH_OPT_RBYTES;
++			break;
++		case Opt_nocrc:
++			args->flags |= CEPH_OPT_NOCRC;
++			break;
++		case Opt_noasyncreaddir:
++			args->flags |= CEPH_OPT_NOASYNCREADDIR;
++			break;
++
++		default:
++			BUG_ON(token);
++		}
++	}
++
 +	return 0;
 +}
 +
-+static inline struct ceph_vino ceph_vino(struct inode *inode)
-+{
-+	return ceph_inode(inode)->i_vino;
-+}
-+
-+/* for printf-style formatting */
-+#define ceph_vinop(i) ceph_inode(i)->i_vino.ino, ceph_inode(i)->i_vino.snap
-+
-+static inline u64 ceph_ino(struct inode *inode)
-+{
-+	return ceph_inode(inode)->i_vino.ino;
-+}
-+static inline u64 ceph_snap(struct inode *inode)
-+{
-+	return ceph_inode(inode)->i_vino.snap;
-+}
-+
-+static inline int ceph_ino_compare(struct inode *inode, void *data)
-+{
-+	struct ceph_vino *pvino = (struct ceph_vino *)data;
-+	struct ceph_inode_info *ci = ceph_inode(inode);
-+	return ci->i_vino.ino == pvino->ino &&
-+		ci->i_vino.snap == pvino->snap;
-+}
-+
-+static inline struct inode *ceph_find_inode(struct super_block *sb,
-+					    struct ceph_vino vino)
-+{
-+	ino_t t = ceph_vino_to_ino(vino);
-+	return ilookup5(sb, t, ceph_ino_compare, &vino);
-+}
-+
-+
 +/*
-+ * caps helpers
++ * create a fresh client instance
 + */
-+static inline bool __ceph_is_any_real_caps(struct ceph_inode_info *ci)
++static struct ceph_client *ceph_create_client(void)
 +{
-+	return !RB_EMPTY_ROOT(&ci->i_caps);
++	struct ceph_client *client;
++	int err = -ENOMEM;
++
++	client = kzalloc(sizeof(*client), GFP_KERNEL);
++	if (client == NULL)
++		return ERR_PTR(-ENOMEM);
++
++	mutex_init(&client->mount_mutex);
++
++	init_waitqueue_head(&client->mount_wq);
++
++	client->sb = NULL;
++	client->mount_state = CEPH_MOUNT_MOUNTING;
++	client->whoami = -1;
++
++	client->msgr = NULL;
++
++	client->mount_err = 0;
++	client->signed_ticket = NULL;
++	client->signed_ticket_len = 0;
++
++	client->wb_wq = create_workqueue("ceph-writeback");
++	if (client->wb_wq == NULL)
++		goto fail;
++	client->pg_inv_wq = create_workqueue("ceph-pg-invalid");
++	if (client->pg_inv_wq == NULL)
++		goto fail;
++	client->trunc_wq = create_workqueue("ceph-trunc");
++	if (client->trunc_wq == NULL)
++		goto fail;
++
++	/* subsystems */
++	err = ceph_monc_init(&client->monc, client);
++	if (err < 0)
++		return ERR_PTR(err);
++	ceph_mdsc_init(&client->mdsc, client);
++	ceph_osdc_init(&client->osdc, client);
++
++	return client;
++
++fail:
++	return ERR_PTR(-ENOMEM);
 +}
 +
-+extern int __ceph_caps_issued(struct ceph_inode_info *ci, int *implemented);
-+extern int __ceph_caps_issued_mask(struct ceph_inode_info *ci, int mask, int t);
-+extern int __ceph_caps_issued_other(struct ceph_inode_info *ci,
-+				    struct ceph_cap *cap);
-+
-+static inline int ceph_caps_issued(struct ceph_inode_info *ci)
++static void ceph_destroy_client(struct ceph_client *client)
 +{
-+	int issued;
-+	spin_lock(&ci->vfs_inode.i_lock);
-+	issued = __ceph_caps_issued(ci, NULL);
-+	spin_unlock(&ci->vfs_inode.i_lock);
-+	return issued;
-+}
++	dout("destroy_client %p\n", client);
 +
-+static inline int ceph_caps_issued_mask(struct ceph_inode_info *ci, int mask,
-+					int touch)
-+{
-+	int r;
-+	spin_lock(&ci->vfs_inode.i_lock);
-+	r = __ceph_caps_issued_mask(ci, mask, touch);
-+	spin_unlock(&ci->vfs_inode.i_lock);
-+	return r;
-+}
++	/* unmount */
++	ceph_mdsc_stop(&client->mdsc);
++	ceph_monc_stop(&client->monc);
++	ceph_osdc_stop(&client->osdc);
 +
-+static inline int __ceph_caps_dirty(struct ceph_inode_info *ci)
-+{
-+	return ci->i_dirty_caps | ci->i_flushing_caps;
-+}
-+extern int __ceph_mark_dirty_caps(struct ceph_inode_info *ci, int mask);
++	kfree(client->signed_ticket);
 +
-+extern int ceph_caps_revoking(struct ceph_inode_info *ci, int mask);
-+
-+static inline int __ceph_caps_used(struct ceph_inode_info *ci)
-+{
-+	int used = 0;
-+	if (ci->i_pin_ref)
-+		used |= CEPH_CAP_PIN;
-+	if (ci->i_rd_ref)
-+		used |= CEPH_CAP_FILE_RD;
-+	if (ci->i_rdcache_ref || ci->i_rdcache_gen)
-+		used |= CEPH_CAP_FILE_CACHE;
-+	if (ci->i_wr_ref)
-+		used |= CEPH_CAP_FILE_WR;
-+	if (ci->i_wrbuffer_ref)
-+		used |= CEPH_CAP_FILE_BUFFER;
-+	return used;
++	ceph_debugfs_client_cleanup(client);
++	if (client->wb_wq)
++		destroy_workqueue(client->wb_wq);
++	if (client->pg_inv_wq)
++		destroy_workqueue(client->pg_inv_wq);
++	if (client->trunc_wq)
++		destroy_workqueue(client->trunc_wq);
++	if (client->msgr)
++		ceph_messenger_destroy(client->msgr);
++	kfree(client);
++	dout("destroy_client %p done\n", client);
 +}
 +
 +/*
-+ * wanted, by virtue of open file modes
++ * true if we have the mon map (and have thus joined the cluster)
 + */
-+static inline int __ceph_caps_file_wanted(struct ceph_inode_info *ci)
++static int have_mon_map(struct ceph_client *client)
 +{
-+	int want = 0;
-+	int mode;
-+	for (mode = 0; mode < 4; mode++)
-+		if (ci->i_nr_by_mode[mode])
-+			want |= ceph_caps_for_mode(mode);
-+	return want;
++	return client->monc.monmap && client->monc.monmap->epoch;
 +}
 +
 +/*
-+ * wanted, by virtue of open file modes AND cap refs (buffered/cached data)
++ * Bootstrap mount by opening the root directory.  Note the mount
++ * @started time from caller, and time out if this takes too long.
 + */
-+static inline int __ceph_caps_wanted(struct ceph_inode_info *ci)
++static struct dentry *open_root_dentry(struct ceph_client *client,
++				       const char *path,
++				       unsigned long started)
 +{
-+	int w = __ceph_caps_file_wanted(ci) | __ceph_caps_used(ci);
-+	if (w & CEPH_CAP_FILE_BUFFER)
-+		w |= CEPH_CAP_FILE_EXCL;  /* we want EXCL if dirty data */
-+	return w;
-+}
++	struct ceph_mds_client *mdsc = &client->mdsc;
++	struct ceph_mds_request *req = NULL;
++	int err;
++	struct dentry *root;
 +
-+/* what the mds thinks we want */
-+extern int __ceph_caps_mds_wanted(struct ceph_inode_info *ci);
-+
-+extern void ceph_caps_init(void);
-+extern void ceph_caps_finalize(void);
-+extern int ceph_reserve_caps(struct ceph_cap_reservation *ctx, int need);
-+extern int ceph_unreserve_caps(struct ceph_cap_reservation *ctx);
-+extern void ceph_reservation_status(int *total, int *avail, int *used,
-+				    int *reserved);
-+
-+static inline struct ceph_client *ceph_inode_to_client(struct inode *inode)
-+{
-+	return (struct ceph_client *)inode->i_sb->s_fs_info;
-+}
-+
-+static inline struct ceph_client *ceph_sb_to_client(struct super_block *sb)
-+{
-+	return (struct ceph_client *)sb->s_fs_info;
-+}
-+
-+static inline int ceph_queue_writeback(struct inode *inode)
-+{
-+	return queue_work(ceph_inode_to_client(inode)->wb_wq,
-+		   &ceph_inode(inode)->i_wb_work);
-+}
-+
-+static inline int ceph_queue_page_invalidation(struct inode *inode)
-+{
-+	return queue_work(ceph_inode_to_client(inode)->pg_inv_wq,
-+		   &ceph_inode(inode)->i_pg_inv_work);
-+}
-+
-+
-+/*
-+ * we keep buffered readdir results attached to file->private_data
-+ */
-+struct ceph_file_info {
-+	int fmode;     /* initialized on open */
-+
-+	/* readdir: position within the dir */
-+	u32 frag;
-+	struct ceph_mds_request *last_readdir;
-+	int at_end;
-+
-+	/* readdir: position within a frag */
-+	unsigned offset;       /* offset of last chunk, adjusted for . and .. */
-+	u64 next_offset;       /* offset of next chunk (last_name's + 1) */
-+	char *last_name;       /* last entry in previous chunk */
-+	struct dentry *dentry; /* next dentry (for dcache readdir) */
-+	unsigned long dir_release_count;
-+
-+	/* used for -o dirstat read() on directory thing */
-+	char *dir_info;
-+	int dir_info_len;
-+};
-+
-+
-+
-+/*
-+ * snapshots
-+ */
-+
-+/*
-+ * A "snap context" is the set of existing snapshots when we
-+ * write data.  It is used by the OSD to guide its COW behavior.
-+ *
-+ * The ceph_snap_context is refcounted, and attached to each dirty
-+ * page, indicating which context the dirty data belonged when it was
-+ * dirtied.
-+ */
-+struct ceph_snap_context {
-+	atomic_t nref;
-+	u64 seq;
-+	int num_snaps;
-+	u64 snaps[];
-+};
-+
-+static inline struct ceph_snap_context *
-+ceph_get_snap_context(struct ceph_snap_context *sc)
-+{
-+	/*
-+	printk("get_snap_context %p %d -> %d\n", sc, atomic_read(&sc->nref),
-+	       atomic_read(&sc->nref)+1);
-+	*/
-+	if (sc)
-+		atomic_inc(&sc->nref);
-+	return sc;
-+}
-+
-+static inline void ceph_put_snap_context(struct ceph_snap_context *sc)
-+{
-+	if (!sc)
-+		return;
-+	/*
-+	printk("put_snap_context %p %d -> %d\n", sc, atomic_read(&sc->nref),
-+	       atomic_read(&sc->nref)-1);
-+	*/
-+	if (atomic_dec_and_test(&sc->nref)) {
-+		/*printk(" deleting snap_context %p\n", sc);*/
-+		kfree(sc);
++	/* open dir */
++	dout("open_root_inode opening '%s'\n", path);
++	req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_GETATTR, USE_ANY_MDS);
++	if (IS_ERR(req))
++		return ERR_PTR(PTR_ERR(req));
++	req->r_path1 = kstrdup(path, GFP_NOFS);
++	req->r_ino1.ino = CEPH_INO_ROOT;
++	req->r_ino1.snap = CEPH_NOSNAP;
++	req->r_started = started;
++	req->r_timeout = client->mount_args.mount_timeout * HZ;
++	req->r_args.getattr.mask = cpu_to_le32(CEPH_STAT_CAP_INODE);
++	req->r_num_caps = 2;
++	err = ceph_mdsc_do_request(mdsc, NULL, req);
++	if (err == 0) {
++		dout("open_root_inode success\n");
++		if (ceph_ino(req->r_target_inode) == CEPH_INO_ROOT &&
++		    client->sb->s_root == NULL)
++			root = d_alloc_root(req->r_target_inode);
++		else
++			root = d_obtain_alias(req->r_target_inode);
++		req->r_target_inode = NULL;
++		dout("open_root_inode success, root dentry is %p\n", root);
++	} else {
++		root = ERR_PTR(err);
 +	}
++	ceph_mdsc_put_request(req);
++	return root;
 +}
 +
 +/*
-+ * A "snap realm" describes a subset of the file hierarchy sharing
-+ * the same set of snapshots that apply to it.  The realms themselves
-+ * are organized into a hierarchy, such that children inherit (some of)
-+ * the snapshots of their parents.
++ * mount: join the ceph cluster, and open root directory.
++ */
++static int ceph_mount(struct ceph_client *client, struct vfsmount *mnt,
++		      const char *path)
++{
++	struct ceph_entity_addr *myaddr = NULL;
++	struct ceph_msg *mount_msg;
++	int err;
++	int request_interval = 5 * HZ;
++	unsigned long timeout = client->mount_args.mount_timeout * HZ;
++	unsigned long started = jiffies;  /* note the start time */
++	int which;
++	struct dentry *root;
++	unsigned char r;
++	struct ceph_client_mount *h;
++
++	dout("mount start\n");
++	mutex_lock(&client->mount_mutex);
++
++	/* initialize the messenger */
++	if (client->msgr == NULL) {
++		if (ceph_test_opt(client, MYIP))
++			myaddr = &client->mount_args.my_addr;
++		client->msgr = ceph_messenger_create(myaddr);
++		if (IS_ERR(client->msgr)) {
++			err = PTR_ERR(client->msgr);
++			client->msgr = NULL;
++			goto out;
++		}
++		client->msgr->parent = client;
++		client->msgr->dispatch = ceph_dispatch;
++		client->msgr->prepare_pages = ceph_osdc_prepare_pages;
++		client->msgr->peer_reset = ceph_peer_reset;
++	}
++
++	/* send mount request, and wait for mon, mds, and osd maps */
++	while (!have_mon_map(client) && !client->mount_err) {
++		err = -EIO;
++		if (timeout && time_after_eq(jiffies, started + timeout))
++			goto out;
++		dout("mount sending mount request\n");
++		get_random_bytes(&r, 1);
++		which = r % client->mount_args.num_mon;
++		mount_msg = ceph_msg_new(CEPH_MSG_CLIENT_MOUNT, sizeof(*h), 0,
++					 0, NULL);
++		if (IS_ERR(mount_msg)) {
++			err = PTR_ERR(mount_msg);
++			goto out;
++		}
++		h = mount_msg->front.iov_base;
++		h->have_version = 0;
++		mount_msg->hdr.dst.name.type =
++			cpu_to_le32(CEPH_ENTITY_TYPE_MON);
++		mount_msg->hdr.dst.name.num = cpu_to_le32(which);
++		mount_msg->hdr.dst.addr = client->mount_args.mon_addr[which];
++
++		ceph_msg_send(client->msgr, mount_msg, 0);
++
++		/* wait */
++		dout("mount sent to mon%d, waiting for mon map\n", which);
++		err = wait_event_interruptible_timeout(client->mount_wq,
++			       client->mount_err || have_mon_map(client),
++			       request_interval);
++		if (err == -EINTR || err == -ERESTARTSYS)
++			goto out;
++		if (client->mount_err) {
++			err = client->mount_err;
++			goto out;
++		}
++	}
++
++
++	dout("mount opening root\n");
++	root = open_root_dentry(client, "", started);
++	if (IS_ERR(root)) {
++		err = PTR_ERR(root);
++		goto out;
++	}
++	if (client->sb->s_root)
++		dput(root);
++	else
++		client->sb->s_root = root;
++
++	if (path[0] == 0) {
++		dget(root);
++	} else {
++		dout("mount opening base mountpoint\n");
++		root = open_root_dentry(client, path, started);
++		if (IS_ERR(root)) {
++			err = PTR_ERR(root);
++			dput(client->sb->s_root);
++			client->sb->s_root = NULL;
++			goto out;
++		}
++	}
++
++	mnt->mnt_root = root;
++	mnt->mnt_sb = client->sb;
++
++	client->mount_state = CEPH_MOUNT_MOUNTED;
++	dout("mount success\n");
++	err = 0;
++
++out:
++	mutex_unlock(&client->mount_mutex);
++	return err;
++}
++
++
++/*
++ * Process an incoming message.
 + *
-+ * All inodes within the realm that have capabilities are linked into a
-+ * per-realm list.
++ * This should be relatively fast and must not do any work that waits
++ * on other messages to be received.
 + */
-+struct ceph_snap_realm {
-+	u64 ino;
-+	atomic_t nref;
-+	u64 created, seq;
-+	u64 parent_ino;
-+	u64 parent_since;   /* snapid when our current parent became so */
-+
-+	u64 *prior_parent_snaps;      /* snaps inherited from any parents we */
-+	int num_prior_parent_snaps;   /*  had prior to parent_since */
-+	u64 *snaps;                   /* snaps specific to this realm */
-+	int num_snaps;
-+
-+	struct ceph_snap_realm *parent;
-+	struct list_head children;       /* list of child realms */
-+	struct list_head child_item;
-+
-+	struct list_head empty_item;     /* if i have ref==0 */
-+
-+	/* the current set of snaps for this realm */
-+	struct ceph_snap_context *cached_context;
-+
-+	struct list_head inodes_with_caps;
-+	spinlock_t inodes_with_caps_lock;
-+};
-+
-+
-+
-+/*
-+ * calculate the number of pages a given length and offset map onto,
-+ * if we align the data.
-+ */
-+static inline int calc_pages_for(u64 off, u64 len)
++void ceph_dispatch(void *p, struct ceph_msg *msg)
 +{
-+	return ((off+len+PAGE_CACHE_SIZE-1) >> PAGE_CACHE_SHIFT) -
-+		(off >> PAGE_CACHE_SHIFT);
++	struct ceph_client *client = p;
++	int type = le16_to_cpu(msg->hdr.type);
++
++	switch (type) {
++	case CEPH_MSG_CLIENT_MOUNT_ACK:
++		client->mount_err = handle_mount_ack(client, msg);
++		wake_up(&client->mount_wq);
++		break;
++
++		/* mon client */
++	case CEPH_MSG_STATFS_REPLY:
++		ceph_monc_handle_statfs_reply(&client->monc, msg);
++		break;
++	case CEPH_MSG_CLIENT_UNMOUNT:
++		ceph_monc_handle_umount(&client->monc, msg);
++		break;
++
++		/* mds client */
++	case CEPH_MSG_MDS_MAP:
++		ceph_mdsc_handle_map(&client->mdsc, msg);
++		break;
++	case CEPH_MSG_CLIENT_SESSION:
++		ceph_mdsc_handle_session(&client->mdsc, msg);
++		break;
++	case CEPH_MSG_CLIENT_REPLY:
++		ceph_mdsc_handle_reply(&client->mdsc, msg);
++		break;
++	case CEPH_MSG_CLIENT_REQUEST_FORWARD:
++		ceph_mdsc_handle_forward(&client->mdsc, msg);
++		break;
++	case CEPH_MSG_CLIENT_CAPS:
++		ceph_handle_caps(&client->mdsc, msg);
++		break;
++	case CEPH_MSG_CLIENT_SNAP:
++		ceph_handle_snap(&client->mdsc, msg);
++		break;
++	case CEPH_MSG_CLIENT_LEASE:
++		ceph_mdsc_handle_lease(&client->mdsc, msg);
++		break;
++
++		/* osd client */
++	case CEPH_MSG_OSD_MAP:
++		ceph_osdc_handle_map(&client->osdc, msg);
++		break;
++	case CEPH_MSG_OSD_OPREPLY:
++		ceph_osdc_handle_reply(&client->osdc, msg);
++		break;
++
++	default:
++		pr_err("ceph received unknown message type %d %s\n", type,
++		       ceph_msg_type_name(type));
++	}
++
++	ceph_msg_put(msg);
 +}
 +
 +
-+
-+/* snap.c */
-+struct ceph_snap_realm *ceph_lookup_snap_realm(struct ceph_mds_client *mdsc,
-+					       u64 ino);
-+extern void ceph_get_snap_realm(struct ceph_mds_client *mdsc,
-+				struct ceph_snap_realm *realm);
-+extern void ceph_put_snap_realm(struct ceph_mds_client *mdsc,
-+				struct ceph_snap_realm *realm);
-+extern int ceph_update_snap_trace(struct ceph_mds_client *m,
-+				  void *p, void *e, bool deletion);
-+extern void ceph_handle_snap(struct ceph_mds_client *mdsc,
-+			     struct ceph_msg *msg);
-+extern void ceph_queue_cap_snap(struct ceph_inode_info *ci,
-+				struct ceph_snap_context *snapc);
-+extern int __ceph_finish_cap_snap(struct ceph_inode_info *ci,
-+				  struct ceph_cap_snap *capsnap);
-+extern void ceph_cleanup_empty_realms(struct ceph_mds_client *mdsc);
-+
-+/*
-+ * a cap_snap is "pending" if it is still awaiting an in-progress
-+ * sync write (that may/may not still update size, mtime, etc.).
-+ */
-+static inline bool __ceph_have_pending_cap_snap(struct ceph_inode_info *ci)
++static int ceph_set_super(struct super_block *s, void *data)
 +{
-+	return !list_empty(&ci->i_cap_snaps) &&
-+		list_entry(ci->i_cap_snaps.prev, struct ceph_cap_snap,
-+			   ci_item)->writing;
-+}
-+
-+
-+/* super.c */
-+extern struct kmem_cache *ceph_inode_cachep;
-+extern struct kmem_cache *ceph_cap_cachep;
-+extern struct kmem_cache *ceph_dentry_cachep;
-+extern struct kmem_cache *ceph_file_cachep;
-+
-+extern const char *ceph_msg_type_name(int type);
-+
-+static inline __le64 __ceph_fsid_minor(ceph_fsid_t *fsid)
-+{
-+	return get_unaligned_le64(&fsid->fsid[8]);
-+}
-+
-+static inline __le64 __ceph_fsid_major(ceph_fsid_t *fsid)
-+{
-+	return get_unaligned_le64(&fsid->fsid[0]);
-+}
-+
-+static inline void __ceph_fsid_set_minor(ceph_fsid_t *fsid, __le64 val)
-+{
-+	put_unaligned_le64(val, &fsid->fsid[8]);
-+}
-+
-+static inline void __ceph_fsid_set_major(ceph_fsid_t *fsid, __le64 val)
-+{
-+	put_unaligned_le64(val, &fsid->fsid[0]);
-+}
-+
-+/* inode.c */
-+extern const struct inode_operations ceph_file_iops;
-+
-+extern struct inode *ceph_alloc_inode(struct super_block *sb);
-+extern void ceph_destroy_inode(struct inode *inode);
-+
-+extern struct inode *ceph_get_inode(struct super_block *sb,
-+				    struct ceph_vino vino);
-+extern struct inode *ceph_get_snapdir(struct inode *parent);
-+extern int ceph_fill_file_size(struct inode *inode, int issued,
-+			       u32 truncate_seq, u64 truncate_size, u64 size);
-+extern void ceph_fill_file_time(struct inode *inode, int issued,
-+				u64 time_warp_seq, struct timespec *ctime,
-+				struct timespec *mtime, struct timespec *atime);
-+extern int ceph_fill_trace(struct super_block *sb,
-+			   struct ceph_mds_request *req,
-+			   struct ceph_mds_session *session);
-+extern int ceph_readdir_prepopulate(struct ceph_mds_request *req,
-+				    struct ceph_mds_session *session);
-+
-+extern int ceph_inode_holds_cap(struct inode *inode, int mask);
-+
-+extern int ceph_inode_set_size(struct inode *inode, loff_t size);
-+extern void ceph_inode_writeback(struct work_struct *work);
-+extern void ceph_vmtruncate_work(struct work_struct *work);
-+extern void __ceph_do_pending_vmtruncate(struct inode *inode);
-+extern void __ceph_queue_vmtruncate(struct inode *inode);
-+
-+extern int ceph_do_getattr(struct inode *inode, int mask);
-+extern int ceph_permission(struct inode *inode, int mask);
-+extern int ceph_setattr(struct dentry *dentry, struct iattr *attr);
-+extern int ceph_getattr(struct vfsmount *mnt, struct dentry *dentry,
-+			struct kstat *stat);
-+extern int ceph_setxattr(struct dentry *, const char *, const void *,
-+			 size_t, int);
-+extern ssize_t ceph_getxattr(struct dentry *, const char *, void *, size_t);
-+extern ssize_t ceph_listxattr(struct dentry *, char *, size_t);
-+extern int ceph_removexattr(struct dentry *, const char *);
-+extern void __ceph_build_xattrs_blob(struct ceph_inode_info *ci,
-+				      void **xattrs_blob,
-+				      int *blob_size);
-+
-+/* caps.c */
-+extern const char *ceph_cap_string(int c);
-+extern void ceph_handle_caps(struct ceph_mds_client *mdsc,
-+			     struct ceph_msg *msg);
-+extern int ceph_add_cap(struct inode *inode,
-+			struct ceph_mds_session *session, u64 cap_id,
-+			int fmode, unsigned issued, unsigned wanted,
-+			unsigned cap, unsigned seq, u64 realmino,
-+			unsigned ttl_ms, unsigned long ttl_from, int flags,
-+			struct ceph_cap_reservation *caps_reservation);
-+extern void __ceph_remove_cap(struct ceph_cap *cap,
-+			      struct ceph_cap_reservation *ctx);
-+static inline void ceph_remove_cap(struct ceph_cap *cap)
-+{
-+	struct inode *inode = &cap->ci->vfs_inode;
-+	spin_lock(&inode->i_lock);
-+	__ceph_remove_cap(cap, NULL);
-+	spin_unlock(&inode->i_lock);
-+}
-+
-+extern void ceph_queue_caps_release(struct inode *inode);
-+extern int ceph_write_inode(struct inode *inode, int unused);
-+extern void ceph_kick_flushing_caps(struct ceph_mds_client *mdsc,
-+				    struct ceph_mds_session *session);
-+extern int ceph_get_cap_mds(struct inode *inode);
-+extern void ceph_get_cap_refs(struct ceph_inode_info *ci, int caps);
-+extern void ceph_put_cap_refs(struct ceph_inode_info *ci, int had);
-+extern void ceph_put_wrbuffer_cap_refs(struct ceph_inode_info *ci, int nr,
-+				       struct ceph_snap_context *snapc);
-+extern void __ceph_flush_snaps(struct ceph_inode_info *ci,
-+			       struct ceph_mds_session **psession);
-+extern void ceph_check_caps(struct ceph_inode_info *ci, int flags,
-+			    struct ceph_mds_session *session);
-+extern void ceph_check_delayed_caps(struct ceph_mds_client *mdsc,
-+				    int flushdirty);
-+
-+extern int ceph_encode_inode_release(void **p, struct inode *inode,
-+				     int mds, int drop, int unless, int force);
-+extern int ceph_encode_dentry_release(void **p, struct dentry *dn,
-+				      int mds, int drop, int unless);
-+
-+extern int ceph_get_caps(struct ceph_inode_info *ci, int need, int want,
-+			 int *got, loff_t endoff);
-+
-+/* for counting open files by mode */
-+static inline void __ceph_get_fmode(struct ceph_inode_info *ci, int mode)
-+{
-+	ci->i_nr_by_mode[mode]++;
-+}
-+extern void ceph_put_fmode(struct ceph_inode_info *ci, int mode);
-+
-+/* addr.c */
-+extern const struct address_space_operations ceph_aops;
-+extern int ceph_mmap(struct file *file, struct vm_area_struct *vma);
-+
-+/* file.c */
-+extern const struct file_operations ceph_file_fops;
-+extern const struct address_space_operations ceph_aops;
-+extern int ceph_open(struct inode *inode, struct file *file);
-+extern struct dentry *ceph_lookup_open(struct inode *dir, struct dentry *dentry,
-+				       struct nameidata *nd, int mode,
-+				       int locked_dir);
-+extern int ceph_release(struct inode *inode, struct file *filp);
-+extern void ceph_release_page_vector(struct page **pages, int num_pages);
-+
-+/* dir.c */
-+extern const struct file_operations ceph_dir_fops;
-+extern const struct inode_operations ceph_dir_iops;
-+extern struct dentry_operations ceph_dentry_ops, ceph_snap_dentry_ops,
-+	ceph_snapdir_dentry_ops;
-+
-+extern int ceph_handle_notrace_create(struct inode *dir, struct dentry *dentry);
-+extern struct dentry *ceph_finish_lookup(struct ceph_mds_request *req,
-+					 struct dentry *dentry, int err);
-+
-+extern void ceph_dentry_lru_add(struct dentry *dn);
-+extern void ceph_dentry_lru_touch(struct dentry *dn);
-+extern void ceph_dentry_lru_del(struct dentry *dn);
-+
-+/*
-+ * our d_ops vary depending on whether the inode is live,
-+ * snapshotted (read-only), or a virtual ".snap" directory.
-+ */
-+int ceph_init_dentry_private(struct dentry *dentry);
-+
-+static inline int ceph_init_dentry(struct dentry *dentry)
-+{
++	struct ceph_client *client = data;
 +	int ret;
 +
-+	if (ceph_snap(dentry->d_parent->d_inode) == CEPH_NOSNAP)
-+		dentry->d_op = &ceph_dentry_ops;
-+	else if (ceph_snap(dentry->d_parent->d_inode) == CEPH_SNAPDIR)
-+		dentry->d_op = &ceph_snapdir_dentry_ops;
-+	else
-+		dentry->d_op = &ceph_snap_dentry_ops;
++	dout("set_super %p data %p\n", s, data);
 +
-+	ret = ceph_init_dentry_private(dentry);
++	s->s_flags = client->mount_args.sb_flags;
++	s->s_maxbytes = 1ULL << 40;  /* temp value until we get mdsmap */
 +
++	s->s_fs_info = client;
++	client->sb = s;
++
++	s->s_op = &ceph_super_ops;
++	s->s_export_op = &ceph_export_ops;
++
++	s->s_time_gran = 1000;  /* 1000 ns == 1 us */
++
++	ret = set_anon_super(s, NULL);  /* what is that second arg for? */
++	if (ret != 0)
++		goto fail;
++
++	return ret;
++
++fail:
++	s->s_fs_info = NULL;
++	client->sb = NULL;
 +	return ret;
 +}
 +
-+/* ioctl.c */
-+extern long ceph_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
-+
-+/* export.c */
-+extern const struct export_operations ceph_export_ops;
-+
-+/* debugfs.c */
-+extern int ceph_debugfs_init(void);
-+extern void ceph_debugfs_cleanup(void);
-+extern int ceph_debugfs_client_init(struct ceph_client *client);
-+extern void ceph_debugfs_client_cleanup(struct ceph_client *client);
-+
-+static inline struct inode *get_dentry_parent_inode(struct dentry *dentry)
++/*
++ * share superblock if same fs AND options
++ */
++static int ceph_compare_super(struct super_block *sb, void *data)
 +{
-+	if (dentry && dentry->d_parent)
-+		return dentry->d_parent->d_inode;
++	struct ceph_client *new = data;
++	struct ceph_mount_args *args = &new->mount_args;
++	struct ceph_client *other = ceph_sb_to_client(sb);
++	int i;
 +
-+	return NULL;
++	dout("ceph_compare_super %p\n", sb);
++	if (args->flags & CEPH_OPT_FSID) {
++		if (ceph_fsid_compare(&args->fsid, &other->fsid)) {
++			dout("fsid doesn't match\n");
++			return 0;
++		}
++	} else {
++		/* do we share (a) monitor? */
++		for (i = 0; i < args->num_mon; i++)
++			if (ceph_monmap_contains(other->monc.monmap,
++						 &args->mon_addr[i]))
++				break;
++		if (i == args->num_mon) {
++			dout("mon ip not part of monmap\n");
++			return 0;
++		}
++		dout("mon ip matches existing sb %p\n", sb);
++	}
++	if (args->sb_flags != other->mount_args.sb_flags) {
++		dout("flags differ\n");
++		return 0;
++	}
++	return 1;
 +}
 +
-+#endif /* _FS_CEPH_SUPER_H */
-diff --git a/fs/ceph/types.h b/fs/ceph/types.h
-new file mode 100644
-index 0000000..c363183
---- /dev/null
-+++ b/fs/ceph/types.h
-@@ -0,0 +1,27 @@
-+#ifndef _FS_CEPH_TYPES_H
-+#define _FS_CEPH_TYPES_H
-+
-+/* needed before including ceph_fs.h */
-+#include <linux/in.h>
-+#include <linux/types.h>
-+#include <linux/fcntl.h>
-+#include <linux/string.h>
-+
-+#include "ceph_fs.h"
-+
 +/*
-+ * Identify inodes by both their ino AND snapshot id (a u64).
++ * construct our own bdi so we can control readahead, etc.
 + */
-+struct ceph_vino {
-+	u64 ino;
-+	u64 snap;
++static int ceph_init_bdi(struct super_block *sb, struct ceph_client *client)
++{
++	int err;
++
++	if (client->mount_args.rsize)
++		client->backing_dev_info.ra_pages =
++			(client->mount_args.rsize + PAGE_CACHE_SIZE - 1)
++			>> PAGE_SHIFT;
++
++	if (client->backing_dev_info.ra_pages < (PAGE_CACHE_SIZE >> PAGE_SHIFT))
++		client->backing_dev_info.ra_pages =
++			CEPH_MOUNT_RSIZE_DEFAULT >> PAGE_SHIFT;
++
++	err = bdi_init(&client->backing_dev_info);
++
++	if (err < 0)
++		return err;
++
++	err = bdi_register_dev(&client->backing_dev_info, sb->s_dev);
++	return err;
++}
++
++static int ceph_get_sb(struct file_system_type *fs_type,
++		       int flags, const char *dev_name, void *data,
++		       struct vfsmount *mnt)
++{
++	struct super_block *sb;
++	struct ceph_client *client;
++	int err;
++	int (*compare_super)(struct super_block *, void *) = ceph_compare_super;
++	const char *path;
++
++	dout("ceph_get_sb\n");
++
++	/* create client (which we may/may not use) */
++	client = ceph_create_client();
++	if (IS_ERR(client))
++		return PTR_ERR(client);
++
++	err = parse_mount_args(flags, data, dev_name,
++			       &client->mount_args, &path);
++	if (err < 0)
++		goto out;
++
++	if (client->mount_args.flags & CEPH_OPT_NOSHARE)
++		compare_super = NULL;
++
++	sb = sget(fs_type, compare_super, ceph_set_super, client);
++	if (IS_ERR(sb)) {
++		err = PTR_ERR(sb);
++		goto out;
++	}
++
++	if (ceph_client(sb) != client) {
++		ceph_destroy_client(client);
++		client = ceph_client(sb);
++		dout("get_sb got existing client %p\n", client);
++	} else {
++		dout("get_sb using new client %p\n", client);
++		err = ceph_init_bdi(sb, client);
++		if (err < 0)
++			goto out_splat;
++	}
++
++	err = ceph_mount(client, mnt, path);
++	if (err < 0)
++		goto out_splat;
++	dout("root %p inode %p ino %llx.%llx\n", mnt->mnt_root,
++	     mnt->mnt_root->d_inode, ceph_vinop(mnt->mnt_root->d_inode));
++	return 0;
++
++out_splat:
++	ceph_mdsc_close_sessions(&client->mdsc);
++	up_write(&sb->s_umount);
++	deactivate_super(sb);
++	goto out_final;
++out:
++	ceph_destroy_client(client);
++out_final:
++	dout("ceph_get_sb fail %d\n", err);
++	return err;
++}
++
++static void ceph_kill_sb(struct super_block *s)
++{
++	struct ceph_client *client = ceph_sb_to_client(s);
++	dout("kill_sb %p\n", s);
++	ceph_mdsc_pre_umount(&client->mdsc);
++	bdi_unregister(&client->backing_dev_info);
++	kill_anon_super(s);    /* will call put_super after sb is r/o */
++	bdi_destroy(&client->backing_dev_info);
++	ceph_destroy_client(client);
++}
++
++static struct file_system_type ceph_fs_type = {
++	.owner		= THIS_MODULE,
++	.name		= "ceph",
++	.get_sb		= ceph_get_sb,
++	.kill_sb	= ceph_kill_sb,
++	.fs_flags	= FS_RENAME_DOES_D_MOVE,
 +};
 +
++#define _STRINGIFY(x) #x
++#define STRINGIFY(x) _STRINGIFY(x)
 +
-+/* context for the caps reservation mechanism */
-+struct ceph_cap_reservation {
-+	int count;
-+};
++static int __init init_ceph(void)
++{
++	int ret = 0;
 +
++	pr_info("ceph init (%s)\n", STRINGIFY(CEPH_GIT_VER));
 +
-+#endif
++	ret = ceph_debugfs_init();
++	if (ret < 0)
++		goto out;
++
++	ret = ceph_msgr_init();
++	if (ret < 0)
++		goto out_debugfs;
++
++	ret = init_caches();
++	if (ret)
++		goto out_msgr;
++
++	ceph_caps_init();
++
++	ret = register_filesystem(&ceph_fs_type);
++	if (ret)
++		goto out_icache;
++	return 0;
++
++out_icache:
++	destroy_caches();
++out_msgr:
++	ceph_msgr_exit();
++out_debugfs:
++	ceph_debugfs_cleanup();
++out:
++	return ret;
++}
++
++static void __exit exit_ceph(void)
++{
++	dout("exit_ceph\n");
++	unregister_filesystem(&ceph_fs_type);
++	ceph_caps_finalize();
++	destroy_caches();
++	ceph_msgr_exit();
++	ceph_debugfs_cleanup();
++}
++
++module_init(init_ceph);
++module_exit(exit_ceph);
++
++MODULE_AUTHOR("Sage Weil <sage@newdream.net>");
++MODULE_AUTHOR("Yehuda Sadeh <yehuda@hq.newdream.net>");
++MODULE_AUTHOR("Patience Warnick <patience@newdream.net>");
++MODULE_DESCRIPTION("Ceph filesystem for Linux");
++MODULE_LICENSE("GPL");
 -- 
 1.5.6.5
 
