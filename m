@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752373AbZGVOz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752278AbZGVO46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752373AbZGVOz4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 10:55:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbZGVOzz
+	id S1752278AbZGVO46 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 10:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752054AbZGVO46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 10:55:55 -0400
-Received: from d1.icnet.pl ([212.160.220.21]:34807 "EHLO d1.icnet.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752054AbZGVOzy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 10:55:54 -0400
-Message-ID: <4A672868.6040502@tis.icnet.pl>
-Date: Wed, 22 Jul 2009 16:55:36 +0200
-From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
-Organization: Tele-Info-System
-User-Agent: IceDove 1.5.0.14pre (X11/20080304)
+	Wed, 22 Jul 2009 10:56:58 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:53923 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751765AbZGVO44 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 10:56:56 -0400
+Date: Wed, 22 Jul 2009 15:56:55 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
+       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
+       t.fujak@samsung.com, kyungmin.park@samsung.com,
+       David Brownell <david-b@pacbell.net>, Daniel Ribeiro <drwyrm@gmail.com>
+Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
+Message-ID: <20090722145654.GA4987@rakim.wolfsonmicro.main>
+References: <20090721160436.GD4352@dtor-d630.eng.vmware.com>
+ <alpine.LFD.2.00.0907212225030.2813@localhost.localdomain>
+ <20090721222547.GA1948@opensource.wolfsonmicro.com>
+ <alpine.LFD.2.00.0907221022190.2813@localhost.localdomain>
+ <20090722121800.GD21171@rakim.wolfsonmicro.main>
+ <alpine.LFD.2.00.0907221427380.2813@localhost.localdomain>
+ <1248269443.27058.1449.camel@twins>
+ <alpine.LFD.2.00.0907221615480.2813@localhost.localdomain>
+ <20090722143211.GB29404@rakim.wolfsonmicro.main>
+ <alpine.LFD.2.00.0907221645240.2813@localhost.localdomain>
 MIME-Version: 1.0
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-CC: Takashi Iwai <tiwai@suse.de>, alsa-devel@alsa-project.org,
-       Jonathan McDowell <noodles@earth.li>, Tony Lindgren <tony@atomide.com>,
-       Peter Ujfalusi <peter.ujfalusi@nokia.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       e3-hacking@earth.li, Arun KS <arunks@mistralsolutions.com>,
-       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [alsa-devel] [RFC] [PATCH 3/3] ASoC: add support for Amstrad
- E3 (Delta) machine
-References: <200907220523.01107.jkrzyszt@tis.icnet.pl> <20090722110328.GB7622@sirena.org.uk> <s5hhbx50wwl.wl%tiwai@suse.de> <20090722121925.GE21171@rakim.wolfsonmicro.main>
-In-Reply-To: <20090722121925.GE21171@rakim.wolfsonmicro.main>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-SA-Exim-Scanned: No (on d1.icnet); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0907221645240.2813@localhost.localdomain>
+X-Cookie: IOT trap -- core dumped
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Brown wrote:
-> On Wed, Jul 22, 2009 at 01:39:22PM +0200, Takashi Iwai wrote:
->> Mark Brown wrote:
-> 
->>>> +	/* Setup pins after corresponding bits if changed */
->>>> +	if ((bool)snd_soc_dapm_get_pin_status(codec, "Speaker") !=
->>>> +			(bool)(function & (1 << AMS_DELTA_SPEAKER))) {
-> 
->>> Don't like these casts...  why are they needed?
-> 
->> Because the right side is the bit operation?
-> 
-> Ick, yes.
-> 
->> The cast doesn't look nice, though...
-> 
-> Indeed.  I'd suggest rewriting to try to do less in the if statement - a
-> helper function seems to be in order here since the same code is
-> repeated several times with different pins and bitmasks.
+On Wed, Jul 22, 2009 at 04:52:21PM +0200, Thomas Gleixner wrote:
+> On Wed, 22 Jul 2009, Mark Brown wrote:
 
-Thanks, I'll rewrite as you suggest.
+> > The chips I'm deling with can certainly support doing that but I'm not
+> > sure there'd be enormous advantages - a lot of the interrupt handlers
+> > will either be trivial (eg, RTC ticks or alarms) or be serialised by a
+> > need to interact with the chip anyway.  I'd expect this to be generally
+> > true, though ICBW.
 
-Janusz
+> So in your case it would be possible to run the various subdevice
+> thread_fn handlers from your main interrupt thread one after each
+> other ?
+
+That's what they're all doing at present outside of genirq.
