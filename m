@@ -1,38 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753594AbZGVU5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbZGVU6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753594AbZGVU5W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 16:57:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbZGVU5V
+	id S1753715AbZGVU6e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 16:58:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753576AbZGVU6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 16:57:21 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:37591 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751929AbZGVU5U (ORCPT
+	Wed, 22 Jul 2009 16:58:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59226 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753464AbZGVU6c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 16:57:20 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=Ldns60f3Sq/TjkgQ2FH89RRNecxCEdrValp9xRnVGiYrJChdMJbTZnYSiRjXQPLtR
-	caQp/WDzz7F/AbqFMOnrg==
-MIME-Version: 1.0
-In-Reply-To: <20090721220017.60A219D3@kernel>
-References: <20090721220017.60A219D3@kernel>
-Date: Wed, 22 Jul 2009 13:57:17 -0700
-Message-ID: <2f86c2480907221357j5a09fd9au890f815db3750187@mail.gmail.com>
-Subject: Re: [RFCv2][PATCH] flexible array implementation
-From: Benjamin Blum <bblum@google.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, menage@google.com,
-       vda.linux@googlemail.com, mikew@google.com
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 22 Jul 2009 16:58:32 -0400
+Date: Wed, 22 Jul 2009 13:57:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Martin Samuelsson <sam.linux.kernel@gmail.com>
+Cc: rbultje@ronald.bitfreak.net, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org
+Subject: Re: [patch] drivers/media/video/zoran_card.c: en/decoder loading
+Message-Id: <20090722135757.1653962f.akpm@linux-foundation.org>
+In-Reply-To: <20080127190129.6a1554ef.sam.linux.kernel@gmail.com>
+References: <20080127190129.6a1554ef.sam.linux.kernel@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Does the array automatically grow if you give it more elements than
-you tell it it can have? How about a resize() function that can be
-used to either grow or shrink the array?
+(cc linux-media)
+
+On Sun, 27 Jan 2008 19:01:29 +0100
+Martin Samuelsson <sam.linux.kernel@gmail.com> wrote:
+
+> This enables the avs6eyes to load the bt866 and ks0127 drivers automatically.
+> 
+> Signed-off-by: Martin Samuelsson <sam.linux.kernel@gmail.com>
+> ---
+>  zoran_card.c |    6 ++++++
+>  1 file changed, 6 insertions(+)
+> --- linux-2.6.24-ori/drivers/media/video/zoran_card.c	2008-01-24 23:58:37.000000000 +0100
+> +++ linux-2.6.24-sam/drivers/media/video/zoran_card.c	2008-01-27 17:16:51.000000000 +0100
+> @@ -366,6 +366,12 @@ i2cid_to_modulename (u16 i2c_id)
+>  	case I2C_DRIVERID_MSE3000:
+>  		name = "mse3000";
+>  		break;*/
+> +	case I2C_DRIVERID_BT866:
+> +		name = "bt866";
+> +		break;
+> +	case I2C_DRIVERID_KS0127:
+> +		name = "ks0127";
+> +		break;
+>  	default:
+>  		break;
+>  	}
+
+The Zoran driver has changed a lot since 2.6.24 and I can't find
+anywhere where a patch like this might be applied.
+
+Please check a current kernel and update the patch if it is still needed?
