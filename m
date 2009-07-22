@@ -1,86 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752997AbZGVFSF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbZGVFZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752997AbZGVFSF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 01:18:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbZGVFSE
+	id S1752795AbZGVFZm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 01:25:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750896AbZGVFZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 01:18:04 -0400
-Received: from waste.org ([66.93.16.53]:57427 "EHLO waste.org"
+	Wed, 22 Jul 2009 01:25:41 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49415 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751742AbZGVFSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 01:18:03 -0400
-Subject: Re: [RFC] move __devinit or __init printk constant format strings
- to __devinitconst or __initdata?
-From: Matt Mackall <mpm@selenic.com>
-To: Joe Perches <joe@perches.com>
-Cc: David Daney <ddaney@caviumnetworks.com>, linux-embedded@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       David Woodhouse <dwmw2@infradead.org>, Tim Bird <tim.bird@am.sony.com>
-In-Reply-To: <1248238202.31365.576.camel@Joe-Laptop.home>
-References: <1248211253.31365.337.camel@Joe-Laptop.home>
-	 <1248212925.10466.143.camel@calx>
-	 <1248213403.31365.343.camel@Joe-Laptop.home>
-	 <1248217044.10466.202.camel@calx>
-	 <1248217502.31365.381.camel@Joe-Laptop.home>
-	 <4A665442.1010006@caviumnetworks.com>  <1248226085.10466.251.camel@calx>
-	 <1248238202.31365.576.camel@Joe-Laptop.home>
-Content-Type: text/plain
-Date: Wed, 22 Jul 2009 00:17:30 -0500
-Message-Id: <1248239850.10466.277.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
-Content-Transfer-Encoding: 7bit
+	id S1750702AbZGVFZk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 01:25:40 -0400
+Date: Wed, 22 Jul 2009 05:24:57 GMT
+From: tip-bot for Andi Kleen <andi@firstfloor.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       andi@firstfloor.org, ak@linux.intel.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org, ak@linux.intel.com, tglx@linutronix.de
+In-Reply-To: <20090718065657.GA2898@basil.fritz.box>
+References: <20090718065657.GA2898@basil.fritz.box>
+Subject: [tip:x86/urgent] x86-64: Fix bad_srat() to clear all state
+Message-ID: <tip-429b2b319af3987e808c18f6b81313104caf782c@git.kernel.org>
+Git-Commit-ID: 429b2b319af3987e808c18f6b81313104caf782c
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 22 Jul 2009 05:25:10 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-21 at 21:50 -0700, Joe Perches wrote:
-> On Tue, 2009-07-21 at 20:28 -0500, Matt Mackall wrote:
-> > On Tue, 2009-07-21 at 16:50 -0700, David Daney wrote:
-> > > It would be tricky, the string data from the entire compilation unit is 
-> > > intermingled.  You would have to separate out only those strings 
-> > > referenced from __init sections into their own section and fix up all 
-> > > symbols and relocations that were affected.
-> > Exactly. Annoying but not impossible.
-> 
-> But faster and likely easier to do once in source.
+Commit-ID:  429b2b319af3987e808c18f6b81313104caf782c
+Gitweb:     http://git.kernel.org/tip/429b2b319af3987e808c18f6b81313104caf782c
+Author:     Andi Kleen <andi@firstfloor.org>
+AuthorDate: Sat, 18 Jul 2009 08:56:57 +0200
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Tue, 21 Jul 2009 15:20:01 -0700
 
-How long have you been hanging out here, Joe? You really thing it's
-going to be EASY to push this change to literally thousands of drivers?
-Your idea may work but it isn't pretty and also isn't an obvious big win
-and is therefore going to hit a lot of friction from lots of different
-people. It's already getting friction from me and I actually care about
-this sort of thing.
+x86-64: Fix bad_srat() to clear all state
 
-That effort would be better spent working on something transparent,
-automatic, and painless. Something people won't put up a fight about.
+Need to clear both nodes and nodes_add state for start/end.
 
-> > > Probably easier would be to use the plug-in feature that will be part of 
-> > > GCC-4.5 (or will that be called GCC-5.0??), and create a special Linux 
-> > > kernel GCC plug-in that just emits the __init literal strings to the 
-> > > proper section to begin with.
-> 
-> Which is what the proposed marking would
-> more or less do today.
-> 
-> > > We don't want the kernel to get left 
-> > > behind in the GCC plug-in race.
-> 
-> Any guess when gcc 4.5/5.0 might become available?
-> It's in stage 1 now.  Mid 2010 or so?
-> 
-> 4.4.0 was April 21, 2009
-> 4.3.0 was March 5, 2008
-> 4.2.0 was May 13, 2007
-> 
-> Could you please send me what you think is a
-> reasonable .config for an embedded box.
-
-Lots of devices have only MTD, JFFS, ethernet, and one other driver like
-wifi.
-
--- 
-http://selenic.com : development and support for Mercurial and Linux
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+LKML-Reference: <20090718065657.GA2898@basil.fritz.box>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Cc: stable@kernel.org
 
 
+---
+ arch/x86/mm/srat_64.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
+index 2dfcbf9..dbb5381 100644
+--- a/arch/x86/mm/srat_64.c
++++ b/arch/x86/mm/srat_64.c
+@@ -79,8 +79,10 @@ static __init void bad_srat(void)
+ 	acpi_numa = -1;
+ 	for (i = 0; i < MAX_LOCAL_APIC; i++)
+ 		apicid_to_node[i] = NUMA_NO_NODE;
+-	for (i = 0; i < MAX_NUMNODES; i++)
+-		nodes_add[i].start = nodes[i].end = 0;
++	for (i = 0; i < MAX_NUMNODES; i++) {
++		nodes[i].start = nodes[i].end = 0;
++		nodes_add[i].start = nodes_add[i].end = 0;
++	}
+ 	remove_all_active_ranges();
+ }
+ 
