@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754558AbZGVMyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbZGVM6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754558AbZGVMyS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 08:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbZGVMyS
+	id S1754654AbZGVM6r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 08:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbZGVM6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 08:54:18 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:21623 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754027AbZGVMyR (ORCPT
+	Wed, 22 Jul 2009 08:58:46 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:14619 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754209AbZGVM6q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 08:54:17 -0400
-X-Trace: 230133583/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.68.55/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.68.55
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuAEAMeoZkpPRUQ3/2dsb2JhbACBUc9AgjSBWgU
-X-IronPort-AV: E=Sophos;i="4.43,247,1246834800"; 
-   d="scan'208";a="230133583"
-Date: Wed, 22 Jul 2009 13:54:06 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Rik van Riel <riel@redhat.com>
-cc: Andrea Arcangeli <aarcange@redhat.com>, Izik Eidus <ieidus@redhat.com>,
-       akpm@linux-foundation.org, chrisw@redhat.com, avi@redhat.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au, Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 06/10] ksm: identify PageKsm pages
-In-Reply-To: <4A660101.3000307@redhat.com>
-Message-ID: <Pine.LNX.4.64.0907221346040.529@sister.anvils>
-References: <1247851850-4298-1-git-send-email-ieidus@redhat.com>
- <1247851850-4298-2-git-send-email-ieidus@redhat.com>
- <1247851850-4298-3-git-send-email-ieidus@redhat.com>
- <1247851850-4298-4-git-send-email-ieidus@redhat.com>
- <1247851850-4298-5-git-send-email-ieidus@redhat.com>
- <1247851850-4298-6-git-send-email-ieidus@redhat.com>
- <1247851850-4298-7-git-send-email-ieidus@redhat.com> <20090721175139.GE2239@random.random>
- <4A660101.3000307@redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 22 Jul 2009 08:58:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=eEujao2ErScwgwFt7SGcxmVGxAbc6i8iQeHds+JtMEf/TVgfL76ltM22HiZZiF9k3g
+         ShNcTXFuNFl8qBHJPD+ga15IkJnGHnGT63a4ppDkHP8FrXYu9g/xyK8gxwb5fdSaAy4H
+         lN3R3LbZWwTzzXkLNPjo2Kt1/kJDjMGL7bkLg=
+From: tom.leiming@gmail.com
+To: a.p.zijlstra@chello.nl
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       torvalds@linux-foundation.org, Ming Lei <tom.leiming@gmail.com>
+Subject: [tip:core/locking 0/3] lockdep:bfs optimization
+Date: Wed, 22 Jul 2009 20:58:30 +0800
+Message-Id: <1248267513-4934-1-git-send-email-tom.leiming@gmail.com>
+X-Mailer: git-send-email 1.6.0.GIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Jul 2009, Rik van Riel wrote:
-> Andrea Arcangeli wrote:
-> > > -	if (PageAnon(old_page)) {
-> > > +	if (PageAnon(old_page) && !PageKsm(old_page)) {
-> > >    if (!trylock_page(old_page)) {
-> > >     page_cache_get(old_page);
-> > >     pte_unmap_unlock(page_table, ptl);
-> > 
-> > What exactly does it buy to have PageAnon return 1 on ksm pages,
-> > besides requiring the above additional check (that if we stick to the
-> > above code, I would find safer to move inside reuse_swap_page).
-> 
-> I guess that if they are to remain unswappable, they
-> should go onto the unevictable list.
+From: Ming Lei <tom.leiming@gmail.com>
 
-The KSM pages are not put on any LRU, so wouldn't be slowing vmscan
-down with futile scans: isn't the unevictable list for pages which
-belong to another LRU once they become evictable again?
+This series does the BFS optimizations:
 
-(At this instant I've forgotten why there's an unevictable list at
-all - somewhere in vmscan.c which is accustomed to dealing with
-pages on lists, so easier to have them on a list than not?)
+	.reintroduce DaveM's generation id to bfs to make it faster
+	.make bfs preallocated "stack" as per cpu variable
+	.add likely/unlikely annotations to BFS core routine
 
-> 
-> Then again, I'm guessing this is all about to change
-> in not too much time :)
+and the patches are based on Peter's patches against tip:core/locking:
 
-Yes, I'd much rather put the effort into making them swappable,
-than fiddling with counts here and there to highlight their
-current unswappability.
+	http://marc.info/?l=linux-kernel&m=124793787804558&w=2
+	http://marc.info/?l=linux-kernel&m=124793787804556&w=2
 
-Hugh
+Also, the patches have passed lockdep's selftest.
+
+include/linux/lockdep.h |    1 +
+kernel/lockdep.c        |   26 ++++++++++++++------------
+2 files changed, 15 insertions(+), 12 deletions(-)
+
+
+Thanks,
+Lei Ming
