@@ -1,60 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbZGVNuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755591AbZGVNwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755593AbZGVNuT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 09:50:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755552AbZGVNuS
+	id S1755591AbZGVNwZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 09:52:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbZGVNwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 09:50:18 -0400
-Received: from moutng.kundenserver.de ([212.227.17.9]:51497 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755551AbZGVNuR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 09:50:17 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Amerigo Wang <xiyou.wangcong@gmail.com>
-Subject: Re: [PATCH/RFC] Move generated files to include/generated
-Date: Wed, 22 Jul 2009 15:50:15 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-3-generic; KDE/4.2.96; x86_64; ; )
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       "linux-kbuild" <linux-kbuild@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux arch <linux-arch@vger.kernel.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-References: <20090721211040.GA7688@merkur.ravnborg.org> <20090722095818.GH6281@cr0.nay.redhat.com>
-In-Reply-To: <20090722095818.GH6281@cr0.nay.redhat.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907221550.15280.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX185SiW4Q2gnJNnfaW25MACmFvKAKyf7zqGYLdw
- MOxaKUU/CRSl0f3H5UlNeXERF2YF5ToA15029R8FOekhmMgYmJ
- aoteeYiXv7SR1CibSGP7w==
+	Wed, 22 Jul 2009 09:52:24 -0400
+Received: from cmpxchg.org ([85.214.51.133]:34805 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752636AbZGVNwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 09:52:23 -0400
+Date: Wed, 22 Jul 2009 15:51:10 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       smfrench@gmail.com, hch@infradead.org
+Subject: Re: [PATCH] fix offset checks in do_sendfile to use unsigned values
+Message-ID: <20090722135110.GA3091@cmpxchg.org>
+References: <1248262099-12514-1-git-send-email-jlayton@redhat.com> <1248262099-12514-2-git-send-email-jlayton@redhat.com> <20090722125945.GA2834@cmpxchg.org> <1248269879.4534.12.camel@tlielax.poochiereds.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1248269879.4534.12.camel@tlielax.poochiereds.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 22 July 2009, Amerigo Wang wrote:
-> On Tue, Jul 21, 2009 at 11:10:40PM +0200, Sam Ravnborg wrote:
-> >In 2.6.30 we introduced support for adding generated
-> >files to a dedicated directory named "include/generated".
->
-> Personally, I don't like this, I hate to see
-> #include <generated/foo.h>
+On Wed, Jul 22, 2009 at 09:37:59AM -0400, Jeff Layton wrote:
+> On Wed, 2009-07-22 at 14:59 +0200, Johannes Weiner wrote:
+> > On Wed, Jul 22, 2009 at 07:28:19AM -0400, Jeff Layton wrote:
+> > > If do_sendfile is called with a "max" value of 0, it grabs the lesser
+> > > s_maxbytes value of the two superblocks to use instead. There's a
+> > > problem here however. s_maxbytes is an unsigned long long and it gets
+> > > cast to a signed value. If both s_maxbytes values are large enough, max
+> > > will end up being negative and the comparisons in this code won't work
+> > > correctly.
+> > > 
+> > > Change do_sendfile to use unsigned values internally for the offset
+> > > checks.
+> > > 
+> > > Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> > > ---
+> > >  fs/read_write.c |    6 +++---
+> > >  1 files changed, 3 insertions(+), 3 deletions(-)
+> > > 
+> > > diff --git a/fs/read_write.c b/fs/read_write.c
+> > > index 6c8c55d..36899ff 100644
+> > > --- a/fs/read_write.c
+> > > +++ b/fs/read_write.c
+> > > @@ -788,11 +788,11 @@ SYSCALL_DEFINE5(pwritev, unsigned long, fd, const struct iovec __user *, vec,
+> > >  }
+> > >  
+> > >  static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
+> > > -			   size_t count, loff_t max)
+> > > +			   size_t count, unsigned long long max)
+> > >  {
+> > >  	struct file * in_file, * out_file;
+> > >  	struct inode * in_inode, * out_inode;
+> > > -	loff_t pos;
+> > > +	unsigned long long pos;
+> > >  	ssize_t retval;
+> > >  	int fput_needed_in, fput_needed_out, fl;
+> > >  
+> > > @@ -838,7 +838,7 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
+> > >  	if (!max)
+> > >  		max = min(in_inode->i_sb->s_maxbytes, out_inode->i_sb->s_maxbytes);
+> > >  
+> > > -	pos = *ppos;
+> > > +	pos = (unsigned long long) *ppos;
+> > >  	retval = -EINVAL;
+> > >  	if (unlikely(pos < 0))
+> > >  		goto fput_out;
+> > 
+> > May it be possible that cifs is the only fs that sets sb->sb_maxbytes
+> > to exceed loff_t?  It seems the others clamp it to MAX_LFS_FILESIZE
+> > while CIFS exceeds this by one.  And then max is -1.
+> > 
+> > So, isn't the correct fix something similar to this?
+> > 
+> > diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
+> > index e16d759..df56093 100644
+> > --- a/fs/cifs/connect.c
+> > +++ b/fs/cifs/connect.c
+> > @@ -2452,10 +2452,10 @@ try_mount_again:
+> >  		tcon->local_lease = volume_info->local_lease;
+> >  	}
+> >  	if (pSesInfo) {
+> > -		if (pSesInfo->capabilities & CAP_LARGE_FILES) {
+> > -			sb->s_maxbytes = (u64) 1 << 63;
+> > -		} else
+> > -			sb->s_maxbytes = (u64) 1 << 31;	/* 2 GB */
+> > +		if (pSesInfo->capabilities & CAP_LARGE_FILES)
+> > +			sb->s_maxbytes = MAX_LFS_FILESIZE;
+> > +		else
+> > +			sb->s_maxbytes = MAX_NON_LFS;
+> >  	}
+> >  
+> >  	/* BB FIXME fix time_gran to be larger for LANMAN sessions */
+> 
+> Yes and I posted that exact same cifs patch yesterday.
 
-I think that moving the generated files to a common location
-makes a lot of sense, but it seems easier to move them
-to include/generated/linux/ or even to (generated/linux/) and
-then add -Iinclude/generated/ to the gcc command line so
-you don't need to actually change all the users.
+Sorry, I missed it.
 
-For the files in asm/, you could either add a generated/asm
-directory or move them to generated/linux/ and change the
-users.
+> I think we also need to do a similar fix for get_sb_pseudo. It
+> currently sets s_maxbytes to ~0ULL...
 
-	Arnd <><
+Yes, I saw it and agree with it.
+
+> Any of these patches will fix the immediate problem, but I think this
+> code in do_sendfile should still account for the possibility that
+> someone can set the value larger than MAX_LFS_FILESIZE. An alternative
+> is to consider a WARN at mount time when filesystems set s_maxbytes
+> larger than that value (that might help catch out of tree filesystems
+> that get this wrong and prevent this sort of silent bug in the future).
+
+Isn't MAX_LFS_FILESIZE by definition the maximum sensible value for
+s_maxbytes?
+
+> Either way, the patch I posted for this isn't sufficient since there are
+> some checks that need to be done against the signed values (the
+> (pos < 0) check, for instance). I'll post a respun patch in a bit that
+> should fix up those problems.
+
+That is already handled in rw_verify_area(), I think, so we should be
+able to drop it completely.
+
+	Hannes
