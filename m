@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbZGVWZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbZGVW0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754759AbZGVWZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 18:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbZGVWZ4
+	id S1754846AbZGVW0M (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 18:26:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802AbZGVW0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 18:25:56 -0400
-Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:41547 "HELO
-	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752734AbZGVWZz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 18:25:55 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=tZ6/F9SwhnIv3hyItS24QyVOCJ0iPxJ2yitk7s6W01eIZr3Ktba3SaPuhVFoFHsEmSQHrshhW6zVaKlb7GOzwrUs70OxX5tr0T6eVaLmDpvNMYTsNBB2tr4NFcZ+znUU2FqwkZ9v7sac+jyFI2I5xl876UcKjagdZ2Af+a43DE8=  ;
-X-YMail-OSG: hTyRVVEVM1m_Mrbw10TLNwtEfWVH2JjUNVzjg26b4IlsacluimDX9e4pEDl2INLjNldkx0Kzggldev6SzcUErpjMd3j5twNj078UkE1pjqOTH3xfCcMHenPUdF7PRreQUbFKJ6Sos6LSFB4k3wUCsv87FZ9NLBkKlsBqw9p8tIC3yWX4A0VFfDKcnARrIciW9xEqGUYqFWN47AE3m4_sGp6agPjaNuKvtq1H2uCuEvBl0iPvcrmuRvpwb_NV0rXIgIqrtFY7S_6ntwBk
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Trilok Soni <soni.trilok@gmail.com>
-Subject: Re: [PATCH 2/2] mfd: twl4030: add twl4030-pwrbutton as our child
-Date: Wed, 22 Jul 2009 15:25:53 -0700
-User-Agent: KMail/1.9.10
-Cc: Andrew Morton <akpm@linux-foundation.org>, me@felipebalbi.com,
-       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       felipe.balbi@nokia.com, Samuel Ortiz <sameo@linux.intel.com>
-References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <20090227154220.7099f339.akpm@linux-foundation.org> <5d5443650907221227w72768b3cna145cea00f1baa05@mail.gmail.com>
-In-Reply-To: <5d5443650907221227w72768b3cna145cea00f1baa05@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200907221525.53890.david-b@pacbell.net>
+	Wed, 22 Jul 2009 18:26:11 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:19043 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754149AbZGVW0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 18:26:10 -0400
+X-IronPort-AV: E=Sophos;i="4.43,248,1246863600"; 
+   d="scan'208";a="210524858"
+Cc: Ben Greear <greearb@candelatech.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+Message-Id: <61F6C626-3C73-456A-A3A2-F1690C46914C@netapp.com>
+From: Andy Adamson <andros@netapp.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+In-Reply-To: <1248301062.9202.11.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: Error mounting FC8 NFS server with 2.6.31-rc3 NFSv4 client.
+Date: Wed, 22 Jul 2009 18:26:09 -0400
+References: <4A64EB1F.4000602@candelatech.com> <1248178527.5222.0.camel@heimdal.trondhjem.org> <4A65F184.5060802@candelatech.com> <1248196339.21343.8.camel@heimdal.trondhjem.org> <4A65FCB2.6080903@candelatech.com> <1248199140.21343.17.camel@heimdal.trondhjem.org> <4A660295.9020807@candelatech.com> <1248200897.21343.19.camel@heimdal.trondhjem.org> <4A6609A9.3000504@candelatech.com> <1248211050.21343.38.camel@heimdal.trondhjem.org> <A7103385-4525-4B7B-9CBA-5DBCB99A98F0@netapp.com> <1248294013.5234.35.camel@heimdal.trondhjem.org> <74713B5B-DF7F-4357-AE3A-0F6B44C41116@netapp.com> <1248299236.9202.3.camel@heimdal.trondhjem.org> <2CC45724-FD70-4F00-84F7-4D0E2158D6B5@netapp.com> <1248301062.9202.11.camel@heimdal.trondhjem.org>
+X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 22 July 2009, Trilok Soni wrote:
-> > That doesn't address the problem at all.  A function called
-> > "add_children" just shouldn't exist.  The general kernel design is for
-> > client drivers to register themselves with the core, so the core does
-> > not have any hard-wired knowledge of any client drivers.
 
-The general kernel design also involves bus drivers
-(consider PCI or USB) enumerating their child devices
-and then *adding* those children ... that's what is
-done here.  The devices supported by that system get
-added, and then the driver model code can bind each
-device to its driver.
+On Jul 22, 2009, at 6:17 PM, Trond Myklebust wrote:
 
+> On Wed, 2009-07-22 at 18:03 -0400, Andy Adamson wrote:
+>> On Jul 22, 2009, at 5:47 PM, Trond Myklebust wrote:
+>>> Well.... The rsize/wsize is one thing, but how about acls? We simply
+>>> don't know how big they may become.
+>>
+>> Yeah - has anything been submitted for 4.2 to fix this? (a readdir
+>> cookie - like thingie)
+>
+> Not really. You pretty much have to set ACLs atomically, or you may  
+> end
+> up with security issues.
 
-> > IOW, twl4030_pwrbutton_probe() should call into twl4030-core,
-> > registering the powerbutton driver.
+Sure, but we could help get ACL.
 
-It calls to the driver model to register that driver,
-which then sees that the device is registered.
+>
+>
+> The good news is, though, that we should be able to figure out an  
+> upper
+> limit by looking at the max_rqst_sz/max_resp_sz that the server  
+> wants to
+> set.
 
-- Dave
+Yep.
 
-
-> 
-> Reviving this very old thread.
-> 
-
+-->Andy
+>
+>
+>
 
