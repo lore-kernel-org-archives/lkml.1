@@ -1,59 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752495AbZGVIfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752436AbZGVIh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752495AbZGVIfz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 04:35:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbZGVIfz
+	id S1752436AbZGVIh1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 04:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbZGVIh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 04:35:55 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:59057 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751476AbZGVIfy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 04:35:54 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: Do cpu-endian MMIO accessors exist?
-Date: Wed, 22 Jul 2009 10:35:49 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-3-generic; KDE/4.2.96; x86_64; ; )
-Cc: Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>, lethal@linux-sh.org,
-       linux-sh@vger.kernel.org
-References: <20090721234243.1928d9e2@daedalus.pq.iki.fi> <200907220005.27583.arnd@arndb.de> <4A66BEAD.3080404@gmail.com>
-In-Reply-To: <4A66BEAD.3080404@gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 22 Jul 2009 04:37:26 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:34476 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751159AbZGVIhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 04:37:25 -0400
+Date: Wed, 22 Jul 2009 14:07:22 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, agk@redhat.com
+Subject: Re: [PATCH 3/9] blkio-cgroup-v9: The new page_cgroup framework
+Message-ID: <20090722083722.GI24157@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090721155636.GB25127@balbir.in.ibm.com> <20090722102058.c1cf731b.kamezawa.hiroyu@jp.fujitsu.com> <20090722110739.e00c0f18.kamezawa.hiroyu@jp.fujitsu.com> <20090722.172843.193696974.ryov@valinux.co.jp>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907221035.50025.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/VoiC+7qMF/lXyoPvoOsZOqR1n2AM810HPn5/
- cie/0XevuSQ04BV6Zsl7JXRUmT6g3LXg6QfaeuhrHwFYSlDF0e
- iXqPIFsxwpOQRXOgdETyBT6tGzfQs0R
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090722.172843.193696974.ryov@valinux.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 22 July 2009, Jiri Slaby wrote:
-> No, I should have written this explicitly. I meant read* have a barrier,
-> whereas ioread* do not. Similarly for writes. Is this expected?
+* Ryo Tsuruta <ryov@valinux.co.jp> [2009-07-22 17:28:43]:
+
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > > > Index: linux-2.6.31-rc3/include/linux/page_cgroup.h
+> > > > > ===================================================================
+> > > > > --- linux-2.6.31-rc3.orig/include/linux/page_cgroup.h
+> > > > > +++ linux-2.6.31-rc3/include/linux/page_cgroup.h
+> > > > > @@ -1,7 +1,7 @@
+> > > > >  #ifndef __LINUX_PAGE_CGROUP_H
+> > > > >  #define __LINUX_PAGE_CGROUP_H
+> > > > > 
+> > > > > -#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> > > > > +#ifdef CONFIG_CGROUP_PAGE
+> > > > >  #include <linux/bit_spinlock.h>
+> > > > >  /*
+> > > > >   * Page Cgroup can be considered as an extended mem_map.
+> > > > > @@ -12,9 +12,11 @@
+> > > > >   */
+> > > > >  struct page_cgroup {
+> > > > >  	unsigned long flags;
+> > > > > -	struct mem_cgroup *mem_cgroup;
+> > > > >  	struct page *page;
+> > > > > +#ifdef CONFIG_CGROUP_MEM_RES_CTLR
+> > > > > +	struct mem_cgroup *mem_cgroup;
+> > > > >  	struct list_head lru;		/* per cgroup LRU list */
+> > > > > +#endif
+> > > > >  };
+> > > > 
+> > > > If CONFIG_CGROUP_MEM_RES_CTLR is not enabled and CGROUP_PAGE is
+> > > > (assuming that the depends on below is refactored), what would this
+> > > > change buy us? What is page_cgroup helping us track, the mem_cgroup is
+> > > > factored out, so we are interested in the flags only?
+> > > > 
+> > > plz remove CONFIG. This jsut makes code complicated.
+> > > or plz use your own infrastructure, not depends on page_cgroup.
 > 
-> For example:
-> #define __raw_readl(a) (__chk_io_ptr(a), *(volatile u32 __force *)(a))
-> #define readl(a)       ({ u32 r_ = __raw_readl(a); mb(); r_; })
-> #define ioread32(a)    __raw_readl(a)
+> Thanks for reviewing the patch.
+> Do you mean that remove only CONFIG_CGROUP_MEM_RES_CTR in struct
+> page_cgroup? Is it OK to define CONFIG_CGROUP_PAGE?
+> 
+> > BTW, you can't modify page_cgroup->flags bit without cmpxchg.
+> > Then, patch [5/9] is completely broken, now because new bit is used
+> > with atomic bit ops but without lock_page_cgroup(). (see mmotm)
+> > 
+> > Why struct page's flags bit can includes zone id etc...is just because
+> > it's initalized before using. Anyway, this is "flags" bit. If you want
+> > to modify multiple bit at once, plz use cmpxchg.
+> > Then, I buy patch [8/9] and just skip this patch.
+> 
+> O.K. I'll use cmpxchg.
+> 
+> > But, following is more straightforward. (and what you do is not different
+> > from this.)
+> > ==
+> > struct page {
+> > 	.....
+> > #ifdef CONFIG_BLOCKIO_CGROUP
+> > 	void *blockio_cgroup;
+> > #endif
+> > }
+> > ==
+> 
+> This increases the size of struct page. Could I get a consensus on
+> this approach?
+>
 
-No, this looks like a bug. I would have expected
 
-#define ioread32(a)    readl(a)
+This defeats the entire purpose of page_cgroup, IMHO. You need to add
+the cgroup pointer to page_cgroup or use css id's there.
+ 
+> Thanks,
+> Ryo Tsuruta
+> 
+> > Regards,
+> > -Kame
+> > 
+> > 
 
-in this case. Also, ioread32 should actually multiplex between
-readl() and inl() based on the address token, as the code in
-lib/iomap.c does. It's probably easy enough to enable
-CONFIG_GENERIC_IOMAP on sh, and remove the ioread*/iowrite*
-macros from arch/sh/include/asm/io.h.
-
-	Arnd <><
+-- 
+	Balbir
