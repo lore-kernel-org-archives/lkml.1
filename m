@@ -1,222 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752245AbZGVJaO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752434AbZGVJiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752245AbZGVJaO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 05:30:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbZGVJaO
+	id S1752434AbZGVJiv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 05:38:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbZGVJiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 05:30:14 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:37482 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751832AbZGVJaL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 05:30:11 -0400
-Date: Wed, 22 Jul 2009 18:30:11 +0900 (JST)
-Message-Id: <20090722.183011.226792119.ryov@valinux.co.jp>
-To: kamezawa.hiroyu@jp.fujitsu.com
-Cc: balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, agk@redhat.com
-Subject: Re: [PATCH 3/9] blkio-cgroup-v9: The new page_cgroup framework
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090722173941.7608387e.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090722110739.e00c0f18.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090722.172843.193696974.ryov@valinux.co.jp>
-	<20090722173941.7608387e.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 22 Jul 2009 05:38:51 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60040 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752289AbZGVJiu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 05:38:50 -0400
+Message-ID: <4A66DDB6.4000700@cn.fujitsu.com>
+Date: Wed, 22 Jul 2009 17:36:54 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Anton Blanchard <anton@samba.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v3 3/4] ftrace: add tracepoint for hrtimer
+References: <4A604E46.5050903@cn.fujitsu.com>	 <4A605009.8060806@cn.fujitsu.com> <1247827801.15751.4.camel@twins>	 <4A641BFC.2050508@cn.fujitsu.com> <1248091771.15751.8578.camel@twins>
+In-Reply-To: <1248091771.15751.8578.camel@twins>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Wed, 22 Jul 2009 17:28:43 +0900 (JST)
-> Ryo Tsuruta <ryov@valinux.co.jp> wrote:
-> > > But, following is more straightforward. (and what you do is not different
-> > > from this.)
-> > > ==
-> > > struct page {
-> > > 	.....
-> > > #ifdef CONFIG_BLOCKIO_CGROUP
-> > > 	void *blockio_cgroup;
-> > > #endif
-> > > }
-> > > ==
-> > 
-> > This increases the size of struct page. Could I get a consensus on
-> > this approach?
-> > 
-> Just God knows ;)
-> 
-> To be honest, what I expected in these days for people of blockio cgroup is like
-> following for getting room for themselves.
-> 
-> I'm now thinking to do this by myself and offer a room for you because
-> terrible bugs have been gone now and I have time.
 
-It is very nice for blkio-cgroup, it can make blkio-cgroup simple and
-more faster to track down the owner of an I/O request.
 
-Thanks,
-Ryo Tsuruta
+Peter Zijlstra wrote:
 
-> Balbir, if you have no concerns, I'll clean up and send this to mmotm.
-> (maybe softlimit accesses pc->page and I have to update this.)
+> Ah, but you don't get those anyway, I'd argue the whole expire thing is
+> broken. The only expiry you get is the hardware interrupt firing.
+> Anything after that is a free-for-all.
 > 
-> Note: This is _not_ tested at all.
+> Look at that loop in hrtimer_interrupt(), with your tracepoint, they'd
+> all expire at the same time, regardless of how long previous callback's
+> took to complete.
 > 
-> Thanks,
-> -Kame
-> ==
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Also, the whole loop can be re-tried, updating 'now' expiring a whole
+> new set of timers without expiry event.
 > 
-> page cgroup has pointer to memmap it stands for.
-> But, page_cgroup->page is not accessed in fast path and not necessary
-> and not modified. Then, it's not to be maintained as pointer.
+
+Yes, the expire time that got by _expire() is incorrect and thanks for
+your point out.
+
+> The best you can get is a tracepoint when the hrtimer interrupt happens,
+> and the IRQ tracepoint already give you that.
 > 
-> This patch removes "page" from page_cgroup and add
-> page_cgroup_to_page() function. This uses some amount of FLAGS bit
-> as struct page does.
-> As side effect, nid, zid can be obtaind from page_cgroup itself.
+
+I'm trying to fix it address your comment, but meet some problems,
+the time of ftrace output can't solve everything, because:
+
+1: the time unit of ftrace output is microsecond, but hrtimer's unit
+   is nanosecond, it's not exact for us
+
+2: the time of ftrace ouput is the time after system boot, but we need
+   xtime and wall_to_monotonic to calculate latency of hrtimer,
+   for example:
+   insmod-3821  [001]  3192.239335: hrtimer_start: timer=d08a1480  expires=1245162841000000000 ns
+   <idle>-0     [001]  3201.506127: hrtimer_expire: timer=d08a1480
+   
+  we expect the timer expire at 1245162841000000000 ns, this is base on
+  xtime, but we don't know the interval running that we are expect hrtimer
+  to run if we don't know the xtime at hrtimer_start or hrtimer_expire.
+
+But it's hard for hrtime's TRACE_EVENT to get xtime and wall_to_monotonic
+since it's a fast patch, if we have to do this, the code maybe like below:
+
+TRACE_EVENT(hrtimer_expire,
+
+	......
+
+	TP_STRUCT__entry(
+		__field( void *,	timer	)
+		__field( s64,		now	)
+		__field( s64, 		offset	)
+	),
+
+	TP_fast_assign(
+		__entry->timer	= timer;
+		__entry->now	= ktime_get().tv64;
+		__entry->wtom 	= timespec_to_ktime(wall_to_monotonic).tv64;
+	),
+
+	TP_printk("timer=%p now=%llu ns wtom=%llu", __entry->timer,
+		 (unsigned long long)__entry->now, (unsigned long long)__entry->wtom)
+);
+
+We need cooperate with trace_hrtimer_init() to get hrtimer's clockid.
+
+That make trace_hrtimer_expire() slow.
+
+Though the original patch get expire time not exactly, but It harm system's 
+performance very little.
+
+Thanks, 
+Xiao
+
+> So I really don't see the use-case for this _expiry tracepoint, its just
+> too ill-defined.
 > 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  include/linux/page_cgroup.h |   19 ++++++++++++++++---
->  mm/page_cgroup.c            |   42 ++++++++++++++++++++++++++++++++----------
->  2 files changed, 48 insertions(+), 13 deletions(-)
+> The _entry and _exit ones I can agree with, this stuff just doesn't make
+> any sense.
 > 
-> Index: mmotm-2.6.31-Jul16/include/linux/page_cgroup.h
-> ===================================================================
-> --- mmotm-2.6.31-Jul16.orig/include/linux/page_cgroup.h
-> +++ mmotm-2.6.31-Jul16/include/linux/page_cgroup.h
-> @@ -13,7 +13,7 @@
->  struct page_cgroup {
->  	unsigned long flags;
->  	struct mem_cgroup *mem_cgroup;
-> -	struct page *page;
-> +	/* block io tracking will use extra unsigned long bytes */
->  	struct list_head lru;		/* per cgroup LRU list */
->  };
->  
-> @@ -32,7 +32,12 @@ static inline void __init page_cgroup_in
->  #endif
->  
->  struct page_cgroup *lookup_page_cgroup(struct page *page);
-> +struct page *page_cgroup_to_page(struct page_cgroup *page);
->  
-> +/*
-> + * TOP MOST (NODE_SHIFT+ZONE_SHIFT or SECTION_SHIFT bits of "flags" are used
-> + * for detecting pfn as struct page does.
-> + */
->  enum {
->  	/* flags for mem_cgroup */
->  	PCG_LOCK,  /* page cgroup is locked */
-> @@ -71,14 +76,22 @@ CLEARPCGFLAG(AcctLRU, ACCT_LRU)
->  TESTPCGFLAG(AcctLRU, ACCT_LRU)
->  TESTCLEARPCGFLAG(AcctLRU, ACCT_LRU)
->  
-> +#ifdef NODE_NOT_IN_PAGE_FLAGS
->  static inline int page_cgroup_nid(struct page_cgroup *pc)
->  {
-> -	return page_to_nid(pc->page);
-> +	struct page *page= page_cgroup_to_page(pc);
-> +	return page_to_nid(page);
->  }
-> +#else
-> +static inline int page_cgroup_nid(struct page_cgroup *pc)
-> +{
-> +	return (pc->flags >> NODES_PGSHIFT) & NODES_MASK;
-> +}
-> +#endif
->  
->  static inline enum zone_type page_cgroup_zid(struct page_cgroup *pc)
->  {
-> -	return page_zonenum(pc->page);
-> +	return (pc->flags >> ZONEID_PGSHIFT) & ZONEID_MASK;
->  }
->  
->  static inline void lock_page_cgroup(struct page_cgroup *pc)
-> Index: mmotm-2.6.31-Jul16/mm/page_cgroup.c
-> ===================================================================
-> --- mmotm-2.6.31-Jul16.orig/mm/page_cgroup.c
-> +++ mmotm-2.6.31-Jul16/mm/page_cgroup.c
-> @@ -13,9 +13,12 @@
->  static void __meminit
->  __init_page_cgroup(struct page_cgroup *pc, unsigned long pfn)
->  {
-> -	pc->flags = 0;
-> +	unsigned long flags;
-> +
->  	pc->mem_cgroup = NULL;
-> -	pc->page = pfn_to_page(pfn);
-> +	/* Copy NODE/ZONE/SECTION information from struct page */
-> +	flags = pfn_to_page(pfn)->flags;
-> +	pc->flags = flags & ~((1 << __NR_PAGEFLAGS) - 1);
->  	INIT_LIST_HEAD(&pc->lru);
->  }
->  static unsigned long total_usage;
-> @@ -42,6 +45,18 @@ struct page_cgroup *lookup_page_cgroup(s
->  	return base + offset;
->  }
->  
-> +struct page *page_cgroup_to_page(struct page_cgroup *pc)
-> +{
-> +	int nid = (page->flags >> SECTIONS_PGSHIFT) & SECTIONS_MASK;
-> +	unsigned long pfn, offset;
-> +
-> +	offset = pc - NODE_DATA(nid)->node_page_cgroup
-> +	pfn = NODE_DATA(nid)->node_start_pfn + offset;
-> +
-> +	return pfn_to_page(pfn);
-> +}
-> +
-> +
->  static int __init alloc_node_page_cgroup(int nid)
->  {
->  	struct page_cgroup *base, *pc;
-> @@ -104,6 +119,18 @@ struct page_cgroup *lookup_page_cgroup(s
->  	return section->page_cgroup + pfn;
->  }
->  
-> +struct page *page_cgroup_to_page(struct page_cgroup *pc)
-> +{
-> +	unsigned long pfn, sectionid;
-> +	struct mem_section *section;
-> +
-> +	sectionid = (pc->flags >> SECTIONS_PGSHIFT) & SECTIONS_MASK;
-> +	section = __nr_to_section(sectionid);
-> +
-> +	pfn = pc - section->page_cgroup;
-> +	return pfn_to_page(pfn);
-> +}
-> +
->  /* __alloc_bootmem...() is protected by !slab_available() */
->  static int __init_refok init_section_page_cgroup(unsigned long pfn)
->  {
-> @@ -128,15 +155,10 @@ static int __init_refok init_section_pag
->  		}
->  	} else {
->  		/*
-> - 		 * We don't have to allocate page_cgroup again, but
-> -		 * address of memmap may be changed. So, we have to initialize
-> -		 * again.
-> + 		 * We don't have to allocate page_cgroup again, and we don't
-> +		 * take care of address of memmap.
->  		 */
-> -		base = section->page_cgroup + pfn;
-> -		table_size = 0;
-> -		/* check address of memmap is changed or not. */
-> -		if (base->page == pfn_to_page(pfn))
-> -			return 0;
-> +		return 0;
->  	}
->  
->  	if (!base) {
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
