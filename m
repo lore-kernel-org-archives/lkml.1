@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755126AbZGVKRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbZGVKRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755126AbZGVKRv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 06:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbZGVKRu
+	id S1755355AbZGVKRb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 06:17:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755126AbZGVKR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 06:17:50 -0400
+	Wed, 22 Jul 2009 06:17:27 -0400
 Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:40236 "EHLO
 	smtp161.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754290AbZGVKKp (ORCPT
+	with ESMTP id S1754346AbZGVKKp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 22 Jul 2009 06:10:45 -0400
 From: Oren Laadan <orenl@librato.com>
@@ -21,9 +21,9 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        Pavel Emelyanov <xemul@openvz.org>,
        Alexey Dobriyan <adobriyan@gmail.com>, Oren Laadan <orenl@librato.com>,
        Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v17][PATCH 49/60] c/r: save and restore sysvipc namespace basics
-Date: Wed, 22 Jul 2009 06:00:11 -0400
-Message-Id: <1248256822-23416-50-git-send-email-orenl@librato.com>
+Subject: [RFC v17][PATCH 39/60] c/r: restore memory address space (private memory)
+Date: Wed, 22 Jul 2009 06:00:01 -0400
+Message-Id: <1248256822-23416-40-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1248256822-23416-1-git-send-email-orenl@librato.com>
 References: <1248256822-23416-1-git-send-email-orenl@librato.com>
@@ -31,724 +31,852 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the helpers to checkpoint and restore the contents of 'struct
-kern_ipc_perm'. Add header structures for ipc state. Put place-holders
-to save and restore ipc state.
-
-Save and restores the common state (parameters) of ipc namespace.
-
-Generic code to iterate through the objects of sysvipc shared memory,
-message queues and semaphores. The logic to save and restore the state
-of these objects will be added in the next few patches.
-
-Right now, we return -EPERM if the user calling sys_restart() isn't
-allowed to create an object with the checkpointed uid.  We may prefer
-to simply use the caller's uid in that case - but that could lead to
-subtle userspace bugs?  Unsure, so going for the stricter behavior.
-
-TODO: restore kern_ipc_perms->security.
+Restoring the memory address space begins with nuking the existing one
+of the current process, and then reading the vma state and contents.
+Call do_mmap_pgoffset() for each vma and then read in the data.
 
 Changelog[v17]:
-  - Fix include: use checkpoint.h not checkpoint_hdr.h
-  - Collect nsproxy->ipc_ns
-  - Restore objects in the right namespace
-  - If !CONFIG_IPC_NS only restore objects, not global settings
-  - Don't overwrite global ipc-ns if !CONFIG_IPC_NS
-  - Reset the checkpointed uid and gid info on ipc objects
-  - Fix compilation with CONFIG_SYSVIPC=n
-Changelog [Dan Smith <danms@us.ibm.com>]
-  - Fix compilation with CONFIG_SYSVIPC=n
-  - Update to match UTS changes
+  - Restore mm->{flags,def_flags,saved_auxv}
+  - Fix bogus warning in do_restore_mm()
+Changelog[v16]:
+  - Restore mm->exe_file
+Changelog[v14]:
+  - Introduce per vma-type restore() function
+  - Merge restart code into same file as checkpoint (memory.c)
+  - Compare saved 'vdso' field of mm_context with current value
+  - Check whether calls to ckpt_hbuf_get() fail
+  - Discard field 'h->parent'
+  - Revert change to pr_debug(), back to ckpt_debug()
+Changelog[v13]:
+  - Avoid access to hh->vma_type after the header is freed
+  - Test for no vma's in exit_mmap() before calling unmap_vma() (or it
+    may crash if restart fails after having removed all vma's)
+Changelog[v12]:
+  - Replace obsolete ckpt_debug() with pr_debug()
+Changelog[v9]:
+  - Introduce ckpt_ctx_checkpoint() for checkpoint-specific ctx setup
+Changelog[v7]:
+  - Fix argument given to kunmap_atomic() in memory dump/restore
+Changelog[v6]:
+  - Balance all calls to ckpt_hbuf_get() with matching ckpt_hbuf_put()
+    (even though it's not really needed)
+Changelog[v5]:
+  - Improve memory restore code (following Dave Hansen's comments)
+  - Change dump format (and code) to allow chunks of <vaddrs, pages>
+    instead of one long list of each
+  - Memory restore now maps user pages explicitly to copy data into them,
+    instead of reading directly to user space; got rid of mprotect_fixup()
+Changelog[v4]:
+  - Use standard list_... for ckpt_pgarr
+
 
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- checkpoint/checkpoint.c          |    2 -
- checkpoint/objhash.c             |   28 ++++
- include/linux/checkpoint.h       |   13 ++
- include/linux/checkpoint_hdr.h   |   54 +++++++
- include/linux/checkpoint_types.h |    1 +
- init/Kconfig                     |    6 +
- ipc/Makefile                     |    2 +-
- ipc/checkpoint.c                 |  317 ++++++++++++++++++++++++++++++++++++++
- ipc/namespace.c                  |    2 +-
- ipc/util.h                       |   10 ++
- kernel/nsproxy.c                 |   22 ++-
- 11 files changed, 449 insertions(+), 8 deletions(-)
- create mode 100644 ipc/checkpoint.c
+ arch/x86/include/asm/ldt.h     |    7 +
+ arch/x86/mm/checkpoint.c       |   64 ++++++
+ checkpoint/memory.c            |  472 ++++++++++++++++++++++++++++++++++++++++
+ checkpoint/objhash.c           |    1 +
+ checkpoint/process.c           |    3 +
+ checkpoint/restart.c           |    4 +
+ fs/exec.c                      |    2 +-
+ include/linux/checkpoint.h     |    7 +
+ include/linux/checkpoint_hdr.h |    2 +-
+ include/linux/mm.h             |   13 +
+ mm/filemap.c                   |   19 ++
+ mm/mmap.c                      |   23 ++-
+ 12 files changed, 614 insertions(+), 3 deletions(-)
 
-diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
-index 39ee917..e4f971e 100644
---- a/checkpoint/checkpoint.c
-+++ b/checkpoint/checkpoint.c
-@@ -331,8 +331,6 @@ static int may_checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
+diff --git a/arch/x86/include/asm/ldt.h b/arch/x86/include/asm/ldt.h
+index 46727eb..f2845f9 100644
+--- a/arch/x86/include/asm/ldt.h
++++ b/arch/x86/include/asm/ldt.h
+@@ -37,4 +37,11 @@ struct user_desc {
+ #define MODIFY_LDT_CONTENTS_CODE	2
  
- 	rcu_read_lock();
- 	nsproxy = task_nsproxy(t);
--	if (nsproxy->ipc_ns != ctx->root_nsproxy->ipc_ns)
--		ret = -EPERM;
- 	if (nsproxy->mnt_ns != ctx->root_nsproxy->mnt_ns)
- 		ret = -EPERM;
- 	if (nsproxy->pid_ns != ctx->root_nsproxy->pid_ns)
-diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
-index caa856c..29c7a04 100644
---- a/checkpoint/objhash.c
-+++ b/checkpoint/objhash.c
-@@ -15,6 +15,8 @@
- #include <linux/hash.h>
- #include <linux/file.h>
- #include <linux/fdtable.h>
-+#include <linux/sched.h>
-+#include <linux/ipc_namespace.h>
+ #endif /* !__ASSEMBLY__ */
++
++#ifdef __KERNEL__
++#include <linux/linkage.h>
++asmlinkage int sys_modify_ldt(int func, void __user *ptr,
++			      unsigned long bytecount);
++#endif
++
+ #endif /* _ASM_X86_LDT_H */
+diff --git a/arch/x86/mm/checkpoint.c b/arch/x86/mm/checkpoint.c
+index fa26d60..68432c8 100644
+--- a/arch/x86/mm/checkpoint.c
++++ b/arch/x86/mm/checkpoint.c
+@@ -13,6 +13,7 @@
+ 
+ #include <asm/desc.h>
+ #include <asm/i387.h>
++#include <asm/elf.h>
+ 
  #include <linux/checkpoint.h>
  #include <linux/checkpoint_hdr.h>
- 
-@@ -164,6 +166,22 @@ static int obj_uts_ns_users(void *ptr)
- 	return atomic_read(&((struct uts_namespace *) ptr)->kref.refcount);
+@@ -563,3 +564,66 @@ int restore_read_header_arch(struct ckpt_ctx *ctx)
+ 	ckpt_hdr_put(ctx, h);
+ 	return ret;
  }
- 
-+static int obj_ipc_ns_grab(void *ptr)
++
++int restore_mm_context(struct ckpt_ctx *ctx, struct mm_struct *mm)
 +{
-+	get_ipc_ns((struct ipc_namespace *) ptr);
-+	return 0;
-+}
-+
-+static void obj_ipc_ns_drop(void *ptr)
-+{
-+	put_ipc_ns((struct ipc_namespace *) ptr);
-+}
-+
-+static int obj_ipc_ns_users(void *ptr)
-+{
-+	return atomic_read(&((struct ipc_namespace *) ptr)->count);
-+}
-+
- static struct ckpt_obj_ops ckpt_obj_ops[] = {
- 	/* ignored object */
- 	{
-@@ -231,6 +249,16 @@ static struct ckpt_obj_ops ckpt_obj_ops[] = {
- 		.checkpoint = checkpoint_uts_ns,
- 		.restore = restore_uts_ns,
- 	},
-+	/* ipc_ns object */
-+	{
-+		.obj_name = "IPC_NS",
-+		.obj_type = CKPT_OBJ_IPC_NS,
-+		.ref_drop = obj_ipc_ns_drop,
-+		.ref_grab = obj_ipc_ns_grab,
-+		.ref_users = obj_ipc_ns_users,
-+		.checkpoint = checkpoint_ipc_ns,
-+		.restore = restore_ipc_ns,
-+	},
- };
- 
- 
-diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-index 0085ea8..9d6b0cc 100644
---- a/include/linux/checkpoint.h
-+++ b/include/linux/checkpoint.h
-@@ -22,6 +22,9 @@
- #ifdef __KERNEL__
- #ifdef CONFIG_CHECKPOINT
- 
-+#include <linux/sched.h>
-+#include <linux/nsproxy.h>
-+#include <linux/ipc_namespace.h>
- #include <linux/checkpoint_types.h>
- #include <linux/checkpoint_hdr.h>
- 
-@@ -136,6 +139,15 @@ extern void *restore_ns(struct ckpt_ctx *ctx);
- extern int checkpoint_uts_ns(struct ckpt_ctx *ctx, void *ptr);
- extern void *restore_uts_ns(struct ckpt_ctx *ctx);
- 
-+/* ipc-ns */
-+#ifdef CONFIG_SYSVIPC
-+extern int checkpoint_ipc_ns(struct ckpt_ctx *ctx, void *ptr);
-+extern void *restore_ipc_ns(struct ckpt_ctx *ctx);
-+#else
-+#define checkpoint_ipc_ns  checkpoint_bad
-+#define restore_ipc_ns  restore_bad
-+#endif /* CONFIG_SYSVIPC */
-+
- /* file table */
- extern int ckpt_collect_file_table(struct ckpt_ctx *ctx, struct task_struct *t);
- extern int checkpoint_obj_file_table(struct ckpt_ctx *ctx,
-@@ -204,6 +216,7 @@ extern int restore_memory_contents(struct ckpt_ctx *ctx, struct inode *inode);
- #define CKPT_DFILE	0x10		/* files and filesystem */
- #define CKPT_DMEM	0x20		/* memory state */
- #define CKPT_DPAGE	0x40		/* memory pages */
-+#define CKPT_DIPC	0x80		/* sysvipc */
- 
- #define CKPT_DDEFAULT	0xffff		/* default debug level */
- 
-diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
-index 18ab78f..3159750 100644
---- a/include/linux/checkpoint_hdr.h
-+++ b/include/linux/checkpoint_hdr.h
-@@ -59,6 +59,7 @@ enum {
- 	CKPT_HDR_CPU,
- 	CKPT_HDR_NS,
- 	CKPT_HDR_UTS_NS,
-+	CKPT_HDR_IPC_NS,
- 
- 	/* 201-299: reserved for arch-dependent */
- 
-@@ -73,6 +74,11 @@ enum {
- 	CKPT_HDR_PGARR,
- 	CKPT_HDR_MM_CONTEXT,
- 
-+	CKPT_HDR_IPC = 501,
-+	CKPT_HDR_IPC_SHM,
-+	CKPT_HDR_IPC_MSG,
-+	CKPT_HDR_IPC_SEM,
-+
- 	CKPT_HDR_TAIL = 9001,
- 
- 	CKPT_HDR_ERROR = 9999,
-@@ -99,6 +105,7 @@ enum obj_type {
- 	CKPT_OBJ_MM,
- 	CKPT_OBJ_NS,
- 	CKPT_OBJ_UTS_NS,
-+	CKPT_OBJ_IPC_NS,
- 	CKPT_OBJ_MAX
- };
- 
-@@ -190,6 +197,7 @@ struct ckpt_hdr_task_ns {
- struct ckpt_hdr_ns {
- 	struct ckpt_hdr h;
- 	__s32 uts_objref;
-+	__u32 ipc_objref;
- } __attribute__((aligned(8)));
- 
- /* task's shared resources */
-@@ -326,4 +334,50 @@ struct ckpt_hdr_pgarr {
- } __attribute__((aligned(8)));
- 
- 
-+/* ipc commons */
-+struct ckpt_hdr_ipcns {
-+	struct ckpt_hdr h;
-+	__u64 shm_ctlmax;
-+	__u64 shm_ctlall;
-+	__s32 shm_ctlmni;
-+
-+	__s32 msg_ctlmax;
-+	__s32 msg_ctlmnb;
-+	__s32 msg_ctlmni;
-+
-+	__s32 sem_ctl_msl;
-+	__s32 sem_ctl_mns;
-+	__s32 sem_ctl_opm;
-+	__s32 sem_ctl_mni;
-+} __attribute__((aligned(8)));
-+
-+struct ckpt_hdr_ipc {
-+	struct ckpt_hdr h;
-+	__u32 ipc_type;
-+	__u32 ipc_count;
-+} __attribute__((aligned(8)));
-+
-+struct ckpt_hdr_ipc_perms {
-+	__s32 id;
-+	__u32 key;
-+	__u32 uid;
-+	__u32 gid;
-+	__u32 cuid;
-+	__u32 cgid;
-+	__u32 mode;
-+	__u32 _padding;
-+	__u64 seq;
-+} __attribute__((aligned(8)));
-+
-+
-+#define CKPT_TST_OVERFLOW_16(a, b) \
-+	((sizeof(a) > sizeof(b)) && ((a) > SHORT_MAX))
-+
-+#define CKPT_TST_OVERFLOW_32(a, b) \
-+	((sizeof(a) > sizeof(b)) && ((a) > INT_MAX))
-+
-+#define CKPT_TST_OVERFLOW_64(a, b) \
-+	((sizeof(a) > sizeof(b)) && ((a) > LONG_MAX))
-+
-+
- #endif /* _CHECKPOINT_CKPT_HDR_H_ */
-diff --git a/include/linux/checkpoint_types.h b/include/linux/checkpoint_types.h
-index 0a9c58b..9ffa492 100644
---- a/include/linux/checkpoint_types.h
-+++ b/include/linux/checkpoint_types.h
-@@ -22,6 +22,7 @@
- 
- struct ckpt_stats {
- 	int uts_ns;
-+	int ipc_ns;
- };
- 
- struct ckpt_ctx {
-diff --git a/init/Kconfig b/init/Kconfig
-index a083161..21a7ca2 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -191,6 +191,12 @@ config SYSVIPC
- 	  section 6.4 of the Linux Programmer's Guide, available from
- 	  <http://www.tldp.org/guides.html>.
- 
-+config SYSVIPC_CHECKPOINT
-+	bool
-+	depends on SYSVIPC
-+	depends on CHECKPOINT
-+	default y
-+
- config SYSVIPC_SYSCTL
- 	bool
- 	depends on SYSVIPC
-diff --git a/ipc/Makefile b/ipc/Makefile
-index 4e1955e..b747127 100644
---- a/ipc/Makefile
-+++ b/ipc/Makefile
-@@ -9,4 +9,4 @@ obj_mq-$(CONFIG_COMPAT) += compat_mq.o
- obj-$(CONFIG_POSIX_MQUEUE) += mqueue.o msgutil.o $(obj_mq-y)
- obj-$(CONFIG_IPC_NS) += namespace.o
- obj-$(CONFIG_POSIX_MQUEUE_SYSCTL) += mq_sysctl.o
--
-+obj-$(CONFIG_SYSVIPC_CHECKPOINT) += checkpoint.o
-diff --git a/ipc/checkpoint.c b/ipc/checkpoint.c
-new file mode 100644
-index 0000000..4eb1a97
---- /dev/null
-+++ b/ipc/checkpoint.c
-@@ -0,0 +1,317 @@
-+/*
-+ *  Checkpoint logic and helpers
-+ *
-+ *  Copyright (C) 2009 Oren Laadan
-+ *
-+ *  This file is subject to the terms and conditions of the GNU General Public
-+ *  License.  See the file COPYING in the main directory of the Linux
-+ *  distribution for more details.
-+ */
-+
-+/* default debug level for output */
-+#define CKPT_DFLAG  CKPT_DIPC
-+
-+#include <linux/ipc.h>
-+#include <linux/msg.h>
-+#include <linux/sched.h>
-+#include <linux/ipc_namespace.h>
-+#include <linux/checkpoint.h>
-+#include <linux/checkpoint_hdr.h>
-+
-+#include "util.h"
-+
-+/* for ckpt_debug */
-+static char *ipc_ind_to_str[] = { "sem", "msg", "shm" };
-+
-+#define shm_ids(ns)	((ns)->ids[IPC_SHM_IDS])
-+#define msg_ids(ns)	((ns)->ids[IPC_MSG_IDS])
-+#define sem_ids(ns)	((ns)->ids[IPC_SEM_IDS])
-+
-+/**************************************************************************
-+ * Checkpoint
-+ */
-+
-+int checkpoint_fill_ipc_perms(struct ckpt_hdr_ipc_perms *h,
-+			      struct kern_ipc_perm *perm)
-+{
-+	if (ipcperms(perm, S_IROTH))
-+		return -EACCES;
-+
-+	h->id = perm->id;
-+	h->key = perm->key;
-+	h->uid = perm->uid;
-+	h->gid = perm->gid;
-+	h->cuid = perm->cuid;
-+	h->cgid = perm->cgid;
-+	h->mode = perm->mode & S_IRWXUGO;
-+	h->seq = perm->seq;
-+
-+	return 0;
-+}
-+
-+static int checkpoint_ipc_any(struct ckpt_ctx *ctx,
-+			      struct ipc_namespace *ipc_ns,
-+			      int ipc_ind, int ipc_type,
-+			      int (*func)(int id, void *p, void *data))
-+{
-+	struct ckpt_hdr_ipc *h;
-+	struct ipc_ids *ipc_ids = &ipc_ns->ids[ipc_ind];
-+	int ret = -ENOMEM;
-+
-+	down_read(&ipc_ids->rw_mutex);
-+	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_IPC);
-+	if (!h)
-+		goto out;
-+
-+	h->ipc_type = ipc_type;
-+	h->ipc_count = ipc_ids->in_use;
-+	ckpt_debug("ipc-%s count %d\n", ipc_ind_to_str[ipc_ind], h->ipc_count);
-+
-+	ret = ckpt_write_obj(ctx, &h->h);
-+	ckpt_hdr_put(ctx, h);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = idr_for_each(&ipc_ids->ipcs_idr, func, ctx);
-+	ckpt_debug("ipc-%s ret %d\n", ipc_ind_to_str[ipc_ind], ret);
-+ out:
-+	up_read(&ipc_ids->rw_mutex);
-+	return ret;
-+}
-+
-+static int do_checkpoint_ipc_ns(struct ckpt_ctx *ctx,
-+				struct ipc_namespace *ipc_ns)
-+{
-+	struct ckpt_hdr_ipcns *h;
++	struct ckpt_hdr_mm_context *h;
++	unsigned int n;
 +	int ret;
 +
-+	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_IPC_NS);
-+	if (!h)
-+		return -ENOMEM;
-+
-+	down_read(&shm_ids(ipc_ns).rw_mutex);
-+	h->shm_ctlmax = ipc_ns->shm_ctlmax;
-+	h->shm_ctlall = ipc_ns->shm_ctlall;
-+	h->shm_ctlmni = ipc_ns->shm_ctlmni;
-+	up_read(&shm_ids(ipc_ns).rw_mutex);
-+
-+	down_read(&msg_ids(ipc_ns).rw_mutex);
-+	h->msg_ctlmax = ipc_ns->msg_ctlmax;
-+	h->msg_ctlmnb = ipc_ns->msg_ctlmnb;
-+	h->msg_ctlmni = ipc_ns->msg_ctlmni;
-+	up_read(&msg_ids(ipc_ns).rw_mutex);
-+
-+	down_read(&sem_ids(ipc_ns).rw_mutex);
-+	h->sem_ctl_msl = ipc_ns->sem_ctls[0];
-+	h->sem_ctl_mns = ipc_ns->sem_ctls[1];
-+	h->sem_ctl_opm = ipc_ns->sem_ctls[2];
-+	h->sem_ctl_mni = ipc_ns->sem_ctls[3];
-+	up_read(&sem_ids(ipc_ns).rw_mutex);
-+
-+	ret = ckpt_write_obj(ctx, &h->h);
-+	ckpt_hdr_put(ctx, h);
-+	if (ret < 0)
-+		return ret;
-+
-+#if 0 /* NEXT FEW PATCHES */
-+	ret = checkpoint_ipc_any(ctx, ipc_ns, IPC_SHM_IDS,
-+				 CKPT_HDR_IPC_SHM, checkpoint_ipc_shm);
-+	if (ret < 0)
-+		return ret;
-+	ret = checkpoint_ipc_any(ctx, ipc_ns, IPC_MSG_IDS,
-+				 CKPT_HDR_IPC_MSG, checkpoint_ipc_msg);
-+	if (ret < 0)
-+		return ret;
-+	ret = checkpoint_ipc_any(ctx, ipc_ns, IPC_SEM_IDS,
-+				 CKPT_HDR_IPC_SEM, checkpoint_ipc_sem);
-+#endif
-+	return ret;
-+}
-+
-+int checkpoint_ipc_ns(struct ckpt_ctx *ctx, void *ptr)
-+{
-+	return do_checkpoint_ipc_ns(ctx, (struct ipc_namespace *) ptr);
-+}
-+
-+/**************************************************************************
-+ * Restart
-+ */
-+
-+/*
-+ * check whether current task may create ipc object with
-+ * checkpointed uids and gids.
-+ * Return 1 if ok, 0 if not.
-+ */
-+static int validate_created_perms(struct ckpt_hdr_ipc_perms *h)
-+{
-+	const struct cred *cred = current_cred();
-+	uid_t uid = cred->uid, euid = cred->euid;
-+
-+	/* actually I don't know - is CAP_IPC_OWNER the right one? */
-+	if (((h->uid != uid && h->uid == euid) ||
-+			(h->cuid != uid && h->cuid != euid) ||
-+			!in_group_p(h->cgid) ||
-+			!in_group_p(h->gid)) &&
-+			!capable(CAP_IPC_OWNER))
-+		return 0;
-+	return 1;
-+}
-+
-+int restore_load_ipc_perms(struct ckpt_hdr_ipc_perms *h,
-+			   struct kern_ipc_perm *perm)
-+{
-+	if (h->id < 0)
-+		return -EINVAL;
-+	if (CKPT_TST_OVERFLOW_16(h->uid, perm->uid) ||
-+	    CKPT_TST_OVERFLOW_16(h->gid, perm->gid) ||
-+	    CKPT_TST_OVERFLOW_16(h->cuid, perm->cuid) ||
-+	    CKPT_TST_OVERFLOW_16(h->cgid, perm->cgid) ||
-+	    CKPT_TST_OVERFLOW_16(h->mode, perm->mode))
-+		return -EINVAL;
-+	if (h->seq >= USHORT_MAX)
-+		return -EINVAL;
-+	if (h->mode & ~S_IRWXUGO)
-+		return -EINVAL;
-+
-+	/* FIX: verify the ->mode field makes sense */
-+
-+	perm->id = h->id;
-+	perm->key = h->key;
-+
-+	if (!validate_created_perms(h))
-+		return -EPERM;
-+	perm->uid = h->uid;
-+	perm->gid = h->gid;
-+	perm->cuid = h->cuid;
-+	perm->cgid = h->cgid;
-+	perm->mode = h->mode;
-+	perm->seq = h->seq;
-+	/*
-+	 * Todo: restore perm->security.
-+	 * At the moment it gets set by security_x_alloc() called through
-+	 * ipcget()->ipcget_public()->ops-.getnew (->nequeue for instance)
-+	 * We will want to ask the LSM to consider resetting the
-+	 * checkpointed ->security, based on current_security(),
-+	 * the checkpointed ->security, and the checkpoint file context.
-+	 */
-+
-+	return 0;
-+}
-+
-+static int restore_ipc_any(struct ckpt_ctx *ctx, struct ipc_namespace *ipc_ns,
-+			   int ipc_ind, int ipc_type,
-+			   int (*func)(struct ckpt_ctx *ctx,
-+				       struct ipc_namespace *ns))
-+{
-+	struct ckpt_hdr_ipc *h;
-+	int n, ret;
-+
-+	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_IPC);
++	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_MM_CONTEXT);
 +	if (IS_ERR(h))
 +		return PTR_ERR(h);
 +
-+	ckpt_debug("ipc-%s: count %d\n", ipc_ind_to_str[ipc_ind], h->ipc_count);
++	ckpt_debug("nldt %d vdso %#lx (%p)\n",
++		 h->nldt, (unsigned long) h->vdso, mm->context.vdso);
 +
 +	ret = -EINVAL;
-+	if (h->ipc_type != ipc_type)
++	if (h->vdso != (unsigned long) mm->context.vdso)
++		goto out;
++	if (h->ldt_entry_size != LDT_ENTRY_SIZE)
 +		goto out;
 +
-+	ret = 0;
-+	for (n = 0; n < h->ipc_count; n++) {
-+		ret = (*func)(ctx, ipc_ns);
++	ret = _ckpt_read_obj_type(ctx, NULL,
++				  h->nldt * LDT_ENTRY_SIZE,
++				  CKPT_HDR_MM_CONTEXT_LDT);
++	if (ret < 0)
++		goto out;
++
++	/*
++	 * to utilize the syscall modify_ldt() we first convert the data
++	 * in the checkpoint image from 'struct desc_struct' to 'struct
++	 * user_desc' with reverse logic of include/asm/desc.h:fill_ldt()
++	 */
++	for (n = 0; n < h->nldt; n++) {
++		struct user_desc info;
++		struct desc_struct desc;
++		mm_segment_t old_fs;
++
++		ret = ckpt_kread(ctx, &desc, LDT_ENTRY_SIZE);
 +		if (ret < 0)
-+			goto out;
++			break;
++
++		info.entry_number = n;
++		info.base_addr = desc.base0 | (desc.base1 << 16);
++		info.limit = desc.limit0;
++		info.seg_32bit = desc.d;
++		info.contents = desc.type >> 2;
++		info.read_exec_only = (desc.type >> 1) ^ 1;
++		info.limit_in_pages = desc.g;
++		info.seg_not_present = desc.p ^ 1;
++		info.useable = desc.avl;
++
++		old_fs = get_fs();
++		set_fs(get_ds());
++		ret = sys_modify_ldt(1, (struct user_desc __user *) &info,
++				     sizeof(info));
++		set_fs(old_fs);
++
++		if (ret < 0)
++			break;
 +	}
 + out:
-+	ckpt_debug("ipc-%s: ret %d\n", ipc_ind_to_str[ipc_ind], ret);
++	ckpt_hdr_put(ctx, h);
++	return ret;
++}
+diff --git a/checkpoint/memory.c b/checkpoint/memory.c
+index 68c31b6..e11784e 100644
+--- a/checkpoint/memory.c
++++ b/checkpoint/memory.c
+@@ -15,6 +15,9 @@
+ #include <linux/sched.h>
+ #include <linux/slab.h>
+ #include <linux/file.h>
++#include <linux/err.h>
++#include <linux/mm.h>
++#include <linux/mman.h>
+ #include <linux/pagemap.h>
+ #include <linux/mm_types.h>
+ #include <linux/proc_fs.h>
+@@ -686,3 +689,472 @@ int ckpt_collect_mm(struct ckpt_ctx *ctx, struct task_struct *t)
+ 
+ 	return ret;
+ }
++
++/***********************************************************************
++ * Restart
++ *
++ * Unlike checkpoint, restart is executed in the context of each restarting
++ * process: vma regions are restored via a call to mmap(), and the data is
++ * read into the address space of the current process.
++ */
++
++/**
++ * read_pages_vaddrs - read addresses of pages to page-array chain
++ * @ctx - restart context
++ * @nr_pages - number of address to read
++ */
++static int read_pages_vaddrs(struct ckpt_ctx *ctx, unsigned long nr_pages)
++{
++	struct ckpt_pgarr *pgarr;
++	unsigned long *vaddrp;
++	int nr, ret;
++
++	while (nr_pages) {
++		pgarr = pgarr_current(ctx);
++		if (!pgarr)
++			return -ENOMEM;
++		nr = pgarr_nr_free(pgarr);
++		if (nr > nr_pages)
++			nr = nr_pages;
++		vaddrp = &pgarr->vaddrs[pgarr->nr_used];
++		ret = ckpt_kread(ctx, vaddrp, nr * sizeof(unsigned long));
++		if (ret < 0)
++			return ret;
++		pgarr->nr_used += nr;
++		nr_pages -= nr;
++	}
++	return 0;
++}
++
++static int restore_read_page(struct ckpt_ctx *ctx, struct page *page, void *p)
++{
++	void *ptr;
++	int ret;
++
++	ret = ckpt_kread(ctx, p, PAGE_SIZE);
++	if (ret < 0)
++		return ret;
++
++	ptr = kmap_atomic(page, KM_USER1);
++	memcpy(ptr, p, PAGE_SIZE);
++	kunmap_atomic(ptr, KM_USER1);
++
++	return 0;
++}
++
++/**
++ * read_pages_contents - read in data of pages in page-array chain
++ * @ctx - restart context
++ */
++static int read_pages_contents(struct ckpt_ctx *ctx)
++{
++	struct mm_struct *mm = current->mm;
++	struct ckpt_pgarr *pgarr;
++	unsigned long *vaddrs;
++	char *buf;
++	int i, ret = 0;
++
++	buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
++
++	down_read(&mm->mmap_sem);
++	list_for_each_entry_reverse(pgarr, &ctx->pgarr_list, list) {
++		vaddrs = pgarr->vaddrs;
++		for (i = 0; i < pgarr->nr_used; i++) {
++			struct page *page;
++
++			_ckpt_debug(CKPT_DPAGE, "got page %#lx\n", vaddrs[i]);
++			ret = get_user_pages(current, mm, vaddrs[i],
++					     1, 1, 1, &page, NULL);
++			if (ret < 0)
++				goto out;
++
++			ret = restore_read_page(ctx, page, buf);
++			page_cache_release(page);
++
++			if (ret < 0)
++				goto out;
++		}
++	}
++
++ out:
++	up_read(&mm->mmap_sem);
++	kfree(buf);
++	return 0;
++}
++
++/**
++ * restore_memory_contents - restore contents of a VMA with private memory
++ * @ctx - restart context
++ *
++ * Reads a header that specifies how many pages will follow, then reads
++ * a list of virtual addresses into ctx->pgarr_list page-array chain,
++ * followed by the actual contents of the corresponding pages. Iterates
++ * these steps until reaching a header specifying "0" pages, which marks
++ * the end of the contents.
++ */
++static int restore_memory_contents(struct ckpt_ctx *ctx)
++{
++	struct ckpt_hdr_pgarr *h;
++	unsigned long nr_pages;
++	int len, ret = 0;
++
++	while (1) {
++		h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_PGARR);
++		if (IS_ERR(h))
++			break;
++
++		ckpt_debug("total pages %ld\n", (unsigned long) h->nr_pages);
++
++		nr_pages = h->nr_pages;
++		ckpt_hdr_put(ctx, h);
++
++		if (!nr_pages)
++			break;
++
++		len = nr_pages * (sizeof(unsigned long) + PAGE_SIZE);
++		ret = _ckpt_read_buffer(ctx, NULL, len);
++		if (ret < 0)
++			break;
++
++		ret = read_pages_vaddrs(ctx, nr_pages);
++		if (ret < 0)
++			break;
++		ret = read_pages_contents(ctx);
++		if (ret < 0)
++			break;
++		pgarr_reset_all(ctx);
++	}
++
++	return ret;
++}
++
++/**
++ * calc_map_prot_bits - convert vm_flags to mmap protection
++ * orig_vm_flags: source vm_flags
++ */
++static unsigned long calc_map_prot_bits(unsigned long orig_vm_flags)
++{
++	unsigned long vm_prot = 0;
++
++	if (orig_vm_flags & VM_READ)
++		vm_prot |= PROT_READ;
++	if (orig_vm_flags & VM_WRITE)
++		vm_prot |= PROT_WRITE;
++	if (orig_vm_flags & VM_EXEC)
++		vm_prot |= PROT_EXEC;
++	if (orig_vm_flags & PROT_SEM)   /* only (?) with IPC-SHM  */
++		vm_prot |= PROT_SEM;
++
++	return vm_prot;
++}
++
++/**
++ * calc_map_flags_bits - convert vm_flags to mmap flags
++ * orig_vm_flags: source vm_flags
++ */
++static unsigned long calc_map_flags_bits(unsigned long orig_vm_flags)
++{
++	unsigned long vm_flags = 0;
++
++	vm_flags = MAP_FIXED;
++	if (orig_vm_flags & VM_GROWSDOWN)
++		vm_flags |= MAP_GROWSDOWN;
++	if (orig_vm_flags & VM_DENYWRITE)
++		vm_flags |= MAP_DENYWRITE;
++	if (orig_vm_flags & VM_EXECUTABLE)
++		vm_flags |= MAP_EXECUTABLE;
++	if (orig_vm_flags & VM_MAYSHARE)
++		vm_flags |= MAP_SHARED;
++	else
++		vm_flags |= MAP_PRIVATE;
++
++	return vm_flags;
++}
++
++/**
++ * generic_vma_restore - restore a vma
++ * @mm - address space
++ * @file - file to map (NULL for anonymous)
++ * @h - vma header data
++ */
++static unsigned long generic_vma_restore(struct mm_struct *mm,
++					 struct file *file,
++					 struct ckpt_hdr_vma *h)
++{
++	unsigned long vm_size, vm_start, vm_flags, vm_prot, vm_pgoff;
++	unsigned long addr;
++
++	if (h->vm_end < h->vm_start)
++		return -EINVAL;
++	if (h->vma_objref < 0)
++		return -EINVAL;
++	if (h->vm_flags & CKPT_VMA_NOT_SUPPORTED)
++		return -ENOSYS;
++
++	vm_start = h->vm_start;
++	vm_pgoff = h->vm_pgoff;
++	vm_size = h->vm_end - h->vm_start;
++	vm_prot = calc_map_prot_bits(h->vm_flags);
++	vm_flags = calc_map_flags_bits(h->vm_flags);
++
++	down_write(&mm->mmap_sem);
++	addr = do_mmap_pgoff(file, vm_start, vm_size,
++			     vm_prot, vm_flags, vm_pgoff);
++	up_write(&mm->mmap_sem);
++	ckpt_debug("size %#lx prot %#lx flag %#lx pgoff %#lx => %#lx\n",
++		 vm_size, vm_prot, vm_flags, vm_pgoff, addr);
++
++	return addr;
++}
++
++/**
++ * private_vma_restore - read vma data, recreate it and read contents
++ * @ctx: checkpoint context
++ * @mm: memory address space
++ * @file: file to use for mapping
++ * @h - vma header data
++ */
++int private_vma_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
++			struct file *file, struct ckpt_hdr_vma *h)
++{
++	unsigned long addr;
++
++	if (h->vm_flags & VM_SHARED)
++		return -EINVAL;
++
++	addr = generic_vma_restore(mm, file, h);
++	if (IS_ERR((void *) addr))
++		return PTR_ERR((void *) addr);
++
++	return restore_memory_contents(ctx);
++}
++
++/**
++ * anon_private_restore - read vma data, recreate it and read contents
++ * @ctx: checkpoint context
++ * @mm: memory address space
++ * @h - vma header data
++ */
++static int anon_private_restore(struct ckpt_ctx *ctx,
++				     struct mm_struct *mm,
++				     struct ckpt_hdr_vma *h)
++{
++	/*
++	 * vm_pgoff for anonymous mapping is the "global" page
++	 * offset (namely from addr 0x0), so we force a zero
++	 */
++	h->vm_pgoff = 0;
++
++	return private_vma_restore(ctx, mm, NULL, h);
++}
++
++/* callbacks to restore vma per its type: */
++struct restore_vma_ops {
++	char *vma_name;
++	enum vma_type vma_type;
++	int (*restore) (struct ckpt_ctx *ctx,
++			struct mm_struct *mm,
++			struct ckpt_hdr_vma *ptr);
++};
++
++static struct restore_vma_ops restore_vma_ops[] = {
++	/* ignored vma */
++	{
++		.vma_name = "IGNORE",
++		.vma_type = CKPT_VMA_IGNORE,
++		.restore = NULL,
++	},
++	/* special mapping (vdso) */
++	{
++		.vma_name = "VDSO",
++		.vma_type = CKPT_VMA_VDSO,
++		.restore = special_mapping_restore,
++	},
++	/* anonymous private */
++	{
++		.vma_name = "ANON PRIVATE",
++		.vma_type = CKPT_VMA_ANON,
++		.restore = anon_private_restore,
++	},
++	/* file-mapped private */
++	{
++		.vma_name = "FILE PRIVATE",
++		.vma_type = CKPT_VMA_FILE,
++		.restore = filemap_restore,
++	},
++};
++
++/**
++ * restore_vma - read vma data, recreate it and read contents
++ * @ctx: checkpoint context
++ * @mm: memory address space
++ */
++static int restore_vma(struct ckpt_ctx *ctx, struct mm_struct *mm)
++{
++	struct ckpt_hdr_vma *h;
++	struct restore_vma_ops *ops;
++	int ret;
++
++	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_VMA);
++	if (IS_ERR(h))
++		return PTR_ERR(h);
++
++	ckpt_debug("vma %#lx-%#lx flags %#lx type %d vmaref %d\n",
++		   (unsigned long) h->vm_start, (unsigned long) h->vm_end,
++		   (unsigned long) h->vm_flags, (int) h->vma_type,
++		   (int) h->vma_objref);
++
++	ret = -EINVAL;
++	if (h->vm_end < h->vm_start)
++		goto out;
++	if (h->vma_objref < 0)
++		goto out;
++	if (h->vma_type >= CKPT_VMA_MAX)
++		goto out;
++
++	ops = &restore_vma_ops[h->vma_type];
++
++	/* make sure we don't change this accidentally */
++	BUG_ON(ops->vma_type != h->vma_type);
++
++	if (ops->restore) {
++		ckpt_debug("vma type %s\n", ops->vma_name);
++		ret = ops->restore(ctx, mm, h);
++	} else {
++		ckpt_debug("vma ignored\n");
++		ret = 0;
++	}
++ out:
 +	ckpt_hdr_put(ctx, h);
 +	return ret;
 +}
 +
-+static struct ipc_namespace *do_restore_ipc_ns(struct ckpt_ctx *ctx)
++static int destroy_mm(struct mm_struct *mm)
 +{
-+	struct ipc_namespace *ipc_ns = NULL;
-+	struct ckpt_hdr_ipcns *h;
++	struct vm_area_struct *vmnext = mm->mmap;
++	struct vm_area_struct *vma;
 +	int ret;
 +
-+	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_IPC_NS);
++	while (vmnext) {
++		vma = vmnext;
++		vmnext = vmnext->vm_next;
++		ret = do_munmap(mm, vma->vm_start, vma->vm_end-vma->vm_start);
++		if (ret < 0) {
++			pr_warning("c/r: failed do_munmap (%d)\n", ret);
++			return ret;
++		}
++	}
++	return 0;
++}
++
++static struct mm_struct *do_restore_mm(struct ckpt_ctx *ctx)
++{
++	struct ckpt_hdr_mm *h;
++	struct mm_struct *mm = NULL;
++	struct file *file;
++	unsigned int nr;
++	int ret;
++
++	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_MM);
 +	if (IS_ERR(h))
-+		return ERR_PTR(PTR_ERR(h));
++		return (struct mm_struct *) h;
++
++	ckpt_debug("map_count %d\n", h->map_count);
++
++	/* XXX need more sanity checks */
 +
 +	ret = -EINVAL;
-+	if (h->shm_ctlmax < 0 || h->shm_ctlall < 0 || h->shm_ctlmni < 0)
++	if ((h->start_code > h->end_code) ||
++	    (h->start_data > h->end_data))
 +		goto out;
-+	if (h->msg_ctlmax < 0 || h->msg_ctlmnb < 0 || h->msg_ctlmni < 0)
++	if (h->exe_objref < 0)
 +		goto out;
-+	if (h->sem_ctl_msl < 0 || h->sem_ctl_mns < 0 ||
-+	    h->sem_ctl_opm < 0 || h->sem_ctl_mni < 0)
++	if (h->def_flags & ~VM_LOCKED)
 +		goto out;
-+
-+	/*
-+	 * If !CONFIG_IPC_NS, do not restore the global IPC state, as
-+	 * it is used by other processes. It is ok to try to restore
-+	 * the {shm,msg,sem} objects: in the worst case the requested
-+	 * identifiers will be in use.
-+	 */
-+#ifdef CONFIG_IPC_NS
-+	ret = -ENOMEM;
-+	ipc_ns = create_ipc_ns();
-+	if (!ipc_ns)
++	if (h->flags & ~(MMF_DUMP_FILTER_MASK |
++			 ((1 << MMF_DUMP_FILTER_BITS) - 1)))
 +		goto out;
 +
-+	down_read(&shm_ids(ipc_ns).rw_mutex);
-+	ipc_ns->shm_ctlmax = h->shm_ctlmax;
-+	ipc_ns->shm_ctlall = h->shm_ctlall;
-+	ipc_ns->shm_ctlmni = h->shm_ctlmni;
-+	up_read(&shm_ids(ipc_ns).rw_mutex);
++	mm = current->mm;
 +
-+	down_read(&msg_ids(ipc_ns).rw_mutex);
-+	ipc_ns->msg_ctlmax = h->msg_ctlmax;
-+	ipc_ns->msg_ctlmnb = h->msg_ctlmnb;
-+	ipc_ns->msg_ctlmni = h->msg_ctlmni;
-+	up_read(&msg_ids(ipc_ns).rw_mutex);
++	/* point of no return -- destruct current mm */
++	down_write(&mm->mmap_sem);
++	ret = destroy_mm(mm);
++	if (ret < 0) {
++		up_write(&mm->mmap_sem);
++		goto out;
++	}
 +
-+	down_read(&sem_ids(ipc_ns).rw_mutex);
-+	ipc_ns->sem_ctls[0] = h->sem_ctl_msl;
-+	ipc_ns->sem_ctls[1] = h->sem_ctl_mns;
-+	ipc_ns->sem_ctls[2] = h->sem_ctl_opm;
-+	ipc_ns->sem_ctls[3] = h->sem_ctl_mni;
-+	up_read(&sem_ids(ipc_ns).rw_mutex);
-+#else
-+	ret = -EEXIST;
-+	/* complain if image contains multiple namespaces */
-+	if (ctx->stats.ipc_ns)
-+		goto out;
-+	ipc_ns = current->nsproxy->ipc_ns;
-+	get_ipc_ns(ipc_ns);
-+#endif
++	mm->flags = h->flags;
++	mm->def_flags = h->def_flags;
 +
-+#if 0 /* NEXT FEW PATCHES */
-+	ret = restore_ipc_any(ctx, ipc_ns, IPC_SHM_IDS,
-+			      CKPT_HDR_IPC_SHM, restore_ipc_shm);
-+	if (ret < 0)
-+		goto out;
-+	ret = restore_ipc_any(ctx, ipc_ns, IPC_MSG_IDS,
-+			      CKPT_HDR_IPC_MSG, restore_ipc_msg);
-+	if (ret < 0)
-+		goto out;
-+	ret = restore_ipc_any(ctx, ipc_ns, IPC_SEM_IDS,
-+			      CKPT_HDR_IPC_SEM, restore_ipc_sem);
-+#endif
++	mm->start_code = h->start_code;
++	mm->end_code = h->end_code;
++	mm->start_data = h->start_data;
++	mm->end_data = h->end_data;
++	mm->start_brk = h->start_brk;
++	mm->brk = h->brk;
++	mm->start_stack = h->start_stack;
++	mm->arg_start = h->arg_start;
++	mm->arg_end = h->arg_end;
++	mm->env_start = h->env_start;
++	mm->env_end = h->env_end;
++
++	/* restore the ->exe_file */
++	if (h->exe_objref) {
++		file = ckpt_obj_fetch(ctx, h->exe_objref, CKPT_OBJ_FILE);
++		if (IS_ERR(file)) {
++			up_write(&mm->mmap_sem);
++			ret = PTR_ERR(file);
++			goto out;
++		}
++		set_mm_exe_file(mm, file);
++	}
++
++	ret = _ckpt_read_buffer(ctx, mm->saved_auxv, sizeof(mm->saved_auxv));
++	up_write(&mm->mmap_sem);
 +	if (ret < 0)
 +		goto out;
 +
-+	ctx->stats.ipc_ns++;
++	for (nr = h->map_count; nr; nr--) {
++		ret = restore_vma(ctx, mm);
++		if (ret < 0)
++			goto out;
++	}
++
++	ret = restore_mm_context(ctx, mm);
 + out:
 +	ckpt_hdr_put(ctx, h);
-+	if (ret < 0) {
-+		put_ipc_ns(ipc_ns);
-+		ipc_ns = ERR_PTR(ret);
-+	}
-+	return ipc_ns;
++	if (ret < 0)
++		return ERR_PTR(ret);
++	/* restore_obj() expect an extra reference */
++	atomic_inc(&mm->mm_users);
++	return mm;
 +}
 +
-+void *restore_ipc_ns(struct ckpt_ctx *ctx)
++void *restore_mm(struct ckpt_ctx *ctx)
 +{
-+	return (void *) do_restore_ipc_ns(ctx);
++	return (void *) do_restore_mm(ctx);
 +}
-diff --git a/ipc/namespace.c b/ipc/namespace.c
-index a1094ff..8e5ea32 100644
---- a/ipc/namespace.c
-+++ b/ipc/namespace.c
-@@ -14,7 +14,7 @@
- 
- #include "util.h"
- 
--static struct ipc_namespace *create_ipc_ns(void)
-+struct ipc_namespace *create_ipc_ns(void)
- {
- 	struct ipc_namespace *ns;
- 	int err;
-diff --git a/ipc/util.h b/ipc/util.h
-index 159a73c..8ae1f8e 100644
---- a/ipc/util.h
-+++ b/ipc/util.h
-@@ -12,6 +12,7 @@
- 
- #include <linux/unistd.h>
- #include <linux/err.h>
-+#include <linux/checkpoint.h>
- 
- #define SEQ_MULTIPLIER	(IPCMNI)
- 
-@@ -175,4 +176,13 @@ int ipcget(struct ipc_namespace *ns, struct ipc_ids *ids,
- void free_ipcs(struct ipc_namespace *ns, struct ipc_ids *ids,
- 	       void (*free)(struct ipc_namespace *, struct kern_ipc_perm *));
- 
-+struct ipc_namespace *create_ipc_ns(void);
 +
++int restore_obj_mm(struct ckpt_ctx *ctx, int mm_objref)
++{
++	struct mm_struct *mm;
++	int ret;
++
++	mm = ckpt_obj_fetch(ctx, mm_objref, CKPT_OBJ_MM);
++	if (IS_ERR(mm))
++		return PTR_ERR(mm);
++
++	if (mm == current->mm)
++		return 0;
++
++	ret = exec_mmap(mm);
++	if (ret < 0)
++		return ret;
++
++	atomic_inc(&mm->mm_users);
++	return 0;
++}
+diff --git a/checkpoint/objhash.c b/checkpoint/objhash.c
+index 479e8eb..354b200 100644
+--- a/checkpoint/objhash.c
++++ b/checkpoint/objhash.c
+@@ -158,6 +158,7 @@ static struct ckpt_obj_ops ckpt_obj_ops[] = {
+ 		.ref_grab = obj_mm_grab,
+ 		.ref_users = obj_mm_users,
+ 		.checkpoint = checkpoint_mm,
++		.restore = restore_mm,
+ 	},
+ };
+ 
+diff --git a/checkpoint/process.c b/checkpoint/process.c
+index 397ab08..5d71016 100644
+--- a/checkpoint/process.c
++++ b/checkpoint/process.c
+@@ -368,6 +368,9 @@ static int restore_task_objs(struct ckpt_ctx *ctx)
+ 	ret = restore_obj_file_table(ctx, h->files_objref);
+ 	ckpt_debug("file_table: ret %d (%p)\n", ret, current->files);
+ 
++	ret = restore_obj_mm(ctx, h->mm_objref);
++	ckpt_debug("mm: ret %d (%p)\n", ret, current->mm);
++
+ 	ckpt_hdr_put(ctx, h);
+ 	return ret;
+ }
+diff --git a/checkpoint/restart.c b/checkpoint/restart.c
+index 81790fe..972bee6 100644
+--- a/checkpoint/restart.c
++++ b/checkpoint/restart.c
+@@ -288,11 +288,15 @@ void *ckpt_read_buf_type(struct ckpt_ctx *ctx, int len, int type)
+ static int check_kernel_const(struct ckpt_hdr_const *h)
+ {
+ 	struct task_struct *tsk;
++	struct mm_struct *mm;
+ 	struct new_utsname *uts;
+ 
+ 	/* task */
+ 	if (h->task_comm_len != sizeof(tsk->comm))
+ 		return -EINVAL;
++	/* mm */
++	if (h->mm_saved_auxv_len != sizeof(mm->saved_auxv))
++		return -EINVAL;
+ 	/* uts */
+ 	if (h->uts_release_len != sizeof(uts->release))
+ 		return -EINVAL;
+diff --git a/fs/exec.c b/fs/exec.c
+index 4a8849e..08cda1e 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -695,7 +695,7 @@ int kernel_read(struct file *file, unsigned long offset,
+ 
+ EXPORT_SYMBOL(kernel_read);
+ 
+-static int exec_mmap(struct mm_struct *mm)
++int exec_mmap(struct mm_struct *mm)
+ {
+ 	struct task_struct *tsk;
+ 	struct mm_struct * old_mm, *active_mm;
+diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
+index 452007c..f7f6967 100644
+--- a/include/linux/checkpoint.h
++++ b/include/linux/checkpoint.h
+@@ -120,6 +120,7 @@ extern int checkpoint_mm_context(struct ckpt_ctx *ctx, struct mm_struct *mm);
+ extern int restore_read_header_arch(struct ckpt_ctx *ctx);
+ extern int restore_thread(struct ckpt_ctx *ctx);
+ extern int restore_cpu(struct ckpt_ctx *ctx);
++extern int restore_mm_context(struct ckpt_ctx *ctx, struct mm_struct *mm);
+ 
+ extern int checkpoint_restart_block(struct ckpt_ctx *ctx,
+ 				    struct task_struct *t);
+@@ -159,9 +160,15 @@ extern int private_vma_checkpoint(struct ckpt_ctx *ctx,
+ 				  int vma_objref);
+ 
+ extern int checkpoint_obj_mm(struct ckpt_ctx *ctx, struct task_struct *t);
++extern int restore_obj_mm(struct ckpt_ctx *ctx, int mm_objref);
+ 
+ extern int ckpt_collect_mm(struct ckpt_ctx *ctx, struct task_struct *t);
+ extern int checkpoint_mm(struct ckpt_ctx *ctx, void *ptr);
++extern void *restore_mm(struct ckpt_ctx *ctx);
++
++extern int private_vma_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
++			       struct file *file, struct ckpt_hdr_vma *h);
++
+ 
+ #define CKPT_VMA_NOT_SUPPORTED					\
+ 	(VM_SHARED | VM_MAYSHARE | VM_IO | VM_HUGETLB |		\
+diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
+index 10c54b2..8bd2f11 100644
+--- a/include/linux/checkpoint_hdr.h
++++ b/include/linux/checkpoint_hdr.h
+@@ -248,7 +248,7 @@ struct ckpt_hdr_mm {
+ 	__u64 arg_start, arg_end, env_start, env_end;
+ } __attribute__((aligned(8)));
+ 
+-/* vma subtypes */
++/* vma subtypes - index into restore_vma_dispatch[] */
+ enum vma_type {
+ 	CKPT_VMA_IGNORE = 0,
+ 	CKPT_VMA_VDSO,		/* special vdso vma */
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 0e46e95..98e1fdf 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1163,6 +1163,9 @@ extern int do_munmap(struct mm_struct *, unsigned long, size_t);
+ 
+ extern unsigned long do_brk(unsigned long, unsigned long);
+ 
++/* fs/exec.c */
++extern int exec_mmap(struct mm_struct *mm);
++
+ /* filemap.c */
+ extern unsigned long page_unuse(struct page *);
+ extern void truncate_inode_pages(struct address_space *, loff_t);
+@@ -1176,6 +1179,16 @@ extern int filemap_fault(struct vm_area_struct *, struct vm_fault *);
+ int write_one_page(struct page *page, int wait);
+ void task_dirty_inc(struct task_struct *tsk);
+ 
++
++/* checkpoint/restart */
 +#ifdef CONFIG_CHECKPOINT
-+extern int checkpoint_fill_ipc_perms(struct ckpt_hdr_ipc_perms *h,
-+				     struct kern_ipc_perm *perm);
-+extern int restore_load_ipc_perms(struct ckpt_hdr_ipc_perms *h,
-+				  struct kern_ipc_perm *perm);
++struct ckpt_hdr_vma;
++extern int filemap_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
++			   struct ckpt_hdr_vma *hh);
++extern int special_mapping_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
++				   struct ckpt_hdr_vma *hh);
 +#endif
 +
- #endif
-diff --git a/kernel/nsproxy.c b/kernel/nsproxy.c
-index 4f48a68..fddc724 100644
---- a/kernel/nsproxy.c
-+++ b/kernel/nsproxy.c
-@@ -248,6 +248,7 @@ int ckpt_collect_ns(struct ckpt_ctx *ctx, struct task_struct *t)
- 	ret = ckpt_obj_collect(ctx, nsproxy->uts_ns, CKPT_OBJ_UTS_NS);
- 	if (ret < 0)
- 		goto out;
-+	ret = ckpt_obj_collect(ctx, nsproxy->ipc_ns, CKPT_OBJ_IPC_NS);
+ /* readahead.c */
+ #define VM_MAX_READAHEAD	128	/* kbytes */
+ #define VM_MIN_READAHEAD	16	/* kbytes (includes current page) */
+diff --git a/mm/filemap.c b/mm/filemap.c
+index d866bbd..843d88b 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1668,6 +1668,25 @@ static int filemap_checkpoint(struct ckpt_ctx *ctx, struct vm_area_struct *vma)
  
- 	/* TODO: collect other namespaces here */
-  out:
-@@ -268,6 +269,11 @@ static int do_checkpoint_ns(struct ckpt_ctx *ctx, struct nsproxy *nsproxy)
- 	if (ret <= 0)
- 		goto out;
- 	h->uts_objref = ret;
-+	ret = checkpoint_obj(ctx, nsproxy->ipc_ns, CKPT_OBJ_IPC_NS);
-+	if (ret < 0)
-+		goto out;
-+	h->ipc_objref = ret;
+ 	return private_vma_checkpoint(ctx, vma, CKPT_VMA_FILE, vma_objref);
+ }
 +
- 	/* TODO: Write other namespaces here */
- 
- 	ret = ckpt_write_obj(ctx, &h->h);
-@@ -287,6 +293,7 @@ static struct nsproxy *do_restore_ns(struct ckpt_ctx *ctx)
- 	struct ckpt_hdr_ns *h;
- 	struct nsproxy *nsproxy = NULL;
- 	struct uts_namespace *uts_ns;
-+	struct ipc_namespace *ipc_ns;
- 	int ret;
- 
- 	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_NS);
-@@ -294,7 +301,8 @@ static struct nsproxy *do_restore_ns(struct ckpt_ctx *ctx)
- 		return (struct nsproxy *) h;
- 
- 	ret = -EINVAL;
--	if (h->uts_objref <= 0)
-+	if (h->uts_objref <= 0 ||
-+	    h->ipc_objref <= 0)
- 		goto out;
- 
- 	uts_ns = ckpt_obj_fetch(ctx, h->uts_objref, CKPT_OBJ_UTS_NS);
-@@ -302,8 +310,13 @@ static struct nsproxy *do_restore_ns(struct ckpt_ctx *ctx)
- 		ret = PTR_ERR(uts_ns);
- 		goto out;
- 	}
-+	ipc_ns = ckpt_obj_fetch(ctx, h->ipc_objref, CKPT_OBJ_IPC_NS);
-+	if (IS_ERR(ipc_ns)) {
-+		ret = PTR_ERR(ipc_ns);
-+		goto out;
-+	}
- 
--#if defined(COFNIG_UTS_NS)
-+#if defined(COFNIG_UTS_NS) || defined(CONFIG_IPC_NS)
- 	ret = -ENOMEM;
- 	nsproxy = create_nsproxy();
- 	if (!nsproxy)
-@@ -311,9 +324,9 @@ static struct nsproxy *do_restore_ns(struct ckpt_ctx *ctx)
- 
- 	get_uts_ns(uts_ns);
- 	nsproxy->uts_ns = uts_ns;
--
--	get_ipc_ns(current->nsproxy->ipc_ns);
-+	get_ipc_ns(ipc_ns);
- 	nsproxy->ipc_ns = ipc_ns;
++int filemap_restore(struct ckpt_ctx *ctx,
++		    struct mm_struct *mm,
++		    struct ckpt_hdr_vma *h)
++{
++	struct file *file;
++	int ret;
 +
- 	get_pid_ns(current->nsproxy->pid_ns);
- 	nsproxy->pid_ns = current->nsproxy->pid_ns;
- 	get_mnt_ns(current->nsproxy->mnt_ns);
-@@ -325,6 +338,7 @@ static struct nsproxy *do_restore_ns(struct ckpt_ctx *ctx)
- 	get_nsproxy(nsproxy);
++	if (h->vma_type == CKPT_VMA_FILE &&
++	    (h->vm_flags & (VM_SHARED | VM_MAYSHARE)))
++		return -EINVAL;
++
++	file = ckpt_obj_fetch(ctx, h->vma_objref, CKPT_OBJ_FILE);
++	if (IS_ERR(file))
++		return PTR_ERR(file);
++
++	ret = private_vma_restore(ctx, mm, file, h);
++	return ret;
++}
+ #endif /* CONFIG_CHECKPOINT */
  
- 	BUG_ON(nsproxy->uts_ns != uts_ns);
-+	BUG_ON(nsproxy->ipc_ns != ipc_ns);
- #endif
+ struct vm_operations_struct generic_file_vm_ops = {
+diff --git a/mm/mmap.c b/mm/mmap.c
+index 939a17c..52d203e 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -2113,7 +2113,7 @@ void exit_mmap(struct mm_struct *mm)
+ 	tlb = tlb_gather_mmu(mm, 1);
+ 	/* update_hiwater_rss(mm) here? but nobody should be looking */
+ 	/* Use -1 here to ensure all VMAs in the mm are unmapped */
+-	end = unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL);
++	end = vma ? unmap_vmas(&tlb, vma, 0, -1, &nr_accounted, NULL) : 0;
+ 	vm_unacct_memory(nr_accounted);
+ 	free_pgtables(tlb, vma, FIRST_USER_ADDRESS, 0);
+ 	tlb_finish_mmu(tlb, 0, end);
+@@ -2272,6 +2272,14 @@ static void special_mapping_close(struct vm_area_struct *vma)
+ }
  
- 	/* TODO: add more namespaces here */
+ #ifdef CONFIG_CHECKPOINT
++/*
++ * FIX:
++ *   - checkpoint vdso pages (once per distinct vdso is enough)
++ *   - check for compatilibility between saved and current vdso
++ *   - accommodate for dynamic kernel data in vdso page
++ *
++ * Current, we require COMPAT_VDSO which somewhat mitigates the issue
++ */
+ static int special_mapping_checkpoint(struct ckpt_ctx *ctx,
+ 				      struct vm_area_struct *vma)
+ {
+@@ -2293,6 +2301,19 @@ static int special_mapping_checkpoint(struct ckpt_ctx *ctx,
+ 
+ 	return generic_vma_checkpoint(ctx, vma, CKPT_VMA_VDSO, 0);
+ }
++
++int special_mapping_restore(struct ckpt_ctx *ctx,
++			    struct mm_struct *mm,
++			    struct ckpt_hdr_vma *h)
++{
++	/*
++	 * FIX:
++	 * Currently, we only handle VDSO/vsyscall special handling.
++	 * Even that, is very basic - call arch_setup_additional_pages
++	 * requiring the same mapping (start address) as before.
++	 */
++	return arch_setup_additional_pages(NULL, h->vm_start, 0);
++}
+ #endif /* CONFIG_CHECKPOINT */
+ 
+ static struct vm_operations_struct special_mapping_vmops = {
 -- 
 1.6.0.4
 
