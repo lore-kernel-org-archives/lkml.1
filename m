@@ -1,67 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbZGVREP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbZGVRIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753926AbZGVREP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 13:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbZGVREP
+	id S1753949AbZGVRIe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 13:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbZGVRId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 13:04:15 -0400
-Received: from n11b.bullet.mail.mud.yahoo.com ([209.191.125.178]:25838 "HELO
-	n11b.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752808AbZGVREL (ORCPT
+	Wed, 22 Jul 2009 13:08:33 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:25692 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753556AbZGVRIc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 13:04:11 -0400
-X-Yahoo-Newman-Id: 55700.79954.bm@omp412.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=gTLV6yonvgavDREDkQ8pJiSLs8hC6LHNdEns2JjD9lnyOJBPL6d1mBUnLcfpIOIQJKZA+WeeLjYZ6azApXahqXPik6SYKN+SIFPMhSgeAtcM2ErvqeItgsMs5Fpc7nDSrb/b/O4WC9TmCwQjlFMDP9XWekXUcOQ6gIhQY+mSMaY=  ;
-X-YMail-OSG: 1nYE5OwVM1ksdk_R89nIUK3F9Gpvexw.A3z5E72yVBdkXLIXUQR2rutCna1L_q.DW9jotNlxyDT7DrbFgDf4iGE2wEA741aUXJAjfkl8KIZlmQmw.6JwTA0e7ULs5Bi8T3ErgSHZufyP5Kt4q9Tfvpgx8NByHfoEtUY09wKbHjLB6DXG1mCh5ackWl57bK1q9KJDB3teOKQnKCFMJa44eUpfJ_pZzRWlUYL5xvIOUEIXQwAPBBttO6g8ZyG79zaRss19Z6EjNbh_02XT7.7ZuTCKlFBkS5XV4ZnZs2zKa8tDkp8GXPCK
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
-Date: Wed, 22 Jul 2009 10:04:10 -0700
-User-Agent: KMail/1.9.10
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+	Wed, 22 Jul 2009 13:08:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=XPW0NoO3qoJTp9+bkfUWkqLojlISFvGG8HS/rAegjPs2Yzz4EUVNHG5sh5eFvszzsl
+         SHHUrYFIt7pTetZksi/3khyeRhYlFD4JAOe5Xvb9U49yPmGDhZPGOalK7CzDd7++/AB+
+         WmTLBW7x7KEjHryC/LqIfAPS/RH0+7aaZPJ14=
+Date: Wed, 22 Jul 2009 10:08:28 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
        Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       "Arve Hj?nnev?g" <arve@android.com>,
+       Arve Hj?nnev?g <arve@android.com>,
        kernel list <linux-kernel@vger.kernel.org>,
        Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
        Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
        Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
        t.fujak@samsung.com, kyungmin.park@samsung.com,
+       David Brownell <david-b@pacbell.net>,
        Peter Zijlstra <peterz@infradead.org>,
        Daniel Ribeiro <drwyrm@gmail.com>
-References: <20090721113642.GC13286@sirena.org.uk> <alpine.LFD.2.00.0907221427380.2813@localhost.localdomain> <20090722133131.GA28355@rakim.wolfsonmicro.main>
-In-Reply-To: <20090722133131.GA28355@rakim.wolfsonmicro.main>
+Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
+Message-ID: <20090722170828.GD2775@dtor-d630.eng.vmware.com>
+References: <5d5443650907210530x4aaa03d6gd47ef5f79a3ef8a4@mail.gmail.com> <20090721124933.GA5668@rakim.wolfsonmicro.main> <20090721160436.GD4352@dtor-d630.eng.vmware.com> <alpine.LFD.2.00.0907212225030.2813@localhost.localdomain> <20090721222547.GA1948@opensource.wolfsonmicro.com> <alpine.LFD.2.00.0907221022190.2813@localhost.localdomain> <20090722121800.GD21171@rakim.wolfsonmicro.main> <alpine.LFD.2.00.0907221427380.2813@localhost.localdomain> <20090722155811.GA2775@dtor-d630.eng.vmware.com> <alpine.LFD.2.00.0907221830410.2813@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907221004.11100.david-b@pacbell.net>
+In-Reply-To: <alpine.LFD.2.00.0907221830410.2813@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 22 July 2009, Mark Brown wrote:
-> Yes, I think that'll be required for users like gpiolib.  If someone's
-> done something like have a button implemented by attaching switch to a
-> GPIO input on for something like jack detect on an audio CODEC or a wake
-> source for a PMIC then we've got generic code that expects to just take
-> a gpio/irq and interact with it.
+On Wed, Jul 22, 2009 at 06:40:21PM +0200, Thomas Gleixner wrote:
+> On Wed, 22 Jul 2009, Dmitry Torokhov wrote:
+> > > I don't think it belongs into the driver code. It belongs into the
+> > > platform code which sets up the system and knows what's on which
+> > > interrupt line.
+> > >  
+> > 
+> > I do think this should be set up by the driver - the platform/arch code
+> > can't be 100% certain what model of servicing interrupts driver will
+> > chose, nor the driver can know whether arch code set things up for
+> > threaded or classic interrupt handling.
+> > 
+> > Since handle_level_oneshot_irq requires drivers to use threaded IRQ
+> > model (in absence of thread interrupt will never be unmasked) it would
+> > be better if we did set it up automatically, right there in
+> > request_threaded_irq(). This would reduce maintenance issues between
+> > platform and driver code.
+> 
+> No, it's the wrong way round. 
+> 
+> The platform code sets up the platform devices. So there is no real
+> good reason that the platform code does not know about the details.
+> 
+> If it conveys the wrong irq number then it wont work, if it sets the
+> wrong handler it wont work either. So what ?
+> 
+> If the driver is implemented to use a threaded handler, which it
+> better is no matter what as it uses a bus, and the interrupt
+> controller logic is proper implemented as well then the driver does
+> not care about those details at all. It will magically work with any
+> interrupt controller you put in front of it.
+> 
+> If the platform maintainer sets the wrong handler or the wrong
+> platform data then it's not the driver writers problem.
+> 
 
-Is there a problem with how it works now?  GPIO calls come in
-sleeping (e.g. over I2C or SPI) and non-sleeping (classic SoC
-GPIOs) varieties.  And it's not gpiolib which would handle any
-IRQ support ... it's the driver for the GPIO chip, which would
-expose both irq_chip and gpio_chip facets.  (Just like classic
-SoC GPIO drivers.)
+It is not matter of setting handler or platform data incorrctly. There
+can be a perfectly working driver using I2C and non-threaded IRQ and
+there can be a similar driver using threaded IRQ. The problem with your
+approach that only _one_ can work with given platform setup. If platform
+sets the oneshot interrup handler then threaded will work and standard
+will break, otherwise standard will work and threaded will break. This
+is not the best outcome, don't you agree?
 
-So if a handler uses only non-sleeping calls, it needs at most
-minor tweaks to make sure it can be used from a threaded context.
-
-If it uses sleeping calls, it already has to arrange that it
-runs in a threaded context.  
-
+-- 
+Dmitry
