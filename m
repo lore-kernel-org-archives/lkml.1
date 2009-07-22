@@ -1,39 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755960AbZGVIKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbZGVINq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755960AbZGVIKT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 04:10:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755991AbZGVIKR
+	id S1756167AbZGVINq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 04:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756002AbZGVINp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 04:10:17 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45861 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755916AbZGVIKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 04:10:15 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1248241468.27348.47.camel@pasglop>
-References: <1248241468.27348.47.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: dhowells@redhat.com, Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Arch list <linux-arch@vger.kernel.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mm: Pass virtual address to [__]p{te,ud,md}_free_tlb()
-Date: Wed, 22 Jul 2009 09:09:34 +0100
-Message-ID: <23069.1248250174@redhat.com>
+	Wed, 22 Jul 2009 04:13:45 -0400
+Received: from bizon.gios.gov.pl ([195.187.34.71]:51728 "EHLO
+	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755991AbZGVINo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 04:13:44 -0400
+Date: Wed, 22 Jul 2009 10:12:21 +0200 (CEST)
+From: Krzysztof Oledzki <olel@ans.pl>
+X-X-Sender: ole@bizon.gios.gov.pl
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Troy Moure <twmoure@szypr.net>, Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
+       lwn@lwn.net, Ian Lance Taylor <iant@google.com>
+Subject: Re: Linux 2.6.27.27
+In-Reply-To: <alpine.LFD.2.01.0907211811410.19335@localhost.localdomain>
+Message-ID: <alpine.LNX.1.10.0907220914150.26357@bizon.gios.gov.pl>
+References: <20090720040655.GA11940@kroah.com> <4A645A45.9060509@ans.pl> <20090720151008.GC10015@suse.de> <alpine.LFD.2.01.0907200848530.13838@localhost.localdomain> <alpine.LNX.1.10.0907202341580.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907201504470.19335@localhost.localdomain>
+ <alpine.LNX.1.10.0907210831210.29729@bizon.gios.gov.pl> <alpine.LNX.1.10.0907211154480.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907210906400.19335@localhost.localdomain> <alpine.LFD.2.01.0907211133010.19335@localhost.localdomain>
+ <alpine.LFD.2.00.0907212211040.4630@troy-laptop> <alpine.LFD.2.01.0907211726140.19335@localhost.localdomain> <alpine.LFD.2.01.0907211811410.19335@localhost.localdomain>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1144830174-1000260807-1248250344=:26357"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> Martin Schwidefsky compile tested on s390 and Michael Ellerman did some
-> test builds on ia64, arm, sparc32, sparc64, i386 and x86_64
-> 
-> Nobody else reacted.
+---1144830174-1000260807-1248250344=:26357
+Content-Type: TEXT/PLAIN; charset=iso-8859-2; format=flowed
+Content-Transfer-Encoding: 8BIT
 
-I did tests for MN10300 and FRV.
 
-David
+
+On Tue, 21 Jul 2009, Linus Torvalds wrote:
+
+>
+>
+> On Tue, 21 Jul 2009, Linus Torvalds wrote:
+>>
+>> Anyway, I bet we can work around the compiler bug by just changing the
+>> type of "i" from "unsigned char" to be a plain "int".
+>
+> IOW, like this.
+>
+> 		Linus
+>
+> ---
+> drivers/video/fbmon.c |    4 ++--
+> 1 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+> index 5c1a2c0..af4a15c 100644
+> --- a/drivers/video/fbmon.c
+> +++ b/drivers/video/fbmon.c
+> @@ -256,8 +256,8 @@ static void fix_edid(unsigned char *edid, int fix)
+>
+> static int edid_checksum(unsigned char *edid)
+> {
+> -	unsigned char i, csum = 0, all_null = 0;
+> -	int err = 0, fix = check_edid(edid);
+> +	unsigned csum = 0, all_null = 0;
+> +	int i, err = 0, fix = check_edid(edid);
+>
+> 	if (fix)
+> 		fix_edid(edid, fix);
+
+Wow! You guys rock! ;)
+
+Indeed, this simple change is enough to make my kernel bootable. However, 
+there is still something wrong. My console is now 80x30 instead of 128x48:
+
+-Console: switching to colour frame buffer device 128x48
++Console: switching to colour frame buffer device 80x30
+
+So, it looks like the loop may be still miscompiled.
+
+The kernel is here:
+  http://noc.axelspringer.pl/no-strict-overflow-vs-wrapv/vmlinux-fno-strict-overflow-fixed.bz2
+
+Best regards,
+
+
+ 				Krzysztof Olêdzki
+---1144830174-1000260807-1248250344=:26357--
