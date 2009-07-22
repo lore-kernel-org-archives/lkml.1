@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbZGVRDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbZGVREP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753797AbZGVRDo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 13:03:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZGVRDn
+	id S1753926AbZGVREP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 13:04:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbZGVREP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 13:03:43 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:39640 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752620AbZGVRDn (ORCPT
+	Wed, 22 Jul 2009 13:04:15 -0400
+Received: from n11b.bullet.mail.mud.yahoo.com ([209.191.125.178]:25838 "HELO
+	n11b.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752808AbZGVREL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 13:03:43 -0400
-Subject: Re: [RFC PATCH] kmemleak: Scan all thread stacks
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090722161809.GH6757@linux.vnet.ibm.com>
-References: <20090717093359.8288.45464.stgit@pc1117.cambridge.arm.com>
-	 <20090717164346.GC5131@elte.hu>
-	 <1247849826.6313.64.camel@pc1117.cambridge.arm.com>
-	 <1247850069.6522.91.camel@laptop>
-	 <20090722161809.GH6757@linux.vnet.ibm.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Wed, 22 Jul 2009 18:03:29 +0100
-Message-Id: <1248282209.31275.68.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 22 Jul 2009 17:03:30.0534 (UTC) FILETIME=[56A09860:01CA0AEE]
+	Wed, 22 Jul 2009 13:04:11 -0400
+X-Yahoo-Newman-Id: 55700.79954.bm@omp412.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=gTLV6yonvgavDREDkQ8pJiSLs8hC6LHNdEns2JjD9lnyOJBPL6d1mBUnLcfpIOIQJKZA+WeeLjYZ6azApXahqXPik6SYKN+SIFPMhSgeAtcM2ErvqeItgsMs5Fpc7nDSrb/b/O4WC9TmCwQjlFMDP9XWekXUcOQ6gIhQY+mSMaY=  ;
+X-YMail-OSG: 1nYE5OwVM1ksdk_R89nIUK3F9Gpvexw.A3z5E72yVBdkXLIXUQR2rutCna1L_q.DW9jotNlxyDT7DrbFgDf4iGE2wEA741aUXJAjfkl8KIZlmQmw.6JwTA0e7ULs5Bi8T3ErgSHZufyP5Kt4q9Tfvpgx8NByHfoEtUY09wKbHjLB6DXG1mCh5ackWl57bK1q9KJDB3teOKQnKCFMJa44eUpfJ_pZzRWlUYL5xvIOUEIXQwAPBBttO6g8ZyG79zaRss19Z6EjNbh_02XT7.7ZuTCKlFBkS5XV4ZnZs2zKa8tDkp8GXPCK
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
+Date: Wed, 22 Jul 2009 10:04:10 -0700
+User-Agent: KMail/1.9.10
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       "Arve Hj?nnev?g" <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
+       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
+       t.fujak@samsung.com, kyungmin.park@samsung.com,
+       Peter Zijlstra <peterz@infradead.org>,
+       Daniel Ribeiro <drwyrm@gmail.com>
+References: <20090721113642.GC13286@sirena.org.uk> <alpine.LFD.2.00.0907221427380.2813@localhost.localdomain> <20090722133131.GA28355@rakim.wolfsonmicro.main>
+In-Reply-To: <20090722133131.GA28355@rakim.wolfsonmicro.main>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200907221004.11100.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-22 at 09:18 -0700, Paul E. McKenney wrote:
-> On Fri, Jul 17, 2009 at 07:01:09PM +0200, Peter Zijlstra wrote:
-> > On Fri, 2009-07-17 at 17:57 +0100, Catalin Marinas wrote:
-> > > On Fri, 2009-07-17 at 18:43 +0200, Ingo Molnar wrote:
-> > > > * Catalin Marinas <catalin.marinas@arm.com> wrote:
-> > > > > 2. Is it safe to use rcu_read_lock() and task_lock() when scanning the
-> > > > >    corresponding kernel stack (thread_info structure)? The loop doesn't
-> > > > >    do any modification to the task list. The reason for this is to
-> > > > >    allow kernel preemption when scanning the stacks.
-> > > > 
-> > > > you cannot generally preempt while holding the RCU read-lock.
-> > > 
-> > > This may work with rcupreempt enabled. But, with classic RCU is it safe
-> > > to call schedule (or cond_resched) while holding the RCU read-lock?
-> > 
-> > No.
-> 
-> What Peter said!  ;-)
-> 
-> However, you might be able to use SRCU (http://lwn.net/Articles/202847/),
-> which does allow blocking within read-side critical sections.
+On Wednesday 22 July 2009, Mark Brown wrote:
+> Yes, I think that'll be required for users like gpiolib.  If someone's
+> done something like have a button implemented by attaching switch to a
+> GPIO input on for something like jack detect on an audio CODEC or a wake
+> source for a PMIC then we've got generic code that expects to just take
+> a gpio/irq and interact with it.
 
-Thanks for the suggestion. But this would mean that the task_struct
-creation/deletion code should use the SRCU as well which I wouldn't
-modify. I'm also not entirely sure this could replace
-read_lock(&tasklist_lock)/read_unlock (as per the initial question).
+Is there a problem with how it works now?  GPIO calls come in
+sleeping (e.g. over I2C or SPI) and non-sleeping (classic SoC
+GPIOs) varieties.  And it's not gpiolib which would handle any
+IRQ support ... it's the driver for the GPIO chip, which would
+expose both irq_chip and gpio_chip facets.  (Just like classic
+SoC GPIO drivers.)
 
-The simplest fix for kmemleak is to not traverse the task list at all -
-http://lkml.org/lkml/2009/7/20/55. The patch is just like any other
-kmemleak annotation in the kernel.
+So if a handler uses only non-sleeping calls, it needs at most
+minor tweaks to make sure it can be used from a threaded context.
 
-Thanks.
-
--- 
-Catalin
+If it uses sleeping calls, it already has to arrange that it
+runs in a threaded context.  
 
