@@ -1,116 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753037AbZGVRDF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbZGVRDo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753037AbZGVRDF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 13:03:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZGVRDE
+	id S1753797AbZGVRDo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 13:03:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZGVRDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 13:03:04 -0400
-Received: from casper.infradead.org ([85.118.1.10]:54115 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752465AbZGVRDD (ORCPT
+	Wed, 22 Jul 2009 13:03:43 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:39640 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752620AbZGVRDn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 13:03:03 -0400
-Subject: [PULL] perf counter patches
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
+	Wed, 22 Jul 2009 13:03:43 -0400
+Subject: Re: [RFC PATCH] kmemleak: Scan all thread stacks
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090722161809.GH6757@linux.vnet.ibm.com>
+References: <20090717093359.8288.45464.stgit@pc1117.cambridge.arm.com>
+	 <20090717164346.GC5131@elte.hu>
+	 <1247849826.6313.64.camel@pc1117.cambridge.arm.com>
+	 <1247850069.6522.91.camel@laptop>
+	 <20090722161809.GH6757@linux.vnet.ibm.com>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 22 Jul 2009 19:04:00 +0200
-Message-Id: <1248282240.27058.1687.camel@twins>
+Organization: ARM Ltd
+Date: Wed, 22 Jul 2009 18:03:29 +0100
+Message-Id: <1248282209.31275.68.camel@pc1117.cambridge.arm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 22 Jul 2009 17:03:30.0534 (UTC) FILETIME=[56A09860:01CA0AEE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Wed, 2009-07-22 at 09:18 -0700, Paul E. McKenney wrote:
+> On Fri, Jul 17, 2009 at 07:01:09PM +0200, Peter Zijlstra wrote:
+> > On Fri, 2009-07-17 at 17:57 +0100, Catalin Marinas wrote:
+> > > On Fri, 2009-07-17 at 18:43 +0200, Ingo Molnar wrote:
+> > > > * Catalin Marinas <catalin.marinas@arm.com> wrote:
+> > > > > 2. Is it safe to use rcu_read_lock() and task_lock() when scanning the
+> > > > >    corresponding kernel stack (thread_info structure)? The loop doesn't
+> > > > >    do any modification to the task list. The reason for this is to
+> > > > >    allow kernel preemption when scanning the stacks.
+> > > > 
+> > > > you cannot generally preempt while holding the RCU read-lock.
+> > > 
+> > > This may work with rcupreempt enabled. But, with classic RCU is it safe
+> > > to call schedule (or cond_resched) while holding the RCU read-lock?
+> > 
+> > No.
+> 
+> What Peter said!  ;-)
+> 
+> However, you might be able to use SRCU (http://lwn.net/Articles/202847/),
+> which does allow blocking within read-side critical sections.
 
-Please pull these perf counter patches from:
+Thanks for the suggestion. But this would mean that the task_struct
+creation/deletion code should use the SRCU as well which I wouldn't
+modify. I'm also not entirely sure this could replace
+read_lock(&tasklist_lock)/read_unlock (as per the initial question).
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/peterz/linux-2.6-perf.git perf-counters-for-linus
+The simplest fix for kmemleak is to not traverse the task list at all -
+http://lkml.org/lkml/2009/7/20/55. The patch is just like any other
+kmemleak annotation in the kernel.
 
-Thanks,
+Thanks.
 
-  Peter
-
----
-Anton Blanchard (8):
-      perf_counter tools: Rename cache events to remove $
-      perf_counter: Make sure we dont leak kernel memory to userspace
-      perf_counter: Synthesize VDSO mmap event
-      perf_counter: Log vfork as a fork event
-      perf_counter: Add perf record option to log addresses
-      perf_counter: Make call graph option consistent
-      perf_counter: Improve perf stat and perf record option parsing
-      perf_counter: Fix throttle/unthrottle event logging
-
-Arjan van de Ven (2):
-      perf: Fix stack data leak
-      perf: avoid structure size confusion by using a fixed size
-
-Arnaldo Carvalho de Melo (7):
-      perf report: Adjust column width to the values sampled
-      perf report: Tidy up reporting of symbols not found
-      strlist: Introduce strlist__entry and strlist__nr_entries methods
-      perf report: Make the output more compact
-      perf_counter tools: PLT info is stripped in -debuginfo packages
-      perf report: Introduce -n/--show-nr-samples
-      perf symbol: C++ demangling
-
-Chris Wilson (1):
-      perf_counter: Fix the tracepoint channel to perfcounters
-
-Daniel Qarras (1):
-      perf_counter, x86: Extend perf_counter Pentium M support
-
-Jason Baron (2):
-      perf_counter: Add tracepoint support to perf list, perf stat
-      perf_counter: Detect debugfs location
-
-Mike Galbraith (2):
-      perf_counter tools: Fix vmlinux symbol generation breakage
-      perf_counter tools: Give perf top inherit option
-
-Peter Zijlstra (6):
-      perf_counter: Fix up P6 PMU details
-      perf_counter: Clean up global vs counter enable
-      perf_counter: Stop open coding unclone_ctx
-      perf_counter: Remove unused variables
-      perf_counter: Plug more stack leaks
-      perf_counter: PERF_SAMPLE_ID and inherited counters
-
-Roel Kluin (1):
-      perf_counter tools: Fix index boundary check
-
-Vince Weaver (1):
-      perf_counter: Add P6 PMU support
-
- arch/x86/kernel/cpu/perf_counter.c       |  253 +++++++++++++++++++++++++++---
- include/linux/perf_counter.h             |   15 +--
- init/Kconfig                             |    2 +-
- kernel/fork.c                            |    9 +-
- kernel/perf_counter.c                    |  186 +++++++++++-----------
- tools/perf/Documentation/perf-report.txt |   15 ++
- tools/perf/Makefile                      |    2 +-
- tools/perf/builtin-annotate.c            |   24 ---
- tools/perf/builtin-record.c              |   13 ++-
- tools/perf/builtin-report.c              |  255 +++++++++++++++++++++---------
- tools/perf/builtin-stat.c                |    3 +-
- tools/perf/builtin-top.c                 |    6 +-
- tools/perf/perf.c                        |   77 +++++++++-
- tools/perf/perf.h                        |    8 +-
- tools/perf/util/cache.h                  |    1 +
- tools/perf/util/header.h                 |    2 +-
- tools/perf/util/include/linux/kernel.h   |    8 +
- tools/perf/util/parse-events.c           |  182 +++++++++++++++++++++-
- tools/perf/util/parse-events.h           |    5 +
- tools/perf/util/string.h                 |    3 +
- tools/perf/util/strlist.c                |   20 ++-
- tools/perf/util/strlist.h                |   11 +-
- tools/perf/util/symbol.c                 |  145 +++++++++++-------
- tools/perf/util/symbol.h                 |    1 +
- tools/perf/util/util.h                   |    2 +
- 25 files changed, 949 insertions(+), 299 deletions(-)
+-- 
+Catalin
 
