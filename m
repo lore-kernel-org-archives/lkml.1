@@ -1,87 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbZGVNbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbZGVNcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755474AbZGVNbf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 09:31:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754835AbZGVNbe
+	id S1755520AbZGVNcu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 09:32:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755440AbZGVNcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 09:31:34 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:45183 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753015AbZGVNbd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 09:31:33 -0400
-Date: Wed, 22 Jul 2009 14:31:31 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
-       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
-       t.fujak@samsung.com, kyungmin.park@samsung.com,
-       David Brownell <david-b@pacbell.net>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Daniel Ribeiro <drwyrm@gmail.com>
-Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
-Message-ID: <20090722133131.GA28355@rakim.wolfsonmicro.main>
-References: <20090721113642.GC13286@sirena.org.uk>
- <5d5443650907210518i6ee4df1evdc04d9ae9453707c@mail.gmail.com>
- <5d5443650907210530x4aaa03d6gd47ef5f79a3ef8a4@mail.gmail.com>
- <20090721124933.GA5668@rakim.wolfsonmicro.main>
- <20090721160436.GD4352@dtor-d630.eng.vmware.com>
- <alpine.LFD.2.00.0907212225030.2813@localhost.localdomain>
- <20090721222547.GA1948@opensource.wolfsonmicro.com>
- <alpine.LFD.2.00.0907221022190.2813@localhost.localdomain>
- <20090722121800.GD21171@rakim.wolfsonmicro.main>
- <alpine.LFD.2.00.0907221427380.2813@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0907221427380.2813@localhost.localdomain>
-X-Cookie: Biggest security gap -- an open mouth.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 22 Jul 2009 09:32:50 -0400
+Received: from nox.protox.org ([88.191.38.29]:42949 "EHLO nox.protox.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755410AbZGVNct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 09:32:49 -0400
+Subject: Re: TTM page pool allocator
+From: Jerome Glisse <glisse@freedesktop.org>
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Cc: Thomas =?ISO-8859-1?Q?Hellstr=F6m?= <thomas@shipmail.org>,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+In-Reply-To: <1248268607.4703.450.camel@thor>
+References: <1245931298.13359.8.camel@localhost.localdomain>
+	 <4A439D7D.9030401@shipmail.org>  <1248197676.2368.11.camel@localhost>
+	 <1248199231.2368.17.camel@localhost>  <1248204128.2368.20.camel@localhost>
+	 <1248268607.4703.450.camel@thor>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 22 Jul 2009 15:31:30 +0200
+Message-Id: <1248269490.2336.2.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 22, 2009 at 02:58:24PM +0200, Thomas Gleixner wrote:
-> On Wed, 22 Jul 2009, Mark Brown wrote:
-> > On Wed, Jul 22, 2009 at 12:44:01PM +0200, Thomas Gleixner wrote:
+On Wed, 2009-07-22 at 15:16 +0200, Michel Dänzer wrote:
+> On Tue, 2009-07-21 at 21:22 +0200, Jerome Glisse wrote:
+> > On Tue, 2009-07-21 at 20:00 +0200, Jerome Glisse wrote:
+> > > On Tue, 2009-07-21 at 19:34 +0200, Jerome Glisse wrote:
+> > > > On Thu, 2009-06-25 at 17:53 +0200, Thomas Hellström wrote:
+> > > > > 
+> > > > > 4) We could now skip the ttm_tt_populate() in ttm_tt_set_caching, since 
+> > > > > it will always allocate cached pages and then transition them.
+> > > > > 
+> > > > 
+> > > > Okay 4) is bad, what happens (my brain is a bit meltdown so i might be
+> > > > wrong) :
+> > > > 1 - bo get allocated tt->state = unpopulated
+> > > > 2 - bo is mapped few page are faulted tt->state = unpopulated
+> > > > 3 - bo is cache transitioned but tt->state == unpopulated but
+> > > >     they are page which have been touch by the cpu so we need
+> > > >     to clflush them and transition them, this never happen if
+> > > >     we don't call ttm_tt_populate and proceed with the remaining
+> > > >     of the cache transitioning functions
+> > > > 
+> > > > As a workaround i will try to go through the pages tables and
+> > > > transition existing pages. Do you have any idea for a better
+> > > > plan ?
+> > > > 
+> > > > Cheers,
+> > > > Jerome
+> > > 
+> > > My workaround ruin the whole idea of pool allocation what happens
+> > > is that most bo get cache transition page per page. My thinking
+> > > is that we should do the following:
+> > > 	- is there is a least one page allocated then fully populate
+> > > 	the object and do cache transition on all the pages.
+> > > 	- otherwise update caching_state and leaves object unpopulated
+> > > 
+> > > This needs that we some how reflect the fact that there is at least
+> > > one page allocated, i am thinking to adding a new state for that :
+> > > ttm_partialy_populated
+> > > 
+> > > Thomas what do you think about that ?
+> > > 
+> > > Cheers,
+> > > Jerome
+> > 
+> > Attached updated patch it doesn't introduce ttm_partialy_populated
+> > but keep the populate call in cache transition. So far it seems to
+> > work properly on AGP platform
+> 
+> Yeah, this one works for me as well.
+> 
+> > and helps quite a lot with performances.
+> 
+> Can't say I've noticed that however. How did you measure?
 
-> > >    set_irq_handler(irq, handle_level_oneshot_irq);
+gears & quake3 but i haven't yet done any X 2d benchmark,
+2d is dead slow with kms at leat this is the feeling i have.
 
-> > Yeah, I know - the issue I was having was that the use of set_irq_handler()
-> > seemed rather rude for driver code.  Grepping around I see that there
+Cheers,
+Jerome
 
-> I don't think it belongs into the driver code. It belongs into the
-> platform code which sets up the system and knows what's on which
-> interrupt line.
-
-Yeah, that is doable - but it'd be good for usability if it could be
-handled transparently by the driver.  Even in board code it's fairly
-rare to need to explicitly set the handler if you're not actually
-implementing an interrupt controller.  Most of the board-specific code
-doing this is doing so for a CPLD, FPGA or similar on the board rather
-than configuring a preexisting IRQ for use by a leaf device.
-
-Half the trouble is that if you're not implementing interrupt controller
-code then calling set_irq_*() is normally a sign that you're doing
-something wrong (for example, for set_irq_type() you should be using
-flags on request_irq()).
-
-> Thinking further we should even provide some infrastructure for that
-> in the common code which would handle the completion and attach it to
-> the interrupts in question, so the driver authors would not have to
-> deal with that at all. They just would return from thread_fn and let
-> the generic code deal with the notification. The notification has to
-> be set up by the interrupt controller code. That way you can use the
-> same device driver code w/o knowledge of the interrupt controller
-> implementation it is attached to.
-
-Yes, I think that'll be required for users like gpiolib.  If someone's
-done something like have a button implemented by attaching switch to a
-GPIO input on for something like jack detect on an audio CODEC or a wake
-source for a PMIC then we've got generic code that expects to just take
-a gpio/irq and interact with it.
