@@ -1,77 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755228AbZGVXaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755163AbZGVXdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755228AbZGVXaS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 19:30:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbZGVXaR
+	id S1755163AbZGVXdm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 19:33:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754525AbZGVXdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 19:30:17 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:47553 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754658AbZGVXaQ convert rfc822-to-8bit (ORCPT
+	Wed, 22 Jul 2009 19:33:42 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:31356 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753765AbZGVXdl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 19:30:16 -0400
+	Wed, 22 Jul 2009 19:33:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=PmjmGhiwJEUoC/sSc++yIkiZNlpTV5IeZlEYOwyE7egCm55G4QRa83pic/ZfTM2uUO
+         fGa6sOdzG+59A7/cJbQdCTy8syZiZYWhdGoTtcx4PLMAn6cwTdw1hy19nvDFmsTFqArz
+         Ws3AzvXPjaC8BIu9YC8D6BI2SlGWNYRi3rZQg=
+Message-ID: <4A67A1D1.8040201@gmail.com>
+Date: Wed, 22 Jul 2009 20:33:37 -0300
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090626)
 MIME-Version: 1.0
-In-Reply-To: <200907221515.07835.david-b@pacbell.net>
-References: <5d5443650907151033w36008b71pe4b32bcea9489b75@mail.gmail.com>
-	 <alpine.LFD.2.00.0907222226270.2813@localhost.localdomain>
-	 <d6200be20907221457r4e2f6d29g57146586fd13776a@mail.gmail.com>
-	 <200907221515.07835.david-b@pacbell.net>
-Date: Wed, 22 Jul 2009 16:30:15 -0700
-Message-ID: <d6200be20907221630j67677654tbec5f27824ab3a96@mail.gmail.com>
-Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
-       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
-       t.fujak@samsung.com, kyungmin.park@samsung.com,
-       Daniel Ribeiro <drwyrm@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT pull] genirq fixes for 2.6.31
+References: <alpine.LFD.2.00.0907221655130.2813@localhost.localdomain> <4A67A0A2.40503@gmail.com>
+In-Reply-To: <4A67A0A2.40503@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/22 David Brownell <david-b@pacbell.net>:
-> On Wednesday 22 July 2009, Arve Hjønnevåg wrote:
->> It would also be useful to mask an edge triggered interrupt until the
->> thread handler has finished. The touchscreen on the G1 is connected to
->> an edge triggered interrupt, and the touchscreen may toggle the
->> interrupt line while reading its registers.
->
-> To clarify:  if it does toggle, do you want that event to be
-> queued up so the IRQ is re-issued -- or not?  That "oneshot"
-> mechanism does some of that, though it's for level triggers.
+Kevin Winchester wrote:
+> Thomas Gleixner wrote:
+>> +/*
+>>   * Interrupt handler thread
+>>   */
+>>  static int irq_thread(void *data)
+>> @@ -458,6 +494,8 @@ static int irq_thread(void *data)
+>>  
+>>  	while (!irq_wait_for_interrupt(action)) {
+>>  
+>> +		irq_thread_check_affinity(desc, action);
+>> +
+>>  		atomic_inc(&desc->threads_active);
+>>  
+>>  		spin_lock_irq(&desc->lock);
+> 
+> Any chance we could do this in a way that doesn't break the build for CONFIG_SMP=n? :)
+> 
+> Should this call simply be wrapped in an #ifdef, or should the function be defined for !SMP?
+> 
 
-For this driver yes the event should normally be queued up. If there
-is an error detected though, there is no need to queue up interrupts
-that are generated during the reinit.
+Actually, I guess the function is defined always, but it references desc->affinity unconditionally.
 
-Also, if you implement a keypad matrix driver using a threaded
-interrupt handler, you will not want the interrupt to be re-issues
-unless it occured after the last key was released since the scan
-itself always generated more interrupts. This is not specific to
-threaded interrupt handlers though, and could be handled by adding a
-clear-interrupt function.
+Perhaps something like the following (likely whitespace damaged) patch:
 
->
-> Parts of that might be appropriate to handle in the threaded
-> IRQ handler itself.  It seems a bit device-specific.
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index f0de36f..353e335 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -451,6 +451,8 @@ static int irq_wait_for_interrupt(struct irqaction *action)
+        return -1;
+ }
+ 
++#ifdef CONFIG_SMP
++
+ /*
+  * Check whether we need to change the affinity of the interrupt thread.
+  */
+@@ -479,6 +481,15 @@ irq_thread_check_affinity(struct irq_desc *desc, struct irqaction *action)
+        free_cpumask_var(mask);
+ }
+ 
++#else
++
++static void
++irq_thread_check_affinity(struct irq_desc *desc, struct irqaction *action)
++{
++}
++
++#endif
++
+ /*
+  * Interrupt handler thread
+  */
 
-Yes, the driver could request a threaded one-shot interrupt so that it
-will work when it is connected to a level triggered interrupt, and
-also call disable_interrupt/enable_interrrupt in the handler to avoid
-extra interrupts when it is connected to an edge triggered source.
-But, it would be nicer if requesting a one-shot interrupt always
-works. Also, waiting until the threaded handler runs before masking
-the interrupt would not work well if the interrupt line needs software
-debouncing.
-
--- 
-Arve Hjønnevåg
