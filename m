@@ -1,95 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbZGVWdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbZGVWj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830AbZGVWdP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 18:33:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbZGVWdP
+	id S1755208AbZGVWj1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 18:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754707AbZGVWj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 18:33:15 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:51572 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754456AbZGVWdO convert rfc822-to-8bit (ORCPT
+	Wed, 22 Jul 2009 18:39:27 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41700 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754125AbZGVWj0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 18:33:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=alAelQ4Y9aC2ISTVMQa6ClGcncygkCCM+nMY2wCwCT84Z/pvc6LRoxGaQgWaEa3QPg
-         MEYlPOtsv/rTo63Xqi7Y6NWZcfS/1UaaL+1afYn9xKm/OjZMXE6EGar1aWF4iImngq1B
-         cnaNM7ZaXCzV5XlaogffXUW/YoxwLonaoZffg=
+	Wed, 22 Jul 2009 18:39:26 -0400
+To: Sage Weil <sage@newdream.net>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 17/19] ceph: ioctls
+From: Andi Kleen <andi@firstfloor.org>
+References: <1248292313-31326-1-git-send-email-sage@newdream.net>
+	<1248292313-31326-2-git-send-email-sage@newdream.net>
+	<1248292313-31326-3-git-send-email-sage@newdream.net>
+	<1248292313-31326-4-git-send-email-sage@newdream.net>
+	<1248292313-31326-5-git-send-email-sage@newdream.net>
+	<1248292313-31326-6-git-send-email-sage@newdream.net>
+	<1248292313-31326-7-git-send-email-sage@newdream.net>
+	<1248292313-31326-8-git-send-email-sage@newdream.net>
+	<1248292313-31326-9-git-send-email-sage@newdream.net>
+	<1248292313-31326-10-git-send-email-sage@newdream.net>
+	<1248292313-31326-11-git-send-email-sage@newdream.net>
+	<1248292313-31326-12-git-send-email-sage@newdream.net>
+	<1248292313-31326-13-git-send-email-sage@newdream.net>
+	<1248292313-31326-14-git-send-email-sage@newdream.net>
+	<1248292313-31326-15-git-send-email-sage@newdream.net>
+	<1248292313-31326-16-git-send-email-sage@newdream.net>
+	<1248292313-31326-17-git-send-email-sage@newdream.net>
+	<1248292313-31326-18-git-send-email-sage@newdream.net>
+Date: Thu, 23 Jul 2009 00:39:25 +0200
+In-Reply-To: <1248292313-31326-18-git-send-email-sage@newdream.net> (Sage Weil's message of "Wed, 22 Jul 2009 12:51:51 -0700")
+Message-ID: <878wig2vhe.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <4A6701E3.3000204@csr.com>
-References: <1248128808-2241-1-git-send-email-linus.walleij@stericsson.com>
-	 <4A6701E3.3000204@csr.com>
-Date: Thu, 23 Jul 2009 00:33:13 +0200
-Message-ID: <63386a3d0907221533u6ab2738dpcb4484595ae757b0@mail.gmail.com>
-Subject: Re: [PATCH 1/2] MMC Agressive clocking framework v5
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: David Vrabel <david.vrabel@csr.com>
-Cc: Linus Walleij <linus.walleij@stericsson.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Pierre Ossman <pierre@ossman.eu>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/22 David Vrabel <david.vrabel@csr.com>:
+Sage Weil <sage@newdream.net> writes:
 
-> Linus Walleij wrote:
+> A few Ceph ioctls for getting and setting file layout (striping)
+> parameters.
 
-> I'm not sure this is the right approach.
+It would be good if you posted manpages for these ioctls
+so that the interface can be reviewed. After all
+that's intended to be used by applications, isn't it?
 
-It's been discussed a bit back and forth for a few months, but let's keep
-at it...
+There don't seem to be compat ioctl handlers?
 
-> 1. With some controllers (e.g., PXA270 I think) turning the clock on and
-> off is slow.  This means if you're doing back-to-back commands you
-> should leave the clock on for best performance.
+> diff --git a/fs/ceph/ioctl.h b/fs/ceph/ioctl.h
+> new file mode 100644
+> index 0000000..537c27b
+> --- /dev/null
+> +++ b/fs/ceph/ioctl.h
+> @@ -0,0 +1,12 @@
+> +#ifndef FS_CEPH_IOCTL_H
+> +#define FS_CEPH_IOCTL_H
+> +
+> +#include <linux/ioctl.h>
+> +#include "types.h"
+> +
+> +#define CEPH_IOCTL_MAGIC 0x97
+> +
+> +#define CEPH_IOC_GET_LAYOUT _IOR(CEPH_IOCTL_MAGIC, 1, struct ceph_file_layout)
+> +#define CEPH_IOC_SET_LAYOUT _IOW(CEPH_IOCTL_MAGIC, 2, struct ceph_file_layout)
 
-OK, when I've been testing this using the default workqueue and
-schedule_work() covered these cases. Back-on-back commands
-seemingly doesn't allow the timeout work to schedule, but I might be
-overseeing the case of several CPU:s there though :-/
+How should the application use that if the include file is in fs/ceph?
+Should be in include/linux I guess
 
-> I think there needs to
-> be a higher level active/idle knob for the user of the card (be it the
-> block driver or an SDIO function driver) to control whether to idle the
-> bus clock or controller.
+Also this file should define all the types needed for the interface,
+especialy struct ceph_file_layout, but no kernel internal types.
 
-The code doesn't tell the driver to idle the controller, it sets ios.clock
-to zero to give the host driver the *opportunity* to turn controller clocks
-off when it's OK from the MMC spec to do so (after 8 MCI cycles), the
-driver doesn't *have* to do that. It can add addtional logic for different
-HW. So it's only about the bus clock (whereas my patch to mmci.c takes
-advantage of the possibility to also gate the block clock).
+-Andi
 
-> 2. Some controllers cannot detect SDIO interrupts if the clock is
-> stopped.  There should either be a distinction between clock off and
-> clock idle.
-
-This is on the driver level, not in the core. The core doesn't tell whether
-to clock off or not, it only tells the device driver that the MCI clk doesn't
-need to run by setting it to 0. Clearly, some hardware cannot exploit
-that, but some (like PL180, OMAP and Atmel) can, easily.
-
-There can possibly also be HW that can turn of MCI clk but not the
-clock to the HW block itself, that is fine with the implementation.
-
-> 3. Regardless of point 1 above.  Using a workqueue item in this way
-> seems overkill.  Consider using a timer and simply calling mod_timer()
-> at the start of every command.  When the timer expires, idle the clock.
->  You will probably need a "command in progress" bit to ensure you don't
-> idle the clock if the timer expires in the middle of a command.
-
-I would agree if I created a new workqueue, but the timeout of this
-particular workqueue is unimportant and that's why I'm using the
-global workqueue and just schedule_work(). This means no extra
-overhead, no extra thread and basically does the exact same thing.
-
-But I could experiment with switching that for a timer if I get time
-at my hands, so point taken.
-
-Linus Walleij
+-- 
+ak@linux.intel.com -- Speaking for myself only.
