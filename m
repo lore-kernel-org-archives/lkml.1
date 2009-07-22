@@ -1,86 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbZGVN10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755372AbZGVN3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbZGVN10 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 09:27:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbZGVN1Z
+	id S1755372AbZGVN3p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 09:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753199AbZGVN3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 09:27:25 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:54858 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752276AbZGVN1Z (ORCPT
+	Wed, 22 Jul 2009 09:29:44 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:34160 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752401AbZGVN3n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 09:27:25 -0400
-X-Sasl-enc: vCpC/0dyqwa8BwEpMjnksBVkLwBooVjTH9xwrZsM9YOo 1248269244
-Date: Wed, 22 Jul 2009 10:27:21 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Krzysztof Oledzki <olel@ans.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Troy Moure <twmoure@szypr.net>, Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       lwn@lwn.net, Ian Lance Taylor <iant@google.com>
-Subject: Re: Linux 2.6.27.27
-Message-ID: <20090722132721.GA7390@khazad-dum.debian.net>
-References: <alpine.LFD.2.01.0907200848530.13838@localhost.localdomain>
- <alpine.LNX.1.10.0907202341580.29729@bizon.gios.gov.pl>
- <alpine.LFD.2.01.0907201504470.19335@localhost.localdomain>
- <alpine.LNX.1.10.0907210831210.29729@bizon.gios.gov.pl>
- <alpine.LNX.1.10.0907211154480.29729@bizon.gios.gov.pl>
- <alpine.LFD.2.01.0907210906400.19335@localhost.localdomain>
- <alpine.LFD.2.01.0907211133010.19335@localhost.localdomain>
- <alpine.LFD.2.00.0907212211040.4630@troy-laptop>
- <alpine.LFD.2.01.0907211726140.19335@localhost.localdomain>
- <alpine.LNX.1.10.0907221340540.26357@bizon.gios.gov.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0907221340540.26357@bizon.gios.gov.pl>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 22 Jul 2009 09:29:43 -0400
+Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
+From: Peter Zijlstra <peterz@infradead.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
+       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
+       t.fujak@samsung.com, kyungmin.park@samsung.com,
+       David Brownell <david-b@pacbell.net>, Daniel Ribeiro <drwyrm@gmail.com>
+In-Reply-To: <alpine.LFD.2.00.0907221427380.2813@localhost.localdomain>
+References: <5d5443650907151033w36008b71pe4b32bcea9489b75@mail.gmail.com>
+	 <20090721105924.GK4133@elf.ucw.cz> <20090721113642.GC13286@sirena.org.uk>
+	 <5d5443650907210518i6ee4df1evdc04d9ae9453707c@mail.gmail.com>
+	 <5d5443650907210530x4aaa03d6gd47ef5f79a3ef8a4@mail.gmail.com>
+	 <20090721124933.GA5668@rakim.wolfsonmicro.main>
+	 <20090721160436.GD4352@dtor-d630.eng.vmware.com>
+	 <alpine.LFD.2.00.0907212225030.2813@localhost.localdomain>
+	 <20090721222547.GA1948@opensource.wolfsonmicro.com>
+	 <alpine.LFD.2.00.0907221022190.2813@localhost.localdomain>
+	 <20090722121800.GD21171@rakim.wolfsonmicro.main>
+	 <alpine.LFD.2.00.0907221427380.2813@localhost.localdomain>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 22 Jul 2009 15:30:43 +0200
+Message-Id: <1248269443.27058.1449.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Jul 2009, Krzysztof Oledzki wrote:
-> BTW: here is a simple testcase for this bug:
+On Wed, 2009-07-22 at 14:58 +0200, Thomas Gleixner wrote:
+>  One
+> thing which I definitely want to change is the thread_eoi function. We
+> probably want to have it customizable for the following reason:
 > 
-> --- fno-strict-overflow-fixed-bug.c ---
-> #include <stdio.h>
+> main interrupt
+>      hardirq handler wakes main thread handler
 > 
-> int main() {
+> main thread handler
+>     bus magic
+>    	subdevice1 "hardirq" handler wakes subdevice1 irq thread
+>    	subdevice2 "hardirq" handler wakes subdevice2 irq thread
+>     main thread handler waits for subdevice1/2 handlers to complete
 > 
->         unsigned char i;
+> subdevice1 thread handler
+>     bus magic
+>     ....
+>     thread_fn returns
+>     signal main thread handler via completion
 > 
->         for (i = 0; i < 128; i++)
->                 printf("loop %u\n", i);
+> subdevice2 thread handler
+>     bus magic
+>     ....
+>     thread_fn returns
+>     signal main thread handler via completion
 > 
->         return 0;
-> }
-> --- cut here ---
+> main thread handler resumes
+>     bus magic
+>     main thread handler returns from thread_fn
+>     unmask main interrupt
 > 
-> The code should be compiled with:
->  cc -o fno-strict-overflow-fixed-bug -Os -fno-strict-overflow fno-strict-overflow-fixed-bug.c
-> or:
->  cc -o fno-strict-overflow-fixed-bug -O2 -fno-strict-overflow fno-strict-overflow-fixed-bug.c
+> So the thread_eoi function is useful for both the main and the
+> subdevice handlers. The main handler probably just issues the unmask
+> while the subdevice handlers probably want to call a completion to
+> notify the main thread handler that they are done. That would be a
+> fairly proper design I think and would encourage driver writers to
+> follow the common scheme instead of doing their own black magic.
 > 
-> This bug does not exist with -O1 or if the loop is controlled by "i
-> < 127" or "i < 129".
+> Thinking further we should even provide some infrastructure for that
+> in the common code which would handle the completion and attach it to
+> the interrupts in question, so the driver authors would not have to
+> deal with that at all. They just would return from thread_fn and let
+> the generic code deal with the notification. The notification has to
+> be set up by the interrupt controller code. That way you can use the
+> same device driver code w/o knowledge of the interrupt controller
+> implementation it is attached to.
 
-Thank you.
+Wouldn't it be better if we could express the nesting property from
+within genirq, so that we can do things like:
 
-Debian stable,   ia32, gcc 4.2.4-6:    BUG
-Debian stable,   ia32, gcc 4.3.2-1.1:  no bug (default)
+  register_chip_nested(parent_chip, parent_irq, slave_chip);
 
-Debian unstable, ia32, gcc 4.2.4-6:    BUG
-Debian unstable, ia32, gcc 4.3.3-14:   no bug (default)
+And let genirq set-up the needed magic to make the nesting work.
 
-Someone else already tested gcc 4.4.0, as no bug.
 
-I will file bugs against Debian gcc-4.2...
+Also, how important is it that subhandler1..n run in their own thread?
+That is, can't we let them run from the thread that is otherwise waiting
+for the completino anyway?
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+
