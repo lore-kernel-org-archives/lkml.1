@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754435AbZGVKKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754896AbZGVKNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754435AbZGVKKr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 06:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbZGVKKo
+	id S1754896AbZGVKNe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 06:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679AbZGVKNa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 06:10:44 -0400
+	Wed, 22 Jul 2009 06:13:30 -0400
 Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:57001 "EHLO
 	smtp161.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754177AbZGVKKj (ORCPT
+	with ESMTP id S1754483AbZGVKKw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 06:10:39 -0400
+	Wed, 22 Jul 2009 06:10:52 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -21,9 +21,9 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        Pavel Emelyanov <xemul@openvz.org>,
        Alexey Dobriyan <adobriyan@gmail.com>, Oren Laadan <orenl@librato.com>,
        Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v17][PATCH 28/60] c/r: support for zombie processes
-Date: Wed, 22 Jul 2009 05:59:50 -0400
-Message-Id: <1248256822-23416-29-git-send-email-orenl@librato.com>
+Subject: [RFC v17][PATCH 44/60] c/r: support for open pipes
+Date: Wed, 22 Jul 2009 06:00:06 -0400
+Message-Id: <1248256822-23416-45-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1248256822-23416-1-git-send-email-orenl@librato.com>
 References: <1248256822-23416-1-git-send-email-orenl@librato.com>
@@ -31,311 +31,337 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-During checkpoint, a zombie processes need only save p->comm,
-p->state, p->exit_state, and p->exit_code.
+A pipe is a double-headed inode with a buffer attached to it. We
+checkpoint the pipe buffer only once, as soon as we hit one side of
+the pipe, regardless whether it is read- or write- end.
 
-During restart, zombie processes are created like all other
-processes. They validate the saved exit_code restore p->comm
-and p->exit_code. Then they call do_exit() instead of waking
-up the next task in line.
+To checkpoint a file descriptor that refers to a pipe (either end), we
+first lookup the inode in the hash table: If not found, it is the
+first encounter of this pipe. Besides the file descriptor, we also (a)
+save the pipe data, and (b) register the pipe inode in the hash. If
+found, it is the second encounter of this pipe, namely, as we hit the
+other end of the same pipe. In both cases we write the pipe-objref of
+the inode.
 
-But before, they place the @ctx in p->checkpoint_ctx, so that
-only at exit time they will wake up the next task in line,
-and drop the reference to the @ctx.
+To restore, create a new pipe and thus have two file pointers (read-
+and write- ends). We only use one of them, depending on which side was
+checkpointed first. We register the file pointer of the other end in
+the hash table, with the pipe_objref given for this pipe from the
+checkpoint, to be used later when the other arrives. At this point we
+also restore the contents of the pipe buffers.
 
-This provides the guarantee that when the coordinator's wait
-completes, all normal tasks completed their restart, and all
-zombie tasks are already zombified (as opposed to perhap only
-becoming a zombie).
+To save the pipe buffer, given a source pipe, use do_tee() to clone
+its contents into a temporary 'struct pipe_inode_info', and then use
+do_splice_from() to transfer it directly to the checkpoint image file.
+
+To restore the pipe buffer, with a fresh newly allocated target pipe,
+use do_splice_to() to splice the data directly between the checkpoint
+image file and the pipe.
 
 Changelog[v17]:
-  - Validate t->exit_signal for both threads and leader
-  - Skip zombies in most of may_checkpoint_task()
-  - Save/restore t->pdeath_signal
-  - Validate ->exit_signal and ->pdeath_signal
+  - Forward-declare 'ckpt_ctx' et-al, don't use checkpoint_types.h
 
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- checkpoint/checkpoint.c        |   12 +++++--
- checkpoint/process.c           |   67 +++++++++++++++++++++++++++++++++++-----
- checkpoint/restart.c           |   40 +++++++++++++++++++++---
- include/linux/checkpoint.h     |    1 +
- include/linux/checkpoint_hdr.h |    1 +
- 5 files changed, 104 insertions(+), 17 deletions(-)
+ checkpoint/files.c             |    7 ++
+ fs/pipe.c                      |  170 ++++++++++++++++++++++++++++++++++++++++
+ include/linux/checkpoint_hdr.h |   12 +++
+ include/linux/pipe_fs_i.h      |    8 ++
+ 4 files changed, 197 insertions(+), 0 deletions(-)
 
-diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
-index 57f59de..fb14585 100644
---- a/checkpoint/checkpoint.c
-+++ b/checkpoint/checkpoint.c
-@@ -280,8 +280,8 @@ static int may_checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
+diff --git a/checkpoint/files.c b/checkpoint/files.c
+index 88d7adf..c247d44 100644
+--- a/checkpoint/files.c
++++ b/checkpoint/files.c
+@@ -17,6 +17,7 @@
+ #include <linux/file.h>
+ #include <linux/fdtable.h>
+ #include <linux/fsnotify.h>
++#include <linux/pipe_fs_i.h>
+ #include <linux/syscalls.h>
+ #include <linux/checkpoint.h>
+ #include <linux/checkpoint_hdr.h>
+@@ -529,6 +530,12 @@ static struct restore_file_ops restore_file_ops[] = {
+ 		.file_type = CKPT_FILE_GENERIC,
+ 		.restore = generic_file_restore,
+ 	},
++	/* pipes */
++	{
++		.file_name = "PIPE",
++		.file_type = CKPT_FILE_PIPE,
++		.restore = pipe_file_restore,
++	},
+ };
  
- 	ckpt_debug("check %d\n", task_pid_nr_ns(t, ctx->root_nsproxy->pid_ns));
+ static struct file *do_restore_file(struct ckpt_ctx *ctx)
+diff --git a/fs/pipe.c b/fs/pipe.c
+index f7dd21a..facb36b 100644
+--- a/fs/pipe.c
++++ b/fs/pipe.c
+@@ -13,11 +13,13 @@
+ #include <linux/fs.h>
+ #include <linux/mount.h>
+ #include <linux/pipe_fs_i.h>
++#include <linux/splice.h>
+ #include <linux/uio.h>
+ #include <linux/highmem.h>
+ #include <linux/pagemap.h>
+ #include <linux/audit.h>
+ #include <linux/syscalls.h>
++#include <linux/checkpoint.h>
  
--	if (t->state == TASK_DEAD) {
--		pr_warning("c/r: task %d is TASK_DEAD\n", task_pid_vnr(t));
-+	if (t->exit_state == EXIT_DEAD) {
-+		pr_warning("c/r: task %d is EXIT_DEAD\n", task_pid_vnr(t));
- 		return -EAGAIN;
- 	}
+ #include <asm/uaccess.h>
+ #include <asm/ioctls.h>
+@@ -809,6 +811,171 @@ pipe_rdwr_open(struct inode *inode, struct file *filp)
+ 	return 0;
+ }
  
-@@ -291,6 +291,10 @@ static int may_checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
- 		return -EPERM;
- 	}
- 
-+	/* zombies are cool (and also don't have nsproxy, below...) */
-+	if (t->exit_state)
-+		return 0;
-+
- 	/* verify that all tasks belongs to same freezer cgroup */
- 	if (t != current && !in_same_cgroup_freezer(t, ctx->root_freezer)) {
- 		__ckpt_write_err(ctx, "task %d (%s) not frozen (wrong cgroup)",
-@@ -309,8 +313,8 @@ static int may_checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
- 	 * FIX: for now, disallow siblings of container init created
- 	 * via CLONE_PARENT (unclear if they will remain possible)
- 	 */
--	if (ctx->root_init && t != root && t->tgid != root->tgid &&
--	    t->real_parent == root->real_parent) {
-+	if (ctx->root_init && t != root &&
-+	    t->real_parent == root->real_parent && t->tgid != root->tgid) {
- 		__ckpt_write_err(ctx, "task %d (%s) is sibling of root",
- 				 task_pid_vnr(t), t->comm);
- 		return -EINVAL;
-diff --git a/checkpoint/process.c b/checkpoint/process.c
-index a0bf344..a67c389 100644
---- a/checkpoint/process.c
-+++ b/checkpoint/process.c
-@@ -35,12 +35,18 @@ static int checkpoint_task_struct(struct ckpt_ctx *ctx, struct task_struct *t)
- 	h->state = t->state;
- 	h->exit_state = t->exit_state;
- 	h->exit_code = t->exit_code;
--	h->exit_signal = t->exit_signal;
- 
--	h->set_child_tid = t->set_child_tid;
--	h->clear_child_tid = t->clear_child_tid;
-+	if (t->exit_state) {
-+		/* zombie - skip remaining state */
-+		BUG_ON(t->exit_state != EXIT_ZOMBIE);
-+	} else {
-+		/* FIXME: save remaining relevant task_struct fields */
-+		h->exit_signal = t->exit_signal;
-+		h->pdeath_signal = t->pdeath_signal;
- 
--	/* FIXME: save remaining relevant task_struct fields */
-+		h->set_child_tid = t->set_child_tid;
-+		h->clear_child_tid = t->clear_child_tid;
-+	}
- 
- 	ret = ckpt_write_obj(ctx, &h->h);
- 	ckpt_hdr_put(ctx, h);
-@@ -169,6 +175,11 @@ int checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
- 	ckpt_debug("task %d\n", ret);
- 	if (ret < 0)
- 		goto out;
-+
-+	/* zombie - we're done here */
-+	if (t->exit_state)
-+		return 0;
-+
- 	ret = checkpoint_thread(ctx, t);
- 	ckpt_debug("thread %d\n", ret);
- 	if (ret < 0)
-@@ -187,6 +198,19 @@ int checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
-  * Restart
-  */
- 
-+static inline int valid_exit_code(int exit_code)
++#ifdef CONFIG_CHECKPOINT
++static int checkpoint_pipe(struct ckpt_ctx *ctx, struct inode *inode)
 +{
-+	if (exit_code >= 0x10000)
-+		return 0;
-+	if (exit_code & 0xff) {
-+		if (exit_code & ~0xff)
-+			return 0;
-+		if (!valid_signal(exit_code & 0xff))
-+			return 0;
-+	}
-+	return 1;
-+}
++	struct ckpt_hdr_file_pipe_state *h;
++	struct pipe_inode_info *pipe;
++	int len, ret = -ENOMEM;
 +
- /* read the task_struct into the current task */
- static int restore_task_struct(struct ckpt_ctx *ctx)
- {
-@@ -198,15 +222,37 @@ static int restore_task_struct(struct ckpt_ctx *ctx)
- 	if (IS_ERR(h))
- 		return PTR_ERR(h);
- 
-+	ret = -EINVAL;
-+	if (h->state == TASK_DEAD) {
-+		if (h->exit_state != EXIT_ZOMBIE)
-+			goto out;
-+		if (!valid_exit_code(h->exit_code))
-+			goto out;
-+		t->exit_code = h->exit_code;
-+	} else {
-+		if (h->exit_code)
-+			goto out;
-+		if ((thread_group_leader(t) && !valid_signal(h->exit_signal)) ||
-+		    (!thread_group_leader(t) && h->exit_signal != -1))
-+			goto out;
-+		if (!valid_signal(h->pdeath_signal))
-+			goto out;
++	pipe = alloc_pipe_info(NULL);
++	if (!pipe)
++		return ret;
 +
-+		/* FIXME: restore remaining relevant task_struct fields */
-+		t->exit_signal = h->exit_signal;
-+		t->pdeath_signal = h->pdeath_signal;
-+
-+		t->set_child_tid = h->set_child_tid;
-+		t->clear_child_tid = h->clear_child_tid;
++	pipe->readers = 1;	/* bluff link_pipe() below */
++	len = link_pipe(inode->i_pipe, pipe, INT_MAX, SPLICE_F_NONBLOCK);
++	if (len == -EAGAIN)
++		len = 0;
++	if (len < 0) {
++		ret = len;
++		goto out;
 +	}
 +
- 	memset(t->comm, 0, TASK_COMM_LEN);
- 	ret = _ckpt_read_string(ctx, t->comm, TASK_COMM_LEN);
- 	if (ret < 0)
- 		goto out;
- 
--	t->set_child_tid = h->set_child_tid;
--	t->clear_child_tid = h->clear_child_tid;
--
--	/* FIXME: restore remaining relevant task_struct fields */
-+	/* return 1 for zombie, 0 otherwise */
-+	ret = (h->state == TASK_DEAD ? 1 : 0);
-  out:
- 	ckpt_hdr_put(ctx, h);
- 	return ret;
-@@ -326,6 +372,11 @@ int restore_task(struct ckpt_ctx *ctx)
- 	ckpt_debug("task %d\n", ret);
- 	if (ret < 0)
- 		goto out;
-+
-+	/* zombie - we're done here */
-+	if (ret)
++	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_FILE_PIPE);
++	if (!h)
++		goto out;
++	h->pipe_len = len;
++	ret = ckpt_write_obj(ctx, &h->h);
++	ckpt_hdr_put(ctx, h);
++	if (ret < 0)
 +		goto out;
 +
- 	ret = restore_thread(ctx);
- 	ckpt_debug("thread %d\n", ret);
- 	if (ret < 0)
-diff --git a/checkpoint/restart.c b/checkpoint/restart.c
-index 65422e2..1b1f639 100644
---- a/checkpoint/restart.c
-+++ b/checkpoint/restart.c
-@@ -375,20 +375,17 @@ static inline void ckpt_notify_error(struct ckpt_ctx *ctx)
- 	complete(&ctx->complete);
- }
- 
--static int ckpt_activate_next(struct ckpt_ctx *ctx)
-+int ckpt_activate_next(struct ckpt_ctx *ctx)
- {
- 	struct task_struct *task;
--	int active;
- 	pid_t pid;
- 
--	active = ++ctx->active_pid;
--	if (active >= ctx->nr_pids) {
-+	if (++ctx->active_pid >= ctx->nr_pids) {
- 		complete(&ctx->complete);
- 		return 0;
- 	}
- 
- 	pid = get_active_pid(ctx);
--	ckpt_debug("active pid %d (%d < %d)\n", pid, active, ctx->nr_pids);
- 
- 	rcu_read_lock();
- 	task = find_task_by_pid_ns(pid, ctx->root_nsproxy->pid_ns);
-@@ -413,6 +410,8 @@ static int wait_task_active(struct ckpt_ctx *ctx)
- 	ret = wait_event_interruptible(ctx->waitq,
- 				       is_task_active(ctx, pid) ||
- 				       ckpt_test_ctx_error(ctx));
-+	ckpt_debug("active %d < %d (ret %d)\n",
-+		   ctx->active_pid, ctx->nr_pids, ret);
- 	if (!ret && ckpt_test_ctx_error(ctx)) {
- 		force_sig(SIGKILL, current);
- 		ret = -EBUSY;
-@@ -468,6 +467,8 @@ static int do_restore_task(void)
- 		return -EAGAIN;
- 	}
- 
-+	current->flags |= PF_RESTARTING;
++	ret = do_splice_from(pipe, ctx->file, &ctx->file->f_pos, len, 0);
++	if (ret < 0)
++		goto out;
++	if (ret != len)
++		ret = -EPIPE;  /* can occur due to an error in target file */
++ out:
++	__free_pipe_info(pipe);
++	return ret;
++}
 +
- 	/* wait for our turn, do the restore, and tell next task in line */
- 	ret = wait_task_active(ctx);
- 	if (ret < 0)
-@@ -477,6 +478,13 @@ static int do_restore_task(void)
- 	if (ret < 0)
- 		goto out;
- 
-+	/*
-+	 * zombie: we're done here; Save @ctx on task_struct, to be
-+	 * used to ckpt_activate_next(), and released, from do_exit().
-+	 */
-+	if (ret)
-+		do_exit(current->exit_code);
-+
- 	ret = ckpt_activate_next(ctx);
- 	if (ret < 0)
- 		goto out;
-@@ -493,6 +501,7 @@ static int do_restore_task(void)
- 		wake_up_all(&ctx->waitq);
- 	}
- 
-+	current->flags &= ~PF_RESTARTING;
- 	ckpt_ctx_put(ctx);
- 	return ret;
- }
-@@ -593,6 +602,7 @@ static int wait_all_tasks_finish(struct ckpt_ctx *ctx)
- 
- 	ret = wait_for_completion_interruptible(&ctx->complete);
- 
-+	ckpt_debug("final sync kflags %#lx\n", ctx->kflags);
- 	if (ckpt_test_ctx_error(ctx))
- 		ret = -EBUSY;
- 	return ret;
-@@ -820,3 +830,23 @@ long do_restart(struct ckpt_ctx *ctx, pid_t pid)
- 
- 	return ret;
- }
-+
-+/**
-+ * exit_checkpoint - callback from do_exit to cleanup checkpoint state
-+ * @tsk: terminating task
-+ */
-+void exit_checkpoint(struct task_struct *tsk)
++static int pipe_file_checkpoint(struct ckpt_ctx *ctx, struct file *file)
 +{
-+	struct ckpt_ctx *ctx;
++	struct ckpt_hdr_file_pipe *h;
++	struct inode *inode = file->f_dentry->d_inode;
++	int objref, first, ret;
 +
-+	ctx = tsk->checkpoint_ctx;
-+	tsk->checkpoint_ctx = NULL;
++	objref = ckpt_obj_lookup_add(ctx, inode, CKPT_OBJ_INODE, &first);
++	if (objref < 0)
++		return objref;
 +
-+	/* restarting zombies will acrivate next task in restart */
-+	if (tsk->flags & PF_RESTARTING) {
-+		if (ckpt_activate_next(ctx) < 0)
-+			pr_warning("c/r: [%d] failed zombie exit\n", tsk->pid);
++	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_FILE);
++	if (!h)
++		return -ENOMEM;
++
++	h->common.f_type = CKPT_FILE_PIPE;
++	h->pipe_objref = objref;
++
++	ret = checkpoint_file_common(ctx, file, &h->common);
++	if (ret < 0)
++		goto out;
++	ret = ckpt_write_obj(ctx, &h->common.h);
++	if (ret < 0)
++		goto out;
++
++	if (first)
++		ret = checkpoint_pipe(ctx, inode);
++ out:
++	ckpt_hdr_put(ctx, h);
++	return ret;
++}
++
++static int restore_pipe(struct ckpt_ctx *ctx, struct file *file)
++{
++	struct ckpt_hdr_file_pipe_state *h;
++	struct pipe_inode_info *pipe;
++	int len, ret;
++
++	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_FILE_PIPE);
++	if (IS_ERR(h))
++		return PTR_ERR(h);
++
++	len = h->pipe_len;
++	ckpt_hdr_put(ctx, h);
++
++	if (len < 0)
++		return -EINVAL;
++
++	pipe = file->f_dentry->d_inode->i_pipe;
++	ret = do_splice_to(ctx->file, &ctx->file->f_pos, pipe, len, 0);
++
++	if (ret >= 0 && ret != len)
++		ret = -EPIPE;  /* can occur due to an error in source file */
++
++	return ret;
++}
++
++struct file *pipe_file_restore(struct ckpt_ctx *ctx, struct ckpt_hdr_file *ptr)
++{
++	struct ckpt_hdr_file_pipe *h = (struct ckpt_hdr_file_pipe *) ptr;
++	struct file *file;
++	int fds[2], which, ret;
++
++	if (ptr->h.type != CKPT_HDR_FILE  ||
++	    ptr->h.len != sizeof(*h) || ptr->f_type != CKPT_FILE_PIPE)
++		return ERR_PTR(-EINVAL);
++
++	if (h->pipe_objref <= 0)
++		return ERR_PTR(-EINVAL);
++
++	file = ckpt_obj_fetch(ctx, h->pipe_objref, CKPT_OBJ_FILE);
++	/*
++	 * If ckpt_obj_fetch() returned ERR_PTR(-EINVAL), then this is
++	 * the first time we see this pipe so need to restore the
++	 * contents.  Otherwise, use the file pointer skip forward.
++	 */
++	if (!IS_ERR(file)) {
++		get_file(file);
++	} else if (PTR_ERR(file) == -EINVAL) {
++		/* first encounter of this pipe: create it */
++		ret = do_pipe_flags(fds, 0);
++		if (ret < 0)
++			return file;
++
++		which = (ptr->f_flags & O_WRONLY ? 1 : 0);
++		/*
++		 * Below we return the file corersponding to one side
++		 * of the pipe for our caller to use. Now insert the
++		 * other side of the pipe to the hash, to be picked up
++		 * when that side is restored.
++		 */
++		file = fget(fds[1-which]);	/* the 'other' side */
++		if (!file)	/* this should _never_ happen ! */
++			return ERR_PTR(-EBADF);
++		ret = ckpt_obj_insert(ctx, file, h->pipe_objref, CKPT_OBJ_FILE);
++		if (ret < 0)
++			goto out;
++
++		ret = restore_pipe(ctx, file);
++		fput(file);
++		if (ret < 0)
++			return ERR_PTR(ret);
++
++		file = fget(fds[which]);	/* 'this' side */
++		if (!file)	/* this should _never_ happen ! */
++			return ERR_PTR(-EBADF);
++
++		/* get rid of the file descriptors (caller sets that) */
++		sys_close(fds[which]);
++		sys_close(fds[1-which]);
++	} else {
++		return file;
 +	}
 +
-+	ckpt_ctx_put(ctx);
++	ret = restore_file_common(ctx, file, ptr);
++ out:
++	if (ret < 0) {
++		fput(file);
++		file = ERR_PTR(ret);
++	}
++
++	return file;
 +}
-diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-index 44b692d..b6af5b9 100644
---- a/include/linux/checkpoint.h
-+++ b/include/linux/checkpoint.h
-@@ -85,6 +85,7 @@ extern long do_checkpoint(struct ckpt_ctx *ctx, pid_t pid);
- extern long do_restart(struct ckpt_ctx *ctx, pid_t pid);
++#else
++#define pipe_file_checkpoint  NULL
++#endif /* CONFIG_CHECKPOINT */
++
+ /*
+  * The file_operations structs are not static because they
+  * are also used in linux/fs/fifo.c to do operations on FIFOs.
+@@ -825,6 +992,7 @@ const struct file_operations read_pipefifo_fops = {
+ 	.open		= pipe_read_open,
+ 	.release	= pipe_read_release,
+ 	.fasync		= pipe_read_fasync,
++	.checkpoint	= pipe_file_checkpoint,
+ };
  
- /* task */
-+extern int ckpt_activate_next(struct ckpt_ctx *ctx);
- extern int checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t);
- extern int restore_task(struct ckpt_ctx *ctx);
+ const struct file_operations write_pipefifo_fops = {
+@@ -837,6 +1005,7 @@ const struct file_operations write_pipefifo_fops = {
+ 	.open		= pipe_write_open,
+ 	.release	= pipe_write_release,
+ 	.fasync		= pipe_write_fasync,
++	.checkpoint	= pipe_file_checkpoint,
+ };
  
+ const struct file_operations rdwr_pipefifo_fops = {
+@@ -850,6 +1019,7 @@ const struct file_operations rdwr_pipefifo_fops = {
+ 	.open		= pipe_rdwr_open,
+ 	.release	= pipe_rdwr_release,
+ 	.fasync		= pipe_rdwr_fasync,
++	.checkpoint	= pipe_file_checkpoint,
+ };
+ 
+ struct pipe_inode_info * alloc_pipe_info(struct inode *inode)
 diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
-index c9a80dc..3f2db22 100644
+index d95c9fb..b187719 100644
 --- a/include/linux/checkpoint_hdr.h
 +++ b/include/linux/checkpoint_hdr.h
-@@ -130,6 +130,7 @@ struct ckpt_hdr_task {
- 	__u32 exit_state;
- 	__u32 exit_code;
- 	__u32 exit_signal;
-+	__u32 pdeath_signal;
+@@ -63,6 +63,7 @@ enum {
+ 	CKPT_HDR_FILE_DESC,
+ 	CKPT_HDR_FILE_NAME,
+ 	CKPT_HDR_FILE,
++	CKPT_HDR_FILE_PIPE,
  
- 	__u64 set_child_tid;
- 	__u64 clear_child_tid;
+ 	CKPT_HDR_MM = 401,
+ 	CKPT_HDR_VMA,
+@@ -218,6 +219,7 @@ struct ckpt_hdr_file_desc {
+ enum file_type {
+ 	CKPT_FILE_IGNORE = 0,
+ 	CKPT_FILE_GENERIC,
++	CKPT_FILE_PIPE,
+ 	CKPT_FILE_MAX
+ };
+ 
+@@ -236,6 +238,16 @@ struct ckpt_hdr_file_generic {
+ 	struct ckpt_hdr_file common;
+ } __attribute__((aligned(8)));
+ 
++struct ckpt_hdr_file_pipe {
++	struct ckpt_hdr_file common;
++	__s32 pipe_objref;
++} __attribute__((aligned(8)));
++
++struct ckpt_hdr_file_pipe_state {
++	struct ckpt_hdr h;
++	__s32 pipe_len;
++} __attribute__((aligned(8)));
++
+ /* memory layout */
+ struct ckpt_hdr_mm {
+ 	struct ckpt_hdr h;
+diff --git a/include/linux/pipe_fs_i.h b/include/linux/pipe_fs_i.h
+index b43a9e0..e526a12 100644
+--- a/include/linux/pipe_fs_i.h
++++ b/include/linux/pipe_fs_i.h
+@@ -154,4 +154,12 @@ int generic_pipe_buf_confirm(struct pipe_inode_info *, struct pipe_buffer *);
+ int generic_pipe_buf_steal(struct pipe_inode_info *, struct pipe_buffer *);
+ void generic_pipe_buf_release(struct pipe_inode_info *, struct pipe_buffer *);
+ 
++/* checkpoint/restart */
++#ifdef CONFIG_CHECKPOINT
++struct ckpt_ctx;
++struct ckpt_hdr_file;
++extern struct file *pipe_file_restore(struct ckpt_ctx *ctx,
++				      struct ckpt_hdr_file *ptr);
++#endif
++
+ #endif
 -- 
 1.6.0.4
 
