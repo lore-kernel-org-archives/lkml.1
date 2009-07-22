@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753030AbZGVNpB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755124AbZGVNpI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753030AbZGVNpB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 09:45:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751022AbZGVNpA
+	id S1755124AbZGVNpI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 09:45:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbZGVNpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 09:45:00 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:63898 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750938AbZGVNo7 (ORCPT
+	Wed, 22 Jul 2009 09:45:04 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:14763 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbZGVNpC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 09:44:59 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Do cpu-endian MMIO accessors exist?
-Date: Wed, 22 Jul 2009 15:44:40 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-3-generic; KDE/4.2.96; x86_64; ; )
-Cc: Jiri Slaby <jirislaby@gmail.com>, Pekka Paalanen <pq@iki.fi>,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       lethal@linux-sh.org, linux-sh@vger.kernel.org
-References: <20090721234243.1928d9e2@daedalus.pq.iki.fi> <200907221035.50025.arnd@arndb.de> <20090722094309.10b25290@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090722094309.10b25290@lxorguk.ukuu.org.uk>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 22 Jul 2009 09:45:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=AqhVyrcIm7H8t0r/7ucQ+XVfIG7KfeCR+n4L1zhEWpDePH4QYkHB3Axb89G4amwZfi
+         /lXrge52Cz170sX6Fo3N8H0YnUlaR6LqELQ5/8PjJz9ne6gxbnUkMmCbsazO+19jgoVf
+         BQ/peg/SJAg/Bw9S+NT0ikzvDa9/ek1Gq6L+4=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907221544.41054.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18hqZVwioH0uQ25mEjZnBiUB/pomJXVPmtFIRH
- TGhYef3HVPvHImCgcPQM7D1LeobtM77V9eC486JxxA9y+7LRk3
- U5f7U00UXaBcD2itJq5Zw==
+In-Reply-To: <1248268755.27058.1426.camel@twins>
+References: <1248267513-4934-1-git-send-email-tom.leiming@gmail.com>
+	 <1248267513-4934-2-git-send-email-tom.leiming@gmail.com>
+	 <1248267513-4934-3-git-send-email-tom.leiming@gmail.com>
+	 <1248267830.27058.1404.camel@twins>
+	 <d82e647a0907220610i484b8d57q39a0141579669b58@mail.gmail.com>
+	 <1248268755.27058.1426.camel@twins>
+Date: Wed, 22 Jul 2009 21:45:02 +0800
+Message-ID: <d82e647a0907220645s109f487fva6d68a9abea68372@mail.gmail.com>
+Subject: Re: [tip:core/locking 2/3] lockdep:define preallocated "stack" for 
+	BFS as per cpu variable
+From: Ming Lei <tom.leiming@gmail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       torvalds@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 22 July 2009, Alan Cox wrote:
-> 
-> > in this case. Also, ioread32 should actually multiplex between
-> > readl() and inl() based on the address token, as the code in
-> > lib/iomap.c does. It's probably easy enough to enable
-> > CONFIG_GENERIC_IOMAP on sh, and remove the ioread*/iowrite*
-> > macros from arch/sh/include/asm/io.h.
-> 
-> If your platform is purely MMIO based then ioread32 and readl can become
-> the same thing, which is much more efficient. Even if you have port based
-> devices that are mapped as MMIO surely its more efficient to do the
-> relevant address tweaking in the iomap not in the read ?
+2009/7/22 Peter Zijlstra <a.p.zijlstra@chello.nl>:
+> On Wed, 2009-07-22 at 21:10 +0800, Ming Lei wrote:
+>> 2009/7/22 Peter Zijlstra <a.p.zijlstra@chello.nl>:
+>> > On Wed, 2009-07-22 at 20:58 +0800, tom.leiming@gmail.com wrote:
+>> >> From: Ming Lei <tom.leiming@gmail.com>
+>> >
+>> > This patch can use a changelog.
+>> >
+>> > Why is this needed, isn't all that serialized by the graph_lock anyway?
+>> > Or are there a few paths where this isn't the case and we're now racy?
+>>
+>> It is really serialized by the graph_lock, but we can prevent cpu cache from
+>> being flushing by different cpu access,  which seems that can be avoided by
+>> per cpu variables. Right?
+>
+> I doubt it'll make a difference, got any numbers to back that up?
 
-I did check that the architecture in question (sh) cannot do this,
-because it actually implements board specific PIO functions in
-arch/sh/boards/mach-*/io.c.
+OK, I'll design some test case to get the numbers.
 
-For architectures that don't need such hacks, I fully agree.
+Thanks.
 
-	Arnd <><
+
+-- 
+Lei Ming
