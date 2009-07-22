@@ -1,143 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbZGVTtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754802AbZGVTvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754658AbZGVTtv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 15:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbZGVTtu
+	id S1754802AbZGVTvg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 15:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754745AbZGVTuy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 15:49:50 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:48715 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754445AbZGVTrj (ORCPT
+	Wed, 22 Jul 2009 15:50:54 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:50430 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754701AbZGVTuv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 15:47:39 -0400
-From: Sage Weil <sage@newdream.net>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 17/19] ceph: ioctls
-Date: Wed, 22 Jul 2009 12:51:51 -0700
-Message-Id: <1248292313-31326-18-git-send-email-sage@newdream.net>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1248292313-31326-17-git-send-email-sage@newdream.net>
-References: <1248292313-31326-1-git-send-email-sage@newdream.net>
- <1248292313-31326-2-git-send-email-sage@newdream.net>
- <1248292313-31326-3-git-send-email-sage@newdream.net>
- <1248292313-31326-4-git-send-email-sage@newdream.net>
- <1248292313-31326-5-git-send-email-sage@newdream.net>
- <1248292313-31326-6-git-send-email-sage@newdream.net>
- <1248292313-31326-7-git-send-email-sage@newdream.net>
- <1248292313-31326-8-git-send-email-sage@newdream.net>
- <1248292313-31326-9-git-send-email-sage@newdream.net>
- <1248292313-31326-10-git-send-email-sage@newdream.net>
- <1248292313-31326-11-git-send-email-sage@newdream.net>
- <1248292313-31326-12-git-send-email-sage@newdream.net>
- <1248292313-31326-13-git-send-email-sage@newdream.net>
- <1248292313-31326-14-git-send-email-sage@newdream.net>
- <1248292313-31326-15-git-send-email-sage@newdream.net>
- <1248292313-31326-16-git-send-email-sage@newdream.net>
- <1248292313-31326-17-git-send-email-sage@newdream.net>
+	Wed, 22 Jul 2009 15:50:51 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=from:subject:to:cc:date:message-id:in-reply-to:references:
+	user-agent:mime-version:content-type:
+	content-transfer-encoding:x-system-of-record;
+	b=ZJl293Kp89MLttqcRxqjajBovXKpb0WBzWwTB5PxHBBI5Wn69gwxpO+PfuoLExOQR
+	QCXOplecn3dErU+xd9ZKw==
+From: Paul Menage <menage@google.com>
+Subject: [PATCH 2/4] Move the cgroup debug subsys into cgroup.c to access
+	internal state
+To: akpm@linux-foundation.org, lizf@cn.fujitsu.com
+Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Date: Wed, 22 Jul 2009 12:50:35 -0700
+Message-ID: <20090722195035.7481.85657.stgit@menage.mtv.corp.google.com>
+In-Reply-To: <20090722194644.7481.47805.stgit@menage.mtv.corp.google.com>
+References: <20090722194644.7481.47805.stgit@menage.mtv.corp.google.com>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A few Ceph ioctls for getting and setting file layout (striping)
-parameters.
+Move the cgroup debug subsys into cgroup.c to access internal state
 
-Signed-off-by: Sage Weil <sage@newdream.net>
+While it's architecturally clean to have the cgroup debug subsystem be
+completely independent of the cgroups framework, it limits its
+usefulness for debugging the contents of internal data structures.
+Move the debug subsystem code into the scope of all the cgroups data
+structures to make more detailed debugging possible.
+
+Signed-off-by: Paul Menage <menage@google.com>
+
 ---
- fs/ceph/ioctl.c |   64 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/ceph/ioctl.h |   12 ++++++++++
- 2 files changed, 76 insertions(+), 0 deletions(-)
- create mode 100644 fs/ceph/ioctl.c
- create mode 100644 fs/ceph/ioctl.h
 
-diff --git a/fs/ceph/ioctl.c b/fs/ceph/ioctl.c
-new file mode 100644
-index 0000000..c60ef7b
---- /dev/null
-+++ b/fs/ceph/ioctl.c
-@@ -0,0 +1,64 @@
-+#include "ioctl.h"
-+#include "super.h"
-+#include "ceph_debug.h"
-+
-+
-+/*
-+ * ioctls
-+ */
-+
-+/*
-+ * get and set the file layout
-+ */
-+static long ceph_ioctl_get_layout(struct file *file, void __user *arg)
+ kernel/Makefile       |    1 
+ kernel/cgroup.c       |   88 +++++++++++++++++++++++++++++++++++++++++
+ kernel/cgroup_debug.c |  105 -------------------------------------------------
+ 3 files changed, 88 insertions(+), 106 deletions(-)
+ delete mode 100644 kernel/cgroup_debug.c
+
+diff --git a/kernel/Makefile b/kernel/Makefile
+index ecbd483..251adfe 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -58,7 +58,6 @@ obj-$(CONFIG_KEXEC) += kexec.o
+ obj-$(CONFIG_BACKTRACE_SELF_TEST) += backtracetest.o
+ obj-$(CONFIG_COMPAT) += compat.o
+ obj-$(CONFIG_CGROUPS) += cgroup.o
+-obj-$(CONFIG_CGROUP_DEBUG) += cgroup_debug.o
+ obj-$(CONFIG_CGROUP_FREEZER) += cgroup_freezer.o
+ obj-$(CONFIG_CPUSETS) += cpuset.o
+ obj-$(CONFIG_CGROUP_NS) += ns_cgroup.o
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index abca7e5..6306757 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -3762,3 +3762,91 @@ css_get_next(struct cgroup_subsys *ss, int id,
+ 	return ret;
+ }
+ 
++#ifdef CONFIG_CGROUP_DEBUG
++static struct cgroup_subsys_state *debug_create(struct cgroup_subsys *ss,
++						   struct cgroup *cont)
 +{
-+	struct ceph_inode_info *ci = ceph_inode(file->f_dentry->d_inode);
-+	int err;
++	struct cgroup_subsys_state *css = kzalloc(sizeof(*css), GFP_KERNEL);
 +
-+	err = ceph_do_getattr(file->f_dentry->d_inode, CEPH_STAT_CAP_LAYOUT);
-+	if (!err) {
-+		if (copy_to_user(arg, &ci->i_layout, sizeof(ci->i_layout)))
-+			return -EFAULT;
-+	}
++	if (!css)
++		return ERR_PTR(-ENOMEM);
 +
-+	return err;
++	return css;
 +}
 +
-+static long ceph_ioctl_set_layout(struct file *file, void __user *arg)
++static void debug_destroy(struct cgroup_subsys *ss, struct cgroup *cont)
 +{
-+	struct inode *inode = file->f_dentry->d_inode;
-+	struct inode *parent_inode = file->f_dentry->d_parent->d_inode;
-+	struct ceph_mds_client *mdsc = &ceph_sb_to_client(inode->i_sb)->mdsc;
-+	struct ceph_mds_request *req;
-+	struct ceph_file_layout layout;
-+	int err;
-+
-+	/* copy and validate */
-+	if (copy_from_user(&layout, arg, sizeof(layout)))
-+		return -EFAULT;
-+
-+	req = ceph_mdsc_create_request(mdsc, CEPH_MDS_OP_SETLAYOUT,
-+				       USE_AUTH_MDS);
-+	if (IS_ERR(req))
-+		return PTR_ERR(req);
-+	req->r_inode = igrab(inode);
-+	req->r_inode_drop = CEPH_CAP_FILE_SHARED | CEPH_CAP_FILE_EXCL;
-+	req->r_args.setlayout.layout = layout;
-+
-+	err = ceph_mdsc_do_request(mdsc, parent_inode, req);
-+	ceph_mdsc_put_request(req);
-+	return err;
++	kfree(cont->subsys[debug_subsys_id]);
 +}
 +
-+long ceph_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
++static u64 cgroup_refcount_read(struct cgroup *cont, struct cftype *cft)
 +{
-+	dout("ioctl file %p cmd %u arg %lu\n", file, cmd, arg);
-+	switch (cmd) {
-+	case CEPH_IOC_GET_LAYOUT:
-+		return ceph_ioctl_get_layout(file, (void __user *)arg);
-+
-+	case CEPH_IOC_SET_LAYOUT:
-+		return ceph_ioctl_set_layout(file, (void __user *)arg);
-+	}
-+	return -ENOTTY;
++	return atomic_read(&cont->count);
 +}
-diff --git a/fs/ceph/ioctl.h b/fs/ceph/ioctl.h
-new file mode 100644
-index 0000000..537c27b
---- /dev/null
-+++ b/fs/ceph/ioctl.h
-@@ -0,0 +1,12 @@
-+#ifndef FS_CEPH_IOCTL_H
-+#define FS_CEPH_IOCTL_H
 +
-+#include <linux/ioctl.h>
-+#include "types.h"
++static u64 debug_taskcount_read(struct cgroup *cont, struct cftype *cft)
++{
++	return cgroup_task_count(cont);
++}
 +
-+#define CEPH_IOCTL_MAGIC 0x97
++static u64 current_css_set_read(struct cgroup *cont, struct cftype *cft)
++{
++	return (u64)(long)current->cgroups;
++}
 +
-+#define CEPH_IOC_GET_LAYOUT _IOR(CEPH_IOCTL_MAGIC, 1, struct ceph_file_layout)
-+#define CEPH_IOC_SET_LAYOUT _IOW(CEPH_IOCTL_MAGIC, 2, struct ceph_file_layout)
++static u64 current_css_set_refcount_read(struct cgroup *cont,
++					   struct cftype *cft)
++{
++	u64 count;
 +
-+#endif
--- 
-1.5.6.5
++	rcu_read_lock();
++	count = atomic_read(&current->cgroups->refcount);
++	rcu_read_unlock();
++	return count;
++}
++
++static u64 releasable_read(struct cgroup *cgrp, struct cftype *cft)
++{
++	return test_bit(CGRP_RELEASABLE, &cgrp->flags);
++}
++
++static struct cftype debug_files[] =  {
++	{
++		.name = "cgroup_refcount",
++		.read_u64 = cgroup_refcount_read,
++	},
++	{
++		.name = "taskcount",
++		.read_u64 = debug_taskcount_read,
++	},
++
++	{
++		.name = "current_css_set",
++		.read_u64 = current_css_set_read,
++	},
++
++	{
++		.name = "current_css_set_refcount",
++		.read_u64 = current_css_set_refcount_read,
++	},
++
++	{
++		.name = "releasable",
++		.read_u64 = releasable_read,
++	},
++};
++
++static int debug_populate(struct cgroup_subsys *ss, struct cgroup *cont)
++{
++	return cgroup_add_files(cont, ss, debug_files,
++				ARRAY_SIZE(debug_files));
++}
++
++struct cgroup_subsys debug_subsys = {
++	.name = "debug",
++	.create = debug_create,
++	.destroy = debug_destroy,
++	.populate = debug_populate,
++	.subsys_id = debug_subsys_id,
++};
++#endif /* CONFIG_CGROUP_DEBUG */
+diff --git a/kernel/cgroup_debug.c b/kernel/cgroup_debug.c
+deleted file mode 100644
+index 0c92d79..0000000
+--- a/kernel/cgroup_debug.c
++++ /dev/null
+@@ -1,105 +0,0 @@
+-/*
+- * kernel/cgroup_debug.c - Example cgroup subsystem that
+- * exposes debug info
+- *
+- * Copyright (C) Google Inc, 2007
+- *
+- * Developed by Paul Menage (menage@google.com)
+- *
+- */
+-
+-#include <linux/cgroup.h>
+-#include <linux/fs.h>
+-#include <linux/slab.h>
+-#include <linux/rcupdate.h>
+-
+-#include <asm/atomic.h>
+-
+-static struct cgroup_subsys_state *debug_create(struct cgroup_subsys *ss,
+-						   struct cgroup *cont)
+-{
+-	struct cgroup_subsys_state *css = kzalloc(sizeof(*css), GFP_KERNEL);
+-
+-	if (!css)
+-		return ERR_PTR(-ENOMEM);
+-
+-	return css;
+-}
+-
+-static void debug_destroy(struct cgroup_subsys *ss, struct cgroup *cont)
+-{
+-	kfree(cont->subsys[debug_subsys_id]);
+-}
+-
+-static u64 cgroup_refcount_read(struct cgroup *cont, struct cftype *cft)
+-{
+-	return atomic_read(&cont->count);
+-}
+-
+-static u64 taskcount_read(struct cgroup *cont, struct cftype *cft)
+-{
+-	u64 count;
+-
+-	count = cgroup_task_count(cont);
+-	return count;
+-}
+-
+-static u64 current_css_set_read(struct cgroup *cont, struct cftype *cft)
+-{
+-	return (u64)(long)current->cgroups;
+-}
+-
+-static u64 current_css_set_refcount_read(struct cgroup *cont,
+-					   struct cftype *cft)
+-{
+-	u64 count;
+-
+-	rcu_read_lock();
+-	count = atomic_read(&current->cgroups->refcount);
+-	rcu_read_unlock();
+-	return count;
+-}
+-
+-static u64 releasable_read(struct cgroup *cgrp, struct cftype *cft)
+-{
+-	return test_bit(CGRP_RELEASABLE, &cgrp->flags);
+-}
+-
+-static struct cftype files[] =  {
+-	{
+-		.name = "cgroup_refcount",
+-		.read_u64 = cgroup_refcount_read,
+-	},
+-	{
+-		.name = "taskcount",
+-		.read_u64 = taskcount_read,
+-	},
+-
+-	{
+-		.name = "current_css_set",
+-		.read_u64 = current_css_set_read,
+-	},
+-
+-	{
+-		.name = "current_css_set_refcount",
+-		.read_u64 = current_css_set_refcount_read,
+-	},
+-
+-	{
+-		.name = "releasable",
+-		.read_u64 = releasable_read,
+-	},
+-};
+-
+-static int debug_populate(struct cgroup_subsys *ss, struct cgroup *cont)
+-{
+-	return cgroup_add_files(cont, ss, files, ARRAY_SIZE(files));
+-}
+-
+-struct cgroup_subsys debug_subsys = {
+-	.name = "debug",
+-	.create = debug_create,
+-	.destroy = debug_destroy,
+-	.populate = debug_populate,
+-	.subsys_id = debug_subsys_id,
+-};
 
