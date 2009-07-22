@@ -1,258 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756624AbZGVGgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752178AbZGVG70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756624AbZGVGgF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 02:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbZGVGgE
+	id S1752178AbZGVG70 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 02:59:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbZGVG70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 02:36:04 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:46488 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751696AbZGVGgC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 02:36:02 -0400
-Date: Wed, 22 Jul 2009 16:35:55 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for July 22
-Message-Id: <20090722163555.2b0a0941.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+	Wed, 22 Jul 2009 02:59:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38350 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751049AbZGVG7Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 02:59:25 -0400
+Date: Tue, 21 Jul 2009 23:59:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Neil Brown <neilb@suse.de>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, dm-devel@redhat.com
+Subject: Re: How to handle >16TB devices on 32 bit hosts ??
+Message-Id: <20090721235904.42e6cd35.akpm@linux-foundation.org>
+In-Reply-To: <19041.4714.686158.130252@notabene.brown>
+References: <19041.4714.686158.130252@notabene.brown>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__22_Jul_2009_16_35_55_+1000_p5.g2QRn14dSYLa="
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__22_Jul_2009_16_35_55_+1000_p5.g2QRn14dSYLa=
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, 18 Jul 2009 10:08:10 +1000 Neil Brown <neilb@suse.de> wrote:
 
-Hi all,
+>  It has recently come to by attention that Linux on a 32 bit host does
+>  not handle devices beyond 16TB particularly well.
+> 
+>  In particular, any access that goes through the page cache for the
+>  block device is limited to a pgoff_t number of pages.
+>  As pgoff_t is "unsigned long" and hence 32bit, and as page size is
+>  4096, this comes to 16TB total.
 
-Changes since 20090721:
+I expect that the VFS could be made to work with 64-bit pgoff_t fairly
+easily.  The generated code will be pretty damn sad.
 
-New tree: ext3 (also contains some jdb changes)
+radix-trees use a ulong index, so we would need a new
+lib/radix_tree64.c or some other means of fixing that up.
 
-This tree fails to build for powerpc allyesconfig (final link problem).
+The bigger problem is filesystems - they'll each need to be checked,
+tested, fixed and enabled.  It's probably not too bad for the
+mainstream filesystems which mostly bounce their operations into VFS
+libarary functions anyway.
 
-The net tree gained 2 conflicts against the wireless-current tree.
 
-----------------------------------------------------------------------------
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+There's perhaps a middle ground - support >16TB devices, but not >16TB
+partitions.  That way everything remains 32-bit and we just have to get
+the offsetting right (probably already the case).
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 134 trees (counting Linus' and 19 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/for-next
-Merging pxa/for-next
-Merging thumb-2/thumb-2
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-CONFLICT (content): Merge conflict in arch/mips/cavium-octeon/dma-octeon.c
-CONFLICT (add/add): Merge conflict in arch/mips/cavium-octeon/executive/cvm=
-x-helper-errata.c
-CONFLICT (content): Merge conflict in arch/mips/mm/tlbex.c
-CONFLICT (content): Merge conflict in arch/mips/sibyte/swarm/setup.c
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
-CONFLICT (add/add): Merge conflict in drivers/dma/txx9dmac.c
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging cifs/master
-Merging configfs/linux-next
-CONFLICT (content): Merge conflict in fs/configfs/dir.c
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl-rc6
-CONFLICT (content): Merge conflict in fs/reiserfs/journal.c
-CONFLICT (content): Merge conflict in fs/reiserfs/super.c
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-CONFLICT (content): Merge conflict in drivers/net/wireless/iwmc3200wifi/net=
-dev.c
-CONFLICT (content): Merge conflict in net/wireless/scan.c
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-Merging mmc/next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-$ git reset --hard HEAD^
-Merging refs/next/20090713/ttydev
-CONFLICT (content): Merge conflict in drivers/usb/serial/generic.c
-CONFLICT (content): Merge conflict in drivers/usb/serial/pl2303.c
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging edac-amd/for-next
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging hwlat/for-linus
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in drivers/oprofile/oprofile_stats.c
-CONFLICT (content): Merge conflict in include/linux/rcupdate.h
-Merging percpu/for-next
-CONFLICT (content): Merge conflict in arch/sh/kernel/vmlinux.lds.S
-CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/perf_counter.c
-CONFLICT (content): Merge conflict in drivers/cpufreq/cpufreq_ondemand.c
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging quilt/driver-core
-CONFLICT (content): Merge conflict in init/main.c
-Merging quilt/usb
-Merging quilt/staging
-Merging scsi-post-merge/master
-
---Signature=_Wed__22_Jul_2009_16_35_55_+1000_p5.g2QRn14dSYLa=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpms0sACgkQjjKRsyhoI8wxYQCguUOa6aEhlWtrPTGQ5XkP/tXO
-svgAnjJaDxgW9XJCO5FbH4t/tgReRkll
-=wjyS
------END PGP SIGNATURE-----
-
---Signature=_Wed__22_Jul_2009_16_35_55_+1000_p5.g2QRn14dSYLa=--
+So now /dev/sda1, /dev/sda2 etc are all <16TB.  The remaining problem
+is that /dev/sda is >16TB.  I expect that we could arrange for the
+kernel to error out if userspace tries to access /dev/sda beyond the
+16TB point, and those very very few applications which want to touch
+that part of the disk will need to be written using direct-io, (or
+perhaps sgio) or run on 64-bit machines.
