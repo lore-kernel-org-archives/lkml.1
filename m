@@ -1,474 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753881AbZGVRAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753037AbZGVRDF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753881AbZGVRAo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 13:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbZGVRAo
+	id S1753037AbZGVRDF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 13:03:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZGVRDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 13:00:44 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:61969 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752070AbZGVRAn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 13:00:43 -0400
-From: Nicolas Ferre <nicolas.ferre@atmel.com>
-To: dan.j.williams@intel.com, maciej.sosnowski@intel.com,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Cc: patrice.vilchez@atmel.com, linux-kernel@vger.kernel.org,
-       nicolas.ferre@atmel.com, haavard.skinnemoen@atmel.com
-Subject: [PATCH] dmaengine: at_hdmac: add DMA slave transfers
-Date: Wed, 22 Jul 2009 20:04:45 +0200
-Message-Id: <1248285885-1189-1-git-send-email-nicolas.ferre@atmel.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1246641873-21686-1-git-send-email-nicolas.ferre@atmel.com>
-References: <1246641873-21686-1-git-send-email-nicolas.ferre@atmel.com>
+	Wed, 22 Jul 2009 13:03:04 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54115 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752465AbZGVRDD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 13:03:03 -0400
+Subject: [PULL] perf counter patches
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 22 Jul 2009 19:04:00 +0200
+Message-Id: <1248282240.27058.1687.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch for at_hdmac adds the slave transfers capability to the Atmel DMA
-controller available on some AT91 SOCs. This allow peripheral to memory and
-memory to peripheral transfers with hardware handshaking.
+Linus,
 
-Slave structure for controller specific information is passed through channel
-private data. This at_dma_slave structure is defined in at_hdmac.h header file
-and relative hardware definition are moved to this file from at_hdmac_regs.h.
-Doing this we allow the channel configuration from platform definition code.
+Please pull these perf counter patches from:
 
-This work is intensively based on dw_dmac and several slave implementations.
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/peterz/linux-2.6-perf.git perf-counters-for-linus
 
-Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+Thanks,
+
+  Peter
+
 ---
-This patch needs the previous at_hdmac driver inclusion:
-"[PATCH 1/2 v3] dmaengine: at_hdmac: new driver for the Atmel AHB DMA Controller"
-http://lkml.org/lkml/2009/7/3/332
+Anton Blanchard (8):
+      perf_counter tools: Rename cache events to remove $
+      perf_counter: Make sure we dont leak kernel memory to userspace
+      perf_counter: Synthesize VDSO mmap event
+      perf_counter: Log vfork as a fork event
+      perf_counter: Add perf record option to log addresses
+      perf_counter: Make call graph option consistent
+      perf_counter: Improve perf stat and perf record option parsing
+      perf_counter: Fix throttle/unthrottle event logging
 
- arch/arm/mach-at91/include/mach/at_hdmac.h |   76 ++++++++++
- drivers/dma/at_hdmac.c                     |  208 +++++++++++++++++++++++++++-
- drivers/dma/at_hdmac_regs.h                |   49 +------
- 3 files changed, 290 insertions(+), 43 deletions(-)
+Arjan van de Ven (2):
+      perf: Fix stack data leak
+      perf: avoid structure size confusion by using a fixed size
 
-diff --git a/arch/arm/mach-at91/include/mach/at_hdmac.h b/arch/arm/mach-at91/include/mach/at_hdmac.h
-index 21a5554..187cb58 100644
---- a/arch/arm/mach-at91/include/mach/at_hdmac.h
-+++ b/arch/arm/mach-at91/include/mach/at_hdmac.h
-@@ -23,4 +23,80 @@ struct at_dma_platform_data {
- 	dma_cap_mask_t  cap_mask;
- };
- 
-+/**
-+ * enum at_dma_slave_width - DMA slave register access width.
-+ * @AT_DMA_SLAVE_WIDTH_8BIT: Do 8-bit slave register accesses
-+ * @AT_DMA_SLAVE_WIDTH_16BIT: Do 16-bit slave register accesses
-+ * @AT_DMA_SLAVE_WIDTH_32BIT: Do 32-bit slave register accesses
-+ */
-+enum at_dma_slave_width {
-+	AT_DMA_SLAVE_WIDTH_8BIT = 0,
-+	AT_DMA_SLAVE_WIDTH_16BIT,
-+	AT_DMA_SLAVE_WIDTH_32BIT,
-+};
-+
-+/**
-+ * struct at_dma_slave - Controller-specific information about a slave
-+ * @dma_dev: required DMA master device
-+ * @tx_reg: physical address of data register used for
-+ *	memory-to-peripheral transfers
-+ * @rx_reg: physical address of data register used for
-+ *	peripheral-to-memory transfers
-+ * @reg_width: peripheral register width
-+ * @cfg: Platform-specific initializer for the CFG register
-+ * @ctrla: Platform-specific initializer for the CTRLA register
-+ */
-+struct at_dma_slave {
-+	struct device		*dma_dev;
-+	dma_addr_t		tx_reg;
-+	dma_addr_t		rx_reg;
-+	enum at_dma_slave_width	reg_width;
-+	u32			cfg;
-+	u32			ctrla;
-+};
-+
-+
-+/* Platform-configurable bits in CFG */
-+#define	ATC_SRC_PER(h)		(0xFU & (h))	/* Channel src rq associated with periph handshaking ifc h */
-+#define	ATC_DST_PER(h)		((0xFU & (h)) <<  4)	/* Channel dst rq associated with periph handshaking ifc h */
-+#define	ATC_SRC_REP		(0x1 <<  8)	/* Source Replay Mod */
-+#define	ATC_SRC_H2SEL		(0x1 <<  9)	/* Source Handshaking Mod */
-+#define		ATC_SRC_H2SEL_SW	(0x0 <<  9)
-+#define		ATC_SRC_H2SEL_HW	(0x1 <<  9)
-+#define	ATC_DST_REP		(0x1 << 12)	/* Destination Replay Mod */
-+#define	ATC_DST_H2SEL		(0x1 << 13)	/* Destination Handshaking Mod */
-+#define		ATC_DST_H2SEL_SW	(0x0 << 13)
-+#define		ATC_DST_H2SEL_HW	(0x1 << 13)
-+#define	ATC_SOD			(0x1 << 16)	/* Stop On Done */
-+#define	ATC_LOCK_IF		(0x1 << 20)	/* Interface Lock */
-+#define	ATC_LOCK_B		(0x1 << 21)	/* AHB Bus Lock */
-+#define	ATC_LOCK_IF_L		(0x1 << 22)	/* Master Interface Arbiter Lock */
-+#define		ATC_LOCK_IF_L_CHUNK	(0x0 << 22)
-+#define		ATC_LOCK_IF_L_BUFFER	(0x1 << 22)
-+#define	ATC_AHB_PROT_MASK	(0x7 << 24)	/* AHB Protection */
-+#define	ATC_FIFOCFG_MASK	(0x3 << 28)	/* FIFO Request Configuration */
-+#define		ATC_FIFOCFG_LARGESTBURST	(0x0 << 28)
-+#define		ATC_FIFOCFG_HALFFIFO		(0x1 << 28)
-+#define		ATC_FIFOCFG_ENOUGHSPACE		(0x2 << 28)
-+
-+/* Platform-configurable bits in CTRLA */
-+#define	ATC_SCSIZE_MASK		(0x7 << 16)	/* Source Chunk Transfer Size */
-+#define		ATC_SCSIZE_1		(0x0 << 16)
-+#define		ATC_SCSIZE_4		(0x1 << 16)
-+#define		ATC_SCSIZE_8		(0x2 << 16)
-+#define		ATC_SCSIZE_16		(0x3 << 16)
-+#define		ATC_SCSIZE_32		(0x4 << 16)
-+#define		ATC_SCSIZE_64		(0x5 << 16)
-+#define		ATC_SCSIZE_128		(0x6 << 16)
-+#define		ATC_SCSIZE_256		(0x7 << 16)
-+#define	ATC_DCSIZE_MASK		(0x7 << 20)	/* Destination Chunk Transfer Size */
-+#define		ATC_DCSIZE_1		(0x0 << 20)
-+#define		ATC_DCSIZE_4		(0x1 << 20)
-+#define		ATC_DCSIZE_8		(0x2 << 20)
-+#define		ATC_DCSIZE_16		(0x3 << 20)
-+#define		ATC_DCSIZE_32		(0x4 << 20)
-+#define		ATC_DCSIZE_64		(0x5 << 20)
-+#define		ATC_DCSIZE_128		(0x6 << 20)
-+#define		ATC_DCSIZE_256		(0x7 << 20)
-+
- #endif /* AT_HDMAC_H */
-diff --git a/drivers/dma/at_hdmac.c b/drivers/dma/at_hdmac.c
-index 9a4abf1..4435c82 100644
---- a/drivers/dma/at_hdmac.c
-+++ b/drivers/dma/at_hdmac.c
-@@ -608,6 +608,187 @@ err_desc_get:
- 	return NULL;
- }
- 
-+
-+/**
-+ * atc_prep_slave_sg - prepare descriptors for a DMA_SLAVE transaction
-+ * @chan: DMA channel
-+ * @sgl: scatterlist to transfer to/from
-+ * @sg_len: number of entries in @scatterlist
-+ * @direction: DMA direction
-+ * @flags: tx descriptor status flags
-+ */
-+static struct dma_async_tx_descriptor *
-+atc_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
-+		unsigned int sg_len, enum dma_data_direction direction,
-+		unsigned long flags)
-+{
-+	struct at_dma_chan	*atchan = to_at_dma_chan(chan);
-+	struct at_dma_slave	*atslave = chan->private;
-+	struct at_desc		*first = NULL;
-+	struct at_desc		*prev = NULL;
-+	u32			ctrla;
-+	u32			ctrlb;
-+	dma_addr_t		reg;
-+	unsigned int		reg_width;
-+	unsigned int		mem_width;
-+	unsigned int		i;
-+	struct scatterlist	*sg;
-+	size_t			total_len = 0;
-+
-+	dev_vdbg(chan2dev(chan), "prep_slave_sg: %s f0x%lx\n",
-+			direction == DMA_TO_DEVICE ? "TO DEVICE" : "FROM DEVICE",
-+			flags);
-+
-+	if (unlikely(!atslave || !sg_len)) {
-+		dev_dbg(chan2dev(chan), "prep_dma_memcpy: length is zero!\n");
-+		return NULL;
-+	}
-+
-+	reg_width = atslave->reg_width;
-+
-+	sg_len = dma_map_sg(chan2parent(chan), sgl, sg_len, direction);
-+
-+	ctrla = ATC_DEFAULT_CTRLA | atslave->ctrla;
-+	ctrlb = ATC_DEFAULT_CTRLB | ATC_IEN;
-+
-+	switch (direction) {
-+	case DMA_TO_DEVICE:
-+		ctrla |=  ATC_DST_WIDTH(reg_width);
-+		ctrlb |=  ATC_DST_ADDR_MODE_FIXED
-+			| ATC_SRC_ADDR_MODE_INCR
-+			| ATC_FC_MEM2PER;
-+		reg = atslave->tx_reg;
-+		for_each_sg(sgl, sg, sg_len, i) {
-+			struct at_desc	*desc;
-+			u32		len;
-+			u32		mem;
-+
-+			desc = atc_desc_get(atchan);
-+			if (!desc)
-+				goto err_desc_get;
-+
-+			mem = sg_phys(sg);
-+			len = sg_dma_len(sg);
-+			mem_width = 2;
-+			if (unlikely(mem & 3 || len & 3))
-+				mem_width = 0;
-+
-+			desc->lli.saddr = mem;
-+			desc->lli.daddr = reg;
-+			desc->lli.ctrla = ctrla
-+					| ATC_SRC_WIDTH(mem_width)
-+					| len >> mem_width;
-+			desc->lli.ctrlb = ctrlb;
-+
-+			if (!first) {
-+				first = desc;
-+			} else {
-+				/* inform the HW lli about chaining */
-+				prev->lli.dscr = desc->txd.phys;
-+				/* insert the link descriptor to the LD ring */
-+				list_add_tail(&desc->desc_node,
-+						&first->txd.tx_list);
-+			}
-+			prev = desc;
-+			total_len += len;
-+		}
-+		break;
-+	case DMA_FROM_DEVICE:
-+		ctrla |=  ATC_SRC_WIDTH(reg_width);
-+		ctrlb |=  ATC_DST_ADDR_MODE_INCR
-+			| ATC_SRC_ADDR_MODE_FIXED
-+			| ATC_FC_PER2MEM;
-+
-+		reg = atslave->rx_reg;
-+		for_each_sg(sgl, sg, sg_len, i) {
-+			struct at_desc	*desc;
-+			u32		len;
-+			u32		mem;
-+
-+			desc = atc_desc_get(atchan);
-+			if (!desc)
-+				goto err_desc_get;
-+
-+			mem = sg_phys(sg);
-+			len = sg_dma_len(sg);
-+			mem_width = 2;
-+			if (unlikely(mem & 3 || len & 3))
-+				mem_width = 0;
-+
-+			desc->lli.saddr = reg;
-+			desc->lli.daddr = mem;
-+			desc->lli.ctrla = ctrla
-+					| ATC_DST_WIDTH(mem_width)
-+					| len >> mem_width;
-+			desc->lli.ctrlb = ctrlb;
-+
-+			if (!first) {
-+				first = desc;
-+			} else {
-+				/* inform the HW lli about chaining */
-+				prev->lli.dscr = desc->txd.phys;
-+				/* insert the link descriptor to the LD ring */
-+				list_add_tail(&desc->desc_node,
-+						&first->txd.tx_list);
-+			}
-+			prev = desc;
-+			total_len += len;
-+		}
-+		break;
-+	default:
-+		return NULL;
-+	}
-+
-+	/* set end-of-link to the last link descriptor of list*/
-+	set_desc_eol(prev);
-+
-+	/* First descriptor of the chain embedds additional information */
-+	first->txd.cookie = -EBUSY;
-+	first->len = total_len;
-+
-+	/* last link descriptor of list is responsible of flags */
-+	prev->txd.flags = flags; /* client is in control of this ack */
-+
-+	return &first->txd;
-+
-+err_desc_get:
-+	dev_err(chan2dev(chan), "not enough descriptors available\n");
-+	atc_desc_put(atchan, first);
-+	return NULL;
-+}
-+
-+static void atc_terminate_all(struct dma_chan *chan)
-+{
-+	struct at_dma_chan	*atchan = to_at_dma_chan(chan);
-+	struct at_dma		*atdma = to_at_dma(chan->device);
-+	struct at_desc		*desc, *_desc;
-+	LIST_HEAD(list);
-+
-+	/*
-+	 * This is only called when something went wrong elsewhere, so
-+	 * we don't really care about the data. Just disable the
-+	 * channel. We still have to poll the channel enable bit due
-+	 * to AHB/HSB limitations.
-+	 */
-+	spin_lock_bh(&atchan->lock);
-+
-+	dma_writel(atdma, CHDR, atchan->mask);
-+
-+	/* confirm that this channel is disabled */
-+	while (dma_readl(atdma, CHSR) & atchan->mask)
-+		cpu_relax();
-+
-+	/* active_list entries will end up before queued entries */
-+	list_splice_init(&atchan->queue, &list);
-+	list_splice_init(&atchan->active_list, &list);
-+
-+	spin_unlock_bh(&atchan->lock);
-+
-+	/* Flush all pending and queued descriptors */
-+	list_for_each_entry_safe(desc, _desc, &list, desc_node)
-+		atc_chain_complete(atchan, desc);
-+}
-+
- /**
-  * atc_is_tx_complete - poll for transaction completion
-  * @chan: DMA channel
-@@ -686,7 +867,9 @@ static int atc_alloc_chan_resources(struct dma_chan *chan)
- 	struct at_dma_chan	*atchan = to_at_dma_chan(chan);
- 	struct at_dma		*atdma = to_at_dma(chan->device);
- 	struct at_desc		*desc;
-+	struct at_dma_slave	*atslave;
- 	int			i;
-+	u32			cfg;
- 	LIST_HEAD(tmp_list);
- 
- 	dev_vdbg(chan2dev(chan), "alloc_chan_resources\n");
-@@ -697,7 +880,23 @@ static int atc_alloc_chan_resources(struct dma_chan *chan)
- 		return -EIO;
- 	}
- 
--	/* have we already been set up? */
-+	cfg = ATC_DEFAULT_CFG;
-+
-+	atslave = chan->private;
-+	if (atslave) {
-+		/*
-+		 * We need controller-specific data to set up slave
-+		 * transfers.
-+		 */
-+		BUG_ON(!atslave->dma_dev || atslave->dma_dev != atdma->dma_common.dev);
-+
-+		/* if cfg configuration specified take it instad of default */
-+		if (atslave->cfg)
-+			cfg = atslave->cfg;
-+	}
-+
-+	/* have we already been set up?
-+	 * reconfigure channel but no need to reallocate descriptors */
- 	if (!list_empty(&atchan->free_list))
- 		return atchan->descs_allocated;
- 
-@@ -719,7 +918,7 @@ static int atc_alloc_chan_resources(struct dma_chan *chan)
- 	spin_unlock_bh(&atchan->lock);
- 
- 	/* channel parameters */
--	channel_writel(atchan, CFG, ATC_DEFAULT_CFG);
-+	channel_writel(atchan, CFG, cfg);
- 
- 	dev_dbg(chan2dev(chan),
- 		"alloc_chan_resources: allocated %d descriptors\n",
-@@ -888,6 +1087,11 @@ static int __init at_dma_probe(struct platform_device *pdev)
- 	if (dma_has_cap(DMA_MEMCPY, atdma->dma_common.cap_mask))
- 		atdma->dma_common.device_prep_dma_memcpy = atc_prep_dma_memcpy;
- 
-+	if (dma_has_cap(DMA_SLAVE, atdma->dma_common.cap_mask)) {
-+		atdma->dma_common.device_prep_slave_sg = atc_prep_slave_sg;
-+		atdma->dma_common.device_terminate_all = atc_terminate_all;
-+	}
-+
- 	dma_writel(atdma, EN, AT_DMA_ENABLE);
- 
- 	dev_info(&pdev->dev, "Atmel AHB DMA Controller ( %s%s), %d channels\n",
-diff --git a/drivers/dma/at_hdmac_regs.h b/drivers/dma/at_hdmac_regs.h
-index ad2d4f4..4c972af 100644
---- a/drivers/dma/at_hdmac_regs.h
-+++ b/drivers/dma/at_hdmac_regs.h
-@@ -87,29 +87,14 @@
- /* Bitfields in CTRLA */
- #define	ATC_BTSIZE_MAX		0xFFFFUL	/* Maximum Buffer Transfer Size */
- #define	ATC_BTSIZE(x)		(ATC_BTSIZE_MAX & (x)) /* Buffer Transfer Size */
--#define	ATC_SCSIZE_MASK		(0x7 << 16)	/* Source Chunk Transfer Size */
--#define		ATC_SCSIZE_1		(0x0 << 16)
--#define		ATC_SCSIZE_4		(0x1 << 16)
--#define		ATC_SCSIZE_8		(0x2 << 16)
--#define		ATC_SCSIZE_16		(0x3 << 16)
--#define		ATC_SCSIZE_32		(0x4 << 16)
--#define		ATC_SCSIZE_64		(0x5 << 16)
--#define		ATC_SCSIZE_128		(0x6 << 16)
--#define		ATC_SCSIZE_256		(0x7 << 16)
--#define	ATC_DCSIZE_MASK		(0x7 << 20)	/* Destination Chunk Transfer Size */
--#define		ATC_DCSIZE_1		(0x0 << 20)
--#define		ATC_DCSIZE_4		(0x1 << 20)
--#define		ATC_DCSIZE_8		(0x2 << 20)
--#define		ATC_DCSIZE_16		(0x3 << 20)
--#define		ATC_DCSIZE_32		(0x4 << 20)
--#define		ATC_DCSIZE_64		(0x5 << 20)
--#define		ATC_DCSIZE_128		(0x6 << 20)
--#define		ATC_DCSIZE_256		(0x7 << 20)
-+/* Chunck Tranfer size definitions are in at_hdmac.h */
- #define	ATC_SRC_WIDTH_MASK	(0x3 << 24)	/* Source Single Transfer Size */
-+#define		ATC_SRC_WIDTH(x)	((x) << 24)
- #define		ATC_SRC_WIDTH_BYTE	(0x0 << 24)
- #define		ATC_SRC_WIDTH_HALFWORD	(0x1 << 24)
- #define		ATC_SRC_WIDTH_WORD	(0x2 << 24)
- #define	ATC_DST_WIDTH_MASK	(0x3 << 28)	/* Destination Single Transfer Size */
-+#define		ATC_DST_WIDTH(x)	((x) << 28)
- #define		ATC_DST_WIDTH_BYTE	(0x0 << 28)
- #define		ATC_DST_WIDTH_HALFWORD	(0x1 << 28)
- #define		ATC_DST_WIDTH_WORD	(0x2 << 28)
-@@ -129,7 +114,8 @@
- #define		ATC_FC_PER2PER		(0x3 << 21)	/* Periph-to-Periph (DMA) */
- #define		ATC_FC_PER2MEM_PER	(0x4 << 21)	/* Periph-to-Mem (Peripheral) */
- #define		ATC_FC_MEM2PER_PER	(0x5 << 21)	/* Mem-to-Periph (Peripheral) */
--#define		ATC_FC_PER2PER_PER	(0x6 << 21)	/* Periph-to-Periph (Src Peripheral) */
-+#define		ATC_FC_PER2PER_SRCPER	(0x6 << 21)	/* Periph-to-Periph (Src Peripheral) */
-+#define		ATC_FC_PER2PER_DSTPER	(0x7 << 21)	/* Periph-to-Periph (Dst Peripheral) */
- #define	ATC_SRC_ADDR_MODE_MASK	(0x3 << 24)
- #define		ATC_SRC_ADDR_MODE_INCR	(0x0 << 24)	/* Incrementing Mode */
- #define		ATC_SRC_ADDR_MODE_DECR	(0x1 << 24)	/* Decrementing Mode */
-@@ -142,27 +128,7 @@
- #define	ATC_AUTO		(0x1 << 31)	/* Auto multiple buffer tx enable */
- 
- /* Bitfields in CFG */
--#define	ATC_SRC_PER(h)		(0xFU & (h))	/* Channel src rq associated with periph handshaking ifc h */
--#define	ATC_DST_PER(h)		((0xFU & (h)) <<  4)	/* Channel dst rq associated with periph handshaking ifc h */
--#define	ATC_SRC_REP		(0x1 <<  8)	/* Source Replay Mod */
--#define	ATC_SRC_H2SEL		(0x1 <<  9)	/* Source Handshaking Mod */
--#define		ATC_SRC_H2SEL_SW	(0x0 <<  9)
--#define		ATC_SRC_H2SEL_HW	(0x1 <<  9)
--#define	ATC_DST_REP		(0x1 << 12)	/* Destination Replay Mod */
--#define	ATC_DST_H2SEL		(0x1 << 13)	/* Destination Handshaking Mod */
--#define		ATC_DST_H2SEL_SW	(0x0 << 13)
--#define		ATC_DST_H2SEL_HW	(0x1 << 13)
--#define	ATC_SOD			(0x1 << 16)	/* Stop On Done */
--#define	ATC_LOCK_IF		(0x1 << 20)	/* Interface Lock */
--#define	ATC_LOCK_B		(0x1 << 21)	/* AHB Bus Lock */
--#define	ATC_LOCK_IF_L		(0x1 << 22)	/* Master Interface Arbiter Lock */
--#define		ATC_LOCK_IF_L_CHUNK	(0x0 << 22)
--#define		ATC_LOCK_IF_L_BUFFER	(0x1 << 22)
--#define	ATC_AHB_PROT_MASK	(0x7 << 24)	/* AHB Protection */
--#define	ATC_FIFOCFG_MASK	(0x3 << 28)	/* FIFO Request Configuration */
--#define		ATC_FIFOCFG_LARGESTBURST	(0x0 << 28)
--#define		ATC_FIFOCFG_HALFFIFO		(0x1 << 28)
--#define		ATC_FIFOCFG_ENOUGHSPACE		(0x2 << 28)
-+/* are in at_hdmac.h */
- 
- /* Bitfields in SPIP */
- #define	ATC_SPIP_HOLE(x)	(0xFFFFU & (x))
-@@ -316,11 +282,12 @@ static void vdbg_dump_regs(struct at_dma_chan *atchan)
- 		dma_readl(atdma, CHSR));
- 
- 	dev_err(chan2dev(&atchan->chan_common),
--		"  channel: s0x%x d0x%x ctrl0x%x:0x%x l0x%x\n",
-+		"  channel: s0x%x d0x%x ctrl0x%x:0x%x cfg0x%x l0x%x\n",
- 		channel_readl(atchan, SADDR),
- 		channel_readl(atchan, DADDR),
- 		channel_readl(atchan, CTRLA),
- 		channel_readl(atchan, CTRLB),
-+		channel_readl(atchan, CFG),
- 		channel_readl(atchan, DSCR));
- }
- #else
--- 
-1.5.3.7
+Arnaldo Carvalho de Melo (7):
+      perf report: Adjust column width to the values sampled
+      perf report: Tidy up reporting of symbols not found
+      strlist: Introduce strlist__entry and strlist__nr_entries methods
+      perf report: Make the output more compact
+      perf_counter tools: PLT info is stripped in -debuginfo packages
+      perf report: Introduce -n/--show-nr-samples
+      perf symbol: C++ demangling
+
+Chris Wilson (1):
+      perf_counter: Fix the tracepoint channel to perfcounters
+
+Daniel Qarras (1):
+      perf_counter, x86: Extend perf_counter Pentium M support
+
+Jason Baron (2):
+      perf_counter: Add tracepoint support to perf list, perf stat
+      perf_counter: Detect debugfs location
+
+Mike Galbraith (2):
+      perf_counter tools: Fix vmlinux symbol generation breakage
+      perf_counter tools: Give perf top inherit option
+
+Peter Zijlstra (6):
+      perf_counter: Fix up P6 PMU details
+      perf_counter: Clean up global vs counter enable
+      perf_counter: Stop open coding unclone_ctx
+      perf_counter: Remove unused variables
+      perf_counter: Plug more stack leaks
+      perf_counter: PERF_SAMPLE_ID and inherited counters
+
+Roel Kluin (1):
+      perf_counter tools: Fix index boundary check
+
+Vince Weaver (1):
+      perf_counter: Add P6 PMU support
+
+ arch/x86/kernel/cpu/perf_counter.c       |  253 +++++++++++++++++++++++++++---
+ include/linux/perf_counter.h             |   15 +--
+ init/Kconfig                             |    2 +-
+ kernel/fork.c                            |    9 +-
+ kernel/perf_counter.c                    |  186 +++++++++++-----------
+ tools/perf/Documentation/perf-report.txt |   15 ++
+ tools/perf/Makefile                      |    2 +-
+ tools/perf/builtin-annotate.c            |   24 ---
+ tools/perf/builtin-record.c              |   13 ++-
+ tools/perf/builtin-report.c              |  255 +++++++++++++++++++++---------
+ tools/perf/builtin-stat.c                |    3 +-
+ tools/perf/builtin-top.c                 |    6 +-
+ tools/perf/perf.c                        |   77 +++++++++-
+ tools/perf/perf.h                        |    8 +-
+ tools/perf/util/cache.h                  |    1 +
+ tools/perf/util/header.h                 |    2 +-
+ tools/perf/util/include/linux/kernel.h   |    8 +
+ tools/perf/util/parse-events.c           |  182 +++++++++++++++++++++-
+ tools/perf/util/parse-events.h           |    5 +
+ tools/perf/util/string.h                 |    3 +
+ tools/perf/util/strlist.c                |   20 ++-
+ tools/perf/util/strlist.h                |   11 +-
+ tools/perf/util/symbol.c                 |  145 +++++++++++-------
+ tools/perf/util/symbol.h                 |    1 +
+ tools/perf/util/util.h                   |    2 +
+ 25 files changed, 949 insertions(+), 299 deletions(-)
 
