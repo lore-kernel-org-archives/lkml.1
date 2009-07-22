@@ -1,74 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755297AbZGVN0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbZGVN10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755297AbZGVN0Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 09:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbZGVN0Z
+	id S1754892AbZGVN10 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 09:27:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbZGVN1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 09:26:25 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:44001 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752472AbZGVN0Y convert rfc822-to-8bit (ORCPT
+	Wed, 22 Jul 2009 09:27:25 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:54858 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752276AbZGVN1Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 09:26:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Dksu+lzGOayNFOM9q8EoP/ARJh3SsFqLmtMxY1xR2o5/Rc0PiwmPQGe3O2L534YNn+
-         j9iEYDORnqf2j7HOXDzcql9O42Bcy5uXllsKU8hEw0sb3Ea9EBt+dwTSSmkBrUiYdTb7
-         HIRq1Hk8FEa4yo8wOzFeRHFT2uFjlX5FdTs1M=
+	Wed, 22 Jul 2009 09:27:25 -0400
+X-Sasl-enc: vCpC/0dyqwa8BwEpMjnksBVkLwBooVjTH9xwrZsM9YOo 1248269244
+Date: Wed, 22 Jul 2009 10:27:21 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Krzysztof Oledzki <olel@ans.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Troy Moure <twmoure@szypr.net>, Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
+       lwn@lwn.net, Ian Lance Taylor <iant@google.com>
+Subject: Re: Linux 2.6.27.27
+Message-ID: <20090722132721.GA7390@khazad-dum.debian.net>
+References: <alpine.LFD.2.01.0907200848530.13838@localhost.localdomain>
+ <alpine.LNX.1.10.0907202341580.29729@bizon.gios.gov.pl>
+ <alpine.LFD.2.01.0907201504470.19335@localhost.localdomain>
+ <alpine.LNX.1.10.0907210831210.29729@bizon.gios.gov.pl>
+ <alpine.LNX.1.10.0907211154480.29729@bizon.gios.gov.pl>
+ <alpine.LFD.2.01.0907210906400.19335@localhost.localdomain>
+ <alpine.LFD.2.01.0907211133010.19335@localhost.localdomain>
+ <alpine.LFD.2.00.0907212211040.4630@troy-laptop>
+ <alpine.LFD.2.01.0907211726140.19335@localhost.localdomain>
+ <alpine.LNX.1.10.0907221340540.26357@bizon.gios.gov.pl>
 MIME-Version: 1.0
-In-Reply-To: <4A645FCE.5030506@suse.de>
-References: <7a7c22420907142137o4253dfb5gcd72176cd6a38beb@mail.gmail.com>
-	 <7a7c22420907142326t3b8d4f5fqaf3813cb456186ec@mail.gmail.com>
-	 <7a7c22420907150803v4f4ae9dn9eff41b5d5a7edf6@mail.gmail.com>
-	 <1247670563.4236.16.camel@mulgrave.site> <4A645FCE.5030506@suse.de>
-Date: Wed, 22 Jul 2009 18:56:22 +0530
-Message-ID: <7a7c22420907220626t11f510b7q835add0d5b7ecc94@mail.gmail.com>
-Subject: Re: SCSI command (SP-OUT) failing on SLES 9 32-bit
-From: rohan a <info1686@gmail.com>
-To: Hannes Reinecke <hare@suse.de>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.1.10.0907221340540.26357@bizon.gios.gov.pl>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-       Thanks for a reply.
-I have 2 SLES 9 32-bit machines, on one I am using an FC HBA card and
-another a SCSI HBA card to connect LTO-4 standalone drives and drive
-based encryption is not working in both cases.
+On Wed, 22 Jul 2009, Krzysztof Oledzki wrote:
+> BTW: here is a simple testcase for this bug:
+> 
+> --- fno-strict-overflow-fixed-bug.c ---
+> #include <stdio.h>
+> 
+> int main() {
+> 
+>         unsigned char i;
+> 
+>         for (i = 0; i < 128; i++)
+>                 printf("loop %u\n", i);
+> 
+>         return 0;
+> }
+> --- cut here ---
+> 
+> The code should be compiled with:
+>  cc -o fno-strict-overflow-fixed-bug -Os -fno-strict-overflow fno-strict-overflow-fixed-bug.c
+> or:
+>  cc -o fno-strict-overflow-fixed-bug -O2 -fno-strict-overflow fno-strict-overflow-fixed-bug.c
+> 
+> This bug does not exist with -O1 or if the loop is controlled by "i
+> < 127" or "i < 129".
 
-Thanks
+Thank you.
 
-On Mon, Jul 20, 2009 at 5:45 PM, Hannes Reinecke<hare@suse.de> wrote:
-> James Bottomley wrote:
->> On Wed, 2009-07-15 at 20:33 +0530, rohan a wrote:
->>> Hi guys,
->>>
->>> Any suggestions...please help
->>
->> I know of no kernel bug that could be causing this.  The SLES9 kernel is
->> just too old though for me to remember clearly.  I'd suggest you file a
->> support incident with SUSE ... they'll debug and fix this on the older
->> kernels; we really only deal with the new kernel and one or two back
->> revisions here on linux-scsi.
->>
-> You did that on purpose.
-> The 'they' is actually me :-(
->
-> Actually, there already _is_ a bug, so no need to open another one.
-> Which HBA are you using?
->
-> Cheers,
->
-> Hannes
-> --
-> Dr. Hannes Reinecke                   zSeries & Storage
-> hare@suse.de                          +49 911 74053 688
-> SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
-> GF: Markus Rex, HRB 16746 (AG Nürnberg)
->
+Debian stable,   ia32, gcc 4.2.4-6:    BUG
+Debian stable,   ia32, gcc 4.3.2-1.1:  no bug (default)
+
+Debian unstable, ia32, gcc 4.2.4-6:    BUG
+Debian unstable, ia32, gcc 4.3.3-14:   no bug (default)
+
+Someone else already tested gcc 4.4.0, as no bug.
+
+I will file bugs against Debian gcc-4.2...
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
