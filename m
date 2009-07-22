@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbZGVKUL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbZGVKSa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423AbZGVKUL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 06:20:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbZGVKTx
+	id S1755388AbZGVKSa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 06:18:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754587AbZGVKS3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 06:19:53 -0400
-Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:40236 "EHLO
+	Wed, 22 Jul 2009 06:18:29 -0400
+Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:57001 "EHLO
 	smtp161.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754039AbZGVKKc (ORCPT
+	with ESMTP id S1754195AbZGVKKk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 06:10:32 -0400
+	Wed, 22 Jul 2009 06:10:40 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -19,10 +19,11 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        "H. Peter Anvin" <hpa@zytor.com>,
        Alexander Viro <viro@zeniv.linux.org.uk>,
        Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: [RFC v17][PATCH 56/60] c/r: clone_with_pids: define the s390 syscall
-Date: Wed, 22 Jul 2009 06:00:18 -0400
-Message-Id: <1248256822-23416-57-git-send-email-orenl@librato.com>
+       Alexey Dobriyan <adobriyan@gmail.com>, Oren Laadan <orenl@librato.com>,
+       Oren Laadan <orenl@cs.columbia.edu>
+Subject: [RFC v17][PATCH 18/60] c/r: create syscalls: sys_checkpoint, sys_restart
+Date: Wed, 22 Jul 2009 05:59:40 -0400
+Message-Id: <1248256822-23416-19-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1248256822-23416-1-git-send-email-orenl@librato.com>
 References: <1248256822-23416-1-git-send-email-orenl@librato.com>
@@ -30,141 +31,221 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Serge E. Hallyn <serue@us.ibm.com>
+Create trivial sys_checkpoint and sys_restore system calls. They will
+enable to checkpoint and restart an entire container, to and from a
+checkpoint image file descriptor.
 
-Hook up the clone_with_pids system call for s390x.  clone_with_pids()
-takes an additional argument over clone(), which we pass in through
-register 7.  Stub code for using the syscall looks like:
+The syscalls take a pid, a file descriptor (for the image file) and
+flags as arguments. The pid identifies the top-most (root) task in the
+process tree, e.g. the container init: for sys_checkpoint the first
+argument identifies the pid of the target container/subtree; for
+sys_restart it will identify the pid of restarting root task.
 
-struct target_pid_set {
-        int num_pids;
-        pid_t *target_pids;
-        unsigned long flags;
-};
+A checkpoint, much like a process coredump, dumps the state of multiple
+processes at once, including the state of the container. The checkpoint
+image is written to (and read from) the file descriptor directly from
+the kernel. This way the data is generated and then pushed out naturally
+as resources and tasks are scanned to save their state. This is the
+approach taken by, e.g., Zap and OpenVZ.
 
-    register unsigned long int __r2 asm ("2") = (unsigned long int)(stack);
-    register unsigned long int __r3 asm ("3") = (unsigned long int)(flags);
-    register unsigned long int __r4 asm ("4") = (unsigned long int)(NULL);
-    register unsigned long int __r5 asm ("5") = (unsigned long int)(NULL);
-    register unsigned long int __r6 asm ("6") = (unsigned long int)(NULL);
-    register unsigned long int __r7 asm ("7") = (unsigned long int)(setp);
-    register unsigned long int __result asm ("2");
-    __asm__ __volatile__(
-            " lghi %%r1,332\n"
-            " svc 0\n"
-            : "=d" (__result)
-            : "0" (__r2), "d" (__r3),
-              "d" (__r4), "d" (__r5), "d" (__r6), "d" (__r7)
-            : "1", "cc", "memory"
-    );
-            __result;
-    })
+By using a return value and not a file descriptor, we can distinguish
+between a return from checkpoint, a return from restart (in case of a
+checkpoint that includes self, i.e. a task checkpointing its own
+container, or itself), and an error condition, in a manner analogous
+to a fork() call.
 
-    struct target_pid_set pid_set;
-    int pids[1] = { 19799 };
-    pid_set.num_pids = 1;
-    pid_set.target_pids = &pids[0];
-    pid_set.flags = 0;
+We don't use copy_from_user()/copy_to_user() because it requires
+holding the entire image in user space, and does not make sense for
+restart.  Also, we don't use a pipe, pseudo-fs file and the like,
+because they work by generating data on demand as the user pulls it
+(unless the entire image is buffered in the kernel) and would require
+more complex logic.  They also would significantly complicate
+checkpoint that includes self.
 
-    rc = do_clone_with_pids(topstack, clone_flags, setp);
-    if (rc == 0)
-	printf("Child\n");
-    else if (rc > 0)
-	printf("Parent: child pid %d\n", rc);
-    else
-	printf("Error %d\n", rc);
+Changelog[v17]:
+  - Move checkpoint closer to namespaces (kconfig)
+  - Kill "Enable" in c/r config option
+Changelog[v16]:
+  - Change sys_restart() first argument to be 'pid_t pid'
+Changelog[v14]:
+  - Change CONFIG_CHEKCPOINT_RESTART to CONFIG_CHECKPOINT (Ingo)
+  - Remove line 'def_bool n' (default is already 'n')
+  - Add CHECKPOINT_SUPPORT in Kconfig (Nathan Lynch)
+Changelog[v5]:
+  - Config is 'def_bool n' by default
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
 ---
- arch/s390/include/asm/unistd.h  |    3 ++-
- arch/s390/kernel/compat_linux.c |   19 +++++++++++++++++++
- arch/s390/kernel/process.c      |   19 +++++++++++++++++++
- arch/s390/kernel/syscalls.S     |    1 +
- 4 files changed, 41 insertions(+), 1 deletions(-)
+ arch/x86/Kconfig                   |    4 +++
+ arch/x86/include/asm/unistd_32.h   |    2 +
+ arch/x86/kernel/syscall_table_32.S |    2 +
+ checkpoint/Kconfig                 |   14 ++++++++++++
+ checkpoint/Makefile                |    5 ++++
+ checkpoint/sys.c                   |   41 ++++++++++++++++++++++++++++++++++++
+ include/linux/syscalls.h           |    2 +
+ init/Kconfig                       |    2 +
+ kernel/sys_ni.c                    |    4 +++
+ 9 files changed, 76 insertions(+), 0 deletions(-)
+ create mode 100644 checkpoint/Kconfig
+ create mode 100644 checkpoint/Makefile
+ create mode 100644 checkpoint/sys.c
 
-diff --git a/arch/s390/include/asm/unistd.h b/arch/s390/include/asm/unistd.h
-index 5d1678a..2a84f9c 100644
---- a/arch/s390/include/asm/unistd.h
-+++ b/arch/s390/include/asm/unistd.h
-@@ -271,7 +271,8 @@
- #define __NR_perf_counter_open	331
- #define __NR_checkpoint		332
- #define __NR_restart		333
--#define NR_syscalls 334
-+#define __NR_clone_with_pids	334
-+#define NR_syscalls 335
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 738bdc6..97ec17c 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -85,6 +85,10 @@ config STACKTRACE_SUPPORT
+ config HAVE_LATENCYTOP_SUPPORT
+ 	def_bool y
  
- /* 
-  * There are some system calls that are not present on 64 bit, some
-diff --git a/arch/s390/kernel/compat_linux.c b/arch/s390/kernel/compat_linux.c
-index 9ab188d..c6dc681 100644
---- a/arch/s390/kernel/compat_linux.c
-+++ b/arch/s390/kernel/compat_linux.c
-@@ -818,6 +818,25 @@ asmlinkage long sys32_clone(void)
- 		       parent_tidptr, child_tidptr);
- }
- 
-+asmlinkage long sys32_clone_with_pids(void)
-+{
-+	struct pt_regs *regs = task_pt_regs(current);
-+	unsigned long clone_flags;
-+	unsigned long newsp;
-+	int __user *parent_tidptr, *child_tidptr;
-+	void __user *upid_setp;
++config CHECKPOINT_SUPPORT
++	bool
++	default y if X86_32
 +
-+	clone_flags = regs->gprs[3] & 0xffffffffUL;
-+	newsp = regs->orig_gpr2 & 0x7fffffffUL;
-+	parent_tidptr = compat_ptr(regs->gprs[4]);
-+	child_tidptr = compat_ptr(regs->gprs[5]);
-+	upid_setp = compat_ptr(regs->gprs[7]);
-+	if (!newsp)
-+		newsp = regs->gprs[15];
-+	return do_fork_with_pids(clone_flags, newsp, regs, 0,
-+		       parent_tidptr, child_tidptr, upid_setp);
+ config FAST_CMPXCHG_LOCAL
+ 	bool
+ 	default y
+diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32.h
+index f65b750..c25971b 100644
+--- a/arch/x86/include/asm/unistd_32.h
++++ b/arch/x86/include/asm/unistd_32.h
+@@ -343,6 +343,8 @@
+ #define __NR_rt_tgsigqueueinfo	335
+ #define __NR_perf_counter_open	336
+ #define __NR_clone_with_pids	337
++#define __NR_checkpoint		338
++#define __NR_restart		339
+ 
+ #ifdef __KERNEL__
+ 
+diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
+index 879e5ec..4741554 100644
+--- a/arch/x86/kernel/syscall_table_32.S
++++ b/arch/x86/kernel/syscall_table_32.S
+@@ -337,3 +337,5 @@ ENTRY(sys_call_table)
+ 	.long sys_rt_tgsigqueueinfo	/* 335 */
+ 	.long sys_perf_counter_open
+ 	.long ptregs_clone_with_pids
++	.long sys_checkpoint
++	.long sys_restart
+diff --git a/checkpoint/Kconfig b/checkpoint/Kconfig
+new file mode 100644
+index 0000000..ef7d406
+--- /dev/null
++++ b/checkpoint/Kconfig
+@@ -0,0 +1,14 @@
++# Architectures should define CHECKPOINT_SUPPORT when they have
++# implemented the hooks for processor state etc. needed by the
++# core checkpoint/restart code.
++
++config CHECKPOINT
++	bool "Checkpoint/restart (EXPERIMENTAL)"
++	depends on CHECKPOINT_SUPPORT && EXPERIMENTAL
++	help
++	  Application checkpoint/restart is the ability to save the
++	  state of a running application so that it can later resume
++	  its execution from the time at which it was checkpointed.
++
++	  Turning this option on will enable checkpoint and restart
++	  functionality in the kernel.
+diff --git a/checkpoint/Makefile b/checkpoint/Makefile
+new file mode 100644
+index 0000000..8a32c6f
+--- /dev/null
++++ b/checkpoint/Makefile
+@@ -0,0 +1,5 @@
++#
++# Makefile for linux checkpoint/restart.
++#
++
++obj-$(CONFIG_CHECKPOINT) += sys.o
+diff --git a/checkpoint/sys.c b/checkpoint/sys.c
+new file mode 100644
+index 0000000..50c3cd8
+--- /dev/null
++++ b/checkpoint/sys.c
+@@ -0,0 +1,41 @@
++/*
++ *  Generic container checkpoint-restart
++ *
++ *  Copyright (C) 2008 Oren Laadan
++ *
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License.  See the file COPYING in the main directory of the Linux
++ *  distribution for more details.
++ */
++
++#include <linux/sched.h>
++#include <linux/kernel.h>
++#include <linux/syscalls.h>
++
++/**
++ * sys_checkpoint - checkpoint a container
++ * @pid: pid of the container init(1) process
++ * @fd: file to which dump the checkpoint image
++ * @flags: checkpoint operation flags
++ *
++ * Returns positive identifier on success, 0 when returning from restart
++ * or negative value on error
++ */
++SYSCALL_DEFINE3(checkpoint, pid_t, pid, int, fd, unsigned long, flags)
++{
++	return -ENOSYS;
 +}
 +
- /*
-  * 31 bit emulation wrapper functions for sys_fadvise64/fadvise64_64.
-  * These need to rewrite the advise values for POSIX_FADV_{DONTNEED,NOREUSE}
-diff --git a/arch/s390/kernel/process.c b/arch/s390/kernel/process.c
-index 5a43f27..263d3ab 100644
---- a/arch/s390/kernel/process.c
-+++ b/arch/s390/kernel/process.c
-@@ -247,6 +247,25 @@ SYSCALL_DEFINE0(clone)
- 		       parent_tidptr, child_tidptr);
- }
- 
-+SYSCALL_DEFINE0(clone_with_pids)
++/**
++ * sys_restart - restart a container
++ * @pid: pid of task root (in coordinator's namespace), or 0
++ * @fd: file from which read the checkpoint image
++ * @flags: restart operation flags
++ *
++ * Returns negative value on error, or otherwise returns in the realm
++ * of the original checkpoint
++ */
++SYSCALL_DEFINE3(restart, pid_t, pid, int, fd, unsigned long, flags)
 +{
-+	struct pt_regs *regs = task_pt_regs(current);
-+	unsigned long clone_flags;
-+	unsigned long newsp;
-+	int __user *parent_tidptr, *child_tidptr;
-+	void __user *upid_setp;
-+
-+	clone_flags = regs->gprs[3];
-+	newsp = regs->orig_gpr2;
-+	parent_tidptr = (int __user *) regs->gprs[4];
-+	child_tidptr = (int __user *) regs->gprs[5];
-+	upid_setp = (void __user *) regs->gprs[7];
-+	if (!newsp)
-+		newsp = regs->gprs[15];
-+	return do_fork_with_pids(clone_flags, newsp, regs, 0, parent_tidptr,
-+			child_tidptr, upid_setp);
++	return -ENOSYS;
 +}
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 80de700..33bce6e 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -754,6 +754,8 @@ asmlinkage long sys_pselect6(int, fd_set __user *, fd_set __user *,
+ asmlinkage long sys_ppoll(struct pollfd __user *, unsigned int,
+ 			  struct timespec __user *, const sigset_t __user *,
+ 			  size_t);
++asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags);
++asmlinkage long sys_restart(pid_t pid, int fd, unsigned long flags);
+ 
+ int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
+ 
+diff --git a/init/Kconfig b/init/Kconfig
+index 7503957..a083161 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -715,6 +715,8 @@ config NET_NS
+ 	  Allow user space to create what appear to be multiple instances
+ 	  of the network stack.
+ 
++source "checkpoint/Kconfig"
 +
- /*
-  * This is trivial, and on the face of it looks like it
-  * could equally well be done in user mode.
-diff --git a/arch/s390/kernel/syscalls.S b/arch/s390/kernel/syscalls.S
-index 67518e2..db850e7 100644
---- a/arch/s390/kernel/syscalls.S
-+++ b/arch/s390/kernel/syscalls.S
-@@ -342,3 +342,4 @@ SYSCALL(sys_rt_tgsigqueueinfo,sys_rt_tgsigqueueinfo,compat_sys_rt_tgsigqueueinfo
- SYSCALL(sys_perf_counter_open,sys_perf_counter_open,sys_perf_counter_open_wrapper)
- SYSCALL(sys_checkpoint,sys_checkpoint,sys_checkpoint_wrapper)
- SYSCALL(sys_restart,sys_restart,sys_restore_wrapper)
-+SYSCALL(sys_clone_with_pids,sys_clone_with_pids,sys_clone_with_pids_wrapper)
+ config BLK_DEV_INITRD
+ 	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
+ 	depends on BROKEN || !FRV
+diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
+index 68320f6..32f3f26 100644
+--- a/kernel/sys_ni.c
++++ b/kernel/sys_ni.c
+@@ -178,3 +178,7 @@ cond_syscall(sys_eventfd2);
+ 
+ /* performance counters: */
+ cond_syscall(sys_perf_counter_open);
++
++/* checkpoint/restart */
++cond_syscall(sys_checkpoint);
++cond_syscall(sys_restart);
 -- 
 1.6.0.4
 
