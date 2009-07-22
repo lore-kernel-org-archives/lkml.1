@@ -1,102 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753645AbZGVSV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbZGVSYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753645AbZGVSV1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 14:21:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZGVSV1
+	id S1753867AbZGVSYv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 14:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbZGVSYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 14:21:27 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:44365 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752944AbZGVSV0 (ORCPT
+	Wed, 22 Jul 2009 14:24:51 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60302
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753386AbZGVSYu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 14:21:26 -0400
-Date: Wed, 22 Jul 2009 14:21:26 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Daniel Mack <daniel@caiaq.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: [PATCH] [usb-serial] fix Ooops on uplug
-In-Reply-To: <20090722171707.5fa39803@lxorguk.ukuu.org.uk>
-Message-ID: <Pine.LNX.4.44L0.0907221352340.3918-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 22 Jul 2009 14:24:50 -0400
+Date: Wed, 22 Jul 2009 11:24:56 -0700 (PDT)
+Message-Id: <20090722.112456.150910386.davem@davemloft.net>
+To: avictor.za@gmail.com
+Cc: u.kleine-koenig@pengutronix.de, linux-kernel@vger.kernel.org,
+       dbrownell@users.sourceforge.net, netdev@vger.kernel.org,
+       paulius.zaleckas@teltonika.lt, marc.pignat@hevs.ch, linux@maxim.org.za,
+       12o3l@tiscali.nl, akpm@linux-foundation.org, gregkh@suse.de
+Subject: Re: [PATCH] register at91_ether using platform_driver_probe
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <cd73a99e0907221046k5e435fd3m3cb1fd006c0385a7@mail.gmail.com>
+References: <200907111527.46441.david-b@pacbell.net>
+	<1248207099-14583-1-git-send-email-u.kleine-koenig@pengutronix.de>
+	<cd73a99e0907221046k5e435fd3m3cb1fd006c0385a7@mail.gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Jul 2009, Alan Cox wrote:
+From: Andrew Victor <avictor.za@gmail.com>
+Date: Wed, 22 Jul 2009 19:46:24 +0200
 
-> > >           free resources
-> > >           wake any pending openers
-> >
-> > Where exactly is the code that wakes the other openers?
->
-> tty_port_close_end wakes port->open_wait
+> hi,
 > 
-> if another opener was blocked during the hangup they then exit
-> tty_blocked_until_ready and error
-
-Hmmm.  serial_open() doesn't call tty_port_block_til_ready() until just 
-before it returns.  Shouldn't it do this before locking port->mutex and 
-incrementing port->port.count?
-
-In fact, should usb-serial.c be touching port->port.count at all?  Is 
-it reserved for use by the tty core?
-
-> > There's an obvious race here between hangup and close.  The assignment 
-> > of hung_up_tty_fops to filp->f_op is protected by the BKL and not much 
-> > else.  Does the code in tty_release_dev() check to see whether this 
-> > assignment has been made before calling tty->ops->close()?  It doesn't 
-> > like like it to me.  With the wrong timing, you could end up telling 
-> > the device driver to stop the uart twice.
+>> at91ether_probe lives in .init.text, so using platform_driver_register
+>> to register it is wrong because binding a device after the init memory
+>> is discarded (e.g. via sysfs) results in an oops.
+>>
+>> As requested by David Brownell platform_driver_probe is used instead of
+>> moving the probe function to .devinit.text as proposed initially.
+>> This saves some memory, but devices registered after the driver is
+>> probed are not bound (probably there are none) and binding via sysfs
+>> isn't possible.
 > 
-> The core hangup and close code are interlocked (now - didn't use to be).
-
-But are they interlocked enough?
-
-> > > The tty notion of "open" is really open->hangup or open->close. Once the
-> > > hangup occurs you may have a file handle to a tty object but it doesn't
-> > > talk to hardware.
-> > 
-> > But it still talks to the device driver via tty_release_dev's call to 
-> > tty->ops->close.  How is the driver supposed to know that this method 
-> > call shouldn't talk to the hardware?
 > 
-> tty_hung_up_p() will be true
+> Acked-by: Andrew Victor <linux@maxim.org.za>
 
-With no synchronization.  So there's still a race.
-
-Why doesn't tty_release_dev() test tty_hung_up_p() before calling
-tty->ops->close() instead of making the driver do it?
-
-> > In fact, what point is there in making the call at all?  Once the 
-> > hangup has occurred, the driver shouldn't do _anything_ when the 
-> > corresponding release happens.  As you say, the notion is open->hangup 
-> > or open->close, not open->(hangup followed by close).
-> 
-> Beats me - not something I designed. However the driver would always need
-> to be aware of it because the following can occur
-> 
-> 			CPU1			CPU2
-> 			close begins
-> 						hangup
-> 						update ops
-> 			close handler runs
-> 
-> The tty_port code handles that internally, but has to handle it anyway.
-
-This is the race I have been talking about.
-
-> There are similar issues with all the other calls if they are pending and
-> I've not even begun to tackle them yet as they are basically
-> inconveniences only. Also because I'm still hoping someone will implement
-> revoke() on Linux and do all the hard work for me.
-
-:-)
-
-Alan Stern
-
-
-
+Applied, thanks everyone.
