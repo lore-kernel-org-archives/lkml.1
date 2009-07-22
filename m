@@ -1,90 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbZGVNcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbZGVNfS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755520AbZGVNcu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 09:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755440AbZGVNcu
+	id S1753906AbZGVNfS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 09:35:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbZGVNfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 09:32:50 -0400
-Received: from nox.protox.org ([88.191.38.29]:42949 "EHLO nox.protox.org"
+	Wed, 22 Jul 2009 09:35:17 -0400
+Received: from mga01.intel.com ([192.55.52.88]:24890 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755410AbZGVNct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 09:32:49 -0400
-Subject: Re: TTM page pool allocator
-From: Jerome Glisse <glisse@freedesktop.org>
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Cc: Thomas =?ISO-8859-1?Q?Hellstr=F6m?= <thomas@shipmail.org>,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-In-Reply-To: <1248268607.4703.450.camel@thor>
-References: <1245931298.13359.8.camel@localhost.localdomain>
-	 <4A439D7D.9030401@shipmail.org>  <1248197676.2368.11.camel@localhost>
-	 <1248199231.2368.17.camel@localhost>  <1248204128.2368.20.camel@localhost>
-	 <1248268607.4703.450.camel@thor>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 22 Jul 2009 15:31:30 +0200
-Message-Id: <1248269490.2336.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
-Content-Transfer-Encoding: 8bit
+	id S1752833AbZGVNfQ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 09:35:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,247,1246863600"; 
+   d="scan'208";a="477032194"
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+CC: "Williams, Dan J" <dan.j.williams@intel.com>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "avictor.za@gmail.com" <avictor.za@gmail.com>,
+       "patrice.vilchez@atmel.com" <patrice.vilchez@atmel.com>
+Date: Wed, 22 Jul 2009 14:35:06 +0100
+Subject: RE: [PATCH 1/2 v3] dmaengine: at_hdmac: new driver for the Atmel
+ AHB 	DMA Controller
+Thread-Topic: [PATCH 1/2 v3] dmaengine: at_hdmac: new driver for the Atmel
+ AHB 	DMA Controller
+Thread-Index: AcoJ3iePonWDKRNUQU6muKrjWbMDmgA7X5oQ
+Message-ID: <129600E5E5FB004392DDC3FB599660D7AF6D5C9A@irsmsx504.ger.corp.intel.com>
+References: <1246012936-10812-1-git-send-email-nicolas.ferre@atmel.com>
+	 <1246641873-21686-1-git-send-email-nicolas.ferre@atmel.com>
+ <e9c3a7c20907180901u3670a8edy2bc5c1b5cf911ab4@mail.gmail.com>
+ <4A657D58.2060708@atmel.com>
+In-Reply-To: <4A657D58.2060708@atmel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-22 at 15:16 +0200, Michel Dänzer wrote:
-> On Tue, 2009-07-21 at 21:22 +0200, Jerome Glisse wrote:
-> > On Tue, 2009-07-21 at 20:00 +0200, Jerome Glisse wrote:
-> > > On Tue, 2009-07-21 at 19:34 +0200, Jerome Glisse wrote:
-> > > > On Thu, 2009-06-25 at 17:53 +0200, Thomas Hellström wrote:
-> > > > > 
-> > > > > 4) We could now skip the ttm_tt_populate() in ttm_tt_set_caching, since 
-> > > > > it will always allocate cached pages and then transition them.
-> > > > > 
-> > > > 
-> > > > Okay 4) is bad, what happens (my brain is a bit meltdown so i might be
-> > > > wrong) :
-> > > > 1 - bo get allocated tt->state = unpopulated
-> > > > 2 - bo is mapped few page are faulted tt->state = unpopulated
-> > > > 3 - bo is cache transitioned but tt->state == unpopulated but
-> > > >     they are page which have been touch by the cpu so we need
-> > > >     to clflush them and transition them, this never happen if
-> > > >     we don't call ttm_tt_populate and proceed with the remaining
-> > > >     of the cache transitioning functions
-> > > > 
-> > > > As a workaround i will try to go through the pages tables and
-> > > > transition existing pages. Do you have any idea for a better
-> > > > plan ?
-> > > > 
-> > > > Cheers,
-> > > > Jerome
-> > > 
-> > > My workaround ruin the whole idea of pool allocation what happens
-> > > is that most bo get cache transition page per page. My thinking
-> > > is that we should do the following:
-> > > 	- is there is a least one page allocated then fully populate
-> > > 	the object and do cache transition on all the pages.
-> > > 	- otherwise update caching_state and leaves object unpopulated
-> > > 
-> > > This needs that we some how reflect the fact that there is at least
-> > > one page allocated, i am thinking to adding a new state for that :
-> > > ttm_partialy_populated
-> > > 
-> > > Thomas what do you think about that ?
-> > > 
-> > > Cheers,
-> > > Jerome
-> > 
-> > Attached updated patch it doesn't introduce ttm_partialy_populated
-> > but keep the populate call in cache transition. So far it seems to
-> > work properly on AGP platform
+Nicolas Ferre wrote:
+> Dan Williams :
+>> On Fri, Jul 3, 2009 at 10:24 AM, Nicolas Ferre<nicolas.ferre@atmel.com> wrote:
+>>> This AHB DMA Controller (aka HDMA or DMAC on AT91 systems) is availlable on
+>>> at91sam9rl chip. It will be used on other products in the future.
+>>> 
+>>> This first release covers only the memory-to-memory tranfer type. This is the
+>>> only tranfer type supported by this chip.  On other products, it will be used
+>>> also for peripheral DMA transfer (slave API support to come).
+>>> 
+>>> I used dmatest client without problem in different configurations to test it.
+>>> 
+>>> Full documentation for this controller can be found in the SAM9RL datasheet:
+>>> http://www.atmel.com/dyn/products/product_card.asp?part_id=4243
+>>> 
+>>> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com> ---
+>>> v2 is here:
+>>> http://lkml.org/lkml/2009/6/26/104
+>>> 
+>>> v2 -> v3:
+>>>  - initial number of descriptors to allocate for each channel raised to 64 and   is now a
+>>> parameter 
+>>>  - ack-bit in descriptor flag comment synchronized with TXx9 dma driver
+>>>  - atc_desc_get() when short on descriptors in pool: create one at a time
+>>>  - allocation flag changed to GFP_ATOMIC in atc_desc_get()
+>>>  - call to proper funtion while unmapping: use of new
+>>>   DMA_COMPL_{SRC,DEST}_UNMAP_SINGLE flags
+>>>  - call dma_run_dependencies() at the end of atc_chain_complete()
+>>> 
+>> 
+>> Looks good, but now I belatedly wonder if that GFP_ATOMIC should be
+>> GFP_NOWAIT instead?  Do we really want to consume from the system
+>> emergency pools for these allocations (a similar fix is need for
+>> ioatdma and fsldma)?
 > 
-> Yeah, this one works for me as well.
+> Seems sensible indeed but I know little about allocation flags.
 > 
-> > and helps quite a lot with performances.
-> 
-> Can't say I've noticed that however. How did you measure?
+> What do you think about including the driver and then building a patch
+> that fixes this flag in all allocation functions at a time.
+> It may add exposure to this modification and maybe encourage people to
+> react...
 
-gears & quake3 but i haven't yet done any X 2d benchmark,
-2d is dead slow with kms at leat this is the feeling i have.
+I think it's a good plan.
+I will prepare similar patch on allocation flags for ioatdma.
 
-Cheers,
-Jerome
+For this v3 patch:
 
+Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
+
+Regards,
+Maciej
