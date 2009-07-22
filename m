@@ -1,89 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbZGVVW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753776AbZGVV3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754161AbZGVVW1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 17:22:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753712AbZGVVW0
+	id S1753776AbZGVV3p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 17:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbZGVV3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 17:22:26 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37623 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752434AbZGVVWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 17:22:24 -0400
-Date: Wed, 22 Jul 2009 21:21:55 GMT
-From: tip-bot for Bruno Premont <bonbons@linux-vserver.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, bonbons@linux-vserver.org, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, bonbons@linux-vserver.org,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de
-In-Reply-To: <20090722222232.2eb3e1c4@neptune.home>
-References: <20090722222232.2eb3e1c4@neptune.home>
-Subject: [tip:irq/urgent] genirq: Fix UP compile failure caused by irq_thread_check_affinity
-Message-ID: <tip-61f3826133dc07142935fb5712fc738e19eb5575@git.kernel.org>
-Git-Commit-ID: 61f3826133dc07142935fb5712fc738e19eb5575
-X-Mailer: tip-git-log-daemon
+	Wed, 22 Jul 2009 17:29:44 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:56516 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752908AbZGVV3n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 17:29:43 -0400
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo\@redhat.com" <mingo@redhat.com>,
+       "hpa\@zytor.com" <hpa@zytor.com>,
+       "tglx\@linutronix.de" <tglx@linutronix.de>,
+       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
+       Yinghai Lu <yinghai@kernel.org>
+References: <tip-e25371d60cb06a44d7a32d7966ab9bfbeacb9390@git.kernel.org>
+	<4A676E89.9010606@goop.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 22 Jul 2009 14:29:33 -0700
+In-Reply-To: <4A676E89.9010606@goop.org> (Jeremy Fitzhardinge's message of "Wed\, 22 Jul 2009 12\:54\:49 -0700")
+Message-ID: <m1hbx4mmo2.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 22 Jul 2009 21:21:56 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: jeremy@goop.org, yinghai@kernel.org, Jeremy.Fitzhardinge@citrix.com, tglx@linutronix.de, hpa@zytor.com, mingo@redhat.com, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: *****;Jeremy Fitzhardinge <jeremy@goop.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 TR_Symld_Words too many words that have symbols inside
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 T_TooManySym_04 7+ unique symbols in subject
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  0.0 T_TooManySym_03 6+ unique symbols in subject
+	*  8.0 XMSpecificSbj Contains a known spam subject
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.0 T_TooManySym_02 5+ unique symbols in subject
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [tip:x86/apic] x86/ioapic.c: unify ioapic_retrigger_irq()
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  61f3826133dc07142935fb5712fc738e19eb5575
-Gitweb:     http://git.kernel.org/tip/61f3826133dc07142935fb5712fc738e19eb5575
-Author:     Bruno Premont <bonbons@linux-vserver.org>
-AuthorDate: Wed, 22 Jul 2009 22:22:32 +0200
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Wed, 22 Jul 2009 23:18:46 +0200
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-genirq: Fix UP compile failure caused by irq_thread_check_affinity
+> On 07/18/09 05:05, tip-bot for Jeremy Fitzhardinge wrote:
+>> Commit-ID:  e25371d60cb06a44d7a32d7966ab9bfbeacb9390
+>> Gitweb:     http://git.kernel.org/tip/e25371d60cb06a44d7a32d7966ab9bfbeacb9390
+>> Author:     Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+>> AuthorDate: Mon, 8 Jun 2009 03:49:01 -0700
+>> Committer:  Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+>> CommitDate: Tue, 14 Jul 2009 13:32:51 -0700
+>>
+>> x86/ioapic.c: unify ioapic_retrigger_irq()
+>>
+>> The 32 and 64-bit versions of ioapic_retrigger_irq() are identical
+>> except the 64-bit one takes vector_lock.  vector_lock is defined and
+>> used on 32-bit too, so just use a common ioapic_retrigger_irq().
+>>   
+>
+> Having another look at this patch, the other difference is that the
+> 32-bit version just does:
+>
+>     apic->send_IPI_self(irq_cfg(irq)->vector);
+>
+> whereas the 64-bit does:
+>
+>     apic->send_IPI_mask(cpumask_of(cpumask_first(cfg->domain)),
+>     cfg->vector);
+>
+>
+> Does 32-bit do the whole vector domain thing now?  Are these actually
+> equivalent?  Sending to self seems like it should be more efficient.
 
-Since genirq: Delegate irq affinity setting to the irq thread
-(591d2fb02ea80472d846c0b8507007806bdd69cc) compilation with
-CONFIG_SMP=n fails with following error:
+It should.  I believe YH did that work when he merged the x86_64 and
+i386 versions io_apic.c.  Sending to self is a problem if we retrigger
+this from the wrong irq.
 
-/usr/src/linux-2.6/kernel/irq/manage.c:
-   In function 'irq_thread_check_affinity':
-/usr/src/linux-2.6/kernel/irq/manage.c:475:
-   error: 'struct irq_desc' has no member named 'affinity'
-make[4]: *** [kernel/irq/manage.o] Error 1
-
-That commit adds a new function irq_thread_check_affinity() which
-uses struct irq_desc.affinity which is only available for CONFIG_SMP=y.
-Move that function under #ifdef CONFIG_SMP.
-
-[ tglx@brownpaperbag: compile and boot tested on UP and SMP ]
-
-Signed-off-by: Bruno Premont <bonbons@linux-vserver.org>
-LKML-Reference: <20090722222232.2eb3e1c4@neptune.home>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-
----
- kernel/irq/manage.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index f0de36f..61c679d 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -451,6 +451,7 @@ static int irq_wait_for_interrupt(struct irqaction *action)
- 	return -1;
- }
- 
-+#ifdef CONFIG_SMP
- /*
-  * Check whether we need to change the affinity of the interrupt thread.
-  */
-@@ -478,6 +479,10 @@ irq_thread_check_affinity(struct irq_desc *desc, struct irqaction *action)
- 	set_cpus_allowed_ptr(current, mask);
- 	free_cpumask_var(mask);
- }
-+#else
-+static inline void
-+irq_thread_check_affinity(struct irq_desc *desc, struct irqaction *action) { }
-+#endif
- 
- /*
-  * Interrupt handler thread
+Eric
