@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbZGVTru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754680AbZGVTuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754529AbZGVTru (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 15:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754500AbZGVTrr
+	id S1754680AbZGVTuB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 15:50:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbZGVTt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 15:47:47 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:48722 "EHLO
+	Wed, 22 Jul 2009 15:49:58 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:48716 "EHLO
 	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754401AbZGVTrh (ORCPT
+	with ESMTP id S1754437AbZGVTrj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 15:47:37 -0400
+	Wed, 22 Jul 2009 15:47:39 -0400
 From: Sage Weil <sage@newdream.net>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Sage Weil <sage@newdream.net>
-Subject: [PATCH 10/19] ceph: OSD client
-Date: Wed, 22 Jul 2009 12:51:44 -0700
-Message-Id: <1248292313-31326-11-git-send-email-sage@newdream.net>
+Subject: [PATCH 15/19] ceph: messenger library
+Date: Wed, 22 Jul 2009 12:51:49 -0700
+Message-Id: <1248292313-31326-16-git-send-email-sage@newdream.net>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1248292313-31326-10-git-send-email-sage@newdream.net>
+In-Reply-To: <1248292313-31326-15-git-send-email-sage@newdream.net>
 References: <1248292313-31326-1-git-send-email-sage@newdream.net>
  <1248292313-31326-2-git-send-email-sage@newdream.net>
  <1248292313-31326-3-git-send-email-sage@newdream.net>
@@ -28,1968 +28,2804 @@ References: <1248292313-31326-1-git-send-email-sage@newdream.net>
  <1248292313-31326-8-git-send-email-sage@newdream.net>
  <1248292313-31326-9-git-send-email-sage@newdream.net>
  <1248292313-31326-10-git-send-email-sage@newdream.net>
+ <1248292313-31326-11-git-send-email-sage@newdream.net>
+ <1248292313-31326-12-git-send-email-sage@newdream.net>
+ <1248292313-31326-13-git-send-email-sage@newdream.net>
+ <1248292313-31326-14-git-send-email-sage@newdream.net>
+ <1248292313-31326-15-git-send-email-sage@newdream.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The OSD client is responsible for reading and writing data from/to the
-object storage pool.  This includes determining where objects are
-stored in the cluster, and ensuring that requests are retried or
-redirected in the event of a node failure or data migration.
+A generic message passing library is used to communicate with all
+other components in the Ceph file system.  The messenger library
+provides ordered, reliable delivery of messages between two nodes in
+the system, or notifies the higher layer when it is unable to do so.
 
-If an OSD does not respond before a timeout expires, keepalive
-messages are sent across the lossless, ordered communications channel
-to ensure that any break in the TCP is discovered.  If the session
-does reset, a reconnection is attempted and affected requests are
-resent (by the message transport layer).
+This implementation is based on TCP.
 
 Signed-off-by: Sage Weil <sage@newdream.net>
 ---
- fs/ceph/osd_client.c | 1008 ++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/ceph/osd_client.h |  125 +++++++
- fs/ceph/osdmap.c     |  697 ++++++++++++++++++++++++++++++++++
- fs/ceph/osdmap.h     |   83 ++++
- 4 files changed, 1913 insertions(+), 0 deletions(-)
- create mode 100644 fs/ceph/osd_client.c
- create mode 100644 fs/ceph/osd_client.h
- create mode 100644 fs/ceph/osdmap.c
- create mode 100644 fs/ceph/osdmap.h
+ fs/ceph/decode.h    |  136 +++
+ fs/ceph/messenger.c | 2367 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ fs/ceph/messenger.h |  253 ++++++
+ 3 files changed, 2756 insertions(+), 0 deletions(-)
+ create mode 100644 fs/ceph/decode.h
+ create mode 100644 fs/ceph/messenger.c
+ create mode 100644 fs/ceph/messenger.h
 
-diff --git a/fs/ceph/osd_client.c b/fs/ceph/osd_client.c
+diff --git a/fs/ceph/decode.h b/fs/ceph/decode.h
 new file mode 100644
-index 0000000..4986701
+index 0000000..fc2769d
 --- /dev/null
-+++ b/fs/ceph/osd_client.c
-@@ -0,0 +1,1008 @@
-+#include <linux/err.h>
++++ b/fs/ceph/decode.h
+@@ -0,0 +1,136 @@
++#ifndef __CEPH_DECODE_H
++#define __CEPH_DECODE_H
++
++#include <asm/unaligned.h>
++
++/*
++ * in all cases,
++ *   void **p     pointer to position pointer
++ *   void *end    pointer to end of buffer (last byte + 1)
++ */
++
++/*
++ * bounds check input.
++ */
++#define ceph_decode_need(p, end, n, bad)		\
++	do {						\
++		if (unlikely(*(p) + (n) > (end))) 	\
++			goto bad;			\
++	} while (0)
++
++#define ceph_decode_64(p, v)					\
++	do {							\
++		v = get_unaligned_le64(*(p));			\
++		*(p) += sizeof(u64);				\
++	} while (0)
++#define ceph_decode_32(p, v)					\
++	do {							\
++		v = get_unaligned_le32(*(p));			\
++		*(p) += sizeof(u32);				\
++	} while (0)
++#define ceph_decode_16(p, v)					\
++	do {							\
++		v = get_unaligned_le16(*(p));			\
++		*(p) += sizeof(u16);				\
++	} while (0)
++#define ceph_decode_8(p, v)				\
++	do {						\
++		v = *(u8 *)*(p);			\
++		(*p)++;					\
++	} while (0)
++
++#define ceph_decode_copy(p, pv, n)			\
++	do {						\
++		memcpy(pv, *(p), n);			\
++		*(p) += n;				\
++	} while (0)
++
++/* bounds check too */
++#define ceph_decode_64_safe(p, end, v, bad)			\
++	do {							\
++		ceph_decode_need(p, end, sizeof(u64), bad);	\
++		ceph_decode_64(p, v);				\
++	} while (0)
++#define ceph_decode_32_safe(p, end, v, bad)			\
++	do {							\
++		ceph_decode_need(p, end, sizeof(u32), bad);	\
++		ceph_decode_32(p, v);				\
++	} while (0)
++#define ceph_decode_16_safe(p, end, v, bad)			\
++	do {							\
++		ceph_decode_need(p, end, sizeof(u16), bad);	\
++		ceph_decode_16(p, v);				\
++	} while (0)
++
++#define ceph_decode_copy_safe(p, end, pv, n, bad)		\
++	do {							\
++		ceph_decode_need(p, end, n, bad);		\
++		ceph_decode_copy(p, pv, n);			\
++	} while (0)
++
++/*
++ * struct ceph_timespec <-> struct timespec
++ */
++#define ceph_decode_timespec(ts, tv)					\
++	do {								\
++		(ts)->tv_sec = le32_to_cpu((tv)->tv_sec);		\
++		(ts)->tv_nsec = le32_to_cpu((tv)->tv_nsec);		\
++	} while (0)
++#define ceph_encode_timespec(tv, ts)				\
++	do {							\
++		(tv)->tv_sec = cpu_to_le32((ts)->tv_sec);	\
++		(tv)->tv_nsec = cpu_to_le32((ts)->tv_nsec);	\
++	} while (0)
++
++
++/*
++ * encoders
++ */
++#define ceph_encode_64(p, v)						\
++	do {								\
++		put_unaligned_le64(v, (__le64 *)*(p));			\
++		*(p) += sizeof(u64);					\
++	} while (0)
++#define ceph_encode_32(p, v)					\
++	do {							\
++		put_unaligned_le32(v, (__le32 *)*(p));		\
++		*(p) += sizeof(u32);				\
++	} while (0)
++#define ceph_encode_16(p, v)					\
++	do {							\
++		put_unaligned_le16(v), (__le16 *)*(p));		\
++	*(p) += sizeof(u16);					\
++	} while (0)
++#define ceph_encode_8(p, v)			  \
++	do {					  \
++		*(u8 *)*(p) = v;		  \
++		(*(p))++;			  \
++	} while (0)
++
++/*
++ * filepath, string encoders
++ */
++static inline void ceph_encode_filepath(void **p, void *end,
++					u64 ino, const char *path)
++{
++	u32 len = path ? strlen(path) : 0;
++	BUG_ON(*p + sizeof(ino) + sizeof(len) + len > end);
++	ceph_encode_64(p, ino);
++	ceph_encode_32(p, len);
++	if (len)
++		memcpy(*p, path, len);
++	*p += len;
++}
++
++static inline void ceph_encode_string(void **p, void *end,
++				      const char *s, u32 len)
++{
++	BUG_ON(*p + sizeof(len) + len > end);
++	ceph_encode_32(p, len);
++	if (len)
++		memcpy(*p, s, len);
++	*p += len;
++}
++
++
++#endif
+diff --git a/fs/ceph/messenger.c b/fs/ceph/messenger.c
+new file mode 100644
+index 0000000..a9d7145
+--- /dev/null
++++ b/fs/ceph/messenger.c
+@@ -0,0 +1,2367 @@
++#include <linux/crc32c.h>
++#include <linux/kthread.h>
++#include <linux/socket.h>
++#include <linux/net.h>
++#include <linux/string.h>
 +#include <linux/highmem.h>
-+#include <linux/mm.h>
-+#include <linux/pagemap.h>
-+#include <linux/slab.h>
-+#include <linux/uaccess.h>
++#include <linux/ctype.h>
++#include <net/tcp.h>
 +
 +#include "ceph_debug.h"
 +#include "super.h"
-+#include "osd_client.h"
 +#include "messenger.h"
-+#include "crush/mapper.h"
-+#include "decode.h"
 +
 +/*
-+ * Implement client access to distributed object storage cluster.
++ * Ceph uses the messenger to exchange ceph_msg messages with other
++ * hosts in the system.  The messenger provides ordered and reliable
++ * delivery.  It tolerates TCP disconnects by reconnecting (with
++ * exponential backoff) in the case of a fault (disconnection, bad
++ * crc, protocol error).  Acks allow sent messages to be discarded by
++ * the sender.
 + *
-+ * All data objects are stored within a cluster/cloud of OSDs, or
-+ * "object storage devices."  (Note that Ceph OSDs have _nothing_ to
-+ * do with the T10 OSD extensions to SCSI.)  Ceph OSDs are simply
-+ * remote daemons serving up and coordinating consistent and safe
-+ * access to storage.
++ * The network topology is flat: there is no "client" or "server," and
++ * any node can initiate a connection (i.e., send messages) to any
++ * other node.  There is a fair bit of complexity to handle the
++ * "connection race" case where two nodes are simultaneously
++ * connecting to each other so that the end result is a single
++ * session.
 + *
-+ * Cluster membership and the mapping of data objects onto storage devices
-+ * are described by the osd map.
-+ *
-+ * We keep track of pending OSD requests (read, write), resubmit
-+ * requests to different OSDs when the cluster topology/data layout
-+ * change, or retry the affected requests when the communications
-+ * channel with an OSD is reset.
++ * The messenger can also send messages in "lossy" mode, where there
++ * is no error recovery or connect retry... the message is just
++ * dropped if something goes wrong.
 + */
 +
++
++/* static tag bytes (protocol control messages) */
++static char tag_msg = CEPH_MSGR_TAG_MSG;
++static char tag_ack = CEPH_MSGR_TAG_ACK;
++
++
++static void ceph_queue_con(struct ceph_connection *con);
++static void con_work(struct work_struct *);
++static void ceph_fault(struct ceph_connection *con);
++
++
 +/*
-+ * calculate the mapping of a file extent onto an object, and fill out the
-+ * request accordingly.  shorten extent as necessary if it crosses an
-+ * object boundary.
-+ *
-+ * fill osd op in request message.
++ * work queue for all reading and writing to/from the socket.
 + */
-+static void calc_layout(struct ceph_osd_client *osdc,
-+			struct ceph_vino vino, struct ceph_file_layout *layout,
-+			u64 off, u64 *plen,
-+			struct ceph_osd_request *req)
++struct workqueue_struct *ceph_msgr_wq;
++
++int ceph_msgr_init(void)
 +{
-+	struct ceph_osd_request_head *reqhead = req->r_request->front.iov_base;
-+	struct ceph_osd_op *op = (void *)(reqhead + 1);
-+	u64 orig_len = *plen;
-+	u64 objoff, objlen;    /* extent in object */
-+	u64 bno;
-+
-+	reqhead->snapid = cpu_to_le64(vino.snap);
-+
-+	/* object extent? */
-+	ceph_calc_file_object_mapping(layout, off, plen, &bno,
-+				      &objoff, &objlen);
-+	if (*plen < orig_len)
-+		dout(" skipping last %llu, final file extent %llu~%llu\n",
-+		     orig_len - *plen, off, *plen);
-+
-+	sprintf(req->r_oid, "%llx.%08llx", vino.ino, bno);
-+	req->r_oid_len = strlen(req->r_oid);
-+
-+	op->offset = cpu_to_le64(objoff);
-+	op->length = cpu_to_le64(objlen);
-+	req->r_num_pages = calc_pages_for(off, *plen);
-+
-+	dout("calc_layout %s (%d) %llu~%llu (%d pages)\n",
-+	     req->r_oid, req->r_oid_len, objoff, objlen, req->r_num_pages);
++	ceph_msgr_wq = create_workqueue("ceph-msgr");
++	if (IS_ERR(ceph_msgr_wq)) {
++		int ret = PTR_ERR(ceph_msgr_wq);
++		pr_err("ceph_msgr_init failed to create workqueue: %d\n", ret);
++		ceph_msgr_wq = NULL;
++		return ret;
++	}
++	return 0;
 +}
 +
-+
-+/*
-+ * requests
-+ */
-+void ceph_osdc_put_request(struct ceph_osd_request *req)
++void ceph_msgr_exit(void)
 +{
-+	dout("osdc put_request %p %d -> %d\n", req, atomic_read(&req->r_ref),
-+	     atomic_read(&req->r_ref)-1);
-+	BUG_ON(atomic_read(&req->r_ref) <= 0);
-+	if (atomic_dec_and_test(&req->r_ref)) {
-+		if (req->r_request)
-+			ceph_msg_put(req->r_request);
-+		if (req->r_reply)
-+			ceph_msg_put(req->r_reply);
-+		if (req->r_own_pages)
-+			ceph_release_page_vector(req->r_pages,
-+						 req->r_num_pages);
-+		ceph_put_snap_context(req->r_snapc);
-+		kfree(req);
-+	}
++	destroy_workqueue(ceph_msgr_wq);
 +}
 +
 +/*
-+ * build new request AND message, calculate layout, and adjust file
-+ * extent as needed.
-+ *
-+ * if the file was recently truncated, we include information about its
-+ * old and new size so that the object can be updated appropriately.  (we
-+ * avoid synchronously deleting truncated objects because it's slow.)
-+ *
-+ * if @do_sync, include a 'startsync' command so that the osd will flush
-+ * data quickly.
++ * socket callback functions
 + */
-+struct ceph_osd_request *ceph_osdc_new_request(struct ceph_osd_client *osdc,
-+					       struct ceph_file_layout *layout,
-+					       struct ceph_vino vino,
-+					       u64 off, u64 *plen,
-+					       int opcode, int flags,
-+					       struct ceph_snap_context *snapc,
-+					       int do_sync,
-+					       u32 truncate_seq,
-+					       u64 truncate_size,
-+					       struct timespec *mtime)
++
++/* listen socket received a connection */
++static void ceph_accept_ready(struct sock *sk, int count_unused)
 +{
-+	struct ceph_osd_request *req;
-+	struct ceph_msg *msg;
-+	struct ceph_osd_request_head *head;
-+	struct ceph_osd_op *op;
-+	void *p;
-+	int do_trunc = truncate_seq && (off + *plen > truncate_size);
-+	int num_op = 1 + do_sync + do_trunc;
-+	size_t msg_size = sizeof(*head) + num_op*sizeof(*op);
-+	int i;
-+	u64 prevofs;
++	struct ceph_messenger *msgr = (struct ceph_messenger *)sk->sk_user_data;
 +
-+	req = kzalloc(sizeof(*req), GFP_NOFS);
-+	if (req == NULL)
-+		return ERR_PTR(-ENOMEM);
-+
-+	atomic_set(&req->r_ref, 1);
-+	init_completion(&req->r_completion);
-+	init_completion(&req->r_safe_completion);
-+	INIT_LIST_HEAD(&req->r_unsafe_item);
-+	req->r_flags = flags;
-+	req->r_last_osd = -1;
-+
-+	WARN_ON((flags & (CEPH_OSD_FLAG_READ|CEPH_OSD_FLAG_WRITE)) == 0);
-+
-+	/* create message; allow space for oid */
-+	msg_size += 40 + osdc->client->signed_ticket_len;
-+	if (snapc)
-+		msg_size += sizeof(u64) * snapc->num_snaps;
-+	msg = ceph_msg_new(CEPH_MSG_OSD_OP, msg_size, 0, 0, NULL);
-+	if (IS_ERR(msg)) {
-+		kfree(req);
-+		return ERR_PTR(PTR_ERR(msg));
-+	}
-+	memset(msg->front.iov_base, 0, msg->front.iov_len);
-+	head = msg->front.iov_base;
-+	op = (void *)(head + 1);
-+	p = (void *)(op + num_op);
-+
-+	req->r_request = msg;
-+	req->r_snapc = ceph_get_snap_context(snapc);
-+
-+	head->client_inc = cpu_to_le32(1); /* always, for now. */
-+	head->flags = cpu_to_le32(flags);
-+	if (flags & CEPH_OSD_FLAG_WRITE)
-+		ceph_encode_timespec(&head->mtime, mtime);
-+	head->num_ops = cpu_to_le16(num_op);
-+	op->op = cpu_to_le16(opcode);
-+
-+	/* calculate max write size */
-+	calc_layout(osdc, vino, layout, off, plen, req);
-+	req->r_file_layout = *layout;  /* keep a copy */
-+
-+	if (flags & CEPH_OSD_FLAG_WRITE) {
-+		req->r_request->hdr.data_off = cpu_to_le16(off);
-+		req->r_request->hdr.data_len = cpu_to_le32(*plen);
-+		op->payload_len = cpu_to_le32(*plen);
-+	}
-+
-+	/* fill in oid, ticket */
-+	head->object_len = cpu_to_le32(req->r_oid_len);
-+	memcpy(p, req->r_oid, req->r_oid_len);
-+	p += req->r_oid_len;
-+
-+	head->ticket_len = cpu_to_le32(osdc->client->signed_ticket_len);
-+	memcpy(p, osdc->client->signed_ticket,
-+	       osdc->client->signed_ticket_len);
-+	p += osdc->client->signed_ticket_len;
-+
-+	/* additional ops */
-+	if (do_trunc) {
-+		op++;
-+		op->op = cpu_to_le16(opcode == CEPH_OSD_OP_READ ?
-+			     CEPH_OSD_OP_MASKTRUNC : CEPH_OSD_OP_SETTRUNC);
-+		op->truncate_seq = cpu_to_le32(truncate_seq);
-+		prevofs = le64_to_cpu((op-1)->offset);
-+		op->truncate_size = cpu_to_le64(truncate_size - (off-prevofs));
-+	}
-+	if (do_sync) {
-+		op++;
-+		op->op = cpu_to_le16(CEPH_OSD_OP_STARTSYNC);
-+	}
-+	if (snapc) {
-+		head->snap_seq = cpu_to_le64(snapc->seq);
-+		head->num_snaps = cpu_to_le32(snapc->num_snaps);
-+		for (i = 0; i < snapc->num_snaps; i++) {
-+			put_unaligned_le64(snapc->snaps[i], p);
-+			p += sizeof(u64);
-+		}
-+	}
-+
-+	BUG_ON(p > msg->front.iov_base + msg->front.iov_len);
-+	return req;
++	dout("ceph_accept_ready messenger %p sk_state = %u\n",
++	     msgr, sk->sk_state);
++	if (sk->sk_state == TCP_LISTEN)
++		queue_work(ceph_msgr_wq, &msgr->awork);
 +}
 +
-+/*
-+ * Register request, assign tid.  If this is the first request, set up
-+ * the timeout event.
-+ */
-+static int register_request(struct ceph_osd_client *osdc,
-+			    struct ceph_osd_request *req)
++/* data available on socket, or listen socket received a connect */
++static void ceph_data_ready(struct sock *sk, int count_unused)
 +{
-+	struct ceph_osd_request_head *head = req->r_request->front.iov_base;
-+	int rc;
-+
-+	mutex_lock(&osdc->request_mutex);
-+	req->r_tid = ++osdc->last_tid;
-+	head->tid = cpu_to_le64(req->r_tid);
-+
-+	dout("register_request %p tid %lld\n", req, req->r_tid);
-+	rc = radix_tree_insert(&osdc->request_tree, req->r_tid, (void *)req);
-+	if (rc < 0)
-+		goto out;
-+
-+	ceph_osdc_get_request(req);
-+	osdc->num_requests++;
-+
-+	req->r_timeout_stamp =
-+		jiffies + osdc->client->mount_args.osd_timeout*HZ;
-+
-+	if (osdc->num_requests == 1) {
-+		osdc->timeout_tid = req->r_tid;
-+		dout("  timeout on tid %llu at %lu\n", req->r_tid,
-+		     req->r_timeout_stamp);
-+		schedule_delayed_work(&osdc->timeout_work,
-+		      round_jiffies_relative(req->r_timeout_stamp - jiffies));
-+	}
-+out:
-+	mutex_unlock(&osdc->request_mutex);
-+	return rc;
-+}
-+
-+/*
-+ * Timeout callback, called every N seconds when 1 or more osd
-+ * requests has been active for more than N seconds.  When this
-+ * happens, we ping all OSDs with requests who have timed out to
-+ * ensure any communications channel reset is detected.  Reset the
-+ * request timeouts another N seconds in the future as we go.
-+ * Reschedule the timeout event another N seconds in future (unless
-+ * there are no open requests).
-+ */
-+static void handle_timeout(struct work_struct *work)
-+{
-+	struct ceph_osd_client *osdc =
-+		container_of(work, struct ceph_osd_client, timeout_work.work);
-+	struct ceph_osd_request *req;
-+	unsigned long timeout = osdc->client->mount_args.osd_timeout * HZ;
-+	unsigned long next_timeout = timeout + jiffies;
-+	RADIX_TREE(pings, GFP_NOFS);  /* only send 1 ping per osd */
-+	u64 next_tid = 0;
-+	int got;
-+
-+	dout("timeout\n");
-+	down_read(&osdc->map_sem);
-+
-+	ceph_monc_request_osdmap(&osdc->client->monc, osdc->osdmap->epoch+1);
-+
-+	mutex_lock(&osdc->request_mutex);
-+	while (1) {
-+		got = radix_tree_gang_lookup(&osdc->request_tree, (void **)&req,
-+					     next_tid, 1);
-+		if (got == 0)
-+			break;
-+		next_tid = req->r_tid + 1;
-+		if (time_before(jiffies, req->r_timeout_stamp))
-+			goto next;
-+
-+		req->r_timeout_stamp = next_timeout;
-+		if (req->r_last_osd >= 0 &&
-+		    radix_tree_lookup(&pings, req->r_last_osd) == NULL) {
-+			struct ceph_entity_name n = {
-+				.type = cpu_to_le32(CEPH_ENTITY_TYPE_OSD),
-+				.num = cpu_to_le32(req->r_last_osd)
-+			};
-+			dout(" tid %llu (at least) timed out on osd%d\n",
-+			     req->r_tid, req->r_last_osd);
-+			radix_tree_insert(&pings, req->r_last_osd, req);
-+			ceph_ping(osdc->client->msgr, n, &req->r_last_osd_addr);
-+		}
-+
-+	next:
-+		got = radix_tree_gang_lookup(&osdc->request_tree, (void **)&req,
-+					     next_tid, 1);
-+	}
-+
-+	while (radix_tree_gang_lookup(&pings, (void **)&req, 0, 1))
-+		radix_tree_delete(&pings, req->r_last_osd);
-+
-+	if (osdc->timeout_tid)
-+		schedule_delayed_work(&osdc->timeout_work,
-+				      round_jiffies_relative(timeout));
-+
-+	mutex_unlock(&osdc->request_mutex);
-+
-+	up_read(&osdc->map_sem);
-+}
-+
-+/*
-+ * called under osdc->request_mutex
-+ */
-+static void __unregister_request(struct ceph_osd_client *osdc,
-+				 struct ceph_osd_request *req)
-+{
-+	dout("__unregister_request %p tid %lld\n", req, req->r_tid);
-+	radix_tree_delete(&osdc->request_tree, req->r_tid);
-+
-+	osdc->num_requests--;
-+	ceph_osdc_put_request(req);
-+
-+	if (req->r_tid == osdc->timeout_tid) {
-+		if (osdc->num_requests == 0) {
-+			dout("no requests, canceling timeout\n");
-+			osdc->timeout_tid = 0;
-+			cancel_delayed_work(&osdc->timeout_work);
-+		} else {
-+			int ret;
-+
-+			ret = radix_tree_gang_lookup(&osdc->request_tree,
-+						     (void **)&req, 0, 1);
-+			BUG_ON(ret != 1);
-+			osdc->timeout_tid = req->r_tid;
-+			dout("rescheduled timeout on tid %llu at %lu\n",
-+			     req->r_tid, req->r_timeout_stamp);
-+			schedule_delayed_work(&osdc->timeout_work,
-+			      round_jiffies_relative(req->r_timeout_stamp -
-+						     jiffies));
-+		}
++	struct ceph_connection *con =
++		(struct ceph_connection *)sk->sk_user_data;
++	if (sk->sk_state != TCP_CLOSE_WAIT) {
++		dout("ceph_data_ready on %p state = %lu, queueing work\n",
++		     con, con->state);
++		ceph_queue_con(con);
 +	}
 +}
 +
-+/*
-+ * Pick an osd (the first 'up' osd in the pg), and put result in
-+ * req->r_last_osd[_addr].  If none, set to -1.
-+ *
-+ * Caller should hold map_sem for read.
-+ *
-+ * return 0 if unchanged, 1 if changed.
-+ */
-+static int map_osds(struct ceph_osd_client *osdc,
-+		    struct ceph_osd_request *req)
++/* socket has buffer space for writing */
++static void ceph_write_space(struct sock *sk)
 +{
-+	struct ceph_osd_request_head *reqhead = req->r_request->front.iov_base;
-+	union ceph_pg pgid;
-+	struct ceph_pg_pool_info *pool;
-+	int ruleno;
-+	unsigned pps; /* placement ps */
-+	int osds[10], osd = -1;
-+	int i, num;
-+	int err;
++	struct ceph_connection *con =
++		(struct ceph_connection *)sk->sk_user_data;
 +
-+	err = ceph_calc_object_layout(&reqhead->layout, req->r_oid,
-+				      &req->r_file_layout, osdc->osdmap);
-+	if (err)
-+		return err;
-+	pgid.pg64 = le64_to_cpu(reqhead->layout.ol_pgid);
-+	if (pgid.pg.pool >= osdc->osdmap->num_pools)
-+		return -1;
-+	pool = &osdc->osdmap->pg_pool[pgid.pg.pool];
-+	ruleno = crush_find_rule(osdc->osdmap->crush, pool->v.crush_ruleset,
-+				 pool->v.type, pool->v.size);
-+	if (ruleno < 0) {
-+		pr_err("ceph map_osds no crush rule pool %d type %d size %d\n",
-+		       pgid.pg.pool, pool->v.type, pool->v.size);
-+		return -1;
++	/* only queue to workqueue if there is data we want to write. */
++	if (test_bit(WRITE_PENDING, &con->state)) {
++		dout("ceph_write_space %p queueing write work\n", con);
++		ceph_queue_con(con);
++	} else {
++		dout("ceph_write_space %p nothing to write\n", con);
 +	}
 +
-+	if (pgid.pg.preferred >= 0)
-+		pps = ceph_stable_mod(pgid.pg.ps,
-+				      le32_to_cpu(pool->v.lpgp_num),
-+				      pool->lpgp_num_mask);
-+	else
-+		pps = ceph_stable_mod(pgid.pg.ps,
-+				      le32_to_cpu(pool->v.pgp_num),
-+				      pool->pgp_num_mask);
-+	pps += pgid.pg.pool;
-+	num = crush_do_rule(osdc->osdmap->crush, ruleno, pps, osds,
-+			    min_t(int, pool->v.size, ARRAY_SIZE(osds)),
-+			    pgid.pg.preferred, osdc->osdmap->osd_weight);
-+
-+	/* primary is first up osd */
-+	for (i = 0; i < num; i++)
-+		if (ceph_osd_is_up(osdc->osdmap, osds[i])) {
-+			osd = osds[i];
-+			break;
-+		}
-+	dout("map_osds tid %llu pgid %llx pool %d osd%d (was osd%d)\n",
-+	     req->r_tid, pgid.pg64, pgid.pg.pool, osd, req->r_last_osd);
-+	if (req->r_last_osd == osd &&
-+	    (osd < 0 || ceph_entity_addr_equal(&osdc->osdmap->osd_addr[osd],
-+					       &req->r_last_osd_addr)))
-+		return 0;
-+	req->r_last_osd = osd;
-+	if (osd >= 0)
-+		req->r_last_osd_addr = osdc->osdmap->osd_addr[osd];
-+	return 1;
++	/* since we have our own write_space, clear the SOCK_NOSPACE flag */
++	clear_bit(SOCK_NOSPACE, &sk->sk_socket->flags);
 +}
 +
-+/*
-+ * caller should hold map_sem (for read)
-+ */
-+static int send_request(struct ceph_osd_client *osdc,
-+			struct ceph_osd_request *req)
++/* socket's state has changed */
++static void ceph_state_change(struct sock *sk)
 +{
-+	struct ceph_osd_request_head *reqhead;
-+	int osd;
++	struct ceph_connection *con =
++		(struct ceph_connection *)sk->sk_user_data;
 +
-+	map_osds(osdc, req);
-+	if (req->r_last_osd < 0) {
-+		dout("send_request %p no up osds in pg\n", req);
-+		ceph_monc_request_osdmap(&osdc->client->monc,
-+					 osdc->osdmap->epoch+1);
-+		return 0;
-+	}
-+	osd = req->r_last_osd;
++	dout("ceph_state_change %p state = %lu sk_state = %u\n",
++	     con, con->state, sk->sk_state);
 +
-+	dout("send_request %p tid %llu to osd%d flags %d\n",
-+	     req, req->r_tid, osd, req->r_flags);
-+
-+	reqhead = req->r_request->front.iov_base;
-+	reqhead->osdmap_epoch = cpu_to_le32(osdc->osdmap->epoch);
-+	reqhead->flags |= cpu_to_le32(req->r_flags);  /* e.g., RETRY */
-+	reqhead->reassert_version = req->r_reassert_version;
-+
-+	req->r_request->hdr.dst.name.type =
-+		cpu_to_le32(CEPH_ENTITY_TYPE_OSD);
-+	req->r_request->hdr.dst.name.num = cpu_to_le32(osd);
-+	req->r_request->hdr.dst.addr = req->r_last_osd_addr;
-+
-+	req->r_timeout_stamp = jiffies+osdc->client->mount_args.osd_timeout*HZ;
-+
-+	ceph_msg_get(req->r_request); /* send consumes a ref */
-+	return ceph_msg_send(osdc->client->msgr, req->r_request,
-+			     BASE_DELAY_INTERVAL);
-+}
-+
-+/*
-+ * handle osd op reply.  either call the callback if it is specified,
-+ * or do the completion to wake up the waiting thread.
-+ */
-+void ceph_osdc_handle_reply(struct ceph_osd_client *osdc, struct ceph_msg *msg)
-+{
-+	struct ceph_osd_reply_head *rhead = msg->front.iov_base;
-+	struct ceph_osd_request *req;
-+	u64 tid;
-+	int numops, object_len, flags;
-+
-+	if (msg->front.iov_len < sizeof(*rhead))
-+		goto bad;
-+	tid = le64_to_cpu(rhead->tid);
-+	numops = le32_to_cpu(rhead->num_ops);
-+	object_len = le32_to_cpu(rhead->object_len);
-+	if (msg->front.iov_len != sizeof(*rhead) + object_len +
-+	    numops * sizeof(struct ceph_osd_op))
-+		goto bad;
-+	dout("handle_reply %p tid %llu\n", msg, tid);
-+
-+	/* lookup */
-+	mutex_lock(&osdc->request_mutex);
-+	req = radix_tree_lookup(&osdc->request_tree, tid);
-+	if (req == NULL) {
-+		dout("handle_reply tid %llu dne\n", tid);
-+		mutex_unlock(&osdc->request_mutex);
++	if (test_bit(CLOSED, &con->state))
 +		return;
-+	}
-+	ceph_osdc_get_request(req);
-+	flags = le32_to_cpu(rhead->flags);
 +
-+	if (req->r_aborted) {
-+		dout("handle_reply tid %llu aborted\n", tid);
-+		goto done;
-+	}
-+
-+	if (req->r_reassert_version.epoch == 0) {
-+		/* first ack */
-+		if (req->r_reply == NULL) {
-+			/* no data payload, or r_reply would have been set by
-+			   prepare_pages. */
-+			ceph_msg_get(msg);
-+			req->r_reply = msg;
-+		} else {
-+			/* r_reply was set by prepare_pages */
-+			BUG_ON(req->r_reply != msg);
-+		}
-+
-+		/* in case we need to replay this op, */
-+		req->r_reassert_version = rhead->reassert_version;
-+	} else if ((flags & CEPH_OSD_FLAG_ONDISK) == 0) {
-+		dout("handle_reply tid %llu dup ack\n", tid);
-+		goto done;
-+	}
-+
-+	dout("handle_reply tid %llu flags %d\n", tid, flags);
-+
-+	/* either this is a read, or we got the safe response */
-+	if ((flags & CEPH_OSD_FLAG_ONDISK) ||
-+	    ((flags & CEPH_OSD_FLAG_WRITE) == 0))
-+		__unregister_request(osdc, req);
-+
-+	mutex_unlock(&osdc->request_mutex);
-+
-+	if (req->r_callback)
-+		req->r_callback(req);
-+	else
-+		complete(&req->r_completion);
-+
-+	if (flags & CEPH_OSD_FLAG_ONDISK) {
-+		if (req->r_safe_callback)
-+			req->r_safe_callback(req);
-+		complete(&req->r_safe_completion);  /* fsync waiter */
-+	}
-+
-+done:
-+	ceph_osdc_put_request(req);
-+	return;
-+
-+bad:
-+	pr_err("ceph corrupt osd_op_reply got %d %d expected %d\n",
-+	       (int)msg->front.iov_len, le32_to_cpu(msg->hdr.front_len),
-+	       (int)sizeof(*rhead));
-+}
-+
-+
-+/*
-+ * Resubmit osd requests whose osd or osd address has changed.  Request
-+ * a new osd map if osds are down, or we are otherwise unable to determine
-+ * how to direct a request.
-+ *
-+ * If @who is specified, resubmit requests for that specific osd.
-+ *
-+ * Caller should hold map_sem for read.
-+ */
-+static void kick_requests(struct ceph_osd_client *osdc,
-+			  struct ceph_entity_addr *who)
-+{
-+	struct ceph_osd_request *req;
-+	u64 next_tid = 0;
-+	int got;
-+	int needmap = 0;
-+
-+	mutex_lock(&osdc->request_mutex);
-+	while (1) {
-+		got = radix_tree_gang_lookup(&osdc->request_tree, (void **)&req,
-+					     next_tid, 1);
-+		if (got == 0)
-+			break;
-+		next_tid = req->r_tid + 1;
-+
-+		if (who && ceph_entity_addr_equal(who, &req->r_last_osd_addr))
-+			goto kick;
-+
-+		if (map_osds(osdc, req) == 0)
-+			continue;  /* no change */
-+
-+		if (req->r_last_osd < 0) {
-+			dout("tid %llu maps to no valid osd\n", req->r_tid);
-+			needmap++;  /* request a newer map */
-+			memset(&req->r_last_osd_addr, 0,
-+			       sizeof(req->r_last_osd_addr));
-+			continue;
-+		}
-+
-+	kick:
-+		dout("kicking tid %llu osd%d\n", req->r_tid,
-+		     req->r_last_osd);
-+		ceph_osdc_get_request(req);
-+		mutex_unlock(&osdc->request_mutex);
-+		req->r_request = ceph_msg_maybe_dup(req->r_request);
-+		if (!req->r_aborted) {
-+			req->r_flags |= CEPH_OSD_FLAG_RETRY;
-+			send_request(osdc, req);
-+		}
-+		ceph_osdc_put_request(req);
-+		mutex_lock(&osdc->request_mutex);
-+	}
-+	mutex_unlock(&osdc->request_mutex);
-+
-+	if (needmap) {
-+		dout("%d requests for down osds, need new map\n", needmap);
-+		ceph_monc_request_osdmap(&osdc->client->monc,
-+					 osdc->osdmap->epoch+1);
++	switch (sk->sk_state) {
++	case TCP_CLOSE:
++		dout("ceph_state_change TCP_CLOSE\n");
++	case TCP_CLOSE_WAIT:
++		dout("ceph_state_change TCP_CLOSE_WAIT\n");
++		set_bit(SOCK_CLOSED, &con->state);
++		if (test_bit(CONNECTING, &con->state))
++			con->error_msg = "connection failed";
++		else
++			con->error_msg = "socket closed";
++		ceph_queue_con(con);
++		break;
++	case TCP_ESTABLISHED:
++		dout("ceph_state_change TCP_ESTABLISHED\n");
++		ceph_queue_con(con);
++		break;
 +	}
 +}
 +
 +/*
-+ * Process updated osd map.
-+ *
-+ * The message contains any number of incremental and full maps, normally
-+ * indicating some sort of topology change in the cluster.  Kick requests
-+ * off to different OSDs as needed.
++ * set up socket callbacks
 + */
-+void ceph_osdc_handle_map(struct ceph_osd_client *osdc, struct ceph_msg *msg)
++static void listen_sock_callbacks(struct socket *sock,
++				  struct ceph_messenger *msgr)
 +{
-+	void *p, *end, *next;
-+	u32 nr_maps, maplen;
-+	u32 epoch;
-+	struct ceph_osdmap *newmap = NULL, *oldmap;
-+	int err;
-+	ceph_fsid_t fsid;
-+
-+	dout("handle_map have %u\n", osdc->osdmap ? osdc->osdmap->epoch : 0);
-+	p = msg->front.iov_base;
-+	end = p + msg->front.iov_len;
-+
-+	/* verify fsid */
-+	ceph_decode_need(&p, end, sizeof(fsid), bad);
-+	ceph_decode_copy(&p, &fsid, sizeof(fsid));
-+	if (ceph_fsid_compare(&fsid, &osdc->client->monc.monmap->fsid)) {
-+		pr_err("ceph got osdmap with wrong fsid, ignoring\n");
-+		return;
-+	}
-+
-+	down_write(&osdc->map_sem);
-+
-+	/* incremental maps */
-+	ceph_decode_32_safe(&p, end, nr_maps, bad);
-+	dout(" %d inc maps\n", nr_maps);
-+	while (nr_maps > 0) {
-+		ceph_decode_need(&p, end, 2*sizeof(u32), bad);
-+		ceph_decode_32(&p, epoch);
-+		ceph_decode_32(&p, maplen);
-+		ceph_decode_need(&p, end, maplen, bad);
-+		next = p + maplen;
-+		if (osdc->osdmap && osdc->osdmap->epoch+1 == epoch) {
-+			dout("applying incremental map %u len %d\n",
-+			     epoch, maplen);
-+			newmap = apply_incremental(&p, next, osdc->osdmap,
-+						   osdc->client->msgr);
-+			if (IS_ERR(newmap)) {
-+				err = PTR_ERR(newmap);
-+				goto bad;
-+			}
-+			if (newmap != osdc->osdmap) {
-+				ceph_osdmap_destroy(osdc->osdmap);
-+				osdc->osdmap = newmap;
-+			}
-+		} else {
-+			dout("ignoring incremental map %u len %d\n",
-+			     epoch, maplen);
-+		}
-+		p = next;
-+		nr_maps--;
-+	}
-+	if (newmap)
-+		goto done;
-+
-+	/* full maps */
-+	ceph_decode_32_safe(&p, end, nr_maps, bad);
-+	dout(" %d full maps\n", nr_maps);
-+	while (nr_maps) {
-+		ceph_decode_need(&p, end, 2*sizeof(u32), bad);
-+		ceph_decode_32(&p, epoch);
-+		ceph_decode_32(&p, maplen);
-+		ceph_decode_need(&p, end, maplen, bad);
-+		if (nr_maps > 1) {
-+			dout("skipping non-latest full map %u len %d\n",
-+			     epoch, maplen);
-+		} else if (osdc->osdmap && osdc->osdmap->epoch >= epoch) {
-+			dout("skipping full map %u len %d, "
-+			     "older than our %u\n", epoch, maplen,
-+			     osdc->osdmap->epoch);
-+		} else {
-+			dout("taking full map %u len %d\n", epoch, maplen);
-+			newmap = osdmap_decode(&p, p+maplen);
-+			if (IS_ERR(newmap)) {
-+				err = PTR_ERR(newmap);
-+				goto bad;
-+			}
-+			oldmap = osdc->osdmap;
-+			osdc->osdmap = newmap;
-+			if (oldmap)
-+				ceph_osdmap_destroy(oldmap);
-+		}
-+		p += maplen;
-+		nr_maps--;
-+	}
-+
-+done:
-+	downgrade_write(&osdc->map_sem);
-+	ceph_monc_got_osdmap(&osdc->client->monc, osdc->osdmap->epoch);
-+	if (newmap)
-+		kick_requests(osdc, NULL);
-+	up_read(&osdc->map_sem);
-+	return;
-+
-+bad:
-+	pr_err("ceph osdc handle_map corrupt msg\n");
-+	up_write(&osdc->map_sem);
-+	return;
++	struct sock *sk = sock->sk;
++	sk->sk_user_data = (void *)msgr;
++	sk->sk_data_ready = ceph_accept_ready;
 +}
 +
-+/*
-+ * If we detect that a tcp connection to an osd resets, we need to
-+ * resubmit all requests for that osd.  That's because although we reliably
-+ * deliver our requests, the osd doesn't not try as hard to deliver the
-+ * reply (because it does not get notification when clients, mds' leave
-+ * the cluster).
-+ */
-+void ceph_osdc_handle_reset(struct ceph_osd_client *osdc,
-+			    struct ceph_entity_addr *addr)
++static void set_sock_callbacks(struct socket *sock,
++			       struct ceph_connection *con)
 +{
-+	down_read(&osdc->map_sem);
-+	kick_requests(osdc, addr);
-+	up_read(&osdc->map_sem);
++	struct sock *sk = sock->sk;
++	sk->sk_user_data = (void *)con;
++	sk->sk_data_ready = ceph_data_ready;
++	sk->sk_write_space = ceph_write_space;
++	sk->sk_state_change = ceph_state_change;
 +}
 +
 +
 +/*
-+ * A read request prepares specific pages that data is to be read into.
-+ * When a message is being read off the wire, we call prepare_pages to
-+ * find those pages.
-+ *  0 = success, -1 failure.
++ * socket helpers
 + */
-+int ceph_osdc_prepare_pages(void *p, struct ceph_msg *m, int want)
++
++/*
++ * initiate connection to a remote socket.
++ */
++static struct socket *ceph_tcp_connect(struct ceph_connection *con)
 +{
-+	struct ceph_client *client = p;
-+	struct ceph_osd_client *osdc = &client->osdc;
-+	struct ceph_osd_reply_head *rhead = m->front.iov_base;
-+	struct ceph_osd_request *req;
-+	u64 tid;
-+	int ret = -1;
-+	int type = le16_to_cpu(m->hdr.type);
++	struct sockaddr *paddr = (struct sockaddr *)&con->peer_addr.ipaddr;
++	struct socket *sock;
++	int ret;
 +
-+	dout("prepare_pages on msg %p want %d\n", m, want);
-+	if (unlikely(type != CEPH_MSG_OSD_OPREPLY))
-+		return -1;  /* hmm! */
++	BUG_ON(con->sock);
++	ret = sock_create_kern(AF_INET, SOCK_STREAM, IPPROTO_TCP, &sock);
++	if (ret)
++		return ERR_PTR(ret);
++	con->sock = sock;
++	sock->sk->sk_allocation = GFP_NOFS;
 +
-+	tid = le64_to_cpu(rhead->tid);
-+	mutex_lock(&osdc->request_mutex);
-+	req = radix_tree_lookup(&osdc->request_tree, tid);
-+	if (!req) {
-+		dout("prepare_pages unknown tid %llu\n", tid);
-+		goto out;
++	set_sock_callbacks(sock, con);
++
++	dout("connect %u.%u.%u.%u:%u\n",
++	     IPQUADPORT(*(struct sockaddr_in *)paddr));
++
++	ret = sock->ops->connect(sock, paddr,
++				 sizeof(struct sockaddr_in), O_NONBLOCK);
++	if (ret == -EINPROGRESS) {
++		dout("connect %u.%u.%u.%u:%u EINPROGRESS sk_state = %u\n",
++		     IPQUADPORT(*(struct sockaddr_in *)paddr),
++		     sock->sk->sk_state);
++		ret = 0;
 +	}
-+	dout("prepare_pages tid %llu has %d pages, want %d\n",
-+	     tid, req->r_num_pages, want);
-+	if (likely(req->r_num_pages >= want && req->r_reply == NULL &&
-+		    !req->r_aborted)) {
-+		m->pages = req->r_pages;
-+		m->nr_pages = req->r_num_pages;
-+		ceph_msg_get(m);
-+		req->r_reply = m;
-+		ret = 0; /* success */
++	if (ret < 0) {
++		pr_err("ceph connect %u.%u.%u.%u:%u error %d\n",
++			IPQUADPORT(*(struct sockaddr_in *)paddr), ret);
++		sock_release(sock);
++		con->sock = NULL;
++		con->error_msg = "connect error";
 +	}
-+out:
-+	mutex_unlock(&osdc->request_mutex);
++
++	if (ret < 0)
++		return ERR_PTR(ret);
++	return sock;
++}
++
++/*
++ * set up listening socket
++ */
++static int ceph_tcp_listen(struct ceph_messenger *msgr)
++{
++	int ret;
++	int optval = 1;
++	struct sockaddr_in *myaddr = &msgr->inst.addr.ipaddr;
++	int nlen;
++	struct socket *sock;
++
++	ret = sock_create_kern(AF_INET, SOCK_STREAM, IPPROTO_TCP, &sock);
++	if (ret)
++		return ret;
++	sock->sk->sk_allocation = GFP_NOFS;
++	ret = kernel_setsockopt(sock, SOL_SOCKET, SO_REUSEADDR,
++				(char *)&optval, sizeof(optval));
++	if (ret < 0) {
++		pr_err("ceph failed to set SO_REUSEADDR: %d\n", ret);
++		goto err;
++	}
++
++	ret = sock->ops->bind(sock, (struct sockaddr *)myaddr,
++			      sizeof(*myaddr));
++	if (ret < 0) {
++		pr_err("ceph failed to bind: %d\n", ret);
++		goto err;
++	}
++
++	/* what port did we bind to? */
++	nlen = sizeof(*myaddr);
++	ret = sock->ops->getname(sock, (struct sockaddr *)myaddr, &nlen,
++				 0);
++	if (ret < 0) {
++		pr_err("ceph failed to getsockname: %d\n", ret);
++		goto err;
++	}
++	pr_info("ceph listening on %u.%u.%u.%u:%u\n", IPQUADPORT(*myaddr));
++
++	/* we don't care too much if this works or not */
++	sock->ops->listen(sock, CEPH_MSGR_BACKUP);
++
++	/* ok! */
++	msgr->listen_sock = sock;
++	listen_sock_callbacks(sock, msgr);
++	return 0;
++
++err:
++	sock_release(sock);
 +	return ret;
 +}
 +
 +/*
-+ * Register request, send initial attempt.
++ * accept a connection
 + */
-+int ceph_osdc_start_request(struct ceph_osd_client *osdc,
-+			    struct ceph_osd_request *req)
++static int ceph_tcp_accept(struct socket *lsock, struct ceph_connection *con)
++{
++	struct socket *sock;
++	int ret;
++
++	ret = sock_create_kern(AF_INET, SOCK_STREAM, IPPROTO_TCP, &sock);
++	if (ret)
++		return ret;
++	con->sock = sock;
++	sock->sk->sk_allocation = GFP_NOFS;
++
++	ret = lsock->ops->accept(lsock, sock, O_NONBLOCK);
++	if (ret < 0) {
++		pr_err("ceph accept error: %d\n", ret);
++		goto err;
++	}
++
++	sock->ops = lsock->ops;
++	sock->type = lsock->type;
++	set_sock_callbacks(sock, con);
++	return ret;
++
++err:
++	sock->ops->shutdown(sock, SHUT_RDWR);
++	sock_release(sock);
++	return ret;
++}
++
++static int ceph_tcp_recvmsg(struct socket *sock, void *buf, size_t len)
++{
++	struct kvec iov = {buf, len};
++	struct msghdr msg = { .msg_flags = MSG_DONTWAIT | MSG_NOSIGNAL };
++
++	return kernel_recvmsg(sock, &msg, &iov, 1, len, msg.msg_flags);
++}
++
++/*
++ * write something.  @more is true if caller will be sending more data
++ * shortly.
++ */
++static int ceph_tcp_sendmsg(struct socket *sock, struct kvec *iov,
++		     size_t kvlen, size_t len, int more)
++{
++	struct msghdr msg = { .msg_flags = MSG_DONTWAIT | MSG_NOSIGNAL };
++
++	if (more)
++		msg.msg_flags |= MSG_MORE;
++	else
++		msg.msg_flags |= MSG_EOR;  /* superfluous, but what the hell */
++
++	return kernel_sendmsg(sock, &msg, iov, kvlen, len);
++}
++
++
++/*
++ * create a new connection.
++ */
++static struct ceph_connection *new_connection(struct ceph_messenger *msgr)
++{
++	struct ceph_connection *con;
++
++	con = kzalloc(sizeof(*con), GFP_NOFS);
++	if (con == NULL)
++		return NULL;
++	con->msgr = msgr;
++	atomic_set(&con->nref, 1);
++	INIT_LIST_HEAD(&con->list_all);
++	INIT_LIST_HEAD(&con->list_bucket);
++	spin_lock_init(&con->out_queue_lock);
++	INIT_LIST_HEAD(&con->out_queue);
++	INIT_LIST_HEAD(&con->out_sent);
++	INIT_DELAYED_WORK(&con->work, con_work);
++
++	dout("new connection: %p\n", con);
++	return con;
++}
++
++/*
++ * The con_tree radix_tree has an unsigned long key and void * value.
++ * Since ceph_entity_addr is bigger than that, we use a trivial hash
++ * key, and point to a list_head in ceph_connection, as you would with
++ * a hash table.  If the trivial hash collides, we just traverse the
++ * (hopefully short) list until we find what we want.
++ */
++static unsigned long hash_addr(struct ceph_entity_addr *addr)
++{
++	unsigned long key;
++
++	key = *(u32 *)&addr->ipaddr.sin_addr.s_addr;
++	key ^= *(u16 *)&addr->ipaddr.sin_port;
++	return key;
++}
++
++/*
++ * Get an existing connection, if any, for given addr.  Note that we
++ * may need to traverse the list_bucket list, which has to "head."
++ *
++ * called under con_lock.
++ */
++static struct ceph_connection *__get_connection(struct ceph_messenger *msgr,
++						struct ceph_entity_addr *addr)
++{
++	struct ceph_connection *con = NULL;
++	struct list_head *head;
++	unsigned long key = hash_addr(addr);
++
++	head = radix_tree_lookup(&msgr->con_tree, key);
++	if (head == NULL)
++		return NULL;
++	con = list_entry(head, struct ceph_connection, list_bucket);
++	if (memcmp(&con->peer_addr, addr, sizeof(addr)) == 0)
++		goto yes;
++	list_for_each_entry(con, head, list_bucket)
++		if (memcmp(&con->peer_addr, addr, sizeof(addr)) == 0)
++			goto yes;
++	return NULL;
++
++yes:
++	atomic_inc(&con->nref);
++	dout("get_connection %p nref = %d -> %d\n", con,
++	     atomic_read(&con->nref) - 1, atomic_read(&con->nref));
++	return con;
++}
++
++
++/*
++ * Shutdown/close the socket for the given connection.
++ */
++static int con_close_socket(struct ceph_connection *con)
 +{
 +	int rc;
 +
-+	req->r_request->pages = req->r_pages;
-+	req->r_request->nr_pages = req->r_num_pages;
-+
-+	rc = register_request(osdc, req);
-+	if (rc < 0)
-+		return rc;
-+
-+	down_read(&osdc->map_sem);
-+	rc = send_request(osdc, req);
-+	up_read(&osdc->map_sem);
++	dout("con_close_socket on %p sock %p\n", con, con->sock);
++	if (!con->sock)
++		return 0;
++	rc = con->sock->ops->shutdown(con->sock, SHUT_RDWR);
++	sock_release(con->sock);
++	con->sock = NULL;
 +	return rc;
 +}
 +
 +/*
-+ * wait for a request to complete
++ * drop a reference
 + */
-+int ceph_osdc_wait_request(struct ceph_osd_client *osdc,
-+			   struct ceph_osd_request *req)
++static void put_connection(struct ceph_connection *con)
 +{
-+	struct ceph_osd_reply_head *replyhead;
-+	__s32 rc;
-+	int bytes;
-+
-+	rc = wait_for_completion_interruptible(&req->r_completion);
-+	if (rc < 0) {
-+		ceph_osdc_abort_request(osdc, req);
-+		return rc;
-+	}
-+
-+	/* parse reply */
-+	replyhead = req->r_reply->front.iov_base;
-+	rc = le32_to_cpu(replyhead->result);
-+	bytes = le32_to_cpu(req->r_reply->hdr.data_len);
-+	dout("wait_request tid %llu result %d, %d bytes\n",
-+	     req->r_tid, rc, bytes);
-+	if (rc < 0)
-+		return rc;
-+	return bytes;
-+}
-+
-+/*
-+ * To abort an in-progress request, take pages away from outgoing or
-+ * incoming message.
-+ */
-+void ceph_osdc_abort_request(struct ceph_osd_client *osdc,
-+			     struct ceph_osd_request *req)
-+{
-+	struct ceph_msg *msg;
-+
-+	dout("abort_request tid %llu, revoking %p pages\n", req->r_tid,
-+	     req->r_request);
-+	/*
-+	 * mark req aborted _before_ revoking pages, so that
-+	 * if a racing kick_request _does_ dup the page vec
-+	 * pointer, it will definitely then see the aborted
-+	 * flag and not send the request.
-+	 */
-+	req->r_aborted = 1;
-+	msg = req->r_request;
-+	mutex_lock(&msg->page_mutex);
-+	msg->pages = NULL;
-+	mutex_unlock(&msg->page_mutex);
-+	if (req->r_reply) {
-+		mutex_lock(&req->r_reply->page_mutex);
-+		req->r_reply->pages = NULL;
-+		mutex_unlock(&req->r_reply->page_mutex);
++	dout("put_connection %p nref = %d -> %d\n", con,
++	     atomic_read(&con->nref), atomic_read(&con->nref) - 1);
++	BUG_ON(atomic_read(&con->nref) == 0);
++	if (atomic_dec_and_test(&con->nref)) {
++		dout("put_connection %p destroying\n", con);
++		ceph_msg_put_list(&con->out_queue);
++		ceph_msg_put_list(&con->out_sent);
++		set_bit(CLOSED, &con->state);
++		con_close_socket(con); /* silently ignore possible errors */
++		kfree(con);
 +	}
 +}
 +
 +/*
-+ * sync - wait for all in-flight requests to flush.  avoid starvation.
++ * add a connection to the con_tree.
++ *
++ * called under con_lock.
 + */
-+void ceph_osdc_sync(struct ceph_osd_client *osdc)
++static int __register_connection(struct ceph_messenger *msgr,
++				 struct ceph_connection *con)
 +{
-+	struct ceph_osd_request *req;
-+	u64 last_tid, next_tid = 0;
-+	int got;
-+
-+	mutex_lock(&osdc->request_mutex);
-+	last_tid = osdc->last_tid;
-+	while (1) {
-+		got = radix_tree_gang_lookup(&osdc->request_tree, (void **)&req,
-+					     next_tid, 1);
-+		if (!got)
-+			break;
-+		if (req->r_tid > last_tid)
-+			break;
-+
-+		next_tid = req->r_tid + 1;
-+		if ((req->r_flags & CEPH_OSD_FLAG_WRITE) == 0)
-+			continue;
-+
-+		ceph_osdc_get_request(req);
-+		mutex_unlock(&osdc->request_mutex);
-+		dout("sync waiting on tid %llu (last is %llu)\n",
-+		     req->r_tid, last_tid);
-+		wait_for_completion(&req->r_safe_completion);
-+		mutex_lock(&osdc->request_mutex);
-+		ceph_osdc_put_request(req);
-+	}
-+	mutex_unlock(&osdc->request_mutex);
-+	dout("sync done (thru tid %llu)\n", last_tid);
-+}
-+
-+/*
-+ * init, shutdown
-+ */
-+void ceph_osdc_init(struct ceph_osd_client *osdc, struct ceph_client *client)
-+{
-+	dout("init\n");
-+	osdc->client = client;
-+	osdc->osdmap = NULL;
-+	init_rwsem(&osdc->map_sem);
-+	init_completion(&osdc->map_waiters);
-+	osdc->last_requested_map = 0;
-+	mutex_init(&osdc->request_mutex);
-+	osdc->timeout_tid = 0;
-+	osdc->last_tid = 0;
-+	INIT_RADIX_TREE(&osdc->request_tree, GFP_NOFS);
-+	osdc->num_requests = 0;
-+	INIT_DELAYED_WORK(&osdc->timeout_work, handle_timeout);
-+}
-+
-+void ceph_osdc_stop(struct ceph_osd_client *osdc)
-+{
-+	cancel_delayed_work_sync(&osdc->timeout_work);
-+	if (osdc->osdmap) {
-+		ceph_osdmap_destroy(osdc->osdmap);
-+		osdc->osdmap = NULL;
-+	}
-+}
-+
-+/*
-+ * Read some contiguous pages.  Return number of bytes read (or
-+ * zeroed).
-+ */
-+int ceph_osdc_readpages(struct ceph_osd_client *osdc,
-+			struct ceph_vino vino, struct ceph_file_layout *layout,
-+			u64 off, u64 len,
-+			u32 truncate_seq, u64 truncate_size,
-+			struct page **pages, int num_pages)
-+{
-+	struct ceph_osd_request *req;
-+	int i;
-+	struct page *page;
-+	int rc = 0, read = 0;
-+
-+	dout("readpages on ino %llx.%llx on %llu~%llu\n", vino.ino,
-+	     vino.snap, off, len);
-+	req = ceph_osdc_new_request(osdc, layout, vino, off, &len,
-+				    CEPH_OSD_OP_READ, CEPH_OSD_FLAG_READ,
-+				    NULL, 0, truncate_seq, truncate_size, NULL);
-+	if (IS_ERR(req))
-+		return PTR_ERR(req);
-+
-+	/* it may be a short read due to an object boundary */
-+	req->r_pages = pages;
-+	num_pages = calc_pages_for(off, len);
-+	req->r_num_pages = num_pages;
-+
-+	dout("readpages final extent is %llu~%llu (%d pages)\n",
-+	     off, len, req->r_num_pages);
-+
-+	rc = ceph_osdc_start_request(osdc, req);
-+	if (!rc)
-+		rc = ceph_osdc_wait_request(osdc, req);
-+
-+	if (rc >= 0) {
-+		read = rc;
-+		rc = len;
-+	} else if (rc == -ENOENT) {
-+		rc = len;
-+	}
-+
-+	/* zero trailing pages on success */
-+	if (read < (num_pages << PAGE_CACHE_SHIFT)) {
-+		if (read & ~PAGE_CACHE_MASK) {
-+			i = read >> PAGE_CACHE_SHIFT;
-+			page = pages[i];
-+			dout("readpages zeroing %d %p from %d\n", i, page,
-+			     (int)(read & ~PAGE_CACHE_MASK));
-+			zero_user_segment(page, read & ~PAGE_CACHE_MASK,
-+					  PAGE_CACHE_SIZE);
-+			read += PAGE_CACHE_SIZE;
-+		}
-+		for (i = read >> PAGE_CACHE_SHIFT; i < num_pages; i++) {
-+			page = req->r_pages[i];
-+			dout("readpages zeroing %d %p\n", i, page);
-+			zero_user_segment(page, 0, PAGE_CACHE_SIZE);
-+		}
-+	}
-+
-+	ceph_osdc_put_request(req);
-+	dout("readpages result %d\n", rc);
-+	return rc;
-+}
-+
-+/*
-+ * do a synchronous write on N pages
-+ */
-+int ceph_osdc_writepages(struct ceph_osd_client *osdc, struct ceph_vino vino,
-+			 struct ceph_file_layout *layout,
-+			 struct ceph_snap_context *snapc,
-+			 u64 off, u64 len,
-+			 u32 truncate_seq, u64 truncate_size,
-+			 struct timespec *mtime,
-+			 struct page **pages, int num_pages,
-+			 int flags, int do_sync)
-+{
-+	struct ceph_osd_request *req;
++	struct list_head *head;
++	unsigned long key = hash_addr(&con->peer_addr);
 +	int rc = 0;
 +
-+	BUG_ON(vino.snap != CEPH_NOSNAP);
-+	req = ceph_osdc_new_request(osdc, layout, vino, off, &len,
-+				    CEPH_OSD_OP_WRITE,
-+				    flags | CEPH_OSD_FLAG_ONDISK |
-+					    CEPH_OSD_FLAG_WRITE,
-+				    snapc, do_sync,
-+				    truncate_seq, truncate_size, mtime);
-+	if (IS_ERR(req))
-+		return PTR_ERR(req);
++	dout("register_connection %p %d -> %d\n", con,
++	     atomic_read(&con->nref), atomic_read(&con->nref) + 1);
++	atomic_inc(&con->nref);
 +
-+	/* it may be a short write due to an object boundary */
-+	req->r_pages = pages;
-+	req->r_num_pages = calc_pages_for(off, len);
-+	dout("writepages %llu~%llu (%d pages)\n", off, len,
-+	     req->r_num_pages);
++	/* if were just ACCEPTING this connection, it is already on the
++	 * con_all and con_accepting lists. */
++	if (test_and_clear_bit(ACCEPTING, &con->state)) {
++		list_del_init(&con->list_bucket);
++		put_connection(con);
++	} else {
++		list_add(&con->list_all, &msgr->con_all);
++	}
 +
-+	rc = ceph_osdc_start_request(osdc, req);
-+	if (!rc)
-+		rc = ceph_osdc_wait_request(osdc, req);
-+
-+	ceph_osdc_put_request(req);
-+	if (rc == 0)
-+		rc = len;
-+	dout("writepages result %d\n", rc);
-+	return rc;
++	head = radix_tree_lookup(&msgr->con_tree, key);
++	if (head) {
++		dout("register_connection %p in old bucket %lu head %p\n",
++		     con, key, head);
++		list_add(&con->list_bucket, head);
++	} else {
++		dout("register_connection %p in new bucket %lu head %p\n",
++		     con, key, &con->list_bucket);
++		INIT_LIST_HEAD(&con->list_bucket);   /* empty */
++		rc = radix_tree_insert(&msgr->con_tree, key, &con->list_bucket);
++		if (rc < 0) {
++			list_del(&con->list_all);
++			put_connection(con);
++			return rc;
++		}
++	}
++	set_bit(REGISTERED, &con->state);
++	return 0;
 +}
 +
-diff --git a/fs/ceph/osd_client.h b/fs/ceph/osd_client.h
-new file mode 100644
-index 0000000..53822ac
---- /dev/null
-+++ b/fs/ceph/osd_client.h
-@@ -0,0 +1,125 @@
-+#ifndef _FS_CEPH_OSD_CLIENT_H
-+#define _FS_CEPH_OSD_CLIENT_H
++/*
++ * called under con_lock.
++ */
++static void add_connection_accepting(struct ceph_messenger *msgr,
++				     struct ceph_connection *con)
++{
++	dout("add_connection_accepting %p nref = %d -> %d\n", con,
++	     atomic_read(&con->nref), atomic_read(&con->nref) + 1);
++	atomic_inc(&con->nref);
++	spin_lock(&msgr->con_lock);
++	list_add(&con->list_all, &msgr->con_all);
++	spin_unlock(&msgr->con_lock);
++}
 +
++/*
++ * Remove connection from all list.  Also, from con_tree, if it should
++ * have been there.
++ *
++ * called under con_lock.
++ */
++static void __remove_connection(struct ceph_messenger *msgr,
++				struct ceph_connection *con)
++{
++	unsigned long key;
++	void **slot, *val;
++
++	dout("__remove_connection %p\n", con);
++	if (list_empty(&con->list_all)) {
++		dout("__remove_connection %p not registered\n", con);
++		return;
++	}
++	list_del_init(&con->list_all);
++	if (test_bit(REGISTERED, &con->state)) {
++		key = hash_addr(&con->peer_addr);
++		if (list_empty(&con->list_bucket)) {
++			/* last one in this bucket */
++			dout("__remove_connection %p and bucket %lu\n",
++			     con, key);
++			radix_tree_delete(&msgr->con_tree, key);
++		} else {
++			/* if we share this bucket, and the radix tree points
++			 * to us, adjust it to point to the next guy. */
++			slot = radix_tree_lookup_slot(&msgr->con_tree, key);
++			val = radix_tree_deref_slot(slot);
++			dout("__remove_connection %p from bucket %lu "
++			     "head %p\n", con, key, val);
++			if (val == &con->list_bucket) {
++				dout("__remove_connection adjusting bucket"
++				     " for %lu to next item, %p\n", key,
++				     con->list_bucket.next);
++				radix_tree_replace_slot(slot,
++							con->list_bucket.next);
++			}
++			list_del_init(&con->list_bucket);
++		}
++	}
++	if (test_and_clear_bit(ACCEPTING, &con->state))
++		list_del_init(&con->list_bucket);
++	put_connection(con);
++}
++
++static void remove_connection(struct ceph_messenger *msgr,
++			      struct ceph_connection *con)
++{
++	spin_lock(&msgr->con_lock);
++	__remove_connection(msgr, con);
++	spin_unlock(&msgr->con_lock);
++}
++
++/*
++ * replace another connection
++ *  (old and new should be for the _same_ peer,
++ *   and thus in the same bucket in the radix tree)
++ */
++static void __replace_connection(struct ceph_messenger *msgr,
++				 struct ceph_connection *old,
++				 struct ceph_connection *new)
++{
++	unsigned long key = hash_addr(&new->peer_addr);
++	void **slot;
++
++	dout("replace_connection %p with %p\n", old, new);
++
++	/* replace in con_tree */
++	slot = radix_tree_lookup_slot(&msgr->con_tree, key);
++	if (*slot == &old->list_bucket)
++		radix_tree_replace_slot(slot, &new->list_bucket);
++	else
++		BUG_ON(list_empty(&old->list_bucket));
++	if (!list_empty(&old->list_bucket)) {
++		/* replace old with new in bucket list */
++		list_add(&new->list_bucket, &old->list_bucket);
++		list_del_init(&old->list_bucket);
++	}
++
++	/* take old connections message queue */
++	spin_lock(&old->out_queue_lock);
++	if (!list_empty(&old->out_queue))
++		list_splice_init(&new->out_queue, &old->out_queue);
++	spin_unlock(&old->out_queue_lock);
++
++	new->connect_seq = le32_to_cpu(new->in_connect.connect_seq);
++	new->out_seq = old->out_seq;
++	new->peer_name = old->peer_name;
++
++	set_bit(CLOSED, &old->state);
++	put_connection(old); /* dec reference count */
++
++	clear_bit(ACCEPTING, &new->state);
++}
++
++
++
++
++/*
++ * We maintain a global counter to order connection attempts.  Get
++ * a unique seq greater than @gt.
++ */
++static u32 get_global_seq(struct ceph_messenger *msgr, u32 gt)
++{
++	u32 ret;
++
++	spin_lock(&msgr->global_seq_lock);
++	if (msgr->global_seq < gt)
++		msgr->global_seq = gt;
++	ret = ++msgr->global_seq;
++	spin_unlock(&msgr->global_seq_lock);
++	return ret;
++}
++
++
++
++
++/*
++ * Prepare footer for currently outgoing message, and finish things
++ * off.  Assumes out_kvec* are already valid.. we just add on to the end.
++ */
++static void prepare_write_message_footer(struct ceph_connection *con, int v)
++{
++	struct ceph_msg *m = con->out_msg;
++
++	dout("prepare_write_message_footer %p\n", con);
++	con->out_kvec[v].iov_base = &m->footer;
++	con->out_kvec[v].iov_len = sizeof(m->footer);
++	con->out_kvec_bytes += sizeof(m->footer);
++	con->out_kvec_left++;
++	con->out_more = m->more_to_follow;
++	con->out_msg = NULL;   /* we're done with this one */
++}
++
++/*
++ * Prepare headers for the next outgoing message.
++ */
++static void prepare_write_message(struct ceph_connection *con)
++{
++	struct ceph_msg *m;
++	int v = 0;
++
++	con->out_kvec_bytes = 0;
++
++	/* Sneak an ack in there first?  If we can get it into the same
++	 * TCP packet that's a good thing. */
++	if (con->in_seq > con->in_seq_acked) {
++		con->in_seq_acked = con->in_seq;
++		con->out_kvec[v].iov_base = &tag_ack;
++		con->out_kvec[v++].iov_len = 1;
++		con->out_temp_ack = cpu_to_le32(con->in_seq_acked);
++		con->out_kvec[v].iov_base = &con->out_temp_ack;
++		con->out_kvec[v++].iov_len = 4;
++		con->out_kvec_bytes = 1 + 4;
++	}
++
++	/* move message to sending/sent list */
++	m = list_first_entry(&con->out_queue,
++		       struct ceph_msg, list_head);
++	list_move_tail(&m->list_head, &con->out_sent);
++	con->out_msg = m;   /* we don't bother taking a reference here. */
++
++	dout("prepare_write_message %p seq %lld type %d len %d+%d %d pgs\n",
++	     m, le64_to_cpu(m->hdr.seq), le16_to_cpu(m->hdr.type),
++	     le32_to_cpu(m->hdr.front_len), le32_to_cpu(m->hdr.data_len),
++	     m->nr_pages);
++	BUG_ON(le32_to_cpu(m->hdr.front_len) != m->front.iov_len);
++
++	/* tag + hdr + front */
++	con->out_kvec[v].iov_base = &tag_msg;
++	con->out_kvec[v++].iov_len = 1;
++	con->out_kvec[v].iov_base = &m->hdr;
++	con->out_kvec[v++].iov_len = sizeof(m->hdr);
++	con->out_kvec[v++] = m->front;
++	con->out_kvec_left = v;
++	con->out_kvec_bytes += 1 + sizeof(m->hdr) + m->front.iov_len;
++	con->out_kvec_cur = con->out_kvec;
++
++	/* fill in crc (except data pages), footer */
++	con->out_msg->hdr.crc =
++		cpu_to_le32(crc32c(0, (void *)&m->hdr,
++				      sizeof(m->hdr) - sizeof(m->hdr.crc)));
++	con->out_msg->footer.flags = 0;
++	con->out_msg->footer.front_crc =
++		cpu_to_le32(crc32c(0, m->front.iov_base, m->front.iov_len));
++	con->out_msg->footer.data_crc = 0;
++
++	/* is there a data payload? */
++	if (le32_to_cpu(m->hdr.data_len) > 0) {
++		/* initialize page iterator */
++		con->out_msg_pos.page = 0;
++		con->out_msg_pos.page_pos =
++			le16_to_cpu(m->hdr.data_off) & ~PAGE_MASK;
++		con->out_msg_pos.data_pos = 0;
++		con->out_msg_pos.did_page_crc = 0;
++		con->out_more = 1;  /* data + footer will follow */
++	} else {
++		/* no, queue up footer too and be done */
++		prepare_write_message_footer(con, v);
++	}
++
++	set_bit(WRITE_PENDING, &con->state);
++}
++
++/*
++ * Prepare an ack.
++ */
++static void prepare_write_ack(struct ceph_connection *con)
++{
++	dout("prepare_write_ack %p %u -> %u\n", con,
++	     con->in_seq_acked, con->in_seq);
++	con->in_seq_acked = con->in_seq;
++
++	con->out_kvec[0].iov_base = &tag_ack;
++	con->out_kvec[0].iov_len = 1;
++	con->out_temp_ack = cpu_to_le32(con->in_seq_acked);
++	con->out_kvec[1].iov_base = &con->out_temp_ack;
++	con->out_kvec[1].iov_len = 4;
++	con->out_kvec_left = 2;
++	con->out_kvec_bytes = 1 + 4;
++	con->out_kvec_cur = con->out_kvec;
++	con->out_more = 1;  /* more will follow.. eventually.. */
++	set_bit(WRITE_PENDING, &con->state);
++}
++
++/*
++ * Connection negotiation.
++ */
++
++/*
++ * We connected to a peer and are saying hello.
++ */
++static void prepare_write_connect(struct ceph_messenger *msgr,
++				  struct ceph_connection *con)
++{
++	int len = strlen(CEPH_BANNER);
++
++	dout("prepare_write_connect %p\n", con);
++	con->out_connect.host_type = cpu_to_le32(CEPH_ENTITY_TYPE_CLIENT);
++	con->out_connect.connect_seq = cpu_to_le32(con->connect_seq);
++	con->out_connect.global_seq =
++		cpu_to_le32(get_global_seq(con->msgr, 0));
++	con->out_connect.flags = 0;
++	if (test_bit(LOSSYTX, &con->state))
++		con->out_connect.flags = CEPH_MSG_CONNECT_LOSSY;
++
++	con->out_kvec[0].iov_base = CEPH_BANNER;
++	con->out_kvec[0].iov_len = len;
++	con->out_kvec[1].iov_base = &msgr->inst.addr;
++	con->out_kvec[1].iov_len = sizeof(msgr->inst.addr);
++	con->out_kvec[2].iov_base = &con->out_connect;
++	con->out_kvec[2].iov_len = sizeof(con->out_connect);
++	con->out_kvec_left = 3;
++	con->out_kvec_bytes = len + sizeof(msgr->inst.addr) +
++		sizeof(con->out_connect);
++	con->out_kvec_cur = con->out_kvec;
++	con->out_more = 0;
++	set_bit(WRITE_PENDING, &con->state);
++}
++
++static void prepare_write_connect_retry(struct ceph_messenger *msgr,
++					struct ceph_connection *con)
++{
++	dout("prepare_write_connect_retry %p\n", con);
++	con->out_connect.connect_seq = cpu_to_le32(con->connect_seq);
++	con->out_connect.global_seq =
++		cpu_to_le32(get_global_seq(con->msgr, 0));
++
++	con->out_kvec[0].iov_base = &con->out_connect;
++	con->out_kvec[0].iov_len = sizeof(con->out_connect);
++	con->out_kvec_left = 1;
++	con->out_kvec_bytes = sizeof(con->out_connect);
++	con->out_kvec_cur = con->out_kvec;
++	con->out_more = 0;
++	set_bit(WRITE_PENDING, &con->state);
++}
++
++/*
++ * We accepted a connection and are saying hello.
++ */
++static void prepare_write_accept_hello(struct ceph_messenger *msgr,
++				       struct ceph_connection *con)
++{
++	int len = strlen(CEPH_BANNER);
++
++	dout("prepare_write_accept_hello %p\n", con);
++	con->out_kvec[0].iov_base = CEPH_BANNER;
++	con->out_kvec[0].iov_len = len;
++	con->out_kvec[1].iov_base = &msgr->inst.addr;
++	con->out_kvec[1].iov_len = sizeof(msgr->inst.addr);
++	con->out_kvec_left = 2;
++	con->out_kvec_bytes = len + sizeof(msgr->inst.addr);
++	con->out_kvec_cur = con->out_kvec;
++	con->out_more = 0;
++	set_bit(WRITE_PENDING, &con->state);
++}
++
++/*
++ * Reply to a connect attempt, indicating whether the negotiation has
++ * succeeded or must continue.
++ */
++static void prepare_write_accept_reply(struct ceph_connection *con, bool retry)
++{
++	dout("prepare_write_accept_reply %p\n", con);
++	con->out_reply.flags = 0;
++	if (test_bit(LOSSYTX, &con->state))
++		con->out_reply.flags = CEPH_MSG_CONNECT_LOSSY;
++
++	con->out_kvec[0].iov_base = &con->out_reply;
++	con->out_kvec[0].iov_len = sizeof(con->out_reply);
++	con->out_kvec_left = 1;
++	con->out_kvec_bytes = sizeof(con->out_reply);
++	con->out_kvec_cur = con->out_kvec;
++	con->out_more = 0;
++	set_bit(WRITE_PENDING, &con->state);
++
++	if (retry)
++		/* we'll re-read the connect request, sans the hello + addr */
++		con->in_base_pos = strlen(CEPH_BANNER) +
++			sizeof(con->msgr->inst.addr);
++}
++
++
++
++/*
++ * write as much of pending kvecs to the socket as we can.
++ *  1 -> done
++ *  0 -> socket full, but more to do
++ * <0 -> error
++ */
++static int write_partial_kvec(struct ceph_connection *con)
++{
++	int ret;
++
++	dout("write_partial_kvec %p %d left\n", con, con->out_kvec_bytes);
++	while (con->out_kvec_bytes > 0) {
++		ret = ceph_tcp_sendmsg(con->sock, con->out_kvec_cur,
++				       con->out_kvec_left, con->out_kvec_bytes,
++				       con->out_more);
++		if (ret <= 0)
++			goto out;
++		con->out_kvec_bytes -= ret;
++		if (con->out_kvec_bytes == 0)
++			break;            /* done */
++		while (ret > 0) {
++			if (ret >= con->out_kvec_cur->iov_len) {
++				ret -= con->out_kvec_cur->iov_len;
++				con->out_kvec_cur++;
++				con->out_kvec_left--;
++			} else {
++				con->out_kvec_cur->iov_len -= ret;
++				con->out_kvec_cur->iov_base += ret;
++				ret = 0;
++				break;
++			}
++		}
++	}
++	con->out_kvec_left = 0;
++	ret = 1;
++out:
++	dout("write_partial_kvec %p %d left in %d kvecs ret = %d\n", con,
++	     con->out_kvec_bytes, con->out_kvec_left, ret);
++	return ret;  /* done! */
++}
++
++/*
++ * Write as much message data payload as we can.  If we finish, queue
++ * up the footer.
++ *  1 -> done, footer is now queued in out_kvec[].
++ *  0 -> socket full, but more to do
++ * <0 -> error
++ */
++static int write_partial_msg_pages(struct ceph_connection *con)
++{
++	struct ceph_client *client = con->msgr->parent;
++	struct ceph_msg *msg = con->out_msg;
++	unsigned data_len = le32_to_cpu(msg->hdr.data_len);
++	size_t len;
++	int crc = !ceph_test_opt(client, NOCRC);
++	int ret;
++
++	dout("write_partial_msg_pages %p msg %p page %d/%d offset %d\n",
++	     con, con->out_msg, con->out_msg_pos.page, con->out_msg->nr_pages,
++	     con->out_msg_pos.page_pos);
++
++	while (con->out_msg_pos.page < con->out_msg->nr_pages) {
++		struct page *page = NULL;
++		void *kaddr = NULL;
++
++		/*
++		 * if we are calculating the data crc (the default), we need
++		 * to map the page.  if our pages[] has been revoked, use the
++		 * zero page.
++		 */
++		mutex_lock(&msg->page_mutex);
++		if (msg->pages) {
++			page = msg->pages[con->out_msg_pos.page];
++			if (crc)
++				kaddr = kmap(page);
++		} else {
++			page = con->msgr->zero_page;
++			if (crc)
++				kaddr = page_address(con->msgr->zero_page);
++		}
++		len = min((int)(PAGE_SIZE - con->out_msg_pos.page_pos),
++			  (int)(data_len - con->out_msg_pos.data_pos));
++		if (crc && !con->out_msg_pos.did_page_crc) {
++			void *base = kaddr + con->out_msg_pos.page_pos;
++			u32 tmpcrc = le32_to_cpu(con->out_msg->footer.data_crc);
++
++			con->out_msg->footer.data_crc =
++				cpu_to_le32(crc32c(tmpcrc, base, len));
++			con->out_msg_pos.did_page_crc = 1;
++		}
++
++		ret = kernel_sendpage(con->sock, page,
++				      con->out_msg_pos.page_pos, len,
++				      MSG_DONTWAIT | MSG_NOSIGNAL |
++				      MSG_MORE);
++
++		if (crc && msg->pages)
++			kunmap(page);
++
++		mutex_unlock(&msg->page_mutex);
++		if (ret <= 0)
++			goto out;
++
++		con->out_msg_pos.data_pos += ret;
++		con->out_msg_pos.page_pos += ret;
++		if (ret == len) {
++			con->out_msg_pos.page_pos = 0;
++			con->out_msg_pos.page++;
++			con->out_msg_pos.did_page_crc = 0;
++		}
++	}
++
++	dout("write_partial_msg_pages %p msg %p done\n", con, msg);
++
++	/* prepare and queue up footer, too */
++	if (!crc)
++		con->out_msg->footer.flags |=
++			cpu_to_le32(CEPH_MSG_FOOTER_NOCRC);
++	con->out_kvec_bytes = 0;
++	con->out_kvec_left = 0;
++	con->out_kvec_cur = con->out_kvec;
++	prepare_write_message_footer(con, 0);
++	ret = 1;
++out:
++	return ret;
++}
++
++
++
++/*
++ * Prepare to read connection handshake, or an ack.
++ */
++static void prepare_read_connect(struct ceph_connection *con)
++{
++	dout("prepare_read_connect %p\n", con);
++	con->in_base_pos = 0;
++}
++
++static void prepare_read_ack(struct ceph_connection *con)
++{
++	dout("prepare_read_ack %p\n", con);
++	con->in_base_pos = 0;
++}
++
++static void prepare_read_tag(struct ceph_connection *con)
++{
++	dout("prepare_read_tag %p\n", con);
++	con->in_base_pos = 0;
++	con->in_tag = CEPH_MSGR_TAG_READY;
++}
++
++/*
++ * Prepare to read a message.
++ */
++static int prepare_read_message(struct ceph_connection *con)
++{
++	int err;
++
++	dout("prepare_read_message %p\n", con);
++	con->in_base_pos = 0;
++	BUG_ON(con->in_msg != NULL);
++	con->in_msg = ceph_msg_new(0, 0, 0, 0, NULL);
++	if (IS_ERR(con->in_msg)) {
++		err = PTR_ERR(con->in_msg);
++		con->in_msg = NULL;
++		con->error_msg = "out of memory for incoming message";
++		return err;
++	}
++	con->in_front_crc = con->in_data_crc = 0;
++	return 0;
++}
++
++
++static int read_partial(struct ceph_connection *con,
++			int *to, int size, void *object)
++{
++	*to += size;
++	while (con->in_base_pos < *to) {
++		int left = *to - con->in_base_pos;
++		int have = size - left;
++		int ret = ceph_tcp_recvmsg(con->sock, object + have, left);
++		if (ret <= 0)
++			return ret;
++		con->in_base_pos += ret;
++	}
++	return 1;
++}
++
++
++/*
++ * Read all or part of the connect-side handshake on a new connection
++ */
++static int read_partial_connect(struct ceph_connection *con)
++{
++	int ret, to = 0;
++
++	dout("read_partial_connect %p at %d\n", con, con->in_base_pos);
++
++	/* peer's banner */
++	ret = read_partial(con, &to, strlen(CEPH_BANNER), con->in_banner);
++	if (ret <= 0)
++		goto out;
++	ret = read_partial(con, &to, sizeof(con->actual_peer_addr),
++			   &con->actual_peer_addr);
++	if (ret <= 0)
++		goto out;
++	ret = read_partial(con, &to, sizeof(con->in_reply), &con->in_reply);
++	if (ret <= 0)
++		goto out;
++
++	dout("read_partial_connect %p connect_seq = %u, global_seq = %u\n",
++	     con, le32_to_cpu(con->in_reply.connect_seq),
++	     le32_to_cpu(con->in_reply.global_seq));
++out:
++	return ret;
++}
++
++/*
++ * Verify the hello banner looks okay.
++ */
++static int verify_hello(struct ceph_connection *con)
++{
++	if (memcmp(con->in_banner, CEPH_BANNER, strlen(CEPH_BANNER))) {
++		pr_err("ceph connect to/from %u.%u.%u.%u:%u has bad banner\n",
++		       IPQUADPORT(con->peer_addr.ipaddr));
++		con->error_msg = "protocol error, bad banner";
++		return -1;
++	}
++	return 0;
++}
++
++/*
++ * Reset a connection.  Discard all incoming and outgoing messages
++ * and clear *_seq state.
++ */
++static void reset_connection(struct ceph_connection *con)
++{
++	pr_err("ceph %s%d %u.%u.%u.%u:%u connection reset\n",
++	       ENTITY_NAME(con->peer_name),
++	       IPQUADPORT(con->peer_addr.ipaddr));
++
++	/* reset connection, out_queue, msg_ and connect_seq */
++	/* discard existing out_queue and msg_seq */
++	spin_lock(&con->out_queue_lock);
++	ceph_msg_put_list(&con->out_queue);
++	ceph_msg_put_list(&con->out_sent);
++
++	con->connect_seq = 0;
++	con->out_seq = 0;
++	con->out_msg = NULL;
++	con->in_seq = 0;
++	con->in_msg = NULL;
++	spin_unlock(&con->out_queue_lock);
++}
++
++
++static int process_connect(struct ceph_connection *con)
++{
++	dout("process_connect on %p tag %d\n", con, (int)con->in_tag);
++
++	if (verify_hello(con) < 0)
++		return -1;
++
++	/*
++	 * Make sure the other end is who we wanted.  note that the other
++	 * end may not yet know their ip address, so if it's 0.0.0.0, give
++	 * them the benefit of the doubt.
++	 */
++	if (!ceph_entity_addr_is_local(&con->peer_addr,
++				       &con->actual_peer_addr) &&
++	    !(con->actual_peer_addr.ipaddr.sin_addr.s_addr == 0 &&
++	      con->actual_peer_addr.ipaddr.sin_port ==
++	      con->peer_addr.ipaddr.sin_port &&
++	      con->actual_peer_addr.nonce == con->peer_addr.nonce)) {
++		pr_err("ceph wrong peer, want %u.%u.%u.%u:%u/%d, "
++		       "got %u.%u.%u.%u:%u/%d, wtf\n",
++		       IPQUADPORT(con->peer_addr.ipaddr),
++		       con->peer_addr.nonce,
++		       IPQUADPORT(con->actual_peer_addr.ipaddr),
++		       con->actual_peer_addr.nonce);
++		con->error_msg = "protocol error, wrong peer";
++		return -1;
++	}
++
++	switch (con->in_reply.tag) {
++	case CEPH_MSGR_TAG_RESETSESSION:
++		/*
++		 * If we connected with a large connect_seq but the peer
++		 * has no record of a session with us (no connection, or
++		 * connect_seq == 0), they will send RESETSESION to indicate
++		 * that they must have reset their session, and may have
++		 * dropped messages.
++		 */
++		dout("process_connect got RESET peer seq %u\n",
++		     le32_to_cpu(con->in_connect.connect_seq));
++		reset_connection(con);
++		prepare_write_connect_retry(con->msgr, con);
++		prepare_read_connect(con);
++
++		/* Tell ceph about it. */
++		con->msgr->peer_reset(con->msgr->parent, &con->peer_addr,
++				      &con->peer_name);
++		break;
++
++	case CEPH_MSGR_TAG_RETRY_SESSION:
++		/*
++		 * If we sent a smaller connect_seq than the peer has, try
++		 * again with a larger value.
++		 */
++		dout("process_connect got RETRY my seq = %u, peer_seq = %u\n",
++		     le32_to_cpu(con->out_connect.connect_seq),
++		     le32_to_cpu(con->in_connect.connect_seq));
++		con->connect_seq = le32_to_cpu(con->in_connect.connect_seq);
++		prepare_write_connect_retry(con->msgr, con);
++		prepare_read_connect(con);
++		break;
++
++	case CEPH_MSGR_TAG_RETRY_GLOBAL:
++		/*
++		 * If we sent a smaller global_seq than the peer has, try
++		 * again with a larger value.
++		 */
++		dout("process_connect got RETRY_GLOBAL my %u, peer_gseq = %u\n",
++		     con->peer_global_seq,
++		     le32_to_cpu(con->in_connect.global_seq));
++		get_global_seq(con->msgr,
++			       le32_to_cpu(con->in_connect.global_seq));
++		prepare_write_connect_retry(con->msgr, con);
++		prepare_read_connect(con);
++		break;
++
++	case CEPH_MSGR_TAG_WAIT:
++		/*
++		 * If there is a connection race (we are opening connections to
++		 * each other), one of us may just have to WAIT.  We will keep
++		 * our queued messages, in expectation of being replaced by an
++		 * incoming connection.
++		 */
++		dout("process_connect peer connecting WAIT\n");
++		set_bit(WAIT, &con->state);
++		con_close_socket(con);
++		break;
++
++	case CEPH_MSGR_TAG_READY:
++		clear_bit(CONNECTING, &con->state);
++		if (con->in_reply.flags & CEPH_MSG_CONNECT_LOSSY)
++			set_bit(LOSSYRX, &con->state);
++		con->peer_global_seq = le32_to_cpu(con->in_reply.global_seq);
++		con->connect_seq++;
++		dout("process_connect got READY gseq %d cseq %d (%d)\n",
++		     con->peer_global_seq,
++		     le32_to_cpu(con->in_reply.connect_seq),
++		     con->connect_seq);
++		WARN_ON(con->connect_seq !=
++			le32_to_cpu(con->in_reply.connect_seq));
++
++		con->delay = 0;  /* reset backoff memory */
++		prepare_read_tag(con);
++		break;
++
++	default:
++		pr_err("ceph connect protocol error, will retry\n");
++		con->error_msg = "protocol error, garbage tag during connect";
++		return -1;
++	}
++	return 0;
++}
++
++
++/*
++ * Read all or part of the accept-side handshake on a newly accepted
++ * connection.
++ */
++static int read_partial_accept(struct ceph_connection *con)
++{
++	int ret;
++	int to = 0;
++
++	/* banner */
++	ret = read_partial(con, &to, strlen(CEPH_BANNER), con->in_banner);
++	if (ret <= 0)
++		return ret;
++	ret = read_partial(con, &to, sizeof(con->peer_addr), &con->peer_addr);
++	if (ret <= 0)
++		return ret;
++	ret = read_partial(con, &to, sizeof(con->in_connect), &con->in_connect);
++	if (ret <= 0)
++		return ret;
++	return 1;
++}
++
++/*
++ * Call after a new connection's handshake has been read.
++ */
++static int process_accept(struct ceph_connection *con)
++{
++	struct ceph_connection *existing;
++	struct ceph_messenger *msgr = con->msgr;
++	u32 peer_gseq = le32_to_cpu(con->in_connect.global_seq);
++	u32 peer_cseq = le32_to_cpu(con->in_connect.connect_seq);
++	bool retry = true;
++	bool replace = false;
++
++	dout("process_accept %p got gseq %d cseq %d\n", con,
++	     peer_gseq, peer_cseq);
++
++	if (verify_hello(con) < 0)
++		return -1;
++
++	/* note flags */
++	if (con->in_connect.flags & CEPH_MSG_CONNECT_LOSSY)
++		set_bit(LOSSYRX, &con->state);
++
++	/* do we have an existing connection for this peer? */
++	if (radix_tree_preload(GFP_NOFS) < 0) {
++		pr_err("ceph ENOMEM in process_accept\n");
++		con->error_msg = "out of memory";
++		return -1;
++	}
++
++	memset(&con->out_reply, 0, sizeof(con->out_reply));
++
++	spin_lock(&msgr->con_lock);
++	existing = __get_connection(msgr, &con->peer_addr);
++	if (existing) {
++		if (peer_gseq < existing->peer_global_seq) {
++			/* out of order connection attempt */
++			con->out_reply.tag = CEPH_MSGR_TAG_RETRY_GLOBAL;
++			con->out_reply.global_seq =
++				cpu_to_le32(con->peer_global_seq);
++			goto reply;
++		}
++		if (test_bit(LOSSYTX, &existing->state)) {
++			dout("process_accept %p replacing LOSSYTX %p\n",
++			     con, existing);
++			replace = true;
++			goto accept;
++		}
++		if (peer_cseq < existing->connect_seq) {
++			if (peer_cseq == 0) {
++				/* peer reset, then connected to us */
++				reset_connection(existing);
++				con->msgr->peer_reset(con->msgr->parent,
++						      &con->peer_addr,
++						      &con->peer_name);
++				replace = true;
++				goto accept;
++			}
++
++			/* old attempt or peer didn't get the READY */
++			con->out_reply.tag = CEPH_MSGR_TAG_RETRY_SESSION;
++			con->out_reply.connect_seq =
++				cpu_to_le32(existing->connect_seq);
++			goto reply;
++		}
++
++		if (peer_cseq == existing->connect_seq) {
++			/* connection race */
++			dout("process_accept connection race state = %lu\n",
++			     con->state);
++			if (ceph_entity_addr_equal(&msgr->inst.addr,
++						   &con->peer_addr)) {
++				/* incoming connection wins.. */
++				replace = true;
++				goto accept;
++			}
++
++			/* our existing outgoing connection wins, tell peer
++			   to wait for our outging connection to go through */
++			con->out_reply.tag = CEPH_MSGR_TAG_WAIT;
++			goto reply;
++		}
++
++		if (existing->connect_seq == 0 &&
++		    peer_cseq > existing->connect_seq) {
++			/* we reset and already reconnecting */
++			con->out_reply.tag = CEPH_MSGR_TAG_RESETSESSION;
++			goto reply;
++		}
++
++		WARN_ON(le32_to_cpu(con->in_connect.connect_seq) <=
++						existing->connect_seq);
++		WARN_ON(le32_to_cpu(con->in_connect.global_seq) <
++						existing->peer_global_seq);
++		if (existing->connect_seq == 0) {
++			/* we reset, sending RESETSESSION */
++			con->out_reply.tag = CEPH_MSGR_TAG_RESETSESSION;
++			goto reply;
++		}
++
++		/* reconnect, replace connection */
++		replace = true;
++		goto accept;
++	}
++
++	if (peer_cseq == 0) {
++		dout("process_accept no existing connection, opening\n");
++		goto accept;
++	} else {
++		dout("process_accept no existing connection, we reset\n");
++		con->out_reply.tag = CEPH_MSGR_TAG_RESETSESSION;
++		goto reply;
++	}
++
++
++accept:
++	/* accept this connection */
++	con->connect_seq = peer_cseq + 1;
++	con->peer_global_seq = peer_gseq;
++	dout("process_accept %p cseq %d peer_gseq %d %s\n", con,
++	     con->connect_seq, peer_gseq, replace ? "replace" : "new");
++
++	con->out_reply.tag = CEPH_MSGR_TAG_READY;
++	con->out_reply.global_seq = cpu_to_le32(get_global_seq(con->msgr, 0));
++	con->out_reply.connect_seq = cpu_to_le32(peer_cseq + 1);
++
++	retry = false;
++	prepare_read_tag(con);
++
++	/* do this _after_ con is ready to go */
++	if (replace)
++		__replace_connection(msgr, existing, con);
++	else
++		__register_connection(msgr, con);
++	put_connection(con);
++
++reply:
++	if (existing)
++		put_connection(existing);
++	prepare_write_accept_reply(con, retry);
++
++	spin_unlock(&msgr->con_lock);
++	radix_tree_preload_end();
++
++	ceph_queue_con(con);
++	return 0;
++}
++
++/*
++ * read (part of) an ack
++ */
++static int read_partial_ack(struct ceph_connection *con)
++{
++	int to = 0;
++
++	return read_partial(con, &to, sizeof(con->in_temp_ack),
++			    &con->in_temp_ack);
++}
++
++
++/*
++ * We can finally discard anything that's been acked.
++ */
++static void process_ack(struct ceph_connection *con)
++{
++	struct ceph_msg *m;
++	u32 ack = le32_to_cpu(con->in_temp_ack);
++	u64 seq;
++
++	spin_lock(&con->out_queue_lock);
++	while (!list_empty(&con->out_sent)) {
++		m = list_first_entry(&con->out_sent, struct ceph_msg,
++				     list_head);
++		seq = le64_to_cpu(m->hdr.seq);
++		if (seq > ack)
++			break;
++		dout("got ack for seq %llu type %d at %p\n", seq,
++		     le16_to_cpu(m->hdr.type), m);
++		ceph_msg_remove(m);
++	}
++	spin_unlock(&con->out_queue_lock);
++	prepare_read_tag(con);
++}
++
++
++
++
++
++
++/*
++ * read (part of) a message.
++ */
++static int read_partial_message(struct ceph_connection *con)
++{
++	struct ceph_msg *m = con->in_msg;
++	void *p;
++	int ret;
++	int to, want, left;
++	unsigned front_len, data_len, data_off;
++	struct ceph_client *client = con->msgr->parent;
++	int datacrc = !ceph_test_opt(client, NOCRC);
++
++	dout("read_partial_message con %p msg %p\n", con, m);
++
++	/* header */
++	while (con->in_base_pos < sizeof(m->hdr)) {
++		left = sizeof(m->hdr) - con->in_base_pos;
++		ret = ceph_tcp_recvmsg(con->sock,
++				       (char *)&m->hdr + con->in_base_pos,
++				       left);
++		if (ret <= 0)
++			return ret;
++		con->in_base_pos += ret;
++		if (con->in_base_pos == sizeof(m->hdr)) {
++			u32 crc = crc32c(0, (void *)&m->hdr,
++				    sizeof(m->hdr) - sizeof(m->hdr.crc));
++			if (crc != le32_to_cpu(m->hdr.crc)) {
++				pr_err("ceph read_partial_message %p bad hdr "
++				       " crc %u != expected %u\n",
++				       m, crc, m->hdr.crc);
++				return -EBADMSG;
++			}
++		}
++	}
++
++	/* front */
++	front_len = le32_to_cpu(m->hdr.front_len);
++	if (front_len > CEPH_MSG_MAX_FRONT_LEN)
++		return -EIO;
++
++	while (m->front.iov_len < front_len) {
++		if (m->front.iov_base == NULL) {
++			m->front.iov_base = kmalloc(front_len, GFP_NOFS);
++			if (m->front.iov_base == NULL)
++				return -ENOMEM;
++		}
++		left = front_len - m->front.iov_len;
++		ret = ceph_tcp_recvmsg(con->sock, (char *)m->front.iov_base +
++				       m->front.iov_len, left);
++		if (ret <= 0)
++			return ret;
++		m->front.iov_len += ret;
++		if (m->front.iov_len == front_len)
++			con->in_front_crc = crc32c(0, m->front.iov_base,
++						      m->front.iov_len);
++	}
++
++	/* (page) data */
++	data_len = le32_to_cpu(m->hdr.data_len);
++	if (data_len > CEPH_MSG_MAX_DATA_LEN)
++		return -EIO;
++
++	data_off = le16_to_cpu(m->hdr.data_off);
++	if (data_len == 0)
++		goto no_data;
++
++	if (m->nr_pages == 0) {
++		con->in_msg_pos.page = 0;
++		con->in_msg_pos.page_pos = data_off & ~PAGE_MASK;
++		con->in_msg_pos.data_pos = 0;
++		/* find pages for data payload */
++		want = calc_pages_for(data_off & ~PAGE_MASK, data_len);
++		ret = 0;
++		BUG_ON(!con->msgr->prepare_pages);
++		ret = con->msgr->prepare_pages(con->msgr->parent, m, want);
++		if (ret < 0) {
++			dout("prepare_pages failed, skipping payload\n");
++			con->in_base_pos = -data_len - sizeof(m->footer);
++			ceph_msg_put(con->in_msg);
++			con->in_msg = NULL;
++			con->in_tag = CEPH_MSGR_TAG_READY;
++			return 0;
++		}
++		BUG_ON(m->nr_pages < want);
++	}
++	while (con->in_msg_pos.data_pos < data_len) {
++		left = min((int)(data_len - con->in_msg_pos.data_pos),
++			   (int)(PAGE_SIZE - con->in_msg_pos.page_pos));
++		mutex_lock(&m->page_mutex);
++		if (!m->pages) {
++			dout("pages revoked during msg read\n");
++			mutex_unlock(&m->page_mutex);
++			con->in_base_pos = con->in_msg_pos.data_pos - data_len -
++				sizeof(m->footer);
++			ceph_msg_put(m);
++			con->in_msg = NULL;
++			con->in_tag = CEPH_MSGR_TAG_READY;
++			return 0;
++		}
++		p = kmap(m->pages[con->in_msg_pos.page]);
++		ret = ceph_tcp_recvmsg(con->sock, p + con->in_msg_pos.page_pos,
++				       left);
++		if (ret > 0 && datacrc)
++			con->in_data_crc =
++				crc32c(con->in_data_crc,
++					  p + con->in_msg_pos.page_pos, ret);
++		kunmap(m->pages[con->in_msg_pos.page]);
++		mutex_unlock(&m->page_mutex);
++		if (ret <= 0)
++			return ret;
++		con->in_msg_pos.data_pos += ret;
++		con->in_msg_pos.page_pos += ret;
++		if (con->in_msg_pos.page_pos == PAGE_SIZE) {
++			con->in_msg_pos.page_pos = 0;
++			con->in_msg_pos.page++;
++		}
++	}
++
++no_data:
++	/* footer */
++	to = sizeof(m->hdr) + sizeof(m->footer);
++	while (con->in_base_pos < to) {
++		left = to - con->in_base_pos;
++		ret = ceph_tcp_recvmsg(con->sock, (char *)&m->footer +
++				       (con->in_base_pos - sizeof(m->hdr)),
++				       left);
++		if (ret <= 0)
++			return ret;
++		con->in_base_pos += ret;
++	}
++	dout("read_partial_message got msg %p\n", m);
++
++	/* crc ok? */
++	if (con->in_front_crc != le32_to_cpu(m->footer.front_crc)) {
++		pr_err("ceph read_partial_message %p front crc %u != exp. %u\n",
++		       con->in_msg,
++		       con->in_front_crc, m->footer.front_crc);
++		return -EBADMSG;
++	}
++	if (datacrc &&
++	    (le32_to_cpu(m->footer.flags) & CEPH_MSG_FOOTER_NOCRC) == 0 &&
++	    con->in_data_crc != le32_to_cpu(m->footer.data_crc)) {
++		int cur_page, data_pos;
++		pr_err("ceph read_partial_message %p data crc %u != exp. %u\n",
++		       con->in_msg,
++		       con->in_data_crc, m->footer.data_crc);
++		for (data_pos = 0, cur_page = 0; data_pos < data_len;
++		     data_pos += PAGE_SIZE, cur_page++) {
++			left = min((int)(data_len - data_pos),
++			   (int)(PAGE_SIZE));
++			mutex_lock(&m->page_mutex);
++
++			if (!m->pages) {
++				mutex_unlock(&m->page_mutex);
++				break;
++			}
++
++			p = kmap(m->pages[cur_page]);
++
++			kunmap(m->pages[0]);
++			mutex_unlock(&m->page_mutex);
++		}
++		return -EBADMSG;
++	}
++
++	/* did i learn my ip? */
++	if (con->msgr->inst.addr.ipaddr.sin_addr.s_addr == htonl(INADDR_ANY)) {
++		/*
++		 * in practice, we learn our ip from the first incoming mon
++		 * message, before anyone else knows we exist, so this is
++		 * safe.
++		 */
++		con->msgr->inst.addr.ipaddr = con->in_msg->hdr.dst.addr.ipaddr;
++		dout("read_partial_message learned my addr is "
++		     "%u.%u.%u.%u:%u\n",
++		     IPQUADPORT(con->msgr->inst.addr.ipaddr));
++	}
++
++	return 1; /* done! */
++}
++
++/*
++ * Process message.  This happens in the worker thread.  The callback should
++ * be careful not to do anything that waits on other incoming messages or it
++ * may deadlock.
++ */
++static void process_message(struct ceph_connection *con)
++{
++	/* if first message, set peer_name */
++	if (con->peer_name.type == 0)
++		con->peer_name = con->in_msg->hdr.src.name;
++
++	spin_lock(&con->out_queue_lock);
++	con->in_seq++;
++	spin_unlock(&con->out_queue_lock);
++
++	dout("===== %p %llu from %s%d %d=%s len %d+%d (%u %u) =====\n",
++	     con->in_msg, le64_to_cpu(con->in_msg->hdr.seq),
++	     ENTITY_NAME(con->in_msg->hdr.src.name),
++	     le16_to_cpu(con->in_msg->hdr.type),
++	     ceph_msg_type_name(le16_to_cpu(con->in_msg->hdr.type)),
++	     le32_to_cpu(con->in_msg->hdr.front_len),
++	     le32_to_cpu(con->in_msg->hdr.data_len),
++	     con->in_front_crc, con->in_data_crc);
++	con->msgr->dispatch(con->msgr->parent, con->in_msg);
++	con->in_msg = NULL;
++	prepare_read_tag(con);
++}
++
++
++
++
++
++
++
++
++/*
++ * Write something to the socket.  Called in a worker thread when the
++ * socket appears to be writeable and we have something ready to send.
++ */
++static int try_write(struct ceph_connection *con)
++{
++	struct ceph_messenger *msgr = con->msgr;
++	int ret = 1;
++
++	dout("try_write start %p state %lu nref %d\n", con, con->state,
++	     atomic_read(&con->nref));
++
++more:
++	dout("try_write out_kvec_bytes %d\n", con->out_kvec_bytes);
++
++	/* open the socket first? */
++	if (con->sock == NULL) {
++		/*
++		 * if we were STANDBY and are reconnecting _this_
++		 * connection, bump connect_seq now.  Always bump
++		 * global_seq.
++		 */
++		if (test_and_clear_bit(STANDBY, &con->state))
++			con->connect_seq++;
++
++		prepare_write_connect(msgr, con);
++		prepare_read_connect(con);
++		set_bit(CONNECTING, &con->state);
++
++		con->in_tag = CEPH_MSGR_TAG_READY;
++		dout("try_write initiating connect on %p new state %lu\n",
++		     con, con->state);
++		con->sock = ceph_tcp_connect(con);
++		if (IS_ERR(con->sock)) {
++			con->sock = NULL;
++			con->error_msg = "connect error";
++			ret = -1;
++			goto out;
++		}
++	}
++
++more_kvec:
++	/* kvec data queued? */
++	if (con->out_kvec_left) {
++		ret = write_partial_kvec(con);
++		if (ret <= 0)
++			goto done;
++		if (ret < 0) {
++			dout("try_write write_partial_kvec err %d\n", ret);
++			goto done;
++		}
++	}
++
++	/* msg pages? */
++	if (con->out_msg) {
++		ret = write_partial_msg_pages(con);
++		if (ret == 1)
++			goto more_kvec;  /* we need to send the footer, too! */
++		if (ret == 0)
++			goto done;
++		if (ret < 0) {
++			dout("try_write write_partial_msg_pages err %d\n",
++			     ret);
++			goto done;
++		}
++	}
++
++	if (!test_bit(CONNECTING, &con->state)) {
++		/* is anything else pending? */
++		spin_lock(&con->out_queue_lock);
++		if (!list_empty(&con->out_queue)) {
++			prepare_write_message(con);
++			spin_unlock(&con->out_queue_lock);
++			goto more;
++		}
++		if (con->in_seq > con->in_seq_acked) {
++			prepare_write_ack(con);
++			spin_unlock(&con->out_queue_lock);
++			goto more;
++		}
++		spin_unlock(&con->out_queue_lock);
++	}
++
++	/* Nothing to do! */
++	clear_bit(WRITE_PENDING, &con->state);
++	dout("try_write nothing else to write.\n");
++done:
++	ret = 0;
++out:
++	dout("try_write done on %p\n", con);
++	return ret;
++}
++
++
++
++/*
++ * Read what we can from the socket.
++ */
++static int try_read(struct ceph_connection *con)
++{
++	struct ceph_messenger *msgr;
++	int ret = -1;
++
++	if (!con->sock)
++		return 0;
++
++	if (test_bit(STANDBY, &con->state))
++		return 0;
++
++	dout("try_read start on %p\n", con);
++	msgr = con->msgr;
++
++more:
++	dout("try_read tag %d in_base_pos %d\n", (int)con->in_tag,
++	     con->in_base_pos);
++	if (test_bit(ACCEPTING, &con->state)) {
++		dout("try_read accepting\n");
++		ret = read_partial_accept(con);
++		if (ret <= 0)
++			goto done;
++		if (process_accept(con) < 0) {
++			ret = -1;
++			goto out;
++		}
++		goto more;
++	}
++	if (test_bit(CONNECTING, &con->state)) {
++		dout("try_read connecting\n");
++		ret = read_partial_connect(con);
++		if (ret <= 0)
++			goto done;
++		if (process_connect(con) < 0) {
++			ret = -1;
++			goto out;
++		}
++		goto more;
++	}
++
++	if (con->in_base_pos < 0) {
++		/*
++		 * skipping + discarding content.
++		 *
++		 * FIXME: there must be a better way to do this!
++		 */
++		static char buf[1024];
++		int skip = min(1024, -con->in_base_pos);
++		dout("skipping %d / %d bytes\n", skip, -con->in_base_pos);
++		ret = ceph_tcp_recvmsg(con->sock, buf, skip);
++		if (ret <= 0)
++			goto done;
++		con->in_base_pos += ret;
++		if (con->in_base_pos)
++			goto more;
++	}
++	if (con->in_tag == CEPH_MSGR_TAG_READY) {
++		/*
++		 * what's next?
++		 */
++		ret = ceph_tcp_recvmsg(con->sock, &con->in_tag, 1);
++		if (ret <= 0)
++			goto done;
++		dout("try_read got tag %d\n", (int)con->in_tag);
++		switch (con->in_tag) {
++		case CEPH_MSGR_TAG_MSG:
++			prepare_read_message(con);
++			break;
++		case CEPH_MSGR_TAG_ACK:
++			prepare_read_ack(con);
++			break;
++		case CEPH_MSGR_TAG_CLOSE:
++			set_bit(CLOSED, &con->state);   /* fixme */
++			goto done;
++		default:
++			goto bad_tag;
++		}
++	}
++	if (con->in_tag == CEPH_MSGR_TAG_MSG) {
++		ret = read_partial_message(con);
++		if (ret <= 0) {
++			switch (ret) {
++			case -EBADMSG:
++				con->error_msg = "bad crc";
++				ret = -EIO;
++				goto out;
++			case -EIO:
++				con->error_msg = "io error";
++				goto out;
++			default:
++				goto done;
++			}
++		}
++		if (con->in_tag == CEPH_MSGR_TAG_READY)
++			goto more;
++		process_message(con);
++		goto more;
++	}
++	if (con->in_tag == CEPH_MSGR_TAG_ACK) {
++		ret = read_partial_ack(con);
++		if (ret <= 0)
++			goto done;
++		process_ack(con);
++		goto more;
++	}
++
++done:
++	ret = 0;
++out:
++	dout("try_read done on %p\n", con);
++	return ret;
++
++bad_tag:
++	pr_err("ceph try_read bad con->in_tag = %d\n", (int)con->in_tag);
++	con->error_msg = "protocol error, garbage tag";
++	ret = -1;
++	goto out;
++}
++
++
++/*
++ * Atomically queue work on a connection.  Bump @con reference to
++ * avoid races with connection teardown.
++ *
++ * There is some trickery going on with QUEUED and BUSY because we
++ * only want a _single_ thread operating on each connection at any
++ * point in time, but we want to use all available CPUs.
++ *
++ * The worker thread only proceeds if it can atomically set BUSY.  It
++ * clears QUEUED and does it's thing.  When it thinks it's done, it
++ * clears BUSY, then rechecks QUEUED.. if it's set again, it loops
++ * (tries again to set BUSY).
++ *
++ * To queue work, we first set QUEUED, _then_ if BUSY isn't set, we
++ * try to queue work.  If that fails (work is already queued, or BUSY)
++ * we give up (work also already being done or is queued) but leave QUEUED
++ * set so that the worker thread will loop if necessary.
++ */
++static void ceph_queue_con(struct ceph_connection *con)
++{
++	if (test_bit(WAIT, &con->state) ||
++	    test_bit(CLOSED, &con->state)) {
++		dout("ceph_queue_con %p ignoring: WAIT|CLOSED\n",
++		     con);
++		return;
++	}
++
++	atomic_inc(&con->nref);
++	dout("ceph_queue_con %p %d -> %d\n", con,
++	     atomic_read(&con->nref) - 1, atomic_read(&con->nref));
++
++	set_bit(QUEUED, &con->state);
++	if (test_bit(BUSY, &con->state) ||
++	    !queue_work(ceph_msgr_wq, &con->work.work)) {
++		dout("ceph_queue_con %p - already BUSY or queued\n", con);
++		put_connection(con);
++	}
++}
++
++/*
++ * Do some work on a connection.  Drop a connection ref when we're done.
++ */
++static void con_work(struct work_struct *work)
++{
++	struct ceph_connection *con = container_of(work, struct ceph_connection,
++						   work.work);
++	int backoff = 0;
++
++more:
++	if (test_and_set_bit(BUSY, &con->state) != 0) {
++		dout("con_work %p BUSY already set\n", con);
++		goto out;
++	}
++	dout("con_work %p start, clearing QUEUED\n", con);
++	clear_bit(QUEUED, &con->state);
++
++	if (test_bit(CLOSED, &con->state)) { /* e.g. if we are replaced */
++		dout("con_work CLOSED\n");
++		goto done;
++	}
++	if (test_bit(WAIT, &con->state)) {   /* we are a zombie */
++		dout("con_work WAIT\n");
++		goto done;
++	}
++
++	if (test_and_clear_bit(SOCK_CLOSED, &con->state) ||
++	    try_read(con) < 0 ||
++	    try_write(con) < 0) {
++		backoff = 1;
++		ceph_fault(con);     /* error/fault path */
++	}
++
++done:
++	clear_bit(BUSY, &con->state);
++	dout("con->state=%lu\n", con->state);
++	if (test_bit(QUEUED, &con->state)) {
++		if (!backoff) {
++			dout("con_work %p QUEUED reset, looping\n", con);
++			goto more;
++		}
++		dout("con_work %p QUEUED reset, but just faulted\n", con);
++		clear_bit(QUEUED, &con->state);
++	}
++	dout("con_work %p done\n", con);
++
++out:
++	put_connection(con);
++}
++
++
++/*
++ * Generic error/fault handler.  A retry mechanism is used with
++ * exponential backoff
++ */
++static void ceph_fault(struct ceph_connection *con)
++{
++	pr_err("ceph %s%d %u.%u.%u.%u:%u %s\n", ENTITY_NAME(con->peer_name),
++	       IPQUADPORT(con->peer_addr.ipaddr), con->error_msg);
++	dout("fault %p state %lu to peer %u.%u.%u.%u:%u\n",
++	     con, con->state, IPQUADPORT(con->peer_addr.ipaddr));
++
++	if (test_bit(LOSSYTX, &con->state)) {
++		dout("fault on LOSSYTX channel\n");
++		remove_connection(con->msgr, con);
++		return;
++	}
++
++	clear_bit(BUSY, &con->state);  /* to avoid an improbable race */
++
++	con_close_socket(con);
++	con->in_msg = NULL;
++
++	/* If there are no messages in the queue, place the connection
++	 * in a STANDBY state (i.e., don't try to reconnect just yet). */
++	spin_lock(&con->out_queue_lock);
++	if (list_empty(&con->out_queue)) {
++		dout("fault setting STANDBY\n");
++		set_bit(STANDBY, &con->state);
++		spin_unlock(&con->out_queue_lock);
++		return;
++	}
++
++	/* Requeue anything that hasn't been acked, and retry after a
++	 * delay. */
++	list_splice_init(&con->out_sent, &con->out_queue);
++	spin_unlock(&con->out_queue_lock);
++
++	if (con->delay == 0)
++		con->delay = BASE_DELAY_INTERVAL;
++	else if (con->delay < MAX_DELAY_INTERVAL)
++		con->delay *= 2;
++
++	/* explicitly schedule work to try to reconnect again later. */
++	dout("fault queueing %p %d -> %d delay %lu\n", con,
++	     atomic_read(&con->nref), atomic_read(&con->nref) + 1,
++	     con->delay);
++	atomic_inc(&con->nref);
++	queue_delayed_work(ceph_msgr_wq, &con->work,
++			   round_jiffies_relative(con->delay));
++}
++
++
++/*
++ * Handle an incoming connection.
++ */
++static void accept_work(struct work_struct *work)
++{
++	struct ceph_connection *newcon = NULL;
++	struct ceph_messenger *msgr = container_of(work, struct ceph_messenger,
++						   awork);
++
++	/* initialize the msgr connection */
++	newcon = new_connection(msgr);
++	if (newcon == NULL) {
++		pr_err("ceph ENOMEM accepting new connection\n");
++		return;
++	}
++
++	set_bit(ACCEPTING, &newcon->state);
++	newcon->connect_seq = 1;
++	newcon->in_tag = CEPH_MSGR_TAG_READY;  /* eventually, hopefully */
++
++	if (ceph_tcp_accept(msgr->listen_sock, newcon) < 0) {
++		pr_err("ceph error accepting connection\n");
++		put_connection(newcon);
++		return;
++	}
++	dout("accepted connection \n");
++
++	prepare_write_accept_hello(msgr, newcon);
++	add_connection_accepting(msgr, newcon);
++
++	/* queue work explicitly; we may have missed the socket state
++	 * change before setting the socket callbacks. */
++	ceph_queue_con(newcon);
++}
++
++
++
++/*
++ * create a new messenger instance, creates listening socket
++ */
++struct ceph_messenger *ceph_messenger_create(struct ceph_entity_addr *myaddr)
++{
++	struct ceph_messenger *msgr;
++	int ret = 0;
++
++	msgr = kzalloc(sizeof(*msgr), GFP_KERNEL);
++	if (msgr == NULL)
++		return ERR_PTR(-ENOMEM);
++
++	INIT_WORK(&msgr->awork, accept_work);
++	spin_lock_init(&msgr->con_lock);
++	INIT_LIST_HEAD(&msgr->con_all);
++	INIT_LIST_HEAD(&msgr->con_accepting);
++	INIT_RADIX_TREE(&msgr->con_tree, GFP_ATOMIC);
++	spin_lock_init(&msgr->global_seq_lock);
++
++	/* the zero page is needed if a request is "canceled" while the message
++	 * is being written over the socket */
++	msgr->zero_page = alloc_page(GFP_KERNEL | __GFP_ZERO);
++	if (!msgr->zero_page) {
++		kfree(msgr);
++		return ERR_PTR(-ENOMEM);
++	}
++	kmap(msgr->zero_page);
++
++	/* pick listening address */
++	if (myaddr) {
++		msgr->inst.addr = *myaddr;
++	} else {
++		dout("create my ip not specified, binding to INADDR_ANY\n");
++		msgr->inst.addr.ipaddr.sin_addr.s_addr = htonl(INADDR_ANY);
++		msgr->inst.addr.ipaddr.sin_port = htons(0);  /* any port */
++	}
++	msgr->inst.addr.ipaddr.sin_family = AF_INET;
++
++	/* create listening socket */
++	ret = ceph_tcp_listen(msgr);
++	if (ret < 0) {
++		kfree(msgr);
++		return ERR_PTR(ret);
++	}
++	if (myaddr)
++		msgr->inst.addr.ipaddr.sin_addr = myaddr->ipaddr.sin_addr;
++
++	dout("messenger %p listening on %u.%u.%u.%u:%u\n", msgr,
++	     IPQUADPORT(msgr->inst.addr.ipaddr));
++	return msgr;
++}
++
++void ceph_messenger_destroy(struct ceph_messenger *msgr)
++{
++	struct ceph_connection *con;
++
++	dout("destroy %p\n", msgr);
++
++	/* stop listener */
++	msgr->listen_sock->ops->shutdown(msgr->listen_sock, SHUT_RDWR);
++	sock_release(msgr->listen_sock);
++	cancel_work_sync(&msgr->awork);
++
++	/* kill off connections */
++	spin_lock(&msgr->con_lock);
++	while (!list_empty(&msgr->con_all)) {
++		con = list_first_entry(&msgr->con_all, struct ceph_connection,
++				 list_all);
++		dout("destroy removing connection %p\n", con);
++		set_bit(CLOSED, &con->state);
++		atomic_inc(&con->nref);
++		dout(" get %p %d -> %d\n", con,
++		     atomic_read(&con->nref) - 1, atomic_read(&con->nref));
++		__remove_connection(msgr, con);
++
++		/* in case there's queued work.  drop a reference if
++		 * we successfully cancel work. */
++		spin_unlock(&msgr->con_lock);
++		if (cancel_delayed_work_sync(&con->work))
++			put_connection(con);
++		put_connection(con);
++		dout("destroy removed connection %p\n", con);
++
++		spin_lock(&msgr->con_lock);
++	}
++	spin_unlock(&msgr->con_lock);
++
++	kunmap(msgr->zero_page);
++	__free_page(msgr->zero_page);
++
++	kfree(msgr);
++	dout("destroyed messenger %p\n", msgr);
++}
++
++/*
++ * mark a peer down.  drop any open connections.
++ */
++void ceph_messenger_mark_down(struct ceph_messenger *msgr,
++			      struct ceph_entity_addr *addr)
++{
++	struct ceph_connection *con;
++
++	dout("mark_down peer %u.%u.%u.%u:%u\n",
++	     IPQUADPORT(addr->ipaddr));
++
++	spin_lock(&msgr->con_lock);
++	con = __get_connection(msgr, addr);
++	if (con) {
++		dout("mark_down %s%d %u.%u.%u.%u:%u (%p)\n",
++		     ENTITY_NAME(con->peer_name),
++		     IPQUADPORT(con->peer_addr.ipaddr), con);
++		set_bit(CLOSED, &con->state);  /* in case there's queued work */
++		__remove_connection(msgr, con);
++	}
++	spin_unlock(&msgr->con_lock);
++	if (con)
++		put_connection(con);
++}
++
++
++/*
++ * A single ceph_msg can't be queued for send twice, unless it's
++ * already been delivered (i.e. we have the only remaining reference),
++ * because of the list_head indicating which queue it is on.
++ *
++ * So, we dup the message if there is more than once reference.  If it has
++ * pages (a data payload), steal the pages away from the old message.
++ */
++struct ceph_msg *ceph_msg_maybe_dup(struct ceph_msg *old)
++{
++	struct ceph_msg *dup;
++
++	if (atomic_read(&old->nref) == 1)
++		return old;  /* we have only ref, all is well */
++
++	dup = ceph_msg_new(le16_to_cpu(old->hdr.type),
++			   le32_to_cpu(old->hdr.front_len),
++			   le32_to_cpu(old->hdr.data_len),
++			   le16_to_cpu(old->hdr.data_off),
++			   old->pages);
++	if (!dup)
++		return ERR_PTR(-ENOMEM);
++	memcpy(dup->front.iov_base, old->front.iov_base,
++	       le32_to_cpu(old->hdr.front_len));
++
++	/* revoke old message's pages */
++	mutex_lock(&old->page_mutex);
++	old->pages = NULL;
++	old->footer.flags |= cpu_to_le32(CEPH_MSG_FOOTER_ABORTED);
++	mutex_unlock(&old->page_mutex);
++
++	ceph_msg_put(old);
++	return dup;
++}
++
++
++/*
++ * Queue up an outgoing message.
++ *
++ * This consumes a msg reference.  That is, if the caller wants to
++ * keep @msg around, it had better call ceph_msg_get first.
++ */
++int ceph_msg_send(struct ceph_messenger *msgr, struct ceph_msg *msg,
++		  unsigned long timeout)
++{
++	struct ceph_connection *con, *newcon;
++	int ret = 0;
++
++	/* set source */
++	msg->hdr.src = msgr->inst;
++	msg->hdr.orig_src = msgr->inst;
++
++	/* do we have the connection? */
++	spin_lock(&msgr->con_lock);
++	con = __get_connection(msgr, &msg->hdr.dst.addr);
++	if (!con) {
++		/* drop lock while we allocate a new connection */
++		spin_unlock(&msgr->con_lock);
++
++		newcon = new_connection(msgr);
++		if (IS_ERR(newcon))
++			return PTR_ERR(con);
++
++		newcon->out_connect.flags = 0;
++		if (!timeout) {
++			dout("ceph_msg_send setting LOSSYTX\n");
++			newcon->out_connect.flags |= CEPH_MSG_CONNECT_LOSSY;
++			set_bit(LOSSYTX, &newcon->state);
++		}
++
++		ret = radix_tree_preload(GFP_NOFS);
++		if (ret < 0) {
++			pr_err("ceph ENOMEM in ceph_msg_send\n");
++			return ret;
++		}
++
++		spin_lock(&msgr->con_lock);
++		con = __get_connection(msgr, &msg->hdr.dst.addr);
++		if (con) {
++			put_connection(newcon);
++			dout("ceph_msg_send (lost race and) had connection "
++			     "%p to peer %u.%u.%u.%u:%u\n", con,
++			     IPQUADPORT(msg->hdr.dst.addr.ipaddr));
++		} else {
++			con = newcon;
++			con->peer_addr = msg->hdr.dst.addr;
++			con->peer_name = msg->hdr.dst.name;
++			__register_connection(msgr, con);
++			dout("ceph_msg_send new connection %p to peer "
++			     "%u.%u.%u.%u:%u\n", con,
++			     IPQUADPORT(msg->hdr.dst.addr.ipaddr));
++		}
++		spin_unlock(&msgr->con_lock);
++		radix_tree_preload_end();
++	} else {
++		dout("ceph_msg_send had connection %p to peer "
++		     "%u.%u.%u.%u:%u con->sock=%p\n", con,
++		     IPQUADPORT(msg->hdr.dst.addr.ipaddr), con->sock);
++		spin_unlock(&msgr->con_lock);
++	}
++
++	/* queue */
++	spin_lock(&con->out_queue_lock);
++
++	/* avoid queuing multiple PING messages in a row. */
++	if (unlikely(le16_to_cpu(msg->hdr.type) == CEPH_MSG_PING &&
++		     !list_empty(&con->out_queue) &&
++		     le16_to_cpu(list_entry(con->out_queue.prev,
++					    struct ceph_msg,
++				    list_head)->hdr.type) == CEPH_MSG_PING)) {
++		dout("ceph_msg_send dropping dup ping\n");
++		ceph_msg_put(msg);
++	} else {
++		msg->hdr.seq = cpu_to_le64(++con->out_seq);
++		dout("----- %p %u to %s%d %d=%s len %d+%d -----\n", msg,
++		     (unsigned)con->out_seq,
++		     ENTITY_NAME(msg->hdr.dst.name), le16_to_cpu(msg->hdr.type),
++		     ceph_msg_type_name(le16_to_cpu(msg->hdr.type)),
++		     le32_to_cpu(msg->hdr.front_len),
++		     le32_to_cpu(msg->hdr.data_len));
++		dout("ceph_msg_send %p seq %llu for %s%d on %p pgs %d\n",
++		     msg, le64_to_cpu(msg->hdr.seq),
++		     ENTITY_NAME(msg->hdr.dst.name), con, msg->nr_pages);
++		list_add_tail(&msg->list_head, &con->out_queue);
++	}
++	spin_unlock(&con->out_queue_lock);
++
++	/* if there wasn't anything waiting to send before, queue
++	 * new work */
++	if (test_and_set_bit(WRITE_PENDING, &con->state) == 0)
++		ceph_queue_con(con);
++
++	put_connection(con);
++	dout("ceph_msg_send done\n");
++	return ret;
++}
++
++
++/*
++ * construct a new message with given type, size
++ * the new msg has a ref count of 1.
++ */
++struct ceph_msg *ceph_msg_new(int type, int front_len,
++			      int page_len, int page_off, struct page **pages)
++{
++	struct ceph_msg *m;
++
++	m = kmalloc(sizeof(*m), GFP_NOFS);
++	if (m == NULL)
++		goto out;
++	atomic_set(&m->nref, 1);
++	mutex_init(&m->page_mutex);
++	INIT_LIST_HEAD(&m->list_head);
++
++	m->hdr.type = cpu_to_le16(type);
++	m->hdr.front_len = cpu_to_le32(front_len);
++	m->hdr.data_len = cpu_to_le32(page_len);
++	m->hdr.data_off = cpu_to_le16(page_off);
++	m->hdr.priority = cpu_to_le16(CEPH_MSG_PRIO_DEFAULT);
++	m->hdr.mon_protocol = CEPH_MON_PROTOCOL;
++	m->hdr.monc_protocol = CEPH_MONC_PROTOCOL;
++	m->hdr.osd_protocol = CEPH_OSD_PROTOCOL;
++	m->hdr.osdc_protocol = CEPH_OSDC_PROTOCOL;
++	m->hdr.mds_protocol = CEPH_MDS_PROTOCOL;
++	m->hdr.mdsc_protocol = CEPH_MDSC_PROTOCOL;
++	m->footer.front_crc = 0;
++	m->footer.data_crc = 0;
++	m->front_is_vmalloc = false;
++	m->more_to_follow = false;
++
++	/* front */
++	if (front_len) {
++		if (front_len > PAGE_CACHE_SIZE) {
++			m->front.iov_base = vmalloc(front_len);
++			m->front_is_vmalloc = true;
++		} else {
++			m->front.iov_base = kmalloc(front_len, GFP_NOFS);
++		}
++		if (m->front.iov_base == NULL) {
++			pr_err("ceph_msg_new can't allocate %d bytes\n",
++			     front_len);
++			goto out2;
++		}
++	} else {
++		m->front.iov_base = NULL;
++	}
++	m->front.iov_len = front_len;
++
++	/* pages */
++	m->nr_pages = calc_pages_for(page_off, page_len);
++	m->pages = pages;
++
++	dout("ceph_msg_new %p page %d~%d -> %d\n", m, page_off, page_len,
++	     m->nr_pages);
++	return m;
++
++out2:
++	ceph_msg_put(m);
++out:
++	pr_err("ceph_msg_new can't create type %d len %d\n", type, front_len);
++	return ERR_PTR(-ENOMEM);
++}
++
++void ceph_msg_put(struct ceph_msg *m)
++{
++	dout("ceph_msg_put %p %d -> %d\n", m, atomic_read(&m->nref),
++	     atomic_read(&m->nref)-1);
++	if (atomic_read(&m->nref) <= 0) {
++		pr_err("bad ceph_msg_put on %p %llu %s%d->%s%d %d=%s %d+%d\n",
++		       m, le64_to_cpu(m->hdr.seq),
++		       ENTITY_NAME(m->hdr.src.name),
++		       ENTITY_NAME(m->hdr.dst.name),
++		       le16_to_cpu(m->hdr.type),
++		       ceph_msg_type_name(le16_to_cpu(m->hdr.type)),
++		       le32_to_cpu(m->hdr.front_len),
++		       le32_to_cpu(m->hdr.data_len));
++		WARN_ON(1);
++	}
++	if (atomic_dec_and_test(&m->nref)) {
++		dout("ceph_msg_put last one on %p\n", m);
++		WARN_ON(!list_empty(&m->list_head));
++		if (m->front_is_vmalloc)
++			vfree(m->front.iov_base);
++		else
++			kfree(m->front.iov_base);
++		kfree(m);
++	}
++}
++
++/*
++ * Send a ping/keepalive message to the specified peer.
++ */
++void ceph_ping(struct ceph_messenger *msgr, struct ceph_entity_name name,
++	       struct ceph_entity_addr *addr)
++{
++	struct ceph_msg *m;
++
++	m = ceph_msg_new(CEPH_MSG_PING, 0, 0, 0, NULL);
++	if (!m)
++		return;
++	memset(m->front.iov_base, 0, m->front.iov_len);
++	m->hdr.dst.name = name;
++	m->hdr.dst.addr = *addr;
++	ceph_msg_send(msgr, m, BASE_DELAY_INTERVAL);
++}
+diff --git a/fs/ceph/messenger.h b/fs/ceph/messenger.h
+new file mode 100644
+index 0000000..4ccd01c
+--- /dev/null
++++ b/fs/ceph/messenger.h
+@@ -0,0 +1,253 @@
++#ifndef __FS_CEPH_MESSENGER_H
++#define __FS_CEPH_MESSENGER_H
++
++#include <linux/mutex.h>
++#include <linux/net.h>
 +#include <linux/radix-tree.h>
-+#include <linux/completion.h>
++#include <linux/uio.h>
++#include <linux/version.h>
++#include <linux/workqueue.h>
 +
 +#include "types.h"
-+#include "osdmap.h"
 +
 +struct ceph_msg;
-+struct ceph_snap_context;
-+struct ceph_osd_request;
++
++#define IPQUADPORT(n)							\
++	(unsigned int)((be32_to_cpu((n).sin_addr.s_addr) >> 24)) & 0xFF, \
++	(unsigned int)((be32_to_cpu((n).sin_addr.s_addr)) >> 16) & 0xFF, \
++	(unsigned int)((be32_to_cpu((n).sin_addr.s_addr))>>8) & 0xFF, \
++	(unsigned int)((be32_to_cpu((n).sin_addr.s_addr))) & 0xFF, \
++	(unsigned int)(ntohs((n).sin_port))
++
++
++extern struct workqueue_struct *ceph_msgr_wq;       /* receive work queue */
 +
 +/*
-+ * completion callback for async writepages
++ * Ceph defines these callbacks for handling events:
 + */
-+typedef void (*ceph_osdc_callback_t)(struct ceph_osd_request *);
++/* handle an incoming message. */
++typedef void (*ceph_msgr_dispatch_t) (void *p, struct ceph_msg *m);
++/* an incoming message has a data payload; tell me what pages I
++ * should read the data into. */
++typedef int (*ceph_msgr_prepare_pages_t) (void *p, struct ceph_msg *m,
++					  int want);
++/* a remote host as terminated a message exchange session, and messages
++ * we sent (or they tried to send us) may be lost. */
++typedef void (*ceph_msgr_peer_reset_t) (void *p, struct ceph_entity_addr *addr,
++					struct ceph_entity_name *pn);
 +
-+/* an in-flight request */
-+struct ceph_osd_request {
-+	u64             r_tid;              /* unique for this client */
++static inline const char *ceph_name_type_str(int t)
++{
++	switch (t) {
++	case CEPH_ENTITY_TYPE_MON: return "mon";
++	case CEPH_ENTITY_TYPE_MDS: return "mds";
++	case CEPH_ENTITY_TYPE_OSD: return "osd";
++	case CEPH_ENTITY_TYPE_CLIENT: return "client";
++	case CEPH_ENTITY_TYPE_ADMIN: return "admin";
++	default: return "???";
++	}
++}
 +
-+	struct ceph_msg  *r_request;
-+	struct ceph_msg  *r_reply;
-+	int               r_result;
-+	int               r_flags;     /* any additional flags for the osd */
-+	int               r_aborted;   /* set if we cancel this request */
++#define CEPH_MSGR_BACKUP 10  /* backlogged incoming connections */
 +
-+	atomic_t          r_ref;
-+	struct completion r_completion, r_safe_completion;
-+	ceph_osdc_callback_t r_callback, r_safe_callback;
-+	struct ceph_eversion r_reassert_version;
-+	struct list_head  r_unsafe_item;
++/* use format string %s%d */
++#define ENTITY_NAME(n)				   \
++	ceph_name_type_str(le32_to_cpu((n).type)), \
++		le32_to_cpu((n).num)
 +
-+	struct inode *r_inode;         	      /* for use by callbacks */
-+	struct writeback_control *r_wbc;      /* ditto */
++struct ceph_messenger {
++	void *parent;                    /* normally struct ceph_client * */
++	ceph_msgr_dispatch_t dispatch;
++	ceph_msgr_peer_reset_t peer_reset;
++	ceph_msgr_prepare_pages_t prepare_pages;
 +
-+	char              r_oid[40];          /* object name */
-+	int               r_oid_len;
-+	int               r_last_osd;         /* pg osds */
-+	struct ceph_entity_addr r_last_osd_addr;
-+	unsigned long     r_timeout_stamp;
++	struct ceph_entity_inst inst;    /* my name+address */
 +
-+	struct ceph_file_layout r_file_layout;
-+	struct ceph_snap_context *r_snapc;    /* snap context for writes */
-+	unsigned          r_num_pages;        /* size of page array (follows) */
-+	struct page     **r_pages;            /* pages for data payload */
-+	int               r_own_pages;        /* if true, i own page list */
++	struct socket *listen_sock; 	 /* listening socket */
++	struct work_struct awork;	 /* accept work */
++
++	spinlock_t con_lock;
++	struct list_head con_all;        /* all open connections */
++	struct list_head con_accepting;  /*  accepting */
++	struct radix_tree_root con_tree; /*  established */
++
++	struct page *zero_page;          /* used in certain error cases */
++
++	/*
++	 * the global_seq counts connections i (attempt to) initiate
++	 * in order to disambiguate certain connect race conditions.
++	 */
++	u32 global_seq;
++	spinlock_t global_seq_lock;
 +};
 +
-+struct ceph_osd_client {
-+	struct ceph_client     *client;
-+
-+	struct ceph_osdmap     *osdmap;       /* current map */
-+	struct rw_semaphore    map_sem;
-+	struct completion      map_waiters;
-+	u64                    last_requested_map;
-+
-+	struct mutex           request_mutex;
-+	u64                    timeout_tid;   /* tid of timeout triggering rq */
-+	u64                    last_tid;      /* tid of last request */
-+	struct radix_tree_root request_tree;  /* pending requests, by tid */
-+	int                    num_requests;
-+	struct delayed_work    timeout_work;
-+	struct dentry 	       *debugfs_file;
++/*
++ * a single message.  it contains a header (src, dest, message type, etc.),
++ * footer (crc values, mainly), a "front" message body, and possibly a
++ * data payload (stored in some number of pages).  The page_mutex protects
++ * access to the page vector.
++ */
++struct ceph_msg {
++	struct ceph_msg_header hdr;	/* header */
++	struct ceph_msg_footer footer;	/* footer */
++	struct kvec front;              /* first bit of message */
++	struct mutex page_mutex;
++	struct page **pages;            /* data payload.  NOT OWNER. */
++	unsigned nr_pages;              /* size of page array */
++	struct list_head list_head;
++	atomic_t nref;
++	bool front_is_vmalloc;
++	bool more_to_follow;
 +};
 +
-+extern void ceph_osdc_init(struct ceph_osd_client *osdc,
-+			   struct ceph_client *client);
-+extern void ceph_osdc_stop(struct ceph_osd_client *osdc);
++struct ceph_msg_pos {
++	int page, page_pos;  /* which page; offset in page */
++	int data_pos;        /* offset in data payload */
++	int did_page_crc;    /* true if we've calculated crc for current page */
++};
 +
-+extern void ceph_osdc_handle_reset(struct ceph_osd_client *osdc,
-+				   struct ceph_entity_addr *addr);
-+
-+extern void ceph_osdc_handle_reply(struct ceph_osd_client *osdc,
-+				   struct ceph_msg *msg);
-+extern void ceph_osdc_handle_map(struct ceph_osd_client *osdc,
-+				 struct ceph_msg *msg);
-+
-+/* incoming read messages use this to discover which pages to read
-+ * the data payload into. */
-+extern int ceph_osdc_prepare_pages(void *p, struct ceph_msg *m, int want);
-+
-+extern struct ceph_osd_request *ceph_osdc_new_request(struct ceph_osd_client *,
-+				      struct ceph_file_layout *layout,
-+				      struct ceph_vino vino,
-+				      u64 offset, u64 *len, int op, int flags,
-+				      struct ceph_snap_context *snapc,
-+				      int do_sync, u32 truncate_seq,
-+				      u64 truncate_size,
-+				      struct timespec *mtime);
-+
-+static inline void ceph_osdc_get_request(struct ceph_osd_request *req)
-+{
-+	atomic_inc(&req->r_ref);
-+}
-+extern void ceph_osdc_put_request(struct ceph_osd_request *req);
-+
-+extern int ceph_osdc_start_request(struct ceph_osd_client *osdc,
-+				   struct ceph_osd_request *req);
-+extern int ceph_osdc_wait_request(struct ceph_osd_client *osdc,
-+				  struct ceph_osd_request *req);
-+extern void ceph_osdc_abort_request(struct ceph_osd_client *osdc,
-+				    struct ceph_osd_request *req);
-+extern void ceph_osdc_sync(struct ceph_osd_client *osdc);
-+
-+extern int ceph_osdc_readpages(struct ceph_osd_client *osdc,
-+			       struct ceph_vino vino,
-+			       struct ceph_file_layout *layout,
-+			       u64 off, u64 len,
-+			       u32 truncate_seq, u64 truncate_size,
-+			       struct page **pages, int nr_pages);
-+
-+extern int ceph_osdc_writepages(struct ceph_osd_client *osdc,
-+				struct ceph_vino vino,
-+				struct ceph_file_layout *layout,
-+				struct ceph_snap_context *sc,
-+				u64 off, u64 len,
-+				u32 truncate_seq, u64 truncate_size,
-+				struct timespec *mtime,
-+				struct page **pages, int nr_pages,
-+				int flags, int do_sync);
-+
-+#endif
-+
-diff --git a/fs/ceph/osdmap.c b/fs/ceph/osdmap.c
-new file mode 100644
-index 0000000..362f5a0
---- /dev/null
-+++ b/fs/ceph/osdmap.c
-@@ -0,0 +1,697 @@
-+
-+#include <asm/div64.h>
-+
-+#include "super.h"
-+#include "osdmap.h"
-+#include "crush/hash.h"
-+#include "decode.h"
-+#include "ceph_debug.h"
-+
-+
-+char *ceph_osdmap_state_str(char *str, int len, int state)
-+{
-+	int flag = 0;
-+
-+	if (!len)
-+		goto done;
-+
-+	*str = '\0';
-+	if (state) {
-+		if (state & CEPH_OSD_EXISTS) {
-+			snprintf(str, len, "exists");
-+			flag = 1;
-+		}
-+		if (state & CEPH_OSD_UP) {
-+			snprintf(str, len, "%s%s%s", str, (flag ? ", " : ""),
-+				 "up");
-+			flag = 1;
-+		}
-+	} else {
-+		snprintf(str, len, "doesn't exist");
-+	}
-+done:
-+	return str;
-+}
-+
-+/* maps */
-+
-+static int calc_bits_of(unsigned t)
-+{
-+	int b = 0;
-+	while (t) {
-+		t = t >> 1;
-+		b++;
-+	}
-+	return b;
-+}
++/* ceph connection fault delay defaults, for exponential backoff */
++#define BASE_DELAY_INTERVAL	(HZ/2)
++#define MAX_DELAY_INTERVAL	(5 * 60 * HZ)
 +
 +/*
-+ * the foo_mask is the smallest value 2^n-1 that is >= foo.
-+ */
-+static void calc_pg_masks(struct ceph_pg_pool_info *pi)
-+{
-+	pi->pg_num_mask = (1 << calc_bits_of(le32_to_cpu(pi->v.pg_num)-1)) - 1;
-+	pi->pgp_num_mask =
-+		(1 << calc_bits_of(le32_to_cpu(pi->v.pgp_num)-1)) - 1;
-+	pi->lpg_num_mask =
-+		(1 << calc_bits_of(le32_to_cpu(pi->v.lpg_num)-1)) - 1;
-+	pi->lpgp_num_mask =
-+		(1 << calc_bits_of(le32_to_cpu(pi->v.lpgp_num)-1)) - 1;
-+}
-+
-+/*
-+ * decode crush map
-+ */
-+static int crush_decode_uniform_bucket(void **p, void *end,
-+				       struct crush_bucket_uniform *b)
-+{
-+	dout("crush_decode_uniform_bucket %p to %p\n", *p, end);
-+	ceph_decode_need(p, end, (1+b->h.size) * sizeof(u32), bad);
-+	ceph_decode_32(p, b->item_weight);
-+	return 0;
-+bad:
-+	return -EINVAL;
-+}
-+
-+static int crush_decode_list_bucket(void **p, void *end,
-+				    struct crush_bucket_list *b)
-+{
-+	int j;
-+	dout("crush_decode_list_bucket %p to %p\n", *p, end);
-+	b->item_weights = kcalloc(b->h.size, sizeof(u32), GFP_NOFS);
-+	if (b->item_weights == NULL)
-+		return -ENOMEM;
-+	b->sum_weights = kcalloc(b->h.size, sizeof(u32), GFP_NOFS);
-+	if (b->sum_weights == NULL)
-+		return -ENOMEM;
-+	ceph_decode_need(p, end, 2 * b->h.size * sizeof(u32), bad);
-+	for (j = 0; j < b->h.size; j++) {
-+		ceph_decode_32(p, b->item_weights[j]);
-+		ceph_decode_32(p, b->sum_weights[j]);
-+	}
-+	return 0;
-+bad:
-+	return -EINVAL;
-+}
-+
-+static int crush_decode_tree_bucket(void **p, void *end,
-+				    struct crush_bucket_tree *b)
-+{
-+	int j;
-+	dout("crush_decode_tree_bucket %p to %p\n", *p, end);
-+	ceph_decode_32_safe(p, end, b->num_nodes, bad);
-+	b->node_weights = kcalloc(b->num_nodes, sizeof(u32), GFP_NOFS);
-+	if (b->node_weights == NULL)
-+		return -ENOMEM;
-+	ceph_decode_need(p, end, b->num_nodes * sizeof(u32), bad);
-+	for (j = 0; j < b->num_nodes; j++)
-+		ceph_decode_32(p, b->node_weights[j]);
-+	return 0;
-+bad:
-+	return -EINVAL;
-+}
-+
-+static int crush_decode_straw_bucket(void **p, void *end,
-+				     struct crush_bucket_straw *b)
-+{
-+	int j;
-+	dout("crush_decode_straw_bucket %p to %p\n", *p, end);
-+	b->item_weights = kcalloc(b->h.size, sizeof(u32), GFP_NOFS);
-+	if (b->item_weights == NULL)
-+		return -ENOMEM;
-+	b->straws = kcalloc(b->h.size, sizeof(u32), GFP_NOFS);
-+	if (b->straws == NULL)
-+		return -ENOMEM;
-+	ceph_decode_need(p, end, 2 * b->h.size * sizeof(u32), bad);
-+	for (j = 0; j < b->h.size; j++) {
-+		ceph_decode_32(p, b->item_weights[j]);
-+		ceph_decode_32(p, b->straws[j]);
-+	}
-+	return 0;
-+bad:
-+	return -EINVAL;
-+}
-+
-+static struct crush_map *crush_decode(void *pbyval, void *end)
-+{
-+	struct crush_map *c;
-+	int err = -EINVAL;
-+	int i, j;
-+	void **p = &pbyval;
-+	void *start = pbyval;
-+	u32 magic;
-+
-+	dout("crush_decode %p to %p len %d\n", *p, end, (int)(end - *p));
-+
-+	c = kzalloc(sizeof(*c), GFP_NOFS);
-+	if (c == NULL)
-+		return ERR_PTR(-ENOMEM);
-+
-+	ceph_decode_need(p, end, 4*sizeof(u32), bad);
-+	ceph_decode_32(p, magic);
-+	if (magic != CRUSH_MAGIC) {
-+		pr_err("ceph crush_decode magic %x != current %x\n",
-+		       (unsigned)magic, (unsigned)CRUSH_MAGIC);
-+		goto bad;
-+	}
-+	ceph_decode_32(p, c->max_buckets);
-+	ceph_decode_32(p, c->max_rules);
-+	ceph_decode_32(p, c->max_devices);
-+
-+	c->device_parents = kcalloc(c->max_devices, sizeof(u32), GFP_NOFS);
-+	if (c->device_parents == NULL)
-+		goto badmem;
-+	c->bucket_parents = kcalloc(c->max_buckets, sizeof(u32), GFP_NOFS);
-+	if (c->bucket_parents == NULL)
-+		goto badmem;
-+
-+	c->buckets = kcalloc(c->max_buckets, sizeof(*c->buckets), GFP_NOFS);
-+	if (c->buckets == NULL)
-+		goto badmem;
-+	c->rules = kcalloc(c->max_rules, sizeof(*c->rules), GFP_NOFS);
-+	if (c->rules == NULL)
-+		goto badmem;
-+
-+	/* buckets */
-+	for (i = 0; i < c->max_buckets; i++) {
-+		int size = 0;
-+		u32 alg;
-+		struct crush_bucket *b;
-+
-+		ceph_decode_32_safe(p, end, alg, bad);
-+		if (alg == 0) {
-+			c->buckets[i] = NULL;
-+			continue;
-+		}
-+		dout("crush_decode bucket %d off %x %p to %p\n",
-+		     i, (int)(*p-start), *p, end);
-+
-+		switch (alg) {
-+		case CRUSH_BUCKET_UNIFORM:
-+			size = sizeof(struct crush_bucket_uniform);
-+			break;
-+		case CRUSH_BUCKET_LIST:
-+			size = sizeof(struct crush_bucket_list);
-+			break;
-+		case CRUSH_BUCKET_TREE:
-+			size = sizeof(struct crush_bucket_tree);
-+			break;
-+		case CRUSH_BUCKET_STRAW:
-+			size = sizeof(struct crush_bucket_straw);
-+			break;
-+		default:
-+			goto bad;
-+		}
-+		BUG_ON(size == 0);
-+		b = c->buckets[i] = kzalloc(size, GFP_NOFS);
-+		if (b == NULL)
-+			goto badmem;
-+
-+		ceph_decode_need(p, end, 4*sizeof(u32), bad);
-+		ceph_decode_32(p, b->id);
-+		ceph_decode_16(p, b->type);
-+		ceph_decode_16(p, b->alg);
-+		ceph_decode_32(p, b->weight);
-+		ceph_decode_32(p, b->size);
-+
-+		dout("crush_decode bucket size %d off %x %p to %p\n",
-+		     b->size, (int)(*p-start), *p, end);
-+
-+		b->items = kcalloc(b->size, sizeof(__s32), GFP_NOFS);
-+		if (b->items == NULL)
-+			goto badmem;
-+		b->perm = kcalloc(b->size, sizeof(u32), GFP_NOFS);
-+		if (b->perm == NULL)
-+			goto badmem;
-+		b->perm_n = 0;
-+
-+		ceph_decode_need(p, end, b->size*sizeof(u32), bad);
-+		for (j = 0; j < b->size; j++)
-+			ceph_decode_32(p, b->items[j]);
-+
-+		switch (b->alg) {
-+		case CRUSH_BUCKET_UNIFORM:
-+			err = crush_decode_uniform_bucket(p, end,
-+				  (struct crush_bucket_uniform *)b);
-+			if (err < 0)
-+				goto bad;
-+			break;
-+		case CRUSH_BUCKET_LIST:
-+			err = crush_decode_list_bucket(p, end,
-+			       (struct crush_bucket_list *)b);
-+			if (err < 0)
-+				goto bad;
-+			break;
-+		case CRUSH_BUCKET_TREE:
-+			err = crush_decode_tree_bucket(p, end,
-+				(struct crush_bucket_tree *)b);
-+			if (err < 0)
-+				goto bad;
-+			break;
-+		case CRUSH_BUCKET_STRAW:
-+			err = crush_decode_straw_bucket(p, end,
-+				(struct crush_bucket_straw *)b);
-+			if (err < 0)
-+				goto bad;
-+			break;
-+		}
-+	}
-+
-+	/* rules */
-+	dout("rule vec is %p\n", c->rules);
-+	for (i = 0; i < c->max_rules; i++) {
-+		u32 yes;
-+		struct crush_rule *r;
-+
-+		ceph_decode_32_safe(p, end, yes, bad);
-+		if (!yes) {
-+			dout("crush_decode NO rule %d off %x %p to %p\n",
-+			     i, (int)(*p-start), *p, end);
-+			c->rules[i] = NULL;
-+			continue;
-+		}
-+
-+		dout("crush_decode rule %d off %x %p to %p\n",
-+		     i, (int)(*p-start), *p, end);
-+
-+		/* len */
-+		ceph_decode_32_safe(p, end, yes, bad);
-+#if BITS_PER_LONG == 32
-+		if (yes > ULONG_MAX / sizeof(struct crush_rule_step))
-+			goto bad;
-+#endif
-+		r = c->rules[i] = kmalloc(sizeof(*r) +
-+					  yes*sizeof(struct crush_rule_step),
-+					  GFP_NOFS);
-+		if (r == NULL)
-+			goto badmem;
-+		dout(" rule %d is at %p\n", i, r);
-+		r->len = yes;
-+		ceph_decode_copy_safe(p, end, &r->mask, 4, bad); /* 4 u8's */
-+		ceph_decode_need(p, end, r->len*3*sizeof(u32), bad);
-+		for (j = 0; j < r->len; j++) {
-+			ceph_decode_32(p, r->steps[j].op);
-+			ceph_decode_32(p, r->steps[j].arg1);
-+			ceph_decode_32(p, r->steps[j].arg2);
-+		}
-+	}
-+
-+	/* ignore trailing name maps. */
-+
-+	dout("crush_decode success\n");
-+	return c;
-+
-+badmem:
-+	err = -ENOMEM;
-+bad:
-+	dout("crush_decode fail %d\n", err);
-+	crush_destroy(c);
-+	return ERR_PTR(err);
-+}
-+
-+
-+/*
-+ * osd map
-+ */
-+void ceph_osdmap_destroy(struct ceph_osdmap *map)
-+{
-+	dout("osdmap_destroy %p\n", map);
-+	if (map->crush)
-+		crush_destroy(map->crush);
-+	kfree(map->osd_state);
-+	kfree(map->osd_weight);
-+	kfree(map->pg_pool);
-+	kfree(map->osd_addr);
-+	kfree(map);
-+}
-+
-+/*
-+ * adjust max osd value.  reallocate arrays.
-+ */
-+static int osdmap_set_max_osd(struct ceph_osdmap *map, int max)
-+{
-+	u8 *state;
-+	struct ceph_entity_addr *addr;
-+	u32 *weight;
-+
-+	state = kcalloc(max, sizeof(*state), GFP_NOFS);
-+	addr = kcalloc(max, sizeof(*addr), GFP_NOFS);
-+	weight = kcalloc(max, sizeof(*weight), GFP_NOFS);
-+	if (state == NULL || addr == NULL || weight == NULL) {
-+		kfree(state);
-+		kfree(addr);
-+		kfree(weight);
-+		return -ENOMEM;
-+	}
-+
-+	/* copy old? */
-+	if (map->osd_state) {
-+		memcpy(state, map->osd_state, map->max_osd*sizeof(*state));
-+		memcpy(addr, map->osd_addr, map->max_osd*sizeof(*addr));
-+		memcpy(weight, map->osd_weight, map->max_osd*sizeof(*weight));
-+		kfree(map->osd_state);
-+		kfree(map->osd_addr);
-+		kfree(map->osd_weight);
-+	}
-+
-+	map->osd_state = state;
-+	map->osd_weight = weight;
-+	map->osd_addr = addr;
-+	map->max_osd = max;
-+	return 0;
-+}
-+
-+/*
-+ * decode a full map.
-+ */
-+struct ceph_osdmap *osdmap_decode(void **p, void *end)
-+{
-+	struct ceph_osdmap *map;
-+	u16 version;
-+	u32 len, max, i;
-+	int err = -EINVAL;
-+	void *start = *p;
-+
-+	dout("osdmap_decode %p to %p len %d\n", *p, end, (int)(end - *p));
-+
-+	map = kzalloc(sizeof(*map), GFP_NOFS);
-+	if (map == NULL)
-+		return ERR_PTR(-ENOMEM);
-+
-+	ceph_decode_16_safe(p, end, version, bad);
-+
-+	ceph_decode_need(p, end, 2*sizeof(u64)+6*sizeof(u32), bad);
-+	ceph_decode_copy(p, &map->fsid, sizeof(map->fsid));
-+	ceph_decode_32(p, map->epoch);
-+	ceph_decode_copy(p, &map->created, sizeof(map->created));
-+	ceph_decode_copy(p, &map->modified, sizeof(map->modified));
-+
-+	ceph_decode_32(p, map->num_pools);
-+	map->pg_pool = kcalloc(map->num_pools, sizeof(*map->pg_pool),
-+			       GFP_NOFS);
-+	if (!map->pg_pool) {
-+		err = -ENOMEM;
-+		goto bad;
-+	}
-+	ceph_decode_32_safe(p, end, max, bad);
-+	while (max--) {
-+		ceph_decode_need(p, end, 4+sizeof(map->pg_pool->v), bad);
-+		ceph_decode_32(p, i);
-+		if (i >= map->num_pools)
-+			goto bad;
-+		ceph_decode_copy(p, &map->pg_pool[i].v,
-+				 sizeof(map->pg_pool->v));
-+		calc_pg_masks(&map->pg_pool[i]);
-+		p += le32_to_cpu(map->pg_pool[i].v.num_snaps) * sizeof(u64);
-+		p += le32_to_cpu(map->pg_pool[i].v.num_removed_snap_intervals)
-+			* sizeof(u64) * 2;
-+	}
-+
-+	ceph_decode_32_safe(p, end, map->flags, bad);
-+
-+	ceph_decode_32(p, max);
-+
-+	/* (re)alloc osd arrays */
-+	err = osdmap_set_max_osd(map, max);
-+	if (err < 0)
-+		goto bad;
-+	dout("osdmap_decode max_osd = %d\n", map->max_osd);
-+
-+	/* osds */
-+	err = -EINVAL;
-+	ceph_decode_need(p, end, 3*sizeof(u32) +
-+			 map->max_osd*(1 + sizeof(*map->osd_weight) +
-+				       sizeof(*map->osd_addr)), bad);
-+	*p += 4; /* skip length field (should match max) */
-+	ceph_decode_copy(p, map->osd_state, map->max_osd);
-+
-+	*p += 4; /* skip length field (should match max) */
-+	for (i = 0; i < map->max_osd; i++)
-+		ceph_decode_32(p, map->osd_weight[i]);
-+
-+	*p += 4; /* skip length field (should match max) */
-+	ceph_decode_copy(p, map->osd_addr, map->max_osd*sizeof(*map->osd_addr));
-+
-+	/* crush */
-+	ceph_decode_32_safe(p, end, len, bad);
-+	dout("osdmap_decode crush len %d from off 0x%x\n", len,
-+	     (int)(*p - start));
-+	ceph_decode_need(p, end, len, bad);
-+	map->crush = crush_decode(*p, end);
-+	*p += len;
-+	if (IS_ERR(map->crush)) {
-+		err = PTR_ERR(map->crush);
-+		map->crush = NULL;
-+		goto bad;
-+	}
-+
-+	/* ignore the rest of the map */
-+	*p = end;
-+
-+	dout("osdmap_decode done %p %p\n", *p, end);
-+	return map;
-+
-+bad:
-+	dout("osdmap_decode fail\n");
-+	ceph_osdmap_destroy(map);
-+	return ERR_PTR(err);
-+}
-+
-+/*
-+ * decode and apply an incremental map update.
-+ */
-+struct ceph_osdmap *apply_incremental(void **p, void *end,
-+				      struct ceph_osdmap *map,
-+				      struct ceph_messenger *msgr)
-+{
-+	struct ceph_osdmap *newmap = map;
-+	struct crush_map *newcrush = NULL;
-+	ceph_fsid_t fsid;
-+	u32 epoch = 0;
-+	struct ceph_timespec modified;
-+	u32 len, pool;
-+	__s32 new_flags, max;
-+	void *start = *p;
-+	int err = -EINVAL;
-+	u16 version;
-+
-+	ceph_decode_16_safe(p, end, version, bad);
-+
-+	ceph_decode_need(p, end, sizeof(fsid)+sizeof(modified)+2*sizeof(u32),
-+			 bad);
-+	ceph_decode_copy(p, &fsid, sizeof(fsid));
-+	ceph_decode_32(p, epoch);
-+	BUG_ON(epoch != map->epoch+1);
-+	ceph_decode_copy(p, &modified, sizeof(modified));
-+	ceph_decode_32(p, new_flags);
-+
-+	/* full map? */
-+	ceph_decode_32_safe(p, end, len, bad);
-+	if (len > 0) {
-+		dout("apply_incremental full map len %d, %p to %p\n",
-+		     len, *p, end);
-+		newmap = osdmap_decode(p, min(*p+len, end));
-+		return newmap;  /* error or not */
-+	}
-+
-+	/* new crush? */
-+	ceph_decode_32_safe(p, end, len, bad);
-+	if (len > 0) {
-+		dout("apply_incremental new crush map len %d, %p to %p\n",
-+		     len, *p, end);
-+		newcrush = crush_decode(*p, min(*p+len, end));
-+		if (IS_ERR(newcrush))
-+			return ERR_PTR(PTR_ERR(newcrush));
-+	}
-+
-+	/* new flags? */
-+	if (new_flags >= 0)
-+		map->flags = new_flags;
-+
-+	ceph_decode_need(p, end, 5*sizeof(u32), bad);
-+
-+	/* new max? */
-+	ceph_decode_32(p, max);
-+	if (max >= 0) {
-+		err = osdmap_set_max_osd(map, max);
-+		if (err < 0)
-+			goto bad;
-+	}
-+
-+	map->epoch++;
-+	map->modified = map->modified;
-+	if (newcrush) {
-+		if (map->crush)
-+			crush_destroy(map->crush);
-+		map->crush = newcrush;
-+		newcrush = NULL;
-+	}
-+
-+	/* new_pool */
-+	ceph_decode_32_safe(p, end, len, bad);
-+	while (len--) {
-+		ceph_decode_32_safe(p, end, pool, bad);
-+		if (pool >= map->num_pools) {
-+			void *pg_pool = kcalloc(pool + 1,
-+						sizeof(*map->pg_pool),
-+						GFP_NOFS);
-+			if (!pg_pool) {
-+				err = -ENOMEM;
-+				goto bad;
-+			}
-+			memcpy(pg_pool, map->pg_pool,
-+			       map->num_pools * sizeof(*map->pg_pool));
-+			kfree(map->pg_pool);
-+			map->pg_pool = pg_pool;
-+			map->num_pools = pool+1;
-+		}
-+		ceph_decode_copy(p, &map->pg_pool[pool].v,
-+				 sizeof(map->pg_pool->v));
-+		calc_pg_masks(&map->pg_pool[pool]);
-+	}
-+
-+	/* old_pool (ignore) */
-+	ceph_decode_32_safe(p, end, len, bad);
-+	*p += len * sizeof(u32);
-+
-+	/* new_up */
-+	err = -EINVAL;
-+	ceph_decode_32_safe(p, end, len, bad);
-+	while (len--) {
-+		u32 osd;
-+		struct ceph_entity_addr addr;
-+		ceph_decode_32_safe(p, end, osd, bad);
-+		ceph_decode_copy_safe(p, end, &addr, sizeof(addr), bad);
-+		pr_info("ceph osd%d up\n", osd);
-+		BUG_ON(osd >= map->max_osd);
-+		map->osd_state[osd] |= CEPH_OSD_UP;
-+		map->osd_addr[osd] = addr;
-+	}
-+
-+	/* new_down */
-+	ceph_decode_32_safe(p, end, len, bad);
-+	while (len--) {
-+		u32 osd;
-+		ceph_decode_32_safe(p, end, osd, bad);
-+		(*p)++;  /* clean flag */
-+		pr_info("ceph osd%d down\n", osd);
-+		if (osd < map->max_osd) {
-+			map->osd_state[osd] &= ~CEPH_OSD_UP;
-+			ceph_messenger_mark_down(msgr, &map->osd_addr[osd]);
-+		}
-+	}
-+
-+	/* new_weight */
-+	ceph_decode_32_safe(p, end, len, bad);
-+	while (len--) {
-+		u32 osd, off;
-+		ceph_decode_need(p, end, sizeof(u32)*2, bad);
-+		ceph_decode_32(p, osd);
-+		ceph_decode_32(p, off);
-+		pr_info("ceph osd%d weight 0x%x %s\n", osd, off,
-+		     off == CEPH_OSD_IN ? "(in)" :
-+		     (off == CEPH_OSD_OUT ? "(out)" : ""));
-+		if (osd < map->max_osd)
-+			map->osd_weight[osd] = off;
-+	}
-+
-+	/* ignore the rest */
-+	*p = end;
-+	return map;
-+
-+bad:
-+	pr_err("ceph corrupt inc osdmap epoch %d off %d (%p of %p-%p)\n",
-+	       epoch, (int)(*p - start), *p, start, end);
-+	if (newcrush)
-+		crush_destroy(newcrush);
-+	return ERR_PTR(err);
-+}
-+
-+
-+
-+
-+/*
-+ * calculate file layout from given offset, length.
-+ * fill in correct oid, logical length, and object extent
-+ * offset, length.
++ * ceph_connection state bit flags
 + *
-+ * for now, we write only a single su, until we can
-+ * pass a stride back to the caller.
++ * QUEUED and BUSY are used together to ensure that only a single
++ * thread is currently opening, reading or writing data to the socket.
 + */
-+void ceph_calc_file_object_mapping(struct ceph_file_layout *layout,
-+				   u64 off, u64 *plen,
-+				   u64 *bno,
-+				   u64 *oxoff, u64 *oxlen)
-+{
-+	u32 osize = le32_to_cpu(layout->fl_object_size);
-+	u32 su = le32_to_cpu(layout->fl_stripe_unit);
-+	u32 sc = le32_to_cpu(layout->fl_stripe_count);
-+	u32 bl, stripeno, stripepos, objsetno;
-+	u32 su_per_object;
-+	u64 t;
-+
-+	dout("mapping %llu~%llu  osize %u fl_su %u\n", off, *plen,
-+	     osize, su);
-+	su_per_object = osize / le32_to_cpu(layout->fl_stripe_unit);
-+	dout("osize %u / su %u = su_per_object %u\n", osize, su,
-+	     su_per_object);
-+
-+	BUG_ON((su & ~PAGE_MASK) != 0);
-+	/* bl = *off / su; */
-+	t = off;
-+	do_div(t, su);
-+	bl = t;
-+	dout("off %llu / su %u = bl %u\n", off, su, bl);
-+
-+	stripeno = bl / sc;
-+	stripepos = bl % sc;
-+	objsetno = stripeno / su_per_object;
-+
-+	*bno = cpu_to_le32(objsetno * sc + stripepos);
-+	dout("objset %u * sc %u = bno %u\n", objsetno, sc, (unsigned)*bno);
-+	/* *oxoff = *off / layout->fl_stripe_unit; */
-+	t = off;
-+	*oxoff = do_div(t, su);
-+	*oxlen = min_t(u64, *plen, su - *oxoff);
-+	*plen = *oxlen;
-+
-+	dout(" obj extent %llu~%llu\n", *oxoff, *oxlen);
-+}
++#define LOSSYTX         0  /* we can close channel or drop messages on errors */
++#define LOSSYRX         1  /* peer may reset/drop messages */
++#define CONNECTING	2
++#define ACCEPTING	3
++#define WRITE_PENDING	4  /* we have data ready to send */
++#define QUEUED          5  /* there is work queued on this connection */
++#define BUSY            6  /* work is being done */
++#define STANDBY		8  /* no outgoing messages, socket closed.  we keep
++			    * the ceph_connection around to maintain shared
++			    * state with the peer. */
++#define WAIT		9  /* waiting for peer to connect to us (during a
++			    * connection race) */
++#define CLOSED		10 /* we've closed the connection */
++#define SOCK_CLOSED	11 /* socket state changed to closed */
++#define REGISTERED      12 /* connection appears in con_tree */
 +
 +/*
-+ * calculate an object layout (i.e. pgid) from an oid,
-+ * file_layout, and osdmap
++ * A single connection with another host.
++ *
++ * We maintain a queue of outgoing messages, and some session state to
++ * ensure that we can preserve the lossless, ordered delivery of
++ * messages in the case of a TCP disconnect.
 + */
-+int ceph_calc_object_layout(struct ceph_object_layout *ol,
-+			    const char *oid,
-+			    struct ceph_file_layout *fl,
-+			    struct ceph_osdmap *osdmap)
++struct ceph_connection {
++	struct ceph_messenger *msgr;
++	struct socket *sock;
++	unsigned long state;	/* connection state (see flags above) */
++	const char *error_msg;  /* error message, if any */
++
++	atomic_t nref;
++
++	struct list_head list_all;     /* msgr->con_all */
++	struct list_head list_bucket;  /* msgr->con_tree or con_accepting */
++
++	struct ceph_entity_addr peer_addr; /* peer address */
++	struct ceph_entity_name peer_name; /* peer name */
++	u32 connect_seq;      /* identify the most recent connection
++				 attempt for this connection, client */
++	u32 peer_global_seq;  /* peer's global seq for this connection */
++
++	/* out queue */
++	spinlock_t out_queue_lock;   /* protects out_queue, out_sent, out_seq */
++	struct list_head out_queue;
++	struct list_head out_sent;   /* sending/sent but unacked */
++	u32 out_seq;		     /* last message queued for send */
++
++	u32 in_seq, in_seq_acked;  /* last message received, acked */
++
++	/* connection negotiation temps */
++	char in_banner[CEPH_BANNER_MAX_LEN];
++	union {
++		struct {  /* outgoing connection */
++			struct ceph_msg_connect out_connect;
++			struct ceph_msg_connect_reply in_reply;
++		};
++		struct {  /* incoming */
++			struct ceph_msg_connect in_connect;
++			struct ceph_msg_connect_reply out_reply;
++		};
++	};
++	struct ceph_entity_addr actual_peer_addr;
++
++	/* message out temps */
++	struct ceph_msg *out_msg;        /* sending message (== tail of
++					    out_sent) */
++	struct ceph_msg_pos out_msg_pos;
++
++	struct kvec out_kvec[6],         /* sending header/footer data */
++		*out_kvec_cur;
++	int out_kvec_left;   /* kvec's left in out_kvec */
++	int out_kvec_bytes;  /* total bytes left */
++	int out_more;        /* there is more data after the kvecs */
++	__le32 out_temp_ack; /* for writing an ack */
++
++	/* message in temps */
++	struct ceph_msg *in_msg;
++	struct ceph_msg_pos in_msg_pos;
++	u32 in_front_crc, in_data_crc;  /* calculated crc, for comparison
++					   message footer */
++
++	char in_tag;         /* protocol control byte */
++	int in_base_pos;     /* bytes read */
++	__le32 in_temp_ack;  /* for reading an ack */
++
++	struct delayed_work work;	    /* send|recv work */
++	unsigned long       delay;          /* current delay interval */
++};
++
++extern int ceph_msgr_init(void);
++extern void ceph_msgr_exit(void);
++
++extern struct ceph_messenger *
++ceph_messenger_create(struct ceph_entity_addr *myaddr);
++extern void ceph_messenger_destroy(struct ceph_messenger *);
++extern void ceph_messenger_mark_down(struct ceph_messenger *msgr,
++				     struct ceph_entity_addr *addr);
++
++extern struct ceph_msg *ceph_msg_new(int type, int front_len,
++				     int page_len, int page_off,
++				     struct page **pages);
++
++static inline struct ceph_msg *ceph_msg_get(struct ceph_msg *msg)
 +{
-+	unsigned num, num_mask;
-+	union ceph_pg pgid;
-+	s32 preferred = (s32)le32_to_cpu(fl->fl_pg_preferred);
-+	int poolid = le32_to_cpu(fl->fl_pg_pool);
-+	struct ceph_pg_pool_info *pool;
++	/*printk("ceph_msg_get %p %d -> %d\n", msg, atomic_read(&msg->nref),
++	  atomic_read(&msg->nref)+1);*/
++	atomic_inc(&msg->nref);
++	return msg;
++}
 +
-+	if (poolid >= osdmap->num_pools)
-+		return -EIO;
-+	pool = &osdmap->pg_pool[poolid];
++extern void ceph_msg_put(struct ceph_msg *msg);
 +
-+	if (preferred >= 0) {
-+		num = le32_to_cpu(pool->v.lpg_num);
-+		num_mask = pool->lpg_num_mask;
-+	} else {
-+		num = le32_to_cpu(pool->v.pg_num);
-+		num_mask = pool->pg_num_mask;
++static inline void ceph_msg_remove(struct ceph_msg *msg)
++{
++	list_del_init(&msg->list_head);
++	ceph_msg_put(msg);
++}
++
++static inline void ceph_msg_put_list(struct list_head *head)
++{
++	while (!list_empty(head)) {
++		struct ceph_msg *msg = list_first_entry(head, struct ceph_msg,
++							list_head);
++		ceph_msg_remove(msg);
 +	}
-+
-+	pgid.pg64 = 0;   /* start with it zeroed out */
-+	pgid.pg.ps = ceph_full_name_hash(oid, strlen(oid));
-+	pgid.pg.preferred = preferred;
-+	pgid.pg.pool = le32_to_cpu(fl->fl_pg_pool);
-+
-+	ol->ol_pgid = cpu_to_le64(pgid.pg64);
-+	ol->ol_stripe_unit = fl->fl_object_stripe_unit;
-+
-+	return 0;
-+}
-diff --git a/fs/ceph/osdmap.h b/fs/ceph/osdmap.h
-new file mode 100644
-index 0000000..757aaf5
---- /dev/null
-+++ b/fs/ceph/osdmap.h
-@@ -0,0 +1,83 @@
-+#ifndef _FS_CEPH_OSDMAP_H
-+#define _FS_CEPH_OSDMAP_H
-+
-+#include "types.h"
-+#include "ceph_fs.h"
-+#include "crush/crush.h"
-+
-+/*
-+ * The osd map describes the current membership of the osd cluster and
-+ * specifies the mapping of objects to placement groups and placement
-+ * groups to (sets of) osds.  That is, it completely specifies the
-+ * (desired) distribution of all data objects in the system at some
-+ * point in time.
-+ *
-+ * Each map version is identified by an epoch, which increases monotonically.
-+ *
-+ * The map can be updated either via an incremental map (diff) describing
-+ * the change between two successive epochs, or as a fully encoded map.
-+ */
-+struct ceph_pg_pool_info {
-+	struct ceph_pg_pool v;
-+	int pg_num_mask, pgp_num_mask, lpg_num_mask, lpgp_num_mask;
-+};
-+
-+struct ceph_osdmap {
-+	ceph_fsid_t fsid;
-+	u32 epoch;
-+	u32 mkfs_epoch;
-+	struct ceph_timespec created, modified;
-+
-+	u32 flags;         /* CEPH_OSDMAP_* */
-+
-+	u32 max_osd;       /* size of osd_state, _offload, _addr arrays */
-+	u8 *osd_state;     /* CEPH_OSD_* */
-+	u32 *osd_weight;   /* 0 = failed, 0x10000 = 100% normal */
-+	struct ceph_entity_addr *osd_addr;
-+
-+	u32 num_pools;
-+	struct ceph_pg_pool_info *pg_pool;
-+
-+	/* the CRUSH map specifies the mapping of placement groups to
-+	 * the list of osds that store+replicate them. */
-+	struct crush_map *crush;
-+};
-+
-+static inline int ceph_osd_is_up(struct ceph_osdmap *map, int osd)
-+{
-+	return (osd < map->max_osd) && (map->osd_state[osd] & CEPH_OSD_UP);
 +}
 +
-+static inline bool ceph_osdmap_flag(struct ceph_osdmap *map, int flag)
-+{
-+	return map && (map->flags & flag);
-+}
++extern struct ceph_msg *ceph_msg_maybe_dup(struct ceph_msg *msg);
 +
-+extern char *ceph_osdmap_state_str(char *str, int len, int state);
++extern int ceph_msg_send(struct ceph_messenger *msgr, struct ceph_msg *msg,
++			 unsigned long timeout);
 +
-+static inline struct ceph_entity_addr *ceph_osd_addr(struct ceph_osdmap *map,
-+						     int osd)
-+{
-+	if (osd >= map->max_osd)
-+		return 0;
-+	return &map->osd_addr[osd];
-+}
-+
-+extern struct ceph_osdmap *osdmap_decode(void **p, void *end);
-+extern struct ceph_osdmap *apply_incremental(void **p, void *end,
-+					     struct ceph_osdmap *map,
-+					     struct ceph_messenger *msgr);
-+extern void ceph_osdmap_destroy(struct ceph_osdmap *map);
-+
-+/* calculate mapping of a file extent to an object */
-+extern void ceph_calc_file_object_mapping(struct ceph_file_layout *layout,
-+					  u64 off, u64 *plen,
-+					  u64 *bno, u64 *oxoff, u64 *oxlen);
-+
-+/* calculate mapping of object to a placement group */
-+extern int ceph_calc_object_layout(struct ceph_object_layout *ol,
-+				   const char *oid,
-+				   struct ceph_file_layout *fl,
-+				   struct ceph_osdmap *osdmap);
++extern void ceph_ping(struct ceph_messenger *msgr, struct ceph_entity_name name,
++		      struct ceph_entity_addr *addr);
 +
 +#endif
 -- 
