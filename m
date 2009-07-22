@@ -1,59 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754252AbZGVSoH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753674AbZGVSvM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754252AbZGVSoH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 14:44:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbZGVSoH
+	id S1753674AbZGVSvM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 14:51:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbZGVSvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 14:44:07 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:40565 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752183AbZGVSoF (ORCPT
+	Wed, 22 Jul 2009 14:51:12 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:51266 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751684AbZGVSvL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 14:44:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=MkJjVxHmJwRovRdRXYTXqkohVka3qFaYYgpEPzEQ6JIOlhmhWCc4TLAlHyQ9J3uTH+
-         e6VdUIQdtGbfBdbOwSbDoi5SxnCwmz7F43rVognv+l+Rz0A+KUP7GX55+Dk5a7Klf2t+
-         aMsFn0hkl5402Axx0kX6dZBLFsp7u0qJQtphg=
-From: Alberto Gonzalez <alberto6674@gmail.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: Kernel 2.6.30 and udevd problem
-Date: Wed, 22 Jul 2009 20:43:56 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.29-ARCH; KDE/4.2.4; x86_64; ; )
-Cc: Alberto Gonzalez <alberto6674@gmail.com>, Michal Soltys <soltys@ziu.info>,
-       Dave Airlie <airlied@linux.ie>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org, linux-hotplug@vger.kernel.org
-References: <200906280821.58631.info@gnebu.es> <200907221851.20916.info@gnebu.es> <20090722101251.0b6c7300@jbarnes-g45>
-In-Reply-To: <20090722101251.0b6c7300@jbarnes-g45>
+	Wed, 22 Jul 2009 14:51:11 -0400
+Message-ID: <4A675F89.50506@nortel.com>
+Date: Wed, 22 Jul 2009 12:50:49 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+To: linux-kernel@vger.kernel.org
+Subject: question for C preprocessor wizards
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907222043.57244.info@gnebu.es>
+X-OriginalArrivalTime: 22 Jul 2009 18:50:51.0291 (UTC) FILETIME=[559E1EB0:01CA0AFD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 22 July 2009 19:12:51 Jesse Barnes wrote:
-> Ah I must have been looking at the wrong register.  This one makes it
-> look like one of your HDMI hotplug bits is getting stuck (HDMIC in
-> particular).  This might not even be wired up on your platform...
 
-Yes, I don't use HDMI, my screen is attached via VGA
->
-> This test hack should prevent us from responding to those interrupts...
+I'm hoping someone can help me out.
 
-I've been hitting it hard for over an hour with all the usual tricks to 
-trigger it (and a few reboots) and I've been unable to reproduce the problem 
-with this patch. Before I could trigger it reliably in a few minutes, so I'm 
-pretty sure this patch fixes it. If something new comes up, I'll let you know 
-anyway.
+I've got a bunch of code that call a bunch of different wrapper
+routines, with varying numbers of arguments.  Depending on whether a
+compile flag is set, I want to do some stuff before and after calling
+the "real" routine.  I can do this easily enough with a macro.
 
-Thank you very much!
+#if FLAG
+#define func_wrapper(args...) \
+	do { \
+		dostuff(); \
+		func(args); \
+		do_more_stuff(); \
+	} while (0)
+#else
+#define func_wrapper(args...) func(args)
+#endif
 
-Regards,
-Alberto.
+
+However, given that there are hundreds of functions, I'd like to
+generate these macros with another macro, sort of like:
+
+#if FLAG
+#define WRAPPER(func) \
+	#define func # _wrapper(args...) \
+	do { \
+		dostuff(); \
+		func(args); \
+		do_more_stuff(); \
+	} while (0)
+#else
+#define WRAPPER(func) \
+	#define func ## _wrapper(args...) func(args)
+#endif
+
+Where I could then do
+
+WRAPPER(func1)
+WRAPPER(func2)
+...
+WRAPPER(func100)
+
+
+However, the preprocessor complains about having that "#" in the macro
+body where it isn't used for stringification.
+
+
+Anyone have any ideas how to accomplish this?  I had considered writing
+an app to programmatically generate an include file as a precursor to
+actually compiling the real app, but I was hoping there was a more
+elegant solution.
+
+Thanks,
+
+Chris
+
