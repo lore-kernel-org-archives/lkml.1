@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbZGVVVM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754034AbZGVVVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753320AbZGVVVM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 17:21:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbZGVVVL
+	id S1754034AbZGVVVW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 17:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbZGVVVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 17:21:11 -0400
-Received: from moutng.kundenserver.de ([212.227.17.10]:58696 "EHLO
+	Wed, 22 Jul 2009 17:21:16 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:52671 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752577AbZGVVVL (ORCPT
+	with ESMTP id S1752937AbZGVVVO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 17:21:11 -0400
+	Wed, 22 Jul 2009 17:21:14 -0400
 From: Arnd Bergmann <arnd@arndb.de>
 To: Pekka Paalanen <pq@iki.fi>
 Subject: Re: Do cpu-endian MMIO accessors exist?
-Date: Wed, 22 Jul 2009 23:20:58 +0200
+Date: Wed, 22 Jul 2009 23:19:12 +0200
 User-Agent: KMail/1.12.0 (Linux/2.6.31-3-generic; KDE/4.2.96; x86_64; ; )
 Cc: Christoph Hellwig <hch@infradead.org>, Jiri Slaby <jirislaby@gmail.com>,
        linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
@@ -25,13 +25,13 @@ X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
  =?iso-8859-1?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
  =?iso-8859-1?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
+Message-Id: <200907222319.12859.arnd@arndb.de>
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200907222320.58744.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19KgvhtJVi4Dlkxzwd7ajBp2aIFCWBXT4Kf4HR
- SUyIVf1NiGpOGZ94TGLgIOhIbm+mvuW+EStnk5tfS/G7smfKj9
- v7gspQ5/Klt1E97c0VJgQ==
+X-Provags-ID: V01U2FsdGVkX192sfMwb8kMiJ3MzIT8SdLOt0pHtLahJ5NxyGw
+ mGviJProlDCnnXxj1ePfjUeCDrvKACI3jA1E/aMOmmEBxim0UL
+ uZLoVE/qbNLBbK7wjWmMQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -84,3 +84,4 @@ decide that this is the right approach after all, it should
 be part of the common linux API, not private to a single driver.
 
 	Arnd <><
+
