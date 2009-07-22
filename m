@@ -1,96 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754780AbZGVNBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbZGVNCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754780AbZGVNBA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 09:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbZGVNA7
+	id S1754823AbZGVNCn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 09:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbZGVNCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 09:00:59 -0400
-Received: from cmpxchg.org ([85.214.51.133]:37370 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754528AbZGVNA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 09:00:58 -0400
-Date: Wed, 22 Jul 2009 14:59:45 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       smfrench@gmail.com, hch@infradead.org
-Subject: Re: [PATCH] fix offset checks in do_sendfile to use unsigned values
-Message-ID: <20090722125945.GA2834@cmpxchg.org>
-References: <1248262099-12514-1-git-send-email-jlayton@redhat.com> <1248262099-12514-2-git-send-email-jlayton@redhat.com>
+	Wed, 22 Jul 2009 09:02:42 -0400
+Received: from viefep19-int.chello.at ([62.179.121.39]:41488 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753470AbZGVNCm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 09:02:42 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [tip:core/locking 2/3] lockdep:define preallocated "stack" for
+ BFS as per cpu variable
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: tom.leiming@gmail.com
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       torvalds@linux-foundation.org
+In-Reply-To: <1248267513-4934-3-git-send-email-tom.leiming@gmail.com>
+References: <1248267513-4934-1-git-send-email-tom.leiming@gmail.com>
+	 <1248267513-4934-2-git-send-email-tom.leiming@gmail.com>
+	 <1248267513-4934-3-git-send-email-tom.leiming@gmail.com>
+Content-Type: text/plain
+Date: Wed, 22 Jul 2009 15:03:50 +0200
+Message-Id: <1248267830.27058.1404.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248262099-12514-2-git-send-email-jlayton@redhat.com>
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 22, 2009 at 07:28:19AM -0400, Jeff Layton wrote:
-> If do_sendfile is called with a "max" value of 0, it grabs the lesser
-> s_maxbytes value of the two superblocks to use instead. There's a
-> problem here however. s_maxbytes is an unsigned long long and it gets
-> cast to a signed value. If both s_maxbytes values are large enough, max
-> will end up being negative and the comparisons in this code won't work
-> correctly.
-> 
-> Change do_sendfile to use unsigned values internally for the offset
-> checks.
-> 
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+On Wed, 2009-07-22 at 20:58 +0800, tom.leiming@gmail.com wrote:
+> From: Ming Lei <tom.leiming@gmail.com>
+
+This patch can use a changelog.
+
+Why is this needed, isn't all that serialized by the graph_lock anyway?
+Or are there a few paths where this isn't the case and we're now racy?
+
+> Signed-off-by: Ming Lei <tom.leiming@gmail.com>
 > ---
->  fs/read_write.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
+>  kernel/lockdep.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
 > 
-> diff --git a/fs/read_write.c b/fs/read_write.c
-> index 6c8c55d..36899ff 100644
-> --- a/fs/read_write.c
-> +++ b/fs/read_write.c
-> @@ -788,11 +788,11 @@ SYSCALL_DEFINE5(pwritev, unsigned long, fd, const struct iovec __user *, vec,
+> diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+> index 1b1796a..1583439 100644
+> --- a/kernel/lockdep.c
+> +++ b/kernel/lockdep.c
+> @@ -847,7 +847,7 @@ struct circular_queue {
+>  	unsigned int  front, rear;
+>  };
+>  
+> -static struct circular_queue lock_cq;
+> +static DEFINE_PER_CPU(struct circular_queue, lock_cq);
+>  
+>  unsigned int max_bfs_queue_depth;
+>  
+> @@ -937,7 +937,7 @@ static int __bfs(struct lock_list *source_entry,
+>  {
+>  	struct lock_list *entry;
+>  	struct list_head *head;
+> -	struct circular_queue *cq = &lock_cq;
+> +	struct circular_queue *cq = &get_cpu_var(lock_cq);
+>  	int ret = 1;
+>  
+>  	if (match(source_entry, data)) {
+> @@ -993,6 +993,7 @@ static int __bfs(struct lock_list *source_entry,
+>  		}
+>  	}
+>  exit:
+> +	put_cpu_var(lock_cq);
+>  	return ret;
 >  }
 >  
->  static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
-> -			   size_t count, loff_t max)
-> +			   size_t count, unsigned long long max)
->  {
->  	struct file * in_file, * out_file;
->  	struct inode * in_inode, * out_inode;
-> -	loff_t pos;
-> +	unsigned long long pos;
->  	ssize_t retval;
->  	int fput_needed_in, fput_needed_out, fl;
->  
-> @@ -838,7 +838,7 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
->  	if (!max)
->  		max = min(in_inode->i_sb->s_maxbytes, out_inode->i_sb->s_maxbytes);
->  
-> -	pos = *ppos;
-> +	pos = (unsigned long long) *ppos;
->  	retval = -EINVAL;
->  	if (unlikely(pos < 0))
->  		goto fput_out;
 
-May it be possible that cifs is the only fs that sets sb->sb_maxbytes
-to exceed loff_t?  It seems the others clamp it to MAX_LFS_FILESIZE
-while CIFS exceeds this by one.  And then max is -1.
-
-So, isn't the correct fix something similar to this?
-
-diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
-index e16d759..df56093 100644
---- a/fs/cifs/connect.c
-+++ b/fs/cifs/connect.c
-@@ -2452,10 +2452,10 @@ try_mount_again:
- 		tcon->local_lease = volume_info->local_lease;
- 	}
- 	if (pSesInfo) {
--		if (pSesInfo->capabilities & CAP_LARGE_FILES) {
--			sb->s_maxbytes = (u64) 1 << 63;
--		} else
--			sb->s_maxbytes = (u64) 1 << 31;	/* 2 GB */
-+		if (pSesInfo->capabilities & CAP_LARGE_FILES)
-+			sb->s_maxbytes = MAX_LFS_FILESIZE;
-+		else
-+			sb->s_maxbytes = MAX_NON_LFS;
- 	}
- 
- 	/* BB FIXME fix time_gran to be larger for LANMAN sessions */
