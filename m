@@ -1,112 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753422AbZGVG1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756254AbZGVG2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753422AbZGVG1c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 02:27:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752219AbZGVG1b
+	id S1756254AbZGVG2o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 02:28:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbZGVG2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 02:27:31 -0400
-Received: from mail-px0-f186.google.com ([209.85.216.186]:45156 "EHLO
-	mail-px0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752384AbZGVG1b (ORCPT
+	Wed, 22 Jul 2009 02:28:44 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:56670 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752219AbZGVG2n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 02:27:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=AnzDtAtgm6X84KUsjgh2LJdQR+hSSwqSg6BbipIbh9D2CEMjWGyAcUKsnPj8d42+Vz
-         n3HA/+fMVgGlox3RlxXlVdLO39mi1QGpjpzqtWj4uQiSLr7Y6gYYspA3S8v9KpDuyVNn
-         hXta/lQ9sEyRrHUQMq3eimNUjZstqiXwcVZWQ=
-Date: Wed, 22 Jul 2009 14:29:43 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/4] kcore: remove noise from walk_memory_resource
-Message-ID: <20090722062943.GF6281@cr0.nay.redhat.com>
-References: <20090722140613.0a751811.kamezawa.hiroyu@jp.fujitsu.com> <20090722141227.9712ee7b.kamezawa.hiroyu@jp.fujitsu.com> <20090722062103.GE6281@cr0.nay.redhat.com> <20090722152238.fc6ce3f3.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090722152238.fc6ce3f3.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 22 Jul 2009 02:28:43 -0400
+Subject: Re: [patch 1/3] net: serialize hrtimer callback in sched_cbq
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, tglx@linutronix.de, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kaber@trash.net
+In-Reply-To: <20090721.201855.32703627.davem@davemloft.net>
+References: <1247588890.7500.186.camel@twins>
+	 <alpine.LFD.2.01.0907140940440.13838@localhost.localdomain>
+	 <1247832892.15751.35.camel@twins>
+	 <20090721.201855.32703627.davem@davemloft.net>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 22 Jul 2009 08:29:44 +0200
+Message-Id: <1248244184.27058.992.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 22, 2009 at 03:22:38PM +0900, KAMEZAWA Hiroyuki wrote:
->On Wed, 22 Jul 2009 14:21:03 +0800
->Amerigo Wang <xiyou.wangcong@gmail.com> wrote:
->
->> On Wed, Jul 22, 2009 at 02:12:27PM +0900, KAMEZAWA Hiroyuki wrote:
->> >From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->> >
->> >Originally, walk_memory_resource() was introduced to traverse all memory
->> >of "System RAM" for detecting memory hotplug/unplug range.
->> >For doing so, flags of IORESOUCE_MEM|IORESOURCE_BUSY was used and this
->> >was enough for memory hotplug because scanning range was controlled properly.
->> >
->> >But for using other purpose, /proc/kcore, this may includes some firmware
->> >area marked as IORESOURCE_BUSY | IORESOUCE_MEM. This patch makes the check
->> >strict to find out busy "System RAM".
->> >
->> >Note: PPC64 keeps their own walk_memory_resouce(), which walk through
->> >ppc64's lmb informaton. Because old kclist_add() is called per lmb,
->> >this patch makes no difference in behavior, finally.
->> >
->> >Changelog v2:
->> > - new patch from v2.
->> >
->> >Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->> >---
->> > kernel/resource.c |   18 ++++++++++++++----
->> > 1 file changed, 14 insertions(+), 4 deletions(-)
->> >
->> >Index: mmotm-2.6.31-Jul16/kernel/resource.c
->> >===================================================================
->> >--- mmotm-2.6.31-Jul16.orig/kernel/resource.c
->> >+++ mmotm-2.6.31-Jul16/kernel/resource.c
->> >@@ -237,10 +237,10 @@ EXPORT_SYMBOL(release_resource);
->> > #if !defined(CONFIG_ARCH_HAS_WALK_MEMORY)
->> > /*
->> >  * Finds the lowest memory reosurce exists within [res->start.res->end)
->> >- * the caller must specify res->start, res->end, res->flags.
->> >+ * the caller must specify res->start, res->end, res->flags and "name".
->> >  * If found, returns 0, res is overwritten, if not found, returns -1.
->> >  */
->> >-static int find_next_system_ram(struct resource *res)
->> >+static int find_next_system_ram(struct resource *res, char *name)
->> > {
->> > 	resource_size_t start, end;
->> > 	struct resource *p;
->> >@@ -256,6 +256,8 @@ static int find_next_system_ram(struct r
->> > 		/* system ram is just marked as IORESOURCE_MEM */
->> > 		if (p->flags != res->flags)
->> > 			continue;
->> >+		if (name && strcmp(p->name, name))
->> >+			continue;
->> > 		if (p->start > end) {
->> > 			p = NULL;
->> > 			break;
->> >@@ -273,19 +275,27 @@ static int find_next_system_ram(struct r
->> > 		res->end = p->end;
->> > 	return 0;
->> > }
->> >+
->> >+/*
->> >+ * This function calls callback against all memory range of "System RAM"
->> >+ * which are marked as IORESOURCE_MEM and IORESOUCE_BUSY.
->> >+ * Now, this function is only for "System RAM".
->> 
->> 
->> Then we should change its name, shouldn't we? :)
->> 
->I tried, but not changed in this version bacause the usage/purpose is not changed.
->
->Hmm, How about walk_system_ram_range() ?
+On Tue, 2009-07-21 at 20:18 -0700, David Miller wrote:
+> From: Peter Zijlstra <peterz@infradead.org>
+> Date: Fri, 17 Jul 2009 14:14:52 +0200
+> 
+> > On Tue, 2009-07-14 at 09:42 -0700, Linus Torvalds wrote:
+> >> 
+> >> On Tue, 14 Jul 2009, Peter Zijlstra wrote:
+> >> > 
+> >> > Linus really hated the softirq mode, which is what prompted me to change
+> >> > that.
+> >> > 
+> >> > Now, it might be he only hated the particular interface and the
+> >> > resulting code, but I think to remember he simply thought the whole
+> >> > thing daft.
+> >> 
+> >> Yes. And I hated the bugs it had. 
+> >> 
+> >> Don't make something as core as timers any more complicated. Don't take 
+> >> locks in timers and then complain about deadlocks. If your locking is 
+> >> broken, don't make the core timers be idiotically broken.
+> >> 
+> >> Because it was. The code was a total mess to follow, and had bugs.
+> > 
+> > How would something like the below work for people?
+> 
+> I like it, but like Linus said it probably belongs in
+> kernel/softirq.c
 
-
-Fine for me.
-
-Thank you.
+Right, I meant to rework it, but stuff kept preempting me. I'll try and
+get around to it today :-)
