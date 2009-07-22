@@ -1,167 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753337AbZGVAzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753573AbZGVBA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753337AbZGVAzh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 20:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbZGVAzg
+	id S1753573AbZGVBA6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 21:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbZGVBA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 20:55:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37729 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751511AbZGVAzf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 20:55:35 -0400
-Date: Tue, 21 Jul 2009 17:53:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Troy Moure <twmoure@szypr.net>
-cc: Krzysztof Oledzki <olel@ans.pl>, Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       lwn@lwn.net, Ian Lance Taylor <iant@google.com>
-Subject: Re: Linux 2.6.27.27
-In-Reply-To: <alpine.LFD.2.00.0907212211040.4630@troy-laptop>
-Message-ID: <alpine.LFD.2.01.0907211726140.19335@localhost.localdomain>
-References: <20090720040655.GA11940@kroah.com> <4A645A45.9060509@ans.pl> <20090720151008.GC10015@suse.de> <alpine.LFD.2.01.0907200848530.13838@localhost.localdomain> <alpine.LNX.1.10.0907202341580.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907201504470.19335@localhost.localdomain>
- <alpine.LNX.1.10.0907210831210.29729@bizon.gios.gov.pl> <alpine.LNX.1.10.0907211154480.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907210906400.19335@localhost.localdomain> <alpine.LFD.2.01.0907211133010.19335@localhost.localdomain>
- <alpine.LFD.2.00.0907212211040.4630@troy-laptop>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 21 Jul 2009 21:00:58 -0400
+Received: from arroyo.ext.ti.com ([192.94.94.40]:55669 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751780AbZGVBA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 21 Jul 2009 21:00:57 -0400
+From: "Madhusudhan" <madhu.cr@ti.com>
+To: "'Linus Walleij'" <linus.walleij@stericsson.com>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>
+Cc: "'Pierre Ossman'" <pierre@ossman.eu>,
+       <linux-arm-kernel@lists.arm.linux.org.uk>
+References: <1248128843-2528-1-git-send-email-linus.walleij@stericsson.com>
+Subject: RE: [PATCH 2/2] Modify MMCI/PL180 to handle agressive clocking v7
+Date: Tue, 21 Jul 2009 20:00:01 -0500
+Message-ID: <009101ca0a67$bda24cc0$544ff780@am.dhcp.ti.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+In-Reply-To: <1248128843-2528-1-git-send-email-linus.walleij@stericsson.com>
+Thread-Index: AcoJjoVOc5eq3bdJRvqJ8Oo/qsvSEAA2N40w
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-[ Added Ian Lance Taylor to the cc, he knows the background, and unlike me 
-  is competent with gcc. ]
 
-On Tue, 21 Jul 2009, Troy Moure wrote:
+> -----Original Message-----
+> From: linux-arm-kernel-bounces@lists.arm.linux.org.uk [mailto:linux-arm-
+> kernel-bounces@lists.arm.linux.org.uk] On Behalf Of Linus Walleij
+> Sent: Monday, July 20, 2009 5:27 PM
+> To: Andrew Morton; linux-kernel@vger.kernel.org
+> Cc: Pierre Ossman; linux-arm-kernel@lists.arm.linux.org.uk; Linus Walleij
+> Subject: [PATCH 2/2] Modify MMCI/PL180 to handle agressive clocking v7
 > 
-> I think I've found something interesting.  Look at the the code generated 
-> for edid_checksum() in driver/video/fbmon.c.  This is what I see for the 
-> -fno-strict-overflow kernel:
+> This adds a few clk_enable()/clk_disable() calls to the MMCI
+> driver so as to handle an set_ios() request with clock
+> frequency set to 0 as an instruction to gate the block clock.
+> This also breaks out the clock setting code into its own
+> function to simplify the set_ios() function a bit.
 
-Ooh.
+Is it possible to share the WRITE/READ throughput numbers with and without
+clock gating enabled? It could be good info.
 
-Bingo. You're 100% right, and you definitely found it (of course, there 
-may be _other_ cases like this, but that's certainly _one_ of the 
-problems, and probably the only one).
-
-Just out of curiosity, how did you find it? Now that I know where to look, 
-it's very obvious in the assembler diffs, but I didn't notice it until you 
-pointed it out just because there is so _much_ of the diffs...
-
-And yes, that's very much a compiler bug. And I also bet it's very easily 
-fixed.
-
-The code in question is this loop:
-
-	#define EDID_LENGTH 128
-
-	unsigned char i, ...
-
-	for (i = 0; i < EDID_LENGTH; i++) {
-                csum += edid[i];
-                all_null |= edid[i];
-        }
-
-and gcc -fno-strict-overflow has apparently decided that that is an 
-infinite loop, even though it clearly is not. So then the stupid and buggy 
-compiler will compile that loop (and the whole rest of the function) to 
-the "optimized" version that is just
-
-	loop:
-		jmp loop;
-
-I even bet I know why: it looks at "unsigned char", and sees that it is an 
-8-bit variable, and then it looks at "i < EDID_LENGTH" and sees that it is 
-a _signed_ comparison (it's signed because the C type rules mean that 
-'unsigned char' will be extended to 'int' in an expression), and then it 
-decides that in a signed comparison an 8-bit entry is always going to be 
-smaller than 128.
-
-Anyway, I bet we can work around the compiler bug by just changing the 
-type of "i" from "unsigned char" to be a plain "int".
-
-Krzysztof? Mind testing that?
-
-Ian? This is Linux 2.6.27.27 compiled with gcc-4.2.4. I'm not seeing the 
-bug in the gcc I have on my machine (gcc-4.4.0), but the bug is very clear 
-(once you _find_ it, which was the problem) in the binaries that Krzysztof 
-posted. They're still at:
-
-    http://noc.axelspringer.pl/no-strict-overflow-vs-wrapv/vmlinux-fno-strict-overflow.bz2 (Hangs)
-    http://noc.axelspringer.pl/no-strict-overflow-vs-wrapv/vmlinux-fwrapv.bz2 (OK)
-    http://noc.axelspringer.pl/no-strict-overflow-vs-wrapv/vmlinux-fnone.bz2 (OK)
-
-and you can clearly see the 'edid_checksum' miscompilation in the objdump 
-disassembly.
-
-Thanks Troy,
-
-			Linus
-
----
-Leaving in the context for Ian:
-
-Buggy -fno-strict-overflow compilation:
-
-> ...
-> ffffffff803b37ed <edid_checksum>:
-> ffffffff803b37ed:       53                      push   %rbx
-> ffffffff803b37ee:       48 89 fb                mov    %rdi,%rbx
-> ffffffff803b37f1:       e8 8d fd ff ff          callq  ffffffff803b3583 <check_edid>
-> ffffffff803b37f6:       85 c0                   test   %eax,%eax
-> ffffffff803b37f8:       89 c6                   mov    %eax,%esi
-> ffffffff803b37fa:       74 08                   je     ffffffff803b3804 <edid_checksum+0x17>
-> ffffffff803b37fc:       48 89 df                mov    %rbx,%rdi
-> ffffffff803b37ff:       e8 c0 fe ff ff          callq  ffffffff803b36c4 <fix_edid>
-> ffffffff803b3804:       eb fe                   jmp    ffffffff803b3804 <edid_checksum+0x17>
+Regards,
+Madhu
 > 
-> ffffffff803b3806 <fb_parse_edid>:
-> ffffffff803b3806:       41 54                   push   %r12
-> ffffffff803b3808:       48 85 ff                test   %rdi,%rdi
-> ...
+> Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
+> ---
+>  drivers/mmc/host/mmci.c |   86 +++++++++++++++++++++++++++++++++++-------
+> ----
+>  drivers/mmc/host/mmci.h |    3 +-
+>  2 files changed, 67 insertions(+), 22 deletions(-)
 > 
-> That last insn in edid_checksum() doesn't look *quite* right to me...
+> diff --git a/drivers/mmc/host/mmci.c b/drivers/mmc/host/mmci.c
+> index e1aa847..db09b69 100644
+> --- a/drivers/mmc/host/mmci.c
+> +++ b/drivers/mmc/host/mmci.c
+> @@ -37,8 +37,34 @@
 > 
-> The -fnone kernel has something a lot more sensible-looking:
+>  static unsigned int fmax = 515633;
 > 
-> ffffffff803b39dd <edid_checksum>:
-> ffffffff803b39dd:       53                      push   %rbx
-> ffffffff803b39de:       48 89 fb                mov    %rdi,%rbx
-> ffffffff803b39e1:       e8 8d fd ff ff          callq  ffffffff803b3773 <check_$
-> ffffffff803b39e6:       85 c0                   test   %eax,%eax
-> ffffffff803b39e8:       89 c6                   mov    %eax,%esi
-> ffffffff803b39ea:       74 08                   je     ffffffff803b39f4 <edid_c$
-> ffffffff803b39ec:       48 89 df                mov    %rbx,%rdi
-> ffffffff803b39ef:       e8 c0 fe ff ff          callq  ffffffff803b38b4 <fix_ed$
-> ffffffff803b39f4:       31 c9                   xor    %ecx,%ecx
-> ffffffff803b39f6:       31 f6                   xor    %esi,%esi
-> ffffffff803b39f8:       31 d2                   xor    %edx,%edx
-> ffffffff803b39fa:       eb 0a                   jmp    ffffffff803b3a06 <edid_c$
-> ffffffff803b39fc:       0f b6 c0                movzbl %al,%eax
-> ffffffff803b39ff:       8a 04 03                mov    (%rbx,%rax,1),%al
-> ffffffff803b3a02:       01 c1                   add    %eax,%ecx
-> ffffffff803b3a04:       09 c6                   or     %eax,%esi
-> ffffffff803b3a06:       88 d0                   mov    %dl,%al
-> ffffffff803b3a08:       ff c2                   inc    %edx
-> ffffffff803b3a0a:       81 fa 81 00 00 00       cmp    $0x81,%edx
-> ffffffff803b3a10:       75 ea                   jne    ffffffff803b39fc <edid_c$
-> ffffffff803b3a12:       84 c9                   test   %cl,%cl
-> ffffffff803b3a14:       0f 94 c0                sete   %al
-> ffffffff803b3a17:       40 84 f6                test   %sil,%sil
-> ffffffff803b3a1a:       5b                      pop    %rbx
-> ffffffff803b3a1b:       0f 95 c2                setne  %dl
-> ffffffff803b3a1e:       21 d0                   and    %edx,%eax
-> ffffffff803b3a20:       0f b6 c0                movzbl %al,%eax
-> ffffffff803b3a23:       c3                      retq
+> +/*
+> + * This must be called with host->lock held
+> + */
+> +static void mmci_set_clkreg(struct mmci_host *host, unsigned int desired)
+> +{
+> +	u32 clk = 0;
+> +
+> +	if (desired) {
+> +		if (desired >= host->mclk) {
+> +			clk = MCI_CLK_BYPASS;
+> +			host->cclk = host->mclk;
+> +			DBG(host, "MMCI: bypass clock divider, cclk = %u
+Hz\n",
+> host->cclk);
+> +		} else {
+> +			clk = host->mclk / (2 * desired) - 1;
+> +			if (clk >= 256)
+> +				clk = 255;
+> +			host->cclk = host->mclk / (2 * (clk + 1));
+> +			DBG(host, "MMCI: divide cclk to %u Hz (divide %u by
+> %u)\n", host->cclk, host->mclk, clk);
+> +		}
+> +		if (host->hw_designer == 0x80)
+> +			clk |= MCI_FCEN; /* Bug fix in ST IP block */
+> +		clk |= MCI_CLK_ENABLE;
+> +	}
+> +	writel(clk, host->base + MMCICLOCK);
+> +}
+> +
+>  static void
+> -mmci_request_end(struct mmci_host *host, struct mmc_request *mrq)
+> + mmci_request_end(struct mmci_host *host, struct mmc_request *mrq)
+>  {
+>  	writel(0, host->base + MMCICOMMAND);
 > 
-> ffffffff803b3a24 <fb_parse_edid>:
-> ffffffff803b3a24:       41 54                   push   %r12
-> ffffffff803b3a26:       48 85 ff                test   %rdi,%rdi
+> @@ -418,22 +444,7 @@ static void mmci_request(struct mmc_host *mmc, struct
+> mmc_request *mrq)
+>  static void mmci_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+>  {
+>  	struct mmci_host *host = mmc_priv(mmc);
+> -	u32 clk = 0, pwr = 0;
+> -
+> -	if (ios->clock) {
+> -		if (ios->clock >= host->mclk) {
+> -			clk = MCI_CLK_BYPASS;
+> -			host->cclk = host->mclk;
+> -		} else {
+> -			clk = host->mclk / (2 * ios->clock) - 1;
+> -			if (clk >= 256)
+> -				clk = 255;
+> -			host->cclk = host->mclk / (2 * (clk + 1));
+> -		}
+> -		if (host->hw_designer == 0x80)
+> -			clk |= MCI_FCEN; /* Bug fix in ST IP block */
+> -		clk |= MCI_CLK_ENABLE;
+> -	}
+> +	u32 pwr = 0;
 > 
-> Hope that helps narrow things down ;)
+>  	if (host->plat->translate_vdd)
+>  		pwr |= host->plat->translate_vdd(mmc_dev(mmc), ios->vdd);
+> @@ -464,12 +475,30 @@ static void mmci_set_ios(struct mmc_host *mmc,
+> struct mmc_ios *ios)
+>  		}
+>  	}
 > 
-> 	Troy
+> -	writel(clk, host->base + MMCICLOCK);
+> +	spin_lock(&host->lock);
+> +
+> +	/*
+> +	 * Turn on clock whenever ios->clock transitions
+> +	 * from 0 to !=0 and gate it off whenever ios->clock
+> +	 * transitions from !=0 to 0.
+> +	 */
+> +	if (host->iosclock == 0 && ios->clock != 0) {
+> +		clk_enable(host->clk);
+> +		mmci_set_clkreg(host, ios->clock);
+> +	} else if (host->iosclock != 0 && ios->clock == 0) {
+> +		clk_disable(host->clk);
+> +	}
+> +	host->iosclock = ios->clock;
 > 
+>  	if (host->pwr != pwr) {
+>  		host->pwr = pwr;
+> +		/* Clock may be gated (ios->clock still 0) */
+> +		clk_enable(host->clk);
+>  		writel(pwr, host->base + MMCIPOWER);
+> +		clk_disable(host->clk);
+>  	}
+> +
+> +	spin_unlock(&host->lock);
+>  }
+> 
+>  static const struct mmc_host_ops mmci_ops = {
+> @@ -546,6 +575,7 @@ static int __devinit mmci_probe(struct amba_device
+> *dev, struct amba_id *id)
+>  		host->mclk = clk_get_rate(host->clk);
+>  		DBG(host, "eventual mclk rate: %u Hz\n", host->mclk);
+>  	}
+> +	host->iosclock = 0;
+>  	host->base = ioremap(dev->res.start, resource_size(&dev->res));
+>  	if (!host->base) {
+>  		ret = -ENOMEM;
+> @@ -615,6 +645,8 @@ static int __devinit mmci_probe(struct amba_device
+> *dev, struct amba_id *id)
+>  	host->timer.expires = jiffies + HZ;
+>  	add_timer(&host->timer);
+> 
+> +	/* The first IOS will turn the clock on again */
+> +	clk_disable(host->clk);
+>  	return 0;
+> 
+>   irq0_free:
+> @@ -646,17 +678,22 @@ static int __devexit mmci_remove(struct amba_device
+> *dev)
+> 
+>  		mmc_remove_host(mmc);
+> 
+> +		/* framework may have gated the block clock */
+> +		clk_enable(host->clk);
+> +
+>  		writel(0, host->base + MMCIMASK0);
+>  		writel(0, host->base + MMCIMASK1);
+> 
+>  		writel(0, host->base + MMCICOMMAND);
+>  		writel(0, host->base + MMCIDATACTRL);
+> 
+> +		clk_disable(host->clk);
+> +
+>  		free_irq(dev->irq[0], host);
+>  		free_irq(dev->irq[1], host);
+> 
+>  		iounmap(host->base);
+> -		clk_disable(host->clk);
+> +
+>  		clk_put(host->clk);
+> 
+>  		mmc_free_host(mmc);
+> @@ -677,8 +714,11 @@ static int mmci_suspend(struct amba_device *dev,
+> pm_message_t state)
+>  		struct mmci_host *host = mmc_priv(mmc);
+> 
+>  		ret = mmc_suspend_host(mmc, state);
+> -		if (ret == 0)
+> +		if (ret == 0) {
+> +			clk_enable(host->clk);
+>  			writel(0, host->base + MMCIMASK0);
+> +			clk_disable(host->clk);
+> +		}
+>  	}
+> 
+>  	return ret;
+> @@ -692,7 +732,11 @@ static int mmci_resume(struct amba_device *dev)
+>  	if (mmc) {
+>  		struct mmci_host *host = mmc_priv(mmc);
+> 
+> -		writel(MCI_IRQENABLE, host->base + MMCIMASK0);
+> +		if (ret == 0) {
+> +			clk_enable(host->clk);
+> +			writel(MCI_IRQENABLE, host->base + MMCIMASK0);
+> +			clk_disable(host->clk);
+> +		}
+> 
+>  		ret = mmc_resume_host(mmc);
+>  	}
+> diff --git a/drivers/mmc/host/mmci.h b/drivers/mmc/host/mmci.h
+> index 0441bac..796db94 100644
+> --- a/drivers/mmc/host/mmci.h
+> +++ b/drivers/mmc/host/mmci.h
+> @@ -137,7 +137,7 @@
+>   * The size of the FIFO in bytes.
+>   */
+>  #define MCI_FIFOSIZE	(16*4)
+> -
+> +
+>  #define MCI_FIFOHALFSIZE (MCI_FIFOSIZE / 2)
+> 
+>  #define NR_SG		16
+> @@ -158,6 +158,7 @@ struct mmci_host {
+> 
+>  	unsigned int		mclk;
+>  	unsigned int		cclk;
+> +	unsigned int		iosclock;
+>  	u32			pwr;
+>  	struct mmc_platform_data *plat;
+> 
+> --
+> 1.6.2.5
+> 
+> 
+> -------------------------------------------------------------------
+> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-
+> kernel
+> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+
+
