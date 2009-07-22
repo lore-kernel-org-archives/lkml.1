@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbZGVVkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbZGVVle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753924AbZGVVkx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 17:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbZGVVkx
+	id S1754142AbZGVVle (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 17:41:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbZGVVle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 17:40:53 -0400
-Received: from slow3-v.mail.gandi.net ([217.70.178.89]:43088 "EHLO
-	slow3-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753725AbZGVVkw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 17:40:52 -0400
-Date: Wed, 22 Jul 2009 14:39:46 -0700
-From: Josh Triplett <josh@joshtriplett.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, john stultz <johnstul@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       lkml <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@tglx.de>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>,
-       nikolag@ca.ibm.com, Darren Hart <dvhltc@us.ibm.com>
-Subject: Re: [RFC][PATCH] Introduce CLOCK_REALTIME_COARSE
-Message-ID: <20090722213942.GA4337@josh-work.beaverton.ibm.com>
-References: <1247873945.8334.67.camel@localhost.localdomain>
- <alpine.LFD.2.00.0907181027510.11571@localhost.localdomain>
- <1247954978.14494.19.camel@work-vm>
- <20090718153011.1de3af8e@infradead.org>
- <1248088622.15751.8465.camel@twins>
- <20090720063305.2ad49d40@infradead.org>
- <1248097754.15751.8867.camel@twins>
+	Wed, 22 Jul 2009 17:41:34 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55040 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753761AbZGVVld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 17:41:33 -0400
+Date: Wed, 22 Jul 2009 23:38:07 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, h-shimamoto@ct.jp.nec.com, roland@redhat.com
+Subject: Re: +
+	task_struct-cleanup-make-binfmt-module-get-and-put-per-signal_struct
+	.patch added to -mm tree
+Message-ID: <20090722213807.GA4583@redhat.com>
+References: <200907222023.n6MKNcgH026779@imap1.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1248097754.15751.8867.camel@twins>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <200907222023.n6MKNcgH026779@imap1.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 20, 2009 at 03:49:14PM +0200, Peter Zijlstra wrote:
-> On Mon, 2009-07-20 at 06:33 -0700, Arjan van de Ven wrote:
-> > > Maybe power64, sparc64 and s390x qualify, but certainly nothing on x86
-> > > does.
-> > 
-> > the x86 on my desk disagrees.
-> 
-> >From what I know even nehalem doesn't have fully synced tscs when your
-> machine is large enough, and the timers are still a tad expensive.
+On 07/22, Andrew Morton wrote:
+>
+> Subject: task_struct cleanup: make binfmt module get and put per signal_struct
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>
+> The binfmt is a member of signal_struct, so it can be handled per
+> signal_struct instead of task_struct.
 
-All single-socket Nehalem boards have synced TSCs, and some multi-socket
-Nehalem boards have synced TSCs, notably Intel's.  I don't know if you
-can safely rely on the latter, though.
+Both patches look good to me. But perhaps the changelog for this patch
+should document the user-visible change,
 
-> Maybe your desktop is next-gen? 't would be nice to finally have an x86
-> that has usable clock and timer hardware.
+> @@ -888,6 +892,8 @@ void __cleanup_signal(struct signal_stru
+>  {
+>  	thread_group_cputime_free(sig);
+>  	tty_kref_put(sig->tty);
+> +	if (sig->binfmt)
+> +		module_put(sig->binfmt->module);
+>  	kmem_cache_free(signal_cachep, sig);
+>  }
 
-x86 CPUs with the ARAT feature ("always running APIC timer") will let
-you use the local APIC even in deep C-states.  I don't know about the
-overhead of the local APIC.
+This means that a zombie task still holds a reference to ->binfmt, until
+it is reaped.
 
-- Josh Triplett
+
+Or. we can do module_put() earlier, in do_exit() under "if (group_dead)".
+(in that case we should also modify copy_process() path).
+
+Oleg.
+
