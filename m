@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751723AbZGVJTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751669AbZGVJYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751723AbZGVJTm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 05:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbZGVJTm
+	id S1751669AbZGVJYW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 05:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbZGVJYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 05:19:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47325 "EHLO mx2.redhat.com"
+	Wed, 22 Jul 2009 05:24:22 -0400
+Received: from tundra.namei.org ([65.99.196.166]:44344 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751000AbZGVJTl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 05:19:41 -0400
-Message-ID: <4A66DA2E.90601@redhat.com>
-Date: Wed, 22 Jul 2009 17:21:50 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+	id S1750702AbZGVJYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 05:24:21 -0400
+Date: Wed, 22 Jul 2009 19:23:27 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Eric Paris <eparis@redhat.com>
+cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org, sds@tycho.nsa.gov,
+       spender@grsecurity.net, dwalsh@redhat.com, cl@linux-foundation.org,
+       arjan@infradead.org, alan@lxorguk.ukuu.org.uk, kyle@mcmartin.ca,
+       cpardy@redhat.com, arnd@arndb.de
+Subject: Re: [PATCH -v2 1/2] VM/SELinux: require CAP_SYS_RAWIO for all
+ mmap_zero operations
+In-Reply-To: <20090721230339.20180.99803.stgit@paris.rdu.redhat.com>
+Message-ID: <alpine.LRH.2.00.0907221921150.15799@tundra.namei.org>
+References: <20090721230339.20180.99803.stgit@paris.rdu.redhat.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-To: Miklos Szeredi <mszeredi@suse.cz>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       heiko.carstens@de.ibm.com, linux-fsdevel@vger.kernel.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: [Patch] pipe: use file_update_time() when hold i_mutex
-References: <20090706053745.6338.50777.sendpatchset@localhost.localdomain>	 <20090720141150.e9d081ca.akpm@linux-foundation.org>	 <4A65934B.9050904@redhat.com> <1248174580.28516.595.camel@tucsk>
-In-Reply-To: <1248174580.28516.595.camel@tucsk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
-> On Tue, 2009-07-21 at 18:07 +0800, Amerigo Wang wrote:
->   
->> Andrew Morton wrote:
->>     
->>> On Mon, 6 Jul 2009 01:35:30 -0400
->>> Amerigo Wang <amwang@redhat.com> wrote:
->>>
->>>   
->>>       
->>>> file_update_time() should be called with i_mutex held,
->>>> move it before mutex_unlock().
->>>>
->>>>     
->>>>         
->>> Why do you believe that file_update_time() needs i_mutex?
->>>   
->>>       
->> file_update_time() modifies inode, no? :)
->>     
->
-> So does touch_atime(), yet neither needs i_mutex.
->   
-Yes?
+On Tue, 21 Jul 2009, Eric Paris wrote:
 
-Then how the inode is protected when file_update_time() modifies
-it?
+> +
+> +	if ((addr < mmap_min_addr) && !capable(CAP_SYS_RAWIO))
+> +		return -EACCES;
 
-Thanks.
+Please make this check a static inline.  Less chance of someone breaking 
+it, or it having some subtle bug, and easier to maintain.
 
+>  	address &= PAGE_MASK;
+> +
+
+Whitespace leak.
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
