@@ -1,62 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753663AbZGVUxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbZGVUzB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753663AbZGVUxK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 16:53:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbZGVUxJ
+	id S1753338AbZGVUzB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 16:55:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbZGVUzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 16:53:09 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:64741 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753257AbZGVUxC (ORCPT
+	Wed, 22 Jul 2009 16:55:00 -0400
+Received: from mail01d.mail.t-online.hu ([84.2.42.6]:51053 "EHLO
+	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752409AbZGVUzA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 16:53:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=jR8z7cURHahEG9etzkf0Jrpssab+9WcdZzS8jJWeiwy0rIac+KjV/E0bAj/nmlQRQ7
-         isTQeNv78YGZycwx+JO7ua++0cnESXRtoMgXkvi4X+Al3hoWzujywnBmp+LnDKk0/lq4
-         NRJYPD5mySlIAUBdX/z/+CjZe5pqeL89TmoDQ=
-Date: Thu, 23 Jul 2009 00:52:59 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH -tip] x86,apic - drop redundant bit assignment
-Message-ID: <20090722205259.GE15805@lenovo>
+	Wed, 22 Jul 2009 16:55:00 -0400
+X-Greylist: delayed 411 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Jul 2009 16:54:59 EDT
+Message-ID: <4A677A27.30203@freemail.hu>
+Date: Wed, 22 Jul 2009 22:44:23 +0200
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.21) Gecko/20090402 SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Trivial Patch Monkey <trivial@kernel.org>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] gcov: fix typo in CONFIG_DEBUG_FS
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32721; Body=2 Fuz1=2
+	Fuz2=2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cpu_has_apic has already investigated boot_cpu_data
-X86_FEATURE_APIC bit for being clear if condition
-is triggered. So there is no need to clear this bit
-second time.
+From: Márton Németh <nm127@freemail.hu>
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+The correct name is CONFIG_DEBUG_FS, add the missing underscore.
+
+Signed-off-by: Márton Németh <nm127@freemail.hu>
 ---
+--- linux-2.6.31-rc3/Documentation/gcov.txt.orig	2009-07-20 19:56:05.000000000 +0200
++++ linux-2.6.31-rc3/Documentation/gcov.txt	2009-07-21 22:53:20.000000000 +0200
+@@ -47,7 +47,7 @@
 
-Please review. Is there some unobvious reason was before
-to clear this bit? This snippet already here since long ago.
-Perhaps I miss something?
+ Configure the kernel with:
 
- arch/x86/kernel/apic/apic.c |    1 -
- 1 file changed, 1 deletion(-)
+-        CONFIG_DEBUGFS=y
++        CONFIG_DEBUG_FS=y
+         CONFIG_GCOV_KERNEL=y
 
-Index: linux-2.6.git/arch/x86/kernel/apic/apic.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic/apic.c
-+++ linux-2.6.git/arch/x86/kernel/apic/apic.c
-@@ -1651,7 +1651,6 @@ int __init APIC_init_uniprocessor(void)
- 	    APIC_INTEGRATED(apic_version[boot_cpu_physical_apicid])) {
- 		pr_err("BIOS bug, local APIC 0x%x not detected!...\n",
- 			boot_cpu_physical_apicid);
--		clear_cpu_cap(&boot_cpu_data, X86_FEATURE_APIC);
- 		return -1;
- 	}
- #endif
+ and to get coverage data for the entire kernel:
