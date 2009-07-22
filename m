@@ -1,113 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752646AbZGVKHR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbZGVKIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752646AbZGVKHR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 06:07:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbZGVKHQ
+	id S1753270AbZGVKIU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 06:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZGVKIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 06:07:16 -0400
-Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:47598 "EHLO
-	smtp161.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751000AbZGVKHQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 06:07:16 -0400
-X-Greylist: delayed 403 seconds by postgrey-1.27 at vger.kernel.org; Wed, 22 Jul 2009 06:07:15 EDT
-From: Oren Laadan <orenl@librato.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-api@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Oren Laadan <orenl@librato.com>,
-       Oren Laadan <orenl@cs.columbia.edu>, Matt Helsley <matthltc@us.ibm.com>,
-       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Cedric Le Goater <legoater@free.fr>
-Subject: [RFC v17][PATCH 08/60] cgroup freezer: interface to freeze a cgroup from within the kernel
-Date: Wed, 22 Jul 2009 05:59:30 -0400
-Message-Id: <1248256822-23416-9-git-send-email-orenl@librato.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1248256822-23416-1-git-send-email-orenl@librato.com>
-References: <1248256822-23416-1-git-send-email-orenl@librato.com>
+	Wed, 22 Jul 2009 06:08:19 -0400
+Received: from tundra.namei.org ([65.99.196.166]:56266 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751493AbZGVKIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 06:08:19 -0400
+Date: Wed, 22 Jul 2009 20:06:47 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: James Carter <jwcart2@tycho.nsa.gov>
+cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
+       Stephen Smalley <sds@tycho.nsa.gov>, spender@grsecurity.net,
+       Daniel J Walsh <dwalsh@redhat.com>, cl@linux-foundation.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, kees@outflux.net,
+       Chad Sellers <csellers@tresys.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+Subject: Re: mmap_min_addr and your local LSM (ok, just SELinux)
+In-Reply-To: <1248187482.19456.90.camel@moss-lions.epoch.ncsc.mil>
+Message-ID: <alpine.LRH.2.00.0907221953190.15799@tundra.namei.org>
+References: <1248132223.2654.278.camel@localhost>  <alpine.LRH.2.00.0907211258110.32400@tundra.namei.org> <1248187482.19456.90.camel@moss-lions.epoch.ncsc.mil>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add public interface to freeze a cgroup freezer given a task that
-belongs to that cgroup:  cgroup_freezer_make_frozen(task)
+On Tue, 21 Jul 2009, James Carter wrote:
 
-Freezing the root cgroup is not permitted. Freezing the cgroup to
-which current process belong is also not permitted.
+> Agreed.  That guarantee has been stated from the very beginning for
+> SELinux; we shouldn't move away from it.  Are there other places where
+> having an LSM weakens security by default?
 
-This will be used for restart(2) to be able to leave the restarted
-processes in a frozen state, instead of resuming execution.
+There's a similar form of hook in vm_enough_memory, but the SELinux module 
+calls the DAC capability check first, so it seems ok from a policy 
+writer's point of view (i.e. worst case is they revert to DAC).
 
-This is useful for debugging, if the user would like to attach a
-debugger to the restarted task(s).
 
-It is also useful if the restart procedure would like to perform
-additional setup once the tasks are restored but before they are
-allowed to proceed execution.
 
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
-CC: Matt Helsley <matthltc@us.ibm.com>
-Cc: Paul Menage <menage@google.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Cedric Le Goater <legoater@free.fr>
----
- include/linux/freezer.h |    1 +
- kernel/cgroup_freezer.c |   27 +++++++++++++++++++++++++++
- 2 files changed, 28 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-index 3d32641..0cb22cb 100644
---- a/include/linux/freezer.h
-+++ b/include/linux/freezer.h
-@@ -68,6 +68,7 @@ extern int cgroup_freezing_or_frozen(struct task_struct *task);
- extern int in_same_cgroup_freezer(struct task_struct *p, struct task_struct *q);
- extern int cgroup_freezer_begin_checkpoint(struct task_struct *task);
- extern void cgroup_freezer_end_checkpoint(struct task_struct *task);
-+extern int cgroup_freezer_make_frozen(struct task_struct *task);
- #else /* !CONFIG_CGROUP_FREEZER */
- static inline int cgroup_freezing_or_frozen(struct task_struct *task)
- {
-diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
-index 87dfbfb..7925850 100644
---- a/kernel/cgroup_freezer.c
-+++ b/kernel/cgroup_freezer.c
-@@ -466,4 +466,31 @@ void cgroup_freezer_end_checkpoint(struct task_struct *task)
- 	 */
- 	WARN_ON(freezer_checkpointing(task, CGROUP_FROZEN) != CGROUP_CHECKPOINTING);
- }
-+
-+int cgroup_freezer_make_frozen(struct task_struct *task)
-+{
-+	struct freezer *freezer;
-+	struct cgroup_subsys_state *css;
-+	int ret = -ENODEV;
-+
-+	task_lock(task);
-+	css = task_subsys_state(task, freezer_subsys_id);
-+	css_get(css); /* make sure freezer doesn't go away */
-+	freezer = container_of(css, struct freezer, css);
-+	task_unlock(task);
-+
-+	/* Never freeze the root cgroup */
-+	if (!test_bit(CSS_ROOT, &css->flags) &&
-+	    cgroup_lock_live_group(css->cgroup)) {
-+		/* do not freeze outselves, ei ?! */
-+		if (css != task_subsys_state(current, freezer_subsys_id))
-+			ret = freezer_change_state(css->cgroup, CGROUP_FROZEN);
-+		else
-+			ret = -EPERM;
-+		cgroup_unlock();
-+	}
-+
-+	css_put(css);
-+	return ret;
-+}
- #endif /* CONFIG_CHECKPOINT */
+- James
 -- 
-1.6.0.4
-
+James Morris
+<jmorris@namei.org>
