@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbZGVFrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbZGVFu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755940AbZGVFrn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 01:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755251AbZGVFrl
+	id S1755897AbZGVFu0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 01:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbZGVFuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 01:47:41 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:48394 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751696AbZGVFrl (ORCPT
+	Wed, 22 Jul 2009 01:50:25 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:58962 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751696AbZGVFuZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 01:47:41 -0400
-Date: Tue, 21 Jul 2009 22:47:39 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ACPI power meter driver?
-Message-ID: <20090722054739.GC20171@plum>
-Reply-To: djwong@us.ibm.com
-References: <20090721234957.GB20171@plum> <1248225507.2670.2.camel@rzhang-dt>
+	Wed, 22 Jul 2009 01:50:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=YkNYXwQmyimCHGk3YY6ZVWNID3AOTNpAgdAozT9L7/Zg5+yKZ9kvqxw0n8myaWiLIt
+         p2gCRsbqMS9hKpMpxtyaOdnNW5X9TP9KM4qzPRvdQiedzBJlFS8+nQ0g97q8WLoWxJsd
+         z0M0Z2rv2vtA14fLeuOu+yNyi+8K+sDER/KVY=
+Date: Wed, 22 Jul 2009 13:52:32 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/4] kcore: cleanup and fix bahavior to find physcal
+	memory range v2
+Message-ID: <20090722055232.GA6281@cr0.nay.redhat.com>
+References: <20090722140613.0a751811.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1248225507.2670.2.camel@rzhang-dt>
+In-Reply-To: <20090722140613.0a751811.kamezawa.hiroyu@jp.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 22, 2009 at 09:18:27AM +0800, Zhang Rui wrote:
-> On Wed, 2009-07-22 at 07:49 +0800, Darrick J. Wong wrote:
-> > Hi everyone,
-> > 
-> > I noticed that section 10.4 of the ACPI 4.0 spec mentions exposing power meter
-> > hardware via the DSDT.
-> 
-> right.
-> 
-> >   Is anybody currently writing a Linux driver for that
-> > power meter interface?
-> > 
-> do you have an laptop with that implemented?
-> can you attach the acpidump output please? :)
+On Wed, Jul 22, 2009 at 02:06:13PM +0900, KAMEZAWA Hiroyuki wrote:
+>I'm sorry I can't find who should be in CC.
+>
 
-No, but I'm working on a prototype to send power use estimates to kvm guests.
+Just keep the original CC's, or run scripts/get_maintainer.pl -f fs/proc/kcore.c.
+:-)
 
-Reading between the lines, you sort of imply that you are working on a driver?
-If you are, we should coordinate efforts.
 
---D
+>This includes some amounts changes to arch-specici code, 
+>but very special codes for kcore. Can I test this in -mm if no objections ?
+>
+>Now, /proc/kcore 's physical memory information is set up at boot
+>via kclist_add(). But it's not updated at memory hotplug etc and
+>it can include much memory holes. This patch is for generatinc /proc/kcore
+>based on memory management information maintained by the kernel.
+>
+> For usual archs, /proc/iomem is used
+> For ppc, lmb information will be used.
+>
+
+This is a good idea!
