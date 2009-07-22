@@ -1,238 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbZGVTuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754734AbZGVTuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754709AbZGVTuM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 15:50:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbZGVTuK
+	id S1754734AbZGVTuk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 15:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510AbZGVTuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 15:50:10 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:63159 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754487AbZGVTuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 15:50:00 -0400
-X-IronPort-AV: E=Sophos;i="4.43,248,1246863600"; 
-   d="scan'208";a="210448957"
-Cc: Ben Greear <greearb@candelatech.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
-Message-Id: <A7103385-4525-4B7B-9CBA-5DBCB99A98F0@netapp.com>
-From: Andy Adamson <andros@netapp.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-In-Reply-To: <1248211050.21343.38.camel@heimdal.trondhjem.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Wed, 22 Jul 2009 15:50:37 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:28204 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754484AbZGVTue (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 15:50:34 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=from:subject:to:cc:date:message-id:user-agent:
+	mime-version:content-type:content-transfer-encoding:x-system-of-record;
+	b=SYWs01+bi0kW/AKk1XDudamdkZ21TR1BVgVgi82lduFaK+zXK9D6gxu9gxr3TT4Sk
+	DrJqVvHGtTU189Eunn9+Q==
+From: Paul Menage <menage@google.com>
+Subject: [PATCH 0/4] CGroup: Support for named and empty hierarchies
+To: akpm@linux-foundation.org, lizf@cn.fujitsu.com
+Cc: containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Date: Wed, 22 Jul 2009 12:50:24 -0700
+Message-ID: <20090722194644.7481.47805.stgit@menage.mtv.corp.google.com>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: Error mounting FC8 NFS server with 2.6.31-rc3 NFSv4 client.
-Date: Wed, 22 Jul 2009 15:49:58 -0400
-References: <4A64EB1F.4000602@candelatech.com> <1248178527.5222.0.camel@heimdal.trondhjem.org> <4A65F184.5060802@candelatech.com> <1248196339.21343.8.camel@heimdal.trondhjem.org> <4A65FCB2.6080903@candelatech.com> <1248199140.21343.17.camel@heimdal.trondhjem.org> <4A660295.9020807@candelatech.com> <1248200897.21343.19.camel@heimdal.trondhjem.org> <4A6609A9.3000504@candelatech.com> <1248211050.21343.38.camel@heimdal.trondhjem.org>
-X-Mailer: Apple Mail (2.930.3)
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The following series implements support for named cgroup hierarchies,
+and for cgroup hierarchies that have no bound subsystems.
 
-On Jul 21, 2009, at 5:17 PM, Trond Myklebust wrote:
+This is a subset of the patch series that I sent out as an RFC earlier
+in the month; I'm not pushing the additional support for
+multiply-bound hierarchies at this point.
 
-> On Tue, 2009-07-21 at 11:32 -0700, Ben Greear wrote:
->> On 07/21/2009 11:28 AM, Trond Myklebust wrote:
->>> On Tue, 2009-07-21 at 11:01 -0700, Ben Greear wrote:
->>>> On 07/21/2009 10:59 AM, Trond Myklebust wrote:
->>>>> On Tue, 2009-07-21 at 10:36 -0700, Ben Greear wrote:
->>>>>> On 07/21/2009 10:12 AM, Trond Myklebust wrote:
->>>>>>> On Tue, 2009-07-21 at 09:49 -0700, Ben Greear wrote:
->>>>>>>> On 07/21/2009 05:15 AM, Trond Myklebust wrote:
->>>>>>>>
->>>>>>>>> What does /var/lib/nfs/v4recovery look like on the server?
->>>>>>>> The server was misconfigured, but I still think the client  
->>>>>>>> should
->>>>>>>> behave better in this case.  If you cannot reproduce it, let  
->>>>>>>> me know
->>>>>>>> and I can try to be more specific.  If you still want the  
->>>>>>>> v4recovery
->>>>>>>> information, let me know and I'll send it.
->>>>>>> So how should the client behave, when a screwed up server  
->>>>>>> allows it to
->>>>>>> mount but starts returning illegal values for setclientid? The  
->>>>>>> only
->>>>>>> thing I can see we could do is to tell the user EINSANESERVER...
->>>>>> Well, it could just fail the mount and give up and not overly  
->>>>>> spam
->>>>>> /var/log/messages in a tight loop perhaps?
->>>>> This doesn't happen at mount time. It happens when you open a  
->>>>> file.
->>>> Not for me, and evidently not for the other person that reported
->>>> similar results.  All I had to do was attempt the mount (which  
->>>> never
->>>> completed).
->>>>
->>>> Thanks,
->>>> Ben
->>>
->>> Ah... You have NFS_V4_1 enabled despite the Kconfig warning...  
->>> Does the
->>> bug occur when you turn this off too?
->>
->> Yes, it did.
->
-> OK. The following patch should fix that particular regression.
->
-> Note that there is a bug remaining inside nfs4_init_session(): we
-> shouldn't be copying the rsize/wsize into the nfs_client if the latter
-> was already initialised.
+Signed-off-by: Paul Menage <menage@google.com>
 
-The rsize/wsize is copied into the session prior to the create_session  
-call (triggered by the state management code you moved), and is used  
-for session negotiation. At this point the nfs_client cl_cons_state is  
-set to NFS_CS_SESSION_INITING (see nfs4_alloc_session), so the  
-nfs_client is not initialized.  The cl_cons_state is set to  
-NFS_CS_READY after a successful create_session call.
+---
 
--->Andy
+Paul Menage (4):
+      Support named cgroups hierarchies
+      Move the cgroup debug subsys into cgroup.c to access internal state
+      Add a back-pointer from struct cg_cgroup_link to struct cgroup
+      Allow cgroup hierarchies to be created with no bound subsystems
 
-> I'm going to leave that for the moment, though,
-> since that bug wasn't introduced by my patch, and it doesn't affect
-> NFSv4.0.
->
-> Cheers,
->  Trond
-> -----------------------------------------------------------------
-> From: Trond Myklebust <Trond.Myklebust@netapp.com>
-> NFSv4: Fix an NFSv4 mount regression
->
-> Commit 008f55d0e019943323c20a03493a2ba5672a4cc8 (nfs41: recover  
-> lease in
-> _nfs4_lookup_root) forces the state manager to always run on mount.  
-> This is
-> a bug in the case of NFSv4.0, which doesn't require us to send a
-> setclientid until we want to grab file state.
->
-> In any case, this is completely the wrong place to be doing state
-> management. Moving that code into nfs4_init_session...
->
-> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> ---
->
-> fs/nfs/client.c   |   18 +++---------------
-> fs/nfs/nfs4_fs.h  |    6 ++++++
-> fs/nfs/nfs4proc.c |   24 +++++++++++++++++-------
-> 3 files changed, 26 insertions(+), 22 deletions(-)
->
->
-> diff --git a/fs/nfs/client.c b/fs/nfs/client.c
-> index c2d0616..8d25ccb 100644
-> --- a/fs/nfs/client.c
-> +++ b/fs/nfs/client.c
-> @@ -1242,20 +1242,6 @@ error:
-> 	return error;
-> }
->
-> -/*
-> - * Initialize a session.
-> - * Note: save the mount rsize and wsize for create_server  
-> negotiation.
-> - */
-> -static void nfs4_init_session(struct nfs_client *clp,
-> -			      unsigned int wsize, unsigned int rsize)
-> -{
-> -#if defined(CONFIG_NFS_V4_1)
-> -	if (nfs4_has_session(clp)) {
-> -		clp->cl_session->fc_attrs.max_rqst_sz = wsize;
-> -		clp->cl_session->fc_attrs.max_resp_sz = rsize;
-> -	}
-> -#endif /* CONFIG_NFS_V4_1 */
-> -}
->
-> /*
->  * Session has been established, and the client marked ready.
-> @@ -1350,7 +1336,9 @@ struct nfs_server *nfs4_create_server(const  
-> struct nfs_parsed_mount_data *data,
-> 	BUG_ON(!server->nfs_client->rpc_ops);
-> 	BUG_ON(!server->nfs_client->rpc_ops->file_inode_ops);
->
-> -	nfs4_init_session(server->nfs_client, server->wsize, server->rsize);
-> +	error = nfs4_init_session(server);
-> +	if (error < 0)
-> +		goto error;
->
-> 	/* Probe the root fh to retrieve its FSID */
-> 	error = nfs4_path_walk(server, mntfh, data->nfs_server.export_path);
-> diff --git a/fs/nfs/nfs4_fs.h b/fs/nfs/nfs4_fs.h
-> index 61bc3a3..6ea07a3 100644
-> --- a/fs/nfs/nfs4_fs.h
-> +++ b/fs/nfs/nfs4_fs.h
-> @@ -220,6 +220,7 @@ extern void nfs4_destroy_session(struct  
-> nfs4_session *session);
-> extern struct nfs4_session *nfs4_alloc_session(struct nfs_client  
-> *clp);
-> extern int nfs4_proc_create_session(struct nfs_client *, int reset);
-> extern int nfs4_proc_destroy_session(struct nfs4_session *);
-> +extern int nfs4_init_session(struct nfs_server *server);
-> #else /* CONFIG_NFS_v4_1 */
-> static inline int nfs4_setup_sequence(struct nfs_client *clp,
-> 		struct nfs4_sequence_args *args, struct nfs4_sequence_res *res,
-> @@ -227,6 +228,11 @@ static inline int nfs4_setup_sequence(struct  
-> nfs_client *clp,
-> {
-> 	return 0;
-> }
-> +
-> +static inline int nfs4_init_session(struct nfs_server *server)
-> +{
-> +	return 0;
-> +}
-> #endif /* CONFIG_NFS_V4_1 */
->
-> extern struct nfs4_state_maintenance_ops *nfs4_state_renewal_ops[];
-> diff --git a/fs/nfs/nfs4proc.c b/fs/nfs/nfs4proc.c
-> index ff0c080..df24f67 100644
-> --- a/fs/nfs/nfs4proc.c
-> +++ b/fs/nfs/nfs4proc.c
-> @@ -2040,15 +2040,9 @@ static int _nfs4_lookup_root(struct  
-> nfs_server *server, struct nfs_fh *fhandle,
-> 		.rpc_argp = &args,
-> 		.rpc_resp = &res,
-> 	};
-> -	int status;
->
-> 	nfs_fattr_init(info->fattr);
-> -	status = nfs4_recover_expired_lease(server);
-> -	if (!status)
-> -		status = nfs4_check_client_ready(server->nfs_client);
-> -	if (!status)
-> -		status = nfs4_call_sync(server, &msg, &args, &res, 0);
-> -	return status;
-> +	return nfs4_call_sync(server, &msg, &args, &res, 0);
-> }
->
-> static int nfs4_lookup_root(struct nfs_server *server, struct nfs_fh  
-> *fhandle,
-> @@ -4793,6 +4787,22 @@ int nfs4_proc_destroy_session(struct  
-> nfs4_session *session)
-> 	return status;
-> }
->
-> +int nfs4_init_session(struct nfs_server *server)
-> +{
-> +	struct nfs_client *clp = server->nfs_client;
-> +	int ret;
-> +
-> +	if (!nfs4_has_session(clp))
-> +		return 0;
-> +
-> +	clp->cl_session->fc_attrs.max_rqst_sz = server->wsize;
-> +	clp->cl_session->fc_attrs.max_resp_sz = server->rsize;
-> +	ret = nfs4_recover_expired_lease(server);
-> +	if (!ret)
-> +		ret = nfs4_check_client_ready(clp);
-> +	return ret;
-> +}
-> +
-> /*
->  * Renew the cl_session lease.
->  */
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs"  
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+ Documentation/cgroups/cgroups.txt |   19 +
+ kernel/Makefile                   |    1 
+ kernel/cgroup.c                   |  660 +++++++++++++++++++++++++++++--------
+ kernel/cgroup_debug.c             |  105 ------
+ 4 files changed, 533 insertions(+), 252 deletions(-)
+ delete mode 100644 kernel/cgroup_debug.c
 
