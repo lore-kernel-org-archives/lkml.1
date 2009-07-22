@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753714AbZGVSwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754320AbZGVSws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753714AbZGVSwf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 14:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbZGVSwe
+	id S1754320AbZGVSws (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 14:52:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754284AbZGVSws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 14:52:34 -0400
-Received: from mailrelay003.isp.belgacom.be ([195.238.6.53]:3748 "EHLO
-	mailrelay003.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750938AbZGVSwd (ORCPT
+	Wed, 22 Jul 2009 14:52:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59673 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754282AbZGVSwr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 14:52:33 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAEf7ZkpR9cYI/2dsb2JhbADUBgmEBQU
-Date: Wed, 22 Jul 2009 20:52:32 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Simon Braunschmidt <sb@emlix.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
-Subject: Re: Handling multiple watchdogs
-Message-ID: <20090722185232.GK2155@infomag.iguana.be>
-References: <4A672B97.1070704@emlix.com> <20090722171920.505ffc4b@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090722171920.505ffc4b@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 22 Jul 2009 14:52:47 -0400
+Date: Wed, 22 Jul 2009 11:51:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andreas Dilger <adilger@sun.com>
+Cc: neilb@suse.de, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, dm-devel@redhat.com
+Subject: Re: How to handle >16TB devices on 32 bit hosts ??
+Message-Id: <20090722115155.f99dcf76.akpm@linux-foundation.org>
+In-Reply-To: <20090722183244.GO4231@webber.adilger.int>
+References: <19041.4714.686158.130252@notabene.brown>
+	<20090721235904.42e6cd35.akpm@linux-foundation.org>
+	<20090722183244.GO4231@webber.adilger.int>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Simon,
+On Wed, 22 Jul 2009 12:32:44 -0600
+Andreas Dilger <adilger@sun.com> wrote:
 
-> > I have two watchdogs on my board that I both want to handle. What would 
-> > be the proper approach in this case?
+> On Jul 21, 2009  23:59 -0700, Andrew Morton wrote:
+> > On Sat, 18 Jul 2009 10:08:10 +1000 Neil Brown <neilb@suse.de> wrote:
+> > I expect that the VFS could be made to work with 64-bit pgoff_t fairly
+> > easily.  The generated code will be pretty damn sad.
+> > 
+> > radix-trees use a ulong index, so we would need a new
+> > lib/radix_tree64.c or some other means of fixing that up.
+> > 
+> > The bigger problem is filesystems - they'll each need to be checked,
+> > tested, fixed and enabled.  It's probably not too bad for the
+> > mainstream filesystems which mostly bounce their operations into VFS
+> > libarary functions anyway.
 > 
-> Fixing the watchdog core to create a class of watchdog drivers and
-> treating the existing /dev/watchdog as a back compatibility hack. It's
-> been talked about for a very long time but not done, although I believe
-> Wim had some test code at one point ?
+> I don't think this is a primary concern for most filesystems even today.
+> Filesystems that work correctly > 16TB on 64-bit platforms should continue
+> to work correctly on 32-bit platforms.
 
-The support of multiple watchdog's is not there at this moment. But we will indeed
-need it. The embedded platforms (like omap) start to have devices with different
-watchdogs that all need to be supported.
+Not if they use an unsigned long to hold a pagecache index anywhere.
 
-To overcome this issue we will indeed need to:
-1) make sure that we have the new watchdog core infrastructure going in for 2.6.32.
-This new core integrates the common code that we use over and over again. I once
-wrote code for it and then Alan had different ideas and thoughts and wrote his updated
-code. I reviewed that and I am changing some small bits so that we will have the new
-watchdog core version 1. Expect the code to appear in the linux-2.6-watchdog-next tree
-in the coming weeks (I first did some pre-cleanup stuff).
-2) Then we will need a dicussion on how we will support multiple watchdog's with this
-new framework. My feeling is that the /dev/watchdog* solution is not the right way to go.
-I think a sysfs interface will be better. This sysfs interface would then be added to the
-core version (and makes "core version 2").
-I once wrote the first basis of this sysfs interface (based on rusty's input I believe).
-I need to check if I still have it after the hard-disk crash I had almost a year ago.
-
-I hope this gives you an idea about how we are proceeding with the watchdog devices driver core
-and what we are trying to do (and OK i'm slower than other maintainers but I'm doing this all
-in my own time and for free and thus my priority's are different...). 
-
-Kind regards,
-Wim.
-
-(Note: for completeness; I know that the following drivers have a "non-standard"
-watchdog part: drivers/watchdog/cpwd.c drivers/hwmon/fschmd.c).
-
+akpm:/usr/src/25> grep 'unsigned long' fs/*/*.c | wc -l
+3465
