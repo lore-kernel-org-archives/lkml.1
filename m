@@ -1,96 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756473AbZGVIk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbZGVIlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756473AbZGVIk1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 04:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756351AbZGVIkY
+	id S1756516AbZGVIlg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 04:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756430AbZGVIlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 04:40:24 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62184 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751192AbZGVIkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 04:40:23 -0400
-Message-ID: <4A66D01E.2000600@cn.fujitsu.com>
-Date: Wed, 22 Jul 2009 16:38:54 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH -tip 2/2] function-graph: use ftrace_graph_funcs directly
-References: <4A66D004.7020205@cn.fujitsu.com>
-In-Reply-To: <4A66D004.7020205@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 22 Jul 2009 04:41:35 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58021 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756406AbZGVIld (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 04:41:33 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 22 Jul 2009 17:39:41 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, agk@redhat.com
+Subject: Re: [PATCH 3/9] blkio-cgroup-v9: The new page_cgroup framework
+Message-Id: <20090722173941.7608387e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090722.172843.193696974.ryov@valinux.co.jp>
+References: <20090721155636.GB25127@balbir.in.ibm.com>
+	<20090722102058.c1cf731b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090722110739.e00c0f18.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090722.172843.193696974.ryov@valinux.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-No need to store ftrace_graph_funcs in file->private.
+On Wed, 22 Jul 2009 17:28:43 +0900 (JST)
+Ryo Tsuruta <ryov@valinux.co.jp> wrote:
+> > But, following is more straightforward. (and what you do is not different
+> > from this.)
+> > ==
+> > struct page {
+> > 	.....
+> > #ifdef CONFIG_BLOCKIO_CGROUP
+> > 	void *blockio_cgroup;
+> > #endif
+> > }
+> > ==
+> 
+> This increases the size of struct page. Could I get a consensus on
+> this approach?
+> 
+Just God knows ;)
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+To be honest, what I expected in these days for people of blockio cgroup is like
+following for getting room for themselves.
+
+I'm now thinking to do this by myself and offer a room for you because
+terrible bugs have been gone now and I have time.
+
+Balbir, if you have no concerns, I'll clean up and send this to mmotm.
+(maybe softlimit accesses pc->page and I have to update this.)
+
+Note: This is _not_ tested at all.
+
+Thanks,
+-Kame
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+page cgroup has pointer to memmap it stands for.
+But, page_cgroup->page is not accessed in fast path and not necessary
+and not modified. Then, it's not to be maintained as pointer.
+
+This patch removes "page" from page_cgroup and add
+page_cgroup_to_page() function. This uses some amount of FLAGS bit
+as struct page does.
+As side effect, nid, zid can be obtaind from page_cgroup itself.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 ---
- kernel/trace/ftrace.c |   22 ++++------------------
- 1 files changed, 4 insertions(+), 18 deletions(-)
+ include/linux/page_cgroup.h |   19 ++++++++++++++++---
+ mm/page_cgroup.c            |   42 ++++++++++++++++++++++++++++++++----------
+ 2 files changed, 48 insertions(+), 13 deletions(-)
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index c6c0c07..7179bff 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -2463,11 +2463,9 @@ unsigned long ftrace_graph_funcs[FTRACE_GRAPH_MAX_FUNCS] __read_mostly;
- static void *
- __g_next(struct seq_file *m, loff_t *pos)
+Index: mmotm-2.6.31-Jul16/include/linux/page_cgroup.h
+===================================================================
+--- mmotm-2.6.31-Jul16.orig/include/linux/page_cgroup.h
++++ mmotm-2.6.31-Jul16/include/linux/page_cgroup.h
+@@ -13,7 +13,7 @@
+ struct page_cgroup {
+ 	unsigned long flags;
+ 	struct mem_cgroup *mem_cgroup;
+-	struct page *page;
++	/* block io tracking will use extra unsigned long bytes */
+ 	struct list_head lru;		/* per cgroup LRU list */
+ };
+ 
+@@ -32,7 +32,12 @@ static inline void __init page_cgroup_in
+ #endif
+ 
+ struct page_cgroup *lookup_page_cgroup(struct page *page);
++struct page *page_cgroup_to_page(struct page_cgroup *page);
+ 
++/*
++ * TOP MOST (NODE_SHIFT+ZONE_SHIFT or SECTION_SHIFT bits of "flags" are used
++ * for detecting pfn as struct page does.
++ */
+ enum {
+ 	/* flags for mem_cgroup */
+ 	PCG_LOCK,  /* page cgroup is locked */
+@@ -71,14 +76,22 @@ CLEARPCGFLAG(AcctLRU, ACCT_LRU)
+ TESTPCGFLAG(AcctLRU, ACCT_LRU)
+ TESTCLEARPCGFLAG(AcctLRU, ACCT_LRU)
+ 
++#ifdef NODE_NOT_IN_PAGE_FLAGS
+ static inline int page_cgroup_nid(struct page_cgroup *pc)
  {
--	unsigned long *array = m->private;
--
- 	if (*pos >= ftrace_graph_count)
- 		return NULL;
--	return &array[*pos];
-+	return &ftrace_graph_funcs[*pos];
+-	return page_to_nid(pc->page);
++	struct page *page= page_cgroup_to_page(pc);
++	return page_to_nid(page);
+ }
++#else
++static inline int page_cgroup_nid(struct page_cgroup *pc)
++{
++	return (pc->flags >> NODES_PGSHIFT) & NODES_MASK;
++}
++#endif
+ 
+ static inline enum zone_type page_cgroup_zid(struct page_cgroup *pc)
+ {
+-	return page_zonenum(pc->page);
++	return (pc->flags >> ZONEID_PGSHIFT) & ZONEID_MASK;
  }
  
- static void *
-@@ -2531,16 +2529,10 @@ ftrace_graph_open(struct inode *inode, struct file *file)
- 		ftrace_graph_count = 0;
- 		memset(ftrace_graph_funcs, 0, sizeof(ftrace_graph_funcs));
- 	}
-+	mutex_unlock(&graph_lock);
- 
--	if (file->f_mode & FMODE_READ) {
-+	if (file->f_mode & FMODE_READ)
- 		ret = seq_open(file, &ftrace_graph_seq_ops);
--		if (!ret) {
--			struct seq_file *m = file->private_data;
--			m->private = ftrace_graph_funcs;
--		}
--	} else
--		file->private_data = ftrace_graph_funcs;
--	mutex_unlock(&graph_lock);
- 
- 	return ret;
- }
-@@ -2601,7 +2593,7 @@ ftrace_graph_write(struct file *file, const char __user *ubuf,
- 		   size_t cnt, loff_t *ppos)
+ static inline void lock_page_cgroup(struct page_cgroup *pc)
+Index: mmotm-2.6.31-Jul16/mm/page_cgroup.c
+===================================================================
+--- mmotm-2.6.31-Jul16.orig/mm/page_cgroup.c
++++ mmotm-2.6.31-Jul16/mm/page_cgroup.c
+@@ -13,9 +13,12 @@
+ static void __meminit
+ __init_page_cgroup(struct page_cgroup *pc, unsigned long pfn)
  {
- 	unsigned char buffer[FTRACE_BUFF_MAX+1];
--	unsigned long *array;
-+	unsigned long *array = ftrace_graph_funcs;
- 	size_t read = 0;
- 	ssize_t ret;
- 	int index = 0;
-@@ -2617,12 +2609,6 @@ ftrace_graph_write(struct file *file, const char __user *ubuf,
- 		goto out;
+-	pc->flags = 0;
++	unsigned long flags;
++
+ 	pc->mem_cgroup = NULL;
+-	pc->page = pfn_to_page(pfn);
++	/* Copy NODE/ZONE/SECTION information from struct page */
++	flags = pfn_to_page(pfn)->flags;
++	pc->flags = flags & ~((1 << __NR_PAGEFLAGS) - 1);
+ 	INIT_LIST_HEAD(&pc->lru);
+ }
+ static unsigned long total_usage;
+@@ -42,6 +45,18 @@ struct page_cgroup *lookup_page_cgroup(s
+ 	return base + offset;
+ }
+ 
++struct page *page_cgroup_to_page(struct page_cgroup *pc)
++{
++	int nid = (page->flags >> SECTIONS_PGSHIFT) & SECTIONS_MASK;
++	unsigned long pfn, offset;
++
++	offset = pc - NODE_DATA(nid)->node_page_cgroup
++	pfn = NODE_DATA(nid)->node_start_pfn + offset;
++
++	return pfn_to_page(pfn);
++}
++
++
+ static int __init alloc_node_page_cgroup(int nid)
+ {
+ 	struct page_cgroup *base, *pc;
+@@ -104,6 +119,18 @@ struct page_cgroup *lookup_page_cgroup(s
+ 	return section->page_cgroup + pfn;
+ }
+ 
++struct page *page_cgroup_to_page(struct page_cgroup *pc)
++{
++	unsigned long pfn, sectionid;
++	struct mem_section *section;
++
++	sectionid = (pc->flags >> SECTIONS_PGSHIFT) & SECTIONS_MASK;
++	section = __nr_to_section(sectionid);
++
++	pfn = pc - section->page_cgroup;
++	return pfn_to_page(pfn);
++}
++
+ /* __alloc_bootmem...() is protected by !slab_available() */
+ static int __init_refok init_section_page_cgroup(unsigned long pfn)
+ {
+@@ -128,15 +155,10 @@ static int __init_refok init_section_pag
+ 		}
+ 	} else {
+ 		/*
+- 		 * We don't have to allocate page_cgroup again, but
+-		 * address of memmap may be changed. So, we have to initialize
+-		 * again.
++ 		 * We don't have to allocate page_cgroup again, and we don't
++		 * take care of address of memmap.
+ 		 */
+-		base = section->page_cgroup + pfn;
+-		table_size = 0;
+-		/* check address of memmap is changed or not. */
+-		if (base->page == pfn_to_page(pfn))
+-			return 0;
++		return 0;
  	}
  
--	if (file->f_mode & FMODE_READ) {
--		struct seq_file *m = file->private_data;
--		array = m->private;
--	} else
--		array = file->private_data;
--
- 	ret = get_user(ch, ubuf++);
- 	if (ret)
- 		goto out;
--- 
-1.6.3
+ 	if (!base) {
 
