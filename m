@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754709AbZGVCCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbZGVCDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754709AbZGVCCK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 22:02:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbZGVCCK
+	id S1755190AbZGVCDz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 22:03:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754310AbZGVCDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 22:02:10 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40107 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752034AbZGVCCJ (ORCPT
+	Tue, 21 Jul 2009 22:03:55 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:45357 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754089AbZGVCDy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 22:02:09 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4A6672F9.3050800@jp.fujitsu.com>
-Date: Wed, 22 Jul 2009 11:01:29 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Tue, 21 Jul 2009 22:03:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=ChqL2lp+tDoZFAtw6Aig3cGdcYpf9HDt5mYXdYpIXEEgY1Sfhne1bBHI+dtpxaxnpz
+         GEXTPXdX6OuXs/qRufjgCsEc/rSMLyX4wSxqXkeprmvsn4xKFqYrSghIszTakxTwRKVW
+         paJZK696mL62paPo43rzpGjUStifCEogT/Umc=
+Message-ID: <4A667231.3020809@gmail.com>
+Date: Wed, 22 Jul 2009 09:58:09 +0800
+From: Eric Miao <eric.y.miao@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-To: Neil Horman <nhorman@tuxdriver.com>
-CC: Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>, Brayan Arraes <brayan@yack.com.br>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Subject: Re: [PATCH] sysrq, kdump: fix regression, revert "simplify sysrq-c
- handler"
-References: <4A64672E.8020005@cn.fujitsu.com> <4A6564F2.10404@jp.fujitsu.com> <20090721110857.GA21612@hmsreliant.think-freely.org>
-In-Reply-To: <20090721110857.GA21612@hmsreliant.think-freely.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Daniel Ribeiro <drwyrm@gmail.com>
+CC: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>, linux-kernel@vger.kernel.org,
+       David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH 1/6] regulator: Add regulator_get_exclusive() API
+References: <1248188428-11277-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1248209397.4333.50.camel@brutus>
+In-Reply-To: <1248209397.4333.50.camel@brutus>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Horman wrote:
-> None of this answers Erics question, what is it that you could do before, that
-> you couldn't do now?
+Daniel Ribeiro wrote:
+> Em Ter, 2009-07-21 às 16:00 +0100, Mark Brown escreveu:
+>> Some consumers require complete control of the regulator and can't
+>> tolerate sharing it with other consumers, most commonly because they need
+>> to have the regulator actually disabled so can't have other consumers
+>> forcing it on. This new regulator_get_exclusive() API call allows these
+>> consumers to explicitly request this, documenting the assumptions that
+>> they are making.
+>>
+>> In order to simplify coding of such consumers the use count for regulators
+>> they request is forced to match the enabled state of the regulator when
+>> it is requested. This is not possible for consumers which can share
+>> regulators due to the need to keep track of the ownership of use counts.
+>>
+>> A new API call is used rather than an additional argument to the existing
+>> regulator_get() in order to avoid merge headaches with driver code in
+>> other trees.
+>>
+>> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> 
+> Thanks for finally fixing the mmc/regulator issue. ;)
+> 
+> Can you update pxamci.c and twl4030-mmc.c to make use of this new API?
+> 
 
-One is, as Ohmichi-san pointed, triggering kdump via echo c > /proc/sysrq-trigger.
-
-In contrast to oops via SysRq-c from keyboard interrupt which results in
-panic due to in_interrupt(), oops via echo-c will not become panic unless
-panic_on_oops.
-
-So in other words, we could expect same effect in both of echo-c and SysRq-c
-before, but now we cannot because it depends on the panic_on_oops.
-Isn't it a regression?
-
-Whether kdump should be executed on oops (which is not panic) or not is a
-separate thing.
-
-> There are reasons to want to have a convenient way to
-> crash the kernel, other than to test kdump (several distributions have augmented
-> sysrq-c to do this for some time to test other previous dump mechanisms and
-> features), so while its not been upstream, saying that its well known to test
-> kdump without causing an oops is a bit of a misleading statement.
-
-Let make me sure the difference between 'crash', 'oops', and 'panic'.
-At least 'oops' is not panic, as is obvious from the name of panic_on_oops.
-And it seems you are using 'crash' and 'oops' in mixture.
-
-If you mean 'crash' as 'panic', my complaint is echo-c does not panic while
-SysRq-c does panic.  So if possible I'd like to suggest a change like:
-
- static void sysrq_handle_crash(int key, struct tty_struct *tty)
- {
--	char *killer = NULL;
--	*killer = 1;
-+	panic("SysRq-triggered panic!\n");
- }
-
-I agree that causing a real crash(panic) is better way to test crashdump than
-calling the entry function of the crashdump directly, and also that opening
-the path for other dump mechanisms is welcomed.
- 
-> It seems to
-> me that right now your major complaint is that the documentation is out of date,
-> and you're having to do things slightly differently to get the same behavioral
-> results.  Would it solve your issue, if we simply updated the documentation to
-> illustrate how it works now?
-
-Of course the documentation should be updated asap.
-But I think the major complaint is about a difference in the behaviors of SysRq-c
-and "echo c > /proc/sysrq-trigger".
-
-
-Thanks,
-H.Seto
-
+I think that deserves another two patches for making use of this
+new API.
