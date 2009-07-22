@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350AbZGVPvM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbZGVPzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753350AbZGVPvM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 11:51:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZGVPvK
+	id S1753270AbZGVPzU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 11:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbZGVPzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 11:51:10 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:37034 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753278AbZGVPvG (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 11:51:06 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Steven Whitehouse <swhiteho@redhat.com>, cluster-devel@redhat.com,
-       linux-kernel@vger.kernel.org, rpurdie@rpsys.net
-Subject: Re: GFS2: Add LED support to GFS2
-In-Reply-To: Your message of "Wed, 22 Jul 2009 17:15:21 +0200."
-             <20090722151521.GB6035@basil.fritz.box>
-From: Valdis.Kletnieks@vt.edu
-References: <1248260198.3456.4.camel@localhost.localdomain> <87k5203hdx.fsf@basil.nowhere.org> <1248274288.3298.5.camel@localhost.localdomain> <20090722145534.GA6035@basil.fritz.box> <1248274951.3298.11.camel@localhost.localdomain>
-            <20090722151521.GB6035@basil.fritz.box>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1248277845_3794P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 22 Jul 2009 11:50:45 -0400
-Message-ID: <23263.1248277845@turing-police.cc.vt.edu>
+	Wed, 22 Jul 2009 11:55:19 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:51973 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752362AbZGVPzS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 11:55:18 -0400
+Date: Wed, 22 Jul 2009 10:55:01 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: David Miller <davem@davemloft.net>, containers@lists.osdl.org,
+       sachinp@in.ibm.com, netdev@vger.kernel.org, matthltc@us.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] veth: don't free priv->status until
+	dev->destructor (v2)
+Message-ID: <20090722155501.GA12820@us.ibm.com>
+References: <20090626162418.GA24828@us.ibm.com> <20090715.085012.223420354.davem@davemloft.net> <20090720142542.4fb12c12@nehalam>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090720142542.4fb12c12@nehalam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1248277845_3794P
-Content-Type: text/plain; charset=us-ascii
-
-On Wed, 22 Jul 2009 17:15:21 +0200, Andi Kleen said:
-
-> So have some sysfs file where you echo mount points into to enable
-> LED activity.
+Quoting Stephen Hemminger (shemminger@vyatta.com):
+> On Wed, 15 Jul 2009 08:50:12 -0700 (PDT)
+> David Miller <davem@davemloft.net> wrote:
 > 
-> Ok that would be a little clumpsy for a "10 million bind mounts" case,
-> but presumably that's very rare and they can still make it work.
+> > From: "Serge E. Hallyn" <serue@us.ibm.com>
+> > Date: Fri, 26 Jun 2009 11:24:18 -0500
+> > 
+> > > I haven't been able to reproduce the original oops though (been
+> > > trying to cat the stats sysfs files while rmmoding veth, to no
+> > > avail, and haven't found an original bug report or testcase), so
+> > > can't verify whether this patch prevents the original oops.
+> > 
+> > If you 'cat' it you're unlikely to trigger the oops.
+> > 
+> > You have to hold the sysfs files open, and then elsewhere do the
+> > rmmod, wait, and then continue with some access to those open sysfs
+> > file descriptors (f.e. do some reads).
 
-Might be interesting for a file server, allow for a Connection-Machine
-style front panel... ;)
+Yup, I was doing that too, but couldn't reproduce as yet.
 
---==_Exmh_1248277845_3794P
-Content-Type: application/pgp-signature
+> > I'd also need this patch to be against current sources as they'll
+> > never apply since I did the revert quite some time ago.
+> > 
+> > Thanks.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Ok, thanks - I'll generate a new patch against a fresh pull when
+I can confirm that it actually solves the problem.
 
-iD8DBQFKZzVVcC3lWbTT17ARAgAYAKDQ59GMClum4qeL8eKr0bbblTjUXgCg1//V
-F+0P6Gjii3fCOIJ0G9Lp4MI=
-=pdic
------END PGP SIGNATURE-----
+> My usual way of doing this is:
+> 
+> #  (sleep 30; cat /sys/class/net/ethX/statistics/tx_bytes) &
+> # rmmod the_buggy_driver
+> 
+> wait...
 
---==_Exmh_1248277845_3794P--
+Can you oops the kernel this way on latest netns?
+
+thanks,
+-serge
