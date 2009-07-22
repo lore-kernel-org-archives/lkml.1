@@ -1,91 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753943AbZGVRM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754034AbZGVRNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753943AbZGVRM5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 13:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753212AbZGVRM4
+	id S1754034AbZGVRNf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 13:13:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbZGVRNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 13:12:56 -0400
-Received: from outbound-mail-131.bluehost.com ([67.222.39.21]:56099 "HELO
-	outbound-mail-131.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752969AbZGVRMz (ORCPT
+	Wed, 22 Jul 2009 13:13:34 -0400
+Received: from n20.bullet.mail.mud.yahoo.com ([68.142.206.147]:41196 "HELO
+	n20.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753971AbZGVRNd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 13:12:55 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:X-Identified-User;
-	b=hS1ok1s9ejGTI+j9I/CN8N4VCsl4yi4y+jjwCYTzEhqV4aKSP6wEIFZLW+r6RS/2R9eRlhx9au7CYQd7ntJlTe9zSpyf3L4xDq94PNpM+2RlZlMf3quJg3QVaOWMLRFv;
-Date: Wed, 22 Jul 2009 10:12:51 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Alberto Gonzalez <alberto6674@gmail.com>
-Cc: Alberto Gonzalez <alberto6674@gmail.com>, Michal Soltys <soltys@ziu.info>,
-       Dave Airlie <airlied@linux.ie>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org, linux-hotplug@vger.kernel.org
-Subject: Re: Kernel 2.6.30 and udevd problem
-Message-ID: <20090722101251.0b6c7300@jbarnes-g45>
-In-Reply-To: <200907221851.20916.info@gnebu.es>
-References: <200906280821.58631.info@gnebu.es>
-	<200907221525.29507.info@gnebu.es>
-	<20090722090834.6ab45aae@jbarnes-g45>
-	<200907221851.20916.info@gnebu.es>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="MP_/AmxVL+Vzeck4LYT3D8=5wUX"
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Wed, 22 Jul 2009 13:13:33 -0400
+X-Yahoo-Newman-Id: 232249.35461.bm@omp423.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=opNYTTaO4/T8dX0tj1rBxlhvnWgIo+w+bQ73QSX1VNbUz/iMiO327inikz+JIglZGOQAcxzezCH8joV0FKra2N+sKyC9p0zofz871UAMHxPJ5VjkaXR53XXCJ9Py35e/zQoMR+yp7Aut3BHSfYq9p/fEw3lF8NT729ggrCBYcNE=  ;
+X-YMail-OSG: b6moAlEVM1k8.pmesC0pXGE7EaIakF9dP6cjE_P31qnCsNdRha9nsXbUo4yglWLVXZ7u4b2Rn31HI58F0lwRs6mZAMNhNdl4q40r85OaP.jUT2AQHBmAUBnl3H.BS7bmfhgYgFccZuGXKV.SOEjk8Ip1pK7h85VoYHr3ToyK6Jir0ufD8kjAWfvYvBKYI59.XJLwKQzEPpiLXT.DPX0lB6_QPaco.A3IdKWSCAyF1ypKSAFpYKRS0uwetUSp3wiiZV94UaVa4M7.hAF1v0gUeVKVEASWMZWwAK7loTaBcf0vY0AfL1Nq
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
+Date: Wed, 22 Jul 2009 10:13:31 -0700
+User-Agent: KMail/1.9.10
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       "Arve Hj?nnev?g" <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
+       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
+       t.fujak@samsung.com, kyungmin.park@samsung.com,
+       Peter Zijlstra <peterz@infradead.org>,
+       Daniel Ribeiro <drwyrm@gmail.com>
+References: <20090721113642.GC13286@sirena.org.uk> <20090722155811.GA2775@dtor-d630.eng.vmware.com> <alpine.LFD.2.00.0907221830410.2813@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0907221830410.2813@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907221013.32087.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---MP_/AmxVL+Vzeck4LYT3D8=5wUX
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-On Wed, 22 Jul 2009 18:51:20 +0200
-Alberto Gonzalez <alberto6674@gmail.com> wrote:
-
-> On Wednesday 22 July 2009 18:08:34 Jesse Barnes wrote:
-> > On Wed, 22 Jul 2009 15:25:29 +0200
-> > Alberto Gonzalez <alberto6674@gmail.com> wrote:
-> > > Ok, I caught a complete log from boot to when the problem starts.
-> > > There doesn't seem to be anything significantly different, but
-> > > just in case.
-> >
-> > Oh I guess this is without the debug patch I attached...  this one
-> > should be a bit less noisy but tell me which bit is stuck.
+On Wednesday 22 July 2009, Thomas Gleixner wrote:
 > 
-> Actually it was with the debug patch found here applied:
+> > I do think this should be set up by the driver - the platform/arch code
+> > can't be 100% certain what model of servicing interrupts driver will
+> > chose, nor the driver can know whether arch code set things up for
+> > threaded or classic interrupt handling.
+> > 
+> > Since handle_level_oneshot_irq requires drivers to use threaded IRQ
+> > model (in absence of thread interrupt will never be unmasked) it would
+> > be better if we did set it up automatically, right there in
+> > request_threaded_irq(). This would reduce maintenance issues between
+> > platform and driver code.
 > 
-> http://lkml.org/lkml/2009/7/2/290
+> No, it's the wrong way round. 
 > 
-> Now I captured another one with the latest patch. This time the
-> problem started after opening Amarok.
-> 
+> The platform code sets up the platform devices. So there is no real
+> good reason that the platform code does not know about the details.
 
-Ah I must have been looking at the wrong register.  This one makes it
-look like one of your HDMI hotplug bits is getting stuck (HDMIC in
-particular).  This might not even be wired up on your platform...
+Except for the "development board" family of exceptions to
+such rules ... or the "Processor-on-Card" model, where the
+same platform/card gets used in a variety of different
+chassis configurations, with different peripherals.
 
-This test hack should prevent us from responding to those interrupts...
+It may not be possible to know *which* configuration is
+being used at board setup time.  However it most certainly
+is known by the time a driver is configuring.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
 
---MP_/AmxVL+Vzeck4LYT3D8=5wUX
-Content-Type: text/x-patch; name=i915-g4x-hotplug-hack.patch
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=i915-g4x-hotplug-hack.patch
 
-diff --git a/drivers/gpu/drm/i915/i915_irq.c b/drivers/gpu/drm/i915/i915_irq.c
-index f340b3f..ecbf0b2 100644
---- a/drivers/gpu/drm/i915/i915_irq.c
-+++ b/drivers/gpu/drm/i915/i915_irq.c
-@@ -962,7 +962,7 @@ int i915_driver_irq_postinstall(struct drm_device *dev)
- 		dev_priv->hotplug_supported_mask = CRT_HOTPLUG_INT_STATUS |
- 			TV_HOTPLUG_INT_STATUS | SDVOC_HOTPLUG_INT_STATUS |
- 			SDVOB_HOTPLUG_INT_STATUS;
--		if (IS_G4X(dev)) {
-+		if (IS_G4X(dev) && 0) {
- 			dev_priv->hotplug_supported_mask |=
- 				HDMIB_HOTPLUG_INT_STATUS |
- 				HDMIC_HOTPLUG_INT_STATUS |
-
---MP_/AmxVL+Vzeck4LYT3D8=5wUX--
