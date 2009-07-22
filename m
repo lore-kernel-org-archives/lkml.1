@@ -1,89 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755565AbZGVNjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755009AbZGVNma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755565AbZGVNjR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 09:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755507AbZGVNjQ
+	id S1755009AbZGVNma (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 09:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbZGVNm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 09:39:16 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:39453 "EHLO mgw1.diku.dk"
+	Wed, 22 Jul 2009 09:42:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52294 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755494AbZGVNjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 09:39:14 -0400
-From: Nicolas Palix <npalix@diku.dk>
-To: gregkh@suse.de, haiyangz@microsoft.com, hjanssen@microsoft.com,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] Transform some kzalloc calls to kcalloc in staging/hv
-Date: Wed, 22 Jul 2009 15:39:13 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
-Cc: Julia Lawall <julia@diku.dk>
+	id S1751729AbZGVNm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 09:42:29 -0400
+Date: Wed, 22 Jul 2009 09:42:11 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Brayan Arraes <brayan@yack.com.br>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
+Subject: Re: [PATCH] sysrq, kdump: fix regression, revert "simplify sysrq-c
+	handler"
+Message-ID: <20090722134211.GA7995@redhat.com>
+References: <4A64672E.8020005@cn.fujitsu.com> <4A6564F2.10404@jp.fujitsu.com> <20090721110857.GA21612@hmsreliant.think-freely.org> <4A6672F9.3050800@jp.fujitsu.com> <20090722111049.GB4539@hmsreliant.think-freely.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907221539.13589.npalix@diku.dk>
+In-Reply-To: <20090722111049.GB4539@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 22, 2009 at 07:10:49AM -0400, Neil Horman wrote:
+> On Wed, Jul 22, 2009 at 11:01:29AM +0900, Hidetoshi Seto wrote:
+> > Neil Horman wrote:
+> > > None of this answers Erics question, what is it that you could do before, that
+> > > you couldn't do now?
+> > 
+> > One is, as Ohmichi-san pointed, triggering kdump via echo c > /proc/sysrq-trigger.
+> > 
+> > In contrast to oops via SysRq-c from keyboard interrupt which results in
+> > panic due to in_interrupt(), oops via echo-c will not become panic unless
+> > panic_on_oops.
+> > 
+> > So in other words, we could expect same effect in both of echo-c and SysRq-c
+> > before, but now we cannot because it depends on the panic_on_oops.
+> > Isn't it a regression?
+> > 
+> Only if you blindly consider a change in behavior to be a regression.  consider
+> that previously executing a sysrq-c did the same thing if you did a echo c >
+> /proc/sysrq-trigger on a keyboard sysrq-c, but did different things based on
+> weather or not your had a kexec kernel loaded.
+> 
+> > Whether kdump should be executed on oops (which is not panic) or not is a
+> > separate thing.
+> > 
+> > > There are reasons to want to have a convenient way to
+> > > crash the kernel, other than to test kdump (several distributions have augmented
+> > > sysrq-c to do this for some time to test other previous dump mechanisms and
+> > > features), so while its not been upstream, saying that its well known to test
+> > > kdump without causing an oops is a bit of a misleading statement.
+> > 
+> > Let make me sure the difference between 'crash', 'oops', and 'panic'.
+> > At least 'oops' is not panic, as is obvious from the name of panic_on_oops.
+> > And it seems you are using 'crash' and 'oops' in mixture.
+> > 
+> I'm perfectly well aware of the difference, I just assert theres value to having
+> sysrq-c be able to test both paths, especially given that we already have the
+> sysrq-c sysctl available to toggle behavior for just this case.
+> 
+> > If you mean 'crash' as 'panic', my complaint is echo-c does not panic while
+> > SysRq-c does panic.  So if possible I'd like to suggest a change like:
+> >
+> See above, I think theres value to having sysrq-c be able to do both, although I
+> agree the method by which it triggers both is a bit muddled.
+>  
+> >  static void sysrq_handle_crash(int key, struct tty_struct *tty)
+> >  {
+> > -	char *killer = NULL;
+> > -	*killer = 1;
+> > +	panic("SysRq-triggered panic!\n");
+> >  }
+> > 
 
-Here is a short excerpt of the semantic patch performing
-this transformation:
-(http://www.emn.fr/x-info/coccinelle/)
+> Well, this removes the ability from sysrq-c to test the oops handling path, but
+> I suppose it does buy us consistent behavior between the keyboard and proc
+> interfaces, which is likely more important.  I can agree to that.  Perhaps we
+> can create another sysctl to test the oops path later.
+> 
 
-//<smpl>
-@@
-expression E1,E2,E3;
-@@
-- kzalloc(E1*sizeof(E2),E3)
-+ kcalloc(E1,sizeof(E2),E3)
+Can't we just set panic_on_oops = 1 in sysrq_handle_crash()? This will
+make sure that we test oops path as well as have consistent behavior
+between two methods of sysrc-c invocation.
 
-@@
-expression E1,E3;
-type T;
-@@
-- kzalloc(E1*sizeof(T),E3)
-+ kcalloc(E1,sizeof(T),E3)
-//</smpl>
+Thanks
+Vivek
 
-Signed-off-by: Nicolas Palix <npalix@diku.dk>
----
- drivers/staging/hv/storvsc_drv.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/staging/hv/storvsc_drv.c b/drivers/staging/hv/storvsc_drv.c
-index c080beb..830076b 100644
---- a/drivers/staging/hv/storvsc_drv.c
-+++ b/drivers/staging/hv/storvsc_drv.c
-@@ -473,7 +473,7 @@ static struct scatterlist *create_bounce_buffer(struct scatterlist *sgl, unsigne
- 
- 	num_pages = ALIGN_UP(len, PAGE_SIZE) >> PAGE_SHIFT;
- 
--	bounce_sgl = kzalloc(num_pages * sizeof(struct scatterlist), GFP_ATOMIC);
-+	bounce_sgl = kcalloc(num_pages, sizeof(struct scatterlist), GFP_ATOMIC);
- 	if (!bounce_sgl)
- 	{
- 		return NULL;
-@@ -928,14 +928,14 @@ static void storvsc_host_rescan_callback(struct work_struct *work)
- 	DPRINT_ENTER(STORVSC_DRV);
- 
- 	host_device_ctx = (struct host_device_context*)host->hostdata;
--	lun_list = kzalloc(sizeof(unsigned int)*STORVSC_MAX_LUNS_PER_TARGET, GFP_ATOMIC);
-+	lun_list = kcalloc(STORVSC_MAX_LUNS_PER_TARGET, sizeof(unsigned int), GFP_ATOMIC);
- 	if (!lun_list)
- 	{
- 		DPRINT_ERR(STORVSC_DRV, "unable to allocate lun list");
- 		return;
- 	}
- 
--	sdevs_remove_list = kzalloc(sizeof(void*)*STORVSC_MAX_LUNS_PER_TARGET, GFP_ATOMIC);
-+	sdevs_remove_list = kcalloc(STORVSC_MAX_LUNS_PER_TARGET, sizeof(void *), GFP_ATOMIC);
- 	if (!sdevs_remove_list)
- 	{
- 		kfree(lun_list);
--- 
-1.6.0.4
-
-
--- 
-Nicolas Palix
+> > I agree that causing a real crash(panic) is better way to test crashdump than
+> > calling the entry function of the crashdump directly, and also that opening
+> > the path for other dump mechanisms is welcomed.
+> >  
+> Ok, so we're in line there :)
+> 
+> > > It seems to
+> > > me that right now your major complaint is that the documentation is out of date,
+> > > and you're having to do things slightly differently to get the same behavioral
+> > > results.  Would it solve your issue, if we simply updated the documentation to
+> > > illustrate how it works now?
+> > 
+> > Of course the documentation should be updated asap.
+> > But I think the major complaint is about a difference in the behaviors of SysRq-c
+> > and "echo c > /proc/sysrq-trigger".
+> > 
+> Ok, I can agree with that.  I'd support a change like what you have above to
+> bring the keyboard and proc interface behavior in line.
+> 
+> Regards
+> Neil
+> 
+> 
+> > 
+> > Thanks,
+> > H.Seto
+> > 
+> > 
