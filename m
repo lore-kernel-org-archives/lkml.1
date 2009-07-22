@@ -1,365 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbZGVGJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbZGVGQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756577AbZGVGJy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 02:09:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750702AbZGVGJx
+	id S1756614AbZGVGQM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 02:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbZGVGQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 02:09:53 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50593 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756478AbZGVGJw (ORCPT
+	Wed, 22 Jul 2009 02:16:11 -0400
+Received: from mail6.webfaction.com ([74.55.86.74]:53197 "EHLO
+	smtp.webfaction.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750702AbZGVGQK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 02:09:52 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 22 Jul 2009 15:08:04 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Amerigo Wang <xiyou.wangcong@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 3/4] kcore: build physical memory direct map information
- in proper way
-Message-Id: <20090722150804.7dd4abaf.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090722060900.GD6281@cr0.nay.redhat.com>
-References: <20090722140613.0a751811.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090722141024.0c6bf382.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090722060900.GD6281@cr0.nay.redhat.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Jul 2009 02:16:10 -0400
+Date: Wed, 22 Jul 2009 07:16:30 +0100 (BST)
+From: Troy Moure <twmoure@szypr.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Troy Moure <twmoure@szypr.net>, Krzysztof Oledzki <olel@ans.pl>,
+       Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
+       lwn@lwn.net, Ian Lance Taylor <iant@google.com>
+Subject: Re: Linux 2.6.27.27
+In-Reply-To: <alpine.LFD.2.01.0907211759180.19335@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0907220618270.2606@troy-laptop>
+References: <20090720040655.GA11940@kroah.com> <4A645A45.9060509@ans.pl> <20090720151008.GC10015@suse.de> <alpine.LFD.2.01.0907200848530.13838@localhost.localdomain> <alpine.LNX.1.10.0907202341580.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907201504470.19335@localhost.localdomain>
+ <alpine.LNX.1.10.0907210831210.29729@bizon.gios.gov.pl> <alpine.LNX.1.10.0907211154480.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907210906400.19335@localhost.localdomain> <alpine.LFD.2.01.0907211133010.19335@localhost.localdomain>
+ <alpine.LFD.2.00.0907212211040.4630@troy-laptop> <alpine.LFD.2.01.0907211726140.19335@localhost.localdomain> <alpine.LFD.2.01.0907211759180.19335@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Jul 2009 14:09:00 +0800
-Amerigo Wang <xiyou.wangcong@gmail.com> wrote:
-
-> >+static int kcore_update_ram(void)
-> >+{
-> >+	LIST_HEAD(head);
-> >+	struct kcore_list *ent;
-> >+	int ret = 0;
-> >+
-> >+	ent = kmalloc(sizeof(*head), GFP_KERNEL);
-> 
-yes, of course.
-
-> 
-> Shouldn't it be sizeof(*ent)? :)
-> 
-> 
-> >+	if (!ent) {
-> >+		ret = -ENOMEM;
-> >+		goto unlock_out;
-> 
-> 
-> Where is unlock_out? :)
-> 
-> 
-
-Hmm...garbage from old patch, sorry.
 
 
-> >+	}
-> >+	ent->addr = __va(0);
-> >+	ent->size = max_low_pfn << PAGE_SHIFT;
-> >+	ent->type = SYSTEM_RAM;
+On Tue, 21 Jul 2009, Linus Torvalds wrote:
+
+> > Just out of curiosity, how did you find it? Now that I know where to look, 
+> > it's very obvious in the assembler diffs, but I didn't notice it until you 
+> > pointed it out just because there is so _much_ of the diffs...
 > 
-> 
-> Huh? SYSTEM_RAM or KCORE_RAM?
-> 
-> 
+> Ahh. I think I see how you found it. Looking at the diffs, there's only a 
+> few places where the number of instructions changed by a big fraction. And 
+> there's only _one_ place that has a factor-of-three difference (26 lines 
+> in the correct cases, and 7 lines in the wrong one). Clever.
 
-KCORE_RAM ... ah, ok. I tested only on x86-64 and this HIGHMEM is wasn't 
-compiled. Very sorry.
+Hmm..that's interesting.  But no, I wasn't that clever.
 
-I"ll post fixed one soon.
+I actually just started poking around the radeonfb code, since you 
+mentioned it looked like that might be where the issue was.  The last 
+message printed in the hung kernel is "Monitor 2 type no found" - printed 
+from radeon_probe_screens().  And the first message after that in the 
+non-hung kernel is "Console: switching to colour frame buffer device", 
+which I guessed was printed from register_framebuffer() (since that calls 
+notifiers).
 
-Thanks,
--Kame
+So I started looking in radeon_fb_register() between the call to 
+radeon_probe_screens() and the call to register_framebuffer(), and tracing 
+through the calls it made.  I ignored pci_, sysfs_, etc. calls, thinking 
+the driver code was more likely to have a device probing loop or something 
+odd like that that could be miscompiled.
 
+For any functions that had a loop or anything strange-looking, I checked 
+the assembler diffs.  And after a little while (a half-hour or so, I 
+think), I found edid_checksum().  Just the name made me think it was a 
+likely culprit, even before I looked at the diff. 
 
-> >+	list_add(&ent->list, &head);
-> >+	__kcore_update_ram(&head);
-> >+	return ret;
-> >+}
-> >+
-> >+#else /* !CONFIG_HIGHMEM */
-> >+
-> >+static int
-> >+kclist_add_private(unsigned long pfn, unsigned long nr_pages, void *arg)
-> >+{
-> >+	struct list_head *head = (struct list_head *)arg;
-> >+	struct kcore_list *ent;
-> >+
-> >+	ent = kmalloc(sizeof(*ent), GFP_KERNEL);
-> >+	if (!ent)
-> >+		return -ENOMEM;
-> >+	ent->addr = (unsigned long)__va((pfn << PAGE_SHIFT));
-> >+	ent->size = nr_pages << PAGE_SHIFT;
-> >+	ent->type = KCORE_RAM;
-> >+	list_add(&ent->list, head);
-> >+	return 0;
-> >+}
-> >+
-> >+static int kcore_update_ram(void)
-> >+{
-> >+	int nid, ret;
-> >+	unsigned long end_pfn;
-> >+	LIST_HEAD(head);
-> >+
-> >+	/* Not inialized....update now */
-> >+	/* find out "max pfn" */
-> >+	end_pfn = 0;
-> >+	for_each_node_state(nid, N_HIGH_MEMORY)
-> >+		if (end_pfn < node_end_pfn(nid))
-> >+			end_pfn = node_end_pfn(nid);
-> >+	/* scan 0 to max_pfn */
-> >+	ret = walk_memory_resource(0, end_pfn, &head, kclist_add_private);
-> >+	if (ret) {
-> >+		free_kclist_ents(&head);
-> >+		return -ENOMEM;
-> >+	}
-> >+	__kcore_update_ram(&head);
-> >+	return ret;
-> >+}
-> >+#endif /* CONFIG_HIGH_MEM */
-> > 
-> > /*****************************************************************************/
-> > /*
-> >@@ -271,6 +362,11 @@ read_kcore(struct file *file, char __use
-> > 		read_unlock(&kclist_lock);
-> > 		return 0;
-> > 	}
-> >+	/* memory hotplug ?? */
-> >+	if (kcore_need_update) {
-> >+		read_unlock(&kclist_lock);
-> >+		return -EBUSY;
-> >+	}
-> > 
-> > 	/* trim buflen to not go beyond EOF */
-> > 	if (buflen > size - *fpos)
-> >@@ -406,9 +502,42 @@ read_kcore(struct file *file, char __use
-> > 	return acc;
-> > }
-> > 
-> >+static int open_kcore(struct inode * inode, struct file *filp)
-> >+{
-> >+	if (!capable(CAP_SYS_RAWIO))
-> >+		return -EPERM;
-> >+	if (kcore_need_update)
-> >+		kcore_update_ram();
-> >+	return 0;
-> >+}
-> >+
-> >+
-> >+static const struct file_operations proc_kcore_operations = {
-> >+	.read		= read_kcore,
-> >+	.open		= open_kcore,
-> >+};
-> >+
-> >+/* just remember that we have to update kcore */
-> >+static int __meminit kcore_callback(struct notifier_block *self,
-> >+				    unsigned long action, void *arg)
-> >+{
-> >+	switch (action) {
-> >+	case MEM_ONLINE:
-> >+	case MEM_OFFLINE:
-> >+		write_lock(&kclist_lock);
-> >+		kcore_need_update = 1;
-> >+		write_unlock(&kclist_lock);
-> >+	}
-> >+	return NOTIFY_OK;
-> >+}
-> >+
-> >+
-> > static int __init proc_kcore_init(void)
-> > {
-> > 	proc_root_kcore = proc_create("kcore", S_IRUSR, NULL, &proc_kcore_operations);
-> >+	kcore_update_ram();
-> >+	hotplug_memory_notifier(kcore_callback, 0);
-> > 	return 0;
-> > }
-> > module_init(proc_kcore_init);
-> >+
-> >Index: mmotm-2.6.31-Jul16/include/linux/ioport.h
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/include/linux/ioport.h
-> >+++ mmotm-2.6.31-Jul16/include/linux/ioport.h
-> >@@ -186,5 +186,13 @@ extern void __devm_release_region(struct
-> > extern int iomem_map_sanity_check(resource_size_t addr, unsigned long size);
-> > extern int iomem_is_exclusive(u64 addr);
-> > 
-> >+/*
-> >+ * Walk through all SYSTEM_RAM which is registered as resource.
-> >+ * arg is (start_pfn, nr_pages, private_arg_pointer)
-> >+ */
-> >+extern int walk_memory_resource(unsigned long start_pfn,
-> >+			unsigned long nr_pages, void *arg,
-> >+			int (*func)(unsigned long, unsigned long, void *));
-> >+
-> > #endif /* __ASSEMBLY__ */
-> > #endif	/* _LINUX_IOPORT_H */
-> >Index: mmotm-2.6.31-Jul16/include/linux/memory_hotplug.h
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/include/linux/memory_hotplug.h
-> >+++ mmotm-2.6.31-Jul16/include/linux/memory_hotplug.h
-> >@@ -191,13 +191,6 @@ static inline void register_page_bootmem
-> > 
-> > #endif /* ! CONFIG_MEMORY_HOTPLUG */
-> > 
-> >-/*
-> >- * Walk through all memory which is registered as resource.
-> >- * arg is (start_pfn, nr_pages, private_arg_pointer)
-> >- */
-> >-extern int walk_memory_resource(unsigned long start_pfn,
-> >-			unsigned long nr_pages, void *arg,
-> >-			int (*func)(unsigned long, unsigned long, void *));
-> > 
-> > #ifdef CONFIG_MEMORY_HOTREMOVE
-> > 
-> >Index: mmotm-2.6.31-Jul16/kernel/resource.c
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/kernel/resource.c
-> >+++ mmotm-2.6.31-Jul16/kernel/resource.c
-> >@@ -234,7 +234,7 @@ int release_resource(struct resource *ol
-> > 
-> > EXPORT_SYMBOL(release_resource);
-> > 
-> >-#if defined(CONFIG_MEMORY_HOTPLUG) && !defined(CONFIG_ARCH_HAS_WALK_MEMORY)
-> >+#if !defined(CONFIG_ARCH_HAS_WALK_MEMORY)
-> > /*
-> >  * Finds the lowest memory reosurce exists within [res->start.res->end)
-> >  * the caller must specify res->start, res->end, res->flags.
-> >Index: mmotm-2.6.31-Jul16/arch/ia64/mm/init.c
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/arch/ia64/mm/init.c
-> >+++ mmotm-2.6.31-Jul16/arch/ia64/mm/init.c
-> >@@ -639,7 +639,6 @@ mem_init (void)
-> > 
-> > 	high_memory = __va(max_low_pfn * PAGE_SIZE);
-> > 
-> >-	kclist_add(&kcore_mem, __va(0), max_low_pfn * PAGE_SIZE, KCORE_RAM);
-> > 	kclist_add(&kcore_vmem, (void *)VMALLOC_START,
-> > 			VMALLOC_END-VMALLOC_START, KCORE_VMALLOC);
-> > 	kclist_add(&kcore_kernel, _stext, _end - _stext, KCORE_TEXT);
-> >Index: mmotm-2.6.31-Jul16/arch/mips/mm/init.c
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/arch/mips/mm/init.c
-> >+++ mmotm-2.6.31-Jul16/arch/mips/mm/init.c
-> >@@ -412,7 +412,6 @@ void __init mem_init(void)
-> > 		kclist_add(&kcore_kseg0, (void *) CKSEG0,
-> > 				0x80000000 - 4, KCORE_TEXT);
-> > #endif
-> >-	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT, KCORE_RAM);
-> > 	kclist_add(&kcore_vmalloc, (void *)VMALLOC_START,
-> > 		   VMALLOC_END-VMALLOC_START, KCORE_VMALLOC);
-> > 
-> >Index: mmotm-2.6.31-Jul16/arch/powerpc/mm/init_32.c
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/arch/powerpc/mm/init_32.c
-> >+++ mmotm-2.6.31-Jul16/arch/powerpc/mm/init_32.c
-> >@@ -249,30 +249,6 @@ static struct kcore_list kcore_vmem;
-> > 
-> > static int __init setup_kcore(void)
-> > {
-> >-	int i;
-> >-
-> >-	for (i = 0; i < lmb.memory.cnt; i++) {
-> >-		unsigned long base;
-> >-		unsigned long size;
-> >-		struct kcore_list *kcore_mem;
-> >-
-> >-		base = lmb.memory.region[i].base;
-> >-		size = lmb.memory.region[i].size;
-> >-
-> >-		kcore_mem = kmalloc(sizeof(struct kcore_list), GFP_ATOMIC);
-> >-		if (!kcore_mem)
-> >-			panic("%s: kmalloc failed\n", __func__);
-> >-
-> >-		/* must stay under 32 bits */
-> >-		if ( 0xfffffffful - (unsigned long)__va(base) < size) {
-> >-			size = 0xfffffffful - (unsigned long)(__va(base));
-> >-			printk(KERN_DEBUG "setup_kcore: restrict size=%lx\n",
-> >-						size);
-> >-		}
-> >-
-> >-		kclist_add(kcore_mem, __va(base), size, KCORE_RAM);
-> >-	}
-> >-
-> > 	kclist_add(&kcore_vmem, (void *)VMALLOC_START,
-> > 		VMALLOC_END-VMALLOC_START, KCORE_VMALLOC);
-> > 
-> >Index: mmotm-2.6.31-Jul16/arch/powerpc/mm/init_64.c
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/arch/powerpc/mm/init_64.c
-> >+++ mmotm-2.6.31-Jul16/arch/powerpc/mm/init_64.c
-> >@@ -114,23 +114,6 @@ static struct kcore_list kcore_vmem;
-> > 
-> > static int __init setup_kcore(void)
-> > {
-> >-	int i;
-> >-
-> >-	for (i=0; i < lmb.memory.cnt; i++) {
-> >-		unsigned long base, size;
-> >-		struct kcore_list *kcore_mem;
-> >-
-> >-		base = lmb.memory.region[i].base;
-> >-		size = lmb.memory.region[i].size;
-> >-
-> >-		/* GFP_ATOMIC to avoid might_sleep warnings during boot */
-> >-		kcore_mem = kmalloc(sizeof(struct kcore_list), GFP_ATOMIC);
-> >-		if (!kcore_mem)
-> >-			panic("%s: kmalloc failed\n", __func__);
-> >-
-> >-		kclist_add(kcore_mem, __va(base), size, KCORE_RAM);
-> >-	}
-> >-
-> > 	kclist_add(&kcore_vmem, (void *)VMALLOC_START,
-> > 		VMALLOC_END-VMALLOC_START, KCORE_VMALLOC);
-> > 
-> >Index: mmotm-2.6.31-Jul16/arch/sh/mm/init.c
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/arch/sh/mm/init.c
-> >+++ mmotm-2.6.31-Jul16/arch/sh/mm/init.c
-> >@@ -218,7 +218,6 @@ void __init mem_init(void)
-> > 	datasize =  (unsigned long) &_edata - (unsigned long) &_etext;
-> > 	initsize =  (unsigned long) &__init_end - (unsigned long) &__init_begin;
-> > 
-> >-	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT, KCORE_RAM);
-> > 	kclist_add(&kcore_vmalloc, (void *)VMALLOC_START,
-> > 		   VMALLOC_END - VMALLOC_START, KCORE_VMALLOC);
-> > 
-> >Index: mmotm-2.6.31-Jul16/arch/x86/mm/init_32.c
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/arch/x86/mm/init_32.c
-> >+++ mmotm-2.6.31-Jul16/arch/x86/mm/init_32.c
-> >@@ -886,7 +886,6 @@ void __init mem_init(void)
-> > 	datasize =  (unsigned long) &_edata - (unsigned long) &_etext;
-> > 	initsize =  (unsigned long) &__init_end - (unsigned long) &__init_begin;
-> > 
-> >-	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT, KCORE_RAM);
-> > 	kclist_add(&kcore_vmalloc, (void *)VMALLOC_START,
-> > 		   VMALLOC_END-VMALLOC_START, KCORE_VMALLOC);
-> > 
-> >Index: mmotm-2.6.31-Jul16/arch/x86/mm/init_64.c
-> >===================================================================
-> >--- mmotm-2.6.31-Jul16.orig/arch/x86/mm/init_64.c
-> >+++ mmotm-2.6.31-Jul16/arch/x86/mm/init_64.c
-> >@@ -677,7 +677,6 @@ void __init mem_init(void)
-> > 	initsize =  (unsigned long) &__init_end - (unsigned long) &__init_begin;
-> > 
-> > 	/* Register memory areas for /proc/kcore */
-> >-	kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT, KCORE_RAM);
-> > 	kclist_add(&kcore_vmalloc, (void *)VMALLOC_START,
-> > 		   VMALLOC_END-VMALLOC_START, KCORE_VMALLOC);
-> > 	kclist_add(&kcore_kernel, &_stext, _end - _stext, KCORE_TEXT);
-> >
-> >--
-> >To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> >the body of a message to majordomo@vger.kernel.org
-> >More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Obviously I got a bit lucky that problem was actually basically where I 
+started looking for it.  But I figured even if I didn't find it, I'd learn 
+something about the radeonfb code. And who would pass up an opportunity to 
+learn about that?
 
+	Troy
