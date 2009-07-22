@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752268AbZGVR5E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753424AbZGVR5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752268AbZGVR5E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 13:57:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbZGVR5C
+	id S1753424AbZGVR5o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 13:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbZGVR5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 13:57:02 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:35828 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751000AbZGVR5B (ORCPT
+	Wed, 22 Jul 2009 13:57:44 -0400
+Received: from e39.co.us.ibm.com ([32.97.110.160]:37023 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751162AbZGVR5n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 13:57:01 -0400
-Subject: Re: [tip:sched/core] sched: Pull up the might_sleep() check into 
- cond_resched()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
-       linux-tip-commits@vger.kernel.org
-In-Reply-To: <c62985530907221017i427b1ae1s8cbb593106c658a1@mail.gmail.com>
-References: <1247725694-6082-6-git-send-email-fweisbec@gmail.com>
-	 <tip-613afbf83298efaead05ebcac23d2285609d7160@git.kernel.org>
-	 <4A6413AB.2050807@cn.fujitsu.com> <20090720081210.GA5309@nowhere>
-	 <1248089955.15751.8494.camel@twins>
-	 <c62985530907221017i427b1ae1s8cbb593106c658a1@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 22 Jul 2009 19:56:43 +0200
-Message-Id: <1248285403.4711.0.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 8bit
+	Wed, 22 Jul 2009 13:57:43 -0400
+Date: Wed, 22 Jul 2009 12:52:23 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Oren Laadan <orenl@librato.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Oren Laadan <orenl@cs.columbia.edu>
+Subject: Re: [RFC v17][PATCH 22/60] c/r: external checkpoint of a task
+	other than ourself
+Message-ID: <20090722175223.GA19389@us.ibm.com>
+References: <1248256822-23416-1-git-send-email-orenl@librato.com> <1248256822-23416-23-git-send-email-orenl@librato.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1248256822-23416-23-git-send-email-orenl@librato.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-22 at 19:17 +0200, Frédéric Weisbecker wrote:
+Quoting Oren Laadan (orenl@librato.com):
+> Now we can do "external" checkpoint, i.e. act on another task.
 
-> Ah, I think I've got it. In case of !CONFIG_PREEMPT, the spinlocks of
-> course don't play
-> with preemption, making no change reflected in the preempt_count().
-> The assumption of preempt_count() = 1
-> is then false.
+...
 
-D'0h indeed. And I didn't hit that because the last time I build a !
-CONFIG_PREEMPT kernel is like many years ago ;-)
+>  long do_checkpoint(struct ckpt_ctx *ctx, pid_t pid)
+>  {
+>  	long ret;
+> 
+> +	ret = init_checkpoint_ctx(ctx, pid);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	if (ctx->root_freezer) {
+> +		ret = cgroup_freezer_begin_checkpoint(ctx->root_freezer);
+> +		if (ret < 0)
+> +			return ret;
+> +	}
 
+Self-checkpoint of a task in root freezer is now denied, though.
 
+Was that intentional?
 
+-serge
