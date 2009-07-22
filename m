@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751695AbZGVEWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752036AbZGVEWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751695AbZGVEWE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 00:22:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbZGVEVt
+	id S1752036AbZGVEWX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 00:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750942AbZGVEWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 00:21:49 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39483
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750816AbZGVEVr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 00:21:47 -0400
-Date: Tue, 21 Jul 2009 21:21:52 -0700 (PDT)
-Message-Id: <20090721.212152.43170346.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: IDE
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 22 Jul 2009 00:22:23 -0400
+Received: from ozlabs.org ([203.10.76.45]:46523 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750896AbZGVEWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 00:22:22 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH] tracing/events: Add module tracepoints
+Date: Wed, 22 Jul 2009 13:52:17 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <4A6582C1.2040609@cn.fujitsu.com>
+In-Reply-To: <4A6582C1.2040609@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907221352.17850.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 21 Jul 2009 06:26:33 pm Li Zefan wrote:
+> Add trace points to trace module_load, module_free, module_get,
+> module_put and module_request, and use trace_event facility
+> to get the trace output.
 
-1) When FS delivers flush commands to an IDE disk (as XFS does, for
-   example) we leak memory.  Fix from Maxime Bizon.
+Hi Li Zefan,
 
-2) IDE tape can leak kstack to userspace, fix from Michael Buesch.
+   I don't know anything about tracing, but the module code changes look
+simple and fine to me.
 
-Please pull, thanks a lot!
-
-The following changes since commit aea1f7964ae6cba5eb419a958956deb9016b3341:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../sam/kbuild-fixes
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/ide-2.6.git master
-
-Maxime Bizon (1):
-      ide: fix memory leak when flush command is issued
-
-Michael Buesch (1):
-      ide-tape: Don't leak kernel stack information
-
- drivers/ide/ide-disk.c |    1 +
- drivers/ide/ide-tape.c |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
+Thanks,
+Rusty.
