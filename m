@@ -1,67 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbZGVWDH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754325AbZGVV5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754529AbZGVWDH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 18:03:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754438AbZGVWDG
+	id S1754325AbZGVV5N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 17:57:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbZGVV5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 18:03:06 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:58074 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754353AbZGVWDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 18:03:04 -0400
-X-IronPort-AV: E=Sophos;i="4.43,248,1246863600"; 
-   d="scan'208";a="210516375"
-Cc: Ben Greear <greearb@candelatech.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
-Message-Id: <2CC45724-FD70-4F00-84F7-4D0E2158D6B5@netapp.com>
-From: Andy Adamson <andros@netapp.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-In-Reply-To: <1248299236.9202.3.camel@heimdal.trondhjem.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: Error mounting FC8 NFS server with 2.6.31-rc3 NFSv4 client.
-Date: Wed, 22 Jul 2009 18:03:03 -0400
-References: <4A64EB1F.4000602@candelatech.com> <1248178527.5222.0.camel@heimdal.trondhjem.org> <4A65F184.5060802@candelatech.com> <1248196339.21343.8.camel@heimdal.trondhjem.org> <4A65FCB2.6080903@candelatech.com> <1248199140.21343.17.camel@heimdal.trondhjem.org> <4A660295.9020807@candelatech.com> <1248200897.21343.19.camel@heimdal.trondhjem.org> <4A6609A9.3000504@candelatech.com> <1248211050.21343.38.camel@heimdal.trondhjem.org> <A7103385-4525-4B7B-9CBA-5DBCB99A98F0@netapp.com> <1248294013.5234.35.camel@heimdal.trondhjem.org> <74713B5B-DF7F-4357-AE3A-0F6B44C41116@netapp.com> <1248299236.9202.3.camel@heimdal.trondhjem.org>
-X-Mailer: Apple Mail (2.930.3)
+	Wed, 22 Jul 2009 17:57:11 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:38569 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753776AbZGVV5K convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 17:57:10 -0400
+MIME-Version: 1.0
+In-Reply-To: <alpine.LFD.2.00.0907222226270.2813@localhost.localdomain>
+References: <5d5443650907151033w36008b71pe4b32bcea9489b75@mail.gmail.com>
+	 <alpine.LFD.2.00.0907221427380.2813@localhost.localdomain>
+	 <1248269443.27058.1449.camel@twins>
+	 <200907220957.16499.david-b@pacbell.net>
+	 <alpine.LFD.2.00.0907222226270.2813@localhost.localdomain>
+Date: Wed, 22 Jul 2009 14:57:09 -0700
+Message-ID: <d6200be20907221457r4e2f6d29g57146586fd13776a@mail.gmail.com>
+Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: David Brownell <david-b@pacbell.net>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
+       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
+       t.fujak@samsung.com, kyungmin.park@samsung.com,
+       Daniel Ribeiro <drwyrm@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Jul 22, 2009, at 5:47 PM, Trond Myklebust wrote:
-
-> On Wed, 2009-07-22 at 17:32 -0400, Andy Adamson wrote:
->> nfs4_init_session should simply return if the nfs_client  
->> cl_cons_state
->> is not NFS_CS_SESSION_INITING.
->> I shouldn't be trying to set the session max_resp_sz/max_rqst_sz to
->> the rsize/wsize, but rather to the maximum rsize/wsize supported by
->> the client.
->> If the server accepts or increases the max_resp_sz/max_rqst_sz then
->> all is well.
->> If the server reduces the max_resp_sz/max_rqst_sz, the maximum rsize/
->> wsize available for NFSv4.1 partition mounts to the server needs to  
->> be
->> reduced accordingly. So the nfs_server rsize/wsize needs to be bound
->> by the session max_resp_sz/max_rqst_sz as well as by the maximum
->> supported size.
+On Wed, Jul 22, 2009 at 2:04 PM, Thomas Gleixner<tglx@linutronix.de> wrote:
+> On Wed, 22 Jul 2009, David Brownell wrote:
+>> On Wednesday 22 July 2009, Peter Zijlstra wrote:
+>> > Wouldn't it be better if we could express the nesting property from
+>> > within genirq, so that we can do things like:
+>> >
+>> >   register_chip_nested(parent_chip, parent_irq, slave_chip);
+>> >
+>> > And let genirq set-up the needed magic to make the nesting work.
+>>
+>> I've been requesting such IRQ chaining support for some time
+>> now ... if the ears are now listening, that kind of direction
+>> should be pursued.
 >
-> Well.... The rsize/wsize is one thing, but how about acls? We simply
-> don't know how big they may become.
-
-Yeah - has anything been submitted for 4.2 to fix this? (a readdir  
-cookie - like thingie)
-
+> Well, I was all ear back then, but the disconnect between "embedded
+> only needs X be happy" and my repsonsibility to keep that all working
+> for everyone was way larger. :)
 >
+>> > Also, how important is it that subhandler1..n run in their own thread?
+>>
+>> Completely unimportant in a practical sense.  Undesirable, even;
+>> wasteful to allocate all those stack pages and keep them idle
+>> most of the time.
+>>
+>> There might be an argument that the design isn't technicaly done
+>> until that model *can* be supported.  On the flip side, last time
+>> this came up there was no "customer demand" for that ... it was
+>> all "supplier push".
+>>
+>>
+>> > That is, can't we let them run from the thread that is otherwise waiting
+>> > for the completino anyway?
+>>
+>> That would be far preferable, yes.
 >
-> An alternative would be to let the server choose the
-> max_rqst_sz/max_resp_sz by always requesting the maximum allowed  
-> value.
-
-OK  - maximum allowed value instead of maximum client supported value...
-
+> Ok, so let me summarize what we came up with so far.
 >
-> Trond
+> 1) handle_level_oneshot_irq is the correct answer to the problem of
+> those "I'm behind a slow bus" interrupt controllers.
 >
+> 2) Some mechanism to request ONESHOT from the driver level is
+> required. Preferrably via a flag on request_threaded_irq
+>
+> 3) a function which allows to express the nested thread irq nature of
+> the interrupt controller and its subdevices.
+>
+> 4) a generic serializing mechanism which is implemented via irq_chip
+> functions to solve the chip->mask/unmask issue for the demultiplexed
+> interrupts. Something like the bus_lock/bus_sync_unlock patch I posted
+> earlier.
+>
+> 5) a common function which allows to call the thread handler of the
+> subdevice interrupts in the context of the main thread which takes
+> care of serialization against disable/enable/request/free irq et al.
+>
+> Any more ?
 
+It would also be useful to mask an edge triggered interrupt until the
+thread handler has finished. The touchscreen on the G1 is connected to
+an edge triggered interrupt, and the touchscreen may toggle the
+interrupt line while reading its registers.
+
+-- 
+Arve Hjønnevåg
