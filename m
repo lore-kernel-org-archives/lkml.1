@@ -1,85 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbZGVA3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752079AbZGVAkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752725AbZGVA3u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 20:29:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbZGVA3t
+	id S1752079AbZGVAkB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 20:40:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbZGVAkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 20:29:49 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44758 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752437AbZGVA3s (ORCPT
+	Tue, 21 Jul 2009 20:40:00 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:44573 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750780AbZGVAkA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 20:29:48 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 22 Jul 2009 09:27:57 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, ebiederm@xmission.com,
-       xiyou.wangcong@gmail.com, tao.ma@oracle.com,
-       linux-kernel@vger.kernel.org, adobriyan@gmail.com,
-       mtk.manpages@gmail.com, y-goto@jp.fujitsu.com
-Subject: Re: [RFC][PATCH 0/3] kcore: clean up and update ram information
- properly
-Message-Id: <20090722092757.ef6326a6.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <873a8q2s0a.fsf@basil.nowhere.org>
-References: <m11vpqvozl.fsf@fess.ebiederm.org>
-	<20090613040958.GA2959@cr0>
-	<m17hzdhkr8.fsf@fess.ebiederm.org>
-	<2375c9f90906160829g3d605836yb4c5b9beeac50c5f@mail.gmail.com>
-	<m1my88568n.fsf@fess.ebiederm.org>
-	<20090618030051.GA6133@cr0.nay.redhat.com>
-	<m1tz2ei54r.fsf@fess.ebiederm.org>
-	<20090618044055.GB6133@cr0.nay.redhat.com>
-	<m1prd2rtdf.fsf@fess.ebiederm.org>
-	<20090622085405.GA6499@cr0.nay.redhat.com>
-	<20090630100850.GD5873@cr0.nay.redhat.com>
-	<20090701144742.6ce3535b.akpm@linux-foundation.org>
-	<m14otwq94e.fsf@fess.ebiederm.org>
-	<20090701171249.004968e8.akpm@linux-foundation.org>
-	<20090702094138.f86ead92.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090717152955.6585cbf9.akpm@linux-foundation.org>
-	<20090721183628.edbb7b99.kamezawa.hiroyu@jp.fujitsu.com>
-	<873a8q2s0a.fsf@basil.nowhere.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 21 Jul 2009 20:40:00 -0400
+Message-ID: <4A665F09.7050104@zytor.com>
+Date: Tue, 21 Jul 2009 17:36:25 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1.1) Gecko/20090715 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Kyle McMartin <kyle@mcmartin.ca>
+CC: "Luis R. Rodriguez" <mcgrof@gmail.com>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Ted Merrill <atheros@embuildsw.com>
+Subject: Re: khttpd fate
+References: <43e72e890907171815x3a85c788k1b4c0f72954db9e5@mail.gmail.com> <20090722002039.GF11051@bombadil.infradead.org>
+In-Reply-To: <20090722002039.GF11051@bombadil.infradead.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Jul 2009 13:29:57 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
+On 07/21/2009 05:20 PM, Kyle McMartin wrote:
+> 
+> I think it kind of got replaced by tux, which Red Hat shipped for a
+> while, but has been dropped now. I seem to recall davej mentioning a
+> while ago that apache had gotten much better at serving static content,
+> which is what khttpd/tux were very good at.
+> 
 
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> writes:
-> 
-> > Now, /proc/kcore is built on kclist information which is constructed at boot.
-> > This kclist includes physical memory range information but not updated at
-> > memory hotplug. And, this information tends to includes big memory hole.
-> >
-> > On the other hand, /proc/iomem includes all physical memory information as
-> > "System RAM" and this is updated properly and kdump use this, IIUC. 
-> > (I hope all archtecuture stores necessary information...)
-> >
-> > This patch tries to build kclist for physical memory(direct map) on
-> > /proc/iomem info. It's refreshed at open("/proc/kcore",) if necesasry.
-> >
-> > This is just a RFC. Any comments are welcome.
-> >
-> > [1/3] ... clean up kclist handling.
-> > [2/3] ... clean up kclist_add()
-> > [3/3] ... use /proc/iomem information for /proc/kcore.
-> 
-> Great cleanup! Thanks.
-> 
-Thank you. I'll reveiw this set again and post v2.
+Also, lighttpd does really well, all in userspace.  After all, static
+http serving really is mostly a bit of header parsing followed by
+sendfile(), so as long as a user-space process doesn't just sit on a
+bunch of memory it can be done very cheaply.
 
-> The only missing part that we still need is to also include 
-> the kallsyms information, then the core would be even more useful.
-> 
-yes.
+	-hpa
 
-Thanks,
--Kame
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
