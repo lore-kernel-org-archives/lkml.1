@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbZGVKQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754846AbZGVKNa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755242AbZGVKQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 06:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbZGVKOy
+	id S1754846AbZGVKNa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 06:13:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754679AbZGVKN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 06:14:54 -0400
-Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:40236 "EHLO
+	Wed, 22 Jul 2009 06:13:28 -0400
+Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:57001 "EHLO
 	smtp161.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754177AbZGVKKs (ORCPT
+	with ESMTP id S1754614AbZGVKKx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 06:10:48 -0400
+	Wed, 22 Jul 2009 06:10:53 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -19,11 +19,10 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        "H. Peter Anvin" <hpa@zytor.com>,
        Alexander Viro <viro@zeniv.linux.org.uk>,
        Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: [RFC v17][PATCH 13/60] pids 3/7: Add target_pid parameter to alloc_pidmap()
-Date: Wed, 22 Jul 2009 05:59:35 -0400
-Message-Id: <1248256822-23416-14-git-send-email-orenl@librato.com>
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: [RFC v17][PATCH 59/60] c/r: restore file->f_cred
+Date: Wed, 22 Jul 2009 06:00:21 -0400
+Message-Id: <1248256822-23416-60-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1248256822-23416-1-git-send-email-orenl@librato.com>
 References: <1248256822-23416-1-git-send-email-orenl@librato.com>
@@ -31,72 +30,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+From: Serge E. Hallyn <serue@us.ibm.com>
 
-With support for setting a specific pid number for a process,
-alloc_pidmap() will need a paramter a 'target_pid' parameter.
+Restore a file's f_cred.  This is set to the cred of the task doing
+the open, so often it will be the same as that of the restarted task.
 
-Changelog[v2]:
-	- (Serge Hallyn) Check for 'pid < 0' in set_pidmap().(Code
-	  actually checks for 'pid <= 0' for completeness).
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-Reviewed-by: Oren Laadan <orenl@cs.columbia.edu>
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
 ---
- kernel/pid.c |   28 ++++++++++++++++++++++++++--
- 1 files changed, 26 insertions(+), 2 deletions(-)
+ checkpoint/files.c             |   16 ++++++++++++++--
+ include/linux/checkpoint_hdr.h |    2 +-
+ 2 files changed, 15 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/pid.c b/kernel/pid.c
-index 9c678ce..29cf119 100644
---- a/kernel/pid.c
-+++ b/kernel/pid.c
-@@ -147,11 +147,35 @@ static int alloc_pidmap_page(struct pidmap *map)
+diff --git a/checkpoint/files.c b/checkpoint/files.c
+index c247d44..bcdc774 100644
+--- a/checkpoint/files.c
++++ b/checkpoint/files.c
+@@ -150,7 +150,11 @@ int checkpoint_file_common(struct ckpt_ctx *ctx, struct file *file,
+ 	h->f_pos = file->f_pos;
+ 	h->f_version = file->f_version;
+ 
+-	/* FIX: need also file->uid, file->gid, file->f_owner, etc */
++	h->f_credref = checkpoint_obj(ctx, file->f_cred, CKPT_OBJ_CRED);
++	if (h->f_credref < 0)
++		return h->f_credref;
++
++	/* FIX: need also file->f_owner, etc */
+ 
  	return 0;
  }
+@@ -454,8 +458,16 @@ int restore_file_common(struct ckpt_ctx *ctx, struct file *file,
+ 	fmode_t new_mode = (__force fmode_t) file->f_mode;
+ 	fmode_t saved_mode = (__force fmode_t) h->f_mode;
+ 	int ret;
++	struct cred *cred;
++
++	/* FIX: need to restore owner etc */
  
--static int alloc_pidmap(struct pid_namespace *pid_ns)
-+static int set_pidmap(struct pid_namespace *pid_ns, int pid)
-+{
-+	int offset;
-+	struct pidmap *map;
-+
-+	if (pid <= 0 || pid >= pid_max)
-+		return -EINVAL;
-+
-+	offset = pid & BITS_PER_PAGE_MASK;
-+	map = &pid_ns->pidmap[pid/BITS_PER_PAGE];
-+
-+	if (alloc_pidmap_page(map))
-+		return -ENOMEM;
-+
-+	if (test_and_set_bit(offset, map->page))
-+		return -EBUSY;
-+
-+	atomic_dec(&map->nr_free);
-+	return pid;
-+}
-+
-+static int alloc_pidmap(struct pid_namespace *pid_ns, int target_pid)
- {
- 	int i, rc, offset, max_scan, pid, last = pid_ns->last_pid;
- 	struct pidmap *map;
+-	/* FIX: need to restore uid, gid, owner etc */
++	/* restore the cred */
++	cred = ckpt_obj_fetch(ctx, h->f_credref, CKPT_OBJ_CRED);
++	if (IS_ERR(cred))
++		return PTR_ERR(cred);
++	put_cred(file->f_cred);
++	file->f_cred = get_cred(cred);
  
-+	if (target_pid)
-+		return set_pidmap(pid_ns, target_pid);
-+
- 	pid = last + 1;
- 	if (pid >= pid_max)
- 		pid = RESERVED_PIDS;
-@@ -270,7 +294,7 @@ struct pid *alloc_pid(struct pid_namespace *ns)
- 
- 	tmp = ns;
- 	for (i = ns->level; i >= 0; i--) {
--		nr = alloc_pidmap(tmp);
-+		nr = alloc_pidmap(tmp, 0);
- 		if (nr < 0)
- 			goto out_free;
- 
+ 	/* safe to set 1st arg (fd) to 0, as command is F_SETFL */
+ 	ret = vfs_fcntl(0, F_SETFL, h->f_flags & CKPT_SETFL_MASK, file);
+diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
+index ca02d9d..0863a07 100644
+--- a/include/linux/checkpoint_hdr.h
++++ b/include/linux/checkpoint_hdr.h
+@@ -329,7 +329,7 @@ struct ckpt_hdr_file {
+ 	__u32 f_type;
+ 	__u32 f_mode;
+ 	__u32 f_flags;
+-	__u32 _padding;
++	__s32 f_credref;
+ 	__u64 f_pos;
+ 	__u64 f_version;
+ } __attribute__((aligned(8)));
 -- 
 1.6.0.4
 
