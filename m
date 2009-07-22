@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752251AbZGVEuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752414AbZGVEuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752251AbZGVEuT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 00:50:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbZGVEuT
+	id S1752414AbZGVEuy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 00:50:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbZGVEux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 00:50:19 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2719 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751283AbZGVEuS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 00:50:18 -0400
-Subject: Re: [RFC] move __devinit or __init printk constant format strings
- to __devinitconst or __initdata?
-From: Joe Perches <joe@perches.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: David Daney <ddaney@caviumnetworks.com>, linux-embedded@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Paul Gortmaker <paul.gortmaker@windriver.com>,
-       David Woodhouse <dwmw2@infradead.org>, Tim Bird <tim.bird@am.sony.com>
-In-Reply-To: <1248226085.10466.251.camel@calx>
-References: <1248211253.31365.337.camel@Joe-Laptop.home>
-	 <1248212925.10466.143.camel@calx>
-	 <1248213403.31365.343.camel@Joe-Laptop.home>
-	 <1248217044.10466.202.camel@calx>
-	 <1248217502.31365.381.camel@Joe-Laptop.home>
-	 <4A665442.1010006@caviumnetworks.com>  <1248226085.10466.251.camel@calx>
-Content-Type: text/plain
-Date: Tue, 21 Jul 2009 21:50:02 -0700
-Message-Id: <1248238202.31365.576.camel@Joe-Laptop.home>
+	Wed, 22 Jul 2009 00:50:53 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:60318 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751969AbZGVEux (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 00:50:53 -0400
+Date: Wed, 22 Jul 2009 14:50:47 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Zhu Yi <yi.zhu@intel.com>
+Cc: David Miller <davem@davemloft.net>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Ortiz, Samuel" <samuel.ortiz@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: linux-next: manual merge of the net tree with the
+ wireless-current tree
+Message-Id: <20090722145047.289a7edb.sfr@canb.auug.org.au>
+In-Reply-To: <1248228321.3747.48.camel@debian>
+References: <20090722115956.482777b4.sfr@canb.auug.org.au>
+	<1248228321.3747.48.camel@debian>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__22_Jul_2009_14_50_47_+1000_nMwv+lxBKryi1s9d"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-21 at 20:28 -0500, Matt Mackall wrote:
-> On Tue, 2009-07-21 at 16:50 -0700, David Daney wrote:
-> > It would be tricky, the string data from the entire compilation unit is 
-> > intermingled.  You would have to separate out only those strings 
-> > referenced from __init sections into their own section and fix up all 
-> > symbols and relocations that were affected.
-> Exactly. Annoying but not impossible.
+--Signature=_Wed__22_Jul_2009_14_50_47_+1000_nMwv+lxBKryi1s9d
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-But faster and likely easier to do once in source.
+Hi Yi,
 
-> > Probably easier would be to use the plug-in feature that will be part of 
-> > GCC-4.5 (or will that be called GCC-5.0??), and create a special Linux 
-> > kernel GCC plug-in that just emits the __init literal strings to the 
-> > proper section to begin with.
 
-Which is what the proposed marking would
-more or less do today.
+On Wed, 22 Jul 2009 10:05:21 +0800 Zhu Yi <yi.zhu@intel.com> wrote:
+>
+> The correct fix should be
+> http://git.kernel.org/?p=3Dlinux/kernel/git/linville/wireless-testing.git=
+;a=3Dcommitdiff;h=3D126e91ba8cfe45a772aad2f51049ac7cedf5bbfd
+>=20
+> We need to make the free wdev the last one.
 
-> > We don't want the kernel to get left 
-> > behind in the GCC plug-in race.
+Thanks, if it is still there tomorrow, I will change the fix.
 
-Any guess when gcc 4.5/5.0 might become available?
-It's in stage 1 now.  Mid 2010 or so?
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-4.4.0 was April 21, 2009
-4.3.0 was March 5, 2008
-4.2.0 was May 13, 2007
+--Signature=_Wed__22_Jul_2009_14_50_47_+1000_nMwv+lxBKryi1s9d
+Content-Type: application/pgp-signature
 
-Could you please send me what you think is a
-reasonable .config for an embedded box.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-cheers, Joe
+iEYEARECAAYFAkpmmqcACgkQjjKRsyhoI8w1YACeM+uhEPqopNw0iWJLh7IwRjnx
+el0An3f1C6sqz316UC6qj9fcwV0W1B02
+=OfX4
+-----END PGP SIGNATURE-----
 
+--Signature=_Wed__22_Jul_2009_14_50_47_+1000_nMwv+lxBKryi1s9d--
