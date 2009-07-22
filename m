@@ -1,100 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752486AbZGVQQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752714AbZGVQSM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752486AbZGVQQX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 12:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbZGVQQX
+	id S1752714AbZGVQSM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 12:18:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbZGVQSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 12:16:23 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34665 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752117AbZGVQQW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 12:16:22 -0400
-Date: Wed, 22 Jul 2009 17:17:07 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Daniel Mack <daniel@caiaq.de>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: [PATCH] [usb-serial] fix Ooops on uplug
-Message-ID: <20090722171707.5fa39803@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.44L0.0907221014210.2935-100000@iolanthe.rowland.org>
-References: <20090721235512.7a1784be@lxorguk.ukuu.org.uk>
-	<Pine.LNX.4.44L0.0907221014210.2935-100000@iolanthe.rowland.org>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Jul 2009 12:18:11 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:56005 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751931AbZGVQSL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 12:18:11 -0400
+Date: Wed, 22 Jul 2009 09:18:09 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] kmemleak: Scan all thread stacks
+Message-ID: <20090722161809.GH6757@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090717093359.8288.45464.stgit@pc1117.cambridge.arm.com> <20090717164346.GC5131@elte.hu> <1247849826.6313.64.camel@pc1117.cambridge.arm.com> <1247850069.6522.91.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247850069.6522.91.camel@laptop>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 		free resources
-> > 		wake any pending openers
+On Fri, Jul 17, 2009 at 07:01:09PM +0200, Peter Zijlstra wrote:
+> On Fri, 2009-07-17 at 17:57 +0100, Catalin Marinas wrote:
+> > On Fri, 2009-07-17 at 18:43 +0200, Ingo Molnar wrote:
+> > > * Catalin Marinas <catalin.marinas@arm.com> wrote:
+> > > > 2. Is it safe to use rcu_read_lock() and task_lock() when scanning the
+> > > >    corresponding kernel stack (thread_info structure)? The loop doesn't
+> > > >    do any modification to the task list. The reason for this is to
+> > > >    allow kernel preemption when scanning the stacks.
+> > > 
+> > > you cannot generally preempt while holding the RCU read-lock.
+> > 
+> > This may work with rcupreempt enabled. But, with classic RCU is it safe
+> > to call schedule (or cond_resched) while holding the RCU read-lock?
 > 
-> Where exactly is the code that wakes the other openers?
+> No.
 
-tty_port_close_end wakes port->open_wait
+What Peter said!  ;-)
 
-if another opener was blocked during the hangup they then exit
-tty_blocked_until_ready and error
+However, you might be able to use SRCU (http://lwn.net/Articles/202847/),
+which does allow blocking within read-side critical sections.
 
-if another open occurs after the hangup completes (but while the other
-use has the port open bug hung up then they will execute
-
-	serial_open()
-		->type->open()
-
-> To rephrase the question above, how is the device driver made aware 
-> that it needs to reallocate resources and restart the uart?
-
-For the case where it needs to do that the hangup will have finished and
-it will get another call to serial_open()
-
-> There's an obvious race here between hangup and close.  The assignment 
-> of hung_up_tty_fops to filp->f_op is protected by the BKL and not much 
-> else.  Does the code in tty_release_dev() check to see whether this 
-> assignment has been made before calling tty->ops->close()?  It doesn't 
-> like like it to me.  With the wrong timing, you could end up telling 
-> the device driver to stop the uart twice.
-
-The core hangup and close code are interlocked (now - didn't use to be).
-
-> > The tty notion of "open" is really open->hangup or open->close. Once the
-> > hangup occurs you may have a file handle to a tty object but it doesn't
-> > talk to hardware.
-> 
-> But it still talks to the device driver via tty_release_dev's call to 
-> tty->ops->close.  How is the driver supposed to know that this method 
-> call shouldn't talk to the hardware?
-
-tty_hung_up_p() will be true
-
-> In fact, what point is there in making the call at all?  Once the 
-> hangup has occurred, the driver shouldn't do _anything_ when the 
-> corresponding release happens.  As you say, the notion is open->hangup 
-> or open->close, not open->(hangup followed by close).
-
-Beats me - not something I designed. However the driver would always need
-to be aware of it because the following can occur
-
-			CPU1			CPU2
-			close begins
-						hangup
-						update ops
-			close handler runs
-
-The tty_port code handles that internally, but has to handle it anyway.
-
-There are similar issues with all the other calls if they are pending and
-I've not even begun to tackle them yet as they are basically
-inconveniences only. Also because I'm still hoping someone will implement
-revoke() on Linux and do all the hard work for me.
-
-> What about the other historical model, a user sitting at a terminal and
-> telling his modem to dial-out?  One wouldn't think the modem's device
-> file would need to be reopened between calls.
-
-The termios flags control this behaviour.
-
-Alan
+							Thanx, Paul
