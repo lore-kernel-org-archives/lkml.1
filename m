@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbZGVKUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbZGVKUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755488AbZGVKUZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 06:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbZGVKUX
+	id S1755423AbZGVKUL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 06:20:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754031AbZGVKTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 06:20:23 -0400
-Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:40394 "EHLO
+	Wed, 22 Jul 2009 06:19:53 -0400
+Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:40236 "EHLO
 	smtp161.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755447AbZGVKUS (ORCPT
+	with ESMTP id S1754039AbZGVKKc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 06:20:18 -0400
+	Wed, 22 Jul 2009 06:10:32 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -19,13 +19,10 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        "H. Peter Anvin" <hpa@zytor.com>,
        Alexander Viro <viro@zeniv.linux.org.uk>,
        Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Matt Helsley <matthltc@us.ibm.com>, Oren Laadan <orenl@cs.columbia.edu>,
-       Cedric Le Goater <legoater@free.fr>, Paul Menage <menage@google.com>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: [RFC v17][PATCH 06/60] cgroup freezer: Update stale locking comments
-Date: Wed, 22 Jul 2009 05:59:28 -0400
-Message-Id: <1248256822-23416-7-git-send-email-orenl@librato.com>
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: [RFC v17][PATCH 56/60] c/r: clone_with_pids: define the s390 syscall
+Date: Wed, 22 Jul 2009 06:00:18 -0400
+Message-Id: <1248256822-23416-57-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1248256822-23416-1-git-send-email-orenl@librato.com>
 References: <1248256822-23416-1-git-send-email-orenl@librato.com>
@@ -33,83 +30,141 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matt Helsley <matthltc@us.ibm.com>
+From: Serge E. Hallyn <serue@us.ibm.com>
 
-Update stale comments regarding locking order and add a little more detail
-so it's easier to follow the locking between the cgroup freezer and the
-power management freezer code.
+Hook up the clone_with_pids system call for s390x.  clone_with_pids()
+takes an additional argument over clone(), which we pass in through
+register 7.  Stub code for using the syscall looks like:
 
-Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-Cc: Oren Laadan <orenl@cs.columbia.edu>
-Cc: Cedric Le Goater <legoater@free.fr>
-Cc: Paul Menage <menage@google.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
+struct target_pid_set {
+        int num_pids;
+        pid_t *target_pids;
+        unsigned long flags;
+};
+
+    register unsigned long int __r2 asm ("2") = (unsigned long int)(stack);
+    register unsigned long int __r3 asm ("3") = (unsigned long int)(flags);
+    register unsigned long int __r4 asm ("4") = (unsigned long int)(NULL);
+    register unsigned long int __r5 asm ("5") = (unsigned long int)(NULL);
+    register unsigned long int __r6 asm ("6") = (unsigned long int)(NULL);
+    register unsigned long int __r7 asm ("7") = (unsigned long int)(setp);
+    register unsigned long int __result asm ("2");
+    __asm__ __volatile__(
+            " lghi %%r1,332\n"
+            " svc 0\n"
+            : "=d" (__result)
+            : "0" (__r2), "d" (__r3),
+              "d" (__r4), "d" (__r5), "d" (__r6), "d" (__r7)
+            : "1", "cc", "memory"
+    );
+            __result;
+    })
+
+    struct target_pid_set pid_set;
+    int pids[1] = { 19799 };
+    pid_set.num_pids = 1;
+    pid_set.target_pids = &pids[0];
+    pid_set.flags = 0;
+
+    rc = do_clone_with_pids(topstack, clone_flags, setp);
+    if (rc == 0)
+	printf("Child\n");
+    else if (rc > 0)
+	printf("Parent: child pid %d\n", rc);
+    else
+	printf("Error %d\n", rc);
+
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
 ---
- kernel/cgroup_freezer.c |   21 +++++++++++++--------
- 1 files changed, 13 insertions(+), 8 deletions(-)
+ arch/s390/include/asm/unistd.h  |    3 ++-
+ arch/s390/kernel/compat_linux.c |   19 +++++++++++++++++++
+ arch/s390/kernel/process.c      |   19 +++++++++++++++++++
+ arch/s390/kernel/syscalls.S     |    1 +
+ 4 files changed, 41 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
-index 765e2c1..22fce5d 100644
---- a/kernel/cgroup_freezer.c
-+++ b/kernel/cgroup_freezer.c
-@@ -88,10 +88,10 @@ struct cgroup_subsys freezer_subsys;
+diff --git a/arch/s390/include/asm/unistd.h b/arch/s390/include/asm/unistd.h
+index 5d1678a..2a84f9c 100644
+--- a/arch/s390/include/asm/unistd.h
++++ b/arch/s390/include/asm/unistd.h
+@@ -271,7 +271,8 @@
+ #define __NR_perf_counter_open	331
+ #define __NR_checkpoint		332
+ #define __NR_restart		333
+-#define NR_syscalls 334
++#define __NR_clone_with_pids	334
++#define NR_syscalls 335
  
- /* Locks taken and their ordering
-  * ------------------------------
-- * css_set_lock
-  * cgroup_mutex (AKA cgroup_lock)
-- * task->alloc_lock (AKA task_lock)
-  * freezer->lock
-+ * css_set_lock
-+ * task->alloc_lock (AKA task_lock)
-  * task->sighand->siglock
-  *
-  * cgroup code forces css_set_lock to be taken before task->alloc_lock
-@@ -99,33 +99,38 @@ struct cgroup_subsys freezer_subsys;
-  * freezer_create(), freezer_destroy():
-  * cgroup_mutex [ by cgroup core ]
-  *
-- * can_attach():
-- * cgroup_mutex
-+ * freezer_can_attach():
-+ * cgroup_mutex (held by caller of can_attach)
-  *
-- * cgroup_frozen():
-+ * cgroup_freezing_or_frozen():
-  * task->alloc_lock (to get task's cgroup)
-  *
-  * freezer_fork() (preserving fork() performance means can't take cgroup_mutex):
-- * task->alloc_lock (to get task's cgroup)
-  * freezer->lock
-  *  sighand->siglock (if the cgroup is freezing)
-  *
-  * freezer_read():
-  * cgroup_mutex
-  *  freezer->lock
-+ *   write_lock css_set_lock (cgroup iterator start)
-+ *    task->alloc_lock
-  *   read_lock css_set_lock (cgroup iterator start)
-  *
-  * freezer_write() (freeze):
-  * cgroup_mutex
-  *  freezer->lock
-+ *   write_lock css_set_lock (cgroup iterator start)
-+ *    task->alloc_lock
-  *   read_lock css_set_lock (cgroup iterator start)
-- *    sighand->siglock
-+ *    sighand->siglock (fake signal delivery inside freeze_task())
-  *
-  * freezer_write() (unfreeze):
-  * cgroup_mutex
-  *  freezer->lock
-+ *   write_lock css_set_lock (cgroup iterator start)
-+ *    task->alloc_lock
-  *   read_lock css_set_lock (cgroup iterator start)
-- *    task->alloc_lock (to prevent races with freeze_task())
-+ *    task->alloc_lock (inside thaw_process(), prevents race with refrigerator())
-  *     sighand->siglock
-  */
- static struct cgroup_subsys_state *freezer_create(struct cgroup_subsys *ss,
+ /* 
+  * There are some system calls that are not present on 64 bit, some
+diff --git a/arch/s390/kernel/compat_linux.c b/arch/s390/kernel/compat_linux.c
+index 9ab188d..c6dc681 100644
+--- a/arch/s390/kernel/compat_linux.c
++++ b/arch/s390/kernel/compat_linux.c
+@@ -818,6 +818,25 @@ asmlinkage long sys32_clone(void)
+ 		       parent_tidptr, child_tidptr);
+ }
+ 
++asmlinkage long sys32_clone_with_pids(void)
++{
++	struct pt_regs *regs = task_pt_regs(current);
++	unsigned long clone_flags;
++	unsigned long newsp;
++	int __user *parent_tidptr, *child_tidptr;
++	void __user *upid_setp;
++
++	clone_flags = regs->gprs[3] & 0xffffffffUL;
++	newsp = regs->orig_gpr2 & 0x7fffffffUL;
++	parent_tidptr = compat_ptr(regs->gprs[4]);
++	child_tidptr = compat_ptr(regs->gprs[5]);
++	upid_setp = compat_ptr(regs->gprs[7]);
++	if (!newsp)
++		newsp = regs->gprs[15];
++	return do_fork_with_pids(clone_flags, newsp, regs, 0,
++		       parent_tidptr, child_tidptr, upid_setp);
++}
++
+ /*
+  * 31 bit emulation wrapper functions for sys_fadvise64/fadvise64_64.
+  * These need to rewrite the advise values for POSIX_FADV_{DONTNEED,NOREUSE}
+diff --git a/arch/s390/kernel/process.c b/arch/s390/kernel/process.c
+index 5a43f27..263d3ab 100644
+--- a/arch/s390/kernel/process.c
++++ b/arch/s390/kernel/process.c
+@@ -247,6 +247,25 @@ SYSCALL_DEFINE0(clone)
+ 		       parent_tidptr, child_tidptr);
+ }
+ 
++SYSCALL_DEFINE0(clone_with_pids)
++{
++	struct pt_regs *regs = task_pt_regs(current);
++	unsigned long clone_flags;
++	unsigned long newsp;
++	int __user *parent_tidptr, *child_tidptr;
++	void __user *upid_setp;
++
++	clone_flags = regs->gprs[3];
++	newsp = regs->orig_gpr2;
++	parent_tidptr = (int __user *) regs->gprs[4];
++	child_tidptr = (int __user *) regs->gprs[5];
++	upid_setp = (void __user *) regs->gprs[7];
++	if (!newsp)
++		newsp = regs->gprs[15];
++	return do_fork_with_pids(clone_flags, newsp, regs, 0, parent_tidptr,
++			child_tidptr, upid_setp);
++}
++
+ /*
+  * This is trivial, and on the face of it looks like it
+  * could equally well be done in user mode.
+diff --git a/arch/s390/kernel/syscalls.S b/arch/s390/kernel/syscalls.S
+index 67518e2..db850e7 100644
+--- a/arch/s390/kernel/syscalls.S
++++ b/arch/s390/kernel/syscalls.S
+@@ -342,3 +342,4 @@ SYSCALL(sys_rt_tgsigqueueinfo,sys_rt_tgsigqueueinfo,compat_sys_rt_tgsigqueueinfo
+ SYSCALL(sys_perf_counter_open,sys_perf_counter_open,sys_perf_counter_open_wrapper)
+ SYSCALL(sys_checkpoint,sys_checkpoint,sys_checkpoint_wrapper)
+ SYSCALL(sys_restart,sys_restart,sys_restore_wrapper)
++SYSCALL(sys_clone_with_pids,sys_clone_with_pids,sys_clone_with_pids_wrapper)
 -- 
 1.6.0.4
 
