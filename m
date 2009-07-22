@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbZGVKK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbZGVKK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754739AbZGVKK6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 06:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbZGVKK5
+	id S1754690AbZGVKK4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 06:10:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbZGVKKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 06:10:57 -0400
+	Wed, 22 Jul 2009 06:10:55 -0400
 Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:40236 "EHLO
 	smtp161.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754282AbZGVKKw (ORCPT
+	with ESMTP id S1754460AbZGVKKt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 06:10:52 -0400
+	Wed, 22 Jul 2009 06:10:49 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -20,10 +20,10 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        Alexander Viro <viro@zeniv.linux.org.uk>,
        Pavel Emelyanov <xemul@openvz.org>,
        Alexey Dobriyan <adobriyan@gmail.com>, Oren Laadan <orenl@librato.com>,
-       Dan Smith <danms@us.ibm.com>
-Subject: [RFC v17][PATCH 53/60] c/r: (s390): expose a constant for the number of words (CRs)
-Date: Wed, 22 Jul 2009 06:00:15 -0400
-Message-Id: <1248256822-23416-54-git-send-email-orenl@librato.com>
+       Oren Laadan <orenl@cs.columbia.edu>
+Subject: [RFC v17][PATCH 40/60] c/r: export shmem_getpage() to support shared memory
+Date: Wed, 22 Jul 2009 06:00:02 -0400
+Message-Id: <1248256822-23416-41-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1248256822-23416-1-git-send-email-orenl@librato.com>
 References: <1248256822-23416-1-git-send-email-orenl@librato.com>
@@ -31,35 +31,81 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We need to use this value in the checkpoint/restart code and would like to
-have a constant instead of a magic '3'.
+Export functionality to retrieve specific pages from shared memory
+given an inode in shmem-fs; this will be used in the next two patches
+to provide support for c/r of shared memory.
 
-Changelog:
-    Mar 30:
-            . Add CHECKPOINT_SUPPORT in Kconfig (Nathan Lynch)
-    Mar 03:
-            . Picked up additional use of magic '3' in ptrace.h
+mm/shmem.c:
+- shmem_getpage() and 'enum sgp_type' moved to linux/mm.h
 
-Signed-off-by: Dan Smith <danms@us.ibm.com>
+Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- arch/s390/Kconfig |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ include/linux/mm.h |   11 +++++++++++
+ mm/shmem.c         |   15 ++-------------
+ 2 files changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index 2ae5d72..6f143ab 100644
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -49,6 +49,10 @@ config GENERIC_TIME_VSYSCALL
- config GENERIC_CLOCKEVENTS
- 	def_bool y
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 98e1fdf..6c2c3dd 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -329,6 +329,17 @@ void put_pages_list(struct list_head *pages);
  
-+config CHECKPOINT_SUPPORT
-+	bool
-+	default y if 64BIT
+ void split_page(struct page *page, unsigned int order);
+ 
++/* Flag allocation requirements to shmem_getpage and shmem_swp_alloc */
++enum sgp_type {
++	SGP_READ,	/* don't exceed i_size, don't allocate page */
++	SGP_CACHE,	/* don't exceed i_size, may allocate page */
++	SGP_DIRTY,	/* like SGP_CACHE, but set new page dirty */
++	SGP_WRITE,	/* may exceed i_size, may allocate page */
++};
 +
- config GENERIC_BUG
- 	bool
- 	depends on BUG
++extern int shmem_getpage(struct inode *inode, unsigned long idx,
++			 struct page **pagep, enum sgp_type sgp, int *type);
++
+ /*
+  * Compound pages have a destructor function.  Provide a
+  * prototype for that function and accessor functions.
+diff --git a/mm/shmem.c b/mm/shmem.c
+index d713239..d80532b 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -99,14 +99,6 @@ static struct vfsmount *shm_mnt;
+ /* Pretend that each entry is of this size in directory's i_size */
+ #define BOGO_DIRENT_SIZE 20
+ 
+-/* Flag allocation requirements to shmem_getpage and shmem_swp_alloc */
+-enum sgp_type {
+-	SGP_READ,	/* don't exceed i_size, don't allocate page */
+-	SGP_CACHE,	/* don't exceed i_size, may allocate page */
+-	SGP_DIRTY,	/* like SGP_CACHE, but set new page dirty */
+-	SGP_WRITE,	/* may exceed i_size, may allocate page */
+-};
+-
+ #ifdef CONFIG_TMPFS
+ static unsigned long shmem_default_max_blocks(void)
+ {
+@@ -119,9 +111,6 @@ static unsigned long shmem_default_max_inodes(void)
+ }
+ #endif
+ 
+-static int shmem_getpage(struct inode *inode, unsigned long idx,
+-			 struct page **pagep, enum sgp_type sgp, int *type);
+-
+ static inline struct page *shmem_dir_alloc(gfp_t gfp_mask)
+ {
+ 	/*
+@@ -1202,8 +1191,8 @@ static inline struct mempolicy *shmem_get_sbmpol(struct shmem_sb_info *sbinfo)
+  * vm. If we swap it in we mark it dirty since we also free the swap
+  * entry since a page cannot live in both the swap and page cache
+  */
+-static int shmem_getpage(struct inode *inode, unsigned long idx,
+-			struct page **pagep, enum sgp_type sgp, int *type)
++int shmem_getpage(struct inode *inode, unsigned long idx,
++		  struct page **pagep, enum sgp_type sgp, int *type)
+ {
+ 	struct address_space *mapping = inode->i_mapping;
+ 	struct shmem_inode_info *info = SHMEM_I(inode);
 -- 
 1.6.0.4
 
