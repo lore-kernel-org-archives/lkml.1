@@ -1,98 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbZGVNfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753714AbZGVNjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbZGVNfS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 09:35:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbZGVNfR
+	id S1753714AbZGVNjA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 09:39:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbZGVNi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 09:35:17 -0400
-Received: from mga01.intel.com ([192.55.52.88]:24890 "EHLO mga01.intel.com"
+	Wed, 22 Jul 2009 09:38:59 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35895 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752833AbZGVNfQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 09:35:16 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,247,1246863600"; 
-   d="scan'208";a="477032194"
-From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-To: Nicolas Ferre <nicolas.ferre@atmel.com>
-CC: "Williams, Dan J" <dan.j.williams@intel.com>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "avictor.za@gmail.com" <avictor.za@gmail.com>,
-       "patrice.vilchez@atmel.com" <patrice.vilchez@atmel.com>
-Date: Wed, 22 Jul 2009 14:35:06 +0100
-Subject: RE: [PATCH 1/2 v3] dmaengine: at_hdmac: new driver for the Atmel
- AHB 	DMA Controller
-Thread-Topic: [PATCH 1/2 v3] dmaengine: at_hdmac: new driver for the Atmel
- AHB 	DMA Controller
-Thread-Index: AcoJ3iePonWDKRNUQU6muKrjWbMDmgA7X5oQ
-Message-ID: <129600E5E5FB004392DDC3FB599660D7AF6D5C9A@irsmsx504.ger.corp.intel.com>
-References: <1246012936-10812-1-git-send-email-nicolas.ferre@atmel.com>
-	 <1246641873-21686-1-git-send-email-nicolas.ferre@atmel.com>
- <e9c3a7c20907180901u3670a8edy2bc5c1b5cf911ab4@mail.gmail.com>
- <4A657D58.2060708@atmel.com>
-In-Reply-To: <4A657D58.2060708@atmel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1751209AbZGVNi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 09:38:59 -0400
+Subject: Re: [PATCH] fix offset checks in do_sendfile to use unsigned values
+From: Jeff Layton <jlayton@redhat.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       smfrench@gmail.com, hch@infradead.org
+In-Reply-To: <20090722125945.GA2834@cmpxchg.org>
+References: <1248262099-12514-1-git-send-email-jlayton@redhat.com>
+	 <1248262099-12514-2-git-send-email-jlayton@redhat.com>
+	 <20090722125945.GA2834@cmpxchg.org>
+Content-Type: text/plain
+Date: Wed, 22 Jul 2009 09:37:59 -0400
+Message-Id: <1248269879.4534.12.camel@tlielax.poochiereds.net>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicolas Ferre wrote:
-> Dan Williams :
->> On Fri, Jul 3, 2009 at 10:24 AM, Nicolas Ferre<nicolas.ferre@atmel.com> wrote:
->>> This AHB DMA Controller (aka HDMA or DMAC on AT91 systems) is availlable on
->>> at91sam9rl chip. It will be used on other products in the future.
->>> 
->>> This first release covers only the memory-to-memory tranfer type. This is the
->>> only tranfer type supported by this chip.  On other products, it will be used
->>> also for peripheral DMA transfer (slave API support to come).
->>> 
->>> I used dmatest client without problem in different configurations to test it.
->>> 
->>> Full documentation for this controller can be found in the SAM9RL datasheet:
->>> http://www.atmel.com/dyn/products/product_card.asp?part_id=4243
->>> 
->>> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com> ---
->>> v2 is here:
->>> http://lkml.org/lkml/2009/6/26/104
->>> 
->>> v2 -> v3:
->>>  - initial number of descriptors to allocate for each channel raised to 64 and   is now a
->>> parameter 
->>>  - ack-bit in descriptor flag comment synchronized with TXx9 dma driver
->>>  - atc_desc_get() when short on descriptors in pool: create one at a time
->>>  - allocation flag changed to GFP_ATOMIC in atc_desc_get()
->>>  - call to proper funtion while unmapping: use of new
->>>   DMA_COMPL_{SRC,DEST}_UNMAP_SINGLE flags
->>>  - call dma_run_dependencies() at the end of atc_chain_complete()
->>> 
->> 
->> Looks good, but now I belatedly wonder if that GFP_ATOMIC should be
->> GFP_NOWAIT instead?  Do we really want to consume from the system
->> emergency pools for these allocations (a similar fix is need for
->> ioatdma and fsldma)?
+On Wed, 2009-07-22 at 14:59 +0200, Johannes Weiner wrote:
+> On Wed, Jul 22, 2009 at 07:28:19AM -0400, Jeff Layton wrote:
+> > If do_sendfile is called with a "max" value of 0, it grabs the lesser
+> > s_maxbytes value of the two superblocks to use instead. There's a
+> > problem here however. s_maxbytes is an unsigned long long and it gets
+> > cast to a signed value. If both s_maxbytes values are large enough, max
+> > will end up being negative and the comparisons in this code won't work
+> > correctly.
+> > 
+> > Change do_sendfile to use unsigned values internally for the offset
+> > checks.
+> > 
+> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> > ---
+> >  fs/read_write.c |    6 +++---
+> >  1 files changed, 3 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/fs/read_write.c b/fs/read_write.c
+> > index 6c8c55d..36899ff 100644
+> > --- a/fs/read_write.c
+> > +++ b/fs/read_write.c
+> > @@ -788,11 +788,11 @@ SYSCALL_DEFINE5(pwritev, unsigned long, fd, const struct iovec __user *, vec,
+> >  }
+> >  
+> >  static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
+> > -			   size_t count, loff_t max)
+> > +			   size_t count, unsigned long long max)
+> >  {
+> >  	struct file * in_file, * out_file;
+> >  	struct inode * in_inode, * out_inode;
+> > -	loff_t pos;
+> > +	unsigned long long pos;
+> >  	ssize_t retval;
+> >  	int fput_needed_in, fput_needed_out, fl;
+> >  
+> > @@ -838,7 +838,7 @@ static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
+> >  	if (!max)
+> >  		max = min(in_inode->i_sb->s_maxbytes, out_inode->i_sb->s_maxbytes);
+> >  
+> > -	pos = *ppos;
+> > +	pos = (unsigned long long) *ppos;
+> >  	retval = -EINVAL;
+> >  	if (unlikely(pos < 0))
+> >  		goto fput_out;
 > 
-> Seems sensible indeed but I know little about allocation flags.
+> May it be possible that cifs is the only fs that sets sb->sb_maxbytes
+> to exceed loff_t?  It seems the others clamp it to MAX_LFS_FILESIZE
+> while CIFS exceeds this by one.  And then max is -1.
 > 
-> What do you think about including the driver and then building a patch
-> that fixes this flag in all allocation functions at a time.
-> It may add exposure to this modification and maybe encourage people to
-> react...
+> So, isn't the correct fix something similar to this?
+> 
+> diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
+> index e16d759..df56093 100644
+> --- a/fs/cifs/connect.c
+> +++ b/fs/cifs/connect.c
+> @@ -2452,10 +2452,10 @@ try_mount_again:
+>  		tcon->local_lease = volume_info->local_lease;
+>  	}
+>  	if (pSesInfo) {
+> -		if (pSesInfo->capabilities & CAP_LARGE_FILES) {
+> -			sb->s_maxbytes = (u64) 1 << 63;
+> -		} else
+> -			sb->s_maxbytes = (u64) 1 << 31;	/* 2 GB */
+> +		if (pSesInfo->capabilities & CAP_LARGE_FILES)
+> +			sb->s_maxbytes = MAX_LFS_FILESIZE;
+> +		else
+> +			sb->s_maxbytes = MAX_NON_LFS;
+>  	}
+>  
+>  	/* BB FIXME fix time_gran to be larger for LANMAN sessions */
 
-I think it's a good plan.
-I will prepare similar patch on allocation flags for ioatdma.
+Yes and I posted that exact same cifs patch yesterday. I think we also
+need to do a similar fix for get_sb_pseudo. It currently sets s_maxbytes
+to ~0ULL...
 
-For this v3 patch:
+Any of these patches will fix the immediate problem, but I think this
+code in do_sendfile should still account for the possibility that
+someone can set the value larger than MAX_LFS_FILESIZE. An alternative
+is to consider a WARN at mount time when filesystems set s_maxbytes
+larger than that value (that might help catch out of tree filesystems
+that get this wrong and prevent this sort of silent bug in the future).
 
-Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
+Either way, the patch I posted for this isn't sufficient since there are
+some checks that need to be done against the signed values (the
+(pos < 0) check, for instance). I'll post a respun patch in a bit that
+should fix up those problems.
 
-Regards,
-Maciej
+Thanks,
+-- 
+Jeff Layton <jlayton@redhat.com>
+
