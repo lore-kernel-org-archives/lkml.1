@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbZGVKSG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbZGVKRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754340AbZGVKSG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 06:18:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbZGVKSD
+	id S1755327AbZGVKRa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 06:17:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbZGVKR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 06:18:03 -0400
-Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:40236 "EHLO
+	Wed, 22 Jul 2009 06:17:29 -0400
+Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:57001 "EHLO
 	smtp161.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754211AbZGVKKl (ORCPT
+	with ESMTP id S1754002AbZGVKKp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 06:10:41 -0400
+	Wed, 22 Jul 2009 06:10:45 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -20,10 +20,10 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        Alexander Viro <viro@zeniv.linux.org.uk>,
        Pavel Emelyanov <xemul@openvz.org>,
        Alexey Dobriyan <adobriyan@gmail.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: [RFC v17][PATCH 17/60] pids 7/7: Define clone_with_pids syscall
-Date: Wed, 22 Jul 2009 05:59:39 -0400
-Message-Id: <1248256822-23416-18-git-send-email-orenl@librato.com>
+       Matt Helsley <matthltc@us.ibm.com>
+Subject: [RFC v17][PATCH 29/60] c/r: Save and restore the [compat_]robust_list member of the task struct
+Date: Wed, 22 Jul 2009 05:59:51 -0400
+Message-Id: <1248256822-23416-30-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1248256822-23416-1-git-send-email-orenl@librato.com>
 References: <1248256822-23416-1-git-send-email-orenl@librato.com>
@@ -31,306 +31,224 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+From: Matt Helsley <matthltc@us.ibm.com>
 
-Container restart requires that a task have the same pid it had when it was
-checkpointed. When containers are nested the tasks within the containers
-exist in multiple pid namespaces and hence have multiple pids to specify
-during restart.
+These lists record which futexes the task holds. To keep the overhead of
+robust futexes low the list is kept in userspace. When the task exits the
+kernel carefully walks these lists to recover held futexes that
+other tasks may be attempting to acquire with FUTEX_WAIT.
 
-clone_with_pids(), intended for use during restart, is the same as clone(),
-except that it takes a 'target_pid_set' paramter. This parameter lets caller
-choose specific pid numbers for the child process, in the process's active
-and ancestor pid namespaces. (Descendant pid namespaces in general don't
-matter since processes don't have pids in them anyway, but see comments
-in copy_target_pids() regarding CLONE_NEWPID).
+Because they point to userspace memory that is saved/restored by
+checkpoint/restart saving the list pointers themselves is safe.
 
-Unlike clone(), clone_with_pids() needs CAP_SYS_ADMIN, at least for now, to
-prevent unprivileged processes from misusing this interface.
+While saving the pointers is safe during checkpoint, restart is tricky
+because the robust futex ABI contains provisions for changes based on
+checking the size of the list head. So we need to save the length of
+the list head too in order to make sure that the kernel used during
+restart is capable of handling that ABI. Since there is only one ABI
+supported at the moment taking the list head's size is simple. Should
+the ABI change we will need to use the same size as specified during
+sys_set_robust_list() and hence some new means of determining the length
+of this userspace structure in sys_checkpoint would be required.
 
-Call clone_with_pids as follows:
+Rather than rewrite the logic that checks and handles the ABI we reuse
+sys_set_robust_list() by factoring out the body of the function and
+calling it during restart.
 
-	pid_t pids[] = { 0, 77, 99 };
-	struct target_pid_set pid_set;
-
-	pid_set.num_pids = sizeof(pids) / sizeof(int);
-	pid_set.target_pids = &pids;
-
-	syscall(__NR_clone_with_pids, flags, stack, NULL, NULL, NULL, &pid_set);
-
-If a target-pid is 0, the kernel continues to assign a pid for the process in
-that namespace. In the above example, pids[0] is 0, meaning the kernel will
-assign next available pid to the process in init_pid_ns. But kernel will assign
-pid 77 in the child pid namespace 1 and pid 99 in pid namespace 2. If either
-77 or 99 are taken, the system call fails with -EBUSY.
-
-If 'pid_set.num_pids' exceeds the current nesting level of pid namespaces,
-the system call fails with -EINVAL.
-
-Its mostly an exploratory patch seeking feedback on the interface.
-
-NOTE:
-	Compared to clone(), clone_with_pids() needs to pass in two more
-	pieces of information:
-
-		- number of pids in the set
-		- user buffer containing the list of pids.
-
-	But since clone() already takes 5 parameters, use a 'struct
-	target_pid_set'.
-
-TODO:
-	- Gently tested.
-	- May need additional sanity checks in do_fork_with_pids().
-
-Changelog[v3]:
-	- (Oren Laadan) Allow CLONE_NEWPID flag (by allocating an extra pid
-	  in the target_pids[] list and setting it 0. See copy_target_pids()).
-	- (Oren Laadan) Specified target pids should apply only to youngest
-	  pid-namespaces (see copy_target_pids())
-	- (Matt Helsley) Update patch description.
-
-Changelog[v2]:
-	- Remove unnecessary printk and add a note to callers of
-	  copy_target_pids() to free target_pids.
-	- (Serge Hallyn) Mention CAP_SYS_ADMIN restriction in patch description.
-	- (Oren Laadan) Add checks for 'num_pids < 0' (return -EINVAL) and
-	  'num_pids == 0' (fall back to normal clone()).
-	- Move arch-independent code (sanity checks and copy-in of target-pids)
-	  into kernel/fork.c and simplify sys_clone_with_pids()
-
-Changelog[v1]:
-	- Fixed some compile errors (had fixed these errors earlier in my
-	  git tree but had not refreshed patches before emailing them)
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
+[orenl@cs.columbia.edu: move save/restore code to checkpoint/process.c]
 ---
- arch/x86/include/asm/syscalls.h    |    2 +
- arch/x86/include/asm/unistd_32.h   |    1 +
- arch/x86/kernel/entry_32.S         |    1 +
- arch/x86/kernel/process_32.c       |   21 +++++++
- arch/x86/kernel/syscall_table_32.S |    1 +
- kernel/fork.c                      |  108 +++++++++++++++++++++++++++++++++++-
- 6 files changed, 133 insertions(+), 1 deletions(-)
+ checkpoint/process.c           |   48 ++++++++++++++++++++++++++++++++++++++++
+ include/linux/checkpoint_hdr.h |    5 ++++
+ include/linux/compat.h         |    3 +-
+ include/linux/futex.h          |    1 +
+ kernel/futex.c                 |   19 ++++++++++-----
+ kernel/futex_compat.c          |   13 ++++++++--
+ 6 files changed, 78 insertions(+), 11 deletions(-)
 
-diff --git a/arch/x86/include/asm/syscalls.h b/arch/x86/include/asm/syscalls.h
-index 372b76e..df3c4a8 100644
---- a/arch/x86/include/asm/syscalls.h
-+++ b/arch/x86/include/asm/syscalls.h
-@@ -40,6 +40,8 @@ long sys_iopl(struct pt_regs *);
+diff --git a/checkpoint/process.c b/checkpoint/process.c
+index a67c389..9e459c6 100644
+--- a/checkpoint/process.c
++++ b/checkpoint/process.c
+@@ -18,6 +18,52 @@
+ #include <linux/checkpoint.h>
+ #include <linux/checkpoint_hdr.h>
  
- /* kernel/process_32.c */
- int sys_clone(struct pt_regs *);
-+int sys_clone_with_pids(struct pt_regs *);
-+int sys_vfork(struct pt_regs *);
- int sys_execve(struct pt_regs *);
- 
- /* kernel/signal.c */
-diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32.h
-index 732a307..f65b750 100644
---- a/arch/x86/include/asm/unistd_32.h
-+++ b/arch/x86/include/asm/unistd_32.h
-@@ -342,6 +342,7 @@
- #define __NR_pwritev		334
- #define __NR_rt_tgsigqueueinfo	335
- #define __NR_perf_counter_open	336
-+#define __NR_clone_with_pids	337
- 
- #ifdef __KERNEL__
- 
-diff --git a/arch/x86/kernel/entry_32.S b/arch/x86/kernel/entry_32.S
-index c097e7d..c7bd1f6 100644
---- a/arch/x86/kernel/entry_32.S
-+++ b/arch/x86/kernel/entry_32.S
-@@ -718,6 +718,7 @@ ptregs_##name: \
- PTREGSCALL(iopl)
- PTREGSCALL(fork)
- PTREGSCALL(clone)
-+PTREGSCALL(clone_with_pids)
- PTREGSCALL(vfork)
- PTREGSCALL(execve)
- PTREGSCALL(sigaltstack)
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 59f4524..9965c06 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -443,6 +443,27 @@ int sys_clone(struct pt_regs *regs)
- 	return do_fork(clone_flags, newsp, regs, 0, parent_tidptr, child_tidptr);
- }
- 
-+int sys_clone_with_pids(struct pt_regs *regs)
++
++#ifdef CONFIG_FUTEX
++static void save_task_robust_futex_list(struct ckpt_hdr_task *h,
++					struct task_struct *t)
 +{
-+	unsigned long clone_flags;
-+	unsigned long newsp;
-+	int __user *parent_tidptr;
-+	int __user *child_tidptr;
-+	void __user *upid_setp;
-+
-+	clone_flags = regs->bx;
-+	newsp = regs->cx;
-+	parent_tidptr = (int __user *)regs->dx;
-+	child_tidptr = (int __user *)regs->di;
-+	upid_setp = (void __user *)regs->bp;
-+
-+	if (!newsp)
-+		newsp = regs->sp;
-+
-+	return do_fork_with_pids(clone_flags, newsp, regs, 0, parent_tidptr,
-+			child_tidptr, upid_setp);
++	/*
++	 * These are __user pointers and thus can be saved without
++	 * the objhash.
++	 */
++	h->robust_futex_list = (unsigned long)t->robust_list;
++	h->robust_futex_head_len = sizeof(*t->robust_list);
++#ifdef CONFIG_COMPAT
++	h->compat_robust_futex_list = ptr_to_compat(t->compat_robust_list);
++	h->compat_robust_futex_head_len = sizeof(*t->compat_robust_list);
++#endif
 +}
 +
- /*
-  * sys_execve() executes a new program.
++static void restore_task_robust_futex_list(struct ckpt_hdr_task *h)
++{
++	/* Since we restore the memory map the address remains the same and
++	 * this is safe. This is the same as [compat_]sys_set_robust_list() */
++	if (h->robust_futex_list) {
++		struct robust_list_head __user *rfl;
++		rfl = (void __user *)(unsigned long) h->robust_futex_list;
++		do_set_robust_list(rfl, h->robust_futex_head_len);
++	}
++#ifdef CONFIG_COMPAT
++	if (h->compat_robust_futex_list) {
++		struct compat_robust_list_head __user *crfl;
++		crfl = compat_ptr(h->compat_robust_futex_list);
++		do_compat_set_robust_list(crfl, h->compat_robust_futex_head_len);
++	}
++#endif
++}
++#else /* !CONFIG_FUTEX */
++static inline void save_task_robust_futex_list(struct ckpt_hdr_task *h,
++					       struct task_struct *t)
++{
++}
++
++static inline void restore_task_robust_futex_list(struct ckpt_hdr_task *h)
++{
++}
++#endif /* CONFIG_FUTEX */
++
++
+ /***********************************************************************
+  * Checkpoint
   */
-diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
-index d51321d..879e5ec 100644
---- a/arch/x86/kernel/syscall_table_32.S
-+++ b/arch/x86/kernel/syscall_table_32.S
-@@ -336,3 +336,4 @@ ENTRY(sys_call_table)
- 	.long sys_pwritev
- 	.long sys_rt_tgsigqueueinfo	/* 335 */
- 	.long sys_perf_counter_open
-+	.long ptregs_clone_with_pids
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 64d53d9..29c66f0 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1336,6 +1336,97 @@ struct task_struct * __cpuinit fork_idle(int cpu)
+@@ -46,6 +92,7 @@ static int checkpoint_task_struct(struct ckpt_ctx *ctx, struct task_struct *t)
+ 
+ 		h->set_child_tid = t->set_child_tid;
+ 		h->clear_child_tid = t->clear_child_tid;
++		save_task_robust_futex_list(h, t);
+ 	}
+ 
+ 	ret = ckpt_write_obj(ctx, &h->h);
+@@ -244,6 +291,7 @@ static int restore_task_struct(struct ckpt_ctx *ctx)
+ 
+ 		t->set_child_tid = h->set_child_tid;
+ 		t->clear_child_tid = h->clear_child_tid;
++		restore_task_robust_futex_list(h);
+ 	}
+ 
+ 	memset(t->comm, 0, TASK_COMM_LEN);
+diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
+index 3f2db22..ad5851d 100644
+--- a/include/linux/checkpoint_hdr.h
++++ b/include/linux/checkpoint_hdr.h
+@@ -134,6 +134,11 @@ struct ckpt_hdr_task {
+ 
+ 	__u64 set_child_tid;
+ 	__u64 clear_child_tid;
++
++	__u32 compat_robust_futex_head_len;
++	__u32 compat_robust_futex_list; /* a compat __user ptr */
++	__u32 robust_futex_head_len;
++	__u64 robust_futex_list; /* a __user ptr */
+ } __attribute__((aligned(8)));
+ 
+ /* restart blocks */
+diff --git a/include/linux/compat.h b/include/linux/compat.h
+index af931ee..f444cf0 100644
+--- a/include/linux/compat.h
++++ b/include/linux/compat.h
+@@ -165,7 +165,8 @@ struct compat_robust_list_head {
+ };
+ 
+ extern void compat_exit_robust_list(struct task_struct *curr);
+-
++extern long do_compat_set_robust_list(struct compat_robust_list_head __user *head,
++				      compat_size_t len);
+ asmlinkage long
+ compat_sys_set_robust_list(struct compat_robust_list_head __user *head,
+ 			   compat_size_t len);
+diff --git a/include/linux/futex.h b/include/linux/futex.h
+index 4326f81..2e126a9 100644
+--- a/include/linux/futex.h
++++ b/include/linux/futex.h
+@@ -185,6 +185,7 @@ union futex_key {
+ #define FUTEX_KEY_INIT (union futex_key) { .both = { .ptr = NULL } }
+ 
+ #ifdef CONFIG_FUTEX
++extern long do_set_robust_list(struct robust_list_head __user *head, size_t len);
+ extern void exit_robust_list(struct task_struct *curr);
+ extern void exit_pi_state_list(struct task_struct *curr);
+ extern int futex_cmpxchg_enabled;
+diff --git a/kernel/futex.c b/kernel/futex.c
+index dfe246f..57a46c9 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -2261,13 +2261,7 @@ out:
+  * the list. There can only be one such pending lock.
+  */
+ 
+-/**
+- * sys_set_robust_list - set the robust-futex list head of a task
+- * @head: pointer to the list-head
+- * @len: length of the list-head, as userspace expects
+- */
+-SYSCALL_DEFINE2(set_robust_list, struct robust_list_head __user *, head,
+-		size_t, len)
++long do_set_robust_list(struct robust_list_head __user *head, size_t len)
+ {
+ 	if (!futex_cmpxchg_enabled)
+ 		return -ENOSYS;
+@@ -2283,6 +2277,17 @@ SYSCALL_DEFINE2(set_robust_list, struct robust_list_head __user *, head,
  }
  
- /*
-+ * If user specified any 'target-pids' in @upid_setp, copy them from
-+ * user and return a pointer to a local copy of the list of pids. The
-+ * caller must free the list, when they are done using it.
-+ *
-+ * If user did not specify any target pids, return NULL (caller should
-+ * treat this like normal clone).
-+ *
-+ * On any errors, return the error code
+ /**
++ * sys_set_robust_list - set the robust-futex list head of a task
++ * @head: pointer to the list-head
++ * @len: length of the list-head, as userspace expects
 + */
-+static pid_t *copy_target_pids(void __user *upid_setp)
++SYSCALL_DEFINE2(set_robust_list, struct robust_list_head __user *, head,
++		size_t, len)
 +{
-+	int j;
-+	int rc;
-+	int size;
-+	int unum_pids;		/* # of pids specified by user */
-+	int knum_pids;		/* # of pids needed in kernel */
-+	pid_t *target_pids;
-+	struct target_pid_set pid_set;
-+
-+	if (!upid_setp)
-+		return NULL;
-+
-+	rc = copy_from_user(&pid_set, upid_setp, sizeof(pid_set));
-+	if (rc)
-+		return ERR_PTR(-EFAULT);
-+
-+	unum_pids = pid_set.num_pids;
-+	knum_pids = task_pid(current)->level + 1;
-+
-+	if (!unum_pids)
-+		return NULL;
-+
-+	if (unum_pids < 0 || unum_pids > knum_pids)
-+		return ERR_PTR(-EINVAL);
-+
-+	/*
-+	 * To keep alloc_pid() simple, allocate an extra pid_t in target_pids[]
-+	 * and set it to 0. This last entry in target_pids[] corresponds to the
-+	 * (yet-to-be-created) descendant pid-namespace if CLONE_NEWPID was
-+	 * specified. If CLONE_NEWPID was not specified, this last entry will
-+	 * simply be ignored.
-+	 */
-+	target_pids = kzalloc((knum_pids + 1) * sizeof(pid_t), GFP_KERNEL);
-+	if (!target_pids)
-+		return ERR_PTR(-ENOMEM);
-+
-+	/*
-+	 * A process running in a level 2 pid namespace has three pid namespaces
-+	 * and hence three pid numbers. If this process is checkpointed,
-+	 * information about these three namespaces are saved. We refer to these
-+	 * namespaces as 'known namespaces'.
-+	 *
-+	 * If this checkpointed process is however restarted in a level 3 pid
-+	 * namespace, the restarted process has an extra ancestor pid namespace
-+	 * (i.e 'unknown namespace') and 'knum_pids' exceeds 'unum_pids'.
-+	 *
-+	 * During restart, the process requests specific pids for its 'known
-+	 * namespaces' and lets kernel assign pids to its 'unknown namespaces'.
-+	 *
-+	 * Since the requested-pids correspond to 'known namespaces' and since
-+	 * 'known-namespaces' are younger than (i.e descendants of) 'unknown-
-+	 * namespaces', copy requested pids to the back-end of target_pids[]
-+	 * (i.e before the last entry for CLONE_NEWPID mentioned above).
-+	 * Any entries in target_pids[] not corresponding to a requested pid
-+	 * will be set to zero and kernel assigns a pid in those namespaces.
-+	 *
-+	 * NOTE: The order of pids in target_pids[] is oldest pid namespace to
-+	 * 	 youngest (target_pids[0] corresponds to init_pid_ns). i.e.
-+	 * 	 the order is:
-+	 *
-+	 * 		- pids for 'unknown-namespaces' (if any)
-+	 * 		- pids for 'known-namespaces' (requested pids)
-+	 * 		- 0 in the last entry (for CLONE_NEWPID).
-+	 */
-+	j = knum_pids - unum_pids;
-+	size = unum_pids * sizeof(pid_t);
-+
-+	rc = copy_from_user(&target_pids[j], pid_set.target_pids, size);
-+	if (rc) {
-+		rc = -EFAULT;
-+		goto out_free;
-+	}
-+
-+	return target_pids;
-+
-+out_free:
-+	kfree(target_pids);
-+	return ERR_PTR(rc);
++	return do_set_robust_list(head, len);
 +}
 +
-+/*
-  *  Ok, this is the main fork-routine.
-  *
-  * It copies the process, and if successful kick-starts
-@@ -1352,7 +1443,7 @@ long do_fork_with_pids(unsigned long clone_flags,
- 	struct task_struct *p;
- 	int trace = 0;
- 	long nr;
--	pid_t *target_pids = NULL;
-+	pid_t *target_pids;
- 
- 	/*
- 	 * Do some preliminary argument and permissions checking before we
-@@ -1386,6 +1477,17 @@ long do_fork_with_pids(unsigned long clone_flags,
- 		}
++/**
+  * sys_get_robust_list - get the robust-futex list head of a task
+  * @pid: pid of the process [zero for current task]
+  * @head_ptr: pointer to a list-head pointer, the kernel fills it in
+diff --git a/kernel/futex_compat.c b/kernel/futex_compat.c
+index d607a5b..eac734c 100644
+--- a/kernel/futex_compat.c
++++ b/kernel/futex_compat.c
+@@ -114,9 +114,9 @@ void compat_exit_robust_list(struct task_struct *curr)
  	}
- 
-+	target_pids = copy_target_pids(pid_setp);
-+
-+	if (target_pids) {
-+		if (IS_ERR(target_pids))
-+			return PTR_ERR(target_pids);
-+
-+		nr = -EPERM;
-+		if (!capable(CAP_SYS_ADMIN))
-+			goto out_free;
-+	}
-+
- 	/*
- 	 * When called from kernel_thread, don't do user tracing stuff.
- 	 */
-@@ -1453,6 +1555,10 @@ long do_fork_with_pids(unsigned long clone_flags,
- 	} else {
- 		nr = PTR_ERR(p);
- 	}
-+
-+out_free:
-+	kfree(target_pids);
-+
- 	return nr;
  }
  
+-asmlinkage long
+-compat_sys_set_robust_list(struct compat_robust_list_head __user *head,
+-			   compat_size_t len)
++long
++do_compat_set_robust_list(struct compat_robust_list_head __user *head,
++			  compat_size_t len)
+ {
+ 	if (!futex_cmpxchg_enabled)
+ 		return -ENOSYS;
+@@ -130,6 +130,13 @@ compat_sys_set_robust_list(struct compat_robust_list_head __user *head,
+ }
+ 
+ asmlinkage long
++compat_sys_set_robust_list(struct compat_robust_list_head __user *head,
++			   compat_size_t len)
++{
++	return do_compat_set_robust_list(head, len);
++}
++
++asmlinkage long
+ compat_sys_get_robust_list(int pid, compat_uptr_t __user *head_ptr,
+ 			   compat_size_t __user *len_ptr)
+ {
 -- 
 1.6.0.4
 
