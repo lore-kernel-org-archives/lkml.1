@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755166AbZGVKO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbZGVKOB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755166AbZGVKO6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 06:14:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755124AbZGVKO5
+	id S1754920AbZGVKOB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 06:14:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754868AbZGVKNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 06:14:57 -0400
+	Wed, 22 Jul 2009 06:13:33 -0400
 Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:57001 "EHLO
 	smtp161.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754428AbZGVKKr (ORCPT
+	with ESMTP id S1754558AbZGVKKv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 06:10:47 -0400
+	Wed, 22 Jul 2009 06:10:51 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -21,9 +21,9 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        Pavel Emelyanov <xemul@openvz.org>,
        Alexey Dobriyan <adobriyan@gmail.com>, Oren Laadan <orenl@librato.com>,
        Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v17][PATCH 25/60] c/r: checkpoint multiple processes
-Date: Wed, 22 Jul 2009 05:59:47 -0400
-Message-Id: <1248256822-23416-26-git-send-email-orenl@librato.com>
+Subject: [RFC v17][PATCH 51/60] c/r: support message-queues sysv-ipc
+Date: Wed, 22 Jul 2009 06:00:13 -0400
+Message-Id: <1248256822-23416-52-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1248256822-23416-1-git-send-email-orenl@librato.com>
 References: <1248256822-23416-1-git-send-email-orenl@librato.com>
@@ -31,601 +31,578 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Checkpointing of multiple processes works by recording the tasks tree
-structure below a given "root" task. The root task is expected to be a
-container init, and then an entire container is checkpointed. However,
-passing CHECKPOINT_SUBTREE to checkpoint(2) relaxes this requirement
-and allows to checkpoint a subtree of processes from the root task.
+Checkpoint of sysvipc message-queues is performed by iterating through
+all 'msq' objects and dumping the contents of each one. The message
+queued on each 'msq' are dumped with that object.
 
-For a given root task, do a DFS scan of the tasks tree and collect them
-into an array (keeping a reference to each task). Using DFS simplifies
-the recreation of tasks either in user space or kernel space. For each
-task collected, test if it can be checkpointed, and save its pid, tgid,
-and ppid.
+Message of a specific queue get written one by one. The queue lock
+cannot be held while dumping them, but the loop must be protected from
+someone (who ?) writing or reading. To do that we grab the lock, then
+hijack the entire chain of messages from the queue, drop the lock,
+and then safely dump them in a loop. Finally, with the lock held, we
+re-attach the chain while verifying that there isn't other (new) data
+on that queue.
 
-The actual work is divided into two passes: a first scan counts the
-tasks, then memory is allocated and a second scan fills the array.
+Writing the message contents themselves is straight forward. The code
+is similar to that in ipc/msgutil.c, the main difference being that
+we deal with kernel memory and not user memory.
 
-Whether checkpoints and restarts require CAP_SYS_ADMIN is determined
-by sysctl 'ckpt_unpriv_allowed': if 1, then regular permission checks
-are intended to prevent privilege escalation, however if 0 it prevents
-unprivileged users from exploiting any privilege escalation bugs.
-
-The logic is suitable for creation of processes during restart either
-in userspace or by the kernel.
-
-Currently we ignore threads and zombies.
-
-Changelog[v16]:
-  - CHECKPOINT_SUBTREE flags allows subtree (not whole container)
-  - sysctl variable 'ckpt_unpriv_allowed' controls needed privileges
-Changelog[v14]:
-  - Refuse non-self checkpoint if target task isn't frozen
-  - Refuse checkpoint (for now) if task is ptraced
-  - Revert change to pr_debug(), back to ckpt_debug()
-  - Use only unsigned fields in checkpoint headers
-  - Check retval of ckpt_tree_count_tasks() in ckpt_build_tree()
-  - Discard 'h.parent' field
-  - Check whether calls to ckpt_hbuf_get() fail
-  - Disallow threads or siblings to container init
-Changelog[v13]:
-  - Release tasklist_lock in error path in ckpt_tree_count_tasks()
-  - Use separate index for 'tasks_arr' and 'hh' in ckpt_write_pids()
-Changelog[v12]:
-  - Replace obsolete ckpt_debug() with pr_debug()
+Changelog[v17]:
+  - Allocate security context for msg_msg
+  - Restore objects in the right namespace
+  - Don't unlock ipc before freeing
 
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- checkpoint/checkpoint.c          |  287 ++++++++++++++++++++++++++++++++++++--
- checkpoint/restart.c             |    2 +-
- checkpoint/sys.c                 |   33 ++++-
- include/linux/checkpoint.h       |   14 ++
- include/linux/checkpoint_hdr.h   |   16 ++-
- include/linux/checkpoint_types.h |    4 +
- kernel/sysctl.c                  |   17 +++
- 7 files changed, 357 insertions(+), 16 deletions(-)
+ include/linux/checkpoint_hdr.h |   20 +++
+ ipc/Makefile                   |    3 +-
+ ipc/checkpoint.c               |    2 +-
+ ipc/checkpoint_msg.c           |  364 ++++++++++++++++++++++++++++++++++++++++
+ ipc/msg.c                      |   10 +-
+ ipc/msgutil.c                  |    8 -
+ ipc/util.h                     |   13 ++
+ 7 files changed, 403 insertions(+), 17 deletions(-)
+ create mode 100644 ipc/checkpoint_msg.c
 
-diff --git a/checkpoint/checkpoint.c b/checkpoint/checkpoint.c
-index 8facd9a..57f59de 100644
---- a/checkpoint/checkpoint.c
-+++ b/checkpoint/checkpoint.c
-@@ -259,8 +259,27 @@ static int checkpoint_write_tail(struct ckpt_ctx *ctx)
- 	return ret;
- }
+diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
+index f4c3f7b..e33bb58 100644
+--- a/include/linux/checkpoint_hdr.h
++++ b/include/linux/checkpoint_hdr.h
+@@ -77,6 +77,7 @@ enum {
+ 	CKPT_HDR_IPC = 501,
+ 	CKPT_HDR_IPC_SHM,
+ 	CKPT_HDR_IPC_MSG,
++	CKPT_HDR_IPC_MSG_MSG,
+ 	CKPT_HDR_IPC_SEM,
  
-+/* dump all tasks in ctx->tasks_arr[] */
-+static int checkpoint_all_tasks(struct ckpt_ctx *ctx)
-+{
-+	int n, ret = 0;
-+
-+	for (n = 0; n < ctx->nr_tasks; n++) {
-+		ckpt_debug("dumping task #%d\n", n);
-+		ret = checkpoint_task(ctx, ctx->tasks_arr[n]);
-+		if (ret < 0)
-+			break;
-+	}
-+
-+	return ret;
-+}
-+
- static int may_checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
- {
-+	struct task_struct *root = ctx->root_task;
-+
-+	ckpt_debug("check %d\n", task_pid_nr_ns(t, ctx->root_nsproxy->pid_ns));
-+
- 	if (t->state == TASK_DEAD) {
- 		pr_warning("c/r: task %d is TASK_DEAD\n", task_pid_vnr(t));
- 		return -EAGAIN;
-@@ -286,15 +305,256 @@ static int may_checkpoint_task(struct ckpt_ctx *ctx, struct task_struct *t)
- 		return -EBUSY;
- 	}
+ 	CKPT_HDR_TAIL = 9001,
+@@ -386,6 +387,25 @@ struct ckpt_hdr_ipc_shm {
+ 	__u32 objref;
+ } __attribute__((aligned(8)));
  
-+	/*
-+	 * FIX: for now, disallow siblings of container init created
-+	 * via CLONE_PARENT (unclear if they will remain possible)
-+	 */
-+	if (ctx->root_init && t != root && t->tgid != root->tgid &&
-+	    t->real_parent == root->real_parent) {
-+		__ckpt_write_err(ctx, "task %d (%s) is sibling of root",
-+				 task_pid_vnr(t), t->comm);
-+		return -EINVAL;
-+	}
++struct ckpt_hdr_ipc_msg {
++	struct ckpt_hdr h;
++	struct ckpt_hdr_ipc_perms perms;
++	__u64 q_stime;
++	__u64 q_rtime;
++	__u64 q_ctime;
++	__u64 q_cbytes;
++	__u64 q_qnum;
++	__u64 q_qbytes;
++	__s32 q_lspid;
++	__s32 q_lrpid;
++} __attribute__((aligned(8)));
 +
-+	/* FIX: change this when namespaces are added */
-+	if (task_nsproxy(t) != ctx->root_nsproxy)
-+		return -EPERM;
++struct ckpt_hdr_ipc_msg_msg {
++	struct ckpt_hdr h;
++	__s32 m_type;
++	__u32 m_ts;
++} __attribute__((aligned(8)));
 +
- 	return 0;
- }
  
-+#define CKPT_HDR_PIDS_CHUNK	256
-+
-+static int checkpoint_pids(struct ckpt_ctx *ctx)
-+{
-+	struct ckpt_hdr_pids *h;
-+	struct pid_namespace *ns;
-+	struct task_struct *task;
-+	struct task_struct **tasks_arr;
-+	int nr_tasks, n, pos = 0, ret = 0;
-+
-+	ns = ctx->root_nsproxy->pid_ns;
-+	tasks_arr = ctx->tasks_arr;
-+	nr_tasks = ctx->nr_tasks;
-+	BUG_ON(nr_tasks <= 0);
-+
-+	ret = ckpt_write_obj_type(ctx, NULL,
-+				  sizeof(*h) * nr_tasks,
-+				  CKPT_HDR_BUFFER);
-+	if (ret < 0)
-+		return ret;
-+
-+	h = ckpt_hdr_get(ctx, sizeof(*h) * CKPT_HDR_PIDS_CHUNK);
-+	if (!h)
-+		return -ENOMEM;
-+
-+	do {
-+		rcu_read_lock();
-+		for (n = 0; n < min(nr_tasks, CKPT_HDR_PIDS_CHUNK); n++) {
-+			task = tasks_arr[pos];
-+
-+			h[n].vpid = task_pid_nr_ns(task, ns);
-+			h[n].vtgid = task_tgid_nr_ns(task, ns);
-+			h[n].vpgid = task_pgrp_nr_ns(task, ns);
-+			h[n].vsid = task_session_nr_ns(task, ns);
-+			h[n].vppid = task_tgid_nr_ns(task->real_parent, ns);
-+			ckpt_debug("task[%d]: vpid %d vtgid %d parent %d\n",
-+				   pos, h[n].vpid, h[n].vtgid, h[n].vppid);
-+			pos++;
-+		}
-+		rcu_read_unlock();
-+
-+		n = min(nr_tasks, CKPT_HDR_PIDS_CHUNK);
-+		ret = ckpt_kwrite(ctx, h, n * sizeof(*h));
-+		if (ret < 0)
-+			break;
-+
-+		nr_tasks -= n;
-+	} while (nr_tasks > 0);
-+
-+	_ckpt_hdr_put(ctx, h, sizeof(*h) * CKPT_HDR_PIDS_CHUNK);
-+	return ret;
-+}
-+
-+/* count number of tasks in tree (and optionally fill pid's in array) */
-+static int tree_count_tasks(struct ckpt_ctx *ctx)
-+{
-+	struct task_struct *root;
-+	struct task_struct *task;
-+	struct task_struct *parent;
-+	struct task_struct **tasks_arr = ctx->tasks_arr;
-+	int nr_tasks = ctx->nr_tasks;
-+	int nr = 0;
-+	int ret;
-+
-+	read_lock(&tasklist_lock);
-+
-+	/* we hold the lock, so root_task->real_parent can't change */
-+	task = ctx->root_task;
-+	if (ctx->root_init) {
-+		/* container-init: start from container parent */
-+		parent = task->real_parent;
-+		root = parent;
-+	} else {
-+		/* non-container-init: start from root task and down */
-+		parent = NULL;
-+		root = task;
-+	}
-+
-+	/* count tasks via DFS scan of the tree */
-+	while (1) {
-+		/* is this task cool ? */
-+		ret = may_checkpoint_task(ctx, task);
-+		if (ret < 0) {
-+			nr = ret;
-+			break;
-+		}
-+		if (tasks_arr) {
-+			/* unlikely... but if so then try again later */
-+			if (nr == nr_tasks) {
-+				nr = -EAGAIN; /* cleanup in ckpt_ctx_free() */
-+				break;
-+			}
-+			tasks_arr[nr] = task;
-+			get_task_struct(task);
-+		}
-+		nr++;
-+		/* if has children - proceed with child */
-+		if (!list_empty(&task->children)) {
-+			parent = task;
-+			task = list_entry(task->children.next,
-+					  struct task_struct, sibling);
-+			continue;
-+		}
-+		while (task != root) {
-+			/* if has sibling - proceed with sibling */
-+			if (!list_is_last(&task->sibling, &parent->children)) {
-+				task = list_entry(task->sibling.next,
-+						  struct task_struct, sibling);
-+				break;
-+			}
-+
-+			/* else, trace back to parent and proceed */
-+			task = parent;
-+			parent = parent->real_parent;
-+		}
-+		if (task == root)
-+			break;
-+	}
-+
-+	read_unlock(&tasklist_lock);
-+
-+	if (nr < 0)
-+		ckpt_write_err(ctx, NULL);
-+	return nr;
-+}
-+
+ #define CKPT_TST_OVERFLOW_16(a, b) \
+ 	((sizeof(a) > sizeof(b)) && ((a) > SHORT_MAX))
+diff --git a/ipc/Makefile b/ipc/Makefile
+index db4b076..71a257f 100644
+--- a/ipc/Makefile
++++ b/ipc/Makefile
+@@ -9,4 +9,5 @@ obj_mq-$(CONFIG_COMPAT) += compat_mq.o
+ obj-$(CONFIG_POSIX_MQUEUE) += mqueue.o msgutil.o $(obj_mq-y)
+ obj-$(CONFIG_IPC_NS) += namespace.o
+ obj-$(CONFIG_POSIX_MQUEUE_SYSCTL) += mq_sysctl.o
+-obj-$(CONFIG_SYSVIPC_CHECKPOINT) += checkpoint.o checkpoint_shm.o
++obj-$(CONFIG_SYSVIPC_CHECKPOINT) += checkpoint.o \
++		checkpoint_shm.o checkpoint_msg.o
+diff --git a/ipc/checkpoint.c b/ipc/checkpoint.c
+index 9062dc6..11941d7 100644
+--- a/ipc/checkpoint.c
++++ b/ipc/checkpoint.c
+@@ -115,11 +115,11 @@ static int do_checkpoint_ipc_ns(struct ckpt_ctx *ctx,
+ 
+ 	ret = checkpoint_ipc_any(ctx, ipc_ns, IPC_SHM_IDS,
+ 				 CKPT_HDR_IPC_SHM, checkpoint_ipc_shm);
+-#if 0 /* NEXT FEW PATCHES */
+ 	if (ret < 0)
+ 		return ret;
+ 	ret = checkpoint_ipc_any(ctx, ipc_ns, IPC_MSG_IDS,
+ 				 CKPT_HDR_IPC_MSG, checkpoint_ipc_msg);
++#if 0 /* NEXT FEW PATCHES */
+ 	if (ret < 0)
+ 		return ret;
+ 	ret = checkpoint_ipc_any(ctx, ipc_ns, IPC_SEM_IDS,
+diff --git a/ipc/checkpoint_msg.c b/ipc/checkpoint_msg.c
+new file mode 100644
+index 0000000..b933c19
+--- /dev/null
++++ b/ipc/checkpoint_msg.c
+@@ -0,0 +1,364 @@
 +/*
-+ * build_tree - scan the tasks tree in DFS order and fill in array
-+ * @ctx: checkpoint context
++ *  Checkpoint/restart - dump state of sysvipc msg
 + *
-+ * Using DFS order simplifies the restart logic to re-create the tasks.
++ *  Copyright (C) 2009 Oren Laadan
 + *
-+ * On success, ctx->tasks_arr will be allocated and populated with all
-+ * tasks (reference taken), and ctx->nr_tasks will hold the total count.
-+ * The array is cleaned up by ckpt_ctx_free().
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License.  See the file COPYING in the main directory of the Linux
++ *  distribution for more details.
 + */
-+static int build_tree(struct ckpt_ctx *ctx)
++
++/* default debug level for output */
++#define CKPT_DFLAG  CKPT_DIPC
++
++#include <linux/mm.h>
++#include <linux/msg.h>
++#include <linux/rwsem.h>
++#include <linux/sched.h>
++#include <linux/syscalls.h>
++#include <linux/nsproxy.h>
++#include <linux/security.h>
++#include <linux/ipc_namespace.h>
++
++#include "util.h"
++
++#include <linux/checkpoint.h>
++#include <linux/checkpoint_hdr.h>
++
++/************************************************************************
++ * ipc checkpoint
++ */
++
++static int fill_ipc_msg_hdr(struct ckpt_ctx *ctx,
++			    struct ckpt_hdr_ipc_msg *h,
++			    struct msg_queue *msq)
 +{
-+	int n, m;
++	int ret = 0;
 +
-+	/* count tasks (no side effects) */
-+	n = tree_count_tasks(ctx);
-+	if (n < 0)
-+		return n;
++	ipc_lock_by_ptr(&msq->q_perm);
 +
-+	ctx->nr_tasks = n;
-+	ctx->tasks_arr = kzalloc(n * sizeof(*ctx->tasks_arr), GFP_KERNEL);
-+	if (!ctx->tasks_arr)
-+		return -ENOMEM;
++	ret = checkpoint_fill_ipc_perms(&h->perms, &msq->q_perm);
++	if (ret < 0)
++		goto unlock;
 +
-+	/* count again (now will fill array) */
-+	m = tree_count_tasks(ctx);
++	h->q_stime = msq->q_stime;
++	h->q_rtime = msq->q_rtime;
++	h->q_ctime = msq->q_ctime;
++	h->q_cbytes = msq->q_cbytes;
++	h->q_qnum = msq->q_qnum;
++	h->q_qbytes = msq->q_qbytes;
++	h->q_lspid = msq->q_lspid;
++	h->q_lrpid = msq->q_lrpid;
 +
-+	/* unlikely, but ... (cleanup in ckpt_ctx_free) */
-+	if (m < 0)
-+		return m;
-+	else if (m != n)
-+		return -EBUSY;
++ unlock:
++	ipc_unlock(&msq->q_perm);
++	ckpt_debug("msg: lspid %d rspid %d qnum %lld qbytes %lld\n",
++		 h->q_lspid, h->q_lrpid, h->q_qnum, h->q_qbytes);
 +
-+	return 0;
++	return ret;
 +}
 +
-+/* dump the array that describes the tasks tree */
-+static int checkpoint_tree(struct ckpt_ctx *ctx)
++static int checkpoint_msg_contents(struct ckpt_ctx *ctx, struct msg_msg *msg)
 +{
-+	struct ckpt_hdr_tree *h;
++	struct ckpt_hdr_ipc_msg_msg *h;
++	struct msg_msgseg *seg;
++	int total, len;
 +	int ret;
 +
-+	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_TREE);
++	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_IPC_MSG_MSG);
 +	if (!h)
 +		return -ENOMEM;
 +
-+	h->nr_tasks = ctx->nr_tasks;
++	h->m_type = msg->m_type;
++	h->m_ts = msg->m_ts;
 +
 +	ret = ckpt_write_obj(ctx, &h->h);
 +	ckpt_hdr_put(ctx, h);
 +	if (ret < 0)
 +		return ret;
 +
-+	ret = checkpoint_pids(ctx);
++	total = msg->m_ts;
++	len = min(total, (int) DATALEN_MSG);
++	ret = ckpt_write_buffer(ctx, (msg + 1), len);
++	if (ret < 0)
++		return ret;
++
++	seg = msg->next;
++	total -= len;
++
++	while (total) {
++		len = min(total, (int) DATALEN_SEG);
++		ret = ckpt_write_buffer(ctx, (seg + 1), len);
++		if (ret < 0)
++			break;
++		seg = seg->next;
++		total -= len;
++	}
++
 +	return ret;
 +}
 +
-+static struct task_struct *get_freezer_task(struct task_struct *root_task)
++static int checkpoint_msg_queue(struct ckpt_ctx *ctx, struct msg_queue *msq)
 +{
-+	struct task_struct *p;
++	struct list_head messages;
++	struct msg_msg *msg;
++	int ret = -EBUSY;
 +
 +	/*
-+	 * For the duration of checkpoint we deep-freeze all tasks.
-+	 * Normally do it through the root task's freezer cgroup.
-+	 * However, if the root task is also the current task (doing
-+	 * self-checkpoint) we can't freeze ourselves. In this case,
-+	 * choose the next available (non-dead) task instead. We'll
-+	 * use its freezer cgroup to verify that all tasks belong to
-+	 * the same cgroup.
++	 * Scanning the msq requires the lock, but then we can't write
++	 * data out from inside. Instead, we grab the lock, remove all
++	 * messages to our own list, drop the lock, write the messages,
++	 * and finally re-attach the them to the msq with the lock taken.
 +	 */
++	ipc_lock_by_ptr(&msq->q_perm);
++	if (!list_empty(&msq->q_receivers))
++		goto unlock;
++	if (!list_empty(&msq->q_senders))
++		goto unlock;
++	if (list_empty(&msq->q_messages))
++		goto unlock;
++	/* temporarily take out all messages */
++	INIT_LIST_HEAD(&messages);
++	list_splice_init(&msq->q_messages, &messages);
++ unlock:
++	ipc_unlock(&msq->q_perm);
 +
-+	if (root_task != current) {
-+		get_task_struct(root_task);
-+		return root_task;
++	list_for_each_entry(msg, &messages, m_list) {
++		ret = checkpoint_msg_contents(ctx, msg);
++		if (ret < 0)
++			break;
 +	}
 +
-+	/* search among threads, then children */
-+	read_lock(&tasklist_lock);
++	/* put all the messages back in */
++	ipc_lock_by_ptr(&msq->q_perm);
++	list_splice(&messages, &msq->q_messages);
++	ipc_unlock(&msq->q_perm);
 +
-+	for (p = next_thread(root_task); p != root_task; p = next_thread(p)) {
-+		if (p->state == TASK_DEAD)
-+			continue;
-+		if (!in_same_cgroup_freezer(p, root_task))
-+			goto out;
-+	}
-+
-+	list_for_each_entry(p, &root_task->children, sibling) {
-+		if (p->state == TASK_DEAD)
-+			continue;
-+		if (!in_same_cgroup_freezer(p, root_task))
-+			goto out;
-+	}
-+
-+	p = NULL;
-+ out:
-+	read_unlock(&tasklist_lock);
-+	if (p)
-+		get_task_struct(p);
-+	return p;
++	return ret;
 +}
 +
- /* setup checkpoint-specific parts of ctx */
- static int init_checkpoint_ctx(struct ckpt_ctx *ctx, pid_t pid)
- {
- 	struct task_struct *task;
- 	struct nsproxy *nsproxy;
--	int ret;
- 
- 	/*
- 	 * No need for explicit cleanup here, because if an error
-@@ -326,17 +586,13 @@ static int init_checkpoint_ctx(struct ckpt_ctx *ctx, pid_t pid)
- 		ctx->root_nsproxy = nsproxy;
- 
- 	/* root freezer */
--	ctx->root_freezer = task;
--	geT_task_struct(task);
-+	ctx->root_freezer = get_freezer_task(task);
- 
--	ret = may_checkpoint_task(ctx, task);
--	if (ret) {
--		ckpt_write_err(ctx, NULL);
--		put_task_struct(task);
--		put_task_struct(task);
--		put_nsproxy(nsproxy);
--		return ret;
--	}
-+	/* container init ? */
-+	ctx->root_init = is_container_init(task);
-+
-+	if (!(ctx->uflags & CHECKPOINT_SUBTREE) && !ctx->root_init)
-+		return -EINVAL;  /* cleanup by ckpt_ctx_free() */
- 
- 	return 0;
- }
-@@ -355,10 +611,17 @@ long do_checkpoint(struct ckpt_ctx *ctx, pid_t pid)
- 			return ret;
- 	}
- 
-+	ret = build_tree(ctx);
-+	if (ret < 0)
-+		goto out;
-+
- 	ret = checkpoint_write_header(ctx);
- 	if (ret < 0)
- 		goto out;
--	ret = checkpoint_task(ctx, ctx->root_task);
-+	ret = checkpoint_tree(ctx);
-+	if (ret < 0)
-+		goto out;
-+	ret = checkpoint_all_tasks(ctx);
- 	if (ret < 0)
- 		goto out;
- 	ret = checkpoint_write_tail(ctx);
-diff --git a/checkpoint/restart.c b/checkpoint/restart.c
-index 582d6b4..4d1ff31 100644
---- a/checkpoint/restart.c
-+++ b/checkpoint/restart.c
-@@ -275,7 +275,7 @@ static int restore_read_header(struct ckpt_ctx *ctx)
- 	    h->minor != ((LINUX_VERSION_CODE >> 8) & 0xff) ||
- 	    h->patch != ((LINUX_VERSION_CODE) & 0xff))
- 		goto out;
--	if (h->uflags)
-+	if (h->uflags & ~CHECKPOINT_USER_FLAGS)
- 		goto out;
- 
- 	ret = check_kernel_const(&h->constants);
-diff --git a/checkpoint/sys.c b/checkpoint/sys.c
-index b37bc8c..cc94775 100644
---- a/checkpoint/sys.c
-+++ b/checkpoint/sys.c
-@@ -23,6 +23,14 @@
- #include <linux/checkpoint.h>
- 
- /*
-+ * ckpt_unpriv_allowed - sysctl controlled, do not allow checkpoints or
-+ * restarts unless caller has CAP_SYS_ADMIN, if 0 (prevent unprivileged
-+ * useres from expoitling any privilege escalation bugs). If it is 1,
-+ * then regular permissions checks are intended to do the job.
-+ */
-+int ckpt_unpriv_allowed = 1;	/* default: allow */
-+
-+/*
-  * Helpers to write(read) from(to) kernel space to(from) the checkpoint
-  * image file descriptor (similar to how a core-dump is performed).
-  *
-@@ -166,11 +174,27 @@ void *ckpt_hdr_get_type(struct ckpt_ctx *ctx, int len, int type)
-  * restart operation, and persists until the operation is completed.
-  */
- 
-+static void task_arr_free(struct ckpt_ctx *ctx)
++int checkpoint_ipc_msg(int id, void *p, void *data)
 +{
-+	int n;
++	struct ckpt_hdr_ipc_msg *h;
++	struct ckpt_ctx *ctx = (struct ckpt_ctx *) data;
++	struct kern_ipc_perm *perm = (struct kern_ipc_perm *) p;
++	struct msg_queue *msq;
++	int ret;
 +
-+	for (n = 0; n < ctx->nr_tasks; n++) {
-+		if (ctx->tasks_arr[n]) {
-+			put_task_struct(ctx->tasks_arr[n]);
-+			ctx->tasks_arr[n] = NULL;
-+		}
-+	}
-+	kfree(ctx->tasks_arr);
++	msq = container_of(perm, struct msg_queue, q_perm);
++
++	h = ckpt_hdr_get_type(ctx, sizeof(*h), CKPT_HDR_IPC_MSG);
++	if (!h)
++		return -ENOMEM;
++
++	ret = fill_ipc_msg_hdr(ctx, h, msq);
++	if (ret < 0)
++		goto out;
++
++	ret = ckpt_write_obj(ctx, &h->h);
++	if (ret < 0)
++		goto out;
++
++	if (h->q_qnum)
++		ret = checkpoint_msg_queue(ctx, msq);
++ out:
++	ckpt_hdr_put(ctx, h);
++	return ret;
 +}
 +
- static void ckpt_ctx_free(struct ckpt_ctx *ctx)
++
++/************************************************************************
++ * ipc restart
++ */
++
++static int load_ipc_msg_hdr(struct ckpt_ctx *ctx,
++			    struct ckpt_hdr_ipc_msg *h,
++			    struct msg_queue *msq)
++{
++	int ret = 0;
++
++	ret = restore_load_ipc_perms(&h->perms, &msq->q_perm);
++	if (ret < 0)
++		return ret;
++
++	ckpt_debug("msq: lspid %d lrpid %d qnum %lld qbytes %lld\n",
++		 h->q_lspid, h->q_lrpid, h->q_qnum, h->q_qbytes);
++
++	if (h->q_lspid < 0 || h->q_lrpid < 0)
++		return -EINVAL;
++
++	msq->q_stime = h->q_stime;
++	msq->q_rtime = h->q_rtime;
++	msq->q_ctime = h->q_ctime;
++	msq->q_lspid = h->q_lspid;
++	msq->q_lrpid = h->q_lrpid;
++
++	return 0;
++}
++
++static struct msg_msg *restore_msg_contents_one(struct ckpt_ctx *ctx, int *clen)
++{
++	struct ckpt_hdr_ipc_msg_msg *h;
++	struct msg_msg *msg = NULL;
++	struct msg_msgseg *seg, **pseg;
++	int total, len;
++	int ret;
++
++	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_IPC_MSG_MSG);
++	if (IS_ERR(h))
++		return (struct msg_msg *) h;
++
++	ret = -EINVAL;
++	if (h->m_type < 1)
++		goto out;
++	if (h->m_ts > current->nsproxy->ipc_ns->msg_ctlmax)
++		goto out;
++
++	total = h->m_ts;
++	len = min(total, (int) DATALEN_MSG);
++	msg = kmalloc(sizeof(*msg) + len, GFP_KERNEL);
++	if (!msg) {
++		ret = -ENOMEM;
++		goto out;
++	}
++	msg->next = NULL;
++	pseg = &msg->next;
++
++	ret = _ckpt_read_buffer(ctx, (msg + 1), len);
++	if (ret < 0)
++		goto out;
++
++	total -= len;
++	while (total) {
++		len = min(total, (int) DATALEN_SEG);
++		seg = kmalloc(sizeof(*seg) + len, GFP_KERNEL);
++		if (!seg) {
++			ret = -ENOMEM;
++			goto out;
++		}
++		seg->next = NULL;
++		*pseg = seg;
++		pseg = &seg->next;
++
++		ret = _ckpt_read_buffer(ctx, (seg + 1), len);
++		if (ret < 0)
++			goto out;
++		total -= len;
++	}
++
++	msg->m_type = h->m_type;
++	msg->m_ts = h->m_ts;
++	*clen = h->m_ts;
++	ret = security_msg_msg_alloc(msg);
++ out:
++	if (ret < 0 && msg) {
++		free_msg(msg);
++		msg = ERR_PTR(ret);
++	}
++	ckpt_hdr_put(ctx, h);
++	return msg;
++}
++
++static inline void free_msg_list(struct list_head *queue)
++{
++	struct msg_msg *msg, *tmp;
++
++	list_for_each_entry_safe(msg, tmp, queue, m_list)
++		free_msg(msg);
++}
++
++static int restore_msg_contents(struct ckpt_ctx *ctx, struct list_head *queue,
++				unsigned long qnum, unsigned long *cbytes)
++{
++	struct msg_msg *msg;
++	int clen = 0;
++	int ret = 0;
++
++	INIT_LIST_HEAD(queue);
++
++	*cbytes = 0;
++	while (qnum--) {
++		msg = restore_msg_contents_one(ctx, &clen);
++		if (IS_ERR(msg))
++			goto fail;
++		list_add_tail(&msg->m_list, queue);
++		*cbytes += clen;
++	}
++	return 0;
++ fail:
++	ret = PTR_ERR(msg);
++	free_msg_list(queue);
++	return ret;
++}
++
++int restore_ipc_msg(struct ckpt_ctx *ctx, struct ipc_namespace *ns)
++{
++	struct ckpt_hdr_ipc_msg *h;
++	struct kern_ipc_perm *perms;
++	struct msg_queue *msq;
++	struct ipc_ids *msg_ids = &ns->ids[IPC_MSG_IDS];
++	struct list_head messages;
++	unsigned long cbytes;
++	int msgflag;
++	int ret;
++
++	INIT_LIST_HEAD(&messages);
++
++	h = ckpt_read_obj_type(ctx, sizeof(*h), CKPT_HDR_IPC_MSG);
++	if (IS_ERR(h))
++		return PTR_ERR(h);
++
++	ret = -EINVAL;
++	if (h->perms.id < 0)
++		goto out;
++
++	/* read queued messages into temporary queue */
++	ret = restore_msg_contents(ctx, &messages, h->q_qnum, &cbytes);
++	if (ret < 0)
++		goto out;
++
++	ret = -EINVAL;
++	if (h->q_cbytes != cbytes)
++		goto out;
++
++	/* restore the message queue */
++	msgflag = h->perms.mode | IPC_CREAT | IPC_EXCL;
++	ckpt_debug("msg: do_msgget key %d flag %#x id %d\n",
++		 h->perms.key, msgflag, h->perms.id);
++	ret = do_msgget(ns, h->perms.key, msgflag, h->perms.id);
++	ckpt_debug("msg: do_msgget ret %d\n", ret);
++	if (ret < 0)
++		goto out;
++
++	down_write(&msg_ids->rw_mutex);
++
++	/* we are the sole owners/users of this ipc_ns, it can't go away */
++	perms = ipc_lock(msg_ids, h->perms.id);
++	BUG_ON(IS_ERR(perms));	/* ipc_ns is private to us */
++
++	msq = container_of(perms, struct msg_queue, q_perm);
++	BUG_ON(!list_empty(&msq->q_messages));	/* ipc_ns is private to us */
++
++	/* attach queued messages we read before */
++	list_splice_init(&messages, &msq->q_messages);
++
++	/* adjust msq and namespace statistics */
++	atomic_add(h->q_cbytes, &ns->msg_bytes);
++	atomic_add(h->q_qnum, &ns->msg_hdrs);
++	msq->q_cbytes = h->q_cbytes;
++	msq->q_qbytes = h->q_qbytes;
++	msq->q_qnum = h->q_qnum;
++
++	ret = load_ipc_msg_hdr(ctx, h, msq);
++
++	if (ret < 0) {
++		ckpt_debug("msq: need to remove (%d)\n", ret);
++		freeque(ns, perms);
++	} else
++		ipc_unlock(perms);
++	up_write(&msg_ids->rw_mutex);
++ out:
++	free_msg_list(&messages);  /* no-op if all ok, else cleanup msgs */
++	ckpt_hdr_put(ctx, h);
++	return ret;
++}
+diff --git a/ipc/msg.c b/ipc/msg.c
+index 1db7c45..3559d53 100644
+--- a/ipc/msg.c
++++ b/ipc/msg.c
+@@ -72,7 +72,6 @@ struct msg_sender {
+ 
+ #define msg_unlock(msq)		ipc_unlock(&(msq)->q_perm)
+ 
+-static void freeque(struct ipc_namespace *, struct kern_ipc_perm *);
+ static int newque(struct ipc_namespace *, struct ipc_params *, int);
+ #ifdef CONFIG_PROC_FS
+ static int sysvipc_msg_proc_show(struct seq_file *s, void *it);
+@@ -278,7 +277,7 @@ static void expunge_all(struct msg_queue *msq, int res)
+  * msg_ids.rw_mutex (writer) and the spinlock for this message queue are held
+  * before freeque() is called. msg_ids.rw_mutex remains locked on exit.
+  */
+-static void freeque(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
++void freeque(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp)
  {
- 	if (ctx->file)
- 		fput(ctx->file);
+ 	struct list_head *tmp;
+ 	struct msg_queue *msq = container_of(ipcp, struct msg_queue, q_perm);
+@@ -311,14 +310,11 @@ static inline int msg_security(struct kern_ipc_perm *ipcp, int msgflg)
+ 	return security_msg_queue_associate(msq, msgflg);
+ }
  
-+	if (ctx->tasks_arr)
-+		task_arr_free(ctx);
+-int do_msgget(key_t key, int msgflg, int req_id)
++int do_msgget(struct ipc_namespace *ns, key_t key, int msgflg, int req_id)
+ {
+-	struct ipc_namespace *ns;
+ 	struct ipc_ops msg_ops;
+ 	struct ipc_params msg_params;
+ 
+-	ns = current->nsproxy->ipc_ns;
+-
+ 	msg_ops.getnew = newque;
+ 	msg_ops.associate = msg_security;
+ 	msg_ops.more_checks = NULL;
+@@ -331,7 +327,7 @@ int do_msgget(key_t key, int msgflg, int req_id)
+ 
+ SYSCALL_DEFINE2(msgget, key_t, key, int, msgflg)
+ {
+-	return do_msgget(key, msgflg, -1);
++	return do_msgget(current->nsproxy->ipc_ns, key, msgflg, -1);
+ }
+ 
+ static inline unsigned long
+diff --git a/ipc/msgutil.c b/ipc/msgutil.c
+index f095ee2..e119243 100644
+--- a/ipc/msgutil.c
++++ b/ipc/msgutil.c
+@@ -36,14 +36,6 @@ struct ipc_namespace init_ipc_ns = {
+ 
+ atomic_t nr_ipc_ns = ATOMIC_INIT(1);
+ 
+-struct msg_msgseg {
+-	struct msg_msgseg* next;
+-	/* the next part of the message follows immediately */
+-};
+-
+-#define DATALEN_MSG	(PAGE_SIZE-sizeof(struct msg_msg))
+-#define DATALEN_SEG	(PAGE_SIZE-sizeof(struct msg_msgseg))
+-
+ struct msg_msg *load_msg(const void __user *src, int len)
+ {
+ 	struct msg_msg *msg;
+diff --git a/ipc/util.h b/ipc/util.h
+index 5f47593..a06a98d 100644
+--- a/ipc/util.h
++++ b/ipc/util.h
+@@ -141,6 +141,14 @@ extern void free_msg(struct msg_msg *msg);
+ extern struct msg_msg *load_msg(const void __user *src, int len);
+ extern int store_msg(void __user *dest, struct msg_msg *msg, int len);
+ 
++struct msg_msgseg {
++	struct msg_msgseg *next;
++	/* the next part of the message follows immediately */
++};
 +
- 	if (ctx->root_nsproxy)
- 		put_nsproxy(ctx->root_nsproxy);
- 	if (ctx->root_task)
-@@ -220,10 +244,12 @@ SYSCALL_DEFINE3(checkpoint, pid_t, pid, int, fd, unsigned long, flags)
- 	struct ckpt_ctx *ctx;
- 	long ret;
- 
--	/* no flags for now */
--	if (flags)
-+	if (flags & ~CHECKPOINT_USER_FLAGS)
- 		return -EINVAL;
- 
-+	if (!ckpt_unpriv_allowed && !capable(CAP_SYS_ADMIN))
-+		return -EPERM;
++#define DATALEN_MSG	(PAGE_SIZE-sizeof(struct msg_msg))
++#define DATALEN_SEG	(PAGE_SIZE-sizeof(struct msg_msgseg))
 +
- 	if (pid == 0)
- 		pid = task_pid_vnr(current);
- 	ctx = ckpt_ctx_alloc(fd, flags, CKPT_CTX_CHECKPOINT);
-@@ -257,6 +283,9 @@ SYSCALL_DEFINE3(restart, pid_t, pid, int, fd, unsigned long, flags)
- 	if (flags)
- 		return -EINVAL;
+ extern void recompute_msgmni(struct ipc_namespace *);
  
-+	if (!ckpt_unpriv_allowed && !capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+
- 	ctx = ckpt_ctx_alloc(fd, flags, CKPT_CTX_RESTART);
- 	if (IS_ERR(ctx))
- 		return PTR_ERR(ctx);
-diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-index 01541b8..df2938f 100644
---- a/include/linux/checkpoint.h
-+++ b/include/linux/checkpoint.h
-@@ -12,6 +12,9 @@
+ static inline int ipc_buildid(int id, int seq)
+@@ -182,6 +190,8 @@ int do_shmget(struct ipc_namespace *ns, key_t key, size_t size, int shmflg,
+ 	      int req_id);
+ void do_shm_rmid(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp);
  
- #define CHECKPOINT_VERSION  1
++int do_msgget(struct ipc_namespace *ns, key_t key, int msgflg, int req_id);
++void freeque(struct ipc_namespace *ns, struct kern_ipc_perm *ipcp);
  
-+/* checkpoint user flags */
-+#define CHECKPOINT_SUBTREE	0x1
-+
- #ifdef __KERNEL__
  #ifdef CONFIG_CHECKPOINT
+ extern int checkpoint_fill_ipc_perms(struct ckpt_hdr_ipc_perms *h,
+@@ -191,6 +201,9 @@ extern int restore_load_ipc_perms(struct ckpt_hdr_ipc_perms *h,
  
-@@ -27,6 +30,17 @@
- #define CKPT_CTX_RESTART	(1 << CKPT_CTX_RESTART_BIT)
- 
- 
-+/* ckpt_ctx: kflags */
-+#define CKPT_CTX_CHECKPOINT_BIT		1
-+#define CKPT_CTX_RESTART_BIT		2
+ extern int checkpoint_ipc_shm(int id, void *p, void *data);
+ extern int restore_ipc_shm(struct ckpt_ctx *ctx, struct ipc_namespace *ns);
 +
-+#define CKPT_CTX_CHECKPOINT	(1 << CKPT_CTX_CHECKPOINT_BIT)
-+#define CKPT_CTX_RESTART	(1 << CKPT_CTX_RESTART_BIT)
-+
-+/* ckpt ctx: uflags */
-+#define CHECKPOINT_USER_FLAGS		CHECKPOINT_SUBTREE
-+
-+
- extern int ckpt_kwrite(struct ckpt_ctx *ctx, void *buf, int count);
- extern int ckpt_kread(struct ckpt_ctx *ctx, void *buf, int count);
- 
-diff --git a/include/linux/checkpoint_hdr.h b/include/linux/checkpoint_hdr.h
-index fa23629..c9a80dc 100644
---- a/include/linux/checkpoint_hdr.h
-+++ b/include/linux/checkpoint_hdr.h
-@@ -49,7 +49,8 @@ enum {
- 	CKPT_HDR_BUFFER,
- 	CKPT_HDR_STRING,
- 
--	CKPT_HDR_TASK = 101,
-+	CKPT_HDR_TREE = 101,
-+	CKPT_HDR_TASK,
- 	CKPT_HDR_RESTART_BLOCK,
- 	CKPT_HDR_THREAD,
- 	CKPT_HDR_CPU,
-@@ -108,6 +109,19 @@ struct ckpt_hdr_tail {
- 	__u64 magic;
- } __attribute__((aligned(8)));
- 
-+/* task tree */
-+struct ckpt_hdr_tree {
-+	struct ckpt_hdr h;
-+	__s32 nr_tasks;
-+} __attribute__((aligned(8)));
-+
-+struct ckpt_hdr_pids {
-+	__s32 vpid;
-+	__s32 vppid;
-+	__s32 vtgid;
-+	__s32 vpgid;
-+	__s32 vsid;
-+} __attribute__((aligned(8)));
- 
- /* task data */
- struct ckpt_hdr_task {
-diff --git a/include/linux/checkpoint_types.h b/include/linux/checkpoint_types.h
-index 220c209..5dca34f 100644
---- a/include/linux/checkpoint_types.h
-+++ b/include/linux/checkpoint_types.h
-@@ -22,6 +22,7 @@ struct ckpt_ctx {
- 
- 	ktime_t ktime_begin;	/* checkpoint start time */
- 
-+	int root_init;				/* [container] root init ? */
- 	pid_t root_pid;				/* [container] root pid */
- 	struct task_struct *root_task;		/* [container] root task */
- 	struct nsproxy *root_nsproxy;		/* [container] root nsproxy */
-@@ -34,6 +35,9 @@ struct ckpt_ctx {
- 	struct file *file;	/* input/output file */
- 	int total;		/* total read/written */
- 
-+	struct task_struct **tasks_arr;	/* array of all tasks in container */
-+	int nr_tasks;			/* size of tasks array */
-+
- 	char err_string[256];	/* checkpoint: error string */
- };
- 
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 98e0232..9f4de60 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -197,6 +197,10 @@ int sysctl_legacy_va_layout;
- extern int prove_locking;
- extern int lock_stat;
- 
-+#ifdef CONFIG_CHECKPOINT
-+extern int ckpt_unpriv_allowed;
-+#endif
-+
- /* The default sysctl tables: */
- 
- static struct ctl_table root_table[] = {
-@@ -989,6 +993,19 @@ static struct ctl_table kern_table[] = {
- 		.proc_handler	= &proc_dointvec,
- 	},
++extern int checkpoint_ipc_msg(int id, void *p, void *data);
++extern int restore_ipc_msg(struct ckpt_ctx *ctx, struct ipc_namespace *ns);
  #endif
-+#ifdef CONFIG_CHECKPOINT
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "ckpt_unpriv_allowed",
-+		.data		= &ckpt_unpriv_allowed,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec_minmax,
-+		.strategy	= &sysctl_intvec,
-+		.extra1		= &zero,
-+		.extra2		= &one,
-+	},
-+#endif
  
- /*
-  * NOTE: do not add new entries to this table unless you have read
+ #endif
 -- 
 1.6.0.4
 
