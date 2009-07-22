@@ -1,80 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbZGVXPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755266AbZGVXT2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755243AbZGVXPs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 19:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbZGVXPr
+	id S1755266AbZGVXT2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 19:19:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbZGVXT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 19:15:47 -0400
-Received: from imp02.mtu.ru ([62.5.255.19]:34426 "EHLO imp02.mtu.ru"
+	Wed, 22 Jul 2009 19:19:28 -0400
+Received: from cantor.suse.de ([195.135.220.2]:32991 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753443AbZGVXPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 19:15:47 -0400
-To: linux-kernel@vger.kernel.org
-Subject: Re: GART_IOMMU without AGP
-Content-Disposition: inline
-From: Pavel Vasilyev <pavel@pavlinux.ru>
-Reply-To: pavel@pavlinux.ru
-Organization: Pavlinux Inc.
-X-Face: =?utf-8?q?=2EqZWJ=3F=248Zrl=26r=7C-=3B8=7ESTufc!R0d=5E=3FdE-g/S=5FryU2S=5D=27?=
- =?utf-8?q?=24vQ7EYY=3DBSj=5DJ-Gp=5FVXPpl=27ci/i=0A=09yH=5B=249HGUU=3Af?=@6hyHiQKeEv#S(K4XtVe$?0UO@',
- =?utf-8?q?!=25=5CR=3A7a=3BITA=3B=7Cs=7C=3F=25+T6=7E5=3Aq=2E2i=5DzA=25=0A=09?=
- =?utf-8?q?Mn-t3kOWGQ?=(7@ZOZ/0@+baHY#Fj&e/k'#p}#F<U{[DP[@"XbG&pmU~{oOMsPc4q|4/,
- =?utf-8?q?du8=0A=09?="'s*i`2=h[f!7!`#',39O3
-Date: Thu, 23 Jul 2009 03:15:43 +0400
+	id S1753605AbZGVXT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 19:19:27 -0400
+Date: Thu, 23 Jul 2009 01:19:26 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [resend, trivial] fix missing printk space
+In-Reply-To: <4A67191F.3040501@msgid.tls.msk.ru>
+Message-ID: <alpine.LNX.2.00.0907230119060.11648@wotan.suse.de>
+References: <20090721191414.2F50912B5F@gandalf.tls.msk.ru> <alpine.LNX.2.00.0907221149450.11648@wotan.suse.de> <4A67191F.3040501@msgid.tls.msk.ru>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907230315.44654.pavel@pavlinux.ru>
-X-Spam-Flag: NO
-X-Spam-Yversion: Spamooborona-3.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 23 July 2009 02:17:38 you wrote:
-> On Wed, 22 Jul 2009 17:37:46 -0400
->
-> Dave Jones <davej@redhat.com> wrote:
-> > On Wed, Jul 22, 2009 at 07:26:49PM +0400, Pavel Vasilyev wrote:
-> >  > In the kernel configuration, if I choose x86_64 and PCI, then choose
-> >  > the item "Garth IOMMU support", which, in turn, chooses not to switch
-> >  > off, support for AGP. But many IOMMU system does not have AGP bus.
-> >
-> > The lack of AGP slots doesn't mean a lack of AGP bus.
-> > It's part of the K8 on-CPU northbridge.
->
-> And the user is selecting CONFIG_AGP to select AGP devices rather than to
-> demonstrate their deep guru grade knowledge of K8 northbridges. Not only
-> that but CONFIG_AGP controls the display of AGP video card options so it
-> is a selection for offered devices not really an internal detail.
->
-> So I think Pavel is right here.
+On Wed, 22 Jul 2009, Michael Tokarev wrote:
 
+> index 28e5f59..6c139ed 100644
+> --- a/arch/x86/kernel/cpu/amd.c
+> +++ b/arch/x86/kernel/cpu/amd.c
+> @@ -185,3 +185,3 @@ static void __cpuinit amd_k7_smp_check(struct cpuinfo_x86
+> *c)
+>  	WARN_ONCE(1, "WARNING: This combination of AMD"
+> -		"processors is not suitable for SMP.\n");
+> +		" processors is not suitable for SMP.\n");
+>  	if (!test_taint(TAINT_UNSAFE_SMP))
+> 
+> 
 
-May be  next logic 
+Applied to trivial queue, thanks Michael.
 
- IF  ( GART_IOMMU  == TRUE )  
-    THEN  
-            IF ( AGP == TRUE ) 
-               THEN 
-                        AGP_AMD64 = TRUE;
-           FI
-FI 
-
-Now 
-
- IF  ( GART_IOMMU  == TRUE )  
-    THEN  
-              AGP = TRUE;'
-	AGP_AMD64 = TURE;
-FI
- 
-
-And in bytes is 
-
--rw-r--r-- 1 root root 54322 Jul 23 01:21 agpgart.ko
--rw-r--r-- 1 root root 19745 Jil 23 01:21  amd64-agp.ko 
-
- is  74067 bytes  :)
-
+-- 
+Jiri Kosina
+SUSE Labs
