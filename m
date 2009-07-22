@@ -1,1120 +1,813 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754406AbZGVFnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755660AbZGVFon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754406AbZGVFnT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 01:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbZGVFnT
+	id S1755660AbZGVFon (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 01:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbZGVFon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 01:43:19 -0400
-Received: from devils.ext.ti.com ([198.47.26.153]:34773 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751957AbZGVFnR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 01:43:17 -0400
-From: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: linux-fbdev-devel@lists.sourceforge.net,
-       davinci-linux-open-source@linux.davincidsp.com, krzysztof.h1@poczta.fm,
-       Sudhakar Rajashekhara <sudhakar.raj@ti.com>,
-       Pavel Kiryukhin <pkiryukhin@ru.mvista.com>,
-       Steve Chen <schen@mvista.com>
-Subject: [PATCH v4] davinci: fb: Frame Buffer driver for TI DA8xx/OMAP-L1xx
-Date: Wed, 22 Jul 2009 00:47:00 -0400
-Message-Id: <1248238020-8266-1-git-send-email-sudhakar.raj@ti.com>
-X-Mailer: git-send-email 1.5.6
+	Wed, 22 Jul 2009 01:44:43 -0400
+Received: from gate.crashing.org ([63.228.1.57]:44281 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752690AbZGVFol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 01:44:41 -0400
+Subject: [PATCH] mm: Pass virtual address to [__]p{te,ud,md}_free_tlb()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Arch list <linux-arch@vger.kernel.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 22 Jul 2009 15:44:28 +1000
+Message-Id: <1248241468.27348.47.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds LCD controller (LCDC) driver for TI's DA8xx/OMAP-L1xx
-architecture. LCDC specifications can be found at
-http://www.ti.com/litv/pdf/sprufm0a.
+mm: Pass virtual address to [__]p{te,ud,md}_free_tlb()
 
-LCDC on DA8xx consists of two independent controllers, the
-Raster Controller and the LCD Interface Display Driver (LIDD)
-controller. LIDD further supports character and graphic displays.
+Upcoming paches to support the new 64-bit "BookE" powerpc architecture
+will need to have the virtual address corresponding to PTE page when
+freeing it, due to the way the HW table walker works.
 
-This patch adds support for the graphic display (Sharp LQ035Q3DG01)
-found on the DA830 based EVM. The EVM details can be found at:
-http://support.spectrumdigital.com/boards/dskda830/revc/.
+Basically, the TLB can be loaded with "large" pages that cover the whole
+virtual space (well, sort-of, half of it actually) represented by a PTE
+page, and which contain an "indirect" bit indicating that this TLB entry
+RPN points to an array of PTEs from which the TLB can then create direct
+entries. Thus, in order to invalidate those when PTE pages are deleted,
+we need the virtual address to pass to tlbilx or tlbivax instructions.
 
-Signed-off-by: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
-Signed-off-by: Pavel Kiryukhin <pkiryukhin@ru.mvista.com>
-Signed-off-by: Steve Chen <schen@mvista.com>
-Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+The old trick of sticking it somewhere in the PTE page struct page sucks
+too much, the address is almost readily available in all call sites and
+almost everybody implemets these as macros, so we may as well add the
+argument everywhere. I added it to the pmd and pud variants for consistency.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Acked-by: David Howells <dhowells@redhat.com> [MN10300 & FRV]
+Acked-by: Nick Piggin <npiggin@suse.de>
 ---
- This patch applies to Linus's Kernel tree.
 
- Since the previous version, return values in ioctl()
- function have been modified.
+Hi Linus !
 
- drivers/video/Kconfig     |   11 +
- drivers/video/Makefile    |    1 +
- drivers/video/da8xx-fb.c  |  908 +++++++++++++++++++++++++++++++++++++++++++++
- include/video/da8xx-fb.h  |  106 ++++++
- 4 files changed, 1026 insertions(+), 0 deletions(-)
- create mode 100644 drivers/video/da8xx-fb.c
- create mode 100644 include/video/da8xx-fb.h
+It's up to you how we merge that patch. It's mostly a big nop but I
+have some work that relies on it that I'll put in powerpc-next
+later this week or early next week. We can merge it now, or I can
+stick it in separate git branch that I pull from powerpc and other
+can pull from though I fell like the former will be easier for
+everybody provided there isn't a killing typo in there :-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 8afcf08..142c759 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2039,6 +2039,17 @@ config FB_SH7760
- 	  and 8, 15 or 16 bpp color; 90 degrees clockwise display rotation for
- 	  panels <= 320 pixel horizontal resolution.
+Up to you, let me know how you want me to proceed.
+
+Martin Schwidefsky compile tested on s390 and Michael Ellerman did some
+test builds on ia64, arm, sparc32, sparc64, i386 and x86_64
+
+Nobody else reacted.
+
+Index: linux-work/arch/powerpc/include/asm/pgalloc-32.h
+===================================================================
+--- linux-work.orig/arch/powerpc/include/asm/pgalloc-32.h	2009-02-05 16:22:24.000000000 +1100
++++ linux-work/arch/powerpc/include/asm/pgalloc-32.h	2009-07-15 17:42:43.000000000 +1000
+@@ -16,7 +16,7 @@ extern void pgd_free(struct mm_struct *m
+  */
+ /* #define pmd_alloc_one(mm,address)       ({ BUG(); ((pmd_t *)2); }) */
+ #define pmd_free(mm, x) 		do { } while (0)
+-#define __pmd_free_tlb(tlb,x)		do { } while (0)
++#define __pmd_free_tlb(tlb,x,a)		do { } while (0)
+ /* #define pgd_populate(mm, pmd, pte)      BUG() */
  
-+config FB_DA8XX
-+	tristate "DA8xx/OMAP-L1xx Framebuffer support"
-+	depends on FB && ARCH_DAVINCI_DA8XX
-+	select FB_CFB_FILLRECT
-+	select FB_CFB_COPYAREA
-+	select FB_CFB_IMAGEBLIT
-+	---help---
-+	  This is the frame buffer device driver for the TI LCD controller
-+	  found on DA8xx/OMAP-L1xx SoCs.
-+	  If unsure, say N.
-+
- config FB_VIRTUAL
- 	tristate "Virtual Frame Buffer support (ONLY FOR TESTING!)"
- 	depends on FB
-diff --git a/drivers/video/Makefile b/drivers/video/Makefile
-index 01a819f..288d9b0 100644
---- a/drivers/video/Makefile
-+++ b/drivers/video/Makefile
-@@ -136,6 +136,7 @@ obj-$(CONFIG_FB_OF)               += offb.o
- obj-$(CONFIG_FB_BF54X_LQ043)	  += bf54x-lq043fb.o
- obj-$(CONFIG_FB_BFIN_T350MCQB)	  += bfin-t350mcqb-fb.o
- obj-$(CONFIG_FB_MX3)		  += mx3fb.o
-+obj-$(CONFIG_FB_DA8XX)		  += da8xx-fb.o
+ #ifndef CONFIG_BOOKE
+Index: linux-work/arch/powerpc/include/asm/pgalloc-64.h
+===================================================================
+--- linux-work.orig/arch/powerpc/include/asm/pgalloc-64.h	2009-02-05 16:22:24.000000000 +1100
++++ linux-work/arch/powerpc/include/asm/pgalloc-64.h	2009-07-15 17:42:43.000000000 +1000
+@@ -118,11 +118,11 @@ static inline void pgtable_free(pgtable_
+ 		kmem_cache_free(pgtable_cache[cachenum], p);
+ }
  
- # the test framebuffer is last
- obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
-diff --git a/drivers/video/da8xx-fb.c b/drivers/video/da8xx-fb.c
-new file mode 100644
-index 0000000..58a9f23
---- /dev/null
-+++ b/drivers/video/da8xx-fb.c
-@@ -0,0 +1,908 @@
-+/*
-+ * Copyright (C) 2008-2009 MontaVista Software Inc.
-+ * Copyright (C) 2008-2009 Texas Instruments Inc
-+ *
-+ * Based on the LCD driver for TI Avalanche processors written by
-+ * Ajay Singh and Shalom Hai.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option)any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-+ */
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/fb.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/device.h>
-+#include <linux/platform_device.h>
-+#include <linux/uaccess.h>
-+#include <linux/device.h>
-+#include <linux/interrupt.h>
-+#include <linux/clk.h>
-+#include <video/da8xx-fb.h>
+-#define __pmd_free_tlb(tlb, pmd) 	\
++#define __pmd_free_tlb(tlb, pmd,addr)		      \
+ 	pgtable_free_tlb(tlb, pgtable_free_cache(pmd, \
+ 		PMD_CACHE_NUM, PMD_TABLE_SIZE-1))
+ #ifndef CONFIG_PPC_64K_PAGES
+-#define __pud_free_tlb(tlb, pud)	\
++#define __pud_free_tlb(tlb, pud, addr)		      \
+ 	pgtable_free_tlb(tlb, pgtable_free_cache(pud, \
+ 		PUD_CACHE_NUM, PUD_TABLE_SIZE-1))
+ #endif /* CONFIG_PPC_64K_PAGES */
+Index: linux-work/arch/powerpc/include/asm/pgalloc.h
+===================================================================
+--- linux-work.orig/arch/powerpc/include/asm/pgalloc.h	2009-02-05 16:22:24.000000000 +1100
++++ linux-work/arch/powerpc/include/asm/pgalloc.h	2009-07-15 17:42:43.000000000 +1000
+@@ -38,14 +38,14 @@ static inline pgtable_free_t pgtable_fre
+ extern void pgtable_free_tlb(struct mmu_gather *tlb, pgtable_free_t pgf);
+ 
+ #ifdef CONFIG_SMP
+-#define __pte_free_tlb(tlb,ptepage)	\
++#define __pte_free_tlb(tlb,ptepage,address)		\
+ do { \
+ 	pgtable_page_dtor(ptepage); \
+ 	pgtable_free_tlb(tlb, pgtable_free_cache(page_address(ptepage), \
+-		PTE_NONCACHE_NUM, PTE_TABLE_SIZE-1)); \
++					PTE_NONCACHE_NUM, PTE_TABLE_SIZE-1)); \
+ } while (0)
+ #else
+-#define __pte_free_tlb(tlb, pte)	pte_free((tlb)->mm, (pte))
++#define __pte_free_tlb(tlb, pte, address)	pte_free((tlb)->mm, (pte))
+ #endif
+ 
+ 
+Index: linux-work/include/asm-generic/pgtable-nopmd.h
+===================================================================
+--- linux-work.orig/include/asm-generic/pgtable-nopmd.h	2009-02-05 16:23:01.000000000 +1100
++++ linux-work/include/asm-generic/pgtable-nopmd.h	2009-07-15 17:42:43.000000000 +1000
+@@ -59,7 +59,7 @@ static inline pmd_t * pmd_offset(pud_t *
+ static inline void pmd_free(struct mm_struct *mm, pmd_t *pmd)
+ {
+ }
+-#define __pmd_free_tlb(tlb, x)			do { } while (0)
++#define __pmd_free_tlb(tlb, x, a)		do { } while (0)
+ 
+ #undef  pmd_addr_end
+ #define pmd_addr_end(addr, end)			(end)
+Index: linux-work/include/asm-generic/pgtable-nopud.h
+===================================================================
+--- linux-work.orig/include/asm-generic/pgtable-nopud.h	2009-02-05 16:23:01.000000000 +1100
++++ linux-work/include/asm-generic/pgtable-nopud.h	2009-07-15 17:42:43.000000000 +1000
+@@ -52,7 +52,7 @@ static inline pud_t * pud_offset(pgd_t *
+  */
+ #define pud_alloc_one(mm, address)		NULL
+ #define pud_free(mm, x)				do { } while (0)
+-#define __pud_free_tlb(tlb, x)			do { } while (0)
++#define __pud_free_tlb(tlb, x, a)		do { } while (0)
+ 
+ #undef  pud_addr_end
+ #define pud_addr_end(addr, end)			(end)
+Index: linux-work/include/asm-generic/tlb.h
+===================================================================
+--- linux-work.orig/include/asm-generic/tlb.h	2009-02-05 16:23:01.000000000 +1100
++++ linux-work/include/asm-generic/tlb.h	2009-07-15 17:42:43.000000000 +1000
+@@ -123,24 +123,24 @@ static inline void tlb_remove_page(struc
+ 		__tlb_remove_tlb_entry(tlb, ptep, address);	\
+ 	} while (0)
+ 
+-#define pte_free_tlb(tlb, ptep)					\
++#define pte_free_tlb(tlb, ptep, address)			\
+ 	do {							\
+ 		tlb->need_flush = 1;				\
+-		__pte_free_tlb(tlb, ptep);			\
++		__pte_free_tlb(tlb, ptep, address);		\
+ 	} while (0)
+ 
+ #ifndef __ARCH_HAS_4LEVEL_HACK
+-#define pud_free_tlb(tlb, pudp)					\
++#define pud_free_tlb(tlb, pudp, address)			\
+ 	do {							\
+ 		tlb->need_flush = 1;				\
+-		__pud_free_tlb(tlb, pudp);			\
++		__pud_free_tlb(tlb, pudp, address);		\
+ 	} while (0)
+ #endif
+ 
+-#define pmd_free_tlb(tlb, pmdp)					\
++#define pmd_free_tlb(tlb, pmdp, address)			\
+ 	do {							\
+ 		tlb->need_flush = 1;				\
+-		__pmd_free_tlb(tlb, pmdp);			\
++		__pmd_free_tlb(tlb, pmdp, address);		\
+ 	} while (0)
+ 
+ #define tlb_migrate_finish(mm) do {} while (0)
+Index: linux-work/mm/memory.c
+===================================================================
+--- linux-work.orig/mm/memory.c	2009-07-08 15:53:55.000000000 +1000
++++ linux-work/mm/memory.c	2009-07-15 17:42:43.000000000 +1000
+@@ -135,11 +135,12 @@ void pmd_clear_bad(pmd_t *pmd)
+  * Note: this doesn't free the actual pages themselves. That
+  * has been handled earlier when unmapping all the memory regions.
+  */
+-static void free_pte_range(struct mmu_gather *tlb, pmd_t *pmd)
++static void free_pte_range(struct mmu_gather *tlb, pmd_t *pmd,
++			   unsigned long addr)
+ {
+ 	pgtable_t token = pmd_pgtable(*pmd);
+ 	pmd_clear(pmd);
+-	pte_free_tlb(tlb, token);
++	pte_free_tlb(tlb, token, addr);
+ 	tlb->mm->nr_ptes--;
+ }
+ 
+@@ -157,7 +158,7 @@ static inline void free_pmd_range(struct
+ 		next = pmd_addr_end(addr, end);
+ 		if (pmd_none_or_clear_bad(pmd))
+ 			continue;
+-		free_pte_range(tlb, pmd);
++		free_pte_range(tlb, pmd, addr);
+ 	} while (pmd++, addr = next, addr != end);
+ 
+ 	start &= PUD_MASK;
+@@ -173,7 +174,7 @@ static inline void free_pmd_range(struct
+ 
+ 	pmd = pmd_offset(pud, start);
+ 	pud_clear(pud);
+-	pmd_free_tlb(tlb, pmd);
++	pmd_free_tlb(tlb, pmd, start);
+ }
+ 
+ static inline void free_pud_range(struct mmu_gather *tlb, pgd_t *pgd,
+@@ -206,7 +207,7 @@ static inline void free_pud_range(struct
+ 
+ 	pud = pud_offset(pgd, start);
+ 	pgd_clear(pgd);
+-	pud_free_tlb(tlb, pud);
++	pud_free_tlb(tlb, pud, start);
+ }
+ 
+ /*
+Index: linux-work/arch/powerpc/mm/hugetlbpage.c
+===================================================================
+--- linux-work.orig/arch/powerpc/mm/hugetlbpage.c	2009-02-05 16:22:25.000000000 +1100
++++ linux-work/arch/powerpc/mm/hugetlbpage.c	2009-07-15 17:42:43.000000000 +1000
+@@ -305,7 +305,7 @@ static void hugetlb_free_pmd_range(struc
+ 
+ 	pmd = pmd_offset(pud, start);
+ 	pud_clear(pud);
+-	pmd_free_tlb(tlb, pmd);
++	pmd_free_tlb(tlb, pmd, start);
+ }
+ 
+ static void hugetlb_free_pud_range(struct mmu_gather *tlb, pgd_t *pgd,
+@@ -348,7 +348,7 @@ static void hugetlb_free_pud_range(struc
+ 
+ 	pud = pud_offset(pgd, start);
+ 	pgd_clear(pgd);
+-	pud_free_tlb(tlb, pud);
++	pud_free_tlb(tlb, pud, start);
+ }
+ 
+ /*
+Index: linux-work/arch/alpha/include/asm/tlb.h
+===================================================================
+--- linux-work.orig/arch/alpha/include/asm/tlb.h	2009-02-05 16:22:17.000000000 +1100
++++ linux-work/arch/alpha/include/asm/tlb.h	2009-07-15 17:42:43.000000000 +1000
+@@ -9,7 +9,7 @@
+ 
+ #include <asm-generic/tlb.h>
+ 
+-#define __pte_free_tlb(tlb, pte)			pte_free((tlb)->mm, pte)
+-#define __pmd_free_tlb(tlb, pmd)			pmd_free((tlb)->mm, pmd)
++#define __pte_free_tlb(tlb, pte, address)		pte_free((tlb)->mm, pte)
++#define __pmd_free_tlb(tlb, pmd, address)		pmd_free((tlb)->mm, pmd)
+  
+ #endif
+Index: linux-work/arch/avr32/include/asm/pgalloc.h
+===================================================================
+--- linux-work.orig/arch/avr32/include/asm/pgalloc.h	2009-02-05 16:22:19.000000000 +1100
++++ linux-work/arch/avr32/include/asm/pgalloc.h	2009-07-15 17:42:43.000000000 +1000
+@@ -83,7 +83,7 @@ static inline void pte_free(struct mm_st
+ 	quicklist_free_page(QUICK_PT, NULL, pte);
+ }
+ 
+-#define __pte_free_tlb(tlb,pte)				\
++#define __pte_free_tlb(tlb,pte,addr)			\
+ do {							\
+ 	pgtable_page_dtor(pte);				\
+ 	tlb_remove_page((tlb), pte);			\
+Index: linux-work/arch/cris/include/asm/pgalloc.h
+===================================================================
+--- linux-work.orig/arch/cris/include/asm/pgalloc.h	2009-02-05 16:22:19.000000000 +1100
++++ linux-work/arch/cris/include/asm/pgalloc.h	2009-07-15 17:42:43.000000000 +1000
+@@ -47,7 +47,7 @@ static inline void pte_free(struct mm_st
+ 	__free_page(pte);
+ }
+ 
+-#define __pte_free_tlb(tlb,pte)				\
++#define __pte_free_tlb(tlb,pte,address)			\
+ do {							\
+ 	pgtable_page_dtor(pte);				\
+ 	tlb_remove_page((tlb), pte);			\
+Index: linux-work/arch/frv/include/asm/pgalloc.h
+===================================================================
+--- linux-work.orig/arch/frv/include/asm/pgalloc.h	2009-04-30 14:19:03.000000000 +1000
++++ linux-work/arch/frv/include/asm/pgalloc.h	2009-07-15 17:42:43.000000000 +1000
+@@ -49,7 +49,7 @@ static inline void pte_free(struct mm_st
+ 	__free_page(pte);
+ }
+ 
+-#define __pte_free_tlb(tlb,pte)				\
++#define __pte_free_tlb(tlb,pte,address)			\
+ do {							\
+ 	pgtable_page_dtor(pte);				\
+ 	tlb_remove_page((tlb),(pte));			\
+@@ -62,7 +62,7 @@ do {							\
+  */
+ #define pmd_alloc_one(mm, addr)		({ BUG(); ((pmd_t *) 2); })
+ #define pmd_free(mm, x)			do { } while (0)
+-#define __pmd_free_tlb(tlb,x)		do { } while (0)
++#define __pmd_free_tlb(tlb,x,a)		do { } while (0)
+ 
+ #endif /* CONFIG_MMU */
+ 
+Index: linux-work/arch/ia64/include/asm/pgalloc.h
+===================================================================
+--- linux-work.orig/arch/ia64/include/asm/pgalloc.h	2009-02-05 16:22:19.000000000 +1100
++++ linux-work/arch/ia64/include/asm/pgalloc.h	2009-07-15 17:42:43.000000000 +1000
+@@ -48,7 +48,7 @@ static inline void pud_free(struct mm_st
+ {
+ 	quicklist_free(0, NULL, pud);
+ }
+-#define __pud_free_tlb(tlb, pud)	pud_free((tlb)->mm, pud)
++#define __pud_free_tlb(tlb, pud, address)	pud_free((tlb)->mm, pud)
+ #endif /* CONFIG_PGTABLE_4 */
+ 
+ static inline void
+@@ -67,7 +67,7 @@ static inline void pmd_free(struct mm_st
+ 	quicklist_free(0, NULL, pmd);
+ }
+ 
+-#define __pmd_free_tlb(tlb, pmd)	pmd_free((tlb)->mm, pmd)
++#define __pmd_free_tlb(tlb, pmd, address)	pmd_free((tlb)->mm, pmd)
+ 
+ static inline void
+ pmd_populate(struct mm_struct *mm, pmd_t * pmd_entry, pgtable_t pte)
+@@ -117,6 +117,6 @@ static inline void check_pgt_cache(void)
+ 	quicklist_trim(0, NULL, 25, 16);
+ }
+ 
+-#define __pte_free_tlb(tlb, pte)	pte_free((tlb)->mm, pte)
++#define __pte_free_tlb(tlb, pte, address)	pte_free((tlb)->mm, pte)
+ 
+ #endif				/* _ASM_IA64_PGALLOC_H */
+Index: linux-work/arch/ia64/include/asm/tlb.h
+===================================================================
+--- linux-work.orig/arch/ia64/include/asm/tlb.h	2009-02-05 16:22:19.000000000 +1100
++++ linux-work/arch/ia64/include/asm/tlb.h	2009-07-15 17:42:43.000000000 +1000
+@@ -236,22 +236,22 @@ do {							\
+ 	__tlb_remove_tlb_entry(tlb, ptep, addr);	\
+ } while (0)
+ 
+-#define pte_free_tlb(tlb, ptep)				\
++#define pte_free_tlb(tlb, ptep, address)		\
+ do {							\
+ 	tlb->need_flush = 1;				\
+-	__pte_free_tlb(tlb, ptep);			\
++	__pte_free_tlb(tlb, ptep, address);		\
+ } while (0)
+ 
+-#define pmd_free_tlb(tlb, ptep)				\
++#define pmd_free_tlb(tlb, ptep, address)		\
+ do {							\
+ 	tlb->need_flush = 1;				\
+-	__pmd_free_tlb(tlb, ptep);			\
++	__pmd_free_tlb(tlb, ptep, address);		\
+ } while (0)
+ 
+-#define pud_free_tlb(tlb, pudp)				\
++#define pud_free_tlb(tlb, pudp, address)		\
+ do {							\
+ 	tlb->need_flush = 1;				\
+-	__pud_free_tlb(tlb, pudp);			\
++	__pud_free_tlb(tlb, pudp, address);		\
+ } while (0)
+ 
+ #endif /* _ASM_IA64_TLB_H */
+Index: linux-work/arch/m32r/include/asm/pgalloc.h
+===================================================================
+--- linux-work.orig/arch/m32r/include/asm/pgalloc.h	2009-04-30 14:19:03.000000000 +1000
++++ linux-work/arch/m32r/include/asm/pgalloc.h	2009-07-15 17:42:43.000000000 +1000
+@@ -58,7 +58,7 @@ static inline void pte_free(struct mm_st
+ 	__free_page(pte);
+ }
+ 
+-#define __pte_free_tlb(tlb, pte)	pte_free((tlb)->mm, (pte))
++#define __pte_free_tlb(tlb, pte, addr)	pte_free((tlb)->mm, (pte))
+ 
+ /*
+  * allocating and freeing a pmd is trivial: the 1-entry pmd is
+@@ -68,7 +68,7 @@ static inline void pte_free(struct mm_st
+ 
+ #define pmd_alloc_one(mm, addr)		({ BUG(); ((pmd_t *)2); })
+ #define pmd_free(mm, x)			do { } while (0)
+-#define __pmd_free_tlb(tlb, x)		do { } while (0)
++#define __pmd_free_tlb(tlb, x, addr)	do { } while (0)
+ #define pgd_populate(mm, pmd, pte)	BUG()
+ 
+ #define check_pgt_cache()	do { } while (0)
+Index: linux-work/arch/m68k/include/asm/motorola_pgalloc.h
+===================================================================
+--- linux-work.orig/arch/m68k/include/asm/motorola_pgalloc.h	2009-02-05 16:22:20.000000000 +1100
++++ linux-work/arch/m68k/include/asm/motorola_pgalloc.h	2009-07-15 17:42:43.000000000 +1000
+@@ -54,7 +54,8 @@ static inline void pte_free(struct mm_st
+ 	__free_page(page);
+ }
+ 
+-static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t page)
++static inline void __pte_free_tlb(struct mmu_gather *tlb, pgtable_t page,
++				  unsigned long address)
+ {
+ 	pgtable_page_dtor(page);
+ 	cache_page(kmap(page));
+@@ -73,7 +74,8 @@ static inline int pmd_free(struct mm_str
+ 	return free_pointer_table(pmd);
+ }
+ 
+-static inline int __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd)
++static inline int __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd,
++				 unsigned long address)
+ {
+ 	return free_pointer_table(pmd);
+ }
+Index: linux-work/arch/m68k/include/asm/sun3_pgalloc.h
+===================================================================
+--- linux-work.orig/arch/m68k/include/asm/sun3_pgalloc.h	2009-02-05 16:22:20.000000000 +1100
++++ linux-work/arch/m68k/include/asm/sun3_pgalloc.h	2009-07-15 17:42:43.000000000 +1000
+@@ -32,7 +32,7 @@ static inline void pte_free(struct mm_st
+         __free_page(page);
+ }
+ 
+-#define __pte_free_tlb(tlb,pte)				\
++#define __pte_free_tlb(tlb,pte,addr)			\
+ do {							\
+ 	pgtable_page_dtor(pte);				\
+ 	tlb_remove_page((tlb), pte);			\
+@@ -80,7 +80,7 @@ static inline void pmd_populate(struct m
+  * inside the pgd, so has no extra memory associated with it.
+  */
+ #define pmd_free(mm, x)			do { } while (0)
+-#define __pmd_free_tlb(tlb, x)		do { } while (0)
++#define __pmd_free_tlb(tlb, x, addr)	do { } while (0)
+ 
+ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
+ {
+Index: linux-work/arch/microblaze/include/asm/pgalloc.h
+===================================================================
+--- linux-work.orig/arch/microblaze/include/asm/pgalloc.h	2009-07-08 15:53:49.000000000 +1000
++++ linux-work/arch/microblaze/include/asm/pgalloc.h	2009-07-15 17:42:43.000000000 +1000
+@@ -180,7 +180,7 @@ extern inline void pte_free(struct mm_st
+ 	__free_page(ptepage);
+ }
+ 
+-#define __pte_free_tlb(tlb, pte)	pte_free((tlb)->mm, (pte))
++#define __pte_free_tlb(tlb, pte, addr)	pte_free((tlb)->mm, (pte))
+ 
+ #define pmd_populate(mm, pmd, pte)	(pmd_val(*(pmd)) = page_address(pte))
+ 
+@@ -193,7 +193,7 @@ extern inline void pte_free(struct mm_st
+  */
+ #define pmd_alloc_one(mm, address)	({ BUG(); ((pmd_t *)2); })
+ /*#define pmd_free(mm, x)			do { } while (0)*/
+-#define __pmd_free_tlb(tlb, x)		do { } while (0)
++#define __pmd_free_tlb(tlb, x, addr)	do { } while (0)
+ #define pgd_populate(mm, pmd, pte)	BUG()
+ 
+ extern int do_check_pgt_cache(int, int);
+Index: linux-work/arch/mips/include/asm/pgalloc.h
+===================================================================
+--- linux-work.orig/arch/mips/include/asm/pgalloc.h	2009-02-05 16:22:21.000000000 +1100
++++ linux-work/arch/mips/include/asm/pgalloc.h	2009-07-15 17:42:43.000000000 +1000
+@@ -98,7 +98,7 @@ static inline void pte_free(struct mm_st
+ 	__free_pages(pte, PTE_ORDER);
+ }
+ 
+-#define __pte_free_tlb(tlb,pte)				\
++#define __pte_free_tlb(tlb,pte,address)			\
+ do {							\
+ 	pgtable_page_dtor(pte);				\
+ 	tlb_remove_page((tlb), pte);			\
+@@ -111,7 +111,7 @@ do {							\
+  * inside the pgd, so has no extra memory associated with it.
+  */
+ #define pmd_free(mm, x)			do { } while (0)
+-#define __pmd_free_tlb(tlb, x)		do { } while (0)
++#define __pmd_free_tlb(tlb, x, addr)	do { } while (0)
+ 
+ #endif
+ 
+@@ -132,7 +132,7 @@ static inline void pmd_free(struct mm_st
+ 	free_pages((unsigned long)pmd, PMD_ORDER);
+ }
+ 
+-#define __pmd_free_tlb(tlb, x)	pmd_free((tlb)->mm, x)
++#define __pmd_free_tlb(tlb, x, addr)	pmd_free((tlb)->mm, x)
+ 
+ #endif
+ 
+Index: linux-work/arch/mn10300/include/asm/pgalloc.h
+===================================================================
+--- linux-work.orig/arch/mn10300/include/asm/pgalloc.h	2009-04-30 14:19:03.000000000 +1000
++++ linux-work/arch/mn10300/include/asm/pgalloc.h	2009-07-15 17:42:43.000000000 +1000
+@@ -51,6 +51,6 @@ static inline void pte_free(struct mm_st
+ }
+ 
+ 
+-#define __pte_free_tlb(tlb, pte) tlb_remove_page((tlb), (pte))
++#define __pte_free_tlb(tlb, pte, addr) tlb_remove_page((tlb), (pte))
+ 
+ #endif /* _ASM_PGALLOC_H */
+Index: linux-work/arch/parisc/include/asm/tlb.h
+===================================================================
+--- linux-work.orig/arch/parisc/include/asm/tlb.h	2009-02-05 16:22:21.000000000 +1100
++++ linux-work/arch/parisc/include/asm/tlb.h	2009-07-15 17:42:43.000000000 +1000
+@@ -21,7 +21,7 @@ do {	if (!(tlb)->fullmm)	\
+ 
+ #include <asm-generic/tlb.h>
+ 
+-#define __pmd_free_tlb(tlb, pmd)	pmd_free((tlb)->mm, pmd)
+-#define __pte_free_tlb(tlb, pte)	pte_free((tlb)->mm, pte)
++#define __pmd_free_tlb(tlb, pmd, addr)	pmd_free((tlb)->mm, pmd)
++#define __pte_free_tlb(tlb, pte, addr)	pte_free((tlb)->mm, pte)
+ 
+ #endif
+Index: linux-work/arch/s390/include/asm/tlb.h
+===================================================================
+--- linux-work.orig/arch/s390/include/asm/tlb.h	2009-02-05 16:22:25.000000000 +1100
++++ linux-work/arch/s390/include/asm/tlb.h	2009-07-15 17:42:43.000000000 +1000
+@@ -96,7 +96,8 @@ static inline void tlb_remove_page(struc
+  * pte_free_tlb frees a pte table and clears the CRSTE for the
+  * page table from the tlb.
+  */
+-static inline void pte_free_tlb(struct mmu_gather *tlb, pgtable_t pte)
++static inline void pte_free_tlb(struct mmu_gather *tlb, pgtable_t pte,
++				unsigned long address)
+ {
+ 	if (!tlb->fullmm) {
+ 		tlb->array[tlb->nr_ptes++] = pte;
+@@ -113,7 +114,8 @@ static inline void pte_free_tlb(struct m
+  * as the pgd. pmd_free_tlb checks the asce_limit against 2GB
+  * to avoid the double free of the pmd in this case.
+  */
+-static inline void pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd)
++static inline void pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd,
++				unsigned long address)
+ {
+ #ifdef __s390x__
+ 	if (tlb->mm->context.asce_limit <= (1UL << 31))
+@@ -134,7 +136,8 @@ static inline void pmd_free_tlb(struct m
+  * as the pgd. pud_free_tlb checks the asce_limit against 4TB
+  * to avoid the double free of the pud in this case.
+  */
+-static inline void pud_free_tlb(struct mmu_gather *tlb, pud_t *pud)
++static inline void pud_free_tlb(struct mmu_gather *tlb, pud_t *pud,
++				unsigned long address)
+ {
+ #ifdef __s390x__
+ 	if (tlb->mm->context.asce_limit <= (1UL << 42))
+Index: linux-work/arch/sh/include/asm/pgalloc.h
+===================================================================
+--- linux-work.orig/arch/sh/include/asm/pgalloc.h	2009-02-05 16:22:26.000000000 +1100
++++ linux-work/arch/sh/include/asm/pgalloc.h	2009-07-15 17:42:43.000000000 +1000
+@@ -73,7 +73,7 @@ static inline void pte_free(struct mm_st
+ 	quicklist_free_page(QUICK_PT, NULL, pte);
+ }
+ 
+-#define __pte_free_tlb(tlb,pte)				\
++#define __pte_free_tlb(tlb,pte,addr)			\
+ do {							\
+ 	pgtable_page_dtor(pte);				\
+ 	tlb_remove_page((tlb), (pte));			\
+@@ -85,7 +85,7 @@ do {							\
+  */
+ 
+ #define pmd_free(mm, x)			do { } while (0)
+-#define __pmd_free_tlb(tlb,x)		do { } while (0)
++#define __pmd_free_tlb(tlb,x,addr)	do { } while (0)
+ 
+ static inline void check_pgt_cache(void)
+ {
+Index: linux-work/arch/sh/include/asm/tlb.h
+===================================================================
+--- linux-work.orig/arch/sh/include/asm/tlb.h	2009-03-31 13:22:05.000000000 +1100
++++ linux-work/arch/sh/include/asm/tlb.h	2009-07-15 17:42:43.000000000 +1000
+@@ -91,9 +91,9 @@ tlb_end_vma(struct mmu_gather *tlb, stru
+ }
+ 
+ #define tlb_remove_page(tlb,page)	free_page_and_swap_cache(page)
+-#define pte_free_tlb(tlb, ptep)		pte_free((tlb)->mm, ptep)
+-#define pmd_free_tlb(tlb, pmdp)		pmd_free((tlb)->mm, pmdp)
+-#define pud_free_tlb(tlb, pudp)		pud_free((tlb)->mm, pudp)
++#define pte_free_tlb(tlb, ptep, addr)	pte_free((tlb)->mm, ptep)
++#define pmd_free_tlb(tlb, pmdp, addr)	pmd_free((tlb)->mm, pmdp)
++#define pud_free_tlb(tlb, pudp, addr)	pud_free((tlb)->mm, pudp)
+ 
+ #define tlb_migrate_finish(mm)		do { } while (0)
+ 
+Index: linux-work/arch/sparc/include/asm/pgalloc_32.h
+===================================================================
+--- linux-work.orig/arch/sparc/include/asm/pgalloc_32.h	2009-02-05 16:22:26.000000000 +1100
++++ linux-work/arch/sparc/include/asm/pgalloc_32.h	2009-07-15 17:42:43.000000000 +1000
+@@ -44,8 +44,8 @@ BTFIXUPDEF_CALL(pmd_t *, pmd_alloc_one, 
+ BTFIXUPDEF_CALL(void, free_pmd_fast, pmd_t *)
+ #define free_pmd_fast(pmd)	BTFIXUP_CALL(free_pmd_fast)(pmd)
+ 
+-#define pmd_free(mm, pmd)	free_pmd_fast(pmd)
+-#define __pmd_free_tlb(tlb, pmd) pmd_free((tlb)->mm, pmd)
++#define pmd_free(mm, pmd)		free_pmd_fast(pmd)
++#define __pmd_free_tlb(tlb, pmd, addr)	pmd_free((tlb)->mm, pmd)
+ 
+ BTFIXUPDEF_CALL(void, pmd_populate, pmd_t *, struct page *)
+ #define pmd_populate(MM, PMD, PTE)        BTFIXUP_CALL(pmd_populate)(PMD, PTE)
+@@ -62,7 +62,7 @@ BTFIXUPDEF_CALL(void, free_pte_fast, pte
+ #define pte_free_kernel(mm, pte)	BTFIXUP_CALL(free_pte_fast)(pte)
+ 
+ BTFIXUPDEF_CALL(void, pte_free, pgtable_t )
+-#define pte_free(mm, pte)	BTFIXUP_CALL(pte_free)(pte)
+-#define __pte_free_tlb(tlb, pte)	pte_free((tlb)->mm, pte)
++#define pte_free(mm, pte)		BTFIXUP_CALL(pte_free)(pte)
++#define __pte_free_tlb(tlb, pte, addr)	pte_free((tlb)->mm, pte)
+ 
+ #endif /* _SPARC_PGALLOC_H */
+Index: linux-work/arch/sparc/include/asm/tlb_64.h
+===================================================================
+--- linux-work.orig/arch/sparc/include/asm/tlb_64.h	2009-03-31 13:22:05.000000000 +1100
++++ linux-work/arch/sparc/include/asm/tlb_64.h	2009-07-15 17:42:43.000000000 +1000
+@@ -100,9 +100,9 @@ static inline void tlb_remove_page(struc
+ }
+ 
+ #define tlb_remove_tlb_entry(mp,ptep,addr) do { } while (0)
+-#define pte_free_tlb(mp, ptepage) pte_free((mp)->mm, ptepage)
+-#define pmd_free_tlb(mp, pmdp) pmd_free((mp)->mm, pmdp)
+-#define pud_free_tlb(tlb,pudp) __pud_free_tlb(tlb,pudp)
++#define pte_free_tlb(mp, ptepage, addr) pte_free((mp)->mm, ptepage)
++#define pmd_free_tlb(mp, pmdp, addr) pmd_free((mp)->mm, pmdp)
++#define pud_free_tlb(tlb,pudp, addr) __pud_free_tlb(tlb,pudp,addr)
+ 
+ #define tlb_migrate_finish(mm)	do { } while (0)
+ #define tlb_start_vma(tlb, vma) do { } while (0)
+Index: linux-work/arch/um/include/asm/pgalloc.h
+===================================================================
+--- linux-work.orig/arch/um/include/asm/pgalloc.h	2009-04-30 14:19:04.000000000 +1000
++++ linux-work/arch/um/include/asm/pgalloc.h	2009-07-15 17:42:43.000000000 +1000
+@@ -40,7 +40,7 @@ static inline void pte_free(struct mm_st
+ 	__free_page(pte);
+ }
+ 
+-#define __pte_free_tlb(tlb,pte)				\
++#define __pte_free_tlb(tlb,pte, address)		\
+ do {							\
+ 	pgtable_page_dtor(pte);				\
+ 	tlb_remove_page((tlb),(pte));			\
+@@ -53,7 +53,7 @@ static inline void pmd_free(struct mm_st
+ 	free_page((unsigned long)pmd);
+ }
+ 
+-#define __pmd_free_tlb(tlb,x)   tlb_remove_page((tlb),virt_to_page(x))
++#define __pmd_free_tlb(tlb,x, address)   tlb_remove_page((tlb),virt_to_page(x))
+ #endif
+ 
+ #define check_pgt_cache()	do { } while (0)
+Index: linux-work/arch/um/include/asm/tlb.h
+===================================================================
+--- linux-work.orig/arch/um/include/asm/tlb.h	2009-02-05 16:22:28.000000000 +1100
++++ linux-work/arch/um/include/asm/tlb.h	2009-07-15 17:42:43.000000000 +1000
+@@ -116,11 +116,11 @@ static inline void tlb_remove_page(struc
+ 		__tlb_remove_tlb_entry(tlb, ptep, address);	\
+ 	} while (0)
+ 
+-#define pte_free_tlb(tlb, ptep) __pte_free_tlb(tlb, ptep)
++#define pte_free_tlb(tlb, ptep, addr) __pte_free_tlb(tlb, ptep, addr)
+ 
+-#define pud_free_tlb(tlb, pudp) __pud_free_tlb(tlb, pudp)
++#define pud_free_tlb(tlb, pudp, addr) __pud_free_tlb(tlb, pudp, addr)
+ 
+-#define pmd_free_tlb(tlb, pmdp) __pmd_free_tlb(tlb, pmdp)
++#define pmd_free_tlb(tlb, pmdp, addr) __pmd_free_tlb(tlb, pmdp, addr)
+ 
+ #define tlb_migrate_finish(mm) do {} while (0)
+ 
+Index: linux-work/arch/x86/include/asm/pgalloc.h
+===================================================================
+--- linux-work.orig/arch/x86/include/asm/pgalloc.h	2009-02-05 16:22:28.000000000 +1100
++++ linux-work/arch/x86/include/asm/pgalloc.h	2009-07-15 17:42:43.000000000 +1000
+@@ -46,7 +46,13 @@ static inline void pte_free(struct mm_st
+ 	__free_page(pte);
+ }
+ 
+-extern void __pte_free_tlb(struct mmu_gather *tlb, struct page *pte);
++extern void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte);
 +
-+#define DRIVER_NAME "da8xx_lcdc"
-+
-+/* LCD Status Register */
-+#define LCD_END_OF_FRAME0		BIT(8)
-+#define LCD_FIFO_UNDERFLOW		BIT(5)
-+#define LCD_SYNC_LOST			BIT(2)
-+
-+/* LCD DMA Control Register */
-+#define LCD_DMA_BURST_SIZE(x)		((x) << 4)
-+#define LCD_DMA_BURST_1			0x0
-+#define LCD_DMA_BURST_2			0x1
-+#define LCD_DMA_BURST_4			0x2
-+#define LCD_DMA_BURST_8			0x3
-+#define LCD_DMA_BURST_16		0x4
-+#define LCD_END_OF_FRAME_INT_ENA	BIT(2)
-+#define LCD_DUAL_FRAME_BUFFER_ENABLE	BIT(0)
-+
-+/* LCD Control Register */
-+#define LCD_CLK_DIVISOR(x)		((x) << 8)
-+#define LCD_RASTER_MODE			0x01
-+
-+/* LCD Raster Control Register */
-+#define LCD_PALETTE_LOAD_MODE(x)	((x) << 20)
-+#define PALETTE_AND_DATA		0x00
-+#define PALETTE_ONLY			0x01
-+
-+#define LCD_MONO_8BIT_MODE		BIT(9)
-+#define LCD_RASTER_ORDER		BIT(8)
-+#define LCD_TFT_MODE			BIT(7)
-+#define LCD_UNDERFLOW_INT_ENA		BIT(6)
-+#define LCD_MONOCHROME_MODE		BIT(1)
-+#define LCD_RASTER_ENABLE		BIT(0)
-+#define LCD_TFT_ALT_ENABLE		BIT(23)
-+#define LCD_STN_565_ENABLE		BIT(24)
-+
-+/* LCD Raster Timing 2 Register */
-+#define LCD_AC_BIAS_TRANSITIONS_PER_INT(x)	((x) << 16)
-+#define LCD_AC_BIAS_FREQUENCY(x)		((x) << 8)
-+#define LCD_SYNC_CTRL				BIT(25)
-+#define LCD_SYNC_EDGE				BIT(24)
-+#define LCD_INVERT_PIXEL_CLOCK			BIT(22)
-+#define LCD_INVERT_LINE_CLOCK			BIT(21)
-+#define LCD_INVERT_FRAME_CLOCK			BIT(20)
-+
-+/* LCD Block */
-+#define  LCD_CTRL_REG				0x4
-+#define  LCD_STAT_REG				0x8
-+#define  LCD_RASTER_CTRL_REG			0x28
-+#define  LCD_RASTER_TIMING_0_REG		0x2C
-+#define  LCD_RASTER_TIMING_1_REG		0x30
-+#define  LCD_RASTER_TIMING_2_REG		0x34
-+#define  LCD_DMA_CTRL_REG			0x40
-+#define  LCD_DMA_FRM_BUF_BASE_ADDR_0_REG	0x44
-+#define  LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG	0x48
-+
-+#define WSI_TIMEOUT	50
-+#define PALETTE_SIZE	256
-+#define LEFT_MARGIN	64
-+#define RIGHT_MARGIN	64
-+#define UPPER_MARGIN	32
-+#define LOWER_MARGIN	32
-+
-+static resource_size_t da8xx_fb_reg_base;
-+static struct resource *lcdc_regs;
-+
-+static inline unsigned int lcdc_read(unsigned int addr)
++static inline void __pte_free_tlb(struct mmu_gather *tlb, struct page *pte,
++				  unsigned long address)
 +{
-+	return (unsigned int)__raw_readl(da8xx_fb_reg_base + (addr));
++	___pte_free_tlb(tlb, pte);
++}
+ 
+ static inline void pmd_populate_kernel(struct mm_struct *mm,
+ 				       pmd_t *pmd, pte_t *pte)
+@@ -78,7 +84,13 @@ static inline void pmd_free(struct mm_st
+ 	free_page((unsigned long)pmd);
+ }
+ 
+-extern void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd);
++extern void ___pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd);
++
++static inline void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd,
++				  unsigned long adddress)
++{
++	___pmd_free_tlb(tlb, pmd);
++}
+ 
+ #ifdef CONFIG_X86_PAE
+ extern void pud_populate(struct mm_struct *mm, pud_t *pudp, pmd_t *pmd);
+@@ -108,7 +120,14 @@ static inline void pud_free(struct mm_st
+ 	free_page((unsigned long)pud);
+ }
+ 
+-extern void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud);
++extern void ___pud_free_tlb(struct mmu_gather *tlb, pud_t *pud);
++
++static inline void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud,
++				  unsigned long address)
++{
++	___pud_free_tlb(tlb, pud);
 +}
 +
-+static inline void lcdc_write(unsigned int val, unsigned int addr)
-+{
-+	__raw_writel(val, da8xx_fb_reg_base + (addr));
-+}
-+
-+struct da8xx_fb_par {
-+	wait_queue_head_t da8xx_wq;
-+	resource_size_t p_palette_base;
-+	unsigned char *v_palette_base;
-+	struct clk *lcdc_clk;
-+	int irq;
-+	unsigned short pseudo_palette[16];
-+	unsigned int databuf_sz;
-+	unsigned int palette_sz;
-+};
-+
-+/* Variable Screen Information */
-+static struct fb_var_screeninfo da8xx_fb_var __devinitdata = {
-+	.xoffset = 0,
-+	.yoffset = 0,
-+	.transp = {0, 0, 0},
-+	.nonstd = 0,
-+	.activate = 0,
-+	.height = -1,
-+	.width = -1,
-+	.pixclock = 46666,	/* 46us - AUO display */
-+	.accel_flags = 0,
-+	.left_margin = LEFT_MARGIN,
-+	.right_margin = RIGHT_MARGIN,
-+	.upper_margin = UPPER_MARGIN,
-+	.lower_margin = LOWER_MARGIN,
-+	.sync = 0,
-+	.vmode = FB_VMODE_NONINTERLACED
-+};
-+
-+static struct fb_fix_screeninfo da8xx_fb_fix __devinitdata = {
-+	.id = "DA8xx FB Drv",
-+	.type = FB_TYPE_PACKED_PIXELS,
-+	.type_aux = 0,
-+	.visual = FB_VISUAL_PSEUDOCOLOR,
-+	.xpanstep = 1,
-+	.ypanstep = 1,
-+	.ywrapstep = 1,
-+	.accel = FB_ACCEL_NONE
-+};
-+
-+struct da8xx_panel {
-+	const char	name[25];	/* Full name <vendor>_<model> */
-+	unsigned short	width;
-+	unsigned short	height;
-+	int		hfp;		/* Horizontal front porch */
-+	int		hbp;		/* Horizontal back porch */
-+	int		hsw;		/* Horizontal Sync Pulse Width */
-+	int		vfp;		/* Vertical front porch */
-+	int		vbp;		/* Vertical back porch */
-+	int		vsw;		/* Vertical Sync Pulse Width */
-+	int		pxl_clk;	/* Pixel clock */
-+};
-+
-+static struct da8xx_panel known_lcd_panels[] = {
-+	/* Sharp LCD035Q3DG01 */
-+	[0] = {
-+		.name = "Sharp_LCD035Q3DG01",
-+		.width = 320,
-+		.height = 240,
-+		.hfp = 8,
-+		.hbp = 6,
-+		.hsw = 0,
-+		.vfp = 2,
-+		.vbp = 2,
-+		.vsw = 0,
-+		.pxl_clk = 0x10,
-+	},
-+	/* Sharp LK043T1DG01 */
-+	[1] = {
-+		.name = "Sharp_LK043T1DG01",
-+		.width = 480,
-+		.height = 272,
-+		.hfp = 2,
-+		.hbp = 2,
-+		.hsw = 41,
-+		.vfp = 2,
-+		.vbp = 2,
-+		.vsw = 10,
-+		.pxl_clk = 0x12,
-+	},
-+};
-+
-+/* Disable the Raster Engine of the LCD Controller */
-+static int lcd_disable_raster(struct da8xx_fb_par *par)
-+{
-+	int ret = 0;
-+	u32 reg;
-+
-+	reg = lcdc_read(LCD_RASTER_CTRL_REG);
-+	if (reg & LCD_RASTER_ENABLE) {
-+		lcdc_write(reg & ~LCD_RASTER_ENABLE, LCD_RASTER_CTRL_REG);
-+		ret = wait_event_interruptible_timeout(par->da8xx_wq,
-+						!lcdc_read(LCD_STAT_REG) &
-+						LCD_END_OF_FRAME0, WSI_TIMEOUT);
-+		if (ret < 0)
-+			return ret;
-+		if (ret == 0)
-+			ret = -ETIMEDOUT;
-+	}
-+
-+	return ret;
-+}
-+
-+static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
-+{
-+	u32 tmp = par->p_palette_base + par->databuf_sz - 4;
-+	u32 reg;
-+
-+	/* Update the databuf in the hw. */
-+	lcdc_write(par->p_palette_base, LCD_DMA_FRM_BUF_BASE_ADDR_0_REG);
-+	lcdc_write(tmp, LCD_DMA_FRM_BUF_CEILING_ADDR_0_REG);
-+
-+	/* Start the DMA. */
-+	reg = lcdc_read(LCD_RASTER_CTRL_REG);
-+	reg &= ~(3 << 20);
-+	if (load_mode == LOAD_DATA)
-+		reg |= LCD_PALETTE_LOAD_MODE(PALETTE_AND_DATA);
-+	else if (load_mode == LOAD_PALETTE)
-+		reg |= LCD_PALETTE_LOAD_MODE(PALETTE_ONLY);
-+
-+	lcdc_write(reg, LCD_RASTER_CTRL_REG);
-+}
-+
-+/* Configure the Burst Size of DMA */
-+static int lcd_cfg_dma(int burst_size)
-+{
-+	u32 reg;
-+
-+	reg = lcdc_read(LCD_DMA_CTRL_REG) & 0x00000001;
-+	switch (burst_size) {
-+	case 1:
-+		reg |= LCD_DMA_BURST_SIZE(LCD_DMA_BURST_1);
-+		break;
-+	case 2:
-+		reg |= LCD_DMA_BURST_SIZE(LCD_DMA_BURST_2);
-+		break;
-+	case 4:
-+		reg |= LCD_DMA_BURST_SIZE(LCD_DMA_BURST_4);
-+		break;
-+	case 8:
-+		reg |= LCD_DMA_BURST_SIZE(LCD_DMA_BURST_8);
-+		break;
-+	case 16:
-+		reg |= LCD_DMA_BURST_SIZE(LCD_DMA_BURST_16);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+	lcdc_write(reg | LCD_END_OF_FRAME_INT_ENA, LCD_DMA_CTRL_REG);
-+
-+	return 0;
-+}
-+
-+static void lcd_cfg_ac_bias(int period, int transitions_per_int)
-+{
-+	u32 reg;
-+
-+	/* Set the AC Bias Period and Number of Transisitons per Interrupt */
-+	reg = lcdc_read(LCD_RASTER_TIMING_2_REG) & 0xFFF00000;
-+	reg |= LCD_AC_BIAS_FREQUENCY(period) |
-+		LCD_AC_BIAS_TRANSITIONS_PER_INT(transitions_per_int);
-+	lcdc_write(reg, LCD_RASTER_TIMING_2_REG);
-+}
-+
-+static void lcd_cfg_horizontal_sync(int back_porch, int pulse_width,
-+		int front_porch)
-+{
-+	u32 reg;
-+
-+	reg = lcdc_read(LCD_RASTER_TIMING_0_REG) & 0xf;
-+	reg |= ((back_porch & 0xff) << 24)
-+	    | ((front_porch & 0xff) << 16)
-+	    | ((pulse_width & 0x3f) << 10);
-+	lcdc_write(reg, LCD_RASTER_TIMING_0_REG);
-+}
-+
-+static void lcd_cfg_vertical_sync(int back_porch, int pulse_width,
-+		int front_porch)
-+{
-+	u32 reg;
-+
-+	reg = lcdc_read(LCD_RASTER_TIMING_1_REG) & 0x3ff;
-+	reg |= ((back_porch & 0xff) << 24)
-+	    | ((front_porch & 0xff) << 16)
-+	    | ((pulse_width & 0x3f) << 10);
-+	lcdc_write(reg, LCD_RASTER_TIMING_1_REG);
-+}
-+
-+static int lcd_cfg_display(const struct lcd_ctrl_config *cfg)
-+{
-+	u32 reg;
-+
-+	reg = lcdc_read(LCD_RASTER_CTRL_REG) & ~(LCD_TFT_MODE |
-+						LCD_MONO_8BIT_MODE |
-+						LCD_MONOCHROME_MODE);
-+
-+	switch (cfg->p_disp_panel->panel_shade) {
-+	case MONOCHROME:
-+		reg |= LCD_MONOCHROME_MODE;
-+		if (cfg->mono_8bit_mode)
-+			reg |= LCD_MONO_8BIT_MODE;
-+		break;
-+	case COLOR_ACTIVE:
-+		reg |= LCD_TFT_MODE;
-+		if (cfg->tft_alt_mode)
-+			reg |= LCD_TFT_ALT_ENABLE;
-+		break;
-+
-+	case COLOR_PASSIVE:
-+		if (cfg->stn_565_mode)
-+			reg |= LCD_STN_565_ENABLE;
-+		break;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	/* enable additional interrupts here */
-+	reg |= LCD_UNDERFLOW_INT_ENA;
-+
-+	lcdc_write(reg, LCD_RASTER_CTRL_REG);
-+
-+	reg = lcdc_read(LCD_RASTER_TIMING_2_REG);
-+
-+	if (cfg->sync_ctrl)
-+		reg |= LCD_SYNC_CTRL;
-+	else
-+		reg &= ~LCD_SYNC_CTRL;
-+
-+	if (cfg->sync_edge)
-+		reg |= LCD_SYNC_EDGE;
-+	else
-+		reg &= ~LCD_SYNC_EDGE;
-+
-+	if (cfg->invert_pxl_clock)
-+		reg |= LCD_INVERT_PIXEL_CLOCK;
-+	else
-+		reg &= ~LCD_INVERT_PIXEL_CLOCK;
-+
-+	if (cfg->invert_line_clock)
-+		reg |= LCD_INVERT_LINE_CLOCK;
-+	else
-+		reg &= ~LCD_INVERT_LINE_CLOCK;
-+
-+	if (cfg->invert_frm_clock)
-+		reg |= LCD_INVERT_FRAME_CLOCK;
-+	else
-+		reg &= ~LCD_INVERT_FRAME_CLOCK;
-+
-+	lcdc_write(reg, LCD_RASTER_TIMING_2_REG);
-+
-+	return 0;
-+}
-+
-+static int lcd_cfg_frame_buffer(struct da8xx_fb_par *par, u32 width, u32 height,
-+		u32 bpp, u32 raster_order)
-+{
-+	u32 bpl, reg;
-+
-+	/* Disable Dual Frame Buffer. */
-+	reg = lcdc_read(LCD_DMA_CTRL_REG);
-+	lcdc_write(reg & ~LCD_DUAL_FRAME_BUFFER_ENABLE,
-+						LCD_DMA_CTRL_REG);
-+	/* Set the Panel Width */
-+	/* Pixels per line = (PPL + 1)*16 */
-+	/*0x3F in bits 4..9 gives max horisontal resolution = 1024 pixels*/
-+	width &= 0x3f0;
-+	reg = lcdc_read(LCD_RASTER_TIMING_0_REG);
-+	reg &= 0xfffffc00;
-+	reg |= ((width >> 4) - 1) << 4;
-+	lcdc_write(reg, LCD_RASTER_TIMING_0_REG);
-+
-+	/* Set the Panel Height */
-+	reg = lcdc_read(LCD_RASTER_TIMING_1_REG);
-+	reg = ((height - 1) & 0x3ff) | (reg & 0xfffffc00);
-+	lcdc_write(reg, LCD_RASTER_TIMING_1_REG);
-+
-+	/* Set the Raster Order of the Frame Buffer */
-+	reg = lcdc_read(LCD_RASTER_CTRL_REG) & ~(1 << 8);
-+	if (raster_order)
-+		reg |= LCD_RASTER_ORDER;
-+	lcdc_write(reg, LCD_RASTER_CTRL_REG);
-+
-+	switch (bpp) {
-+	case 1:
-+	case 2:
-+	case 4:
-+	case 16:
-+		par->palette_sz = 16 * 2;
-+		break;
-+
-+	case 8:
-+		par->palette_sz = 256 * 2;
-+		break;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	bpl = width * bpp / 8;
-+	par->databuf_sz = height * bpl + par->palette_sz;
-+
-+	return 0;
-+}
-+
-+static int fb_setcolreg(unsigned regno, unsigned red, unsigned green,
-+			      unsigned blue, unsigned transp,
-+			      struct fb_info *info)
-+{
-+	struct da8xx_fb_par *par = info->par;
-+	unsigned short *palette = (unsigned short *)par->v_palette_base;
-+	u_short pal;
-+
-+	if (regno > 255)
-+		return 1;
-+
-+	if (info->fix.visual == FB_VISUAL_DIRECTCOLOR)
-+		return 1;
-+
-+	if (info->var.bits_per_pixel == 8) {
-+		red >>= 4;
-+		green >>= 8;
-+		blue >>= 12;
-+
-+		pal = (red & 0x0f00);
-+		pal |= (green & 0x00f0);
-+		pal |= (blue & 0x000f);
-+
-+		palette[regno] = pal;
-+
-+	} else if ((info->var.bits_per_pixel == 16) && regno < 16) {
-+		red >>= (16 - info->var.red.length);
-+		red <<= info->var.red.offset;
-+
-+		green >>= (16 - info->var.green.length);
-+		green <<= info->var.green.offset;
-+
-+		blue >>= (16 - info->var.blue.length);
-+		blue <<= info->var.blue.offset;
-+
-+		par->pseudo_palette[regno] = red | green | blue;
-+
-+		palette[0] = 0x4000;
-+	}
-+
-+	return 0;
-+}
-+
-+static int lcd_reset(struct da8xx_fb_par *par)
-+{
-+	int ret = 0;
-+
-+	/* Disable the Raster if previously Enabled */
-+	if (lcdc_read(LCD_RASTER_CTRL_REG) & LCD_RASTER_ENABLE)
-+		ret = lcd_disable_raster(par);
-+
-+	/* DMA has to be disabled */
-+	lcdc_write(0, LCD_DMA_CTRL_REG);
-+	lcdc_write(0, LCD_RASTER_CTRL_REG);
-+
-+	return ret;
-+}
-+
-+static int lcd_init(struct da8xx_fb_par *par, const struct lcd_ctrl_config *cfg,
-+		struct da8xx_panel *panel)
-+{
-+	u32 bpp;
-+	int ret = 0;
-+
-+	ret = lcd_reset(par);
-+	if (ret != 0)
-+		return ret;
-+
-+	/* Configure the LCD clock divisor. */
-+	lcdc_write(LCD_CLK_DIVISOR(panel->pxl_clk) |
-+			(LCD_RASTER_MODE & 0x1), LCD_CTRL_REG);
-+
-+	/* Configure the DMA burst size. */
-+	ret = lcd_cfg_dma(cfg->dma_burst_sz);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* Configure the AC bias properties. */
-+	lcd_cfg_ac_bias(cfg->ac_bias, cfg->ac_bias_intrpt);
-+
-+	/* Configure the vertical and horizontal sync properties. */
-+	lcd_cfg_vertical_sync(panel->vbp, panel->vsw, panel->vfp);
-+	lcd_cfg_horizontal_sync(panel->hbp, panel->hsw, panel->hfp);
-+
-+	/* Configure for disply */
-+	ret = lcd_cfg_display(cfg);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (QVGA != cfg->p_disp_panel->panel_type)
-+		return -EINVAL;
-+
-+	if (cfg->bpp <= cfg->p_disp_panel->max_bpp &&
-+	    cfg->bpp >= cfg->p_disp_panel->min_bpp)
-+		bpp = cfg->bpp;
-+	else
-+		bpp = cfg->p_disp_panel->max_bpp;
-+	if (bpp == 12)
-+		bpp = 16;
-+	ret = lcd_cfg_frame_buffer(par, (unsigned int)panel->width,
-+				(unsigned int)panel->height, bpp,
-+				cfg->raster_order);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* Configure FDD */
-+	lcdc_write((lcdc_read(LCD_RASTER_CTRL_REG) & 0xfff00fff) |
-+		       (cfg->fdd << 12), LCD_RASTER_CTRL_REG);
-+
-+	return 0;
-+}
-+
-+static irqreturn_t lcdc_irq_handler(int irq, void *arg)
-+{
-+	u32 stat = lcdc_read(LCD_STAT_REG);
-+	struct da8xx_fb_par *par = arg;
-+	u32 reg;
-+
-+	if ((stat & LCD_SYNC_LOST) && (stat & LCD_FIFO_UNDERFLOW)) {
-+		reg = lcdc_read(LCD_RASTER_CTRL_REG);
-+		lcdc_write(reg & ~LCD_RASTER_ENABLE, LCD_RASTER_CTRL_REG);
-+		lcdc_write(stat, LCD_STAT_REG);
-+		lcdc_write(reg | LCD_RASTER_ENABLE, LCD_RASTER_CTRL_REG);
-+	} else
-+		lcdc_write(stat, LCD_STAT_REG);
-+
-+	wake_up_interruptible(&par->da8xx_wq);
-+	return IRQ_HANDLED;
-+}
-+
-+static int fb_check_var(struct fb_var_screeninfo *var,
-+			struct fb_info *info)
-+{
-+	int err = 0;
-+
-+	switch (var->bits_per_pixel) {
-+	case 1:
-+	case 8:
-+		var->red.offset = 0;
-+		var->red.length = 8;
-+		var->green.offset = 0;
-+		var->green.length = 8;
-+		var->blue.offset = 0;
-+		var->blue.length = 8;
-+		var->transp.offset = 0;
-+		var->transp.length = 0;
-+		break;
-+	case 4:
-+		var->red.offset = 0;
-+		var->red.length = 4;
-+		var->green.offset = 0;
-+		var->green.length = 4;
-+		var->blue.offset = 0;
-+		var->blue.length = 4;
-+		var->transp.offset = 0;
-+		var->transp.length = 0;
-+		break;
-+	case 16:		/* RGB 565 */
-+		var->red.offset = 0;
-+		var->red.length = 5;
-+		var->green.offset = 5;
-+		var->green.length = 6;
-+		var->blue.offset = 11;
-+		var->blue.length = 5;
-+		var->transp.offset = 0;
-+		var->transp.length = 0;
-+		break;
-+	default:
-+		err = -EINVAL;
-+	}
-+
-+	var->red.msb_right = 0;
-+	var->green.msb_right = 0;
-+	var->blue.msb_right = 0;
-+	var->transp.msb_right = 0;
-+	return err;
-+}
-+
-+static int __devexit fb_remove(struct platform_device *dev)
-+{
-+	struct fb_info *info = dev_get_drvdata(&dev->dev);
-+	int ret = 0;
-+
-+	if (info) {
-+		struct da8xx_fb_par *par = info->par;
-+
-+		if (lcdc_read(LCD_RASTER_CTRL_REG) & LCD_RASTER_ENABLE)
-+			ret = lcd_disable_raster(par);
-+		lcdc_write(0, LCD_RASTER_CTRL_REG);
-+
-+		/* disable DMA  */
-+		lcdc_write(0, LCD_DMA_CTRL_REG);
-+
-+		unregister_framebuffer(info);
-+		fb_dealloc_cmap(&info->cmap);
-+		dma_free_coherent(NULL, par->databuf_sz + PAGE_SIZE,
-+					info->screen_base,
-+					info->fix.smem_start);
-+		free_irq(par->irq, par);
-+		clk_disable(par->lcdc_clk);
-+		clk_put(par->lcdc_clk);
-+		framebuffer_release(info);
-+		iounmap((void __iomem *)da8xx_fb_reg_base);
-+		release_mem_region(lcdc_regs->start, resource_size(lcdc_regs));
-+
-+	}
-+	return ret;
-+}
-+
-+static int fb_ioctl(struct fb_info *info, unsigned int cmd,
-+			  unsigned long arg)
-+{
-+	struct lcd_sync_arg sync_arg;
-+
-+	switch (cmd) {
-+	case FBIOGET_CONTRAST:
-+	case FBIOPUT_CONTRAST:
-+	case FBIGET_BRIGHTNESS:
-+	case FBIPUT_BRIGHTNESS:
-+	case FBIGET_COLOR:
-+	case FBIPUT_COLOR:
-+		return -ENOTTY;
-+	case FBIPUT_HSYNC:
-+		if (copy_from_user(&sync_arg, (char *)arg,
-+				sizeof(struct lcd_sync_arg)))
-+			return -EFAULT;
-+		lcd_cfg_horizontal_sync(sync_arg.back_porch,
-+					sync_arg.pulse_width,
-+					sync_arg.front_porch);
-+		break;
-+	case FBIPUT_VSYNC:
-+		if (copy_from_user(&sync_arg, (char *)arg,
-+				sizeof(struct lcd_sync_arg)))
-+			return -EFAULT;
-+		lcd_cfg_vertical_sync(sync_arg.back_porch,
-+					sync_arg.pulse_width,
-+					sync_arg.front_porch);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+	return 0;
-+}
-+
-+static struct fb_ops da8xx_fb_ops = {
-+	.owner = THIS_MODULE,
-+	.fb_check_var = fb_check_var,
-+	.fb_setcolreg = fb_setcolreg,
-+	.fb_ioctl = fb_ioctl,
-+	.fb_fillrect = cfb_fillrect,
-+	.fb_copyarea = cfb_copyarea,
-+	.fb_imageblit = cfb_imageblit,
-+};
-+
-+static int __init fb_probe(struct platform_device *device)
-+{
-+	struct da8xx_lcdc_platform_data *fb_pdata =
-+						device->dev.platform_data;
-+	struct lcd_ctrl_config *lcd_cfg;
-+	struct da8xx_panel *lcdc_info;
-+	struct fb_info *da8xx_fb_info;
-+	struct clk *fb_clk = NULL;
-+	struct da8xx_fb_par *par;
-+	resource_size_t len;
-+	int ret, i;
-+
-+	if (fb_pdata == NULL) {
-+		dev_err(&device->dev, "Can not get platform data\n");
-+		return -ENOENT;
-+	}
-+
-+	lcdc_regs = platform_get_resource(device, IORESOURCE_MEM, 0);
-+	if (!lcdc_regs) {
-+		dev_err(&device->dev,
-+			"Can not get memory resource for LCD controller\n");
-+		return -ENOENT;
-+	}
-+
-+	len = resource_size(lcdc_regs);
-+
-+	lcdc_regs = request_mem_region(lcdc_regs->start, len, lcdc_regs->name);
-+	if (!lcdc_regs)
-+		return -EBUSY;
-+
-+	da8xx_fb_reg_base = (resource_size_t)ioremap(lcdc_regs->start, len);
-+	if (!da8xx_fb_reg_base) {
-+		ret = -EBUSY;
-+		goto err_request_mem;
-+	}
-+
-+	fb_clk = clk_get(&device->dev, NULL);
-+	if (IS_ERR(fb_clk)) {
-+		dev_err(&device->dev, "Can not get device clock\n");
-+		ret = -ENODEV;
-+		goto err_ioremap;
-+	}
-+	ret = clk_enable(fb_clk);
-+	if (ret)
-+		goto err_clk_put;
-+
-+	for (i = 0, lcdc_info = known_lcd_panels;
-+		i < ARRAY_SIZE(known_lcd_panels);
-+		i++, lcdc_info++) {
-+		if (strcmp(fb_pdata->type, lcdc_info->name) == 0)
-+			break;
-+	}
-+
-+	if (i == ARRAY_SIZE(known_lcd_panels)) {
-+		dev_err(&device->dev, "GLCD: No valid panel found\n");
-+		ret = ENODEV;
-+		goto err_clk_disable;
-+	} else
-+		dev_info(&device->dev, "GLCD: Found %s panel\n",
-+					fb_pdata->type);
-+
-+	lcd_cfg = (struct lcd_ctrl_config *)fb_pdata->controller_data;
-+
-+	da8xx_fb_info = framebuffer_alloc(sizeof(struct da8xx_fb_par),
-+					&device->dev);
-+	if (!da8xx_fb_info) {
-+		dev_dbg(&device->dev, "Memory allocation failed for fb_info\n");
-+		ret = -ENOMEM;
-+		goto err_clk_disable;
-+	}
-+
-+	par = da8xx_fb_info->par;
-+
-+	if (lcd_init(par, lcd_cfg, lcdc_info) < 0) {
-+		dev_err(&device->dev, "lcd_init failed\n");
-+		ret = -EFAULT;
-+		goto err_release_fb;
-+	}
-+
-+	/* allocate frame buffer */
-+	da8xx_fb_info->screen_base = dma_alloc_coherent(NULL,
-+					par->databuf_sz + PAGE_SIZE,
-+					(resource_size_t *)
-+					&da8xx_fb_info->fix.smem_start,
-+					GFP_KERNEL | GFP_DMA);
-+
-+	if (!da8xx_fb_info->screen_base) {
-+		dev_err(&device->dev,
-+			"GLCD: kmalloc for frame buffer failed\n");
-+		ret = -EINVAL;
-+		goto err_release_fb;
-+	}
-+
-+	/* move palette base pointer by (PAGE_SIZE - palette_sz) bytes */
-+	par->v_palette_base = da8xx_fb_info->screen_base +
-+				(PAGE_SIZE - par->palette_sz);
-+	par->p_palette_base = da8xx_fb_info->fix.smem_start +
-+				(PAGE_SIZE - par->palette_sz);
-+
-+	/* the rest of the frame buffer is pixel data */
-+	da8xx_fb_fix.smem_start = par->p_palette_base + par->palette_sz;
-+	da8xx_fb_fix.smem_len = par->databuf_sz - par->palette_sz;
-+	da8xx_fb_fix.line_length = (lcdc_info->width * lcd_cfg->bpp) / 8;
-+
-+	par->lcdc_clk = fb_clk;
-+
-+	init_waitqueue_head(&par->da8xx_wq);
-+
-+	par->irq = platform_get_irq(device, 0);
-+	if (par->irq < 0) {
-+		ret = -ENOENT;
-+		goto err_release_fb_mem;
-+	}
-+
-+	ret = request_irq(par->irq, lcdc_irq_handler, 0, DRIVER_NAME, par);
-+	if (ret)
-+		goto err_release_fb_mem;
-+
-+	/* Initialize par */
-+	da8xx_fb_info->var.bits_per_pixel = lcd_cfg->bpp;
-+
-+	da8xx_fb_var.xres = lcdc_info->width;
-+	da8xx_fb_var.xres_virtual = lcdc_info->width;
-+
-+	da8xx_fb_var.yres = lcdc_info->height;
-+	da8xx_fb_var.yres_virtual = lcdc_info->height;
-+
-+	da8xx_fb_var.grayscale =
-+	    lcd_cfg->p_disp_panel->panel_shade == MONOCHROME ? 1 : 0;
-+	da8xx_fb_var.bits_per_pixel = lcd_cfg->bpp;
-+
-+	da8xx_fb_var.hsync_len = lcdc_info->hsw;
-+	da8xx_fb_var.vsync_len = lcdc_info->vsw;
-+
-+	/* Initialize fbinfo */
-+	da8xx_fb_info->flags = FBINFO_FLAG_DEFAULT;
-+	da8xx_fb_info->fix = da8xx_fb_fix;
-+	da8xx_fb_info->var = da8xx_fb_var;
-+	da8xx_fb_info->fbops = &da8xx_fb_ops;
-+	da8xx_fb_info->pseudo_palette = par->pseudo_palette;
-+
-+	ret = fb_alloc_cmap(&da8xx_fb_info->cmap, PALETTE_SIZE, 0);
-+	if (ret)
-+		goto err_free_irq;
-+
-+	/* First palette_sz byte of the frame buffer is the palette */
-+	da8xx_fb_info->cmap.len = par->palette_sz;
-+
-+	/* Flush the buffer to the screen. */
-+	lcd_blit(LOAD_DATA, par);
-+
-+	/* initialize var_screeninfo */
-+	da8xx_fb_var.activate = FB_ACTIVATE_FORCE;
-+	fb_set_var(da8xx_fb_info, &da8xx_fb_var);
-+
-+	dev_set_drvdata(&device->dev, da8xx_fb_info);
-+	/* Register the Frame Buffer  */
-+	if (register_framebuffer(da8xx_fb_info) < 0) {
-+		dev_err(&device->dev,
-+			"GLCD: Frame Buffer Registration Failed!\n");
-+		ret = -EINVAL;
-+		goto err_dealloc_cmap;
-+	}
-+
-+	/* enable raster engine */
-+	lcdc_write(lcdc_read(LCD_RASTER_CTRL_REG) |
-+			LCD_RASTER_ENABLE, LCD_RASTER_CTRL_REG);
-+
-+	return 0;
-+
-+err_dealloc_cmap:
-+	fb_dealloc_cmap(&da8xx_fb_info->cmap);
-+
-+err_free_irq:
-+	free_irq(par->irq, par);
-+
-+err_release_fb_mem:
-+	dma_free_coherent(NULL, par->databuf_sz + PAGE_SIZE,
-+				da8xx_fb_info->screen_base,
-+				da8xx_fb_info->fix.smem_start);
-+
-+err_release_fb:
-+	framebuffer_release(da8xx_fb_info);
-+
-+err_clk_disable:
-+	clk_disable(fb_clk);
-+
-+err_clk_put:
-+	clk_put(fb_clk);
-+
-+err_ioremap:
-+	iounmap((void __iomem *)da8xx_fb_reg_base);
-+
-+err_request_mem:
-+	release_mem_region(lcdc_regs->start, len);
-+
-+	return ret;
-+}
-+
-+#ifdef CONFIG_PM
-+static int fb_suspend(struct platform_device *dev, pm_message_t state)
-+{
-+	 return -EBUSY;
-+}
-+static int fb_resume(struct platform_device *dev)
-+{
-+	 return -EBUSY;
-+}
-+#else
-+#define fb_suspend NULL
-+#define fb_resume NULL
-+#endif
-+
-+static struct platform_driver da8xx_fb_driver = {
-+	.probe = fb_probe,
-+	.remove = fb_remove,
-+	.suspend = fb_suspend,
-+	.resume = fb_resume,
-+	.driver = {
-+		   .name = DRIVER_NAME,
-+		   .owner = THIS_MODULE,
-+		   },
-+};
-+
-+static int __init da8xx_fb_init(void)
-+{
-+	return platform_driver_register(&da8xx_fb_driver);
-+}
-+
-+static void __exit da8xx_fb_cleanup(void)
-+{
-+	platform_driver_unregister(&da8xx_fb_driver);
-+}
-+
-+module_init(da8xx_fb_init);
-+module_exit(da8xx_fb_cleanup);
-+
-+MODULE_DESCRIPTION("Framebuffer driver for TI da8xx/omap-l1xx");
-+MODULE_AUTHOR("Texas Instruments");
-+MODULE_LICENSE("GPL");
-diff --git a/include/video/da8xx-fb.h b/include/video/da8xx-fb.h
-new file mode 100644
-index 0000000..5f77675
---- /dev/null
-+++ b/include/video/da8xx-fb.h
-@@ -0,0 +1,106 @@
-+/*
-+ * Header file for TI DA8XX LCD controller platform data.
-+ *
-+ * Copyright (C) 2008-2009 MontaVista Software Inc.
-+ * Copyright (C) 2008-2009 Texas Instruments Inc
-+ *
-+ * This file is licensed under the terms of the GNU General Public License
-+ * version 2. This program is licensed "as is" without any warranty of any
-+ * kind, whether express or implied.
-+ */
-+
-+#ifndef DA8XX_FB_H
-+#define DA8XX_FB_H
-+
-+enum panel_type {
-+	QVGA = 0
-+};
-+
-+enum panel_shade {
-+	MONOCHROME = 0,
-+	COLOR_ACTIVE,
-+	COLOR_PASSIVE,
-+};
-+
-+enum raster_load_mode {
-+	LOAD_DATA = 1,
-+	LOAD_PALETTE,
-+};
-+
-+struct display_panel {
-+	enum panel_type panel_type; /* QVGA */
-+	int max_bpp;
-+	int min_bpp;
-+	enum panel_shade panel_shade;
-+};
-+
-+struct da8xx_lcdc_platform_data {
-+	const char manu_name[10];
-+	void *controller_data;
-+	const char type[25];
-+};
-+
-+struct lcd_ctrl_config {
-+	const struct display_panel *p_disp_panel;
-+
-+	/* AC Bias Pin Frequency */
-+	int ac_bias;
-+
-+	/* AC Bias Pin Transitions per Interrupt */
-+	int ac_bias_intrpt;
-+
-+	/* DMA burst size */
-+	int dma_burst_sz;
-+
-+	/* Bits per pixel */
-+	int bpp;
-+
-+	/* FIFO DMA Request Delay */
-+	int fdd;
-+
-+	/* TFT Alternative Signal Mapping (Only for active) */
-+	unsigned char tft_alt_mode;
-+
-+	/* 12 Bit Per Pixel (5-6-5) Mode (Only for passive) */
-+	unsigned char stn_565_mode;
-+
-+	/* Mono 8-bit Mode: 1=D0-D7 or 0=D0-D3 */
-+	unsigned char mono_8bit_mode;
-+
-+	/* Invert pixel clock */
-+	unsigned char invert_pxl_clock;
-+
-+	/* Invert line clock */
-+	unsigned char invert_line_clock;
-+
-+	/* Invert frame clock  */
-+	unsigned char invert_frm_clock;
-+
-+	/* Horizontal and Vertical Sync Edge: 0=rising 1=falling */
-+	unsigned char sync_edge;
-+
-+	/* Horizontal and Vertical Sync: Control: 0=ignore */
-+	unsigned char sync_ctrl;
-+
-+	/* Raster Data Order Select: 1=Most-to-least 0=Least-to-most */
-+	unsigned char raster_order;
-+};
-+
-+struct lcd_sync_arg {
-+	int back_porch;
-+	int front_porch;
-+	int pulse_width;
-+};
-+
-+/* ioctls */
-+#define FBIOGET_CONTRAST	_IOR('F', 1, int)
-+#define FBIOPUT_CONTRAST	_IOW('F', 2, int)
-+#define FBIGET_BRIGHTNESS	_IOR('F', 3, int)
-+#define FBIPUT_BRIGHTNESS	_IOW('F', 3, int)
-+#define FBIGET_COLOR		_IOR('F', 5, int)
-+#define FBIPUT_COLOR		_IOW('F', 6, int)
-+#define FBIPUT_HSYNC		_IOW('F', 9, int)
-+#define FBIPUT_VSYNC		_IOW('F', 10, int)
-+
-+#endif  /* ifndef DA8XX_FB_H */
-+
--- 
-1.5.6
+ #endif	/* PAGETABLE_LEVELS > 3 */
+ #endif	/* PAGETABLE_LEVELS > 2 */
+ 
+Index: linux-work/arch/x86/mm/pgtable.c
+===================================================================
+--- linux-work.orig/arch/x86/mm/pgtable.c	2009-07-08 15:53:51.000000000 +1000
++++ linux-work/arch/x86/mm/pgtable.c	2009-07-15 17:42:43.000000000 +1000
+@@ -25,7 +25,7 @@ pgtable_t pte_alloc_one(struct mm_struct
+ 	return pte;
+ }
+ 
+-void __pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
++void ___pte_free_tlb(struct mmu_gather *tlb, struct page *pte)
+ {
+ 	pgtable_page_dtor(pte);
+ 	paravirt_release_pte(page_to_pfn(pte));
+@@ -33,14 +33,14 @@ void __pte_free_tlb(struct mmu_gather *t
+ }
+ 
+ #if PAGETABLE_LEVELS > 2
+-void __pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd)
++void ___pmd_free_tlb(struct mmu_gather *tlb, pmd_t *pmd)
+ {
+ 	paravirt_release_pmd(__pa(pmd) >> PAGE_SHIFT);
+ 	tlb_remove_page(tlb, virt_to_page(pmd));
+ }
+ 
+ #if PAGETABLE_LEVELS > 3
+-void __pud_free_tlb(struct mmu_gather *tlb, pud_t *pud)
++void ___pud_free_tlb(struct mmu_gather *tlb, pud_t *pud)
+ {
+ 	paravirt_release_pud(__pa(pud) >> PAGE_SHIFT);
+ 	tlb_remove_page(tlb, virt_to_page(pud));
+Index: linux-work/arch/xtensa/include/asm/tlb.h
+===================================================================
+--- linux-work.orig/arch/xtensa/include/asm/tlb.h	2009-02-05 16:22:29.000000000 +1100
++++ linux-work/arch/xtensa/include/asm/tlb.h	2009-07-15 17:42:43.000000000 +1000
+@@ -42,6 +42,6 @@
+ 
+ #include <asm-generic/tlb.h>
+ 
+-#define __pte_free_tlb(tlb, pte)		pte_free((tlb)->mm, pte)
++#define __pte_free_tlb(tlb, pte, address)	pte_free((tlb)->mm, pte)
+ 
+ #endif	/* _XTENSA_TLB_H */
+Index: linux-work/arch/arm/include/asm/tlb.h
+===================================================================
+--- linux-work.orig/arch/arm/include/asm/tlb.h	2009-07-15 17:45:18.000000000 +1000
++++ linux-work/arch/arm/include/asm/tlb.h	2009-07-15 17:45:28.000000000 +1000
+@@ -102,8 +102,8 @@ tlb_end_vma(struct mmu_gather *tlb, stru
+ }
+ 
+ #define tlb_remove_page(tlb,page)	free_page_and_swap_cache(page)
+-#define pte_free_tlb(tlb, ptep)		pte_free((tlb)->mm, ptep)
+-#define pmd_free_tlb(tlb, pmdp)		pmd_free((tlb)->mm, pmdp)
++#define pte_free_tlb(tlb, ptep, addr)	pte_free((tlb)->mm, ptep)
++#define pmd_free_tlb(tlb, pmdp, addr)	pmd_free((tlb)->mm, pmdp)
+ 
+ #define tlb_migrate_finish(mm)		do { } while (0)
+ 
+Index: linux-work/arch/frv/include/asm/pgtable.h
+===================================================================
+--- linux-work.orig/arch/frv/include/asm/pgtable.h	2009-07-15 17:45:52.000000000 +1000
++++ linux-work/arch/frv/include/asm/pgtable.h	2009-07-15 17:45:59.000000000 +1000
+@@ -225,7 +225,7 @@ static inline pud_t *pud_offset(pgd_t *p
+  */
+ #define pud_alloc_one(mm, address)		NULL
+ #define pud_free(mm, x)				do { } while (0)
+-#define __pud_free_tlb(tlb, x)			do { } while (0)
++#define __pud_free_tlb(tlb, x, address)		do { } while (0)
+ 
+ /*
+  * The "pud_xxx()" functions here are trivial for a folded two-level
+Index: linux-work/include/asm-generic/4level-fixup.h
+===================================================================
+--- linux-work.orig/include/asm-generic/4level-fixup.h	2009-07-15 17:44:05.000000000 +1000
++++ linux-work/include/asm-generic/4level-fixup.h	2009-07-15 17:44:25.000000000 +1000
+@@ -27,9 +27,9 @@
+ #define pud_page_vaddr(pud)		pgd_page_vaddr(pud)
+ 
+ #undef pud_free_tlb
+-#define pud_free_tlb(tlb, x)            do { } while (0)
++#define pud_free_tlb(tlb, x, addr)	do { } while (0)
+ #define pud_free(mm, x)			do { } while (0)
+-#define __pud_free_tlb(tlb, x)		do { } while (0)
++#define __pud_free_tlb(tlb, x, addr)	do { } while (0)
+ 
+ #undef  pud_addr_end
+ #define pud_addr_end(addr, end)		(end)
+
 
