@@ -1,99 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753042AbZGVUlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbZGVUpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753042AbZGVUlb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 16:41:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbZGVUla
+	id S1752908AbZGVUpx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 16:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbZGVUpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 16:41:30 -0400
-Received: from slimlogic.co.uk ([89.16.172.20]:48206 "EHLO slimlogic.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752312AbZGVUla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 16:41:30 -0400
-Subject: Re: [PATCH 6/6] regulator: Provide mode to status conversion
- function
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1248188428-11277-6-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <1248188428-11277-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	 <1248188428-11277-2-git-send-email-broonie@opensource.wolfsonmicro.com>
-	 <1248188428-11277-3-git-send-email-broonie@opensource.wolfsonmicro.com>
-	 <1248188428-11277-4-git-send-email-broonie@opensource.wolfsonmicro.com>
-	 <1248188428-11277-5-git-send-email-broonie@opensource.wolfsonmicro.com>
-	 <1248188428-11277-6-git-send-email-broonie@opensource.wolfsonmicro.com>
-Content-Type: text/plain
-Date: Wed, 22 Jul 2009 21:41:28 +0100
-Message-Id: <1248295288.25964.844.camel@vega.slimlogic.co.uk>
+	Wed, 22 Jul 2009 16:45:52 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:25119 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752458AbZGVUpv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 16:45:51 -0400
+Date: Wed, 22 Jul 2009 13:43:21 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Cheng Renquan <crq@kernel.org>, linux-kbuild@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       crquan@gmail.com, Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [PATCH 0/6] kbuild configuration system improvements
+Message-Id: <20090722134321.34f1ebf7.randy.dunlap@oracle.com>
+In-Reply-To: <20090718072138.GA7711@merkur.ravnborg.org>
+References: <1247386308-19628-1-git-send-email-crq@kernel.org>
+	<20090718072138.GA7711@merkur.ravnborg.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt009.oracle.com [141.146.116.18]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010209.4A6779ED.00CF:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-21 at 16:00 +0100, Mark Brown wrote:
-> This is useful for implementing get_status() in terms of get_mode().
+On Sat, 18 Jul 2009 09:21:38 +0200 Sam Ravnborg wrote:
+
+> On Sun, Jul 12, 2009 at 04:11:42PM +0800, Cheng Renquan wrote:
+> > From: Cheng Renquan <crquan@gmail.com>
+> > 
+> > These patches improve usability of kernel configuration system,
+> > 
+> > 1. add symbol's value shown accompanied in config item's help message;
+> > 2. move the real plumbing functions code from mconf.c to menu.c, make them
+> >    be able to be shared with other configuration methods;
+> > 3. add "symbol's value shown" support for gconfig/xconfig/config;
+> > 
+> >     0001-add-symbol-value-to-help-find-the-real-depend.patch
+> >     0002-add-menu_get_ext_help-function-to-display-more-infor.patch
+> >     0003-menuconfig-improvements.patch
+> >     0004-make-use-of-menu_get_ext_help-in-gconfig.patch
+> >     0005-make-use-of-menu_get_ext_help-in-qconfig.patch
+> >     0006-make-use-of-menu_get_ext_help-in-make-config.patch
 > 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
->  drivers/regulator/core.c         |   24 ++++++++++++++++++++++++
->  include/linux/regulator/driver.h |    2 ++
->  2 files changed, 26 insertions(+), 0 deletions(-)
+> I fixed them all up to:
+> 1) include "kconfig:" prefix in subject
+> 2) cc: of Roman Zippel which is kconfig maintainer
 > 
-> diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
-> index cba10ec..13d0f92 100644
-> --- a/drivers/regulator/core.c
-> +++ b/drivers/regulator/core.c
-> @@ -1993,6 +1993,30 @@ int regulator_notifier_call_chain(struct regulator_dev *rdev,
->  }
->  EXPORT_SYMBOL_GPL(regulator_notifier_call_chain);
->  
-> +/**
-> + * regulator_mode_to_status - convert a regulator mode into a status
-> + *
-> + * @mode: Mode to convert
-> + *
-> + * Convert a regulator mode into a status.
-> + */
-> +int regulator_mode_to_status(unsigned int mode)
-> +{
-> +	switch (mode) {
-> +	case REGULATOR_MODE_FAST:
-> +		return REGULATOR_STATUS_FAST;
-> +	case REGULATOR_MODE_NORMAL:
-> +		return REGULATOR_STATUS_NORMAL;
-> +	case REGULATOR_MODE_IDLE:
-> +		return REGULATOR_STATUS_IDLE;
-> +	case REGULATOR_STATUS_STANDBY:
-> +		return REGULATOR_STATUS_STANDBY;
-> +	default:
-> +		return 0;
-> +	}
-> +}
-> +EXPORT_SYMBOL_GPL(regulator_mode_to_status);
-> +
->  /*
->   * To avoid cluttering sysfs (and memory) with useless state, only
->   * create attributes that can be meaningfully displayed.
-> diff --git a/include/linux/regulator/driver.h b/include/linux/regulator/driver.h
-> index 60efbd1..73c9cd6 100644
-> --- a/include/linux/regulator/driver.h
-> +++ b/include/linux/regulator/driver.h
-> @@ -195,6 +195,8 @@ void *rdev_get_drvdata(struct regulator_dev *rdev);
->  struct device *rdev_get_dev(struct regulator_dev *rdev);
->  int rdev_get_id(struct regulator_dev *rdev);
->  
-> +int regulator_mode_to_status(unsigned int);
-> +
->  void *regulator_get_init_drvdata(struct regulator_init_data *reg_init_data);
->  
->  #endif
+> There were a few checkpatch issues that I decided to ignore for now.
+> 
+> Please always cc: Roman on kconfig patches as he is the mintainer.
+> 
+> Applied to kbuild-next.git.
 
-I've applied all patches, but I'm wondering whether it would be better
-to eventually merge MODE and STATUS. i.e. have REGULATOR_FAST instead of
-REGULATOR_STATUS_FAST and REGULATOR_MODE_FAST. 
 
-Thanks
+FWIW, I still get a segfault in gconfig (as I reported several months ago).
+I suppose that if it's a real issue, someone else will also see this.
 
-Liam
-
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
