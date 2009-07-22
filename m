@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752128AbZGVJuO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752918AbZGVJxh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752128AbZGVJuO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 05:50:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbZGVJuO
+	id S1752918AbZGVJxh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 05:53:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbZGVJxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 05:50:14 -0400
-Received: from cantor.suse.de ([195.135.220.2]:39258 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751639AbZGVJuN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 05:50:13 -0400
-Date: Wed, 22 Jul 2009 11:50:12 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [resend, trivial] fix missing printk space
-In-Reply-To: <20090721191414.2F50912B5F@gandalf.tls.msk.ru>
-Message-ID: <alpine.LNX.2.00.0907221149450.11648@wotan.suse.de>
-References: <20090721191414.2F50912B5F@gandalf.tls.msk.ru>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Wed, 22 Jul 2009 05:53:36 -0400
+Received: from wavehammer.waldi.eu.org ([82.139.201.20]:37392 "EHLO
+	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750865AbZGVJxg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 05:53:36 -0400
+Date: Wed, 22 Jul 2009 11:54:37 +0200
+From: Bastian Blank <bastian@waldi.eu.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andreas Herrmann <andreas.herrmann3@amd.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com
+Subject: Re: [PATCH] x86: detect use of extended APIC ID for AMD CPUs
+Message-ID: <20090722095436.GA9000@wavehammer.waldi.eu.org>
+Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
+	Jeremy Fitzhardinge <jeremy@goop.org>,
+	Andreas Herrmann <andreas.herrmann3@amd.com>,
+	Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+	"H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+	xen-devel@lists.xensource.com
+References: <20090604104016.GT5736@alberich.amd.com> <20090721103642.GA10071@wavehammer.waldi.eu.org> <4A65F34D.40506@goop.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4A65F34D.40506@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 21 Jul 2009, Michael Tokarev wrote:
+On Tue, Jul 21, 2009 at 09:56:45AM -0700, Jeremy Fitzhardinge wrote:
+> Does this work?  (Completely untested.)
 
-> This trivial patch fixes one missing space in printk.
-> 
-> I already fixed it about half a year ago or more, but
-> the change (in arch/x86/kernel/cpu/smpboot.c at that
-> time) didn't made into mainline yet.
-> 
-> Thanks.
-> 
-> /mjt
-> 
-> index 28e5f59..6c139ed 100644
-> --- a/arch/x86/kernel/cpu/amd.c
-> +++ b/arch/x86/kernel/cpu/amd.c
-> @@ -185,3 +185,3 @@ static void __cpuinit amd_k7_smp_check(struct cpuinfo_x86 *c)
->  	WARN_ONCE(1, "WARNING: This combination of AMD"
-> -		"processors is not suitable for SMP.\n");
-> +		" processors is not suitable for SMP.\n");
->  	if (!test_taint(TAINT_UNSAFE_SMP))
+Yes, it works. It just looks like a workaround.
 
-You forgot Signed-off-by: line. Please resend with it, and I will queue it 
-in the trivial tree if noone else picks it up.
+Bastian
 
 -- 
-Jiri Kosina
-SUSE Labs
+Each kiss is as the first.
+		-- Miramanee, Kirk's wife, "The Paradise Syndrome",
+		   stardate 4842.6
