@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752835AbZGVHKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbZGVHYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752835AbZGVHKt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 03:10:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752507AbZGVHKs
+	id S1752794AbZGVHYe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 03:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbZGVHYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 03:10:48 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42289 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752398AbZGVHKs (ORCPT
+	Wed, 22 Jul 2009 03:24:33 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:41622 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751192AbZGVHYc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 03:10:48 -0400
-Date: Wed, 22 Jul 2009 09:10:39 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Wu Zhangjin <wuzhangjin@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alan Stern <stern@rowland.harvard.edu>,
-       linux-pm@lists.linux-foundation.org, len.brown@intel.com,
-       yanh@lemote.com, linux-kernel@vger.kernel.org, zhangfx@lemote.com
-Subject: Re: [linux-pm] [PATCH] [suspend] pci_raw_set_power_state: replace
-	msleep by udelay in resuming procedure
-Message-ID: <20090722071039.GD29955@elf.ucw.cz>
-References: <Pine.LNX.4.44L0.0907161259510.2952-100000@iolanthe.rowland.org> <1247796643.19112.77.camel@falcon> <200907170433.42366.rjw@sisk.pl> <1248229436.12360.27.camel@falcon>
+	Wed, 22 Jul 2009 03:24:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=sei+ZmIONKzpgU6Lj9bgUWEs2seqvq/heZlk4dH45vM71NAZUZXps4RLSjQ4FVCq6v
+         2H/ZgzqMkcXeEGgte5sQ14sdKyd6zFo1BhTxhhX9Ej3k8ZAO2HoBC2Vhj290vsCHuTyc
+         Dd4J/qcjM7c20kWYDbLCHFCDM7E8hDmiGym6M=
+Message-ID: <4A66BEAD.3080404@gmail.com>
+Date: Wed, 22 Jul 2009 09:24:29 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.8 Thunderbird/3.0b3pre
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248229436.12360.27.camel@falcon>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Pekka Paalanen <pq@iki.fi>, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@infradead.org>, lethal@linux-sh.org,
+       linux-sh@vger.kernel.org
+Subject: Re: Do cpu-endian MMIO accessors exist?
+References: <20090721234243.1928d9e2@daedalus.pq.iki.fi> <200907212315.50225.arnd@arndb.de> <4A663987.4040500@gmail.com> <200907220005.27583.arnd@arndb.de>
+In-Reply-To: <200907220005.27583.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> > Perhaps it's necessary to annotate your timer interrupts appropriately so that
-> > they are not disabled during suspend?
+On 07/22/2009 12:05 AM, Arnd Bergmann wrote:
+> On Tuesday 21 July 2009, Jiri Slaby wrote:
+>> I guess it's a bug that ioread/write* on sh are not with
+>> barriers?
 > 
-> Thanks very much, The IRQF_TIMER flag works for me, so the replacement
-> of msleep by udelay is not needed.
-> 
-> [This source code is not ready to upstream, herein, just a prompt to the
-> other guys who will meet the same problem.]
+> That depends on how that architecture defines its bus interface.
+> On many simple architectures, you do not need any synchronization
+> operations.
 
-Unlike the other patch, this one actually looks ok.
+No, I should have written this explicitly. I meant read* have a barrier,
+whereas ioread* do not. Similarly for writes. Is this expected?
 
-> Adding IRQF_TIMER to the interupt flags when requesting the mfgpt timer
-> interrupts solves the problem.
-> 
-> Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
-> ---
->  arch/mips/loongson/common/cs5536/cs5536_mfgpt.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/mips/loongson/common/cs5536/cs5536_mfgpt.c
-> b/arch/mips/loongson/common/cs5536/cs5536_mfgpt.c
-> index 1a518ec..5b8fa9f 100644
-> --- a/arch/mips/loongson/common/cs5536/cs5536_mfgpt.c
-> +++ b/arch/mips/loongson/common/cs5536/cs5536_mfgpt.c
-> @@ -133,7 +133,7 @@ static irqreturn_t timer_interrupt(int irq, void
-> *dev_id)
->  
->  static struct irqaction irq5 = {
->  	.handler = timer_interrupt,
-> -	.flags = IRQF_DISABLED | IRQF_NOBALANCING,
-> +	.flags = IRQF_TIMER | IRQF_DISABLED | IRQF_NOBALANCING,
->  	.name = "timer"
->  };
-
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+For example:
+#define __raw_readl(a) (__chk_io_ptr(a), *(volatile u32 __force *)(a))
+#define readl(a)       ({ u32 r_ = __raw_readl(a); mb(); r_; })
+#define ioread32(a)    __raw_readl(a)
