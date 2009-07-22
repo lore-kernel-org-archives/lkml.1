@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754998AbZGVKPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbZGVKO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754998AbZGVKPc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 06:15:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbZGVKPa
+	id S1755117AbZGVKO4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 06:14:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbZGVKOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 06:15:30 -0400
-Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:47795 "EHLO
+	Wed, 22 Jul 2009 06:14:53 -0400
+Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:40236 "EHLO
 	smtp161.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754544AbZGVKPW (ORCPT
+	with ESMTP id S1754168AbZGVKKu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 06:15:22 -0400
+	Wed, 22 Jul 2009 06:10:50 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -19,14 +19,11 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        "H. Peter Anvin" <hpa@zytor.com>,
        Alexander Viro <viro@zeniv.linux.org.uk>,
        Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Matt Helsley <matthltc@us.ibm.com>, Cedric Le Goater <legoater@free.fr>,
-       Paul Menage <menage@google.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@suse.cz>,
-       linux-pm@lists.linux-foundation.org
-Subject: [RFC v17][PATCH 05/60] cgroup freezer: Fix buggy resume test for tasks frozen with cgroup freezer
-Date: Wed, 22 Jul 2009 05:59:27 -0400
-Message-Id: <1248256822-23416-6-git-send-email-orenl@librato.com>
+       Alexey Dobriyan <adobriyan@gmail.com>, Oren Laadan <orenl@librato.com>,
+       Oren Laadan <orenl@cs.columbia.edu>
+Subject: [RFC v17][PATCH 42/60] c/r: restore anonymous- and file-mapped- shared memory
+Date: Wed, 22 Jul 2009 06:00:04 -0400
+Message-Id: <1248256822-23416-43-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1248256822-23416-1-git-send-email-orenl@librato.com>
 References: <1248256822-23416-1-git-send-email-orenl@librato.com>
@@ -34,111 +31,324 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matt Helsley <matthltc@us.ibm.com>
+The bulk of the work is in ckpt_read_vma(), which has been refactored:
+the part that create the suitable 'struct file *' for the mapping is
+now larger and moved to a separate function. What's left is to read
+the VMA description, get the file pointer, create the mapping, and
+proceed to read the contents in.
 
-When the cgroup freezer is used to freeze tasks we do not want to thaw
-those tasks during resume. Currently we test the cgroup freezer
-state of the resuming tasks to see if the cgroup is FROZEN.  If so
-then we don't thaw the task. However, the FREEZING state also indicates
-that the task should remain frozen.
+Both anonymous shared VMAs that have been read earlier (as indicated
+by a look up to objhash) and file-mapped shared VMAs are skipped.
+Anonymous shared VMAs seen for the first time have their contents
+read in directly to the backing inode, as indexed by the page numbers
+(as opposed to virtual addresses).
 
-This also avoids a problem pointed out by Oren Ladaan: the freezer state
-transition from FREEZING to FROZEN is updated lazily when userspace reads
-or writes the freezer.state file in the cgroup filesystem. This means that
-resume will thaw tasks in cgroups which should be in the FROZEN state if
-there is no read/write of the freezer.state file to trigger this
-transition before suspend.
+Changelog[v14]:
+  - Introduce patch
 
-NOTE: Another "simple" solution would be to always update the cgroup
-freezer state during resume. However it's a bad choice for several reasons:
-Updating the cgroup freezer state is somewhat expensive because it requires
-walking all the tasks in the cgroup and checking if they are each frozen.
-Worse, this could easily make resume run in N^2 time where N is the number
-of tasks in the cgroup. Finally, updating the freezer state from this code
-path requires trickier locking because of the way locks must be ordered.
-
-Instead of updating the freezer state we rely on the fact that lazy
-updates only manage the transition from FREEZING to FROZEN. We know that
-a cgroup with the FREEZING state may actually be FROZEN so test for that
-state too. This makes sense in the resume path even for partially-frozen
-cgroups -- those that really are FREEZING but not FROZEN.
-
-Reported-by: Oren Ladaan <orenl@cs.columbia.edu>
-Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-Cc: Cedric Le Goater <legoater@free.fr>
-Cc: Paul Menage <menage@google.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Rafael J. Wysocki <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@suse.cz>
-Cc: linux-pm@lists.linux-foundation.org
-
-Seems like a candidate for -stable.
+Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- include/linux/freezer.h |    7 +++++--
- kernel/cgroup_freezer.c |    9 ++++++---
- kernel/power/process.c  |    2 +-
- 3 files changed, 12 insertions(+), 6 deletions(-)
+ checkpoint/memory.c        |   66 ++++++++++++++++++++++++++++++++-----------
+ include/linux/checkpoint.h |    6 ++++
+ include/linux/mm.h         |    2 +
+ mm/filemap.c               |   13 ++++++++-
+ mm/shmem.c                 |   49 ++++++++++++++++++++++++++++++++
+ 5 files changed, 118 insertions(+), 18 deletions(-)
 
-diff --git a/include/linux/freezer.h b/include/linux/freezer.h
-index 5a361f8..da7e52b 100644
---- a/include/linux/freezer.h
-+++ b/include/linux/freezer.h
-@@ -64,9 +64,12 @@ extern bool freeze_task(struct task_struct *p, bool sig_only);
- extern void cancel_freezing(struct task_struct *p);
+diff --git a/checkpoint/memory.c b/checkpoint/memory.c
+index a1d1eca..77234cd 100644
+--- a/checkpoint/memory.c
++++ b/checkpoint/memory.c
+@@ -840,13 +840,36 @@ static int restore_read_page(struct ckpt_ctx *ctx, struct page *page, void *p)
+ 	return 0;
+ }
  
- #ifdef CONFIG_CGROUP_FREEZER
--extern int cgroup_frozen(struct task_struct *task);
-+extern int cgroup_freezing_or_frozen(struct task_struct *task);
- #else /* !CONFIG_CGROUP_FREEZER */
--static inline int cgroup_frozen(struct task_struct *task) { return 0; }
-+static inline int cgroup_freezing_or_frozen(struct task_struct *task)
++static struct page *bring_private_page(unsigned long addr)
 +{
-+	return 0;
++	struct page *page;
++	int ret;
++
++	ret = get_user_pages(current, current->mm, addr, 1, 1, 1, &page, NULL);
++	if (ret < 0)
++		page = ERR_PTR(ret);
++	return page;
 +}
- #endif /* !CONFIG_CGROUP_FREEZER */
- 
- /*
-diff --git a/kernel/cgroup_freezer.c b/kernel/cgroup_freezer.c
-index fb249e2..765e2c1 100644
---- a/kernel/cgroup_freezer.c
-+++ b/kernel/cgroup_freezer.c
-@@ -47,17 +47,20 @@ static inline struct freezer *task_freezer(struct task_struct *task)
- 			    struct freezer, css);
- }
- 
--int cgroup_frozen(struct task_struct *task)
-+int cgroup_freezing_or_frozen(struct task_struct *task)
++
++static struct page *bring_shared_page(unsigned long idx, struct inode *ino)
++{
++	struct page *page = NULL;
++	int ret;
++
++	ret = shmem_getpage(ino, idx, &page, SGP_WRITE, NULL);
++	if (ret < 0)
++		return ERR_PTR(ret);
++	if (page)
++		unlock_page(page);
++	return page;
++}
++
+ /**
+  * read_pages_contents - read in data of pages in page-array chain
+  * @ctx - restart context
+  */
+-static int read_pages_contents(struct ckpt_ctx *ctx)
++static int read_pages_contents(struct ckpt_ctx *ctx, struct inode *inode)
  {
- 	struct freezer *freezer;
- 	enum freezer_state state;
+-	struct mm_struct *mm = current->mm;
+ 	struct ckpt_pgarr *pgarr;
+ 	unsigned long *vaddrs;
+ 	char *buf;
+@@ -856,17 +879,22 @@ static int read_pages_contents(struct ckpt_ctx *ctx)
+ 	if (!buf)
+ 		return -ENOMEM;
  
- 	task_lock(task);
- 	freezer = task_freezer(task);
--	state = freezer->state;
-+	if (!freezer->css.cgroup->parent)
-+		state = CGROUP_THAWED; /* root cgroup can't be frozen */
-+	else
-+		state = freezer->state;
- 	task_unlock(task);
+-	down_read(&mm->mmap_sem);
++	down_read(&current->mm->mmap_sem);
+ 	list_for_each_entry_reverse(pgarr, &ctx->pgarr_list, list) {
+ 		vaddrs = pgarr->vaddrs;
+ 		for (i = 0; i < pgarr->nr_used; i++) {
+ 			struct page *page;
  
--	return state == CGROUP_FROZEN;
-+	return (state == CGROUP_FREEZING) || (state == CGROUP_FROZEN);
+ 			_ckpt_debug(CKPT_DPAGE, "got page %#lx\n", vaddrs[i]);
+-			ret = get_user_pages(current, mm, vaddrs[i],
+-					     1, 1, 1, &page, NULL);
+-			if (ret < 0)
++			if (inode)
++				page = bring_shared_page(vaddrs[i], inode);
++			else
++				page = bring_private_page(vaddrs[i]);
++
++			if (IS_ERR(page)) {
++				ret = PTR_ERR(page);
+ 				goto out;
++			}
+ 
+ 			ret = restore_read_page(ctx, page, buf);
+ 			page_cache_release(page);
+@@ -877,14 +905,15 @@ static int read_pages_contents(struct ckpt_ctx *ctx)
+ 	}
+ 
+  out:
+-	up_read(&mm->mmap_sem);
++	up_read(&current->mm->mmap_sem);
+ 	kfree(buf);
+ 	return 0;
  }
  
- /*
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index da2072d..3728d4c 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -138,7 +138,7 @@ static void thaw_tasks(bool nosig_only)
- 		if (nosig_only && should_send_signal(p))
- 			continue;
+ /**
+- * restore_memory_contents - restore contents of a VMA with private memory
++ * restore_memory_contents - restore contents of a memory region
+  * @ctx - restart context
++ * @inode - backing inode
+  *
+  * Reads a header that specifies how many pages will follow, then reads
+  * a list of virtual addresses into ctx->pgarr_list page-array chain,
+@@ -892,7 +921,7 @@ static int read_pages_contents(struct ckpt_ctx *ctx)
+  * these steps until reaching a header specifying "0" pages, which marks
+  * the end of the contents.
+  */
+-static int restore_memory_contents(struct ckpt_ctx *ctx)
++int restore_memory_contents(struct ckpt_ctx *ctx, struct inode *inode)
+ {
+ 	struct ckpt_hdr_pgarr *h;
+ 	unsigned long nr_pages;
+@@ -919,7 +948,7 @@ static int restore_memory_contents(struct ckpt_ctx *ctx)
+ 		ret = read_pages_vaddrs(ctx, nr_pages);
+ 		if (ret < 0)
+ 			break;
+-		ret = read_pages_contents(ctx);
++		ret = read_pages_contents(ctx, inode);
+ 		if (ret < 0)
+ 			break;
+ 		pgarr_reset_all(ctx);
+@@ -977,9 +1006,9 @@ static unsigned long calc_map_flags_bits(unsigned long orig_vm_flags)
+  * @file - file to map (NULL for anonymous)
+  * @h - vma header data
+  */
+-static unsigned long generic_vma_restore(struct mm_struct *mm,
+-					 struct file *file,
+-					 struct ckpt_hdr_vma *h)
++unsigned long generic_vma_restore(struct mm_struct *mm,
++				  struct file *file,
++				  struct ckpt_hdr_vma *h)
+ {
+ 	unsigned long vm_size, vm_start, vm_flags, vm_prot, vm_pgoff;
+ 	unsigned long addr;
+@@ -1026,7 +1055,7 @@ int private_vma_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
+ 	if (IS_ERR((void *) addr))
+ 		return PTR_ERR((void *) addr);
  
--		if (cgroup_frozen(p))
-+		if (cgroup_freezing_or_frozen(p))
- 			continue;
+-	return restore_memory_contents(ctx);
++	return restore_memory_contents(ctx, NULL);
+ }
  
- 		thaw_process(p);
+ /**
+@@ -1086,16 +1115,19 @@ static struct restore_vma_ops restore_vma_ops[] = {
+ 	{
+ 		.vma_name = "ANON SHARED",
+ 		.vma_type = CKPT_VMA_SHM_ANON,
++		.restore = shmem_restore,
+ 	},
+ 	/* anonymous shared (skipped) */
+ 	{
+ 		.vma_name = "ANON SHARED (skip)",
+ 		.vma_type = CKPT_VMA_SHM_ANON_SKIP,
++		.restore = shmem_restore,
+ 	},
+ 	/* file-mapped shared */
+ 	{
+ 		.vma_name = "FILE SHARED",
+ 		.vma_type = CKPT_VMA_SHM_FILE,
++		.restore = filemap_restore,
+ 	},
+ };
+ 
+@@ -1114,15 +1146,15 @@ static int restore_vma(struct ckpt_ctx *ctx, struct mm_struct *mm)
+ 	if (IS_ERR(h))
+ 		return PTR_ERR(h);
+ 
+-	ckpt_debug("vma %#lx-%#lx flags %#lx type %d vmaref %d\n",
++	ckpt_debug("vma %#lx-%#lx flags %#lx type %d vmaref %d inoref %d\n",
+ 		   (unsigned long) h->vm_start, (unsigned long) h->vm_end,
+ 		   (unsigned long) h->vm_flags, (int) h->vma_type,
+-		   (int) h->vma_objref);
++		   (int) h->vma_objref, (int) h->ino_objref);
+ 
+ 	ret = -EINVAL;
+ 	if (h->vm_end < h->vm_start)
+ 		goto out;
+-	if (h->vma_objref < 0)
++	if (h->vma_objref < 0 || h->ino_objref < 0)
+ 		goto out;
+ 	if (h->vma_type >= CKPT_VMA_MAX)
+ 		goto out;
+diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
+index 54cc4b0..5920453 100644
+--- a/include/linux/checkpoint.h
++++ b/include/linux/checkpoint.h
+@@ -170,9 +170,15 @@ extern int ckpt_collect_mm(struct ckpt_ctx *ctx, struct task_struct *t);
+ extern int checkpoint_mm(struct ckpt_ctx *ctx, void *ptr);
+ extern void *restore_mm(struct ckpt_ctx *ctx);
+ 
++extern unsigned long generic_vma_restore(struct mm_struct *mm,
++					 struct file *file,
++					 struct ckpt_hdr_vma *h);
++
+ extern int private_vma_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
+ 			       struct file *file, struct ckpt_hdr_vma *h);
+ 
++extern int restore_memory_contents(struct ckpt_ctx *ctx, struct inode *inode);
++
+ 
+ #define CKPT_VMA_NOT_SUPPORTED						\
+ 	(VM_IO | VM_HUGETLB | VM_NONLINEAR | VM_PFNMAP |		\
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 6c2c3dd..5f341ac 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1198,6 +1198,8 @@ extern int filemap_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
+ 			   struct ckpt_hdr_vma *hh);
+ extern int special_mapping_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
+ 				   struct ckpt_hdr_vma *hh);
++extern int shmem_restore(struct ckpt_ctx *ctx, struct mm_struct *mm,
++			 struct ckpt_hdr_vma *hh);
+ #endif
+ 
+ /* readahead.c */
+diff --git a/mm/filemap.c b/mm/filemap.c
+index a07bb3d..0c4906f 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1711,17 +1711,28 @@ int filemap_restore(struct ckpt_ctx *ctx,
+ 		    struct ckpt_hdr_vma *h)
+ {
+ 	struct file *file;
++	unsigned long addr;
+ 	int ret;
+ 
+ 	if (h->vma_type == CKPT_VMA_FILE &&
+ 	    (h->vm_flags & (VM_SHARED | VM_MAYSHARE)))
+ 		return -EINVAL;
++	if (h->vma_type == CKPT_VMA_SHM_FILE &&
++	    !(h->vm_flags & (VM_SHARED | VM_MAYSHARE)))
++		return -EINVAL;
+ 
+ 	file = ckpt_obj_fetch(ctx, h->vma_objref, CKPT_OBJ_FILE);
+ 	if (IS_ERR(file))
+ 		return PTR_ERR(file);
+ 
+-	ret = private_vma_restore(ctx, mm, file, h);
++	if (h->vma_type == CKPT_VMA_FILE) {
++		/* private mapped file */
++		ret = private_vma_restore(ctx, mm, file, h);
++	} else {
++		/* shared mapped file */
++		addr = generic_vma_restore(mm, file, h);
++		ret = (IS_ERR((void *) addr) ? PTR_ERR((void *) addr) : 0);
++	}
+ 	return ret;
+ }
+ #endif /* CONFIG_CHECKPOINT */
+diff --git a/mm/shmem.c b/mm/shmem.c
+index 808e14a..9334810 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -2406,6 +2406,55 @@ static int shmem_checkpoint(struct ckpt_ctx *ctx, struct vm_area_struct *vma)
+ 
+ 	return shmem_vma_checkpoint(ctx, vma, vma_type, ino_objref);
+ }
++
++int shmem_restore(struct ckpt_ctx *ctx,
++		  struct mm_struct *mm, struct ckpt_hdr_vma *h)
++{
++	unsigned long addr;
++	struct file *file;
++	int ret = 0;
++
++	file = ckpt_obj_fetch(ctx, h->ino_objref, CKPT_OBJ_FILE);
++	if (PTR_ERR(file) == -EINVAL)
++		file = NULL;
++	if (IS_ERR(file))
++		return PTR_ERR(file);
++
++	/* if file is NULL, this is the premiere - create and insert */
++	if (!file) {
++		if (h->vma_type != CKPT_VMA_SHM_ANON)
++			return -EINVAL;
++		/*
++		 * in theory could pass NULL to mmap and let it create
++		 * the file. But, if 'shm_size != vm_end - vm_start',
++		 * or if 'vm_pgoff != 0', then the vma reflects only a
++		 * portion of the shm object and we need to "manually"
++		 * create the full shm object.
++		 */
++		file = shmem_file_setup("/dev/zero", h->ino_size, h->vm_flags);
++		if (IS_ERR(file))
++			return PTR_ERR(file);
++		ret = ckpt_obj_insert(ctx, file, h->ino_objref, CKPT_OBJ_FILE);
++		if (ret < 0)
++			goto out;
++	} else {
++		if (h->vma_type != CKPT_VMA_SHM_ANON_SKIP)
++			return -EINVAL;
++		/* Already need fput() for the file above; keep path simple */
++		get_file(file);
++	}
++
++	addr = generic_vma_restore(mm, file, h);
++	if (IS_ERR((void *) addr))
++		return PTR_ERR((void *) addr);
++
++	if (h->vma_type == CKPT_VMA_SHM_ANON)
++		ret = restore_memory_contents(ctx, file->f_dentry->d_inode);
++ out:
++	fput(file);
++	return ret;
++}
++
+ #endif /* CONFIG_CHECKPOINT */
+ 
+ static void init_once(void *foo)
 -- 
 1.6.0.4
 
