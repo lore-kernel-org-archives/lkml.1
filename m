@@ -1,111 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752434AbZGVJiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752489AbZGVJk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752434AbZGVJiv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 05:38:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbZGVJiv
+	id S1752489AbZGVJk5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 05:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbZGVJk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 05:38:51 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:60040 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752289AbZGVJiu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 05:38:50 -0400
-Message-ID: <4A66DDB6.4000700@cn.fujitsu.com>
-Date: Wed, 22 Jul 2009 17:36:54 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Anton Blanchard <anton@samba.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v3 3/4] ftrace: add tracepoint for hrtimer
-References: <4A604E46.5050903@cn.fujitsu.com>	 <4A605009.8060806@cn.fujitsu.com> <1247827801.15751.4.camel@twins>	 <4A641BFC.2050508@cn.fujitsu.com> <1248091771.15751.8578.camel@twins>
-In-Reply-To: <1248091771.15751.8578.camel@twins>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 22 Jul 2009 05:40:56 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:49411 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750868AbZGVJkz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 05:40:55 -0400
+Date: Wed, 22 Jul 2009 18:40:55 +0900 (JST)
+Message-Id: <20090722.184055.226788113.ryov@valinux.co.jp>
+To: kamezawa.hiroyu@jp.fujitsu.com
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, agk@redhat.com
+Subject: Re: [PATCH 7/9] blkio-cgroup-v9: Page tracking hooks
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090722111714.8af6c5d8.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090721.231505.112612378.ryov@valinux.co.jp>
+	<20090721.232316.183036419.ryov@valinux.co.jp>
+	<20090722111714.8af6c5d8.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Peter Zijlstra wrote:
-
-> Ah, but you don't get those anyway, I'd argue the whole expire thing is
-> broken. The only expiry you get is the hardware interrupt firing.
-> Anything after that is a free-for-all.
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Tue, 21 Jul 2009 23:23:16 +0900 (JST)
+> Ryo Tsuruta <ryov@valinux.co.jp> wrote:
 > 
-> Look at that loop in hrtimer_interrupt(), with your tracepoint, they'd
-> all expire at the same time, regardless of how long previous callback's
-> took to complete.
+> > This patch contains several hooks that let the blkio-cgroup framework to know
+> > which blkio-cgroup is the owner of a page before starting I/O against the page.
 > 
-> Also, the whole loop can be re-tried, updating 'now' expiring a whole
-> new set of timers without expiry event.
+> > @@ -464,6 +465,7 @@ int add_to_page_cache_locked(struct page
+> >  					gfp_mask & GFP_RECLAIM_MASK);
+> >  	if (error)
+> >  		goto out;
+> > +	blkio_cgroup_set_owner(page, current->mm);
+> >  
 > 
+> This part is doubtful...Is this necessary ? 
+> I recommend you that the caller should attach owner by itself.
 
-Yes, the expire time that got by _expire() is incorrect and thanks for
-your point out.
-
-> The best you can get is a tracepoint when the hrtimer interrupt happens,
-> and the IRQ tracepoint already give you that.
+I think that it is reasonable to add the hook right here rather than
+to add many hooks to a variety of places.
+ 
+> >  	error = radix_tree_preload(gfp_mask & ~__GFP_HIGHMEM);
+> >  	if (error == 0) {
+> > Index: linux-2.6.31-rc3/mm/memory.c
+> > ===================================================================
+> > --- linux-2.6.31-rc3.orig/mm/memory.c
+> > +++ linux-2.6.31-rc3/mm/memory.c
+> > @@ -51,6 +51,7 @@
+> >  #include <linux/init.h>
+> >  #include <linux/writeback.h>
+> >  #include <linux/memcontrol.h>
+> > +#include <linux/biotrack.h>
+> >  #include <linux/mmu_notifier.h>
+> >  #include <linux/kallsyms.h>
+> >  #include <linux/swapops.h>
+> > @@ -2115,6 +2116,7 @@ gotten:
+> >  		 */
+> >  		ptep_clear_flush_notify(vma, address, page_table);
+> >  		page_add_new_anon_rmap(new_page, vma, address);
+> > +		blkio_cgroup_set_owner(new_page, mm);
 > 
-
-I'm trying to fix it address your comment, but meet some problems,
-the time of ftrace output can't solve everything, because:
-
-1: the time unit of ftrace output is microsecond, but hrtimer's unit
-   is nanosecond, it's not exact for us
-
-2: the time of ftrace ouput is the time after system boot, but we need
-   xtime and wall_to_monotonic to calculate latency of hrtimer,
-   for example:
-   insmod-3821  [001]  3192.239335: hrtimer_start: timer=d08a1480  expires=1245162841000000000 ns
-   <idle>-0     [001]  3201.506127: hrtimer_expire: timer=d08a1480
-   
-  we expect the timer expire at 1245162841000000000 ns, this is base on
-  xtime, but we don't know the interval running that we are expect hrtimer
-  to run if we don't know the xtime at hrtimer_start or hrtimer_expire.
-
-But it's hard for hrtime's TRACE_EVENT to get xtime and wall_to_monotonic
-since it's a fast patch, if we have to do this, the code maybe like below:
-
-TRACE_EVENT(hrtimer_expire,
-
-	......
-
-	TP_STRUCT__entry(
-		__field( void *,	timer	)
-		__field( s64,		now	)
-		__field( s64, 		offset	)
-	),
-
-	TP_fast_assign(
-		__entry->timer	= timer;
-		__entry->now	= ktime_get().tv64;
-		__entry->wtom 	= timespec_to_ktime(wall_to_monotonic).tv64;
-	),
-
-	TP_printk("timer=%p now=%llu ns wtom=%llu", __entry->timer,
-		 (unsigned long long)__entry->now, (unsigned long long)__entry->wtom)
-);
-
-We need cooperate with trace_hrtimer_init() to get hrtimer's clockid.
-
-That make trace_hrtimer_expire() slow.
-
-Though the original patch get expire time not exactly, but It harm system's 
-performance very little.
-
-Thanks, 
-Xiao
-
-> So I really don't see the use-case for this _expiry tracepoint, its just
-> too ill-defined.
+> plz do this in swap-out code.
 > 
-> The _entry and _exit ones I can agree with, this stuff just doesn't make
-> any sense.
+> >  		set_pte_at(mm, address, page_table, entry);
+> >  		update_mmu_cache(vma, address, entry);
+> >  		if (old_page) {
+> > @@ -2580,6 +2582,7 @@ static int do_swap_page(struct mm_struct
+> >  	flush_icache_page(vma, page);
+> >  	set_pte_at(mm, address, page_table, pte);
+> >  	page_add_anon_rmap(page, vma, address);
+> > +	blkio_cgroup_reset_owner(page, mm);
+> 
+> and this.
 > 
 > 
+> >  	/* It's better to call commit-charge after rmap is established */
+> >  	mem_cgroup_commit_charge_swapin(page, ptr);
+> >  
+> > @@ -2644,6 +2647,7 @@ static int do_anonymous_page(struct mm_s
+> >  		goto release;
+> >  	inc_mm_counter(mm, anon_rss);
+> >  	page_add_new_anon_rmap(page, vma, address);
+> > +	blkio_cgroup_set_owner(page, mm);
+> >  	set_pte_at(mm, address, page_table, entry);
+> >  
+> and this.
+> 
+> >  	/* No need to invalidate - it was non-present before */
+> > @@ -2791,6 +2795,7 @@ static int __do_fault(struct mm_struct *
+> >  		if (anon) {
+> >  			inc_mm_counter(mm, anon_rss);
+> >  			page_add_new_anon_rmap(page, vma, address);
+> > +			blkio_cgroup_set_owner(page, mm);
+> and this.
+> 
+> IMHO, later io for swap-out is caused by the caller of swapout, not page's
+> owner. plz charge to them or,
+>   - add special BLOCK CGROUP ID for the kernel's swap out. 
+
+I think that it is not too bad to charge the owner of a page for
+swap-out. From another perspective, it can be considered that swap-out
+is caused by a process which uses a large amount of memory.
+
+Thanks,
+Ryo Tsuruta
+
+> 
+> Bye,
+> -Kame
+> 
+> >  		} else {
+> >  			inc_mm_counter(mm, file_rss);
+> >  			page_add_file_rmap(page);
+> > Index: linux-2.6.31-rc3/mm/page-writeback.c
+> > ===================================================================
+> > --- linux-2.6.31-rc3.orig/mm/page-writeback.c
+> > +++ linux-2.6.31-rc3/mm/page-writeback.c
+> > @@ -23,6 +23,7 @@
+> >  #include <linux/init.h>
+> >  #include <linux/backing-dev.h>
+> >  #include <linux/task_io_accounting_ops.h>
+> > +#include <linux/biotrack.h>
+> >  #include <linux/blkdev.h>
+> >  #include <linux/mpage.h>
+> >  #include <linux/rmap.h>
+> > @@ -1247,6 +1248,7 @@ int __set_page_dirty_nobuffers(struct pa
+> >  			BUG_ON(mapping2 != mapping);
+> >  			WARN_ON_ONCE(!PagePrivate(page) && !PageUptodate(page));
+> >  			account_page_dirtied(page, mapping);
+> > +			blkio_cgroup_reset_owner_pagedirty(page, current->mm);
+> >  			radix_tree_tag_set(&mapping->page_tree,
+> >  				page_index(page), PAGECACHE_TAG_DIRTY);
+> >  		}
+> > Index: linux-2.6.31-rc3/mm/swap_state.c
+> > ===================================================================
+> > --- linux-2.6.31-rc3.orig/mm/swap_state.c
+> > +++ linux-2.6.31-rc3/mm/swap_state.c
+> > @@ -18,6 +18,7 @@
+> >  #include <linux/pagevec.h>
+> >  #include <linux/migrate.h>
+> >  #include <linux/page_cgroup.h>
+> > +#include <linux/biotrack.h>
+> >  
+> >  #include <asm/pgtable.h>
+> >  
+> > @@ -307,6 +308,7 @@ struct page *read_swap_cache_async(swp_e
+> >  		 */
+> >  		__set_page_locked(new_page);
+> >  		SetPageSwapBacked(new_page);
+> > +		blkio_cgroup_set_owner(new_page, current->mm);
+> >  		err = add_to_swap_cache(new_page, entry, gfp_mask & GFP_KERNEL);
+> >  		if (likely(!err)) {
+> >  			/*
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> > 
