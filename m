@@ -1,95 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751909AbZGVMOB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbZGVMSF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751909AbZGVMOB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 08:14:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751192AbZGVMOB
+	id S1754009AbZGVMSF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 08:18:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbZGVMSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 08:14:01 -0400
-Received: from nox.protox.org ([88.191.38.29]:39793 "EHLO nox.protox.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750973AbZGVMOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 08:14:00 -0400
-Subject: Re: TTM page pool allocator
-From: Jerome Glisse <glisse@freedesktop.org>
-To: Thomas =?ISO-8859-1?Q?Hellstr=F6m?= <thomas@shipmail.org>
-Cc: Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sf.net
-In-Reply-To: <4A66CD54.6070104@shipmail.org>
-References: <1245931298.13359.8.camel@localhost.localdomain>
-	 <4A439D7D.9030401@shipmail.org> <1248197676.2368.11.camel@localhost>
-	 <4A66CD54.6070104@shipmail.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 22 Jul 2009 14:12:42 +0200
-Message-Id: <1248264762.2336.1.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 (2.26.2-1.fc11) 
-Content-Transfer-Encoding: 8bit
+	Wed, 22 Jul 2009 08:18:05 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:48453 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751040AbZGVMSD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 08:18:03 -0400
+Date: Wed, 22 Jul 2009 13:18:00 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
+       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
+       t.fujak@samsung.com, kyungmin.park@samsung.com,
+       David Brownell <david-b@pacbell.net>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Daniel Ribeiro <drwyrm@gmail.com>
+Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
+Message-ID: <20090722121800.GD21171@rakim.wolfsonmicro.main>
+References: <5d5443650907151033w36008b71pe4b32bcea9489b75@mail.gmail.com>
+ <20090721105924.GK4133@elf.ucw.cz>
+ <20090721113642.GC13286@sirena.org.uk>
+ <5d5443650907210518i6ee4df1evdc04d9ae9453707c@mail.gmail.com>
+ <5d5443650907210530x4aaa03d6gd47ef5f79a3ef8a4@mail.gmail.com>
+ <20090721124933.GA5668@rakim.wolfsonmicro.main>
+ <20090721160436.GD4352@dtor-d630.eng.vmware.com>
+ <alpine.LFD.2.00.0907212225030.2813@localhost.localdomain>
+ <20090721222547.GA1948@opensource.wolfsonmicro.com>
+ <alpine.LFD.2.00.0907221022190.2813@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0907221022190.2813@localhost.localdomain>
+X-Cookie: Biology grows on you.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-22 at 10:27 +0200, Thomas Hellström wrote:
-> Jerome Glisse wrote:
-> > On Thu, 2009-06-25 at 17:53 +0200, Thomas Hellström wrote:
-> >   
-> >> Jerome Glisse skrev:
-> >>     
-> >>> Hi,
-> >>>
-> >>> Thomas i attach a reworked page pool allocator based on Dave works,
-> >>> this one should be ok with ttm cache status tracking. It definitely
-> >>> helps on AGP system, now the bottleneck is in mesa vertex's dma
-> >>> allocation.
-> >>>
-> >>> Cheers,
-> >>> Jerome
-> >>>   
-> >>>       
-> >> Hi, Jerome!
-> >> In general it looks very good. Some things that need fixing:
-> >>
-> >> 1)  We must have a way to hand back pages. I still not quite understand 
-> >> how the shrink callbacks work and whether they are applicable. Another 
-> >> scheme would be to free, say 1MB when we have at least 2MB available.
-> >>
-> >> 2) We should avoid including AGP headers if AGP is not configured. 
-> >> Either reimplement unmap_page_from_agp or map_page_into_agp or move them 
-> >> out from the AGP headers. We've hade complaints before from people with 
-> >> AGP free systems that the code doesn't compile.
-> >>
-> >> 3) Since we're allocating (and freeing) in batches we should use the 
-> >> set_pages_array() interface to avoid a global tlb flush per page.
-> >>
-> >> 4) We could now skip the ttm_tt_populate() in ttm_tt_set_caching, since 
-> >> it will always allocate cached pages and then transition them.
-> >>
-> >>     
-> >
-> > Okay 4) is bad, what happens (my brain is a bit meltdown so i might be
-> > wrong) :
-> > 1 - bo get allocated tt->state = unpopulated
-> > 2 - bo is mapped few page are faulted tt->state = unpopulated
-> > 3 - bo is cache transitioned but tt->state == unpopulated but
-> >     they are page which have been touch by the cpu so we need
-> >     to clflush them and transition them, 
-> 
-> Right.
-> 
-> > this never happen if
-> >     we don't call ttm_tt_populate and proceed with the remaining
-> >     of the cache transitioning functions
-> >   
-> 
-> Why can't we just skip ttm_tt_populate and proceed with the remaining of 
-> the cache transitioning functions? Then all pages currently allocated to 
-> the TTM will be transitioned.
-> 
+On Wed, Jul 22, 2009 at 12:44:01PM +0200, Thomas Gleixner wrote:
+> On Tue, 21 Jul 2009, Mark Brown wrote:
 
-Because not all tt->pages entry have valid page some are null and thus
-we have to go through the whole table and transition page per page. I
-did that and quick benchmark showed that it's faster to fully populate
-and fully transition.
+> > I'll need to have a more detailed look at that but it's not immediately
+> > clear to me how a driver (or even machine) should use that code - it
+> > looks more like it's intended to be called from within the IRQ
+> > infrastructure than from random driver code.
 
-Cheers,
-Jerome
+> All it needs is to set handle_level_oneshot_irq for the interrupt line
+> of your I2C or whatever devices. 
 
+>    set_irq_handler(irq, handle_level_oneshot_irq);
+
+Yeah, I know - the issue I was having was that the use of set_irq_handler()
+seemed rather rude for driver code.  Grepping around I see that there
+are actually a small number of drivers using it already but at first
+glance most of them appear to be implementing interrupt controllers.  It
+was setting off alarm bells about abstraction layer violation like
+set_irq_type() does.
+
+> > Nothing if the above works, though I guess more documentation wouldn't
+> > hurt (and possibly a more friendly wrapper).  From the name and
+
+> Wrapper for what ? 
+
+Something to package up the set_irq_handler() and request_threaded_irq()
+(possibly a flag for request_threaded_irq()).  This is such a common
+thing and request_threaded_irq() looks so much like it should Just Work
+that I'd expect it'll help usability a lot to have a single function
+which says "this is the idiomatic way to implement this".
+
+> The irq thread finds out which interrupt(s) are active in the
+> device. So it raises the interrupt handlers for those from the thread
+> which will wake up the relevant interrupt threads for those
+> devices. Once all the thread handlers have finished you return from
+> the main thread and the interrupt line gets unmasked again.
+
+Yes, this bit of it isn't too much of a problem, it's what's going on in
+all the non-genirq infrastructures, but...
+
+> The driver which controls the interrupt device has to expose the
+> demultiplexed interrupts via its own irq_chip implementation. Of
+> course the chip functions like mask/ack/unmask cannot run in atomic
+> context as they require bus access again.
+
+...as you say this is the tricky bit.
+
+> Here in deed we need to put some thought into common infrastructure
+> as it seems that such excellent hardware designs are becoming more
+> popular :(
+
+This isn't a new issue - it's more that you're seeing a greater degree
+of mainline activity from embedded systems.  
+
+FWIW the hardware tradeoff here is in a large part down to the fact that
+many of these devices are heavily size (and therefore pin count)
+constrained, often on both the device and CPU end of things.  Adding
+more pins would either mean a bigger device or a device that's more
+expensive to manufacture and use.  This pushes to minimal wire, low
+speed control interfaces and for the sort of low volume control these
+things need there's not much operational problem there.  These things
+are *normally* either pushing events that either won't happen very often
+(eg, RTC alarm expiry) or shouldn't happen at all (eg, power failures)
+and so aren't performance critical.
+
+> After that bus_sync_unlock() is called outside the atomic context. Now
+> the chip implementation issues the bus commands, waits for completion
+> and unlocks the interrupt controller bus.
+
+I'll try to find time to implement some use of it and give it a spin -
+it looks good at first glance but I'll need to convert one of my drivers
+to genirq in order to test.  Someone working on a chip that already uses
+genirq might get there first.
