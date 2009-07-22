@@ -1,93 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbZGVINq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbZGVI1K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756167AbZGVINq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 04:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756002AbZGVINp
+	id S1755968AbZGVI1K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 04:27:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbZGVI1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 04:13:45 -0400
-Received: from bizon.gios.gov.pl ([195.187.34.71]:51728 "EHLO
-	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755991AbZGVINo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 04:13:44 -0400
-Date: Wed, 22 Jul 2009 10:12:21 +0200 (CEST)
-From: Krzysztof Oledzki <olel@ans.pl>
-X-X-Sender: ole@bizon.gios.gov.pl
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Troy Moure <twmoure@szypr.net>, Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       lwn@lwn.net, Ian Lance Taylor <iant@google.com>
-Subject: Re: Linux 2.6.27.27
-In-Reply-To: <alpine.LFD.2.01.0907211811410.19335@localhost.localdomain>
-Message-ID: <alpine.LNX.1.10.0907220914150.26357@bizon.gios.gov.pl>
-References: <20090720040655.GA11940@kroah.com> <4A645A45.9060509@ans.pl> <20090720151008.GC10015@suse.de> <alpine.LFD.2.01.0907200848530.13838@localhost.localdomain> <alpine.LNX.1.10.0907202341580.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907201504470.19335@localhost.localdomain>
- <alpine.LNX.1.10.0907210831210.29729@bizon.gios.gov.pl> <alpine.LNX.1.10.0907211154480.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907210906400.19335@localhost.localdomain> <alpine.LFD.2.01.0907211133010.19335@localhost.localdomain>
- <alpine.LFD.2.00.0907212211040.4630@troy-laptop> <alpine.LFD.2.01.0907211726140.19335@localhost.localdomain> <alpine.LFD.2.01.0907211811410.19335@localhost.localdomain>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Wed, 22 Jul 2009 04:27:09 -0400
+Received: from relay.gothnet.se ([82.193.160.251]:51449 "EHLO
+	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753906AbZGVI1G convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 04:27:06 -0400
+Message-ID: <4A66CD54.6070104@shipmail.org>
+Date: Wed, 22 Jul 2009 10:27:00 +0200
+From: =?UTF-8?B?VGhvbWFzIEhlbGxzdHLDtm0=?= <thomas@shipmail.org>
+Organization: VMware
+User-Agent: Thunderbird 1.5.0.7 (X11/20060921)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1144830174-1000260807-1248250344=:26357"
+To: Jerome Glisse <glisse@freedesktop.org>
+CC: Dave Airlie <airlied@gmail.com>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sf.net
+Subject: Re: TTM page pool allocator
+References: <1245931298.13359.8.camel@localhost.localdomain>	 <4A439D7D.9030401@shipmail.org> <1248197676.2368.11.camel@localhost>
+In-Reply-To: <1248197676.2368.11.camel@localhost>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+X-BitDefender-Scanner: Mail not scanned due to license constraints
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----1144830174-1000260807-1248250344=:26357
-Content-Type: TEXT/PLAIN; charset=iso-8859-2; format=flowed
-Content-Transfer-Encoding: 8BIT
-
-
-
-On Tue, 21 Jul 2009, Linus Torvalds wrote:
-
->
->
-> On Tue, 21 Jul 2009, Linus Torvalds wrote:
+Jerome Glisse wrote:
+> On Thu, 2009-06-25 at 17:53 +0200, Thomas HellstrÃ¶m wrote:
+>   
+>> Jerome Glisse skrev:
+>>     
+>>> Hi,
+>>>
+>>> Thomas i attach a reworked page pool allocator based on Dave works,
+>>> this one should be ok with ttm cache status tracking. It definitely
+>>> helps on AGP system, now the bottleneck is in mesa vertex's dma
+>>> allocation.
+>>>
+>>> Cheers,
+>>> Jerome
+>>>   
+>>>       
+>> Hi, Jerome!
+>> In general it looks very good. Some things that need fixing:
 >>
->> Anyway, I bet we can work around the compiler bug by just changing the
->> type of "i" from "unsigned char" to be a plain "int".
+>> 1)  We must have a way to hand back pages. I still not quite understand 
+>> how the shrink callbacks work and whether they are applicable. Another 
+>> scheme would be to free, say 1MB when we have at least 2MB available.
+>>
+>> 2) We should avoid including AGP headers if AGP is not configured. 
+>> Either reimplement unmap_page_from_agp or map_page_into_agp or move them 
+>> out from the AGP headers. We've hade complaints before from people with 
+>> AGP free systems that the code doesn't compile.
+>>
+>> 3) Since we're allocating (and freeing) in batches we should use the 
+>> set_pages_array() interface to avoid a global tlb flush per page.
+>>
+>> 4) We could now skip the ttm_tt_populate() in ttm_tt_set_caching, since 
+>> it will always allocate cached pages and then transition them.
+>>
+>>     
 >
-> IOW, like this.
->
-> 		Linus
->
-> ---
-> drivers/video/fbmon.c |    4 ++--
-> 1 files changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-> index 5c1a2c0..af4a15c 100644
-> --- a/drivers/video/fbmon.c
-> +++ b/drivers/video/fbmon.c
-> @@ -256,8 +256,8 @@ static void fix_edid(unsigned char *edid, int fix)
->
-> static int edid_checksum(unsigned char *edid)
-> {
-> -	unsigned char i, csum = 0, all_null = 0;
-> -	int err = 0, fix = check_edid(edid);
-> +	unsigned csum = 0, all_null = 0;
-> +	int i, err = 0, fix = check_edid(edid);
->
-> 	if (fix)
-> 		fix_edid(edid, fix);
+> Okay 4) is bad, what happens (my brain is a bit meltdown so i might be
+> wrong) :
+> 1 - bo get allocated tt->state = unpopulated
+> 2 - bo is mapped few page are faulted tt->state = unpopulated
+> 3 - bo is cache transitioned but tt->state == unpopulated but
+>     they are page which have been touch by the cpu so we need
+>     to clflush them and transition them, 
 
-Wow! You guys rock! ;)
+Right.
 
-Indeed, this simple change is enough to make my kernel bootable. However, 
-there is still something wrong. My console is now 80x30 instead of 128x48:
+> this never happen if
+>     we don't call ttm_tt_populate and proceed with the remaining
+>     of the cache transitioning functions
+>   
 
--Console: switching to colour frame buffer device 128x48
-+Console: switching to colour frame buffer device 80x30
+Why can't we just skip ttm_tt_populate and proceed with the remaining of 
+the cache transitioning functions? Then all pages currently allocated to 
+the TTM will be transitioned.
 
-So, it looks like the loop may be still miscompiled.
-
-The kernel is here:
-  http://noc.axelspringer.pl/no-strict-overflow-vs-wrapv/vmlinux-fno-strict-overflow-fixed.bz2
-
-Best regards,
+/Thomas
 
 
- 				Krzysztof Olêdzki
----1144830174-1000260807-1248250344=:26357--
+
