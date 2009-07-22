@@ -1,147 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753057AbZGVT1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753751AbZGVT1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753057AbZGVT1u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 15:27:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751985AbZGVT1u
+	id S1753751AbZGVT1w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 15:27:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752624AbZGVT1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 22 Jul 2009 15:27:50 -0400
-Received: from sj-iport-5.cisco.com ([171.68.10.87]:28135 "EHLO
-	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751898AbZGVT1t (ORCPT
+Received: from mail-qy0-f173.google.com ([209.85.221.173]:50807 "EHLO
+	mail-qy0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751819AbZGVT1t convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 22 Jul 2009 15:27:49 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAFsFZ0qrR7PE/2dsb2JhbAC6O4glkQAFhA4
-X-IronPort-AV: E=Sophos;i="4.43,248,1246838400"; 
-   d="scan'208";a="87112172"
-From: Roland Dreier <rdreier@cisco.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Jeff Squyres <jsquyres@cisco.com>
-Subject: Re: [PATCH/RFC] ummunot: Userspace support for MMU notifications
-References: <ada3a8oobis.fsf@cisco.com>
-	<20090722111538.58a126e3.akpm@linux-foundation.org>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 22 Jul 2009 12:27:42 -0700
-In-Reply-To: <20090722111538.58a126e3.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Wed, 22 Jul 2009 11:15:38 -0700")
-Message-ID: <adad47smsb5.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TfSnYsH60aZWfaj3pSy8871zhe0RkYG6fJGyU0FPpZbUiBCCwBY7znFoSgwpWE0/nM
+         J5HSXug6glu2HT+HAviT0GFtq8MBNTf4xz47Mt/XCmSCxhzG9WT2yXU3G/Yo5vNAbDtB
+         3+7dSlL8zyw0FRFttKRWxpMMm0EddESu9nZZM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 22 Jul 2009 19:27:46.0264 (UTC) FILETIME=[7DD82D80:01CA0B02]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+In-Reply-To: <20090227154220.7099f339.akpm@linux-foundation.org>
+References: <1235762883-20870-1-git-send-email-me@felipebalbi.com>
+	 <200902271358.46863.david-b@pacbell.net>
+	 <20090227141212.a2bc4a01.akpm@linux-foundation.org>
+	 <200902271520.56696.david-b@pacbell.net>
+	 <20090227154220.7099f339.akpm@linux-foundation.org>
+Date: Thu, 23 Jul 2009 00:57:48 +0530
+Message-ID: <5d5443650907221227w72768b3cna145cea00f1baa05@mail.gmail.com>
+Subject: Re: [PATCH 2/2] mfd: twl4030: add twl4030-pwrbutton as our child
+From: Trilok Soni <soni.trilok@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Brownell <david-b@pacbell.net>, me@felipebalbi.com,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       felipe.balbi@nokia.com, Samuel Ortiz <sameo@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Andrew/Samuel,
 
- > > As discussed in <http://article.gmane.org/gmane.linux.drivers.openib/61925>
- > > and follow-up messages, libraries using RDMA would like to track
- > > precisely when application code changes memory mapping via free(),
- > > munmap(), etc.
- > 
- > It isn't "precisely" - the tracker has a delayed view of the trackee,
- > of course.  Only really solvable by blocking the trackee each time it
- > does something.
- > 
- > The time-skew makes the facility considerably weaker.  Obviously this
- > is OK for your application but it's a fairly important design point
- > which it would be interesting to hear about.
+On Sat, Feb 28, 2009 at 5:12 AM, Andrew Morton<akpm@linux-foundation.org> wrote:
+> On Fri, 27 Feb 2009 15:20:56 -0800
+> David Brownell <david-b@pacbell.net> wrote:
+>
+>> On Friday 27 February 2009, Andrew Morton wrote:
+>> > > >
+>> > > > What has gone wrong here?
+>> > >
+>> > > Not much I can see. __It's registering a platform_device,
+>> > > but only if it could be used on this system.
+>> >
+>> > Again, that all gets fixed if this is done the right way around. __Run
+>> > your probe function. __If the hardware is there, register with the core
+>> > and all the nodes appear. __If the hardware is not present: bale.
+>>
+>> Right.  If there's no button hooked up to its "power button"
+>> signal, don't register that "twl4030-pwrbutton" node.
+>>
+>>
+>> > The design of the whole subsystem appears to be upside down :(
+>>
+>> You seem to be missing something.  Is it only the lack of that
+>> tweak Felipe sent?
+>
+> I generally just delete unchangelogged patches.
+>
+> <goes back and finds it>
+>
+>
+> That doesn't address the problem at all.  A function called
+> "add_children" just shouldn't exist.  The general kernel design is for
+> client drivers to register themselves with the core, so the core does
+> not have any hard-wired knowledge of any client drivers.
+>
+> IOW, twl4030_pwrbutton_probe() should call into twl4030-core,
+> registering the powerbutton driver.
+>
 
-Fair enough.  Of course as you say "precise" is impossible if we have
-multiple threads running on multiple CPUs without synchronization
-between them.  As you alluded to, for the specific use that inspired
-this, it would be a bug in the userspace code for any changes to occur
-at the moment that the library cares about things.
+Reviving this very old thread.
 
- > >  1. ioctl() to register/unregister an address range to watch in the
- > >     kernel (cf struct ummunot_register_ioctl in <linux/ummunot.h>).
- > > 
- > >  2. read() to retrieve events generated when a mapping in a watched
- > >     address range is invalidated (cf struct ummunot_event in
- > >     <linux/ummunot.h>).  select()/poll()/epoll() and SIGIO are handled
- > >     for this IO.
- > > 
- > >  3. mmap() one page at offset 0 to map a kernel page that contains a
- > >     generation counter that is incremented each time an event is
- > >     generated.  This allows userspace to have a fast path that checks
- > >     that no events have occurred without a system call.
- > 
- > If you stand back and squint, each of 1, 2 and 3 are things which the
- > kernel already provides for the delivery of ftrace events to userspace.
- > 
- > Did you look at reusing all that stuff?
+Andrew,
 
-No, not really... will investigate a bit further.  Any pointers to how
-the ftrace stuff might work?  Specifically how #3 maps to ftrace is a
-little obscure to me; and also as I understand it, ftrace is controlled
-through debugfs, which means there's a bit of hassle to make this usable
-on a default install.  And also I'm not sure how the ftrace control path
-really maps to "here's a 100 address ranges I'd like events for".
+It seems that every driver under "mfd" is following the more or less
+approach like twl4030, where the core driver is creating sub-device
+driver's platform devices based on either some conditions like
+platform data for that sub-device driver is available or not, or
+sub-device array with it's "name" and "id" is passed from arch/ board
+files.
 
-So at a first glance after unsquinting a bit I'm not sure how good the
-fit really is.
+Samuel,
 
- > I looked at the code, asked "wtf is that rbtree being used for", went
- > to the defining data structure and ...  nothing.
- > 
- > And without knowing what the data structures do, and the relationship
- > between them it's hard to follow the code.  But you need to follow the
- > code to be able to reverse-engineer the data structures.
+I don't see any further discussion of points raised by Andrew in this driver.
 
-OK, will document data structures a bit more in the next version.  The
-specific questions here:
 
- > What's the rbtree for?
-
-To keep track of what ranges userspace is interested in so that it's
-reasonably efficient to go through them in sort order and reasonably
-efficient to add/remove ranges too.
-
- > What's a "hint"?
-
-If userspace asks us to monitor a range X...Y and we get an event that
-invalidates some subrange W...Q then we tell userspace that only the
-subrange is invalid as a hint.  If multiple events hit a single range,
-we give up and don't try to tell userspace what parts got invalidated.
-So it's a "hint" in the sense of "here's some information that might be
-helpful that we may give you, but don't count on getting it every time"
-
- > What's on dirty_list?
-
-list of address ranges being watched that have been invalidated.
-
- > I really really want to do s/not/notify/g on this patch ;)
-
-The name is of course very provisional... I'd be happy with ummunotify
-or even perhaps something with _s in it to be more readable.  I'll go
-with ummunotify next time.
-
- > > +static void ummunot_inval_page(struct mmu_notifier *mn,
-
- > "invalidate"
-
-sure.
-
- > hm, how do you set the permissions on a miscdevice node?
-
-On my system I have a udev rule
-
-KERNEL=="ummunot", MODE="0666"
-
-and that seems to work.  (Will need to change it to KERNEL=="ummunotify"
-I guess ;)
-
- > > +	max = min(PAGE_SIZE, count) / sizeof *events;
-
- > It used to be the case that architectures disagreed over the type of
- > PAGE_SIZE - unsigned versus unsigned long, iirc.
-
- > If still true, this will warn.
-
-Will check it out... anyway it's easy to switch to min_t() to be safe.
-
-Thanks for the review,
-  Roland
-
+-- 
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
