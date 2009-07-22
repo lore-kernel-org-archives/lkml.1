@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbZGVSZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbZGVS0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754174AbZGVSZN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 14:25:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbZGVSZM
+	id S1754196AbZGVS0X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 14:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754043AbZGVS0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 14:25:12 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60313
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753798AbZGVSZL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 14:25:11 -0400
-Date: Wed, 22 Jul 2009 11:25:17 -0700 (PDT)
-Message-Id: <20090722.112517.31647761.davem@davemloft.net>
-To: shemminger@vyatta.com
-Cc: rjw@sisk.pl, netdev@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, mike@it-loops.com
-Subject: Re: [PATCH] NET / skge: Enable WoL by default if supported
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090722095953.0806bea2@nehalam>
-References: <200907221458.55616.rjw@sisk.pl>
-	<20090722095953.0806bea2@nehalam>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 22 Jul 2009 14:26:22 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:35880 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751159AbZGVS0W (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 14:26:22 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Jan Kara <jack@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Stephen Tweedie <sct@redhat.com>, Andreas Dilger <adilger@sun.com>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: mmotm 2009-07-16-14-32 - lockdep whinge in ext3/quota code
+In-Reply-To: Your message of "Wed, 22 Jul 2009 18:19:23 +0200."
+             <20090722161923.GD19072@duck.suse.cz>
+From: Valdis.Kletnieks@vt.edu
+References: <200907162134.n6GLY2kt019816@imap1.linux-foundation.org> <15072.1248268669@turing-police.cc.vt.edu>
+            <20090722161923.GD19072@duck.suse.cz>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: multipart/signed; boundary="==_Exmh_1248287132_2718P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Wed, 22 Jul 2009 14:25:32 -0400
+Message-ID: <3025.1248287132@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Hemminger <shemminger@vyatta.com>
-Date: Wed, 22 Jul 2009 09:59:53 -0700
+--==_Exmh_1248287132_2718P
+Content-Type: text/plain; charset=us-ascii
 
-> On Wed, 22 Jul 2009 14:58:55 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
->> From: Rafael J. Wysocki <rjw@sisk.pl>
->> 
->> If skge hardware is capable of waking up the system from sleep,
->> enable magic packet WoL during driver initialisation.
->> 
->> This makes WoL work without calling 'ethtool -s ethX wol g'
->> for each adapter.
->> 
->> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
->> Tested-by: Michael Guntsche <mike@it-loops.com>
->> ---
->>  drivers/net/skge.c |    4 +++-
->>  1 file changed, 3 insertions(+), 1 deletion(-)
->> 
->> Index: linux-2.6/drivers/net/skge.c
->> ===================================================================
->> --- linux-2.6.orig/drivers/net/skge.c
->> +++ linux-2.6/drivers/net/skge.c
->> @@ -3856,8 +3856,10 @@ static struct net_device *skge_devinit(s
->>  	skge->speed = -1;
->>  	skge->advertising = skge_supported_modes(hw);
->>  
->> -	if (device_may_wakeup(&hw->pdev->dev))
->> +	if (device_can_wakeup(&hw->pdev->dev)) {
->>  		skge->wol = wol_supported(hw) & WAKE_MAGIC;
->> +		device_set_wakeup_enable(&hw->pdev->dev, skge->wol);
->> +	}
->>  
->>  	hw->dev[port] = dev;
->>  
-> 
-> Acked-by: Stephen Hemminger <shemminger@vyatta.com>
+On Wed, 22 Jul 2009 18:19:23 +0200, Jan Kara said:
 
-Applied, thanks.
+> From df60fe9a9d554070e6135087e154bd5aad2cc1b5 Mon Sep 17 00:00:00 2001
+> From: Jan Kara <jack@suse.cz>
+> Date: Wed, 22 Jul 2009 18:12:17 +0200
+> Subject: [PATCH] quota: Silence lockdep on quota_on
+> 
+> Commit d01730d74d2b0155da50d44555001706294014f7 didn't completely fix
+> the problem since we still take dqio_mutex and i_mutex in the wrong
+> order. Move taking of i_mutex further down (luckily it's needed only
+> for updating inode flags) below where dqio_mutex is taken.
+> 
+> Signed-off-by: Jan Kara <jack@suse.cz>
+
+Applied that fix to the -mmotm I was testing, and the kernel booted quietly.
+Feel free to attach a:
+
+Tested-by: Valdis Kletnieks <valdis.kletnieks@vt.edu>
+
+as it goes upstream.  Thanks for the fast patch.
+
+
+--==_Exmh_1248287132_2718P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFKZ1mccC3lWbTT17ARAm9rAJ0V9pKovSzDaDo1lMIBGAt45bAIHQCgqPfv
+9VuvYtaXm2HWgEFVnLCga8k=
+=nEkn
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1248287132_2718P--
