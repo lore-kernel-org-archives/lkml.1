@@ -1,127 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755009AbZGVNma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753030AbZGVNpB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755009AbZGVNma (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 09:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbZGVNm3
+	id S1753030AbZGVNpB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 09:45:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751022AbZGVNpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 09:42:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52294 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751729AbZGVNm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 09:42:29 -0400
-Date: Wed, 22 Jul 2009 09:42:11 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Brayan Arraes <brayan@yack.com.br>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Subject: Re: [PATCH] sysrq, kdump: fix regression, revert "simplify sysrq-c
-	handler"
-Message-ID: <20090722134211.GA7995@redhat.com>
-References: <4A64672E.8020005@cn.fujitsu.com> <4A6564F2.10404@jp.fujitsu.com> <20090721110857.GA21612@hmsreliant.think-freely.org> <4A6672F9.3050800@jp.fujitsu.com> <20090722111049.GB4539@hmsreliant.think-freely.org>
+	Wed, 22 Jul 2009 09:45:00 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:63898 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750938AbZGVNo7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 09:44:59 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Do cpu-endian MMIO accessors exist?
+Date: Wed, 22 Jul 2009 15:44:40 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-3-generic; KDE/4.2.96; x86_64; ; )
+Cc: Jiri Slaby <jirislaby@gmail.com>, Pekka Paalanen <pq@iki.fi>,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       lethal@linux-sh.org, linux-sh@vger.kernel.org
+References: <20090721234243.1928d9e2@daedalus.pq.iki.fi> <200907221035.50025.arnd@arndb.de> <20090722094309.10b25290@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090722094309.10b25290@lxorguk.ukuu.org.uk>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090722111049.GB4539@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200907221544.41054.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18hqZVwioH0uQ25mEjZnBiUB/pomJXVPmtFIRH
+ TGhYef3HVPvHImCgcPQM7D1LeobtM77V9eC486JxxA9y+7LRk3
+ U5f7U00UXaBcD2itJq5Zw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 22, 2009 at 07:10:49AM -0400, Neil Horman wrote:
-> On Wed, Jul 22, 2009 at 11:01:29AM +0900, Hidetoshi Seto wrote:
-> > Neil Horman wrote:
-> > > None of this answers Erics question, what is it that you could do before, that
-> > > you couldn't do now?
-> > 
-> > One is, as Ohmichi-san pointed, triggering kdump via echo c > /proc/sysrq-trigger.
-> > 
-> > In contrast to oops via SysRq-c from keyboard interrupt which results in
-> > panic due to in_interrupt(), oops via echo-c will not become panic unless
-> > panic_on_oops.
-> > 
-> > So in other words, we could expect same effect in both of echo-c and SysRq-c
-> > before, but now we cannot because it depends on the panic_on_oops.
-> > Isn't it a regression?
-> > 
-> Only if you blindly consider a change in behavior to be a regression.  consider
-> that previously executing a sysrq-c did the same thing if you did a echo c >
-> /proc/sysrq-trigger on a keyboard sysrq-c, but did different things based on
-> weather or not your had a kexec kernel loaded.
+On Wednesday 22 July 2009, Alan Cox wrote:
 > 
-> > Whether kdump should be executed on oops (which is not panic) or not is a
-> > separate thing.
-> > 
-> > > There are reasons to want to have a convenient way to
-> > > crash the kernel, other than to test kdump (several distributions have augmented
-> > > sysrq-c to do this for some time to test other previous dump mechanisms and
-> > > features), so while its not been upstream, saying that its well known to test
-> > > kdump without causing an oops is a bit of a misleading statement.
-> > 
-> > Let make me sure the difference between 'crash', 'oops', and 'panic'.
-> > At least 'oops' is not panic, as is obvious from the name of panic_on_oops.
-> > And it seems you are using 'crash' and 'oops' in mixture.
-> > 
-> I'm perfectly well aware of the difference, I just assert theres value to having
-> sysrq-c be able to test both paths, especially given that we already have the
-> sysrq-c sysctl available to toggle behavior for just this case.
+> > in this case. Also, ioread32 should actually multiplex between
+> > readl() and inl() based on the address token, as the code in
+> > lib/iomap.c does. It's probably easy enough to enable
+> > CONFIG_GENERIC_IOMAP on sh, and remove the ioread*/iowrite*
+> > macros from arch/sh/include/asm/io.h.
 > 
-> > If you mean 'crash' as 'panic', my complaint is echo-c does not panic while
-> > SysRq-c does panic.  So if possible I'd like to suggest a change like:
-> >
-> See above, I think theres value to having sysrq-c be able to do both, although I
-> agree the method by which it triggers both is a bit muddled.
->  
-> >  static void sysrq_handle_crash(int key, struct tty_struct *tty)
-> >  {
-> > -	char *killer = NULL;
-> > -	*killer = 1;
-> > +	panic("SysRq-triggered panic!\n");
-> >  }
-> > 
+> If your platform is purely MMIO based then ioread32 and readl can become
+> the same thing, which is much more efficient. Even if you have port based
+> devices that are mapped as MMIO surely its more efficient to do the
+> relevant address tweaking in the iomap not in the read ?
 
-> Well, this removes the ability from sysrq-c to test the oops handling path, but
-> I suppose it does buy us consistent behavior between the keyboard and proc
-> interfaces, which is likely more important.  I can agree to that.  Perhaps we
-> can create another sysctl to test the oops path later.
-> 
+I did check that the architecture in question (sh) cannot do this,
+because it actually implements board specific PIO functions in
+arch/sh/boards/mach-*/io.c.
 
-Can't we just set panic_on_oops = 1 in sysrq_handle_crash()? This will
-make sure that we test oops path as well as have consistent behavior
-between two methods of sysrc-c invocation.
+For architectures that don't need such hacks, I fully agree.
 
-Thanks
-Vivek
-
-> > I agree that causing a real crash(panic) is better way to test crashdump than
-> > calling the entry function of the crashdump directly, and also that opening
-> > the path for other dump mechanisms is welcomed.
-> >  
-> Ok, so we're in line there :)
-> 
-> > > It seems to
-> > > me that right now your major complaint is that the documentation is out of date,
-> > > and you're having to do things slightly differently to get the same behavioral
-> > > results.  Would it solve your issue, if we simply updated the documentation to
-> > > illustrate how it works now?
-> > 
-> > Of course the documentation should be updated asap.
-> > But I think the major complaint is about a difference in the behaviors of SysRq-c
-> > and "echo c > /proc/sysrq-trigger".
-> > 
-> Ok, I can agree with that.  I'd support a change like what you have above to
-> bring the keyboard and proc interface behavior in line.
-> 
-> Regards
-> Neil
-> 
-> 
-> > 
-> > Thanks,
-> > H.Seto
-> > 
-> > 
+	Arnd <><
