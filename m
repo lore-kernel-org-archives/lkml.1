@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbZGVKK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbZGVKMB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754690AbZGVKK4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 06:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbZGVKKz
+	id S1754715AbZGVKMB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 06:12:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754440AbZGVKMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 06:10:55 -0400
-Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:40236 "EHLO
+	Wed, 22 Jul 2009 06:12:00 -0400
+Received: from smtp161.dfw.emailsrvr.com ([67.192.241.161]:57001 "EHLO
 	smtp161.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754460AbZGVKKt (ORCPT
+	with ESMTP id S1754622AbZGVKKy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 06:10:49 -0400
+	Wed, 22 Jul 2009 06:10:54 -0400
 From: Oren Laadan <orenl@librato.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -19,11 +19,11 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        "H. Peter Anvin" <hpa@zytor.com>,
        Alexander Viro <viro@zeniv.linux.org.uk>,
        Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Oren Laadan <orenl@librato.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Dan Smith <danms@us.ibm.com>,
        Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v17][PATCH 40/60] c/r: export shmem_getpage() to support shared memory
-Date: Wed, 22 Jul 2009 06:00:02 -0400
-Message-Id: <1248256822-23416-41-git-send-email-orenl@librato.com>
+Subject: [RFC v17][PATCH 54/60] c/r: add CKPT_COPY() macro
+Date: Wed, 22 Jul 2009 06:00:16 -0400
+Message-Id: <1248256822-23416-55-git-send-email-orenl@librato.com>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1248256822-23416-1-git-send-email-orenl@librato.com>
 References: <1248256822-23416-1-git-send-email-orenl@librato.com>
@@ -31,81 +31,81 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Export functionality to retrieve specific pages from shared memory
-given an inode in shmem-fs; this will be used in the next two patches
-to provide support for c/r of shared memory.
+From: Dan Smith <danms@us.ibm.com>
 
-mm/shmem.c:
-- shmem_getpage() and 'enum sgp_type' moved to linux/mm.h
+As suggested by Dave[1], this provides us a way to make the copy-in and
+copy-out processes symmetric.  CKPT_COPY_ARRAY() provides us a way to do
+the same thing but for arrays.  It's not critical, but it helps us unify
+the checkpoint and restart paths for some things.
 
+Changelog:
+    Mar 04:
+            . Removed semicolons
+            . Added build-time check for __must_be_array in CKPT_COPY_ARRAY
+    Feb 27:
+            . Changed CKPT_COPY() to use assignment, eliminating the need
+              for the CKPT_COPY_BIT() macro
+            . Add CKPT_COPY_ARRAY() macro to help copying register arrays,
+              etc
+            . Move the macro definitions inside the CR #ifdef
+    Feb 25:
+            . Changed WARN_ON() to BUILD_BUG_ON()
+
+Signed-off-by: Dan Smith <danms@us.ibm.com>
 Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
----
- include/linux/mm.h |   11 +++++++++++
- mm/shmem.c         |   15 ++-------------
- 2 files changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 98e1fdf..6c2c3dd 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -329,6 +329,17 @@ void put_pages_list(struct list_head *pages);
+1: https://lists.linux-foundation.org/pipermail/containers/2009-February/015821.html (all the way at the bottom)
+---
+ include/linux/checkpoint.h |   29 +++++++++++++++++++++++++++++
+ 1 files changed, 29 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
+index aeae2fa..2ee1bc2 100644
+--- a/include/linux/checkpoint.h
++++ b/include/linux/checkpoint.h
+@@ -211,6 +211,34 @@ extern int restore_memory_contents(struct ckpt_ctx *ctx, struct inode *inode);
+ 	 VM_MAPPED_COPY | VM_INSERTPAGE | VM_MIXEDMAP | VM_SAO)
  
- void split_page(struct page *page, unsigned int order);
  
-+/* Flag allocation requirements to shmem_getpage and shmem_swp_alloc */
-+enum sgp_type {
-+	SGP_READ,	/* don't exceed i_size, don't allocate page */
-+	SGP_CACHE,	/* don't exceed i_size, may allocate page */
-+	SGP_DIRTY,	/* like SGP_CACHE, but set new page dirty */
-+	SGP_WRITE,	/* may exceed i_size, may allocate page */
-+};
++/* useful macros to copy fields and buffers to/from ckpt_hdr_xxx structures */
++#define CKPT_CPT 1
++#define CKPT_RST 2
 +
-+extern int shmem_getpage(struct inode *inode, unsigned long idx,
-+			 struct page **pagep, enum sgp_type sgp, int *type);
++#define CKPT_COPY(op, SAVE, LIVE)				        \
++	do {							\
++		if (op == CKPT_CPT)				\
++			SAVE = LIVE;				\
++		else						\
++			LIVE = SAVE;				\
++	} while (0)
 +
- /*
-  * Compound pages have a destructor function.  Provide a
-  * prototype for that function and accessor functions.
-diff --git a/mm/shmem.c b/mm/shmem.c
-index d713239..d80532b 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -99,14 +99,6 @@ static struct vfsmount *shm_mnt;
- /* Pretend that each entry is of this size in directory's i_size */
- #define BOGO_DIRENT_SIZE 20
- 
--/* Flag allocation requirements to shmem_getpage and shmem_swp_alloc */
--enum sgp_type {
--	SGP_READ,	/* don't exceed i_size, don't allocate page */
--	SGP_CACHE,	/* don't exceed i_size, may allocate page */
--	SGP_DIRTY,	/* like SGP_CACHE, but set new page dirty */
--	SGP_WRITE,	/* may exceed i_size, may allocate page */
--};
--
- #ifdef CONFIG_TMPFS
- static unsigned long shmem_default_max_blocks(void)
- {
-@@ -119,9 +111,6 @@ static unsigned long shmem_default_max_inodes(void)
- }
- #endif
- 
--static int shmem_getpage(struct inode *inode, unsigned long idx,
--			 struct page **pagep, enum sgp_type sgp, int *type);
--
- static inline struct page *shmem_dir_alloc(gfp_t gfp_mask)
- {
- 	/*
-@@ -1202,8 +1191,8 @@ static inline struct mempolicy *shmem_get_sbmpol(struct shmem_sb_info *sbinfo)
-  * vm. If we swap it in we mark it dirty since we also free the swap
-  * entry since a page cannot live in both the swap and page cache
++/*
++ * Copy @count items from @LIVE to @SAVE if op is CKPT_CPT (otherwise,
++ * copy in the reverse direction)
++ */
++#define CKPT_COPY_ARRAY(op, SAVE, LIVE, count)				\
++	do {								\
++		(void)__must_be_array(SAVE);				\
++		(void)__must_be_array(LIVE);				\
++		BUILD_BUG_ON(sizeof(*SAVE) != sizeof(*LIVE));		\
++		if (op == CKPT_CPT)					\
++			memcpy(SAVE, LIVE, count * sizeof(*SAVE));	\
++		else							\
++			memcpy(LIVE, SAVE, count * sizeof(*SAVE));	\
++	} while (0)
++
++
+ /* debugging flags */
+ #define CKPT_DBASE	0x1		/* anything */
+ #define CKPT_DSYS	0x2		/* generic (system) */
+@@ -243,6 +271,7 @@ extern unsigned long ckpt_debug_level;
+  * CKPT_DBASE is the base flags, doesn't change
+  * CKPT_DFLAG is to be redfined in each source file
   */
--static int shmem_getpage(struct inode *inode, unsigned long idx,
--			struct page **pagep, enum sgp_type sgp, int *type)
-+int shmem_getpage(struct inode *inode, unsigned long idx,
-+		  struct page **pagep, enum sgp_type sgp, int *type)
- {
- 	struct address_space *mapping = inode->i_mapping;
- 	struct shmem_inode_info *info = SHMEM_I(inode);
++
+ #define ckpt_debug(fmt, args...)  \
+ 	_ckpt_debug(CKPT_DBASE | CKPT_DFLAG, fmt, ## args)
+ 
 -- 
 1.6.0.4
 
