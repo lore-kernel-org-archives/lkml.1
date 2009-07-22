@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753147AbZGVPu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350AbZGVPvM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753147AbZGVPu7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 11:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbZGVPu6
+	id S1753350AbZGVPvM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 11:51:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZGVPvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 11:50:58 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50894 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752523AbZGVPu6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 11:50:58 -0400
-Date: Wed, 22 Jul 2009 08:48:48 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Krzysztof Oledzki <olel@ans.pl>
-cc: Troy Moure <twmoure@szypr.net>, Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       lwn@lwn.net, Ian Lance Taylor <iant@google.com>
-Subject: Re: Linux 2.6.27.27
-In-Reply-To: <alpine.LNX.1.10.0907221546480.26357@bizon.gios.gov.pl>
-Message-ID: <alpine.LFD.2.01.0907220846350.19335@localhost.localdomain>
-References: <20090720040655.GA11940@kroah.com> <4A645A45.9060509@ans.pl> <20090720151008.GC10015@suse.de> <alpine.LFD.2.01.0907200848530.13838@localhost.localdomain> <alpine.LNX.1.10.0907202341580.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907201504470.19335@localhost.localdomain>
- <alpine.LNX.1.10.0907210831210.29729@bizon.gios.gov.pl> <alpine.LNX.1.10.0907211154480.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907210906400.19335@localhost.localdomain> <alpine.LFD.2.01.0907211133010.19335@localhost.localdomain>
- <alpine.LFD.2.00.0907212211040.4630@troy-laptop> <alpine.LFD.2.01.0907211726140.19335@localhost.localdomain> <alpine.LFD.2.01.0907211811410.19335@localhost.localdomain> <alpine.LNX.1.10.0907221546480.26357@bizon.gios.gov.pl>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 22 Jul 2009 11:51:10 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:37034 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753278AbZGVPvG (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 11:51:06 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Steven Whitehouse <swhiteho@redhat.com>, cluster-devel@redhat.com,
+       linux-kernel@vger.kernel.org, rpurdie@rpsys.net
+Subject: Re: GFS2: Add LED support to GFS2
+In-Reply-To: Your message of "Wed, 22 Jul 2009 17:15:21 +0200."
+             <20090722151521.GB6035@basil.fritz.box>
+From: Valdis.Kletnieks@vt.edu
+References: <1248260198.3456.4.camel@localhost.localdomain> <87k5203hdx.fsf@basil.nowhere.org> <1248274288.3298.5.camel@localhost.localdomain> <20090722145534.GA6035@basil.fritz.box> <1248274951.3298.11.camel@localhost.localdomain>
+            <20090722151521.GB6035@basil.fritz.box>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1248277845_3794P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 22 Jul 2009 11:50:45 -0400
+Message-ID: <23263.1248277845@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--==_Exmh_1248277845_3794P
+Content-Type: text/plain; charset=us-ascii
 
+On Wed, 22 Jul 2009 17:15:21 +0200, Andi Kleen said:
 
-On Wed, 22 Jul 2009, Krzysztof Oledzki wrote:
-
+> So have some sysfs file where you echo mount points into to enable
+> LED activity.
 > 
-> 
-> On Tue, 21 Jul 2009, Linus Torvalds wrote:
-> > 
-> > IOW, like this.
+> Ok that would be a little clumpsy for a "10 million bind mounts" case,
+> but presumably that's very rare and they can still make it work.
 
-Yeah, I'm a moron. Not at _all_ like that. I wish I hadn't sent out the 
-patch, you'd have done it correctly by hand from my description.
+Might be interesting for a file server, allow for a Connection-Machine
+style front panel... ;)
 
-> > diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-> > index 5c1a2c0..af4a15c 100644
-> > --- a/drivers/video/fbmon.c
-> > +++ b/drivers/video/fbmon.c
-> > @@ -256,8 +256,8 @@ static void fix_edid(unsigned char *edid, int fix)
-> > 
-> > static int edid_checksum(unsigned char *edid)
-> > {
-> > -	unsigned char i, csum = 0, all_null = 0;
-> > -	int err = 0, fix = check_edid(edid);
-> > +	unsigned csum = 0, all_null = 0;
-> > +	int i, err = 0, fix = check_edid(edid);
+--==_Exmh_1248277845_3794P
+Content-Type: application/pgp-signature
 
-I don't know where the 'char' disappeared, but that was obviously not 
-intended. I just meant to move the 'i' from one line to the other.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-> > 
-> > 	if (fix)
-> > 		fix_edid(edid, fix);
-> 
-> Tested-by: Krzysztof Piotr Oledzki <ole@ans.pl>
-> 
-> On condition, that you keep "unsigned char" here. ;)
+iD8DBQFKZzVVcC3lWbTT17ARAgAYAKDQ59GMClum4qeL8eKr0bbblTjUXgCg1//V
+F+0P6Gjii3fCOIJ0G9Lp4MI=
+=pdic
+-----END PGP SIGNATURE-----
 
-Indeed. I'll commit the fixed version. Thanks for testing and sorry for 
-the idiot patch.
-
-		Linus
+--==_Exmh_1248277845_3794P--
