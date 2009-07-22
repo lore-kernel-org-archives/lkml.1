@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753408AbZGVP4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752662AbZGVQAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753408AbZGVP4T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 11:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbZGVP4S
+	id S1752662AbZGVQAP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 12:00:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbZGVQAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 11:56:18 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:44830 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752718AbZGVP4R (ORCPT
+	Wed, 22 Jul 2009 12:00:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56900 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751681AbZGVQAN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 11:56:17 -0400
-Date: Wed, 22 Jul 2009 16:56:15 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
-       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
-       t.fujak@samsung.com, kyungmin.park@samsung.com,
-       David Brownell <david-b@pacbell.net>, Daniel Ribeiro <drwyrm@gmail.com>
-Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
-Message-ID: <20090722155615.GA14026@rakim.wolfsonmicro.main>
-References: <20090721222547.GA1948@opensource.wolfsonmicro.com>
- <alpine.LFD.2.00.0907221022190.2813@localhost.localdomain>
- <20090722121800.GD21171@rakim.wolfsonmicro.main>
- <alpine.LFD.2.00.0907221427380.2813@localhost.localdomain>
- <1248269443.27058.1449.camel@twins>
- <alpine.LFD.2.00.0907221615480.2813@localhost.localdomain>
- <20090722143211.GB29404@rakim.wolfsonmicro.main>
- <alpine.LFD.2.00.0907221645240.2813@localhost.localdomain>
- <20090722145654.GA4987@rakim.wolfsonmicro.main>
- <alpine.LFD.2.00.0907221715260.2813@localhost.localdomain>
+	Wed, 22 Jul 2009 12:00:13 -0400
+Date: Wed, 22 Jul 2009 08:58:50 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Troy Moure <twmoure@szypr.net>
+cc: Krzysztof Oledzki <olel@ans.pl>, Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
+       lwn@lwn.net, Ian Lance Taylor <iant@google.com>
+Subject: Re: Linux 2.6.27.27
+In-Reply-To: <alpine.LFD.2.00.0907220618270.2606@troy-laptop>
+Message-ID: <alpine.LFD.2.01.0907220858020.19335@localhost.localdomain>
+References: <20090720040655.GA11940@kroah.com> <4A645A45.9060509@ans.pl> <20090720151008.GC10015@suse.de> <alpine.LFD.2.01.0907200848530.13838@localhost.localdomain> <alpine.LNX.1.10.0907202341580.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907201504470.19335@localhost.localdomain>
+ <alpine.LNX.1.10.0907210831210.29729@bizon.gios.gov.pl> <alpine.LNX.1.10.0907211154480.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907210906400.19335@localhost.localdomain> <alpine.LFD.2.01.0907211133010.19335@localhost.localdomain>
+ <alpine.LFD.2.00.0907212211040.4630@troy-laptop> <alpine.LFD.2.01.0907211726140.19335@localhost.localdomain> <alpine.LFD.2.01.0907211759180.19335@localhost.localdomain> <alpine.LFD.2.00.0907220618270.2606@troy-laptop>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0907221715260.2813@localhost.localdomain>
-X-Cookie: User hostile.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 22, 2009 at 05:15:59PM +0200, Thomas Gleixner wrote:
-> On Wed, 22 Jul 2009, Mark Brown wrote:
 
-> > That's what they're all doing at present outside of genirq.
 
-> They just are racy against disable/enable/request/free I guess :)
+On Wed, 22 Jul 2009, Troy Moure wrote:
+> 
+> Obviously I got a bit lucky that problem was actually basically where I 
+> started looking for it.  But I figured even if I didn't find it, I'd learn 
+> something about the radeonfb code. And who would pass up an opportunity to 
+> learn about that?
 
-All of them are using a locks which means none of those can run at the
-same time as an interrupt is being serviced.
+Who indeed? <eyeroll> There are few things more interesting than looking 
+at assembler code from the frame buffer layer. </eyeroll>
+
+		Linus
