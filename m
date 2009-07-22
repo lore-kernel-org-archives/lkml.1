@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbZGVBKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753504AbZGVBMG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753769AbZGVBKG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 21 Jul 2009 21:10:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbZGVBKG
+	id S1753504AbZGVBMG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 21 Jul 2009 21:12:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbZGVBMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 21 Jul 2009 21:10:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45925 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751406AbZGVBKE (ORCPT
+	Tue, 21 Jul 2009 21:12:06 -0400
+Received: from mail-qy0-f173.google.com ([209.85.221.173]:52839 "EHLO
+	mail-qy0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752034AbZGVBME convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 21 Jul 2009 21:10:04 -0400
-Date: Tue, 21 Jul 2009 18:07:50 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Troy Moure <twmoure@szypr.net>
-cc: Krzysztof Oledzki <olel@ans.pl>, Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       lwn@lwn.net, Ian Lance Taylor <iant@google.com>
-Subject: Re: Linux 2.6.27.27
-In-Reply-To: <alpine.LFD.2.01.0907211726140.19335@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0907211759180.19335@localhost.localdomain>
-References: <20090720040655.GA11940@kroah.com> <4A645A45.9060509@ans.pl> <20090720151008.GC10015@suse.de> <alpine.LFD.2.01.0907200848530.13838@localhost.localdomain> <alpine.LNX.1.10.0907202341580.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907201504470.19335@localhost.localdomain>
- <alpine.LNX.1.10.0907210831210.29729@bizon.gios.gov.pl> <alpine.LNX.1.10.0907211154480.29729@bizon.gios.gov.pl> <alpine.LFD.2.01.0907210906400.19335@localhost.localdomain> <alpine.LFD.2.01.0907211133010.19335@localhost.localdomain>
- <alpine.LFD.2.00.0907212211040.4630@troy-laptop> <alpine.LFD.2.01.0907211726140.19335@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 21 Jul 2009 21:12:04 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090721101103.GD4133@elf.ucw.cz>
+References: <20090713202302.GC2569@elf.ucw.cz>
+	 <20090713220726.GA28375@elf.ucw.cz>
+	 <d6200be20907131829o77bce3d8w8f238bc079478368@mail.gmail.com>
+	 <20090714094629.GB2076@elf.ucw.cz>
+	 <d6200be20907141507s39b54cccq9f0cedc325d3a203@mail.gmail.com>
+	 <20090714221638.GA6512@elf.ucw.cz>
+	 <d6200be20907141545k2b40b790x1af853b89517891c@mail.gmail.com>
+	 <20090719212330.GI26511@elf.ucw.cz>
+	 <d6200be20907192043w3f1aa2abvd0125163e6f5519c@mail.gmail.com>
+	 <20090721101103.GD4133@elf.ucw.cz>
+Date: Tue, 21 Jul 2009 18:12:03 -0700
+Message-ID: <d6200be20907211812l47012c00i1fc7de53db97d702@mail.gmail.com>
+Subject: Re: HTC: touchscreen driver
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Brian Swetland <swetland@google.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jul 21, 2009 at 3:11 AM, Pavel Machek<pavel@ucw.cz> wrote:
+> On Sun 2009-07-19 20:43:10, Arve Hj?nnev?g wrote:
+>> On Sun, Jul 19, 2009 at 2:23 PM, Pavel Machek<pavel@ucw.cz> wrote:
+>> >
+>> >> > Applying small patch on top of cleaned up driver should be better than
+>> >> > carrying whole driver itself, right?
+>> >>
+>> >> Perhaps, but the only problem I encountered with this driver so far
+>> >> was when calling disable_irq from the interrupt handler stopped
+>> >> working on non-smp systems in 2.6.30 (which is another patch you
+>> >> should probably apply first).
+>> >
+>> > How do I get that patch? git pull on msm-2.6.29 tree?
+>>
+>> No it is in the android-msm-2.6.30-rc2-test branch at
+>> git://android.git.kernel.org/kernel/experimental.git (commit
+>> 9f89902daf7a3c6fdd6b0c7494f3cc82d5e09217).
+>
+> Could you inline the patch? I tried to pull it off the web interface,
+> but it did not work for some reason.
 
+git fetch git://android.git.kernel.org/kernel/experimental.git
+android-msm-2.6.30-rc2-test
+git cherry-pick 9f89902daf7a3c6fdd6b0c7494f3cc82d5e09217
 
-On Tue, 21 Jul 2009, Linus Torvalds wrote:
-> 
-> Just out of curiosity, how did you find it? Now that I know where to look, 
-> it's very obvious in the assembler diffs, but I didn't notice it until you 
-> pointed it out just because there is so _much_ of the diffs...
+That way you will hopefully not add question marks to my name.
 
-Ahh. I think I see how you found it. Looking at the diffs, there's only a 
-few places where the number of instructions changed by a big fraction. And 
-there's only _one_ place that has a factor-of-three difference (26 lines 
-in the correct cases, and 7 lines in the wrong one). Clever.
-
-There's also a case in do_page_fault() where -fno-strict-overflow 
-generates a _lot_ more instructions than the other cases (but not by a 
-factor of three - but it expands 63 instructions to 100). I'm not seeing 
-quite _why_ it does that, but it does various stupid things like multiply 
-by 0x38 etc. But it doesn't look buggy, it just looks stupid.
-
-Or did you just brute-force it and spend a lot of time eyeballing things?
-
-			Linus
+-- 
+Arve Hjønnevåg
