@@ -1,66 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753756AbZGVQqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753694AbZGVQuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753756AbZGVQqP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 12:46:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbZGVQqO
+	id S1753694AbZGVQuV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 12:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbZGVQuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 12:46:14 -0400
-Received: from mail.gmx.net ([213.165.64.20]:51852 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751848AbZGVQqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 12:46:13 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+/EV1SQ72/eRdTMC5VsuXONBdO6sOFz3bbiPRyLw
-	RwWtIsivDaWJ2u
-Subject: Re: [patch] perf_counter tools: resurrect perf top annotation in a
- simple interactive form
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1248274190.27058.1530.camel@twins>
-References: <1248090981.18702.14.camel@marge.simson.net>
-	 <1248274190.27058.1530.camel@twins>
-Content-Type: text/plain
-Date: Wed, 22 Jul 2009 18:46:11 +0200
-Message-Id: <1248281171.5738.5.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+	Wed, 22 Jul 2009 12:50:21 -0400
+Received: from mail.free-electrons.com ([88.191.76.200]:59638 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751848AbZGVQuT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 12:50:19 -0400
+Date: Wed, 22 Jul 2009 18:50:16 +0200
+From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+To: kevin.granade@gmail.com
+Cc: linux@arm.linux.org.uk, hpa@zytor.com, alain@knaff.lu,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
+Subject: Re: [PATCH 3/5] Add support for LZO-compressed kernels
+Message-ID: <20090722165016.GC4625@pc-ras4041.res.insa>
+References: <1248271279-9920-3-git-send-email-albin.tonnerre@free-electrons.com> <0022152d7fe9b6dbcf046f4d04a6@google.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="TakKZr9L6Hm6aLOc"
+Content-Disposition: inline
+In-Reply-To: <0022152d7fe9b6dbcf046f4d04a6@google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-22 at 16:49 +0200, Peter Zijlstra wrote:
-> On Mon, 2009-07-20 at 13:56 +0200, Mike Galbraith wrote:
-> > Comments/suggestions/clue_bats welcome.
-> > 
-> > perf_counter tools: resurrect perf top annotation in a simple interactive form.
-> > 
-> > This patch allows the user to select any symbol in kernel space for source level
-> > annotation on the fly, switch between event counters and alter display variables.
-> > When symbol details are being displayed, stopping annotation reverts to normal.
-> > 
-> > This doesn't make top _fully_ interactive, you can only select among the events
-> > you started top with, ie it doesn't stop/start event counters etc.
-> > 
-> > known keys:
-> >         [d]     select display delay.
-> >         [e]     select display entries (lines).
-> >         [E]     select annotation event counter.
-> >         [f]     select normal display count filter.
-> >         [F]     select annotation display count filter (percentage).
-> >         [qQ]    quit.
-> >         [s]     select annotation symbol and start annotation.
-> >         [S]     stop annotation, revert to normal display.
-> >         [z]     toggle event count zeroing.
-> 
-> ok, so I tried this, but the screen updates overwrite this input
-> screen before I can read it ;-)
 
-That's not an input screen, it's a legend shown if you poke an unknown
-key.  Poking a known key prompts for input.
+--TakKZr9L6Hm6aLOc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	-Mike
+On Wed, Jul 22, 2009 at 03:28:09PM +0000, kevin.granade@gmail.com wrote :
+> On Jul 22, 2009 9:01am, Albin Tonnerre <albin.tonnerre@free-electrons.com>
+> wrote:
+> > This is the first part of the lzo patch
+> >
+> > The lzo compressor is worse than gzip at compression, but faster at
+> >
+> > extraction. Here are some figures for an ARM board I'm working on:
+> >
+> >
+> >
+> > Uncompressed size: 3.24Mo
+> >
+> > gzip 1.61Mo 0.72s
+> >
+> > lzo 1.75Mo 0.48s
+> >
+> >
+> >
+> > So for a compression ratio that is still relatively close to gzip, it's
+> >
+> > much faster to extract, at least in that case.
+>=20
+> Is that "time to run the extraction algorithm", or "time to read in image=
+ from
+> media and extract"? I think the time to read from the media would tend to
+> dominate the decompression time.
+> Either way, could you provide the other time for each algorithm in order =
+to
+> give a sense of how this might scale to other CPU speeds/media read speed=
+s?
+>=20
 
+That's the time to run the extraction algorithm. As H. Peter Anvin pointed =
+out,
+you can have a fast media and a somewhat slow CPU, for which lzo makes sens=
+e.
+As for other data, I don't have all the figures handy, but:
+
+ - LZMA: compressed size 1.19Mo, decompression time: several *seconds* (tha=
+t's
+   on a 180MHz ARM9 board, using a patch to implement LZMA compression simi=
+lar
+   to this one)
+ - Bzip2 eats a lot of RAM, and head.S only gives 64Ko of malloc() space on
+   ARM, so I didn't try.
+
+Regards,
+--=20
+Albin Tonnerre, Free Electrons
+Kernel, drivers and embedded Linux development,
+consulting, training and support.
+http://free-electrons.com
+
+--TakKZr9L6Hm6aLOc
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iQIcBAEBCAAGBQJKZ0NIAAoJEBEG8gBbtuSl0x0P/32kBqozhjvMJVjopQhg879k
+CqVLP9CXmPcfFGc3ytyAnbP3glR+DiAcpc4sWvvCowZZ+k13znU5DpDMgl4+MdVl
+XHr3ebrQJon+LJ6toRmcPuy2U/qTqBV2vrAcy7PNViUMVG2QAKPS9LWYsQjdbHW5
+Z6bXMOdLCwVGJgENxapgKDwG+yGlDirROGoGHinIdHZmLnNdc+vMd+Grme58jSwC
+/D4l4vTU0kEOMon5t2sZOGguyPr7VGTzjJjHZ7vP2B+ltPobwmT1H4C/uut2KPkh
+cYxPevUjTkrvXiOqX8NBzB+FBxw8j/S99PEGH9sSTlMEaoPShz+QvR3AUFOcyAsQ
+IGoEmCnmm8tYwdhRPUKNs9APVdkQGilAgkVt6Sv/KgJ6ovs0cGMy0KO33TkK/+nS
+CgonnEVizauYxmg4mNCOdtxgOSIZvhw7vWQoGdzeC1REg+Lcpa8cadcRrYkZ5BO+
+yYXAHCRIX2C4mTzPq+bow7bMaoGnlAt7YFh8WkLi4Uuv1od3qKowqytSXp+07qsx
+AGseHIosb33EhCJb09Fbf7TCQDwnXKzrAMpTH/YvYfSoyX/0kdRNSmwRB1RhHSx1
+edLCu6mtnbO4A2rTLLEel7OdU4UqJUq3Tbeu4tYLoZNSNgxLXyWlHocNX5NLeOpK
+vT+GmLRBLkOipprBfFDW
+=jHrT
+-----END PGP SIGNATURE-----
+
+--TakKZr9L6Hm6aLOc--
