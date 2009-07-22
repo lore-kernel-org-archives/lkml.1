@@ -1,134 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753576AbZGVTjF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754249AbZGVTmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753576AbZGVTjF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 15:39:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbZGVTjE
+	id S1754249AbZGVTmP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 15:42:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbZGVTmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 15:39:04 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:54554 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752666AbZGVTjD (ORCPT
+	Wed, 22 Jul 2009 15:42:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42784 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752798AbZGVTmN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 15:39:03 -0400
-Date: Wed, 22 Jul 2009 15:38:31 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Brayan Arraes <brayan@yack.com.br>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Subject: Re: [PATCH] sysrq, kdump: fix regression, revert "simplify sysrq-c
-	handler"
-Message-ID: <20090722193831.GA4718@hmsreliant.think-freely.org>
-References: <4A64672E.8020005@cn.fujitsu.com> <4A6564F2.10404@jp.fujitsu.com> <20090721110857.GA21612@hmsreliant.think-freely.org> <4A6672F9.3050800@jp.fujitsu.com> <20090722111049.GB4539@hmsreliant.think-freely.org> <20090722134211.GA7995@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090722134211.GA7995@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-Spam-Score: -1.4 (-)
+	Wed, 22 Jul 2009 15:42:13 -0400
+Date: Wed, 22 Jul 2009 12:42:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-kernel@vger.kernel.org, jsquyres@cisco.com,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH/RFC] ummunot: Userspace support for MMU notifications
+Message-Id: <20090722124208.97d7d9d7.akpm@linux-foundation.org>
+In-Reply-To: <adad47smsb5.fsf@cisco.com>
+References: <ada3a8oobis.fsf@cisco.com>
+	<20090722111538.58a126e3.akpm@linux-foundation.org>
+	<adad47smsb5.fsf@cisco.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 22, 2009 at 09:42:11AM -0400, Vivek Goyal wrote:
-> On Wed, Jul 22, 2009 at 07:10:49AM -0400, Neil Horman wrote:
-> > On Wed, Jul 22, 2009 at 11:01:29AM +0900, Hidetoshi Seto wrote:
-> > > Neil Horman wrote:
-> > > > None of this answers Erics question, what is it that you could do before, that
-> > > > you couldn't do now?
-> > > 
-> > > One is, as Ohmichi-san pointed, triggering kdump via echo c > /proc/sysrq-trigger.
-> > > 
-> > > In contrast to oops via SysRq-c from keyboard interrupt which results in
-> > > panic due to in_interrupt(), oops via echo-c will not become panic unless
-> > > panic_on_oops.
-> > > 
-> > > So in other words, we could expect same effect in both of echo-c and SysRq-c
-> > > before, but now we cannot because it depends on the panic_on_oops.
-> > > Isn't it a regression?
-> > > 
-> > Only if you blindly consider a change in behavior to be a regression.  consider
-> > that previously executing a sysrq-c did the same thing if you did a echo c >
-> > /proc/sysrq-trigger on a keyboard sysrq-c, but did different things based on
-> > weather or not your had a kexec kernel loaded.
-> > 
-> > > Whether kdump should be executed on oops (which is not panic) or not is a
-> > > separate thing.
-> > > 
-> > > > There are reasons to want to have a convenient way to
-> > > > crash the kernel, other than to test kdump (several distributions have augmented
-> > > > sysrq-c to do this for some time to test other previous dump mechanisms and
-> > > > features), so while its not been upstream, saying that its well known to test
-> > > > kdump without causing an oops is a bit of a misleading statement.
-> > > 
-> > > Let make me sure the difference between 'crash', 'oops', and 'panic'.
-> > > At least 'oops' is not panic, as is obvious from the name of panic_on_oops.
-> > > And it seems you are using 'crash' and 'oops' in mixture.
-> > > 
-> > I'm perfectly well aware of the difference, I just assert theres value to having
-> > sysrq-c be able to test both paths, especially given that we already have the
-> > sysrq-c sysctl available to toggle behavior for just this case.
-> > 
-> > > If you mean 'crash' as 'panic', my complaint is echo-c does not panic while
-> > > SysRq-c does panic.  So if possible I'd like to suggest a change like:
-> > >
-> > See above, I think theres value to having sysrq-c be able to do both, although I
-> > agree the method by which it triggers both is a bit muddled.
-> >  
-> > >  static void sysrq_handle_crash(int key, struct tty_struct *tty)
-> > >  {
-> > > -	char *killer = NULL;
-> > > -	*killer = 1;
-> > > +	panic("SysRq-triggered panic!\n");
-> > >  }
-> > > 
-> 
-> > Well, this removes the ability from sysrq-c to test the oops handling path, but
-> > I suppose it does buy us consistent behavior between the keyboard and proc
-> > interfaces, which is likely more important.  I can agree to that.  Perhaps we
-> > can create another sysctl to test the oops path later.
-> > 
-> 
-> Can't we just set panic_on_oops = 1 in sysrq_handle_crash()? This will
-> make sure that we test oops path as well as have consistent behavior
-> between two methods of sysrc-c invocation.
-> 
-Thats a good point too, seems simpler than the other approach.
-Neil
+On Wed, 22 Jul 2009 12:27:42 -0700
+Roland Dreier <rdreier@cisco.com> wrote:
 
-> Thanks
-> Vivek
+>  > >  1. ioctl() to register/unregister an address range to watch in the
+>  > >     kernel (cf struct ummunot_register_ioctl in <linux/ummunot.h>).
+>  > > 
+>  > >  2. read() to retrieve events generated when a mapping in a watched
+>  > >     address range is invalidated (cf struct ummunot_event in
+>  > >     <linux/ummunot.h>).  select()/poll()/epoll() and SIGIO are handled
+>  > >     for this IO.
+>  > > 
+>  > >  3. mmap() one page at offset 0 to map a kernel page that contains a
+>  > >     generation counter that is incremented each time an event is
+>  > >     generated.  This allows userspace to have a fast path that checks
+>  > >     that no events have occurred without a system call.
+>  > 
+>  > If you stand back and squint, each of 1, 2 and 3 are things which the
+>  > kernel already provides for the delivery of ftrace events to userspace.
+>  > 
+>  > Did you look at reusing all that stuff?
 > 
-> > > I agree that causing a real crash(panic) is better way to test crashdump than
-> > > calling the entry function of the crashdump directly, and also that opening
-> > > the path for other dump mechanisms is welcomed.
-> > >  
-> > Ok, so we're in line there :)
-> > 
-> > > > It seems to
-> > > > me that right now your major complaint is that the documentation is out of date,
-> > > > and you're having to do things slightly differently to get the same behavioral
-> > > > results.  Would it solve your issue, if we simply updated the documentation to
-> > > > illustrate how it works now?
-> > > 
-> > > Of course the documentation should be updated asap.
-> > > But I think the major complaint is about a difference in the behaviors of SysRq-c
-> > > and "echo c > /proc/sysrq-trigger".
-> > > 
-> > Ok, I can agree with that.  I'd support a change like what you have above to
-> > bring the keyboard and proc interface behavior in line.
-> > 
-> > Regards
-> > Neil
-> > 
-> > 
-> > > 
-> > > Thanks,
-> > > H.Seto
-> > > 
-> > > 
+> No, not really... will investigate a bit further.  Any pointers to how
+> the ftrace stuff might work?
+
+I know who to cc ;)
+
+>  Specifically how #3 maps to ftrace is a
+> little obscure to me; and also as I understand it, ftrace is controlled
+> through debugfs, which means there's a bit of hassle to make this usable
+> on a default install.  And also I'm not sure how the ftrace control path
+> really maps to "here's a 100 address ranges I'd like events for".
 > 
+> So at a first glance after unsquinting a bit I'm not sure how good the
+> fit really is.
+
+Oh.  Here was I hoping that all that code was about to become useful.
+<runs away>
