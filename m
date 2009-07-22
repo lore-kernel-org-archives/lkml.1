@@ -1,114 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753694AbZGVQuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbZGVQuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753694AbZGVQuV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 12:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbZGVQuV
+	id S1753850AbZGVQuq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 12:50:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbZGVQup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 12:50:21 -0400
-Received: from mail.free-electrons.com ([88.191.76.200]:59638 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751848AbZGVQuT (ORCPT
+	Wed, 22 Jul 2009 12:50:45 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:49978 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753576AbZGVQuo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 12:50:19 -0400
-Date: Wed, 22 Jul 2009 18:50:16 +0200
-From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-To: kevin.granade@gmail.com
-Cc: linux@arm.linux.org.uk, hpa@zytor.com, alain@knaff.lu,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
-Subject: Re: [PATCH 3/5] Add support for LZO-compressed kernels
-Message-ID: <20090722165016.GC4625@pc-ras4041.res.insa>
-References: <1248271279-9920-3-git-send-email-albin.tonnerre@free-electrons.com> <0022152d7fe9b6dbcf046f4d04a6@google.com>
+	Wed, 22 Jul 2009 12:50:44 -0400
+Date: Wed, 22 Jul 2009 17:50:42 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
+       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
+       t.fujak@samsung.com, kyungmin.park@samsung.com,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
+Message-ID: <20090722165042.GA21186@rakim.wolfsonmicro.main>
+References: <20090714100634.GA4054@elf.ucw.cz>
+ <20090721160436.GD4352@dtor-d630.eng.vmware.com>
+ <alpine.LFD.2.00.0907212225030.2813@localhost.localdomain>
+ <200907220939.33399.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="TakKZr9L6Hm6aLOc"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <0022152d7fe9b6dbcf046f4d04a6@google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200907220939.33399.david-b@pacbell.net>
+X-Cookie: Sign here without admitting guilt.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 22, 2009 at 09:39:32AM -0700, David Brownell wrote:
 
---TakKZr9L6Hm6aLOc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> The normal model is that boards don't get involved with that level of
+> logic ... all IRQs get set up once on generic code, and flow handlers
+> don't change.  Or if they do change, it's done when changing the IRQ's
+> trigger mode from edge to level, or vice versa.
 
-On Wed, Jul 22, 2009 at 03:28:09PM +0000, kevin.granade@gmail.com wrote :
-> On Jul 22, 2009 9:01am, Albin Tonnerre <albin.tonnerre@free-electrons.com>
-> wrote:
-> > This is the first part of the lzo patch
-> >
-> > The lzo compressor is worse than gzip at compression, but faster at
-> >
-> > extraction. Here are some figures for an ARM board I'm working on:
-> >
-> >
-> >
-> > Uncompressed size: 3.24Mo
-> >
-> > gzip 1.61Mo 0.72s
-> >
-> > lzo 1.75Mo 0.48s
-> >
-> >
-> >
-> > So for a compression ratio that is still relatively close to gzip, it's
-> >
-> > much faster to extract, at least in that case.
->=20
-> Is that "time to run the extraction algorithm", or "time to read in image=
- from
-> media and extract"? I think the time to read from the media would tend to
-> dominate the decompression time.
-> Either way, could you provide the other time for each algorithm in order =
-to
-> give a sense of how this might scale to other CPU speeds/media read speed=
-s?
->=20
+> Can that be cleaned up a bit, so that the handle_level_oneshot_irq()
+> and unmask_oneshot_irq() stuff kicks in automatically when needed,
+> instead of requiring board-specific (or driver-specific) code to get
+> that stuff right?
 
-That's the time to run the extraction algorithm. As H. Peter Anvin pointed =
-out,
-you can have a fast media and a somewhat slow CPU, for which lzo makes sens=
-e.
-As for other data, I don't have all the figures handy, but:
-
- - LZMA: compressed size 1.19Mo, decompression time: several *seconds* (tha=
-t's
-   on a 180MHz ARM9 board, using a patch to implement LZMA compression simi=
-lar
-   to this one)
- - Bzip2 eats a lot of RAM, and head.S only gives 64Ko of malloc() space on
-   ARM, so I didn't try.
-
-Regards,
---=20
-Albin Tonnerre, Free Electrons
-Kernel, drivers and embedded Linux development,
-consulting, training and support.
-http://free-electrons.com
-
---TakKZr9L6Hm6aLOc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iQIcBAEBCAAGBQJKZ0NIAAoJEBEG8gBbtuSl0x0P/32kBqozhjvMJVjopQhg879k
-CqVLP9CXmPcfFGc3ytyAnbP3glR+DiAcpc4sWvvCowZZ+k13znU5DpDMgl4+MdVl
-XHr3ebrQJon+LJ6toRmcPuy2U/qTqBV2vrAcy7PNViUMVG2QAKPS9LWYsQjdbHW5
-Z6bXMOdLCwVGJgENxapgKDwG+yGlDirROGoGHinIdHZmLnNdc+vMd+Grme58jSwC
-/D4l4vTU0kEOMon5t2sZOGguyPr7VGTzjJjHZ7vP2B+ltPobwmT1H4C/uut2KPkh
-cYxPevUjTkrvXiOqX8NBzB+FBxw8j/S99PEGH9sSTlMEaoPShz+QvR3AUFOcyAsQ
-IGoEmCnmm8tYwdhRPUKNs9APVdkQGilAgkVt6Sv/KgJ6ovs0cGMy0KO33TkK/+nS
-CgonnEVizauYxmg4mNCOdtxgOSIZvhw7vWQoGdzeC1REg+Lcpa8cadcRrYkZ5BO+
-yYXAHCRIX2C4mTzPq+bow7bMaoGnlAt7YFh8WkLi4Uuv1od3qKowqytSXp+07qsx
-AGseHIosb33EhCJb09Fbf7TCQDwnXKzrAMpTH/YvYfSoyX/0kdRNSmwRB1RhHSx1
-edLCu6mtnbO4A2rTLLEel7OdU4UqJUq3Tbeu4tYLoZNSNgxLXyWlHocNX5NLeOpK
-vT+GmLRBLkOipprBfFDW
-=jHrT
------END PGP SIGNATURE-----
-
---TakKZr9L6Hm6aLOc--
+Thomas was reluctant to do that but up till now every single user has
+been asking for it.  A flag in the driver requesting the behaviour
+sounds OK to me, there are devices that can use threaded IRQs while
+interacting with the device in the primary handler NAPI style.
