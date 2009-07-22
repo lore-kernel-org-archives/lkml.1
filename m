@@ -1,62 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754410AbZGVWRs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbZGVWdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754410AbZGVWRs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 18:17:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbZGVWRr
+	id S1754830AbZGVWdP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 18:33:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbZGVWdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 18:17:47 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:54438 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751909AbZGVWRq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 18:17:46 -0400
-Subject: Re: Error mounting FC8 NFS server with 2.6.31-rc3 NFSv4 client.
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Andy Adamson <andros@netapp.com>
-Cc: Ben Greear <greearb@candelatech.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
-In-Reply-To: <2CC45724-FD70-4F00-84F7-4D0E2158D6B5@netapp.com>
-References: <4A64EB1F.4000602@candelatech.com>
-	 <1248178527.5222.0.camel@heimdal.trondhjem.org>
-	 <4A65F184.5060802@candelatech.com>
-	 <1248196339.21343.8.camel@heimdal.trondhjem.org>
-	 <4A65FCB2.6080903@candelatech.com>
-	 <1248199140.21343.17.camel@heimdal.trondhjem.org>
-	 <4A660295.9020807@candelatech.com>
-	 <1248200897.21343.19.camel@heimdal.trondhjem.org>
-	 <4A6609A9.3000504@candelatech.com>
-	 <1248211050.21343.38.camel@heimdal.trondhjem.org>
-	 <A7103385-4525-4B7B-9CBA-5DBCB99A98F0@netapp.com>
-	 <1248294013.5234.35.camel@heimdal.trondhjem.org>
-	 <74713B5B-DF7F-4357-AE3A-0F6B44C41116@netapp.com>
-	 <1248299236.9202.3.camel@heimdal.trondhjem.org>
-	 <2CC45724-FD70-4F00-84F7-4D0E2158D6B5@netapp.com>
-Content-Type: text/plain
-Date: Wed, 22 Jul 2009 18:17:42 -0400
-Message-Id: <1248301062.9202.11.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 4 msgs/h 1 sum rcpts/h 7 sum msgs/h 1 total rcpts 940 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 91CAB61F1D3FFFE5A9CF08A1F7C85B1164819353
-X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 85 max/h 5 blacklist 0 greylist 0 ratelimit 0
+	Wed, 22 Jul 2009 18:33:15 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:51572 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754456AbZGVWdO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 18:33:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=alAelQ4Y9aC2ISTVMQa6ClGcncygkCCM+nMY2wCwCT84Z/pvc6LRoxGaQgWaEa3QPg
+         MEYlPOtsv/rTo63Xqi7Y6NWZcfS/1UaaL+1afYn9xKm/OjZMXE6EGar1aWF4iImngq1B
+         cnaNM7ZaXCzV5XlaogffXUW/YoxwLonaoZffg=
+MIME-Version: 1.0
+In-Reply-To: <4A6701E3.3000204@csr.com>
+References: <1248128808-2241-1-git-send-email-linus.walleij@stericsson.com>
+	 <4A6701E3.3000204@csr.com>
+Date: Thu, 23 Jul 2009 00:33:13 +0200
+Message-ID: <63386a3d0907221533u6ab2738dpcb4484595ae757b0@mail.gmail.com>
+Subject: Re: [PATCH 1/2] MMC Agressive clocking framework v5
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: David Vrabel <david.vrabel@csr.com>
+Cc: Linus Walleij <linus.walleij@stericsson.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Pierre Ossman <pierre@ossman.eu>,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-22 at 18:03 -0400, Andy Adamson wrote:
-> On Jul 22, 2009, at 5:47 PM, Trond Myklebust wrote:
-> > Well.... The rsize/wsize is one thing, but how about acls? We simply
-> > don't know how big they may become.
-> 
-> Yeah - has anything been submitted for 4.2 to fix this? (a readdir  
-> cookie - like thingie)
+2009/7/22 David Vrabel <david.vrabel@csr.com>:
 
-Not really. You pretty much have to set ACLs atomically, or you may end
-up with security issues.
+> Linus Walleij wrote:
 
-The good news is, though, that we should be able to figure out an upper
-limit by looking at the max_rqst_sz/max_resp_sz that the server wants to
-set.
+> I'm not sure this is the right approach.
 
+It's been discussed a bit back and forth for a few months, but let's keep
+at it...
 
+> 1. With some controllers (e.g., PXA270 I think) turning the clock on and
+> off is slow.  This means if you're doing back-to-back commands you
+> should leave the clock on for best performance.
+
+OK, when I've been testing this using the default workqueue and
+schedule_work() covered these cases. Back-on-back commands
+seemingly doesn't allow the timeout work to schedule, but I might be
+overseeing the case of several CPU:s there though :-/
+
+> I think there needs to
+> be a higher level active/idle knob for the user of the card (be it the
+> block driver or an SDIO function driver) to control whether to idle the
+> bus clock or controller.
+
+The code doesn't tell the driver to idle the controller, it sets ios.clock
+to zero to give the host driver the *opportunity* to turn controller clocks
+off when it's OK from the MMC spec to do so (after 8 MCI cycles), the
+driver doesn't *have* to do that. It can add addtional logic for different
+HW. So it's only about the bus clock (whereas my patch to mmci.c takes
+advantage of the possibility to also gate the block clock).
+
+> 2. Some controllers cannot detect SDIO interrupts if the clock is
+> stopped.  There should either be a distinction between clock off and
+> clock idle.
+
+This is on the driver level, not in the core. The core doesn't tell whether
+to clock off or not, it only tells the device driver that the MCI clk doesn't
+need to run by setting it to 0. Clearly, some hardware cannot exploit
+that, but some (like PL180, OMAP and Atmel) can, easily.
+
+There can possibly also be HW that can turn of MCI clk but not the
+clock to the HW block itself, that is fine with the implementation.
+
+> 3. Regardless of point 1 above.  Using a workqueue item in this way
+> seems overkill.  Consider using a timer and simply calling mod_timer()
+> at the start of every command.  When the timer expires, idle the clock.
+>  You will probably need a "command in progress" bit to ensure you don't
+> idle the clock if the timer expires in the middle of a command.
+
+I would agree if I created a new workqueue, but the timeout of this
+particular workqueue is unimportant and that's why I'm using the
+global workqueue and just schedule_work(). This means no extra
+overhead, no extra thread and basically does the exact same thing.
+
+But I could experiment with switching that for a timer if I get time
+at my hands, so point taken.
+
+Linus Walleij
