@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754049AbZGVWPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbZGVWZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754049AbZGVWPL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 18:15:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753791AbZGVWPK
+	id S1754759AbZGVWZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 18:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbZGVWZ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 18:15:10 -0400
-Received: from n20.bullet.mail.mud.yahoo.com ([68.142.206.147]:43437 "HELO
-	n20.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753299AbZGVWPJ (ORCPT
+	Wed, 22 Jul 2009 18:25:56 -0400
+Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:41547 "HELO
+	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752734AbZGVWZz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 18:15:09 -0400
-X-Yahoo-Newman-Id: 829137.95495.bm@omp420.mail.mud.yahoo.com
+	Wed, 22 Jul 2009 18:25:55 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=b1uVvQdiUcz82QGHPzkTyXpvk+3RQv4/5oR+YpOwaXm2/Rl4VcaPVpN1Qk+rmJO7fYznCzjwA+zgBY85cdCsBn0ILUG11t/K6eeCNAreJqUsOmsa4mt8pkouqAFhoLnxIQDkVoQ00cuKjw10a3fo4jkqZnUfP0JVtIJOxYfuBIk=  ;
-X-YMail-OSG: MAvmrSMVM1ldmgWDITJCJr2m3SCkqi2M55v6GAeUFAC9X_OxgcpyKONjjXEDCr1F51UIOTdOoNi4eZqkzd8tznsi6fVrJ.4_j1FsH_V9R_kKJ9pesvVWCjs_CkWUT4XNal_eK61y_sqFRmPwHC2b60hJKEpo8Xzu1OiV9Sn6k8xrJA0tBYFbSrmTfBgLuVPlhiukbF7RAn67FerPmB4A4omAxXTHUlpjqmk6JPqupXfSqi3I.5jOmJogXsXzzkyDAff.scT9haGWyMjr_GkutZ_88VZd2qd6mIVeNnTv00tu3yrmojB7
+  b=tZ6/F9SwhnIv3hyItS24QyVOCJ0iPxJ2yitk7s6W01eIZr3Ktba3SaPuhVFoFHsEmSQHrshhW6zVaKlb7GOzwrUs70OxX5tr0T6eVaLmDpvNMYTsNBB2tr4NFcZ+znUU2FqwkZ9v7sac+jyFI2I5xl876UcKjagdZ2Af+a43DE8=  ;
+X-YMail-OSG: hTyRVVEVM1m_Mrbw10TLNwtEfWVH2JjUNVzjg26b4IlsacluimDX9e4pEDl2INLjNldkx0Kzggldev6SzcUErpjMd3j5twNj078UkE1pjqOTH3xfCcMHenPUdF7PRreQUbFKJ6Sos6LSFB4k3wUCsv87FZ9NLBkKlsBqw9p8tIC3yWX4A0VFfDKcnARrIciW9xEqGUYqFWN47AE3m4_sGp6agPjaNuKvtq1H2uCuEvBl0iPvcrmuRvpwb_NV0rXIgIqrtFY7S_6ntwBk
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
-To: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>
-Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
-Date: Wed, 22 Jul 2009 15:15:06 -0700
+To: Trilok Soni <soni.trilok@gmail.com>
+Subject: Re: [PATCH 2/2] mfd: twl4030: add twl4030-pwrbutton as our child
+Date: Wed, 22 Jul 2009 15:25:53 -0700
 User-Agent: KMail/1.9.10
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
-       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
-       t.fujak@samsung.com, kyungmin.park@samsung.com,
-       Daniel Ribeiro <drwyrm@gmail.com>
-References: <5d5443650907151033w36008b71pe4b32bcea9489b75@mail.gmail.com> <alpine.LFD.2.00.0907222226270.2813@localhost.localdomain> <d6200be20907221457r4e2f6d29g57146586fd13776a@mail.gmail.com>
-In-Reply-To: <d6200be20907221457r4e2f6d29g57146586fd13776a@mail.gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, me@felipebalbi.com,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       felipe.balbi@nokia.com, Samuel Ortiz <sameo@linux.intel.com>
+References: <1235762883-20870-1-git-send-email-me@felipebalbi.com> <20090227154220.7099f339.akpm@linux-foundation.org> <5d5443650907221227w72768b3cna145cea00f1baa05@mail.gmail.com>
+In-Reply-To: <5d5443650907221227w72768b3cna145cea00f1baa05@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200907221515.07835.david-b@pacbell.net>
+Message-Id: <200907221525.53890.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 22 July 2009, Arve Hjønnevåg wrote:
-> It would also be useful to mask an edge triggered interrupt until the
-> thread handler has finished. The touchscreen on the G1 is connected to
-> an edge triggered interrupt, and the touchscreen may toggle the
-> interrupt line while reading its registers.
+On Wednesday 22 July 2009, Trilok Soni wrote:
+> > That doesn't address the problem at all.  A function called
+> > "add_children" just shouldn't exist.  The general kernel design is for
+> > client drivers to register themselves with the core, so the core does
+> > not have any hard-wired knowledge of any client drivers.
 
-To clarify:  if it does toggle, do you want that event to be
-queued up so the IRQ is re-issued -- or not?  That "oneshot"
-mechanism does some of that, though it's for level triggers.
+The general kernel design also involves bus drivers
+(consider PCI or USB) enumerating their child devices
+and then *adding* those children ... that's what is
+done here.  The devices supported by that system get
+added, and then the driver model code can bind each
+device to its driver.
 
-Parts of that might be appropriate to handle in the threaded
-IRQ handler itself.  It seems a bit device-specific.
+
+> > IOW, twl4030_pwrbutton_probe() should call into twl4030-core,
+> > registering the powerbutton driver.
+
+It calls to the driver model to register that driver,
+which then sees that the device is registered.
 
 - Dave
+
+
+> 
+> Reviving this very old thread.
+> 
+
 
