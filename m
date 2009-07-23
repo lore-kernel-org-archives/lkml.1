@@ -1,57 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752881AbZGWOoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753103AbZGWOpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752881AbZGWOoP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 10:44:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZGWOoO
+	id S1753103AbZGWOpp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 10:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbZGWOpo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 10:44:14 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:55617 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752137AbZGWOoO (ORCPT
+	Thu, 23 Jul 2009 10:45:44 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:45716 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752158AbZGWOpo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 10:44:14 -0400
-Date: Thu, 23 Jul 2009 10:44:13 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Ferenc Wagner <wferi@niif.hu>, <linux-kernel@vger.kernel.org>,
-       <alan@lxorguk.ukuu.org.uk>, <linux-usb@vger.kernel.org>
-Subject: Re: 2.6.31-rc3: replugging USB serial converter uses new device node
-In-Reply-To: <20090723012140.39f697d2.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.44L0.0907231042040.2825-100000@iolanthe.rowland.org>
+	Thu, 23 Jul 2009 10:45:44 -0400
+Message-ID: <4A687796.80200@canonical.com>
+Date: Thu, 23 Jul 2009 16:45:42 +0200
+From: Stefan Bader <stefan.bader@canonical.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: jfs-discussion@lists.sourceforge.net, linux-kernel@vger.kernel.org
+CC: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Al Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>,
+       Andy Whitcroft <apw@canonical.com>, Christophe Dumez <dchris@gmail.com>
+Subject: [PATCH] jfs: Fix early release of acl in jfs_get_acl
+Content-Type: multipart/mixed;
+ boundary="------------000906070704060503070504"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Jul 2009, Andrew Morton wrote:
+This is a multi-part message in MIME format.
+--------------000906070704060503070504
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> (cc linux-usb)
-> 
-> On Sat, 18 Jul 2009 22:04:57 +0200 Ferenc Wagner <wferi@niif.hu> wrote:
-> 
-> > Hi,
-> > 
-> > Since upgrading to 2.6.31-rc3 from 2.6.30, my ttyUSB device number
-> > keeps increasing on each replug.  Output of udevadm monitor:
-...
-> > Dmesg is available at http://pastebin.com/d516e3e00.
-> 
-> Can anyone say whether this is expected behaviour?
+Commit 073aaa1b142461d91f83da66db1184d7c1b1edea "helpers for acl
+caching + switch to those" introduced new helper functions for
+acl handling but seems to have introduced a regression for jfs as the
+acl is released before returning it to the caller, instead of
+leaving this for the caller to do.
+This causes the acl object to be used after freeing it, leading
+to kernel panics in completely different places.
 
-It depends on whether a program is still holding the old device file 
-open when the replug occurs.
+Thanks to Christophe Dumez for reporting and bisecting into this.
 
-> Does it actually cause any observeable problems?  I expect things will
-> get ugly once it runs out of range.
+Reported-by: Christophe Dumez <dchris@gmail.com>
+Tested-by: Christophe Dumez <dchris@gmail.com>
+Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
+Acked-by: Andy Whitcroft <apw@canonical.com>
+---
+  fs/jfs/acl.c |    4 +---
+  1 files changed, 1 insertions(+), 3 deletions(-)
 
-The numbers will get reused after the corresponding device files are
-closed.
 
-For further discussion, see this thread:
+--------------000906070704060503070504
+Content-Type: text/x-diff;
+ name="0001-jfs-Fix-early-release-of-acl-in-jfs_get_acl.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename*0="0001-jfs-Fix-early-release-of-acl-in-jfs_get_acl.patch"
 
-	http://marc.info/?t=124828810800002&r=1&w=2
+>From a345a80ca7a926c9c6e322a1e8add4817c834d0f Mon Sep 17 00:00:00 2001
+From: Stefan Bader <stefan.bader@canonical.com>
+Date: Thu, 23 Jul 2009 11:26:05 +0200
+Subject: [PATCH] jfs: Fix early release of acl in jfs_get_acl
 
-Alan Stern
+BugLink: http://bugs.launchpad.net/ubuntu/+bug/396780
 
+Commit 073aaa1b142461d91f83da66db1184d7c1b1edea "helpers for acl
+caching + switch to those" introduced new helper functions for
+acl handling but seems to have introduced a regression for jfs as
+the acl is released before returning it to the caller, instead of
+leaving this for the caller to do.
+This causes the acl object to be used after freeing it, leading
+to kernel panics in completely different places.
+
+Thanks to Christophe Dumez for reporting and bisecting into this.
+
+Reported-by: Christophe Dumez <dchris@gmail.com>
+Tested-by: Christophe Dumez <dchris@gmail.com>
+Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
+Acked-by: Andy Whitcroft <apw@canonical.com>
+---
+ fs/jfs/acl.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
+
+diff --git a/fs/jfs/acl.c b/fs/jfs/acl.c
+index f272bf0..3c88d1b 100644
+--- a/fs/jfs/acl.c
++++ b/fs/jfs/acl.c
+@@ -67,10 +67,8 @@ static struct posix_acl *jfs_get_acl(struct inode *inode, int type)
+ 		acl = posix_acl_from_xattr(value, size);
+ 	}
+ 	kfree(value);
+-	if (!IS_ERR(acl)) {
++	if (!IS_ERR(acl))
+ 		set_cached_acl(inode, type, acl);
+-		posix_acl_release(acl);
+-	}
+ 	return acl;
+ }
+ 
+-- 
+1.5.4.3
+
+
+--------------000906070704060503070504--
