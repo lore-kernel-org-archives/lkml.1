@@ -1,78 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751618AbZGWFFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752259AbZGWFMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751618AbZGWFFZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 01:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750938AbZGWFFZ
+	id S1752259AbZGWFMp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 01:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbZGWFMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 01:05:25 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:49929 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750754AbZGWFFY (ORCPT
+	Thu, 23 Jul 2009 01:12:44 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:45851 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751334AbZGWFMn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 01:05:24 -0400
-Date: Thu, 23 Jul 2009 07:05:22 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Matthias Klose <doko@ubuntu.com>, binutils <binutils@sourceware.org>,
-       Bastian Blank <waldi@debian.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Kiko Piris <kernel@pirispons.net>,
-       Damien Wyart <damien.wyart@free.fr>, Greg KH <gregkh@suse.de>,
-       Wolfgang Walter <wolfgang.walter@stwm.de>
-Subject: Re: current binutils trunk fails to build bootable kernel image
-	for some configurations
-Message-ID: <20090723050522.GA8887@merkur.ravnborg.org>
-References: <4A6746B9.9010603@ubuntu.com> <20090723004939.GF13233@bubble.grove.modra.org>
+	Thu, 23 Jul 2009 01:12:43 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4A67F12A.9060204@jp.fujitsu.com>
+Date: Thu, 23 Jul 2009 14:12:10 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090723004939.GF13233@bubble.grove.modra.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org
+CC: Lai Jiangshan <laijs@cn.fujitsu.com>,
+       "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>,
+       Neil Horman <nhorman@tuxdriver.com>, Vivek Goyal <vgoyal@redhat.com>,
+       Brayan Arraes <brayan@yack.com.br>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] sysrq, kdump: Make sysrq-c consistent
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 23, 2009 at 10:19:39AM +0930, Alan Modra wrote:
-> On Wed, Jul 22, 2009 at 01:04:57PM -0400, Matthias Klose wrote:
-> > this was reported as http://bugs.debian.org/537389, I currently don't 
-> > have much more information, besides that one of the Debian kernel 
-> > maintainers did identify
-> >
-> > 2009-07-11  Alan Modra  <amodra@bigpond.net.au>
-> >
-> >         * ldlang.c (insert_os_after): Don't tie assignments to non-alloc
-> >         output sections.
-> >
-> > this patch as the one causing the wrongly built kernel. However I don't 
-> > see this checkin mentioned on the ML.
-> 
-> The discussion happened on bug-binutils.
-> http://lists.gnu.org/archive/html/bug-binutils/2009-07/msg00067.html
-> 
-> > Bastian Blank did check that the 
-> > problem goes away with a binutils build from trunk and this patch 
-> > reverted. Some more analysis in http://lkml.org/lkml/2009/7/21/400
-> 
-> The biggest problem is that the kernel linker script doesn't mention
-> all sections, which means ld must choose a place for the unmentioned
-> sections (orphans).  Sometimes ld's placement isn't how a naive
-> programmer would expect.
-> 
-> In this case:
-> 
->   . = ALIGN(PAGE_SIZE);
->   .data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
-> 
-> ld stuck an orphan section between the two statements.  Which meant
-> that the start of .data_nosave is not aligned (and since the end is
-> aligned by following statements, it means that .data_nosave also has
-> padding inserted).  It would be more robust to write:
-> 
->   .data_nosave ALIGN(PAGE_SIZE) : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
+[ based on 2.6.31-rc4 ]
 
-Do you recall when this started to be supported?
-I think I tried this and it failed - but I may be wrong here.
+Recent commit d6580a9f15238b87e618310c862231ae3f352d2d changed the
+behavior of sysrq-c to unconditional dereference of NULL pointer.
+So in cases with CONFIG_KEXEC, where crash_kexec() was directly called
+from sysrq-c before, now it can be said that a step of "real oops" was
+inserted before starting kdump.
 
-Also - do there exist an option to tell what sections has not been
-covered by a linker script?
+However, in contrast to oops via SysRq-c from keyboard which results
+in panic due to in_interrupt(), oops via "echo c > /proc/sysrq-trigger"
+will not become panic unless panic_on_oops=1.  It means that even if
+dump is properly configured to be taken on panic, the sysrq-c from proc
+interface might not start crashdump while the sysrq-c from keyboard can
+start crashdump.  This confuses traditional users of kdump, i.e. people
+who expect sysrq-c to do common behavior in both of the keyboard and
+proc interface.
 
-	Sam
+This patch brings the keyboard and proc interface behavior of sysrq-c
+in line, by forcing panic_on_oops=1 before oops in sysrq-c handler.
+
+And some updates in documentation are included, to clarify that there
+is no longer dependency with CONFIG_KEXEC, and that now the system can
+just crash by sysrq-c if no dump mechanism is configured.
+
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ken'ichi Ohmichi <oomichi@mxs.nes.nec.co.jp>
+Cc: Neil Horman <nhorman@tuxdriver.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>
+Cc: Brayan Arraes <brayan@yack.com.br>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+ Documentation/sysrq.txt |    7 ++++---
+ drivers/char/sysrq.c    |    8 +++++---
+ 2 files changed, 9 insertions(+), 6 deletions(-)
+
+diff --git a/Documentation/sysrq.txt b/Documentation/sysrq.txt
+index cf42b82..d56a017 100644
+--- a/Documentation/sysrq.txt
++++ b/Documentation/sysrq.txt
+@@ -66,7 +66,8 @@ On all -  write a character to /proc/sysrq-trigger.  e.g.:
+ 'b'     - Will immediately reboot the system without syncing or unmounting
+           your disks.
+ 
+-'c'	- Will perform a kexec reboot in order to take a crashdump.
++'c'	- Will perform a system crash by a NULL pointer dereference.
++          A crashdump will be taken if configured.
+ 
+ 'd'	- Shows all locks that are held.
+ 
+@@ -141,8 +142,8 @@ useful when you want to exit a program that will not let you switch consoles.
+ re'B'oot is good when you're unable to shut down. But you should also 'S'ync
+ and 'U'mount first.
+ 
+-'C'rashdump can be used to manually trigger a crashdump when the system is hung.
+-The kernel needs to have been built with CONFIG_KEXEC enabled.
++'C'rash can be used to manually trigger a crashdump when the system is hung.
++Note that this just triggers a crash if there is no dump mechanism available.
+ 
+ 'S'ync is great when your system is locked up, it allows you to sync your
+ disks and will certainly lessen the chance of data loss and fscking. Note
+diff --git a/drivers/char/sysrq.c b/drivers/char/sysrq.c
+index 0db3585..5d7a02f 100644
+--- a/drivers/char/sysrq.c
++++ b/drivers/char/sysrq.c
+@@ -35,7 +35,6 @@
+ #include <linux/spinlock.h>
+ #include <linux/vt_kern.h>
+ #include <linux/workqueue.h>
+-#include <linux/kexec.h>
+ #include <linux/hrtimer.h>
+ #include <linux/oom.h>
+ 
+@@ -124,9 +123,12 @@ static struct sysrq_key_op sysrq_unraw_op = {
+ static void sysrq_handle_crash(int key, struct tty_struct *tty)
+ {
+ 	char *killer = NULL;
++
++	panic_on_oops = 1;	/* force panic */
++	wmb();
+ 	*killer = 1;
+ }
+-static struct sysrq_key_op sysrq_crashdump_op = {
++static struct sysrq_key_op sysrq_crash_op = {
+ 	.handler	= sysrq_handle_crash,
+ 	.help_msg	= "Crash",
+ 	.action_msg	= "Trigger a crash",
+@@ -401,7 +403,7 @@ static struct sysrq_key_op *sysrq_key_table[36] = {
+ 	 */
+ 	NULL,				/* a */
+ 	&sysrq_reboot_op,		/* b */
+-	&sysrq_crashdump_op,		/* c & ibm_emac driver debug */
++	&sysrq_crash_op,		/* c & ibm_emac driver debug */
+ 	&sysrq_showlocks_op,		/* d */
+ 	&sysrq_term_op,			/* e */
+ 	&sysrq_moom_op,			/* f */
+-- 
+1.6.0
+
