@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbZGWXTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbZGWXVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754612AbZGWXTv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 19:19:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbZGWXTv
+	id S1754738AbZGWXVP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 19:21:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbZGWXVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 19:19:51 -0400
-Received: from mail-px0-f184.google.com ([209.85.216.184]:41702 "EHLO
-	mail-px0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753105AbZGWXTu (ORCPT
+	Thu, 23 Jul 2009 19:21:14 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:55338 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753940AbZGWXVN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 19:19:50 -0400
-X-Greylist: delayed 371 seconds by postgrey-1.27 at vger.kernel.org; Thu, 23 Jul 2009 19:19:50 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=k6d9pPHnQkEsuIJolXtYDwg3VCSyJ9Ou3CUZjG1ruF1LmonIyFVS554nTZjpqrUAOu
-         HSEWDOTbhbBM5wphA82h1OIg94CTiqnr6GhPvwCb2b2OqQLQLikpYdHeB87ejL+Op6BO
-         KGsN1yiWsOEyxzYBM6p+VmiB/4Nrrk6q67q/4=
-Message-ID: <4A68EEA0.2020709@gmail.com>
-Date: Thu, 23 Jul 2009 16:13:36 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009031304)
+	Thu, 23 Jul 2009 19:21:13 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Paul Menage <menage@google.com>
+Subject: Re: [PATCH] copy over oom_adj value at fork time
+Cc: kosaki.motohiro@jp.fujitsu.com, David Rientjes <rientjes@google.com>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mel@csn.ul.ie, npiggin@suse.de
+In-Reply-To: <6599ad830907211303m25141938kcb75065a74a40ee2@mail.gmail.com>
+References: <alpine.DEB.2.00.0907211258500.10356@chino.kir.corp.google.com> <6599ad830907211303m25141938kcb75065a74a40ee2@mail.gmail.com>
+Message-Id: <20090722233347.776E.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: linux-bluetooth@vger.kernel.org
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: No hci0 in 2.6.31-rc4 with the imac 9,1
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri, 24 Jul 2009 08:21:11 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The macbook is showing a device when issuing the command
-hciconfig but with the imac 9,1
-nothing happens. Is there a patch that has been created for the imac 9,1
-(device number added to drviers/bluetooth/*) or is this something I need to
-figure out, if so How difficult?
+> On Tue, Jul 21, 2009 at 1:00 PM, David Rientjes<rientjes@google.com> wrote:
+> > On Tue, 21 Jul 2009, Paul Menage wrote:
+> >
+> >> Agreed, but the same livelock can be fixed in ways that don't break
+> >> the API. (E.g. check for the victim being OOM_DISABLED in
+> >> select_bad_process() when we find a new "worst" candidate).
+> >>
+> >
+> > And allow /proc/pid-of-child/oom_score to represent a possible candidate
+> > (and, additionally, a hint at the oom killing priority) when it really
+> > isn't?
 
-Justin P. Mattock
+Oops, I really don't like  /proc/pid-of-child/oom_score. it is very strange.
+
+> 
+> It's the API that's existed for years with no complaints, AFAICS.
+
+I think thead and vfork() should be separeted on this discussion.
+I agree vfork() regression should be fixed. but I don't think anyone
+hope per-thread oom score. 
+
+Of cource, if simple reverting is best way, I don't oppose this.... ;-)
+
+
+
