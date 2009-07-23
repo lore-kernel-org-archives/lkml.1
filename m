@@ -1,105 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbZGWLtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbZGWMCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754148AbZGWLtu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 07:49:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbZGWLtt
+	id S1754181AbZGWMCS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 08:02:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbZGWMCS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 07:49:49 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:23875 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754066AbZGWLts (ORCPT
+	Thu, 23 Jul 2009 08:02:18 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46407 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754006AbZGWMCR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 07:49:48 -0400
-Subject: Re: [PATCH 06/10] ksm: identify PageKsm pages
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Rik van Riel <riel@redhat.com>,
-       Andrea Arcangeli <aarcange@redhat.com>, Izik Eidus <ieidus@redhat.com>,
-       akpm@linux-foundation.org, chrisw@redhat.com, avi@redhat.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au, Wu Fengguang <fengguang.wu@intel.com>
-In-Reply-To: <20090723110655.f08cdcdc.kamezawa.hiroyu@jp.fujitsu.com>
-References: <1247851850-4298-1-git-send-email-ieidus@redhat.com>
-	 <1247851850-4298-2-git-send-email-ieidus@redhat.com>
-	 <1247851850-4298-3-git-send-email-ieidus@redhat.com>
-	 <1247851850-4298-4-git-send-email-ieidus@redhat.com>
-	 <1247851850-4298-5-git-send-email-ieidus@redhat.com>
-	 <1247851850-4298-6-git-send-email-ieidus@redhat.com>
-	 <1247851850-4298-7-git-send-email-ieidus@redhat.com>
-	 <20090721175139.GE2239@random.random> <4A660101.3000307@redhat.com>
-	 <Pine.LNX.4.64.0907221346040.529@sister.anvils>
-	 <20090723110655.f08cdcdc.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain
-Organization: HP/LKTT
-Date: Thu, 23 Jul 2009 07:49:43 -0400
-Message-Id: <1248349783.5674.2.camel@useless.americas.hpqcorp.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Jul 2009 08:02:17 -0400
+Message-ID: <5971c26b399a97f51dd10ea497617733.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20090723.190253.226783703.ryov@valinux.co.jp>
+References: <20090723091841.81ff2432.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090723.153843.193704010.ryov@valinux.co.jp>
+    <20090723164935.e97a3ccf.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090723.190253.226783703.ryov@valinux.co.jp>
+Date: Thu, 23 Jul 2009 21:02:13 +0900 (JST)
+Subject: Re: [Xen-devel] Re: [PATCH 7/9] blkio-cgroup-v9: Page tracking
+ hooks
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Ryo Tsuruta" <ryov@valinux.co.jp>
+Cc: kamezawa.hiroyu@jp.fujitsu.com, xen-devel@lists.xensource.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, dm-devel@redhat.com,
+       agk@redhat.com
+User-Agent: SquirrelMail/1.4.16
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-23 at 11:06 +0900, KAMEZAWA Hiroyuki wrote:
-> On Wed, 22 Jul 2009 13:54:06 +0100 (BST)
-> Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
-> 
-> > On Tue, 21 Jul 2009, Rik van Riel wrote:
-> > > Andrea Arcangeli wrote:
-> > > > > -	if (PageAnon(old_page)) {
-> > > > > +	if (PageAnon(old_page) && !PageKsm(old_page)) {
-> > > > >    if (!trylock_page(old_page)) {
-> > > > >     page_cache_get(old_page);
-> > > > >     pte_unmap_unlock(page_table, ptl);
-> > > > 
-> > > > What exactly does it buy to have PageAnon return 1 on ksm pages,
-> > > > besides requiring the above additional check (that if we stick to the
-> > > > above code, I would find safer to move inside reuse_swap_page).
-> > > 
-> > > I guess that if they are to remain unswappable, they
-> > > should go onto the unevictable list.
-> > 
-> > The KSM pages are not put on any LRU, so wouldn't be slowing vmscan
-> > down with futile scans: isn't the unevictable list for pages which
-> > belong to another LRU once they become evictable again?
-> > 
-> > (At this instant I've forgotten why there's an unevictable list at
-> > all - somewhere in vmscan.c which is accustomed to dealing with
-> > pages on lists, so easier to have them on a list than not?)
-> > 
-> I forget, too. But in short thinking, Unevictable pages should be
-> on LRU (marked as PG_lru) for isolating page (from LRU) called by
-> page migration etc.
-> 
-> isolate_lru_page()
-> 	-> put page on private list
-> 	-> do some work
-> 	-> putback_lru_page()
-> 
-> sequence is useful at handling pages in a list.
-> Because mlock/munclock can be called arbitrarily, unevicatable lru
-> works enough good for making above kinds of code simpler.
+Ryo Tsuruta wrote:
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-Right.  Quoting from Documentation/vm/unevictable-lru.txt:
+>> > dm-ioband gives high priority to I/O for swap-out by checking whether
+>> > PG_swapcache flag is set on the I/O page, regardless of the assigned
+>> > I/O bandwidth, and the bandwidth consumed for swap-out is charged to
+>> > the owner of the pages as a debt.
+>> > How about this approach?
+>>
+>> I don't think it's reasonable. Why I/O device, scheduler should know
+>> about
+>> such mm-related information ? I think layering is wrong.
+>
+> I think that urgent I/O requests such as swap-out should be notified
+> by setting a special flag in the struct bio, but there is no such
+> mechanism at this time. That is why dm-ioband uses this approach.
+>
+>> And your approatch cannot be a workaround.
+>>
+>> In follwing _typical_ case,
+>>
+>>   - A process does small logging to /var/log/mylog, once in a sec.
+>>     but it uses some amount of cold memory or shmem.
+>>
+>> This process's logging will be delayed _unexpectedly_ by some buggy
+>> process
+>> which does memory leak.
+>
+> Do you mean that the delay in logging is caused since the small process
+> is swapped out unexpectedly by the buggy processes?
+I don't write "small process", "small logging".
+Buggy process does swap-out and cosumes someone else's bandwidth, then,
+loggind will be delayed. Important here is throttle bandwidth consumed by
+buggy prorcess, not other's.
 
-The Unevictable LRU infrastructure maintains unevictable pages on an additional
-LRU list for a few reasons:
- 
- (1) We get to "treat unevictable pages just like we treat other pages in the
-     system - which means we get to use the same code to manipulate them, the
-     same code to isolate them (for migrate, etc.), the same code to keep track
-     of the statistics, etc..." [Rik van Riel]
+> How about using memory cgroup to prevent the small process from swap-out?
+It never be help if memcg is not configured.
 
- (2) We want to be able to migrate unevictable pages between nodes for memory
-     defragmentation, workload management and memory hotplug.  The linux kernel
-     can only migrate pages that it can successfully isolate from the LRU
-     lists.  If we were to maintain pages elsewhere than on an LRU-like list,
-     where they can be found by isolate_lru_page(), we would prevent their
-     migration, unless we reworked migration code to find the unevictable pages
-     itself.
+My point is "don't allow anyone to use bandwidth of others."
+Considering job isolation, a thread who requests swap-out should be charged
+against bandwidth.
+
+Thanks,
+-Kame
 
 
-I guess "a few" became "a couple" over time...
-
-Lee
 
