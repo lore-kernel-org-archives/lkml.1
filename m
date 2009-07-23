@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753444AbZGWImX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbZGWInd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753444AbZGWImX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 04:42:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbZGWImW
+	id S1753543AbZGWInd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 04:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZGWInd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 04:42:22 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:54154 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752053AbZGWImW (ORCPT
+	Thu, 23 Jul 2009 04:43:33 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:58741 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752549AbZGWInc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 04:42:22 -0400
-Date: Thu, 23 Jul 2009 09:42:21 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/6] regulator: Provide mode to status conversion
- function
-Message-ID: <20090723084221.GB5744@rakim.wolfsonmicro.main>
-References: <1248188428-11277-1-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1248188428-11277-2-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1248188428-11277-3-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1248188428-11277-4-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1248188428-11277-5-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1248188428-11277-6-git-send-email-broonie@opensource.wolfsonmicro.com>
- <1248295288.25964.844.camel@vega.slimlogic.co.uk>
+	Thu, 23 Jul 2009 04:43:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=M099zeicJpdFSbulnbnDR8janM6mz+tkpeu+oCZQMSbyzrzCVsDevxoC54uEVQWTqI
+         aUF5H9lJDcPpfjrQYOvcrMswI9MhF5pCoDEkGu9pJV82JogFfxcQl46mfW++bevLW3bg
+         sCFVBwosyz4rgIKbz+ggI1L65TwkDYSxtA2iA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248295288.25964.844.camel@vega.slimlogic.co.uk>
-X-Cookie: <wiggy> bwah, vodka in my mouse
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <a4423d670907170657o2c68c479j9b4810af5adad29f@mail.gmail.com>
+References: <a4423d670907160148n66760052wbef60e4a2c3c7941@mail.gmail.com>
+	 <alpine.LFD.2.00.0907162145140.3531@sony-vgn-z540>
+	 <a4423d670907170657o2c68c479j9b4810af5adad29f@mail.gmail.com>
+Date: Thu, 23 Jul 2009 12:43:30 +0400
+Message-ID: <a4423d670907230143l78f324dewefa4cb8990ef4266@mail.gmail.com>
+Subject: Re: next: sfi build fails when !CONFIG_ACPI
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Len Brown <lenb@kernel.org>
+Cc: linux-next <linux-next@vger.kernel.org>, Feng Tang <feng.tang@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 22, 2009 at 09:41:28PM +0100, Liam Girdwood wrote:
-> On Tue, 2009-07-21 at 16:00 +0100, Mark Brown wrote:
+2009/7/17 Alexander Beregalov <a.beregalov@gmail.com>:
+> 2009/7/17 Len Brown <lenb@kernel.org>:
+>>> drivers/sfi/sfi_core.c: In function 'sfi_init':
+>>> drivers/sfi/sfi_core.c:346: error: 'acpi_disabled' undeclared (first
+>>> use in this function)
+>>> drivers/sfi/sfi_core.c:346: error: (Each undeclared identifier is
+>>> reported only once
+>>> drivers/sfi/sfi_core.c:346: error: for each function it appears in.)
+>>>
+>>>
+>>> $ grep ACPI .config
+>>> # Power management and ACPI options
+>>
+>> It builds for me.
+>> Please send me the complete failing .config
+>
+> Attached (x86_64)
 
-> > +int regulator_mode_to_status(unsigned int);
-> > +
-> >  void *regulator_get_init_drvdata(struct regulator_init_data *reg_init_data);
-
-> I've applied all patches, but I'm wondering whether it would be better
-> to eventually merge MODE and STATUS. i.e. have REGULATOR_FAST instead of
-> REGULATOR_STATUS_FAST and REGULATOR_MODE_FAST. 
-
-I agree, at least lining up the values so you can just assign between
-the two would be nice.
+Still fails for me in the same way,
+X86_64
+next-20090723
