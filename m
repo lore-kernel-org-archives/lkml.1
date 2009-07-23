@@ -1,80 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752400AbZGWKZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbZGWK3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752400AbZGWKZm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 06:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbZGWKZl
+	id S1752549AbZGWK3K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 06:29:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbZGWK3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 06:25:41 -0400
-Received: from tac.ki.iif.hu ([193.6.222.43]:59711 "EHLO tac.ki.iif.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752046AbZGWKZk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 06:25:40 -0400
-From: Ferenc Wagner <wferi@niif.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-       linux-usb@vger.kernel.org
-Subject: Re: 2.6.31-rc3: replugging USB serial converter uses new device node
-References: <87zlb1u592.fsf@tac.ki.iif.hu>
-	<20090723012140.39f697d2.akpm@linux-foundation.org>
-Date: Thu, 23 Jul 2009 12:25:27 +0200
-In-Reply-To: <20090723012140.39f697d2.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Thu, 23 Jul 2009 01:21:40 -0700")
-Message-ID: <87tz13vgq0.fsf@tac.ki.iif.hu>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 23 Jul 2009 06:29:09 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:4046 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751965AbZGWK3H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 06:29:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=pLvKWvh/W1CLsOGWwoBmSxqlV9ZOP+lK+FN6NE3a9vlHGS+TfenhHTNrAZ8Fto6cqW
+         2JuIbcVaQnN5YF4EIlPuYLXElpd5B1QPGJ9BOldjYxbq3JNCmoDRjscBz/AD0RlBfb6u
+         4s9e6yyQgIyS+wY3oEriR/r1FWjkn+bnk50kc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0907171626330.4731@axis700.grange>
+References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>
+	 <aec7e5c30907170719re0b4152y987d30f8cdeb0cba@mail.gmail.com>
+	 <Pine.LNX.4.64.0907171626330.4731@axis700.grange>
+Date: Thu, 23 Jul 2009 19:29:07 +0900
+Message-ID: <aec7e5c30907230329p19be67ccxfbffb8956922fb8c@mail.gmail.com>
+Subject: Re: [PATCH] MMC: Make the configuration memory resource optional
+From: Magnus Damm <magnus.damm@gmail.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Ian Molton <ian@mnementh.co.uk>, linux-kernel@vger.kernel.org,
+       Pierre Ossman <drzeus@drzeus.cx>, Magnus Damm <damm@opensource.se>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+[added akpm to the CC]
 
-> On Sat, 18 Jul 2009 22:04:57 +0200 Ferenc Wagner <wferi@niif.hu> wrote:
+On Fri, Jul 17, 2009 at 11:34 PM, Guennadi
+Liakhovetski<g.liakhovetski@gmx.de> wrote:
+> (forgot the "[PATCH]" marker on submission, re-added now)
 >
->> Hi,
->> 
->> Since upgrading to 2.6.31-rc3 from 2.6.30, my ttyUSB device number
->> keeps increasing on each replug.  Output of udevadm monitor:
->> 
->> ==poff==
->> UEVENT[1247946169.580772] remove   /devices/virtual/net/ppp0 (net)
->> UDEV  [1247946169.589775] remove   /devices/virtual/net/ppp0 (net)
->> ==unplug==
->> UEVENT[1247946186.700698] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0/ttyUSB2/tty/ttyUSB2 (tty)
->> UEVENT[1247946186.700737] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0/ttyUSB2 (usb-serial)
->> UEVENT[1247946186.700749] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0 (usb)
->> UEVENT[1247946186.700760] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1/usb_device/usbdev3.6 (usb_device)
->> UEVENT[1247946186.700771] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1 (usb)
->> UDEV  [1247946186.701535] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0/ttyUSB2/tty/ttyUSB2 (tty)
->> UDEV  [1247946186.705822] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0/ttyUSB2 (usb-serial)
->> UDEV  [1247946186.711662] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0 (usb)
->> UDEV  [1247946186.715237] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1/usb_device/usbdev3.6 (usb_device)
->> UDEV  [1247946186.718872] remove   /devices/pci0000:00/0000:00:1d.1/usb3/3-1 (usb)
->> ==replug==
->> UEVENT[1247946199.654628] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1 (usb)
->> UDEV  [1247946199.660946] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1 (usb)
->> UEVENT[1247946199.661096] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0 (usb)
->> UEVENT[1247946199.688206] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0/ttyUSB3 (usb-serial)
->> UEVENT[1247946199.688254] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0/ttyUSB3/tty/ttyUSB3 (tty)
->> UEVENT[1247946199.688266] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1/usb_device/usbdev3.7 (usb_device)
->> UDEV  [1247946199.710642] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0 (usb)
->> UDEV  [1247946199.713898] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0/ttyUSB3 (usb-serial)
->> UDEV  [1247946199.729618] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1/usb_device/usbdev3.7 (usb_device)
->> UDEV  [1247946199.739566] add      /devices/pci0000:00/0000:00:1d.1/usb3/3-1/3-1:1.0/ttyUSB3/tty/ttyUSB3 (tty)
->> ==pon==
->> UEVENT[1247946268.571857] add      /devices/virtual/net/ppp0 (net)
->> UDEV  [1247946268.593127] add      /devices/virtual/net/ppp0 (net)
->> 
->> Dmesg is available at http://pastebin.com/d516e3e00.
+> On Fri, 17 Jul 2009, Magnus Damm wrote:
 >
-> Can anyone say whether this is expected behaviour?
-> Does it actually cause any observeable problems?
+>> On Fri, Jul 17, 2009 at 8:10 PM, Guennadi
+>> Liakhovetski<g.liakhovetski@gmx.de> wrote:
+>> > Add support for tmio_mmc hardware configurations, that lack the cnf io
+>> > area, like SuperH SoCs. With this patch such hardware can pass a single
+>> > ctl io area with the platform data.
+>>
+>> Right, this need looks familiar. =)
+>
+> Your Acked-by would be appreciated:-)
 
-The main problem is that I have to change my ppp config before each
-pon.  I guess it could be solved by some udev trickery, but didn't
-want to go that route before getting sure it's expected behaviour,
-which I find improbable as it depends on a pppd run in the middle.
-That's also why I didn't report it as an USB problem originally.
--- 
-Thanks,
-Feri.
+Since this is a hobby project I prefer to sign off with my swedish address:
+
+Acked-by: Magnus Damm <damm@opensource.se>
+
+>> Have you tested this on any specific platform?
+>
+> Yep, on migor with the sh7722 CPU.
+
+I've tested it on Migo-R as well and all seems fine.
+
+Can someone please pick this up? akpm? =)
+
+Thanks for your help!
+
+/ magnus
