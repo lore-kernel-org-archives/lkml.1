@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752533AbZGWOg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbZGWOhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752533AbZGWOg2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 10:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbZGWOg2
+	id S1752832AbZGWOhz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 10:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbZGWOhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 10:36:28 -0400
-Received: from bear.ext.ti.com ([192.94.94.41]:48985 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751658AbZGWOg1 convert rfc822-to-8bit (ORCPT
+	Thu, 23 Jul 2009 10:37:54 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:60209 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752704AbZGWOhw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 10:36:27 -0400
-From: "Pandita, Vikram" <vikram.pandita@ti.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Alan Cox <alan@linux.intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       Eric Whitney <eric.whitney@hp.com>, Rich Freiss <richard.freiss@hp.com>,
-       Linux OMAP Users <linux-omap@vger.kernel.org>
-Date: Thu, 23 Jul 2009 20:06:01 +0530
-Subject: RE: Boot Hang - mmotm 090716 - serial 8250 irq flags support
-Thread-Topic: Boot Hang - mmotm 090716 - serial 8250 irq flags support
-Thread-Index: AcoLnXn9vnsUSli4SfCQN94bhCu4PwABTXAQ
-Message-ID: <FCCFB4CDC6E5564B9182F639FC35608702F57AD326@dbde02.ent.ti.com>
-References: <1248291948.4490.67.camel@useless.americas.hpqcorp.net>
-	<20090723113353.7da8f6f9@lxorguk.ukuu.org.uk>
-	<1248353462.5674.80.camel@useless.americas.hpqcorp.net>
- <20090723145754.3f001c4e@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090723145754.3f001c4e@lxorguk.ukuu.org.uk>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Thu, 23 Jul 2009 10:37:52 -0400
+Date: Thu, 23 Jul 2009 07:37:43 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Ludwig Nussel <ludwig.nussel@suse.de>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] implement uid mount option for ext2 and ext3
+Message-Id: <20090723073743.6aeed77e.randy.dunlap@oracle.com>
+In-Reply-To: <1248348991-849-1-git-send-email-ludwig.nussel@suse.de>
+References: <1248348991-849-1-git-send-email-ludwig.nussel@suse.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt003.oracle.com [141.146.116.12]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.4A6875BA.00ED:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan
+On Thu, 23 Jul 2009 13:36:29 +0200 Ludwig Nussel wrote:
 
->-----Original Message-----
->From: Alan Cox [mailto:alan@lxorguk.ukuu.org.uk]
->Sent: Thursday, July 23, 2009 8:58 AM
->To: Lee Schermerhorn
->Cc: Andrew Morton; Pandita, Vikram; Alan Cox; linux-kernel; Bjorn Helgaas; Eric Whitney; Rich Freiss
->
->> </system1>hpiLO-> Virtual Serial Port active: IO=0x02F8 INT=3
->>
->> Perhaps Bjorn or Rich could comment on the hardware setup...
->
->Ok thats a generic ISA port
->
->The rest fits the patch I sent you so hopefully that fixes it and if so
->I'll make sure the corrected one ends up in -next.
+> Hi,
+> 
+> When using 'real' file systems on removable storage devices such as
+> hard disks or usb sticks people quickly face the problem that their
+> Linux users have different uids on different machines. Therefore one
+> cannot modify or even read files created on a different machine
+> without running chown as root or storing everything with mode 777.
+> Simple file systems such as vfat don't have that problem as they
+> don't store file ownership information and one can pass the uid
+> files should belong to as mount option.
+> 
+> The following two patches (for 2.6.31-rc4) therefore implement the
+> uid mount option for ext2 and ext3 to make them actually useful on
+> removable media. My implementation just writes uid 0 to disk for
+> files that are owned by the specified user. In read direction files
+> with uid 0 appear as being owned by the specified user.
+> 
+> In an ideal world this would probably be implemented as vfs feature
+> rather than having it in every single file system.
+> 
+> Anyways, AFAICT the method works just fine for ext2. I'm not sure
+> about the ext3 patch though as ext3 has that ext3_setattr() function
+> for journaling. I don't know if the uid should better be mangled
+> there instead.
 
-Are you referring to serial-add-irqflags-support patch.
-Do let me know in case any respin of this patch is needed.
+Hi,
+Please document the mount options in Documentation/filesystems/ext?.txt .
 
->
->Alan
-
+Thanks.
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
