@@ -1,57 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752523AbZGWBYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752434AbZGWBqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752523AbZGWBYz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 21:24:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbZGWBYy
+	id S1752434AbZGWBqp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 21:46:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbZGWBqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 21:24:54 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:60547 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752268AbZGWBYy (ORCPT
+	Wed, 22 Jul 2009 21:46:45 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35075 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750865AbZGWBqo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 21:24:54 -0400
-Message-ID: <4A67BBDC.7040207@zytor.com>
-Date: Wed, 22 Jul 2009 18:24:44 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1.1) Gecko/20090715 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Mike Rapoport <mike@compulab.co.il>, linux-kernel@vger.kernel.org,
-       denis@compulab.co.il
-Subject: Re: [PATCH] Add reboot fixup for SBC-fitPC2
-References: <4A6491C1.5060909@compulab.co.il> <20090722173854.fdbcee7f.akpm@linux-foundation.org>
-In-Reply-To: <20090722173854.fdbcee7f.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 22 Jul 2009 21:46:44 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 23 Jul 2009 10:44:50 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, menage@google.com,
+       vda.linux@googlemail.com, mikew@google.com, lizf@cn.fujitsu.com,
+       xiyou.wangcong@gmail.com
+Subject: Re: [RFC][PATCH] flexible array implementation v3
+Message-Id: <20090723104450.e0d421ca.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090722175345.7154C2F2@kernel>
+References: <20090722175345.7154C2F2@kernel>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/22/2009 05:38 PM, Andrew Morton wrote:
+On Wed, 22 Jul 2009 10:53:45 -0700
+Dave Hansen <dave@linux.vnet.ibm.com> wrote:
+
 > 
-> Neither this patch nor Denis's earlier version contained an adequate
-> decription.  We aren't told what these "problems" are, so we're unable
-> to judge the appropriateness of patch.
 > 
-> Both patches were wordwrapped.
+> Changes from v2:
+> - renamed some of the index functions
+> - added preallocation function
+> - added flex_array_free_parts() for use with
+>   statically allocated bases
+> - killed append() function
 > 
-> Both patches use an atypical layout style for the comments.
-> 
-> I fixed up some of these things and merged the patch into my tree, for
-> sending to Ingo for 2.6.32.
-> 
-> Please send a description of the problem which the patch fixes and I
-> shall add that to my copy of the changelog.
+> Changes from v1:
+> - to vs too typo
+> - added __check_part_and_nr() and gave it a warning
+> - fixed off-by-one check on __nr_part_ptrs()
+> - added FLEX_ARRAY_INIT() macro
+> - some kerneldoc comments about the capacity
+>   with various sized objects
+> - comments to note lack of locking semantice
 > 
 
-I queued up an equivalent cleaned up version for tip:x86/urgent that I
-was planning to push to Linus.  However, as you quite correctly point
-out the comments in this file are pretty darn pointless; they add
-absolutely no information over what is already in the data structure.
+Seems nice, thank you. but a nitpick..
 
-	-hpa
++struct flex_array *flex_array_alloc(int element_size, int total, gfp_t flags)
++{
++	struct flex_array *ret;
++	int max_size = nr_base_part_ptrs() * __elements_per_part(element_size);
++
++	/* max_size will end up 0 if element_size > PAGE_SIZE */
++	if (total > max_size)
++		return NULL;
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Can't we store "total" somewhere and do error check ?
+
+And some magic value as following can't be defined for 'total' ?
+
+#define FLEX_ARRAY_MAX_ELEMENTS		(-1) // Use maximum flex array.
+
+
+> +/**
+> + * flex_array_get - pull data back out of the array
+> + * @element_nr:	index of the element to fetch from the array
+> + *
+> + * Returns a pointer to the data at index @element_nr.  Note
+> + * that this is a copy of the data that was passed in.  If you
+> + * are using this to store pointers, you'll get back &ptr.
+> + *
+> + * Locking must be provided by the caller.
+> + */
+> +void *flex_array_get(struct flex_array *fa, int element_nr)
+> +{
+> +	int part_nr = fa_element_to_part_nr(fa, element_nr);
+> +	struct flex_array_part *part;
+> +	int offset;
+> +
+> +	if (__check_part_nr(fa, part_nr))
+> +		return NULL;
+return -EINVAL, here ?
+(Can't we compared with stored "total" ?)
+
+> +	if (!fa->parts[part_nr])
+> +		return NULL;
+> +
+
+The caller can't know whether
+ - there are no entry or
+ - NULL(0) is stored at the array.
+
+Then, he has to check gotten value is valid or not by himself.
+
+Can't we return -ENOENT here(especially when prealloc() is called) ?
+But ah, anyway, all-zero elements in allocated array exists ;(
+and the user can get value from an entry never be put.
+
+If we can fill the first 4bytes of _unused_ index by some magic code like this
+#define FLEX_ARRAY_UNUSED_MAGIC		(0xa5a5a5a5)
+(if maintaining bitmap/status of usage is nonsense)
+and flex_array_get() can return -ENOENT, the users will feel easy.
+
+Overprotection ;) ?
+
+
+Thanks,
+-Kame
+
+> +	part = fa->parts[part_nr];
+> +	offset = index_inside_part(fa, element_nr);
+> +	return &part->elements[index_inside_part(fa, element_nr)];
+> +}
+
+
+
+
+
+
+
 
