@@ -1,114 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbZGWXEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbZGWXFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754746AbZGWXEp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 19:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683AbZGWXEm
+	id S1754560AbZGWXFx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 19:05:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbZGWXFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 19:04:42 -0400
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:16086 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753950AbZGWXEY (ORCPT
+	Thu, 23 Jul 2009 19:05:52 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:35336 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751866AbZGWXFv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 19:04:24 -0400
-Subject: [PATCH v3 1/2] ACPI: export acpi_pci_root and friends
-To: jbarnes@virtuousgeek.org, lenb@kernel.org
-From: Alex Chiang <achiang@hp.com>
-Cc: linux-pci@vger.kernel.org, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Date: Thu, 23 Jul 2009 17:03:00 -0600
-Message-ID: <20090723230300.4247.75347.stgit@bob.kio>
-In-Reply-To: <20090723230026.4247.12759.stgit@bob.kio>
-References: <20090723230026.4247.12759.stgit@bob.kio>
-User-Agent: StGit/0.14.3.386.gb02d
+	Thu, 23 Jul 2009 19:05:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=a5Wifj1BXsuL1NC5Y4gnte1TJqnvvLLr5XpGdwEAeKpL16cSIO+SrtI3InDWntkPiy
+         ayrooLyJWkYuB6nb/Y0QrDpnzy/AFuz4eTMRx6k/07bSCC1vvkmEKFbGFNvGp9sNEHfH
+         hIXvaeLAbzh/BEZNptOPTdF+kZ5ViRTsYUiSw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <200907231921.31121.lamarque@gmail.com>
+References: <200907170301.43807.lamarque@gmail.com>
+	 <200907231900.59820.lamarque@gmail.com>
+	 <20090723150643.0a099d4f.akpm@linux-foundation.org>
+	 <200907231921.31121.lamarque@gmail.com>
+Date: Thu, 23 Jul 2009 19:05:49 -0400
+Message-ID: <2a91b6e50907231605t2b805a7avfbd313a96280af29@mail.gmail.com>
+Subject: Re: [PATCH] Fix for Acer Bluetooth Optical Rechargeable Mouse
+From: Anthony Waters <awaters1@gmail.com>
+To: Lamarque Vieira Souza <lamarque@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-bluetooth@vger.kernel.org,
+       linux-kernel@vger.kernel.org, marcel@holtmann.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We can simplify ACPI drivers if we can tell whether a handle is an
-ACPI PCI root or not.
+The patch in the bug report[1] just undoes the part of the commit that
+causes the stutter/sluggishness with my mouse so it isn't really a fix
 
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
+[1] http://bugzilla.kernel.org/show_bug.cgi?id=13314
 
- drivers/acpi/pci_root.c |   17 ++---------------
- include/acpi/acpi_bus.h |   16 ++++++++++++++++
- 2 files changed, 18 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
-index 55b5b90..31b961c 100644
---- a/drivers/acpi/pci_root.c
-+++ b/drivers/acpi/pci_root.c
-@@ -61,20 +61,6 @@ static struct acpi_driver acpi_pci_root_driver = {
- 		},
- };
- 
--struct acpi_pci_root {
--	struct list_head node;
--	struct acpi_device *device;
--	struct pci_bus *bus;
--	u16 segment;
--	u8 bus_nr;
--
--	u32 osc_support_set;	/* _OSC state of support bits */
--	u32 osc_control_set;	/* _OSC state of control bits */
--	u32 osc_control_qry;	/* the latest _OSC query result */
--
--	u32 osc_queried:1;	/* has _OSC control been queried? */
--};
--
- static LIST_HEAD(acpi_pci_roots);
- 
- static struct acpi_pci_driver *sub_driver;
-@@ -317,7 +303,7 @@ static acpi_status acpi_pci_osc_support(struct acpi_pci_root *root, u32 flags)
- 	return status;
- }
- 
--static struct acpi_pci_root *acpi_pci_find_root(acpi_handle handle)
-+struct acpi_pci_root *acpi_pci_find_root(acpi_handle handle)
- {
- 	struct acpi_pci_root *root;
- 
-@@ -327,6 +313,7 @@ static struct acpi_pci_root *acpi_pci_find_root(acpi_handle handle)
- 	}
- 	return NULL;
- }
-+EXPORT_SYMBOL_GPL(acpi_pci_find_root);
- 
- struct acpi_handle_node {
- 	struct list_head node;
-diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
-index c65e4ce..c3ace75 100644
---- a/include/acpi/acpi_bus.h
-+++ b/include/acpi/acpi_bus.h
-@@ -369,10 +369,26 @@ int register_acpi_bus_type(struct acpi_bus_type *);
- int unregister_acpi_bus_type(struct acpi_bus_type *);
- struct device *acpi_get_physical_device(acpi_handle);
- 
-+struct acpi_pci_root {
-+	struct list_head node;
-+	struct acpi_device * device;
-+	struct acpi_pci_id id;
-+	struct pci_bus *bus;
-+	u16 segment;
-+	u8 bus_nr;
-+
-+	u32 osc_support_set;	/* _OSC state of support bits */
-+	u32 osc_control_set;	/* _OSC state of control bits */
-+	u32 osc_control_qry;	/* the latest _OSC query result */
-+
-+	u32 osc_queried:1;	/* has _OSC control been queried? */
-+};
-+
- /* helper */
- acpi_handle acpi_get_child(acpi_handle, acpi_integer);
- int acpi_is_root_bridge(acpi_handle);
- acpi_handle acpi_get_pci_rootbridge_handle(unsigned int, unsigned int);
-+struct acpi_pci_root *acpi_pci_find_root(acpi_handle handle);
- #define DEVICE_ACPI_HANDLE(dev) ((acpi_handle)((dev)->archdata.acpi_handle))
- 
- #ifdef CONFIG_PM_SLEEP
-
+On Thu, Jul 23, 2009 at 6:21 PM, Lamarque Vieira
+Souza<lamarque@gmail.com> wrote:
+> Em Quinta-feira 23 Julho 2009, Andrew Morton escreveu:
+>> On Thu, 23 Jul 2009 19:00:58 -0300
+>>
+>> Lamarque Vieira Souza <lamarque@gmail.com> wrote:
+>> > Em Quinta-feira 23 Julho 2009, Andrew Morton escreveu:
+>> > > On Thu, 23 Jul 2009 18:30:57 -0300
+>> > >
+>> > > Lamarque Vieira Souza <lamarque@gmail.com> wrote:
+>> > > > Em Quinta-feira 23 Julho 2009, Andrew Morton escreveu:
+>> > > > > On Fri, 17 Jul 2009 03:01:43 -0300
+>> > > > >
+>> > > > > Lamarque Vieira Souza <lamarque@gmail.com> wrote:
+>> > > > > >     This patch works around one problem with my Acer Bluetooth
+>> > > > > > Optical Rechargeable Mouse where the cursor gets stuck at
+>> > > > > > screen's upper-left corner. Even my notebook's touchpad is not
+>> > > > > > able to move cursor when the bluetooth mouse is connected to my
+>> > > > > > Acer Ferrari 4005 notebook. Using input session instead of hid
+>> > > > > > session solves this problem although the cursor still moves a
+>> > > > > > little sluggishly with the bluetooth mouse, cursor moves
+>> > > > > > correctly using the touchpad. My bluetooth mouse used to work
+>> > > > > > well (no sluggish) until kernel 2.6.21, since then the problems
+>> > > > > > are getting worse with each kernel release (it got sluggish in
+>> > > > > > 2.6.22 and this this upper-left corner problem appeared in 2.6.28
+>> > > > > > or 2.6.27).
+>> > > >
+>> > > >         By the way, I have found that bug
+>> > > > http://bugzilla.kernel.org/show_bug.cgi?id=13314 is the cause of the
+>> > > > sluggish in my mouse.
+>> > >
+>> > > (cc's added)
+>> > >
+>> > > OK, thanks.  Did you test Anthony's patch on your system?
+>> >
+>> >     Yes,  I did.
+>>
+>> Did it fix the bug?
+>
+>        It fixed one of the two problems I had with this mouse.
+>
+>> If so, does that mean that you think we should merge Anthony's patch
+>> instead of yours?
+>
+>        I need both patches for my mouse to work properly. My patch fix the problem
+> of cursor stucked at upper-left corner. Anthony's fix the cursor being
+> sluggish (stutter). They are two different problems.
+>
+>> > > Also, you've determined that
+>> > > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=comm
+>> > >it;h =e4e8e37c42bdaaefcb84eeaef0dc1bc3f696f8f6 caused the problem on
+>> > > your machine and that reverting it fixes things up.
+>> > >
+>> > > I'm all confused.
+>
+>
+> --
+> Lamarque V. Souza
+> http://www.geographicguide.com/brazil.htm
+> Linux User #57137 - http://counter.li.org/
+>
