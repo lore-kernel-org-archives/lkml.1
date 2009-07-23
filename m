@@ -1,87 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbZGWPIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbZGWPL3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753709AbZGWPIK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 11:08:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbZGWPIK
+	id S1754085AbZGWPL3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 11:11:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbZGWPL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 11:08:10 -0400
-Received: from ns2.tasking.nl ([195.193.207.10]:16433 "EHLO ns2.tasking.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751202AbZGWPIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 11:08:09 -0400
-To: linux-kernel@vger.kernel.org
-Mime-Version: 1.0
-X-Newsreader: knews 1.0b.1
-Reply-To: dick.streefland@altium.nl (Dick Streefland)
-Organization: Altium BV
-X-Face: "`*@3nW;mP[=Z(!`?W;}cn~3M5O_/vMjX&Pe!o7y?xi@;wnA&Tvx&kjv'N\P&&5Xqf{2CaT 9HXfUFg}Y/TT^?G1j26Qr[TZY%v-1A<3?zpTYD5E759Q?lEoR*U1oj[.9\yg_o.~O.$wj:t(B+Q_?D XX57?U,#b,iM$[zX'I(!'VCQM)N)x~knSj>M*@l}y9(tK\rYwdv%~+&*jV"epphm>|q~?ys:g:K#R" 2PuAzy-N9cKM<Ml/%yPQxpq"Ttm{GzBn-*:;619QM2HLuRX4]~361+,[uFp6f"JF5R`y
-References: <4A675F89.50506@nortel.com>
-From: dick.streefland@altium.nl (Dick Streefland)
-Subject: Re: question for C preprocessor wizards
-Content-Type: text/plain; charset=us-ascii
-NNTP-Posting-Host: 172.17.1.66
-Message-ID: <4c5d.4a687cd4.a6013@altium.nl>
-Date: Thu, 23 Jul 2009 15:08:04 -0000
+	Thu, 23 Jul 2009 11:11:28 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:16160 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751844AbZGWPL1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 11:11:27 -0400
+MIME-Version: 1.0
+In-Reply-To: <Pine.LNX.4.44L0.0907231042040.2825-100000@iolanthe.rowland.org>
+References: <20090723012140.39f697d2.akpm@linux-foundation.org> 
+	<Pine.LNX.4.44L0.0907231042040.2825-100000@iolanthe.rowland.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Thu, 23 Jul 2009 17:11:12 +0200
+Message-ID: <ac3eb2510907230811q35c7561qb7f67979cc9953af@mail.gmail.com>
+Subject: Re: 2.6.31-rc3: replugging USB serial converter uses new device node
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ferenc Wagner <wferi@niif.hu>,
+       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       linux-usb@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Chris Friesen" <cfriesen@nortel.com> wrote:
-| I've got a bunch of code that call a bunch of different wrapper
-| routines, with varying numbers of arguments.  Depending on whether a
-| compile flag is set, I want to do some stuff before and after calling
-| the "real" routine.  I can do this easily enough with a macro.
-| 
-| #if FLAG
-| #define func_wrapper(args...) \
-| 	do { \
-| 		dostuff(); \
-| 		func(args); \
-| 		do_more_stuff(); \
-| 	} while (0)
-| #else
-| #define func_wrapper(args...) func(args)
-| #endif
-| 
-| 
-| However, given that there are hundreds of functions, I'd like to
-| generate these macros with another macro, sort of like:
-| 
-| #if FLAG
-| #define WRAPPER(func) \
-| 	#define func # _wrapper(args...) \
-| 	do { \
-| 		dostuff(); \
-| 		func(args); \
-| 		do_more_stuff(); \
-| 	} while (0)
-| #else
-| #define WRAPPER(func) \
-| 	#define func ## _wrapper(args...) func(args)
-| #endif
+On Thu, Jul 23, 2009 at 16:44, Alan Stern<stern@rowland.harvard.edu> wrote:
+> On Thu, 23 Jul 2009, Andrew Morton wrote:
+>> On Sat, 18 Jul 2009 22:04:57 +0200 Ferenc Wagner <wferi@niif.hu> wrote:
 
-You cannot generate preprocessing directives with macro expansion.
-An alternative is to use a generic wrapper macro, and use that to
-define wrappers for the functions. Something like:
+>> > Since upgrading to 2.6.31-rc3 from 2.6.30, my ttyUSB device number
+>> > keeps increasing on each replug.  Output of udevadm monitor:
+> ...
+>> > Dmesg is available at http://pastebin.com/d516e3e00.
+>>
+>> Can anyone say whether this is expected behaviour?
+>
+> It depends on whether a program is still holding the old device file
+> open when the replug occurs.
+>
+>> Does it actually cause any observeable problems?  I expect things will
+>> get ugly once it runs out of range.
+>
+> The numbers will get reused after the corresponding device files are
+> closed.
 
-#if FLAG
-#define generic_wrapper(func, args...) \
-        do { \
-                dostuff(); \
-                func(args); \
-                do_more_stuff(); \
-        } while (0)
-#else
-#define generic_wrapper(func, args...) func(args)
-#endif
+You might find a symlink for ttyUSB devices to the actual device node,
+which does not depend on the kernel name, in:
+  /dev/serial/
+  |-- by-id
+  |   `-- usb-067b_2303-if00-port0 -> ../../ttyUSB0
+  `-- by-path
+      `-- pci-0000:00:1d.7-usb-0:1.1.3.2:1.0-port0 -> ../../ttyUSB0
 
-#define func1_wrapper(args...) generic_wrapper(func1, args)
-#define func2_wrapper(args...) generic_wrapper(func2, args)
-#define func3_wrapper(args...) generic_wrapper(func3, args)
-...
+> For further discussion, see this thread:
+>
+>        http://marc.info/?t=124828810800002&r=1&w=2
 
--- 
-Dick Streefland                      ////                      Altium BV
-dick.streefland@altium.nl           (@ @)          http://www.altium.com
---------------------------------oOO--(_)--OOo---------------------------
+I can't find the original message to reply, but the device node is
+always deleted and re-created when the device goes away and comes
+back.
 
+Thanks,
+Kay
