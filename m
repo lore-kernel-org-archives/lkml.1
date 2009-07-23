@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbZGWOzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753992AbZGWO52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754004AbZGWOzp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 10:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbZGWOzo
+	id S1753992AbZGWO52 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 10:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbZGWO52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 10:55:44 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52786 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752987AbZGWOzn (ORCPT
+	Thu, 23 Jul 2009 10:57:28 -0400
+Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:62189 "EHLO
+	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753169AbZGWO51 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 10:55:43 -0400
-Date: Thu, 23 Jul 2009 16:55:37 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Trilok Soni <soni.trilok@gmail.com>, Arve Hj?nnev?g <arve@android.com>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Brian Swetland <swetland@google.com>, dmitry.torokhov@gmail.com,
-       dtor@mail.ru, linux-input@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org
-Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
-Message-ID: <20090723145537.GA28158@elf.ucw.cz>
-References: <20090714100634.GA4054@elf.ucw.cz> <5d5443650907140320w334864f4uc1ee13ed32fdb874@mail.gmail.com> <20090715133627.GA2538@elf.ucw.cz> <5d5443650907151033w36008b71pe4b32bcea9489b75@mail.gmail.com> <20090721105924.GK4133@elf.ucw.cz> <20090721113642.GC13286@sirena.org.uk>
+	Thu, 23 Jul 2009 10:57:27 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Jens Rosenboom <jens@leia.mcbone.net>
+Subject: Re: early_ioremap messages with old ASUS board
+Date: Thu, 23 Jul 2009 16:57:26 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <1248351634.7237.32.camel@fnki-nb00130>
+In-reply-To: <1248351634.7237.32.camel@fnki-nb00130>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090721113642.GC13286@sirena.org.uk>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200907231657.26690.elendil@planet.nl>
+X-OriginalArrivalTime: 23 Jul 2009 14:57:26.0997 (UTC) FILETIME=[E4D23050:01CA0BA5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jens Rosenboom wrote:
+> Running 2.6.31-rc4 I get the following dmesg output:
+>
+> [ 0.000000] early_ioremap(000f0000, 00010000) [0] => Pid: 0, comm:
+> swapper Not tainted 2.6.31-rc4 #36
+> [ 0.000000] Call Trace:
+> [ 0.000000]  [<c136e48b>] ? printk+0x18/0x1d
+> [ 0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
+> [ 0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
+> [ 0.000000]  [<c156194e>] dmi_scan_machine+0x1a/0x1af
+> [ 0.000000]  [<c15404c5>] ? parse_early_options+0x23/0x25
+> [ 0.000000]  [<c1543d92>] setup_arch+0x3d0/0x922
+> [ 0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
+> [ 0.000000]  [<c1540897>] start_kernel+0x77/0x2da
+> [ 0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
+> [ 0.000000] 00000000 + ffe00000
 
-> > +static irqreturn_t synaptics_ts_hardirq(int irq, void *dev_id)
-> > +{
-> > +	disable_irq_nosync(irq);
-> > +	return IRQ_WAKE_THREAD;
-> 
-> Are you sure that this is going to work?  The IRQ thread code will not
+Did .31-rc3 work correctly?
 
-No, I'm not. I copied it from somewhere and could not really test it.
+If it did, then could you try if reverting commit 857fdc53a0a9 helps?
+It's a bit of a wild guess, but it solved an iomem change on my notebook.
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Cheers,
+FJP
