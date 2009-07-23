@@ -1,58 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbZGWO6G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbZGWPCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754094AbZGWO6G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 10:58:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbZGWO6F
+	id S1753974AbZGWPCO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 11:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZGWPCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 10:58:05 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52933 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752658AbZGWO6D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 10:58:03 -0400
-Date: Thu, 23 Jul 2009 16:57:57 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>, Jouni Malinen <j@w1.fi>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Stephen Chen <Stephen.Chen@atheros.com>
-Subject: Re: Generic events for wake up from S1-S4
-Message-ID: <20090723145757.GB28158@elf.ucw.cz>
-References: <43e72e890907141511h70a0a987g57cb26e23e5824a9@mail.gmail.com> <20090714235332.GA1552@ucw.cz> <43e72e890907150851m69cd2de6lfb71596fbfac30e6@mail.gmail.com> <43e72e890907151100j37feb30av7281d09960ca5db2@mail.gmail.com> <20090718103756.GA11381@elf.ucw.cz> <43e72e890907181302j600506d5oc208167206c44745@mail.gmail.com> <20090718235609.GC25343@khazad-dum.debian.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090718235609.GC25343@khazad-dum.debian.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 23 Jul 2009 11:02:13 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:44949 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752400AbZGWPCN (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 11:02:13 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: mmotm-0716 - selinux_bprm_commited_creds patch missing..
+From: Valdis.Kletnieks@vt.edu
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1248357159_9653P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Thu, 23 Jul 2009 09:52:39 -0400
+Message-ID: <13397.1248357159@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2009-07-18 20:56:10, Henrique de Moraes Holschuh wrote:
-> On Sat, 18 Jul 2009, Luis R. Rodriguez wrote:
-> > Hm yeah, but I doubt someone will do that, generally we'd get one wake
-> > up event. Can't we just report the first one and ignore the rest?
-> 
-> Well, I'd say keeping it simple is best, here.  What if you ignore the more
-> interesting wakeup events by chance (and it is really up to userspace to
-> know what it considers interesting...)?  IMHO, just issue as many
-> notifications as needed, let userspace filter it if it wants.
-> 
-> But if you guys are talking about something really generic, shouldn't it
-> also provide the important "why" along with the "who"?
-> 
-> Even for the most common cases, the "why" is useful: userspace may well want
-> to run special routines when it wakes up because of WoL and WoW (instead of
-> a key press, lid open or mouse movement...).
+--==_Exmh_1248357159_9653P
+Content-Type: text/plain; charset=us-ascii
 
-What special routines?
+Andrew - mmotm-0716 dies at boot because it's missing this patch from Oleg
+for a problem originally spotted in -0630/0702:
 
-Note that the "why" is unreliable by design. Network driver will
-ignore WoL during run-time, right?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Date: Fri, 03 Jul 2009 11:23:11 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org,         James Morris <jmorris@namei.org>, David Howells <dhowells@redhat.com>,         Roland McGrath <roland@redhat.com>
+Subject: [PATCH] selinux_bprm_committed_creds: use __wake_up_parent()
+
+(depends on ptrace-__ptrace_detach-do-__wake_up_parent-if-we-reap-the-tracee.patch
+ which exports __wake_up_parent)
+
+Spotted by Valdis.Kletnieks@vt.edu.
+
+selinux_bprm_committed_creds() should not play with ->wait_chldexit, now
+that __wake_up_parent() is exported change the code to use this helper.
+
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+
+--- WAIT/security/selinux/hooks.c~SEL_WAKE_PARENT	2009-06-16 17:01:42.000000000 +0200
++++ WAIT/security/selinux/hooks.c	2009-07-03 11:15:08.000000000 +0200
+@@ -2404,7 +2404,7 @@ static void selinux_bprm_committed_creds
+ 	/* Wake up the parent if it is waiting so that it can recheck
+ 	 * wait permission to the new task SID. */
+ 	read_lock(&tasklist_lock);
+-	wake_up_interruptible(&current->real_parent->signal->wait_chldexit);
++	__wake_up_parent(current, current->real_parent);
+ 	read_unlock(&tasklist_lock);
+ }
+ 
+
+
+
+
+
+--==_Exmh_1248357159_9653P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFKaGsncC3lWbTT17ARAlndAJ9PpQZccN1iY067RHzK0druNi9HawCg1lOd
+H8gTlH4Igz+oG+Ue+B1a0ak=
+=7IQw
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1248357159_9653P--
