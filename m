@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbZGWVYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbZGWVZR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754220AbZGWVYB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 17:24:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbZGWVYA
+	id S1753897AbZGWVZR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 17:25:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbZGWVZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 17:24:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39242 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753862AbZGWVXw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 17:23:52 -0400
-Date: Thu, 23 Jul 2009 22:23:10 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Mike Snitzer <snitzer@redhat.com>, Milan Broz <mbroz@redhat.com>,
-       Mikulas Patocka <mpatocka@redhat.com>,
-       "Jun'ichi Nomura" <j-nomura@ce.jp.nec.com>, Neil Brown <neilb@suse.de>,
-       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
-       Christian =?iso-8859-1?Q?Borntr=E4ger?= <borntraeger@de.ibm.com>
-Subject: [git pull] device-mapper fixes for 2.6.31-rc5
-Message-ID: <20090723212310.GA31998@agk-dp.fab.redhat.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Mike Snitzer <snitzer@redhat.com>, Milan Broz <mbroz@redhat.com>,
-	Mikulas Patocka <mpatocka@redhat.com>,
-	Jun'ichi Nomura <j-nomura@ce.jp.nec.com>,
-	Neil Brown <neilb@suse.de>, Kiyoshi Ueda <k-ueda@ct.jp.nec.com>,
-	Christian =?iso-8859-1?Q?Borntr=E4ger?= <borntraeger@de.ibm.com>
+	Thu, 23 Jul 2009 17:25:16 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47526 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752457AbZGWVZO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 17:25:14 -0400
+Date: Thu, 23 Jul 2009 23:25:07 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Arve Hj?nnev?g <arve@android.com>
+Cc: Brian Swetland <swetland@google.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: HTC: touchscreen driver
+Message-ID: <20090723212506.GS28158@elf.ucw.cz>
+References: <20090713220726.GA28375@elf.ucw.cz> <d6200be20907131829o77bce3d8w8f238bc079478368@mail.gmail.com> <20090714094629.GB2076@elf.ucw.cz> <d6200be20907141507s39b54cccq9f0cedc325d3a203@mail.gmail.com> <20090714221638.GA6512@elf.ucw.cz> <d6200be20907141545k2b40b790x1af853b89517891c@mail.gmail.com> <20090719212330.GI26511@elf.ucw.cz> <d6200be20907192043w3f1aa2abvd0125163e6f5519c@mail.gmail.com> <20090721101103.GD4133@elf.ucw.cz> <d6200be20907211812l47012c00i1fc7de53db97d702@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Organization: Red Hat UK Ltd. Registered in England and Wales, number
-	03798903. Registered Office: Amberley Place, 107-111 Peascod
-	Street, Windsor, Berkshire, SL4 1TE.
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <d6200be20907211812l47012c00i1fc7de53db97d702@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
+On Tue 2009-07-21 18:12:03, Arve Hj?nnev?g wrote:
+> On Tue, Jul 21, 2009 at 3:11 AM, Pavel Machek<pavel@ucw.cz> wrote:
+> > On Sun 2009-07-19 20:43:10, Arve Hj?nnev?g wrote:
+> >> On Sun, Jul 19, 2009 at 2:23 PM, Pavel Machek<pavel@ucw.cz> wrote:
+> >> >
+> >> >> > Applying small patch on top of cleaned up driver should be better than
+> >> >> > carrying whole driver itself, right?
+> >> >>
+> >> >> Perhaps, but the only problem I encountered with this driver so far
+> >> >> was when calling disable_irq from the interrupt handler stopped
+> >> >> working on non-smp systems in 2.6.30 (which is another patch you
+> >> >> should probably apply first).
+> >> >
+> >> > How do I get that patch? git pull on msm-2.6.29 tree?
+> >>
+> >> No it is in the android-msm-2.6.30-rc2-test branch at
+> >> git://android.git.kernel.org/kernel/experimental.git (commit
+> >> 9f89902daf7a3c6fdd6b0c7494f3cc82d5e09217).
+> >
+> > Could you inline the patch? I tried to pull it off the web interface,
+> > but it did not work for some reason.
+> 
+> git fetch git://android.git.kernel.org/kernel/experimental.git
+> android-msm-2.6.30-rc2-test
+> git cherry-pick 9f89902daf7a3c6fdd6b0c7494f3cc82d5e09217
 
-  master.kernel.org:/pub/scm/linux/kernel/git/agk/linux-2.6-dm.git master
+So I spent 10 minutes downloading patch you could have inlined... only
+to find out that review already pointed nosync issue (and I fixed swap
+independetly)...
 
-to get the following device-mapper fixes for 2.6.31-rc5:
+> That way you will hopefully not add question marks to my name.
 
-Mike Snitzer (2):
-      dm: remove queue next_ordered workaround for barriers
-      dm table: pass correct dev area size to device_area_is_valid
-
-Mikulas Patocka (1):
-      dm raid1: wake kmirrord when requeueing delayed bios after remote recovery
-
- drivers/md/dm-crypt.c         |    2 +-
- drivers/md/dm-delay.c         |    4 ++--
- drivers/md/dm-linear.c        |    2 +-
- drivers/md/dm-mpath.c         |    2 +-
- drivers/md/dm-raid1.c         |    3 ++-
- drivers/md/dm-stripe.c        |    7 ++++---
- drivers/md/dm-table.c         |   15 +++++----------
- drivers/md/dm.c               |   10 ----------
- drivers/md/dm.h               |    1 -
- include/linux/device-mapper.h |    4 ++--
- 10 files changed, 18 insertions(+), 32 deletions(-)
-
-Alasdair
+...and I still don't know what your name is. My terminal displays "Arve
+Hj#¸nnev##g <arve@android.com>" :-(.
+									Pavel
 -- 
-agk@redhat.com
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
