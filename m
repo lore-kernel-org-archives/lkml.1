@@ -1,72 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753700AbZGWHjH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbZGWHob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753700AbZGWHjH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 03:39:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbZGWHjH
+	id S1753865AbZGWHob (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 03:44:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbZGWHob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 03:39:07 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:36193 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752644AbZGWHjG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 03:39:06 -0400
-Date: Thu, 23 Jul 2009 17:38:52 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Matt Fleming <matt@console-pimps.org>, Ian Molton <ian@mnementh.co.uk>,
-       Pierre Ossman <pierre@ossman.eu>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, nico@cam.org,
-       nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com, tony@atomide.com,
-       david-b@pacbell.net, manuel.lauss@gmail.com, mirq-linux@rere.qmqm.pl,
-       ppisa@pikron.com, jarkko.lavinen@nokia.com, ben@fluff.org,
-       saschasommer@freenet.de, avorontsov@ru.mvista.com, oakad@yahoo.com,
-       HaraldWelte@viatech.com, JosephChan@via.com.tw, adrian.hunter@nokia.com
-Subject: Re: New MMC maintainer needed
-Message-Id: <20090723173852.119c04c2.sfr@canb.auug.org.au>
-In-Reply-To: <20090723003228.fc0ec34b.akpm@linux-foundation.org>
-References: <20090714153601.6dfe70ff@mjolnir.ossman.eu>
-	<20090722151744.fffd7bf5.akpm@linux-foundation.org>
-	<4A67A9E8.5080002@mnementh.co.uk>
-	<20090723055447.GA12211@console-pimps.org>
-	<20090722232259.d0ff3495.akpm@linux-foundation.org>
-	<20090723172559.e7aebbb5.sfr@canb.auug.org.au>
-	<20090723003228.fc0ec34b.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__23_Jul_2009_17_38_52_+1000_oDw4Esi.93GQJz8U"
+	Thu, 23 Jul 2009 03:44:31 -0400
+Received: from mail-gx0-f213.google.com ([209.85.217.213]:62810 "EHLO
+	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751892AbZGWHoa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 03:44:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=UMInk7F+HvcMctVKsQy3mEe8Bn254EmOYa5anHxUteaYfge1pmyyuDPpC6KPonaW6d
+         Zf/d7At776Iksn+Y1mobhY/FApzbu/AEEhhXAdFmj10ZfdrOwDakwonP94p+ErqRHcUV
+         ygxnGVDge4HbcF9SRuXD1giVgRV/qUNghxTSQ=
+MIME-Version: 1.0
+In-Reply-To: <d8bd05e00907222324q26b8faa0i2d85f4d7e35d8198@mail.gmail.com>
+References: <62.47.75.132.1247818962.wm@webmail.inode.at>
+	 <20090722161312.8c2ab4b5.akpm@linux-foundation.org>
+	 <d8bd05e00907222226o369fe2e7i225afb06ec71db8d@mail.gmail.com>
+	 <524f69650907222310h433cfe86vaef63c8ea2e56d56@mail.gmail.com>
+	 <d8bd05e00907222324q26b8faa0i2d85f4d7e35d8198@mail.gmail.com>
+Date: Thu, 23 Jul 2009 02:44:30 -0500
+Message-ID: <524f69650907230044u5ab44c59y91bc9b808f5fd6c3@mail.gmail.com>
+Subject: Re: mounting cifs filesystems not possible
+From: Steve French <smfrench@gmail.com>
+To: Gerhard Hintermayer <gerhard.hintermayer@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__23_Jul_2009_17_38_52_+1000_oDw4Esi.93GQJz8U
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Andrew,
-
-On Thu, 23 Jul 2009 00:32:28 -0700 Andrew Morton <akpm@linux-foundation.org=
-> wrote:
+On Thu, Jul 23, 2009 at 1:24 AM, Gerhard
+Hintermayer<gerhard.hintermayer@gmail.com> wrote:
+> See my original post to LKML at http://lkml.org/lkml/2009/7/15/217.
+> You can see kernel version, and dmesg output (including cifsFYI set to
+> 7) there.
+> I did file a bug report to gentoo bug list and lkml. Shall I also do
+> so for bugzilla.samba.org ? I think it's more kernel related.
 >
-> It gets easy if I remove linux-next.patch from -mm.  Maybe I'll do that.
+> The DebugData of the share I'm trying to mount (fortunaltely I got a
 
-At that point we could add the "stable" part of -mm to linux-next :-)
+> mount -t cifs -o user=aprol,password=*****,ip=10.5.12.105 //BRKVN05/AtlasPM /mnt/AtlasPM
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+The mount syntax you listed in your post is a little strange with the
+mount options preceding rather than following the UNC name and device,
+ie rather than the usual:
+              mount.cifs {//unc-name} {mount-point} [-o options]
 
---Signature=_Thu__23_Jul_2009_17_38_52_+1000_oDw4Esi.93GQJz8U
-Content-Type: application/pgp-signature
+It looks like the first 3/4 of mount succeeded (setting up a session,
+and connecting to the share) to the point of doing the lookup of the
+root directory of the share (which I don't see in your trace).
+Typically there have been the following reasons for that to fail:
+1) the user has no permission on the root of the share
+or
+2) the root of the share is a dfs referral to another server (this
+should work now, but was probably not supported a few kernel releases
+ago)
+or
+3) the server reports that the root directory is not a directory (ie
+is a file for example)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+It may be that an earlier mount failed perhaps oopsing in the vfs, and
+that could have left an existing cifs session and tree connection
+which made it seem like a later mount worked (since it found an
+existing session) but that seems unlikely.
 
-iEYEARECAAYFAkpoE4wACgkQjjKRsyhoI8wrkgCfdjgP2DApF7CncFbPP7lThwmw
-sy4Ani/p693trAP+JnaAF1Jb5vdUkQhU
-=kPP5
------END PGP SIGNATURE-----
+It would be helpful to see if the client did a network request (in
+this case SMB transact2 Query Path Info) on the root directory of the
+share, so if you have a wireshark trace that would be useful.
+-- 
+Thanks,
 
---Signature=_Thu__23_Jul_2009_17_38_52_+1000_oDw4Esi.93GQJz8U--
+Steve
