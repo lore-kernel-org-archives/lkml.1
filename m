@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZGWNJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbZGWNQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754205AbZGWNJt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 09:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754034AbZGWNJs
+	id S1754222AbZGWNQX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 09:16:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbZGWNQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 09:09:48 -0400
-Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:15303 "EHLO
-	TX2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751597AbZGWNJr convert rfc822-to-8bit (ORCPT
+	Thu, 23 Jul 2009 09:16:22 -0400
+Received: from e39.co.us.ibm.com ([32.97.110.160]:55075 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754039AbZGWNQV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 09:09:47 -0400
-X-SpamScore: -5
-X-BigFish: VPS-5(zz140fM1442Jzz1202hzzz32i6bh1f9i67h)
-X-Spam-TCS-SCL: 6:0
-X-WSS-ID: 0KN8K9L-02-16X-01
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Thu, 23 Jul 2009 09:16:21 -0400
+Date: Thu, 23 Jul 2009 08:12:50 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Oren Laadan <orenl@librato.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Oren Laadan <orenl@cs.columbia.edu>
+Subject: Re: [RFC v17][PATCH 22/60] c/r: external checkpoint of a task
+	other than ourself
+Message-ID: <20090723131250.GA9535@us.ibm.com>
+References: <1248256822-23416-1-git-send-email-orenl@librato.com> <1248256822-23416-23-git-send-email-orenl@librato.com> <20090722175223.GA19389@us.ibm.com> <4A67E7D7.9060800@librato.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH][KVM][retry 4] Add support for Pause Filtering to AMD SVM
-Date: Wed, 22 Jul 2009 17:40:48 -0500
-Message-ID: <6453C3CB8E2B3646B0D020C112613273036209FB@sausexmb4.amd.com>
-In-Reply-To: <200907090950.06204.sheng@linux.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH][KVM][retry 4] Add support for Pause Filtering to AMD SVM
-Thread-Index: AcoAN5DdI+0qECmpTsOh2vJXjZz60wK5aszg
-References: <200905050909.58583.mark.langsdorf@amd.com> <200907081319.57307.sheng@linux.intel.com> <6453C3CB8E2B3646B0D020C112613273036209F0@sausexmb4.amd.com> <200907090950.06204.sheng@linux.intel.com>
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-To: "Sheng Yang" <sheng@linux.intel.com>
-CC: "Roedel, Joerg" <Joerg.Roedel@amd.com>, <peterz@infradead.org>,
-       "Ingo Molnar" <mingo@elte.hu>, <avi@redhat.com>, <kvm@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, "Edwin Zhai" <edwin.zhai@intel.com>
-X-OriginalArrivalTime: 22 Jul 2009 22:40:49.0277 (UTC) FILETIME=[75DBB2D0:01CA0B1D]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A67E7D7.9060800@librato.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Um, I am afraid we have the different result... With your 
-> scheduler patch, we got 1% more performance improvement
-> in the quick test. Of course more tests are needed to
-> find a better value of delay.
+Quoting Oren Laadan (orenl@librato.com):
+> 
+> 
+> Serge E. Hallyn wrote:
+> > Quoting Oren Laadan (orenl@librato.com):
+> >> Now we can do "external" checkpoint, i.e. act on another task.
+> > 
+> > ...
+> > 
+> >>  long do_checkpoint(struct ckpt_ctx *ctx, pid_t pid)
+> >>  {
+> >>  	long ret;
+> >>
+> >> +	ret = init_checkpoint_ctx(ctx, pid);
+> >> +	if (ret < 0)
+> >> +		return ret;
+> >> +
+> >> +	if (ctx->root_freezer) {
+> >> +		ret = cgroup_freezer_begin_checkpoint(ctx->root_freezer);
+> >> +		if (ret < 0)
+> >> +			return ret;
+> >> +	}
+> > 
+> > Self-checkpoint of a task in root freezer is now denied, though.
+> > 
+> > Was that intentional?
+> 
+> Yes.
+> 
+> "root freezer" is an arbitrary task in the checkpoint subtree or
+> container. It is used to verify that all checkpointed tasks - except
+> for current, if doing self-checkpoint - belong to the same freezer
+> group.
+> 
+> Since current is busy calling checkpoint(2), and since we only permit
+> checkpoint of (cgroup-) frozen tasks, then - by definition - it cannot
+> possibly belong to the same group. If it did, it would itself be frozen
+> like its fellows and unable to call checkpoint(2).
 
-What was your test case?  How many runs did you do?
-My results had a lot of variance in them.
+So then you're saying that regular self-checkpoint no longer works,
+but the documentation still shows self.c and claims it should just
+work.
 
-> Do you have time to work on it recently?
+Mind you I prefer this as it is more consistent, but I thought it
+was something you wanted to support.
 
-I've been working with the former VI guys on some scheduler
-improvements for Xen, and hope to get back to this some
-next week.
-
--Mark Langsdorf
-Operating System Research Center
-AMD
-
+-serge
