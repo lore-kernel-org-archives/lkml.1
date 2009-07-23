@@ -1,75 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754472AbZGWQXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbZGWQZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754472AbZGWQXo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 12:23:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbZGWQXn
+	id S1754509AbZGWQZZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 12:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbZGWQZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 12:23:43 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:38697 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752581AbZGWQXn (ORCPT
+	Thu, 23 Jul 2009 12:25:24 -0400
+Received: from e23smtp07.au.ibm.com ([202.81.31.140]:52652 "EHLO
+	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754259AbZGWQZY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 12:23:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:in-reply-to:references
-         :x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=kFH5rLq9b9guwz+PcC3xBgjpq+fSMGjFuB4TQocmVLm/hYk7d74YXJ6lZ7neLnzNC/
-         N4xGPO29ifWZgw2xQwGk4P7x9BSuNJq89UxBhnBawBQ517NKZAoKtpCNpALDqICJRM/Z
-         flusefT7p3Sfeivt9nYYkL+j8xOFJ/zl0yNbg=
-Date: Thu, 23 Jul 2009 19:23:36 +0300
-From: Pekka Paalanen <pq@iki.fi>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Christoph Hellwig <hch@infradead.org>, Jiri Slaby <jirislaby@gmail.com>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Do cpu-endian MMIO accessors exist?
-Message-ID: <20090723192336.721b9fb8@daedalus.pq.iki.fi>
-In-Reply-To: <200907222319.12859.arnd@arndb.de>
-References: <20090721234243.1928d9e2@daedalus.pq.iki.fi>
-	<200907220001.59388.arnd@arndb.de>
-	<20090722201148.19f47119@daedalus.pq.iki.fi>
-	<200907222319.12859.arnd@arndb.de>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Jul 2009 12:25:24 -0400
+Date: Thu, 23 Jul 2009 21:55:01 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: gregkh@suse.de
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, devel@driverdev.osuosl.org,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for July 23
+Message-ID: <20090723162501.GA9203@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20090723163201.6951a44b.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090723163201.6951a44b.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Jul 2009 23:19:12 +0200
-Arnd Bergmann <arnd@arndb.de> wrote:
+Hi Greg,
 
-> > > It would of course be easy to just define an API extension
-> > > to ioread along the lines of
-> > > 
-> > > #ifdef __BIG_ENDIAN
-> > > #define ioread16_native ioread16be
-> > > #define ioread32_native ioread32be
-> > > #define iowrite16_native iowrite16be
-> > > #define iowrite32_native iowrite32be
-> > > #else
-> > > #define ioread16_native ioread16
-> > > #define ioread32_native ioread32
-> > > #define iowrite16_native iowrite16
-> > > #define iowrite32_native iowrite32
-> > > #endif
-> > > 
-> > > but I'm not yet convinced that there is a potential user that
-> > > should not just be fixed in a different way.
-> > 
-> > This is how it currently is.
-> 
-> Well, I meant we could add it to asm-generic/iomap.h. If we
-> decide that this is the right approach after all, it should
-> be part of the common linux API, not private to a single driver.
+	next-20090723 randconfig build breaks at
 
-Yes, I understood. I believe I should wait until Nouveau gets ready
-to be sent upstream before proposing your extension as a real patch.
+drivers/staging/android/lowmemorykiller.c: In function '__check_cost':
+drivers/staging/android/lowmemorykiller.c:60: error: 'lowmem_shrinker' undeclared (first use in this function)
+drivers/staging/android/lowmemorykiller.c:60: error: (Each undeclared identifier is reported only once
+drivers/staging/android/lowmemorykiller.c:60: error: for each function it appears in.)
+drivers/staging/android/lowmemorykiller.c: At top level:
+drivers/staging/android/lowmemorykiller.c:60: error: 'lowmem_shrinker' undeclared here (not in a function)
+drivers/staging/android/lowmemorykiller.c:60: warning: type defaults to 'int' in declaration of 'type name'
+make[3]: *** [drivers/staging/android/lowmemorykiller.o] Error 1
+make[2]: *** [drivers/staging/android] Error 2
+make[1]: *** [drivers/staging] Error 2
 
+I have tested the patch for the build failure only.
 
-Thank you very much.
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+--
+--- linux/drivers/staging/android/lowmemorykiller.c	2009-07-23 12:15:59.000000000 -0400
++++ linux/drivers/staging/android/~lowmemorykiller.c	2009-07-23 12:17:46.000000000 -0400
+@@ -57,13 +57,6 @@ static int lowmem_minfree_size = 4;
+ 			printk(x);			\
+ 	} while (0)
+ 
+-module_param_named(cost, lowmem_shrinker.seeks, int, S_IRUGO | S_IWUSR);
+-module_param_array_named(adj, lowmem_adj, int, &lowmem_adj_size,
+-			 S_IRUGO | S_IWUSR);
+-module_param_array_named(minfree, lowmem_minfree, uint, &lowmem_minfree_size,
+-			 S_IRUGO | S_IWUSR);
+-module_param_named(debug_level, lowmem_debug_level, uint, S_IRUGO | S_IWUSR);
+-
+ static int lowmem_shrink(int nr_to_scan, gfp_t gfp_mask)
+ {
+ 	struct task_struct *p;
+@@ -155,6 +148,13 @@ static struct shrinker lowmem_shrinker =
+ 	.seeks = DEFAULT_SEEKS * 16
+ };
+ 
++module_param_named(cost, lowmem_shrinker.seeks, int, S_IRUGO | S_IWUSR);
++module_param_array_named(adj, lowmem_adj, int, &lowmem_adj_size,
++			 S_IRUGO | S_IWUSR);
++module_param_array_named(minfree, lowmem_minfree, uint, &lowmem_minfree_size,
++			 S_IRUGO | S_IWUSR);
++module_param_named(debug_level, lowmem_debug_level, uint, S_IRUGO | S_IWUSR);
++
+ static int __init lowmem_init(void)
+ {
+ 	register_shrinker(&lowmem_shrinker);
 
--- 
-Pekka Paalanen
-http://www.iki.fi/pq/
+			
+					Kamalesh
