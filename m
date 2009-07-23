@@ -1,71 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752549AbZGWK3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752699AbZGWK3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752549AbZGWK3K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 06:29:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751975AbZGWK3J
+	id S1752699AbZGWK3k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 06:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbZGWK3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 06:29:09 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:4046 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751965AbZGWK3H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 06:29:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=pLvKWvh/W1CLsOGWwoBmSxqlV9ZOP+lK+FN6NE3a9vlHGS+TfenhHTNrAZ8Fto6cqW
-         2JuIbcVaQnN5YF4EIlPuYLXElpd5B1QPGJ9BOldjYxbq3JNCmoDRjscBz/AD0RlBfb6u
-         4s9e6yyQgIyS+wY3oEriR/r1FWjkn+bnk50kc=
+	Thu, 23 Jul 2009 06:29:40 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:36390 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751975AbZGWK3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 06:29:39 -0400
+Date: Thu, 23 Jul 2009 11:29:39 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       kosaki.motohiro@jp.fujitsu.com, maximlevitsky@gmail.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Lee.Schermerhorn@hp.com, penberg@cs.helsinki.fi, hannes@cmpxchg.org,
+       jirislaby@gmail.com
+Subject: Re: [PATCH] mm: Warn once when a page is freed with PG_mlocked set
+	V2
+Message-ID: <20090723102938.GA27731@csn.ul.ie>
+References: <20090715125822.GB29749@csn.ul.ie> <alpine.DEB.1.10.0907151027410.23643@gentwo.org> <20090722160649.61176c61.akpm@linux-foundation.org>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0907171626330.4731@axis700.grange>
-References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>
-	 <aec7e5c30907170719re0b4152y987d30f8cdeb0cba@mail.gmail.com>
-	 <Pine.LNX.4.64.0907171626330.4731@axis700.grange>
-Date: Thu, 23 Jul 2009 19:29:07 +0900
-Message-ID: <aec7e5c30907230329p19be67ccxfbffb8956922fb8c@mail.gmail.com>
-Subject: Re: [PATCH] MMC: Make the configuration memory resource optional
-From: Magnus Damm <magnus.damm@gmail.com>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Ian Molton <ian@mnementh.co.uk>, linux-kernel@vger.kernel.org,
-       Pierre Ossman <drzeus@drzeus.cx>, Magnus Damm <damm@opensource.se>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090722160649.61176c61.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[added akpm to the CC]
+On Wed, Jul 22, 2009 at 04:06:49PM -0700, Andrew Morton wrote:
+> On Wed, 15 Jul 2009 10:31:54 -0400 (EDT)
+> Christoph Lameter <cl@linux-foundation.org> wrote:
+> 
+> > On Wed, 15 Jul 2009, Mel Gorman wrote:
+> > 
+> > > -static inline int free_pages_check(struct page *page)
+> > > +static inline int free_pages_check(struct page *page, int wasMlocked)
+> > >  {
+> > > +	WARN_ONCE(wasMlocked, KERN_WARNING
+> > > +		"Page flag mlocked set for process %s at pfn:%05lx\n"
+> > > +		"page:%p flags:0x%lX\n",
+> > > +		current->comm, page_to_pfn(page),
+> > > +		page, page->flags|__PG_MLOCKED);
+> > > +
+> > >  	if (unlikely(page_mapcount(page) |
+> > 
+> > There is already a free_page_mlocked() that is only called if the mlock
+> > bit is set. Move it into there to avoid having to run two checks in the
+> > hot codee path?
+> 
+> Agreed.
+> 
+> This patch gratuitously adds hotpath overhead.  Moving the change to be
+> inside those preexisting wasMlocked tests will reduce its overhead a lot.
+> 
 
-On Fri, Jul 17, 2009 at 11:34 PM, Guennadi
-Liakhovetski<g.liakhovetski@gmx.de> wrote:
-> (forgot the "[PATCH]" marker on submission, re-added now)
->
-> On Fri, 17 Jul 2009, Magnus Damm wrote:
->
->> On Fri, Jul 17, 2009 at 8:10 PM, Guennadi
->> Liakhovetski<g.liakhovetski@gmx.de> wrote:
->> > Add support for tmio_mmc hardware configurations, that lack the cnf io
->> > area, like SuperH SoCs. With this patch such hardware can pass a single
->> > ctl io area with the platform data.
->>
->> Right, this need looks familiar. =)
->
-> Your Acked-by would be appreciated:-)
+It adds code duplication then, one of which is in a fast path.
 
-Since this is a hobby project I prefer to sign off with my swedish address:
+> As it stands, I'm really doubting that the patch's utility is worth its
+> cost.
+> 
 
-Acked-by: Magnus Damm <damm@opensource.se>
+I'm happy to let this one drop. It seemed like it would be nice for debugging
+while there are still corner cases where mlocked pages are getting freed
+instead of torn down but we already account for that situation occuring. While
+I think it'll be tricky to spot, it's probably preferable to having warnings
+spew out onto dmesg.
 
->> Have you tested this on any specific platform?
->
-> Yep, on migor with the sh7722 CPU.
+> Also, it's a bit of a figleaf, but please consider making more use of
+> CONFIG_DEBUG_VM (see VM_BUG_ON()).
+> 
 
-I've tested it on Migo-R as well and all seems fine.
+In this particular case, I doubted that DEBUG_VM would be set on
+machines that were triggering the mlock corner case but yeah, this does
+look more like a DEBUG_VM than a production thing.
 
-Can someone please pick this up? akpm? =)
-
-Thanks for your help!
-
-/ magnus
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
