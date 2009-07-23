@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753051AbZGWGZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753048AbZGWG11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753051AbZGWGZx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 02:25:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbZGWGZw
+	id S1753048AbZGWG11 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 02:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbZGWG11
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 02:25:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35552 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752747AbZGWGZv (ORCPT
+	Thu, 23 Jul 2009 02:27:27 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:32257 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752255AbZGWG10 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 02:25:51 -0400
-Date: Wed, 22 Jul 2009 23:22:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matt Fleming <matt@console-pimps.org>
-Cc: Ian Molton <ian@mnementh.co.uk>, Pierre Ossman <pierre@ossman.eu>,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       nico@cam.org, nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com,
-       tony@atomide.com, david-b@pacbell.net, manuel.lauss@gmail.com,
-       mirq-linux@rere.qmqm.pl, ppisa@pikron.com, jarkko.lavinen@nokia.com,
-       ben@fluff.org, saschasommer@freenet.de, avorontsov@ru.mvista.com,
-       oakad@yahoo.com, HaraldWelte@viatech.com, JosephChan@via.com.tw,
-       adrian.hunter@nokia.com
-Subject: Re: New MMC maintainer needed
-Message-Id: <20090722232259.d0ff3495.akpm@linux-foundation.org>
-In-Reply-To: <20090723055447.GA12211@console-pimps.org>
-References: <20090714153601.6dfe70ff@mjolnir.ossman.eu>
-	<20090722151744.fffd7bf5.akpm@linux-foundation.org>
-	<4A67A9E8.5080002@mnementh.co.uk>
-	<20090723055447.GA12211@console-pimps.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Jul 2009 02:27:26 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=sVdWhdxXiyOo6/hJj/njsr5F/asbUrgNfNnH9qboMnLfiZ1LXSM5jE/BwUUPKsUmP
+	2Q5OeK6vKvp5Ai0xc8hPA==
+MIME-Version: 1.0
+In-Reply-To: <4A68013A.2020302@cn.fujitsu.com>
+References: <20090722194644.7481.47805.stgit@menage.mtv.corp.google.com>
+	 <20090722195029.7481.94700.stgit@menage.mtv.corp.google.com>
+	 <4A68013A.2020302@cn.fujitsu.com>
+Date: Wed, 22 Jul 2009 23:27:23 -0700
+Message-ID: <6599ad830907222327s31340956y9783db39d076520f@mail.gmail.com>
+Subject: Re: [PATCH 1/4] Support named cgroups hierarchies
+From: Paul Menage <menage@google.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Jul 2009 06:54:47 +0100 Matt Fleming <matt@console-pimps.org> wrote:
+On Wed, Jul 22, 2009 at 11:20 PM, Li Zefan<lizf@cn.fujitsu.com> wrote:
+>> +The name should match [\w.-]+
+>> +
+>
+> "[\w._-]+" ?
+>
+> But I double we need to check this.
 
-> On Thu, Jul 23, 2009 at 01:08:08AM +0100, Ian Molton wrote:
-> > Andrew Morton wrote:
-> >
-> >> Until and unless someone else steps up I can act as maintainer of last
-> >> resort for MMC.  As I'm presently doing for fbdev, hwmon, rtc, spi,
-> >> gpio, i2o and about 1000 other identifiable subsystems.
-> >
-> > If no-one else is helping out, Im happy to also be CC'd on MMC patches.
-> >
-> 
-> Ditto.
+\w includes '_'
 
-Thanks, guys.
+>>  static int cgroup_set_super(struct super_block *sb, void *data)
+>>  {
+>>       int ret;
+>> -     struct cgroupfs_root *root = data;
+>> +     struct cgroup_sb_opts *opts = data;
+>> +
+>> +     /* If we don't have a new root, we can't set up a new sb */
+>> +     if (!opts->new_root)
+>> +             return -EINVAL;
+>> +
+>
+> I think this should be BUG_ON(). If set_super() is called,
+> we are allocating a new root, so opts->new_root won't be NULL.
 
-I actually already have a little pile of MMC things queued:
+Not true - if you try to mount a hierarchy by name, but with no
+subsystem options, then we don't construct a new root, but we still
+call sget(). If we find a superblock with the right name then we use
+it, else sget() will allocate a new superblock and call
+cgroup_set_super(), at which point we need to fail.
 
-http://userweb.kernel.org/~akpm/mmotm/broken-out/mmc-in-mmc_power_up-use-previously-selected-ocr-if-available.patch
-http://userweb.kernel.org/~akpm/mmotm/broken-out/omap-hsmmc-do-not-enable-buffer-ready-interrupt-if-using-dma.patch
-http://userweb.kernel.org/~akpm/mmotm/broken-out/mmc-msm_sdccc-driver-for-htc-dream.patch
-http://userweb.kernel.org/~akpm/mmotm/broken-out/msm_sdccc-convert-printkkern_level-to-pr_level.patch
-http://userweb.kernel.org/~akpm/mmotm/broken-out/msm_sdccc-stylistic-cleaning.patch
-http://userweb.kernel.org/~akpm/mmotm/broken-out/msm_sdccc-move-overly-indented-code-to-separate-function.patch
+>
+>> +             struct cgroupfs_root *new_root = cgroup_root_from_opts(&opts);
+>
+> Why not just declare new_root in the beginning of cgroup_get_sb()?
 
-I guess we own them now ;)
+Because it's not needed for the entire scope of the function. Keeping
+its scope as small as possible makes it clearer what it's being used
+for.
+
+Paul
