@@ -1,136 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752987AbZGWOZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751913AbZGWObi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752987AbZGWOZY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 10:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbZGWOZX
+	id S1751913AbZGWObi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 10:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbZGWObi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 10:25:23 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:58818 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752224AbZGWOZW (ORCPT
+	Thu, 23 Jul 2009 10:31:38 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:27490 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751141AbZGWObh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 10:25:22 -0400
-Date: Thu, 23 Jul 2009 09:24:54 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Oren Laadan <orenl@librato.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-api@vger.kernel.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Oren Laadan <orenl@cs.columbia.edu>
-Subject: Re: [RFC v17][PATCH 19/60] c/r: documentation
-Message-ID: <20090723142454.GA10769@us.ibm.com>
-References: <1248256822-23416-1-git-send-email-orenl@librato.com> <1248256822-23416-20-git-send-email-orenl@librato.com>
+	Thu, 23 Jul 2009 10:31:37 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=NdU9JcGjE/i311KMDuFHg1u/TBAvYQxki9knSfk04SboPPkoa/5LscYmlxVkIhXBG
+	I/agaKHoJWnegmxIR9INQ==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248256822-23416-20-git-send-email-orenl@librato.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A6806D9.8020004@cn.fujitsu.com>
+References: <20090722194644.7481.47805.stgit@menage.mtv.corp.google.com>
+	 <20090722195040.7481.44939.stgit@menage.mtv.corp.google.com>
+	 <4A6806D9.8020004@cn.fujitsu.com>
+Date: Thu, 23 Jul 2009 07:31:34 -0700
+Message-ID: <6599ad830907230731v13b18e17vbed373f57f878c85@mail.gmail.com>
+Subject: Re: [PATCH 3/4] Add a back-pointer from struct cg_cgroup_link to 
+	struct cgroup
+From: Paul Menage <menage@google.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Oren Laadan (orenl@librato.com):
-> +Security
-> +========
-> +
-> +The main question is whether sys_checkpoint() and sys_restart()
-> +require privileged or unprivileged operation.
-> +
-> +Early versions checked capable(CAP_SYS_ADMIN) assuming that we would
-> +attempt to remove the need for privilege, so that all users could
-> +safely use it. Arnd Bergmann pointed out that it'd make more sense to
-> +let unprivileged users use them now, so that we'll be more careful
-> +about the security as patches roll in.
-> +
-> +Checkpoint: the main concern is whether a task that performs the
-> +checkpoint of another task has sufficient privileges to access its
-> +state. We address this by requiring that the checkpointer task will be
-> +able to ptrace the target task, by means of ptrace_may_access() with
-> +read mode.
+On Wed, Jul 22, 2009 at 11:44 PM, Li Zefan<lizf@cn.fujitsu.com> wrote:
+>
+> I think we need to cgroup_enable_task_cg_lists():
+>
+>        if (!use_task_css_set_links)
+>                cgroup_enable_task_cg_lists();
+>
+> Otherwise we'll see no tasks when reading this debug file
+> if use_task_css_set_links == 0.
+>
 
-with access mode now, actually.
+I think that's OK - the debug file should indicate the state of the
+kernel, not alter it. If there are no links, then no links should be
+printed.
 
-> +Restart: the main concern is that we may allow an unprivileged user to
-> +feed the kernel with random data. To this end, the restart works in a
-> +way that does not skip the usual security checks. Task credentials,
-> +i.e. euid, reuid, and LSM security contexts currently come from the
-> +caller, not the checkpoint image.  When restoration of credentials
-> +becomes supported, then definitely the ability of the task that calls
-> +sys_restore() to setresuid/setresgid to those values must be checked.
-
-That is now possible, and this is done.
-
-> +Keeping the restart procedure to operate within the limits of the
-> +caller's credentials means that there various scenarios that cannot
-> +be supported. For instance, a setuid program that opened a protected
-> +log file and then dropped privileges will fail the restart, because
-> +the user won't have enough credentials to reopen the file. In these
-> +cases, we should probably treat restarting like inserting a kernel
-> +module: surely the user can cause havoc by providing incorrect data,
-> +but then again we must trust the root account.
-> +
-> +So that's why we don't want CAP_SYS_ADMIN required up-front. That way
-> +we will be forced to more carefully review each of those features.
-> +However, this can be controlled with a sysctl-variable.
-> +
-> +
-> diff --git a/Documentation/checkpoint/usage.txt b/Documentation/checkpoint/usage.txt
-> new file mode 100644
-> index 0000000..ed34765
-> --- /dev/null
-> +++ b/Documentation/checkpoint/usage.txt
-> @@ -0,0 +1,193 @@
-> +
-> +	      How to use Checkpoint-Restart
-> +	=========================================
-> +
-> +
-> +API
-> +===
-> +
-> +The API consists of two new system calls:
-> +
-> +* int checkpoint(pid_t pid, int fd, unsigned long flag);
-> +
-> + Checkpoint a (sub-)container whose root task is identified by @pid,
-> + to the open file indicated by @fd. @flags may be on or more of:
-> +   - CHECKPOINT_SUBTREE : allow checkpoint of sub-container
-> + (other value are not allowed).
-> +
-> + Returns: a positive checkpoint identifier (ckptid) upon success, 0 if
-> + it returns from a restart, and -1 if an error occurs. The ckptid will
-> + uniquely identify a checkpoint image, for as long as the checkpoint
-> + is kept in the kernel (e.g. if one wishes to keep a checkpoint, or a
-> + partial checkpoint, residing in kernel memory).
-> +
-> +* int sys_restart(pid_t pid, int fd, unsigned long flags);
-> +
-> + Restart a process hierarchy from a checkpoint image that is read from
-> + the blob stored in the file indicated by @fd. The @flags' will have
-> + future meaning (must be 0 for now). @pid indicates the root of the
-> + hierarchy as seen in the coordinator's pid-namespace, and is expected
-> + to be a child of the coordinator. (Note that this argument may mean
-> + 'ckptid' to identify an in-kernel checkpoint image, with some @flags
-> + in the future).
-> +
-> + Returns: -1 if an error occurs, 0 on success when restarting from a
-> + "self" checkpoint, and return value of system call at the time of the
-> + checkpoint when restarting from an "external" checkpoint.
-
-Return value of the checkpointed (init) task's syscall at the time of
-external checkpoint?  If so, what's the use for this, as opposed to
-returning 0 as in the case of self-checkpoint?
-
-> + TODO: upon successful "external" restart, the container will end up
-> + in a frozen state.
-
-Should clone_with_pids() be mentioned here?
-
-thanks,
--serge
+Paul
