@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753791AbZGWRp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803AbZGWRtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753791AbZGWRp4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 13:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbZGWRp4
+	id S1753803AbZGWRtW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 13:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbZGWRtV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 13:45:56 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35100 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752059AbZGWRpz (ORCPT
+	Thu, 23 Jul 2009 13:49:21 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37448 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752977AbZGWRtV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 13:45:55 -0400
-Subject: Re: [RFC][PATCH 5/5] perfcounter: Add support for kernel hardware
- breakpoints
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Anton Blanchard <anton@samba.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       "K . Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>
-In-Reply-To: <1248354493.26273.2.camel@twins>
-References: <1248109687-7808-1-git-send-email-fweisbec@gmail.com>
-	 <1248109687-7808-6-git-send-email-fweisbec@gmail.com>
-	 <1248354493.26273.2.camel@twins>
-Content-Type: text/plain
-Date: Thu, 23 Jul 2009 19:45:10 +0200
-Message-Id: <1248371110.4681.1.camel@laptop>
+	Thu, 23 Jul 2009 13:49:21 -0400
+Date: Thu, 23 Jul 2009 10:48:09 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ferenc Wagner <wferi@niif.hu>, <linux-kernel@vger.kernel.org>,
+       <alan@lxorguk.ukuu.org.uk>, <linux-usb@vger.kernel.org>
+Subject: Re: 2.6.31-rc3: replugging USB serial converter uses new device
+ node
+Message-Id: <20090723104809.6d39b03b.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0907231042040.2825-100000@iolanthe.rowland.org>
+References: <20090723012140.39f697d2.akpm@linux-foundation.org>
+	<Pine.LNX.4.44L0.0907231042040.2825-100000@iolanthe.rowland.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-23 at 15:08 +0200, Peter Zijlstra wrote:
-> On Mon, 2009-07-20 at 13:08 -0400, Frederic Weisbecker wrote:
-> > This adds the support for kernel hardware breakpoints in perfcounter.
-> > It is added as a new type of software counter and can be defined by
-> > using the counter number 5 and by passsing the address of the
-> > breakpoint to set through the config attribute.
+On Thu, 23 Jul 2009 10:44:13 -0400 (EDT) Alan Stern <stern@rowland.harvard.edu> wrote:
+
+> On Thu, 23 Jul 2009, Andrew Morton wrote:
 > 
-> Is there a limit to these hardware breakpoints? If so, the software
-> counter model is not sufficient, since we assume we can always schedule
-> all software counters. However if you were to add more counters than you
-> have hardware breakpoints you're hosed.
+> > (cc linux-usb)
+> > 
+> > On Sat, 18 Jul 2009 22:04:57 +0200 Ferenc Wagner <wferi@niif.hu> wrote:
+> > 
+> > > Hi,
+> > > 
+> > > Since upgrading to 2.6.31-rc3 from 2.6.30, my ttyUSB device number
+> > > keeps increasing on each replug.  Output of udevadm monitor:
+> ...
+> > > Dmesg is available at http://pastebin.com/d516e3e00.
+> > 
+> > Can anyone say whether this is expected behaviour?
+> 
+> It depends on whether a program is still holding the old device file 
+> open when the replug occurs.
 
-Do the breakpoints work on virtual or physical addresses?
+But this is new behaviour in 2.6.31-rcX.  Was something changed in this area?
 
-Also, do we have an 64bit architecture with split address-spaces?
-
-
-
+> > Does it actually cause any observeable problems?  I expect things will
+> > get ugly once it runs out of range.
+> 
+> The numbers will get reused after the corresponding device files are
+> closed.
+> 
+> For further discussion, see this thread:
+> 
+> 	http://marc.info/?t=124828810800002&r=1&w=2
+> 
+> Alan Stern
