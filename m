@@ -1,88 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753998AbZGWL2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbZGWLgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753998AbZGWL2c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 07:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753760AbZGWL2b
+	id S1754085AbZGWLgr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 07:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbZGWLgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 07:28:31 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:49203 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752272AbZGWL2a convert rfc822-to-8bit (ORCPT
+	Thu, 23 Jul 2009 07:36:45 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:16628 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754068AbZGWLgo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 07:28:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=OSORLHmsvZXbROP9dFFaLuVzzbJ/CSf1kFFW4+WjX7a6Eq2OHdsCZ339b6NOC0BKYo
-         3bQLzcl5e8ACGmn78quaERq9MKqo9+iWsHW6KLuxxeaRokwEOZigQGMqnwl/9+JE179B
-         Zx1API5Y91mCXlC3e2u6/TMWl2Ef5QgkWxa5o=
+	Thu, 23 Jul 2009 07:36:44 -0400
+X-Trace: 231362743/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.32.187/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.32.187
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsAEAAnoZ0pPRSC7/2dsb2JhbACBUM5pgjIDgVgFgUOIPg
+X-IronPort-AV: E=Sophos;i="4.43,254,1246834800"; 
+   d="scan'208";a="231362743"
+Date: Thu, 23 Jul 2009 12:36:30 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Andrea Arcangeli <aarcange@redhat.com>
+cc: Izik Eidus <ieidus@redhat.com>, akpm@linux-foundation.org,
+       chrisw@redhat.com, avi@redhat.com, riel@redhat.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       nickpiggin@yahoo.com.au, Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH 06/10] ksm: identify PageKsm pages
+In-Reply-To: <20090722165202.GA8937@random.random>
+Message-ID: <Pine.LNX.4.64.0907231202550.12896@sister.anvils>
+References: <1247851850-4298-1-git-send-email-ieidus@redhat.com>
+ <1247851850-4298-2-git-send-email-ieidus@redhat.com>
+ <1247851850-4298-3-git-send-email-ieidus@redhat.com>
+ <1247851850-4298-4-git-send-email-ieidus@redhat.com>
+ <1247851850-4298-5-git-send-email-ieidus@redhat.com>
+ <1247851850-4298-6-git-send-email-ieidus@redhat.com>
+ <1247851850-4298-7-git-send-email-ieidus@redhat.com> <20090721175139.GE2239@random.random>
+ <Pine.LNX.4.64.0907221313370.529@sister.anvils> <20090722165202.GA8937@random.random>
 MIME-Version: 1.0
-In-Reply-To: <20090723181525.475692d3@feng-desktop>
-References: <a4423d670907160148n66760052wbef60e4a2c3c7941@mail.gmail.com>
-	 <alpine.LFD.2.00.0907162145140.3531@sony-vgn-z540>
-	 <a4423d670907170657o2c68c479j9b4810af5adad29f@mail.gmail.com>
-	 <a4423d670907230143l78f324dewefa4cb8990ef4266@mail.gmail.com>
-	 <20090723181525.475692d3@feng-desktop>
-Date: Thu, 23 Jul 2009 15:28:29 +0400
-Message-ID: <a4423d670907230428g48cd2b70wf3d26d2c1378503f@mail.gmail.com>
-Subject: Re: next: sfi build fails when !CONFIG_ACPI
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: Feng Tang <feng.tang@intel.com>
-Cc: Len Brown <lenb@kernel.org>, linux-next <linux-next@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/23 Feng Tang <feng.tang@intel.com>:
-> On Thu, 23 Jul 2009 16:43:30 +0800
-> Alexander Beregalov <a.beregalov@gmail.com> wrote:
->
->> 2009/7/17 Alexander Beregalov <a.beregalov@gmail.com>:
->> > 2009/7/17 Len Brown <lenb@kernel.org>:
->> >>> drivers/sfi/sfi_core.c: In function 'sfi_init':
->> >>> drivers/sfi/sfi_core.c:346: error: 'acpi_disabled' undeclared
->> >>> (first use in this function)
->> >>> drivers/sfi/sfi_core.c:346: error: (Each undeclared identifier is
->> >>> reported only once
->> >>> drivers/sfi/sfi_core.c:346: error: for each function it appears
->> >>> in.)
->> >>>
->> >>>
->> >>> $ grep ACPI .config
->> >>> # Power management and ACPI options
->> >>
->> >> It builds for me.
->> >> Please send me the complete failing .config
->> >
->> > Attached (x86_64)
->>
->> Still fails for me in the same way,
->> X86_64
->> next-20090723
->
-> sorry for the late response, please try the following patch:
-It obviously works. Thanks
+On Wed, 22 Jul 2009, Andrea Arcangeli wrote:
+> On Wed, Jul 22, 2009 at 01:45:15PM +0100, Hugh Dickins wrote:
+> > If they're to be vm_normal_page pages (I think we'll agree they are),
+> > then for now they have to be counted either as file pages or as anon
+> > pages.  We could trawl through mm/ adding the third category for KSM
+> > pages, but I don't think that would be sensible - KSM is mostly
+> > keeping out of everybody's way, and I want to preserve that.
+> 
+> That was basically the idea, keeping out of everybody's way. This was
+> more true in the past than today, I mean back when CONFIG_KSM=m was
+> allowed.. Today instead KSM is more like CONFIG_SWAP, which is surely
+> nice from the standpoint that it should be always available and I like
+> that.
+> 
+> > swapping these pages we will use a PAGE_MAPPING_KSM bit 2 (set in
+> > addition to PAGE_MAPPING_ANON), so that the pointer in page->mapping
+> 
+> Ok if it was my choice I wouldn't make them Anon pages.
+> 
+> My background is that in theory, and from a madvise API standpoint,
+> Ksm could work on more than Anon pages in the future.
 
->
-> diff --git a/drivers/sfi/sfi_core.c b/drivers/sfi/sfi_core.c
-> index 62e2f98..fa66824 100644
-> --- a/drivers/sfi/sfi_core.c
-> +++ b/drivers/sfi/sfi_core.c
-> @@ -361,9 +361,6 @@ static __init int sfi_find_syst(void)
->
->  void __init sfi_init(void)
->  {
-> -       if (!acpi_disabled)
-> -               disable_sfi();
-> -
->        if (sfi_disabled)
->                return;
->
-> Thanks,
-> Feng
->
+Right (I say "right" blithely, but fear what might be involved -
+though you've thought it through more, and have a particular case
+in mind); but marking the KSM pages as Anon where they're replacing
+Anon pages seems appropriate to me for now; and then when/if they
+can replace pagecache pages later, I agree those instances should not
+be PageAnon.  (And perhaps by that time we'll be seeing them as a
+third category, rather than as a qualifier of anon/file: I've no
+view on that yet.)
+
+By the way, it did occur to me late last night that I've unconsciously
+and unfairly biased this argument towards me by using the words "anon"
+and "file", which makes it fairly obvious that the current KSM pages
+should be considered "anon".  But if I'd chosen the words "private"
+and "shared", and that may well be the background you're coming from,
+then there's a very reasonable argument for considering them "shared".
+
+I'd still contend that the manner in which they're shared is much
+more like the way anon pages are shared across fork (as the fifth
+line of ksm.c indicates), than the way in which file pages are
+shared with pagecache and backing store.  And I'd still contend
+that it's an unnecessary surprise for KSM to be raising file rss
+and lowering anon rss.  But I did bias the argument unfairly.
+
+> 
+> Example is when pagecache is enabled in host to provide the same
+> pre-cache feature that tmem provides to Xen. We already have that
+> pre-cache of tmem since day zero in KVM (in fact we only more recently
+> had a way to switch it off and do zerocopy DMA with O_DIRECT, kind of
+> turning off tmem).
+> 
+> So it wouldn't be impossible to have a shared pre-cache even when we
+> don't share the same parent qcow2 image, but that is purely
+> theoretical, and it likely never happen. So I am ok with considering
+> ksm pages as anon...
+
+Thanks!
+
+> 
+> For swap we'll need to sue a new bitflag there and adjust PageAnon to
+> check against &(PAGE_MAPPING_ANON|PAGE_MAPPING_KSM)!=0, which will
+> have the same runtime cost, so no problem there.
+
+Yup.
+
+> 
+> > But I'd still expect them to be PageAnon: even more so, really -
+> > once they're swapping, they're even more ordinary anonymous pages.
+> 
+> Frankly the fact they swap on swap device, doesn't make them more
+> anonymous the same way /dev/shm files are filebacked and they swap to
+> swap device too.
+
+True - though they're another odd case.
+
+> 
+> > Leave them out of such accounting completely, or give them their
+> > own stats: yes, that can be done, but not without changes elsewhere;
+> > which I think we'd prefer not to press until KSM is a more accepted
+> > part of regular mm operation.
+> 
+> Ok.
+> 
+> > That's certainly the ugliest part of accepting PageKsm pages as
+> > PageAnon, and I wept when I realized we needed that check (well,
+> > I exaggerate a little ;).
+> 
+> Yes, that very change is exactly what actually made me to rewind back
+> to the issue of why Ksm pages provides benefit to be Anon pages too.
+
+Yes, it was a strong reason for making that a separate patch,
+to parade that shame openly for comment.
+
+> 
+> > It didn't cross my mind to move it into reuse_swap_page(): yes,
+> > we could do that.  I don't see how it's safer; and to be honest,
+> 
+> I thought it was safer, because reuse_swap_page is the thing that tell
+> us if we can takeover an anon page and avoid COW. So anybody calling
+> reuse_swap_page should first check if it's a Ksm page outside of it,
+> and not takeover in that case. Ksm pages must always be readonly to
+> avoid screwing stable tree lookups (stable tree is never regenerated
+> and we need it to stay stable). The swapin path right now doesn't
+> require the check because we know Ksm pages won't come in from swap
+> but I thought it was safer to have reuse_swap_page to be aware instead
+> of leaving the job to the caller. Not that it makes much difference.
+
+I think, until reuse_swap_page gets more callers anyway, that we're
+best off keeping that regrettable test highly visible in do_wp_page.
+
+(I wouldn't be surprised if we later decide that it's good to keep
+once-stable pages around for longer, and hold one reference to them
+in the stable tree: in which case, do_wp_page's extra test could go.)
+
+> 
+> > its main appeal to me is that it would hide this wart away more,
+> > where fewer eyes would notice it.  Which may not be the best
+> > argument for making the move!  Technically, I think it would
+> > just increase the overhead of COWing a KSM page (getting that
+> > page lock, maybe having to drop ptlock etc.), but that may not
+> > matter much: please persuade me it's safer in reuse_swap_page()
+> > and I'll move it there.
+> 
+> Yes it increases overhead a bit, but Ksm pages are never locked so the
+> difference in overhead is negligeable. It's up to you...
+
+They're not locked in ksm.c; but if we were to move the PageKsm test
+from do_wp_page down to reuse_swap_page, then they would briefly be
+locked whenever breaking COW on them, with contention arising there.
+I should think there are much more sigificant inefficiencies to
+worry about than this one, but we've no need for it.
+
+> 
+> Ack 6/10 too..
+
+Many thanks.
+Hugh
