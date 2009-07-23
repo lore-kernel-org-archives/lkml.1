@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbZGWSvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbZGWS4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754128AbZGWSvk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 14:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbZGWSvk
+	id S1754119AbZGWS4a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 14:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbZGWS4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 14:51:40 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55185 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751931AbZGWSvj (ORCPT
+	Thu, 23 Jul 2009 14:56:30 -0400
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:57411 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752434AbZGWS43 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 14:51:39 -0400
-Date: Thu, 23 Jul 2009 20:51:32 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-input@vger.kernel.org,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: Re: xterms freezing on 2.6.31-rc2 (was Re: [regression] Re:
-	2.6.31-rc2: X stop accepting keystrokes?)
-Message-ID: <20090723185132.GO28158@elf.ucw.cz>
-References: <20090714092459.GA2010@elf.ucw.cz> <20090715131611.GB2367@elf.ucw.cz> <20090717125946.GA2022@elf.ucw.cz> <alpine.LNX.2.00.0907171501080.11648@wotan.suse.de> <20090717130649.GA2202@elf.ucw.cz> <alpine.LNX.2.00.0907171512260.11648@wotan.suse.de>
+	Thu, 23 Jul 2009 14:56:29 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: minor Makefile simplification through use of cc-ifversion
+Date: Thu, 23 Jul 2009 20:56:27 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kbuild@vger.kernel.org, Ingo Molnar <mingo@elte.hu>, x86@kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.0907171512260.11648@wotan.suse.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200907232056.28635.elendil@planet.nl>
+X-OriginalArrivalTime: 23 Jul 2009 18:56:29.0191 (UTC) FILETIME=[496F5170:01CA0BC7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-07-17 15:13:41, Jiri Kosina wrote:
-> On Fri, 17 Jul 2009, Pavel Machek wrote:
-> 
-> > > > ...and they seem to be slightly different crashes. Once keyboard was
-> > > > dead but mouse worked, second time keyboard still worked but xterms
-> > > > kept locking up. I managed to type dmesg into one of them, but that
-> > > > xterm hung in middle of dump :-(.
-> > > 
-> > > I guess that both keyboard and mouse are PS/2 connected, right?
-> > 
-> > Thinkpad internal keyboard/mouse, yes.
-> > 
-> > > Any possibility to capture serial console output?
-> > 
-> > I managed to get dmesg via magic sysrq at some point. I got some
-> > softlockup messages and processes seemed to hang.
-> 
-> Softlockup in which area?
-> 
-> Are you able to ssh into the machine? Where do the xterms hang? 
-> (/proc/<pid>/stack)
+Signed-off-by: Frans Pop <elendil@planet.nl>
+---
 
-I have not seen it for a while with new kernel, so I assume problem is gone.
-									Pavel
+Change was suggested by Sam Ravnborg; see http://lkml.org/lkml/2009/7/18/15.
+Tested to work correctly.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+index 1b68659..1f3851a 100644
+--- a/arch/x86/Makefile
++++ b/arch/x86/Makefile
+@@ -32,8 +32,8 @@ ifeq ($(CONFIG_X86_32),y)
+ 
+         # Disable unit-at-a-time mode on pre-gcc-4.0 compilers, it makes gcc use
+         # a lot more stack due to the lack of sharing of stacklots:
+-        KBUILD_CFLAGS += $(shell if [ $(call cc-version) -lt 0400 ] ; then \
+-                echo $(call cc-option,-fno-unit-at-a-time); fi ;)
++        KBUILD_CFLAGS += $(call cc-ifversion, -lt, 0400, \
++				$(call cc-option,-fno-unit-at-a-time))
+ 
+         # CPU-specific tuning. Anything which can be shared with UML should go here.
+         include $(srctree)/arch/x86/Makefile_32.cpu
