@@ -1,72 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944AbZGWSmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbZGWSnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753944AbZGWSmu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 14:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbZGWSmu
+	id S1754025AbZGWSnd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 14:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbZGWSnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 14:42:50 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:42533 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752868AbZGWSmt (ORCPT
+	Thu, 23 Jul 2009 14:43:33 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:54184 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752413AbZGWSnc convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 14:42:49 -0400
-Date: Thu, 23 Jul 2009 11:42:49 -0700 (PDT)
-From: Sage Weil <sage@newdream.net>
-To: Andi Kleen <andi@firstfloor.org>
-cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 17/19] ceph: ioctls
-In-Reply-To: <20090723062412.GA19207@basil.fritz.box>
-Message-ID: <Pine.LNX.4.64.0907231133450.2930@cobra.newdream.net>
-References: <1248292313-31326-11-git-send-email-sage@newdream.net>
- <1248292313-31326-12-git-send-email-sage@newdream.net>
- <1248292313-31326-13-git-send-email-sage@newdream.net>
- <1248292313-31326-14-git-send-email-sage@newdream.net>
- <1248292313-31326-15-git-send-email-sage@newdream.net>
- <1248292313-31326-16-git-send-email-sage@newdream.net>
- <1248292313-31326-17-git-send-email-sage@newdream.net>
- <1248292313-31326-18-git-send-email-sage@newdream.net> <878wig2vhe.fsf@basil.nowhere.org>
- <Pine.LNX.4.64.0907221636260.8312@cobra.newdream.net> <20090723062412.GA19207@basil.fritz.box>
+	Thu, 23 Jul 2009 14:43:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=X15FlNfPPleWQNn8B1OCqW0UL8JbX16ncYVGNlxU/ul84Ihk4ZpZ96zgqQifgzoaTE
+         pHM+9QtMaGRUF/HDNBOa4dVDvwvy9SGgoXFtPdDU7s0erZypV/P077RhdhbySNbWxUEt
+         dtvHQDRdUiS/MzkJX66rsNDm75QDBzZcncEIM=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <1244471650-4632-5-git-send-email-joerg.roedel@amd.com>
+References: <1244471650-4632-1-git-send-email-joerg.roedel@amd.com>
+	 <1244471650-4632-5-git-send-email-joerg.roedel@amd.com>
+Date: Thu, 23 Jul 2009 20:43:30 +0200
+Message-ID: <c384c5ea0907231143h696406fcu7219800e5998fa4b@mail.gmail.com>
+Subject: Re: [PATCH 4/5] dma-debug: disable/enable irqs only once in 
+	device_dma_allocations
+From: Leon Woestenberg <leon.woestenberg@gmail.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Jul 2009, Andi Kleen wrote:
-> What I find more suspicious is that it's the direct network
-> data structure. Presumably that's in a defined endian?
-> So that means the application would already need to 
-> change to network endian order at the ioctl level?
-> 
-> That seems wrong if true. I think defining
-> a ioctl directly based on a network protocol header is 
-> likely a bad idea.
+Hello,
 
-That's a good point.  I've defined an ioctl-specific struct, so the entire 
-interface is defined in the header:
+On Mon, Jun 8, 2009 at 4:34 PM, Joerg Roedel<joerg.roedel@amd.com> wrote:
+> There is no need to disable/enable irqs on each loop iteration. Just
+> disable irqs for the whole time the loop runs.
+>
+A typical need would be low interrupt latency.
 
----
-#include <linux/ioctl.h>
-#include <linux/types.h>
 
-#define CEPH_IOCTL_MAGIC 0x97
+> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> ---
+>  lib/dma-debug.c |    8 ++++++--
+>  1 files changed, 6 insertions(+), 2 deletions(-)
+>
+> diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+> index 24c4a2c..27b369d 100644
+> --- a/lib/dma-debug.c
+> +++ b/lib/dma-debug.c
+> @@ -649,15 +649,19 @@ static int device_dma_allocations(struct device *dev)
+>        unsigned long flags;
+>        int count = 0, i;
+>
+> +       local_irq_save(flags);
+> +
+>        for (i = 0; i < HASH_SIZE; ++i) {
+> -               spin_lock_irqsave(&dma_entry_hash[i].lock, flags);
+> +               spin_lock(&dma_entry_hash[i].lock);
+>                list_for_each_entry(entry, &dma_entry_hash[i].list, list) {
+>                        if (entry->dev == dev)
+>                                count += 1;
+>                }
+> -               spin_unlock_irqrestore(&dma_entry_hash[i].lock, flags);
+> +               spin_unlock(&dma_entry_hash[i].lock);
+>        }
+>
+> +       local_irq_restore(flags);
+> +
+>        return count;
+>  }
 
-/* just use u64 to align sanely on all archs */
-struct ceph_ioctl_layout {
-	__u64 stripe_unit, stripe_count, object_size;
-	__u64 data_pool;
-};
+Does this mean that on a UP system, interrupts are disabled for O(HASH_SIZE)?
+How would that affect interrupt latencies?
 
-#define CEPH_IOC_GET_LAYOUT _IOR(CEPH_IOCTL_MAGIC, 1,		\
-				   struct ceph_ioctl_layout)
-#define CEPH_IOC_SET_LAYOUT _IOW(CEPH_IOCTL_MAGIC, 2,		\
-				   struct ceph_ioctl_layout)
----
-
-The remaining issues are:
-- this isn't complete.  I haven't made up my mind how to list, describe, 
-  and choose the data pool to store a file in; for now it's ignored.
-- where the header should go.  I don't see any other file system ioctls in 
-  include/linux other than ext[23]; the rest are all in fs/*.
-
-sage
+Regards,
+-- 
+Leon
