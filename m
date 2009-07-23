@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbZGWFll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbZGWFrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752648AbZGWFll (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 01:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752574AbZGWFlk
+	id S1752702AbZGWFrJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 01:47:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbZGWFrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 01:41:40 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:46406 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752557AbZGWFlk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 01:41:40 -0400
-Subject: Re: [RFCv2][PATCH] flexible array implementation
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Benjamin Blum <bblum@google.com>
-Cc: vda.linux@googlemail.com, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, menage@google.com,
-       akpm@linux-foundation.org
-In-Reply-To: <2f86c2480907221620u6da3a8e3h8273f6a9ee156f86@mail.gmail.com>
-References: <20090721220017.60A219D3@kernel>
-	 <2f86c2480907221357j5a09fd9au890f815db3750187@mail.gmail.com>
-	 <1248299464.24021.334.camel@nimitz>
-	 <2f86c2480907221620u6da3a8e3h8273f6a9ee156f86@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 22 Jul 2009 22:41:37 -0700
-Message-Id: <1248327697.24021.661.camel@nimitz>
+	Thu, 23 Jul 2009 01:47:08 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45217 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752626AbZGWFrH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 01:47:07 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 23 Jul 2009 14:45:20 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Paul Menage <menage@google.com>
+Cc: akpm@linux-foundation.org, lizf@cn.fujitsu.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/4] CGroup: Support for named and empty hierarchies
+Message-Id: <20090723144520.ced5f8f1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <6599ad830907222237jcdac287tf4243e24024f8055@mail.gmail.com>
+References: <20090722194644.7481.47805.stgit@menage.mtv.corp.google.com>
+	<20090723141301.05401a5c.kamezawa.hiroyu@jp.fujitsu.com>
+	<6599ad830907222237jcdac287tf4243e24024f8055@mail.gmail.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-22 at 16:20 -0700, Benjamin Blum wrote:
-> 
-> >> How about a resize() function that can be
-> >> used to either grow or shrink the array?
+On Wed, 22 Jul 2009 22:37:53 -0700
+Paul Menage <menage@google.com> wrote:
+
+> On Wed, Jul 22, 2009 at 10:13 PM, KAMEZAWA
+> Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > >
-> > I think growing is out of the question.  It has a fixed maximum size
-> > already.  As for shrinking, there's probably a use case for when
-> > something is large, then shrinks back down.  But, I think I'd want to
-> > see a user for it, otherwise I'm just guessing at it too much.
+> > Thank you. I'd like to look into procps package to allow
+> >
+> >  #ps -lf -cgroup=/xxxx/yyy
+> > or
+> >  #top -cgroup=/xxx/yyy
+> >
 > 
-> Check out the reallocate logic in pidlist_uniq from my patch (the
-> series you linked).
+> Wouldn't it be less invasive to change procps so that doing
+> 
+> ps <pid1> <pid2> ...
+> 
+> only actually looks at /proc/<pid1>, /proc/<pid2>, etc, rather than
+> looking at all of them and then throwing away any that aren't in the
+> supplied list?
+> 
+> Then you could do what you want with ps $(cat /dev/cgroup/xxxx/yyy/tasks)
+> 
+Good point. When you try strace
 
-To me, it seems like you should just replace the cgroup_pidlist->list
-with a 'struct flex_array *'.  It sounds like you're concerned that a
-large cgroup_pidlist that was later shrunk would take up too much space.
+#strace ps -ef --pid XXXX
 
-That's a valid concern and it would be quite possible to make a
-flex_array_clean() or truncate() or something similar.  Such a function,
-given an index, could clean out the array at all points past the given
-index.  Kinda the opposite of prealloc().
+you'll see ps scan all pids. The same behavior for pkill, pgrep etc...
+AFAIK, this is a behavior from Linux 2.4 ages.
+By this, ps -ef --pid=XXX can take 1ms if 2000 procs are on system.
+# I think this is because ps uses an unified filter routine.
 
-At the same time, you could get the same effect by allocating a new flex
-array and doing copies like you are now with the normal arrays.  
+So, I have to rewrite filter routine or add cgroup support.
 
--- Dave
+Abyway, adding a new toggle switch to "top", "pgrep" is worth to do, I think.
+
+Thanks,
+-Kame
 
