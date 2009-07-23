@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbZGWPq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753153AbZGWP5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754148AbZGWPq1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 11:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbZGWPq1
+	id S1753153AbZGWP5z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 11:57:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbZGWP5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 11:46:27 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:36828 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752906AbZGWPq0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 11:46:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=x34ij0xjKAP7XXO+XAY8Kw8AbPOJyZVswZHAUmOyKe5/pFr+FE14JbXMed1tIJi0Nm
-         PvUpKntbYrgH1zOVEbGfTbI5lh+/G0noIbITN0gC2eA0jfbPDnJTJIlUttPaNSDAEvpB
-         YNQMtaXRo4TIK7JEyDwbUteXckVAU6HLGSxj0=
-Message-ID: <4A688661.9040506@gmail.com>
-Date: Thu, 23 Jul 2009 17:48:49 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] smbfs: Read buffer overflow
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Jul 2009 11:57:55 -0400
+Received: from outbound-mail-302.bluehost.com ([67.222.53.9]:37975 "HELO
+	outbound-mail-302.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752069AbZGWP5y convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 11:57:54 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=PbWPg7M3p+1L88g8N6X+pZ944EsZ/ZwEobXBCZXCtYDgDJ2vrgubOpzQkDv7JE+WMwcIpUwSH6SB/jvYZa4Zd31jYR2wFL6gCogqvBthLzevTucKkBDwpAlBlKGg23cr;
+Date: Thu, 23 Jul 2009 08:57:51 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.31-rc4: strange change in iomem allocation
+Message-ID: <20090723085751.1872545c@jbarnes-g45>
+In-Reply-To: <86802c440907230742w2858e1d9i8357bb94ed996ff3@mail.gmail.com>
+References: <alpine.LFD.2.01.0907221936220.3352@localhost.localdomain>
+	<200907231614.23570.elendil@planet.nl>
+	<86802c440907230742w2858e1d9i8357bb94ed996ff3@mail.gmail.com>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This function uses signed integers for the unix_date and local variables - if a
-negative number is supplied and the leap-year condition is not met, month
-will be 0, leading to a read of day_n[-1]
+On Thu, 23 Jul 2009 07:42:28 -0700
+Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-This is the easiest way to prevent the buffer overflow, but it produces a date.
-Maybe a magic date would be better? What should we choose?
+> On Thu, Jul 23, 2009 at 7:14 AM, Frans Pop<elendil@planet.nl> wrote:
+> > I'm seeing the following change in dmesg between -rc3 and -rc4:
+> > -system 00:0c: iomem range 0xfec00000-0xfec000ff has been reserved
+> > +system 00:0c: iomem range 0xfec00000-0xfec000ff could not be
+> > reserved
+> >
+> > There is nothing in the earlier part of dmesg that would explain
+> > this change.
+> >
+> > The change is also visible in /proc/iomem:
+> >  fec00000-fec00fff : IOAPIC 0
+> >   fec00000-fec00fff : reserved
+> > -    fec00000-fec000ff : pnp 00:0c
+> >
+> > I somewhat suspect 857fdc53a0a90c3ba7fcf5b1fb4c7a62ae03cf82:
+> >    x86/pci: insert ioapic resource before assigning unassigned
+> > resources
+> >
+> > System is HP 2510p notebook (x86_64).
+> 
+> should be ok. we don't need that
+>    fec00000-fec000ff : pnp 00:0c
 
-Credits to Parfait and Nathan Keynes,
+So the PNP ranges are duplicating the IOAPIC range?  Seems harmless
+enough...
 
-diff --git a/fs/smbfs/proc.c b/fs/smbfs/proc.c
-index 9468168..71c29b6 100644
---- a/fs/smbfs/proc.c
-+++ b/fs/smbfs/proc.c
-@@ -509,7 +509,7 @@ date_unix2dos(struct smb_sb_info *server,
- 		month = 2;
- 	} else {
- 		nl_day = (year & 3) || day <= 59 ? day : day - 1;
--		for (month = 0; month < 12; month++)
-+		for (month = 1; month < 12; month++)
- 			if (day_n[month] > nl_day)
- 				break;
- 	}
+-- 
+Jesse Barnes, Intel Open Source Technology Center
