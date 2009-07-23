@@ -1,98 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751763AbZGWHxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752151AbZGWH7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751763AbZGWHxk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 03:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751040AbZGWHxk
+	id S1752151AbZGWH7W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 03:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbZGWH7W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 03:53:40 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:38286 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750927AbZGWHxj (ORCPT
+	Thu, 23 Jul 2009 03:59:22 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:60119 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752053AbZGWH7V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 03:53:39 -0400
-Date: Thu, 23 Jul 2009 09:53:36 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Daniel Walker <dwalker@fifo99.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC][patch 1/5] move clock source related code to
- clocksource.c
-Message-ID: <20090723095336.2cb4b1a4@skybase>
-In-Reply-To: <1248308900.7592.36.camel@localhost.localdomain>
-References: <20090721191745.788551122@de.ibm.com>
-	<20090721192057.177653956@de.ibm.com>
-	<1248205851.14209.777.camel@desktop>
-	<1248213607.3298.107.camel@localhost>
-	<20090722092519.772b238b@skybase>
-	<1248284733.18789.32.camel@work-vm>
-	<1248308900.7592.36.camel@localhost.localdomain>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Jul 2009 03:59:21 -0400
+Date: Thu, 23 Jul 2009 13:27:35 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ken Chen <kenchen@google.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: CFS group scheduler fairness broken starting from 2.6.29-rc1
+Message-ID: <20090723075735.GA18878@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Jul 2009 17:28:20 -0700
-john stultz <johnstul@us.ibm.com> wrote:
+Hi,
 
-> Hey Martin,
-> 	So here's a really quick swipe at breaking apart the clocksource struct
-> into a clocksource only portion and a timekeeping portion.
-> 
-> Caveats:
-> 1) This doesn't completely build. The core bits do, but there's still a
-> few left-over issues (see following caveats). Its just here to give you
-> an idea of what I'm thinking about. I'd of course break it up into more
-> manageable chunks before submitting it.
-> 
-> 2) Structure names aren't too great right now. Not sure timeclock is
-> what I want to use, probably system_time or something. Will find/replace
-> before the next revision is sent out.
-> 
-> 3) I still need to unify the clocksource and cyclecounter structures, as
-> they're basically redundant now.
-> 
-> 4) I still need to fix the update_vsyscall code (shouldn't be hard, I
-> didn't want to run through arch code yet).
-> 
-> 5) The TSC clocksource uses cycles_last to avoid very slight skew issues
-> (that otherwise would not be noticed). Not sure how to fix that if we're
-> pulling cycles_last (which is purely timekeeping state) out of the
-> clocksource. Will have to think of something.
-> 
-> 
-> Other cleanups still out there in the distant future:
-> 1) Once all arches are converted to GENERIC_TIME, we can remove the
-> ifdefs, and cleanup a lot of the more complicated xtime struct
-> manipulation. It will cleanup update_wall_time() nicely.
-> 
-> 2) I have a logarithmic accumulation patch to update_wall_time that will
-> remove the need for xtime_cache to be managed and updated. Just have to
-> spend some additional time making sure its bugfree.
-> 
-> 3) Once all arches are converted to using read_persistent_clock(), then
-> the arch specific time initialization can be dropped. Removing the
-> majority of direct xtime structure accesses.
-> 
-> 4) Then once the remaining direct wall_to_monotonic and xtime accessors
-> are moved to timekeeping.c we can make those both static and embed them
-> into the core timekeeping structure.
-> 
-> 
-> But let me know if this patch doesn't achieve most of the cleanup you
-> wanted to see.
+Group scheduler fainess is broken since 2.6.29-rc1. git bisect led me
+to this commit:
 
-Cool, I'll have a look. What I can see right away is that a lot of the
-changes I tried yesterday are contained in your patch as well.
-But your patch is more radical, a lot more is (re-)moved from the
-struct clocksource. That mult_orig goes aways is good :-)
+commit ec4e0e2fe018992d980910db901637c814575914
+Author: Ken Chen <kenchen@google.com>
+Date:   Tue Nov 18 22:41:57 2008 -0800
 
--- 
-blue skies,
-   Martin.
+    sched: fix inconsistency when redistribute per-cpu tg->cfs_rq shares
+    
+    Impact: make load-balancing more consistent
+    
+    In the update_shares() path leading to tg_shares_up(), the calculation of
+    per-cpu cfs_rq shares is rather erratic even under moderate task wake up
+    rate.  The problem is that the per-cpu tg->cfs_rq load weight used in the
+    sd_rq_weight aggregation and actual redistribution of the cfs_rq->shares
+    are collected at different time.  Under moderate system load, we've seen
+    quite a bit of variation on the cfs_rq->shares and ultimately wildly
+    affects sched_entity's load weight.
+    
+    This patch caches the result of initial per-cpu load weight when doing the
+    sum calculation, and then pass it down to update_group_shares_cpu() for
+    redistributing per-cpu cfs_rq shares.  This allows consistent total cfs_rq
+    shares across all CPUs. It also simplifies the rounding and zero load
+    weight check.
+    
+    Signed-off-by: Ken Chen <kenchen@google.com>
+    Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+    Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-"Reality continues to ruin my life." - Calvin.
+======================================================================
+			% CPU time division b/n groups
+Group		2.6.29-rc1		2.6.29-rc1 w/o the above patch
+======================================================================
+a with 8 tasks	44			31
+b with 5 tasks  32			34
+c with 3 tasks  22			34
+======================================================================
+All groups had equal shares.
 
+Regards,
+Bharata.
