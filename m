@@ -1,292 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbZGWTV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754612AbZGWTV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754562AbZGWTV2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 15:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbZGWTV0
+	id S1754612AbZGWTV5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 15:21:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754220AbZGWTVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 15:21:26 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48212 "EHLO
+	Thu, 23 Jul 2009 15:21:18 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:48199 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754445AbZGWTVX (ORCPT
+	with ESMTP id S1754168AbZGWTVQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 15:21:23 -0400
-Message-Id: <20090723191957.401245856@chello.nl>
+	Thu, 23 Jul 2009 15:21:16 -0400
+Message-Id: <20090723191956.941061118@chello.nl>
 References: <20090723191642.780643661@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 23 Jul 2009 21:16:51 +0200
+Date: Thu, 23 Jul 2009 21:16:46 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Marcelo Tosatti <mtosatti@redhat.com>
-Subject: [PATCH 09/13] lockdep: Deal with many similar locks
-Content-Disposition: inline; filename=lockdep-held-refcount.patch
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Jason Baron <jbaron@redhat.com>, Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 04/13] ftrace: perf_counter intergration
+Content-Disposition: inline; filename=ftrace-perf.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-spin_lock_nest_lock() allows to take many instances of the same class,
-this can easily lead to overflow of MAX_LOCK_DEPTH.
+Adds possible second part to the assign argument of TP_EVENT().
 
-To avoid this overflow, we'll stop accounting instances but start
-reference counting the class in the held_lock structure.
+  TP_perf_assign(
+	__perf_count(foo);
+	__perf_addr(bar);
+  )
 
-[ we could maintain a list of instances, if we'd move the hlock stuff
-  into __lock_acquired(), but that would require significant
-  modifications to the current code. ]
-
-We restrict this mode to spin_lock_nest_lock() only, because it
-degrades the lockdep quality due to lost of instance.
-
-For lockstat this means we don't track lock statistics for any but the
-first lock in the series.
-
-Currently nesting is limited to 11 bits because that was the spare
-space available in held_lock. This yields a 2048 instances maximium.
+Which, when specified make the swcounter increment with @foo instead
+of the usual 1, and report @bar for PERF_SAMPLE_ADDR (data address
+associated with the event) when this triggers a counter overflow.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Jason Baron <jbaron@redhat.com>
+Cc: Paul Mackerras <paulus@samba.org>
 ---
- include/linux/lockdep.h |    4 +-
- kernel/lockdep.c        |   89 +++++++++++++++++++++++++++++++++++++++++-------
- 2 files changed, 80 insertions(+), 13 deletions(-)
+ include/trace/ftrace.h |  110 +++++++++++++++++++++++++++++++++++++------------
+ kernel/perf_counter.c  |    6 +-
+ 2 files changed, 88 insertions(+), 28 deletions(-)
 
-Index: linux-2.6/include/linux/lockdep.h
+Index: linux-2.6/include/trace/ftrace.h
 ===================================================================
---- linux-2.6.orig/include/linux/lockdep.h
-+++ linux-2.6/include/linux/lockdep.h
-@@ -213,10 +213,12 @@ struct held_lock {
- 	 * interrupt context:
- 	 */
- 	unsigned int irq_context:2; /* bit 0 - soft, bit 1 - hard */
--	unsigned int trylock:1;
-+	unsigned int trylock:1;						/* 16 bits */
-+
- 	unsigned int read:2;        /* see lock_acquire() comment */
- 	unsigned int check:2;       /* see lock_acquire() comment */
- 	unsigned int hardirqs_off:1;
-+	unsigned int references:11;					/* 32 bits */
- };
+--- linux-2.6.orig/include/trace/ftrace.h
++++ linux-2.6/include/trace/ftrace.h
+@@ -144,6 +144,9 @@
+ #undef TP_fast_assign
+ #define TP_fast_assign(args...) args
  
- /*
-Index: linux-2.6/kernel/lockdep.c
-===================================================================
---- linux-2.6.orig/kernel/lockdep.c
-+++ linux-2.6/kernel/lockdep.c
-@@ -2699,13 +2699,15 @@ EXPORT_SYMBOL_GPL(lockdep_init_map);
-  */
- static int __lock_acquire(struct lockdep_map *lock, unsigned int subclass,
- 			  int trylock, int read, int check, int hardirqs_off,
--			  struct lockdep_map *nest_lock, unsigned long ip)
-+			  struct lockdep_map *nest_lock, unsigned long ip,
-+			  int references)
- {
- 	struct task_struct *curr = current;
- 	struct lock_class *class = NULL;
- 	struct held_lock *hlock;
- 	unsigned int depth, id;
- 	int chain_head = 0;
-+	int class_idx;
- 	u64 chain_key;
++#undef TP_perf_assign
++#define TP_perf_assign(args...)
++
+ #undef TRACE_EVENT
+ #define TRACE_EVENT(call, proto, args, tstruct, func, print)		\
+ static int								\
+@@ -345,6 +348,88 @@ static inline int ftrace_get_offsets_##c
  
- 	if (!prove_locking)
-@@ -2753,10 +2755,24 @@ static int __lock_acquire(struct lockdep
- 	if (DEBUG_LOCKS_WARN_ON(depth >= MAX_LOCK_DEPTH))
- 		return 0;
+ #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
  
-+	class_idx = class - lock_classes + 1;
++#ifdef CONFIG_EVENT_PROFILE
 +
-+	if (depth) {
-+		hlock = curr->held_locks + depth - 1;
-+		if (hlock->class_idx == class_idx && nest_lock) {
-+			if (hlock->references)
-+				hlock->references++;
-+			else
-+				hlock->references = 2;
++/*
++ * Generate the functions needed for tracepoint perf_counter support.
++ *
++ * static void ftrace_profile_<call>(proto)
++ * {
++ * 	extern void perf_tpcounter_event(int, u64, u64);
++ * 	u64 addr = 0, count = 1;
++ *
++ * 	<assign>   <-- here we expand the TP_perf_assign() macro
++ *
++ * 	perf_tpcounter_event(event_<call>.id, addr, count);
++ * }
++ *
++ * static int ftrace_profile_enable_<call>(struct ftrace_event_call *event_call)
++ * {
++ * 	int ret = 0;
++ *
++ * 	if (!atomic_inc_return(&event_call->profile_count))
++ * 		ret = register_trace_<call>(ftrace_profile_<call>);
++ *
++ * 	return ret;
++ * }
++ *
++ * static void ftrace_profile_disable_<call>(struct ftrace_event_call *event_call)
++ * {
++ * 	if (atomic_add_negative(-1, &event->call->profile_count))
++ * 		unregister_trace_<call>(ftrace_profile_<call>);
++ * }
++ *
++ */
 +
-+			return 1;
-+		}
-+	}
++#undef TP_fast_assign
++#define TP_fast_assign(args...)
 +
- 	hlock = curr->held_locks + depth;
- 	if (DEBUG_LOCKS_WARN_ON(!class))
- 		return 0;
--	hlock->class_idx = class - lock_classes + 1;
-+	hlock->class_idx = class_idx;
- 	hlock->acquire_ip = ip;
- 	hlock->instance = lock;
- 	hlock->nest_lock = nest_lock;
-@@ -2764,6 +2780,7 @@ static int __lock_acquire(struct lockdep
- 	hlock->read = read;
- 	hlock->check = check;
- 	hlock->hardirqs_off = !!hardirqs_off;
-+	hlock->references = references;
- #ifdef CONFIG_LOCK_STAT
- 	hlock->waittime_stamp = 0;
- 	hlock->holdtime_stamp = sched_clock();
-@@ -2872,6 +2889,30 @@ static int check_unlock(struct task_stru
- 	return 1;
- }
- 
-+static int match_held_lock(struct held_lock *hlock, struct lockdep_map *lock)
-+{
-+	if (hlock->instance == lock)
-+		return 1;
++#undef TP_perf_assign
++#define TP_perf_assign(args...) args
 +
-+	if (hlock->references) {
-+		struct lock_class *class = lock->class_cache;
++#undef __perf_addr
++#define __perf_addr(a) addr = (a)
 +
-+		if (!class)
-+			class = look_up_lock_class(lock, 0);
++#undef __perf_count
++#define __perf_count(c) count = (c)
 +
-+		if (DEBUG_LOCKS_WARN_ON(!class))
-+			return 0;
-+
-+		if (DEBUG_LOCKS_WARN_ON(!hlock->nest_lock))
-+			return 0;
-+
-+		if (hlock->class_idx == class - lock_classes + 1)
-+			return 1;
-+	}
-+
-+	return 0;
++#undef TRACE_EVENT
++#define TRACE_EVENT(call, proto, args, tstruct, assign, print)		\
++									\
++static void ftrace_profile_##call(proto)				\
++{									\
++	extern void perf_tpcounter_event(int, u64, u64);		\
++	u64 addr = 0, count = 1;					\
++	{ assign; }							\
++	perf_tpcounter_event(event_##call.id, addr, count);		\
++}									\
++									\
++static int ftrace_profile_enable_##call(struct ftrace_event_call *event_call) \
++{									\
++	int ret = 0;							\
++									\
++	if (!atomic_inc_return(&event_call->profile_count))		\
++		ret = register_trace_##call(ftrace_profile_##call);	\
++									\
++	return ret;							\
++}									\
++									\
++static void ftrace_profile_disable_##call(struct ftrace_event_call *event_call)\
++{									\
++	if (atomic_add_negative(-1, &event_call->profile_count))	\
++		unregister_trace_##call(ftrace_profile_##call);		\
 +}
 +
- static int
- __lock_set_class(struct lockdep_map *lock, const char *name,
- 		 struct lock_class_key *key, unsigned int subclass,
-@@ -2895,7 +2936,7 @@ __lock_set_class(struct lockdep_map *loc
- 		 */
- 		if (prev_hlock && prev_hlock->irq_context != hlock->irq_context)
- 			break;
--		if (hlock->instance == lock)
-+		if (match_held_lock(hlock, lock))
- 			goto found_it;
- 		prev_hlock = hlock;
- 	}
-@@ -2914,7 +2955,8 @@ found_it:
- 		if (!__lock_acquire(hlock->instance,
- 			hlock_class(hlock)->subclass, hlock->trylock,
- 				hlock->read, hlock->check, hlock->hardirqs_off,
--				hlock->nest_lock, hlock->acquire_ip))
-+				hlock->nest_lock, hlock->acquire_ip,
-+				hlock->references))
- 			return 0;
- 	}
- 
-@@ -2953,20 +2995,34 @@ lock_release_non_nested(struct task_stru
- 		 */
- 		if (prev_hlock && prev_hlock->irq_context != hlock->irq_context)
- 			break;
--		if (hlock->instance == lock)
-+		if (match_held_lock(hlock, lock))
- 			goto found_it;
- 		prev_hlock = hlock;
- 	}
- 	return print_unlock_inbalance_bug(curr, lock, ip);
- 
- found_it:
--	lock_release_holdtime(hlock);
-+	if (hlock->instance == lock)
-+		lock_release_holdtime(hlock);
++#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 +
-+	if (hlock->references) {
-+		hlock->references--;
-+		if (hlock->references) {
-+			/*
-+			 * We had, and after removing one, still have
-+			 * references, the current lock stack is still
-+			 * valid. We're done!
-+			 */
-+			return 1;
-+		}
-+	}
- 
- 	/*
- 	 * We have the right lock to unlock, 'hlock' points to it.
- 	 * Now we remove it from the stack, and add back the other
- 	 * entries (if any), recalculating the hash along the way:
- 	 */
++#undef TP_fast_assign
++#define TP_fast_assign(args...) args
 +
- 	curr->lockdep_depth = i;
- 	curr->curr_chain_key = hlock->prev_chain_key;
- 
-@@ -2975,7 +3031,8 @@ found_it:
- 		if (!__lock_acquire(hlock->instance,
- 			hlock_class(hlock)->subclass, hlock->trylock,
- 				hlock->read, hlock->check, hlock->hardirqs_off,
--				hlock->nest_lock, hlock->acquire_ip))
-+				hlock->nest_lock, hlock->acquire_ip,
-+				hlock->references))
- 			return 0;
- 	}
- 
-@@ -3005,7 +3062,7 @@ static int lock_release_nested(struct ta
- 	/*
- 	 * Is the unlock non-nested:
- 	 */
--	if (hlock->instance != lock)
-+	if (hlock->instance != lock || hlock->references)
- 		return lock_release_non_nested(curr, lock, ip);
- 	curr->lockdep_depth--;
- 
-@@ -3056,7 +3113,9 @@ static int __lock_is_held(struct lockdep
- 	int i;
- 
- 	for (i = 0; i < curr->lockdep_depth; i++) {
--		if (curr->held_locks[i].instance == lock)
-+		struct held_lock *hlock = curr->held_locks + i;
++#undef TP_perf_assign
++#define TP_perf_assign(args...)
 +
-+		if (match_held_lock(hlock, lock))
- 			return 1;
- 	}
++#endif
++
+ /*
+  * Stage 4 of the trace events.
+  *
+@@ -447,28 +532,6 @@ static inline int ftrace_get_offsets_##c
+ #define TP_FMT(fmt, args...)	fmt "\n", ##args
  
-@@ -3139,7 +3198,7 @@ void lock_acquire(struct lockdep_map *lo
+ #ifdef CONFIG_EVENT_PROFILE
+-#define _TRACE_PROFILE(call, proto, args)				\
+-static void ftrace_profile_##call(proto)				\
+-{									\
+-	extern void perf_tpcounter_event(int);				\
+-	perf_tpcounter_event(event_##call.id);				\
+-}									\
+-									\
+-static int ftrace_profile_enable_##call(struct ftrace_event_call *event_call) \
+-{									\
+-	int ret = 0;							\
+-									\
+-	if (!atomic_inc_return(&event_call->profile_count))		\
+-		ret = register_trace_##call(ftrace_profile_##call);	\
+-									\
+-	return ret;							\
+-}									\
+-									\
+-static void ftrace_profile_disable_##call(struct ftrace_event_call *event_call)\
+-{									\
+-	if (atomic_add_negative(-1, &event_call->profile_count))	\
+-		unregister_trace_##call(ftrace_profile_##call);		\
+-}
  
- 	current->lockdep_recursion = 1;
- 	__lock_acquire(lock, subclass, trylock, read, check,
--		       irqs_disabled_flags(flags), nest_lock, ip);
-+		       irqs_disabled_flags(flags), nest_lock, ip, 0);
- 	current->lockdep_recursion = 0;
- 	raw_local_irq_restore(flags);
+ #define _TRACE_PROFILE_INIT(call)					\
+ 	.profile_count = ATOMIC_INIT(-1),				\
+@@ -476,7 +539,6 @@ static void ftrace_profile_disable_##cal
+ 	.profile_disable = ftrace_profile_disable_##call,
+ 
+ #else
+-#define _TRACE_PROFILE(call, proto, args)
+ #define _TRACE_PROFILE_INIT(call)
+ #endif
+ 
+@@ -502,7 +564,6 @@ static void ftrace_profile_disable_##cal
+ 
+ #undef TRACE_EVENT
+ #define TRACE_EVENT(call, proto, args, tstruct, assign, print)		\
+-_TRACE_PROFILE(call, PARAMS(proto), PARAMS(args))			\
+ 									\
+ static struct ftrace_event_call event_##call;				\
+ 									\
+@@ -586,6 +647,5 @@ __attribute__((section("_ftrace_events")
+ 
+ #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+ 
+-#undef _TRACE_PROFILE
+ #undef _TRACE_PROFILE_INIT
+ 
+Index: linux-2.6/kernel/perf_counter.c
+===================================================================
+--- linux-2.6.orig/kernel/perf_counter.c
++++ linux-2.6/kernel/perf_counter.c
+@@ -3680,17 +3680,17 @@ static const struct pmu perf_ops_task_cl
+ };
+ 
+ #ifdef CONFIG_EVENT_PROFILE
+-void perf_tpcounter_event(int event_id)
++void perf_tpcounter_event(int event_id, u64 addr, u64 count)
+ {
+ 	struct perf_sample_data data = {
+ 		.regs = get_irq_regs(),
+-		.addr = 0,
++		.addr = addr,
+ 	};
+ 
+ 	if (!data.regs)
+ 		data.regs = task_pt_regs(current);
+ 
+-	do_perf_swcounter_event(PERF_TYPE_TRACEPOINT, event_id, 1, 1, &data);
++	do_perf_swcounter_event(PERF_TYPE_TRACEPOINT, event_id, count, 1, &data);
  }
-@@ -3243,7 +3302,7 @@ __lock_contended(struct lockdep_map *loc
- 		 */
- 		if (prev_hlock && prev_hlock->irq_context != hlock->irq_context)
- 			break;
--		if (hlock->instance == lock)
-+		if (match_held_lock(hlock, lock))
- 			goto found_it;
- 		prev_hlock = hlock;
- 	}
-@@ -3251,6 +3310,9 @@ __lock_contended(struct lockdep_map *loc
- 	return;
+ EXPORT_SYMBOL_GPL(perf_tpcounter_event);
  
- found_it:
-+	if (hlock->instance != lock)
-+		return;
-+
- 	hlock->waittime_stamp = sched_clock();
- 
- 	contention_point = lock_point(hlock_class(hlock)->contention_point, ip);
-@@ -3290,7 +3352,7 @@ __lock_acquired(struct lockdep_map *lock
- 		 */
- 		if (prev_hlock && prev_hlock->irq_context != hlock->irq_context)
- 			break;
--		if (hlock->instance == lock)
-+		if (match_held_lock(hlock, lock))
- 			goto found_it;
- 		prev_hlock = hlock;
- 	}
-@@ -3298,6 +3360,9 @@ __lock_acquired(struct lockdep_map *lock
- 	return;
- 
- found_it:
-+	if (hlock->instance != lock)
-+		return;
-+
- 	cpu = smp_processor_id();
- 	if (hlock->waittime_stamp) {
- 		now = sched_clock();
 
 -- 
 
