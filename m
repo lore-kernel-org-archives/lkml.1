@@ -1,131 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752434AbZGWBqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752117AbZGWB60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752434AbZGWBqp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 21:46:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751193AbZGWBqp
+	id S1752117AbZGWB60 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 21:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZGWB6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 21:46:45 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35075 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750865AbZGWBqo (ORCPT
+	Wed, 22 Jul 2009 21:58:25 -0400
+Received: from nschwqsrv01p.mx.bigpond.com ([61.9.189.231]:62578 "EHLO
+	nschwqsrv01p.mx.bigpond.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751193AbZGWB6Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 21:46:44 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 23 Jul 2009 10:44:50 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, menage@google.com,
-       vda.linux@googlemail.com, mikew@google.com, lizf@cn.fujitsu.com,
-       xiyou.wangcong@gmail.com
-Subject: Re: [RFC][PATCH] flexible array implementation v3
-Message-Id: <20090723104450.e0d421ca.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090722175345.7154C2F2@kernel>
-References: <20090722175345.7154C2F2@kernel>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Jul 2009 21:58:24 -0400
+Date: Thu, 23 Jul 2009 10:19:39 +0930
+From: Alan Modra <amodra@bigpond.net.au>
+To: Matthias Klose <doko@ubuntu.com>
+Cc: binutils <binutils@sourceware.org>, Bastian Blank <waldi@debian.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Kiko Piris <kernel@pirispons.net>,
+       Damien Wyart <damien.wyart@free.fr>, Greg KH <gregkh@suse.de>,
+       Wolfgang Walter <wolfgang.walter@stwm.de>
+Subject: Re: current binutils trunk fails to build bootable kernel image
+	for some configurations
+Message-ID: <20090723004939.GF13233@bubble.grove.modra.org>
+Mail-Followup-To: Matthias Klose <doko@ubuntu.com>,
+	binutils <binutils@sourceware.org>,
+	Bastian Blank <waldi@debian.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, Kiko Piris <kernel@pirispons.net>,
+	Damien Wyart <damien.wyart@free.fr>, Greg KH <gregkh@suse.de>,
+	Wolfgang Walter <wolfgang.walter@stwm.de>
+References: <4A6746B9.9010603@ubuntu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090721204214.GA27015@wavehammer.waldi.eu.org> <4A6746B9.9010603@ubuntu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-RPD-ScanID: Class unknown; VirusThreatLevel unknown, RefID str=0001.0A150201.4A67B3A4.0007,ss=1,fgs=0
+X-SIH-MSG-ID: qhs6EN35TAD0zmRy0WWwOwRzyFrsq3B48Z4QWs1mqRMGT0XduMfOJ5LmY9kEnZ7k1y5MNhCBN2skY7zmXY/YiA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Jul 2009 10:53:45 -0700
-Dave Hansen <dave@linux.vnet.ibm.com> wrote:
+On Wed, Jul 22, 2009 at 01:04:57PM -0400, Matthias Klose wrote:
+> this was reported as http://bugs.debian.org/537389, I currently don't 
+> have much more information, besides that one of the Debian kernel 
+> maintainers did identify
+>
+> 2009-07-11  Alan Modra  <amodra@bigpond.net.au>
+>
+>         * ldlang.c (insert_os_after): Don't tie assignments to non-alloc
+>         output sections.
+>
+> this patch as the one causing the wrongly built kernel. However I don't 
+> see this checkin mentioned on the ML.
 
-> 
-> 
-> Changes from v2:
-> - renamed some of the index functions
-> - added preallocation function
-> - added flex_array_free_parts() for use with
->   statically allocated bases
-> - killed append() function
-> 
-> Changes from v1:
-> - to vs too typo
-> - added __check_part_and_nr() and gave it a warning
-> - fixed off-by-one check on __nr_part_ptrs()
-> - added FLEX_ARRAY_INIT() macro
-> - some kerneldoc comments about the capacity
->   with various sized objects
-> - comments to note lack of locking semantice
-> 
+The discussion happened on bug-binutils.
+http://lists.gnu.org/archive/html/bug-binutils/2009-07/msg00067.html
 
-Seems nice, thank you. but a nitpick..
+> Bastian Blank did check that the 
+> problem goes away with a binutils build from trunk and this patch 
+> reverted. Some more analysis in http://lkml.org/lkml/2009/7/21/400
 
-+struct flex_array *flex_array_alloc(int element_size, int total, gfp_t flags)
-+{
-+	struct flex_array *ret;
-+	int max_size = nr_base_part_ptrs() * __elements_per_part(element_size);
-+
-+	/* max_size will end up 0 if element_size > PAGE_SIZE */
-+	if (total > max_size)
-+		return NULL;
+The biggest problem is that the kernel linker script doesn't mention
+all sections, which means ld must choose a place for the unmentioned
+sections (orphans).  Sometimes ld's placement isn't how a naive
+programmer would expect.
 
-Can't we store "total" somewhere and do error check ?
+In this case:
 
-And some magic value as following can't be defined for 'total' ?
+  . = ALIGN(PAGE_SIZE);
+  .data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
 
-#define FLEX_ARRAY_MAX_ELEMENTS		(-1) // Use maximum flex array.
+ld stuck an orphan section between the two statements.  Which meant
+that the start of .data_nosave is not aligned (and since the end is
+aligned by following statements, it means that .data_nosave also has
+padding inserted).  It would be more robust to write:
 
+  .data_nosave ALIGN(PAGE_SIZE) : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
 
-> +/**
-> + * flex_array_get - pull data back out of the array
-> + * @element_nr:	index of the element to fetch from the array
-> + *
-> + * Returns a pointer to the data at index @element_nr.  Note
-> + * that this is a copy of the data that was passed in.  If you
-> + * are using this to store pointers, you'll get back &ptr.
-> + *
-> + * Locking must be provided by the caller.
-> + */
-> +void *flex_array_get(struct flex_array *fa, int element_nr)
-> +{
-> +	int part_nr = fa_element_to_part_nr(fa, element_nr);
-> +	struct flex_array_part *part;
-> +	int offset;
-> +
-> +	if (__check_part_nr(fa, part_nr))
-> +		return NULL;
-return -EINVAL, here ?
-(Can't we compared with stored "total" ?)
-
-> +	if (!fa->parts[part_nr])
-> +		return NULL;
-> +
-
-The caller can't know whether
- - there are no entry or
- - NULL(0) is stored at the array.
-
-Then, he has to check gotten value is valid or not by himself.
-
-Can't we return -ENOENT here(especially when prealloc() is called) ?
-But ah, anyway, all-zero elements in allocated array exists ;(
-and the user can get value from an entry never be put.
-
-If we can fill the first 4bytes of _unused_ index by some magic code like this
-#define FLEX_ARRAY_UNUSED_MAGIC		(0xa5a5a5a5)
-(if maintaining bitmap/status of usage is nonsense)
-and flex_array_get() can return -ENOENT, the users will feel easy.
-
-Overprotection ;) ?
-
-
-Thanks,
--Kame
-
-> +	part = fa->parts[part_nr];
-> +	offset = index_inside_part(fa, element_nr);
-> +	return &part->elements[index_inside_part(fa, element_nr)];
-> +}
-
-
-
-
-
-
-
-
+-- 
+Alan Modra
+Australia Development Lab, IBM
