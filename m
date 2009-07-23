@@ -1,93 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753075AbZGWTNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753753AbZGWTQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753075AbZGWTNj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 15:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbZGWTNi
+	id S1753753AbZGWTQO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 15:16:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbZGWTQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 15:13:38 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44211 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752400AbZGWTNh (ORCPT
+	Thu, 23 Jul 2009 15:16:13 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60053 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752158AbZGWTQM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 15:13:37 -0400
-Date: Thu, 23 Jul 2009 21:13:30 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-kernel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>, Jouni Malinen <j@w1.fi>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Stephen Chen <Stephen.Chen@atheros.com>
-Subject: Re: Generic events for wake up from S1-S4
-Message-ID: <20090723191330.GQ28158@elf.ucw.cz>
-References: <43e72e890907141511h70a0a987g57cb26e23e5824a9@mail.gmail.com> <20090714235332.GA1552@ucw.cz> <43e72e890907150851m69cd2de6lfb71596fbfac30e6@mail.gmail.com> <43e72e890907151100j37feb30av7281d09960ca5db2@mail.gmail.com> <20090718103756.GA11381@elf.ucw.cz> <43e72e890907181302j600506d5oc208167206c44745@mail.gmail.com> <20090718235609.GC25343@khazad-dum.debian.net> <20090723145757.GB28158@elf.ucw.cz> <20090723185720.GB19369@khazad-dum.debian.net>
+	Thu, 23 Jul 2009 15:16:12 -0400
+Date: Thu, 23 Jul 2009 21:16:11 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Sage Weil <sage@newdream.net>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 08/19] ceph: address space operations
+Message-ID: <20090723191611.GE19207@basil.fritz.box>
+References: <1248292313-31326-2-git-send-email-sage@newdream.net> <1248292313-31326-3-git-send-email-sage@newdream.net> <1248292313-31326-4-git-send-email-sage@newdream.net> <1248292313-31326-5-git-send-email-sage@newdream.net> <1248292313-31326-6-git-send-email-sage@newdream.net> <1248292313-31326-7-git-send-email-sage@newdream.net> <1248292313-31326-8-git-send-email-sage@newdream.net> <1248292313-31326-9-git-send-email-sage@newdream.net> <874ot33ddd.fsf@basil.nowhere.org> <Pine.LNX.4.64.0907231115190.2930@cobra.newdream.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090723185720.GB19369@khazad-dum.debian.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <Pine.LNX.4.64.0907231115190.2930@cobra.newdream.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-07-23 15:57:20, Henrique de Moraes Holschuh wrote:
-> On Thu, 23 Jul 2009, Pavel Machek wrote:
-> > On Sat 2009-07-18 20:56:10, Henrique de Moraes Holschuh wrote:
-> > > On Sat, 18 Jul 2009, Luis R. Rodriguez wrote:
-> > > > Hm yeah, but I doubt someone will do that, generally we'd get one wake
-> > > > up event. Can't we just report the first one and ignore the rest?
-> > > 
-> > > Well, I'd say keeping it simple is best, here.  What if you ignore the more
-> > > interesting wakeup events by chance (and it is really up to userspace to
-> > > know what it considers interesting...)?  IMHO, just issue as many
-> > > notifications as needed, let userspace filter it if it wants.
-> > > 
-> > > But if you guys are talking about something really generic, shouldn't it
-> > > also provide the important "why" along with the "who"?
-> > > 
-> > > Even for the most common cases, the "why" is useful: userspace may well want
-> > > to run special routines when it wakes up because of WoL and WoW (instead of
-> > > a key press, lid open or mouse movement...).
-> > 
-> > What special routines?
-> 
-> Starting a remote maintenance shell is a common usage scenario on corporate
-> environments.
+> There are two other memory allocations during writeout: a vector of pages 
+> to be written, and the message we're sending to the OSD.  If I use a 
+> mempool for those to guarantee as least some writeout will occur, how do I 
+> safely defer when allocations do fail?  Will pdflush (or it's replacement) 
+> eventually come back and try ->writepages() again?
 
-But... You want to start maintenance shell not on wakeup from WoL, but
-on receiving the magic packet. If you hit the keyboard before to wake
-up the machine, and the magic packet still comes, you still want the
-remote maintenance shell.
+mempool allocs should never fail, just block for a long time until
+someone else frees. This means you need to ensure of course you
+always make forward progress.
 
-> Besides, it is a generic wakeup notification we're talking about, isn't it?
-> I have some that have nothing to do with WoW or WoL:
-> 
-> 1. Thermal alarm
-> 2. Battery alarm
-> 3. Hotunplug request (bay/dock): umount stuff, cleanly undock, then go back
-> to sleep (optional)
+-Andi
 
-Well, battery&thermal alarms would certainly be useful. (And yes, I
-believe it is a bug in ACPI that we don't printk on battery critical).
-
-> > Note that the "why" is unreliable by design. Network driver will
-> > ignore WoL during run-time, right?
-> 
-> "Why" is unrealible?  I don't follow your reasoning.  It should be as
-> reliable as "who"...
-
-See above. The wakeup events race with each other.
-
-> If the WoW/WoL device doesn't know why it woke up the system, it uses the
-> generic reason for network devices (I don't even know if a network device
-> has more than one reason for wakeup).  If a different device wakes the
-> system, it might know why and provide that reason.  And if it doesn't know
-> it woke up the system, it sends no notification at all.
-
-See above.
-
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ak@linux.intel.com -- Speaking for myself only.
