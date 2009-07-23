@@ -1,1513 +1,983 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbZGWMUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754070AbZGWMvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754171AbZGWMUs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 08:20:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754039AbZGWMUr
+	id S1754070AbZGWMvP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 08:51:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751607AbZGWMvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 08:20:47 -0400
-Received: from leia.mcbone.net ([194.97.104.42]:60678 "EHLO leia.mcbone.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754004AbZGWMUo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 08:20:44 -0400
-Subject: early_ioremap messages with old ASUS board
-From: Jens Rosenboom <jens@leia.mcbone.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Organization: Confused
-Date: Thu, 23 Jul 2009 14:20:34 +0200
-Message-Id: <1248351634.7237.32.camel@fnki-nb00130>
+	Thu, 23 Jul 2009 08:51:14 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:25100 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751478AbZGWMvM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 08:51:12 -0400
+Subject: Re: Boot Hang - mmotm 090716 - serial 8250 irq flags support
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Vikram Pandita <vikram.pandita@ti.com>, Alan Cox <alan@linux.intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Eric Whitney <eric.whitney@hp.com>, Rich Freiss <richard.freiss@hp.com>
+In-Reply-To: <20090723113353.7da8f6f9@lxorguk.ukuu.org.uk>
+References: <1248291948.4490.67.camel@useless.americas.hpqcorp.net>
+	 <20090723113353.7da8f6f9@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Organization: HP/LKTT
+Date: Thu, 23 Jul 2009 08:51:02 -0400
+Message-Id: <1248353462.5674.80.camel@useless.americas.hpqcorp.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Running 2.6.31-rc4 I get the following dmesg output:
+On Thu, 2009-07-23 at 11:33 +0100, Alan Cox wrote:
+> On Wed, 22 Jul 2009 15:45:48 -0400
+> Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+> 
+> > The mmotm dated 17jul09 atop 2.6.31-rc3 hangs [or appears to--could have
+> > just lost remote access via virtual serial port] during boot on HP
+> > Proliant DL585 [and perhaps others].  Checking back, the last mmotm to
+> > boot successfully on this platform was the 25jun09 snapshot.
+> 
+> Is your virtual serial port the console ? Also when you say "lost remote
+> access", at what point do you lose remote access - what is the last thing
+> printed to the console. What if anything is logged on the monitor if one
+> is plugged in and does it boot fine with the patch but without console
+> on the serial port ?
 
-[    0.000000] Linux version 2.6.31-rc4 (root@easy) (gcc version 4.4.0
-(GCC) ) #36 SMP PREEMPT Thu Jul 23 10:06:21 CEST 2009
-[    0.000000] KERNEL supported cpus:
-[    0.000000]   Intel GenuineIntel
-[    0.000000]   AMD AuthenticAMD
-[    0.000000]   NSC Geode by NSC
-[    0.000000]   Cyrix CyrixInstead
-[    0.000000]   Centaur CentaurHauls
-[    0.000000]   Transmeta GenuineTMx86
-[    0.000000]   Transmeta TransmetaCPU
-[    0.000000]   UMC UMC UMC UMC
-[    0.000000] BIOS-provided physical RAM map:
-[    0.000000]  BIOS-e820: 0000000000000000 - 00000000000a0000 (usable)
-[    0.000000]  BIOS-e820: 00000000000f0000 - 0000000000100000
-(reserved)
-[    0.000000]  BIOS-e820: 0000000000100000 - 000000003fffd000 (usable)
-[    0.000000]  BIOS-e820: 000000003fffd000 - 000000003ffff000 (ACPI
-data)
-[    0.000000]  BIOS-e820: 000000003ffff000 - 0000000040000000 (ACPI
-NVS)
-[    0.000000]  BIOS-e820: 00000000fec00000 - 00000000fec01000
-(reserved)
-[    0.000000]  BIOS-e820: 00000000fee00000 - 00000000fee01000
-(reserved)
-[    0.000000]  BIOS-e820: 00000000ffff0000 - 0000000100000000
-(reserved)
-[    0.000000] early_ioremap(000f0000, 00010000) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c156194e>] dmi_scan_machine+0x1a/0x1af
-[    0.000000]  [<c15404c5>] ? parse_early_options+0x23/0x25
-[    0.000000]  [<c1543d92>] setup_arch+0x3d0/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000000 + ffe00000
-[    0.000000] DMI 2.0 present.
-[    0.000000] early_ioremap(000f5afa, 0000041b) [1] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c1561a43>] dmi_scan_machine+0x10f/0x1af
-[    0.000000]  [<c1543d92>] setup_arch+0x3d0/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000afa + ffe40000
-[    0.000000] early_iounmap(ffe40afa, 0000041b) [1]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c1561a7d>] dmi_scan_machine+0x149/0x1af
-[    0.000000]  [<c1561c45>] ? dmi_decode+0x0/0x408
-[    0.000000]  [<c1543d92>] setup_arch+0x3d0/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_iounmap(ffe00000, 00010000) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c1561a95>] dmi_scan_machine+0x161/0x1af
-[    0.000000]  [<c1561c45>] ? dmi_decode+0x0/0x408
-[    0.000000]  [<c1543d92>] setup_arch+0x3d0/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] last_pfn = 0x3fffd max_arch_pfn = 0x1000000
-[    0.000000] MTRR default type: uncachable
-[    0.000000] MTRR fixed ranges enabled:
-[    0.000000]   00000-9FFFF write-back
-[    0.000000]   A0000-BFFFF uncachable
-[    0.000000]   C0000-C7FFF write-protect
-[    0.000000]   C8000-F7FFF uncachable
-[    0.000000]   F8000-FCFFF write-protect
-[    0.000000]   FD000-FFFFF uncachable
-[    0.000000] MTRR variable ranges enabled:
-[    0.000000]   0 base 000000000 mask FC0000000 write-back
-[    0.000000]   1 disabled
-[    0.000000]   2 disabled
-[    0.000000]   3 disabled
-[    0.000000]   4 disabled
-[    0.000000]   5 disabled
-[    0.000000]   6 disabled
-[    0.000000]   7 disabled
-[    0.000000] PAT not supported by CPU.
-[    0.000000] initial memory mapped : 0 - 02000000
-[    0.000000] init_memory_mapping: 0000000000000000-00000000379fe000
-[    0.000000]  0000000000 - 0000200000 page 4k
-[    0.000000]  0000200000 - 0037800000 page 2M
-[    0.000000]  0037800000 - 00379fe000 page 4k
-[    0.000000] kernel direct mapping tables up to 379fe000 @ 7000-d000
-[    0.000000] ASUS P2B-DS detected: force use of acpi=ht
-[    0.000000] early_ioremap(0000040e, 00000002) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c1194f5d>] acpi_find_root_pointer+0x1b/0x12a
-[    0.000000]  [<c155bbd3>] acpi_os_get_root_pointer+0x15/0x1a
-[    0.000000]  [<c155c84c>] acpi_initialize_tables+0x67/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 0000040e + ffe00000
-[    0.000000] early_iounmap(ffe0040e, 00000002) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c135a7d9>] acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c1194f81>] acpi_find_root_pointer+0x3f/0x12a
-[    0.000000]  [<c155bbd3>] acpi_os_get_root_pointer+0x15/0x1a
-[    0.000000]  [<c155c84c>] acpi_initialize_tables+0x67/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(000e0000, 00020000) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c155132d>] ? early_iounmap+0x100/0x15e
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c1194ffc>] acpi_find_root_pointer+0xba/0x12a
-[    0.000000]  [<c155bbd3>] acpi_os_get_root_pointer+0x15/0x1a
-[    0.000000]  [<c155c84c>] acpi_initialize_tables+0x67/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000000 + ffe00000
-[    0.000000] early_iounmap(ffe00000, 00020000) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c135a7d9>] acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c1195030>] acpi_find_root_pointer+0xee/0x12a
-[    0.000000]  [<c155bbd3>] acpi_os_get_root_pointer+0x15/0x1a
-[    0.000000]  [<c155c84c>] acpi_initialize_tables+0x67/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(000f81a0, 00000024) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c101faec>] ? native_set_fixmap+0x4c/0x60
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c155c87b>] acpi_tb_parse_root_table+0x15/0x2a6
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c1195030>] ? acpi_find_root_pointer+0xee/0x12a
-[    0.000000]  [<c155c85e>] acpi_initialize_tables+0x79/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 000001a0 + ffe00000
-[    0.000000] ACPI: RSDP 000f81a0 00014 (v00 ASUS  )
-[    0.000000] early_iounmap(ffe001a0, 00000024) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c11947df>] ? acpi_tb_print_table_header+0x61/0x9e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c135a7d9>] acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c155c8cc>] acpi_tb_parse_root_table+0x66/0x2a6
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c1195030>] ? acpi_find_root_pointer+0xee/0x12a
-[    0.000000]  [<c155c85e>] acpi_initialize_tables+0x79/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd000, 00000024) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c155132d>] ? early_iounmap+0x100/0x15e
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c155c93e>] acpi_tb_parse_root_table+0xd8/0x2a6
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c1195030>] ? acpi_find_root_pointer+0xee/0x12a
-[    0.000000]  [<c155c85e>] acpi_initialize_tables+0x79/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000000 + ffe00000
-[    0.000000] ACPI: RSDT 3fffd000 00030 (v01 ASUS   P2B-DS   58582E32
-MSFT 31313031)
-[    0.000000] early_iounmap(ffe00000, 00000024) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c135a7d9>] acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c155c960>] acpi_tb_parse_root_table+0xfa/0x2a6
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c1195030>] ? acpi_find_root_pointer+0xee/0x12a
-[    0.000000]  [<c155c85e>] acpi_initialize_tables+0x79/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd000, 00000030) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c155132d>] ? early_iounmap+0x100/0x15e
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c155c990>] acpi_tb_parse_root_table+0x12a/0x2a6
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c1195030>] ? acpi_find_root_pointer+0xee/0x12a
-[    0.000000]  [<c155c85e>] acpi_initialize_tables+0x79/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000000 + ffe00000
-[    0.000000] early_iounmap(ffe00000, 00000030) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c135a7d9>] acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c155ca99>] acpi_tb_parse_root_table+0x233/0x2a6
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c155c85e>] acpi_initialize_tables+0x79/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd100, 00000024) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c101fa91>] ? __native_set_fixmap+0x21/0x30
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119485e>] acpi_tb_install_table+0x42/0x121
-[    0.000000]  [<c155cab4>] acpi_tb_parse_root_table+0x24e/0x2a6
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c155c85e>] acpi_initialize_tables+0x79/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000100 + ffe00000
-[    0.000000] ACPI: FACP 3fffd100 00074 (v01 ASUS   P2B-DS   58582E32
-MSFT 31313031)
-[    0.000000] early_iounmap(ffe00100, 00000024) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c135a7d9>] acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c1194935>] acpi_tb_install_table+0x119/0x121
-[    0.000000]  [<c155cab4>] acpi_tb_parse_root_table+0x24e/0x2a6
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c155c85e>] acpi_initialize_tables+0x79/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd100, 00000074) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c1194ea3>] acpi_tb_parse_fadt+0x1a/0x63
-[    0.000000]  [<c155cacc>] acpi_tb_parse_root_table+0x266/0x2a6
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c155c85e>] acpi_initialize_tables+0x79/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000100 + ffe00000
-[    0.000000] early_iounmap(ffe00100, 00000074) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c135a7d9>] acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c1194ec2>] acpi_tb_parse_fadt+0x39/0x63
-[    0.000000]  [<c155cacc>] acpi_tb_parse_root_table+0x266/0x2a6
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c155c85e>] acpi_initialize_tables+0x79/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd180, 00000024) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c101fa91>] ? __native_set_fixmap+0x21/0x30
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119485e>] acpi_tb_install_table+0x42/0x121
-[    0.000000]  [<c1194ed3>] acpi_tb_parse_fadt+0x4a/0x63
-[    0.000000]  [<c155cacc>] acpi_tb_parse_root_table+0x266/0x2a6
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c155c85e>] acpi_initialize_tables+0x79/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000180 + ffe00000
-[    0.000000] ACPI: DSDT 3fffd180 01DEE (v01   ASUS P2B-DS   00001000
-MSFT 01000001)
-[    0.000000] early_iounmap(ffe00180, 00000024) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c135a7d9>] acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c1194935>] acpi_tb_install_table+0x119/0x121
-[    0.000000]  [<c1194ed3>] acpi_tb_parse_fadt+0x4a/0x63
-[    0.000000]  [<c155cacc>] acpi_tb_parse_root_table+0x266/0x2a6
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c155c85e>] acpi_initialize_tables+0x79/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3ffff000, 00000024) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c155132d>] ? early_iounmap+0x100/0x15e
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119485e>] acpi_tb_install_table+0x42/0x121
-[    0.000000]  [<c1194ee7>] acpi_tb_parse_fadt+0x5e/0x63
-[    0.000000]  [<c155cacc>] acpi_tb_parse_root_table+0x266/0x2a6
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c155c85e>] acpi_initialize_tables+0x79/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000000 + ffe00000
-[    0.000000] ACPI: FACS 3ffff000 00040
-[    0.000000] early_iounmap(ffe00000, 00000024) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c135a7d9>] acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c1194935>] acpi_tb_install_table+0x119/0x121
-[    0.000000]  [<c1194ee7>] acpi_tb_parse_fadt+0x5e/0x63
-[    0.000000]  [<c155cacc>] acpi_tb_parse_root_table+0x266/0x2a6
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c155c85e>] acpi_initialize_tables+0x79/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd040, 00000024) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119485e>] acpi_tb_install_table+0x42/0x121
-[    0.000000]  [<c155cab4>] acpi_tb_parse_root_table+0x24e/0x2a6
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c155c85e>] acpi_initialize_tables+0x79/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000040 + ffe00000
-[    0.000000] ACPI: BOOT 3fffd040 00028 (v01 ASUS   P2B-DS   58582E32
-MSFT 31313031)
-[    0.000000] early_iounmap(ffe00040, 00000024) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c135a7d9>] acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c1194935>] acpi_tb_install_table+0x119/0x121
-[    0.000000]  [<c155cab4>] acpi_tb_parse_root_table+0x24e/0x2a6
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c155c85e>] acpi_initialize_tables+0x79/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd080, 00000024) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c155132d>] ? early_iounmap+0x100/0x15e
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119485e>] acpi_tb_install_table+0x42/0x121
-[    0.000000]  [<c155cab4>] acpi_tb_parse_root_table+0x24e/0x2a6
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c155c85e>] acpi_initialize_tables+0x79/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000080 + ffe00000
-[    0.000000] ACPI: APIC 3fffd080 0005C (v01 ASUS   P2B-DS   58582E32
-MSFT 31313031)
-[    0.000000] early_iounmap(ffe00080, 00000024) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c135a7d9>] acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c1194935>] acpi_tb_install_table+0x119/0x121
-[    0.000000]  [<c155cab4>] acpi_tb_parse_root_table+0x24e/0x2a6
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c155c85e>] acpi_initialize_tables+0x79/0x81
-[    0.000000]  [<c155b50f>] acpi_table_init+0x17/0x8b
-[    0.000000]  [<c15499e0>] acpi_boot_table_init+0x31/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd040, 00000028) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c135a7d9>] ? acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c1194935>] ? acpi_tb_install_table+0x119/0x121
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119459c>] acpi_tb_verify_table+0x20/0x49
-[    0.000000]  [<c1193e50>] acpi_get_table_with_size+0x53/0xa1
-[    0.000000]  [<c15493a0>] ? acpi_parse_sbf+0x0/0x2a
-[    0.000000]  [<c155b5cd>] acpi_table_parse+0x4a/0x6f
-[    0.000000]  [<c155b534>] ? acpi_table_init+0x3c/0x8b
-[    0.000000]  [<c1549a1f>] acpi_boot_table_init+0x70/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000040 + ffe00000
-[    0.000000] early_iounmap(ffe00040, 00000028) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c15493a0>] ? acpi_parse_sbf+0x0/0x2a
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c155bbbc>] early_acpi_os_unmap_memory+0x11/0x13
-[    0.000000]  [<c155b5e9>] acpi_table_parse+0x66/0x6f
-[    0.000000]  [<c1549a1f>] acpi_boot_table_init+0x70/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd180, 00000024) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c1006c5a>] ? show_trace+0x1a/0x20
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119407d>] acpi_get_table_header+0x5c/0x99
-[    0.000000]  [<c155b72e>] acpi_blacklisted+0x24/0x108
-[    0.000000]  [<c15493a0>] ? acpi_parse_sbf+0x0/0x2a
-[    0.000000]  [<c154a16d>] ? __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c155bbbc>] ? early_acpi_os_unmap_memory+0x11/0x13
-[    0.000000]  [<c155b5e9>] ? acpi_table_parse+0x66/0x6f
-[    0.000000]  [<c1549a24>] acpi_boot_table_init+0x75/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000180 + ffe00000
-[    0.000000] early_iounmap(ffe00180, 00000024) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c135a7d9>] acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c1194096>] acpi_get_table_header+0x75/0x99
-[    0.000000]  [<c155b72e>] acpi_blacklisted+0x24/0x108
-[    0.000000]  [<c1549a24>] acpi_boot_table_init+0x75/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd180, 00000024) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c155132d>] ? early_iounmap+0x100/0x15e
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119407d>] acpi_get_table_header+0x5c/0x99
-[    0.000000]  [<c155b72e>] acpi_blacklisted+0x24/0x108
-[    0.000000]  [<c1549a24>] acpi_boot_table_init+0x75/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000180 + ffe00000
-[    0.000000] early_iounmap(ffe00180, 00000024) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c135a7d9>] acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c1194096>] acpi_get_table_header+0x75/0x99
-[    0.000000]  [<c155b72e>] acpi_blacklisted+0x24/0x108
-[    0.000000]  [<c1549a24>] acpi_boot_table_init+0x75/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd180, 00000024) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c155132d>] ? early_iounmap+0x100/0x15e
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119407d>] acpi_get_table_header+0x5c/0x99
-[    0.000000]  [<c155b72e>] acpi_blacklisted+0x24/0x108
-[    0.000000]  [<c1549a24>] acpi_boot_table_init+0x75/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000180 + ffe00000
-[    0.000000] early_iounmap(ffe00180, 00000024) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c135a7d9>] acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c1194096>] acpi_get_table_header+0x75/0x99
-[    0.000000]  [<c155b72e>] acpi_blacklisted+0x24/0x108
-[    0.000000]  [<c1549a24>] acpi_boot_table_init+0x75/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd180, 00000024) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c155132d>] ? early_iounmap+0x100/0x15e
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119407d>] acpi_get_table_header+0x5c/0x99
-[    0.000000]  [<c155b72e>] acpi_blacklisted+0x24/0x108
-[    0.000000]  [<c1549a24>] acpi_boot_table_init+0x75/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000180 + ffe00000
-[    0.000000] early_iounmap(ffe00180, 00000024) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c135a7d9>] acpi_os_unmap_memory+0x18/0x1a
-[    0.000000]  [<c1194096>] acpi_get_table_header+0x75/0x99
-[    0.000000]  [<c155b72e>] acpi_blacklisted+0x24/0x108
-[    0.000000]  [<c1549a24>] acpi_boot_table_init+0x75/0xce
-[    0.000000]  [<c154423a>] setup_arch+0x878/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd080, 0000005c) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119459c>] acpi_tb_verify_table+0x20/0x49
-[    0.000000]  [<c1193e50>] acpi_get_table_with_size+0x53/0xa1
-[    0.000000]  [<c154984f>] ? acpi_parse_madt+0x0/0x66
-[    0.000000]  [<c155b5cd>] acpi_table_parse+0x4a/0x6f
-[    0.000000]  [<c154960d>] early_acpi_boot_init+0x31/0xd1
-[    0.000000]  [<c154423f>] setup_arch+0x87d/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000080 + ffe00000
-[    0.000000] ACPI: Local APIC address 0xfee00000
-[    0.000000] early_iounmap(ffe00080, 0000005c) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154984f>] ? acpi_parse_madt+0x0/0x66
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c155bbbc>] early_acpi_os_unmap_memory+0x11/0x13
-[    0.000000]  [<c155b5e9>] acpi_table_parse+0x66/0x6f
-[    0.000000]  [<c154960d>] early_acpi_boot_init+0x31/0xd1
-[    0.000000]  [<c154423f>] setup_arch+0x87d/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd080, 0000005c) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119459c>] acpi_tb_verify_table+0x20/0x49
-[    0.000000]  [<c1193e50>] acpi_get_table_with_size+0x53/0xa1
-[    0.000000]  [<c155b646>] acpi_table_parse_entries+0x54/0x100
-[    0.000000]  [<c154a16d>] ? __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c155b708>] acpi_table_parse_madt+0x16/0x18
-[    0.000000]  [<c1549074>] ? acpi_parse_lapic_addr_ovr+0x0/0x30
-[    0.000000]  [<c1549630>] early_acpi_boot_init+0x54/0xd1
-[    0.000000]  [<c154423f>] setup_arch+0x87d/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000080 + ffe00000
-[    0.000000] early_iounmap(ffe00080, 0000005c) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c155bbbc>] early_acpi_os_unmap_memory+0x11/0x13
-[    0.000000]  [<c155b6e8>] acpi_table_parse_entries+0xf6/0x100
-[    0.000000]  [<c155b708>] acpi_table_parse_madt+0x16/0x18
-[    0.000000]  [<c1549074>] ? acpi_parse_lapic_addr_ovr+0x0/0x30
-[    0.000000]  [<c1549630>] early_acpi_boot_init+0x54/0xd1
-[    0.000000]  [<c154423f>] setup_arch+0x87d/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 133MB HIGHMEM available.
-[    0.000000] 889MB LOWMEM available.
-[    0.000000]   mapped low ram: 0 - 379fe000
-[    0.000000]   low ram: 0 - 379fe000
-[    0.000000]   node 0 low ram: 00000000 - 379fe000
-[    0.000000]   node 0 bootmap 00009000 - 0000ff40
-[    0.000000] (8 early reservations) ==> bootmem [0000000000 -
-00379fe000]
-[    0.000000]   #0 [0000000000 - 0000001000]   BIOS data page ==>
-[0000000000 - 0000001000]
-[    0.000000]   #1 [0000001000 - 0000002000]    EX TRAMPOLINE ==>
-[0000001000 - 0000002000]
-[    0.000000]   #2 [0000006000 - 0000007000]       TRAMPOLINE ==>
-[0000006000 - 0000007000]
-[    0.000000]   #3 [0001000000 - 0001b064dc]    TEXT DATA BSS ==>
-[0001000000 - 0001b064dc]
-[    0.000000]   #4 [000009f000 - 0000100000]    BIOS reserved ==>
-[000009f000 - 0000100000]
-[    0.000000]   #5 [0001b07000 - 0001b17184]              BRK ==>
-[0001b07000 - 0001b17184]
-[    0.000000]   #6 [0000007000 - 0000009000]          PGTABLE ==>
-[0000007000 - 0000009000]
-[    0.000000]   #7 [0000009000 - 0000010000]          BOOTMAP ==>
-[0000009000 - 0000010000]
-[    0.000000] found SMP MP-table at [c00f6ef0] f6ef0
-[    0.000000] early_ioremap(000f6ae4, 00001000) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154b92d>] get_mpc_size+0x16/0x4d
-[    0.000000]  [<c1554178>] ? reserve_bootmem+0x20/0x22
-[    0.000000]  [<c154ba4b>] smp_scan_config+0xe7/0x132
-[    0.000000]  [<c154bae8>] __find_smp_config+0x52/0x71
-[    0.000000]  [<c154bb14>] find_smp_config+0xd/0xf
-[    0.000000]  [<c1544251>] setup_arch+0x88f/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000ae4 + ffe00000
-[    0.000000] early_iounmap(ffe00ae4, 00001000) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154b93b>] get_mpc_size+0x24/0x4d
-[    0.000000]  [<c1554178>] ? reserve_bootmem+0x20/0x22
-[    0.000000]  [<c154ba4b>] smp_scan_config+0xe7/0x132
-[    0.000000]  [<c154bae8>] __find_smp_config+0x52/0x71
-[    0.000000]  [<c154bb14>] find_smp_config+0xd/0xf
-[    0.000000]  [<c1544251>] setup_arch+0x88f/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] Zone PFN ranges:
-[    0.000000]   DMA      0x00000000 -> 0x00001000
-[    0.000000]   Normal   0x00001000 -> 0x000379fe
-[    0.000000]   HighMem  0x000379fe -> 0x0003fffd
-[    0.000000] Movable zone start PFN for each node
-[    0.000000] early_node_map[2] active PFN ranges
-[    0.000000]     0: 0x00000000 -> 0x000000a0
-[    0.000000]     0: 0x00000100 -> 0x0003fffd
-[    0.000000] On node 0 totalpages: 262045
-[    0.000000] free_area_init_node: node 0, pgdat c151a8a0, node_mem_map
-c1b18000
-[    0.000000]   DMA zone: 52 pages used for memmap
-[    0.000000]   DMA zone: 0 pages reserved
-[    0.000000]   DMA zone: 3948 pages, LIFO batch:0
-[    0.000000]   Normal zone: 2841 pages used for memmap
-[    0.000000]   Normal zone: 220901 pages, LIFO batch:31
-[    0.000000]   HighMem zone: 436 pages used for memmap
-[    0.000000]   HighMem zone: 33867 pages, LIFO batch:7
-[    0.000000] Using APIC driver default
-[    0.000000] early_ioremap(3fffd040, 00000028) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119459c>] acpi_tb_verify_table+0x20/0x49
-[    0.000000]  [<c1193e50>] acpi_get_table_with_size+0x53/0xa1
-[    0.000000]  [<c15493a0>] ? acpi_parse_sbf+0x0/0x2a
-[    0.000000]  [<c155b5cd>] acpi_table_parse+0x4a/0x6f
-[    0.000000]  [<c1549d4f>] acpi_boot_init+0x3c/0x35b
-[    0.000000]  [<c1544279>] setup_arch+0x8b7/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000040 + ffe00000
-[    0.000000] early_iounmap(ffe00040, 00000028) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c15493a0>] ? acpi_parse_sbf+0x0/0x2a
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c155bbbc>] early_acpi_os_unmap_memory+0x11/0x13
-[    0.000000]  [<c155b5e9>] acpi_table_parse+0x66/0x6f
-[    0.000000]  [<c1549d4f>] acpi_boot_init+0x3c/0x35b
-[    0.000000]  [<c1544279>] setup_arch+0x8b7/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd100, 00000074) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119459c>] acpi_tb_verify_table+0x20/0x49
-[    0.000000]  [<c1193e50>] acpi_get_table_with_size+0x53/0xa1
-[    0.000000]  [<c1549353>] ? acpi_parse_fadt+0x0/0x4d
-[    0.000000]  [<c155b5cd>] acpi_table_parse+0x4a/0x6f
-[    0.000000]  [<c1549d5e>] acpi_boot_init+0x4b/0x35b
-[    0.000000]  [<c1544279>] setup_arch+0x8b7/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000100 + ffe00000
-[    0.000000] ACPI: PM-Timer IO Port: 0xe408
-[    0.000000] early_iounmap(ffe00100, 00000074) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c1549353>] ? acpi_parse_fadt+0x0/0x4d
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c155bbbc>] early_acpi_os_unmap_memory+0x11/0x13
-[    0.000000]  [<c155b5e9>] acpi_table_parse+0x66/0x6f
-[    0.000000]  [<c1549d5e>] acpi_boot_init+0x4b/0x35b
-[    0.000000]  [<c1544279>] setup_arch+0x8b7/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd080, 0000005c) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119459c>] acpi_tb_verify_table+0x20/0x49
-[    0.000000]  [<c1193e50>] acpi_get_table_with_size+0x53/0xa1
-[    0.000000]  [<c154984f>] ? acpi_parse_madt+0x0/0x66
-[    0.000000]  [<c155b5cd>] acpi_table_parse+0x4a/0x6f
-[    0.000000]  [<c1549d6d>] acpi_boot_init+0x5a/0x35b
-[    0.000000]  [<c1544279>] setup_arch+0x8b7/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000080 + ffe00000
-[    0.000000] ACPI: Local APIC address 0xfee00000
-[    0.000000] early_iounmap(ffe00080, 0000005c) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154984f>] ? acpi_parse_madt+0x0/0x66
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c155bbbc>] early_acpi_os_unmap_memory+0x11/0x13
-[    0.000000]  [<c155b5e9>] acpi_table_parse+0x66/0x6f
-[    0.000000]  [<c1549d6d>] acpi_boot_init+0x5a/0x35b
-[    0.000000]  [<c1544279>] setup_arch+0x8b7/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd080, 0000005c) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119459c>] acpi_tb_verify_table+0x20/0x49
-[    0.000000]  [<c1193e50>] acpi_get_table_with_size+0x53/0xa1
-[    0.000000]  [<c155b646>] acpi_table_parse_entries+0x54/0x100
-[    0.000000]  [<c154a16d>] ? __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c155b708>] acpi_table_parse_madt+0x16/0x18
-[    0.000000]  [<c1549074>] ? acpi_parse_lapic_addr_ovr+0x0/0x30
-[    0.000000]  [<c1549d90>] acpi_boot_init+0x7d/0x35b
-[    0.000000]  [<c1544279>] setup_arch+0x8b7/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000080 + ffe00000
-[    0.000000] early_iounmap(ffe00080, 0000005c) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c155bbbc>] early_acpi_os_unmap_memory+0x11/0x13
-[    0.000000]  [<c155b6e8>] acpi_table_parse_entries+0xf6/0x100
-[    0.000000]  [<c155b708>] acpi_table_parse_madt+0x16/0x18
-[    0.000000]  [<c1549074>] ? acpi_parse_lapic_addr_ovr+0x0/0x30
-[    0.000000]  [<c1549d90>] acpi_boot_init+0x7d/0x35b
-[    0.000000]  [<c1544279>] setup_arch+0x8b7/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd080, 0000005c) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119459c>] acpi_tb_verify_table+0x20/0x49
-[    0.000000]  [<c1193e50>] acpi_get_table_with_size+0x53/0xa1
-[    0.000000]  [<c155b646>] acpi_table_parse_entries+0x54/0x100
-[    0.000000]  [<c155b708>] acpi_table_parse_madt+0x16/0x18
-[    0.000000]  [<c15497e2>] ? acpi_parse_sapic+0x0/0x6d
-[    0.000000]  [<c1549dc5>] acpi_boot_init+0xb2/0x35b
-[    0.000000]  [<c1544279>] setup_arch+0x8b7/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000080 + ffe00000
-[    0.000000] early_iounmap(ffe00080, 0000005c) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c155bbbc>] early_acpi_os_unmap_memory+0x11/0x13
-[    0.000000]  [<c155b6e8>] acpi_table_parse_entries+0xf6/0x100
-[    0.000000]  [<c155b708>] acpi_table_parse_madt+0x16/0x18
-[    0.000000]  [<c15497e2>] ? acpi_parse_sapic+0x0/0x6d
-[    0.000000]  [<c1549dc5>] acpi_boot_init+0xb2/0x35b
-[    0.000000]  [<c1544279>] setup_arch+0x8b7/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd080, 0000005c) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119459c>] acpi_tb_verify_table+0x20/0x49
-[    0.000000]  [<c1193e50>] acpi_get_table_with_size+0x53/0xa1
-[    0.000000]  [<c155b646>] acpi_table_parse_entries+0x54/0x100
-[    0.000000]  [<c155b708>] acpi_table_parse_madt+0x16/0x18
-[    0.000000]  [<c1549731>] ? acpi_parse_x2apic+0x0/0x33
-[    0.000000]  [<c1549ddf>] acpi_boot_init+0xcc/0x35b
-[    0.000000]  [<c1544279>] setup_arch+0x8b7/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000080 + ffe00000
-[    0.000000] early_iounmap(ffe00080, 0000005c) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c155bbbc>] early_acpi_os_unmap_memory+0x11/0x13
-[    0.000000]  [<c155b6e8>] acpi_table_parse_entries+0xf6/0x100
-[    0.000000]  [<c155b708>] acpi_table_parse_madt+0x16/0x18
-[    0.000000]  [<c1549731>] ? acpi_parse_x2apic+0x0/0x33
-[    0.000000]  [<c1549ddf>] acpi_boot_init+0xcc/0x35b
-[    0.000000]  [<c1544279>] setup_arch+0x8b7/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd080, 0000005c) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119459c>] acpi_tb_verify_table+0x20/0x49
-[    0.000000]  [<c1193e50>] acpi_get_table_with_size+0x53/0xa1
-[    0.000000]  [<c155b646>] acpi_table_parse_entries+0x54/0x100
-[    0.000000]  [<c155b708>] acpi_table_parse_madt+0x16/0x18
-[    0.000000]  [<c1549788>] ? acpi_parse_lapic+0x0/0x5a
-[    0.000000]  [<c1549df2>] acpi_boot_init+0xdf/0x35b
-[    0.000000]  [<c1544279>] setup_arch+0x8b7/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000080 + ffe00000
-[    0.000000] ACPI: LAPIC (acpi_id[0x00] lapic_id[0x01] enabled)
-[    0.000000] ACPI: LAPIC (acpi_id[0x01] lapic_id[0x00] enabled)
-[    0.000000] early_iounmap(ffe00080, 0000005c) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c1179ef7>] ? acpi_table_print_madt_entry+0x67/0x1ec
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c155bbbc>] early_acpi_os_unmap_memory+0x11/0x13
-[    0.000000]  [<c155b6e8>] acpi_table_parse_entries+0xf6/0x100
-[    0.000000]  [<c155b708>] acpi_table_parse_madt+0x16/0x18
-[    0.000000]  [<c1549788>] ? acpi_parse_lapic+0x0/0x5a
-[    0.000000]  [<c1549df2>] acpi_boot_init+0xdf/0x35b
-[    0.000000]  [<c1544279>] setup_arch+0x8b7/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd080, 0000005c) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119459c>] acpi_tb_verify_table+0x20/0x49
-[    0.000000]  [<c1193e50>] acpi_get_table_with_size+0x53/0xa1
-[    0.000000]  [<c155b646>] acpi_table_parse_entries+0x54/0x100
-[    0.000000]  [<c155b708>] acpi_table_parse_madt+0x16/0x18
-[    0.000000]  [<c15496ef>] ? acpi_parse_x2apic_nmi+0x0/0x42
-[    0.000000]  [<c1549e33>] acpi_boot_init+0x120/0x35b
-[    0.000000]  [<c1544279>] setup_arch+0x8b7/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000080 + ffe00000
-[    0.000000] early_iounmap(ffe00080, 0000005c) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c155bbbc>] early_acpi_os_unmap_memory+0x11/0x13
-[    0.000000]  [<c155b6e8>] acpi_table_parse_entries+0xf6/0x100
-[    0.000000]  [<c155b708>] acpi_table_parse_madt+0x16/0x18
-[    0.000000]  [<c15496ef>] ? acpi_parse_x2apic_nmi+0x0/0x42
-[    0.000000]  [<c1549e33>] acpi_boot_init+0x120/0x35b
-[    0.000000]  [<c1544279>] setup_arch+0x8b7/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(3fffd080, 0000005c) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    0.000000]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    0.000000]  [<c119459c>] acpi_tb_verify_table+0x20/0x49
-[    0.000000]  [<c1193e50>] acpi_get_table_with_size+0x53/0xa1
-[    0.000000]  [<c155b646>] acpi_table_parse_entries+0x54/0x100
-[    0.000000]  [<c155b708>] acpi_table_parse_madt+0x16/0x18
-[    0.000000]  [<c15496ad>] ? acpi_parse_lapic_nmi+0x0/0x42
-[    0.000000]  [<c1549e46>] acpi_boot_init+0x133/0x35b
-[    0.000000]  [<c1544279>] setup_arch+0x8b7/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000080 + ffe00000
-[    0.000000] early_iounmap(ffe00080, 0000005c) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154a16d>] __acpi_unmap_table+0x10/0x12
-[    0.000000]  [<c155bbbc>] early_acpi_os_unmap_memory+0x11/0x13
-[    0.000000]  [<c155b6e8>] acpi_table_parse_entries+0xf6/0x100
-[    0.000000]  [<c155b708>] acpi_table_parse_madt+0x16/0x18
-[    0.000000]  [<c15496ad>] ? acpi_parse_lapic_nmi+0x0/0x42
-[    0.000000]  [<c1549e46>] acpi_boot_init+0x133/0x35b
-[    0.000000]  [<c1544279>] setup_arch+0x8b7/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] Using ACPI for processor (LAPIC) configuration
-information
-[    0.000000] Intel MultiProcessor Specification v1.1
-[    0.000000]     Virtual Wire compatibility mode.
-[    0.000000] early_ioremap(000f6ae4, 00001000) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154b92d>] get_mpc_size+0x16/0x4d
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c154c21c>] __get_smp_config+0x2ec/0x576
-[    0.000000]  [<c1540020>] ? __init_begin+0x20/0x82
-[    0.000000]  [<c155bbbc>] ? early_acpi_os_unmap_memory+0x11/0x13
-[    0.000000]  [<c15498b5>] ? acpi_parse_hpet+0x0/0xfa
-[    0.000000]  [<c155b5cd>] ? acpi_table_parse+0x4a/0x6f
-[    0.000000]  [<c154c4b0>] get_smp_config+0xa/0xc
-[    0.000000]  [<c1544287>] setup_arch+0x8c5/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000ae4 + ffe00000
-[    0.000000] early_iounmap(ffe00ae4, 00001000) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154b93b>] get_mpc_size+0x24/0x4d
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c154c21c>] __get_smp_config+0x2ec/0x576
-[    0.000000]  [<c1540020>] ? __init_begin+0x20/0x82
-[    0.000000]  [<c155bbbc>] ? early_acpi_os_unmap_memory+0x11/0x13
-[    0.000000]  [<c15498b5>] ? acpi_parse_hpet+0x0/0xfa
-[    0.000000]  [<c155b5cd>] ? acpi_table_parse+0x4a/0x6f
-[    0.000000]  [<c154c4b0>] get_smp_config+0xa/0xc
-[    0.000000]  [<c1544287>] setup_arch+0x8c5/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] early_ioremap(000f6ae4, 000000f4) [0] => Pid: 0, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    0.000000]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    0.000000]  [<c154c22e>] __get_smp_config+0x2fe/0x576
-[    0.000000]  [<c1540020>] ? __init_begin+0x20/0x82
-[    0.000000]  [<c15498b5>] ? acpi_parse_hpet+0x0/0xfa
-[    0.000000]  [<c155b5cd>] ? acpi_table_parse+0x4a/0x6f
-[    0.000000]  [<c154c4b0>] get_smp_config+0xa/0xc
-[    0.000000]  [<c1544287>] setup_arch+0x8c5/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] 00000ae4 + ffe00000
-[    0.000000] MPTABLE: OEM ID: OEM00000
-[    0.000000] MPTABLE: Product ID: PROD00000000
-[    0.000000] MPTABLE: APIC at: 0xFEE00000
-[    0.000000] I/O APIC #2 Version 17 at 0xFEC00000.
-[    0.000000] Enabling APIC mode:  Flat.  Using 1 I/O APICs
-[    0.000000] early_iounmap(ffe00ae4, 000000f4) [0]
-[    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #36
-[    0.000000] Call Trace:
-[    0.000000]  [<c136e48b>] ? printk+0x18/0x1d
-[    0.000000]  [<c15512c9>] early_iounmap+0x9c/0x15e
-[    0.000000]  [<c154c432>] __get_smp_config+0x502/0x576
-[    0.000000]  [<c1540020>] ? __init_begin+0x20/0x82
-[    0.000000]  [<c15498b5>] ? acpi_parse_hpet+0x0/0xfa
-[    0.000000]  [<c154c4b0>] get_smp_config+0xa/0xc
-[    0.000000]  [<c1544287>] setup_arch+0x8c5/0x922
-[    0.000000]  [<c1166e82>] ? __spin_lock_init+0x32/0x60
-[    0.000000]  [<c1540897>] start_kernel+0x77/0x2da
-[    0.000000]  [<c1540352>] i386_start_kernel+0x7c/0x83
-[    0.000000] Processors: 2
-[    0.000000] SMP: Allowing 2 CPUs, 0 hotplug CPUs
-[    0.000000] nr_irqs_gsi: 24
-[    0.000000] Allocating PCI resources starting at 40000000 (gap:
-40000000:bec00000)
-[    0.000000] NR_CPUS:8 nr_cpumask_bits:8 nr_cpu_ids:2 nr_node_ids:1
-[    0.000000] PERCPU: Embedded 11 pages at c2824000, static data 23292
-bytes
-[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.
-Total pages: 258716
-[    0.000000] Kernel command line: auto BOOT_IMAGE=2.6 ro root=900
-panic=30 console=ttyS1,38400n8 console=tty0 early_ioremap_debug
-[    0.000000] PID hash table entries: 4096 (order: 12, 16384 bytes)
-[    0.000000] Dentry cache hash table entries: 131072 (order: 7, 524288
-bytes)
-[    0.000000] Inode-cache hash table entries: 65536 (order: 6, 262144
-bytes)
-[    0.000000] Enabling fast FPU save and restore... done.
-[    0.000000] Initializing CPU#0
-[    0.000000] Initializing HighMem for node 0 (000379fe:0003fffd)
-[    0.000000] Memory: 1022280k/1048564k available (3530k kernel code,
-25620k reserved, 1815k data, 344k init, 137212k highmem)
-[    0.000000] virtual kernel memory layout:
-[    0.000000]     fixmap  : 0xfff1f000 - 0xfffff000   ( 896 kB)
-[    0.000000]     pkmap   : 0xffa00000 - 0xffc00000   (2048 kB)
-[    0.000000]     vmalloc : 0xf81fe000 - 0xff9fe000   ( 120 MB)
-[    0.000000]     lowmem  : 0xc0000000 - 0xf79fe000   ( 889 MB)
-[    0.000000]       .init : 0xc1540000 - 0xc1596000   ( 344 kB)
-[    0.000000]       .data : 0xc1372b53 - 0xc1538888   (1815 kB)
-[    0.000000]       .text : 0xc1000000 - 0xc1372b53   (3530 kB)
-[    0.000000] Checking if this processor honours the WP bit even in
-supervisor mode...Ok.
-[    0.000000] NR_IRQS:512
-[    0.000000] Fast TSC calibration using PIT
-[    0.000000] Detected 400.917 MHz processor.
-[    0.004000] Console: colour VGA+ 80x25
-[    0.004000] console [tty0] enabled
-[    0.004000] console [ttyS1] enabled
-[    0.004000] Lock dependency validator: Copyright (c) 2006 Red Hat,
-Inc., Ingo Molnar
-[    0.004000] ... MAX_LOCKDEP_SUBCLASSES:  8
-[    0.004000] ... MAX_LOCK_DEPTH:          48
-[    0.004000] ... MAX_LOCKDEP_KEYS:        8191
-[    0.004000] ... CLASSHASH_SIZE:          4096
-[    0.004000] ... MAX_LOCKDEP_ENTRIES:     16384
-[    0.004000] ... MAX_LOCKDEP_CHAINS:      32768
-[    0.004000] ... CHAINHASH_SIZE:          16384
-[    0.004000]  memory used by lock dependency info: 3487 kB
-[    0.004000]  per task-struct memory footprint: 1152 bytes
-[    0.004105] Calibrating delay loop (skipped), value calculated using
-timer frequency.. 801.83 BogoMIPS (lpj=1603668)
-[    0.017007] Mount-cache hash table entries: 512
-[    0.029037] CPU: L1 I cache: 16K, L1 D cache: 16K
-[    0.036028] CPU: L2 cache: 512K
-[    0.040038] mce: CPU supports 5 MCE banks
-[    0.044135] Checking 'hlt' instruction... OK.
-[    0.066164] Freeing SMP alternatives: 14k freed
-[    0.073397] ExtINT not setup in hardware but reported by MP table
-[    0.081270] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=0 pin2=0
-[    0.126758] CPU0: Intel Pentium II (Deschutes) stepping 02
-[    0.140347] lockdep: fixing up alternatives.
-[    0.144644] Booting processor 1 APIC 0x0 ip 0x6000
-[    0.004000] Initializing CPU#1
-[    0.004000] Calibrating delay using timer specific routine.. 801.90
-BogoMIPS (lpj=1603811)
-[    0.004000] CPU: L1 I cache: 16K, L1 D cache: 16K
-[    0.004000] CPU: L2 cache: 512K
-[    0.004000] mce: CPU supports 5 MCE banks
-[    0.237018] CPU1: Intel Pentium II (Deschutes) stepping 02
-[    0.248039] checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-[    0.256075] Brought up 2 CPUs
-[    0.260029] Total of 2 processors activated (1603.73 BogoMIPS).
-[    0.264684] CPU0 attaching sched-domain:
-[    0.264706]  domain 0: span 0-1 level CPU
-[    0.264724]   groups: 0 1
-[    0.268167] CPU1 attaching sched-domain:
-[    0.268186]  domain 0: span 0-1 level CPU
-[    0.268203]   groups: 1 0
-[    0.276543] xor: measuring software checksum speed
-[    0.300024]    8regs     :   698.000 MB/sec
-[    0.324024]    8regs_prefetch:   625.000 MB/sec
-[    0.348024]    32regs    :   351.000 MB/sec
-[    0.372028]    32regs_prefetch:   331.000 MB/sec
-[    0.396024]    pII_mmx   :  1037.000 MB/sec
-[    0.420027]    p5_mmx    :  1055.000 MB/sec
-[    0.424027] xor: using function: p5_mmx (1055.000 MB/sec)
-[    0.429287] NET: Registered protocol family 16
-[    0.440050] PCI: PCI BIOS revision 2.10 entry at 0xf0730, last bus=1
-[    0.444025] PCI: Using configuration type 1 for base access
-[    0.501028] bio: create slab <bio-0> at 0
-[    0.505084] ACPI: Interpreter disabled.
-[    0.513621] SCSI subsystem initialized
-[    0.520371] libata version 3.00 loaded.
-[    0.592421] raid6: int32x1     85 MB/s
-[    0.664480] raid6: int32x2     87 MB/s
-[    0.736283] raid6: int32x4     90 MB/s
-[    0.808572] raid6: int32x8     81 MB/s
-[    0.880193] raid6: mmxx1      229 MB/s
-[    0.952158] raid6: mmxx2      272 MB/s
-[    0.956030] raid6: using algorithm mmxx2 (272 MB/s)
-[    0.960109] PCI: Probing PCI hardware
-[    0.964143] PCI: Probing PCI hardware (bus 00)
-[    0.964616] pci 0000:00:00.0: reg 10 32bit mmio:
-[0xe4000000-0xe7ffffff]
-[    0.968491] pci 0000:00:04.1: reg 20 io port: [0xd800-0xd80f]
-[    0.968815] pci 0000:00:04.2: reg 20 io port: [0xd400-0xd41f]
-[    0.969016] * Found PM-Timer Bug on the chipset. Due to workarounds
-for a bug,
-[    0.969027] * this clock source is slow. Consider trying other clock
-sources
-[    0.972271] pci 0000:00:04.3: quirk: region e400-e43f claimed by
-PIIX4 ACPI
-[    0.976041] pci 0000:00:04.3: quirk: region e800-e80f claimed by
-PIIX4 SMB
-[    0.980043] pci 0000:00:04.3: PIIX4 devres B PIO at 0290-0297
-[    0.984278] pci 0000:00:06.0: reg 10 io port: [0xd000-0xd0ff]
-[    0.984353] pci 0000:00:06.0: reg 14 64bit mmio:
-[0xe3000000-0xe3000fff]
-[    0.984473] pci 0000:00:06.0: reg 30 32bit mmio: [0x000000-0x01ffff]
-[    0.984784] pci 0000:00:09.0: reg 10 32bit mmio:
-[0xe2800000-0xe2800fff]
-[    0.984833] pci 0000:00:09.0: reg 14 io port: [0xb800-0xb83f]
-[    0.984880] pci 0000:00:09.0: reg 18 32bit mmio:
-[0xe2000000-0xe20fffff]
-[    0.984998] pci 0000:00:09.0: reg 30 32bit mmio: [0x000000-0x0fffff]
-[    0.985113] pci 0000:00:09.0: supports D1 D2
-[    0.985131] pci 0000:00:09.0: PME# supported from D0 D1 D2 D3hot
-[    0.988042] pci 0000:00:09.0: PME# disabled
-[    1.000731] pci 0000:00:04.0: PIIX/ICH IRQ router [8086:7110]
-[    1.025480] pnp: PnP ACPI: disabled
-[    1.071614] pci 0000:00:01.0: PCI bridge, secondary bus 0000:01
-[    1.089614] pci 0000:00:01.0:   IO window: disabled
-[    1.104525] pci 0000:00:01.0:   MEM window: disabled
-[    1.119673] pci 0000:00:01.0:   PREFETCH window: disabled
-[    1.136169] pci_bus 0000:00: resource 0 io:  [0x00-0xffff]
-[    1.136192] pci_bus 0000:00: resource 1 mem:
-[0x000000-0xffffffffffffffff]
-[    1.136666] NET: Registered protocol family 2
-[    1.151042] IP route cache hash table entries: 32768 (order: 5,
-131072 bytes)
-[    1.176339] TCP established hash table entries: 131072 (order: 8,
-1048576 bytes)
-[    1.204713] TCP bind hash table entries: 65536 (order: 9, 2097152
-bytes)
-[    1.275384] TCP: Hash tables configured (established 131072 bind
-65536)
-[    1.295697] TCP reno registered
-[    1.306686] NET: Registered protocol family 1
-[    1.322882] Simple Boot Flag at 0x46 set to 0x1
-[    1.338742] platform rtc_cmos: registered platform RTC device (no PNP
-device found)
-[    1.374296] highmem bounce pool size: 64 pages
-[    1.392150] msgmni has been set to 1729
-[    1.407833] alg: No test for stdrng (krng)
-[    1.420452] async_tx: api initialized (sync-only)
-[    1.435034] io scheduler noop registered
-[    1.447050] io scheduler anticipatory registered
-[    1.461136] io scheduler deadline registered
-[    1.474361] io scheduler cfq registered (default)
-[    1.488753] pci 0000:00:00.0: Limiting direct PCI/PCI transfers
-[    1.507461] pci 0000:00:09.0: Firmware left e100 interrupts enabled;
-disabling
-[    1.532778] early_ioremap(3fffd080, 0000005c) [0] => Pid: 1, comm:
-swapper Not tainted 2.6.31-rc4 #36
-[    1.561007] Call Trace:
-[    1.568638]  [<c136e48b>] ? printk+0x18/0x1d
-[    1.581734]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-[    1.596898]  [<c15515aa>] early_ioremap+0x1a/0x1c
-[    1.611270]  [<c154a187>] __acpi_map_table+0x18/0x1a
-[    1.626451]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-[    1.642129]  [<c119459c>] acpi_tb_verify_table+0x20/0x49
-[    1.658321]  [<c1193e50>] acpi_get_table_with_size+0x53/0xa1
-[    1.675553]  [<c1193eae>] acpi_get_table+0x10/0x15
-[    1.690192]  [<c155cc19>] acpi_processor_init+0x23/0xab
-[    1.706126]  [<c1001043>] do_one_initcall+0x33/0x180
-[    1.721279]  [<c155cbf6>] ? acpi_processor_init+0x0/0xab
-[    1.737479]  [<c106893a>] ? register_irq_proc+0xaa/0xc0
-[    1.753411]  [<c10689b7>] ? init_irq_proc+0x67/0x80
-[    1.768316]  [<c15405e7>] kernel_init+0x120/0x176
-[    1.782678]  [<c15404c7>] ? kernel_init+0x0/0x176
-[    1.797062]  [<c10038b7>] kernel_thread_helper+0x7/0x10
-[    1.812984] 00000080 + ffe00000
-[    2.060010] Switched to high resolution mode on CPU 0
-[    2.060053] Switched to high resolution mode on CPU 1
-[    2.338196] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
-[    2.623917] serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-[    2.907912] serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
-[    2.930178] Platform driver 'serial8250' needs updating - please use
-dev_pm_ops
-[    2.986099] brd: module loaded
-[    2.995536] Uniform Multi-Platform E-IDE driver
-[    3.010792] piix 0000:00:04.1: IDE controller (0x8086:0x7111 rev
-0x01)
-[    3.030991] piix 0000:00:04.1: not 100% native mode: will probe irqs
-later
-[    3.051915]     ide0: BM-DMA at 0xd800-0xd807
-[    3.065528]     ide1: BM-DMA at 0xd808-0xd80f
-[    3.078946] Probing IDE interface ide0...
-[    3.364334] hda: WDC WD400BB-32CXA0, ATA DISK drive
-[    4.049334] hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
-[    4.050259] hda: UDMA/33 mode selected
-[    4.062712] Probing IDE interface ide1...
-[    4.348331] hdc: WDC WD400BB-60JKA0, ATA DISK drive
-[    5.032958] hdc: host max PIO4 wanted PIO255(auto-tune) selected PIO4
-[    5.033111] hdc: UDMA/33 mode selected
-[    5.044915] ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-[    5.059777] ide1 at 0x170-0x177,0x376 on irq 15
-[    5.081602] ide_generic: please use "probe_mask=0x3f" module
-parameter for probing all legacy ISA IDE ports
-[    5.111237] ide-gd driver 1.18
-[    5.121233] hda: max request size: 128KiB
-[    5.158376] hda: 78165360 sectors (40020 MB) w/2048KiB Cache,
-CHS=65535/16/63
-[    5.180317] hda: cache flushes not supported
-[    5.194662]  hda: hda1 hda4 < hda5 hda6 hda7 hda8 hda9 hda10 hda11 >
-[    5.282652] hdc: max request size: 128KiB
-[    5.317286] hdc: 78165360 sectors (40020 MB) w/2048KiB Cache,
-CHS=65535/16/63
-[    5.339497] hdc: cache flushes supported
-[    5.351950]  hdc: hdc1 hdc4 < hdc5 hdc6 hdc7 hdc8 hdc9 hdc10 hdc11 >
-[    5.463672] aic7xxx 0000:00:06.0: can't find IRQ for PCI INT A;
-probably buggy MP table
-[   10.700237] scsi0 : Adaptec AIC7XXX EISA/VLB/PCI SCSI HBA DRIVER, Rev
-7.0
-[   10.700248]         <Adaptec aic7890/91 Ultra2 SCSI adapter>
-[   10.700256]         aic7890/91: Ultra2 Wide Channel A, SCSI Id=7,
-32/253 SCBs
-[   10.700265] 
-[   14.630460] 3ware Storage Controller device driver for Linux
-v1.26.02.002.
-[   14.658692] Intel(R) PRO/1000 Network Driver - version 7.3.21-k3-NAPI
-[   14.678268] Copyright (c) 1999-2006 Intel Corporation.
-[   14.694717] e1000e: Intel(R) PRO/1000 Network Driver - 1.0.2-k2
-[   14.712738] e1000e: Copyright (c) 1999-2008 Intel Corporation.
-[   14.731381] Intel(R) Gigabit Ethernet Network Driver - version
-1.3.16-k2
-[   14.751759] Copyright (c) 2007-2009 Intel Corporation.
-[   14.768118] jme: JMicron JMC2XX ethernet driver version 1.0.4
-[   14.787041] e100: Intel(R) PRO/100 Network Driver, 3.5.24-k2-NAPI
-[   14.805628] e100: Copyright(c) 1999-2006 Intel Corporation
-[   14.822559] e100 0000:00:09.0: can't find IRQ for PCI INT A; probably
-buggy MP table
-[   14.872749] e100 0000:00:09.0: PME# disabled
-[   14.887825] e100: eth0: e100_probe: addr 0xe2800000, irq 11, MAC addr
-00:d0:b7:60:9e:e1
-[   14.919282] PNP: No PS/2 controller found. Probing ports directly.
-[   14.938323] Platform driver 'i8042' needs updating - please use
-dev_pm_ops
-[   15.212561] serio: i8042 KBD port at 0x60,0x64 irq 1
-[   15.231207] mice: PS/2 mouse device common for all mice
-[   15.247924] Driver for 1-wire Dallas network protocol.
-[   15.265727] md: raid0 personality registered for level 0
-[   15.281946] md: raid1 personality registered for level 1
-[   15.298200] md: raid10 personality registered for level 10
-[   15.314927] md: raid6 personality registered for level 6
-[   15.331118] md: raid5 personality registered for level 5
-[   15.347310] md: raid4 personality registered for level 4
-[   15.363633] cpuidle: using governor ladder
-[   15.376201] cpuidle: using governor menu
-[   15.390373] TCP cubic registered
-[   15.400332] NET: Registered protocol family 17
-[   15.414135] Using IPI Shortcut mode
-[   15.424871] ------------[ cut here ]------------
-[   15.439028] WARNING: at arch/x86/mm/ioremap.c:603
-check_early_ioremap_leak+0x56/0x69()
-[   15.463165] Hardware name: System Name
-[   15.474657] Debug warning: early ioremap leak of 1 areas detected.
-[   15.493448] Modules linked in:
-[   15.502979] Pid: 1, comm: swapper Not tainted 2.6.31-rc4 #36
-[   15.520200] Call Trace:
-[   15.527817]  [<c1031ddd>] warn_slowpath_common+0x6d/0xa0
-[   15.544063]  [<c155108e>] ? check_early_ioremap_leak+0x56/0x69
-[   15.561836]  [<c155108e>] ? check_early_ioremap_leak+0x56/0x69
-[   15.579642]  [<c1031e56>] warn_slowpath_fmt+0x26/0x30
-[   15.595056]  [<c155108e>] check_early_ioremap_leak+0x56/0x69
-[   15.612293]  [<c1001043>] do_one_initcall+0x33/0x180
-[   15.627446]  [<c1551038>] ? check_early_ioremap_leak+0x0/0x69
-[   15.644946]  [<c106893a>] ? register_irq_proc+0xaa/0xc0
-[   15.660899]  [<c10689b7>] ? init_irq_proc+0x67/0x80
-[   15.675806]  [<c15405e7>] kernel_init+0x120/0x176
-[   15.690213]  [<c15404c7>] ? kernel_init+0x0/0x176
-[   15.704609]  [<c10038b7>] kernel_thread_helper+0x7/0x10
-[   15.720583] ---[ end trace a0b1852c05553e7a ]---
+Alan:
 
+Yes, the vsp is the console.  The test machine is in a lab 40 miles or
+so away.  I access the "management processor" ["ilo" or "integrated
+lights out" console in HP market-speak] via the net and then connect to
+the virtual serial port from there.  Like a network terminal server.
+This shows up as ttyS1 in Linux.
+
+I plan on driving down to the site next week and plugging a terminal
+into a serial port to test a "real serial port".  
+
+I'll attach the console output--what I can capture of it--below.
+
+[Ouch! I rebooted kernel with the 8250 patch to capture console log.
+Altho' console hangs, looks like it still booted.  More below.]
+
+> 
+> Is the virtual serial port a standard PC serial port (or appearing as
+> one) and using the standard drivers or is there anything else
+> loaded/special modules in use for it ?
+
+As far as I know, it LOOKS like a standard pc serial port.  I don't know
+the actual hardware, altho' it seems to use the 8250 driver. Here's what
+I see when I attach to the vsp from the ilo command line:
+
+</system1>hpiLO-> Virtual Serial Port active: IO=0x02F8 INT=3
+
+Perhaps Bjorn or Rich could comment on the hardware setup...
+
+> 
+> > The offending patch appears to be commit
+> > 0b8d7a6fbba81ffd06de701fa6178916ee9732c3 - "serial-add-irqflags-support"
+> > in the linux-next mega-patch.  Reverting the changes to the 8250 driver
+> > allows the kernel to boot and operate normally.
+> 
+> Strange as it simply moves a few flags around. That ought to make it easy
+> to figure however.
+
+You'd think.  I'll gladly try any other patches or instrumentation to
+help sort this out.  Altho' it is booting, I really would like to have
+my console back.  Seems like the patch confuses the firmware managing
+the other end of the vsp link.  Not hard to do, I imagine.
+
+Console log [long]:
+
+> 
+Initializing cgroup subsys cpuset
+Linux version 2.6.31-rc3-mmotm-090716-1432+8250-patch (lts@spoke.lnx.usa.hp.com) (gcc version 4.1.2 20080704 (Red Hat 4.1.2-44)) #54 SMP Thu Jul 23 08:29:33 EDT 2009
+Command line: ro root=LABEL=RHEL53 console=ttyS1,115200N8 debug meminit_loglevel=3
+KERNEL supported cpus:
+  Intel GenuineIntel
+  AMD AuthenticAMD
+  Centaur CentaurHauls
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000000 - 000000000009f400 (usable)
+ BIOS-e820: 000000000009f400 - 00000000000a0000 (reserved)
+ BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 000000007fe4e000 (usable)
+ BIOS-e820: 000000007fe4e000 - 000000007fe56000 (ACPI data)
+ BIOS-e820: 000000007fe56000 - 000000007fe57000 (usable)
+ BIOS-e820: 000000007fe57000 - 0000000080000000 (reserved)
+ BIOS-e820: 00000000e0000000 - 00000000f0000000 (reserved)
+ BIOS-e820: 00000000fec00000 - 00000000fed00000 (reserved)
+ BIOS-e820: 00000000fee00000 - 00000000fee10000 (reserved)
+ BIOS-e820: 00000000ffc00000 - 0000000100000000 (reserved)
+ BIOS-e820: 0000000100000000 - 000000087ffff000 (usable)
+DMI 2.4 present.
+last_pfn = 0x87ffff max_arch_pfn = 0x400000000
+MTRR default type: uncachable
+MTRR fixed ranges enabled:
+  00000-9FFFF write-back
+  A0000-BFFFF uncachable
+  C0000-FFFFF write-back
+MTRR variable ranges enabled:
+  0 base 0000000000 mask FF80000000 write-back
+  1 disabled
+  2 disabled
+  3 disabled
+  4 disabled
+  5 disabled
+  6 disabled
+  7 disabled
+TOM2: 0000000880000000 aka 34816M
+x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+e820 update range: 0000000080000000 - 0000000100000000 (usable) ==> (reserved)
+last_pfn = 0x7fe57 max_arch_pfn = 0x400000000
+initial memory mapped : 0 - 20000000
+init_memory_mapping: 0000000000000000-000000007fe57000
+ 0000000000 - 007fe57000 page 4k
+kernel direct mapping tables up to 7fe57000 @ 100000-503000
+init_memory_mapping: 0000000100000000-000000087ffff000
+ 0100000000 - 087ffff000 page 4k
+kernel direct mapping tables up to 87ffff000 @ 1646000-5a69000
+RAMDISK: 37daa000 - 37fef1f3
+ACPI: RSDP 00000000000f4f00 00024 (v02 HP    )
+ACPI: XSDT 000000007fe4ed00 00074 (v01 HP     ProLiant 00000002   �? 0000162E)
+ACPI: FACP 000000007fe4ed80 000F4 (v03 HP     A07      00000002   �? 0000162E)
+ACPI: DSDT 000000007fe4ee80 04959 (v01 HP         DSDT 00000001 INTL 20030228)
+ACPI: FACS 000000007fe4e100 00040
+ACPI: SPCR 000000007fe4e140 00050 (v01 HP     SPCRRBSU 00000001   �? 0000162E)
+ACPI: HPET 000000007fe4e1c0 00038 (v01 HP     ProLiant 00000002   �? 0000162E)
+ACPI: SPMI 000000007fe4e200 00040 (v05 HP     ProLiant 00000001   �? 0000162E)
+ACPI: ERST 000000007fe4e240 001D0 (v01 HP     ProLiant 00000001   �? 0000162E)
+ACPI: APIC 000000007fe4e440 000C6 (v01 HP     ProLiant 00000002      00000000)
+ACPI: SRAT 000000007fe4e580 001A0 (v01 AMD    FAM_F_10 00000002 AMD  00000001)
+ACPI: FFFF 000000007fe4e980 00176 (v01 HP     ProLiant 00000001   �? 0000162E)
+ACPI: BERT 000000007fe4eb00 00030 (v01 HP     ProLiant 00000001   �? 0000162E)
+ACPI: HEST 000000007fe4eb40 00170 (v01 HP     ProLiant 00000001   �? 0000162E)
+ACPI: Local APIC address 0xfee00000
+SRAT: PXM 0 -> APIC 0 -> Node 0
+SRAT: PXM 0 -> APIC 1 -> Node 0
+SRAT: PXM 1 -> APIC 2 -> Node 1
+SRAT: PXM 1 -> APIC 3 -> Node 1
+SRAT: PXM 2 -> APIC 4 -> Node 2
+SRAT: PXM 2 -> APIC 5 -> Node 2
+SRAT: PXM 3 -> APIC 6 -> Node 3
+SRAT: PXM 3 -> APIC 7 -> Node 3
+SRAT: Node 0 PXM 0 0-a0000
+SRAT: Node 0 PXM 0 100000-80000000
+SRAT: Node 0 PXM 0 100000000-280000000
+SRAT: Node 1 PXM 1 280000000-480000000
+SRAT: Node 2 PXM 2 480000000-680000000
+SRAT: Node 3 PXM 3 680000000-880000000
+NUMA: Allocated memnodemap from 8000 - 19040
+NUMA: Using 20 for the hash shift.
+Bootmem setup node 0 0000000000000000-0000000280000000
+  NODE_DATA [0000000000001000 - 0000000000004fff]
+  bootmap [000000000001a000 -  0000000000069fff] pages 50
+(9 early reservations) ==> bootmem [0000000000 - 0280000000]
+  #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
+  #1 [0000006000 - 0000008000]       TRAMPOLINE ==> [0000006000 - 0000008000]
+  #2 [0001000000 - 0001644c10]    TEXT DATA BSS ==> [0001000000 - 0001644c10]
+  #3 [0037daa000 - 0037fef1f3]          RAMDISK ==> [0037daa000 - 0037fef1f3]
+  #4 [000009f400 - 0000100000]    BIOS reserved ==> [000009f400 - 0000100000]
+  #5 [0001645000 - 0001645114]              BRK ==> [0001645000 - 0001645114]
+  #6 [0000100000 - 0000501000]          PGTABLE ==> [0000100000 - 0000501000]
+  #7 [0001646000 - 0005264000]          PGTABLE ==> [0001646000 - 0005264000]
+  #8 [0000008000 - 0000019040]       MEMNODEMAP ==> [0000008000 - 0000019040]
+Bootmem setup node 1 0000000280000000-0000000480000000
+  NODE_DATA [0000000280000000 - 0000000280003fff]
+  bootmap [0000000280004000 -  0000000280043fff] pages 40
+(9 early reservations) ==> bootmem [0280000000 - 0480000000]
+  #0 [0000000000 - 0000001000]   BIOS data page
+  #1 [0000006000 - 0000008000]       TRAMPOLINE
+  #2 [0001000000 - 0001644c10]    TEXT DATA BSS
+  #3 [0037daa000 - 0037fef1f3]          RAMDISK
+  #4 [000009f400 - 0000100000]    BIOS reserved
+  #5 [0001645000 - 0001645114]              BRK
+  #6 [0000100000 - 0000501000]          PGTABLE
+  #7 [0001646000 - 0005264000]          PGTABLE
+  #8 [0000008000 - 0000019040]       MEMNODEMAP
+Bootmem setup node 2 0000000480000000-0000000680000000
+  NODE_DATA [0000000480000000 - 0000000480003fff]
+  bootmap [0000000480004000 -  0000000480043fff] pages 40
+(9 early reservations) ==> bootmem [0480000000 - 0680000000]
+  #0 [0000000000 - 0000001000]   BIOS data page
+  #1 [0000006000 - 0000008000]       TRAMPOLINE
+  #2 [0001000000 - 0001644c10]    TEXT DATA BSS
+  #3 [0037daa000 - 0037fef1f3]          RAMDISK
+  #4 [000009f400 - 0000100000]    BIOS reserved
+  #5 [0001645000 - 0001645114]              BRK
+  #6 [0000100000 - 0000501000]          PGTABLE
+  #7 [0001646000 - 0005264000]          PGTABLE
+  #8 [0000008000 - 0000019040]       MEMNODEMAP
+Bootmem setup node 3 0000000680000000-000000087ffff000
+  NODE_DATA [0000000680000000 - 0000000680003fff]
+  bootmap [0000000680004000 -  0000000680043fff] pages 40
+(9 early reservations) ==> bootmem [0680000000 - 087ffff000]
+  #0 [0000000000 - 0000001000]   BIOS data page
+  #1 [0000006000 - 0000008000]       TRAMPOLINE
+  #2 [0001000000 - 0001644c10]    TEXT DATA BSS
+  #3 [0037daa000 - 0037fef1f3]          RAMDISK
+  #4 [000009f400 - 0000100000]    BIOS reserved
+  #5 [0001645000 - 0001645114]              BRK
+  #6 [0000100000 - 0000501000]          PGTABLE
+  #7 [0001646000 - 0005264000]          PGTABLE
+  #8 [0000008000 - 0000019040]       MEMNODEMAP
+found SMP MP-table at [ffff8800000f4f80] f4f80
+ [ffffea0000000000-ffffea0008bfffff] PMD -> [ffff880028600000-ffff88002f5fffff] on node 0
+ [ffffea0008c00000-ffffea000fbfffff] PMD -> [ffff880280200000-ffff8802871fffff] on node 1
+ [ffffea000fc00000-ffffea0016bfffff] PMD -> [ffff880480200000-ffff8804871fffff] on node 2
+ [ffffea0016c00000-ffffea001dbfffff] PMD -> [ffff880680200000-ffff8806871fffff] on node 3
+sizeof(struct page) = 56
+Zone PFN ranges:
+  DMA      0x00000000 -> 0x00001000
+  DMA32    0x00001000 -> 0x00100000
+  Normal   0x00100000 -> 0x0087ffff
+Movable zone start PFN for each node
+early_node_map[7] active PFN ranges
+    0: 0x00000000 -> 0x0000009f
+    0: 0x00000100 -> 0x0007fe4e
+    0: 0x0007fe56 -> 0x0007fe57
+    0: 0x00100000 -> 0x00280000
+    1: 0x00280000 -> 0x00480000
+    2: 0x00480000 -> 0x00680000
+    3: 0x00680000 -> 0x0087ffff
+On node 0 totalpages: 2096622
+  DMA zone: 56 pages used for memmap
+  DMA zone: 1141 pages reserved
+  DMA zone: 2802 pages, LIFO batch:0
+  DMA32 zone: 14280 pages used for memmap
+  DMA32 zone: 505479 pages, LIFO batch:31
+  Normal zone: 21504 pages used for memmap
+  Normal zone: 1551360 pages, LIFO batch:31
+On node 1 totalpages: 2097152
+  Normal zone: 28672 pages used for memmap
+  Normal zone: 2068480 pages, LIFO batch:31
+On node 2 totalpages: 2097152
+  Normal zone: 28672 pages used for memmap
+  Normal zone: 2068480 pages, LIFO batch:31
+On node 3 totalpages: 2097151
+  Normal zone: 28672 pages used for memmap
+  Normal zone: 2068479 pages, LIFO batch:31
+Detected use of extended apic ids on hypertransport bus
+Detected use of extended apic ids on hypertransport bus
+Detected use of extended apic ids on hypertransport bus
+Detected use of extended apic ids on hypertransport bus
+ACPI: PM-Timer IO Port: 0x908
+ACPI: Local APIC address 0xfee00000
+ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+ACPI: LAPIC (acpi_id[0x02] lapic_id[0x02] enabled)
+ACPI: LAPIC (acpi_id[0x04] lapic_id[0x04] enabled)
+ACPI: LAPIC (acpi_id[0x06] lapic_id[0x06] enabled)
+ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
+ACPI: LAPIC (acpi_id[0x03] lapic_id[0x03] enabled)
+ACPI: LAPIC (acpi_id[0x05] lapic_id[0x05] enabled)
+ACPI: LAPIC (acpi_id[0x07] lapic_id[0x07] enabled)
+ACPI: LAPIC_NMI (acpi_id[0xff] dfl dfl lint[0x1])
+ACPI: IOAPIC (id[0x08] address[0xd9af0000] gsi_base[0])
+IOAPIC[0]: apic_id 8, version 17, address 0xd9af0000, GSI 0-23
+ACPI: IOAPIC (id[0x09] address[0xd9fd0000] gsi_base[24])
+IOAPIC[1]: apic_id 9, version 17, address 0xd9fd0000, GSI 24-30
+ACPI: IOAPIC (id[0x0a] address[0xd9fe0000] gsi_base[31])
+IOAPIC[2]: apic_id 10, version 17, address 0xd9fe0000, GSI 31-37
+ACPI: IOAPIC (id[0x0b] address[0xd9ff0000] gsi_base[38])
+IOAPIC[3]: apic_id 11, version 17, address 0xd9ff0000, GSI 38-61
+ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 high edge)
+ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 low level)
+ACPI: IRQ0 used by override.
+ACPI: IRQ2 used by override.
+ACPI: IRQ9 used by override.
+ACPI: NMI_SRC (dfl dfl global_irq 28)
+ACPI: NMI_SRC (dfl dfl global_irq 35)
+Using ACPI (MADT) for SMP configuration information
+ACPI: HPET id: 0x10228201 base: 0xfed00000
+SMP: Allowing 8 CPUs, 0 hotplug CPUs
+nr_irqs_gsi: 62
+Allocating PCI resources starting at 80000000 (gap: 80000000:60000000)
+NR_CPUS:8 nr_cpumask_bits:8 nr_cpu_ids:8 nr_node_ids:4
+pcpu-lpage: sta/res/dyn=82656/8192/23840 unit=1048576 lpage=2097152
+pcpu-lpage: 0 4 | 1 5 | 2 6 | 3 7 
+PERCPU: Remapped at ffffc90000000000 with large pages, static data 82656 bytes
+Built 4 zonelists in Zone order, mobility grouping on.  Total pages: 8265080
+Policy zone: Normal
+Kernel command line: ro root=LABEL=RHEL53 console=ttyS1,115200N8 debug meminit_loglevel=3
+PID hash table entries: 4096 (order: 12, 32768 bytes)
+Initializing CPU#0
+Checking aperture...
+No AGP bridge found
+Node 0: aperture @ 20000000 size 32 MB
+Aperture pointing to e820 RAM. Ignoring.
+Your BIOS doesn't leave a aperture memory hole
+Please enable the IOMMU option in the BIOS setup
+This costs you 64 MB of RAM
+Mapping aperture over 65536 KB of RAM @ 20000000
+Memory: 32951992k/35651580k available (3357k kernel code, 2099272k absent, 600316k reserved, 1831k data, 516k init)
+SLUB: Genslabs=14, HWalign=64, Order=0-3, MinObjects=0, CPUs=8, Nodes=4
+Hierarchical RCU implementation.
+NR_IRQS:4352 nr_irqs:1118
+Extended CMOS year: 2000
+Fast TSC calibration using PIT
+Detected 2813.300 MHz processor.
+spurious 8259A interrupt: IRQ7.
+Console: colour VGA+ 80x25
+console [ttyS1] enabled
+allocated 335544320 bytes of page_cgroup
+please try 'cgroup_disable=memory' option if you don't want memory cgroups
+hpet clockevent registered
+HPET: 3 timers in total, 0 timers will be used for per-cpu timer
+Calibrating delay loop (skipped), value calculated using timer frequency.. 5626.60 BogoMIPS (lpj=2813300)
+Security Framework initialized
+Dentry cache hash table entries: 4194304 (order: 13, 33554432 bytes)
+Inode-cache hash table entries: 2097152 (order: 12, 16777216 bytes)
+Mount-cache hash table entries: 256
+Initializing cgroup subsys ns
+Initializing cgroup subsys memory
+Initializing cgroup subsys devices
+CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+CPU: L2 Cache: 1024K (64 bytes/line)
+CPU 0/0x0 -> Node 0
+tseg: 0000000000
+CPU: Physical Processor ID: 0
+CPU: Processor Core ID: 0
+mce: CPU supports 5 MCE banks
+using C1E aware idle routine
+Performance Counters: AMD PMU driver.
+... version:                 0
+... bit width:               48
+... generic counters:        4
+... value mask:              0000ffffffffffff
+... max period:              00007fffffffffff
+... fixed-purpose counters:  0
+... counter mask:            000000000000000f
+ACPI: Core revision 20090625
+Setting APIC routing to flat
+..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+CPU0: Dual-Core AMD Opteron(tm) Processor 8220 SE stepping 02
+Booting processor 1 APIC 0x2 ip 0x6000
+Initializing CPU#1
+Calibrating delay using timer specific routine.. 5625.65 BogoMIPS (lpj=2812825)
+CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+CPU: L2 Cache: 1024K (64 bytes/line)
+CPU 1/0x2 -> Node 1
+CPU: Physical Processor ID: 1
+CPU: Processor Core ID: 0
+mce: CPU supports 5 MCE banks
+x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
+CPU1: Dual-Core AMD Opteron(tm) Processor 8220 SE stepping 02
+Booting processor 2 APIC 0x4 ip 0x6000
+Initializing CPU#2
+Calibrating delay using timer specific routine.. 5625.62 BogoMIPS (lpj=2812812)
+CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+CPU: L2 Cache: 1024K (64 bytes/line)
+CPU 2/0x4 -> Node 2
+CPU: Physical Processor ID: 2
+CPU: Processor Core ID: 0
+mce: CPU supports 5 MCE banks
+x86 PAT enabled: cpu 2, old 0x7040600070406, new 0x7010600070106
+CPU2: Dual-Core AMD Opteron(tm) Processor 8220 SE stepping 02
+Booting processor 3 APIC 0x6 ip 0x6000
+Initializing CPU#3
+Calibrating delay using timer specific routine.. 5625.63 BogoMIPS (lpj=2812816)
+CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+CPU: L2 Cache: 1024K (64 bytes/line)
+CPU 3/0x6 -> Node 3
+CPU: Physical Processor ID: 3
+CPU: Processor Core ID: 0
+mce: CPU supports 5 MCE banks
+x86 PAT enabled: cpu 3, old 0x7040600070406, new 0x7010600070106
+CPU3: Dual-Core AMD Opteron(tm) Processor 8220 SE stepping 02
+Booting processor 4 APIC 0x1 ip 0x6000
+Initializing CPU#4
+Calibrating delay using timer specific routine.. 5625.68 BogoMIPS (lpj=2812841)
+CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+CPU: L2 Cache: 1024K (64 bytes/line)
+CPU 4/0x1 -> Node 0
+CPU: Physical Processor ID: 0
+CPU: Processor Core ID: 1
+mce: CPU supports 5 MCE banks
+x86 PAT enabled: cpu 4, old 0x7040600070406, new 0x7010600070106
+CPU4: Dual-Core AMD Opteron(tm) Processor 8220 SE stepping 02
+Booting processor 5 APIC 0x3 ip 0x6000
+Initializing CPU#5
+Calibrating delay using timer specific routine.. 5625.65 BogoMIPS (lpj=2812828)
+CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+CPU: L2 Cache: 1024K (64 bytes/line)
+CPU 5/0x3 -> Node 1
+CPU: Physical Processor ID: 1
+CPU: Processor Core ID: 1
+mce: CPU supports 5 MCE banks
+x86 PAT enabled: cpu 5, old 0x7040600070406, new 0x7010600070106
+CPU5: Dual-Core AMD Opteron(tm) Processor 8220 SE stepping 02
+Booting processor 6 APIC 0x5 ip 0x6000
+Initializing CPU#6
+Calibrating delay using timer specific routine.. 5625.66 BogoMIPS (lpj=2812832)
+CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+CPU: L2 Cache: 1024K (64 bytes/line)
+CPU 6/0x5 -> Node 2
+CPU: Physical Processor ID: 2
+CPU: Processor Core ID: 1
+mce: CPU supports 5 MCE banks
+x86 PAT enabled: cpu 6, old 0x7040600070406, new 0x7010600070106
+CPU6: Dual-Core AMD Opteron(tm) Processor 8220 SE stepping 02
+Booting processor 7 APIC 0x7 ip 0x6000
+Initializing CPU#7
+Calibrating delay using timer specific routine.. 5625.71 BogoMIPS (lpj=2812855)
+CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+CPU: L2 Cache: 1024K (64 bytes/line)
+CPU 7/0x7 -> Node 3
+CPU: Physical Processor ID: 3
+CPU: Processor Core ID: 1
+mce: CPU supports 5 MCE banks
+x86 PAT enabled: cpu 7, old 0x7040600070406, new 0x7010600070106
+CPU7: Dual-Core AMD Opteron(tm) Processor 8220 SE stepping 02
+Brought up 8 CPUs
+Total of 8 processors activated (45006.21 BogoMIPS).
+CPU0 attaching sched-domain:
+ domain 0: span 0,4 level MC
+  groups: 0 4
+  domain 1: span 0-7 level NODE
+   groups: 0,4 1,5 2,6 3,7
+CPU1 attaching sched-domain:
+ domain 0: span 1,5 level MC
+  groups: 1 5
+  domain 1: span 0-7 level NODE
+   groups: 1,5 2,6 3,7 0,4
+CPU2 attaching sched-domain:
+ domain 0: span 2,6 level MC
+  groups: 2 6
+  domain 1: span 0-7 level NODE
+   groups: 2,6 3,7 0,4 1,5
+CPU3 attaching sched-domain:
+ domain 0: span 3,7 level MC
+  groups: 3 7
+  domain 1: span 0-7 level NODE
+   groups: 3,7 0,4 1,5 2,6
+CPU4 attaching sched-domain:
+ domain 0: span 0,4 level MC
+  groups: 4 0
+  domain 1: span 0-7 level NODE
+   groups: 0,4 1,5 2,6 3,7
+CPU5 attaching sched-domain:
+ domain 0: span 1,5 level MC
+  groups: 5 1
+  domain 1: span 0-7 level NODE
+   groups: 1,5 2,6 3,7 0,4
+CPU6 attaching sched-domain:
+ domain 0: span 2,6 level MC
+  groups: 6 2
+  domain 1: span 0-7 level NODE
+   groups: 2,6 3,7 0,4 1,5
+CPU7 attaching sched-domain:
+ domain 0: span 3,7 level MC
+  groups: 7 3
+  domain 1: span 0-7 level NODE
+   groups: 3,7 0,4 1,5 2,6
+NET: Registered protocol family 16
+node 0 link 1: io port [1000, 3fff]
+node 1 link 2: io port [4000, ffff]
+TOM: 0000000080000000 aka 2048M
+node 0 link 1: mmio [d0000000, d9efffff]
+node 1 link 2: mmio [d9f00000, dfefffff]
+node 0 link 1: mmio [e0000000, e3ffffff]
+node 1 link 2: mmio [e4000000, e7ffffff]
+node 0 link 1: mmio [a0000, bffff]
+TOM2: 0000000880000000 aka 34816M
+bus: [00,3f] on node 0 link 1
+bus: 00 index 0 io port: [0, 3fff]
+bus: 00 index 1 mmio: [80000000, d9efffff]
+bus: 00 index 2 mmio: [dff00000, e3ffffff]
+bus: 00 index 3 mmio: [a0000, bffff]
+bus: 00 index 4 mmio: [e8000000, ffffffff]
+bus: 00 index 5 mmio: [880000000, fcffffffff]
+bus: [40,7f] on node 1 link 2
+bus: 40 index 0 io port: [4000, ffff]
+bus: 40 index 1 mmio: [d9f00000, dfefffff]
+bus: 40 index 2 mmio: [e4000000, e7ffffff]
+ACPI: bus type pci registered
+PCI: Using configuration type 1 for base access
+PCI: HP ProLiant DL585 G2 detected, enabling pci=bfsort.
+bio: create slab <bio-0> at 0
+ACPI: EC: Look up EC in DSDT
+ACPI: Interpreter enabled
+ACPI: (supports S0 S5)
+ACPI: Using IOAPIC for interrupt routing
+ACPI: No dock devices found.
+ACPI: PCI Root Bridge [PCI0] (0000:00)
+pci 0000:00:02.0: reg 10 32bit mmio: [0xd9ae0000-0xd9ae0fff]
+pci 0000:00:02.0: supports D1 D2
+pci 0000:00:02.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:00:02.0: PME# disabled
+pci 0000:00:02.1: reg 10 32bit mmio: [0xd9ad0000-0xd9ad00ff]
+pci 0000:00:02.1: supports D1 D2
+pci 0000:00:02.1: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:00:02.1: PME# disabled
+pci 0000:00:06.0: reg 20 io port: [0x500-0x50f]
+pci 0000:00:0c.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:00:0c.0: PME# disabled
+pci 0000:00:0d.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:00:0d.0: PME# disabled
+pci 0000:00:0e.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:00:0e.0: PME# disabled
+PCI: peer root bus 00 res updated from pci conf
+pci 0000:01:03.0: reg 10 32bit mmio: [0xd0000000-0xd7ffffff]
+pci 0000:01:03.0: reg 14 io port: [0x1000-0x10ff]
+pci 0000:01:03.0: reg 18 32bit mmio: [0xd9cf0000-0xd9cfffff]
+pci 0000:01:03.0: reg 30 32bit mmio: [0x000000-0x01ffff]
+pci 0000:01:03.0: supports D1 D2
+pci 0000:01:04.0: reg 10 io port: [0x2800-0x28ff]
+pci 0000:01:04.0: reg 14 32bit mmio: [0xd9ce0000-0xd9ce01ff]
+pci 0000:01:04.0: PME# supported from D0 D3hot D3cold
+pci 0000:01:04.0: PME# disabled
+pci 0000:01:04.2: reg 10 io port: [0x1400-0x14ff]
+pci 0000:01:04.2: reg 14 32bit mmio: [0xd9cd0000-0xd9cd07ff]
+pci 0000:01:04.2: reg 18 32bit mmio: [0xd9cc0000-0xd9cc3fff]
+pci 0000:01:04.2: reg 1c 32bit mmio: [0xd9c00000-0xd9c7ffff]
+pci 0000:01:04.2: reg 30 32bit mmio: [0x000000-0x00ffff]
+pci 0000:01:04.2: PME# supported from D0 D3hot D3cold
+pci 0000:01:04.2: PME# disabled
+pci 0000:01:04.4: reg 20 io port: [0x1800-0x181f]
+pci 0000:01:04.4: PME# supported from D0 D3hot D3cold
+pci 0000:01:04.4: PME# disabled
+pci 0000:01:04.6: reg 10 32bit mmio: [0xd9bf0000-0xd9bf00ff]
+pci 0000:01:04.6: PME# supported from D0 D3hot D3cold
+pci 0000:01:04.6: PME# disabled
+pci 0000:00:09.0: transparent bridge
+pci 0000:00:09.0: bridge io port: [0x1000-0x2fff]
+pci 0000:00:09.0: bridge 32bit mmio: [0xd9b00000-0xd9cfffff]
+pci 0000:00:09.0: bridge 32bit mmio pref: [0xd0000000-0xd7ffffff]
+pci 0000:08:00.0: reg 10 64bit mmio: [0xd9e00000-0xd9efffff]
+pci 0000:08:00.0: reg 18 io port: [0x3000-0x30ff]
+pci 0000:08:00.0: reg 1c 64bit mmio: [0xd9df0000-0xd9df0fff]
+pci 0000:08:00.0: reg 30 32bit mmio: [0x000000-0x03ffff]
+pci 0000:08:00.0: supports D1
+pci 0000:00:0c.0: bridge io port: [0x3000-0x3fff]
+pci 0000:00:0c.0: bridge 32bit mmio: [0xd9d00000-0xd9efffff]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.IP2P._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.CPE0._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.CPE1._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.CPE2._PRT]
+ACPI: PCI Root Bridge [PCI1] (0000:40)
+pci 0000:40:0b.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:40:0b.0: PME# disabled
+pci 0000:40:0c.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:40:0c.0: PME# disabled
+pci 0000:40:0d.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:40:0d.0: PME# disabled
+pci 0000:40:0e.0: PME# supported from D0 D1 D2 D3hot D3cold
+pci 0000:40:0e.0: PME# disabled
+pci 0000:40:10.0: Enabling HT MSI Mapping
+pci 0000:40:11.0: Enabling HT MSI Mapping
+PCI: peer root bus 40 res updated from pci conf
+pci 0000:41:01.0: reg 10 64bit mmio: [0xdc000000-0xddffffff]
+pci 0000:41:01.0: reg 30 32bit mmio: [0x000000-0x01ffff]
+pci 0000:41:01.0: PME# supported from D3hot D3cold
+pci 0000:41:01.0: PME# disabled
+pci 0000:41:02.0: reg 10 64bit mmio: [0xda000000-0xdbffffff]
+pci 0000:41:02.0: reg 30 32bit mmio: [0x000000-0x01ffff]
+pci 0000:41:02.0: PME# supported from D3hot D3cold
+pci 0000:41:02.0: PME# disabled
+pci 0000:40:10.0: bridge 32bit mmio: [0xda000000-0xddffffff]
+pci 0000:42:01.0: reg 10 io port: [0x4000-0x40ff]
+pci 0000:42:01.0: reg 14 64bit mmio: [0xdfee0000-0xdfefffff]
+pci 0000:42:01.0: reg 1c 64bit mmio: [0xdfec0000-0xdfedffff]
+pci 0000:42:01.0: reg 30 32bit mmio: [0x000000-0x0fffff]
+pci 0000:42:01.0: supports D1 D2
+pci 0000:42:01.1: reg 10 io port: [0x4400-0x44ff]
+pci 0000:42:01.1: reg 14 64bit mmio: [0xdfea0000-0xdfebffff]
+pci 0000:42:01.1: reg 1c 64bit mmio: [0xdfe80000-0xdfe9ffff]
+pci 0000:42:01.1: reg 30 32bit mmio: [0x000000-0x0fffff]
+pci 0000:42:01.1: supports D1 D2
+pci 0000:40:11.0: bridge io port: [0x4000-0x4fff]
+pci 0000:40:11.0: bridge 32bit mmio: [0xdfe00000-0xdfefffff]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI1.BRGA._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI1.BRGB._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI1.IPE0._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI1.IPE1._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI1.IPE2._PRT]
+ACPI: PCI Interrupt Routing Table [\_SB_.PCI1.IPE3._PRT]
+ACPI: PCI Interrupt Link [LNKW] (IRQs 16) *0, disabled.
+ACPI: PCI Interrupt Link [LNKX] (IRQs 17) *0, disabled.
+ACPI: PCI Interrupt Link [LNKY] (IRQs 18) *0, disabled.
+ACPI: PCI Interrupt Link [LNKZ] (IRQs 19) *0, disabled.
+ACPI: PCI Interrupt Link [LNU0] (IRQs 22) *5
+ACPI: PCI Interrupt Link [LNU2] (IRQs 23) *10
+ACPI: PCI Interrupt Link [LNKA] (IRQs 54) *0, disabled.
+ACPI: PCI Interrupt Link [LNKB] (IRQs 55) *0, disabled.
+ACPI: PCI Interrupt Link [LNKC] (IRQs 56) *0, disabled.
+ACPI: PCI Interrupt Link [LNKD] (IRQs 57) *0, disabled.
+usbcore: registered new interface driver usbfs
+usbcore: registered new interface driver hub
+usbcore: registered new device driver usb
+PCI: Using ACPI for IRQ routing
+Expanded resource reserved due to conflict with PCI Bus #00
+Expanded resource reserved due to conflict with PCI Bus #00
+NetLabel: Initializing
+NetLabel:  domain hash size = 128
+NetLabel:  protocols = UNLABELED CIPSOv4
+NetLabel:  unlabeled traffic allowed by default
+PCI-DMA: Disabling AGP.
+PCI-DMA: aperture base @ 20000000 size 65536 KB
+PCI-DMA: using GART IOMMU.
+PCI-DMA: Reserving 64MB of IOMMU area in the AGP aperture
+hpet0: at MMIO 0xfed00000, IRQs 2, 8, 31
+hpet0: 3 comparators, 32-bit 25.000000 MHz counter
+Switched to high resolution mode on CPU 0
+Switched to high resolution mode on CPU 4
+Switched to high resolution mode on CPU 6
+Switched to high resolution mode on CPU 1
+Switched to high resolution mode on CPU 5
+Switched to high resolution mode on CPU 2
+Switched to high resolution mode on CPU 3
+Switched to high resolution mode on CPU 7
+pnp: PnP ACPI init
+ACPI: bus type pnp registered
+pnp: PnP ACPI: found 16 devices
+ACPI: ACPI bus type pnp unregistered
+system 00:01: ioport range 0x408-0x40f has been reserved
+system 00:01: ioport range 0x4d0-0x4d1 has been reserved
+system 00:01: ioport range 0x700-0x73f has been reserved
+system 00:01: ioport range 0x800-0x8fe has been reserved
+system 00:01: ioport range 0x900-0x9fe has been reserved
+system 00:01: ioport range 0x9ff-0x9ff has been reserved
+system 00:01: ioport range 0xa00-0xafe has been reserved
+system 00:01: ioport range 0xaff-0xaff has been reserved
+system 00:01: ioport range 0xb00-0xbfe has been reserved
+system 00:01: ioport range 0xbff-0xbff has been reserved
+system 00:01: ioport range 0xc80-0xc83 has been reserved
+system 00:01: ioport range 0xcd4-0xcd7 has been reserved
+system 00:01: ioport range 0xcf9-0xcf9 could not be reserved
+system 00:01: ioport range 0xf50-0xf58 has been reserved
+system 00:01: ioport range 0xca0-0xca1 has been reserved
+system 00:01: ioport range 0xca4-0xca5 has been reserved
+system 00:01: ioport range 0xc00-0xc03 has been reserved
+system 00:01: ioport range 0x2f8-0x2ff has been reserved
+pci 0000:00:09.0: PCI bridge, secondary bus 0000:01
+pci 0000:00:09.0:   IO window: 0x1000-0x2fff
+pci 0000:00:09.0:   MEM window: 0xd9b00000-0xd9cfffff
+pci 0000:00:09.0:   PREFETCH window: 0xd0000000-0xd7ffffff
+pci 0000:00:0c.0: PCI bridge, secondary bus 0000:08
+pci 0000:00:0c.0:   IO window: 0x3000-0x3fff
+pci 0000:00:0c.0:   MEM window: 0xd9d00000-0xd9efffff
+pci 0000:00:0c.0:   PREFETCH window: 0x80000000-0x800fffff
+pci 0000:00:0d.0: PCI bridge, secondary bus 0000:05
+pci 0000:00:0d.0:   IO window: disabled
+pci 0000:00:0d.0:   MEM window: disabled
+pci 0000:00:0d.0:   PREFETCH window: disabled
+pci 0000:00:0e.0: PCI bridge, secondary bus 0000:02
+pci 0000:00:0e.0:   IO window: disabled
+pci 0000:00:0e.0:   MEM window: disabled
+pci 0000:00:0e.0:   PREFETCH window: disabled
+pci 0000:00:09.0: setting latency timer to 64
+pci 0000:00:0c.0: setting latency timer to 64
+pci 0000:00:0d.0: setting latency timer to 64
+pci 0000:00:0e.0: setting latency timer to 64
+pci 0000:40:0b.0: PCI bridge, secondary bus 0000:4f
+pci 0000:40:0b.0:   IO window: disabled
+pci 0000:40:0b.0:   MEM window: disabled
+pci 0000:40:0b.0:   PREFETCH window: disabled
+pci 0000:40:0c.0: PCI bridge, secondary bus 0000:4c
+pci 0000:40:0c.0:   IO window: disabled
+pci 0000:40:0c.0:   MEM window: disabled
+pci 0000:40:0c.0:   PREFETCH window: disabled
+pci 0000:40:0d.0: PCI bridge, secondary bus 0000:49
+pci 0000:40:0d.0:   IO window: disabled
+pci 0000:40:0d.0:   MEM window: disabled
+pci 0000:40:0d.0:   PREFETCH window: disabled
+pci 0000:40:0e.0: PCI bridge, secondary bus 0000:46
+pci 0000:40:0e.0:   IO window: disabled
+pci 0000:40:0e.0:   MEM window: disabled
+pci 0000:40:0e.0:   PREFETCH window: disabled
+pci 0000:40:10.0: PCI bridge, secondary bus 0000:41
+pci 0000:40:10.0:   IO window: disabled
+pci 0000:40:10.0:   MEM window: 0xda000000-0xddffffff
+pci 0000:40:10.0:   PREFETCH window: 0xde000000-0xde0fffff
+pci 0000:40:11.0: PCI bridge, secondary bus 0000:42
+pci 0000:40:11.0:   IO window: 0x4000-0x4fff
+pci 0000:40:11.0:   MEM window: 0xdfe00000-0xdfefffff
+pci 0000:40:11.0:   PREFETCH window: 0xde100000-0xde2fffff
+pci 0000:40:0b.0: setting latency timer to 64
+pci 0000:40:0c.0: setting latency timer to 64
+pci 0000:40:0d.0: setting latency timer to 64
+pci 0000:40:0e.0: setting latency timer to 64
+pci_bus 0000:00: resource 0 io:  [0x00-0x3fff]
+pci_bus 0000:00: resource 1 mem: [0x80000000-0xd9efffff]
+pci_bus 0000:00: resource 2 mem: [0xdff00000-0xe3ffffff]
+pci_bus 0000:00: resource 3 mem: [0x0a0000-0x0bffff]
+pci_bus 0000:00: resource 4 mem: [0xe8000000-0xffffffff]
+pci_bus 0000:00: resource 5 mem: [0x880000000-0xfcffffffff]
+pci_bus 0000:01: resource 0 io:  [0x1000-0x2fff]
+pci_bus 0000:01: resource 1 mem: [0xd9b00000-0xd9cfffff]
+pci_bus 0000:01: resource 2 pref mem [0xd0000000-0xd7ffffff]
+pci_bus 0000:01: resource 3 io:  [0x00-0x3fff]
+pci_bus 0000:01: resource 4 mem: [0x80000000-0xd9efffff]
+pci_bus 0000:01: resource 5 mem: [0xdff00000-0xe3ffffff]
+pci_bus 0000:01: resource 6 mem: [0x0a0000-0x0bffff]
+pci_bus 0000:01: resource 7 mem: [0xe8000000-0xffffffff]
+pci_bus 0000:01: resource 8 mem: [0x880000000-0xfcffffffff]
+pci_bus 0000:08: resource 0 io:  [0x3000-0x3fff]
+pci_bus 0000:08: resource 1 mem: [0xd9d00000-0xd9efffff]
+pci_bus 0000:08: resource 2 pref mem [0x80000000-0x800fffff]
+pci_bus 0000:40: resource 0 io:  [0x4000-0xffff]
+pci_bus 0000:40: resource 1 mem: [0xd9f00000-0xdfefffff]
+pci_bus 0000:40: resource 2 mem: [0xe4000000-0xe7ffffff]
+pci_bus 0000:41: resource 1 mem: [0xda000000-0xddffffff]
+pci_bus 0000:41: resource 2 pref mem [0xde000000-0xde0fffff]
+pci_bus 0000:42: resource 0 io:  [0x4000-0x4fff]
+pci_bus 0000:42: resource 1 mem: [0xdfe00000-0xdfefffff]
+pci_bus 0000:42: resource 2 pref mem [0xde100000-0xde2fffff]
+NET: Registered protocol family 2
+IP route cache hash table entries: 524288 (order: 10, 4194304 bytes)
+TCP established hash table entries: 524288 (order: 11, 8388608 bytes)
+TCP bind hash table entries: 65536 (order: 8, 1048576 bytes)
+TCP: Hash tables configured (established 524288 bind 65536)
+TCP reno registered
+NET: Registered protocol family 1
+Trying to unpack rootfs image as initramfs...
+debug: unmapping init memory ffff880037daa000..ffff880037ff0000
+platform rtc_cmos: registered platform RTC device (no PNP device found)
+HugeTLB registered 2 MB page size, pre-allocated 0 pages
+VFS: Disk quotas dquot_6.5.2
+Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+msgmni has been set to 32768
+alg: No test for stdrng (krng)
+Block layer SCSI generic (bsg) driver version 0.4 loaded (major 254)
+io scheduler noop registered
+io scheduler anticipatory registered
+io scheduler deadline registered (default)
+io scheduler cfq registered
+pci 0000:00:0c.0: Found enabled HT MSI Mapping
+pci 0000:00:0d.0: Found enabled HT MSI Mapping
+pci 0000:00:0e.0: Found enabled HT MSI Mapping
+pci 0000:01:03.0: Boot video device
+pci 0000:01:04.4: HCRESET not completed yet!
+pci 0000:40:0b.0: Found enabled HT MSI Mapping
+pci 0000:40:0c.0: Found enabled HT MSI Mapping
+pci 0000:40:0d.0: Found enabled HT MSI Mapping
+pci 0000:40:0e.0: Found enabled HT MSI Mapping
+  alloc irq_desc for 62 on node 0
+  alloc kstat_irqs on node 0
+pcieport-driver 0000:00:0c.0: irq 62 for MSI/MSI-X
+pcieport-driver 0000:00:0c.0: setting latency timer to 64
+  alloc irq_desc for 63 on node 0
+  alloc kstat_irqs on node 0
+pcieport-driver 0000:00:0d.0: irq 63 for MSI/MSI-X
+pcieport-driver 0000:00:0d.0: setting latency timer to 64
+  alloc irq_desc for 64 on node 0
+  alloc kstat_irqs on node 0
+pcieport-driver 0000:00:0e.0: irq 64 for MSI/MSI-X
+pcieport-driver 0000:00:0e.0: setting latency timer to 64
+  alloc irq_desc for 65 on node 1
+  alloc kstat_irqs on node 1
+pcieport-driver 0000:40:0b.0: irq 65 for MSI/MSI-X
+pcieport-driver 0000:40:0b.0: setting latency timer to 64
+  alloc irq_desc for 66 on node 1
+  alloc kstat_irqs on node 1
+pcieport-driver 0000:40:0c.0: irq 66 for MSI/MSI-X
+pcieport-driver 0000:40:0c.0: setting latency timer to 64
+  alloc irq_desc for 67 on node 1
+  alloc kstat_irqs on node 1
+pcieport-driver 0000:40:0d.0: irq 67 for MSI/MSI-X
+pcieport-driver 0000:40:0d.0: setting latency timer to 64
+  alloc irq_desc for 68 on node 1
+  alloc kstat_irqs on node 1
+pcieport-driver 0000:40:0e.0: irq 68 for MSI/MSI-X
+pcieport-driver 0000:40:0e.0: setting latency timer to 64
+processor LNXCPU:00: registered as cooling_device0
+processor LNXCPU:01: registered as cooling_device1
+processor LNXCPU:02: registered as cooling_device2
+processor LNXCPU:03: registered as cooling_device3
+processor LNXCPU:04: registered as cooling_device4
+processor LNXCPU:05: registered as cooling_device5
+processor LNXCPU:06: registered as cooling_device6
+processor LNXCPU:07: registered as cooling_device7
+Non-volatile memory driver v1.3
+Linux agpgart interface v0.103
+Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
+Platform driver 'serial8250' needs updating - please use dev_pm_ops
+00:09: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+brd: module loaded
+Compaq SMART2 Driver (v 2.6.0)
+HP CISS Driver (v 3.6.20)
+ACPI: PCI Interrupt Link [LNKW] enabled at IRQ 16
+  alloc irq_desc for 16 on node 0
+  alloc kstat_irqs on node 0
+cciss 0000:08:00.0: PCI INT A -> Link[LNKW] -> GSI 16 (level, high) -> IRQ 16
+  alloc irq_desc for 69 on node 0
+  alloc kstat_irqs on node 0
+cciss 0000:08:00.0: irq 69 for MSI/MSI-X
+  alloc irq_desc for 70 on node 0
+  alloc kstat_irqs on node 0
+cciss 0000:08:00.0: irq 70 for MSI/MSI-X
+  alloc irq_desc for 71 on node 0
+  alloc kstat_irqs on node 0
+cciss 0000:08:00.0: irq 71 for MSI/MSI-X
+  alloc irq_desc for 72 on node 0
+  alloc kstat_irqs on node 0
+cciss 0000:08:00.0: irq 72 for MSI/MSI-X
+IRQ 71/cciss0: IRQF_DISABLED is not guaranteed on shared IRQs
+cciss0: <0x3230> at PCI 0000:08:00.0 IRQ 71 using DAC
+      blocks= 143305920 block_size= 512
+      heads=255, sectors=32, cylinders=17562
+
+      blocks= 143305920 block_size= 512
+      heads=255, sectors=32, cylinders=17562
+
+ cciss/c0d0: p1 p2 p3
+      blocks= 143305920 block_size= 512
+      heads=255, sectors=32, cylinders=17562
+
+      blocks= 143305920 block_size= 512
+      heads=255, sectors=32, cylinders=17562
+
+ cciss/c0d1: p1 p2 p3
+      blocks= 143305920 block_size= 512
+      heads=255, sectors=32, cylinders=17562
+
+      blocks= 143305920 block_size= 512
+      heads=255, sectors=32, cylinders=17562
+
+ cciss/c0d2: p1 p2 p3
+      blocks= 143305920 block_size= 512
+      heads=255, sectors=32, cylinders=17562
+
+      blocks= 143305920 block_size= 512
+      heads=255, sectors=32, cylinders=17562
+
+ cciss/c0d3: p1 p2 p3
+      blocks= 143305920 block_size= 512
+      heads=255, sectors=32, cylinders=17562
+
+      blocks= 143305920 block_size= 512
+      heads=255, sectors=32, cylinders=17562
+
+ cciss/c0d4: p1 p2 p3
+      blocks= 143305920 block_size= 512
+      heads=255, sectors=32, cylinders=17562
+
+      blocks= 143305920 block_size= 512
+      heads=255, sectors=32, cylinders=17562
+
+ cciss/c0d5: p1 p2 p3
+      blocks= 143305920 block_size= 512
+      heads=255, sectors=32, cylinders=17562
+
+      blocks= 143305920 block_size= 512
+      heads=255, sectors=32, cylinders=17562
+
+ cciss/c0d6: p1 p2 p3
+      blocks= 143305920 block_size= 512
+      heads=255, sectors=32, cylinders=17562
+
+      blocks= 143305920 block_size= 512
+      heads=255, sectors=32, cylinders=17562
+
+ cciss/c0d7: p1 p2 p3
+Uniform Multi-Platform E-IDE driver
+amd74xx 0000:00:06.0: UDMA133 controller
+amd74xx 0000:00:06.0: IDE controller (0x10de:0x0053 rev 0xa3)
+amd74xx 0000:00:06.0: IDE port disabled
+amd74xx 0000:00:06.0: not 100% native mode: will probe irqs later
+    ide0: BM-DMA at 0x0500-0x0507
+Probing IDE interface ide0...
+hda: DW-224E-R, ATAPI CD/DVD-ROM drive
+hda: host max PIO5 wanted PIO255(auto-tune) selected PIO4
+hda: UDMA/33 mode selected
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+ide_generic: please use "probe_mask=0x3f" module parameter for probing all legacy ISA IDE ports
+ide-gd driver 1.18
+usbcore: registered new interface driver rio500
+rio500: v1.1:USB Rio 500 driver
+PNP: PS/2 Controller [PNP0303:KBD,PNP0f0e:PS2M] at 0x60,0x64 irq 1,12
+Platform driver 'i8042' needs updating - please use dev_pm_ops
+serio: i8042 KBD port at 0x60,0x64 irq 1
+serio: i8042 AUX port at 0x60,0x64 irq 12
+mice: PS/2 mouse device common for all mice
+cpuidle: using governor ladder
+usbcore: registered new interface driver hiddev
+usbcore: registered new interface driver usbhid
+usbhid: v2.6:USB HID core driver
+TCP bic registered
+Initializing XFRM netlink socket
+NET: Registered protocol family 17
+registered taskstats version 1
+debug: unmapping init memory ffffffff81524000..ffffffff815a5000
+Write protecting the kernel read-only data: 4780k
+ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
+ACPI: PCI Interrupt Link [LNU2] enabled at IRQ 23
+  alloc irq_desc for 23 on node 0
+  alloc kstat_irqs on node 0
+ehci_hcd 0000:00:02.1: PCI INT B -> Link[LNU2] -> GSI 23 (level, high) -> IRQ 23
+ehci_hcd 0000:00:02.1: setting latency timer to 64
+ehci_hcd 0000:00:02.1: EHCI Host Controller
+ehci_hcd 0000:00:02.1: new USB bus registered, assigned bus number 1
+ehci_hcd 0000:00:02.1: debug port 1
+ehci_hcd 0000:00:02.1: cache line size of 64 is not supported
+ehci_hcd 0000:00:02.1: irq 23, io mem 0xd9ad0000
+ehci_hcd 0000:00:02.1: USB 2.0 started, EHCI 1.00
+usb usb1: configuration #1 chosen from 1 choice
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 10 ports detected
+ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
+ACPI: PCI Interrupt Link [LNU0] enabled at IRQ 22
+  alloc irq_desc for 22 on node 0
+  alloc kstat_irqs on node 0
+ohci_hcd 0000:00:02.0: PCI INT A -> Link[LNU0] -> GSI 22 (level, high) -> IRQ 22
+ohci_hcd 0000:00:02.0: setting latency timer to 64
+ohci_hcd 0000:00:02.0: OHCI Host Controller
+ohci_hcd 0000:00:02.0: new USB bus registered, assigned bus number 2
+ohci_hcd 0000:00:02.0: irq 22, io mem 0xd9ae0000
+usb usb2: configuration #1 chosen from 1 choice
+hub 2-0:1.0: USB hub found
+hub 2-0:1.0: 10 ports detected
+uhci_hcd: USB Universal Host Controller Interface driver
+ACPI: PCI Interrupt Link [LNKX] enabled at IRQ 17
+  alloc irq_desc for 17 on node 0
+  alloc kstat_irqs on node 0
+uhci_hcd 0000:01:04.4: PCI INT B -> Link[LNKX] -> GSI 17 (level, high) -> IRQ 17
+uhci_hcd 0000:01:04.4: UHCI Host Controller
+uhci_hcd 0000:01:04.4: new USB bus registered, assigned bus number 3
+uhci_hcd 0000:01:04.4: port count misdetected? forcing to 2 ports
+uhci_hcd 0000:01:04.4: HCRESET not completed yet!
+usb 1-6: new high speed USB device using ehci_hcd and address 2
+uhci_hcd 0000:01:04.4: irq 17, io base 0x00001800
+usb usb3: configuration #1 chosen from 1 choice
+hub 3-0:1.0: USB hub found
+hub 3-0:1.0: 2 ports detected
+usb 1-6: configuration #1 chosen from 1 choice
+hub 1-6:1.0: USB hub found
+hub 1-6:1.0: 4 ports detected
+usb 3-1: new full speed USB device using uhci_hcd and address 2
+usb 3-1: configuration #1 chosen from 1 choice
+input: HP Virtual Keyboard as /class/input/input0
+generic-usb 0003:03F0:1027.0001: input: USB HID v1.01 Keyboard [HP Virtual Keyboard] on usb-0000:01:04.4-1/input0
+input: HP Virtual Keyboard as /class/input/input1
+generic-usb 0003:03F0:1027.0002: input: USB HID v1.01 Mouse [HP Virtual Keyboard] on usb-0000:01:04.4-1/input1
+usb 3-2: new full speed USB device using uhci_hcd and address 3
+kjournald starting.  Commit interval 5 seconds
+EXT3-fs: mounted filesystem with writeback data mode.
+usb 3-2: configuration #1 chosen from 1 choice
+hub 3-2:1.0: USB hub found
+hub 3-2:1.0: 7 ports detected
+<long pause here, then>
+Slow work thread pool: Starting up
+Slow work thread pool: Ready
+FS-Cache: Loaded
+FS-Cache: Netfs 'nfs' registered for caching
+svc: failed to register lockdv1 RPC service (errno 97).
+<and nothing more...>
+
+Those last messages would indicate that, altho' I've lost the console,
+the init scripts have run.
+
+At this point, the system doesn't respond to pings, so I didn't try
+anything else.  Turns out, this is the result of my network setup from
+home.  I can ssh into the system, so it did boot all the way. The
+console is just dead.  I tried "echo foo >/dev/console", which works on
+other Proliant DL* and see:
+
+-bash: echo: write error: Input/output error
+
+Lee
 
