@@ -1,71 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbZGWPov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbZGWPpN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753709AbZGWPov (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 11:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbZGWPou
+	id S1754219AbZGWPpN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 11:45:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753666AbZGWPpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 11:44:50 -0400
-Received: from gate.crashing.org ([63.228.1.57]:43831 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751658AbZGWPot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 11:44:49 -0400
-Cc: beckyb@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
-       benh@kernel.crashing.org, linux-kernel@vger.kernel.org
-Message-Id: <26996510-F41B-4B4C-8AA1-80CD23E4F435@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090723160855S.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Thu, 23 Jul 2009 11:45:12 -0400
+Received: from tarap.cc.columbia.edu ([128.59.29.7]:41899 "EHLO
+	tarap.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753585AbZGWPpL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 11:45:11 -0400
+Message-ID: <4A68855C.1060702@cs.columbia.edu>
+Date: Thu, 23 Jul 2009 11:44:28 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+MIME-Version: 1.0
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: akpm@linux-foundation.org, vda.linux@googlemail.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       menage@google.com
+Subject: Re: [RFC][PATCH] flexible array implementation v3
+References: <20090722175345.7154C2F2@kernel>
+In-Reply-To: <20090722175345.7154C2F2@kernel>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: removing addr_needs_map in struct dma_mapping_ops
-Date: Thu, 23 Jul 2009 10:44:25 -0500
-References: <B6C36B32-6861-4FD9-B8A3-E8C328687E0F@kernel.crashing.org> <20090714094919V.fujita.tomonori@lab.ntt.co.jp> <79B7CF70-0A66-43DA-91ED-3C8638FED141@kernel.crashing.org> <20090723160855S.fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: Apple Mail (2.935.3)
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Jul 23, 2009, at 2:09 AM, FUJITA Tomonori wrote:
 
->>> diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/
->>> powerpc/platforms/86xx/mpc86xx_hpcn.c
->>> index 6632702..d1878f3 100644
->>> --- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
->>> +++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
->>> @@ -187,5 +187,6 @@ define_machine(mpc86xx_hpcn) {
->>> 	.progress		= udbg_progress,
->>> #ifdef CONFIG_PCI
->>> 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
->>> +	.pci_dma_dev_setup	= pci_dma_dev_setup_swiotlb,
->>> #endif
->>> };
->>
->> Instead of initializing this here (which has problems if !
->> CONFIG_SWIOTLB),
->
-> Oops, I overlooked it.
->
->
->> place this in the xxxxx_xxxx_setup_arch function in
->> the same files, which already have an #ifdef CONFIG_SWIOTLB in which
->> this can be embedded.
->
-> But the xxxxx_xxxx_setup_arch function doesn't access to each device
-> so we need to add something like for_each_pci_dev()? You prefer that?
+Dave Hansen wrote:
+> 
+> Changes from v2:
+> - renamed some of the index functions
+> - added preallocation function
+> - added flex_array_free_parts() for use with
+>   statically allocated bases
+> - killed append() function
+> 
+> Changes from v1:
+> - to vs too typo
+> - added __check_part_and_nr() and gave it a warning
+> - fixed off-by-one check on __nr_part_ptrs()
+> - added FLEX_ARRAY_INIT() macro
+> - some kerneldoc comments about the capacity
+>   with various sized objects
+> - comments to note lack of locking semantice
+> 
+> --
+> 
+> Once a structure goes over PAGE_SIZE*2, we see occasional
+> allocation failures.  Some people have chosen to switch
+> over to things like vmalloc() that will let them keep
+> array-like access to such a large structures.  But,
+> vmalloc() has plenty of downsides.
+> 
+> Here's an alternative.  I think it's what Andrew was
+> suggesting  here:
+> 
+> 	http://lkml.org/lkml/2009/7/2/518 
+> 
+> I call it a flexible array.  It does all of its work in
+> PAGE_SIZE bits, so never does an order>0 allocation.
+> The base level has PAGE_SIZE-2*sizeof(int) bytes of
+> storage for pointers to the second level.  So, with a
+> 32-bit arch, you get about 4MB (4183112 bytes) of total
+> storage when the objects pack nicely into a page.  It
+> is half that on 64-bit because the pointers are twice
+> the size.  There's a table detailing this in the code.
+> 
+> There are kerneldocs for the functions, but here's an
+> overview:
+> 
+> flex_array_alloc() - dynamically allocate a base structure
+> flex_array_free() - free the array and all of the
+> 		    second-level pages
+> flex_array_free_parts() - free the second-level pages, but
+> 			  not the base (for static bases)
+> flex_array_put() - copy into the array at the given index
+> flex_array_get() - copy out of the array at the given index
+> flex_array_prealloc() - preallocate the second-level pages
+> 			between the given indexes to
+> 			guarantee no allocs will occur at
+> 			put() time.
 
-No.. I think what we want is:
+Probably premature, but -- I wonder if it's worth adding interfaces to:
 
-#ifdef CONFIG_SWIOTLB
-         if (lmb_end_of_DRAM() > max) {
-                 ppc_swiotlb_enable = 1;
-                 set_pci_dma_ops(&swiotlb_pci_dma_ops);
-		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
-         }
-#endif
+* copy a range of elements at once (perhaps to/from regular array ?
+or userspace ? -- depending on potential users)
 
-Buts its been a few days since Becky & I chatted about this and I feel  
-like I'm forgetting something.
+* (macro ?) iterate through elements (better have it ready for users
+of flex_array before, than convert their code later on)
 
-- k
+Oren.
+
+
