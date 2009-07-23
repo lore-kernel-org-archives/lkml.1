@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753803AbZGWRtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751787AbZGWSCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753803AbZGWRtW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 13:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbZGWRtV
+	id S1751787AbZGWSCQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 14:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbZGWSCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 13:49:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37448 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752977AbZGWRtV (ORCPT
+	Thu, 23 Jul 2009 14:02:15 -0400
+Received: from mail-px0-f186.google.com ([209.85.216.186]:40009 "EHLO
+	mail-px0-f186.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751587AbZGWSCO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 13:49:21 -0400
-Date: Thu, 23 Jul 2009 10:48:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Ferenc Wagner <wferi@niif.hu>, <linux-kernel@vger.kernel.org>,
-       <alan@lxorguk.ukuu.org.uk>, <linux-usb@vger.kernel.org>
-Subject: Re: 2.6.31-rc3: replugging USB serial converter uses new device
- node
-Message-Id: <20090723104809.6d39b03b.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.44L0.0907231042040.2825-100000@iolanthe.rowland.org>
-References: <20090723012140.39f697d2.akpm@linux-foundation.org>
-	<Pine.LNX.4.44L0.0907231042040.2825-100000@iolanthe.rowland.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Jul 2009 14:02:14 -0400
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Chaithrika U S <chaithrika@ti.com>,
+       Pavel Kiryukhin <pkiryukhin@ru.mvista.com>,
+       Naresh Medisetty <naresh@ti.com>, Steve Chen <schen@mvista.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Sudhakar Rajashekhara <sudhakar.raj@ti.com>
+Subject: Re: linux-next: manual merge of the sound tree with the davinci tree
+References: <20090723112110.e42430e9.sfr@canb.auug.org.au>
+	<s5hvdlkvsk6.wl%tiwai@suse.de>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Organization: Deep Root Systems, LLC
+Date: Thu, 23 Jul 2009 10:54:44 -0700
+In-Reply-To: <s5hvdlkvsk6.wl%tiwai@suse.de> (Takashi Iwai's message of "Thu\, 23 Jul 2009 08\:09\:45 +0200")
+Message-ID: <873a8ni8t7.fsf@deeprootsystems.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Jul 2009 10:44:13 -0400 (EDT) Alan Stern <stern@rowland.harvard.edu> wrote:
+Takashi Iwai <tiwai@suse.de> writes:
 
-> On Thu, 23 Jul 2009, Andrew Morton wrote:
-> 
-> > (cc linux-usb)
-> > 
-> > On Sat, 18 Jul 2009 22:04:57 +0200 Ferenc Wagner <wferi@niif.hu> wrote:
-> > 
-> > > Hi,
-> > > 
-> > > Since upgrading to 2.6.31-rc3 from 2.6.30, my ttyUSB device number
-> > > keeps increasing on each replug.  Output of udevadm monitor:
-> ...
-> > > Dmesg is available at http://pastebin.com/d516e3e00.
-> > 
-> > Can anyone say whether this is expected behaviour?
-> 
-> It depends on whether a program is still holding the old device file 
-> open when the replug occurs.
+> At Thu, 23 Jul 2009 11:21:10 +1000,
+> Stephen Rothwell wrote:
+>> 
+>> Hi Takashi,
+>> 
+>> Today's linux-next merge of the sound tree got a conflict in
+>> sound/soc/davinci/davinci-evm.c between commit
+>> 95d0d986d09ac25a5b9f2bf28f289ab0823e86d5 ("davinci: EDMA: multiple CCs,
+>> channel mapping and API changes") from the davinci tree and commit
+>> 04f80f5c486b39446af44e218dba90ec210d61ca ("ASoC: Add machine driver
+>> support for DM646x") from the sound tree.
+>> 
+>> The latter removes the code modified by the former.  I have just used the
+>> latter.
+>
+> Thanks.  I'll try to resolve the conflict in the sound tree,
+> e.g. pulling the affecting commit of davinci tree into for-next 
+> branch.
 
-But this is new behaviour in 2.6.31-rcX.  Was something changed in this area?
+I've taken care of this in the DaVinci for-next branch.
 
-> > Does it actually cause any observeable problems?  I expect things will
-> > get ugly once it runs out of range.
-> 
-> The numbers will get reused after the corresponding device files are
-> closed.
-> 
-> For further discussion, see this thread:
-> 
-> 	http://marc.info/?t=124828810800002&r=1&w=2
-> 
-> Alan Stern
+I dropped the davinci changes that change code that were then dropped
+by the asoc changes.
+
+Kevin
