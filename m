@@ -1,122 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753315AbZGWGiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753380AbZGWGkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753315AbZGWGiz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 02:38:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbZGWGiy
+	id S1753380AbZGWGkN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 02:40:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbZGWGkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 02:38:54 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:50506 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752689AbZGWGiw (ORCPT
+	Thu, 23 Jul 2009 02:40:12 -0400
+Received: from a-pb-sasl-sd.pobox.com ([64.74.157.62]:51536 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752029AbZGWGkK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 02:38:52 -0400
-Date: Thu, 23 Jul 2009 15:38:43 +0900 (JST)
-Message-Id: <20090723.153843.193704010.ryov@valinux.co.jp>
-To: kamezawa.hiroyu@jp.fujitsu.com
-Cc: xen-devel@lists.xensource.com, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       dm-devel@redhat.com, agk@redhat.com
-Subject: Re: [Xen-devel] Re: [PATCH 7/9] blkio-cgroup-v9: Page tracking
- hooks
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090723091841.81ff2432.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090722111714.8af6c5d8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090722.184055.226788113.ryov@valinux.co.jp>
-	<20090723091841.81ff2432.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Jul 2009 02:40:10 -0400
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.6.4-rc2
+From: Junio C Hamano <gitster@pobox.com>
+Date: Wed, 22 Jul 2009 23:40:01 -0700
+Message-ID: <7vd47r298e.fsf@alter.siamese.dyndns.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Pobox-Relay-ID: AA8DB274-7753-11DE-905F-AEF1826986A2-77302942!a-pb-sasl-sd.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Wed, 22 Jul 2009 18:40:55 +0900 (JST)
-> Ryo Tsuruta <ryov@valinux.co.jp> wrote:
-> 
-> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > > On Tue, 21 Jul 2009 23:23:16 +0900 (JST)
-> > > Ryo Tsuruta <ryov@valinux.co.jp> wrote:
-> > > 
-> > > > This patch contains several hooks that let the blkio-cgroup framework to know
-> > > > which blkio-cgroup is the owner of a page before starting I/O against the page.
-> > > 
-> > > > @@ -464,6 +465,7 @@ int add_to_page_cache_locked(struct page
-> > > >  					gfp_mask & GFP_RECLAIM_MASK);
-> > > >  	if (error)
-> > > >  		goto out;
-> > > > +	blkio_cgroup_set_owner(page, current->mm);
-> > > >  
-> > > 
-> > > This part is doubtful...Is this necessary ? 
-> > > I recommend you that the caller should attach owner by itself.
-> > 
-> > I think that it is reasonable to add the hook right here rather than
-> > to add many hooks to a variety of places.
-> > 
-> Why ? at writing, it's will be overwriten soon, IIUC. Then, this information
-> is misleading. plz add a hook like this when it means something. In this case,
-> read/write callers.
-> IMO, you just increase patch's readbility but decrease easiness of maintaince.
+A release candidate GIT 1.6.4-rc2 is available at the usual places
+for testing:
 
-Even though the owner is overwritten soon at writing, I'm not sure why
-inserting the hook here causes the misleading. I think that it is easy
-to understand when and where the owner is set by blkio-cgroup, and it
-does not decrease maintainability, rather than put many hooks to each
-caller.
- 
-> > > IMHO, later io for swap-out is caused by the caller of swapout, not page's
-> > > owner. plz charge to them or,
-> > >   - add special BLOCK CGROUP ID for the kernel's swap out. 
-> > 
-> > I think that it is not too bad to charge the owner of a page for
-> > swap-out. From another perspective, it can be considered that swap-out
-> > is caused by a process which uses a large amount of memory.
-> > 
-> No. swap-out is caused by a thread who requests memory even while memory is
-> in short. IMHO, I/O by memory reqraim should work in priority of memory requester.
+  http://www.kernel.org/pub/software/scm/git/
+
+  git-1.6.4.rc2.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.6.4.rc2.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.6.4.rc2.tar.{gz,bz2}		(preformatted docs)
+
+The RPM binary packages for a few architectures are found in:
+
+  testing/git-*-1.6.4.rc2-1.fc9.$arch.rpm	(RPM)
+
+The changes since -rc1 are all small fixes and documentation updates; we
+are in a very good shape to expect 1.6.4 final by the end of the month.
+
+GIT v1.6.4 Release Notes (draft)
+================================
+
+With the next major release, "git push" into a branch that is
+currently checked out will be refused by default.  You can choose
+what should happen upon such a push by setting the configuration
+variable receive.denyCurrentBranch in the receiving repository.
+
+To ease the transition plan, the receiving repository of such a
+push running this release will issue a big warning when the
+configuration variable is missing.  Please refer to:
+
+  http://git.or.cz/gitwiki/GitFaq#non-bare
+  http://thread.gmane.org/gmane.comp.version-control.git/107758/focus=108007
+
+for more details on the reason why this change is needed and the
+transition plan.
+
+For a similar reason, "git push $there :$killed" to delete the branch
+$killed in a remote repository $there, if $killed branch is the current
+branch pointed at by its HEAD, gets a large warning.  You can choose what
+should happen upon such a push by setting the configuration variable
+receive.denyDeleteCurrent in the receiving repository.
 
 
-> 
-> Consider following situation.
-> 
-> - A process "A" has big memory. When several threads requests memory, all 
->   of them are caught by a blockio cgroup of "A".
-> - A process "B" has read big file caches. When several threads requests memory, 
->   all  of them are caught by a blockio cgroup of "B".
-> 
-> If "A" and "B" 's threshold is small, you'll see big slow down.
-> But it's not _planned_ behavior in many cases.
-> 
-> If you charges agaisnt memory owner, the admin has to set _big_ priority of I/O
-> controller to "A" and "B" if it uses much memory. I think the admin can't design
-> his system. It's nonsense to say "plz set I/O limit propotional to memory usage of
-> your apps even if it never do I/O in usual."
->
-> If this blockio cgroup is introduced, people will see *unexpected* very
-> terrible slow down and the user will see heartbeat warnings/failover by cluster
-> management software. Please do I/O at the priority of memory reclaiming requester.
+Updates since v1.6.3
+--------------------
 
-dm-ioband gives high priority to I/O for swap-out by checking whether
-PG_swapcache flag is set on the I/O page, regardless of the assigned
-I/O bandwidth, and the bandwidth consumed for swap-out is charged to
-the owner of the pages as a debt.
-How about this approach?
+(subsystems)
 
-Thanks,
-Ryo Tsuruta
+ * gitweb Perl style clean-up.
 
-> 
-> 
-> Thanks,
-> -Kame
-> 
-> 
-> 
-> 
-> 
-> _______________________________________________
-> Xen-devel mailing list
-> Xen-devel@lists.xensource.com
-> http://lists.xensource.com/xen-devel
+ * git-svn updates, including a new --authors-prog option to map author
+   names by invoking an external program, 'git svn reset' to unwind
+   'git svn fetch', support for more than one branches, etc.
+
+(portability)
+
+ * We feed iconv with "UTF-8" instead of "utf8"; the former is
+   understood more widely.  Similarly updated test scripts to use
+   encoding names more widely understood (e.g. use "ISO8850-1" instead
+   of "ISO-8859-1").
+
+ * Various portability fixes/workarounds for different vintages of
+   SunOS, IRIX, and Windows.
+
+ * Git-over-ssh transport on Windows supports PuTTY plink and TortoisePlink.
+
+(performance)
+
+ * Many repeated use of lstat() are optimized out in "checkout" codepath.
+
+ * git-status (and underlying git-diff-index --cached) are optimized
+   to take advantage of cache-tree information in the index.
+
+(usability, bells and whistles)
+
+ * "git add --edit" lets users edit the whole patch text to fine-tune what
+   is added to the index.
+
+ * "git am" accepts StGIT series file as its input.
+
+ * "git bisect skip" skips to a more randomly chosen place in the hope
+   to avoid testing a commit that is too close to a commit that is
+   already known to be untestable.
+
+ * "git cvsexportcommit" learned -k option to stop CVS keywords expansion
+
+ * "git grep" learned -p option to show the location of the match using the
+   same context hunk marker "git diff" uses.
+
+ * https transport can optionally be told that the used client
+   certificate is password protected, in which case it asks the
+   password only once.
+
+ * "git imap-send" is IPv6 aware.
+
+ * "git log --graph" draws graphs more compactly by using horizonal lines
+   when able.
+
+ * "git log --decorate" shows shorter refnames by stripping well-known
+   refs/* prefix.
+
+ * "git push $name" honors remote.$name.pushurl if present before
+   using remote.$name.url.  In other words, the URL used for fetching
+   and pushing can be different.
+
+ * "git send-email" understands quoted aliases in .mailrc files (might
+   have to be backported to 1.6.3.X).
+
+ * "git send-email" can fetch the sender address from the configuration
+   variable "sendmail.from" (and "sendmail.<identity>.from").
+
+ * "git show-branch" can color its output.
+
+ * "add" and "update" subcommands to "git submodule" learned --reference
+   option to use local clone with references.
+
+ * "git submodule update" learned --rebase option to update checked
+   out submodules by rebasing the local changes.
+
+ * "gitweb" can optionally use gravatar to adorn author/committer names.
+
+(developers)
+
+ * A major part of the "git bisect" wrapper has moved to C.
+
+Fixes since v1.6.3
+------------------
+
+All of the fixes in v1.6.3.X maintenance series are included in this
+release, unless otherwise noted.
+
+Here are fixes that this release has, but have not been backported to
+v1.6.3.X series.
+
+ * "git diff-tree -r -t" used to omit new or removed directories from
+   the output.  df533f3 (diff-tree -r -t: include added/removed
+   directories in the output, 2009-06-13) may need to be cherry-picked
+   to backport this fix.
+
+ * The way Git.pm sets up a Repository object was not friendly to callers
+   that chdir around.  It now internally records the repository location
+   as an absolute path when autodetected.
+
+---
+exec >/var/tmp/1
+echo O=$(git describe master)
+O=v1.6.4-rc1-7-gbba0fd2
+git shortlog --no-merges $O..master ^maint
+
+
+----------------------------------------------------------------
+
+Changes since v1.6.4-rc1 are as follows:
+
+Brandon Casey (4):
+      refs.c: release file descriptor on error return
+      sha1_name.c: avoid unnecessary strbuf_release
+      configure.ac: rework/fix the NEEDS_RESOLV and NEEDS_LIBGEN tests
+      configure.ac: properly unset NEEDS_SSL_WITH_CRYPTO when sha1 func is missing
+
+Eric Wong (2):
+      git svn: rename tests that had conflicting numbers
+      git svn: fix reparenting when ugly http(s) URLs are used
+
+Junio C Hamano (5):
+      checkout -f: deal with a D/F conflict entry correctly
+      push: do not give big warning when no preference is configured
+      Updates to draft release notes to 1.6.4
+      combine-diff.c: fix performance problem when folding common deleted lines
+      diff --cc: a lost line at the beginning of the file is shown incorrectly
+
+Martin Koegler (1):
+      git stash: modernize use of "dashed" git-XXX calls
+
+Michael J Gruber (1):
+      t4202-log.sh: Test git log --no-walk sort order
+
+Mike Ralphson (1):
+      cvsexportcommit: reorder tests to quiet intermittent failure
+
+Pierre Habouzit (4):
+      janitor: use NULL and not 0 for pointers.
+      refactor: use bitsizeof() instead of 8 * sizeof()
+      janitor: add DIV_ROUND_UP and use it.
+      janitor: useless checks before free
+
+SZEDER Gábor (1):
+      Trailing whitespace and no newline fix
+
+Yann Dirson (2):
+      List send-email config options in config.txt.
+      Improve doc for format-patch threading options.
+
