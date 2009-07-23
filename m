@@ -1,76 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753393AbZGWVCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbZGWVCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753393AbZGWVCg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 17:02:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753851AbZGWVCX
+	id S1754629AbZGWVCt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 17:02:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbZGWVCg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 17:02:23 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37239 "EHLO
+	Thu, 23 Jul 2009 17:02:36 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:37216 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753490AbZGWVCW (ORCPT
+	with ESMTP id S1753742AbZGWVCW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 23 Jul 2009 17:02:22 -0400
-Message-Id: <20090723210220.880275669@goodmis.org>
+Message-Id: <20090723210220.508042243@goodmis.org>
 References: <20090723210047.294710482@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 23 Jul 2009 17:00:51 -0400
+Date: Thu, 23 Jul 2009 17:00:49 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Matt Fleming <matt@console-pimps.org>
-Subject: [PATCH 4/4] ftrace: Only update $offset when we update $ref_func
-Content-Disposition: inline; filename=0004-ftrace-Only-update-offset-when-we-update-ref_func.patch
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 2/4] tracing: only truncate ftrace files when O_TRUNC is set
+Content-Disposition: inline; filename=0002-tracing-only-truncate-ftrace-files-when-O_TRUNC-is-s.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matt Fleming <matt@console-pimps.org>
+From: Steven Rostedt <srostedt@redhat.com>
 
-The value of $offset should be the offset of $ref_func from the
-beginning of the object file. Therefore, we should set both variables
-together.
+The current code will truncate the ftrace files contents if O_APPEND
+is not set and the file is opened in write mode. This is incorrect.
+It should only truncate the file if O_TRUNC is set. Otherwise
+if one of these files is opened by a C program with fopen "r+",
+it will incorrectly truncate the file.
 
-This fixes a bug I was hitting on sh where $offset (which is used to
-calcualte the addends for the __mcount_loc entries) was being set
-multiple times and didn't correspond to $ref_func's offset in the object
-file. The addends in __mcount_loc were calculated incorrectly, resulting
-in ftrace dynamically modifying addresses that weren't mcount call
-sites.
-
-Signed-off-by: Matt Fleming <matt@console-pimps.org>
-LKML-Reference: <1248365775-25196-2-git-send-email-matt@console-pimps.org>
+Reported-by: Jiri Olsa <jolsa@redhat.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- scripts/recordmcount.pl |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ kernel/trace/ftrace.c       |    4 ++--
+ kernel/trace/trace.c        |    2 +-
+ kernel/trace/trace_events.c |    2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 16c5563..d29baa2 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -403,7 +403,6 @@ while (<IN>) {
-     # section found, now is this a start of a function?
-     } elsif ($read_function && /$function_regex/) {
- 	$text_found = 1;
--	$offset = hex $1;
- 	$text = $2;
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 1f3ec2a..1e1d23c 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -1662,7 +1662,7 @@ ftrace_regex_open(struct inode *inode, struct file *file, int enable)
  
- 	# if this is either a local function or a weak function
-@@ -412,10 +411,12 @@ while (<IN>) {
- 	if (!defined($locals{$text}) && !defined($weak{$text})) {
- 	    $ref_func = $text;
- 	    $read_function = 0;
-+	    $offset = hex $1;
- 	} else {
- 	    # if we already have a function, and this is weak, skip it
- 	    if (!defined($ref_func) && !defined($weak{$text})) {
- 		$ref_func = $text;
-+		$offset = hex $1;
- 	    }
+ 	mutex_lock(&ftrace_regex_lock);
+ 	if ((file->f_mode & FMODE_WRITE) &&
+-	    !(file->f_flags & O_APPEND))
++	    (file->f_flags & O_TRUNC))
+ 		ftrace_filter_reset(enable);
+ 
+ 	if (file->f_mode & FMODE_READ) {
+@@ -2577,7 +2577,7 @@ ftrace_graph_open(struct inode *inode, struct file *file)
+ 
+ 	mutex_lock(&graph_lock);
+ 	if ((file->f_mode & FMODE_WRITE) &&
+-	    !(file->f_flags & O_APPEND)) {
++	    (file->f_flags & O_TRUNC)) {
+ 		ftrace_graph_count = 0;
+ 		memset(ftrace_graph_funcs, 0, sizeof(ftrace_graph_funcs));
  	}
-     } elsif ($read_headers && /$mcount_section/) {
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 8bc8d8a..d8ef285 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -2031,7 +2031,7 @@ static int tracing_open(struct inode *inode, struct file *file)
+ 
+ 	/* If this file was open for write, then erase contents */
+ 	if ((file->f_mode & FMODE_WRITE) &&
+-	    !(file->f_flags & O_APPEND)) {
++	    (file->f_flags & O_TRUNC)) {
+ 		long cpu = (long) inode->i_private;
+ 
+ 		if (cpu == TRACE_PIPE_ALL_CPU)
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 53c8fd3..23d2972 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -376,7 +376,7 @@ ftrace_event_seq_open(struct inode *inode, struct file *file)
+ 	const struct seq_operations *seq_ops;
+ 
+ 	if ((file->f_mode & FMODE_WRITE) &&
+-	    !(file->f_flags & O_APPEND))
++	    (file->f_flags & O_TRUNC))
+ 		ftrace_clear_events();
+ 
+ 	seq_ops = inode->i_private;
 -- 
 1.6.3.3
 
