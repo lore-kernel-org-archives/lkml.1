@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752774AbZGWOma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752881AbZGWOoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752774AbZGWOma (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 10:42:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbZGWOm3
+	id S1752881AbZGWOoP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 10:44:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZGWOoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 10:42:29 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:35898 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751622AbZGWOm3 convert rfc822-to-8bit (ORCPT
+	Thu, 23 Jul 2009 10:44:14 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:55617 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752137AbZGWOoO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 10:42:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=N2tRjvoVWkBCbiDbBn8sSM6xkfxdKi9GBkk5NX0P5ZZ4herxXkwSdjPYEG3PtNyFYI
-         UmSg2BIeOJFPRdhtt9gUzKFa/ilhAaSGp1L27voNvp5mlyyQH8nhoSdJ5NEn4U/6V1Yc
-         zmepe0efXFEDt+PsK2X5Pfw5SU/ra2jWnIu2E=
+	Thu, 23 Jul 2009 10:44:14 -0400
+Date: Thu, 23 Jul 2009 10:44:13 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Ferenc Wagner <wferi@niif.hu>, <linux-kernel@vger.kernel.org>,
+       <alan@lxorguk.ukuu.org.uk>, <linux-usb@vger.kernel.org>
+Subject: Re: 2.6.31-rc3: replugging USB serial converter uses new device node
+In-Reply-To: <20090723012140.39f697d2.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.44L0.0907231042040.2825-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <200907231614.23570.elendil@planet.nl>
-References: <alpine.LFD.2.01.0907221936220.3352@localhost.localdomain>
-	 <200907231614.23570.elendil@planet.nl>
-Date: Thu, 23 Jul 2009 07:42:28 -0700
-Message-ID: <86802c440907230742w2858e1d9i8357bb94ed996ff3@mail.gmail.com>
-Subject: Re: Linux 2.6.31-rc4: strange change in iomem allocation
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 23, 2009 at 7:14 AM, Frans Pop<elendil@planet.nl> wrote:
-> I'm seeing the following change in dmesg between -rc3 and -rc4:
-> -system 00:0c: iomem range 0xfec00000-0xfec000ff has been reserved
-> +system 00:0c: iomem range 0xfec00000-0xfec000ff could not be reserved
->
-> There is nothing in the earlier part of dmesg that would explain this
-> change.
->
-> The change is also visible in /proc/iomem:
->  fec00000-fec00fff : IOAPIC 0
->   fec00000-fec00fff : reserved
-> -    fec00000-fec000ff : pnp 00:0c
->
-> I somewhat suspect 857fdc53a0a90c3ba7fcf5b1fb4c7a62ae03cf82:
->    x86/pci: insert ioapic resource before assigning unassigned resources
->
-> System is HP 2510p notebook (x86_64).
+On Thu, 23 Jul 2009, Andrew Morton wrote:
 
-should be ok. we don't need that
-   fec00000-fec000ff : pnp 00:0c
+> (cc linux-usb)
+> 
+> On Sat, 18 Jul 2009 22:04:57 +0200 Ferenc Wagner <wferi@niif.hu> wrote:
+> 
+> > Hi,
+> > 
+> > Since upgrading to 2.6.31-rc3 from 2.6.30, my ttyUSB device number
+> > keeps increasing on each replug.  Output of udevadm monitor:
+...
+> > Dmesg is available at http://pastebin.com/d516e3e00.
+> 
+> Can anyone say whether this is expected behaviour?
 
-YH
+It depends on whether a program is still holding the old device file 
+open when the replug occurs.
+
+> Does it actually cause any observeable problems?  I expect things will
+> get ugly once it runs out of range.
+
+The numbers will get reused after the corresponding device files are
+closed.
+
+For further discussion, see this thread:
+
+	http://marc.info/?t=124828810800002&r=1&w=2
+
+Alan Stern
+
