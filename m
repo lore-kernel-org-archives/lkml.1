@@ -1,78 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbZGWPCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbZGWPIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753974AbZGWPCO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 11:02:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbZGWPCN
+	id S1753709AbZGWPIK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 11:08:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbZGWPIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 11:02:13 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:44949 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752400AbZGWPCN (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 11:02:13 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: mmotm-0716 - selinux_bprm_commited_creds patch missing..
-From: Valdis.Kletnieks@vt.edu
+	Thu, 23 Jul 2009 11:08:10 -0400
+Received: from ns2.tasking.nl ([195.193.207.10]:16433 "EHLO ns2.tasking.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751202AbZGWPIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 11:08:09 -0400
+To: linux-kernel@vger.kernel.org
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1248357159_9653P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 23 Jul 2009 09:52:39 -0400
-Message-ID: <13397.1248357159@turing-police.cc.vt.edu>
+X-Newsreader: knews 1.0b.1
+Reply-To: dick.streefland@altium.nl (Dick Streefland)
+Organization: Altium BV
+X-Face: "`*@3nW;mP[=Z(!`?W;}cn~3M5O_/vMjX&Pe!o7y?xi@;wnA&Tvx&kjv'N\P&&5Xqf{2CaT 9HXfUFg}Y/TT^?G1j26Qr[TZY%v-1A<3?zpTYD5E759Q?lEoR*U1oj[.9\yg_o.~O.$wj:t(B+Q_?D XX57?U,#b,iM$[zX'I(!'VCQM)N)x~knSj>M*@l}y9(tK\rYwdv%~+&*jV"epphm>|q~?ys:g:K#R" 2PuAzy-N9cKM<Ml/%yPQxpq"Ttm{GzBn-*:;619QM2HLuRX4]~361+,[uFp6f"JF5R`y
+References: <4A675F89.50506@nortel.com>
+From: dick.streefland@altium.nl (Dick Streefland)
+Subject: Re: question for C preprocessor wizards
+Content-Type: text/plain; charset=us-ascii
+NNTP-Posting-Host: 172.17.1.66
+Message-ID: <4c5d.4a687cd4.a6013@altium.nl>
+Date: Thu, 23 Jul 2009 15:08:04 -0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1248357159_9653P
-Content-Type: text/plain; charset=us-ascii
+"Chris Friesen" <cfriesen@nortel.com> wrote:
+| I've got a bunch of code that call a bunch of different wrapper
+| routines, with varying numbers of arguments.  Depending on whether a
+| compile flag is set, I want to do some stuff before and after calling
+| the "real" routine.  I can do this easily enough with a macro.
+| 
+| #if FLAG
+| #define func_wrapper(args...) \
+| 	do { \
+| 		dostuff(); \
+| 		func(args); \
+| 		do_more_stuff(); \
+| 	} while (0)
+| #else
+| #define func_wrapper(args...) func(args)
+| #endif
+| 
+| 
+| However, given that there are hundreds of functions, I'd like to
+| generate these macros with another macro, sort of like:
+| 
+| #if FLAG
+| #define WRAPPER(func) \
+| 	#define func # _wrapper(args...) \
+| 	do { \
+| 		dostuff(); \
+| 		func(args); \
+| 		do_more_stuff(); \
+| 	} while (0)
+| #else
+| #define WRAPPER(func) \
+| 	#define func ## _wrapper(args...) func(args)
+| #endif
 
-Andrew - mmotm-0716 dies at boot because it's missing this patch from Oleg
-for a problem originally spotted in -0630/0702:
+You cannot generate preprocessing directives with macro expansion.
+An alternative is to use a generic wrapper macro, and use that to
+define wrappers for the functions. Something like:
 
-Date: Fri, 03 Jul 2009 11:23:11 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org,         James Morris <jmorris@namei.org>, David Howells <dhowells@redhat.com>,         Roland McGrath <roland@redhat.com>
-Subject: [PATCH] selinux_bprm_committed_creds: use __wake_up_parent()
+#if FLAG
+#define generic_wrapper(func, args...) \
+        do { \
+                dostuff(); \
+                func(args); \
+                do_more_stuff(); \
+        } while (0)
+#else
+#define generic_wrapper(func, args...) func(args)
+#endif
 
-(depends on ptrace-__ptrace_detach-do-__wake_up_parent-if-we-reap-the-tracee.patch
- which exports __wake_up_parent)
+#define func1_wrapper(args...) generic_wrapper(func1, args)
+#define func2_wrapper(args...) generic_wrapper(func2, args)
+#define func3_wrapper(args...) generic_wrapper(func3, args)
+...
 
-Spotted by Valdis.Kletnieks@vt.edu.
+-- 
+Dick Streefland                      ////                      Altium BV
+dick.streefland@altium.nl           (@ @)          http://www.altium.com
+--------------------------------oOO--(_)--OOo---------------------------
 
-selinux_bprm_committed_creds() should not play with ->wait_chldexit, now
-that __wake_up_parent() is exported change the code to use this helper.
-
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
-
---- WAIT/security/selinux/hooks.c~SEL_WAKE_PARENT	2009-06-16 17:01:42.000000000 +0200
-+++ WAIT/security/selinux/hooks.c	2009-07-03 11:15:08.000000000 +0200
-@@ -2404,7 +2404,7 @@ static void selinux_bprm_committed_creds
- 	/* Wake up the parent if it is waiting so that it can recheck
- 	 * wait permission to the new task SID. */
- 	read_lock(&tasklist_lock);
--	wake_up_interruptible(&current->real_parent->signal->wait_chldexit);
-+	__wake_up_parent(current, current->real_parent);
- 	read_unlock(&tasklist_lock);
- }
- 
-
-
-
-
-
---==_Exmh_1248357159_9653P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFKaGsncC3lWbTT17ARAlndAJ9PpQZccN1iY067RHzK0druNi9HawCg1lOd
-H8gTlH4Igz+oG+Ue+B1a0ak=
-=7IQw
------END PGP SIGNATURE-----
-
---==_Exmh_1248357159_9653P--
