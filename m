@@ -1,83 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835AbZGWJpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753894AbZGWJwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753835AbZGWJpz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 05:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbZGWJpy
+	id S1753894AbZGWJwJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 05:52:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbZGWJwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 05:45:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43925 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751881AbZGWJpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 05:45:54 -0400
-Message-ID: <4A6831AC.3080704@redhat.com>
-Date: Thu, 23 Jul 2009 17:47:24 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
-MIME-Version: 1.0
-To: Johannes Weiner <hannes@cmpxchg.org>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>, mingo@elte.hu,
-       Chris Zankel <chris@zankel.net>
-Subject: Re: [Patch 2/2] xtensa: use generic sys_pipe()
-References: <20090722091051.6621.15184.sendpatchset@localhost.localdomain> <20090722091100.6621.80645.sendpatchset@localhost.localdomain> <20090722101032.GA2102@cmpxchg.org>
-In-Reply-To: <20090722101032.GA2102@cmpxchg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Jul 2009 05:52:09 -0400
+Received: from cs20.apochromatic.org ([204.152.189.161]:54418 "EHLO
+	cs20.apochromatic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753444AbZGWJwI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 05:52:08 -0400
+From: Matt Fleming <matt@console-pimps.org>
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH -tip] ftrace: Correctly calculate the first function in the .text section
+Date: Thu, 23 Jul 2009 10:51:43 +0100
+Message-Id: <1248342703-15758-1-git-send-email-matt@console-pimps.org>
+X-Mailer: git-send-email 1.6.4.rc0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Weiner wrote:
-> [CC Chris]
->
-> On Wed, Jul 22, 2009 at 05:08:42AM -0400, Amerigo Wang wrote:
->   
->> As suggested by Al, we can use the generic sys_pipe() instead of xtensa_pipe()
->> for xtensa.
->>
->> Signed-off-by: WANG Cong <amwang@redhat.com>
->> Cc: Al Viro <viro@zeniv.linux.org.uk> 
->> CC: Linus Torvalds <torvalds@linux-foundation.org>
->>     
->
-> Reviewed-by: Johannes Weiner <jw@emlix.com>
->
->   
+This patch fixes a bug whereby recordmcount.pl didn't stop searching
+once it had correctly detected the function at the beginning of the
+.text section. To stop it searching, I needed to reset $read_function.
+The effect of this bug was that some entries in __mcount_loc section
+were created with the negative reloc addends. The last text section
+found was used as the base and all mcount calls were at a relative
+offset to that, so at final link time the addresses were fixed up to
+point to somewhere completely bogus.
 
-Thanks for your review.
->> ---
->> diff --git a/arch/xtensa/include/asm/syscall.h b/arch/xtensa/include/asm/syscall.h
->> index 05cebf8..76a1fb8 100644
->> --- a/arch/xtensa/include/asm/syscall.h
->> +++ b/arch/xtensa/include/asm/syscall.h
->> @@ -12,7 +12,6 @@ struct pt_regs;
->>  struct sigaction;
->>  asmlinkage long xtensa_execve(char*, char**, char**, struct pt_regs*);
->>  asmlinkage long xtensa_clone(unsigned long, unsigned long, struct pt_regs*);
->> -asmlinkage long xtensa_pipe(int __user *);
->>  asmlinkage long xtensa_mmap2(unsigned long, unsigned long, unsigned long,
->>      			     unsigned long, unsigned long, unsigned long);
->>  asmlinkage long xtensa_ptrace(long, long, long, long);
->> diff --git a/arch/xtensa/include/asm/unistd.h b/arch/xtensa/include/asm/unistd.h
->> index c092c8f..b6880c8 100644
->> --- a/arch/xtensa/include/asm/unistd.h
->> +++ b/arch/xtensa/include/asm/unistd.h
->> @@ -94,7 +94,7 @@ __SYSCALL( 35, sys_readlink, 3)
->>  #define __NR_mknod 				 36
->>  __SYSCALL( 36, sys_mknod, 3)
->>  #define __NR_pipe 				 37
->> -__SYSCALL( 37, xtensa_pipe, 1)
->> +__SYSCALL(37, sys_pipe, 1)
->>     
->
-> It would have been nice to keep the spacing but that shouldn't be a
-> show stopper..
->
->   
+This all resulted in ftrace dynamically modifying addresses that weren't
+actually mcount callsites.
 
-I did this, but checkpatch.pl complained about this... so I removed the
-space. Do I need to update and resend the patch? :)
+I also noticed another bug and fixed up the condition from,
 
-Thanks.
+	if (!defined($ref_func) || !defined($weak{$text})) {
+to
+	if (!defined($ref_func) && !defined($weak{$text})) {
+
+This now matches the comment above the conditional.
+
+Signed-off-by: Matt Fleming <matt@console-pimps.org>
+---
+ scripts/recordmcount.pl |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
+index 7109e2b..356ff6a 100755
+--- a/scripts/recordmcount.pl
++++ b/scripts/recordmcount.pl
+@@ -414,8 +414,9 @@ while (<IN>) {
+ 	    $read_function = 0;
+ 	} else {
+ 	    # if we already have a function, and this is weak, skip it
+-	    if (!defined($ref_func) || !defined($weak{$text})) {
++	    if (!defined($ref_func) && !defined($weak{$text})) {
+ 		$ref_func = $text;
++		$read_function = 0;
+ 	    }
+ 	}
+     } elsif ($read_headers && /$mcount_section/) {
+-- 
+1.6.4.rc0
 
