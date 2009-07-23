@@ -1,127 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752158AbZGWORj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752987AbZGWOZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752158AbZGWORj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 10:17:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbZGWORj
+	id S1752987AbZGWOZY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 10:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbZGWOZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 10:17:39 -0400
-Received: from cluster-d.mailcontrol.com ([85.115.60.190]:48463 "EHLO
-	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751059AbZGWORi (ORCPT
+	Thu, 23 Jul 2009 10:25:23 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:58818 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752224AbZGWOZW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 10:17:38 -0400
-Message-ID: <4A68709E.5060207@csr.com>
-Date: Thu, 23 Jul 2009 15:15:58 +0100
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Thu, 23 Jul 2009 10:25:22 -0400
+Date: Thu, 23 Jul 2009 09:24:54 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Oren Laadan <orenl@librato.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Oren Laadan <orenl@cs.columbia.edu>
+Subject: Re: [RFC v17][PATCH 19/60] c/r: documentation
+Message-ID: <20090723142454.GA10769@us.ibm.com>
+References: <1248256822-23416-1-git-send-email-orenl@librato.com> <1248256822-23416-20-git-send-email-orenl@librato.com>
 MIME-Version: 1.0
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-CC: Linus Walleij <linus.walleij@stericsson.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Pierre Ossman <pierre@ossman.eu>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH 1/2] MMC Agressive clocking framework v5
-References: <1248128808-2241-1-git-send-email-linus.walleij@stericsson.com>	 <4A6701E3.3000204@csr.com> <63386a3d0907221533u6ab2738dpcb4484595ae757b0@mail.gmail.com>
-In-Reply-To: <63386a3d0907221533u6ab2738dpcb4484595ae757b0@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Jul 2009 14:15:58.0571 (UTC) FILETIME=[199A83B0:01CA0BA0]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1248256822-23416-20-git-send-email-orenl@librato.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Walleij wrote:
-> 2009/7/22 David Vrabel <david.vrabel@csr.com>:
-> 
->> Linus Walleij wrote:
-> 
->> I'm not sure this is the right approach.
-> 
-> It's been discussed a bit back and forth for a few months, but let's keep
-> at it...
-> 
->> 1. With some controllers (e.g., PXA270 I think) turning the clock on and
->> off is slow.  This means if you're doing back-to-back commands you
->> should leave the clock on for best performance.
-> 
-> OK, when I've been testing this using the default workqueue and
-> schedule_work() covered these cases. Back-on-back commands
-> seemingly doesn't allow the timeout work to schedule, but I might be
-> overseeing the case of several CPU:s there though :-/
+Quoting Oren Laadan (orenl@librato.com):
+> +Security
+> +========
+> +
+> +The main question is whether sys_checkpoint() and sys_restart()
+> +require privileged or unprivileged operation.
+> +
+> +Early versions checked capable(CAP_SYS_ADMIN) assuming that we would
+> +attempt to remove the need for privilege, so that all users could
+> +safely use it. Arnd Bergmann pointed out that it'd make more sense to
+> +let unprivileged users use them now, so that we'll be more careful
+> +about the security as patches roll in.
+> +
+> +Checkpoint: the main concern is whether a task that performs the
+> +checkpoint of another task has sufficient privileges to access its
+> +state. We address this by requiring that the checkpointer task will be
+> +able to ptrace the target task, by means of ptrace_may_access() with
+> +read mode.
 
-Ok, with a configurable timeout your scheme is fine.  The timeout can be
-extended beyond 8 SDCLKs if this is beneficial.
+with access mode now, actually.
 
->>  I think there needs to
->> be a higher level active/idle knob for the user of the card (be it the
->> block driver or an SDIO function driver) to control whether to idle the
->> bus clock or controller.
-> 
-> The code doesn't tell the driver to idle the controller, it sets ios.clock
-> to zero to give the host driver the *opportunity* to turn controller clocks
-> off when it's OK from the MMC spec to do so (after 8 MCI cycles), the
-> driver doesn't *have* to do that. It can add addtional logic for different
-> HW. So it's only about the bus clock (whereas my patch to mmci.c takes
-> advantage of the possibility to also gate the block clock).
+> +Restart: the main concern is that we may allow an unprivileged user to
+> +feed the kernel with random data. To this end, the restart works in a
+> +way that does not skip the usual security checks. Task credentials,
+> +i.e. euid, reuid, and LSM security contexts currently come from the
+> +caller, not the checkpoint image.  When restoration of credentials
+> +becomes supported, then definitely the ability of the task that calls
+> +sys_restore() to setresuid/setresgid to those values must be checked.
 
-Many host controllers do stop the clock when ios->clock == 0 (pxamci and
-sdhci, for example).  Therefore. your patch will stop SDIO cards from
-working on (at least) PXA27x platforms.
+That is now possible, and this is done.
 
-There needs to be three different bus states: active (max clock), idle
-(minimal clock, SDIO interrupts work), and off (minimal clocks, SDIO
-interrupts not required).
+> +Keeping the restart procedure to operate within the limits of the
+> +caller's credentials means that there various scenarios that cannot
+> +be supported. For instance, a setuid program that opened a protected
+> +log file and then dropped privileges will fail the restart, because
+> +the user won't have enough credentials to reopen the file. In these
+> +cases, we should probably treat restarting like inserting a kernel
+> +module: surely the user can cause havoc by providing incorrect data,
+> +but then again we must trust the root account.
+> +
+> +So that's why we don't want CAP_SYS_ADMIN required up-front. That way
+> +we will be forced to more carefully review each of those features.
+> +However, this can be controlled with a sysctl-variable.
+> +
+> +
+> diff --git a/Documentation/checkpoint/usage.txt b/Documentation/checkpoint/usage.txt
+> new file mode 100644
+> index 0000000..ed34765
+> --- /dev/null
+> +++ b/Documentation/checkpoint/usage.txt
+> @@ -0,0 +1,193 @@
+> +
+> +	      How to use Checkpoint-Restart
+> +	=========================================
+> +
+> +
+> +API
+> +===
+> +
+> +The API consists of two new system calls:
+> +
+> +* int checkpoint(pid_t pid, int fd, unsigned long flag);
+> +
+> + Checkpoint a (sub-)container whose root task is identified by @pid,
+> + to the open file indicated by @fd. @flags may be on or more of:
+> +   - CHECKPOINT_SUBTREE : allow checkpoint of sub-container
+> + (other value are not allowed).
+> +
+> + Returns: a positive checkpoint identifier (ckptid) upon success, 0 if
+> + it returns from a restart, and -1 if an error occurs. The ckptid will
+> + uniquely identify a checkpoint image, for as long as the checkpoint
+> + is kept in the kernel (e.g. if one wishes to keep a checkpoint, or a
+> + partial checkpoint, residing in kernel memory).
+> +
+> +* int sys_restart(pid_t pid, int fd, unsigned long flags);
+> +
+> + Restart a process hierarchy from a checkpoint image that is read from
+> + the blob stored in the file indicated by @fd. The @flags' will have
+> + future meaning (must be 0 for now). @pid indicates the root of the
+> + hierarchy as seen in the coordinator's pid-namespace, and is expected
+> + to be a child of the coordinator. (Note that this argument may mean
+> + 'ckptid' to identify an in-kernel checkpoint image, with some @flags
+> + in the future).
+> +
+> + Returns: -1 if an error occurs, 0 on success when restarting from a
+> + "self" checkpoint, and return value of system call at the time of the
+> + checkpoint when restarting from an "external" checkpoint.
 
-I'm not sure what the best way to add this would be.  You could:
+Return value of the checkpointed (init) task's syscall at the time of
+external checkpoint?  If so, what's the use for this, as opposed to
+returning 0 as in the case of self-checkpoint?
 
-1. Have a special clock frequency to mean idle and fix up all existing
-controller drivers to interpret this as 400 kHz unless you know the
-controller handles SDIO interrupts with no SDCLK.
+> + TODO: upon successful "external" restart, the container will end up
+> + in a frozen state.
 
-or:
+Should clone_with_pids() be mentioned here?
 
-2. Add an additional controller method (set_bus_state?) and only provide
-this on controller drivers you're interested in.
-
->> 2. Some controllers cannot detect SDIO interrupts if the clock is
->> stopped.  There should either be a distinction between clock off and
->> clock idle.
-> 
-> This is on the driver level, not in the core. The core doesn't tell whether
-> to clock off or not, it only tells the device driver that the MCI clk doesn't
-> need to run by setting it to 0. Clearly, some hardware cannot exploit
-> that, but some (like PL180, OMAP and Atmel) can, easily.
-
-See previous comment.
-
-> There can possibly also be HW that can turn of MCI clk but not the
-> clock to the HW block itself, that is fine with the implementation.
-
-Ok.
-
->> 3. Regardless of point 1 above.  Using a workqueue item in this way
->> seems overkill.  Consider using a timer and simply calling mod_timer()
->> at the start of every command.  When the timer expires, idle the clock.
->>  You will probably need a "command in progress" bit to ensure you don't
->> idle the clock if the timer expires in the middle of a command.
-> 
-> I would agree if I created a new workqueue, but the timeout of this
-> particular workqueue is unimportant and that's why I'm using the
-> global workqueue and just schedule_work(). This means no extra
-> overhead, no extra thread and basically does the exact same thing.
-
-You currently queue a work item and wake the workqueue every command.
-This is considerably more overhead (when doing back-to-back commands)
-than simply calling mod_timer().
-
-You also potentially delay for a considerable amount of time in the work
-item.
-
-David
--- 
-David Vrabel, Senior Software Engineer, Drivers
-CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
-Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
-
-
-'member of the CSR plc group of companies. CSR plc registered in England and Wales, registered number 4187346, registered office Churchill House, Cambridge Business Park, Cowley Road, Cambridge, CB4 0WZ, United Kingdom'
+thanks,
+-serge
