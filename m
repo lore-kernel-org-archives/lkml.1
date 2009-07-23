@@ -1,67 +1,265 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752508AbZGWGKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752375AbZGWGWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752508AbZGWGKM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 02:10:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbZGWGKL
+	id S1752375AbZGWGWR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 02:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751127AbZGWGWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 02:10:11 -0400
-Received: from mail-yx0-f184.google.com ([209.85.210.184]:44497 "EHLO
-	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752009AbZGWGKK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 02:10:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=nD+ZG7YegXP8s6rPpCsoekmt8gf1h0qtu0Kv0OLKs/dFCHUph0nYpNE/pBZdW7k1Mx
-         WpNZUNsK4fuQxSOkXBk61aajjZi8i1KIx8StSm+IDmZGeNF0d1sqmRlDrx57xvQcy70G
-         pFCLeNr7Fz4IAicUzDQpqCcnV3I0M2Z1oB/H0=
+	Thu, 23 Jul 2009 02:22:16 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58043 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750927AbZGWGWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 02:22:16 -0400
+Message-ID: <4A68013A.2020302@cn.fujitsu.com>
+Date: Thu, 23 Jul 2009 14:20:42 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <d8bd05e00907222226o369fe2e7i225afb06ec71db8d@mail.gmail.com>
-References: <62.47.75.132.1247818962.wm@webmail.inode.at>
-	 <20090722161312.8c2ab4b5.akpm@linux-foundation.org>
-	 <d8bd05e00907222226o369fe2e7i225afb06ec71db8d@mail.gmail.com>
-Date: Thu, 23 Jul 2009 01:10:09 -0500
-Message-ID: <524f69650907222310h433cfe86vaef63c8ea2e56d56@mail.gmail.com>
-Subject: Re: mounting cifs filesystems not possible
-From: Steve French <smfrench@gmail.com>
-To: Gerhard Hintermayer <gerhard.hintermayer@gmail.com>
-Cc: linux-kernel@vger.kernel.org, sfrench@samba.org
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8BIT
+To: Paul Menage <menage@google.com>
+CC: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] Support named cgroups hierarchies
+References: <20090722194644.7481.47805.stgit@menage.mtv.corp.google.com> <20090722195029.7481.94700.stgit@menage.mtv.corp.google.com>
+In-Reply-To: <20090722195029.7481.94700.stgit@menage.mtv.corp.google.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 23, 2009 at 12:26 AM, Gerhard
-Hintermayer<gerhard.hintermayer@gmail.com> wrote:
-> Well this is indeed strange. First I thought the problem was solved
-> because I had an old version of mount installed, but the successful
-> mount with latest version of mount.cifs was only by chance. I get 1
-> successful mount out of ~ 30 tries (each time unloading the cifs
-> module). And looking at the source in export.c I discovered, that
-> reexporting cifs- mount points is still not supported :-( : This seems
-> to be very tricky. If you need more information to track the tainting
-> problem down, pls give me a note.
+Paul Menage wrote:
+> Support named cgroups hierarchies
+> 
+> To simplify referring to cgroup hierarchies in mount statements, and
+> to allow disambiguation in the presence of empty hierarchies and
+> multiply-bindable subsystems this patch adds support for naming a new
+> cgroup hierarchy via the "name=" mount option
+> 
+> A pre-existing hierarchy may be specified by either name or by
+> subsystems; a hierarchy's name cannot be changed by a remount
+> operation.
+> 
+> Example usage:
+> 
+> # To create a hierarchy called "foo" containing the "cpu" subsystem
+> mount -t cgroup -oname=foo,cpu cgroup /mnt/cgroup1
+> 
+> # To mount the "foo" hierarchy on a second location
+> mount -t cgroup -oname=foo cgroup /mnt/cgroup2
+> 
+> 
+> Signed-off-by: Paul Menage <menage@google.com>
+> 
 
-What is kernel version?
-What is symptom?
+Looks good to me.
 
-Have you opened a bug against the project bugzilla (bugzilla.samba.org)?
+Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
 
-The dmesg (Linux message log) will show certain serious errors, but
-enabling additional cifs debugging flags can increase the debug
-output. Setting /proc/fs/cifs/DebugData to 1 will cause additional
-cifs informational messages to be logged, and setting
-it to 3 (“echo 3 > /proc/fs/cifs/cifsFYI”) will also log return codes
-from most cifs entry points to dmesg.
-One of the most powerful tools for analyzing networking or network
-filesystem problems is “Wireshark."
-http://wiki.samba.org/index.php/Capture_Packets shows instructions how
-to do wireshark captures.
+Except a few comments below:
 
--- 
-Thanks,
+> ---
+> 
+>  Documentation/cgroups/cgroups.txt |   19 ++++
+>  kernel/cgroup.c                   |  186 +++++++++++++++++++++++++++----------
+>  2 files changed, 157 insertions(+), 48 deletions(-)
+> 
+> diff --git a/Documentation/cgroups/cgroups.txt b/Documentation/cgroups/cgroups.txt
+> index 6eb1a97..1f7cf9f 100644
+> --- a/Documentation/cgroups/cgroups.txt
+> +++ b/Documentation/cgroups/cgroups.txt
+> @@ -408,6 +408,25 @@ You can attach the current shell task by echoing 0:
+>  
+>  # echo 0 > tasks
+>  
+> +2.3 Mounting hierarchies by name
+> +--------------------------------
+> +
+> +Passing the name=<x> option when mounting a cgroups hierarchy
+> +associates the given name with the hierarchy.  This can be used when
+> +mounting a pre-existing hierarchy, in order to refer to it by name
+> +rather than by its set of active subsystems.
+> +
+> +The name should match [\w.-]+
+> +
 
-Steve
+"[\w._-]+" ?
+
+But I double we need to check this.
+
+> +When passing a name=<x> option for a new hierarchy, you need to
+> +specify subsystems manually; the legacy behaviour of mounting all
+> +subsystems when none are explicitly specified is not supported when
+> +you give a subsystem a name.
+> +
+
+Mention that a hierarchy either has no name or should have a uniq name?
+
+> +The name of the subsystem appears as part of the hierarchy description
+> +in /proc/mounts and /proc/<pid>/cgroups.
+
+...
+
+>  static int cgroup_set_super(struct super_block *sb, void *data)
+>  {
+>  	int ret;
+> -	struct cgroupfs_root *root = data;
+> +	struct cgroup_sb_opts *opts = data;
+> +
+> +	/* If we don't have a new root, we can't set up a new sb */
+> +	if (!opts->new_root)
+> +		return -EINVAL;
+> +
+
+I think this should be BUG_ON(). If set_super() is called,
+we are allocating a new root, so opts->new_root won't be NULL.
+
+> +	BUG_ON(!opts->subsys_bits);
+>  
+>  	ret = set_anon_super(sb, NULL);
+>  	if (ret)
+>  		return ret;
+>  
+> -	sb->s_fs_info = root;
+> -	root->sb = sb;
+> +	sb->s_fs_info = opts->new_root;
+> +	opts->new_root->sb = sb;
+>  
+>  	sb->s_blocksize = PAGE_CACHE_SIZE;
+>  	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
+> @@ -1039,48 +1106,44 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+>  			 void *data, struct vfsmount *mnt)
+>  {
+>  	struct cgroup_sb_opts opts;
+> +	struct cgroupfs_root *root;
+>  	int ret = 0;
+>  	struct super_block *sb;
+> -	struct cgroupfs_root *root;
+> -	struct list_head tmp_cg_links;
+>  
+>  	/* First find the desired set of subsystems */
+>  	ret = parse_cgroupfs_options(data, &opts);
+> -	if (ret) {
+> -		kfree(opts.release_agent);
+> -		return ret;
+> -	}
+> -
+> -	root = kzalloc(sizeof(*root), GFP_KERNEL);
+> -	if (!root) {
+> -		kfree(opts.release_agent);
+> -		return -ENOMEM;
+> -	}
+> +	if (ret)
+> +		goto out_err;
+>  
+> -	init_cgroup_root(root);
+> -	root->subsys_bits = opts.subsys_bits;
+> -	root->flags = opts.flags;
+> -	if (opts.release_agent) {
+> -		strcpy(root->release_agent_path, opts.release_agent);
+> -		kfree(opts.release_agent);
+> +	/*
+> +	 * Allocate a new cgroup root. We may not need it if we're
+> +	 * reusing an existing hierarchy.
+> +	 */
+> +	{
+
+I don't think this is a normal coding style.
+
+> +		struct cgroupfs_root *new_root = cgroup_root_from_opts(&opts);
+
+Why not just declare new_root in the beginning of cgroup_get_sb()?
+
+> +		if (IS_ERR(new_root)) {
+> +			ret = PTR_ERR(new_root);
+> +			goto out_err;
+> +		}
+> +		opts.new_root = new_root;
+>  	}
+>  
+> -	sb = sget(fs_type, cgroup_test_super, cgroup_set_super, root);
+> -
+> +	/* Locate an existing or new sb for this hierarchy */
+> +	sb = sget(fs_type, cgroup_test_super, cgroup_set_super, &opts);
+>  	if (IS_ERR(sb)) {
+> -		kfree(root);
+> -		return PTR_ERR(sb);
+> +		ret = PTR_ERR(sb);
+> +		kfree(opts.new_root);
+> +		goto out_err;
+>  	}
+>  
+> -	if (sb->s_fs_info != root) {
+> -		/* Reusing an existing superblock */
+> -		BUG_ON(sb->s_root == NULL);
+> -		kfree(root);
+> -		root = NULL;
+> -	} else {
+> -		/* New superblock */
+> +	root = sb->s_fs_info;
+> +	BUG_ON(!root);
+> +	if (root == opts.new_root) {
+> +		/* We used the new root structure, so this is a new hierarchy */
+> +		struct list_head tmp_cg_links;
+>  		struct cgroup *root_cgrp = &root->top_cgroup;
+>  		struct inode *inode;
+> +		struct cgroupfs_root *existing_root;
+>  		int i;
+>  
+>  		BUG_ON(sb->s_root != NULL);
+> @@ -1093,6 +1156,18 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+>  		mutex_lock(&inode->i_mutex);
+>  		mutex_lock(&cgroup_mutex);
+>  
+> +		if (strlen(root->name)) {
+> +			/* Check for name clashes with existing mounts */
+> +			for_each_active_root(existing_root) {
+> +				if (!strcmp(existing_root->name, root->name)) {
+> +					ret = -EBUSY;
+> +					mutex_unlock(&cgroup_mutex);
+> +					mutex_unlock(&inode->i_mutex);
+> +					goto drop_new_super;
+> +				}
+> +			}
+> +		}
+> +
+>  		/*
+>  		 * We're accessing css_set_count without locking
+>  		 * css_set_lock here, but that's OK - it can only be
+> @@ -1111,7 +1186,8 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+>  		if (ret == -EBUSY) {
+>  			mutex_unlock(&cgroup_mutex);
+>  			mutex_unlock(&inode->i_mutex);
+> -			goto free_cg_links;
+> +			free_cg_links(&tmp_cg_links);
+> +			goto drop_new_super;
+>  		}
+>  
+>  		/* EBUSY should be the only error here */
+> @@ -1145,15 +1221,26 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+>  		cgroup_populate_dir(root_cgrp);
+>  		mutex_unlock(&inode->i_mutex);
+>  		mutex_unlock(&cgroup_mutex);
+> +	} else {
+> +		/*
+> +		 * We re-used an existing hierarchy - the new root (if
+> +		 * any) is not needed
+> +		 */
+> +		kfree(opts.new_root);
+>  	}
+>  
+>  	simple_set_mnt(mnt, sb);
+> +	kfree(opts.release_agent);
+> +	kfree(opts.name);
+>  	return 0;
+>  
+> - free_cg_links:
+> -	free_cg_links(&tmp_cg_links);
+>   drop_new_super:
+>  	deactivate_locked_super(sb);
+> +
+> + out_err:
+> +	kfree(opts.release_agent);
+> +	kfree(opts.name);
+> +
+>  	return ret;
+>  }
+>  
