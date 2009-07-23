@@ -1,82 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754248AbZGWV0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582AbZGWV1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754248AbZGWV0n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 17:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbZGWV0n
+	id S1754582AbZGWV1j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 17:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbZGWV1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 17:26:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42165 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753105AbZGWV0m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 17:26:42 -0400
-Date: Thu, 23 Jul 2009 14:26:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] DAC960: Fix undefined behavior on empty string
-Message-Id: <20090723142603.4ba09c5a.akpm@linux-foundation.org>
-In-Reply-To: <200907191505.47243.mb@bu3sch.de>
-References: <200907191505.47243.mb@bu3sch.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 23 Jul 2009 17:27:39 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47641 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753661AbZGWV1h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 17:27:37 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: Generic events for wake up from S1-S4
+Date: Thu, 23 Jul 2009 23:27:59 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc3-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Pavel Machek <pavel@ucw.cz>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       linux-kernel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>, Jouni Malinen <j@w1.fi>,
+       "linux-wireless" <linux-wireless@vger.kernel.org>,
+       Stephen Chen <Stephen.Chen@atheros.com>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <43e72e890907150851m69cd2de6lfb71596fbfac30e6@mail.gmail.com> <20090723195114.GR28158@elf.ucw.cz> <20090723201050.GD19369@khazad-dum.debian.net>
+In-Reply-To: <20090723201050.GD19369@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907232328.03566.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 19 Jul 2009 15:05:47 +0200
-Michael Buesch <mb@bu3sch.de> wrote:
-
-> This patch fixes undefined behavior due to buffer underrun,
-> if an empty string is written to the proc file.
+On Thursday 23 July 2009, Henrique de Moraes Holschuh wrote:
+> On Thu, 23 Jul 2009, Pavel Machek wrote:
+> > On Thu 2009-07-23 16:45:22, Henrique de Moraes Holschuh wrote:
+> > > On Thu, 23 Jul 2009, Pavel Machek wrote:
+> > > > > > Note that the "why" is unreliable by design. Network driver will
+> > > > > > ignore WoL during run-time, right?
+> > > > > 
+> > > > > "Why" is unrealible?  I don't follow your reasoning.  It should be as
+> > > > > reliable as "who"...
+> > > > 
+> > > > See above. The wakeup events race with each other.
+> > > 
+> > > We deliver them all.  It is that simple.  The rest is up to userspace.
+> > 
+> > Ok, but then we should not be talking about wake up events,
+> > but... events.
+> > 
+> > Like "lid opened", "wake packet came", ... . And deliver them even
+> > when they happen during run-time. That's okay with me.
 > 
-> Signed-off-by: Michael Buesch <mb@bu3sch.de>
-> Cc: stable@kernel.org
+> Well, we *already* deliver "lid opened" when the lid is opened, regardless
+> of it waking up the computer or not.  But we are missing a way to deliver
+> other classes of wakeup events.
 > 
-> ---
+> I know of at least these (incomplete list):
 > 
-> This patch is untested, because I do not have the hardware.
+> 1. network-initiated wakeup
+>    a. wired
+>    b. wireless
+>    c. long-range wireless
 > 
-> ---
->  drivers/block/DAC960.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> 2. platform health/condition alarms
+>    a. battery alarm (two levels, warning and emergency)
+>    b. thermal alarm (two levels, warning and emergency)
+>    (we need these as generic alarms, not just reason-for-wakeup)
 > 
-> --- linux-2.6.orig/drivers/block/DAC960.c
-> +++ linux-2.6/drivers/block/DAC960.c
-> @@ -6555,21 +6555,21 @@ static int DAC960_ProcWriteUserCommand(s
->  				       const char __user *Buffer,
->  				       unsigned long Count, void *Data)
->  {
->    DAC960_Controller_T *Controller = (DAC960_Controller_T *) Data;
->    unsigned char CommandBuffer[80];
->    int Length;
->    if (Count > sizeof(CommandBuffer)-1) return -EINVAL;
->    if (copy_from_user(CommandBuffer, Buffer, Count)) return -EFAULT;
->    CommandBuffer[Count] = '\0';
->    Length = strlen(CommandBuffer);
-> -  if (CommandBuffer[Length-1] == '\n')
-> +  if (Length > 0 && CommandBuffer[Length-1] == '\n')
->      CommandBuffer[--Length] = '\0';
->    if (Controller->FirmwareType == DAC960_V1_Controller)
->      return (DAC960_V1_ExecuteUserCommand(Controller, CommandBuffer)
->  	    ? Count : -EBUSY);
->    else
->      return (DAC960_V2_ExecuteUserCommand(Controller, CommandBuffer)
->  	    ? Count : -EBUSY);
->  }
+> 3. device (or device tree) hotplug/hotunplug
+>    a. hotunplug request or notification
+>       (we deliver the request/notification, but we don't know we should
+>       go back to sleep, so all we are missing is the reason-for-wakeup
+>       event)
+> 
+> 4. management
+>    a. wake-up/power on clock
+>    b. remote management command (IMPI, etc)
+>    c. intrusion alarm
+>    d. theft alarm
+> 
+> None of those have a standard interface to notify userspace of the reason of
+> the wake up AFAIK.  Many of these want a generic event interface to be
+> delivered not just as reason-for-wakeup, but also as runtime events.
+> 
+> And I guess we should also tell userspace what state we are waking up from
+> (S5 clean state, S5/S4 hibernation, S3), sometimes it matters.
 
-I suspect this is NotABug, as it requires that
-DAC960_ProcWriteUserCommand() be called in response to a zero-length
-write, and various bits of code will terminate early if they see such a
-write go past.  But we shouldn't rely on that here.
+Agreed, and same for the above.
 
-Surely we have a library function somewhere which will remove any
-terminating whitespace from a C string?  Sigh.
+So, what in your opinion would be the best way to expose this information?
 
-I note that you cc'ed stable@kernel.org on this patch.  Why was that? 
-I assume that this pseudo-file is root-only, in which case the fix
-isn't particularly urgent?
-
-Thanks.
+Rafael
