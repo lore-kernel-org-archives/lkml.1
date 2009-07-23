@@ -1,108 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752688AbZGWIdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752995AbZGWIeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752688AbZGWIdy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 04:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751269AbZGWIdx
+	id S1752995AbZGWIeX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 04:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbZGWIeW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 04:33:53 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54408 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751127AbZGWIdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 04:33:52 -0400
-Message-ID: <4A682011.5010400@cn.fujitsu.com>
-Date: Thu, 23 Jul 2009 16:32:17 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Thu, 23 Jul 2009 04:34:22 -0400
+Received: from mga14.intel.com ([143.182.124.37]:11899 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752817AbZGWIeT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 04:34:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,253,1246863600"; 
+   d="scan'208";a="168062188"
+Date: Thu, 23 Jul 2009 16:33:22 +0800
+From: Feng Tang <feng.tang@intel.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Alexander Beregalov <a.beregalov@gmail.com>,
+       linux-next <linux-next@vger.kernel.org>,
+       "Brown, Len" <len.brown@intel.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Subject: Re: next: sfi build fails when !CONFIG_ACPI
+Message-ID: <20090723163322.615e1f8e@feng-desktop>
+In-Reply-To: <20090722150617.13c24350.randy.dunlap@oracle.com>
+References: <a4423d670907160148n66760052wbef60e4a2c3c7941@mail.gmail.com>
+	<20090722150617.13c24350.randy.dunlap@oracle.com>
+Organization: intel
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Paul Menage <menage@google.com>, akpm@linux-foundation.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] Allow cgroup hierarchies to be created with no bound
- subsystems
-References: <20090722194644.7481.47805.stgit@menage.mtv.corp.google.com>	<20090722195045.7481.62013.stgit@menage.mtv.corp.google.com> <20090723171913.3279de8c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090723171913.3279de8c.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> -	/* We can't have an empty hierarchy */
->> +
->> +	/* Can't specify "none" and some subsystems */
->> +	if (opts->subsys_bits && opts->none)
->> +		return -EINVAL;
+On Thu, 23 Jul 2009 06:06:17 +0800
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
+
+> On Thu, 16 Jul 2009 12:48:01 +0400 Alexander Beregalov wrote:
 > 
-> Is this case never happens ?
+> > Hi
+> > 
+> > drivers/sfi/sfi_core.c: In function 'sfi_init':
+> > drivers/sfi/sfi_core.c:346: error: 'acpi_disabled' undeclared (first
+> > use in this function)
+> > drivers/sfi/sfi_core.c:346: error: (Each undeclared identifier is
+> > reported only once
+> > drivers/sfi/sfi_core.c:346: error: for each function it appears in.)
+> > 
+> > 
+> > $ grep ACPI .config
+> > # Power management and ACPI options
+> > --
 > 
-> 	BUG_ON(!opts->subsys_bits && !opts->none)
+> next-20090722 still fails on x86_32 when SFI=y & ACPI=n:
 > 
+> arch/x86/pci/mmconfig_32.c:34: error: invalid use of undefined type
+> 'struct acpi_mcfg_allocation' arch/x86/pci/mmconfig_32.c:34: error:
+> dereferencing pointer to incomplete type
+> arch/x86/pci/mmconfig_32.c:35: error: dereferencing pointer to
+> incomplete type arch/x86/pci/mmconfig_32.c:36: error: dereferencing
+> pointer to incomplete type arch/x86/pci/mmconfig_32.c:37: error:
+> dereferencing pointer to incomplete type
+> arch/x86/pci/mmconfig_32.c:38: error: dereferencing pointer to
+> incomplete type
+> 
+> config is attached.
+Hi Randy,
 
-It can happen:
+Thanks for the catch. Could you try the following patch? thanks!
 
-  # mount -t cgroup -o none,memory
+- Feng
+
+diff --git a/arch/x86/pci/mmconfig-shared.c b/arch/x86/pci/mmconfig-shared.c
+index 25a0d9f..e89bf33 100644
+--- a/arch/x86/pci/mmconfig-shared.c
++++ b/arch/x86/pci/mmconfig-shared.c
+@@ -557,15 +557,15 @@ static int __init pci_parse_mcfg(struct acpi_table_header *header)
+ 		i -= sizeof(struct acpi_mcfg_allocation);
+ 	};
+ 	if (pci_mmcfg_config_num == 0) {
+-		printk(KERN_ERR PREFIX "MMCONFIG has no entries\n");
++		printk(KERN_ERR "PCI: MMCONFIG has no entries\n");
+ 		return -ENODEV;
+ 	}
+ 
+ 	config_size = pci_mmcfg_config_num * sizeof(*pci_mmcfg_config);
+ 	pci_mmcfg_config = kmalloc(config_size, GFP_KERNEL);
+ 	if (!pci_mmcfg_config) {
+-		printk(KERN_WARNING PREFIX
+-		       "No memory for MCFG config tables\n");
++		printk(KERN_WARNING
++		       "PCI: No memory for MCFG config tables\n");
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -576,8 +576,8 @@ static int __init pci_parse_mcfg(struct acpi_table_header *header)
+ 	for (i = 0; i < pci_mmcfg_config_num; ++i) {
+ 		if ((pci_mmcfg_config[i].address > 0xFFFFFFFF) &&
+ 		    !acpi_mcfg_64bit_base_addr) {
+-			printk(KERN_ERR PREFIX
+-			       "MMCONFIG not in low 4GB of memory\n");
++			printk(KERN_ERR
++			       "PCI: MMCONFIG not in low 4GB of memory\n");
+ 			kfree(pci_mmcfg_config);
+ 			pci_mmcfg_config_num = 0;
+ 			return -ENODEV;
+@@ -609,7 +609,9 @@ static void __init __pci_mmcfg_init(int early)
+ 	if (!known_bridge)
+ 		x86_table_parse(ACPI_SIG_MCFG, pci_parse_mcfg);
+ 
++#ifdef CONFIG_ACPI
+ 	pci_mmcfg_reject_broken(early);
++#endif
+ 
+ 	if ((pci_mmcfg_config_num == 0) ||
+ 	    (pci_mmcfg_config == NULL) ||
+diff --git a/arch/x86/pci/mmconfig_32.c b/arch/x86/pci/mmconfig_32.c
+index 8b2d561..f10a7e9 100644
+--- a/arch/x86/pci/mmconfig_32.c
++++ b/arch/x86/pci/mmconfig_32.c
+@@ -11,9 +11,9 @@
+ 
+ #include <linux/pci.h>
+ #include <linux/init.h>
+-#include <linux/acpi.h>
+ #include <asm/e820.h>
+ #include <asm/pci_x86.h>
++#include <acpi/acpi.h>
+ 
+ /* Assume systems with more busses have correct MCFG */
+ #define mmcfg_virt_addr ((void __iomem *) fix_to_virt(FIX_PCIE_MCFG))
+diff --git a/include/linux/sfi_acpi.h b/include/linux/sfi_acpi.h
+index 356d0a2..3c645bb 100644
+--- a/include/linux/sfi_acpi.h
++++ b/include/linux/sfi_acpi.h
+@@ -50,8 +50,10 @@ extern int sfi_acpi_table_parse(char *signature, char *oem_id,
+ static inline int x86_table_parse(char *signature,
+ 				int (*handler)(struct acpi_table_header *))
+ {
++#ifdef CONFIG_ACPI
+ 	if (!acpi_table_parse(signature, handler))
+ 		return 0;
++#endif
+ 
+ 	return sfi_acpi_table_parse(signature, NULL, NULL, handler);
+ }
 
 > 
->> +
->> +	/*
->> +	 * We either have to specify by name or by subsystems. (So all
->> +	 * empty hierarchies must have a name).
->> +	 */
->>  	if (!opts->subsys_bits && !opts->name)
->>  		return -EINVAL;
->>  
->> @@ -1129,6 +1124,31 @@ static void init_cgroup_root(struct cgroupfs_root *root)
->>  	init_cgroup_housekeeping(cgrp);
->>  }
->>  
->> +static bool init_root_id(struct cgroupfs_root *root)
->> +{
->> +	int ret = 0;
->> +
->> +	do {
->> +		if (!ida_pre_get(&hierarchy_ida, GFP_KERNEL))
->> +			return false;
->> +		spin_lock(&hierarchy_id_lock);
->> +		/* Try to allocate the next unused ID */
->> +		ret = ida_get_new_above(&hierarchy_ida, next_hierarchy_id,
->> +					&root->hierarchy_id);
-> 
-> Why new id should be greater than old one ?
-> Just for avoiding reuse-id-too-soon ?
-> 
-
-Otherwise we can't identify each hierachy by it's id.
-
-
->> +		if (ret == -ENOSPC)
->> +			/* Try again starting from 0 */
->> +			ret = ida_get_new(&hierarchy_ida, &root->hierarchy_id);
->> +		if (!ret) {
->> +			next_hierarchy_id = root->hierarchy_id + 1;
->> +		} else if (ret != -EAGAIN) {
->> +			/* Can only get here if the 31-bit IDR is full ... */
->> +			BUG_ON(ret);
->> +		}
->> +		spin_unlock(&hierarchy_id_lock);
->> +	} while (ret);
->> +	return true;
->> +}
->> +
-
-...
-
->> @@ -3910,8 +3950,8 @@ static int current_css_set_cg_links_read(struct cgroup *cont,
->>  			name = c->dentry->d_name.name;
->>  		else
->>  			name = "?";
->> -		seq_printf(seq, "Root %lu group %s\n",
->> -			   c->root->subsys_bits, name);
->> +		seq_printf(seq, "Root %d group %s\n",
->> +			   c->root->hierarchy_id, name);
->>  	}
-> 
-> I'm not sure but this "id" is worth to be printed ?
-> 
-
-It's a debug file, so I think at least it's not bad to print the id.
-
+> ---
+> ~Randy
+> LPC 2009, Sept. 23-25, Portland, Oregon
+> http://linuxplumbersconf.org/2009/
