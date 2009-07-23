@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752552AbZGWOGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752083AbZGWOMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752552AbZGWOGd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 10:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbZGWOGc
+	id S1752083AbZGWOMT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 10:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbZGWOMS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 10:06:32 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:63355 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752056AbZGWOGb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 10:06:31 -0400
-Date: Thu, 23 Jul 2009 10:06:30 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: linux-kernel@vger.kernel.org
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/2] [GIT PULL] tracing: various fixes
-In-Reply-To: <20090723033514.153354674@goodmis.org>
-Message-ID: <alpine.DEB.2.00.0907231005470.20997@gandalf.stny.rr.com>
-References: <20090723033514.153354674@goodmis.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 23 Jul 2009 10:12:18 -0400
+Received: from ozlabs.org ([203.10.76.45]:54305 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751691AbZGWOMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 10:12:18 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] module: use MODULE_SYMBOL_PREFIX with module_layout
+Date: Thu, 23 Jul 2009 23:42:08 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, Mike Frysinger <vapier@gentoo.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907232342.08817.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Mike Frysinger <vapier@gentoo.org>
 
-On Wed, 22 Jul 2009, Steven Rostedt wrote:
+The check_modstruct_version() needs to look up the symbol "module_layout"
+in the kernel, but it does so literally and not by a C identifier.  The
+trouble is that it does not include a symbol prefix for those ports that
+need it (like the Blackfin and H8300 port).  So make sure we tack on the
+MODULE_SYMBOL_PREFIX define to the front of it.
 
-> 
-> Ingo,
-> 
-> These two patches are built against my last push, but perhaps these
-> should go to 2.6.31. The first one fixes a bug that makes the 
-> printk_format file useless (making trace_bprintk useless for binary
-> readers). The other is a bug with the way the files may be truncated
-> incorrectly.
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ kernel/module.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-I may pull these over to urgent. They probably should go into 31.
-
-I'll make another pull request there instead.
-
-Thanks,
-
--- Steve
-
-> 
-> Please pull the latest tip/tracing/core-1 tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/core-1
-> 
-> 
-> Steven Rostedt (2):
->       tracing: show proper address for trace-printk format
->       tracing: only truncate ftrace files when O_TRUNC is set
-> 
-> ----
->  kernel/trace/ftrace.c       |    4 ++--
->  kernel/trace/trace.c        |    2 +-
->  kernel/trace/trace_events.c |    2 +-
->  kernel/trace/trace_printk.c |    2 +-
->  4 files changed, 5 insertions(+), 5 deletions(-)
-> -- 
-> 
+diff --git a/kernel/module.c b/kernel/module.c
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -1068,7 +1068,8 @@ static inline int check_modstruct_versio
+ {
+ 	const unsigned long *crc;
+ 
+-	if (!find_symbol("module_layout", NULL, &crc, true, false))
++	if (!find_symbol(MODULE_SYMBOL_PREFIX "module_layout", NULL,
++			 &crc, true, false))
+ 		BUG();
+ 	return check_version(sechdrs, versindex, "module_layout", mod, crc);
+ }
