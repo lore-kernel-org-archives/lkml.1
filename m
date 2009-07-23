@@ -1,33 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbZGWXpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbZGWXw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754664AbZGWXpZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 19:45:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbZGWXpZ
+	id S1754746AbZGWXw5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 19:52:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754560AbZGWXw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 19:45:25 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48002 "EHLO ogre.sisk.pl"
+	Thu, 23 Jul 2009 19:52:56 -0400
+Received: from gate.crashing.org ([63.228.1.57]:53327 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753895AbZGWXpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 19:45:24 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [Regression] kdesu broken
-Date: Fri, 24 Jul 2009 01:45:31 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+	id S1754220AbZGWXwz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 19:52:55 -0400
+Subject: Re: [PATCH] powerpc: minor Makefile simplification through use of
+ cc-ifversion
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Frans Pop <elendil@planet.nl>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
+In-Reply-To: <20090723213132.GA9514@merkur.ravnborg.org>
+References: <200907232057.19942.elendil@planet.nl>
+	 <20090723213132.GA9514@merkur.ravnborg.org>
+Content-Type: text/plain
+Date: Fri, 24 Jul 2009 09:52:26 +1000
+Message-Id: <1248393146.25467.13.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907240145.31935.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 2009-07-23 at 23:31 +0200, Sam Ravnborg wrote:
+> On Thu, Jul 23, 2009 at 08:57:18PM +0200, Frans Pop wrote:
+> > Signed-off-by: Frans Pop <elendil@planet.nl>
+> Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-A recent kernel change broke kdesu (from KDE 4.2) on my test boxes.  ISTR a
-discussion about that, but I can't find it right now.  Any clues?
+Thanks, will include in my next batch.
 
-Rafael
+Cheers,
+Ben.
+
+
