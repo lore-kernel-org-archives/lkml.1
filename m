@@ -1,95 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbZGWVCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbZGWVG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754629AbZGWVCt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 17:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbZGWVCg
+	id S1754168AbZGWVG0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 17:06:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbZGWVGZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 17:02:36 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:37216 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753742AbZGWVCW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 17:02:22 -0400
-Message-Id: <20090723210220.508042243@goodmis.org>
-References: <20090723210047.294710482@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Thu, 23 Jul 2009 17:00:49 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 2/4] tracing: only truncate ftrace files when O_TRUNC is set
-Content-Disposition: inline; filename=0002-tracing-only-truncate-ftrace-files-when-O_TRUNC-is-s.patch
+	Thu, 23 Jul 2009 17:06:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48918 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753490AbZGWVGZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 17:06:25 -0400
+Date: Thu, 23 Jul 2009 17:06:16 -0400
+From: Dave Jones <davej@redhat.com>
+To: "eial@cs.bgu.ac.il" <eial@cs.bgu.ac.il>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: max freq is 2.1, but current freq is between min.
+Message-ID: <20090723210616.GB18811@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"eial@cs.bgu.ac.il" <eial@cs.bgu.ac.il>,
+	linux-kernel@vger.kernel.org
+References: <200907231936.n6NJakbL003030@indigo.cs.bgu.ac.il>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200907231936.n6NJakbL003030@indigo.cs.bgu.ac.il>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+On Thu, Jul 23, 2009 at 10:36:46PM +0300, eial@cs.bgu.ac.il wrote:
+ > 
+ > I have a t8100 cpu, running gentoo, I've tried both kernels 2.6.29 and 30, but for no avail.
+ > I have 4 stepping: 2.10 GHz, 2.10 GHz, 1.60 GHz, 1.20 GHz but under all governors, the max freq is 1.2 it changes here and there: cpufreq-info shows this:
+ > ..
+ >   current policy: frequency should be within 1.20 GHz and 1.20 GHz.                     <----- range is not ok
+ > ..
+ > the range keeps changing, due this thing, it took e 6 and a half hours to compile openoffice, almost twice than the average time that I have compiled it before.
+ > most of the time, the computer is unusable.I have no idea what else can be done, I've checked the bios, all ok, that is the latest version of bios, running boinc, compile and checking for broken libs keeps the freq at min...
 
-The current code will truncate the ftrace files contents if O_APPEND
-is not set and the file is opened in write mode. This is incorrect.
-It should only truncate the file if O_TRUNC is set. Otherwise
-if one of these files is opened by a C program with fopen "r+",
-it will incorrectly truncate the file.
+Boot with cpufreq.debug=7 and you should see notices in your dmesg when the
+upper bound is being limited.  This usually happens when the BIOS tells us
+the system is overheating. As it cools off, the higher speeds should become
+available again.
 
-Reported-by: Jiri Olsa <jolsa@redhat.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/ftrace.c       |    4 ++--
- kernel/trace/trace.c        |    2 +-
- kernel/trace/trace_events.c |    2 +-
- 3 files changed, 4 insertions(+), 4 deletions(-)
+	Dave
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 1f3ec2a..1e1d23c 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -1662,7 +1662,7 @@ ftrace_regex_open(struct inode *inode, struct file *file, int enable)
- 
- 	mutex_lock(&ftrace_regex_lock);
- 	if ((file->f_mode & FMODE_WRITE) &&
--	    !(file->f_flags & O_APPEND))
-+	    (file->f_flags & O_TRUNC))
- 		ftrace_filter_reset(enable);
- 
- 	if (file->f_mode & FMODE_READ) {
-@@ -2577,7 +2577,7 @@ ftrace_graph_open(struct inode *inode, struct file *file)
- 
- 	mutex_lock(&graph_lock);
- 	if ((file->f_mode & FMODE_WRITE) &&
--	    !(file->f_flags & O_APPEND)) {
-+	    (file->f_flags & O_TRUNC)) {
- 		ftrace_graph_count = 0;
- 		memset(ftrace_graph_funcs, 0, sizeof(ftrace_graph_funcs));
- 	}
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 8bc8d8a..d8ef285 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -2031,7 +2031,7 @@ static int tracing_open(struct inode *inode, struct file *file)
- 
- 	/* If this file was open for write, then erase contents */
- 	if ((file->f_mode & FMODE_WRITE) &&
--	    !(file->f_flags & O_APPEND)) {
-+	    (file->f_flags & O_TRUNC)) {
- 		long cpu = (long) inode->i_private;
- 
- 		if (cpu == TRACE_PIPE_ALL_CPU)
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 53c8fd3..23d2972 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -376,7 +376,7 @@ ftrace_event_seq_open(struct inode *inode, struct file *file)
- 	const struct seq_operations *seq_ops;
- 
- 	if ((file->f_mode & FMODE_WRITE) &&
--	    !(file->f_flags & O_APPEND))
-+	    (file->f_flags & O_TRUNC))
- 		ftrace_clear_events();
- 
- 	seq_ops = inode->i_private;
--- 
-1.6.3.3
-
--- 
