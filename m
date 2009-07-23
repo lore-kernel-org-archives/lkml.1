@@ -1,138 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125AbZGWOPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752158AbZGWORj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753125AbZGWOPx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 10:15:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbZGWOPw
+	id S1752158AbZGWORj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 10:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751463AbZGWORj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 10:15:52 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:44320 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753432AbZGWOPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 10:15:51 -0400
-Subject: Re: [RFC][PATCH] flexible array implementation v3
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: vda.linux@googlemail.com, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, menage@google.com,
-       akpm@linux-foundation.org
-In-Reply-To: <20090723104450.e0d421ca.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090722175345.7154C2F2@kernel>
-	 <20090723104450.e0d421ca.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Thu, 23 Jul 2009 07:05:48 -0700
-Message-Id: <1248357948.24021.692.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 23 Jul 2009 10:17:39 -0400
+Received: from cluster-d.mailcontrol.com ([85.115.60.190]:48463 "EHLO
+	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751059AbZGWORi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 10:17:38 -0400
+Message-ID: <4A68709E.5060207@csr.com>
+Date: Thu, 23 Jul 2009 15:15:58 +0100
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+MIME-Version: 1.0
+To: Linus Walleij <linus.ml.walleij@gmail.com>
+CC: Linus Walleij <linus.walleij@stericsson.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Pierre Ossman <pierre@ossman.eu>,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH 1/2] MMC Agressive clocking framework v5
+References: <1248128808-2241-1-git-send-email-linus.walleij@stericsson.com>	 <4A6701E3.3000204@csr.com> <63386a3d0907221533u6ab2738dpcb4484595ae757b0@mail.gmail.com>
+In-Reply-To: <63386a3d0907221533u6ab2738dpcb4484595ae757b0@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 23 Jul 2009 14:15:58.0571 (UTC) FILETIME=[199A83B0:01CA0BA0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-23 at 10:44 +0900, KAMEZAWA Hiroyuki wrote:
-> On Wed, 22 Jul 2009 10:53:45 -0700
-> Dave Hansen <dave@linux.vnet.ibm.com> wrote:
-> > Changes from v2:
-> > - renamed some of the index functions
-> > - added preallocation function
-> > - added flex_array_free_parts() for use with
-> >   statically allocated bases
-> > - killed append() function
-> > 
-> > Changes from v1:
-> > - to vs too typo
-> > - added __check_part_and_nr() and gave it a warning
-> > - fixed off-by-one check on __nr_part_ptrs()
-> > - added FLEX_ARRAY_INIT() macro
-> > - some kerneldoc comments about the capacity
-> >   with various sized objects
-> > - comments to note lack of locking semantice
+Linus Walleij wrote:
+> 2009/7/22 David Vrabel <david.vrabel@csr.com>:
 > 
-> Seems nice, thank you. but a nitpick..
+>> Linus Walleij wrote:
 > 
-> +struct flex_array *flex_array_alloc(int element_size, int total, gfp_t flags)
-> +{
-> +	struct flex_array *ret;
-> +	int max_size = nr_base_part_ptrs() * __elements_per_part(element_size);
-> +
-> +	/* max_size will end up 0 if element_size > PAGE_SIZE */
-> +	if (total > max_size)
-> +		return NULL;
+>> I'm not sure this is the right approach.
 > 
-> Can't we store "total" somewhere and do error check ?
+> It's been discussed a bit back and forth for a few months, but let's keep
+> at it...
 > 
-> And some magic value as following can't be defined for 'total' ?
+>> 1. With some controllers (e.g., PXA270 I think) turning the clock on and
+>> off is slow.  This means if you're doing back-to-back commands you
+>> should leave the clock on for best performance.
 > 
-> #define FLEX_ARRAY_MAX_ELEMENTS		(-1) // Use maximum flex array.
+> OK, when I've been testing this using the default workqueue and
+> schedule_work() covered these cases. Back-on-back commands
+> seemingly doesn't allow the timeout work to schedule, but I might be
+> overseeing the case of several CPU:s there though :-/
 
-This would all be reasonable to add.  The only reason I haven't at this
-point is that it simplifies things to not have it.  When bounds
-checking, for instance, we just check against the data structure's
-bounds, which we have to do anyway.  There's also no need to worry about
-resizing since the maximum size is already fixed.
+Ok, with a configurable timeout your scheme is fine.  The timeout can be
+extended beyond 8 SDCLKs if this is beneficial.
 
-> > +/**
-> > + * flex_array_get - pull data back out of the array
-> > + * @element_nr:	index of the element to fetch from the array
-> > + *
-> > + * Returns a pointer to the data at index @element_nr.  Note
-> > + * that this is a copy of the data that was passed in.  If you
-> > + * are using this to store pointers, you'll get back &ptr.
-> > + *
-> > + * Locking must be provided by the caller.
-> > + */
-> > +void *flex_array_get(struct flex_array *fa, int element_nr)
-> > +{
-> > +	int part_nr = fa_element_to_part_nr(fa, element_nr);
-> > +	struct flex_array_part *part;
-> > +	int offset;
-> > +
-> > +	if (__check_part_nr(fa, part_nr))
-> > +		return NULL;
-> return -EINVAL, here ?
-> (Can't we compared with stored "total" ?)
-
-Heh.  The radix_tree.c code just BUG_ON()s when you pass it bad indexes.
-I guess the ranges that might be dealt with here are significantly
-smaller.  
-
-> > +	if (!fa->parts[part_nr])
-> > +		return NULL;
-> > +
+>>  I think there needs to
+>> be a higher level active/idle knob for the user of the card (be it the
+>> block driver or an SDIO function driver) to control whether to idle the
+>> bus clock or controller.
 > 
-> The caller can't know whether
->  - there are no entry or
->  - NULL(0) is stored at the array.
+> The code doesn't tell the driver to idle the controller, it sets ios.clock
+> to zero to give the host driver the *opportunity* to turn controller clocks
+> off when it's OK from the MMC spec to do so (after 8 MCI cycles), the
+> driver doesn't *have* to do that. It can add addtional logic for different
+> HW. So it's only about the bus clock (whereas my patch to mmci.c takes
+> advantage of the possibility to also gate the block clock).
+
+Many host controllers do stop the clock when ios->clock == 0 (pxamci and
+sdhci, for example).  Therefore. your patch will stop SDIO cards from
+working on (at least) PXA27x platforms.
+
+There needs to be three different bus states: active (max clock), idle
+(minimal clock, SDIO interrupts work), and off (minimal clocks, SDIO
+interrupts not required).
+
+I'm not sure what the best way to add this would be.  You could:
+
+1. Have a special clock frequency to mean idle and fix up all existing
+controller drivers to interpret this as 400 kHz unless you know the
+controller handles SDIO interrupts with no SDCLK.
+
+or:
+
+2. Add an additional controller method (set_bus_state?) and only provide
+this on controller drivers you're interested in.
+
+>> 2. Some controllers cannot detect SDIO interrupts if the clock is
+>> stopped.  There should either be a distinction between clock off and
+>> clock idle.
 > 
-> Then, he has to check gotten value is valid or not by himself.
+> This is on the driver level, not in the core. The core doesn't tell whether
+> to clock off or not, it only tells the device driver that the MCI clk doesn't
+> need to run by setting it to 0. Clearly, some hardware cannot exploit
+> that, but some (like PL180, OMAP and Atmel) can, easily.
 
-I think you may be reading this bit wrong.  Either that, or I badly
-miscoded it. :)  The flex_array_get() code should returns NULL in cases
-of error or the *address* of the data element.  It will actually return
-an address pointing into the second-level page.
+See previous comment.
 
-NULL's two meaning here are:
-1. No element was ever put() here and thus there's no data page
-2. Your index was out of bounds
+> There can possibly also be HW that can turn of MCI clk but not the
+> clock to the HW block itself, that is fine with the implementation.
 
-(1) is a little fuzzy here.  It of course doesn't absolutely guarantee
-that no put() was done since we just use the data page's existence to
-tell.  This is certainly no worse than a normal C array would be,
-though.
+Ok.
 
-> Can't we return -ENOENT here(especially when prealloc() is called) ?
-> But ah, anyway, all-zero elements in allocated array exists ;(
-> and the user can get value from an entry never be put.
+>> 3. Regardless of point 1 above.  Using a workqueue item in this way
+>> seems overkill.  Consider using a timer and simply calling mod_timer()
+>> at the start of every command.  When the timer expires, idle the clock.
+>>  You will probably need a "command in progress" bit to ensure you don't
+>> idle the clock if the timer expires in the middle of a command.
 > 
-> If we can fill the first 4bytes of _unused_ index by some magic code like this
-> #define FLEX_ARRAY_UNUSED_MAGIC		(0xa5a5a5a5)
-> (if maintaining bitmap/status of usage is nonsense)
-> and flex_array_get() can return -ENOENT, the users will feel easy.
-> 
-> Overprotection ;) ?
+> I would agree if I created a new workqueue, but the timeout of this
+> particular workqueue is unimportant and that's why I'm using the
+> global workqueue and just schedule_work(). This means no extra
+> overhead, no extra thread and basically does the exact same thing.
 
-I intentionally didn't use kzalloc() for the data pages.  I figured that
-users will either initialize it themselves or pass in __GFP_ZERO.  I've
-added a comment to clarify this.  
+You currently queue a work item and wake the workqueue every command.
+This is considerably more overhead (when doing back-to-back commands)
+than simply calling mod_timer().
 
--- Dave
+You also potentially delay for a considerable amount of time in the work
+item.
 
+David
+-- 
+David Vrabel, Senior Software Engineer, Drivers
+CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
+Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
+
+
+'member of the CSR plc group of companies. CSR plc registered in England and Wales, registered number 4187346, registered office Churchill House, Cambridge Business Park, Cowley Road, Cambridge, CB4 0WZ, United Kingdom'
