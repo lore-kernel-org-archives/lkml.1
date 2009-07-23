@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752457AbZGWBCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbZGWBCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752457AbZGWBCj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 21:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbZGWBCh
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 21:02:37 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:38807 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752227AbZGWBCe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752262AbZGWBCe (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 22 Jul 2009 21:02:34 -0400
-Date: Thu, 23 Jul 2009 10:22:57 +1000
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbZGWBCe
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 22 Jul 2009 21:02:34 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:38793 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751507AbZGWBCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 21:02:33 -0400
+Date: Thu, 23 Jul 2009 10:11:13 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Mauro Carvalho Chehab <mchehab@infradead.org>
 Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Chaithrika U S <chaithrika@ti.com>, Manjunath Hadli <mrh@ti.com>,
-       Brijesh Jadav <brijesh.j@ti.com>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       Hemant Pedanekar <hemantp@ti.com>
+       Muralidharan Karicheri <m-karicheri2@ti.com>,
+       Chaithrika U S <chaithrika@ti.com>, Naresh Medisetty <naresh@ti.com>,
+       Kevin Hilman <khilman@deeprootsystems.com>
 Subject: linux-next: manual merge of the v4l-dvb tree with the davinci tree
-Message-Id: <20090723102257.2e9852b4.sfr@canb.auug.org.au>
+Message-Id: <20090723101113.ed6fc12c.sfr@canb.auug.org.au>
 X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,192 +29,112 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Hi Mauro,
 
 Today's linux-next merge of the v4l-dvb tree got a conflict in
-arch/arm/mach-davinci/dm646x.c between commits
+arch/arm/mach-davinci/dm355.c between commit
 e94c101ce3ef11bc00f8ea5db4b65c4b01874cf8 ("davinci: ASoC: Add the
-platform devices for ASP") and da7f706415a5392ba5ff21228cf61c30e6371566
-("davinci: dm646x: Add IDE setup") from the davinci tree and commit
-be45110fa4525939a32c0509229a1781c5c3da78 ("rch/arm/mach-davinci: Platform
-and board specific setup for DM646x EVM") from the v4l-dvb tree.
+platform devices for ASP") from the davinci tree and commit
+32a01291c576c302d82a985d91db720dcf8c891b ("V4L/DVB: DM355 platform
+changes for vpfe capture driver") from the v4l-dvb tree.
 
-Again, assuming that these changes are orthogonal, I have fixed it up
-(see below) and can carry the fixes as necessary.
+I assume that these are orthogonal changes (though they may not be).  I
+fixed it up (see below) and can carry the fixes as necessary.
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --cc arch/arm/mach-davinci/dm646x.c
-index 8fa2803,3877ba3..0000000
---- a/arch/arm/mach-davinci/dm646x.c
-+++ b/arch/arm/mach-davinci/dm646x.c
-@@@ -600,92 -518,37 +609,123 @@@ static struct platform_device dm646x_ed
+diff --cc arch/arm/mach-davinci/dm355.c
+index 3abeb3e,2696df1..0000000
+--- a/arch/arm/mach-davinci/dm355.c
++++ b/arch/arm/mach-davinci/dm355.c
+@@@ -628,31 -612,67 +636,92 @@@ static struct platform_device dm355_edm
   	.resource		= edma_resources,
   };
   
- +static struct resource ide_resources[] = {
+ +static struct resource dm355_asp1_resources[] = {
  +	{
- +		.start          = DM646X_ATA_REG_BASE,
- +		.end            = DM646X_ATA_REG_BASE + 0x7ff,
- +		.flags          = IORESOURCE_MEM,
- +	},
- +	{
- +		.start          = IRQ_DM646X_IDE,
- +		.end            = IRQ_DM646X_IDE,
- +		.flags          = IORESOURCE_IRQ,
- +	},
- +};
- +
- +static u64 ide_dma_mask = DMA_BIT_MASK(32);
- +
- +static struct platform_device ide_dev = {
- +	.name           = "palm_bk3710",
- +	.id             = -1,
- +	.resource       = ide_resources,
- +	.num_resources  = ARRAY_SIZE(ide_resources),
- +	.dev = {
- +		.dma_mask		= &ide_dma_mask,
- +		.coherent_dma_mask      = DMA_BIT_MASK(32),
- +	},
- +};
- +
- +static struct resource dm646x_mcasp0_resources[] = {
- +	{
- +		.name	= "mcasp0",
- +		.start 	= DAVINCI_DM646X_MCASP0_REG_BASE,
- +		.end 	= DAVINCI_DM646X_MCASP0_REG_BASE + (SZ_1K << 1) - 1,
- +		.flags 	= IORESOURCE_MEM,
- +	},
- +	/* first TX, then RX */
- +	{
- +		.start	= DAVINCI_DM646X_DMA_MCASP0_AXEVT0,
- +		.end	= DAVINCI_DM646X_DMA_MCASP0_AXEVT0,
- +		.flags	= IORESOURCE_DMA,
- +	},
- +	{
- +		.start	= DAVINCI_DM646X_DMA_MCASP0_AREVT0,
- +		.end	= DAVINCI_DM646X_DMA_MCASP0_AREVT0,
- +		.flags	= IORESOURCE_DMA,
- +	},
- +};
- +
- +static struct resource dm646x_mcasp1_resources[] = {
- +	{
- +		.name	= "mcasp1",
- +		.start	= DAVINCI_DM646X_MCASP1_REG_BASE,
- +		.end	= DAVINCI_DM646X_MCASP1_REG_BASE + (SZ_1K << 1) - 1,
+ +		.start	= DAVINCI_ASP1_BASE,
+ +		.end	= DAVINCI_ASP1_BASE + SZ_8K - 1,
  +		.flags	= IORESOURCE_MEM,
  +	},
- +	/* DIT mode, only TX event */
  +	{
- +		.start	= DAVINCI_DM646X_DMA_MCASP1_AXEVT1,
- +		.end	= DAVINCI_DM646X_DMA_MCASP1_AXEVT1,
+ +		.start	= DAVINCI_DMA_ASP1_TX,
+ +		.end	= DAVINCI_DMA_ASP1_TX,
  +		.flags	= IORESOURCE_DMA,
  +	},
- +	/* DIT mode, dummy entry */
  +	{
- +		.start	= -1,
- +		.end	= -1,
+ +		.start	= DAVINCI_DMA_ASP1_RX,
+ +		.end	= DAVINCI_DMA_ASP1_RX,
  +		.flags	= IORESOURCE_DMA,
  +	},
  +};
  +
- +static struct platform_device dm646x_mcasp0_device = {
- +	.name		= "davinci-mcasp",
- +	.id		= 0,
- +	.num_resources	= ARRAY_SIZE(dm646x_mcasp0_resources),
- +	.resource	= dm646x_mcasp0_resources,
- +};
- +
- +static struct platform_device dm646x_mcasp1_device = {
- +	.name		= "davinci-mcasp",
+ +static struct platform_device dm355_asp1_device = {
+ +	.name		= "davinci-asp",
  +	.id		= 1,
- +	.num_resources	= ARRAY_SIZE(dm646x_mcasp1_resources),
- +	.resource	= dm646x_mcasp1_resources,
+ +	.num_resources	= ARRAY_SIZE(dm355_asp1_resources),
+ +	.resource	= dm355_asp1_resources,
  +};
  +
- +static struct platform_device dm646x_dit_device = {
- +	.name	= "spdif-dit",
- +	.id	= -1,
- +};
- +
-+ static u64 vpif_dma_mask = DMA_BIT_MASK(32);
-+ 
-+ static struct resource vpif_resource[] = {
++ static struct resource dm355_vpss_resources[] = {
 + 	{
-+ 		.start	= DAVINCI_VPIF_BASE,
-+ 		.end	= DAVINCI_VPIF_BASE + 0x03fff,
-+ 		.flags	= IORESOURCE_MEM,
++ 		/* VPSS BL Base address */
++ 		.name		= "vpss",
++ 		.start          = 0x01c70800,
++ 		.end            = 0x01c70800 + 0xff,
++ 		.flags          = IORESOURCE_MEM,
 + 	},
 + 	{
-+ 		.start = IRQ_DM646X_VP_VERTINT2,
-+ 		.end   = IRQ_DM646X_VP_VERTINT2,
-+ 		.flags = IORESOURCE_IRQ,
-+ 	},
-+ 	{
-+ 		.start = IRQ_DM646X_VP_VERTINT3,
-+ 		.end   = IRQ_DM646X_VP_VERTINT3,
-+ 		.flags = IORESOURCE_IRQ,
++ 		/* VPSS CLK Base address */
++ 		.name		= "vpss",
++ 		.start          = 0x01c70000,
++ 		.end            = 0x01c70000 + 0xf,
++ 		.flags          = IORESOURCE_MEM,
 + 	},
 + };
 + 
-+ static struct platform_device vpif_display_dev = {
-+ 	.name		= "vpif_display",
++ static struct platform_device dm355_vpss_device = {
++ 	.name			= "vpss",
++ 	.id			= -1,
++ 	.dev.platform_data	= "dm355_vpss",
++ 	.num_resources		= ARRAY_SIZE(dm355_vpss_resources),
++ 	.resource		= dm355_vpss_resources,
++ };
++ 
++ static struct resource vpfe_resources[] = {
++ 	{
++ 		.start          = IRQ_VDINT0,
++ 		.end            = IRQ_VDINT0,
++ 		.flags          = IORESOURCE_IRQ,
++ 	},
++ 	{
++ 		.start          = IRQ_VDINT1,
++ 		.end            = IRQ_VDINT1,
++ 		.flags          = IORESOURCE_IRQ,
++ 	},
++ 	/* CCDC Base address */
++ 	{
++ 		.flags          = IORESOURCE_MEM,
++ 		.start          = 0x01c70600,
++ 		.end            = 0x01c70600 + 0x1ff,
++ 	},
++ };
++ 
++ static u64 vpfe_capture_dma_mask = DMA_BIT_MASK(32);
++ static struct platform_device vpfe_capture_dev = {
++ 	.name		= CAPTURE_DRV_NAME,
 + 	.id		= -1,
-+ 	.dev		= {
-+ 			.dma_mask 		= &vpif_dma_mask,
-+ 			.coherent_dma_mask	= DMA_32BIT_MASK,
++ 	.num_resources	= ARRAY_SIZE(vpfe_resources),
++ 	.resource	= vpfe_resources,
++ 	.dev = {
++ 		.dma_mask		= &vpfe_capture_dma_mask,
++ 		.coherent_dma_mask	= DMA_BIT_MASK(32),
 + 	},
-+ 	.resource	= vpif_resource,
-+ 	.num_resources	= ARRAY_SIZE(vpif_resource),
 + };
++ 
++ void dm355_set_vpfe_config(struct vpfe_config *cfg)
++ {
++ 	vpfe_capture_dev.dev.platform_data = cfg;
++ }
 + 
   /*----------------------------------------------------------------------*/
   
-  static struct map_desc dm646x_io_desc[] = {
-@@@ -795,25 -659,28 +835,47 @@@ static struct davinci_soc_info davinci_
-  	.sram_len		= SZ_32K,
-  };
-  
- +void __init dm646x_init_ide()
- +{
- +	davinci_cfg_reg(DM646X_ATAEN);
- +	platform_device_register(&ide_dev);
- +}
- +
- +void __init dm646x_init_mcasp0(struct snd_platform_data *pdata)
- +{
- +	dm646x_mcasp0_device.dev.platform_data = pdata;
- +	platform_device_register(&dm646x_mcasp0_device);
- +}
- +
- +void __init dm646x_init_mcasp1(struct snd_platform_data *pdata)
- +{
- +	dm646x_mcasp1_device.dev.platform_data = pdata;
- +	platform_device_register(&dm646x_mcasp1_device);
- +	platform_device_register(&dm646x_dit_device);
- +}
- +
-+ void dm646x_setup_vpif(struct vpif_config *config)
-+ {
-+ 	unsigned int value;
-+ 	void __iomem *base = IO_ADDRESS(DAVINCI_SYSTEM_MODULE_BASE);
-+ 
-+ 	value = __raw_readl(base + VSCLKDIS_OFFSET);
-+ 	value &= ~VSCLKDIS_MASK;
-+ 	__raw_writel(value, base + VSCLKDIS_OFFSET);
-+ 
-+ 	value = __raw_readl(base + VDD3P3V_PWDN_OFFSET);
-+ 	value &= ~VDD3P3V_VID_MASK;
-+ 	__raw_writel(value, base + VDD3P3V_PWDN_OFFSET);
-+ 
-+ 	davinci_cfg_reg(DM646X_STSOMUX_DISABLE);
-+ 	davinci_cfg_reg(DM646X_STSIMUX_DISABLE);
-+ 	davinci_cfg_reg(DM646X_PTSOMUX_DISABLE);
-+ 	davinci_cfg_reg(DM646X_PTSIMUX_DISABLE);
-+ 
-+ 	vpif_display_dev.dev.platform_data = config;
-+ 	platform_device_register(&vpif_display_dev);
-+ }
-+ 
-  void __init dm646x_init(void)
-  {
-  	davinci_common_init(&davinci_soc_info_dm646x);
+  static struct map_desc dm355_io_desc[] = {
