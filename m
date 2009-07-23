@@ -1,60 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbZGWX3N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbZGWXpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754775AbZGWX3N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 19:29:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbZGWX3M
+	id S1754664AbZGWXpZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 19:45:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbZGWXpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 19:29:12 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:48514 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754645AbZGWX3L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 19:29:11 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=Vm7CmtDzqrhhwGp+a5d4thg0YIxc1mVYmXrUthfw3WXXPo9V6BS6ufyKRiv107Paw
-	ztGa/wQSGdVDmdjlevvOQ==
-Date: Thu, 23 Jul 2009 16:29:01 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: Paul Menage <menage@google.com>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mel@csn.ul.ie,
-       npiggin@suse.de
-Subject: Re: [PATCH] copy over oom_adj value at fork time
-In-Reply-To: <20090722233347.776E.A69D9226@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0907231624480.3476@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0907211258500.10356@chino.kir.corp.google.com> <6599ad830907211303m25141938kcb75065a74a40ee2@mail.gmail.com> <20090722233347.776E.A69D9226@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 23 Jul 2009 19:45:25 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48002 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753895AbZGWXpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 19:45:24 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [Regression] kdesu broken
+Date: Fri, 24 Jul 2009 01:45:31 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907240145.31935.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Jul 2009, KOSAKI Motohiro wrote:
+Hi,
 
-> > It's the API that's existed for years with no complaints, AFAICS.
-> 
-> I think thead and vfork() should be separeted on this discussion.
-> I agree vfork() regression should be fixed. but I don't think anyone
-> hope per-thread oom score. 
-> 
-> Of cource, if simple reverting is best way, I don't oppose this.... ;-)
-> 
+A recent kernel change broke kdesu (from KDE 4.2) on my test boxes.  ISTR a
+discussion about that, but I can't find it right now.  Any clues?
 
-Simply reverting it isn't an option unless you fix the underlying livelock 
-problem that my patches originally addressed and no viable alternative has 
-been proposed.
-
-On the other hand, I think adding /proc/pid/oom_adj_child would solve the 
-userspace issue.  oom_adj_child would be the oom_adj value that is used by 
-the newly initialized mm_struct; this would allow the vfork'd child to 
-share the same oom_score with the parent and then be replaced with an 
-alternate score on execve().
-
-oom_adj_child would only be allowed to be greater (i.e. the more preferred 
-victim) than oom_adj for any given thread since the oom killer tries to 
-kill a child of the selected task first if it doesn't share memory.
+Rafael
