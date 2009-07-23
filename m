@@ -1,80 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752490AbZGWKQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752002AbZGWKZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752490AbZGWKQZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 06:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbZGWKQZ
+	id S1752002AbZGWKZX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 06:25:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZGWKZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 06:16:25 -0400
-Received: from mga09.intel.com ([134.134.136.24]:23796 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751141AbZGWKQY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 06:16:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,253,1246863600"; 
-   d="scan'208";a="432661254"
-Date: Thu, 23 Jul 2009 18:15:25 +0800
-From: Feng Tang <feng.tang@intel.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-CC: Len Brown <lenb@kernel.org>, linux-next <linux-next@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Subject: Re: next: sfi build fails when !CONFIG_ACPI
-Message-ID: <20090723181525.475692d3@feng-desktop>
-In-Reply-To: <a4423d670907230143l78f324dewefa4cb8990ef4266@mail.gmail.com>
-References: <a4423d670907160148n66760052wbef60e4a2c3c7941@mail.gmail.com>
-	<alpine.LFD.2.00.0907162145140.3531@sony-vgn-z540>
-	<a4423d670907170657o2c68c479j9b4810af5adad29f@mail.gmail.com>
-	<a4423d670907230143l78f324dewefa4cb8990ef4266@mail.gmail.com>
-Organization: intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
+	Thu, 23 Jul 2009 06:25:23 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:56439 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751881AbZGWKZW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 06:25:22 -0400
+To: Sage Weil <sage@newdream.net>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 08/19] ceph: address space operations
+From: Andi Kleen <andi@firstfloor.org>
+References: <1248292313-31326-1-git-send-email-sage@newdream.net>
+	<1248292313-31326-2-git-send-email-sage@newdream.net>
+	<1248292313-31326-3-git-send-email-sage@newdream.net>
+	<1248292313-31326-4-git-send-email-sage@newdream.net>
+	<1248292313-31326-5-git-send-email-sage@newdream.net>
+	<1248292313-31326-6-git-send-email-sage@newdream.net>
+	<1248292313-31326-7-git-send-email-sage@newdream.net>
+	<1248292313-31326-8-git-send-email-sage@newdream.net>
+	<1248292313-31326-9-git-send-email-sage@newdream.net>
+Date: Thu, 23 Jul 2009 12:25:18 +0200
+In-Reply-To: <1248292313-31326-9-git-send-email-sage@newdream.net> (Sage Weil's message of "Wed, 22 Jul 2009 12:51:42 -0700")
+Message-ID: <874ot33ddd.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Jul 2009 16:43:30 +0800
-Alexander Beregalov <a.beregalov@gmail.com> wrote:
+Sage Weil <sage@newdream.net> writes:
 
-> 2009/7/17 Alexander Beregalov <a.beregalov@gmail.com>:
-> > 2009/7/17 Len Brown <lenb@kernel.org>:
-> >>> drivers/sfi/sfi_core.c: In function 'sfi_init':
-> >>> drivers/sfi/sfi_core.c:346: error: 'acpi_disabled' undeclared
-> >>> (first use in this function)
-> >>> drivers/sfi/sfi_core.c:346: error: (Each undeclared identifier is
-> >>> reported only once
-> >>> drivers/sfi/sfi_core.c:346: error: for each function it appears
-> >>> in.)
-> >>>
-> >>>
-> >>> $ grep ACPI .config
-> >>> # Power management and ACPI options
-> >>
-> >> It builds for me.
-> >> Please send me the complete failing .config
-> >
-> > Attached (x86_64)
-> 
-> Still fails for me in the same way,
-> X86_64
-> next-20090723
+> The ceph address space methods are concerned primarily with managing
+> the dirty page accounting in the inode, which (among other things)
+> must keep track of which snapshot context each page was dirtied in,
+> and ensure that dirty data is written out to the OSDs in snapshort
+> order.
+>
+> A writepage() on a page that is not currently writeable due to
+> snapshot writeback ordering constraints is ignored (it was presumably
+> called from kswapd).
 
-sorry for the late response, please try the following patch:
+Not a detailed review. You would need to get one from someone who
+knows the VFS interfaces very well (unfortunately those people are hard
+to find). I just read through it.
 
-diff --git a/drivers/sfi/sfi_core.c b/drivers/sfi/sfi_core.c
-index 62e2f98..fa66824 100644
---- a/drivers/sfi/sfi_core.c
-+++ b/drivers/sfi/sfi_core.c
-@@ -361,9 +361,6 @@ static __init int sfi_find_syst(void)
- 
- void __init sfi_init(void)
- {
--	if (!acpi_disabled)
--		disable_sfi();
--
- 	if (sfi_disabled)
- 		return;
- 
-Thanks,
-Feng
+One thing I noticed is that you seem to do a lot of memory allocation
+in the write out paths (some of it even GFP_KERNEL, not GFP_NOFS) 
+
+The traditional wisdom is that you should not allocate memory in block
+writeout, because that can deadlock. The worst case is swapfile
+on it, but it can happen with mmap too (e.g. one process using
+most memory with a file mmap from your fs)  GFP_KERNEL can also recurse,
+which can cause other problems in your fs.
+
+There were some changes to make this problem less severe (e.g. better
+dirty pages accounting), but I don't think anyone has really declared
+it solved yet. The standard workaround for this is to use mempools 
+for anything allocated in the writeout path, then you are at least
+guaranteed to make forward progress.
+
+You also had at least one unchecked kmalloc I think.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
