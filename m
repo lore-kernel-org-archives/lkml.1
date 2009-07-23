@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752498AbZGWFRx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752530AbZGWF0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752498AbZGWFRx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 01:17:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbZGWFRx
+	id S1752530AbZGWF0s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 01:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbZGWF0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 01:17:53 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:43243 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752148AbZGWFRw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 01:17:52 -0400
-Date: Thu, 23 Jul 2009 15:17:48 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: async_tx tree build failure
-Message-Id: <20090723151748.4a7d7281.sfr@canb.auug.org.au>
-In-Reply-To: <1248323620.24951.2.camel@dwillia2-linux.ch.intel.com>
-References: <20090723120004.fac867eb.sfr@canb.auug.org.au>
-	<1248323620.24951.2.camel@dwillia2-linux.ch.intel.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__23_Jul_2009_15_17_48_+1000_jeFBgdckaV_syrW+"
+	Thu, 23 Jul 2009 01:26:48 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:62229 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751153AbZGWF0r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 01:26:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=c8a+iy/5WM2K1PEUKkQwgGvvFks96PM+4CruJcSgeCAgMg0UV+d3+IJF6DrzEjitFA
+         7CjqHxpB88mCsKS2q4J9LPP1OvLdrN6kJhkDWrP6EfYNvNjcJv9hOoD57whpaGDh5h8V
+         mhVIE0VRQUGEdmEBvFHrJuHEd1o8wrLO82xvo=
+MIME-Version: 1.0
+In-Reply-To: <20090722161312.8c2ab4b5.akpm@linux-foundation.org>
+References: <62.47.75.132.1247818962.wm@webmail.inode.at>
+	 <20090722161312.8c2ab4b5.akpm@linux-foundation.org>
+Date: Thu, 23 Jul 2009 07:26:46 +0200
+Message-ID: <d8bd05e00907222226o369fe2e7i225afb06ec71db8d@mail.gmail.com>
+Subject: Re: mounting cifs filesystems not possible
+From: Gerhard Hintermayer <gerhard.hintermayer@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: sfrench@samba.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__23_Jul_2009_15_17_48_+1000_jeFBgdckaV_syrW+
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Well this is indeed strange. First I thought the problem was solved
+because I had an old version of mount installed, but the successful
+mount with latest version of mount.cifs was only by chance. I get 1
+successful mount out of ~ 30 tries (each time unloading the cifs
+module). And looking at the source in export.c I discovered, that
+reexporting cifs- mount points is still not supported :-( : This seems
+to be very tricky. If you need more information to track the tainting
+problem down, pls give me a note.
 
-Hi Dan,
 
-On Wed, 22 Jul 2009 21:33:40 -0700 Dan Williams <dan.j.williams@intel.com> =
-wrote:
->=20
-> Gah, yes that commit was half baked.  I have pushed out an updated tree
-> with the following fix:
+PS: please CC gerhard.hintermayer@gmail.com, I'm not on the list
 
-Thanks.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__23_Jul_2009_15_17_48_+1000_jeFBgdckaV_syrW+
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpn8nwACgkQjjKRsyhoI8wehgCeJWviL5xOSHaKTgjxdK0OhqX4
-tjcAn1LFKyTFc4VZe3Mx4/DcRUhIjxFt
-=UKBp
------END PGP SIGNATURE-----
-
---Signature=_Thu__23_Jul_2009_15_17_48_+1000_jeFBgdckaV_syrW+--
+On Thu, Jul 23, 2009 at 1:13 AM, Andrew Morton<akpm@linux-foundation.org> wrote:
+> On Fri, 17 Jul 2009 10:22:42 +0200 (CEST)
+> "Gerhard Hintermayer" <g.hintermayer@inode.at> wrote:
+>
+>> I discovered that this is a slow_path issue, which is tainting the kernel,
+>> I already filed this as a gentoo bug, but since this is kernel related, I
+>> think here's the right place.  The server I'm trying to mount is a Windows
+>> 2003 Server, I  can inquire more if neccessary.
+>> PS: please CC me, I not on the list anymore (too much traffic, just how I
+>> was warned)
+>>
+>
+> please do cc the CIFS maintainer and list on future issues:
+>
+> COMMON INTERNET FILE SYSTEM (CIFS)
+> P:      Steve French
+> M:      sfrench@samba.org
+> L:      linux-cifs-client@lists.samba.org
+> L:      samba-technical@lists.samba.org
+> W:      http://linux-cifs.samba.org/
+> T:      git git://git.kernel.org/pub/scm/linux/kernel/git/sfrench/cifs-2.6.git
+> S:      Supported
+> F:      Documentation/filesystems/cifs.txt
+> F:      fs/cifs/
+>
+> Thanks.
+>
