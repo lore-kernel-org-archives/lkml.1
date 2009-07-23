@@ -1,102 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbZGWPmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753709AbZGWPov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754077AbZGWPmg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 11:42:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbZGWPmf
+	id S1753709AbZGWPov (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 11:44:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbZGWPou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 11:42:35 -0400
-Received: from smtp111.iad.emailsrvr.com ([207.97.245.111]:39165 "EHLO
-	smtp111.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752906AbZGWPmf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 11:42:35 -0400
-X-Greylist: delayed 544 seconds by postgrey-1.27 at vger.kernel.org; Thu, 23 Jul 2009 11:42:34 EDT
-Message-ID: <4A6882C0.6020302@librato.com>
-Date: Thu, 23 Jul 2009 11:33:20 -0400
-From: Oren Laadan <orenl@librato.com>
-Organization: Librato
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-api@vger.kernel.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Oren Laadan <orenl@cs.columbia.edu>
-Subject: Re: [RFC v17][PATCH 22/60] c/r: external checkpoint of a task	other
- than ourself
-References: <1248256822-23416-1-git-send-email-orenl@librato.com> <1248256822-23416-23-git-send-email-orenl@librato.com> <20090723144753.GA12416@us.ibm.com>
-In-Reply-To: <20090723144753.GA12416@us.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+	Thu, 23 Jul 2009 11:44:50 -0400
+Received: from gate.crashing.org ([63.228.1.57]:43831 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751658AbZGWPot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 11:44:49 -0400
+Cc: beckyb@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
+       benh@kernel.crashing.org, linux-kernel@vger.kernel.org
+Message-Id: <26996510-F41B-4B4C-8AA1-80CD23E4F435@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090723160855S.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v935.3)
+Subject: Re: removing addr_needs_map in struct dma_mapping_ops
+Date: Thu, 23 Jul 2009 10:44:25 -0500
+References: <B6C36B32-6861-4FD9-B8A3-E8C328687E0F@kernel.crashing.org> <20090714094919V.fujita.tomonori@lab.ntt.co.jp> <79B7CF70-0A66-43DA-91ED-3C8638FED141@kernel.crashing.org> <20090723160855S.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: Apple Mail (2.935.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On Jul 23, 2009, at 2:09 AM, FUJITA Tomonori wrote:
 
-Serge E. Hallyn wrote:
-> Quoting Oren Laadan (orenl@librato.com):
->> +/* setup checkpoint-specific parts of ctx */
->> +static int init_checkpoint_ctx(struct ckpt_ctx *ctx, pid_t pid)
->> +{
->> +	struct task_struct *task;
->> +	struct nsproxy *nsproxy;
->> +	int ret;
->> +
->> +	/*
->> +	 * No need for explicit cleanup here, because if an error
->> +	 * occurs then ckpt_ctx_free() is eventually called.
->> +	 */
->> +
->> +	ctx->root_pid = pid;
->> +
->> +	/* root task */
->> +	read_lock(&tasklist_lock);
->> +	task = find_task_by_vpid(pid);
->> +	if (task)
->> +		get_task_struct(task);
->> +	read_unlock(&tasklist_lock);
->> +	if (!task)
->> +		return -ESRCH;
->> +	else
->> +		ctx->root_task = task;
->> +
->> +	/* root nsproxy */
->> +	rcu_read_lock();
->> +	nsproxy = task_nsproxy(task);
->> +	if (nsproxy)
->> +		get_nsproxy(nsproxy);
->> +	rcu_read_unlock();
->> +	if (!nsproxy)
->> +		return -ESRCH;
->> +	else
->> +		ctx->root_nsproxy = nsproxy;
->> +
->> +	/* root freezer */
->> +	ctx->root_freezer = task;
->> +	geT_task_struct(task);
->> +
->> +	ret = may_checkpoint_task(ctx, task);
->> +	if (ret) {
->> +		ckpt_write_err(ctx, NULL);
->> +		put_task_struct(task);
->> +		put_task_struct(task);
->> +		put_nsproxy(nsproxy);
-> 
-> I don't think this is safe - the ckpt_ctx_free() will
-> free them a second time because you're not setting them
-> to NULL, right?
+>>> diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/
+>>> powerpc/platforms/86xx/mpc86xx_hpcn.c
+>>> index 6632702..d1878f3 100644
+>>> --- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+>>> +++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+>>> @@ -187,5 +187,6 @@ define_machine(mpc86xx_hpcn) {
+>>> 	.progress		= udbg_progress,
+>>> #ifdef CONFIG_PCI
+>>> 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
+>>> +	.pci_dma_dev_setup	= pci_dma_dev_setup_swiotlb,
+>>> #endif
+>>> };
+>>
+>> Instead of initializing this here (which has problems if !
+>> CONFIG_SWIOTLB),
+>
+> Oops, I overlooked it.
+>
+>
+>> place this in the xxxxx_xxxx_setup_arch function in
+>> the same files, which already have an #ifdef CONFIG_SWIOTLB in which
+>> this can be embedded.
+>
+> But the xxxxx_xxxx_setup_arch function doesn't access to each device
+> so we need to add something like for_each_pci_dev()? You prefer that?
 
-Yes. Fortunately this hole chunk is removed by the 3rd-next patch.
-I'll make sure it's correct here too.
+No.. I think what we want is:
 
-Thanks,
+#ifdef CONFIG_SWIOTLB
+         if (lmb_end_of_DRAM() > max) {
+                 ppc_swiotlb_enable = 1;
+                 set_pci_dma_ops(&swiotlb_pci_dma_ops);
+		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+         }
+#endif
 
-Oren.
+Buts its been a few days since Becky & I chatted about this and I feel  
+like I'm forgetting something.
 
+- k
