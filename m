@@ -1,31 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751906AbZGWAf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752030AbZGWAjD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751906AbZGWAf1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 20:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbZGWAf1
+	id S1752030AbZGWAjD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 20:39:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZGWAjC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 20:35:27 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33261 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbZGWAf0 (ORCPT
+	Wed, 22 Jul 2009 20:39:02 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48001 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751815AbZGWAjB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 20:35:26 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 23 Jul 2009 09:33:34 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
-       hugh.dickins@tiscali.co.uk, avi@redhat.com,
-       torvalds@linux-foundation.org, aarcange@redhat.com
-Subject: Re: [PATCH 0/2] ZERO PAGE again v4.
-Message-Id: <20090723093334.3166e9d2.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090722171245.d5b3a108.akpm@linux-foundation.org>
-References: <20090709122428.8c2d4232.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090716180134.3393acde.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090723085137.b14fe267.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090722171245.d5b3a108.akpm@linux-foundation.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 22 Jul 2009 20:39:01 -0400
+Date: Wed, 22 Jul 2009 17:38:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, denis@compulab.co.il,
+       mike@compulab.co.il
+Subject: Re: [PATCH] Add reboot fixup for SBC-fitPC2
+Message-Id: <20090722173854.fdbcee7f.akpm@linux-foundation.org>
+In-Reply-To: <4A6491C1.5060909@compulab.co.il>
+References: <4A6491C1.5060909@compulab.co.il>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -33,53 +27,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Jul 2009 17:12:45 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Mon, 20 Jul 2009 18:48:17 +0300
+Mike Rapoport <mike@compulab.co.il> wrote:
 
-> On Thu, 23 Jul 2009 08:51:37 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > From: Denis Turischev <denis@compulab.co.il>
 > 
-> > On Thu, 16 Jul 2009 18:01:34 +0900
-> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > 
-> > > 
-> > > Rebased onto  mm-of-the-moment snapshot 2009-07-15-20-57.
-> > > And modifeied to make vm_normal_page() eat FOLL_NOZERO, directly.
-> > > 
-> > > Any comments ?
-> > > 
-> > 
-> > A week passed since I posted this.
+> This patch adds reboot fixup for CompuLab SBC-fitPC2 board.
 > 
-> I'm catching up at a rate of 2.5 days per day.  Am presently up to July
-> 16.  I never know whether to work through it forwards or in reverse.
+> Singned-off-by: Denis Turischev <denis@compulab.co.il>
+> Signedd-off-by: Mike Rapoport <mike@compulab.co.il
 > 
-> Geeze you guys send a lot of stuff.  Stop writing new code and go fix
-> some bugs!
+> diff -Nru linux-2.6.31-rc3.orig/arch/x86/kernel/reboot.c
+> linux-2.6.31-rc3/arch/x86/kernel/reboot.c
+> --- linux-2.6.31-rc3.orig/arch/x86/kernel/reboot.c	2009-07-14 04:18:52.000000000
+> +0300
+> +++ linux-2.6.31-rc3/arch/x86/kernel/reboot.c	2009-07-16 14:39:48.000000000 +0300
+> @@ -249,6 +249,15 @@
+>  			DMI_MATCH(DMI_PRODUCT_NAME, "VGN-Z540N"),
+>  		},
+>  	},
+> +	{	/* Handle problems with rebooting on
+> +				CompuLab SBC-FITPC2 board */
+> +		.callback = set_bios_reboot,
+> +		.ident = "CompuLab SBC-FITPC2",
+> +		.matches = {
+> +			DMI_MATCH(DMI_SYS_VENDOR, "CompuLab"),
+> +			DMI_MATCH(DMI_PRODUCT_NAME, "SBC-FITPC2"),
+> +		},
+> +	},
+>  	{ }
+>  };
 > 
-In these months, I myself don't write any new feature.
-I'm now in stablization stage.
-(ZERO_PAGE is not new feature in my point of view.)
 
-Remainig big one is Direce-I/O v.s. fork() fix.
+Neither this patch nor Denis's earlier version contained an adequate
+decription.  We aren't told what these "problems" are, so we're unable
+to judge the appropriateness of patch.
 
-> > It's no problem to keep updating this
-> > and post again. But if anyone have concerns, please notify me.
-> > I'll reduce CC: list in the next post.
-> 
-> ok...
-> 
-I'll postpone v5 until the next week.
+Both patches were wordwrapped.
 
-Thank you for your efforts.
+Both patches use an atypical layout style for the comments.
 
-BTW, when I post new version, should I send a reply to old version to say
-"this version is obsolete" ? Can it make your work easier ? like following.
+I fixed up some of these things and merged the patch into my tree, for
+sending to Ingo for 2.6.32.
 
-Re:[PATCH][Obsolete] new version weill come (Was.....)
+Please send a description of the problem which the patch fixes and I
+shall add that to my copy of the changelog.
 
-I tend to update patches until v5 or more until merged.
-
-Regards,
--Kame
-
+Thanks.
