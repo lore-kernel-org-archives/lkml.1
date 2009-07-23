@@ -1,139 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751192AbZGWABN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750973AbZGWADz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751192AbZGWABN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 20:01:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbZGWABM
+	id S1750973AbZGWADz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 20:03:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbZGWADy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 20:01:12 -0400
-Received: from mail-yx0-f197.google.com ([209.85.210.197]:38223 "EHLO
-	mail-yx0-f197.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796AbZGWABM (ORCPT
+	Wed, 22 Jul 2009 20:03:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55534 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750804AbZGWADy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 20:01:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=q7BVa/sJxCHvoygtxoIOt2vUCfDrMFprJjpg1+f1MpEF7k3SyuuU834JT5U58OFqV+
-         VJtt3dz5Pci88DVV04zvb+ZZWiO5q9nhpbgEMJNi9bCXZ2Oo5XVmbcx+4xb1oJA/v3vc
-         AHHvg/COvV6pbwvUvGs2jXvWb9hwJlQObjZrA=
-Message-ID: <4A67A83D.1030101@gmail.com>
-Date: Wed, 22 Jul 2009 21:01:01 -0300
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090626)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] irq: Add compiling definition of irq_thread_check_affinity
- for !CONFIG_SMP
-References: <alpine.LFD.2.00.0907221655130.2813@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0907221655130.2813@localhost.localdomain>
-X-Enigmail-Version: 0.95.7
+	Wed, 22 Jul 2009 20:03:54 -0400
+Date: Wed, 22 Jul 2009 17:02:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: airlied@redhat.com, catalin.marinas@arm.com, airlied@gmail.com,
+       linux-kernel@vger.kernel.org, eric@anholt.net
+Subject: Re: Memory leak issues in drm
+Message-Id: <20090722170226.c5becf38.akpm@linux-foundation.org>
+In-Reply-To: <1247728158.2543.4.camel@ht.satnam>
+References: <1247720877.2532.4.camel@ht.satnam>
+	<1247728158.2543.4.camel@ht.satnam>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 16 Jul 2009 12:39:18 +0530
+Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-The addition and use of irq_thread_check_affinity neglected the fact
-that struct irq_desc does not have an affinity member when CONFIG_SMP=n.
+> On Thu, 2009-07-16 at 10:37 +0530, Jaswinder Singh Rajput wrote:
+> > On linus tree, while investigating kmemleak issues in drm :
+> > 
+> > unreferenced object 0xf571dea0 (size 32):
+> >   comm "Xorg", pid 1992, jiffies 4294703188
+> >   backtrace:
+> >     [<c1096655>] create_object+0x140/0x210
+> >     [<c10967f2>] kmemleak_alloc+0x25/0x4b
+> >     [<c1093b63>] __kmalloc+0xcb/0x153
+> >     [<c11ae939>] drm_setversion+0x154/0x1f6
+> >     [<c11ad0b1>] drm_ioctl+0x211/0x296
+> >     [<c10a2dc9>] vfs_ioctl+0x50/0x69
+> >     [<c10a3321>] do_vfs_ioctl+0x49b/0x4d5
+> >     [<c10a3387>] sys_ioctl+0x2c/0x45
+> >     [<c1002988>] sysenter_do_call+0x12/0x36
+> >     [<ffffffff>] 0xffffffff
+> > 
+> 
+> This fixes above memory leak in drm because it was allocating again on
+> dev->devname without freeing previous instance and more memory related
+> issues, hope this will be helpful:
+> 
+> diff --git a/drivers/gpu/drm/drm_ioctl.c b/drivers/gpu/drm/drm_ioctl.c
+> index 9b9ff46..b39ab86 100644
+> --- a/drivers/gpu/drm/drm_ioctl.c
+> +++ b/drivers/gpu/drm/drm_ioctl.c
+> @@ -96,25 +96,36 @@ int drm_setunique(struct drm_device *dev, void *data,
 
-Fix this by adding an empty definition of the method for !SMP.
+drm_setunique() is pretty crappy.  It has a number of places where it
+does some resource freeing and then a `return' and other places where
+it does the usual `goto out_free' thing.
 
-Signed-off-by: Kevin Winchester <kjwinchester@gmail.com>
----
+I do think that converting this function to the usual
+single-return-statement model would simplify it and would reduce the
+chances of additional resource leaks being added in the future.
 
-I'll try not to be lazy and send a real patch.  Please let me know if
-I've done it wrong.
+The basic pattern (which is applicable here) is:
 
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index f0de36f..82f01c8 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -190,11 +190,46 @@ int irq_select_affinity_usr(unsigned int irq)
- 	return ret;
- }
- 
-+/*
-+ * Check whether we need to change the affinity of the interrupt thread.
-+ */
-+static void
-+irq_thread_check_affinity(struct irq_desc *desc, struct irqaction *action)
-+{
-+	cpumask_var_t mask;
-+
-+	if (!test_and_clear_bit(IRQTF_AFFINITY, &action->thread_flags))
-+		return;
-+
-+	/*
-+	 * In case we are out of memory we set IRQTF_AFFINITY again and
-+	 * try again next time
-+	 */
-+	if (!alloc_cpumask_var(&mask, GFP_KERNEL)) {
-+		set_bit(IRQTF_AFFINITY, &action->thread_flags);
-+		return;
-+	}
-+
-+	spin_lock_irq(&desc->lock);
-+	cpumask_copy(mask, desc->affinity);
-+	spin_unlock_irq(&desc->lock);
-+
-+	set_cpus_allowed_ptr(current, mask);
-+	free_cpumask_var(mask);
-+}
-+
- #else
-+
- static inline int setup_affinity(unsigned int irq, struct irq_desc *desc)
- {
- 	return 0;
- }
-+
-+static void
-+irq_thread_check_affinity(struct irq_desc *desc, struct irqaction *action)
-+{
-+}
-+
- #endif
- 
- void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
-@@ -452,34 +487,6 @@ static int irq_wait_for_interrupt(struct irqaction *action)
- }
- 
- /*
-- * Check whether we need to change the affinity of the interrupt thread.
-- */
--static void
--irq_thread_check_affinity(struct irq_desc *desc, struct irqaction *action)
--{
--	cpumask_var_t mask;
--
--	if (!test_and_clear_bit(IRQTF_AFFINITY, &action->thread_flags))
--		return;
--
--	/*
--	 * In case we are out of memory we set IRQTF_AFFINITY again and
--	 * try again next time
--	 */
--	if (!alloc_cpumask_var(&mask, GFP_KERNEL)) {
--		set_bit(IRQTF_AFFINITY, &action->thread_flags);
--		return;
--	}
--
--	spin_lock_irq(&desc->lock);
--	cpumask_copy(mask, desc->affinity);
--	spin_unlock_irq(&desc->lock);
--
--	set_cpus_allowed_ptr(current, mask);
--	free_cpumask_var(mask);
--}
--
--/*
-  * Interrupt handler thread
-  */
- static int irq_thread(void *data)
+foo()
+{
+	if (!simple test)
+		return -EFOO;
+	if (!simple_test_2)
+		return -EBAR;
 
+	foo = allocate_something();
+
+	if (test3)
+		goto fail_foo;
+
+	bar = allocate_something_else();
+
+	if (test4)
+		goto fail_bar;
+
+	...
+
+	return 0;		/* success */
+
+fail_bar:
+	deallocate(bar);
+fail_foo:
+	deallocate(foo);
+
+	return err;
+}
+
+>  	master->unique = kmalloc(master->unique_size, GFP_KERNEL);
+>  	if (!master->unique)
+>  		return -ENOMEM;
+> -	if (copy_from_user(master->unique, u->unique, master->unique_len))
+> +	if (copy_from_user(master->unique, u->unique, master->unique_len)) {
+> +		kfree(master->unique);
+> +		master->unique_len = 0;
+>  		return -EFAULT;
+> +	}
+>  
+>  	master->unique[master->unique_len] = '\0';
+>  
+> +	/* Free previous dev->devname, if exists */
+> +	if (dev->devname)
+> +		kfree(dev->devname);
+
+kfree(NULL) is legal and will simplify and shorten the code here.
+
+>  	dev->devname = kmalloc(strlen(dev->driver->pci_driver.name) +
+>  			       strlen(master->unique) + 2, GFP_KERNEL);
+> -	if (!dev->devname)
+> +	if (!dev->devname) {
+> +		kfree(master->unique);
+> +		master->unique_len = 0;
+>  		return -ENOMEM;
+> +	}
+>  
+>  	sprintf(dev->devname, "%s@%s", dev->driver->pci_driver.name,
+>  		master->unique);
+>  
+> -	/* Return error if the busid submitted doesn't match the device's actual
+> +	/*
+> +	 * Return error if the busid submitted doesn't match the device's actual
+>  	 * busid.
+>  	 */
+>  	ret = sscanf(master->unique, "PCI:%d:%d:%d", &bus, &slot, &func);
+>  	if (ret != 3)
+> -		return -EINVAL;
+> +		goto error;
+> +
+>  	domain = bus >> 8;
+>  	bus &= 0xff;
+>  
+> @@ -122,9 +133,15 @@ int drm_setunique(struct drm_device *dev, void *data,
+>  	    (bus != dev->pdev->bus->number) ||
+>  	    (slot != PCI_SLOT(dev->pdev->devfn)) ||
+>  	    (func != PCI_FUNC(dev->pdev->devfn)))
+> -		return -EINVAL;
+> +		goto error;
+>  
+>  	return 0;
+> +
+> +error:
+> +	kfree(dev->devname);
+> +	kfree(master->unique);
+> +
+> +	return -EINVAL;
+>  }
+>  
+>  static int drm_set_busid(struct drm_device *dev, struct drm_file *file_priv)
+> @@ -136,25 +153,35 @@ static int drm_set_busid(struct drm_device *dev, struct drm_file *file_priv)
+>  		return -EBUSY;
+>  
+>  	master->unique_len = 40;
+> -	master->unique_size = master->unique_len;
+> +	master->unique_size = master->unique_len + 1;
+>  	master->unique = kmalloc(master->unique_size, GFP_KERNEL);
+>  	if (master->unique == NULL)
+>  		return -ENOMEM;
+>  
+> -	len = snprintf(master->unique, master->unique_len, "pci:%04x:%02x:%02x.%d",
+> +	/*
+> +	 * Using sprintf as it will return number of characters
+> +	 * (not including the trailing '\0')
+> +	 */
+> +	len = sprintf(master->unique, "pci:%04x:%02x:%02x.%d",
+>  		       drm_get_pci_domain(dev),
+>  		       dev->pdev->bus->number,
+>  		       PCI_SLOT(dev->pdev->devfn),
+>  		       PCI_FUNC(dev->pdev->devfn));
+> -	if (len >= master->unique_len)
+> +	if (len > master->unique_len)
+>  		DRM_ERROR("buffer overflow");
+>  	else
+>  		master->unique_len = len;
+>  
+> +	/* Free previous dev->devname, if exists */
+> +	if (dev->devname)
+> +		kfree(dev->devname);
+
+and here.
+
+>  	dev->devname = kmalloc(strlen(dev->driver->pci_driver.name) +
+>  			       master->unique_len + 2, GFP_KERNEL);
+> -	if (dev->devname == NULL)
+> +	if (dev->devname == NULL) {
+> +		kfree(master->unique);
+> +		master->unique_len = 0;
+>  		return -ENOMEM;
+> +	}
+>  
+>  	sprintf(dev->devname, "%s@%s", dev->driver->pci_driver.name,
+>  		master->unique);
+> 
