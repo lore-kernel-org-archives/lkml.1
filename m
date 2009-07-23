@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753080AbZGWRYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753261AbZGWR3D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753080AbZGWRYf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 13:24:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752508AbZGWRYe
+	id S1753261AbZGWR3D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 13:29:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbZGWR3C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 13:24:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43425 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752472AbZGWRYd (ORCPT
+	Thu, 23 Jul 2009 13:29:02 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39378 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752651AbZGWR3B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 13:24:33 -0400
-Date: Thu, 23 Jul 2009 10:23:16 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       kosaki.motohiro@jp.fujitsu.com, maximlevitsky@gmail.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Lee.Schermerhorn@hp.com, penberg@cs.helsinki.fi, hannes@cmpxchg.org,
-       jirislaby@gmail.com
-Subject: Re: [PATCH] mm: Warn once when a page is freed with PG_mlocked set
- V2
-Message-Id: <20090723102316.b94a2e4f.akpm@linux-foundation.org>
-In-Reply-To: <20090723102938.GA27731@csn.ul.ie>
-References: <20090715125822.GB29749@csn.ul.ie>
-	<alpine.DEB.1.10.0907151027410.23643@gentwo.org>
-	<20090722160649.61176c61.akpm@linux-foundation.org>
-	<20090723102938.GA27731@csn.ul.ie>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Jul 2009 13:29:01 -0400
+Date: Thu, 23 Jul 2009 19:28:54 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Arve Hj?nnev?g <arve@android.com>
+Cc: Brian Swetland <swetland@google.com>, Arve Hj??nnev??g <arve@google.com>,
+       Iliyan Malchev <malchev@google.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: HTC Dream camera support for staging
+Message-ID: <20090723172854.GG28158@elf.ucw.cz>
+References: <20090629114339.GA25552@elf.ucw.cz> <20090629121023.GD28046@google.com> <20090630102457.GA25802@elf.ucw.cz> <a55d774e0906300338l7743d566k5b463eed3efd1ea1@mail.gmail.com> <20090709101315.GF10937@elf.ucw.cz> <a55d774e0907090406u5e91b5c9r2303b098d0e44988@mail.gmail.com> <20090713202720.GD2569@elf.ucw.cz> <d6200be20907131505x2ea29585p4bc8babebfc7395a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d6200be20907131505x2ea29585p4bc8babebfc7395a@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Jul 2009 11:29:39 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
-
-> On Wed, Jul 22, 2009 at 04:06:49PM -0700, Andrew Morton wrote:
-> > On Wed, 15 Jul 2009 10:31:54 -0400 (EDT)
-> > Christoph Lameter <cl@linux-foundation.org> wrote:
-> > 
-> > > On Wed, 15 Jul 2009, Mel Gorman wrote:
-> > > 
-> > > > -static inline int free_pages_check(struct page *page)
-> > > > +static inline int free_pages_check(struct page *page, int wasMlocked)
-> > > >  {
-> > > > +	WARN_ONCE(wasMlocked, KERN_WARNING
-> > > > +		"Page flag mlocked set for process %s at pfn:%05lx\n"
-> > > > +		"page:%p flags:0x%lX\n",
-> > > > +		current->comm, page_to_pfn(page),
-> > > > +		page, page->flags|__PG_MLOCKED);
-> > > > +
-> > > >  	if (unlikely(page_mapcount(page) |
-> > > 
-> > > There is already a free_page_mlocked() that is only called if the mlock
-> > > bit is set. Move it into there to avoid having to run two checks in the
-> > > hot codee path?
-> > 
-> > Agreed.
-> > 
-> > This patch gratuitously adds hotpath overhead.  Moving the change to be
-> > inside those preexisting wasMlocked tests will reduce its overhead a lot.
-> > 
+On Mon 2009-07-13 15:05:04, Arve Hj?nnev?g wrote:
+> On Mon, Jul 13, 2009 at 1:27 PM, Pavel Machek<pavel@ucw.cz> wrote:
+> ...
+> >> > gpio_matrix: I thought in-tree zaurus keypad driver has recently
+> >> > became generic enough to almost replace this?
+> >>
 > 
-> It adds code duplication then, one of which is in a fast path.
-> 
-> > As it stands, I'm really doubting that the patch's utility is worth its
-> > cost.
-> > 
-> 
-> I'm happy to let this one drop. It seemed like it would be nice for debugging
-> while there are still corner cases where mlocked pages are getting freed
-> instead of torn down but we already account for that situation occuring. While
-> I think it'll be tricky to spot, it's probably preferable to having warnings
-> spew out onto dmesg.
+> I would recommend using our driver since it allows multiple input
+> types in the same device. The generic matrix driver may work, but you
+> will not get the power and camera keys in the same device. The generic
+> driver also does not yet handle phantom keys, so if you for instance
+> press right-alt+right-shift+p you will also get 9. Our gpio input
+> driver also handles the trackball.
 
-If we do in it the way which Christoph recommends, the additional
-overhead is miniscule?
+Well, matrix_keypad.c will need to be improved, then... Merging
+duplicate code is not really an option.
 
+> I have also seen devices that put the trackball click in the keypad
+> matrix which means we have to change our gpio input driver to create
+> multiple input devices. That change would also allow the two keypads
+> on the G1 to be separate input devices which would allow both menu
+> keys to report KEY_MENU.
 
+Ok, I guess we should discuss this on linux-input.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
