@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752588AbZGWBKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752486AbZGWBVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752588AbZGWBKu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 21:10:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbZGWBKu
+	id S1752486AbZGWBVS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 21:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbZGWBVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 21:10:50 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35057 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751499AbZGWBKt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 21:10:49 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4A67B87C.5030104@jp.fujitsu.com>
-Date: Thu, 23 Jul 2009 10:10:20 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: Neil Horman <nhorman@tuxdriver.com>
-CC: Vivek Goyal <vgoyal@redhat.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Brayan Arraes <brayan@yack.com.br>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Ken'ichi Ohmichi" <oomichi@mxs.nes.nec.co.jp>
-Subject: Re: [PATCH] sysrq, kdump: fix regression, revert "simplify sysrq-c
- handler"
-References: <4A64672E.8020005@cn.fujitsu.com> <4A6564F2.10404@jp.fujitsu.com> <20090721110857.GA21612@hmsreliant.think-freely.org> <4A6672F9.3050800@jp.fujitsu.com> <20090722111049.GB4539@hmsreliant.think-freely.org> <20090722134211.GA7995@redhat.com> <20090722193831.GA4718@hmsreliant.think-freely.org>
-In-Reply-To: <20090722193831.GA4718@hmsreliant.think-freely.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 22 Jul 2009 21:21:17 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:48650 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751295AbZGWBVR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 21:21:17 -0400
+Date: Thu, 23 Jul 2009 11:21:10 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Chaithrika U S <chaithrika@ti.com>,
+       Pavel Kiryukhin <pkiryukhin@ru.mvista.com>,
+       Naresh Medisetty <naresh@ti.com>, Steve Chen <schen@mvista.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Sudhakar Rajashekhara <sudhakar.raj@ti.com>,
+       Kevin Hilman <khilman@deeprootsystems.com>
+Subject: linux-next: manual merge of the sound tree with the davinci tree
+Message-Id: <20090723112110.e42430e9.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__23_Jul_2009_11_21_10_+1000_mC3rUaRrIR40MFl6"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Horman wrote:
-> On Wed, Jul 22, 2009 at 09:42:11AM -0400, Vivek Goyal wrote:
->> Can't we just set panic_on_oops = 1 in sysrq_handle_crash()? This will
->> make sure that we test oops path as well as have consistent behavior
->> between two methods of sysrc-c invocation.
->>
-> Thats a good point too, seems simpler than the other approach.
+--Signature=_Thu__23_Jul_2009_11_21_10_+1000_mC3rUaRrIR40MFl6
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-OK, I'll take this way.  Please wait for a moment for a patch.
+Hi Takashi,
 
-Thanks,
-H.Seto
+Today's linux-next merge of the sound tree got a conflict in
+sound/soc/davinci/davinci-evm.c between commit
+95d0d986d09ac25a5b9f2bf28f289ab0823e86d5 ("davinci: EDMA: multiple CCs,
+channel mapping and API changes") from the davinci tree and commit
+04f80f5c486b39446af44e218dba90ec210d61ca ("ASoC: Add machine driver
+support for DM646x") from the sound tree.
 
+The latter removes the code modified by the former.  I have just used the
+latter.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__23_Jul_2009_11_21_10_+1000_mC3rUaRrIR40MFl6
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpnuwYACgkQjjKRsyhoI8yJDwCcC6q4QwdEHSYj8ibh8Ln2FcHY
+1TQAmwdT3TjdtEx+g9vsVx2+2LK6rx1n
+=avKv
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__23_Jul_2009_11_21_10_+1000_mC3rUaRrIR40MFl6--
