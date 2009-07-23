@@ -1,132 +1,965 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752585AbZGWSUC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbZGWSUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752585AbZGWSUC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 14:20:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZGWSUB
+	id S1752704AbZGWSUk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 14:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbZGWSUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 14:20:01 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:47569 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752168AbZGWSUA (ORCPT
+	Thu, 23 Jul 2009 14:20:40 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:51825 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751866AbZGWSUi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 14:20:00 -0400
-Date: Thu, 23 Jul 2009 14:19:59 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Valdis.Kletnieks@vt.edu
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Jiri Kosina <jkosina@suse.cz>, Greg Kroah-Hartman <gregkh@suse.de>,
-       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>
-Subject: Re: 31-rc3-mmotm0716 - dead USB trackball mouse kills entire system
-In-Reply-To: <4789.1248365209@turing-police.cc.vt.edu>
-Message-ID: <Pine.LNX.4.44L0.0907231416170.3509-100000@iolanthe.rowland.org>
+	Thu, 23 Jul 2009 14:20:38 -0400
+Date: Thu, 23 Jul 2009 14:20:35 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
+       "Martin J. Bligh" <mbligh@mbligh.org>,
+       Christoph Hellwig <hch@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Huang Ying <ying.huang@intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH -tip] ring_buffer: redesign lockless algorithm
+In-Reply-To: <4A686738.7020408@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0907231345510.2498@gandalf.stny.rr.com>
+References: <20090619151922.830665788@goodmis.org> <20090619152117.384751340@goodmis.org> <4A686738.7020408@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Jul 2009 Valdis.Kletnieks@vt.edu wrote:
 
-> Well... Usually.  Today, on a -mmotm0716 kernel, the loose conductor struck
-> again, and no amount of wiggling would resurrect it as far as the system was
-> concerned.  Note however that it *did* wake up just fine when I finally
-> rebooted the machine, even though I had not touched the mouse any further -
-> which says to me that the wires were making a connection again, but the kernel
-> wasn't picking up on it.
+On Thu, 23 Jul 2009, Lai Jiangshan wrote:
+
 > 
-> Meanwhile, in my kernel logs, I had:
+> The primary problem of current lockless ring_buffer is that:
+> It's too complicated. And there are no more than 5 guys in
+
+This is why I wrote so much documentation on the design. Only 5 people 
+actually took a good look at it. The documentation is still around even 
+when I'm not ;-)
+
+> the world understand it, I bet. It's not good for
+> being maintained and introduces arguments easily.
 > 
-> [  571.965568] drivers/hid/usbhid/hid-core.c: can't reset device, 0000:00:1d.7-8.3/input0, status -71
-> [  571.965661] usb 1-8: clear tt 3 (0060) error -32
-> [  571.981570] drivers/hid/usbhid/hid-core.c: can't reset device, 0000:00:1d.7-8.3/input0, status -71
-> [  571.981668] usb 1-8: clear tt 3 (0060) error -32
-> [  571.997698] drivers/hid/usbhid/hid-core.c: can't reset device, 0000:00:1d.7-8.3/input0, status -71
-> [  571.997782] usb 1-8: clear tt 3 (0060) error -32
-> [  572.013568] drivers/hid/usbhid/hid-core.c: can't reset device, 0000:00:1d.7-8.3/input0, status -71
-> [  572.013656] usb 1-8: clear tt 3 (0060) error -32
-> [  572.029694] drivers/hid/usbhid/hid-core.c: can't reset device, 0000:00:1d.7-8.3/input0, status -71
-> [  572.029783] usb 1-8: clear tt 3 (0060) error -32
-> [  572.045696] drivers/hid/usbhid/hid-core.c: can't reset device, 0000:00:1d.7-8.3/input0, status -71
-> [  572.045781] usb 1-8: clear tt 3 (0060) error -32
-> [  572.061567] drivers/hid/usbhid/hid-core.c: can't reset device, 0000:00:1d.7-8.3/input0, status -71
-> [  572.061655] usb 1-8: clear tt 3 (0060) error -32
-> [  572.077698] drivers/hid/usbhid/hid-core.c: can't reset device, 0000:00:1d.7-8.3/input0, status -71
-> [  572.077782] usb 1-8: clear tt 3 (0060) error -32
-> [  572.088910] usb 1-8.3: USB disconnect, address 6
-> [  572.267417] usb 1-8.3: new low speed USB device using ehci_hcd and address 7
-> [  572.357781] usb 1-8.3: New USB device found, idVendor=045e, idProduct=0023
-> [  572.357789] usb 1-8.3: New USB device strings: Mfr=1, Product=2, SerialNumber=0
-> [  572.357796] usb 1-8.3: Product: Microsoft Trackball Optical®
-> [  572.357802] usb 1-8.3: Manufacturer: Microsoft
-> [  572.358075] usb 1-8.3: configuration #1 chosen from 1 choice
-> [  572.365574] input: Microsoft Microsoft Trackball Optical® as /devices/pci0000:00/0000:00:1d.7/usb1/1-8/1-8.3/1-8.3:1.0/input/input9
-> [  572.365829] generic-usb 0003:045E:0023.0002: input,hidraw0: USB HID v1.00 Mouse [Microsoft Microsoft Trackball Optical®] on usb-0000:00:1d.7-8.3/input0
+> The complication comes from that: we always set the LSB.
+> This _heavy_ contract brings complication when we fight
+> for interrupt and brings the second LSB which brings
+> more complication when we fight for interrupt.
 > 
-> The "can't reset device" is apparently new with mm-0716 - I've not seen it
-> before in at least the 6 weeks my logs go back.
-
-I don't think it is new.  You might try using an older kernel with your 
-decaying trackball to see.
-
->  And it seems to be the
-> beginning of things going pear-shaped, even though it manages to reset the
-> device.
-
-No it doesn't.  The device gets disconnected and reconnected.
-
->  A few seconds, the events thread whinges that not all is fine in USB
-> land:
+> This new design kicks out this heavy contract and moves
+> the most complication from write side to read side.
+> It largely simplifies the codes.
 > 
-> [  588.903158] usb 1-8.3: reset low speed USB device using ehci_hcd and address 7
-> [  593.903075] ------------[ cut here ]------------
-> [  593.903091] WARNING: at drivers/usb/host/ehci-hcd.c:906 ehci_urb_dequeue+0xa9/0x145()
-> [  593.903098] Hardware name: Latitude D820                   
-> [  593.903102] Modules linked in: ext4 jbd2 crc16 nvidia(P) [last unloaded: microcode]
-> [  593.903127] Pid: 10, comm: events/0 Tainted: P           2.6.31-rc3-mmotm0716 #5
-> [  593.903133] Call Trace:
-> [  593.903147]  [<ffffffff8103f459>] warn_slowpath_common+0x77/0x8f
-> [  593.903156]  [<ffffffff8103f480>] warn_slowpath_null+0xf/0x11
-> [  593.903165]  [<ffffffff812d66cb>] ehci_urb_dequeue+0xa9/0x145
-> [  593.903176]  [<ffffffff812c20f6>] unlink1+0xcd/0xe0
-> [  593.903185]  [<ffffffff812c2279>] usb_hcd_unlink_urb+0x60/0x84
-> [  593.903194]  [<ffffffff812c34d0>] usb_kill_urb+0x4f/0xc7
-> [  593.903204]  [<ffffffff812c4ae4>] usb_start_wait_urb+0x9e/0xde
-> [  593.903214]  [<ffffffff812c3b1d>] ? usb_init_urb+0x22/0x33
-> [  593.903224]  [<ffffffff812c4dd1>] usb_control_msg+0x172/0x196
-> [  593.903233]  [<ffffffff812be39b>] hub_port_init+0x348/0x71e
-> [  593.903244]  [<ffffffff812be80e>] usb_reset_and_verify_device+0x9d/0x3f0
-> [  593.903253]  [<ffffffff812c34a0>] ? usb_kill_urb+0x1f/0xc7
-> [  593.903263]  [<ffffffff81034cb0>] ? get_parent_ip+0x11/0x42
-> [  593.903273]  [<ffffffff81327812>] ? hid_cease_io+0x36/0x3b
-> [  593.903282]  [<ffffffff812bebfa>] usb_reset_device+0x99/0x11c
-> [  593.903291]  [<ffffffff8132808f>] ? hid_reset+0x0/0x128
-> [  593.903299]  [<ffffffff8132812a>] hid_reset+0x9b/0x128
-> [  593.903309]  [<ffffffff81051a48>] worker_thread+0x2ba/0x3e9
-> [  593.903317]  [<ffffffff810519ef>] ? worker_thread+0x261/0x3e9
-> [  593.903328]  [<ffffffff81056841>] ? autoremove_wake_function+0x0/0x34
-> [  593.903337]  [<ffffffff8105178e>] ? worker_thread+0x0/0x3e9
-> [  593.903346]  [<ffffffff81056433>] kthread+0x85/0x8d
-> [  593.903357]  [<ffffffff8100c41a>] child_rip+0xa/0x20
-> [  593.903367]  [<ffffffff8100bd80>] ? restore_args+0x0/0x30
-> [  593.903377]  [<ffffffff810563ae>] ? kthread+0x0/0x8d
-> [  593.903385]  [<ffffffff8100c410>] ? child_rip+0x0/0x20
-> [  593.903391] ---[ end trace 816b51bf46b6656d ]---
+> The lockless code is almost totally rewritten except
+> the code for writer interrupts writer. This new design
+> includes just two tight functions.
+> 
+> rb_switch_head() is for read side, it includes 5 steps.
+> rb_push_head() is for write side, it includes 4 steps.
+> 
+> These 9 steps are carefully designed for safely switching(may spin)
+> the head page and pushing(no spin, lockless) head page forward.
+> Full describe is in the code.
+> 
 
-This is a bug.  For more discussion see this thread:
+Running the ring-buffer-benchmark (just configure 
+CONFIG_RING_BUFFER_BENCHMARK=m and load the module, or configure it as 
+=y), I hit this bug:
 
-	http://marc.info/?t=124807676700001&r=1&w=2
+WARNING: at kernel/trace/ring_buffer.c:1429 rb_end_commit+0x9e/0x16f()
 
-You should try the patch given there.
+Which was this:
 
-> And 2 minutes later, things are *still* not fine, and other things
-> are hanging as well.  Since the 'events' thread is hung, both my mouse
-> and keyboard are dead (though alt-sysrq kept working, since it does its
-> magic behind 'events' back).
+rb_set_commit_to_write(...)
+[...]
+        while (cpu_buffer->commit_page != cpu_buffer->tail_page) {
+[...]
+        if (RB_WARN_ON(cpu_buffer,
+                       rb_is_reader_page(cpu_buffer->tail_page)))
 
-Try the patch and see if it fixes the hang.
 
-Alan Stern
+The tail page is on the reader page but the commit page is not. This will 
+cause the commit update to go into an inifite loop. Thus this check makes 
+it fail.
 
+
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+>  ring_buffer.c |  613 +++++++++++++++++-----------------------------------------
+>  1 file changed, 184 insertions(+), 429 deletions(-)
+> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+> index 51633d7..7d88fd9 100644
+> --- a/kernel/trace/ring_buffer.c
+> +++ b/kernel/trace/ring_buffer.c
+> @@ -434,6 +434,7 @@ struct ring_buffer_per_cpu {
+>  	struct buffer_page		*tail_page;	/* write to tail */
+>  	struct buffer_page		*commit_page;	/* committed pages */
+>  	struct buffer_page		*reader_page;
+> +	atomic_t			push_head;
+>  	local_t				commit_overrun;
+>  	local_t				overrun;
+>  	local_t				entries;
+> @@ -533,21 +534,14 @@ EXPORT_SYMBOL_GPL(ring_buffer_normalize_time_stamp);
+>   * during this operation, the reader could end up with the tail.
+>   *
+>   * We use cmpxchg to help prevent this race. We also do something
+> - * special with the page before head. We set the LSB to 1.
+> + * special with the page before head. We set the LSB to 1 when
+> + * we trying to replace the head page.
+>   *
+>   * When the writer must push the page forward, it will clear the
+> - * bit that points to the head page, move the head, and then set
+> - * the bit that points to the new head page.
+> + * bit that points to the head page, move the head.
+>   *
+> - * We also don't want an interrupt coming in and moving the head
+> - * page on another writer. Thus we use the second LSB to catch
+> - * that too. Thus:
+> - *
+> - * head->list->prev->next        bit 1          bit 0
+> - *                              -------        -------
+> - * Normal page                     0              0
+> - * Points to head page             0              1
+> - * New head page                   1              0
+> + * The LSB may be set to a false pointer. So we must use rb_list_head()
+> + * to access to any next pointer in write side.
+>   *
+>   * Note we can not trust the prev pointer of the head page, because:
+>   *
+> @@ -580,15 +574,8 @@ EXPORT_SYMBOL_GPL(ring_buffer_normalize_time_stamp);
+>   *  temporarially.
+>   */
+>  
+> -#define RB_PAGE_NORMAL		0UL
+> -#define RB_PAGE_HEAD		1UL
+> -#define RB_PAGE_UPDATE		2UL
+> -
+> -
+> -#define RB_FLAG_MASK		3UL
+> -
+> -/* PAGE_MOVED is not part of the mask */
+> -#define RB_PAGE_MOVED		4UL
+> +#define RB_PAGE_SWITCH_HEAD	1UL
+> +#define RB_FLAG_MASK		(RB_PAGE_SWITCH_HEAD)
+>  
+>  /*
+>   * rb_list_head - remove any bit
+> @@ -601,28 +588,6 @@ static struct list_head *rb_list_head(struct list_head *list)
+>  }
+>  
+>  /*
+> - * rb_is_head_page - test if the give page is the head page
+> - *
+> - * Because the reader may move the head_page pointer, we can
+> - * not trust what the head page is (it may be pointing to
+> - * the reader page). But if the next page is a header page,
+> - * its flags will be non zero.
+> - */
+> -static int inline
+> -rb_is_head_page(struct ring_buffer_per_cpu *cpu_buffer,
+> -		struct buffer_page *page, struct list_head *list)
+> -{
+> -	unsigned long val;
+> -
+> -	val = (unsigned long)list->next;
+> -
+> -	if ((val & ~RB_FLAG_MASK) != (unsigned long)&page->list)
+> -		return RB_PAGE_MOVED;
+> -
+> -	return val & RB_FLAG_MASK;
+> -}
+> -
+> -/*
+>   * rb_is_reader_page
+>   *
+>   * The unique thing about the reader page, is that, if the
+> @@ -636,108 +601,6 @@ static int rb_is_reader_page(struct buffer_page *page)
+>  	return rb_list_head(list->next) != &page->list;
+>  }
+>  
+> -/*
+> - * rb_set_list_to_head - set a list_head to be pointing to head.
+> - */
+> -static void rb_set_list_to_head(struct ring_buffer_per_cpu *cpu_buffer,
+> -				struct list_head *list)
+> -{
+> -	unsigned long *ptr;
+> -
+> -	ptr = (unsigned long *)&list->next;
+> -	*ptr |= RB_PAGE_HEAD;
+> -	*ptr &= ~RB_PAGE_UPDATE;
+> -}
+> -
+> -/*
+> - * rb_head_page_activate - sets up head page
+> - */
+> -static void rb_head_page_activate(struct ring_buffer_per_cpu *cpu_buffer)
+> -{
+> -	struct buffer_page *head;
+> -
+> -	head = cpu_buffer->head_page;
+> -	if (!head)
+> -		return;
+> -
+> -	/*
+> -	 * Set the previous list pointer to have the HEAD flag.
+> -	 */
+> -	rb_set_list_to_head(cpu_buffer, head->list.prev);
+> -}
+> -
+> -static void rb_list_head_clear(struct list_head *list)
+> -{
+> -	unsigned long *ptr = (unsigned long *)&list->next;
+> -
+> -	*ptr &= ~RB_FLAG_MASK;
+> -}
+> -
+> -/*
+> - * rb_head_page_dactivate - clears head page ptr (for free list)
+> - */
+> -static void
+> -rb_head_page_deactivate(struct ring_buffer_per_cpu *cpu_buffer)
+> -{
+> -	struct list_head *hd;
+> -
+> -	/* Go through the whole list and clear any pointers found. */
+> -	rb_list_head_clear(cpu_buffer->pages);
+> -
+> -	list_for_each(hd, cpu_buffer->pages)
+> -		rb_list_head_clear(hd);
+> -}
+> -
+> -static int rb_head_page_set(struct ring_buffer_per_cpu *cpu_buffer,
+> -			    struct buffer_page *head,
+> -			    struct buffer_page *prev,
+> -			    int old_flag, int new_flag)
+> -{
+> -	struct list_head *list;
+> -	unsigned long val = (unsigned long)&head->list;
+> -	unsigned long ret;
+> -
+> -	list = &prev->list;
+> -
+> -	val &= ~RB_FLAG_MASK;
+> -
+> -	ret = (unsigned long)cmpxchg(&list->next,
+> -				     val | old_flag, val | new_flag);
+> -
+> -	/* check if the reader took the page */
+> -	if ((ret & ~RB_FLAG_MASK) != val)
+> -		return RB_PAGE_MOVED;
+> -
+> -	return ret & RB_FLAG_MASK;
+> -}
+> -
+> -static int rb_head_page_set_update(struct ring_buffer_per_cpu *cpu_buffer,
+> -				   struct buffer_page *head,
+> -				   struct buffer_page *prev,
+> -				   int old_flag)
+> -{
+> -	return rb_head_page_set(cpu_buffer, head, prev,
+> -				old_flag, RB_PAGE_UPDATE);
+> -}
+> -
+> -static int rb_head_page_set_head(struct ring_buffer_per_cpu *cpu_buffer,
+> -				 struct buffer_page *head,
+> -				 struct buffer_page *prev,
+> -				 int old_flag)
+> -{
+> -	return rb_head_page_set(cpu_buffer, head, prev,
+> -				old_flag, RB_PAGE_HEAD);
+> -}
+> -
+> -static int rb_head_page_set_normal(struct ring_buffer_per_cpu *cpu_buffer,
+> -				   struct buffer_page *head,
+> -				   struct buffer_page *prev,
+> -				   int old_flag)
+> -{
+> -	return rb_head_page_set(cpu_buffer, head, prev,
+> -				old_flag, RB_PAGE_NORMAL);
+> -}
+> -
+>  static inline void rb_inc_page(struct ring_buffer_per_cpu *cpu_buffer,
+>  			       struct buffer_page **bpage)
+>  {
+> @@ -746,60 +609,171 @@ static inline void rb_inc_page(struct ring_buffer_per_cpu *cpu_buffer,
+>  	*bpage = list_entry(p, struct buffer_page, list);
+>  }
+>  
+> -static struct buffer_page *
+> -rb_set_head_page(struct ring_buffer_per_cpu *cpu_buffer)
+> -{
+> -	struct buffer_page *head;
+> -	struct buffer_page *page;
+> -	struct list_head *list;
+> -	int i;
+> -
+> -	if (RB_WARN_ON(cpu_buffer, !cpu_buffer->head_page))
+> -		return NULL;
+> -
+> -	/* sanity check */
+> -	list = cpu_buffer->pages;
+> -	if (RB_WARN_ON(cpu_buffer, rb_list_head(list->prev->next) != list))
+> -		return NULL;
+> -
+> -	page = head = cpu_buffer->head_page;
+> -	/*
+> -	 * It is possible that the writer moves the header behind
+> -	 * where we started, and we miss in one loop.
+> -	 * A second loop should grab the header, but we'll do
+> -	 * three loops just because I'm paranoid.
+> -	 */
+> -	for (i = 0; i < 3; i++) {
+> -		do {
+> -			if (rb_is_head_page(cpu_buffer, page, page->list.prev)) {
+> -				cpu_buffer->head_page = page;
+> -				return page;
+> -			}
+> -			rb_inc_page(cpu_buffer, &page);
+> -		} while (page != head);
+> -	}
+> -
+> -	RB_WARN_ON(cpu_buffer, 1);
+> -
+> -	return NULL;
+> -}
+> -
+> -static int rb_head_page_replace(struct buffer_page *old,
+> -				struct buffer_page *new)
+> -{
+> -	unsigned long *ptr = (unsigned long *)&old->list.prev->next;
+> -	unsigned long val;
+> -	unsigned long ret;
+> -
+> -	val = *ptr & ~RB_FLAG_MASK;
+> -	val |= RB_PAGE_HEAD;
+> -
+> -	ret = cmpxchg(ptr, val, &new->list);
+> -
+> -	return ret == val;
+> -}
+> -
+>  /*
+> + * returns:
+> + * 0: success
+> + * 1: it's done by other
+
+That comment needs some love.
+
+> + */
+> +static int __rb_advance_head(struct ring_buffer_per_cpu *cpu_buffer,
+> +		struct buffer_page *head_page)
+> +{
+> +	struct list_head *next;
+> +	struct buffer_page *next_page;
+> +	unsigned long *ptr, old, new;
+> +
+> +	next = rb_list_head(head_page->list.next);
+> +	next_page = list_entry(next, struct buffer_page, list);
+> +
+> +	ptr = (unsigned long *)(void *)&cpu_buffer->head_page;
+> +	old = (unsigned long)(void *)head_page;
+> +	new = (unsigned long)(void *)next_page;
+> +
+> +	return !!(cmpxchg(ptr, old, new) != old);
+
+  In C, != only returns 1 or 0, so you can get rid of the "!!".
+
+
+> +}
+> +
+> +/*
+> + * rb_switch_head - switches the head_page with a new page
+> + *   swaps the original head_page and new page
+> + *   and advances the head page.
+> + * returns the original head_page(swapped-out page)
+> + */
+> +static
+> +struct buffer_page *rb_switch_head(struct ring_buffer_per_cpu *cpu_buffer,
+> +		struct buffer_page *new_page)
+> +{
+> +	struct buffer_page *head_page;
+> +	unsigned long *ptr, hval, nval;
+> +
+> +	nval = (unsigned long)(void *)new_page;
+
+Although the list item happens to be the first in the buffer_page, nval 
+really should be pointing to &new_page->list.
+
+> +
+> +again:
+> +	head_page = ACCESS_ONCE(cpu_buffer->head_page);
+> +
+> +	/* S-Step1: Set the RB_PAGE_SWITCH_HEAD LSB */
+> +	hval = (unsigned long)(void *)head_page | RB_PAGE_SWITCH_HEAD;
+> +	ptr = (unsigned long *)(void *)&head_page->list.prev->next;
+> +	ACCESS_ONCE(*ptr) = hval;
+> +	smp_mb();
+> +
+> +	/* S-Step2: Synchoronize existing rb_push_head() */
+> +	while (atomic_read(&cpu_buffer->push_head))
+> +		cpu_relax();
+> +
+> +	/* S-Step3: Test if we compete at the right place. */
+> +	smp_mb();
+> +	if (head_page != ACCESS_ONCE(cpu_buffer->head_page)) {
+> +		/* clear the bit and try again. */
+> +		ACCESS_ONCE(*ptr) = (unsigned long)(void *)head_page;
+> +		goto again;
+> +	}
+> +
+> +	/*
+> +	 * We should not do S-Step4 when the RB_PAGE_SWITCH_HEAD LSB
+> +	 * is not set for the real head_page, otherwise we will win
+> +	 * the fight but swap out a WRONG page.
+> +	 * P-Step1, P-Step3, P-Step4, S-Step2 and S-Step3 ensure we
+> +	 * try again when the head_page is pushed.
+> +	 *
+> +	 * OK, we can fight now:
+> +	 */
+> +
+> +	/*
+> +	 * S-Step4: Atomic Clear the LSB and Sew the new page
+> +	 * into ring_buffer.
+> +	 */
+> +	new_page->list.prev = head_page->list.prev;
+> +	new_page->list.next = head_page->list.next;
+> +
+> +	if (cmpxchg(ptr, hval, nval) != hval)
+> +		goto again;
+> +	new_page->list.next->prev = &new_page->list;
+> +
+> +	/* S-Step5: Advance the head page */
+> +	__rb_advance_head(cpu_buffer, head_page);
+> +
+> +	return head_page;
+> +}
+> +
+> +static inline unsigned long rb_page_entries(struct buffer_page *bpage);
+> +
+> +/*
+> + * rb_push_head move the head page forward
+> + * returns:
+> + * <0: Error
+> + * 0: successful move the head forward
+> + * 1: it's done by other.
+> + *
+> + * @tail_page is the prev page of @head_page.
+> + * We can not access to page->list.prev in write side.
+> + */
+> +static int rb_push_head(struct ring_buffer_per_cpu *cpu_buffer,
+> +		 struct buffer_page *tail_page, struct buffer_page *head_page)
+> +{
+> +	unsigned long *ptr, val;
+> +	int fail = 0;
+> +	int ret = 1;
+> +	int entries;
+> +
+> +	entries = rb_page_entries(head_page);
+> +	ptr = (unsigned long *)(void *)&tail_page->list.next;
+> +
+> +	/* P-Step1: Increase the push_head counter */
+> +	atomic_inc(&cpu_buffer->push_head);
+> +	smp_mb__after_atomic_inc();
+> +
+> +	/* P-Step2: Atomic Clear RB_PAGE_SWITCH_HEAD LSB */
+> +again:
+> +	val = ACCESS_ONCE(*ptr);
+> +
+> +	if (val & RB_PAGE_SWITCH_HEAD) {
+> +		/* fight with the S-Step4 */
+> +		if (cmpxchg(ptr, val, val & ~RB_PAGE_SWITCH_HEAD) != val) {
+> +			if (head_page != ACCESS_ONCE(cpu_buffer->head_page))
+> +				goto out;
+
+Wait! This is saying that the writer is fine with the reader pushing the 
+head forward? The way my algorithm worked, is that another writer could 
+push it forward with no issue, because it is in stack order. That is, if a 
+another writer preempted the current writer, and push the head forward, it 
+would be done (because it was from an interrupt) before it came back here. 
+
+This is saying that a reader (on another CPU) is pushing it forward. Thus, 
+we throw away all assumptions about what that reader is doing.
+
+Yes my algorithm may be a bit complex, but I worked hard on making sure 
+that things would work out. One of the things that was added (by the two 
+flags) is that the writer stops the reader completely as it goes to 
+update. Once it changes the "HEAD" page to "UPDATE" it prevents the reader 
+from moving forward and takes modifications by the reader out of the 
+equation. It only needs to worry about other writers, which only happen 
+via interrupts and not SMP issues. This actually makes the algorithm a bit 
+more simplex.
+
+Here's the full write up I did when I first worked on this algorithm:
+
+ http://rostedt.homelinux.com/lockless-ring-buffer-full-states.txt
+
+It has a pretty large state diagram that shows how the algorithm works. As 
+I wrote that state diagram, it helped me point out errors in my code, as 
+well as help me keep the design straight. It does not cover all states, 
+but it covers the trickier ones.
+
+If you need to make design changes to this algorithm, please write up 
+something similar.  I've put this code through lots of stress tests and it 
+worked fine. Here's some of the things I've done:
+
+Changed the size of the buffer pages to 400 bytes (makes going across 
+pages much faster).
+
+Set it to use only 3 buffer pages. Stresses the conflicts between writer 
+and reader.
+
+Up the nmi watchdog to 1000HZ or more, and add a event into do_nmi. This 
+stresses the writer interrupting other writers.
+
+Then I run all events, and cat out trace_pipe, or use splice against 
+trace_pipe_raw. Stresses readers and writers.
+
+I've let these stress tests run for a week. If I hit any error, it is 
+considered a failure, the bug needs to be fixed, and the tests start over 
+again.
+
+I'm all for simplifing the code, but it must still work at the end ;-)
+
+-- Steve
+
+
+> +
+> +			/*
+> +			 * If this P-Step1 is after S-Step2(other cpu),
+> +			 * we may fail once, it's not possible that we fail
+> +			 * tiwce or more.
+> +			 */
+> +			if (RB_WARN_ON(cpu_buffer, fail > 0)) {
+> +				ret = -1;
+> +				goto out;
+> +			}
+> +
+> +			fail++;
+> +			goto again;
+> +		}
+> +
+> +	}
+> +
+> +	/*
+> +	 * It's hell when S-Step1 happen between P-Step2 and P-Step3,
+> +	 * we may advance the head page to a swapped-out page. But
+> +	 * P-Step1, P-Step4, S-Step2 and S-Step3 ensure rb_switch_head()
+> +	 * try again when it happens and save we from the hell.
+> +	 */
+> +
+> +	/* P-Step3: Advance the head page */
+> +	ret = __rb_advance_head(cpu_buffer, head_page);
+> +
+> +	if (!ret) {
+> +		/*
+> +		 * We advanced the head page, thus
+> +		 * it is our responsibility to update
+> +		 * the counters.
+> +		 */
+> +		local_add(entries, &cpu_buffer->overrun);
+> +	}
+> +
+> +out:
+> +	/* P-Step4: Decrease the push_head counter */
+> +	atomic_dec(&cpu_buffer->push_head);
+> +
+> +	return ret;
+> +}
+> +
+> +/*
+>   * rb_tail_page_update - move the tail page forward
+>   *
+>   * Returns 1 if moved tail page, 0 if someone else did.
+> @@ -907,8 +717,6 @@ static int rb_check_pages(struct ring_buffer_per_cpu *cpu_buffer)
+>  	struct list_head *head = cpu_buffer->pages;
+>  	struct buffer_page *bpage, *tmp;
+>  
+> -	rb_head_page_deactivate(cpu_buffer);
+> -
+>  	if (RB_WARN_ON(cpu_buffer, head->next->prev != head))
+>  		return -1;
+>  	if (RB_WARN_ON(cpu_buffer, head->prev->next != head))
+> @@ -928,8 +736,6 @@ static int rb_check_pages(struct ring_buffer_per_cpu *cpu_buffer)
+>  			return -1;
+>  	}
+>  
+> -	rb_head_page_activate(cpu_buffer);
+> -
+>  	return 0;
+>  }
+>  
+> @@ -1023,8 +829,6 @@ rb_allocate_cpu_buffer(struct ring_buffer *buffer, int cpu)
+>  		= list_entry(cpu_buffer->pages, struct buffer_page, list);
+>  	cpu_buffer->tail_page = cpu_buffer->commit_page = cpu_buffer->head_page;
+>  
+> -	rb_head_page_activate(cpu_buffer);
+> -
+>  	return cpu_buffer;
+>  
+>   fail_free_reader:
+> @@ -1042,8 +846,6 @@ static void rb_free_cpu_buffer(struct ring_buffer_per_cpu *cpu_buffer)
+>  
+>  	free_buffer_page(cpu_buffer->reader_page);
+>  
+> -	rb_head_page_deactivate(cpu_buffer);
+> -
+>  	if (head) {
+>  		list_for_each_entry_safe(bpage, tmp, head, list) {
+>  			list_del_init(&bpage->list);
+> @@ -1194,8 +996,6 @@ rb_remove_pages(struct ring_buffer_per_cpu *cpu_buffer, unsigned nr_pages)
+>  	atomic_inc(&cpu_buffer->record_disabled);
+>  	synchronize_sched();
+>  
+> -	rb_head_page_deactivate(cpu_buffer);
+> -
+>  	for (i = 0; i < nr_pages; i++) {
+>  		if (RB_WARN_ON(cpu_buffer, list_empty(cpu_buffer->pages)))
+>  			return;
+> @@ -1227,7 +1027,6 @@ rb_insert_pages(struct ring_buffer_per_cpu *cpu_buffer,
+>  	synchronize_sched();
+>  
+>  	spin_lock_irq(&cpu_buffer->reader_lock);
+> -	rb_head_page_deactivate(cpu_buffer);
+>  
+>  	for (i = 0; i < nr_pages; i++) {
+>  		if (RB_WARN_ON(cpu_buffer, list_empty(pages)))
+> @@ -1513,7 +1312,7 @@ static void rb_inc_iter(struct ring_buffer_iter *iter)
+>  	 * to the head page instead of next.
+>  	 */
+>  	if (iter->head_page == cpu_buffer->reader_page)
+> -		iter->head_page = rb_set_head_page(cpu_buffer);
+> +		iter->head_page = cpu_buffer->head_page;
+>  	else
+>  		rb_inc_page(cpu_buffer, &iter->head_page);
+>  
+> @@ -1557,163 +1356,6 @@ rb_update_event(struct ring_buffer_event *event,
+>  	}
+>  }
+>  
+> -/*
+> - * rb_handle_head_page - writer hit the head page
+> - *
+> - * Returns: +1 to retry page
+> - *           0 to continue
+> - *          -1 on error
+> - */
+> -static int
+> -rb_handle_head_page(struct ring_buffer_per_cpu *cpu_buffer,
+> -		    struct buffer_page *tail_page,
+> -		    struct buffer_page *next_page)
+> -{
+> -	struct buffer_page *new_head;
+> -	int entries;
+> -	int type;
+> -	int ret;
+> -
+> -	entries = rb_page_entries(next_page);
+> -
+> -	/*
+> -	 * The hard part is here. We need to move the head
+> -	 * forward, and protect against both readers on
+> -	 * other CPUs and writers coming in via interrupts.
+> -	 */
+> -	type = rb_head_page_set_update(cpu_buffer, next_page, tail_page,
+> -				       RB_PAGE_HEAD);
+> -
+> -	/*
+> -	 * type can be one of four:
+> -	 *  NORMAL - an interrupt already moved it for us
+> -	 *  HEAD   - we are the first to get here.
+> -	 *  UPDATE - we are the interrupt interrupting
+> -	 *           a current move.
+> -	 *  MOVED  - a reader on another CPU moved the next
+> -	 *           pointer to its reader page. Give up
+> -	 *           and try again.
+> -	 */
+> -
+> -	switch (type) {
+> -	case RB_PAGE_HEAD:
+> -		/*
+> -		 * We changed the head to UPDATE, thus
+> -		 * it is our responsibility to update
+> -		 * the counters.
+> -		 */
+> -		local_add(entries, &cpu_buffer->overrun);
+> -
+> -		/*
+> -		 * The entries will be zeroed out when we move the
+> -		 * tail page.
+> -		 */
+> -
+> -		/* still more to do */
+> -		break;
+> -
+> -	case RB_PAGE_UPDATE:
+> -		/*
+> -		 * This is an interrupt that interrupt the
+> -		 * previous update. Still more to do.
+> -		 */
+> -		break;
+> -	case RB_PAGE_NORMAL:
+> -		/*
+> -		 * An interrupt came in before the update
+> -		 * and processed this for us.
+> -		 * Nothing left to do.
+> -		 */
+> -		return 1;
+> -	case RB_PAGE_MOVED:
+> -		/*
+> -		 * The reader is on another CPU and just did
+> -		 * a swap with our next_page.
+> -		 * Try again.
+> -		 */
+> -		return 1;
+> -	default:
+> -		RB_WARN_ON(cpu_buffer, 1); /* WTF??? */
+> -		return -1;
+> -	}
+> -
+> -	/*
+> -	 * Now that we are here, the old head pointer is
+> -	 * set to UPDATE. This will keep the reader from
+> -	 * swapping the head page with the reader page.
+> -	 * The reader (on another CPU) will spin till
+> -	 * we are finished.
+> -	 *
+> -	 * We just need to protect against interrupts
+> -	 * doing the job. We will set the next pointer
+> -	 * to HEAD. After that, we set the old pointer
+> -	 * to NORMAL, but only if it was HEAD before.
+> -	 * otherwise we are an interrupt, and only
+> -	 * want the outer most commit to reset it.
+> -	 */
+> -	new_head = next_page;
+> -	rb_inc_page(cpu_buffer, &new_head);
+> -
+> -	ret = rb_head_page_set_head(cpu_buffer, new_head, next_page,
+> -				    RB_PAGE_NORMAL);
+> -
+> -	/*
+> -	 * Valid returns are:
+> -	 *  HEAD   - an interrupt came in and already set it.
+> -	 *  NORMAL - One of two things:
+> -	 *            1) We really set it.
+> -	 *            2) A bunch of interrupts came in and moved
+> -	 *               the page forward again.
+> -	 */
+> -	switch (ret) {
+> -	case RB_PAGE_HEAD:
+> -	case RB_PAGE_NORMAL:
+> -		/* OK */
+> -		break;
+> -	default:
+> -		RB_WARN_ON(cpu_buffer, 1);
+> -		return -1;
+> -	}
+> -
+> -	/*
+> -	 * It is possible that an interrupt came in,
+> -	 * set the head up, then more interrupts came in
+> -	 * and moved it again. When we get back here,
+> -	 * the page would have been set to NORMAL but we
+> -	 * just set it back to HEAD.
+> -	 *
+> -	 * How do you detect this? Well, if that happened
+> -	 * the tail page would have moved.
+> -	 */
+> -	if (ret == RB_PAGE_NORMAL) {
+> -		/*
+> -		 * If the tail had moved passed next, then we need
+> -		 * to reset the pointer.
+> -		 */
+> -		if (cpu_buffer->tail_page != tail_page &&
+> -		    cpu_buffer->tail_page != next_page)
+> -			rb_head_page_set_normal(cpu_buffer, new_head,
+> -						next_page,
+> -						RB_PAGE_HEAD);
+> -	}
+> -
+> -	/*
+> -	 * If this was the outer most commit (the one that
+> -	 * changed the original pointer from HEAD to UPDATE),
+> -	 * then it is up to us to reset it to NORMAL.
+> -	 */
+> -	if (type == RB_PAGE_HEAD) {
+> -		ret = rb_head_page_set_normal(cpu_buffer, next_page,
+> -					      tail_page,
+> -					      RB_PAGE_UPDATE);
+> -		if (RB_WARN_ON(cpu_buffer,
+> -			       ret != RB_PAGE_UPDATE))
+> -			return -1;
+> -	}
+> -
+> -	return 0;
+> -}
+> -
+>  static unsigned rb_calculate_event_length(unsigned length)
+>  {
+>  	struct ring_buffer_event event; /* Used only for sizeof array */
+> @@ -1793,6 +1435,7 @@ rb_move_tail(struct ring_buffer_per_cpu *cpu_buffer,
+>  	     struct buffer_page *tail_page, u64 *ts)
+>  {
+>  	struct ring_buffer *buffer = cpu_buffer->buffer;
+> +	struct buffer_page *head_page;
+>  	struct buffer_page *next_page;
+>  	int ret;
+>  
+> @@ -1824,7 +1467,8 @@ rb_move_tail(struct ring_buffer_per_cpu *cpu_buffer,
+>  	 * the buffer, unless the commit page is still on the
+>  	 * reader page.
+>  	 */
+> -	if (rb_is_head_page(cpu_buffer, next_page, &tail_page->list)) {
+> +	head_page = ACCESS_ONCE(cpu_buffer->head_page);
+> +	if (next_page == head_page) {
+>  
+>  		/*
+>  		 * If the commit is not on the reader page, then
+> @@ -1838,9 +1482,7 @@ rb_move_tail(struct ring_buffer_per_cpu *cpu_buffer,
+>  			if (!(buffer->flags & RB_FL_OVERWRITE))
+>  				goto out_reset;
+>  
+> -			ret = rb_handle_head_page(cpu_buffer,
+> -						  tail_page,
+> -						  next_page);
+> +			ret = rb_push_head(cpu_buffer, tail_page, head_page);
+>  			if (ret < 0)
+>  				goto out_reset;
+>  			if (ret)
+> @@ -1856,10 +1498,8 @@ rb_move_tail(struct ring_buffer_per_cpu *cpu_buffer,
+>  			 * Note, if the tail page is also the on the
+>  			 * reader_page, we let it move out.
+>  			 */
+> -			if (unlikely((cpu_buffer->commit_page !=
+> -				      cpu_buffer->tail_page) &&
+> -				     (cpu_buffer->commit_page ==
+> -				      cpu_buffer->reader_page))) {
+> +			if (unlikely(cpu_buffer->commit_page !=
+> +				     cpu_buffer->tail_page)) {
+>  				local_inc(&cpu_buffer->commit_overrun);
+>  				goto out_reset;
+>  			}
+> @@ -2468,13 +2108,9 @@ EXPORT_SYMBOL_GPL(ring_buffer_write);
+>  static int rb_per_cpu_empty(struct ring_buffer_per_cpu *cpu_buffer)
+>  {
+>  	struct buffer_page *reader = cpu_buffer->reader_page;
+> -	struct buffer_page *head = rb_set_head_page(cpu_buffer);
+> +	struct buffer_page *head = cpu_buffer->head_page;
+>  	struct buffer_page *commit = cpu_buffer->commit_page;
+>  
+> -	/* In case of error, head will be NULL */
+> -	if (unlikely(!head))
+> -		return 1;
+> -
+>  	return reader->read == rb_page_commit(reader) &&
+>  		(commit == reader ||
+>  		 (commit == head &&
+> @@ -2666,9 +2302,7 @@ static void rb_iter_reset(struct ring_buffer_iter *iter)
+>  
+>  	/* Iterator usage is expected to have record disabled */
+>  	if (list_empty(&cpu_buffer->reader_page->list)) {
+> -		iter->head_page = rb_set_head_page(cpu_buffer);
+> -		if (unlikely(!iter->head_page))
+> -			return;
+> +		iter->head_page = cpu_buffer->head_page;
+>  		iter->head = iter->head_page->read;
+>  	} else {
+>  		iter->head_page = cpu_buffer->reader_page;
+> @@ -2786,7 +2420,6 @@ rb_get_reader_page(struct ring_buffer_per_cpu *cpu_buffer)
+>  	struct buffer_page *reader = NULL;
+>  	unsigned long flags;
+>  	int nr_loops = 0;
+> -	int ret;
+>  
+>  	local_irq_save(flags);
+>  	__raw_spin_lock(&cpu_buffer->lock);
+> @@ -2826,50 +2459,12 @@ rb_get_reader_page(struct ring_buffer_per_cpu *cpu_buffer)
+>  	local_set(&cpu_buffer->reader_page->entries, 0);
+>  	local_set(&cpu_buffer->reader_page->page->commit, 0);
+>  
+> - spin:
+> -	/*
+> -	 * Splice the empty reader page into the list around the head.
+> -	 */
+> -	reader = rb_set_head_page(cpu_buffer);
+> -	cpu_buffer->reader_page->list.next = reader->list.next;
+> -	cpu_buffer->reader_page->list.prev = reader->list.prev;
+> +	cpu_buffer->pages = &cpu_buffer->reader_page->list;
+>  
+>  	/*
+> -	 * cpu_buffer->pages just needs to point to the buffer, it
+> -	 *  has no specific buffer page to point to. Lets move it out
+> -	 *  of our way so we don't accidently swap it.
+> -	 */
+> -	cpu_buffer->pages = reader->list.prev;
+> -
+> -	/* The reader page will be pointing to the new head */
+> -	rb_set_list_to_head(cpu_buffer, &cpu_buffer->reader_page->list);
+> -
+> -	/*
+> -	 * Here's the tricky part.
+> -	 *
+> -	 * We need to move the pointer past the header page.
+> -	 * But we can only do that if a writer is not currently
+> -	 * moving it. The page before the header page has the
+> -	 * flag bit '1' set if it is pointing to the page we want.
+> -	 * but if the writer is in the process of moving it
+> -	 * than it will be '2' or already moved '0'.
+> +	 * Switch the reader page with the head page.
+>  	 */
+> -
+> -	ret = rb_head_page_replace(reader, cpu_buffer->reader_page);
+> -
+> -	/*
+> -	 * If we did not convert it, then we must try again.
+> -	 */
+> -	if (!ret)
+> -		goto spin;
+> -
+> -	/*
+> -	 * Yeah! We succeeded in replacing the page.
+> -	 *
+> -	 * Now make the new head point back to the reader page.
+> -	 */
+> -	reader->list.next->prev = &cpu_buffer->reader_page->list;
+> -	rb_inc_page(cpu_buffer, &cpu_buffer->head_page);
+> +	reader = rb_switch_head(cpu_buffer, cpu_buffer->reader_page);
+>  
+>  	/* Finally update the reader page to the new head */
+>  	cpu_buffer->reader_page = reader;
+> @@ -3325,8 +2920,6 @@ EXPORT_SYMBOL_GPL(ring_buffer_size);
+>  static void
+>  rb_reset_cpu(struct ring_buffer_per_cpu *cpu_buffer)
+>  {
+> -	rb_head_page_deactivate(cpu_buffer);
+> -
+>  	cpu_buffer->head_page
+>  		= list_entry(cpu_buffer->pages, struct buffer_page, list);
+>  	local_set(&cpu_buffer->head_page->write, 0);
+> @@ -3353,8 +2946,6 @@ rb_reset_cpu(struct ring_buffer_per_cpu *cpu_buffer)
+>  
+>  	cpu_buffer->write_stamp = 0;
+>  	cpu_buffer->read_stamp = 0;
+> -
+> -	rb_head_page_activate(cpu_buffer);
+>  }
+>  
+>  /**
+> 
+> 
+> 
+> 
+> 
+> 
+> 
