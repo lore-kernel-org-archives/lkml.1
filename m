@@ -1,143 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750929AbZGWEBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751770AbZGWEVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750929AbZGWEBi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 00:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750754AbZGWEBh
+	id S1751770AbZGWEVj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 00:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbZGWEVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 00:01:37 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:52239 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750712AbZGWEBh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 00:01:37 -0400
-Message-ID: <4A67E092.3080202@cn.fujitsu.com>
-Date: Thu, 23 Jul 2009 12:01:22 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 23 Jul 2009 00:21:38 -0400
+Received: from brinza.cc.columbia.edu ([128.59.29.8]:58764 "EHLO
+	brinza.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751386AbZGWEVh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 00:21:37 -0400
+X-Greylist: delayed 2016 seconds by postgrey-1.27 at vger.kernel.org; Thu, 23 Jul 2009 00:21:37 EDT
+Message-ID: <4A67DD16.1090704@cs.columbia.edu>
+Date: Wed, 22 Jul 2009 23:46:30 -0400
+From: Oren Laadan <orenl@cs.columbia.edu>
+Organization: Columbia University
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] tracing/ksym_tracer: support quick clear for ksym_trace_filter
- -- v2
-References: <4A6685BB.2090809@cn.fujitsu.com> <4A66869A.9000106@cn.fujitsu.com>
-In-Reply-To: <4A66869A.9000106@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Oren Laadan <orenl@librato.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Serge Hallyn <serue@us.ibm.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [RFC v17][PATCH 52/60] c/r: support semaphore sysv-ipc
+References: <1248256822-23416-1-git-send-email-orenl@librato.com> <1248256822-23416-53-git-send-email-orenl@librato.com> <20090722172502.GA15805@lenovo>
+In-Reply-To: <20090722172502.GA15805@lenovo>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's rather bored to clear symbol one by one in ksym_trace_filter
-file, so, this patch can let ksym_trace_filter file support quick
-clear, we can write "0" to this file, it can clear all symbols
- 
-for example:
- # cat ksym_trace_filter
- ksym_filter_head:rw-
- global_trace:rw-
- # echo 0 > ksym_trace_filter
- # cat ksym_trace_filter
- #
 
-Changelog v1->v2:
-Add other way to clear all breakpoints by writing NULL or "*:---"
-to ksym_trace_filter file base on K.Prasad's suggestion
 
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
----
- kernel/trace/trace_ksym.c |   53 +++++++++++++++++++++++++++++---------------
- 1 files changed, 35 insertions(+), 18 deletions(-)
+Cyrill Gorcunov wrote:
+> [Oren Laadan - Wed, Jul 22, 2009 at 06:00:14AM -0400]
+> ...
+> | +static struct sem *restore_sem_array(struct ckpt_ctx *ctx, int nsems)
+> | +{
+> | +	struct sem *sma;
+> | +	int i, ret;
+> | +
+> | +	sma = kmalloc(nsems * sizeof(*sma), GFP_KERNEL);
+> 
+> Forgot to
+> 
+> 	if (!sma)
+> 		return -ENOMEM;
+> 
+> right?
 
-diff --git a/kernel/trace/trace_ksym.c b/kernel/trace/trace_ksym.c
-index cd5cb65..2fde875 100644
---- a/kernel/trace/trace_ksym.c
-+++ b/kernel/trace/trace_ksym.c
-@@ -163,8 +163,6 @@ static int parse_ksym_trace_str(char *input_string, char **ksymname,
- {
- 	int ret;
- 
--	strstrip(input_string);
--
- 	*ksymname = strsep(&input_string, ":");
- 	*addr = kallsyms_lookup_name(*ksymname);
- 
-@@ -262,6 +260,25 @@ static ssize_t ksym_trace_filter_read(struct file *filp, char __user *ubuf,
- 	return cnt;
- }
- 
-+static void __ksym_trace_reset(void)
-+{
-+	struct trace_ksym *entry;
-+	struct hlist_node *node, *node1;
-+
-+	mutex_lock(&ksym_tracer_mutex);
-+	hlist_for_each_entry_safe(entry, node, node1, &ksym_filter_head,
-+								ksym_hlist) {
-+		unregister_kernel_hw_breakpoint(entry->ksym_hbp);
-+		ksym_filter_entry_count--;
-+		hlist_del_rcu(&(entry->ksym_hlist));
-+		synchronize_rcu();
-+		kfree(entry->ksym_hbp->info.name);
-+		kfree(entry->ksym_hbp);
-+		kfree(entry);
-+	}
-+	mutex_unlock(&ksym_tracer_mutex);
-+}
-+
- static ssize_t ksym_trace_filter_write(struct file *file,
- 					const char __user *buffer,
- 						size_t count, loff_t *ppos)
-@@ -282,6 +299,21 @@ static ssize_t ksym_trace_filter_write(struct file *file,
- 	}
- 	input_string[count] = '\0';
- 
-+	strstrip(input_string);
-+
-+	/*
-+	 * Clear all breakpoints if:
-+	 * 1: echo > ksym_trace_filter
-+	 * 2: echo 0 > ksym_trace_filter
-+	 * 3: echo "*:---" > ksym_trace_filter
-+	 */
-+	if (!input_string[0] || !strcmp(input_string, "0") ||
-+	    !strcmp(input_string, "*:---")) {
-+		__ksym_trace_reset();
-+		kfree(input_string);
-+		return count;
-+	}
-+
- 	ret = op = parse_ksym_trace_str(input_string, &ksymname, &ksym_addr);
- 	if (ret < 0) {
- 		kfree(input_string);
-@@ -341,23 +373,8 @@ static const struct file_operations ksym_tracing_fops = {
- 
- static void ksym_trace_reset(struct trace_array *tr)
- {
--	struct trace_ksym *entry;
--	struct hlist_node *node, *node1;
--
- 	ksym_tracing_enabled = 0;
--
--	mutex_lock(&ksym_tracer_mutex);
--	hlist_for_each_entry_safe(entry, node, node1, &ksym_filter_head,
--								ksym_hlist) {
--		unregister_kernel_hw_breakpoint(entry->ksym_hbp);
--		ksym_filter_entry_count--;
--		hlist_del_rcu(&(entry->ksym_hlist));
--		synchronize_rcu();
--		kfree(entry->ksym_hbp->info.name);
--		kfree(entry->ksym_hbp);
--		kfree(entry);
--	}
--	mutex_unlock(&ksym_tracer_mutex);
-+	__ksym_trace_reset();
- }
- 
- static int ksym_trace_init(struct trace_array *tr)
--- 
-1.6.1.2
+Yep !  thanks...  (fixed commit to branch ckpt-v17-dev)
+
+Oren.
 
 
