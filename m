@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbZGWQjH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411AbZGWRBF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753270AbZGWQjH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 12:39:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbZGWQjG
+	id S1754411AbZGWRBF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 13:01:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbZGWRBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 12:39:06 -0400
-Received: from capitol.palaunet.com ([202.124.226.19]:18227 "EHLO
-	mail.palaugov.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751128AbZGWQjG (ORCPT
-	<rfc822;Linux-Kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 12:39:06 -0400
-From: "Webmail Help team" <info@webmail.org>
-Reply-To: account_upgrade76@live.com
-Subject: Email Account Verification Update ! ! !
-Date: Thu, 23 Jul 2009 22:08:41 +0900
-Message-Id: <20090723130841.M33732@webmail.org>
-X-Mailer: Open WebMail 2.51 20050228
-X-OriginatingIP: 82.128.16.113 (bpss)
+	Thu, 23 Jul 2009 13:01:05 -0400
+Received: from mail-yx0-f184.google.com ([209.85.210.184]:40836 "EHLO
+	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754203AbZGWRBE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 13:01:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=DMP8B3gvUdMTHyuU4ms7qYnooJZUqJEDnydn2n+h/yc6IuophT5FreakxOS/+drmxi
+         9L1o4fEnXZH9ON8iYxwBDydN8sI5ysNwzw8A6NHSA4ytEcmumhfhqEw3fb3Ip+J8KQk8
+         /hbUTsWJ1wUBHdYhWiSkWOlWnP47z0/n+RQcw=
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-1
-To: undisclosed-recipients:;
+Date: Thu, 23 Jul 2009 22:25:30 +0530
+Message-ID: <cee4bbc90907230955s558123dpe021fa1e7b384068@mail.gmail.com>
+Subject: [query] skb alignment in tx path of driver
+From: Kalpesh Rathod <kalpeshrathod@gmail.com>
+To: linux-net@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Webmail User,
+Hi,
 
-The Helpdesk Program that periodically checks the size of your e-mail space is sending 
-you this information. The program runs weekly to ensure your inbox does not grow too 
-large, thus preventing you from receiving or sending new e-mail. As this message is 
-being sent, you have 18 megabytes (MB) or more stored in your inbox. To help us reset 
-your space in our database,
+I am writing n/w device driver for sdio wifi card. I am testing it on
+embedded platform.
+DMA controller on the platform is able to xfer data to sdio only if
+source data buf address is 4 byte aligned.
 
- please enter your current user name(_________________) password (_______________) 
+The firmware on the card understands 802.3 frames with snap headers.
+So, I convert it to the required format in my driver.
+4 byte additional header is also attached to this frame and sent over sdio.
+This all conversion effectively adds 12 byes to the frame received in
+hard_xmit method.
 
-You will receive a periodic alert if your inbox size is between 18 and 20 MB. If your 
-inbox size is 20 MB, a program on your Webmail will move your oldest e-mails to a 
-folder in your home directory to ensure you can continue receiving incoming e-mail. 
-You will be notified this has taken place. If your inbox grows to 25 MB, you will be 
-unable to receive new e-mail and it will be returned to sender. All this is programmed 
-to ensure your e-mail continues to function well. Thank you for your cooperation.
+Problem is, frame received in hard_xmit method is 2 byte aligned.
+(skb->data is 2 byte aligned). As a result,
+after addition of 12 bytes header, skb->data remains 2 byte aligned
+instead of 4 byte aligned. And DMA controller refuses
+to transfer it.
 
-Help Desk.Important:
-Email Account Verification Update ! ! !
+So, how can I request IP stack so that frame received in hard_xmit is
+on 4 byte aligned boundry?
+
+I believe setting NET_IP_ALIGN will only matter in rx path. is this correct?
+
+Thanks in advance.
+
+Regards,
+Kalpesh
