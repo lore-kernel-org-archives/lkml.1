@@ -1,80 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753516AbZGWGnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbZGWGqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753516AbZGWGnQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 02:43:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbZGWGnP
+	id S1753543AbZGWGqP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 02:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752987AbZGWGqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 02:43:15 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:42934 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753150AbZGWGnO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 02:43:14 -0400
-Date: Thu, 23 Jul 2009 15:42:31 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Matt Fleming <matt@console-pimps.org>, Ian Molton <ian@mnementh.co.uk>,
-       Pierre Ossman <pierre@ossman.eu>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, nico@cam.org,
-       nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com, tony@atomide.com,
-       david-b@pacbell.net, manuel.lauss@gmail.com, mirq-linux@rere.qmqm.pl,
-       ppisa@pikron.com, jarkko.lavinen@nokia.com, ben@fluff.org,
-       saschasommer@freenet.de, avorontsov@ru.mvista.com, oakad@yahoo.com,
-       HaraldWelte@viatech.com, JosephChan@via.com.tw, adrian.hunter@nokia.com
-Subject: Re: New MMC maintainer needed
-Message-ID: <20090723064230.GA7658@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Matt Fleming <matt@console-pimps.org>,
-	Ian Molton <ian@mnementh.co.uk>, Pierre Ossman <pierre@ossman.eu>,
-	linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-	nico@cam.org, nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com,
-	tony@atomide.com, david-b@pacbell.net, manuel.lauss@gmail.com,
-	mirq-linux@rere.qmqm.pl, ppisa@pikron.com, jarkko.lavinen@nokia.com,
-	ben@fluff.org, saschasommer@freenet.de, avorontsov@ru.mvista.com,
-	oakad@yahoo.com, HaraldWelte@viatech.com, JosephChan@via.com.tw,
-	adrian.hunter@nokia.com
-References: <20090714153601.6dfe70ff@mjolnir.ossman.eu> <20090722151744.fffd7bf5.akpm@linux-foundation.org> <4A67A9E8.5080002@mnementh.co.uk> <20090723055447.GA12211@console-pimps.org> <20090722232259.d0ff3495.akpm@linux-foundation.org>
+	Thu, 23 Jul 2009 02:46:15 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63896 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751468AbZGWGqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 02:46:14 -0400
+Message-ID: <4A6806D9.8020004@cn.fujitsu.com>
+Date: Thu, 23 Jul 2009 14:44:41 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090722232259.d0ff3495.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Paul Menage <menage@google.com>
+CC: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] Add a back-pointer from struct cg_cgroup_link to
+ struct	cgroup
+References: <20090722194644.7481.47805.stgit@menage.mtv.corp.google.com> <20090722195040.7481.44939.stgit@menage.mtv.corp.google.com>
+In-Reply-To: <20090722195040.7481.44939.stgit@menage.mtv.corp.google.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 22, 2009 at 11:22:59PM -0700, Andrew Morton wrote:
-> On Thu, 23 Jul 2009 06:54:47 +0100 Matt Fleming <matt@console-pimps.org> wrote:
+Paul Menage wrote:
+> Add a back-pointer from struct cg_cgroup_link to struct cgroup
 > 
-> > On Thu, Jul 23, 2009 at 01:08:08AM +0100, Ian Molton wrote:
-> > > Andrew Morton wrote:
-> > >
-> > >> Until and unless someone else steps up I can act as maintainer of last
-> > >> resort for MMC.  As I'm presently doing for fbdev, hwmon, rtc, spi,
-> > >> gpio, i2o and about 1000 other identifiable subsystems.
-> > >
-> > > If no-one else is helping out, Im happy to also be CC'd on MMC patches.
-> > >
-> > 
-> > Ditto.
+> Currently the cgroups code makes the assumption that the subsystem
+> pointers in a struct css_set uniquely identify the hierarchy->cgroup
+> mappings associated with the css_set; and there's no way to directly
+> identify the associated set of cgroups other than by indirecting
+> through the appropriate subsystem state pointers.
 > 
-> Thanks, guys.
+> This patch removes the need for that assumption by adding a
+> back-pointer from struct cg_cgroup_link object to its associated
+> cgroup; this allows the set of cgroups to be determined by traversing
+> the cg_links list in the struct css_set.
 > 
-> I actually already have a little pile of MMC things queued:
+> Signed-off-by: Paul Menage <menage@google.com>
 > 
-> http://userweb.kernel.org/~akpm/mmotm/broken-out/mmc-in-mmc_power_up-use-previously-selected-ocr-if-available.patch
-> http://userweb.kernel.org/~akpm/mmotm/broken-out/omap-hsmmc-do-not-enable-buffer-ready-interrupt-if-using-dma.patch
-> http://userweb.kernel.org/~akpm/mmotm/broken-out/mmc-msm_sdccc-driver-for-htc-dream.patch
-> http://userweb.kernel.org/~akpm/mmotm/broken-out/msm_sdccc-convert-printkkern_level-to-pr_level.patch
-> http://userweb.kernel.org/~akpm/mmotm/broken-out/msm_sdccc-stylistic-cleaning.patch
-> http://userweb.kernel.org/~akpm/mmotm/broken-out/msm_sdccc-move-overly-indented-code-to-separate-function.patch
-> 
-> I guess we own them now ;)
 
-While you're in MMC collection mode:
+Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
 
-	http://lkml.org/lkml/2009/7/17/75
+...
 
-wants to be queued, too. Presumably Ian will get to it at some point,
-though.
+> +#define MAX_TASKS_SHOWN_PER_CSS 25
+> +static int cgroup_css_links_read(struct cgroup *cont,
+> +				 struct cftype *cft,
+> +				 struct seq_file *seq)
+> +{
+> +	struct cg_cgroup_link *link;
+> +
+
+I think we need to cgroup_enable_task_cg_lists():
+
+	if (!use_task_css_set_links)
+		cgroup_enable_task_cg_lists();
+
+Otherwise we'll see no tasks when reading this debug file
+if use_task_css_set_links == 0.
+
+> +	read_lock(&css_set_lock);
+> +	list_for_each_entry(link, &cont->css_sets, cgrp_link_list) {
+> +		struct css_set *cg = link->cg;
+> +		struct task_struct *task;
+> +		int count = 0;
+> +		seq_printf(seq, "css_set %p\n", cg);
+> +		list_for_each_entry(task, &cg->tasks, cg_list) {
+> +			if (count++ > MAX_TASKS_SHOWN_PER_CSS) {
+> +				seq_puts(seq, "  ...\n");
+> +				break;
+> +			} else {
+> +				seq_printf(seq, "  task %d\n",
+> +					   task_pid_vnr(task));
+> +			}
+> +		}
+> +	}
+> +	read_unlock(&css_set_lock);
+> +	return 0;
+> +}
