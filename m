@@ -1,77 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbZGWU2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754467AbZGWU2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754124AbZGWU2E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 16:28:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753464AbZGWU2D
+	id S1754467AbZGWU2R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 16:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754231AbZGWU2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 16:28:03 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:46587 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753105AbZGWU2B (ORCPT
+	Thu, 23 Jul 2009 16:28:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35008 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754195AbZGWU2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 16:28:01 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAK9kaEqrR7PD/2dsb2JhbAC4RIglkQkFhA0
-X-IronPort-AV: E=Sophos;i="4.43,257,1246838400"; 
-   d="scan'208";a="218341701"
-From: Roland Dreier <rdreier@cisco.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Jeff Squyres <jsquyres@cisco.com>
-Subject: Re: [PATCH/RFC] ummunot: Userspace support for MMU notifications
-References: <ada3a8oobis.fsf@cisco.com>
-	<20090722111538.58a126e3.akpm@linux-foundation.org>
-	<adad47smsb5.fsf@cisco.com> <4A682795.8050609@cn.fujitsu.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Thu, 23 Jul 2009 13:28:01 -0700
-In-Reply-To: <4A682795.8050609@cn.fujitsu.com> (Li Zefan's message of "Thu, 23
-	Jul 2009 17:04:21 +0800")
-Message-ID: <adafxcn401a.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 23 Jul 2009 20:28:02.0014 (UTC) FILETIME=[136997E0:01CA0BD4]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+	Thu, 23 Jul 2009 16:28:14 -0400
+Date: Thu, 23 Jul 2009 13:28:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Lamarque Vieira Souza <lamarque@gmail.com>
+Cc: linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix for Acer  Bluetooth Optical Rechargeable Mouse
+Message-Id: <20090723132810.6a7aa3dc.akpm@linux-foundation.org>
+In-Reply-To: <200907170301.43807.lamarque@gmail.com>
+References: <200907170301.43807.lamarque@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 17 Jul 2009 03:01:43 -0300
+Lamarque Vieira Souza <lamarque@gmail.com> wrote:
 
- > This can be implemented as a tracer or trace events, though I'm
- > not sure if it can fully meet your requirements or not.
- > 
- > To implement it as trace events, we add tracepoints in mmu_inlivadate_xxx(),
- > and define some TRACE_EVENT() macros.
- > 
- > And below shows how to use it:
- > 
- >   # mount -t debugfs xxx /mnt
- >   # cd /mnt/tracing/
- >   # echo 1 > events/mmu/enable
- >   # echo '(start >= 10000000 && end <= 10004096) || \
- > 	(start >= 20000000 && end <= 20004096)' > events/mmu/filter
- >   # cat trace_pipe
- >         bash-2066  [001]   795.239077: mmu_invalidate_range_start: start=10000000 end=10000100
- >         bash-2066  [001]   795.239091: mmu_invalidate_range_start: start=10000000 end=10000100
- >         bash-2066  [001]   795.239098: mmu_invalidate_range_start: start=10000000 end=10000100
- >          cat-2189  [001]   795.239502: mmu_invalidate_page: start=20000000 end=20003000
- >          cat-2189  [001]   795.239578: mmu_invalidate_page: start=20000000 end=20003000
- >         bash-2066  [001]   795.239626: mmu_invalidate_page: start=20000000 end=20003000
- > 
- > The patch is extremely simple:
+> 	This patch works around one problem with my Acer Bluetooth Optical 
+> Rechargeable Mouse where the cursor gets stuck at screen's upper-left corner. 
+> Even my notebook's touchpad is not able to move cursor when the bluetooth 
+> mouse is connected to my Acer Ferrari 4005 notebook. Using input session 
+> instead of hid session solves this problem although the cursor still moves a 
+> little sluggishly with the bluetooth mouse, cursor moves correctly using the 
+> touchpad. My bluetooth mouse used to work well (no sluggish) until kernel 
+> 2.6.21, since then the problems are getting worse with each kernel release (it 
+> got sluggish in 2.6.22 and this this upper-left corner problem appeared in 
+> 2.6.28 or 2.6.27).
 
-Thanks... unfortunately I don't think this really helps for the use case
-I'm trying to address.  What's desired is a way for an unprivileged
-userspace process to monitor (parts of) its own address space; I think
-getting a single stream of all such events is not going to be helpful,
-because, first, the overhead of filtering out the subset of useful
-events may be too high to make this useful and, second, exposing events
-about unrelated processes is probably a security hole (eg "allocation
-channel" attacks on crypto processes analogous to timing channel attacks)
+The patch also adds a new general quirk infrastructure to the hidp
+core.  That's worth noting in the changelog!  I added this:
 
-If there were some way for each process to get a trace of its own events
-then that would be very close to what I'm trying to implement.
+   The patch adds a general quirk handling framework to the HIDP
+   core and then uses this framework to implement a quirk for this
+   device.
 
-Thanks,
-  Roland
+
+> linux-2.6.30.1-lvs/net/bluetooth/hidp/core.c
+> --- linux-2.6.30.1-orig/net/bluetooth/hidp/core.c	2009-07-16 
+> 23:53:04.697925121 -0300
+> +++ linux-2.6.30.1-lvs/net/bluetooth/hidp/core.c	2009-07-17 02:35:03.969927384 
+> -0300
+> @@ -73,6 +73,43 @@ static unsigned char hidp_keycode[256] =
+>  
+>  static unsigned char hidp_mkeyspat[] = { 0x01, 0x01, 0x01, 0x01, 0x01, 0x01 
+> };
+>  
+> +/* HIDP device quirks */
+> +enum {
+> +	HIDP_QUIRK_USE_INPUT_SESSION
+> +};
+> +
+> +struct quirk_id {
+> +	__u16 vendor;
+> +	__u16 product;
+> +	unsigned long quirks;
+> +};
+> +
+> +static const struct quirk_id hidp_quirks[] = {
+> +	{
+> +		/* Lamarque: Acer Bluetooth Optical Rechargeable Mouse
+> +		 * does not work properly with hid session since 2.6.27. */
+> +		.vendor = 0x0458,
+> +		.product = 0x0058,
+> +		.quirks = 1 << HIDP_QUIRK_USE_INPUT_SESSION
+> +	},
+> +
+> +	{ /* end: all zeroes */ }
+> +};
+> +
+> +static int quirk_test_bit(__u16 vendor, __u16 product, int quirk)
+> +{
+> +	const struct quirk_id *q = &hidp_quirks[0];
+> +
+> +	while (q->vendor != vendor && q->product != product &&
+> +	       q->vendor && q->product)
+> +		q++;
+> +
+> +	if (q->vendor == vendor && q->product == product)
+> +		return test_bit(quirk, &q->quirks);
+> +
+> +	return 0;
+> +}
+
+Looks OK, but...
+
+It's a bit neater (IMO) and probably more efficient to replace the
+null-terminated search with a fixed-size one, using ARRAY_SIZE().
+
+How does this look?
+
+static const struct quirk_id hidp_quirks[] = {
+	{
+		/* Lamarque: Acer Bluetooth Optical Rechargeable Mouse
+		 * does not work properly with hid session since 2.6.27. */
+		.vendor = 0x0458,
+		.product = 0x0058,
+		.quirks = 1 << HIDP_QUIRK_USE_INPUT_SESSION
+	},
+};
+
+static int quirk_test_bit(__u16 vendor, __u16 product, int quirk)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(hidp_quirks); i++) {
+		const struct quirk_id *q = hidp_quirks + i;
+	
+		if (q->vendor == vendor && q->product == product)
+			return test_bit(quirk, &q->quirks);
+	}
+
+	return 0;
+}
+
+
+
+Incremental patch:
+
+--- a/net/bluetooth/hidp/core.c~bluetooth-fix-for-acer-bluetooth-optical-rechargeable-mouse-fix
++++ a/net/bluetooth/hidp/core.c
+@@ -92,20 +92,18 @@ static const struct quirk_id hidp_quirks
+ 		.product = 0x0058,
+ 		.quirks = 1 << HIDP_QUIRK_USE_INPUT_SESSION
+ 	},
+-
+-	{ /* end: all zeroes */ }
+ };
+ 
+ static int quirk_test_bit(__u16 vendor, __u16 product, int quirk)
+ {
+-	const struct quirk_id *q = &hidp_quirks[0];
++	int i;
+ 
+-	while (q->vendor != vendor && q->product != product &&
+-	       q->vendor && q->product)
+-		q++;
++	for (i = 0; i < ARRAY_SIZE(hidp_quirks); i++) {
++		const struct quirk_id *q = hidp_quirks + i;
+ 
+-	if (q->vendor == vendor && q->product == product)
+-		return test_bit(quirk, &q->quirks);
++		if (q->vendor == vendor && q->product == product)
++			return test_bit(quirk, &q->quirks);
++	}
+ 
+ 	return 0;
+ }
+_
+
