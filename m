@@ -1,367 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753576AbZGWGt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753634AbZGWGu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753576AbZGWGt3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 02:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbZGWGt3
+	id S1753634AbZGWGu0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 02:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbZGWGu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 02:49:29 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34221 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752995AbZGWGt2 (ORCPT
+	Thu, 23 Jul 2009 02:50:26 -0400
+Received: from mail-bw0-f228.google.com ([209.85.218.228]:48607 "EHLO
+	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753484AbZGWGuZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 02:49:28 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 23 Jul 2009 15:47:43 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Paul Menage <menage@google.com>
-Cc: akpm@linux-foundation.org, lizf@cn.fujitsu.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] Support named cgroups hierarchies
-Message-Id: <20090723154743.5c446108.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090722195029.7481.94700.stgit@menage.mtv.corp.google.com>
-References: <20090722194644.7481.47805.stgit@menage.mtv.corp.google.com>
-	<20090722195029.7481.94700.stgit@menage.mtv.corp.google.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 23 Jul 2009 02:50:25 -0400
+MIME-Version: 1.0
+In-Reply-To: <20090722232259.d0ff3495.akpm@linux-foundation.org>
+References: <20090714153601.6dfe70ff@mjolnir.ossman.eu> <20090722151744.fffd7bf5.akpm@linux-foundation.org> 
+	<4A67A9E8.5080002@mnementh.co.uk> <20090723055447.GA12211@console-pimps.org> 
+	<20090722232259.d0ff3495.akpm@linux-foundation.org>
+From: Ohad Ben-Cohen <ohad@bencohen.org>
+Date: Thu, 23 Jul 2009 09:50:03 +0300
+Message-ID: <bd5b16740907222350w54ca7b21w6b47ed94c1d7d16e@mail.gmail.com>
+Subject: Re: New MMC maintainer needed
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Matt Fleming <matt@console-pimps.org>, Ian Molton <ian@mnementh.co.uk>,
+       Pierre Ossman <pierre@ossman.eu>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org, nico@cam.org,
+       nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com, tony@atomide.com,
+       david-b@pacbell.net, manuel.lauss@gmail.com, mirq-linux@rere.qmqm.pl,
+       ppisa@pikron.com, jarkko.lavinen@nokia.com, ben@fluff.org,
+       saschasommer@freenet.de, avorontsov@ru.mvista.com, oakad@yahoo.com,
+       HaraldWelte@viatech.com, JosephChan@via.com.tw, adrian.hunter@nokia.com
+Content-Type: multipart/mixed; boundary=001636c5b3ffe0d7e6046f59e643
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-some nitpicks.
+--001636c5b3ffe0d7e6046f59e643
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-On Wed, 22 Jul 2009 12:50:30 -0700
-Paul Menage <menage@google.com> wrote:
+Hi Andrew,
 
-> -			opts->release_agent = kzalloc(PATH_MAX, GFP_KERNEL);
-> +			opts->release_agent =
-> +				kstrndup(token + 14, PATH_MAX, GFP_KERNEL);
+On Thu, Jul 23, 2009 at 9:22 AM, Andrew Morton<akpm@linux-foundation.org> wrote:
+> I actually already have a little pile of MMC things queued:
 
-unrelated fix ?
+Please also consider queuing up the attached patch as well.
 
+The patch is removing the current SDIO cards 1.8V limit, which is
+needed for embedded
+SDIO devices like TI 127x WLAN devices (with 1.8V MMC controllers like we
+have on the ZOOM2 boards for example).
 
->  			if (!opts->release_agent)
->  				return -ENOMEM;
-> -			strncpy(opts->release_agent, token + 14, PATH_MAX - 1);
-> -			opts->release_agent[PATH_MAX - 1] = 0;
-> +		} else if (!strncmp(token, "name=", 5)) {
-> +			int i;
-> +			const char *name = token + 5;
-> +			/* Can't specify an empty name */
-> +			if (!strlen(name))
-> +				return -EINVAL;
-> +			/* Must match [\w.-]+ */
-> +			for (i = 0; i < strlen(name); i++) {
-> +				char c = name[i];
-> +				if (isalnum(c))
-> +					continue;
-> +				if ((c == '.') || (c == '-') || (c == '_'))
-> +					continue;
-> +				return -EINVAL;
-> +			}
-> +			/* Specifying two names is forbidden */
-> +			if (opts->name)
-> +				return -EINVAL;
-> +			opts->name = kstrndup(name,
-> +					      MAX_CGROUP_ROOT_NAMELEN,
-> +					      GFP_KERNEL);
-> +			if (!opts->name)
-> +				return -ENOMEM;
->  		} else {
->  			struct cgroup_subsys *ss;
->  			int i;
-> @@ -904,7 +935,7 @@ static int parse_cgroupfs_options(char *data,
->  		return -EINVAL;
->  
->  	/* We can't have an empty hierarchy */
-> -	if (!opts->subsys_bits)
-> +	if (!opts->subsys_bits && !opts->name)
->  		return -EINVAL;
->  
->  	return 0;
-> @@ -932,6 +963,12 @@ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
->  		goto out_unlock;
->  	}
->  
-> +	/* Don't allow name to change at remount */
-> +	if (opts.name && strcmp(opts.name, root->name)) {
-> +		ret = -EINVAL;
-> +		goto out_unlock;
-> +	}
-> +
->  	ret = rebind_subsystems(root, opts.subsys_bits);
->  	if (ret)
->  		goto out_unlock;
-> @@ -943,6 +980,7 @@ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
->  		strcpy(root->release_agent_path, opts.release_agent);
->   out_unlock:
->  	kfree(opts.release_agent);
-> +	kfree(opts.name);
->  	mutex_unlock(&cgroup_mutex);
->  	mutex_unlock(&cgrp->dentry->d_inode->i_mutex);
->  	unlock_kernel();
-> @@ -965,6 +1003,7 @@ static void init_cgroup_housekeeping(struct cgroup *cgrp)
->  	INIT_LIST_HEAD(&cgrp->pids_list);
->  	init_rwsem(&cgrp->pids_mutex);
->  }
-> +
->  static void init_cgroup_root(struct cgroupfs_root *root)
->  {
->  	struct cgroup *cgrp = &root->top_cgroup;
+Thank you,
+Ohad.
 
-ditto.
+--001636c5b3ffe0d7e6046f59e643
+Content-Type: text/x-diff; charset=US-ASCII; 
+	name="0001-sdio-do-not-ignore-MMC_VDD_165_195.patch"
+Content-Disposition: attachment; 
+	filename="0001-sdio-do-not-ignore-MMC_VDD_165_195.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fxh4mr990
 
-
-
-> @@ -978,31 +1017,59 @@ static void init_cgroup_root(struct cgroupfs_root *root)
->  
->  static int cgroup_test_super(struct super_block *sb, void *data)
->  {
-> -	struct cgroupfs_root *new = data;
-> +	struct cgroup_sb_opts *opts = data;
->  	struct cgroupfs_root *root = sb->s_fs_info;
->  
-> -	/* First check subsystems */
-> -	if (new->subsys_bits != root->subsys_bits)
-> -	    return 0;
-> +	/* If we asked for a name then it must match */
-> +	if (opts->name && strcmp(opts->name, root->name))
-> +		return 0;
-I'm not sure but...
-
-opts->name is created by 
-+			opts->name = kstrndup(name,
-+					      MAX_CGROUP_ROOT_NAMELEN,
-+					      GFP_KERNEL);
-
-Then, opts->name can be a subset of a name user passed.
-(kstrdup cut it implicitly)
-And more,
-opts->name[MAX_CGROUP_ROOT_NAMELEN] = '\0' and this can break memory
-here,
-+	if (opts->name)
-+		strcpy(root->name, opts->name);
-+	return root;
-
-
-So, I think it's better to check the length of name at parse_options.
-as
-
-@@ -873,11 +882,33 @@ static int parse_cgroupfs_options(char *data,
-
-+			/* Can't specify an empty name */
-+			if (!strlen(name))
-+				return -EINVAL;
-+			/* too long name is not allowed. */
-+			if (strlen(name) >= MAX_CGROUP_ROOT_NAMELEN)
-+				return -EINVAL;
-
-
-Thanks,
--Kame
-
->  
-> -	/* Next check flags */
-> -	if (new->flags != root->flags)
-> +	/* If we asked for subsystems then they must match */
-> +	if (opts->subsys_bits && (opts->subsys_bits != root->subsys_bits))
->  		return 0;
->  
->  	return 1;
->  }
->  
-> +static struct cgroupfs_root *cgroup_root_from_opts(struct cgroup_sb_opts *opts)
-> +{
-> +	struct cgroupfs_root *root;
-> +
-> +	/* Empty hierarchies aren't supported */
-> +	if (!opts->subsys_bits)
-> +		return NULL;
-> +
-> +	root = kzalloc(sizeof(*root), GFP_KERNEL);
-> +	if (!root)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	init_cgroup_root(root);
-> +	root->subsys_bits = opts->subsys_bits;
-> +	root->flags = opts->flags;
-> +	if (opts->release_agent)
-> +		strcpy(root->release_agent_path, opts->release_agent);
-> +	if (opts->name)
-> +		strcpy(root->name, opts->name);
-> +	return root;
-> +}
-> +
->  static int cgroup_set_super(struct super_block *sb, void *data)
->  {
->  	int ret;
-> -	struct cgroupfs_root *root = data;
-> +	struct cgroup_sb_opts *opts = data;
-> +
-> +	/* If we don't have a new root, we can't set up a new sb */
-> +	if (!opts->new_root)
-> +		return -EINVAL;
-> +
-> +	BUG_ON(!opts->subsys_bits);
->  
->  	ret = set_anon_super(sb, NULL);
->  	if (ret)
->  		return ret;
->  
-> -	sb->s_fs_info = root;
-> -	root->sb = sb;
-> +	sb->s_fs_info = opts->new_root;
-> +	opts->new_root->sb = sb;
->  
->  	sb->s_blocksize = PAGE_CACHE_SIZE;
->  	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
-> @@ -1039,48 +1106,44 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
->  			 void *data, struct vfsmount *mnt)
->  {
->  	struct cgroup_sb_opts opts;
-> +	struct cgroupfs_root *root;
->  	int ret = 0;
->  	struct super_block *sb;
-> -	struct cgroupfs_root *root;
-> -	struct list_head tmp_cg_links;
->  
->  	/* First find the desired set of subsystems */
->  	ret = parse_cgroupfs_options(data, &opts);
-> -	if (ret) {
-> -		kfree(opts.release_agent);
-> -		return ret;
-> -	}
-> -
-> -	root = kzalloc(sizeof(*root), GFP_KERNEL);
-> -	if (!root) {
-> -		kfree(opts.release_agent);
-> -		return -ENOMEM;
-> -	}
-> +	if (ret)
-> +		goto out_err;
->  
-> -	init_cgroup_root(root);
-> -	root->subsys_bits = opts.subsys_bits;
-> -	root->flags = opts.flags;
-> -	if (opts.release_agent) {
-> -		strcpy(root->release_agent_path, opts.release_agent);
-> -		kfree(opts.release_agent);
-> +	/*
-> +	 * Allocate a new cgroup root. We may not need it if we're
-> +	 * reusing an existing hierarchy.
-> +	 */
-> +	{
-> +		struct cgroupfs_root *new_root = cgroup_root_from_opts(&opts);
-> +		if (IS_ERR(new_root)) {
-> +			ret = PTR_ERR(new_root);
-> +			goto out_err;
-> +		}
-> +		opts.new_root = new_root;
->  	}
->  
-> -	sb = sget(fs_type, cgroup_test_super, cgroup_set_super, root);
-> -
-> +	/* Locate an existing or new sb for this hierarchy */
-> +	sb = sget(fs_type, cgroup_test_super, cgroup_set_super, &opts);
->  	if (IS_ERR(sb)) {
-> -		kfree(root);
-> -		return PTR_ERR(sb);
-> +		ret = PTR_ERR(sb);
-> +		kfree(opts.new_root);
-> +		goto out_err;
->  	}
->  
-> -	if (sb->s_fs_info != root) {
-> -		/* Reusing an existing superblock */
-> -		BUG_ON(sb->s_root == NULL);
-> -		kfree(root);
-> -		root = NULL;
-> -	} else {
-> -		/* New superblock */
-> +	root = sb->s_fs_info;
-> +	BUG_ON(!root);
-> +	if (root == opts.new_root) {
-> +		/* We used the new root structure, so this is a new hierarchy */
-> +		struct list_head tmp_cg_links;
->  		struct cgroup *root_cgrp = &root->top_cgroup;
->  		struct inode *inode;
-> +		struct cgroupfs_root *existing_root;
->  		int i;
->  
->  		BUG_ON(sb->s_root != NULL);
-> @@ -1093,6 +1156,18 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
->  		mutex_lock(&inode->i_mutex);
->  		mutex_lock(&cgroup_mutex);
->  
-> +		if (strlen(root->name)) {
-> +			/* Check for name clashes with existing mounts */
-> +			for_each_active_root(existing_root) {
-> +				if (!strcmp(existing_root->name, root->name)) {
-> +					ret = -EBUSY;
-> +					mutex_unlock(&cgroup_mutex);
-> +					mutex_unlock(&inode->i_mutex);
-> +					goto drop_new_super;
-> +				}
-> +			}
-> +		}
-> +
->  		/*
->  		 * We're accessing css_set_count without locking
->  		 * css_set_lock here, but that's OK - it can only be
-> @@ -1111,7 +1186,8 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
->  		if (ret == -EBUSY) {
->  			mutex_unlock(&cgroup_mutex);
->  			mutex_unlock(&inode->i_mutex);
-> -			goto free_cg_links;
-> +			free_cg_links(&tmp_cg_links);
-> +			goto drop_new_super;
->  		}
->  
->  		/* EBUSY should be the only error here */
-> @@ -1145,15 +1221,26 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
->  		cgroup_populate_dir(root_cgrp);
->  		mutex_unlock(&inode->i_mutex);
->  		mutex_unlock(&cgroup_mutex);
-> +	} else {
-> +		/*
-> +		 * We re-used an existing hierarchy - the new root (if
-> +		 * any) is not needed
-> +		 */
-> +		kfree(opts.new_root);
->  	}
->  
->  	simple_set_mnt(mnt, sb);
-> +	kfree(opts.release_agent);
-> +	kfree(opts.name);
->  	return 0;
->  
-> - free_cg_links:
-> -	free_cg_links(&tmp_cg_links);
->   drop_new_super:
->  	deactivate_locked_super(sb);
-> +
-> + out_err:
-> +	kfree(opts.release_agent);
-> +	kfree(opts.name);
-> +
->  	return ret;
->  }
->  
-> @@ -2971,6 +3058,9 @@ static int proc_cgroup_show(struct seq_file *m, void *v)
->  		seq_printf(m, "%lu:", root->subsys_bits);
->  		for_each_subsys(root, ss)
->  			seq_printf(m, "%s%s", count++ ? "," : "", ss->name);
-> +		if (strlen(root->name))
-> +			seq_printf(m, "%sname=%s", count ? "," : "",
-> +				   root->name);
->  		seq_putc(m, ':');
->  		get_first_subsys(&root->top_cgroup, NULL, &subsys_id);
->  		cgrp = task_cgroup(tsk, subsys_id);
-> 
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
-
+RnJvbSBmOWJhNDViNTM3ZGQxMmZjMDk0NDNlZTI5YzQ4ODYwNjY1ZjhhYzgyIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBPaGFkIEJlbi1Db2hlbiA8b2hhZEBiZW5jb2hlbi5vcmc+CkRh
+dGU6IFdlZCwgMTUgSnVsIDIwMDkgMDk6MjE6NDEgKzAzMDAKU3ViamVjdDogW1BBVENIXSBzZGlv
+OiBkbyBub3QgaWdub3JlIE1NQ19WRERfMTY1XzE5NQoKVGhpcyBpcyBuZWVkZWQgZm9yIDEuOFYg
+ZW1iZWRkZWQgU0RJTyBkZXZpY2VzIGFuZCBzdXBwb3J0aW5nIGhvc3QgY29udHJvbGxlcnMKKGUu
+Zy4gVEkgMTI3eCBhbmQgWk9PTTIgYm9hcmRzKQoKU2lnbmVkLW9mZi1ieTogT2hhZCBCZW4tQ29o
+ZW4gPG9oYWRAYmVuY29oZW4ub3JnPgotLS0KIGRyaXZlcnMvbW1jL2NvcmUvc2Rpby5jIHwgICAg
+NyAtLS0tLS0tCiAxIGZpbGVzIGNoYW5nZWQsIDAgaW5zZXJ0aW9ucygrKSwgNyBkZWxldGlvbnMo
+LSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL21tYy9jb3JlL3NkaW8uYyBiL2RyaXZlcnMvbW1jL2Nv
+cmUvc2Rpby5jCmluZGV4IGZiOTljY2YuLjZmMjIxZGMgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvbW1j
+L2NvcmUvc2Rpby5jCisrKyBiL2RyaXZlcnMvbW1jL2NvcmUvc2Rpby5jCkBAIC0yNzUsMTMgKzI3
+NSw2IEBAIGludCBtbWNfYXR0YWNoX3NkaW8oc3RydWN0IG1tY19ob3N0ICpob3N0LCB1MzIgb2Ny
+KQogCQlvY3IgJj0gfjB4N0Y7CiAJfQogCi0JaWYgKG9jciAmIE1NQ19WRERfMTY1XzE5NSkgewot
+CQlwcmludGsoS0VSTl9XQVJOSU5HICIlczogU0RJTyBjYXJkIGNsYWltcyB0byBzdXBwb3J0IHRo
+ZSAiCi0JCSAgICAgICAiaW5jb21wbGV0ZWx5IGRlZmluZWQgJ2xvdyB2b2x0YWdlIHJhbmdlJy4g
+VGhpcyAiCi0JCSAgICAgICAid2lsbCBiZSBpZ25vcmVkLlxuIiwgbW1jX2hvc3RuYW1lKGhvc3Qp
+KTsKLQkJb2NyICY9IH5NTUNfVkREXzE2NV8xOTU7Ci0JfQotCiAJaG9zdC0+b2NyID0gbW1jX3Nl
+bGVjdF92b2x0YWdlKGhvc3QsIG9jcik7CiAKIAkvKgotLSAKMS41LjQuMwoK
+--001636c5b3ffe0d7e6046f59e643--
