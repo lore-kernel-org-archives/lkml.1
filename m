@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752646AbZGWCIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703AbZGWCJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752646AbZGWCIq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 22:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbZGWCIp
+	id S1752703AbZGWCJt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 22:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbZGWCJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 22:08:45 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36138 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751331AbZGWCIp (ORCPT
+	Wed, 22 Jul 2009 22:09:49 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:57315 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751507AbZGWCJs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 22:08:45 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 23 Jul 2009 11:06:55 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Rik van Riel <riel@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       Izik Eidus <ieidus@redhat.com>, akpm@linux-foundation.org,
-       chrisw@redhat.com, avi@redhat.com, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, nickpiggin@yahoo.com.au,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 06/10] ksm: identify PageKsm pages
-Message-Id: <20090723110655.f08cdcdc.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0907221346040.529@sister.anvils>
-References: <1247851850-4298-1-git-send-email-ieidus@redhat.com>
-	<1247851850-4298-2-git-send-email-ieidus@redhat.com>
-	<1247851850-4298-3-git-send-email-ieidus@redhat.com>
-	<1247851850-4298-4-git-send-email-ieidus@redhat.com>
-	<1247851850-4298-5-git-send-email-ieidus@redhat.com>
-	<1247851850-4298-6-git-send-email-ieidus@redhat.com>
-	<1247851850-4298-7-git-send-email-ieidus@redhat.com>
-	<20090721175139.GE2239@random.random>
-	<4A660101.3000307@redhat.com>
-	<Pine.LNX.4.64.0907221346040.529@sister.anvils>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Wed, 22 Jul 2009 22:09:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=kF69zqlp6l6/P4l8YZDdC9kCMl+QBE3vwsseVkaEJBO+MXyk3guw4yJ4VbJAMVkiQk
+         98j5Zu6xZW2xAsMlodyJ5LCR9VkXfs0FGGLYYkv1BkbR0oox0oR6uP3tuGkckV8pRNDZ
+         IIi0R0j+u7oyzRiDgcePqxZFncbWQttf8wFy4=
+Subject: [PATCH] USB: option.c to support Alcatel X060S/X200 broadband
+ modems
+From: Javier Martin <jmartinj@iname.com>
+To: smurf@smurf.noris.de, linux-usb@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Thu, 23 Jul 2009 04:03:43 +0200
+Message-Id: <1248314623.12639.28.camel@eee>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Jul 2009 13:54:06 +0100 (BST)
-Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
+Added support for the Alcatel X060S/X200 broadband modems to the option driver. The device starts in cd-rom emulation mode (1bbb:f000) and requires the use of the usb_modeswitch tool to switch it to modem mode (1bbb:0000).
 
-> On Tue, 21 Jul 2009, Rik van Riel wrote:
-> > Andrea Arcangeli wrote:
-> > > > -	if (PageAnon(old_page)) {
-> > > > +	if (PageAnon(old_page) && !PageKsm(old_page)) {
-> > > >    if (!trylock_page(old_page)) {
-> > > >     page_cache_get(old_page);
-> > > >     pte_unmap_unlock(page_table, ptl);
-> > > 
-> > > What exactly does it buy to have PageAnon return 1 on ksm pages,
-> > > besides requiring the above additional check (that if we stick to the
-> > > above code, I would find safer to move inside reuse_swap_page).
-> > 
-> > I guess that if they are to remain unswappable, they
-> > should go onto the unevictable list.
-> 
-> The KSM pages are not put on any LRU, so wouldn't be slowing vmscan
-> down with futile scans: isn't the unevictable list for pages which
-> belong to another LRU once they become evictable again?
-> 
-> (At this instant I've forgotten why there's an unevictable list at
-> all - somewhere in vmscan.c which is accustomed to dealing with
-> pages on lists, so easier to have them on a list than not?)
-> 
-I forget, too. But in short thinking, Unevictable pages should be
-on LRU (marked as PG_lru) for isolating page (from LRU) called by
-page migration etc.
+Signed-off-by: Javier Martin <jmartinj@iname.com>
+---
+diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
+index 98262dd..8946115 100644
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -322,6 +322,11 @@ static int  option_resume(struct usb_serial *serial);
+ #define ALINK_VENDOR_ID				0x1e0e
+ #define ALINK_PRODUCT_3GU			0x9200
+ 
++/* ALCATEL PRODUCTS */
++#define ALCATEL_VENDOR_ID			0x1bbb
++#define ALCATEL_PRODUCT_X060S			0x0000
++
++
+ static struct usb_device_id option_ids[] = {
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_COLT) },
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_RICOLA) },
+@@ -547,6 +552,7 @@ static struct usb_device_id option_ids[] = {
+ 	{ USB_DEVICE(TOSHIBA_VENDOR_ID, TOSHIBA_PRODUCT_HSDPA_MINICARD ) }, /* Toshiba 3G HSDPA == Novatel Expedite EU870D MiniCard */
+ 	{ USB_DEVICE(ALINK_VENDOR_ID, 0x9000) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ALINK_VENDOR_ID, ALINK_PRODUCT_3GU, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE(ALCATEL_VENDOR_ID, ALCATEL_PRODUCT_X060S) },
+ 	{ } /* Terminating entry */
+ };
+ MODULE_DEVICE_TABLE(usb, option_ids);
 
-isolate_lru_page()
-	-> put page on private list
-	-> do some work
-	-> putback_lru_page()
-
-sequence is useful at handling pages in a list.
-Because mlock/munclock can be called arbitrarily, unevicatable lru
-works enough good for making above kinds of code simpler.
-
-Thanks,
--Kame
 
 
