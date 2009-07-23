@@ -1,120 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752213AbZGWOfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752533AbZGWOg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752213AbZGWOfd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 10:35:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbZGWOfd
+	id S1752533AbZGWOg2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 10:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751866AbZGWOg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 10:35:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59993 "EHLO mx2.redhat.com"
+	Thu, 23 Jul 2009 10:36:28 -0400
+Received: from bear.ext.ti.com ([192.94.94.41]:48985 "EHLO bear.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751433AbZGWOfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 10:35:32 -0400
-Date: Thu, 23 Jul 2009 16:35:27 +0200
-From: John Kacur <jkacur@redhat.com>
-To: linux-kernel@vger.kernel.org, jcm@redhat.com
-Cc: linux-rt-users@vger.kernel.org, williams@redhat.com
-Subject: [PATCH] A little spellchecking of the hwlat_detector.c file
-Message-ID: <20090723143527.GA4521@tycho.redhat.com>
+	id S1751658AbZGWOg1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 10:36:27 -0400
+From: "Pandita, Vikram" <vikram.pandita@ti.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Alan Cox <alan@linux.intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Eric Whitney <eric.whitney@hp.com>, Rich Freiss <richard.freiss@hp.com>,
+       Linux OMAP Users <linux-omap@vger.kernel.org>
+Date: Thu, 23 Jul 2009 20:06:01 +0530
+Subject: RE: Boot Hang - mmotm 090716 - serial 8250 irq flags support
+Thread-Topic: Boot Hang - mmotm 090716 - serial 8250 irq flags support
+Thread-Index: AcoLnXn9vnsUSli4SfCQN94bhCu4PwABTXAQ
+Message-ID: <FCCFB4CDC6E5564B9182F639FC35608702F57AD326@dbde02.ent.ti.com>
+References: <1248291948.4490.67.camel@useless.americas.hpqcorp.net>
+	<20090723113353.7da8f6f9@lxorguk.ukuu.org.uk>
+	<1248353462.5674.80.camel@useless.americas.hpqcorp.net>
+ <20090723145754.3f001c4e@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090723145754.3f001c4e@lxorguk.ukuu.org.uk>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan
 
->From 9f51d93ba6d35f048fae1e7b902d1ca99e7a172c Mon Sep 17 00:00:00 2001
-From: John Kacur <jkacur@redhat.com>
-Date: Thu, 23 Jul 2009 16:05:39 +0200
-Subject: [PATCH] A little spellchecking of the hwlat_detector.c file.
+>-----Original Message-----
+>From: Alan Cox [mailto:alan@lxorguk.ukuu.org.uk]
+>Sent: Thursday, July 23, 2009 8:58 AM
+>To: Lee Schermerhorn
+>Cc: Andrew Morton; Pandita, Vikram; Alan Cox; linux-kernel; Bjorn Helgaas; Eric Whitney; Rich Freiss
+>
+>> </system1>hpiLO-> Virtual Serial Port active: IO=0x02F8 INT=3
+>>
+>> Perhaps Bjorn or Rich could comment on the hardware setup...
+>
+>Ok thats a generic ISA port
+>
+>The rest fits the patch I sent you so hopefully that fixes it and if so
+>I'll make sure the corrected one ends up in -next.
 
-Signed-off-by: John Kacur <jkacur@redhat.com>
----
- drivers/misc/hwlat_detector.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+Are you referring to serial-add-irqflags-support patch.
+Do let me know in case any respin of this patch is needed.
 
-diff --git a/drivers/misc/hwlat_detector.c b/drivers/misc/hwlat_detector.c
-index 9059b5d..575a8b5 100644
---- a/drivers/misc/hwlat_detector.c
-+++ b/drivers/misc/hwlat_detector.c
-@@ -159,7 +159,7 @@ static struct data {
- 
- 	atomic_t sample_open;		/* whether the sample file is open */
- 
--	wait_queue_head_t wq;		/* waitqeue for new sample values */
-+	wait_queue_head_t wq;		/* waitqueue for new sample values */
- 
- } data;
- 
-@@ -270,13 +270,13 @@ out:
-  * @unused: A required part of the kthread API.
-  *
-  * Used to periodically sample the CPU TSC via a call to get_sample. We
-- * use stop_machine, whith does (intentionally) introduce latency since we
-+ * use stop_machine, which does (intentionally) introduce latency since we
-  * need to ensure nothing else might be running (and thus pre-empting).
-  * Obviously this should never be used in production environments.
-  *
-  * stop_machine will schedule us typically only on CPU0 which is fine for
-  * almost every real-world hardware latency situation - but we might later
-- * generalize this if we find there are any actualy systems with alternate
-+ * generalize this if we find there are any actual systems with alternate
-  * SMI delivery or other non CPU0 hardware latencies.
-  */
- static int kthread_fn(void *unused)
-@@ -332,7 +332,7 @@ static int start_kthread(void)
- }
- 
- /**
-- * stop_kthread - Inform the hardware latency samping/detector kthread to stop
-+ * stop_kthread - Inform the hardware latency sampling/detector kthread to stop
-  *
-  * This kicks the running hardware latency sampling/detector kernel thread and
-  * tells it to stop sampling now. Use this on unload and at system shutdown.
-@@ -752,7 +752,7 @@ out:
- 
- /**
-  * debug_sample_release - Release function for "sample" debugfs interface
-- * @inode: The in-kernel inode represenation of the debugfs "file"
-+ * @inode: The in-kernel inode representation of the debugfs "file"
-  * @filp: The active open file structure for the debugfs "file"
-  *
-  * This function completes the close of the debugfs interface "sample" file.
-@@ -846,7 +846,7 @@ static int debug_width_fopen(struct inode *inode, struct file *filp)
-  * This function provides a read implementation for the "width" debugfs
-  * interface to the hardware latency detector. It can be used to determine
-  * for how many us of the total window us we will actively sample for any
-- * hardware-induced latecy periods. Obviously, it is not possible to
-+ * hardware-induced latency periods. Obviously, it is not possible to
-  * sample constantly and have the system respond to a sample reader, or,
-  * worse, without having the system appear to have gone out to lunch.
-  */
-@@ -947,12 +947,12 @@ static ssize_t debug_window_fread(struct file *filp, char __user *ubuf,
-  * @cnt: The maximum number of bytes to write to "file"
-  * @ppos: The current position in the debugfs "file"
-  *
-- * This function provides a write implementation for the "window" debufds
-- * interface to the hardware latency detetector. The window is the total time
-+ * This function provides a write implementation for the "window" debugfs
-+ * interface to the hardware latency detector. The window is the total time
-  * in us that will be considered one sample period. Conceptually, windows
-  * occur back-to-back and contain a sample width period during which
-  * actual sampling occurs. Can be used to write a new total window size. It
-- * is enfoced that any value written must be greater than the sample width
-+ * is enforced that any value written must be greater than the sample width
-  * size, or an error results.
-  */
- static ssize_t  debug_window_fwrite(struct file *filp,
-@@ -1062,7 +1062,7 @@ static const struct file_operations window_fops = {
-  * This function creates entries in debugfs for "hwlat_detector", including
-  * files to read values from the detector, current samples, and the
-  * maximum sample that has been captured since the hardware latency
-- * dectector was started.
-+ * detector was started.
-  */
- static int init_debugfs(void)
- {
--- 
-1.6.0.6
+>
+>Alan
 
