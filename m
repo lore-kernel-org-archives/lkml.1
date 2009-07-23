@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752688AbZGWCfU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752635AbZGWCk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752688AbZGWCfU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 22:35:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZGWCfT
+	id S1752635AbZGWCk0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 22:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbZGWCkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 22:35:19 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37630 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750865AbZGWCfR (ORCPT
+	Wed, 22 Jul 2009 22:40:25 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:47751 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751695AbZGWCkZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 22:35:17 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 23 Jul 2009 11:33:20 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Oren Laadan <orenl@librato.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-api@vger.kernel.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       Linus Torvalds <torvalds@osdl.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC v17][PATCH 10/60] c/r: make file_pos_read/write() public
-Message-Id: <20090723113320.65f6746d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1248256822-23416-11-git-send-email-orenl@librato.com>
-References: <1248256822-23416-1-git-send-email-orenl@librato.com>
-	<1248256822-23416-11-git-send-email-orenl@librato.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 22 Jul 2009 22:40:25 -0400
+Message-ID: <4A67CD97.8000609@zytor.com>
+Date: Wed, 22 Jul 2009 19:40:23 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1.1) Gecko/20090715 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Subodh Nijsure <nijsure.subodh@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Way to combine kernel and initrd on x86 platform?
+References: <110c8b2e0907221415q77f7416ehcff4ad26d834bce2@mail.gmail.com>
+In-Reply-To: <110c8b2e0907221415q77f7416ehcff4ad26d834bce2@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-a nitpick.
+On 07/22/2009 02:15 PM, Subodh Nijsure wrote:
+> I have been using the arch/powerpc/boot/wrapper scripts to combine
+> linux and initrd.gz to create a single image for distribution.
+> 
+> Is there similar wrapper possible for x86 platforms also? This is my
+> first week of working on x86 embedded platform.
+> 
+> I know of initramfs option in 2.6 kernel, however the contents of
+> initrd in my case are created after the kernel is build i.e. will have
+> to "patch in" the initramfs at later point in build process.
 
-On Wed, 22 Jul 2009 05:59:32 -0400
-Oren Laadan <orenl@librato.com> wrote:
+If your bootloader can support ELF, Multiboot, or NBI, you can use
+Wraplinux:
 
-> These two are used in the next patch when calling vfs_read/write()
+	http://www.kernel.org/pub/linux/utils/boot/wraplinux/
 
-> +static inline loff_t file_pos_read(struct file *file)
-> +{
-> +	return file->f_pos;
-> +}
-> +
-> +static inline void file_pos_write(struct file *file, loff_t pos)
-> +{
-> +	file->f_pos = pos;
-> +}
-> +
+bzImage support would be possible, but it isn't in this version (noone
+has asked for it).
 
-I'm not sure but how about renaming this to
-	file_pos() 
-	set_file_pos()
-at moving this to global include file ?
+	-hpa
 
-Thanks,
--Kame
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
