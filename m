@@ -1,74 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752059AbZGWEdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbZGWEn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752059AbZGWEdm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 00:33:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbZGWEdl
+	id S1752138AbZGWEn3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 00:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbZGWEn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 00:33:41 -0400
-Received: from mga11.intel.com ([192.55.52.93]:45884 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751040AbZGWEdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 00:33:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,251,1246863600"; 
-   d="scan'208";a="710275653"
-Subject: Re: linux-next: async_tx tree build failure
-From: Dan Williams <dan.j.williams@intel.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090723120004.fac867eb.sfr@canb.auug.org.au>
-References: <20090723120004.fac867eb.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 22 Jul 2009 21:33:40 -0700
-Message-Id: <1248323620.24951.2.camel@dwillia2-linux.ch.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 8bit
+	Thu, 23 Jul 2009 00:43:28 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:41356 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750938AbZGWEn1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 00:43:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=VKYSh/S9sT4SMLaDHPAqsEw6bDeE4DcKDGx+q4XwytgGRjbd9+CgdaHQ3Nrhf36IVJ
+         6BZfDA6SfJouGsVKUke+T8G+cofMzLAXdaGsFqprRCuww3mZGd8SXcdBLsuiOv76KD3A
+         RirgpvBJ97/ZfYoeWzM05zjNgzbdqCYBNYKfU=
+Date: Wed, 22 Jul 2009 21:43:22 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: David Brownell <david-b@pacbell.net>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Trilok Soni <soni.trilok@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Arve Hj?nnev?g <arve@android.com>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Brian Swetland <swetland@google.com>, linux-input@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, linux-i2c@vger.kernel.org,
+       Joonyoung Shim <jy0922.shim@samsung.com>, m.szyprowski@samsung.com,
+       t.fujak@samsung.com, kyungmin.park@samsung.com,
+       Daniel Ribeiro <drwyrm@gmail.com>
+Subject: Re: Threaded interrupts for synaptic touchscreen in HTC dream
+Message-ID: <20090723044321.GA2782@dtor-d630.eng.vmware.com>
+References: <5d5443650907151033w36008b71pe4b32bcea9489b75@mail.gmail.com> <alpine.LFD.2.00.0907221427380.2813@localhost.localdomain> <1248269443.27058.1449.camel@twins> <200907220957.16499.david-b@pacbell.net> <alpine.LFD.2.00.0907222226270.2813@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0907222226270.2813@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-22 at 19:00 -0700, Stephen Rothwell wrote:
-> Hi Dan,
+On Wed, Jul 22, 2009 at 11:04:33PM +0200, Thomas Gleixner wrote:
 > 
-> Since next-20090623, the linux-next build (i386 allmodconfig) has failed
-> like this:
+> Any more ?
 > 
-> crypto/async_tx/async_xor.c: In function ‘async_xor_init’:
-> crypto/async_tx/async_xor.c:310: error: size of array ‘type name’ is negative
-> 
-> The failing line is this:
-> 
-> 	BUILD_BUG_ON(sizeof(dma_addr_t) > sizeof(struct page *));
-> 
-> in async_xor_init() introduced by commit
-> 0036731c88fdb5bf4f04a796a30b5e445fc57f54 ("async_tx: kill tx_set_src and
-> tx_set_dest methods") in Feb, 2008.
-> 
-> Bisecting in the next-20090623 tree pointed to commit
-> 3c30a9ca1fb95214e60e3bf43957971df6668033 ("dmaengine: move HIGHMEM64G
-> restriction to ASYNC_TX_DMA") from the async_tx tree.  This is now commit
-> f3c56e57f66a73a241299dbec1ad55491aa0e403.
 
-Gah, yes that commit was half baked.  I have pushed out an updated tree
-with the following fix:
+Can we also have something like below by any chance?
 
-diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
-index 95fe2c8..90dd3f8 100644
---- a/crypto/async_tx/async_xor.c
-+++ b/crypto/async_tx/async_xor.c
-@@ -300,7 +300,7 @@ EXPORT_SYMBOL_GPL(async_xor_zero_sum);
+-- 
+Dmitry
+
+genirq: provide dummy hard irq handler for threaded interrupts
+
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+
+Quite often drivers using threaded interrupts don't do anything
+in the hard IRQ portion of their interrupt handler; everything
+is offloaded to the threaded half. Instead of having every driver
+implement a stub have one ready in the IRQ core.
+
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+---
+
+ kernel/irq/manage.c |   22 ++++++++++++++++++----
+ 1 files changed, 18 insertions(+), 4 deletions(-)
+
+
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 50da676..cdc52f6 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -695,6 +695,15 @@ out_thread:
+ 	return ret;
+ }
  
- static int __init async_xor_init(void)
- {
--	#ifdef CONFIG_DMA_ENGINE
-+	#ifdef CONFIG_ASYNC_TX_DMA
- 	/* To conserve stack space the input src_list (array of page pointers)
- 	 * is reused to hold the array of dma addresses passed to the driver.
- 	 * This conversion is only possible when dma_addr_t is less than the
-
-Thanks,
-Dan
-
-
++/*
++ * Default hardirq handler for threaded irqs that is used when
++ * driver did not provide its own implementation.
++ */
++static irqreturn_t dummy_hardirq_handler(int irq, void *dev_id)
++{
++	return IRQ_WAKE_THREAD;
++}
++
+ /**
+  *	setup_irq - setup an interrupt
+  *	@irq: Interrupt line to setup
+@@ -837,8 +846,11 @@ EXPORT_SYMBOL(free_irq);
+  *	request_threaded_irq - allocate an interrupt line
+  *	@irq: Interrupt line to allocate
+  *	@handler: Function to be called when the IRQ occurs.
+- *		  Primary handler for threaded interrupts
+- *	@thread_fn: Function called from the irq handler thread
++ *		  Primary handler for threaded interrupts.
++ *		  May be NULL, in which case a dummy interrupt
++ *		  handler is used that simply returns
++ *		  IRQ_WAKE_THREAD
++ *	@thread_fn: Function called from the irq handler thread.
+  *		    If NULL, no irq thread is created
+  *	@irqflags: Interrupt type flags
+  *	@devname: An ascii name for the claiming device
+@@ -917,14 +929,16 @@ int request_threaded_irq(unsigned int irq, irq_handler_t handler,
+ 
+ 	if (desc->status & IRQ_NOREQUEST)
+ 		return -EINVAL;
+-	if (!handler)
++
++	if (!handler && !thread_fn) {
+ 		return -EINVAL;
++	}
+ 
+ 	action = kzalloc(sizeof(struct irqaction), GFP_KERNEL);
+ 	if (!action)
+ 		return -ENOMEM;
+ 
+-	action->handler = handler;
++	action->handler = handler ?: dummy_hardirq_handler;
+ 	action->thread_fn = thread_fn;
+ 	action->flags = irqflags;
+ 	action->name = devname;
