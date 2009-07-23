@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbZGWBCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752401AbZGWBCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752262AbZGWBCe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 21:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbZGWBCe
+	id S1752401AbZGWBCh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 21:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751569AbZGWBCg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 21:02:34 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:38793 "EHLO smtps.tip.net.au"
+	Wed, 22 Jul 2009 21:02:36 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:38802 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751507AbZGWBCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 21:02:33 -0400
-Date: Thu, 23 Jul 2009 10:11:13 +1000
+	id S1751676AbZGWBCe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 22 Jul 2009 21:02:34 -0400
+Date: Thu, 23 Jul 2009 10:15:08 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Mauro Carvalho Chehab <mchehab@infradead.org>
 Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -17,7 +17,7 @@ Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
        Chaithrika U S <chaithrika@ti.com>, Naresh Medisetty <naresh@ti.com>,
        Kevin Hilman <khilman@deeprootsystems.com>
 Subject: linux-next: manual merge of the v4l-dvb tree with the davinci tree
-Message-Id: <20090723101113.ed6fc12c.sfr@canb.auug.org.au>
+Message-Id: <20090723101508.39f36ddd.sfr@canb.auug.org.au>
 X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,74 +29,68 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Hi Mauro,
 
 Today's linux-next merge of the v4l-dvb tree got a conflict in
-arch/arm/mach-davinci/dm355.c between commit
+arch/arm/mach-davinci/dm644x.c between commit
 e94c101ce3ef11bc00f8ea5db4b65c4b01874cf8 ("davinci: ASoC: Add the
 platform devices for ASP") from the davinci tree and commit
-32a01291c576c302d82a985d91db720dcf8c891b ("V4L/DVB: DM355 platform
+751970533394e56a84289abe6c92605460ada306 ("V4L/DVB: DM6446 platform
 changes for vpfe capture driver") from the v4l-dvb tree.
 
-I assume that these are orthogonal changes (though they may not be).  I
-fixed it up (see below) and can carry the fixes as necessary.
+Again, I assume these are orthogonal changes.  I fixed it up (see below)
+and can carry the fixes as necessary.
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --cc arch/arm/mach-davinci/dm355.c
-index 3abeb3e,2696df1..0000000
---- a/arch/arm/mach-davinci/dm355.c
-+++ b/arch/arm/mach-davinci/dm355.c
-@@@ -628,31 -612,67 +636,92 @@@ static struct platform_device dm355_edm
+diff --cc arch/arm/mach-davinci/dm644x.c
+index e554aa6,cc8fc78..0000000
+--- a/arch/arm/mach-davinci/dm644x.c
++++ b/arch/arm/mach-davinci/dm644x.c
+@@@ -554,32 -530,59 +554,85 @@@ static struct platform_device dm644x_ed
   	.resource		= edma_resources,
   };
   
- +static struct resource dm355_asp1_resources[] = {
+ +/* DM6446 EVM uses ASP0; line-out is a pair of RCA jacks */
+ +static struct resource dm644x_asp_resources[] = {
  +	{
- +		.start	= DAVINCI_ASP1_BASE,
- +		.end	= DAVINCI_ASP1_BASE + SZ_8K - 1,
+ +		.start	= DAVINCI_ASP0_BASE,
+ +		.end	= DAVINCI_ASP0_BASE + SZ_8K - 1,
  +		.flags	= IORESOURCE_MEM,
  +	},
  +	{
- +		.start	= DAVINCI_DMA_ASP1_TX,
- +		.end	= DAVINCI_DMA_ASP1_TX,
+ +		.start	= DAVINCI_DMA_ASP0_TX,
+ +		.end	= DAVINCI_DMA_ASP0_TX,
  +		.flags	= IORESOURCE_DMA,
  +	},
  +	{
- +		.start	= DAVINCI_DMA_ASP1_RX,
- +		.end	= DAVINCI_DMA_ASP1_RX,
+ +		.start	= DAVINCI_DMA_ASP0_RX,
+ +		.end	= DAVINCI_DMA_ASP0_RX,
  +		.flags	= IORESOURCE_DMA,
  +	},
  +};
  +
- +static struct platform_device dm355_asp1_device = {
+ +static struct platform_device dm644x_asp_device = {
  +	.name		= "davinci-asp",
- +	.id		= 1,
- +	.num_resources	= ARRAY_SIZE(dm355_asp1_resources),
- +	.resource	= dm355_asp1_resources,
+ +	.id		= -1,
+ +	.num_resources	= ARRAY_SIZE(dm644x_asp_resources),
+ +	.resource	= dm644x_asp_resources,
  +};
  +
-+ static struct resource dm355_vpss_resources[] = {
++ static struct resource dm644x_vpss_resources[] = {
 + 	{
-+ 		/* VPSS BL Base address */
++ 		/* VPSS Base address */
 + 		.name		= "vpss",
-+ 		.start          = 0x01c70800,
-+ 		.end            = 0x01c70800 + 0xff,
-+ 		.flags          = IORESOURCE_MEM,
-+ 	},
-+ 	{
-+ 		/* VPSS CLK Base address */
-+ 		.name		= "vpss",
-+ 		.start          = 0x01c70000,
-+ 		.end            = 0x01c70000 + 0xf,
++ 		.start          = 0x01c73400,
++ 		.end            = 0x01c73400 + 0xff,
 + 		.flags          = IORESOURCE_MEM,
 + 	},
 + };
 + 
-+ static struct platform_device dm355_vpss_device = {
++ static struct platform_device dm644x_vpss_device = {
 + 	.name			= "vpss",
 + 	.id			= -1,
-+ 	.dev.platform_data	= "dm355_vpss",
-+ 	.num_resources		= ARRAY_SIZE(dm355_vpss_resources),
-+ 	.resource		= dm355_vpss_resources,
++ 	.dev.platform_data	= "dm644x_vpss",
++ 	.num_resources		= ARRAY_SIZE(dm644x_vpss_resources),
++ 	.resource		= dm644x_vpss_resources,
 + };
 + 
 + static struct resource vpfe_resources[] = {
@@ -110,11 +104,10 @@ index 3abeb3e,2696df1..0000000
 + 		.end            = IRQ_VDINT1,
 + 		.flags          = IORESOURCE_IRQ,
 + 	},
-+ 	/* CCDC Base address */
 + 	{
++ 		.start          = 0x01c70400,
++ 		.end            = 0x01c70400 + 0xff,
 + 		.flags          = IORESOURCE_MEM,
-+ 		.start          = 0x01c70600,
-+ 		.end            = 0x01c70600 + 0x1ff,
 + 	},
 + };
 + 
@@ -130,11 +123,11 @@ index 3abeb3e,2696df1..0000000
 + 	},
 + };
 + 
-+ void dm355_set_vpfe_config(struct vpfe_config *cfg)
++ void dm644x_set_vpfe_config(struct vpfe_config *cfg)
 + {
 + 	vpfe_capture_dev.dev.platform_data = cfg;
 + }
 + 
   /*----------------------------------------------------------------------*/
   
-  static struct map_desc dm355_io_desc[] = {
+  static struct map_desc dm644x_io_desc[] = {
