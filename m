@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbZGWWLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbZGWWL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754715AbZGWWLG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 18:11:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbZGWWLF
+	id S1754730AbZGWWL4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 18:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbZGWWLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 18:11:05 -0400
-Received: from mail-pz0-f192.google.com ([209.85.222.192]:41003 "EHLO
-	mail-pz0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754218AbZGWWLD (ORCPT
+	Thu, 23 Jul 2009 18:11:55 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:65068 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754487AbZGWWLy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 18:11:03 -0400
+	Thu, 23 Jul 2009 18:11:54 -0400
 To: Stephen Rothwell <sfr@canb.auug.org.au>
 Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Chaithrika U S <chaithrika@ti.com>,
-       Manjunath Hadli <mrh@ti.com>, Brijesh Jadav <brijesh.j@ti.com>,
-       Hemant Pedanekar <hemantp@ti.com>
+       linux-kernel@vger.kernel.org,
+       Muralidharan Karicheri <m-karicheri2@ti.com>,
+       Chaithrika U S <chaithrika@ti.com>, Naresh Medisetty <naresh@ti.com>
 Subject: Re: linux-next: manual merge of the v4l-dvb tree with the davinci tree
-References: <20090723101121.d21a575d.sfr@canb.auug.org.au>
+References: <20090723101113.ed6fc12c.sfr@canb.auug.org.au>
 From: Kevin Hilman <khilman@deeprootsystems.com>
 Organization: Deep Root Systems, LLC
-Date: Thu, 23 Jul 2009 15:11:01 -0700
-In-Reply-To: <20090723101121.d21a575d.sfr@canb.auug.org.au> (Stephen Rothwell's message of "Thu\, 23 Jul 2009 10\:11\:21 +1000")
-Message-ID: <87d47rhwy2.fsf@deeprootsystems.com>
+Date: Thu, 23 Jul 2009 15:11:51 -0700
+In-Reply-To: <20090723101113.ed6fc12c.sfr@canb.auug.org.au> (Stephen Rothwell's message of "Thu\, 23 Jul 2009 10\:11\:13 +1000")
+Message-ID: <877hxzhwwo.fsf@deeprootsystems.com>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -34,119 +34,117 @@ Stephen Rothwell <sfr@canb.auug.org.au> writes:
 > Hi Mauro,
 >
 > Today's linux-next merge of the v4l-dvb tree got a conflict in
-> arch/arm/mach-davinci/board-dm646x-evm.c between commits
+> arch/arm/mach-davinci/dm355.c between commit
 > e94c101ce3ef11bc00f8ea5db4b65c4b01874cf8 ("davinci: ASoC: Add the
-> platform devices for ASP") and 4d6c5c3ec7c9b6d0d055da77c406049f7a663a0c
-> ("davinci: dm646x-evm: Add support for IDE") from the davinci tree and
-> commit be45110fa4525939a32c0509229a1781c5c3da78 ("arch/arm/mach-davinci:
-> Platform and board specific setup for DM646x EVM") from the v4l-dvb tree.
+> platform devices for ASP") from the davinci tree and commit
+> 32a01291c576c302d82a985d91db720dcf8c891b ("V4L/DVB: DM355 platform
+> changes for vpfe capture driver") from the v4l-dvb tree.
 >
-> I think that these are just overlapping additions (though they my
-> actually be implementing similar things).  I fixed it up (see below) and
-> can carry the fixes as necessary.
+> I assume that these are orthogonal changes (though they may not be).  I
+> fixed it up (see below) and can carry the fixes as necessary.
 
-I can confirm that these are just overlapping additions.
+I can confirm these are overlapping changes.
 
-Kevin 
+Kevin
 (davinci platform maintainer)
 
-> -- 
 > Cheers,
 > Stephen Rothwell                    sfr@canb.auug.org.au
 >
-> diff --cc arch/arm/mach-davinci/board-dm646x-evm.c
-> index b1bf18c,eb4bd01..0000000
-> --- a/arch/arm/mach-davinci/board-dm646x-evm.c
-> +++ b/arch/arm/mach-davinci/board-dm646x-evm.c
-> @@@ -259,35 -220,40 +272,69 @@@ static struct at24_platform_data eeprom
->   	.context	= (void *)0x7f00,
+> diff --cc arch/arm/mach-davinci/dm355.c
+> index 3abeb3e,2696df1..0000000
+> --- a/arch/arm/mach-davinci/dm355.c
+> +++ b/arch/arm/mach-davinci/dm355.c
+> @@@ -628,31 -612,67 +636,92 @@@ static struct platform_device dm355_edm
+>   	.resource		= edma_resources,
 >   };
 >   
->  +static u8 dm646x_iis_serializer_direction[] = {
->  +       TX_MODE, RX_MODE, INACTIVE_MODE, INACTIVE_MODE,
->  +};
->  +
->  +static u8 dm646x_dit_serializer_direction[] = {
->  +       TX_MODE,
->  +};
->  +
->  +static struct snd_platform_data dm646x_evm_snd_data[] = {
+>  +static struct resource dm355_asp1_resources[] = {
 >  +	{
->  +		.tx_dma_offset  = 0x400,
->  +		.rx_dma_offset  = 0x400,
->  +		.op_mode        = DAVINCI_MCASP_IIS_MODE,
->  +		.num_serializer = ARRAY_SIZE(dm646x_iis_serializer_direction),
->  +		.tdm_slots      = 2,
->  +		.serial_dir     = dm646x_iis_serializer_direction,
->  +		.eventq_no      = EVENTQ_0,
+>  +		.start	= DAVINCI_ASP1_BASE,
+>  +		.end	= DAVINCI_ASP1_BASE + SZ_8K - 1,
+>  +		.flags	= IORESOURCE_MEM,
 >  +	},
 >  +	{
->  +		.tx_dma_offset  = 0x400,
->  +		.rx_dma_offset  = 0,
->  +		.op_mode        = DAVINCI_MCASP_DIT_MODE,
->  +		.num_serializer = ARRAY_SIZE(dm646x_dit_serializer_direction),
->  +		.tdm_slots      = 32,
->  +		.serial_dir     = dm646x_dit_serializer_direction,
->  +		.eventq_no      = EVENTQ_0,
+>  +		.start	= DAVINCI_DMA_ASP1_TX,
+>  +		.end	= DAVINCI_DMA_ASP1_TX,
+>  +		.flags	= IORESOURCE_DMA,
+>  +	},
+>  +	{
+>  +		.start	= DAVINCI_DMA_ASP1_RX,
+>  +		.end	= DAVINCI_DMA_ASP1_RX,
+>  +		.flags	= IORESOURCE_DMA,
 >  +	},
 >  +};
 >  +
-> + static struct i2c_client *cpld_client;
-> + 
-> + static int cpld_video_probe(struct i2c_client *client,
-> + 			const struct i2c_device_id *id)
-> + {
-> + 	cpld_client = client;
-> + 	return 0;
-> + }
-> + 
-> + static int __devexit cpld_video_remove(struct i2c_client *client)
-> + {
-> + 	cpld_client = NULL;
-> + 	return 0;
-> + }
-> + 
-> + static const struct i2c_device_id cpld_video_id[] = {
-> + 	{ "cpld_video", 0 },
-> + 	{ }
+>  +static struct platform_device dm355_asp1_device = {
+>  +	.name		= "davinci-asp",
+>  +	.id		= 1,
+>  +	.num_resources	= ARRAY_SIZE(dm355_asp1_resources),
+>  +	.resource	= dm355_asp1_resources,
+>  +};
+>  +
+> + static struct resource dm355_vpss_resources[] = {
+> + 	{
+> + 		/* VPSS BL Base address */
+> + 		.name		= "vpss",
+> + 		.start          = 0x01c70800,
+> + 		.end            = 0x01c70800 + 0xff,
+> + 		.flags          = IORESOURCE_MEM,
+> + 	},
+> + 	{
+> + 		/* VPSS CLK Base address */
+> + 		.name		= "vpss",
+> + 		.start          = 0x01c70000,
+> + 		.end            = 0x01c70000 + 0xf,
+> + 		.flags          = IORESOURCE_MEM,
+> + 	},
 > + };
 > + 
-> + static struct i2c_driver cpld_video_driver = {
-> + 	.driver = {
-> + 		.name	= "cpld_video",
-> + 	},
-> + 	.probe		= cpld_video_probe,
-> + 	.remove		= cpld_video_remove,
-> + 	.id_table	= cpld_video_id,
+> + static struct platform_device dm355_vpss_device = {
+> + 	.name			= "vpss",
+> + 	.id			= -1,
+> + 	.dev.platform_data	= "dm355_vpss",
+> + 	.num_resources		= ARRAY_SIZE(dm355_vpss_resources),
+> + 	.resource		= dm355_vpss_resources,
 > + };
 > + 
-> + static void evm_init_cpld(void)
+> + static struct resource vpfe_resources[] = {
+> + 	{
+> + 		.start          = IRQ_VDINT0,
+> + 		.end            = IRQ_VDINT0,
+> + 		.flags          = IORESOURCE_IRQ,
+> + 	},
+> + 	{
+> + 		.start          = IRQ_VDINT1,
+> + 		.end            = IRQ_VDINT1,
+> + 		.flags          = IORESOURCE_IRQ,
+> + 	},
+> + 	/* CCDC Base address */
+> + 	{
+> + 		.flags          = IORESOURCE_MEM,
+> + 		.start          = 0x01c70600,
+> + 		.end            = 0x01c70600 + 0x1ff,
+> + 	},
+> + };
+> + 
+> + static u64 vpfe_capture_dma_mask = DMA_BIT_MASK(32);
+> + static struct platform_device vpfe_capture_dev = {
+> + 	.name		= CAPTURE_DRV_NAME,
+> + 	.id		= -1,
+> + 	.num_resources	= ARRAY_SIZE(vpfe_resources),
+> + 	.resource	= vpfe_resources,
+> + 	.dev = {
+> + 		.dma_mask		= &vpfe_capture_dma_mask,
+> + 		.coherent_dma_mask	= DMA_BIT_MASK(32),
+> + 	},
+> + };
+> + 
+> + void dm355_set_vpfe_config(struct vpfe_config *cfg)
 > + {
-> + 	i2c_add_driver(&cpld_video_driver);
+> + 	vpfe_capture_dev.dev.platform_data = cfg;
 > + }
 > + 
->   static struct i2c_board_info __initdata i2c_info[] =  {
->   	{
->   		I2C_BOARD_INFO("24c256", 0x50),
-> @@@ -298,8 -264,8 +345,11 @@@
->   		.platform_data	= &pcf_data,
->   	},
->   	{
->  +		I2C_BOARD_INFO("cpld_reg0", 0x3a),
->  +	},
-> ++	{
-> + 		I2C_BOARD_INFO("cpld_video", 0x3B),
-> + 	},
->   };
+>   /*----------------------------------------------------------------------*/
 >   
->   static struct davinci_i2c_platform_data i2c_pdata = {
-> @@@ -310,8 -346,8 +430,9 @@@ static struct vpif_config dm646x_vpif_c
->   static void __init evm_init_i2c(void)
->   {
->   	davinci_init_i2c(&i2c_pdata);
->  +	i2c_add_driver(&dm6467evm_cpld_driver);
->   	i2c_register_board_info(1, i2c_info, ARRAY_SIZE(i2c_info));
-> + 	evm_init_cpld();
->   }
->   
->   static void __init davinci_map_io(void)
+>   static struct map_desc dm355_io_desc[] = {
