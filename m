@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754509AbZGWQZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754522AbZGWQ3c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754509AbZGWQZZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 12:25:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbZGWQZY
+	id S1754522AbZGWQ3c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 12:29:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbZGWQ3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 12:25:24 -0400
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:52652 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754259AbZGWQZY (ORCPT
+	Thu, 23 Jul 2009 12:29:31 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:44634 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754020AbZGWQ3a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 12:25:24 -0400
-Date: Thu, 23 Jul 2009 21:55:01 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: gregkh@suse.de
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, devel@driverdev.osuosl.org,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for July 23
-Message-ID: <20090723162501.GA9203@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20090723163201.6951a44b.sfr@canb.auug.org.au>
+	Thu, 23 Jul 2009 12:29:30 -0400
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Matt Fleming <matt@console-pimps.org>, Ian Molton <ian@mnementh.co.uk>,
+       Pierre Ossman <pierre@ossman.eu>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org, nico@cam.org,
+       nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com, tony@atomide.com,
+       david-b@pacbell.net, manuel.lauss@gmail.com, mirq-linux@rere.qmqm.pl,
+       ppisa@pikron.com, jarkko.lavinen@nokia.com, ben@fluff.org,
+       saschasommer@freenet.de, avorontsov@ru.mvista.com, oakad@yahoo.com,
+       HaraldWelte@viatech.com, JosephChan@via.com.tw, adrian.hunter@nokia.com
+Subject: Re: New MMC maintainer needed
+From: Andi Kleen <andi@firstfloor.org>
+References: <20090714153601.6dfe70ff@mjolnir.ossman.eu>
+	<20090722151744.fffd7bf5.akpm@linux-foundation.org>
+	<4A67A9E8.5080002@mnementh.co.uk>
+	<20090723055447.GA12211@console-pimps.org>
+	<20090722232259.d0ff3495.akpm@linux-foundation.org>
+	<20090723172559.e7aebbb5.sfr@canb.auug.org.au>
+	<20090723003228.fc0ec34b.akpm@linux-foundation.org>
+	<20090723173852.119c04c2.sfr@canb.auug.org.au>
+Date: Thu, 23 Jul 2009 18:29:25 +0200
+In-Reply-To: <20090723173852.119c04c2.sfr@canb.auug.org.au> (Stephen Rothwell's message of "Thu, 23 Jul 2009 17:38:52 +1000")
+Message-ID: <87zlav1hy2.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090723163201.6951a44b.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+Stephen Rothwell <sfr@canb.auug.org.au> writes:
 
-	next-20090723 randconfig build breaks at
+> Hi Andrew,
+>
+> On Thu, 23 Jul 2009 00:32:28 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+>>
+>> It gets easy if I remove linux-next.patch from -mm.  Maybe I'll do that.
+>
+> At that point we could add the "stable" part of -mm to linux-next :-)
 
-drivers/staging/android/lowmemorykiller.c: In function '__check_cost':
-drivers/staging/android/lowmemorykiller.c:60: error: 'lowmem_shrinker' undeclared (first use in this function)
-drivers/staging/android/lowmemorykiller.c:60: error: (Each undeclared identifier is reported only once
-drivers/staging/android/lowmemorykiller.c:60: error: for each function it appears in.)
-drivers/staging/android/lowmemorykiller.c: At top level:
-drivers/staging/android/lowmemorykiller.c:60: error: 'lowmem_shrinker' undeclared here (not in a function)
-drivers/staging/android/lowmemorykiller.c:60: warning: type defaults to 'int' in declaration of 'type name'
-make[3]: *** [drivers/staging/android/lowmemorykiller.o] Error 1
-make[2]: *** [drivers/staging/android] Error 2
-make[1]: *** [drivers/staging] Error 2
+I think that would be a great idea. It always bugged me that
+if Andrew pulls something in it's not automatically tested in -next.
 
-I have tested the patch for the build failure only.
+-Andi
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
---- linux/drivers/staging/android/lowmemorykiller.c	2009-07-23 12:15:59.000000000 -0400
-+++ linux/drivers/staging/android/~lowmemorykiller.c	2009-07-23 12:17:46.000000000 -0400
-@@ -57,13 +57,6 @@ static int lowmem_minfree_size = 4;
- 			printk(x);			\
- 	} while (0)
- 
--module_param_named(cost, lowmem_shrinker.seeks, int, S_IRUGO | S_IWUSR);
--module_param_array_named(adj, lowmem_adj, int, &lowmem_adj_size,
--			 S_IRUGO | S_IWUSR);
--module_param_array_named(minfree, lowmem_minfree, uint, &lowmem_minfree_size,
--			 S_IRUGO | S_IWUSR);
--module_param_named(debug_level, lowmem_debug_level, uint, S_IRUGO | S_IWUSR);
--
- static int lowmem_shrink(int nr_to_scan, gfp_t gfp_mask)
- {
- 	struct task_struct *p;
-@@ -155,6 +148,13 @@ static struct shrinker lowmem_shrinker =
- 	.seeks = DEFAULT_SEEKS * 16
- };
- 
-+module_param_named(cost, lowmem_shrinker.seeks, int, S_IRUGO | S_IWUSR);
-+module_param_array_named(adj, lowmem_adj, int, &lowmem_adj_size,
-+			 S_IRUGO | S_IWUSR);
-+module_param_array_named(minfree, lowmem_minfree, uint, &lowmem_minfree_size,
-+			 S_IRUGO | S_IWUSR);
-+module_param_named(debug_level, lowmem_debug_level, uint, S_IRUGO | S_IWUSR);
-+
- static int __init lowmem_init(void)
- {
- 	register_shrinker(&lowmem_shrinker);
-
-			
-					Kamalesh
+-- 
+ak@linux.intel.com -- Speaking for myself only.
