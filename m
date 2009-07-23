@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753634AbZGWGu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753681AbZGWGvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753634AbZGWGu0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 02:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbZGWGu0
+	id S1753681AbZGWGvv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 02:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753494AbZGWGvu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 02:50:26 -0400
-Received: from mail-bw0-f228.google.com ([209.85.218.228]:48607 "EHLO
-	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753484AbZGWGuZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 02:50:25 -0400
+	Thu, 23 Jul 2009 02:51:50 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62254 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752919AbZGWGvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 02:51:50 -0400
+Message-ID: <4A68082C.8010604@cn.fujitsu.com>
+Date: Thu, 23 Jul 2009 14:50:20 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <20090722232259.d0ff3495.akpm@linux-foundation.org>
-References: <20090714153601.6dfe70ff@mjolnir.ossman.eu> <20090722151744.fffd7bf5.akpm@linux-foundation.org> 
-	<4A67A9E8.5080002@mnementh.co.uk> <20090723055447.GA12211@console-pimps.org> 
-	<20090722232259.d0ff3495.akpm@linux-foundation.org>
-From: Ohad Ben-Cohen <ohad@bencohen.org>
-Date: Thu, 23 Jul 2009 09:50:03 +0300
-Message-ID: <bd5b16740907222350w54ca7b21w6b47ed94c1d7d16e@mail.gmail.com>
-Subject: Re: New MMC maintainer needed
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Matt Fleming <matt@console-pimps.org>, Ian Molton <ian@mnementh.co.uk>,
-       Pierre Ossman <pierre@ossman.eu>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, nico@cam.org,
-       nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com, tony@atomide.com,
-       david-b@pacbell.net, manuel.lauss@gmail.com, mirq-linux@rere.qmqm.pl,
-       ppisa@pikron.com, jarkko.lavinen@nokia.com, ben@fluff.org,
-       saschasommer@freenet.de, avorontsov@ru.mvista.com, oakad@yahoo.com,
-       HaraldWelte@viatech.com, JosephChan@via.com.tw, adrian.hunter@nokia.com
-Content-Type: multipart/mixed; boundary=001636c5b3ffe0d7e6046f59e643
+To: Paul Menage <menage@google.com>
+CC: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/4] Support named cgroups hierarchies
+References: <20090722194644.7481.47805.stgit@menage.mtv.corp.google.com>	 <20090722195029.7481.94700.stgit@menage.mtv.corp.google.com>	 <4A68013A.2020302@cn.fujitsu.com> <6599ad830907222327s31340956y9783db39d076520f@mail.gmail.com>
+In-Reply-To: <6599ad830907222327s31340956y9783db39d076520f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---001636c5b3ffe0d7e6046f59e643
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+>>>  static int cgroup_set_super(struct super_block *sb, void *data)
+>>>  {
+>>>       int ret;
+>>> -     struct cgroupfs_root *root = data;
+>>> +     struct cgroup_sb_opts *opts = data;
+>>> +
+>>> +     /* If we don't have a new root, we can't set up a new sb */
+>>> +     if (!opts->new_root)
+>>> +             return -EINVAL;
+>>> +
+>> I think this should be BUG_ON(). If set_super() is called,
+>> we are allocating a new root, so opts->new_root won't be NULL.
+> 
+> Not true - if you try to mount a hierarchy by name, but with no
+> subsystem options, then we don't construct a new root, but we still
+> call sget(). If we find a superblock with the right name then we use
+> it, else sget() will allocate a new superblock and call
+> cgroup_set_super(), at which point we need to fail.
+> 
 
-Hi Andrew,
+Ah, I see.
 
-On Thu, Jul 23, 2009 at 9:22 AM, Andrew Morton<akpm@linux-foundation.org> wrote:
-> I actually already have a little pile of MMC things queued:
+>>> +             struct cgroupfs_root *new_root = cgroup_root_from_opts(&opts);
+>> Why not just declare new_root in the beginning of cgroup_get_sb()?
+> 
+> Because it's not needed for the entire scope of the function. Keeping
+> its scope as small as possible makes it clearer what it's being used
+> for.
+> 
 
-Please also consider queuing up the attached patch as well.
+If we had been doing this, we'll see many:
 
-The patch is removing the current SDIO cards 1.8V limit, which is
-needed for embedded
-SDIO devices like TI 127x WLAN devices (with 1.8V MMC controllers like we
-have on the ZOOM2 boards for example).
+	(no if, while, for)
+	{
+		...
+	}
 
-Thank you,
-Ohad.
+in kernel code, but I don't remember I ever saw this style.
 
---001636c5b3ffe0d7e6046f59e643
-Content-Type: text/x-diff; charset=US-ASCII; 
-	name="0001-sdio-do-not-ignore-MMC_VDD_165_195.patch"
-Content-Disposition: attachment; 
-	filename="0001-sdio-do-not-ignore-MMC_VDD_165_195.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fxh4mr990
-
-RnJvbSBmOWJhNDViNTM3ZGQxMmZjMDk0NDNlZTI5YzQ4ODYwNjY1ZjhhYzgyIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBPaGFkIEJlbi1Db2hlbiA8b2hhZEBiZW5jb2hlbi5vcmc+CkRh
-dGU6IFdlZCwgMTUgSnVsIDIwMDkgMDk6MjE6NDEgKzAzMDAKU3ViamVjdDogW1BBVENIXSBzZGlv
-OiBkbyBub3QgaWdub3JlIE1NQ19WRERfMTY1XzE5NQoKVGhpcyBpcyBuZWVkZWQgZm9yIDEuOFYg
-ZW1iZWRkZWQgU0RJTyBkZXZpY2VzIGFuZCBzdXBwb3J0aW5nIGhvc3QgY29udHJvbGxlcnMKKGUu
-Zy4gVEkgMTI3eCBhbmQgWk9PTTIgYm9hcmRzKQoKU2lnbmVkLW9mZi1ieTogT2hhZCBCZW4tQ29o
-ZW4gPG9oYWRAYmVuY29oZW4ub3JnPgotLS0KIGRyaXZlcnMvbW1jL2NvcmUvc2Rpby5jIHwgICAg
-NyAtLS0tLS0tCiAxIGZpbGVzIGNoYW5nZWQsIDAgaW5zZXJ0aW9ucygrKSwgNyBkZWxldGlvbnMo
-LSkKCmRpZmYgLS1naXQgYS9kcml2ZXJzL21tYy9jb3JlL3NkaW8uYyBiL2RyaXZlcnMvbW1jL2Nv
-cmUvc2Rpby5jCmluZGV4IGZiOTljY2YuLjZmMjIxZGMgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvbW1j
-L2NvcmUvc2Rpby5jCisrKyBiL2RyaXZlcnMvbW1jL2NvcmUvc2Rpby5jCkBAIC0yNzUsMTMgKzI3
-NSw2IEBAIGludCBtbWNfYXR0YWNoX3NkaW8oc3RydWN0IG1tY19ob3N0ICpob3N0LCB1MzIgb2Ny
-KQogCQlvY3IgJj0gfjB4N0Y7CiAJfQogCi0JaWYgKG9jciAmIE1NQ19WRERfMTY1XzE5NSkgewot
-CQlwcmludGsoS0VSTl9XQVJOSU5HICIlczogU0RJTyBjYXJkIGNsYWltcyB0byBzdXBwb3J0IHRo
-ZSAiCi0JCSAgICAgICAiaW5jb21wbGV0ZWx5IGRlZmluZWQgJ2xvdyB2b2x0YWdlIHJhbmdlJy4g
-VGhpcyAiCi0JCSAgICAgICAid2lsbCBiZSBpZ25vcmVkLlxuIiwgbW1jX2hvc3RuYW1lKGhvc3Qp
-KTsKLQkJb2NyICY9IH5NTUNfVkREXzE2NV8xOTU7Ci0JfQotCiAJaG9zdC0+b2NyID0gbW1jX3Nl
-bGVjdF92b2x0YWdlKGhvc3QsIG9jcik7CiAKIAkvKgotLSAKMS41LjQuMwoK
---001636c5b3ffe0d7e6046f59e643--
