@@ -1,173 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835AbZGWPYt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbZGWPbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753835AbZGWPYt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 11:24:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753103AbZGWPYt
+	id S1753208AbZGWPbs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 11:31:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbZGWPbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 11:24:49 -0400
-Received: from smtp171.dfw.emailsrvr.com ([67.192.241.171]:46031 "EHLO
-	smtp171.dfw.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752987AbZGWPYs (ORCPT
+	Thu, 23 Jul 2009 11:31:47 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:54938 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752792AbZGWPbq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 11:24:48 -0400
-Message-ID: <4A6880B4.6090702@librato.com>
-Date: Thu, 23 Jul 2009 11:24:36 -0400
-From: Oren Laadan <orenl@librato.com>
-Organization: Librato
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Thu, 23 Jul 2009 11:31:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=KZozkXiwyCctHBrHVnuSC4PQIrXJ9MpwvyWKvSYMRmINDzxtjcDGJfoVvXhI3MKSLt
+         JL/WuhSSWpaFug8gSmieUL8+jr6ciMv1Phy+4sgdO+grZwx2DIdvxEeR3kI2rtFGYK6E
+         dNtj3zv4S1SAIeq/W6dkptbZgYMe0uetGyc58=
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-api@vger.kernel.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Oren Laadan <orenl@cs.columbia.edu>
-Subject: Re: [RFC v17][PATCH 19/60] c/r: documentation
-References: <1248256822-23416-1-git-send-email-orenl@librato.com> <1248256822-23416-20-git-send-email-orenl@librato.com> <20090723142454.GA10769@us.ibm.com>
-In-Reply-To: <20090723142454.GA10769@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4A65A2F9.1060509@tuffmail.co.uk>
+References: <4A65A2F9.1060509@tuffmail.co.uk>
+Date: Thu, 23 Jul 2009 17:31:45 +0200
+Message-ID: <8db1092f0907230831w1255d0bey951342fb61b67c1e@mail.gmail.com>
+Subject: Re: [PATCH] hp-wmi: improve rfkill support
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: Matthew Garrett <mjg@redhat.com>, linux acpi <linux-acpi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/7/21 Alan Jenkins <alan-jenkins@tuffmail.co.uk>:
+> 1) Add support for reading the hardware blocked state.  Previously
+>   we read a combination of the hardware and software blocked states,
+>   reporting it as the software blocked state.  This caused some
+>   confusing behaviour.
+>
+> 2) The software state is persistent, mark it as such.
+>
+> 3) Check rfkill in the resume handler.  Both the hard and soft
+>   blocked states may change over hibernation.
+>
+> Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+> Tested-by: Maciej Rutecki <maciej.rutecki@gmail.com>
 
+It's this patch is added to -rc4? I one case I have strange behaviour.
 
-Serge E. Hallyn wrote:
-> Quoting Oren Laadan (orenl@librato.com):
->> +Security
->> +========
->> +
->> +The main question is whether sys_checkpoint() and sys_restart()
->> +require privileged or unprivileged operation.
->> +
->> +Early versions checked capable(CAP_SYS_ADMIN) assuming that we would
->> +attempt to remove the need for privilege, so that all users could
->> +safely use it. Arnd Bergmann pointed out that it'd make more sense to
->> +let unprivileged users use them now, so that we'll be more careful
->> +about the security as patches roll in.
->> +
->> +Checkpoint: the main concern is whether a task that performs the
->> +checkpoint of another task has sufficient privileges to access its
->> +state. We address this by requiring that the checkpointer task will be
->> +able to ptrace the target task, by means of ptrace_may_access() with
->> +read mode.
-> 
-> with access mode now, actually.
+Before disable by button:
+root@gumis:/home/maciek/Desktop# rfkill list
+2: hp-wifi: Wireless LAN
+        Soft blocked: no
+        Hard blocked: no
+3: hp-bluetooth: Bluetooth
+        Soft blocked: no
+        Hard blocked: no
+16: hci0: Bluetooth
+        Soft blocked: no
+        Hard blocked: no
+17: phy7: Wireless LAN
+        Soft blocked: no
+        Hard blocked: no
+	
+Disable by button:
+root@gumis:/home/maciek/Desktop# rfkill list
+2: hp-wifi: Wireless LAN
+        Soft blocked: yes
+        Hard blocked: no
+3: hp-bluetooth: Bluetooth
+        Soft blocked: yes
+        Hard blocked: no
+17: phy7: Wireless LAN
+        Soft blocked: no
+        Hard blocked: yes
+	
+I do s2disk. After resume from suspend to disk (still disabled by button):
+root@gumis:/home/maciek/Desktop# rfkill list
+2: hp-wifi: Wireless LAN
+        Soft blocked: yes
+        Hard blocked: no
+3: hp-bluetooth: Bluetooth
+        Soft blocked: yes
+        Hard blocked: no
+18: phy8: Wireless LAN
+        Soft blocked: no
+        Hard blocked: yes
+	
+Try enable by button:
+root@gumis:/home/maciek/Desktop# rfkill list
+2: hp-wifi: Wireless LAN
+        Soft blocked: yes
+        Hard blocked: no
+3: hp-bluetooth: Bluetooth
+        Soft blocked: yes
+        Hard blocked: no
+18: phy8: Wireless LAN
+        Soft blocked: no
+        Hard blocked: yes
+	
+Nothing change (LED, wireless and bluetooth don't work). To enable it
+I use this script rfkill.sh (I must use rfkill program):
 
-Yes...
+#!/bin/sh
+PROGRAM=/usr/local/sbin/rfkill
+WIFI=`$PROGRAM list | grep -E 'Wireless|Bluetooth' | cut -d  ':' -f 1`
 
-> 
->> +Restart: the main concern is that we may allow an unprivileged user to
->> +feed the kernel with random data. To this end, the restart works in a
->> +way that does not skip the usual security checks. Task credentials,
->> +i.e. euid, reuid, and LSM security contexts currently come from the
->> +caller, not the checkpoint image.  When restoration of credentials
->> +becomes supported, then definitely the ability of the task that calls
->> +sys_restore() to setresuid/setresgid to those values must be checked.
-> 
-> That is now possible, and this is done.
+for DEVICE in $WIFI; do
+  echo $DEVICE
+  $PROGRAM unblock $DEVICE
+done
 
-Yes again.
+Then works OK:
+root@gumis:/home/maciek/Desktop# ./rfkill.sh
+2
+3
+18
+root@gumis:/home/maciek/Desktop# rfkill list
+2: hp-wifi: Wireless LAN
+        Soft blocked: no
+        Hard blocked: no
+3: hp-bluetooth: Bluetooth
+        Soft blocked: no
+        Hard blocked: no
+18: phy8: Wireless LAN
+        Soft blocked: no
+        Hard blocked: no
+19: hci0: Bluetooth
+        Soft blocked: no
+        Hard blocked: no
+	
+It's normal behaviour?
 
-> 
->> +Keeping the restart procedure to operate within the limits of the
->> +caller's credentials means that there various scenarios that cannot
->> +be supported. For instance, a setuid program that opened a protected
->> +log file and then dropped privileges will fail the restart, because
->> +the user won't have enough credentials to reopen the file. In these
->> +cases, we should probably treat restarting like inserting a kernel
->> +module: surely the user can cause havoc by providing incorrect data,
->> +but then again we must trust the root account.
->> +
->> +So that's why we don't want CAP_SYS_ADMIN required up-front. That way
->> +we will be forced to more carefully review each of those features.
->> +However, this can be controlled with a sysctl-variable.
->> +
->> +
->> diff --git a/Documentation/checkpoint/usage.txt b/Documentation/checkpoint/usage.txt
->> new file mode 100644
->> index 0000000..ed34765
->> --- /dev/null
->> +++ b/Documentation/checkpoint/usage.txt
->> @@ -0,0 +1,193 @@
->> +
->> +	      How to use Checkpoint-Restart
->> +	=========================================
->> +
->> +
->> +API
->> +===
->> +
->> +The API consists of two new system calls:
->> +
->> +* int checkpoint(pid_t pid, int fd, unsigned long flag);
->> +
->> + Checkpoint a (sub-)container whose root task is identified by @pid,
->> + to the open file indicated by @fd. @flags may be on or more of:
->> +   - CHECKPOINT_SUBTREE : allow checkpoint of sub-container
->> + (other value are not allowed).
->> +
->> + Returns: a positive checkpoint identifier (ckptid) upon success, 0 if
->> + it returns from a restart, and -1 if an error occurs. The ckptid will
->> + uniquely identify a checkpoint image, for as long as the checkpoint
->> + is kept in the kernel (e.g. if one wishes to keep a checkpoint, or a
->> + partial checkpoint, residing in kernel memory).
->> +
->> +* int sys_restart(pid_t pid, int fd, unsigned long flags);
->> +
->> + Restart a process hierarchy from a checkpoint image that is read from
->> + the blob stored in the file indicated by @fd. The @flags' will have
->> + future meaning (must be 0 for now). @pid indicates the root of the
->> + hierarchy as seen in the coordinator's pid-namespace, and is expected
->> + to be a child of the coordinator. (Note that this argument may mean
->> + 'ckptid' to identify an in-kernel checkpoint image, with some @flags
->> + in the future).
->> +
->> + Returns: -1 if an error occurs, 0 on success when restarting from a
->> + "self" checkpoint, and return value of system call at the time of the
->> + checkpoint when restarting from an "external" checkpoint.
-> 
-> Return value of the checkpointed (init) task's syscall at the time of
-> external checkpoint?  If so, what's the use for this, as opposed to
-> returning 0 as in the case of self-checkpoint?
-
-When you restart from a regular ("external") syscall, the checkpointed
-process was doing _something_:
-
-If it was frozen for checkpoint while running in userspace, then it will
-resume running in userspace exactly where it was interrupted.
-
-If it was frozen while in kernel doing a syscall, it will return what
-that syscall returned when it was interrupted - or completed - for the
-freeze. It will proceed from there as if it had only been frozen and
-then thawed.
-
-In the special case that the process original self-checkpointed, then
-once restart completes successfully, it will resume execution at the
-first instruction after the original call to checkpoint(2), and the
-return value from that syscall will be set to 0. (The caller uses
-this retval to learn that it was restarted, and not just completed
-a checkpoint).
-
-> 
->> + TODO: upon successful "external" restart, the container will end up
->> + in a frozen state.
-
-Heh .. this is also done :)
-
-> 
-> Should clone_with_pids() be mentioned here?
-
-It's not a c/r interface per-se, but you're probably right that a few
-words there won't hurt.
-
-Thanks.
-
-Oren.
-
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
