@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751662AbZGWKGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751433AbZGWKIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751662AbZGWKGi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 06:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbZGWKGh
+	id S1751433AbZGWKIt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 06:08:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbZGWKIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 06:06:37 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37406 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751094AbZGWKGh (ORCPT
+	Thu, 23 Jul 2009 06:08:48 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:41286 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750923AbZGWKIs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 06:06:37 -0400
-Subject: Re: [PATCH v3 3/4] ftrace: add tracepoint for hrtimer
-From: Peter Zijlstra <peterz@infradead.org>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Anton Blanchard <anton@samba.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A6834EA.3070303@cn.fujitsu.com>
-References: <4A604E46.5050903@cn.fujitsu.com>
-	 <4A605009.8060806@cn.fujitsu.com> <1247827801.15751.4.camel@twins>
-	 <4A641BFC.2050508@cn.fujitsu.com> <1248091771.15751.8578.camel@twins>
-	 <4A66DDB6.4000700@cn.fujitsu.com> <1248257598.27058.1227.camel@twins>
-	 <4A6834EA.3070303@cn.fujitsu.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 23 Jul 2009 12:07:41 +0200
-Message-Id: <1248343661.27058.1722.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 23 Jul 2009 06:08:48 -0400
+Date: Thu, 23 Jul 2009 06:06:18 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: annoying drivers/char/vr41xx_giu.c file still there
+Message-ID: <alpine.LFD.2.00.0907230604180.3789@localhost>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-23 at 18:01 +0800, Xiao Guangrong wrote:
-> 
-> Peter Zijlstra wrote:
-> 
-> > OK, so what you want to measure is the time of the actual callback
-> > happening (hrtimer_entry) vs that where you would have expected it to
-> > happen (hrtimer_start + delay), right?
-> > 
-> 
-> Yes
-> 
-> > So what's wrong with printing the expected expiration time in the
-> > hrtimer_start tracepoint in the cheap clock units?
-> > 
-> 
-> Is "cheap clock units" means jiffies time?
 
-Nah, something like cpu_clock() which is monotonic per-cpu and should
-have high resolution where available.
+  i thought someone was going to clean up this occasional git glitch:
+
+$ git diff
+diff --git a/drivers/char/vr41xx_giu.c b/drivers/char/vr41xx_giu.c
+deleted file mode 100644
+index e69de29..0000000
+$
+
+  that same diff output still pops up on occasion.  if you do a hard
+reset back to origin, it goes away but it will eventually reappear.
+
+rday
+--
+
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
+
+        Linux Consulting, Training and Annoying Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Twitter:                                       http://twitter.com/rpjday
+"Kernel Newbie Corner" column @ linux.com:          http://cli.gs/WG6WYX
+========================================================================
