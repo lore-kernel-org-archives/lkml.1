@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbZGWQQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754449AbZGWQUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754475AbZGWQQn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 12:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754444AbZGWQQm
+	id S1754449AbZGWQUT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 12:20:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754361AbZGWQUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 12:16:42 -0400
-Received: from cs20.apochromatic.org ([204.152.189.161]:54180 "EHLO
-	cs20.apochromatic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754362AbZGWQQk (ORCPT
+	Thu, 23 Jul 2009 12:20:19 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:52668 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754340AbZGWQUR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 12:16:40 -0400
-From: Matt Fleming <matt@console-pimps.org>
-To: Steven Rostedt <rostedt@goodmis.org>
+	Thu, 23 Jul 2009 12:20:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=FHNSDtMuN1qGypE9TAah3j/gaDCYmcLi8zQ05mufzebq+byR0ibLrblemew9bcTJV0
+         ugRE0oh0Xxj441092H7wI/+93fZafqlo35vwN3WVx5i/6yLW4dKLbFX+SLDLYbdvUzHh
+         n+qgUPRbtmuYA4Lfh327xCQBJLuxzHeFBAEgs=
+Subject: [PATCH] USB: option.c to support Alcatel X060S/X200 broadband
+ modems
+From: Javier Martin <jmartinj@iname.com>
+To: linux-usb@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] ftrace: Fix the conditional that updates $ref_func
-Date: Thu, 23 Jul 2009 17:16:14 +0100
-Message-Id: <1248365775-25196-1-git-send-email-matt@console-pimps.org>
-X-Mailer: git-send-email 1.6.4.rc0
-In-Reply-To: <alpine.DEB.2.00.0907231043330.20997@gandalf.stny.rr.com>
-References: <alpine.DEB.2.00.0907231043330.20997@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Thu, 23 Jul 2009 18:20:09 +0200
+Message-Id: <1248366009.24563.0.camel@eee>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix the conditional that checks if we already have a $ref_func and that
-the new function is weak. The code as previously checking whether either
-condition was false, and we really need to only update $ref_func is both
-cconditions are false.
+Added support for the Alcatel X060S/X200 broadband modems to the option driver. The device starts in cd-rom emulation mode (1bbb:f000) and requires the use of the usb_modeswitch tool to switch it to modem mode (1bbb:0000).
 
-Signed-off-by: Matt Fleming <matt@console-pimps.org>
+Signed-off-by: Javier Martin <jmartinj@iname.com>
 ---
- scripts/recordmcount.pl |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
+index 98262dd..8946115 100644
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -322,6 +322,11 @@ static int  option_resume(struct usb_serial *serial);
+ #define ALINK_VENDOR_ID				0x1e0e
+ #define ALINK_PRODUCT_3GU			0x9200
+ 
++/* ALCATEL PRODUCTS */
++#define ALCATEL_VENDOR_ID			0x1bbb
++#define ALCATEL_PRODUCT_X060S			0x0000
++
++
+ static struct usb_device_id option_ids[] = {
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_COLT) },
+ 	{ USB_DEVICE(OPTION_VENDOR_ID, OPTION_PRODUCT_RICOLA) },
+@@ -547,6 +552,7 @@ static struct usb_device_id option_ids[] = {
+ 	{ USB_DEVICE(TOSHIBA_VENDOR_ID, TOSHIBA_PRODUCT_HSDPA_MINICARD ) }, /* Toshiba 3G HSDPA == Novatel Expedite EU870D MiniCard */
+ 	{ USB_DEVICE(ALINK_VENDOR_ID, 0x9000) },
+ 	{ USB_DEVICE_AND_INTERFACE_INFO(ALINK_VENDOR_ID, ALINK_PRODUCT_3GU, 0xff, 0xff, 0xff) },
++	{ USB_DEVICE(ALCATEL_VENDOR_ID, ALCATEL_PRODUCT_X060S) },
+ 	{ } /* Terminating entry */
+ };
+ MODULE_DEVICE_TABLE(usb, option_ids);
 
-diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-index 7109e2b..16c5563 100755
---- a/scripts/recordmcount.pl
-+++ b/scripts/recordmcount.pl
-@@ -414,7 +414,7 @@ while (<IN>) {
- 	    $read_function = 0;
- 	} else {
- 	    # if we already have a function, and this is weak, skip it
--	    if (!defined($ref_func) || !defined($weak{$text})) {
-+	    if (!defined($ref_func) && !defined($weak{$text})) {
- 		$ref_func = $text;
- 	    }
- 	}
--- 
-1.6.4.rc0
+
+
 
