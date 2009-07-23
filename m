@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753713AbZGWRdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753557AbZGWReu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753713AbZGWRdd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 13:33:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbZGWRdc
+	id S1753557AbZGWReu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 13:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbZGWRet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 13:33:32 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:45576 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752029AbZGWRdc (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 13:33:32 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: mmotm-0716 - selinux_bprm_commited_creds patch missing..
-In-Reply-To: Your message of "Thu, 23 Jul 2009 17:56:26 +0200."
-             <20090723155626.GA5466@redhat.com>
-From: Valdis.Kletnieks@vt.edu
-References: <13397.1248357159@turing-police.cc.vt.edu>
-            <20090723155626.GA5466@redhat.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1248370381_2728P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 23 Jul 2009 13:33:01 -0400
-Message-ID: <8548.1248370381@turing-police.cc.vt.edu>
+	Thu, 23 Jul 2009 13:34:49 -0400
+Received: from bizon.gios.gov.pl ([195.187.34.71]:48511 "EHLO
+	bizon.gios.gov.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752868AbZGWRet (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 13:34:49 -0400
+Message-ID: <4A689EE3.3070405@ans.pl>
+Date: Thu, 23 Jul 2009 19:33:23 +0200
+From: =?ISO-8859-2?Q?Krzysztof_Ol=EAdzki?= <ole@ans.pl>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, stable@kernel.org, lwn@lwn.net
+Subject: Re: Linux 2.6.27.27
+References: <20090720040655.GA11940@kroah.com> <4A645A45.9060509@ans.pl> <20090720151008.GC10015@suse.de>
+In-Reply-To: <20090720151008.GC10015@suse.de>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1248370381_2728P
-Content-Type: text/plain; charset=us-ascii
+On 2009-07-20 17:10, Greg KH wrote:
+> On Mon, Jul 20, 2009 at 01:51:33PM +0200, Krzysztof Oledzki wrote:
+>> On 2009-07-20 06:06, Greg KH wrote:
+>>> I'm announcing the release of the 2.6.27.26 kernel.  All users of the
+>>> 2.6.27 kernel series are very strongly encouraged to upgrade.
+>>>
+>>> I'll also be replying to this message with a copy of the patch between
+>>> 2.6.27.26 and 2.6.27.27
+>>>
+>>> The updated 2.6.27.y git tree can be found at:
+>>>        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.27.y.git
+>>> and can be browsed at the normal kernel.org git web browser:
+>>>        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=summary
+>>>
+>>> thanks,
+>> <CUT>
+>>> Linus Torvalds (1):
+>>>      Don't use '-fwrapv' compiler option: it's buggy in gcc-4.1.x
+>> I'm very sorry to say that but 2.6.27.27 compiled with gcc-4.2.4
+>> hangs during boot and it is caused by this fix.
+>>
+>> I extended http://bugzilla.kernel.org/show_bug.cgi?id=13012 with
+>> additional info & .config.
+> 
+> Wierd.  Linus, any thoughts?  Do we need to check the version of the
+> compiler that we are using before turning that option off?
 
-On Thu, 23 Jul 2009 17:56:26 +0200, Oleg Nesterov said:
->
-> Thanks Valdis! but it is already (since Jul 18) in -mm,
-> do_wait-wakeup-optimization-change-__wake_up_parent-to-use-filtered-wakeup-selinux_bprm_committed_creds-use-__wake_up_parent.patch
+This bug is now fixed by 
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=3730793d457fed79a6d49bae72996d458c8e4f2d
 
-"Nevermind.." -- Emily Litella
+Could you please include this patch in the next -stable releases?
 
-:)
+BTW: the problem exists in gcc-4.2.4 not gcc-2.4.2 so I think it is 
+worth to change the subject when adding the patch. ;)
 
---==_Exmh_1248370381_2728P
-Content-Type: application/pgp-signature
+Best regards,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFKaJ7NcC3lWbTT17ARAkvJAJ9xE8CY4C8gulUCehPk4JgHeQv1ZwCgn5+X
-QxSeakiPa9GvSNl0fjrqdVI=
-=LJu4
------END PGP SIGNATURE-----
-
---==_Exmh_1248370381_2728P--
+			Krzysztof Olêdzki
