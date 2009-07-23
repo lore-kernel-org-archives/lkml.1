@@ -1,24 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752030AbZGWAjD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751854AbZGWAs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752030AbZGWAjD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 22 Jul 2009 20:39:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZGWAjC
+	id S1751854AbZGWAs2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 22 Jul 2009 20:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbZGWAs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 22 Jul 2009 20:39:02 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48001 "EHLO
+	Wed, 22 Jul 2009 20:48:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43050 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751815AbZGWAjB (ORCPT
+	by vger.kernel.org with ESMTP id S1750796AbZGWAs1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 22 Jul 2009 20:39:01 -0400
-Date: Wed, 22 Jul 2009 17:38:54 -0700
+	Wed, 22 Jul 2009 20:48:27 -0400
+Date: Wed, 22 Jul 2009 17:47:41 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: hpa@zytor.com, linux-kernel@vger.kernel.org, denis@compulab.co.il,
-       mike@compulab.co.il
-Subject: Re: [PATCH] Add reboot fixup for SBC-fitPC2
-Message-Id: <20090722173854.fdbcee7f.akpm@linux-foundation.org>
-In-Reply-To: <4A6491C1.5060909@compulab.co.il>
-References: <4A6491C1.5060909@compulab.co.il>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, npiggin@suse.de,
+       hugh.dickins@tiscali.co.uk, avi@redhat.com,
+       torvalds@linux-foundation.org, aarcange@redhat.com
+Subject: Re: [PATCH 0/2] ZERO PAGE again v4.
+Message-Id: <20090722174741.79743e3a.akpm@linux-foundation.org>
+In-Reply-To: <20090723093334.3166e9d2.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090709122428.8c2d4232.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090716180134.3393acde.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090723085137.b14fe267.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090722171245.d5b3a108.akpm@linux-foundation.org>
+	<20090723093334.3166e9d2.kamezawa.hiroyu@jp.fujitsu.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,50 +32,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 20 Jul 2009 18:48:17 +0300
-Mike Rapoport <mike@compulab.co.il> wrote:
+On Thu, 23 Jul 2009 09:33:34 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-> > From: Denis Turischev <denis@compulab.co.il>
+> BTW, when I post new version, should I send a reply to old version to say
+> "this version is obsolete" ? Can it make your work easier ? like following.
 > 
-> This patch adds reboot fixup for CompuLab SBC-fitPC2 board.
+> Re:[PATCH][Obsolete] new version weill come (Was.....)
 > 
-> Singned-off-by: Denis Turischev <denis@compulab.co.il>
-> Signedd-off-by: Mike Rapoport <mike@compulab.co.il
-> 
-> diff -Nru linux-2.6.31-rc3.orig/arch/x86/kernel/reboot.c
-> linux-2.6.31-rc3/arch/x86/kernel/reboot.c
-> --- linux-2.6.31-rc3.orig/arch/x86/kernel/reboot.c	2009-07-14 04:18:52.000000000
-> +0300
-> +++ linux-2.6.31-rc3/arch/x86/kernel/reboot.c	2009-07-16 14:39:48.000000000 +0300
-> @@ -249,6 +249,15 @@
->  			DMI_MATCH(DMI_PRODUCT_NAME, "VGN-Z540N"),
->  		},
->  	},
-> +	{	/* Handle problems with rebooting on
-> +				CompuLab SBC-FITPC2 board */
-> +		.callback = set_bios_reboot,
-> +		.ident = "CompuLab SBC-FITPC2",
-> +		.matches = {
-> +			DMI_MATCH(DMI_SYS_VENDOR, "CompuLab"),
-> +			DMI_MATCH(DMI_PRODUCT_NAME, "SBC-FITPC2"),
-> +		},
-> +	},
->  	{ }
->  };
-> 
+> I tend to update patches until v5 or more until merged.
 
-Neither this patch nor Denis's earlier version contained an adequate
-decription.  We aren't told what these "problems" are, so we're unable
-to judge the appropriateness of patch.
+Usually it's pretty clear when a new patch or patch series is going to
+be sent.  I think that simply resending it all is OK.
 
-Both patches were wordwrapped.
+I don't pay much attention to the "version N" info either - it can be
+unreliable and not everyone does it and chronological ordering works OK
+for this.
 
-Both patches use an atypical layout style for the comments.
+Very occasionally I'll merge a patch and then discover a later version
+further down through the backlog.  But that's OK - I'll just update the
+patch.  Plus I'm not usually stuck this far in the past.
 
-I fixed up some of these things and merged the patch into my tree, for
-sending to Ingo for 2.6.32.
+(I'm still trying to find half a day to read "Per-bdi writeback flusher
+threads v12")
 
-Please send a description of the problem which the patch fixes and I
-shall add that to my copy of the changelog.
-
-Thanks.
