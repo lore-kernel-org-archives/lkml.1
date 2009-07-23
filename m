@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZGWWHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbZGWWKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754689AbZGWWHV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 18:07:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbZGWWHU
+	id S1754693AbZGWWKW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 18:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754487AbZGWWKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 18:07:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60314 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753823AbZGWWHT (ORCPT
+	Thu, 23 Jul 2009 18:10:21 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:43010 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754303AbZGWWKV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 18:07:19 -0400
-Date: Thu, 23 Jul 2009 15:06:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Lamarque Vieira Souza <lamarque@gmail.com>
-Cc: linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org,
-       marcel@holtmann.org, awaters1@gmail.com
-Subject: Re: [PATCH] Fix for Acer  Bluetooth Optical Rechargeable Mouse
-Message-Id: <20090723150643.0a099d4f.akpm@linux-foundation.org>
-In-Reply-To: <200907231900.59820.lamarque@gmail.com>
-References: <200907170301.43807.lamarque@gmail.com>
-	<200907231830.57719.lamarque@gmail.com>
-	<20090723144336.3ab01751.akpm@linux-foundation.org>
-	<200907231900.59820.lamarque@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 23 Jul 2009 18:10:21 -0400
+Message-ID: <4A68DFC4.5070809@zytor.com>
+Date: Thu, 23 Jul 2009 15:10:12 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Subodh Nijsure <nijsure.subodh@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Way to combine kernel and initrd on x86 platform?
+References: <110c8b2e0907221415q77f7416ehcff4ad26d834bce2@mail.gmail.com>	 <4A67CD97.8000609@zytor.com> <110c8b2e0907231350v122543a0n9a3aabc3aee59623@mail.gmail.com>
+In-Reply-To: <110c8b2e0907231350v122543a0n9a3aabc3aee59623@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Jul 2009 19:00:58 -0300
-Lamarque Vieira Souza <lamarque@gmail.com> wrote:
-
-> Em Quinta-feira 23 Julho 2009, Andrew Morton escreveu:
-> > On Thu, 23 Jul 2009 18:30:57 -0300
-> >
-> > Lamarque Vieira Souza <lamarque@gmail.com> wrote:
-> > > Em Quinta-feira 23 Julho 2009, Andrew Morton escreveu:
-> > > > On Fri, 17 Jul 2009 03:01:43 -0300
-> > > >
-> > > > Lamarque Vieira Souza <lamarque@gmail.com> wrote:
-> > > > > 	This patch works around one problem with my Acer Bluetooth Optical
-> > > > > Rechargeable Mouse where the cursor gets stuck at screen's upper-left
-> > > > > corner. Even my notebook's touchpad is not able to move cursor when
-> > > > > the bluetooth mouse is connected to my Acer Ferrari 4005 notebook.
-> > > > > Using input session instead of hid session solves this problem
-> > > > > although the cursor still moves a little sluggishly with the
-> > > > > bluetooth mouse, cursor moves correctly using the touchpad. My
-> > > > > bluetooth mouse used to work well (no sluggish) until kernel 2.6.21,
-> > > > > since then the problems are getting worse with each kernel release
-> > > > > (it got sluggish in 2.6.22 and this this upper-left corner problem
-> > > > > appeared in 2.6.28 or 2.6.27).
-> > >
-> > > 	By the way, I have found that bug
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=13314 is the cause of the
-> > > sluggish in my mouse.
-> >
-> > (cc's added)
-> >
-> > OK, thanks.  Did you test Anthony's patch on your system?
+Subodh Nijsure wrote:
 > 
-> 	Yes,  I did.
+> Sorry if I am not being very smart  here, confused by the remark "
+> bzImage support would not be possible"
+> 
+> I was able create wrapped image using command
+> 
+> wraplinux -p "console=ttyS0,115200" -i initrd.gz -o
+> vmlinux.initrd.wrap arch/i386/boot/bzImage
+> 
+> I am using wraplinux version 1.6
+> 
+> if I use any other image  wraplinux doesn't find the version
+> information and initrd image doesn't get attached.
+> 
+> What file should I be specifying as the 'kernel' when I execute
+> wrapimage  if not the bzImage?
+> 
+> ( I am working with 2.6.23 kernel)
+> 
+> On my board I can boot the standard bzImage, but not able to load the
+> wrapped image produced by wraplinux command. Would very much
+> appreciate hints...
+> 
 
-Did it fix the bug?
+What I mean is that Wraplinux accepts bzImage as input and outputs ELF,
+NBI or Multiboot.  Depending on the bootloader on your board, you may
+need to select one or the other of these formats, or might not be able
+to at all.  It does not *output* bzImage, and it isn't 100% trivial to
+make it do so.
 
-If so, does that mean that you think we should merge Anthony's patch
-instead of yours?
+	-hpa
 
-> > Also, you've determined that
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h
-> >=e4e8e37c42bdaaefcb84eeaef0dc1bc3f696f8f6 caused the problem on your machine
-> > and that reverting it fixes things up.
-> >
-> > I'm all confused.
