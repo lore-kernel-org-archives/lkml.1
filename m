@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754405AbZGXVCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbZGXVHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754405AbZGXVCc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 17:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbZGXVCb
+	id S1754549AbZGXVHB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 17:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbZGXVHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 17:02:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55124 "EHLO mx2.redhat.com"
+	Fri, 24 Jul 2009 17:07:00 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:50823 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750962AbZGXVCb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 17:02:31 -0400
-Subject: Re: fanotify - overall design before I start sending patches
-From: Eric Paris <eparis@redhat.com>
-To: david@lang.hm
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       malware-list@dmesg.printk.net, Valdis.Kletnieks@vt.edu, greg@kroah.com,
-       jcm@redhat.com, douglas.leeder@sophos.com, tytso@mit.edu,
-       arjan@infradead.org, jengelh@medozas.de, aviro@redhat.com,
-       mrkafk@gmail.com, alexl@redhat.com, jack@suse.cz,
-       tvrtko.ursulin@sophos.com, a.p.zijlstra@chello.nl, hch@infradead.org,
-       alan@lxorguk.ukuu.org.uk, mmorley@hcl.in
-In-Reply-To: <alpine.DEB.1.10.0907241340580.28013@asgard.lang.hm>
-References: <1248466429.3567.82.camel@localhost>
-	 <alpine.DEB.1.10.0907241340580.28013@asgard.lang.hm>
-Content-Type: text/plain
-Date: Fri, 24 Jul 2009 17:01:18 -0400
-Message-Id: <1248469278.3567.88.camel@localhost>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1754152AbZGXVHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 17:07:00 -0400
+Date: Fri, 24 Jul 2009 14:06:57 -0700
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Benjamin Blum <bblum@google.com>
+Cc: Paul Menage <menage@google.com>, Matt Helsley <matthltc@us.ibm.com>,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       akpm@linux-foundation.org, serue@us.ibm.com, lizf@cn.fujitsu.com
+Subject: Re: [PATCH 5/6] Makes procs file writable to move all threads by
+	tgid at once
+Message-ID: <20090724210657.GL5878@count0.beaverton.ibm.com>
+References: <20090724032033.2463.79256.stgit@hastromil.mtv.corp.google.com> <20090724032200.2463.82408.stgit@hastromil.mtv.corp.google.com> <20090724155041.GF5878@count0.beaverton.ibm.com> <6599ad830907240901w4fc02097k83d0c1012708e6ee@mail.gmail.com> <20090724172320.GH5878@count0.beaverton.ibm.com> <6599ad830907241047w9a9fff9q4dc68f26a9544398@mail.gmail.com> <2f86c2480907241353l63818dfehb20c9d4918a3f069@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2f86c2480907241353l63818dfehb20c9d4918a3f069@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-24 at 13:48 -0700, david@lang.hm wrote:
-> getting an open fd to the file is good for things like content scanning, 
-> but for other things like a HSM re-populating the file, you would need to 
-> pass the path used to open the file at open time. is this in the metadata 
-> you are passing?
+On Fri, Jul 24, 2009 at 01:53:53PM -0700, Benjamin Blum wrote:
+> On Fri, Jul 24, 2009 at 1:47 PM, Paul Menage<menage@google.com> wrote:
+> > On Fri, Jul 24, 2009 at 10:23 AM, Matt Helsley<matthltc@us.ibm.com> wrote:
+> >>
+> >> Well, I imagine holding tasklist_lock is worse than cgroup_mutex in some
+> >> ways since it's used even more widely. Makes sense not to use it here..
+> >
+> > Just to clarify - the new "procs" code doesn't use cgroup_mutex for
+> > its critical section, it uses a new cgroup_fork_mutex, which is only
+> > taken for write during cgroup_proc_attach() (after all setup has been
+> > done, to ensure that no new threads are created while we're updating
+> > all the existing threads). So in general there'll be zero contention
+> > on this lock - the cost will be the cache misses due to the rwlock
+> > bouncing between the different CPUs that are taking it in read mode.
+> 
+> Right. The different options so far are:
+> 
+> Global rwsem: only needs one lock, but prevents all forking when a
+> write is in progress. It should be quick enough, if it's just "iterate
+> down the threadgroup list in O(n)". In the good case, fork() slows
+> down by a cache miss when taking the lock in read mode.
 
-No, I will NOT EVER pass a pathname.  Period.  End of story.  I stated
-the if userspace wants to deal with pathnames (and they understand the
-system setup well enough to know if pathnames even make sense to them)
-they can use readlink(2) on /proc/self/fd
+I noticed your point about only one process contending for write on
+the new semaphore since cgroup_mutex is also held on the write side.
+However won't there be cacheline bouncing as lots of readers contend not
+for the read side of the lock itself but the cacheline needed to take it?
 
-> to avoid race conditions, you may want some way that a listener on a 
-> directory can flag that it wants to also be a listener for all new 
-> directories created under the one it is listening on.
+> Threadgroup-local rwsem: Needs adding a field to task_struct. Only
+> forks within the same threadgroup would block on a write to the procs
+> file, and the zero-contention case is the same as before.
 
-Interesting way to get the subtree checking people want, you do the
-registration yourself the first time on the entire hierarchy and new
-directories will be automagically added.  I could probably do that, I'll
-have to look.
+This seems like it would be better.
 
-> with the PERM checks, can a checker respond within the 5 second window 
-> with 'I need more time'? or does it need to complete all it's work in <5 
-> seconds?
+> Using tasklist_lock: Currently, the call to cgroup_fork() (which
+> starts the race) is very far above where tasklist_lock is taken in
+> fork, so taking tasklist_lock earlier is very infeasible. Could
+> cgroup_fork() be moved downwards to inside it, and if so, how much
+> restructuring would be needed? Even if so, this still adds stuff that
+> is being done (unnecessarily) while holding a global mutex.
 
-FAN_RESET_TIMEOUT
+Yup.
 
+> > What happened to the big-reader lock concept from 2.4.x? That would be
+> > applicable here - minimizing the overhead on the critical path when
+> > the write operation is expected to be very rare.
+
+Supplanted by RCU perhaps? *shrug*
+
+Cheers,
+	-Matt Helsley
