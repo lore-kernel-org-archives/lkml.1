@@ -1,61 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753143AbZGXPIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753084AbZGXPJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753143AbZGXPIA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 11:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbZGXPH7
+	id S1753084AbZGXPJp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 11:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbZGXPJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 11:07:59 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:51516 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751847AbZGXPH6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 11:07:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZDTKczHdISQoJ8qmond9NxTnv7uyh3vqlZEpx3PEylBHNOz0RafVbZCHrutfXLjk7t
-         CeVUgUoi8KUY6RIOAHaxzA5zO9kwvGruFnf0NLBk2z81pzICOYyTq7U7D7ckxfxZXl01
-         HxK2oE3++fRR+td2JLdDTjRxf6bhs5C2JoWi4=
-MIME-Version: 1.0
-In-Reply-To: <1248446909.6987.110.camel@twins>
-References: <454c71700907240357l61f5c4fajaca73db0fba7db8@mail.gmail.com>
-	 <1248437670.6987.26.camel@twins>
-	 <454c71700907240604h4673f117j8ed58b9f2ee54798@mail.gmail.com>
-	 <1248441290.6987.52.camel@twins>
-	 <454c71700907240626w127fd890ufa91ef90cbcaaa@mail.gmail.com>
-	 <1248442415.6987.56.camel@twins>
-	 <454c71700907240644h7469e2a5sfcb57f202a2e184d@mail.gmail.com>
-	 <1248443656.6987.61.camel@twins>
-	 <454c71700907240704o32dcdeb3v57845eb9472dd04c@mail.gmail.com>
-	 <1248446909.6987.110.camel@twins>
-Date: Fri, 24 Jul 2009 23:07:58 +0800
-Message-ID: <454c71700907240807t5b682e7cv52534f41d3be961a@mail.gmail.com>
-Subject: Re: report a bug about sched_rt
-From: sen wang <wangsen.linux@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: mingo@elte.hu, akpm@linux-foundation.org, kernel@kolivas.org,
-       npiggin@suse.de, arjan@infradead.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Fri, 24 Jul 2009 11:09:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:32785 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751882AbZGXPJn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 11:09:43 -0400
+Subject: Re: [PATCH 0/44] includecheck: fix multiple includes
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: eduardo.valentin@nokia.com
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       davinci <davinci-linux-open-source@linux.davincidsp.com>,
+       Hugo Villeneuve <hugo.villeneuve@lyrtech.com>,
+       "philip@opensdr.com" <philip@opensdr.com>,
+       Sascha Hauer <s.hauer@pengutronix.de>, Tony Lindgren <tony@atomide.com>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       Ben Dooks <ben-linux@fluff.org>, Ben Dooks <ben@simtec.co.uk>,
+       dmitry pervushin <dpervushin@embeddedalley.com>,
+       Vladislav Buzov <vbuzov@embeddedalley.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       arm <linux-arm@lists.arm.linux.org.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090724144502.GA2622@esdhcp037198.research.nokia.com>
+References: <1247063308.4382.12.camel@ht.satnam>
+	 <1247076059.4382.127.camel@ht.satnam>
+	 <20090708211321.GA15928@flint.arm.linux.org.uk>
+	 <1247113711.2453.27.camel@ht.satnam>
+	 <20090724144502.GA2622@esdhcp037198.research.nokia.com>
+Content-Type: text/plain
+Date: Fri, 24 Jul 2009 20:37:13 +0530
+Message-Id: <1248448033.2429.17.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/24 Peter Zijlstra <peterz@infradead.org>:
-> On Fri, 2009-07-24 at 22:04 +0800, sen wang wrote:
->
->> just one question:
->> if cpu is free and there is running state task, how you do?
->> schedule the task up? or schedule idle task up?
->
-> Well, when an RT group is over the bandwidth limit I don't consider them
-> runnable. Therefore, failing to find any other tasks, we run the idle
-> task.
->
+Hello all,
 
-you havn't anwser the question: if cpu is free, should we  schedule the
-running state task or idle task?
+On Fri, 2009-07-24 at 17:45 +0300, Eduardo Valentin wrote:
+> On Thu, Jul 09, 2009 at 06:28:31AM +0200, ext Jaswinder Singh Rajput wrote:
+> > On Wed, 2009-07-08 at 22:13 +0100, Russell King wrote:
+> > > On Wed, Jul 08, 2009 at 11:30:59PM +0530, Jaswinder Singh Rajput wrote:
+> > > > I am still waiting ACK/NAK for :
+> > > > 
+> > > >       includecheck fix: arm, misc.c
+> > > >       includecheck fix: arm, atomic.h
+> > > >       includecheck fix: arm, board-dm355-evm.c
+> > > >       includecheck fix: arm, board-dm355-leopard.c
+> > > >       includecheck fix: arm, board-dm644x-evm.c
+> > > >       includecheck fix: arm, board-dm646x-evm.c
+> > > >       includecheck fix: arm, board-sffsdr.c
+> > > >       includecheck fix: arm, mach-mx3/devices.c
+> > > >       includecheck fix: arm, mach-omap1/mcbsp.c
+> > > >       includecheck fix: arm, mach-omap2/mcbsp.c
+> > > >       includecheck fix: arm, plat-s3c64xx/pm.c
+> > > >       includecheck fix: arm, plat-stmp3xxx/pinmux.c
+> > > 
+> > > You're still waiting because apparantly you never sent this set anywhere
+> > > near any ARM people before.
+> > > 
+> > > For the first two, I'll ack them:
+> > > 
+> > > Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+> > > 
+> > > The remainder look sane to me, but you'll have to seek acks from the
+> > > individual platform maintainer(s).
+> > > 
+> > 
+> > OK, adding some more ARM people and ARM lists to get remaining ACK/NAK.
+> > 
+> > Patches are already posted to LKML and also available at :
+> > 
+> > http://git.kernel.org/?p=linux/kernel/git/jaswinder/headers-check-2.6.git;a=summary
+> > 
+> > In case if you are not able to find these patches let me know.
+> > 
+> > Thanks,
+> 
+> In behalf of mach-omap[1,2]/mcbsp.c:
+> 
+> Acked-by: Eduardo Valentin <eduardo.valentin@nokia.com>
+> 
 
-face the error and fix it! ok?
+These patches are still not applied anywhere, If you want you can apply
+respective patch in your respective trees.
+
+Thanks,
+--
+JSR
+
