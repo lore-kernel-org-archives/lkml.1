@@ -1,433 +1,284 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752669AbZGXKwG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752701AbZGXKwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752669AbZGXKwG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 06:52:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbZGXKwG
+	id S1752701AbZGXKwo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 06:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbZGXKwn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 06:52:06 -0400
-Received: from moutng.kundenserver.de ([212.227.17.10]:59771 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752206AbZGXKwE (ORCPT
+	Fri, 24 Jul 2009 06:52:43 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:49239 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752206AbZGXKwl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 06:52:04 -0400
-From: Karsten Keil <isdn@linux-pingi.de>
-Reply-To: isdn@linux-pingi.de
-To: Stoyan Gaydarov <sgayda2@uiuc.edu>
-Subject: Re: [PATCH 2/7] [isdn] ARRAY_SIZE changes
-Date: Fri, 24 Jul 2009 12:51:49 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.27.23-0.1-default; KDE/4.2.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <1248231753-8344-1-git-send-email-sgayda2@uiuc.edu> <1248231753-8344-2-git-send-email-sgayda2@uiuc.edu> <1248231753-8344-3-git-send-email-sgayda2@uiuc.edu>
-In-Reply-To: <1248231753-8344-3-git-send-email-sgayda2@uiuc.edu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Fri, 24 Jul 2009 06:52:41 -0400
+Date: Fri, 24 Jul 2009 12:52:02 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-s390 <linux-s390@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: [GIT PULL] s390 patches for v2.6.31-rc4
+Message-ID: <20090724125202.75a9ecc5@skybase>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907241251.49556.isdn@linux-pingi.de>
-X-Provags-ID: V01U2FsdGVkX1/r6AHtmxJvYmgWT9MgXzrT2c3EGGqVE3Ggb1a
- 2s7E2J9J5Ih1ymhs29cQQwLt3GI/+hD+7h/5iHETDXUGvbG5Vr
- BgPk/DwNTUpqHiwadKYiV69BURoqBGs
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stoyan,
+Hi Linus,
 
-On Mittwoch, 22. Juli 2009 05:02:28 Stoyan Gaydarov wrote:
-> These changes were a direct result of using a semantic patch
-> More information can be found at http://www.emn.fr/x-info/coccinelle/
->
-> Signed-off-by: Stoyan Gaydarov <sgayda2@uiuc.edu>
+please pull from 'for-linus' branch of
 
-Yes you are right, these defines should be rewritten to use
-ARRAY_SIZE(), but in most cases the define is only used once,
-so it would be better to replace it completely, I will prepare a new patch for 
-this stuff in drivers/isdn  .
+	git://git390.marist.edu/pub/scm/linux-2.6.git for-linus
 
-> ---
->  drivers/isdn/act2000/capi.c           |    2 +-
->  drivers/isdn/act2000/module.c         |    2 +-
->  drivers/isdn/hardware/eicon/message.c |    2 +-
->  drivers/isdn/hardware/eicon/os_4bri.c |    3 +--
->  drivers/isdn/hisax/callc.c            |    2 +-
->  drivers/isdn/hisax/isdnl1.c           |    6 +++---
->  drivers/isdn/hisax/isdnl2.c           |    2 +-
->  drivers/isdn/hisax/isdnl3.c           |    2 +-
->  drivers/isdn/hisax/l3_1tr6.c          |    9 +++------
->  drivers/isdn/hisax/l3dss1.c           |   12 ++++--------
->  drivers/isdn/hisax/l3ni1.c            |   12 ++++--------
->  drivers/isdn/hisax/q931.c             |   24 ++++++++++++------------
->  drivers/isdn/hisax/tei.c              |    2 +-
->  13 files changed, 34 insertions(+), 46 deletions(-)
->
-> diff --git a/drivers/isdn/act2000/capi.c b/drivers/isdn/act2000/capi.c
-> index 946c38c..a3428da 100644
-> --- a/drivers/isdn/act2000/capi.c
-> +++ b/drivers/isdn/act2000/capi.c
-> @@ -78,7 +78,7 @@ static actcapi_msgdsc valid_msg[] = {
->  #endif
->  	{{ 0x00, 0x00}, NULL},
->  };
-> -#define num_valid_msg (sizeof(valid_msg)/sizeof(actcapi_msgdsc))
-> +#define num_valid_msg ARRAY_SIZE(valid_msg)
->  #define num_valid_imsg 27 /* MANUFACTURER_IND */
->
->  /*
-> diff --git a/drivers/isdn/act2000/module.c b/drivers/isdn/act2000/module.c
-> index 8325022..6387baa 100644
-> --- a/drivers/isdn/act2000/module.c
-> +++ b/drivers/isdn/act2000/module.c
-> @@ -23,7 +23,7 @@ static unsigned short act2000_isa_ports[] =
->          0x0200, 0x0240, 0x0280, 0x02c0, 0x0300, 0x0340, 0x0380,
->          0xcfe0, 0xcfa0, 0xcf60, 0xcf20, 0xcee0, 0xcea0, 0xce60,
->  };
-> -#define ISA_NRPORTS (sizeof(act2000_isa_ports)/sizeof(unsigned short))
-> +#define ISA_NRPORTS ARRAY_SIZE(act2000_isa_ports)
->
->  static act2000_card *cards = (act2000_card *) NULL;
->
-> diff --git a/drivers/isdn/hardware/eicon/message.c
-> b/drivers/isdn/hardware/eicon/message.c index 31f91c1..9253209 100644
-> --- a/drivers/isdn/hardware/eicon/message.c
-> +++ b/drivers/isdn/hardware/eicon/message.c
-> @@ -552,7 +552,7 @@ word api_put(APPL   * appl, CAPI_MSG   * msg)
->
->    for(j=0;j<MAX_MSG_PARMS+1;j++) msg_parms[j].length = 0;
->    for(i=0, ret = _BAD_MSG;
-> -      i<(sizeof(ftable)/sizeof(struct _ftable));
-> +      i<ARRAY_SIZE(ftable);
->        i++) {
->
->      if(ftable[i].command==msg->header.command) {
-> diff --git a/drivers/isdn/hardware/eicon/os_4bri.c
-> b/drivers/isdn/hardware/eicon/os_4bri.c index c964b8d..cb7616c 100644
-> --- a/drivers/isdn/hardware/eicon/os_4bri.c
-> +++ b/drivers/isdn/hardware/eicon/os_4bri.c
-> @@ -149,8 +149,7 @@ int diva_4bri_init_card(diva_os_xdi_adapter_t * a)
->  	diva_os_xdi_adapter_t *diva_current;
->  	diva_os_xdi_adapter_t *adapter_list[4];
->  	PISDN_ADAPTER Slave;
-> -	unsigned long bar_length[sizeof(_4bri_bar_length) /
-> -				 sizeof(_4bri_bar_length[0])];
-> +	unsigned long bar_length[ARRAY_SIZE(_4bri_bar_length)];
->  	int v2 = _4bri_is_rev_2_card(a->CardOrdinal);
->  	int tasks = _4bri_is_rev_2_bri_card(a->CardOrdinal) ? 1 :
-> MQ_INSTANCE_COUNT; int factor = (tasks == 1) ? 1 : 2;
-> diff --git a/drivers/isdn/hisax/callc.c b/drivers/isdn/hisax/callc.c
-> index 025a20d..f90d6a6 100644
-> --- a/drivers/isdn/hisax/callc.c
-> +++ b/drivers/isdn/hisax/callc.c
-> @@ -833,7 +833,7 @@ static struct FsmNode fnlist[] __initdata =
->  };
->  /* *INDENT-ON* */
->
-> -#define FNCOUNT (sizeof(fnlist)/sizeof(struct FsmNode))
-> +#define FNCOUNT ARRAY_SIZE(fnlist)
->
->  int __init
->  CallcNew(void)
-> diff --git a/drivers/isdn/hisax/isdnl1.c b/drivers/isdn/hisax/isdnl1.c
-> index 317f16f..980e099 100644
-> --- a/drivers/isdn/hisax/isdnl1.c
-> +++ b/drivers/isdn/hisax/isdnl1.c
-> @@ -647,7 +647,7 @@ static struct FsmNode L1SFnList[] __initdata =
->  	{ST_L1_F8, EV_TIMER_DEACT, l1_timer_deact},
->  };
->
-> -#define L1S_FN_COUNT (sizeof(L1SFnList)/sizeof(struct FsmNode))
-> +#define L1S_FN_COUNT ARRAY_SIZE(L1SFnList)
->
->  #ifdef HISAX_UINTERFACE
->  static void
-> @@ -706,7 +706,7 @@ static struct FsmNode L1UFnList[] __initdata =
->  	{ST_L1_RESET, EV_TIMER_DEACT, l1_timer_deact},
->  };
->
-> -#define L1U_FN_COUNT (sizeof(L1UFnList)/sizeof(struct FsmNode))
-> +#define L1U_FN_COUNT ARRAY_SIZE(L1UFnList)
->
->  #endif
->
-> @@ -754,7 +754,7 @@ static struct FsmNode L1BFnList[] __initdata =
->  	{ST_L1_WAIT_DEACT, EV_TIMER_DEACT, l1b_timer_deact},
->  };
->
-> -#define L1B_FN_COUNT (sizeof(L1BFnList)/sizeof(struct FsmNode))
-> +#define L1B_FN_COUNT ARRAY_SIZE(L1BFnList)
->
->  int __init
->  Isdnl1New(void)
-> diff --git a/drivers/isdn/hisax/isdnl2.c b/drivers/isdn/hisax/isdnl2.c
-> index 3446f24..846a7e6 100644
-> --- a/drivers/isdn/hisax/isdnl2.c
-> +++ b/drivers/isdn/hisax/isdnl2.c
-> @@ -1623,7 +1623,7 @@ static struct FsmNode L2FnList[] __initdata =
->  	{ST_L2_8, EV_L1_DEACTIVATE, l2_persistent_da},
->  };
->
-> -#define L2_FN_COUNT (sizeof(L2FnList)/sizeof(struct FsmNode))
-> +#define L2_FN_COUNT ARRAY_SIZE(L2FnList)
->
->  static void
->  isdnl2_l1l2(struct PStack *st, int pr, void *arg)
-> diff --git a/drivers/isdn/hisax/isdnl3.c b/drivers/isdn/hisax/isdnl3.c
-> index 935f233..c081fed 100644
-> --- a/drivers/isdn/hisax/isdnl3.c
-> +++ b/drivers/isdn/hisax/isdnl3.c
-> @@ -543,7 +543,7 @@ static struct FsmNode L3FnList[] __initdata =
->  };
->  /* *INDENT-ON* */
->
-> -#define L3_FN_COUNT (sizeof(L3FnList)/sizeof(struct FsmNode))
-> +#define L3_FN_COUNT ARRAY_SIZE(L3FnList)
->
->  void
->  l3_msg(struct PStack *st, int pr, void *arg)
-> diff --git a/drivers/isdn/hisax/l3_1tr6.c b/drivers/isdn/hisax/l3_1tr6.c
-> index c5c36ee..ff62679 100644
-> --- a/drivers/isdn/hisax/l3_1tr6.c
-> +++ b/drivers/isdn/hisax/l3_1tr6.c
-> @@ -698,8 +698,7 @@ static struct stateentry downstl[] =
->  	 CC_T308_2, l3_1tr6_t308_2},
->  };
->
-> -#define DOWNSTL_LEN \
-> -	(sizeof(downstl) / sizeof(struct stateentry))
-> +#define DOWNSTL_LEN ARRAY_SIZE(downstl)
->
->  static struct stateentry datastln1[] =
->  {
-> @@ -735,8 +734,7 @@ static struct stateentry datastln1[] =
->  	 MT_N1_REL_ACK, l3_1tr6_rel_ack}
->  };
->
-> -#define DATASTLN1_LEN \
-> -	(sizeof(datastln1) / sizeof(struct stateentry))
-> +#define DATASTLN1_LEN ARRAY_SIZE(datastln1)
->
->  static struct stateentry manstatelist[] =
->  {
-> @@ -746,8 +744,7 @@ static struct stateentry manstatelist[] =
->           DL_RELEASE | INDICATION, l3_1tr6_dl_release},
->  };
->
-> -#define MANSLLEN \
-> -        (sizeof(manstatelist) / sizeof(struct stateentry))
-> +#define MANSLLEN ARRAY_SIZE(manstatelist)
->  /* *INDENT-ON* */
->
->  static void
-> diff --git a/drivers/isdn/hisax/l3dss1.c b/drivers/isdn/hisax/l3dss1.c
-> index 99feae8..c434fa5 100644
-> --- a/drivers/isdn/hisax/l3dss1.c
-> +++ b/drivers/isdn/hisax/l3dss1.c
-> @@ -2820,8 +2820,7 @@ static struct stateentry downstatelist[] =
->  	 CC_T309, l3dss1_dl_release},
->  };
->
-> -#define DOWNSLLEN \
-> -	(sizeof(downstatelist) / sizeof(struct stateentry))
-> +#define DOWNSLLEN ARRAY_SIZE(downstatelist)
->
->  static struct stateentry datastatelist[] =
->  {
-> @@ -2875,8 +2874,7 @@ static struct stateentry datastatelist[] =
->  	 MT_RESUME_REJECT, l3dss1_resume_rej},
->  };
->
-> -#define DATASLLEN \
-> -	(sizeof(datastatelist) / sizeof(struct stateentry))
-> +#define DATASLLEN ARRAY_SIZE(datastatelist)
->
->  static struct stateentry globalmes_list[] =
->  {
-> @@ -2888,8 +2886,7 @@ static struct stateentry globalmes_list[] =
->  	 MT_RESTART_ACKNOWLEDGE, l3dss1_restart_ack},
->  */
->  };
-> -#define GLOBALM_LEN \
-> -	(sizeof(globalmes_list) / sizeof(struct stateentry))
-> +#define GLOBALM_LEN ARRAY_SIZE(globalmes_list)
->
->  static struct stateentry manstatelist[] =
->  {
-> @@ -2903,8 +2900,7 @@ static struct stateentry manstatelist[] =
->           DL_RELEASE | INDICATION, l3dss1_dl_release},
->  };
->
-> -#define MANSLLEN \
-> -        (sizeof(manstatelist) / sizeof(struct stateentry))
-> +#define MANSLLEN ARRAY_SIZE(manstatelist)
->  /* *INDENT-ON* */
->
->
-> diff --git a/drivers/isdn/hisax/l3ni1.c b/drivers/isdn/hisax/l3ni1.c
-> index f7041d5..ba05ae3 100644
-> --- a/drivers/isdn/hisax/l3ni1.c
-> +++ b/drivers/isdn/hisax/l3ni1.c
-> @@ -2755,8 +2755,7 @@ static struct stateentry downstatelist[] =
->  	 CC_TSPID, l3ni1_spid_tout },
->  };
->
-> -#define DOWNSLLEN \
-> -	(sizeof(downstatelist) / sizeof(struct stateentry))
-> +#define DOWNSLLEN ARRAY_SIZE(downstatelist)
->
->  static struct stateentry datastatelist[] =
->  {
-> @@ -2810,8 +2809,7 @@ static struct stateentry datastatelist[] =
->  	 MT_RESUME_REJECT, l3ni1_resume_rej},
->  };
->
-> -#define DATASLLEN \
-> -	(sizeof(datastatelist) / sizeof(struct stateentry))
-> +#define DATASLLEN ARRAY_SIZE(datastatelist)
->
->  static struct stateentry globalmes_list[] =
->  {
-> @@ -2825,8 +2823,7 @@ static struct stateentry globalmes_list[] =
->  	{ SBIT( 0 ), MT_DL_ESTABLISHED, l3ni1_spid_send },
->  	{ SBIT( 20 ) | SBIT( 21 ) | SBIT( 22 ), MT_INFORMATION, l3ni1_spid_epid
-> }, };
-> -#define GLOBALM_LEN \
-> -	(sizeof(globalmes_list) / sizeof(struct stateentry))
-> +#define GLOBALM_LEN ARRAY_SIZE(globalmes_list)
->
->  static struct stateentry manstatelist[] =
->  {
-> @@ -2840,8 +2837,7 @@ static struct stateentry manstatelist[] =
->           DL_RELEASE | INDICATION, l3ni1_dl_release},
->  };
->
-> -#define MANSLLEN \
-> -        (sizeof(manstatelist) / sizeof(struct stateentry))
-> +#define MANSLLEN ARRAY_SIZE(manstatelist)
->  /* *INDENT-ON* */
->
->
-> diff --git a/drivers/isdn/hisax/q931.c b/drivers/isdn/hisax/q931.c
-> index aacbf0d..8b853d5 100644
-> --- a/drivers/isdn/hisax/q931.c
-> +++ b/drivers/isdn/hisax/q931.c
-> @@ -140,7 +140,7 @@ struct MessageType {
->  	}
->  };
->
-> -#define MTSIZE sizeof(mtlist)/sizeof(struct MessageType)
-> +#define MTSIZE ARRAY_SIZE(mtlist)
->
->  static
->  struct MessageType mt_n0[] =
-> @@ -157,7 +157,7 @@ struct MessageType mt_n0[] =
->  	{MT_N0_CLO_ACK, "CLOse ACKnowledge"}
->  };
->
-> -#define MT_N0_LEN (sizeof(mt_n0) / sizeof(struct MessageType))
-> +#define MT_N0_LEN ARRAY_SIZE(mt_n0)
->
->  static
->  struct MessageType mt_n1[] =
-> @@ -194,7 +194,7 @@ struct MessageType mt_n1[] =
->  	{MT_N1_STAT, "STATus"}
->  };
->
-> -#define MT_N1_LEN (sizeof(mt_n1) / sizeof(struct MessageType))
-> +#define MT_N1_LEN ARRAY_SIZE(mt_n1)
->
->
->  static int
-> @@ -438,7 +438,7 @@ struct CauseValue {
->  	},
->  };
->
-> -#define CVSIZE sizeof(cvlist)/sizeof(struct CauseValue)
-> +#define CVSIZE ARRAY_SIZE(cvlist)
->
->  static
->  int
-> @@ -516,7 +516,7 @@ struct MessageType cause_1tr6[] =
->  	{CAUSE_UserInfoDiscarded, "User Info Discarded"}
->  };
->
-> -static int cause_1tr6_len = (sizeof(cause_1tr6) / sizeof(struct
-> MessageType)); +static int cause_1tr6_len = ARRAY_SIZE(cause_1tr6);
->
->  static int
->  prcause_1tr6(char *dest, u_char * p)
-> @@ -865,7 +865,7 @@ struct DTag { /* Display tags */
->  	{ 0x96, "Redirection name" },
->  	{ 0x9e, "Text" },
->  };
-> -#define DTAGSIZE sizeof(dtaglist)/sizeof(struct DTag)
-> +#define DTAGSIZE ARRAY_SIZE(dtaglist)
->
->  static int
->  disptext_ni1(char *dest, u_char * p)
-> @@ -1074,7 +1074,7 @@ struct InformationElement {
->  };
->
->
-> -#define IESIZE sizeof(ielist)/sizeof(struct InformationElement)
-> +#define IESIZE ARRAY_SIZE(ielist)
->
->  static
->  struct InformationElement ielist_ni1[] = {
-> @@ -1102,7 +1102,7 @@ struct InformationElement ielist_ni1[] = {
->  };
->
->
-> -#define IESIZE_NI1 sizeof(ielist_ni1)/sizeof(struct InformationElement)
-> +#define IESIZE_NI1 ARRAY_SIZE(ielist_ni1)
->
->  static
->  struct InformationElement ielist_ni1_cs5[] = {
-> @@ -1110,14 +1110,14 @@ struct InformationElement ielist_ni1_cs5[] = {
->  	{ 0x2a, "Display text", disptext_ni1 },
->  };
->
-> -#define IESIZE_NI1_CS5 sizeof(ielist_ni1_cs5)/sizeof(struct
-> InformationElement) +#define IESIZE_NI1_CS5 ARRAY_SIZE(ielist_ni1_cs5)
->
->  static
->  struct InformationElement ielist_ni1_cs6[] = {
->  	{ 0x7b, "Call appearance", general_ni1 },
->  };
->
-> -#define IESIZE_NI1_CS6 sizeof(ielist_ni1_cs6)/sizeof(struct
-> InformationElement) +#define IESIZE_NI1_CS6 ARRAY_SIZE(ielist_ni1_cs6)
->
->  static struct InformationElement we_0[] =
->  {
-> @@ -1133,7 +1133,7 @@ static struct InformationElement we_0[] =
->  	{WE0_userInfo, "User Info", general}
->  };
->
-> -#define WE_0_LEN (sizeof(we_0) / sizeof(struct InformationElement))
-> +#define WE_0_LEN ARRAY_SIZE(we_0)
->
->  static struct InformationElement we_6[] =
->  {
-> @@ -1145,7 +1145,7 @@ static struct InformationElement we_6[] =
->  	{WE6_statusCalled, "Status Called", general},
->  	{WE6_addTransAttr, "Additional Transmission Attributes", general}
->  };
-> -#define WE_6_LEN (sizeof(we_6) / sizeof(struct InformationElement))
-> +#define WE_6_LEN ARRAY_SIZE(we_6)
->
->  int
->  QuickHex(char *txt, u_char * p, int cnt)
-> diff --git a/drivers/isdn/hisax/tei.c b/drivers/isdn/hisax/tei.c
-> index ceb0df9..21567af 100644
-> --- a/drivers/isdn/hisax/tei.c
-> +++ b/drivers/isdn/hisax/tei.c
-> @@ -447,7 +447,7 @@ static struct FsmNode TeiFnList[] __initdata =
->  	{ST_TEI_IDVERIFY, EV_CHKREQ, tei_id_chk_req},
->  };
->
-> -#define TEI_FN_COUNT (sizeof(TeiFnList)/sizeof(struct FsmNode))
-> +#define TEI_FN_COUNT ARRAY_SIZE(TeiFnList)
->
->  int __init
->  TeiNew(void)
+to receive the following updates:
 
+Felix Beck (1):
+      [S390] zcrypt: fix scheduling of hrtimer ap_poll_timer
+
+Heiko Carstens (3):
+      [S390] hibernation: fix lowcore handling
+      [S390] hibernation: fix register corruption on machine checks
+      [S390] vdso: fix per cpu area allocation
+
+Martin Schwidefsky (1):
+      [S390] vdso: clock_gettime of CLOCK_THREAD_CPUTIME_ID with noexec=on
+
+ arch/s390/kernel/early.c                |    4 +-
+ arch/s390/kernel/smp.c                  |    7 +++--
+ arch/s390/kernel/vdso64/clock_gettime.S |   11 +++++++-
+ arch/s390/power/swsusp.c                |   36 ++++++++++++++++++++----------
+ arch/s390/power/swsusp_asm64.S          |   35 +++++++----------------------
+ drivers/s390/crypto/ap_bus.c            |    9 ++++++-
+ 6 files changed, 55 insertions(+), 47 deletions(-)
+
+diff --git a/arch/s390/kernel/early.c b/arch/s390/kernel/early.c
+index f9b1440..8d15314 100644
+--- a/arch/s390/kernel/early.c
++++ b/arch/s390/kernel/early.c
+@@ -210,7 +210,7 @@ static noinline __init void detect_machine_type(void)
+ 		machine_flags |= MACHINE_FLAG_VM;
+ }
+ 
+-static void early_pgm_check_handler(void)
++static __init void early_pgm_check_handler(void)
+ {
+ 	unsigned long addr;
+ 	const struct exception_table_entry *fixup;
+@@ -222,7 +222,7 @@ static void early_pgm_check_handler(void)
+ 	S390_lowcore.program_old_psw.addr = fixup->fixup | PSW_ADDR_AMODE;
+ }
+ 
+-void setup_lowcore_early(void)
++static noinline __init void setup_lowcore_early(void)
+ {
+ 	psw_t psw;
+ 
+diff --git a/arch/s390/kernel/smp.c b/arch/s390/kernel/smp.c
+index 2270730..be2cae0 100644
+--- a/arch/s390/kernel/smp.c
++++ b/arch/s390/kernel/smp.c
+@@ -687,13 +687,14 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
+ #ifndef CONFIG_64BIT
+ 	if (MACHINE_HAS_IEEE)
+ 		lowcore->extended_save_area_addr = (u32) save_area;
+-#else
+-	if (vdso_alloc_per_cpu(smp_processor_id(), lowcore))
+-		BUG();
+ #endif
+ 	set_prefix((u32)(unsigned long) lowcore);
+ 	local_mcck_enable();
+ 	local_irq_enable();
++#ifdef CONFIG_64BIT
++	if (vdso_alloc_per_cpu(smp_processor_id(), &S390_lowcore))
++		BUG();
++#endif
+ 	for_each_possible_cpu(cpu)
+ 		if (cpu != smp_processor_id())
+ 			smp_create_idle(cpu);
+diff --git a/arch/s390/kernel/vdso64/clock_gettime.S b/arch/s390/kernel/vdso64/clock_gettime.S
+index 79dbfee..49106c6 100644
+--- a/arch/s390/kernel/vdso64/clock_gettime.S
++++ b/arch/s390/kernel/vdso64/clock_gettime.S
+@@ -88,10 +88,17 @@ __kernel_clock_gettime:
+ 	llilh	%r4,0x0100
+ 	sar	%a4,%r4
+ 	lghi	%r4,0
++	epsw	%r5,0
+ 	sacf	512				/* Magic ectg instruction */
+ 	.insn	ssf,0xc80100000000,__VDSO_ECTG_BASE(4),__VDSO_ECTG_USER(4),4
+-	sacf	0
+-	sar	%a4,%r2
++	tml	%r5,0x4000
++	jo	11f
++	tml	%r5,0x8000
++	jno	10f
++	sacf	256
++	j	11f
++10:	sacf	0
++11:	sar	%a4,%r2
+ 	algr	%r1,%r0				/* r1 = cputime as TOD value */
+ 	mghi	%r1,1000			/* convert to nanoseconds */
+ 	srlg	%r1,%r1,12			/* r1 = cputime in nanosec */
+diff --git a/arch/s390/power/swsusp.c b/arch/s390/power/swsusp.c
+index e6a4fe9..bd1f5c6 100644
+--- a/arch/s390/power/swsusp.c
++++ b/arch/s390/power/swsusp.c
+@@ -7,24 +7,36 @@
+  *
+  */
+ 
++#include <asm/system.h>
+ 
+-/*
+- * save CPU registers before creating a hibernation image and before
+- * restoring the memory state from it
+- */
+ void save_processor_state(void)
+ {
+-	/* implentation contained in the
+-	 * swsusp_arch_suspend function
++	/* swsusp_arch_suspend() actually saves all cpu register contents.
++	 * Machine checks must be disabled since swsusp_arch_suspend() stores
++	 * register contents to their lowcore save areas. That's the same
++	 * place where register contents on machine checks would be saved.
++	 * To avoid register corruption disable machine checks.
++	 * We must also disable machine checks in the new psw mask for
++	 * program checks, since swsusp_arch_suspend() may generate program
++	 * checks. Disabling machine checks for all other new psw masks is
++	 * just paranoia.
+ 	 */
++	local_mcck_disable();
++	/* Disable lowcore protection */
++	__ctl_clear_bit(0,28);
++	S390_lowcore.external_new_psw.mask &= ~PSW_MASK_MCHECK;
++	S390_lowcore.svc_new_psw.mask &= ~PSW_MASK_MCHECK;
++	S390_lowcore.io_new_psw.mask &= ~PSW_MASK_MCHECK;
++	S390_lowcore.program_new_psw.mask &= ~PSW_MASK_MCHECK;
+ }
+ 
+-/*
+- * restore the contents of CPU registers
+- */
+ void restore_processor_state(void)
+ {
+-	/* implentation contained in the
+-	 * swsusp_arch_resume function
+-	 */
++	S390_lowcore.external_new_psw.mask |= PSW_MASK_MCHECK;
++	S390_lowcore.svc_new_psw.mask |= PSW_MASK_MCHECK;
++	S390_lowcore.io_new_psw.mask |= PSW_MASK_MCHECK;
++	S390_lowcore.program_new_psw.mask |= PSW_MASK_MCHECK;
++	/* Enable lowcore protection */
++	__ctl_set_bit(0,28);
++	local_mcck_enable();
+ }
+diff --git a/arch/s390/power/swsusp_asm64.S b/arch/s390/power/swsusp_asm64.S
+index 76d688d..b26df5c 100644
+--- a/arch/s390/power/swsusp_asm64.S
++++ b/arch/s390/power/swsusp_asm64.S
+@@ -32,19 +32,14 @@ swsusp_arch_suspend:
+ 	/* Deactivate DAT */
+ 	stnsm	__SF_EMPTY(%r15),0xfb
+ 
+-	/* Switch off lowcore protection */
+-	stctg	%c0,%c0,__SF_EMPTY(%r15)
+-	ni	__SF_EMPTY+4(%r15),0xef
+-	lctlg	%c0,%c0,__SF_EMPTY(%r15)
+-
+ 	/* Store prefix register on stack */
+ 	stpx	__SF_EMPTY(%r15)
+ 
+-	/* Setup base register for lowcore (absolute 0) */
+-	llgf	%r1,__SF_EMPTY(%r15)
++	/* Save prefix register contents for lowcore */
++	llgf	%r4,__SF_EMPTY(%r15)
+ 
+ 	/* Get pointer to save area */
+-	aghi	%r1,0x1000
++	lghi	%r1,0x1000
+ 
+ 	/* Store registers */
+ 	mvc	0x318(4,%r1),__SF_EMPTY(%r15)	/* move prefix to lowcore */
+@@ -79,17 +74,15 @@ swsusp_arch_suspend:
+ 	xc	__SF_EMPTY(4,%r15),__SF_EMPTY(%r15)
+ 	spx	__SF_EMPTY(%r15)
+ 
+-	/* Setup lowcore */
+-	brasl	%r14,setup_lowcore_early
++	lghi	%r2,0
++	lghi	%r3,2*PAGE_SIZE
++	lghi	%r5,2*PAGE_SIZE
++1:	mvcle	%r2,%r4,0
++	jo	1b
+ 
+ 	/* Save image */
+ 	brasl	%r14,swsusp_save
+ 
+-	/* Switch on lowcore protection */
+-	stctg	%c0,%c0,__SF_EMPTY(%r15)
+-	oi	__SF_EMPTY+4(%r15),0x10
+-	lctlg	%c0,%c0,__SF_EMPTY(%r15)
+-
+ 	/* Restore prefix register and return */
+ 	lghi	%r1,0x1000
+ 	spx	0x318(%r1)
+@@ -117,11 +110,6 @@ swsusp_arch_resume:
+ 	/* Deactivate DAT */
+ 	stnsm	__SF_EMPTY(%r15),0xfb
+ 
+-	/* Switch off lowcore protection */
+-	stctg	%c0,%c0,__SF_EMPTY(%r15)
+-	ni	__SF_EMPTY+4(%r15),0xef
+-	lctlg	%c0,%c0,__SF_EMPTY(%r15)
+-
+ 	/* Set prefix page to zero */
+ 	xc	__SF_EMPTY(4,%r15),__SF_EMPTY(%r15)
+ 	spx	__SF_EMPTY(%r15)
+@@ -175,7 +163,7 @@ swsusp_arch_resume:
+ 	/* Load old stack */
+ 	lg	%r15,0x2f8(%r13)
+ 
+-	/* Pointer to save arae */
++	/* Pointer to save area */
+ 	lghi	%r13,0x1000
+ 
+ #ifdef CONFIG_SMP
+@@ -187,11 +175,6 @@ swsusp_arch_resume:
+ 	/* Restore prefix register */
+ 	spx	0x318(%r13)
+ 
+-	/* Switch on lowcore protection */
+-	stctg	%c0,%c0,__SF_EMPTY(%r15)
+-	oi	__SF_EMPTY+4(%r15),0x10
+-	lctlg	%c0,%c0,__SF_EMPTY(%r15)
+-
+ 	/* Activate DAT */
+ 	stosm	__SF_EMPTY(%r15),0x04
+ 
+diff --git a/drivers/s390/crypto/ap_bus.c b/drivers/s390/crypto/ap_bus.c
+index 727a809..ed3dcde 100644
+--- a/drivers/s390/crypto/ap_bus.c
++++ b/drivers/s390/crypto/ap_bus.c
+@@ -1145,12 +1145,17 @@ ap_config_timeout(unsigned long ptr)
+  */
+ static inline void ap_schedule_poll_timer(void)
+ {
++	ktime_t hr_time;
+ 	if (ap_using_interrupts() || ap_suspend_flag)
+ 		return;
+ 	if (hrtimer_is_queued(&ap_poll_timer))
+ 		return;
+-	hrtimer_start(&ap_poll_timer, ktime_set(0, poll_timeout),
+-		      HRTIMER_MODE_ABS);
++	if (ktime_to_ns(hrtimer_expires_remaining(&ap_poll_timer)) <= 0) {
++		hr_time = ktime_set(0, poll_timeout);
++		hrtimer_forward_now(&ap_poll_timer, hr_time);
++		hrtimer_restart(&ap_poll_timer);
++	}
++	return;
+ }
+ 
+ /**
