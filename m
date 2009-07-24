@@ -1,197 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753798AbZGXUPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753856AbZGXUTJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753798AbZGXUPR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 16:15:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbZGXUPR
+	id S1753856AbZGXUTJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 16:19:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753249AbZGXUTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 16:15:17 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47937 "EHLO mx2.redhat.com"
+	Fri, 24 Jul 2009 16:19:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37957 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753493AbZGXUPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 16:15:15 -0400
-Subject: fanotify - overall design before I start sending patches
-From: Eric Paris <eparis@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       malware-list@dmesg.printk.net
-Cc: Valdis.Kletnieks@vt.edu, greg@kroah.com, jcm@redhat.com,
-       douglas.leeder@sophos.com, tytso@mit.edu, arjan@infradead.org,
-       david@lang.hm, jengelh@medozas.de, aviro@redhat.com, mrkafk@gmail.com,
-       alexl@redhat.com, jack@suse.cz, tvrtko.ursulin@sophos.com,
-       a.p.zijlstra@chello.nl, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
-       mmorley@hcl.in, pavel@suse.cz
-Content-Type: text/plain
-Date: Fri, 24 Jul 2009 16:13:49 -0400
-Message-Id: <1248466429.3567.82.camel@localhost>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1751522AbZGXUTI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 16:19:08 -0400
+Message-ID: <4A6A1775.2050907@redhat.com>
+Date: Fri, 24 Jul 2009 16:20:05 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
+       Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Anton Blanchard <anton@samba.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "K . Prasad" <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 5/5] perfcounter: Add support for kernel hardware
+ 	breakpoints
+References: <1248109687-7808-1-git-send-email-fweisbec@gmail.com>	 <1248109687-7808-6-git-send-email-fweisbec@gmail.com>	 <1248111537.15751.9341.camel@twins> <c62985530907201422i3f18813at7f6028e4be68d48f@mail.gmail.com>
+In-Reply-To: <c62985530907201422i3f18813at7f6028e4be68d48f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I plan to start sending patches for fanotify in the next week or two.
-I'd like to see more comments on the design, interface, and capabilities
-in case there is a recognized need for major reworks or if I'm not
-meeting some users needs (other than those noted at the end)
+Frédéric Weisbecker wrote:
+> 2009/7/20, Peter Zijlstra <a.p.zijlstra@chello.nl>:
+>> On Mon, 2009-07-20 at 13:08 -0400, Frederic Weisbecker wrote:
+>>> This adds the support for kernel hardware breakpoints in perfcounter.
+>>> It is added as a new type of software counter and can be defined by
+>>> using the counter number 5 and by passsing the address of the
+>>> breakpoint to set through the config attribute.
+>> This seems to be IP based breakpoints. Are there plans for data based
+>> breakpoints as well? In that case we might want to think about the
+>> namespace issue, we cannot both call them breakpoint/bp etc.. ;-)
+> 
+> 
+> Nop, by default these breakpoints trigger on READ/WRITE accesses, it's
+> meant for data.
+> The example in the changelog profiles the bkl accesses, not by tracing
+> lock_kernel() or so...but by tracing the kernel_flag spinlock itself.
+> 
+> So it's the opposite, we may start thinking about naming issues
+> against possible future plans
+> for IP breakpoint :-)
+> 
+> But actually for the latter case, I would suggest Kprobe...
 
-git://git.infradead.org/users/eparis/notify.git fanotify-experimental
+Yeah, after kprobes-based event tracer is supported on ftrace,
+it is easy to set up IP breakpoints in the kernel.
+(maybe, I need to enhance it for perfcounter.)
 
-should have working code to test what I'm talking about.
+Thank you,
 
-What is fanotify?
+-- 
+Masami Hiramatsu
 
-It is a new notification system that has a limited set of events (open,
-close, read, write) in which notification not only comes with metadata
-the describes what happened it also comes with an open file descriptor
-to the object in question.  fanotify will also allow the listener to
-make access decisions on open and read events.  This allows the
-implementation of hierarchical storage management systems or an access
-file scanning or integrity checking.
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-fanotify comes in two flavors 'directed' and 'global.'  'Directed' is
-like inotify or dnotify in that you register specific inodes of interest
-and only get events pertaining to those inodes.  Global means you are
-registering interest for event types system wide.  With global mode the
-listener program can later exclude objects from future events.
-
-fanotify kernel/userspace interaction is over a new socket protocol.  A
-listener opens a new socket in the new PF_FANOTIFY family.  The socket
-is then bound to an address.  Using the following struct:
-
-struct fanotify_addr {
-        sa_family_t family;
-        __u32 priority;
-        __u32 group_num;
-        __u32 mask;
-        __u32 f_flags;
-        __u32 unused[16];
-}  __attribute__((packed));
-
-The priority field indicates in which order fanotify listeners will get
-events.  Since 2 fanotify listeners would 'hear' each others events on
-the new fd they create fanotify listeners will not hear events generated
-by other fanotify listeners with a lower priority number.
-
-The group_num is at the moment not used, but the plan was to allow 2
-processes to bind to the same fanotify group and share the load of
-processing events.
-
-The f_flags is the flags which the fanotify listener wishes to use when
-opening their notification fds.  On access scanners would want to use
-O_RDONLY, whereas HSM systems would need to use O_WRONLY.
-
-The mask is the indication of the events this group is interested in.
-The set of events of interest if FAN_GLOBAL_LISTENER is set at bind
-time.  If FAN_GLOBAL_LISTENER is not set, this field is meaningless as
-the registration of events on individual inodes will dictate the
-reception of events.
-
-* FAN_ACCESS: every file access.
-* FAN_MODIFY: file modifications.
-* FAN_CLOSE: files are closed.
-* FAN_OPEN: open() calls.
-* FAN_ACCESS_PERM: like FAN_ACCESS, except that the process trying to
-access the file is put on hold while the fanotify client decides whether
-to allow the operation.
-* FAN_OPEN_PERM: like FAN_OPEN, but with the permission check.
-* FAN_EVENT_ON_CHILD: receive notification of events on inodes inside
-this subdirectory. (this is not a full recursive notification of all
-descendants, only direct children)
-* FAN_GLOBAL_LISTENER: notify for events on all files in the system.
-* FAN_SURVIVE_MODIFY: special flag that ignores should survive inode
-modification.  Discussed below.
-
-After the socket is bound events are attained using the read() syscall
-(recv* probably also works haven't tested).  This will result in the
-buffer being filled with one or more events like this:
-
-struct fanotify_event_metadata {
-        __u32 event_len;
-        __s32 fd;
-        __u32 mask;
-        __u32 f_flags;
-        __s32 pid;
-        __s32 tgid;
-        __u64 cookie;
-}  __attribute__((packed));
-
-fd specifies the new file descriptor that was created in the context of
-the listener.  (readlink of /proc/self/fd will give you A pathname)
-mask indicates the events type (bitwise OR of the event types listed
-above).  f_flags here is the f_flags the ORIGINAL process has the file
-open with.  pid and tgid are from the original process.  cookie is used
-when the listener needs to allow, deny, or delay the operation.
-
-If a FAN_ACCESS_PERM or FAN_OPEN_PERM event is received the listener
-must send a response before the 5 second timeout.  If no response is
-sent before the 5 second timeout the original operation is allowed.  If
-this happens too many times (10 in a row) the fanotify group is evicted
-from the kernel and will not get any new events.  Sending a response is
-done using the setsockopt() call with the socket options set to
-FANOTIFY_ACCESS_RESPONSE.  The buffer should contain a structure like:
-
-struct fanotify_so_access {
-        __u64 cookie;
-        __u32 response;
-}  __attribute__((packed));
-
-Where cookie is the cookie from the notification and response is one of:
-
-FAN_ALLOW: allow the original operation
-FAN_DENY: deny the original operation
-FAN_RESET_TIMEOUT: reset the timeout.
-
-The last main interface is the 'marking' of inodes.  The purpose of
-inode marks differ between 'directed' and 'global' listeners.  Directed
-fanotify listeners need to mark inodes of interest.  They do that also
-using setsockopt() of type FANOTIFY_SET_MARK with the buffer containing
-a structure like:
-
-struct fanotify_so_inode_mark {
-        __s32 fd;
-        __u32 mask;
-        __u32 ignored_mask;
-}  __attribute__((packed));
-
-Where fd is backed by the inode in question.  Mask is the events of
-interest (only used in directed mode) and ignored_mask is the mask of
-events which should be ignored.  
-
-The ignored_mask is cleared every time an inode receives a modification
-events unless FAN_SURVIVE_MODIFY is also set.  The ignored_mask is
-mainly used for 2 purposes.  Global listeners may just have no interest
-in lots of events, so they should spam inodes with an ignored mask.  The
-ignored mask is also used to 'cache' access decisions.  If the listener
-sets FAN_ACCESS_PERM in the ignored mask all access operations will be
-permitted without the call out to userspace.  If the inode is modified
-the ignored_mask will be cleared and userspace will again have to
-approve the access.  If userspace REALLY doesn't care ever they can use
-the special FAN_SURVIVE_MODIFY flag inside the ignored_mask.
-
-The only other current interface is the ability to ignore events by
-superblock magic number.  This makes it easy to ignore all events
-in /proc which can be difficult to accomplish firing FANOTIFY_SET_MARK
-with ignored_masks over and over as processes are created and destroyed.
-
-***********
-
-Future direction:
-There are 2 things I'm interested in adding.
-- Rename events.
-	The updatedb/mlocate people are interested in fanotify as a means to
-not thrash the harddrive every night.  They could instead update the db
-in real time as files are moved.
-
-- subtree notification.
-	Currently to only watch /home and all of it's descendants one must
-either register a directed watch on every directory or use a global
-listener.  The global listener with ignored_mask is not as bad as it
-sounds in my testing, but decent subtree registration and notification
-would be a big win in a lot of people's mind.
-
-***********
-
-Please, complaints? sortcomings? design flaws?  issues?  failures?  How
-can it be tweaked to suit your needs?
-
--Eric
+e-mail: mhiramat@redhat.com
 
