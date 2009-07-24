@@ -1,50 +1,315 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751786AbZGXXuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbZGXXuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751786AbZGXXuA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 19:50:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbZGXXt7
+	id S1754254AbZGXXuo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 19:50:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbZGXXun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 19:49:59 -0400
-Received: from mailservice.tudelft.nl ([130.161.131.5]:26660 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751256AbZGXXt6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 19:49:58 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -12.579
-Message-ID: <4A6A48A1.80608@tremplin-utc.net>
-Date: Sat, 25 Jul 2009 01:49:53 +0200
-From: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090623 Mandriva/2.0.0.22-1mdv2010.0 (2010.0) Thunderbird/2.0.0.22 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>, webmaster@kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, stable@kernel.org
-Subject: Re: Linux 2.6.27.28
-References: <20090724222746.GA30562@kroah.com>
-In-Reply-To: <20090724222746.GA30562@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 24 Jul 2009 19:50:43 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40121 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751444AbZGXXum (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 19:50:42 -0400
+Subject: Re: fanotify - overall design before I start sending patches
+From: Eric Paris <eparis@redhat.com>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       malware-list@dmesg.printk.net, Valdis.Kletnieks@vt.edu, greg@kroah.com,
+       jcm@redhat.com, douglas.leeder@sophos.com, tytso@mit.edu,
+       arjan@infradead.org, david@lang.hm, jengelh@medozas.de,
+       aviro@redhat.com, mrkafk@gmail.com, alexl@redhat.com, jack@suse.cz,
+       tvrtko.ursulin@sophos.com, a.p.zijlstra@chello.nl, hch@infradead.org,
+       alan@lxorguk.ukuu.org.uk, mmorley@hcl.in, pavel@suse.cz
+In-Reply-To: <20090724224813.GK27755@shareable.org>
+References: <1248466429.3567.82.camel@localhost>
+	 <20090724224813.GK27755@shareable.org>
+Content-Type: text/plain
+Date: Fri, 24 Jul 2009 19:49:27 -0400
+Message-Id: <1248479367.3567.133.camel@localhost>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Op 25-07-09 00:27, Greg KH schreef:
-> I'm announcing the release of the 2.6.27.28 kernel.  It fixes a
-> boot-time error with the 2.6.27.27 release.  If you don't have this
-> problem, no need to upgrade.
-> 
-> I'll also be replying to this message with a copy of the patch between
-> 2.6.27.27 and 2.6.27.28
-> 
-> The updated 2.6.27.y git tree can be found at:
->         git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.27.y.git
-> and can be browsed at the normal kernel.org git web browser:
->         http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=summary
-> 
-Hello,
-Currently, there is no clue on www.kernel.org that 2.6.27 is a "long
-term stable" kernel tree. Would it be possible to add a line to the page
-pointing to the latest version of this type of tree? I'm sure some
-people would love discovering that such thing exists :-)
+On Fri, 2009-07-24 at 23:48 +0100, Jamie Lokier wrote:
+> Eric Paris wrote:
 
-Eric
+> > fanotify kernel/userspace interaction is over a new socket protocol.  A
+> > listener opens a new socket in the new PF_FANOTIFY family.  The socket
+> > is then bound to an address.  Using the following struct:
+> > 
+> > struct fanotify_addr {
+> >         sa_family_t family;
+> >         __u32 priority;
+> >         __u32 group_num;
+> >         __u32 mask;
+> >         __u32 f_flags;
+> >         __u32 unused[16];
+> > }  __attribute__((packed));
+> > 
+> > The priority field indicates in which order fanotify listeners will get
+> > events.  Since 2 fanotify listeners would 'hear' each others events on
+> > the new fd they create fanotify listeners will not hear events generated
+> > by other fanotify listeners with a lower priority number.
+> 
+> I'm not sure if I understand the priority mechanism.  If it means that
+> events are only delivered to the highest priority listener, that makes
+> the fanotify subsystem virtually useless for things like 'enhanced
+> rsync' which someone else has mentioned.  Those programs need to know
+> they will receive all events, not miss some events when another
+> program is running.
+> 
+> But maybe I misunderstood the priority mechanism?
+
+The priority mechanism ONLY excludes events generated by processes which
+have an open fanotify listener.  (someone is going to barf when the see
+that patch)
+
+The problem was basically.
+
+Process A opens [file]
+Listener 1 gets the event about A and opens [file]
+Listener 2 gets the event about A and opens [file]
+Listener 1 gets the event about 2 and opens [file]
+Listener 2 gets the event about 1 and opens [file]
+Listener 1 gets the event about 2 and opens [file]
+.....   shit, see how this keeps going forever?
+
+Now that I type it out there might be some horribleness left since my
+solution was to only send events caused by 3 to listeners with priority
+< 3.  So given 3 listeners and the above situation we get
+
+Process A opens [file]
+Listener 1 gets the event about A and opens [file]
+Listener 2 gets the event about A and opens [file]
+Listener 3 gets the event about A and opens [file]
+Listener 1 gets the event about 2 and opens [file]
+Listener 1 gets the event about 3 and opens [file]
+Listener 2 gets the event about 3 and opens [file]
+Listener 1 gets the event about 2 and opens [file]
+done.
+
+But maybe I should jsut do the 'if you have fanotify open, you don't
+create other fanotify events'...   so everyone gets what they expect...
+
+
+
+
+> 
+> > The f_flags is the flags which the fanotify listener wishes to use when
+> > opening their notification fds.  On access scanners would want to use
+> > O_RDONLY, whereas HSM systems would need to use O_WRONLY.
+> 
+> Interesting.  An option for file change trackers who don't care about
+> the open file descriptor would be good too.  Perhaps they are just
+> logging.
+
+No open fd would be pretty worthless, you'd know 'some file opened' but
+you wouldn't know what file   :)   The open fd is the whole point of
+fanotify.
+
+> > fd specifies the new file descriptor that was created in the context of
+> > the listener.  (readlink of /proc/self/fd will give you A pathname)
+> > mask indicates the events type (bitwise OR of the event types listed
+> > above).  f_flags here is the f_flags the ORIGINAL process has the file
+> > open with.  pid and tgid are from the original process.  cookie is used
+> > when the listener needs to allow, deny, or delay the operation.
+> 
+> So far it looks quite similar to inotify, with some differences.
+> Some things taken away:
+> 
+>    - Very similar events, but missing a few like renames (which you
+>      are thinking of adding).
+>    - No file name for things that happen in a subdirectory.
+
+Actually I should be more clear about that.  If you call
+setsockopt(FANOTIFY_ADD_MARK) where
+
+struct fanotify_so_inode_mark {
+        __s32 fd;	= "/tmp/"
+        __u32 mask;	= (FAN_OPEN | FAN_EVENT_ON_CHILD);
+        __u32 ignored_mask; = 0
+};
+
+and someone opens /tmp/file1 you are going to get an open fd
+for /tmp/file1 NOT for /tmp.  This is different than inotify.
+
+>      Application expected to call readlink("/proc/self/fd") if it
+>      cares about the file name.  But that won't work for every kind of
+>      event!
+
+It does, since I only give you events where it works  :)
+
+> Some things (useful I agree) added:
+> 
+>    - Returns an open file descriptor to the affected file.
+>    - Returns some other attributes, like accessing pid/tgid (uid though?).
+>    - Can block the process trying to access the file.
+> 
+> API-wise, is there a particular reason for using a new socket
+> interface, rather than extending the inotify interface with a few more
+> flags and a different event structure?
+
+Since they are syscalls, they pretty much suck to change (setsockopt is
+SOOOOO much more versionable)
+
+
+> So you may have better
+> luck with a system call interface than using a socket.
+
+I'm going on the suggestion of Alan Cox, but honestly the interface is
+clearly segregated, so it can be changed if there is a better idea....
+
+
+
+> > struct fanotify_so_access {
+> >         __u64 cookie;
+> >         __u32 response;
+> > }  __attribute__((packed));
+> > 
+> > Where cookie is the cookie from the notification and response is one of:
+> 
+> What happens when a process sends a cookie that it did not receive,
+> but another process received it?
+
+Cookie's are specific to your fanotify socket.  If you response with an
+invalid cookie the setsockopt() call returns -EINVAL;
+
+> 
+> > FAN_ALLOW: allow the original operation
+> > FAN_DENY: deny the original operation
+> > FAN_RESET_TIMEOUT: reset the timeout.
+> > 
+> > The last main interface is the 'marking' of inodes.  The purpose of
+> > inode marks differ between 'directed' and 'global' listeners.  Directed
+> > fanotify listeners need to mark inodes of interest.  They do that also
+> > using setsockopt() of type FANOTIFY_SET_MARK with the buffer containing
+> > a structure like:
+> > 
+> > struct fanotify_so_inode_mark {
+> >         __s32 fd;
+> >         __u32 mask;
+> >         __u32 ignored_mask;
+> > }  __attribute__((packed));
+> > 
+> > Where fd is backed by the inode in question.  Mask is the events of
+> > interest (only used in directed mode) and ignored_mask is the mask of
+> > events which should be ignored.  
+> 
+> It's hard to see how this differs much from inotify_add_watch, except
+> - is this mark global to all processes, or local to the process
+> setting the mark?
+
+there are a LOT of similarities.  bind() is a lot like inotify_init().
+adding a mark is a lot like inotify_add_watch().....
+
+as in inotify setting a mark only applies to the socket it was
+associated with....
+
+> > The ignored_mask is cleared every time an inode receives a modification
+> > events unless FAN_SURVIVE_MODIFY is also set.  The ignored_mask is
+> > mainly used for 2 purposes.  Global listeners may just have no interest
+> > in lots of events, so they should spam inodes with an ignored mask.  The
+> > ignored mask is also used to 'cache' access decisions.  If the listener
+> > sets FAN_ACCESS_PERM in the ignored mask all access operations will be
+> > permitted without the call out to userspace.  If the inode is modified
+> > the ignored_mask will be cleared and userspace will again have to
+> > approve the access.  If userspace REALLY doesn't care ever they can use
+> > the special FAN_SURVIVE_MODIFY flag inside the ignored_mask.
+> 
+> I do like the idea of caching access decisions.  Are these flags
+> global to the whole system, or local to the listening process setting
+> the flags (or to the specific listener's socket)?
+
+socket.
+
+> > The only other current interface is the ability to ignore events by
+> > superblock magic number.  This makes it easy to ignore all events
+> > in /proc which can be difficult to accomplish firing FANOTIFY_SET_MARK
+> > with ignored_masks over and over as processes are created and destroyed.
+> > 
+> > ***********
+> > 
+> > Future direction:
+> 
+> Here's one more thing which may be needed to make hard guarantees for
+> security applications:
+> 
+>    - Mount events, which it would be natural for fanotify to block
+>      temporarily while it assesses the impact and/or synchronises it's
+>      map of the mounts against the change.  Mounts do change the set
+>      of visible files, after all.
+> 
+> > There are 2 things I'm interested in adding.
+> > - Rename events.
+> > 	The updatedb/mlocate people are interested in fanotify as a means to
+> > not thrash the harddrive every night.  They could instead update the db
+> > in real time as files are moved.
+> 
+> Great!
+> 
+> I'm interested in the same thing on narrower (but still large)
+> subdirectories, for things like enhanced rsync, make, git, indexing,
+> and complex caching of compiled things.  You get the idea: it has a
+> lot of uses.
+> 
+> > - subtree notification.
+> > 	Currently to only watch /home and all of it's descendants one must
+> > either register a directed watch on every directory or use a global
+> > listener.  The global listener with ignored_mask is not as bad as it
+> > sounds in my testing, but decent subtree registration and notification
+> > would be a big win in a lot of people's mind.
+> 
+> I believe we've talked about one suggestion for how to do this, on
+> lwn.net.  I'll repeat it here.
+> 
+> Efficient recursive notifications method:
+> 
+>    - You register for event on a directory with a RECURSIVE flag "give
+>      me events for this directory and all paths below it".
+> 
+>    - That listener gets events for any access of the appropriate type
+>      whose path is via that directory, *using the specific run-time
+>      path used for the access*.
+> 
+>    - That _doesn't_ mean hard-link files need to know all their parent
+>      directories, which would be silly and impossible.  The event path
+>      is just the one used at run-time for access, by the application
+>      attempting to open/write/whatever.
+> 
+>    - If a listener needs to track all accesses to a particular
+>      hard-linked file, it's the responsibility of the listener to
+>      ensure it listens to enough directories to cover every path to
+>      that file - or listen to the file directly.  It knows from
+>      i_nlink and the mount map when it has enough directories.
+> 
+>    - Notifying just the access path may seem counterintuitive, but in
+>      fact it's what inotify and dnotify do already, and it does
+>      actually work.  Often a listener is maintaining a cache or index
+>      of some kind, in which case it will already have sufficient
+>      knowledge about where the hard-linked files are (or know that it
+>      needs an initial indexing), and whether it has covered enough
+>      parent directories to see all accesses to them.
+> 
+>    - In practice it means each access traverses the path, following
+>      parent directories until reaching a mount point, broadcasting
+>      events on each one where there's a recursive listener.  That's
+>      not as inefficient as it looks, because paths don't usually have
+>      a large number of components.
+> 
+>    - I'm not sure exactly how fast/slow it is, though, and it may a
+>      few thoughtfully cached flags in each dentry to elide traversals.
+>      I won't discuss the details here, for fear of complicating the
+>      discussion too much.  They might well mesh with the 'access
+>      decision cache' flags you mentioned.
+> 
+>    - It is necessary that link(2) create an attribute-change event
+>      (for i_nlink!) on the source path of the link.  dnotify/inotify
+>      don't do that now (unless they changed recently), but they should
+>      to make this work.
+> 
+> Please shoot down the idea.  I think it is good enough
+> for reliable subtree notifications, but I'd love to be proven wrong.
+> 
+> -- Jamie
+
