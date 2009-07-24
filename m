@@ -1,99 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbZGXQ2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbZGXQfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753253AbZGXQ2v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 12:28:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbZGXQ2u
+	id S1753024AbZGXQfZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 12:35:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbZGXQfZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 12:28:50 -0400
-Received: from h155.mvista.com ([63.81.120.155]:59694 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751847AbZGXQ2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 12:28:49 -0400
-Message-ID: <4A69E164.9040403@ru.mvista.com>
-Date: Fri, 24 Jul 2009 20:29:24 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Fri, 24 Jul 2009 12:35:25 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44826 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751852AbZGXQfY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 12:35:24 -0400
+Date: Fri, 24 Jul 2009 09:34:35 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Regression] kdesu broken
+In-Reply-To: <20090724164058.21a054e6@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.LFD.2.01.0907240930120.3960@localhost.localdomain>
+References: <200907240145.31935.rjw@sisk.pl> <2c0942db0907231721q124dc8f9mdbe64ed33c69ffbf@mail.gmail.com> <200907241721.45943.rjw@sisk.pl> <20090724164058.21a054e6@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Trevor Pace <tr212206@DAL.CA>
-Cc: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Removed useless retval variables in usb-serial.c
-References: <20090724124803.ltfbg57ooyoko0gs@my5.dal.ca>
-In-Reply-To: <20090724124803.ltfbg57ooyoko0gs@my5.dal.ca>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
 
-Trevor Pace wrote:
 
-> Removed useless return value variables.
+On Fri, 24 Jul 2009, Alan Cox wrote:
 
-    Are you sure gcc doesn't optimize them away? :-)
-
-> Signed-off By: Trevor Pace <trevor.pace@dal.ca>
-
-> ================================================================================
-
-> diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
-> index bd7581b..faec1d1 100644
-> --- a/drivers/usb/serial/usb-serial.c
-> +++ b/drivers/usb/serial/usb-serial.c
-
-[...]
-
-> @@ -437,11 +432,9 @@ static int serial_ioctl(struct tty_struct *tty, struct file
-> *file,
+> On Fri, 24 Jul 2009 17:21:45 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
->  	/* pass on to the driver specific version of this function
->  	   if it is available */
-> -	if (port->serial->type->ioctl) {
-> -		retval = port->serial->type->ioctl(tty, file, cmd, arg);
-> -	} else
-> -		retval = -ENOIOCTLCMD;
-> -	return retval;
-> +	if (port->serial->type->ioctl)
-> +		return port->serial->type->ioctl(tty, file, cmd, arg);
-> +        return -ENOIOCTLCMD;
-
-    Spaces instead of tab here...
-
-> @@ -1185,24 +1178,21 @@ int usb_serial_suspend(struct usb_interface *intf,
-> pm_message_t message)
->  	}
+> > On Friday 24 July 2009, Ray Lee wrote:
+> > > On Thu, Jul 23, 2009 at 4:45 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> > > > A recent kernel change broke kdesu (from KDE 4.2) on my test boxes.  ISTR a
+> > > > discussion about that, but I can't find it right now.  Any clues?
+> > > 
+> > > See the thread starting here: ("possible regression with pty.c commit")
+> > >    http://lkml.org/lkml/2009/7/11/125
+> > 
+> > Thanks for the pointer.
+> > 
+> > Well, I thought we were expected to avoid breaking existing user space, even
+> > if that were buggy etc.
 > 
->  	if (serial->type->suspend)
-> -		r = serial->type->suspend(serial, message);
-> +		return serial->type->suspend(serial, message);
-> 
-> -	return r;
-> +	return 0;
->  }
->  EXPORT_SYMBOL(usb_serial_suspend);
-> 
->  int usb_serial_resume(struct usb_interface *intf)
->  {
->  	struct usb_serial *serial = usb_get_intfdata(intf);
-> -	int rv;
-> 
->  	serial->suspending = 0;
-> -	if (serial->type->resume)
-> -		rv = serial->type->resume(serial);
-> -	else
-> -		rv = usb_serial_generic_resume(serial);
-> 
-> -	return rv;
-> +	return (serial->type->resume)
+> I don't know where you got that idea from. Avoiding breaking user space
+> unneccessarily is good but if its buggy you often can't do anything about
+> it.
 
-    Parens totally not needed here.
+Alan, he got that idea from me.
 
-> +		? serial->type->resume(serial)
-> +		: usb_serial_generic_resume(serial);
->  }
->  EXPORT_SYMBOL(usb_serial_resume);
+We don't do regressions. If user space depended on old behavior, we don't 
+change behavior.
 
-WBR, Sergei
+And regardless of that, I do not think EIO is the right thing to return at 
+all. If the other side of a pty went away, return 0 and possibly send a 
+HUP, or whatever. What did we do before?
+
+			Linus
