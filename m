@@ -1,109 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbZGXWbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbZGXWdx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754843AbZGXWbc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 18:31:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754824AbZGXWbb
+	id S1754856AbZGXWdx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 18:33:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbZGXWdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 18:31:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60111 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751714AbZGXWba (ORCPT
+	Fri, 24 Jul 2009 18:33:52 -0400
+Received: from mga05.intel.com ([192.55.52.89]:7962 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751834AbZGXWdv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 18:31:30 -0400
-Date: Fri, 24 Jul 2009 15:29:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matt Fleming <matt@console-pimps.org>
-Cc: ohad@bencohen.org, ian@mnementh.co.uk, pierre@ossman.eu,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       nico@cam.org, nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com,
-       tony@atomide.com, david-b@pacbell.net, manuel.lauss@gmail.com,
-       mirq-linux@rere.qmqm.pl, ppisa@pikron.com, jarkko.lavinen@nokia.com,
-       ben@fluff.org, saschasommer@freenet.de, avorontsov@ru.mvista.com,
-       oakad@yahoo.com, HaraldWelte@viatech.com, JosephChan@via.com.tw,
-       adrian.hunter@nokia.com
-Subject: Re: New MMC maintainer needed
-Message-Id: <20090724152944.51402e87.akpm@linux-foundation.org>
-In-Reply-To: <20090723135209.GD6570@console-pimps.org>
-References: <20090714153601.6dfe70ff@mjolnir.ossman.eu>
-	<20090722151744.fffd7bf5.akpm@linux-foundation.org>
-	<4A67A9E8.5080002@mnementh.co.uk>
-	<20090723055447.GA12211@console-pimps.org>
-	<20090722232259.d0ff3495.akpm@linux-foundation.org>
-	<bd5b16740907222350w54ca7b21w6b47ed94c1d7d16e@mail.gmail.com>
-	<20090723135209.GD6570@console-pimps.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Jul 2009 18:33:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,266,1246863600"; 
+   d="scan'208";a="710849354"
+Date: Sat, 25 Jul 2009 00:35:55 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC] mfd: Allow multiple MFD cells with the same name
+Message-ID: <20090724223554.GA10055@sortiz.org>
+References: <1246550798-9936-1-git-send-email-broonie@opensource.wolfsonmicro.com> <20090713113017.GB24783@sirena.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090713113017.GB24783@sirena.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Jul 2009 14:52:09 +0100
-Matt Fleming <matt@console-pimps.org> wrote:
+Hi Mark,
 
-> On Thu, Jul 23, 2009 at 09:50:03AM +0300, Ohad Ben-Cohen wrote:
-> > Hi Andrew,
+On Mon, Jul 13, 2009 at 12:30:18PM +0100, Mark Brown wrote:
+> On Thu, Jul 02, 2009 at 05:06:38PM +0100, Mark Brown wrote:
+> > Provide basic support for MFDs having multiple cells of a given
+> > type with different IDs by adding an id to the mfd_cell structure
+> > and then adding that to the id passed in to mfd_add_devices().
 > > 
-> > On Thu, Jul 23, 2009 at 9:22 AM, Andrew Morton<akpm@linux-foundation.org> wrote:
-> > > I actually already have a little pile of MMC things queued:
+> > As it stands this approach requires that MFDs using this feature
+> > deal with ensuring that there aren't any ID collisions resulting
+> > from multiple MFDs of the same type being instantiated. This needs
+> > to happen with the existing code too, but with this approach there
+> > is a knock on effect on the IDs for non-duplicated devices.
 > > 
-> > Please also consider queuing up the attached patch as well.
-> > 
-> > The patch is removing the current SDIO cards 1.8V limit, which is
-> > needed for embedded
-> > SDIO devices like TI 127x WLAN devices (with 1.8V MMC controllers like we
-> > have on the ZOOM2 boards for example).
-> > 
-> > Thank you,
-> > Ohad.
+> > Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 > 
-> > From f9ba45b537dd12fc09443ee29c48860665f8ac82 Mon Sep 17 00:00:00 2001
-> > From: Ohad Ben-Cohen <ohad@bencohen.org>
-> > Date: Wed, 15 Jul 2009 09:21:41 +0300
-> > Subject: [PATCH] sdio: do not ignore MMC_VDD_165_195
+> Samuel, do you have any thoughts on this patch?  As I said...
+I think it's safe to expect people that decide they need this feature will be
+careful enough to make sure they dont get ID collisions.
+
+ 
+> > I'm not 100% convinced that this is the best way to do this but I can't
+> > think of anything better
+> 
+> ...but it'd be really helpful to get some idea if this approach is going
+> to be viable for some code I'm currently working on.
+I'm ok with this patch, but I'd like the new cell->id field to be more
+documented. In particular we should mention that one should leave it to 0
+unless trying to add several cells of the same type.
+I'll push this patch once I'll be back from vacation, thanks.
+
+Cheers,
+Samuel.
+
+
+> 
 > > 
-> > This is needed for 1.8V embedded SDIO devices and supporting host controllers
-> > (e.g. TI 127x and ZOOM2 boards)
+> >  drivers/mfd/mfd-core.c   |    2 +-
+> >  include/linux/mfd/core.h |    1 +
+> >  2 files changed, 2 insertions(+), 1 deletions(-)
 > > 
-> > Signed-off-by: Ohad Ben-Cohen <ohad@bencohen.org>
-> > ---
-> >  drivers/mmc/core/sdio.c |    7 -------
-> >  1 files changed, 0 insertions(+), 7 deletions(-)
-> > 
-> > diff --git a/drivers/mmc/core/sdio.c b/drivers/mmc/core/sdio.c
-> > index fb99ccf..6f221dc 100644
-> > --- a/drivers/mmc/core/sdio.c
-> > +++ b/drivers/mmc/core/sdio.c
-> > @@ -275,13 +275,6 @@ int mmc_attach_sdio(struct mmc_host *host, u32 ocr)
-> >  		ocr &= ~0x7F;
-> >  	}
+> > diff --git a/drivers/mfd/mfd-core.c b/drivers/mfd/mfd-core.c
+> > index 54ddf37..ae15e49 100644
+> > --- a/drivers/mfd/mfd-core.c
+> > +++ b/drivers/mfd/mfd-core.c
+> > @@ -25,7 +25,7 @@ static int mfd_add_device(struct device *parent, int id,
+> >  	int ret = -ENOMEM;
+> >  	int r;
 > >  
-> > -	if (ocr & MMC_VDD_165_195) {
-> > -		printk(KERN_WARNING "%s: SDIO card claims to support the "
-> > -		       "incompletely defined 'low voltage range'. This "
-> > -		       "will be ignored.\n", mmc_hostname(host));
-> > -		ocr &= ~MMC_VDD_165_195;
-> > -	}
-> > -
-> >  	host->ocr = mmc_select_voltage(host, ocr);
+> > -	pdev = platform_device_alloc(cell->name, id);
+> > +	pdev = platform_device_alloc(cell->name, id + cell->id);
+> >  	if (!pdev)
+> >  		goto fail_alloc;
 > >  
-> >  	/*
+> > diff --git a/include/linux/mfd/core.h b/include/linux/mfd/core.h
+> > index 49ef857..11d740b 100644
+> > --- a/include/linux/mfd/core.h
+> > +++ b/include/linux/mfd/core.h
+> > @@ -23,6 +23,7 @@
+> >   */
+> >  struct mfd_cell {
+> >  	const char		*name;
+> > +	int			id;
+> >  
+> >  	int			(*enable)(struct platform_device *dev);
+> >  	int			(*disable)(struct platform_device *dev);
 > > -- 
-> > 1.5.4.3
+> > 1.6.3.3
+> > 
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
 > > 
 > 
-> Looks OK to me, I'm unaware of a reason to not allow a card to use
-> MMC_VDD_165_195 if that's what it wants.
-> 
+> -- 
+> "You grabbed my hand and we fell into it, like a daydream - or a fever."
 
-Yes, that code was there from day #1, via Pierre's original commit.  There
-is no indication in either the code comments or the changelog why it was done
-this way.
-
-Other ways of finding out why this code is there include:
-
-a) search the mailing list for review discussion.  I can't find it
-   in my lkml archive.
-
-b) ask Pierre :)
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
