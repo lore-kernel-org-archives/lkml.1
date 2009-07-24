@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752263AbZGXJW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752314AbZGXJXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752263AbZGXJW4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 05:22:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZGXJW4
+	id S1752314AbZGXJXc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 05:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZGXJXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 05:22:56 -0400
-Received: from mail-pz0-f192.google.com ([209.85.222.192]:46868 "EHLO
-	mail-pz0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751787AbZGXJWz (ORCPT
+	Fri, 24 Jul 2009 05:23:32 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:50486 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751147AbZGXJXb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 05:22:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=lJA2qUeiSsnCLxwyF9PhNTHlbWbFQYG1/QhPpEMLkjPhoQBaaSevAs7cYQwMLOBx2t
-         uyVZNpndOVKYtLjruTUuC+qeBnkNJ4a+2lDPkvjyqx4WKhyAI+sQbEfIh55MvFn/WaM2
-         XZDb0ICxWy9iy3XgSfxyEQddRodnAsVvmRah0=
-Date: Fri, 24 Jul 2009 17:25:05 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: Trevor Pace <trevorpace@gmail.com>
-Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: PATCH: Removed useless variable in arch/x86/boot/tty.c puts()
-Message-ID: <20090724092505.GD6372@cr0.nay.redhat.com>
-References: <bad58e960907221751h4520c359u47b29edd77f02db1@mail.gmail.com>
+	Fri, 24 Jul 2009 05:23:31 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@monstr.eu
+Subject: Re: generic uaccess.h
+Date: Fri, 24 Jul 2009 11:20:22 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-3-generic; KDE/4.2.96; x86_64; ; )
+References: <4A69651E.7040305@monstr.eu>
+In-Reply-To: <4A69651E.7040305@monstr.eu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       John Williams <john.williams@petalogix.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <bad58e960907221751h4520c359u47b29edd77f02db1@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200907241120.22483.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+QfTE81zlocCl62p0p0laNcZO67o6OG8APMFJ
+ KJMCL73dKf7r63C3ow9tnews2wIpt5T+OLb/xhumK7PSgMO8Bv
+ iQrVPUyfTgnE6qggvMAvA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 22, 2009 at 09:51:28PM -0300, Trevor Pace wrote:
->Change: Removed needless counting integer.
->
->Applies to kernel version 2.6.30.2.
->
+On Friday 24 July 2009, Michal Simek wrote:
+> I have just look at asm-generic uaccess.h and there is one thing which
+> seems to me wrong.
+> 
+> For put_user macro - you use __copy_to_user but you have for 64bit case
+> ifdef CONFIG_64BIT
+> but  look at fs/eventfd: eventfd_read function. At least for this
+> function(syscall) is necessary "return" 64bit
+> value on 32bit machines too.
+> IMHO that ifdef CONFIG_64BIT shouldn't be there.
+> 
+> What do you think?
+> If you agree with me, I'll generate proper patch with description.
 
-This was already done by HPA, please check the latest Linus tree.
+The code was intentional, because 32 bit architectures normally
+don't acces u64 values efficiently. I would expect the memcpy
+to produce better object code in that case.
+Did you see an actual bug in my version or are you only
+guessing that the assignment should work better than the
+memcpy?
 
-Thanks.
+What object code do you get with
 
+int test(unsigned long long __user *out, unsigned long long in)
+{
+	return put_user(in, ptr);
+}
 
->Signed-off-by: Trevor Pace <tr212206@dal.ca>
->
->=====================================================================
->
->--- arch/x86/boot/tty.c	2009-07-22 19:59:33.000000000 -0300
->+++ arch/x86/boot/tty.c	2009-07-22 21:37:25.000000000 -0300
->@@ -35,11 +35,8 @@ void __attribute__((section(".inittext")
->
-> void __attribute__((section(".inittext"))) puts(const char *str)
-> {
->-	int n = 0;
->-	while (*str) {
->+	while (*str)
-> 		putchar(*str++);
->-		n++;
->-	}
-> }
->
-> /*
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+in both cases?
+
+	Arnd <><
