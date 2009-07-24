@@ -1,89 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbZGXALH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750892AbZGXAOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754002AbZGXALH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 20:11:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbZGXALH
+	id S1750892AbZGXAOc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 20:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750773AbZGXAOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 20:11:07 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:61832 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753320AbZGXALF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 20:11:05 -0400
+	Thu, 23 Jul 2009 20:14:32 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:50917 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750759AbZGXAOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 20:14:31 -0400
+Date: Thu, 23 Jul 2009 17:14:29 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org
+Subject: [PATCH RFC -tip 0/4] RCU cleanups and simplified preemptable RCU
+Message-ID: <20090724001429.GA17374@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
-In-Reply-To: <20090723212506.GS28158@elf.ucw.cz>
-References: <20090713220726.GA28375@elf.ucw.cz>
-	 <20090714094629.GB2076@elf.ucw.cz>
-	 <d6200be20907141507s39b54cccq9f0cedc325d3a203@mail.gmail.com>
-	 <20090714221638.GA6512@elf.ucw.cz>
-	 <d6200be20907141545k2b40b790x1af853b89517891c@mail.gmail.com>
-	 <20090719212330.GI26511@elf.ucw.cz>
-	 <d6200be20907192043w3f1aa2abvd0125163e6f5519c@mail.gmail.com>
-	 <20090721101103.GD4133@elf.ucw.cz>
-	 <d6200be20907211812l47012c00i1fc7de53db97d702@mail.gmail.com>
-	 <20090723212506.GS28158@elf.ucw.cz>
-Date: Thu, 23 Jul 2009 17:11:04 -0700
-Message-ID: <d6200be20907231711hdf8173avea686b63db157b93@mail.gmail.com>
-Subject: Re: HTC: touchscreen driver
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Brian Swetland <swetland@google.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 23, 2009 at 2:25 PM, Pavel Machek<pavel@ucw.cz> wrote:
-> On Tue 2009-07-21 18:12:03, Arve Hj?nnev?g wrote:
->> On Tue, Jul 21, 2009 at 3:11 AM, Pavel Machek<pavel@ucw.cz> wrote:
->> > On Sun 2009-07-19 20:43:10, Arve Hj?nnev?g wrote:
->> >> On Sun, Jul 19, 2009 at 2:23 PM, Pavel Machek<pavel@ucw.cz> wrote:
->> >> >
->> >> >> > Applying small patch on top of cleaned up driver should be better than
->> >> >> > carrying whole driver itself, right?
->> >> >>
->> >> >> Perhaps, but the only problem I encountered with this driver so far
->> >> >> was when calling disable_irq from the interrupt handler stopped
->> >> >> working on non-smp systems in 2.6.30 (which is another patch you
->> >> >> should probably apply first).
->> >> >
->> >> > How do I get that patch? git pull on msm-2.6.29 tree?
->> >>
->> >> No it is in the android-msm-2.6.30-rc2-test branch at
->> >> git://android.git.kernel.org/kernel/experimental.git (commit
->> >> 9f89902daf7a3c6fdd6b0c7494f3cc82d5e09217).
->> >
->> > Could you inline the patch? I tried to pull it off the web interface,
->> > but it did not work for some reason.
->>
->> git fetch git://android.git.kernel.org/kernel/experimental.git
->> android-msm-2.6.30-rc2-test
->> git cherry-pick 9f89902daf7a3c6fdd6b0c7494f3cc82d5e09217
->
-> So I spent 10 minutes downloading patch you could have inlined... only
-> to find out that review already pointed nosync issue (and I fixed swap
-> independetly)...
+[Not for inclusion.]
 
-Sorry, I thought it was clear what it contained.
+This patchset contains some RCU cleanups as follows:
 
-I'm a little confused why you did not already have this though. This
-is the same branch I pushed specifically so you could get at it a
-month ago, and you said you got it booting back then.
+o	Move private definitions from include/linux/rcutree.h to
+	kernel/rcutree.h
 
->
->> That way you will hopefully not add question marks to my name.
->
-> ...and I still don't know what your name is. My terminal displays "Arve
-> Hj#罩nev##g <arve@android.com>" :-(.
+o	Rename variables and functions so that RCU-sched is an
+	underlying definition, along with RCU-bh and (when so
+	configured) RCU-preempt.  RCU then maps to either RCU-sched
+	or RCU-preempt, depending on configuration.
 
-That does not look right. It displays correctly for me in the mailing
-list archives:
-http://lkml.org/lkml/2009/7/21/496
+o	Consolidate sparse and lockdep into include/linux/rcupdate.h
+	so that all RCU implementations are set up properly.
 
-gitk also works for me. git log only works if you are using a utf8
-terminal (or have set the character set in your gitconfig).
+With these in place, we add configurable preemptable-RCU functionality
+to kernel/rcutree.c.  This new implementation has much faster and
+simpler read-side primitives (roughly that of Classic RCU built with
+CONFIG_PREEMPT), and has update-side performance equal to Classic RCU (at
+least in absence of blocking/preemption of read-side critical sections).
+This new implementation should eventually replace the old preemptable RCU,
+which would remove 2099 lines of code from the kernel.
 
--- 
-Arve Hjønnevåg
+This patchset is undoubtably buggy, and does not have RCU priority
+boosting, though it does have the necessary tracking of tasks blocked
+in RCU read-side critical sections.
+
+ Documentation/RCU/trace.txt   |   14 
+ b/Documentation/RCU/trace.txt |    7 
+ b/include/linux/init_task.h   |   15 
+ b/include/linux/rcupdate.h    |   21 -
+ b/include/linux/rcupreempt.h  |    4 
+ b/include/linux/rcutree.h     |  211 ------------
+ b/include/linux/sched.h       |   13 
+ b/init/Kconfig                |   22 -
+ b/kernel/Makefile             |    1 
+ b/kernel/exit.c               |    1 
+ b/kernel/fork.c               |    6 
+ b/kernel/rcupreempt.c         |    8 
+ b/kernel/rcutree.c            |    2 
+ b/kernel/rcutree.h            |  238 +++++++++++++
+ b/kernel/rcutree_plugin.h     |  414 +++++++++++++++++++++++
+ b/kernel/rcutree_trace.c      |    1 
+ b/kernel/sched.c              |    2 
+ b/kernel/softirq.c            |    4 
+ include/linux/rcupdate.h      |  136 ++++++-
+ include/linux/rcupreempt.h    |   20 -
+ include/linux/rcutree.h       |  707 +---------------------------------------
+ kernel/rcupreempt.c           |   16 
+ kernel/rcutree.c              |  317 ++++++++++++------
+ kernel/rcutree.h              |  730 +++++++++++++++++++++++++++++++++++++++++-
+ kernel/rcutree_trace.c        |   63 +--
+ kernel/sched.c                |    4 
+ kernel/softirq.c              |    8 
+ 27 files changed, 1882 insertions(+), 1103 deletions(-)
