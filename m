@@ -1,101 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751544AbZGXEX2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751633AbZGXEb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751544AbZGXEX2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 00:23:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZGXEX1
+	id S1751633AbZGXEb6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 00:31:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbZGXEb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 00:23:27 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:44688 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751530AbZGXEX0 (ORCPT
+	Fri, 24 Jul 2009 00:31:57 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:39327 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750847AbZGXEb5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 00:23:26 -0400
-Message-ID: <4A6935E0.3080002@ct.jp.nec.com>
-Date: Fri, 24 Jul 2009 13:17:36 +0900
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Fri, 24 Jul 2009 00:31:57 -0400
+Date: Fri, 24 Jul 2009 10:00:01 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Ken Chen <kenchen@google.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: CFS group scheduler fairness broken starting from 2.6.29-rc1
+Message-ID: <20090724043001.GC5304@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20090723075735.GA18878@in.ibm.com> <b040c32a0907231517l265a9528w628d48fa3625e261@mail.gmail.com>
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] task_struct cleanup: make binfmt module get and put per
- mm_struct
-References: <4A56FEF7.80207@ct.jp.nec.com> <20090722132302.a9889eb3.akpm@linux-foundation.org> <20090722220353.88B2A67B6E@magilla.sf.frob.com> <20090723161806.GA5690@redhat.com> <4A68FD3B.7040606@ct.jp.nec.com> <4A693569.1090009@ct.jp.nec.com>
-In-Reply-To: <4A693569.1090009@ct.jp.nec.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <b040c32a0907231517l265a9528w628d48fa3625e261@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+On Thu, Jul 23, 2009 at 03:17:18PM -0700, Ken Chen wrote:
+> On Thu, Jul 23, 2009 at 12:57 AM, Bharata B
+> Rao<bharata@linux.vnet.ibm.com> wrote:
+> > Hi,
+> >
+> > Group scheduler fainess is broken since 2.6.29-rc1. git bisect led me
+> > to this commit:
+> >
+> > commit ec4e0e2fe018992d980910db901637c814575914
+> > Author: Ken Chen <kenchen@google.com>
+> > Date:   Tue Nov 18 22:41:57 2008 -0800
+> >
+> >    sched: fix inconsistency when redistribute per-cpu tg->cfs_rq shares
+> >
+> >    Impact: make load-balancing more consistent
+> > ....
+> >
+> > ======================================================================
+> >                        % CPU time division b/n groups
+> > Group           2.6.29-rc1              2.6.29-rc1 w/o the above patch
+> > ======================================================================
+> > a with 8 tasks  44                      31
+> > b with 5 tasks  32                      34
+> > c with 3 tasks  22                      34
+> > ======================================================================
+> > All groups had equal shares.
+> 
+> What value did you use for each task_group's share?  For very large
+> value of tg->shares, it could be that all of the boost went to one CPU
+> and subsequently causes load-balancer to shuffle tasks around.  Do you
+> see any unexpected task migration?
 
-The binfmt is a member of mm_struct, so it can be handled per mm_struct
-instead of task_struct.
+Used default 1024 for each group.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- kernel/exit.c |    3 ---
- kernel/fork.c |   11 +++++------
- 2 files changed, 5 insertions(+), 9 deletions(-)
+Without your patch, each of the tasks see around 165 migrations during
+a 60s run, but with your patch, they see 125 migrations (as per
+se.nr_migrations). I am using a 8CPU machine here.
 
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 07524fa..77b01be 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -953,9 +953,6 @@ NORET_TYPE void do_exit(long code)
- 	tsk->exit_code = code;
- 	taskstats_exit(tsk, group_dead);
- 
--	if (tsk->mm && tsk->mm->binfmt)
--		module_put(tsk->mm->binfmt->module);
--
- 	exit_mm(tsk);
- 
- 	if (group_dead)
-diff --git a/kernel/fork.c b/kernel/fork.c
-index b81223a..3f3de29 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -494,6 +494,8 @@ void mmput(struct mm_struct *mm)
- 			spin_unlock(&mmlist_lock);
- 		}
- 		put_swap_token(mm);
-+		if (mm->binfmt)
-+			module_put(mm->binfmt->module);
- 		mmdrop(mm);
- 	}
- }
-@@ -619,6 +621,9 @@ struct mm_struct *dup_mm(struct task_struct *tsk)
- 	mm->hiwater_rss = get_mm_rss(mm);
- 	mm->hiwater_vm = mm->total_vm;
- 
-+	if (mm->binfmt && !try_module_get(mm->binfmt->module))
-+		goto free_pt;
-+
- 	return mm;
- 
- free_pt:
-@@ -1008,9 +1013,6 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 	if (!try_module_get(task_thread_info(p)->exec_domain->module))
- 		goto bad_fork_cleanup_count;
- 
--	if (p->mm && p->mm->binfmt && !try_module_get(p->mm->binfmt->module))
--		goto bad_fork_cleanup_put_domain;
--
- 	p->did_exec = 0;
- 	delayacct_tsk_init(p);	/* Must remain after dup_task_struct() */
- 	copy_flags(clone_flags, p);
-@@ -1295,9 +1297,6 @@ bad_fork_cleanup_cgroup:
- #endif
- 	cgroup_exit(p, cgroup_callbacks_done);
- 	delayacct_tsk_free(p);
--	if (p->mm && p->mm->binfmt)
--		module_put(p->mm->binfmt->module);
--bad_fork_cleanup_put_domain:
- 	module_put(task_thread_info(p)->exec_domain->module);
- bad_fork_cleanup_count:
- 	atomic_dec(&p->cred->user->processes);
--- 
-1.6.3.3
-
+Regards,
+Bharata.
