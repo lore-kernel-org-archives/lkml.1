@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753062AbZGXPlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753263AbZGXPl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753062AbZGXPlO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 11:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752896AbZGXPlL
+	id S1753263AbZGXPl3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 11:41:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbZGXPl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 11:41:11 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48338 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752672AbZGXPlI (ORCPT
+	Fri, 24 Jul 2009 11:41:28 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:19361 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753220AbZGXPl1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 11:41:08 -0400
-Date: Fri, 24 Jul 2009 16:40:58 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ray Lee <ray-lk@madrabbit.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Regression] kdesu broken
-Message-ID: <20090724164058.21a054e6@lxorguk.ukuu.org.uk>
-In-Reply-To: <200907241721.45943.rjw@sisk.pl>
-References: <200907240145.31935.rjw@sisk.pl>
-	<2c0942db0907231721q124dc8f9mdbe64ed33c69ffbf@mail.gmail.com>
-	<200907241721.45943.rjw@sisk.pl>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 24 Jul 2009 11:41:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=e+rcG2XYlGp0DAYx0tTPzCRDW2uUBW61hF1iUyeqUVqhYY+w81F/jt95eAYkq8sGiK
+         qoMNHotjFkhSklRehA6MisRGSl6TiCIKY1cVFIb7cDTvBbsggLYR4i/nokSpJ8fovWcF
+         RU6DyPQbR3RYSraeDqLWPmsEi1/dOa6KNNPGw=
+MIME-Version: 1.0
+In-Reply-To: <20090723150517.fbbd03dc.akpm@linux-foundation.org>
+References: <200907191659.47179.czoccolo@gmail.com>
+	 <20090723150517.fbbd03dc.akpm@linux-foundation.org>
+Date: Fri, 24 Jul 2009 17:41:26 +0200
+Message-ID: <4e5e476b0907240841y183a4c08r3abf3d4fb7489284@mail.gmail.com>
+Subject: Re: [PATCH] cpuidle: menu governor: reduce latency on exit
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: venkatesh.pallipadi@intel.com, abelay@novell.com,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Jul 2009 17:21:45 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Hi Andrew,
+the expected effect is to reduce processor wakeup latency from sleep (C-states).
 
-> On Friday 24 July 2009, Ray Lee wrote:
-> > On Thu, Jul 23, 2009 at 4:45 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> > > A recent kernel change broke kdesu (from KDE 4.2) on my test boxes.  ISTR a
-> > > discussion about that, but I can't find it right now.  Any clues?
-> > 
-> > See the thread starting here: ("possible regression with pty.c commit")
-> >    http://lkml.org/lkml/2009/7/11/125
-> 
-> Thanks for the pointer.
-> 
-> Well, I thought we were expected to avoid breaking existing user space, even
-> if that were buggy etc.
+We are speaking of few hundreds of cycles reduction out of a several
+microseconds latency (determined by the hardware transition), so it is
+difficult to measure.
 
-I don't know where you got that idea from. Avoiding breaking user space
-unneccessarily is good but if its buggy you often can't do anything about
-it.
+Corrado
 
-Alan
+On Fri, Jul 24, 2009 at 12:05 AM, Andrew
+Morton<akpm@linux-foundation.org> wrote:
+> On Sun, 19 Jul 2009 16:59:46 +0200
+> Corrado Zoccolo <czoccolo@gmail.com> wrote:
+>
+>> This patch moves the state residency accounting and statistics
+>> computation off the hot exit path.
+>> On exit, the need to recompute statistics is recorded, and new
+>> statistics will be computed when menu_select is called again.
+>>
+>
+> Was there any observed and/or measured effect as a result of this patch?
+>
+> If so, please send a description of that effect, thanks.
+>
+>
+
+
+
+-- 
+__________________________________________________________________________
+
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
