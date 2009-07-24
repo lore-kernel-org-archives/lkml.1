@@ -1,109 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbZGXQMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbZGXQMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753459AbZGXQMy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 12:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbZGXQMv
+	id S1753400AbZGXQMt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 12:12:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbZGXQMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 12:12:51 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:51203 "EHLO
+	Fri, 24 Jul 2009 12:12:48 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:51198 "EHLO
 	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753414AbZGXQMu (ORCPT
+	by vger.kernel.org with ESMTP id S1752698AbZGXQMq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 12:12:50 -0400
-Subject: [PATCH 7/8] kmemleak: Inform kmemleak about kernel stack allocation
+	Fri, 24 Jul 2009 12:12:46 -0400
+Subject: [PATCH 6/8] kmemleak: Printing of the objects hex dump
 To: linux-kernel@vger.kernel.org
 From: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Date: Fri, 24 Jul 2009 17:12:41 +0100
-Message-ID: <20090724161240.5752.6828.stgit@pc1117.cambridge.arm.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+Date: Fri, 24 Jul 2009 17:12:35 +0100
+Message-ID: <20090724161235.5752.34490.stgit@pc1117.cambridge.arm.com>
 In-Reply-To: <20090724161026.5752.52503.stgit@pc1117.cambridge.arm.com>
 References: <20090724161026.5752.52503.stgit@pc1117.cambridge.arm.com>
 User-Agent: StGit/0.15-rc1-9-gd8846
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Jul 2009 16:12:41.0408 (UTC) FILETIME=[92086400:01CA0C79]
+X-OriginalArrivalTime: 24 Jul 2009 16:12:35.0752 (UTC) FILETIME=[8EA95A80:01CA0C79]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Traversing all the tasks in the system for scanning the kernel stacks
-requires locking which increases the kernel latency considerably. This
-patch informs kmemleak about newly allocated or freed stacks so that
-they are treated as any other allocated object. Subsequent patch will
-remove the explicit stack scanning from mm/kmemleak.c.
+From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
 
+Introducing printing of the objects hex dump to the seq file.
+The number of lines to be printed is limited to HEX_MAX_LINES
+to prevent seq file spamming. The actual number of printed
+bytes is less than or equal to (HEX_MAX_LINES * HEX_ROW_SIZE).
+
+(slight adjustments by Catalin Marinas)
+
+Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
 Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
 ---
- arch/x86/include/asm/thread_info.h |    7 ++++++-
- arch/x86/kernel/process.c          |    1 +
- kernel/fork.c                      |    7 ++++++-
- 3 files changed, 13 insertions(+), 2 deletions(-)
+ mm/kmemleak.c |   39 +++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 39 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
-index fad7d40..f26432a 100644
---- a/arch/x86/include/asm/thread_info.h
-+++ b/arch/x86/include/asm/thread_info.h
-@@ -162,7 +162,12 @@ struct thread_info {
- #define __HAVE_ARCH_THREAD_INFO_ALLOCATOR
+diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+index 7dcb898..983f3f6 100644
+--- a/mm/kmemleak.c
++++ b/mm/kmemleak.c
+@@ -162,6 +162,15 @@ struct kmemleak_object {
+ /* flag set on newly allocated objects */
+ #define OBJECT_NEW		(1 << 3)
  
- #define alloc_thread_info(tsk)						\
--	((struct thread_info *)__get_free_pages(THREAD_FLAGS, THREAD_ORDER))
-+({									\
-+	struct thread_info *ti = (struct thread_info *)			\
-+		__get_free_pages(THREAD_FLAGS, THREAD_ORDER);		\
-+	kmemleak_alloc(ti, THREAD_SIZE, 1, THREAD_FLAGS);		\
-+	ti;								\
-+})
++/* number of bytes to print per line; must be 16 or 32 */
++#define HEX_ROW_SIZE		16
++/* number of bytes to print at a time (1, 2, 4, 8) */
++#define HEX_GROUP_SIZE		1
++/* include ASCII after the hex output */
++#define HEX_ASCII		1
++/* max number of lines to be printed */
++#define HEX_MAX_LINES		2
++
+ /* the list of all allocated objects */
+ static LIST_HEAD(object_list);
+ /* the list of gray-colored objects (see color_gray comment below) */
+@@ -259,6 +268,35 @@ static void kmemleak_disable(void);
+ } while (0)
  
- #ifdef CONFIG_X86_32
+ /*
++ * Printing of the objects hex dump to the seq file. The number of lines to be
++ * printed is limited to HEX_MAX_LINES to prevent seq file spamming. The
++ * actual number of printed bytes depends on HEX_ROW_SIZE. It must be called
++ * with the object->lock held.
++ */
++static void hex_dump_object(struct seq_file *seq,
++			    struct kmemleak_object *object)
++{
++	const u8 *ptr = (const u8 *)object->pointer;
++	int i, len, remaining;
++	unsigned char linebuf[HEX_ROW_SIZE * 5];
++
++	/* limit the number of lines to HEX_MAX_LINES */
++	remaining = len =
++		min(object->size, (size_t)(HEX_MAX_LINES * HEX_ROW_SIZE));
++
++	seq_printf(seq, "  hex dump (first %d bytes):\n", len);
++	for (i = 0; i < len; i += HEX_ROW_SIZE) {
++		int linelen = min(remaining, HEX_ROW_SIZE);
++
++		remaining -= HEX_ROW_SIZE;
++		hex_dump_to_buffer(ptr + i, linelen, HEX_ROW_SIZE,
++				   HEX_GROUP_SIZE, linebuf, sizeof(linebuf),
++				   HEX_ASCII);
++		seq_printf(seq, "    %s\n", linebuf);
++	}
++}
++
++/*
+  * Object colors, encoded with count and min_count:
+  * - white - orphan object, not enough references to it (count < min_count)
+  * - gray  - not orphan, not marked as false positive (min_count == 0) or
+@@ -308,6 +346,7 @@ static void print_unreferenced(struct seq_file *seq,
+ 		   object->pointer, object->size);
+ 	seq_printf(seq, "  comm \"%s\", pid %d, jiffies %lu\n",
+ 		   object->comm, object->pid, object->jiffies);
++	hex_dump_object(seq, object);
+ 	seq_printf(seq, "  backtrace:\n");
  
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 994dd6a..ac43992 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -55,6 +55,7 @@ void free_thread_xstate(struct task_struct *tsk)
- void free_thread_info(struct thread_info *ti)
- {
- 	free_thread_xstate(ti->task);
-+	kmemleak_free(ti);
- 	free_pages((unsigned long)ti, get_order(THREAD_SIZE));
- }
- 
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 9b42695..47ebc8e 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -62,6 +62,7 @@
- #include <linux/fs_struct.h>
- #include <linux/magic.h>
- #include <linux/perf_counter.h>
-+#include <linux/kmemleak.h>
- 
- #include <asm/pgtable.h>
- #include <asm/pgalloc.h>
-@@ -104,16 +105,20 @@ static struct kmem_cache *task_struct_cachep;
- #ifndef __HAVE_ARCH_THREAD_INFO_ALLOCATOR
- static inline struct thread_info *alloc_thread_info(struct task_struct *tsk)
- {
-+	struct thread_info *ti;
- #ifdef CONFIG_DEBUG_STACK_USAGE
- 	gfp_t mask = GFP_KERNEL | __GFP_ZERO;
- #else
- 	gfp_t mask = GFP_KERNEL;
- #endif
--	return (struct thread_info *)__get_free_pages(mask, THREAD_SIZE_ORDER);
-+	ti = (struct thread_info *)__get_free_pages(mask, THREAD_SIZE_ORDER);
-+	kmemleak_alloc(ti, THREAD_SIZE, 1, mask);
-+	return ti;
- }
- 
- static inline void free_thread_info(struct thread_info *ti)
- {
-+	kmemleak_free(ti);
- 	free_pages((unsigned long)ti, THREAD_SIZE_ORDER);
- }
- #endif
+ 	for (i = 0; i < object->trace_len; i++) {
 
