@@ -1,88 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751865AbZGXCPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752045AbZGXDBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751865AbZGXCPP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 22:15:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbZGXCPO
+	id S1752045AbZGXDBh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 23:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbZGXDBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 22:15:14 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59968 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751288AbZGXCPL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 22:15:11 -0400
-Message-Id: <20090724021510.881289541@goodmis.org>
-References: <20090724021403.694891838@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Thu, 23 Jul 2009 22:14:05 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH 2/3] tracing/ksym_tracer: fix write operation of ksym_trace_filter
-Content-Disposition: inline; filename=0002-tracing-ksym_tracer-fix-write-operation-of-ksym_trac.patch
+	Thu, 23 Jul 2009 23:01:36 -0400
+Received: from mga09.intel.com ([134.134.136.24]:47937 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751623AbZGXDB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 23:01:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,259,1246863600"; 
+   d="scan'208";a="535500521"
+Subject: [PATCH V2 1/4] fix a problem that linux/async.h can not be
+	included in another header file
+From: Zhang Rui <rui.zhang@intel.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
+       "Zhang, Rui" <rui.zhang@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Fri, 24 Jul 2009 11:02:00 +0800
+Message-Id: <1248404520.2670.109.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
 
-This patch fix 2 bugs:
-- fix the return value of ksym_trace_filter_write() when we want to
-  clear symbol in ksym_trace_filter file
-  for example:
-  # echo global_trace:rw- > /debug/tracing/ksym_trace_filter
-  # echo global_trace:--- > /debug/tracing/ksym_trace_filter
-  -bash: echo: write error: Invalid argument
-  # cat /debug/tracing/ksym_trace_filter
-  #
-  We want to clear 'global_trace' in ksym_trace_filter, it complain
-  with "Invalid argument", but the operation is successful
+include/linux/async.h:16: error: redefinition of typedef ‘async_cookie_t’
+include/linux/async.h:16: error: previous declaration of ‘async_cookie_t’ was here
+include/linux/async.h:17: error: redefinition of typedef ‘async_func_ptr’
+include/linux/async.h:17: error: previous declaration of ‘async_func_ptr’ was here
 
-- the "r--" access types is not allowed, but ksym_trace_filter file think
-  it OK
-  for example:
-  # echo ksym_tracer_mutex:r-- > ksym_trace_filter
-  -bash: echo: write error: Resource temporarily unavailable
-  # dmesg
-  ksym_tracer request failed. Try again later!!
+fix a problem that include/linux/async.h can not be included in another header file
 
-  The error occur at register_kernel_hw_breakpoint(), but It's should
-  at access types parser
-
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-LKML-Reference: <4A66863D.5090802@cn.fujitsu.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
 ---
- kernel/trace/trace_ksym.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ include/linux/async.h |    3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/kernel/trace/trace_ksym.c b/kernel/trace/trace_ksym.c
-index fbf3a8e..cd5cb65 100644
---- a/kernel/trace/trace_ksym.c
-+++ b/kernel/trace/trace_ksym.c
-@@ -135,6 +135,9 @@ static int ksym_trace_get_access_type(char *str)
- 	case 6:
- 		access = HW_BREAKPOINT_RW;
- 		break;
-+	case 4:
-+		access = -EINVAL;
-+		break;
- 	case 2:
- 		access = HW_BREAKPOINT_WRITE;
- 		break;
-@@ -312,6 +315,7 @@ static ssize_t ksym_trace_filter_write(struct file *file,
- 		kfree(entry->ksym_hbp->info.name);
- 		kfree(entry->ksym_hbp);
- 		kfree(entry);
-+		ret = 0;
- 		goto out;
- 	} else {
- 		/* Check for malformed request: (4) */
--- 
-1.6.3.3
+Index: linux-2.6/include/linux/async.h
+===================================================================
+--- linux-2.6.orig/include/linux/async.h
++++ linux-2.6/include/linux/async.h
+@@ -9,6 +9,8 @@
+  * as published by the Free Software Foundation; version 2
+  * of the License.
+  */
++#ifndef _ASYNC_H_
++#define _ASYNC_H_
+ 
+ #include <linux/types.h>
+ #include <linux/list.h>
+@@ -25,3 +27,4 @@ extern void async_synchronize_cookie(asy
+ extern void async_synchronize_cookie_domain(async_cookie_t cookie,
+ 					    struct list_head *list);
+ 
++#endif /* _ASYNC_H_ */
 
--- 
+
