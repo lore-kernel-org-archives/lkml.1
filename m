@@ -1,53 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751812AbZGXFur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751942AbZGXFyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751812AbZGXFur (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 01:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbZGXFur
+	id S1751942AbZGXFyU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 01:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbZGXFyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 01:50:47 -0400
-Received: from smtpauth.net4india.com ([202.71.129.41]:58423 "EHLO
-	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750759AbZGXFuq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 01:50:46 -0400
-From: David John <davidjon@xenontk.org>
-To: torvalds@linux-foundation.org
-Cc: elendil@planet.nl, linux-kernel@vger.kernel.org, yinghai@kernel.org,
-       jbarnes@virtuousgeek.org
-Subject: Kind of like the following. Apply if you feel it is ok to _not_
-Date: Fri, 24 Jul 2009 11:21:38 +0530
-Message-Id: <1248414698-10072-1-git-send-email-davidjon@xenontk.org>
-X-Mailer: git-send-email 1.6.2.5
-In-Reply-To: <4A6939F2.3050006@xenontk.org>
-References: <4A6939F2.3050006@xenontk.org>
+	Fri, 24 Jul 2009 01:54:19 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:51879 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751002AbZGXFyS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 01:54:18 -0400
+Date: Fri, 24 Jul 2009 15:54:17 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: ttydev tree build failure
+Message-Id: <20090724155417.62fa065d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Alan,
+
+Today's linux-next build (powerpc allyesconfig) failed like this:
+
+drivers/serial/pmac_zilog.c: In function 'pmz_suspend':
+drivers/serial/pmac_zilog.c:1648: error: 'struct uart_state' has no member named 'mutex'
+drivers/serial/pmac_zilog.c:1679: error: 'struct uart_state' has no member named 'mutex'
+drivers/serial/pmac_zilog.c: In function 'pmz_resume':
+drivers/serial/pmac_zilog.c:1708: error: 'struct uart_state' has no member named 'mutex'
+drivers/serial/pmac_zilog.c:1740: error: 'struct uart_state' has no member named 'mutex'
+
+Caused by commit d7b52714eee196caeb4195ae1a7aa8bf82bffda5
+("serial-move-mutex") from the ttydev tree.
+
+I applied the following patch for today.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 24 Jul 2009 15:48:36 +1000
+Subject: [PATCH] serial: fix pmac_zilog fallout from uart_state mutex move
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
+ drivers/serial/pmac_zilog.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
->From 645da858c547a6badd231e66003f58f32eb985a2 Mon Sep 17 00:00:00 2001
-From: David John <davidjon@xenontk.org>
-Date: Fri, 24 Jul 2009 10:36:15 +0530
-Subject: [PATCH] Remove Spurious PnP Memory Reserved Warning
-
-Remove unnecessary complaints about memory ranges being reserved by the
-PnP sub-system.
-
-Signed-off-by: David John <davidjon@xenontk.org>
-
-diff --git a/drivers/pnp/system.c b/drivers/pnp/system.c
-index 59b9092..feda64e 100644
---- a/drivers/pnp/system.c
-+++ b/drivers/pnp/system.c
-@@ -48,10 +48,6 @@ static void reserve_range(struct pnp_dev *dev, resource_size_t start,
- 	 * example do reserve stuff they know about too, so we may well
- 	 * have double reservations.
- 	 */
--	dev_info(&dev->dev, "%s range 0x%llx-0x%llx %s reserved\n",
--		port ? "ioport" : "iomem",
--		(unsigned long long) start, (unsigned long long) end,
--		res ? "has been" : "could not be");
- }
+diff --git a/drivers/serial/pmac_zilog.c b/drivers/serial/pmac_zilog.c
+index 6495d01..0700cd1 100644
+--- a/drivers/serial/pmac_zilog.c
++++ b/drivers/serial/pmac_zilog.c
+@@ -1645,7 +1645,7 @@ static int pmz_suspend(struct macio_dev *mdev, pm_message_t pm_state)
+ 	state = pmz_uart_reg.state + uap->port.line;
  
- static void reserve_resources_of_dev(struct pnp_dev *dev)
+ 	mutex_lock(&pmz_irq_mutex);
+-	mutex_lock(&state->mutex);
++	mutex_lock(&state->port.mutex);
+ 
+ 	spin_lock_irqsave(&uap->port.lock, flags);
+ 
+@@ -1676,7 +1676,7 @@ static int pmz_suspend(struct macio_dev *mdev, pm_message_t pm_state)
+ 	/* Shut the chip down */
+ 	pmz_set_scc_power(uap, 0);
+ 
+-	mutex_unlock(&state->mutex);
++	mutex_unlock(&state->port.mutex);
+ 	mutex_unlock(&pmz_irq_mutex);
+ 
+ 	pmz_debug("suspend, switching complete\n");
+@@ -1705,7 +1705,7 @@ static int pmz_resume(struct macio_dev *mdev)
+ 	state = pmz_uart_reg.state + uap->port.line;
+ 
+ 	mutex_lock(&pmz_irq_mutex);
+-	mutex_lock(&state->mutex);
++	mutex_lock(&state->port.mutex);
+ 
+ 	spin_lock_irqsave(&uap->port.lock, flags);
+ 	if (!ZS_IS_OPEN(uap) && !ZS_IS_CONS(uap)) {
+@@ -1737,7 +1737,7 @@ static int pmz_resume(struct macio_dev *mdev)
+ 	}
+ 
+  bail:
+-	mutex_unlock(&state->mutex);
++	mutex_unlock(&state->port.mutex);
+ 	mutex_unlock(&pmz_irq_mutex);
+ 
+ 	/* Right now, we deal with delay by blocking here, I'll be
+-- 
+1.6.3.3
+
