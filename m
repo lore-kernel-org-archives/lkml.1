@@ -1,47 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752584AbZGXKhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752534AbZGXKg7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752584AbZGXKhM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 06:37:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZGXKhJ
+	id S1752534AbZGXKg7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 06:36:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbZGXKg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 06:37:09 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59930 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752542AbZGXKhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 06:37:04 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18br40chWcbg/SbcwsXYVsdjCLflwanM472j5nfqA
-	UngNqvzIQzpeEb
-Subject: Re: [patch] perf tools: allow top users to switch between weighted
- and individual counter display
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1248425937.6987.0.camel@twins>
-References: <1248422990.28486.3.camel@marge.simson.net>
-	 <1248425937.6987.0.camel@twins>
-Content-Type: text/plain
-Date: Fri, 24 Jul 2009 12:37:01 +0200
-Message-Id: <1248431821.9722.4.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.7
+	Fri, 24 Jul 2009 06:36:58 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:35763 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752365AbZGXKg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 06:36:57 -0400
+Date: Fri, 24 Jul 2009 11:36:56 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       kosaki.motohiro@jp.fujitsu.com, maximlevitsky@gmail.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Lee.Schermerhorn@hp.com, penberg@cs.helsinki.fi, hannes@cmpxchg.org,
+       jirislaby@gmail.com
+Subject: Re: [PATCH] mm: Warn once when a page is freed with PG_mlocked set
+	V2
+Message-ID: <20090724103656.GA18074@csn.ul.ie>
+References: <20090715125822.GB29749@csn.ul.ie> <alpine.DEB.1.10.0907151027410.23643@gentwo.org> <20090722160649.61176c61.akpm@linux-foundation.org> <20090723102938.GA27731@csn.ul.ie> <20090723102316.b94a2e4f.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090723102316.b94a2e4f.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-24 at 10:58 +0200, Peter Zijlstra wrote:
-> On Fri, 2009-07-24 at 10:09 +0200, Mike Galbraith wrote:
-> > (depends on last resurrect annotation patch)
-> > 
-> > perf_counter tools: allow top users to switch between weighted and individual counter display.
-> > 
-> > Add [w]eighted hotkey.  Pressing [w] toggles between displaying weighted total of all counters,
-> > and the counter selected via [E]vent select key.
+On Thu, Jul 23, 2009 at 10:23:16AM -0700, Andrew Morton wrote:
+> On Thu, 23 Jul 2009 11:29:39 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
 > 
-> /me stuck it next to that other one, let see what happens ;-)
+> > On Wed, Jul 22, 2009 at 04:06:49PM -0700, Andrew Morton wrote:
+> > > On Wed, 15 Jul 2009 10:31:54 -0400 (EDT)
+> > > Christoph Lameter <cl@linux-foundation.org> wrote:
+> > > 
+> > > > On Wed, 15 Jul 2009, Mel Gorman wrote:
+> > > > 
+> > > > > -static inline int free_pages_check(struct page *page)
+> > > > > +static inline int free_pages_check(struct page *page, int wasMlocked)
+> > > > >  {
+> > > > > +	WARN_ONCE(wasMlocked, KERN_WARNING
+> > > > > +		"Page flag mlocked set for process %s at pfn:%05lx\n"
+> > > > > +		"page:%p flags:0x%lX\n",
+> > > > > +		current->comm, page_to_pfn(page),
+> > > > > +		page, page->flags|__PG_MLOCKED);
+> > > > > +
+> > > > >  	if (unlikely(page_mapcount(page) |
+> > > > 
+> > > > There is already a free_page_mlocked() that is only called if the mlock
+> > > > bit is set. Move it into there to avoid having to run two checks in the
+> > > > hot codee path?
+> > > 
+> > > Agreed.
+> > > 
+> > > This patch gratuitously adds hotpath overhead.  Moving the change to be
+> > > inside those preexisting wasMlocked tests will reduce its overhead a lot.
+> > > 
+> > 
+> > It adds code duplication then, one of which is in a fast path.
+> > 
+> > > As it stands, I'm really doubting that the patch's utility is worth its
+> > > cost.
+> > > 
+> > 
+> > I'm happy to let this one drop. It seemed like it would be nice for debugging
+> > while there are still corner cases where mlocked pages are getting freed
+> > instead of torn down but we already account for that situation occuring. While
+> > I think it'll be tricky to spot, it's probably preferable to having warnings
+> > spew out onto dmesg.
+> 
+> If we do in it the way which Christoph recommends, the additional
+> overhead is miniscule?
+> 
 
-(plugs in Bitwolf-9000 charger)
+Yep, it should be. I misinterpreted what you said with doubting the patch's
+utility. The cost as it was was too high rather than the warning itself was
+useless. When moved to free_page_mlock(), patch looks like;
 
+==== CUT HERE ====
+mm: Warn once when a page is freed with PG_mlocked set V3
+
+Changelog since V2
+  o Move warning to free_page_mlock()
+  o Use %#lx instead of 0x%lX in printf format string
+
+Changelog since V1
+  o Remove unnecessary branch
+
+When a page is freed with the PG_mlocked set, it is considered an unexpected
+but recoverable situation. A counter records how often this event happens
+but it is easy to miss that this event has occured at all. This patch warns
+once when PG_mlocked is set to prompt debuggers to check the counter to
+see how often it is happening.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ mm/page_alloc.c |    5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index b8283e8..d3d0707 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -488,6 +488,11 @@ static inline void __free_one_page(struct page *page,
+  */
+ static inline void free_page_mlock(struct page *page)
+ {
++	WARN_ONCE(1, KERN_WARNING
++		"Page flag mlocked set for process %s at pfn:%05lx\n"
++		"page:%p flags:%#lx\n",
++		current->comm, page_to_pfn(page),
++		page, page->flags|__PG_MLOCKED);
+ 	__dec_zone_page_state(page, NR_MLOCK);
+ 	__count_vm_event(UNEVICTABLE_MLOCKFREED);
+ }
