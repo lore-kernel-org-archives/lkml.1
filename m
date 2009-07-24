@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbZGXTX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZGXTfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbZGXTX4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 15:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZGXTXz
+	id S1754059AbZGXTfk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 15:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbZGXTfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 15:23:55 -0400
-Received: from www84.your-server.de ([213.133.104.84]:53905 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752266AbZGXTXz (ORCPT
+	Fri, 24 Jul 2009 15:35:39 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:53213 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753732AbZGXTfj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 15:23:55 -0400
-Subject: [PATCH] fbcon: rotate upside down crash
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, adaplas@pol.net
-Content-Type: text/plain
-Date: Fri, 24 Jul 2009 21:23:46 +0200
-Message-Id: <1248463426.30437.12.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Fri, 24 Jul 2009 15:35:39 -0400
+Date: Fri, 24 Jul 2009 15:35:37 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH][GIT PULL] trace: stop tracer in oops_enter()
+Message-ID: <alpine.DEB.2.00.0907241533540.29550@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Attached is a bug fix for the frame console. 
 
-The current frame buffer console upside down functionality will crash
-using a font which has not a width of multiple by 8. 
+Ingo or Thomas,
 
-The following 1 liner will fix the rotate_ud() function,
+This is on top of the previous pull requests I made for 31.
 
- fbcon_rotate.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Please pull the latest tip/tracing/urgent-2 tree, which can be found at:
 
---- linux-2.6.31-rc4/drivers/video/console/fbcon_rotate.h	2009-07-24
-20:37:31.000000000 +0200
-+++ linux-2.6.31-rc4.orig/drivers/video/console/fbcon_rotate.h
-2009-06-10 05:05:27.000000000 +0200
-@@ -45,7 +45,7 @@
- 	width = (width + 7) & ~7;
- 
- 	for (i = 0; i < height; i++) {
--		for (j = 0; j < width - shift; j++) {
-+		for (j = 0; j < width; j++) {
- 			if (pattern_test_bit(j, i, width, in))
- 				pattern_set_bit(width - (1 + j + shift),
- 						height - (1 + i),
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/urgent-2
 
+
+Thomas Gleixner (1):
+      trace: stop tracer in oops_enter()
+
+----
+ kernel/panic.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+---------------------------
+commit bdff78707f3ce47e891f3201c9666122a70556ce
+Author: Thomas Gleixner <tglx@linutronix.de>
+Date:   Fri Jul 24 15:30:45 2009 -0400
+
+    trace: stop tracer in oops_enter()
+    
+    If trace_printk_on_oops is set we lose interesting trace information
+    when the tracer is enabled across oops handling and printing. We want
+    the trace which might give us information _WHY_ we oopsed.
+    
+    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+diff --git a/kernel/panic.c b/kernel/panic.c
+index 984b3ec..512ab73 100644
+--- a/kernel/panic.c
++++ b/kernel/panic.c
+@@ -301,6 +301,7 @@ int oops_may_print(void)
+  */
+ void oops_enter(void)
+ {
++	tracing_off();
+ 	/* can't trust the integrity of the kernel anymore: */
+ 	debug_locks_off();
+ 	do_oops_enter_exit();
 
