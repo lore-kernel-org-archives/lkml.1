@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbZGXXqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753493AbZGXXtO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755256AbZGXXqU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 19:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbZGXXqS
+	id S1753493AbZGXXtO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 19:49:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbZGXXtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 19:46:18 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:37027 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755228AbZGXXqS (ORCPT
+	Fri, 24 Jul 2009 19:49:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50516 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751324AbZGXXtN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 19:46:18 -0400
-Date: Sat, 25 Jul 2009 00:46:15 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       malware-list@dmesg.printk.net, Valdis.Kletnieks@vt.edu, greg@kroah.com,
-       jcm@redhat.com, douglas.leeder@sophos.com, tytso@mit.edu,
-       arjan@infradead.org, david@lang.hm, jengelh@medozas.de,
-       aviro@redhat.com, mrkafk@gmail.com, alexl@redhat.com, jack@suse.cz,
-       tvrtko.ursulin@sophos.com, a.p.zijlstra@chello.nl, hch@infradead.org,
-       alan@lxorguk.ukuu.org.uk, mmorley@hcl.in, pavel@suse.cz
-Subject: Re: fanotify - overall design before I start sending patches
-Message-ID: <20090724234615.GQ27755@shareable.org>
-References: <1248466429.3567.82.camel@localhost> <20090724224813.GK27755@shareable.org> <1248477951.3567.110.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248477951.3567.110.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 24 Jul 2009 19:49:13 -0400
+Date: Fri, 24 Jul 2009 16:49:09 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Zhaolei <zhaolei@cn.fujitsu.com>
+Subject: Re: [PATCH] smbfs: Read buffer overflow
+Message-Id: <20090724164909.b3f6cf2b.akpm@linux-foundation.org>
+In-Reply-To: <4A688661.9040506@gmail.com>
+References: <4A688661.9040506@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Paris wrote:
-> On Fri, 2009-07-24 at 23:48 +0100, Jamie Lokier wrote:
-> > Eric Paris wrote:
-> > > It is a new notification system that has a limited set of events (open,
-> > > close, read, write) in which notification not only comes with metadata
-> > > the describes what happened it also comes with an open file descriptor
-> > > to the object in question.  fanotify will also allow the listener to
-> > > make access decisions on open and read events.  This allows the
-> > > implementation of hierarchical storage management systems or an access
-> > > file scanning or integrity checking.
-> > 
-> > My first thought was to wonder, why not make it the same set of events
-> > that inotify and dnotify provide?  That is: open, close, read, write,
-> > create, delete, rename, attribute change?  In other words, I don't see
-> > a good reason for it to be a subset of events.
-> 
-> The two real reasons?
-> 
-> 1) These were the only 4 my original use case cared about.
-> 2) These are the only 4 where the notification hook has enough
-> information to open a fd in the context of the listener.
-> 
-> In the kernel most notification is done with either an inode or a dentry
-> as that is enough for inotify, dnotify, audit_watch and audit_tree.
-> Opening a file descriptor, and thus fanotify, requires a dentry and a
-> vfsmnt, which is much harder to come by in the kernel.
->
-> Maybe as future work I'll try to convince Al to allow me to have that
-> information in more places, but for today, those 4 are the only ones I
-> can probably slip past him...
+On Thu, 23 Jul 2009 17:48:49 +0200
+Roel Kluin <roel.kluin@gmail.com> wrote:
 
-For the other events, maybe there is no need for a file descriptor
-anyway.
+> This function uses signed integers for the unix_date and local variables - if a
+> negative number is supplied and the leap-year condition is not met, month
+> will be 0, leading to a read of day_n[-1]
+> 
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> This is the easiest way to prevent the buffer overflow, but it produces a date.
+> Maybe a magic date would be better? What should we choose?
+> 
+> Credits to Parfait and Nathan Keynes,
+> 
+> diff --git a/fs/smbfs/proc.c b/fs/smbfs/proc.c
+> index 9468168..71c29b6 100644
+> --- a/fs/smbfs/proc.c
+> +++ b/fs/smbfs/proc.c
+> @@ -509,7 +509,7 @@ date_unix2dos(struct smb_sb_info *server,
+>  		month = 2;
+>  	} else {
+>  		nl_day = (year & 3) || day <= 59 ? day : day - 1;
+> -		for (month = 0; month < 12; month++)
+> +		for (month = 1; month < 12; month++)
+>  			if (day_n[month] > nl_day)
+>  				break;
+>  	}
 
--- Jamie
+Again, fixable by switching to the kernel/time/timeconv.c functions.
