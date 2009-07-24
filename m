@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751894AbZGXEsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751949AbZGXFH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751894AbZGXEsh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 00:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbZGXEsh
+	id S1751949AbZGXFH0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 01:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbZGXFHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 00:48:37 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:39632 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751121AbZGXEsg (ORCPT
+	Fri, 24 Jul 2009 01:07:20 -0400
+Received: from mga01.intel.com ([192.55.52.88]:8375 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751622AbZGXFHT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 00:48:36 -0400
-Date: Thu, 23 Jul 2009 21:48:36 -0700 (PDT)
-From: Sage Weil <sage@newdream.net>
-To: Andi Kleen <andi@firstfloor.org>
-cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 08/19] ceph: address space operations
-In-Reply-To: <20090723191611.GE19207@basil.fritz.box>
-Message-ID: <Pine.LNX.4.64.0907232145560.14156@cobra.newdream.net>
-References: <1248292313-31326-2-git-send-email-sage@newdream.net>
- <1248292313-31326-3-git-send-email-sage@newdream.net>
- <1248292313-31326-4-git-send-email-sage@newdream.net>
- <1248292313-31326-5-git-send-email-sage@newdream.net>
- <1248292313-31326-6-git-send-email-sage@newdream.net>
- <1248292313-31326-7-git-send-email-sage@newdream.net>
- <1248292313-31326-8-git-send-email-sage@newdream.net>
- <1248292313-31326-9-git-send-email-sage@newdream.net> <874ot33ddd.fsf@basil.nowhere.org>
- <Pine.LNX.4.64.0907231115190.2930@cobra.newdream.net> <20090723191611.GE19207@basil.fritz.box>
+	Fri, 24 Jul 2009 01:07:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,259,1246863600"; 
+   d="scan'208";a="477594694"
+From: "Yu, Fenghua" <fenghua.yu@intel.com>
+To: "'Tejun Heo'" <tj@kernel.org>
+CC: "Luck, Tony" <tony.luck@intel.com>,
+       "'lkml'" <linux-kernel@vger.kernel.org>,
+       "'linux-arch@vger.kernel.org'" <linux-arch@vger.kernel.org>,
+       "'linux-ia64@vger.kernel.org'" <linux-ia64@vger.kernel.org>
+Date: Thu, 23 Jul 2009 22:07:15 -0700
+Subject: RE: [RFC PATCH] ia64: convert to dynamic percpu allocator
+Thread-Topic: [RFC PATCH] ia64: convert to dynamic percpu allocator
+Thread-Index: AcoKUFEtP0jXOrt+TdGyZILeXOha5QBw0mwg
+Message-ID: <A6AD88C3F2289247BE726C37303E1EB8B0A9115B@orsmsx505.amr.corp.intel.com>
+References: <4A65B0AB.5000608@kernel.org>
+ <A6AD88C3F2289247BE726C37303E1EB8B097D4C5@orsmsx505.amr.corp.intel.com>
+ <4A663DC7.4060600@kernel.org>
+In-Reply-To: <4A663DC7.4060600@kernel.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Jul 2009, Andi Kleen wrote:
-> > There are two other memory allocations during writeout: a vector of pages 
-> > to be written, and the message we're sending to the OSD.  If I use a 
-> > mempool for those to guarantee as least some writeout will occur, how do I 
-> > safely defer when allocations do fail?  Will pdflush (or it's replacement) 
-> > eventually come back and try ->writepages() again?
-> 
-> mempool allocs should never fail, just block for a long time until
-> someone else frees. This means you need to ensure of course you
-> always make forward progress.
+>Yu, Fenghua wrote:
+>>> This patch is available in the following git tree.
+>>>
+>>>  git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git review-ia64
+>>
+>> Is this patch against the latest linux-next? It's applied cleanly on
+>> linux-next. But compilation reports undefined function
+>> pcpu_alloc_alloc_info() in both contig.c and discontig.c.
+>
+>Oh, it's on top of percpu#for-next + 20 patches to implement sparse
+>embedding[1].  I think it would be the easiest to fetch the above git
+>tree.
 
-Oh, that avoids the issue reasonably well then.
+After cloning from git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git, kernel built with CONFIG_DISCONTIGMEM=y boots ok.
 
-Using mempools for the message passing is going to be a bit trickier (need 
-to avoid any deadlocks due to dependencies on other messages), but it's 
-doable.  At least in the limited case of making writeback proceed.
+After pulling from review-ia64, kernel built with CONFIG_DISCONTIGMEM=y can not boot on ia64. After loading kernel and initrd, system hangs and doesn't show anything on serial port.
 
-sage
+Thanks.
+
+-Fenghua 
