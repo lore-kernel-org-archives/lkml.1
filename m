@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751896AbZGXBKN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752014AbZGXBMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751896AbZGXBKN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 21:10:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbZGXBKN
+	id S1752014AbZGXBMs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 21:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbZGXBMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 21:10:13 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52193 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751582AbZGXBKM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 21:10:12 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [PATCH] copy over oom_adj value at fork time
-Cc: kosaki.motohiro@jp.fujitsu.com, Paul Menage <menage@google.com>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mel@csn.ul.ie, npiggin@suse.de
-In-Reply-To: <alpine.DEB.2.00.0907231624480.3476@chino.kir.corp.google.com>
-References: <20090722233347.776E.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0907231624480.3476@chino.kir.corp.google.com>
-Message-Id: <20090724083802.1E37.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri, 24 Jul 2009 10:10:08 +0900 (JST)
+	Thu, 23 Jul 2009 21:12:47 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:55842 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751729AbZGXBMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 23 Jul 2009 21:12:46 -0400
+Date: Fri, 24 Jul 2009 11:12:42 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Chaithrika U S <chaithrika@ti.com>,
+       Pavel Kiryukhin <pkiryukhin@ru.mvista.com>,
+       Naresh Medisetty <naresh@ti.com>, Steve Chen <schen@mvista.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Sudhakar Rajashekhara <sudhakar.raj@ti.com>
+Subject: Re: linux-next: manual merge of the sound tree with the davinci
+ tree
+Message-Id: <20090724111242.4156c6f9.sfr@canb.auug.org.au>
+In-Reply-To: <s5h7hxzngg5.wl%tiwai@suse.de>
+References: <20090723112110.e42430e9.sfr@canb.auug.org.au>
+	<s5hvdlkvsk6.wl%tiwai@suse.de>
+	<873a8ni8t7.fsf@deeprootsystems.com>
+	<s5h7hxzngg5.wl%tiwai@suse.de>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__24_Jul_2009_11_12_42_+1000_9np3rPAK7dAgHe31"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, 24 Jul 2009, KOSAKI Motohiro wrote:
-> 
-> > > It's the API that's existed for years with no complaints, AFAICS.
-> > 
-> > I think thead and vfork() should be separeted on this discussion.
-> > I agree vfork() regression should be fixed. but I don't think anyone
-> > hope per-thread oom score. 
-> > 
-> > Of cource, if simple reverting is best way, I don't oppose this.... ;-)
-> > 
-> 
-> Simply reverting it isn't an option unless you fix the underlying livelock 
-> problem that my patches originally addressed and no viable alternative has 
-> been proposed.
+--Signature=_Fri__24_Jul_2009_11_12_42_+1000_9np3rPAK7dAgHe31
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I disagree.
-I agree with old behavior have one bug. but it doesn't provide any regression
-allowing reason although old behavior is totally suck.
+Hi Takashi, Kevin,
 
-David, We already know your patch break real application. it is never acceptable.
+On Fri, 24 Jul 2009 01:10:50 +0200 Takashi Iwai <tiwai@suse.de> wrote:
+>
+> At Thu, 23 Jul 2009 10:54:44 -0700,
+> Kevin Hilman wrote:
+> >=20
+> > I've taken care of this in the DaVinci for-next branch.
+> >=20
+> > I dropped the davinci changes that change code that were then dropped
+> > by the asoc changes.
+>=20
+> Ah, great.  Then I revert a fix merge in my for-next branch and keep
+> only pure ASoC things.
 
+Thanks.
 
-> On the other hand, I think adding /proc/pid/oom_adj_child would solve the 
-> userspace issue.  oom_adj_child would be the oom_adj value that is used by 
-> the newly initialized mm_struct; this would allow the vfork'd child to 
-> share the same oom_score with the parent and then be replaced with an 
-> alternate score on execve().
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Not solve. "please rewrite your application" isn't good solution.
+--Signature=_Fri__24_Jul_2009_11_12_42_+1000_9np3rPAK7dAgHe31
+Content-Type: application/pgp-signature
 
-Hm...
-This is just idea, Does moving oom_adj from mm_struct to signal_struct solve
-this problem?
-I mean vfork() share mm_struct, but doesn't share signal_struct.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
+iEYEARECAAYFAkppCooACgkQjjKRsyhoI8zlewCgjWKJ8COez0EMIqm9VMx+1hRa
+U/QAoIydR+qbBZhG/92ZREQNR/f2XKnO
+=UNQR
+-----END PGP SIGNATURE-----
 
-
-
-> 
-> oom_adj_child would only be allowed to be greater (i.e. the more preferred 
-> victim) than oom_adj for any given thread since the oom killer tries to 
-> kill a child of the selected task first if it doesn't share memory.
-
-
+--Signature=_Fri__24_Jul_2009_11_12_42_+1000_9np3rPAK7dAgHe31--
