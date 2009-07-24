@@ -1,103 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936AbZGXNjK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbZGXNor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752936AbZGXNjK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 09:39:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbZGXNjK
+	id S1752847AbZGXNor (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 09:44:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbZGXNoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 09:39:10 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:49077 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752597AbZGXNjI (ORCPT
+	Fri, 24 Jul 2009 09:44:46 -0400
+Received: from mail-qy0-f196.google.com ([209.85.221.196]:55638 "EHLO
+	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752597AbZGXNoq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 09:39:08 -0400
-X-Sasl-enc: wHeFewy0xOEp3xIMSa6Nxw/01jqKYyG4lFZtpTYyjsf8 1248442746
-Date: Fri, 24 Jul 2009 10:39:03 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: ykzhao <yakui.zhao@intel.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>, Jouni Malinen <j@w1.fi>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Stephen Chen <Stephen.Chen@atheros.com>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: Generic events for wake up from S1-S4
-Message-ID: <20090724133903.GA18827@khazad-dum.debian.net>
-References: <43e72e890907150851m69cd2de6lfb71596fbfac30e6@mail.gmail.com>
- <20090723195114.GR28158@elf.ucw.cz>
- <20090723201050.GD19369@khazad-dum.debian.net>
- <200907232328.03566.rjw@sisk.pl>
- <1248396826.3556.26.camel@localhost.localdomain>
+	Fri, 24 Jul 2009 09:44:46 -0400
+X-Greylist: delayed 2398 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Jul 2009 09:44:45 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=rIc5eDA/VNJsYF3+tCrqWEVceVkA2J6NQVutDzwmAAxSeG8JfSw/K8M8w2cDoPomEA
+         xggEV6nE9QJUInb/Y3ovribIxjt2YKqob8WbTRXym6cP7eBw1Jp7kB5XPwWs9mWgSw8k
+         iNcQkrkxUa4B1QluAk6nF5VlVI/XfQW/ZyG0A=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248396826.3556.26.camel@localhost.localdomain>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1248442415.6987.56.camel@twins>
+References: <454c71700907240357l61f5c4fajaca73db0fba7db8@mail.gmail.com>
+	 <1248437670.6987.26.camel@twins>
+	 <454c71700907240604h4673f117j8ed58b9f2ee54798@mail.gmail.com>
+	 <1248441290.6987.52.camel@twins>
+	 <454c71700907240626w127fd890ufa91ef90cbcaaa@mail.gmail.com>
+	 <1248442415.6987.56.camel@twins>
+Date: Fri, 24 Jul 2009 21:44:43 +0800
+Message-ID: <454c71700907240644h7469e2a5sfcb57f202a2e184d@mail.gmail.com>
+Subject: Re: report a bug about sched_rt
+From: sen wang <wangsen.linux@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@elte.hu, akpm@linux-foundation.org, kernel@kolivas.org,
+       npiggin@suse.de, arjan@infradead.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Jul 2009, ykzhao wrote:
-> > > Well, we *already* deliver "lid opened" when the lid is opened, regardless
-> > > of it waking up the computer or not.  But we are missing a way to deliver
-> > > other classes of wakeup events.
-> > > 
-> > > I know of at least these (incomplete list):
-> > > 
-> > > 1. network-initiated wakeup
-> > >    a. wired
-> > >    b. wireless
-> > >    c. long-range wireless
-> > > 
-> > > 2. platform health/condition alarms
-> > >    a. battery alarm (two levels, warning and emergency)
-> > >    b. thermal alarm (two levels, warning and emergency)
-> > >    (we need these as generic alarms, not just reason-for-wakeup)
-> > > 
-> > > 3. device (or device tree) hotplug/hotunplug
-> > >    a. hotunplug request or notification
-> > >       (we deliver the request/notification, but we don't know we should
-> > >       go back to sleep, so all we are missing is the reason-for-wakeup
-> > >       event)
-> > > 
-> > > 4. management
-> > >    a. wake-up/power on clock
-> > >    b. remote management command (IMPI, etc)
-> > >    c. intrusion alarm
-> > >    d. theft alarm
-> > > 
-> > > None of those have a standard interface to notify userspace of the reason of
-> > > the wake up AFAIK.  Many of these want a generic event interface to be
-> > > delivered not just as reason-for-wakeup, but also as runtime events.
-> > > 
-> > > And I guess we should also tell userspace what state we are waking up from
-> > > (S5 clean state, S5/S4 hibernation, S3), sometimes it matters.
-> > 
-> > Agreed, and same for the above.
-> > 
-> > So, what in your opinion would be the best way to expose this information?
+2009/7/24 Peter Zijlstra <peterz@infradead.org>:
+> On Fri, 2009-07-24 at 21:26 +0800, sen wang wrote:
+>> don't tell me what theory. don't be so doctrinairism! OK?
+>> If cpu is free and there is a running state task,how can you scdedule
+>> idle task up?
+>> I tell you again:we are not talking about a bandwidth of 100% for RT!
+>> Bug lies in the bandwidth of (100- X)%.(X<100)
+>> even in the time of 100-X,if there is a rt task, you should not idle()
+>> the system.
+>
+> *sigh*
+>
+> Yes we should. I appreciate that you might assume otherwise, but you're
+> wrong. Suppose you have two competing bandwidth groups, which one will
+> run over, to what purpose?
+>
+> Also, your next top post will go to /dev/null.
+>
 
-Frankly?  It needs to be an easy-to-extend ABI, and the only one that cames
-to mind right now are uevents.
 
-> Maybe we should firstly define what event should be delivered to user
-> space when it is resumed from S1--S4.
+OK !  maybe you has not understand what I said.
+It not two competing bandwidth groups. there is a  active group and
+another is empty?
+How you do?
+Why not try it by your hand: empty the fair task, run a rt task,enable
+the  bandwidth and
+see what will happen!
 
-Why not a change uevent (although we could always come up with a new uevent
-type for this, and that might be a good idea)?
-
-> And another issue who is in charge of sending the event? By the specific
-> device or ACPI notification?
-
-ACPI notifications are hard to extend, I think.  Please correct me if I am
-wrong.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+In many embedded system,idle task will lead to shutdown something, but
+the rt task will
+assume: when it run, idle will not happen!
