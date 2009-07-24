@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbZGXKjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752615AbZGXKkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752591AbZGXKjV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 06:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbZGXKjU
+	id S1752615AbZGXKkW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 06:40:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbZGXKkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 06:39:20 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57786 "EHLO song.cn.fujitsu.com"
+	Fri, 24 Jul 2009 06:40:20 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:51811 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752251AbZGXKjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 06:39:19 -0400
-Message-ID: <4A698FFE.8030906@cn.fujitsu.com>
-Date: Fri, 24 Jul 2009 18:42:06 +0800
+	id S1752430AbZGXKkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 06:40:17 -0400
+Message-ID: <4A699038.6060907@cn.fujitsu.com>
+Date: Fri, 24 Jul 2009 18:43:04 +0800
 From: Zhaolei <zhaolei@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+CC: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Add walltime support for ring-buffer
+Subject: [RFC PATCH 1/3] Add walltime support for ring-buffer
 References: <4A698F90.90501@cn.fujitsu.com>
 In-Reply-To: <4A698F90.90501@cn.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
