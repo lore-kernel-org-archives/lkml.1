@@ -1,108 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbZGXQMO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZGXQN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752587AbZGXQMO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 12:12:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbZGXQML
+	id S1753446AbZGXQN1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 12:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZGXQNZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 12:12:11 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:51157 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752410AbZGXQMI (ORCPT
+	Fri, 24 Jul 2009 12:13:25 -0400
+Received: from av8-2-sn3.vrr.skanova.net ([81.228.9.184]:41910 "EHLO
+	av8-2-sn3.vrr.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753207AbZGXQNX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 12:12:08 -0400
-Subject: [PATCH 1/8] kmemleak: Dump object information on request
-To: linux-kernel@vger.kernel.org
-From: Catalin Marinas <catalin.marinas@arm.com>
-Date: Fri, 24 Jul 2009 17:12:07 +0100
-Message-ID: <20090724161207.5752.32572.stgit@pc1117.cambridge.arm.com>
-In-Reply-To: <20090724161026.5752.52503.stgit@pc1117.cambridge.arm.com>
-References: <20090724161026.5752.52503.stgit@pc1117.cambridge.arm.com>
-User-Agent: StGit/0.15-rc1-9-gd8846
+	Fri, 24 Jul 2009 12:13:23 -0400
+Message-ID: <4A69DDA2.80902@mocean-labs.com>
+Date: Fri, 24 Jul 2009 18:13:22 +0200
+From: =?ISO-8859-1?Q?Richard_R=F6jfors?= 
+	<richard.rojfors.ext@mocean-labs.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Jul 2009 16:12:07.0908 (UTC) FILETIME=[7E10B240:01CA0C79]
+To: linux-input@vger.kernel.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, kwangwoo.lee@gmail.com,
+       Thierry Reding <thierry.reding@avionic-design.de>,
+       Trilok Soni <soni.trilok@gmail.com>
+Subject: [PATCH 1/2] tsc2007: IRQ balancing when stopping work during removal
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-By writing dump=<addr> to the kmemleak file, kmemleak will look up an
-object with that address and dump the information it has about it to
-syslog. This is useful in debugging memory leaks.
+The implementation is proposed by Dmitry Torokhov, I have just made some 
+changes so it applied to my previous patches, and I tried it out.
 
-Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+The idea is to balance the IRQ:s in the case where the poll worker is 
+running, so it won't get disabled twice.
+
+Also using __devinit/__devexit macros on probe/remove functions.
+
+Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
 ---
- Documentation/kmemleak.txt |    1 +
- mm/kmemleak.c              |   25 +++++++++++++++++++++++++
- 2 files changed, 26 insertions(+), 0 deletions(-)
+Index: linux-2.6.31-rc2/drivers/input/touchscreen/tsc2007.c
+===================================================================
+--- linux-2.6.31-rc2/drivers/input/touchscreen/tsc2007.c	(revision 997)
++++ linux-2.6.31-rc2/drivers/input/touchscreen/tsc2007.c	(revision 1040)
+@@ -61,7 +61,7 @@
 
-diff --git a/Documentation/kmemleak.txt b/Documentation/kmemleak.txt
-index 8906803..c223785 100644
---- a/Documentation/kmemleak.txt
-+++ b/Documentation/kmemleak.txt
-@@ -42,6 +42,7 @@ Memory scanning parameters can be modified at run-time by writing to the
-   scan=<secs>	- set the automatic memory scanning period in seconds
- 		  (default 600, 0 to stop the automatic scanning)
-   scan		- trigger a memory scan
-+  dump=<addr>	- dump information about the object found at <addr>
- 
- Kmemleak can also be disabled at boot-time by passing "kmemleak=off" on
- the kernel command line.
-diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-index 4872673..7e8e4b0 100644
---- a/mm/kmemleak.c
-+++ b/mm/kmemleak.c
-@@ -330,6 +330,7 @@ static void dump_object_info(struct kmemleak_object *object)
- 		  object->comm, object->pid, object->jiffies);
- 	pr_notice("  min_count = %d\n", object->min_count);
- 	pr_notice("  count = %d\n", object->count);
-+	pr_notice("  flags = 0x%lx\n", object->flags);
- 	pr_notice("  backtrace:\n");
- 	print_stack_trace(&trace, 4);
- }
-@@ -1294,6 +1295,27 @@ static int kmemleak_release(struct inode *inode, struct file *file)
- 	return seq_release(inode, file);
- }
- 
-+static int dump_str_object_info(const char *str)
+  #define PEN_STATE_UP	0x00
+  #define PEN_STATE_DOWN	0x01
+-#define PEN_STATE_IRQ	0x01
++#define PEN_STATE_IRQ	0x02
+
+  struct ts_event {
+  	u16	x;
+@@ -141,8 +141,6 @@
+  	 */
+  	if (rt > MAX_12BIT) {
+  		dev_dbg(&ts->client->dev, "ignored pressure %d\n", rt);
+-
+-		schedule_delayed_work(&ts->work, TS_POLL_PERIOD);
+  		return;
+  	}
+
+@@ -178,8 +176,6 @@
+  	} else if (!ts->get_pendown_state)
+  		/* no callback to check pendown state, use pressure */
+  		ts->penstate = PEN_STATE_UP;
+-
+-	schedule_delayed_work(&ts->work, TS_POLL_PERIOD);
+  }
+
+  static int tsc2007_read_values(struct tsc2007 *tsc)
+@@ -228,6 +224,7 @@
+
+  		tsc2007_read_values(ts);
+  		tsc2007_send_event(ts);
++		schedule_delayed_work(&ts->work, TS_POLL_PERIOD);
+  	}
+  }
+
+@@ -238,7 +235,7 @@
+  	if (!ts->get_pendown_state || likely(ts->get_pendown_state())) {
+  		disable_irq_nosync(ts->irq);
+  		ts->penstate = PEN_STATE_IRQ;
+-		schedule_delayed_work(&ts->work, 0);
++		schedule_delayed_work(&ts->work, TS_POLL_PERIOD);
+  	}
+
+  	if (ts->clear_penirq)
+@@ -247,15 +244,25 @@
+  	return IRQ_HANDLED;
+  }
+
+-static int tsc2007_probe(struct i2c_client *client,
++static void tsc2007_free_irq(struct tsc2007 *ts)
 +{
-+	unsigned long flags;
-+	struct kmemleak_object *object;
-+	unsigned long addr;
-+
-+	addr= simple_strtoul(str, NULL, 0);
-+	object = find_and_get_object(addr, 0);
-+	if (!object) {
-+		pr_info("Unknown object at 0x%08lx\n", addr);
-+		return -EINVAL;
-+	}
-+
-+	spin_lock_irqsave(&object->lock, flags);
-+	dump_object_info(object);
-+	spin_unlock_irqrestore(&object->lock, flags);
-+
-+	put_object(object);
-+	return 0;
++	free_irq(ts->irq, ts);
++	if (cancel_delayed_work_sync(&ts->work))
++		/* Work was pending, therefore we need to enable IRQ here to
++		 * balance the disable done in the interrupt handler.
++		 */
++		enable_irq(ts->irq);
 +}
 +
- /*
-  * File write operation to configure kmemleak at run-time. The following
-  * commands can be written to the /sys/kernel/debug/kmemleak file:
-@@ -1305,6 +1327,7 @@ static int kmemleak_release(struct inode *inode, struct file *file)
-  *   scan=...	- set the automatic memory scanning period in seconds (0 to
-  *		  disable it)
-  *   scan	- trigger a memory scan
-+ *   dump=...	- dump information about the object found at the given address
-  */
- static ssize_t kmemleak_write(struct file *file, const char __user *user_buf,
- 			      size_t size, loff_t *ppos)
-@@ -1345,6 +1368,8 @@ static ssize_t kmemleak_write(struct file *file, const char __user *user_buf,
- 		}
- 	} else if (strncmp(buf, "scan", 4) == 0)
- 		kmemleak_scan();
-+	else if (strncmp(buf, "dump=", 5) == 0)
-+		ret = dump_str_object_info(buf + 5);
- 	else
- 		ret = -EINVAL;
- 
++static int __devinit tsc2007_probe(struct i2c_client *client,
+  			const struct i2c_device_id *id)
+  {
+  	struct tsc2007 *ts;
+-	struct tsc2007_platform_data *pdata = pdata = client->dev.platform_data;
++	struct tsc2007_platform_data *pdata = client->dev.platform_data;
+  	struct input_dev *input_dev;
+  	int err;
 
+-	if (!pdata || !pdata->get_pendown_state) {
++	if (!pdata) {
+  		dev_err(&client->dev, "platform data is required!\n");
+  		return -EINVAL;
+  	}
+@@ -320,25 +327,24 @@
+  	return 0;
+
+   err_free_irq:
+-	free_irq(ts->irq, ts);
++	tsc2007_free_irq(ts);
+   err_free_mem:
++	if (pdata->exit_platform_hw)
++		pdata->exit_platform_hw();
+  	input_free_device(input_dev);
+  	kfree(ts);
+  	return err;
+  }
+
+-static int tsc2007_remove(struct i2c_client *client)
++static int __devexit tsc2007_remove(struct i2c_client *client)
+  {
+  	struct tsc2007	*ts = i2c_get_clientdata(client);
+-	struct tsc2007_platform_data *pdata;
++	struct tsc2007_platform_data *pdata = client->dev.platform_data;
+
+-	cancel_delayed_work_sync(&ts->work);
+-
+-	pdata = client->dev.platform_data;
++	tsc2007_free_irq(ts);
+  	if (pdata->exit_platform_hw)
+  		pdata->exit_platform_hw();
+
+-	free_irq(ts->irq, ts);
+  	input_unregister_device(ts->input);
+  	kfree(ts);
+
+@@ -359,7 +365,7 @@
+  	},
+  	.id_table	= tsc2007_idtable,
+  	.probe		= tsc2007_probe,
+-	.remove		= tsc2007_remove,
++	.remove		= __devexit_p(tsc2007_remove),
+  };
+
+  static int __init tsc2007_init(void)
