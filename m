@@ -1,72 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbZGXQwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753540AbZGXQwl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753484AbZGXQwf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 12:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbZGXQwe
+	id S1753540AbZGXQwl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 12:52:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbZGXQwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 12:52:34 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:38711 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753398AbZGXQwd (ORCPT
+	Fri, 24 Jul 2009 12:52:40 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:44469 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753408AbZGXQwh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 12:52:33 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-Content-type: text/plain; CHARSET=US-ASCII
-Date: Fri, 24 Jul 2009 10:52:01 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [PATCH 1/2] implement uid mount option for ext2
-In-reply-to: <1248431444-18842-2-git-send-email-ludwig.nussel@suse.de>
-To: Ludwig Nussel <ludwig.nussel@suse.de>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-id: <20090724165201.GA4231@webber.adilger.int>
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <1248348991-849-1-git-send-email-ludwig.nussel@suse.de>
- <1248431444-18842-1-git-send-email-ludwig.nussel@suse.de>
- <1248431444-18842-2-git-send-email-ludwig.nussel@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 24 Jul 2009 12:52:37 -0400
+Date: Fri, 24 Jul 2009 09:52:37 -0700 (PDT)
+From: Sage Weil <sage@newdream.net>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 08/19] ceph: address space operations
+In-Reply-To: <20090724065603.GA2045@basil.fritz.box>
+Message-ID: <Pine.LNX.4.64.0907240857420.14156@cobra.newdream.net>
+References: <1248292313-31326-4-git-send-email-sage@newdream.net>
+ <1248292313-31326-5-git-send-email-sage@newdream.net>
+ <1248292313-31326-6-git-send-email-sage@newdream.net>
+ <1248292313-31326-7-git-send-email-sage@newdream.net>
+ <1248292313-31326-8-git-send-email-sage@newdream.net>
+ <1248292313-31326-9-git-send-email-sage@newdream.net> <874ot33ddd.fsf@basil.nowhere.org>
+ <Pine.LNX.4.64.0907231122070.2930@cobra.newdream.net>
+ <1248374834.6139.13.camel@heimdal.trondhjem.org>
+ <Pine.LNX.4.64.0907231642590.2930@cobra.newdream.net> <20090724065603.GA2045@basil.fritz.box>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 24, 2009  12:30 +0200, Ludwig Nussel wrote:
-> @@ -1353,7 +1356,13 @@ int ext2_write_inode(struct inode *inode, int do_sync)
->  
->  	ext2_get_inode_flags(ei);
->  	raw_inode->i_mode = cpu_to_le16(inode->i_mode);
-> +	if (EXT2_SB(sb)->s_uid &&
-> +	    inode->i_uid == EXT2_SB(sb)->s_uid) {
-> +		raw_inode->i_uid_high = 0;
-> +		raw_inode->i_uid_low  = 0;
-> +		raw_inode->i_gid_high = 0;
-> +		raw_inode->i_gid_low  = 0;
+On Fri, 24 Jul 2009, Andi Kleen wrote:
+> > The part I don't understand is what actually happens to pages after the 
+> > error flag set.  They're still uptodate, but no longer dirty?  And can be 
+> > overwritten/redirtied?  There's also an error flag on the address_space.  
+> > Are there any guidelines as far as which should be used?
+> 
+> Ideally both. The Page error flag prevents the data from being
+> consumed and the address space error flag makes sure errors are 
+> getting reported on fsync()/close() etc.  Also AS error is useful when
+> you don't have a clear page to assign the error to, e.g. if you
+> get an error indication that's not tied to a read operation.
+> 
+> BTW the upcoming hwpoison code can set such errors asynchronously
+> under you.
 
-I would suggest to also clear the SUID flag on this inode.  Otherwise,
-it opens the risk of creating SUID root files that might be handled
-incorrectly.
+I looked through the various callers, and these look correct:
 
-To be honest, rather than mapping the specified file to uid == 0/gid == 0
-it would be more useful (and safe) to allow specifying a mapping from one
-UID to another, or have the on-disk UID always be set to/from the specified
-UID.  Given that your original problem is for the user having UIDX on
-system X and UIDY on system Y, you should just specify the X->Y mapping
-explicitly, instead of an implicit X->0 mapping.  Otherwise, if the user
-is unable to access root-owned files on either one of system X or Y your
-current patch fails.
+readpages -- return error code.  Doesn't matter, we'll get a call to 
+->readpage later.
 
-I would have the option be something like "uid={local_uid}={disk_uid}"
-(which hopefully the option parser can handle), or "uid=X:Y" if not.
-That way, the on-disk filesystem will remain correct for at least one
-of the two systems.  If someone wants to specify disk_uid=0 that is
-fine, but it shouldn't be the only option.
+writepages (async) -- return error code if we fail during request setup, 
+or call mapping_set_error() on completion.  If 
+wait_on_page_writeback_range() is any indication, that's correct.
 
-PS - please also send a patch for ext4.
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+These I'm unsure about:
+
+readpage -- currently calls SetPageError(page) _and_ returns error code.  
+I don't see any page error checks outside the writeout paths, so a simple 
+return value looks sufficient for a synchronous read.  OTOH 
+mpage_end_io_read() and end_buffer_async_read() both do SetPageError() for 
+async readpage (although I don't see where that is checked).
+
+writepage -- SetPageError(page) _and_ return error code.  I see that 
+wait_on_page_writeback_range() and write_one_page() check the page error 
+after wait_on_page_writeback(), so that looks correct for an async 
+writepage.  My writepage() is currently synchronous (i.e. does 
+wait_on_page_writeback itself), so worry the page error bit is 
+superfluous?  I should make it async, regardless.  Also, 
+mpage_end_io_write() sets both PageError and AS_EIO on the mapping, so an 
+async writepage should also set the mapping bit in the async case.
+
+
+I'm guessing on the (??) items, but this at least looks consistent (as far 
+as the sync vs async implementations go):
+
+readpage (sync) -- return error and SetPageError (??)
+readpage (async) -- SetPageError
+readpages -- doesn't matter
+writepage (sync) -- return error and SetPageError (__writepage() sets 
+	mapping error)   (??)
+writepage (async) -- SetPageError AND mapping_set_error
+writepages (sync) -- return error AND mapping_set_error (??)
+writepages (async) -- mapping_set_error
+
+Does that sound right?  If so, I can update 
+Documentation/filesystems/vfs.txt appropriately.
+
+Thanks-
+sage
 
