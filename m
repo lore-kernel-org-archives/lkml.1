@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbZGXUDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753608AbZGXUDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752834AbZGXUDE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 16:03:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbZGXUDE
+	id S1753608AbZGXUDS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 16:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbZGXUDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 16:03:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55260 "EHLO mx2.redhat.com"
+	Fri, 24 Jul 2009 16:03:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55290 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751087AbZGXUDC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 16:03:02 -0400
+	id S1753267AbZGXUDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 16:03:14 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip -v13 03/11] kprobes: checks probe address is instruction
-	boudary on x86
+Subject: [PATCH -tip -v13 04/11] kprobes: cleanup fix_riprel() using insn
+	decoder on x86
 To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
@@ -19,8 +19,8 @@ Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
        Masami Hiramatsu <mhiramat@redhat.com>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>
-Date: Fri, 24 Jul 2009 16:05:47 -0400
-Message-ID: <20090724200547.25904.65305.stgit@localhost.localdomain>
+Date: Fri, 24 Jul 2009 16:05:53 -0400
+Message-ID: <20090724200552.25904.93540.stgit@localhost.localdomain>
 In-Reply-To: <20090724200527.25904.2562.stgit@localhost.localdomain>
 References: <20090724200527.25904.2562.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -31,120 +31,165 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ensure safeness of inserting kprobes by checking whether the specified
-address is at the first byte of a instruction on x86.
-This is done by decoding probed function from its head to the probe point.
+Cleanup fix_riprel() in arch/x86/kernel/kprobes.c by using x86 instruction
+decoder.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 Cc: Jim Keniston <jkenisto@us.ibm.com>
 Cc: Ingo Molnar <mingo@elte.hu>
 ---
 
- arch/x86/kernel/kprobes.c |   69 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 69 insertions(+), 0 deletions(-)
+ arch/x86/kernel/kprobes.c |  128 ++++++++-------------------------------------
+ 1 files changed, 23 insertions(+), 105 deletions(-)
 
 diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index b5b1848..80d493f 100644
+index 80d493f..98f48d0 100644
 --- a/arch/x86/kernel/kprobes.c
 +++ b/arch/x86/kernel/kprobes.c
-@@ -48,6 +48,7 @@
- #include <linux/preempt.h>
- #include <linux/module.h>
- #include <linux/kdebug.h>
-+#include <linux/kallsyms.h>
+@@ -109,50 +109,6 @@ static const u32 twobyte_is_boostable[256 / 32] = {
+ 	/*      -----------------------------------------------         */
+ 	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+ };
+-static const u32 onebyte_has_modrm[256 / 32] = {
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-	/*      -----------------------------------------------         */
+-	W(0x00, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) | /* 00 */
+-	W(0x10, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) , /* 10 */
+-	W(0x20, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) | /* 20 */
+-	W(0x30, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) , /* 30 */
+-	W(0x40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 40 */
+-	W(0x50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 50 */
+-	W(0x60, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0) | /* 60 */
+-	W(0x70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 70 */
+-	W(0x80, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 80 */
+-	W(0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 90 */
+-	W(0xa0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* a0 */
+-	W(0xb0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* b0 */
+-	W(0xc0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* c0 */
+-	W(0xd0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1) , /* d0 */
+-	W(0xe0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* e0 */
+-	W(0xf0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1)   /* f0 */
+-	/*      -----------------------------------------------         */
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-};
+-static const u32 twobyte_has_modrm[256 / 32] = {
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-	/*      -----------------------------------------------         */
+-	W(0x00, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1) | /* 0f */
+-	W(0x10, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0) , /* 1f */
+-	W(0x20, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1) | /* 2f */
+-	W(0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 3f */
+-	W(0x40, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 4f */
+-	W(0x50, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 5f */
+-	W(0x60, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 6f */
+-	W(0x70, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1) , /* 7f */
+-	W(0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 8f */
+-	W(0x90, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 9f */
+-	W(0xa0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1) | /* af */
+-	W(0xb0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1) , /* bf */
+-	W(0xc0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* cf */
+-	W(0xd0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* df */
+-	W(0xe0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* ef */
+-	W(0xf0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)   /* ff */
+-	/*      -----------------------------------------------         */
+-	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
+-};
+ #undef W
  
- #include <asm/cacheflush.h>
- #include <asm/desc.h>
-@@ -55,6 +56,7 @@
- #include <asm/uaccess.h>
- #include <asm/alternative.h>
- #include <asm/debugreg.h>
-+#include <asm/insn.h>
- 
- void jprobe_return_end(void);
- 
-@@ -245,6 +247,71 @@ retry:
- 	}
- }
- 
-+/* Recover the probed instruction at addr for further analysis. */
-+static int recover_probed_instruction(kprobe_opcode_t *buf, unsigned long addr)
-+{
-+	struct kprobe *kp;
-+	kp = get_kprobe((void *)addr);
-+	if (!kp)
-+		return -EINVAL;
-+
-+	/*
-+	 *  Basically, kp->ainsn.insn has an original instruction.
-+	 *  However, RIP-relative instruction can not do single-stepping
-+	 *  at different place, fix_riprel() tweaks the displacement of
-+	 *  that instruction. In that case, we can't recover the instruction
-+	 *  from the kp->ainsn.insn.
-+	 *
-+	 *  On the other hand, kp->opcode has a copy of the first byte of
-+	 *  the probed instruction, which is overwritten by int3. And
-+	 *  the instruction at kp->addr is not modified by kprobes except
-+	 *  for the first byte, we can recover the original instruction
-+	 *  from it and kp->opcode.
-+	 */
-+	memcpy(buf, kp->addr, MAX_INSN_SIZE * sizeof(kprobe_opcode_t));
-+	buf[0] = kp->opcode;
-+	return 0;
-+}
-+
-+/* Dummy buffers for kallsyms_lookup */
-+static char __dummy_buf[KSYM_NAME_LEN];
-+
-+/* Check if paddr is at an instruction boundary */
-+static int __kprobes can_probe(unsigned long paddr)
-+{
-+	int ret;
-+	unsigned long addr, offset = 0;
-+	struct insn insn;
-+	kprobe_opcode_t buf[MAX_INSN_SIZE];
-+
-+	if (!kallsyms_lookup(paddr, NULL, &offset, NULL, __dummy_buf))
-+		return 0;
-+
-+	/* Decode instructions */
-+	addr = paddr - offset;
-+	while (addr < paddr) {
-+		kernel_insn_init(&insn, (void *)addr);
-+		insn_get_opcode(&insn);
-+
-+		/* Check if the instruction has been modified. */
-+		if (insn.opcode.bytes[0] == BREAKPOINT_INSTRUCTION) {
-+			ret = recover_probed_instruction(buf, addr);
-+			if (ret)
-+				/*
-+				 * Another debugging subsystem might insert
-+				 * this breakpoint. In that case, we can't
-+				 * recover it.
-+				 */
-+				return 0;
-+			kernel_insn_init(&insn, buf);
-+		}
-+		insn_get_length(&insn);
-+		addr += insn.length;
-+	}
-+
-+	return (addr == paddr);
-+}
-+
- /*
-  * Returns non-zero if opcode modifies the interrupt flag.
-  */
-@@ -360,6 +427,8 @@ static void __kprobes arch_copy_kprobe(struct kprobe *p)
- 
- int __kprobes arch_prepare_kprobe(struct kprobe *p)
+ struct kretprobe_blackpoint kretprobe_blacklist[] = {
+@@ -345,68 +301,30 @@ static int __kprobes is_IF_modifier(kprobe_opcode_t *insn)
+ static void __kprobes fix_riprel(struct kprobe *p)
  {
-+	if (!can_probe((unsigned long)p->addr))
-+		return -EILSEQ;
- 	/* insn: must be on special executable page on x86. */
- 	p->ainsn.insn = get_insn_slot();
- 	if (!p->ainsn.insn)
+ #ifdef CONFIG_X86_64
+-	u8 *insn = p->ainsn.insn;
+-	s64 disp;
+-	int need_modrm;
+-
+-	/* Skip legacy instruction prefixes.  */
+-	while (1) {
+-		switch (*insn) {
+-		case 0x66:
+-		case 0x67:
+-		case 0x2e:
+-		case 0x3e:
+-		case 0x26:
+-		case 0x64:
+-		case 0x65:
+-		case 0x36:
+-		case 0xf0:
+-		case 0xf3:
+-		case 0xf2:
+-			++insn;
+-			continue;
+-		}
+-		break;
+-	}
++	struct insn insn;
++	kernel_insn_init(&insn, p->ainsn.insn);
+ 
+-	/* Skip REX instruction prefix.  */
+-	if (is_REX_prefix(insn))
+-		++insn;
+-
+-	if (*insn == 0x0f) {
+-		/* Two-byte opcode.  */
+-		++insn;
+-		need_modrm = test_bit(*insn,
+-				      (unsigned long *)twobyte_has_modrm);
+-	} else
+-		/* One-byte opcode.  */
+-		need_modrm = test_bit(*insn,
+-				      (unsigned long *)onebyte_has_modrm);
+-
+-	if (need_modrm) {
+-		u8 modrm = *++insn;
+-		if ((modrm & 0xc7) == 0x05) {
+-			/* %rip+disp32 addressing mode */
+-			/* Displacement follows ModRM byte.  */
+-			++insn;
+-			/*
+-			 * The copied instruction uses the %rip-relative
+-			 * addressing mode.  Adjust the displacement for the
+-			 * difference between the original location of this
+-			 * instruction and the location of the copy that will
+-			 * actually be run.  The tricky bit here is making sure
+-			 * that the sign extension happens correctly in this
+-			 * calculation, since we need a signed 32-bit result to
+-			 * be sign-extended to 64 bits when it's added to the
+-			 * %rip value and yield the same 64-bit result that the
+-			 * sign-extension of the original signed 32-bit
+-			 * displacement would have given.
+-			 */
+-			disp = (u8 *) p->addr + *((s32 *) insn) -
+-			       (u8 *) p->ainsn.insn;
+-			BUG_ON((s64) (s32) disp != disp); /* Sanity check.  */
+-			*(s32 *)insn = (s32) disp;
+-		}
++	if (insn_rip_relative(&insn)) {
++		s64 newdisp;
++		u8 *disp;
++		insn_get_displacement(&insn);
++		/*
++		 * The copied instruction uses the %rip-relative addressing
++		 * mode.  Adjust the displacement for the difference between
++		 * the original location of this instruction and the location
++		 * of the copy that will actually be run.  The tricky bit here
++		 * is making sure that the sign extension happens correctly in
++		 * this calculation, since we need a signed 32-bit result to
++		 * be sign-extended to 64 bits when it's added to the %rip
++		 * value and yield the same 64-bit result that the sign-
++		 * extension of the original signed 32-bit displacement would
++		 * have given.
++		 */
++		newdisp = (u8 *) p->addr + (s64) insn.displacement.value -
++			  (u8 *) p->ainsn.insn;
++		BUG_ON((s64) (s32) newdisp != newdisp); /* Sanity check.  */
++		disp = (u8 *) p->ainsn.insn + insn_offset_displacement(&insn);
++		*(s32 *) disp = (s32) newdisp;
+ 	}
+ #endif
+ }
 
 
 -- 
