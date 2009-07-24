@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753723AbZGXXZL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbZGXX1N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753723AbZGXXZL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 19:25:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbZGXXZI
+	id S1755215AbZGXX1N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 19:27:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754136AbZGXX1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 19:25:08 -0400
-Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:55255 "EHLO
-	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751256AbZGXXZH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 19:25:07 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Fenghua Yu <fenghua.yu@intel.com>
-Subject: Re: [PATCH] ia64: minor Makefile simplification through use of cc-ifversion
-Date: Sat, 25 Jul 2009 01:25:04 +0200
-User-Agent: KMail/1.9.9
-Cc: Peter Chubb <peterc@gelato.unsw.edu.au>, Sam Ravnborg <sam@ravnborg.org>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       "linux-kbuild@vger.kernel.org" <linux-kbuild@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200907232056.51064.elendil@planet.nl> <200907242023.12478.elendil@planet.nl> <20090724231511.GA20607@linux-os.sc.intel.com>
-In-Reply-To: <20090724231511.GA20607@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 24 Jul 2009 19:27:13 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39607 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753531AbZGXX1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 19:27:12 -0400
+Subject: Re: fanotify - overall design before I start sending patches
+From: Eric Paris <eparis@redhat.com>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       malware-list@dmesg.printk.net, Valdis.Kletnieks@vt.edu, greg@kroah.com,
+       jcm@redhat.com, douglas.leeder@sophos.com, tytso@mit.edu,
+       arjan@infradead.org, david@lang.hm, jengelh@medozas.de,
+       aviro@redhat.com, mrkafk@gmail.com, alexl@redhat.com, jack@suse.cz,
+       tvrtko.ursulin@sophos.com, a.p.zijlstra@chello.nl, hch@infradead.org,
+       alan@lxorguk.ukuu.org.uk, mmorley@hcl.in, pavel@suse.cz
+In-Reply-To: <20090724224813.GK27755@shareable.org>
+References: <1248466429.3567.82.camel@localhost>
+	 <20090724224813.GK27755@shareable.org>
+Content-Type: text/plain
+Date: Fri, 24 Jul 2009 19:25:51 -0400
+Message-Id: <1248477951.3567.110.camel@localhost>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907250125.06102.elendil@planet.nl>
-X-OriginalArrivalTime: 24 Jul 2009 23:25:06.0569 (UTC) FILETIME=[FA8DC790:01CA0CB5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 25 July 2009, Fenghua Yu wrote:
-> Between GCC version 3.4.0 and 4.3.3 (including 3.4.0 and 4.3.3),
-> -mtune=merced is implemented in GCC. Starting from 4.4.0, -mtune=merced
-> is deprecated.
->
-> Even implemented in versions between 3.4.0 and 4.3.3, the -mtune=merced
-> feature has been broken in some of the versions. For example, GCC 4.1.2
-> reports interanl tuning function errors during kernel building with
-> -mtune=merced. Or GCC Bugzilla 16130 reports another -mtune=merced
-> issue on GCC 3.4.1.
->
-> So I would remove the -mtune=merced from IA64 kernel build. Without
-> this option, kernel on Merced will remain the same except losing an
-> unstable and out-of-date performance tunning feature.
->
-> Since GCC version 3.4.0, -mtune=mckinley has been implemented. The
-> -mtune=mckinley option functions the same as mtune=itanium2. And
-> mtune=itanium2 is the default option. So we don't need to add
-> mtune=mckinley either since its been the default option in any GCC
-> version which implements this option.
->
-> Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+On Fri, 2009-07-24 at 23:48 +0100, Jamie Lokier wrote:
+> Eric Paris wrote:
+> > It is a new notification system that has a limited set of events (open,
+> > close, read, write) in which notification not only comes with metadata
+> > the describes what happened it also comes with an open file descriptor
+> > to the object in question.  fanotify will also allow the listener to
+> > make access decisions on open and read events.  This allows the
+> > implementation of hierarchical storage management systems or an access
+> > file scanning or integrity checking.
+> 
+> My first thought was to wonder, why not make it the same set of events
+> that inotify and dnotify provide?  That is: open, close, read, write,
+> create, delete, rename, attribute change?  In other words, I don't see
+> a good reason for it to be a subset of events.
 
-Fine by me, but you'll probably want to give the commit a different 
-subject :-)
+The two real reasons?
+
+1) These were the only 4 my original use case cared about.
+2) These are the only 4 where the notification hook has enough
+information to open a fd in the context of the listener.
+
+In the kernel most notification is done with either an inode or a dentry
+as that is enough for inotify, dnotify, audit_watch and audit_tree.
+Opening a file descriptor, and thus fanotify, requires a dentry and a
+vfsmnt, which is much harder to come by in the kernel.
+
+Maybe as future work I'll try to convince Al to allow me to have that
+information in more places, but for today, those 4 are the only ones I
+can probably slip past him...
+
