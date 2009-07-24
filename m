@@ -1,130 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbZGXUA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbZGXUDE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752138AbZGXUA5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 16:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZGXUA4
+	id S1752834AbZGXUDE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 16:03:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbZGXUDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 16:00:56 -0400
-Received: from www84.your-server.de ([213.133.104.84]:52718 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751067AbZGXUA4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 16:00:56 -0400
-Subject: [PATCH]: fsl usb gadget driver pullup fix
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel@vger.kernel.org, leoli@freescale.com,
-       tanya.jiang@freescale.com
-Content-Type: text/plain
-Date: Fri, 24 Jul 2009 22:00:23 +0200
-Message-Id: <1248465623.30437.24.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Fri, 24 Jul 2009 16:03:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55260 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751087AbZGXUDC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 16:03:02 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -tip -v13 03/11] kprobes: checks probe address is instruction
+	boudary on x86
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>
+Date: Fri, 24 Jul 2009 16:05:47 -0400
+Message-ID: <20090724200547.25904.65305.stgit@localhost.localdomain>
+In-Reply-To: <20090724200527.25904.2562.stgit@localhost.localdomain>
+References: <20090724200527.25904.2562.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Attached is a small fix for the fsl usb gadget driver. This fix the
-driver in a way that the usb device will be only "pulled up" on request,
-like other usb gadget drivers do. 
+Ensure safeness of inserting kprobes by checking whether the specified
+address is at the first byte of a instruction on x86.
+This is done by decoding probed function from its head to the probe point.
 
-This is necessary, because the device information is not always
-available until an application is up and running which provides this
-datas.
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Acked-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
 
-Hope you like it.
+ arch/x86/kernel/kprobes.c |   69 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 69 insertions(+), 0 deletions(-)
 
- fsl_udc_core.c |   41 ++++++++++++++++++++---------------------
- 1 file changed, 20 insertions(+), 21 deletions(-)
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
-
---- linux-2.6.31-rc4.orig/drivers/usb/gadget/fsl_udc_core.c	2009-07-24
-20:35:29.000000000 +0200
-+++ linux-2.6.31-rc4/drivers/usb/gadget/fsl_udc_core.c	2009-07-24
-21:44:10.000000000 +0200
-@@ -171,6 +171,21 @@
+diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+index b5b1848..80d493f 100644
+--- a/arch/x86/kernel/kprobes.c
++++ b/arch/x86/kernel/kprobes.c
+@@ -48,6 +48,7 @@
+ #include <linux/preempt.h>
+ #include <linux/module.h>
+ #include <linux/kdebug.h>
++#include <linux/kallsyms.h>
+ 
+ #include <asm/cacheflush.h>
+ #include <asm/desc.h>
+@@ -55,6 +56,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/alternative.h>
+ #include <asm/debugreg.h>
++#include <asm/insn.h>
+ 
+ void jprobe_return_end(void);
+ 
+@@ -245,6 +247,71 @@ retry:
  	}
  }
  
-+static int can_pullup(struct fsl_udc *udc)
++/* Recover the probed instruction at addr for further analysis. */
++static int recover_probed_instruction(kprobe_opcode_t *buf, unsigned long addr)
 +{
-+	return udc->driver && udc->softconnect && udc->vbus_active;
++	struct kprobe *kp;
++	kp = get_kprobe((void *)addr);
++	if (!kp)
++		return -EINVAL;
++
++	/*
++	 *  Basically, kp->ainsn.insn has an original instruction.
++	 *  However, RIP-relative instruction can not do single-stepping
++	 *  at different place, fix_riprel() tweaks the displacement of
++	 *  that instruction. In that case, we can't recover the instruction
++	 *  from the kp->ainsn.insn.
++	 *
++	 *  On the other hand, kp->opcode has a copy of the first byte of
++	 *  the probed instruction, which is overwritten by int3. And
++	 *  the instruction at kp->addr is not modified by kprobes except
++	 *  for the first byte, we can recover the original instruction
++	 *  from it and kp->opcode.
++	 */
++	memcpy(buf, kp->addr, MAX_INSN_SIZE * sizeof(kprobe_opcode_t));
++	buf[0] = kp->opcode;
++	return 0;
 +}
 +
-+static void set_pullup(struct fsl_udc *udc)
++/* Dummy buffers for kallsyms_lookup */
++static char __dummy_buf[KSYM_NAME_LEN];
++
++/* Check if paddr is at an instruction boundary */
++static int __kprobes can_probe(unsigned long paddr)
 +{
-+	if (can_pullup(udc))
-+		fsl_writel((fsl_readl(&dr_regs->usbcmd) | USB_CMD_RUN_STOP),
-+				&dr_regs->usbcmd);
-+	else
-+		fsl_writel((fsl_readl(&dr_regs->usbcmd) & ~USB_CMD_RUN_STOP),
-+				&dr_regs->usbcmd);
++	int ret;
++	unsigned long addr, offset = 0;
++	struct insn insn;
++	kprobe_opcode_t buf[MAX_INSN_SIZE];
++
++	if (!kallsyms_lookup(paddr, NULL, &offset, NULL, __dummy_buf))
++		return 0;
++
++	/* Decode instructions */
++	addr = paddr - offset;
++	while (addr < paddr) {
++		kernel_insn_init(&insn, (void *)addr);
++		insn_get_opcode(&insn);
++
++		/* Check if the instruction has been modified. */
++		if (insn.opcode.bytes[0] == BREAKPOINT_INSTRUCTION) {
++			ret = recover_probed_instruction(buf, addr);
++			if (ret)
++				/*
++				 * Another debugging subsystem might insert
++				 * this breakpoint. In that case, we can't
++				 * recover it.
++				 */
++				return 0;
++			kernel_insn_init(&insn, buf);
++		}
++		insn_get_length(&insn);
++		addr += insn.length;
++	}
++
++	return (addr == paddr);
 +}
 +
- /*------------------------------------------------------------------
- 	Internal Hardware related function
-  ------------------------------------------------------------------*/
-@@ -283,10 +298,7 @@
- 	temp |= USB_MODE_CTRL_MODE_DEVICE;
- 	fsl_writel(temp, &dr_regs->usbmode);
+ /*
+  * Returns non-zero if opcode modifies the interrupt flag.
+  */
+@@ -360,6 +427,8 @@ static void __kprobes arch_copy_kprobe(struct kprobe *p)
  
--	/* Set controller to Run */
--	temp = fsl_readl(&dr_regs->usbcmd);
--	temp |= USB_CMD_RUN_STOP;
--	fsl_writel(temp, &dr_regs->usbcmd);
-+	set_pullup(udc);
- 
- 	return;
- }
-@@ -1059,11 +1071,6 @@
- 	return 0;
- }
- 
--static int can_pullup(struct fsl_udc *udc)
--{
--	return udc->driver && udc->softconnect && udc->vbus_active;
--}
--
- /* Notify controller that VBUS is powered, Called by whatever
-    detects VBUS sessions */
- static int fsl_vbus_session(struct usb_gadget *gadget, int is_active)
-@@ -1075,12 +1082,7 @@
- 	spin_lock_irqsave(&udc->lock, flags);
- 	VDBG("VBUS %s", is_active ? "on" : "off");
- 	udc->vbus_active = (is_active != 0);
--	if (can_pullup(udc))
--		fsl_writel((fsl_readl(&dr_regs->usbcmd) | USB_CMD_RUN_STOP),
--				&dr_regs->usbcmd);
--	else
--		fsl_writel((fsl_readl(&dr_regs->usbcmd) & ~USB_CMD_RUN_STOP),
--				&dr_regs->usbcmd);
-+	set_pullup(udc);
- 	spin_unlock_irqrestore(&udc->lock, flags);
- 	return 0;
- }
-@@ -1111,12 +1113,7 @@
- 
- 	udc = container_of(gadget, struct fsl_udc, gadget);
- 	udc->softconnect = (is_on != 0);
--	if (can_pullup(udc))
--		fsl_writel((fsl_readl(&dr_regs->usbcmd) | USB_CMD_RUN_STOP),
--				&dr_regs->usbcmd);
--	else
--		fsl_writel((fsl_readl(&dr_regs->usbcmd) & ~USB_CMD_RUN_STOP),
--				&dr_regs->usbcmd);
-+	set_pullup(udc);
- 
- 	return 0;
- }
-@@ -2194,6 +2191,8 @@
- 
- 	udc->resume_state = USB_STATE_NOTATTACHED;
- 	udc->usb_state = USB_STATE_POWERED;
-+	udc->vbus_active = 1;
-+	udc->softconnect = 1;
- 	udc->ep0_dir = 0;
- 	udc->remote_wakeup = 0;	/* default to 0 on reset */
- 
+ int __kprobes arch_prepare_kprobe(struct kprobe *p)
+ {
++	if (!can_probe((unsigned long)p->addr))
++		return -EILSEQ;
+ 	/* insn: must be on special executable page on x86. */
+ 	p->ainsn.insn = get_insn_slot();
+ 	if (!p->ainsn.insn)
 
 
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
