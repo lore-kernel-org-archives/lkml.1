@@ -1,93 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752615AbZGXRNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752745AbZGXRWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752615AbZGXRNJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 13:13:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbZGXRNJ
+	id S1752745AbZGXRWh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 13:22:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbZGXRWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 13:13:09 -0400
-Received: from e24smtp02.br.ibm.com ([32.104.18.86]:53163 "EHLO
-	e24smtp02.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751852AbZGXRNI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 13:13:08 -0400
-Subject: Re: [PATCH] TPM: DATA_EXPECT bit check bypass
-From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-To: Andy Isaacson <adi@hexapodia.org>
-Cc: Valdis.Kletnieks@vt.edu, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andy Isaacson <adi@vmware.com>, linux-kernel@vger.kernel.org,
-       tpmdd-devel@lists.sourceforge.net, dds@google.com,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>,
-       Shahbaz Khan <shaz.linux@gmail.com>, seiji.munetoh@gmail.com
-In-Reply-To: <20090720232816.GR6370@hexapodia.org>
-References: <1246410255-6839-1-git-send-email-adi@vmware.com>
-	 <1246410255-6839-6-git-send-email-adi@vmware.com>
-	 <20090701110136.576a1d14@lxorguk.ukuu.org.uk>
-	 <1246455920.9140.28.camel@blackbox>
-	 <1247765210.30736.3.camel@dyn531421.br.ibm.com>
-	 <1247766212.30736.17.camel@dyn531421.br.ibm.com>
-	 <49514.1247774890@turing-police.cc.vt.edu>
-	 <1247779226.3062.44.camel@dyn531421.br.ibm.com>
-	 <20090720232816.GR6370@hexapodia.org>
-Content-Type: text/plain
-Date: Fri, 24 Jul 2009 14:12:58 -0300
-Message-Id: <1248455578.2666.2.camel@blackbox>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Jul 2009 13:22:37 -0400
+Received: from THUNK.ORG ([69.25.196.29]:56275 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752279AbZGXRWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 13:22:36 -0400
+Date: Fri, 24 Jul 2009 13:22:27 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Clemens Eisserer <linuxhippy@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Status of ext4 online defrag?
+Message-ID: <20090724172227.GH5675@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Clemens Eisserer <linuxhippy@gmail.com>,
+	linux-kernel@vger.kernel.org
+References: <194f62550907240636o5ba623cdy1f16deb7f6d70eeb@mail.gmail.com> <200907241700.24170.diegocg@gmail.com> <194f62550907240829m1834bc26r8e23baba4b295ae4@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <194f62550907240829m1834bc26r8e23baba4b295ae4@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-20 at 16:28 -0700, Andy Isaacson wrote:
-> On Thu, Jul 16, 2009 at 06:20:26PM -0300, Rajiv Andrade wrote:
-> > On Thu, 2009-07-16 at 16:08 -0400, Valdis.Kletnieks@vt.edu wrote:
-> > > On Thu, 16 Jul 2009 14:43:32 -0300, Rajiv Andrade said:
-> > > 
-> > > > @@ -582,6 +585,12 @@ static int tpm_tis_init(struct device *dev, resource_siz
-> > > e_t start,
-> > > >         tpm_get_timeouts(chip);
-> > > >         tpm_continue_selftest(chip);
-> > > >  
-> > > > +       for (i=0; i < 8; i++)
-> > > > +               if (ITPM_ID[i] != to_pnp_dev(dev)->id->id[i])
-> > > > +                       break;
-> > > > +       if (i == 8)
-> > > > +               chip->is_itpm = 1;
-> > > > +
-> > > 
-> > > strcmp() variant of some sort instead?
-> > 
-> > Wait, is to_pnp_dev(dev)->id->id[i] null terminated? Maybe memcmp() fits
-> > better here..
+On Fri, Jul 24, 2009 at 11:29:40AM -0400, Clemens Eisserer wrote:
+> >> Does anybody know what the current state of ext4 online defrag is?
+> >
+> > It got merged for 2.6.31 (commit 748de6736c1e482e111f9d1b5a5d5b1787600cad)
 > 
-> Rather than checking the PNP ID at this point, I suggest something like:
-> 
-> (the context here depends on my earlier series, but it's fairly
-> obvious.)
-> 
-> @@ -467,6 +481,11 @@ static int tpm_tis_init(struct device *dev, resource_size_t start,
->  		 "1.2 TPM (%04X:%04X rev %d)\n", vendor & 0xffff,
->  		 vendor >> 16, ioread8(chip->vendor.iobase + TPM_RID(0)));
-> 
-> +	if (vendor == 0x10208086) {
-> +		dev_info(dev, "Intel iTPM workaround enabled\n");
-> +		chip->itpm = 1;
-> +	}
-> +
->  	/* Figure out the capabilities */
->  	intfcaps =
->  	    ioread32(chip->vendor.iobase +
-> 
-> (I suppose there should be a #define of 0x10208086 somewhere.)
-> 
+> Thanks, how cool!
+> I feared already that this feature is dead, glad to hear it is not :)
 
-Much better, my patch would break everything in case force option was
-set.
+It's not dead, but it's not fully complete.  There are more patches
+that introduce a half-dozen or so new ioctl's that still need review,
+and the e4defrag tool is still quite primitive and needs to (a) use
+the new ioctls, and (b) be made more intelligent about defragging free
+space.
 
-> I'll cook up a refreshed patch series.
+At the moment what e4defrag will do is to ask the filesystem to
+allocate new space, and if the new space contains fewer fragments that
+the current file, use an ioctl to atomically copy the data to the new
+blocks and swap the blocks so that the file being defragged uses the
+newly allocated blocks.  If the filesystem's free space is not badly
+fragmented, this will tend to defrag individual files, but e4defrag
+doesn't currently have any kind of global knowledge of where files
+live and any global knowledge of the free space and how to move blocks
+around so that the free space will get defragmented.
 
-Great, I'll ack this one when I get it, thanks.
+The new ioctls are designed to give the userspace program the tools to
+do this, but (a) we haven't had the time to review the ioctls and new
+code so they haven't been merged yet, and (b) the userspace program
+hasn't been taught to use these new ioctls.
 
-Rajiv
-+++
+> When compiling e2fsprogs from git, I get:
+> > e4defrag.c:388: error: conflicting types for ‘fallocate’
+> > /usr/include/bits/fcntl.h:240: note: previous declaration of ‘fallocate’ was here
+> > make: *** [e4defrag.o] Error 1
+> 
+> I had to comment out fallocate in fcntl.h, no idea who is wrong here.
 
+Eric Sandeen has patches that he sent out in the last two weeks to fix
+e4defrag so it will compile on glibc's that define fallocate.  I just
+haven't had a chance to get them applied into mainline.  Things like
+fixing bugs where off-line resize2fs could corrupt ext4 filesystems
+were higher priority.  :-(
+
+The bottom line is that online defrag is something that is happening,
+it's just not happening as fast as we would all like, mainly due to
+resource issues.
+
+Regards,
+
+					- Ted
