@@ -1,97 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbZGXTWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbZGXTWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbZGXTWN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 15:22:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbZGXTWM
+	id S1754048AbZGXTWl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 15:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbZGXTWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 15:22:12 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:39122 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751256AbZGXTWL convert rfc822-to-8bit (ORCPT
+	Fri, 24 Jul 2009 15:22:40 -0400
+Received: from mail-gx0-f213.google.com ([209.85.217.213]:65299 "EHLO
+	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754035AbZGXTWj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 15:22:11 -0400
+	Fri, 24 Jul 2009 15:22:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=TLo8KgAdfFhBgOoUuK23k0ooqnRJzINzTy8z/Y0WoyV/M2CLaSnCFDeVpgueinU7Ir
-         pLnuZluZdDS1ijPupqsGdQaHrmSmD9ITsQDp3CVai5edl0Bt70YJNPUhqV00zPVeYksX
-         r2Pn9+KIJZOQIkJef4NOCD1/Ybhc1Zio0AL5E=
+        h=mime-version:sender:in-reply-to:references:from:date
+         :x-google-sender-auth:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=AAtdFcwrAD0PrBmUhCexvYRZvZValCcP0mL5VqLmC66omUq8w/aun8e5WEaJLW6yZA
+         fPOGbhi68dS+p7isQuYTSau6q69bVK+YutnBZgS0bR1dqelnmlZjVGhBL69TFVm9TXfv
+         nvfJNf5RtXOHfdzkhMLN5sQBUFNtgel5yYWyY=
 MIME-Version: 1.0
-In-Reply-To: <bad58e960907241047o7558a715u6a36535f2496c49d@mail.gmail.com>
-References: <20090724124803.ltfbg57ooyoko0gs@my5.dal.ca>
-	 <20090724173422.GA10989@suse.de>
-	 <bad58e960907241047o7558a715u6a36535f2496c49d@mail.gmail.com>
-Date: Fri, 24 Jul 2009 16:22:10 -0300
-Message-ID: <bad58e960907241222j5d7ad970tce4860aa7c273c44@mail.gmail.com>
-Subject: Fwd: [PATCH] Removed useless retval variables in usb-serial.c
-From: Trevor Pace <trevorpace@gmail.com>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <f5a7b3810907240831t75a058a2m96abdc28a28c4365@mail.gmail.com>
+References: <f5a7b3810907240831t75a058a2m96abdc28a28c4365@mail.gmail.com>
+From: Ray Lee <ray-lk@madrabbit.org>
+Date: Fri, 24 Jul 2009 12:16:21 -0700
+X-Google-Sender-Auth: 9ec0306e4aaf50ff
+Message-ID: <2c0942db0907241216p416ac5edyce0b41e29926ec29@mail.gmail.com>
+Subject: Re: Char Limit issue on 2.6.29 kernels
+To: naresh kamboju <naresh.kernel@gmail.com>
+Cc: linux-kernel@vger.kernel.org, tim.bird@am.sony.com,
+       ltp-list@lists.sourceforge.net, brinda_mn@yahoo.co.in,
+       rohit.170309@gmail.com, Garrett Cooper <yanegomi@gmail.com>,
+       Oleg Nesterov <oleg@redhat.com>, maxin john <maxinbjohn@gmail.com>,
+       Masatake YAMATO <yamato@redhat.com>, michal.simek@petalogix.com
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Forgot to CC the mailing list as well on this one.
-
-Sorry,
-
-Trevor Pace
-
-
-
-
----------- Forwarded message ----------
-From: Trevor Pace <trevorpace@gmail.com>
-Date: Fri, Jul 24, 2009 at 2:47 PM
-Subject: Re: [PATCH] Removed useless retval variables in usb-serial.c
-To: Greg KH <gregkh@suse.de>
-
-
-Hey Greg,
-
-First off, thanks for the feedback. As you can probably tell I haven't
-done much kernel patching before.
-
-Perhaps "useless" wasn't the term I should have used. Those retval
-variables seemed to just add more to the code then appears to be
-necessary. �You are right though the compiler probably optimized them
-right out of the code so I can't imagine a performance increase as a
-result of this.
-
-I quite like that idea of having the code fall out the bottom and I
-guess I just never really thought about it that way.
-
-Anyway thanks again,
-
-Trevor Pace
-
-
-
-On Fri, Jul 24, 2009 at 2:34 PM, Greg KH<gregkh@suse.de> wrote:
-> On Fri, Jul 24, 2009 at 12:48:03PM -0300, Trevor Pace wrote:
->> Removed useless return value variables.
+On Fri, Jul 24, 2009 at 8:31 AM, naresh kamboju <naresh.kernel@gmail.com> wrote:
 >
-> Why are they "useless"?
+> Hi,
 >
-> They seem useful to me, especially as it causes the code to fall out of
-> the function at the bottom, and not in the middle, which makes
-> maintaining the code easier to do over time, right?
+> I have come across with char Limit issue on 2.6.29 kernels.
 >
-> And did this actually cause any generated code to be
-> faster/smaller/better?
 >
-> Oh, and you seem to have messed up a bit of whitespace, please always
-> run your patches through scripts/checkpatch.pl first.
+> SIGFAULT:
 >
-> thanks,
+> #define SIZE            8053759
+> char buf1[SIZE] ;
 >
-> greg k-h
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at �http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at �http://www.tux.org/lkml/
+> NO SIGFAULT:
 >
+> #define SIZE            8053758
+> char buf1[SIZE] ;
+>
+> This SIGFAULT not observed on 2.6.23 kernels.
+>
+> What could be the changes that effecting from 2.6.23 to 2.6.29 kernels.
+> Please share me the information.
+
+is "ulimit -a" the same on both kernels?
+
+Can you provide a small program that shows the issue?
