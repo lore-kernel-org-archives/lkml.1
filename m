@@ -1,58 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752864AbZGXNTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752858AbZGXN0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752864AbZGXNTr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 09:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbZGXNTq
+	id S1752858AbZGXN0o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 09:26:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbZGXN0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 09:19:46 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:40620 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752698AbZGXNTp (ORCPT
+	Fri, 24 Jul 2009 09:26:43 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:50701 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751798AbZGXN0m convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 09:19:45 -0400
-From: Daniel Mack <daniel@caiaq.de>
-To: linux-kernel@vger.kernel.org
-Cc: Daniel Mack <daniel@caiaq.de>, Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>,
-       Matt Reimer <mreimer@vpop.net>, Anton Vorontsov <cbou@mail.ru>
-Subject: [PATCH] ds2760: fix integer overflow for time_to_empty_now
-Date: Fri, 24 Jul 2009 15:19:33 +0200
-Message-Id: <1248441573-32712-1-git-send-email-daniel@caiaq.de>
-X-Mailer: git-send-email 1.6.3.1
+	Fri, 24 Jul 2009 09:26:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=chTWtQc7UBvfxazJB+wXtIXGsQ5fC284OG6IsmG8wFc3odhnYIOjlDp7slb5HI1SCD
+         Gn4kIjIog9PCH8a46ulMtjPOnr7xqeeIotN8cwEvOBuKJcPsaBuAAPr2V8vqEsx86+i3
+         Y9gtL7uV6UMfAUWtkvcqxit8SWeTFDh4Q0Whg=
+MIME-Version: 1.0
+In-Reply-To: <1248441290.6987.52.camel@twins>
+References: <454c71700907240357l61f5c4fajaca73db0fba7db8@mail.gmail.com>
+	 <1248437670.6987.26.camel@twins>
+	 <454c71700907240604h4673f117j8ed58b9f2ee54798@mail.gmail.com>
+	 <1248441290.6987.52.camel@twins>
+Date: Fri, 24 Jul 2009 21:26:42 +0800
+Message-ID: <454c71700907240626w127fd890ufa91ef90cbcaaa@mail.gmail.com>
+Subject: Re: report a bug about sched_rt
+From: sen wang <wangsen.linux@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mingo@elte.hu, akpm@linux-foundation.org, kernel@kolivas.org,
+       npiggin@suse.de, arjan@infradead.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On the device we're currently developing, battery sizes of ~2.8Ah and
-current flow of ~600mA are typical.
+don't tell me what theory. don't be so doctrinairism! OK?
+If cpu is free and there is a running state task,how can you scdedule
+idle task up?
+I tell you again:we are not talking about a bandwidth of 100% for RT!
+Bug lies in the bandwidth of (100- X)%.(X<100)
+even in the time of 100-X,if there is a rt task, you should not idle()
+the system.
 
-With that values, the life_sec computation overflows due to the
-multiplication by 3600.
 
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Cc: Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
-Cc: Matt Reimer <mreimer@vpop.net>
-Cc: Anton Vorontsov <cbou@mail.ru>
-
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
----
- drivers/power/ds2760_battery.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/power/ds2760_battery.c b/drivers/power/ds2760_battery.c
-index d545fee..5d30dc0 100644
---- a/drivers/power/ds2760_battery.c
-+++ b/drivers/power/ds2760_battery.c
-@@ -212,8 +212,8 @@ static int ds2760_battery_read_status(struct ds2760_device_info *di)
- 		di->rem_capacity = 100;
- 
- 	if (di->current_uA)
--		di->life_sec = -((di->accum_current_uAh - di->empty_uAh) *
--				 3600L) / di->current_uA;
-+		di->life_sec = -((di->accum_current_uAh - di->empty_uAh) * 36L)
-+					/ (di->current_uA / 100L);
- 	else
- 		di->life_sec = 0;
- 
--- 
-1.6.3.1
-
+2009/7/24 Peter Zijlstra <peterz@infradead.org>:
+> Don't top post -- again!
+>
+> On Fri, 2009-07-24 at 21:04 +0800, sen wang wrote:
+>> Linux is used in many fieldes. SCHED_OTHER tasks is important to
+>> embedded system.
+>
+> Irrelevant.
+>
+>> if there is a running state task（a realtime task）, how can we
+>> shcedule the idle task up?
+>
+> Because it ran out of bandwidth.
+>
+>> It is ridiculous！
+>>
+>> since the throttle has a bug, why not fix it?
+>
+> It doesn't have a bug, therefore I won't fix it.
+>
+> The throttle limits the RT tasks to a bandwidth w of u/p.
+> Since real-time scheduling is about determinism a maximum bandwidth
+> larger than the minimum bandwidth specified by w is useless since it
+> cannot be relied upon.
+>
+> Therefore we don't run RT tasks beyond their bandwidth limit.
+>
+> Go read up on scheduling theory.
+>
+> Now you might want a bandwidth of 100% for your RT application (not
+> something I can recommend for the overall health of your machine) in
+> which case you're free to change this setting:
+>
+>  echo -1 > /proc/sys/kernel/sched_rt_runtime_us
+>
+> Should do that for you. Also read:
+>
+>  Documentation/scheduler/sched-rt-group.txt
+>
+>
+>
