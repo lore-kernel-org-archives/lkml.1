@@ -1,149 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbZGXXM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755195AbZGXXPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755184AbZGXXM1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 19:12:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755155AbZGXXM0
+	id S1755195AbZGXXPO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 19:15:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751976AbZGXXPN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 19:12:26 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50545 "EHLO mx2.redhat.com"
+	Fri, 24 Jul 2009 19:15:13 -0400
+Received: from mga09.intel.com ([134.134.136.24]:31621 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754961AbZGXXMZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 19:12:25 -0400
-Date: Fri, 24 Jul 2009 19:12:13 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: g.hintermayer@inode.at
-Cc: <linux-kernel@vger.kernel.org>, smfrench@gmail.com
-Subject: Re: WARNING: at fs/inode.c:362 invalidate_inodes tainting kernel
- while trying to mount cifs filesystem
-Message-ID: <20090724191213.48f20943@tlielax.poochiereds.net>
-In-Reply-To: <62.47.75.132.1248259046.wm@webmail.inode.at>
-References: <62.47.75.132.1248259046.wm@webmail.inode.at>
+	id S1751961AbZGXXPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 19:15:12 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,266,1246863600"; 
+   d="scan'208";a="535764431"
+Date: Fri, 24 Jul 2009 16:15:11 -0700
+From: Fenghua Yu <fenghua.yu@intel.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: Peter Chubb <peterc@gelato.unsw.edu.au>, Sam Ravnborg <sam@ravnborg.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "linux-kbuild@vger.kernel.org" <linux-kbuild@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ia64: minor Makefile simplification through use of cc-ifversion
+Message-ID: <20090724231511.GA20607@linux-os.sc.intel.com>
+References: <200907232056.51064.elendil@planet.nl> <20090723212809.GB9488@merkur.ravnborg.org> <87ws5yoo44.wl%peterc@nicta.com.au> <200907242023.12478.elendil@planet.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200907242023.12478.elendil@planet.nl>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 22 Jul 2009 12:37:26 +0200 (CEST)
-"Gerhard Hintermayer" <g.hintermayer@inode.at> wrote:
-
-> Sorry to bump up this issue again, but I haven't got any reply neither
-> here nor at gentoo bug list.
-> please CC me, since I'm not on the list.
+On Fri, Jul 24, 2009 at 11:23:11AM -0700, Frans Pop wrote:
+> On Friday 24 July 2009, Peter Chubb wrote:
+> > >>>>> "Sam" == Sam Ravnborg <sam@ravnborg.org> writes:
+> > Sam> The above change is correct.  But I really wonder if the original
+> > Sam> code was correct?  Do we really only want to use the -mtune
+> > Sam> options for this specific gcc version?  If this is indeed the
+> > Sam> case this deserves a comment explaning this.
+> >
+> > I suspect it should be all compilers after this one.  -mtune=mckinley
+> > didn't work very well in the early gcc 3 compilers and didn't exist in
+> > version 2.
 > 
-> When trying to mount a Windows 2003  share via
-> mount -t cifs -o user=aprol,password=*****,ip=10.5.12.105 //BRKVN05/AtlasPM
-> /mnt/AtlasPM "mount: Not a directory" even though the mountpoint
-> exists and is a valid directory
-> 
-> dmesg output (with cifsFYI set to 7):
-> fs/cifs/cifsfs.c: Devname: //BRKVN05/AtlasPM flags: 0
->  fs/cifs/connect.c: CIFS VFS: in cifs_mount as Xid: 3 with uid: 0
->  fs/cifs/connect.c: Username: aprol
->  fs/cifs/connect.c: UNC: \\BRKVN05\AtlasPM ip: 10.5.12.105
->  fs/cifs/connect.c: Socket created
->  fs/cifs/connect.c: sndbuf 16384 rcvbuf 87380 rcvtimeo 0x2bc
->  fs/cifs/connect.c: Existing smb sess not found
->  fs/cifs/cifssmb.c: secFlags 0x7
->  fs/cifs/transport.c: For smb_command 114
->  fs/cifs/transport.c: Sending smb:  total_len 51
->  fs/cifs/connect.c: Demultiplex PID: 5083
->  fs/cifs/connect.c: rfc1002 length 0x6f
->  fs/cifs/cifssmb.c: Dialect: 0
->  fs/cifs/cifssmb.c: negprot rc 0
->  fs/cifs/connect.c: Security Mode: 0x3 Capabilities: 0x1f3fd TimeAdjust:
-> -7200
->  fs/cifs/sess.c: sess setup type 2
->  fs/cifs/transport.c: For smb_command 115
->  fs/cifs/transport.c: Sending smb:  total_len 242
->  fs/cifs/connect.c: rfc1002 length 0xc7
->  fs/cifs/misc.c: Null buffer passed to cifs_small_buf_release
->  fs/cifs/sess.c: ssetup rc from sendrecv2 is 0
->  fs/cifs/sess.c: UID = 14336
->  fs/cifs/sess.c: bleft 153
->  fs/cifs/sess.c: words left: 0
->  fs/cifs/sess.c: ssetup freeing small buf edca9740
->  fs/cifs/connect.c: CIFS Session Established successfully
->  fs/cifs/connect.c: file mode: 0x5f7  dir mode: 0x1ff
->  fs/cifs/transport.c: For smb_command 117
->  fs/cifs/transport.c: Sending smb:  total_len 90
->  fs/cifs/connect.c: rfc1002 length 0x42
->  fs/cifs/connect.c: disk share connection
->  fs/cifs/connect.c: Tcon flags: 0x1
->  fs/cifs/connect.c: CIFS Tcon rc = 0
->  fs/cifs/cifssmb.c: In QFSDeviceInfo
->  fs/cifs/transport.c: For smb_command 50
->  fs/cifs/transport.c: Sending smb:  total_len 72
->  fs/cifs/connect.c: rfc1002 length 0x44
->  fs/cifs/cifssmb.c: In QFSAttributeInfo
->  fs/cifs/transport.c: For smb_command 50
->  fs/cifs/transport.c: Sending smb:  total_len 72
->  fs/cifs/connect.c: rfc1002 length 0x50
->  fs/cifs/connect.c: CIFS VFS: leaving cifs_mount (xid = 3) rc = 0
-> ------------[ cut here ]------------
-> WARNING: at fs/inode.c:362 invalidate_inodes+0xa6/0xe1()
-> Hardware name: PowerEdge 2950
-> Modules linked in: cifs nfsd exportfs ncpfs bonding floppy e1000e bnx2
-> thermal button processor thermal_sys e1000 nfs lockd sunrpc usbhid sg
-> scsi_wait_scan [last unloaded: cifs]
-> Pid: 5082, comm: mount Tainted: G        W  2.6.29-gentoo-r5 #1
-> Call Trace:
->  [<c011d251>] warn_slowpath+0x71/0xa8
->  [<c01158f6>] ? __wake_up+0x31/0x3b
->  [<f84bc7b0>] ? cifs_init_once+0xe/0x16 [cifs]
->  [<c01587e3>] ? cache_alloc_refill+0x62/0x434
->  [<c0170283>] ? generic_sync_sb_inodes+0x395/0x3a5
->  [<c01301de>] ? lowest_in_progress+0x43/0x4b
->  [<c016982a>] invalidate_inodes+0xa6/0xe1
->  [<c015c96b>] generic_shutdown_super+0x3c/0xda
->  [<c015ca4c>] kill_anon_super+0x12/0x31
->  [<c015cabc>] deactivate_super+0x35/0x47
->  [<c016c05e>] mntput_no_expire+0xc6/0xe6
->  [<c016c91d>] do_add_mount+0xd0/0xd8
->  [<c016d511>] do_mount+0x631/0x654
->  [<c0142138>] ? __get_free_pages+0x1e/0x24
->  [<c016bc53>] ? copy_mount_options+0x2a/0xf9
->  [<c016d59e>] sys_mount+0x6a/0xa8
->  [<c0102cc5>] sysenter_do_call+0x12/0x25
-> ---[ end trace ea473e21e738f567 ]---
->  fs/cifs/cifsfs.c: In cifs_put_super
->  fs/cifs/connect.c: CIFS VFS: in cifs_put_tcon as Xid: 4 with uid: 0
->  fs/cifs/cifssmb.c: In tree disconnect
->  fs/cifs/transport.c: For smb_command 113
->  fs/cifs/transport.c: Sending smb:  total_len 39
->  fs/cifs/connect.c: rfc1002 length 0x27
->  fs/cifs/connect.c: CIFS VFS: in cifs_put_smb_ses as Xid: 5 with uid: 0
->  fs/cifs/cifssmb.c: In SMBLogoff for session disconnect
->  fs/cifs/transport.c: For smb_command 116
->  fs/cifs/transport.c: Sending smb:  total_len 43
->  fs/cifs/connect.c: rfc1002 length 0x2b
-> 
+> How would you like to handle that? As it is essentially a separate issue,
+> my suggestion would be: apply my patch as is and then (if needed) commit
+> a separate patch to fix the incorrect comparisons on top.
 
-Sorry I didn't see this before...
+Between GCC version 3.4.0 and 4.3.3 (including 3.4.0 and 4.3.3), -mtune=merced is
+implemented in GCC. Starting from 4.4.0, -mtune=merced is deprecated.
 
-This is pretty odd since it looks like the mount actually succeeded.
-The call chain is something like:
+Even implemented in versions between 3.4.0 and 4.3.3, the -mtune=merced
+feature has been broken in some of the versions. For example, GCC 4.1.2 reports
+interanl tuning function errors during kernel building with -mtune=merced. Or GCC
+Bugzilla 16130 reports another -mtune=merced issue on GCC 3.4.1.
 
-do_mount
-    do_new_mount
-        do_kern_mount
-        do_add_mount
+So I would remove the -mtune=merced from IA64 kernel build. Without this option,
+kernel on Merced will remain the same except losing an unstable and out-of-date
+performance tunning feature.
 
-...do_kern_mount apparently returned success, but then do_add_mount
-ended up doing a mntput and tearing down the superblock (probably one
-of the "goto unlock" clauses in there).
+Since GCC version 3.4.0, -mtune=mckinley has been implemented. The
+-mtune=mckinley option functions the same as mtune=itanium2. And mtune=itanium2
+is the default option. So we don't need to add mtune=mckinley either since its
+been the default option in any GCC version which implements this option.
 
-Did the mount syscall return any errors? stracing the mount command
-should tell you this... Also like Steve said, getting a capture of the
-traffic between the client and server when it fails may tell us something.
+Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
 
-The fact that it only fails sometimes is a little worrisome though.
-That means that either the server is behaving erratically or we have an
-intermittent bug (maybe mem corruption or some sort of race). I've not
-seen this problem in my testing, any legwork you can do to track it
-down would be most helpful.
+---
+ arch/ia64/Makefile |    5 -----
+ 1 files changed, 5 deletions(-)
 
-Thanks,
--- 
-Jeff Layton <jlayton@redhat.com>
+diff --git a/arch/ia64/Makefile b/arch/ia64/Makefile
+index 58a7e46..e7cbaa0 100644
+--- a/arch/ia64/Makefile
++++ b/arch/ia64/Makefile
+@@ -41,11 +41,6 @@ $(error Sorry, you need a newer version of the assember, one that is built from
+ 		ftp://ftp.hpl.hp.com/pub/linux-ia64/gas-030124.tar.gz)
+ endif
+ 
+-ifeq ($(call cc-version),0304)
+-	cflags-$(CONFIG_ITANIUM)	+= -mtune=merced
+-	cflags-$(CONFIG_MCKINLEY)	+= -mtune=mckinley
+-endif
+-
+ KBUILD_CFLAGS += $(cflags-y)
+ head-y := arch/ia64/kernel/head.o arch/ia64/kernel/init_task.o
+ 
