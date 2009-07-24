@@ -1,122 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752410AbZGXOYH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbZGXOYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752410AbZGXOYH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 10:24:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbZGXOYG
+	id S1752725AbZGXOYd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 10:24:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbZGXOYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 10:24:06 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:38961 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751827AbZGXOYF convert rfc822-to-8bit (ORCPT
+	Fri, 24 Jul 2009 10:24:32 -0400
+Received: from viefep15-int.chello.at ([62.179.121.35]:52451 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239AbZGXOYb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 10:24:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=UElbww+QGw+HZg8P0NiUh+StTz2qGjiatiyXoZReg7Y78z8czCeWwZ0ox2oq3Wi4JS
-         S5QMdaHKfa5q24s3y+IgCRk4ZNMuwZTP2XRlrPv79bH1S2uFV68aV+pj9vdtMMrby15o
-         Dc8CDNn+W5uCSNXPkqsotzT4YsHGDtDvV21Qo=
-MIME-Version: 1.0
-In-Reply-To: <1248443656.6987.61.camel@twins>
-References: <454c71700907240357l61f5c4fajaca73db0fba7db8@mail.gmail.com>
-	 <1248437670.6987.26.camel@twins>
-	 <454c71700907240604h4673f117j8ed58b9f2ee54798@mail.gmail.com>
-	 <1248441290.6987.52.camel@twins>
-	 <454c71700907240626w127fd890ufa91ef90cbcaaa@mail.gmail.com>
-	 <1248442415.6987.56.camel@twins>
-	 <454c71700907240644h7469e2a5sfcb57f202a2e184d@mail.gmail.com>
-	 <1248443656.6987.61.camel@twins>
-Date: Fri, 24 Jul 2009 22:24:02 +0800
-Message-ID: <454c71700907240724u76b970e5y5af0fc114cc92f83@mail.gmail.com>
-Subject: Re: report a bug about sched_rt
-From: sen wang <wangsen.linux@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: mingo@elte.hu, akpm@linux-foundation.org, kernel@kolivas.org,
-       npiggin@suse.de, arjan@infradead.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 24 Jul 2009 10:24:31 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [RFC][PATCH 5/5] perfcounter: Add support for kernel hardware 
+ breakpoints
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
+       Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Anton Blanchard <anton@samba.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "K . Prasad" <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>
+In-Reply-To: <c62985530907240702h2b2de14bw2f0d475f46067e4e@mail.gmail.com>
+References: <1248109687-7808-1-git-send-email-fweisbec@gmail.com>
+	 <1248109687-7808-6-git-send-email-fweisbec@gmail.com>
+	 <1248354493.26273.2.camel@twins>
+	 <c62985530907240702h2b2de14bw2f0d475f46067e4e@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 24 Jul 2009 16:26:09 +0200
+Message-Id: <1248445569.6987.74.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/24 Peter Zijlstra <peterz@infradead.org>:
-> On Fri, 2009-07-24 at 21:44 +0800, sen wang wrote:
->> 2009/7/24 Peter Zijlstra <peterz@infradead.org>:
->> > On Fri, 2009-07-24 at 21:26 +0800, sen wang wrote:
->> >> don't tell me what theory. don't be so doctrinairism! OK?
->> >> If cpu is free and there is a running state task,how can you scdedule
->> >> idle task up?
->> >> I tell you again:we are not talking about a bandwidth of 100% for RT!
->> >> Bug lies in the bandwidth of (100- X)%.(X<100)
->> >> even in the time of 100-X,if there is a rt task, you should not idle()
->> >> the system.
->> >
->> > *sigh*
->> >
->> > Yes we should. I appreciate that you might assume otherwise, but you're
->> > wrong. Suppose you have two competing bandwidth groups, which one will
->> > run over, to what purpose?
->> >
->> > Also, your next top post will go to /dev/null.
->> >
->>
->>
->> OK !  maybe you has not understand what I said.
->> It not two competing bandwidth groups. there is a  active group and
->> another is empty?
->> How you do?
->
-> No, but the 1 group is the trivial case of many groups. Changing the
-> semantics for the trivial case is inconsistent at best, and confusing at
-> worst.
-yes! 1 group is the trivial case ,but you can't say it is useless. and
-in some system
-it is important!
-I have read across the schedule codes and tried this way,it work:
-static struct task_struct *pick_next_task_rt(struct rq *rq)
-{ ...
-       if (rt_rq_throttled(rt_rq)&& rq->cfs.nr_running)
-               return NULL;
-...
-}
+On Fri, 2009-07-24 at 16:02 +0200, Frédéric Weisbecker wrote:
+> 2009/7/23 Peter Zijlstra <a.p.zijlstra@chello.nl>:
+> > On Mon, 2009-07-20 at 13:08 -0400, Frederic Weisbecker wrote:
+> >> This adds the support for kernel hardware breakpoints in perfcounter.
+> >> It is added as a new type of software counter and can be defined by
+> >> using the counter number 5 and by passsing the address of the
+> >> breakpoint to set through the config attribute.
+> >
+> > Is there a limit to these hardware breakpoints? If so, the software
+> > counter model is not sufficient, since we assume we can always schedule
+> > all software counters. However if you were to add more counters than you
+> > have hardware breakpoints you're hosed.
+> >
+> >
+> 
+> Hmm, indeed. But this patch handles this case:
+> 
+> +static const struct pmu *bp_perf_counter_init(struct perf_counter *counter)
+> +{
+> +       if (hw_breakpoint_perf_init((unsigned long)counter->attr.config))
+> +               return NULL;
+> +
+> 
+> IIRC, hw_breakpoint_perf_init() calls register_kernel_breakpoint() which in turn
+> returns -ENOSPC if we haven't any breakpoint room left.
+> 
+> It seems we can only set 4 breakpoints simultaneously in x86, or
+> something close to that.
 
->> Why not try it by your hand: empty the fair task, run a rt task,enable
->> the  bandwidth and
->> see what will happen!
->
-> Oh, I know, I wrote the code.
->
->> In many embedded system,idle task will lead to shutdown something, but
->> the rt task will
->> assume: when it run, idle will not happen!
->
-> How is it my problem when you design your system wrong?
+Ah, that's not the correct way of doing that. Suppose that you would
+register 4 breakpoint counter to one task, that would leave you unable
+to register a breakpoint counter on another task. Even though these
+breakpoints would never be scheduled simultaneously.
 
-my system is good. but there is no rules what the idle task will do,so.
-people always write codes in idle task with the assume: no any running
-task in the system.
-and people also always write codes in rt task with the assume: if I am
-in running state
-,system will not idle.
+Also, regular perf counters would multiplex counters when over-committed
+on a hardware resource, allowing you to create more such breakpoints
+than you have actual hardware slots.
 
-so what i said above is some like theory,but I don't like the word “theory".
-I call it people's common sense.
+The way to do this is to create a breakpoint pmu which would simply fail
+the pmu->enable() method if there are insufficient hardware resources
+available.
 
-but the behavior of the  throttled RT group is changed from people's
-common sense,so don't say people's common sense is wrong. OK?
+Also, your init routine, the above hw_breakpoint_perf_init(), will have
+to verify that when the counter is part of a group, this and all other
+hw breakpoint counters in that group can, now, but also in the future,
+be scheduled simultaneously.
 
+This means that there should be some arbitration towards other in-kernel
+hw breakpoint users, because if you allow all 4 hw breakpoints in a
+group and then let another hw breakpoint users have one, you can never
+schedule that group again.
 
+[ which raises a fun point, Paulus do we handle groups having multiple
+  'hardware' pmu's in? ]
 
->
-> If you want your 1 RT group to not get throttled, disable the throttle,
-> or adjust it to fit the parameters of your workload. If you don't want
-> idle to have latency impact on your RT tasks, fix your idle behaviour.
->
+Now, for the actual counter implementation you can probably re-use the
+swcounter code, but you also need a pmu implementation.
 
-1 RT is important to me. But I also have fair task, so  throttled is
-also important to me.
-and don't say : idle have latency impact on RT tasks. It is too
-ludicrous Why we make   intended latency impact by ourselves,by wrong
-idle task?
