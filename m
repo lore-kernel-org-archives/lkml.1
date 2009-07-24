@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751725AbZGXI5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752187AbZGXI5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751725AbZGXI5V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 04:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbZGXI5V
+	id S1752187AbZGXI5g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 04:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZGXI5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 04:57:21 -0400
-Received: from viefep15-int.chello.at ([62.179.121.35]:22123 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750893AbZGXI5U (ORCPT
+	Fri, 24 Jul 2009 04:57:35 -0400
+Received: from mail-px0-f184.google.com ([209.85.216.184]:36086 "EHLO
+	mail-px0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752128AbZGXI5d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 04:57:20 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [patch] perf tools: allow top users to switch between weighted
- and individual counter display
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Mike Galbraith <efault@gmx.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1248422990.28486.3.camel@marge.simson.net>
-References: <1248422990.28486.3.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Fri, 24 Jul 2009 10:58:57 +0200
-Message-Id: <1248425937.6987.0.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Jul 2009 04:57:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Q3K5XToWvzJEEeMRi709i0EiiTsC+Afl84h56YPA8oWLYol6qmId0gSOrzWio9aDQ7
+         DFkF+ZS19ph88I/B7sPhYdHQMS7+TlQPejNEWveeJt4zdt4PtPeGxnVHwH1bOiFoR9Sm
+         Zrn1EnQWkYOSHNitmD55dcaaQpNw6sVpe+B7U=
+Date: Fri, 24 Jul 2009 16:59:45 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Frans Pop <elendil@planet.nl>, user-mode-linux-devel@lists.sourceforge.net,
+       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] um: minor Makefile simplification through use of
+	cc-ifversion
+Message-ID: <20090724085945.GB6372@cr0.nay.redhat.com>
+References: <200907232057.51827.elendil@planet.nl> <20090723213002.GC9488@merkur.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090723213002.GC9488@merkur.ravnborg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-24 at 10:09 +0200, Mike Galbraith wrote:
-> (depends on last resurrect annotation patch)
-> 
-> perf_counter tools: allow top users to switch between weighted and individual counter display.
-> 
-> Add [w]eighted hotkey.  Pressing [w] toggles between displaying weighted total of all counters,
-> and the counter selected via [E]vent select key.
+On Thu, Jul 23, 2009 at 11:30:02PM +0200, Sam Ravnborg wrote:
+>On Thu, Jul 23, 2009 at 08:57:51PM +0200, Frans Pop wrote:
+>> Signed-off-by: Frans Pop <elendil@planet.nl>
+>Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-/me stuck it next to that other one, let see what happens ;-)
+Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
 
-Thanks Mike.
+>
+>If this patch is not pisked up by anyone else I will take it in kbuild.git.
 
+Thanks.
