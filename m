@@ -1,99 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752943AbZGXPn0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753217AbZGXPqK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752943AbZGXPn0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 11:43:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751854AbZGXPn0
+	id S1753217AbZGXPqK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 11:46:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbZGXPqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 11:43:26 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:55420 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751798AbZGXPnZ convert rfc822-to-8bit (ORCPT
+	Fri, 24 Jul 2009 11:46:09 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:60364 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751239AbZGXPqJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 11:43:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=pLUm6/SW1++YvZd/wb1s4ytp2EcgR4nw97VG9+mizt8AcBCN8ktvjSWI2k0AhpmTTM
-         c8znJXy0foybkxyz8do2YCe+xdTEsLuX5SyFrmrgkhOJd9785jEb0eSDVWifblJR/zmu
-         EmRYM8vq5GQ79Qr4nSDwFqBZmo/j1RCUKMEDU=
+	Fri, 24 Jul 2009 11:46:09 -0400
+Date: Fri, 24 Jul 2009 17:46:00 +0200
+From: Daniel Mack <daniel@caiaq.de>
+To: Artem Bityutskiy <dedekind1@gmail.com>
+Cc: Adrian Hunter <adrian.hunter@nokia.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+       "Bityutskiy Artem (Nokia-M/Helsinki)" <Artem.Bityutskiy@nokia.com>
+Subject: Re: ubifs: error unwinding trouble
+Message-ID: <20090724154600.GR19257@buzzloop.caiaq.de>
+References: <20090724103038.GN19257@buzzloop.caiaq.de> <4A6991A5.4020105@nokia.com> <1248437866.24676.79.camel@localhost>
 MIME-Version: 1.0
-In-Reply-To: <1248449070.6987.126.camel@twins>
-References: <454c71700907240357l61f5c4fajaca73db0fba7db8@mail.gmail.com>
-	 <1248441290.6987.52.camel@twins>
-	 <454c71700907240626w127fd890ufa91ef90cbcaaa@mail.gmail.com>
-	 <1248442415.6987.56.camel@twins>
-	 <454c71700907240644h7469e2a5sfcb57f202a2e184d@mail.gmail.com>
-	 <1248443656.6987.61.camel@twins>
-	 <454c71700907240704o32dcdeb3v57845eb9472dd04c@mail.gmail.com>
-	 <1248446909.6987.110.camel@twins>
-	 <454c71700907240807t5b682e7cv52534f41d3be961a@mail.gmail.com>
-	 <1248449070.6987.126.camel@twins>
-Date: Fri, 24 Jul 2009 23:43:25 +0800
-Message-ID: <454c71700907240843v7a1de45eo6551fcda9b876234@mail.gmail.com>
-Subject: Re: report a bug about sched_rt
-From: sen wang <wangsen.linux@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: mingo@elte.hu, akpm@linux-foundation.org, kernel@kolivas.org,
-       npiggin@suse.de, arjan@infradead.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1248437866.24676.79.camel@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/24 Peter Zijlstra <peterz@infradead.org>:
-> On Fri, 2009-07-24 at 23:07 +0800, sen wang wrote:
->> 2009/7/24 Peter Zijlstra <peterz@infradead.org>:
->> > On Fri, 2009-07-24 at 22:04 +0800, sen wang wrote:
->> >
->> >> just one question:
->> >> if cpu is free and there is running state task, how you do?
->> >> schedule the task up? or schedule idle task up?
->> >
->> > Well, when an RT group is over the bandwidth limit I don't consider them
->> > runnable. Therefore, failing to find any other tasks, we run the idle
->> > task.
->> >
->>
->> you havn't anwser the question: if cpu is free, should we  schedule the
->> running state task or idle task?
->
-> It it not runnable because the group is over its limit.
->
->> face the error and fix it! ok?
->
-> Please tone down and re-read the explanations I gave.
->
-> The throttle is an H-CBS services for RT task groups, meant to provide
-> isolation through a fixed resource guarantee.
->
-> Any process actually hitting the throttle means a miss configured system
-> -- unless its a temporary overload and you're able to deal with those.
->
-> The single group case is simply the trivial case thereof.
->
-> Your proposed change does not generalize to such a framework, and while
-> it might work with the current code, it doesn't serve a use-case
-> considered in this architecture and will render the interface
-> inconsistent.
->
-> Furthermore, future work in this area will not be able to support your
-> changed semantics in a sane fashion.
->
-> I've yet to see any coherent explanation of your problem, and quite
-> frankly I find your attitude offensive.
->
-> As you say, Linux is an open-source effort, and you're free to do with
-> your copy as you see fit (provided you stick to the rules stipulated by
-> the GPLv2). However as co-maintainer of the mainline scheduler I see no
-> reason to entertain your change, nor for that matter to continue this
-> discussion.
->
->
+On Fri, Jul 24, 2009 at 03:17:46PM +0300, Artem Bityutskiy wrote:
+> On Fri, 2009-07-24 at 13:49 +0300, Adrian Hunter wrote:
+> > diff --git a/drivers/mtd/ubi/eba.c b/drivers/mtd/ubi/eba.c
+> > index 0f2034c..e4d9ef0 100644
+> > --- a/drivers/mtd/ubi/eba.c
+> > +++ b/drivers/mtd/ubi/eba.c
+> > @@ -1254,6 +1254,7 @@ out_free:
+> >                 if (!ubi->volumes[i])
+> >                         continue;
+> >                 kfree(ubi->volumes[i]->eba_tbl);
+> > +               ubi->volumes[i]->eba_tbl = NULL;
+> >         }
+> >         return err;
+> >  }
+> 
+> You are right. I've just pushed your patch to ubi-2.6.git/master.
 
-sorry for my tone, If you feel hurted. I apologize.
+Great. Thanks for the quick response!
+Is there any merge cycle outstanding for ubifs in 2.6.31?
 
-But I still hold my viewpoint. I just want the 100-x time should be
-used by running  task.
+Daniel
+
