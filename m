@@ -1,96 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751942AbZGXFyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751966AbZGXFzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751942AbZGXFyU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 01:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbZGXFyT
+	id S1751966AbZGXFzY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 01:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbZGXFzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 01:54:19 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:51879 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751002AbZGXFyS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 01:54:18 -0400
-Date: Fri, 24 Jul 2009 15:54:17 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: ttydev tree build failure
-Message-Id: <20090724155417.62fa065d.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 24 Jul 2009 01:55:24 -0400
+Received: from cpsmtpm-eml110.kpnxchange.com ([195.121.3.14]:58701 "EHLO
+	CPSMTPM-EML110.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751209AbZGXFzX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 01:55:23 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH?] Re: Linux 2.6.31-rc4: strange change in iomem allocation
+Date: Fri, 24 Jul 2009 09:53:47 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <alpine.LFD.2.01.0907221936220.3352@localhost.localdomain> <200907231653.48933.elendil@planet.nl> <alpine.LFD.2.01.0907230905360.21520@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0907230905360.21520@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907240953.48297.elendil@planet.nl>
+X-OriginalArrivalTime: 24 Jul 2009 05:55:23.0081 (UTC) FILETIME=[55783390:01CA0C23]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
+On Thursday 23 July 2009, Linus Torvalds wrote:
+> On Thu, 23 Jul 2009, Frans Pop wrote:
+> > On Thursday 23 July 2009, Frans Pop wrote:
+> > > I'm seeing the following change in dmesg between -rc3 and -rc4:
+> > > -system 00:0c: iomem range 0xfec00000-0xfec000ff has been reserved
+> > > +system 00:0c: iomem range 0xfec00000-0xfec000ff could not be reserved
+> > >
+> > > There is nothing in the earlier part of dmesg that would explain
+> > > this change.
+> >
+> > Reverting that commit did indeed restore the old situation.
+>
+> So think of it this way: the difference between "has been reserved" and
+> "could not be reserved" is _not_ a "good" vs "bad" situation. They are
+> both purely informational. They're not good-or-bad, they are
+> information we leave around in case bad things happen later.
 
-Today's linux-next build (powerpc allyesconfig) failed like this:
+Yeah, I suspected that might be the case (which is why I used "restores old
+situation" rather than "fixes regression" :-). My message was triggered by
+the fact that it's still a somewhat unusual change, so I was mainly looking
+for confirmation that it was intended.
 
-drivers/serial/pmac_zilog.c: In function 'pmz_suspend':
-drivers/serial/pmac_zilog.c:1648: error: 'struct uart_state' has no member named 'mutex'
-drivers/serial/pmac_zilog.c:1679: error: 'struct uart_state' has no member named 'mutex'
-drivers/serial/pmac_zilog.c: In function 'pmz_resume':
-drivers/serial/pmac_zilog.c:1708: error: 'struct uart_state' has no member named 'mutex'
-drivers/serial/pmac_zilog.c:1740: error: 'struct uart_state' has no member named 'mutex'
+Still, failure messages can be confusing for users. The source code documents
+that reservation failures are expected, but most users don't read source...
 
-Caused by commit d7b52714eee196caeb4195ae1a7aa8bf82bffda5
-("serial-move-mutex") from the ttydev tree.
+So, also looking at David John's message, would something like the patch
+below be an option? The result is as follows on my system:
 
-I applied the following patch for today.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+pnp: PnP ACPI init
+ACPI: bus type pnp registered
+pnp: PnP ACPI: found 14 devices
+ACPI: ACPI bus type pnp unregistered
+system 00:00: iomem range 0x0-0x9ffff could not be reserved
+(The fact that a range could not be reserved is generally harmless.)
+system 00:00: iomem range 0xe0000-0xfffff could not be reserved
+system 00:00: iomem range 0x100000-0x7e7fffff could not be reserved
+system 00:0a: ioport range 0x500-0x55f has been reserved
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 24 Jul 2009 15:48:36 +1000
-Subject: [PATCH] serial: fix pmac_zilog fallout from uart_state mutex move
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/serial/pmac_zilog.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+From: Frans Pop <elendil@planet.nl>
+Subject: PNP: make explicit that range allocation failures are generally harmless
 
-diff --git a/drivers/serial/pmac_zilog.c b/drivers/serial/pmac_zilog.c
-index 6495d01..0700cd1 100644
---- a/drivers/serial/pmac_zilog.c
-+++ b/drivers/serial/pmac_zilog.c
-@@ -1645,7 +1645,7 @@ static int pmz_suspend(struct macio_dev *mdev, pm_message_t pm_state)
- 	state = pmz_uart_reg.state + uap->port.line;
- 
- 	mutex_lock(&pmz_irq_mutex);
--	mutex_lock(&state->mutex);
-+	mutex_lock(&state->port.mutex);
- 
- 	spin_lock_irqsave(&uap->port.lock, flags);
- 
-@@ -1676,7 +1676,7 @@ static int pmz_suspend(struct macio_dev *mdev, pm_message_t pm_state)
- 	/* Shut the chip down */
- 	pmz_set_scc_power(uap, 0);
- 
--	mutex_unlock(&state->mutex);
-+	mutex_unlock(&state->port.mutex);
- 	mutex_unlock(&pmz_irq_mutex);
- 
- 	pmz_debug("suspend, switching complete\n");
-@@ -1705,7 +1705,7 @@ static int pmz_resume(struct macio_dev *mdev)
- 	state = pmz_uart_reg.state + uap->port.line;
- 
- 	mutex_lock(&pmz_irq_mutex);
--	mutex_lock(&state->mutex);
-+	mutex_lock(&state->port.mutex);
- 
- 	spin_lock_irqsave(&uap->port.lock, flags);
- 	if (!ZS_IS_OPEN(uap) && !ZS_IS_CONS(uap)) {
-@@ -1737,7 +1737,7 @@ static int pmz_resume(struct macio_dev *mdev)
- 	}
- 
-  bail:
--	mutex_unlock(&state->mutex);
-+	mutex_unlock(&state->port.mutex);
- 	mutex_unlock(&pmz_irq_mutex);
- 
- 	/* Right now, we deal with delay by blocking here, I'll be
--- 
-1.6.3.3
+Signed-off-by: Frans Pop <elendil@planet.nl>
 
+diff --git a/drivers/pnp/system.c b/drivers/pnp/system.c
+index 59b9092..72de2a7 100644
+--- a/drivers/pnp/system.c
++++ b/drivers/pnp/system.c
+@@ -52,6 +52,10 @@ static void reserve_range(struct pnp_dev *dev, resource_size_t 
+start,
+ 		port ? "ioport" : "iomem",
+ 		(unsigned long long) start, (unsigned long long) end,
+ 		res ? "has been" : "could not be");
++	if (!res)
++		printk_once(KERN_INFO
++			"(The fact that a range could not be reserved "
++			"is generally harmless.)\n");
+ }
+ 
+ static void reserve_resources_of_dev(struct pnp_dev *dev)
