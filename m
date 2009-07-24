@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbZGXPU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbZGXPVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752969AbZGXPU0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 11:20:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752452AbZGXPUZ
+	id S1753173AbZGXPVh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 11:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbZGXPVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 11:20:25 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:45200 "EHLO
-	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752100AbZGXPUY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 11:20:24 -0400
-From: Philipp Reisner <philipp.reisner@linbit.com>
-Organization: LINBIT
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [Drbd-dev] [PATCH 00/16] drbd: a block device for HA clusters
-Date: Fri, 24 Jul 2009 17:20:21 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Lars Ellenberg <lars.ellenberg@linbit.com>,
-       Andrew Morton <akpm@linux-foundation.org>, drbd-dev@lists.linbit.com,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org
-References: <1246894775-10855-1-git-send-email-philipp.reisner@linbit.com> <20090721185156.GA10126@johann> <20090722145917.055eddc1.sfr@canb.auug.org.au>
-In-Reply-To: <20090722145917.055eddc1.sfr@canb.auug.org.au>
-X-OTRS-FollowUp-SenderType: agent
+	Fri, 24 Jul 2009 11:21:36 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51747 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752138AbZGXPVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 11:21:36 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ray Lee <ray-lk@madrabbit.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Regression] kdesu broken
+Date: Fri, 24 Jul 2009 17:21:45 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <200907240145.31935.rjw@sisk.pl> <2c0942db0907231721q124dc8f9mdbe64ed33c69ffbf@mail.gmail.com>
+In-Reply-To: <2c0942db0907231721q124dc8f9mdbe64ed33c69ffbf@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-15"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200907241720.22771.philipp.reisner@linbit.com>
+Message-Id: <200907241721.45943.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 22 July 2009 06:59:17 Stephen Rothwell wrote:
-> Hi Lars,
->
-> On Tue, 21 Jul 2009 20:51:56 +0200 Lars Ellenberg 
-<lars.ellenberg@linbit.com> wrote:
-> > Stephen: expect an explicit linux-next merge request
-> > within the next few days.
->
-> OK, just to be clear your tree should be based on Linus' tree (or some
-> other *stable*, non rebasing, tree - *not* linux-next).
->
+On Friday 24 July 2009, Ray Lee wrote:
+> On Thu, Jul 23, 2009 at 4:45 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> > A recent kernel change broke kdesu (from KDE 4.2) on my test boxes.  ISTR a
+> > discussion about that, but I can't find it right now.  Any clues?
+> 
+> See the thread starting here: ("possible regression with pty.c commit")
+>    http://lkml.org/lkml/2009/7/11/125
 
-Hi Stephen,
+Thanks for the pointer.
 
-Please add git://git.drbd.org/linux-2.6-drbd.git to linux-next.
+Well, I thought we were expected to avoid breaking existing user space, even
+if that were buggy etc.  
 
-The tree was initially based on v2.6.30-rc1. Later 2.6.31-rc1 was
-merged in. 
-I verified that it still merges with 2.6.31-rc4 without conflicts.
-
-Thanks!
-
--Philipp
--- 
-: Dipl-Ing Philipp Reisner
-: LINBIT | Your Way to High Availability
-: Tel: +43-1-8178292-50, Fax: +43-1-8178292-82
-: http://www.linbit.com
-
-DRBD(R) and LINBIT(R) are registered trademarks of LINBIT, Austria.
-
+Best,
+Rafael
