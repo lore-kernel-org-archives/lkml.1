@@ -1,131 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbZGXQLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753217AbZGXQMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752969AbZGXQLW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 12:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbZGXQLW
+	id S1753217AbZGXQMF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 12:12:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbZGXQME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 12:11:22 -0400
-Received: from SXT-SM-1.UCIS.Dal.Ca ([129.173.5.72]:55912 "EHLO
-	sxt-sm-1.ucis.dal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752245AbZGXQLV (ORCPT
+	Fri, 24 Jul 2009 12:12:04 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:51149 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751882AbZGXQME (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 12:11:21 -0400
-X-Greylist: delayed 926 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Jul 2009 12:11:21 EDT
-Message-ID: <20090724124803.ltfbg57ooyoko0gs@my5.dal.ca>
-Date: Fri, 24 Jul 2009 12:48:03 -0300
-From: Trevor Pace <tr212206@DAL.CA>
-To: gregkh@suse.de
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Removed useless retval variables in usb-serial.c
+	Fri, 24 Jul 2009 12:12:04 -0400
+Subject: [PATCH 0/8] Kmemleak patches for 2.6.32
+To: linux-kernel@vger.kernel.org
+From: Catalin Marinas <catalin.marinas@arm.com>
+Date: Fri, 24 Jul 2009 17:12:01 +0100
+Message-ID: <20090724161026.5752.52503.stgit@pc1117.cambridge.arm.com>
+User-Agent: StGit/0.15-rc1-9-gd8846
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=ISO-8859-1
-Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-User-Agent: Internet Messaging Program (IMP) H3 (4.0.3)
+X-OriginalArrivalTime: 24 Jul 2009 16:12:02.0299 (UTC) FILETIME=[7AB8D4B0:01CA0C79]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Removed useless return value variables.
+Hi,
 
-Signed-off By: Trevor Pace <trevor.pace@dal.ca>
+These are kmemleak related patches I plan to submit for mainline
+inclusion during the upcoming merging window. I'll push them to the
+linux-next tree once any comments received are implemented.
 
-================================================================================
+Thanks.
 
-diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
-index bd7581b..faec1d1 100644
---- a/drivers/usb/serial/usb-serial.c
-+++ b/drivers/usb/serial/usb-serial.c
-@@ -362,10 +362,9 @@ static int serial_write(struct tty_struct *tty, const
-unsigned char *buf,
- 								int count)
- {
- 	struct usb_serial_port *port = tty->driver_data;
--	int retval = -ENODEV;
 
- 	if (port->serial->dev->state == USB_STATE_NOTATTACHED)
--		goto exit;
-+		return -ENODEV;
+Catalin Marinas (7):
+      kmemleak: Dump object information on request
+      kmemleak: Allow rescheduling during an object scanning
+      kmemleak: Mark the early log buffer as __initdata
+      kmemleak: Save the stack trace for early allocations
+      kmemleak: Do not report alloc_bootmem blocks as leaks
+      kmemleak: Inform kmemleak about kernel stack allocation
+      kmemleak: Always scan the task stacks
 
- 	dbg("%s - port %d, %d byte(s)", __func__, port->number, count);
+Sergey Senozhatsky (1):
+      kmemleak: Printing of the objects hex dump
 
-@@ -374,10 +373,7 @@ static int serial_write(struct tty_struct *tty, const
-unsigned char *buf,
- 	WARN_ON(!port->port.count);
 
- 	/* pass on to the driver specific version of this function */
--	retval = port->serial->type->write(tty, port, buf, count);
--
--exit:
--	return retval;
-+	return port->serial->type->write(tty, port, buf, count);
- }
+ Documentation/kmemleak.txt         |   12 +-
+ arch/x86/include/asm/thread_info.h |    7 +
+ arch/x86/kernel/process.c          |    1 
+ include/linux/kmemleak.h           |   18 ++-
+ kernel/fork.c                      |    7 +
+ mm/bootmem.c                       |    6 +
+ mm/kmemleak.c                      |  195 +++++++++++++++++++++++++++---------
+ 7 files changed, 178 insertions(+), 68 deletions(-)
 
- static int serial_write_room(struct tty_struct *tty)
-@@ -429,7 +425,6 @@ static int serial_ioctl(struct tty_struct *tty, struct file
-*file,
- 					unsigned int cmd, unsigned long arg)
- {
- 	struct usb_serial_port *port = tty->driver_data;
--	int retval = -ENODEV;
-
- 	dbg("%s - port %d, cmd 0x%.4x", __func__, port->number, cmd);
-
-@@ -437,11 +432,9 @@ static int serial_ioctl(struct tty_struct *tty, struct file
-*file,
-
- 	/* pass on to the driver specific version of this function
- 	   if it is available */
--	if (port->serial->type->ioctl) {
--		retval = port->serial->type->ioctl(tty, file, cmd, arg);
--	} else
--		retval = -ENOIOCTLCMD;
--	return retval;
-+	if (port->serial->type->ioctl)
-+		return port->serial->type->ioctl(tty, file, cmd, arg);
-+        return -ENOIOCTLCMD;
- }
-
- static void serial_set_termios(struct tty_struct *tty, struct ktermios *old)
-@@ -1174,7 +1167,7 @@ int usb_serial_suspend(struct usb_interface *intf,
-pm_message_t message)
- {
- 	struct usb_serial *serial = usb_get_intfdata(intf);
- 	struct usb_serial_port *port;
--	int i, r = 0;
-+	int i;
-
- 	serial->suspending = 1;
-
-@@ -1185,24 +1178,21 @@ int usb_serial_suspend(struct usb_interface *intf,
-pm_message_t message)
- 	}
-
- 	if (serial->type->suspend)
--		r = serial->type->suspend(serial, message);
-+		return serial->type->suspend(serial, message);
-
--	return r;
-+	return 0;
- }
- EXPORT_SYMBOL(usb_serial_suspend);
-
- int usb_serial_resume(struct usb_interface *intf)
- {
- 	struct usb_serial *serial = usb_get_intfdata(intf);
--	int rv;
-
- 	serial->suspending = 0;
--	if (serial->type->resume)
--		rv = serial->type->resume(serial);
--	else
--		rv = usb_serial_generic_resume(serial);
-
--	return rv;
-+	return (serial->type->resume)
-+		? serial->type->resume(serial)
-+		: usb_serial_generic_resume(serial);
- }
- EXPORT_SYMBOL(usb_serial_resume);
-
+-- 
+Catalin
