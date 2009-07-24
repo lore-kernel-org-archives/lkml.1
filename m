@@ -1,450 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbZGXUdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbZGXUuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290AbZGXUdc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 16:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754220AbZGXUdc
+	id S1754032AbZGXUuK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 16:50:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbZGXUuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 16:33:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35387 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753704AbZGXU2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 16:28:51 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, ryov@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com
-Cc: lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       vgoyal@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
-Subject: [PATCH 23/24] io-controller: Support per cgroup per device weights and io class
-Date: Fri, 24 Jul 2009 16:27:53 -0400
-Message-Id: <1248467274-32073-24-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1248467274-32073-1-git-send-email-vgoyal@redhat.com>
-References: <1248467274-32073-1-git-send-email-vgoyal@redhat.com>
+	Fri, 24 Jul 2009 16:50:09 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:52325 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751067AbZGXUuI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 16:50:08 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:from:date:message-id:
+	subject:to:cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=p9MssEmTFqP/AQehRgVjoywChAg7s4yCvwIapMjwksC8pSWnU5ush9G/2pBND2avd
+	PqOzSmOMj3CtdIYgIWHrA==
+MIME-Version: 1.0
+In-Reply-To: <20090715215214.GA3994@redhat.com>
+References: <20090715212553.8349.51342.stgit@hyd-omgvisitor1.hyd.corp.google.com> 
+	<20090715215214.GA3994@redhat.com>
+From: Divyesh Shah <dpshah@google.com>
+Date: Fri, 24 Jul 2009 13:49:40 -0700
+Message-ID: <af41c7c40907241349r6a1ba386le64c526ea1b9a60e@mail.gmail.com>
+Subject: Re: [PATCH] block: Improve think time sampling for CFQ
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com, nauman@google.com,
+       mrubin@google.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch enables per-cgroup per-device weight and ioprio_class handling.
-A new cgroup interface "policy" is introduced. You can make use of this
-file to configure weight and ioprio_class for each device in a given cgroup.
-The original "weight" and "ioprio_class" files are still available. If you
-don't do special configuration for a particular device, "weight" and
-"ioprio_class" are used as default values in this device.
+On Wed, Jul 15, 2009 at 2:52 PM, Vivek Goyal<vgoyal@redhat.com> wrote:
+> On Thu, Jul 16, 2009 at 02:56:54AM +0530, Divyesh Shah wrote:
+>> Avoid taking a think time sample when the cfqq is not a sync queue or not
+>> currently active or till its first request in the ongoing timeslice
+>> completes.
+>>
+>
+> Hi Divyesh,
+>
+> It would be nice to give some more details in changelog regarding why are
+> you donig this change.
 
-You can use the following format to play with the new interface.
-#echo dev_major:dev_minor weight ioprio_class > /patch/to/cgroup/policy
-weight=0 means removing the policy for device.
+Hi Vivek,
+    It seems like I misunderstood the last_end_request and the
+io_thinktime calculations. Please ignore this patch.
 
-Examples:
-Configure weight=300 ioprio_class=2 on /dev/hdb (8:16) in this cgroup
-# echo "8:16 300 2" > io.policy
-# cat io.policy
-dev	weight	class
-8:16	300	2
-
-Configure weight=500 ioprio_class=1 on /dev/hda (8:0) in this cgroup
-# echo "8:0 500 1" > io.policy
-# cat io.policy
-dev	weight	class
-8:0	500	1
-8:16	300	2
-
-Remove the policy for /dev/hda in this cgroup
-# echo 8:0 0 1 > io.policy
-# cat io.policy
-dev	weight	class
-8:16	300	2
-
-Changelog (v1 -> v2)
-- Rename some structures
-- Use spin_lock_irqsave() and spin_lock_irqrestore() version to prevent
-  from enabling the interrupts unconditionally.
-- Fix policy setup bug when switching to another io scheduler.
-- If a policy is available for a specific device, don't update weight and
-  io class when writing "weight" and "iprio_class".
-- Fix a bug when parsing policy string.
-
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
----
- block/elevator-fq.c |  265 ++++++++++++++++++++++++++++++++++++++++++++++++++-
- block/elevator-fq.h |   10 ++
- 2 files changed, 271 insertions(+), 4 deletions(-)
-
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index c41e84e..746c548 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -17,6 +17,7 @@
- #include <linux/blktrace_api.h>
- #include <linux/seq_file.h>
- #include <linux/biotrack.h>
-+#include <linux/genhd.h>
- 
- /* Values taken from cfq */
- const int elv_slice_sync = HZ / 10;
-@@ -1189,12 +1190,30 @@ bfq_init_entity(struct io_entity *entity, struct io_group *iog)
- 	entity->sched_data = &iog->sched_data;
- }
- 
--static void io_group_init_entity(struct io_cgroup *iocg, struct io_group *iog)
-+static struct io_policy_node *policy_search_node(const struct io_cgroup *iocg,
-+							dev_t dev);
-+
-+static void
-+io_group_init_entity(struct io_cgroup *iocg, struct io_group *iog, dev_t dev)
- {
- 	struct io_entity *entity = &iog->entity;
-+	struct io_policy_node *pn;
-+	unsigned long flags;
- 
--	entity->weight = iocg->weight;
--	entity->ioprio_class = entity->new_ioprio_class = iocg->ioprio_class;
-+	spin_lock_irqsave(&iocg->lock, flags);
-+	pn = policy_search_node(iocg, dev);
-+	if (pn) {
-+		entity->weight = pn->weight;
-+		entity->new_weight = pn->weight;
-+		entity->ioprio_class = pn->ioprio_class;
-+		entity->new_ioprio_class = pn->ioprio_class;
-+	} else {
-+		entity->weight = iocg->weight;
-+		entity->new_weight = iocg->weight;
-+		entity->ioprio_class = iocg->ioprio_class;
-+		entity->new_ioprio_class = iocg->ioprio_class;
-+	}
-+	spin_unlock_irqrestore(&iocg->lock, flags);
- 	entity->ioprio_changed = 1;
- 	entity->my_sched_data = &iog->sched_data;
- }
-@@ -1314,6 +1333,227 @@ io_cgroup_lookup_group(struct io_cgroup *iocg, void *key)
- 	return NULL;
- }
- 
-+static int io_cgroup_policy_read(struct cgroup *cgrp, struct cftype *cft,
-+				  struct seq_file *m)
-+{
-+	struct io_cgroup *iocg;
-+	struct io_policy_node *pn;
-+
-+	iocg = cgroup_to_io_cgroup(cgrp);
-+
-+	if (list_empty(&iocg->policy_list))
-+		goto out;
-+
-+	seq_printf(m, "dev\tweight\tclass\n");
-+
-+	spin_lock_irq(&iocg->lock);
-+	list_for_each_entry(pn, &iocg->policy_list, node) {
-+		seq_printf(m, "%u:%u\t%u\t%hu\n", MAJOR(pn->dev),
-+			   MINOR(pn->dev), pn->weight, pn->ioprio_class);
-+	}
-+	spin_unlock_irq(&iocg->lock);
-+out:
-+	return 0;
-+}
-+
-+static inline void policy_insert_node(struct io_cgroup *iocg,
-+					  struct io_policy_node *pn)
-+{
-+	list_add(&pn->node, &iocg->policy_list);
-+}
-+
-+/* Must be called with iocg->lock held */
-+static inline void policy_delete_node(struct io_policy_node *pn)
-+{
-+	list_del(&pn->node);
-+}
-+
-+/* Must be called with iocg->lock held */
-+static struct io_policy_node *policy_search_node(const struct io_cgroup *iocg,
-+						 dev_t dev)
-+{
-+	struct io_policy_node *pn;
-+
-+	if (list_empty(&iocg->policy_list))
-+		return NULL;
-+
-+	list_for_each_entry(pn, &iocg->policy_list, node) {
-+		if (pn->dev == dev)
-+			return pn;
-+	}
-+
-+	return NULL;
-+}
-+
-+static int check_dev_num(dev_t dev)
-+{
-+	int part = 0;
-+	struct gendisk *disk;
-+
-+	disk = get_gendisk(dev, &part);
-+	if (!disk || part)
-+		return -ENODEV;
-+
-+	return 0;
-+}
-+
-+static int policy_parse_and_set(char *buf, struct io_policy_node *newpn)
-+{
-+	char *s[4], *p, *major_s = NULL, *minor_s = NULL;
-+	int ret;
-+	unsigned long major, minor, temp;
-+	int i = 0;
-+	dev_t dev;
-+
-+	memset(s, 0, sizeof(s));
-+	while ((p = strsep(&buf, " ")) != NULL) {
-+		if (!*p)
-+			continue;
-+		s[i++] = p;
-+
-+		/* Prevent from inputing too many things */
-+		if (i == 4)
-+			break;
-+	}
-+
-+	if (i != 3)
-+		return -EINVAL;
-+
-+	p = strsep(&s[0], ":");
-+	if (p != NULL)
-+		major_s = p;
-+	else
-+		return -EINVAL;
-+
-+	minor_s = s[0];
-+	if (!minor_s)
-+		return -EINVAL;
-+
-+	ret = strict_strtoul(major_s, 10, &major);
-+	if (ret)
-+		return -EINVAL;
-+
-+	ret = strict_strtoul(minor_s, 10, &minor);
-+	if (ret)
-+		return -EINVAL;
-+
-+	dev = MKDEV(major, minor);
-+
-+	ret = check_dev_num(dev);
-+	if (ret)
-+		return ret;
-+
-+	newpn->dev = dev;
-+
-+	if (s[1] == NULL)
-+		return -EINVAL;
-+
-+	ret = strict_strtoul(s[1], 10, &temp);
-+	if (ret || temp > WEIGHT_MAX)
-+		return -EINVAL;
-+
-+	newpn->weight =  temp;
-+
-+	if (s[2] == NULL)
-+		return -EINVAL;
-+
-+	ret = strict_strtoul(s[2], 10, &temp);
-+	if (ret || temp < IOPRIO_CLASS_RT || temp > IOPRIO_CLASS_IDLE)
-+		return -EINVAL;
-+	newpn->ioprio_class = temp;
-+
-+	return 0;
-+}
-+
-+static int io_cgroup_policy_write(struct cgroup *cgrp, struct cftype *cft,
-+			    const char *buffer)
-+{
-+	struct io_cgroup *iocg;
-+	struct io_policy_node *newpn, *pn;
-+	char *buf;
-+	int ret = 0;
-+	int keep_newpn = 0;
-+	struct hlist_node *n;
-+	struct io_group *iog;
-+
-+	buf = kstrdup(buffer, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	newpn = kzalloc(sizeof(*newpn), GFP_KERNEL);
-+	if (!newpn) {
-+		ret = -ENOMEM;
-+		goto free_buf;
-+	}
-+
-+	ret = policy_parse_and_set(buf, newpn);
-+	if (ret)
-+		goto free_newpn;
-+
-+	if (!cgroup_lock_live_group(cgrp)) {
-+		ret = -ENODEV;
-+		goto free_newpn;
-+	}
-+
-+	iocg = cgroup_to_io_cgroup(cgrp);
-+	spin_lock_irq(&iocg->lock);
-+
-+	pn = policy_search_node(iocg, newpn->dev);
-+	if (!pn) {
-+		if (newpn->weight != 0) {
-+			policy_insert_node(iocg, newpn);
-+			keep_newpn = 1;
-+		}
-+		goto update_io_group;
-+	}
-+
-+	if (newpn->weight == 0) {
-+		/* weight == 0 means deleteing a policy */
-+		policy_delete_node(pn);
-+		goto update_io_group;
-+	}
-+
-+	pn->weight = newpn->weight;
-+	pn->ioprio_class = newpn->ioprio_class;
-+
-+update_io_group:
-+	hlist_for_each_entry(iog, n, &iocg->group_data, group_node) {
-+		if (iog->dev == newpn->dev) {
-+			if (newpn->weight) {
-+				iog->entity.new_weight = newpn->weight;
-+				iog->entity.new_ioprio_class =
-+						newpn->ioprio_class;
-+				/*
-+				 * iog weight and ioprio_class updating
-+				 * actually happens if ioprio_changed is set.
-+				 * So ensure ioprio_changed is not set until
-+				 * new weight and new ioprio_class are updated.
-+				 */
-+				smp_wmb();
-+				iog->entity.ioprio_changed = 1;
-+			} else {
-+				iog->entity.new_weight = iocg->weight;
-+				iog->entity.new_ioprio_class =
-+							iocg->ioprio_class;
-+
-+				/* The same as above */
-+				smp_wmb();
-+				iog->entity.ioprio_changed = 1;
-+			}
-+		}
-+	}
-+	spin_unlock_irq(&iocg->lock);
-+
-+	cgroup_unlock();
-+
-+free_newpn:
-+	if (!keep_newpn)
-+		kfree(newpn);
-+free_buf:
-+	kfree(buf);
-+	return ret;
-+}
-+
- #define SHOW_FUNCTION(__VAR)						\
- static u64 io_cgroup_##__VAR##_read(struct cgroup *cgroup,		\
- 				       struct cftype *cftype)		\
-@@ -1346,6 +1586,7 @@ static int io_cgroup_##__VAR##_write(struct cgroup *cgroup,		\
- 	struct io_cgroup *iocg;					\
- 	struct io_group *iog;						\
- 	struct hlist_node *n;						\
-+	struct io_policy_node *pn;					\
- 									\
- 	if (val < (__MIN) || val > (__MAX))				\
- 		return -EINVAL;						\
-@@ -1358,6 +1599,9 @@ static int io_cgroup_##__VAR##_write(struct cgroup *cgroup,		\
- 	spin_lock_irq(&iocg->lock);					\
- 	iocg->__VAR = (unsigned long)val;				\
- 	hlist_for_each_entry(iog, n, &iocg->group_data, group_node) {	\
-+		pn = policy_search_node(iocg, iog->dev);		\
-+		if (pn)							\
-+			continue;					\
- 		iog->entity.new_##__VAR = (unsigned long)val;		\
- 		smp_wmb();						\
- 		iog->entity.ioprio_changed = 1;				\
-@@ -1496,6 +1740,12 @@ static int io_cgroup_disk_dequeue_read(struct cgroup *cgroup,
- 
- struct cftype bfqio_files[] = {
- 	{
-+		.name = "policy",
-+		.read_seq_string = io_cgroup_policy_read,
-+		.write_string = io_cgroup_policy_write,
-+		.max_write_len = 256,
-+	},
-+	{
- 		.name = "weight",
- 		.read_u64 = io_cgroup_weight_read,
- 		.write_u64 = io_cgroup_weight_write,
-@@ -1547,6 +1797,7 @@ static struct cgroup_subsys_state *iocg_create(struct cgroup_subsys *subsys,
- 	INIT_HLIST_HEAD(&iocg->group_data);
- 	iocg->weight = IO_DEFAULT_GRP_WEIGHT;
- 	iocg->ioprio_class = IO_DEFAULT_GRP_CLASS;
-+	INIT_LIST_HEAD(&iocg->policy_list);
- 
- 	return &iocg->css;
- }
-@@ -1649,7 +1900,7 @@ io_group_chain_alloc(struct request_queue *q, void *key, struct cgroup *cgroup)
- 		sscanf(dev_name(bdi->dev), "%u:%u", &major, &minor);
- 		iog->dev = MKDEV(major, minor);
- 
--		io_group_init_entity(iocg, iog);
-+		io_group_init_entity(iocg, iog, iog->dev);
- 		iog->my_entity = &iog->entity;
- 
- 		atomic_set(&iog->ref, 0);
-@@ -2121,6 +2372,7 @@ static void iocg_destroy(struct cgroup_subsys *subsys, struct cgroup *cgroup)
- 	struct io_group *iog;
- 	struct elv_fq_data *efqd;
- 	unsigned long uninitialized_var(flags);
-+	struct io_policy_node *pn, *pntmp;
- 
- 	/*
- 	 * io groups are linked in two lists. One list is maintained
-@@ -2160,6 +2412,11 @@ remove_entry:
- 	goto remove_entry;
- 
- done:
-+	list_for_each_entry_safe(pn, pntmp, &iocg->policy_list, node) {
-+		policy_delete_node(pn);
-+		kfree(pn);
-+	}
-+
- 	free_css_id(&io_subsys, &iocg->css);
- 	rcu_read_unlock();
- 	BUG_ON(!hlist_empty(&iocg->group_data));
-diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-index 44e9255..185550e 100644
---- a/block/elevator-fq.h
-+++ b/block/elevator-fq.h
-@@ -274,6 +274,13 @@ struct io_group {
- 	struct request_list rl;
- };
- 
-+struct io_policy_node {
-+	struct list_head node;
-+	dev_t dev;
-+	unsigned int weight;
-+	unsigned short ioprio_class;
-+};
-+
- /**
-  * struct io_cgroup - io cgroup data structure.
-  * @css: subsystem state for io in the containing cgroup.
-@@ -291,6 +298,9 @@ struct io_cgroup {
- 	unsigned int weight;
- 	unsigned short ioprio_class;
- 
-+	/* list of io_policy_node */
-+	struct list_head policy_list;
-+
- 	spinlock_t lock;
- 	struct hlist_head group_data;
- };
--- 
-1.6.0.6
-
+>
+>
+>> Signed-off by: Divyesh Shah <dpshah@google.com>
+>> ---
+>> This applies to Linus's kernel tree.
+>>
+>>  block/cfq-iosched.c |   15 +++++++++++----
+>>  1 files changed, 11 insertions(+), 4 deletions(-)
+>> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+>> index fd7080e..1657d4f 100644
+>> --- a/block/cfq-iosched.c
+>> +++ b/block/cfq-iosched.c
+>> @@ -1904,10 +1904,17 @@ err:
+>>  }
+>>
+>>  static void
+>> -cfq_update_io_thinktime(struct cfq_data *cfqd, struct cfq_io_context *cic)
+>> +cfq_update_io_thinktime(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+>> +                     struct cfq_io_context *cic)
+>>  {
+>> -     unsigned long elapsed = jiffies - cic->last_end_request;
+>> -     unsigned long ttime = min(elapsed, 2UL * cfqd->cfq_slice_idle);
+>> +     unsigned long elapsed, ttime;
+>> +
+>> +     if (!cfq_cfqq_sync(cfqq) || cfqq != cfqd->active_queue ||
+>> +         cfq_cfqq_slice_new(cfqq))
+>> +             return;
+>
+> If we take a valid sample only when cfqq is the active queue, I think it
+> will take a long time before idling is enabled back?
+>
+> For example consider a queue for which idling got disabled for some
+> reason. Now that queue will be scheduled in and after completion of
+> request, we will not idle and immediately expire the queue. For sequential
+> readers, next request most likely will come after the expiry of the queue.
+> Now this queue is not active, so when next request comes in, that sample
+> will not be valid and we will never enable the idling on this queue?
+>
+> I am not sure what are you trying to solve here. I guess that you are
+> concerned about the case where a reader can drive queue depth more than 1.
+> So after first request when next request comes in, it is probably not very
+> fair to compare it with cic->last_end_request. Instead it should be
+> compared with arrival time of previous request?
+>
+> If yes, then we can probably maintain another variable, cic->last_req_arrival
+> and calculate elapsed time based on last_req_arrival only if it is after
+> the last_end_request. May be something like as follows.
+>
+>        if (time_after(cic->last_req_arrival, cic->last_end_request))
+>                elapsed = jiffies - cic->last_req_arrival;
+>        else
+>                elapsed = jiffies - cic->last_end_request;
+>
+> One more question, why are you not considering a sample valid if slice_new
+> is set for the active queue? I think with introduction of
+> last_req_arrival, we probably would not need it.
+>
+> Thanks
+> Vivek
+>
+>> +
+>> +     elapsed = jiffies - cic->last_end_request;
+>> +     ttime = min(elapsed, 2UL * cfqd->cfq_slice_idle);
+>>
+>>       cic->ttime_samples = (7*cic->ttime_samples + 256) / 8;
+>>       cic->ttime_total = (7*cic->ttime_total + 256*ttime) / 8;
+>> @@ -2072,7 +2079,7 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
+>>       if (rq_is_meta(rq))
+>>               cfqq->meta_pending++;
+>>
+>> -     cfq_update_io_thinktime(cfqd, cic);
+>> +     cfq_update_io_thinktime(cfqd, cfqq, cic);
+>>       cfq_update_io_seektime(cfqd, cic, rq);
+>>       cfq_update_idle_window(cfqd, cfqq, cic);
+>>
+>
