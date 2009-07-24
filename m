@@ -1,92 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755041AbZGXWwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbZGXWyB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755041AbZGXWwE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 18:52:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbZGXWwD
+	id S1755027AbZGXWyB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 18:54:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbZGXWyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 18:52:03 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:63434 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755019AbZGXWwA (ORCPT
+	Fri, 24 Jul 2009 18:54:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35814 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754999AbZGXWyA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 18:52:00 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=uqWyf0yaCRMQ57SnvkE/ZHfnNjuhaW1YnCfcUdgW3CF0ChHxDLlXs5f9ElF7ULz8M
-	X35lpBY7r9xw2hkL5C/Dg==
-Date: Fri, 24 Jul 2009 15:51:51 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Miao Xie <miaox@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Paul Menage <menage@google.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-mm <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG] set_mempolicy(MPOL_INTERLEAV) cause kernel panic
-In-Reply-To: <alpine.DEB.2.00.0907161257190.31844@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.2.00.0907241551070.8573@chino.kir.corp.google.com>
-References: <20090715182320.39B5.A69D9226@jp.fujitsu.com> <1247679064.4089.26.camel@useless.americas.hpqcorp.net> <alpine.DEB.2.00.0907161257190.31844@chino.kir.corp.google.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Fri, 24 Jul 2009 18:54:00 -0400
+Date: Fri, 24 Jul 2009 15:53:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adrian Hunter <adrian.hunter@nokia.com>
+Cc: pierre@ossman.eu, jarkko.lavinen@nokia.com, ext-denis.2.karpov@nokia.com,
+       adrian.hunter@nokia.com, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH 26/32] omap_hsmmc: prevent races with irq handler
+Message-Id: <20090724155351.a99e30fd.akpm@linux-foundation.org>
+In-Reply-To: <20090710124309.1262.22465.sendpatchset@ahunter-tower>
+References: <20090710124004.1262.10422.sendpatchset@ahunter-tower>
+	<20090710124309.1262.22465.sendpatchset@ahunter-tower>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 16 Jul 2009, David Rientjes wrote:
+On Fri, 10 Jul 2009 15:43:09 +0300
+Adrian Hunter <adrian.hunter@nokia.com> wrote:
 
-> numactl --interleave=all simply passes a nodemask with all bits set, so if 
-> cpuset_current_mems_allowed includes offline nodes from node_possible_map, 
-> then mpol_set_nodemask() doesn't mask them off.
+> >From 242fae6293adec671b14354f215217354f5076a0 Mon Sep 17 00:00:00 2001
+> From: Adrian Hunter <adrian.hunter@nokia.com>
+> Date: Sat, 16 May 2009 10:32:34 +0300
+> Subject: [PATCH] omap_hsmmc: prevent races with irq handler
 > 
-> Seems like we could handle this strictly in mempolicies without worrying 
-> about top_cpuset like in the following?
+> If an unexpected interrupt occurs while preparing the
+> next request, an oops can occur.
+> 
+> For example, a new request is setting up DMA for data
+> transfer so host->data is not NULL.  An unexpected
+> transfer complete (TC) interrupt comes along and
+> the interrupt handler sets host->data to NULL.  Oops!
+> 
+> Prevent that by disabling interrupts while setting up
+> a new request.
+> 
+> Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
 > ---
-> diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-> --- a/mm/mempolicy.c
-> +++ b/mm/mempolicy.c
-> @@ -194,6 +194,7 @@ static int mpol_new_bind(struct mempolicy *pol, const nodemask_t *nodes)
->  static int mpol_set_nodemask(struct mempolicy *pol, const nodemask_t *nodes)
->  {
->  	nodemask_t cpuset_context_nmask;
-> +	nodemask_t mems_allowed;
->  	int ret;
->  
->  	/* if mode is MPOL_DEFAULT, pol is NULL. This is right. */
-> @@ -201,20 +202,21 @@ static int mpol_set_nodemask(struct mempolicy *pol, const nodemask_t *nodes)
->  		return 0;
->  
->  	VM_BUG_ON(!nodes);
-> +	nodes_and(mems_allowed, cpuset_current_mems_allowed,
-> +				node_states[N_HIGH_MEMORY]);
->  	if (pol->mode == MPOL_PREFERRED && nodes_empty(*nodes))
->  		nodes = NULL;	/* explicit local allocation */
->  	else {
->  		if (pol->flags & MPOL_F_RELATIVE_NODES)
->  			mpol_relative_nodemask(&cpuset_context_nmask, nodes,
-> -					       &cpuset_current_mems_allowed);
-> +					       &mems_allowed);
->  		else
->  			nodes_and(cpuset_context_nmask, *nodes,
-> -				  cpuset_current_mems_allowed);
-> +				  mems_allowed);
->  		if (mpol_store_user_nodemask(pol))
->  			pol->w.user_nodemask = *nodes;
->  		else
-> -			pol->w.cpuset_mems_allowed =
-> -						cpuset_current_mems_allowed;
-> +			pol->w.cpuset_mems_allowed = mems_allowed;
->  	}
->  
->  	ret = mpol_ops[pol->mode].create(pol,
+>  drivers/mmc/host/omap_hsmmc.c |   16 ++++++++++++++++
+>  1 files changed, 16 insertions(+), 0 deletions(-)
 > 
+> diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+> index 28563d6..38e1410 100644
+> --- a/drivers/mmc/host/omap_hsmmc.c
+> +++ b/drivers/mmc/host/omap_hsmmc.c
+> @@ -452,6 +452,13 @@ mmc_omap_start_command(struct mmc_omap_host *host, struct mmc_command *cmd,
+>  	if (host->use_dma)
+>  		cmdreg |= DMA_EN;
+>  
+> +	/*
+> +	 * In an interrupt context (i.e. STOP command), the interrupt is already
+> +	 * enabled, otherwise it is not (i.e. new request).
+> +	 */
+> +	if (!in_interrupt())
+> +		enable_irq(host->irq);
+> +
+>  	OMAP_HSMMC_WRITE(host->base, ARG, cmd->arg);
+>  	OMAP_HSMMC_WRITE(host->base, CMD, cmdreg);
+>  }
+> @@ -1011,6 +1018,13 @@ static void omap_mmc_request(struct mmc_host *mmc, struct mmc_request *req)
+>  	struct mmc_omap_host *host = mmc_priv(mmc);
+>  	int err;
+>  
+> +	/*
+> +	 * Prevent races with the interrupt handler because of unexpected
+> +	 * interrupts, but not if we are already in interrupt context i.e.
+> +	 * retries.
+> +	 */
+> +	if (!in_interrupt())
+> +		disable_irq(host->irq);
+>  	WARN_ON(host->mrq != NULL);
+>  	host->mrq = req;
+>  	err = mmc_omap_prepare_data(host, req);
+> @@ -1019,6 +1033,8 @@ static void omap_mmc_request(struct mmc_host *mmc, struct mmc_request *req)
+>  		if (req->data)
+>  			req->data->error = err;
+>  		host->mrq = NULL;
+> +		if (!in_interrupt())
+> +			enable_irq(host->irq);
+>  		mmc_request_done(mmc, req);
+>  		return;
+>  	}
 
-Should this patch be added to 2.6.31-rc4 to prevent the kernel panic while 
-hotplug notifiers are being added to mempolicies?
+That seems pretty crude.  Disabling an interrupt line can be expensive,
+and will shut off any other innocent devices which share the line.
+
+The usual and superior way of fixing races such as this is
+spin_lock_irq[save]().
+
