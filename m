@@ -1,159 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZGXQN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbZGXQMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbZGXQN1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 12:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZGXQNZ
+	id S1753432AbZGXQMv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 12:12:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbZGXQMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 12:13:25 -0400
-Received: from av8-2-sn3.vrr.skanova.net ([81.228.9.184]:41910 "EHLO
-	av8-2-sn3.vrr.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753207AbZGXQNX (ORCPT
+	Fri, 24 Jul 2009 12:12:50 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:51202 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753323AbZGXQMr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 12:13:23 -0400
-Message-ID: <4A69DDA2.80902@mocean-labs.com>
-Date: Fri, 24 Jul 2009 18:13:22 +0200
-From: =?ISO-8859-1?Q?Richard_R=F6jfors?= 
-	<richard.rojfors.ext@mocean-labs.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Fri, 24 Jul 2009 12:12:47 -0400
+Subject: [PATCH 8/8] kmemleak: Always scan the task stacks
+To: linux-kernel@vger.kernel.org
+From: Catalin Marinas <catalin.marinas@arm.com>
+Date: Fri, 24 Jul 2009 17:12:46 +0100
+Message-ID: <20090724161246.5752.19794.stgit@pc1117.cambridge.arm.com>
+In-Reply-To: <20090724161026.5752.52503.stgit@pc1117.cambridge.arm.com>
+References: <20090724161026.5752.52503.stgit@pc1117.cambridge.arm.com>
+User-Agent: StGit/0.15-rc1-9-gd8846
 MIME-Version: 1.0
-To: linux-input@vger.kernel.org
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, kwangwoo.lee@gmail.com,
-       Thierry Reding <thierry.reding@avionic-design.de>,
-       Trilok Soni <soni.trilok@gmail.com>
-Subject: [PATCH 1/2] tsc2007: IRQ balancing when stopping work during removal
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Jul 2009 16:12:46.0986 (UTC) FILETIME=[955B86A0:01CA0C79]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The implementation is proposed by Dmitry Torokhov, I have just made some 
-changes so it applied to my previous patches, and I tried it out.
+This patch removes the stack scanning on/off run-time configuration. The
+thread stacks are now automatically scanned as any other allocated
+object (and avoid many false positives).
 
-The idea is to balance the IRQ:s in the case where the poll worker is 
-running, so it won't get disabled twice.
-
-Also using __devinit/__devexit macros on probe/remove functions.
-
-Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
 ---
-Index: linux-2.6.31-rc2/drivers/input/touchscreen/tsc2007.c
-===================================================================
---- linux-2.6.31-rc2/drivers/input/touchscreen/tsc2007.c	(revision 997)
-+++ linux-2.6.31-rc2/drivers/input/touchscreen/tsc2007.c	(revision 1040)
-@@ -61,7 +61,7 @@
+ Documentation/kmemleak.txt |   11 +++++------
+ mm/kmemleak.c              |   22 ----------------------
+ 2 files changed, 5 insertions(+), 28 deletions(-)
 
-  #define PEN_STATE_UP	0x00
-  #define PEN_STATE_DOWN	0x01
--#define PEN_STATE_IRQ	0x01
-+#define PEN_STATE_IRQ	0x02
-
-  struct ts_event {
-  	u16	x;
-@@ -141,8 +141,6 @@
-  	 */
-  	if (rt > MAX_12BIT) {
-  		dev_dbg(&ts->client->dev, "ignored pressure %d\n", rt);
+diff --git a/Documentation/kmemleak.txt b/Documentation/kmemleak.txt
+index c223785..fa93249 100644
+--- a/Documentation/kmemleak.txt
++++ b/Documentation/kmemleak.txt
+@@ -35,8 +35,6 @@ Memory scanning parameters can be modified at run-time by writing to the
+ /sys/kernel/debug/kmemleak file. The following parameters are supported:
+ 
+   off		- disable kmemleak (irreversible)
+-  stack=on	- enable the task stacks scanning (default)
+-  stack=off	- disable the tasks stacks scanning
+   scan=on	- start the automatic memory scanning thread (default)
+   scan=off	- stop the automatic memory scanning thread
+   scan=<secs>	- set the automatic memory scanning period in seconds
+@@ -111,7 +109,8 @@ reported by kmemleak because values found during the memory scanning
+ point to such objects. To reduce the number of false negatives, kmemleak
+ provides the kmemleak_ignore, kmemleak_scan_area, kmemleak_no_scan and
+ kmemleak_erase functions (see above). The task stacks also increase the
+-amount of false negatives and their scanning is not enabled by default.
++amount of false negatives (enabling CONFIG_DEBUG_STACK_USAGE would help
++by zeroing newly allocated stacks).
+ 
+ The false positives are objects wrongly reported as being memory leaks
+ (orphan). For objects known not to be leaks, kmemleak provides the
+@@ -120,9 +119,9 @@ the memory block is known not to contain other pointers and it will no
+ longer be scanned.
+ 
+ Some of the reported leaks are only transient, especially on SMP
+-systems, because of pointers temporarily stored in CPU registers or
+-stacks. Kmemleak defines MSECS_MIN_AGE (defaulting to 1000) representing
+-the minimum age of an object to be reported as a memory leak.
++systems, because of pointers temporarily stored in CPU registers.
++Kmemleak defines MSECS_MIN_AGE (defaulting to 5000) representing the
++minimum age of an object to be reported as a memory leak.
+ 
+ Limitations and Drawbacks
+ -------------------------
+diff --git a/mm/kmemleak.c b/mm/kmemleak.c
+index 983f3f6..752a276 100644
+--- a/mm/kmemleak.c
++++ b/mm/kmemleak.c
+@@ -203,8 +203,6 @@ static unsigned long jiffies_min_age;
+ static unsigned long jiffies_last_scan;
+ /* delay between automatic memory scannings */
+ static signed long jiffies_scan_wait;
+-/* enables or disables the task stacks scanning */
+-static int kmemleak_stack_scan = 1;
+ /* protects the memory scanning, parameters and debug/kmemleak file access */
+ static DEFINE_MUTEX(scan_mutex);
+ 
+@@ -1064,7 +1062,6 @@ static void kmemleak_scan(void)
+ {
+ 	unsigned long flags;
+ 	struct kmemleak_object *object, *tmp;
+-	struct task_struct *task;
+ 	int i;
+ 	int new_leaks = 0;
+ 	int gray_list_pass = 0;
+@@ -1131,19 +1128,6 @@ static void kmemleak_scan(void)
+ 	}
+ 
+ 	/*
+-	 * Scanning the task stacks may introduce false negatives and it is
+-	 * not enabled by default.
+-	 */
+-	if (kmemleak_stack_scan) {
+-		read_lock(&tasklist_lock);
+-		for_each_process(task)
+-			scan_block(task_stack_page(task),
+-				   task_stack_page(task) + THREAD_SIZE,
+-				   NULL, 0);
+-		read_unlock(&tasklist_lock);
+-	}
 -
--		schedule_delayed_work(&ts->work, TS_POLL_PERIOD);
-  		return;
-  	}
+-	/*
+ 	 * Scan the objects already referenced from the sections scanned
+ 	 * above. More objects will be referenced and, if there are no memory
+ 	 * leaks, all the objects will be scanned. The list traversal is safe
+@@ -1413,8 +1397,6 @@ static int dump_str_object_info(const char *str)
+  * File write operation to configure kmemleak at run-time. The following
+  * commands can be written to the /sys/kernel/debug/kmemleak file:
+  *   off	- disable kmemleak (irreversible)
+- *   stack=on	- enable the task stacks scanning
+- *   stack=off	- disable the tasks stacks scanning
+  *   scan=on	- start the automatic memory scanning thread
+  *   scan=off	- stop the automatic memory scanning thread
+  *   scan=...	- set the automatic memory scanning period in seconds (0 to
+@@ -1440,10 +1422,6 @@ static ssize_t kmemleak_write(struct file *file, const char __user *user_buf,
+ 
+ 	if (strncmp(buf, "off", 3) == 0)
+ 		kmemleak_disable();
+-	else if (strncmp(buf, "stack=on", 8) == 0)
+-		kmemleak_stack_scan = 1;
+-	else if (strncmp(buf, "stack=off", 9) == 0)
+-		kmemleak_stack_scan = 0;
+ 	else if (strncmp(buf, "scan=on", 7) == 0)
+ 		start_scan_thread();
+ 	else if (strncmp(buf, "scan=off", 8) == 0)
 
-@@ -178,8 +176,6 @@
-  	} else if (!ts->get_pendown_state)
-  		/* no callback to check pendown state, use pressure */
-  		ts->penstate = PEN_STATE_UP;
--
--	schedule_delayed_work(&ts->work, TS_POLL_PERIOD);
-  }
-
-  static int tsc2007_read_values(struct tsc2007 *tsc)
-@@ -228,6 +224,7 @@
-
-  		tsc2007_read_values(ts);
-  		tsc2007_send_event(ts);
-+		schedule_delayed_work(&ts->work, TS_POLL_PERIOD);
-  	}
-  }
-
-@@ -238,7 +235,7 @@
-  	if (!ts->get_pendown_state || likely(ts->get_pendown_state())) {
-  		disable_irq_nosync(ts->irq);
-  		ts->penstate = PEN_STATE_IRQ;
--		schedule_delayed_work(&ts->work, 0);
-+		schedule_delayed_work(&ts->work, TS_POLL_PERIOD);
-  	}
-
-  	if (ts->clear_penirq)
-@@ -247,15 +244,25 @@
-  	return IRQ_HANDLED;
-  }
-
--static int tsc2007_probe(struct i2c_client *client,
-+static void tsc2007_free_irq(struct tsc2007 *ts)
-+{
-+	free_irq(ts->irq, ts);
-+	if (cancel_delayed_work_sync(&ts->work))
-+		/* Work was pending, therefore we need to enable IRQ here to
-+		 * balance the disable done in the interrupt handler.
-+		 */
-+		enable_irq(ts->irq);
-+}
-+
-+static int __devinit tsc2007_probe(struct i2c_client *client,
-  			const struct i2c_device_id *id)
-  {
-  	struct tsc2007 *ts;
--	struct tsc2007_platform_data *pdata = pdata = client->dev.platform_data;
-+	struct tsc2007_platform_data *pdata = client->dev.platform_data;
-  	struct input_dev *input_dev;
-  	int err;
-
--	if (!pdata || !pdata->get_pendown_state) {
-+	if (!pdata) {
-  		dev_err(&client->dev, "platform data is required!\n");
-  		return -EINVAL;
-  	}
-@@ -320,25 +327,24 @@
-  	return 0;
-
-   err_free_irq:
--	free_irq(ts->irq, ts);
-+	tsc2007_free_irq(ts);
-   err_free_mem:
-+	if (pdata->exit_platform_hw)
-+		pdata->exit_platform_hw();
-  	input_free_device(input_dev);
-  	kfree(ts);
-  	return err;
-  }
-
--static int tsc2007_remove(struct i2c_client *client)
-+static int __devexit tsc2007_remove(struct i2c_client *client)
-  {
-  	struct tsc2007	*ts = i2c_get_clientdata(client);
--	struct tsc2007_platform_data *pdata;
-+	struct tsc2007_platform_data *pdata = client->dev.platform_data;
-
--	cancel_delayed_work_sync(&ts->work);
--
--	pdata = client->dev.platform_data;
-+	tsc2007_free_irq(ts);
-  	if (pdata->exit_platform_hw)
-  		pdata->exit_platform_hw();
-
--	free_irq(ts->irq, ts);
-  	input_unregister_device(ts->input);
-  	kfree(ts);
-
-@@ -359,7 +365,7 @@
-  	},
-  	.id_table	= tsc2007_idtable,
-  	.probe		= tsc2007_probe,
--	.remove		= tsc2007_remove,
-+	.remove		= __devexit_p(tsc2007_remove),
-  };
-
-  static int __init tsc2007_init(void)
