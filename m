@@ -1,87 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754716AbZGXVoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbZGXVu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754716AbZGXVoV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 17:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbZGXVoU
+	id S1754739AbZGXVu2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 17:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754563AbZGXVu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 17:44:20 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:35397 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751605AbZGXVoT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 17:44:19 -0400
-Date: Fri, 24 Jul 2009 22:44:01 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Eric Paris <eparis@redhat.com>
-Cc: david@lang.hm, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       malware-list@dmesg.printk.net, Valdis.Kletnieks@vt.edu, greg@kroah.com,
-       jcm@redhat.com, douglas.leeder@sophos.com, tytso@mit.edu,
-       arjan@infradead.org, jengelh@medozas.de, aviro@redhat.com,
-       mrkafk@gmail.com, alexl@redhat.com, jack@suse.cz,
-       tvrtko.ursulin@sophos.com, a.p.zijlstra@chello.nl, hch@infradead.org,
-       alan@lxorguk.ukuu.org.uk, mmorley@hcl.in
-Subject: Re: fanotify - overall design before I start sending patches
-Message-ID: <20090724214401.GJ27755@shareable.org>
-References: <1248466429.3567.82.camel@localhost> <alpine.DEB.1.10.0907241340580.28013@asgard.lang.hm> <1248469278.3567.88.camel@localhost>
+	Fri, 24 Jul 2009 17:50:27 -0400
+Received: from cantor.suse.de ([195.135.220.2]:42292 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754348AbZGXVu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 17:50:27 -0400
+Date: Fri, 24 Jul 2009 14:48:06 -0700
+From: Greg KH <gregkh@suse.de>
+To: Devin Heitmueller <dheitmueller@kernellabs.com>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-media@vger.kernel.org
+Subject: Re: [GIT PATCHES for 2.6.31] V4L/DVB fixes
+Message-ID: <20090724214806.GA7200@suse.de>
+References: <20090724144020.3f5a6bb7@pedra.chehab.org>
+ <20090724205015.GA5889@suse.de>
+ <829197380907241432m32bb6a51wc9b9bacce86e0c75@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <1248469278.3567.88.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <829197380907241432m32bb6a51wc9b9bacce86e0c75@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Paris wrote:
-> On Fri, 2009-07-24 at 13:48 -0700, david@lang.hm wrote:
-> > getting an open fd to the file is good for things like content scanning, 
-> > but for other things like a HSM re-populating the file, you would need to 
-> > pass the path used to open the file at open time. is this in the metadata 
-> > you are passing?
+On Fri, Jul 24, 2009 at 05:32:23PM -0400, Devin Heitmueller wrote:
+> On Fri, Jul 24, 2009 at 4:50 PM, Greg KH<gregkh@suse.de> wrote:
+> > On Fri, Jul 24, 2009 at 02:40:20PM -0300, Mauro Carvalho Chehab wrote:
+> >> Linus,
+> >>
+> >> Please pull from:
+> >>         ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
+> >>
+> >> This series adds a new gscpca sub-driver for sn9c20x webcams. There are several
+> >> popular webcam models supported by those Sonix/Microdia chips.
+> >>
+> >> Greg can remove some linuxdriverproject.org requests from the project Wiki
+> >> after this merge ;) Greg, for the USB ID details, you could take a look at
+> >> Documentation/video4linux/gspca.txt changes (32 USB ID's added) or at
+> >> http://linuxtv.org/wiki/index.php/Gspca. With this series, gspca alone supports
+> >> 660 different webcam models.
+> >
+> > That's great to see.  As it's a wiki, could someone who knows these ids
+> > go through and mark off those devices on the linuxdriverproject.org
+> > site?
+> >
+> > thanks,
+> >
+> > greg k-h
 > 
-> No, I will NOT EVER pass a pathname.  Period.  End of story.  I stated
-> the if userspace wants to deal with pathnames (and they understand the
-> system setup well enough to know if pathnames even make sense to them)
-> they can use readlink(2) on /proc/self/fd
-
-That makes sense.
-
-In most cases where events trigger userspace cache or index updates,
-userspace already has enough information to calculate the path (and
-any derived data) from the inode number (in the case of non-hard-link
-files) or from the inode number of the parent directory and the name
-(not full path).
-
-So it wouldn't even need to call readlink(2), provided those bits of
-information are passed in the event.
-
-That is one thing which inotify _nearly_ gets right.  Nearly, because
-it doesn't pass the inode number when you're watching a directory, and
-watching every inode is too expensive.
-
-> > to avoid race conditions, you may want some way that a listener on a 
-> > directory can flag that it wants to also be a listener for all new 
-> > directories created under the one it is listening on.
+> I looked at it a few weeks ago, and the V4L section is in pretty bad
+> shape.  Lots of the devices in "DriversNeeded" are now supported.
 > 
-> Interesting way to get the subtree checking people want, you do the
-> registration yourself the first time on the entire hierarchy and new
-> directories will be automagically added.  I could probably do that, I'll
-> have to look.
+> http://linuxdriverproject.org/twiki/bin/view/Main/DriversNeeded?sortcol=table;up=#Video_for_Linux_devices_Input
+> 
+> I'm going to try to take a pass over it in the next few days and do
+> some cleanup.
 
-Yes, automagically adding directories is essential, otherwise they can
-be added, and someone can populate them with files that have some
-effect before userspace gets a chance to scan them.
+That would be much appreciated, thanks.
 
-The other part of useful subtree notification is getting notifications
-for a subtree without having to initially scan the whole hierachy
-,which can take a long time as well as a huge amount of unnecessary
-seeking and I/O.
-
-The third part, which by the way is really recommended for security
-applications, is persistence across umount/reboot/mount.  That can be
-done either by assuming there are no filesystem changes when userspace
-isn't watching it, or by the simple expedient of letting userspace add
-an xattr to things it has indexed, with a specially recognised name
-that is automatically removed whenever the file/directory is changed.
-
--- Jamie
+greg k-h
