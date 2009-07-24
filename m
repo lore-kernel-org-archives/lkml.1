@@ -1,119 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752534AbZGXKg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551AbZGXKhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752534AbZGXKg7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 06:36:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbZGXKg6
+	id S1752551AbZGXKhu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 06:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbZGXKht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 06:36:58 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:35763 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752365AbZGXKg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 06:36:57 -0400
-Date: Fri, 24 Jul 2009 11:36:56 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       kosaki.motohiro@jp.fujitsu.com, maximlevitsky@gmail.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Lee.Schermerhorn@hp.com, penberg@cs.helsinki.fi, hannes@cmpxchg.org,
-       jirislaby@gmail.com
-Subject: Re: [PATCH] mm: Warn once when a page is freed with PG_mlocked set
-	V2
-Message-ID: <20090724103656.GA18074@csn.ul.ie>
-References: <20090715125822.GB29749@csn.ul.ie> <alpine.DEB.1.10.0907151027410.23643@gentwo.org> <20090722160649.61176c61.akpm@linux-foundation.org> <20090723102938.GA27731@csn.ul.ie> <20090723102316.b94a2e4f.akpm@linux-foundation.org>
+	Fri, 24 Jul 2009 06:37:49 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60027 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752245AbZGXKht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 06:37:49 -0400
+Message-ID: <4A698F90.90501@cn.fujitsu.com>
+Date: Fri, 24 Jul 2009 18:40:16 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090723102316.b94a2e4f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/3] Add walltime support for ring-buffer
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 23, 2009 at 10:23:16AM -0700, Andrew Morton wrote:
-> On Thu, 23 Jul 2009 11:29:39 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
-> 
-> > On Wed, Jul 22, 2009 at 04:06:49PM -0700, Andrew Morton wrote:
-> > > On Wed, 15 Jul 2009 10:31:54 -0400 (EDT)
-> > > Christoph Lameter <cl@linux-foundation.org> wrote:
-> > > 
-> > > > On Wed, 15 Jul 2009, Mel Gorman wrote:
-> > > > 
-> > > > > -static inline int free_pages_check(struct page *page)
-> > > > > +static inline int free_pages_check(struct page *page, int wasMlocked)
-> > > > >  {
-> > > > > +	WARN_ONCE(wasMlocked, KERN_WARNING
-> > > > > +		"Page flag mlocked set for process %s at pfn:%05lx\n"
-> > > > > +		"page:%p flags:0x%lX\n",
-> > > > > +		current->comm, page_to_pfn(page),
-> > > > > +		page, page->flags|__PG_MLOCKED);
-> > > > > +
-> > > > >  	if (unlikely(page_mapcount(page) |
-> > > > 
-> > > > There is already a free_page_mlocked() that is only called if the mlock
-> > > > bit is set. Move it into there to avoid having to run two checks in the
-> > > > hot codee path?
-> > > 
-> > > Agreed.
-> > > 
-> > > This patch gratuitously adds hotpath overhead.  Moving the change to be
-> > > inside those preexisting wasMlocked tests will reduce its overhead a lot.
-> > > 
-> > 
-> > It adds code duplication then, one of which is in a fast path.
-> > 
-> > > As it stands, I'm really doubting that the patch's utility is worth its
-> > > cost.
-> > > 
-> > 
-> > I'm happy to let this one drop. It seemed like it would be nice for debugging
-> > while there are still corner cases where mlocked pages are getting freed
-> > instead of torn down but we already account for that situation occuring. While
-> > I think it'll be tricky to spot, it's probably preferable to having warnings
-> > spew out onto dmesg.
-> 
-> If we do in it the way which Christoph recommends, the additional
-> overhead is miniscule?
-> 
+Hello, Steven
 
-Yep, it should be. I misinterpreted what you said with doubting the patch's
-utility. The cost as it was was too high rather than the warning itself was
-useless. When moved to free_page_mlock(), patch looks like;
+It is a prototype code to make ftrace display walltime of events.
 
-==== CUT HERE ====
-mm: Warn once when a page is freed with PG_mlocked set V3
+It need to applys on my patch of:
+[PATCH v3 1/2] Add function to convert between calendar time and broken-down time for universal use
 
-Changelog since V2
-  o Move warning to free_page_mlock()
-  o Use %#lx instead of 0x%lX in printf format string
+This code can run but need to be fixed, it only for demostrate what is result
+looks like.
 
-Changelog since V1
-  o Remove unnecessary branch
+I think display walltime is valuable for ftrace, it can provide more
+recognizable information to system manager that he can known "when"
+event happened.
+And it is also helpful for flight-recorder we are doing now, we can get
+walltime of events after panic for analyse.
 
-When a page is freed with the PG_mlocked set, it is considered an unexpected
-but recoverable situation. A counter records how often this event happens
-but it is easy to miss that this event has occured at all. This patch warns
-once when PG_mlocked is set to prompt debuggers to check the counter to
-see how often it is happening.
+We can get following result on this patch:
+ # cd /mnt/debugfs/tracing/
+ # echo sched_switch > current_tracer
+ # cat trace
+ # tracer: sched_switch
+ #
+ #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+ #              | |       |          |         |
+             bash-2457  [000]   214.895446:   2457:120:S   + [000]  2457:120:S bash
+             bash-2457  [000]   214.898298:   2457:120:R   + [000]     5:115:S events/0
+             bash-2457  [000]   214.898684:   2457:120:R ==> [000]     5:115:R events/0
+         events/0-5     [000]   214.899458:      5:115:R   + [000]  2455:120:S sshd
+         events/0-5     [000]   214.899495:      5:115:S ==> [000]  2455:120:R sshd
+ ...
+ # echo 1 > options/walltime
+ # cat trace
+ # tracer: sched_switch
+ #
+ #           TASK-PID    CPU#                  TIMESTAMP  FUNCTION
+ #              | |       |                        |         |
+           <idle>-0     [000] 2009-07-25 18:01:00.848468:      0:140:R ==> [000]     5:115:R events/0
+         events/0-5     [000] 2009-07-25 18:01:00.848523:      5:115:S ==> [000]     0:140:R <idle>
+           <idle>-0     [000] 2009-07-25 18:01:01.613479:      0:140:R   + [000]  2455:120:S sshd
+           <idle>-0     [000] 2009-07-25 18:01:01.613678:      0:140:R ==> [000]  2455:120:R sshd
+             sshd-2455  [000] 2009-07-25 18:01:01.614015:   2455:120:S   + [000]  2455:120:S sshd
+ ...
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
---- 
- mm/page_alloc.c |    5 +++++
- 1 file changed, 5 insertions(+)
+This patch is prototype because we have following things to do:
+1: function to get walltime is not near rb_time_stamp()
+   So walltime is not absolutely synchronize with trace time.
+   But if we place code to get walltime near rb_time_stamp(), it will be called
+   on every reserve-event and will make system slow.
+2: We can't call getnstimeofday() freely in ring-buffer's code, because
+   it is possibility already hold xtime_lock. Prototype code used a ugly way
+   to get gid of this problem, maybe we need to ftrace_disable_cpu() before
+   every write_seqlock() instead.
+3: People maybe change walltime when tracing, but current ring-buffer page's
+   walltime can not reflect this change. We need to add tracepoints to watch
+   this change, and add a walltime-change event(already reserved in
+   ring-buffer.c) to record this change.
 
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index b8283e8..d3d0707 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -488,6 +488,11 @@ static inline void __free_one_page(struct page *page,
-  */
- static inline void free_page_mlock(struct page *page)
- {
-+	WARN_ONCE(1, KERN_WARNING
-+		"Page flag mlocked set for process %s at pfn:%05lx\n"
-+		"page:%p flags:%#lx\n",
-+		current->comm, page_to_pfn(page),
-+		page, page->flags|__PG_MLOCKED);
- 	__dec_zone_page_state(page, NR_MLOCK);
- 	__count_vm_event(UNEVICTABLE_MLOCKFREED);
- }
+I'll continue to finish remain steps, what is your opinion on it?
+
+Thanks
+Zhaolei
+
+
