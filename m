@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753851AbZGXSXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753879AbZGXSZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753851AbZGXSXQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 14:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbZGXSXP
+	id S1753879AbZGXSZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 14:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbZGXSZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 14:23:15 -0400
-Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:57806 "EHLO
-	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753798AbZGXSXO (ORCPT
+	Fri, 24 Jul 2009 14:25:58 -0400
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:55154 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753862AbZGXSZ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 14:23:14 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Peter Chubb <peterc@gelato.unsw.edu.au>
-Subject: Re: [PATCH] ia64: minor Makefile simplification through use =?iso-8859-1?q?of=09cc-ifversion?=
-Date: Fri, 24 Jul 2009 20:23:11 +0200
-User-Agent: KMail/1.9.9
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-ia64@vger.kernel.org,
-       linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200907232056.51064.elendil@planet.nl> <20090723212809.GB9488@merkur.ravnborg.org> <87ws5yoo44.wl%peterc@nicta.com.au>
-In-Reply-To: <87ws5yoo44.wl%peterc@nicta.com.au>
+	Fri, 24 Jul 2009 14:25:57 -0400
+Date: Fri, 24 Jul 2009 23:55:47 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Regression] kdesu broken
+Message-ID: <20090724182547.GB29851@skywalker>
+References: <200907240145.31935.rjw@sisk.pl> <2c0942db0907231721q124dc8f9mdbe64ed33c69ffbf@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200907242023.12478.elendil@planet.nl>
-X-OriginalArrivalTime: 24 Jul 2009 18:23:13.0051 (UTC) FILETIME=[CE0E46B0:01CA0C8B]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <2c0942db0907231721q124dc8f9mdbe64ed33c69ffbf@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 24 July 2009, Peter Chubb wrote:
-> >>>>> "Sam" == Sam Ravnborg <sam@ravnborg.org> writes:
-> Sam> The above change is correct.  But I really wonder if the original
-> Sam> code was correct?  Do we really only want to use the -mtune
-> Sam> options for this specific gcc version?  If this is indeed the
-> Sam> case this deserves a comment explaning this.
->
-> I suspect it should be all compilers after this one.  -mtune=mckinley
-> didn't work very well in the early gcc 3 compilers and didn't exist in
-> version 2.
+On Thu, Jul 23, 2009 at 05:21:36PM -0700, Ray Lee wrote:
+> On Thu, Jul 23, 2009 at 4:45 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> > A recent kernel change broke kdesu (from KDE 4.2) on my test boxes.  ISTR a
+> > discussion about that, but I can't find it right now.  Any clues?
+> 
+> See the thread starting here: ("possible regression with pty.c commit")
+>    http://lkml.org/lkml/2009/7/11/125
 
-How would you like to handle that? As it is essentially a separate issue, 
-my suggestion would be: apply my patch as is and then (if needed) commit 
-a separate patch to fix the incorrect comparisons on top.
+I am also facing a similar problem.
 
-Cheers,
-FJP
+http://bugzilla.kernel.org/show_bug.cgi?id=13815
+
+-aneesh
