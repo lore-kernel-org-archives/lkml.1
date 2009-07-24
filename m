@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752761AbZGXKzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752729AbZGXK5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752761AbZGXKzq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 06:55:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbZGXKzq
+	id S1752729AbZGXK5h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 06:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbZGXK5h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 06:55:46 -0400
-Received: from mail.netone.net.tr ([193.192.98.182]:19184 "EHLO
-	mail.turknet.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752725AbZGXKzp (ORCPT
+	Fri, 24 Jul 2009 06:57:37 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:56191 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752458AbZGXK5g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 06:55:45 -0400
-Message-ID: <4A69932E.90906@turknet.net.tr>
-Date: Fri, 24 Jul 2009 13:55:42 +0300
-From: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.2pre) Gecko/20090723 Shredder/3.0b4pre
+	Fri, 24 Jul 2009 06:57:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=iWYWWASBtPfsHR8yT/Qm6spAltpiJduW6zbRk1nXne/tlUb42SlEs3D4NufF9l+Wnm
+         IccSFG7v01pC7YlThM9PWnupRFGHeNbK/je6B9PNwJrILPi8osWO3b4gWk8WHCOCFXvR
+         jNhU8hJ0ZDj/LkUqUUydedRd+FnJbNz4FkrEU=
 MIME-Version: 1.0
-To: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-CC: Matthew Wilcox <matthew@wil.cx>
-Subject: [BISECTED] Re: [BUG] Linux-2.6.31-rc1 Fails To Recognize Some USB
- Disks
-References: <4A4472DF.1050900@turknet.net.tr>	<yq1zlbrn2rj.fsf@sermon.lab.mkp.net> <4A4878AC.3050208@turknet.net.tr> <yq1fxdji03l.fsf@sermon.lab.mkp.net>
-In-Reply-To: <yq1fxdji03l.fsf@sermon.lab.mkp.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Date: Fri, 24 Jul 2009 18:57:35 +0800
+Message-ID: <454c71700907240357l61f5c4fajaca73db0fba7db8@mail.gmail.com>
+Subject: report a bug about sched_rt
+From: sen wang <wangsen.linux@gmail.com>
+To: mingo@elte.hu, akpm@linux-foundation.org, kernel@kolivas.org,
+       npiggin@suse.de, arjan@infradead.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Jul 2009 10:55:43.0215 (UTC) FILETIME=[4A4E6FF0:01CA0C4D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/29/2009 05:30 PM, Martin K. Petersen wrote:
-> Tarkan>  version=0x00 [no conformance claimed]
->
-> Wow, that's super lame.  And somewhat odd because WDC are usually pretty
-> good at USB-SATA bridge protocol compliance.  But in any case this is
-> unrelated to your problems.
->
-> My concern was that our recent changes to the capacity detection in SCSI
-> failed for your device.  However, given your attached log it looks like
-> it's a USB issue.  And rereading your original log it also looks like
-> you had a USB timeout which coincided with READ CAPACITY failing.
->
-> So I'm deferring to the USB folks.
->
-> Tarkan>  [160848.805027] usb 5-8: reset high speed USB device using
-> Tarkan>  ehci_hcd and address 7
->
->    
+I find something is wrong about sched_rt.
 
-Martin,
+ when I am debugging my system with rt_bandwidth_enabled, there is a
+running realtime FIFO task in the sched_rt running queue and
+ the fair running queue is empty.  I found the idle task will be
+scheduled up when the running task still lie in the  sched_rt running
+queue!
 
-Today, I had time to bisect and you were right: The below commit related 
-to capacity detection changes in SCSI subsystem,as you mentioned, seems 
-the cause of the problem.
+this will happen when rt runqueue passed it's rt_bandwidth_enabled
+runtime,then the scheduler choose the idle task instead of realtime
+FIFO task.
 
-3821d768912a47ddbd6cab52943a8284df88003c is first bad commit
-commit 3821d768912a47ddbd6cab52943a8284df88003c
-Author: Martin K. Petersen <martin.petersen@oracle.com>
-Date:   Sat May 23 11:43:38 2009 -0400
+the reason lie in: when scheduler try to pick up a realtime FIFO task,
+it will check if rt_throttled is enabled,
+if so, it'll return and try fair queue but it is empty, then it come
+to the sched_idle class.
 
-     sd: Detect non-rotational devices
+I don't think it reasonable, we should give the realtime FIFO task the
+chance, even when rt runqueue passed it's runtime.
+because it is cpu's free time.
 
-     Detect non-rotational devices and set the queue flag accordingly.
+To fix it ,and keep rt_bandwidth works as before, I think
+pick_next_task_rt() is the best space,
 
-     Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-     Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+the pick_next_task_rt should check another condiction: rq->cfs.nr_running.
 
-:040000 040000 f744f08d73f56e6d8461267c8c5bc4c710d4c9dd 
-89eb1f56a7066a22a9ae6b7b916453a78a9dd082 M      drivers
+So,I modify pick_next_task_rt() like this and debug it on my omap3430
+zoom2 board, it works!
 
 
+static struct task_struct *pick_next_task_rt(struct rq *rq)
+{
+	struct sched_rt_entity *rt_se;
+	struct task_struct *p;
+	struct rt_rq *rt_rq;
 
+  ...
 
+	if (rt_rq_throttled(rt_rq)&& rq->cfs.nr_running)
+		return NULL;
 
+  ...
+}
