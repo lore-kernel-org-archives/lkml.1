@@ -1,93 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbZGXS6n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbZGXTA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753953AbZGXS6n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 14:58:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZGXS6m
+	id S1753926AbZGXTA6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 15:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbZGXTA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 14:58:42 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:34084 "EHLO
-	mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751118AbZGXS6m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 14:58:42 -0400
+	Fri, 24 Jul 2009 15:00:58 -0400
+Received: from bu3sch.de ([62.75.166.246]:48579 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751067AbZGXTA5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 15:00:57 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Ben Gardner <gardner.ben@gmail.com>
+Subject: Re: FW: [PATCH] cs5535_gpio: Fix root triggerable integer underflow
+Date: Fri, 24 Jul 2009 21:00:55 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
+References: <F06EB2894F3F0D45AD9BEA7246DE9C900E542FE2@WCSEXCMBS1.ad.wabtec.com> <808c8e9d0907241040i2783d27aw948aa239f521336c@mail.gmail.com>
+In-Reply-To: <808c8e9d0907241040i2783d27aw948aa239f521336c@mail.gmail.com>
+X-Move-Along: Nothing to see here. No, really... Nothing.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-ID: <19050.1094.758320.38666@stoffel.org>
-Date: Fri, 24 Jul 2009 14:58:14 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Andreas Dilger <adilger@sun.com>
-Cc: Ludwig Nussel <ludwig.nussel@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] implement uid mount option for ext2
-In-Reply-To: <20090724165201.GA4231@webber.adilger.int>
-References: <1248348991-849-1-git-send-email-ludwig.nussel@suse.de>
-	<1248431444-18842-1-git-send-email-ludwig.nussel@suse.de>
-	<1248431444-18842-2-git-send-email-ludwig.nussel@suse.de>
-	<20090724165201.GA4231@webber.adilger.int>
-X-Mailer: VM 8.0.9 under Emacs 22.3.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+Message-Id: <200907242100.56097.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Andreas" == Andreas Dilger <adilger@sun.com> writes:
+On Friday 24 July 2009 19:40:28 Ben Gardner wrote:
+> Hi Michael,
+> 
+> > This patch fixes a possible root triggerable (I hope the device is only
+> > readable by root?) integer underflow.
+> > Well, it's not really an underflow, but as loff_t is a signed type, the
+> > range check at the start of the function is incomplete. It needs to
+> > check for <0, too.
+> > Otherwise the loop below will poke into random memory and I/O space.
+> > This could be used to crash the machine, at least.
+> >
+> > This patch is only compiletested, because I do not have the hardware.
+> >
+> > Signed-off-by: Michael Buesch <mb@bu3sch.de>
+> >
+> > ---
+> >
+> > I'm not sure if this bug is exploitable. I _guess_ the device is only
+> > readable by root
+> > on a standard setup.
+> 
+> The cs5525_gpio driver uses the default seek, which doesn't allow
+> negative position values.
+> So, I don't think it necessary to check for negative values.
 
-Andreas> On Jul 24, 2009  12:30 +0200, Ludwig Nussel wrote:
->> @@ -1353,7 +1356,13 @@ int ext2_write_inode(struct inode *inode, int do_sync)
->> 
->> ext2_get_inode_flags(ei);
-raw_inode-> i_mode = cpu_to_le16(inode->i_mode);
->> +	if (EXT2_SB(sb)->s_uid &&
->> +	    inode->i_uid == EXT2_SB(sb)->s_uid) {
->> +		raw_inode->i_uid_high = 0;
->> +		raw_inode->i_uid_low  = 0;
->> +		raw_inode->i_gid_high = 0;
->> +		raw_inode->i_gid_low  = 0;
+Yes you are right.
 
-Andreas> I would suggest to also clear the SUID flag on this inode.
-Andreas> Otherwise, it opens the risk of creating SUID root files that
-Andreas> might be handled incorrectly.
-
-Andreas> To be honest, rather than mapping the specified file to uid
-Andreas> == 0/gid == 0 it would be more useful (and safe) to allow
-Andreas> specifying a mapping from one UID to another, or have the
-Andreas> on-disk UID always be set to/from the specified UID.  Given
-Andreas> that your original problem is for the user having UIDX on
-Andreas> system X and UIDY on system Y, you should just specify the
-Andreas> X->Y mapping explicitly, instead of an implicit X->0 mapping.
-Andreas> Otherwise, if the user is unable to access root-owned files
-Andreas> on either one of system X or Y your current patch fails.
-
-I didn't read the original email closely, but I have to say that both
-of these plans don't sound good to me.  If you can mount a filesystem,
-you're root already, so you can do any fixup you need.
-
-If you're sharing the filesystem via a Network Filesystem, then you
-have to have proper UIDs that match.
-
-If you're moving a disks (USB, eSATA, whatever) between systems, then
-I don't think *either* system should do anything automatically.  It's
-too fraught with danger.  
-
-Andreas> I would have the option be something like
-Andreas> "uid={local_uid}={disk_uid}" (which hopefully the option
-Andreas> parser can handle), or "uid=X:Y" if not.  That way, the
-Andreas> on-disk filesystem will remain correct for at least one of
-Andreas> the two systems.  If someone wants to specify disk_uid=0 that
-Andreas> is fine, but it shouldn't be the only option.
-
-So what happens when you have 1000 UIDs on a disk you want to re-map?
-How does that happen?  Or if this option is just for a single UID
-mapping, then it's seems to be just as easy to have a script you run
-after mounting to fixup the disk.  
-
-Or better yet, just match the UIDs, though I understand why this would
-be a problem if you don't control one of the systems completely, or if
-you're trying to move the disk between three or more systems and you
-can't control two or more of them with conflicting UIDs.
-
-But in that case, you're screwed anyway and it's going to become
-un-manageable.  Push this to userspace, not the kernel since it's a
-userspace issue when you come right down to it.
-
-John
+-- 
+Greetings, Michael.
