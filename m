@@ -1,79 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753158AbZGXQBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbZGXQLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753158AbZGXQBx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 12:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbZGXQBw
+	id S1752969AbZGXQLW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 12:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbZGXQLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 12:01:52 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:19310 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752458AbZGXQBv convert rfc822-to-8bit (ORCPT
+	Fri, 24 Jul 2009 12:11:22 -0400
+Received: from SXT-SM-1.UCIS.Dal.Ca ([129.173.5.72]:55912 "EHLO
+	sxt-sm-1.ucis.dal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752245AbZGXQLV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 12:01:51 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=Y44vccontBWaGHtjwpy5IkGLOTIvJEcPdBZqBhopbpmSxHLC8z1QJsuT5zuyWm86E
-	9V6SQxQzja4wOdYxkQYmQ==
+	Fri, 24 Jul 2009 12:11:21 -0400
+X-Greylist: delayed 926 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Jul 2009 12:11:21 EDT
+Message-ID: <20090724124803.ltfbg57ooyoko0gs@my5.dal.ca>
+Date: Fri, 24 Jul 2009 12:48:03 -0300
+From: Trevor Pace <tr212206@DAL.CA>
+To: gregkh@suse.de
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] Removed useless retval variables in usb-serial.c
 MIME-Version: 1.0
-In-Reply-To: <20090724155041.GF5878@count0.beaverton.ibm.com>
-References: <20090724032033.2463.79256.stgit@hastromil.mtv.corp.google.com>
-	 <20090724032200.2463.82408.stgit@hastromil.mtv.corp.google.com>
-	 <20090724155041.GF5878@count0.beaverton.ibm.com>
-Date: Fri, 24 Jul 2009 09:01:46 -0700
-Message-ID: <6599ad830907240901w4fc02097k83d0c1012708e6ee@mail.gmail.com>
-Subject: Re: [PATCH 5/6] Makes procs file writable to move all threads by tgid 
-	at once
-From: Paul Menage <menage@google.com>
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: Ben Blum <bblum@google.com>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, akpm@linux-foundation.org,
-       serue@us.ibm.com, lizf@cn.fujitsu.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: text/plain;
+	charset=ISO-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.0.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 24, 2009 at 8:50 AM, Matt Helsley<matthltc@us.ibm.com> wrote:
->
-> There is much ado about not taking additional "global locks" in fork()
-> paths.
->
-> * The fork and exit callbacks cgroup_fork() and cgroup_exit(), don't
-> * (usually) take cgroup_mutex.  These are the two most performance
-> * critical pieces of code here.
-> ...
->
-> and as I recall cgroup_fork() doesn't ever take cgroup_mutex because it is
-> so performance critical.
+Removed useless return value variables.
 
-cgroup_mutex is a much bigger and heavier mutex than the new rwsem
-being introduced in this patch. It's sort of the BKL of cgroups,
-although where possible I'm encouraging use of finer-grained
-alternatives (such as subsystem-specific locks, the per-hierarchy
-lock, etc).
+Signed-off By: Trevor Pace <trevor.pace@dal.ca>
 
-> Assuming the above comments in kernel/cgroup.c
-> are correct then this patch adds a performance regression by introducing a
-> global mutex in the fork path, doesn't it?
+================================================================================
 
-Yes, although to what magnitude isn't clear.
+diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
+index bd7581b..faec1d1 100644
+--- a/drivers/usb/serial/usb-serial.c
++++ b/drivers/usb/serial/usb-serial.c
+@@ -362,10 +362,9 @@ static int serial_write(struct tty_struct *tty, const
+unsigned char *buf,
+ 								int count)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
+-	int retval = -ENODEV;
 
-Alternatives that we looked at were:
+ 	if (port->serial->dev->state == USB_STATE_NOTATTACHED)
+-		goto exit;
++		return -ENODEV;
 
-- add a clone_rwsem to task_struct, and require that a clone operation
-that's adding to the same thread group take a read lock on the
-leader's clone_rwsem; then the effect would be localised to a single
-process; but for a system that has one big multi-threaded server on
-it, the effect would still be similar to a global lock
+ 	dbg("%s - port %d, %d byte(s)", __func__, port->number, count);
 
-- move the housekeeping done by cgroup_fork() inside the tasklist_lock
-critical section in do_fork(); then cgroup_attach_proc() can rely on
-the existing global tasklist_lock to provide the necessary
-synchronization, rather than introducing a second global lock; the
-downside is that it slightly increases the size of the section where
-tasklist_lock is held for write.
+@@ -374,10 +373,7 @@ static int serial_write(struct tty_struct *tty, const
+unsigned char *buf,
+ 	WARN_ON(!port->port.count);
 
-Paul
+ 	/* pass on to the driver specific version of this function */
+-	retval = port->serial->type->write(tty, port, buf, count);
+-
+-exit:
+-	return retval;
++	return port->serial->type->write(tty, port, buf, count);
+ }
+
+ static int serial_write_room(struct tty_struct *tty)
+@@ -429,7 +425,6 @@ static int serial_ioctl(struct tty_struct *tty, struct file
+*file,
+ 					unsigned int cmd, unsigned long arg)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
+-	int retval = -ENODEV;
+
+ 	dbg("%s - port %d, cmd 0x%.4x", __func__, port->number, cmd);
+
+@@ -437,11 +432,9 @@ static int serial_ioctl(struct tty_struct *tty, struct file
+*file,
+
+ 	/* pass on to the driver specific version of this function
+ 	   if it is available */
+-	if (port->serial->type->ioctl) {
+-		retval = port->serial->type->ioctl(tty, file, cmd, arg);
+-	} else
+-		retval = -ENOIOCTLCMD;
+-	return retval;
++	if (port->serial->type->ioctl)
++		return port->serial->type->ioctl(tty, file, cmd, arg);
++        return -ENOIOCTLCMD;
+ }
+
+ static void serial_set_termios(struct tty_struct *tty, struct ktermios *old)
+@@ -1174,7 +1167,7 @@ int usb_serial_suspend(struct usb_interface *intf,
+pm_message_t message)
+ {
+ 	struct usb_serial *serial = usb_get_intfdata(intf);
+ 	struct usb_serial_port *port;
+-	int i, r = 0;
++	int i;
+
+ 	serial->suspending = 1;
+
+@@ -1185,24 +1178,21 @@ int usb_serial_suspend(struct usb_interface *intf,
+pm_message_t message)
+ 	}
+
+ 	if (serial->type->suspend)
+-		r = serial->type->suspend(serial, message);
++		return serial->type->suspend(serial, message);
+
+-	return r;
++	return 0;
+ }
+ EXPORT_SYMBOL(usb_serial_suspend);
+
+ int usb_serial_resume(struct usb_interface *intf)
+ {
+ 	struct usb_serial *serial = usb_get_intfdata(intf);
+-	int rv;
+
+ 	serial->suspending = 0;
+-	if (serial->type->resume)
+-		rv = serial->type->resume(serial);
+-	else
+-		rv = usb_serial_generic_resume(serial);
+
+-	return rv;
++	return (serial->type->resume)
++		? serial->type->resume(serial)
++		: usb_serial_generic_resume(serial);
+ }
+ EXPORT_SYMBOL(usb_serial_resume);
+
