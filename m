@@ -1,65 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbZGXPgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752279AbZGXPlC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753110AbZGXPgc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 11:36:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbZGXPgc
+	id S1752279AbZGXPlC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 11:41:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbZGXPlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 11:36:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40692 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750779AbZGXPgb (ORCPT
+	Fri, 24 Jul 2009 11:41:01 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:53075 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751026AbZGXPlB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 11:36:31 -0400
-Date: Fri, 24 Jul 2009 08:36:07 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Xiaotian Feng <dfeng@redhat.com>
-Cc: davem@davemloft.net, bridge@lists.linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Xiaotian Feng <dfeng@redhat.com>
-Subject: Re: [PATCH] net/bridge: use kobject_put to release kobject in
- br_add_if error path
-Message-ID: <20090724083607.6b91282d@nehalam>
-In-Reply-To: <1248426392-30777-1-git-send-email-dfeng@redhat.com>
-References: <1248426392-30777-1-git-send-email-dfeng@redhat.com>
-Organization: Linux Foundation
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 24 Jul 2009 11:41:01 -0400
+Date: Fri, 24 Jul 2009 16:40:36 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: sen wang <wangsen.linux@gmail.com>, mingo@elte.hu,
+       akpm@linux-foundation.org, kernel@kolivas.org, npiggin@suse.de,
+       arjan@infradead.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: report a bug about sched_rt
+Message-ID: <20090724154036.GG27755@shareable.org>
+References: <454c71700907240357l61f5c4fajaca73db0fba7db8@mail.gmail.com> <1248437670.6987.26.camel@twins> <454c71700907240604h4673f117j8ed58b9f2ee54798@mail.gmail.com> <1248441290.6987.52.camel@twins> <454c71700907240626w127fd890ufa91ef90cbcaaa@mail.gmail.com> <1248442415.6987.56.camel@twins> <454c71700907240644h7469e2a5sfcb57f202a2e184d@mail.gmail.com> <1248443656.6987.61.camel@twins> <454c71700907240724u76b970e5y5af0fc114cc92f83@mail.gmail.com> <1248446910.6987.111.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1248446910.6987.111.camel@twins>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Jul 2009 17:06:32 +0800
-Xiaotian Feng <dfeng@redhat.com> wrote:
+Peter Zijlstra wrote:
+> If you're using the bandwidth throttle to control your RT tasks so as
+> not to starve your SCHED_OTHER tasks, then I will call your system ill
+> designed.
 
-> kobject_init_and_add will alloc memory for kobj->name, so in br_add_if
-> error path, simply use kobject_del will not free memory for kobj->name.
-> Fix by using kobject_put instead, kobject_put will internally calls
-> kobject_del and frees memory for kobj->name.
-> 
-> Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
-> ---
->  net/bridge/br_if.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/net/bridge/br_if.c b/net/bridge/br_if.c
-> index 8a96672..eb404dc 100644
-> --- a/net/bridge/br_if.c
-> +++ b/net/bridge/br_if.c
-> @@ -424,7 +424,7 @@ int br_add_if(struct net_bridge *br, struct net_device *dev)
->  err2:
->  	br_fdb_delete_by_port(br, p, 1);
->  err1:
-> -	kobject_del(&p->kobj);
-> +	kobject_put(&p->kobj);
->  err0:
->  	dev_set_promiscuity(dev, -1);
->  put_back:
+What mechanism should be used to avoid starving SCHED_OTHER tasks, in
+the event there are unforeseen bugs or unpredictable calculation times
+in an RT task?
 
-I assume you tested this by doing something like adding two interfaces
-with the same MAC address to a bridge.
-
-Acked-by: Stephen Hemminger <shemminger@vyatta.com>
-
--- 
+Thanks,
+-- Jamie
