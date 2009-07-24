@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752135AbZGYRo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752159AbZGYRzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752135AbZGYRo4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 13:44:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751851AbZGYRoz
+	id S1752159AbZGYRzJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 13:55:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZGYRzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 13:44:55 -0400
-Received: from mail-pz0-f172.google.com ([209.85.222.172]:34964 "EHLO
-	mail-pz0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752003AbZGYRoz (ORCPT
+	Sat, 25 Jul 2009 13:55:08 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42910 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751446AbZGYRzH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 13:44:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=JQLLWNwHStUeEJM6f9kvKYeLiuGFGRlGrJHAEfyTx7WfdXHnYf5a/qt5ErI/EmVn76
-         sDYY/L37Q+4ITEi49jQcsmy233lXDaOsU6IUuUpN2CRrrqArWS6/PfOQ4Vx/R1hurtF4
-         gfVO4GMc2eNNoCFgpMFT2gtJ3v6jzxWDqxMv4=
-Date: Sat, 25 Jul 2009 10:44:50 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Manuel Lauss <manuel.lauss@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       Manuel Lauss <manuel.lauss@gmail.com>, Frans Pop <elendil@planet.nl>
-Subject: Re: [PATCH V2] au1xmmc: dev_pm_ops conversion
-Message-ID: <20090725174449.GC14062@dtor-d630.eng.vmware.com>
-References: <1248275919-3296-1-git-send-email-manuel.lauss@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248275919-3296-1-git-send-email-manuel.lauss@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Sat, 25 Jul 2009 13:55:07 -0400
+Date: Fri, 24 Jul 2009 07:28:26 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: sen wang <wangsen.linux@gmail.com>
+Cc: mingo@elte.hu, akpm@linux-foundation.org, kernel@kolivas.org,
+       npiggin@suse.de, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: report a bug about sched_rt
+Message-ID: <20090724072826.4c35bc2a@infradead.org>
+In-Reply-To: <454c71700907240357l61f5c4fajaca73db0fba7db8@mail.gmail.com>
+References: <454c71700907240357l61f5c4fajaca73db0fba7db8@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Manuel,
+On Fri, 24 Jul 2009 18:57:35 +0800
+sen wang <wangsen.linux@gmail.com> wrote:
 
-On Wed, Jul 22, 2009 at 05:18:39PM +0200, Manuel Lauss wrote:
-> Cc: Frans Pop <elendil@planet.nl>
-> Signed-off-by: Manuel Lauss <manuel.lauss@gmail.com>
->
-> +
-> +static struct dev_pm_ops au1xmmc_pmops = {
-> +	.resume		= au1xmmc_resume,
-> +	.suspend	= au1xmmc_suspend,
-> +};
-> +
+> I find something is wrong about sched_rt.
+> 
+>  when I am debugging my system with rt_bandwidth_enabled, there is a
+> running realtime FIFO task in the sched_rt running queue and
+>  the fair running queue is empty.  I found the idle task will be
+> scheduled up when the running task still lie in the  sched_rt running
+> queue!
+> 
+> this will happen when rt runqueue passed it's rt_bandwidth_enabled
+> runtime,then the scheduler choose the idle task instead of realtime
+> FIFO task.
+> 
+> the reason lie in: when scheduler try to pick up a realtime FIFO task,
+> it will check if rt_throttled is enabled,
+> if so, it'll return and try fair queue but it is empty, then it come
+> to the sched_idle class.
+> 
+> I don't think it reasonable, we should give the realtime FIFO task the
+> chance, even when rt runqueue passed it's runtime.
+> because it is cpu's free time.
 
-Was suspend to disk tested? It requires freeze()/thaw().
+
+sounds like a good power limiting feature...
+
 
 -- 
-Dmitry
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
