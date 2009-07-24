@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751773AbZGXDLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752034AbZGXDVu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751773AbZGXDLT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 23 Jul 2009 23:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbZGXDLS
+	id S1752034AbZGXDVu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 23 Jul 2009 23:21:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751415AbZGXDVu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 23 Jul 2009 23:11:18 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:58244 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988AbZGXDLR (ORCPT
+	Thu, 23 Jul 2009 23:21:50 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:59710 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751342AbZGXDVt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 23 Jul 2009 23:11:17 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 24 Jul 2009 12:08:11 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>, akpm@linux-foundation.org,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       menage@google.com, vda.linux@googlemail.com, mikew@google.com,
-       xiyou.wangcong@gmail.com, hpa@zytor.com, bblum@google.com
-Subject: Re: [RFC][PATCH] flexible array implementation v4
-Message-Id: <20090724120811.a581eea5.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <4A692444.2030303@cn.fujitsu.com>
-References: <20090723152647.D9391722@kernel>
-	<4A692444.2030303@cn.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 23 Jul 2009 23:21:49 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=from:subject:to:date:message-id:user-agent:mime-version:
+	content-type:content-transfer-encoding;
+	b=ObSnY9l+NGa6UYfJ7+F3oNlFwjD2KSFmB9WfoZUKL5Pgu3IAP9mooar6bz9J0xBs9
+	idwfsSnn5z4qpn5Kgx4/Q==
+From: Ben Blum <bblum@google.com>
+Subject: [PATCH 0/6] CGroups: cgroup memberlist enhancement+fix
+To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       akpm@linux-foundation.org, serue@us.ibm.com, lizf@cn.fujitsu.com,
+       menage@google.com, bblum@google.com
+Date: Thu, 23 Jul 2009 20:21:35 -0700
+Message-ID: <20090724032033.2463.79256.stgit@hastromil.mtv.corp.google.com>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Jul 2009 11:02:28 +0800
-Li Zefan <lizf@cn.fujitsu.com> wrote:
+(This patch series contains revisions of the patches from
+http://lkml.org/lkml/2009/7/10/396 and a few more.)
 
-> Dave Hansen wrote:
-> > Remaining issues:
-> > - How should we deal with out-of-range indexes, especially
-> >   in flex_array_get() which returns void*?  ERR_PTR()?
-> >   BUG_ON()?  return NULL (current behavior)?
-> > - Should care be taken not to allow a flex_array_get() to
-> >   an index where no flex_array_put() was done?
-> > - Should we decay further than just packing things into the
-> >   'base' page?  Should we actually kmalloc() less than a
-> >   page at times when it will fit?
-> > 
-> 
-> I sugguest find some candidate users and see how this flex_array
-> fits them.
-> 
-Hmm, can't we rewrite cgroup->tasks file using this ?
-I'll try some if I have time.
+The following series adds a "cgroup.procs" file to each cgroup that reports
+unique tgids rather than pids, which can also be written to for moving all
+threads in a threadgroup at once.
 
--Kame
+Patch #5 introduces a new rwsem that must be taken for reading in the fork()
+path, and patch #6 reveals potential for a race when forking in certain
+subsystems before the subsystem's attach() function is called, the naive
+solution to which would be holding on to the fork rwsem until after the attach
+loop. Suggestions for alternative approaches or tweaks to the current approach
+are welcome; one potential fix is to make the fork rwsem per-threadgroup,
+which will involve adding a field to task_struct, thereby drastically reducing
+contention when a write to the procs file is in progress.
 
+This patch series was written at the same time as Li Zefan's pid namespace
+bugfix patch (from http://lkml.org/lkml/2009/7/1/559 ), and contains a similar
+but finer-grained fix for the same bug. These patches can either be rewritten
+to be applied on top of Li's patch, or be applied as they are with Li's patch
+reversed.
+
+---
+
+Ben Blum (6):
+      Lets ss->can_attach and ss->attach do whole threadgroups at a time
+      Makes procs file writable to move all threads by tgid at once
+      Changes css_set freeing mechanism to be under RCU
+      Quick vmalloc vs kmalloc fix to the case where array size is too large
+      Ensures correct concurrent opening/reading of pidlists across pid namespaces
+      Adds a read-only "procs" file similar to "tasks" that shows only unique tgids
+
+
+ Documentation/cgroups/cgroups.txt |   12 -
+ include/linux/cgroup.h            |   58 ++-
+ kernel/cgroup.c                   |  816 ++++++++++++++++++++++++++++++-------
+ kernel/cgroup_freezer.c           |   15 +
+ kernel/cpuset.c                   |   65 ++-
+ kernel/fork.c                     |    2 
+ kernel/ns_cgroup.c                |   16 +
+ kernel/sched.c                    |   37 ++
+ mm/memcontrol.c                   |    3 
+ security/device_cgroup.c          |    3 
+ 10 files changed, 843 insertions(+), 184 deletions(-)
 
