@@ -1,112 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754772AbZGXVzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754787AbZGXV5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754772AbZGXVzK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 17:55:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754568AbZGXVzJ
+	id S1754787AbZGXV5l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 17:57:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754757AbZGXV5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 17:55:09 -0400
-Received: from ru.mvista.com ([213.79.90.228]:14776 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754756AbZGXVzI (ORCPT
+	Fri, 24 Jul 2009 17:57:41 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:58576 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754756AbZGXV5k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 17:55:08 -0400
-Date: Sat, 25 Jul 2009 01:55:05 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pierre Ossman <pierre@ossman.eu>, Ben Dooks <ben@fluff.org>,
-       Sascha Hauer <s.hauer@pengutronix.de>, linux-kernel@vger.kernel.org,
-       sdhci-devel@lists.ossman.eu, linuxppc-dev@ozlabs.org
-Subject: [PATCH] sdhci: Get rid of "frequency too high" flood when using
- eSDHC
-Message-ID: <20090724215505.GA5726@oksana.dev.rtsoft.ru>
+	Fri, 24 Jul 2009 17:57:40 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=JHvA/1RTeVm9imbtLu1dX/ZZJwWn5ewyvQjpDx0ULmiYraRgqopvSLPfNwNjK6xm9
+	1uQi7i2ApadrN+rudGf3w==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <2f86c2480907241452m74c50975k522c5a43a62e8459@mail.gmail.com>
+References: <20090724032033.2463.79256.stgit@hastromil.mtv.corp.google.com>
+	 <20090724032200.2463.82408.stgit@hastromil.mtv.corp.google.com>
+	 <20090724100220.GF11101@hawkmoon.kerlabs.com>
+	 <2f86c2480907241452m74c50975k522c5a43a62e8459@mail.gmail.com>
+Date: Fri, 24 Jul 2009 14:57:36 -0700
+Message-ID: <6599ad830907241457x3d1380b6ne613eb5921d6c5a0@mail.gmail.com>
+Subject: Re: [PATCH 5/6] Makes procs file writable to move all threads by tgid 
+	at once
+From: Paul Menage <menage@google.com>
+To: Benjamin Blum <bblum@google.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       akpm@linux-foundation.org, serue@us.ibm.com, lizf@cn.fujitsu.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since commit 8dfd0374be84793360db7fff2e635d2cd3bbcb21 ("MMC core: limit
-minimum initialization frequency to 400kHz") MMC core checks for minimum
-frequency, and that causes following messages flood when using eSDHC
-controllers:
+On Fri, Jul 24, 2009 at 2:52 PM, Benjamin Blum<bblum@google.com> wrote:
+>> I don't see how css_sets are guaranteed while cgroup_fork_mutex is not held and
+>> thus does not prevent new threads from being created right now. Could you
+>> elaborate on that?
+>
+> Prefetching the css sets is independent of the fork lock/race issue.
+> The idea is that we build a list, kept locally, that has references on
+> all the css_sets we'll need to migrate each thread to the new cgroup.
+> Since ordinarily we might need to malloc a new css_set for a thread
+> before moving it, and it's possible that that could fail, we need to
+> do allocations for all threads to be moved before committing any of
+> them. As long as we have the list of prefetched css_sets, they'll stay
+> there, and at the end, we drop the extra references we took on them to
+> make that guarantee when tearing down the list.
 
-  ...
-  mmc0: Minimum clock frequency too high for identification mode
-  mmc0: Minimum clock frequency too high for identification mode
-  ...
+And more specifically, since only the holder of cgroup_mutex can move
+a thread to a new cgroup (and hence a potentially new unique css_set),
+we know that once we've run through all the threads in the
+thread_group and verified that we have the appropriate pre-fetched
+css_set objects for all of them, it doesn't matter if any new threads
+are created - they'll share one of the pre-fetched css_sets.
 
-The warnings are legitimate, since if we'd use 133 MHz clocks for
-standard SDHCI controllers, we'd not able to scale frequency down
-to 400 kHz.
-
-But eSDHC controllers have a non-standard SD clock management, so
-we can divide clock by 256 * 16, not just 256.
-
-This patch introduces get_min_clock() callback for sdhci core and
-implements it for sdhci-of driver, and thus fixes the issue.
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/mmc/host/sdhci-of.c |    8 ++++++++
- drivers/mmc/host/sdhci.c    |    5 ++++-
- drivers/mmc/host/sdhci.h    |    1 +
- 3 files changed, 13 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
-index d79fa55..9088443 100644
---- a/drivers/mmc/host/sdhci-of.c
-+++ b/drivers/mmc/host/sdhci-of.c
-@@ -158,6 +158,13 @@ static unsigned int esdhc_get_max_clock(struct sdhci_host *host)
- 	return of_host->clock;
- }
- 
-+static unsigned int esdhc_get_min_clock(struct sdhci_host *host)
-+{
-+	struct sdhci_of_host *of_host = sdhci_priv(host);
-+
-+	return of_host->clock / 256 / 16;
-+}
-+
- static unsigned int esdhc_get_timeout_clock(struct sdhci_host *host)
- {
- 	struct sdhci_of_host *of_host = sdhci_priv(host);
-@@ -184,6 +191,7 @@ static struct sdhci_of_data sdhci_esdhc = {
- 		.set_clock = esdhc_set_clock,
- 		.enable_dma = esdhc_enable_dma,
- 		.get_max_clock = esdhc_get_max_clock,
-+		.get_min_clock = esdhc_get_min_clock,
- 		.get_timeout_clock = esdhc_get_timeout_clock,
- 	},
- };
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 6779b4e..62041c7 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -1766,7 +1766,10 @@ int sdhci_add_host(struct sdhci_host *host)
- 	 * Set host parameters.
- 	 */
- 	mmc->ops = &sdhci_ops;
--	mmc->f_min = host->max_clk / 256;
-+	if (host->ops->get_min_clock)
-+		mmc->f_min = host->ops->get_min_clock(host);
-+	else
-+		mmc->f_min = host->max_clk / 256;
- 	mmc->f_max = host->max_clk;
- 	mmc->caps = MMC_CAP_SDIO_IRQ;
- 
-diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index 831ddf7..c77e9ff 100644
---- a/drivers/mmc/host/sdhci.h
-+++ b/drivers/mmc/host/sdhci.h
-@@ -302,6 +302,7 @@ struct sdhci_ops {
- 
- 	int		(*enable_dma)(struct sdhci_host *host);
- 	unsigned int	(*get_max_clock)(struct sdhci_host *host);
-+	unsigned int	(*get_min_clock)(struct sdhci_host *host);
- 	unsigned int	(*get_timeout_clock)(struct sdhci_host *host);
- };
- 
--- 
-1.6.3.3
+Paul
