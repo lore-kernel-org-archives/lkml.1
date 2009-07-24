@@ -1,131 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752006AbZGXIhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751847AbZGXIsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752006AbZGXIhV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 04:37:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbZGXIhU
+	id S1751847AbZGXIsz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 04:48:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750826AbZGXIsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 04:37:20 -0400
-Received: from mail-px0-f184.google.com ([209.85.216.184]:58067 "EHLO
-	mail-px0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750826AbZGXIhT (ORCPT
+	Fri, 24 Jul 2009 04:48:55 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:49839 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750759AbZGXIsy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 04:37:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=jYC3qhc484cI9ds1ied4mxkAigY2Ku4iXI00ixF6cQYGnncMQhuN1D0RLO9A14dspS
-         pWDG4P+aEbboDVpHyX9hX7pD46oZkauRlvx6MIeZ5BvFeFSuhUHioX/X5eLvJFdFvwQ1
-         MR0V/1Lu1kfb/Lq5YxNFBxQiK0k0k7VQ7VMD0=
-Date: Fri, 24 Jul 2009 16:39:26 +0800
-From: Amerigo Wang <xiyou.wangcong@gmail.com>
-To: "Moussa A. Ba" <moussa.a.ba@gmail.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       adobriyan@gmail.com, mpm@selenic.com, mel@csn.ul.ie, yinghan@google.com,
-       npiggin@suse.de, jaredeh@gmail.com
-Subject: Re: [PATCH 1/1] pagemap clear_refs: modify to specify anon or
-	mapped vma clearing
-Message-ID: <20090724083926.GA6372@cr0.nay.redhat.com>
-References: <4A693122.6060503@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A693122.6060503@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 24 Jul 2009 04:48:54 -0400
+Date: Fri, 24 Jul 2009 17:48:53 +0900 (JST)
+Message-Id: <20090724.174853.193712105.ryov@valinux.co.jp>
+To: kamezawa.hiroyu@jp.fujitsu.com
+Cc: xen-devel@lists.xensource.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       dm-devel@redhat.com, agk@redhat.com
+Subject: Re: [Xen-devel] Re: [PATCH 7/9] blkio-cgroup-v9: Page tracking
+ hooks
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090724151923.986dd932.kamezawa.hiroyu@jp.fujitsu.com>
+References: <5971c26b399a97f51dd10ea497617733.squirrel@webmail-b.css.fujitsu.com>
+	<20090724.144416.71112906.ryov@valinux.co.jp>
+	<20090724151923.986dd932.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 23, 2009 at 08:57:22PM -0700, Moussa A. Ba wrote:
->
-> Signed-off-by: Jared E. Hulbert <jaredeh@gmail.com>
-> Signed-off-by: Moussa Ba <moussa.a.ba@gmail.com>
-> --- a/fs/proc/task_mmu.c	2009-07-21 14:30:01.000000000 -0700
-> +++ b/fs/proc/task_mmu.c	2009-07-21 14:32:56.000000000 -0700
-> @@ -461,6 +461,33 @@
->  	cond_resched();
->  	return 0;
->  }
-> +static void walk_vma_area(struct mm_walk *this_walk, struct  
-> vm_area_struct *vma,
-> +						int type)
-> +{
-> +	switch (type) {
-> +		/* Clear Anon VMAs only */
-> +	case 1:
-> +		if (!is_vm_hugetlb_page(vma) && !vma->vm_file)
-> +			walk_page_range(vma->vm_start,
-> +					vma->vm_end,
-> +					this_walk);
-> +		break;
-> +		/* Clear Mapped VMAs only */
-> +	case 2:
-> +		if (!is_vm_hugetlb_page(vma) && vma->vm_file)
-> +			walk_page_range(vma->vm_start,
-> +					vma->vm_end,
-> +					this_walk);
-> +		break;
-> +		/* Clear All VMAs */
-> +	default:
-> +		if (!is_vm_hugetlb_page(vma))
-> +			walk_page_range(vma->vm_start,
-> +					vma->vm_end,
-> +					this_walk);
-> +		break;
-> +	}
-> +}
->
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Fri, 24 Jul 2009 14:44:16 +0900 (JST)
+> Ryo Tsuruta <ryov@valinux.co.jp> wrote:
+>  good solution to resolve such problem.
+> > 
+> > > My point is "don't allow anyone to use bandwidth of others."
+> > > Considering job isolation, a thread who requests swap-out should be charg=
+> > > ed
+> > > against bandwidth.
+> > 
+> > From another perspective, the swap-out is caused since the buggy
+> > process uses a large amount of memory, so it can be considered as 
+> > the bandwidth of logging process is used due to the buggy process.
+> > 
+> > Please consider the following case. If a thread who requests swap-out
+> > is charged, the thread is charged other threads' I/O.
+> > 
+> >    (1)                          --------      (2)
+> >    Process A                   |        |     Process B
+> >    mmaps a large area in   --> | memory | <-- tries to allocate a page.
+> >    the memory and writes       |        |
+> >    data to there.               --------     (3)
+> >                                    |         To get a free page,
+> >                                    |         the data written by Proc.A
+> >                                    |         is written out to the disk.
+> >                                    V         The I/O is done by using
+> >                                 ---------    Proc.B's bandwidth.
+> >                                |  disk   |   
+> >                                 ---------
+> > 
+> > Thus I think that page owners should be charged against bandwidth.
+> > 
+> Ok, no good way. yours is wrong, mine is wrong, too.
+> plz find 3rd way, reasonable.
+> 
+> Below is brief thinking.
+> 
+> "Why process A should be charged to I/O when it just maps anon memory ?"
+> I can't answer this.
+> 
+> Even in yorr case, Process B requests memory and get penalty. It's
+> very natural, I think.
+> 
+> In usual case, 
+>  - if process A maps ANON, there will be no I/O.
+>  - if process A maps FILE, it will be charged to process A.
+> ok ?
+> 
+> Under memory pressure,
+>  - if process A maps ANON, swap I/O should be charged to process B.
+>  - if process A maps FILE, I/O should be charged to process A.
+> maybe. 
 
+I think that even process A maps ANON, it should be charged to process A
+because the memory pressure is caused by process A. It seems natual
+for me that a process which consumes more resources is more likely to
+get penalty.
 
-First, can you make these plain numbers as macros or enum types?
+> Anyway, there will be ineraction with dirty_ratio of memcg (not implemeted yet)
+> and _Owner should be charged_ issue will be handled in this dirty_ratio layer.
+> More consideration is necessary, I think.
 
-Second, I believe the above code can be simiplified, how about below?
+I'll keep thinking how it should be done.
 
-{
-    if (!is_vm_hugetlb_page(vma)) {
-        if (type == 1 && vma->vm_file)
-             return;
-        if (type == 2 && !vma->vm_file)
-             return;
-        walk_page_range(vma->vm_start, vma->end, this_walk);
-    }
-}
-
-
-
->  static ssize_t clear_refs_write(struct file *file, const char __user *  
-> buf,
->  				size_t count, loff_t * ppos)
-> @@ -469,13 +496,15 @@
->  	char buffer[PROC_NUMBUF], *end;
->  	struct mm_struct *mm;
->  	struct vm_area_struct *vma;
-> +	int type;
->
->  	memset(buffer, 0, sizeof(buffer));
->  	if (count > sizeof(buffer) - 1)
->  		count = sizeof(buffer) - 1;
->  	if (copy_from_user(buffer, buf, count))
->  		return -EFAULT;
-> -	if (!simple_strtol(buffer, &end, 0))
-> +	type = simple_strtol(buffer, &end, 0);
-> +	if (!type)
->  		return -EINVAL;
->  	if (*end == '\n')
->  		end++;
-> @@ -491,9 +520,7 @@
->  		down_read(&mm->mmap_sem);
->  		for (vma = mm->mmap; vma; vma = vma->vm_next) {
->  			clear_refs_walk.private = vma;
-> -			if (!is_vm_hugetlb_page(vma))
-> -				walk_page_range(vma->vm_start, vma->vm_end,
-> -						&clear_refs_walk);
-> +			walk_vma_area(&clear_refs_walk, vma, type);
->  		}
->  		flush_tlb_mm(mm);
->  		up_read(&mm->mmap_sem);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Thanks,
+Ryo Tsuruta
