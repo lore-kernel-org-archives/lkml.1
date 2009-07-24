@@ -1,166 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753364AbZGXQMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbZGXQMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753364AbZGXQMa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 12:12:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbZGXQM2
+	id S1752587AbZGXQMO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 12:12:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbZGXQML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 12:12:28 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:51182 "EHLO
+	Fri, 24 Jul 2009 12:12:11 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:51157 "EHLO
 	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752669AbZGXQMZ (ORCPT
+	by vger.kernel.org with ESMTP id S1752410AbZGXQMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 12:12:25 -0400
-Subject: [PATCH 4/8] kmemleak: Save the stack trace for early allocations
+	Fri, 24 Jul 2009 12:12:08 -0400
+Subject: [PATCH 1/8] kmemleak: Dump object information on request
 To: linux-kernel@vger.kernel.org
 From: Catalin Marinas <catalin.marinas@arm.com>
-Date: Fri, 24 Jul 2009 17:12:24 +0100
-Message-ID: <20090724161224.5752.30441.stgit@pc1117.cambridge.arm.com>
+Date: Fri, 24 Jul 2009 17:12:07 +0100
+Message-ID: <20090724161207.5752.32572.stgit@pc1117.cambridge.arm.com>
 In-Reply-To: <20090724161026.5752.52503.stgit@pc1117.cambridge.arm.com>
 References: <20090724161026.5752.52503.stgit@pc1117.cambridge.arm.com>
 User-Agent: StGit/0.15-rc1-9-gd8846
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Jul 2009 16:12:24.0564 (UTC) FILETIME=[87FE3340:01CA0C79]
+X-OriginalArrivalTime: 24 Jul 2009 16:12:07.0908 (UTC) FILETIME=[7E10B240:01CA0C79]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Before slab is initialised, kmemleak save the allocations in an early
-log buffer. They are later recorded as normal memory allocations. This
-patch adds the stack trace saving to the early log buffer, otherwise the
-information shown for such objects only refers to the kmemleak_init()
-function.
+By writing dump=<addr> to the kmemleak file, kmemleak will look up an
+object with that address and dump the information it has about it to
+syslog. This is useful in debugging memory leaks.
 
 Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
 ---
- mm/kmemleak.c |   64 ++++++++++++++++++++++++++++++++++++++++++++++-----------
- 1 files changed, 52 insertions(+), 12 deletions(-)
+ Documentation/kmemleak.txt |    1 +
+ mm/kmemleak.c              |   25 +++++++++++++++++++++++++
+ 2 files changed, 26 insertions(+), 0 deletions(-)
 
+diff --git a/Documentation/kmemleak.txt b/Documentation/kmemleak.txt
+index 8906803..c223785 100644
+--- a/Documentation/kmemleak.txt
++++ b/Documentation/kmemleak.txt
+@@ -42,6 +42,7 @@ Memory scanning parameters can be modified at run-time by writing to the
+   scan=<secs>	- set the automatic memory scanning period in seconds
+ 		  (default 600, 0 to stop the automatic scanning)
+   scan		- trigger a memory scan
++  dump=<addr>	- dump information about the object found at <addr>
+ 
+ Kmemleak can also be disabled at boot-time by passing "kmemleak=off" on
+ the kernel command line.
 diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-index 8eab0a7..7dcb898 100644
+index 4872673..7e8e4b0 100644
 --- a/mm/kmemleak.c
 +++ b/mm/kmemleak.c
-@@ -229,6 +229,8 @@ struct early_log {
- 	int min_count;			/* minimum reference count */
- 	unsigned long offset;		/* scan area offset */
- 	size_t length;			/* scan area length */
-+	unsigned long trace[MAX_TRACE];	/* stack trace */
-+	unsigned int trace_len;		/* stack trace length */
- };
- 
- /* early logging buffer and current position */
-@@ -437,21 +439,36 @@ static struct kmemleak_object *find_and_get_object(unsigned long ptr, int alias)
+@@ -330,6 +330,7 @@ static void dump_object_info(struct kmemleak_object *object)
+ 		  object->comm, object->pid, object->jiffies);
+ 	pr_notice("  min_count = %d\n", object->min_count);
+ 	pr_notice("  count = %d\n", object->count);
++	pr_notice("  flags = 0x%lx\n", object->flags);
+ 	pr_notice("  backtrace:\n");
+ 	print_stack_trace(&trace, 4);
+ }
+@@ -1294,6 +1295,27 @@ static int kmemleak_release(struct inode *inode, struct file *file)
+ 	return seq_release(inode, file);
  }
  
- /*
-+ * Save stack trace to the given array of MAX_TRACE size.
-+ */
-+static int __save_stack_trace(unsigned long *trace)
++static int dump_str_object_info(const char *str)
 +{
-+	struct stack_trace stack_trace;
-+
-+	stack_trace.max_entries = MAX_TRACE;
-+	stack_trace.nr_entries = 0;
-+	stack_trace.entries = trace;
-+	stack_trace.skip = 2;
-+	save_stack_trace(&stack_trace);
-+
-+	return stack_trace.nr_entries;
-+}
-+
-+/*
-  * Create the metadata (struct kmemleak_object) corresponding to an allocated
-  * memory block and add it to the object_list and object_tree_root.
-  */
--static void create_object(unsigned long ptr, size_t size, int min_count,
--			  gfp_t gfp)
-+static struct kmemleak_object *create_object(unsigned long ptr, size_t size,
-+					     int min_count, gfp_t gfp)
- {
- 	unsigned long flags;
- 	struct kmemleak_object *object;
- 	struct prio_tree_node *node;
--	struct stack_trace trace;
- 
- 	object = kmem_cache_alloc(object_cache, gfp & GFP_KMEMLEAK_MASK);
- 	if (!object) {
- 		kmemleak_stop("Cannot allocate a kmemleak_object structure\n");
--		return;
-+		return NULL;
- 	}
- 
- 	INIT_LIST_HEAD(&object->object_list);
-@@ -485,12 +502,7 @@ static void create_object(unsigned long ptr, size_t size, int min_count,
- 	}
- 
- 	/* kernel backtrace */
--	trace.max_entries = MAX_TRACE;
--	trace.nr_entries = 0;
--	trace.entries = object->trace;
--	trace.skip = 1;
--	save_stack_trace(&trace);
--	object->trace_len = trace.nr_entries;
-+	object->trace_len = __save_stack_trace(object->trace);
- 
- 	INIT_PRIO_TREE_NODE(&object->tree_node);
- 	object->tree_node.start = ptr;
-@@ -521,6 +533,7 @@ static void create_object(unsigned long ptr, size_t size, int min_count,
- 	list_add_tail_rcu(&object->object_list, &object_list);
- out:
- 	write_unlock_irqrestore(&kmemleak_lock, flags);
-+	return object;
- }
- 
- /*
-@@ -742,11 +755,39 @@ static void __init log_early(int op_type, const void *ptr, size_t size,
- 	log->min_count = min_count;
- 	log->offset = offset;
- 	log->length = length;
-+	if (op_type == KMEMLEAK_ALLOC)
-+		log->trace_len = __save_stack_trace(log->trace);
- 	crt_early_log++;
- 	local_irq_restore(flags);
- }
- 
- /*
-+ * Log an early allocated block and populate the stack trace.
-+ */
-+static void early_alloc(struct early_log *log)
-+{
-+	struct kmemleak_object *object;
 +	unsigned long flags;
-+	int i;
++	struct kmemleak_object *object;
++	unsigned long addr;
 +
-+	if (!atomic_read(&kmemleak_enabled) || !log->ptr || IS_ERR(log->ptr))
-+		return;
++	addr= simple_strtoul(str, NULL, 0);
++	object = find_and_get_object(addr, 0);
++	if (!object) {
++		pr_info("Unknown object at 0x%08lx\n", addr);
++		return -EINVAL;
++	}
 +
-+	/*
-+	 * RCU locking needed to ensure object is not freed via put_object().
-+	 */
-+	rcu_read_lock();
-+	object = create_object((unsigned long)log->ptr, log->size,
-+			       log->min_count, GFP_KERNEL);
 +	spin_lock_irqsave(&object->lock, flags);
-+	for (i = 0; i < log->trace_len; i++)
-+		object->trace[i] = log->trace[i];
-+	object->trace_len = log->trace_len;
++	dump_object_info(object);
 +	spin_unlock_irqrestore(&object->lock, flags);
-+	rcu_read_unlock();
++
++	put_object(object);
++	return 0;
 +}
 +
-+/*
-  * Memory allocation function callback. This function is called from the
-  * kernel allocators when a new block is allocated (kmem_cache_alloc, kmalloc,
-  * vmalloc etc.).
-@@ -1507,8 +1548,7 @@ void __init kmemleak_init(void)
+ /*
+  * File write operation to configure kmemleak at run-time. The following
+  * commands can be written to the /sys/kernel/debug/kmemleak file:
+@@ -1305,6 +1327,7 @@ static int kmemleak_release(struct inode *inode, struct file *file)
+  *   scan=...	- set the automatic memory scanning period in seconds (0 to
+  *		  disable it)
+  *   scan	- trigger a memory scan
++ *   dump=...	- dump information about the object found at the given address
+  */
+ static ssize_t kmemleak_write(struct file *file, const char __user *user_buf,
+ 			      size_t size, loff_t *ppos)
+@@ -1345,6 +1368,8 @@ static ssize_t kmemleak_write(struct file *file, const char __user *user_buf,
+ 		}
+ 	} else if (strncmp(buf, "scan", 4) == 0)
+ 		kmemleak_scan();
++	else if (strncmp(buf, "dump=", 5) == 0)
++		ret = dump_str_object_info(buf + 5);
+ 	else
+ 		ret = -EINVAL;
  
- 		switch (log->op_type) {
- 		case KMEMLEAK_ALLOC:
--			kmemleak_alloc(log->ptr, log->size, log->min_count,
--				       GFP_KERNEL);
-+			early_alloc(log);
- 			break;
- 		case KMEMLEAK_FREE:
- 			kmemleak_free(log->ptr);
 
