@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbZGXVc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754707AbZGXVcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754667AbZGXVc1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 17:32:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbZGXVc0
+	id S1754707AbZGXVcf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 17:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754681AbZGXVce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 17:32:26 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:57590 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754193AbZGXVc0 convert rfc822-to-8bit (ORCPT
+	Fri, 24 Jul 2009 17:32:34 -0400
+Received: from lazybastard.de ([212.112.238.170]:58333 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754680AbZGXVcd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 17:32:26 -0400
+	Fri, 24 Jul 2009 17:32:33 -0400
+Date: Fri, 24 Jul 2009 23:32:19 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: virtualization@lists.linux-foundation.org,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org, virtualization@lists.osdl.org,
+       Sam Ramji <sramji@microsoft.com>,
+       Haiyang Zhang <haiyangz@microsoft.com>,
+       Hank Janssen <hjanssen@microsoft.com>, shemminger@linux-foundation.org
+Subject: Re: [patch 34/54] Staging: hv: remove STRUCT_PACKED and STRUCT_ALIGNED defines
+Message-ID: <20090724213218.GA13702@logfs.org>
+References: <20090717180850.873962925@mini.kroah.org> <20090717180921.448023599@mini.kroah.org> <200907210146.41399.arnd@arndb.de>
 MIME-Version: 1.0
-In-Reply-To: <20090724205015.GA5889@suse.de>
-References: <20090724144020.3f5a6bb7@pedra.chehab.org>
-	 <20090724205015.GA5889@suse.de>
-Date: Fri, 24 Jul 2009 17:32:23 -0400
-Message-ID: <829197380907241432m32bb6a51wc9b9bacce86e0c75@mail.gmail.com>
-Subject: Re: [GIT PATCHES for 2.6.31] V4L/DVB fixes
-From: Devin Heitmueller <dheitmueller@kernellabs.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200907210146.41399.arnd@arndb.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 24, 2009 at 4:50 PM, Greg KH<gregkh@suse.de> wrote:
-> On Fri, Jul 24, 2009 at 02:40:20PM -0300, Mauro Carvalho Chehab wrote:
->> Linus,
->>
->> Please pull from:
->>         ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
->>
->> This series adds a new gscpca sub-driver for sn9c20x webcams. There are several
->> popular webcam models supported by those Sonix/Microdia chips.
->>
->> Greg can remove some linuxdriverproject.org requests from the project Wiki
->> after this merge ;) Greg, for the USB ID details, you could take a look at
->> Documentation/video4linux/gspca.txt changes (32 USB ID's added) or at
->> http://linuxtv.org/wiki/index.php/Gspca. With this series, gspca alone supports
->> 660 different webcam models.
->
-> That's great to see.  As it's a wiki, could someone who knows these ids
-> go through and mark off those devices on the linuxdriverproject.org
-> site?
->
-> thanks,
->
-> greg k-h
+On Tue, 21 July 2009 01:46:41 +0200, Arnd Bergmann wrote:
+> On Friday 17 July 2009, Greg Kroah-Hartman wrote:
+> > @@ -43,7 +43,7 @@ typedef struct _RING_BUFFER {
+> >         // volatile u32 InterruptMask;
+> >         // Ring data starts here + RingDataStartOffset !!! DO NOT place any fields below this !!!
+> >      u8         Buffer[0];
+> > -} STRUCT_PACKED RING_BUFFER;
+> > +} __attribute__((packed)) RING_BUFFER;
+> >  
+> 
+> The data structure is actually packed already, the attribute does not make it better
+> and could be removed. We also have __packed as a shortcut for __attribute__((packed)).
 
-I looked at it a few weeks ago, and the V4L section is in pretty bad
-shape.  Lots of the devices in "DriversNeeded" are now supported.
+Honestly, I don't know how useful __packed really is.  In a shared
+kernel/userspace header, it is only defined for the kernel.
 
-http://linuxdriverproject.org/twiki/bin/view/Main/DriversNeeded?sortcol=table;up=#Video_for_Linux_devices_Input
-
-I'm going to try to take a pass over it in the next few days and do
-some cleanup.
-
-Devin
+JÃ¶rn
 
 -- 
-Devin J. Heitmueller - Kernel Labs
-http://www.kernellabs.com
+Do not stop an army on its way home.
+-- Sun Tzu
