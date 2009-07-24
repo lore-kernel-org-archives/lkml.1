@@ -1,173 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbZGXRkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405AbZGXRkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753252AbZGXRkc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 13:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752651AbZGXRkb
+	id S1753405AbZGXRkh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 13:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbZGXRkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 13:40:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36030 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752458AbZGXRka convert rfc822-to-8bit (ORCPT
+	Fri, 24 Jul 2009 13:40:32 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:53615 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752002AbZGXRka convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 24 Jul 2009 13:40:30 -0400
-Date: Fri, 24 Jul 2009 14:40:20 -0300
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, Greg KH <gregkh@suse.de>
-Subject: [GIT PATCHES for 2.6.31] V4L/DVB fixes
-Message-ID: <20090724144020.3f5a6bb7@pedra.chehab.org>
-Mime-Version: 1.0
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XWA7Rjw1x/PJxTQyJKPlSabHTDf2znJHSaynoABypVJATpF9/INWfRrOo8bYfVCBXs
+         Zt7S/Z51DnO6MjicGI0kAgJFdSLHyh8j42aRomEuJjDHU+vdHvZIVwiDLm3TlHu0LQBm
+         77HE84V/Ac5kynSEBlPGiuEnge0u3YhN/bJjU=
+MIME-Version: 1.0
+In-Reply-To: <F06EB2894F3F0D45AD9BEA7246DE9C900E542FE2@WCSEXCMBS1.ad.wabtec.com>
+References: <F06EB2894F3F0D45AD9BEA7246DE9C900E542FE2@WCSEXCMBS1.ad.wabtec.com>
+Date: Fri, 24 Jul 2009 12:40:28 -0500
+Message-ID: <808c8e9d0907241040i2783d27aw948aa239f521336c@mail.gmail.com>
+Subject: Re: FW: [PATCH] cs5535_gpio: Fix root triggerable integer underflow
+From: Ben Gardner <gardner.ben@gmail.com>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Hi Michael,
 
-Please pull from:
-        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-2.6.git for_linus
+> This patch fixes a possible root triggerable (I hope the device is only
+> readable by root?) integer underflow.
+> Well, it's not really an underflow, but as loff_t is a signed type, the
+> range check at the start of the function is incomplete. It needs to
+> check for <0, too.
+> Otherwise the loop below will poke into random memory and I/O space.
+> This could be used to crash the machine, at least.
+>
+> This patch is only compiletested, because I do not have the hardware.
+>
+> Signed-off-by: Michael Buesch <mb@bu3sch.de>
+>
+> ---
+>
+> I'm not sure if this bug is exploitable. I _guess_ the device is only
+> readable by root
+> on a standard setup.
 
-This series adds a new gscpca sub-driver for sn9c20x webcams. There are several
-popular webcam models supported by those Sonix/Microdia chips. 
+The cs5525_gpio driver uses the default seek, which doesn't allow
+negative position values.
+So, I don't think it necessary to check for negative values.
 
-Greg can remove some linuxdriverproject.org requests from the project Wiki
-after this merge ;) Greg, for the USB ID details, you could take a look at
-Documentation/video4linux/gspca.txt changes (32 USB ID's added) or at
-http://linuxtv.org/wiki/index.php/Gspca. With this series, gspca alone supports
-660 different webcam models.
+Ben
 
-It has also the following fixes:
-
-   - gspca:
-	main: Add support for vidioc_g_chip_ident and vidioc_g/s_register;
-	stv06xx-hdcs: update the sensor state, fix a sensor sequence bug and 
-		      correct the pixelformat;
-	m5602-s5k4aa: Remove erroneous register writes;
-	jpeg subdrivers: Check the result of kmalloc(jpeg header);
-	sonixj: Bad sensor init of non ov76xx sensors.
-
-   - em28xx:
-	Fixes bugs where webcams are detected, but, since there weren't any
-		sensor code, webcams failed to work;
-	Auto-detect mt9v011 sensors;
-	Added support and autodetection code for mt9m001 sensors;
-	Fixed webcam scaling;
-	make tuning work for Terratec Cinergy T XS USB (mt352 variant);
-	fix typo in mt352 init sequence for Terratec Cinergy T XS USB;
-	make support work for the Pinnacle Hybrid Pro (eb1a:2881);
-	set GPIO properly for Pinnacle Hybrid Pro analog support;
-	Make sure the tuner is initialized if generic empia USB id was used;
-	set demod profile for Pinnacle Hybrid Pro 320e;
-	fix tuning problem in HVR-900 (R1).
-
-   - mt9v011 (new driver on 2.6.32 added on a previous merge):
-	implement VIDIOC_QUERYCTRL, adds function to calculate fps and adjust
-	the frequency of the used quartz cristal;
-
-   - af9013: auto-detect parameters in case of garbage given by app;
-
-   - b2c2-flexcop: regression fix (BZ#13709): properly compile with builtin
-		   frontends;
-
-   - bttv: fix regression: tvaudio must be loaded before tuner;
-
-   - cx23885-417: fix broken IOCTL handling;
-
-   - cx23885: check pointers before dereferencing in dprintk macro.
-
-Cheers,
-Mauro.
-
----
-
- Documentation/video4linux/CARDLIST.em28xx        |    2 +-
- Documentation/video4linux/gspca.txt              |   32 +
- drivers/media/dvb/b2c2/flexcop-fe-tuner.c        |   67 +-
- drivers/media/dvb/frontends/af9013.c             |   25 +-
- drivers/media/video/bt8xx/bttv-cards.c           |   92 +-
- drivers/media/video/bt8xx/bttv-driver.c          |    1 +
- drivers/media/video/bt8xx/bttv.h                 |    1 +
- drivers/media/video/cx23885/cx23885-417.c        |    4 +-
- drivers/media/video/em28xx/em28xx-cards.c        |  134 +-
- drivers/media/video/em28xx/em28xx-core.c         |   22 +-
- drivers/media/video/em28xx/em28xx-dvb.c          |   62 +-
- drivers/media/video/em28xx/em28xx-video.c        |   16 +-
- drivers/media/video/em28xx/em28xx.h              |   31 +-
- drivers/media/video/gspca/Kconfig                |   16 +
- drivers/media/video/gspca/Makefile               |    2 +
- drivers/media/video/gspca/conex.c                |    2 +
- drivers/media/video/gspca/gspca.c                |   73 +
- drivers/media/video/gspca/gspca.h                |    9 +
- drivers/media/video/gspca/m5602/m5602_s5k4aa.c   |    6 -
- drivers/media/video/gspca/mars.c                 |    2 +
- drivers/media/video/gspca/sn9c20x.c              | 2434 ++++++++++++++++++++++
- drivers/media/video/gspca/sonixj.c               |    4 +
- drivers/media/video/gspca/spca500.c              |    2 +
- drivers/media/video/gspca/stk014.c               |    2 +
- drivers/media/video/gspca/stv06xx/stv06xx_hdcs.c |   16 +-
- drivers/media/video/gspca/sunplus.c              |    2 +
- drivers/media/video/gspca/zc3xx.c                |    2 +
- drivers/media/video/mt9v011.c                    |   69 +-
- include/linux/videodev2.h                        |    1 +
- include/media/v4l2-chip-ident.h                  |   12 +
- 30 files changed, 2973 insertions(+), 170 deletions(-)
- create mode 100644 drivers/media/video/gspca/sn9c20x.c
-
-Antti Palosaari (1):
-      V4L/DVB (12269): af9013: auto-detect parameters in case of garbage given by app
-
-Brian Johnson (2):
-      V4L/DVB (12282): gspca - main: Support for vidioc_g_chip_ident and vidioc_g/s_register.
-      V4L/DVB (12283): gspca - sn9c20x: New subdriver for sn9c201 and sn9c202 bridges.
-
-Devin Heitmueller (7):
-      V4L/DVB (12257): em28xx: make tuning work for Terratec Cinergy T XS USB (mt352 variant)
-      V4L/DVB (12258): em28xx: fix typo in mt352 init sequence for Terratec Cinergy T XS USB
-      V4L/DVB (12260): em28xx: make support work for the Pinnacle Hybrid Pro (eb1a:2881)
-      V4L/DVB (12261): em28xx: set GPIO properly for Pinnacle Hybrid Pro analog support
-      V4L/DVB (12262): em28xx: Make sure the tuner is initialized if generic empia USB id was used
-      V4L/DVB (12263): em28xx: set demod profile for Pinnacle Hybrid Pro 320e
-      V4L/DVB (12265): em28xx: fix tuning problem in HVR-900 (R1)
-
-Erik AndrÃ©n (4):
-      V4L/DVB (12221): gspca - stv06xx-hdcs: Actually update the sensor state
-      V4L/DVB (12222): gspca - stv06xx-hdcs: Fix sensor sequence bug
-      V4L/DVB (12223): gspca - stv06xx-hdcs: Correct the pixelformat
-      V4L/DVB (12224): gspca - m5602-s5k4aa: Remove erroneous register writes
-
-Hans Verkuil (1):
-      V4L/DVB (12300): bttv: fix regression: tvaudio must be loaded before tuner
-
-Jean-Francois Moine (1):
-      V4L/DVB (12267): gspca - sonixj: Bad sensor init of non ov76xx sensors.
-
-Julia Lawall (1):
-      V4L/DVB (12284): gspca - jpeg subdrivers: Check the result of kmalloc(jpeg header).
-
-Mauro Carvalho Chehab (14):
-      V4L/DVB (12233): em28xx: rename is_27xx to is_webcam
-      V4L/DVB (12234): em28xx-cards: use is_webcam flag for devices that are known to be webcams
-      V4L/DVB (12235): em28xx: detects sensors also with the generic em2750/2750 entry
-      V4L/DVB (12236): em28xx: stop abusing of board->decoder for sensor information
-      V4L/DVB (12237): mt9v011: implement VIDIOC_QUERYCTRL
-      V4L/DVB (12238): em28xx: call sensor detection code for all webcam entries
-      V4L/DVB (12239): em28xx: fix webcam scaling
-      V4L/DVB (12240): mt9v011: add a function to calculate frames per second rate
-      V4L/DVB (12241): mt9v011: Fix vstart
-      V4L/DVB (12242): mt9v011: implement core->s_config to allow adjusting xtal frequency
-      V4L/DVB (12243): em28xx: allow specifying sensor xtal frequency
-      V4L/DVB (12244): em28xx: adjust vinmode/vinctl based on the stream input format
-      V4L/DVB (12245): em28xx: add support for mt9m001 webcams
-      V4L/DVB (12286): sn9c20x: reorder includes to be like other drivers
-
-Michael Krufky (2):
-      V4L/DVB (12302): cx23885-417: fix broken IOCTL handling
-      V4L/DVB (12303): cx23885: check pointers before dereferencing in dprintk macro
-
-Trent Piepho (1):
-      V4L/DVB (12291): b2c2: fix frontends compiled into kernel
-
----------------------------------------------------
-V4L/DVB development is hosted at http://linuxtv.org
+> ---
+>  drivers/char/cs5535_gpio.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> --- linux-2.6.orig/drivers/char/cs5535_gpio.c
+> +++ linux-2.6/drivers/char/cs5535_gpio.c
+> @@ -124,21 +124,21 @@ static ssize_t cs5535_gpio_write(struct
+>  static ssize_t cs5535_gpio_read(struct file *file, char __user *buf,
+>                                size_t len, loff_t *ppos)
+>  {
+>        u32     m = iminor(file->f_path.dentry->d_inode);
+>        u32     base = gpio_base + cs5535_lowhigh_base(m);
+>        int     rd_bit = 1 << (m & 0x0f);
+>        int     i;
+>        char    ch;
+>        ssize_t count = 0;
+>
+> -       if (*ppos >= ARRAY_SIZE(rm))
+> +       if (*ppos < 0 || *ppos >= ARRAY_SIZE(rm))
+>                return 0;
+>
+>        for (i = *ppos; (i < (*ppos + len)) && (i < ARRAY_SIZE(rm));
+> i++) {
+>                ch = (inl(base + rm[i].rd_offset) & rd_bit) ?
+>                     rm[i].on : rm[i].off;
+>
+>                if (put_user(ch, buf+count))
+>                        return -EFAULT;
+>
+>                count++;
+>
+> --
+> Greetings, Michael.
