@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752314AbZGXJXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752356AbZGXJYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752314AbZGXJXc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 05:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZGXJXc
+	id S1752356AbZGXJYj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 05:24:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbZGXJYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 05:23:32 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:50486 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751147AbZGXJXb (ORCPT
+	Fri, 24 Jul 2009 05:24:38 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:29056 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752222AbZGXJYh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 05:23:31 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: monstr@monstr.eu
-Subject: Re: generic uaccess.h
-Date: Fri, 24 Jul 2009 11:20:22 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-3-generic; KDE/4.2.96; x86_64; ; )
-References: <4A69651E.7040305@monstr.eu>
-In-Reply-To: <4A69651E.7040305@monstr.eu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       John Williams <john.williams@petalogix.com>
+	Fri, 24 Jul 2009 05:24:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=BNXUjjBrzDfiGlaMm0tm4+ADm2sFH1LgqeSegHa6iURWiQZOXllDdYBpym/lvlHVRS
+         9yLDqSGgW2+RNn0cTQG0UZ4l4aw+hPKvJFUrJv8jKDUItqkX3Btq15j/Xac7zdgv0Jd5
+         YTwnVt8s7vNUsFZdHg74UIUIgK1dIfpPEPHmE=
+Date: Fri, 24 Jul 2009 17:26:44 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, x86@kernel.org
+Subject: Re: [PATCH] x86: minor Makefile simplification through use of
+	cc-ifversion
+Message-ID: <20090724092644.GE6372@cr0.nay.redhat.com>
+References: <200907232056.28635.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907241120.22483.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+QfTE81zlocCl62p0p0laNcZO67o6OG8APMFJ
- KJMCL73dKf7r63C3ow9tnews2wIpt5T+OLb/xhumK7PSgMO8Bv
- iQrVPUyfTgnE6qggvMAvA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200907232056.28635.elendil@planet.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 24 July 2009, Michal Simek wrote:
-> I have just look at asm-generic uaccess.h and there is one thing which
-> seems to me wrong.
+On Thu, Jul 23, 2009 at 08:56:27PM +0200, Frans Pop wrote:
+>Signed-off-by: Frans Pop <elendil@planet.nl>
+>---
+>
+>Change was suggested by Sam Ravnborg; see http://lkml.org/lkml/2009/7/18/15.
+>Tested to work correctly.
+
+
+Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
+
+
+>
+>diff --git a/arch/x86/Makefile b/arch/x86/Makefile
+>index 1b68659..1f3851a 100644
+>--- a/arch/x86/Makefile
+>+++ b/arch/x86/Makefile
+>@@ -32,8 +32,8 @@ ifeq ($(CONFIG_X86_32),y)
 > 
-> For put_user macro - you use __copy_to_user but you have for 64bit case
-> ifdef CONFIG_64BIT
-> but  look at fs/eventfd: eventfd_read function. At least for this
-> function(syscall) is necessary "return" 64bit
-> value on 32bit machines too.
-> IMHO that ifdef CONFIG_64BIT shouldn't be there.
+>         # Disable unit-at-a-time mode on pre-gcc-4.0 compilers, it makes gcc use
+>         # a lot more stack due to the lack of sharing of stacklots:
+>-        KBUILD_CFLAGS += $(shell if [ $(call cc-version) -lt 0400 ] ; then \
+>-                echo $(call cc-option,-fno-unit-at-a-time); fi ;)
+>+        KBUILD_CFLAGS += $(call cc-ifversion, -lt, 0400, \
+>+				$(call cc-option,-fno-unit-at-a-time))
 > 
-> What do you think?
-> If you agree with me, I'll generate proper patch with description.
-
-The code was intentional, because 32 bit architectures normally
-don't acces u64 values efficiently. I would expect the memcpy
-to produce better object code in that case.
-Did you see an actual bug in my version or are you only
-guessing that the assignment should work better than the
-memcpy?
-
-What object code do you get with
-
-int test(unsigned long long __user *out, unsigned long long in)
-{
-	return put_user(in, ptr);
-}
-
-in both cases?
-
-	Arnd <><
+>         # CPU-specific tuning. Anything which can be shared with UML should go here.
+>         include $(srctree)/arch/x86/Makefile_32.cpu
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
