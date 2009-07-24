@@ -1,84 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbZGXUx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbZGXVBA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754171AbZGXUx6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 16:53:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753950AbZGXUx6
+	id S1753993AbZGXVBA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 17:01:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbZGXVBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 16:53:58 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:52124 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753694AbZGXUx5 (ORCPT
+	Fri, 24 Jul 2009 17:01:00 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:56991 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750962AbZGXVA7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 16:53:57 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=Gwhm3WNAAEW3O83sh7U/NOOETNQOs+Yx52FSUCs55UJS2GCDgu2pbo7ecw8j1zsVj
-	2fJT4zNpJqCAsUY/8DQAw==
-MIME-Version: 1.0
-In-Reply-To: <6599ad830907241047w9a9fff9q4dc68f26a9544398@mail.gmail.com>
-References: <20090724032033.2463.79256.stgit@hastromil.mtv.corp.google.com>
-	 <20090724032200.2463.82408.stgit@hastromil.mtv.corp.google.com>
-	 <20090724155041.GF5878@count0.beaverton.ibm.com>
-	 <6599ad830907240901w4fc02097k83d0c1012708e6ee@mail.gmail.com>
-	 <20090724172320.GH5878@count0.beaverton.ibm.com>
-	 <6599ad830907241047w9a9fff9q4dc68f26a9544398@mail.gmail.com>
-Date: Fri, 24 Jul 2009 13:53:53 -0700
-Message-ID: <2f86c2480907241353l63818dfehb20c9d4918a3f069@mail.gmail.com>
-Subject: Re: [PATCH 5/6] Makes procs file writable to move all threads by tgid 
-	at once
-From: Benjamin Blum <bblum@google.com>
-To: Paul Menage <menage@google.com>
-Cc: Matt Helsley <matthltc@us.ibm.com>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, akpm@linux-foundation.org,
-       serue@us.ibm.com, lizf@cn.fujitsu.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+	Fri, 24 Jul 2009 17:00:59 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+Content-type: text/plain; CHARSET=US-ASCII
+Date: Fri, 24 Jul 2009 15:00:09 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: fanotify - overall design before I start sending patches
+In-reply-to: <1248466429.3567.82.camel@localhost>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       malware-list@dmesg.printk.net, Valdis.Kletnieks@vt.edu, greg@kroah.com,
+       jcm@redhat.com, douglas.leeder@sophos.com, tytso@mit.edu,
+       arjan@infradead.org, david@lang.hm, jengelh@medozas.de,
+       aviro@redhat.com, mrkafk@gmail.com, alexl@redhat.com, jack@suse.cz,
+       tvrtko.ursulin@sophos.com, a.p.zijlstra@chello.nl, hch@infradead.org,
+       alan@lxorguk.ukuu.org.uk, mmorley@hcl.in, pavel@suse.cz
+Message-id: <20090724210008.GE4231@webber.adilger.int>
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <1248466429.3567.82.camel@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 24, 2009 at 1:47 PM, Paul Menage<menage@google.com> wrote:
-> On Fri, Jul 24, 2009 at 10:23 AM, Matt Helsley<matthltc@us.ibm.com> wrote:
->>
->> Well, I imagine holding tasklist_lock is worse than cgroup_mutex in some
->> ways since it's used even more widely. Makes sense not to use it here..
->
-> Just to clarify - the new "procs" code doesn't use cgroup_mutex for
-> its critical section, it uses a new cgroup_fork_mutex, which is only
-> taken for write during cgroup_proc_attach() (after all setup has been
-> done, to ensure that no new threads are created while we're updating
-> all the existing threads). So in general there'll be zero contention
-> on this lock - the cost will be the cache misses due to the rwlock
-> bouncing between the different CPUs that are taking it in read mode.
+On Jul 24, 2009  16:13 -0400, Eric Paris wrote:
+> fanotify kernel/userspace interaction is over a new socket protocol.  A
+> listener opens a new socket in the new PF_FANOTIFY family.  The socket
+> is then bound to an address.  Using the following struct:
 
-Right. The different options so far are:
+Would it make sense to use existing netlink?
 
-Global rwsem: only needs one lock, but prevents all forking when a
-write is in progress. It should be quick enough, if it's just "iterate
-down the threadgroup list in O(n)". In the good case, fork() slows
-down by a cache miss when taking the lock in read mode.
-Threadgroup-local rwsem: Needs adding a field to task_struct. Only
-forks within the same threadgroup would block on a write to the procs
-file, and the zero-contention case is the same as before.
-Using tasklist_lock: Currently, the call to cgroup_fork() (which
-starts the race) is very far above where tasklist_lock is taken in
-fork, so taking tasklist_lock earlier is very infeasible. Could
-cgroup_fork() be moved downwards to inside it, and if so, how much
-restructuring would be needed? Even if so, this still adds stuff that
-is being done (unnecessarily) while holding a global mutex.
+> struct fanotify_addr {
+>         sa_family_t family;
+>         __u32 priority;
+>         __u32 group_num;
+>         __u32 mask;
+>         __u32 f_flags;
+>         __u32 unused[16];
+> }  __attribute__((packed));
+> 
+> The mask is the indication of the events this group is interested in.
+> The set of events of interest if FAN_GLOBAL_LISTENER is set at bind
+> time.  If FAN_GLOBAL_LISTENER is not set, this field is meaningless as
+> the registration of events on individual inodes will dictate the
+> reception of events.
+> 
+> * FAN_ACCESS: every file access.
+> * FAN_MODIFY: file modifications.
+> * FAN_CLOSE: files are closed.
+> * FAN_OPEN: open() calls.
+> * FAN_ACCESS_PERM: like FAN_ACCESS, except that the process trying to
+> access the file is put on hold while the fanotify client decides whether
+> to allow the operation.
+> * FAN_OPEN_PERM: like FAN_OPEN, but with the permission check.
+> * FAN_EVENT_ON_CHILD: receive notification of events on inodes inside
+> this subdirectory. (this is not a full recursive notification of all
+> descendants, only direct children)
+> * FAN_GLOBAL_LISTENER: notify for events on all files in the system.
+> * FAN_SURVIVE_MODIFY: special flag that ignores should survive inode
+> modification.  Discussed below.
 
-> What happened to the big-reader lock concept from 2.4.x? That would be
-> applicable here - minimizing the overhead on the critical path when
-> the write operation is expected to be very rare.
+It seems like a 32-bit mask might not be enough, it wouldn't be hard
+at this stage to add a 64-bit mask.  Lustre has a similar mechanism
+(changelog) that allows tracking all different kinds of filesystem
+events (create/unlink/symlink/link/rename/mkdir/setxattr/etc), instead
+of just open/close, also use by HSM, enhanced rsync, etc.
 
-Seems like a good application, but it appears to be gone in the
-current kernel. Also, from my understanding, it would have to be a
-global (or at least not threadgroup-local) lock, no? Were we to use
-this and try to write to the procs file while a bunch of forks are in
-progress, how long would the write operation have to block? (that is,
-at least with a rwsem, the writing thread seems to get the lock rather
-quickly when there's contention.) Depending on just how slow
-write-locking one of these is, it might kill any hopes of performing a
-write while forks are in progress.
+> struct fanotify_event_metadata {
+>         __u32 event_len;
+>         __s32 fd;
+>         __u32 mask;
+>         __u32 f_flags;
+>         __s32 pid;
+>         __s32 tgid;
+>         __u64 cookie;
+> }  __attribute__((packed));
+
+Getting the attributes that have changed into this message is also
+useful, as it avoids a continual stream of "stat" calls on the inodes.
+
+The other thing that is important for HSM is that this log is atomic
+and persistent, otherwise there may be files that are missed if the
+node crashes.  This involves creating atomic update records as part
+of the filesystem operation, and then userspace consumes them and
+tells the kernel that it is finished with records up to X.  Otherwise
+you risk inconsistencies between rsync/HSM/updatedb for files that
+are updated just before a crash.
+
+> If a FAN_ACCESS_PERM or FAN_OPEN_PERM event is received the listener
+> must send a response before the 5 second timeout.  If no response is
+> sent before the 5 second timeout the original operation is allowed.  If
+> this happens too many times (10 in a row) the fanotify group is evicted
+> from the kernel and will not get any new events.
+
+This should be a tunable, since if the intent is to monitor PERM checks
+it would be possible for users to DOS the machine and delay the userspace
+programs and access files they shouldn't be able to.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
+
