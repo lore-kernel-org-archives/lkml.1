@@ -1,308 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbZGXUFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753798AbZGXUPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754091AbZGXUFm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 16:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbZGXUFm
+	id S1753798AbZGXUPR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 16:15:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbZGXUPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 16:05:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55291 "EHLO mx2.redhat.com"
+	Fri, 24 Jul 2009 16:15:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47937 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753358AbZGXUDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 16:03:14 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip -v13 02/11] x86: x86 instruction decoder build-time
-	selftest
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, Sam Ravnborg <sam@ravnborg.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>,
-       =?utf-8?q?Przemys=C5=82aw?= =?utf-8?q?Pawe=C5=82czyk?= 
-	<przemyslaw@pawelczyk.it>
-Date: Fri, 24 Jul 2009 16:05:41 -0400
-Message-ID: <20090724200541.25904.34800.stgit@localhost.localdomain>
-In-Reply-To: <20090724200527.25904.2562.stgit@localhost.localdomain>
-References: <20090724200527.25904.2562.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	id S1753493AbZGXUPP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 16:15:15 -0400
+Subject: fanotify - overall design before I start sending patches
+From: Eric Paris <eparis@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       malware-list@dmesg.printk.net
+Cc: Valdis.Kletnieks@vt.edu, greg@kroah.com, jcm@redhat.com,
+       douglas.leeder@sophos.com, tytso@mit.edu, arjan@infradead.org,
+       david@lang.hm, jengelh@medozas.de, aviro@redhat.com, mrkafk@gmail.com,
+       alexl@redhat.com, jack@suse.cz, tvrtko.ursulin@sophos.com,
+       a.p.zijlstra@chello.nl, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
+       mmorley@hcl.in, pavel@suse.cz
+Content-Type: text/plain
+Date: Fri, 24 Jul 2009 16:13:49 -0400
+Message-Id: <1248466429.3567.82.camel@localhost>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a user-space selftest of x86 instruction decoder at kernel build time.
-When CONFIG_X86_DECODER_SELFTEST=y, Kbuild builds a test harness of x86
-instruction decoder and performs it after building vmlinux.
-The test compares the results of objdump and x86 instruction decoder
-code and check there are no differences.
+I plan to start sending patches for fanotify in the next week or two.
+I'd like to see more comments on the design, interface, and capabilities
+in case there is a recognized need for major reworks or if I'm not
+meeting some users needs (other than those noted at the end)
 
-Changes from v12:
- - Remove user_include.h.
- - Use $(OBJDUMP) instead of native objdump.
- - Use hostprogs-y and include insn.c and inat.c directly from test_gen_insn.c.
+git://git.infradead.org/users/eparis/notify.git fanotify-experimental
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Signed-off-by: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Avi Kivity <avi@redhat.com>
-Cc: Przemysław Pawełczyk <przemyslaw@pawelczyk.it>
----
+should have working code to test what I'm talking about.
 
- arch/x86/Kconfig.debug        |    9 +++
- arch/x86/Makefile             |    3 +
- arch/x86/tools/Makefile       |   15 +++++
- arch/x86/tools/distill.awk    |   42 +++++++++++++++
- arch/x86/tools/test_get_len.c |  113 +++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 182 insertions(+), 0 deletions(-)
- create mode 100644 arch/x86/tools/Makefile
- create mode 100644 arch/x86/tools/distill.awk
- create mode 100644 arch/x86/tools/test_get_len.c
+What is fanotify?
 
-diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-index d105f29..7d0b681 100644
---- a/arch/x86/Kconfig.debug
-+++ b/arch/x86/Kconfig.debug
-@@ -186,6 +186,15 @@ config X86_DS_SELFTEST
- config HAVE_MMIOTRACE_SUPPORT
- 	def_bool y
- 
-+config X86_DECODER_SELFTEST
-+     bool "x86 instruction decoder selftest"
-+     depends on DEBUG_KERNEL
-+	---help---
-+	 Perform x86 instruction decoder selftests at build time.
-+	 This option is useful for checking the sanity of x86 instruction
-+	 decoder code.
-+	 If unsure, say "N".
-+
- #
- # IO delay types:
- #
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 1b68659..5fe16bf 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -154,6 +154,9 @@ all: bzImage
- KBUILD_IMAGE := $(boot)/bzImage
- 
- bzImage: vmlinux
-+ifeq ($(CONFIG_X86_DECODER_SELFTEST),y)
-+	$(Q)$(MAKE) $(build)=arch/x86/tools posttest
-+endif
- 	$(Q)$(MAKE) $(build)=$(boot) $(KBUILD_IMAGE)
- 	$(Q)mkdir -p $(objtree)/arch/$(UTS_MACHINE)/boot
- 	$(Q)ln -fsn ../../x86/boot/bzImage $(objtree)/arch/$(UTS_MACHINE)/boot/$@
-diff --git a/arch/x86/tools/Makefile b/arch/x86/tools/Makefile
-new file mode 100644
-index 0000000..3dd626b
---- /dev/null
-+++ b/arch/x86/tools/Makefile
-@@ -0,0 +1,15 @@
-+PHONY += posttest
-+quiet_cmd_posttest = TEST    $@
-+      cmd_posttest = $(OBJDUMP) -d $(objtree)/vmlinux | awk -f $(srctree)/arch/x86/tools/distill.awk | $(obj)/test_get_len
-+
-+posttest: $(obj)/test_get_len vmlinux
-+	$(call cmd,posttest)
-+
-+hostprogs-y	:= test_get_len
-+
-+# -I needed for generated C source and C source which in the kernel tree.
-+HOSTCFLAGS_test_get_len.o := -Wall -I$(objtree)/arch/x86/lib/ -I$(srctree)/arch/x86/include/ -I$(srctree)/arch/x86/lib/
-+
-+# Dependancies are also needed.
-+$(obj)/test_get_len.o: $(srctree)/arch/x86/lib/insn.c $(srctree)/arch/x86/lib/inat.c $(srctree)/arch/x86/include/asm/inat_types.h $(srctree)/arch/x86/include/asm/inat.h $(srctree)/arch/x86/include/asm/insn.h $(objtree)/arch/x86/lib/inat-tables.c
-+
-diff --git a/arch/x86/tools/distill.awk b/arch/x86/tools/distill.awk
-new file mode 100644
-index 0000000..d433619
---- /dev/null
-+++ b/arch/x86/tools/distill.awk
-@@ -0,0 +1,42 @@
-+#!/bin/awk -f
-+# Usage: objdump -d a.out | awk -f distill.awk | ./test_get_len
-+# Distills the disassembly as follows:
-+# - Removes all lines except the disassembled instructions.
-+# - For instructions that exceed 1 line (7 bytes), crams all the hex bytes
-+# into a single line.
-+# - Remove bad(or prefix only) instructions
-+
-+BEGIN {
-+	prev_addr = ""
-+	prev_hex = ""
-+	prev_mnemonic = ""
-+	bad_expr = "(\\(bad\\)|^rex|^.byte|^rep(z|nz)$|^lock$|^es$|^cs$|^ss$|^ds$|^fs$|^gs$|^data(16|32)$|^addr(16|32|64))"
-+	fwait_expr = "^9b "
-+	fwait_str="9b\tfwait"
-+}
-+
-+/^ *[0-9a-f]+:/ {
-+	if (split($0, field, "\t") < 3) {
-+		# This is a continuation of the same insn.
-+		prev_hex = prev_hex field[2]
-+	} else {
-+		# Skip bad instructions
-+		if (match(prev_mnemonic, bad_expr))
-+			prev_addr = ""
-+		# Split fwait from other f* instructions
-+		if (match(prev_hex, fwait_expr) && prev_mnemonic != "fwait") {
-+			printf "%s\t%s\n", prev_addr, fwait_str
-+			sub(fwait_expr, "", prev_hex)
-+		}
-+		if (prev_addr != "")
-+			printf "%s\t%s\t%s\n", prev_addr, prev_hex, prev_mnemonic
-+		prev_addr = field[1]
-+		prev_hex = field[2]
-+		prev_mnemonic = field[3]
-+	}
-+}
-+
-+END {
-+	if (prev_addr != "")
-+		printf "%s\t%s\t%s\n", prev_addr, prev_hex, prev_mnemonic
-+}
-diff --git a/arch/x86/tools/test_get_len.c b/arch/x86/tools/test_get_len.c
-new file mode 100644
-index 0000000..1e81adb
---- /dev/null
-+++ b/arch/x86/tools/test_get_len.c
-@@ -0,0 +1,113 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2009
-+ */
-+
-+#include <stdlib.h>
-+#include <stdio.h>
-+#include <string.h>
-+#include <assert.h>
-+
-+#ifdef __x86_64__
-+#define CONFIG_X86_64
-+#else
-+#define CONFIG_X86_32
-+#endif
-+#define unlikely(cond) (cond)
-+
-+#include <asm/insn.h>
-+#include <inat.c>
-+#include <insn.c>
-+
-+/*
-+ * Test of instruction analysis in general and insn_get_length() in
-+ * particular.  See if insn_get_length() and the disassembler agree
-+ * on the length of each instruction in an elf disassembly.
-+ *
-+ * Usage: objdump -d a.out | awk -f distill.awk | ./test_get_len
-+ */
-+
-+const char *prog;
-+
-+static void usage(void)
-+{
-+	fprintf(stderr, "Usage: objdump -d a.out | awk -f distill.awk |"
-+		" ./test_get_len\n");
-+	exit(1);
-+}
-+
-+static void malformed_line(const char *line, int line_nr)
-+{
-+	fprintf(stderr, "%s: malformed line %d:\n%s", prog, line_nr, line);
-+	exit(3);
-+}
-+
-+#define BUFSIZE 256
-+
-+int main(int argc, char **argv)
-+{
-+	char line[BUFSIZE];
-+	unsigned char insn_buf[16];
-+	struct insn insn;
-+	int insns = 0;
-+
-+	prog = argv[0];
-+	if (argc > 1)
-+		usage();
-+
-+	while (fgets(line, BUFSIZE, stdin)) {
-+		char copy[BUFSIZE], *s, *tab1, *tab2;
-+		int nb = 0;
-+		unsigned int b;
-+
-+		insns++;
-+		memset(insn_buf, 0, 16);
-+		strcpy(copy, line);
-+		tab1 = strchr(copy, '\t');
-+		if (!tab1)
-+			malformed_line(line, insns);
-+		s = tab1 + 1;
-+		s += strspn(s, " ");
-+		tab2 = strchr(s, '\t');
-+		if (!tab2)
-+			malformed_line(line, insns);
-+		*tab2 = '\0';	/* Characters beyond tab2 aren't examined */
-+		while (s < tab2) {
-+			if (sscanf(s, "%x", &b) == 1) {
-+				insn_buf[nb++] = (unsigned char) b;
-+				s += 3;
-+			} else
-+				break;
-+		}
-+		/* Decode an instruction */
-+#ifdef __x86_64__
-+		insn_init(&insn, insn_buf, 1);
-+#else
-+		insn_init(&insn, insn_buf, 0);
-+#endif
-+		insn_get_length(&insn);
-+		if (insn.length != nb) {
-+			fprintf(stderr, "Error: %s", line);
-+			fprintf(stderr, "Error: objdump says %d bytes, but "
-+				"insn_get_length() says %d (attr:%x)\n", nb,
-+				insn.length, insn.attr);
-+			exit(2);
-+		}
-+	}
-+	fprintf(stderr, "Succeed: decoded and checked %d instructions\n",
-+		insns);
-+	return 0;
-+}
+It is a new notification system that has a limited set of events (open,
+close, read, write) in which notification not only comes with metadata
+the describes what happened it also comes with an open file descriptor
+to the object in question.  fanotify will also allow the listener to
+make access decisions on open and read events.  This allows the
+implementation of hierarchical storage management systems or an access
+file scanning or integrity checking.
 
+fanotify comes in two flavors 'directed' and 'global.'  'Directed' is
+like inotify or dnotify in that you register specific inodes of interest
+and only get events pertaining to those inodes.  Global means you are
+registering interest for event types system wide.  With global mode the
+listener program can later exclude objects from future events.
 
--- 
-Masami Hiramatsu
+fanotify kernel/userspace interaction is over a new socket protocol.  A
+listener opens a new socket in the new PF_FANOTIFY family.  The socket
+is then bound to an address.  Using the following struct:
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+struct fanotify_addr {
+        sa_family_t family;
+        __u32 priority;
+        __u32 group_num;
+        __u32 mask;
+        __u32 f_flags;
+        __u32 unused[16];
+}  __attribute__((packed));
 
-e-mail: mhiramat@redhat.com
+The priority field indicates in which order fanotify listeners will get
+events.  Since 2 fanotify listeners would 'hear' each others events on
+the new fd they create fanotify listeners will not hear events generated
+by other fanotify listeners with a lower priority number.
+
+The group_num is at the moment not used, but the plan was to allow 2
+processes to bind to the same fanotify group and share the load of
+processing events.
+
+The f_flags is the flags which the fanotify listener wishes to use when
+opening their notification fds.  On access scanners would want to use
+O_RDONLY, whereas HSM systems would need to use O_WRONLY.
+
+The mask is the indication of the events this group is interested in.
+The set of events of interest if FAN_GLOBAL_LISTENER is set at bind
+time.  If FAN_GLOBAL_LISTENER is not set, this field is meaningless as
+the registration of events on individual inodes will dictate the
+reception of events.
+
+* FAN_ACCESS: every file access.
+* FAN_MODIFY: file modifications.
+* FAN_CLOSE: files are closed.
+* FAN_OPEN: open() calls.
+* FAN_ACCESS_PERM: like FAN_ACCESS, except that the process trying to
+access the file is put on hold while the fanotify client decides whether
+to allow the operation.
+* FAN_OPEN_PERM: like FAN_OPEN, but with the permission check.
+* FAN_EVENT_ON_CHILD: receive notification of events on inodes inside
+this subdirectory. (this is not a full recursive notification of all
+descendants, only direct children)
+* FAN_GLOBAL_LISTENER: notify for events on all files in the system.
+* FAN_SURVIVE_MODIFY: special flag that ignores should survive inode
+modification.  Discussed below.
+
+After the socket is bound events are attained using the read() syscall
+(recv* probably also works haven't tested).  This will result in the
+buffer being filled with one or more events like this:
+
+struct fanotify_event_metadata {
+        __u32 event_len;
+        __s32 fd;
+        __u32 mask;
+        __u32 f_flags;
+        __s32 pid;
+        __s32 tgid;
+        __u64 cookie;
+}  __attribute__((packed));
+
+fd specifies the new file descriptor that was created in the context of
+the listener.  (readlink of /proc/self/fd will give you A pathname)
+mask indicates the events type (bitwise OR of the event types listed
+above).  f_flags here is the f_flags the ORIGINAL process has the file
+open with.  pid and tgid are from the original process.  cookie is used
+when the listener needs to allow, deny, or delay the operation.
+
+If a FAN_ACCESS_PERM or FAN_OPEN_PERM event is received the listener
+must send a response before the 5 second timeout.  If no response is
+sent before the 5 second timeout the original operation is allowed.  If
+this happens too many times (10 in a row) the fanotify group is evicted
+from the kernel and will not get any new events.  Sending a response is
+done using the setsockopt() call with the socket options set to
+FANOTIFY_ACCESS_RESPONSE.  The buffer should contain a structure like:
+
+struct fanotify_so_access {
+        __u64 cookie;
+        __u32 response;
+}  __attribute__((packed));
+
+Where cookie is the cookie from the notification and response is one of:
+
+FAN_ALLOW: allow the original operation
+FAN_DENY: deny the original operation
+FAN_RESET_TIMEOUT: reset the timeout.
+
+The last main interface is the 'marking' of inodes.  The purpose of
+inode marks differ between 'directed' and 'global' listeners.  Directed
+fanotify listeners need to mark inodes of interest.  They do that also
+using setsockopt() of type FANOTIFY_SET_MARK with the buffer containing
+a structure like:
+
+struct fanotify_so_inode_mark {
+        __s32 fd;
+        __u32 mask;
+        __u32 ignored_mask;
+}  __attribute__((packed));
+
+Where fd is backed by the inode in question.  Mask is the events of
+interest (only used in directed mode) and ignored_mask is the mask of
+events which should be ignored.  
+
+The ignored_mask is cleared every time an inode receives a modification
+events unless FAN_SURVIVE_MODIFY is also set.  The ignored_mask is
+mainly used for 2 purposes.  Global listeners may just have no interest
+in lots of events, so they should spam inodes with an ignored mask.  The
+ignored mask is also used to 'cache' access decisions.  If the listener
+sets FAN_ACCESS_PERM in the ignored mask all access operations will be
+permitted without the call out to userspace.  If the inode is modified
+the ignored_mask will be cleared and userspace will again have to
+approve the access.  If userspace REALLY doesn't care ever they can use
+the special FAN_SURVIVE_MODIFY flag inside the ignored_mask.
+
+The only other current interface is the ability to ignore events by
+superblock magic number.  This makes it easy to ignore all events
+in /proc which can be difficult to accomplish firing FANOTIFY_SET_MARK
+with ignored_masks over and over as processes are created and destroyed.
+
+***********
+
+Future direction:
+There are 2 things I'm interested in adding.
+- Rename events.
+	The updatedb/mlocate people are interested in fanotify as a means to
+not thrash the harddrive every night.  They could instead update the db
+in real time as files are moved.
+
+- subtree notification.
+	Currently to only watch /home and all of it's descendants one must
+either register a directed watch on every directory or use a global
+listener.  The global listener with ignored_mask is not as bad as it
+sounds in my testing, but decent subtree registration and notification
+would be a big win in a lot of people's mind.
+
+***********
+
+Please, complaints? sortcomings? design flaws?  issues?  failures?  How
+can it be tweaked to suit your needs?
+
+-Eric
+
