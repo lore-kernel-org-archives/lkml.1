@@ -1,58 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751680AbZGXFXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751716AbZGXFoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751680AbZGXFXR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 01:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbZGXFXQ
+	id S1751716AbZGXFoT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 01:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZGXFoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 01:23:16 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62697 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750883AbZGXFXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 01:23:16 -0400
-Message-ID: <4A6944E6.1090405@cn.fujitsu.com>
-Date: Fri, 24 Jul 2009 13:21:42 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Paul Menage <menage@google.com>
-CC: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] Allow cgroup hierarchies to be created with no bound
- subsystems
-References: <20090722194644.7481.47805.stgit@menage.mtv.corp.google.com> <20090722195045.7481.62013.stgit@menage.mtv.corp.google.com>
-In-Reply-To: <20090722195045.7481.62013.stgit@menage.mtv.corp.google.com>
-Content-Type: text/plain; charset=utf-8
+	Fri, 24 Jul 2009 01:44:18 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:57562 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750988AbZGXFoR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 01:44:17 -0400
+Date: Fri, 24 Jul 2009 14:44:16 +0900 (JST)
+Message-Id: <20090724.144416.71112906.ryov@valinux.co.jp>
+To: kamezawa.hiroyu@jp.fujitsu.com
+Cc: xen-devel@lists.xensource.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       dm-devel@redhat.com, agk@redhat.com
+Subject: Re: [Xen-devel] Re: [PATCH 7/9] blkio-cgroup-v9: Page tracking
+ hooks
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <5971c26b399a97f51dd10ea497617733.squirrel@webmail-b.css.fujitsu.com>
+References: <20090723164935.e97a3ccf.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090723.190253.226783703.ryov@valinux.co.jp>
+	<5971c26b399a97f51dd10ea497617733.squirrel@webmail-b.css.fujitsu.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Menage wrote:
-> Allow cgroup hierarchies to be created with no bound subsystems
+"KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> Ryo Tsuruta wrote:
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > 
-> This patch removes the restriction that a cgroup hierarchy must have
-> at least one bound subsystem.  The mount option "none" is treated as
-> an explicit request for no bound subsystems.
-> 
-> A hierarchy with no subsystems can be useful for plain task tracking,
-> and is also a step towards the support for multiply-bindable
-> subsystems.
-> 
-> As part of this change, the hierarchy id is no longer calculated from
-> the bitmask of subsystems in the hierarchy (since this is not
-> guaranteed to be unique) but is allocated via an ida.  Reference
-> counts on cgroups from css_set objects are now taken explicitly one
-> per hierarchy, rather than one per subsystem.
-> 
-> Example usage:
-> 
-> mount -t cgroup -o none,name=foo cgroup /mnt/cgroup
-> 
-> Based on the "no-op"/"none" subsystem concept proposed by
-> kamezawa.hiroyu@jp.fujitsu.com
-> 
-> Signed-off-by: Paul Menage <menage@google.com>
-> 
+> >> > dm-ioband gives high priority to I/O for swap-out by checking whethe=
+> r
+> >> > PG_swapcache flag is set on the I/O page, regardless of the assigned
+> >> > I/O bandwidth, and the bandwidth consumed for swap-out is charged to
+> >> > the owner of the pages as a debt.
+> >> > How about this approach?
+> >>
+> >> I don't think it's reasonable. Why I/O device, scheduler should know
+> >> about
+> >> such mm-related information ? I think layering is wrong.
+> >
+> > I think that urgent I/O requests such as swap-out should be notified
+> > by setting a special flag in the struct bio, but there is no such
+> > mechanism at this time. That is why dm-ioband uses this approach.
+> >
+> >> And your approatch cannot be a workaround.
+> >>
+> >> In follwing _typical_ case,
+> >>
+> >>   - A process does small logging to /var/log/mylog, once in a sec.
+> >>     but it uses some amount of cold memory or shmem.
+> >>
+> >> This process's logging will be delayed _unexpectedly_ by some buggy
+> >> process
+> >> which does memory leak.
+> >
+> > Do you mean that the delay in logging is caused since the small process
+> > is swapped out unexpectedly by the buggy processes?
+> I don't write "small process", "small logging".
+> Buggy process does swap-out and cosumes someone else's bandwidth, then,
+> loggind will be delayed. Important here is throttle bandwidth consumed by
+> buggy prorcess, not other's.
 
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+Thank you for explaining it.
 
+> > How about using memory cgroup to prevent the small process from swap-ou=
+> t?
+> It never be help if memcg is not configured.
+
+blkio-cgroup is recommended to use with memcg. I think that it can be
+a good solution to resolve such problem.
+
+> My point is "don't allow anyone to use bandwidth of others."
+> Considering job isolation, a thread who requests swap-out should be charg=
+> ed
+> against bandwidth.
+
+>From another perspective, the swap-out is caused since the buggy
+process uses a large amount of memory, so it can be considered as 
+the bandwidth of logging process is used due to the buggy process.
+
+Please consider the following case. If a thread who requests swap-out
+is charged, the thread is charged other threads' I/O.
+
+   (1)                          --------      (2)
+   Process A                   |        |     Process B
+   mmaps a large area in   --> | memory | <-- tries to allocate a page.
+   the memory and writes       |        |
+   data to there.               --------     (3)
+                                   |         To get a free page,
+                                   |         the data written by Proc.A
+                                   |         is written out to the disk.
+                                   V         The I/O is done by using
+                                ---------    Proc.B's bandwidth.
+                               |  disk   |   
+                                ---------
+
+Thus I think that page owners should be charged against bandwidth.
+
+Thanks,
+Ryo Tsuruta
