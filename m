@@ -1,97 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbZGXOES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753016AbZGXOHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753024AbZGXOES (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 10:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbZGXOER
+	id S1753016AbZGXOHx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 10:07:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbZGXOHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 10:04:17 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:7171 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752801AbZGXOER convert rfc822-to-8bit (ORCPT
+	Fri, 24 Jul 2009 10:07:52 -0400
+Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:35273 "EHLO
+	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752745AbZGXOHw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 10:04:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=DjKEj5b5yWl9MNMsgFqqZkvVz2enQp7cuLhif5EDCj5vMpB++0TSB8iREa1BVALZJ9
-         OJ3gp3sBKQA5EpAjcridVBMeAGLDy+t339+BqdJ7t9p3NGGmFYDjsb0ShmBItzKZyb3M
-         AL+SvhpPHu6Og9j6OjuSNd2W+4e9WeUJtXens=
-MIME-Version: 1.0
-In-Reply-To: <1248443656.6987.61.camel@twins>
-References: <454c71700907240357l61f5c4fajaca73db0fba7db8@mail.gmail.com>
-	 <1248437670.6987.26.camel@twins>
-	 <454c71700907240604h4673f117j8ed58b9f2ee54798@mail.gmail.com>
-	 <1248441290.6987.52.camel@twins>
-	 <454c71700907240626w127fd890ufa91ef90cbcaaa@mail.gmail.com>
-	 <1248442415.6987.56.camel@twins>
-	 <454c71700907240644h7469e2a5sfcb57f202a2e184d@mail.gmail.com>
-	 <1248443656.6987.61.camel@twins>
-Date: Fri, 24 Jul 2009 22:04:16 +0800
-Message-ID: <454c71700907240704o32dcdeb3v57845eb9472dd04c@mail.gmail.com>
-Subject: Re: report a bug about sched_rt
-From: sen wang <wangsen.linux@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: mingo@elte.hu, akpm@linux-foundation.org, kernel@kolivas.org,
-       npiggin@suse.de, arjan@infradead.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 24 Jul 2009 10:07:52 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 8BIT
+Content-type: text/plain; charset=ISO-8859-1
+X-IronPort-AV: E=Sophos;i="4.43,264,1246831200";   d="scan'208";a="20262747"
+Message-id: <4A69C03E.3090706@lih.rwth-aachen.de>
+Date: Fri, 24 Jul 2009 16:07:58 +0200
+From: =?ISO-8859-1?Q?Victor_Matar=E9?= <matare@lih.rwth-aachen.de>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090723)
+To: linux-kernel@vger.kernel.org
+Subject: clock freezes??
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/24 Peter Zijlstra <peterz@infradead.org>:
-> On Fri, 2009-07-24 at 21:44 +0800, sen wang wrote:
->> 2009/7/24 Peter Zijlstra <peterz@infradead.org>:
->> > On Fri, 2009-07-24 at 21:26 +0800, sen wang wrote:
->> >> don't tell me what theory. don't be so doctrinairism! OK?
->> >> If cpu is free and there is a running state task,how can you scdedule
->> >> idle task up?
->> >> I tell you again:we are not talking about a bandwidth of 100% for RT!
->> >> Bug lies in the bandwidth of (100- X)%.(X<100)
->> >> even in the time of 100-X,if there is a rt task, you should not idle()
->> >> the system.
->> >
->> > *sigh*
->> >
->> > Yes we should. I appreciate that you might assume otherwise, but you're
->> > wrong. Suppose you have two competing bandwidth groups, which one will
->> > run over, to what purpose?
->> >
->> > Also, your next top post will go to /dev/null.
->> >
->>
->>
->> OK ! Â maybe you has not understand what I said.
->> It not two competing bandwidth groups. there is a Â active group and
->> another is empty?
->> How you do?
->
-> No, but the 1 group is the trivial case of many groups. Changing the
-> semantics for the trivial case is inconsistent at best, and confusing at
-> worst.
->
->> Why not try it by your hand: empty the fair task, run a rt task,enable
->> the Â bandwidth and
->> see what will happen!
->
-> Oh, I know, I wrote the code.
->
->> In many embedded system,idle task will lead to shutdown something, but
->> the rt task will
->> assume: when it run, idle will not happen!
->
-> How is it my problem when you design your system wrong?
->
-> If you want your 1 RT group to not get throttled, disable the throttle,
-> or adjust it to fit the parameters of your workload. If you don't want
-> idle to have latency impact on your RT tasks, fix your idle behaviour.
->
->
->
+Hello,
 
-OK
-just one question:
-if cpu is free and there is running state task, how you do?
-schedule the task up? or schedule idle task up?
+I have a dual Xeon server (old Xeon HT) with an Intel E7505 chipset,
+with hrtimer and dynticks enabled. On bootup, the kernel
+(2.6.29-gentoo-r5) tells me it's using the PM-Timer bug workaround, but
+then it uses tsc as clocksource. Now the clock was running slow for
+about 15sec/12hrs, which is quite a lot. So in a careless moment, I just
+tried "echo jiffies > clocksource0/current_clocksource". This froze the
+system time. Now I couldn't switch back to tsc or acpi_pm, echoing those
+was just ignored. Subsequently, the entire system locked up and I needed
+to reboot.
+
+Now what does that mean? Is this supposed to happen? Should I disable
+dynticks and/or hrtimer?
+
+thanks...
+
+-- 
+Victor Mataré
+Server- & Netzwerk-Administration
+
+Lehrstuhl für Ingenieurgeologie und Hydrogeologie der RWTH-Aachen
+Lochnerstraße 4-20, 52064 Aachen
+
+Tel: 0241 80 96778
+Fax: 0241 80 92280
+
