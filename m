@@ -1,76 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751999AbZGXGqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751932AbZGXG4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751999AbZGXGqp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 02:46:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZGXGqo
+	id S1751932AbZGXG4G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 02:56:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbZGXG4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 02:46:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41327 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751049AbZGXGqn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 02:46:43 -0400
-Date: Fri, 24 Jul 2009 06:46:16 GMT
-From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, dilinger@debian.org
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, dilinger@debian.org
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:x86/urgent] x86: geode: Mark mfgpt irq IRQF_TIMER to prevent resume failure
-Message-ID: <tip-d6c585a4342a2ff627a29f9aea77c5ed4cd76023@git.kernel.org>
-Git-Commit-ID: d6c585a4342a2ff627a29f9aea77c5ed4cd76023
-X-Mailer: tip-git-log-daemon
+	Fri, 24 Jul 2009 02:56:06 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:51656 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750779AbZGXG4F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 02:56:05 -0400
+Date: Fri, 24 Jul 2009 08:56:03 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Sage Weil <sage@newdream.net>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       linux-fsdevel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 08/19] ceph: address space operations
+Message-ID: <20090724065603.GA2045@basil.fritz.box>
+References: <1248292313-31326-4-git-send-email-sage@newdream.net> <1248292313-31326-5-git-send-email-sage@newdream.net> <1248292313-31326-6-git-send-email-sage@newdream.net> <1248292313-31326-7-git-send-email-sage@newdream.net> <1248292313-31326-8-git-send-email-sage@newdream.net> <1248292313-31326-9-git-send-email-sage@newdream.net> <874ot33ddd.fsf@basil.nowhere.org> <Pine.LNX.4.64.0907231122070.2930@cobra.newdream.net> <1248374834.6139.13.camel@heimdal.trondhjem.org> <Pine.LNX.4.64.0907231642590.2930@cobra.newdream.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 24 Jul 2009 06:46:17 +0000 (UTC)
+In-Reply-To: <Pine.LNX.4.64.0907231642590.2930@cobra.newdream.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d6c585a4342a2ff627a29f9aea77c5ed4cd76023
-Gitweb:     http://git.kernel.org/tip/d6c585a4342a2ff627a29f9aea77c5ed4cd76023
-Author:     Thomas Gleixner <tglx@linutronix.de>
-AuthorDate: Fri, 24 Jul 2009 08:34:59 +0200
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Fri, 24 Jul 2009 08:42:52 +0200
+> The part I don't understand is what actually happens to pages after the 
+> error flag set.  They're still uptodate, but no longer dirty?  And can be 
+> overwritten/redirtied?  There's also an error flag on the address_space.  
+> Are there any guidelines as far as which should be used?
 
-x86: geode: Mark mfgpt irq IRQF_TIMER to prevent resume failure
+Ideally both. The Page error flag prevents the data from being
+consumed and the address space error flag makes sure errors are 
+getting reported on fsync()/close() etc.  Also AS error is useful when
+you don't have a clear page to assign the error to, e.g. if you
+get an error indication that's not tied to a read operation.
 
-Timer interrupts are excluded from being disabled during suspend. The
-clock events code manages the disabling of clock events on its own
-because the timer interrupt needs to be functional before the resume
-code reenables the device interrupts.
+BTW the upcoming hwpoison code can set such errors asynchronously
+under you.
 
-The mfgpt timer request its interrupt without setting the IRQF_TIMER
-flag so suspend_device_irqs() disables it as well which results in a
-fatal resume failure.
+-Andi
 
-Adding IRQF_TIMER to the interupt flags when requesting the mrgpt
-timer interrupt solves the problem.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-LKML-Reference: <new-submission>
-Cc: Andres Salomon <dilinger@debian.org>
-Cc: stable@kernel.org
-
-
----
- arch/x86/kernel/mfgpt_32.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/mfgpt_32.c b/arch/x86/kernel/mfgpt_32.c
-index 846510b..2a62d84 100644
---- a/arch/x86/kernel/mfgpt_32.c
-+++ b/arch/x86/kernel/mfgpt_32.c
-@@ -347,7 +347,7 @@ static irqreturn_t mfgpt_tick(int irq, void *dev_id)
- 
- static struct irqaction mfgptirq  = {
- 	.handler = mfgpt_tick,
--	.flags = IRQF_DISABLED | IRQF_NOBALANCING,
-+	.flags = IRQF_DISABLED | IRQF_NOBALANCING | IRQF_TIMER,
- 	.name = "mfgpt-timer"
- };
- 
+-- 
+ak@linux.intel.com -- Speaking for myself only.
