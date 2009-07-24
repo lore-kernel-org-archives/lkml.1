@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbZGXTWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbZGXTX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754048AbZGXTWl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 15:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbZGXTWk
+	id S1754036AbZGXTX4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 15:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZGXTXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 15:22:40 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:65299 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754035AbZGXTWj convert rfc822-to-8bit (ORCPT
+	Fri, 24 Jul 2009 15:23:55 -0400
+Received: from www84.your-server.de ([213.133.104.84]:53905 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752266AbZGXTXz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 15:22:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:from:date
-         :x-google-sender-auth:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=AAtdFcwrAD0PrBmUhCexvYRZvZValCcP0mL5VqLmC66omUq8w/aun8e5WEaJLW6yZA
-         fPOGbhi68dS+p7isQuYTSau6q69bVK+YutnBZgS0bR1dqelnmlZjVGhBL69TFVm9TXfv
-         nvfJNf5RtXOHfdzkhMLN5sQBUFNtgel5yYWyY=
-MIME-Version: 1.0
-In-Reply-To: <f5a7b3810907240831t75a058a2m96abdc28a28c4365@mail.gmail.com>
-References: <f5a7b3810907240831t75a058a2m96abdc28a28c4365@mail.gmail.com>
-From: Ray Lee <ray-lk@madrabbit.org>
-Date: Fri, 24 Jul 2009 12:16:21 -0700
-X-Google-Sender-Auth: 9ec0306e4aaf50ff
-Message-ID: <2c0942db0907241216p416ac5edyce0b41e29926ec29@mail.gmail.com>
-Subject: Re: Char Limit issue on 2.6.29 kernels
-To: naresh kamboju <naresh.kernel@gmail.com>
-Cc: linux-kernel@vger.kernel.org, tim.bird@am.sony.com,
-       ltp-list@lists.sourceforge.net, brinda_mn@yahoo.co.in,
-       rohit.170309@gmail.com, Garrett Cooper <yanegomi@gmail.com>,
-       Oleg Nesterov <oleg@redhat.com>, maxin john <maxinbjohn@gmail.com>,
-       Masatake YAMATO <yamato@redhat.com>, michal.simek@petalogix.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 24 Jul 2009 15:23:55 -0400
+Subject: [PATCH] fbcon: rotate upside down crash
+From: Stefani Seibold <stefani@seibold.net>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, adaplas@pol.net
+Content-Type: text/plain
+Date: Fri, 24 Jul 2009 21:23:46 +0200
+Message-Id: <1248463426.30437.12.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 24, 2009 at 8:31 AM, naresh kamboju <naresh.kernel@gmail.com> wrote:
->
-> Hi,
->
-> I have come across with char Limit issue on 2.6.29 kernels.
->
->
-> SIGFAULT:
->
-> #define SIZE            8053759
-> char buf1[SIZE] ;
->
-> NO SIGFAULT:
->
-> #define SIZE            8053758
-> char buf1[SIZE] ;
->
-> This SIGFAULT not observed on 2.6.23 kernels.
->
-> What could be the changes that effecting from 2.6.23 to 2.6.29 kernels.
-> Please share me the information.
+Attached is a bug fix for the frame console. 
 
-is "ulimit -a" the same on both kernels?
+The current frame buffer console upside down functionality will crash
+using a font which has not a width of multiple by 8. 
 
-Can you provide a small program that shows the issue?
+The following 1 liner will fix the rotate_ud() function,
+
+ fbcon_rotate.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-2.6.31-rc4/drivers/video/console/fbcon_rotate.h	2009-07-24
+20:37:31.000000000 +0200
++++ linux-2.6.31-rc4.orig/drivers/video/console/fbcon_rotate.h
+2009-06-10 05:05:27.000000000 +0200
+@@ -45,7 +45,7 @@
+ 	width = (width + 7) & ~7;
+ 
+ 	for (i = 0; i < height; i++) {
+-		for (j = 0; j < width - shift; j++) {
++		for (j = 0; j < width; j++) {
+ 			if (pattern_test_bit(j, i, width, in))
+ 				pattern_set_bit(width - (1 + j + shift),
+ 						height - (1 + i),
+
+
