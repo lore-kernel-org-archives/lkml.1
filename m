@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbZGXVHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbZGXVSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754549AbZGXVHB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 17:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbZGXVHA
+	id S1754575AbZGXVSE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 17:18:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751566AbZGXVSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 17:07:00 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:50823 "EHLO e2.ny.us.ibm.com"
+	Fri, 24 Jul 2009 17:18:03 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41700 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754152AbZGXVHA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 17:07:00 -0400
-Date: Fri, 24 Jul 2009 14:06:57 -0700
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Benjamin Blum <bblum@google.com>
-Cc: Paul Menage <menage@google.com>, Matt Helsley <matthltc@us.ibm.com>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       akpm@linux-foundation.org, serue@us.ibm.com, lizf@cn.fujitsu.com
-Subject: Re: [PATCH 5/6] Makes procs file writable to move all threads by
-	tgid at once
-Message-ID: <20090724210657.GL5878@count0.beaverton.ibm.com>
-References: <20090724032033.2463.79256.stgit@hastromil.mtv.corp.google.com> <20090724032200.2463.82408.stgit@hastromil.mtv.corp.google.com> <20090724155041.GF5878@count0.beaverton.ibm.com> <6599ad830907240901w4fc02097k83d0c1012708e6ee@mail.gmail.com> <20090724172320.GH5878@count0.beaverton.ibm.com> <6599ad830907241047w9a9fff9q4dc68f26a9544398@mail.gmail.com> <2f86c2480907241353l63818dfehb20c9d4918a3f069@mail.gmail.com>
+	id S1753534AbZGXVSC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 17:18:02 -0400
+Date: Fri, 24 Jul 2009 17:17:56 -0400
+From: Mike Snitzer <snitzer@redhat.com>
+To: Nick Dokos <nicholas.dokos@hp.com>
+Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>, linux-kernel@vger.kernel.org,
+       martin.petersen@oracle.com, agk@redhat.com
+Subject: Re: Regression in 2.6.31-rc3 (and presumably 2.6.31-rc4?)
+Message-ID: <20090724211756.GA21441@redhat.com>
+References: <1248467055.7964.12.camel@cail> <8899.1248467518@alphaville.usa.hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <2f86c2480907241353l63818dfehb20c9d4918a3f069@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <8899.1248467518@alphaville.usa.hp.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 24, 2009 at 01:53:53PM -0700, Benjamin Blum wrote:
-> On Fri, Jul 24, 2009 at 1:47 PM, Paul Menage<menage@google.com> wrote:
-> > On Fri, Jul 24, 2009 at 10:23 AM, Matt Helsley<matthltc@us.ibm.com> wrote:
-> >>
-> >> Well, I imagine holding tasklist_lock is worse than cgroup_mutex in some
-> >> ways since it's used even more widely. Makes sense not to use it here..
-> >
-> > Just to clarify - the new "procs" code doesn't use cgroup_mutex for
-> > its critical section, it uses a new cgroup_fork_mutex, which is only
-> > taken for write during cgroup_proc_attach() (after all setup has been
-> > done, to ensure that no new threads are created while we're updating
-> > all the existing threads). So in general there'll be zero contention
-> > on this lock - the cost will be the cache misses due to the rwlock
-> > bouncing between the different CPUs that are taking it in read mode.
+On Fri, Jul 24 2009 at  4:31pm -0400,
+Nick Dokos <nicholas.dokos@hp.com> wrote:
+
+> Alan D. Brunelle <Alan.Brunelle@hp.com> wrote:
 > 
-> Right. The different options so far are:
+> > I did a diffstat between 2.6.31-rc3 and -rc4 and didn't see anything in
+> > the MD space, so...
+> > 
+> > I am unable to create multi-disk LVM striped-volumes with this commit in
+> > place - Nick Dokos @ HP did the bisecting and found that removing this
+> > commit fixes the same problem for him:
+> > 
+> > 754c5fc7ebb417b23601a6222a6005cc2e7f2913 is first bad commit
+> > commit 754c5fc7ebb417b23601a6222a6005cc2e7f2913
+> > Author: Mike Snitzer <snitzer@redhat.com>
+> > Date:   Mon Jun 22 10:12:34 2009 +0100
+> > 
+> >     dm: calculate queue limits during resume not load
+> > 
 > 
-> Global rwsem: only needs one lock, but prevents all forking when a
-> write is in progress. It should be quick enough, if it's just "iterate
-> down the threadgroup list in O(n)". In the good case, fork() slows
-> down by a cache miss when taking the lock in read mode.
+> I pulled from agk's tree after seeing his pull request and applied
+> commit 5dea271b6d87bd1d79a59c1d5baac2596a841c37 (plus two more) on
+> top of 2.6.41-rc4: I don't see the problem any longer.
 
-I noticed your point about only one process contending for write on
-the new semaphore since cgroup_mutex is also held on the write side.
-However won't there be cacheline bouncing as lots of readers contend not
-for the read side of the lock itself but the cacheline needed to take it?
+Yes, this issue was fixed by that commit (5dea271b6d8).  The fix was
+first posted to dm-devel 3 weeks ago:
+https://www.redhat.com/archives/dm-devel/2009-July/msg00008.html
 
-> Threadgroup-local rwsem: Needs adding a field to task_struct. Only
-> forks within the same threadgroup would block on a write to the procs
-> file, and the zero-contention case is the same as before.
-
-This seems like it would be better.
-
-> Using tasklist_lock: Currently, the call to cgroup_fork() (which
-> starts the race) is very far above where tasklist_lock is taken in
-> fork, so taking tasklist_lock earlier is very infeasible. Could
-> cgroup_fork() be moved downwards to inside it, and if so, how much
-> restructuring would be needed? Even if so, this still adds stuff that
-> is being done (unnecessarily) while holding a global mutex.
-
-Yup.
-
-> > What happened to the big-reader lock concept from 2.4.x? That would be
-> > applicable here - minimizing the overhead on the critical path when
-> > the write operation is expected to be very rare.
-
-Supplanted by RCU perhaps? *shrug*
-
-Cheers,
-	-Matt Helsley
+Regards,
+Mike
