@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753223AbZGXPs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbZGXPur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753223AbZGXPs0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 11:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbZGXPs0
+	id S1753252AbZGXPur (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 11:50:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbZGXPuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 11:48:26 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:37187 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752833AbZGXPsZ (ORCPT
+	Fri, 24 Jul 2009 11:50:46 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:59916 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751852AbZGXPuq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 11:48:25 -0400
-Message-ID: <4A69D79F.7020105@gmail.com>
-Date: Fri, 24 Jul 2009 18:47:43 +0300
-From: Artem Bityutskiy <dedekind1@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Fri, 24 Jul 2009 11:50:46 -0400
+Date: Fri, 24 Jul 2009 08:50:41 -0700
+From: Matt Helsley <matthltc@us.ibm.com>
+To: Ben Blum <bblum@google.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       akpm@linux-foundation.org, serue@us.ibm.com, lizf@cn.fujitsu.com,
+       menage@google.com
+Subject: Re: [PATCH 5/6] Makes procs file writable to move all threads by
+	tgid at once
+Message-ID: <20090724155041.GF5878@count0.beaverton.ibm.com>
+References: <20090724032033.2463.79256.stgit@hastromil.mtv.corp.google.com> <20090724032200.2463.82408.stgit@hastromil.mtv.corp.google.com>
 MIME-Version: 1.0
-To: Daniel Mack <daniel@caiaq.de>
-CC: Adrian Hunter <adrian.hunter@nokia.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>,
-       "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-       "Bityutskiy Artem (Nokia-M/Helsinki)" <Artem.Bityutskiy@nokia.com>
-Subject: Re: ubifs: error unwinding trouble
-References: <20090724103038.GN19257@buzzloop.caiaq.de> <4A6991A5.4020105@nokia.com> <1248437866.24676.79.camel@localhost> <20090724154600.GR19257@buzzloop.caiaq.de>
-In-Reply-To: <20090724154600.GR19257@buzzloop.caiaq.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 24 Jul 2009 15:48:12.0231 (UTC) FILETIME=[2655C570:01CA0C76]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090724032200.2463.82408.stgit@hastromil.mtv.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/24/2009 06:46 PM, Daniel Mack wrote:
-> On Fri, Jul 24, 2009 at 03:17:46PM +0300, Artem Bityutskiy wrote:
->> On Fri, 2009-07-24 at 13:49 +0300, Adrian Hunter wrote:
->>> diff --git a/drivers/mtd/ubi/eba.c b/drivers/mtd/ubi/eba.c
->>> index 0f2034c..e4d9ef0 100644
->>> --- a/drivers/mtd/ubi/eba.c
->>> +++ b/drivers/mtd/ubi/eba.c
->>> @@ -1254,6 +1254,7 @@ out_free:
->>>                  if (!ubi->volumes[i])
->>>                          continue;
->>>                  kfree(ubi->volumes[i]->eba_tbl);
->>> +               ubi->volumes[i]->eba_tbl = NULL;
->>>          }
->>>          return err;
->>>   }
->> You are right. I've just pushed your patch to ubi-2.6.git/master.
->
-> Great. Thanks for the quick response!
-> Is there any merge cycle outstanding for ubifs in 2.6.31?
+On Thu, Jul 23, 2009 at 08:22:00PM -0700, Ben Blum wrote:
+> Makes procs file writable to move all threads by tgid at once
+> 
+> This patch adds functionality that enables users to move all threads in a
+> threadgroup at once to a cgroup by writing the tgid to the 'cgroup.procs'
+> file. This current implementation makes use of a rwsem that's taken for
+> reading in the fork() path to prevent newly forking threads within the
 
-It is UBI, not UBIFS. I've created ubi-2.6.git/for-linus branch
-with the stuff to merge for 2.6.31.
+There is much ado about not taking additional "global locks" in fork()
+paths.
 
-But I anyway always encouredge people to use the linux-next stuff
-which has the latest UBI/UBIFS changes.
+* The fork and exit callbacks cgroup_fork() and cgroup_exit(), don't
+* (usually) take cgroup_mutex.  These are the two most performance
+* critical pieces of code here. 
+...
 
-See http://www.linux-mtd.infradead.org/doc/ubifs.html#L_source
+and as I recall cgroup_fork() doesn't ever take cgroup_mutex because it is
+so performance critical. Assuming the above comments in kernel/cgroup.c
+are correct then this patch adds a performance regression by introducing a
+global mutex in the fork path, doesn't it?
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Cheers,
+	-Matt Helsley
