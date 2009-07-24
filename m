@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938AbZGYVDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753029AbZGYVDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752938AbZGYVDi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 17:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbZGYVDg
+	id S1753029AbZGYVDz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 17:03:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbZGYVDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 17:03:36 -0400
-Received: from d112a2.x-mailer.de ([212.162.53.4]:55075 "EHLO
+	Sat, 25 Jul 2009 17:03:50 -0400
+Received: from d112a2.x-mailer.de ([212.162.53.4]:49936 "EHLO
 	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752840AbZGYVDd (ORCPT
+	with ESMTP id S1752667AbZGYVDn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 17:03:33 -0400
-Message-Id: <6115d2f3fcaebed5b88fa9cefd178bb5b07461ff.1248546896.git.keil@b1-systems.de>
+	Sat, 25 Jul 2009 17:03:43 -0400
+Message-Id: <ba2d6ccb1df6ebb2c1b2322518ce7be25c1e3469.1248546896.git.keil@b1-systems.de>
 In-Reply-To: <cover.1248546896.git.keil@b1-systems.de>
 References: <cover.1248546896.git.keil@b1-systems.de>
-Date: Wed, 22 Jul 2009 19:52:24 +0200
-Subject: [PATCH 07/13] mISDN: Driver for AVM Fritz!CARD PCI
+Date: Fri, 24 Jul 2009 18:26:08 +0200
+Subject: [PATCH 12/13] ISDN: ARRAY_SIZE changes
 From: Karsten Keil <keil@b1-systems.de>
 To: linux-kernel@vger.kernel.org
 Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
@@ -25,1205 +25,670 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add mISDN driver for AVM FRITZ!CARD PCI (all versions).
+These changes were a direct result of using a semantic patch
+More information can be found at http://www.emn.fr/x-info/coccinelle/
 
+Modified some of the changes to avoid the extra define.
+
+Signed-off-by: Stoyan Gaydarov <sgayda2@uiuc.edu>
 Signed-off-by: Karsten Keil <keil@b1-systems.de>
 ---
- drivers/isdn/hardware/mISDN/Kconfig    |    8 +
- drivers/isdn/hardware/mISDN/Makefile   |    1 +
- drivers/isdn/hardware/mISDN/avmfritz.c | 1152 ++++++++++++++++++++++++++++++++
- 3 files changed, 1161 insertions(+), 0 deletions(-)
- create mode 100644 drivers/isdn/hardware/mISDN/avmfritz.c
+ drivers/isdn/act2000/capi.c           |    3 +--
+ drivers/isdn/act2000/module.c         |   31 +++++++++++++++----------------
+ drivers/isdn/hardware/eicon/message.c |    4 +---
+ drivers/isdn/hardware/eicon/os_4bri.c |    3 +--
+ drivers/isdn/hisax/callc.c            |    4 +---
+ drivers/isdn/hisax/isdnl1.c           |   12 +++---------
+ drivers/isdn/hisax/isdnl2.c           |    4 +---
+ drivers/isdn/hisax/isdnl3.c           |    4 +---
+ drivers/isdn/hisax/l3_1tr6.c          |   20 ++++++--------------
+ drivers/isdn/hisax/l3dss1.c           |   26 ++++++++------------------
+ drivers/isdn/hisax/l3ni1.c            |   26 ++++++++------------------
+ drivers/isdn/hisax/q931.c             |   24 ++++++++++++------------
+ drivers/isdn/hisax/tei.c              |    4 +---
+ drivers/isdn/mISDN/layer2.c           |    2 --
+ 14 files changed, 59 insertions(+), 108 deletions(-)
 
-diff --git a/drivers/isdn/hardware/mISDN/Kconfig b/drivers/isdn/hardware/mISDN/Kconfig
-index a8542b8..212dee6 100644
---- a/drivers/isdn/hardware/mISDN/Kconfig
-+++ b/drivers/isdn/hardware/mISDN/Kconfig
-@@ -39,6 +39,14 @@ config MISDN_HFCUSB
- 	  Enable support for USB ISDN TAs with Cologne Chip AG's
- 	  HFC-S USB ISDN Controller
+diff --git a/drivers/isdn/act2000/capi.c b/drivers/isdn/act2000/capi.c
+index 946c38c..1f0a949 100644
+--- a/drivers/isdn/act2000/capi.c
++++ b/drivers/isdn/act2000/capi.c
+@@ -78,7 +78,6 @@ static actcapi_msgdsc valid_msg[] = {
+ #endif
+ 	{{ 0x00, 0x00}, NULL},
+ };
+-#define num_valid_msg (sizeof(valid_msg)/sizeof(actcapi_msgdsc))
+ #define num_valid_imsg 27 /* MANUFACTURER_IND */
  
-+config MISDN_AVMFRITZ
-+	tristate "Support for AVM FRITZ!CARD PCI"
-+	depends on MISDN
-+	depends on PCI
-+	select MISDN_IPAC
-+	help
-+	  Enable support for AVMs FRITZ!CARD PCI cards
-+
- config MISDN_INFINEON
- 	tristate "Support for cards with Infineon chipset"
- 	depends on MISDN
-diff --git a/drivers/isdn/hardware/mISDN/Makefile b/drivers/isdn/hardware/mISDN/Makefile
-index 2863455..8204d84 100644
---- a/drivers/isdn/hardware/mISDN/Makefile
-+++ b/drivers/isdn/hardware/mISDN/Makefile
-@@ -6,6 +6,7 @@
- obj-$(CONFIG_MISDN_HFCPCI) += hfcpci.o
- obj-$(CONFIG_MISDN_HFCMULTI) += hfcmulti.o
- obj-$(CONFIG_MISDN_HFCUSB) += hfcsusb.o
-+obj-$(CONFIG_MISDN_AVMFRITZ) += avmfritz.o
- obj-$(CONFIG_MISDN_INFINEON) += mISDNinfineon.o
- # chip modules
- obj-$(CONFIG_MISDN_IPAC) += mISDNipac.o
-diff --git a/drivers/isdn/hardware/mISDN/avmfritz.c b/drivers/isdn/hardware/mISDN/avmfritz.c
-new file mode 100644
-index 0000000..81ac541
---- /dev/null
-+++ b/drivers/isdn/hardware/mISDN/avmfritz.c
-@@ -0,0 +1,1152 @@
-+/*
-+ * avm_fritz.c    low level stuff for AVM FRITZ!CARD PCI ISDN cards
-+ *                Thanks to AVM, Berlin for informations
-+ *
-+ * Author       Karsten Keil <keil@isdn4linux.de>
-+ *
-+ * Copyright 2009  by Karsten Keil <keil@isdn4linux.de>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ *
-+ */
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/delay.h>
-+#include <linux/mISDNhw.h>
-+#include <asm/unaligned.h>
-+#include "ipac.h"
-+
-+
-+#define AVMFRITZ_REV	"2.1"
-+
-+static int AVM_cnt;
-+static int debug;
-+
-+enum {
-+	AVM_FRITZ_PCI,
-+	AVM_FRITZ_PCIV2,
-+};
-+
-+#define HDLC_FIFO		0x0
-+#define HDLC_STATUS		0x4
-+#define CHIP_WINDOW		0x10
-+
-+#define CHIP_INDEX		0x4
-+#define AVM_HDLC_1		0x00
-+#define AVM_HDLC_2		0x01
-+#define AVM_ISAC_FIFO		0x02
-+#define AVM_ISAC_REG_LOW	0x04
-+#define AVM_ISAC_REG_HIGH	0x06
-+
-+#define AVM_STATUS0_IRQ_ISAC	0x01
-+#define AVM_STATUS0_IRQ_HDLC	0x02
-+#define AVM_STATUS0_IRQ_TIMER	0x04
-+#define AVM_STATUS0_IRQ_MASK	0x07
-+
-+#define AVM_STATUS0_RESET	0x01
-+#define AVM_STATUS0_DIS_TIMER	0x02
-+#define AVM_STATUS0_RES_TIMER	0x04
-+#define AVM_STATUS0_ENA_IRQ	0x08
-+#define AVM_STATUS0_TESTBIT	0x10
-+
-+#define AVM_STATUS1_INT_SEL	0x0f
-+#define AVM_STATUS1_ENA_IOM	0x80
-+
-+#define HDLC_MODE_ITF_FLG	0x01
-+#define HDLC_MODE_TRANS		0x02
-+#define HDLC_MODE_CCR_7		0x04
-+#define HDLC_MODE_CCR_16	0x08
-+#define HDLC_MODE_TESTLOOP	0x80
-+
-+#define HDLC_INT_XPR		0x80
-+#define HDLC_INT_XDU		0x40
-+#define HDLC_INT_RPR		0x20
-+#define HDLC_INT_MASK		0xE0
-+
-+#define HDLC_STAT_RME		0x01
-+#define HDLC_STAT_RDO		0x10
-+#define HDLC_STAT_CRCVFRRAB	0x0E
-+#define HDLC_STAT_CRCVFR	0x06
-+#define HDLC_STAT_RML_MASK	0x3f00
-+
-+#define HDLC_CMD_XRS		0x80
-+#define HDLC_CMD_XME		0x01
-+#define HDLC_CMD_RRS		0x20
-+#define HDLC_CMD_XML_MASK	0x3f00
-+#define HDLC_FIFO_SIZE		32
-+
-+/* Fritz PCI v2.0 */
-+
-+#define AVM_HDLC_FIFO_1		0x10
-+#define AVM_HDLC_FIFO_2		0x18
-+
-+#define AVM_HDLC_STATUS_1	0x14
-+#define AVM_HDLC_STATUS_2	0x1c
-+
-+#define AVM_ISACX_INDEX		0x04
-+#define AVM_ISACX_DATA		0x08
-+
-+/* data struct */
-+#define LOG_SIZE		63
-+
-+struct hdlc_stat_reg {
-+#ifdef __BIG_ENDIAN
-+	u8 fill;
-+	u8 mode;
-+	u8 xml;
-+	u8 cmd;
-+#else
-+	u8 cmd;
-+	u8 xml;
-+	u8 mode;
-+	u8 fill;
-+#endif
-+} __attribute__((packed));
-+
-+struct hdlc_hw {
-+	union {
-+		u32 ctrl;
-+		struct hdlc_stat_reg sr;
-+	} ctrl;
-+	u32 stat;
-+};
-+
-+struct fritzcard {
-+	struct list_head	list;
-+	struct pci_dev		*pdev;
-+	char			name[MISDN_MAX_IDLEN];
-+	u8			type;
-+	u8			ctrlreg;
-+	u16			irq;
-+	u32			irqcnt;
-+	u32			addr;
-+	spinlock_t		lock; /* hw lock */
-+	struct isac_hw		isac;
-+	struct hdlc_hw		hdlc[2];
-+	struct bchannel		bch[2];
-+	char			log[LOG_SIZE + 1];
-+};
-+
-+static LIST_HEAD(Cards);
-+static DEFINE_RWLOCK(card_lock); /* protect Cards */
-+
-+static void
-+_set_debug(struct fritzcard *card)
-+{
-+	card->isac.dch.debug = debug;
-+	card->bch[0].debug = debug;
-+	card->bch[1].debug = debug;
-+}
-+
-+static int
-+set_debug(const char *val, struct kernel_param *kp)
-+{
-+	int ret;
-+	struct fritzcard *card;
-+
-+	ret = param_set_uint(val, kp);
-+	if (!ret) {
-+		read_lock(&card_lock);
-+		list_for_each_entry(card, &Cards, list)
-+			_set_debug(card);
-+		read_unlock(&card_lock);
-+	}
-+	return ret;
-+}
-+
-+MODULE_AUTHOR("Karsten Keil");
-+MODULE_LICENSE("GPL v2");
-+MODULE_VERSION(AVMFRITZ_REV);
-+module_param_call(debug, set_debug, param_get_uint, &debug, S_IRUGO | S_IWUSR);
-+MODULE_PARM_DESC(debug, "avmfritz debug mask");
-+
-+/* Interface functions */
-+
-+static u8
-+ReadISAC_V1(void *p, u8 offset)
-+{
-+	struct fritzcard *fc = p;
-+	u8 idx = (offset > 0x2f) ? AVM_ISAC_REG_HIGH : AVM_ISAC_REG_LOW;
-+
-+	outb(idx, fc->addr + CHIP_INDEX);
-+	return inb(fc->addr + CHIP_WINDOW + (offset & 0xf));
-+}
-+
-+static void
-+WriteISAC_V1(void *p, u8 offset, u8 value)
-+{
-+	struct fritzcard *fc = p;
-+	u8 idx = (offset > 0x2f) ? AVM_ISAC_REG_HIGH : AVM_ISAC_REG_LOW;
-+
-+	outb(idx, fc->addr + CHIP_INDEX);
-+	outb(value, fc->addr + CHIP_WINDOW + (offset & 0xf));
-+}
-+
-+static void
-+ReadFiFoISAC_V1(void *p, u8 off, u8 *data, int size)
-+{
-+	struct fritzcard *fc = p;
-+
-+	outb(AVM_ISAC_FIFO, fc->addr + CHIP_INDEX);
-+	insb(fc->addr + CHIP_WINDOW, data, size);
-+}
-+
-+static void
-+WriteFiFoISAC_V1(void *p, u8 off, u8 *data, int size)
-+{
-+	struct fritzcard *fc = p;
-+
-+	outb(AVM_ISAC_FIFO, fc->addr + CHIP_INDEX);
-+	outsb(fc->addr + CHIP_WINDOW, data, size);
-+}
-+
-+static u8
-+ReadISAC_V2(void *p, u8 offset)
-+{
-+	struct fritzcard *fc = p;
-+
-+	outl(offset, fc->addr + AVM_ISACX_INDEX);
-+	return 0xff & inl(fc->addr + AVM_ISACX_DATA);
-+}
-+
-+static void
-+WriteISAC_V2(void *p, u8 offset, u8 value)
-+{
-+	struct fritzcard *fc = p;
-+
-+	outl(offset, fc->addr + AVM_ISACX_INDEX);
-+	outl(value, fc->addr + AVM_ISACX_DATA);
-+}
-+
-+static void
-+ReadFiFoISAC_V2(void *p, u8 off, u8 *data, int size)
-+{
-+	struct fritzcard *fc = p;
-+	int i;
-+
-+	outl(off, fc->addr + AVM_ISACX_INDEX);
-+	for (i = 0; i < size; i++)
-+		data[i] = 0xff & inl(fc->addr + AVM_ISACX_DATA);
-+}
-+
-+static void
-+WriteFiFoISAC_V2(void *p, u8 off, u8 *data, int size)
-+{
-+	struct fritzcard *fc = p;
-+	int i;
-+
-+	outl(off, fc->addr + AVM_ISACX_INDEX);
-+	for (i = 0; i < size; i++)
-+		outl(data[i], fc->addr + AVM_ISACX_DATA);
-+}
-+
-+static struct bchannel *
-+Sel_BCS(struct fritzcard *fc, u32 channel)
-+{
-+	if (test_bit(FLG_ACTIVE, &fc->bch[0].Flags) &&
-+		(fc->bch[0].nr & channel))
-+		return &fc->bch[0];
-+	else if (test_bit(FLG_ACTIVE, &fc->bch[1].Flags) &&
-+		(fc->bch[1].nr & channel))
-+		return &fc->bch[1];
-+	else
-+		return NULL;
-+}
-+
-+static inline void
-+__write_ctrl_pci(struct fritzcard *fc, struct hdlc_hw *hdlc, u32 channel) {
-+	u32 idx = channel == 2 ? AVM_HDLC_2 : AVM_HDLC_1;
-+
-+	outl(idx, fc->addr + CHIP_INDEX);
-+	outl(hdlc->ctrl.ctrl, fc->addr + CHIP_WINDOW + HDLC_STATUS);
-+}
-+
-+static inline void
-+__write_ctrl_pciv2(struct fritzcard *fc, struct hdlc_hw *hdlc, u32 channel) {
-+	outl(hdlc->ctrl.ctrl, fc->addr + (channel == 2 ? AVM_HDLC_STATUS_2 :
-+		AVM_HDLC_STATUS_1));
-+}
-+
-+void
-+write_ctrl(struct bchannel *bch, int which) {
-+	struct fritzcard *fc = bch->hw;
-+	struct hdlc_hw *hdlc;
-+
-+	hdlc = &fc->hdlc[(bch->nr - 1) & 1];
-+	pr_debug("%s: hdlc %c wr%x ctrl %x\n", fc->name, '@' + bch->nr,
-+		which, hdlc->ctrl.ctrl);
-+	switch (fc->type) {
-+	case AVM_FRITZ_PCIV2:
-+		__write_ctrl_pciv2(fc, hdlc, bch->nr);
-+		break;
-+	case AVM_FRITZ_PCI:
-+		__write_ctrl_pci(fc, hdlc, bch->nr);
-+		break;
-+	}
-+}
-+
-+
-+static inline u32
-+__read_status_pci(u_long addr, u32 channel)
-+{
-+	outl(channel == 2 ? AVM_HDLC_2 : AVM_HDLC_1, addr + CHIP_INDEX);
-+	return inl(addr + CHIP_WINDOW + HDLC_STATUS);
-+}
-+
-+static inline u32
-+__read_status_pciv2(u_long addr, u32 channel)
-+{
-+	return inl(addr + (channel == 2 ? AVM_HDLC_STATUS_2 :
-+		AVM_HDLC_STATUS_1));
-+}
-+
-+
-+static u32
-+read_status(struct fritzcard *fc, u32 channel)
-+{
-+	switch (fc->type) {
-+	case AVM_FRITZ_PCIV2:
-+		return __read_status_pciv2(fc->addr, channel);
-+	case AVM_FRITZ_PCI:
-+		return __read_status_pci(fc->addr, channel);
-+	}
-+	/* dummy */
-+	return 0;
-+}
-+
-+static void
-+enable_hwirq(struct fritzcard *fc)
-+{
-+	fc->ctrlreg |= AVM_STATUS0_ENA_IRQ;
-+	outb(fc->ctrlreg, fc->addr + 2);
-+}
-+
-+static void
-+disable_hwirq(struct fritzcard *fc)
-+{
-+	fc->ctrlreg &= ~AVM_STATUS0_ENA_IRQ;
-+	outb(fc->ctrlreg, fc->addr + 2);
-+}
-+
-+static int
-+modehdlc(struct bchannel *bch, int protocol)
-+{
-+	struct fritzcard *fc = bch->hw;
-+	struct hdlc_hw *hdlc;
-+
-+	hdlc = &fc->hdlc[(bch->nr - 1) & 1];
-+	pr_debug("%s: hdlc %c protocol %x-->%x ch %d\n", fc->name,
-+		'@' + bch->nr, bch->state, protocol, bch->nr);
-+	hdlc->ctrl.ctrl = 0;
-+	switch (protocol) {
-+	case -1: /* used for init */
-+		bch->state = -1;
-+	case ISDN_P_NONE:
-+		if (bch->state == ISDN_P_NONE)
-+			break;
-+		hdlc->ctrl.sr.cmd  = HDLC_CMD_XRS | HDLC_CMD_RRS;
-+		hdlc->ctrl.sr.mode = HDLC_MODE_TRANS;
-+		write_ctrl(bch, 5);
-+		bch->state = ISDN_P_NONE;
-+		test_and_clear_bit(FLG_HDLC, &bch->Flags);
-+		test_and_clear_bit(FLG_TRANSPARENT, &bch->Flags);
-+		break;
-+	case ISDN_P_B_RAW:
-+		bch->state = protocol;
-+		hdlc->ctrl.sr.cmd  = HDLC_CMD_XRS | HDLC_CMD_RRS;
-+		hdlc->ctrl.sr.mode = HDLC_MODE_TRANS;
-+		write_ctrl(bch, 5);
-+		hdlc->ctrl.sr.cmd = HDLC_CMD_XRS;
-+		write_ctrl(bch, 1);
-+		hdlc->ctrl.sr.cmd = 0;
-+		test_and_set_bit(FLG_TRANSPARENT, &bch->Flags);
-+		break;
-+	case ISDN_P_B_HDLC:
-+		bch->state = protocol;
-+		hdlc->ctrl.sr.cmd  = HDLC_CMD_XRS | HDLC_CMD_RRS;
-+		hdlc->ctrl.sr.mode = HDLC_MODE_ITF_FLG;
-+		write_ctrl(bch, 5);
-+		hdlc->ctrl.sr.cmd = HDLC_CMD_XRS;
-+		write_ctrl(bch, 1);
-+		hdlc->ctrl.sr.cmd = 0;
-+		test_and_set_bit(FLG_HDLC, &bch->Flags);
-+		break;
-+	default:
-+		pr_info("%s: protocol not known %x\n", fc->name, protocol);
-+		return -ENOPROTOOPT;
-+	}
-+	return 0;
-+}
-+
-+static void
-+hdlc_empty_fifo(struct bchannel *bch, int count)
-+{
-+	u32 *ptr;
-+	u8 *p;
-+	u32  val, addr;
-+	int cnt = 0;
-+	struct fritzcard *fc = bch->hw;
-+
-+	pr_debug("%s: %s %d\n", fc->name, __func__, count);
-+	if (!bch->rx_skb) {
-+		bch->rx_skb = mI_alloc_skb(bch->maxlen, GFP_ATOMIC);
-+		if (!bch->rx_skb) {
-+			pr_info("%s: B receive out of memory\n",
-+				fc->name);
-+			return;
-+		}
-+	}
-+	if ((bch->rx_skb->len + count) > bch->maxlen) {
-+		pr_debug("%s: overrun %d\n", fc->name,
-+			bch->rx_skb->len + count);
-+		return;
-+	}
-+	p = skb_put(bch->rx_skb, count);
-+	ptr = (u32 *)p;
-+	if (AVM_FRITZ_PCIV2 == fc->type)
-+		addr = fc->addr + (bch->nr == 2 ?
-+			AVM_HDLC_FIFO_2 : AVM_HDLC_FIFO_1);
-+	else {
-+		addr = fc->addr + CHIP_WINDOW;
-+		outl(bch->nr == 2 ? AVM_HDLC_2 : AVM_HDLC_1, fc->addr);
-+	}
-+	while (cnt < count) {
-+		val = le32_to_cpu(inl(addr));
-+		put_unaligned(val, ptr);
-+		ptr++;
-+		cnt += 4;
-+	}
-+	if (debug & DEBUG_HW_BFIFO) {
-+		snprintf(fc->log, LOG_SIZE, "B%1d-recv %s %d ",
-+			bch->nr, fc->name, count);
-+		print_hex_dump_bytes(fc->log, DUMP_PREFIX_OFFSET, p, count);
-+	}
-+}
-+
-+static void
-+hdlc_fill_fifo(struct bchannel *bch)
-+{
-+	struct fritzcard *fc = bch->hw;
-+	struct hdlc_hw *hdlc;
-+	int count, cnt = 0;
-+	u8 *p;
-+	u32 *ptr, val, addr;
-+
-+	hdlc = &fc->hdlc[(bch->nr - 1) & 1];
-+	if (!bch->tx_skb)
-+		return;
-+	count = bch->tx_skb->len - bch->tx_idx;
-+	if (count <= 0)
-+		return;
-+	p = bch->tx_skb->data + bch->tx_idx;
-+	hdlc->ctrl.sr.cmd &= ~HDLC_CMD_XME;
-+	if (count > HDLC_FIFO_SIZE) {
-+		count = HDLC_FIFO_SIZE;
-+	} else {
-+		if (test_bit(FLG_HDLC, &bch->Flags))
-+			hdlc->ctrl.sr.cmd |= HDLC_CMD_XME;
-+	}
-+	pr_debug("%s: %s %d/%d/%d", fc->name, __func__, count,
-+		bch->tx_idx, bch->tx_skb->len);
-+	ptr = (u32 *)p;
-+	bch->tx_idx += count;
-+	hdlc->ctrl.sr.xml = ((count == HDLC_FIFO_SIZE) ? 0 : count);
-+	if (AVM_FRITZ_PCIV2 == fc->type) {
-+		__write_ctrl_pciv2(fc, hdlc, bch->nr);
-+		addr = fc->addr + (bch->nr == 2 ?
-+			AVM_HDLC_FIFO_2 : AVM_HDLC_FIFO_1);
-+	} else {
-+		__write_ctrl_pci(fc, hdlc, bch->nr);
-+		addr = fc->addr + CHIP_WINDOW;
-+	}
-+	while (cnt < count) {
-+		val = get_unaligned(ptr);
-+		outl(cpu_to_le32(val), addr);
-+		ptr++;
-+		cnt += 4;
-+	}
-+	if (debug & DEBUG_HW_BFIFO) {
-+		snprintf(fc->log, LOG_SIZE, "B%1d-send %s %d ",
-+			bch->nr, fc->name, count);
-+		print_hex_dump_bytes(fc->log, DUMP_PREFIX_OFFSET, p, count);
-+	}
-+}
-+
-+static void
-+HDLC_irq_xpr(struct bchannel *bch)
-+{
-+	if (bch->tx_skb && bch->tx_idx < bch->tx_skb->len)
-+		hdlc_fill_fifo(bch);
-+	else {
-+		if (bch->tx_skb) {
-+			/* send confirm, on trans, free on hdlc. */
-+			if (test_bit(FLG_TRANSPARENT, &bch->Flags))
-+				confirm_Bsend(bch);
-+			dev_kfree_skb(bch->tx_skb);
-+		}
-+		if (get_next_bframe(bch))
-+			hdlc_fill_fifo(bch);
-+	}
-+}
-+
-+static void
-+HDLC_irq(struct bchannel *bch, u32 stat)
-+{
-+	struct fritzcard *fc = bch->hw;
-+	int		len;
-+	struct hdlc_hw	*hdlc;
-+
-+	hdlc = &fc->hdlc[(bch->nr - 1) & 1];
-+	pr_debug("%s: ch%d stat %#x\n", fc->name, bch->nr, stat);
-+	if (stat & HDLC_INT_RPR) {
-+		if (stat & HDLC_STAT_RDO) {
-+			hdlc->ctrl.sr.xml = 0;
-+			hdlc->ctrl.sr.cmd |= HDLC_CMD_RRS;
-+			write_ctrl(bch, 1);
-+			hdlc->ctrl.sr.cmd &= ~HDLC_CMD_RRS;
-+			write_ctrl(bch, 1);
-+			if (bch->rx_skb)
-+				skb_trim(bch->rx_skb, 0);
-+		} else {
-+			len = (stat & HDLC_STAT_RML_MASK) >> 8;
-+			if (!len)
-+				len = 32;
-+			hdlc_empty_fifo(bch, len);
-+			if (!bch->rx_skb)
-+				goto handle_tx;
-+			if ((stat & HDLC_STAT_RME) || test_bit(FLG_TRANSPARENT,
-+			    &bch->Flags)) {
-+				if (((stat & HDLC_STAT_CRCVFRRAB) ==
-+				    HDLC_STAT_CRCVFR) ||
-+				    test_bit(FLG_TRANSPARENT, &bch->Flags)) {
-+					recv_Bchannel(bch, 0);
-+				} else {
-+					pr_debug("%s: got invalid frame\n",
-+						fc->name);
-+					skb_trim(bch->rx_skb, 0);
+ /*
+@@ -1025,7 +1024,7 @@ actcapi_debug_msg(struct sk_buff *skb, int direction)
+ #ifdef DEBUG_DUMP_SKB
+ 	dump_skb(skb);
+ #endif
+-	for (i = 0; i < num_valid_msg; i++)
++	for (i = 0; i < ARRAY_SIZE(valid_msg); i++)
+ 		if ((msg->hdr.cmd.cmd == valid_msg[i].cmd.cmd) &&
+ 		    (msg->hdr.cmd.subcmd == valid_msg[i].cmd.subcmd)) {
+ 			descr = valid_msg[i].description;
+diff --git a/drivers/isdn/act2000/module.c b/drivers/isdn/act2000/module.c
+index 8325022..f774e12 100644
+--- a/drivers/isdn/act2000/module.c
++++ b/drivers/isdn/act2000/module.c
+@@ -23,7 +23,6 @@ static unsigned short act2000_isa_ports[] =
+         0x0200, 0x0240, 0x0280, 0x02c0, 0x0300, 0x0340, 0x0380,
+         0xcfe0, 0xcfa0, 0xcf60, 0xcf20, 0xcee0, 0xcea0, 0xce60,
+ };
+-#define ISA_NRPORTS (sizeof(act2000_isa_ports)/sizeof(unsigned short))
+ 
+ static act2000_card *cards = (act2000_card *) NULL;
+ 
+@@ -686,21 +685,21 @@ act2000_addcard(int bus, int port, int irq, char *id)
+ 		 * This may result in more than one card detected.
+ 		 */
+ 		switch (bus) {
+-			case ACT2000_BUS_ISA:
+-				for (i = 0; i < ISA_NRPORTS; i++)
+-					if (act2000_isa_detect(act2000_isa_ports[i])) {
+-						printk(KERN_INFO
+-						       "act2000: Detected ISA card at port 0x%x\n",
+-						       act2000_isa_ports[i]);
+-						act2000_alloccard(bus, act2000_isa_ports[i], irq, id);
+-					}
+-				break;
+-			case ACT2000_BUS_MCA:
+-			case ACT2000_BUS_PCMCIA:
+-			default:
+-				printk(KERN_WARNING
+-				       "act2000: addcard: Invalid BUS type %d\n",
+-				       bus);
++		case ACT2000_BUS_ISA:
++			for (i = 0; i < ARRAY_SIZE(act2000_isa_ports); i++)
++				if (act2000_isa_detect(act2000_isa_ports[i])) {
++					printk(KERN_INFO "act2000: Detected "
++						"ISA card at port 0x%x\n",
++						act2000_isa_ports[i]);
++					act2000_alloccard(bus,
++						act2000_isa_ports[i], irq, id);
 +				}
-+			}
-+		}
-+	}
-+handle_tx:
-+	if (stat & HDLC_INT_XDU) {
-+		/* Here we lost an TX interrupt, so
-+		 * restart transmitting the whole frame on HDLC
-+		 * in transparent mode we send the next data
-+		 */
-+		if (bch->tx_skb)
-+			pr_debug("%s: ch%d XDU len(%d) idx(%d) Flags(%lx)\n",
-+				fc->name, bch->nr, bch->tx_skb->len,
-+				bch->tx_idx, bch->Flags);
-+		else
-+			pr_debug("%s: ch%d XDU no tx_skb Flags(%lx)\n",
-+				fc->name, bch->nr, bch->Flags);
-+		if (bch->tx_skb && bch->tx_skb->len) {
-+			if (!test_bit(FLG_TRANSPARENT, &bch->Flags))
-+				bch->tx_idx = 0;
-+		}
-+		hdlc->ctrl.sr.xml = 0;
-+		hdlc->ctrl.sr.cmd |= HDLC_CMD_XRS;
-+		write_ctrl(bch, 1);
-+		hdlc->ctrl.sr.cmd &= ~HDLC_CMD_XRS;
-+		HDLC_irq_xpr(bch);
-+		return;
-+	} else if (stat & HDLC_INT_XPR)
-+		HDLC_irq_xpr(bch);
-+}
-+
-+static inline void
-+HDLC_irq_main(struct fritzcard *fc)
-+{
-+	u32 stat;
-+	struct bchannel *bch;
-+
-+	stat = read_status(fc, 1);
-+	if (stat & HDLC_INT_MASK) {
-+		bch = Sel_BCS(fc, 1);
-+		if (bch)
-+			HDLC_irq(bch, stat);
-+		else
-+			pr_debug("%s: spurious ch1 IRQ\n", fc->name);
-+	}
-+	stat = read_status(fc, 2);
-+	if (stat & HDLC_INT_MASK) {
-+		bch = Sel_BCS(fc, 2);
-+		if (bch)
-+			HDLC_irq(bch, stat);
-+		else
-+			pr_debug("%s: spurious ch2 IRQ\n", fc->name);
-+	}
-+}
-+
-+static irqreturn_t
-+avm_fritz_interrupt(int intno, void *dev_id)
-+{
-+	struct fritzcard *fc = dev_id;
-+	u8 val;
-+	u8 sval;
-+
-+	spin_lock(&fc->lock);
-+	sval = inb(fc->addr + 2);
-+	pr_debug("%s: irq stat0 %x\n", fc->name, sval);
-+	if ((sval & AVM_STATUS0_IRQ_MASK) == AVM_STATUS0_IRQ_MASK) {
-+		/* shared  IRQ from other HW */
-+		spin_unlock(&fc->lock);
-+		return IRQ_NONE;
-+	}
-+	fc->irqcnt++;
-+
-+	if (!(sval & AVM_STATUS0_IRQ_ISAC)) {
-+		val = ReadISAC_V1(fc, ISAC_ISTA);
-+		mISDNisac_irq(&fc->isac, val);
-+	}
-+	if (!(sval & AVM_STATUS0_IRQ_HDLC))
-+		HDLC_irq_main(fc);
-+	spin_unlock(&fc->lock);
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t
-+avm_fritzv2_interrupt(int intno, void *dev_id)
-+{
-+	struct fritzcard *fc = dev_id;
-+	u8 val;
-+	u8 sval;
-+
-+	spin_lock(&fc->lock);
-+	sval = inb(fc->addr + 2);
-+	pr_debug("%s: irq stat0 %x\n", fc->name, sval);
-+	if (!(sval & AVM_STATUS0_IRQ_MASK)) {
-+		/* shared  IRQ from other HW */
-+		spin_unlock(&fc->lock);
-+		return IRQ_NONE;
-+	}
-+	fc->irqcnt++;
-+
-+	if (sval & AVM_STATUS0_IRQ_HDLC)
-+		HDLC_irq_main(fc);
-+	if (sval & AVM_STATUS0_IRQ_ISAC) {
-+		val = ReadISAC_V2(fc, ISACX_ISTA);
-+		mISDNisac_irq(&fc->isac, val);
-+	}
-+	if (sval & AVM_STATUS0_IRQ_TIMER) {
-+		pr_debug("%s: timer irq\n", fc->name);
-+		outb(fc->ctrlreg | AVM_STATUS0_RES_TIMER, fc->addr + 2);
-+		udelay(1);
-+		outb(fc->ctrlreg, fc->addr + 2);
-+	}
-+	spin_unlock(&fc->lock);
-+	return IRQ_HANDLED;
-+}
-+
-+static int
-+avm_l2l1B(struct mISDNchannel *ch, struct sk_buff *skb)
-+{
-+	struct bchannel *bch = container_of(ch, struct bchannel, ch);
-+	struct fritzcard *fc = bch->hw;
-+	int ret = -EINVAL;
-+	struct mISDNhead *hh = mISDN_HEAD_P(skb);
-+	u32 id;
-+	u_long flags;
-+
-+	switch (hh->prim) {
-+	case PH_DATA_REQ:
-+		spin_lock_irqsave(&fc->lock, flags);
-+		ret = bchannel_senddata(bch, skb);
-+		if (ret > 0) { /* direct TX */
-+			id = hh->id; /* skb can be freed */
-+			hdlc_fill_fifo(bch);
-+			ret = 0;
-+			spin_unlock_irqrestore(&fc->lock, flags);
-+			if (!test_bit(FLG_TRANSPARENT, &bch->Flags))
-+				queue_ch_frame(ch, PH_DATA_CNF, id, NULL);
-+		} else
-+			spin_unlock_irqrestore(&fc->lock, flags);
-+		return ret;
-+	case PH_ACTIVATE_REQ:
-+		spin_lock_irqsave(&fc->lock, flags);
-+		if (!test_and_set_bit(FLG_ACTIVE, &bch->Flags))
-+			ret = modehdlc(bch, ch->protocol);
-+		else
-+			ret = 0;
-+		spin_unlock_irqrestore(&fc->lock, flags);
-+		if (!ret)
-+			_queue_data(ch, PH_ACTIVATE_IND, MISDN_ID_ANY, 0,
-+				NULL, GFP_KERNEL);
-+		break;
-+	case PH_DEACTIVATE_REQ:
-+		spin_lock_irqsave(&fc->lock, flags);
-+		mISDN_clear_bchannel(bch);
-+		modehdlc(bch, ISDN_P_NONE);
-+		spin_unlock_irqrestore(&fc->lock, flags);
-+		_queue_data(ch, PH_DEACTIVATE_IND, MISDN_ID_ANY, 0,
-+			NULL, GFP_KERNEL);
-+		ret = 0;
-+		break;
-+	}
-+	if (!ret)
-+		dev_kfree_skb(skb);
-+	return ret;
-+}
-+
-+static void
-+inithdlc(struct fritzcard *fc)
-+{
-+	modehdlc(&fc->bch[0], -1);
-+	modehdlc(&fc->bch[1], -1);
-+}
-+
-+void
-+clear_pending_hdlc_ints(struct fritzcard *fc)
-+{
-+	u32 val;
-+
-+	val = read_status(fc, 1);
-+	pr_debug("%s: HDLC 1 STA %x\n", fc->name, val);
-+	val = read_status(fc, 2);
-+	pr_debug("%s: HDLC 2 STA %x\n", fc->name, val);
-+}
-+
-+static void
-+reset_avm(struct fritzcard *fc)
-+{
-+	switch (fc->type) {
-+	case AVM_FRITZ_PCI:
-+		fc->ctrlreg = AVM_STATUS0_RESET | AVM_STATUS0_DIS_TIMER;
-+		break;
-+	case AVM_FRITZ_PCIV2:
-+		fc->ctrlreg = AVM_STATUS0_RESET;
-+		break;
-+	}
-+	if (debug & DEBUG_HW)
-+		pr_notice("%s: reset\n", fc->name);
-+	disable_hwirq(fc);
-+	mdelay(5);
-+	switch (fc->type) {
-+	case AVM_FRITZ_PCI:
-+		fc->ctrlreg = AVM_STATUS0_DIS_TIMER | AVM_STATUS0_RES_TIMER;
-+		disable_hwirq(fc);
-+		outb(AVM_STATUS1_ENA_IOM, fc->addr + 3);
-+		break;
-+	case AVM_FRITZ_PCIV2:
-+		fc->ctrlreg = 0;
-+		disable_hwirq(fc);
-+		break;
-+	}
-+	mdelay(1);
-+	if (debug & DEBUG_HW)
-+		pr_notice("%s: S0/S1 %x/%x\n", fc->name,
-+			inb(fc->addr + 2), inb(fc->addr + 3));
-+}
-+
-+static int
-+init_card(struct fritzcard *fc)
-+{
-+	int		ret, cnt = 3;
-+	u_long		flags;
-+
-+	reset_avm(fc); /* disable IRQ */
-+	if (fc->type == AVM_FRITZ_PCIV2)
-+		ret = request_irq(fc->irq, avm_fritzv2_interrupt,
-+			IRQF_SHARED, fc->name, fc);
-+	else
-+		ret = request_irq(fc->irq, avm_fritz_interrupt,
-+			IRQF_SHARED, fc->name, fc);
-+	if (ret) {
-+		pr_info("%s: couldn't get interrupt %d\n",
-+			fc->name, fc->irq);
-+		return ret;
-+	}
-+	while (cnt--) {
-+		spin_lock_irqsave(&fc->lock, flags);
-+		ret = fc->isac.init(&fc->isac);
-+		if (ret) {
-+			spin_unlock_irqrestore(&fc->lock, flags);
-+			pr_info("%s: ISAC init failed with %d\n",
-+				fc->name, ret);
 +			break;
-+		}
-+		clear_pending_hdlc_ints(fc);
-+		inithdlc(fc);
-+		enable_hwirq(fc);
-+		/* RESET Receiver and Transmitter */
-+		if (AVM_FRITZ_PCIV2 == fc->type) {
-+			WriteISAC_V2(fc, ISACX_MASK, 0);
-+			WriteISAC_V2(fc, ISACX_CMDRD, 0x41);
-+		} else {
-+			WriteISAC_V1(fc, ISAC_MASK, 0);
-+			WriteISAC_V1(fc, ISAC_CMDR, 0x41);
-+		}
-+		spin_unlock_irqrestore(&fc->lock, flags);
-+		/* Timeout 10ms */
-+		msleep_interruptible(10);
-+		if (debug & DEBUG_HW)
-+			pr_notice("%s: IRQ %d count %d\n", fc->name,
-+				fc->irq, fc->irqcnt);
-+		if (!fc->irqcnt) {
-+			pr_info("%s: IRQ(%d) getting no IRQs during init %d\n",
-+				fc->name, fc->irq, 3 - cnt);
-+			reset_avm(fc);
-+		} else
-+			return 0;
-+	}
-+	free_irq(fc->irq, fc);
-+	return -EIO;
-+}
-+
-+static int
-+channel_bctrl(struct bchannel *bch, struct mISDN_ctrl_req *cq)
-+{
-+	int ret = 0;
-+	struct fritzcard *fc = bch->hw;
-+
-+	switch (cq->op) {
-+	case MISDN_CTRL_GETOP:
-+		cq->op = 0;
-+		break;
-+	/* Nothing implemented yet */
-+	case MISDN_CTRL_FILL_EMPTY:
-+	default:
-+		pr_info("%s: %s unknown Op %x\n", fc->name, __func__, cq->op);
-+		ret = -EINVAL;
-+		break;
-+	}
-+	return ret;
-+}
-+
-+static int
-+avm_bctrl(struct mISDNchannel *ch, u32 cmd, void *arg)
-+{
-+	struct bchannel *bch = container_of(ch, struct bchannel, ch);
-+	struct fritzcard *fc = bch->hw;
-+	int ret = -EINVAL;
-+	u_long flags;
-+
-+	pr_debug("%s: %s cmd:%x %p\n", fc->name, __func__, cmd, arg);
-+	switch (cmd) {
-+	case CLOSE_CHANNEL:
-+		test_and_clear_bit(FLG_OPEN, &bch->Flags);
-+		if (test_bit(FLG_ACTIVE, &bch->Flags)) {
-+			spin_lock_irqsave(&fc->lock, flags);
-+			mISDN_freebchannel(bch);
-+			test_and_clear_bit(FLG_TX_BUSY, &bch->Flags);
-+			test_and_clear_bit(FLG_ACTIVE, &bch->Flags);
-+			modehdlc(bch, ISDN_P_NONE);
-+			spin_unlock_irqrestore(&fc->lock, flags);
-+		}
-+		ch->protocol = ISDN_P_NONE;
-+		ch->peer = NULL;
-+		module_put(THIS_MODULE);
-+		ret = 0;
-+		break;
-+	case CONTROL_CHANNEL:
-+		ret = channel_bctrl(bch, arg);
-+		break;
-+	default:
-+		pr_info("%s: %s unknown prim(%x)\n", fc->name, __func__, cmd);
-+	}
-+	return ret;
-+}
-+
-+static int
-+channel_ctrl(struct fritzcard  *fc, struct mISDN_ctrl_req *cq)
-+{
-+	int	ret = 0;
-+
-+	switch (cq->op) {
-+	case MISDN_CTRL_GETOP:
-+		cq->op = MISDN_CTRL_LOOP;
-+		break;
-+	case MISDN_CTRL_LOOP:
-+		/* cq->channel: 0 disable, 1 B1 loop 2 B2 loop, 3 both */
-+		if (cq->channel < 0 || cq->channel > 3) {
-+			ret = -EINVAL;
-+			break;
-+		}
-+		ret = fc->isac.ctrl(&fc->isac, HW_TESTLOOP, cq->channel);
-+		break;
-+	default:
-+		pr_info("%s: %s unknown Op %x\n", fc->name, __func__, cq->op);
-+		ret = -EINVAL;
-+		break;
-+	}
-+	return ret;
-+}
-+
-+static int
-+open_bchannel(struct fritzcard *fc, struct channel_req *rq)
-+{
-+	struct bchannel		*bch;
-+
-+	if (rq->adr.channel > 2)
-+		return -EINVAL;
-+	if (rq->protocol == ISDN_P_NONE)
-+		return -EINVAL;
-+	bch = &fc->bch[rq->adr.channel - 1];
-+	if (test_and_set_bit(FLG_OPEN, &bch->Flags))
-+		return -EBUSY; /* b-channel can be only open once */
-+	test_and_clear_bit(FLG_FILLEMPTY, &bch->Flags);
-+	bch->ch.protocol = rq->protocol;
-+	rq->ch = &bch->ch;
-+	return 0;
-+}
-+
-+/*
-+ * device control function
-+ */
-+static int
-+avm_dctrl(struct mISDNchannel *ch, u32 cmd, void *arg)
-+{
-+	struct mISDNdevice	*dev = container_of(ch, struct mISDNdevice, D);
-+	struct dchannel		*dch = container_of(dev, struct dchannel, dev);
-+	struct fritzcard	*fc = dch->hw;
-+	struct channel_req	*rq;
-+	int			err = 0;
-+
-+	pr_debug("%s: %s cmd:%x %p\n", fc->name, __func__, cmd, arg);
-+	switch (cmd) {
-+	case OPEN_CHANNEL:
-+		rq = arg;
-+		if (rq->protocol == ISDN_P_TE_S0)
-+			err = fc->isac.open(&fc->isac, rq);
-+		else
-+			err = open_bchannel(fc, rq);
-+		if (err)
-+			break;
-+		if (!try_module_get(THIS_MODULE))
-+			pr_info("%s: cannot get module\n", fc->name);
-+		break;
-+	case CLOSE_CHANNEL:
-+		pr_debug("%s: dev(%d) close from %p\n", fc->name, dch->dev.id,
-+			__builtin_return_address(0));
-+		module_put(THIS_MODULE);
-+		break;
-+	case CONTROL_CHANNEL:
-+		err = channel_ctrl(fc, arg);
-+		break;
-+	default:
-+		pr_debug("%s: %s unknown command %x\n",
-+			fc->name, __func__, cmd);
-+		return -EINVAL;
-+	}
-+	return err;
-+}
-+
-+int
-+setup_fritz(struct fritzcard *fc)
-+{
-+	u32 val, ver;
-+
-+	if (!request_region(fc->addr, 32, fc->name)) {
-+		pr_info("%s: AVM config port %x-%x already in use\n",
-+			fc->name, fc->addr, fc->addr + 31);
-+		return -EIO;
-+	}
-+	switch (fc->type) {
-+	case AVM_FRITZ_PCI:
-+		val = inl(fc->addr);
-+		outl(AVM_HDLC_1, fc->addr + CHIP_INDEX);
-+		ver = inl(fc->addr + CHIP_WINDOW + HDLC_STATUS) >> 24;
-+		if (debug & DEBUG_HW) {
-+			pr_notice("%s: PCI stat %#x\n", fc->name, val);
-+			pr_notice("%s: PCI Class %X Rev %d\n", fc->name,
-+				val & 0xff, (val >> 8) & 0xff);
-+			pr_notice("%s: HDLC version %x\n", fc->name, ver & 0xf);
-+		}
-+		ASSIGN_FUNC(V1, ISAC, fc->isac);
-+		fc->isac.type = IPAC_TYPE_ISAC;
-+		break;
-+	case AVM_FRITZ_PCIV2:
-+		val = inl(fc->addr);
-+		ver = inl(fc->addr + AVM_HDLC_STATUS_1) >> 24;
-+		if (debug & DEBUG_HW) {
-+			pr_notice("%s: PCI V2 stat %#x\n", fc->name, val);
-+			pr_notice("%s: PCI V2 Class %X Rev %d\n", fc->name,
-+				val & 0xff, (val>>8) & 0xff);
-+			pr_notice("%s: HDLC version %x\n", fc->name, ver & 0xf);
-+		}
-+		ASSIGN_FUNC(V2, ISAC, fc->isac);
-+		fc->isac.type = IPAC_TYPE_ISACX;
-+		break;
-+	default:
-+		release_region(fc->addr, 32);
-+		pr_info("%s: AVM unknown type %d\n", fc->name, fc->type);
-+		return -ENODEV;
-+	}
-+	pr_notice("%s: %s config irq:%d base:0x%X\n", fc->name,
-+		(fc->type == AVM_FRITZ_PCI) ? "AVM Fritz!CARD PCI" :
-+		"AVM Fritz!CARD PCIv2", fc->irq, fc->addr);
-+	return 0;
-+}
-+
-+static void
-+release_card(struct fritzcard *card)
-+{
-+	u_long flags;
-+
-+	disable_hwirq(card);
-+	spin_lock_irqsave(&card->lock, flags);
-+	modehdlc(&card->bch[0], ISDN_P_NONE);
-+	modehdlc(&card->bch[1], ISDN_P_NONE);
-+	spin_unlock_irqrestore(&card->lock, flags);
-+	card->isac.release(&card->isac);
-+	free_irq(card->irq, card);
-+	mISDN_freebchannel(&card->bch[1]);
-+	mISDN_freebchannel(&card->bch[0]);
-+	mISDN_unregister_device(&card->isac.dch.dev);
-+	release_region(card->addr, 32);
-+	pci_disable_device(card->pdev);
-+	pci_set_drvdata(card->pdev, NULL);
-+	write_lock_irqsave(&card_lock, flags);
-+	list_del(&card->list);
-+	write_unlock_irqrestore(&card_lock, flags);
-+	kfree(card);
-+	AVM_cnt--;
-+}
-+
-+static int __devinit
-+setup_instance(struct fritzcard *card)
-+{
-+	int i, err;
-+	u_long flags;
-+
-+	snprintf(card->name, MISDN_MAX_IDLEN - 1, "AVM.%d", AVM_cnt + 1);
-+	write_lock_irqsave(&card_lock, flags);
-+	list_add_tail(&card->list, &Cards);
-+	write_unlock_irqrestore(&card_lock, flags);
-+
-+	_set_debug(card);
-+	card->isac.name = card->name;
-+	spin_lock_init(&card->lock);
-+	card->isac.hwlock = &card->lock;
-+	mISDNisac_init(&card->isac, card);
-+
-+	card->isac.dch.dev.Bprotocols = (1 << (ISDN_P_B_RAW & ISDN_P_B_MASK)) |
-+	    (1 << (ISDN_P_B_HDLC & ISDN_P_B_MASK));
-+	card->isac.dch.dev.D.ctrl = avm_dctrl;
-+	for (i = 0; i < 2; i++) {
-+		card->bch[i].nr = i + 1;
-+		set_channelmap(i + 1, card->isac.dch.dev.channelmap);
-+		mISDN_initbchannel(&card->bch[i], MAX_DATA_MEM);
-+		card->bch[i].hw = card;
-+		card->bch[i].ch.send = avm_l2l1B;
-+		card->bch[i].ch.ctrl = avm_bctrl;
-+		card->bch[i].ch.nr = i + 1;
-+		list_add(&card->bch[i].ch.list, &card->isac.dch.dev.bchannels);
-+	}
-+	err = setup_fritz(card);
-+	if (err)
-+		goto error;
-+	err = mISDN_register_device(&card->isac.dch.dev, &card->pdev->dev,
-+		card->name);
-+	if (err)
-+		goto error_reg;
-+	err = init_card(card);
-+	if (!err)  {
-+		AVM_cnt++;
-+		pr_notice("AVM %d cards installed DEBUG\n", AVM_cnt);
-+		return 0;
-+	}
-+	mISDN_unregister_device(&card->isac.dch.dev);
-+error_reg:
-+	release_region(card->addr, 32);
-+error:
-+	card->isac.release(&card->isac);
-+	mISDN_freebchannel(&card->bch[1]);
-+	mISDN_freebchannel(&card->bch[0]);
-+	write_lock_irqsave(&card_lock, flags);
-+	list_del(&card->list);
-+	write_unlock_irqrestore(&card_lock, flags);
-+	kfree(card);
-+	return err;
-+}
-+
-+static int __devinit
-+fritzpci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
-+{
-+	int err = -ENOMEM;
-+	struct fritzcard *card;
-+
-+	card = kzalloc(sizeof(struct fritzcard), GFP_KERNEL);
-+	if (!card) {
-+		pr_info("No kmem for fritzcard\n");
-+		return err;
-+	}
-+	if (pdev->device == PCI_DEVICE_ID_AVM_A1_V2)
-+		card->type = AVM_FRITZ_PCIV2;
-+	else
-+		card->type = AVM_FRITZ_PCI;
-+	card->pdev = pdev;
-+	err = pci_enable_device(pdev);
-+	if (err) {
-+		kfree(card);
-+		return err;
-+	}
-+
-+	pr_notice("mISDN: found adapter %s at %s\n",
-+	       (char *) ent->driver_data, pci_name(pdev));
-+
-+	card->addr = pci_resource_start(pdev, 1);
-+	card->irq = pdev->irq;
-+	pci_set_drvdata(pdev, card);
-+	err = setup_instance(card);
-+	if (err)
-+		pci_set_drvdata(pdev, NULL);
-+	return err;
-+}
-+
-+static void __devexit
-+fritz_remove_pci(struct pci_dev *pdev)
-+{
-+	struct fritzcard *card = pci_get_drvdata(pdev);
-+
-+	if (card)
-+		release_card(card);
-+	else
-+		if (debug)
-+			pr_info("%s: drvdata allready removed\n", __func__);
-+}
-+
-+static struct pci_device_id fcpci_ids[] __devinitdata = {
-+	{ PCI_VENDOR_ID_AVM, PCI_DEVICE_ID_AVM_A1, PCI_ANY_ID, PCI_ANY_ID,
-+	  0, 0, (unsigned long) "Fritz!Card PCI"},
-+	{ PCI_VENDOR_ID_AVM, PCI_DEVICE_ID_AVM_A1_V2, PCI_ANY_ID, PCI_ANY_ID,
-+	  0, 0, (unsigned long) "Fritz!Card PCI v2" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(pci, fcpci_ids);
-+
-+static struct pci_driver fcpci_driver = {
-+	.name = "fcpci",
-+	.probe = fritzpci_probe,
-+	.remove = __devexit_p(fritz_remove_pci),
-+	.id_table = fcpci_ids,
-+};
-+
-+static int __init AVM_init(void)
-+{
-+	int err;
-+
-+	pr_notice("AVM Fritz PCI driver Rev. %s\n", AVMFRITZ_REV);
-+	err = pci_register_driver(&fcpci_driver);
-+	return err;
-+}
-+
-+static void __exit AVM_cleanup(void)
-+{
-+	pci_unregister_driver(&fcpci_driver);
-+}
-+
-+module_init(AVM_init);
-+module_exit(AVM_cleanup);
++		case ACT2000_BUS_MCA:
++		case ACT2000_BUS_PCMCIA:
++		default:
++			printk(KERN_WARNING
++				"act2000: addcard: Invalid BUS type %d\n", bus);
+ 		}
+ 	}
+ 	if (!cards)
+diff --git a/drivers/isdn/hardware/eicon/message.c b/drivers/isdn/hardware/eicon/message.c
+index 31f91c1..27d5dd6 100644
+--- a/drivers/isdn/hardware/eicon/message.c
++++ b/drivers/isdn/hardware/eicon/message.c
+@@ -551,9 +551,7 @@ word api_put(APPL   * appl, CAPI_MSG   * msg)
+   dbug(1,dprintf("com=%x",msg->header.command));
+ 
+   for(j=0;j<MAX_MSG_PARMS+1;j++) msg_parms[j].length = 0;
+-  for(i=0, ret = _BAD_MSG;
+-      i<(sizeof(ftable)/sizeof(struct _ftable));
+-      i++) {
++  for(i=0, ret = _BAD_MSG; i < ARRAY_SIZE(ftable); i++) {
+ 
+     if(ftable[i].command==msg->header.command) {
+       /* break loop if the message is correct, otherwise continue scan  */
+diff --git a/drivers/isdn/hardware/eicon/os_4bri.c b/drivers/isdn/hardware/eicon/os_4bri.c
+index c964b8d..cb7616c 100644
+--- a/drivers/isdn/hardware/eicon/os_4bri.c
++++ b/drivers/isdn/hardware/eicon/os_4bri.c
+@@ -149,8 +149,7 @@ int diva_4bri_init_card(diva_os_xdi_adapter_t * a)
+ 	diva_os_xdi_adapter_t *diva_current;
+ 	diva_os_xdi_adapter_t *adapter_list[4];
+ 	PISDN_ADAPTER Slave;
+-	unsigned long bar_length[sizeof(_4bri_bar_length) /
+-				 sizeof(_4bri_bar_length[0])];
++	unsigned long bar_length[ARRAY_SIZE(_4bri_bar_length)];
+ 	int v2 = _4bri_is_rev_2_card(a->CardOrdinal);
+ 	int tasks = _4bri_is_rev_2_bri_card(a->CardOrdinal) ? 1 : MQ_INSTANCE_COUNT;
+ 	int factor = (tasks == 1) ? 1 : 2;
+diff --git a/drivers/isdn/hisax/callc.c b/drivers/isdn/hisax/callc.c
+index 025a20d..475b1a0 100644
+--- a/drivers/isdn/hisax/callc.c
++++ b/drivers/isdn/hisax/callc.c
+@@ -833,8 +833,6 @@ static struct FsmNode fnlist[] __initdata =
+ };
+ /* *INDENT-ON* */
+ 
+-#define FNCOUNT (sizeof(fnlist)/sizeof(struct FsmNode))
+-
+ int __init
+ CallcNew(void)
+ {
+@@ -842,7 +840,7 @@ CallcNew(void)
+ 	callcfsm.event_count = EVENT_COUNT;
+ 	callcfsm.strEvent = strEvent;
+ 	callcfsm.strState = strState;
+-	return FsmNew(&callcfsm, fnlist, FNCOUNT);
++	return FsmNew(&callcfsm, fnlist, ARRAY_SIZE(fnlist));
+ }
+ 
+ void
+diff --git a/drivers/isdn/hisax/isdnl1.c b/drivers/isdn/hisax/isdnl1.c
+index 317f16f..9ce6abe 100644
+--- a/drivers/isdn/hisax/isdnl1.c
++++ b/drivers/isdn/hisax/isdnl1.c
+@@ -647,8 +647,6 @@ static struct FsmNode L1SFnList[] __initdata =
+ 	{ST_L1_F8, EV_TIMER_DEACT, l1_timer_deact},
+ };
+ 
+-#define L1S_FN_COUNT (sizeof(L1SFnList)/sizeof(struct FsmNode))
+-
+ #ifdef HISAX_UINTERFACE
+ static void
+ l1_deact_req_u(struct FsmInst *fi, int event, void *arg)
+@@ -706,8 +704,6 @@ static struct FsmNode L1UFnList[] __initdata =
+ 	{ST_L1_RESET, EV_TIMER_DEACT, l1_timer_deact},
+ };
+ 
+-#define L1U_FN_COUNT (sizeof(L1UFnList)/sizeof(struct FsmNode))
+-
+ #endif
+ 
+ static void
+@@ -754,8 +750,6 @@ static struct FsmNode L1BFnList[] __initdata =
+ 	{ST_L1_WAIT_DEACT, EV_TIMER_DEACT, l1b_timer_deact},
+ };
+ 
+-#define L1B_FN_COUNT (sizeof(L1BFnList)/sizeof(struct FsmNode))
+-
+ int __init 
+ Isdnl1New(void)
+ {
+@@ -765,7 +759,7 @@ Isdnl1New(void)
+ 	l1fsm_s.event_count = L1_EVENT_COUNT;
+ 	l1fsm_s.strEvent = strL1Event;
+ 	l1fsm_s.strState = strL1SState;
+-	retval = FsmNew(&l1fsm_s, L1SFnList, L1S_FN_COUNT);
++	retval = FsmNew(&l1fsm_s, L1SFnList, ARRAY_SIZE(L1SFnList));
+ 	if (retval)
+ 		return retval;
+ 
+@@ -773,7 +767,7 @@ Isdnl1New(void)
+ 	l1fsm_b.event_count = L1_EVENT_COUNT;
+ 	l1fsm_b.strEvent = strL1Event;
+ 	l1fsm_b.strState = strL1BState;
+-	retval = FsmNew(&l1fsm_b, L1BFnList, L1B_FN_COUNT);
++	retval = FsmNew(&l1fsm_b, L1BFnList, ARRAY_SIZE(L1BFnList));
+ 	if (retval) {
+ 		FsmFree(&l1fsm_s);
+ 		return retval;
+@@ -783,7 +777,7 @@ Isdnl1New(void)
+ 	l1fsm_u.event_count = L1_EVENT_COUNT;
+ 	l1fsm_u.strEvent = strL1Event;
+ 	l1fsm_u.strState = strL1UState;
+-	retval = FsmNew(&l1fsm_u, L1UFnList, L1U_FN_COUNT);
++	retval = FsmNew(&l1fsm_u, L1UFnList, ARRAY_SIZE(L1UFnList));
+ 	if (retval) {
+ 		FsmFree(&l1fsm_s);
+ 		FsmFree(&l1fsm_b);
+diff --git a/drivers/isdn/hisax/isdnl2.c b/drivers/isdn/hisax/isdnl2.c
+index 3446f24..7b9496a 100644
+--- a/drivers/isdn/hisax/isdnl2.c
++++ b/drivers/isdn/hisax/isdnl2.c
+@@ -1623,8 +1623,6 @@ static struct FsmNode L2FnList[] __initdata =
+ 	{ST_L2_8, EV_L1_DEACTIVATE, l2_persistent_da},
+ };
+ 
+-#define L2_FN_COUNT (sizeof(L2FnList)/sizeof(struct FsmNode))
+-
+ static void
+ isdnl2_l1l2(struct PStack *st, int pr, void *arg)
+ {
+@@ -1836,7 +1834,7 @@ Isdnl2New(void)
+ 	l2fsm.event_count = L2_EVENT_COUNT;
+ 	l2fsm.strEvent = strL2Event;
+ 	l2fsm.strState = strL2State;
+-	return FsmNew(&l2fsm, L2FnList, L2_FN_COUNT);
++	return FsmNew(&l2fsm, L2FnList, ARRAY_SIZE(L2FnList));
+ }
+ 
+ void
+diff --git a/drivers/isdn/hisax/isdnl3.c b/drivers/isdn/hisax/isdnl3.c
+index 935f233..0676602 100644
+--- a/drivers/isdn/hisax/isdnl3.c
++++ b/drivers/isdn/hisax/isdnl3.c
+@@ -543,8 +543,6 @@ static struct FsmNode L3FnList[] __initdata =
+ };
+ /* *INDENT-ON* */
+ 
+-#define L3_FN_COUNT (sizeof(L3FnList)/sizeof(struct FsmNode))
+-
+ void
+ l3_msg(struct PStack *st, int pr, void *arg)
+ {
+@@ -587,7 +585,7 @@ Isdnl3New(void)
+ 	l3fsm.event_count = L3_EVENT_COUNT;
+ 	l3fsm.strEvent = strL3Event;
+ 	l3fsm.strState = strL3State;
+-	return FsmNew(&l3fsm, L3FnList, L3_FN_COUNT);
++	return FsmNew(&l3fsm, L3FnList, ARRAY_SIZE(L3FnList));
+ }
+ 
+ void
+diff --git a/drivers/isdn/hisax/l3_1tr6.c b/drivers/isdn/hisax/l3_1tr6.c
+index c5c36ee..b0554f8 100644
+--- a/drivers/isdn/hisax/l3_1tr6.c
++++ b/drivers/isdn/hisax/l3_1tr6.c
+@@ -698,9 +698,6 @@ static struct stateentry downstl[] =
+ 	 CC_T308_2, l3_1tr6_t308_2},
+ };
+ 
+-#define DOWNSTL_LEN \
+-	(sizeof(downstl) / sizeof(struct stateentry))
+-
+ static struct stateentry datastln1[] =
+ {
+ 	{SBIT(0),
+@@ -735,9 +732,6 @@ static struct stateentry datastln1[] =
+ 	 MT_N1_REL_ACK, l3_1tr6_rel_ack}
+ };
+ 
+-#define DATASTLN1_LEN \
+-	(sizeof(datastln1) / sizeof(struct stateentry))
+-
+ static struct stateentry manstatelist[] =
+ {
+         {SBIT(2),
+@@ -746,8 +740,6 @@ static struct stateentry manstatelist[] =
+          DL_RELEASE | INDICATION, l3_1tr6_dl_release},
+ };
+  
+-#define MANSLLEN \
+-        (sizeof(manstatelist) / sizeof(struct stateentry))
+ /* *INDENT-ON* */
+ 
+ static void
+@@ -840,11 +832,11 @@ up1tr6(struct PStack *st, int pr, void *arg)
+ 				mt = MT_N1_INVALID;
+ 			}
+ 		}
+-		for (i = 0; i < DATASTLN1_LEN; i++)
++		for (i = 0; i < ARRAY_SIZE(datastln1); i++)
+ 			if ((mt == datastln1[i].primitive) &&
+ 			    ((1 << proc->state) & datastln1[i].state))
+ 				break;
+-		if (i == DATASTLN1_LEN) {
++		if (i == ARRAY_SIZE(datastln1)) {
+ 			dev_kfree_skb(skb);
+ 			if (st->l3.debug & L3_DEB_STATE) {
+ 				sprintf(tmp, "up1tr6%sstate %d mt %x unhandled",
+@@ -892,11 +884,11 @@ down1tr6(struct PStack *st, int pr, void *arg)
+ 		proc = arg;
+ 	}
+ 
+-	for (i = 0; i < DOWNSTL_LEN; i++)
++	for (i = 0; i < ARRAY_SIZE(downstl); i++)
+ 		if ((pr == downstl[i].primitive) &&
+ 		    ((1 << proc->state) & downstl[i].state))
+ 			break;
+-	if (i == DOWNSTL_LEN) {
++	if (i == ARRAY_SIZE(downstl)) {
+ 		if (st->l3.debug & L3_DEB_STATE) {
+ 			sprintf(tmp, "down1tr6 state %d prim %d unhandled",
+ 				proc->state, pr);
+@@ -922,11 +914,11 @@ man1tr6(struct PStack *st, int pr, void *arg)
+                 printk(KERN_ERR "HiSax man1tr6 without proc pr=%04x\n", pr);
+                 return;
+         }
+-        for (i = 0; i < MANSLLEN; i++)
++        for (i = 0; i < ARRAY_SIZE(manstatelist); i++)
+                 if ((pr == manstatelist[i].primitive) &&
+                     ((1 << proc->state) & manstatelist[i].state))
+                         break;
+-        if (i == MANSLLEN) {
++        if (i == ARRAY_SIZE(manstatelist)) {
+                 if (st->l3.debug & L3_DEB_STATE) {
+                         l3_debug(st, "cr %d man1tr6 state %d prim %d unhandled",
+                                 proc->callref & 0x7f, proc->state, pr);
+diff --git a/drivers/isdn/hisax/l3dss1.c b/drivers/isdn/hisax/l3dss1.c
+index 99feae8..a12fa4d 100644
+--- a/drivers/isdn/hisax/l3dss1.c
++++ b/drivers/isdn/hisax/l3dss1.c
+@@ -2820,9 +2820,6 @@ static struct stateentry downstatelist[] =
+ 	 CC_T309, l3dss1_dl_release},
+ };
+ 
+-#define DOWNSLLEN \
+-	(sizeof(downstatelist) / sizeof(struct stateentry))
+-
+ static struct stateentry datastatelist[] =
+ {
+ 	{ALL_STATES,
+@@ -2875,9 +2872,6 @@ static struct stateentry datastatelist[] =
+ 	 MT_RESUME_REJECT, l3dss1_resume_rej},
+ };
+ 
+-#define DATASLLEN \
+-	(sizeof(datastatelist) / sizeof(struct stateentry))
+-
+ static struct stateentry globalmes_list[] =
+ {
+ 	{ALL_STATES,
+@@ -2888,8 +2882,6 @@ static struct stateentry globalmes_list[] =
+ 	 MT_RESTART_ACKNOWLEDGE, l3dss1_restart_ack},
+ */
+ };
+-#define GLOBALM_LEN \
+-	(sizeof(globalmes_list) / sizeof(struct stateentry))
+ 
+ static struct stateentry manstatelist[] =
+ {
+@@ -2903,8 +2895,6 @@ static struct stateentry manstatelist[] =
+          DL_RELEASE | INDICATION, l3dss1_dl_release},
+ };
+ 
+-#define MANSLLEN \
+-        (sizeof(manstatelist) / sizeof(struct stateentry))
+ /* *INDENT-ON* */
+ 
+ 
+@@ -2918,11 +2908,11 @@ global_handler(struct PStack *st, int mt, struct sk_buff *skb)
+ 	struct l3_process *proc = st->l3.global;
+ 
+ 	proc->callref = skb->data[2]; /* cr flag */
+-	for (i = 0; i < GLOBALM_LEN; i++)
++	for (i = 0; i < ARRAY_SIZE(globalmes_list); i++)
+ 		if ((mt == globalmes_list[i].primitive) &&
+ 		    ((1 << proc->state) & globalmes_list[i].state))
+ 			break;
+-	if (i == GLOBALM_LEN) {
++	if (i == ARRAY_SIZE(globalmes_list)) {
+ 		if (st->l3.debug & L3_DEB_STATE) {
+ 			l3_debug(st, "dss1 global state %d mt %x unhandled",
+ 				proc->state, mt);
+@@ -3097,11 +3087,11 @@ dss1up(struct PStack *st, int pr, void *arg)
+ 	}
+ 	if ((p = findie(skb->data, skb->len, IE_DISPLAY, 0)) != NULL) 
+ 	  l3dss1_deliver_display(proc, pr, p); /* Display IE included */
+-	for (i = 0; i < DATASLLEN; i++)
++	for (i = 0; i < ARRAY_SIZE(datastatelist); i++)
+ 		if ((mt == datastatelist[i].primitive) &&
+ 		    ((1 << proc->state) & datastatelist[i].state))
+ 			break;
+-	if (i == DATASLLEN) {
++	if (i == ARRAY_SIZE(datastatelist)) {
+ 		if (st->l3.debug & L3_DEB_STATE) {
+ 			l3_debug(st, "dss1up%sstate %d mt %#x unhandled",
+ 				(pr == (DL_DATA | INDICATION)) ? " " : "(broadcast) ",
+@@ -3156,11 +3146,11 @@ dss1down(struct PStack *st, int pr, void *arg)
+ 		return;
+ 	}  
+ 
+-	for (i = 0; i < DOWNSLLEN; i++)
++	for (i = 0; i < ARRAY_SIZE(downstatelist); i++)
+ 		if ((pr == downstatelist[i].primitive) &&
+ 		    ((1 << proc->state) & downstatelist[i].state))
+ 			break;
+-	if (i == DOWNSLLEN) {
++	if (i == ARRAY_SIZE(downstatelist)) {
+ 		if (st->l3.debug & L3_DEB_STATE) {
+ 			l3_debug(st, "dss1down state %d prim %#x unhandled",
+ 				proc->state, pr);
+@@ -3184,11 +3174,11 @@ dss1man(struct PStack *st, int pr, void *arg)
+                 printk(KERN_ERR "HiSax dss1man without proc pr=%04x\n", pr);
+                 return;
+         }
+-        for (i = 0; i < MANSLLEN; i++)
++        for (i = 0; i < ARRAY_SIZE(manstatelist); i++)
+                 if ((pr == manstatelist[i].primitive) &&
+                     ((1 << proc->state) & manstatelist[i].state))
+                         break;
+-        if (i == MANSLLEN) {
++        if (i == ARRAY_SIZE(manstatelist)) {
+                 if (st->l3.debug & L3_DEB_STATE) {
+                         l3_debug(st, "cr %d dss1man state %d prim %#x unhandled",
+                                 proc->callref & 0x7f, proc->state, pr);
+diff --git a/drivers/isdn/hisax/l3ni1.c b/drivers/isdn/hisax/l3ni1.c
+index f7041d5..4622d43 100644
+--- a/drivers/isdn/hisax/l3ni1.c
++++ b/drivers/isdn/hisax/l3ni1.c
+@@ -2755,9 +2755,6 @@ static struct stateentry downstatelist[] =
+ 	 CC_TSPID, l3ni1_spid_tout },
+ };
+ 
+-#define DOWNSLLEN \
+-	(sizeof(downstatelist) / sizeof(struct stateentry))
+-
+ static struct stateentry datastatelist[] =
+ {
+ 	{ALL_STATES,
+@@ -2810,9 +2807,6 @@ static struct stateentry datastatelist[] =
+ 	 MT_RESUME_REJECT, l3ni1_resume_rej},
+ };
+ 
+-#define DATASLLEN \
+-	(sizeof(datastatelist) / sizeof(struct stateentry))
+-
+ static struct stateentry globalmes_list[] =
+ {
+ 	{ALL_STATES,
+@@ -2825,8 +2819,6 @@ static struct stateentry globalmes_list[] =
+ 	{ SBIT( 0 ), MT_DL_ESTABLISHED, l3ni1_spid_send },
+ 	{ SBIT( 20 ) | SBIT( 21 ) | SBIT( 22 ), MT_INFORMATION, l3ni1_spid_epid },
+ };
+-#define GLOBALM_LEN \
+-	(sizeof(globalmes_list) / sizeof(struct stateentry))
+ 
+ static struct stateentry manstatelist[] =
+ {
+@@ -2840,8 +2832,6 @@ static struct stateentry manstatelist[] =
+          DL_RELEASE | INDICATION, l3ni1_dl_release},
+ };
+ 
+-#define MANSLLEN \
+-        (sizeof(manstatelist) / sizeof(struct stateentry))
+ /* *INDENT-ON* */
+ 
+ 
+@@ -2858,11 +2848,11 @@ global_handler(struct PStack *st, int mt, struct sk_buff *skb)
+ 		proc->callref = skb->data[2]; /* cr flag */
+ 	else
+ 		proc->callref = 0;
+-	for (i = 0; i < GLOBALM_LEN; i++)
++	for (i = 0; i < ARRAY_SIZE(globalmes_list); i++)
+ 		if ((mt == globalmes_list[i].primitive) &&
+ 		    ((1 << proc->state) & globalmes_list[i].state))
+ 			break;
+-	if (i == GLOBALM_LEN) {
++	if (i == ARRAY_SIZE(globalmes_list)) {
+ 		if (st->l3.debug & L3_DEB_STATE) {
+ 			l3_debug(st, "ni1 global state %d mt %x unhandled",
+ 				proc->state, mt);
+@@ -3049,11 +3039,11 @@ ni1up(struct PStack *st, int pr, void *arg)
+ 	}
+ 	if ((p = findie(skb->data, skb->len, IE_DISPLAY, 0)) != NULL) 
+ 	  l3ni1_deliver_display(proc, pr, p); /* Display IE included */
+-	for (i = 0; i < DATASLLEN; i++)
++	for (i = 0; i < ARRAY_SIZE(datastatelist); i++)
+ 		if ((mt == datastatelist[i].primitive) &&
+ 		    ((1 << proc->state) & datastatelist[i].state))
+ 			break;
+-	if (i == DATASLLEN) {
++	if (i == ARRAY_SIZE(datastatelist)) {
+ 		if (st->l3.debug & L3_DEB_STATE) {
+ 			l3_debug(st, "ni1up%sstate %d mt %#x unhandled",
+ 				(pr == (DL_DATA | INDICATION)) ? " " : "(broadcast) ",
+@@ -3108,11 +3098,11 @@ ni1down(struct PStack *st, int pr, void *arg)
+ 		return;
+ 	}  
+ 
+-	for (i = 0; i < DOWNSLLEN; i++)
++	for (i = 0; i < ARRAY_SIZE(downstatelist); i++)
+ 		if ((pr == downstatelist[i].primitive) &&
+ 		    ((1 << proc->state) & downstatelist[i].state))
+ 			break;
+-	if (i == DOWNSLLEN) {
++	if (i == ARRAY_SIZE(downstatelist)) {
+ 		if (st->l3.debug & L3_DEB_STATE) {
+ 			l3_debug(st, "ni1down state %d prim %#x unhandled",
+ 				proc->state, pr);
+@@ -3136,11 +3126,11 @@ ni1man(struct PStack *st, int pr, void *arg)
+                 printk(KERN_ERR "HiSax ni1man without proc pr=%04x\n", pr);
+                 return;
+         }
+-        for (i = 0; i < MANSLLEN; i++)
++        for (i = 0; i < ARRAY_SIZE(manstatelist); i++)
+                 if ((pr == manstatelist[i].primitive) &&
+                     ((1 << proc->state) & manstatelist[i].state))
+                         break;
+-        if (i == MANSLLEN) {
++        if (i == ARRAY_SIZE(manstatelist)) {
+                 if (st->l3.debug & L3_DEB_STATE) {
+                         l3_debug(st, "cr %d ni1man state %d prim %#x unhandled",
+                                 proc->callref & 0x7f, proc->state, pr);
+diff --git a/drivers/isdn/hisax/q931.c b/drivers/isdn/hisax/q931.c
+index aacbf0d..8b853d5 100644
+--- a/drivers/isdn/hisax/q931.c
++++ b/drivers/isdn/hisax/q931.c
+@@ -140,7 +140,7 @@ struct MessageType {
+ 	}
+ };
+ 
+-#define MTSIZE sizeof(mtlist)/sizeof(struct MessageType)
++#define MTSIZE ARRAY_SIZE(mtlist)
+ 
+ static
+ struct MessageType mt_n0[] =
+@@ -157,7 +157,7 @@ struct MessageType mt_n0[] =
+ 	{MT_N0_CLO_ACK, "CLOse ACKnowledge"}
+ };
+ 
+-#define MT_N0_LEN (sizeof(mt_n0) / sizeof(struct MessageType))
++#define MT_N0_LEN ARRAY_SIZE(mt_n0)
+ 
+ static
+ struct MessageType mt_n1[] =
+@@ -194,7 +194,7 @@ struct MessageType mt_n1[] =
+ 	{MT_N1_STAT, "STATus"}
+ };
+ 
+-#define MT_N1_LEN (sizeof(mt_n1) / sizeof(struct MessageType))
++#define MT_N1_LEN ARRAY_SIZE(mt_n1)
+ 
+ 
+ static int
+@@ -438,7 +438,7 @@ struct CauseValue {
+ 	},
+ };
+ 
+-#define CVSIZE sizeof(cvlist)/sizeof(struct CauseValue)
++#define CVSIZE ARRAY_SIZE(cvlist)
+ 
+ static
+ int
+@@ -516,7 +516,7 @@ struct MessageType cause_1tr6[] =
+ 	{CAUSE_UserInfoDiscarded, "User Info Discarded"}
+ };
+ 
+-static int cause_1tr6_len = (sizeof(cause_1tr6) / sizeof(struct MessageType));
++static int cause_1tr6_len = ARRAY_SIZE(cause_1tr6);
+ 
+ static int
+ prcause_1tr6(char *dest, u_char * p)
+@@ -865,7 +865,7 @@ struct DTag { /* Display tags */
+ 	{ 0x96, "Redirection name" },
+ 	{ 0x9e, "Text" },
+ };
+-#define DTAGSIZE sizeof(dtaglist)/sizeof(struct DTag)
++#define DTAGSIZE ARRAY_SIZE(dtaglist)
+ 
+ static int
+ disptext_ni1(char *dest, u_char * p)
+@@ -1074,7 +1074,7 @@ struct InformationElement {
+ };
+ 
+ 
+-#define IESIZE sizeof(ielist)/sizeof(struct InformationElement)
++#define IESIZE ARRAY_SIZE(ielist)
+ 
+ static
+ struct InformationElement ielist_ni1[] = {
+@@ -1102,7 +1102,7 @@ struct InformationElement ielist_ni1[] = {
+ };
+ 
+ 
+-#define IESIZE_NI1 sizeof(ielist_ni1)/sizeof(struct InformationElement)
++#define IESIZE_NI1 ARRAY_SIZE(ielist_ni1)
+ 
+ static
+ struct InformationElement ielist_ni1_cs5[] = {
+@@ -1110,14 +1110,14 @@ struct InformationElement ielist_ni1_cs5[] = {
+ 	{ 0x2a, "Display text", disptext_ni1 },
+ };
+ 
+-#define IESIZE_NI1_CS5 sizeof(ielist_ni1_cs5)/sizeof(struct InformationElement)
++#define IESIZE_NI1_CS5 ARRAY_SIZE(ielist_ni1_cs5)
+ 
+ static
+ struct InformationElement ielist_ni1_cs6[] = {
+ 	{ 0x7b, "Call appearance", general_ni1 },
+ };
+ 
+-#define IESIZE_NI1_CS6 sizeof(ielist_ni1_cs6)/sizeof(struct InformationElement)
++#define IESIZE_NI1_CS6 ARRAY_SIZE(ielist_ni1_cs6)
+ 
+ static struct InformationElement we_0[] =
+ {
+@@ -1133,7 +1133,7 @@ static struct InformationElement we_0[] =
+ 	{WE0_userInfo, "User Info", general}
+ };
+ 
+-#define WE_0_LEN (sizeof(we_0) / sizeof(struct InformationElement))
++#define WE_0_LEN ARRAY_SIZE(we_0)
+ 
+ static struct InformationElement we_6[] =
+ {
+@@ -1145,7 +1145,7 @@ static struct InformationElement we_6[] =
+ 	{WE6_statusCalled, "Status Called", general},
+ 	{WE6_addTransAttr, "Additional Transmission Attributes", general}
+ };
+-#define WE_6_LEN (sizeof(we_6) / sizeof(struct InformationElement))
++#define WE_6_LEN ARRAY_SIZE(we_6)
+ 
+ int
+ QuickHex(char *txt, u_char * p, int cnt)
+diff --git a/drivers/isdn/hisax/tei.c b/drivers/isdn/hisax/tei.c
+index ceb0df9..6e65424 100644
+--- a/drivers/isdn/hisax/tei.c
++++ b/drivers/isdn/hisax/tei.c
+@@ -447,8 +447,6 @@ static struct FsmNode TeiFnList[] __initdata =
+ 	{ST_TEI_IDVERIFY, EV_CHKREQ, tei_id_chk_req},
+ };
+ 
+-#define TEI_FN_COUNT (sizeof(TeiFnList)/sizeof(struct FsmNode))
+-
+ int __init
+ TeiNew(void)
+ {
+@@ -456,7 +454,7 @@ TeiNew(void)
+ 	teifsm.event_count = TEI_EVENT_COUNT;
+ 	teifsm.strEvent = strTeiEvent;
+ 	teifsm.strState = strTeiState;
+-	return FsmNew(&teifsm, TeiFnList, TEI_FN_COUNT);
++	return FsmNew(&teifsm, TeiFnList, ARRAY_SIZE(TeiFnList));
+ }
+ 
+ void
+diff --git a/drivers/isdn/mISDN/layer2.c b/drivers/isdn/mISDN/layer2.c
+index 9c2589e..e17f004 100644
+--- a/drivers/isdn/mISDN/layer2.c
++++ b/drivers/isdn/mISDN/layer2.c
+@@ -1832,8 +1832,6 @@ static struct FsmNode L2FnList[] =
+ 	{ST_L2_8, EV_L1_DEACTIVATE, l2_persistant_da},
+ };
+ 
+-#define L2_FN_COUNT (sizeof(L2FnList)/sizeof(struct FsmNode))
+-
+ static int
+ ph_data_indication(struct layer2 *l2, struct mISDNhead *hh, struct sk_buff *skb)
+ {
 -- 
 1.6.0.2
 
