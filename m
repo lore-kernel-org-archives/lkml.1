@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbZGXP3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752957AbZGXPcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753225AbZGXP3m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 11:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbZGXP3m
+	id S1752957AbZGXPcB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 11:32:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbZGXPcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 11:29:42 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:63000 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752651AbZGXP3l convert rfc822-to-8bit (ORCPT
+	Fri, 24 Jul 2009 11:32:00 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:57619 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752452AbZGXPcA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 11:29:41 -0400
+	Fri, 24 Jul 2009 11:32:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=JfpeL9u3dEh3i+VQHUULi2zr1UgcfgnrZ8Kr9fW9vbGd1p45y7ZZ26PVhby8Dde/Vo
-         ilu2Lf72Dyj5ABo+XD3Ahb76xPATusB5ftYWMrRV5+iYtm6ICKPy0DZNykou+ul+7ZKP
-         5zfdJGtUOL7JjX2EyvVSb/756GqEfMTm3DzB0=
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=u4btP8BUIdQ2xEqS8dNRBX4nESkrwhRL6iSjEmLi7u9cRlnnpTkFT/x6UaQyoiUeeI
+         +K/UPw6it9nF4chd0Qk7uDEBx0m26ti6k1sK3TpZcy/kvNmqe8pd553a/pYGZnT/qmNN
+         0eUGKQEMy+vbBPOKUHgqcECMJhzoCvQMfMgVc=
 MIME-Version: 1.0
-In-Reply-To: <200907241700.24170.diegocg@gmail.com>
-References: <194f62550907240636o5ba623cdy1f16deb7f6d70eeb@mail.gmail.com>
-	 <200907241700.24170.diegocg@gmail.com>
-Date: Fri, 24 Jul 2009 11:29:40 -0400
-Message-ID: <194f62550907240829m1834bc26r8e23baba4b295ae4@mail.gmail.com>
-Subject: Re: Status of ext4 online defrag?
-From: Clemens Eisserer <linuxhippy@gmail.com>
+Date: Fri, 24 Jul 2009 21:01:59 +0530
+Message-ID: <f5a7b3810907240831t75a058a2m96abdc28a28c4365@mail.gmail.com>
+Subject: Char Limit issue on 2.6.29 kernels
+From: naresh kamboju <naresh.kernel@gmail.com>
 To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Cc: tim.bird@am.sony.com, ltp-list@lists.sourceforge.net,
+       brinda_mn@yahoo.co.in, rohit.170309@gmail.com,
+       Garrett Cooper <yanegomi@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
+       maxin john <maxinbjohn@gmail.com>, Masatake YAMATO <yamato@redhat.com>,
+       michal.simek@petalogix.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Does anybody know what the current state of ext4 online defrag is?
->
-> It got merged for 2.6.31 (commit 748de6736c1e482e111f9d1b5a5d5b1787600cad)
+Hi,
 
-Thanks, how cool!
-I feared already that this feature is dead, glad to hear it is not :)
+I have come across with char Limit issue on 2.6.29 kernels.
 
-When compiling e2fsprogs from git, I get:
-> e4defrag.c:388: error: conflicting types for ‘fallocate’
-> /usr/include/bits/fcntl.h:240: note: previous declaration of ‘fallocate’ was here
-> make: *** [e4defrag.o] Error 1
 
-I had to comment out fallocate in fcntl.h, no idea who is wrong here.
+SIGFAULT:
 
-Thanks again, Clemens
+#define SIZE            8053759
+char buf1[SIZE] ;
+
+NO SIGFAULT:
+
+#define SIZE            8053758
+char buf1[SIZE] ;
+
+This SIGFAULT not observed on 2.6.23 kernels.
+
+What could be the changes that effecting from 2.6.23 to 2.6.29 kernels.
+Please share me the information.
+
+
+Best regards,
+Naresh Kamboju
