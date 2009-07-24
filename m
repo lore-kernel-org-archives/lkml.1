@@ -1,53 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751962AbZGXGnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751999AbZGXGqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751962AbZGXGnt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 02:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZGXGns
+	id S1751999AbZGXGqp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 02:46:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZGXGqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 02:43:48 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41242 "EHLO hera.kernel.org"
+	Fri, 24 Jul 2009 02:46:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41327 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751565AbZGXGnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 02:43:47 -0400
-Message-ID: <4A695897.2020902@kernel.org>
-Date: Fri, 24 Jul 2009 15:45:43 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	id S1751049AbZGXGqn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 02:46:43 -0400
+Date: Fri, 24 Jul 2009 06:46:16 GMT
+From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tglx@linutronix.de, dilinger@debian.org
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, dilinger@debian.org
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:x86/urgent] x86: geode: Mark mfgpt irq IRQF_TIMER to prevent resume failure
+Message-ID: <tip-d6c585a4342a2ff627a29f9aea77c5ed4cd76023@git.kernel.org>
+Git-Commit-ID: d6c585a4342a2ff627a29f9aea77c5ed4cd76023
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: "Yu, Fenghua" <fenghua.yu@intel.com>
-CC: "Luck, Tony" <tony.luck@intel.com>,
-       "'lkml'" <linux-kernel@vger.kernel.org>,
-       "'linux-arch@vger.kernel.org'" <linux-arch@vger.kernel.org>,
-       "'linux-ia64@vger.kernel.org'" <linux-ia64@vger.kernel.org>
-Subject: Re: [RFC PATCH] ia64: convert to dynamic percpu allocator
-References: <4A65B0AB.5000608@kernel.org> <A6AD88C3F2289247BE726C37303E1EB8B097D4C5@orsmsx505.amr.corp.intel.com> <4A663DC7.4060600@kernel.org> <A6AD88C3F2289247BE726C37303E1EB8B0A9115B@orsmsx505.amr.corp.intel.com>
-In-Reply-To: <A6AD88C3F2289247BE726C37303E1EB8B0A9115B@orsmsx505.amr.corp.intel.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 24 Jul 2009 06:43:45 +0000 (UTC)
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 24 Jul 2009 06:46:17 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Commit-ID:  d6c585a4342a2ff627a29f9aea77c5ed4cd76023
+Gitweb:     http://git.kernel.org/tip/d6c585a4342a2ff627a29f9aea77c5ed4cd76023
+Author:     Thomas Gleixner <tglx@linutronix.de>
+AuthorDate: Fri, 24 Jul 2009 08:34:59 +0200
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Fri, 24 Jul 2009 08:42:52 +0200
 
-Yu, Fenghua wrote:
+x86: geode: Mark mfgpt irq IRQF_TIMER to prevent resume failure
 
-> After cloning from
-> git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git, kernel
-> built with CONFIG_DISCONTIGMEM=y boots ok.
-> 
-> After pulling from review-ia64, kernel built with
-> CONFIG_DISCONTIGMEM=y can not boot on ia64. After loading kernel and
-> initrd, system hangs and doesn't show anything on serial port.
+Timer interrupts are excluded from being disabled during suspend. The
+clock events code manages the disabling of clock events on its own
+because the timer interrupt needs to be functional before the resume
+code reenables the device interrupts.
 
-Heh, I didn't really expect it to work that easily either.  The code
-builds but is completely untested (I can't test them).  Can you try to
-track it down?  Serial console should be up and running at that point,
-no?
+The mfgpt timer request its interrupt without setting the IRQF_TIMER
+flag so suspend_device_irqs() disables it as well which results in a
+fatal resume failure.
 
-Thanks.
+Adding IRQF_TIMER to the interupt flags when requesting the mrgpt
+timer interrupt solves the problem.
 
--- 
-tejun
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+LKML-Reference: <new-submission>
+Cc: Andres Salomon <dilinger@debian.org>
+Cc: stable@kernel.org
+
+
+---
+ arch/x86/kernel/mfgpt_32.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/mfgpt_32.c b/arch/x86/kernel/mfgpt_32.c
+index 846510b..2a62d84 100644
+--- a/arch/x86/kernel/mfgpt_32.c
++++ b/arch/x86/kernel/mfgpt_32.c
+@@ -347,7 +347,7 @@ static irqreturn_t mfgpt_tick(int irq, void *dev_id)
+ 
+ static struct irqaction mfgptirq  = {
+ 	.handler = mfgpt_tick,
+-	.flags = IRQF_DISABLED | IRQF_NOBALANCING,
++	.flags = IRQF_DISABLED | IRQF_NOBALANCING | IRQF_TIMER,
+ 	.name = "mfgpt-timer"
+ };
+ 
