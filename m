@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752029AbZGXFHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751680AbZGXFXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752029AbZGXFHh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 01:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751680AbZGXFHg
+	id S1751680AbZGXFXR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 01:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbZGXFXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 01:07:36 -0400
-Received: from smtpauth.net4india.com ([202.71.129.41]:39496 "EHLO
-	smtpauth.net4india.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751962AbZGXFHc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 01:07:32 -0400
-X-Greylist: delayed 2011 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Jul 2009 01:07:32 EDT
-Message-ID: <4A6939F2.3050006@xenontk.org>
-Date: Fri, 24 Jul 2009 10:04:58 +0530
-From: David John <davidjon@xenontk.org>
-Reply-To: davidjon@xenontk.org
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2 ThunderBrowse/3.2.6.1
+	Fri, 24 Jul 2009 01:23:16 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62697 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750883AbZGXFXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 01:23:16 -0400
+Message-ID: <4A6944E6.1090405@cn.fujitsu.com>
+Date: Fri, 24 Jul 2009 13:21:42 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       Yinghai Lu <yinghai@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: Linux 2.6.31-rc4: strange change in iomem allocation
-References: <alpine.LFD.2.01.0907221936220.3352@localhost.localdomain> <200907231614.23570.elendil@planet.nl> <200907231653.48933.elendil@planet.nl> <alpine.LFD.2.01.0907230905360.21520@localhost.localdomain> <alpine.LFD.2.01.0907230926140.21520@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0907230926140.21520@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
+To: Paul Menage <menage@google.com>
+CC: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4] Allow cgroup hierarchies to be created with no bound
+ subsystems
+References: <20090722194644.7481.47805.stgit@menage.mtv.corp.google.com> <20090722195045.7481.62013.stgit@menage.mtv.corp.google.com>
+In-Reply-To: <20090722195045.7481.62013.stgit@menage.mtv.corp.google.com>
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/23/2009 09:59 PM, Linus Torvalds wrote:
+Paul Menage wrote:
+> Allow cgroup hierarchies to be created with no bound subsystems
 > 
-> On Thu, 23 Jul 2009, Linus Torvalds wrote:
->> Don't worry about the new warning. 
->>
->> It is in fact _normal_ to see a number of warnings about PnP resources 
->> "could not be reserved"
+> This patch removes the restriction that a cgroup hierarchy must have
+> at least one bound subsystem.  The mount option "none" is treated as
+> an explicit request for no bound subsystems.
 > 
-> In fact, I notice that you had them even before, eg:
+> A hierarchy with no subsystems can be useful for plain task tracking,
+> and is also a step towards the support for multiply-bindable
+> subsystems.
 > 
-> 	system 00:00: iomem range 0x0-0x9ffff could not be reserved
-> 	system 00:00: iomem range 0xe0000-0xfffff could not be reserved
-> 	system 00:00: iomem range 0x100000-0x7e7fffff could not be reserved
+> As part of this change, the hierarchy id is no longer calculated from
+> the bitmask of subsystems in the hierarchy (since this is not
+> guaranteed to be unique) but is allocated via an ida.  Reference
+> counts on cgroups from css_set objects are now taken explicitly one
+> per hierarchy, rather than one per subsystem.
 > 
-> which are about exactly the same thing - e820 RAM reservations take 
-> precedence over the PnP ones.
+> Example usage:
 > 
-> So the only new thing is that we claim the APIC thing to that category 
-> too.
+> mount -t cgroup -o none,name=foo cgroup /mnt/cgroup
+> 
+> Based on the "no-op"/"none" subsystem concept proposed by
+> kamezawa.hiroyu@jp.fujitsu.com
+> 
+> Signed-off-by: Paul Menage <menage@google.com>
 > 
 
-If the kernel knows that those ranges have already been reserved, can't
-the PnP messages be suppressed? I used to think these were errors as
-well (because of some BIOS misbehaviour) until I checked the code...
+Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+
