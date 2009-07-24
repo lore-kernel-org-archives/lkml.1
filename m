@@ -1,31 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbZGXUDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753661AbZGXUDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754098AbZGXUDn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 16:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbZGXUDl
+	id S1753661AbZGXUDi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 16:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbZGXUDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 16:03:41 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55323 "EHLO mx2.redhat.com"
+	Fri, 24 Jul 2009 16:03:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55312 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752637AbZGXUDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 16:03:33 -0400
+	id S1753768AbZGXUD2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 16:03:28 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip -v13 05/11] x86: add pt_regs register and stack access
-	APIs
+Subject: [PATCH -tip -v13 06/11] tracing: ftrace dynamic ftrace_event_call
+	support
 To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        lkml <linux-kernel@vger.kernel.org>
 Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
        DLE <dle-develop@lists.sourceforge.net>,
        Masami Hiramatsu <mhiramat@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Roland McGrath <roland@redhat.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       linux-arch@vger.kernel.org
-Date: Fri, 24 Jul 2009 16:05:58 -0400
-Message-ID: <20090724200558.25904.22641.stgit@localhost.localdomain>
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Tom Zanussi <tzanussi@gmail.com>
+Date: Fri, 24 Jul 2009 16:06:04 -0400
+Message-ID: <20090724200604.25904.35675.stgit@localhost.localdomain>
 In-Reply-To: <20090724200527.25904.2562.stgit@localhost.localdomain>
 References: <20090724200527.25904.2562.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -36,249 +32,363 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add following APIs for accessing registers and stack entries from pt_regs.
-These APIs are required by kprobes-based event tracer on ftrace.
-Some other debugging tools might be able to use it too.
-
-- regs_query_register_offset(const char *name)
-   Query the offset of "name" register.
-
-- regs_query_register_name(unsigned int offset)
-   Query the name of register by its offset.
-
-- regs_get_register(struct pt_regs *regs, unsigned int offset)
-   Get the value of a register by its offset.
-
-- regs_within_kernel_stack(struct pt_regs *regs, unsigned long addr)
-   Check the address is in the kernel stack.
-
-- regs_get_kernel_stack_nth(struct pt_regs *reg, unsigned int nth)
-   Get Nth entry of the kernel stack. (N >= 0)
-
-- regs_get_argument_nth(struct pt_regs *reg, unsigned int nth)
-   Get Nth argument at function call. (N >= 0)
-
+Add dynamic ftrace_event_call support to ftrace. Trace engines can adds new
+ftrace_event_call to ftrace on the fly. Each operator functions of the call
+takes a ftrace_event_call data structure as an argument, because these
+functions may be shared among several ftrace_event_calls.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Reviewed-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Christoph Hellwig <hch@infradead.org>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Roland McGrath <roland@redhat.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: linux-arch@vger.kernel.org
+Cc: Tom Zanussi <tzanussi@gmail.com>
 ---
 
- arch/x86/include/asm/ptrace.h |   62 +++++++++++++++++++++++
- arch/x86/kernel/ptrace.c      |  112 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 174 insertions(+), 0 deletions(-)
+ include/linux/ftrace_event.h |   13 +++++---
+ include/trace/ftrace.h       |   22 ++++++-------
+ kernel/trace/trace_events.c  |   72 ++++++++++++++++++++++++++++++++----------
+ kernel/trace/trace_export.c  |   27 ++++++++--------
+ 4 files changed, 86 insertions(+), 48 deletions(-)
 
-diff --git a/arch/x86/include/asm/ptrace.h b/arch/x86/include/asm/ptrace.h
-index 0f0d908..a3d49dd 100644
---- a/arch/x86/include/asm/ptrace.h
-+++ b/arch/x86/include/asm/ptrace.h
-@@ -7,6 +7,7 @@
+diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
+index 5c093ff..f7733b6 100644
+--- a/include/linux/ftrace_event.h
++++ b/include/linux/ftrace_event.h
+@@ -108,12 +108,13 @@ struct ftrace_event_call {
+ 	struct dentry		*dir;
+ 	struct trace_event	*event;
+ 	int			enabled;
+-	int			(*regfunc)(void);
+-	void			(*unregfunc)(void);
++	int			(*regfunc)(struct ftrace_event_call *);
++	void			(*unregfunc)(struct ftrace_event_call *);
+ 	int			id;
+-	int			(*raw_init)(void);
+-	int			(*show_format)(struct trace_seq *s);
+-	int			(*define_fields)(void);
++	int			(*raw_init)(struct ftrace_event_call *);
++	int			(*show_format)(struct ftrace_event_call *,
++					       struct trace_seq *);
++	int			(*define_fields)(struct ftrace_event_call *);
+ 	struct list_head	fields;
+ 	int			filter_active;
+ 	void			*filter;
+@@ -138,6 +139,8 @@ extern int filter_current_check_discard(struct ftrace_event_call *call,
  
- #ifdef __KERNEL__
- #include <asm/segment.h>
-+#include <asm/page_types.h>
- #endif
+ extern int trace_define_field(struct ftrace_event_call *call, char *type,
+ 			      char *name, int offset, int size, int is_signed);
++extern int trace_add_event_call(struct ftrace_event_call *call);
++extern void trace_remove_event_call(struct ftrace_event_call *call);
  
- #ifndef __ASSEMBLY__
-@@ -216,6 +217,67 @@ static inline unsigned long user_stack_pointer(struct pt_regs *regs)
- 	return regs->sp;
+ #define is_signed_type(type)	(((type)(-1)) < 0)
+ 
+diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+index 1867553..d696580 100644
+--- a/include/trace/ftrace.h
++++ b/include/trace/ftrace.h
+@@ -147,7 +147,8 @@
+ #undef TRACE_EVENT
+ #define TRACE_EVENT(call, proto, args, tstruct, func, print)		\
+ static int								\
+-ftrace_format_##call(struct trace_seq *s)				\
++ftrace_format_##call(struct ftrace_event_call *event_call,		\
++		     struct trace_seq *s)				\
+ {									\
+ 	struct ftrace_raw_##call field __attribute__((unused));		\
+ 	int ret = 0;							\
+@@ -289,10 +290,9 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
+ #undef TRACE_EVENT
+ #define TRACE_EVENT(call, proto, args, tstruct, func, print)		\
+ int									\
+-ftrace_define_fields_##call(void)					\
++ftrace_define_fields_##call(struct ftrace_event_call *event_call)	\
+ {									\
+ 	struct ftrace_raw_##call field;					\
+-	struct ftrace_event_call *event_call = &event_##call;		\
+ 	int ret;							\
+ 									\
+ 	__common_field(int, type, 1);					\
+@@ -355,7 +355,7 @@ static inline int ftrace_get_offsets_##call(				\
+  *	event_trace_printk(_RET_IP_, "<call>: " <fmt>);
+  * }
+  *
+- * static int ftrace_reg_event_<call>(void)
++ * static int ftrace_reg_event_<call>(struct ftrace_event_call *unused)
+  * {
+  *	int ret;
+  *
+@@ -366,7 +366,7 @@ static inline int ftrace_get_offsets_##call(				\
+  *	return ret;
+  * }
+  *
+- * static void ftrace_unreg_event_<call>(void)
++ * static void ftrace_unreg_event_<call>(struct ftrace_event_call *unused)
+  * {
+  *	unregister_trace_<call>(ftrace_event_<call>);
+  * }
+@@ -399,7 +399,7 @@ static inline int ftrace_get_offsets_##call(				\
+  *	trace_current_buffer_unlock_commit(event, irq_flags, pc);
+  * }
+  *
+- * static int ftrace_raw_reg_event_<call>(void)
++ * static int ftrace_raw_reg_event_<call>(struct ftrace_event_call *unused)
+  * {
+  *	int ret;
+  *
+@@ -410,7 +410,7 @@ static inline int ftrace_get_offsets_##call(				\
+  *	return ret;
+  * }
+  *
+- * static void ftrace_unreg_event_<call>(void)
++ * static void ftrace_unreg_event_<call>(struct ftrace_event_call *unused)
+  * {
+  *	unregister_trace_<call>(ftrace_raw_event_<call>);
+  * }
+@@ -419,7 +419,7 @@ static inline int ftrace_get_offsets_##call(				\
+  *	.trace			= ftrace_raw_output_<call>, <-- stage 2
+  * };
+  *
+- * static int ftrace_raw_init_event_<call>(void)
++ * static int ftrace_raw_init_event_<call>(struct ftrace_event_call *unused)
+  * {
+  *	int id;
+  *
+@@ -537,7 +537,7 @@ static void ftrace_raw_event_##call(proto)				\
+ 		trace_nowake_buffer_unlock_commit(event, irq_flags, pc); \
+ }									\
+ 									\
+-static int ftrace_raw_reg_event_##call(void)				\
++static int ftrace_raw_reg_event_##call(struct ftrace_event_call *unused)\
+ {									\
+ 	int ret;							\
+ 									\
+@@ -548,7 +548,7 @@ static int ftrace_raw_reg_event_##call(void)				\
+ 	return ret;							\
+ }									\
+ 									\
+-static void ftrace_raw_unreg_event_##call(void)				\
++static void ftrace_raw_unreg_event_##call(struct ftrace_event_call *unused)\
+ {									\
+ 	unregister_trace_##call(ftrace_raw_event_##call);		\
+ }									\
+@@ -557,7 +557,7 @@ static struct trace_event ftrace_event_type_##call = {			\
+ 	.trace			= ftrace_raw_output_##call,		\
+ };									\
+ 									\
+-static int ftrace_raw_init_event_##call(void)				\
++static int ftrace_raw_init_event_##call(struct ftrace_event_call *unused)\
+ {									\
+ 	int id;								\
+ 									\
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 90cf936..174840b 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -62,9 +62,7 @@ err:
+ }
+ EXPORT_SYMBOL_GPL(trace_define_field);
+ 
+-#ifdef CONFIG_MODULES
+-
+-static void trace_destroy_fields(struct ftrace_event_call *call)
++void trace_destroy_fields(struct ftrace_event_call *call)
+ {
+ 	struct ftrace_event_field *field, *next;
+ 
+@@ -76,8 +74,6 @@ static void trace_destroy_fields(struct ftrace_event_call *call)
+ 	}
  }
  
-+/* Query offset/name of register from its name/offset */
-+extern int regs_query_register_offset(const char *name);
-+extern const char *regs_query_register_name(unsigned int offset);
-+#define MAX_REG_OFFSET (offsetof(struct pt_regs, ss))
-+
-+/**
-+ * regs_get_register() - get register value from its offset
-+ * @regs:	pt_regs from which register value is gotten.
-+ * @offset:	offset number of the register.
-+ *
-+ * regs_get_register returns the value of a register whose offset from @regs
-+ * is @offset. The @offset is the offset of the register in struct pt_regs.
-+ * If @offset is bigger than MAX_REG_OFFSET, this returns 0.
-+ */
-+static inline unsigned long regs_get_register(struct pt_regs *regs,
-+					      unsigned int offset)
-+{
-+	if (unlikely(offset > MAX_REG_OFFSET))
-+		return 0;
-+	return *(unsigned long *)((unsigned long)regs + offset);
-+}
-+
-+/**
-+ * regs_within_kernel_stack() - check the address in the stack
-+ * @regs:	pt_regs which contains kernel stack pointer.
-+ * @addr:	address which is checked.
-+ *
-+ * regs_within_kenel_stack() checks @addr is within the kernel stack page(s).
-+ * If @addr is within the kernel stack, it returns true. If not, returns false.
-+ */
-+static inline int regs_within_kernel_stack(struct pt_regs *regs,
-+					   unsigned long addr)
-+{
-+	return ((addr & ~(THREAD_SIZE - 1))  ==
-+		(kernel_stack_pointer(regs) & ~(THREAD_SIZE - 1)));
-+}
-+
-+/**
-+ * regs_get_kernel_stack_nth() - get Nth entry of the stack
-+ * @regs:	pt_regs which contains kernel stack pointer.
-+ * @n:		stack entry number.
-+ *
-+ * regs_get_kernel_stack_nth() returns @n th entry of the kernel stack which
-+ * is specifined by @regs. If the @n th entry is NOT in the kernel stack,
-+ * this returns 0.
-+ */
-+static inline unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs,
-+						      unsigned int n)
-+{
-+	unsigned long *addr = (unsigned long *)kernel_stack_pointer(regs);
-+	addr += n;
-+	if (regs_within_kernel_stack(regs, (unsigned long)addr))
-+		return *addr;
-+	else
-+		return 0;
-+}
-+
-+/* Get Nth argument at function call */
-+extern unsigned long regs_get_argument_nth(struct pt_regs *regs,
-+					   unsigned int n);
-+
- /*
-  * These are defined as per linux/ptrace.h, which see.
-  */
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index cabdabc..32729ec 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -49,6 +49,118 @@ enum x86_regset {
- 	REGSET_IOPERM32,
- };
+-#endif /* CONFIG_MODULES */
+-
+ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+ 					int enable)
+ {
+@@ -86,14 +82,14 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+ 		if (call->enabled) {
+ 			call->enabled = 0;
+ 			tracing_stop_cmdline_record();
+-			call->unregfunc();
++			call->unregfunc(call);
+ 		}
+ 		break;
+ 	case 1:
+ 		if (!call->enabled) {
+ 			call->enabled = 1;
+ 			tracing_start_cmdline_record();
+-			call->regfunc();
++			call->regfunc(call);
+ 		}
+ 		break;
+ 	}
+@@ -576,7 +572,7 @@ event_format_read(struct file *filp, char __user *ubuf, size_t cnt,
+ 	trace_seq_printf(s, "format:\n");
+ 	trace_write_header(s);
  
-+struct pt_regs_offset {
-+	const char *name;
-+	int offset;
-+};
-+
-+#define REG_OFFSET_NAME(r) {.name = #r, .offset = offsetof(struct pt_regs, r)}
-+#define REG_OFFSET_END {.name = NULL, .offset = 0}
-+
-+static const struct pt_regs_offset regoffset_table[] = {
-+#ifdef CONFIG_X86_64
-+	REG_OFFSET_NAME(r15),
-+	REG_OFFSET_NAME(r14),
-+	REG_OFFSET_NAME(r13),
-+	REG_OFFSET_NAME(r12),
-+	REG_OFFSET_NAME(r11),
-+	REG_OFFSET_NAME(r10),
-+	REG_OFFSET_NAME(r9),
-+	REG_OFFSET_NAME(r8),
-+#endif
-+	REG_OFFSET_NAME(bx),
-+	REG_OFFSET_NAME(cx),
-+	REG_OFFSET_NAME(dx),
-+	REG_OFFSET_NAME(si),
-+	REG_OFFSET_NAME(di),
-+	REG_OFFSET_NAME(bp),
-+	REG_OFFSET_NAME(ax),
-+#ifdef CONFIG_X86_32
-+	REG_OFFSET_NAME(ds),
-+	REG_OFFSET_NAME(es),
-+	REG_OFFSET_NAME(fs),
-+	REG_OFFSET_NAME(gs),
-+#endif
-+	REG_OFFSET_NAME(orig_ax),
-+	REG_OFFSET_NAME(ip),
-+	REG_OFFSET_NAME(cs),
-+	REG_OFFSET_NAME(flags),
-+	REG_OFFSET_NAME(sp),
-+	REG_OFFSET_NAME(ss),
-+	REG_OFFSET_END,
-+};
-+
-+/**
-+ * regs_query_register_offset() - query register offset from its name
-+ * @name:	the name of a register
-+ *
-+ * regs_query_register_offset() returns the offset of a register in struct
-+ * pt_regs from its name. If the name is invalid, this returns -EINVAL;
-+ */
-+int regs_query_register_offset(const char *name)
+-	r = call->show_format(s);
++	r = call->show_format(call, s);
+ 	if (!r) {
+ 		/*
+ 		 * ug!  The format output is bigger than a PAGE!!
+@@ -952,7 +948,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+ 		d_events = event_subsystem_dir(call->system, d_events);
+ 
+ 	if (call->raw_init) {
+-		ret = call->raw_init();
++		ret = call->raw_init(call);
+ 		if (ret < 0) {
+ 			pr_warning("Could not initialize trace point"
+ 				   " events/%s\n", call->name);
+@@ -976,7 +972,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+ 					  id);
+ 
+ 	if (call->define_fields) {
+-		ret = call->define_fields();
++		ret = call->define_fields(call);
+ 		if (ret < 0) {
+ 			pr_warning("Could not initialize trace point"
+ 				   " events/%s\n", call->name);
+@@ -996,6 +992,53 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+ 	return 0;
+ }
+ 
++static int __trace_add_event_call(struct ftrace_event_call *call)
 +{
-+	const struct pt_regs_offset *roff;
-+	for (roff = regoffset_table; roff->name != NULL; roff++)
-+		if (!strcmp(roff->name, name))
-+			return roff->offset;
-+	return -EINVAL;
++	struct dentry *d_events;
++
++	if (!call->name)
++		return -EINVAL;
++
++	d_events = event_trace_events_dir();
++	if (!d_events)
++		return -ENOENT;
++
++	list_add(&call->list, &ftrace_events);
++	return event_create_dir(call, d_events, &ftrace_event_id_fops,
++				&ftrace_enable_fops, &ftrace_event_filter_fops,
++				&ftrace_event_format_fops);
 +}
 +
-+/**
-+ * regs_query_register_name() - query register name from its offset
-+ * @offset:	the offset of a register in struct pt_regs.
-+ *
-+ * regs_query_register_name() returns the name of a register from its
-+ * offset in struct pt_regs. If the @offset is invalid, this returns NULL;
-+ */
-+const char *regs_query_register_name(unsigned int offset)
++/* Add an additional event_call dynamically */
++int trace_add_event_call(struct ftrace_event_call *call)
 +{
-+	const struct pt_regs_offset *roff;
-+	for (roff = regoffset_table; roff->name != NULL; roff++)
-+		if (roff->offset == offset)
-+			return roff->name;
-+	return NULL;
++	int ret;
++	mutex_lock(&event_mutex);
++	ret = __trace_add_event_call(call);
++	mutex_unlock(&event_mutex);
++	return ret;
 +}
 +
-+static const int arg_offs_table[] = {
-+#ifdef CONFIG_X86_32
-+	[0] = offsetof(struct pt_regs, ax),
-+	[1] = offsetof(struct pt_regs, dx),
-+	[2] = offsetof(struct pt_regs, cx)
-+#else /* CONFIG_X86_64 */
-+	[0] = offsetof(struct pt_regs, di),
-+	[1] = offsetof(struct pt_regs, si),
-+	[2] = offsetof(struct pt_regs, dx),
-+	[3] = offsetof(struct pt_regs, cx),
-+	[4] = offsetof(struct pt_regs, r8),
-+	[5] = offsetof(struct pt_regs, r9)
-+#endif
++static void __trace_remove_event_call(struct ftrace_event_call *call)
++{
++	ftrace_event_enable_disable(call, 0);
++	if (call->event)
++		__unregister_ftrace_event(call->event);
++	debugfs_remove_recursive(call->dir);
++	list_del(&call->list);
++	trace_destroy_fields(call);
++	destroy_preds(call);
++	remove_subsystem_dir(call->system);
++}
++
++/* Remove an event_call */
++void trace_remove_event_call(struct ftrace_event_call *call)
++{
++	mutex_lock(&event_mutex);
++	__trace_remove_event_call(call);
++	mutex_unlock(&event_mutex);
++}
++
+ #define for_each_event(event, start, end)			\
+ 	for (event = start;					\
+ 	     (unsigned long)event < (unsigned long)end;		\
+@@ -1101,14 +1144,7 @@ static void trace_module_remove_events(struct module *mod)
+ 	list_for_each_entry_safe(call, p, &ftrace_events, list) {
+ 		if (call->mod == mod) {
+ 			found = true;
+-			ftrace_event_enable_disable(call, 0);
+-			if (call->event)
+-				__unregister_ftrace_event(call->event);
+-			debugfs_remove_recursive(call->dir);
+-			list_del(&call->list);
+-			trace_destroy_fields(call);
+-			destroy_preds(call);
+-			remove_subsystem_dir(call->system);
++			__trace_remove_event_call(call);
+ 		}
+ 	}
+ 
+diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
+index d06cf89..7cee79d 100644
+--- a/kernel/trace/trace_export.c
++++ b/kernel/trace/trace_export.c
+@@ -60,7 +60,7 @@ extern void __bad_type_size(void);
+ #undef TRACE_EVENT_FORMAT
+ #define TRACE_EVENT_FORMAT(call, proto, args, fmt, tstruct, tpfmt)	\
+ static int								\
+-ftrace_format_##call(struct trace_seq *s)				\
++ftrace_format_##call(struct ftrace_event_call *dummy, struct trace_seq *s)\
+ {									\
+ 	struct args field;						\
+ 	int ret;							\
+@@ -76,7 +76,7 @@ ftrace_format_##call(struct trace_seq *s)				\
+ #define TRACE_EVENT_FORMAT_NOFILTER(call, proto, args, fmt, tstruct,	\
+ 				    tpfmt)				\
+ static int								\
+-ftrace_format_##call(struct trace_seq *s)				\
++ftrace_format_##call(struct ftrace_event_call *dummy, struct trace_seq *s)\
+ {									\
+ 	struct args field;						\
+ 	int ret;							\
+@@ -115,10 +115,16 @@ ftrace_format_##call(struct trace_seq *s)				\
+ #define TRACE_FIELD_SPECIAL(type_item, item, len, cmd)	\
+ 	cmd;
+ 
++static int ftrace_raw_init_event(struct ftrace_event_call *event_call)
++{
++	INIT_LIST_HEAD(&event_call->fields);
++	init_preds(event_call);
++	return 0;
++}
++
+ #undef TRACE_EVENT_FORMAT
+ #define TRACE_EVENT_FORMAT(call, proto, args, fmt, tstruct, tpfmt)	\
+-int ftrace_define_fields_##call(void);					\
+-static int ftrace_raw_init_event_##call(void);				\
++int ftrace_define_fields_##call(struct ftrace_event_call *c);		\
+ 									\
+ struct ftrace_event_call __used						\
+ __attribute__((__aligned__(4)))						\
+@@ -126,16 +132,10 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ 	.name			= #call,				\
+ 	.id			= proto,				\
+ 	.system			= __stringify(TRACE_SYSTEM),		\
+-	.raw_init		= ftrace_raw_init_event_##call,		\
++	.raw_init		= ftrace_raw_init_event,		\
+ 	.show_format		= ftrace_format_##call,			\
+ 	.define_fields		= ftrace_define_fields_##call,		\
+-};									\
+-static int ftrace_raw_init_event_##call(void)				\
+-{									\
+-	INIT_LIST_HEAD(&event_##call.fields);				\
+-	init_preds(&event_##call);					\
+-	return 0;							\
+-}									\
 +};
-+
-+/**
-+ * regs_get_argument_nth() - get Nth argument at function call
-+ * @regs:	pt_regs which contains registers at function entry.
-+ * @n:		argument number.
-+ *
-+ * regs_get_argument_nth() returns @n th argument of a function call.
-+ * Since usually the kernel stack will be changed right after function entry,
-+ * you must use this at function entry. If the @n th entry is NOT in the
-+ * kernel stack or pt_regs, this returns 0.
-+ */
-+unsigned long regs_get_argument_nth(struct pt_regs *regs, unsigned int n)
-+{
-+	if (n < ARRAY_SIZE(arg_offs_table))
-+		return *((unsigned long *)regs + arg_offs_table[n]);
-+	else {
-+		/*
-+		 * The typical case: arg n is on the stack.
-+		 * (Note: stack[0] = return address, so skip it)
-+		 */
-+		n -= ARRAY_SIZE(arg_offs_table);
-+		return regs_get_kernel_stack_nth(regs, 1 + n);
-+	}
-+}
-+
- /*
-  * does not yet catch signals sent when the child dies.
-  * in exit.c or in signal.c.
+ 
+ #undef TRACE_EVENT_FORMAT_NOFILTER
+ #define TRACE_EVENT_FORMAT_NOFILTER(call, proto, args, fmt, tstruct,	\
+@@ -182,9 +182,8 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ #undef TRACE_EVENT_FORMAT
+ #define TRACE_EVENT_FORMAT(call, proto, args, fmt, tstruct, tpfmt)	\
+ int									\
+-ftrace_define_fields_##call(void)					\
++ftrace_define_fields_##call(struct ftrace_event_call *event_call)	\
+ {									\
+-	struct ftrace_event_call *event_call = &event_##call;		\
+ 	struct args field;						\
+ 	int ret;							\
+ 									\
 
 
 -- 
