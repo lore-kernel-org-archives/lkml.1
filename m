@@ -1,72 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752755AbZGXK6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752774AbZGXLDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752755AbZGXK6g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 06:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbZGXK6f
+	id S1752774AbZGXLDi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 07:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbZGXLDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 06:58:35 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:35828 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752489AbZGXK6e (ORCPT
+	Fri, 24 Jul 2009 07:03:38 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:23284 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752567AbZGXLDh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 06:58:34 -0400
-Date: Fri, 24 Jul 2009 12:58:31 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Thomas Hellstrom <thellstrom@vmware.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] x86: Use clflush() instead of wbinvd() whenever
-	possible when changing mapping
-Message-ID: <20090724105831.GB2045@basil.fritz.box>
-References: <1248421981-31865-1-git-send-email-thellstrom@vmware.com> <87ocra1jn6.fsf@basil.nowhere.org> <4A698B3E.4020208@vmware.com>
+	Fri, 24 Jul 2009 07:03:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Nye1IhowT9SWGl/vy90hBEezbNg2XzOS+DVdwSt0aVRpJqHb+IznSOAV1xTdulNahX
+         Nfhu92vtv94KDKQUFCxMP2n7f4l3YU6PSGrzc25esHQM/PklXFavm3br6ukYb2wnwxam
+         TYGcdcJRgJKvVpCTEf05C4bPyoo96HKDOjDRU=
+Message-ID: <4A699506.4010006@gmail.com>
+Date: Fri, 24 Jul 2009 13:03:34 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.8 Thunderbird/3.0b3pre
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A698B3E.4020208@vmware.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Thomas Meyer <thomas@m3y3r.de>, Parag Warudkar <parag.warudkar@gmail.com>,
+       linux-kernel@vger.kernel.org, sds@tycho.nsa.gov, jmorris@namei.org,
+       eparis@parisplace.org
+Subject: Re: 2.6.31-rc2: BUG: unable to handle kernel NULL pointer dereference
+References: <1247410030.1095.1.camel@localhost> <4A5A46ED.7010907@gmail.com> <1248117834.7185.17.camel@localhost> <200907222228.18615.rjw@sisk.pl>
+In-Reply-To: <200907222228.18615.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 24, 2009 at 12:21:50PM +0200, Thomas Hellstrom wrote:
-> Andi Kleen wrote:
->> Thomas Hellstrom <thellstrom@vmware.com> writes:
->>
->>   
->>> The current code uses wbinvd() when the area to flush is > 4MB. Although this
->>> may be faster than using clflush() the effect of wbinvd() on irq latencies
->>> may be catastrophical on systems with large caches. Therefore use clflush()
->>>     
->>
->> may be? You seem to miss some hard data here.
->>
->>   
-> Admittedly.
+On 07/22/2009 10:28 PM, Rafael J. Wysocki wrote:
+> On Monday 20 July 2009, Thomas Meyer wrote:
+>> Maybe memory in acpi S3 is not so stable? Is this possible?
+> 
+> Generally, it is, but I haven't seen it happen yet.  In theory, if the memory
+> chips are not refreshed appropriately while suspended, something like this may
+> happen.
 
-So was it motivated by a real problem?
+You can check it by a program from:
+http://lkml.org/lkml/2008/4/24/439
 
-> However, the concept of flushing and invalidating the caches completely on 
-> systems with many
-> processors and huge caches when we intend to only flush only small piece of 
-> the cache also sounds like a big overkill.
-
-The other CPUs will not block (just flush their caches in the background or
-in parallel), so the latency shouldn't scale with the number of sockets.
-Also number of cores also shouldn't impact it because these tend
-to have shared cache hierarchies.
-
-That's just a theory, but not necessarily a worse one than yours :-)
-
->
-> Furthermore, since the wbinvd() has been introduced as an optimization of 
-> the general clflush() case, did somebody ever check the effects on systems 
-> with many processors and huge caches?
-
-Typically systems with large caches flush faster too.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Only change 1000000000 to circa 5/6 of your memory size. Suspend the
+machine after "alloced" appears on the console.
