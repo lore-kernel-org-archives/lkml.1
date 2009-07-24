@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754661AbZGXUcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754676AbZGXUcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754661AbZGXUcv (ORCPT <rfc822;w@1wt.eu>);
+	id S1754676AbZGXUcv (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 24 Jul 2009 16:32:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbZGXUcs
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754220AbZGXUcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 16:32:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35400 "EHLO mx2.redhat.com"
+	Fri, 24 Jul 2009 16:32:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35396 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754220AbZGXU2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 16:28:54 -0400
+	id S1754146AbZGXU2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 16:28:53 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
 To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
        dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
@@ -19,966 +19,789 @@ Cc: lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
        s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
        dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
        vgoyal@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
-Subject: [PATCH 02/24] io-controller: Core of the B-WF2Q+ scheduler
-Date: Fri, 24 Jul 2009 16:27:32 -0400
-Message-Id: <1248467274-32073-3-git-send-email-vgoyal@redhat.com>
+Subject: [PATCH 20/24] io-controller: map async requests to appropriate cgroup
+Date: Fri, 24 Jul 2009 16:27:50 -0400
+Message-Id: <1248467274-32073-21-git-send-email-vgoyal@redhat.com>
 In-Reply-To: <1248467274-32073-1-git-send-email-vgoyal@redhat.com>
 References: <1248467274-32073-1-git-send-email-vgoyal@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is core of the BFQ(B-WF2Q+) scheduler originally implemented by Paolo and
-Fabio in BFQ patches. Since then I have taken relevant pieces from BFQ and
-continued the work on IO controller. It is not the full patch. Just pulled out
-the some bits to show how core scheduler looks like and it becomes easier to
-review.
+o So far we were assuming that a bio/rq belongs to the task who is submitting
+  it. It did not hold good in case of async writes. This patch makes use of
+  blkio_cgroup pataches to attribute the aysnc writes to right group instead
+  of task submitting the bio.
 
-Originally BFQ code was hierarchical. This patch only shows non-hierarchical
-bits. Hierarhical code comes in later patches.
+o For sync requests, we continue to assume that io belongs to the task
+  submitting it. Only in case of async requests, we make use of io tracking
+  patches to track the owner cgroup.
 
-This code is the building base of introducing fair queuing logic in common
-elevator layer so that it can be used by all the four IO schedulers. In
-later patches, CFQ's weighted round robin scheduler will be replaced with
-B-WF2Q+ scheduler.
+o So far cfq always caches the async queue pointer. With async requests now
+  not necessarily being tied to submitting task io context, caching the
+  pointer will not help for async queues. This patch introduces a new config
+  option CONFIG_TRACK_ASYNC_CONTEXT. If this option is not set, cfq retains
+  old behavior where async queue pointer is cached in task context. If it
+  is set, async queue pointer is not cached and we take help of bio
+  tracking patches to determine group bio belongs to and then map it to
+  async queue of that group.
 
-Also note that BFQ originally provided fairness in-terms of number of
-sectors of IO done by the queue. It has been modified to provide fairness
-in terms of disk time (like CFQ allocate disk time slices proportionate to
-prio/weight).
-
-B-WF2Q+ is based on WF2Q+, that is described in [2], together with
-H-WF2Q+, while the augmented tree used to implement B-WF2Q+ with O(log N)
-complexity derives from the one introduced with EEVDF in [3].
-
-[1] P. Valente and F. Checconi, ``High Throughput Disk Scheduling
-    with Deterministic Guarantees on Bandwidth Distribution,'' to be
-    published.
-
-    http://algo.ing.unimo.it/people/paolo/disk_sched/bfq.pdf
-
-[2] Jon C.R. Bennett and H. Zhang, ``Hierarchical Packet Fair Queueing
-    Algorithms,'' IEEE/ACM Transactions on Networking, 5(5):675-689,
-    Oct 1997.
-
-    http://www.cs.cmu.edu/~hzhang/papers/TON-97-Oct.ps.gz
-
-[3] I. Stoica and H. Abdel-Wahab, ``Earliest Eligible Virtual Deadline
-    First: A Flexible and Accurate Mechanism for Proportional Share
-    Resource Allocation,'' technical report.
-
-    http://www.cs.berkeley.edu/~istoica/papers/eevdf-tr-95.pdf
-
-Signed-off-by: Fabio Checconi <fabio@gandalf.sssup.it>
-Signed-off-by: Paolo Valente <paolo.valente@unimore.it>
 Signed-off-by: Nauman Rafique <nauman@google.com>
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
 ---
- block/elevator-fq.c |  715 +++++++++++++++++++++++++++++++++++++++++++++++++++
- block/elevator-fq.h |  172 ++++++++++++
- 2 files changed, 887 insertions(+), 0 deletions(-)
- create mode 100644 block/elevator-fq.c
- create mode 100644 block/elevator-fq.h
+ block/Kconfig.iosched    |   16 +++++
+ block/as-iosched.c       |    2 +-
+ block/blk-core.c         |    7 +-
+ block/cfq-iosched.c      |  151 ++++++++++++++++++++++++++++++++++++----------
+ block/deadline-iosched.c |    2 +-
+ block/elevator-fq.c      |  119 +++++++++++++++++++++++++++++++-----
+ block/elevator-fq.h      |   20 ++++--
+ block/elevator.c         |   15 +++--
+ include/linux/elevator.h |   22 ++++++-
+ 9 files changed, 284 insertions(+), 70 deletions(-)
 
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-new file mode 100644
-index 0000000..e5f39cf
---- /dev/null
-+++ b/block/elevator-fq.c
-@@ -0,0 +1,715 @@
-+/*
-+ * elevator fair queuing Layer. Uses B-WF2Q+ hierarchical scheduler for
-+ * fair queuing.
+diff --git a/block/Kconfig.iosched b/block/Kconfig.iosched
+index 8ab08da..8b507c4 100644
+--- a/block/Kconfig.iosched
++++ b/block/Kconfig.iosched
+@@ -132,6 +132,22 @@ config DEBUG_GROUP_IOSCHED
+ 	  Enable some debugging hooks for hierarchical scheduling support.
+ 	  Currently it just outputs more information in blktrace output.
+ 
++config TRACK_ASYNC_CONTEXT
++	bool "Determine async request context from bio"
++	depends on GROUP_IOSCHED
++	select CGROUP_BLKIO
++	default n
++	---help---
++	  Normally async request is attributed to the task submitting the
++	  request. With group ioscheduling, for accurate accounting of
++	  async writes, one needs to map the request to original task/cgroup
++	  which originated the request and not the submitter of the request.
++
++	  Currently there are generic io tracking patches to provide facility
++	  to map bio to original owner. If this option is set, for async
++	  request, original owner of the bio is decided by using io tracking
++	  patches otherwise we continue to attribute the request to the
++	  submitting thread.
+ endmenu
+ 
+ endif
+diff --git a/block/as-iosched.c b/block/as-iosched.c
+index 2f68d5b..1282a78 100644
+--- a/block/as-iosched.c
++++ b/block/as-iosched.c
+@@ -1514,7 +1514,7 @@ as_merge(struct request_queue *q, struct request **req, struct bio *bio)
+ {
+ 	sector_t rb_key = bio->bi_sector + bio_sectors(bio);
+ 	struct request *__rq;
+-	struct as_queue *asq = elv_get_sched_queue_current(q);
++	struct as_queue *asq = elv_get_sched_queue_bio(q, bio);
+ 
+ 	if (!asq)
+ 		return ELEVATOR_NO_MERGE;
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 4b45435..f046c1d 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -626,7 +626,8 @@ static inline void blk_free_request(struct request_queue *q, struct request *rq)
+ }
+ 
+ static struct request *
+-blk_alloc_request(struct request_queue *q, int flags, int priv, gfp_t gfp_mask)
++blk_alloc_request(struct request_queue *q, struct bio *bio, int flags, int priv,
++					gfp_t gfp_mask)
+ {
+ 	struct request *rq = mempool_alloc(q->rq.rq_pool, gfp_mask);
+ 
+@@ -638,7 +639,7 @@ blk_alloc_request(struct request_queue *q, int flags, int priv, gfp_t gfp_mask)
+ 	rq->cmd_flags = flags | REQ_ALLOCED;
+ 
+ 	if (priv) {
+-		if (unlikely(elv_set_request(q, rq, gfp_mask))) {
++		if (unlikely(elv_set_request(q, rq, bio, gfp_mask))) {
+ 			mempool_free(rq, q->rq.rq_pool);
+ 			return NULL;
+ 		}
+@@ -779,7 +780,7 @@ static struct request *get_request(struct request_queue *q, int rw_flags,
+ 		rw_flags |= REQ_IO_STAT;
+ 	spin_unlock_irq(q->queue_lock);
+ 
+-	rq = blk_alloc_request(q, rw_flags, priv, gfp_mask);
++	rq = blk_alloc_request(q, bio, rw_flags, priv, gfp_mask);
+ 	if (unlikely(!rq)) {
+ 		/*
+ 		 * Allocation failed presumably due to memory. Undo anything
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 5cc3292..9527f46 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -174,8 +174,8 @@ CFQ_CFQQ_FNS(coop);
+ 	blk_add_trace_msg((cfqd)->queue, "cfq " fmt, ##args)
+ 
+ static void cfq_dispatch_insert(struct request_queue *, struct request *);
+-static struct cfq_queue *cfq_get_queue(struct cfq_data *, int,
+-				       struct io_context *, gfp_t);
++static struct cfq_queue *cfq_get_queue(struct cfq_data *, struct bio *bio,
++					int, struct io_context *, gfp_t);
+ static struct cfq_io_context *cfq_cic_lookup(struct cfq_data *,
+ 						struct io_context *);
+ 
+@@ -185,22 +185,56 @@ static inline struct cfq_queue *cic_to_cfqq(struct cfq_io_context *cic,
+ 	return cic->cfqq[!!is_sync];
+ }
+ 
+-static inline void cic_set_cfqq(struct cfq_io_context *cic,
+-				struct cfq_queue *cfqq, int is_sync)
+-{
+-	cic->cfqq[!!is_sync] = cfqq;
+-}
+-
+ /*
+- * We regard a request as SYNC, if it's either a read or has the SYNC bit
+- * set (in which case it could also be direct WRITE).
++ * Determine the cfq queue bio should go in. This is primarily used by
++ * front merge and allow merge functions.
 + *
-+ * Based on ideas and code from CFQ:
-+ * Copyright (C) 2003 Jens Axboe <axboe@kernel.dk>
-+ *
-+ * Copyright (C) 2008 Fabio Checconi <fabio@gandalf.sssup.it>
-+ *		      Paolo Valente <paolo.valente@unimore.it>
-+ *
-+ * Copyright (C) 2009 Vivek Goyal <vgoyal@redhat.com>
-+ * 	              Nauman Rafique <nauman@google.com>
-+ */
++ * Currently this function takes the ioprio and iprio_class from task
++ * submitting async bio. Later save the task information in the page_cgroup
++ * and retrieve task's ioprio and class from there.
+  */
+-static inline int cfq_bio_sync(struct bio *bio)
++static struct cfq_queue *cic_bio_to_cfqq(struct cfq_data *cfqd,
++		struct cfq_io_context *cic, struct bio *bio, int is_sync)
+ {
+-	if (bio_data_dir(bio) == READ || bio_sync(bio))
+-		return 1;
++	struct cfq_queue *cfqq = NULL;
+ 
+-	return 0;
++	cfqq = cic_to_cfqq(cic, is_sync);
 +
-+#include <linux/blkdev.h>
-+#include "elevator-fq.h"
-+
-+#define IO_SERVICE_TREE_INIT   ((struct io_service_tree)		\
-+				{ RB_ROOT, RB_ROOT, NULL, NULL, 0, 0 })
-+
-+/* Mainly the BFQ scheduling code Follows */
-+
-+/*
-+ * Shift for timestamp calculations.  This actually limits the maximum
-+ * service allowed in one timestamp delta (small shift values increase it),
-+ * the maximum total weight that can be used for the queues in the system
-+ * (big shift values increase it), and the period of virtual time wraparounds.
-+ */
-+#define WFQ_SERVICE_SHIFT	22
-+
-+/**
-+ * bfq_gt - compare two timestamps.
-+ * @a: first ts.
-+ * @b: second ts.
-+ *
-+ * Return @a > @b, dealing with wrapping correctly.
-+ */
-+static inline int bfq_gt(u64 a, u64 b)
-+{
-+	return (s64)(a - b) > 0;
-+}
-+
-+/**
-+ * bfq_delta - map service into the virtual time domain.
-+ * @service: amount of service.
-+ * @weight: scale factor.
-+ */
-+static inline u64 bfq_delta(unsigned long service, unsigned int weight)
-+{
-+	u64 d = (u64)service << WFQ_SERVICE_SHIFT;
-+
-+	do_div(d, weight);
-+	return d;
-+}
-+
-+/**
-+ * bfq_calc_finish - assign the finish time to an entity.
-+ * @entity: the entity to act upon.
-+ * @service: the service to be charged to the entity.
-+ */
-+static inline void bfq_calc_finish(struct io_entity *entity,
-+					unsigned long service)
-+{
-+	BUG_ON(entity->weight == 0);
-+
-+	entity->finish = entity->start + bfq_delta(service, entity->weight);
-+}
-+
-+static inline struct io_queue *io_entity_to_ioq(struct io_entity *entity)
-+{
-+	struct io_queue *ioq = NULL;
-+
-+	BUG_ON(entity == NULL);
-+	if (entity->my_sched_data == NULL)
-+		ioq = container_of(entity, struct io_queue, entity);
-+	return ioq;
-+}
-+
-+/**
-+ * io_entity_of - get an entity from a node.
-+ * @node: the node field of the entity.
-+ *
-+ * Convert a node pointer to the relative entity.  This is used only
-+ * to simplify the logic of some functions and not as the generic
-+ * conversion mechanism because, e.g., in the tree walking functions,
-+ * the check for a %NULL value would be redundant.
-+ */
-+static inline struct io_entity *io_entity_of(struct rb_node *node)
-+{
-+	struct io_entity *entity = NULL;
-+
-+	if (node != NULL)
-+		entity = rb_entry(node, struct io_entity, rb_node);
-+
-+	return entity;
-+}
-+
-+/**
-+ * bfq_remove - remove an entity from a tree.
-+ * @root: the tree root.
-+ * @entity: the entity to remove.
-+ */
-+static inline void bfq_remove(struct rb_root *root, struct io_entity *entity)
-+{
-+	BUG_ON(entity->tree != root);
-+
-+	entity->tree = NULL;
-+	rb_erase(&entity->rb_node, root);
-+}
-+
-+/**
-+ * bfq_idle_remove - remove an entity from the idle tree.
-+ * @st: the service tree of the owning @entity.
-+ * @entity: the entity being removed.
-+ */
-+static void bfq_idle_remove(struct io_service_tree *st,
-+				struct io_entity *entity)
-+{
-+	struct rb_node *next;
-+
-+	BUG_ON(entity->tree != &st->idle);
-+
-+	if (entity == st->first_idle) {
-+		next = rb_next(&entity->rb_node);
-+		st->first_idle = io_entity_of(next);
-+	}
-+
-+	if (entity == st->last_idle) {
-+		next = rb_prev(&entity->rb_node);
-+		st->last_idle = io_entity_of(next);
-+	}
-+
-+	bfq_remove(&st->idle, entity);
-+}
-+
-+/**
-+ * bfq_insert - generic tree insertion.
-+ * @root: tree root.
-+ * @entity: entity to insert.
-+ *
-+ * This is used for the idle and the active tree, since they are both
-+ * ordered by finish time.
-+ */
-+static void bfq_insert(struct rb_root *root, struct io_entity *entity)
-+{
-+	struct io_entity *entry;
-+	struct rb_node **node = &root->rb_node;
-+	struct rb_node *parent = NULL;
-+
-+	BUG_ON(entity->tree != NULL);
-+
-+	while (*node != NULL) {
-+		parent = *node;
-+		entry = rb_entry(parent, struct io_entity, rb_node);
-+
-+		if (bfq_gt(entry->finish, entity->finish))
-+			node = &parent->rb_left;
-+		else
-+			node = &parent->rb_right;
-+	}
-+
-+	rb_link_node(&entity->rb_node, parent, node);
-+	rb_insert_color(&entity->rb_node, root);
-+
-+	entity->tree = root;
-+}
-+
-+/**
-+ * bfq_update_min - update the min_start field of a entity.
-+ * @entity: the entity to update.
-+ * @node: one of its children.
-+ *
-+ * This function is called when @entity may store an invalid value for
-+ * min_start due to updates to the active tree.  The function  assumes
-+ * that the subtree rooted at @node (which may be its left or its right
-+ * child) has a valid min_start value.
-+ */
-+static inline void bfq_update_min(struct io_entity *entity,
-+					struct rb_node *node)
-+{
-+	struct io_entity *child;
-+
-+	if (node != NULL) {
-+		child = rb_entry(node, struct io_entity, rb_node);
-+		if (bfq_gt(entity->min_start, child->min_start))
-+			entity->min_start = child->min_start;
-+	}
-+}
-+
-+/**
-+ * bfq_update_active_node - recalculate min_start.
-+ * @node: the node to update.
-+ *
-+ * @node may have changed position or one of its children may have moved,
-+ * this function updates its min_start value.  The left and right subtrees
-+ * are assumed to hold a correct min_start value.
-+ */
-+static inline void bfq_update_active_node(struct rb_node *node)
-+{
-+	struct io_entity *entity = rb_entry(node, struct io_entity, rb_node);
-+
-+	entity->min_start = entity->start;
-+	bfq_update_min(entity, node->rb_right);
-+	bfq_update_min(entity, node->rb_left);
-+}
-+
-+/**
-+ * bfq_update_active_tree - update min_start for the whole active tree.
-+ * @node: the starting node.
-+ *
-+ * @node must be the deepest modified node after an update.  This function
-+ * updates its min_start using the values held by its children, assuming
-+ * that they did not change, and then updates all the nodes that may have
-+ * changed in the path to the root.  The only nodes that may have changed
-+ * are the ones in the path or their siblings.
-+ */
-+static void bfq_update_active_tree(struct rb_node *node)
-+{
-+	struct rb_node *parent;
-+
-+up:
-+	bfq_update_active_node(node);
-+
-+	parent = rb_parent(node);
-+	if (parent == NULL)
-+		return;
-+
-+	if (node == parent->rb_left && parent->rb_right != NULL)
-+		bfq_update_active_node(parent->rb_right);
-+	else if (parent->rb_left != NULL)
-+		bfq_update_active_node(parent->rb_left);
-+
-+	node = parent;
-+	goto up;
-+}
-+
-+/**
-+ * bfq_active_insert - insert an entity in the active tree of its group/device.
-+ * @st: the service tree of the entity.
-+ * @entity: the entity being inserted.
-+ *
-+ * The active tree is ordered by finish time, but an extra key is kept
-+ * per each node, containing the minimum value for the start times of
-+ * its children (and the node itself), so it's possible to search for
-+ * the eligible node with the lowest finish time in logarithmic time.
-+ */
-+static void bfq_active_insert(struct io_service_tree *st,
-+					struct io_entity *entity)
-+{
-+	struct rb_node *node = &entity->rb_node;
-+
-+	bfq_insert(&st->active, entity);
-+
-+	if (node->rb_left != NULL)
-+		node = node->rb_left;
-+	else if (node->rb_right != NULL)
-+		node = node->rb_right;
-+
-+	bfq_update_active_tree(node);
-+}
-+
-+static void bfq_get_entity(struct io_entity *entity)
-+{
-+	struct io_queue *ioq = io_entity_to_ioq(entity);
-+
-+	if (ioq)
-+		elv_get_ioq(ioq);
-+}
-+
-+static void bfq_init_entity(struct io_entity *entity, struct io_group *iog)
-+{
-+	entity->sched_data = &iog->sched_data;
-+}
-+
-+/**
-+ * bfq_find_deepest - find the deepest node that an extraction can modify.
-+ * @node: the node being removed.
-+ *
-+ * Do the first step of an extraction in an rb tree, looking for the
-+ * node that will replace @node, and returning the deepest node that
-+ * the following modifications to the tree can touch.  If @node is the
-+ * last node in the tree return %NULL.
-+ */
-+static struct rb_node *bfq_find_deepest(struct rb_node *node)
-+{
-+	struct rb_node *deepest;
-+
-+	if (node->rb_right == NULL && node->rb_left == NULL)
-+		deepest = rb_parent(node);
-+	else if (node->rb_right == NULL)
-+		deepest = node->rb_left;
-+	else if (node->rb_left == NULL)
-+		deepest = node->rb_right;
-+	else {
-+		deepest = rb_next(node);
-+		if (deepest->rb_right != NULL)
-+			deepest = deepest->rb_right;
-+		else if (rb_parent(deepest) != node)
-+			deepest = rb_parent(deepest);
-+	}
-+
-+	return deepest;
-+}
-+
-+/**
-+ * bfq_active_remove - remove an entity from the active tree.
-+ * @st: the service_tree containing the tree.
-+ * @entity: the entity being removed.
-+ */
-+static void bfq_active_remove(struct io_service_tree *st,
-+				struct io_entity *entity)
-+{
-+	struct rb_node *node;
-+
-+	node = bfq_find_deepest(&entity->rb_node);
-+	bfq_remove(&st->active, entity);
-+
-+	if (node != NULL)
-+		bfq_update_active_tree(node);
-+}
-+
-+/**
-+ * bfq_idle_insert - insert an entity into the idle tree.
-+ * @st: the service tree containing the tree.
-+ * @entity: the entity to insert.
-+ */
-+static void bfq_idle_insert(struct io_service_tree *st,
-+					struct io_entity *entity)
-+{
-+	struct io_entity *first_idle = st->first_idle;
-+	struct io_entity *last_idle = st->last_idle;
-+
-+	if (first_idle == NULL || bfq_gt(first_idle->finish, entity->finish))
-+		st->first_idle = entity;
-+	if (last_idle == NULL || bfq_gt(entity->finish, last_idle->finish))
-+		st->last_idle = entity;
-+
-+	bfq_insert(&st->idle, entity);
-+}
-+
-+/**
-+ * bfq_forget_entity - remove an entity from the wfq trees.
-+ * @st: the service tree.
-+ * @entity: the entity being removed.
-+ *
-+ * Update the device status and forget everything about @entity, putting
-+ * the device reference to it, if it is a queue.  Entities belonging to
-+ * groups are not refcounted.
-+ */
-+static void bfq_forget_entity(struct io_service_tree *st,
-+				struct io_entity *entity)
-+{
-+	struct io_queue *ioq = NULL;
-+
-+	BUG_ON(!entity->on_st);
-+	entity->on_st = 0;
-+	st->wsum -= entity->weight;
-+	ioq = io_entity_to_ioq(entity);
-+	if (!ioq)
-+		return;
-+	elv_put_ioq(ioq);
-+}
-+
-+/**
-+ * bfq_put_idle_entity - release the idle tree ref of an entity.
-+ * @st: service tree for the entity.
-+ * @entity: the entity being released.
-+ */
-+static void bfq_put_idle_entity(struct io_service_tree *st,
-+				struct io_entity *entity)
-+{
-+	bfq_idle_remove(st, entity);
-+	bfq_forget_entity(st, entity);
-+}
-+
-+/**
-+ * bfq_forget_idle - update the idle tree if necessary.
-+ * @st: the service tree to act upon.
-+ *
-+ * To preserve the global O(log N) complexity we only remove one entry here;
-+ * as the idle tree will not grow indefinitely this can be done safely.
-+ */
-+static void bfq_forget_idle(struct io_service_tree *st)
-+{
-+	struct io_entity *first_idle = st->first_idle;
-+	struct io_entity *last_idle = st->last_idle;
-+
-+	if (RB_EMPTY_ROOT(&st->active) && last_idle != NULL &&
-+	    !bfq_gt(last_idle->finish, st->vtime)) {
++#ifdef CONFIG_TRACK_ASYNC_CONTEXT
++	if (!cfqq && !is_sync) {
++		const int ioprio = task_ioprio(cic->ioc);
++		const int ioprio_class = task_ioprio_class(cic->ioc);
++		struct io_group *iog;
 +		/*
-+		 * Active tree is empty. Pull back vtime to finish time of
-+		 * last idle entity on idle tree.
-+		 * Rational seems to be that it reduces the possibility of
-+		 * vtime wraparound (bfq_gt(V-F) < 0).
++		 * async bio tracking is enabled and we are not caching
++		 * async queue pointer in cic.
 +		 */
-+		st->vtime = last_idle->finish;
-+	}
-+
-+	if (first_idle != NULL && !bfq_gt(first_idle->finish, st->vtime))
-+		bfq_put_idle_entity(st, first_idle);
-+}
-+
-+
-+static struct io_service_tree *
-+__bfq_entity_update_prio(struct io_service_tree *old_st,
-+				struct io_entity *entity)
-+{
-+	struct io_service_tree *new_st = old_st;
-+	struct io_queue *ioq = io_entity_to_ioq(entity);
-+
-+	if (entity->ioprio_changed) {
-+		old_st->wsum -= entity->weight;
-+		entity->ioprio = entity->new_ioprio;
-+		entity->ioprio_class = entity->new_ioprio_class;
-+		entity->weight = entity->new_weight;
-+		entity->ioprio_changed = 0;
-+
-+		/*
-+		 * Also update the scaled budget for ioq. Group will get the
-+		 * updated budget once ioq is selected to run next.
-+		 */
-+		if (ioq) {
-+			struct elv_fq_data *efqd = ioq->efqd;
++		iog = io_get_io_group_bio(cfqd->queue, bio, 0);
++		if (!iog) {
 +			/*
-+			 * elv_prio_to_slice() is defined in later patches
-+			 * where a slice length is calculated from the
-+			 * ioprio of the queue.
++			 * May be this is first rq/bio and io group has not
++			 * been setup yet.
 +			 */
-+			entity->budget = elv_prio_to_slice(efqd, ioq);
++			return NULL;
 +		}
++		return io_group_async_queue_prio(iog, ioprio_class, ioprio);
++	}
++#endif
++	return cfqq;
++}
++
++static inline void cic_set_cfqq(struct cfq_io_context *cic,
++				struct cfq_queue *cfqq, int is_sync)
++{
++#ifdef CONFIG_TRACK_ASYNC_CONTEXT
++	/*
++	 * Don't cache async queue pointer as now one io context might
++	 * be submitting async io for various different async queues
++	 */
++	if (!is_sync)
++		return;
++#endif
++	cic->cfqq[!!is_sync] = cfqq;
+ }
+ 
+ static inline struct io_group *cfqq_to_io_group(struct cfq_queue *cfqq)
+@@ -522,7 +556,7 @@ cfq_find_rq_fmerge(struct cfq_data *cfqd, struct bio *bio)
+ 	if (!cic)
+ 		return NULL;
+ 
+-	cfqq = cic_to_cfqq(cic, cfq_bio_sync(bio));
++	cfqq = cic_bio_to_cfqq(cfqd, cic, bio, elv_bio_sync(bio));
+ 	if (cfqq) {
+ 		sector_t sector = bio->bi_sector + bio_sectors(bio);
+ 
+@@ -605,7 +639,7 @@ static int cfq_allow_merge(struct request_queue *q, struct request *rq,
+ 	/*
+ 	 * Disallow merge of a sync bio into an async request.
+ 	 */
+-	if (cfq_bio_sync(bio) && !rq_is_sync(rq))
++	if (elv_bio_sync(bio) && !rq_is_sync(rq))
+ 		return 0;
+ 
+ 	/*
+@@ -616,7 +650,7 @@ static int cfq_allow_merge(struct request_queue *q, struct request *rq,
+ 	if (!cic)
+ 		return 0;
+ 
+-	cfqq = cic_to_cfqq(cic, cfq_bio_sync(bio));
++	cfqq = cic_bio_to_cfqq(cfqd, cic, bio, elv_bio_sync(bio));
+ 	if (cfqq == RQ_CFQQ(rq))
+ 		return 1;
+ 
+@@ -1242,14 +1276,28 @@ static void changed_ioprio(struct io_context *ioc, struct cfq_io_context *cic)
+ 	spin_lock_irqsave(q->queue_lock, flags);
+ 
+ 	cfqq = cic->cfqq[BLK_RW_ASYNC];
++
+ 	if (cfqq) {
+ 		struct cfq_queue *new_cfqq;
+-		new_cfqq = cfq_get_queue(cfqd, BLK_RW_ASYNC, cic->ioc,
 +
 +		/*
-+		 * NOTE: here we may be changing the weight too early,
-+		 * this will cause unfairness.  The correct approach
-+		 * would have required additional complexity to defer
-+		 * weight changes to the proper time instants (i.e.,
-+		 * when entity->finish <= old_st->vtime).
++		 * Drop the reference to old queue unconditionally. Don't
++		 * worry whether new async prio queue has been allocated
++		 * or not.
 +		 */
-+		new_st = io_entity_service_tree(entity);
-+		new_st->wsum += entity->weight;
++		cic_set_cfqq(cic, NULL, BLK_RW_ASYNC);
++		cfq_put_queue(cfqq);
 +
-+		if (new_st != old_st)
-+			entity->start = new_st->vtime;
++		/*
++		 * Why to allocate new queue now? Will it not be automatically
++		 * allocated whenever another async request from same context
++		 * comes? Keeping it for the time being because existing cfq
++		 * code allocates the new queue immediately upon prio change
++		 */
++		new_cfqq = cfq_get_queue(cfqd, NULL, BLK_RW_ASYNC, cic->ioc,
+ 						GFP_ATOMIC);
+-		if (new_cfqq) {
+-			cic->cfqq[BLK_RW_ASYNC] = new_cfqq;
+-			cfq_put_queue(cfqq);
+-		}
++		if (new_cfqq)
++			cic_set_cfqq(cic, new_cfqq, BLK_RW_ASYNC);
+ 	}
+ 
+ 	cfqq = cic->cfqq[BLK_RW_SYNC];
+@@ -1300,7 +1348,7 @@ static void changed_cgroup(struct io_context *ioc, struct cfq_io_context *cic)
+ 
+ 	spin_lock_irqsave(q->queue_lock, flags);
+ 
+-	iog = io_get_io_group(q, 0);
++	iog = io_get_io_group(q, NULL, 0);
+ 
+ 	if (async_cfqq != NULL) {
+ 		__iog = cfqq_to_io_group(async_cfqq);
+@@ -1338,7 +1386,7 @@ static void cfq_ioc_set_cgroup(struct io_context *ioc)
+ #endif  /* CONFIG_IOSCHED_CFQ_HIER */
+ 
+ static struct cfq_queue *
+-cfq_find_alloc_queue(struct cfq_data *cfqd, int is_sync,
++cfq_find_alloc_queue(struct cfq_data *cfqd, struct bio *bio, int is_sync,
+ 		     struct io_context *ioc, gfp_t gfp_mask)
+ {
+ 	struct cfq_queue *cfqq, *new_cfqq = NULL;
+@@ -1348,12 +1396,28 @@ cfq_find_alloc_queue(struct cfq_data *cfqd, int is_sync,
+ 	struct io_group *iog = NULL;
+ 
+ retry:
+-	iog = io_get_io_group(q, 1);
++	iog = io_get_io_group_bio(q, bio, 1);
+ 
+ 	cic = cfq_cic_lookup(cfqd, ioc);
+ 	/* cic always exists here */
+ 	cfqq = cic_to_cfqq(cic, is_sync);
+ 
++#ifdef CONFIG_TRACK_ASYNC_CONTEXT
++	if (!cfqq && !is_sync) {
++		const int ioprio = task_ioprio(cic->ioc);
++		const int ioprio_class = task_ioprio_class(cic->ioc);
++
++		/*
++		 * We have not cached async queue pointer as bio tracking
++		 * is enabled. Look into group async queue array using ioc
++		 * class and prio to see if somebody already allocated the
++		 * queue.
++		 */
++
++		cfqq = io_group_async_queue_prio(iog, ioprio_class, ioprio);
 +	}
++#endif
 +
-+	return new_st;
-+}
+ 	/*
+ 	 * Always try a new alloc if we fell back to the OOM cfqq
+ 	 * originally, since it should just be a temporary situation.
+@@ -1431,14 +1495,14 @@ out:
+ }
+ 
+ static struct cfq_queue *
+-cfq_get_queue(struct cfq_data *cfqd, int is_sync, struct io_context *ioc,
+-	      gfp_t gfp_mask)
++cfq_get_queue(struct cfq_data *cfqd, struct bio *bio, int is_sync,
++		struct io_context *ioc, gfp_t gfp_mask)
+ {
+ 	const int ioprio = task_ioprio(ioc);
+ 	const int ioprio_class = task_ioprio_class(ioc);
+ 	struct cfq_queue *async_cfqq = NULL;
+ 	struct cfq_queue *cfqq = NULL;
+-	struct io_group *iog = io_get_io_group(cfqd->queue, 1);
++	struct io_group *iog = io_get_io_group_bio(cfqd->queue, bio, 1);
+ 
+ 	if (!is_sync) {
+ 		async_cfqq = io_group_async_queue_prio(iog, ioprio_class,
+@@ -1447,13 +1511,35 @@ cfq_get_queue(struct cfq_data *cfqd, int is_sync, struct io_context *ioc,
+ 	}
+ 
+ 	if (!cfqq)
+-		cfqq = cfq_find_alloc_queue(cfqd, is_sync, ioc, gfp_mask);
++		cfqq = cfq_find_alloc_queue(cfqd, bio, is_sync, ioc, gfp_mask);
+ 
+ 	if (!is_sync && !async_cfqq)
+ 		io_group_set_async_queue(iog, ioprio_class, ioprio, cfqq->ioq);
+ 
+-	/* ioc reference */
++#ifdef CONFIG_TRACK_ASYNC_CONTEXT
++	/*
++	 * ioc reference. If async request queue/group is determined from the
++	 * original task/cgroup and not from submitter task, io context can
++	 * not cache the pointer to async queue and everytime a request comes,
++	 * it will be determined by going through the async queue array.
++	 *
++	 * This comes from the fact that we might be getting async requests
++	 * which belong to a different cgroup altogether than the cgroup
++	 * iocontext belongs to. And this thread might be submitting bios
++	 * from various cgroups. So every time async queue will be different
++	 * based on the cgroup of the bio/rq. Can't cache the async cfqq
++	 * pointer in cic.
++	 */
++	if (is_sync)
++		elv_get_ioq(cfqq->ioq);
++#else
++	/*
++	 * async requests are being attributed to task submitting
++	 * it, hence cic can cache async cfqq pointer. Take the
++	 * queue reference even for async queue.
++	 */
+ 	elv_get_ioq(cfqq->ioq);
++#endif
+ 	return cfqq;
+ }
+ 
+@@ -1912,7 +1998,8 @@ static void cfq_put_request(struct request *rq)
+  * Allocate cfq data structures associated with this request.
+  */
+ static int
+-cfq_set_request(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
++cfq_set_request(struct request_queue *q, struct request *rq, struct bio *bio,
++				gfp_t gfp_mask)
+ {
+ 	struct cfq_data *cfqd = q->elevator->elevator_data;
+ 	struct cfq_io_context *cic;
+@@ -1932,7 +2019,7 @@ cfq_set_request(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
+ 
+ 	cfqq = cic_to_cfqq(cic, is_sync);
+ 	if (!cfqq || cfqq == &cfqd->oom_cfqq) {
+-		cfqq = cfq_get_queue(cfqd, is_sync, cic->ioc, gfp_mask);
++		cfqq = cfq_get_queue(cfqd, bio, is_sync, cic->ioc, gfp_mask);
+ 		cic_set_cfqq(cic, cfqq, is_sync);
+ 	}
+ 
+diff --git a/block/deadline-iosched.c b/block/deadline-iosched.c
+index 73cd98f..9811a0e 100644
+--- a/block/deadline-iosched.c
++++ b/block/deadline-iosched.c
+@@ -133,7 +133,7 @@ deadline_merge(struct request_queue *q, struct request **req, struct bio *bio)
+ 	int ret;
+ 	struct deadline_queue *dq;
+ 
+-	dq = elv_get_sched_queue_current(q);
++	dq = elv_get_sched_queue_bio(q, bio);
+ 	if (!dq)
+ 		return ELEVATOR_NO_MERGE;
+ 
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index 0849bb1..4042e16 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -16,6 +16,7 @@
+ #include "elevator-fq.h"
+ #include <linux/blktrace_api.h>
+ #include <linux/seq_file.h>
++#include <linux/biotrack.h>
+ 
+ /* Values taken from cfq */
+ const int elv_slice_sync = HZ / 10;
+@@ -1220,6 +1221,9 @@ struct io_cgroup io_root_cgroup = {
+ 
+ static struct io_cgroup *cgroup_to_io_cgroup(struct cgroup *cgroup)
+ {
++	if (!cgroup)
++		return &io_root_cgroup;
 +
-+/**
-+ * bfq_update_vtime - update vtime if necessary.
-+ * @st: the service tree to act upon.
-+ *
-+ * If necessary update the service tree vtime to have at least one
-+ * eligible entity, skipping to its start time.  Assumes that the
-+ * active tree of the device is not empty.
-+ *
-+ * NOTE: this hierarchical implementation updates vtimes quite often,
-+ * we may end up with reactivated tasks getting timestamps after a
-+ * vtime skip done because we needed a ->first_active entity on some
-+ * intermediate node.
-+ */
-+static void bfq_update_vtime(struct io_service_tree *st)
+ 	return container_of(cgroup_subsys_state(cgroup, io_subsys_id),
+ 			    struct io_cgroup, css);
+ }
+@@ -1730,9 +1734,60 @@ end:
+ 	return iog;
+ }
+ 
++/* Map a page to respective cgroup. Null return means, map it to root cgroup */
++static inline struct cgroup *get_cgroup_from_page(struct page *page)
 +{
-+	struct io_entity *entry;
-+	struct rb_node *node = st->active.rb_node;
++	unsigned long bio_cgroup_id;
++	struct cgroup *cgroup;
 +
-+	entry = rb_entry(node, struct io_entity, rb_node);
-+	if (bfq_gt(entry->min_start, st->vtime)) {
-+		st->vtime = entry->min_start;
-+		bfq_forget_idle(st);
-+	}
-+}
++	bio_cgroup_id = get_blkio_cgroup_id_page(page);
 +
-+/**
-+ * bfq_first_active - find the eligible entity with the smallest finish time
-+ * @st: the service tree to select from.
-+ *
-+ * This function searches the first schedulable entity, starting from the
-+ * root of the tree and going on the left every time on this side there is
-+ * a subtree with at least one eligible (start <= vtime) entity.  The path
-+ * on the right is followed only if a) the left subtree contains no eligible
-+ * entities and b) no eligible entity has been found yet.
-+ */
-+static struct io_entity *bfq_first_active_entity(struct io_service_tree *st)
-+{
-+	struct io_entity *entry, *first = NULL;
-+	struct rb_node *node = st->active.rb_node;
-+
-+	while (node != NULL) {
-+		entry = rb_entry(node, struct io_entity, rb_node);
-+left:
-+		if (!bfq_gt(entry->start, st->vtime))
-+			first = entry;
-+
-+		BUG_ON(bfq_gt(entry->min_start, st->vtime));
-+
-+		if (node->rb_left != NULL) {
-+			entry = rb_entry(node->rb_left,
-+					 struct io_entity, rb_node);
-+			if (!bfq_gt(entry->min_start, st->vtime)) {
-+				node = node->rb_left;
-+				goto left;
-+			}
-+		}
-+		if (first != NULL)
-+			break;
-+		node = node->rb_right;
-+	}
-+
-+	BUG_ON(first == NULL && !RB_EMPTY_ROOT(&st->active));
-+	return first;
-+}
-+
-+/**
-+ * __bfq_lookup_next_entity - return the first eligible entity in @st.
-+ * @st: the service tree.
-+ *
-+ * Update the virtual time in @st and return the first eligible entity
-+ * it contains.
-+ */
-+static struct io_entity *__bfq_lookup_next_entity(struct io_service_tree *st)
-+{
-+	struct io_entity *entity;
-+
-+	if (RB_EMPTY_ROOT(&st->active))
++	if (!bio_cgroup_id)
 +		return NULL;
 +
-+	bfq_update_vtime(st);
-+	entity = bfq_first_active_entity(st);
-+	BUG_ON(bfq_gt(entity->start, st->vtime));
-+
-+	return entity;
++	cgroup = blkio_cgroup_lookup(bio_cgroup_id);
++	return cgroup;
 +}
 +
-+/**
-+ * bfq_lookup_next_entity - return the first eligible entity in @sd.
-+ * @sd: the sched_data.
-+ * @extract: if true the returned entity will be also extracted from @sd.
-+ *
-+ * NOTE: since we cache the next_active entity at each level of the
-+ * hierarchy, the complexity of the lookup can be decreased with
-+ * absolutely no effort just returning the cached next_active value;
-+ * we prefer to do full lookups to test the consistency of * the data
-+ * structures.
-+ */
-+static struct io_entity *bfq_lookup_next_entity(struct io_sched_data *sd,
-+						 int extract)
++struct io_group *io_get_io_group_bio(struct request_queue *q, struct bio *bio,
++					int create)
 +{
-+	struct io_service_tree *st = sd->service_tree;
-+	struct io_entity *entity;
-+	int i;
++	struct page *page = NULL;
 +
 +	/*
-+	 * We should not call lookup when an entity is active, as doing lookup
-+	 * can result in an erroneous vtime jump.
++	 * Determine the group from task context. Even calls from
++	 * blk_get_request() which don't have any bio info will be mapped
++	 * to the task's group
 +	 */
-+	BUG_ON(sd->active_entity != NULL);
++	if (!bio)
++		goto sync;
 +
-+	for (i = 0; i < IO_IOPRIO_CLASSES; i++, st++) {
-+		entity = __bfq_lookup_next_entity(st);
-+		if (entity != NULL) {
-+			if (extract) {
-+				bfq_active_remove(st, entity);
-+				sd->active_entity = entity;
-+			}
-+			break;
-+		}
++	if (bio_barrier(bio)) {
++		/*
++		 * Map barrier requests to root group. May be more special
++		 * bio cases should come here
++		 */
++		return q->elevator->efqd.root_group;
 +	}
 +
-+	return entity;
++	/* Map the sync bio to the right group using task context */
++	if (elv_bio_sync(bio))
++		goto sync;
++
++#ifdef CONFIG_TRACK_ASYNC_CONTEXT
++	/* Determine the group from info stored in page */
++	page = bio_iovec_idx(bio, 0)->bv_page;
++	return io_get_io_group(q, page, create);
++#endif
++
++sync:
++	return io_get_io_group(q, NULL, create);
 +}
++EXPORT_SYMBOL(io_get_io_group_bio);
 +
-+/**
-+ * __bfq_activate_entity - activate an entity.
-+ * @entity: the entity being activated.
+ /*
+- * Search for the io group current task belongs to. If create=1, then also
+- * create the io group if it is not already there.
++ * Find the io group page belongs to.
++ * If "create" is set, io group is created if it is not already present.
+  *
+  * Note: This function should be called with queue lock held. It returns
+  * a pointer to io group without taking any reference. That group will
+@@ -1740,28 +1795,48 @@ end:
+  * needs to get hold of queue lock). So if somebody needs to use group
+  * pointer even after dropping queue lock, take a reference to the group
+  * before dropping queue lock.
 + *
-+ * Called whenever an entity is activated, i.e., it is not active and one
-+ * of its children receives a new request, or has to be reactivated due to
-+ * budget exhaustion.  It uses the current budget of the entity (and the
-+ * service received if @entity is active) of the queue to calculate its
-+ * timestamps.
-+ */
-+static void __bfq_activate_entity(struct io_entity *entity)
-+{
-+	struct io_sched_data *sd = entity->sched_data;
-+	struct io_service_tree *st = io_entity_service_tree(entity);
++ * One can call it without queue lock with rcu read lock held for browsing
++ * through the groups.
+  */
+-struct io_group *io_get_io_group(struct request_queue *q, int create)
++struct io_group *io_get_io_group(struct request_queue *q, struct page *page,
++					int create)
+ {
+ 	struct cgroup *cgroup;
+ 	struct io_group *iog;
+ 	struct elv_fq_data *efqd = &q->elevator->efqd;
+ 
+-	assert_spin_locked(q->queue_lock);
++	if (create)
++		assert_spin_locked(q->queue_lock);
+ 
+ 	rcu_read_lock();
+-	cgroup = task_cgroup(current, io_subsys_id);
+-	iog = io_find_alloc_group(q, cgroup, efqd, create);
+-	if (!iog) {
 +
-+	if (entity == sd->active_entity) {
-+		BUG_ON(entity->tree != NULL);
-+		/*
-+		 * If we are requeueing the current entity we have
-+		 * to take care of not charging to it service it has
-+		 * not received.
-+		 */
-+		bfq_calc_finish(entity, entity->service);
-+		entity->start = entity->finish;
-+		sd->active_entity = NULL;
-+	} else if (entity->tree == &st->active) {
-+		/*
-+		 * Requeueing an entity due to a change of some
-+		 * next_active entity below it.  We reuse the old
-+		 * start time.
-+		 */
-+		bfq_active_remove(st, entity);
-+	} else if (entity->tree == &st->idle) {
-+		/*
-+		 * Must be on the idle tree, bfq_idle_remove() will
-+		 * check for that.
-+		 */
-+		bfq_idle_remove(st, entity);
-+		entity->start = bfq_gt(st->vtime, entity->finish) ?
-+				       st->vtime : entity->finish;
-+	} else {
-+		/*
-+		 * The finish time of the entity may be invalid, and
-+		 * it is in the past for sure, otherwise the queue
-+		 * would have been on the idle tree.
-+		 */
-+		entity->start = st->vtime;
-+		st->wsum += entity->weight;
-+		bfq_get_entity(entity);
-+
-+		BUG_ON(entity->on_st);
-+		entity->on_st = 1;
-+	}
-+
-+	st = __bfq_entity_update_prio(st, entity);
-+	bfq_calc_finish(entity, entity->budget);
-+	bfq_active_insert(st, entity);
-+}
-+
-+/**
-+ * bfq_activate_entity - activate an entity.
-+ * @entity: the entity to activate.
-+ */
-+static void bfq_activate_entity(struct io_entity *entity)
-+{
-+	__bfq_activate_entity(entity);
-+}
-+
-+/**
-+ * __bfq_deactivate_entity - deactivate an entity from its service tree.
-+ * @entity: the entity to deactivate.
-+ * @requeue: if false, the entity will not be put into the idle tree.
-+ *
-+ * Deactivate an entity, independently from its previous state.  If the
-+ * entity was not on a service tree just return, otherwise if it is on
-+ * any scheduler tree, extract it from that tree, and if necessary
-+ * and if the caller did not specify @requeue, put it on the idle tree.
-+ *
-+ */
-+static int __bfq_deactivate_entity(struct io_entity *entity, int requeue)
-+{
-+	struct io_sched_data *sd = entity->sched_data;
-+	struct io_service_tree *st = io_entity_service_tree(entity);
-+	int was_active = entity == sd->active_entity;
-+	int ret = 0;
-+
-+	if (!entity->on_st)
-+		return 0;
-+
-+	BUG_ON(was_active && entity->tree != NULL);
-+
-+	if (was_active) {
-+		bfq_calc_finish(entity, entity->service);
-+		sd->active_entity = NULL;
-+	} else if (entity->tree == &st->active)
-+		bfq_active_remove(st, entity);
-+	else if (entity->tree == &st->idle)
-+		bfq_idle_remove(st, entity);
-+	else if (entity->tree != NULL)
-+		BUG();
-+
-+	if (!requeue || !bfq_gt(entity->finish, st->vtime))
-+		bfq_forget_entity(st, entity);
++	if (!page)
++		cgroup = task_cgroup(current, io_subsys_id);
 +	else
-+		bfq_idle_insert(st, entity);
++		cgroup = get_cgroup_from_page(page);
 +
-+	BUG_ON(sd->active_entity == entity);
++	if (!cgroup) {
+ 		if (create)
+ 			iog = efqd->root_group;
+-		else
++		else {
+ 			/*
+ 			 * bio merge functions doing lookup don't want to
+ 			 * map bio to root group by default
+ 			 */
+ 			iog = NULL;
++		}
++		goto out;
+ 	}
 +
-+	return ret;
-+}
-+
-+/**
-+ * bfq_deactivate_entity - deactivate an entity.
-+ * @entity: the entity to deactivate.
-+ * @requeue: true if the entity can be put on the idle tree
-+ */
-+static void bfq_deactivate_entity(struct io_entity *entity, int requeue)
++	iog = io_find_alloc_group(q, cgroup, efqd, create);
++	if (!iog) {
++		if (create)
++			iog = efqd->root_group;
++		else
++			iog = NULL;
++	}
++out:
+ 	rcu_read_unlock();
+ 	return iog;
+ }
+@@ -2074,7 +2149,7 @@ int io_group_allow_merge(struct request *rq, struct bio *bio)
+ 		return 1;
+ 
+ 	/* Determine the io group of the bio submitting task */
+-	iog = io_get_io_group(q, 0);
++	iog = io_get_io_group_bio(q, bio, 0);
+ 	if (!iog) {
+ 		/* May be task belongs to a differet cgroup for which io
+ 		 * group has not been setup yet. */
+@@ -2098,7 +2173,7 @@ int io_group_allow_merge(struct request *rq, struct bio *bio)
+  * function is not invoked.
+  */
+ int elv_fq_set_request_ioq(struct request_queue *q, struct request *rq,
+-					gfp_t gfp_mask)
++				struct bio *bio, gfp_t gfp_mask)
+ {
+ 	struct elevator_queue *e = q->elevator;
+ 	unsigned long flags;
+@@ -2114,7 +2189,7 @@ int elv_fq_set_request_ioq(struct request_queue *q, struct request *rq,
+ 
+ retry:
+ 	/* Determine the io group request belongs to */
+-	iog = io_get_io_group(q, 1);
++	iog = io_get_io_group_bio(q, bio, 1);
+ 	BUG_ON(!iog);
+ 
+ 	/* Get the iosched queue */
+@@ -2202,17 +2277,17 @@ queue_fail:
+ }
+ 
+ /*
+- * Find out the io queue of current task. Optimization for single ioq
++ * Find out the io queue of bio belongs to. Optimization for single ioq
+  * per io group io schedulers.
+  */
+-struct io_queue *elv_lookup_ioq_current(struct request_queue *q)
++struct io_queue *elv_lookup_ioq_bio(struct request_queue *q, struct bio *bio)
+ {
+ 	struct io_group *iog;
+ 
+ 	/* Determine the io group and io queue of the bio submitting task */
+-	iog = io_get_io_group(q, 0);
++	iog = io_get_io_group_bio(q, bio, 0);
+ 	if (!iog) {
+-		/* May be task belongs to a cgroup for which io group has
++		/* May be bio belongs to a cgroup for which io group has
+ 		 * not been setup yet. */
+ 		return NULL;
+ 	}
+@@ -2286,13 +2361,21 @@ static void io_free_root_group(struct elevator_queue *e)
+ 	kfree(iog);
+ }
+ 
+-struct io_group *io_get_io_group(struct request_queue *q, int create)
++struct io_group *io_get_io_group(struct request_queue *q, struct page *page,
++						int create)
+ {
+ 	/* In flat mode, there is only root group */
+ 	return q->elevator->efqd.root_group;
+ }
+ EXPORT_SYMBOL(io_get_io_group);
+ 
++struct io_group *io_get_io_group_bio(struct request_queue *q, struct bio *bio,
++						int create)
 +{
-+	__bfq_deactivate_entity(entity, requeue);
++	return q->elevator->efqd.root_group;
 +}
++EXPORT_SYMBOL(io_get_io_group_bio);
 +
-+static void entity_served(struct io_entity *entity, unsigned long served)
-+{
-+	struct io_service_tree *st;
-+
-+	st = io_entity_service_tree(entity);
-+	entity->service += served;
-+	BUG_ON(st->wsum == 0);
-+	st->vtime += bfq_delta(served, st->wsum);
-+	bfq_forget_idle(st);
-+}
-+
-+/**
-+ * io_flush_idle_tree - deactivate any entity on the idle tree of @st.
-+ * @st: the service tree being flushed.
-+ */
-+static void io_flush_idle_tree(struct io_service_tree *st)
-+{
-+	struct io_entity *entity = st->first_idle;
-+
-+	for (; entity != NULL; entity = st->first_idle)
-+		__bfq_deactivate_entity(entity, 0);
-+}
+ static inline int is_only_root_group(void)
+ {
+ 	return 1;
+@@ -3379,6 +3462,10 @@ expire:
+ new_queue:
+ 	ioq = elv_set_active_ioq(q, new_ioq);
+ keep_queue:
++	if (ioq)
++		elv_log_ioq(efqd, ioq, "select busy=%d qued=%d disp=%d",
++				elv_nr_busy_ioq(q->elevator), ioq->nr_queued,
++				elv_ioq_nr_dispatched(ioq));
+ 	return ioq;
+ }
+ 
 diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-new file mode 100644
-index 0000000..4554d7f
---- /dev/null
+index 9715fc5..639f89a 100644
+--- a/block/elevator-fq.h
 +++ b/block/elevator-fq.h
-@@ -0,0 +1,172 @@
+@@ -550,10 +550,11 @@ static inline int update_requeue(struct io_queue *ioq, int requeue)
+ }
+ 
+ extern int elv_fq_set_request_ioq(struct request_queue *q, struct request *rq,
+-					gfp_t gfp_mask);
++					struct bio *bio, gfp_t gfp_mask);
+ extern void elv_fq_unset_request_ioq(struct request_queue *q,
+ 					struct request *rq);
+-extern struct io_queue *elv_lookup_ioq_current(struct request_queue *q);
++extern struct io_queue *elv_lookup_ioq_bio(struct request_queue *q,
++						struct bio *bio);
+ 
+ /* Sets the single ioq associated with the io group. (noop, deadline, AS) */
+ static inline void io_group_set_ioq(struct io_group *iog, struct io_queue *ioq)
+@@ -588,7 +589,7 @@ static inline void io_group_set_ioq(struct io_group *iog, struct io_queue *ioq)
+ }
+ 
+ static inline int elv_fq_set_request_ioq(struct request_queue *q,
+-					struct request *rq, gfp_t gfp_mask)
++			struct request *rq, struct bio *bio, gfp_t gfp_mask)
+ {
+ 	return 0;
+ }
+@@ -598,7 +599,8 @@ static inline void elv_fq_unset_request_ioq(struct request_queue *q,
+ {
+ }
+ 
+-static inline struct io_queue *elv_lookup_ioq_current(struct request_queue *q)
++static inline struct io_queue *elv_lookup_ioq_bio(struct request_queue *q,
++						struct bio *bio)
+ {
+ 	return NULL;
+ }
+@@ -655,7 +657,10 @@ extern void *io_group_async_queue_prio(struct io_group *iog, int ioprio_class,
+ 					int ioprio);
+ extern void io_group_set_async_queue(struct io_group *iog, int ioprio_class,
+ 					int ioprio, struct io_queue *ioq);
+-extern struct io_group *io_get_io_group(struct request_queue *q, int create);
++extern struct io_group *io_get_io_group(struct request_queue *q,
++					struct page *page, int create);
++extern struct io_group *io_get_io_group_bio(struct request_queue *q,
++					struct bio *bio, int create);
+ extern int elv_nr_busy_ioq(struct elevator_queue *e);
+ extern int elv_rq_in_driver(struct elevator_queue *e);
+ extern struct io_queue *elv_alloc_ioq(struct request_queue *q, gfp_t gfp_mask);
+@@ -714,7 +719,7 @@ static inline int io_group_allow_merge(struct request *rq, struct bio *bio)
+ 	return 1;
+ }
+ static inline int elv_fq_set_request_ioq(struct request_queue *q,
+-					struct request *rq, gfp_t gfp_mask)
++			struct request *rq, struct bio *bio, gfp_t gfp_mask)
+ {
+ 	return 0;
+ }
+@@ -724,7 +729,8 @@ static inline void elv_fq_unset_request_ioq(struct request_queue *q,
+ {
+ }
+ 
+-static inline struct io_queue *elv_lookup_ioq_current(struct request_queue *q)
++static inline struct io_queue *elv_lookup_ioq_bio(struct request_queue *q,
++						struct bio *bio)
+ {
+ 	return NULL;
+ }
+diff --git a/block/elevator.c b/block/elevator.c
+index 11a15ac..b2850cf 100644
+--- a/block/elevator.c
++++ b/block/elevator.c
+@@ -846,7 +846,8 @@ struct request *elv_former_request(struct request_queue *q, struct request *rq)
+ 	return NULL;
+ }
+ 
+-int elv_set_request(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
++int elv_set_request(struct request_queue *q, struct request *rq,
++			struct bio *bio, gfp_t gfp_mask)
+ {
+ 	struct elevator_queue *e = q->elevator;
+ 
+@@ -855,10 +856,10 @@ int elv_set_request(struct request_queue *q, struct request *rq, gfp_t gfp_mask)
+ 	 * ioq per io group
+ 	 */
+ 	if (elv_iosched_single_ioq(e))
+-		return elv_fq_set_request_ioq(q, rq, gfp_mask);
++		return elv_fq_set_request_ioq(q, rq, bio, gfp_mask);
+ 
+ 	if (e->ops->elevator_set_req_fn)
+-		return e->ops->elevator_set_req_fn(q, rq, gfp_mask);
++		return e->ops->elevator_set_req_fn(q, rq, bio, gfp_mask);
+ 
+ 	rq->elevator_private = NULL;
+ 	return 0;
+@@ -1260,19 +1261,19 @@ void *elv_select_sched_queue(struct request_queue *q, int force)
+ EXPORT_SYMBOL(elv_select_sched_queue);
+ 
+ /*
+- * Get the io scheduler queue pointer for current task.
++ * Get the io scheduler queue pointer for the group bio belongs to.
+  *
+  * If fair queuing is enabled, determine the io group of task and retrieve
+  * the ioq pointer from that. This is used by only single queue ioschedulers
+  * for retrieving the queue associated with the group to decide whether the
+  * new bio can do a front merge or not.
+  */
+-void *elv_get_sched_queue_current(struct request_queue *q)
++void *elv_get_sched_queue_bio(struct request_queue *q, struct bio *bio)
+ {
+ 	/* Fair queuing is not enabled. There is only one queue. */
+ 	if (!elv_iosched_fair_queuing_enabled(q->elevator))
+ 		return q->elevator->sched_queue;
+ 
+-	return ioq_sched_queue(elv_lookup_ioq_current(q));
++	return ioq_sched_queue(elv_lookup_ioq_bio(q, bio));
+ }
+-EXPORT_SYMBOL(elv_get_sched_queue_current);
++EXPORT_SYMBOL(elv_get_sched_queue_bio);
+diff --git a/include/linux/elevator.h b/include/linux/elevator.h
+index d944c24..e98c098 100644
+--- a/include/linux/elevator.h
++++ b/include/linux/elevator.h
+@@ -23,7 +23,8 @@ typedef struct request *(elevator_request_list_fn) (struct request_queue *, stru
+ typedef void (elevator_completed_req_fn) (struct request_queue *, struct request *);
+ typedef int (elevator_may_queue_fn) (struct request_queue *, int);
+ 
+-typedef int (elevator_set_req_fn) (struct request_queue *, struct request *, gfp_t);
++typedef int (elevator_set_req_fn) (struct request_queue *, struct request *,
++					struct bio *bio, gfp_t);
+ typedef void (elevator_put_req_fn) (struct request *);
+ typedef void (elevator_activate_req_fn) (struct request_queue *, struct request *);
+ typedef void (elevator_deactivate_req_fn) (struct request_queue *, struct request *);
+@@ -147,7 +148,8 @@ extern void elv_unregister_queue(struct request_queue *q);
+ extern int elv_may_queue(struct request_queue *, int);
+ extern void elv_abort_queue(struct request_queue *);
+ extern void elv_completed_request(struct request_queue *, struct request *);
+-extern int elv_set_request(struct request_queue *, struct request *, gfp_t);
++extern int elv_set_request(struct request_queue *, struct request *,
++					struct bio *bio, gfp_t);
+ extern void elv_put_request(struct request_queue *, struct request *);
+ extern void elv_drain_elevator(struct request_queue *);
+ 
+@@ -276,6 +278,20 @@ static inline int elv_iosched_single_ioq(struct elevator_queue *e)
+ #endif /* ELV_IOSCHED_FAIR_QUEUING */
+ extern void *elv_get_sched_queue(struct request_queue *q, struct request *rq);
+ extern void *elv_select_sched_queue(struct request_queue *q, int force);
+-extern void *elv_get_sched_queue_current(struct request_queue *q);
++extern void *elv_get_sched_queue_bio(struct request_queue *q, struct bio *bio);
++
 +/*
-+ * elevator fair queuing Layer. Uses B-WF2Q+ hierarchical scheduler for
-+ * fair queuing. Data structures and common functions prototypes.
-+ *
-+ * Based on ideas and code from CFQ:
-+ * Copyright (C) 2003 Jens Axboe <axboe@kernel.dk>
-+ *
-+ * Copyright (C) 2008 Fabio Checconi <fabio@gandalf.sssup.it>
-+ *		      Paolo Valente <paolo.valente@unimore.it>
-+ *
-+ * Copyright (C) 2009 Vivek Goyal <vgoyal@redhat.com>
-+ * 	              Nauman Rafique <nauman@google.com>
++ * This is equivalent of rq_is_sync()/cfq_bio_sync() function where we
++ * determine whether an rq/bio is sync or not. There are cases like during
++ * merging and during * request allocation, where we don't have rq but bio
++ * and needs to find out * if this bio will be considered as sync or async by
++ * elevator/iosched. This function is useful in such cases.
 + */
-+
-+#include <linux/blkdev.h>
-+
-+#ifndef _BFQ_SCHED_H
-+#define _BFQ_SCHED_H
-+
-+#define IO_IOPRIO_CLASSES	3
-+
-+struct io_entity;
-+struct io_queue;
-+
-+/**
-+ * struct io_service_tree - per ioprio_class service tree.
-+ * @active: tree for active entities (i.e., those backlogged).
-+ * @idle: tree for idle entities (i.e., those not backlogged, with V <= F_i).
-+ * @first_idle: idle entity with minimum F_i.
-+ * @last_idle: idle entity with maximum F_i.
-+ * @vtime: scheduler virtual time.
-+ * @wsum: scheduler weight sum; active and idle entities contribute to it.
-+ *
-+ * Each service tree represents a B-WF2Q+ scheduler on its own.  Each
-+ * ioprio_class has its own independent scheduler, and so its own
-+ * io_service_tree.  All the fields are protected by the queue lock
-+ * of the containing efqd.
-+ */
-+struct io_service_tree {
-+	struct rb_root active;
-+	struct rb_root idle;
-+
-+	struct io_entity *first_idle;
-+	struct io_entity *last_idle;
-+
-+	u64 vtime;
-+	unsigned int wsum;
-+};
-+
-+/**
-+ * struct io_sched_data - multi-class scheduler.
-+ * @active_entity: entity under service.
-+ * @next_active: head-of-the-line entity in the scheduler.
-+ * @service_tree: array of service trees, one per ioprio_class.
-+ *
-+ * io_sched_data is the basic scheduler queue.  It supports three
-+ * ioprio_classes, and can be used either as a toplevel queue or as
-+ * an intermediate queue on a hierarchical setup.
-+ * @next_active points to the active entity of the sched_data service
-+ * trees that will be scheduled next.
-+ *
-+ * The supported ioprio_classes are the same as in CFQ, in descending
-+ * priority order, IOPRIO_CLASS_RT, IOPRIO_CLASS_BE, IOPRIO_CLASS_IDLE.
-+ * Requests from higher priority queues are served before all the
-+ * requests from lower priority queues; among requests of the same
-+ * queue requests are served according to B-WF2Q+.
-+ * All the fields are protected by the queue lock of the containing efqd.
-+ */
-+struct io_sched_data {
-+	struct io_entity *active_entity;
-+	struct io_service_tree service_tree[IO_IOPRIO_CLASSES];
-+};
-+
-+/**
-+ * struct io_entity - schedulable entity.
-+ * @rb_node: service_tree member.
-+ * @on_st: flag, true if the entity is on a tree (either the active or
-+ *         the idle one of its service_tree).
-+ * @finish: B-WF2Q+ finish timestamp (aka F_i).
-+ * @start: B-WF2Q+ start timestamp (aka S_i).
-+ * @tree: tree the entity is enqueued into; %NULL if not on a tree.
-+ * @min_start: minimum start time of the (active) subtree rooted at
-+ *             this entity; used for O(log N) lookups into active trees.
-+ * @service: service received during the last round of service.
-+ * @budget: budget used to calculate F_i; F_i = S_i + @budget / @weight.
-+ * @weight: weight of the queue, calculated as IOPRIO_BE_NR - @ioprio.
-+ * @new_weight: when a weight change is requested, the new weight value
-+ * @parent: parent entity, for hierarchical scheduling.
-+ * @my_sched_data: for non-leaf nodes in the cgroup hierarchy, the
-+ *                 associated scheduler queue, %NULL on leaf nodes.
-+ * @sched_data: the scheduler queue this entity belongs to.
-+ * @ioprio: the ioprio in use.
-+ * @new_ioprio: when an ioprio change is requested, the new ioprio value
-+ * @ioprio_class: the ioprio_class in use.
-+ * @new_ioprio_class: when an ioprio_class change is requested, the new
-+ *                    ioprio_class value.
-+ * @ioprio_changed: flag, true when the user requested an ioprio or
-+ *                  ioprio_class change.
-+ *
-+ * A io_entity is used to represent either a io_queue (leaf node in the
-+ * cgroup hierarchy) or a io_group into the upper level scheduler.  Each
-+ * entity belongs to the sched_data of the parent group in the cgroup
-+ * hierarchy.  Non-leaf entities have also their own sched_data, stored
-+ * in @my_sched_data.
-+ *
-+ * Each entity stores independently its priority values; this would allow
-+ * different weights on different devices, but this functionality is not
-+ * exported to userspace by now.  Priorities are updated lazily, first
-+ * storing the new values into the new_* fields, then setting the
-+ * @ioprio_changed flag.  As soon as there is a transition in the entity
-+ * state that allows the priority update to take place the effective and
-+ * the requested priority values are synchronized.
-+ *
-+ * The weight value is calculated from the ioprio to export the same
-+ * interface as CFQ.
-+ *
-+ * All the fields are protected by the queue lock of the containing efqd.
-+ */
-+struct io_entity {
-+	struct rb_node rb_node;
-+
-+	int on_st;
-+
-+	u64 finish;
-+	u64 start;
-+
-+	struct rb_root *tree;
-+
-+	u64 min_start;
-+
-+	unsigned long service, budget;
-+	unsigned int weight, new_weight;
-+
-+	struct io_entity *parent;
-+
-+	struct io_sched_data *my_sched_data;
-+	struct io_sched_data *sched_data;
-+
-+	unsigned short ioprio, new_ioprio;
-+	unsigned short ioprio_class, new_ioprio_class;
-+
-+	int ioprio_changed;
-+};
-+
-+/*
-+ * A common structure representing the io queue where requests are actually
-+ * queued.
-+ */
-+struct io_queue {
-+	struct io_entity entity;
-+	atomic_t ref;
-+
-+	/* Pointer to generic elevator fair queuing data structure */
-+	struct elv_fq_data *efqd;
-+};
-+
-+struct io_group {
-+	struct io_sched_data sched_data;
-+};
-+
-+static inline struct io_service_tree *
-+io_entity_service_tree(struct io_entity *entity)
++static inline int elv_bio_sync(struct bio *bio)
 +{
-+	struct io_sched_data *sched_data = entity->sched_data;
-+	unsigned int idx = entity->ioprio_class - 1;
-+
-+	BUG_ON(idx >= IO_IOPRIO_CLASSES);
-+	BUG_ON(sched_data == NULL);
-+
-+	return sched_data->service_tree + idx;
++	if ((bio_data_dir(bio) == READ) || bio_sync(bio))
++		return 1;
++	return 0;
 +}
-+#endif /* _BFQ_SCHED_H */
+ #endif /* CONFIG_BLOCK */
+ #endif
 -- 
 1.6.0.6
 
