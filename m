@@ -1,86 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753324AbZGXRXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753054AbZGXRXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753324AbZGXRXc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 13:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbZGXRXb
+	id S1753054AbZGXRXY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 13:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbZGXRXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 13:23:31 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:49346 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752497AbZGXRXX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 24 Jul 2009 13:23:23 -0400
-Date: Fri, 24 Jul 2009 10:23:20 -0700
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: Matt Helsley <matthltc@us.ibm.com>, Ben Blum <bblum@google.com>,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       akpm@linux-foundation.org, serue@us.ibm.com, lizf@cn.fujitsu.com
-Subject: Re: [PATCH 5/6] Makes procs file writable to move all threads by
-	tgid at once
-Message-ID: <20090724172320.GH5878@count0.beaverton.ibm.com>
-References: <20090724032033.2463.79256.stgit@hastromil.mtv.corp.google.com> <20090724032200.2463.82408.stgit@hastromil.mtv.corp.google.com> <20090724155041.GF5878@count0.beaverton.ibm.com> <6599ad830907240901w4fc02097k83d0c1012708e6ee@mail.gmail.com>
+Received: from mx2.redhat.com ([66.187.237.31]:57735 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752216AbZGXRXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 13:23:22 -0400
+Date: Fri, 24 Jul 2009 19:19:43 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       Roland McGrath <roland@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: [PATCH] exec: fix set_binfmt() vs sys_delete_module() race
+Message-ID: <20090724171943.GA10778@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <6599ad830907240901w4fc02097k83d0c1012708e6ee@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 24, 2009 at 09:01:46AM -0700, Paul Menage wrote:
-> On Fri, Jul 24, 2009 at 8:50 AM, Matt Helsley<matthltc@us.ibm.com> wrote:
-> >
-> > There is much ado about not taking additional "global locks" in fork()
-> > paths.
-> >
-> > * The fork and exit callbacks cgroup_fork() and cgroup_exit(), don't
-> > * (usually) take cgroup_mutex.  These are the two most performance
-> > * critical pieces of code here.
-> > ...
-> >
-> > and as I recall cgroup_fork() doesn't ever take cgroup_mutex because it is
-> > so performance critical.
-> 
-> cgroup_mutex is a much bigger and heavier mutex than the new rwsem
-> being introduced in this patch. It's sort of the BKL of cgroups,
-> although where possible I'm encouraging use of finer-grained
-> alternatives (such as subsystem-specific locks, the per-hierarchy
-> lock, etc).
-> 
-> > Assuming the above comments in kernel/cgroup.c
-> > are correct then this patch adds a performance regression by introducing a
-> > global mutex in the fork path, doesn't it?
-> 
-> Yes, although to what magnitude isn't clear.
+sys_delete_module() can set MODULE_STATE_GOING after search_binary_handler()
+does try_module_get(). In this case set_binfmt()->try_module_get() fails but
+since none of the callers check the returned error, the task will run with
+the wrong old ->binfmt.
 
-OK.
+The proper fix should change all ->load_binary() methods, but we can rely
+on fact that the caller must hold a reference to binfmt->module and use
+__module_get() which never fails.
 
-> Alternatives that we looked at were:
-> 
-> - add a clone_rwsem to task_struct, and require that a clone operation
-> that's adding to the same thread group take a read lock on the
-> leader's clone_rwsem; then the effect would be localised to a single
-> process; but for a system that has one big multi-threaded server on
-> it, the effect would still be similar to a global lock
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-Except most processes aren't big multi-threaded servers and not everyone
-runs such processes. They'll experience the overhead of a global lock
-when they don't have to. Again, it's a question of magnitudes we don't
-know I think.
+--- WAIT/include/linux/binfmts.h~SET_BINFMT	2009-05-03 17:15:27.000000000 +0200
++++ WAIT/include/linux/binfmts.h	2009-07-24 19:02:19.000000000 +0200
+@@ -119,7 +119,7 @@ extern int bprm_mm_init(struct linux_bin
+ extern int copy_strings_kernel(int argc,char ** argv,struct linux_binprm *bprm);
+ extern void install_exec_creds(struct linux_binprm *bprm);
+ extern void do_coredump(long signr, int exit_code, struct pt_regs *regs);
+-extern int set_binfmt(struct linux_binfmt *new);
++extern void set_binfmt(struct linux_binfmt *new);
+ extern void free_bprm(struct linux_binprm *);
+ 
+ #endif /* __KERNEL__ */
+--- WAIT/fs/exec.c~SET_BINFMT	2009-07-02 19:27:36.000000000 +0200
++++ WAIT/fs/exec.c	2009-07-24 19:00:40.000000000 +0200
+@@ -1377,18 +1377,14 @@ out_ret:
+ 	return retval;
+ }
+ 
+-int set_binfmt(struct linux_binfmt *new)
++void set_binfmt(struct linux_binfmt *new)
+ {
+-	struct linux_binfmt *old = current->binfmt;
++	if (current->binfmt)
++		module_put(current->binfmt->module);
+ 
+-	if (new) {
+-		if (!try_module_get(new->module))
+-			return -1;
+-	}
+ 	current->binfmt = new;
+-	if (old)
+-		module_put(old->module);
+-	return 0;
++	if (new)
++		__module_get(new->module);
+ }
+ 
+ EXPORT_SYMBOL(set_binfmt);
 
-> 
-> - move the housekeeping done by cgroup_fork() inside the tasklist_lock
-> critical section in do_fork(); then cgroup_attach_proc() can rely on
-> the existing global tasklist_lock to provide the necessary
-> synchronization, rather than introducing a second global lock; the
-> downside is that it slightly increases the size of the section where
-> tasklist_lock is held for write.
-
-Well, I imagine holding tasklist_lock is worse than cgroup_mutex in some
-ways since it's used even more widely. Makes sense not to use it here..
-
-Cheers,
-	-Matt Helsley
