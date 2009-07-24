@@ -1,64 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753024AbZGXQfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753470AbZGXQfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753024AbZGXQfZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 12:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbZGXQfZ
+	id S1753470AbZGXQfo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 12:35:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbZGXQfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 12:35:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44826 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751852AbZGXQfY (ORCPT
+	Fri, 24 Jul 2009 12:35:43 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:35225 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753358AbZGXQfl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 12:35:24 -0400
-Date: Fri, 24 Jul 2009 09:34:35 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Regression] kdesu broken
-In-Reply-To: <20090724164058.21a054e6@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.2.01.0907240930120.3960@localhost.localdomain>
-References: <200907240145.31935.rjw@sisk.pl> <2c0942db0907231721q124dc8f9mdbe64ed33c69ffbf@mail.gmail.com> <200907241721.45943.rjw@sisk.pl> <20090724164058.21a054e6@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Fri, 24 Jul 2009 12:35:41 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Alex Chiang <achiang@hp.com>
+Subject: Re: [PATCH v3 1/2] ACPI: export acpi_pci_root and friends
+Date: Fri, 24 Jul 2009 10:35:39 -0600
+User-Agent: KMail/1.9.10
+Cc: jbarnes@virtuousgeek.org, lenb@kernel.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+References: <20090723230026.4247.12759.stgit@bob.kio> <20090723230300.4247.75347.stgit@bob.kio>
+In-Reply-To: <20090723230300.4247.75347.stgit@bob.kio>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907241035.40074.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 24 Jul 2009, Alan Cox wrote:
-
-> On Fri, 24 Jul 2009 17:21:45 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Thursday 23 July 2009 05:03:00 pm Alex Chiang wrote:
+> We can simplify ACPI drivers if we can tell whether a handle is an
+> ACPI PCI root or not.
 > 
-> > On Friday 24 July 2009, Ray Lee wrote:
-> > > On Thu, Jul 23, 2009 at 4:45 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> > > > A recent kernel change broke kdesu (from KDE 4.2) on my test boxes.  ISTR a
-> > > > discussion about that, but I can't find it right now.  Any clues?
-> > > 
-> > > See the thread starting here: ("possible regression with pty.c commit")
-> > >    http://lkml.org/lkml/2009/7/11/125
-> > 
-> > Thanks for the pointer.
-> > 
-> > Well, I thought we were expected to avoid breaking existing user space, even
-> > if that were buggy etc.
+> Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+
+Reviewed-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+
+> ---
 > 
-> I don't know where you got that idea from. Avoiding breaking user space
-> unneccessarily is good but if its buggy you often can't do anything about
-> it.
+>  drivers/acpi/pci_root.c |   17 ++---------------
+>  include/acpi/acpi_bus.h |   16 ++++++++++++++++
+>  2 files changed, 18 insertions(+), 15 deletions(-)
+> 
+> diff --git a/drivers/acpi/pci_root.c b/drivers/acpi/pci_root.c
+> index 55b5b90..31b961c 100644
+> --- a/drivers/acpi/pci_root.c
+> +++ b/drivers/acpi/pci_root.c
+> @@ -61,20 +61,6 @@ static struct acpi_driver acpi_pci_root_driver = {
+>  		},
+>  };
+>  
+> -struct acpi_pci_root {
+> -	struct list_head node;
+> -	struct acpi_device *device;
+> -	struct pci_bus *bus;
+> -	u16 segment;
+> -	u8 bus_nr;
+> -
+> -	u32 osc_support_set;	/* _OSC state of support bits */
+> -	u32 osc_control_set;	/* _OSC state of control bits */
+> -	u32 osc_control_qry;	/* the latest _OSC query result */
+> -
+> -	u32 osc_queried:1;	/* has _OSC control been queried? */
+> -};
+> -
+>  static LIST_HEAD(acpi_pci_roots);
+>  
+>  static struct acpi_pci_driver *sub_driver;
+> @@ -317,7 +303,7 @@ static acpi_status acpi_pci_osc_support(struct acpi_pci_root *root, u32 flags)
+>  	return status;
+>  }
+>  
+> -static struct acpi_pci_root *acpi_pci_find_root(acpi_handle handle)
+> +struct acpi_pci_root *acpi_pci_find_root(acpi_handle handle)
+>  {
+>  	struct acpi_pci_root *root;
+>  
+> @@ -327,6 +313,7 @@ static struct acpi_pci_root *acpi_pci_find_root(acpi_handle handle)
+>  	}
+>  	return NULL;
+>  }
+> +EXPORT_SYMBOL_GPL(acpi_pci_find_root);
+>  
+>  struct acpi_handle_node {
+>  	struct list_head node;
+> diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+> index c65e4ce..c3ace75 100644
+> --- a/include/acpi/acpi_bus.h
+> +++ b/include/acpi/acpi_bus.h
+> @@ -369,10 +369,26 @@ int register_acpi_bus_type(struct acpi_bus_type *);
+>  int unregister_acpi_bus_type(struct acpi_bus_type *);
+>  struct device *acpi_get_physical_device(acpi_handle);
+>  
+> +struct acpi_pci_root {
+> +	struct list_head node;
+> +	struct acpi_device * device;
+> +	struct acpi_pci_id id;
+> +	struct pci_bus *bus;
+> +	u16 segment;
+> +	u8 bus_nr;
+> +
+> +	u32 osc_support_set;	/* _OSC state of support bits */
+> +	u32 osc_control_set;	/* _OSC state of control bits */
+> +	u32 osc_control_qry;	/* the latest _OSC query result */
+> +
+> +	u32 osc_queried:1;	/* has _OSC control been queried? */
+> +};
+> +
+>  /* helper */
+>  acpi_handle acpi_get_child(acpi_handle, acpi_integer);
+>  int acpi_is_root_bridge(acpi_handle);
+>  acpi_handle acpi_get_pci_rootbridge_handle(unsigned int, unsigned int);
+> +struct acpi_pci_root *acpi_pci_find_root(acpi_handle handle);
+>  #define DEVICE_ACPI_HANDLE(dev) ((acpi_handle)((dev)->archdata.acpi_handle))
+>  
+>  #ifdef CONFIG_PM_SLEEP
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-Alan, he got that idea from me.
 
-We don't do regressions. If user space depended on old behavior, we don't 
-change behavior.
-
-And regardless of that, I do not think EIO is the right thing to return at 
-all. If the other side of a pty went away, return 0 and possibly send a 
-HUP, or whatever. What did we do before?
-
-			Linus
