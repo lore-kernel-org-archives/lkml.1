@@ -1,134 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754480AbZGXVWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbZGXVY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754480AbZGXVWq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 17:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754395AbZGXVWq
+	id S1754590AbZGXVY7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 17:24:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754402AbZGXVY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 17:22:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43681 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754384AbZGXVWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 17:22:45 -0400
-Subject: Re: fanotify - overall design before I start sending patches
-From: Eric Paris <eparis@redhat.com>
-To: Andreas Dilger <adilger@sun.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       malware-list@dmesg.printk.net, Valdis.Kletnieks@vt.edu, greg@kroah.com,
-       jcm@redhat.com, douglas.leeder@sophos.com, tytso@mit.edu,
-       arjan@infradead.org, david@lang.hm, jengelh@medozas.de,
-       aviro@redhat.com, mrkafk@gmail.com, alexl@redhat.com, jack@suse.cz,
-       tvrtko.ursulin@sophos.com, a.p.zijlstra@chello.nl, hch@infradead.org,
-       alan@lxorguk.ukuu.org.uk, mmorley@hcl.in, pavel@suse.cz
-In-Reply-To: <20090724210008.GE4231@webber.adilger.int>
-References: <1248466429.3567.82.camel@localhost>
-	 <20090724210008.GE4231@webber.adilger.int>
-Content-Type: text/plain
-Date: Fri, 24 Jul 2009 17:21:25 -0400
-Message-Id: <1248470485.3567.106.camel@localhost>
+	Fri, 24 Jul 2009 17:24:59 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41905 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754396AbZGXVY6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 24 Jul 2009 17:24:58 -0400
+Date: Fri, 24 Jul 2009 14:23:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net,
+       davinci-linux-open-source@linux.davincidsp.com, krzysztof.h1@poczta.fm,
+       sudhakar.raj@ti.com, pkiryukhin@ru.mvista.com, schen@mvista.com
+Subject: Re: [PATCH v4] davinci: fb: Frame Buffer driver for TI
+ DA8xx/OMAP-L1xx
+Message-Id: <20090724142336.2b9b4082.akpm@linux-foundation.org>
+In-Reply-To: <1248238020-8266-1-git-send-email-sudhakar.raj@ti.com>
+References: <1248238020-8266-1-git-send-email-sudhakar.raj@ti.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-24 at 15:00 -0600, Andreas Dilger wrote:
-> On Jul 24, 2009  16:13 -0400, Eric Paris wrote:
-> > fanotify kernel/userspace interaction is over a new socket protocol.  A
-> > listener opens a new socket in the new PF_FANOTIFY family.  The socket
-> > is then bound to an address.  Using the following struct:
+On Wed, 22 Jul 2009 00:47:00 -0400
+Sudhakar Rajashekhara <sudhakar.raj@ti.com> wrote:
+
+> Adds LCD controller (LCDC) driver for TI's DA8xx/OMAP-L1xx
+> architecture. LCDC specifications can be found at
+> http://www.ti.com/litv/pdf/sprufm0a.
 > 
-> Would it make sense to use existing netlink?
-
-I looked at netlink, but because of the nature of the fact that fd
-creation has to be done in the listener context I couldn't figure out
-how to make it suitable.
-
-> > struct fanotify_addr {
-> >         sa_family_t family;
-> >         __u32 priority;
-> >         __u32 group_num;
-> >         __u32 mask;
-> >         __u32 f_flags;
-> >         __u32 unused[16];
-> > }  __attribute__((packed));
-> > 
-> > The mask is the indication of the events this group is interested in.
-> > The set of events of interest if FAN_GLOBAL_LISTENER is set at bind
-> > time.  If FAN_GLOBAL_LISTENER is not set, this field is meaningless as
-> > the registration of events on individual inodes will dictate the
-> > reception of events.
-> > 
-> > * FAN_ACCESS: every file access.
-> > * FAN_MODIFY: file modifications.
-> > * FAN_CLOSE: files are closed.
-> > * FAN_OPEN: open() calls.
-> > * FAN_ACCESS_PERM: like FAN_ACCESS, except that the process trying to
-> > access the file is put on hold while the fanotify client decides whether
-> > to allow the operation.
-> > * FAN_OPEN_PERM: like FAN_OPEN, but with the permission check.
-> > * FAN_EVENT_ON_CHILD: receive notification of events on inodes inside
-> > this subdirectory. (this is not a full recursive notification of all
-> > descendants, only direct children)
-> > * FAN_GLOBAL_LISTENER: notify for events on all files in the system.
-> > * FAN_SURVIVE_MODIFY: special flag that ignores should survive inode
-> > modification.  Discussed below.
+> LCDC on DA8xx consists of two independent controllers, the
+> Raster Controller and the LCD Interface Display Driver (LIDD)
+> controller. LIDD further supports character and graphic displays.
 > 
-> It seems like a 32-bit mask might not be enough, it wouldn't be hard
-> at this stage to add a 64-bit mask.  Lustre has a similar mechanism
-> (changelog) that allows tracking all different kinds of filesystem
-> events (create/unlink/symlink/link/rename/mkdir/setxattr/etc), instead
-> of just open/close, also use by HSM, enhanced rsync, etc.
-
-I had a 64 bit mask, but Al Viro ask me to go back to a 32 bit mask
-because of i386 register pressure.  The bitmask operations are on VERY
-hot paths inside the kernel.
-
-> > struct fanotify_event_metadata {
-> >         __u32 event_len;
-> >         __s32 fd;
-> >         __u32 mask;
-> >         __u32 f_flags;
-> >         __s32 pid;
-> >         __s32 tgid;
-> >         __u64 cookie;
-> > }  __attribute__((packed));
+> This patch adds support for the graphic display (Sharp LQ035Q3DG01)
+> found on the DA830 based EVM. The EVM details can be found at:
+> http://support.spectrumdigital.com/boards/dskda830/revc/.
 > 
-> Getting the attributes that have changed into this message is also
-> useful, as it avoids a continual stream of "stat" calls on the inodes.
-
-Hmmm, I'll take a look.  Do you have a good example of what you would
-want to see?  I don't think we know in the notification hooks what
-actually is being changed  :(
-
-> The other thing that is important for HSM is that this log is atomic
-> and persistent, otherwise there may be files that are missed if the
-> node crashes.  This involves creating atomic update records as part
-> of the filesystem operation, and then userspace consumes them and
-> tells the kernel that it is finished with records up to X.  Otherwise
-> you risk inconsistencies between rsync/HSM/updatedb for files that
-> are updated just before a crash.
-
-Uhhh, persistent across a crash?  Nope, don't have that.  Notification
-is all in memory.  Can't I just put the onus on userspace to recheck
-things maybe?  Sounds like a user for i_version....
-
-> > If a FAN_ACCESS_PERM or FAN_OPEN_PERM event is received the listener
-> > must send a response before the 5 second timeout.  If no response is
-> > sent before the 5 second timeout the original operation is allowed.  If
-> > this happens too many times (10 in a row) the fanotify group is evicted
-> > from the kernel and will not get any new events.
+> Signed-off-by: Sudhakar Rajashekhara <sudhakar.raj@ti.com>
+> Signed-off-by: Pavel Kiryukhin <pkiryukhin@ru.mvista.com>
+> Signed-off-by: Steve Chen <schen@mvista.com>
+> Acked-by: Krzysztof Helt <krzysztof.h1@wp.pl>
+> ---
+>  This patch applies to Linus's Kernel tree.
 > 
-> This should be a tunable, since if the intent is to monitor PERM checks
-> it would be possible for users to DOS the machine and delay the userspace
-> programs and access files they shouldn't be able to.
+>  Since the previous version, return values in ioctl()
+>  function have been modified.
 
-At the moment I cheat and say root only to bind.  I do plan to open it
-up to non-root users after it's in and working, but I'm seriously
-considering leaving _PERM events as root only.  It's hard to map the
-original to listener security implications.  So making sure the listener
-is always root is easy   :)
+That wasn't the only change in version 4:
 
-Userspace would never be able to access a file it shouldn't be allowed
-to (the new fd is created in the context of the listener and EPERM is
-possible.)
+--- a/drivers/video/da8xx-fb.c~davinci-fb-frame-buffer-driver-for-ti-da8xx-omap-l1xx-v4
++++ a/drivers/video/da8xx-fb.c
+@@ -201,14 +201,13 @@ static int lcd_disable_raster(struct da8
+ 		ret = wait_event_interruptible_timeout(par->da8xx_wq,
+ 						!lcdc_read(LCD_STAT_REG) &
+ 						LCD_END_OF_FRAME0, WSI_TIMEOUT);
++		if (ret < 0)
++			return ret;
++		if (ret == 0)
++			ret = -ETIMEDOUT;
+ 	}
+ 
+-	if (ret < 0)
+-		return ret;
+-	if (ret == 0)
+-		return -ETIMEDOUT;
+-
+-	return 0;
++	return ret;
+ }
+ 
+ static void lcd_blit(int load_mode, struct da8xx_fb_par *par)
+@@ -634,11 +633,11 @@ static int fb_ioctl(struct fb_info *info
+ 	case FBIPUT_BRIGHTNESS:
+ 	case FBIGET_COLOR:
+ 	case FBIPUT_COLOR:
+-		return -EINVAL;
++		return -ENOTTY;
+ 	case FBIPUT_HSYNC:
+ 		if (copy_from_user(&sync_arg, (char *)arg,
+ 				sizeof(struct lcd_sync_arg)))
+-			return -EINVAL;
++			return -EFAULT;
+ 		lcd_cfg_horizontal_sync(sync_arg.back_porch,
+ 					sync_arg.pulse_width,
+ 					sync_arg.front_porch);
+@@ -646,7 +645,7 @@ static int fb_ioctl(struct fb_info *info
+ 	case FBIPUT_VSYNC:
+ 		if (copy_from_user(&sync_arg, (char *)arg,
+ 				sizeof(struct lcd_sync_arg)))
+-			return -EINVAL;
++			return -EFAULT;
+ 		lcd_cfg_vertical_sync(sync_arg.back_porch,
+ 					sync_arg.pulse_width,
+ 					sync_arg.front_porch);
+_
+
+
+Was that intentional?
+
+
+The change to lcd_disable_raster() is a bit odd:
+
+static int lcd_disable_raster(struct da8xx_fb_par *par)
+{
+	int ret = 0;
+	u32 reg;
+
+	reg = lcdc_read(LCD_RASTER_CTRL_REG);
+	if (reg & LCD_RASTER_ENABLE) {
+		lcdc_write(reg & ~LCD_RASTER_ENABLE, LCD_RASTER_CTRL_REG);
+		ret = wait_event_interruptible_timeout(par->da8xx_wq,
+						!lcdc_read(LCD_STAT_REG) &
+						LCD_END_OF_FRAME0, WSI_TIMEOUT);
+		if (ret < 0)
+			return ret;
+		if (ret == 0)
+			ret = -ETIMEDOUT;
+	}
+
+	return ret;
+}
+
+
+We can do this, yes?
+
+--- a/drivers/video/da8xx-fb.c~davinci-fb-frame-buffer-driver-for-ti-da8xx-omap-l1xx-v4-cleanup
++++ a/drivers/video/da8xx-fb.c
+@@ -201,8 +201,6 @@ static int lcd_disable_raster(struct da8
+ 		ret = wait_event_interruptible_timeout(par->da8xx_wq,
+ 						!lcdc_read(LCD_STAT_REG) &
+ 						LCD_END_OF_FRAME0, WSI_TIMEOUT);
+-		if (ret < 0)
+-			return ret;
+ 		if (ret == 0)
+ 			ret = -ETIMEDOUT;
+ 	}
+_
 
