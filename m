@@ -1,68 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbZGYC14@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755286AbZGYCf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755302AbZGYC14 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 24 Jul 2009 22:27:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbZGYC14
+	id S1755286AbZGYCf7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 24 Jul 2009 22:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbZGYCf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 24 Jul 2009 22:27:56 -0400
-Received: from shards.monkeyblade.net ([198.137.202.13]:46727 "EHLO
-	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755291AbZGYC1z (ORCPT
+	Fri, 24 Jul 2009 22:35:59 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38130 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752247AbZGYCf6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 24 Jul 2009 22:27:55 -0400
-X-Greylist: delayed 2211 seconds by postgrey-1.27 at vger.kernel.org; Fri, 24 Jul 2009 22:27:55 EDT
-Message-ID: <4A6A64CB.7090108@kernel.org>
-Date: Fri, 24 Jul 2009 18:50:03 -0700
-From: "J.H." <warthog9@kernel.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 24 Jul 2009 22:35:58 -0400
+Message-ID: <5bb65c0e4c6828b1331d33745f34d9ee.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <337c5d83954b38b14a17f0adf4d357d8.squirrel@webmail-b.css.fujitsu.com>
+References: <20090715182320.39B5.A69D9226@jp.fujitsu.com>
+    <1247679064.4089.26.camel@useless.americas.hpqcorp.net>
+    <alpine.DEB.2.00.0907161257190.31844@chino.kir.corp.google.com>
+    <alpine.DEB.2.00.0907241551070.8573@chino.kir.corp.google.com>
+    <20090724160936.a3b8ad29.akpm@linux-foundation.org>
+    <337c5d83954b38b14a17f0adf4d357d8.squirrel@webmail-b.css.fujitsu.com>
+Date: Sat, 25 Jul 2009 11:35:54 +0900 (JST)
+Subject: Re: [BUG] set_mempolicy(MPOL_INTERLEAV) cause kernel panic
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "David Rientjes" <rientjes@google.com>, lee.schermerhorn@hp.com,
+       kosaki.motohiro@jp.fujitsu.com, miaox@cn.fujitsu.com, mingo@elte.hu,
+       a.p.zijlstra@chello.nl, cl@linux-foundation.org, menage@google.com,
+       nickpiggin@yahoo.com.au, y-goto@jp.fujitsu.com, penberg@cs.helsinki.fi,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>
-CC: Greg KH <gregkh@suse.de>, webmaster@kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, stable@kernel.org
-Subject: Re: Linux 2.6.27.28
-References: <20090724222746.GA30562@kroah.com> <4A6A48A1.80608@tremplin-utc.net>
-In-Reply-To: <4A6A48A1.80608@tremplin-utc.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;charset=iso-2022-jp
 Content-Transfer-Encoding: 8bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.1.1 (shards.monkeyblade.net [198.137.202.13]); Fri, 24 Jul 2009 18:50:04 -0700 (PDT)
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Éric Piel wrote:
-> Op 25-07-09 00:27, Greg KH schreef:
->> I'm announcing the release of the 2.6.27.28 kernel.  It fixes a
->> boot-time error with the 2.6.27.27 release.  If you don't have this
->> problem, no need to upgrade.
+KAMEZAWA Hiroyuki wrote:
+> Andrew Morton wrote:
+>> On Fri, 24 Jul 2009 15:51:51 -0700 (PDT)
+>> David Rientjes <rientjes@google.com> wrote:
+>
+>> afaik we don't have a final patch for this.  I asked Motohiro-san about
+>> this and he's proposing that we revert the offending change (which one
+>> was it?) if nothing gets fixed soon - the original author is on a
+>> lengthy vacation.
 >>
->> I'll also be replying to this message with a copy of the patch between
->> 2.6.27.27 and 2.6.27.28
 >>
->> The updated 2.6.27.y git tree can be found at:
->>         git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.27.y.git
->> and can be browsed at the normal kernel.org git web browser:
->>         http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=summary
->>
-> Hello,
-> Currently, there is no clue on www.kernel.org that 2.6.27 is a "long
-> term stable" kernel tree. Would it be possible to add a line to the page
-> pointing to the latest version of this type of tree? I'm sure some
-> people would love discovering that such thing exists :-)
+>> If we _do_ have a patch then can we start again?  Someone send out the
+>> patch
+>> and let's take a look at it.
+> Hmm, like this ? (cleaned up David's one because we shouldn't have
+> extra nodemask_t on stack.)
+>
+> Problems are
+>   - rebind() is maybe broken but no good idea.
+>    (but it seems to be broken in old kernels
+>   - Who can test this is only a user who has possible node on SRAT.
+>
 
-Eric, Everyone,
+> +		/* should we call is_valid_nodemask() here ?*/
+>  		if (pol->flags & MPOL_F_RELATIVE_NODES)
+>  			mpol_relative_nodemask(&cpuset_context_nmask, nodes,
+> -					       &cpuset_current_mems_allowed);
+> +					       &cpuset_context_nmask);
+Sorry this part is buggy.
 
-Yes we know about this problem, the code that generates the numbers on 
-the front page is really quite ancient (and thus any assumption we had 
-back when it was written is anything but the same now) and we have been 
-working on getting it updated.  However there has been a lot going on, 
-Fedora's recent excitement, Linux Symposium, OSCon, etc and work on this 
-has been disrupted and scattered - I.E. I haven't gotten very far on it 
-yet :-(
+But to fix this, we use extra nodemask here and this patch will
+allocate 3 nodemasks on stack!
+Then, here is a much easier fix. for trusting cpuset more.
 
-I'm hoping to get back onto it next week, but please bear with us while 
-we try and get it all sorted out and try and get the code into such a 
-shape that we can actually cope with the ever changing idea of what are 
-'latest' kernels are now, and going forward.
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-- John 'Warthog9' Hawley
+task->mems_allowed is guaranteed to be only includes valid nodes when
+it is set under cpuset. but, at init, all possible nodes are included.
+fix it.
+
+And at cpuset-rebind, caluculated result can be a invaild one.
+In that case, trust cpuset's one
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ init/main.c    |    4 ++--
+ mm/mempolicy.c |    7 ++++++-
+ 2 files changed, 8 insertions(+), 3 deletions(-)
+
+Index: mmotm-2.6.31-Jul16/init/main.c
+===================================================================
+--- mmotm-2.6.31-Jul16.orig/init/main.c
++++ mmotm-2.6.31-Jul16/init/main.c
+@@ -855,9 +855,9 @@ static int __init kernel_init(void * unu
+ 	lock_kernel();
+
+ 	/*
+-	 * init can allocate pages on any node
++	 * init can allocate pages on any online node
+ 	 */
+-	set_mems_allowed(node_possible_map);
++	set_mems_allowed(node_state[N_HIGH_MEMORY]);
+ 	/*
+ 	 * init can run on any cpu.
+ 	 */
+Index: mmotm-2.6.31-Jul16/mm/mempolicy.c
+===================================================================
+--- mmotm-2.6.31-Jul16.orig/mm/mempolicy.c
++++ mmotm-2.6.31-Jul16/mm/mempolicy.c
+@@ -290,7 +290,12 @@ static void mpol_rebind_nodemask(struct
+ 			    *nodes);
+ 		pol->w.cpuset_mems_allowed = *nodes;
+ 	}
+-
++	/*
++	 * tmp can be invalid ...just use cpuset's one in that case.
++	 */
++	if (nodes_empty(tmp) ||
++	    ((pol->mode == MPOL_BIND) && !is_valid_nodemask(&tmp)))
++		tmp = *nodes;
+ 	pol->v.nodes = tmp;
+ 	if (!node_isset(current->il_next, tmp)) {
+ 		current->il_next = next_node(current->il_next, tmp);
+
+
+
+
+
