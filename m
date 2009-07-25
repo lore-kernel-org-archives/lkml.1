@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752111AbZGYQdo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752131AbZGYQgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752111AbZGYQdo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 12:33:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbZGYQdo
+	id S1752131AbZGYQgA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 12:36:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbZGYQf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 12:33:44 -0400
-Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:56553 "EHLO
-	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751842AbZGYQdn (ORCPT
+	Sat, 25 Jul 2009 12:35:59 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:41868 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751300AbZGYQf7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 12:33:43 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Dave Airlie <airlied@gmail.com>
-Subject: Re: [Bug #13667] drm: display arifacts when X.Org is stopped
-Date: Sat, 25 Jul 2009 18:33:40 +0200
-User-Agent: KMail/1.9.9
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera> <21d7e9970907081642l3ef6df5blde31df656cd74432@mail.gmail.com> <200907090328.53643.elendil@planet.nl>
-In-Reply-To: <200907090328.53643.elendil@planet.nl>
+	Sat, 25 Jul 2009 12:35:59 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 1/2] Add function to convert between calendar time and broken-down time for universal use
+References: <4A5C3BC0.6020701@cn.fujitsu.com>
+	<20090714151040.b7b3b26d.akpm@linux-foundation.org>
+	<20090718115019.GH1433@ucw.cz>
+	<04e101ca08e5$be078fa0$808410ac@zhaoleiwin>
+	<20090719202018.497f7ec1.akpm@linux-foundation.org>
+	<4A643EFE.7090103@cn.fujitsu.com> <4A643F36.5090200@cn.fujitsu.com>
+	<87ocr9mi8h.fsf@devron.myhome.or.jp>
+Date: Sat, 25 Jul 2009 17:50:50 +0900
+In-Reply-To: <87ocr9mi8h.fsf@devron.myhome.or.jp> (OGAWA Hirofumi's message of
+	"Sat, 25 Jul 2009 14:42:06 +0900")
+Message-ID: <877hxxm9hx.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907251833.42598.elendil@planet.nl>
-X-OriginalArrivalTime: 25 Jul 2009 16:33:43.0303 (UTC) FILETIME=[AC980970:01CA0D45]
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 09 July 2009, Frans Pop wrote:
-> > However we shall endeavour to fix this issues as it may be systemic
-> > of something else going wrong in the new PAT/AGP code.
->
-> Great. Thanks in advance, I do appreciate it.
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> writes:
 
-Any news on this?
+> Are you going to fix it? Otherwise I don't think it would not be good to
+> use it easily as generic function like this.
 
-> BTW, today I noticed another regression, but I have not yet looked into
-> it deeply. When I suspend I normally see at least some console messages
-> from the suspend procedure on the framebuffer console, but with .31-rc2
-> I only see a cursor. It does not really affect the suspend/resume.
-> Could possibly be related. Will investigate further.
-
-This turned out to be unrelated, and is actually an improvement. It's a 
-logical result of a printk patch I submitted (for .32):
-http://lkml.org/lkml/2009/7http://lkml.org/lkml/2009/7/6/108/6/108
-
-Cheers,
-FJP
+s/I don't think/I think/
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
