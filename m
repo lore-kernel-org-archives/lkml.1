@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbZGYUiI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752282AbZGYUsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752627AbZGYUiI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 16:38:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbZGYUiH
+	id S1752282AbZGYUsw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 16:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbZGYUsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 16:38:07 -0400
-Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:56664 "EHLO
-	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752436AbZGYUiG (ORCPT
+	Sat, 25 Jul 2009 16:48:51 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51393 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751931AbZGYUsv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 16:38:06 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH V2] au1xmmc: dev_pm_ops conversion
-Date: Sat, 25 Jul 2009 22:38:02 +0200
-User-Agent: KMail/1.9.9
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Manuel Lauss <manuel.lauss@googlemail.com>,
-       linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
-       Manuel Lauss <manuel.lauss@gmail.com>,
-       Arnaud Faucher <arnaud.faucher@gmail.com>, Erik Ekman <erik@kryo.se>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Paul Mundt <lethal@linux-sh.org>
-References: <1248275919-3296-1-git-send-email-manuel.lauss@gmail.com> <200907252139.30674.rjw@sisk.pl> <200907252221.45407.elendil@planet.nl>
-In-Reply-To: <200907252221.45407.elendil@planet.nl>
+	Sat, 25 Jul 2009 16:48:51 -0400
+Date: Sat, 25 Jul 2009 22:48:39 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org, Jiri Kosina <trivial@kernel.org>,
+       Christian Thaeter <ct@pipapo.org>
+Subject: Re: [PATCH 2/2] hpfall: accept disk device to unload as argument
+Message-ID: <20090725204838.GA2246@elf.ucw.cz>
+References: <200907252055.16416.elendil@planet.nl> <200907252100.14175.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907252238.05296.elendil@planet.nl>
-X-OriginalArrivalTime: 25 Jul 2009 20:38:06.0083 (UTC) FILETIME=[D04AB530:01CA0D67]
+In-Reply-To: <200907252100.14175.elendil@planet.nl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 25 July 2009, you wrote:
-> > I'll fix up the floppy and hp-wmi patches.
->
-> Note that those are already in mainline, as is pcspkr.
+On Sat 2009-07-25 21:00:12, Frans Pop wrote:
+> Allows users who use an IDE driver for their disk to use hpfall without
+> having to modify the source. By default /dev/sda is used.
+> Suggested by Christian Thaeter in http://lkml.org/lkml/2009/3/25/505.
+> 
+> While we're add it, improve error message if opening /dev/freefall fails.
+> 
+> Signed-off-by: Frans Pop <elendil@planet.nl>
+> Cc: Pavel Machek <pavel@ucw.cz>
 
-Here's an overview of commits (that I could find) already in mainline that 
-look to have gotten it wrong:
-
-6daa79b3  drivers/serial/sh-sci.c	(Paul Mundt)
-2dbc8a23  drivers/video/hitfb.c		(Paul Mundt)
-35db715b  drivers/input/misc/pcspkr.c	(/me)
-2702403c  drivers/platform/x86/hp-wmi.c	(/me)
-142a735b  drivers/block/floppy.c	(/me)
+ACK.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
