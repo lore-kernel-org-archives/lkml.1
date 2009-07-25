@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752667AbZGYLMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752615AbZGYLYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752667AbZGYLMJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 07:12:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbZGYLMI
+	id S1752615AbZGYLYI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 07:24:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbZGYLYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 07:12:08 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:57588 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752535AbZGYLMH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 07:12:07 -0400
-Subject: Re: report a bug about sched_rt
-From: Raistlin <raistlin@linux.it>
-To: sen wang <wangsen.linux@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, mingo@elte.hu,
-       akpm@linux-foundation.org, kernel@kolivas.org, npiggin@suse.de,
-       arjan@infradead.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <454c71700907240807t5b682e7cv52534f41d3be961a@mail.gmail.com>
-References: <454c71700907240357l61f5c4fajaca73db0fba7db8@mail.gmail.com>
-	 <1248437670.6987.26.camel@twins>
-	 <454c71700907240604h4673f117j8ed58b9f2ee54798@mail.gmail.com>
-	 <1248441290.6987.52.camel@twins>
-	 <454c71700907240626w127fd890ufa91ef90cbcaaa@mail.gmail.com>
-	 <1248442415.6987.56.camel@twins>
-	 <454c71700907240644h7469e2a5sfcb57f202a2e184d@mail.gmail.com>
-	 <1248443656.6987.61.camel@twins>
-	 <454c71700907240704o32dcdeb3v57845eb9472dd04c@mail.gmail.com>
-	 <1248446909.6987.110.camel@twins>
-	 <454c71700907240807t5b682e7cv52534f41d3be961a@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-oZFBTS1mglcHTerNsEdo"
-Date: Sat, 25 Jul 2009 13:12:05 +0200
-Message-Id: <1248520325.8429.84.camel@Palantir>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Sat, 25 Jul 2009 07:24:07 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:33416 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751783AbZGYLYG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Jul 2009 07:24:06 -0400
+Date: Sat, 25 Jul 2009 12:23:59 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org
+Message-ID: <20090725112359.GB4600@sirena.org.uk>
+References: <1246550798-9936-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <20090713113017.GB24783@sirena.org.uk>
+ <20090724223554.GA10055@sortiz.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090724223554.GA10055@sortiz.org>
+X-Cookie: Long life is in store for you.
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [PATCH/RFC] mfd: Allow multiple MFD cells with the same name
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jul 25, 2009 at 12:35:55AM +0200, Samuel Ortiz wrote:
+> On Mon, Jul 13, 2009 at 12:30:18PM +0100, Mark Brown wrote:
 
---=-oZFBTS1mglcHTerNsEdo
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > Samuel, do you have any thoughts on this patch?  As I said...
 
-On Fri, 2009-07-24 at 23:07 +0800, sen wang wrote:
-> face the error and fix it! ok?
-Wow... You're very and reasonable nice guy, aren't you? :-O
+> I think it's safe to expect people that decide they need this feature will be
+> careful enough to make sure they dont get ID collisions.
 
-Dario
---=20
-<<This happens because I choose it to happen!>> (Raistlin Majere)
-----------------------------------------------------------------------
-Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
+Yes, and it should be fairly easy to work out what's gone wrong if there
+are any problems.
 
-http://blog.linux.it/raistlin / raistlin@ekiga.net /
-dario.faggioli@jabber.org
+> > ...but it'd be really helpful to get some idea if this approach is going
+> > to be viable for some code I'm currently working on.
 
---=-oZFBTS1mglcHTerNsEdo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+> I'm ok with this patch, but I'd like the new cell->id field to be more
+> documented. In particular we should mention that one should leave it to 0
+> unless trying to add several cells of the same type.
+> I'll push this patch once I'll be back from vacation, thanks.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkpq6IUACgkQk4XaBE3IOsTl6QCeKbxfs1TKLKW8SOqPNWGM5RMt
-GYIAoIMlbgsj/KAt+8lOJFy3MxwHrz7w
-=ObaI
------END PGP SIGNATURE-----
-
---=-oZFBTS1mglcHTerNsEdo--
-
+OK, thanks.  I'm not sure when you're back from your vacation but early
+next week I should be releasing the code which I was mentioning above -
+if you've not applied it before then I'll try to include a revised
+version with more documentation in that series.
