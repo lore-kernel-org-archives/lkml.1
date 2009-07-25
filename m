@@ -1,113 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751931AbZGYRnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752052AbZGYRoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751931AbZGYRnR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 13:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbZGYRnR
+	id S1752052AbZGYRoi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 13:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbZGYRoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 13:43:17 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:47079 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751290AbZGYRnQ (ORCPT
+	Sat, 25 Jul 2009 13:44:37 -0400
+Received: from mail.gmx.net ([213.165.64.20]:36958 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751107AbZGYRoh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 13:43:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=UowYwpeMwm7QGNYXG3yUYmEzZBRJu/LLpEzUeNFWKPWiF3AyATdk2XLWH2dt1mP+g1
-         mgNhmpHXJ7GrxG3bKFjadd01P1EUvrn3KUJXxSg0/0vy0+asSf1lPdz10mcwozZXV9DT
-         Aw4PDs6FOT5tfoECsS4YsQk2tozVhenJhpbkA=
-Date: Sat, 25 Jul 2009 10:43:12 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Arnaud Faucher <arnaud.faucher@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, Carlos Corbacho <carlos@strangeworlds.co.uk>
-Subject: Re: [PATCH 1/1] acer-wmi: switch driver to dev_pm_ops
-Message-ID: <20090725174311.GB14062@dtor-d630.eng.vmware.com>
-References: <1248527091-18246-1-git-send-email-arnaud.faucher@gmail.com>
+	Sat, 25 Jul 2009 13:44:37 -0400
+X-Authenticated: #5108953
+X-Provags-ID: V01U2FsdGVkX1+ga0IKM4mgf5i7nJkIqmZV8SU0/3KjMmLoIq9m8b
+	9bDEJXbXMHeZ8b
+From: Toralf =?iso-8859-15?q?F=F6rster?= <toralf.foerster@gmx.de>
+To: linux-fbdev-devel@lists.sourceforge.net
+Subject: [PATCH] remove needless variable from drivers/video/fbmon.c
+Date: Sat, 25 Jul 2009 19:44:34 +0200
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <1248527091-18246-1-git-send-email-arnaud.faucher@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200907251944.35148.toralf.foerster@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Arnaud,
+fbmon.c: integer err is not needed
 
-On Sat, Jul 25, 2009 at 09:04:51AM -0400, Arnaud Faucher wrote:
-> Gets rid of the following warning:
-> Platform driver 'acer-wmi' needs updating - please use dev_pm_ops
-> 
+Signed-off-by: Toralf Foerster <toralf.foerster@gmx.de>
+---
+ drivers/video/fbmon.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-Have you tested it with Suspend to disk? You are [potentially] breaking
-it since the new suspend and resume methods are not used by it, it calls
-freeze() and thaw() instead.
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 9ae9cd3..e1b7073 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -277,17 +277,17 @@ static int edid_checksum(unsigned char *edid)
 
-Rafael,
+ static int edid_check_header(unsigned char *edid)
+ {
+-       int i, err = 1, fix = check_edid(edid);
++       int i, fix = check_edid(edid);
 
-I wonder if PM core should automatically use suspend()/resume() in place of
-freeze()/thaw() when the latter pair is missing.
+        if (fix)
+                fix_edid(edid, fix);
 
-> Signed-off-by: Arnaud Faucher <arnaud.faucher@gmail.com>
-> ---
->  drivers/platform/x86/acer-wmi.c |   13 ++++++++-----
->  1 files changed, 8 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/platform/x86/acer-wmi.c b/drivers/platform/x86/acer-wmi.c
-> index be2fd6f..b2b6aef 100644
-> --- a/drivers/platform/x86/acer-wmi.c
-> +++ b/drivers/platform/x86/acer-wmi.c
-> @@ -1152,8 +1152,7 @@ static int acer_platform_remove(struct platform_device *device)
->  	return 0;
->  }
->  
-> -static int acer_platform_suspend(struct platform_device *dev,
-> -pm_message_t state)
-> +static int acer_platform_suspend(struct device *dev)
->  {
->  	u32 value;
->  	struct acer_data *data = &interface->data;
-> @@ -1174,7 +1173,7 @@ pm_message_t state)
->  	return 0;
->  }
->  
-> -static int acer_platform_resume(struct platform_device *device)
-> +static int acer_platform_resume(struct device *dev)
->  {
->  	struct acer_data *data = &interface->data;
->  
-> @@ -1190,15 +1189,19 @@ static int acer_platform_resume(struct platform_device *device)
->  	return 0;
->  }
->  
-> +static struct dev_pm_ops acer_platform_pm_ops = {
-> +	.suspend = acer_platform_suspend,
-> +	.resume = acer_platform_resume,
-> +};
-> +
->  static struct platform_driver acer_platform_driver = {
->  	.driver = {
->  		.name = "acer-wmi",
->  		.owner = THIS_MODULE,
-> +		.pm = &acer_platform_pm_ops,
->  	},
->  	.probe = acer_platform_probe,
->  	.remove = acer_platform_remove,
-> -	.suspend = acer_platform_suspend,
-> -	.resume = acer_platform_resume,
->  };
->  
->  static struct platform_device *acer_platform_device;
-> -- 
-> 1.6.3.3
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+        for (i = 0; i < 8; i++) {
+                if (edid[i] != edid_v1_header[i])
+-                       err = 0;
++                       return 0;
+        }
 
+-       return err;
++       return 1;
+ }
+
+ static void parse_vendor_block(unsigned char *block, struct fb_monspecs *specs)
 -- 
-Dmitry
+MfG/Sincerely
+
+Toralf Förster
+pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
+
