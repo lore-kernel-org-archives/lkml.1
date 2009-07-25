@@ -1,95 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752828AbZGYVlO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752525AbZGYVru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752828AbZGYVlO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 17:41:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752612AbZGYVlN
+	id S1752525AbZGYVru (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 17:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbZGYVru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 17:41:13 -0400
-Received: from mail-pz0-f172.google.com ([209.85.222.172]:42102 "EHLO
-	mail-pz0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752210AbZGYVlN (ORCPT
+	Sat, 25 Jul 2009 17:47:50 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:60864 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750893AbZGYVrt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 17:41:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=references:message-id:from:to:in-reply-to:content-type
-         :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
-        b=i9gUr1XAjDF49UeY7+1EAbdYmaz4LYq+GYJ/7xPxelg4gG31GYMp2f8vB7HZUOnOXs
-         F2UkBy5pzSKKSqgU5/Gz2huqfXpeqtnIL+8zNQyNQ/O+8Cuucxanu5fwJxig1ecL8/M1
-         kf3OtvZc3dftBo1c5gWLMNpcD6TmTywkuwLKk=
-References: <1248275919-3296-1-git-send-email-manuel.lauss@gmail.com> <20090725191037.GE14062@dtor-d630.eng.vmware.com> <200907252139.30674.rjw@sisk.pl> <200907252221.45407.elendil@planet.nl>
-Message-Id: <6090EAB2-5A74-4324-9B0C-1A70A871D293@gmail.com>
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Frans Pop <elendil@planet.nl>
-In-Reply-To: <200907252221.45407.elendil@planet.nl>
-Content-Type: text/plain;
-	charset=us-ascii;
-	format=flowed;
-	delsp=yes
+	Sat, 25 Jul 2009 17:47:49 -0400
+X-Greylist: delayed 440 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Jul 2009 17:47:49 EDT
+From: Laurent Pinchart <laurent.pinchart@skynet.be>
+To: linux-kernel@vger.kernel.org
+Subject: Should I use kmap or kmap_atomic to map user pages that will be written in a loop ?
+Date: Sat, 25 Jul 2009 23:41:47 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.30; KDE/4.2.4; x86_64; ; )
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Mailer: iPhone Mail (7A341)
-Mime-Version: 1.0 (iPhone Mail 7A341)
-Subject: Re: [PATCH V2] au1xmmc: dev_pm_ops conversion
-Date: Sat, 25 Jul 2009 14:41:03 -0700
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Manuel Lauss <manuel.lauss@googlemail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
-       Manuel Lauss <manuel.lauss@gmail.com>,
-       Arnaud Faucher <arnaud.faucher@gmail.com>, Erik Ekman <erik@kryo.se>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Content-Disposition: inline
+Message-Id: <200907252341.48526.laurent.pinchart@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 25, 2009, at 1:21 PM, Frans Pop <elendil@planet.nl> wrote:
+Hi everybody,
 
-> On Saturday 25 July 2009, Rafael J. Wysocki wrote:
->>>>> Was suspend to disk tested? It requires freeze()/thaw().
->>>>
->>>> Is that a regression introduced by this patch then? If so, many
->>>> more of the recent dev_pm_ops conversion patches would need to be
->>>> revisited.
->>
->> Yes, they would.  In general, you'd probably want to do something  
->> like
->> this:
->>
->> static struct dev_pm_ops au1xmmc_pmops = {
->>         .resume         = au1xmmc_resume,
->>         .suspend                = au1xmmc_suspend,
->>         .freeze         = au1xmmc_resume,
->>         .thaw           = au1xmmc_suspend,
->>         .restore                = au1xmmc_resume,
->>         .poweroff       = au1xmmc_suspend,
->> };
->>
->> but in this particular case it's probably better to define separate
->> callbacks for .freeze() and .thaw() at least.
->>
->> During hibernation we call .freeze() and .thaw() before and after
->> creating the image, respectively, and then .poweroff() is called  
->> right
->> after the image has been saved.  During resume .freeze() is called
->> after the image has been loaded and before the control goes to the
->> image kernel, which then calls .restore().
->
-> Yes, I see that in drivers/base/platform.c (legacy) .suspend  
-> resp. .resume
-> also got called for those cases?
-> Ouch :-(
->
-> I've added others who've submitted dev_pm_ops patches in CC.
->
->> I'll fix up the floppy and hp-wmi patches.
->
-> Note that those are already in mainline, as is pcspkr.
->
+I'm trying to implement the USERPTR V4L2 streaming I/O method in the uvcvideo 
+driver. In a nutshell, that methods uses userspace-allocated buffers to 
+transfer video data from kernelspace to userspace. The buffers are reused 
+during the whole video stream in a circular fashion.
 
+The kernel driver receives userspace pointers to those buffers, which can have 
+been allocated using different methods (malloc, Xv alloc, mmap() on a reserved 
+memory region, ...). I get the list of underlying pages using 
+get_user_pages(), and I then need to map those pages to the kernel virtual 
+address space.
 
-Pcspkr should be fine as is since we just want to shut it off and with  
-s2d it will happen automatically when we power down.
+Pages will be written to from the kernel in USB interrupt context. I can then 
+either kmap_atomic() pages before copying data and kunmap_atomic() them right 
+after, or kmap() them once at the beginning of the video stream and keep them 
+mapped until the end.
 
--- 
-Dmitry
+As I don't have much experience with the memory management subsystem, I'd 
+appreciate if someone could give me a few advices regarding the best way to 
+proceed. kmap() is expensive, but it would only be called once, while 
+kmap_atomic() would be called many times (4500 times per second for a 640x480 
+30fps video stream). On the other hand, I'm not sure how much pressure keeping 
+all those kmap() pages mapped into kernel virtual memory for a long time would 
+put on the memory subsystem.
+
+Please CC me on answers.
+
+Regards,
+
+Laurent Pinchart
 
