@@ -1,46 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbZGYMPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752728AbZGYMRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752666AbZGYMPZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 08:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752539AbZGYMPY
+	id S1752728AbZGYMRt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 08:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbZGYMRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 08:15:24 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:55193 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752006AbZGYMPX (ORCPT
+	Sat, 25 Jul 2009 08:17:49 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:33120 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751029AbZGYMRs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 08:15:23 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 1/2] Add function to convert between calendar time and broken-down time for universal use
-References: <4A5C3BC0.6020701@cn.fujitsu.com>
-	<20090714151040.b7b3b26d.akpm@linux-foundation.org>
-	<20090718115019.GH1433@ucw.cz>
-	<04e101ca08e5$be078fa0$808410ac@zhaoleiwin>
-	<20090719202018.497f7ec1.akpm@linux-foundation.org>
-	<4A643EFE.7090103@cn.fujitsu.com> <4A643F36.5090200@cn.fujitsu.com>
-	<87ocr9mi8h.fsf@devron.myhome.or.jp>
-Date: Sat, 25 Jul 2009 21:15:18 +0900
-In-Reply-To: <87ocr9mi8h.fsf@devron.myhome.or.jp> (OGAWA Hirofumi's message of
-	"Sat, 25 Jul 2009 14:42:06 +0900")
-Message-ID: <87eis50xih.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+	Sat, 25 Jul 2009 08:17:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=pnfwOJcVJ2VhWVP0SjNGDIYEp7+RnPoAbMtfaw/xRecP2tMWaTVbCKpCjCMwfiVeuf
+         JcrbyN9SYNkdI86ZmDrv+Hza/z4MS6mc4hsMLewEdBqSVjnApAOnvzJSyw39LyNTVqhr
+         gX7eTC279OEmP3lxpfCBXwTWkYnKixBWohGYk=
+From: Arnaud Faucher <arnaud.faucher@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Arnaud Faucher <arnaud.faucher@gmail.com>
+Subject: [PATCH] serial: 8250: switch to dev_pm_ops
+Date: Sat, 25 Jul 2009 08:17:15 -0400
+Message-Id: <1248524235-11167-1-git-send-email-arnaud.faucher@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[resend: sorry if you got this twice]
 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> writes:
+Signed-off-by: Arnaud Faucher <arnaud.faucher@gmail.com>
+---
+ drivers/serial/8250.c |   16 ++++++++++------
+ 1 files changed, 10 insertions(+), 6 deletions(-)
 
-> Are you going to fix it? Otherwise I don't think it would not be good to
-> use it easily as generic function like this.
-
-s/I don't think/I think/
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index fb867a9..e6b41b1 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -2982,42 +2982,46 @@ static int __devexit serial8250_remove(struct platform_device *dev)
+ 	return 0;
+ }
+ 
+-static int serial8250_suspend(struct platform_device *dev, pm_message_t state)
++static int serial8250_suspend(struct device *dev)
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < UART_NR; i++) {
+ 		struct uart_8250_port *up = &serial8250_ports[i];
+ 
+-		if (up->port.type != PORT_UNKNOWN && up->port.dev == &dev->dev)
++		if (up->port.type != PORT_UNKNOWN && up->port.dev == dev)
+ 			uart_suspend_port(&serial8250_reg, &up->port);
+ 	}
+ 
+ 	return 0;
+ }
+ 
+-static int serial8250_resume(struct platform_device *dev)
++static int serial8250_resume(struct device *dev)
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < UART_NR; i++) {
+ 		struct uart_8250_port *up = &serial8250_ports[i];
+ 
+-		if (up->port.type != PORT_UNKNOWN && up->port.dev == &dev->dev)
++		if (up->port.type != PORT_UNKNOWN && up->port.dev == dev)
+ 			serial8250_resume_port(i);
+ 	}
+ 
+ 	return 0;
+ }
+ 
++static struct dev_pm_ops serial8250_pm_ops = {
++	.suspend	= serial8250_suspend,
++	.resume		= serial8250_resume,
++};
++
+ static struct platform_driver serial8250_isa_driver = {
+ 	.probe		= serial8250_probe,
+ 	.remove		= __devexit_p(serial8250_remove),
+-	.suspend	= serial8250_suspend,
+-	.resume		= serial8250_resume,
+ 	.driver		= {
+ 		.name	= "serial8250",
+ 		.owner	= THIS_MODULE,
++		.pm	= &serial8250_pm_ops,
+ 	},
+ };
+ 
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+1.6.3.3
+
