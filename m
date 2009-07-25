@@ -1,71 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752873AbZGYVCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752917AbZGYVDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752873AbZGYVCt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 17:02:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbZGYVCq
+	id S1752917AbZGYVDO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 17:03:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbZGYVDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 17:02:46 -0400
-Received: from d112a2.x-mailer.de ([212.162.53.4]:46535 "EHLO
-	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752810AbZGYVCn (ORCPT
+	Sat, 25 Jul 2009 17:03:13 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:52684 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752667AbZGYVDM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 17:02:43 -0400
-Message-Id: <f3fad223ed69f406f33c9619c256858d5a5fc5c7.1248546896.git.keil@b1-systems.de>
-In-Reply-To: <cover.1248546896.git.keil@b1-systems.de>
-References: <cover.1248546896.git.keil@b1-systems.de>
-Date: Wed, 8 Jul 2009 20:58:33 +0200
-Subject: [PATCH 04/13] ISDN: Fix isdnhdlc for one byte hdlc packets
-From: Karsten Keil <keil@b1-systems.de>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       i4ldeveloper@listserv.isdn4linux.de
-X-Info: valid message
-X-Info: original Date
+	Sat, 25 Jul 2009 17:03:12 -0400
+Date: Sat, 25 Jul 2009 22:03:28 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Frans Pop <elendil@planet.nl>, torvalds@linux-foundation.org,
+       ray-lk@madrabbit.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org,
+       Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+Subject: Re: [Regression] kdesu broken
+Message-ID: <20090725220328.6faa9b3b@lxorguk.ukuu.org.uk>
+In-Reply-To: <200907252216.42889.rjw@sisk.pl>
+References: <200907240145.31935.rjw@sisk.pl>
+	<20090725124859.530d158b@lxorguk.ukuu.org.uk>
+	<200907251602.49918.elendil@planet.nl>
+	<200907252216.42889.rjw@sisk.pl>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Normally HDLC packets contain more as one byte (e.g a X25/X75 header).
-But if you use plain HDLC framing, the current code do not encode
-1 byte payloads, this patch fix that.
+> > Just out of curiosity ad for reference.
+> > Has this issue already been reported to the KDE people? Any links to a bug 
+> > report or discussions there?
+> 
+> Not that I know of.  It's probably worth reporting, though.
 
-Signed-off-by: Karsten Keil <keil@b1-systems.de>
----
- drivers/isdn/i4l/isdnhdlc.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+The EIO one hasn't because it isn't their bug, the other one has.
 
-diff --git a/drivers/isdn/i4l/isdnhdlc.c b/drivers/isdn/i4l/isdnhdlc.c
-index df345ce..c989aa3 100644
---- a/drivers/isdn/i4l/isdnhdlc.c
-+++ b/drivers/isdn/i4l/isdnhdlc.c
-@@ -47,7 +47,7 @@ enum {
- 	HDLC_SEND_DATA, HDLC_SEND_CRC1, HDLC_SEND_FAST_FLAG,
- 	HDLC_SEND_FIRST_FLAG, HDLC_SEND_CRC2, HDLC_SEND_CLOSING_FLAG,
- 	HDLC_SEND_IDLE1, HDLC_SEND_FAST_IDLE, HDLC_SENDFLAG_B0,
--	HDLC_SENDFLAG_B1A6, HDLC_SENDFLAG_B7, STOPPED
-+	HDLC_SENDFLAG_B1A6, HDLC_SENDFLAG_B7, STOPPED, HDLC_SENDFLAG_ONE
- };
- 
- void isdnhdlc_rcv_init(struct isdnhdlc_vars *hdlc, u32 features)
-@@ -362,6 +362,9 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const u8 *src, u16 slen,
- 
- 	*count = slen;
- 
-+	/* special handling for one byte frames */
-+	if ((slen == 1) && (hdlc->state == HDLC_SEND_FAST_FLAG))
-+		hdlc->state = HDLC_SENDFLAG_ONE;
- 	while (dsize > 0) {
- 		if (hdlc->bit_shift == 0) {
- 			if (slen && !hdlc->do_closing) {
-@@ -407,6 +410,8 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const u8 *src, u16 slen,
- 				dsize--;
- 				break;
- 			}
-+			/* fall through */
-+		case HDLC_SENDFLAG_ONE:
- 			if (hdlc->bit_shift == 8) {
- 				hdlc->cbin = hdlc->ffvalue >>
- 					(8 - hdlc->data_bits);
--- 
-1.6.0.2
-
+Alan
