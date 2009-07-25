@@ -1,116 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752104AbZGYQmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752151AbZGYQuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752104AbZGYQmd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 12:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbZGYQmd
+	id S1752151AbZGYQuL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 12:50:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbZGYQuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 12:42:33 -0400
-Received: from mga06.intel.com ([134.134.136.21]:60296 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751756AbZGYQmc (ORCPT
+	Sat, 25 Jul 2009 12:50:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57197 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751966AbZGYQuJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 12:42:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,269,1246863600"; 
-   d="scan'208";a="433307513"
-Message-ID: <4A6B35F7.2030804@linux.intel.com>
-Date: Sat, 25 Jul 2009 09:42:31 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Peter Zijlstra <peterz@infradead.org>,
+	Sat, 25 Jul 2009 12:50:09 -0400
+Date: Sat, 25 Jul 2009 09:49:41 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Dave Jones <davej@redhat.com>
+cc: Ian Lance Taylor <iant@google.com>, Frans Pop <elendil@planet.nl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
-Subject: Re: [PATCH] sched: Provide iowait counters
-References: <4A64B813.1080506@linux.intel.com>	<20090724212220.afa278ee.akpm@linux-foundation.org>	<4A6A8AFE.1010608@linux.intel.com>	<20090724214006.7380c3b4.akpm@linux-foundation.org>	<4A6A8E96.7050509@linux.intel.com>	<20090724220423.11828b85.akpm@linux-foundation.org>	<1248501946.6987.146.camel@twins> <20090725002148.5524c846.akpm@linux-foundation.org>
-In-Reply-To: <20090725002148.5524c846.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       Andrew Morton <akpm@linux-foundation.org>, linux-kbuild@vger.kernel.org,
+       barryn@pobox.com, bugme-daemon@bugzilla.kernel.org
+Subject: Re: [Bug 13012] 2.6.28.9 causes init to segfault on Debian etch;
+ 2.6.28.8 OK
+In-Reply-To: <20090725032343.GA20841@redhat.com>
+Message-ID: <alpine.LFD.2.01.0907250944570.3960@localhost.localdomain>
+References: <200907100928.07369.elendil@planet.nl> <200907101659.31813.elendil@planet.nl> <alpine.LFD.2.01.0907121058040.3552@localhost.localdomain> <m3k52d1775.fsf@google.com> <20090725032343.GA20841@redhat.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
+
+
+On Fri, 24 Jul 2009, Dave Jones wrote:
 > 
-> What _is_ Arjan's requirement, anyway?  I don't think it's really been
-> spelled out.
+> Is it worth fixing these up, with diffs like the below ?
 
-ok long description coming ;)
+Historically, when we fix up bugs like this, it causes more bugs than it 
+fixes.
 
-Actually we're building a tool that conceptually is two different tools, that operate at different levels,
-and tool two is a zoomed in version of zoom one. I'll describe both below as if they are independent tools,
-to not confuse things too much.
+It needs _really_ careful people, and people who really understand how C 
+type rules work. Stuff that looks obvious often is not, and basing a large 
+part of the patch on a compiler warning is a _very_ weak reason for 
+something that is more than just syntactic.
 
+And the problem is, nobody can judge the patch from the diff. So it gets 
+absolutely zero review, until the day when somebody notices that the 
+unsigned version is a bug.
 
-Tool One
---------
-This can be summarized as "a better bootchart", although it's not (just) for measuring boot.
-What the tool provides is a graphical overview of all process activity over a period of time
-(the period of time needs to be long enough to cover a system boot, so around 10 seconds).
+I'd suggest that the rule should be:
 
-In this overview, time is the horizontal axis, and processes are on the vertical axis.
-This overview is basically a horizontal bar per "process", that shows the name of the process. The
-bar starts (X axis) when the process starts, and ends when the process ends. Bars of processes that
-either start before the measurement period, or continue to live on after the measurement period
-just run to the edge of the graph.
+ - if you can use -U30 and show all uses, so that people can actually look 
+   at the patch and see what it _causes_ (ie not just the "we change 'i' 
+   to 'unsigned'", but also the "this is where 'i' gets used, and 
+   'unsigned' is right"), then we can apply it.
 
-Within these bars, we make "boxes" that cover 1 millisecond (typical) of time, and these boxes get colored
-depending on what kind of activity has happened.
-* Shade of blue for CPU activity; basically we take the number of nanoseconds that the process executed at the beginning
-   and at the end of the box, scale this to the size of the box (1 msec) to get a ratio/percentage, and then make the
-   shade of blue represent this percentage. (eg if the process was running for the full msec, it gets very dark blue,
-   but if it was only running for 50%, it gets a gray-ish blue)
-* Shade of red for "waiting for IO"; we take the io wait nanoseconds at the beginning and end, scale this like we do cpu
-   and color the box red appropriately
-* Share of yellow for "waiting for the scheduler to give us a time slice"; the kernel exposes the (accumulated) time
-   between wakeup and actually running, basically the scheduler delay (due to other processes running etc). Similar to
-   cpu and io time, we scale this to a yellow color
-(if there is more than one of these during the 1 msec activity, we have an arbitrage algorithm to resolve this)
+ - none of the patches go through a 'trivial' tree, or come from newbies 
+   that think this is a good way to get involved.
 
-In addition, we show a system view (at the top of the diagram for now) that shows
-* For each logical cpu, how the CPU utilization is. Again in 1 msec bars, we calculate how busy each logical cpu is
-   and have a bar for which the height scales with utilization
-* We show the amount of IO, in megabytes per second in another bar, so that one can see how well the system is doing
-   on IO throughput (we're considering splitting this into a separate display for read and write)
+Is it worth it at that point? I dunno.
 
-For the process bars to work, we need to track the name of processes as they change (fork+exec first creates a process that shares
-the name with the parent process, and then during the exec changes name to the new process for example). The visualization
-switches to a new bar when such a process changes name.
-
-This tool is very useful (for us already, but I expect it's not just us) to see what is going on performance wise on a system level.
-We can see that process A uses CPU, but causes the dbus process to use CPU which then causes process B to use CPU etc; we can
-track performance bottlenecks/costs beyond just a single process.
-
-Right now we're just polling every millisecond various /proc/pid files to collect this information. Will investigate
-the task accounting flow to see if we can kill the polling entirely, but if we can't kill this polling entirely we'll likely need
-to stick to polling, since otherwise consolidating the two sources of information gets problematic.
-
-The current "bootchart" tool provides this mostly, but it is using the millisecond sampled data, which is so inaccurate
-that major things are missed in terms of system activity, and in addition it's so heavy in how it operates that you can't
-sample fine grained enough without impacting the system too much.
-
-Tool Two
---------
-This is sort of a zoomed in version of Tool One. Tool Two does not show utilization percentages, but shows a time flow
-of what happens, nanosecond accurate. The same bars like in tool one, per process etc, but now we don't show boxes that represent a 
-millisecond, but we start a box of blue every time a process gets scheduled, that lasts until the process gets unscheduled. Same for the
-red/yellow boxes.
-Ideally we also get "process A wakes up process B" information, that we can represent as little arrows in our diagram.
-
-Tool Two also gives cpu utilization in a time format rather than in a utilization %age format.
-
-We're using "perf" for collecting this information; for todays mainline we can collect the blue bar (When scheduled in/out) already,
-and Peter has been adding the data for iowait etc in an experimental branch.
-
-
-
-In case you wonder why you need both tools, and can't just use one: we wondered the same, but it turns out that if you only build
-Tool Two, you don't get a good overview of what is going on on a higher level. It's like looking at the world via a microscope all the time,
-you just don't get a good feeling what the world is like; you just can't find which areas are interesting to look at (with the microscope)/
-So we provide a higher level view tool (Tool One), with the capability to zoom into what happens in minute (well.. nanosecond) detail for 
-areas of interest (Tool Two).
-
-[again, while I describe them here as separate tools, that's just for the description, the idea is that the user will see it as just one
-unified tool with different zoom levels]
+		Linus
