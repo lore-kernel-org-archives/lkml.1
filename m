@@ -1,100 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755007AbZGYGYJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755075AbZGYG0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755007AbZGYGYJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 02:24:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZGYGYI
+	id S1755075AbZGYG0B (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 02:26:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbZGYG0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 02:24:08 -0400
-Received: from mx10.brocade.com ([208.185.105.18]:48908 "EHLO mx10.brocade.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751306AbZGYGYH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 02:24:07 -0400
-X-IronPort-AV: E=Sophos;i="4.43,268,1246863600"; 
-   d="scan'208";a="206299438"
-Date: Fri, 24 Jul 2009 23:24:06 -0700
-From: Jing Huang <huangj@brocade.com>
-Message-Id: <200907250624.n6P6O65M025999@swe57.brocade.com>
-To: James.Bottomley@HansenPartnership.com
-Subject: [PATCH 13/14] bfa: Brocade BFA FC SCSI driver (makefile)
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       rvadivel@brocade.com, vravindr@brocade.com
+	Sat, 25 Jul 2009 02:26:00 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:50795 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751306AbZGYG0A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Jul 2009 02:26:00 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Regression] kdesu broken
+References: <200907240145.31935.rjw@sisk.pl>
+	<2c0942db0907231721q124dc8f9mdbe64ed33c69ffbf@mail.gmail.com>
+	<200907241721.45943.rjw@sisk.pl>
+	<20090724164058.21a054e6@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907240930120.3960@localhost.localdomain>
+Date: Sat, 25 Jul 2009 15:04:06 +0900
+In-Reply-To: <alpine.LFD.2.01.0907240930120.3960@localhost.localdomain> (Linus
+	Torvalds's message of "Fri, 24 Jul 2009 09:34:35 -0700 (PDT)")
+Message-ID: <87ws5xjo2x.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jing Huang <huangj@brocade.com>
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-This patch contains Makefile and Kconfig file for scsi and bfa.
+>> I don't know where you got that idea from. Avoiding breaking user space
+>> unneccessarily is good but if its buggy you often can't do anything about
+>> it.
+>
+> Alan, he got that idea from me.
+>
+> We don't do regressions. If user space depended on old behavior, we don't 
+> change behavior.
+>
+> And regardless of that, I do not think EIO is the right thing to return at 
+> all. If the other side of a pty went away, return 0 and possibly send a 
+> HUP, or whatever. What did we do before?
 
-Signed-off-by: Jing Huang <huangj@brocade.com>
----
- Kconfig      |   10 ++++++++++
- Makefile     |    1 +
- bfa/Makefile |   30 ++++++++++++++++++++++++++++++
- 3 files changed, 41 insertions(+)
+I also was seeing this. I hope the attached test code shows the problem.
 
-diff -urpN orig/drivers/scsi/Kconfig patch/drivers/scsi/Kconfig
---- orig/drivers/scsi/Kconfig	2009-07-21 15:34:05.000000000 -0700
-+++ patch/drivers/scsi/Kconfig	2009-07-21 15:34:00.000000000 -0700
-@@ -1819,6 +1819,16 @@ config SCSI_SRP
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called libsrp.
- 
-+config SCSI_BFA_FC
-+	tristate "Brocade BFA Fibre Channel Support"
-+	depends on PCI && SCSI
-+	select SCSI_FC_ATTRS
-+	help
-+	  This bfa driver supports all Brocade PCIe FC/FCOE host adapters.
-+
-+	  To compile this driver as a module, choose M here. The module will
-+	  be called bfa.
-+
- endif # SCSI_LOWLEVEL
- 
- source "drivers/scsi/pcmcia/Kconfig"
-diff -urpN orig/drivers/scsi/Makefile patch/drivers/scsi/Makefile
---- orig/drivers/scsi/Makefile	2009-07-21 15:34:05.000000000 -0700
-+++ patch/drivers/scsi/Makefile	2009-07-21 15:34:01.000000000 -0700
-@@ -86,6 +86,7 @@ obj-$(CONFIG_SCSI_QLOGIC_1280)	+= qla128
- obj-$(CONFIG_SCSI_QLA_FC)	+= qla2xxx/
- obj-$(CONFIG_SCSI_QLA_ISCSI)	+= qla4xxx/
- obj-$(CONFIG_SCSI_LPFC)		+= lpfc/
-+obj-$(CONFIG_SCSI_BFA_FC)	+= bfa/
- obj-$(CONFIG_SCSI_PAS16)	+= pas16.o
- obj-$(CONFIG_SCSI_T128)		+= t128.o
- obj-$(CONFIG_SCSI_DMX3191D)	+= dmx3191d.o
-diff -urpN orig/drivers/scsi/bfa/Makefile patch/drivers/scsi/bfa/Makefile
---- orig/drivers/scsi/bfa/Makefile	1969-12-31 16:00:00.000000000 -0800
-+++ patch/drivers/scsi/bfa/Makefile	2009-07-21 15:34:05.000000000 -0700
-@@ -0,0 +1,30 @@
-+#
-+# Copyright (c) 2005-2008 Brocade Communications Systems, Inc.
-+# All rights reserved
-+# www.brocade.com
-+# 
-+# Linux driver for Brocade Fibre Channel Host Bus Adapter.
-+#
-+# This program is free software; you can redistribute it and/or modify it
-+# under the terms of the GNU General Public License (GPL) Version 2 as
-+# published by the Free Software Foundation
-+#
-+# This program is distributed in the hope that it will be useful, but
-+# WITHOUT ANY WARRANTY; without even the implied warranty of
-+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+# General Public License for more details.
-+#
-+obj-$(CONFIG_SCSI_BFA_FC) := bfa.o
-+
-+bfa-objs := bfad.o bfad_intr.o bfad_os.o bfad_im.o bfad_attr.o bfad_fwimg.o \
-+	bfa_core.o bfa_ioc.o bfa_iocfc.o bfa_aen.o bfa_fcxp.o bfa_lps.o \
-+	bfa_hw_cb.o bfa_hw_ct.o bfa_intr.o bfa_timer.o bfa_rport.o \
-+	bfa_fcport.o bfa_port.o bfa_uf.o bfa_sgpg.o bfa_module.o bfa_ioim.o \
-+	bfa_itnim.o bfa_fcpim.o bfa_tskim.o bfa_log.o bfa_log_module.o \
-+	bfa_csdebug.o bfa_sm.o plog.o fcbuild.o fabric.o fcpim.o vfapi.o \
-+	fcptm.o bfa_fcs.o bfa_fcs_port.o bfa_fcs_uf.o bfa_fcs_lport.o \
-+        fab.o fdmi.o ms.o ns.o scn.o loop.o lport_api.o n2n.o rport.o \
-+        rport_api.o rport_ftrs.o vport.o
-+
-+
-+EXTRA_CFLAGS += -I$(obj) -I$(obj)/include -I$(obj)/include/cna
+The problem seems to be complex. And before change, write() seems to
+send buffer to ldisc directly. After change, write() seems to send
+buffer to tty buffer. With some debug, I'm not sure though, I guess the
+following
+
+          slave                                 master
+     write()
+         write to buffer
+             tty_flip_buffer_push()
+             schedule_delayed_work()
+     close()
+         set_bit(TTY_OTHER_CLOSED)
+                                            read()
+                                                input_available_p()
+                                                # buffer was not received yet
+                                                    test_bit(TTY_OTHER_CLOSED)
+                                                        return -EIO
+
+                                            flush_to_ldisc()
+                                                ->receive_buf()
+
+master is having the input data in tty->buf, but ->receive_buf() is not
+called yet. So, it seems to return -EIO before handling input data in
+tty->buf.
+
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <error.h>
+#include <limits.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <sys/wait.h>
+#include <unistd.h>
+
+static char pts_name[PATH_MAX];
+
+static int open_pty(void)
+{
+	int master;
+	char *name;
+
+	master = getpt();
+	if (master < 0)
+		return -1;
+
+	if (grantpt(master) < 0 || unlockpt(master) < 0)
+		goto close_master;
+#if 0
+	{
+		int on = 1;
+		ioctl(master, FIONBIO, &on);
+	}
+#endif
+	name = ptsname(master);
+	if (name == NULL)
+		goto close_master;
+
+	strcpy(pts_name, name);
+
+	return master;
+
+close_master:
+	close(master);
+	return -1;
+}
+
+static pid_t child(int master)
+{
+	pid_t pid;
+	int slave;
+
+	pid = fork();
+	if (pid < 0)
+		error(1, errno, "%s: fork", __func__);
+
+	if (pid == 0) {
+		slave = open(pts_name, O_RDWR);
+		if (slave < 0)
+			error(1, errno, "%s: open", __func__);
+
+		close(master);
+		dup2(slave, 0);
+		dup2(slave, 1);
+		dup2(slave, 2);
+		close(slave);
+
+		printf("1-----------------------------------------------\n");
+		printf("2-----------------------------------------------\n");
+		printf("3-----------------------------------------------\n");
+		printf("4-----------------------------------------------\n");
+		printf("5-----------------------------------------------\n");
+		printf("6-----------------------------------------------\n");
+		printf("7-----------------------------------------------\n");
+		printf("8-----------------------------------------------\n");
+		printf("9-----------------------------------------------\n");
+		exit(0);
+	}
+
+	return pid;
+}
+
+int main()
+{
+	pid_t pid;
+	int master;
+
+	master = open_pty();
+	if (master < 0)
+		error(1, errno, "%s: open_pty", __func__);
+
+	pid = child(master);
+
+	waitpid(pid, NULL, 0);
+	while (1) {
+		char buf[4096];
+		ssize_t size;
+
+		size = read(master, buf, sizeof(buf));
+		if (size < 0) {
+			if (errno == EAGAIN) {
+				printf("EAGAIN\n");
+				continue;
+			}
+			error(1, errno, "%s: read", __func__);
+		}
+		if (size == 0)
+			break;
+		write(STDOUT_FILENO, buf, size);
+	}
+	
+	return 0;
+}
