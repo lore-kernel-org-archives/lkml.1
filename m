@@ -1,106 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbZGYHWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbZGYHey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755060AbZGYHWM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 03:22:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbZGYHWL
+	id S1753648AbZGYHey (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 03:34:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZGYHey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 03:22:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52904 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752380AbZGYHWK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 03:22:10 -0400
-Date: Sat, 25 Jul 2009 00:21:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
-Subject: Re: [PATCH] sched: Provide iowait counters
-Message-Id: <20090725002148.5524c846.akpm@linux-foundation.org>
-In-Reply-To: <1248501946.6987.146.camel@twins>
-References: <4A64B813.1080506@linux.intel.com>
-	<20090724212220.afa278ee.akpm@linux-foundation.org>
-	<4A6A8AFE.1010608@linux.intel.com>
-	<20090724214006.7380c3b4.akpm@linux-foundation.org>
-	<4A6A8E96.7050509@linux.intel.com>
-	<20090724220423.11828b85.akpm@linux-foundation.org>
-	<1248501946.6987.146.camel@twins>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 25 Jul 2009 03:34:54 -0400
+Received: from er-systems.de ([85.25.136.202]:43125 "EHLO er-systems.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752596AbZGYHex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Jul 2009 03:34:53 -0400
+X-Greylist: delayed 566 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Jul 2009 03:34:53 EDT
+Date: Sat, 25 Jul 2009 09:25:21 +0200 (CEST)
+From: Thomas Voegtle <tv@lio96.de>
+To: Greg KH <gregkh@suse.de>
+cc: =?ISO-8859-15?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>,
+       webmaster@kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       stable@kernel.org
+Subject: Re: Linux 2.6.27.28
+In-Reply-To: <20090725033030.GA481@suse.de>
+Message-ID: <alpine.LNX.2.00.0907250906330.10172@er-systems.de>
+References: <20090724222746.GA30562@kroah.com> <4A6A48A1.80608@tremplin-utc.net> <20090725033030.GA481@suse.de>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="425052808-535022048-1248506723=:10172"
+X-Virus-Checker-Version: clamassassin 1.2.4 with clamdscan / ClamAV 0.95.2/9613/Sat Jul 25 02:08:58 2009 signatures .
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 25 Jul 2009 08:05:46 +0200 Peter Zijlstra <peterz@infradead.org> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> On Fri, 2009-07-24 at 22:04 -0700, Andrew Morton wrote:
-> > 
-> > > > See include/linux/sched.h's definition of task_delay_info - u64
-> > > > blkio_delay is in nanoseconds.  It uses
-> > > > do_posix_clock_monotonic_gettime() internally.
-> > > 
-> > > looks like it does.. to bad we don't expose that data in
-> > a /proc/<pid>/delay or something field
-> > > like we do with the scheduler info...
-> > > 
-> > 
-> > I thought we did deliver a few of the taskstats counters via procfs,
-> > but maybe I dreamed it.  It would have been a rather bad thing to do.
-> > 
-> > taskstats has a large advantage over /proc-based things: it delivers a
-> > packet to the monitoring process(es) when the monitored task exits.
-> > So
-> > with no polling at all it is possible to gather all that information
-> > about the just-completed task.  This isn't possible with /proc.
-> > 
-> > There's a patch on the list now to teach taskstats to emit a packet at
-> > fork- and exit-time too.
-> > 
-> > The monitored task can be polled at any time during its execution
-> > also,
-> > like /proc files.
-> > 
-> > Please consider switching whatever-you're-working-on over to use
-> > taskstats rather than adding (duplicative) things to /proc (which
-> > require CONFIG_SCHED_DEBUG, btw).
-> > 
-> > If there's stuff missing from taskstats then we can add it - it's
-> > versioned and upgradeable and is a better interface.  It's better
-> > to make taskstats stronger than it is to add /proc/pid fields,
-> > methinks.
-> 
-> The below exposes the information to ftrace and perf counters, it uses
-> the scheduler accounting (which is often much cheaper than
-> do_posix_clock_monotonic_gettime, and more 'accurate' in the sense that
-> its what the scheduler itself uses).
+--425052808-535022048-1248506723=:10172
+Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 
-Well.  The do_posix_clock_monotonic_gettime() call is already there,
-and this change adds more code on top of Arjan's code which wasn't
-needed if he can use taskstats.
 
-> This allows profiling tasks based on iowait time, for example, something
-> not possible with taskstats afaik.
-> 
-> Maybe there's a use for taskstats still, maybe not.
+Hi,
+
+first of all: thank you for the stable kernels...
+
+
+On Fri, 24 Jul 2009, Greg KH wrote:
+> On Sat, Jul 25, 2009 at 01:49:53AM +0200, Éric Piel wrote:
+>> Currently, there is no clue on www.kernel.org that 2.6.27 is a "long
+>> term stable" kernel tree. Would it be possible to add a line to the page
+>> pointing to the latest version of this type of tree? I'm sure some
+>> people would love discovering that such thing exists :-)
 >
-> ---
-> Subject: sched: wait, sleep and iowait accounting tracepoints
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Thu Jul 23 20:13:26 CEST 2009
-> 
-> Add 3 schedstat tracepoints to help account for wait-time, sleep-time
-> and iowait-time.
-> 
-> They can also be used as a perf-counter source to profile tasks on
-> these clocks.
+> I'm curious as to why someone, if they were inclined to be using such a
+> thing, wouldn't already know about this?
 
-This may be a useful feature, dunno.  But it seems to be unrelated to
-Arjan's requirement, apart from building on top of it.
+It even isn't called at linux-kernel-announce, except the latest stable 
+kernel.
+So you have to read LKML, or follow the lwn.net news to track the 
+older stable kernel. Or always guessing: when there is a release of the 
+newer stable kernel (this is announced in linux-kernel-announce) then 
+there might be a release of the older one aswell...
 
-What _is_ Arjan's requirement, anyway?  I don't think it's really been
-spelled out.
+
+> How many people really are relying on this .27 branch, becides the
+> distros, these days?  And if you are, why?
+
+I'm one of that guys, having a server and one firewall and feeling 
+much better with a small optimized own-built kernel for that machines.
+And both just work with this .27 branch, why should I change it to 
+2.6.30.y?
+I don't need any of the new features and it won't be faster with 2.6.30 or 
+something else...
+
+
+       Thomas
+
+--425052808-535022048-1248506723=:10172--
 
