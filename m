@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752602AbZGYWtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752570AbZGYWya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752602AbZGYWtL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 18:49:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbZGYWtK
+	id S1752570AbZGYWya (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 18:54:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZGYWy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 18:49:10 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:38676 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751961AbZGYWtJ (ORCPT
+	Sat, 25 Jul 2009 18:54:29 -0400
+Received: from mail-gx0-f213.google.com ([209.85.217.213]:58180 "EHLO
+	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752570AbZGYWy2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 18:49:09 -0400
-Date: Sat, 25 Jul 2009 23:48:48 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Bill Gatliff <bgat@billgatliff.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, sen wang <wangsen.linux@gmail.com>,
-       mingo@elte.hu, akpm@linux-foundation.org, kernel@kolivas.org,
-       npiggin@suse.de, arjan@infradead.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: report a bug about sched_rt
-Message-ID: <20090725224848.GA15260@shareable.org>
-References: <454c71700907240626w127fd890ufa91ef90cbcaaa@mail.gmail.com> <1248442415.6987.56.camel@twins> <454c71700907240644h7469e2a5sfcb57f202a2e184d@mail.gmail.com> <1248443656.6987.61.camel@twins> <454c71700907240724u76b970e5y5af0fc114cc92f83@mail.gmail.com> <1248446910.6987.111.camel@twins> <20090724154036.GG27755@shareable.org> <1248451279.6987.138.camel@twins> <20090724233057.GO27755@shareable.org> <4A6A96AB.7030609@billgatliff.com>
+	Sat, 25 Jul 2009 18:54:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=WnIFvQDrWL+XmFN88qtql4p226ZvCiP9y4aPPr8amYQejrEFQdcHzHIHwzTf2/kOHN
+         lg+PQbBqdTZl9jXcxcAl3U0uJeCLNa3elUILi0ulH8lZIL7Xr9+sSkMxJg1kjyhpA0Ka
+         lOcqSXunN5cchrSXX4UbKFm4JAlwe+z8y2AQw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A6A96AB.7030609@billgatliff.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <4A6ACE7C.9090409@orcon.net.nz>
+References: <4A5DB243.2000100@orcon.net.nz>
+	 <21d7e9970907152016u3b213beet9090ee3b34f6d8b1@mail.gmail.com>
+	 <4A6ACE7C.9090409@orcon.net.nz>
+Date: Sun, 26 Jul 2009 08:54:27 +1000
+Message-ID: <21d7e9970907251554m18e4fca5p69b758e36fddc7d9@mail.gmail.com>
+Subject: Re: Kernel 2.6.30.1 Oops on Alpha Architecture when starting Xserver
+From: Dave Airlie <airlied@gmail.com>
+To: Michael Cree <mcree@orcon.net.nz>
+Cc: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+       xorg@lists.freedesktop.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Gatliff wrote:
-> Jamie Lokier wrote:
-> >For simple things like "try to keep the buffer to my DVD writer full"
-> >(no I don't know how much CPU that requires - it's a kind of "best
-> >effort but try very hard!"), it would be quite useful to have
-> >something like RT-bandwidth which grants a certain percentage of time
-> >as an RT task, and effectively downgrades it to SCHED_OTHER when that
-> >time is exceeded to permit some fairness with the rest of the system.
-> >  
-> 
-> Useful perhaps, but an application design that explicitly communicates 
-> your desires to the scheduler will be more robust, even if it does seem 
-> more complex at the outset.
+>>> The kernel oops is:
+>>>
+>>
+>> So its a machine check,
+>>
+>
+> So, does this indicate a software fault (e.g. inconsistencies in kernel data
+> structures) or does it imply a hardware fault?
+>
+>> Well X is trying to post the graphics card you have installed, and the
+>> machine
+>> is falling over when it does it.
+>>
+>
+> SRM (the equivalent of a BIOS) cannot post the card on startup.  But I have
+> had the card (radeon rv610) post correctly and working in the past when I
+> compiled the complete 1.5.3 Xserver myself.  I had it working with both the
+> radeon and radeonhd drivers and a 2.6.29.x kernel patched to support
+> libpciaccess.
 
-I agree with communicting the desire explicitly to the scheduler.
+There is no -ati card in that machine, its got some SiS card which is
+completely
+different, maybe its some onboard card or something.
 
-In the above example, the exact desire is "give me as much CPU as I
-ask for, because my hardware servicing will be adversely but
-non-fatally affected if you don't, and the amount of CPU needed to
-service the hardware cannot be determined in advance, but prevent me
-from blocking progress in the rest of the system by limiting my
-exclusive ownership of the CPU".
-
-How do you propose to communicate that to the scheduler, if not by
-something rather like RT-bandwidth with downgrading to SCHED_OTHER
-when a policy limit is exceeded?
-
--- Jamie
+Dave.
