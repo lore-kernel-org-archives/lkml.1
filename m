@@ -1,95 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752728AbZGYMRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752752AbZGYMTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752728AbZGYMRt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 08:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbZGYMRt
+	id S1752752AbZGYMTk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 08:19:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752588AbZGYMTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 08:17:49 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:33120 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751029AbZGYMRs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 08:17:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=pnfwOJcVJ2VhWVP0SjNGDIYEp7+RnPoAbMtfaw/xRecP2tMWaTVbCKpCjCMwfiVeuf
-         JcrbyN9SYNkdI86ZmDrv+Hza/z4MS6mc4hsMLewEdBqSVjnApAOnvzJSyw39LyNTVqhr
-         gX7eTC279OEmP3lxpfCBXwTWkYnKixBWohGYk=
-From: Arnaud Faucher <arnaud.faucher@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Arnaud Faucher <arnaud.faucher@gmail.com>
-Subject: [PATCH] serial: 8250: switch to dev_pm_ops
-Date: Sat, 25 Jul 2009 08:17:15 -0400
-Message-Id: <1248524235-11167-1-git-send-email-arnaud.faucher@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
+	Sat, 25 Jul 2009 08:19:40 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:40861 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752539AbZGYMTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Jul 2009 08:19:39 -0400
+Subject: Re: report a bug about sched_rt
+From: Raistlin <raistlin@linux.it>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Jamie Lokier <jamie@shareable.org>, sen wang <wangsen.linux@gmail.com>,
+       mingo@elte.hu, akpm@linux-foundation.org, kernel@kolivas.org,
+       npiggin@suse.de, arjan@infradead.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>
+In-Reply-To: <1248451279.6987.138.camel@twins>
+References: <454c71700907240357l61f5c4fajaca73db0fba7db8@mail.gmail.com>
+	 <1248437670.6987.26.camel@twins>
+	 <454c71700907240604h4673f117j8ed58b9f2ee54798@mail.gmail.com>
+	 <1248441290.6987.52.camel@twins>
+	 <454c71700907240626w127fd890ufa91ef90cbcaaa@mail.gmail.com>
+	 <1248442415.6987.56.camel@twins>
+	 <454c71700907240644h7469e2a5sfcb57f202a2e184d@mail.gmail.com>
+	 <1248443656.6987.61.camel@twins>
+	 <454c71700907240724u76b970e5y5af0fc114cc92f83@mail.gmail.com>
+	 <1248446910.6987.111.camel@twins>  <20090724154036.GG27755@shareable.org>
+	 <1248451279.6987.138.camel@twins>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-kQx414Ydk6TJgdBLzHrj"
+Date: Sat, 25 Jul 2009 14:19:14 +0200
+Message-Id: <1248524354.8429.100.camel@Palantir>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Signed-off-by: Arnaud Faucher <arnaud.faucher@gmail.com>
----
- drivers/serial/8250.c |   16 ++++++++++------
- 1 files changed, 10 insertions(+), 6 deletions(-)
+--=-kQx414Ydk6TJgdBLzHrj
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index fb867a9..e6b41b1 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -2982,42 +2982,46 @@ static int __devexit serial8250_remove(struct platform_device *dev)
- 	return 0;
- }
- 
--static int serial8250_suspend(struct platform_device *dev, pm_message_t state)
-+static int serial8250_suspend(struct device *dev)
- {
- 	int i;
- 
- 	for (i = 0; i < UART_NR; i++) {
- 		struct uart_8250_port *up = &serial8250_ports[i];
- 
--		if (up->port.type != PORT_UNKNOWN && up->port.dev == &dev->dev)
-+		if (up->port.type != PORT_UNKNOWN && up->port.dev == dev)
- 			uart_suspend_port(&serial8250_reg, &up->port);
- 	}
- 
- 	return 0;
- }
- 
--static int serial8250_resume(struct platform_device *dev)
-+static int serial8250_resume(struct device *dev)
- {
- 	int i;
- 
- 	for (i = 0; i < UART_NR; i++) {
- 		struct uart_8250_port *up = &serial8250_ports[i];
- 
--		if (up->port.type != PORT_UNKNOWN && up->port.dev == &dev->dev)
-+		if (up->port.type != PORT_UNKNOWN && up->port.dev == dev)
- 			serial8250_resume_port(i);
- 	}
- 
- 	return 0;
- }
- 
-+static struct dev_pm_ops serial8250_pm_ops = {
-+	.suspend	= serial8250_suspend,
-+	.resume		= serial8250_resume,
-+};
-+
- static struct platform_driver serial8250_isa_driver = {
- 	.probe		= serial8250_probe,
- 	.remove		= __devexit_p(serial8250_remove),
--	.suspend	= serial8250_suspend,
--	.resume		= serial8250_resume,
- 	.driver		= {
- 		.name	= "serial8250",
- 		.owner	= THIS_MODULE,
-+		.pm	= &serial8250_pm_ops,
- 	},
- };
- 
--- 
-1.6.3.3
+On Fri, 2009-07-24 at 18:01 +0200, Peter Zijlstra wrote:
+> For bugs the throttle works, like I said a well functioning system is
+> not supposed to hit the throttle, obviously a bug precludes the well
+> functioning qualification :-)
+>=20
+Yes, I also think a bandwidth isolation/throttling mechanism could help
+a lot either with bugs or when you need hard real-time, soft real-time
+and non real-time applications to live together in one single system
+such as Linux is --or is about to become.
+
+> Unpredictable calculation times can be dealt with on the application
+> design level, for example using techniques such as outlined here:
+>=20
+>   http://feanor.sssup.it/~faggioli/papers/OSPERT-2009-dlexception.pdf
+>=20
+Thanks Peter! :-)
+
+We're getting more citation in this ML than in 'our' academic world...
+I'm not sure it is useful for our PhD and research career, but, indeed,
+I like that very much anyway! :-P
+
+The mechanism proposed in that paper is one way for providing developers
+with the capability of specifying some typical real time "attributes" of
+an application (or part of it), such as deadline and/or expected (worst
+case?) execution time.
+
+It is probably not always the best way of doing, but it's something we
+think it could be useful somewhere. Therefore, we are still working on
+it, e.g., improving timer resolution, adding the support for new
+semantic and programming models, etc. Moreover, we are open to any
+suggestion and contribution about this work, especially from the
+community!
+
+> These really are things you should know about before writing an RT
+> application ;-)
+:-D
+
+Regards,
+Dario
+
+--=20
+<<This happens because I choose it to happen!>> (Raistlin Majere)
+----------------------------------------------------------------------
+Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
+
+http://blog.linux.it/raistlin / raistlin@ekiga.net /
+dario.faggioli@jabber.org
+
+--=-kQx414Ydk6TJgdBLzHrj
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkpq+DsACgkQk4XaBE3IOsS+3wCfcfVmo81T8Gu7jh8nD9LwQfJv
+nV4AoIr241zF5+CM+PT3GIgv+q4ba1Bc
+=pbF4
+-----END PGP SIGNATURE-----
+
+--=-kQx414Ydk6TJgdBLzHrj--
 
