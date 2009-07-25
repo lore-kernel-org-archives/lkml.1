@@ -1,150 +1,388 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752006AbZGYJQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751852AbZGYJVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752006AbZGYJQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 05:16:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbZGYJQz
+	id S1751852AbZGYJVM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 05:21:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbZGYJVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 05:16:55 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:4270 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751029AbZGYJQy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 05:16:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :x-enigmail-version:content-type:content-transfer-encoding;
-        b=O1k9+ge2CsnCbbqxoslMJ+B35T5vND9BnG0hgzfoOpWbWjpNJntnXT/stlmknsfdeF
-         Mp2A84a2Gd68Fd5YMyrSiay56+KOhu6QfbhL+uV+Njd6ss/9Nbsiyw70doHGSm/KIt5N
-         Pgi7TWeUvN1VC+8X3SKTxfpt2TkrP96qQh7+A=
-Message-ID: <4A6ACD80.5090307@googlemail.com>
-Date: Sat, 25 Jul 2009 11:16:48 +0200
-From: e9hack <e9hack@googlemail.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Sat, 25 Jul 2009 05:21:10 -0400
+Received: from mx6.orcon.net.nz ([219.88.242.56]:36904 "EHLO mx6.orcon.net.nz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751568AbZGYJVH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Jul 2009 05:21:07 -0400
+Message-ID: <4A6ACE7C.9090409@orcon.net.nz>
+Date: Sat, 25 Jul 2009 21:21:00 +1200
+From: Michael Cree <mcree@orcon.net.nz>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [BUG] Linux-2.6.31-rc4 fails to open a USB serial port
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-15
+To: Dave Airlie <airlied@gmail.com>
+CC: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+       xorg@lists.freedesktop.org
+Subject: Re: Kernel 2.6.30.1 Oops on Alpha Architecture when starting Xserver
+References: <4A5DB243.2000100@orcon.net.nz> <21d7e9970907152016u3b213beet9090ee3b34f6d8b1@mail.gmail.com>
+In-Reply-To: <21d7e9970907152016u3b213beet9090ee3b34f6d8b1@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-DSPAM-Check: by mx6.orcon.net.nz on Sat, 25 Jul 2009 21:21:03 +1200
+X-DSPAM-Result: Innocent
+X-DSPAM-Processed: Sat Jul 25 21:21:04 2009
+X-DSPAM-Confidence: 0.9938
+X-DSPAM-Probability: 0.0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+[CCed to xorg email list since this might be an Xserver bug.]
 
-if I open a USB serial port (FT232RL from FTDI), I got a mutex problem. It occurs
-immediately during the open call. The USB converter is always plugged in. With 2.6.31-rc3,
-I don't see this problem.
+Dave Airlie wrote:
+> On Wed, Jul 15, 2009 at 8:41 PM, Michael Cree<mcree@orcon.net.nz> wrote:
+>   
+>> Kernel Oops on Alpha Architecture when starting the Xserver.
+>>
+>> Whenever I start the Xserver, version 1.6.2 from Debain Unstable, I get a
+>> kernel oops report and the computer crashes hard; no ping response, hitting
+>> the reset button to return to SRM fails.  Has caused corruption on disc
+>> partitions on some crashes.  This occurs with kernels 2.6.30, 2.6.30.1 and
+>> also a patched version of 2.6.29.x (patched so that I get PCI resource files
+>> under sysfs).
+>>
+>> The kernel oops is:
+>>     
+>
+> So its a machine check,
+>   
 
-Regards,
-Hartmut
+So, does this indicate a software fault (e.g. inconsistencies in kernel 
+data structures) or does it imply a hardware fault?
 
-Jul 25 10:26:43 vdr kernel: [   24.931403] WARNING: at
-/usr/src/linux-2.6.31-rc4/kernel/mutex-debug.c:77 debug_mutex_unlock+0x8c/0xd2()
-Jul 25 10:26:43 vdr kernel: [   24.932025] Hardware name: MS-7207PV
-Jul 25 10:26:43 vdr kernel: [   24.932025] Modules linked in: aes_x86_64 aes_generic
-af_packet cpufreq_conservative cpufreq_ondemand cpufreq_userspace cpufreq_powersave
-powernow_k8 freq_table ipt_REJECT xt_state iptable_mangle iptable_nat nf_nat
-iptable_filter nf_conntrack_netbios_ns nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4
-ip_tables x_tables fuse nls_iso8859_1 nls_cp437 vfat fat loop dm_mod tda10021 stv0297 arc4
-ecb budget_av dvb_ttpci saa7146_vv zd1211rw videodev v4l1_compat firmware_class
-budget_core v4l2_compat_ioctl32 parport_pc dvb_core mac80211 videobuf_dma_sg ppdev
-ftdi_sio saa7146 videobuf_core usb_storage rtc_cmos parport cfg80211 rtc_core ttpci_eeprom
-button usbserial usb_libusual k8temp rtc_lib sr_mod rfkill forcedeth i2c_nforce2 cdrom
-evdev sg ehci_hcd ohci_hcd sd_mod crc_t10dif usbcore edd ext3 mbcache jbd fan pata_amd
-sata_nv libata scsi_mod thermal processor thermal_sys hwmon
-Jul 25 10:26:43 vdr kernel: [   24.932025] Pid: 3270, comm: vdr Not tainted
-2.6.31-rc4-64-mp-suse-11 #1
-Jul 25 10:26:43 vdr kernel: [   24.932025] Call Trace:
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffff81066bbc>] ?
-debug_mutex_unlock+0x8c/0xd2
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffff8104475e>]
-warn_slowpath_common+0x77/0xa4
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffff8104479a>] warn_slowpath_null+0xf/0x11
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffff81066bbc>] debug_mutex_unlock+0x8c/0xd2
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffff812aa3c3>]
-__mutex_unlock_slowpath+0xad/0x100
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffff812aa41f>] mutex_unlock+0x9/0xb
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffffa01b0552>] serial_open+0x1f8/0x256
-[usbserial]
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffff811dbfe1>] tty_open+0x301/0x424
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffff810d9c55>] chrdev_open+0x18d/0x1ae
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffff810d9ac8>] ? chrdev_open+0x0/0x1ae
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffff810d552f>] __dentry_open+0x18f/0x2b4
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffff810d5721>] nameidata_to_filp+0x41/0x52
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffff810e2dde>] do_filp_open+0x533/0xa3a
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffff81223099>] ? sys_sendto+0xf1/0x107
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffff812abc5e>] ? _spin_unlock+0x13/0x2c
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffff810ebc02>] ? alloc_fd+0x11d/0x12e
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffff810d52bc>] do_sys_open+0x5d/0x104
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffff810d538c>] sys_open+0x1b/0x1d
-Jul 25 10:26:43 vdr kernel: [   24.932025]  [<ffffffff8100baab>]
-system_call_fastpath+0x16/0x1b
-Jul 25 10:26:43 vdr kernel: [   24.932025] ---[ end trace f090009acc376d07 ]---
-Jul 25 10:26:43 vdr kernel: [   24.946809] general protection fault: 0000 [#1] PREEMPT SMP
-Jul 25 10:26:43 vdr kernel: [   24.947012] last sysfs file: /sys/class/firmware/2-5/loading
-Jul 25 10:26:43 vdr kernel: [   24.947012] CPU 0
-Jul 25 10:26:43 vdr kernel: [   24.947012] Modules linked in: aes_x86_64 aes_generic
-af_packet cpufreq_conservative cpufreq_ondemand cpufreq_userspace cpufreq_powersave
-powernow_k8 freq_table ipt_REJECT xt_state iptable_mangle iptable_nat nf_nat
-iptable_filter nf_conntrack_netbios_ns nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4
-ip_tables x_tables fuse nls_iso8859_1 nls_cp437 vfat fat loop dm_mod tda10021 stv0297 arc4
-ecb budget_av dvb_ttpci saa7146_vv zd1211rw videodev v4l1_compat firmware_class
-budget_core v4l2_compat_ioctl32 parport_pc dvb_core mac80211 videobuf_dma_sg ppdev
-ftdi_sio saa7146 videobuf_core usb_storage rtc_cmos parport cfg80211 rtc_core ttpci_eeprom
-button usbserial usb_libusual k8temp rtc_lib sr_mod rfkill forcedeth i2c_nforce2 cdrom
-evdev sg ehci_hcd ohci_hcd sd_mod crc_t10dif usbcore edd ext3 mbcache jbd fan pata_amd
-sata_nv libata scsi_mod thermal processor thermal_sys hwmon
-Jul 25 10:26:43 vdr kernel: [   24.947012] Pid: 3270, comm: vdr Tainted: G        W
-2.6.31-rc4-64-mp-suse-11 #1 MS-7207PV
-Jul 25 10:26:43 vdr kernel: [   24.947012] RIP: 0010:[<ffffffff811dbed9>]
-[<ffffffff811dbed9>] tty_open+0x1f9/0x424
-Jul 25 10:26:43 vdr kernel: [   24.947012] RSP: 0018:ffff880039dd3ce8  EFLAGS: 00010206
-Jul 25 10:26:43 vdr kernel: [   24.947012] RAX: ffff88003746d580 RBX: ffff880039817000
-RCX: ffff8800392a5708
-Jul 25 10:26:43 vdr kernel: [   24.947012] RDX: 3a36323a30312035 RSI: ffff880039dd3c68
-RDI: ffff88003752b804
-Jul 25 10:26:43 vdr kernel: [   24.947012] RBP: ffff880039dd3d38 R08: ffff880039dd3ba8
-R09: 0000000000000000
-Jul 25 10:26:43 vdr kernel: [   24.947012] R10: ffff88003a8518e8 R11: ffff8800335635c8
-R12: ffff88003752b800
-Jul 25 10:26:43 vdr kernel: [   24.947012] R13: 00000000fffffe00 R14: ffff88003746d580
-R15: 0000000000000100
-Jul 25 10:26:43 vdr kernel: [   24.947012] FS:  000000004b0b1950(0063)
-GS:ffff8800015dc000(0000) knlGS:0000000000000000
-Jul 25 10:26:43 vdr kernel: [   24.947012] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-Jul 25 10:26:43 vdr kernel: [   24.947012] CR2: 00007f52b50bf558 CR3: 0000000039c0d000
-CR4: 00000000000006f0
-Jul 25 10:26:43 vdr kernel: [   24.947012] DR0: 0000000000000000 DR1: 0000000000000000
-DR2: 0000000000000000
-Jul 25 10:26:43 vdr kernel: [   24.947012] DR3: 0000000000000000 DR6: 00000000ffff0ff0
-DR7: 0000000000000400
-Jul 25 10:26:43 vdr kernel: [   24.947012] Process vdr (pid: 3270, threadinfo
-ffff880039dd2000, task ffff880039ca5800)
-Jul 25 10:26:43 vdr kernel: [   24.947012] Stack:
-Jul 25 10:26:43 vdr kernel: [   24.947012]  000000000bc00000 ffff880037d59130
-0bc0000000008182 00000000fffffffa
-Jul 25 10:26:43 vdr kernel: [   24.947012] <0> 000000003752b808 0000000000000000
-0000000000000000 0000000000000000
-Jul 25 10:26:43 vdr kernel: [   24.947012] <0> ffff88003752b808 ffff880037d59130
-ffff880039dd3d88 ffffffff810d9c55
-Jul 25 10:26:43 vdr kernel: [   24.947012] Call Trace:
-Jul 25 10:26:43 vdr kernel: [   24.947012]  [<ffffffff810d9c55>] chrdev_open+0x18d/0x1ae
-Jul 25 10:26:43 vdr kernel: [   24.947012]  [<ffffffff810d9ac8>] ? chrdev_open+0x0/0x1ae
-Jul 25 10:26:43 vdr kernel: [   24.947012]  [<ffffffff810d552f>] __dentry_open+0x18f/0x2b4
-Jul 25 10:26:43 vdr kernel: [   24.947012]  [<ffffffff810d5721>] nameidata_to_filp+0x41/0x52
-Jul 25 10:26:43 vdr kernel: [   24.947012]  [<ffffffff810e2dde>] do_filp_open+0x533/0xa3a
-Jul 25 10:26:43 vdr kernel: [   24.947012]  [<ffffffff81223099>] ? sys_sendto+0xf1/0x107
-Jul 25 10:26:43 vdr kernel: [   24.947012]  [<ffffffff812abc5e>] ? _spin_unlock+0x13/0x2c
-Jul 25 10:26:43 vdr kernel: [   24.947012]  [<ffffffff810ebc02>] ? alloc_fd+0x11d/0x12e
-Jul 25 10:26:43 vdr kernel: [   24.947012]  [<ffffffff810d52bc>] do_sys_open+0x5d/0x104
-Jul 25 10:26:43 vdr kernel: [   24.947012]  [<ffffffff810d538c>] sys_open+0x1b/0x1d
-Jul 25 10:26:43 vdr kernel: [   24.947012]  [<ffffffff8100baab>]
-system_call_fastpath+0x16/0x1b
-Jul 25 10:26:43 vdr kernel: [   24.947012] Code: 81 fb 00 f0 ff ff 76 11 48 c7 c7 80 a1 44
-81 e8 54 e5 0c 00 e9 b6 00 00 00 48 85 db 74 69 80 bb 38 01 00 00 00 48 8b 53 08 78 71
-<81> ba 9c 00 00 00 04 00 01 00 75 16 83 bb 40 01 00 00 00 75 5c
-Jul 25 10:26:43 vdr kernel: [   24.947012] RIP  [<ffffffff811dbed9>] tty_open+0x1f9/0x424
-Jul 25 10:26:43 vdr kernel: [   24.947012]  RSP <ffff880039dd3ce8>
+> Well X is trying to post the graphics card you have installed, and the machine
+> is falling over when it does it.
+>   
+
+SRM (the equivalent of a BIOS) cannot post the card on startup.  But I 
+have had the card (radeon rv610) post correctly and working in the past 
+when I compiled the complete 1.5.3 Xserver myself.  I had it working 
+with both the radeon and radeonhd drivers and a 2.6.29.x kernel patched 
+to support libpciaccess.
+
+Everything went to custard went I reinstalled and upgraded to Debian 
+unstable.
+
+As an experiment I have removed the Radeon rv610 card and installed a 
+really old Sis variant video card.
+
+The Xserver now displays a green screen and gets no further.  The 
+machine no longer Oops.  Instead the Xserver sucks up near 100% CPU.  I 
+connected to the Xorg process with gdb and got the following backtrace:
+
+#0  0x00000200004fa7d8 in ?? () from /lib/libc.so.6.1
+No symbol table info available.
+#1  0x00000200004fa950 in inb () from /lib/libc.so.6.1
+No symbol table info available.
+#2  0x0000020000916fc0 in inb (port=986) at 
+../../../../hw/xfree86/common/compiler.h:158
+No locals.
+#3  x_inb (port=986) at ../../../../hw/xfree86/int10/helper_exec.c:333
+        val = 236 '\354'
+#4  0x0000020000922c8c in x86emuOp_in_byte_AL_DX (op1=<value optimized out>)
+    at ../../../../hw/xfree86/int10/../x86emu/ops.c:9737
+No locals.
+#5  0x0000020000937ddc in X86EMU_exec () at 
+../../../../hw/xfree86/int10/../x86emu/decode.c:122
+No locals.
+#6  0x000002000091a0a8 in xf86ExecX86int10 (pInt=0x120293bc0)
+    at ../../../../hw/xfree86/int10/xf86x86emu.c:40
+No locals.
+#7  0x000002000091b460 in xf86ExtendedInitInt10 (entityIndex=0, 
+Flags=<value optimized out>)
+    at ../../../../hw/xfree86/int10/generic.c:284
+        pInt = <value optimized out>
+        vbiosMem = 0x20000a14010
+        options = 0x0
+        screen = 0
+        vga = {save_msr = 103 'g', save_pos102 = 255 '\377', save_vse = 
+1 '\1', save_46e8 = 255 '\377'}
+#8  0x00000200008f8c30 in VBEExtendedInit (pInt=0x0, entityIndex=0, Flags=3)
+    at ../../../../hw/xfree86/vbe/vbe.c:69
+        RealOff = <value optimized out>
+        page = <value optimized out>
+        pScrn = <value optimized out>
+        init_int10 = 0
+        vip = <value optimized out>
+        screen = 0
+#9  0x0000020000840f94 in SiS_LoadInitVBE (pScrn=0x120291c80) at 
+../../src/sis_driver.c:2956
+        pSiS = 0x120294810
+#10 0x00000200008475c8 in SISPreInit (pScrn=0x120291c80, flags=<value 
+optimized out>)
+    at ../../src/sis_driver.c:6125
+        pSiSEnt = 0x0
+        from = X_PROBED
+        usScratchCR17 = 41 ')'
+        usScratchCR32 = 176 '\260'
+        usScratchCR63 = 84 'T'
+        usScratchSR1F = 223 '\337'
+        srlockReg = 33 '!'
+        crlockReg = 33 '!'
+        i = <value optimized out>
+        pix24flags = 41
+        clockRanges = <value optimized out>
+        pMonitor = 0x2
+        fromDDC = <value optimized out>
+        crlockReg = 33 '!'
+        i = <value optimized out>
+        pix24flags = 41
+        clockRanges = <value optimized out>
+        pMonitor = 0x2
+        fromDDC = <value optimized out>
+---Type <return> to continue, or q <return> to quit---
+        crt1freqoverruled = <value optimized out>
+        CR5F = 2 '\2'
+        first = <value optimized out>
+        p = <value optimized out>
+        n = <value optimized out>
+        crt2freqoverruled = <value optimized out>
+        ddcsstr = 0x2000088731e "CRT%d DDC monitor info: ", '*' <repeats 
+43 times>, "\n"
+        ddcestr = 0x200008872d9 "End of CRT%d DDC monitor info ", '*' 
+<repeats 37 times>, "\n"
+        subshstr = 0x2000088729d "Substituting missing CRT%d monitor 
+HSync range by DDC data\n"
+        subsvstr = 0x2000088725e "Substituting missing CRT%d monitor 
+VRefresh range by DDC data\n"
+        saneh = 0x20000887235 "Correcting %s CRT%d monitor HSync range\n"
+        sanev = 0x20000887209 "Correcting %s CRT%d monitor VRefresh range\n"
+        mergednocrt1 = 0x200008871e3 "CRT1 not detected or forced off. 
+%s.\n"
+        mergednocrt2 = 0x200008871a9 "No CRT2 output selected or no 
+video bridge detected. %s.\n"
+        mergeddisstr = 0x20000887192 "MergedFB mode disabled"
+        modesforstr = 0x2000088714d "Modes for CRT%d: ", '*' <repeats 50 
+times>, "\n"
+        crtsetupstr = 0x20000887108 '*' <repeats 27 times>, " CRT%d 
+setup ", '*' <repeats 27 times>, "\n"
+        crt2monname = 0x2000088a47f "CRT2"
+        notsuitablestr = 0x200008870d8 "Not using mode \"%s\" (not 
+suitable for %s mode)\n"
+        id650str = {0x200008870cc "650", 0x200008870cc "650", 
+0x200008870cc "650",
+          0x200008870cc "650", 0x20000887090 "650 A0 AA", 0x2000088709a 
+"650 A2 CA",
+          0x200008870cc "650", 0x200008870cc "650", 0x200008870a4 "M650 
+A0",
+          0x200008870ac "M650 A1 AA", 0x200008870b7 "651 A0 AA", 
+0x200008870c1 "651 A1 AA",
+          0x200008870cb "M650", 0x200008870d0 "65?", 0x200008870d4 
+"651", 0x200008870d0 "65?"}
+#11 0x000000012008b7c4 in InitOutput (pScreenInfo=0x1202700e0, argc=3, 
+argv=0x11f9d1c38)
+    at ../../../../hw/xfree86/common/xf86Init.c:1008
+        i = 0
+        j = <value optimized out>
+        k = <value optimized out>
+        modulelist = <value optimized out>
+        optionlist = 0x120284530
+        layout = <value optimized out>
+        screenpix24 = <value optimized out>
+        pix24 = <value optimized out>
+        pix24From = <value optimized out>
+        autoconfig = <value optimized out>
+        configured_device = <value optimized out>
+#12 0x000000012003234c in main (argc=3, argv=0x11f9d1c38, 
+envp=0x11f9d1c58) at ../../dix/main.c:315
+        i = 536878123
+        alwaysCheckForInput = {0, 1}
+
+
+The Xorg.0.log is:
+
+X.Org X Server 1.6.2
+Release Date: 2009-7-7
+X Protocol Version 11, Revision 0
+Build Operating System: Linux 2.6.26-2-alpha-generic alpha Debian
+Current Operating System: Linux aleph 2.6.30.1-miata #1 Fri Jul 3 
+22:54:36 NZST 2009 alpha
+Build Date: 13 July 2009  10:58:49PM
+xorg-server 2:1.6.2-1 (buildd@goetz.debian.org)
+        Before reporting problems, check http://wiki.x.org
+        to make sure that you have the latest version.
+Markers: (--) probed, (**) from config file, (==) default setting,
+        (++) from command line, (!!) notice, (II) informational,
+        (WW) warning, (EE) error, (NI) not implemented, (??) unknown.
+(==) Log file: "/var/log/Xorg.0.log", Time: Sat Jul 25 20:56:41 2009
+(==) Using config file: "/etc/X11/xorg.conf"
+(==) No Layout section.  Using the first Screen section.
+(==) No screen section available. Using defaults.
+(**) |-->Screen "Default Screen Section" (0)
+(**) |   |-->Monitor "<default monitor>"
+(==) No device specified for screen "Default Screen Section".
+        Using the first device section listed.
+(**) |   |-->Device "Configured Video Device"
+(==) No monitor specified for screen "Default Screen Section".
+        Using a default monitor configuration.
+(**) Option "AllowEmptyInput" "off"
+(==) Automatically adding devices
+(==) Automatically enabling devices
+(WW) The directory "/usr/share/fonts/X11/cyrillic" does not exist.
+        Entry deleted from font path.
+(==) FontPath set to:
+        /usr/share/fonts/X11/misc,
+        /usr/share/fonts/X11/100dpi/:unscaled,
+        /usr/share/fonts/X11/75dpi/:unscaled,
+        /usr/share/fonts/X11/Type1,
+        /usr/share/fonts/X11/100dpi,
+        /usr/share/fonts/X11/75dpi,
+        /var/lib/defoma/x-ttcidfont-conf.d/dirs/TrueType,
+        built-ins
+(==) ModulePath set to "/usr/lib/xorg/modules"
+(==) |-->Input Device "Configured Mouse"
+(==) |-->Input Device "Generic Keyboard"
+(==) No Layout section. Using the first mouse device.
+(==) No Layout section. Using the first keyboard device.
+(II) Loader magic: 0x1d00
+(II) Module ABI versions:
+        X.Org ANSI C Emulation: 0.4
+        X.Org Video Driver: 5.0
+        X.Org XInput driver : 4.0
+        X.Org Server Extension : 2.0
+(II) Loader running on linux
+(--) using VT number 3
+
+(--) PCI:*(0:0:12:0) 1039:6326:1039:6326 Silicon Integrated Systems 
+[SiS] 86C326 5598/6326 rev 11, Mem @ 0x09000000/8388608, 
+0x09a50000/65536, I/O @ 0x00009080/128, BIOS @ 0x????????/65536
+(II) No APM support in BIOS or kernel
+(II) System resource ranges:
+(II) LoadModule: "extmod"
+(II) Loading /usr/lib/xorg/modules/extensions//libextmod.so
+(II) Module extmod: vendor="X.Org Foundation"
+        compiled for 1.6.2, module version = 1.0.0
+        Module class: X.Org Server Extension
+        ABI class: X.Org Server Extension, version 2.0
+(II) Loading extension SELinux
+(II) Loading extension MIT-SCREEN-SAVER
+(II) Loading extension XFree86-VidModeExtension
+(II) Loading extension XFree86-DGA
+(II) Loading extension DPMS
+(II) Loading extension XVideo
+(II) Loading extension XVideo-MotionCompensation
+(II) Loading extension X-Resource
+(II) LoadModule: "dbe"
+(II) Loading /usr/lib/xorg/modules/extensions//libdbe.so
+(II) Module dbe: vendor="X.Org Foundation"
+        compiled for 1.6.2, module version = 1.0.0
+        Module class: X.Org Server Extension
+        ABI class: X.Org Server Extension, version 2.0
+(II) Loading extension DOUBLE-BUFFER
+(II) LoadModule: "glx"
+(II) Loading /usr/lib/xorg/modules/extensions//libglx.so
+(II) Module glx: vendor="X.Org Foundation"
+        compiled for 1.6.2, module version = 1.0.0
+        ABI class: X.Org Server Extension, version 2.0
+(==) AIGLX enabled
+(II) Loading extension GLX
+(II) LoadModule: "record"
+(II) Loading /usr/lib/xorg/modules/extensions//librecord.so
+(II) Module record: vendor="X.Org Foundation"
+        compiled for 1.6.2, module version = 1.13.0
+        Module class: X.Org Server Extension
+        ABI class: X.Org Server Extension, version 2.0
+(II) Loading extension RECORD
+(II) LoadModule: "dri"
+(II) Loading /usr/lib/xorg/modules/extensions//libdri.so
+(II) Module dri: vendor="X.Org Foundation"
+        compiled for 1.6.2, module version = 1.0.0
+        ABI class: X.Org Server Extension, version 2.0
+(II) Loading extension XFree86-DRI
+(II) LoadModule: "dri2"
+(II) Loading /usr/lib/xorg/modules/extensions//libdri2.so
+(II) Module dri2: vendor="X.Org Foundation"
+        compiled for 1.6.2, module version = 1.1.0
+        ABI class: X.Org Server Extension, version 2.0
+(II) Loading extension DRI2
+(==) Matched sis for the autoconfigured driver
+(==) Assigned the driver to the xf86ConfigLayout
+(II) LoadModule: "sis"
+(II) Loading /usr/lib/xorg/modules/drivers//sis_drv.so
+(II) Module sis: vendor="X.Org Foundation"
+        compiled for 1.6.2, module version = 0.10.1
+        Module class: X.Org Video Driver
+        ABI class: X.Org Video Driver, version 5.0
+(II) LoadModule: "mouse"
+(II) Loading /usr/lib/xorg/modules/input//mouse_drv.so
+(II) Module mouse: vendor="X.Org Foundation"
+        compiled for 1.6.1, module version = 1.4.0
+        Module class: X.Org XInput Driver
+        ABI class: X.Org XInput driver, version 4.0
+(II) LoadModule: "kbd"
+(II) Loading /usr/lib/xorg/modules/input//kbd_drv.so
+(II) Module kbd: vendor="X.Org Foundation"
+        compiled for 1.6.1, module version = 1.3.2
+        Module class: X.Org XInput Driver
+        ABI class: X.Org XInput driver, version 4.0
+(II) SIS: driver for SiS chipsets: SIS5597/5598, SIS530/620,
+        SIS6326/AGP/DVD, SIS300/305, SIS630/730, SIS540, SIS315, SIS315H,
+        SIS315PRO/E, SIS550, SIS650/M650/651/740, SIS330(Xabre),
+        
+SIS660/[M]661[F|M]X/[M]670/[M]741[GX]/[M]760[GX]/[M]761[GX]/[M]770[GX],
+        SIS340
+(II) SIS: driver for XGI chipsets: Volari Z7 (XG20),
+        Volari V3XT/V5/V8/Duo (XG40)
+(II) Primary Device is: PCI 00@00:0c:0
+(WW) Falling back to old probe method for sis
+(--) Assigning device section with no busID to primary device
+(--) Chipset SIS6326/AGP/DVD found
+(II) Machine type has 8/16 bit access
+(II) resource ranges after xf86ClaimFixedResources() call:
+(II) resource ranges after probing:
+(II) SIS(0): SiS driver (2005/09/20-1, compiled for X.org 1.6.2.0)
+(II) SIS(0): Copyright (C) 2001-2005 Thomas Winischhofer 
+<thomas@winischhofer.net> and others
+(II) SIS(0): *** See http://www.winischhofer.at/linuxsisvga.shtml
+(II) SIS(0): *** for documentation and updates.
+(--) SIS(0): Chipset is SiS6326 AGP (H0) (revision 0x0b)
+(--) SIS(0): Relocated I/O registers at 0x9080
+(II) Loading sub module "ramdac"
+(II) LoadModule: "ramdac"
+(II) Module "ramdac" already built-in
+(II) SIS(0): Creating default Display subsection in Screen section
+        "Default Screen Section" for depth/fbbpp 24/24
+(==) SIS(0): Depth 24, (--) framebuffer bpp 24
+(==) SIS(0): RGB weight 888
+(==) SIS(0): Default visual is TrueColor
+(==) SIS(0): Fast VRAM timing enabled (for read and write)
+(==) SIS(0): Using XAA acceleration architecture
+(==) SIS(0): Using HW cursor
+(==) SIS(0): TurboQueue enabled
+(==) SIS(0): DRI disabled
+(--) SIS(0): DRAM type: SDRAM/SGRAM
+(--) SIS(0): Memory clock: 83.000 MHz
+(--) SIS(0): DRAM bus width: 64 bit
+(--) SIS(0): Linear framebuffer at 0x9000000
+(--) SIS(0): MMIO registers at 0x9A50000 (size 64K)
+(--) SIS(0): SiS6326: Detected 8192 KB VideoRAM, limiting to 4096 KB
+(II) SIS(0): Using 4032K of framebuffer memory at offset 0K
+(--) SIS(0): Hardware supports one video overlay
+(==) SIS(0): Using gamma correction (1.0, 1.0, 1.0)
+(II) SIS(0): Gamma correction is enabled
+(--) SIS(0): Maximum pixel clock at 24 bpp is 154.933 MHz
+(II) Loading sub module "ddc"
+(II) LoadModule: "ddc"
+(II) Module "ddc" already built-in
+(II) Loading sub module "vbe"
+(II) LoadModule: "vbe"
+(II) Loading /usr/lib/xorg/modules//libvbe.so
+(II) Module vbe: vendor="X.Org Foundation"
+        compiled for 1.6.2, module version = 1.1.0
+        ABI class: X.Org Video Driver, version 5.0
+(II) Loading sub module "int10"
+(II) LoadModule: "int10"
+(II) Loading /usr/lib/xorg/modules//libint10.so
+(II) Module int10: vendor="X.Org Foundation"
+        compiled for 1.6.2, module version = 1.0.0
+        ABI class: X.Org Video Driver, version 5.0
+(II) SIS(0): initializing int10
+
+
+Cheers
+Michael.
 
