@@ -1,113 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752142AbZGYEru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752535AbZGYEsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752142AbZGYEru (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 00:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751574AbZGYEru
+	id S1752535AbZGYEsY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 00:48:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750949AbZGYEsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 00:47:50 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:39946 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751378AbZGYErt convert rfc822-to-8bit (ORCPT
+	Sat, 25 Jul 2009 00:48:23 -0400
+Received: from mga10.intel.com ([192.55.52.92]:64356 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750933AbZGYEsX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 00:47:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=RFF32nXdflX2HvW3ohvqLzaKKmkwQ8aAO3/UoG74DGe8lhaevzgUkGte8Yu7qtUIJp
-         RpI3EkHzlP68rR//uWcMg5JChW9sWZ0bqYBefbiK1zcfnsu4dzho/lvzfIw9N0YyvfhG
-         rfaOLfgQt+Crl4f9Od5ppSh1/0xAr5X4nZZkI=
+	Sat, 25 Jul 2009 00:48:23 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,268,1246863600"; 
+   d="scan'208";a="477869731"
+Message-ID: <4A6A8E96.7050509@linux.intel.com>
+Date: Fri, 24 Jul 2009 21:48:22 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Reply-To: mtk.manpages@gmail.com
-In-Reply-To: <49b7c2350905130806jc02a4dfg8b04ec2de4fb1ff4@mail.gmail.com>
-References: <1242180268.31161.24.camel@centos51> <20090513113357.GA11773@hack>
-	 <49b7c2350905130806jc02a4dfg8b04ec2de4fb1ff4@mail.gmail.com>
-Date: Sat, 25 Jul 2009 06:47:47 +0200
-Message-ID: <cfd18e0f0907242147h809b14qede7d4fbc200cc99@mail.gmail.com>
-Subject: Re: [PATCH]man-pages : section 9 for kernel api description.
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
-To: GeunSik Lim <leemgs1@gmail.com>
-Cc: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       tovalds@linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
+Subject: Re: [PATCH] sched: Provide iowait counters
+References: <4A64B813.1080506@linux.intel.com>	<20090724212220.afa278ee.akpm@linux-foundation.org>	<4A6A8AFE.1010608@linux.intel.com> <20090724214006.7380c3b4.akpm@linux-foundation.org>
+In-Reply-To: <20090724214006.7380c3b4.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Very late follow up here...
+Andrew Morton wrote:
+> On Fri, 24 Jul 2009 21:33:02 -0700 Arjan van de Ven <arjan@linux.intel.com> wrote:
+> 
+>> Andrew Morton wrote:
+>>> On Mon, 20 Jul 2009 11:31:47 -0700 Arjan van de Ven <arjan@linux.intel.com> wrote:
+>>>
+>>>> For counting how long an application has been waiting for (disk) IO,
+>>>> there currently is only the HZ sample driven information available, while
+>>>> for all other counters in this class, a high resolution version is
+>>>> available via CONFIG_SCHEDSTATS.
+>>>>
+>>>> In order to make an improved bootchart tool possible, we also need
+>>>> a higher resolution version of the iowait time.
+>>>>
+>>>> This patch below adds this scheduler statistic to the kernel.
+>>> Doesn't this duplicate the delay accounting already available via the
+>>> taskstats interface?
+>> we have how long we wait. we do not have how long we iowait afaik...
+>> at least not in nanosecond granularity. (We do have the sampled data, but that
+>> is milisecond sampled data, not very useful for making charts based on time
+>> to show the sequence of events)
+> 
+> See include/linux/sched.h's definition of task_delay_info - u64
+> blkio_delay is in nanoseconds.  It uses
+> do_posix_clock_monotonic_gettime() internally.
 
-On Wed, May 13, 2009 at 5:06 PM, GeunSik Lim<leemgs1@gmail.com> wrote:
-> Thank you for your opinion.
->
-> 2009/5/13 Américo Wang <xiyou.wangcong@gmail.com>:
->> On Wed, May 13, 2009 at 11:04:28AM +0900, GeunSik Lim wrote:
->>>
->>>
->>>Dear Michael Kerrisk,
->>>
->>>Are you maintainer of man-pages(man-pages-3.XX.tar.gz)?
->>>I am not sure...
->>
->> Yes, he is.
->>
->>>
->>>I use fedora 9 distribution as Linux based Desktop OS currently.
->>>I have one proposal about "#> man <linux-kernel-api>" command.
->>>Can you tell me your opinion about below patch?
->>>Thanks reading.
->>>
->>>commit 45e950c98412c002c47254507a199731315c7c2b
->>>Author: GeunSik,Lim <leemgs1@gmail.com>
->>>Date:   Wed May 13 10:49:47 2009 +0900
->>>
->>>    Append Section 9 info of man command.
->>>
->>>    We view description of the Linux kernel API with man command.
->>>       For example,
->>>       Fedoar9#> yum install kernel-doc*
->>>       Fedora9#> man kobject_rename  or
->>>       Fedora9#> man kthread_create
->>
->> Why?
->> Why do you want kernel api doc be in man pages?
->> Why not just browsing the kernel source code?
->>
-> I want Michael to append patch file  in the man-pages source that I
-> sent because
-> Many linux distributions (ex: Fedora , openSUSE, and so on ) already
-> support  kernel api for man currently.
-> In general, kernel api(ex:kernel-doc-2.6.29.1-30.fc10.noarch.rpm) is
-> located in the
-> /usr/share/man/man9/ directory when we installed linux distribution
-> like Fedora by default.
-> So, I think that we need description and section 9 folder(man9) in the
-> man-pages source
-> to understand  meaning of man 9.
->
->
->> Kernel APIs are not stable at all, this is also a reason why you
->> should not include their doc into man pages.
-> I agree that Kernel APIs is not stable.
-> But, I believe that we can utilize "#> man <linux-kernel-api>" command
-> in the own
-> Linux distribution easy to use about "uname -a" Linux kernel version.
-> This support is a valuable. I think that The problem deserves solving.
-
-I agree that there's a problem that needs solving here, but I don't
-think it's one that can be solved by man-0pages, whose mission is to
-document the kerenl-userpsace and libc APIs. (This doesn't mean that
-kernel APIs couldn't be documented in man pages, but it would be a
-different project.)
-
-Cheers,
-
-Michael
+looks like it does.. to bad we don't expose that data in a /proc/<pid>/delay or something field
+like we do with the scheduler info...
 
 
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-Watch my Linux system programming book progress to publication!
-http://blog.man7.org/
