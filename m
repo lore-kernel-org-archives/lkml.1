@@ -1,92 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194AbZGYHx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752899AbZGYIVL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755194AbZGYHx5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 03:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbZGYHx4
+	id S1752899AbZGYIVL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 04:21:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbZGYIVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 03:53:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34201 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751612AbZGYHxz (ORCPT
+	Sat, 25 Jul 2009 04:21:10 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:44643 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751164AbZGYIVI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 03:53:55 -0400
-Date: Sat, 25 Jul 2009 00:53:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christophe Lermytte <christophe.lermytte@thomson.net>
-Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
-Subject: Re: 2.6.31-rc3 cpufreq bug (null pointer dereference)
-Message-Id: <20090725005350.bb4db4ad.akpm@linux-foundation.org>
-In-Reply-To: <1248206869.4516.6.camel@localhost>
-References: <1248206869.4516.6.camel@localhost>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 25 Jul 2009 04:21:08 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 1/2] Add function to convert between calendar time and broken-down time for universal use
+References: <4A5C3BC0.6020701@cn.fujitsu.com>
+	<20090714151040.b7b3b26d.akpm@linux-foundation.org>
+	<20090718115019.GH1433@ucw.cz>
+	<04e101ca08e5$be078fa0$808410ac@zhaoleiwin>
+	<20090719202018.497f7ec1.akpm@linux-foundation.org>
+	<4A643EFE.7090103@cn.fujitsu.com> <4A643F36.5090200@cn.fujitsu.com>
+Date: Sat, 25 Jul 2009 14:42:06 +0900
+In-Reply-To: <4A643F36.5090200@cn.fujitsu.com> (zhaolei@cn.fujitsu.com's
+	message of "Mon, 20 Jul 2009 17:56:06 +0800")
+Message-ID: <87ocr9mi8h.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Zhaolei <zhaolei@cn.fujitsu.com> writes:
 
-(cc cpufreq@vger.kernel.org)
+> +/*
+> + * Similar to the struct tm in userspace <time.h>, but it needs to be here so
+> + * that the kernel source is self contained.
+> + */
+> +struct tm {
+> +	/*
+> +	 * the number of seconds after the minute, normally in the range
+> +	 * 0 to 59, but can be up to 60 to allow for leap seconds
+> +	 */
+> +	int tm_sec;
+> +	/* the number of minutes after the hour, in the range 0 to 59*/
+> +	int tm_min;
+> +	/* the number of hours past midnight, in the range 0 to 23 */
+> +	int tm_hour;
+> +	/* the day of the month, in the range 1 to 31 */
+> +	int tm_mday;
+> +	/* the number of months since January, in the range 0 to 11 */
+> +	int tm_mon;
+> +	/* the number of years since 1900 */
+> +	int tm_year;
 
-On Tue, 21 Jul 2009 22:07:49 +0200 Christophe Lermytte <christophe.lermytte@thomson.net> wrote:
+Why isn't this "long"? "int" can overflow.
 
-> Today, I tried to change the governor to conservative using the GNOME
-> cpufreqd applet. The applet subsequently hangs and the following appears
-> in the kernel traces: 
-> 
-> [ 3067.249054] BUG: unable to handle kernel NULL pointer dereference at
-> 00000020
-> [ 3067.249062] IP: [<c1302d23>] dbs_cpufreq_notifier+0x17/0x2b
-> [ 3067.249074] *pde = 00000000 
-> [ 3067.249078] Oops: 0000 [#1] SMP 
-> [ 3067.249083] last sysfs
-> file: /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-> [ 3067.249087] Modules linked in: cdc_wdm cdc_acm
-> [ 3067.249093] 
-> [ 3067.249098] Pid: 1346, comm: kondemand/1 Not tainted (2.6.31-rc3 #2)
-> Latitude D630                   
-> [ 3067.249103] EIP: 0060:[<c1302d23>] EFLAGS: 00010286 CPU: 1
-> [ 3067.249108] EIP is at dbs_cpufreq_notifier+0x17/0x2b
-> [ 3067.249112] EAX: 00000000 EBX: f6959f00 ECX: 00000000 EDX: c278c300
-> [ 3067.249116] ESI: fffffffe EDI: 00000000 EBP: 00000000 ESP: f6959e78
-> [ 3067.249120]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> [ 3067.249124] Process kondemand/1 (pid: 1346, ti=f6958000 task=f69020a0
-> task.ti=f6958000)
-> [ 3067.249128] Stack:
-> [ 3067.249130]  c161ba54 c1427067 f6959f00 00000000 c176d000 f6959f00
-> c176cfe4 00000000
-> [ 3067.249139] <0> c103a57e ffffffff 00000000 00000000 00000001 f64de590
-> f8416980 f6959f00
-> [ 3067.249149] <0> c103a59c ffffffff 00000000 c100f8b0 f6bcf240 ffffffea
-> 00000003 00000000
-> [ 3067.249160] Call Trace:
-> [ 3067.249166]  [<c1427067>] ? notifier_call_chain+0x2a/0x47
-> [ 3067.249175]  [<c103a57e>] ? __srcu_notifier_call_chain+0x32/0x47
-> [ 3067.249181]  [<c103a59c>] ? srcu_notifier_call_chain+0x9/0xc
-> [ 3067.249193]  [<c100f8b0>] ? acpi_cpufreq_target+0x1a7/0x2b1
-> [ 3067.249197]  [<c100f5ba>] ? get_measured_perf+0x1f/0x140
-> [ 3067.249201]  [<c103db6d>] ? getnstimeofday+0x4d/0xd0
-> [ 3067.249205]  [<c1300802>] ? cpufreq_register_driver+0xb1/0x15b
-> [ 3067.249209]  [<c100f709>] ? acpi_cpufreq_target+0x0/0x2b1
-> [ 3067.249213]  [<c13008f5>] ? __cpufreq_driver_target+0x49/0x55
-> [ 3067.249217]  [<c13029a0>] ? do_dbs_timer+0x262/0x2b8
-> [ 3067.249222]  [<c1033b50>] ? worker_thread+0x137/0x1b3
-> [ 3067.249226]  [<c130273e>] ? do_dbs_timer+0x0/0x2b8
-> [ 3067.249229]  [<c1037042>] ? autoremove_wake_function+0x0/0x2d
-> [ 3067.249233]  [<c1033a19>] ? worker_thread+0x0/0x1b3
-> [ 3067.249236]  [<c1036da6>] ? kthread+0x69/0x6e
-> [ 3067.249240]  [<c1036d3d>] ? kthread+0x0/0x6e
-> [ 3067.249244]  [<c100334f>] ? kernel_thread_helper+0x7/0x10
-> [ 3067.249246] Code: c7 44 24 18 ea ff ff ff 8b 44 24 18 83 c4 20 5b 5e
-> 5f 5d c3 53 8b 01 ba 00 83 6c c1 89 cb 03 14 85 6c b9 66 c1 8b 4a 18 8b
-> 42 60 <3b> 41 20 77 05 3b 41 1c 73 06 8b 43 08 89 42 60 31 c0 5b c3 53 
-> [ 3067.249282] EIP: [<c1302d23>] dbs_cpufreq_notifier+0x17/0x2b SS:ESP
-> 0068:f6959e78
-> [ 3067.249287] CR2: 0000000000000020
-> [ 3067.249296] ---[ end trace 5cb870966b6883a7 ]---
-> 
+> +	/* the number of days since Sunday, in the range 0 to 6 */
+> +	int tm_wday;
+> +	/* the number of days since January 1, in the range 0 to 365 */
+> +	int tm_yday;
+> +};
 
-I assume that this is repeatable and that 2.6.30 was OK?
+Those are needed? 
+
+> +
+> +extern struct tm *__offtime(__kernel_time_t totalsecs, int offset,
+> +			    struct tm *result);
+
+Why isn't time_t simply, not __kernel_time_t?
+
+> +/**
+> + * gmtime_r - converts the calendar time to UTC broken-down time
+> + *
+> + * @totalsecs	the number of seconds elapsed since 00:00:00 on January 1, 1970,
+> + *		Coordinated Universal Time (UTC).
+> + * @result	pointer to struct tm variable to receive broken-down time
+> + *
+> + * Return a pointer to the broken-down time result on success,
+> + * and NULL on when the year does not fit into an integer.
+> + *
+> + * Similar to the gmtime_r() in glibc, broken-down time is expressed in
+> + * Coordinated Universal Time (UTC).
+> + */
+> +static inline struct tm *gmtime_r(__kernel_time_t totalsecs, struct tm *result)
+> +{
+> +	return __offtime(totalsecs, 0, result);
+> +}
+> +
+> +/**
+> + * localtime_r - converts the calendar time to local broken-down time
+> + *
+> + * @totalsecs	the number of seconds elapsed since 00:00:00 on January 1, 1970,
+> + *		Coordinated Universal Time (UTC).
+> + * @result	pointer to struct tm variable to receive broken-down time
+> + *
+> + * Return a pointer to the broken-down time result on success,
+> + * and NULL on when the year does not fit into an integer.
+> + *
+> + * Similar to the localtime_r() in glibc, broken-down time is expressed
+> + * relative to sys_tz.
+> + */
+> +static inline struct tm *localtime_r(__kernel_time_t totalsecs,
+> +				     struct tm *result)
+> +{
+> +	return __offtime(totalsecs, -sys_tz.tz_minuteswest * 60, result);
+> +}
+
+I think those are confusable. The real function of those needs to handle
+timezone database. Especially, sys_tz.tz_minuteswest in localtime_r() is
+known as wrong.
+
+Are you going to fix it? Otherwise I don't think it would not be good to
+use it easily as generic function like this.
+
+> +/*
+> + * Nonzero if YEAR is a leap year (every 4 years,
+> + * except every 100th isn't, and every 400th is).
+> + */
+> +static int __isleap(unsigned int year)
+
+long year. This breaks negative time_t.
+
+> +{
+> +	return (year) % 4 == 0 && ((year) % 100 != 0 || (year) % 400 == 0);
+> +}
+
+> +/**
+> + * __offtime - converts the calendar time to local broken-down time
+> + *
+> + * @totalsecs	the number of seconds elapsed since 00:00:00 on January 1, 1970,
+> + *		Coordinated Universal Time (UTC).
+> + * @offset	offset seconds adding to totalsecs.
+> + * @result	pointer to struct tm variable to receive broken-down time
+> + *
+> + * Return a pointer to the broken-down time result on success,
+> + * and NULL on when the year does not fit into an integer.
+> + *
+> + * This function is for internal use, call gmtime_r() and localtime_r() instead.
+> + */ 
+> +struct tm *__offtime(__kernel_time_t totalsecs, int offset, struct tm *result)
+> +{
+
+So, I suggest to consolidate this code only, and don't provide
+gmtime_r()/localtime_r(), and use more good function name for
+__offtime() (I'm not sure, however, personally I feel __offtime is not
+obvious what's doing).
 
 Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
