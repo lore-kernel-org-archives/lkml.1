@@ -1,98 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752618AbZGYWqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752602AbZGYWtL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752618AbZGYWqE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 18:46:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752381AbZGYWqD
+	id S1752602AbZGYWtL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 18:49:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbZGYWtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 18:46:03 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:39753 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751618AbZGYWqC (ORCPT
+	Sat, 25 Jul 2009 18:49:10 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:38676 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751961AbZGYWtJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 18:46:02 -0400
-Date: Sat, 25 Jul 2009 18:35:06 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       acpi4asus-user@lists.sourceforge.net,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>,
-       debian-eeepc-devel@lists.alioth.debian.org,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Thiemo Nagel <thiemo.nagel@ph.tum.de>,
-       Corentin Chary <corentin.chary@gmail.com>
-Subject: Re: [Acpi4asus-user] [PATCH 2.6.31] rfkill: allow toggling soft
-	state in sysfs again
-Message-ID: <20090725223505.GA2729@tuxdriver.com>
-References: <4A5716AA.5000903@ph.tum.de> <507E47A184%linux@youmustbejoking.demon.co.uk> <1247262952.26071.1.camel@johannes.local> <200907252256.44570.rjw@sisk.pl>
+	Sat, 25 Jul 2009 18:49:09 -0400
+Date: Sat, 25 Jul 2009 23:48:48 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Bill Gatliff <bgat@billgatliff.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, sen wang <wangsen.linux@gmail.com>,
+       mingo@elte.hu, akpm@linux-foundation.org, kernel@kolivas.org,
+       npiggin@suse.de, arjan@infradead.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: report a bug about sched_rt
+Message-ID: <20090725224848.GA15260@shareable.org>
+References: <454c71700907240626w127fd890ufa91ef90cbcaaa@mail.gmail.com> <1248442415.6987.56.camel@twins> <454c71700907240644h7469e2a5sfcb57f202a2e184d@mail.gmail.com> <1248443656.6987.61.camel@twins> <454c71700907240724u76b970e5y5af0fc114cc92f83@mail.gmail.com> <1248446910.6987.111.camel@twins> <20090724154036.GG27755@shareable.org> <1248451279.6987.138.camel@twins> <20090724233057.GO27755@shareable.org> <4A6A96AB.7030609@billgatliff.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200907252256.44570.rjw@sisk.pl>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <4A6A96AB.7030609@billgatliff.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 25, 2009 at 10:56:43PM +0200, Rafael J. Wysocki wrote:
-> On Friday 10 July 2009, Johannes Berg wrote:
-> > On Fri, 2009-07-10 at 22:09 +0100, Darren Salt wrote:
-> > > I demand that Johannes Berg may or may not have written...
-> > > 
-> > > > Apparently there actually _are_ tools that try to set this in sysfs even
-> > > > though it wasn't supposed to be used this way without claiming first.
-> > > 
-> > > Then it should have been documented as such. I don't see anything about this
-> > > in Documentation/rfkill.txt (as found in 2.6.30), other than a vague
-> > > statement that "Kernel handles events", which isn't exactly helpful :-\
-> > 
-> > Oh, it's not just that rfkill was horrible, the documentation matched :)
-> > All the SHOUTING in it about what you must and must not do but nothing
-> > actually helpful :)
-> > 
-> > > > *shrug*, I don't like it, but whatever...
-> > > 
-> > > I do. It means that we have a nice simple text-based interface for use in
-> > > scripts (for now), and a binary interface which is better suited to the likes
-> > > of desktop applications.
-> > 
-> > Indeed, and as long as you expect to only use soft toggle... problem is
-> > that you won't know whether it's soft-toggled or not while it's
-> > hard-blocked (off)!
-> > 
-> > > > Please test & report.
-> > > 
-> > > With the patch applied, Bluetooth toggling is working again, so you get to
-> > > add this:
-> > > 
-> > > Tested-By: Darren Salt <linux@youmustbejoking.demon.co.uk>
-> > 
-> > Ok, John, please pick up the patch.
+Bill Gatliff wrote:
+> Jamie Lokier wrote:
+> >For simple things like "try to keep the buffer to my DVD writer full"
+> >(no I don't know how much CPU that requires - it's a kind of "best
+> >effort but try very hard!"), it would be quite useful to have
+> >something like RT-bandwidth which grants a certain percentage of time
+> >as an RT task, and effectively downgrades it to SCHED_OTHER when that
+> >time is exceeded to permit some fairness with the rest of the system.
+> >  
 > 
-> Is there anything going on with the patch?
-> 
-> Surely it's not in -rc4.
+> Useful perhaps, but an application design that explicitly communicates 
+> your desires to the scheduler will be more robust, even if it does seem 
+> more complex at the outset.
 
-commit f54c142725ad2ba33c3ee627873cb6966bf05447
-Author: Johannes Berg <johannes@sipsolutions.net>
-Date:   Fri Jul 10 21:41:39 2009 +0200
+I agree with communicting the desire explicitly to the scheduler.
 
-    rfkill: allow toggling soft state in sysfs again
-    
-    Apparently there actually _are_ tools that try to set
-    this in sysfs even though it wasn't supposed to be used
-    this way without claiming first. Guess what: now that
-    I've cleaned it all up it doesn't matter and we can
-    simply allow setting the soft-block state in sysfs.
-    
-    Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-    Tested-By: Darren Salt <linux@youmustbejoking.demon.co.uk>
-    Signed-off-by: John W. Linville <linville@tuxdriver.com>
+In the above example, the exact desire is "give me as much CPU as I
+ask for, because my hardware servicing will be adversely but
+non-fatally affected if you don't, and the amount of CPU needed to
+service the hardware cannot be determined in advance, but prevent me
+from blocking progress in the rest of the system by limiting my
+exclusive ownership of the CPU".
 
-Didn't make -rc4, should be in -rc5.
+How do you propose to communicate that to the scheduler, if not by
+something rather like RT-bandwidth with downgrading to SCHED_OTHER
+when a policy limit is exceeded?
 
-John
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
-			¡Viva Honduras Libre!
+-- Jamie
