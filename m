@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752477AbZGYTvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752534AbZGYUEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752477AbZGYTvW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 15:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbZGYTvW
+	id S1752534AbZGYUEh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 16:04:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbZGYUEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 15:51:22 -0400
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:34608 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751898AbZGYTvV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 15:51:21 -0400
-Date: Sat, 25 Jul 2009 20:51:16 +0100
-From: Andrew Price <andy@andrewprice.me.uk>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Ralf Baechle <ralf@linux-mips.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: annoying drivers/char/vr41xx_giu.c file still there
-Message-ID: <20090725195115.GB1252@sucs.org>
-Mail-Followup-To: Andrew Price <andy@andrewprice.me.uk>,
-	"Robert P. J. Day" <rpjday@crashcourse.ca>,
-	Ralf Baechle <ralf@linux-mips.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.00.0907230604180.3789@localhost>
+	Sat, 25 Jul 2009 16:04:36 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55272 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752436AbZGYUEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Jul 2009 16:04:36 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Subject: Re: [PATCH 1/1] acer-wmi: switch driver to dev_pm_ops
+Date: Sat, 25 Jul 2009 22:04:44 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Arnaud Faucher <arnaud.faucher@gmail.com>, linux-kernel@vger.kernel.org,
+       Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+References: <1248527091-18246-1-git-send-email-arnaud.faucher@gmail.com> <20090725174311.GB14062@dtor-d630.eng.vmware.com>
+In-Reply-To: <20090725174311.GB14062@dtor-d630.eng.vmware.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0907230604180.3789@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200907252204.44875.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Robert,
-
-On Thu, Jul 23, 2009 at 06:06:18AM -0400, Robert P. J. Day wrote:
+On Saturday 25 July 2009, Dmitry Torokhov wrote:
+> Hi Arnaud,
 > 
->   i thought someone was going to clean up this occasional git glitch:
+> On Sat, Jul 25, 2009 at 09:04:51AM -0400, Arnaud Faucher wrote:
+> > Gets rid of the following warning:
+> > Platform driver 'acer-wmi' needs updating - please use dev_pm_ops
+> > 
 > 
-> $ git diff
-> diff --git a/drivers/char/vr41xx_giu.c b/drivers/char/vr41xx_giu.c
-> deleted file mode 100644
-> index e69de29..0000000
-> $
+> Have you tested it with Suspend to disk? You are [potentially] breaking
+> it since the new suspend and resume methods are not used by it, it calls
+> freeze() and thaw() instead.
 > 
->   that same diff output still pops up on occasion.  if you do a hard
-> reset back to origin, it goes away but it will eventually reappear.
+> Rafael,
+> 
+> I wonder if PM core should automatically use suspend()/resume() in place of
+> freeze()/thaw() when the latter pair is missing.
 
-After some digging I found this:
+Well, in fact it often is not necessary to do .thaw() at all, because the
+state of the device doesn't change in .freeze().  Also, PCI drivers should
+not need .thaw(), unless they manipulate the standard PM registers of the
+device themselves.
 
-http://git.kernel.org/?p=linux/kernel/git/ralf/linux.git;a=commit;h=ac01dc416905aeb331954d036287a0a0c5c90ec5
+That said, if .suspend() is defined, then most probably .freeze() is necessary
+as well.  Also, if .resume() is defined, .restore() is most probably necessary
+and it should be safe to use .suspend() as .freeze() and .resume() as
+.restore().
 
-I read the thread that it references but there is no indication of
-whether the empty file is going to be git rm'd any time soon.  Perhaps
-Ralf could comment?
+OTOH, it's really easy to point .restore() to the same routine as .resume()
+etc., so I'm not sure.
 
-Andrew
+Best,
+Rafael
