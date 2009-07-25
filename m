@@ -1,74 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752572AbZGYU4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752736AbZGYU7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752572AbZGYU4O (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 16:56:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbZGYU4O
+	id S1752736AbZGYU7l (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 16:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbZGYU7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 16:56:14 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55418 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752135AbZGYU4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 16:56:13 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Johannes Berg <johannes@sipsolutions.net>,
-       John Linville <linville@tuxdriver.com>
-Subject: Re: [Acpi4asus-user] [PATCH 2.6.31] rfkill: allow toggling soft state in sysfs again
-Date: Sat, 25 Jul 2009 22:56:43 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
-Cc: acpi4asus-user@lists.sourceforge.net,
-       Darren Salt <linux@youmustbejoking.demon.co.uk>,
-       debian-eeepc-devel@lists.alioth.debian.org,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Thiemo Nagel <thiemo.nagel@ph.tum.de>,
-       Corentin Chary <corentin.chary@gmail.com>
-References: <4A5716AA.5000903@ph.tum.de> <507E47A184%linux@youmustbejoking.demon.co.uk> <1247262952.26071.1.camel@johannes.local>
-In-Reply-To: <1247262952.26071.1.camel@johannes.local>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
+	Sat, 25 Jul 2009 16:59:40 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:15629 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752643AbZGYU7k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Jul 2009 16:59:40 -0400
+Date: Sat, 25 Jul 2009 22:59:37 +0200
+From: Erik Ekman <erik@kryo.se>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Frans Pop <elendil@planet.nl>, Alan Cox <alan@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH v2 -tip][RFC] serial8250: update to dev_pm_ops
+Message-Id: <20090725225937.dfbd4805.erik@kryo.se>
+In-Reply-To: <200907252218.46364.rjw@sisk.pl>
+References: <20090701083737.41f28c7d.erik@kryo.se>
+	<20090708144337.7006fa0a@t61.ukuu.org.uk>
+	<200907251612.34140.elendil@planet.nl>
+	<200907252218.46364.rjw@sisk.pl>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907252256.44570.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 10 July 2009, Johannes Berg wrote:
-> On Fri, 2009-07-10 at 22:09 +0100, Darren Salt wrote:
-> > I demand that Johannes Berg may or may not have written...
-> > 
-> > > Apparently there actually _are_ tools that try to set this in sysfs even
-> > > though it wasn't supposed to be used this way without claiming first.
-> > 
-> > Then it should have been documented as such. I don't see anything about this
-> > in Documentation/rfkill.txt (as found in 2.6.30), other than a vague
-> > statement that "Kernel handles events", which isn't exactly helpful :-\
-> 
-> Oh, it's not just that rfkill was horrible, the documentation matched :)
-> All the SHOUTING in it about what you must and must not do but nothing
-> actually helpful :)
-> 
-> > > *shrug*, I don't like it, but whatever...
-> > 
-> > I do. It means that we have a nice simple text-based interface for use in
-> > scripts (for now), and a binary interface which is better suited to the likes
-> > of desktop applications.
-> 
-> Indeed, and as long as you expect to only use soft toggle... problem is
-> that you won't know whether it's soft-toggled or not while it's
-> hard-blocked (off)!
-> 
-> > > Please test & report.
-> > 
-> > With the patch applied, Bluetooth toggling is working again, so you get to
-> > add this:
-> > 
-> > Tested-By: Darren Salt <linux@youmustbejoking.demon.co.uk>
-> 
-> Ok, John, please pick up the patch.
+serial8250: update to dev_pm_ops
 
-Is there anything going on with the patch?
+>From dmesg:
+Platform driver 'serial8250' needs updating - please use dev_pm_ops
 
-Surely it's not in -rc4.
+Signed-off-by: Erik Ekman <erik@kryo.se>
+--
+Updated to handle hibernation as understood based on info from Rafael J. Wysocki.
+Please let me know if any special handling is needed.
 
-Rafael
+diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
+index fb867a9..e93222c 100644
+--- a/drivers/serial/8250.c
++++ b/drivers/serial/8250.c
+@@ -2982,42 +2982,50 @@ static int __devexit serial8250_remove(struct platform_device *dev)
+ 	return 0;
+ }
+ 
+-static int serial8250_suspend(struct platform_device *dev, pm_message_t state)
++static int serial8250_suspend(struct device *dev)
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < UART_NR; i++) {
+ 		struct uart_8250_port *up = &serial8250_ports[i];
+ 
+-		if (up->port.type != PORT_UNKNOWN && up->port.dev == &dev->dev)
++		if (up->port.type != PORT_UNKNOWN && up->port.dev == dev)
+ 			uart_suspend_port(&serial8250_reg, &up->port);
+ 	}
+ 
+ 	return 0;
+ }
+ 
+-static int serial8250_resume(struct platform_device *dev)
++static int serial8250_resume(struct device *dev)
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < UART_NR; i++) {
+ 		struct uart_8250_port *up = &serial8250_ports[i];
+ 
+-		if (up->port.type != PORT_UNKNOWN && up->port.dev == &dev->dev)
++		if (up->port.type != PORT_UNKNOWN && up->port.dev == dev)
+ 			serial8250_resume_port(i);
+ 	}
+ 
+ 	return 0;
+ }
+ 
++static struct dev_pm_ops serial8250_pm_ops = {
++	.resume   = serial8250_resume,
++	.suspend  = serial8250_suspend,
++	.freeze   = serial8250_resume,
++	.thaw     = serial8250_suspend,
++	.restore  = serial8250_resume,
++	.poweroff = serial8250_suspend,
++};
++
+ static struct platform_driver serial8250_isa_driver = {
+ 	.probe		= serial8250_probe,
+ 	.remove		= __devexit_p(serial8250_remove),
+-	.suspend	= serial8250_suspend,
+-	.resume		= serial8250_resume,
+ 	.driver		= {
+ 		.name	= "serial8250",
+ 		.owner	= THIS_MODULE,
++		.pm     = &serial8250_pm_ops, 
+ 	},
+ };
