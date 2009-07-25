@@ -1,300 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752124AbZGYQjH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752104AbZGYQmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752124AbZGYQjH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 12:39:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbZGYQjG
+	id S1752104AbZGYQmd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 12:42:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbZGYQmd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 12:39:06 -0400
-Received: from atreides.gradator.net ([212.85.155.42]:38389 "EHLO
-	atreides.gradator.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751236AbZGYQjF (ORCPT
+	Sat, 25 Jul 2009 12:42:33 -0400
+Received: from mga06.intel.com ([134.134.136.21]:60296 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751756AbZGYQmc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 12:39:05 -0400
-X-Greylist: delayed 4867 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Jul 2009 12:39:05 EDT
-Date: Sat, 25 Jul 2009 17:17:52 +0200
-From: Sylvain Rochet <gradator@gradator.net>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org
-Message-ID: <20090725151751.GA6419@gradator.net>
-References: <20090420162017.GA28079@gradator.net> <20090716172749.GC3740@atrey.karlin.mff.cuni.cz>
+	Sat, 25 Jul 2009 12:42:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,269,1246863600"; 
+   d="scan'208";a="433307513"
+Message-ID: <4A6B35F7.2030804@linux.intel.com>
+Date: Sat, 25 Jul 2009 09:42:31 -0700
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="MW5yreqqjyrRcusr"
-Content-Disposition: inline
-In-Reply-To: <20090716172749.GC3740@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: gradator@atreides.gradator.net
-Subject: Re: 2.6.28.9: EXT3/NFS inodes corruption
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:51:29 +0000)
-X-SA-Exim-Scanned: Yes (on atreides.gradator.net)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>
+Subject: Re: [PATCH] sched: Provide iowait counters
+References: <4A64B813.1080506@linux.intel.com>	<20090724212220.afa278ee.akpm@linux-foundation.org>	<4A6A8AFE.1010608@linux.intel.com>	<20090724214006.7380c3b4.akpm@linux-foundation.org>	<4A6A8E96.7050509@linux.intel.com>	<20090724220423.11828b85.akpm@linux-foundation.org>	<1248501946.6987.146.camel@twins> <20090725002148.5524c846.akpm@linux-foundation.org>
+In-Reply-To: <20090725002148.5524c846.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton wrote:
+> 
+> What _is_ Arjan's requirement, anyway?  I don't think it's really been
+> spelled out.
 
---MW5yreqqjyrRcusr
-Content-Type: multipart/mixed; boundary="3V7upXqbjpZ4EhLz"
-Content-Disposition: inline
+ok long description coming ;)
 
-
---3V7upXqbjpZ4EhLz
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-Sorry for the late answer, waiting for the problem to happen again ;)
+Actually we're building a tool that conceptually is two different tools, that operate at different levels,
+and tool two is a zoomed in version of zoom one. I'll describe both below as if they are independent tools,
+to not confuse things too much.
 
 
-On Thu, Jul 16, 2009 at 07:27:49PM +0200, Jan Kara wrote:
->   Hi,
->=20
-> > We(TuxFamily) are having some inodes corruptions on a NFS server.
-> >=20
-> > So, let's start with the facts.
-> >=20
-> >=20
-> > =3D=3D=3D=3D NFS Server
-> >=20
-> > Linux bazooka 2.6.28.9 #1 SMP Mon Mar 30 12:58:22 CEST 2009 x86_64 GNU/=
-Linux
->=20
-> Can you still see the corruption with 2.6.30 kernel?
+Tool One
+--------
+This can be summarized as "a better bootchart", although it's not (just) for measuring boot.
+What the tool provides is a graphical overview of all process activity over a period of time
+(the period of time needs to be long enough to cover a system boot, so around 10 seconds).
 
-Not upgraded yet, we'll give a try.
+In this overview, time is the horizontal axis, and processes are on the vertical axis.
+This overview is basically a horizontal bar per "process", that shows the name of the process. The
+bar starts (X axis) when the process starts, and ends when the process ends. Bars of processes that
+either start before the measurement period, or continue to live on after the measurement period
+just run to the edge of the graph.
 
+Within these bars, we make "boxes" that cover 1 millisecond (typical) of time, and these boxes get colored
+depending on what kind of activity has happened.
+* Shade of blue for CPU activity; basically we take the number of nanoseconds that the process executed at the beginning
+   and at the end of the box, scale this to the size of the box (1 msec) to get a ratio/percentage, and then make the
+   shade of blue represent this percentage. (eg if the process was running for the full msec, it gets very dark blue,
+   but if it was only running for 50%, it gets a gray-ish blue)
+* Shade of red for "waiting for IO"; we take the io wait nanoseconds at the beginning and end, scale this like we do cpu
+   and color the box red appropriately
+* Share of yellow for "waiting for the scheduler to give us a time slice"; the kernel exposes the (accumulated) time
+   between wakeup and actually running, basically the scheduler delay (due to other processes running etc). Similar to
+   cpu and io time, we scale this to a yellow color
+(if there is more than one of these during the 1 msec activity, we have an arbitrage algorithm to resolve this)
 
-> If you can still see this problem, could you run: debugfs /dev/md10
-> and send output of the command:
-> stat <40420228>
-> (or whatever the corrupted inode number will be)
-> and also:
-> dump <40420228> /tmp/corrupted_dir
+In addition, we show a system view (at the top of the diagram for now) that shows
+* For each logical cpu, how the CPU utilization is. Again in 1 msec bars, we calculate how busy each logical cpu is
+   and have a bar for which the height scales with utilization
+* We show the amount of IO, in megabytes per second in another bar, so that one can see how well the system is doing
+   on IO throughput (we're considering splitting this into a separate display for read and write)
 
+For the process bars to work, we need to track the name of processes as they change (fork+exec first creates a process that shares
+the name with the parent process, and then during the exec changes name to the new process for example). The visualization
+switches to a new bar when such a process changes name.
 
-One inode get corrupted recently, here is the output:
+This tool is very useful (for us already, but I expect it's not just us) to see what is going on performance wise on a system level.
+We can see that process A uses CPU, but causes the dbus process to use CPU which then causes process B to use CPU etc; we can
+track performance bottlenecks/costs beyond just a single process.
 
+Right now we're just polling every millisecond various /proc/pid files to collect this information. Will investigate
+the task accounting flow to see if we can kill the polling entirely, but if we can't kill this polling entirely we'll likely need
+to stick to polling, since otherwise consolidating the two sources of information gets problematic.
 
-root@bazooka:/data/web/ed/90/48/walotux.walon.org/htdocs/tmp/cache/e# ls -l=
-ai
-total 64
-88539836 drwxr-sr-x  2 18804 23084  4096 2009-07-25 07:53 .
-88539821 drwxr-sr-x 20 18804 23084  4096 2008-08-20 10:14 ..
-88541578 -rw-rw-rw-  1 18804 23084   471 2009-07-25 04:55 -inc_forum-10-wa.=
-3cb1921f
-88541465 -rw-rw-rw-  1 18804 23084  6693 2009-07-25 07:53 -inc_rss_item-32-=
-wa.23d91cc2
-88541471 -rw-rw-rw-  1 18804 23084  1625 2009-07-25 07:53 -inc_rubriques-17=
--wa.f2f152f0
-88541549 -rw-rw-rw-  1 18804 23084  2813 2009-07-25 03:04 INDEX-.edfac52c
-88541366 -rw-rw-rw-  1 18804 23084     0 2008-08-17 20:44 .ok
-       ? ?---------  ? ?     ?         ?                ? spip%3Farticle19.=
-f8740dca
-88541671 -rw-rw-rw-  1 18804 23084  5619 2009-07-24 21:07 spip%3Fauteur1.c6=
-4f7f7e
-88541460 -rw-rw-rw-  1 18804 23084  5636 2009-07-24 19:30 spip%3Fmot5.f3e9a=
-dda
-88540284 -rw-rw-rw-  1 18804 23084  3802 2009-07-25 16:10 spip%3Fpage%3Dfor=
-um-30.63b2c1b1
-88541539 -rw-rw-rw-  1 18804 23084 12972 2009-07-25 11:14 spip%3Fpage%3Djqu=
-ery.cce608b6.gz
+The current "bootchart" tool provides this mostly, but it is using the millisecond sampled data, which is so inaccurate
+that major things are missed in terms of system activity, and in addition it's so heavy in how it operates that you can't
+sample fine grained enough without impacting the system too much.
 
+Tool Two
+--------
+This is sort of a zoomed in version of Tool One. Tool Two does not show utilization percentages, but shows a time flow
+of what happens, nanosecond accurate. The same bars like in tool one, per process etc, but now we don't show boxes that represent a 
+millisecond, but we start a box of blue every time a process gets scheduled, that lasts until the process gets unscheduled. Same for the
+red/yellow boxes.
+Ideally we also get "process A wakes up process B" information, that we can represent as little arrows in our diagram.
 
-root@bazooka:/data/web/ed/90/48/walotux.walon.org/htdocs/tmp/cache/e# cat s=
-pip%3Farticle19.f8740dca
-cat: spip%3Farticle19.f8740dca: Stale NFS file handle
+Tool Two also gives cpu utilization in a time format rather than in a utilization %age format.
 
-
-root@bazooka:~# debugfs /dev/md10
-debugfs 1.40-WIP (14-Nov-2006)
-
-
-    debugfs:  stat <88539836>
-
-Inode: 88539836   Type: directory    Mode:  0755   Flags: 0x0   Generation:=
- 791796957
-User: 18804   Group: 23084   Size: 4096
-File ACL: 0    Directory ACL: 0
-Links: 2   Blockcount: 8
-Fragment:  Address: 0    Number: 0    Size: 0
-ctime: 0x4a6a9dd5 -- Sat Jul 25 07:53:25 2009
-atime: 0x4a0de585 -- Fri May 15 23:58:29 2009
-mtime: 0x4a6a9dd5 -- Sat Jul 25 07:53:25 2009
-Size of extra inode fields: 4
-BLOCKS:
-(0):177096928
-TOTAL: 1
-
-
-    debugfs:  ls <88539836>
-
- 88539836  (12) .    88539821  (32) ..    88541366  (12) .ok
- 88541465  (56) -inc_rss_item-32-wa.23d91cc2
- 88541539  (40) spip%3Fpage%3Djquery.cce608b6.gz
- 88540284  (40) spip%3Fpage%3Dforum-30.63b2c1b1
- 88541460  (28) spip%3Fmot5.f3e9adda
- 88541471  (160) -inc_rubriques-17-wa.f2f152f0
- 88541549  (24) INDEX-.edfac52c    88541578  (284) -inc_forum-10-wa.3cb1921f
- 88541562  (36) spip%3Farticle19.f8740dca
- 88541671  (3372) spip%3Fauteur1.c64f7f7e
-
-
-    debugfs:  stat <88541562>
-
-Inode: 88541562   Type: regular    Mode:  0666   Flags: 0x0   Generation: 8=
-60068541
-User: 18804   Group: 23084   Size: 0
-File ACL: 0    Directory ACL: 0
-Links: 0   Blockcount: 0
-Fragment:  Address: 0    Number: 0    Size: 0
-ctime: 0x4a6a8fac -- Sat Jul 25 06:53:00 2009
-atime: 0x4a6a612f -- Sat Jul 25 03:34:39 2009
-mtime: 0x4a6a8fac -- Sat Jul 25 06:53:00 2009
-dtime: 0x4a6a8fac -- Sat Jul 25 06:53:00 2009
-Size of extra inode fields: 4
-BLOCKS:
-
-
-    debugfs:  dump <88539836> /tmp/corrupted_dir
-
-(file attached)
-
-
-> You might want to try disabling the DIR_INDEX feature and see whether
-> the corruption still occurs...
-
-We'll try.
-
-
-> > Keeping inodes into servers' cache seems to prevent the problem to happ=
-en.
-> > ( yeah, # while true ; do ionice -c3 find /data -size +0 > /dev/null ; =
-done )
->=20
-> I'd guess just because they don't have to be read from disk where they
-> get corrupted.
-
-Exactly.
-
-
-> Interesting, but it may well be just by the way how these files get
-> created / updated.
-
-Yes, this is only because of that.
+We're using "perf" for collecting this information; for todays mainline we can collect the blue bar (When scheduled in/out) already,
+and Peter has been adding the data for iowait etc in an experimental branch.
 
 
 
-Additional data that may help, we replaced the storage server to=20
-something slower (less number of CPU, less number of cores, ...). We are=20
-still getting some corruption but with non-common sense with the former=20
-server.
+In case you wonder why you need both tools, and can't just use one: we wondered the same, but it turns out that if you only build
+Tool Two, you don't get a good overview of what is going on on a higher level. It's like looking at the world via a microscope all the time,
+you just don't get a good feeling what the world is like; you just can't find which areas are interesting to look at (with the microscope)/
+So we provide a higher level view tool (Tool One), with the capability to zoom into what happens in minute (well.. nanosecond) detail for 
+areas of interest (Tool Two).
 
-The data are stored on two storage arrays of disks. The primary one is=20
-made of fiber-channel disks used through a simple fiber-channel card,=20
-RAID soft with md, raid6. The secondary one is made of SCSI disks used=20
-through a RAID-hard card. We got corruption on both, depending on
-the one currently used into production.
-
-
-Sylvain
-
---3V7upXqbjpZ4EhLz
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename=corrupted_dir
-Content-Transfer-Encoding: base64
-
-vAJHBQwAAQIuAAAArQJHBSAAAgIuLgAAtghHBRQACwEuLm9rLmNoTU55WQC2CEcFDAADAS5v
-awAZCUcFOAAcAS1pbmNfcnNzX2l0ZW0tMzItd2EuMjNkOTFjYzIwAA8BSU5ERVgtLmVkZmFj
-NTJjAGMJRwUoACABc3BpcCUzRnBhZ2UlM0RqcXVlcnkuY2NlNjA4YjYuZ3p8BEcFKAAfAXNw
-aXAlM0ZwYWdlJTNEZm9ydW0tMzAuNjNiMmMxYjFhFAlHBRwAFAFzcGlwJTNGbW90NS5mM2U5
-YWRkYR8JRwWgAB0BLWluY19ydWJyaXF1ZXMtMTctd2EuZjJmMTUyZjA1MmYwNWYzTglHBXQA
-HwFsb2ctbG9nLWxvZy1lY3ItLXB0LXB0LjkyMTE3ZGY3BVsJRwVMAB8BMjMyNTk5MSUzQi1v
-cHQtY3BmX2hhdC4zYmI4Y2JhYQFnCUcFJAAZAXNwaXAlM0ZydWJyaXF1ZTQuZjUyOGFlMzBp
-bmNtCUcFGAAPAUlOREVYLS5lZGZhYzUyYwWKCUcFHAEZAS1pbmNfZm9ydW0tMTAtd2EuM2Ni
-MTkyMWYJRwXgABUBc3BpcCUzRnNpdGU0LjM2MzU3MjEwLXdhaAlHBSQAGQEtaW5jX2ZvcnVt
-LTEwLXdhLjNjYjE5MjFmdWU0dwlHBSQAGQFzcGlwJTNGcnVicmlxdWU0LmY1MjhhZTMwLXdh
-jQlHBXgAIAFzcGlwJTNGcGFnZSUzRGZvcnVtLTgtMy5kYzQ3ZmJiN5oJRwVQACABc3BpcCUz
-RnBhZ2UlM0Rmb3J1bS04LTIuZWFjMDliMzOdCUcFKAAfAS0lMjMyNTk5MSUzQi1vcHQtcHRf
-YnIuNDlhMjIzMGIFoQlHBRwAFAFzcGlwJTNGbW90NS5mM2U5YWRkYXoJRwUkABkBc3BpcCUz
-RmFydGljbGUxOS5mODc0MGRjYQAYAecJRwUsDRcBc3BpcCUzRmF1dGV1cjEuYzY0ZjdmN2UB
-6QlHBQwNHwFzcGlwJTNGcGFnZSUzRGZvcnVtLTQxLjEyMGUyYTgwAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
-
---3V7upXqbjpZ4EhLz--
-
---MW5yreqqjyrRcusr
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFKayIfDFub3qtEsS8RAhbqAJ9neupmj7mRsdcX6B1p9eJaoMp8kQCfeD3t
-EwpJ909UiI/LEZbOGpqPXU0=
-=6moM
------END PGP SIGNATURE-----
-
---MW5yreqqjyrRcusr--
+[again, while I describe them here as separate tools, that's just for the description, the idea is that the user will see it as just one
+unified tool with different zoom levels]
