@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752908AbZGYWzL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752899AbZGYW5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752908AbZGYWzL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 18:55:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbZGYWzK
+	id S1752899AbZGYW5R (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 18:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbZGYW5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 18:55:10 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:60510 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752816AbZGYWzK (ORCPT
+	Sat, 25 Jul 2009 18:57:16 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:50002 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752291AbZGYW5Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 18:55:10 -0400
-Date: Sat, 25 Jul 2009 23:54:59 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Raistlin <raistlin@linux.it>
-Cc: Peter Zijlstra <peterz@infradead.org>, sen wang <wangsen.linux@gmail.com>,
-       mingo@elte.hu, akpm@linux-foundation.org, kernel@kolivas.org,
-       npiggin@suse.de, arjan@infradead.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       Tommaso Cucinotta <tommaso.cucinotta@sssup.it>
-Subject: Re: report a bug about sched_rt
-Message-ID: <20090725225459.GB15260@shareable.org>
-References: <1248441290.6987.52.camel@twins> <454c71700907240626w127fd890ufa91ef90cbcaaa@mail.gmail.com> <1248442415.6987.56.camel@twins> <454c71700907240644h7469e2a5sfcb57f202a2e184d@mail.gmail.com> <1248443656.6987.61.camel@twins> <454c71700907240724u76b970e5y5af0fc114cc92f83@mail.gmail.com> <1248446910.6987.111.camel@twins> <20090724154036.GG27755@shareable.org> <1248451279.6987.138.camel@twins> <1248524354.8429.100.camel@Palantir>
+	Sat, 25 Jul 2009 18:57:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=aTzMBMd9nas1Q4PBEQ8KqREZaA2jJsfP4THVMvqjfLPy8efJUH6AYxpqLaCADFBO2T
+         5NzEPb0PsIu0mk+YD5kdfPg/Ag6e1RwZ4YOLXXSKajqsVgOf9zj3Fh2lF+4jdYrmJrfQ
+         m0EBPh31QqTGBVuhvXXs1rMRDVCeK59375GnA=
+Message-ID: <4A6B8E65.1080904@gmail.com>
+Date: Sun, 26 Jul 2009 00:59:49 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248524354.8429.100.camel@Palantir>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] cyclades: Read buffer overflow
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Raistlin wrote:
-> >   http://feanor.sssup.it/~faggioli/papers/OSPERT-2009-dlexception.pdf
->
-> It is probably not always the best way of doing, but it's something we
-> think it could be useful somewhere. Therefore, we are still working on
-> it, e.g., improving timer resolution, adding the support for new
-> semantic and programming models, etc. Moreover, we are open to any
-> suggestion and contribution about this work, especially from the
-> community!
+irq is declared with size NR_CARDS (4), but the loop containing this segment
+runs up until NR_ISA_ADDRS (16), possibly reading from irq[i] (and trying to
+use the result)
 
-The biggest weakness I see is if the application has a bug such as
-overwriting random memory or terminating the thread which is receiving
-timer signals, it can easily break the scheduling policy by accident.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+Credits to Parfait
 
-When the scheduling policy is implemented in the kernel, it can only
-be broken by system calls requesting a change of scheduling policy,
-which are relatively unlikely, and if necessary that can be completely
-prevented by security controls.
-
--- Jamie
+diff --git a/drivers/char/cyclades.c b/drivers/char/cyclades.c
+index 2dafc2d..d067705 100644
+--- a/drivers/char/cyclades.c
++++ b/drivers/char/cyclades.c
+@@ -4535,7 +4535,7 @@ static int __init cy_detect_isa(void)
+ 			continue;
+ 		}
+ #ifdef MODULE
+-		if (isparam && irq[i])
++		if (isparam && i < NR_CARDS && irq[i])
+ 			cy_isa_irq = irq[i];
+ 		else
+ #endif
