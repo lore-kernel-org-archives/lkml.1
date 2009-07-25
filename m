@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752119AbZGYQ1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752111AbZGYQdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752119AbZGYQ1t (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 12:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbZGYQ1s
+	id S1752111AbZGYQdo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 12:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbZGYQdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 12:27:48 -0400
-Received: from mail-bw0-f228.google.com ([209.85.218.228]:45988 "EHLO
-	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751439AbZGYQ1r convert rfc822-to-8bit (ORCPT
+	Sat, 25 Jul 2009 12:33:44 -0400
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:56553 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751842AbZGYQdn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 12:27:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=K44gNVCyJImRxj/8JSlig7rVixvjpAffn8gCxcgG4tt+UJ4ScY9QO8jpSLpvTX6UvM
-         oBQn99jPF2NVaahuMMJWqCRtTnpE7EEhCXUGrfMSd2BZmjiqjj5/Ke3oqQmm0g0z/ptT
-         bjfGQdde20UsmPMwAOMTodaarvbpvtF50URUY=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Len Brown <lenb@kernel.org>
-Subject: [PATCH] acpi: remove superfluous NULL pointer check from acpi_processor_get_throttling_info()
-Date: Sat, 25 Jul 2009 18:24:30 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc4-next-20090723-04314-g011b7b2-dirty; KDE/4.2.4; i686; ; )
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       Dan Carpenter <error27@gmail.com>, corbet@lwn.net, eteo@redhat.com
+	Sat, 25 Jul 2009 12:33:43 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Dave Airlie <airlied@gmail.com>
+Subject: Re: [Bug #13667] drm: display arifacts when X.Org is stopped
+Date: Sat, 25 Jul 2009 18:33:40 +0200
+User-Agent: KMail/1.9.9
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera> <21d7e9970907081642l3ef6df5blde31df656cd74432@mail.gmail.com> <200907090328.53643.elendil@planet.nl>
+In-Reply-To: <200907090328.53643.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200907251824.31074.bzolnier@gmail.com>
+Message-Id: <200907251833.42598.elendil@planet.nl>
+X-OriginalArrivalTime: 25 Jul 2009 16:33:43.0303 (UTC) FILETIME=[AC980970:01CA0D45]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] acpi: remove superfluous NULL pointer check from acpi_processor_get_throttling_info()
+On Thursday 09 July 2009, Frans Pop wrote:
+> > However we shall endeavour to fix this issues as it may be systemic
+> > of something else going wrong in the new PAT/AGP code.
+>
+> Great. Thanks in advance, I do appreciate it.
 
->From Dan's list:
+Any news on this?
 
-drivers/acpi/processor_throttling.c +1139 acpi_processor_get_throttling_info(11) warning: variable derefenced before check 'pr'
+> BTW, today I noticed another regression, but I have not yet looked into
+> it deeply. When I suspend I normally see at least some console messages
+> from the suspend procedure on the framebuffer console, but with .31-rc2
+> I only see a cursor. It does not really affect the suspend/resume.
+> Could possibly be related. Will investigate further.
 
-acpi_processor_get_throttling_info() is never called with pr == NULL.
+This turned out to be unrelated, and is actually an improvement. It's a 
+logical result of a printk patch I submitted (for .32):
+http://lkml.org/lkml/2009/7http://lkml.org/lkml/2009/7/6/108/6/108
 
-Reported-by: Dan Carpenter <error27@gmail.com>
-Cc: corbet@lwn.net
-Cc: eteo@redhat.com
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/acpi/processor_throttling.c |    3 ---
- 1 file changed, 3 deletions(-)
-
-Index: b/drivers/acpi/processor_throttling.c
-===================================================================
---- a/drivers/acpi/processor_throttling.c
-+++ b/drivers/acpi/processor_throttling.c
-@@ -1135,9 +1135,6 @@ int acpi_processor_get_throttling_info(s
- 			  pr->throttling.duty_offset,
- 			  pr->throttling.duty_width));
- 
--	if (!pr)
--		return -EINVAL;
--
- 	/*
- 	 * Evaluate _PTC, _TSS and _TPC
- 	 * They must all be present or none of them can be used.
+Cheers,
+FJP
