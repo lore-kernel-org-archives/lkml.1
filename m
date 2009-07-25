@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755135AbZGYGlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752531AbZGYGwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755135AbZGYGlA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 02:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755073AbZGYGk7
+	id S1752531AbZGYGwe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 02:52:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbZGYGwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 02:40:59 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:56925 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753648AbZGYGk6 (ORCPT
+	Sat, 25 Jul 2009 02:52:33 -0400
+Received: from mail-pz0-f192.google.com ([209.85.222.192]:56149 "EHLO
+	mail-pz0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751216AbZGYGwd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 02:40:58 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Jorg Schummer <ext-jorg.2.schummer@nokia.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH take 2][RFC] fat: Save FAT root directory timestamps to volume label
-References: <1248274841-3586-1-git-send-email-ext-jorg.2.schummer@nokia.com>
-	<1248428635-26073-1-git-send-email-ext-jorg.2.schummer@nokia.com>
-Date: Sat, 25 Jul 2009 14:48:25 +0900
-In-Reply-To: <1248428635-26073-1-git-send-email-ext-jorg.2.schummer@nokia.com>
-	(Jorg Schummer's message of "Fri, 24 Jul 2009 12:43:55 +0300")
-Message-ID: <87fxclmhxy.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	Sat, 25 Jul 2009 02:52:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Hd4t7OxF+vG+lGEI9o9miWBL+3npT+xBi5RssIZLIzUsxI3AZoUM0lfyoXQQoj1G8w
+         kAmGP0fD4/0srcxnabr2pAqYdemoOuTrkgqB7iFvRBHSPAQdKhadhKXev3tU4AYlSO4w
+         2Z3oLjOrYiV5mr4kTJCoO2jMfXmGPpXV0Oxe8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+In-Reply-To: <7b6bb4a50907242334m15335df6xaa0a8f96fc6cfcd4@mail.gmail.com>
+References: <1248419547-30261-1-git-send-email-dfeng@redhat.com>
+	 <d82e647a0907242038l460c01b0ud51a7265f70d6c2e@mail.gmail.com>
+	 <7b6bb4a50907242334m15335df6xaa0a8f96fc6cfcd4@mail.gmail.com>
+Date: Sat, 25 Jul 2009 14:52:33 +0800
+Message-ID: <d82e647a0907242352i5e184dd2i488ae6918e9cd959@mail.gmail.com>
+Subject: Re: [PATCH] lib/kobject: put kobject if kobject_add_internal fails
+From: Ming Lei <tom.leiming@gmail.com>
+To: Xiaotian Feng <xtfeng@gmail.com>
+Cc: Xiaotian Feng <dfeng@redhat.com>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jorg Schummer <ext-jorg.2.schummer@nokia.com> writes:
+2009/7/25 Xiaotian Feng <xtfeng@gmail.com>:
+>> No, you should fix the 20+ files instead of lib/kobject. One rule should
+>> be:
+>>
+>>             One who allocated kobject should free the kobject,
+>> instead of others.
+>
+>
+> kobject_put is not to free the kobject, it's to cleanup the resources
+> allocated by kobject_init/add/....
+> After kobject_put, we just have a cleanup kobject. The freed action is taken
+> by kfree called by who uses kobject,
 
-> Standard FAT implementations cannot store any of the FAT root directory's
-> timestamps. This commit adds the mount option 'rootts', which allows saving
-> the FAT root directory timestamps as the timestamps of the FAT volume label
-> directory entry. At least Mac OS X is known to support the same mechanism
-> and interoperate with this commit.
->
-> When mounting, the following values can be specified for the 'rootts' mount
-> option:
->
->   "rootts=ignore"   ignores root directory timestamps. All timestamps are
->                     reset to 0 (1/1/1970). This is the default.
->
->   "rootts=load"     only tries to load the root directory's timestamps from
->                     a volume label entry when mounting.
->
->   "rootts=preserve" tries to load and save the root directory's timestamps
->                     if a volume label entry exists.
->
->   "rootts=save"     tries to load and save the root directory's timestamps.
->                     If the root directory was accessed but no volume label
->                     entry exists, the label "NO NAME" is created.
+kobject_put may (but not must) free the kobject, which depends on the kobj_type
+passed to  kobject_init_and_add. The .release of the default
+kobj_type(dynamic_kobj_ktype) will free the kobject and kobject_put will call
+.release.
 
-Looks like interesting hack. However, personally, I don't think I want
-this, but I guess it can be only me.
-
-Well, so, what is this for? If rootdir doesn't have timestamp, some app
-is not working, or something?
+Even you can make sure _all_ .release of the passed kobj_type does not free
+the kobject, you still have the double calling of kobject_put problem,
+don't you?
 
 Thanks.
+
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Lei Ming
