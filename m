@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752053AbZGYQ13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752119AbZGYQ1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752053AbZGYQ13 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 12:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbZGYQ12
+	id S1752119AbZGYQ1t (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 12:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbZGYQ1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 12:27:28 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38132 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751202AbZGYQ12 (ORCPT
+	Sat, 25 Jul 2009 12:27:48 -0400
+Received: from mail-bw0-f228.google.com ([209.85.218.228]:45988 "EHLO
+	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751439AbZGYQ1r convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 12:27:28 -0400
-Subject: Re: [RFC][PATCH 5/5] perfcounter: Add support for kernel hardware
- breakpoints
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Anton Blanchard <anton@samba.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "K . Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>
-In-Reply-To: <20090725155129.GB749@Krystal>
-References: <1248109687-7808-1-git-send-email-fweisbec@gmail.com>
-	 <1248109687-7808-6-git-send-email-fweisbec@gmail.com>
-	 <1248354493.26273.2.camel@twins>
-	 <c62985530907240702h2b2de14bw2f0d475f46067e4e@mail.gmail.com>
-	 <1248445569.6987.74.camel@twins> <20090724174723.GA11985@nowhere>
-	 <1248519416.5780.12.camel@laptop> <20090725141918.GA5295@nowhere>
-	 <20090725155129.GB749@Krystal>
-Content-Type: text/plain
-Date: Sat, 25 Jul 2009 18:27:09 +0200
-Message-Id: <1248539229.5780.30.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 25 Jul 2009 12:27:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=K44gNVCyJImRxj/8JSlig7rVixvjpAffn8gCxcgG4tt+UJ4ScY9QO8jpSLpvTX6UvM
+         oBQn99jPF2NVaahuMMJWqCRtTnpE7EEhCXUGrfMSd2BZmjiqjj5/Ke3oqQmm0g0z/ptT
+         bjfGQdde20UsmPMwAOMTodaarvbpvtF50URUY=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Len Brown <lenb@kernel.org>
+Subject: [PATCH] acpi: remove superfluous NULL pointer check from acpi_processor_get_throttling_info()
+Date: Sat, 25 Jul 2009 18:24:30 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc4-next-20090723-04314-g011b7b2-dirty; KDE/4.2.4; i686; ; )
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       Dan Carpenter <error27@gmail.com>, corbet@lwn.net, eteo@redhat.com
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200907251824.31074.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-07-25 at 11:51 -0400, Mathieu Desnoyers wrote:
-> I agree with your idea to split the hardware counter management from
-> virtual per-process counters. IMO, this limited resource needs to be
-> managed centrally at one location and because system-wide level
-> performance counters do not need to flip the performance counters
-> depending on the current task.
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] acpi: remove superfluous NULL pointer check from acpi_processor_get_throttling_info()
 
-System wide counters never care about the task state.
+>From Dan's list:
 
-Its task counters we sometimes don't re-program counters for on context
-switch when both tasks have the same configuration, saving greatly on
-context switch costs.
+drivers/acpi/processor_throttling.c +1139 acpi_processor_get_throttling_info(11) warning: variable derefenced before check 'pr'
 
->  We can easily think of an embedded system
-> where providing system-wide performance counters would be important (for
-> tracing for instance), but which would compile-out the per-task
-> performance counters to save space.
+acpi_processor_get_throttling_info() is never called with pr == NULL.
 
-That doesn't make sense, the per task/global parts of perf counters are
-tightly interwoven and don't differ much.
+Reported-by: Dan Carpenter <error27@gmail.com>
+Cc: corbet@lwn.net
+Cc: eteo@redhat.com
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/acpi/processor_throttling.c |    3 ---
+ 1 file changed, 3 deletions(-)
 
-> Note that you will have to deal with some policy here, because you can
-> have performance counter reservation asked from both the kernel
-> (for either kernel and per-task watchpoints) and from userspace (for
-> per-task watchpoints).
-
-cpu counters can be both kernel and user
-task counter can be both kernel and user.
-
-Your above use of 'and' doesn't make sense.
-
+Index: b/drivers/acpi/processor_throttling.c
+===================================================================
+--- a/drivers/acpi/processor_throttling.c
++++ b/drivers/acpi/processor_throttling.c
+@@ -1135,9 +1135,6 @@ int acpi_processor_get_throttling_info(s
+ 			  pr->throttling.duty_offset,
+ 			  pr->throttling.duty_width));
+ 
+-	if (!pr)
+-		return -EINVAL;
+-
+ 	/*
+ 	 * Evaluate _PTC, _TSS and _TPC
+ 	 * They must all be present or none of them can be used.
