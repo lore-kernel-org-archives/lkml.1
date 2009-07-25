@@ -1,76 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbZGYHey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194AbZGYHx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbZGYHey (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 03:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZGYHey
+	id S1755194AbZGYHx5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 03:53:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbZGYHx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 03:34:54 -0400
-Received: from er-systems.de ([85.25.136.202]:43125 "EHLO er-systems.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752596AbZGYHex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 03:34:53 -0400
-X-Greylist: delayed 566 seconds by postgrey-1.27 at vger.kernel.org; Sat, 25 Jul 2009 03:34:53 EDT
-Date: Sat, 25 Jul 2009 09:25:21 +0200 (CEST)
-From: Thomas Voegtle <tv@lio96.de>
-To: Greg KH <gregkh@suse.de>
-cc: =?ISO-8859-15?Q?=C9ric_Piel?= <eric.piel@tremplin-utc.net>,
-       webmaster@kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       stable@kernel.org
-Subject: Re: Linux 2.6.27.28
-In-Reply-To: <20090725033030.GA481@suse.de>
-Message-ID: <alpine.LNX.2.00.0907250906330.10172@er-systems.de>
-References: <20090724222746.GA30562@kroah.com> <4A6A48A1.80608@tremplin-utc.net> <20090725033030.GA481@suse.de>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="425052808-535022048-1248506723=:10172"
-X-Virus-Checker-Version: clamassassin 1.2.4 with clamdscan / ClamAV 0.95.2/9613/Sat Jul 25 02:08:58 2009 signatures .
+	Sat, 25 Jul 2009 03:53:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34201 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751612AbZGYHxz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Jul 2009 03:53:55 -0400
+Date: Sat, 25 Jul 2009 00:53:50 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christophe Lermytte <christophe.lermytte@thomson.net>
+Cc: linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Subject: Re: 2.6.31-rc3 cpufreq bug (null pointer dereference)
+Message-Id: <20090725005350.bb4db4ad.akpm@linux-foundation.org>
+In-Reply-To: <1248206869.4516.6.camel@localhost>
+References: <1248206869.4516.6.camel@localhost>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---425052808-535022048-1248506723=:10172
-Content-Type: TEXT/PLAIN; charset=iso-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+(cc cpufreq@vger.kernel.org)
 
+On Tue, 21 Jul 2009 22:07:49 +0200 Christophe Lermytte <christophe.lermytte@thomson.net> wrote:
 
-Hi,
+> Today, I tried to change the governor to conservative using the GNOME
+> cpufreqd applet. The applet subsequently hangs and the following appears
+> in the kernel traces: 
+> 
+> [ 3067.249054] BUG: unable to handle kernel NULL pointer dereference at
+> 00000020
+> [ 3067.249062] IP: [<c1302d23>] dbs_cpufreq_notifier+0x17/0x2b
+> [ 3067.249074] *pde = 00000000 
+> [ 3067.249078] Oops: 0000 [#1] SMP 
+> [ 3067.249083] last sysfs
+> file: /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+> [ 3067.249087] Modules linked in: cdc_wdm cdc_acm
+> [ 3067.249093] 
+> [ 3067.249098] Pid: 1346, comm: kondemand/1 Not tainted (2.6.31-rc3 #2)
+> Latitude D630                   
+> [ 3067.249103] EIP: 0060:[<c1302d23>] EFLAGS: 00010286 CPU: 1
+> [ 3067.249108] EIP is at dbs_cpufreq_notifier+0x17/0x2b
+> [ 3067.249112] EAX: 00000000 EBX: f6959f00 ECX: 00000000 EDX: c278c300
+> [ 3067.249116] ESI: fffffffe EDI: 00000000 EBP: 00000000 ESP: f6959e78
+> [ 3067.249120]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> [ 3067.249124] Process kondemand/1 (pid: 1346, ti=f6958000 task=f69020a0
+> task.ti=f6958000)
+> [ 3067.249128] Stack:
+> [ 3067.249130]  c161ba54 c1427067 f6959f00 00000000 c176d000 f6959f00
+> c176cfe4 00000000
+> [ 3067.249139] <0> c103a57e ffffffff 00000000 00000000 00000001 f64de590
+> f8416980 f6959f00
+> [ 3067.249149] <0> c103a59c ffffffff 00000000 c100f8b0 f6bcf240 ffffffea
+> 00000003 00000000
+> [ 3067.249160] Call Trace:
+> [ 3067.249166]  [<c1427067>] ? notifier_call_chain+0x2a/0x47
+> [ 3067.249175]  [<c103a57e>] ? __srcu_notifier_call_chain+0x32/0x47
+> [ 3067.249181]  [<c103a59c>] ? srcu_notifier_call_chain+0x9/0xc
+> [ 3067.249193]  [<c100f8b0>] ? acpi_cpufreq_target+0x1a7/0x2b1
+> [ 3067.249197]  [<c100f5ba>] ? get_measured_perf+0x1f/0x140
+> [ 3067.249201]  [<c103db6d>] ? getnstimeofday+0x4d/0xd0
+> [ 3067.249205]  [<c1300802>] ? cpufreq_register_driver+0xb1/0x15b
+> [ 3067.249209]  [<c100f709>] ? acpi_cpufreq_target+0x0/0x2b1
+> [ 3067.249213]  [<c13008f5>] ? __cpufreq_driver_target+0x49/0x55
+> [ 3067.249217]  [<c13029a0>] ? do_dbs_timer+0x262/0x2b8
+> [ 3067.249222]  [<c1033b50>] ? worker_thread+0x137/0x1b3
+> [ 3067.249226]  [<c130273e>] ? do_dbs_timer+0x0/0x2b8
+> [ 3067.249229]  [<c1037042>] ? autoremove_wake_function+0x0/0x2d
+> [ 3067.249233]  [<c1033a19>] ? worker_thread+0x0/0x1b3
+> [ 3067.249236]  [<c1036da6>] ? kthread+0x69/0x6e
+> [ 3067.249240]  [<c1036d3d>] ? kthread+0x0/0x6e
+> [ 3067.249244]  [<c100334f>] ? kernel_thread_helper+0x7/0x10
+> [ 3067.249246] Code: c7 44 24 18 ea ff ff ff 8b 44 24 18 83 c4 20 5b 5e
+> 5f 5d c3 53 8b 01 ba 00 83 6c c1 89 cb 03 14 85 6c b9 66 c1 8b 4a 18 8b
+> 42 60 <3b> 41 20 77 05 3b 41 1c 73 06 8b 43 08 89 42 60 31 c0 5b c3 53 
+> [ 3067.249282] EIP: [<c1302d23>] dbs_cpufreq_notifier+0x17/0x2b SS:ESP
+> 0068:f6959e78
+> [ 3067.249287] CR2: 0000000000000020
+> [ 3067.249296] ---[ end trace 5cb870966b6883a7 ]---
+> 
 
-first of all: thank you for the stable kernels...
+I assume that this is repeatable and that 2.6.30 was OK?
 
-
-On Fri, 24 Jul 2009, Greg KH wrote:
-> On Sat, Jul 25, 2009 at 01:49:53AM +0200, Éric Piel wrote:
->> Currently, there is no clue on www.kernel.org that 2.6.27 is a "long
->> term stable" kernel tree. Would it be possible to add a line to the page
->> pointing to the latest version of this type of tree? I'm sure some
->> people would love discovering that such thing exists :-)
->
-> I'm curious as to why someone, if they were inclined to be using such a
-> thing, wouldn't already know about this?
-
-It even isn't called at linux-kernel-announce, except the latest stable 
-kernel.
-So you have to read LKML, or follow the lwn.net news to track the 
-older stable kernel. Or always guessing: when there is a release of the 
-newer stable kernel (this is announced in linux-kernel-announce) then 
-there might be a release of the older one aswell...
-
-
-> How many people really are relying on this .27 branch, becides the
-> distros, these days?  And if you are, why?
-
-I'm one of that guys, having a server and one firewall and feeling 
-much better with a small optimized own-built kernel for that machines.
-And both just work with this .27 branch, why should I change it to 
-2.6.30.y?
-I don't need any of the new features and it won't be faster with 2.6.30 or 
-something else...
-
-
-       Thomas
-
---425052808-535022048-1248506723=:10172--
-
+Thanks.
