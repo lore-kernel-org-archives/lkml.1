@@ -1,63 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752151AbZGYQuL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752053AbZGYQ4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752151AbZGYQuL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 12:50:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbZGYQuK
+	id S1752053AbZGYQ4f (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 12:56:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbZGYQ4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 12:50:10 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57197 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751966AbZGYQuJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 12:50:09 -0400
-Date: Sat, 25 Jul 2009 09:49:41 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Dave Jones <davej@redhat.com>
-cc: Ian Lance Taylor <iant@google.com>, Frans Pop <elendil@planet.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kbuild@vger.kernel.org,
-       barryn@pobox.com, bugme-daemon@bugzilla.kernel.org
-Subject: Re: [Bug 13012] 2.6.28.9 causes init to segfault on Debian etch;
- 2.6.28.8 OK
-In-Reply-To: <20090725032343.GA20841@redhat.com>
-Message-ID: <alpine.LFD.2.01.0907250944570.3960@localhost.localdomain>
-References: <200907100928.07369.elendil@planet.nl> <200907101659.31813.elendil@planet.nl> <alpine.LFD.2.01.0907121058040.3552@localhost.localdomain> <m3k52d1775.fsf@google.com> <20090725032343.GA20841@redhat.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Sat, 25 Jul 2009 12:56:34 -0400
+Received: from kroah.org ([198.145.64.141]:40188 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751842AbZGYQ4e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Jul 2009 12:56:34 -0400
+Date: Sat, 25 Jul 2009 09:55:46 -0700
+From: Greg KH <greg@kroah.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Daniel Mack <daniel@caiaq.de>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, stern@rowland.harvard.edu
+Subject: Re: [PATCH] tty: Fix a USB serial crash/scribble
+Message-ID: <20090725165546.GA2803@kroah.com>
+References: <20090722093735.27118.36158.stgit@localhost.localdomain>
+ <20090722101631.GG13236@buzzloop.caiaq.de>
+ <20090725044844.GC19432@kroah.com>
+ <20090725125621.441a8e1a@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090725125621.441a8e1a@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 24 Jul 2009, Dave Jones wrote:
+On Sat, Jul 25, 2009 at 12:56:21PM +0100, Alan Cox wrote:
+> > Alan, do you want me to send this to Linus, or will you?
 > 
-> Is it worth fixing these up, with diffs like the below ?
+> I sent it to him on the 22nd.
 
-Historically, when we fix up bugs like this, it causes more bugs than it 
-fixes.
-
-It needs _really_ careful people, and people who really understand how C 
-type rules work. Stuff that looks obvious often is not, and basing a large 
-part of the patch on a compiler warning is a _very_ weak reason for 
-something that is more than just syntactic.
-
-And the problem is, nobody can judge the patch from the diff. So it gets 
-absolutely zero review, until the day when somebody notices that the 
-unsigned version is a bug.
-
-I'd suggest that the rule should be:
-
- - if you can use -U30 and show all uses, so that people can actually look 
-   at the patch and see what it _causes_ (ie not just the "we change 'i' 
-   to 'unsigned'", but also the "this is where 'i' gets used, and 
-   'unsigned' is right"), then we can apply it.
-
- - none of the patches go through a 'trivial' tree, or come from newbies 
-   that think this is a good way to get involved.
-
-Is it worth it at that point? I dunno.
-
-		Linus
+Doh, nevermind :)
