@@ -1,175 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbZGYULg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbZGYUMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752612AbZGYULg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 16:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbZGYULf
+	id S1752627AbZGYUMS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 16:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbZGYUMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 16:11:35 -0400
-Received: from d112a2.x-mailer.de ([212.162.53.4]:54620 "EHLO
-	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752593AbZGYUL1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 16:11:27 -0400
-Message-Id: <fb286f0471a04ef646c8e5c79750ae6718183745.1248546896.git.keil@b1-systems.de>
-In-Reply-To: <cover.1248546896.git.keil@b1-systems.de>
-References: <cover.1248546896.git.keil@b1-systems.de>
-Date: Thu, 9 Jul 2009 10:02:29 +0200
-Subject: [PATCH 05/13] mISDN: Make clearing B-channel a common function
-From: Karsten Keil <keil@b1-systems.de>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       i4ldeveloper@listserv.isdn4linux.de
-X-Info: valid message
-X-Info: original Date
+	Sat, 25 Jul 2009 16:12:17 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55298 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752540AbZGYUMR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Jul 2009 16:12:17 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [Regression] kdesu broken
+Date: Sat, 25 Jul 2009 22:12:48 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ray Lee <ray-lk@madrabbit.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200907240145.31935.rjw@sisk.pl> <87ws5xjo2x.fsf@devron.myhome.or.jp> <20090725150510.35e8854d@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090725150510.35e8854d@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907252212.49045.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clearing B-channel is needed in every driver, so it makes sense
-to have it as common function.
+On Saturday 25 July 2009, Alan Cox wrote:
+> Actually try this:
+> 
+> 
+> commit b0e6bdde87725a5d46273ecc4bd00c54bd675848
+> Author: Alan Cox <alan@linux.intel.com>
+> Date:   Sat Jul 25 15:00:04 2009 +0100
+> 
+>     pty: ensure writes hit the reader before close
+>     
+>     This is elegant in all the wrong ways. Put the pty into low latency mode (which
+>     we can do as we always post bytes from user context). The tty_flip_buffer_push
+>     then always calls into the ldisc which means we clear the ldisc buffer before
+>     we set the TTY_OTHER_CLOSED flag.
+>     
+>     Means pty has subtle knowledge of tty internals we really don't want it to, but
+>     it fixes the problem for the moment.
+>     
+>     Signed-off-by: Alan Cox <alan@linux.intel.com>
 
-Signed-off-by: Karsten Keil <keil@b1-systems.de>
----
- drivers/isdn/hardware/mISDN/hfcmulti.c |   16 +---------------
- drivers/isdn/hardware/mISDN/hfcpci.c   |   16 +---------------
- drivers/isdn/hardware/mISDN/hfcsusb.c  |   16 +---------------
- drivers/isdn/mISDN/hwchannel.c         |   15 +++++++++++++--
- include/linux/mISDNhw.h                |    1 +
- 5 files changed, 17 insertions(+), 47 deletions(-)
+Works for me, thanks!
 
-diff --git a/drivers/isdn/hardware/mISDN/hfcmulti.c b/drivers/isdn/hardware/mISDN/hfcmulti.c
-index e1dab30..fd77bb1 100644
---- a/drivers/isdn/hardware/mISDN/hfcmulti.c
-+++ b/drivers/isdn/hardware/mISDN/hfcmulti.c
-@@ -3416,22 +3416,8 @@ deactivate_bchannel(struct bchannel *bch)
- 	u_long			flags;
- 
- 	spin_lock_irqsave(&hc->lock, flags);
--	if (test_and_clear_bit(FLG_TX_NEXT, &bch->Flags)) {
--		dev_kfree_skb(bch->next_skb);
--		bch->next_skb = NULL;
--	}
--	if (bch->tx_skb) {
--		dev_kfree_skb(bch->tx_skb);
--		bch->tx_skb = NULL;
--	}
--	bch->tx_idx = 0;
--	if (bch->rx_skb) {
--		dev_kfree_skb(bch->rx_skb);
--		bch->rx_skb = NULL;
--	}
-+	mISDN_clear_bchannel(bch);
- 	hc->chan[bch->slot].coeff_count = 0;
--	test_and_clear_bit(FLG_ACTIVE, &bch->Flags);
--	test_and_clear_bit(FLG_TX_BUSY, &bch->Flags);
- 	hc->chan[bch->slot].rx_off = 0;
- 	hc->chan[bch->slot].conf = -1;
- 	mode_hfcmulti(hc, bch->slot, ISDN_P_NONE, -1, 0, -1, 0);
-diff --git a/drivers/isdn/hardware/mISDN/hfcpci.c b/drivers/isdn/hardware/mISDN/hfcpci.c
-index 228ffbe..70e6b0e 100644
---- a/drivers/isdn/hardware/mISDN/hfcpci.c
-+++ b/drivers/isdn/hardware/mISDN/hfcpci.c
-@@ -1522,22 +1522,8 @@ deactivate_bchannel(struct bchannel *bch)
- 	u_long		flags;
- 
- 	spin_lock_irqsave(&hc->lock, flags);
--	if (test_and_clear_bit(FLG_TX_NEXT, &bch->Flags)) {
--		dev_kfree_skb(bch->next_skb);
--		bch->next_skb = NULL;
--	}
--	if (bch->tx_skb) {
--		dev_kfree_skb(bch->tx_skb);
--		bch->tx_skb = NULL;
--	}
--	bch->tx_idx = 0;
--	if (bch->rx_skb) {
--		dev_kfree_skb(bch->rx_skb);
--		bch->rx_skb = NULL;
--	}
-+	mISDN_clear_bchannel(bch);
- 	mode_hfcpci(bch, bch->nr, ISDN_P_NONE);
--	test_and_clear_bit(FLG_ACTIVE, &bch->Flags);
--	test_and_clear_bit(FLG_TX_BUSY, &bch->Flags);
- 	spin_unlock_irqrestore(&hc->lock, flags);
- }
- 
-diff --git a/drivers/isdn/hardware/mISDN/hfcsusb.c b/drivers/isdn/hardware/mISDN/hfcsusb.c
-index 6b7704c..fc46a26 100644
---- a/drivers/isdn/hardware/mISDN/hfcsusb.c
-+++ b/drivers/isdn/hardware/mISDN/hfcsusb.c
-@@ -1809,21 +1809,7 @@ deactivate_bchannel(struct bchannel *bch)
- 		    hw->name, __func__, bch->nr);
- 
- 	spin_lock_irqsave(&hw->lock, flags);
--	if (test_and_clear_bit(FLG_TX_NEXT, &bch->Flags)) {
--		dev_kfree_skb(bch->next_skb);
--		bch->next_skb = NULL;
--	}
--	if (bch->tx_skb) {
--		dev_kfree_skb(bch->tx_skb);
--		bch->tx_skb = NULL;
--	}
--	bch->tx_idx = 0;
--	if (bch->rx_skb) {
--		dev_kfree_skb(bch->rx_skb);
--		bch->rx_skb = NULL;
--	}
--	clear_bit(FLG_ACTIVE, &bch->Flags);
--	clear_bit(FLG_TX_BUSY, &bch->Flags);
-+	mISDN_clear_bchannel(bch);
- 	spin_unlock_irqrestore(&hw->lock, flags);
- 	hfcsusb_setup_bch(bch, ISDN_P_NONE);
- 	hfcsusb_stop_endpoint(hw, bch->nr);
-diff --git a/drivers/isdn/mISDN/hwchannel.c b/drivers/isdn/mISDN/hwchannel.c
-index 0481a0c..e8049be 100644
---- a/drivers/isdn/mISDN/hwchannel.c
-+++ b/drivers/isdn/mISDN/hwchannel.c
-@@ -114,13 +114,14 @@ mISDN_freedchannel(struct dchannel *ch)
- }
- EXPORT_SYMBOL(mISDN_freedchannel);
- 
--int
--mISDN_freebchannel(struct bchannel *ch)
-+void
-+mISDN_clear_bchannel(struct bchannel *ch)
- {
- 	if (ch->tx_skb) {
- 		dev_kfree_skb(ch->tx_skb);
- 		ch->tx_skb = NULL;
- 	}
-+	ch->tx_idx = 0;
- 	if (ch->rx_skb) {
- 		dev_kfree_skb(ch->rx_skb);
- 		ch->rx_skb = NULL;
-@@ -129,6 +130,16 @@ mISDN_freebchannel(struct bchannel *ch)
- 		dev_kfree_skb(ch->next_skb);
- 		ch->next_skb = NULL;
- 	}
-+	test_and_clear_bit(FLG_TX_BUSY, &ch->Flags);
-+	test_and_clear_bit(FLG_TX_NEXT, &ch->Flags);
-+	test_and_clear_bit(FLG_ACTIVE, &ch->Flags);
-+}
-+EXPORT_SYMBOL(mISDN_clear_bchannel);
-+
-+int
-+mISDN_freebchannel(struct bchannel *ch)
-+{
-+	mISDN_clear_bchannel(ch);
- 	skb_queue_purge(&ch->rqueue);
- 	ch->rcount = 0;
- 	flush_scheduled_work();
-diff --git a/include/linux/mISDNhw.h b/include/linux/mISDNhw.h
-index 7f9831d..4af8414 100644
---- a/include/linux/mISDNhw.h
-+++ b/include/linux/mISDNhw.h
-@@ -168,6 +168,7 @@ struct bchannel {
- extern int	mISDN_initdchannel(struct dchannel *, int, void *);
- extern int	mISDN_initbchannel(struct bchannel *, int);
- extern int	mISDN_freedchannel(struct dchannel *);
-+extern void	mISDN_clear_bchannel(struct bchannel *);
- extern int	mISDN_freebchannel(struct bchannel *);
- extern void	queue_ch_frame(struct mISDNchannel *, u_int,
- 			int, struct sk_buff *);
--- 
-1.6.0.2
-
+Best,
+Rafael
