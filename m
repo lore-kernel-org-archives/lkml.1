@@ -1,48 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752410AbZGYKAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752215AbZGYKYN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752410AbZGYKAl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 06:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbZGYKAk
+	id S1752215AbZGYKYN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 06:24:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbZGYKYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 06:00:40 -0400
-Received: from www17.your-server.de ([213.133.104.17]:43498 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751029AbZGYKAk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 06:00:40 -0400
-Subject: Re: Linux 2.6.27.28
-From: Thomas Meyer <thomas@m3y3r.de>
-To: Thomas Voegtle <tv@lio96.de>
-Cc: Greg KH <gregkh@suse.de>,
-       =?ISO-8859-1?Q?=C9ric?= Piel <eric.piel@tremplin-utc.net>,
-       webmaster@kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       stable@kernel.org
-In-Reply-To: <alpine.LNX.2.00.0907250906330.10172@er-systems.de>
-References: <20090724222746.GA30562@kroah.com>
-	 <4A6A48A1.80608@tremplin-utc.net> <20090725033030.GA481@suse.de>
-	 <alpine.LNX.2.00.0907250906330.10172@er-systems.de>
-Content-Type: text/plain
-Date: Sat, 25 Jul 2009 12:00:17 +0200
-Message-Id: <1248516017.5642.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	Sat, 25 Jul 2009 06:24:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47091 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751088AbZGYKYL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Jul 2009 06:24:11 -0400
+Message-ID: <4A6ADD0D.10002@kernel.org>
+Date: Sat, 25 Jul 2009 03:23:09 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: don't use current_cpu_data in x2apic phys_pkg_id
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag, den 25.07.2009, 09:25 +0200 schrieb Thomas Voegtle:
-> It even isn't called at linux-kernel-announce, except the latest stable 
-> kernel.
-> So you have to read LKML, or follow the lwn.net news to track the 
-> older stable kernel. Or always guessing: when there is a release of the 
-> newer stable kernel (this is announced in linux-kernel-announce) then 
-> there might be a release of the older one aswell...
 
-A feed reader is handy for this. Just add this feed:
+one system that socket 1 come up as BSP. kexeced kernel report BSP as:
+[    1.524550] Initializing cgroup subsys cpuacct
+[    1.536064] initial_apicid:20
+[    1.537135] ht_mask_width:1
+[    1.538128] core_select_mask:f
+[    1.539126] core_plus_mask_width:5
+[    1.558479] CPU: Physical Processor ID: 0
+[    1.559501] CPU: Processor Core ID: 0
+[    1.560539] CPU: L1 I cache: 32K, L1 D cache: 32K
+[    1.579098] CPU: L2 cache: 256K
+[    1.580085] CPU: L3 cache: 24576K
+[    1.581108] CPU 0/0x20 -> Node 0
+[    1.596193] CPU 0 microcode level: 0xffff0008
 
-http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=rss
+it doesn't have correct physical processor id. and will get error
+[   38.840859] CPU0 attaching sched-domain:
+[   38.848287]  domain 0: span 0,8,72 level SIBLING
+[   38.851151]   groups: 0 8 72
+[   38.858137]   domain 1: span 0,8-15,72-79 level MC
+[   38.868944]    groups: 0,8,72 9,73 10,74 11,75 12,76 13,77 14,78 15,79
+[   38.881383] ERROR: parent span is not a superset of domain->span
+[   38.890724]    domain 2: span 0-7,64-71 level CPU
+[   38.899237] ERROR: domain->groups does not contain CPU0
+[   38.909229]     groups: 8-15,72-79
+[   38.912547] ERROR: groups don't span domain->span
+[   38.919665]     domain 3: span 0-127 level NODE
+[   38.930739]      groups: 0-7,64-71 8-15,72-79 16-23,80-87 24-31,88-95 32-39,96-103 40-47,104-111 48-55,112-119 56-63,120-127
 
->        Thomas
+it turns out:
+we can not use current_cpu_data in phys_pgd_id for x2apic.
 
+identify_boot_cpu is called by check_bugs before smp_prepare_cpus.
+and till smp_prepare_cpus current_cpu_data for bsp is assigned with
+boot_cpu_data
+
+just make phys_pkg_id for x2apic is aligned to xapic
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/kernel/apic/x2apic_cluster.c |    2 +-
+ arch/x86/kernel/apic/x2apic_phys.c    |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/apic/x2apic_cluster.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/x2apic_cluster.c
++++ linux-2.6/arch/x86/kernel/apic/x2apic_cluster.c
+@@ -170,7 +170,7 @@ static unsigned long set_apic_id(unsigne
+ 
+ static int x2apic_cluster_phys_pkg_id(int initial_apicid, int index_msb)
+ {
+-	return current_cpu_data.initial_apicid >> index_msb;
++	return initial_apicid >> index_msb;
+ }
+ 
+ static void x2apic_send_IPI_self(int vector)
+Index: linux-2.6/arch/x86/kernel/apic/x2apic_phys.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/x2apic_phys.c
++++ linux-2.6/arch/x86/kernel/apic/x2apic_phys.c
+@@ -162,7 +162,7 @@ static unsigned long set_apic_id(unsigne
+ 
+ static int x2apic_phys_pkg_id(int initial_apicid, int index_msb)
+ {
+-	return current_cpu_data.initial_apicid >> index_msb;
++	return initial_apicid >> index_msb;
+ }
+ 
+ static void x2apic_send_IPI_self(int vector)
