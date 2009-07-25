@@ -1,280 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752689AbZGYUPK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752699AbZGYUQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752689AbZGYUPK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 16:15:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbZGYUPJ
+	id S1752699AbZGYUQM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 16:16:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZGYUQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 16:15:09 -0400
-Received: from d112a2.x-mailer.de ([212.162.53.4]:38124 "EHLO
-	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750893AbZGYUPH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 16:15:07 -0400
-Message-Id: <c38fc3bc2ecddd4f5278131603e6964cbed071b2.1248546896.git.keil@b1-systems.de>
-In-Reply-To: <cover.1248546896.git.keil@b1-systems.de>
-References: <cover.1248546896.git.keil@b1-systems.de>
-Date: Wed, 8 Jul 2009 20:31:42 +0200
-Subject: [PATCH 03/13] ISDN: Add support for none reverse bitstreams to isdnhdc
-From: Karsten Keil <keil@b1-systems.de>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       i4ldeveloper@listserv.isdn4linux.de
-X-Info: valid message
-X-Info: original Date
+	Sat, 25 Jul 2009 16:16:11 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55321 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752438AbZGYUQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Jul 2009 16:16:11 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: [Regression] kdesu broken
+Date: Sat, 25 Jul 2009 22:16:42 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, torvalds@linux-foundation.org,
+       ray-lk@madrabbit.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org,
+       Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+References: <200907240145.31935.rjw@sisk.pl> <20090725124859.530d158b@lxorguk.ukuu.org.uk> <200907251602.49918.elendil@planet.nl>
+In-Reply-To: <200907251602.49918.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907252216.42889.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The original isdnhdlc code was developed for devices which had
-reversed bitorder in the byte stream. Adding code to handle normal
-bitstreams as well.
+On Saturday 25 July 2009, Frans Pop wrote:
+> Alan Cox wrote:
+> > Linus Torvalds wrote:
+> >> We don't do regressions. If user space depended on old behavior, we
+> >> don't change behavior
+> > 
+> > I think there are two bugs being confused here. The first kdesu bug
+> > isn't the EIO one. It's just busted userspace code that happened to be
+> > lucky. 
+> > It's also impossible to keep that "luck" going. The other problem is the
+> > EIO - which is a bug.
+>  
+> Just out of curiosity ad for reference.
+> Has this issue already been reported to the KDE people? Any links to a bug 
+> report or discussions there?
 
-Signed-off-by: Karsten Keil <keil@b1-systems.de>
----
- drivers/isdn/hisax/st5481_b.c   |    5 ++-
- drivers/isdn/hisax/st5481_d.c   |    2 +-
- drivers/isdn/hisax/st5481_usb.c |   11 ++++--
- drivers/isdn/i4l/isdnhdlc.c     |   70 +++++++++++++++++++-------------------
- include/linux/isdn/hdlc.h       |   12 +++++--
- 5 files changed, 56 insertions(+), 44 deletions(-)
+Not that I know of.  It's probably worth reporting, though.
 
-diff --git a/drivers/isdn/hisax/st5481_b.c b/drivers/isdn/hisax/st5481_b.c
-index 0074b60..95b1cdd 100644
---- a/drivers/isdn/hisax/st5481_b.c
-+++ b/drivers/isdn/hisax/st5481_b.c
-@@ -218,7 +218,10 @@ static void st5481B_mode(struct st5481_bcs *bcs, int mode)
- 	if (bcs->mode != L1_MODE_NULL) {
- 		// Open the B channel
- 		if (bcs->mode != L1_MODE_TRANS) {
--			isdnhdlc_out_init(&b_out->hdlc_state, 0, bcs->mode == L1_MODE_HDLC_56K);
-+			u32 features = HDLC_BITREVERSE;
-+			if (bcs->mode == L1_MODE_HDLC_56K)
-+				features |= HDLC_56KBIT;
-+			isdnhdlc_out_init(&b_out->hdlc_state, features);
- 		}
- 		st5481_usb_pipe_reset(adapter, (bcs->channel+1)*2, NULL, NULL);
- 	
-diff --git a/drivers/isdn/hisax/st5481_d.c b/drivers/isdn/hisax/st5481_d.c
-index 077991c..39e8e49 100644
---- a/drivers/isdn/hisax/st5481_d.c
-+++ b/drivers/isdn/hisax/st5481_d.c
-@@ -417,7 +417,7 @@ static void dout_start_xmit(struct FsmInst *fsm, int event, void *arg)
- 
- 	DBG(2,"len=%d",skb->len);
- 
--	isdnhdlc_out_init(&d_out->hdlc_state, 1, 0);
-+	isdnhdlc_out_init(&d_out->hdlc_state, HDLC_DCHANNEL | HDLC_BITREVERSE);
- 
- 	if (test_and_set_bit(buf_nr, &d_out->busy)) {
- 		WARNING("ep %d urb %d busy %#lx", EP_D_OUT, buf_nr, d_out->busy);
-diff --git a/drivers/isdn/hisax/st5481_usb.c b/drivers/isdn/hisax/st5481_usb.c
-index 2b3a055..10d41c5 100644
---- a/drivers/isdn/hisax/st5481_usb.c
-+++ b/drivers/isdn/hisax/st5481_usb.c
-@@ -637,10 +637,13 @@ void st5481_in_mode(struct st5481_in *in, int mode)
- 	usb_unlink_urb(in->urb[1]);
- 
- 	if (in->mode != L1_MODE_NULL) {
--		if (in->mode != L1_MODE_TRANS)
--			isdnhdlc_rcv_init(&in->hdlc_state,
--				in->mode == L1_MODE_HDLC_56K);
--		
-+		if (in->mode != L1_MODE_TRANS) {
-+			u32 features = HDLC_BITREVERSE;
-+
-+			if (in->mode == L1_MODE_HDLC_56K)
-+				features |= HDLC_56KBIT;
-+			isdnhdlc_rcv_init(&in->hdlc_state, features);
-+		}
- 		st5481_usb_pipe_reset(in->adapter, in->ep, NULL, NULL);
- 		st5481_usb_device_ctrl_msg(in->adapter, in->counter,
- 					   in->packet_size,
-diff --git a/drivers/isdn/i4l/isdnhdlc.c b/drivers/isdn/i4l/isdnhdlc.c
-index b80e55a..df345ce 100644
---- a/drivers/isdn/i4l/isdnhdlc.c
-+++ b/drivers/isdn/i4l/isdnhdlc.c
-@@ -2,6 +2,7 @@
-  * isdnhdlc.c  --  General purpose ISDN HDLC decoder.
-  *
-  * Copyright (C)
-+ *	2009	Karsten Keil		<keil@b1-systems.de>
-  *	2002	Wolfgang Mües		<wolfgang@iksw-muees.de>
-  *	2001	Frode Isaksen		<fisaksen@bewan.com>
-  *      2001	Kai Germaschewski	<kai.germaschewski@gmx.de>
-@@ -25,6 +26,7 @@
- #include <linux/init.h>
- #include <linux/crc-ccitt.h>
- #include <linux/isdn/hdlc.h>
-+#include <linux/bitrev.h>
- 
- /*-------------------------------------------------------------------*/
- 
-@@ -48,35 +50,21 @@ enum {
- 	HDLC_SENDFLAG_B1A6, HDLC_SENDFLAG_B7, STOPPED
- };
- 
--void isdnhdlc_rcv_init(struct isdnhdlc_vars *hdlc, int do_adapt56)
-+void isdnhdlc_rcv_init(struct isdnhdlc_vars *hdlc, u32 features)
- {
--	hdlc->bit_shift = 0;
--	hdlc->hdlc_bits1 = 0;
--	hdlc->data_bits = 0;
--	hdlc->ffbit_shift = 0;
--	hdlc->data_received = 0;
-+	memset(hdlc, 0, sizeof(struct isdnhdlc_vars));
- 	hdlc->state = HDLC_GET_DATA;
--	hdlc->do_adapt56 = do_adapt56;
--	hdlc->dchannel = 0;
--	hdlc->crc = 0;
--	hdlc->cbin = 0;
--	hdlc->shift_reg = 0;
--	hdlc->ffvalue = 0;
--	hdlc->dstpos = 0;
-+	if (features & HDLC_56KBIT)
-+		hdlc->do_adapt56 = 1;
-+	if (features & HDLC_BITREVERSE)
-+		hdlc->do_bitreverse = 1;
- }
- EXPORT_SYMBOL(isdnhdlc_out_init);
- 
--void isdnhdlc_out_init(struct isdnhdlc_vars *hdlc, int is_d_channel,
--	int do_adapt56)
-+void isdnhdlc_out_init(struct isdnhdlc_vars *hdlc, u32 features)
- {
--	hdlc->bit_shift = 0;
--	hdlc->hdlc_bits1 = 0;
--	hdlc->data_bits = 0;
--	hdlc->ffbit_shift = 0;
--	hdlc->data_received = 0;
--	hdlc->do_closing = 0;
--	hdlc->ffvalue = 0;
--	if (is_d_channel) {
-+	memset(hdlc, 0, sizeof(struct isdnhdlc_vars));
-+	if (features & HDLC_DCHANNEL) {
- 		hdlc->dchannel = 1;
- 		hdlc->state = HDLC_SEND_FIRST_FLAG;
- 	} else {
-@@ -85,16 +73,13 @@ void isdnhdlc_out_init(struct isdnhdlc_vars *hdlc, int is_d_channel,
- 		hdlc->ffvalue = 0x7e;
- 	}
- 	hdlc->cbin = 0x7e;
--	hdlc->bit_shift = 0;
--	if (do_adapt56) {
-+	if (features & HDLC_56KBIT) {
- 		hdlc->do_adapt56 = 1;
--		hdlc->data_bits = 0;
- 		hdlc->state = HDLC_SENDFLAG_B0;
--	} else {
--		hdlc->do_adapt56 = 0;
-+	} else
- 		hdlc->data_bits = 8;
--	}
--	hdlc->shift_reg = 0;
-+	if (features & HDLC_BITREVERSE)
-+		hdlc->do_bitreverse = 1;
- }
- EXPORT_SYMBOL(isdnhdlc_rcv_init);
- 
-@@ -188,7 +173,11 @@ int isdnhdlc_decode(struct isdnhdlc_vars *hdlc, const u8 *src, int slen,
- 
- 	while (slen > 0) {
- 		if (hdlc->bit_shift == 0) {
--			hdlc->cbin = *src++;
-+			/* the code is for bitreverse streams */
-+			if (hdlc->do_bitreverse == 0)
-+				hdlc->cbin = bitrev8(*src++);
-+			else
-+				hdlc->cbin = *src++;
- 			slen--;
- 			hdlc->bit_shift = 8;
- 			if (hdlc->do_adapt56)
-@@ -405,12 +394,15 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const u8 *src, u16 slen,
- 		case STOPPED:
- 			while (dsize--)
- 				*dst++ = 0xff;
--
- 			return dsize;
- 		case HDLC_SEND_FAST_FLAG:
- 			hdlc->do_closing = 0;
- 			if (slen == 0) {
--				*dst++ = hdlc->ffvalue;
-+				/* the code is for bitreverse streams */
-+				if (hdlc->do_bitreverse == 0)
-+					*dst++ = bitrev8(hdlc->ffvalue);
-+				else
-+					*dst++ = hdlc->ffvalue;
- 				len++;
- 				dsize--;
- 				break;
-@@ -594,7 +586,11 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const u8 *src, u16 slen,
- 				hdlc->cbin = 0x7e;
- 				hdlc->state = HDLC_SEND_FIRST_FLAG;
- 			} else {
--				*dst++ = hdlc->cbin;
-+				/* the code is for bitreverse streams */
-+				if (hdlc->do_bitreverse == 0)
-+					*dst++ = bitrev8(hdlc->cbin);
-+				else
-+					*dst++ = hdlc->cbin;
- 				hdlc->bit_shift = 0;
- 				hdlc->data_bits = 0;
- 				len++;
-@@ -612,7 +608,11 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const u8 *src, u16 slen,
- 			}
- 		}
- 		if (hdlc->data_bits == 8) {
--			*dst++ = hdlc->cbin;
-+			/* the code is for bitreverse streams */
-+			if (hdlc->do_bitreverse == 0)
-+				*dst++ = bitrev8(hdlc->cbin);
-+			else
-+				*dst++ = hdlc->cbin;
- 			hdlc->data_bits = 0;
- 			len++;
- 			dsize--;
-diff --git a/include/linux/isdn/hdlc.h b/include/linux/isdn/hdlc.h
-index 8f3540c..4b3ecc4 100644
---- a/include/linux/isdn/hdlc.h
-+++ b/include/linux/isdn/hdlc.h
-@@ -6,6 +6,7 @@
-  * controllers.
-  *
-  * Copyright (C)
-+ *	2009	Karsten Keil		<keil@b1-systems.de>
-  *	2002	Wolfgang Mües		<wolfgang@iksw-muees.de>
-  *	2001	Frode Isaksen		<fisaksen@bewan.com>
-  *	2001	Kai Germaschewski	<kai.germaschewski@gmx.de>
-@@ -50,8 +51,14 @@ struct isdnhdlc_vars {
- 	u32 do_adapt56:1;
- 	/* set if in closing phase (need to send CRC + flag) */
- 	u32 do_closing:1;
-+	/* set if data is bitreverse */
-+	u32 do_bitreverse:1;
- };
- 
-+/* Feature Flags */
-+#define HDLC_56KBIT	0x01
-+#define HDLC_DCHANNEL	0x02
-+#define HDLC_BITREVERSE	0x04
- 
- /*
-   The return value from isdnhdlc_decode is
-@@ -62,13 +69,12 @@ struct isdnhdlc_vars {
- #define HDLC_CRC_ERROR         2
- #define HDLC_LENGTH_ERROR      3
- 
--extern void	isdnhdlc_rcv_init(struct isdnhdlc_vars *hdlc, int do_adapt56);
-+extern void	isdnhdlc_rcv_init(struct isdnhdlc_vars *hdlc, u32 features);
- 
- extern int	isdnhdlc_decode(struct isdnhdlc_vars *hdlc, const u8 *src,
- 			int slen, int *count, u8 *dst, int dsize);
- 
--extern void	isdnhdlc_out_init(struct isdnhdlc_vars *hdlc, int is_d_channel,
--			int do_adapt56);
-+extern void	isdnhdlc_out_init(struct isdnhdlc_vars *hdlc, u32 features);
- 
- extern int	isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const u8 *src,
- 			u16 slen, int *count, u8 *dst, int dsize);
--- 
-1.6.0.2
-
+Best,
+Rafael
