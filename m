@@ -1,72 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751883AbZGYOee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751842AbZGYOkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751883AbZGYOee (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 10:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750877AbZGYOed
+	id S1751842AbZGYOkU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 10:40:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbZGYOkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 10:34:33 -0400
-Received: from mail-bw0-f228.google.com ([209.85.218.228]:63818 "EHLO
-	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751838AbZGYOec convert rfc822-to-8bit (ORCPT
+	Sat, 25 Jul 2009 10:40:19 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34751 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751621AbZGYOkT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 10:34:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=gj5LLajp/ENrOxthoG/AL88FZRMvTmnJLTqerIVNMJRddIxP8HzRnFhjw/GfiaRziW
-         8W3b3W3+zkIc+V3Hunisu50tX7/oX/tcZdAf3oFwj9lA5T1fYSo/8b4tFHwctqGjYZqH
-         kRpG1z421pK/omfe+oCq4xynwDik1uN2rrHPk=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: James.Bottomley@hansenpartnership.com
-Subject: [PATCH] scsi: remove superfluous NULL pointer check from scsi_kill_request()
-Date: Sun, 26 Jul 2009 16:29:25 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc4-next-20090723-04314-g011b7b2-dirty; KDE/4.2.4; i686; ; )
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Dan Carpenter <error27@gmail.com>, corbet@lwn.net, eteo@redhat.com
+	Sat, 25 Jul 2009 10:40:19 -0400
+Message-ID: <f39a7fd56408054bebd11e40b7dd4db6.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <2f11576a0907250621w3696fdc0pe61638c8c935c981@mail.gmail.com>
+References: <20090715182320.39B5.A69D9226@jp.fujitsu.com>
+    <1247679064.4089.26.camel@useless.americas.hpqcorp.net>
+    <alpine.DEB.2.00.0907161257190.31844@chino.kir.corp.google.com>
+    <alpine.DEB.2.00.0907241551070.8573@chino.kir.corp.google.com>
+    <20090724160936.a3b8ad29.akpm@linux-foundation.org>
+    <337c5d83954b38b14a17f0adf4d357d8.squirrel@webmail-b.css.fujitsu.com>
+    <5bb65c0e4c6828b1331d33745f34d9ee.squirrel@webmail-b.css.fujitsu.com>
+    <9443f91bd4648e6214b32acff4512b97.squirrel@webmail-b.css.fujitsu.com>
+    <2f11576a0907250621w3696fdc0pe61638c8c935c981@mail.gmail.com>
+Date: Sat, 25 Jul 2009 23:40:16 +0900 (JST)
+Subject: Re: [BUG] set_mempolicy(MPOL_INTERLEAV) cause kernel panic
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "David Rientjes" <rientjes@google.com>, lee.schermerhorn@hp.com,
+       miaox@cn.fujitsu.com, mingo@elte.hu, a.p.zijlstra@chello.nl,
+       cl@linux-foundation.org, menage@google.com, nickpiggin@yahoo.com.au,
+       y-goto@jp.fujitsu.com, penberg@cs.helsinki.fi, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200907261629.26529.bzolnier@gmail.com>
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] scsi: remove superfluous NULL pointer check from scsi_kill_request()
+KOSAKI Motohiro wrote:
+> 2009/07/25 12:15 に KAMEZAWA Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> さんは
+> 書きました:
+>> KAMEZAWA Hiroyuki wrote:
+>>> KAMEZAWA Hiroyuki wrote:
+>>> Then, here is a much easier fix. for trusting cpuset more.
+>>>
+>> just a memo about memory hotplug
+>>
+>> _Direct_ use of task->mems_allowed is only in cpuset and mempolicy.
+>> If no policy is used, it's not checked.
+>> (See alloc_pages_current())
+>>
+>> memory hotplug's notifier just updates top_cpuset's mems_allowed.
+>> But it doesn't update each task's ones.
+>> Then, task's bahavior is
+>>
+>>  - tasks which don't use mempolicy will use all nodes, N_HIGH_MEMORY.
+>>  - tasks under cpuset will be controlled under their own cpuset.
+>>  - tasks under mempolicy will use their own policy.
+>>   but no new policy is re-calculated and, then, no new mask.
+>>
+>> Now, even if all memory on nodes a removed, pgdat just remains.
+>> Then, cpuset/mempolicy will never access NODE_DATA(nid) which is NULL.
+>
+> Umm..
+> I don't think this is optimal behavior. but if hotplug guys agree
+> this, I agree this too.
+>
+This behavior itself is not very bad.
+And all hotplug thing is just a side story of this bugfix.
 
->From Dan's list:
 
-drivers/scsi/scsi_lib.c +1365 scsi_kill_request(9) warning: variable derefenced in initializer 'cmd'
-drivers/scsi/scsi_lib.c +1365 scsi_kill_request(9) warning: variable derefenced before check 'cmd'
+To update nodemask,  user's mask should be saved in the policy
+even when the mask is not relative and v.node should be calculated
+again, at event. IIUC, rather than per-policy update by notifer,
+some new implemenation for policy will be necessary.
 
-We dereference cmd (and possible OOPS if cmd == NULL) before starting
-the request so just remove the superfluous debugging code altogether.
+If you mention about the fact that NODE_DATA(nid) is not removed
+at node removal. I have no idea, now. copied zonelist is a problem.
 
-Reported-by: Dan Carpenter <error27@gmail.com>
-Cc: corbet@lwn.net
-Cc: eteo@redhat.com
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/scsi/scsi_lib.c |    6 ------
- 1 file changed, 6 deletions(-)
 
-Index: b/drivers/scsi/scsi_lib.c
-===================================================================
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -1365,12 +1365,6 @@ static void scsi_kill_request(struct req
- 
- 	blk_start_request(req);
- 
--	if (unlikely(cmd == NULL)) {
--		printk(KERN_CRIT "impossible request in %s.\n",
--				 __func__);
--		BUG();
--	}
--
- 	scsi_init_cmd_errh(cmd);
- 	cmd->result = DID_NO_CONNECT << 16;
- 	atomic_inc(&cmd->device->iorequest_cnt);
+Thanks,
+-Kame
+
+
+
