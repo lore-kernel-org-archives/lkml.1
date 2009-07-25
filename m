@@ -1,93 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752438AbZGYSzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752289AbZGYTAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752438AbZGYSzT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 14:55:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbZGYSzS
+	id S1752289AbZGYTAS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 15:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752192AbZGYTAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 14:55:18 -0400
-Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:59536 "EHLO
-	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751652AbZGYSzR (ORCPT
+	Sat, 25 Jul 2009 15:00:17 -0400
+Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:52140 "EHLO
+	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751996AbZGYTAQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 14:55:17 -0400
+	Sat, 25 Jul 2009 15:00:16 -0400
 From: Frans Pop <elendil@planet.nl>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] hpfall: reduce risk that hpfall can do harm
-Date: Sat, 25 Jul 2009 20:55:15 +0200
+Subject: [PATCH 2/2] hpfall: accept disk device to unload as argument
+Date: Sat, 25 Jul 2009 21:00:12 +0200
 User-Agent: KMail/1.9.9
 Cc: Jiri Kosina <trivial@kernel.org>, Christian Thaeter <ct@pipapo.org>,
        Pavel Machek <pavel@ucw.cz>
+References: <200907252055.16416.elendil@planet.nl>
+In-Reply-To: <200907252055.16416.elendil@planet.nl>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200907252055.16416.elendil@planet.nl>
-X-OriginalArrivalTime: 25 Jul 2009 18:55:17.0227 (UTC) FILETIME=[735DFBB0:01CA0D59]
+Message-Id: <200907252100.14175.elendil@planet.nl>
+X-OriginalArrivalTime: 25 Jul 2009 19:00:15.0159 (UTC) FILETIME=[24F2CC70:01CA0D5A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Thaeter <ct@pipapo.org>
+Allows users who use an IDE driver for their disk to use hpfall without
+having to modify the source. By default /dev/sda is used.
+Suggested by Christian Thaeter in http://lkml.org/lkml/2009/3/25/505.
 
-Improve the example code to be at least useable, as in not causing
-harm (as shown below). Code can still be improved further, but this
-adds some basic safeguards.
+While we're add it, improve error message if opening /dev/freefall fails.
 
-1. hpfall *MUST* mlockall(MCL_CURRENT|MCL_FUTURE); itself!
-Since the Program sits and waits most of the time it becomes very likely
-swapped out. If it gets woken up when the laptop drops from the table
-while it is swapped out it actually triggers harddrive activity!
-
-2. Daemonize hpfall using 'daemon(0,0)' (quick and dirty).
-
-3. Give hpfall realtime priority.
-Should give a chance that it has less latency when woken up.
-
-Signed-off-by: Christian Thaeter <ct@pipapo.org>
 Signed-off-by: Frans Pop <elendil@planet.nl>
-Acked-by: Pavel Machek <pavel@ucw.cz>
----
-
-This patch was posted some time back by Christian and acked by Pavel, but
-was never picked up: http://lkml.org/lkml/2009/3/25/505.
-All I've done is cleaned up whitespace and the commit message.
-
-The patch is on top of my patch to clean up checkpatch errors which is
-already in the trivial tree for .32. As this is only example code, I guess
-this could go through trivial too.
-
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Christian Thaeter <ct@pipapo.org>
 
 diff --git a/Documentation/hwmon/hpfall.c b/Documentation/hwmon/hpfall.c
-index d2f6711..a3cfe1a 100644
+index a3cfe1a..681ec22 100644
 --- a/Documentation/hwmon/hpfall.c
 +++ b/Documentation/hwmon/hpfall.c
-@@ -16,6 +16,8 @@
- #include <stdint.h>
- #include <errno.h>
- #include <signal.h>
-+#include <sys/mman.h>
-+#include <sched.h>
+@@ -19,6 +19,32 @@
+ #include <sys/mman.h>
+ #include <sched.h>
  
++char unload_heads_path[64];
++
++int set_unload_heads_path(char *device)
++{
++	char devname[64];
++
++	if (strlen(device) <= 5 || strncmp(device, "/dev/", 5) != 0)
++		return -EINVAL;
++	strncpy(devname, device + 5, sizeof(devname));
++
++	snprintf(unload_heads_path, sizeof(unload_heads_path),
++				"/sys/block/%s/device/unload_heads", devname);
++	return 0;
++}
++int valid_disk(void)
++{
++	int fd = open(unload_heads_path, O_RDONLY);
++	if (fd < 0) {
++		perror(unload_heads_path);
++		return 0;
++	}
++
++	close(fd);
++	return 1;
++}
++
  void write_int(char *path, int i)
  {
-@@ -62,6 +64,7 @@ void ignore_me(void)
- int main(int argc, char *argv[])
+ 	char buf[1024];
+@@ -42,7 +68,7 @@ void set_led(int on)
+ 
+ void protect(int seconds)
+ {
+-	write_int("/sys/block/sda/device/unload_heads", seconds*1000);
++	write_int(unload_heads_path, seconds*1000);
+ }
+ 
+ int on_ac(void)
+@@ -61,14 +87,27 @@ void ignore_me(void)
+ 	set_led(0);
+ }
+ 
+-int main(int argc, char *argv[])
++int main(int argc, char **argv)
  {
  	int fd, ret;
-+	struct sched_param param;
+ 	struct sched_param param;
  
++	if (argc == 1)
++		ret = set_unload_heads_path("/dev/sda");
++	else if (argc == 2)
++		ret = set_unload_heads_path(argv[1]);
++	else
++		ret = -EINVAL;
++
++	if (ret || !valid_disk()) {
++		fprintf(stderr, "usage: %s <device> (default: /dev/sda)\n",
++				argv[0]);
++		exit(1);
++	}
++
  	fd = open("/dev/freefall", O_RDONLY);
  	if (fd < 0) {
-@@ -69,6 +72,11 @@ int main(int argc, char *argv[])
+-		perror("open");
++		perror("/dev/freefall");
  		return EXIT_FAILURE;
  	}
  
-+	daemon(0, 0);
-+	param.sched_priority = sched_get_priority_max(SCHED_FIFO);
-+	sched_setscheduler(0, SCHED_FIFO, &param);
-+	mlockall(MCL_CURRENT|MCL_FUTURE);
-+
- 	signal(SIGALRM, ignore_me);
- 
- 	for (;;) {
