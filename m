@@ -1,44 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752282AbZGYUsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752222AbZGYUwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752282AbZGYUsw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 16:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbZGYUsv
+	id S1752222AbZGYUwQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 16:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbZGYUwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 16:48:51 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51393 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751931AbZGYUsv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 16:48:51 -0400
-Date: Sat, 25 Jul 2009 22:48:39 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org, Jiri Kosina <trivial@kernel.org>,
-       Christian Thaeter <ct@pipapo.org>
-Subject: Re: [PATCH 2/2] hpfall: accept disk device to unload as argument
-Message-ID: <20090725204838.GA2246@elf.ucw.cz>
-References: <200907252055.16416.elendil@planet.nl> <200907252100.14175.elendil@planet.nl>
+	Sat, 25 Jul 2009 16:52:15 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55401 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751522AbZGYUwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Jul 2009 16:52:14 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>
+Subject: Re: [BISECTED] HP G7000 battery disappears after suspend
+Date: Sat, 25 Jul 2009 22:52:37 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+References: <61b223ba0907081216q3813c8f0n677bcce8b24ae52c@mail.gmail.com> <200907092211.31250.rjw@sisk.pl> <200907101837.29026.bzolnier@gmail.com>
+In-Reply-To: <200907101837.29026.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200907252100.14175.elendil@planet.nl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200907252252.38254.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2009-07-25 21:00:12, Frans Pop wrote:
-> Allows users who use an IDE driver for their disk to use hpfall without
-> having to modify the source. By default /dev/sda is used.
-> Suggested by Christian Thaeter in http://lkml.org/lkml/2009/3/25/505.
-> 
-> While we're add it, improve error message if opening /dev/freefall fails.
-> 
-> Signed-off-by: Frans Pop <elendil@planet.nl>
-> Cc: Pavel Machek <pavel@ucw.cz>
+Hi Len,
 
-ACK.
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+On Friday 10 July 2009, Bartlomiej Zolnierkiewicz wrote:
+> On Thursday 09 July 2009 22:11:30 Rafael J. Wysocki wrote:
+> > On Thursday 09 July 2009, Alan Jenkins wrote:
+> > > 2009/7/8 Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>:
+> > > > On Wednesday 08 July 2009 21:41:17 Rafael J. Wysocki wrote:
+> > > >> On Wednesday 08 July 2009, Alan Jenkins wrote:
+> > > >> > Hi,
+> > > >> >
+> > > >> > I've borrowed this laptop for a few days.  Linux works pretty well,
+> > > >> > but I found a problem on newer kernels.  After suspend it claims the
+> > > >> > battery has been removed.  E.g. /proc/acpi/battery/BAT0/state claims
+> > > >> > the battery is not present (but it is).
+> > > >> >
+> > > >> > I've attached acpidump and dmidecode output at
+> > > >> > <http://bugzilla.kernel.org/show_bug.cgi?id=13745>.  I still have
+> > > >> > access to the laptop for further tests, but only until Friday.
+> > > >> >
+> > > >> > I bisected it to the commit below.  Manually reverting the patch fixes
+> > > >> > the problem (in both 2.6.30 and 2.6.31-rc2).
+> > > >>
+> > > >> Well, the commit below can't be reverted, because that would cause the boxes
+> > > >> it fixed to stop working.
+> > > >>
+> > > >> Now, the only case this patch can make any difference is when the BIOS doesn't
+> > > >> set SCI_EN before returning control the the kernel, which quite evidently is a
+> > > >> BIOS bug.  The fact that the battery doesn't work with this patch applied means
+> > > >> that the BIOS not only doesn't set SCI_EN, but also expects it to remain unset,
+> > > >> which is insane.
+> > > >>
+> > > >> IMO this is a "won't fix", sorry.
+> > > >
+> > > > Lets be pragmatic here..
+> > > >
+> > > > Besides this is a regression and we are already handling some such insane
+> > > > systems in STR case.  Moreover sending SMI ACPI_ENABLE command may result in
+> > > > some things happening behind our back and not only setting of SCI_EN bit..
+> > > >
+> > > > PS Looking at the set_sci_en_on_resume quirk history it seems that if we are
+> > > > lucky we may may fix another issue (screaming IRQ one) at the same time :)
+> > > >
+> > > > Alan, could you try this patch?
+> > > >
+> > > > ---
+> > > > debug patch (needs to have both CONFIG_SUSPEND=y & CONFIG_HIBERNATION=y)
+> > > >
+> > > >  drivers/acpi/sleep.c |   13 ++++++++++++-
+> > > >  1 file changed, 12 insertions(+), 1 deletion(-)
+> > > >
+> > > > Index: b/drivers/acpi/sleep.c
+> > > > ===================================================================
+> > > > --- a/drivers/acpi/sleep.c
+> > > > +++ b/drivers/acpi/sleep.c
+> > > > @@ -383,6 +383,14 @@ static struct dmi_system_id __initdata a
+> > > >                },
+> > > >        },
+> > > >        {
+> > > > +       .callback = init_set_sci_en_on_resume,
+> > > > +       .ident = "Hewlett-Packard HP G7000 Notebook PC",
+> > > > +       .matches = {
+> > > > +               DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
+> > > > +               DMI_MATCH(DMI_PRODUCT_NAME, "HP G7000 Notebook PC"),
+> > > > +               },
+> > > > +       },
+> > > > +       {
+> > > >        .callback = init_old_suspend_ordering,
+> > > >        .ident = "Panasonic CF51-2L",
+> > > >        .matches = {
+> > > 
+> > > Thanks for coding this up for me in full.  It works, the battery now
+> > > survives, and it does indeed remove the IRQ warning.
+> > 
+> > Great, thanks for testing, Bart, thanks for the patch!
+> > 
+> > Len, can you add the Bart's patch to your 2.6.31 queue, please?
+> 
+> Here is the final patch version:
+> 
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] acpi: HP G7000 Notebook needs a SCI_EN resume quirk
+> 
+> This fixes regression (battery "vanishing" on resume) introduced by
+> commit d0c71fe7ebc180f1b7bc7da1d39a07fc19eec768 ("ACPI Suspend: Enable
+> ACPI during resume if SCI_EN is not set") and also the issue with
+> the "screaming" IRQ 9.
+> 
+> Fixes:
+> 	http://bugzilla.kernel.org/show_bug.cgi?id=13745
+> 
+> Reported-and-tested-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+> Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: stable@kernel.org
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+I'm adding this patch to my linux-next branch and will push it to Linus for
+2.6.32.  Is that fine with you?
+
+Rafael
+
+
+> ---
+>  drivers/acpi/sleep.c |   13 ++++++++++++-
+>  1 file changed, 12 insertions(+), 1 deletion(-)
+> 
+> Index: b/drivers/acpi/sleep.c
+> ===================================================================
+> --- a/drivers/acpi/sleep.c
+> +++ b/drivers/acpi/sleep.c
+> @@ -383,6 +383,14 @@ static struct dmi_system_id __initdata a
+>  		},
+>  	},
+>  	{
+> +	.callback = init_set_sci_en_on_resume,
+> +	.ident = "Hewlett-Packard HP G7000 Notebook PC",
+> +	.matches = {
+> +		DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
+> +		DMI_MATCH(DMI_PRODUCT_NAME, "HP G7000 Notebook PC"),
+> +		},
+> +	},
+> +	{
+>  	.callback = init_old_suspend_ordering,
+>  	.ident = "Panasonic CF51-2L",
+>  	.matches = {
+> 
