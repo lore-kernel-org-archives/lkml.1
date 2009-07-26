@@ -1,158 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbZGZWvJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbZGZW4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100AbZGZWvJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 18:51:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbZGZWvJ
+	id S1754119AbZGZW4T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 18:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbZGZW4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 18:51:09 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:54002 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754025AbZGZWvI (ORCPT
+	Sun, 26 Jul 2009 18:56:18 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60045 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754062AbZGZW4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 18:51:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=L8VEu6KenNUoJtG/VfHnVtfF+zIxlxsWR0rd/hNS8rjP9x1JWxd8NX7VxvY6WFW94U
-         TLs6ebEfKXAqubHF81usW7SVHhRROFu0SIUV2S6V/8EcuK99kksUifqxgCKu8zYxefvr
-         DW3CCSNUYFyuOJNAnPZG3DIzPAGRrZNblH2MQ=
-Subject: Re: [PATCH 1/1] acer-wmi: switch driver to dev_pm_ops
-From: Arnaud Faucher <arnaud.faucher@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Frans Pop <elendil@planet.nl>,
-       Manuel Lauss <manuel.lauss@gmail.com>, Erik Ekman <erik@kryo.se>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <EF5CB084-D774-49E3-9E9F-6803ECB9862C@gmail.com>
-References: <1248527091-18246-1-git-send-email-arnaud.faucher@gmail.com>
-	 <200907261523.30378.carlos@strangeworlds.co.uk>
-	 <20090726180809.GA31396@dtor-d630.eng.vmware.com>
-	 <200907261935.08762.carlos@strangeworlds.co.uk>
-	 <1248640128.4216.13.camel@green>
-	 <EF5CB084-D774-49E3-9E9F-6803ECB9862C@gmail.com>
-Content-Type: text/plain
-Date: Sun, 26 Jul 2009 18:51:03 -0400
-Message-Id: <1248648663.3718.7.camel@green>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.27.4.1 
+	Sun, 26 Jul 2009 18:56:18 -0400
+Message-ID: <d3f2ef305f8c04aca0d93765a8dde741.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <Pine.LNX.4.64.0907261639570.32238@sister.anvils>
+References: <20090709122428.8c2d4232.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090716180134.3393acde.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090723085137.b14fe267.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090722171245.d5b3a108.akpm@linux-foundation.org>
+    <20090723093334.3166e9d2.kamezawa.hiroyu@jp.fujitsu.com>
+    <Pine.LNX.4.64.0907261639570.32238@sister.anvils>
+Date: Mon, 27 Jul 2009 07:56:15 +0900 (JST)
+Subject: Re: [PATCH 0/2] ZERO PAGE again v4.
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Hugh Dickins" <hugh.dickins@tiscali.co.uk>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, npiggin@suse.de, avi@redhat.com,
+       torvalds@linux-foundation.org, aarcange@redhat.com
+User-Agent: SquirrelMail/1.4.16
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-2022-jp
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On dim, 2009-07-26 at 14:33 -0700, Dmitry Torokhov wrote:
-> On Jul 26, 2009, at 1:28 PM, Arnaud Faucher <arnaud.faucher@gmail.com>  
-> wrote:
-> 
-> > On dim, 2009-07-26 at 19:35 +0100, Carlos Corbacho wrote:
-> >> On Sunday 26 July 2009 19:08:09 Dmitry Torokhov wrote:
-> >>> On Sun, Jul 26, 2009 at 03:23:29PM +0100, Carlos Corbacho wrote:
-> >>>> [Removing linux-mips from CC - I don't know why they'd be  
-> >>>> interested in
-> >>>> an x86 only platform driver...]
-> >>>>
-> >>>> On Sunday 26 July 2009 14:53:33 Arnaud Faucher wrote:
-> >>>>> Gets rid of the following warning:
-> >>>>> Platform driver 'acer-wmi' needs updating - please use dev_pm_ops
-> >>>>>
-> >>>>> Take 2, thanks to Dmitry, Rafael and Frans for pointing out PM  
-> >>>>> issue on
-> >>>>> hibernation when using dev_pm_ops blindly.
-> >>>>>
-> >>>>> This patch was tested against suspendand hibernation (Acer mail  
-> >>>>> led
-> >>>>> status).
-> >>>>>
-> >>>>> Signed-off-by: Arnaud Faucher <arnaud.faucher@gmail.com>
-> >>>>> ---
-> >>>>> drivers/platform/x86/acer-wmi.c |   17 ++++++++++++-----
-> >>>>> 1 files changed, 12 insertions(+), 5 deletions(-)
-> >>>>>
-> >>>>> diff --git a/drivers/platform/x86/acer-wmi.c
-> >>>>> b/drivers/platform/x86/acer-wmi.c
-> >>>>> index be2fd6f..29374bc 100644
-> >>>>> --- a/drivers/platform/x86/acer-wmi.c
-> >>>>> +++ b/drivers/platform/x86/acer-wmi.c
-> >>>>> @@ -1152,8 +1152,7 @@ static int acer_platform_remove(struct
-> >>>>> platform_device *device)
-> >>>>>    return 0;
-> >>>>> }
-> >>>>>
-> >>>>> -static int acer_platform_suspend(struct platform_device *dev,
-> >>>>> -pm_message_t state)
-> >>>>> +static int acer_platform_suspend(struct device *dev)
-> >>>>> {
-> >>>>>    u32 value;
-> >>>>>    struct acer_data *data = &interface->data;
-> >>>>> @@ -1174,7 +1173,7 @@ pm_message_t state)
-> >>>>>    return 0;
-> >>>>> }
-> >>>>>
-> >>>>> -static int acer_platform_resume(struct platform_device *device)
-> >>>>> +static int acer_platform_resume(struct device *dev)
-> >>>>> {
-> >>>>>    struct acer_data *data = &interface->data;
-> >>>>>
-> >>>>> @@ -1190,15 +1189,23 @@ static int acer_platform_resume(struct
-> >>>>> platform_device *device)
-> >>>>>    return 0;
-> >>>>> }
-> >>>>>
-> >>>>> +static struct dev_pm_ops acer_platform_pm_ops = {
-> >>>>> +    .suspend = acer_platform_suspend,
-> >>>>> +    .resume = acer_platform_resume,
-> >>>>
-> >>>> Are these necessary? For suspend-to-RAM, I've never needed these.  
-> >>>> The old
-> >>>> callbacks here were just for suspend-to-disk.
-> >>>
-> >>> That is not correct. Old suspend and resume callbacks were called  
-> >>> for
-> >>> both S2R and S2D. Whether it is actually needed for S2R I don't  
-> >>> know but
-> >>> looking at the code they should not hurt.
-> >>
-> >> I'm aware they were called for S2RAM as well, but that was just a  
-> >> limitation
-> >> of the old calls - as I say, they're not needed for it (at least on  
-> >> my
-> >> hardware anyway).
-> >>
-> >
-> > I was looking for similar functionality.
-> >
-> >>>>> +    .freeze = acer_platform_suspend,
-> >>>>> +    .thaw = acer_platform_resume,
-> >>>>
-> >>>> If we only need these callbacks for freeze & thaw, they should be
-> >>>> rebamed.
-> >>>>
-> >>>>> +    .poweroff = acer_platform_suspend,
-> >>>>> +    .restore = acer_platform_resume,
-> >>>>
-> >>>> What do poweroff and restore mean in this context. Do my comments  
-> >>>> above
-> >>>> apply again (i.e. are the callbacks necessary here)?
-> >>>
-> >>> I don't think poweroff handler is needed.
-> >
-> > After testing many combinations, I observed that I had to use that  
-> > much
-> > callbacks. For example, when omitting to wire .poweroff/.restore,
-> > with .freeze/.thaw linked to suspend()/resume(), the state (of the  
-> > mail
-> > led) is not restored correctly after S2D.
-> 
-> 
-> Have you tried with just 3 - freeze, thaw and restore?
-> 
+Hugh Dickins さんは書きました：
+> On Thu, 23 Jul 2009, KAMEZAWA Hiroyuki wrote:
+>> On Wed, 22 Jul 2009 17:12:45 -0700
+>> Andrew Morton <akpm@linux-foundation.org> wrote:
+>> > On Thu, 23 Jul 2009 08:51:37 +0900
+>> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>> > > On Thu, 16 Jul 2009 18:01:34 +0900
+>> > > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>> > > >
+>> > > > Rebased onto  mm-of-the-moment snapshot 2009-07-15-20-57.
+>> > > > And modifeied to make vm_normal_page() eat FOLL_NOZERO, directly.
+>> > > >
+>> > > > Any comments ?
+>
+> Sorry, I've been waiting to have something positive to suggest,
+> but today still busy with my own issues (handling OOM in KSM).
+>
+no problems. thank you.
 
-State restoration seems to be OK with only those three ones (tested
-against both S2RAM and S2D on my Acer Aspire 5680).
+> I do dislike that additional argument to vm_normal_page, and
+> feel that's a problem to be solved in follow_page, rather
+> than spread to every other vm_normal_page user.
+>
+Hmm, I'll check whether it's necessary or not agian before v5.
 
-BTW, in the "struct dev_pm_ops" documentation, it would be interesting
-to know which callback sequence occurs in case of S2RAM and S2D events.
+> Does follow_page even need to be using vm_normal_page?
+Avoiding it means follow_page() has to handle pte_special().
+But yes, all vm_normal_page() users other than get_user_page() uses
+__FOLL_NOZERO. I feel it's just "which is cleaner ?" problem.
+
+
+> Hmm, VM_MIXEDMAP, __get_user_pages doesn't exclude that.
+> > I also feel a strong (but not yet fulfilled) urge to check
+> all the use_zero_page ignore_zero stuff: which is far from
+> self-evident.
+>
+I'll add comment more, in v5 (if vm_normal_page() still have "flags")
+
+I myself feels I'll have to update this to v6 or v7.
+
+Thank you
+-Kame
 
 
