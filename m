@@ -1,122 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbZGZOht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753583AbZGZOly@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753551AbZGZOht (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 10:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbZGZOht
+	id S1753583AbZGZOly (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 10:41:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbZGZOlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 10:37:49 -0400
-Received: from phoenix.slamd64.com ([217.10.145.2]:33528 "EHLO
-	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753527AbZGZOhs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 10:37:48 -0400
-X-Greylist: delayed 820 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 Jul 2009 10:37:48 EDT
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-To: Arnaud Faucher <arnaud.faucher@gmail.com>
-Subject: Re: [PATCH 1/1] acer-wmi: switch driver to dev_pm_ops
-Date: Sun, 26 Jul 2009 15:23:29 +0100
-User-Agent: KMail/1.11.4 (Linux/2.6.30; KDE/4.2.4; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Frans Pop <elendil@planet.nl>,
-       Manuel Lauss <manuel.lauss@gmail.com>, Erik Ekman <erik@kryo.se>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-References: <1248527091-18246-1-git-send-email-arnaud.faucher@gmail.com> <200907252204.44875.rjw@sisk.pl> <1248616413.3922.7.camel@green>
-In-Reply-To: <1248616413.3922.7.camel@green>
+	Sun, 26 Jul 2009 10:41:53 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39295 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753565AbZGZOlx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Jul 2009 10:41:53 -0400
+Date: Sun, 26 Jul 2009 14:41:52 +0000
+From: Willy Tarreau <wtarreau@hera.kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.4.37.4
+Message-ID: <20090726144152.GA2844@hera.kernel.org>
+Reply-To: w@1wt.eu
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907261523.30378.carlos@strangeworlds.co.uk>
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Sun, 26 Jul 2009 14:23:35 +0000 (UTC)
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 26 Jul 2009 14:41:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Removing linux-mips from CC - I don't know why they'd be interested in an x86 
-only platform driver...]
 
-On Sunday 26 July 2009 14:53:33 Arnaud Faucher wrote:
-> Gets rid of the following warning:
-> Platform driver 'acer-wmi' needs updating - please use dev_pm_ops
->
-> Take 2, thanks to Dmitry, Rafael and Frans for pointing out PM issue on
-> hibernation when using dev_pm_ops blindly.
->
-> This patch was tested against suspendand hibernation (Acer mail led
-> status).
->
-> Signed-off-by: Arnaud Faucher <arnaud.faucher@gmail.com>
-> ---
->  drivers/platform/x86/acer-wmi.c |   17 ++++++++++++-----
->  1 files changed, 12 insertions(+), 5 deletions(-)
->
-> diff --git a/drivers/platform/x86/acer-wmi.c
-> b/drivers/platform/x86/acer-wmi.c
-> index be2fd6f..29374bc 100644
-> --- a/drivers/platform/x86/acer-wmi.c
-> +++ b/drivers/platform/x86/acer-wmi.c
-> @@ -1152,8 +1152,7 @@ static int acer_platform_remove(struct
-> platform_device *device)
->  	return 0;
->  }
->
-> -static int acer_platform_suspend(struct platform_device *dev,
-> -pm_message_t state)
-> +static int acer_platform_suspend(struct device *dev)
->  {
->  	u32 value;
->  	struct acer_data *data = &interface->data;
-> @@ -1174,7 +1173,7 @@ pm_message_t state)
->  	return 0;
->  }
->
-> -static int acer_platform_resume(struct platform_device *device)
-> +static int acer_platform_resume(struct device *dev)
->  {
->  	struct acer_data *data = &interface->data;
->
-> @@ -1190,15 +1189,23 @@ static int acer_platform_resume(struct
-> platform_device *device)
->  	return 0;
->  }
->
-> +static struct dev_pm_ops acer_platform_pm_ops = {
-> +	.suspend = acer_platform_suspend,
-> +	.resume = acer_platform_resume,
+I've just released Linux 2.4.37.4.
 
-Are these necessary? For suspend-to-RAM, I've never needed these. The old 
-callbacks here were just for suspend-to-disk.
+It fixes a build error that my last fix to memcmp has introduced
+on some archs such as MIPS. It also removes annoying warnings that
+were emitted when building with CONFIG_MODVERSIONS=y. This time I
+have built for i386, x86_64 and alpha, so we should be fine.
 
-> +	.freeze = acer_platform_suspend,
-> +	.thaw = acer_platform_resume,
+Another relevant fix is related to the personality issue recently
+discovered by Julien Tinnes and Tavis Ormandy and fixed in kernel
+2.6. While performing deeper checks on 2.4 with Solar Designer, we
+found that some archs such as x86_64 are similarly affected while
+others like i386 and alpha are not. I would appreciate it if arch
+maintainers and/or people well aware of the personality uses could
+help us figuring out how this is *supposed* to work and fix the
+affected code path. Right now we have applied a common preventive
+fix which protects against initial NULL mapping when mmap_min_addr
+is correctly set. This should be enough even on untested architectures,
+but that's not a reason for not fixing them.
 
-If we only need these callbacks for freeze & thaw, they should be rebamed.
+The rest is minor ; fix for some failures to correctly detect some USB
+flash drives, and proper MTU checks on tulip to fix VLAN support (tested
+and works).
 
-> +	.poweroff = acer_platform_suspend,
-> +	.restore = acer_platform_resume,
+The patch and changelog will appear soon at the following locations:
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/patch-2.4.37.4.bz2
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.37.4
 
-What do poweroff and restore mean in this context. Do my comments above apply 
-again (i.e. are the callbacks necessary here)?
+Git repository:
+   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.4.37.y.git
+  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.4.37.y.git
 
-> +};
-> +
->  static struct platform_driver acer_platform_driver = {
->  	.driver = {
->  		.name = "acer-wmi",
->  		.owner = THIS_MODULE,
-> +		.pm = &acer_platform_pm_ops,
->  	},
->  	.probe = acer_platform_probe,
->  	.remove = acer_platform_remove,
-> -	.suspend = acer_platform_suspend,
-> -	.resume = acer_platform_resume,
->  };
->
->  static struct platform_device *acer_platform_device;
+Git repository through the gitweb interface:
+  http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.4.37.y.git
 
--Carlos
--- 
-E-Mail: carlos@strangeworlds.co.uk
-Web: strangeworlds.co.uk
-GPG Key ID: 0x23EE722D
+Note for those who have already upgraded to 2.4.37.3 : the security fix
+is not *that* serious, as it protects against faulty setuid programs. If
+you don't have any issues with 2.4.37.3, there's no emergency to upgrade.
+
+Willy
+
+--
+Summary of changes from v2.4.37.3 to v2.4.37.4
+============================================
+
+Tomasz Lemiech (1):
+      tulip: Fix for MTU problems with 802.1q tagged frames
+
+Willy Tarreau (6):
+      lib: memcmp must be exported without module versioning
+      lib: fix again memcmp export issues in the arch ksyms only
+      usb-storage: fix "READ CAPACITY failed" errors with USB flash drives
+      md/raid5: silent out the "switching cache buffer size" messages
+      personality: clear MMAP_PAGE_ZERO on exec if mmap_min_addr is set
+      Change VERSION to 2.4.37.4
+
+Zhang Rui (1):
+      kernel/resource.c: fix sign extension in reserve_setup()
+
