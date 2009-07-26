@@ -1,64 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbZGZIXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753180AbZGZIYM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753253AbZGZIXo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 04:23:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbZGZIXm
+	id S1753180AbZGZIYM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 04:24:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbZGZITv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 04:23:42 -0400
-Received: from www.tglx.de ([62.245.132.106]:34080 "EHLO www.tglx.de"
+	Sun, 26 Jul 2009 04:19:51 -0400
+Received: from www.tglx.de ([62.245.132.106]:57948 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753110AbZGZIXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 04:23:41 -0400
-Message-Id: <20090726081555.073502498@linutronix.de>
+	id S1752252AbZGZITs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Jul 2009 04:19:48 -0400
+Message-Id: <20090726081555.354074236@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Sun, 26 Jul 2009 08:18:15 -0000
+Date: Sun, 26 Jul 2009 08:18:23 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
        Peter Zijlstra <peterz@infradead.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [Patch RFC 14/37] scsi: aacraid semaphore cleanup
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: [Patch RFC 16/37] smbfs: Convert server->sem to mutex
 References: <20090726081459.455111897@linutronix.de>
-Content-Disposition: inline; filename=driver-scsi-aacraid-sema-cleanup.patch
+Content-Disposition: inline; filename=convert-smbfs-inode-sem-to-mutex.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The usage of these "mutex"es is non obvious and probably completions
-in some places. Make it them semaphores.
+server->sem is used as mutex so make it a mutex.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/scsi/aacraid/commctrl.c |    2 +-
- drivers/scsi/aacraid/commsup.c  |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ fs/smbfs/inode.c          |    2 +-
+ include/linux/smb_fs_sb.h |    8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-Index: linux-2.6-tip/drivers/scsi/aacraid/commctrl.c
+Index: linux-2.6-tip/fs/smbfs/inode.c
 ===================================================================
---- linux-2.6-tip.orig/drivers/scsi/aacraid/commctrl.c
-+++ linux-2.6-tip/drivers/scsi/aacraid/commctrl.c
-@@ -190,7 +190,7 @@ static int open_getadapter_fib(struct aa
- 		/*
- 		 *	Initialize the mutex used to wait for the next AIF.
- 		 */
--		init_MUTEX_LOCKED(&fibctx->wait_sem);
-+		semaphore_init_locked(&fibctx->wait_sem);
- 		fibctx->wait = 0;
- 		/*
- 		 *	Initialize the fibs and set the count of fibs on
-Index: linux-2.6-tip/drivers/scsi/aacraid/commsup.c
+--- linux-2.6-tip.orig/fs/smbfs/inode.c
++++ linux-2.6-tip/fs/smbfs/inode.c
+@@ -536,7 +536,7 @@ static int smb_fill_super(struct super_b
+ 	server->mnt = NULL;
+ 	server->sock_file = NULL;
+ 	init_waitqueue_head(&server->conn_wq);
+-	init_MUTEX(&server->sem);
++	mutex_init(&server->mutex);
+ 	INIT_LIST_HEAD(&server->entry);
+ 	INIT_LIST_HEAD(&server->xmitq);
+ 	INIT_LIST_HEAD(&server->recvq);
+Index: linux-2.6-tip/include/linux/smb_fs_sb.h
 ===================================================================
---- linux-2.6-tip.orig/drivers/scsi/aacraid/commsup.c
-+++ linux-2.6-tip/drivers/scsi/aacraid/commsup.c
-@@ -124,7 +124,7 @@ int aac_fib_setup(struct aac_dev * dev)
- 		fibptr->hw_fib_va = hw_fib;
- 		fibptr->data = (void *) fibptr->hw_fib_va->data;
- 		fibptr->next = fibptr+1;	/* Forward chain the fibs */
--		init_MUTEX_LOCKED(&fibptr->event_wait);
-+		semaphore_init_locked(&fibptr->event_wait);
- 		spin_lock_init(&fibptr->event_lock);
- 		hw_fib->header.XferState = cpu_to_le32(0xffffffff);
- 		hw_fib->header.SenderSize = cpu_to_le16(dev->max_fib_size);
+--- linux-2.6-tip.orig/include/linux/smb_fs_sb.h
++++ linux-2.6-tip/include/linux/smb_fs_sb.h
+@@ -57,7 +57,7 @@ struct smb_sb_info {
+ 	struct smb_conn_opt opt;
+ 	wait_queue_head_t conn_wq;
+ 	int conn_complete;
+-	struct semaphore sem;
++	struct mutex mutex;
+ 
+ 	unsigned char      header[SMB_HEADER_LEN + 20*2 + 2];
+ 	u32                header_len;
+@@ -79,19 +79,19 @@ struct smb_sb_info {
+ static inline int
+ smb_lock_server_interruptible(struct smb_sb_info *server)
+ {
+-	return down_interruptible(&(server->sem));
++	return mutex_lock_interruptible(&server->mutex);
+ }
+ 
+ static inline void
+ smb_lock_server(struct smb_sb_info *server)
+ {
+-	down(&(server->sem));
++	mutex_lock(&server->mutex);
+ }
+ 
+ static inline void
+ smb_unlock_server(struct smb_sb_info *server)
+ {
+-	up(&(server->sem));
++	mutex_unlock(&server->mutex);
+ }
+ 
+ #endif
 
 
