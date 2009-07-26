@@ -1,80 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751116AbZGYOEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751364AbZGYOKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751116AbZGYOEW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 10:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbZGYOEV
+	id S1751364AbZGYOKh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 10:10:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbZGYOKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 10:04:21 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36221 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750817AbZGYOEV (ORCPT
+	Sat, 25 Jul 2009 10:10:36 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:60599 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751202AbZGYOKf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 10:04:21 -0400
-Date: Sat, 25 Jul 2009 15:05:10 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Regression] kdesu broken
-Message-ID: <20090725150510.35e8854d@lxorguk.ukuu.org.uk>
-In-Reply-To: <87ws5xjo2x.fsf@devron.myhome.or.jp>
-References: <200907240145.31935.rjw@sisk.pl>
-	<2c0942db0907231721q124dc8f9mdbe64ed33c69ffbf@mail.gmail.com>
-	<200907241721.45943.rjw@sisk.pl>
-	<20090724164058.21a054e6@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907240930120.3960@localhost.localdomain>
-	<87ws5xjo2x.fsf@devron.myhome.or.jp>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 25 Jul 2009 10:10:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=cCWo6YhBGnxZF8E7ePN74OvFbh8iVrkjhW3lKkhmxyjsg9YbKi46I15KW0jYP5UqNS
+         52lQDTG7dTsHgq2sNnYzaJyxTySe50Sc0RbQU4NzQCAjdqTTc5UuInrADTTzi34FdFfF
+         nuwvVzrXV6SxBiYkKdlYpBUSkNdU9PUjIpUYE=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: jgarzik@pobox.com
+Subject: [PATCH] libata: remove superfluous NULL pointer checks
+Date: Sun, 26 Jul 2009 16:05:13 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc4-next-20090723-04314-g011b7b2-dirty; KDE/4.2.4; i686; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Dan Carpenter <error27@gmail.com>, corbet@lwn.net, eteo@redhat.com
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907261605.14619.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Actually try this:
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] libata: remove superfluous NULL pointer checks
 
+host->ports[] always contain pointers to valid port structures since
+a "dummy port" structure is used in case if there is no physical port.
 
-commit b0e6bdde87725a5d46273ecc4bd00c54bd675848
-Author: Alan Cox <alan@linux.intel.com>
-Date:   Sat Jul 25 15:00:04 2009 +0100
+This patch takes care of two entries from Dan's list:
 
-    pty: ensure writes hit the reader before close
-    
-    This is elegant in all the wrong ways. Put the pty into low latency mode (which
-    we can do as we always post bytes from user context). The tty_flip_buffer_push
-    then always calls into the ldisc which means we clear the ldisc buffer before
-    we set the TTY_OTHER_CLOSED flag.
-    
-    Means pty has subtle knowledge of tty internals we really don't want it to, but
-    it fixes the problem for the moment.
-    
-    Signed-off-by: Alan Cox <alan@linux.intel.com>
+drivers/ata/sata_sil.c +535 sil_interrupt(13) warning: variable derefenced before check 'ap'
+drivers/ata/sata_mv.c +2517 mv_unexpected_intr(6) warning: variable derefenced before check 'ap'
 
-diff --git a/drivers/char/pty.c b/drivers/char/pty.c
-index 6e6942c..87d729b 100644
---- a/drivers/char/pty.c
-+++ b/drivers/char/pty.c
-@@ -47,10 +47,12 @@ static void pty_close(struct tty_struct *tty, struct file *filp)
- 	}
- 	wake_up_interruptible(&tty->read_wait);
- 	wake_up_interruptible(&tty->write_wait);
-+	
- 	tty->packet = 0;
- 	if (!tty->link)
- 		return;
- 	tty->link->packet = 0;
-+	tty_flip_buffer_push(tty->link);
- 	set_bit(TTY_OTHER_CLOSED, &tty->link->flags);
- 	wake_up_interruptible(&tty->link->read_wait);
- 	wake_up_interruptible(&tty->link->write_wait);
-@@ -207,6 +209,7 @@ static int pty_open(struct tty_struct *tty, struct file *filp)
- 	clear_bit(TTY_OTHER_CLOSED, &tty->link->flags);
- 	set_bit(TTY_THROTTLED, &tty->flags);
- 	retval = 0;
-+	tty->low_latency = 1;
- out:
- 	return retval;
- }
+and of another needless NULL pointer check in pata_octeon_cf.c.
+
+Reported-by: Dan Carpenter <error27@gmail.com>
+Cc: corbet@lwn.net
+Cc: eteo@redhat.com
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ata/pata_octeon_cf.c |    3 ++-
+ drivers/ata/sata_mv.c        |    2 +-
+ drivers/ata/sata_sil.c       |    2 +-
+ 3 files changed, 4 insertions(+), 3 deletions(-)
+
+Index: b/drivers/ata/pata_octeon_cf.c
+===================================================================
+--- a/drivers/ata/pata_octeon_cf.c
++++ b/drivers/ata/pata_octeon_cf.c
+@@ -653,7 +653,8 @@ static irqreturn_t octeon_cf_interrupt(i
+ 
+ 		ap = host->ports[i];
+ 		ocd = ap->dev->platform_data;
+-		if (!ap || (ap->flags & ATA_FLAG_DISABLED))
++
++		if (ap->flags & ATA_FLAG_DISABLED)
+ 			continue;
+ 
+ 		ocd = ap->dev->platform_data;
+Index: b/drivers/ata/sata_mv.c
+===================================================================
+--- a/drivers/ata/sata_mv.c
++++ b/drivers/ata/sata_mv.c
+@@ -2514,7 +2514,7 @@ static void mv_unexpected_intr(struct at
+ 	char *when = "idle";
+ 
+ 	ata_ehi_clear_desc(ehi);
+-	if (!ap || (ap->flags & ATA_FLAG_DISABLED)) {
++	if (ap->flags & ATA_FLAG_DISABLED) {
+ 		when = "disabled";
+ 	} else if (edma_was_enabled) {
+ 		when = "EDMA enabled";
+Index: b/drivers/ata/sata_sil.c
+===================================================================
+--- a/drivers/ata/sata_sil.c
++++ b/drivers/ata/sata_sil.c
+@@ -532,7 +532,7 @@ static irqreturn_t sil_interrupt(int irq
+ 		struct ata_port *ap = host->ports[i];
+ 		u32 bmdma2 = readl(mmio_base + sil_port[ap->port_no].bmdma2);
+ 
+-		if (unlikely(!ap || ap->flags & ATA_FLAG_DISABLED))
++		if (unlikely(ap->flags & ATA_FLAG_DISABLED))
+ 			continue;
+ 
+ 		/* turn off SATA_IRQ if not supported */
