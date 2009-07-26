@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753347AbZGZKFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbZGZKKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753347AbZGZKFm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 06:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbZGZKFl
+	id S1753374AbZGZKKf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 06:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbZGZKKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 06:05:41 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:1688 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753326AbZGZKFl convert rfc822-to-8bit (ORCPT
+	Sun, 26 Jul 2009 06:10:34 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60811 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753343AbZGZKKd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 06:05:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=lUcxEnZrKKwhU632xDubwvI4poAIWnb04n9CmtijsHTuuJFDQ/4emP38qY6HdQQd5C
-         M4PHLXvs8e9GAnqq/W9qNotbX80QCZfzUPuk9KwsqwxX0aQskDvWtYzKPKF1QnFVnM8A
-         pGNhaKYSTrZ2AocNQ3aJVRnkPXp9S4Z5GRkEo=
+	Sun, 26 Jul 2009 06:10:33 -0400
+Date: Sun, 26 Jul 2009 12:10:28 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: WARN_ON namespace.c:638 mntput_no_expire on umount in 2.6.30
+Message-ID: <20090726101028.GA11367@basil.fritz.box>
 MIME-Version: 1.0
-In-Reply-To: <1248099954-6666-1-git-send-email-tom.leiming@gmail.com>
-References: <1248099954-6666-1-git-send-email-tom.leiming@gmail.com>
-Date: Sun, 26 Jul 2009 18:05:41 +0800
-Message-ID: <d82e647a0907260305i4cceaf07p3029f9ea3eb482cd@mail.gmail.com>
-Subject: Re: [PATCH v2 0/4] ARM:dma-mapping:DMA-API debugging patch set
-From: Ming Lei <tom.leiming@gmail.com>
-To: linux@arm.linux.org.uk, rmk@arm.linux.org.uk
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, Ming Lei <tom.leiming@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/20  <tom.leiming@gmail.com>:
-> From: Ming Lei <tom.leiming@gmail.com>
->
-> Hi,
-> This patch set introduces dma-api debugging facility on ARM, and is
-> against -rc3-next tree.
->
-> Based on the feedback from Russell King, this version removes
-> unnecessary calling of debug_dma_map_page and debug_dma_unmap_page
-> in dma_map_sg and dma_unmap_sg respectively.
->
->  arch/arm/Kconfig                   |    1 +
->  arch/arm/common/dmabounce.c        |   12 ++--
->  arch/arm/include/asm/dma-mapping.h |  114 +++++++++++++++++++++++++++++-------
->  arch/arm/mm/dma-mapping.c          |   41 ++++++++-----
->  4 files changed, 126 insertions(+), 42 deletions(-)
+Saw this when umounting a VFAT USB stick before it got pulled out.
+Haven't investigated, but thought I should post it.
 
-Hi, Russell
+-Andi
 
-Is this version OK for you now?
-
-Thanks.
+usb 2-1: new high speed USB device using ehci_hcd and address 4
+usb 2-1: configuration #1 chosen from 1 choice
+scsi6 : SCSI emulation for USB Mass Storage devices
+usb-storage: device found at 4
+usb-storage: waiting for device to settle before scanning
+scsi 6:0:0:0: Direct-Access     USB      Flash Disk       5.00 PQ: 0 ANSI: 2
+sd 6:0:0:0: Attached scsi generic sg1 type 0
+sd 6:0:0:0: [sdb] 4087808 512-byte hardware sectors: (2.09 GB/1.94 GiB)
+usb-storage: device scan complete
+sd 6:0:0:0: [sdb] Write Protect is off
+sd 6:0:0:0: [sdb] Mode Sense: 0b 00 00 08
+sd 6:0:0:0: [sdb] Assuming drive cache: write through
+sd 6:0:0:0: [sdb] Assuming drive cache: write through
+ sdb: sdb1
+sd 6:0:0:0: [sdb] Attached SCSI removable disk
+------------[ cut here ]------------
+WARNING: at /home/lsrc/linux-2.6.30-ak/fs/namespace.c:638 mntput_no_expire+0xcf/0x11b()
+Hardware name:         
+Modules linked in:  ...
+Pid: 8749, comm: umount Not tainted 2.6.30.2-BASIL #7
+Call Trace:
+ [<ffffffff8020e284>] dump_trace+0x6e/0x292
+ [<ffffffff805bccb3>] dump_stack+0x69/0x6f
+ [<ffffffff802376db>] warn_slowpath_common+0x77/0xa2
+ [<ffffffff802b78a1>] mntput_no_expire+0xcf/0x11b
+ [<ffffffff802b7e27>] sys_umount+0x2b7/0x2e2
+ [<ffffffff8020ba6b>] system_call_fastpath+0x16/0x1b
+ [<00007fe4739421c7>] 0x7fe4739421c7
+---[ end trace 6fa485b25ae0195b ]---
+usb 2-1: USB disconnect, address 4
 
 -- 
-Lei Ming
+ak@linux.intel.com -- Speaking for myself only.
