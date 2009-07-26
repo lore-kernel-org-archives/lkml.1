@@ -1,36 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbZGZXXI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbZGZXYG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754659AbZGZXXI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 19:23:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbZGZXUD
+	id S1754611AbZGZXYG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 19:24:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbZGZXYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 19:20:03 -0400
-Received: from joust.gpcc.itd.umich.edu ([141.211.2.207]:59126 "EHLO
-	joust.gpcc.itd.umich.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754255AbZGZXUA (ORCPT
+	Sun, 26 Jul 2009 19:24:04 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58523 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754158AbZGZXTb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 19:20:00 -0400
-X-Greylist: delayed 539 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 Jul 2009 19:20:00 EDT
-From: "Matthew D. Reuther" <mreuther@joust.gpcc.itd.umich.edu>
-Date: Sun, 26 Jul 2009 19:10:25 -0400
-To: linux-kernel@vger.kernel.org
-Subject: android lowmemorykiller breaks compile
-Message-ID: <4A6CE261.mailHX41REN0Z@joust.gpcc.itd.umich.edu>
-User-Agent: nail 10.5 4/27/03
+	Sun, 26 Jul 2009 19:19:31 -0400
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>,
+       "Heiko Carstens" <heiko.carstens@de.ibm.com>
+References: <Jya1GruKQpD.A.16.2GObKB@chimera>
+In-Reply-To: <Jya1GruKQpD.A.16.2GObKB@chimera>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <3zAHs5O6maO.A.TmC.RHObKB@chimera>
+Subject: [Bug #13827] PM/hibernate swapfile regression
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Sun, 26 Jul 2009 22:28:28 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't actually use Android, but I compile it just for giggles. With every one of the 2.6.31-rc releases, my compile breaks when it hits lowmemorykiller:
+This message has been generated automatically as a part of a report
+of recent regressions.
 
-drivers/staging/android/lowmemorykiller.c: In function 'lowmem_shrink':
-drivers/staging/android/lowmemorykiller.c:106: error: 'struct task_struct' has no member named 'oomkilladj'
-make[3]: *** [drivers/staging/android/lowmemorykiller.o] Error 1
-make[2]: *** [drivers/staging/android] Error 2
+The following bug entry is on the current list of known regressions
+from 2.6.30.  Please verify if it still should be listed and let me know
+(either way).
 
-Maybe this should not be selectable for x86? Can't tell.
 
-config:
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13827
+Subject		: PM/hibernate swapfile regression
+Submitter	: Heiko Carstens <heiko.carstens@de.ibm.com>
+Date		: 2009-07-14 15:54 (13 days old)
+References	: http://marc.info/?l=linux-kernel&m=124757972118196&w=4
+Handled-By	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Patch		: http://patchwork.kernel.org/patch/36510/
+
+
