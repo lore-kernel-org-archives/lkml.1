@@ -1,77 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbZGZAFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbZGZAKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753004AbZGZAFf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 25 Jul 2009 20:05:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZGZAFe
+	id S1753047AbZGZAKX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 25 Jul 2009 20:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbZGZAKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 25 Jul 2009 20:05:34 -0400
-Received: from mx6.orcon.net.nz ([219.88.242.56]:36085 "EHLO mx6.orcon.net.nz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752886AbZGZAFd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 25 Jul 2009 20:05:33 -0400
-Message-ID: <4A6B9DCB.1090001@orcon.net.nz>
-Date: Sun, 26 Jul 2009 12:05:31 +1200
-From: Michael Cree <mcree@orcon.net.nz>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
+	Sat, 25 Jul 2009 20:10:22 -0400
+Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:56842 "EHLO
+	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751632AbZGZAKW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 25 Jul 2009 20:10:22 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-kbuild@vger.kernel.org
+Subject: kbuild: fix the binrpm-pkg target to work with KBUILD_OUTPUT set
+Date: Sun, 26 Jul 2009 02:10:19 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Dave Airlie <airlied@gmail.com>
-CC: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
-       xorg@lists.freedesktop.org
-Subject: Re: Kernel 2.6.30.1 Oops on Alpha Architecture when starting Xserver
-References: <4A5DB243.2000100@orcon.net.nz>	 <21d7e9970907152016u3b213beet9090ee3b34f6d8b1@mail.gmail.com>	 <4A6ACE7C.9090409@orcon.net.nz> <21d7e9970907251554m18e4fca5p69b758e36fddc7d9@mail.gmail.com>
-In-Reply-To: <21d7e9970907251554m18e4fca5p69b758e36fddc7d9@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-DSPAM-Check: by mx6.orcon.net.nz on Sun, 26 Jul 2009 12:05:33 +1200
-X-DSPAM-Result: Innocent
-X-DSPAM-Processed: Sun Jul 26 12:05:33 2009
-X-DSPAM-Confidence: 0.7621
-X-DSPAM-Probability: 0.0000
+Content-Disposition: inline
+Message-Id: <200907260210.19784.elendil@planet.nl>
+X-OriginalArrivalTime: 26 Jul 2009 00:10:21.0623 (UTC) FILETIME=[7743E470:01CA0D85]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Airlie wrote:
->>>> The kernel oops is:
->>>>
->>>>         
->>> So its a machine check,
->>>
->>>       
->> So, does this indicate a software fault (e.g. inconsistencies in kernel data
->> structures) or does it imply a hardware fault?
->>
->>     
->>> Well X is trying to post the graphics card you have installed, and the
->>> machine
->>> is falling over when it does it.
->>>
->>>       
->> SRM (the equivalent of a BIOS) cannot post the card on startup.  But I have
->> had the card (radeon rv610) post correctly and working in the past when I
->> compiled the complete 1.5.3 Xserver myself.  I had it working with both the
->> radeon and radeonhd drivers and a 2.6.29.x kernel patched to support
->> libpciaccess.
->>     
->
-> There is no -ati card in that machine, its got some SiS card which is
-> completely
-> different, maybe its some onboard card or something.
->   
+The binrpm-pkg target (binary RPM only) fails when called with
+KBUILD_OUTPUT set. This patch makes it work.
 
-No, you have misunderstood.   I removed that Radeon rv610 card (that 
-caused the kernel oops) from the machine and replaced it with an old SiS 
-card I have.  The behaviour changed: now the Xserver locks up on 
-initialisation and consumes 100% CPU.  The backtrace I provided is with 
-the SiS card only.  I thought it might be helpful to locate the problem 
-(assuming that we are seeing a different symptom of the same underlying 
-problem).
+For the rpm-pkg target (source + binary RPM), building with
+KBUILD_OUTPUT set is not possible and also not needed as the
+actual build is done in a temporary directory anyway, so check
+that KBUILD_OUTPUT is not set in that case to avoid later errors.
 
-BTW, my attempt to CC the xorg mailing list failed.  It would seem that 
-they are too exclusive to allow posting to their email list without 
-subscription.  Putting up such barriers means they won't get bug reports 
-from such people as myself.  Their loss.
+Signed-off-by: Frans Pop <elendil@planet.nl>
+---
 
-Cheers
-Michael
+I ran into this while trying if I could build an RPM kernel package on
+my Debian notebook :-)
 
+The patch has been tested by doing three builds:
+- make -j4 rpm-pkg
+- make -j4 binrpm-pkg
+- KBUILD_OUTPUT=../builds/amd64 make -j4 binrpm-pkg
+
+For all three the contents of the resulting binary RPM package was identical
+(and looked correct); the source RPM package from the first build looked sane.
+
+A 'KBUILD_OUTPUT=../builds/amd64 make -j4 rpm-pkg' fails as intended.
+
+One open issue is that the following commands should IIUC be identical,
+but the second one does not work:
+- KBUILD_OUTPUT=../builds/amd64 make -j4 binrpm-pkg
+- make -j4 O=../builds/amd64 binrpm-pkg
+
+AFAICT the root Makefile is supposed to set KBUILD_OUTPUT based on O=, but
+that is not visible when the lines within the binrpm-pkg target are executed.
+My make foo was not strong enough to debug this. Sam, do you know?
+
+Cheers,
+FJP
+
+diff --git a/scripts/package/Makefile b/scripts/package/Makefile
+index fa4a0a1..b305c57 100644
+--- a/scripts/package/Makefile
++++ b/scripts/package/Makefile
+@@ -18,6 +18,9 @@
+ # e) generate the rpm files, based on kernel.spec
+ # - Use /. to avoid tar packing just the symlink
+ 
++# Note that the rpm-pkg target cannot be used with KBUILD_OUTPUT,
++# but the binrpm-pkg target can; for some reason O= gets ignored.
++
+ # Do we have rpmbuild, otherwise fall back to the older rpm
+ RPM := $(shell if [ -x "/usr/bin/rpmbuild" ]; then echo rpmbuild; \
+ 	           else echo rpm; fi)
+@@ -33,6 +36,12 @@ $(objtree)/kernel.spec: $(MKSPEC) $(srctree)/Makefile
+ 	$(CONFIG_SHELL) $(MKSPEC) > $@
+ 
+ rpm-pkg rpm: $(objtree)/kernel.spec FORCE
++	@if test -n "$(KBUILD_OUTPUT)"; then \
++		echo "Building source + binary RPM is not possible outside the"; \
++		echo "kernel source tree. Don't set KBUILD_OUTPUT, or use the"; \
++		echo "binrpm-pkg target instead."; \
++		false; \
++	fi
+ 	$(MAKE) clean
+ 	$(PREV) ln -sf $(srctree) $(KERNELPATH)
+ 	$(CONFIG_SHELL) $(srctree)/scripts/setlocalversion > $(objtree)/.scmversion
+@@ -61,7 +70,7 @@ binrpm-pkg: $(objtree)/binkernel.spec FORCE
+ 	set -e; \
+ 	mv -f $(objtree)/.tmp_version $(objtree)/.version
+ 
+-	$(RPM) $(RPMOPTS) --define "_builddir $(srctree)" --target \
++	$(RPM) $(RPMOPTS) --define "_builddir $(objtree)" --target \
+ 		$(UTS_MACHINE) -bb $<
+ 
+ clean-files += $(objtree)/binkernel.spec
+diff --git a/scripts/package/mkspec b/scripts/package/mkspec
+index 3d93f8c..ce9c60e 100755
+--- a/scripts/package/mkspec
++++ b/scripts/package/mkspec
+@@ -70,7 +70,7 @@ echo 'mkdir -p $RPM_BUILD_ROOT/boot $RPM_BUILD_ROOT/lib/modules'
+ echo 'mkdir -p $RPM_BUILD_ROOT/lib/firmware'
+ echo "%endif"
+ 
+-echo 'INSTALL_MOD_PATH=$RPM_BUILD_ROOT make %{_smp_mflags} modules_install'
++echo 'INSTALL_MOD_PATH=$RPM_BUILD_ROOT make %{_smp_mflags} KBUILD_SRC= modules_install'
+ echo "%ifarch ia64"
+ echo 'cp $KBUILD_IMAGE $RPM_BUILD_ROOT'"/boot/efi/vmlinuz-$KERNELRELEASE"
+ echo 'ln -s '"efi/vmlinuz-$KERNELRELEASE" '$RPM_BUILD_ROOT'"/boot/"
