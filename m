@@ -1,101 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752747AbZGZTPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbZGZTcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752747AbZGZTPW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 15:15:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbZGZTPW
+	id S1753106AbZGZTcd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 15:32:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbZGZTcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 15:15:22 -0400
-Received: from mail-bw0-f228.google.com ([209.85.218.228]:37746 "EHLO
-	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751149AbZGZTPV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 15:15:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=XzlDMqqoCfiMk3HauEA2YiYXoGLZ5IqWb08+KIovdSWQuJAPGRfcvoWUx1RSFk4x7H
-         D6HT8nBQUNeqJGjHdLCKuovX4U+R/Dg5N3XVzMqKQCyJt4DspJef0W4iMPcFSUEG1req
-         5Hy6daDjXQ2sts7jV87ARnKq2WMIJrTudGooM=
+	Sun, 26 Jul 2009 15:32:33 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57742 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752368AbZGZTcc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Jul 2009 15:32:32 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [Acpi4asus-user] [PATCH 2.6.31] rfkill: allow toggling soft state in sysfs again
+Date: Sun, 26 Jul 2009 21:32:38 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       acpi4asus-user@lists.sourceforge.net,
+       Darren Salt <linux@youmustbejoking.demon.co.uk>,
+       debian-eeepc-devel@lists.alioth.debian.org,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Thiemo Nagel <thiemo.nagel@ph.tum.de>,
+       Corentin Chary <corentin.chary@gmail.com>
+References: <4A5716AA.5000903@ph.tum.de> <200907252256.44570.rjw@sisk.pl> <20090725223505.GA2729@tuxdriver.com>
+In-Reply-To: <20090725223505.GA2729@tuxdriver.com>
 MIME-Version: 1.0
-In-Reply-To: <c6b1100b0907210439jf67d886s3125dafa5f4d3928@mail.gmail.com>
-References: <c6b1100b0907130127g3d4013c6n3264f79bd74bc9@mail.gmail.com>
-	 <c6b1100b0907140404h4fdbe419p8443da43350f3520@mail.gmail.com>
-	 <c6b1100b0907210439jf67d886s3125dafa5f4d3928@mail.gmail.com>
-Date: Sun, 26 Jul 2009 20:15:19 +0100
-Message-ID: <c6b1100b0907261215l71ada148y8a15f6595d939192@mail.gmail.com>
-Subject: Re: 2.6.31-rc2: Possible regression in rt61pci driver
-From: Chris Clayton <chris2553@googlemail.com>
-To: linux-wireless@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, linville@tuxdriver.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907262132.38947.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/21 Chris Clayton <chris2553@googlemail.com>:
-> 2009/7/14 Chris Clayton <chris2553@googlemail.com>:
-> <snip>
->
->> I've updated to 2.6.31-rc3 this morning and done some more testing.
->> I'm now convinced that the rt61pci driver is somehow involved in
->> locking up the laptop. With the (Belkin) rt61 card inserted, the
->> machine will lock up even if I am doing nothing (no web browsing,
->> email or anything else at all) except running this script in a console
->> window:
->>
->> i=0
->> while true; do
->>        let i++
->>        echo -n "$i "
->>        sleep 1
->> done
->>
->> In the tests I have done so far, the counter has never gone beyond 240
->> before the machine locked. With the (no-name) ath5k card inserted I
->> can use the laptop for normal web browsing, email, etc with no
->> problems - the counter in the script above gets to over 2000.
->>
->
-> The freeze still happens with 2.6.31-rc3-git5, but I've been doing
-> some more fact-finding.
->
-> Running the script shown above and with the rt61-based card inserted,
-> I can freeze the laptop even if I am doing nothing else on the laptop.
-> When the freeze occurs, the laptop is effectively dead, no response to
-> mouse movement or keyboard input and no response to pings from
-> another machine on my network. However, if I eject the card, the
-> laptop comes to life again. The key presses from when the laptop was
-> frozen appear on screen and pings from another machine are responded
-> to. The script continues to run and display the counter. I then
-> reinsert the card and everything appears OK until the laptop freezes
-> again a minute or two later. During a test run this morning the
-> machine froze at (from the output of the script) 80, 235, 369, 538 and
-> 672. Each time, ejecting the card brought the machine back to life.
->
-> Trying the same test with the ath5k-based card inserted resulted in
-> the script getting to 2300 without the laptop freezing, at which point
-> I stopped the script.
->
+On Sunday 26 July 2009, John W. Linville wrote:
+> On Sat, Jul 25, 2009 at 10:56:43PM +0200, Rafael J. Wysocki wrote:
+> > On Friday 10 July 2009, Johannes Berg wrote:
+> > > On Fri, 2009-07-10 at 22:09 +0100, Darren Salt wrote:
+> > > > I demand that Johannes Berg may or may not have written...
+> > > > 
+> > > > > Apparently there actually _are_ tools that try to set this in sysfs even
+> > > > > though it wasn't supposed to be used this way without claiming first.
+> > > > 
+> > > > Then it should have been documented as such. I don't see anything about this
+> > > > in Documentation/rfkill.txt (as found in 2.6.30), other than a vague
+> > > > statement that "Kernel handles events", which isn't exactly helpful :-\
+> > > 
+> > > Oh, it's not just that rfkill was horrible, the documentation matched :)
+> > > All the SHOUTING in it about what you must and must not do but nothing
+> > > actually helpful :)
+> > > 
+> > > > > *shrug*, I don't like it, but whatever...
+> > > > 
+> > > > I do. It means that we have a nice simple text-based interface for use in
+> > > > scripts (for now), and a binary interface which is better suited to the likes
+> > > > of desktop applications.
+> > > 
+> > > Indeed, and as long as you expect to only use soft toggle... problem is
+> > > that you won't know whether it's soft-toggled or not while it's
+> > > hard-blocked (off)!
+> > > 
+> > > > > Please test & report.
+> > > > 
+> > > > With the patch applied, Bluetooth toggling is working again, so you get to
+> > > > add this:
+> > > > 
+> > > > Tested-By: Darren Salt <linux@youmustbejoking.demon.co.uk>
+> > > 
+> > > Ok, John, please pick up the patch.
+> > 
+> > Is there anything going on with the patch?
+> > 
+> > Surely it's not in -rc4.
+> 
+> commit f54c142725ad2ba33c3ee627873cb6966bf05447
+> Author: Johannes Berg <johannes@sipsolutions.net>
+> Date:   Fri Jul 10 21:41:39 2009 +0200
+> 
+>     rfkill: allow toggling soft state in sysfs again
+>     
+>     Apparently there actually _are_ tools that try to set
+>     this in sysfs even though it wasn't supposed to be used
+>     this way without claiming first. Guess what: now that
+>     I've cleaned it all up it doesn't matter and we can
+>     simply allow setting the soft-block state in sysfs.
+>     
+>     Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+>     Tested-By: Darren Salt <linux@youmustbejoking.demon.co.uk>
+>     Signed-off-by: John W. Linville <linville@tuxdriver.com>
+> 
+> Didn't make -rc4, should be in -rc5.
 
-One more data point. I wondered whether the freeze would "time out" if
-I just left the laptop frozen, but my testing shows that it probably
-does not (or if it does it takes more than 27 minutes to do so.
+Great, thanks!
 
-I've also tried to bisect again, but, as last time, once I got to the
-batch of network-related changes that went into -rc1, I get a series
-of kernels that build but either won't boot or have inoperable
-wireless networking.
-
-Finally, since I haven't had a single reply to the regression report I
-posted almost two weeks ago, I now give up. I'll switch to using the
-card supported by the ath5k driver.
-
-<snip>
-
-Chris
--- 
-No, Sir; there is nothing which has yet been contrived by man, by
-which so much happiness is produced as by a good tavern or inn -
-Doctor Samuel Johnson
+Best,
+Rafael
