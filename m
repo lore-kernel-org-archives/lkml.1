@@ -1,70 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbZGZUKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbZGZULh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753304AbZGZUKS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 16:10:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbZGZUKS
+	id S1753919AbZGZULh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 16:11:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbZGZULg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 16:10:18 -0400
-Received: from c60.cesmail.net ([216.154.195.49]:12518 "EHLO c60.cesmail.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752917AbZGZUKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 16:10:17 -0400
-Subject: Re: 2.6.31-rc2: Possible regression in rt61pci driver
-From: Pavel Roskin <proski@gnu.org>
-To: Chris Clayton <chris2553@googlemail.com>
-Cc: linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linville@tuxdriver.com
-In-Reply-To: <c6b1100b0907261215l71ada148y8a15f6595d939192@mail.gmail.com>
-References: <c6b1100b0907130127g3d4013c6n3264f79bd74bc9@mail.gmail.com>
-	 <c6b1100b0907140404h4fdbe419p8443da43350f3520@mail.gmail.com>
-	 <c6b1100b0907210439jf67d886s3125dafa5f4d3928@mail.gmail.com>
-	 <c6b1100b0907261215l71ada148y8a15f6595d939192@mail.gmail.com>
+	Sun, 26 Jul 2009 16:11:36 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:57000 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753214AbZGZULg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Jul 2009 16:11:36 -0400
+Subject: Re: [Patch RFC 14/37] scsi: aacraid semaphore cleanup
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <20090726081555.073502498@linutronix.de>
+References: <20090726081459.455111897@linutronix.de>
+	 <20090726081555.073502498@linutronix.de>
 Content-Type: text/plain
-Date: Sun, 26 Jul 2009 16:10:13 -0400
-Message-Id: <1248639013.32168.15.camel@mj>
+Date: Sun, 26 Jul 2009 16:11:31 -0400
+Message-Id: <1248639091.4766.4.camel@mulgrave.site>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-07-26 at 20:15 +0100, Chris Clayton wrote:
+cc linux-scsi added
 
-> One more data point. I wondered whether the freeze would "time out" if
-> I just left the laptop frozen, but my testing shows that it probably
-> does not (or if it does it takes more than 27 minutes to do so.
+On Sun, 2009-07-26 at 08:18 +0000, Thomas Gleixner wrote:
+> plain text document attachment
+> (driver-scsi-aacraid-sema-cleanup.patch)
+> The usage of these "mutex"es is non obvious and probably completions
+> in some places. Make it them semaphores.
 
-I suggest that you run it on the text console after "dmesg -n 8", so
-that all kernel messages are seen.
+-ENOCONTEXT on this ... I assume this is just a global
+s/init_MUTEX/semaphore_init/?
 
-I'm using rt61pci with wireless-testing, and I don't see any freezes.
+I think both are really just mutexes; no need for a counting semaphore.
+There's no stack declaration issues (the fibs are long lived entities)
+that would necessitate a completion.
 
-> I've also tried to bisect again, but, as last time, once I got to the
-> batch of network-related changes that went into -rc1, I get a series
-> of kernels that build but either won't boot or have inoperable
-> wireless networking.
+James
 
-You can use "git bisect skip" to skip those revisions.
 
-You can specify the paths in "git bisect start" so that only changes to
-the interesting places (like drivers/net wireless, net/mac80211 and
-net/wireless) are considered when calculating the next commit.  This
-will probably help you avoid the bad place.
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+> ---
+>  drivers/scsi/aacraid/commctrl.c |    2 +-
+>  drivers/scsi/aacraid/commsup.c  |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6-tip/drivers/scsi/aacraid/commctrl.c
+> ===================================================================
+> --- linux-2.6-tip.orig/drivers/scsi/aacraid/commctrl.c
+> +++ linux-2.6-tip/drivers/scsi/aacraid/commctrl.c
+> @@ -190,7 +190,7 @@ static int open_getadapter_fib(struct aa
+>  		/*
+>  		 *	Initialize the mutex used to wait for the next AIF.
+>  		 */
+> -		init_MUTEX_LOCKED(&fibctx->wait_sem);
+> +		semaphore_init_locked(&fibctx->wait_sem);
+>  		fibctx->wait = 0;
+>  		/*
+>  		 *	Initialize the fibs and set the count of fibs on
+> Index: linux-2.6-tip/drivers/scsi/aacraid/commsup.c
+> ===================================================================
+> --- linux-2.6-tip.orig/drivers/scsi/aacraid/commsup.c
+> +++ linux-2.6-tip/drivers/scsi/aacraid/commsup.c
+> @@ -124,7 +124,7 @@ int aac_fib_setup(struct aac_dev * dev)
+>  		fibptr->hw_fib_va = hw_fib;
+>  		fibptr->data = (void *) fibptr->hw_fib_va->data;
+>  		fibptr->next = fibptr+1;	/* Forward chain the fibs */
+> -		init_MUTEX_LOCKED(&fibptr->event_wait);
+> +		semaphore_init_locked(&fibptr->event_wait);
+>  		spin_lock_init(&fibptr->event_lock);
+>  		hw_fib->header.XferState = cpu_to_le32(0xffffffff);
+>  		hw_fib->header.SenderSize = cpu_to_le16(dev->max_fib_size);
+> 
 
-Also, please try the current wireless-testing.  The problem may be fixed
-there.
-
-> Finally, since I haven't had a single reply to the regression report I
-> posted almost two weeks ago, I now give up. I'll switch to using the
-> card supported by the ath5k driver.
-
-Perhaps there was not enough material for others to comment on, and
-nobody was experiencing anything similar.
-
-If I had such problem, I would try to bisect it, but I cannot reproduce
-it.
-
--- 
-Regards,
-Pavel Roskin
