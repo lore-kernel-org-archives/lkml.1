@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754054AbZGZWGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754066AbZGZWJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754054AbZGZWGl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 18:06:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbZGZWGk
+	id S1754066AbZGZWJx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 18:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbZGZWJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 18:06:40 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42182 "EHLO mx2.redhat.com"
+	Sun, 26 Jul 2009 18:09:52 -0400
+Received: from www.tglx.de ([62.245.132.106]:56537 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754009AbZGZWGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 18:06:40 -0400
-Date: Sun, 26 Jul 2009 19:06:19 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/1 tip] perf top: Add mwait_idle_with_hints to skip_symbols
-Message-ID: <20090726220618.GB20675@ghostprotocols.net>
+	id S1753262AbZGZWJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Jul 2009 18:09:52 -0400
+Date: Mon, 27 Jul 2009 00:04:33 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Marcel Holtmann <marcel@holtmann.org>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [Patch RFC 15/37] bluetooth: Convert hdev->req_lock to mutex
+In-Reply-To: <1248644184.28545.168.camel@violet>
+Message-ID: <alpine.LFD.2.00.0907270003460.2936@localhost.localdomain>
+References: <20090726081459.455111897@linutronix.de>  <20090726081555.202765397@linutronix.de> <1248644184.28545.168.camel@violet>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/builtin-top.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-index c0a4230..f139f1a 100644
---- a/tools/perf/builtin-top.c
-+++ b/tools/perf/builtin-top.c
-@@ -285,6 +285,7 @@ static const char *skip_symbols[] = {
- 	"enter_idle",
- 	"exit_idle",
- 	"mwait_idle",
-+	"mwait_idle_with_hints",
- 	"ppc64_runlatch_off",
- 	"pseries_dedicated_idle_sleep",
- 	NULL
--- 
-1.6.2.5
 
 
+On Sun, 26 Jul 2009, Marcel Holtmann wrote:
+
+> Hi Thomas,
+> 
+> > hdev->req_lock is used as mutex so make it a mutex.
+> 
+> no idea why we never changed this before.
+
+:)
+
+> > Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> > Cc: Marcel Holtmann <marcel@holtmann.org>
+> 
+> Acked-by: Marcel Holtmann <marcel@holtmann.org>
+> 
+> In case this one is going via someone else's tree. Do you have any
+> preference how this gets merged. I can also take it via my tree.
+
+Please take it. It does not depend on anything else. It's a straight
+forward conversion to existing infrastructore.
+
+Thanks,
+
+	tglx
