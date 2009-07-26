@@ -1,83 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753885AbZGZRlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbZGZSIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753885AbZGZRlb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 13:41:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbZGZRla
+	id S1753895AbZGZSIT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 14:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbZGZSIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 13:41:30 -0400
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:42403 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753802AbZGZRla (ORCPT
+	Sun, 26 Jul 2009 14:08:18 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:24794 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753855AbZGZSIR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 13:41:30 -0400
-Date: Sun, 26 Jul 2009 23:11:18 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Regression] kdesu broken
-Message-ID: <20090726174118.GA4290@skywalker>
-References: <200907240145.31935.rjw@sisk.pl> <2c0942db0907231721q124dc8f9mdbe64ed33c69ffbf@mail.gmail.com> <200907241721.45943.rjw@sisk.pl> <20090724164058.21a054e6@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907240930120.3960@localhost.localdomain> <87ws5xjo2x.fsf@devron.myhome.or.jp> <20090725150510.35e8854d@lxorguk.ukuu.org.uk>
+	Sun, 26 Jul 2009 14:08:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=wmElwuVEnxUUG86/hpDm2G03eXN0hZgxqO5OgGxq/zc32azX0850WQKoymndXQ8Lsc
+         5i5jX6oIuY5OvP6TTmQILn5MndzKS/lA+iUEbHej9HbPUe92tKIkyfNqDJTj78XKruUn
+         WWVCg+qr8dQuBdroDax82jK80c/4d/eEsZ4AA=
+Date: Sun, 26 Jul 2009 11:08:09 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Cc: Arnaud Faucher <arnaud.faucher@gmail.com>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Frans Pop <elendil@planet.nl>,
+       Manuel Lauss <manuel.lauss@gmail.com>, Erik Ekman <erik@kryo.se>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 1/1] acer-wmi: switch driver to dev_pm_ops
+Message-ID: <20090726180809.GA31396@dtor-d630.eng.vmware.com>
+References: <1248527091-18246-1-git-send-email-arnaud.faucher@gmail.com> <200907252204.44875.rjw@sisk.pl> <1248616413.3922.7.camel@green> <200907261523.30378.carlos@strangeworlds.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090725150510.35e8854d@lxorguk.ukuu.org.uk>
+In-Reply-To: <200907261523.30378.carlos@strangeworlds.co.uk>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 25, 2009 at 03:05:10PM +0100, Alan Cox wrote:
-> Actually try this:
+On Sun, Jul 26, 2009 at 03:23:29PM +0100, Carlos Corbacho wrote:
+> [Removing linux-mips from CC - I don't know why they'd be interested in an x86 
+> only platform driver...]
 > 
+> On Sunday 26 July 2009 14:53:33 Arnaud Faucher wrote:
+> > Gets rid of the following warning:
+> > Platform driver 'acer-wmi' needs updating - please use dev_pm_ops
+> >
+> > Take 2, thanks to Dmitry, Rafael and Frans for pointing out PM issue on
+> > hibernation when using dev_pm_ops blindly.
+> >
+> > This patch was tested against suspendand hibernation (Acer mail led
+> > status).
+> >
+> > Signed-off-by: Arnaud Faucher <arnaud.faucher@gmail.com>
+> > ---
+> >  drivers/platform/x86/acer-wmi.c |   17 ++++++++++++-----
+> >  1 files changed, 12 insertions(+), 5 deletions(-)
+> >
+> > diff --git a/drivers/platform/x86/acer-wmi.c
+> > b/drivers/platform/x86/acer-wmi.c
+> > index be2fd6f..29374bc 100644
+> > --- a/drivers/platform/x86/acer-wmi.c
+> > +++ b/drivers/platform/x86/acer-wmi.c
+> > @@ -1152,8 +1152,7 @@ static int acer_platform_remove(struct
+> > platform_device *device)
+> >  	return 0;
+> >  }
+> >
+> > -static int acer_platform_suspend(struct platform_device *dev,
+> > -pm_message_t state)
+> > +static int acer_platform_suspend(struct device *dev)
+> >  {
+> >  	u32 value;
+> >  	struct acer_data *data = &interface->data;
+> > @@ -1174,7 +1173,7 @@ pm_message_t state)
+> >  	return 0;
+> >  }
+> >
+> > -static int acer_platform_resume(struct platform_device *device)
+> > +static int acer_platform_resume(struct device *dev)
+> >  {
+> >  	struct acer_data *data = &interface->data;
+> >
+> > @@ -1190,15 +1189,23 @@ static int acer_platform_resume(struct
+> > platform_device *device)
+> >  	return 0;
+> >  }
+> >
+> > +static struct dev_pm_ops acer_platform_pm_ops = {
+> > +	.suspend = acer_platform_suspend,
+> > +	.resume = acer_platform_resume,
 > 
-> commit b0e6bdde87725a5d46273ecc4bd00c54bd675848
-> Author: Alan Cox <alan@linux.intel.com>
-> Date:   Sat Jul 25 15:00:04 2009 +0100
-> 
->     pty: ensure writes hit the reader before close
->     
->     This is elegant in all the wrong ways. Put the pty into low latency mode (which
->     we can do as we always post bytes from user context). The tty_flip_buffer_push
->     then always calls into the ldisc which means we clear the ldisc buffer before
->     we set the TTY_OTHER_CLOSED flag.
->     
->     Means pty has subtle knowledge of tty internals we really don't want it to, but
->     it fixes the problem for the moment.
->     
->     Signed-off-by: Alan Cox <alan@linux.intel.com>
-> 
-> diff --git a/drivers/char/pty.c b/drivers/char/pty.c
-> index 6e6942c..87d729b 100644
-> --- a/drivers/char/pty.c
-> +++ b/drivers/char/pty.c
-> @@ -47,10 +47,12 @@ static void pty_close(struct tty_struct *tty, struct file *filp)
->  	}
->  	wake_up_interruptible(&tty->read_wait);
->  	wake_up_interruptible(&tty->write_wait);
-> +	
->  	tty->packet = 0;
->  	if (!tty->link)
->  		return;
->  	tty->link->packet = 0;
-> +	tty_flip_buffer_push(tty->link);
->  	set_bit(TTY_OTHER_CLOSED, &tty->link->flags);
->  	wake_up_interruptible(&tty->link->read_wait);
->  	wake_up_interruptible(&tty->link->write_wait);
-> @@ -207,6 +209,7 @@ static int pty_open(struct tty_struct *tty, struct file *filp)
->  	clear_bit(TTY_OTHER_CLOSED, &tty->link->flags);
->  	set_bit(TTY_THROTTLED, &tty->flags);
->  	retval = 0;
-> +	tty->low_latency = 1;
->  out:
->  	return retval;
->  }
+> Are these necessary? For suspend-to-RAM, I've never needed these. The old 
+> callbacks here were just for suspend-to-disk.
+>
 
-This one fixes "the compile in emacs bug" for me.
+That is not correct. Old suspend and resume callbacks were called for
+both S2R and S2D. Whether it is actually needed for S2R I don't know but
+looking at the code they should not hurt.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=13815
+ 
+> > +	.freeze = acer_platform_suspend,
+> > +	.thaw = acer_platform_resume,
+> 
+> If we only need these callbacks for freeze & thaw, they should be rebamed.
+> 
+> > +	.poweroff = acer_platform_suspend,
+> > +	.restore = acer_platform_resume,
+> 
+> What do poweroff and restore mean in this context. Do my comments above apply 
+> again (i.e. are the callbacks necessary here)?
+>
 
--aneesh
+I don't think poweroff handler is needed.
+
+BTW, why so we retuen -ENOMEM from these methods if interface->data is
+missing? I'd say we should not fail suspend resume in that case or if we
+fail then with somethig like -EINVAL - we did not have mempry allocation
+failure.
+
+-- 
+Dmitry
