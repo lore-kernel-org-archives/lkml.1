@@ -1,67 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbZGZVuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbZGZV7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754072AbZGZVuy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 17:50:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbZGZVuw
+	id S1754031AbZGZV7R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 17:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbZGZV7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 17:50:52 -0400
-Received: from perceval.irobotique.be ([92.243.18.41]:38045 "EHLO
-	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754061AbZGZVuv (ORCPT
+	Sun, 26 Jul 2009 17:59:17 -0400
+Received: from smtp-out4.blueyonder.co.uk ([195.188.213.7]:55096 "EHLO
+	smtp-out4.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753972AbZGZV7Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 17:50:51 -0400
-From: Laurent Pinchart <laurent.pinchart@skynet.be>
-To: Jonathan Corbet <corbet@lwn.net>
-Subject: Re: Should I use kmap or kmap_atomic to map user pages that will be written in a loop ?
-Date: Sun, 26 Jul 2009 23:52:09 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.30; KDE/4.2.4; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <200907252341.48526.laurent.pinchart@skynet.be> <20090726152655.7488abe4@bike.lwn.net>
-In-Reply-To: <20090726152655.7488abe4@bike.lwn.net>
+	Sun, 26 Jul 2009 17:59:16 -0400
+Message-ID: <4A6CD1AD.6090009@blueyonder.co.uk>
+Date: Sun, 26 Jul 2009 22:59:09 +0100
+From: Sid Boyce <g3vbv@blueyonder.co.uk>
+Reply-To: g3vbv@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-1.1 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Avi Kivity <avi@redhat.com>
+CC: linux-kernel@vger.kernel.org, Sid Boyce <sboyce@blueyonder.co.uk>,
+       KVM list <kvm@vger.kernel.org>
+Subject: Re: OpenSolaris boot failure with KVM and VirtualBox
+References: <4A5ED714.7010304@blueyonder.co.uk> <4A6C80C3.8090007@redhat.com> <4A6C9D1F.3090404@blueyonder.co.uk> <4A6C9DE6.8080002@redhat.com>
+In-Reply-To: <4A6C9DE6.8080002@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907262352.09797.laurent.pinchart@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jonathan,
+On 26/07/09 19:18, Avi Kivity wrote:
+> On 07/26/2009 09:14 PM, Sid Boyce wrote:
+>>
+>>> Is this a regression from previous kernel versions?  What userspace are
+>>> you using?
+>>>
+>>>      
+>>
+>> Currently running 2.6.31-rc4 with the original kqemu-1.4.0pre1 on
+>> openSUSE 11.2 Milestone 4 and it boots OK - a 200G disk image used.
+>> qemu-system-x86_64 -cdrom /ISO/osol-0906-ai-x86.iso -boot d
+>> /osol0906.qcow2 -smp 4 -m 500M&
+>>    
+> 
+> Wait, are you using kqemu or kvm?
+> 
 
-first of all thanks for your answer.
+# l /dev/kvm
+crw-rw----+ 1 root root 10, 232 2009-07-24 20:26 /dev/kvm
+# lsmod|grep kvm
+kvm_amd                41908  0
+kvm                   180488  1 kvm_amd
 
-On Sunday 26 July 2009 23:26:55 Jonathan Corbet wrote:
-> On Sat, 25 Jul 2009 23:41:47 +0200
->
-> Laurent Pinchart <laurent.pinchart@skynet.be> wrote:
-> > Pages will be written to from the kernel in USB interrupt context. I can
-> > then either kmap_atomic() pages before copying data and kunmap_atomic()
-> > them right after, or kmap() them once at the beginning of the video
-> > stream and keep them mapped until the end.
->
-> Video buffers can be big, and the streaming interface requires at least
-> two of them.  That's a lot of kmap'd pages.  It seems to me that
-> kmap_atomic() is the way to go for something like this.
+>From long ago I read that kvm needed kqemu, so I have always built the
+module, but I see here it's not used.
+ lsmod|grep qemu
+kqemu                 173496  0
 
-Ok thanks.
+# rpm -qf /usr/bin/qemu-system-x86_64
+qemu-0.10.1-2.21
 
-> But, then, these are user-space buffers, and you're seemingly buffering
-> the data through kernel space buffers first?  It seems like using
-> copy_to_user() in a workqueue (or a threaded interrupt handler) might be
-> a more straightforward way to go, unless I'm missing something.
-
-I receive data from the USB subsystem in URB buffers, which are small kernel 
-buffers. As I have to strip headers from those buffers, I can't initialize the 
-URBs to copy data directly to the userspace buffers, so there's at least one 
-memcpy operation involved :-S
-
-I could indeed append the URBs to a list in the callback called from interrupt 
-context, and process them from a threaded interrupt handler. Would it make 
-much difference ?
-
-Regards,
-
-Laurent Pinchart
+Regards
+Sid.
+-- 
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
+Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
 
