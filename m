@@ -1,17 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbZGZXgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbZGZXhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755457AbZGZXgl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 19:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755449AbZGZXgk
+	id S1755510AbZGZXhN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 19:37:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755521AbZGZXhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 19:36:40 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58874 "EHLO ogre.sisk.pl"
+	Sun, 26 Jul 2009 19:37:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58899 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755363AbZGZXgi convert rfc822-to-8bit (ORCPT
+	id S1755510AbZGZXhF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 19:36:38 -0400
+	Sun, 26 Jul 2009 19:37:05 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Johannes Stezenbach" <js@sig21.net>, "Rafael J. Wysocki" <rjw@sisk.pl>
+       "Alexander Kaltsas" <alexkaltsas@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Mel Gorman" <mel@csn.ul.ie>
 References: <DizPU9GBfHF.A.kgF.iWObKB@chimera>
 In-Reply-To: <DizPU9GBfHF.A.kgF.iWObKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +23,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <H5-1lZIIeYK.A.niG.HXObKB@chimera>
-Subject: [Bug #13644] hibernation/swsusp lockup due to acpi-cpufreq
+Message-ID: <H5-1lZIIeYK.A.88F.6WObKB@chimera>
+Subject: [Bug #13681] A number of usb Devices causes Oops messages and kernel panics.
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 26 Jul 2009 22:45:33 +0200 (CEST)
+Date: Sun, 26 Jul 2009 22:45:34 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,12 +39,9 @@ introduced between 2.6.29 and 2.6.30.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13644
-Subject		: hibernation/swsusp lockup due to acpi-cpufreq
-Submitter	: Johannes Stezenbach <js@sig21.net>
-Date		: 2009-06-16 01:27 (41 days old)
-References	: http://lkml.org/lkml/2009/6/15/630
-		  http://lkml.org/lkml/2009/6/29/504
-Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13681
+Subject		: A number of usb Devices causes Oops messages and kernel panics.
+Submitter	: Alexander Kaltsas <alexkaltsas@gmail.com>
+Date		: 2009-06-30 13:06 (27 days old)
 
 
