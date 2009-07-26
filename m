@@ -1,121 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbZGZSIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753908AbZGZSPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753895AbZGZSIT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 14:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753857AbZGZSIS
+	id S1753908AbZGZSPJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 14:15:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbZGZSPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 14:08:18 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:24794 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753855AbZGZSIR (ORCPT
+	Sun, 26 Jul 2009 14:15:09 -0400
+Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:49945 "EHLO
+	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753857AbZGZSPI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 14:08:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=wmElwuVEnxUUG86/hpDm2G03eXN0hZgxqO5OgGxq/zc32azX0850WQKoymndXQ8Lsc
-         5i5jX6oIuY5OvP6TTmQILn5MndzKS/lA+iUEbHej9HbPUe92tKIkyfNqDJTj78XKruUn
-         WWVCg+qr8dQuBdroDax82jK80c/4d/eEsZ4AA=
-Date: Sun, 26 Jul 2009 11:08:09 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Cc: Arnaud Faucher <arnaud.faucher@gmail.com>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Frans Pop <elendil@planet.nl>,
-       Manuel Lauss <manuel.lauss@gmail.com>, Erik Ekman <erik@kryo.se>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 1/1] acer-wmi: switch driver to dev_pm_ops
-Message-ID: <20090726180809.GA31396@dtor-d630.eng.vmware.com>
-References: <1248527091-18246-1-git-send-email-arnaud.faucher@gmail.com> <200907252204.44875.rjw@sisk.pl> <1248616413.3922.7.camel@green> <200907261523.30378.carlos@strangeworlds.co.uk>
+	Sun, 26 Jul 2009 14:15:08 -0400
+Message-ID: <4A6C9D1F.3090404@blueyonder.co.uk>
+Date: Sun, 26 Jul 2009 19:14:55 +0100
+From: Sid Boyce <g3vbv@blueyonder.co.uk>
+Reply-To: g3vbv@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-1.1 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907261523.30378.carlos@strangeworlds.co.uk>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Avi Kivity <avi@redhat.com>
+CC: linux-kernel@vger.kernel.org, Sid Boyce <sboyce@blueyonder.co.uk>,
+       KVM list <kvm@vger.kernel.org>
+Subject: Re: OpenSolaris boot failure with KVM and VirtualBox
+References: <4A5ED714.7010304@blueyonder.co.uk> <4A6C80C3.8090007@redhat.com>
+In-Reply-To: <4A6C80C3.8090007@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 26, 2009 at 03:23:29PM +0100, Carlos Corbacho wrote:
-> [Removing linux-mips from CC - I don't know why they'd be interested in an x86 
-> only platform driver...]
+On 26/07/09 17:13, Avi Kivity wrote:
+> On 07/16/2009 10:30 AM, Sid Boyce wrote:
+>> I first tried using kernel 2.6.31-rc1 on openSUSE 11.2 Milestone1 on a
+>> 4P box. All other VM's, Windows and Linux work, currently running
+>> openSUSE 11.2 Milestone 3 with 2.6.31-rc3. Verified the .iso is good.
+>> Error message
+>> =============
+>> Booting 'OpenSolaris 2009.06'
+>> kernel$ /platform/i86pc/kernel/$ISADIR/unix
+>> loading '/platform/i86pc/kernel/$ISADIR/unix' ...
+>> cpu: 'AuthenticAMD' family 16 model 4 step 2 ...
+>> [BIOS accepted mixed-mode target setting!]
+>>    [Multiboot-kernel, loadaddr=0xbffe38, text-and-data=0x1b1ff0, bss=0x0,
+>> entry=0xc00000]
+>> 'platform/i86pc/kernel/amd64/unix' is loaded
+>> module$ /boot/$ISADIR/x86.microroot
+>> loading '/boot/$ISADIR/x86.microroot' ...
+>> Error 15: File not found
+>> Press any key to continue ...
+>> Regards
+>> Sid.
+>>    
 > 
-> On Sunday 26 July 2009 14:53:33 Arnaud Faucher wrote:
-> > Gets rid of the following warning:
-> > Platform driver 'acer-wmi' needs updating - please use dev_pm_ops
-> >
-> > Take 2, thanks to Dmitry, Rafael and Frans for pointing out PM issue on
-> > hibernation when using dev_pm_ops blindly.
-> >
-> > This patch was tested against suspendand hibernation (Acer mail led
-> > status).
-> >
-> > Signed-off-by: Arnaud Faucher <arnaud.faucher@gmail.com>
-> > ---
-> >  drivers/platform/x86/acer-wmi.c |   17 ++++++++++++-----
-> >  1 files changed, 12 insertions(+), 5 deletions(-)
-> >
-> > diff --git a/drivers/platform/x86/acer-wmi.c
-> > b/drivers/platform/x86/acer-wmi.c
-> > index be2fd6f..29374bc 100644
-> > --- a/drivers/platform/x86/acer-wmi.c
-> > +++ b/drivers/platform/x86/acer-wmi.c
-> > @@ -1152,8 +1152,7 @@ static int acer_platform_remove(struct
-> > platform_device *device)
-> >  	return 0;
-> >  }
-> >
-> > -static int acer_platform_suspend(struct platform_device *dev,
-> > -pm_message_t state)
-> > +static int acer_platform_suspend(struct device *dev)
-> >  {
-> >  	u32 value;
-> >  	struct acer_data *data = &interface->data;
-> > @@ -1174,7 +1173,7 @@ pm_message_t state)
-> >  	return 0;
-> >  }
-> >
-> > -static int acer_platform_resume(struct platform_device *device)
-> > +static int acer_platform_resume(struct device *dev)
-> >  {
-> >  	struct acer_data *data = &interface->data;
-> >
-> > @@ -1190,15 +1189,23 @@ static int acer_platform_resume(struct
-> > platform_device *device)
-> >  	return 0;
-> >  }
-> >
-> > +static struct dev_pm_ops acer_platform_pm_ops = {
-> > +	.suspend = acer_platform_suspend,
-> > +	.resume = acer_platform_resume,
+> Please copy kvm@vger.kernel.org on kvm issues.
 > 
-> Are these necessary? For suspend-to-RAM, I've never needed these. The old 
-> callbacks here were just for suspend-to-disk.
->
-
-That is not correct. Old suspend and resume callbacks were called for
-both S2R and S2D. Whether it is actually needed for S2R I don't know but
-looking at the code they should not hurt.
-
- 
-> > +	.freeze = acer_platform_suspend,
-> > +	.thaw = acer_platform_resume,
+> Is this a regression from previous kernel versions?  What userspace are
+> you using?
 > 
-> If we only need these callbacks for freeze & thaw, they should be rebamed.
-> 
-> > +	.poweroff = acer_platform_suspend,
-> > +	.restore = acer_platform_resume,
-> 
-> What do poweroff and restore mean in this context. Do my comments above apply 
-> again (i.e. are the callbacks necessary here)?
->
 
-I don't think poweroff handler is needed.
-
-BTW, why so we retuen -ENOMEM from these methods if interface->data is
-missing? I'd say we should not fail suspend resume in that case or if we
-fail then with somethig like -EINVAL - we did not have mempry allocation
-failure.
-
+Currently running 2.6.31-rc4 with the original kqemu-1.4.0pre1 on
+openSUSE 11.2 Milestone 4 and it boots OK - a 200G disk image used.
+qemu-system-x86_64 -cdrom /ISO/osol-0906-ai-x86.iso -boot d
+/osol0906.qcow2 -smp 4 -m 500M &
+Regards
+Sid.
 -- 
-Dmitry
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support
+Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
+
