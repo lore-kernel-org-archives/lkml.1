@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752643AbZGZJko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753347AbZGZKFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752643AbZGZJko (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 05:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbZGZJkn
+	id S1753347AbZGZKFm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 06:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbZGZKFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 05:40:43 -0400
-Received: from slimlogic.co.uk ([89.16.172.20]:48885 "EHLO slimlogic.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751415AbZGZJkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 05:40:43 -0400
-Subject: Re: [PATCH] regulator: da903x: add support for DA9030 BUCK2 with
- DVM
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: broonie@opensource.wolfsonmicro.com, eric.y.miao@gmail.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1248594842-23456-1-git-send-email-mike@compulab.co.il>
-References: <1248594842-23456-1-git-send-email-mike@compulab.co.il>
-Content-Type: text/plain
-Date: Sun, 26 Jul 2009 10:40:39 +0100
-Message-Id: <1248601239.25964.883.camel@vega.slimlogic.co.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 26 Jul 2009 06:05:41 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:1688 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753326AbZGZKFl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Jul 2009 06:05:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=lUcxEnZrKKwhU632xDubwvI4poAIWnb04n9CmtijsHTuuJFDQ/4emP38qY6HdQQd5C
+         M4PHLXvs8e9GAnqq/W9qNotbX80QCZfzUPuk9KwsqwxX0aQskDvWtYzKPKF1QnFVnM8A
+         pGNhaKYSTrZ2AocNQ3aJVRnkPXp9S4Z5GRkEo=
+MIME-Version: 1.0
+In-Reply-To: <1248099954-6666-1-git-send-email-tom.leiming@gmail.com>
+References: <1248099954-6666-1-git-send-email-tom.leiming@gmail.com>
+Date: Sun, 26 Jul 2009 18:05:41 +0800
+Message-ID: <d82e647a0907260305i4cceaf07p3029f9ea3eb482cd@mail.gmail.com>
+Subject: Re: [PATCH v2 0/4] ARM:dma-mapping:DMA-API debugging patch set
+From: Ming Lei <tom.leiming@gmail.com>
+To: linux@arm.linux.org.uk, rmk@arm.linux.org.uk
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Ming Lei <tom.leiming@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-07-26 at 10:54 +0300, Mike Rapoport wrote:
-> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
-> ---
->  drivers/regulator/da903x.c |   17 ++++++++++++-----
->  1 files changed, 12 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/regulator/da903x.c b/drivers/regulator/da903x.c
-> index b8b89ef..fab755d 100644
-> --- a/drivers/regulator/da903x.c
-> +++ b/drivers/regulator/da903x.c
-> @@ -367,24 +367,24 @@ static struct regulator_ops da9034_regulator_ldo12_ops = {
->  	.enable_bit	= (ebit),					\
->  }
->  
+2009/7/20  <tom.leiming@gmail.com>:
+> From: Ming Lei <tom.leiming@gmail.com>
+>
+> Hi,
+> This patch set introduces dma-api debugging facility on ARM, and is
+> against -rc3-next tree.
+>
+> Based on the feedback from Russell King, this version removes
+> unnecessary calling of debug_dma_map_page and debug_dma_unmap_page
+> in dma_map_sg and dma_unmap_sg respectively.
+>
+>  arch/arm/Kconfig                   |    1 +
+>  arch/arm/common/dmabounce.c        |   12 ++--
+>  arch/arm/include/asm/dma-mapping.h |  114 +++++++++++++++++++++++++++++-------
+>  arch/arm/mm/dma-mapping.c          |   41 ++++++++-----
+>  4 files changed, 126 insertions(+), 42 deletions(-)
 
-Looks fine but did not apply :-
+Hi, Russell
 
-Applying: regulator: da903x: add support for DA9030 BUCK2 with DVM
-error: patch failed: drivers/regulator/da903x.c:367
-error: drivers/regulator/da903x.c: patch does not apply
-Patch failed at 0001 regulator: da903x: add support for DA9030 BUCK2 with DVM
+Is this version OK for you now?
 
-Could you regenerate against the regulator tree for-next branch.
+Thanks.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/lrg/voltage-2.6.git
-
-Thanks
-
-Liam
-
+-- 
+Lei Ming
