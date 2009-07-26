@@ -1,81 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbZGZXdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754986AbZGZXeE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754913AbZGZXdj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 19:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbZGZXdi
+	id S1754986AbZGZXeE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 19:34:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbZGZXeE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 19:33:38 -0400
-Received: from liberdade.minaslivre.org ([72.232.18.203]:50392 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754270AbZGZXdi (ORCPT
+	Sun, 26 Jul 2009 19:34:04 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:43836 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754490AbZGZXeC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 19:33:38 -0400
-Date: Sun, 26 Jul 2009 20:33:32 -0300
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>
-Subject: Re: [Bug #13643] Touchpad lost synchronization after resume from
-	suspend to RAM
-Message-ID: <20090726233331.GA4712@vespa.holoscopio.com>
-References: <Jya1GruKQpD.A.16.2GObKB@chimera> <3zAHs5O6maO.A.JcF.gIObKB@chimera>
+	Sun, 26 Jul 2009 19:34:02 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=YFhVQL/WXBW+o4OiL18X58f4rYLN2UeSe5qQk0j+cHDx1I+92ynlnTabJcTvQT3X3
+	mMOpFiN3PIgQKWnheUiGA==
+Date: Sun, 26 Jul 2009 16:33:57 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: "Matthew D. Reuther" <mreuther@joust.gpcc.itd.umich.edu>
+cc: linux-kernel@vger.kernel.org, Greg KH <gregkh@kroah.com>
+Subject: Re: android lowmemorykiller breaks compile
+In-Reply-To: <4A6CE261.mailHX41REN0Z@joust.gpcc.itd.umich.edu>
+Message-ID: <alpine.DEB.2.00.0907261630420.17123@chino.kir.corp.google.com>
+References: <4A6CE261.mailHX41REN0Z@joust.gpcc.itd.umich.edu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="zhXaljGHf11kAtnf"
-Content-Disposition: inline
-In-Reply-To: <3zAHs5O6maO.A.JcF.gIObKB@chimera>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 26 Jul 2009, Matthew D. Reuther wrote:
 
---zhXaljGHf11kAtnf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> I don't actually use Android, but I compile it just for giggles. With every one of the 2.6.31-rc releases, my compile breaks when it hits lowmemorykiller:
+> 
+> drivers/staging/android/lowmemorykiller.c: In function 'lowmem_shrink':
+> drivers/staging/android/lowmemorykiller.c:106: error: 'struct task_struct' has no member named 'oomkilladj'
+> make[3]: *** [drivers/staging/android/lowmemorykiller.o] Error 1
+> make[2]: *** [drivers/staging/android] Error 2
+> 
+> Maybe this should not be selectable for x86? Can't tell.
+> 
 
-On Sun, Jul 26, 2009 at 10:23:34PM +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->=20
-> The following bug entry is on the current list of known regressions
-> from 2.6.30.  Please verify if it still should be listed and let me know
-> (either way).
->=20
->=20
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D13643
-> Subject		: Touchpad lost synchronization after resume from suspend to RAM
-> Submitter	: Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>
-> Date		: 2009-06-28 10:42 (29 days old)
-> References	: http://lkml.org/lkml/2009/6/23/365
-> 		  2.6.30-rc1: touchpad disabled
-> 		  http://lkml.org/lkml/2009/6/25/256
-> Handled-By	: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-> Patch		: http://patchwork.kernel.org/patch/34075/
->=20
->=20
+It's had a fix pending in Greg KH's staging tree for a couple months, 
+we're just waiting for it to be pushed to Linus.  Greg indicated he will 
+send it in his next staging pull.
 
-I guess my patch did fix it and we had other confirmations as well,
-didn't we?
-
-Thanks,
-Cascardo.
-
---zhXaljGHf11kAtnf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkps58sACgkQyTpryRcqtS0RLwCfXK7xLQlGQ3jkwPKevRDsAyip
-6uAAn2n8JnsIgRLx/081pvwXsxH5a0EQ
-=BZ4S
------END PGP SIGNATURE-----
-
---zhXaljGHf11kAtnf--
+Thanks.
