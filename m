@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752598AbZGZJcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752643AbZGZJko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752598AbZGZJcO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 05:32:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752151AbZGZJcO
+	id S1752643AbZGZJko (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 05:40:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbZGZJkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 05:32:14 -0400
-Received: from mail-pz0-f172.google.com ([209.85.222.172]:35209 "EHLO
-	mail-pz0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752105AbZGZJcN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 05:32:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Y0KogivSj40Zh56GR58AhZqJgHDhI0GamiiStHsyaffzgPn2HmJUlMxMMb+S71LiIp
-         l09SH1cQLSzjxYtDQ8pvGfT4xuc61OMwYJVf2SFGy+s6CWUT7un+sZAKkPGjTK4xT2n3
-         Xkzcg5l175VLHZIWccdX/yl/NSMTs+LHJqig8=
-MIME-Version: 1.0
-In-Reply-To: <7b6bb4a50907250636h17be6678u75b5e5a68522ada4@mail.gmail.com>
-References: <1248419547-30261-1-git-send-email-dfeng@redhat.com>
-	 <d82e647a0907242038l460c01b0ud51a7265f70d6c2e@mail.gmail.com>
-	 <7b6bb4a50907242334m15335df6xaa0a8f96fc6cfcd4@mail.gmail.com>
-	 <d82e647a0907242352i5e184dd2i488ae6918e9cd959@mail.gmail.com>
-	 <7b6bb4a50907250636h17be6678u75b5e5a68522ada4@mail.gmail.com>
-Date: Sun, 26 Jul 2009 17:32:13 +0800
-Message-ID: <d82e647a0907260232i148c2a3fhb69d61faad01b6e7@mail.gmail.com>
-Subject: Re: [PATCH] lib/kobject: put kobject if kobject_add_internal fails
-From: Ming Lei <tom.leiming@gmail.com>
-To: Xiaotian Feng <xtfeng@gmail.com>
-Cc: Xiaotian Feng <dfeng@redhat.com>, gregkh@suse.de,
+	Sun, 26 Jul 2009 05:40:43 -0400
+Received: from slimlogic.co.uk ([89.16.172.20]:48885 "EHLO slimlogic.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751415AbZGZJkn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Jul 2009 05:40:43 -0400
+Subject: Re: [PATCH] regulator: da903x: add support for DA9030 BUCK2 with
+ DVM
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: broonie@opensource.wolfsonmicro.com, eric.y.miao@gmail.com,
        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <1248594842-23456-1-git-send-email-mike@compulab.co.il>
+References: <1248594842-23456-1-git-send-email-mike@compulab.co.il>
+Content-Type: text/plain
+Date: Sun, 26 Jul 2009 10:40:39 +0100
+Message-Id: <1248601239.25964.883.camel@vega.slimlogic.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/25 Xiaotian Feng <xtfeng@gmail.com>:
->
->
-> On Sat, Jul 25, 2009 at 2:52 PM, Ming Lei <tom.leiming@gmail.com> wrote:
->> Even you can make sure _all_ .release of the passed kobj_type does not
->> free
->> the kobject, you still have the double calling of kobject_put problem,
->> don't you?
->
->
-> hmm, how about change kobject_put to kfree(kobj->name) ? Then it's safe for
-> both cases, right?
+On Sun, 2009-07-26 at 10:54 +0300, Mike Rapoport wrote:
+> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+> ---
+>  drivers/regulator/da903x.c |   17 ++++++++++++-----
+>  1 files changed, 12 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/regulator/da903x.c b/drivers/regulator/da903x.c
+> index b8b89ef..fab755d 100644
+> --- a/drivers/regulator/da903x.c
+> +++ b/drivers/regulator/da903x.c
+> @@ -367,24 +367,24 @@ static struct regulator_ops da9034_regulator_ldo12_ops = {
+>  	.enable_bit	= (ebit),					\
+>  }
+>  
 
-No, it is very buggy and ugly to kfree kobj->name directly by kobject
-users instead
-of kobject_put().  Image that someone uses the kobject after kfree(kobj->name)
-but before kobject_put,  oops may happen.
+Looks fine but did not apply :-
 
-Why don't you fix the 20+ callers of  kobject_init_and_add?  It is the
-standard way of doing
-such thing.
+Applying: regulator: da903x: add support for DA9030 BUCK2 with DVM
+error: patch failed: drivers/regulator/da903x.c:367
+error: drivers/regulator/da903x.c: patch does not apply
+Patch failed at 0001 regulator: da903x: add support for DA9030 BUCK2 with DVM
 
--- 
-Lei Ming
+Could you regenerate against the regulator tree for-next branch.
+
+git://git.kernel.org/pub/scm/linux/kernel/git/lrg/voltage-2.6.git
+
+Thanks
+
+Liam
+
