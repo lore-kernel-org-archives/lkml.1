@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbZGZW02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071AbZGZWiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754092AbZGZW02 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 18:26:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbZGZW01
+	id S1754071AbZGZWiV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 18:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbZGZWiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 18:26:27 -0400
-Received: from www.tglx.de ([62.245.132.106]:38950 "EHLO www.tglx.de"
+	Sun, 26 Jul 2009 18:38:20 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58266 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753976AbZGZW01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 18:26:27 -0400
-Date: Mon, 27 Jul 2009 00:21:06 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [Patch RFC 14/37] scsi: aacraid semaphore cleanup
-In-Reply-To: <1248639091.4766.4.camel@mulgrave.site>
-Message-ID: <alpine.LFD.2.00.0907270004430.2936@localhost.localdomain>
-References: <20090726081459.455111897@linutronix.de>  <20090726081555.073502498@linutronix.de> <1248639091.4766.4.camel@mulgrave.site>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1754007AbZGZWiU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Jul 2009 18:38:20 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: [PATCH v2 -tip][RFC] serial8250: update to dev_pm_ops
+Date: Mon, 27 Jul 2009 00:38:25 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Erik Ekman <erik@kryo.se>,
+       Alan Cox <alan@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Magnus Damm <magnus.damm@gmail.com>
+References: <20090701083737.41f28c7d.erik@kryo.se> <200907262145.46363.rjw@sisk.pl> <200907262252.41429.elendil@planet.nl>
+In-Reply-To: <200907262252.41429.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907270038.26549.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 26 Jul 2009, James Bottomley wrote:
-
-> cc linux-scsi added
+On Sunday 26 July 2009, Frans Pop wrote:
+> On Sunday 26 July 2009, Rafael J. Wysocki wrote:
+> > In fact, I wouldn't advise anyone to do these conversions mechanically.
 > 
-> On Sun, 2009-07-26 at 08:18 +0000, Thomas Gleixner wrote:
-> > plain text document attachment
-> > (driver-scsi-aacraid-sema-cleanup.patch)
-> > The usage of these "mutex"es is non obvious and probably completions
-> > in some places. Make it them semaphores.
+> With hindsight I'd say you are correct.
 > 
-> -ENOCONTEXT on this ... I assume this is just a global
-> s/init_MUTEX/semaphore_init/?
+> In that case would it maybe have been better to have a build time warning 
+> about the need to convert drivers rather than a run time one? Run time 
+> warnings have a much higher annoyance factor and will thus "invite" more 
+> people into having a shot at getting rid of them.
+> 
+> But I guess partly it's also just the nature of this change: it looks 
+> trivial due to the corresponding terms.
 
-Well, in cases where the mutex use case is obvious it's a semaphore to
-mutex conversion. But this one is definitly not.
+Well, in fact the patch that added the warning wasn't mine. :-)
 
-> I think both are really just mutexes; no need for a counting semaphore.
-> There's no stack declaration issues (the fibs are long lived entities)
-> that would necessitate a completion.
+Anyway, the purpose was to get the attention of the people who maintain
+those drivers mostly, AFAICS.
 
-It's not about stack declaration. These semaphores can not be
-converted to mutexes for following reasons:
-
-1) there is no mutex_init_locked() and there never will be one
-
-2) the sem is taken from context A and released from context B. That
-violates the mutex semantics where the lock/unlock has to happen in
-the same thread context.
-
-i.e. wait_sem is taken from
-
-     aac_do_ioctl()
-	next_getadapter_fib()
-
-but release from
-
-    aac_check_health() or aac_command_thread()
-
-I have no idea how that hell of code works, but wait_sem is definitely
-not a mutex and neither is event_wait. The beasts might serialize
-stuff as well, but they are also (ab)used as a completion to wait for
-whatever.
-
-Thanks,
-
-	tglx
+Best,
+Rafael
