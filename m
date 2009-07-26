@@ -1,83 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbZGZVdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754026AbZGZVd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754001AbZGZVdM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 17:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbZGZVdL
+	id S1754026AbZGZVd0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 17:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbZGZVdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 17:33:11 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:48514 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753975AbZGZVdK convert rfc822-to-8bit (ORCPT
+	Sun, 26 Jul 2009 17:33:22 -0400
+Received: from mail-px0-f184.google.com ([209.85.216.184]:41644 "EHLO
+	mail-px0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754004AbZGZVdO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 17:33:10 -0400
+	Sun, 26 Jul 2009 17:33:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xNEPbrcU6qZ82Jwv9TtiZqjfDaLNnrH4QC2bLt5PeeIXM3rT8eQRSPodcj52d/WYb8
-         rFmzWoZrq80KCFPTdW+/aTmTPNqux5JXNw2XTeYoL8UdLlRWRZYbCmU+9Zd14OhFOILL
-         cnPSKXXKQrFdVakqeQNWkntdneHcNWBLsXnlg=
-MIME-Version: 1.0
-In-Reply-To: <1248639013.32168.15.camel@mj>
-References: <c6b1100b0907130127g3d4013c6n3264f79bd74bc9@mail.gmail.com>
-	 <c6b1100b0907140404h4fdbe419p8443da43350f3520@mail.gmail.com>
-	 <c6b1100b0907210439jf67d886s3125dafa5f4d3928@mail.gmail.com>
-	 <c6b1100b0907261215l71ada148y8a15f6595d939192@mail.gmail.com>
-	 <1248639013.32168.15.camel@mj>
-Date: Sun, 26 Jul 2009 22:33:08 +0100
-Message-ID: <c6b1100b0907261433s5f069f8ck26861cef5239ef98@mail.gmail.com>
-Subject: Re: 2.6.31-rc2: Possible regression in rt61pci driver
-From: Chris Clayton <chris2553@googlemail.com>
-To: Pavel Roskin <proski@gnu.org>
-Cc: linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linville@tuxdriver.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+        d=gmail.com; s=gamma;
+        h=references:message-id:from:to:in-reply-to:content-type
+         :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
+        b=Ibk4+w73w8rAF+epMioWjKsECQhdRyIgLcEvNKS52RYkX5vKMV+XHnV0rbUEeHZdbe
+         ha2BNw15hwuavjSSCs2L/pS9ZnmfUN6FM/pIylO3Z34+IgInAqEFtbD0ibU5uaPP2+oG
+         8lWoMVFH1OyYV74PbOS+l+P1/ig4ObfF4E2s8=
+References: <1248527091-18246-1-git-send-email-arnaud.faucher@gmail.com> <200907261523.30378.carlos@strangeworlds.co.uk> <20090726180809.GA31396@dtor-d630.eng.vmware.com> <200907261935.08762.carlos@strangeworlds.co.uk> <1248640128.4216.13.camel@green>
+Message-Id: <EF5CB084-D774-49E3-9E9F-6803ECB9862C@gmail.com>
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Arnaud Faucher <arnaud.faucher@gmail.com>
+In-Reply-To: <1248640128.4216.13.camel@green>
+Content-Type: text/plain;
+	charset=us-ascii;
+	format=flowed;
+	delsp=yes
+Content-Transfer-Encoding: 7bit
+X-Mailer: iPhone Mail (7A341)
+Mime-Version: 1.0 (iPhone Mail 7A341)
+Subject: Re: [PATCH 1/1] acer-wmi: switch driver to dev_pm_ops
+Date: Sun, 26 Jul 2009 14:33:00 -0700
+Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Frans Pop <elendil@planet.nl>,
+       Manuel Lauss <manuel.lauss@gmail.com>, Erik Ekman <erik@kryo.se>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the reply, Pavel.
+On Jul 26, 2009, at 1:28 PM, Arnaud Faucher <arnaud.faucher@gmail.com>  
+wrote:
 
-2009/7/26 Pavel Roskin <proski@gnu.org>:
-> On Sun, 2009-07-26 at 20:15 +0100, Chris Clayton wrote:
+> On dim, 2009-07-26 at 19:35 +0100, Carlos Corbacho wrote:
+>> On Sunday 26 July 2009 19:08:09 Dmitry Torokhov wrote:
+>>> On Sun, Jul 26, 2009 at 03:23:29PM +0100, Carlos Corbacho wrote:
+>>>> [Removing linux-mips from CC - I don't know why they'd be  
+>>>> interested in
+>>>> an x86 only platform driver...]
+>>>>
+>>>> On Sunday 26 July 2009 14:53:33 Arnaud Faucher wrote:
+>>>>> Gets rid of the following warning:
+>>>>> Platform driver 'acer-wmi' needs updating - please use dev_pm_ops
+>>>>>
+>>>>> Take 2, thanks to Dmitry, Rafael and Frans for pointing out PM  
+>>>>> issue on
+>>>>> hibernation when using dev_pm_ops blindly.
+>>>>>
+>>>>> This patch was tested against suspendand hibernation (Acer mail  
+>>>>> led
+>>>>> status).
+>>>>>
+>>>>> Signed-off-by: Arnaud Faucher <arnaud.faucher@gmail.com>
+>>>>> ---
+>>>>> drivers/platform/x86/acer-wmi.c |   17 ++++++++++++-----
+>>>>> 1 files changed, 12 insertions(+), 5 deletions(-)
+>>>>>
+>>>>> diff --git a/drivers/platform/x86/acer-wmi.c
+>>>>> b/drivers/platform/x86/acer-wmi.c
+>>>>> index be2fd6f..29374bc 100644
+>>>>> --- a/drivers/platform/x86/acer-wmi.c
+>>>>> +++ b/drivers/platform/x86/acer-wmi.c
+>>>>> @@ -1152,8 +1152,7 @@ static int acer_platform_remove(struct
+>>>>> platform_device *device)
+>>>>>    return 0;
+>>>>> }
+>>>>>
+>>>>> -static int acer_platform_suspend(struct platform_device *dev,
+>>>>> -pm_message_t state)
+>>>>> +static int acer_platform_suspend(struct device *dev)
+>>>>> {
+>>>>>    u32 value;
+>>>>>    struct acer_data *data = &interface->data;
+>>>>> @@ -1174,7 +1173,7 @@ pm_message_t state)
+>>>>>    return 0;
+>>>>> }
+>>>>>
+>>>>> -static int acer_platform_resume(struct platform_device *device)
+>>>>> +static int acer_platform_resume(struct device *dev)
+>>>>> {
+>>>>>    struct acer_data *data = &interface->data;
+>>>>>
+>>>>> @@ -1190,15 +1189,23 @@ static int acer_platform_resume(struct
+>>>>> platform_device *device)
+>>>>>    return 0;
+>>>>> }
+>>>>>
+>>>>> +static struct dev_pm_ops acer_platform_pm_ops = {
+>>>>> +    .suspend = acer_platform_suspend,
+>>>>> +    .resume = acer_platform_resume,
+>>>>
+>>>> Are these necessary? For suspend-to-RAM, I've never needed these.  
+>>>> The old
+>>>> callbacks here were just for suspend-to-disk.
+>>>
+>>> That is not correct. Old suspend and resume callbacks were called  
+>>> for
+>>> both S2R and S2D. Whether it is actually needed for S2R I don't  
+>>> know but
+>>> looking at the code they should not hurt.
+>>
+>> I'm aware they were called for S2RAM as well, but that was just a  
+>> limitation
+>> of the old calls - as I say, they're not needed for it (at least on  
+>> my
+>> hardware anyway).
+>>
 >
->> One more data point. I wondered whether the freeze would "time out" if
->> I just left the laptop frozen, but my testing shows that it probably
->> does not (or if it does it takes more than 27 minutes to do so.
+> I was looking for similar functionality.
 >
-> I suggest that you run it on the text console after "dmesg -n 8", so
-> that all kernel messages are seen.
+>>>>> +    .freeze = acer_platform_suspend,
+>>>>> +    .thaw = acer_platform_resume,
+>>>>
+>>>> If we only need these callbacks for freeze & thaw, they should be
+>>>> rebamed.
+>>>>
+>>>>> +    .poweroff = acer_platform_suspend,
+>>>>> +    .restore = acer_platform_resume,
+>>>>
+>>>> What do poweroff and restore mean in this context. Do my comments  
+>>>> above
+>>>> apply again (i.e. are the callbacks necessary here)?
+>>>
+>>> I don't think poweroff handler is needed.
 >
-> I'm using rt61pci with wireless-testing, and I don't see any freezes.
+> After testing many combinations, I observed that I had to use that  
+> much
+> callbacks. For example, when omitting to wire .poweroff/.restore,
+> with .freeze/.thaw linked to suspend()/resume(), the state (of the  
+> mail
+> led) is not restored correctly after S2D.
 
-Do you have CONFIG_MAC80211_DEFAULT_PS enabled? I have just built and
-installed -rc4 with this option disabled and it has survived almost 20
- minutes so far without a freeze. No previous kernel  in the 2.6.31
-series has survived more than 5 minutes without freezing, so this
-looks promising.
->
->> I've also tried to bisect again, but, as last time, once I got to the
->> batch of network-related changes that went into -rc1, I get a series
->> of kernels that build but either won't boot or have inoperable
->> wireless networking.
->
-> You can use "git bisect skip" to skip those revisions.
->
-> You can specify the paths in "git bisect start" so that only changes to
-> the interesting places (like drivers/net wireless, net/mac80211 and
-> net/wireless) are considered when calculating the next commit.  This
-> will probably help you avoid the bad place.
->
 
- Thanks for those tips. I'll note them in my "useful stuff I might
-forget" notebook and then try to find time over the next few weeks to
-get to grips with the power of git.
+Have you tried with just 3 - freeze, thaw and restore?
 
-Chris
-
+>
 
 -- 
-No, Sir; there is nothing which has yet been contrived by man, by which
-so much happiness is produced as by a good tavern or inn - Doctor Samuel
-Johnson
+Dmitry
+
