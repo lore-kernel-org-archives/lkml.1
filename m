@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbZGZXZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754619AbZGZXXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754740AbZGZXZa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 19:25:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbZGZXZ3
+	id S1754619AbZGZXXc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 19:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbZGZXXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 19:25:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58487 "EHLO ogre.sisk.pl"
+	Sun, 26 Jul 2009 19:23:31 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58528 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754416AbZGZXSw convert rfc822-to-8bit (ORCPT
+	id S1754363AbZGZXTf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 19:18:52 -0400
+	Sun, 26 Jul 2009 19:19:35 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
+       "Alan Cox" <alan@linux.intel.com>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 References: <Jya1GruKQpD.A.16.2GObKB@chimera>
 In-Reply-To: <Jya1GruKQpD.A.16.2GObKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +20,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <3zAHs5O6maO.A.lnD.tHObKB@chimera>
-Subject: [Bug #13740] X server crashes with 2.6.31-rc2 when options are changed
+Message-ID: <3zAHs5O6maO.A._ED.aHObKB@chimera>
+Subject: [Bug #13815] emacs -nw compilation doesn't show the error message
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun, 26 Jul 2009 22:28:23 +0200 (CEST)
+Date: Sun, 26 Jul 2009 22:28:25 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,9 +36,10 @@ from 2.6.30.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13740
-Subject		: X server crashes with 2.6.31-rc2 when options are changed
-Submitter	: Michael S. Tsirkin <m.s.tsirkin@gmail.com>
-Date		: 2009-07-07 15:19 (20 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13815
+Subject		: emacs -nw compilation doesn't show the error message
+Submitter	: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Date		: 2009-07-23 06:22 (4 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d945cb9cce20ac7143c2de8d88b187f62db99bdc
 
 
