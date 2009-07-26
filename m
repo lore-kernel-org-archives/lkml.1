@@ -1,188 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752113AbZGZIQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752201AbZGZISe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752113AbZGZIQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 04:16:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbZGZIQ5
+	id S1752201AbZGZISe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 04:18:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbZGZISd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 04:16:57 -0400
-Received: from a-pb-sasl-sd.pobox.com ([64.74.157.62]:55037 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752034AbZGZIQv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 04:16:51 -0400
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.6.4-rc3
-From: Junio C Hamano <gitster@pobox.com>
-Date: Sun, 26 Jul 2009 01:16:40 -0700
-Message-ID: <7vws5vrh93.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: AB6DA67A-79BC-11DE-9D85-AEF1826986A2-77302942!a-pb-sasl-sd.pobox.com
+	Sun, 26 Jul 2009 04:18:33 -0400
+Received: from www.tglx.de ([62.245.132.106]:57745 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752044AbZGZISb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Jul 2009 04:18:31 -0400
+Message-Id: <20090726081459.455111897@linutronix.de>
+User-Agent: quilt/0.47-1
+Date: Sun, 26 Jul 2009 08:17:05 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: [Patch RFC 00/37]  Cleanup init_MUTEX[_LOCKED] / DECLARE_MUTEX
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A release candidate GIT 1.6.4.rc3 is available at the usual places
-for testing:
+There are still semaphores left which are used as mutexes. Many of
+them are not mutexes; they are used as completions and serialization
+object at the same time. Some others are simple mutexes and nobody
+bothered to clean them up.
 
-  http://www.kernel.org/pub/software/scm/git/
+Most of the cases have been identified in the preempt-rt patch. The
+conversion to mutexes has been tested with both lockdep and mutex
+debugging for quite a time. The other semaphore style users are simply
+converted to semaphores and the init_MUTEX[_LOCKED] / DECLARE_MUTEX
+confusion is removed.
 
-  git-1.6.4.rc3.tar.{gz,bz2}			(source tarball)
-  git-htmldocs-1.6.4.rc3.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.6.4.rc3.tar.{gz,bz2}		(preformatted docs)
+Andrew: it would be great if we could merge the infrastructure patch
+[1/n] right away. It does not change any code as it just adds
+DEFINE_SEMAPHORE, semaphore_init() and semaphore_init_locked(). The
+latter is marked deprecated as well as the locked init usually points
+to a completion like use case. Merging it now would allow the
+maintainers to queue up the cleanup patches for .32
 
-The RPM binary packages for a few architectures are found in:
+Thanks,
 
-  testing/git-*-1.6.4.rc3-1.fc9.$arch.rpm	(RPM)
-
-An embarrassing and serious bug in "git am/apply" that was in 1.6.4-rc2
-has been squashed, and this snapshot should be both safe to use and is
-expected to be the last -rc before the real thing.  Please give it a good
-beating.
-
-
-GIT v1.6.4 Release Notes (draft)
-================================
-
-With the next major release, "git push" into a branch that is
-currently checked out will be refused by default.  You can choose
-what should happen upon such a push by setting the configuration
-variable receive.denyCurrentBranch in the receiving repository.
-
-To ease the transition plan, the receiving repository of such a
-push running this release will issue a big warning when the
-configuration variable is missing.  Please refer to:
-
-  http://git.or.cz/gitwiki/GitFaq#non-bare
-  http://thread.gmane.org/gmane.comp.version-control.git/107758/focus=108007
-
-for more details on the reason why this change is needed and the
-transition plan.
-
-For a similar reason, "git push $there :$killed" to delete the branch
-$killed in a remote repository $there, if $killed branch is the current
-branch pointed at by its HEAD, gets a large warning.  You can choose what
-should happen upon such a push by setting the configuration variable
-receive.denyDeleteCurrent in the receiving repository.
+	tglx
 
 
-Updates since v1.6.3
---------------------
 
-(subsystems)
-
- * gitweb Perl style clean-up.
-
- * git-svn updates, including a new --authors-prog option to map author
-   names by invoking an external program, 'git svn reset' to unwind
-   'git svn fetch', support for more than one branches, documenting
-   of the useful --minimize-url feature, new "git svn gc" command, etc.
-
-(portability)
-
- * We feed iconv with "UTF-8" instead of "utf8"; the former is
-   understood more widely.  Similarly updated test scripts to use
-   encoding names more widely understood (e.g. use "ISO8859-1" instead
-   of "ISO-8859-1").
-
- * Various portability fixes/workarounds for different vintages of
-   SunOS, IRIX, and Windows.
-
- * Git-over-ssh transport on Windows supports PuTTY plink and TortoisePlink.
-
-(performance)
-
- * Many repeated use of lstat() are optimized out in "checkout" codepath.
-
- * git-status (and underlying git-diff-index --cached) are optimized
-   to take advantage of cache-tree information in the index.
-
-(usability, bells and whistles)
-
- * "git add --edit" lets users edit the whole patch text to fine-tune what
-   is added to the index.
-
- * "git am" accepts StGIT series file as its input.
-
- * "git bisect skip" skips to a more randomly chosen place in the hope
-   to avoid testing a commit that is too close to a commit that is
-   already known to be untestable.
-
- * "git cvsexportcommit" learned -k option to stop CVS keywords expansion
-
- * "git grep" learned -p option to show the location of the match using the
-   same context hunk marker "git diff" uses.
-
- * https transport can optionally be told that the used client
-   certificate is password protected, in which case it asks the
-   password only once.
-
- * "git imap-send" is IPv6 aware.
-
- * "git log --graph" draws graphs more compactly by using horizontal lines
-   when able.
-
- * "git log --decorate" shows shorter refnames by stripping well-known
-   refs/* prefix.
-
- * "git push $name" honors remote.$name.pushurl if present before
-   using remote.$name.url.  In other words, the URL used for fetching
-   and pushing can be different.
-
- * "git send-email" understands quoted aliases in .mailrc files (might
-   have to be backported to 1.6.3.X).
-
- * "git send-email" can fetch the sender address from the configuration
-   variable "sendmail.from" (and "sendmail.<identity>.from").
-
- * "git show-branch" can color its output.
-
- * "add" and "update" subcommands to "git submodule" learned --reference
-   option to use local clone with references.
-
- * "git submodule update" learned --rebase option to update checked
-   out submodules by rebasing the local changes.
-
- * "gitweb" can optionally use gravatar to adorn author/committer names.
-
-(developers)
-
- * A major part of the "git bisect" wrapper has moved to C.
-
- * Formatting with the new version of AsciiDoc 8.4.1 is now supported.
-
-Fixes since v1.6.3
-------------------
-
-All of the fixes in v1.6.3.X maintenance series are included in this
-release, unless otherwise noted.
-
-Here are fixes that this release has, but have not been backported to
-v1.6.3.X series.
-
- * "git diff-tree -r -t" used to omit new or removed directories from
-   the output.  df533f3 (diff-tree -r -t: include added/removed
-   directories in the output, 2009-06-13) may need to be cherry-picked
-   to backport this fix.
-
- * The way Git.pm sets up a Repository object was not friendly to callers
-   that chdir around.  It now internally records the repository location
-   as an absolute path when autodetected.
-
- * Removing a section with "git config --remove-section", when its
-   section header has a variable definition on the same line, lost
-   that variable definition.
-
- * "git repack" used to faithfully follow grafts and considered true
-   parents recorded in the commit object unreachable from the commit.
-   After such a repacking, you cannot remove grafts without corrupting
-   the repository.
-
- * "git send-email" did not detect erroneous loops in alias expansion.
-
----
-exec >/var/tmp/1
-echo O=$(git describe master)
-O=v1.6.4-rc2-31-g2ceb639
-git shortlog --no-merges $O..master ^maint
