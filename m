@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753715AbZGZP5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753740AbZGZQBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753715AbZGZP5y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 11:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZGZP5y
+	id S1753740AbZGZQBU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 12:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbZGZQBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 11:57:54 -0400
-Received: from mail-bw0-f228.google.com ([209.85.218.228]:63765 "EHLO
-	mail-bw0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751111AbZGZP5x (ORCPT
+	Sun, 26 Jul 2009 12:01:19 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:28762 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751850AbZGZQBT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 11:57:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fft083xakD2M2p5MHhKg4WzgrHriiP466qQiee2U425DR06/CWZjTCsVWqq97S0+0/
-         2MYzwIsNWHm1cmlI2ZJKofJamJFDr8GCEjeSPpQu67f5EGbppZOw8/GVCP1OIpTUEWYU
-         tR7wsIrsspm0fytnGZC4qPO0x1x+3WNkTAoh8=
+	Sun, 26 Jul 2009 12:01:19 -0400
+X-Trace: 236284260/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.106.223/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.106.223
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AkQFANcabEpQKWrf/2dsb2JhbACBUMpqhA0F
+X-IronPort-AV: E=Sophos;i="4.43,272,1246834800"; 
+   d="scan'208";a="236284260"
+Date: Sun, 26 Jul 2009 17:00:54 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, npiggin@suse.de, avi@redhat.com,
+       torvalds@linux-foundation.org, aarcange@redhat.com
+Subject: Re: [PATCH 0/2] ZERO PAGE again v4.
+In-Reply-To: <20090723093334.3166e9d2.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0907261639570.32238@sister.anvils>
+References: <20090709122428.8c2d4232.kamezawa.hiroyu@jp.fujitsu.com>
+ <20090716180134.3393acde.kamezawa.hiroyu@jp.fujitsu.com>
+ <20090723085137.b14fe267.kamezawa.hiroyu@jp.fujitsu.com>
+ <20090722171245.d5b3a108.akpm@linux-foundation.org>
+ <20090723093334.3166e9d2.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <81b0412b0907260846i1cce0e81m6c7bf99263fb4c1@mail.gmail.com>
-References: <1246510598-6136-1-git-send-email-keithp@keithp.com>
-	 <1246536889.22562.74.camel@dhcp235-23.rdu.redhat.com>
-	 <81b0412b0907260846i1cce0e81m6c7bf99263fb4c1@mail.gmail.com>
-Date: Sun, 26 Jul 2009 17:57:50 +0200
-Message-ID: <81b0412b0907260857q15376026x7fae3e708f33ff74@mail.gmail.com>
-Subject: Re: [PATCH] fs/notify/inotify: decrement user inotify count on close
-From: Alex Riesen <raa.lkml@gmail.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: Keith Packard <keithp@keithp.com>, linux-kernel@vger.kernel.org,
-       john@johnmccutchan.com, rlove@rlove.org, eparis@parisplace.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 26, 2009 at 17:46, Alex Riesen<raa.lkml@gmail.com> wrote:
-> On Thu, Jul 2, 2009 at 14:14, Eric Paris<eparis@redhat.com> wrote:
->> On Wed, 2009-07-01 at 21:56 -0700, Keith Packard wrote:
->>> The per-user inotify_devs value is incremented each time a new file is
->>> allocated, but never decremented. This led to inotify_init failing after a
->>> limited number of calls.
->>>
->>> Signed-off-by: Keith Packard <keithp@keithp.com>
->>
->> Thanks, I will push to Linus later today, sorry about the regression!
->>
->
-> Hmm... Either the patch wasn't enough, or it was broken again.
+On Thu, 23 Jul 2009, KAMEZAWA Hiroyuki wrote:
+> On Wed, 22 Jul 2009 17:12:45 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Thu, 23 Jul 2009 08:51:37 +0900
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > On Thu, 16 Jul 2009 18:01:34 +0900
+> > > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > > 
+> > > > Rebased onto  mm-of-the-moment snapshot 2009-07-15-20-57.
+> > > > And modifeied to make vm_normal_page() eat FOLL_NOZERO, directly.
+> > > > 
+> > > > Any comments ?
 
-The bug seem to be known since 2.6.28:
+Sorry, I've been waiting to have something positive to suggest,
+but today still busy with my own issues (handling OOM in KSM).
 
-   http://bugzilla.kernel.org/show_bug.cgi?id=12754
+I do dislike that additional argument to vm_normal_page, and
+feel that's a problem to be solved in follow_page, rather
+than spread to every other vm_normal_page user.
+
+Does follow_page even need to be using vm_normal_page?
+Hmm, VM_MIXEDMAP, __get_user_pages doesn't exclude that.
+
+I also feel a strong (but not yet fulfilled) urge to check
+all the use_zero_page ignore_zero stuff: which is far from
+self-evident.
+
+Hugh
