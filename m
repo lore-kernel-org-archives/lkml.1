@@ -1,50 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbZGZITe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753062AbZGZIUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752792AbZGZITe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 04:19:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbZGZITb
+	id S1753062AbZGZIUA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 04:20:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbZGZIT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 04:19:31 -0400
-Received: from www.tglx.de ([62.245.132.106]:57907 "EHLO www.tglx.de"
+	Sun, 26 Jul 2009 04:19:56 -0400
+Received: from www.tglx.de ([62.245.132.106]:57963 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752614AbZGZIT3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 04:19:29 -0400
-Message-Id: <20090726081554.686871186@linutronix.de>
+	id S1752959AbZGZITx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Jul 2009 04:19:53 -0400
+Message-Id: <20090726081555.743717843@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Sun, 26 Jul 2009 08:18:02 -0000
+Date: Sun, 26 Jul 2009 08:18:35 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
        Peter Zijlstra <peterz@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [Patch RFC 11/37] parport: semaphore cleanup
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: [Patch RFC 19/37] hfs: Convert tree_lock to mutex
 References: <20090726081459.455111897@linutronix.de>
-Content-Disposition: inline; filename=driver-parport-share-cleanup.patch
+Content-Disposition: inline; filename=hfs-convert-sem-to-mutex.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The usage of this "mutex" is non obvious and probably a completion in
-some places. Make it a semaphore.
+tree_lock is used as mutex so make it a mutex.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/parport/share.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/hfs/bfind.c |    4 ++--
+ fs/hfs/btree.c |    2 +-
+ fs/hfs/btree.h |    2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-Index: linux-2.6-tip/drivers/parport/share.c
+Index: linux-2.6-tip/fs/hfs/bfind.c
 ===================================================================
---- linux-2.6-tip.orig/drivers/parport/share.c
-+++ linux-2.6-tip/drivers/parport/share.c
-@@ -306,7 +306,7 @@ struct parport *parport_register_port(un
- 	spin_lock_init(&tmp->pardevice_lock);
- 	tmp->ieee1284.mode = IEEE1284_MODE_COMPAT;
- 	tmp->ieee1284.phase = IEEE1284_PH_FWD_IDLE;
--	init_MUTEX_LOCKED (&tmp->ieee1284.irq); /* actually a semaphore at 0 */
-+	semaphore_init_locked(&tmp->ieee1284.irq);
- 	tmp->spintime = parport_default_spintime;
- 	atomic_set (&tmp->ref_count, 1);
- 	INIT_LIST_HEAD(&tmp->full_list);
+--- linux-2.6-tip.orig/fs/hfs/bfind.c
++++ linux-2.6-tip/fs/hfs/bfind.c
+@@ -23,7 +23,7 @@ int hfs_find_init(struct hfs_btree *tree
+ 	fd->search_key = ptr;
+ 	fd->key = ptr + tree->max_key_len + 2;
+ 	dprint(DBG_BNODE_REFS, "find_init: %d (%p)\n", tree->cnid, __builtin_return_address(0));
+-	down(&tree->tree_lock);
++	mutex_lock(&tree->tree_lock);
+ 	return 0;
+ }
+ 
+@@ -32,7 +32,7 @@ void hfs_find_exit(struct hfs_find_data 
+ 	hfs_bnode_put(fd->bnode);
+ 	kfree(fd->search_key);
+ 	dprint(DBG_BNODE_REFS, "find_exit: %d (%p)\n", fd->tree->cnid, __builtin_return_address(0));
+-	up(&fd->tree->tree_lock);
++	mutex_unlock(&fd->tree->tree_lock);
+ 	fd->tree = NULL;
+ }
+ 
+Index: linux-2.6-tip/fs/hfs/btree.c
+===================================================================
+--- linux-2.6-tip.orig/fs/hfs/btree.c
++++ linux-2.6-tip/fs/hfs/btree.c
+@@ -26,7 +26,7 @@ struct hfs_btree *hfs_btree_open(struct 
+ 	if (!tree)
+ 		return NULL;
+ 
+-	init_MUTEX(&tree->tree_lock);
++	mutex_init(&tree->tree_lock);
+ 	spin_lock_init(&tree->hash_lock);
+ 	/* Set the correct compare function */
+ 	tree->sb = sb;
+Index: linux-2.6-tip/fs/hfs/btree.h
+===================================================================
+--- linux-2.6-tip.orig/fs/hfs/btree.h
++++ linux-2.6-tip/fs/hfs/btree.h
+@@ -33,7 +33,7 @@ struct hfs_btree {
+ 	unsigned int depth;
+ 
+ 	//unsigned int map1_size, map_size;
+-	struct semaphore tree_lock;
++	struct mutex tree_lock;
+ 
+ 	unsigned int pages_per_bnode;
+ 	spinlock_t hash_lock;
 
 
