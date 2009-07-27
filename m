@@ -1,43 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754284AbZG0TLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754271AbZG0TNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754284AbZG0TLz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 15:11:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbZG0TLy
+	id S1754271AbZG0TNj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 15:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbZG0TNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 15:11:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39948 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754265AbZG0TLu (ORCPT
+	Mon, 27 Jul 2009 15:13:38 -0400
+Received: from mail-gx0-f205.google.com ([209.85.217.205]:41340 "EHLO
+	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751396AbZG0TNi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 15:11:50 -0400
-Date: Mon, 27 Jul 2009 12:11:13 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management <linux-mm@kvack.org>,
-       Linux-Arch <linux-arch@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Hugh Dickins <hugh@tiscali.co.uk>
-Subject: Re: [RFC/PATCH] mm: Pass virtual address to
- [__]p{te,ud,md}_free_tlb()
-In-Reply-To: <1248310415.3367.22.camel@pasglop>
-Message-ID: <alpine.LFD.2.01.0907271210210.25224@localhost.localdomain>
-References: <20090715074952.A36C7DDDB2@ozlabs.org>  <20090715135620.GD7298@wotan.suse.de> <1248073873.13067.31.camel@pasglop>  <alpine.LFD.2.01.0907220930320.19335@localhost.localdomain> <1248310415.3367.22.camel@pasglop>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 27 Jul 2009 15:13:38 -0400
+X-Greylist: delayed 392 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Jul 2009 15:13:37 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=vXKGsiyLFo2e3PbbyPGtjy5Sq9S3LqKf4Xl19kr9+cI5RTZVO0yb8ZfPZ+Yz2EoRvA
+         9CXyvWKjUbvkRxLgsBGBj1ly4WqgdwIB7+j8Ihknql5gsKFoILkW5/hy7/eYaESKcmr2
+         c7DhUkogZgPhPf8QDhfxxQ9pSJ5mqiGlnevp0=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <52058.1248720339@turing-police.cc.vt.edu>
+References: <689eb3470907271102i904d81em6317302e373e0730@mail.gmail.com>
+	 <689eb3470907271117x4638464p72964819a80637c0@mail.gmail.com>
+	 <52058.1248720339@turing-police.cc.vt.edu>
+Date: Mon, 27 Jul 2009 12:07:05 -0700
+Message-ID: <689eb3470907271207s23fd313ck92c2448de264ec33@mail.gmail.com>
+Subject: Re: Undefined symbol "min_low_pfn"
+From: Anupama Chandwani <anupama.chandwani@gmail.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Sure,
 
+On Mon, Jul 27, 2009 at 11:45 AM, <Valdis.Kletnieks@vt.edu> wrote:
+> On Mon, 27 Jul 2009 11:17:20 PDT, Anupama Chandwani said:
+>
+>> I want to know what pages (page frame numbers) are used by kernel
+>> code/data/bss etc. min_low_pfn would have told me the lowest usable
+>> pfn.
+>> Is there another way of getting this information? Or printing the min_low_pfn?
+>
+> What are you trying to do with that number?  Perhaps if you explain the
+> problem you're trying to solve by looking at min_low_pfn, somebody will have
+> a better solution...
+>
 
-On Thu, 23 Jul 2009, Benjamin Herrenschmidt wrote:
-> 
-> Hrm... my powerpc-next branch will contain stuff that depend on it, so
-> I'll probably have to pull it in though, unless I tell all my
-> sub-maintainers to also pull from that other branch first :-)
+I am trying to find the pfns that belong to the kernel image in RAM.
+It is a study project to learn the memory management of the linux
+kernel, and perhaps suggest a few optimizations.
+With min_low_pfn, I can claim that all pfns under it, belong to the
+kernel image and hence cannot be used by others.
 
-Ok, I'll just apply the patch. It does look obvious enough.
+I have the pfns of other pools, like mapped, mlocked, etc.
 
-			Linus
+Thanks,
+Anupama
