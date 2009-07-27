@@ -1,36 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbZG0Wlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755494AbZG0Wmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755448AbZG0Wlv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 18:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbZG0Wlu
+	id S1755494AbZG0Wmq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 18:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755478AbZG0Wmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 18:41:50 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37068 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754123AbZG0Wlt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 18:41:49 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Tobias Diedrich <ranma@tdiedrich.de>
-Subject: Re: [Bug #13826] thinkpad boots with backlight low
-Date: Tue, 28 Jul 2009 00:42:26 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Mon, 27 Jul 2009 18:42:45 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:52507 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755419AbZG0Wmo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 18:42:44 -0400
+X-Sasl-enc: creWLDqDl+z4PNGRJDBritEaStFLKo8jK2Cs1QJ4pJ4W 1248734564
+Date: Mon, 27 Jul 2009 19:42:40 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Tobias Diedrich <ranma@tdiedrich.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
        Pavel Machek <pavel@ucw.cz>
-References: <Jya1GruKQpD.A.16.2GObKB@chimera> <3zAHs5O6maO.A.KtC.THObKB@chimera> <20090727110651.GA4496@yamamaya.is-a-geek.org>
-In-Reply-To: <20090727110651.GA4496@yamamaya.is-a-geek.org>
+Subject: Re: [Bug #13826] thinkpad boots with backlight low
+Message-ID: <20090727224240.GA6932@khazad-dum.debian.net>
+References: <Jya1GruKQpD.A.16.2GObKB@chimera>
+ <3zAHs5O6maO.A.KtC.THObKB@chimera>
+ <20090727110651.GA4496@yamamaya.is-a-geek.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907280042.27190.rjw@sisk.pl>
+In-Reply-To: <20090727110651.GA4496@yamamaya.is-a-geek.org>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 27 July 2009, Tobias Diedrich wrote:
+On Mon, 27 Jul 2009, Tobias Diedrich wrote:
 > Rafael J. Wysocki wrote:
 > > This message has been generated automatically as a part of a report
 > > of recent regressions.
@@ -42,14 +45,11 @@ On Monday 27 July 2009, Tobias Diedrich wrote:
 > Yes, this still applies to 2.6.31-rc4.
 > If I  don't add brightness_mode=2 the backlight controls don't work
 > properly.
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13826
-> > Subject		: thinkpad boots with backlight low
-> > Submitter	: Pavel Machek <pavel@ucw.cz>
-> > Date		: 2009-07-15 15:13 (12 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=124756359126830&w=4
-> > Handled-By	: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
-Thanks for the update.
+Patch ready. Will send to linux-acpi soon.
 
-Rafael
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
