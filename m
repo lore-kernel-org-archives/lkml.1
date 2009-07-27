@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755075AbZG0Wq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754155AbZG0WtE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755075AbZG0Wq4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 18:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbZG0Wqz
+	id S1754155AbZG0WtE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 18:49:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbZG0WtD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 18:46:55 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:45708 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751110AbZG0Wqz (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 18:46:55 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: =?ISO-8859-1?Q?Lasse_K=E4rkk=E4inen?= <tronic+bpsk@trn.iki.fi>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Securing a system with limits.conf
-In-Reply-To: Your message of "Sun, 26 Jul 2009 07:10:41 +0300."
-             <4A6BD741.2070807@trn.iki.fi>
-From: Valdis.Kletnieks@vt.edu
-References: <4A6BD741.2070807@trn.iki.fi>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1248734813_3074P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Mon, 27 Jul 2009 18:49:03 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37135 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750833AbZG0WtB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 18:49:01 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Gene Heskett <gene.heskett@verizon.net>
+Subject: Re: [Bug #13841] 2.6.31-rc4 boot failure
+Date: Tue, 28 Jul 2009 00:49:26 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <Jya1GruKQpD.A.16.2GObKB@chimera> <3zAHs5O6maO.A.olB.EHObKB@chimera> <200907270020.23019.gene.heskett@verizon.net>
+In-Reply-To: <200907270020.23019.gene.heskett@verizon.net>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Date: Mon, 27 Jul 2009 18:46:53 -0400
-Message-ID: <67027.1248734813@turing-police.cc.vt.edu>
+Content-Disposition: inline
+Message-Id: <200907280049.26580.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1248734813_3074P
-Content-Type: text/plain; charset=us-ascii
+On Monday 27 July 2009, Gene Heskett wrote:
+> On Sunday 26 July 2009, Rafael J. Wysocki wrote:
+> >This message has been generated automatically as a part of a report
+> >of recent regressions.
+> >
+> >The following bug entry is on the current list of known regressions
+> >from 2.6.30.  Please verify if it still should be listed and let me know
+> >(either way).
+> >
+> Yes.  I have nuked the odd stuff in my rc.local file, and rebuilt this kernel 
+> with several mods that I thought might be related, but it is still failing in 
+> the same manner.  The error messages (apparently from lp:, but long after cups 
+> has been started) do NOT make it to the messages log file either, so its 
+> totally blown up at that point.
+> 
+> Note, that this is a regression from 2.6 31-rc3, which works fine.  So the 
+> thing shouldn't be that hard to find.  But in looking over the changelog, 
+> nothing obviously reaches out and grabs me.
+> 
+> I'm not really equipt to do a bisect here either, my git from F10 is at least 
+> 2 versions old now.  And I'm crippled by a way too small /boot partition which 
+> can't hold more than 12-14 kernels.  The disk partitioning tool in F10 is 
+> nothing short of fscking broken IMO. But fedora isn't interested in that 
+> either, cuz its existed since at least Fedora 2.  Here, fedora is on its way 
+> out, 64 bit mandriva sure looks nice.  And DiskDrake Just Works(TM).
+> 
+> Thanks Rafael, I thought it was being ignored.
 
-On Sun, 26 Jul 2009 07:10:41 +0300, =?ISO-8859-1?Q?Lasse_K=E4rkk=E4inen?= said:
+You're welcome, thanks for the update.
 
-> - How should things be configured to reliably prevent non-priveleged 
-> users from DoS'ing a machine.
-
-This depends on your threat model.  What are you trying to defend against:
-
-1) Clued user doing something stupid on their laptop?
-2) Unclued user doing the same?
-3) Clued user who just got bitten by an exploit in Firefox?
-4) Clued user doing something stupid on a large database/web server?
-5) Malicious user on a multi-user timesharing system?
-
-bash$ :(){ :|:&};:
-
-Consider the above line of bash code, in each of the 5 scenarios. Same
-attack, but the configuration settings you use to deal with it may be
-vastly different.
-
-Now repeat the analysis, but assume you have a determined attacker who has
-acquired access to *3* different logins on the machine and can use them
-simultaneously, in collusion.  Now try to come up with a solution that
-doesn't annoy the 3 users in question when they're legitimately logged on.
-
-Bottom line: At best, you can make it more difficult for a local user to DoS
-the box.  You can't *prevent* it unless you're willing to impose a lot of
-limits your users won't like.
-
-And sometimes, the correct security tool is not a system tunable setting,
-but a baseball bat.
-
---==_Exmh_1248734813_3074P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFKbi5dcC3lWbTT17ARAo5ZAKCnLTsEBnKWUgeTlvmCvPj6JJJzCwCfUn9S
-jMYdFRXhlBhRvgh4GUzbMuM=
-=eALL
------END PGP SIGNATURE-----
-
---==_Exmh_1248734813_3074P--
+Rafael
