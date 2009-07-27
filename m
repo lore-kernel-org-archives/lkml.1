@@ -1,207 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755499AbZG0JGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbZG0JHE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755499AbZG0JGh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 05:06:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbZG0JGg
+	id S1755571AbZG0JHE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 05:07:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbZG0JHD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 05:06:36 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:49311 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753539AbZG0JGf (ORCPT
+	Mon, 27 Jul 2009 05:07:03 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:46935 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755051AbZG0JHB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 05:06:35 -0400
-Message-ID: <4A6D6E22.8000105@nokia.com>
-Date: Mon, 27 Jul 2009 12:06:42 +0300
-From: Adrian Hunter <adrian.hunter@nokia.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Mon, 27 Jul 2009 05:07:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=My34vHMEWlLlvR3YHpLJeVYNqGXnDdR1ivUKNflde1hfWDqjRI8Bd68kRUsMttTu81
+         V7PY2HCAgrX1qP9cObDKPcF6DWh0IhpNbOFv+x3xBQGnqdXovaA5lm0rYBi5k5VfYT3B
+         Eh50NZ4Fd2bNkxzRa5DfiL3h/3MwEEwBd8FjU=
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "pierre@ossman.eu" <pierre@ossman.eu>,
-       "Lavinen Jarkko (Nokia-D/Helsinki)" <jarkko.lavinen@nokia.com>,
-       "Karpov Denis.2 (EXT-Teleca/Helsinki)" <ext-denis.2.karpov@nokia.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
-Subject: Re: [PATCH 26/32] omap_hsmmc: prevent races with irq handler
-References: <20090710124004.1262.10422.sendpatchset@ahunter-tower>	<20090710124309.1262.22465.sendpatchset@ahunter-tower> <20090724155351.a99e30fd.akpm@linux-foundation.org>
-In-Reply-To: <20090724155351.a99e30fd.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 Jul 2009 09:06:08.0923 (UTC) FILETIME=[7AF656B0:01CA0E99]
-X-Nokia-AV: Clean
+In-Reply-To: <1248675700.6987.1416.camel@twins>
+References: <Jya1GruKQpD.A.16.2GObKB@chimera>
+	 <3zAHs5O6maO.A.c9D.3HObKB@chimera> <1248675700.6987.1416.camel@twins>
+Date: Mon, 27 Jul 2009 10:07:00 +0100
+Message-ID: <6278d2220907270207g7ff93fd1kdf59e32f139269d3@mail.gmail.com>
+Subject: Re: [Bug #13730] hitting lockdep limits...
+From: Daniel J Blueman <daniel.blueman@gmail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 10 Jul 2009 15:43:09 +0300
-> Adrian Hunter <adrian.hunter@nokia.com> wrote:
-> 
->> >From 242fae6293adec671b14354f215217354f5076a0 Mon Sep 17 00:00:00 2001
->> From: Adrian Hunter <adrian.hunter@nokia.com>
->> Date: Sat, 16 May 2009 10:32:34 +0300
->> Subject: [PATCH] omap_hsmmc: prevent races with irq handler
+On Mon, Jul 27, 2009 at 7:21 AM, Peter Zijlstra<a.p.zijlstra@chello.nl> wrote:
+> On Sun, 2009-07-26 at 22:28 +0200, Rafael J. Wysocki wrote:
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
 >>
->> If an unexpected interrupt occurs while preparing the
->> next request, an oops can occur.
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.30.  Please verify if it still should be listed and let me know
+>> (either way).
 >>
->> For example, a new request is setting up DMA for data
->> transfer so host->data is not NULL.  An unexpected
->> transfer complete (TC) interrupt comes along and
->> the interrupt handler sets host->data to NULL.  Oops!
 >>
->> Prevent that by disabling interrupts while setting up
->> a new request.
+>> Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=13730
+>> Subject               : hitting lockdep limits...
+>> Submitter     : Daniel J Blueman <daniel.blueman@gmail.com>
+>> Date          : 2009-07-05 18:19 (22 days old)
+>> References    : http://marc.info/?l=linux-kernel&m=124681799023782&w=4
 >>
->> Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
->> ---
->>  drivers/mmc/host/omap_hsmmc.c |   16 ++++++++++++++++
->>  1 files changed, 16 insertions(+), 0 deletions(-)
->>
->> diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
->> index 28563d6..38e1410 100644
->> --- a/drivers/mmc/host/omap_hsmmc.c
->> +++ b/drivers/mmc/host/omap_hsmmc.c
->> @@ -452,6 +452,13 @@ mmc_omap_start_command(struct mmc_omap_host *host, struct mmc_command *cmd,
->>  	if (host->use_dma)
->>  		cmdreg |= DMA_EN;
->>  
->> +	/*
->> +	 * In an interrupt context (i.e. STOP command), the interrupt is already
->> +	 * enabled, otherwise it is not (i.e. new request).
->> +	 */
->> +	if (!in_interrupt())
->> +		enable_irq(host->irq);
->> +
->>  	OMAP_HSMMC_WRITE(host->base, ARG, cmd->arg);
->>  	OMAP_HSMMC_WRITE(host->base, CMD, cmdreg);
->>  }
->> @@ -1011,6 +1018,13 @@ static void omap_mmc_request(struct mmc_host *mmc, struct mmc_request *req)
->>  	struct mmc_omap_host *host = mmc_priv(mmc);
->>  	int err;
->>  
->> +	/*
->> +	 * Prevent races with the interrupt handler because of unexpected
->> +	 * interrupts, but not if we are already in interrupt context i.e.
->> +	 * retries.
->> +	 */
->> +	if (!in_interrupt())
->> +		disable_irq(host->irq);
->>  	WARN_ON(host->mrq != NULL);
->>  	host->mrq = req;
->>  	err = mmc_omap_prepare_data(host, req);
->> @@ -1019,6 +1033,8 @@ static void omap_mmc_request(struct mmc_host *mmc, struct mmc_request *req)
->>  		if (req->data)
->>  			req->data->error = err;
->>  		host->mrq = NULL;
->> +		if (!in_interrupt())
->> +			enable_irq(host->irq);
->>  		mmc_request_done(mmc, req);
->>  		return;
->>  	}
-> 
-> That seems pretty crude.  Disabling an interrupt line can be expensive,
-> and will shut off any other innocent devices which share the line.
-> 
-> The usual and superior way of fixing races such as this is
-> spin_lock_irq[save]().
-> 
-> 
+>
+>
+> Is this still a problem after?
+>
+> commit b0a5b83ee0fce9dbf8ff5fe1f8c9ae7dfafe458c
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Tue Jun 16 16:11:14 2009 +0200
+>
+>    dma-debug: Put all hash-chain locks into the same lock class
 
->From f54be3678907b85a00d9f51e3ce4c828fc21ee95 Mon Sep 17 00:00:00 2001
-From: Adrian Hunter <adrian.hunter@nokia.com>
-Date: Mon, 27 Jul 2009 12:00:17 +0300
-Subject: [PATCH] omap_hsmmc: use spin_lock not disable_irq
-
-Disabling an interrupt line can be expensive.  The usual and
-superior way of fixing races such as this is spin_lock_irqsave.
-
-Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
----
- drivers/mmc/host/omap_hsmmc.c |   16 ++++++++++++----
- 1 files changed, 12 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
-index 8900bae..9850280 100644
---- a/drivers/mmc/host/omap_hsmmc.c
-+++ b/drivers/mmc/host/omap_hsmmc.c
-@@ -146,6 +146,8 @@ struct omap_hsmmc_host {
- 	struct	work_struct	mmc_carddetect_work;
- 	void	__iomem		*base;
- 	resource_size_t		mapbase;
-+	spinlock_t		irq_lock;
-+	unsigned long		flags;
- 	unsigned int		id;
- 	unsigned int		dma_len;
- 	unsigned int		dma_sg_idx;
-@@ -462,7 +464,7 @@ omap_hsmmc_start_command(struct omap_hsmmc_host *host, struct mmc_command *cmd,
- 	 * enabled, otherwise it is not (i.e. new request).
- 	 */
- 	if (!in_interrupt())
--		enable_irq(host->irq);
-+		spin_unlock_irqrestore(&host->irq_lock, host->flags);
- 
- 	OMAP_HSMMC_WRITE(host->base, ARG, cmd->arg);
- 	OMAP_HSMMC_WRITE(host->base, CMD, cmdreg);
-@@ -626,11 +628,14 @@ static irqreturn_t omap_hsmmc_irq(int irq, void *dev_id)
- 	struct mmc_data *data;
- 	int end_cmd = 0, end_trans = 0, status;
- 
-+	spin_lock(&host->irq_lock);
-+
- 	if (host->mrq == NULL) {
- 		OMAP_HSMMC_WRITE(host->base, STAT,
- 			OMAP_HSMMC_READ(host->base, STAT));
- 		/* Flush posted write */
- 		OMAP_HSMMC_READ(host->base, STAT);
-+		spin_unlock(&host->irq_lock);
- 		return IRQ_HANDLED;
- 	}
- 
-@@ -696,6 +701,8 @@ static irqreturn_t omap_hsmmc_irq(int irq, void *dev_id)
- 	if ((end_trans || (status & TC)) && host->mrq)
- 		omap_hsmmc_xfer_done(host, data);
- 
-+	spin_unlock(&host->irq_lock);
-+
- 	return IRQ_HANDLED;
- }
- 
-@@ -1066,7 +1073,7 @@ static void omap_hsmmc_request(struct mmc_host *mmc, struct mmc_request *req)
- 	 * retries.
- 	 */
- 	if (!in_interrupt()) {
--		disable_irq(host->irq);
-+		spin_lock_irqsave(&host->irq_lock, host->flags);
- 		/*
- 		 * Protect the card from I/O if there is a possibility
- 		 * it can be removed.
-@@ -1085,7 +1092,7 @@ static void omap_hsmmc_request(struct mmc_host *mmc, struct mmc_request *req)
- 			req->cmd->error = -EBADF;
- 			if (req->data)
- 				req->data->error = -EBADF;
--			enable_irq(host->irq);
-+			spin_unlock_irqrestore(&host->irq_lock, host->flags);
- 			mmc_request_done(mmc, req);
- 			return;
- 		} else if (host->reqs_blocked)
-@@ -1100,7 +1107,7 @@ static void omap_hsmmc_request(struct mmc_host *mmc, struct mmc_request *req)
- 			req->data->error = err;
- 		host->mrq = NULL;
- 		if (!in_interrupt())
--			enable_irq(host->irq);
-+			spin_unlock_irqrestore(&host->irq_lock, host->flags);
- 		mmc_request_done(mmc, req);
- 		return;
- 	}
-@@ -1653,6 +1660,7 @@ static int __init omap_hsmmc_probe(struct platform_device *pdev)
- 	mmc->f_max	= 52000000;
- 
- 	sema_init(&host->sem, 1);
-+	spin_lock_init(&host->irq_lock);
- 
- 	host->iclk = clk_get(&pdev->dev, "ick");
- 	if (IS_ERR(host->iclk)) {
+Using the same .config and use profile, I haven't seen this in
+2.6.31-rc4, thus this can be closed. I've updated the kernel bugzilla
+entry also.
 -- 
-1.5.6.3
-
-
+Daniel J Blueman
