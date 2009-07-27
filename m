@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbZG0Qmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752166AbZG0Qre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752834AbZG0Qmv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 12:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZG0Qmu
+	id S1752166AbZG0Qre (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 12:47:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbZG0Qre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 12:42:50 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33760 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751075AbZG0Qmu (ORCPT
+	Mon, 27 Jul 2009 12:47:34 -0400
+Received: from mail-px0-f184.google.com ([209.85.216.184]:53461 "EHLO
+	mail-px0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750732AbZG0Qrd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 12:42:50 -0400
-Date: Mon, 27 Jul 2009 17:42:52 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kdesu broken
-Message-ID: <20090727174252.2d987830@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090727161424.GA4233@skywalker>
-References: <20090725150510.35e8854d@lxorguk.ukuu.org.uk>
-	<87ab2sx15g.fsf@devron.myhome.or.jp>
-	<20090725163251.50e6f546@lxorguk.ukuu.org.uk>
-	<87bpn7mzli.fsf@devron.myhome.or.jp>
-	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
-	<873a8iqqgv.fsf@devron.myhome.or.jp>
-	<20090727142303.41096bf5@lxorguk.ukuu.org.uk>
-	<877hxujkuv.fsf@devron.myhome.or.jp>
-	<20090727145805.690afe5d@lxorguk.ukuu.org.uk>
-	<87fxci6ub9.fsf@devron.myhome.or.jp>
-	<20090727161424.GA4233@skywalker>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 27 Jul 2009 12:47:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=ufFSzOwAKJlUyP9sspUCeBaLXXZLp/SY7uk9VzbhkAbmyVbAAaufQmI9PpVWfJDuX7
+         bx2lvLHz5KC95z4/VuM7+g9MdlZG5T15uHx2QUHNcgFikndwZLwYXXqEOKAkQVgUZIJS
+         Z0t2iOJursdM03X8FTxDNl7qYmgPTxK+bpCbs=
+MIME-Version: 1.0
+Date: Tue, 28 Jul 2009 00:47:33 +0800
+Message-ID: <86bb1aef0907270947o6219f950xf13a077b30486d41@mail.gmail.com>
+Subject: [PATCH] amd64_edac: fix insmod fail while ecc is enabled
+From: wan wei <onewayforever@gmail.com>
+To: dougthompson@xmission.com, borislav.petkov@amd.com
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Signed-off-by: Wan Wei<wanwei@mail.dawning.com.cn>
 
-> > -			if (count > tty->receive_room) {
-> > +			if (count > tty->receive_room)
-> >  				count = tty->receive_room;
-> > -				done = 0;
-> > -			}
-> >  			char_buf = head->char_buf_ptr + head->read;
-> >  			flag_buf = head->flag_buf_ptr + head->read;
-> >  			head->read += count;
-> > _
-> 
-> 
-> I still have the "compile in emacs" bug. So this patch along with
-> http://article.gmane.org/gmane.linux.kernel/869824 doesn't fix the
-> bug for me.
+diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
+index 858fe60..95b1096 100644
+--- a/drivers/edac/amd64_edac.c
++++ b/drivers/edac/amd64_edac.c
+@@ -2979,6 +2979,7 @@ static int amd64_check_ecc_enabled(struct amd64_pvt *pvt)
 
-Can you stick some printk calls in and debug it further then because at
-with the fixes Ogawa provided I'm finding it impossible to reproduce even
-on an 8 way x86.
+                /* CLEAR the override, since BIOS controlled it */
+                ecc_enable_override = 0;
++               ret = 0;
+        }
 
-What hardware are you using ?
-
+        return ret;
