@@ -1,214 +1,435 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754265AbZG0TvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbZG0Txr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754265AbZG0TvA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 15:51:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbZG0TvA
+	id S1753248AbZG0Txr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 15:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZG0Txq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 15:51:00 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:43145 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751484AbZG0Tu7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 15:50:59 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kdesu broken
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
-	<87bpn7mzli.fsf@devron.myhome.or.jp>
-	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
-	<873a8iqqgv.fsf@devron.myhome.or.jp>
-	<20090727142303.41096bf5@lxorguk.ukuu.org.uk>
-	<877hxujkuv.fsf@devron.myhome.or.jp>
-	<20090727145805.690afe5d@lxorguk.ukuu.org.uk>
-	<87fxci6ub9.fsf@devron.myhome.or.jp> <20090727161424.GA4233@skywalker>
-	<20090727174252.2d987830@lxorguk.ukuu.org.uk>
-	<20090727171213.GB4233@skywalker>
-Date: Tue, 28 Jul 2009 04:28:59 +0900
-In-Reply-To: <20090727171213.GB4233@skywalker> (Aneesh Kumar K. V.'s message
-	of "Mon, 27 Jul 2009 22:42:14 +0530")
-Message-ID: <87skgikjr8.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+	Mon, 27 Jul 2009 15:53:46 -0400
+Received: from poutre.nerim.net ([62.4.16.124]:55114 "EHLO poutre.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751307AbZG0Txp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 15:53:45 -0400
+X-Greylist: delayed 432 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Jul 2009 15:53:44 EDT
+Date: Mon, 27 Jul 2009 21:44:19 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] [PATCH 12/22] hwmon: WM831x PMIC hardware
+ monitoring  driver
+Message-ID: <20090727214419.5a503821@hyperion.delvare>
+In-Reply-To: <1248702372-29534-12-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <20090727134527.GA12849@rakim.wolfsonmicro.main>
+	<1248702372-29534-12-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+Hi Mark,
 
-> On Mon, Jul 27, 2009 at 05:42:52PM +0100, Alan Cox wrote:
->> 
->> > > -			if (count > tty->receive_room) {
->> > > +			if (count > tty->receive_room)
->> > >  				count = tty->receive_room;
->> > > -				done = 0;
->> > > -			}
->> > >  			char_buf = head->char_buf_ptr + head->read;
->> > >  			flag_buf = head->flag_buf_ptr + head->read;
->> > >  			head->read += count;
->> > > _
->> > 
->> > 
->> > I still have the "compile in emacs" bug. So this patch along with
->> > http://article.gmane.org/gmane.linux.kernel/869824 doesn't fix the
->> > bug for me.
->> 
->> Can you stick some printk calls in and debug it further then because at
->> with the fixes Ogawa provided I'm finding it impossible to reproduce even
->> on an 8 way x86.
->> 
->> What hardware are you using ?
->
-> My T60p lenovo laptop. If you can send me a debug prink patch i can redo the
-> test with the patches. I don't know what data i should start collecting so
-> that it make sense. This is the patch i tried
+On Mon, 27 Jul 2009 14:46:02 +0100, Mark Brown wrote:
+> This driver adds support for the hardware monitoring features of
+> the WM831x PMICs to the hwmon API. Monitoring is provided for
+> the system voltages supported natively by the WM831x, the chip
+> temperature, the battery temperature and the auxiliary inputs
+> of the WM831x.
+> 
+> Currently no alarms are supported, though digital comparators on
+> the WM831x devices would allow these to be provided.
+> 
+> Since the auxiliary and battery temperature input scaling depends
+> on the system configuration raw ADC values are reported with scaling
+> left to userspace.
+> 
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> Cc: lm-sensors@lm-sensors.org
+> ---
+>  Documentation/hwmon/wm831x   |   37 +++++++
+>  drivers/hwmon/Kconfig        |   11 ++
+>  drivers/hwmon/Makefile       |    1 +
+>  drivers/hwmon/wm831x-hwmon.c |  236 ++++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 285 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/hwmon/wm831x
+>  create mode 100644 drivers/hwmon/wm831x-hwmon.c
 
-If I read that part of emacs correctly, it seems to be assuming the data
-was already sent to master side if the child process was exited.
+Quick review:
 
-And if it's right, unfortunately, I guess we can't return -EAGAIN in
-this case to preserve behavior.
+> diff --git a/Documentation/hwmon/wm831x b/Documentation/hwmon/wm831x
+> new file mode 100644
+> index 0000000..999e525
+> --- /dev/null
+> +++ b/Documentation/hwmon/wm831x
+> @@ -0,0 +1,37 @@
+> +Kernel driver wm831x-hwmon
+> +==========================
+> +
+> +Supported chips:
+> +  * Wolfson Microelectronics WM831x PMICs
+> +    Prefix: 'wm831x'
+> +    Datasheet:
+> +	http://www.wolfsonmicro.com/products/WM8310
+> +	http://www.wolfsonmicro.com/products/WM8311
+> +	http://www.wolfsonmicro.com/products/WM8312
+> +
+> +Authors: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> +
+> +Description
+> +-----------
+> +
+> +The WM831x series of PMICs include an AUXADC which can be used to
+> +monitor a range of system operating parameters, including the voltages
+> +of the major supplies within the system.  Currently the driver provides
+> +reporting of all the input values but does not provide any alarms.
+> +
+> +Voltage Monitoring
+> +------------------
+> +
+> +Voltages are sampled by a 12 bit ADC.  Voltages in milivolts are 1.465
+> +times the ADC value.
+> +
+> +Temperature Monitoring
+> +----------------------
+> +
+> +Temperatures are sampled by a 12 bit ADC.  Chip and battery temperatures
+> +are available.  The chip temperature is calculated as:
+> +
+> +	Degrees celsius = (512.8 - data) / 1.0983
 
-Aneesh, can you get the log of strace of emacs error case?
+The driver code says 512.18.
 
-Thanks.
+> +
+> +while the battery temperature calculation will depend on the NTC
+> +termistor component.
+> diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
+> index 8d17135..6a680e2 100644
+> --- a/drivers/hwmon/Kconfig
+> +++ b/drivers/hwmon/Kconfig
+> @@ -930,6 +930,17 @@ config SENSORS_W83627EHF
+>  	  This driver can also be built as a module.  If so, the module
+>  	  will be called w83627ehf.
+>  
+> +config SENSORS_WM831X
+> +	tristate "WM831x PMICs"
+> +	depends on MFD_WM831X
+> +	help
+> +	  If you say yes here you get support for the hardware
+> +   	  monitoring functionality of the Wolfson Microelectronics
+> +	  WM831x series of PMICs.
+> +
+> +	  This driver can also be built as a module.  If so, the module
+> +	  will be called wm831x-hwmon.
+> +
+>  config SENSORS_WM8350
+>  	tristate "Wolfson Microelectronics WM835x"
+>  	depends on MFD_WM8350
+> diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
+> index 6126257..a7e7eb7 100644
+> --- a/drivers/hwmon/Makefile
+> +++ b/drivers/hwmon/Makefile
+> @@ -90,6 +90,7 @@ obj-$(CONFIG_SENSORS_VT8231)	+= vt8231.o
+>  obj-$(CONFIG_SENSORS_W83627EHF)	+= w83627ehf.o
+>  obj-$(CONFIG_SENSORS_W83L785TS)	+= w83l785ts.o
+>  obj-$(CONFIG_SENSORS_W83L786NG)	+= w83l786ng.o
+> +obj-$(CONFIG_SENSORS_WM831X)	+= wm831x-hwmon.o
+
+FWIW, I tend to dislike "x" for digits in driver names. What if a
+WM8315 chip is ever released and is incompatible with the WM8310 as far
+as hardware monitoring is concerned? The driver name suggests the new
+chip is supported while it isn't.
+
+Additionally it is inconsistent with the naming of the WM8350 driver
+below.
+
+>  obj-$(CONFIG_SENSORS_WM8350)	+= wm8350-hwmon.o
+>  
+>  ifeq ($(CONFIG_HWMON_DEBUG_CHIP),y)
+> diff --git a/drivers/hwmon/wm831x-hwmon.c b/drivers/hwmon/wm831x-hwmon.c
+> new file mode 100644
+> index 0000000..0dd9973
+> --- /dev/null
+> +++ b/drivers/hwmon/wm831x-hwmon.c
+> @@ -0,0 +1,236 @@
+> +/*
+> + * drivers/hwmon/wm831x-hwmon.c - Wolfson Microelectronics WM831x PMIC
+> + *                                hardware monitoring features.
+> + *
+> + * Copyright (C) 2009 Wolfson Microelectronics plc
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of the GNU General Public License v2 as published by the
+> + * Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful, but WITHOUT
+> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+> + * more details.
+> + *
+> + * You should have received a copy of the GNU General Public License along with
+> + * this program; if not, write to the Free Software Foundation, Inc.,
+> + * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/err.h>
+> +#include <linux/hwmon.h>
+> +#include <linux/hwmon-sysfs.h>
+> +
+> +#include <linux/mfd/wm831x/core.h>
+> +#include <linux/mfd/wm831x/auxadc.h>
+> +
+> +struct wm831x_hwmon {
+> +	struct wm831x *wm831x;
+> +	struct device *classdev;
+> +};
+> +
+> +static ssize_t show_name(struct device *dev,
+> +			 struct device_attribute *attr, char *buf)
+> +{
+> +	return sprintf(buf, "wm831x\n");
+> +}
+> +
+> +static const char *input_names[] = {
+> +	[WM831X_AUX_SYSVDD]    = "SYSVDD" ,
+> +	[WM831X_AUX_USB]       = "USB" ,
+
+Stray spaces before commas.
+
+> +	[WM831X_AUX_BKUP_BATT] = "Backup battery",
+
+This one isn't used anywhere?
+
+> +	[WM831X_AUX_BATT]      = "Battery",
+> +	[WM831X_AUX_WALL]      = "WALL",
+> +	[WM831X_AUX_CHIP_TEMP] = "PMIC",
+> +	[WM831X_AUX_BATT_TEMP] = "Battery",
+> +};
+> +
+> +
+> +static ssize_t show_voltage(struct device *dev,
+> +			    struct device_attribute *attr, char *buf)
+> +{
+> +	struct wm831x_hwmon *hwmon = dev_get_drvdata(dev);
+> +	int channel = to_sensor_dev_attr(attr)->index;
+> +	int ret;
+> +
+> +	ret = wm831x_auxadc_read_uv(hwmon->wm831x, channel);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	return sprintf(buf, "%d\n", DIV_ROUND_CLOSEST(ret, 1000));
+> +}
+> +
+> +static ssize_t show_chip_temp(struct device *dev,
+> +			      struct device_attribute *attr, char *buf)
+> +{
+> +	struct wm831x_hwmon *hwmon = dev_get_drvdata(dev);
+> +	int channel = to_sensor_dev_attr(attr)->index;
+> +	int ret;
+> +
+> +	ret = wm831x_auxadc_read(hwmon->wm831x, channel);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	/* Degrees celsius = (512.18-ret) / 1.0983 */
+> +	ret = 512180 - (ret * 1000);
+> +	ret = (ret * 10000) / 10983;
+
+DIV_ROUND_CLOSEST() would give you a more accurate result.
+
+> +
+> +	return sprintf(buf, "%d\n", ret);
+> +}
+> +
+> +static ssize_t show_batt_temp(struct device *dev,
+> +			      struct device_attribute *attr, char *buf)
+> +{
+> +	struct wm831x_hwmon *hwmon = dev_get_drvdata(dev);
+> +	int channel = to_sensor_dev_attr(attr)->index;
+> +	int ret;
+> +
+> +	ret = wm831x_auxadc_read(hwmon->wm831x, channel);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	/* The conversion depends on the battery, leave to userspace */
+> +	return sprintf(buf, "%d\n", ret);
+> +}
+
+This is a problem. You are not supposed to return raw register values through
+the sysfs interface. Returning the voltage reading at the chip's pin is
+OK because you still return a voltage value. But a raw register value is
+not something the user should see. I agree that technically speaking, a
+good sensors.conf configuration file would work it out, but
+conceptually this is wrong.
+
+Can you say more about these batteries and how temperature measurement
+is different between them? If you can export a voltage reading to
+userspace than that would be OK (as I recall, we have at least one
+driver doing that already.)
+
+> +
+> +static ssize_t show_label(struct device *dev,
+> +			  struct device_attribute *attr, char *buf)
+> +{
+> +	int channel = to_sensor_dev_attr(attr)->index;
+> +
+> +	return sprintf(buf, "%s\n", input_names[channel]);
+> +}
+> +
+> +#define WM831X_VOLTAGE(id, name) \
+> +	static SENSOR_DEVICE_ATTR(in##id##_input, S_IRUGO, show_voltage, \
+> +				  NULL, name);
+
+Trailing semi-colon not needed.
+
+> +
+> +#define WM831X_NAMED_VOLTAGE(id, name) \
+> +	static SENSOR_DEVICE_ATTR(in##id##_input, S_IRUGO, show_voltage,\
+> +				  NULL, name);		\
+
+I guess you could just call WM831X_VOLTAGE(id, name).
+
+> +	static SENSOR_DEVICE_ATTR(in##id##_label, S_IRUGO, show_label,	\
+> +				  NULL, name)
+> +
+> +static DEVICE_ATTR(name, S_IRUGO, show_name, NULL);
+> +
+> +WM831X_VOLTAGE(0, WM831X_AUX_AUX1);
+> +WM831X_VOLTAGE(1, WM831X_AUX_AUX2);
+> +WM831X_VOLTAGE(2, WM831X_AUX_AUX3);
+> +WM831X_VOLTAGE(3, WM831X_AUX_AUX4);
+> +
+> +WM831X_NAMED_VOLTAGE(4, WM831X_AUX_SYSVDD);
+> +WM831X_NAMED_VOLTAGE(5, WM831X_AUX_USB);
+> +WM831X_NAMED_VOLTAGE(6, WM831X_AUX_BATT);
+> +WM831X_NAMED_VOLTAGE(7, WM831X_AUX_WALL);
+> +
+> +static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_chip_temp, NULL,
+> +			  WM831X_AUX_CHIP_TEMP);
+> +static SENSOR_DEVICE_ATTR(temp1_label, S_IRUGO, show_label, NULL,
+> +			  WM831X_AUX_CHIP_TEMP);
+> +static SENSOR_DEVICE_ATTR(temp2_input, S_IRUGO, show_batt_temp, NULL,
+> +			  WM831X_AUX_BATT_TEMP);
+> +static SENSOR_DEVICE_ATTR(temp2_label, S_IRUGO, show_label, NULL,
+> +			  WM831X_AUX_BATT_TEMP);
+> +
+> +static struct attribute *wm831x_attributes[] = {
+> +	&dev_attr_name.attr,
+> +
+> +	&sensor_dev_attr_in0_input.dev_attr.attr,
+> +	&sensor_dev_attr_in1_input.dev_attr.attr,
+> +	&sensor_dev_attr_in2_input.dev_attr.attr,
+> +	&sensor_dev_attr_in3_input.dev_attr.attr,
+> +
+> +	&sensor_dev_attr_in4_input.dev_attr.attr,
+> +	&sensor_dev_attr_in4_label.dev_attr.attr,
+> +	&sensor_dev_attr_in5_input.dev_attr.attr,
+> +	&sensor_dev_attr_in5_label.dev_attr.attr,
+> +	&sensor_dev_attr_in6_input.dev_attr.attr,
+> +	&sensor_dev_attr_in6_label.dev_attr.attr,
+> +	&sensor_dev_attr_in7_input.dev_attr.attr,
+> +	&sensor_dev_attr_in7_label.dev_attr.attr,
+> +
+> +	&sensor_dev_attr_temp1_input.dev_attr.attr,
+> +	&sensor_dev_attr_temp1_label.dev_attr.attr,
+> +	&sensor_dev_attr_temp2_input.dev_attr.attr,
+> +	&sensor_dev_attr_temp2_label.dev_attr.attr,
+> +
+> +	NULL,
+
+Trailing comma unneeded, you're never going to add something after this
+NULL.
+
+> +};
+> +
+> +static const struct attribute_group wm831x_attr_group = {
+> +	.attrs	= wm831x_attributes,
+> +};
+> +
+> +static int __devinit wm831x_hwmon_probe(struct platform_device *pdev)
+> +{
+> +	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
+> +	struct wm831x_hwmon *hwmon;
+> +	int ret;
+> +
+> +	hwmon = kzalloc(sizeof(struct wm831x_hwmon), GFP_KERNEL);
+> +	if (!hwmon)
+> +		return -ENOMEM;
+> +
+> +	hwmon->wm831x = wm831x;
+> +
+> +	ret = sysfs_create_group(&pdev->dev.kobj, &wm831x_attr_group);
+> +	if (ret)
+> +		goto err;
+> +
+> +	hwmon->classdev = hwmon_device_register(&pdev->dev);
+> +	if (IS_ERR(hwmon->classdev)) {
+> +		ret = PTR_ERR(hwmon->classdev);
+> +		goto err_sysfs;
+> +	}
+> +
+> +	platform_set_drvdata(pdev, hwmon);
+> +
+> +	return 0;
+> +
+> +err_sysfs:
+> +	sysfs_remove_group(&pdev->dev.kobj, &wm831x_attr_group);
+> +err:
+> +	kfree(hwmon);
+> +	return ret;
+> +}
+> +
+> +static int __devexit wm831x_hwmon_remove(struct platform_device *pdev)
+> +{
+> +	struct wm831x_hwmon *hwmon = platform_get_drvdata(pdev);
+> +
+
+May I suggest adding:
+
+	platform_set_drvdata(pdev, NULL);
+
+to avoid leaving a dangling pointer behind?
+
+> +	hwmon_device_unregister(hwmon->classdev);
+> +	sysfs_remove_group(&pdev->dev.kobj, &wm831x_attr_group);
+> +	kfree(hwmon);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver wm831x_hwmon_driver = {
+> +	.probe = wm831x_hwmon_probe,
+> +	.remove = __devexit_p(wm831x_hwmon_remove),
+> +	.driver = {
+> +		.name = "wm831x-hwmon",
+> +		.owner = THIS_MODULE,
+> +	},
+> +};
+> +
+> +static int __init wm831x_hwmon_init(void)
+> +{
+> +	return platform_driver_register(&wm831x_hwmon_driver);
+> +}
+> +module_init(wm831x_hwmon_init);
+> +
+> +static void __exit wm831x_hwmon_exit(void)
+> +{
+> +	platform_driver_unregister(&wm831x_hwmon_driver);
+> +}
+> +module_exit(wm831x_hwmon_exit);
+> +
+> +MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com>");
+> +MODULE_DESCRIPTION("WM831x Hardware Monitoring");
+> +MODULE_LICENSE("GPL");
+> +MODULE_ALIAS("platform:wm831x-hwmon");
+
+The rest looks good to me.
+
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-
-#define _GNU_SOURCE
-#define BIG_BUF
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <error.h>
-#include <limits.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <sys/wait.h>
-#include <unistd.h>
-
-static char pts_name[PATH_MAX];
-
-static int open_pty(void)
-{
-	int master;
-	char *name;
-
-	master = getpt();
-	if (master < 0)
-		return -1;
-
-	if (grantpt(master) < 0 || unlockpt(master) < 0)
-		goto close_master;
-
-	{
-		int on = 1;
-		ioctl(master, FIONBIO, &on);
-	}
-
-	name = ptsname(master);
-	if (name == NULL)
-		goto close_master;
-
-	strcpy(pts_name, name);
-
-	return master;
-
-close_master:
-	close(master);
-	return -1;
-}
-
-static pid_t child(int master)
-{
-	pid_t pid;
-	int slave;
-
-	pid = fork();
-	if (pid < 0)
-		error(1, errno, "%s: fork", __func__);
-
-	if (pid == 0) {
-		slave = open(pts_name, O_RDWR);
-		if (slave < 0)
-			error(1, errno, "%s: open", __func__);
-
-		close(master);
-		dup2(slave, 0);
-		dup2(slave, 1);
-		dup2(slave, 2);
-		close(slave);
-
-#ifdef BIG_BUF
-	{
-		char buf[4096];
-		size_t size;
-
-		memset(buf, '-', sizeof(buf));
-		size = 0;
-		while (size < 8192) {
-			ssize_t r = write(STDOUT_FILENO, buf, sizeof(buf));
-			if (r < 0)
-				error(1, errno, "%s: write", __func__);
-			size += r;
-		}
-	}
-#else
-		printf("1-----------------------------------------------\n");
-		printf("2-----------------------------------------------\n");
-		printf("3-----------------------------------------------\n");
-		printf("4-----------------------------------------------\n");
-		printf("5-----------------------------------------------\n");
-		printf("6-----------------------------------------------\n");
-		printf("7-----------------------------------------------\n");
-		printf("8-----------------------------------------------\n");
-		printf("9-----------------------------------------------\n");
-#endif
-		exit(0);
-	}
-
-	return pid;
-}
-
-int main()
-{
-	pid_t pid;
-	int master;
-
-	master = open_pty();
-	if (master < 0)
-		error(1, errno, "%s: open_pty", __func__);
-
-	pid = child(master);
-
-	waitpid(pid, NULL, 0);
-	while (1) {
-		char buf[4096];
-		ssize_t size;
-
-		size = read(master, buf, sizeof(buf));
-		if (size < 0) {
-			if (errno == EAGAIN) {
-				printf("some app doesn't expect EAGAIN\n");
-				break;
-			}
-			error(1, errno, "%s: read", __func__);
-		}
-		if (size == 0)
-			break;
-#ifdef BIG_BUF
-		printf("size %zd\n", size);
-#else
-		write(STDOUT_FILENO, buf, size);
-#endif
-	}
-	
-	return 0;
-}
+Jean Delvare
