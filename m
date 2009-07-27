@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbZG0QUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbZG0QTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752999AbZG0QUI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 12:20:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750735AbZG0QUH
+	id S1753253AbZG0QTe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 12:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbZG0QTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 12:20:07 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:49339 "EHLO mgw1.diku.dk"
+	Mon, 27 Jul 2009 12:19:33 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:49184 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751882AbZG0QUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 12:20:05 -0400
-Date: Mon, 27 Jul 2009 18:14:48 +0200 (CEST)
+	id S1753011AbZG0QTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 12:19:31 -0400
+Date: Mon, 27 Jul 2009 18:14:11 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: linux-scsi@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+To: jwoithe@physics.adelaide.edu.au, linux-acpi@vger.kernel.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 8/12] drivers/scsi/fcoe: Correct redundant test
-Message-ID: <Pine.LNX.4.64.0907271814300.2682@ask.diku.dk>
+Subject: [PATCH 6/12] drivers/platform/x86: Correct redundant test
+Message-ID: <Pine.LNX.4.64.0907271813490.2682@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,7 +23,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-The second test is more general than the first one.
+device and acpi_driver_data(device) were tested just a few lines above.
 
 A simplified version of the semantic match that finds this problem is as
 follows: (http://www.emn.fr/x-info/coccinelle/)
@@ -32,7 +32,6 @@ follows: (http://www.emn.fr/x-info/coccinelle/)
 @r exists@
 local idexpression x;
 expression E;
-position p1,p2;
 @@
 
 if (x == NULL || ...) { ... when forall
@@ -48,19 +47,20 @@ if (x == NULL || ...) { ... when forall
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/scsi/fcoe/libfcoe.c         |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ drivers/platform/x86/fujitsu-laptop.c          |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/scsi/fcoe/libfcoe.c b/drivers/scsi/fcoe/libfcoe.c
-index f544340..ab0eb1b 100644
---- a/drivers/scsi/fcoe/libfcoe.c
-+++ b/drivers/scsi/fcoe/libfcoe.c
-@@ -911,8 +911,6 @@ static void fcoe_ctlr_recv_clr_vlink(struct fcoe_ctlr *fip,
- 	u32	desc_mask;
+diff --git a/drivers/platform/x86/fujitsu-laptop.c b/drivers/platform/x86/fujitsu-laptop.c
+index 218b9a1..5306901 100644
+--- a/drivers/platform/x86/fujitsu-laptop.c
++++ b/drivers/platform/x86/fujitsu-laptop.c
+@@ -745,9 +745,6 @@ static int acpi_fujitsu_remove(struct acpi_device *device, int type)
  
- 	LIBFCOE_FIP_DBG("Clear Virtual Link received\n");
--	if (!fcf)
--		return;
- 	if (!fcf || !fc_host_port_id(lp->host))
- 		return;
+ 	fujitsu = acpi_driver_data(device);
  
+-	if (!device || !acpi_driver_data(device))
+-		return -EINVAL;
+-
+ 	fujitsu->acpi_handle = NULL;
+ 
+ 	return 0;
