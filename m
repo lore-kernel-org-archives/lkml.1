@@ -1,168 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbZG0HIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754097AbZG0Hb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754118AbZG0HIw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 03:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbZG0HIv
+	id S1754097AbZG0Hb3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 03:31:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753881AbZG0Hb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 03:08:51 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:38644 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753842AbZG0HIu (ORCPT
+	Mon, 27 Jul 2009 03:31:29 -0400
+Received: from mail.turknet.net.tr ([193.192.98.182]:53422 "EHLO
+	mail.turknet.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753695AbZG0Hb2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 03:08:50 -0400
-Message-ID: <4A6D527E.3030501@monstr.eu>
-Date: Mon, 27 Jul 2009 09:08:46 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Mon, 27 Jul 2009 03:31:28 -0400
+Message-ID: <4A6D57CE.3000108@turknet.net.tr>
+Date: Mon, 27 Jul 2009 10:31:26 +0300
+From: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.2pre) Gecko/20090726 Shredder/3.0b4pre
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] arch/microblaze fixes for 2.6.31-rc5
-References: <4A6D4D9F.9080402@monstr.eu>
-In-Reply-To: <4A6D4D9F.9080402@monstr.eu>
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [BISECTED] Re: [BUG] Linux-2.6.31-rc1 Fails To Recognize Some
+ USB Disks
+References: <4A4472DF.1050900@turknet.net.tr>	<yq1zlbrn2rj.fsf@sermon.lab.mkp.net> <4A4878AC.3050208@turknet.net.tr>	<yq1fxdji03l.fsf@sermon.lab.mkp.net> <4A69932E.90906@turknet.net.tr>	<yq1fxcmnpqa.fsf@sermon.lab.mkp.net> <4A69D093.8020108@turknet.net.tr> <yq1hbwykj80.fsf@sermon.lab.mkp.net>
+In-Reply-To: <yq1hbwykj80.fsf@sermon.lab.mkp.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Jul 2009 07:31:27.0349 (UTC) FILETIME=[407AF250:01CA0E8C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On 07/27/2009 04:28 AM, Martin K. Petersen wrote:
+>>>>>> "Tarkan" == Tarkan Erimer<tarkan.erimer@turknet.net.tr>  writes:
+>>>>>>              
+> Tarkan>  root@tarkane:~# sg_inq -e /dev/sdb
+> Tarkan>  VPD INQUIRY: extended INQUIRY data page
+> Tarkan>  inquiry: transport: Host_status=0x05 [DID_ABORT]
+> Tarkan>  Driver_status=0x00 [DRIVER_OK, SUGGEST_OK]
+> Tarkan>      inquiry: failed, res=-1
+>
+> *sigh*
+>
+>
+> sd: Avoid sending extended inquiry to legacy/broken devices
+>
+> Our existing check for VPD page validity does not handle devices that
+> refuse to respond to INQUIRY with the EVPD bit set.
+>
+> Restrict extended inquiry to devices reporting SBC2/SPC3 or higher.
+>
+> Signed-off-by: Martin K. Petersen<martin.petersen@oracle.com>
+>
+>    
 
-I forget to remove one my commit (microblaze: Export memcpy, memmove for ASM optimized code)
-I updated fixes-for-linus branch.
-Please pull these changes.
+Martin,
 
-Sorry for confusion.
-Thanks,
-Michal
+Happily, I confirm that your patch worked flawlessly with -rc4! Thanks a 
+lot for your help :-)
 
+Cheers!
 
+Tarkan
 
-The following changes since commit 4be3bd7849165e7efa6b0b35a23d6a3598d97465:
-  Linus Torvalds (1):
-        Linux 2.6.31-rc4
-
-are available in the git repository at:
-
-  git://git.monstr.eu/linux-2.6-microblaze.git fixes-for-linus
-
-Arnd Bergmann (1):
-      microblaze: remove sys_ipc
-
-Huang Weiyi (1):
-      microblaze: remove duplicated #include
-
-John Williams (2):
-      microblaze: Final support for statically linked DTB
-      microblaze: Get module loading working
-
-Michal Simek (11):
-      microblaze: Define tlb_flush macro
-      microblaze: Add messages about FDT blob
-      microblaze: Not to clear r7 after copying DTB to kernel
-      microblaze: Clear print messages for DTB passing via r7
-      microblaze: Fix put_user macro for 64bits arguments
-      microblaze: Add _PAGE_FILE macros to pgtable.h
-      microblaze: Fix do_page_fault for no context
-      microblaze: Detect new Microblaze 7.20 versions
-      microblaze: Support unaligned address for put/get_user macros
-      microblaze: Add support for R_MICROBLAZE_64_NONE
-      microblaze: Typo fix for cpu param inconsistency
-
-Sam Ravnborg (1):
-      microblaze: Makefile cleanup
-
- arch/microblaze/Makefile                      |   35 ++++----
- arch/microblaze/include/asm/io.h              |    1 -
- arch/microblaze/include/asm/pgtable.h         |    6 +-
- arch/microblaze/include/asm/prom.h            |   23 +++---
- arch/microblaze/include/asm/tlb.h             |    2 +-
- arch/microblaze/include/asm/uaccess.h         |    2 +-
- arch/microblaze/kernel/Makefile               |    2 +-
- arch/microblaze/kernel/cpu/cpuinfo-pvr-full.c |    2 +-
- arch/microblaze/kernel/cpu/cpuinfo-static.c   |    2 +-
- arch/microblaze/kernel/cpu/cpuinfo.c          |    2 +
- arch/microblaze/kernel/head.S                 |   17 +++-
- arch/microblaze/kernel/hw_exception_handler.S |  109 +++++++++++--------------
- arch/microblaze/kernel/module.c               |   19 +++-
- arch/microblaze/kernel/setup.c                |    8 ++-
- arch/microblaze/kernel/sys_microblaze.c       |   99 ----------------------
- arch/microblaze/kernel/syscall_table.S        |    2 +-
- arch/microblaze/mm/fault.c                    |   15 +---
- 17 files changed, 126 insertions(+), 220 deletions(-)
-
-
-
-Michal Simek wrote:
-> Hi Linus,
-> 
-> please pull the following changes.
-> 
-> Thanks,
-> Michal
-> 
-> 
-> The following changes since commit 4be3bd7849165e7efa6b0b35a23d6a3598d97465:
->   Linus Torvalds (1):
->         Linux 2.6.31-rc4
-> 
-> are available in the git repository at:
-> 
->   git://git.monstr.eu/linux-2.6-microblaze.git fixes-for-linus
-> 
-> Arnd Bergmann (1):
->       microblaze: remove sys_ipc
-> 
-> Huang Weiyi (1):
->       microblaze: remove duplicated #include
-> 
-> John Williams (2):
->       microblaze: Final support for statically linked DTB
->       microblaze: Get module loading working
-> 
-> Michal Simek (12):
->       microblaze: Define tlb_flush macro
->       microblaze: Add messages about FDT blob
->       microblaze: Not to clear r7 after copying DTB to kernel
->       microblaze: Clear print messages for DTB passing via r7
->       microblaze: Fix put_user macro for 64bits arguments
->       microblaze: Add _PAGE_FILE macros to pgtable.h
->       microblaze: Fix do_page_fault for no context
->       microblaze: Detect new Microblaze 7.20 versions
->       microblaze: Export memcpy, memmove for ASM optimized code
->       microblaze: Support unaligned address for put/get_user macros
->       microblaze: Add support for R_MICROBLAZE_64_NONE
->       microblaze: Typo fix for cpu param inconsistency
-> 
-> Sam Ravnborg (1):
->       microblaze: Makefile cleanup
-> 
->  arch/microblaze/Makefile                      |   35 ++++----
->  arch/microblaze/include/asm/io.h              |    1 -
->  arch/microblaze/include/asm/pgtable.h         |    6 +-
->  arch/microblaze/include/asm/prom.h            |   23 +++---
->  arch/microblaze/include/asm/tlb.h             |    2 +-
->  arch/microblaze/include/asm/uaccess.h         |    2 +-
->  arch/microblaze/kernel/Makefile               |    2 +-
->  arch/microblaze/kernel/cpu/cpuinfo-pvr-full.c |    2 +-
->  arch/microblaze/kernel/cpu/cpuinfo-static.c   |    2 +-
->  arch/microblaze/kernel/cpu/cpuinfo.c          |    2 +
->  arch/microblaze/kernel/head.S                 |   17 +++-
->  arch/microblaze/kernel/hw_exception_handler.S |  109
-> +++++++++++--------------
->  arch/microblaze/kernel/microblaze_ksyms.c     |    7 ++
->  arch/microblaze/kernel/module.c               |   19 +++-
->  arch/microblaze/kernel/setup.c                |    8 ++-
->  arch/microblaze/kernel/sys_microblaze.c       |   99 ----------------------
->  arch/microblaze/kernel/syscall_table.S        |    2 +-
->  arch/microblaze/mm/fault.c                    |   15 +---
->  18 files changed, 133 insertions(+), 220 deletions(-)
-> 
-> 
-> 
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
