@@ -1,30 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752284AbZG0OpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751634AbZG0Out@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752284AbZG0OpY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 10:45:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbZG0OpX
+	id S1751634AbZG0Out (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 10:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750851AbZG0Out
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 10:45:23 -0400
-Received: from smtprelay07.ispgateway.de ([80.67.31.41]:35626 "EHLO
-	smtprelay07.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750955AbZG0OpX (ORCPT
+	Mon, 27 Jul 2009 10:50:49 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:47480 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751318AbZG0Ous (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 10:45:23 -0400
-X-Greylist: delayed 366 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Jul 2009 10:45:23 EDT
-Message-ID: <4A6DBB43.5020101@jens-regel.de>
-Date: Mon, 27 Jul 2009 16:35:47 +0200
-From: Jens Regel <jens@jens-regel.de>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Mon, 27 Jul 2009 10:50:48 -0400
+Date: Mon, 27 Jul 2009 08:50:48 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: Boaz Harrosh <bharrosh@panasas.com>,
+       Tarkan Erimer <tarkan.erimer@turknet.net.tr>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [BISECTED] Re: [BUG] Linux-2.6.31-rc1 Fails To Recognize Some
+	USB Disks
+Message-ID: <20090727145048.GF3711@parisc-linux.org>
+References: <4A4878AC.3050208@turknet.net.tr> <yq1fxdji03l.fsf@sermon.lab.mkp.net> <4A69932E.90906@turknet.net.tr> <yq1fxcmnpqa.fsf@sermon.lab.mkp.net> <4A69D093.8020108@turknet.net.tr> <yq1hbwykj80.fsf@sermon.lab.mkp.net> <20090727020611.GC3711@parisc-linux.org> <yq18wiakfq4.fsf@sermon.lab.mkp.net> <4A6D64DC.3020001@panasas.com> <yq1ocr66vy6.fsf@sermon.lab.mkp.net>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: (kein Betreff)
-References: <1248705048-22607-1-git-send-email-joerg.roedel@amd.com> <1248705048-22607-7-git-send-email-joerg.roedel@amd.com>
-In-Reply-To: <1248705048-22607-7-git-send-email-joerg.roedel@amd.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: 220693
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <yq1ocr66vy6.fsf@sermon.lab.mkp.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-unsubscribe linux-kernel
+On Mon, Jul 27, 2009 at 10:29:21AM -0400, Martin K. Petersen wrote:
+> >>>>> "Boaz" == Boaz Harrosh <bharrosh@panasas.com> writes:
+> 
+> Boaz> I don't understand. The device in question breaks when we try to
+> Boaz> read a page that it reported it supports?
+> 
+> No.  The USB-ATA bridge in question locks up when we send it an INQUIRY
+> with EVPD=1.  I.e. when we try to get a list of pages. 0xB0 and 0xB1 are
+> not even in play here.
+
+Tarkan didn't say it locked up.  He said it returned:
+
+root@tarkane:~# sg_inq -e /dev/sdb
+VPD INQUIRY: extended INQUIRY data page
+
+inquiry: transport: Host_status=0x05 [DID_ABORT]
+Driver_status=0x00 [DRIVER_OK, SUGGEST_OK]
+
+    inquiry: failed, res=-1
+
+I don't understand how we go any further at this point.
+
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
