@@ -1,81 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754185AbZG0TVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751106AbZG0TYF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754185AbZG0TVx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 15:21:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbZG0TVw
+	id S1751106AbZG0TYF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 15:24:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750756AbZG0TYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 15:21:52 -0400
-Received: from web50111.mail.re2.yahoo.com ([206.190.39.137]:41669 "HELO
-	web50111.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751326AbZG0TVw convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 15:21:52 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Jul 2009 15:21:51 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=kltoUeBqH9r59LHlmsC08viSsJTtlgM+MAd7+p2qfJSI8BBINy81aeXFf8uLGdXauLU0W90cPLU4ys7CCZDbAYAqDhkDFC3umOuKx9Q5a72tQTJeSh/zJJUXUiLhJZzoUGhIdkPVX9yUhXjraQDgCe7sYyk+FyqW0SZCMhzznRg=;
-Message-ID: <844900.87437.qm@web50111.mail.re2.yahoo.com>
-X-YMail-OSG: TmbCdnsVM1kkqdIkK5rm0WJpqs2yaa.9BUIfg6sY.mwDltqd4JtESNAvcwN1.uEAC28FU0PA.xMnHloqugVQdMrJLqf08GZ2vHrUZPh48dI.8G4zMl2JO7bBVNkt72kv19fUrVm8oHEKZ1peyhgKfWYzQpp3KUFv7qD.S91JhH88RpZ3hwlYTM83tFTKJv0_t30tg1pQ4mxShyMuqWRTT8sK9sgt2PCNVl9I.Oy7cRtrcIBG4Rm7BvpWIKUGlq3BV4zCe93Hb86zuCbxdLeR6.jN9uPNieATmWbLheWkFsDGl94y_7J6vkrZyd71u2XIY_HpglGrqq9L3cV2.3uV3qtGt_c-
-X-Mailer: YahooMailClassic/6.0.19 YahooMailWebService/0.7.338.1
-Date: Mon, 27 Jul 2009 12:15:12 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Subject: Re: [PATCH] amd64_edac: fix insmod fail while ecc is enabled
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: dougthompson@xmission.com, borislav.petkov@amd.com,
-       wan wei <onewayforever@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090727184302.GC3044@liondog.tnic>
+	Mon, 27 Jul 2009 15:24:04 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:36935 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750732AbZG0TYD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 15:24:03 -0400
+Date: Mon, 27 Jul 2009 20:23:42 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Andreas Dilger <adilger@sun.com>
+Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, malware-list@dmesg.printk.net,
+       Valdis.Kletnieks@vt.edu, greg@kroah.com, jcm@redhat.com,
+       douglas.leeder@sophos.com, tytso@mit.edu, arjan@infradead.org,
+       david@lang.hm, jengelh@medozas.de, aviro@redhat.com, mrkafk@gmail.com,
+       alexl@redhat.com, jack@suse.cz, tvrtko.ursulin@sophos.com,
+       a.p.zijlstra@chello.nl, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
+       mmorley@hcl.in, pavel@suse.cz
+Subject: Re: fanotify - overall design before I start sending patches
+Message-ID: <20090727192342.GA27895@shareable.org>
+References: <1248466429.3567.82.camel@localhost> <20090724224813.GK27755@shareable.org> <1248479367.3567.133.camel@localhost> <20090725002916.GB13556@shareable.org> <20090727183354.GM4231@webber.adilger.int>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090727183354.GM4231@webber.adilger.int>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
---- On Mon, 7/27/09, Borislav Petkov <petkovbb@googlemail.com> wrote:
-
-> From: Borislav Petkov <petkovbb@googlemail.com>
-> Subject: Re: [PATCH] amd64_edac: fix insmod fail while ecc is enabled
-> To: "Doug Thompson" <norsk5@yahoo.com>
-> Cc: dougthompson@xmission.com, borislav.petkov@amd.com, "wan wei" <onewayforever@gmail.com>, linux-kernel@vger.kernel.org
-> Date: Monday, July 27, 2009, 12:43 PM
-> Hi,
+Andreas Dilger wrote:
+> On Jul 25, 2009  01:29 +0100, Jamie Lokier wrote:
+> > Eric Paris wrote:
+> > > But maybe I should jsut do the 'if you have fanotify open, you don't
+> > > create other fanotify events'...   so everyone gets what they expect...
+> > 
+> > O_NONOTIFY.  Similar security concerns, more control.
+> > 
+> > The security concern is clear: If you allow a process with fanotify
+> > open to not create events, then any (root) process can open a fanotify
+> > socket to hide it's behaviour.
 > 
-> On Mon, Jul 27, 2009 at 11:01:26AM -0700, Doug Thompson
-> wrote:
-> > In a prior email you indicated that you refactored the
-> function in
-> >question. What that in the series of patches you
-> submitted? I think
-> >that set is too big to get in the RC branch.
-> >
-> > We need this in 2.6.31 in order for the module to even
-> work.
-> >
-> > Shall we push my simple one, or your complete
-> refactor?
-> 
-> I wanted to give my refactoring patch a little testing in
-> linux-next but
-> my gut feeling tells me it would be wiser to go with your
-> fix that late
-> in the cycle and postpone mine for the next kernel. In the
-> meantime,
-> it'll see more testing in linux-next.
-> 
-> I'll push the two fixes tomorrow if Linus hasn't pulled yet
+> I think the "fanotify doesn't generate more fanotify events" makes the
+> most sense.  Given that the open will be done in the kernel specifically
+> due to fanotify, this doesn't actually allow the listener to open files
+> without detection (unlike the "O_NONOTIFY" flag would).  The fanotify
+> "opens" would only be in response to other processes opening the file.
 
-great, thanks. Since I am going camping on wednesday until next monday, I am short on access let alone time. If you will handle it, that is wonderful
+Nice idea (if I understand it) - the file descriptors opened by
+fanotify wouldn't cause fanotify events?  Effectively having an
+in-kernel O_NONOTIFY flag which can't be set from userspace?
 
-doug t
+'if you have fanotify open, you don't create other fanotify events' is
+too severe - it means you can circumvent fanotify entirely for
+everything your process does by just opening a fanotify socket and not
+using it, which is clearly worse than having an O_NONOTIFY flag.
 
-> otherwise
-> I'll have to wait for -rc6 with your patch, but even
-> that'll do.
-> 
-> -- 
-> Regards/Gruss,
->     Boris.
-> 
+All ways to avoid creating fanotify events introduce security and
+cache integrity problems though.
+
+Why should processes which simply _watch_ the filesystem, without
+modifying any files, ever fail to receive information about file
+changes?  Why should they be unable to claim they provide integrity
+guarantees because of the loophole?
+
+So before we implement that loophole: let's ask ourselves if we really
+need it at all.
+
+What's wrong with fanotify-using applications generating events when
+they modify files themselves?
+
+An example was given where app A gets an event and modifies the file,
+then app B gets an event and modifies the file, and app A... cycling.
+
+But if you have two "virus checker" style applications fighting over
+modifying the same file without locking, you have much bigger problems
+already.  There's nothing to gain by fixing the fanotify cycle.
+
+Maybe there's no need to suppress events after all.
+
+Programs monitoring for writes to maintain caches or integrity checks
+will be much happier if they know they're getting all file modifications.
+
+-- Jamie
