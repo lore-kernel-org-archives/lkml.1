@@ -1,49 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbZG0VNC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754908AbZG0VNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754893AbZG0VNC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 17:13:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbZG0VNB
+	id S1754908AbZG0VNM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 17:13:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754533AbZG0VNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 17:13:01 -0400
-Received: from vena.lwn.net ([206.168.112.25]:58792 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754871AbZG0VNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 17:13:00 -0400
-Date: Mon, 27 Jul 2009 15:11:58 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Laurent Pinchart <laurent.pinchart@skynet.be>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Should I use kmap or kmap_atomic to map user pages that will be
- written in a loop ?
-Message-ID: <20090727151158.2c5db4eb@bike.lwn.net>
-In-Reply-To: <200907262352.09797.laurent.pinchart@skynet.be>
-References: <200907252341.48526.laurent.pinchart@skynet.be>
-	<20090726152655.7488abe4@bike.lwn.net>
-	<200907262352.09797.laurent.pinchart@skynet.be>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; x86_64-redhat-linux-gnu)
+	Mon, 27 Jul 2009 17:13:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40004 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754896AbZG0VNH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 17:13:07 -0400
+Date: Mon, 27 Jul 2009 14:10:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: joe@perches.com, wim@iguana.be, linux-kernel@vger.kernel.org,
+       denis@compulab.co.il, mike@compulab.co.il, pazke@centrinvest.ru
+Subject: Re: [PATCH v2] add SBC-FITPC2 watchdog driver
+Message-Id: <20090727141024.5ea28817.akpm@linux-foundation.org>
+In-Reply-To: <4A6594C9.4010403@compulab.co.il>
+References: <4A6594C9.4010403@compulab.co.il>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 26 Jul 2009 23:52:09 +0200
-Laurent Pinchart <laurent.pinchart@skynet.be> wrote:
+On Tue, 21 Jul 2009 13:13:29 +0300
+Mike Rapoport <mike@compulab.co.il> wrote:
 
-> I receive data from the USB subsystem in URB buffers, which are small kernel 
-> buffers. As I have to strip headers from those buffers, I can't initialize the 
-> URBs to copy data directly to the userspace buffers, so there's at least one 
-> memcpy operation involved :-S
+> > From: Denis Turischev <denis@compulab.co.il>
 > 
-> I could indeed append the URBs to a list in the callback called from interrupt 
-> context, and process them from a threaded interrupt handler. Would it make 
-> much difference ?
+> This patch adds support for watchdog found on SBC-FITPC2 board.
+> 
+> +/*
+> + * Watchdog driver for SBC-FITPC2 board
+> + *
+> + * Author: Denis Turischev <denis@compulab.co.il>
+> + *
+> + * Adapted from the IXP2000 watchdog driver by Deepak Saxena.
+> + *
+> + * This file is licensed under  the terms of the GNU General Public
+> + * License version 2. This program is licensed "as is" without any
+> + * warranty of any kind, whether express or implied.
+> + */
+> +
+> +#define pr_fmt(fmt) KBUILD_MODNAME " WATCHDOG: " fmt
+> +
+> +#include <linux/module.h>
+> +#include <linux/types.h>
+> +#include <linux/miscdevice.h>
+> +#include <linux/watchdog.h>
+> +#include <linux/ioport.h>
+> +#include <linux/delay.h>
+> +#include <linux/notifier.h>
+> +#include <linux/fs.h>
+> +#include <linux/reboot.h>
+> +#include <linux/init.h>
+> +#include <linux/moduleparam.h>
+> +#include <linux/dmi.h>
+> +
+> +#include <linux/io.h>
+> +#include <linux/uaccess.h>
+> +#include <asm/system.h>
+> +
+> +static int nowayout = WATCHDOG_NOWAYOUT;
+> +static unsigned int margin = 60;	/* (secs) Default is 1 minute */
+> +static unsigned long wdt_status;
+> +static spinlock_t wdt_lock;
 
-Moving the actual copying out of interrupt context seems like a good
-idea.  And if you can get away from the whole get_user_pages() and
-kmap() mess into a straight copy-to-user-space situation, you'll make
-your life easier.  So that would be my recommendation, yes.
+You forgot to initialise the spinlock.
 
-jon
+--- a/drivers/watchdog/sbc_fitpc2_wdt.c~watchdog-add-sbc-fitpc2-watchdog-driver-fix
++++ a/drivers/watchdog/sbc_fitpc2_wdt.c
+@@ -32,7 +32,7 @@
+ static int nowayout = WATCHDOG_NOWAYOUT;
+ static unsigned int margin = 60;	/* (secs) Default is 1 minute */
+ static unsigned long wdt_status;
+-static spinlock_t wdt_lock;
++static DEFINE_SPINLOCK(wdt_lock);
+ 
+ #define	WDT_IN_USE		0
+ #define	WDT_OK_TO_CLOSE		1
+_
+
