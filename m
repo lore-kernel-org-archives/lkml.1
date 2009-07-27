@@ -1,40 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbZG0N0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbZG0Neh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754216AbZG0N0V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 09:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753963AbZG0N0V
+	id S1754373AbZG0Neh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 09:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbZG0Neh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 09:26:21 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35115 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753751AbZG0N0V (ORCPT
+	Mon, 27 Jul 2009 09:34:37 -0400
+Received: from casper.infradead.org ([85.118.1.10]:52257 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754292AbZG0Neg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 09:26:21 -0400
-Date: Mon, 27 Jul 2009 14:25:36 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Zachary Amsden <zamsden@redhat.com>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, axboe@kernel.dk, hch@infradead.org,
-       akpm@linux-foundation.org, Paul.Clements@steeleye.com, tytso@mit.edu,
-       Tejun Heo <tj@kernel.org>, miklos <miklos@szeredi.hu>
-Subject: Re: [PATCH] Allow userspace block device implementation
-Message-ID: <20090727142536.465799aa@lxorguk.ukuu.org.uk>
-In-Reply-To: <1248699365.6987.1628.camel@twins>
-References: <4A6D79F6.3050509@redhat.com>
-	<1248699365.6987.1628.camel@twins>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 27 Jul 2009 09:34:36 -0400
+Subject: Re: futexes: Still infinite loop in get_futex_key() in 2.6.31-rc4
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jens Rosenboom <jens@mcbone.net>
+Cc: Sonny Rao <sonnyrao@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1248698755.7279.47.camel@fnki-nb00130>
+References: <1248681637.7279.12.camel@fnki-nb00130>
+	 <1248694266.6987.1594.camel@twins>  <1248697004.7279.31.camel@fnki-nb00130>
+	 <1248697409.6987.1617.camel@twins>  <1248698755.7279.47.camel@fnki-nb00130>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Mon, 27 Jul 2009 15:36:52 +0200
+Message-Id: <1248701812.6987.1637.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Somehow this made me think of FUSE/CUSE... should this be named aBUSE?
-> Oh wait it is :-), what I'm after is I guess is, can we share some of
-> the FUSE/CUSE code?
+On Mon, 2009-07-27 at 14:45 +0200, Jens Rosenboom wrote:
 
-It reminds me of the existing and perfectly functional network block
-device (nbd) we already have and which has also been present for years.
+> Good question, but as this happens on a production machine, I cannot
+> easily change the installation to check this.
 
-Alan
+Uhm, but you do run .31-rc4 on it? :-)
+
+> Attaching an strace to the process gives just
+> 
+> # strace -p 12886
+> Process 12886 attached - interrupt to quit
+> 
+> and nothing further.
+
+Bugger.. how easy it is to reproduce?
