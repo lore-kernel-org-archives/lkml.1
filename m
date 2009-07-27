@@ -1,105 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755892AbZG0J3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbZG0JfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755892AbZG0J3y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 05:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbZG0J3x
+	id S1755907AbZG0JfB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 05:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859AbZG0JfA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 05:29:53 -0400
-Received: from mga11.intel.com ([192.55.52.93]:47022 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753539AbZG0J3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 05:29:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,276,1246863600"; 
-   d="scan'208";a="711351116"
-From: "Yang, Sheng" <sheng.yang@intel.com>
-Organization: Intel Opensource Technology Center
-To: Jan Kiszka <jan.kiszka@siemens.com>
-Subject: Re: cpuinfo and HVM features (was: Host latency peaks due to kvm-intel)
-Date: Mon, 27 Jul 2009 17:29:11 +0800
-User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; x86_64; ; )
-Cc: "Anvin, H Peter" <h.peter.anvin@intel.com>, Avi Kivity <avi@redhat.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       "kvm-devel" <kvm@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>
-References: <4A68A6E5.6010808@siemens.com> <200907270912.00470.sheng.yang@intel.com> <4A6D6E9A.6030400@siemens.com>
-In-Reply-To: <4A6D6E9A.6030400@siemens.com>
+	Mon, 27 Jul 2009 05:35:00 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:40637 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755718AbZG0Je7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 05:34:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=x0htCudUrmpILd54zl42EzOYMqIQyAengsAqbR6g+AcpfUO6YGx8Q+tOeZ3K8XFtZV
+         PQe7fveEaHVTpgKcCBKvxgFGN4JwUCEVlc69QKn+M9aGvHwRTjcsCAd64SiVauCAMLfH
+         yKxgSSkDWk1J+f+l3tKUeRceYHFqXhHAdE9yU=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907271729.13142.sheng.yang@intel.com>
+In-Reply-To: <3zAHs5O6maO.A.eMB.9GObKB@chimera>
+References: <Jya1GruKQpD.A.16.2GObKB@chimera>
+	 <3zAHs5O6maO.A.eMB.9GObKB@chimera>
+Date: Mon, 27 Jul 2009 10:27:01 +0100
+Message-ID: <c6b1100b0907270227r4ab5a0b1q410160f92c94eae9@mail.gmail.com>
+Subject: Re: [Bug #13846] Possible regression in rt61pci driver
+From: Chris Clayton <chris2553@googlemail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 27 July 2009 17:08:42 Jan Kiszka wrote:
-> [ carrying this to LKML ]
+2009/7/26 Rafael J. Wysocki <rjw@sisk.pl>:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 >
-> Yang, Sheng wrote:
-> > On Monday 27 July 2009 03:16:27 H. Peter Anvin wrote:
-> >> Jan Kiszka wrote:
-> >>> Avi Kivity wrote:
-> >>>> On 07/24/2009 12:41 PM, Jan Kiszka wrote:
-> >>>>> I vaguely recall that someone promised to add a feature reporting
-> >>>>> facility for all those nice things, modern VM-extensions may or may
-> >>>>> not support (something like or even an extension of /proc/cpuinfo).
-> >>>>> What is the state of this plan? Would be specifically interesting for
-> >>>>> Intel CPUs as there seem to be many of them out there with
-> >>>>> restrictions for special use cases - like real-time.
-> >>>>
-> >>>> Newer kernels do report some vmx features (like flexpriority) in
-> >>>> /proc/cpuinfo but not all.
-> >>>
-> >>> Ah, nice. Then we just need this?
-> >>
-> >> Fine with me.
-> >>
-> >> Acked-by: H. Peter Anvin <hpa@zytor.com>
-> >>
-> >> However, I guess the real question if we shouldn't export ALL VMX
-> >> features in a consistent way instead?
-> >
-> > When I add feature reporting to cpuinfo, I just put highlight features
-> > there, otherwise the VMX feature list would at least as long as CPU one.
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me know
+> (either way).
 >
-> That could become true. But the question is always what the highlights
-> are. Often this depends on the hypervisor as it may implement
-> workarounds for missing features differently (or not at all). So I'm
-> also for exposing feature information consistently.
 
-(CC Andi and Ingo)
+This bug should remain open, although we are, I think, getting closer
+to the cause, which seems to be related to some interaction between
+the rt61 driver and mac80211 power saving.
 
-The highlight means the feature we would gain a lot, like FlexPriority, EPT, 
-VPID. They can be vendor specific. And I am talking about hardware capability 
-here, so what's hypervisor did for workaround is not in scope.
 >
-> > I have also suggested another field for virtualization feature for it,
-> > but some concern again userspace tools raised.
-> >
-> > For we got indeed quite a lot features, and would get more, would it
-> > better to export the part of struct vmcs_config entries(that's
-> > pin_based_exec_ctrl, cpu_based_exec_ctrl, and cpu_based_2nd_exec_ctrl)
-> > through
-> > sys/module/kvm_intel/? Put every feature to cpuinfo seems not that
-> > necessary for such a big list.
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13846
+> Subject         : Possible regression in rt61pci driver
+> Submitter       : Chris Clayton <chris2553@googlemail.com>
+> Date            : 2009-07-13 8:27 (14 days old)
+> References      : http://marc.info/?l=linux-kernel&m=124747418828398&w=4
 >
-> I don't think this information should only come from KVM. Consider you
-> didn't build it into some kernel but still want to find out what your
-> system is able to provide.
-
-Yes, agree.
 >
-> What about adding some dedicated /proc entry for CPU virtualization
-> features, say /proc/hvminfo?
-
-Well, compared to this, I may still prefer a new item in /proc/cpuinfo, for 
-it's still CPU feature, like Andi did for power management(IIRC).
-
-Any more preferred location?
+>
 
 -- 
-regards
-Yang, Sheng
+No, Sir; there is nothing which has yet been contrived by man, by which
+so much happiness is produced as by a good tavern or inn - Doctor Samuel
+Johnson
