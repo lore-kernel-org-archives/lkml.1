@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbZG0Rwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753733AbZG0Rzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753478AbZG0Rwf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 13:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbZG0Rwe
+	id S1753733AbZG0Rzt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 13:55:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbZG0Rzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 13:52:34 -0400
-Received: from intermatrixgroup.ru ([195.178.208.66]:52299 "EHLO
-	tservice.net.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750779AbZG0Rwe (ORCPT
+	Mon, 27 Jul 2009 13:55:49 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:47811 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752688AbZG0Rzs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 13:52:34 -0400
-Date: Mon, 27 Jul 2009 21:52:25 +0400
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Eric Paris <eparis@redhat.com>, david@lang.hm,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       malware-list@dmesg.printk.net, Valdis.Kletnieks@vt.edu, greg@kroah.com,
-       jcm@redhat.com, douglas.leeder@sophos.com, tytso@mit.edu,
-       arjan@infradead.org, jengelh@medozas.de, aviro@redhat.com,
-       mrkafk@gmail.com, alexl@redhat.com, jack@suse.cz,
-       tvrtko.ursulin@sophos.com, a.p.zijlstra@chello.nl, hch@infradead.org,
-       alan@lxorguk.ukuu.org.uk, mmorley@hcl.in
-Subject: Re: fanotify - overall design before I start sending patches
-Message-ID: <20090727175225.GA27999@ioremap.net>
-References: <1248466429.3567.82.camel@localhost> <alpine.DEB.1.10.0907241340580.28013@asgard.lang.hm> <1248469278.3567.88.camel@localhost> <20090724214401.GJ27755@shareable.org>
+	Mon, 27 Jul 2009 13:55:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=dfA97VDEv2P6Tve8qLwDZDmQIr1S+KxJMUuZEynap1FA5cA52EumMA/pp8TYHTDNjc
+         n3YIMEILbn6HbRmycr7vUA9RoihrxHV/2sW0SI1oYeyf+hbVPYUNU/rMFGEhhV+Xr1EU
+         bc+eu3GBMEeFTFsxUQVUJzBFJHpjTtrjKbCPY=
+Message-ID: <4A6DE9D4.406@gmail.com>
+Date: Mon, 27 Jul 2009 19:54:28 +0200
+From: Niel Lambrechts <niel.lambrechts@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090724214401.GJ27755@shareable.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #13733] 2.6.31-rc2: irq 16: nobody cared
+References: <Jya1GruKQpD.A.16.2GObKB@chimera> <3zAHs5O6maO.A.ZsD.yHObKB@chimera>
+In-Reply-To: <3zAHs5O6maO.A.ZsD.yHObKB@chimera>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On 07/26/2009 10:28 PM, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13733
+> Subject		: 2.6.31-rc2: irq 16: nobody cared
+> Submitter	: Niel Lambrechts<niel.lambrechts@gmail.com>
+> Date		: 2009-07-06 18:32 (21 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124690524027166&w=4
+>    
+Hi,
 
-On Fri, Jul 24, 2009 at 10:44:01PM +0100, Jamie Lokier (jamie@shareable.org) wrote:
-> > No, I will NOT EVER pass a pathname.  Period.  End of story.  I stated
-> > the if userspace wants to deal with pathnames (and they understand the
-> > system setup well enough to know if pathnames even make sense to them)
-> > they can use readlink(2) on /proc/self/fd
-> 
-> That makes sense.
-> 
-> In most cases where events trigger userspace cache or index updates,
-> userspace already has enough information to calculate the path (and
-> any derived data) from the inode number (in the case of non-hard-link
-> files) or from the inode number of the parent directory and the name
-> (not full path).
+Bug is still evident on kernels up to 2.6.31-rc4.
 
-Except that rlimits may forbid to open new file descriptor while queue
-length is enough to put another event with the full or partial path
-name.
-
-I will read initial mail next, but if it is not described there, how
-rlimit problem is handled?
-
--- 
-	Evgeniy Polyakov
+Regards,
+Niel
