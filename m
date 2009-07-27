@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbZG0Vxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbZG0VzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755240AbZG0Vxt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 17:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755213AbZG0Vxt
+	id S1755249AbZG0VzO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 17:55:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755213AbZG0VzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 17:53:49 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60727 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753175AbZG0Vxs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 17:53:48 -0400
-Date: Mon, 27 Jul 2009 22:54:08 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kdesu broken
-Message-ID: <20090727225408.19e91e91@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.01.0907271421080.25224@localhost.localdomain>
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
-	<87bpn7mzli.fsf@devron.myhome.or.jp>
-	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
-	<873a8iqqgv.fsf@devron.myhome.or.jp>
-	<20090727142303.41096bf5@lxorguk.ukuu.org.uk>
-	<877hxujkuv.fsf@devron.myhome.or.jp>
-	<20090727145805.690afe5d@lxorguk.ukuu.org.uk>
-	<87fxci6ub9.fsf@devron.myhome.or.jp>
-	<20090727161424.GA4233@skywalker>
-	<20090727174252.2d987830@lxorguk.ukuu.org.uk>
-	<20090727171213.GB4233@skywalker>
-	<87skgikjr8.fsf@devron.myhome.or.jp>
-	<alpine.LFD.2.01.0907271237250.25224@localhost.localdomain>
-	<20090727215250.034f7d4b@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907271421080.25224@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 27 Jul 2009 17:55:13 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36718 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754740AbZG0VzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 17:55:12 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [Bug #13472] Oops with minicom and USB serial
+Date: Mon, 27 Jul 2009 23:55:34 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Peter Chubb <peterc@gelato.unsw.edu.au>
+References: <Pine.LNX.4.44L0.0907271039260.5614-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0907271039260.5614-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907272355.35592.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Jul 2009 14:22:40 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Monday 27 July 2009, Alan Stern wrote:
+> On Sun, 26 Jul 2009, Rafael J. Wysocki wrote:
+> 
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.29 and 2.6.30.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> > be listed and let me know (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13472
+> > Subject		: Oops with minicom and USB serial
+> > Submitter	: Peter Chubb <peterc@gelato.unsw.edu.au>
+> > Date		: 2009-06-05 1:37 (52 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=124416901026700&w=4
+> > Handled-By	: Alan Stern <stern@rowland.harvard.edu>
+> 
+> This bug has been fixed in 2.6.30.stable by commit
+> b6cd9d132aa5e2ef0abdd1d5171e45dad9aafc29.
 
-> 
-> 
-> On Mon, 27 Jul 2009, Alan Cox wrote:
-> >
-> > Nor can we revert several patches because the ppp stuff means going back
-> > to about 2.6.28 or so for the entire tty layer plus some of the DoS and
-> > null pointer races go back to 2.2 or 2.0 8(.
-> 
-> The thing is, breaking ppp and reverting at least to 2.6.30 behavior. 
-> Since it's better than the _current_ breakage.
-> 
-> > We can use the two line slightly imperfect quickfix which people reported
-> > does fix their problem and I'm tempted to go with that for 2.6.31 because
-> > it works for the real world cases that matter.
-> 
-> Umm. Which ones? People have reported kdesu and emacs breaking. Last I 
-> saw, the emacs breakage wasn't fixed by any of the patches seen so far.
+Thanks, closed.
 
-Aneesh verified the tty->low_latency patch fixed emacs (Sunday mail in
-the thread "Re: [Regression] kdesu broken")
-
+Rafael
