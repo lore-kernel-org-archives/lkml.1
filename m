@@ -1,80 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752685AbZG0O4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737AbZG0O46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752685AbZG0O4t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 10:56:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbZG0O4t
+	id S1752737AbZG0O46 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 10:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbZG0O44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 10:56:49 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:56525 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752109AbZG0O4s (ORCPT
+	Mon, 27 Jul 2009 10:56:56 -0400
+Received: from Mycroft.westnet.com ([216.187.52.7]:42785 "EHLO
+	mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752688AbZG0O4y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 10:56:48 -0400
-Date: Mon, 27 Jul 2009 07:55:36 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, drbd-dev@lists.linbit.com
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>
-Subject: [PATCH] drbd: fix build when CONFIG_MODULES=n
-Message-Id: <20090727075536.533d1801.randy.dunlap@oracle.com>
-In-Reply-To: <20090727180552.eb32515b.sfr@canb.auug.org.au>
-References: <20090727180552.eb32515b.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 27 Jul 2009 10:56:54 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt007.oracle.com [141.146.116.16]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010206.4A6DC003.0095:SCFSTAT5015188,ss=1,fgs=0
+Message-ID: <19053.49157.984140.286148@stoffel.org>
+Date: Mon, 27 Jul 2009 10:56:05 -0400
+From: "John Stoffel" <john@stoffel.org>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: John Stoffel <john@stoffel.org>, Andreas Dilger <adilger@sun.com>,
+       Ludwig Nussel <ludwig.nussel@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] implement uid mount option for ext2
+In-Reply-To: <20090724231658.GM27755@shareable.org>
+References: <1248348991-849-1-git-send-email-ludwig.nussel@suse.de>
+	<1248431444-18842-1-git-send-email-ludwig.nussel@suse.de>
+	<1248431444-18842-2-git-send-email-ludwig.nussel@suse.de>
+	<20090724165201.GA4231@webber.adilger.int>
+	<19050.1094.758320.38666@stoffel.org>
+	<20090724231658.GM27755@shareable.org>
+X-Mailer: VM 8.0.9 under Emacs 22.3.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Jul 2009 18:05:52 +1000 Stephen Rothwell wrote:
+>>>>> "Jamie" == Jamie Lokier <jamie@shareable.org> writes:
 
-> Hi all,
-> 
-> Changes since 20090724:
-> 
-> New trees:
-> 	drbd
-> 
-> The drbd tree gained two build failures for which I reverted a commit from
-> the rr tree and applied a patch.
-> ----------------------------------------------------------------------------
+Sorry for the delay, I was out of it this weekend... :]
 
+Jamie> John Stoffel wrote:
+>> I didn't read the original email closely, but I have to say that both
+>> of these plans don't sound good to me.  If you can mount a filesystem,
+>> you're root already, so you can do any fixup you need.
 
-(already fixed?)
+Jamie> What if someone lends you a 1TB disk, for you to browse it in
+Jamie> your favourite GUI or Shell Window to read some files from it?
+Jamie> And you're to put a couple of files on it before you give it
+Jamie> back?
 
----
-From: Randy Dunlap <randy.dunlap@oracle.com>
+So?  How is the kernel supposed to know you're doing this?
 
-Fix drbd build when CONFIG_MODULES=n:
-drivers/block/drbd/drbd_main.c:3738: error: dereferencing pointer to incomplete type
+Jamie> Hotplug scripts run as root to mount it, and you have your GUI
+Jamie> / Shell Window which don't run as root to read and write a few
+Jamie> of those files.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: drbd-dev@lists.linbit.com
----
- drivers/block/drbd/drbd_main.c |    4 ++++
- 1 file changed, 4 insertions(+)
+Jamie> You must not chown anything on the disk, because it isn't your
+Jamie> disk.
 
---- linux-next-20090727.orig/drivers/block/drbd/drbd_main.c
-+++ linux-next-20090727/drivers/block/drbd/drbd_main.c
-@@ -3733,12 +3733,16 @@ const char *drbd_buildtag(void)
- 
- 	static char buildtag[38] = "\0uilt-in";
- 
-+#ifdef CONFIG_MODULES
- 	if (buildtag[0] == 0) {
- 		if (THIS_MODULE != NULL)
- 			sprintf(buildtag, "srcversion: %-24s", THIS_MODULE->srcversion);
- 		else
- 			buildtag[0] = 'b';
- 	}
-+#else
-+	buildtag[0] = 'b';
-+#endif
- 
- 	return buildtag;
- }
+Umm... this doesn't make sense.  If it's not your disk, why are you
+writing to it?  And how is chown different? 
+
+The real answer is that your buddy should have setup a mode 777
+directory on there where random stuff could be dropped.  Again, a
+userspace issue, not kernel.
+
+>> But in that case, you're screwed anyway and it's going to become
+>> un-manageable.  Push this to userspace, not the kernel since it's a
+>> userspace issue when you come right down to it.
+
+Jamie> How do you handle the above scenario in userspace?
+
+You certainly can't handle this in kernel space!  If you just plug in
+a random disk, and it comes up with borked UIDs because the original
+server it came from has a different setup than yours for UID/GIDs,
+then you're going to have to do *something* in a manual manner to fix
+it.
+
+Either you need to 'sudo chown -R user /media/disk/' or better yet
+just mkdir a new directory with appropriate permissions and then write
+using your GUI/shell-window, non-root user account to that new
+directory.
+
+Putting in a mount option like this is just begging for all kinds of
+issues.
+
+John
+
