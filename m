@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbZG0W3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410AbZG0WeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbZG0W3i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 18:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755045AbZG0W3h
+	id S1755410AbZG0WeY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 18:34:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754972AbZG0WeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 18:29:37 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:52324 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755017AbZG0W3g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 18:29:36 -0400
-Date: Tue, 28 Jul 2009 07:29:35 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Matt Fleming <matt@console-pimps.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] ftrace: Correctly calculate the first function in the .text section
-Message-ID: <20090727222935.GA22208@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Matt Fleming <matt@console-pimps.org>, Ingo Molnar <mingo@elte.hu>,
-	linux-kernel@vger.kernel.org
-References: <1248342703-15758-1-git-send-email-matt@console-pimps.org> <alpine.DEB.2.00.0907231043330.20997@gandalf.stny.rr.com> <alpine.DEB.2.00.0907231052010.20997@gandalf.stny.rr.com>
+	Mon, 27 Jul 2009 18:34:24 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37026 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754645AbZG0WeX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 18:34:23 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Duncan <1i5t5.duncan@cox.net>
+Subject: Re: [Bug #13750] Load average flatlines after returning from hibernate
+Date: Tue, 28 Jul 2009 00:34:51 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <Jya1GruKQpD.A.16.2GObKB@chimera> <1248675666.6987.1415.camel@twins> <200907270221.24667.1i5t5.duncan@cox.net>
+In-Reply-To: <200907270221.24667.1i5t5.duncan@cox.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0907231052010.20997@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200907280034.52465.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 23, 2009 at 10:52:47AM -0400, Steven Rostedt wrote:
+On Monday 27 July 2009, Duncan wrote:
+> On Sunday 26 July 2009 23:21:06 Peter Zijlstra wrote:
+> > On Sun, 2009-07-26 at 22:28 +0200, Rafael J. Wysocki wrote:
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > >
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.30.  Please verify if it still should be listed and let me know
+> > > (either way).
+> > >
+> > >
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13750
+> > > Subject		: Load average flatlines after returning from hibernate
+> > > Submitter	: Duncan <1i5t5.duncan@cox.net>
+> > > Date		: 2009-07-09 15:14 (18 days old)
+> >
+> > commit 6301cb95c119ebf324bb96ee226fa9ddffad80a7
+> > Author: Thomas Gleixner <tglx@linutronix.de>
+> > Date:   Fri Jul 17 14:15:47 2009 +0200
+> >
+> >     sched: fix nr_uninterruptible accounting of frozen tasks really
+> >
+> >
+> > commit a468d389349a7560249b355cdb6d2097ea1616c9
+> > Author: Thomas Gleixner <tglx@linutronix.de>
+> > Date:   Fri Jul 17 14:15:46 2009 +0200
+> >
+> >     sched: fix load average accounting vs. cpu hotplug
 > 
-> On Thu, 23 Jul 2009, Steven Rostedt wrote:
-> > 
-> > > 
-> > > 	if (!defined($ref_func) || !defined($weak{$text})) {
-> > > to
-> > > 	if (!defined($ref_func) && !defined($weak{$text})) {
-> > > 
-> > > This now matches the comment above the conditional.
-> > 
-> > This is the true bug. But the previous is not.
+> [replied to all]
 > 
-> Could you resend the patch with this fix only. Then I can send it out as 
-> an ugent fix.
+> That's presumably correct, as rc4 (on-tag at last git pull) resolved it.
 > 
-Is anything happening with these patches? Without them, a lot of SH
-configurations are completely broken.
+> Just updated the bug.
+
+Thanks.
+ 
+> (I didn't know whether CODE_FIX or PATCH_ALREADY_AVAILABLE was correct, and 
+> the status link is to the generic bugzilla resolutions, so not much help.  I 
+> picked CODE_FIX.  I guess that's the next bug I file, on bugzilla.kernel.org 
+> itself.)
+
+For the bugs on the regression lists CODE_FIX is correct if the fix has been
+merged by Linus or the problem has been confirmed not to be present in the
+Linus' tree any more.  In wich case the bug should be marked as CLOSED.
+
+Best,
+Rafael
