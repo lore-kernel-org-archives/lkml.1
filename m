@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754119AbZG0SQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbZG0SRX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754119AbZG0SQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 14:16:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbZG0SQ2
+	id S1754085AbZG0SRX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 14:17:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754013AbZG0SRW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 14:16:28 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:43535 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753976AbZG0SQ0 (ORCPT
+	Mon, 27 Jul 2009 14:17:22 -0400
+Received: from mail-gx0-f213.google.com ([209.85.217.213]:47609 "EHLO
+	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750900AbZG0SRV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 14:16:26 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=JECTeT1V40GQ6jQGsWIrUc3oHV5ZeMXoWQsWmG9mSuP65wK6u4BNkUplV6u1VmrkK
-	gE+Gfbt0rg2uuIuQ8UFvw==
-Date: Mon, 27 Jul 2009 11:16:16 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
-In-Reply-To: <alpine.DEB.1.10.0907271320130.13513@gentwo.org>
-Message-ID: <alpine.DEB.2.00.0907271113460.8408@chino.kir.corp.google.com>
-References: <DizPU9GBfHF.A.kgF.iWObKB@chimera> <H5-1lZIIeYK.A.Pi.BZObKB@chimera> <4A6CF220.7080605@lwfinger.net> <alpine.DEB.2.00.0907261722140.21259@chino.kir.corp.google.com> <84144f020907270008h2a985278of68e70ff1ee9265c@mail.gmail.com>
- <alpine.DEB.2.00.0907270227420.15760@chino.kir.corp.google.com> <alpine.DEB.1.10.0907271320130.13513@gentwo.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 27 Jul 2009 14:17:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=ghuNs7Evjinz46ZrqwfZsqe7rHLnhovPo4wTDohuFEG508ys+L6HecM8GRIw78uShP
+         2qTiWmf+geP2WFivySUdvqn5/a5IYk9GrQSrX1Sh3w8HQGEPhUTGttX0p2vizqMZ09dd
+         o8vVh4vD0uslv3q1phmTyjtGLb3SgS/lhZWrk=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+In-Reply-To: <689eb3470907271102i904d81em6317302e373e0730@mail.gmail.com>
+References: <689eb3470907271102i904d81em6317302e373e0730@mail.gmail.com>
+Date: Mon, 27 Jul 2009 11:17:20 -0700
+Message-ID: <689eb3470907271117x4638464p72964819a80637c0@mail.gmail.com>
+Subject: Undefined symbol "min_low_pfn"
+From: Anupama Chandwani <anupama.chandwani@gmail.com>
+To: linux kernel mailing list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Jul 2009, Christoph Lameter wrote:
+Hi,
 
-> On Mon, 27 Jul 2009, David Rientjes wrote:
-> 
-> > We need DEBUG_FLAGS to determine which flags to mask off to reduce the
-> > minimum order, so I don't see DEBUG_FLAGS_SIZE as troublesome.
-> >
-> > Christoph?
-> 
-> Post a patch? Otherwise just go ahead.
-> 
-> 
+I see min_low_pfn as an exported symbol so I am trying to print it
+from a kernel module (also of GPL license), but I am getting a
+undefined reference.
+I want to know what pages (page frame numbers) are used by kernel
+code/data/bss etc. min_low_pfn would have told me the lowest usable
+pfn.
+Is there another way of getting this information? Or printing the min_low_pfn?
 
-My patch is already in Pekka's slab-2.6.git tree at 
-http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commit;h=fa5ec8a1f66f3c2a3af723abcf8085509c9ee682
-
-You had proposed http://marc.info/?l=linux-kernel&m=124725166205814, which 
-moves the mask to kmem_cache_open() and calls calculate_sizes() twice.  
-That eliminates DEBUG_FLAGS_SIZE, but I don't see that define as being 
-troublesome since we must define DEBUG_FLAGS to specify what options add 
-metdata anyway.
+--
+Thanks,
+Anupama Chandwani
