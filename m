@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbZG0Vnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbZG0VoI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755196AbZG0Vnu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 17:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbZG0Vnt
+	id S1755225AbZG0VoI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 17:44:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193AbZG0VoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 17:43:49 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:55844 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753887AbZG0Vnt (ORCPT
+	Mon, 27 Jul 2009 17:44:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41888 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755207AbZG0VoF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 17:43:49 -0400
-Date: Mon, 27 Jul 2009 17:43:40 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@gentwo.org
-To: David Rientjes <rientjes@google.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
-In-Reply-To: <alpine.DEB.2.00.0907271113460.8408@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.1.10.0907271740090.27697@gentwo.org>
-References: <DizPU9GBfHF.A.kgF.iWObKB@chimera> <H5-1lZIIeYK.A.Pi.BZObKB@chimera> <4A6CF220.7080605@lwfinger.net> <alpine.DEB.2.00.0907261722140.21259@chino.kir.corp.google.com> <84144f020907270008h2a985278of68e70ff1ee9265c@mail.gmail.com>
- <alpine.DEB.2.00.0907270227420.15760@chino.kir.corp.google.com> <alpine.DEB.1.10.0907271320130.13513@gentwo.org> <alpine.DEB.2.00.0907271113460.8408@chino.kir.corp.google.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 27 Jul 2009 17:44:05 -0400
+Date: Mon, 27 Jul 2009 14:44:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Chia-chi Yeh (=?ISO-8859-1?Q?=5F=5F=5F=5F=5F=5F=5F=5F=5F?=) 
+	<chiachi@android.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] net: Keep interface binding when sending packets with 
+ ipi_ifindex = 0
+Message-Id: <20090727144402.513369f1.akpm@linux-foundation.org>
+In-Reply-To: <6c039e090907231439t1def08a4n10978733bee55bec@mail.gmail.com>
+References: <6c039e090907231439t1def08a4n10978733bee55bec@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Jul 2009, David Rientjes wrote:
+(cc netdev)
 
-> My patch is already in Pekka's slab-2.6.git tree at
-> http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commit;h=fa5ec8a1f66f3c2a3af723abcf8085509c9ee682
->
-> You had proposed http://marc.info/?l=linux-kernel&m=124725166205814, which
-> moves the mask to kmem_cache_open() and calls calculate_sizes() twice.
-> That eliminates DEBUG_FLAGS_SIZE, but I don't see that define as being
-> troublesome since we must define DEBUG_FLAGS to specify what options add
-> metdata anyway.
+On Thu, 23 Jul 2009 14:39:28 -0700
+Chia-chi Yeh (_________) <chiachi@android.com> wrote:
 
-My prosal was to use the size and objsize parameters. You would only have
-to call calculate_sizes() twice when the comparison of the order of size
-and objsize would be different.
-
-Doing so would simplify additing future flags. If you do your own
-calculations (like in the patch) then you have to replicate the size
-calculation from calculate_sizes() somehow. Is the duplicate calculation
-really accurate regarding alignment and other special casing?
-
-
+> In IPv4, sending a packet with ipi_ifindex = 0 via an interface-bound
+> socket will unbind the packet to that interface. This behavior is
+> different from IPv6 which treats ipi6_ifindex = 0 as unspecified.
+> Furthermore, IPv6 does not allow sending packets to other interface
+> than the bound one, but I am not sure if it is necessary in IPv4. The
+> following patch keeps the interface binding when ipi_ifindex = 0.
+> 
+> Thanks,
+> Chia-chi
+> 
+> --- a/net/ipv4/ip_sockglue.c	2009-07-24 04:50:45.000000000 +0800
+> +++ b/net/ipv4/ip_sockglue.c	2009-07-24 04:51:09.000000000 +0800
+> @@ -213,7 +213,8 @@
+>  			if (cmsg->cmsg_len != CMSG_LEN(sizeof(struct in_pktinfo)))
+>  				return -EINVAL;
+>  			info = (struct in_pktinfo *)CMSG_DATA(cmsg);
+> -			ipc->oif = info->ipi_ifindex;
+> +			if (info->ipi_ifindex)
+> +				ipc->oif = info->ipi_ifindex;
+>  			ipc->addr = info->ipi_spec_dst.s_addr;
+>  			break;
+>  		}
 
