@@ -1,18 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753408AbZG1Lu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753560AbZG1Lu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753408AbZG1Lu1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 07:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbZG1Lu0
+	id S1753560AbZG1Lu2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 07:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbZG1Lu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 07:50:26 -0400
-Received: from d112a2.x-mailer.de ([212.162.53.4]:36014 "EHLO
+	Tue, 28 Jul 2009 07:50:28 -0400
+Received: from d112a2.x-mailer.de ([212.162.53.4]:43776 "EHLO
 	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752898AbZG1LuZ (ORCPT
+	with ESMTP id S1753170AbZG1LuZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 28 Jul 2009 07:50:25 -0400
-Message-Id: <cover.1248781021.git.keil@b1-systems.de>
-Date: Tue, 28 Jul 2009 13:37:01 +0200
-Subject: [PATCH 0/1] mISDN: Fix handling of receive buffer size in L1oIP
+Message-Id: <467d0b871314c60818f541024fcacca686f3e354.1248781021.git.keil@b1-systems.de>
+In-Reply-To: <cover.1248781021.git.keil@b1-systems.de>
+References: <cover.1248781021.git.keil@b1-systems.de>
+Date: Mon, 27 Jul 2009 19:24:04 +0200
+Subject: [PATCH 1/1] mISDN: Fix handling of receive buffer size in L1oIP
 From: Karsten Keil <keil@b1-systems.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
@@ -25,18 +27,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fix a regression introduced in 2.6.31 with the commit
-8c90e11e3543d7de612194a042a148caeaab5f1d "mISDN: Use kernel_{send,recv}msg instead of open coding".
+From: Andreas Eversberg <andreas@eversberg.eu>
 
-Linus: you can pull the fix from
-git://git.kernel.org/pub/scm/linux/kernel/git/kkeil/ISDN-2.6-net-next for_linus
+The size of receive buffer pointer was used to get size of
+receive buffer instead of recvbuf_size itself, so only 4/8
+bytes could be transfered.
 
-David for net-next-2.6 you can get it from:
-git://git.kernel.org/pub/scm/linux/kernel/git/kkeil/ISDN-2.6-net-next for_david
+This is a regression to 2.6.30 introduced by commit 8c90e11e3543d7de612194a042a148caeaab5f1d
+mISDN: Use kernel_{send,recv}msg instead of open coding
 
-Andreas Eversberg (1):
-  mISDN: Fix handling of receive buffer size in L1oIP
-
+Signed-off-by: Andreas Eversberg <andreas@eversberg.eu>
+Signed-off-by: Karsten Keil <keil@b1-systems.de>
+---
  drivers/isdn/mISDN/l1oip_core.c |    4 ++--
  1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/isdn/mISDN/l1oip_core.c b/drivers/isdn/mISDN/l1oip_core.c
+index 990e6a7..c3b661a 100644
+--- a/drivers/isdn/mISDN/l1oip_core.c
++++ b/drivers/isdn/mISDN/l1oip_core.c
+@@ -731,10 +731,10 @@ l1oip_socket_thread(void *data)
+ 	while (!signal_pending(current)) {
+ 		struct kvec iov = {
+ 			.iov_base = recvbuf,
+-			.iov_len = sizeof(recvbuf),
++			.iov_len = recvbuf_size,
+ 		};
+ 		recvlen = kernel_recvmsg(socket, &msg, &iov, 1,
+-					 sizeof(recvbuf), 0);
++					 recvbuf_size, 0);
+ 		if (recvlen > 0) {
+ 			l1oip_socket_parse(hc, &sin_rx, recvbuf, recvlen);
+ 		} else {
+-- 
+1.6.0.2
 
