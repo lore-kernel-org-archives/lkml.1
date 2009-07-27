@@ -1,41 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751231AbZG0FMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751396AbZG0FPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751231AbZG0FMY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 01:12:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750833AbZG0FMX
+	id S1751396AbZG0FPw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 01:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbZG0FPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 01:12:23 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50991 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750805AbZG0FMX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 01:12:23 -0400
-Date: Mon, 27 Jul 2009 01:12:17 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux-kernel@vger.kernel.org,
-       Hans-Joachim Picht <hans@linux.vnet.ibm.com>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Arnd Schneider <arnd@de.ibm.com>, linux-fsdevel@vger.kernel.org
-Subject: Re: PM/hibernate swapfile regression
-Message-ID: <20090727051217.GA24854@infradead.org>
-References: <20090714135453.GA26976@osiris.boeblingen.de.ibm.com> <4A659D75.3050004@tuffmail.co.uk> <20090721215536.GA9502@infradead.org> <200907252358.26434.rjw@sisk.pl>
+	Mon, 27 Jul 2009 01:15:52 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54102 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751266AbZG0FPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 01:15:51 -0400
+Message-ID: <4A6D37A4.6020605@cn.fujitsu.com>
+Date: Mon, 27 Jul 2009 13:14:12 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907252358.26434.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Ben Blum <bblum@google.com>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       akpm@linux-foundation.org, serue@us.ibm.com, menage@google.com
+Subject: Re: [PATCH 3/6] Quick vmalloc vs kmalloc fix to the case where array
+ size	is too large
+References: <20090724032033.2463.79256.stgit@hastromil.mtv.corp.google.com> <20090724032150.2463.49019.stgit@hastromil.mtv.corp.google.com>
+In-Reply-To: <20090724032150.2463.49019.stgit@hastromil.mtv.corp.google.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 25, 2009 at 11:58:25PM +0200, Rafael J. Wysocki wrote:
-> Thanks for the comments.  Does the one below look better?
+Ben Blum wrote:
+> Quick vmalloc vs kmalloc fix to the case where array size is too large
+> 
+> Separates all pidlist allocation requests to a separate function that judges
+> based on the requested size whether or not the array needs to be vmalloced or
+> can be gotten via kmalloc, and similar for kfree/vfree. Should be replaced
+> entirely with a kernel-wide solution to this general problem.
+> 
+> Depends on cgroup-pidlist-namespace.patch, cgroup-procs.patch
+> 
+> Signed-off-by: Ben Blum <bblum@google.com>
+> 
 
-Yes, that looks much better to me.
+We'll either use flex_array or implement Paul's proposal, so I think
+we can drop this patch?
 
