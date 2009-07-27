@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbZG0UgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbZG0Ui2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754687AbZG0UgX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 16:36:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbZG0UgV
+	id S1754695AbZG0Ui2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 16:38:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbZG0Ui2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 16:36:21 -0400
-Received: from waste.org ([66.93.16.53]:42342 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754670AbZG0UgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 16:36:20 -0400
-Subject: Re: [PATCH 1/1] pagemap clear_refs: modify to specify anon or
- mapped vma clearing
-From: Matt Mackall <mpm@selenic.com>
-To: "Moussa A. Ba" <moussa.a.ba@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Amerigo Wang <xiyou.wangcong@gmail.com>,
-       akpm@linux-foundation.org, adobriyan@gmail.com, mel@csn.ul.ie,
-       yinghan@google.com, npiggin@suse.de, jaredeh@gmail.com
-In-Reply-To: <4A6E0BD6.50102@gmail.com>
-References: <4A693122.6060503@gmail.com>
-	 <20090724083926.GA6372@cr0.nay.redhat.com>  <4A6E0BD6.50102@gmail.com>
-Content-Type: text/plain
-Date: Mon, 27 Jul 2009 15:30:09 -0500
-Message-Id: <1248726609.1374.425.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Jul 2009 16:38:28 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:42442 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753352AbZG0Ui1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 16:38:27 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Ray Lee <ray-lk@madrabbit.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kdesu broken
+References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
+	<87bpn7mzli.fsf@devron.myhome.or.jp>
+	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
+	<873a8iqqgv.fsf@devron.myhome.or.jp>
+	<20090727142303.41096bf5@lxorguk.ukuu.org.uk>
+	<877hxujkuv.fsf@devron.myhome.or.jp>
+	<20090727145805.690afe5d@lxorguk.ukuu.org.uk>
+	<87fxci6ub9.fsf@devron.myhome.or.jp> <20090727161424.GA4233@skywalker>
+	<20090727174252.2d987830@lxorguk.ukuu.org.uk>
+	<20090727171213.GB4233@skywalker> <87skgikjr8.fsf@devron.myhome.or.jp>
+	<alpine.LFD.2.01.0907271237250.25224@localhost.localdomain>
+Date: Tue, 28 Jul 2009 05:38:24 +0900
+In-Reply-To: <alpine.LFD.2.01.0907271237250.25224@localhost.localdomain>
+	(Linus Torvalds's message of "Mon, 27 Jul 2009 12:40:11 -0700 (PDT)")
+Message-ID: <87ocr5dfpb.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-27 at 13:19 -0700, Moussa A. Ba wrote:
-> This patch makes the clear_refs proc interface a bit more versatile.
-> It adds support  for clearing anonymous pages, file mapped pages or both.
-> 
-> The clear_refs entry is used to reset the Referenced bits on virtual and
-> physical pages associated with a process.
-> echo 1 > /proc/PID/clear_refs clears all pages associated with the process
-> echo 2 > /proc/PID/clear_refs clears anonymous pages only
-> echo 3 > /proc/PID/clear_refs clears file mapped pages only
-> Any other value written to the proc entry will clear all pages.
-> 
-> Selective clearing the pages has a measurable impact on performance as it
-> limits the number of page walks.  We have been using this interface and  this
-> adds flexibility to the user user space application implementing the reference
-> clearing.
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-Looks ok to me.
+> On Tue, 28 Jul 2009, OGAWA Hirofumi wrote:
+>> 
+>> If I read that part of emacs correctly, it seems to be assuming the data
+>> was already sent to master side if the child process was exited.
+>
+> That sounds like a rather obvious assumption.
+>
+> Aren't pty's flushing the data at flush() time? Which should be happening 
+> when the child process exits and closes the pty slave.
 
-Acked-by: Matt Mackall <mpm@selenic.com>
+For tty, I guess yes. However, now, pty is pushing the data to other
+side by background, I'm not sure at all though, I guess ppp is requiring it.
 
+> So at what point do we just admit that the commit that caused all this was 
+> a buggy pile of sh*t and just revert it?
+
+Also, I'm not sure though, I guess it depends on the bug which was fixed
+by the commit.
+
+I don't know about ppp problem at all. So, personally I'm ok either way
+- we revert it and try to fix this for next merge window, or continue to
+fix this for a while.
+
+Alan-san?
+
+Thanks.
 -- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
