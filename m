@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbZG0QTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbZG0QUI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753175AbZG0QTP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 12:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbZG0QTN
+	id S1752999AbZG0QUI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 12:20:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750735AbZG0QUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 12:19:13 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:44406 "EHLO mgw2.diku.dk"
+	Mon, 27 Jul 2009 12:20:07 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:49339 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751253AbZG0QTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 12:19:10 -0400
-Date: Mon, 27 Jul 2009 18:15:43 +0200 (CEST)
+	id S1751882AbZG0QUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 12:20:05 -0400
+Date: Mon, 27 Jul 2009 18:14:48 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: paul.moore@hp.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 11/12] net/netlabel: Correct redundant test
-Message-ID: <Pine.LNX.4.64.0907271815260.2682@ask.diku.dk>
+To: linux-scsi@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 8/12] drivers/scsi/fcoe: Correct redundant test
+Message-ID: <Pine.LNX.4.64.0907271814300.2682@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,8 +23,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-entry was tested for NULL near the beginning of the function, followed by a
-return, and there is no intervening modification of its value.
+The second test is more general than the first one.
 
 A simplified version of the semantic match that finds this problem is as
 follows: (http://www.emn.fr/x-info/coccinelle/)
@@ -49,30 +48,19 @@ if (x == NULL || ...) { ... when forall
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- net/netlabel/netlabel_kapi.c        |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ drivers/scsi/fcoe/libfcoe.c         |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/net/netlabel/netlabel_kapi.c b/net/netlabel/netlabel_kapi.c
-index b0e582f..3ff6f32 100644
---- a/net/netlabel/netlabel_kapi.c
-+++ b/net/netlabel/netlabel_kapi.c
-@@ -185,8 +185,7 @@ int netlbl_cfg_unlbl_map_add(const char *domain,
- 	return 0;
+diff --git a/drivers/scsi/fcoe/libfcoe.c b/drivers/scsi/fcoe/libfcoe.c
+index f544340..ab0eb1b 100644
+--- a/drivers/scsi/fcoe/libfcoe.c
++++ b/drivers/scsi/fcoe/libfcoe.c
+@@ -911,8 +911,6 @@ static void fcoe_ctlr_recv_clr_vlink(struct fcoe_ctlr *fip,
+ 	u32	desc_mask;
  
- cfg_unlbl_map_add_failure:
--	if (entry != NULL)
--		kfree(entry->domain);
-+	kfree(entry->domain);
- 	kfree(entry);
- 	kfree(addrmap);
- 	kfree(map4);
-@@ -385,8 +384,7 @@ int netlbl_cfg_cipsov4_map_add(u32 doi,
+ 	LIBFCOE_FIP_DBG("Clear Virtual Link received\n");
+-	if (!fcf)
+-		return;
+ 	if (!fcf || !fc_host_port_id(lp->host))
+ 		return;
  
- cfg_cipsov4_map_add_failure:
- 	cipso_v4_doi_putdef(doi_def);
--	if (entry != NULL)
--		kfree(entry->domain);
-+	kfree(entry->domain);
- 	kfree(entry);
- 	kfree(addrmap);
- 	kfree(addrinfo);
