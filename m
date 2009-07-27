@@ -1,85 +1,362 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752162AbZG0Lrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751950AbZG0L4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752162AbZG0Lrd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 07:47:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbZG0Lrc
+	id S1751950AbZG0L4E (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 07:56:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbZG0L4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 07:47:32 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:54615 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751017AbZG0Lrb (ORCPT
+	Mon, 27 Jul 2009 07:56:03 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:62843 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751100AbZG0L4B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 07:47:31 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: =?iso-8859-1?Q?J=F6rg?= Schummer <ext-jorg.2.schummer@nokia.com>
-Cc: "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel\@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH take 2][RFC] fat: Save FAT root directory timestamps to volume label
-References: <1248274841-3586-1-git-send-email-ext-jorg.2.schummer@nokia.com>
-	<1248428635-26073-1-git-send-email-ext-jorg.2.schummer@nokia.com>
-	<87fxclmhxy.fsf@devron.myhome.or.jp>
-	<1248691635.4618.43.camel@jorg-desktop>
-Date: Mon, 27 Jul 2009 20:47:29 +0900
-In-Reply-To: <1248691635.4618.43.camel@jorg-desktop> (=?iso-8859-1?Q?=22J?=
- =?iso-8859-1?Q?=F6rg?= Schummer"'s
-	message of "Mon, 27 Jul 2009 13:47:15 +0300")
-Message-ID: <87ljmas5ym.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+	Mon, 27 Jul 2009 07:56:01 -0400
+Date: Mon, 27 Jul 2009 13:55:50 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Daniel Walker <dwalker@fifo99.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RFC][patch 1/5] move clock source related code to
+ clocksource.c
+Message-ID: <20090727135550.4929c89b@skybase>
+In-Reply-To: <1248480527.12279.29.camel@localhost.localdomain>
+References: <20090721191745.788551122@de.ibm.com>
+	<20090721192057.177653956@de.ibm.com>
+	<1248205851.14209.777.camel@desktop>
+	<1248213607.3298.107.camel@localhost>
+	<20090722092519.772b238b@skybase>
+	<1248284733.18789.32.camel@work-vm>
+	<1248308900.7592.36.camel@localhost.localdomain>
+	<20090723125245.34e84cac@skybase>
+	<1248480527.12279.29.camel@localhost.localdomain>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.4; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jörg Schummer <ext-jorg.2.schummer@nokia.com> writes:
+On Fri, 24 Jul 2009 17:08:47 -0700
+john stultz <johnstul@us.ibm.com> wrote:
 
-> Hi,
+> On Thu, 2009-07-23 at 12:52 +0200, Martin Schwidefsky wrote:
+> > On Wed, 22 Jul 2009 17:28:20 -0700
+> > john stultz <johnstul@us.ibm.com> wrote:
+> > > 2) Structure names aren't too great right now. Not sure timeclock is
+> > > what I want to use, probably system_time or something. Will find/replace
+> > > before the next revision is sent out.
+> > 
+> > I've picked the name struct timekeeper.
+> 
+> Nice. I like this name.
 
-Hi,
+Agreed then.
+ 
+> > > 5) The TSC clocksource uses cycles_last to avoid very slight skew issues
+> > > (that otherwise would not be noticed). Not sure how to fix that if we're
+> > > pulling cycles_last (which is purely timekeeping state) out of the
+> > > clocksource. Will have to think of something.
+> > 
+> > That is an ugly one. A similar thing exists in the s390 backend where I
+> > want to reset the timekeeping to precise values after the clocksource
+> > switch from jiffies. The proper solution probably is to allow
+> > architectures to override the default clocksource. The jiffies
+> > clocksource doesn't make any sense on s390.
+> 
+> Yea. Still not sure what a good fix is here. We need some way for the
+> TSC to check if its slightly behind another cpu. Alternatively we could
+> create a flag (SLIGHTLY_UNSYNCED or something) where we then do the
+> quick comparison in the timekeeping code instead of the clocksource read
+> implementation? It would really only be useful for the TSC and would
+> clutter the code up somewhat, so I'm not sure I really like it, but
+> maybe that would work. 
 
-> If you don't want this patch.. There's probably good reasons not to take
-> it, especially the amount-of-problem-solving-by-maintenance-cost ratio
-> might be rather low.
+For my next version of the patch series I will leave the cycle_last in
+the struct clocksource. Small, manageable steps, if we find a way to
+move it then we can do that later on as well.
 
-Also, the option is easy to add, but really hard to delete by backward
-compatible reason. This is why I'm so careful to it.
+> > > 3) Once all arches are converted to using read_persistent_clock(), then
+> > > the arch specific time initialization can be dropped. Removing the
+> > > majority of direct xtime structure accesses.
+> > 
+> > Only if the read_persistent_clock allows for a better resolution than
+> > seconds. With my cputime accounting hat on: seconds are not good
+> > enough..
+> 
+> cputime accounting? read_persistent_clock is only used for time
+> initialization. But yea, it could be extended to return a timespec.
 
-BTW, the patch has several bugs. fat_get_label_entry() doesn't check
-IS_FREE(), is it right? fat_create_label_entry() doesn't initialize all
-timestamp in the case of msdos. spin_lock() usage is wrong. and more...
+Exactly! 
 
->> Well, so, what is this for? If rootdir doesn't have timestamp, some app
->> is not working, or something?
->
-> To be honest, the only app which I can think of here is some
-> backup-script which I wrote many years ago and which has not been in use
-> anymore for a long time. (Maybe rsync or similar could also fail under
-> some circumstances? Not sure.)
->
-> So some backup / synchronisation apps might not work properly. But who's
-> going to use FAT for sensitive, i.e. backup-worthy data anyway? The
-> answer is: People who use the same volume in many different machines,
-> some of which might be able to speak only FAT. Drawback: Just for these
-> people this patch might not be useful since none of those FAT machines
-> (except for the apple and possibly the penguin) support root dir
-> timestamps anyway. So whatever timestamps are found at backup-time, they
-> cannot be trusted, because the volume might have been in use by standard
-> FAT implementations.
->
-> In summary: If you're not keen on integrating new features which would
-> make Linux look good in the face of shiny Mac OS, there might not be
-> much reason to take it in. Unless we get zillions of people replying now
-> with what wonderful things it would enable them to do.. ;-)
+> > > 4) Then once the remaining direct wall_to_monotonic and xtime accessors
+> > > are moved to timekeeping.c we can make those both static and embed them
+> > > into the core timekeeping structure.
+> > 
+> > Both should not be accessed at a rate that makes it necessary to read
+> > from the values directly. An accessor should be fine I think.
+> 
+> Yea its just a matter of cleaning things up.
 
-Yes, we would really want to know whether people want to use this. Is
-there any info from Mac OS people?
+Nod.
 
-BTW, my thinking is, the option is why default is "rootts=ignore" if
-it's really good? Or 4 rootts=* options is really needed, and what is
-reason?  Or if it's not good by some reasons, why is it added? ...
+> > > But let me know if this patch doesn't achieve most of the cleanup you
+> > > wanted to see.
+> > 
+> > We are getting there. I wonder if it is really necessary to pull
+> > xtime_cache, raw_time, total_sleep_time and timekeeping_suspended into
+> > the struct timeclock. I would prefer the semantics that the struct
+> > timekeeper / timeclock contains the internal values of the timekeeping
+> > code for the currently selected clock source. xtime is not clock
+> > specific.
+> 
+> Its not necessary. Although I do like the idea of pulling all the values
+> protected by the xtime_lock into one structure so its clear what we're
+> protecting. As it is now, jiffies, ntp state and a whole host of other
+> data is covered by it, so it would be a ways off until all that logic
+> could be dethreaded.
 
-Thanks.
+Yea, I guess that makes sense. Gives us something to do in the near
+future. For now I do what is not too complicated to implement.
+
+> The other reason for putting those values into the timekeeping struct is
+> that they are actually fairly tightly connected with the clocksource
+> state. There is some redundancy: xtime_nsec stores the highres remainder
+> of xtime.tv_nsec, xtime_cache is also mostly duplicate, so hopefully we
+> can combine those once xtime is made static.
+> 
+> > For reference here is the current stack of patches I have on my disk.
+> > The stop_machine conversion to install a new clocksource is currently missing.
+> > 
+> > PRELIMINARY PATCHES, USE AT YOUR OWN RISK.
+> > -------------------------------------------------------------------
+> > 
+> > Subject: [PATCH] introduce timekeeping_leap_insert
+> > 
+> > From: john stultz <johnstul@us.ibm.com>
+> > 
+> > ---
+> >  include/linux/time.h      |    1 +
+> >  kernel/time/ntp.c         |    7 ++-----
+> >  kernel/time/timekeeping.c |    7 +++++++
+> >  3 files changed, 10 insertions(+), 5 deletions(-)
+> > 
+> [snip]
+> 
+> I think this one is pretty easy and should be able to be submitted on
+> the sooner side. 
+
+A good question is who will upstream all this, will you take care of
+it ?
+
+> > -------------------------------------------------------------------
+> > 
+> > Subject: [PATCH] remove clocksource inline functions
+> > 
+> > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > 
+> > Remove clocksource_read, clocksource_enable and clocksource_disable
+> > inline functions. No functional change.
+> > 
+> > Cc: Ingo Molnar <mingo@elte.hu>
+> > Cc: Thomas Gleixner <tglx@linutronix.de>
+> > Cc: john stultz <johnstul@us.ibm.com>
+> > Cc: Daniel Walker <dwalker@fifo99.com>
+> > Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > ---
+> >  include/linux/clocksource.h |   46 --------------------------------------------
+> >  kernel/time/timekeeping.c   |   32 +++++++++++++++++-------------
+> >  2 files changed, 18 insertions(+), 60 deletions(-)
+> 
+> [snip]
+> 
+> Again, the outstanding mult_orig fix (I need to pester Thomas or Andrew
+> to push that before 2.6.31 comes out) will collide with this, but
+> overall it looks ok.
+
+The conflict with mult_orig is a small issue, I'll work around it. In
+the end mult_orig will be gone anyway.
+
+> > -------------------------------------------------------------------
+> > 
+> > Subject: [PATCH] cleanup clocksource selection
+> > 
+> > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > 
+> > Introduce clocksource_dequeue & clocksource_update and move spinlock
+> > calls. clocksource_update does nothing for GENERIC_TIME=n since
+> > change_clocksource does nothing as well.
+> > 
+> > Cc: Ingo Molnar <mingo@elte.hu>
+> > Cc: Thomas Gleixner <tglx@linutronix.de>
+> > Cc: john stultz <johnstul@us.ibm.com>
+> > Cc: Daniel Walker <dwalker@fifo99.com>
+> > Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> 
+> [snip]
+> 
+> Haven't had enough time to closely review or test this, but it looks
+> like an agreeable change. 
+
+Don't know yet, the change to clocksource for the stop_machine rework
+will be bigger than I though. The clocksource watchdog code changes the
+rating of the TSC clock from interrupt context. I need to get out of
+the interrupt context if I want to use stop_machine for the clocksource
+update. Not nice..
+
+> > +/* Structure holding internal timekeeping values. */
+> > +struct timekeeper {
+> > +	struct clocksource *clock;
+> > +	cycle_t cycle_interval;
+> > +	u64	xtime_interval;
+> > +	u32	raw_interval;
+> > +	u64	xtime_nsec;
+> > +	s64	ntp_error;
+> > +	int	xtime_shift;
+> > +	int	ntp_shift;
+> > +
+> > +	/*
+> > +	 * The following is written at each timer interrupt
+> > +	 * Keep it in a different cache line to dirty no
+> > +	 * more than one cache line.
+> > +	 */
+> > +	cycle_t cycle_last ____cacheline_aligned_in_smp;
+> > +};
+> 
+> 
+> The cacheline aligned bit probably needs to cover almost everything here
+> (not clock, not the shift values), as it will all be updated each tick.
+
+cycle_last is back in the clocksource structure for now.
+
+> [snip]
+> > @@ -564,8 +628,8 @@ static __always_inline int clocksource_b
+> >  	 * Now calculate the error in (1 << look_ahead) ticks, but first
+> >  	 * remove the single look ahead already included in the error.
+> >  	 */
+> > -	tick_error = tick_length >> (NTP_SCALE_SHIFT - clock->shift + 1);
+> > -	tick_error -= clock->xtime_interval >> 1;
+> > +	tick_error = tick_length >> (timekeeper.ntp_shift + 1);
+> > +	tick_error -= timekeeper.xtime_interval >> 1;
+> >  	error = ((error - tick_error) >> look_ahead) + tick_error;
+> > 
+> >  	/* Finally calculate the adjustment shift value.  */
+> > @@ -590,18 +654,18 @@ static __always_inline int clocksource_b
+> >   * this is optimized for the most common adjustments of -1,0,1,
+> >   * for other values we can do a bit more work.
+> >   */
+> > -static void clocksource_adjust(s64 offset)
+> > +static void timekeeping_adjust(s64 offset)
+> >  {
+> > -	s64 error, interval = clock->cycle_interval;
+> > +	s64 error, interval = timekeeper.cycle_interval;
+> >  	int adj;
+> > 
+> > -	error = clock->error >> (NTP_SCALE_SHIFT - clock->shift - 1);
+> > +	error = timekeeper.ntp_error >> (timekeeper.ntp_shift - 1);
+> >  	if (error > interval) {
+> >  		error >>= 2;
+> >  		if (likely(error <= interval))
+> >  			adj = 1;
+> >  		else
+> > -			adj = clocksource_bigadjust(error, &interval, &offset);
+> > +			adj = timekeeping_bigadjust(error, &interval, &offset);
+> >  	} else if (error < -interval) {
+> >  		error >>= 2;
+> >  		if (likely(error >= -interval)) {
+> > @@ -609,15 +673,14 @@ static void clocksource_adjust(s64 offse
+> >  			interval = -interval;
+> >  			offset = -offset;
+> >  		} else
+> > -			adj = clocksource_bigadjust(error, &interval, &offset);
+> > +			adj = timekeeping_bigadjust(error, &interval, &offset);
+> >  	} else
+> >  		return;
+> > 
+> > -	clock->mult += adj;
+> > -	clock->xtime_interval += interval;
+> > -	clock->xtime_nsec -= offset;
+> > -	clock->error -= (interval - offset) <<
+> > -			(NTP_SCALE_SHIFT - clock->shift);
+> > +	timekeeper.clock->mult += adj;
+> > +	timekeeper.xtime_interval += interval;
+> > +	timekeeper.xtime_nsec -= offset;
+> > +	timekeeper.ntp_error -= (interval - offset) << timekeeper.ntp_shift;
+> >  }
+> > 
+> >  /**
+> > @@ -627,53 +690,56 @@ static void clocksource_adjust(s64 offse
+> >   */
+> >  void update_wall_time(void)
+> >  {
+> > +	struct clocksource *clock;
+> >  	cycle_t offset;
+> > 
+> >  	/* Make sure we're fully resumed: */
+> >  	if (unlikely(timekeeping_suspended))
+> >  		return;
+> > 
+> > +	clock = timekeeper.clock;
+> >  #ifdef CONFIG_GENERIC_TIME
+> > -	offset = (clock->read(clock) - clock->cycle_last) & clock->mask;
+> > +	offset = (clock->read(clock) - timekeeper.cycle_last) & clock->mask;
+> >  #else
+> > -	offset = clock->cycle_interval;
+> > +	offset = timekeeper.cycle_interval;
+> >  #endif
+> > -	clock->xtime_nsec = (s64)xtime.tv_nsec << clock->shift;
+> > +	timekeeper.xtime_nsec = (s64)xtime.tv_nsec << timekeeper.xtime_shift;
+> > 
+> >  	/* normally this loop will run just once, however in the
+> >  	 * case of lost or late ticks, it will accumulate correctly.
+> >  	 */
+> > -	while (offset >= clock->cycle_interval) {
+> > +	while (offset >= timekeeper.cycle_interval) {
+> >  		/* accumulate one interval */
+> > -		offset -= clock->cycle_interval;
+> > -		clock->cycle_last += clock->cycle_interval;
+> > +		offset -= timekeeper.cycle_interval;
+> > +		timekeeper.cycle_last += timekeeper.cycle_interval;
+> > 
+> > -		clock->xtime_nsec += clock->xtime_interval;
+> > -		if (clock->xtime_nsec >= (u64)NSEC_PER_SEC << clock->shift) {
+> > -			clock->xtime_nsec -= (u64)NSEC_PER_SEC << clock->shift;
+> > +		timekeeper.xtime_nsec += timekeeper.xtime_interval;
+> > +		if (timekeeper.xtime_nsec >= (u64)NSEC_PER_SEC << timekeeper.xtime_shift) {
+> > +			timekeeper.xtime_nsec -= (u64)NSEC_PER_SEC << timekeeper.xtime_shift;
+> >  			xtime.tv_sec++;
+> >  			second_overflow();
+> >  		}
+> > 
+> > -		clock->raw_time.tv_nsec += clock->raw_interval;
+> > -		if (clock->raw_time.tv_nsec >= NSEC_PER_SEC) {
+> > -			clock->raw_time.tv_nsec -= NSEC_PER_SEC;
+> > -			clock->raw_time.tv_sec++;
+> > +		raw_time.tv_nsec += timekeeper.raw_interval;
+> > +		if (raw_time.tv_nsec >= NSEC_PER_SEC) {
+> > +			raw_time.tv_nsec -= NSEC_PER_SEC;
+> > +			raw_time.tv_sec++;
+> >  		}
+> > 
+> >  		/* accumulate error between NTP and clock interval */
+> > -		clock->error += tick_length;
+> > -		clock->error -= clock->xtime_interval << (NTP_SCALE_SHIFT - clock->shift);
+> > +		timekeeper.ntp_error += tick_length;
+> > +		timekeeper.ntp_error -= timekeeper.xtime_interval <<
+> > +					timekeeper.ntp_shift;
+> >  	}
+> 
+> 
+> Just to be super careful, I'd probably separate the introduction of the
+> timekeeper code and the ntp_shift changes into separate patches. Just to
+> keep the amount of change to very complex code down to a more easily
+> review-able amount.
+
+Done, I now have multiple patches for the cleanup. I will resend soon.
+
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
