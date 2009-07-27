@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbZG0TLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754284AbZG0TLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754036AbZG0TLq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 15:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZG0TLp
+	id S1754284AbZG0TLz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 15:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbZG0TLy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 15:11:45 -0400
-Received: from smtp10.bis.na.blackberry.com ([216.9.248.57]:17521 "EHLO
-	smtp10.bis.na.blackberry.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751307AbZG0TLp (ORCPT
+	Mon, 27 Jul 2009 15:11:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39948 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754265AbZG0TLu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 15:11:45 -0400
-X-Greylist: delayed 581 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Jul 2009 15:11:45 EDT
-X-rim-org-msg-ref-id: 609821868
-Message-ID: <609821868-1248721321-cardhu_decombobulator_blackberry.rim.net-1499766221-@bxe1208.bisx.prod.on.blackberry>
-Reply-To: Dan@spore.ath.cx
-X-Priority: Normal
-Sensitivity: Normal
-Importance: Normal
-To: linux-kernel@vger.kernel.org
-Subject: Rtl8187se & 2.6.30.3 - almost, but no wpa
-From: "Dan Farrell" <Dan@spore.ath.cx>
-Date: Mon, 27 Jul 2009 19:02:02 +0000
-Content-Type: text/plain
+	Mon, 27 Jul 2009 15:11:50 -0400
+Date: Mon, 27 Jul 2009 12:11:13 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       Linux-Arch <linux-arch@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Hugh Dickins <hugh@tiscali.co.uk>
+Subject: Re: [RFC/PATCH] mm: Pass virtual address to
+ [__]p{te,ud,md}_free_tlb()
+In-Reply-To: <1248310415.3367.22.camel@pasglop>
+Message-ID: <alpine.LFD.2.01.0907271210210.25224@localhost.localdomain>
+References: <20090715074952.A36C7DDDB2@ozlabs.org>  <20090715135620.GD7298@wotan.suse.de> <1248073873.13067.31.camel@pasglop>  <alpine.LFD.2.01.0907220930320.19335@localhost.localdomain> <1248310415.3367.22.camel@pasglop>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings esteemed linux devs!  I thank you all. 
 
-I write to report limited success with the realtek rtl8187se wireless b/g network card driver in 2.6.30.3 staging. 
 
-The driver works AFAICT with open networks. The driver does not appear to work yet with WPA although it appears to be implemented.  I haven't yet tested WEP although I can if testers are in short supply. 
+On Thu, 23 Jul 2009, Benjamin Herrenschmidt wrote:
+> 
+> Hrm... my powerpc-next branch will contain stuff that depend on it, so
+> I'll probably have to pull it in though, unless I tell all my
+> sub-maintainers to also pull from that other branch first :-)
 
-I send this report because there are various requests for feedback on the driver in the code base.  
+Ok, I'll just apply the patch. It does look obvious enough.
 
-I want to help!  I will gladly provide any information that can assist. I will follow with bits from dmesg if I can figure out what seems relevant.  
-
-Guidance would be greatly appreciated.  What can I do to help?  Is this the right place to be posting feedback?   
-
-With great respect, 
-Dan farrell dan@spore.ath.cx 
-
+			Linus
