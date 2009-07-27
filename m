@@ -1,88 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbZG0I1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755112AbZG0I1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755173AbZG0I1s (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 04:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755092AbZG0I1r
+	id S1755112AbZG0I1T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 04:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbZG0I1T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 04:27:47 -0400
-Received: from cs20.apochromatic.org ([204.152.189.161]:51842 "EHLO
-	cs20.apochromatic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753463AbZG0I1q (ORCPT
+	Mon, 27 Jul 2009 04:27:19 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:17583
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754980AbZG0I1S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 04:27:46 -0400
-Date: Mon, 27 Jul 2009 09:27:21 +0100
-From: Matt Fleming <matt@console-pimps.org>
-To: Adrian Hunter <adrian.hunter@nokia.com>
-Cc: Pierre Ossman <pierre@ossman.eu>,
-       "Lavinen Jarkko (Nokia-D/Helsinki)" <jarkko.lavinen@nokia.com>,
-       "Karpov Denis.2 (EXT-Teleca/Helsinki)" <ext-denis.2.karpov@nokia.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-omap Mailing List <linux-omap@vger.kernel.org>
-Subject: Re: [PATCH 32/32] ARM: OMAP: RX51: set MMC capabilities and
-	power-saving flag
-Message-ID: <20090727082721.GG12665@console-pimps.org>
-References: <20090710124004.1262.10422.sendpatchset@ahunter-tower> <20090710124353.1262.22788.sendpatchset@ahunter-tower> <20090725235329.GE12665@console-pimps.org> <4A6D5E40.7030608@nokia.com>
+	Mon, 27 Jul 2009 04:27:18 -0400
+Message-ID: <4A6D64DC.3020001@panasas.com>
+Date: Mon, 27 Jul 2009 11:27:08 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A6D5E40.7030608@nokia.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+CC: Matthew Wilcox <matthew@wil.cx>,
+       Tarkan Erimer <tarkan.erimer@turknet.net.tr>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [BISECTED] Re: [BUG] Linux-2.6.31-rc1 Fails To Recognize Some
+ USB Disks
+References: <4A4472DF.1050900@turknet.net.tr>	<yq1zlbrn2rj.fsf@sermon.lab.mkp.net> <4A4878AC.3050208@turknet.net.tr>	<yq1fxdji03l.fsf@sermon.lab.mkp.net> <4A69932E.90906@turknet.net.tr>	<yq1fxcmnpqa.fsf@sermon.lab.mkp.net> <4A69D093.8020108@turknet.net.tr>	<yq1hbwykj80.fsf@sermon.lab.mkp.net>	<20090727020611.GC3711@parisc-linux.org> <yq18wiakfq4.fsf@sermon.lab.mkp.net>
+In-Reply-To: <yq18wiakfq4.fsf@sermon.lab.mkp.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Jul 2009 08:27:12.0490 (UTC) FILETIME=[0A56F4A0:01CA0E94]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 27, 2009 at 10:58:56AM +0300, Adrian Hunter wrote:
-> Matt Fleming wrote:
->> On Fri, Jul 10, 2009 at 03:43:53PM +0300, Adrian Hunter wrote:
->>> >From 3865867159f25cf706480236f6d4f0e4adde5dac Mon Sep 17 00:00:00 2001
->>> From: Adrian Hunter <adrian.hunter@nokia.com>
->>> Date: Fri, 10 Jul 2009 10:32:44 +0300
->>> Subject: [PATCH] ARM: OMAP: RX51: set MMC capabilities and power-saving flag
->>>
->>> Specify MMC capabilities and set the power-saving flag
->>> for RX51.
->>>
->>
->> After the changes to [PATCH 7/32], this becomes,
->
-> I think this will leave every other board that uses omap_hsmmc
-> without any card caps.
->
+On 07/27/2009 05:43 AM, Martin K. Petersen wrote:
+>>>>>> "Matthew" == Matthew Wilcox <matthew@wil.cx> writes:
+> 
+> First let's see if I actually interpreted the responses correctly and
+> that this fixes the issue.
+> 
+> Matthew> and the sd code seems to check for that.  So what bug are you
+> Matthew> papering over here?
+> 
+> The USB drive in question appears to go tits up when we send it an
+> extended inquiry.  I contemplated adding a BLIST option but we really
+> only need EVPD to access pages 0xB0 and 0xB1.  
 
-Doh. You're right, good catch!
+I don't understand. The device in question breaks when we try to read
+a page that it reported it supports? we did do
+        /* Ask for all the pages supported by this device */
+        result = scsi_vpd_inquiry(sdev, buf, 0, 255);
+        if (result)
+                goto fail;
+Didn't we? Are we checking that 0xB0 or 0xB1 are returned?
 
-> What about adding something like this:
->
->
-> diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
-> index 8900bae..f2548f1 100644
-> --- a/drivers/mmc/host/omap_hsmmc.c
-> +++ b/drivers/mmc/host/omap_hsmmc.c
-> @@ -1720,6 +1720,11 @@ static int __init omap_hsmmc_probe(struct platform_device *pdev)
-> 		mmc->caps |= MMC_CAP_4_BIT_DATA;
->
-> 	mmc->caps |= mmc_slot(host).caps;
-> +	/* If no card caps specified then assume them all */
-> +	if (!((mmc->caps & MMC_CAP_SD) ||
-> +	      (mmc->caps & MMC_CAP_MMC) ||
-> +	      (mmc->caps & MMC_CAP_SDIO)))
-> +		mmc->caps |= MMC_CAP_SD & MMC_CAP_MMC & MMC_CAP_SDIO;
->
-> 	omap_hsmmc_conf_bus_power(host);
->
+The Block Limits page
+> appeared in SBC2 so I'm just trying to play it safe.  And hopefully fix
+> Tarkan's problem in the process.
+> 
 
-Those & should be |
-
-	/* If no card caps specified then assume them all */
-	if (!((mmc->caps & MMC_CAP_SD) ||
-	      (mmc->caps & MMC_CAP_MMC) ||
-	      (mmc->caps & MMC_CAP_SDIO)))
-	        mmc->caps |= MMC_CAP_SD | MMC_CAP_MMC | MMC_CAP_SDIO;
-
-or more compactly,
-
-	/* If no card caps specified then assume them all */
-	if (!(mmc->caps & (MMC_CAP_SD | MMC_CAP_SDIO | MMC_CAP_MMC)))
-		mmc->caps |= MMC_CAP_SD | MMC_CAP_MMC | MMC_CAP_SDIO;
-
-	
+Thanks
+Boaz
