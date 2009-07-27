@@ -1,102 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbZG0Iv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbZG0I6I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755432AbZG0Iv0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 04:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755369AbZG0Iv0
+	id S1755461AbZG0I6I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 04:58:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755370AbZG0I6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 04:51:26 -0400
-Received: from viefep18-int.chello.at ([62.179.121.38]:3221 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755169AbZG0IvZ (ORCPT
+	Mon, 27 Jul 2009 04:58:08 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:47286 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755266AbZG0I6G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 04:51:25 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [RFC][PATCH 5/5] perfcounter: Add support for kernel hardware
- breakpoints
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: prasad@linux.vnet.ibm.com
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Anton Blanchard <anton@samba.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Alan Stern <stern@rowland.harvard.edu>
-In-Reply-To: <20090725235702.GA5082@in.ibm.com>
-References: <1248109687-7808-1-git-send-email-fweisbec@gmail.com>
-	 <1248109687-7808-6-git-send-email-fweisbec@gmail.com>
-	 <1248354493.26273.2.camel@twins>
-	 <c62985530907240702h2b2de14bw2f0d475f46067e4e@mail.gmail.com>
-	 <1248445569.6987.74.camel@twins> <20090724174723.GA11985@nowhere>
-	 <1248519416.5780.12.camel@laptop> <20090725141918.GA5295@nowhere>
-	 <1248538972.5780.25.camel@laptop>  <20090725235702.GA5082@in.ibm.com>
-Content-Type: text/plain
-Date: Mon, 27 Jul 2009 10:53:37 +0200
-Message-Id: <1248684817.6987.1573.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 27 Jul 2009 04:58:06 -0400
+Message-ID: <4A6D6C2E.6060306@nokia.com>
+Date: Mon, 27 Jul 2009 11:58:22 +0300
+From: Adrian Hunter <adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: Matt Fleming <matt@console-pimps.org>
+CC: Pierre Ossman <pierre@ossman.eu>,
+       "Lavinen Jarkko (Nokia-D/Helsinki)" <jarkko.lavinen@nokia.com>,
+       "Karpov Denis.2 (EXT-Teleca/Helsinki)" <ext-denis.2.karpov@nokia.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-omap Mailing List <linux-omap@vger.kernel.org>
+Subject: Re: [PATCH 32/32] ARM: OMAP: RX51: set MMC capabilities and	power-saving
+ flag
+References: <20090710124004.1262.10422.sendpatchset@ahunter-tower> <20090710124353.1262.22788.sendpatchset@ahunter-tower> <20090725235329.GE12665@console-pimps.org> <4A6D5E40.7030608@nokia.com> <20090727082721.GG12665@console-pimps.org>
+In-Reply-To: <20090727082721.GG12665@console-pimps.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Jul 2009 08:57:49.0067 (UTC) FILETIME=[51065DB0:01CA0E98]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-07-26 at 05:27 +0530, K.Prasad wrote:
-
-> I don't claim to have understood the requirements of perf-counters
-> fully, but I sense the persistence of a few doubts about the register
-> allocation mechanism of the hw-breakpoints API...thought it might be
-> worthwhile to briefly explain.
+ext Matt Fleming wrote:
+> On Mon, Jul 27, 2009 at 10:58:56AM +0300, Adrian Hunter wrote:
+>> Matt Fleming wrote:
+>>> On Fri, Jul 10, 2009 at 03:43:53PM +0300, Adrian Hunter wrote:
+>>>> >From 3865867159f25cf706480236f6d4f0e4adde5dac Mon Sep 17 00:00:00 2001
+>>>> From: Adrian Hunter <adrian.hunter@nokia.com>
+>>>> Date: Fri, 10 Jul 2009 10:32:44 +0300
+>>>> Subject: [PATCH] ARM: OMAP: RX51: set MMC capabilities and power-saving flag
+>>>>
+>>>> Specify MMC capabilities and set the power-saving flag
+>>>> for RX51.
+>>>>
+>>> After the changes to [PATCH 7/32], this becomes,
+>> I think this will leave every other board that uses omap_hsmmc
+>> without any card caps.
+>>
 > 
-> A few notes about the same:
+> Doh. You're right, good catch!
 > 
-> Kernel-space breakpoints: They are system-wide i.e. one kernel-space
-> breakpoint request consumes one debug register on 'all' CPUs of the
-> system.
-> User-space breakpoints: Requests are stored in per-thread data
-> structures. Written onto the debug register only when scheduled-into
-> the CPU, and are removed when another task using the debug registers is
-> scheduled onto the CPU.
-> Debug register allocation mechanism: register request succeeds only when
-> the availability of a debug register is guaranteed (for both user and
-> kernel space). Allocation on a first-come-first-serve basis, no
-> priorities for register requests and hence no pre-emption of requests.
+>> What about adding something like this:
+>>
+>>
+>> diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+>> index 8900bae..f2548f1 100644
+>> --- a/drivers/mmc/host/omap_hsmmc.c
+>> +++ b/drivers/mmc/host/omap_hsmmc.c
+>> @@ -1720,6 +1720,11 @@ static int __init omap_hsmmc_probe(struct platform_device *pdev)
+>> 		mmc->caps |= MMC_CAP_4_BIT_DATA;
+>>
+>> 	mmc->caps |= mmc_slot(host).caps;
+>> +	/* If no card caps specified then assume them all */
+>> +	if (!((mmc->caps & MMC_CAP_SD) ||
+>> +	      (mmc->caps & MMC_CAP_MMC) ||
+>> +	      (mmc->caps & MMC_CAP_SDIO)))
+>> +		mmc->caps |= MMC_CAP_SD & MMC_CAP_MMC & MMC_CAP_SDIO;
+>>
+>> 	omap_hsmmc_conf_bus_power(host);
+>>
 > 
-> In short the available debug registers are divided into:
+> Those & should be |
 > 
-> # of debug registers = # of kernel-space requests + MAX(# of all
-> user-space requests) + freely available debug registers.
+> 	/* If no card caps specified then assume them all */
+> 	if (!((mmc->caps & MMC_CAP_SD) ||
+> 	      (mmc->caps & MMC_CAP_MMC) ||
+> 	      (mmc->caps & MMC_CAP_SDIO)))
+> 	        mmc->caps |= MMC_CAP_SD | MMC_CAP_MMC | MMC_CAP_SDIO;
 > 
-> Thus on an x86 system with 4 debug registers, if there exists 1
-> kernel-space request it consumes one debug register on all CPUs in the
-> system. The remaining 3 debug registers can be consumed by user-space
-> i.e. upto 3 user-space requests per-thread.
+> or more compactly,
 > 
-> There is no restriction on how many debug registers can be consumed by
-> the kernel- or user-space requests and it is entirely dependent on the
-> number of free registers available for use then.
+> 	/* If no card caps specified then assume them all */
+> 	if (!(mmc->caps & (MMC_CAP_SD | MMC_CAP_SDIO | MMC_CAP_MMC)))
+> 		mmc->caps |= MMC_CAP_SD | MMC_CAP_MMC | MMC_CAP_SDIO;
 
-Right, this is an utter miss-match for what perf counters would want.
-
-Firstly, you seem to have this weird split of kernel/userspace
-breakpoints. Perf counters looks at things in a per-cpu fashion, so the
-all-cpus kernel breakpoint stuff is useless. Also, from perf counters'
-POV its perfectly reasonable to have a per-task kernel breakpoint.
-
-Secondly, perf counters wants to schedule the per task breakpoints
-because we can optimize the context switch, saving lots of these MSR
-writes under some common scenarios.
-
-Thirdly, we can multiplex perf counters beyond their hardware maximum,
-something you simply cannot do for a debug interface.
-
-Like I said, please use the raw per-cpu breakpoint interface for perf
-counters and connect that with the minimally required reservation you
-need to make your other thing work.
-
-You simply cannot put perf-counter breakpoints on top of whatever virt
-layer you created going by what you say it is.
-
+Yes much nicer.  Will you add it to your patch?
