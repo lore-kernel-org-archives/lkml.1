@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbZG0NsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbZG0Nrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755542AbZG0NsX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 09:48:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755418AbZG0Nrr
+	id S1755441AbZG0Nrs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 09:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755371AbZG0Nrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 09:47:47 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:59145 "EHLO
+	Mon, 27 Jul 2009 09:47:46 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:59146 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754702AbZG0Nq3 (ORCPT
+	by vger.kernel.org with ESMTP id S1754722AbZG0Nqa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 09:46:29 -0400
+	Mon, 27 Jul 2009 09:46:30 -0400
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Samuel Ortiz <sameo@linux.intel.com>
 Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: [PATCH 10/22] gpio: Add WM831X GPIO driver
-Date: Mon, 27 Jul 2009 14:46:00 +0100
-Message-Id: <1248702372-29534-10-git-send-email-broonie@opensource.wolfsonmicro.com>
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 06/22] mfd: Add basic WM831x OTP support
+Date: Mon, 27 Jul 2009 14:45:56 +0100
+Message-Id: <1248702372-29534-6-git-send-email-broonie@opensource.wolfsonmicro.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <20090727134527.GA12849@rakim.wolfsonmicro.main>
 References: <20090727134527.GA12849@rakim.wolfsonmicro.main>
@@ -25,62 +24,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add support for the GPIO pins on the WM831x. No direct support is
-currently supplied for configuring non-gpiolib functionality such
-as pull configuration and alternate functions, soft configuration
-of these will be provided in a future patch.
+The WM831x series of devices use OTP (One Time Programmable, a type
+of PROM) to store system configuration. At run time this data is
+visible via registers.
 
-Currently use of these pins as interrupts is not supported due to
-the ongoing issues with generic irq not support interrupt controllers
-on interrupt driven buses. Users can directly request the interrupts
-with the wm831x-specific APIs currently provided if required.
+Currently the only explicitly supported feature is that the unique
+ID provided by every WM831x device is exported to user space via
+sysfs. Other configuration data may be read by system-specific
+code in the pre_init() and post_init() platform data operations.
 
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
 ---
- drivers/gpio/Kconfig            |    7 +
- drivers/gpio/Makefile           |    1 +
- drivers/gpio/wm831x-gpio.c      |  252 +++++++++++++++++++++++++++++++++++++++
- include/linux/mfd/wm831x/gpio.h |   55 +++++++++
- 4 files changed, 315 insertions(+), 0 deletions(-)
- create mode 100644 drivers/gpio/wm831x-gpio.c
- create mode 100644 include/linux/mfd/wm831x/gpio.h
+ drivers/mfd/wm831x-core.c      |    4 +
+ drivers/mfd/wm831x-otp.c       |   83 ++++++++++++++++++++
+ include/linux/mfd/wm831x/otp.h |  162 ++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 249 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/mfd/wm831x-otp.c
+ create mode 100644 include/linux/mfd/wm831x/otp.h
 
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index 96dda81..6b4c484 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -155,6 +155,13 @@ config GPIO_TWL4030
- 	  Say yes here to access the GPIO signals of various multi-function
- 	  power management chips from Texas Instruments.
+diff --git a/drivers/mfd/wm831x-core.c b/drivers/mfd/wm831x-core.c
+index bc40ea3..33eaea2 100644
+--- a/drivers/mfd/wm831x-core.c
++++ b/drivers/mfd/wm831x-core.c
+@@ -23,6 +23,7 @@
+ #include <linux/mfd/wm831x/pdata.h>
+ #include <linux/mfd/wm831x/irq.h>
+ #include <linux/mfd/wm831x/auxadc.h>
++#include <linux/mfd/wm831x/otp.h>
  
-+config GPIO_WM831X
-+	tristate "WM831x GPIOs"
-+	depends on MFD_WM831X
-+	help
-+	  Say yes here to access the GPIO signals of WM831x power management
-+	  chips from Wolfson Microelectronics.
+ enum wm831x_parent {
+ 	WM8310 = 0,
+@@ -1340,6 +1341,8 @@ static int wm831x_device_init(struct wm831x *wm831x, unsigned long id, int irq)
+ 				ret);
+ 	}
+ 
++	wm831x_otp_init(wm831x);
 +
- comment "PCI GPIO expanders:"
+ 	if (pdata && pdata->post_init) {
+ 		ret = pdata->post_init(wm831x);
+ 		if (ret != 0) {
+@@ -1360,6 +1363,7 @@ err:
  
- config GPIO_BT8XX
-diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
-index 9244c6f..ea7c745 100644
---- a/drivers/gpio/Makefile
-+++ b/drivers/gpio/Makefile
-@@ -14,3 +14,4 @@ obj-$(CONFIG_GPIO_TWL4030)	+= twl4030-gpio.o
- obj-$(CONFIG_GPIO_XILINX)	+= xilinx_gpio.o
- obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
- obj-$(CONFIG_GPIO_VR41XX)	+= vr41xx_giu.o
-+obj-$(CONFIG_GPIO_WM831X)	+= wm831x-gpio.o
-diff --git a/drivers/gpio/wm831x-gpio.c b/drivers/gpio/wm831x-gpio.c
+ static void wm831x_device_exit(struct wm831x *wm831x)
+ {
++	wm831x_otp_exit(wm831x);
+ 	mfd_remove_devices(wm831x->dev);
+ 	wm831x_irq_exit(wm831x);
+ 	kfree(wm831x);
+diff --git a/drivers/mfd/wm831x-otp.c b/drivers/mfd/wm831x-otp.c
 new file mode 100644
-index 0000000..f9c09a5
+index 0000000..f742745
 --- /dev/null
-+++ b/drivers/gpio/wm831x-gpio.c
-@@ -0,0 +1,252 @@
++++ b/drivers/mfd/wm831x-otp.c
+@@ -0,0 +1,83 @@
 +/*
-+ * wm831x-gpio.c  --  gpiolib support for Wolfson WM831x PMICs
++ * wm831x-otp.c  --  OTP for Wolfson WM831x PMICs
 + *
 + * Copyright 2009 Wolfson Microelectronics PLC.
 + *
@@ -95,250 +93,81 @@ index 0000000..f9c09a5
 +
 +#include <linux/kernel.h>
 +#include <linux/module.h>
-+#include <linux/gpio.h>
++#include <linux/i2c.h>
++#include <linux/bcd.h>
++#include <linux/delay.h>
 +#include <linux/mfd/core.h>
-+#include <linux/platform_device.h>
-+#include <linux/seq_file.h>
 +
 +#include <linux/mfd/wm831x/core.h>
-+#include <linux/mfd/wm831x/pdata.h>
-+#include <linux/mfd/wm831x/gpio.h>
++#include <linux/mfd/wm831x/otp.h>
 +
-+#define WM831X_GPIO_MAX 16
++/* In bytes */
++#define WM831X_UNIQUE_ID_LEN 16
 +
-+struct wm831x_gpio {
-+	struct wm831x *wm831x;
-+	struct gpio_chip gpio_chip;
-+};
-+
-+static inline struct wm831x_gpio *to_wm831x_gpio(struct gpio_chip *chip)
++/* Read the unique ID from the chip into id */
++static int wm831x_unique_id_read(struct wm831x *wm831x, char *id)
 +{
-+	return container_of(chip, struct wm831x_gpio, gpio_chip);
++	int i, val;
++
++	for (i = 0; i < WM831X_UNIQUE_ID_LEN / 2; i++) {
++		val = wm831x_reg_read(wm831x, WM831X_UNIQUE_ID_1 + i);
++		if (val < 0)
++			return val;
++
++		id[i * 2]       = (val >> 8) & 0xff;
++		id[(i * 2) + 1] = val & 0xff;
++	}
++
++	return 0;
 +}
 +
-+static int wm831x_gpio_direction_in(struct gpio_chip *chip, unsigned offset)
++static ssize_t wm831x_unique_id_show(struct device *dev,
++				     struct device_attribute *attr, char *buf)
 +{
-+	struct wm831x_gpio *wm831x_gpio = to_wm831x_gpio(chip);
-+	struct wm831x *wm831x = wm831x_gpio->wm831x;
++	struct wm831x *wm831x = dev_get_drvdata(dev);
++	int i, rval;
++	char id[WM831X_UNIQUE_ID_LEN];
++	ssize_t ret = 0;
 +
-+	return wm831x_set_bits(wm831x, WM831X_GPIO1_CONTROL + offset,
-+			       WM831X_GPN_DIR | WM831X_GPN_TRI,
-+			       WM831X_GPN_DIR);
-+}
-+
-+static int wm831x_gpio_get(struct gpio_chip *chip, unsigned offset)
-+{
-+	struct wm831x_gpio *wm831x_gpio = to_wm831x_gpio(chip);
-+	struct wm831x *wm831x = wm831x_gpio->wm831x;
-+	int ret;
-+
-+	ret = wm831x_reg_read(wm831x, WM831X_GPIO_LEVEL);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (ret & 1 << offset)
-+		return 1;
-+	else
++	rval = wm831x_unique_id_read(wm831x, id);
++	if (rval < 0)
 +		return 0;
++
++	for (i = 0; i < WM831X_UNIQUE_ID_LEN; i++)
++		ret += sprintf(&buf[ret], "%02x", buf[i]);
++
++	ret += sprintf(&buf[ret], "\n");
++
++	return ret;
 +}
 +
-+static int wm831x_gpio_direction_out(struct gpio_chip *chip,
-+				     unsigned offset, int value)
++static DEVICE_ATTR(unique_id, 0444, wm831x_unique_id_show, NULL);
++
++int wm831x_otp_init(struct wm831x *wm831x)
 +{
-+	struct wm831x_gpio *wm831x_gpio = to_wm831x_gpio(chip);
-+	struct wm831x *wm831x = wm831x_gpio->wm831x;
-+
-+	return wm831x_set_bits(wm831x, WM831X_GPIO1_CONTROL + offset,
-+			       WM831X_GPN_DIR | WM831X_GPN_TRI, 0);
-+}
-+
-+static void wm831x_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
-+{
-+	struct wm831x_gpio *wm831x_gpio = to_wm831x_gpio(chip);
-+	struct wm831x *wm831x = wm831x_gpio->wm831x;
-+
-+	wm831x_set_bits(wm831x, WM831X_GPIO_LEVEL, 1 << offset,
-+			value << offset);
-+}
-+
-+#ifdef CONFIG_DEBUG_FS
-+static void wm831x_gpio_dbg_show(struct seq_file *s, struct gpio_chip *chip)
-+{
-+	struct wm831x_gpio *wm831x_gpio = to_wm831x_gpio(chip);
-+	struct wm831x *wm831x = wm831x_gpio->wm831x;
-+	int i;
-+
-+	for (i = 0; i < chip->ngpio; i++) {
-+		int gpio = i + chip->base;
-+		int reg;
-+		const char *label, *pull, *powerdomain;
-+
-+		/* We report the GPIO even if it's not requested since
-+		 * we're also reporting things like alternate
-+		 * functions which apply even when the GPIO is not in
-+		 * use as a GPIO.
-+		 */
-+		label = gpiochip_is_requested(chip, i);
-+		if (!label)
-+			label = "Unrequested";
-+
-+		seq_printf(s, " gpio-%-3d (%-20.20s) ", gpio, label);
-+
-+		reg = wm831x_reg_read(wm831x, WM831X_GPIO1_CONTROL + i);
-+		if (reg < 0) {
-+			dev_err(wm831x->dev,
-+				"GPIO control %d read failed: %d\n",
-+				gpio, reg);
-+			seq_printf(s, "\n");
-+			continue;
-+		}
-+
-+		switch (reg & WM831X_GPN_PULL_MASK) {
-+		case WM831X_GPIO_PULL_NONE:
-+			pull = "nopull";
-+			break;
-+		case WM831X_GPIO_PULL_DOWN:
-+			pull = "pulldown";
-+			break;
-+		case WM831X_GPIO_PULL_UP:
-+			pull = "pullup";
-+		default:
-+			pull = "INVALID PULL";
-+			break;
-+		}
-+
-+		switch (i + 1) {
-+		case 1 ... 3:
-+		case 7 ... 9:
-+			if (reg & WM831X_GPN_PWR_DOM)
-+				powerdomain = "VPMIC";
-+			else
-+				powerdomain = "DBVDD";
-+			break;
-+
-+		case 4 ... 6:
-+		case 10 ... 12:
-+			if (reg & WM831X_GPN_PWR_DOM)
-+				powerdomain = "SYSVDD";
-+			else
-+				powerdomain = "DBVDD";
-+			break;
-+
-+		case 13 ... 16:
-+			powerdomain = "TPVDD";
-+			break;
-+
-+		default:
-+			BUG();
-+			break;
-+		}
-+
-+		seq_printf(s, " %s %s %s %s%s\n"
-+			   "                                  %s%s (0x%4x)\n",
-+			   reg & WM831X_GPN_DIR ? "in" : "out",
-+			   wm831x_gpio_get(chip, i) ? "high" : "low",
-+			   pull,
-+			   powerdomain,
-+			   reg & WM831X_GPN_POL ? " inverted" : "",
-+			   reg & WM831X_GPN_OD ? "open-drain" : "CMOS",
-+			   reg & WM831X_GPN_TRI ? " tristated" : "",
-+			   reg);
-+	}
-+}
-+#else
-+#define wm831x_gpio_dbg_show NULL
-+#endif
-+
-+static struct gpio_chip template_chip = {
-+	.label			= "wm831x",
-+	.owner			= THIS_MODULE,
-+	.direction_input	= wm831x_gpio_direction_in,
-+	.get			= wm831x_gpio_get,
-+	.direction_output	= wm831x_gpio_direction_out,
-+	.set			= wm831x_gpio_set,
-+	.dbg_show		= wm831x_gpio_dbg_show,
-+	.can_sleep		= 1,
-+};
-+
-+static int __devinit wm831x_gpio_probe(struct platform_device *pdev)
-+{
-+	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
-+	struct wm831x_pdata *pdata = wm831x->dev->platform_data;
-+	struct wm831x_gpio *wm831x_gpio;
 +	int ret;
 +
-+	wm831x_gpio = kzalloc(sizeof(*wm831x_gpio), GFP_KERNEL);
-+	if (wm831x_gpio == NULL)
-+		return -ENOMEM;
-+
-+	wm831x_gpio->wm831x = wm831x;
-+	wm831x_gpio->gpio_chip = template_chip;
-+	wm831x_gpio->gpio_chip.ngpio = WM831X_GPIO_MAX;
-+	wm831x_gpio->gpio_chip.dev = &pdev->dev;
-+	if (pdata && pdata->gpio_base)
-+		wm831x_gpio->gpio_chip.base = pdata->gpio_base;
-+	else
-+		wm831x_gpio->gpio_chip.base = -1;
-+
-+	ret = gpiochip_add(&wm831x_gpio->gpio_chip);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "Could not register gpiochip, %d\n",
++	ret = device_create_file(wm831x->dev, &dev_attr_unique_id);
++	if (ret != 0)
++		dev_err(wm831x->dev, "Unique ID attribute not created: %d\n",
 +			ret);
-+		goto err;
-+	}
-+
-+	platform_set_drvdata(pdev, wm831x_gpio);
-+
-+	return ret;
-+
-+err:
-+	kfree(wm831x_gpio);
-+	return ret;
-+}
-+
-+static int __devexit wm831x_gpio_remove(struct platform_device *pdev)
-+{
-+	struct wm831x_gpio *wm831x_gpio = platform_get_drvdata(pdev);
-+	int ret;
-+
-+	ret = gpiochip_remove(&wm831x_gpio->gpio_chip);
-+	if (ret == 0)
-+		kfree(wm831x_gpio);
 +
 +	return ret;
 +}
 +
-+static struct platform_driver wm831x_gpio_driver = {
-+	.driver.name	= "wm831x-gpio",
-+	.driver.owner	= THIS_MODULE,
-+	.probe		= wm831x_gpio_probe,
-+	.remove		= __devexit_p(wm831x_gpio_remove),
-+};
-+
-+static int __init wm831x_gpio_init(void)
++void wm831x_otp_exit(struct wm831x *wm831x)
 +{
-+	return platform_driver_register(&wm831x_gpio_driver);
++	device_remove_file(wm831x->dev, &dev_attr_unique_id);
 +}
-+subsys_initcall(wm831x_gpio_init);
 +
-+static void __exit wm831x_gpio_exit(void)
-+{
-+	platform_driver_unregister(&wm831x_gpio_driver);
-+}
-+module_exit(wm831x_gpio_exit);
-+
-+MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com>");
-+MODULE_DESCRIPTION("GPIO interface for WM831x PMICs");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:wm831x-gpio");
-diff --git a/include/linux/mfd/wm831x/gpio.h b/include/linux/mfd/wm831x/gpio.h
+diff --git a/include/linux/mfd/wm831x/otp.h b/include/linux/mfd/wm831x/otp.h
 new file mode 100644
-index 0000000..2835614
+index 0000000..ce1f81a
 --- /dev/null
-+++ b/include/linux/mfd/wm831x/gpio.h
-@@ -0,0 +1,55 @@
++++ b/include/linux/mfd/wm831x/otp.h
+@@ -0,0 +1,162 @@
 +/*
-+ * include/linux/mfd/wm831x/gpio.h -- GPIO for WM831x
++ * include/linux/mfd/wm831x/otp.h -- OTP interface for WM831x
 + *
 + * Copyright 2009 Wolfson Microelectronics PLC.
 + *
@@ -351,46 +180,153 @@ index 0000000..2835614
 + *
 + */
 +
-+#ifndef __MFD_WM831X_GPIO_H__
-+#define __MFD_WM831X_GPIO_H__
++#ifndef __MFD_WM831X_OTP_H__
++#define __MFD_WM831X_OTP_H__
++
++int wm831x_otp_init(struct wm831x *wm831x);
++void wm831x_otp_exit(struct wm831x *wm831x);
 +
 +/*
-+ * R16440-16455 (0x4038-0x4047) - GPIOx Control
++ * R30720 (0x7800) - Unique ID 1
 + */
-+#define WM831X_GPN_DIR                          0x8000  /* GPN_DIR */
-+#define WM831X_GPN_DIR_MASK                     0x8000  /* GPN_DIR */
-+#define WM831X_GPN_DIR_SHIFT                        15  /* GPN_DIR */
-+#define WM831X_GPN_DIR_WIDTH                         1  /* GPN_DIR */
-+#define WM831X_GPN_PULL_MASK                    0x6000  /* GPN_PULL - [14:13] */
-+#define WM831X_GPN_PULL_SHIFT                       13  /* GPN_PULL - [14:13] */
-+#define WM831X_GPN_PULL_WIDTH                        2  /* GPN_PULL - [14:13] */
-+#define WM831X_GPN_INT_MODE                     0x1000  /* GPN_INT_MODE */
-+#define WM831X_GPN_INT_MODE_MASK                0x1000  /* GPN_INT_MODE */
-+#define WM831X_GPN_INT_MODE_SHIFT                   12  /* GPN_INT_MODE */
-+#define WM831X_GPN_INT_MODE_WIDTH                    1  /* GPN_INT_MODE */
-+#define WM831X_GPN_PWR_DOM                      0x0800  /* GPN_PWR_DOM */
-+#define WM831X_GPN_PWR_DOM_MASK                 0x0800  /* GPN_PWR_DOM */
-+#define WM831X_GPN_PWR_DOM_SHIFT                    11  /* GPN_PWR_DOM */
-+#define WM831X_GPN_PWR_DOM_WIDTH                     1  /* GPN_PWR_DOM */
-+#define WM831X_GPN_POL                          0x0400  /* GPN_POL */
-+#define WM831X_GPN_POL_MASK                     0x0400  /* GPN_POL */
-+#define WM831X_GPN_POL_SHIFT                        10  /* GPN_POL */
-+#define WM831X_GPN_POL_WIDTH                         1  /* GPN_POL */
-+#define WM831X_GPN_OD                           0x0200  /* GPN_OD */
-+#define WM831X_GPN_OD_MASK                      0x0200  /* GPN_OD */
-+#define WM831X_GPN_OD_SHIFT                          9  /* GPN_OD */
-+#define WM831X_GPN_OD_WIDTH                          1  /* GPN_OD */
-+#define WM831X_GPN_TRI                          0x0080  /* GPN_TRI */
-+#define WM831X_GPN_TRI_MASK                     0x0080  /* GPN_TRI */
-+#define WM831X_GPN_TRI_SHIFT                         7  /* GPN_TRI */
-+#define WM831X_GPN_TRI_WIDTH                         1  /* GPN_TRI */
-+#define WM831X_GPN_FN_MASK                      0x000F  /* GPN_FN - [3:0] */
-+#define WM831X_GPN_FN_SHIFT                          0  /* GPN_FN - [3:0] */
-+#define WM831X_GPN_FN_WIDTH                          4  /* GPN_FN - [3:0] */
++#define WM831X_UNIQUE_ID_MASK                   0xFFFF  /* UNIQUE_ID - [15:0] */
++#define WM831X_UNIQUE_ID_SHIFT                       0  /* UNIQUE_ID - [15:0] */
++#define WM831X_UNIQUE_ID_WIDTH                      16  /* UNIQUE_ID - [15:0] */
 +
-+#define WM831X_GPIO_PULL_NONE (0 << WM831X_GPN_PULL_SHIFT)
-+#define WM831X_GPIO_PULL_DOWN (1 << WM831X_GPN_PULL_SHIFT)
-+#define WM831X_GPIO_PULL_UP   (2 << WM831X_GPN_PULL_SHIFT)
++/*
++ * R30721 (0x7801) - Unique ID 2
++ */
++#define WM831X_UNIQUE_ID_MASK                   0xFFFF  /* UNIQUE_ID - [15:0] */
++#define WM831X_UNIQUE_ID_SHIFT                       0  /* UNIQUE_ID - [15:0] */
++#define WM831X_UNIQUE_ID_WIDTH                      16  /* UNIQUE_ID - [15:0] */
++
++/*
++ * R30722 (0x7802) - Unique ID 3
++ */
++#define WM831X_UNIQUE_ID_MASK                   0xFFFF  /* UNIQUE_ID - [15:0] */
++#define WM831X_UNIQUE_ID_SHIFT                       0  /* UNIQUE_ID - [15:0] */
++#define WM831X_UNIQUE_ID_WIDTH                      16  /* UNIQUE_ID - [15:0] */
++
++/*
++ * R30723 (0x7803) - Unique ID 4
++ */
++#define WM831X_UNIQUE_ID_MASK                   0xFFFF  /* UNIQUE_ID - [15:0] */
++#define WM831X_UNIQUE_ID_SHIFT                       0  /* UNIQUE_ID - [15:0] */
++#define WM831X_UNIQUE_ID_WIDTH                      16  /* UNIQUE_ID - [15:0] */
++
++/*
++ * R30724 (0x7804) - Unique ID 5
++ */
++#define WM831X_UNIQUE_ID_MASK                   0xFFFF  /* UNIQUE_ID - [15:0] */
++#define WM831X_UNIQUE_ID_SHIFT                       0  /* UNIQUE_ID - [15:0] */
++#define WM831X_UNIQUE_ID_WIDTH                      16  /* UNIQUE_ID - [15:0] */
++
++/*
++ * R30725 (0x7805) - Unique ID 6
++ */
++#define WM831X_UNIQUE_ID_MASK                   0xFFFF  /* UNIQUE_ID - [15:0] */
++#define WM831X_UNIQUE_ID_SHIFT                       0  /* UNIQUE_ID - [15:0] */
++#define WM831X_UNIQUE_ID_WIDTH                      16  /* UNIQUE_ID - [15:0] */
++
++/*
++ * R30726 (0x7806) - Unique ID 7
++ */
++#define WM831X_UNIQUE_ID_MASK                   0xFFFF  /* UNIQUE_ID - [15:0] */
++#define WM831X_UNIQUE_ID_SHIFT                       0  /* UNIQUE_ID - [15:0] */
++#define WM831X_UNIQUE_ID_WIDTH                      16  /* UNIQUE_ID - [15:0] */
++
++/*
++ * R30727 (0x7807) - Unique ID 8
++ */
++#define WM831X_UNIQUE_ID_MASK                   0xFFFF  /* UNIQUE_ID - [15:0] */
++#define WM831X_UNIQUE_ID_SHIFT                       0  /* UNIQUE_ID - [15:0] */
++#define WM831X_UNIQUE_ID_WIDTH                      16  /* UNIQUE_ID - [15:0] */
++
++/*
++ * R30728 (0x7808) - Factory OTP ID
++ */
++#define WM831X_OTP_FACT_ID_MASK                 0xFFFE  /* OTP_FACT_ID - [15:1] */
++#define WM831X_OTP_FACT_ID_SHIFT                     1  /* OTP_FACT_ID - [15:1] */
++#define WM831X_OTP_FACT_ID_WIDTH                    15  /* OTP_FACT_ID - [15:1] */
++#define WM831X_OTP_FACT_FINAL                   0x0001  /* OTP_FACT_FINAL */
++#define WM831X_OTP_FACT_FINAL_MASK              0x0001  /* OTP_FACT_FINAL */
++#define WM831X_OTP_FACT_FINAL_SHIFT                  0  /* OTP_FACT_FINAL */
++#define WM831X_OTP_FACT_FINAL_WIDTH                  1  /* OTP_FACT_FINAL */
++
++/*
++ * R30729 (0x7809) - Factory OTP 1
++ */
++#define WM831X_DC3_TRIM_MASK                    0xF000  /* DC3_TRIM - [15:12] */
++#define WM831X_DC3_TRIM_SHIFT                       12  /* DC3_TRIM - [15:12] */
++#define WM831X_DC3_TRIM_WIDTH                        4  /* DC3_TRIM - [15:12] */
++#define WM831X_DC2_TRIM_MASK                    0x0FC0  /* DC2_TRIM - [11:6] */
++#define WM831X_DC2_TRIM_SHIFT                        6  /* DC2_TRIM - [11:6] */
++#define WM831X_DC2_TRIM_WIDTH                        6  /* DC2_TRIM - [11:6] */
++#define WM831X_DC1_TRIM_MASK                    0x003F  /* DC1_TRIM - [5:0] */
++#define WM831X_DC1_TRIM_SHIFT                        0  /* DC1_TRIM - [5:0] */
++#define WM831X_DC1_TRIM_WIDTH                        6  /* DC1_TRIM - [5:0] */
++
++/*
++ * R30730 (0x780A) - Factory OTP 2
++ */
++#define WM831X_CHIP_ID_MASK                     0xFFFF  /* CHIP_ID - [15:0] */
++#define WM831X_CHIP_ID_SHIFT                         0  /* CHIP_ID - [15:0] */
++#define WM831X_CHIP_ID_WIDTH                        16  /* CHIP_ID - [15:0] */
++
++/*
++ * R30731 (0x780B) - Factory OTP 3
++ */
++#define WM831X_OSC_TRIM_MASK                    0x0780  /* OSC_TRIM - [10:7] */
++#define WM831X_OSC_TRIM_SHIFT                        7  /* OSC_TRIM - [10:7] */
++#define WM831X_OSC_TRIM_WIDTH                        4  /* OSC_TRIM - [10:7] */
++#define WM831X_BG_TRIM_MASK                     0x0078  /* BG_TRIM - [6:3] */
++#define WM831X_BG_TRIM_SHIFT                         3  /* BG_TRIM - [6:3] */
++#define WM831X_BG_TRIM_WIDTH                         4  /* BG_TRIM - [6:3] */
++#define WM831X_LPBG_TRIM_MASK                   0x0007  /* LPBG_TRIM - [2:0] */
++#define WM831X_LPBG_TRIM_SHIFT                       0  /* LPBG_TRIM - [2:0] */
++#define WM831X_LPBG_TRIM_WIDTH                       3  /* LPBG_TRIM - [2:0] */
++
++/*
++ * R30732 (0x780C) - Factory OTP 4
++ */
++#define WM831X_CHILD_I2C_ADDR_MASK              0x00FE  /* CHILD_I2C_ADDR - [7:1] */
++#define WM831X_CHILD_I2C_ADDR_SHIFT                  1  /* CHILD_I2C_ADDR - [7:1] */
++#define WM831X_CHILD_I2C_ADDR_WIDTH                  7  /* CHILD_I2C_ADDR - [7:1] */
++#define WM831X_CH_AW                            0x0001  /* CH_AW */
++#define WM831X_CH_AW_MASK                       0x0001  /* CH_AW */
++#define WM831X_CH_AW_SHIFT                           0  /* CH_AW */
++#define WM831X_CH_AW_WIDTH                           1  /* CH_AW */
++
++/*
++ * R30733 (0x780D) - Factory OTP 5
++ */
++#define WM831X_CHARGE_TRIM_MASK                 0x003F  /* CHARGE_TRIM - [5:0] */
++#define WM831X_CHARGE_TRIM_SHIFT                     0  /* CHARGE_TRIM - [5:0] */
++#define WM831X_CHARGE_TRIM_WIDTH                     6  /* CHARGE_TRIM - [5:0] */
++
++/*
++ * R30736 (0x7810) - Customer OTP ID
++ */
++#define WM831X_OTP_AUTO_PROG                    0x8000  /* OTP_AUTO_PROG */
++#define WM831X_OTP_AUTO_PROG_MASK               0x8000  /* OTP_AUTO_PROG */
++#define WM831X_OTP_AUTO_PROG_SHIFT                  15  /* OTP_AUTO_PROG */
++#define WM831X_OTP_AUTO_PROG_WIDTH                   1  /* OTP_AUTO_PROG */
++#define WM831X_OTP_CUST_ID_MASK                 0x7FFE  /* OTP_CUST_ID - [14:1] */
++#define WM831X_OTP_CUST_ID_SHIFT                     1  /* OTP_CUST_ID - [14:1] */
++#define WM831X_OTP_CUST_ID_WIDTH                    14  /* OTP_CUST_ID - [14:1] */
++#define WM831X_OTP_CUST_FINAL                   0x0001  /* OTP_CUST_FINAL */
++#define WM831X_OTP_CUST_FINAL_MASK              0x0001  /* OTP_CUST_FINAL */
++#define WM831X_OTP_CUST_FINAL_SHIFT                  0  /* OTP_CUST_FINAL */
++#define WM831X_OTP_CUST_FINAL_WIDTH                  1  /* OTP_CUST_FINAL */
++
++/*
++ * R30759 (0x7827) - DBE CHECK DATA
++ */
++#define WM831X_DBE_VALID_DATA_MASK              0xFFFF  /* DBE_VALID_DATA - [15:0] */
++#define WM831X_DBE_VALID_DATA_SHIFT                  0  /* DBE_VALID_DATA - [15:0] */
++#define WM831X_DBE_VALID_DATA_WIDTH                 16  /* DBE_VALID_DATA - [15:0] */
++
++
 +#endif
 -- 
 1.6.3.3
