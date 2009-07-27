@@ -1,69 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbZG0QIi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752800AbZG0QOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752827AbZG0QIi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 12:08:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbZG0QIi
+	id S1752800AbZG0QOi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 12:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbZG0QOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 12:08:38 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:39773 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751076AbZG0QIh (ORCPT
+	Mon, 27 Jul 2009 12:14:37 -0400
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:53869 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752059AbZG0QOh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 12:08:37 -0400
-Subject: Re: iwlwifi (4965) regression since 2.6.30
-From: Marcel Holtmann <marcel@holtmann.org>
-To: reinette chatre <reinette.chatre@intel.com>
-Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       johannes@sipsolutions.net
-In-Reply-To: <1248710618.1216.452.camel@rc-desk>
-References: <20090726075738.GA21333@ics.muni.cz>
-	 <1248710618.1216.452.camel@rc-desk>
-Content-Type: text/plain
-Date: Mon, 27 Jul 2009 18:07:34 +0200
-Message-Id: <1248710854.28545.202.camel@violet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Jul 2009 12:14:37 -0400
+Date: Mon, 27 Jul 2009 21:44:24 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kdesu broken
+Message-ID: <20090727161424.GA4233@skywalker>
+References: <20090725150510.35e8854d@lxorguk.ukuu.org.uk> <87ab2sx15g.fsf@devron.myhome.or.jp> <20090725163251.50e6f546@lxorguk.ukuu.org.uk> <87bpn7mzli.fsf@devron.myhome.or.jp> <20090727115723.1e8de60e@lxorguk.ukuu.org.uk> <873a8iqqgv.fsf@devron.myhome.or.jp> <20090727142303.41096bf5@lxorguk.ukuu.org.uk> <877hxujkuv.fsf@devron.myhome.or.jp> <20090727145805.690afe5d@lxorguk.ukuu.org.uk> <87fxci6ub9.fsf@devron.myhome.or.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87fxci6ub9.fsf@devron.myhome.or.jp>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Reinette,
-
-> > I noticed regression in 2.6.31-rc{3,4}. iwlagn driver does not work for me.
-> > I got:
-> > ifconfig wlan0 up
-> > SIOCSIFFLAGS: Unknown error 132
+On Tue, Jul 28, 2009 at 12:04:42AM +0900, OGAWA Hirofumi wrote:
+> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 > 
-> yes - this is a rfkill error
+> >> > +	set_bit(TTY_EOFPENDING, &pair->flags);
+> >> > +	set_bit(TTY_OTHER_CLOSED, &pair->flags);
+> >> > +	spin_unlock_irqrestore(&pair->buf.lock, flags);
+> >> 
+> >> 	tty_flip_buffer_push() or something?
+> >> 
+> >> > +	wake_up_interruptible(&pair->read_wait);
+> >> > +	wake_up_interruptible(&pair->write_wait);
+> >> 
+> >> It seems, this sets TTY_EOFPENDING, but if flush_to_ldisc() was done
+> >> already here, anybody doesn't set TTY_EOF for master.
+> >
+> > Does putting a tty_flip_buffer_push() at that point fix it. I had thought
+> > I could remove it but you are right that creates a situation where EOF
+> > may never get set.
 > 
-> > 
-> > dmesg shows:
-> > [ 1812.806813] iwlagn: Intel(R) Wireless WiFi Link AGN driver for Linux,
-> > 1.3.27kds
-> > [ 1812.806820] iwlagn: Copyright(c) 2003-2009 Intel Corporation
-> > [ 1812.806996] iwlagn 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-> > [ 1812.807024] iwlagn 0000:03:00.0: setting latency timer to 64
-> > [ 1812.807699] iwlagn 0000:03:00.0: Detected Intel Wireless WiFi Link 4965AGN
-> > REV=0x4
-> > [ 1812.860879] iwlagn 0000:03:00.0: Tunable channels: 11 802.11bg, 13 802.11a
-> > channels
-> > [ 1812.861012]   alloc irq_desc for 32 on node -1
-> > [ 1812.861017]   alloc kstat_irqs on node -1
-> > [ 1812.861069] iwlagn 0000:03:00.0: irq 32 for MSI/MSI-X
-> > [ 1812.882796] phy0: Selected rate control algorithm 'iwl-agn-rs'
-> > 
-> > I definitely have rfkill on. I tried to even toggle rfkill, no success. The HW
-> > is Lenovo T61 (thus acer/hp rfkill patches do not work for me).
+> With this patch, test program seems to work.
 > 
-> Maybe Johannes knows if there is something that you need for thinkpad.
+> It seems "done = 0" hunk was needed for correct "done".
+> 
+> Thanks.
+> 
+> 
+> Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> ---
+> 
+>  drivers/char/pty.c        |    1 +
+>  drivers/char/tty_buffer.c |    4 +---
+>  2 files changed, 2 insertions(+), 3 deletions(-)
+> 
+> diff -puN drivers/char/pty.c~pty-fixes4-fix drivers/char/pty.c
+> --- linux-2.6/drivers/char/pty.c~pty-fixes4-fix	2009-07-27 23:56:27.000000000 +0900
+> +++ linux-2.6-hirofumi/drivers/char/pty.c	2009-07-27 23:56:40.000000000 +0900
+> @@ -64,6 +64,7 @@ static void pty_close(struct tty_struct 
+>  	set_bit(TTY_EOFPENDING, &pair->flags);
+>  	set_bit(TTY_OTHER_CLOSED, &pair->flags);
+>  	spin_unlock_irqrestore(&pair->buf.lock, flags);
+> +	tty_flip_buffer_push(pair);
+>  	wake_up_interruptible(&pair->read_wait);
+>  	wake_up_interruptible(&pair->write_wait);
+>  	if (tty->driver->subtype == PTY_TYPE_MASTER) {
+> diff -puN drivers/char/tty_buffer.c~pty-fixes4-fix drivers/char/tty_buffer.c
+> --- linux-2.6/drivers/char/tty_buffer.c~pty-fixes4-fix	2009-07-27 23:57:27.000000000 +0900
+> +++ linux-2.6-hirofumi/drivers/char/tty_buffer.c	2009-07-27 23:57:30.000000000 +0900
+> @@ -443,10 +443,8 @@ static void flush_to_ldisc(struct work_s
+>  				done = 0;
+>  				break;
+>  			}
+> -			if (count > tty->receive_room) {
+> +			if (count > tty->receive_room)
+>  				count = tty->receive_room;
+> -				done = 0;
+> -			}
+>  			char_buf = head->char_buf_ptr + head->read;
+>  			flag_buf = head->flag_buf_ptr + head->read;
+>  			head->read += count;
+> _
 
-it works fine with my X200 and a 5350 card, but it could be that the
-code inside the thinkpad driver is different for a T61.
 
-Regards
+I still have the "compile in emacs" bug. So this patch along with
+http://article.gmane.org/gmane.linux.kernel/869824 doesn't fix the
+bug for me.
 
-Marcel
-
-
+-aneesh
