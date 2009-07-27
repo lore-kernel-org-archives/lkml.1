@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753653AbZG0Q2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753725AbZG0Q3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753653AbZG0Q2w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 12:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbZG0Q2v
+	id S1753725AbZG0Q3F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 12:29:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbZG0Q3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 12:28:51 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:57671 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752745AbZG0Q2u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 12:28:50 -0400
-Date: Mon, 27 Jul 2009 12:28:39 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: linux-btrfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 9/12] fs/btrfs: Correct redundant test
-Message-ID: <20090727162839.GB895@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Julia Lawall <julia@diku.dk>, linux-btrfs@vger.kernel.org,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-References: <Pine.LNX.4.64.0907271814490.2682@ask.diku.dk>
+	Mon, 27 Jul 2009 12:29:04 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56479 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753699AbZG0Q3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 12:29:03 -0400
+Date: Mon, 27 Jul 2009 09:26:01 -0700
+From: Greg KH <gregkh@suse.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Lucian Adrian Grijincu <lgrijincu@ixiacom.com>
+Subject: Re: [PATCH] documentation: make it clear that sysfs is optional
+Message-ID: <20090727162601.GA3632@suse.de>
+References: <20090727090642.0e495919.randy.dunlap@oracle.com>
+ <20090727161031.GA15328@suse.de>
+ <20090727091824.38d55ea1.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0907271814490.2682@ask.diku.dk>
+In-Reply-To: <20090727091824.38d55ea1.randy.dunlap@oracle.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: abhmt005.oracle.com [141.146.116.14]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010202.4A6DD5B9.01D7:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 27, 2009 at 06:15:05PM +0200, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
+On Mon, Jul 27, 2009 at 09:18:24AM -0700, Randy Dunlap wrote:
+> On Mon, 27 Jul 2009 09:10:33 -0700 Greg KH wrote:
 > 
-> dir has already been tested.  It seems that this test should be on the
-> recently returned value inode.
+> > On Mon, Jul 27, 2009 at 09:06:42AM -0700, Randy Dunlap wrote:
+> > > From:	Lucian Adrian Grijincu <lgrijincu@ixiacom.com>
+> > > Subject: [PATCH] documentation: make it clear that sysfs is optional
+> > > 
+> > > The original text suggested that sysfs is mandatory and always
+> > > compiled in the kernel.
+> > 
+> > But it should be :)
 > 
-> A simplified version of the semantic match that finds this problem is as
-> follows: (http://www.emn.fr/x-info/coccinelle/)
+> Well, you have the option of making it non-optional.
+> 
+> 
+> > Seriously, who turns sysfs off these days, does anyone?  If so, why?
+> 
+> Why is it configurable then?
 
-Thank you, this is queued up in my tree along with the
-other btrfs patches you've sent.
+Probably the same reason /proc is configurable.  No one ever turns it
+off, but hey, it's possible :)
 
--chris
+thanks,
+
+greg k-h
