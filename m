@@ -1,50 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbZG0Jha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755940AbZG0JoE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755934AbZG0Jha (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 05:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755777AbZG0Jh3
+	id S1755940AbZG0JoE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 05:44:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755913AbZG0JoD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 05:37:29 -0400
-Received: from slimlogic.co.uk ([89.16.172.20]:50047 "EHLO slimlogic.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755903AbZG0Jh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 05:37:27 -0400
-Subject: Re: [PATCH] regulator: da903x: add support for DA9030 BUCK2 with
- DVM
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: broonie@opensource.wolfsonmicro.com, eric.y.miao@gmail.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <4A6C313C.9050101@compulab.co.il>
-References: <1248594842-23456-1-git-send-email-mike@compulab.co.il>
-	 <1248601239.25964.883.camel@vega.slimlogic.co.uk>
-	 <4A6C313C.9050101@compulab.co.il>
-Content-Type: text/plain
-Date: Mon, 27 Jul 2009 10:37:25 +0100
-Message-Id: <1248687445.25964.977.camel@vega.slimlogic.co.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 27 Jul 2009 05:44:03 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:32223 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755905AbZG0JoB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 05:44:01 -0400
+Message-ID: <4A6D76DB.1050902@monstr.eu>
+Date: Mon, 27 Jul 2009 11:43:55 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       John Williams <john.williams@petalogix.com>
+Subject: Re: generic uaccess.h
+References: <4A69651E.7040305@monstr.eu> <200907241120.22483.arnd@arndb.de>
+In-Reply-To: <200907241120.22483.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-07-26 at 13:34 +0300, Mike Rapoport wrote:
+Arnd Bergmann wrote:
+> On Friday 24 July 2009, Michal Simek wrote:
+>> I have just look at asm-generic uaccess.h and there is one thing which
+>> seems to me wrong.
+>>
+>> For put_user macro - you use __copy_to_user but you have for 64bit case
+>> ifdef CONFIG_64BIT
+>> but  look at fs/eventfd: eventfd_read function. At least for this
+>> function(syscall) is necessary "return" 64bit
+>> value on 32bit machines too.
+>> IMHO that ifdef CONFIG_64BIT shouldn't be there.
+>>
+>> What do you think?
+>> If you agree with me, I'll generate proper patch with description.
+> 
+> The code was intentional, because 32 bit architectures normally
+> don't acces u64 values efficiently. I would expect the memcpy
+> to produce better object code in that case.
+> Did you see an actual bug in my version or are you only
+> guessing that the assignment should work better than the
+> memcpy?
+> 
+> What object code do you get with
+> 
+> int test(unsigned long long __user *out, unsigned long long in)
+> {
+> 	return put_user(in, ptr);
+> }
+> 
+> in both cases?
+
+I found that I have problem on noMMU with replacing
+put_user macro
+
+with
+
+#define put_user(x, ptr)					\
+({								\
+	might_sleep();						\
+	access_ok(VERIFY_WRITE, ptr, sizeof(*ptr)) ?		\
+		__put_user(x, ptr) :				\
+		-EFAULT;					\
+})
+
+(The similar issue is for get_user) (__put_user function is origin - not asm-generic)
+
+I am getting any short write error. It is caused with adding access_ok macro.
+It is weird.
+
+RPC: Registered tcp transport module.
+VFS: Mounted root (romfs filesystem) readonly on device 31:0.
+Freeing unused kernel memory: 100k freed
+0: short write
+Kernel panic - not syncing: Attempted to kill init!
+
+
+I have more important work in front of me - I take a look at it later.
+
+Michal
+
 
 > 
-> > From: Mike Rapoport <mike@compulab.co.il>
-> Date: Sun, 26 Jul 2009 13:33:04 +0300
-> Subject: [PATCH] regulator: da903x: consolidate DA903[045]_DVC macros
-> 
-> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
-> ---
->  drivers/regulator/da903x.c |   66 +++++++++++--------------------------------
->  1 files changed, 17 insertions(+), 49 deletions(-)
-> 
+> 	Arnd <><
 
-Applied.
 
-Thanks
-
-Liam
-
+-- 
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
