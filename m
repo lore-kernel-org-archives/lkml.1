@@ -1,126 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755707AbZG0JJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755813AbZG0JJg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755707AbZG0JJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 05:09:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbZG0JJ2
+	id S1755813AbZG0JJg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 05:09:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755761AbZG0JJf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 05:09:28 -0400
-Received: from smtprelay02.ispgateway.de ([80.67.31.36]:57522 "EHLO
-	smtprelay02.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755525AbZG0JJ1 (ORCPT
+	Mon, 27 Jul 2009 05:09:35 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:44542 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755741AbZG0JJd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 05:09:27 -0400
-References: <1247672919-13089-1-git-send-email-petkovbb@gmail.com> <cone.1247683003.40459.21332.1000@deskpiie> <20090723082904.GE3997@dtor-d630.eng.vmware.com> <cone.1248339143.133822.15136.1000@arca> <9ea470500907230221m1664be8ft2aaf63d2550de6f8@mail.gmail.com> <9ea470500907230553h3ae169c0nc6abaeedb08bef1e@mail.gmail.com>
-Message-ID: <cone.1248685630.590706.15136.1000@arca>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, lenb@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] acerhdf: convert to dev_pm_ops
-Date: Mon, 27 Jul 2009 11:07:10 +0200
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
-Content-Disposition: inline
+	Mon, 27 Jul 2009 05:09:33 -0400
+From: Philipp Reisner <philipp.reisner@linbit.com>
+Organization: LINBIT
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: drbd tree build failure
+Date: Mon, 27 Jul 2009 11:09:32 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090727173754.6a04e781.sfr@canb.auug.org.au>
+In-Reply-To: <20090727173754.6a04e781.sfr@canb.auug.org.au>
+X-OTRS-FollowUp-SenderType: agent
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Df-Sender: 404094
+Content-Disposition: inline
+Message-Id: <200907271109.33271.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Boris,
+On Monday 27 July 2009 09:37:54 Stephen Rothwell wrote:
+> Hi Philipp,
+>
+> Today's linux-next build (powerpc allyesconfig) failed like this:
+>
+> drivers/block/drbd/drbd_trace.o: In function `.roles_to_name':
+> (.text+0x64): multiple definition of `.roles_to_name'
+> drivers/block/drbd/drbd.o:(.text+0x28eb8): first defined here
+> drivers/block/drbd/drbd_trace.o: In function `disks_to_name':
+> (.opd+0x30): multiple definition of `disks_to_name'
+> drivers/block/drbd/drbd.o:(.opd+0x1b78): first defined here
+> drivers/block/drbd/drbd_trace.o: In function `roles_to_name':
+> (.opd+0x18): multiple definition of `roles_to_name'
+> drivers/block/drbd/drbd.o:(.opd+0x1b60): first defined here
+> drivers/block/drbd/drbd_trace.o: In function `.conns_to_name':
+> (.text+0x0): multiple definition of `.conns_to_name'
+> drivers/block/drbd/drbd.o:(.text+0x28e54): first defined here
+> drivers/block/drbd/drbd_trace.o: In function `set_st_err_name':
+> (.opd+0x48): multiple definition of `set_st_err_name'
+> drivers/block/drbd/drbd.o:(.opd+0x1b90): first defined here
+> drivers/block/drbd/drbd_trace.o: In function `.disks_to_name':
+> (.text+0xcc): multiple definition of `.disks_to_name'
+> drivers/block/drbd/drbd.o:(.text+0x28f20): first defined here
+> drivers/block/drbd/drbd_trace.o: In function `conns_to_name':
+> (.opd+0x0): multiple definition of `conns_to_name'
+> drivers/block/drbd/drbd.o:(.opd+0x1b48): first defined here
+> drivers/block/drbd/drbd_trace.o: In function `.set_st_err_name':
+> (.text+0x134): multiple definition of `.set_st_err_name'
+> drivers/block/drbd/drbd.o:(.text+0x28f88): first defined here
+>
+> I applied the following patch to mark DRBD_TRACE broken for now.
 
-I can't apply this patch, tried different methods to get the patch to ensure 
-my mailclient doesn't screw the patch up.
+I have fixed that issue. With the next pull, drbd_tracing should
+compile on PPC. 
 
-The last one I tried was from:
-http://lkml.org/lkml/2009/7/23/106
+BTW, we are working on making our stuff compatible with Rusty's
+cpu set changes. I expect that this will be finished soon...
 
-When patching I'm getting this error:
-patch: **** malformed patch at line 15: *dev, pm_message_t state)
+-Phil
+-- 
+: Dipl-Ing Philipp Reisner
+: LINBIT | Your Way to High Availability
+: Tel: +43-1-8178292-50, Fax: +43-1-8178292-82
+: http://www.linbit.com
 
-Could you please fix and resend the patch? Unfortunatelly can't I test s2d 
-as I do have the 8gb ssd version of the acer aspire. But I'll try to use 
-a sd-card for s2d, maybe it'll work this way.
+DRBD(R) and LINBIT(R) are registered trademarks of LINBIT, Austria.
 
-kind regards,
---peter
-
-
-Borislav Petkov writes:
-
->> Dmitry's right, suspend() and resume() are used only for S2R. Since
->> the only thing we do when suspending/hibernating is set fan speed to
->> auto, we might just as well replicate those functions to .freeze() and
->> .thaw().
-> 
-> here's a fix:
-> 
-> --
-> From: Borislav Petkov <petkovbb@gmail.com>
-> Date: Wed, 15 Jul 2009 17:33:32 +0200
-> Subject: [PATCH] acerhdf: convert to dev_pm_ops
-> 
-> v 1.1:
-> Add .freeze/.thaw func ptrs to support
-> suspend-to-disk, as suggested by Dmitry Torokhov.
-> 
-> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-> ---
->  drivers/platform/x86/acerhdf.c |   16 +++++++++++-----
->  1 files changed, 11 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
-> index aa298d6..8cd7a7b 100644
-> --- a/drivers/platform/x86/acerhdf.c
-> +++ b/drivers/platform/x86/acerhdf.c
-> @@ -435,7 +435,7 @@ struct thermal_cooling_device_ops acerhdf_cooling_ops = {
->  };
-> 
->  /* suspend / resume functionality */
-> -static int acerhdf_suspend(struct platform_device *dev, pm_message_t state)
-> +static int acerhdf_suspend(struct device *dev)
->  {
->  	if (kernelmode)
->  		acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
-> @@ -446,7 +446,7 @@ static int acerhdf_suspend(struct platform_device
-> *dev, pm_message_t state)
->  	return 0;
->  }
-> 
-> -static int acerhdf_resume(struct platform_device *device)
-> +static int acerhdf_resume(struct device *dev)
->  {
->  	if (verbose)
->  		pr_notice("resuming\n");
-> @@ -464,15 +464,21 @@ static int acerhdf_remove(struct platform_device *device)
->  	return 0;
->  }
-> 
-> +static struct dev_pm_ops acerhdf_pm_ops = {
-> +	.suspend = acerhdf_suspend,
-> +	.resume  = acerhdf_resume,
-> +	.freeze  = acerhdf_suspend,
-> +	.thaw	 = acerhdf_resume,
-> +};
-> +
->  static struct platform_driver acerhdf_driver = {
->  	.driver = {
-> -		.name = "acerhdf",
-> +		.name  = "acerhdf",
->  		.owner = THIS_MODULE,
-> +		.pm    = &acerhdf_pm_ops,
->  	},
->  	.probe = acerhdf_probe,
->  	.remove = acerhdf_remove,
-> -	.suspend = acerhdf_suspend,
-> -	.resume = acerhdf_resume,
->  };
-> 
-> 
-> -- 
-> 1.6.3.3
-> 
-> -- 
-> Regards/Gruss,
-> Boris
