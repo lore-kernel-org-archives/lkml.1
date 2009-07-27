@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752667AbZG0SJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753592AbZG0SM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752667AbZG0SJz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 14:09:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750756AbZG0SJz
+	id S1753592AbZG0SM0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 14:12:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbZG0SM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 14:09:55 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:52193 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750737AbZG0SJy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 14:09:54 -0400
-Date: Mon, 27 Jul 2009 10:48:52 -0700
-From: Greg KH <gregkh@suse.de>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: damm@igel.co.jp, linux-kernel@vger.kernel.org
-Subject: Re: early platform drivers vs resource lookup by name
-Message-ID: <20090727174852.GA3137@suse.de>
-References: <8bd0f97a0907262320y3c5c3505h5d47d5c51025a536@mail.gmail.com>
+	Mon, 27 Jul 2009 14:12:26 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:14630 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751919AbZG0SMZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 14:12:25 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=sdgePkGvq5HNEo3zA/BuA+GziQ5k6x0j4umSeLREMfoaEtUHZGuwhMBO6nHjqwaFT
+	Tx0Z9QKIMH5qp7OsDALrw==
+Date: Mon, 27 Jul 2009 11:12:15 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Gregory Haskins <gregory.haskins@gmail.com>
+cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [regression] sched_getaffinity fails with EINVAL in 2.6.31-rc4
+In-Reply-To: <4A6DE0DC.2070207@gmail.com>
+Message-ID: <alpine.DEB.2.00.0907271108350.8408@chino.kir.corp.google.com>
+References: <4A6DE0DC.2070207@gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8bd0f97a0907262320y3c5c3505h5d47d5c51025a536@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 27, 2009 at 02:20:06AM -0400, Mike Frysinger wrote:
-> ive been toying with the new early platform driver framework and
-> noticed a not-so-friendly feature wrt resource handling.  the
-> platform_device_add() function will take care of making sure that
-> every resource's name field is not NULL:
-> int platform_device_add(struct platform_device *pdev)
+On Mon, 27 Jul 2009, Gregory Haskins wrote:
+
+> I am not sure when this started, but noticed that sched_getaffinity is
+> not working in -rc4.
+> 
+> [pid  6254] sched_getaffinity(0, 128, 0x7f80586b1fe0) = -1 EINVAL
+> (Invalid argument)
+> 
+> Here is a simple program for reproduction:
+> 
+> #include <sched.h>
+> 
+> int main(void)
 > {
-> ...
->         if (r->name == NULL)
->             r->name = dev_name(&pdev->dev);
-> ...
+> 	cpu_set_t mask;
+> 	int ret;
 > 
-> unfortunately, the early_platform_add_devices() function does not have
-> similar code.  this leads to NULL pointer crashes if you attempt to
-> use any of the "byname" resource functions (e.g.
-> platform_get_resource_byname) and the resources in question arent
-> fully named.
+> 	ret = sched_getaffinity(0, sizeof(mask), &mask);
+> 	if (ret < 0)
+> 		perror("getaffinity");
 > 
-> is the simple fix here to add a resource loop to
-> early_platform_add_devices() that makes sure all the name fields are
-> non-NULL ?
+> 	return ret;
+> }
+> 
+> If I get time, I will bisect this later today.
+> 
 
-I really do not know, what do you think would resolve this best for you?
-
-thanks,
-
-greg k-h
+It's most likely due to the cpumask changes.  I don't know what cpu_set_t 
+is, but it's probably smaller than CONFIG_NR_CPUS rounded up to a multiple 
+of sizeof(long).
