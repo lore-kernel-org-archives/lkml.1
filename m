@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbZG0PlK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbZG0Pkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752832AbZG0PlK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 11:41:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbZG0PlJ
+	id S1752587AbZG0Pkv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 11:40:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbZG0Pku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 11:41:09 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:34035 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752676AbZG0PlI (ORCPT
+	Mon, 27 Jul 2009 11:40:50 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:27838
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751307AbZG0Pkt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 11:41:08 -0400
-Date: Mon, 27 Jul 2009 16:41:07 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: Re: [PATCH 13/22] Input: Add support for the WM831x ON pin
-Message-ID: <20090727154107.GA10526@rakim.wolfsonmicro.main>
-References: <20090727134527.GA12849@rakim.wolfsonmicro.main>
- <1248702372-29534-13-git-send-email-broonie@opensource.wolfsonmicro.com>
- <20090727161151.A9D36526EC9@mailhub.coreip.homeip.net>
+	Mon, 27 Jul 2009 11:40:49 -0400
+Message-ID: <4A6DCA7F.4080006@panasas.com>
+Date: Mon, 27 Jul 2009 18:40:47 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090727161151.A9D36526EC9@mailhub.coreip.homeip.net>
-X-Cookie: He's dead, Jim.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+CC: Matthew Wilcox <matthew@wil.cx>,
+       Tarkan Erimer <tarkan.erimer@turknet.net.tr>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [BISECTED] Re: [BUG] Linux-2.6.31-rc1 Fails To Recognize Some
+ USB Disks
+References: <4A4472DF.1050900@turknet.net.tr>	<yq1zlbrn2rj.fsf@sermon.lab.mkp.net> <4A4878AC.3050208@turknet.net.tr>	<yq1fxdji03l.fsf@sermon.lab.mkp.net> <4A69932E.90906@turknet.net.tr>	<yq1fxcmnpqa.fsf@sermon.lab.mkp.net> <4A69D093.8020108@turknet.net.tr>	<yq1hbwykj80.fsf@sermon.lab.mkp.net>	<20090727020611.GC3711@parisc-linux.org>	<yq18wiakfq4.fsf@sermon.lab.mkp.net> <4A6D64DC.3020001@panasas.com>	<yq1ocr66vy6.fsf@sermon.lab.mkp.net> <4A6DBEEB.5020302@panasas.com> <yq1fxci6tmc.fsf@sermon.lab.mkp.net>
+In-Reply-To: <yq1fxci6tmc.fsf@sermon.lab.mkp.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Jul 2009 15:40:50.0255 (UTC) FILETIME=[9E22D5F0:01CA0ED0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 27, 2009 at 08:38:05AM -0700, Dmitry Torokhov wrote:
-> On Mon, Jul 27, 2009 at 02:46:03PM +0100, Mark Brown wrote:
+On 07/27/2009 06:19 PM, Martin K. Petersen wrote:
+>>>>>> "Boaz" == Boaz Harrosh <bharrosh@panasas.com> writes:
+> 
+> Boaz> Haa, OK. I thought INQUIRY EVPD=1 page=0 was so old it sure must
+> Boaz> be supported but you are saying it's only SBC2/SPC3. So I guess
+> Boaz> there is nothing else we can do.
+> 
+> Yes, EVPD must be supported.  USB-ATA bridge firmware writers are
+> dyslexic.  Film at 11.
+> 
+> What I'm saying is that *our* reason for sending out extended inquiry
+> appeared in SBC2 (block limits VPD).  So there is no point in asking
+> devices older than that.
+> 
+> The fact that this fixes the problem for Tarkan's crappy disk is a
+> (quasi-intentional) side effect.  My patch simply tries to be
+> conservative about asking for those pages.
+> 
+> 
+> Boaz> What I hate about all this is that in USB the scsi_level is hard
+> Boaz> coded at the driver, without actually been able to probe the
+> Boaz> device about it.
+> 
+> Huh, what?
+> 
 
-> > + * wm831x-on.c - WM831X ON pind river
+Look in drivers/usb/storage::slave_configure
 
-> "Pind river"? ;)
+		/* Some devices report a SCSI revision level above 2 but are
+		 * unable to handle the REPORT LUNS command (for which
+		 * support is mandatory at level 3).  Since we already have
+		 * a Get-Max-LUN request, we won't lose much by setting the
+		 * revision level down to 2.  The only devices that would be
+		 * affected are those with sparse LUNs. */
+		if (sdev->scsi_level > SCSI_2)
+			sdev->sdev_target->scsi_level =
+					sdev->scsi_level = SCSI_2;
 
-Err, yes.  Highly innovative new technology!
+So the scsi_level is hard coded to very low.
+Or am I reading this code wrong and it is only triggered for some but not
+all devices?
 
-> > +static irqreturn_t wm831x_on_irq(int irq, void *data)
-> > +{
-> > +	struct wm831x_on *wm831x_on = data;
-> > +
-> > +	schedule_work(&wm831x_on->work.work);
-
-> schedule_delayed_work(&wm831x_on->work, 0); - I prefer not to expose
-> delayed work implementation details.
-
-> Other than that:
-
-> 	Acked-by: Dmitry Torokhov <dtor@mail.ru>
-
-> Freel free to push this with the rest of the series. If that does not
-> work out let me know and I will get this driver into my tree.
-
-OK, I'll fix that when I resend.  Thanks.
+Boaz
