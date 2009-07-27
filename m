@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752879AbZG0GTX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753013AbZG0GU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752879AbZG0GTX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 02:19:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZG0GTW
+	id S1753013AbZG0GU2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 02:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbZG0GU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 02:19:22 -0400
-Received: from viefep13-int.chello.at ([62.179.121.33]:29265 "EHLO
-	viefep13-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751229AbZG0GTV (ORCPT
+	Mon, 27 Jul 2009 02:20:27 -0400
+Received: from mail-gx0-f213.google.com ([209.85.217.213]:56574 "EHLO
+	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751283AbZG0GU0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 02:19:21 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [Bug #13730] hitting lockdep limits...
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Daniel J Blueman <daniel.blueman@gmail.com>
-In-Reply-To: <3zAHs5O6maO.A.c9D.3HObKB@chimera>
-References: <Jya1GruKQpD.A.16.2GObKB@chimera>
-	 <3zAHs5O6maO.A.c9D.3HObKB@chimera>
-Content-Type: text/plain
-Date: Mon, 27 Jul 2009 08:21:40 +0200
-Message-Id: <1248675700.6987.1416.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 27 Jul 2009 02:20:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=uqjp76l7aJOhGcpmG36JGuY9lQ/m4wJvXmt0E6+/nQDG6zDFRwEAjmpzdzi2GXWA3o
+         vUQUlA7qx7ABgpXaejAP/BZGJFGba9byQQtau57VfzhymGo92sGh6fRJodLmMJcXwmaj
+         +S1ZoeFu7BCCrd5JiVFSwzR77ktSLSCsZz7Ss=
+MIME-Version: 1.0
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Mon, 27 Jul 2009 02:20:06 -0400
+Message-ID: <8bd0f97a0907262320y3c5c3505h5d47d5c51025a536@mail.gmail.com>
+Subject: early platform drivers vs resource lookup by name
+To: Greg KH <gregkh@suse.de>, damm@igel.co.jp
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-07-26 at 22:28 +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.30.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13730
-> Subject		: hitting lockdep limits...
-> Submitter	: Daniel J Blueman <daniel.blueman@gmail.com>
-> Date		: 2009-07-05 18:19 (22 days old)
-> References	: http://marc.info/?l=linux-kernel&m=124681799023782&w=4
-> 
+ive been toying with the new early platform driver framework and
+noticed a not-so-friendly feature wrt resource handling.  the
+platform_device_add() function will take care of making sure that
+every resource's name field is not NULL:
+int platform_device_add(struct platform_device *pdev)
+{
+...
+        if (r->name == NULL)
+            r->name = dev_name(&pdev->dev);
+...
 
+unfortunately, the early_platform_add_devices() function does not have
+similar code.  this leads to NULL pointer crashes if you attempt to
+use any of the "byname" resource functions (e.g.
+platform_get_resource_byname) and the resources in question arent
+fully named.
 
-Is this still a problem after?
-
-commit b0a5b83ee0fce9dbf8ff5fe1f8c9ae7dfafe458c
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Tue Jun 16 16:11:14 2009 +0200
-
-    dma-debug: Put all hash-chain locks into the same lock class
-
-
+is the simple fix here to add a resource loop to
+early_platform_add_devices() that makes sure all the name fields are
+non-NULL ?
+-mike
