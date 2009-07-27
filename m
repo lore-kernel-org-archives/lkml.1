@@ -1,103 +1,278 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755684AbZG0XiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbZG0XiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755684AbZG0XiZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 19:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755665AbZG0XiZ
+	id S1755618AbZG0XiQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 19:38:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754972AbZG0XiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 19:38:25 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:61696 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754341AbZG0XiY convert rfc822-to-8bit (ORCPT
+	Mon, 27 Jul 2009 19:38:15 -0400
+Received: from mail-bw0-f221.google.com ([209.85.218.221]:43130 "EHLO
+	mail-bw0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754258AbZG0XiO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 19:38:24 -0400
+	Mon, 27 Jul 2009 19:38:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=BYu4VVL127OpTX01rCIdIdMJtGE7jdAZRACzsQFj5eG1px/Ed6PQsQylXNdLLN8Apq
+         VmGZd+KYb7ZhPlNvG4n2wzHCjPFOasQDXYlIH+UFvIYutD0OwiQ6hOc5AqE6DHBkzR7C
+         BVlulQd/yyfuIcrlGBZeZKwtdCUNnRGomINcw=
 MIME-Version: 1.0
-In-Reply-To: <20090727231459.GD7142@elf.ucw.cz>
-References: <20090714094629.GB2076@elf.ucw.cz>
-	 <20090714221638.GA6512@elf.ucw.cz>
-	 <d6200be20907141545k2b40b790x1af853b89517891c@mail.gmail.com>
-	 <20090719212330.GI26511@elf.ucw.cz>
-	 <d6200be20907192043w3f1aa2abvd0125163e6f5519c@mail.gmail.com>
-	 <20090721101103.GD4133@elf.ucw.cz>
-	 <d6200be20907211812l47012c00i1fc7de53db97d702@mail.gmail.com>
-	 <20090723212506.GS28158@elf.ucw.cz>
-	 <d6200be20907231711hdf8173avea686b63db157b93@mail.gmail.com>
-	 <20090727231459.GD7142@elf.ucw.cz>
-Date: Mon, 27 Jul 2009 16:38:23 -0700
-Message-ID: <d6200be20907271638l42135548l28d23bd073815ec4@mail.gmail.com>
-Subject: Re: HTC: touchscreen driver
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Brian Swetland <swetland@google.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <alpine.DEB.2.00.0907271543420.23587@chino.kir.corp.google.com>
+References: <4A693122.6060503@gmail.com>
+	 <20090724083926.GA6372@cr0.nay.redhat.com> <4A6E0BD6.50102@gmail.com>
+	 <alpine.DEB.2.00.0907271339070.17425@chino.kir.corp.google.com>
+	 <7928e7bd0907271514y699d1de4j54f9c562b94ef0cc@mail.gmail.com>
+	 <alpine.DEB.2.00.0907271543420.23587@chino.kir.corp.google.com>
+Date: Mon, 27 Jul 2009 16:38:13 -0700
+Message-ID: <7928e7bd0907271638x5ddbfd2ckba2802338a33765a@mail.gmail.com>
+Subject: Re: [PATCH 1/1] pagemap clear_refs: modify to specify anon or mapped 
+	vma clearing
+From: Moussa Ba <moussa.a.ba@gmail.com>
+To: David Rientjes <rientjes@google.com>
+Cc: linux-kernel@vger.kernel.org, xiyou.wangcong@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Matt Mackall <mpm@selenic.com>,
+       Mel Gorman <mel@csn.ul.ie>, Ying Han <yinghan@google.com>,
+       Nick Piggin <npiggin@suse.de>, jaredeh@gmail.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 27, 2009 at 4:14 PM, Pavel Machek<pavel@ucw.cz> wrote:
-> Hi!
+On Mon, Jul 27, 2009 at 3:49 PM, David Rientjes<rientjes@google.com> wrote:
+> On Mon, 27 Jul 2009, Moussa Ba wrote:
 >
->> >> git fetch git://android.git.kernel.org/kernel/experimental.git
->> >> android-msm-2.6.30-rc2-test
->> >> git cherry-pick 9f89902daf7a3c6fdd6b0c7494f3cc82d5e09217
+>> > clear_refs currently accepts any non-zero value, so it's possible that
+>> > this will break user scripts that, for whatever reason, write '2' or '3'.
+>> > I think that's acceptable, but it would be helpful to make all other
+>> > values a no-op similar to drop_caches at this point to avoid the potential
+>> > for breakage if this is ever extended any further.
 >> >
->> > So I spent 10 minutes downloading patch you could have inlined... only
->> > to find out that review already pointed nosync issue (and I fixed swap
->> > independetly)...
->>
->> Sorry, I thought it was clear what it contained.
 >
-> Well, I guess I lost that in the mailflood.
+> In your latest post, I see you implemented this in
+> clear_refs_walk_vma_area() by checking for
+> CLEAR_REFS_ALL > type > CLEAR_REFS_MAPPED.  Thanks!  Don't forget to
+> update Documentation/filesystems/proc.txt to specify that.
 >
->> I'm a little confused why you did not already have this though. This
->> is the same branch I pushed specifically so you could get at it a
->> month ago, and you said you got it booting back then.
->
-> I already got the tree (thanks!) but I did not know that I had it, so
-> I ended up downloading another copy...
->
-> BTW... would you have 2.6.31-rcX (or linux-next?) working on dream by chance?
-
-No, I have not looked at 31 yet. I did push most of our changes to the
-touchscreen driver, including a stab at the official multi-touch
-protocol, to the android-2.6.29 branch in the public
-git://android.git.kernel.org/kernel/common.git repository though.
-
->
->> >> That way you will hopefully not add question marks to my name.
+>> >> Selective clearing the pages has a measurable impact on performance as it
+>> >> limits the number of page walks.  We have been using this interface and  this
+>> >> adds flexibility to the user user space application implementing the reference
+>> >> clearing.
+>> >>
+>> >> Signed-off-by: Jared Hulbert (jaredeh@gmail.com)
+>> >> Signed-off-by: Moussa A. Ba (moussa.a.ba@gmail.com)
 >> >
->> > ...and I still don't know what your name is. My terminal displays "Arve
->> > Hj#???nev##g <arve@android.com>" :-(.
+>> > Email addresses in < > braces, please.
+>> >
+>> > The first sign-off line normally indicates who wrote the patch, but your
+>> > submission lacks a From: line, so git would indicate you wrote it.  If
+>> > that's incorrect, please add a From: line as described in
+>> > Documentation/SubmittingPatches.  If it's correct, please reorder your
+>> > sign-off lines.
+>> >
+>> I will reorder the sign-off lines
+>
+> Ok, that removes the ambiguity concerning authorship, thanks.
+>
+>> >> -------
+>> >> Documentation/filesystems/proc.txt |    7 +++++++
+>> >> fs/proc/task_mmu.c                 |   29 +++++++++++++++++++++++++----
+>> >> 2 files changed, 32 insertions(+), 4 deletions(-)
+>> >>
+>> >> --- a/fs/proc/task_mmu.c      2009-07-21 14:30:01.000000000 -0700
+>> >> +++ b/fs/proc/task_mmu.c      2009-07-27 11:46:05.000000000 -0700
+>> >> @@ -462,6 +462,27 @@
+>> >>       return 0;
+>> >>  }
+>> >>
+>> >> +static void walk_vma_area(struct mm_walk *this_walk,
+>> >> +                       struct vm_area_struct *vma, int type)
+>> >> +{
+>> >
+>> > This is a very generic name for something that is only applicable to
+>> > clear_refs, so please name it accordingly.  This will also avoid having to
+>> > pass the struct mm_walk * in since its only user is clear_refs_walk.
+>> >
+>> Done.
+>> >> +
+>> >> +     /* Writing 2 to /proc/pid/clear_refs will clear all Anonymous
+>> >> +      * pages.
+>> >> +      *
+>> >> +      * Writing 3 to /proc/pid/clear_refs will clear all file mapped
+>> >> +      * pages.
+>> >> +      *
+>> >> +      * Writing any other value including 1 will clear all pages
+>> >> +      */
+>> >
+>> > Documentation/CodingStyle would suggest this format:
+>> >
+>> >        /*
+>> >         * Multi-line kernel comments always start ..
+>> >         * with an empty first line.
+>> >         */
+>> >
+>> Done.
+>> >> +     if (is_vm_hugetlb_page(vma))
+>> >> +             return;
+>> >> +     if (type == 2 && vma->vm_file)
+>> >> +             return;
+>> >> +     if (type == 3 && !vma->vm_file)
+>> >> +             return;
+>> >> +     walk_page_range(vma->vm_start, vma->vm_end, this_walk);
+>> >> +}
+>> >
+>> > K&R would suggest #define's (or enums) for those hard-coded values.  I
+>> > think that's already been suggested for this patch, actually.
+>> >
 >>
->> That does not look right. It displays correctly for me in the mailing
->> list archives:
->> http://lkml.org/lkml/2009/7/21/496
+>> Would this be acceptable?
 >>
->> gitk also works for me. git log only works if you are using a utf8
->> terminal (or have set the character set in your gitconfig).
+>> enum clear_refs_walk_type {
+>>       CLEAR_REFS_ALL  = 1,
+>>       CLEAR_REFS_ANON = 2,
+>>       CLEAR_REFS_MAPPED = 3
+>> };
+>>
 >
-> Apparently my terminals don't speak utf8. (Which is no wonder, I had
-> to fall back to xterm when gnome-terminal stopped working). Web
-> browser displays your name correctly, so I now know what it is, and I
-> can even paste it (Arve HjÅ™nnevÄºg). I wonder if it gets through the
-> mail system undamaged. (If not, is there acceptable transcription of
-
-It did not.
-
-> your name to us/ascii?)
-
-Acceptable, no, but I use "Arve Hjonnevag" for systems that only
-support us-ascii.
-
+> #define seems more appropriate for this particular use case.  We simply
+> try to avoid hard-coded integers in source code (rationale: K&R).
 >
-> Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â Pavel
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>> static void clear_refs_walk_vma_area(struct mm_walk *this_walk,
+>>                         struct vm_area_struct *vma, enum clear_refs_walk_type type)
+>> {
+>
+> Ddi you consider my suggestion of dropping the struct mm_walk * formal
+> since this is now a clear_refs-specific function?  walk_page_range() will
+> always take clear_refs_walk, there's no need to pass it in.
 >
 
+Well, I did but I would have to either pass clear_refs_walk or mm and
+build the mm_walk entry inside clear_refs_walk_vma.  Simply passing
+the clear_refs_walk structure seemed simpler and more logical than
+having to rebuild it inside the function every time it is called.
+
+The other alternative would be to just forgo the additional function
+clear_refs_walk_vma and rewrite the for loop as:
+
+        for (vma = mm->mmap; vma; vma = vma->vm_next) {
+			clear_refs_walk.private = vma;
+			if (type < CLEAR_REFS_ALL || type > CLEAR_REFS_MAPPED)
+				continue;
+			if (is_vm_hugetlb_page(vma))
+				continue;
+			if (type == CLEAR_REFS_ANON && vma->vm_file)
+				continue;
+			if (type == CLEAR_REFS_MAPPED && !vma->vm_file)
+				continue;
+			walk_page_range(vma->vm_start, vma->vm_end, this_walk);
+        }
 
 
--- 
-Arve HjÃ¸nnevÃ¥g
+
+>>
+>>       /*
+>>        * Writing 1 to /proc/pid/clear_refs clears all pages.
+>>        * Writing 2 to /proc/pid/clear_refs clears Anonymous pages.
+>>        * Writing 3 to /proc/pid/clear_refs clears file mapped pages.
+>>        */
+>>       if (type < CLEAR_REFS_ALL || type > CLEAR_REFS_MAPPED)
+>>               return;
+>>       if (is_vm_hugetlb_page(vma))
+>>               return;
+>>       if (type == CLEAR_REFS_ANON && vma->vm_file)
+>>               return;
+>>       if (type == CLEAR_REFS_MAPPED && !vma->vm_file)
+>>               return;
+>>       walk_page_range(vma->vm_start, vma->vm_end, this_walk);
+>> }
+>>
+>>
+>> >> +
+>> >>  static ssize_t clear_refs_write(struct file *file, const char __user * buf,
+>> >>                               size_t count, loff_t * ppos)
+>> >>  {
+>> >> @@ -469,13 +490,15 @@
+>> >>       char buffer[PROC_NUMBUF], *end;
+>> >>       struct mm_struct *mm;
+>> >>       struct vm_area_struct *vma;
+>> >> +     int type;
+>> >>
+>> >>       memset(buffer, 0, sizeof(buffer));
+>> >>       if (count > sizeof(buffer) - 1)
+>> >>               count = sizeof(buffer) - 1;
+>> >>       if (copy_from_user(buffer, buf, count))
+>> >>               return -EFAULT;
+>> >> -     if (!simple_strtol(buffer, &end, 0))
+>> >> +     type = strict_strtol(buffer, &end, 0);
+>> >> +     if (!type)
+>> >>               return -EINVAL;
+>> >>       if (*end == '\n')
+>> >>               end++;
+>> >> @@ -491,9 +514,7 @@
+>> >>               down_read(&mm->mmap_sem);
+>> >>               for (vma = mm->mmap; vma; vma = vma->vm_next) {
+>> >>                       clear_refs_walk.private = vma;
+>> >> -                     if (!is_vm_hugetlb_page(vma))
+>> >> -                             walk_page_range(vma->vm_start, vma->vm_end,
+>> >> -                                             &clear_refs_walk);
+>> >> +                     walk_vma_area(&clear_refs_walk, vma, type);
+>> >>               }
+>> >>               flush_tlb_mm(mm);
+>> >>               up_read(&mm->mmap_sem);
+>> >> --- a/Documentation/filesystems/proc.txt      2009-07-20 17:29:11.000000000
+>> >> -0700
+>> >> +++ b/Documentation/filesystems/proc.txt      2009-07-27 12:08:34.000000000
+>> >> -0700
+>> >> @@ -375,6 +375,13 @@
+>> >>  This file is only present if the CONFIG_MMU kernel configuration option is
+>> >>  enabled.
+>> >>
+>> >> +The clear_refs entry is used to reset the Referenced bits on virtual and physical
+>> >> +pages associated with a process.
+>> >> +echo 1 > /proc/PID/clear_refs clears all pages associated with the process
+>> >> +echo 2 > /proc/PID/clear_refs clears anonymous pages only
+>> >> +echo 3 > /proc/PID/clear_refs clears file mapped pages only
+>> >> +Any other value written to the proc entry will clear all pages.
+>> >> +
+>> >
+>> > Please follow the format in this document for how other /proc/PID/*
+>> > entries are described.
+>> >
+>> > That format could really be improved here, perhaps you could clean
+>> > proc.txt up a little bit while you're here?
+>> >
+>> >
+>>
+>> I am not sure what you mean by "clean" proc.txt, I did not detect much
+>> formatting in the PID proc enries description, beyond what I rewrote
+>> below:
+>>
+>
+> Right, the file is pretty sloppy, so I was wondering if you wanted to take
+> the time to clean it up a little so there's a more consistent style.
+>
+>>
+>> The /proc/PID/clear_refs is used to reset the Referenced bits on virtual and
+>
+> Probably better to say PG_referenced instead of Referenced.
+
+Okay, though it would have to also state that the pte bits are cleared as well.
+>
+>> physical pages associated with a process.
+>> To clear all pages associated with the process
+>>     > echo 1 > /proc/PID/clear_refs
+>>
+>> To clear all anonymous pages associated with the process
+>>     > echo 2 > /proc/PID/clear_refs
+>>
+>> To clear all file mapped pages associated with the process
+>>     > echo 3 > /proc/PID/clear_refs
+>> Any other value written to /proc/PID/clear_refs will have no effect.
+>>
+>
+> You should probably say these all clear the bit instead of saying they
+> "clear pages," which doesn't make a lot of sense.
+
+You are correct.
