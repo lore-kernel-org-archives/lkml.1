@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbZG0JfB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbZG0JhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755907AbZG0JfB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 05:35:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859AbZG0JfA
+	id S1755918AbZG0JhY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 05:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755903AbZG0JhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 05:35:00 -0400
-Received: from mail-fx0-f218.google.com ([209.85.220.218]:40637 "EHLO
-	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755718AbZG0Je7 convert rfc822-to-8bit (ORCPT
+	Mon, 27 Jul 2009 05:37:23 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:7637 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755353AbZG0JhW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 05:34:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=x0htCudUrmpILd54zl42EzOYMqIQyAengsAqbR6g+AcpfUO6YGx8Q+tOeZ3K8XFtZV
-         PQe7fveEaHVTpgKcCBKvxgFGN4JwUCEVlc69QKn+M9aGvHwRTjcsCAd64SiVauCAMLfH
-         yKxgSSkDWk1J+f+l3tKUeRceYHFqXhHAdE9yU=
+	Mon, 27 Jul 2009 05:37:22 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=fiY7X4s6G2W63p7OzmB45bx+8qAFkQ5t2N7wm/R/F1t19bnD70Qh/F8+kDKmV9CaK
+	GfOPbZq2cyqyTa8btKPuQ==
+Date: Mon, 27 Jul 2009 02:37:13 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+In-Reply-To: <84144f020907270008h2a985278of68e70ff1ee9265c@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0907270227420.15760@chino.kir.corp.google.com>
+References: <DizPU9GBfHF.A.kgF.iWObKB@chimera> <H5-1lZIIeYK.A.Pi.BZObKB@chimera> <4A6CF220.7080605@lwfinger.net> <alpine.DEB.2.00.0907261722140.21259@chino.kir.corp.google.com> <84144f020907270008h2a985278of68e70ff1ee9265c@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <3zAHs5O6maO.A.eMB.9GObKB@chimera>
-References: <Jya1GruKQpD.A.16.2GObKB@chimera>
-	 <3zAHs5O6maO.A.eMB.9GObKB@chimera>
-Date: Mon, 27 Jul 2009 10:27:01 +0100
-Message-ID: <c6b1100b0907270227r4ab5a0b1q410160f92c94eae9@mail.gmail.com>
-Subject: Re: [Bug #13846] Possible regression in rt61pci driver
-From: Chris Clayton <chris2553@googlemail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: MULTIPART/MIXED; BOUNDARY="497827084-1036803123-1248687436=:15760"
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/26 Rafael J. Wysocki <rjw@sisk.pl>:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.30.  Please verify if it still should be listed and let me know
-> (either way).
->
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-This bug should remain open, although we are, I think, getting closer
-to the cause, which seems to be related to some interaction between
-the rt61 driver and mac80211 power saving.
+--497827084-1036803123-1248687436=:15760
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13846
-> Subject         : Possible regression in rt61pci driver
-> Submitter       : Chris Clayton <chris2553@googlemail.com>
-> Date            : 2009-07-13 8:27 (14 days old)
-> References      : http://marc.info/?l=linux-kernel&m=124747418828398&w=4
->
->
->
+On Mon, 27 Jul 2009, Pekka Enberg wrote:
 
--- 
-No, Sir; there is nothing which has yet been contrived by man, by which
-so much happiness is produced as by a good tavern or inn - Doctor Samuel
-Johnson
+> > Hmm, I'm remembering differently.  I thought the root problem here has
+> > only been fixed in Pekka's slab-2.6.git tree with "slub: add option to
+> > disable higher order debugging slabs" and isn't currently in Linus' tree.
+> 
+> Yup, the fix is in slab.git and queued for 2.6.32. There was some
+> complaints from Christoph from the patch that need to be addressed
+> still.
+> 
+
+>From what I recall, he asked that calculate_sizes() be called twice, first 
+to determine if get_order(s->size) increased as the result of the metadata 
+and, if so, a second time with the flags disabled.
+
+slab_debug=O only disables debugging options that increase the min order 
+of slab as defined in DEBUG_FLAGS; it doesn't selectively disable some of 
+them when get_order(s->size) grows.  So it's quite sane, like my patch 
+does, to disable all DEBUG_FLAGS when
+
+	get_order(s->objsize) + DEBUG_SIZE_FLAGS > get_order(s->objsize)
+
+without calling calculate_sizes() twice.
+
+We need DEBUG_FLAGS to determine which flags to mask off to reduce the 
+minimum order, so I don't see DEBUG_FLAGS_SIZE as troublesome.
+
+Christoph?
+--497827084-1036803123-1248687436=:15760--
