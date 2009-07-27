@@ -1,195 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755375AbZG0Ntf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617AbZG0N6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755375AbZG0Ntf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 09:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755071AbZG0Ntd
+	id S1753617AbZG0N6Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 09:58:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbZG0N6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 09:49:33 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:59134 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754539AbZG0Nq2 (ORCPT
+	Mon, 27 Jul 2009 09:58:24 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32947 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751508AbZG0N6Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 09:46:28 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>
-Subject: [PATCH 19/22] regulator: Add WM831x DC-DC boost convertor support
-Date: Mon, 27 Jul 2009 14:46:09 +0100
-Message-Id: <1248702372-29534-19-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <20090727134527.GA12849@rakim.wolfsonmicro.main>
-References: <20090727134527.GA12849@rakim.wolfsonmicro.main>
+	Mon, 27 Jul 2009 09:58:24 -0400
+Date: Mon, 27 Jul 2009 14:58:05 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kdesu broken
+Message-ID: <20090727145805.690afe5d@lxorguk.ukuu.org.uk>
+In-Reply-To: <877hxujkuv.fsf@devron.myhome.or.jp>
+References: <200907240145.31935.rjw@sisk.pl>
+	<2c0942db0907231721q124dc8f9mdbe64ed33c69ffbf@mail.gmail.com>
+	<200907241721.45943.rjw@sisk.pl>
+	<20090724164058.21a054e6@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907240930120.3960@localhost.localdomain>
+	<87ws5xjo2x.fsf@devron.myhome.or.jp>
+	<20090725150510.35e8854d@lxorguk.ukuu.org.uk>
+	<87ab2sx15g.fsf@devron.myhome.or.jp>
+	<20090725163251.50e6f546@lxorguk.ukuu.org.uk>
+	<87bpn7mzli.fsf@devron.myhome.or.jp>
+	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
+	<873a8iqqgv.fsf@devron.myhome.or.jp>
+	<20090727142303.41096bf5@lxorguk.ukuu.org.uk>
+	<877hxujkuv.fsf@devron.myhome.or.jp>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The WM831x series of PMICs include a single DC-DC boost convertor.
-This adds basic support for this convertor.
+> > +	/* Indicate that the other end is now closed, set the
+> > +	   ENDPENDING marker so that the true end can be processed by
+> 
+> This seems typo s/ENDPENDING/EOFPENDING/
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>
----
- drivers/regulator/wm831x-dcdc.c |  131 +++++++++++++++++++++++++++++++++++++++
- 1 files changed, 131 insertions(+), 0 deletions(-)
+I renamed it but missed that.
 
-diff --git a/drivers/regulator/wm831x-dcdc.c b/drivers/regulator/wm831x-dcdc.c
-index 97ae40f..3251e22 100644
---- a/drivers/regulator/wm831x-dcdc.c
-+++ b/drivers/regulator/wm831x-dcdc.c
-@@ -614,6 +614,132 @@ static struct platform_driver wm831x_buckp_driver = {
- };
- 
- /*
-+ * DCDC boost convertors
-+ */
-+
-+static int wm831x_boostp_get_status(struct regulator_dev *rdev)
-+{
-+	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
-+	struct wm831x *wm831x = dcdc->wm831x;
-+	int ret;
-+
-+	/* First, check for errors */
-+	ret = wm831x_reg_read(wm831x, WM831X_DCDC_UV_STATUS);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (ret & (1 << rdev_get_id(rdev))) {
-+		dev_dbg(wm831x->dev, "DCDC%d under voltage\n",
-+			rdev_get_id(rdev) + 1);
-+		return REGULATOR_STATUS_ERROR;
-+	}
-+
-+	/* Is the regulator on? */
-+	ret = wm831x_reg_read(wm831x, WM831X_DCDC_STATUS);
-+	if (ret < 0)
-+		return ret;
-+	if (ret & (1 << rdev_get_id(rdev)))
-+		return REGULATOR_STATUS_ON;
-+	else
-+		return REGULATOR_STATUS_OFF;
-+}
-+
-+static struct regulator_ops wm831x_boostp_ops = {
-+	.get_status = wm831x_boostp_get_status,
-+
-+	.is_enabled = wm831x_dcdc_is_enabled,
-+	.enable = wm831x_dcdc_enable,
-+	.disable = wm831x_dcdc_disable,
-+};
-+
-+static __devinit int wm831x_boostp_probe(struct platform_device *pdev)
-+{
-+	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
-+	struct wm831x_pdata *pdata = wm831x->dev->platform_data;
-+	int id = pdev->id % ARRAY_SIZE(pdata->dcdc);
-+	struct wm831x_dcdc *dcdc;
-+	struct resource *res;
-+	int ret, irq;
-+
-+	dev_dbg(&pdev->dev, "Probing DCDC%d\n", id + 1);
-+
-+	if (pdata->dcdc[id] == NULL)
-+		return -ENODEV;
-+
-+	dcdc = kzalloc(sizeof(struct wm831x_dcdc), GFP_KERNEL);
-+	if (dcdc == NULL) {
-+		dev_err(&pdev->dev, "Unable to allocate private data\n");
-+		return -ENOMEM;
-+	}
-+
-+	dcdc->wm831x = wm831x;
-+
-+	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
-+	if (res == NULL) {
-+		dev_err(&pdev->dev, "No I/O resource\n");
-+		ret = -EINVAL;
-+		goto err;
-+	}
-+	dcdc->base = res->start;
-+
-+	snprintf(dcdc->name, sizeof(dcdc->name), "DCDC%d", id + 1);
-+	dcdc->desc.name = dcdc->name;
-+	dcdc->desc.id = id;
-+	dcdc->desc.type = REGULATOR_VOLTAGE;
-+	dcdc->desc.ops = &wm831x_boostp_ops;
-+	dcdc->desc.owner = THIS_MODULE;
-+
-+	dcdc->regulator = regulator_register(&dcdc->desc, &pdev->dev,
-+					     pdata->dcdc[id], dcdc);
-+	if (IS_ERR(dcdc->regulator)) {
-+		ret = PTR_ERR(dcdc->regulator);
-+		dev_err(wm831x->dev, "Failed to register DCDC%d: %d\n",
-+			id + 1, ret);
-+		goto err;
-+	}
-+
-+	irq = platform_get_irq_byname(pdev, "UV");
-+	ret = wm831x_request_irq(wm831x, irq, wm831x_dcdc_uv_irq,
-+				 IRQF_TRIGGER_RISING, dcdc->name,
-+				 dcdc);
-+	if (ret != 0) {
-+		dev_err(&pdev->dev, "Failed to request UV IRQ %d: %d\n",
-+			irq, ret);
-+		goto err_regulator;
-+	}
-+
-+	platform_set_drvdata(pdev, dcdc);
-+
-+	return 0;
-+
-+err_regulator:
-+	regulator_unregister(dcdc->regulator);
-+err:
-+	kfree(dcdc);
-+	return ret;
-+}
-+
-+static __devexit int wm831x_boostp_remove(struct platform_device *pdev)
-+{
-+	struct wm831x_dcdc *dcdc = platform_get_drvdata(pdev);
-+	struct wm831x *wm831x = dcdc->wm831x;
-+
-+	wm831x_free_irq(wm831x, platform_get_irq_byname(pdev, "UV"), dcdc);
-+	regulator_unregister(dcdc->regulator);
-+	kfree(dcdc);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver wm831x_boostp_driver = {
-+	.probe = wm831x_boostp_probe,
-+	.remove = __devexit_p(wm831x_boostp_remove),
-+	.driver		= {
-+		.name	= "wm831x-boostp",
-+	},
-+};
-+
-+/*
-  * External Power Enable
-  *
-  * These aren't actually DCDCs but look like them in hardware so share
-@@ -707,6 +833,10 @@ static int __init wm831x_dcdc_init(void)
- 	if (ret != 0)
- 		pr_err("Failed to register WM831x BUCKP driver: %d\n", ret);
- 
-+	ret = platform_driver_register(&wm831x_boostp_driver);
-+	if (ret != 0)
-+		pr_err("Failed to register WM831x BOOST driver: %d\n", ret);
-+
- 	ret = platform_driver_register(&wm831x_epe_driver);
- 	if (ret != 0)
- 		pr_err("Failed to register WM831x EPE driver: %d\n", ret);
-@@ -718,6 +848,7 @@ subsys_initcall(wm831x_dcdc_init);
- static void __exit wm831x_dcdc_exit(void)
- {
- 	platform_driver_unregister(&wm831x_epe_driver);
-+	platform_driver_unregister(&wm831x_boostp_driver);
- 	platform_driver_unregister(&wm831x_buckp_driver);
- 	platform_driver_unregister(&wm831x_buckv_driver);
- }
--- 
-1.6.3.3
+> > @@ -47,13 +50,22 @@ static void pty_close(struct tty_struct *tty, struct file *filp)
+> 
+> [...]
+> 
+> > +	set_bit(TTY_EOFPENDING, &pair->flags);
+> > +	set_bit(TTY_OTHER_CLOSED, &pair->flags);
+> > +	spin_unlock_irqrestore(&pair->buf.lock, flags);
+> 
+> 	tty_flip_buffer_push() or something?
+> 
+> > +	wake_up_interruptible(&pair->read_wait);
+> > +	wake_up_interruptible(&pair->write_wait);
+> 
+> It seems, this sets TTY_EOFPENDING, but if flush_to_ldisc() was done
+> already here, anybody doesn't set TTY_EOF for master.
 
+Does putting a tty_flip_buffer_push() at that point fix it. I had thought
+I could remove it but you are right that creates a situation where EOF
+may never get set.
