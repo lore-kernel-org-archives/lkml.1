@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752211AbZG0GSu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752879AbZG0GTX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752211AbZG0GSu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 02:18:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbZG0GSt
+	id S1752879AbZG0GTX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 02:19:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZG0GTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 02:18:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:59994 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751213AbZG0GSt (ORCPT
+	Mon, 27 Jul 2009 02:19:22 -0400
+Received: from viefep13-int.chello.at ([62.179.121.33]:29265 "EHLO
+	viefep13-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751229AbZG0GTV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 02:18:49 -0400
-Subject: Re: [Bug #13750] Load average flatlines after returning from
- hibernate
-From: Peter Zijlstra <peterz@infradead.org>
+	Mon, 27 Jul 2009 02:19:21 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [Bug #13730] hitting lockdep limits...
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Duncan <1i5t5.duncan@cox.net>, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <3zAHs5O6maO.A.DfD.oHObKB@chimera>
+       Daniel J Blueman <daniel.blueman@gmail.com>
+In-Reply-To: <3zAHs5O6maO.A.c9D.3HObKB@chimera>
 References: <Jya1GruKQpD.A.16.2GObKB@chimera>
-	 <3zAHs5O6maO.A.DfD.oHObKB@chimera>
+	 <3zAHs5O6maO.A.c9D.3HObKB@chimera>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 27 Jul 2009 08:21:06 +0200
-Message-Id: <1248675666.6987.1415.camel@twins>
+Date: Mon, 27 Jul 2009 08:21:40 +0200
+Message-Id: <1248675700.6987.1416.camel@twins>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -39,24 +39,20 @@ On Sun, 2009-07-26 at 22:28 +0200, Rafael J. Wysocki wrote:
 > (either way).
 > 
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13750
-> Subject		: Load average flatlines after returning from hibernate
-> Submitter	: Duncan <1i5t5.duncan@cox.net>
-> Date		: 2009-07-09 15:14 (18 days old)
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13730
+> Subject		: hitting lockdep limits...
+> Submitter	: Daniel J Blueman <daniel.blueman@gmail.com>
+> Date		: 2009-07-05 18:19 (22 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124681799023782&w=4
 > 
-> 
-
-commit 6301cb95c119ebf324bb96ee226fa9ddffad80a7
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Fri Jul 17 14:15:47 2009 +0200
-
-    sched: fix nr_uninterruptible accounting of frozen tasks really
 
 
-commit a468d389349a7560249b355cdb6d2097ea1616c9
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Fri Jul 17 14:15:46 2009 +0200
+Is this still a problem after?
 
-    sched: fix load average accounting vs. cpu hotplug
+commit b0a5b83ee0fce9dbf8ff5fe1f8c9ae7dfafe458c
+Author: Ingo Molnar <mingo@elte.hu>
+Date:   Tue Jun 16 16:11:14 2009 +0200
+
+    dma-debug: Put all hash-chain locks into the same lock class
 
 
