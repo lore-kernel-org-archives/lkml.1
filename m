@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755020AbZG0NrC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755199AbZG0Nq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755020AbZG0NrC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 09:47:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbZG0Nq6
+	id S1755199AbZG0Nq5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 09:46:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755133AbZG0Nq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 09:46:58 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:59153 "EHLO
+	Mon, 27 Jul 2009 09:46:56 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:59154 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754801AbZG0Nqc (ORCPT
+	by vger.kernel.org with ESMTP id S1754806AbZG0Nqc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 27 Jul 2009 09:46:32 -0400
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Samuel Ortiz <sameo@linux.intel.com>
 Cc: linux-kernel@vger.kernel.org,
        Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Anton Vorontsov <cbouatmailru@gmail.com>
-Subject: [PATCH 15/22] power_supply: Add driver for the PMU on WM831x PMICs
-Date: Mon, 27 Jul 2009 14:46:05 +0100
-Message-Id: <1248702372-29534-15-git-send-email-broonie@opensource.wolfsonmicro.com>
+       Liam Girdwood <lrg@slimlogic.co.uk>
+Subject: [PATCH 16/22] regulator: Add WM831x DC-DC buck convertor support
+Date: Mon, 27 Jul 2009 14:46:06 +0100
+Message-Id: <1248702372-29534-16-git-send-email-broonie@opensource.wolfsonmicro.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <20090727134527.GA12849@rakim.wolfsonmicro.main>
 References: <20090727134527.GA12849@rakim.wolfsonmicro.main>
@@ -25,850 +25,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The WM831x PMICs provide power path management from three sources:
-a wall supply, USB and a battery with integrated charger. They also
-provide an additional backup supply with integrated for maintaining
-always on functionality such as the RTC and monitoring of power
-switches.
-
-After some initial configuration at startup the device operates
-autonomously, the driver simply provides reporting of the current
-state.
+The WM831x series of devices all have 3 DC-DC buck convertors. This
+driver implements software control for these regulators via the
+regulator API.  Use with split hardware/software control of individual
+regulators is not supported, though regulators not controlled by
+software may be controlled via the hardware control interfaces.
 
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Anton Vorontsov <cbouatmailru@gmail.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>
 ---
- drivers/power/Kconfig          |    7 +
- drivers/power/Makefile         |    1 +
- drivers/power/wm831x_power.c   |  779 ++++++++++++++++++++++++++++++++++++++++
- include/linux/mfd/wm831x/pmu.h |  189 ++++++++++
- 4 files changed, 976 insertions(+), 0 deletions(-)
- create mode 100644 drivers/power/wm831x_power.c
- create mode 100644 include/linux/mfd/wm831x/pmu.h
+ drivers/regulator/Kconfig            |    7 +
+ drivers/regulator/Makefile           |    1 +
+ drivers/regulator/wm831x-dcdc.c      |  643 ++++++++++++++++++++++++++++++++++
+ include/linux/mfd/wm831x/regulator.h |  571 ++++++++++++++++++++++++++++++
+ 4 files changed, 1222 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/regulator/wm831x-dcdc.c
 
-diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index bdbc4f7..343194c 100644
---- a/drivers/power/Kconfig
-+++ b/drivers/power/Kconfig
-@@ -29,6 +29,13 @@ config APM_POWER
- 	  Say Y here to enable support APM status emulation using
- 	  battery class devices.
+diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
+index da7483e..38ea5dc 100644
+--- a/drivers/regulator/Kconfig
++++ b/drivers/regulator/Kconfig
+@@ -82,6 +82,13 @@ config REGULATOR_TWL4030
+ 	  This driver supports the voltage regulators provided by
+ 	  this family of companion chips.
  
-+config WM831X_POWER
-+        tristate "WM831X PMU support"
-+        depends on MFD_WM831X
-+        help
-+          Say Y here to enable support for the power management unit
-+	  provided by Wolfson Microelectronics WM831x PMICs.
++config REGULATOR_WM831X
++	tristate "Wolfson Microelcronics WM831x PMIC regulators"
++	depends on MFD_WM831X
++	help
++	  Support the voltage and current regulators of the WM831x series
++	  of PMIC devices.
 +
- config WM8350_POWER
-         tristate "WM8350 PMU support"
-         depends on MFD_WM8350
-diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index 380d17c..b96f29d 100644
---- a/drivers/power/Makefile
-+++ b/drivers/power/Makefile
-@@ -16,6 +16,7 @@ obj-$(CONFIG_POWER_SUPPLY)	+= power_supply.o
- 
- obj-$(CONFIG_PDA_POWER)		+= pda_power.o
- obj-$(CONFIG_APM_POWER)		+= apm_power.o
-+obj-$(CONFIG_WM831X_POWER)	+= wm831x_power.o
- obj-$(CONFIG_WM8350_POWER)	+= wm8350_power.o
- 
- obj-$(CONFIG_BATTERY_DS2760)	+= ds2760_battery.o
-diff --git a/drivers/power/wm831x_power.c b/drivers/power/wm831x_power.c
+ config REGULATOR_WM8350
+ 	tristate "Wolfson Microelectroncis WM8350 AudioPlus PMIC"
+ 	depends on MFD_WM8350
+diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
+index 3a9748f..b1d2b82 100644
+--- a/drivers/regulator/Makefile
++++ b/drivers/regulator/Makefile
+@@ -12,6 +12,7 @@ obj-$(CONFIG_REGULATOR_BQ24022) += bq24022.o
+ obj-$(CONFIG_REGULATOR_LP3971) += lp3971.o
+ obj-$(CONFIG_REGULATOR_MAX1586) += max1586.o
+ obj-$(CONFIG_REGULATOR_TWL4030) += twl4030-regulator.o
++obj-$(CONFIG_REGULATOR_WM831X) += wm831x-dcdc.o
+ obj-$(CONFIG_REGULATOR_WM8350) += wm8350-regulator.o
+ obj-$(CONFIG_REGULATOR_WM8400) += wm8400-regulator.o
+ obj-$(CONFIG_REGULATOR_DA903X)	+= da903x.o
+diff --git a/drivers/regulator/wm831x-dcdc.c b/drivers/regulator/wm831x-dcdc.c
 new file mode 100644
-index 0000000..2a4c8b0
+index 0000000..97a7877
 --- /dev/null
-+++ b/drivers/power/wm831x_power.c
-@@ -0,0 +1,779 @@
++++ b/drivers/regulator/wm831x-dcdc.c
+@@ -0,0 +1,643 @@
 +/*
-+ * PMU driver for Wolfson Microelectronics wm831x PMICs
-+ *
-+ * Copyright 2009 Wolfson Microelectronics PLC.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/err.h>
-+#include <linux/platform_device.h>
-+#include <linux/power_supply.h>
-+
-+#include <linux/mfd/wm831x/core.h>
-+#include <linux/mfd/wm831x/auxadc.h>
-+#include <linux/mfd/wm831x/pmu.h>
-+#include <linux/mfd/wm831x/pdata.h>
-+
-+struct wm831x_power {
-+	struct wm831x *wm831x;
-+	struct power_supply wall;
-+	struct power_supply backup;
-+	struct power_supply usb;
-+	struct power_supply battery;
-+};
-+
-+static int wm831x_power_check_online(struct wm831x *wm831x, int supply,
-+				     union power_supply_propval *val)
-+{
-+	int ret;
-+
-+	ret = wm831x_reg_read(wm831x, WM831X_SYSTEM_STATUS);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (ret & supply)
-+		val->intval = 1;
-+	else
-+		val->intval = 0;
-+
-+	return 0;
-+}
-+
-+static int wm831x_power_read_voltage(struct wm831x *wm831x,
-+				     enum wm831x_auxadc src,
-+				     union power_supply_propval *val)
-+{
-+	int ret;
-+
-+	ret = wm831x_auxadc_read_uv(wm831x, src);
-+	if (ret >= 0)
-+		val->intval = ret;
-+
-+	return ret;
-+}
-+
-+/*********************************************************************
-+ *		WALL Power
-+ *********************************************************************/
-+static int wm831x_wall_get_prop(struct power_supply *psy,
-+				enum power_supply_property psp,
-+				union power_supply_propval *val)
-+{
-+	struct wm831x_power *wm831x_power = dev_get_drvdata(psy->dev->parent);
-+	struct wm831x *wm831x = wm831x_power->wm831x;
-+	int ret = 0;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		ret = wm831x_power_check_online(wm831x, WM831X_PWR_WALL, val);
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		ret = wm831x_power_read_voltage(wm831x, WM831X_AUX_WALL, val);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+		break;
-+	}
-+
-+	return ret;
-+}
-+
-+static enum power_supply_property wm831x_wall_props[] = {
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+};
-+
-+/*********************************************************************
-+ *		USB Power
-+ *********************************************************************/
-+static int wm831x_usb_get_prop(struct power_supply *psy,
-+			       enum power_supply_property psp,
-+			       union power_supply_propval *val)
-+{
-+	struct wm831x_power *wm831x_power = dev_get_drvdata(psy->dev->parent);
-+	struct wm831x *wm831x = wm831x_power->wm831x;
-+	int ret = 0;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		ret = wm831x_power_check_online(wm831x, WM831X_PWR_USB, val);
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		ret = wm831x_power_read_voltage(wm831x, WM831X_AUX_USB, val);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+		break;
-+	}
-+
-+	return ret;
-+}
-+
-+static enum power_supply_property wm831x_usb_props[] = {
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+};
-+
-+/*********************************************************************
-+ *		Battery properties
-+ *********************************************************************/
-+
-+struct chg_map {
-+	int val;
-+	int reg_val;
-+};
-+
-+static struct chg_map trickle_ilims[] = {
-+	{  50, 0 << WM831X_CHG_TRKL_ILIM_SHIFT },
-+	{ 100, 1 << WM831X_CHG_TRKL_ILIM_SHIFT },
-+	{ 150, 2 << WM831X_CHG_TRKL_ILIM_SHIFT },
-+	{ 200, 3 << WM831X_CHG_TRKL_ILIM_SHIFT },
-+};
-+
-+static struct chg_map vsels[] = {
-+	{ 4050, 0 << WM831X_CHG_VSEL_SHIFT },
-+	{ 4100, 1 << WM831X_CHG_VSEL_SHIFT },
-+	{ 4150, 2 << WM831X_CHG_VSEL_SHIFT },
-+	{ 4200, 3 << WM831X_CHG_VSEL_SHIFT },
-+};
-+
-+static struct chg_map fast_ilims[] = {
-+	{    0,  0 << WM831X_CHG_FAST_ILIM_SHIFT },
-+	{   50,  1 << WM831X_CHG_FAST_ILIM_SHIFT },
-+	{  100,  2 << WM831X_CHG_FAST_ILIM_SHIFT },
-+	{  150,  3 << WM831X_CHG_FAST_ILIM_SHIFT },
-+	{  200,  4 << WM831X_CHG_FAST_ILIM_SHIFT },
-+	{  250,  5 << WM831X_CHG_FAST_ILIM_SHIFT },
-+	{  300,  6 << WM831X_CHG_FAST_ILIM_SHIFT },
-+	{  350,  7 << WM831X_CHG_FAST_ILIM_SHIFT },
-+	{  400,  8 << WM831X_CHG_FAST_ILIM_SHIFT },
-+	{  450,  9 << WM831X_CHG_FAST_ILIM_SHIFT },
-+	{  500, 10 << WM831X_CHG_FAST_ILIM_SHIFT },
-+	{  600, 11 << WM831X_CHG_FAST_ILIM_SHIFT },
-+	{  700, 12 << WM831X_CHG_FAST_ILIM_SHIFT },
-+	{  800, 13 << WM831X_CHG_FAST_ILIM_SHIFT },
-+	{  900, 14 << WM831X_CHG_FAST_ILIM_SHIFT },
-+	{ 1000, 15 << WM831X_CHG_FAST_ILIM_SHIFT },
-+};
-+
-+static struct chg_map eoc_iterms[] = {
-+	{ 20, 0 << WM831X_CHG_ITERM_SHIFT },
-+	{ 30, 1 << WM831X_CHG_ITERM_SHIFT },
-+	{ 40, 2 << WM831X_CHG_ITERM_SHIFT },
-+	{ 50, 3 << WM831X_CHG_ITERM_SHIFT },
-+	{ 60, 4 << WM831X_CHG_ITERM_SHIFT },
-+	{ 70, 5 << WM831X_CHG_ITERM_SHIFT },
-+	{ 80, 6 << WM831X_CHG_ITERM_SHIFT },
-+	{ 90, 7 << WM831X_CHG_ITERM_SHIFT },
-+};
-+
-+static struct chg_map chg_times[] = {
-+	{  60,  0 << WM831X_CHG_TIME_SHIFT },
-+	{  90,  1 << WM831X_CHG_TIME_SHIFT },
-+	{ 120,  2 << WM831X_CHG_TIME_SHIFT },
-+	{ 150,  3 << WM831X_CHG_TIME_SHIFT },
-+	{ 180,  4 << WM831X_CHG_TIME_SHIFT },
-+	{ 210,  5 << WM831X_CHG_TIME_SHIFT },
-+	{ 240,  6 << WM831X_CHG_TIME_SHIFT },
-+	{ 270,  7 << WM831X_CHG_TIME_SHIFT },
-+	{ 300,  8 << WM831X_CHG_TIME_SHIFT },
-+	{ 330,  9 << WM831X_CHG_TIME_SHIFT },
-+	{ 360, 10 << WM831X_CHG_TIME_SHIFT },
-+	{ 390, 11 << WM831X_CHG_TIME_SHIFT },
-+	{ 420, 12 << WM831X_CHG_TIME_SHIFT },
-+	{ 450, 13 << WM831X_CHG_TIME_SHIFT },
-+	{ 480, 14 << WM831X_CHG_TIME_SHIFT },
-+	{ 510, 15 << WM831X_CHG_TIME_SHIFT },
-+};
-+
-+static void wm831x_battey_apply_config(struct wm831x *wm831x,
-+				       struct chg_map *map, int count, int val,
-+				       int *reg, const char *name,
-+				       const char *units)
-+{
-+	int i;
-+
-+	for (i = 0; i < count; i++)
-+		if (val == map[i].val)
-+			break;
-+	if (i == count) {
-+		dev_err(wm831x->dev, "Invalid %s %d%s\n",
-+			name, val, units);
-+	} else {
-+		*reg |= map[i].reg_val;
-+		dev_dbg(wm831x->dev, "Set %s of %d%s\n", name, val, units);
-+	}
-+}
-+
-+static void wm831x_config_battery(struct wm831x *wm831x)
-+{
-+	struct wm831x_pdata *wm831x_pdata = wm831x->dev->platform_data;
-+	struct wm831x_battery_pdata *pdata;
-+	int ret, reg1, reg2;
-+
-+	if (!wm831x_pdata || !wm831x_pdata->battery) {
-+		dev_warn(wm831x->dev,
-+			 "No battery charger configuration\n");
-+		return;
-+	}
-+
-+	pdata = wm831x_pdata->battery;
-+
-+	reg1 = 0;
-+	reg2 = 0;
-+
-+	if (!pdata->enable) {
-+		dev_info(wm831x->dev, "Battery charger disabled\n");
-+		return;
-+	}
-+
-+	reg1 |= WM831X_CHG_ENA;
-+	if (pdata->off_mask)
-+		reg2 |= WM831X_CHG_OFF_MSK;
-+	if (pdata->fast_enable)
-+		reg1 |= WM831X_CHG_FAST;
-+
-+	wm831x_battey_apply_config(wm831x, trickle_ilims,
-+				   ARRAY_SIZE(trickle_ilims),
-+				   pdata->trickle_ilim, &reg2,
-+				   "trickle charge current limit", "mA");
-+
-+	wm831x_battey_apply_config(wm831x, vsels, ARRAY_SIZE(vsels),
-+				   pdata->vsel, &reg2,
-+				   "target voltage", "mV");
-+
-+	wm831x_battey_apply_config(wm831x, fast_ilims, ARRAY_SIZE(fast_ilims),
-+				   pdata->fast_ilim, &reg2,
-+				   "fast charge current limit", "mA");
-+
-+	wm831x_battey_apply_config(wm831x, eoc_iterms, ARRAY_SIZE(eoc_iterms),
-+				   pdata->eoc_iterm, &reg1,
-+				   "end of charge current threshold", "mA");
-+
-+	wm831x_battey_apply_config(wm831x, chg_times, ARRAY_SIZE(chg_times),
-+				   pdata->timeout, &reg2,
-+				   "charger timeout", "min");
-+
-+	ret = wm831x_reg_unlock(wm831x);
-+	if (ret != 0) {
-+		dev_err(wm831x->dev, "Failed to unlock registers: %d\n", ret);
-+		return;
-+	}
-+
-+	ret = wm831x_set_bits(wm831x, WM831X_CHARGER_CONTROL_1,
-+			      WM831X_CHG_ENA_MASK |
-+			      WM831X_CHG_FAST_MASK |
-+			      WM831X_CHG_ITERM_MASK |
-+			      WM831X_CHG_ITERM_MASK,
-+			      reg1);
-+	if (ret != 0)
-+		dev_err(wm831x->dev, "Failed to set charger control 1: %d\n",
-+			ret);
-+
-+	ret = wm831x_set_bits(wm831x, WM831X_CHARGER_CONTROL_2,
-+			      WM831X_CHG_OFF_MSK |
-+			      WM831X_CHG_TIME_MASK |
-+			      WM831X_CHG_FAST_ILIM_MASK |
-+			      WM831X_CHG_TRKL_ILIM_MASK |
-+			      WM831X_CHG_VSEL_MASK,
-+			      reg2);
-+	if (ret != 0)
-+		dev_err(wm831x->dev, "Failed to set charger control 2: %d\n",
-+			ret);
-+
-+	wm831x_reg_lock(wm831x);
-+}
-+
-+static int wm831x_bat_check_status(struct wm831x *wm831x, int *status)
-+{
-+	int ret;
-+
-+	ret = wm831x_reg_read(wm831x, WM831X_SYSTEM_STATUS);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (ret & WM831X_PWR_SRC_BATT) {
-+		*status = POWER_SUPPLY_STATUS_DISCHARGING;
-+		return 0;
-+	}
-+
-+	ret = wm831x_reg_read(wm831x, WM831X_CHARGER_STATUS);
-+	if (ret < 0)
-+		return ret;
-+
-+	switch (ret & WM831X_CHG_STATE_MASK) {
-+	case WM831X_CHG_STATE_OFF:
-+		*status = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+		break;
-+	case WM831X_CHG_STATE_TRICKLE:
-+	case WM831X_CHG_STATE_FAST:
-+		*status = POWER_SUPPLY_STATUS_CHARGING;
-+		break;
-+
-+	default:
-+		*status = POWER_SUPPLY_STATUS_UNKNOWN;
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static int wm831x_bat_check_type(struct wm831x *wm831x, int *type)
-+{
-+	int ret;
-+
-+	ret = wm831x_reg_read(wm831x, WM831X_CHARGER_STATUS);
-+	if (ret < 0)
-+		return ret;
-+
-+	switch (ret & WM831X_CHG_STATE_MASK) {
-+	case WM831X_CHG_STATE_TRICKLE:
-+	case WM831X_CHG_STATE_TRICKLE_OT:
-+		*type = POWER_SUPPLY_CHARGE_TYPE_TRICKLE;
-+		break;
-+	case WM831X_CHG_STATE_FAST:
-+	case WM831X_CHG_STATE_FAST_OT:
-+		*type = POWER_SUPPLY_CHARGE_TYPE_FAST;
-+		break;
-+	default:
-+		*type = POWER_SUPPLY_CHARGE_TYPE_NONE;
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static int wm831x_bat_check_health(struct wm831x *wm831x, int *health)
-+{
-+	int ret;
-+
-+	ret = wm831x_reg_read(wm831x, WM831X_CHARGER_STATUS);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (ret & WM831X_BATT_HOT_STS) {
-+		*health = POWER_SUPPLY_HEALTH_OVERHEAT;
-+		return 0;
-+	}
-+
-+	if (ret & WM831X_BATT_COLD_STS) {
-+		*health = POWER_SUPPLY_HEALTH_COLD;
-+		return 0;
-+	}
-+
-+	if (ret & WM831X_BATT_OV_STS) {
-+		*health = POWER_SUPPLY_HEALTH_OVERVOLTAGE;
-+		return 0;
-+	}
-+
-+	switch (ret & WM831X_CHG_STATE_MASK) {
-+	case WM831X_CHG_STATE_TRICKLE_OT:
-+	case WM831X_CHG_STATE_FAST_OT:
-+		*health = POWER_SUPPLY_HEALTH_OVERHEAT;
-+		break;
-+	case WM831X_CHG_STATE_DEFECTIVE:
-+		*health = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
-+		break;
-+	default:
-+		*health = POWER_SUPPLY_HEALTH_GOOD;
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static int wm831x_bat_get_prop(struct power_supply *psy,
-+			       enum power_supply_property psp,
-+			       union power_supply_propval *val)
-+{
-+	struct wm831x_power *wm831x_power = dev_get_drvdata(psy->dev->parent);
-+	struct wm831x *wm831x = wm831x_power->wm831x;
-+	int ret = 0;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+		ret = wm831x_bat_check_status(wm831x, &val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		ret = wm831x_power_check_online(wm831x, WM831X_PWR_SRC_BATT,
-+						val);
-+		break;
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		ret = wm831x_power_read_voltage(wm831x, WM831X_AUX_BATT, val);
-+		break;
-+	case POWER_SUPPLY_PROP_HEALTH:
-+		ret = wm831x_bat_check_health(wm831x, &val->intval);
-+		break;
-+	case POWER_SUPPLY_PROP_CHARGE_TYPE:
-+		ret = wm831x_bat_check_type(wm831x, &val->intval);
-+		break;
-+	default:
-+		ret = -EINVAL;
-+		break;
-+	}
-+
-+	return ret;
-+}
-+
-+static enum power_supply_property wm831x_bat_props[] = {
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_ONLINE,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_HEALTH,
-+	POWER_SUPPLY_PROP_CHARGE_TYPE,
-+};
-+
-+static const char *wm831x_bat_irqs[] = {
-+	"BATT HOT",
-+	"BATT COLD",
-+	"BATT FAIL",
-+	"OV",
-+	"END",
-+	"TO",
-+	"MODE",
-+	"START",
-+};
-+
-+static irqreturn_t wm831x_bat_irq(int irq, void *data)
-+{
-+	struct wm831x_power *wm831x_power = data;
-+	struct wm831x *wm831x = wm831x_power->wm831x;
-+
-+	dev_dbg(wm831x->dev, "Battery status changed: %d\n", irq);
-+
-+	/* The battery charger is autonomous so we don't need to do
-+	 * anything except kick user space */
-+	power_supply_changed(&wm831x_power->battery);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+
-+/*********************************************************************
-+ *		Backup supply properties
-+ *********************************************************************/
-+
-+static void wm831x_config_backup(struct wm831x *wm831x)
-+{
-+	struct wm831x_pdata *wm831x_pdata = wm831x->dev->platform_data;
-+	struct wm831x_backup_pdata *pdata;
-+	int ret, reg;
-+
-+	if (!wm831x_pdata || !wm831x_pdata->backup) {
-+		dev_warn(wm831x->dev,
-+			 "No backup battery charger configuration\n");
-+		return;
-+	}
-+
-+	pdata = wm831x_pdata->backup;
-+
-+	reg = 0;
-+
-+	if (pdata->charger_enable)
-+		reg |= WM831X_BKUP_CHG_ENA | WM831X_BKUP_BATT_DET_ENA;
-+	if (pdata->no_constant_voltage)
-+		reg |= WM831X_BKUP_CHG_MODE;
-+
-+	switch (pdata->vlim) {
-+	case 2500:
-+		break;
-+	case 3100:
-+		reg |= WM831X_BKUP_CHG_VLIM;
-+		break;
-+	default:
-+		dev_err(wm831x->dev, "Invalid backup voltage limit %dmV\n",
-+			pdata->vlim);
-+	}
-+
-+	switch (pdata->ilim) {
-+	case 100:
-+		break;
-+	case 200:
-+		reg |= 1;
-+		break;
-+	case 300:
-+		reg |= 2;
-+		break;
-+	case 400:
-+		reg |= 3;
-+		break;
-+	default:
-+		dev_err(wm831x->dev, "Invalid backup current limit %duA\n",
-+			pdata->ilim);
-+	}
-+
-+	ret = wm831x_reg_unlock(wm831x);
-+	if (ret != 0) {
-+		dev_err(wm831x->dev, "Failed to unlock registers: %d\n", ret);
-+		return;
-+	}
-+
-+	ret = wm831x_set_bits(wm831x, WM831X_BACKUP_CHARGER_CONTROL,
-+			      WM831X_BKUP_CHG_ENA_MASK |
-+			      WM831X_BKUP_CHG_MODE_MASK |
-+			      WM831X_BKUP_BATT_DET_ENA_MASK |
-+			      WM831X_BKUP_CHG_VLIM_MASK |
-+			      WM831X_BKUP_CHG_ILIM_MASK,
-+			      reg);
-+	if (ret != 0)
-+		dev_err(wm831x->dev,
-+			"Failed to set backup charger config: %d\n", ret);
-+
-+	wm831x_reg_lock(wm831x);
-+}
-+
-+static int wm831x_backup_get_prop(struct power_supply *psy,
-+				  enum power_supply_property psp,
-+				  union power_supply_propval *val)
-+{
-+	struct wm831x_power *wm831x_power = dev_get_drvdata(psy->dev->parent);
-+	struct wm831x *wm831x = wm831x_power->wm831x;
-+	int ret = 0;
-+
-+	ret = wm831x_reg_read(wm831x, WM831X_BACKUP_CHARGER_CONTROL);
-+	if (ret < 0)
-+		return ret;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+		if (ret & WM831X_BKUP_CHG_STS)
-+			val->intval = POWER_SUPPLY_STATUS_CHARGING;
-+		else
-+			val->intval = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+		break;
-+
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		ret = wm831x_power_read_voltage(wm831x, WM831X_AUX_BKUP_BATT,
-+						val);
-+		break;
-+
-+	case POWER_SUPPLY_PROP_PRESENT:
-+		if (ret & WM831X_BKUP_CHG_STS)
-+			val->intval = 1;
-+		else
-+			val->intval = 0;
-+		break;
-+
-+	default:
-+		ret = -EINVAL;
-+		break;
-+	}
-+
-+	return ret;
-+}
-+
-+static enum power_supply_property wm831x_backup_props[] = {
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_PRESENT,
-+};
-+
-+/*********************************************************************
-+ *		Initialisation
-+ *********************************************************************/
-+
-+static irqreturn_t wm831x_syslo_irq(int irq, void *data)
-+{
-+	struct wm831x_power *wm831x_power = data;
-+	struct wm831x *wm831x = wm831x_power->wm831x;
-+
-+	/* Not much we can actually *do* but tell people for
-+	 * posterity, we're probably about to run out of power. */
-+	dev_crit(wm831x->dev, "SYSVDD under voltage\n");
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static irqreturn_t wm831x_pwr_src_irq(int irq, void *data)
-+{
-+	struct wm831x_power *wm831x_power = data;
-+	struct wm831x *wm831x = wm831x_power->wm831x;
-+
-+	dev_dbg(wm831x->dev, "Power source changed\n");
-+
-+	/* Just notify for everything - little harm in overnotifying.
-+	 * The backup battery is not a power source while the system
-+	 * is running so skip that.
-+	 */
-+	power_supply_changed(&wm831x_power->battery);
-+	power_supply_changed(&wm831x_power->usb);
-+	power_supply_changed(&wm831x_power->wall);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static __devinit int wm831x_power_probe(struct platform_device *pdev)
-+{
-+	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
-+	struct wm831x_power *power;
-+	struct power_supply *usb;
-+	struct power_supply *battery;
-+	struct power_supply *wall;
-+	struct power_supply *backup;
-+	int ret, irq, i;
-+
-+	power = kzalloc(sizeof(struct wm831x_power), GFP_KERNEL);
-+	if (power == NULL)
-+		return -ENOMEM;
-+
-+	power->wm831x = wm831x;
-+	platform_set_drvdata(pdev, power);
-+
-+	usb = &power->usb;
-+	battery = &power->battery;
-+	wall = &power->wall;
-+	backup = &power->backup;
-+
-+	/* We ignore configuration failures since we can still read back
-+	 * the status without enabling either of the chargers.
-+	 */
-+	wm831x_config_battery(wm831x);
-+	wm831x_config_backup(wm831x);
-+
-+	wall->name = "wm831x-wall";
-+	wall->type = POWER_SUPPLY_TYPE_MAINS;
-+	wall->properties = wm831x_wall_props;
-+	wall->num_properties = ARRAY_SIZE(wm831x_wall_props);
-+	wall->get_property = wm831x_wall_get_prop;
-+	ret = power_supply_register(&pdev->dev, wall);
-+	if (ret)
-+		goto err_kmalloc;
-+
-+	battery->name = "wm831x-battery";
-+	battery->properties = wm831x_bat_props;
-+	battery->num_properties = ARRAY_SIZE(wm831x_bat_props);
-+	battery->get_property = wm831x_bat_get_prop;
-+	battery->use_for_apm = 1;
-+	ret = power_supply_register(&pdev->dev, battery);
-+	if (ret)
-+		goto err_wall;
-+
-+	usb->name = "wm831x-usb",
-+	usb->type = POWER_SUPPLY_TYPE_USB;
-+	usb->properties = wm831x_usb_props;
-+	usb->num_properties = ARRAY_SIZE(wm831x_usb_props);
-+	usb->get_property = wm831x_usb_get_prop;
-+	ret = power_supply_register(&pdev->dev, usb);
-+	if (ret)
-+		goto err_battery;
-+
-+	backup->name = "wm831x-backup";
-+	backup->type = POWER_SUPPLY_TYPE_BATTERY;
-+	backup->properties = wm831x_backup_props;
-+	backup->num_properties = ARRAY_SIZE(wm831x_backup_props);
-+	backup->get_property = wm831x_backup_get_prop;
-+	ret = power_supply_register(&pdev->dev, backup);
-+	if (ret)
-+		goto err_usb;
-+
-+	irq = platform_get_irq_byname(pdev, "SYSLO");
-+	ret = wm831x_request_irq(wm831x, irq, wm831x_syslo_irq,
-+				 IRQF_TRIGGER_RISING, "SYSLO",
-+				 power);
-+	if (ret != 0) {
-+		dev_err(&pdev->dev, "Failed to request SYSLO IRQ %d: %d\n",
-+			irq, ret);
-+		goto err_backup;
-+	}
-+
-+	irq = platform_get_irq_byname(pdev, "PWR SRC");
-+	ret = wm831x_request_irq(wm831x, irq, wm831x_pwr_src_irq,
-+				 IRQF_TRIGGER_RISING, "Power source",
-+				 power);
-+	if (ret != 0) {
-+		dev_err(&pdev->dev, "Failed to request PWR SRC IRQ %d: %d\n",
-+			irq, ret);
-+		goto err_syslo;
-+	}
-+
-+	for (i = 0; i < ARRAY_SIZE(wm831x_bat_irqs); i++) {
-+		irq = platform_get_irq_byname(pdev, wm831x_bat_irqs[i]);
-+		ret = wm831x_request_irq(wm831x, irq, wm831x_bat_irq,
-+					 IRQF_TRIGGER_RISING,
-+					 wm831x_bat_irqs[i],
-+					 power);
-+		if (ret != 0) {
-+			dev_err(&pdev->dev,
-+				"Failed to request %s IRQ %d: %d\n",
-+				wm831x_bat_irqs[i], irq, ret);
-+			goto err_bat_irq;
-+		}
-+	}
-+
-+	return ret;
-+
-+err_bat_irq:
-+	for (; i >= 0; i--) {
-+		irq = platform_get_irq_byname(pdev, wm831x_bat_irqs[i]);
-+		wm831x_free_irq(wm831x, irq, power);
-+	}
-+	irq = platform_get_irq_byname(pdev, "PWR SRC");
-+	wm831x_free_irq(wm831x, irq, power);
-+err_syslo:
-+	irq = platform_get_irq_byname(pdev, "SYSLO");
-+	wm831x_free_irq(wm831x, irq, power);
-+err_backup:
-+	power_supply_unregister(backup);
-+err_usb:
-+	power_supply_unregister(usb);
-+err_battery:
-+	power_supply_unregister(battery);
-+err_wall:
-+	power_supply_unregister(wall);
-+err_kmalloc:
-+	kfree(power);
-+	return ret;
-+}
-+
-+static __devexit int wm831x_power_remove(struct platform_device *pdev)
-+{
-+	struct wm831x_power *wm831x_power = platform_get_drvdata(pdev);
-+	struct wm831x *wm831x = wm831x_power->wm831x;
-+	int irq, i;
-+
-+	for (i = 0; i < ARRAY_SIZE(wm831x_bat_irqs); i++) {
-+		irq = platform_get_irq_byname(pdev, wm831x_bat_irqs[i]);
-+		wm831x_free_irq(wm831x, irq, wm831x_power);
-+	}
-+
-+	irq = platform_get_irq_byname(pdev, "PWR SRC");
-+	wm831x_free_irq(wm831x, irq, wm831x_power);
-+
-+	irq = platform_get_irq_byname(pdev, "SYSLO");
-+	wm831x_free_irq(wm831x, irq, wm831x_power);
-+
-+	power_supply_unregister(&wm831x_power->backup);
-+	power_supply_unregister(&wm831x_power->battery);
-+	power_supply_unregister(&wm831x_power->wall);
-+	power_supply_unregister(&wm831x_power->usb);
-+	return 0;
-+}
-+
-+static struct platform_driver wm831x_power_driver = {
-+	.probe = wm831x_power_probe,
-+	.remove = __devexit_p(wm831x_power_remove),
-+	.driver = {
-+		.name = "wm831x-power",
-+	},
-+};
-+
-+static int __init wm831x_power_init(void)
-+{
-+	return platform_driver_register(&wm831x_power_driver);
-+}
-+module_init(wm831x_power_init);
-+
-+static void __exit wm831x_power_exit(void)
-+{
-+	platform_driver_unregister(&wm831x_power_driver);
-+}
-+module_exit(wm831x_power_exit);
-+
-+MODULE_DESCRIPTION("Power supply driver for WM831x PMICs");
-+MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com>");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:wm831x-power");
-diff --git a/include/linux/mfd/wm831x/pmu.h b/include/linux/mfd/wm831x/pmu.h
-new file mode 100644
-index 0000000..b18cbb0
---- /dev/null
-+++ b/include/linux/mfd/wm831x/pmu.h
-@@ -0,0 +1,189 @@
-+/*
-+ * include/linux/mfd/wm831x/pmu.h -- PMU for WM831x
++ * wm831x-dcdc.c  --  DC-DC buck convertor driver for the WM831x series
 + *
 + * Copyright 2009 Wolfson Microelectronics PLC.
 + *
@@ -878,184 +88,1220 @@ index 0000000..b18cbb0
 + *  under  the terms of  the GNU General  Public License as published by the
 + *  Free Software Foundation;  either version 2 of the  License, or (at your
 + *  option) any later version.
-+ *
 + */
 +
-+#ifndef __MFD_WM831X_PMU_H__
-+#define __MFD_WM831X_PMU_H__
++#include <linux/module.h>
++#include <linux/moduleparam.h>
++#include <linux/init.h>
++#include <linux/bitops.h>
++#include <linux/err.h>
++#include <linux/i2c.h>
++#include <linux/platform_device.h>
++#include <linux/regulator/driver.h>
++
++#include <linux/mfd/wm831x/core.h>
++#include <linux/mfd/wm831x/regulator.h>
++#include <linux/mfd/wm831x/pdata.h>
++
++#define WM831X_BUCKV_MAX_SELECTOR 0x68
++#define WM831X_BUCKP_MAX_SELECTOR 0x66
++
++#define WM831X_DCDC_MODE_FAST    0
++#define WM831X_DCDC_MODE_NORMAL  1
++#define WM831X_DCDC_MODE_IDLE    2
++#define WM831X_DCDC_MODE_STANDBY 3
++
++#define WM831X_DCDC_MAX_NAME 6
++
++/* Register offsets in control block */
++#define WM831X_DCDC_CONTROL_1     0
++#define WM831X_DCDC_CONTROL_2     1
++#define WM831X_DCDC_ON_CONFIG     2
++#define WM831X_DCDC_SLEEP_CONTROL 3
 +
 +/*
-+ * R16387 (0x4003) - Power State
++ * Shared
 + */
-+#define WM831X_CHIP_ON                          0x8000  /* CHIP_ON */
-+#define WM831X_CHIP_ON_MASK                     0x8000  /* CHIP_ON */
-+#define WM831X_CHIP_ON_SHIFT                        15  /* CHIP_ON */
-+#define WM831X_CHIP_ON_WIDTH                         1  /* CHIP_ON */
-+#define WM831X_CHIP_SLP                         0x4000  /* CHIP_SLP */
-+#define WM831X_CHIP_SLP_MASK                    0x4000  /* CHIP_SLP */
-+#define WM831X_CHIP_SLP_SHIFT                       14  /* CHIP_SLP */
-+#define WM831X_CHIP_SLP_WIDTH                        1  /* CHIP_SLP */
-+#define WM831X_REF_LP                           0x1000  /* REF_LP */
-+#define WM831X_REF_LP_MASK                      0x1000  /* REF_LP */
-+#define WM831X_REF_LP_SHIFT                         12  /* REF_LP */
-+#define WM831X_REF_LP_WIDTH                          1  /* REF_LP */
-+#define WM831X_PWRSTATE_DLY_MASK                0x0C00  /* PWRSTATE_DLY - [11:10] */
-+#define WM831X_PWRSTATE_DLY_SHIFT                   10  /* PWRSTATE_DLY - [11:10] */
-+#define WM831X_PWRSTATE_DLY_WIDTH                    2  /* PWRSTATE_DLY - [11:10] */
-+#define WM831X_SWRST_DLY                        0x0200  /* SWRST_DLY */
-+#define WM831X_SWRST_DLY_MASK                   0x0200  /* SWRST_DLY */
-+#define WM831X_SWRST_DLY_SHIFT                       9  /* SWRST_DLY */
-+#define WM831X_SWRST_DLY_WIDTH                       1  /* SWRST_DLY */
-+#define WM831X_USB100MA_STARTUP_MASK            0x0030  /* USB100MA_STARTUP - [5:4] */
-+#define WM831X_USB100MA_STARTUP_SHIFT                4  /* USB100MA_STARTUP - [5:4] */
-+#define WM831X_USB100MA_STARTUP_WIDTH                2  /* USB100MA_STARTUP - [5:4] */
-+#define WM831X_USB_CURR_STS                     0x0008  /* USB_CURR_STS */
-+#define WM831X_USB_CURR_STS_MASK                0x0008  /* USB_CURR_STS */
-+#define WM831X_USB_CURR_STS_SHIFT                    3  /* USB_CURR_STS */
-+#define WM831X_USB_CURR_STS_WIDTH                    1  /* USB_CURR_STS */
-+#define WM831X_USB_ILIM_MASK                    0x0007  /* USB_ILIM - [2:0] */
-+#define WM831X_USB_ILIM_SHIFT                        0  /* USB_ILIM - [2:0] */
-+#define WM831X_USB_ILIM_WIDTH                        3  /* USB_ILIM - [2:0] */
++
++struct wm831x_dcdc {
++	char name[WM831X_DCDC_MAX_NAME];
++	struct regulator_desc desc;
++	int base;
++	struct wm831x *wm831x;
++	struct regulator_dev *regulator;
++};
++
++static int wm831x_dcdc_is_enabled(struct regulator_dev *rdev)
++{
++	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
++	struct wm831x *wm831x = dcdc->wm831x;
++	int mask = 1 << rdev_get_id(rdev);
++	int reg;
++
++	reg = wm831x_reg_read(wm831x, WM831X_DCDC_ENABLE);
++	if (reg < 0)
++		return reg;
++
++	if (reg & mask)
++		return 1;
++	else
++		return 0;
++}
++
++static int wm831x_dcdc_enable(struct regulator_dev *rdev)
++{
++	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
++	struct wm831x *wm831x = dcdc->wm831x;
++	int mask = 1 << rdev_get_id(rdev);
++
++	return wm831x_set_bits(wm831x, WM831X_DCDC_ENABLE, mask, mask);
++}
++
++static int wm831x_dcdc_disable(struct regulator_dev *rdev)
++{
++	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
++	struct wm831x *wm831x = dcdc->wm831x;
++	int mask = 1 << rdev_get_id(rdev);
++
++	return wm831x_set_bits(wm831x, WM831X_DCDC_ENABLE, mask, 0);
++}
++
++static unsigned int wm831x_dcdc_get_mode(struct regulator_dev *rdev)
++
++{
++	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
++	struct wm831x *wm831x = dcdc->wm831x;
++	u16 reg = dcdc->base + WM831X_DCDC_ON_CONFIG;
++	int val;
++
++	val = wm831x_reg_read(wm831x, reg);
++	if (val < 0)
++		return val;
++
++	val = (val & WM831X_DC1_ON_MODE_MASK) >> WM831X_DC1_ON_MODE_SHIFT;
++
++	switch (val) {
++	case WM831X_DCDC_MODE_FAST:
++		return REGULATOR_MODE_FAST;
++	case WM831X_DCDC_MODE_NORMAL:
++		return REGULATOR_MODE_NORMAL;
++	case WM831X_DCDC_MODE_STANDBY:
++		return REGULATOR_MODE_STANDBY;
++	case WM831X_DCDC_MODE_IDLE:
++		return REGULATOR_MODE_IDLE;
++	default:
++		BUG();
++	}
++}
++
++static int wm831x_dcdc_set_mode_int(struct wm831x *wm831x, int reg,
++				    unsigned int mode)
++{
++	int val;
++
++	switch (mode) {
++	case REGULATOR_MODE_FAST:
++		val = WM831X_DCDC_MODE_FAST;
++		break;
++	case REGULATOR_MODE_NORMAL:
++		val = WM831X_DCDC_MODE_NORMAL;
++		break;
++	case REGULATOR_MODE_STANDBY:
++		val = WM831X_DCDC_MODE_STANDBY;
++		break;
++	case REGULATOR_MODE_IDLE:
++		val = WM831X_DCDC_MODE_IDLE;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return wm831x_set_bits(wm831x, reg, WM831X_DC1_ON_MODE_MASK,
++			       val << WM831X_DC1_ON_MODE_SHIFT);
++}
++
++static int wm831x_dcdc_set_mode(struct regulator_dev *rdev, unsigned int mode)
++{
++	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
++	struct wm831x *wm831x = dcdc->wm831x;
++	u16 reg = dcdc->base + WM831X_DCDC_ON_CONFIG;
++
++	return wm831x_dcdc_set_mode_int(wm831x, reg, mode);
++}
++
++static int wm831x_dcdc_set_suspend_mode(struct regulator_dev *rdev,
++					unsigned int mode)
++{
++	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
++	struct wm831x *wm831x = dcdc->wm831x;
++	u16 reg = dcdc->base + WM831X_DCDC_SLEEP_CONTROL;
++
++	return wm831x_dcdc_set_mode_int(wm831x, reg, mode);
++}
++
++static int wm831x_dcdc_get_status(struct regulator_dev *rdev)
++{
++	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
++	struct wm831x *wm831x = dcdc->wm831x;
++	int ret;
++
++	/* First, check for errors */
++	ret = wm831x_reg_read(wm831x, WM831X_DCDC_UV_STATUS);
++	if (ret < 0)
++		return ret;
++
++	if (ret & (1 << rdev_get_id(rdev))) {
++		dev_dbg(wm831x->dev, "DCDC%d under voltage\n",
++			rdev_get_id(rdev) + 1);
++		return REGULATOR_STATUS_ERROR;
++	}
++
++	/* DCDC1 and DCDC2 can additionally detect high voltage/current */
++	if (rdev_get_id(rdev) < 2) {
++		if (ret & (WM831X_DC1_OV_STS << rdev_get_id(rdev))) {
++			dev_dbg(wm831x->dev, "DCDC%d over voltage\n",
++				rdev_get_id(rdev) + 1);
++			return REGULATOR_STATUS_ERROR;
++		}
++
++		if (ret & (WM831X_DC1_HC_STS << rdev_get_id(rdev))) {
++			dev_dbg(wm831x->dev, "DCDC%d over current\n",
++				rdev_get_id(rdev) + 1);
++			return REGULATOR_STATUS_ERROR;
++		}
++	}
++
++	/* Is the regulator on? */
++	ret = wm831x_reg_read(wm831x, WM831X_DCDC_STATUS);
++	if (ret < 0)
++		return ret;
++	if (!(ret & (1 << rdev_get_id(rdev))))
++		return REGULATOR_STATUS_OFF;
++
++	/* TODO: When we handle hardware control modes so we can report the
++	 * current mode. */
++	return REGULATOR_STATUS_ON;
++}
++
++static irqreturn_t wm831x_dcdc_uv_irq(int irq, void *data)
++{
++	struct wm831x_dcdc *dcdc = data;
++
++	regulator_notifier_call_chain(dcdc->regulator,
++				      REGULATOR_EVENT_UNDER_VOLTAGE,
++				      NULL);
++
++	return IRQ_HANDLED;
++}
++
++static irqreturn_t wm831x_dcdc_oc_irq(int irq, void *data)
++{
++	struct wm831x_dcdc *dcdc = data;
++
++	regulator_notifier_call_chain(dcdc->regulator,
++				      REGULATOR_EVENT_OVER_CURRENT,
++				      NULL);
++
++	return IRQ_HANDLED;
++}
 +
 +/*
-+ * R16397 (0x400D) - System Status
++ * BUCKV specifics
 + */
-+#define WM831X_THW_STS                          0x8000  /* THW_STS */
-+#define WM831X_THW_STS_MASK                     0x8000  /* THW_STS */
-+#define WM831X_THW_STS_SHIFT                        15  /* THW_STS */
-+#define WM831X_THW_STS_WIDTH                         1  /* THW_STS */
-+#define WM831X_PWR_SRC_BATT                     0x0400  /* PWR_SRC_BATT */
-+#define WM831X_PWR_SRC_BATT_MASK                0x0400  /* PWR_SRC_BATT */
-+#define WM831X_PWR_SRC_BATT_SHIFT                   10  /* PWR_SRC_BATT */
-+#define WM831X_PWR_SRC_BATT_WIDTH                    1  /* PWR_SRC_BATT */
-+#define WM831X_PWR_WALL                         0x0200  /* PWR_WALL */
-+#define WM831X_PWR_WALL_MASK                    0x0200  /* PWR_WALL */
-+#define WM831X_PWR_WALL_SHIFT                        9  /* PWR_WALL */
-+#define WM831X_PWR_WALL_WIDTH                        1  /* PWR_WALL */
-+#define WM831X_PWR_USB                          0x0100  /* PWR_USB */
-+#define WM831X_PWR_USB_MASK                     0x0100  /* PWR_USB */
-+#define WM831X_PWR_USB_SHIFT                         8  /* PWR_USB */
-+#define WM831X_PWR_USB_WIDTH                         1  /* PWR_USB */
-+#define WM831X_MAIN_STATE_MASK                  0x001F  /* MAIN_STATE - [4:0] */
-+#define WM831X_MAIN_STATE_SHIFT                      0  /* MAIN_STATE - [4:0] */
-+#define WM831X_MAIN_STATE_WIDTH                      5  /* MAIN_STATE - [4:0] */
++
++static int wm831x_buckv_list_voltage(struct regulator_dev *rdev,
++				      unsigned selector)
++{
++	if (selector <= 0x8)
++		return 600000;
++	if (selector <= WM831X_BUCKV_MAX_SELECTOR)
++		return 600000 + ((selector - 0x8) * 12500);
++	return -EINVAL;
++}
++
++static int wm831x_buckv_set_voltage_int(struct regulator_dev *rdev, int reg,
++					 int min_uV, int max_uV)
++{
++	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
++	struct wm831x *wm831x = dcdc->wm831x;
++	u16 vsel;
++
++	if (min_uV < 600000)
++		vsel = 0;
++	else if (min_uV <= 1800000)
++		vsel = ((min_uV - 600000) / 12500) + 8;
++	else
++		return -EINVAL;
++
++	if (wm831x_buckv_list_voltage(rdev, vsel) > max_uV)
++		return -EINVAL;
++
++	return wm831x_set_bits(wm831x, reg, WM831X_DC1_ON_VSEL_MASK, vsel);
++}
++
++static int wm831x_buckv_set_voltage(struct regulator_dev *rdev,
++				     int min_uV, int max_uV)
++{
++	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
++	u16 reg = dcdc->base + WM831X_DCDC_ON_CONFIG;
++
++	return wm831x_buckv_set_voltage_int(rdev, reg, min_uV, max_uV);
++}
++
++static int wm831x_buckv_set_suspend_voltage(struct regulator_dev *rdev,
++					     int uV)
++{
++	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
++	u16 reg = dcdc->base + WM831X_DCDC_SLEEP_CONTROL;
++
++	return wm831x_buckv_set_voltage_int(rdev, reg, uV, uV);
++}
++
++static int wm831x_buckv_get_voltage(struct regulator_dev *rdev)
++{
++	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
++	struct wm831x *wm831x = dcdc->wm831x;
++	u16 reg = dcdc->base + WM831X_DCDC_ON_CONFIG;
++	int val;
++
++	val = wm831x_reg_read(wm831x, reg);
++	if (val < 0)
++		return val;
++
++	return wm831x_buckv_list_voltage(rdev, val & WM831X_DC1_ON_VSEL_MASK);
++}
++
++/* Current limit options */
++static u16 wm831x_dcdc_ilim[] = {
++	125, 250, 375, 500, 625, 750, 875, 1000
++};
++
++static int wm831x_buckv_set_current_limit(struct regulator_dev *rdev,
++					   int min_uA, int max_uA)
++{
++	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
++	struct wm831x *wm831x = dcdc->wm831x;
++	u16 reg = dcdc->base + WM831X_DCDC_CONTROL_2;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(wm831x_dcdc_ilim); i++) {
++		if (max_uA <= wm831x_dcdc_ilim[i])
++			break;
++	}
++	if (i == ARRAY_SIZE(wm831x_dcdc_ilim))
++		return -EINVAL;
++
++	return wm831x_set_bits(wm831x, reg, WM831X_DC1_HC_THR_MASK, i);
++}
++
++static int wm831x_buckv_get_current_limit(struct regulator_dev *rdev)
++{
++	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
++	struct wm831x *wm831x = dcdc->wm831x;
++	u16 reg = dcdc->base + WM831X_DCDC_CONTROL_2;
++	int val;
++
++	val = wm831x_reg_read(wm831x, reg);
++	if (val < 0)
++		return val;
++
++	return wm831x_dcdc_ilim[val & WM831X_DC1_HC_THR_MASK];
++}
++
++static struct regulator_ops wm831x_buckv_ops = {
++	.set_voltage = wm831x_buckv_set_voltage,
++	.get_voltage = wm831x_buckv_get_voltage,
++	.list_voltage = wm831x_buckv_list_voltage,
++	.set_suspend_voltage = wm831x_buckv_set_suspend_voltage,
++	.set_current_limit = wm831x_buckv_set_current_limit,
++	.get_current_limit = wm831x_buckv_get_current_limit,
++
++	.is_enabled = wm831x_dcdc_is_enabled,
++	.enable = wm831x_dcdc_enable,
++	.disable = wm831x_dcdc_disable,
++	.get_status = wm831x_dcdc_get_status,
++	.get_mode = wm831x_dcdc_get_mode,
++	.set_mode = wm831x_dcdc_set_mode,
++	.set_suspend_mode = wm831x_dcdc_set_suspend_mode,
++};
++
++static __devinit int wm831x_buckv_probe(struct platform_device *pdev)
++{
++	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
++	struct wm831x_pdata *pdata = wm831x->dev->platform_data;
++	int id = pdev->id % ARRAY_SIZE(pdata->dcdc);
++	struct wm831x_dcdc *dcdc;
++	struct resource *res;
++	int ret, irq;
++
++	dev_dbg(&pdev->dev, "Probing DCDC%d\n", id + 1);
++
++	if (pdata->dcdc[id] == NULL)
++		return -ENODEV;
++
++	dcdc = kzalloc(sizeof(struct wm831x_dcdc), GFP_KERNEL);
++	if (dcdc == NULL) {
++		dev_err(&pdev->dev, "Unable to allocate private data\n");
++		return -ENOMEM;
++	}
++
++	dcdc->wm831x = wm831x;
++
++	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
++	if (res == NULL) {
++		dev_err(&pdev->dev, "No I/O resource\n");
++		ret = -EINVAL;
++		goto err;
++	}
++	dcdc->base = res->start;
++
++	snprintf(dcdc->name, sizeof(dcdc->name), "DCDC%d", id + 1);
++	dcdc->desc.name = dcdc->name;
++	dcdc->desc.id = id;
++	dcdc->desc.type = REGULATOR_VOLTAGE;
++	dcdc->desc.n_voltages = WM831X_BUCKV_MAX_SELECTOR + 1;
++	dcdc->desc.ops = &wm831x_buckv_ops;
++	dcdc->desc.owner = THIS_MODULE;
++
++	dcdc->regulator = regulator_register(&dcdc->desc, &pdev->dev,
++					     pdata->dcdc[id], dcdc);
++	if (IS_ERR(dcdc->regulator)) {
++		ret = PTR_ERR(dcdc->regulator);
++		dev_err(wm831x->dev, "Failed to register DCDC%d: %d\n",
++			id + 1, ret);
++		goto err;
++	}
++
++	irq = platform_get_irq_byname(pdev, "UV");
++	ret = wm831x_request_irq(wm831x, irq, wm831x_dcdc_uv_irq,
++				 IRQF_TRIGGER_RISING, dcdc->name,
++				 dcdc);
++	if (ret != 0) {
++		dev_err(&pdev->dev, "Failed to request UV IRQ %d: %d\n",
++			irq, ret);
++		goto err_regulator;
++	}
++
++	irq = platform_get_irq_byname(pdev, "HC");
++	ret = wm831x_request_irq(wm831x, irq, wm831x_dcdc_oc_irq,
++				 IRQF_TRIGGER_RISING, dcdc->name,
++				 dcdc);
++	if (ret != 0) {
++		dev_err(&pdev->dev, "Failed to request HC IRQ %d: %d\n",
++			irq, ret);
++		goto err_uv;
++	}
++
++	platform_set_drvdata(pdev, dcdc);
++
++	return 0;
++
++err_uv:
++	wm831x_free_irq(wm831x, platform_get_irq_byname(pdev, "UV"), dcdc);
++err_regulator:
++	regulator_unregister(dcdc->regulator);
++err:
++	kfree(dcdc);
++	return ret;
++}
++
++static __devexit int wm831x_buckv_remove(struct platform_device *pdev)
++{
++	struct wm831x_dcdc *dcdc = platform_get_drvdata(pdev);
++	struct wm831x *wm831x = dcdc->wm831x;
++
++	wm831x_free_irq(wm831x, platform_get_irq_byname(pdev, "HC"), dcdc);
++	wm831x_free_irq(wm831x, platform_get_irq_byname(pdev, "UV"), dcdc);
++	regulator_unregister(dcdc->regulator);
++	kfree(dcdc);
++
++	return 0;
++}
++
++static struct platform_driver wm831x_buckv_driver = {
++	.probe = wm831x_buckv_probe,
++	.remove = __devexit_p(wm831x_buckv_remove),
++	.driver		= {
++		.name	= "wm831x-buckv",
++	},
++};
 +
 +/*
-+ * R16456 (0x4048) - Charger Control 1
++ * BUCKP specifics
 + */
-+#define WM831X_CHG_ENA                          0x8000  /* CHG_ENA */
-+#define WM831X_CHG_ENA_MASK                     0x8000  /* CHG_ENA */
-+#define WM831X_CHG_ENA_SHIFT                        15  /* CHG_ENA */
-+#define WM831X_CHG_ENA_WIDTH                         1  /* CHG_ENA */
-+#define WM831X_CHG_FRC                          0x4000  /* CHG_FRC */
-+#define WM831X_CHG_FRC_MASK                     0x4000  /* CHG_FRC */
-+#define WM831X_CHG_FRC_SHIFT                        14  /* CHG_FRC */
-+#define WM831X_CHG_FRC_WIDTH                         1  /* CHG_FRC */
-+#define WM831X_CHG_ITERM_MASK                   0x1C00  /* CHG_ITERM - [12:10] */
-+#define WM831X_CHG_ITERM_SHIFT                      10  /* CHG_ITERM - [12:10] */
-+#define WM831X_CHG_ITERM_WIDTH                       3  /* CHG_ITERM - [12:10] */
-+#define WM831X_CHG_FAST                         0x0020  /* CHG_FAST */
-+#define WM831X_CHG_FAST_MASK                    0x0020  /* CHG_FAST */
-+#define WM831X_CHG_FAST_SHIFT                        5  /* CHG_FAST */
-+#define WM831X_CHG_FAST_WIDTH                        1  /* CHG_FAST */
-+#define WM831X_CHG_IMON_ENA                     0x0002  /* CHG_IMON_ENA */
-+#define WM831X_CHG_IMON_ENA_MASK                0x0002  /* CHG_IMON_ENA */
-+#define WM831X_CHG_IMON_ENA_SHIFT                    1  /* CHG_IMON_ENA */
-+#define WM831X_CHG_IMON_ENA_WIDTH                    1  /* CHG_IMON_ENA */
-+#define WM831X_CHG_CHIP_TEMP_MON                0x0001  /* CHG_CHIP_TEMP_MON */
-+#define WM831X_CHG_CHIP_TEMP_MON_MASK           0x0001  /* CHG_CHIP_TEMP_MON */
-+#define WM831X_CHG_CHIP_TEMP_MON_SHIFT               0  /* CHG_CHIP_TEMP_MON */
-+#define WM831X_CHG_CHIP_TEMP_MON_WIDTH               1  /* CHG_CHIP_TEMP_MON */
++
++static int wm831x_buckp_list_voltage(struct regulator_dev *rdev,
++				      unsigned selector)
++{
++	if (selector <= WM831X_BUCKP_MAX_SELECTOR)
++		return 850000 + (selector * 25000);
++	else
++		return -EINVAL;
++}
++
++static int wm831x_buckp_set_voltage_int(struct regulator_dev *rdev, int reg,
++					int min_uV, int max_uV)
++{
++	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
++	struct wm831x *wm831x = dcdc->wm831x;
++	u16 vsel;
++
++	if (min_uV <= 34000000)
++		vsel = (min_uV - 850000) / 25000;
++	else
++		return -EINVAL;
++
++	if (wm831x_buckp_list_voltage(rdev, vsel) > max_uV)
++		return -EINVAL;
++
++	return wm831x_set_bits(wm831x, reg, WM831X_DC3_ON_VSEL_MASK, vsel);
++}
++
++static int wm831x_buckp_set_voltage(struct regulator_dev *rdev,
++				    int min_uV, int max_uV)
++{
++	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
++	u16 reg = dcdc->base + WM831X_DCDC_ON_CONFIG;
++
++	return wm831x_buckp_set_voltage_int(rdev, reg, min_uV, max_uV);
++}
++
++static int wm831x_buckp_set_suspend_voltage(struct regulator_dev *rdev,
++					    int uV)
++{
++	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
++	u16 reg = dcdc->base + WM831X_DCDC_SLEEP_CONTROL;
++
++	return wm831x_buckp_set_voltage_int(rdev, reg, uV, uV);
++}
++
++static int wm831x_buckp_get_voltage(struct regulator_dev *rdev)
++{
++	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
++	struct wm831x *wm831x = dcdc->wm831x;
++	u16 reg = dcdc->base + WM831X_DCDC_ON_CONFIG;
++	int val;
++
++	val = wm831x_reg_read(wm831x, reg);
++	if (val < 0)
++		return val;
++
++	return wm831x_buckp_list_voltage(rdev, val & WM831X_DC3_ON_VSEL_MASK);
++}
++
++static struct regulator_ops wm831x_buckp_ops = {
++	.set_voltage = wm831x_buckp_set_voltage,
++	.get_voltage = wm831x_buckp_get_voltage,
++	.list_voltage = wm831x_buckp_list_voltage,
++	.set_suspend_voltage = wm831x_buckp_set_suspend_voltage,
++
++	.is_enabled = wm831x_dcdc_is_enabled,
++	.enable = wm831x_dcdc_enable,
++	.disable = wm831x_dcdc_disable,
++	.get_status = wm831x_dcdc_get_status,
++	.get_mode = wm831x_dcdc_get_mode,
++	.set_mode = wm831x_dcdc_set_mode,
++	.set_suspend_mode = wm831x_dcdc_set_suspend_mode,
++};
++
++static __devinit int wm831x_buckp_probe(struct platform_device *pdev)
++{
++	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
++	struct wm831x_pdata *pdata = wm831x->dev->platform_data;
++	int id = pdev->id % ARRAY_SIZE(pdata->dcdc);
++	struct wm831x_dcdc *dcdc;
++	struct resource *res;
++	int ret, irq;
++
++	dev_dbg(&pdev->dev, "Probing DCDC%d\n", id + 1);
++
++	if (pdata->dcdc[id] == NULL)
++		return -ENODEV;
++
++	dcdc = kzalloc(sizeof(struct wm831x_dcdc), GFP_KERNEL);
++	if (dcdc == NULL) {
++		dev_err(&pdev->dev, "Unable to allocate private data\n");
++		return -ENOMEM;
++	}
++
++	dcdc->wm831x = wm831x;
++
++	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
++	if (res == NULL) {
++		dev_err(&pdev->dev, "No I/O resource\n");
++		ret = -EINVAL;
++		goto err;
++	}
++	dcdc->base = res->start;
++
++	snprintf(dcdc->name, sizeof(dcdc->name), "DCDC%d", id + 1);
++	dcdc->desc.name = dcdc->name;
++	dcdc->desc.id = id;
++	dcdc->desc.type = REGULATOR_VOLTAGE;
++	dcdc->desc.n_voltages = WM831X_BUCKP_MAX_SELECTOR + 1;
++	dcdc->desc.ops = &wm831x_buckp_ops;
++	dcdc->desc.owner = THIS_MODULE;
++
++	dcdc->regulator = regulator_register(&dcdc->desc, &pdev->dev,
++					     pdata->dcdc[id], dcdc);
++	if (IS_ERR(dcdc->regulator)) {
++		ret = PTR_ERR(dcdc->regulator);
++		dev_err(wm831x->dev, "Failed to register DCDC%d: %d\n",
++			id + 1, ret);
++		goto err;
++	}
++
++	irq = platform_get_irq_byname(pdev, "UV");
++	ret = wm831x_request_irq(wm831x, irq, wm831x_dcdc_uv_irq,
++				 IRQF_TRIGGER_RISING, dcdc->name,
++				 dcdc);
++	if (ret != 0) {
++		dev_err(&pdev->dev, "Failed to request UV IRQ %d: %d\n",
++			irq, ret);
++		goto err_regulator;
++	}
++
++	platform_set_drvdata(pdev, dcdc);
++
++	return 0;
++
++err_regulator:
++	regulator_unregister(dcdc->regulator);
++err:
++	kfree(dcdc);
++	return ret;
++}
++
++static __devexit int wm831x_buckp_remove(struct platform_device *pdev)
++{
++	struct wm831x_dcdc *dcdc = platform_get_drvdata(pdev);
++	struct wm831x *wm831x = dcdc->wm831x;
++
++	wm831x_free_irq(wm831x, platform_get_irq_byname(pdev, "UV"), dcdc);
++	regulator_unregister(dcdc->regulator);
++	kfree(dcdc);
++
++	return 0;
++}
++
++static struct platform_driver wm831x_buckp_driver = {
++	.probe = wm831x_buckp_probe,
++	.remove = __devexit_p(wm831x_buckp_remove),
++	.driver		= {
++		.name	= "wm831x-buckp",
++	},
++};
++
++static int __init wm831x_dcdc_init(void)
++{
++	int ret;
++	ret = platform_driver_register(&wm831x_buckv_driver);
++	if (ret != 0)
++		pr_err("Failed to register WM831x BUCKV driver: %d\n", ret);
++
++	ret = platform_driver_register(&wm831x_buckp_driver);
++	if (ret != 0)
++		pr_err("Failed to register WM831x BUCKP driver: %d\n", ret);
++
++	return 0;
++}
++subsys_initcall(wm831x_dcdc_init);
++
++static void __exit wm831x_dcdc_exit(void)
++{
++	platform_driver_unregister(&wm831x_buckp_driver);
++	platform_driver_unregister(&wm831x_buckv_driver);
++}
++module_exit(wm831x_dcdc_exit);
++
++/* Module information */
++MODULE_AUTHOR("Mark Brown");
++MODULE_DESCRIPTION("WM831x DC-DC convertor driver");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:wm831x-buckv");
++MODULE_ALIAS("platform:wm831x-buckp");
+diff --git a/include/linux/mfd/wm831x/regulator.h b/include/linux/mfd/wm831x/regulator.h
+index b5d58fb..c74d6aa 100644
+--- a/include/linux/mfd/wm831x/regulator.h
++++ b/include/linux/mfd/wm831x/regulator.h
+@@ -15,6 +15,577 @@
+ #ifndef __MFD_WM831X_REGULATOR_H__
+ #define __MFD_WM831X_REGULATOR_H__
+ 
++/*
++ * R16462 (0x404E) - Current Sink 1
++ */
++#define WM831X_CS1_ENA                          0x8000  /* CS1_ENA */
++#define WM831X_CS1_ENA_MASK                     0x8000  /* CS1_ENA */
++#define WM831X_CS1_ENA_SHIFT                        15  /* CS1_ENA */
++#define WM831X_CS1_ENA_WIDTH                         1  /* CS1_ENA */
++#define WM831X_CS1_DRIVE                        0x4000  /* CS1_DRIVE */
++#define WM831X_CS1_DRIVE_MASK                   0x4000  /* CS1_DRIVE */
++#define WM831X_CS1_DRIVE_SHIFT                      14  /* CS1_DRIVE */
++#define WM831X_CS1_DRIVE_WIDTH                       1  /* CS1_DRIVE */
++#define WM831X_CS1_SLPENA                       0x1000  /* CS1_SLPENA */
++#define WM831X_CS1_SLPENA_MASK                  0x1000  /* CS1_SLPENA */
++#define WM831X_CS1_SLPENA_SHIFT                     12  /* CS1_SLPENA */
++#define WM831X_CS1_SLPENA_WIDTH                      1  /* CS1_SLPENA */
++#define WM831X_CS1_OFF_RAMP_MASK                0x0C00  /* CS1_OFF_RAMP - [11:10] */
++#define WM831X_CS1_OFF_RAMP_SHIFT                   10  /* CS1_OFF_RAMP - [11:10] */
++#define WM831X_CS1_OFF_RAMP_WIDTH                    2  /* CS1_OFF_RAMP - [11:10] */
++#define WM831X_CS1_ON_RAMP_MASK                 0x0300  /* CS1_ON_RAMP - [9:8] */
++#define WM831X_CS1_ON_RAMP_SHIFT                     8  /* CS1_ON_RAMP - [9:8] */
++#define WM831X_CS1_ON_RAMP_WIDTH                     2  /* CS1_ON_RAMP - [9:8] */
++#define WM831X_CS1_ISEL_MASK                    0x003F  /* CS1_ISEL - [5:0] */
++#define WM831X_CS1_ISEL_SHIFT                        0  /* CS1_ISEL - [5:0] */
++#define WM831X_CS1_ISEL_WIDTH                        6  /* CS1_ISEL - [5:0] */
 +
 +/*
-+ * R16457 (0x4049) - Charger Control 2
++ * R16463 (0x404F) - Current Sink 2
 + */
-+#define WM831X_CHG_OFF_MSK                      0x4000  /* CHG_OFF_MSK */
-+#define WM831X_CHG_OFF_MSK_MASK                 0x4000  /* CHG_OFF_MSK */
-+#define WM831X_CHG_OFF_MSK_SHIFT                    14  /* CHG_OFF_MSK */
-+#define WM831X_CHG_OFF_MSK_WIDTH                     1  /* CHG_OFF_MSK */
-+#define WM831X_CHG_TIME_MASK                    0x0F00  /* CHG_TIME - [11:8] */
-+#define WM831X_CHG_TIME_SHIFT                        8  /* CHG_TIME - [11:8] */
-+#define WM831X_CHG_TIME_WIDTH                        4  /* CHG_TIME - [11:8] */
-+#define WM831X_CHG_TRKL_ILIM_MASK               0x00C0  /* CHG_TRKL_ILIM - [7:6] */
-+#define WM831X_CHG_TRKL_ILIM_SHIFT                   6  /* CHG_TRKL_ILIM - [7:6] */
-+#define WM831X_CHG_TRKL_ILIM_WIDTH                   2  /* CHG_TRKL_ILIM - [7:6] */
-+#define WM831X_CHG_VSEL_MASK                    0x0030  /* CHG_VSEL - [5:4] */
-+#define WM831X_CHG_VSEL_SHIFT                        4  /* CHG_VSEL - [5:4] */
-+#define WM831X_CHG_VSEL_WIDTH                        2  /* CHG_VSEL - [5:4] */
-+#define WM831X_CHG_FAST_ILIM_MASK               0x000F  /* CHG_FAST_ILIM - [3:0] */
-+#define WM831X_CHG_FAST_ILIM_SHIFT                   0  /* CHG_FAST_ILIM - [3:0] */
-+#define WM831X_CHG_FAST_ILIM_WIDTH                   4  /* CHG_FAST_ILIM - [3:0] */
++#define WM831X_CS2_ENA                          0x8000  /* CS2_ENA */
++#define WM831X_CS2_ENA_MASK                     0x8000  /* CS2_ENA */
++#define WM831X_CS2_ENA_SHIFT                        15  /* CS2_ENA */
++#define WM831X_CS2_ENA_WIDTH                         1  /* CS2_ENA */
++#define WM831X_CS2_DRIVE                        0x4000  /* CS2_DRIVE */
++#define WM831X_CS2_DRIVE_MASK                   0x4000  /* CS2_DRIVE */
++#define WM831X_CS2_DRIVE_SHIFT                      14  /* CS2_DRIVE */
++#define WM831X_CS2_DRIVE_WIDTH                       1  /* CS2_DRIVE */
++#define WM831X_CS2_SLPENA                       0x1000  /* CS2_SLPENA */
++#define WM831X_CS2_SLPENA_MASK                  0x1000  /* CS2_SLPENA */
++#define WM831X_CS2_SLPENA_SHIFT                     12  /* CS2_SLPENA */
++#define WM831X_CS2_SLPENA_WIDTH                      1  /* CS2_SLPENA */
++#define WM831X_CS2_OFF_RAMP_MASK                0x0C00  /* CS2_OFF_RAMP - [11:10] */
++#define WM831X_CS2_OFF_RAMP_SHIFT                   10  /* CS2_OFF_RAMP - [11:10] */
++#define WM831X_CS2_OFF_RAMP_WIDTH                    2  /* CS2_OFF_RAMP - [11:10] */
++#define WM831X_CS2_ON_RAMP_MASK                 0x0300  /* CS2_ON_RAMP - [9:8] */
++#define WM831X_CS2_ON_RAMP_SHIFT                     8  /* CS2_ON_RAMP - [9:8] */
++#define WM831X_CS2_ON_RAMP_WIDTH                     2  /* CS2_ON_RAMP - [9:8] */
++#define WM831X_CS2_ISEL_MASK                    0x003F  /* CS2_ISEL - [5:0] */
++#define WM831X_CS2_ISEL_SHIFT                        0  /* CS2_ISEL - [5:0] */
++#define WM831X_CS2_ISEL_WIDTH                        6  /* CS2_ISEL - [5:0] */
 +
 +/*
-+ * R16458 (0x404A) - Charger Status
++ * R16464 (0x4050) - DCDC Enable
 + */
-+#define WM831X_BATT_OV_STS                      0x8000  /* BATT_OV_STS */
-+#define WM831X_BATT_OV_STS_MASK                 0x8000  /* BATT_OV_STS */
-+#define WM831X_BATT_OV_STS_SHIFT                    15  /* BATT_OV_STS */
-+#define WM831X_BATT_OV_STS_WIDTH                     1  /* BATT_OV_STS */
-+#define WM831X_CHG_STATE_MASK                   0x7000  /* CHG_STATE - [14:12] */
-+#define WM831X_CHG_STATE_SHIFT                      12  /* CHG_STATE - [14:12] */
-+#define WM831X_CHG_STATE_WIDTH                       3  /* CHG_STATE - [14:12] */
-+#define WM831X_BATT_HOT_STS                     0x0800  /* BATT_HOT_STS */
-+#define WM831X_BATT_HOT_STS_MASK                0x0800  /* BATT_HOT_STS */
-+#define WM831X_BATT_HOT_STS_SHIFT                   11  /* BATT_HOT_STS */
-+#define WM831X_BATT_HOT_STS_WIDTH                    1  /* BATT_HOT_STS */
-+#define WM831X_BATT_COLD_STS                    0x0400  /* BATT_COLD_STS */
-+#define WM831X_BATT_COLD_STS_MASK               0x0400  /* BATT_COLD_STS */
-+#define WM831X_BATT_COLD_STS_SHIFT                  10  /* BATT_COLD_STS */
-+#define WM831X_BATT_COLD_STS_WIDTH                   1  /* BATT_COLD_STS */
-+#define WM831X_CHG_TOPOFF                       0x0200  /* CHG_TOPOFF */
-+#define WM831X_CHG_TOPOFF_MASK                  0x0200  /* CHG_TOPOFF */
-+#define WM831X_CHG_TOPOFF_SHIFT                      9  /* CHG_TOPOFF */
-+#define WM831X_CHG_TOPOFF_WIDTH                      1  /* CHG_TOPOFF */
-+#define WM831X_CHG_ACTIVE                       0x0100  /* CHG_ACTIVE */
-+#define WM831X_CHG_ACTIVE_MASK                  0x0100  /* CHG_ACTIVE */
-+#define WM831X_CHG_ACTIVE_SHIFT                      8  /* CHG_ACTIVE */
-+#define WM831X_CHG_ACTIVE_WIDTH                      1  /* CHG_ACTIVE */
-+#define WM831X_CHG_TIME_ELAPSED_MASK            0x00FF  /* CHG_TIME_ELAPSED - [7:0] */
-+#define WM831X_CHG_TIME_ELAPSED_SHIFT                0  /* CHG_TIME_ELAPSED - [7:0] */
-+#define WM831X_CHG_TIME_ELAPSED_WIDTH                8  /* CHG_TIME_ELAPSED - [7:0] */
-+
-+#define WM831X_CHG_STATE_OFF         (0 << WM831X_CHG_STATE_SHIFT)
-+#define WM831X_CHG_STATE_TRICKLE     (1 << WM831X_CHG_STATE_SHIFT)
-+#define WM831X_CHG_STATE_FAST        (2 << WM831X_CHG_STATE_SHIFT)
-+#define WM831X_CHG_STATE_TRICKLE_OT  (3 << WM831X_CHG_STATE_SHIFT)
-+#define WM831X_CHG_STATE_FAST_OT     (4 << WM831X_CHG_STATE_SHIFT)
-+#define WM831X_CHG_STATE_DEFECTIVE   (5 << WM831X_CHG_STATE_SHIFT)
++#define WM831X_EPE2_ENA                         0x0080  /* EPE2_ENA */
++#define WM831X_EPE2_ENA_MASK                    0x0080  /* EPE2_ENA */
++#define WM831X_EPE2_ENA_SHIFT                        7  /* EPE2_ENA */
++#define WM831X_EPE2_ENA_WIDTH                        1  /* EPE2_ENA */
++#define WM831X_EPE1_ENA                         0x0040  /* EPE1_ENA */
++#define WM831X_EPE1_ENA_MASK                    0x0040  /* EPE1_ENA */
++#define WM831X_EPE1_ENA_SHIFT                        6  /* EPE1_ENA */
++#define WM831X_EPE1_ENA_WIDTH                        1  /* EPE1_ENA */
++#define WM831X_DC4_ENA                          0x0008  /* DC4_ENA */
++#define WM831X_DC4_ENA_MASK                     0x0008  /* DC4_ENA */
++#define WM831X_DC4_ENA_SHIFT                         3  /* DC4_ENA */
++#define WM831X_DC4_ENA_WIDTH                         1  /* DC4_ENA */
++#define WM831X_DC3_ENA                          0x0004  /* DC3_ENA */
++#define WM831X_DC3_ENA_MASK                     0x0004  /* DC3_ENA */
++#define WM831X_DC3_ENA_SHIFT                         2  /* DC3_ENA */
++#define WM831X_DC3_ENA_WIDTH                         1  /* DC3_ENA */
++#define WM831X_DC2_ENA                          0x0002  /* DC2_ENA */
++#define WM831X_DC2_ENA_MASK                     0x0002  /* DC2_ENA */
++#define WM831X_DC2_ENA_SHIFT                         1  /* DC2_ENA */
++#define WM831X_DC2_ENA_WIDTH                         1  /* DC2_ENA */
++#define WM831X_DC1_ENA                          0x0001  /* DC1_ENA */
++#define WM831X_DC1_ENA_MASK                     0x0001  /* DC1_ENA */
++#define WM831X_DC1_ENA_SHIFT                         0  /* DC1_ENA */
++#define WM831X_DC1_ENA_WIDTH                         1  /* DC1_ENA */
 +
 +/*
-+ * R16459 (0x404B) - Backup Charger Control
++ * R16465 (0x4051) - LDO Enable
 + */
-+#define WM831X_BKUP_CHG_ENA                     0x8000  /* BKUP_CHG_ENA */
-+#define WM831X_BKUP_CHG_ENA_MASK                0x8000  /* BKUP_CHG_ENA */
-+#define WM831X_BKUP_CHG_ENA_SHIFT                   15  /* BKUP_CHG_ENA */
-+#define WM831X_BKUP_CHG_ENA_WIDTH                    1  /* BKUP_CHG_ENA */
-+#define WM831X_BKUP_CHG_STS                     0x4000  /* BKUP_CHG_STS */
-+#define WM831X_BKUP_CHG_STS_MASK                0x4000  /* BKUP_CHG_STS */
-+#define WM831X_BKUP_CHG_STS_SHIFT                   14  /* BKUP_CHG_STS */
-+#define WM831X_BKUP_CHG_STS_WIDTH                    1  /* BKUP_CHG_STS */
-+#define WM831X_BKUP_CHG_MODE                    0x1000  /* BKUP_CHG_MODE */
-+#define WM831X_BKUP_CHG_MODE_MASK               0x1000  /* BKUP_CHG_MODE */
-+#define WM831X_BKUP_CHG_MODE_SHIFT                  12  /* BKUP_CHG_MODE */
-+#define WM831X_BKUP_CHG_MODE_WIDTH                   1  /* BKUP_CHG_MODE */
-+#define WM831X_BKUP_BATT_DET_ENA                0x0800  /* BKUP_BATT_DET_ENA */
-+#define WM831X_BKUP_BATT_DET_ENA_MASK           0x0800  /* BKUP_BATT_DET_ENA */
-+#define WM831X_BKUP_BATT_DET_ENA_SHIFT              11  /* BKUP_BATT_DET_ENA */
-+#define WM831X_BKUP_BATT_DET_ENA_WIDTH               1  /* BKUP_BATT_DET_ENA */
-+#define WM831X_BKUP_BATT_STS                    0x0400  /* BKUP_BATT_STS */
-+#define WM831X_BKUP_BATT_STS_MASK               0x0400  /* BKUP_BATT_STS */
-+#define WM831X_BKUP_BATT_STS_SHIFT                  10  /* BKUP_BATT_STS */
-+#define WM831X_BKUP_BATT_STS_WIDTH                   1  /* BKUP_BATT_STS */
-+#define WM831X_BKUP_CHG_VLIM                    0x0010  /* BKUP_CHG_VLIM */
-+#define WM831X_BKUP_CHG_VLIM_MASK               0x0010  /* BKUP_CHG_VLIM */
-+#define WM831X_BKUP_CHG_VLIM_SHIFT                   4  /* BKUP_CHG_VLIM */
-+#define WM831X_BKUP_CHG_VLIM_WIDTH                   1  /* BKUP_CHG_VLIM */
-+#define WM831X_BKUP_CHG_ILIM_MASK               0x0003  /* BKUP_CHG_ILIM - [1:0] */
-+#define WM831X_BKUP_CHG_ILIM_SHIFT                   0  /* BKUP_CHG_ILIM - [1:0] */
-+#define WM831X_BKUP_CHG_ILIM_WIDTH                   2  /* BKUP_CHG_ILIM - [1:0] */
++#define WM831X_LDO11_ENA                        0x0400  /* LDO11_ENA */
++#define WM831X_LDO11_ENA_MASK                   0x0400  /* LDO11_ENA */
++#define WM831X_LDO11_ENA_SHIFT                      10  /* LDO11_ENA */
++#define WM831X_LDO11_ENA_WIDTH                       1  /* LDO11_ENA */
++#define WM831X_LDO10_ENA                        0x0200  /* LDO10_ENA */
++#define WM831X_LDO10_ENA_MASK                   0x0200  /* LDO10_ENA */
++#define WM831X_LDO10_ENA_SHIFT                       9  /* LDO10_ENA */
++#define WM831X_LDO10_ENA_WIDTH                       1  /* LDO10_ENA */
++#define WM831X_LDO9_ENA                         0x0100  /* LDO9_ENA */
++#define WM831X_LDO9_ENA_MASK                    0x0100  /* LDO9_ENA */
++#define WM831X_LDO9_ENA_SHIFT                        8  /* LDO9_ENA */
++#define WM831X_LDO9_ENA_WIDTH                        1  /* LDO9_ENA */
++#define WM831X_LDO8_ENA                         0x0080  /* LDO8_ENA */
++#define WM831X_LDO8_ENA_MASK                    0x0080  /* LDO8_ENA */
++#define WM831X_LDO8_ENA_SHIFT                        7  /* LDO8_ENA */
++#define WM831X_LDO8_ENA_WIDTH                        1  /* LDO8_ENA */
++#define WM831X_LDO7_ENA                         0x0040  /* LDO7_ENA */
++#define WM831X_LDO7_ENA_MASK                    0x0040  /* LDO7_ENA */
++#define WM831X_LDO7_ENA_SHIFT                        6  /* LDO7_ENA */
++#define WM831X_LDO7_ENA_WIDTH                        1  /* LDO7_ENA */
++#define WM831X_LDO6_ENA                         0x0020  /* LDO6_ENA */
++#define WM831X_LDO6_ENA_MASK                    0x0020  /* LDO6_ENA */
++#define WM831X_LDO6_ENA_SHIFT                        5  /* LDO6_ENA */
++#define WM831X_LDO6_ENA_WIDTH                        1  /* LDO6_ENA */
++#define WM831X_LDO5_ENA                         0x0010  /* LDO5_ENA */
++#define WM831X_LDO5_ENA_MASK                    0x0010  /* LDO5_ENA */
++#define WM831X_LDO5_ENA_SHIFT                        4  /* LDO5_ENA */
++#define WM831X_LDO5_ENA_WIDTH                        1  /* LDO5_ENA */
++#define WM831X_LDO4_ENA                         0x0008  /* LDO4_ENA */
++#define WM831X_LDO4_ENA_MASK                    0x0008  /* LDO4_ENA */
++#define WM831X_LDO4_ENA_SHIFT                        3  /* LDO4_ENA */
++#define WM831X_LDO4_ENA_WIDTH                        1  /* LDO4_ENA */
++#define WM831X_LDO3_ENA                         0x0004  /* LDO3_ENA */
++#define WM831X_LDO3_ENA_MASK                    0x0004  /* LDO3_ENA */
++#define WM831X_LDO3_ENA_SHIFT                        2  /* LDO3_ENA */
++#define WM831X_LDO3_ENA_WIDTH                        1  /* LDO3_ENA */
++#define WM831X_LDO2_ENA                         0x0002  /* LDO2_ENA */
++#define WM831X_LDO2_ENA_MASK                    0x0002  /* LDO2_ENA */
++#define WM831X_LDO2_ENA_SHIFT                        1  /* LDO2_ENA */
++#define WM831X_LDO2_ENA_WIDTH                        1  /* LDO2_ENA */
++#define WM831X_LDO1_ENA                         0x0001  /* LDO1_ENA */
++#define WM831X_LDO1_ENA_MASK                    0x0001  /* LDO1_ENA */
++#define WM831X_LDO1_ENA_SHIFT                        0  /* LDO1_ENA */
++#define WM831X_LDO1_ENA_WIDTH                        1  /* LDO1_ENA */
 +
-+#endif
++/*
++ * R16466 (0x4052) - DCDC Status
++ */
++#define WM831X_EPE2_STS                         0x0080  /* EPE2_STS */
++#define WM831X_EPE2_STS_MASK                    0x0080  /* EPE2_STS */
++#define WM831X_EPE2_STS_SHIFT                        7  /* EPE2_STS */
++#define WM831X_EPE2_STS_WIDTH                        1  /* EPE2_STS */
++#define WM831X_EPE1_STS                         0x0040  /* EPE1_STS */
++#define WM831X_EPE1_STS_MASK                    0x0040  /* EPE1_STS */
++#define WM831X_EPE1_STS_SHIFT                        6  /* EPE1_STS */
++#define WM831X_EPE1_STS_WIDTH                        1  /* EPE1_STS */
++#define WM831X_DC4_STS                          0x0008  /* DC4_STS */
++#define WM831X_DC4_STS_MASK                     0x0008  /* DC4_STS */
++#define WM831X_DC4_STS_SHIFT                         3  /* DC4_STS */
++#define WM831X_DC4_STS_WIDTH                         1  /* DC4_STS */
++#define WM831X_DC3_STS                          0x0004  /* DC3_STS */
++#define WM831X_DC3_STS_MASK                     0x0004  /* DC3_STS */
++#define WM831X_DC3_STS_SHIFT                         2  /* DC3_STS */
++#define WM831X_DC3_STS_WIDTH                         1  /* DC3_STS */
++#define WM831X_DC2_STS                          0x0002  /* DC2_STS */
++#define WM831X_DC2_STS_MASK                     0x0002  /* DC2_STS */
++#define WM831X_DC2_STS_SHIFT                         1  /* DC2_STS */
++#define WM831X_DC2_STS_WIDTH                         1  /* DC2_STS */
++#define WM831X_DC1_STS                          0x0001  /* DC1_STS */
++#define WM831X_DC1_STS_MASK                     0x0001  /* DC1_STS */
++#define WM831X_DC1_STS_SHIFT                         0  /* DC1_STS */
++#define WM831X_DC1_STS_WIDTH                         1  /* DC1_STS */
++
++/*
++ * R16467 (0x4053) - LDO Status
++ */
++#define WM831X_LDO11_STS                        0x0400  /* LDO11_STS */
++#define WM831X_LDO11_STS_MASK                   0x0400  /* LDO11_STS */
++#define WM831X_LDO11_STS_SHIFT                      10  /* LDO11_STS */
++#define WM831X_LDO11_STS_WIDTH                       1  /* LDO11_STS */
++#define WM831X_LDO10_STS                        0x0200  /* LDO10_STS */
++#define WM831X_LDO10_STS_MASK                   0x0200  /* LDO10_STS */
++#define WM831X_LDO10_STS_SHIFT                       9  /* LDO10_STS */
++#define WM831X_LDO10_STS_WIDTH                       1  /* LDO10_STS */
++#define WM831X_LDO9_STS                         0x0100  /* LDO9_STS */
++#define WM831X_LDO9_STS_MASK                    0x0100  /* LDO9_STS */
++#define WM831X_LDO9_STS_SHIFT                        8  /* LDO9_STS */
++#define WM831X_LDO9_STS_WIDTH                        1  /* LDO9_STS */
++#define WM831X_LDO8_STS                         0x0080  /* LDO8_STS */
++#define WM831X_LDO8_STS_MASK                    0x0080  /* LDO8_STS */
++#define WM831X_LDO8_STS_SHIFT                        7  /* LDO8_STS */
++#define WM831X_LDO8_STS_WIDTH                        1  /* LDO8_STS */
++#define WM831X_LDO7_STS                         0x0040  /* LDO7_STS */
++#define WM831X_LDO7_STS_MASK                    0x0040  /* LDO7_STS */
++#define WM831X_LDO7_STS_SHIFT                        6  /* LDO7_STS */
++#define WM831X_LDO7_STS_WIDTH                        1  /* LDO7_STS */
++#define WM831X_LDO6_STS                         0x0020  /* LDO6_STS */
++#define WM831X_LDO6_STS_MASK                    0x0020  /* LDO6_STS */
++#define WM831X_LDO6_STS_SHIFT                        5  /* LDO6_STS */
++#define WM831X_LDO6_STS_WIDTH                        1  /* LDO6_STS */
++#define WM831X_LDO5_STS                         0x0010  /* LDO5_STS */
++#define WM831X_LDO5_STS_MASK                    0x0010  /* LDO5_STS */
++#define WM831X_LDO5_STS_SHIFT                        4  /* LDO5_STS */
++#define WM831X_LDO5_STS_WIDTH                        1  /* LDO5_STS */
++#define WM831X_LDO4_STS                         0x0008  /* LDO4_STS */
++#define WM831X_LDO4_STS_MASK                    0x0008  /* LDO4_STS */
++#define WM831X_LDO4_STS_SHIFT                        3  /* LDO4_STS */
++#define WM831X_LDO4_STS_WIDTH                        1  /* LDO4_STS */
++#define WM831X_LDO3_STS                         0x0004  /* LDO3_STS */
++#define WM831X_LDO3_STS_MASK                    0x0004  /* LDO3_STS */
++#define WM831X_LDO3_STS_SHIFT                        2  /* LDO3_STS */
++#define WM831X_LDO3_STS_WIDTH                        1  /* LDO3_STS */
++#define WM831X_LDO2_STS                         0x0002  /* LDO2_STS */
++#define WM831X_LDO2_STS_MASK                    0x0002  /* LDO2_STS */
++#define WM831X_LDO2_STS_SHIFT                        1  /* LDO2_STS */
++#define WM831X_LDO2_STS_WIDTH                        1  /* LDO2_STS */
++#define WM831X_LDO1_STS                         0x0001  /* LDO1_STS */
++#define WM831X_LDO1_STS_MASK                    0x0001  /* LDO1_STS */
++#define WM831X_LDO1_STS_SHIFT                        0  /* LDO1_STS */
++#define WM831X_LDO1_STS_WIDTH                        1  /* LDO1_STS */
++
++/*
++ * R16468 (0x4054) - DCDC UV Status
++ */
++#define WM831X_DC2_OV_STS                       0x2000  /* DC2_OV_STS */
++#define WM831X_DC2_OV_STS_MASK                  0x2000  /* DC2_OV_STS */
++#define WM831X_DC2_OV_STS_SHIFT                     13  /* DC2_OV_STS */
++#define WM831X_DC2_OV_STS_WIDTH                      1  /* DC2_OV_STS */
++#define WM831X_DC1_OV_STS                       0x1000  /* DC1_OV_STS */
++#define WM831X_DC1_OV_STS_MASK                  0x1000  /* DC1_OV_STS */
++#define WM831X_DC1_OV_STS_SHIFT                     12  /* DC1_OV_STS */
++#define WM831X_DC1_OV_STS_WIDTH                      1  /* DC1_OV_STS */
++#define WM831X_DC2_HC_STS                       0x0200  /* DC2_HC_STS */
++#define WM831X_DC2_HC_STS_MASK                  0x0200  /* DC2_HC_STS */
++#define WM831X_DC2_HC_STS_SHIFT                      9  /* DC2_HC_STS */
++#define WM831X_DC2_HC_STS_WIDTH                      1  /* DC2_HC_STS */
++#define WM831X_DC1_HC_STS                       0x0100  /* DC1_HC_STS */
++#define WM831X_DC1_HC_STS_MASK                  0x0100  /* DC1_HC_STS */
++#define WM831X_DC1_HC_STS_SHIFT                      8  /* DC1_HC_STS */
++#define WM831X_DC1_HC_STS_WIDTH                      1  /* DC1_HC_STS */
++#define WM831X_DC4_UV_STS                       0x0008  /* DC4_UV_STS */
++#define WM831X_DC4_UV_STS_MASK                  0x0008  /* DC4_UV_STS */
++#define WM831X_DC4_UV_STS_SHIFT                      3  /* DC4_UV_STS */
++#define WM831X_DC4_UV_STS_WIDTH                      1  /* DC4_UV_STS */
++#define WM831X_DC3_UV_STS                       0x0004  /* DC3_UV_STS */
++#define WM831X_DC3_UV_STS_MASK                  0x0004  /* DC3_UV_STS */
++#define WM831X_DC3_UV_STS_SHIFT                      2  /* DC3_UV_STS */
++#define WM831X_DC3_UV_STS_WIDTH                      1  /* DC3_UV_STS */
++#define WM831X_DC2_UV_STS                       0x0002  /* DC2_UV_STS */
++#define WM831X_DC2_UV_STS_MASK                  0x0002  /* DC2_UV_STS */
++#define WM831X_DC2_UV_STS_SHIFT                      1  /* DC2_UV_STS */
++#define WM831X_DC2_UV_STS_WIDTH                      1  /* DC2_UV_STS */
++#define WM831X_DC1_UV_STS                       0x0001  /* DC1_UV_STS */
++#define WM831X_DC1_UV_STS_MASK                  0x0001  /* DC1_UV_STS */
++#define WM831X_DC1_UV_STS_SHIFT                      0  /* DC1_UV_STS */
++#define WM831X_DC1_UV_STS_WIDTH                      1  /* DC1_UV_STS */
++
++/*
++ * R16469 (0x4055) - LDO UV Status
++ */
++#define WM831X_INTLDO_UV_STS                    0x8000  /* INTLDO_UV_STS */
++#define WM831X_INTLDO_UV_STS_MASK               0x8000  /* INTLDO_UV_STS */
++#define WM831X_INTLDO_UV_STS_SHIFT                  15  /* INTLDO_UV_STS */
++#define WM831X_INTLDO_UV_STS_WIDTH                   1  /* INTLDO_UV_STS */
++#define WM831X_LDO10_UV_STS                     0x0200  /* LDO10_UV_STS */
++#define WM831X_LDO10_UV_STS_MASK                0x0200  /* LDO10_UV_STS */
++#define WM831X_LDO10_UV_STS_SHIFT                    9  /* LDO10_UV_STS */
++#define WM831X_LDO10_UV_STS_WIDTH                    1  /* LDO10_UV_STS */
++#define WM831X_LDO9_UV_STS                      0x0100  /* LDO9_UV_STS */
++#define WM831X_LDO9_UV_STS_MASK                 0x0100  /* LDO9_UV_STS */
++#define WM831X_LDO9_UV_STS_SHIFT                     8  /* LDO9_UV_STS */
++#define WM831X_LDO9_UV_STS_WIDTH                     1  /* LDO9_UV_STS */
++#define WM831X_LDO8_UV_STS                      0x0080  /* LDO8_UV_STS */
++#define WM831X_LDO8_UV_STS_MASK                 0x0080  /* LDO8_UV_STS */
++#define WM831X_LDO8_UV_STS_SHIFT                     7  /* LDO8_UV_STS */
++#define WM831X_LDO8_UV_STS_WIDTH                     1  /* LDO8_UV_STS */
++#define WM831X_LDO7_UV_STS                      0x0040  /* LDO7_UV_STS */
++#define WM831X_LDO7_UV_STS_MASK                 0x0040  /* LDO7_UV_STS */
++#define WM831X_LDO7_UV_STS_SHIFT                     6  /* LDO7_UV_STS */
++#define WM831X_LDO7_UV_STS_WIDTH                     1  /* LDO7_UV_STS */
++#define WM831X_LDO6_UV_STS                      0x0020  /* LDO6_UV_STS */
++#define WM831X_LDO6_UV_STS_MASK                 0x0020  /* LDO6_UV_STS */
++#define WM831X_LDO6_UV_STS_SHIFT                     5  /* LDO6_UV_STS */
++#define WM831X_LDO6_UV_STS_WIDTH                     1  /* LDO6_UV_STS */
++#define WM831X_LDO5_UV_STS                      0x0010  /* LDO5_UV_STS */
++#define WM831X_LDO5_UV_STS_MASK                 0x0010  /* LDO5_UV_STS */
++#define WM831X_LDO5_UV_STS_SHIFT                     4  /* LDO5_UV_STS */
++#define WM831X_LDO5_UV_STS_WIDTH                     1  /* LDO5_UV_STS */
++#define WM831X_LDO4_UV_STS                      0x0008  /* LDO4_UV_STS */
++#define WM831X_LDO4_UV_STS_MASK                 0x0008  /* LDO4_UV_STS */
++#define WM831X_LDO4_UV_STS_SHIFT                     3  /* LDO4_UV_STS */
++#define WM831X_LDO4_UV_STS_WIDTH                     1  /* LDO4_UV_STS */
++#define WM831X_LDO3_UV_STS                      0x0004  /* LDO3_UV_STS */
++#define WM831X_LDO3_UV_STS_MASK                 0x0004  /* LDO3_UV_STS */
++#define WM831X_LDO3_UV_STS_SHIFT                     2  /* LDO3_UV_STS */
++#define WM831X_LDO3_UV_STS_WIDTH                     1  /* LDO3_UV_STS */
++#define WM831X_LDO2_UV_STS                      0x0002  /* LDO2_UV_STS */
++#define WM831X_LDO2_UV_STS_MASK                 0x0002  /* LDO2_UV_STS */
++#define WM831X_LDO2_UV_STS_SHIFT                     1  /* LDO2_UV_STS */
++#define WM831X_LDO2_UV_STS_WIDTH                     1  /* LDO2_UV_STS */
++#define WM831X_LDO1_UV_STS                      0x0001  /* LDO1_UV_STS */
++#define WM831X_LDO1_UV_STS_MASK                 0x0001  /* LDO1_UV_STS */
++#define WM831X_LDO1_UV_STS_SHIFT                     0  /* LDO1_UV_STS */
++#define WM831X_LDO1_UV_STS_WIDTH                     1  /* LDO1_UV_STS */
++
++/*
++ * R16470 (0x4056) - DC1 Control 1
++ */
++#define WM831X_DC1_RATE_MASK                    0xC000  /* DC1_RATE - [15:14] */
++#define WM831X_DC1_RATE_SHIFT                       14  /* DC1_RATE - [15:14] */
++#define WM831X_DC1_RATE_WIDTH                        2  /* DC1_RATE - [15:14] */
++#define WM831X_DC1_PHASE                        0x1000  /* DC1_PHASE */
++#define WM831X_DC1_PHASE_MASK                   0x1000  /* DC1_PHASE */
++#define WM831X_DC1_PHASE_SHIFT                      12  /* DC1_PHASE */
++#define WM831X_DC1_PHASE_WIDTH                       1  /* DC1_PHASE */
++#define WM831X_DC1_FREQ_MASK                    0x0300  /* DC1_FREQ - [9:8] */
++#define WM831X_DC1_FREQ_SHIFT                        8  /* DC1_FREQ - [9:8] */
++#define WM831X_DC1_FREQ_WIDTH                        2  /* DC1_FREQ - [9:8] */
++#define WM831X_DC1_FLT                          0x0080  /* DC1_FLT */
++#define WM831X_DC1_FLT_MASK                     0x0080  /* DC1_FLT */
++#define WM831X_DC1_FLT_SHIFT                         7  /* DC1_FLT */
++#define WM831X_DC1_FLT_WIDTH                         1  /* DC1_FLT */
++#define WM831X_DC1_SOFT_START_MASK              0x0030  /* DC1_SOFT_START - [5:4] */
++#define WM831X_DC1_SOFT_START_SHIFT                  4  /* DC1_SOFT_START - [5:4] */
++#define WM831X_DC1_SOFT_START_WIDTH                  2  /* DC1_SOFT_START - [5:4] */
++#define WM831X_DC1_CAP_MASK                     0x0003  /* DC1_CAP - [1:0] */
++#define WM831X_DC1_CAP_SHIFT                         0  /* DC1_CAP - [1:0] */
++#define WM831X_DC1_CAP_WIDTH                         2  /* DC1_CAP - [1:0] */
++
++/*
++ * R16471 (0x4057) - DC1 Control 2
++ */
++#define WM831X_DC1_ERR_ACT_MASK                 0xC000  /* DC1_ERR_ACT - [15:14] */
++#define WM831X_DC1_ERR_ACT_SHIFT                    14  /* DC1_ERR_ACT - [15:14] */
++#define WM831X_DC1_ERR_ACT_WIDTH                     2  /* DC1_ERR_ACT - [15:14] */
++#define WM831X_DC1_HWC_SRC_MASK                 0x1800  /* DC1_HWC_SRC - [12:11] */
++#define WM831X_DC1_HWC_SRC_SHIFT                    11  /* DC1_HWC_SRC - [12:11] */
++#define WM831X_DC1_HWC_SRC_WIDTH                     2  /* DC1_HWC_SRC - [12:11] */
++#define WM831X_DC1_HWC_VSEL                     0x0400  /* DC1_HWC_VSEL */
++#define WM831X_DC1_HWC_VSEL_MASK                0x0400  /* DC1_HWC_VSEL */
++#define WM831X_DC1_HWC_VSEL_SHIFT                   10  /* DC1_HWC_VSEL */
++#define WM831X_DC1_HWC_VSEL_WIDTH                    1  /* DC1_HWC_VSEL */
++#define WM831X_DC1_HWC_MODE_MASK                0x0300  /* DC1_HWC_MODE - [9:8] */
++#define WM831X_DC1_HWC_MODE_SHIFT                    8  /* DC1_HWC_MODE - [9:8] */
++#define WM831X_DC1_HWC_MODE_WIDTH                    2  /* DC1_HWC_MODE - [9:8] */
++#define WM831X_DC1_HC_THR_MASK                  0x0070  /* DC1_HC_THR - [6:4] */
++#define WM831X_DC1_HC_THR_SHIFT                      4  /* DC1_HC_THR - [6:4] */
++#define WM831X_DC1_HC_THR_WIDTH                      3  /* DC1_HC_THR - [6:4] */
++#define WM831X_DC1_HC_IND_ENA                   0x0001  /* DC1_HC_IND_ENA */
++#define WM831X_DC1_HC_IND_ENA_MASK              0x0001  /* DC1_HC_IND_ENA */
++#define WM831X_DC1_HC_IND_ENA_SHIFT                  0  /* DC1_HC_IND_ENA */
++#define WM831X_DC1_HC_IND_ENA_WIDTH                  1  /* DC1_HC_IND_ENA */
++
++/*
++ * R16472 (0x4058) - DC1 ON Config
++ */
++#define WM831X_DC1_ON_SLOT_MASK                 0xE000  /* DC1_ON_SLOT - [15:13] */
++#define WM831X_DC1_ON_SLOT_SHIFT                    13  /* DC1_ON_SLOT - [15:13] */
++#define WM831X_DC1_ON_SLOT_WIDTH                     3  /* DC1_ON_SLOT - [15:13] */
++#define WM831X_DC1_ON_MODE_MASK                 0x0300  /* DC1_ON_MODE - [9:8] */
++#define WM831X_DC1_ON_MODE_SHIFT                     8  /* DC1_ON_MODE - [9:8] */
++#define WM831X_DC1_ON_MODE_WIDTH                     2  /* DC1_ON_MODE - [9:8] */
++#define WM831X_DC1_ON_VSEL_MASK                 0x007F  /* DC1_ON_VSEL - [6:0] */
++#define WM831X_DC1_ON_VSEL_SHIFT                     0  /* DC1_ON_VSEL - [6:0] */
++#define WM831X_DC1_ON_VSEL_WIDTH                     7  /* DC1_ON_VSEL - [6:0] */
++
++/*
++ * R16473 (0x4059) - DC1 SLEEP Control
++ */
++#define WM831X_DC1_SLP_SLOT_MASK                0xE000  /* DC1_SLP_SLOT - [15:13] */
++#define WM831X_DC1_SLP_SLOT_SHIFT                   13  /* DC1_SLP_SLOT - [15:13] */
++#define WM831X_DC1_SLP_SLOT_WIDTH                    3  /* DC1_SLP_SLOT - [15:13] */
++#define WM831X_DC1_SLP_MODE_MASK                0x0300  /* DC1_SLP_MODE - [9:8] */
++#define WM831X_DC1_SLP_MODE_SHIFT                    8  /* DC1_SLP_MODE - [9:8] */
++#define WM831X_DC1_SLP_MODE_WIDTH                    2  /* DC1_SLP_MODE - [9:8] */
++#define WM831X_DC1_SLP_VSEL_MASK                0x007F  /* DC1_SLP_VSEL - [6:0] */
++#define WM831X_DC1_SLP_VSEL_SHIFT                    0  /* DC1_SLP_VSEL - [6:0] */
++#define WM831X_DC1_SLP_VSEL_WIDTH                    7  /* DC1_SLP_VSEL - [6:0] */
++
++/*
++ * R16474 (0x405A) - DC1 DVS Control
++ */
++#define WM831X_DC1_DVS_SRC_MASK                 0x1800  /* DC1_DVS_SRC - [12:11] */
++#define WM831X_DC1_DVS_SRC_SHIFT                    11  /* DC1_DVS_SRC - [12:11] */
++#define WM831X_DC1_DVS_SRC_WIDTH                     2  /* DC1_DVS_SRC - [12:11] */
++#define WM831X_DC1_DVS_VSEL_MASK                0x007F  /* DC1_DVS_VSEL - [6:0] */
++#define WM831X_DC1_DVS_VSEL_SHIFT                    0  /* DC1_DVS_VSEL - [6:0] */
++#define WM831X_DC1_DVS_VSEL_WIDTH                    7  /* DC1_DVS_VSEL - [6:0] */
++
++/*
++ * R16475 (0x405B) - DC2 Control 1
++ */
++#define WM831X_DC2_RATE_MASK                    0xC000  /* DC2_RATE - [15:14] */
++#define WM831X_DC2_RATE_SHIFT                       14  /* DC2_RATE - [15:14] */
++#define WM831X_DC2_RATE_WIDTH                        2  /* DC2_RATE - [15:14] */
++#define WM831X_DC2_PHASE                        0x1000  /* DC2_PHASE */
++#define WM831X_DC2_PHASE_MASK                   0x1000  /* DC2_PHASE */
++#define WM831X_DC2_PHASE_SHIFT                      12  /* DC2_PHASE */
++#define WM831X_DC2_PHASE_WIDTH                       1  /* DC2_PHASE */
++#define WM831X_DC2_FREQ_MASK                    0x0300  /* DC2_FREQ - [9:8] */
++#define WM831X_DC2_FREQ_SHIFT                        8  /* DC2_FREQ - [9:8] */
++#define WM831X_DC2_FREQ_WIDTH                        2  /* DC2_FREQ - [9:8] */
++#define WM831X_DC2_FLT                          0x0080  /* DC2_FLT */
++#define WM831X_DC2_FLT_MASK                     0x0080  /* DC2_FLT */
++#define WM831X_DC2_FLT_SHIFT                         7  /* DC2_FLT */
++#define WM831X_DC2_FLT_WIDTH                         1  /* DC2_FLT */
++#define WM831X_DC2_SOFT_START_MASK              0x0030  /* DC2_SOFT_START - [5:4] */
++#define WM831X_DC2_SOFT_START_SHIFT                  4  /* DC2_SOFT_START - [5:4] */
++#define WM831X_DC2_SOFT_START_WIDTH                  2  /* DC2_SOFT_START - [5:4] */
++#define WM831X_DC2_CAP_MASK                     0x0003  /* DC2_CAP - [1:0] */
++#define WM831X_DC2_CAP_SHIFT                         0  /* DC2_CAP - [1:0] */
++#define WM831X_DC2_CAP_WIDTH                         2  /* DC2_CAP - [1:0] */
++
++/*
++ * R16476 (0x405C) - DC2 Control 2
++ */
++#define WM831X_DC2_ERR_ACT_MASK                 0xC000  /* DC2_ERR_ACT - [15:14] */
++#define WM831X_DC2_ERR_ACT_SHIFT                    14  /* DC2_ERR_ACT - [15:14] */
++#define WM831X_DC2_ERR_ACT_WIDTH                     2  /* DC2_ERR_ACT - [15:14] */
++#define WM831X_DC2_HWC_SRC_MASK                 0x1800  /* DC2_HWC_SRC - [12:11] */
++#define WM831X_DC2_HWC_SRC_SHIFT                    11  /* DC2_HWC_SRC - [12:11] */
++#define WM831X_DC2_HWC_SRC_WIDTH                     2  /* DC2_HWC_SRC - [12:11] */
++#define WM831X_DC2_HWC_VSEL                     0x0400  /* DC2_HWC_VSEL */
++#define WM831X_DC2_HWC_VSEL_MASK                0x0400  /* DC2_HWC_VSEL */
++#define WM831X_DC2_HWC_VSEL_SHIFT                   10  /* DC2_HWC_VSEL */
++#define WM831X_DC2_HWC_VSEL_WIDTH                    1  /* DC2_HWC_VSEL */
++#define WM831X_DC2_HWC_MODE_MASK                0x0300  /* DC2_HWC_MODE - [9:8] */
++#define WM831X_DC2_HWC_MODE_SHIFT                    8  /* DC2_HWC_MODE - [9:8] */
++#define WM831X_DC2_HWC_MODE_WIDTH                    2  /* DC2_HWC_MODE - [9:8] */
++#define WM831X_DC2_HC_THR_MASK                  0x0070  /* DC2_HC_THR - [6:4] */
++#define WM831X_DC2_HC_THR_SHIFT                      4  /* DC2_HC_THR - [6:4] */
++#define WM831X_DC2_HC_THR_WIDTH                      3  /* DC2_HC_THR - [6:4] */
++#define WM831X_DC2_HC_IND_ENA                   0x0001  /* DC2_HC_IND_ENA */
++#define WM831X_DC2_HC_IND_ENA_MASK              0x0001  /* DC2_HC_IND_ENA */
++#define WM831X_DC2_HC_IND_ENA_SHIFT                  0  /* DC2_HC_IND_ENA */
++#define WM831X_DC2_HC_IND_ENA_WIDTH                  1  /* DC2_HC_IND_ENA */
++
++/*
++ * R16477 (0x405D) - DC2 ON Config
++ */
++#define WM831X_DC2_ON_SLOT_MASK                 0xE000  /* DC2_ON_SLOT - [15:13] */
++#define WM831X_DC2_ON_SLOT_SHIFT                    13  /* DC2_ON_SLOT - [15:13] */
++#define WM831X_DC2_ON_SLOT_WIDTH                     3  /* DC2_ON_SLOT - [15:13] */
++#define WM831X_DC2_ON_MODE_MASK                 0x0300  /* DC2_ON_MODE - [9:8] */
++#define WM831X_DC2_ON_MODE_SHIFT                     8  /* DC2_ON_MODE - [9:8] */
++#define WM831X_DC2_ON_MODE_WIDTH                     2  /* DC2_ON_MODE - [9:8] */
++#define WM831X_DC2_ON_VSEL_MASK                 0x007F  /* DC2_ON_VSEL - [6:0] */
++#define WM831X_DC2_ON_VSEL_SHIFT                     0  /* DC2_ON_VSEL - [6:0] */
++#define WM831X_DC2_ON_VSEL_WIDTH                     7  /* DC2_ON_VSEL - [6:0] */
++
++/*
++ * R16478 (0x405E) - DC2 SLEEP Control
++ */
++#define WM831X_DC2_SLP_SLOT_MASK                0xE000  /* DC2_SLP_SLOT - [15:13] */
++#define WM831X_DC2_SLP_SLOT_SHIFT                   13  /* DC2_SLP_SLOT - [15:13] */
++#define WM831X_DC2_SLP_SLOT_WIDTH                    3  /* DC2_SLP_SLOT - [15:13] */
++#define WM831X_DC2_SLP_MODE_MASK                0x0300  /* DC2_SLP_MODE - [9:8] */
++#define WM831X_DC2_SLP_MODE_SHIFT                    8  /* DC2_SLP_MODE - [9:8] */
++#define WM831X_DC2_SLP_MODE_WIDTH                    2  /* DC2_SLP_MODE - [9:8] */
++#define WM831X_DC2_SLP_VSEL_MASK                0x007F  /* DC2_SLP_VSEL - [6:0] */
++#define WM831X_DC2_SLP_VSEL_SHIFT                    0  /* DC2_SLP_VSEL - [6:0] */
++#define WM831X_DC2_SLP_VSEL_WIDTH                    7  /* DC2_SLP_VSEL - [6:0] */
++
++/*
++ * R16479 (0x405F) - DC2 DVS Control
++ */
++#define WM831X_DC2_DVS_SRC_MASK                 0x1800  /* DC2_DVS_SRC - [12:11] */
++#define WM831X_DC2_DVS_SRC_SHIFT                    11  /* DC2_DVS_SRC - [12:11] */
++#define WM831X_DC2_DVS_SRC_WIDTH                     2  /* DC2_DVS_SRC - [12:11] */
++#define WM831X_DC2_DVS_VSEL_MASK                0x007F  /* DC2_DVS_VSEL - [6:0] */
++#define WM831X_DC2_DVS_VSEL_SHIFT                    0  /* DC2_DVS_VSEL - [6:0] */
++#define WM831X_DC2_DVS_VSEL_WIDTH                    7  /* DC2_DVS_VSEL - [6:0] */
++
++/*
++ * R16480 (0x4060) - DC3 Control 1
++ */
++#define WM831X_DC3_PHASE                        0x1000  /* DC3_PHASE */
++#define WM831X_DC3_PHASE_MASK                   0x1000  /* DC3_PHASE */
++#define WM831X_DC3_PHASE_SHIFT                      12  /* DC3_PHASE */
++#define WM831X_DC3_PHASE_WIDTH                       1  /* DC3_PHASE */
++#define WM831X_DC3_FLT                          0x0080  /* DC3_FLT */
++#define WM831X_DC3_FLT_MASK                     0x0080  /* DC3_FLT */
++#define WM831X_DC3_FLT_SHIFT                         7  /* DC3_FLT */
++#define WM831X_DC3_FLT_WIDTH                         1  /* DC3_FLT */
++#define WM831X_DC3_SOFT_START_MASK              0x0030  /* DC3_SOFT_START - [5:4] */
++#define WM831X_DC3_SOFT_START_SHIFT                  4  /* DC3_SOFT_START - [5:4] */
++#define WM831X_DC3_SOFT_START_WIDTH                  2  /* DC3_SOFT_START - [5:4] */
++#define WM831X_DC3_STNBY_LIM_MASK               0x000C  /* DC3_STNBY_LIM - [3:2] */
++#define WM831X_DC3_STNBY_LIM_SHIFT                   2  /* DC3_STNBY_LIM - [3:2] */
++#define WM831X_DC3_STNBY_LIM_WIDTH                   2  /* DC3_STNBY_LIM - [3:2] */
++#define WM831X_DC3_CAP_MASK                     0x0003  /* DC3_CAP - [1:0] */
++#define WM831X_DC3_CAP_SHIFT                         0  /* DC3_CAP - [1:0] */
++#define WM831X_DC3_CAP_WIDTH                         2  /* DC3_CAP - [1:0] */
++
++/*
++ * R16481 (0x4061) - DC3 Control 2
++ */
++#define WM831X_DC3_ERR_ACT_MASK                 0xC000  /* DC3_ERR_ACT - [15:14] */
++#define WM831X_DC3_ERR_ACT_SHIFT                    14  /* DC3_ERR_ACT - [15:14] */
++#define WM831X_DC3_ERR_ACT_WIDTH                     2  /* DC3_ERR_ACT - [15:14] */
++#define WM831X_DC3_HWC_SRC_MASK                 0x1800  /* DC3_HWC_SRC - [12:11] */
++#define WM831X_DC3_HWC_SRC_SHIFT                    11  /* DC3_HWC_SRC - [12:11] */
++#define WM831X_DC3_HWC_SRC_WIDTH                     2  /* DC3_HWC_SRC - [12:11] */
++#define WM831X_DC3_HWC_VSEL                     0x0400  /* DC3_HWC_VSEL */
++#define WM831X_DC3_HWC_VSEL_MASK                0x0400  /* DC3_HWC_VSEL */
++#define WM831X_DC3_HWC_VSEL_SHIFT                   10  /* DC3_HWC_VSEL */
++#define WM831X_DC3_HWC_VSEL_WIDTH                    1  /* DC3_HWC_VSEL */
++#define WM831X_DC3_HWC_MODE_MASK                0x0300  /* DC3_HWC_MODE - [9:8] */
++#define WM831X_DC3_HWC_MODE_SHIFT                    8  /* DC3_HWC_MODE - [9:8] */
++#define WM831X_DC3_HWC_MODE_WIDTH                    2  /* DC3_HWC_MODE - [9:8] */
++#define WM831X_DC3_OVP                          0x0080  /* DC3_OVP */
++#define WM831X_DC3_OVP_MASK                     0x0080  /* DC3_OVP */
++#define WM831X_DC3_OVP_SHIFT                         7  /* DC3_OVP */
++#define WM831X_DC3_OVP_WIDTH                         1  /* DC3_OVP */
++
++/*
++ * R16482 (0x4062) - DC3 ON Config
++ */
++#define WM831X_DC3_ON_SLOT_MASK                 0xE000  /* DC3_ON_SLOT - [15:13] */
++#define WM831X_DC3_ON_SLOT_SHIFT                    13  /* DC3_ON_SLOT - [15:13] */
++#define WM831X_DC3_ON_SLOT_WIDTH                     3  /* DC3_ON_SLOT - [15:13] */
++#define WM831X_DC3_ON_MODE_MASK                 0x0300  /* DC3_ON_MODE - [9:8] */
++#define WM831X_DC3_ON_MODE_SHIFT                     8  /* DC3_ON_MODE - [9:8] */
++#define WM831X_DC3_ON_MODE_WIDTH                     2  /* DC3_ON_MODE - [9:8] */
++#define WM831X_DC3_ON_VSEL_MASK                 0x007F  /* DC3_ON_VSEL - [6:0] */
++#define WM831X_DC3_ON_VSEL_SHIFT                     0  /* DC3_ON_VSEL - [6:0] */
++#define WM831X_DC3_ON_VSEL_WIDTH                     7  /* DC3_ON_VSEL - [6:0] */
++
++/*
++ * R16483 (0x4063) - DC3 SLEEP Control
++ */
++#define WM831X_DC3_SLP_SLOT_MASK                0xE000  /* DC3_SLP_SLOT - [15:13] */
++#define WM831X_DC3_SLP_SLOT_SHIFT                   13  /* DC3_SLP_SLOT - [15:13] */
++#define WM831X_DC3_SLP_SLOT_WIDTH                    3  /* DC3_SLP_SLOT - [15:13] */
++#define WM831X_DC3_SLP_MODE_MASK                0x0300  /* DC3_SLP_MODE - [9:8] */
++#define WM831X_DC3_SLP_MODE_SHIFT                    8  /* DC3_SLP_MODE - [9:8] */
++#define WM831X_DC3_SLP_MODE_WIDTH                    2  /* DC3_SLP_MODE - [9:8] */
++#define WM831X_DC3_SLP_VSEL_MASK                0x007F  /* DC3_SLP_VSEL - [6:0] */
++#define WM831X_DC3_SLP_VSEL_SHIFT                    0  /* DC3_SLP_VSEL - [6:0] */
++#define WM831X_DC3_SLP_VSEL_WIDTH                    7  /* DC3_SLP_VSEL - [6:0] */
++
++/*
++ * R16484 (0x4064) - DC4 Control
++ */
++#define WM831X_DC4_ERR_ACT_MASK                 0xC000  /* DC4_ERR_ACT - [15:14] */
++#define WM831X_DC4_ERR_ACT_SHIFT                    14  /* DC4_ERR_ACT - [15:14] */
++#define WM831X_DC4_ERR_ACT_WIDTH                     2  /* DC4_ERR_ACT - [15:14] */
++#define WM831X_DC4_HWC_SRC_MASK                 0x1800  /* DC4_HWC_SRC - [12:11] */
++#define WM831X_DC4_HWC_SRC_SHIFT                    11  /* DC4_HWC_SRC - [12:11] */
++#define WM831X_DC4_HWC_SRC_WIDTH                     2  /* DC4_HWC_SRC - [12:11] */
++#define WM831X_DC4_HWC_MODE                     0x0100  /* DC4_HWC_MODE */
++#define WM831X_DC4_HWC_MODE_MASK                0x0100  /* DC4_HWC_MODE */
++#define WM831X_DC4_HWC_MODE_SHIFT                    8  /* DC4_HWC_MODE */
++#define WM831X_DC4_HWC_MODE_WIDTH                    1  /* DC4_HWC_MODE */
++#define WM831X_DC4_RANGE_MASK                   0x000C  /* DC4_RANGE - [3:2] */
++#define WM831X_DC4_RANGE_SHIFT                       2  /* DC4_RANGE - [3:2] */
++#define WM831X_DC4_RANGE_WIDTH                       2  /* DC4_RANGE - [3:2] */
++#define WM831X_DC4_FBSRC                        0x0001  /* DC4_FBSRC */
++#define WM831X_DC4_FBSRC_MASK                   0x0001  /* DC4_FBSRC */
++#define WM831X_DC4_FBSRC_SHIFT                       0  /* DC4_FBSRC */
++#define WM831X_DC4_FBSRC_WIDTH                       1  /* DC4_FBSRC */
++
++/*
++ * R16485 (0x4065) - DC4 SLEEP Control
++ */
++#define WM831X_DC4_SLPENA                       0x0100  /* DC4_SLPENA */
++#define WM831X_DC4_SLPENA_MASK                  0x0100  /* DC4_SLPENA */
++#define WM831X_DC4_SLPENA_SHIFT                      8  /* DC4_SLPENA */
++#define WM831X_DC4_SLPENA_WIDTH                      1  /* DC4_SLPENA */
++
++/*
++ * R16526 (0x408E) - Power Good Source 1
++ */
++#define WM831X_DC4_OK                           0x0008  /* DC4_OK */
++#define WM831X_DC4_OK_MASK                      0x0008  /* DC4_OK */
++#define WM831X_DC4_OK_SHIFT                          3  /* DC4_OK */
++#define WM831X_DC4_OK_WIDTH                          1  /* DC4_OK */
++#define WM831X_DC3_OK                           0x0004  /* DC3_OK */
++#define WM831X_DC3_OK_MASK                      0x0004  /* DC3_OK */
++#define WM831X_DC3_OK_SHIFT                          2  /* DC3_OK */
++#define WM831X_DC3_OK_WIDTH                          1  /* DC3_OK */
++#define WM831X_DC2_OK                           0x0002  /* DC2_OK */
++#define WM831X_DC2_OK_MASK                      0x0002  /* DC2_OK */
++#define WM831X_DC2_OK_SHIFT                          1  /* DC2_OK */
++#define WM831X_DC2_OK_WIDTH                          1  /* DC2_OK */
++#define WM831X_DC1_OK                           0x0001  /* DC1_OK */
++#define WM831X_DC1_OK_MASK                      0x0001  /* DC1_OK */
++#define WM831X_DC1_OK_SHIFT                          0  /* DC1_OK */
++#define WM831X_DC1_OK_WIDTH                          1  /* DC1_OK */
++
+ #define WM831X_ISINK_MAX_ISEL 56
+ extern int wm831x_isinkv_values[WM831X_ISINK_MAX_ISEL];
+ 
 -- 
 1.6.3.3
 
