@@ -1,66 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754888AbZG0VTq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbZG0VTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754888AbZG0VTq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 17:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbZG0VTp
+	id S1754950AbZG0VTy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 17:19:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbZG0VTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 17:19:45 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51855 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754596AbZG0VTp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 17:19:45 -0400
-Date: Mon, 27 Jul 2009 22:20:10 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kdesu broken
-Message-ID: <20090727222010.1a5efb7b@lxorguk.ukuu.org.uk>
-In-Reply-To: <87skgikjr8.fsf@devron.myhome.or.jp>
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
-	<87bpn7mzli.fsf@devron.myhome.or.jp>
-	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
-	<873a8iqqgv.fsf@devron.myhome.or.jp>
-	<20090727142303.41096bf5@lxorguk.ukuu.org.uk>
-	<877hxujkuv.fsf@devron.myhome.or.jp>
-	<20090727145805.690afe5d@lxorguk.ukuu.org.uk>
-	<87fxci6ub9.fsf@devron.myhome.or.jp>
-	<20090727161424.GA4233@skywalker>
-	<20090727174252.2d987830@lxorguk.ukuu.org.uk>
-	<20090727171213.GB4233@skywalker>
-	<87skgikjr8.fsf@devron.myhome.or.jp>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Jul 2009 17:19:53 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44654 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754924AbZG0VTu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 17:19:50 -0400
+Date: Mon, 27 Jul 2009 21:19:23 GMT
+From: tip-bot for Robert Richter <robert.richter@amd.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       robert.richter@amd.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       robert.richter@amd.com, tglx@linutronix.de
+In-Reply-To: <1248716632-26844-1-git-send-email-robert.richter@amd.com>
+References: <1248716632-26844-1-git-send-email-robert.richter@amd.com>
+Subject: [tip:x86/urgent] x86: fix section mismatch for i386 init code
+Message-ID: <tip-56d15a6e6e65b3a5afc1d8095717bab1a3a025be@git.kernel.org>
+Git-Commit-ID: 56d15a6e6e65b3a5afc1d8095717bab1a3a025be
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 27 Jul 2009 21:19:24 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > My T60p lenovo laptop. If you can send me a debug prink patch i can redo the
-> > test with the patches. I don't know what data i should start collecting so
-> > that it make sense. This is the patch i tried
-> 
-> If I read that part of emacs correctly, it seems to be assuming the data
-> was already sent to master side if the child process was exited.
+Commit-ID:  56d15a6e6e65b3a5afc1d8095717bab1a3a025be
+Gitweb:     http://git.kernel.org/tip/56d15a6e6e65b3a5afc1d8095717bab1a3a025be
+Author:     Robert Richter <robert.richter@amd.com>
+AuthorDate: Mon, 27 Jul 2009 19:43:52 +0200
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Mon, 27 Jul 2009 13:46:47 -0700
 
-Oops.. that would be rather buggy.
+x86: fix section mismatch for i386 init code
 
-It is true that the data has left the slave. It is not neccessarily true
-the data has arrived on the master before the call to close() completes.
+Startup code for i386 in arch/x86/kernel/head_32.S is using the
+reference variable initial_code that is located in the .cpuinit.data
+section. If CONFIG_HOTPLUG_CPU is enabled, startup code is not in an
+init section and can be called later too. In this case the reference
+initial_code must be kept too. This patch fixes this. See below for
+the section mismatch warning.
 
-We can fake that but what the hell are the semantics if the process on
-the master blocks or if both processes each end fill the queue and then
-close so no data can be consumed.
+ WARNING: vmlinux.o(.cpuinit.data+0x0): Section mismatch in reference
+ from the variable initial_code to the function
+ .init.text:i386_start_kernel()
+ The variable __cpuinitdata initial_code references
+ a function __init i386_start_kernel().
+ If i386_start_kernel is only used by initial_code then
+ annotate i386_start_kernel with a matching annotation.
 
-> And if it's right, unfortunately, I guess we can't return -EAGAIN in
-> this case to preserve behavior.
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+LKML-Reference: <1248716632-26844-1-git-send-email-robert.richter@amd.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 
-To avoid the EAGAIN the close needs to block until all queued I/O has
-been processed by the ldisc the other end. That's not standards
-guaranteed or even what happens with a non pty port, but it is doable
-unless you take signals - we can't block signals or it can all deadlock.
+
+---
+ arch/x86/kernel/head_32.S |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
+index 8663afb..0d98a01 100644
+--- a/arch/x86/kernel/head_32.S
++++ b/arch/x86/kernel/head_32.S
+@@ -602,7 +602,11 @@ ignore_int:
+ #endif
+ 	iret
+ 
+-.section .cpuinit.data,"wa"
++#ifndef CONFIG_HOTPLUG_CPU
++	__CPUINITDATA
++#else
++	__REFDATA
++#endif
+ .align 4
+ ENTRY(initial_code)
+ 	.long i386_start_kernel
