@@ -1,71 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303AbZG0FgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbZG0FsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753303AbZG0FgN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 01:36:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbZG0FgN
+	id S1754303AbZG0FsX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 01:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbZG0FsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 01:36:13 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:58990 "EHLO mx2.suse.de"
+	Mon, 27 Jul 2009 01:48:23 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:50900 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751875AbZG0FgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 01:36:12 -0400
-Cc: Avi Kivity <avi@redhat.com>,
-       LKML Mailing List <linux-kernel@vger.kernel.org>,
-       Sid Boyce <sboyce@blueyonder.co.uk>, KVM list <kvm@vger.kernel.org>
-Message-Id: <8CF02BC9-C112-422B-A9D7-9B391F6EA694@suse.de>
-From: Alexander Graf <agraf@suse.de>
-To: g3vbv@blueyonder.co.uk
-In-Reply-To: <4A6CD1AD.6090009@blueyonder.co.uk>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v935.3)
-Subject: Re: OpenSolaris boot failure with KVM and VirtualBox
-Date: Mon, 27 Jul 2009 07:36:10 +0200
-References: <4A5ED714.7010304@blueyonder.co.uk> <4A6C80C3.8090007@redhat.com> <4A6C9D1F.3090404@blueyonder.co.uk> <4A6C9DE6.8080002@redhat.com> <4A6CD1AD.6090009@blueyonder.co.uk>
-X-Mailer: Apple Mail (2.935.3)
+	id S1753407AbZG0FsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 01:48:22 -0400
+Date: Mon, 27 Jul 2009 15:48:16 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Philipp Reisner <philipp.reisner@linbit.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>
+Subject: linux-next: drbd tree build failure
+Message-Id: <20090727154816.24e81531.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__27_Jul_2009_15_48_16_+1000_8Z9AW3oh1dAIqicv"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Mon__27_Jul_2009_15_48_16_+1000_8Z9AW3oh1dAIqicv
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 26.07.2009, at 23:59, Sid Boyce wrote:
+Hi Philipp,
 
-> On 26/07/09 19:18, Avi Kivity wrote:
->> On 07/26/2009 09:14 PM, Sid Boyce wrote:
->>>
->>>> Is this a regression from previous kernel versions?  What  
->>>> userspace are
->>>> you using?
->>>>
->>>>
->>>
->>> Currently running 2.6.31-rc4 with the original kqemu-1.4.0pre1 on
->>> openSUSE 11.2 Milestone 4 and it boots OK - a 200G disk image used.
->>> qemu-system-x86_64 -cdrom /ISO/osol-0906-ai-x86.iso -boot d
->>> /osol0906.qcow2 -smp 4 -m 500M&
->>>
->>
->> Wait, are you using kqemu or kvm?
->>
->
-> # l /dev/kvm
-> crw-rw----+ 1 root root 10, 232 2009-07-24 20:26 /dev/kvm
-> # lsmod|grep kvm
-> kvm_amd                41908  0
-> kvm                   180488  1 kvm_amd
->
-> From long ago I read that kvm needed kqemu, so I have always built the
-> module, but I see here it's not used.
-> lsmod|grep qemu
-> kqemu                 173496  0
->
-> # rpm -qf /usr/bin/qemu-system-x86_64
-> qemu-0.10.1-2.21
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
-You're not using KVM. "Qemu" is the non-KVM version.
+drivers/block/drbd/drbd_main.c: In function 'drbd_thread_current_set_cpu':
+drivers/block/drbd/drbd_main.c:1592: error: implicit declaration of functio=
+n 'set_cpus_allowed'
 
-Maybe uli activated the preliminary kvm support in there, but if you  
-want the real deal, install the "kvm" package and use /usr/bin/qemu-kvm.
+Introduced by commit 8a4ebc3fbd90072ac870064a930fe612eea6d9a1 ("DRBD:
+main") from the drbd interacting with commit
+84cf7f02712e3491fb9776f950a8c4f413204c8b
+("cpumask:remove-set_cpus_allowed") from the rr tree.
 
-Alex
+I am not sure what the transformation to the new infrastructure is here -
+maybe Rusty can help?
 
+For today, I have reverted the rr tree commit above but we need a better
+solution.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__27_Jul_2009_15_48_16_+1000_8Z9AW3oh1dAIqicv
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkptP6AACgkQjjKRsyhoI8xzPACgnrnnZvqqJ+2HU3WJk8nd3gR9
+SgIAoIkTWPSzg6zuqn9DWvX9tdrU8Qks
+=/Iel
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__27_Jul_2009_15_48_16_+1000_8Z9AW3oh1dAIqicv--
