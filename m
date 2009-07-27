@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737AbZG0QDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752484AbZG0QGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752737AbZG0QDj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 12:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbZG0QDi
+	id S1752484AbZG0QGv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 12:06:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751693AbZG0QGu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 12:03:38 -0400
-Received: from mga09.intel.com ([134.134.136.24]:26511 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751908AbZG0QDi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 12:03:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,277,1246863600"; 
-   d="scan'208";a="536302557"
+	Mon, 27 Jul 2009 12:06:50 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:51835 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751558AbZG0QGu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 12:06:50 -0400
 Subject: Re: iwlwifi (4965) regression since 2.6.30
-From: reinette chatre <reinette.chatre@intel.com>
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       johannes@sipsolutions.net
-In-Reply-To: <20090726075738.GA21333@ics.muni.cz>
+From: Johannes Berg <johannes@sipsolutions.net>
+To: reinette chatre <reinette.chatre@intel.com>
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1248710618.1216.452.camel@rc-desk>
 References: <20090726075738.GA21333@ics.muni.cz>
-Content-Type: text/plain
-Date: Mon, 27 Jul 2009 09:03:38 -0700
-Message-Id: <1248710618.1216.452.camel@rc-desk>
+	 <1248710618.1216.452.camel@rc-desk>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-u4cDgwnuxr0nibRXaxlu"
+Date: Mon, 27 Jul 2009 18:06:15 +0200
+Message-Id: <1248710775.9958.0.camel@johannes.local>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Lukas,
 
-On Sun, 2009-07-26 at 00:57 -0700, Lukas Hejtmanek wrote:
-> Hello,
-> 
-> I noticed regression in 2.6.31-rc{3,4}. iwlagn driver does not work for me.
-> I got:
-> ifconfig wlan0 up
-> SIOCSIFFLAGS: Unknown error 132
+--=-u4cDgwnuxr0nibRXaxlu
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-yes - this is a rfkill error
+On Mon, 2009-07-27 at 09:03 -0700, reinette chatre wrote:
 
-> 
-> dmesg shows:
-> [ 1812.806813] iwlagn: Intel(R) Wireless WiFi Link AGN driver for Linux,
-> 1.3.27kds
-> [ 1812.806820] iwlagn: Copyright(c) 2003-2009 Intel Corporation
-> [ 1812.806996] iwlagn 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
-> [ 1812.807024] iwlagn 0000:03:00.0: setting latency timer to 64
-> [ 1812.807699] iwlagn 0000:03:00.0: Detected Intel Wireless WiFi Link 4965AGN
-> REV=0x4
-> [ 1812.860879] iwlagn 0000:03:00.0: Tunable channels: 11 802.11bg, 13 802.11a
-> channels
-> [ 1812.861012]   alloc irq_desc for 32 on node -1
-> [ 1812.861017]   alloc kstat_irqs on node -1
-> [ 1812.861069] iwlagn 0000:03:00.0: irq 32 for MSI/MSI-X
-> [ 1812.882796] phy0: Selected rate control algorithm 'iwl-agn-rs'
-> 
-> I definitely have rfkill on. I tried to even toggle rfkill, no success. The HW
-> is Lenovo T61 (thus acer/hp rfkill patches do not work for me).
+> > I definitely have rfkill on. I tried to even toggle rfkill, no success.=
+ The HW
+> > is Lenovo T61 (thus acer/hp rfkill patches do not work for me).
+>=20
+> Maybe Johannes knows if there is something that you need for thinkpad.
 
-Maybe Johannes knows if there is something that you need for thinkpad.
+I'm not aware of any thinkpad-acpi rfkill problems, can you get the
+rfkill tool and dump the status/list?
 
-Reinette
+http://wireless.kernel.org/en/users/Documentation/rfkill
 
+johannes
+
+--=-u4cDgwnuxr0nibRXaxlu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKbdBzAAoJEODzc/N7+QmayuwP/0T495a1g8jPYoCARr9HWoQa
+oMFwbbEKcWgfbcTVIREuH2Kh21Lskly0+/k+5UE65A9ft089CApEohgsecDlfxRF
+DQMnrYLMPh5aHxO3r90OeB+0KEqudtYS81oskPuvnWUk9eDB2V5KRnBw0c9Bhxdp
+aYoB6BqWoC782++U4FRRohdpzm1op/cO6FlstuJpvAFbS82F8dOThYHBCIzWg7Lo
+2NCBlXHycZetH7yzpSuKYdj6Za/pHnZqPxK2ufp9ySF2TDo6HKtgOKNRF1pCAFuv
+Lat+egTtVCrTZp+tAbvCFOuTmjOF/ArU8cyFuMYDeRtc1aTatXWJxJ91tXolPEfL
+TUrXIj9Ii5G0cRYE9ShTR8qfNjeY3kDDe1J4YsQQSjyuo0wXYL42V1Nv5P0q7lXo
+18Uth3ZoQmrDJrhPpdABKdDqPd+8jF9gEdrhoyfdApns0A7xpjlivxts8tqFENPI
+KOjN0Ju6rgqeIn+0smjkPv1qNeQZY5RxIhZY8An8Qk5EveBiydKb+Hp2cz2nG3l1
+idHDlFh4bEKJ/akFAuXaIvh/fPtqkM7FauP3EhwXymEywwE+D32SSAAxiyTeFtCY
+L6ujvwKAi5ksG4/9TNv7yIoDDyp0TxJ412kMe7FfdZ3NHi1Yjupj6qg8XOWlgCF+
+IWJEPKRQARTyx3tz6wUc
+=DwTc
+-----END PGP SIGNATURE-----
+
+--=-u4cDgwnuxr0nibRXaxlu--
 
