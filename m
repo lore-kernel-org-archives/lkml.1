@@ -1,87 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbZG0MqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753751AbZG0MqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbZG0MqJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 08:46:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbZG0MqI
+	id S1753751AbZG0MqM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 08:46:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbZG0MqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 08:46:08 -0400
-Received: from leia.mcbone.net ([194.97.104.42]:59360 "EHLO leia.mcbone.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752890AbZG0MqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 08:46:07 -0400
-Subject: Re: futexes: Still infinite loop in get_futex_key() in 2.6.31-rc4
-From: Jens Rosenboom <jens@mcbone.net>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Sonny Rao <sonnyrao@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1248697409.6987.1617.camel@twins>
-References: <1248681637.7279.12.camel@fnki-nb00130>
-	 <1248694266.6987.1594.camel@twins>  <1248697004.7279.31.camel@fnki-nb00130>
-	 <1248697409.6987.1617.camel@twins>
-Content-Type: text/plain
-Date: Mon, 27 Jul 2009 14:45:55 +0200
-Message-Id: <1248698755.7279.47.camel@fnki-nb00130>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Jul 2009 08:46:11 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:35738 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753394AbZG0MqJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 08:46:09 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Regression] kdesu broken
+References: <200907240145.31935.rjw@sisk.pl>
+	<2c0942db0907231721q124dc8f9mdbe64ed33c69ffbf@mail.gmail.com>
+	<200907241721.45943.rjw@sisk.pl>
+	<20090724164058.21a054e6@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907240930120.3960@localhost.localdomain>
+	<87ws5xjo2x.fsf@devron.myhome.or.jp>
+	<20090725150510.35e8854d@lxorguk.ukuu.org.uk>
+	<87ab2sx15g.fsf@devron.myhome.or.jp>
+	<20090725163251.50e6f546@lxorguk.ukuu.org.uk>
+	<87bpn7mzli.fsf@devron.myhome.or.jp>
+	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
+	<873a8iqqgv.fsf@devron.myhome.or.jp>
+Date: Mon, 27 Jul 2009 21:46:07 +0900
+In-Reply-To: <873a8iqqgv.fsf@devron.myhome.or.jp> (OGAWA Hirofumi's message of
+	"Mon, 27 Jul 2009 21:07:28 +0900")
+Message-ID: <87skgipa40.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-27 at 14:23 +0200, Peter Zijlstra wrote:
-> On Mon, 2009-07-27 at 14:16 +0200, Jens Rosenboom wrote:
-> > On Mon, 2009-07-27 at 13:31 +0200, Peter Zijlstra wrote:
-> > > On Mon, 2009-07-27 at 10:00 +0200, Jens Rosenboom wrote:
-> > > > We have a problem with infinitely running processes on kernels at least
-> > > > since 2.6.29.4. It happens on a loaded machine after running for a
-> > > > couple of days,
-> > > 
-> > > What kinds of machine, i386? Could you please enable
-> > > CONFIG_FRAME_POINTER, these backtraces are quite mangled.
-> > 
-> > i686 or AMD dualcore Opteron to be exact. CONFIG_FRAME_POINTER is
-> > enabled, the complete kernel-config is attached, maybe some other
-> > debugging options are needed? But I copied just the part pertaining to
-> > the stuck process, maybe the complete log has the parts you are missing?
-> 
-> Ah, weird. The question of course is, does an x86_64 kernel suffer the
-> same problem?
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp> writes:
 
-Good question, but as this happens on a production machine, I cannot
-easily change the installation to check this.
+>> +	spin_lock_irqsave(&pair->buf.lock, flags);
+>> +	pair->packet = 0;
+>
+> I worried "pair->packet = 0" when I'm thinking this. I guess it would be
+> changed more early than before. Is it ok?
 
-> > > >  that a "ps ax" seems to get stuck in get_futex_key while
-> > > > exiting. Sadly your patch 
-> > > 
-> > > Who's patch, and which patch? 7c8fa4f04ab956076605422d5ed37410893a8a73?
-> > > That was only regarding huge pages.
-> > 
-> > Yes, that is the one I was talking about and the commit message seemed
-> > to match what I was seeing here.
-> 
-> Are you in fact using huge pages?
+Ah, maybe, this is ok. Because n_tty_read() checks it, so, I guess there
+is no big difference with before change.
 
-The process that gets stuck is a standard ps from procps version 3.2.8,
-which is called from within a perl script, so the answer is probably:
-no. Which means let us forget that patch and look at this as a distinct
-issue.
-
-> > > The only loop in get_futex_key() appears to be the one around
-> > > get_user_pages_fast(), and I'm not quite sure how that could get stuck
-> > > like this.
-> > > 
-> > > Could it be glibc loops on futex_wake() returning -EFAULT?
-> > 
-> > How would I be able to check that?
-> 
-> strace the struck process I think, you'd see tons of sys_futex() calls
-> with FUTEX_WAKE* returning -EFAULT.
-
-Attaching an strace to the process gives just
-
-# strace -p 12886
-Process 12886 attached - interrupt to quit
-
-and nothing further.
-
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
