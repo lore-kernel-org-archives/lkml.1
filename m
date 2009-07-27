@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185AbZG0ViO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbZG0Vk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755185AbZG0ViO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 17:38:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755008AbZG0ViN
+	id S1755147AbZG0Vk2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 17:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753796AbZG0Vk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 17:38:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36638 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752001AbZG0ViM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 17:38:12 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [Bug #13424] possible deadlock when doing governor switching
-Date: Mon, 27 Jul 2009 23:38:44 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Shaohua Li <shaohua.li@intel.com>
-References: <DizPU9GBfHF.A.kgF.iWObKB@chimera> <H5-1lZIIeYK.A.hdH.DYObKB@chimera> <20090727164814.GB25626@Krystal>
-In-Reply-To: <20090727164814.GB25626@Krystal>
+	Mon, 27 Jul 2009 17:40:27 -0400
+Received: from cs20.apochromatic.org ([204.152.189.161]:51497 "EHLO
+	cs20.apochromatic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752001AbZG0Vk1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 17:40:27 -0400
+Date: Mon, 27 Jul 2009 22:40:01 +0100
+From: Matt Fleming <matt@console-pimps.org>
+To: David Vrabel <david.vrabel@csr.com>
+Cc: Philip Langdale <philipl@overt.org>,
+       Andrew Morton <akpm@linux-foundation.org>, ohad@bencohen.org,
+       ian@mnementh.co.uk, pierre@ossman.eu, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org, nico@cam.org,
+       nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com, tony@atomide.com,
+       david-b@pacbell.net, manuel.lauss@gmail.com, mirq-l@jasper.es
+Subject: Re: New MMC maintainer needed
+Message-ID: <20090727214001.GK12665@console-pimps.org>
+References: <20090714153601.6dfe70ff@mjolnir.ossman.eu> <20090722151744.fffd7bf5.akpm@linux-foundation.org> <4A67A9E8.5080002@mnementh.co.uk> <20090723055447.GA12211@console-pimps.org> <20090722232259.d0ff3495.akpm@linux-foundation.org> <20090724152944.51402e87.akpm@linux-foundation.org> <20090726230630.7598fbe4@fido2.homeip.net> <4A6D990B.9000005@csr.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907272338.45366.rjw@sisk.pl>
+In-Reply-To: <4A6D990B.9000005@csr.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 27 July 2009, Mathieu Desnoyers wrote:
-> It should be fixed now by recents commits to the cpufreq tree, which got
-> into mainline:
+On Mon, Jul 27, 2009 at 01:09:47PM +0100, David Vrabel wrote:
+> Philip Langdale wrote:
+> > 
+> > Both the (Simplified) SD and SDIO specifications do not formally
+> > define the 'low voltage' range in the way the MMC spec does. ie: You
+> > won't find anything in the SD specs that even tell you what the range
+> > is - it just says that it exists.
 > 
-> 42a06f2166f2f6f7bf04f32b4e823eacdceafdc9
-> b253d2b2d28ead6fed012feb54694b3d0562839a
-> b14893a62c73af0eca414cfed505b8c09efc613c
-> 7d26e2d5e2da37e92c6c7644b26b294dedd8c982
-> 37c90e8887efd218dc4af949b7f498ca2da4af9f
-> 5a75c82828e7c088ca6e7b4827911dc29cc8e774
-> ee88415caf736b89500f16e0a545614541a45005
-> 3f4a782b5ce2698b1870b5a7b573cd721d4fce33
-> 5e1596f75395e7a402e1059c518e633d2732dcf8
+> Standard SD/SDIO cards only support 2.7-3.6V.
+> 
+> 1.8V operation is added in SD physical spec 3.00 and is part of any of
+> the UHS-1 modes (SDR12-SDR104 and DDR50).  It has a different timings
+> and requires a different (3.00 compliant) host controller.
 
-Thanks, closed.
-
-Rafael
+Is the 3.00 spec publicly available?
