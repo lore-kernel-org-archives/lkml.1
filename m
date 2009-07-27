@@ -1,77 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754363AbZG0Hxe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754281AbZG0H6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754363AbZG0Hxe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 03:53:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754173AbZG0Hxd
+	id S1754281AbZG0H6m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 03:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbZG0H6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 03:53:33 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:48772 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754091AbZG0Hxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 03:53:32 -0400
-Date: Mon, 27 Jul 2009 17:53:28 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Karsten Keil <keil@b1-systems.de>
-Subject: linux-next:  tree build failure
-Message-Id: <20090727175328.fe3197a5.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 27 Jul 2009 03:58:41 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:34991 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751061AbZG0H6k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 03:58:40 -0400
+Message-ID: <4A6D5E40.7030608@nokia.com>
+Date: Mon, 27 Jul 2009 10:58:56 +0300
+From: Adrian Hunter <adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: Matt Fleming <matt@console-pimps.org>
+CC: Pierre Ossman <pierre@ossman.eu>,
+       "Lavinen Jarkko (Nokia-D/Helsinki)" <jarkko.lavinen@nokia.com>,
+       "Karpov Denis.2 (EXT-Teleca/Helsinki)" <ext-denis.2.karpov@nokia.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-omap Mailing List <linux-omap@vger.kernel.org>
+Subject: Re: [PATCH 32/32] ARM: OMAP: RX51: set MMC capabilities and	power-saving
+ flag
+References: <20090710124004.1262.10422.sendpatchset@ahunter-tower> <20090710124353.1262.22788.sendpatchset@ahunter-tower> <20090725235329.GE12665@console-pimps.org>
+In-Reply-To: <20090725235329.GE12665@console-pimps.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Jul 2009 07:58:23.0007 (UTC) FILETIME=[037CCAF0:01CA0E90]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+Matt Fleming wrote:
+> On Fri, Jul 10, 2009 at 03:43:53PM +0300, Adrian Hunter wrote:
+>> >From 3865867159f25cf706480236f6d4f0e4adde5dac Mon Sep 17 00:00:00 2001
+>> From: Adrian Hunter <adrian.hunter@nokia.com>
+>> Date: Fri, 10 Jul 2009 10:32:44 +0300
+>> Subject: [PATCH] ARM: OMAP: RX51: set MMC capabilities and power-saving flag
+>>
+>> Specify MMC capabilities and set the power-saving flag
+>> for RX51.
+>>
+> 
+> After the changes to [PATCH 7/32], this becomes,
 
-Today's linux-next build (powerpc allyesconfig) failed like this:
+I think this will leave every other board that uses omap_hsmmc
+without any card caps.
 
-drivers/isdn/hisax/built-in.o: In function `setup_w6692':
-(.opd+0x4a28): multiple definition of `setup_w6692'
-drivers/isdn/hardware/built-in.o:(.opd+0x4e90): first defined here
-drivers/isdn/hisax/built-in.o: In function `.setup_w6692':
-(.devinit.text+0x5b14): multiple definition of `.setup_w6692'
-drivers/isdn/hardware/built-in.o:(.text+0x8b75c): first defined here
+What about adding something like this:
 
-Caused by commit 707b2ce6c1f4f1261788f2ff09ad82c35e0e6240
-("mISDN: Add driver for Winbond cards").
 
-setup_w6692 appears in drivers/isdn/hardware/mISDN/w6692.c and
-drivers/isdn/hisax/w6692.c.  I applied the patch below for today (this
-may not be correct).
-
-[I also get these warnings:
-drivers/isdn/hardware/mISDN/w6692.c:533: warning: 'setvolume' defined but not used
-drivers/isdn/hardware/mISDN/w6692.c:560: warning: 'enable_pots' defined but not used
-]
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 27 Jul 2009 17:45:36 +1000
-Subject: [PATCH] net: fix multiple definitions of setup_w6692
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/isdn/hardware/mISDN/w6692.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/isdn/hardware/mISDN/w6692.c b/drivers/isdn/hardware/mISDN/w6692.c
-index 1b9008f..d3f1077 100644
---- a/drivers/isdn/hardware/mISDN/w6692.c
-+++ b/drivers/isdn/hardware/mISDN/w6692.c
-@@ -1234,7 +1234,7 @@ w6692_dctrl(struct mISDNchannel *ch, u32 cmd, void *arg)
- 	return err;
- }
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index 8900bae..f2548f1 100644
+--- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -1720,6 +1720,11 @@ static int __init omap_hsmmc_probe(struct platform_device *pdev)
+ 		mmc->caps |= MMC_CAP_4_BIT_DATA;
  
--int
-+static int
- setup_w6692(struct w6692_hw *card)
- {
- 	u32	val;
--- 
-1.6.3.3
+ 	mmc->caps |= mmc_slot(host).caps;
++	/* If no card caps specified then assume them all */
++	if (!((mmc->caps & MMC_CAP_SD) ||
++	      (mmc->caps & MMC_CAP_MMC) ||
++	      (mmc->caps & MMC_CAP_SDIO)))
++		mmc->caps |= MMC_CAP_SD & MMC_CAP_MMC & MMC_CAP_SDIO;
+ 
+ 	omap_hsmmc_conf_bus_power(host);
+ 
+
+
+
+
+
+
+> ---
+> 
+> ARM: OMAP: RX51: set MMC capabilities and power-saving flag
+> 
+> Specify MMC capabilities and set the power-saving flag for RX51.
+> 
+> Signed-off-by: Matt Fleming <matt@console-pimps.org>
+> Cc: Adrian Hunter <adrian.hunter@nokia.com>
+> Cc: Ian Molton <ian@mnementh.co.uk>
+> Cc: "Roberto A. Foglietta" <roberto.foglietta@gmail.com>
+> Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>
+> Cc: Denis Karpov <ext-denis.2.karpov@nokia.com>
+> Cc: Pierre Ossman <pierre@ossman.eu>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>  arch/arm/mach-omap2/board-rx51-peripherals.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
+> index 9a0bf67..d2ce938 100644
+> --- a/arch/arm/mach-omap2/board-rx51-peripherals.c
+> +++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
+> @@ -19,6 +19,7 @@
+>  #include <linux/delay.h>
+>  #include <linux/regulator/machine.h>
+>  #include <linux/gpio.h>
+> +#include <linux/mmc/host.h>
+>  
+>  #include <mach/mcspi.h>
+>  #include <mach/mux.h>
+> @@ -102,6 +103,8 @@ static struct twl4030_hsmmc_info mmc[] = {
+>  		.cover_only	= true,
+>  		.gpio_cd	= 160,
+>  		.gpio_wp	= -EINVAL,
+> +		.power_saving	= true,
+> +		.caps		= MMC_CAP_SD,
+>  	},
+>  	{
+>  		.name		= "internal",
+> @@ -109,6 +112,8 @@ static struct twl4030_hsmmc_info mmc[] = {
+>  		.wires		= 8,
+>  		.gpio_cd	= -EINVAL,
+>  		.gpio_wp	= -EINVAL,
+> +		.power_saving	= true,
+> +		.caps		= MMC_CAP_MMC | MMC_CAP_NONREMOVABLE,
+>  	},
+>  	{}	/* Terminator */
+>  };
 
