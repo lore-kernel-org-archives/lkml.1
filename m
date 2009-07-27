@@ -1,54 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbZG0P41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752257AbZG0P7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752886AbZG0P41 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 11:56:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbZG0P40
+	id S1752257AbZG0P7T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 11:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbZG0P7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 11:56:26 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:50085 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751266AbZG0P4Z (ORCPT
+	Mon, 27 Jul 2009 11:59:18 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:35134 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751693AbZG0P7S convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 11:56:25 -0400
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Matthew Wilcox <matthew@wil.cx>,
-       Tarkan Erimer <tarkan.erimer@turknet.net.tr>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [BISECTED] Re: [BUG] Linux-2.6.31-rc1 Fails To Recognize Some USB Disks
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <4A4472DF.1050900@turknet.net.tr>
-	<yq1zlbrn2rj.fsf@sermon.lab.mkp.net> <4A4878AC.3050208@turknet.net.tr>
-	<yq1fxdji03l.fsf@sermon.lab.mkp.net> <4A69932E.90906@turknet.net.tr>
-	<yq1fxcmnpqa.fsf@sermon.lab.mkp.net> <4A69D093.8020108@turknet.net.tr>
-	<yq1hbwykj80.fsf@sermon.lab.mkp.net>
-	<20090727020611.GC3711@parisc-linux.org>
-	<yq18wiakfq4.fsf@sermon.lab.mkp.net> <4A6D64DC.3020001@panasas.com>
-	<yq1ocr66vy6.fsf@sermon.lab.mkp.net> <4A6DBEEB.5020302@panasas.com>
-	<yq1fxci6tmc.fsf@sermon.lab.mkp.net> <4A6DCA7F.4080006@panasas.com>
-Date: Mon, 27 Jul 2009 11:55:58 -0400
-In-Reply-To: <4A6DCA7F.4080006@panasas.com> (Boaz Harrosh's message of "Mon,
-	27 Jul 2009 18:40:47 +0300")
-Message-ID: <yq1bpn66rxt.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Mon, 27 Jul 2009 11:59:18 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Source-IP: abhmt001.oracle.com [141.146.116.10]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4A6DCE12.00F9:SCFSTAT5015188,ss=1,fgs=0
+In-Reply-To: <1248707662-4060-1-git-send-email-adkulkar@umail.iu.edu>
+References: <1248707662-4060-1-git-send-email-adkulkar@umail.iu.edu>
+Date: Mon, 27 Jul 2009 09:59:18 -0600
+Message-ID: <f6e1b7990907270859l65f84d8bm4712f6d82d9a688a@mail.gmail.com>
+Subject: Re: [PATCH] net/9p: Insulate the client against an invalid error code 
+	sent by a 9p server.
+From: Abhishek Kulkarni <adkulkar@umail.iu.edu>
+To: linux-kernel@vger.kernel.org
+Cc: v9fs-developer@lists.sourceforge.net, netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Boaz" == Boaz Harrosh <bharrosh@panasas.com> writes:
+Adding netdev to Cc.
+---
 
-Boaz> if (sdev->scsi_level > SCSI_2)
-Boaz> 	 sdev-> sdev_target->scsi_level = sdev-> scsi_level = SCSI_2;
+A looney tunes server sending an invalid error code (which is !IS_ERR_VALUE)
+can result in a client oops. So fix it by adding a check and converting unknown
+or invalid error codes to -ESERVERFAULT.
 
-Beautiful!
+Signed-off-by: Abhishek Kulkarni <adkulkar@umail.iu.edu>
+---
+:100644 100644 787ccdd... c9a5bf9... M	net/9p/client.c
+:100644 100644 fdebe43... 5251851... M	net/9p/error.c
+ net/9p/client.c |    7 +------
+ net/9p/error.c  |    2 +-
+ 2 files changed, 2 insertions(+), 7 deletions(-)
 
-The suck of USB strikes back.
+diff --git a/net/9p/client.c b/net/9p/client.c
+index 787ccdd..c9a5bf9 100644
+--- a/net/9p/client.c
++++ b/net/9p/client.c
+@@ -411,14 +411,9 @@ static int p9_check_errors(struct p9_client *c,
+struct p9_req_t *req)
+ 		if (c->dotu)
+ 			err = -ecode;
 
+-		if (!err) {
++		if (!err || !IS_ERR_VALUE(err))
+ 			err = p9_errstr2errno(ename, strlen(ename));
+
+-			/* string match failed */
+-			if (!err)
+-				err = -ESERVERFAULT;
+-		}
+-
+ 		P9_DPRINTK(P9_DEBUG_9P, "<<< RERROR (%d) %s\n", -ecode, ename);
+
+ 		kfree(ename);
+diff --git a/net/9p/error.c b/net/9p/error.c
+index fdebe43..5251851 100644
+--- a/net/9p/error.c
++++ b/net/9p/error.c
+@@ -239,7 +239,7 @@ int p9_errstr2errno(char *errstr, int len)
+ 		errstr[len] = 0;
+ 		printk(KERN_ERR "%s: server reported unknown error %s\n",
+ 			__func__, errstr);
+-		errno = 1;
++		errno = ESERVERFAULT;
+ 	}
+
+ 	return -errno;
 -- 
-Martin K. Petersen	Oracle Linux Engineering
+1.6.0.4
+
+
+On Mon, Jul 27, 2009 at 9:14 AM, Abhishek Kulkarni<adkulkar@umail.iu.edu> wrote:
+> A looney tunes server sending an invalid error code (which is !IS_ERR_VALUE)
+> can result in a client oops. So fix it by adding a check and converting unknown
+> or invalid error codes to -ESERVERFAULT.
+>
+> Signed-off-by: Abhishek Kulkarni <adkulkar@umail.iu.edu>
+> ---
+> :100644 100644 787ccdd... c9a5bf9... M  net/9p/client.c
+> :100644 100644 fdebe43... 5251851... M  net/9p/error.c
+>  net/9p/client.c |    7 +------
+>  net/9p/error.c  |    2 +-
+>  2 files changed, 2 insertions(+), 7 deletions(-)
+>
+> diff --git a/net/9p/client.c b/net/9p/client.c
+> index 787ccdd..c9a5bf9 100644
+> --- a/net/9p/client.c
+> +++ b/net/9p/client.c
+> @@ -411,14 +411,9 @@ static int p9_check_errors(struct p9_client *c, struct p9_req_t *req)
+>                if (c->dotu)
+>                        err = -ecode;
+>
+> -               if (!err) {
+> +               if (!err || !IS_ERR_VALUE(err))
+>                        err = p9_errstr2errno(ename, strlen(ename));
+>
+> -                       /* string match failed */
+> -                       if (!err)
+> -                               err = -ESERVERFAULT;
+> -               }
+> -
+>                P9_DPRINTK(P9_DEBUG_9P, "<<< RERROR (%d) %s\n", -ecode, ename);
+>
+>                kfree(ename);
+> diff --git a/net/9p/error.c b/net/9p/error.c
+> index fdebe43..5251851 100644
+> --- a/net/9p/error.c
+> +++ b/net/9p/error.c
+> @@ -239,7 +239,7 @@ int p9_errstr2errno(char *errstr, int len)
+>                errstr[len] = 0;
+>                printk(KERN_ERR "%s: server reported unknown error %s\n",
+>                        __func__, errstr);
+> -               errno = 1;
+> +               errno = ESERVERFAULT;
+>        }
+>
+>        return -errno;
+> --
+> 1.6.0.4
+>
+>
