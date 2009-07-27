@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752166AbZG0PGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751110AbZG0PIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752166AbZG0PGM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 11:06:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbZG0PGM
+	id S1751110AbZG0PIB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 11:08:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750735AbZG0PIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 11:06:12 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36806
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751111AbZG0PGL (ORCPT
+	Mon, 27 Jul 2009 11:08:00 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:48534 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750718AbZG0PH7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 11:06:11 -0400
-Date: Mon, 27 Jul 2009 08:06:17 -0700 (PDT)
-Message-Id: <20090727.080617.30802851.davem@davemloft.net>
-To: keil@b1-systems.de
-Cc: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+	Mon, 27 Jul 2009 11:07:59 -0400
+From: Philipp Reisner <philipp.reisner@linbit.com>
+Organization: LINBIT
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Subject: Re: linux-next: drbd tree build failure
+Date: Mon, 27 Jul 2009 17:07:58 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: linux-next: tree build failure
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200907271121.34348.keil@b1-systems.de>
-References: <20090727175328.fe3197a5.sfr@canb.auug.org.au>
-	<200907271121.34348.keil@b1-systems.de>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+References: <20090727173754.6a04e781.sfr@canb.auug.org.au> <200907271109.33271.philipp.reisner@linbit.com> <a4423d670907270438n3e8f07caoa45124b1bd7b2386@mail.gmail.com>
+In-Reply-To: <a4423d670907270438n3e8f07caoa45124b1bd7b2386@mail.gmail.com>
+X-OTRS-FollowUp-SenderType: agent
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907271707.58733.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Karsten Keil <keil@b1-systems.de>
-Date: Mon, 27 Jul 2009 11:21:33 +0200
+On Monday 27 July 2009 13:38:44 Alexander Beregalov wrote:
+> One more issue
+>
+> drivers/block/drbd/drbd_main.c: In function 'drbd_buildtag':
+> drivers/block/drbd/drbd_main.c:3738: error: dereferencing pointer to
+> incomplete type
 
-> On Montag, 27. Juli 2009 09:53:28 you wrote:
->> Hi Dave,
->>
->> Today's linux-next build (powerpc allyesconfig) failed like this:
->>
->> drivers/isdn/hisax/built-in.o: In function `setup_w6692':
->> (.opd+0x4a28): multiple definition of `setup_w6692'
->> drivers/isdn/hardware/built-in.o:(.opd+0x4e90): first defined here
->> drivers/isdn/hisax/built-in.o: In function `.setup_w6692':
->> (.devinit.text+0x5b14): multiple definition of `.setup_w6692'
->> drivers/isdn/hardware/built-in.o:(.text+0x8b75c): first defined here
->>
->> Caused by commit 707b2ce6c1f4f1261788f2ff09ad82c35e0e6240
->> ("mISDN: Add driver for Winbond cards").
->>
->> setup_w6692 appears in drivers/isdn/hardware/mISDN/w6692.c and
->> drivers/isdn/hisax/w6692.c.  I applied the patch below for today (this
->> may not be correct).
->>
-> 
-> Sorry for that, yes this fix is correct - I really should test allyesconfig 
-> more times by myself  :-(.
-> 
-> ACK.
+Ohh, right. I have never tried to build a kernel with the DRBD patch
+without CONFIG_MODULES set.
 
-Applied.
+It is fixed now.
+
+-Phil
+-- 
+: Dipl-Ing Philipp Reisner
+: LINBIT | Your Way to High Availability
+: Tel: +43-1-8178292-50, Fax: +43-1-8178292-82
+: http://www.linbit.com
+
+DRBD(R) and LINBIT(R) are registered trademarks of LINBIT, Austria.
+
