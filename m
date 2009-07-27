@@ -1,67 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbZG0Ses@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbZG0Sfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbZG0Ses (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 14:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbZG0Ser
+	id S1754003AbZG0Sfm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 14:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbZG0Sfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 14:34:47 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:58083 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752230AbZG0Seq (ORCPT
+	Mon, 27 Jul 2009 14:35:41 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:54229 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751524AbZG0Sfk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 14:34:46 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-Content-type: text/plain; CHARSET=US-ASCII
-Date: Mon, 27 Jul 2009 12:33:54 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: fanotify - overall design before I start sending patches
-In-reply-to: <20090725002916.GB13556@shareable.org>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, malware-list@dmesg.printk.net,
-       Valdis.Kletnieks@vt.edu, greg@kroah.com, jcm@redhat.com,
-       douglas.leeder@sophos.com, tytso@mit.edu, arjan@infradead.org,
-       david@lang.hm, jengelh@medozas.de, aviro@redhat.com, mrkafk@gmail.com,
-       alexl@redhat.com, jack@suse.cz, tvrtko.ursulin@sophos.com,
-       a.p.zijlstra@chello.nl, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
-       mmorley@hcl.in, pavel@suse.cz
-Message-id: <20090727183354.GM4231@webber.adilger.int>
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <1248466429.3567.82.camel@localhost>
- <20090724224813.GK27755@shareable.org> <1248479367.3567.133.camel@localhost>
- <20090725002916.GB13556@shareable.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 27 Jul 2009 14:35:40 -0400
+Date: Mon, 27 Jul 2009 20:35:38 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Hannes Eder <heder@google.com>
+cc: lvs-devel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 2/5] netfilter: xt_ipvs (netfilter matcher for
+ ipvs)
+In-Reply-To: <20090727134621.12897.75558.stgit@jazzy.zrh.corp.google.com>
+Message-ID: <alpine.LSU.2.00.0907272017280.20984@fbirervta.pbzchgretzou.qr>
+References: <20090727134457.12897.272.stgit@jazzy.zrh.corp.google.com> <20090727134621.12897.75558.stgit@jazzy.zrh.corp.google.com>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 25, 2009  01:29 +0100, Jamie Lokier wrote:
-> Eric Paris wrote:
-> > But maybe I should jsut do the 'if you have fanotify open, you don't
-> > create other fanotify events'...   so everyone gets what they expect...
-> 
-> O_NONOTIFY.  Similar security concerns, more control.
-> 
-> The security concern is clear: If you allow a process with fanotify
-> open to not create events, then any (root) process can open a fanotify
-> socket to hide it's behaviour.
 
-I think the "fanotify doesn't generate more fanotify events" makes the
-most sense.  Given that the open will be done in the kernel specifically
-due to fanotify, this doesn't actually allow the listener to open files
-without detection (unlike the "O_NONOTIFY" flag would).  The fanotify
-"opens" would only be in response to other processes opening the file.
+On Monday 2009-07-27 15:46, Hannes Eder wrote:
+>--- /dev/null
+>+++ b/include/linux/netfilter/xt_ipvs.h
+>@@ -0,0 +1,32 @@
+>+#ifndef _XT_IPVS_H
+>+#define _XT_IPVS_H 1
+>+
+>+#ifndef _IP_VS_H
 
-It might also make sense to verify that the process doing the open has
-at least permission to open the file in question (i.e. root) so that
-some unauthorized process cannot just get file handles to arbitrary files.
+Do the definitions (should probably be enums) exist in
+very old <linux/ip_vs.h>? Then maybe you can get rid of them
+from xt_ipvs.h.
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+>+#define IP_VS_CONN_F_FWD_MASK	0x0007		/* mask for the fwd methods */
+>+#define IP_VS_CONN_F_MASQ	0x0000		/* masquerading/NAT */
+>+#define IP_VS_CONN_F_LOCALNODE	0x0001		/* local node */
+>+#define IP_VS_CONN_F_TUNNEL	0x0002		/* tunneling */
+>+#define IP_VS_CONN_F_DROUTE	0x0003		/* direct routing */
+>+#define IP_VS_CONN_F_BYPASS	0x0004		/* cache bypass */
+>+#endif
+>+
+>+#define XT_IPVS_IPVS		0x01 /* this is implied by all other options */
+>+#define XT_IPVS_PROTO		0x02
+>+#define XT_IPVS_VADDR		0x04
+>+#define XT_IPVS_VPORT		0x08
+>+#define XT_IPVS_DIR		0x10
+>+#define XT_IPVS_METHOD		0x20
+>+#define XT_IPVS_MASK		(0x40 - 1)
+>+#define XT_IPVS_ONCE_MASK	(XT_IPVS_MASK & ~XT_IPVS_IPVS)
+>+
+>+struct xt_ipvs {
+>+	union nf_inet_addr	vaddr, vmask;
+>+	__be16			vport;
+>+	u_int16_t		l4proto;
+>+	u_int16_t		fwd_method;
+>+
+>+	u_int8_t invert;
+>+	u_int8_t bitmask;
+>+};
+
+As per the "Writing Netfilter modules" e-book, __u16/__u8 is required.
+
+>+config NETFILTER_XT_MATCH_IPVS
+>+	tristate '"ipvs" match support'
+>+	depends on NETFILTER_ADVANCED
+>+	help
+>+	  This option allows you to match against ipvs properties of a packet.
+>+
+>+          To compile it as a module, choos M here.  If unsure, say N.
+>+
+
+IMHO the "to compile it as a module, choos[e] M" is a relict from
+old times and should just be dropped. These days, I stupilate,
+everyone knows that M makes modules. And if it doesnot, then
+it's not allowed by Kconfig :>
+
+>+MODULE_AUTHOR("Hannes Eder <heder@google.com>");
+>+MODULE_DESCRIPTION("Xtables: match ipvs");
+
+"Match IPVS connection properties" is what you previously stated,
+and which I think is good. Use it here, too.
+
+>+bool ipvs_mt(const struct sk_buff *skb, const struct xt_match_param *par)
+>+{
+>+	const struct xt_ipvs *data = par->matchinfo;
+>+	const u_int8_t family = par->family;
+>+	struct ip_vs_iphdr iph;
+>+	struct ip_vs_protocol *pp;
+>+	struct ip_vs_conn *cp;
+>+	int af;
+>+	bool match = true;
+>+
+>+	if (data->bitmask == XT_IPVS_IPVS) {
+>+		match = !!(skb->ipvs_property)
+>+			^ !!(data->invert & XT_IPVS_IPVS);
+>+		goto out;
+>+	}
+
+XT_IPVS_IPVS? What's that supposed to tell me...
+Anyway, this can be made much shorter, given that all following
+the "out" label is a return:
+
+	if (data->bitmask == XT_IPVS_IPVS)
+		return skb->ipvs_property ^ !!(data->invert & XT_IPVS_IPVS);
+
+>+	/* other flags than XT_IPVS_IPVS are set */
+>+	if (!skb->ipvs_property) {
+>+		match = false;
+>+		goto out;
+>+	}
+
+	if (!skb->ipvs_property)
+		return false;
+
+>+	ip_vs_fill_iphdr(af, skb_network_header(skb), &iph);
+>+
+>+	if (data->bitmask & XT_IPVS_PROTO)
+>+		if ((iph.protocol == data->l4proto)
+>+		    ^ !(data->invert & XT_IPVS_PROTO)) {
+>+			match = false;
+>+			goto out;
+>+		}
+
+		if (iph.protocol == data->l4proto ^
+		    !(data->invert & XT_IPVS_PROTO))
+			return false;
+
+>+	pp = ip_vs_proto_get(iph.protocol);
+>+	if (unlikely(!pp)) {
+>+		match = false;
+>+		goto out;
+>+	}
+
+	if (unlikely(pp == NULL))
+		return false;
+
+Only after here we really need goto (to put pp).
+
+>+	/*
+>+	 * Check if the packet belongs to an existing entry
+>+	 */
+>+	/* TODO: why does it only match in inverse? */
+
+FIXME: Figure it out :)
+
+>+	cp = pp->conn_out_get(af, skb, pp, &iph, iph.len, 1 /* inverse */);
+>+	if (unlikely(!cp)) {
+>+		match = false;
+>+		goto out;
+>+	}
+>+
+>+	/*
+>+	 * We found a connection, i.e. ct != 0, make sure to call
+>+	 * __ip_vs_conn_put before returning.  In our case jump to out_put_con.
+>+	 */
+>+
+>+	if (data->bitmask & XT_IPVS_VPORT)
+>+		if ((cp->vport == data->vport)
+>+		    ^ !(data->invert & XT_IPVS_VPORT)) {
+>+			match = false;
+>+			goto out_put_ct;
+>+		}
+>+
+>+	if (data->bitmask & XT_IPVS_DIR) {
+>+		/* TODO: implement */
+
+		/* Yes please */
+
+>+	}
+>+
+>+	if (data->bitmask & XT_IPVS_METHOD)
+>+		if (((cp->flags & IP_VS_CONN_F_FWD_MASK) == data->fwd_method)
+>+		    ^ !(data->invert & XT_IPVS_METHOD)) {
+>+			match = false;
+>+			goto out_put_ct;
+>+		}
+>+
+>+	if (data->bitmask & XT_IPVS_VADDR) {
+>+		if (af != family) {
+>+			match = false;
+>+			goto out_put_ct;
+>+		}
+>+
+>+		if (ipvs_mt_addrcmp(&cp->vaddr, &data->vaddr, &data->vmask, af)
+>+		    ^ !(data->invert & XT_IPVS_VADDR)) {
+
+I think the operator (^ in this case) always goes onto the same line as the ')'
+((a) ^\n(b), not ((a)\n ^(b)), though some legacy code seems to do it
+random so-so.)
+
+>+	return match;
+>+}
+>+EXPORT_SYMBOL(ipvs_mt);
+
+What will be using ipvs_mt?
+
+>+static struct xt_match xt_ipvs_mt_reg[] __read_mostly = {
+>+	{
+>+		.name       = "ipvs",
+>+		.revision   = 0,
+>+		.family     = NFPROTO_UNSPEC,
+>+		.match      = ipvs_mt,
+>+		.matchsize  = sizeof(struct xt_ipvs),
+>+		.me         = THIS_MODULE,
+>+	},
+>+};
+
+There is just one element, so no strict need for the [] array.
 
