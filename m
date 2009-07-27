@@ -1,47 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbZG0BWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755584AbZG0B2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755345AbZG0BWu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 21:22:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754405AbZG0BWt
+	id S1755584AbZG0B2l (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 21:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbZG0B2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 21:22:49 -0400
-Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:60911 "EHLO
-	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752187AbZG0BWt (ORCPT
+	Sun, 26 Jul 2009 21:28:41 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:47267 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754701AbZG0B2k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 21:22:49 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #13389] Warning 'Invalid throttling state, reset' gets displayed when it should not be
-Date: Mon, 27 Jul 2009 03:22:42 +0200
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Len Brown <len.brown@intel.com>, rui.zhang@intel.com
-References: <DizPU9GBfHF.A.kgF.iWObKB@chimera> <H5-1lZIIeYK.A.f0H.XYObKB@chimera>
-In-Reply-To: <H5-1lZIIeYK.A.f0H.XYObKB@chimera>
+	Sun, 26 Jul 2009 21:28:40 -0400
+To: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [BISECTED] Re: [BUG] Linux-2.6.31-rc1 Fails To Recognize Some USB Disks
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <4A4472DF.1050900@turknet.net.tr>
+	<yq1zlbrn2rj.fsf@sermon.lab.mkp.net> <4A4878AC.3050208@turknet.net.tr>
+	<yq1fxdji03l.fsf@sermon.lab.mkp.net> <4A69932E.90906@turknet.net.tr>
+	<yq1fxcmnpqa.fsf@sermon.lab.mkp.net> <4A69D093.8020108@turknet.net.tr>
+Date: Sun, 26 Jul 2009 21:28:15 -0400
+In-Reply-To: <4A69D093.8020108@turknet.net.tr> (Tarkan Erimer's message of
+	"Fri, 24 Jul 2009 18:17:39 +0300")
+Message-ID: <yq1hbwykj80.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907270322.47523.elendil@planet.nl>
-X-OriginalArrivalTime: 27 Jul 2009 01:22:48.0501 (UTC) FILETIME=[C09E9650:01CA0E58]
+Content-Type: text/plain; charset=us-ascii
+X-Source-IP: abhmt008.oracle.com [141.146.116.17]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4A6D02B1.0100:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 26 July 2009, Rafael J. Wysocki wrote:
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-> be listed and let me know (either way).
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13389
-> Subject	: Warning 'Invalid throttling state, reset' gets displayed
->		  when it should not be
-> Patch		: http://bugzilla.kernel.org/attachment.cgi?id=21671
-> 		  http://bugzilla.kernel.org/attachment.cgi?id=21672
+>>>>> "Tarkan" == Tarkan Erimer <tarkan.erimer@turknet.net.tr> writes:
 
-Rui has acked the patches [1], but AFAIK Len has not yet picked them up.
+Tarkan> root@tarkane:~# sg_inq -e /dev/sdb
+Tarkan> VPD INQUIRY: extended INQUIRY data page
+Tarkan> inquiry: transport: Host_status=0x05 [DID_ABORT]
+Tarkan> Driver_status=0x00 [DRIVER_OK, SUGGEST_OK]
+Tarkan>     inquiry: failed, res=-1
 
-[1] http://lkml.org/lkml/2009/7/7/474
+*sigh*
+
+
+sd: Avoid sending extended inquiry to legacy/broken devices
+
+Our existing check for VPD page validity does not handle devices that
+refuse to respond to INQUIRY with the EVPD bit set.
+
+Restrict extended inquiry to devices reporting SBC2/SPC3 or higher.
+
+Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
+
+---
+
+diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+index 5616cd7..9b703fd 100644
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -1840,6 +1840,13 @@ static void sd_read_block_characteristics(struct scsi_disk *sdkp)
+ 	kfree(buffer);
+ }
+ 
++static int sd_try_extended_inquiry(struct scsi_device *sdp)
++{
++	if (sdp->scsi_level > SCSI_SPC_2)
++		return 1;
++	return 0;
++}
++
+ /**
+  *	sd_revalidate_disk - called the first time a new disk is seen,
+  *	performs disk spin up, read_capacity, etc.
+@@ -1877,8 +1884,12 @@ static int sd_revalidate_disk(struct gendisk *disk)
+ 	 */
+ 	if (sdkp->media_present) {
+ 		sd_read_capacity(sdkp, buffer);
+-		sd_read_block_limits(sdkp);
+-		sd_read_block_characteristics(sdkp);
++
++		if (sd_try_extended_inquiry(sdp)) {
++			sd_read_block_limits(sdkp);
++			sd_read_block_characteristics(sdkp);
++		}
++
+ 		sd_read_write_protect_flag(sdkp, buffer);
+ 		sd_read_cache_type(sdkp, buffer);
+ 		sd_read_app_tag_own(sdkp, buffer);
