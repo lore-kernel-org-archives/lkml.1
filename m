@@ -1,87 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752737AbZG0O46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752059AbZG0PAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752737AbZG0O46 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 10:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbZG0O44
+	id S1752059AbZG0PAk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 11:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbZG0PAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 10:56:56 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:42785 "EHLO
-	mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752688AbZG0O4y (ORCPT
+	Mon, 27 Jul 2009 11:00:39 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:44670 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751426AbZG0PAj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 10:56:54 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19053.49157.984140.286148@stoffel.org>
-Date: Mon, 27 Jul 2009 10:56:05 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: John Stoffel <john@stoffel.org>, Andreas Dilger <adilger@sun.com>,
-       Ludwig Nussel <ludwig.nussel@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] implement uid mount option for ext2
-In-Reply-To: <20090724231658.GM27755@shareable.org>
-References: <1248348991-849-1-git-send-email-ludwig.nussel@suse.de>
-	<1248431444-18842-1-git-send-email-ludwig.nussel@suse.de>
-	<1248431444-18842-2-git-send-email-ludwig.nussel@suse.de>
-	<20090724165201.GA4231@webber.adilger.int>
-	<19050.1094.758320.38666@stoffel.org>
-	<20090724231658.GM27755@shareable.org>
-X-Mailer: VM 8.0.9 under Emacs 22.3.1 (i486-pc-linux-gnu)
+	Mon, 27 Jul 2009 11:00:39 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Samuel Ortiz <sameo@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] mfd: Fix comment cut'n'paste in register lock code
+Date: Mon, 27 Jul 2009 16:00:37 +0100
+Message-Id: <1248706837-9656-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1248702372-29534-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1248702372-29534-2-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Jamie" == Jamie Lokier <jamie@shareable.org> writes:
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/mfd/wm831x-core.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-Sorry for the delay, I was out of it this weekend... :]
-
-Jamie> John Stoffel wrote:
->> I didn't read the original email closely, but I have to say that both
->> of these plans don't sound good to me.  If you can mount a filesystem,
->> you're root already, so you can do any fixup you need.
-
-Jamie> What if someone lends you a 1TB disk, for you to browse it in
-Jamie> your favourite GUI or Shell Window to read some files from it?
-Jamie> And you're to put a couple of files on it before you give it
-Jamie> back?
-
-So?  How is the kernel supposed to know you're doing this?
-
-Jamie> Hotplug scripts run as root to mount it, and you have your GUI
-Jamie> / Shell Window which don't run as root to read and write a few
-Jamie> of those files.
-
-Jamie> You must not chown anything on the disk, because it isn't your
-Jamie> disk.
-
-Umm... this doesn't make sense.  If it's not your disk, why are you
-writing to it?  And how is chown different? 
-
-The real answer is that your buddy should have setup a mode 777
-directory on there where random stuff could be dropped.  Again, a
-userspace issue, not kernel.
-
->> But in that case, you're screwed anyway and it's going to become
->> un-manageable.  Push this to userspace, not the kernel since it's a
->> userspace issue when you come right down to it.
-
-Jamie> How do you handle the above scenario in userspace?
-
-You certainly can't handle this in kernel space!  If you just plug in
-a random disk, and it comes up with borked UIDs because the original
-server it came from has a different setup than yours for UID/GIDs,
-then you're going to have to do *something* in a manual manner to fix
-it.
-
-Either you need to 'sudo chown -R user /media/disk/' or better yet
-just mkdir a new directory with appropriate permissions and then write
-using your GUI/shell-window, non-root user account to that new
-directory.
-
-Putting in a mount option like this is just begging for all kinds of
-issues.
-
-John
+diff --git a/drivers/mfd/wm831x-core.c b/drivers/mfd/wm831x-core.c
+index 49b7885..05e5724 100644
+--- a/drivers/mfd/wm831x-core.c
++++ b/drivers/mfd/wm831x-core.c
+@@ -115,11 +115,11 @@ static int wm831x_reg_locked(struct wm831x *wm831x, unsigned short reg)
+ }
+ 
+ /**
+- * wm831x_reg_unlock: Unlock user keyed registers
++ * wm831x_reg_lock: Unlock user keyed registers
+  *
+  * The WM831x has a user key preventing writes to particularly
+  * critical registers.  This function locks those registers,
+- * allowing writes to them.
++ * disallowing writes to them.
+  */
+ void wm831x_reg_lock(struct wm831x *wm831x)
+ {
+@@ -145,7 +145,7 @@ EXPORT_SYMBOL_GPL(wm831x_reg_lock);
+  *
+  * The WM831x has a user key preventing writes to particularly
+  * critical registers.  This function locks those registers,
+- * preventing spurious writes.
++ * allowing writes to them.
+  */
+ int wm831x_reg_unlock(struct wm831x *wm831x)
+ {
+-- 
+1.6.3.3
 
