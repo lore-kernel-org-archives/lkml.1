@@ -1,40 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754407AbZG0HoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbZG0Ho1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754407AbZG0HoT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 03:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbZG0HoT
+	id S1754633AbZG0Ho1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 03:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbZG0Ho0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 03:44:19 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:59395 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754073AbZG0HoS (ORCPT
+	Mon, 27 Jul 2009 03:44:26 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:49398 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754136AbZG0HoT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 03:44:18 -0400
-Date: Mon, 27 Jul 2009 03:44:18 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Dave Jones <davej@redhat.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] Don't export scsi kernel variables in userspace
-	headers.
-Message-ID: <20090727074418.GA14765@infradead.org>
-References: <20090725021026.GA6942@redhat.com>
+	Mon, 27 Jul 2009 03:44:19 -0400
+Message-ID: <4A6D59B6.3040400@cs.helsinki.fi>
+Date: Mon, 27 Jul 2009 10:39:34 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090725021026.GA6942@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+CC: linux-kernel@vger.kernel.org, npiggin@suse.de
+Subject: Re: slqb enables interrupts very early
+References: <20090725180321.GA24814@Chamillionaire.breakpoint.cc>
+In-Reply-To: <20090725180321.GA24814@Chamillionaire.breakpoint.cc>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 24, 2009 at 10:10:26PM -0400, Dave Jones wrote:
-> Found with make headers_check
+Sebastian Andrzej Siewior wrote:
+> I've checkout slab-2.6/linux-next and noticed that the interrupts are
+> enabled very early by accident. Please look at the following call stack:
 > 
-> /usr/include/scsi/scsi.h:159: userspace cannot call function or variable defined in the kernel
-> /usr/include/scsi/scsi.h:285: userspace cannot call function or variable defined in the kernel
+>     start_kernel()
+>     kmem_cache_init()
+>     kmem_cache_open()
+>     down_write(&slqb_lock);
+>     __down_write()
+>     __down_write_nested()
+> 
+> Now, __down_write_nested() protects its internal structure the follwing
+> way:
+>     spin_lock_irq(&sem->wait_lock);
+>     ...
+>     spin_unlock_irq(&sem->wait_lock);
+> 
+> so once we return, we return with interrupts on.
 
-The headers shouldn't be exported at all because scsi/ headers are
-exported from glibc.
+Indeed. Nick, do we need to take ->slqb_lock in kmem_cache_open()? A 
+quick read on the code suggests that we could just drop it.
 
+			Pekka
