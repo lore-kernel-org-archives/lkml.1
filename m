@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbZG0SnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbZG0Spl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754128AbZG0SnK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 14:43:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750959AbZG0SnJ
+	id S1753411AbZG0Spl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 14:45:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZG0Spk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 14:43:09 -0400
-Received: from mail-fx0-f214.google.com ([209.85.220.214]:46859 "EHLO
-	mail-fx0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750756AbZG0SnI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 14:43:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=VsRxt++9OimSZATHZj1vomYsn6dmnlvKIQAXiVtK14W6jJELrq0SlU9EkwlXTTERsW
-         cuKBWj0drnNUS3//CywEwj4xaBOBgKtU5jSUTW1FrRvjyo1EVR6sC4l6KqAldDyjUuNC
-         PWldlqZkgt/YLoD3eu4+26DkCZib2dMhlljdM=
-Date: Mon, 27 Jul 2009 20:43:02 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Doug Thompson <norsk5@yahoo.com>
-Cc: dougthompson@xmission.com, borislav.petkov@amd.com,
-       wan wei <onewayforever@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] amd64_edac: fix insmod fail while ecc is enabled
-Message-ID: <20090727184302.GC3044@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	Doug Thompson <norsk5@yahoo.com>, dougthompson@xmission.com,
-	borislav.petkov@amd.com, wan wei <onewayforever@gmail.com>,
-	linux-kernel@vger.kernel.org
-References: <86bb1aef0907270947o6219f950xf13a077b30486d41@mail.gmail.com>
- <368206.16549.qm@web50108.mail.re2.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <368206.16549.qm@web50108.mail.re2.yahoo.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Mon, 27 Jul 2009 14:45:40 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:42219 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750695AbZG0Spk (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 14:45:40 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Anupama Chandwani <anupama.chandwani@gmail.com>
+Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: Undefined symbol "min_low_pfn"
+In-Reply-To: Your message of "Mon, 27 Jul 2009 11:17:20 PDT."
+             <689eb3470907271117x4638464p72964819a80637c0@mail.gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <689eb3470907271102i904d81em6317302e373e0730@mail.gmail.com>
+            <689eb3470907271117x4638464p72964819a80637c0@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1248720339_3074P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Mon, 27 Jul 2009 14:45:39 -0400
+Message-ID: <52058.1248720339@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--==_Exmh_1248720339_3074P
+Content-Type: text/plain; charset=us-ascii
 
-On Mon, Jul 27, 2009 at 11:01:26AM -0700, Doug Thompson wrote:
-> In a prior email you indicated that you refactored the function in
->question. What that in the series of patches you submitted? I think
->that set is too big to get in the RC branch.
->
-> We need this in 2.6.31 in order for the module to even work.
->
-> Shall we push my simple one, or your complete refactor?
+On Mon, 27 Jul 2009 11:17:20 PDT, Anupama Chandwani said:
 
-I wanted to give my refactoring patch a little testing in linux-next but
-my gut feeling tells me it would be wiser to go with your fix that late
-in the cycle and postpone mine for the next kernel. In the meantime,
-it'll see more testing in linux-next.
+> I want to know what pages (page frame numbers) are used by kernel
+> code/data/bss etc. min_low_pfn would have told me the lowest usable
+> pfn.
+> Is there another way of getting this information? Or printing the min_low_pfn?
 
-I'll push the two fixes tomorrow if Linus hasn't pulled yet otherwise
-I'll have to wait for -rc6 with your patch, but even that'll do.
+What are you trying to do with that number?  Perhaps if you explain the
+problem you're trying to solve by looking at min_low_pfn, somebody will have
+a better solution...
 
--- 
-Regards/Gruss,
-    Boris.
+
+--==_Exmh_1248720339_3074P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFKbfXTcC3lWbTT17ARAgEQAKCOM+zx42gQzoHxPDuFhQ+gTBEF1wCeIByt
+Xb+jUVFQ+2rQl4OSrlRZbOE=
+=b2hV
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1248720339_3074P--
