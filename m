@@ -1,69 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbZG0Hdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbZG0Hh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754216AbZG0Hdj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 03:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbZG0Hdi
+	id S1754300AbZG0Hh6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 03:37:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754136AbZG0Hh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 03:33:38 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:57385 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753944AbZG0Hdi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 03:33:38 -0400
-Date: Mon, 27 Jul 2009 09:33:38 +0200
-From: Andreas Mohr <andi@lisas.de>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
-Subject: Re: Dynamic configure max_cstate
-Message-ID: <20090727073338.GA12669@rhlx01.hs-esslingen.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248672613.2560.604.camel@ymzhang>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 27 Jul 2009 03:37:57 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:51556 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754035AbZG0Hh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 03:37:57 -0400
+Date: Mon, 27 Jul 2009 17:37:54 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Philipp Reisner <philipp.reisner@linbit.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: drbd tree build failure
+Message-Id: <20090727173754.6a04e781.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Philipp,
 
-> When running a fio workload, I found sometimes cpu C state has
-> big impact on the result. Mostly, fio is a disk I/O workload
-> which doesn't spend much time with cpu, so cpu switch to C2/C3
-> freqently and the latency is big.
+Today's linux-next build (powerpc allyesconfig) failed like this:
 
-Rather than inventing ways to limit ACPI Cx state usefulness, we should
-perhaps be thinking of what's wrong here.
+drivers/block/drbd/drbd_trace.o: In function `.roles_to_name':
+(.text+0x64): multiple definition of `.roles_to_name'
+drivers/block/drbd/drbd.o:(.text+0x28eb8): first defined here
+drivers/block/drbd/drbd_trace.o: In function `disks_to_name':
+(.opd+0x30): multiple definition of `disks_to_name'
+drivers/block/drbd/drbd.o:(.opd+0x1b78): first defined here
+drivers/block/drbd/drbd_trace.o: In function `roles_to_name':
+(.opd+0x18): multiple definition of `roles_to_name'
+drivers/block/drbd/drbd.o:(.opd+0x1b60): first defined here
+drivers/block/drbd/drbd_trace.o: In function `.conns_to_name':
+(.text+0x0): multiple definition of `.conns_to_name'
+drivers/block/drbd/drbd.o:(.text+0x28e54): first defined here
+drivers/block/drbd/drbd_trace.o: In function `set_st_err_name':
+(.opd+0x48): multiple definition of `set_st_err_name'
+drivers/block/drbd/drbd.o:(.opd+0x1b90): first defined here
+drivers/block/drbd/drbd_trace.o: In function `.disks_to_name':
+(.text+0xcc): multiple definition of `.disks_to_name'
+drivers/block/drbd/drbd.o:(.text+0x28f20): first defined here
+drivers/block/drbd/drbd_trace.o: In function `conns_to_name':
+(.opd+0x0): multiple definition of `conns_to_name'
+drivers/block/drbd/drbd.o:(.opd+0x1b48): first defined here
+drivers/block/drbd/drbd_trace.o: In function `.set_st_err_name':
+(.text+0x134): multiple definition of `.set_st_err_name'
+drivers/block/drbd/drbd.o:(.text+0x28f88): first defined here
 
-And your complaint might just fit into a thought I had recently:
-are we actually taking ACPI Cx exit latency into account, for timers???
+I applied the following patch to mark DRBD_TRACE broken for now.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-If we program a timer to fire at some point, then it is quite imaginable
-that any ACPI Cx exit latency due to the CPU being idle at that moment
-could add to actual timer trigger time significantly.
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Mon, 27 Jul 2009 17:27:39 +1000
+Subject: [PATCH] drbd: tracing is broken
 
-To combat this, one would need to tweak the timer expiration time
-to include the exit latency. But of course once the CPU is running
-again, one would need to re-add the latency amount (read: reprogram the
-timer hardware, ugh...) to prevent the timer from firing too early.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/block/drbd/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Given that one would need to reprogram timer hardware quite often,
-I don't know whether taking Cx exit latency into account is feasible.
-OTOH analysis of the single next timer value and actual hardware reprogramming
-would have to be done only once (in ACPI sleep and wake paths each),
-thus it might just turn out to be very beneficial after all
-(minus prolonging ACPI Cx path activity and thus aggravating CPU power
-savings, of course).
+diff --git a/drivers/block/drbd/Kconfig b/drivers/block/drbd/Kconfig
+index 8b14ea2..b047662 100644
+--- a/drivers/block/drbd/Kconfig
++++ b/drivers/block/drbd/Kconfig
+@@ -41,6 +41,7 @@ config BLK_DEV_DRBD
+ config DRBD_TRACE
+ 	tristate "DRBD tracing"
+ 	depends on BLK_DEV_DRBD
++	depends on BROKEN
+ 	select TRACEPOINTS
+ 	default m
+ 	help
+-- 
+1.6.3.3
 
-Arjan mentioned examples of maybe 10us for C2 and 185us for C3/C4 in an
-article.
-
-OTOH even 185us is only 0.185ms, which, when compared to disk seek
-latency (around 7ms still, except for SSD), doesn't seem to be all that much.
-Or what kind of ballpark figure do you have for percentage of I/O
-deterioration?
-I'm wondering whether we might have an even bigger problem with disk I/O
-related to this than just the raw ACPI exit latency value itself.
-
-Andreas Mohr
