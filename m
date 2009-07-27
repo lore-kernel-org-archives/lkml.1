@@ -1,96 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203AbZG0VtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbZG0Vxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755203AbZG0VtG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 17:49:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbZG0VtF
+	id S1755240AbZG0Vxt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 17:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755213AbZG0Vxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 17:49:05 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:23586 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754117AbZG0VtE (ORCPT
+	Mon, 27 Jul 2009 17:53:49 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60727 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753175AbZG0Vxs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 17:49:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=M1EXnzz//zFe8p32qSx3hanGgEsOGuRDAtWeB7sbIZdIcT9QL3YlC9N4t4p9vJpfcK
-         whdvfD89q7BUKK5Z1jtq5vcJTKadOvAcVM+gr2NZVrIBPFWKLidIFeLlr1s703cZ8HS1
-         ci+hJJX4WQrnVd4B6JeTcl0PzEnIA3dHXJ6dM=
-MIME-Version: 1.0
-Date: Mon, 27 Jul 2009 22:49:03 +0100
-Message-ID: <6278d2220907271449l38609680n943875d2672da20f@mail.gmail.com>
-Subject: [2.6.31-rc4] nfs4 writecount warning...
-From: Daniel J Blueman <daniel.blueman@gmail.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 27 Jul 2009 17:53:48 -0400
+Date: Mon, 27 Jul 2009 22:54:08 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kdesu broken
+Message-ID: <20090727225408.19e91e91@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.01.0907271421080.25224@localhost.localdomain>
+References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
+	<87bpn7mzli.fsf@devron.myhome.or.jp>
+	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
+	<873a8iqqgv.fsf@devron.myhome.or.jp>
+	<20090727142303.41096bf5@lxorguk.ukuu.org.uk>
+	<877hxujkuv.fsf@devron.myhome.or.jp>
+	<20090727145805.690afe5d@lxorguk.ukuu.org.uk>
+	<87fxci6ub9.fsf@devron.myhome.or.jp>
+	<20090727161424.GA4233@skywalker>
+	<20090727174252.2d987830@lxorguk.ukuu.org.uk>
+	<20090727171213.GB4233@skywalker>
+	<87skgikjr8.fsf@devron.myhome.or.jp>
+	<alpine.LFD.2.01.0907271237250.25224@localhost.localdomain>
+	<20090727215250.034f7d4b@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907271421080.25224@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After two days uptime on my NFS4 server with 2.6.31-rc4 and a few
-2.6.28 clients, I hit the file write-count
-WARN_ON(f->f_mnt_write_state != 0) in file_take_write() in the
-nfsd4_open path [1].
+On Mon, 27 Jul 2009 14:22:40 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-I can't find this reported elsewhere; let me know if it's preferred in
-bugzilla.kernel.org etc.
+> 
+> 
+> On Mon, 27 Jul 2009, Alan Cox wrote:
+> >
+> > Nor can we revert several patches because the ppp stuff means going back
+> > to about 2.6.28 or so for the entire tty layer plus some of the DoS and
+> > null pointer races go back to 2.2 or 2.0 8(.
+> 
+> The thing is, breaking ppp and reverting at least to 2.6.30 behavior. 
+> Since it's better than the _current_ breakage.
+> 
+> > We can use the two line slightly imperfect quickfix which people reported
+> > does fix their problem and I'm tempted to go with that for 2.6.31 because
+> > it works for the real world cases that matter.
+> 
+> Umm. Which ones? People have reported kdesu and emacs breaking. Last I 
+> saw, the emacs breakage wasn't fixed by any of the patches seen so far.
 
-Thanks,
-  Daniel
+Aneesh verified the tty->low_latency patch fixed emacs (Sunday mail in
+the thread "Re: [Regression] kdesu broken")
 
---- [1]
-
-------------[ cut here ]------------
-
-WARNING: at include/linux/fs.h:953 nfsd4_process_open2+0x9c3/0xc90()
-
-Hardware name: OEM
-
-Modules linked in: coretemp w83627ehf hwmon_vid ath9k
-snd_hda_codec_realtek mac80211 led_class ath snd_hda_intel
-snd_hda_codec snd_pcm snd_timer snd pl2303 soundcore snd_page_alloc
-
-Pid: 2970, comm: nfsd Tainted: G        W  2.6.31-rc4-274sd #1
-
-Call Trace:
-
- [<ffffffff81190413>] ? nfsd4_process_open2+0x9c3/0xc90
-
- [<ffffffff810490f8>] warn_slowpath_common+0x78/0xd0
-
- [<ffffffff8104915f>] warn_slowpath_null+0xf/0x20
-
- [<ffffffff81190413>] nfsd4_process_open2+0x9c3/0xc90
-
- [<ffffffff8118420f>] ? do_open_lookup+0x28f/0x300
-
- [<ffffffff811844b9>] nfsd4_open+0x239/0x420
-
- [<ffffffff81183c67>] nfsd4_proc_compound+0x2d7/0x530
-
- [<ffffffff81172115>] nfsd_dispatch+0x115/0x260
-
- [<ffffffff813f3d12>] svc_process+0x492/0x800
-
- [<ffffffff8142e507>] ? down_read+0x77/0x80
-
- [<ffffffff81172740>] ? nfsd+0x0/0x160
-
- [<ffffffff8117281d>] nfsd+0xdd/0x160
-
- [<ffffffff81062c9e>] kthread+0x9e/0xb0
-
- [<ffffffff8100ce9a>] child_rip+0xa/0x20
-
- [<ffffffff8100c83c>] ? restore_args+0x0/0x30
-
- [<ffffffff81062c00>] ? kthread+0x0/0xb0
-
- [<ffffffff8100ce90>] ? child_rip+0x0/0x20
-
----[ end trace 8ecb5c2eb0ae54d8 ]---
-
--- 
-Daniel J Blueman
