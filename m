@@ -1,71 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752779AbZG0RR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753074AbZG0RUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752779AbZG0RR6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 13:17:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZG0RR5
+	id S1753074AbZG0RUw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 13:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZG0RUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 13:17:57 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:48527 "EHLO
-	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751075AbZG0RR5 (ORCPT
+	Mon, 27 Jul 2009 13:20:51 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:56884 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751154AbZG0RUu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 13:17:57 -0400
-From: Philipp Reisner <philipp.reisner@linbit.com>
-Organization: LINBIT
-To: Lars Ellenberg <lars.ellenberg@linbit.com>
-Subject: Re: linux-next: drbd tree build failure
-Date: Mon, 27 Jul 2009 19:17:55 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
-References: <20090727154816.24e81531.sfr@canb.auug.org.au> <20090727080957.GA8046@barkeeper1-xen.linbit>
-In-Reply-To: <20090727080957.GA8046@barkeeper1-xen.linbit>
-X-OTRS-FollowUp-SenderType: agent
+	Mon, 27 Jul 2009 13:20:50 -0400
+Date: Mon, 27 Jul 2009 13:20:29 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@gentwo.org
+To: David Rientjes <rientjes@google.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+In-Reply-To: <alpine.DEB.2.00.0907270227420.15760@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.1.10.0907271320130.13513@gentwo.org>
+References: <DizPU9GBfHF.A.kgF.iWObKB@chimera> <H5-1lZIIeYK.A.Pi.BZObKB@chimera> <4A6CF220.7080605@lwfinger.net> <alpine.DEB.2.00.0907261722140.21259@chino.kir.corp.google.com> <84144f020907270008h2a985278of68e70ff1ee9265c@mail.gmail.com>
+ <alpine.DEB.2.00.0907270227420.15760@chino.kir.corp.google.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907271917.56148.philipp.reisner@linbit.com>
+Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
+Content-ID: <alpine.DEB.1.10.0907271320132.13513@gentwo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 27 July 2009 10:09:57 Lars Ellenberg wrote:
-> On Mon, Jul 27, 2009 at 03:48:16PM +1000, Stephen Rothwell wrote:
-> > Hi Philipp,
-> >
-> > Today's linux-next build (x86_64 allmodconfig) failed like this:
-> >
-> > drivers/block/drbd/drbd_main.c: In function
-> > 'drbd_thread_current_set_cpu': drivers/block/drbd/drbd_main.c:1592:
-> > error: implicit declaration of function 'set_cpus_allowed'
-> >
-> > Introduced by commit 8a4ebc3fbd90072ac870064a930fe612eea6d9a1 ("DRBD:
-> > main") from the drbd interacting with commit
-> > 84cf7f02712e3491fb9776f950a8c4f413204c8b
-> > ("cpumask:remove-set_cpus_allowed") from the rr tree.
-> >
-> > I am not sure what the transformation to the new infrastructure is here -
-> > maybe Rusty can help?
-> >
-> > For today, I have reverted the rr tree commit above but we need a better
-> > solution.
+On Mon, 27 Jul 2009, David Rientjes wrote:
+
+> We need DEBUG_FLAGS to determine which flags to mask off to reduce the
+> minimum order, so I don't see DEBUG_FLAGS_SIZE as troublesome.
 >
-> I think we can easily use set_cpus_allowed_ptr() instead,
-> as in fact, we do not have the cpu mask on the stack.
-> But embeded in struct drbd_conf.
+> Christoph?
 
-Ok. Lars' patch is now complete and arrived in the git tree...
-
-It should build now with Rusty's paches.
-
--phil
--- 
-: Dipl-Ing Philipp Reisner
-: LINBIT | Your Way to High Availability
-: Tel: +43-1-8178292-50, Fax: +43-1-8178292-82
-: http://www.linbit.com
-
-DRBD(R) and LINBIT(R) are registered trademarks of LINBIT, Austria.
+Post a patch? Otherwise just go ahead.
 
