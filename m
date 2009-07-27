@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752345AbZG1IwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752850AbZG1Ix2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752345AbZG1IwP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 04:52:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbZG1IwP
+	id S1752850AbZG1Ix2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 04:53:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbZG1Ix1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 04:52:15 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:36412 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751394AbZG1IwO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 04:52:14 -0400
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Miao Xie <miaox@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Paul Menage <menage@google.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Rientjes <rientjes@google.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUGFIX] set_mempolicy(MPOL_INTERLEAV) N_HIGH_MEMORY aware
-From: Andi Kleen <andi@firstfloor.org>
-References: <20090715182320.39B5.A69D9226@jp.fujitsu.com>
-	<20090728161813.f2fefd29.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 28 Jul 2009 10:52:10 +0200
-In-Reply-To: <20090728161813.f2fefd29.kamezawa.hiroyu@jp.fujitsu.com> (KAMEZAWA Hiroyuki's message of "Tue, 28 Jul 2009 16:18:13 +0900")
-Message-ID: <877hxti405.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Tue, 28 Jul 2009 04:53:27 -0400
+Received: from uucp.gnuu.de ([83.246.114.63]:4175 "EHLO uucp.gnuu.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752787AbZG1Ix0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 04:53:26 -0400
+X-Greylist: delayed 1598 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Jul 2009 04:53:26 EDT
+X-DKIM: Sendmail DKIM Filter v2.5.2 uucp.gnuu.de DA91E488034
+Date: Tue, 28 Jul 2009 00:23:53 +0200
+From: =?iso-8859-1?Q?J=F6rg?= Sommer <joerg@alea.gnuu.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #13797] iBook G4 doesn't suspend since 2ed8d2b3a8
+Message-ID: <20090727222353.GA23932@alea.gnuu.de>
+References: <DizPU9GBfHF.A.kgF.iWObKB@chimera>
+ <H5-1lZIIeYK.A.ZjF.nWObKB@chimera>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="SUOF0GtieIMvvwua"
+Content-Disposition: inline
+In-Reply-To: <H5-1lZIIeYK.A.ZjF.nWObKB@chimera>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> writes:
 
-> tested on x86-64/fake NUMA and ia64/NUMA.
-> (That ia64 is a host which orignal bug report used.)
->
-> Maybe this is bigger patch than expected, but NODEMASK_ALLOC() will be a way
-> to go, anyway. (even if CPUMASK_ALLOC is not used anyware yet..)
-> Kosaki tested this on ia64 NUMA. thanks.
+--SUOF0GtieIMvvwua
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Note that low/high memory support in NUMA policy is only partial
-anyways, e.g. the VMA based policy only supports a single zone. That
-was by design choice and because NUMA has a lot of issues on 32bit due
-to the limited address space and is not widely used.
+Hi Rafael,
 
-So small fixes are ok but I wouldn't go to large effort to fix NUMA
-policy on 32bit.
+Rafael J. Wysocki hat am Sun 26. Jul, 22:45 (+0200) geschrieben:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.29 and 2.6.30.
+>=20
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> be listed and let me know (either way).
 
--Andi
+Yes, the bug still exists. I can't put my iBook asleep using 2.6.30-rc4.
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Regards, J=F6rg.
+--=20
+Da w=FCrde ich auch lieber den Panzerf=FChrerschein machen als den MCSE.
+Bringt mehr, d=FCrfte das gleiche kosten und macht sicher mehr Spa=DF.
+                                   Jens Dittmar in de.comp.security
+
+--SUOF0GtieIMvvwua
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature http://en.wikipedia.org/wiki/OpenPGP
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkpuKPkACgkQwe0mZwH1VIAr5ACgxP8gJu+9Lz40cM8uE+X3VH4A
+HtUAnjL2jKHMTjlDkIU59R2Ny0HcxhRW
+=bins
+-----END PGP SIGNATURE-----
+
+--SUOF0GtieIMvvwua--
