@@ -1,58 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbZG0VoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203AbZG0VtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755225AbZG0VoI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 17:44:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193AbZG0VoG
+	id S1755203AbZG0VtG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 17:49:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbZG0VtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 17:44:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41888 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755207AbZG0VoF (ORCPT
+	Mon, 27 Jul 2009 17:49:05 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:23586 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754117AbZG0VtE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 17:44:05 -0400
-Date: Mon, 27 Jul 2009 14:44:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Chia-chi Yeh (=?ISO-8859-1?Q?=5F=5F=5F=5F=5F=5F=5F=5F=5F?=) 
-	<chiachi@android.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] net: Keep interface binding when sending packets with 
- ipi_ifindex = 0
-Message-Id: <20090727144402.513369f1.akpm@linux-foundation.org>
-In-Reply-To: <6c039e090907231439t1def08a4n10978733bee55bec@mail.gmail.com>
-References: <6c039e090907231439t1def08a4n10978733bee55bec@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 27 Jul 2009 17:49:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=M1EXnzz//zFe8p32qSx3hanGgEsOGuRDAtWeB7sbIZdIcT9QL3YlC9N4t4p9vJpfcK
+         whdvfD89q7BUKK5Z1jtq5vcJTKadOvAcVM+gr2NZVrIBPFWKLidIFeLlr1s703cZ8HS1
+         ci+hJJX4WQrnVd4B6JeTcl0PzEnIA3dHXJ6dM=
+MIME-Version: 1.0
+Date: Mon, 27 Jul 2009 22:49:03 +0100
+Message-ID: <6278d2220907271449l38609680n943875d2672da20f@mail.gmail.com>
+Subject: [2.6.31-rc4] nfs4 writecount warning...
+From: Daniel J Blueman <daniel.blueman@gmail.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc netdev)
+After two days uptime on my NFS4 server with 2.6.31-rc4 and a few
+2.6.28 clients, I hit the file write-count
+WARN_ON(f->f_mnt_write_state != 0) in file_take_write() in the
+nfsd4_open path [1].
 
-On Thu, 23 Jul 2009 14:39:28 -0700
-Chia-chi Yeh (_________) <chiachi@android.com> wrote:
+I can't find this reported elsewhere; let me know if it's preferred in
+bugzilla.kernel.org etc.
 
-> In IPv4, sending a packet with ipi_ifindex = 0 via an interface-bound
-> socket will unbind the packet to that interface. This behavior is
-> different from IPv6 which treats ipi6_ifindex = 0 as unspecified.
-> Furthermore, IPv6 does not allow sending packets to other interface
-> than the bound one, but I am not sure if it is necessary in IPv4. The
-> following patch keeps the interface binding when ipi_ifindex = 0.
-> 
-> Thanks,
-> Chia-chi
-> 
-> --- a/net/ipv4/ip_sockglue.c	2009-07-24 04:50:45.000000000 +0800
-> +++ b/net/ipv4/ip_sockglue.c	2009-07-24 04:51:09.000000000 +0800
-> @@ -213,7 +213,8 @@
->  			if (cmsg->cmsg_len != CMSG_LEN(sizeof(struct in_pktinfo)))
->  				return -EINVAL;
->  			info = (struct in_pktinfo *)CMSG_DATA(cmsg);
-> -			ipc->oif = info->ipi_ifindex;
-> +			if (info->ipi_ifindex)
-> +				ipc->oif = info->ipi_ifindex;
->  			ipc->addr = info->ipi_spec_dst.s_addr;
->  			break;
->  		}
+Thanks,
+  Daniel
 
+--- [1]
+
+------------[ cut here ]------------
+
+WARNING: at include/linux/fs.h:953 nfsd4_process_open2+0x9c3/0xc90()
+
+Hardware name: OEM
+
+Modules linked in: coretemp w83627ehf hwmon_vid ath9k
+snd_hda_codec_realtek mac80211 led_class ath snd_hda_intel
+snd_hda_codec snd_pcm snd_timer snd pl2303 soundcore snd_page_alloc
+
+Pid: 2970, comm: nfsd Tainted: G        W  2.6.31-rc4-274sd #1
+
+Call Trace:
+
+ [<ffffffff81190413>] ? nfsd4_process_open2+0x9c3/0xc90
+
+ [<ffffffff810490f8>] warn_slowpath_common+0x78/0xd0
+
+ [<ffffffff8104915f>] warn_slowpath_null+0xf/0x20
+
+ [<ffffffff81190413>] nfsd4_process_open2+0x9c3/0xc90
+
+ [<ffffffff8118420f>] ? do_open_lookup+0x28f/0x300
+
+ [<ffffffff811844b9>] nfsd4_open+0x239/0x420
+
+ [<ffffffff81183c67>] nfsd4_proc_compound+0x2d7/0x530
+
+ [<ffffffff81172115>] nfsd_dispatch+0x115/0x260
+
+ [<ffffffff813f3d12>] svc_process+0x492/0x800
+
+ [<ffffffff8142e507>] ? down_read+0x77/0x80
+
+ [<ffffffff81172740>] ? nfsd+0x0/0x160
+
+ [<ffffffff8117281d>] nfsd+0xdd/0x160
+
+ [<ffffffff81062c9e>] kthread+0x9e/0xb0
+
+ [<ffffffff8100ce9a>] child_rip+0xa/0x20
+
+ [<ffffffff8100c83c>] ? restore_args+0x0/0x30
+
+ [<ffffffff81062c00>] ? kthread+0x0/0xb0
+
+ [<ffffffff8100ce90>] ? child_rip+0x0/0x20
+
+---[ end trace 8ecb5c2eb0ae54d8 ]---
+
+-- 
+Daniel J Blueman
