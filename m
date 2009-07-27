@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753129AbZGaVqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754204AbZG0Suy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753129AbZGaVqW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 17:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752638AbZGaVqV
+	id S1754204AbZG0Suy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 14:50:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754087AbZG0Suy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 17:46:21 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:38233 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751538AbZGaVqV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 17:46:21 -0400
-Date: Fri, 31 Jul 2009 14:45:50 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: akpm@linux-foundation.org,
-       David =?ISO-8859-1?Q?H=E4rdeman?= <david@hardeman.nu>
-Cc: linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: [PATCH -mmotm] input/winbond-cir: select BITREVERSE
-Message-Id: <20090731144550.c0861733.randy.dunlap@oracle.com>
-In-Reply-To: <200907301204.n6UC4Saf019612@imap1.linux-foundation.org>
-References: <200907301204.n6UC4Saf019612@imap1.linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Source-IP: abhmt008.oracle.com [141.146.116.17]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4A736619.0021:SCFSTAT5015188,ss=1,fgs=0
+	Mon, 27 Jul 2009 14:50:54 -0400
+Received: from mout7.freenet.de ([195.4.92.97]:35395 "EHLO mout7.freenet.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754081AbZG0Sux (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 14:50:53 -0400
+X-Greylist: delayed 5094 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Jul 2009 14:50:53 EDT
+Date: Mon, 27 Jul 2009 19:25:42 +0200
+From: Alex Riesen <raa.lkml@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: fs_other@kernel-bugs.osdl.org, Russell Bell <russellbell@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>, josef@redhat.com,
+       Eric Paris <eparis@redhat.com>, Robert Love <rlove@rlove.org>,
+       John McCutchan <john@johnmccutchan.com>
+Subject: [PATCH] inotify: fix the running away counter of user watches
+Message-ID: <20090727172542.GA5104@blimp.localdomain>
+Reply-To: Alex Riesen <raa.lkml@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-purgate-ID: 149285::1248715551-00006ABE-0F5D2F02/0-0/0-0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+The counter of userspace inotify watches is incremented when a watch is
+added, but was never decremented. This patch uses the fsnotify callback
+(freeing_marks, which in turn calls inotify_ignored_and_remove_idr of
+inotify userspace interface) called when an fsnotify mark is removed.
 
-winbond-cir driver uses bitreverse functions so it needs to
-select BITREVERSE to fix these build errors:
+The bug has been reported in
 
-drivers/built-in.o: In function `wbcir_shutdown':
-winbond-cir.c:(.text+0x104fc7): undefined reference to `byte_rev_table'
-winbond-cir.c:(.text+0x104fd8): undefined reference to `byte_rev_table'
-winbond-cir.c:(.text+0x104ff4): undefined reference to `byte_rev_table'
-drivers/built-in.o: In function `wbcir_irq_handler':
-winbond-cir.c:(.text+0x105f47): undefined reference to `byte_rev_table'
-winbond-cir.c:(.text+0x105f5f): undefined reference to `byte_rev_table'
-drivers/built-in.o:winbond-cir.c:(.text+0x105f77): more undefined references to `byte_rev_table' follow
+    http://bugzilla.kernel.org/show_bug.cgi?id=12754
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: David Härdeman <david@hardeman.nu>
+Signed-off-by: Alex Riesen <raa.lkml@gmail.com>
 ---
- drivers/input/misc/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
 
---- mmotm-2009-0730-0501.orig/drivers/input/misc/Kconfig
-+++ mmotm-2009-0730-0501/drivers/input/misc/Kconfig
-@@ -226,6 +226,7 @@ config INPUT_WINBOND_CIR
- 	tristate "Winbond IR remote control"
- 	depends on X86 && ACPI
- 	select LEDS_CLASS
-+	select BITREVERSE
- 	help
- 	  Say Y here if you want to use the IR remote functionality found
- 	  in some Winbond SuperI/O chips. Currently only the WPCD376I
+Sorry for long Cc:, I'm a little confused about "fs_other@" (and the
+list of participants) in the bug report.
+
+The patch works in my limited testing. I just did:
+
+    # echo 10 >/proc/sys/fs/inotify/max_user_watches
+    # inotify-watch -r /lib # to max the counter
+    Ctrl-C
+    # inotify-watch /bin/true # must work
+
+in a clean environment (init=/bin/bash).
+
+But I don't know whether it safe to access the counter in this
+callback, nor am I sure the patch is enough.
+
+ fs/notify/inotify/inotify_user.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/fs/notify/inotify/inotify_user.c b/fs/notify/inotify/inotify_user.c
+index ff27a29..c2d94df 100644
+--- a/fs/notify/inotify/inotify_user.c
++++ b/fs/notify/inotify/inotify_user.c
+@@ -404,6 +404,7 @@ skip_send_ignore:
+ 
+ 	/* removed from idr, drop that reference */
+ 	fsnotify_put_mark(entry);
++	atomic_dec(&group->inotify_data.user->inotify_watches);
+ }
+ 
+ /* ding dong the mark is dead */
+-- 
+1.6.4.rc3.56.g32a7
 
 
-
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
