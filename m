@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751396AbZG0FPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751573AbZG0FZQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751396AbZG0FPw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 01:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbZG0FPw
+	id S1751573AbZG0FZQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 01:25:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbZG0FZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 01:15:52 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54102 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751266AbZG0FPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 01:15:51 -0400
-Message-ID: <4A6D37A4.6020605@cn.fujitsu.com>
-Date: Mon, 27 Jul 2009 13:14:12 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Mon, 27 Jul 2009 01:25:15 -0400
+Received: from mail-px0-f184.google.com ([209.85.216.184]:49583 "EHLO
+	mail-px0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751225AbZG0FZO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 01:25:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=PEh/s0NEClCPm6oPmw8ykzM0yeUmboEdpNiubzLtxZ8jt2pUYsgwlAsxjCG+Eujd2N
+         qRugdDUzrOHgUnA2rJQwSZAzWO5ERVWPS2itF1YaUD30l9MZUjKXhG5VmHZAQW1fbT6V
+         wkEDXVo3BH/OdlHJkMYBaHj3Vdlh5b+t+x/k4=
+Date: Mon, 27 Jul 2009 13:27:22 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: Luming Yu <luming.yu@gmail.com>
+Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Boot panic in 2.6.31-rc4
+Message-ID: <20090727052722.GA5877@cr0.nay.redhat.com>
+References: <2375c9f90907262010s36980f88q28f10b6bc2b5263f@mail.gmail.com> <3877989d0907262100la342487j52cf5e12e5efe520@mail.gmail.com>
 MIME-Version: 1.0
-To: Ben Blum <bblum@google.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       akpm@linux-foundation.org, serue@us.ibm.com, menage@google.com
-Subject: Re: [PATCH 3/6] Quick vmalloc vs kmalloc fix to the case where array
- size	is too large
-References: <20090724032033.2463.79256.stgit@hastromil.mtv.corp.google.com> <20090724032150.2463.49019.stgit@hastromil.mtv.corp.google.com>
-In-Reply-To: <20090724032150.2463.49019.stgit@hastromil.mtv.corp.google.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3877989d0907262100la342487j52cf5e12e5efe520@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Blum wrote:
-> Quick vmalloc vs kmalloc fix to the case where array size is too large
-> 
-> Separates all pidlist allocation requests to a separate function that judges
-> based on the requested size whether or not the array needs to be vmalloced or
-> can be gotten via kmalloc, and similar for kfree/vfree. Should be replaced
-> entirely with a kernel-wide solution to this general problem.
-> 
-> Depends on cgroup-pidlist-namespace.patch, cgroup-procs.patch
-> 
-> Signed-off-by: Ben Blum <bblum@google.com>
-> 
+On Mon, Jul 27, 2009 at 12:00:33PM +0800, Luming Yu wrote:
+>CONFIG_SYSFS_DEPRECATED_V2 disabled by default?
+>
 
-We'll either use flex_array or implement Paul's proposal, so I think
-we can drop this patch?
 
+Yup, enabling it makes the panic disappear...
+
+Thanks.
+
+P.S. This is newly introduced?
