@@ -1,68 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752245AbZG0O4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752685AbZG0O4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752245AbZG0O4R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 10:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbZG0O4R
+	id S1752685AbZG0O4t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 10:56:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbZG0O4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 10:56:17 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:26150 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751363AbZG0O4Q (ORCPT
+	Mon, 27 Jul 2009 10:56:49 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:56525 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752109AbZG0O4s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 10:56:16 -0400
-Subject: Re: [PATCH take 2][RFC] fat: Save FAT root directory timestamps to
-	volume label
-From: =?ISO-8859-1?Q?J=F6rg?= Schummer <ext-jorg.2.schummer@nokia.com>
-To: ext OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <87ljmas5ym.fsf@devron.myhome.or.jp>
-References: <1248274841-3586-1-git-send-email-ext-jorg.2.schummer@nokia.com>
-	 <1248428635-26073-1-git-send-email-ext-jorg.2.schummer@nokia.com>
-	 <87fxclmhxy.fsf@devron.myhome.or.jp>
-	 <1248691635.4618.43.camel@jorg-desktop>
-	 <87ljmas5ym.fsf@devron.myhome.or.jp>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 27 Jul 2009 17:56:03 +0300
-Message-Id: <1248706563.4618.95.camel@jorg-desktop>
+	Mon, 27 Jul 2009 10:56:48 -0400
+Date: Mon, 27 Jul 2009 07:55:36 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, drbd-dev@lists.linbit.com
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>
+Subject: [PATCH] drbd: fix build when CONFIG_MODULES=n
+Message-Id: <20090727075536.533d1801.randy.dunlap@oracle.com>
+In-Reply-To: <20090727180552.eb32515b.sfr@canb.auug.org.au>
+References: <20090727180552.eb32515b.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 27 Jul 2009 14:56:02.0878 (UTC) FILETIME=[5C55A5E0:01CA0ECA]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt007.oracle.com [141.146.116.16]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010206.4A6DC003.0095:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello again,
+On Mon, 27 Jul 2009 18:05:52 +1000 Stephen Rothwell wrote:
 
-just in case you (or perhaps somebody else) have a minute to assist me..
-
-On Mon, 2009-07-27 at 13:47 +0200, ext OGAWA Hirofumi wrote:
-
-> BTW, the patch has several bugs. fat_get_label_entry() doesn't check
-> IS_FREE(), is it right?
-
-Not 100% sure if it's needed in a consistent fs, but I guess it
-shouldn't do any harm, so I added it.
-
-> fat_create_label_entry() doesn't initialize all
-> timestamp in the case of msdos.
-
-Corrected.
-
-> spin_lock() usage is wrong.
-
->From the code, I'm not totally sure then what inode_hash_lock is
-supposed to protect in fat_write_inode. Probably it should prevent that
-the dir entry of an inode is being moved around to another i_pos while
-it's being changed?
-
-But in the pre-patch version of fat_write_inode, shouldn't then
-mark_buffer_dirty(bh) be called when the lock is still held?
-
-Sorry for the newbie-questions, thanks for any help.
-
-Jörg
+> Hi all,
+> 
+> Changes since 20090724:
+> 
+> New trees:
+> 	drbd
+> 
+> The drbd tree gained two build failures for which I reverted a commit from
+> the rr tree and applied a patch.
+> ----------------------------------------------------------------------------
 
 
+(already fixed?)
+
+---
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+Fix drbd build when CONFIG_MODULES=n:
+drivers/block/drbd/drbd_main.c:3738: error: dereferencing pointer to incomplete type
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: drbd-dev@lists.linbit.com
+---
+ drivers/block/drbd/drbd_main.c |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+--- linux-next-20090727.orig/drivers/block/drbd/drbd_main.c
++++ linux-next-20090727/drivers/block/drbd/drbd_main.c
+@@ -3733,12 +3733,16 @@ const char *drbd_buildtag(void)
+ 
+ 	static char buildtag[38] = "\0uilt-in";
+ 
++#ifdef CONFIG_MODULES
+ 	if (buildtag[0] == 0) {
+ 		if (THIS_MODULE != NULL)
+ 			sprintf(buildtag, "srcversion: %-24s", THIS_MODULE->srcversion);
+ 		else
+ 			buildtag[0] = 'b';
+ 	}
++#else
++	buildtag[0] = 'b';
++#endif
+ 
+ 	return buildtag;
+ }
