@@ -1,237 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbZG0UfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754666AbZG0UgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754653AbZG0UfH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 16:35:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754624AbZG0UfG
+	id S1754666AbZG0UgO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 16:36:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754640AbZG0UgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 16:35:06 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34488
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754264AbZG0UfD convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 16:35:03 -0400
-Date: Mon, 27 Jul 2009 13:35:10 -0700 (PDT)
-Message-Id: <20090727.133510.149375201.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 27 Jul 2009 16:36:14 -0400
+Received: from mail-fx0-f205.google.com ([209.85.220.205]:59175 "EHLO
+	mail-fx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753352AbZG0UgN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 16:36:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=hqAB1/TXPgImKLhnXAR++W+Jfm4GuLCHewsZ2Ay7dtxV93AR1jPRFZkuo67juffWci
+         5B8prIw2cq1ymlYK8ANYt5KBK+WOU/PfnE6t17V58+V8nyC4wSg5kd1yJVjmnC9bAPPw
+         ifPOCrm9YBu5wayAN35wGptbaXmQjKCD2A0wg=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: Tree for July 27 (tty locking)
+Date: Mon, 27 Jul 2009 22:35:08 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc4-next-20090727-04601-g24690ff; KDE/4.2.4; i686; ; )
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <20090727180552.eb32515b.sfr@canb.auug.org.au>
+In-Reply-To: <20090727180552.eb32515b.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200907272235.08319.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-1) Enable smc91x to work on Nomadik evaluation ARM borads.
-   From Alessandro Rubini
+Hi,
 
-2) Build fix, KS8851 needs MII, from Alexander Beregalov
+On Monday 27 July 2009 10:05:52 Stephen Rothwell wrote:
+> Hi all,
+> 
+> Changes since 20090724:
 
-3) WoL got busted in ixgbe, fix from Andy Gospodarek.
+Alan, it seems that tty still needs some polishing,
+I'm getting the following warning on boot:
 
-4) Fixed-link support in fs_enet/gianfar/ucc_geth/of-mdio was
-   broken unintentionally, fix from Anton Vorontsov.
+INFO: task hald-probe-seri:1779 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+hald-probe-se D 0000000b     0  1779   1734 0x00000004
+ daf8cde0 00000046 b829e804 0000000b daf95a04 00000000 c054832c c054bec0
+ daf95a04 00000000 c054bec0 c054bec0 00000001 00000000 00000000 00094e71
+ 00000000 b8209993 0000000b daf95780 00000246 00000000 00000002 00000000
+Call Trace:
+ [<c029b327>] ? tty_port_block_til_ready+0x1f/0x3c
+ [<c0397be3>] mutex_lock_nested+0x167/0x28e
+ [<c029b327>] tty_port_block_til_ready+0x1f/0x3c
+ [<c02bdcdc>] uart_open+0x12a/0x1e9
+ [<c0296742>] tty_open+0x291/0x38f
+ [<c018b8bf>] chrdev_open+0x156/0x16d
+ [<c0187f02>] __dentry_open+0x131/0x21b
+ [<c019b5a5>] ? mntput_no_expire+0x19/0xb4
+ [<c018808a>] nameidata_to_filp+0x2d/0x42
+ [<c018b769>] ? chrdev_open+0x0/0x16d
+ [<c01928d7>] do_filp_open+0x3dc/0x6dc
+ [<c019a161>] ? alloc_fd+0xbd/0xca
+ [<c0187cd6>] do_sys_open+0x48/0xe4
+ [<c01191fb>] ? do_page_fault+0x262/0x290
+ [<c0187db4>] sys_open+0x1e/0x26
+ [<c0102948>] sysenter_do_call+0x12/0x36
+INFO: lockdep is turned off.
 
-5) irda memcpys into a spinlock, forgets to initialize it,
-   lockdep gets angry, fix from Deepak Saxena
+with LOCKDEP=y:
 
-6) ixgbe counts UDP checksum errors that aren't due to an errata,
-   fix from Don Skidmore
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.31-rc4-next-20090727-04601-g24690ff #43
+---------------------------------------------
+hald-probe-seri/1580 is trying to acquire lock:
+ (&port->mutex){+.+.+.}, at: [<c029b327>] tty_port_block_til_ready+0x1f/0x3c
 
-7) Broadcom CNIC driver doesn't handle ISCSI_KEVENT_IF_DOWN messages
-   properly, fix from Michael Chan.
+but task is already holding lock:
+ (&port->mutex){+.+.+.}, at: [<c02bdc03>] uart_open+0x51/0x1e9
 
-8) Turn WoL on by default in skge if supported, from Rafael J. Wysocki.
+other info that might help us debug this:
+1 lock held by hald-probe-seri/1580:
+ #0:  (&port->mutex){+.+.+.}, at: [<c02bdc03>] uart_open+0x51/0x1e9
 
-9) ROSE protocol uses static buffer for computing procfs output
-   strings, which doesn't work very well on SMP, fix from Ralf Baechle
-
-10) When bridging's br_add_if fails, we don't release kobjects properly,
-    fix from Xiaotian Feng
-
-11) Fix WoL for 8169 chips, from François Romieu.
-
-12) Several out-of-bounds array access fixes from Roel Kluin
-    (eepro, fealnx, at1700, tokenring)
-
-13) Netxen driver fix for suspend/resume, wasn't resetting the
-    consumer ring pointer properly.  Fix from Dhananjay Phadke.
-
-14) Wireless fixes from John Linville and the wireless crew.
-
-Please pull, thanks a lot!
-
-The following changes since commit e00b95debb9a0f023b61abcd4b1e74f687276b47:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../bp/bp
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Ajit Khaparde (1):
-      be2net: Bug fix in the non-lro path. Size of received packet was not updated in statistics properly.
-
-Alan Jenkins (3):
-      rfkill: fix rfkill_set_states() to set the hw state
-      rfkill: remove too-strict __must_check
-      acer-wmi: fix rfkill conversion
-
-Alessandro Rubini (1):
-      smc91x.h: add config for Nomadik evaluation kit
-
-Alexander Beregalov (1):
-      net: KS8851 needs to depend on MII
-
-Andy Gospodarek (1):
-      ixgbe: remove unnecessary call to device_init_wakeup
-
-Andy Whitcroft (1):
-      rt2x00: Fix chipset detection for rt2500usb
-
-Anton Vorontsov (4):
-      of/mdio: Add support function for Ethernet fixed-link property
-      fs_enet: Revive fixed link support
-      gianfar: Revive fixed link support
-      ucc_geth: Revive fixed link support
-
-Bob Copeland (1):
-      ath5k: temporarily disable crypto for AP mode
-
-Christian Lamparter (1):
-      cfg80211: double free in __cfg80211_scan_done
-
-Dan Carpenter (1):
-      p54spi: fix potential null deref in p54spi.c
-
-David S. Miller (1):
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
-
-Deepak Saxena (1):
-      net: irda: init spinlock after memcpy
-
-Dhananjay Phadke (1):
-      netxen: reset ring consumer during cleanup
-
-Don Skidmore (1):
-      ixgbe: fix for 82599 errata marking UDP checksum errors
-
-Javier Cardona (1):
-      mac80211: use correct address for mesh Path Error
-
-Johannes Berg (4):
-      mac80211: disable mesh
-      rfkill: allow toggling soft state in sysfs again
-      mac80211_hwsim: fix unregistration
-      mac80211_hwsim: fix use after free
-
-Larry Finger (1):
-      rtl8187: Fix for kernel oops when unloading with LEDs enabled
-
-Lucy Liu (1):
-      ixgbe: Don't priority tag control frames in DCB mode
-
-Luis R. Rodriguez (2):
-      ath9k: Tune ANI function processing on AP mode during ANI reset
-      ath: add support for special 0x8000 regulatory domain
-
-Marek Vasut (1):
-      libertas: Fix problem with broken V4 firmware on CF8381
-
-Mark Ware (1):
-      net: Rework mdio-ofgpio driver to use of_mdio infrastructure
-
-Michael Chan (1):
-      cnic: Fix ISCSI_KEVENT_IF_DOWN message handling.
-
-Niko Jokinen (1):
-      nl80211: Memory leak fixed
-
-Pavel Roskin (1):
-      mac80211: fix injection in monitor mode
-
-Rafael J. Wysocki (1):
-      skge: Enable WoL by default if supported
-
-Ralf Baechle (1):
-      NET: ROSE: Don't use static buffer.
-
-Reinette Chatre (2):
-      iwlwifi: only show active power level via sysfs
-      iwlwifi: only update byte count table during aggregation
-
-Roel Kluin (1):
-      eepro: Read buffer overflow
-
-Uwe Kleine-König (1):
-      register at91_ether using platform_driver_probe
-
-Xiaotian Feng (1):
-      net/bridge: use kobject_put to release kobject in br_add_if error path
-
-Yi Zou (1):
-      ixgbe: Enable FCoE offload when DCB is enabled for 82599
-
-Zhu Yi (1):
-      iwmc3200wifi: fix NULL pointer dereference in iwm_if_free
-
-françois romieu (1):
-      r8169: WakeOnLan fix for the 8168
-
-roel kluin (3):
-      fealnx: Write outside array bounds
-      at1700: Read buffer overflow
-      tokenring: Read buffer overflow
-
- drivers/net/Kconfig                         |    1 +
- drivers/net/arm/at91_ether.c                |    3 +-
- drivers/net/at1700.c                        |    2 +-
- drivers/net/benet/be_main.c                 |    8 ++--
- drivers/net/cnic.c                          |   23 +++++++-
- drivers/net/eepro.c                         |    2 +-
- drivers/net/fealnx.c                        |    3 +-
- drivers/net/fs_enet/fs_enet-main.c          |   20 ++++----
- drivers/net/gianfar.c                       |   24 +++------
- drivers/net/ixgbe/ixgbe.h                   |    1 +
- drivers/net/ixgbe/ixgbe_dcb_nl.c            |   24 ++++++++
- drivers/net/ixgbe/ixgbe_main.c              |   52 +++++++++++-------
- drivers/net/netxen/netxen_nic_init.c        |    7 +++
- drivers/net/phy/mdio-gpio.c                 |   77 ++++++++++++--------------
- drivers/net/r8169.c                         |   13 ++++-
- drivers/net/skge.c                          |    4 +-
- drivers/net/smc91x.h                        |    3 +-
- drivers/net/tokenring/ibmtr.c               |    2 +-
- drivers/net/ucc_geth.c                      |   23 +++------
- drivers/net/wireless/ath/ath5k/base.c       |    3 +
- drivers/net/wireless/ath/ath9k/ani.c        |   12 ++++
- drivers/net/wireless/ath/regd.c             |   17 ++++++
- drivers/net/wireless/iwlwifi/iwl-agn.c      |    4 +-
- drivers/net/wireless/iwlwifi/iwl-tx.c       |    3 +-
- drivers/net/wireless/iwlwifi/iwl3945-base.c |    4 +-
- drivers/net/wireless/iwmc3200wifi/netdev.c  |    2 +-
- drivers/net/wireless/libertas/cmd.c         |    8 +++-
- drivers/net/wireless/libertas/defs.h        |    2 +
- drivers/net/wireless/mac80211_hwsim.c       |    6 +-
- drivers/net/wireless/p54/p54spi.c           |    2 +-
- drivers/net/wireless/rt2x00/rt2500usb.c     |    4 +-
- drivers/net/wireless/rtl818x/rtl8187_leds.c |    3 +-
- drivers/of/of_mdio.c                        |   42 +++++++++++++++
- drivers/platform/x86/acer-wmi.c             |    2 +-
- include/linux/of_mdio.h                     |    3 +
- include/linux/rfkill.h                      |    2 +-
- include/net/rose.h                          |    2 +-
- net/bridge/br_if.c                          |    2 +-
- net/irda/irttp.c                            |    1 +
- net/mac80211/Kconfig                        |    1 +
- net/mac80211/mesh_pathtbl.c                 |   11 +++-
- net/mac80211/tx.c                           |    2 +-
- net/rfkill/core.c                           |   31 ++++++++---
- net/rose/af_rose.c                          |   18 +++----
- net/rose/rose_route.c                       |   23 ++++----
- net/wireless/nl80211.c                      |    5 +-
- net/wireless/scan.c                         |    3 +-
- 47 files changed, 336 insertions(+), 174 deletions(-)
+stack backtrace:
+Pid: 1580, comm: hald-probe-seri Not tainted 2.6.31-rc4-next-20090727-04601-g24690ff #43
+Call Trace:
+ [<c0396406>] ? printk+0xf/0x11
+ [<c014b29b>] __lock_acquire+0xc21/0x12b5
+ [<c029b327>] ? tty_port_block_til_ready+0x1f/0x3c
+ [<c014b975>] lock_acquire+0x46/0x62
+ [<c029b327>] ? tty_port_block_til_ready+0x1f/0x3c
+ [<c0397abf>] mutex_lock_nested+0x43/0x28e
+ [<c029b327>] ? tty_port_block_til_ready+0x1f/0x3c
+ [<c0149c14>] ? trace_hardirqs_on_caller+0x100/0x121
+ [<c0149c40>] ? trace_hardirqs_on+0xb/0xd
+ [<c029b327>] tty_port_block_til_ready+0x1f/0x3c
+ [<c02bdcdc>] uart_open+0x12a/0x1e9
+ [<c0296742>] tty_open+0x291/0x38f
+ [<c018b8bf>] chrdev_open+0x156/0x16d
+ [<c0187f02>] __dentry_open+0x131/0x21b
+ [<c019b5a5>] ? mntput_no_expire+0x19/0xb4
+ [<c018808a>] nameidata_to_filp+0x2d/0x42
+ [<c018b769>] ? chrdev_open+0x0/0x16d
+ [<c01928d7>] do_filp_open+0x3dc/0x6dc
+ [<c019a161>] ? alloc_fd+0xbd/0xca
+ [<c0187cd6>] do_sys_open+0x48/0xe4
+ [<c01029fc>] ? restore_all_notrace+0x0/0x18
+ [<c0187db4>] sys_open+0x1e/0x26
+ [<c0102948>] sysenter_do_call+0x12/0x36
