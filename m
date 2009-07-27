@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753091AbZG0RCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbZG0RCo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753091AbZG0RCU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 13:02:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbZG0RCU
+	id S1753532AbZG0RCo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 13:02:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753418AbZG0RCn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 13:02:20 -0400
-Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:8898 "EHLO
-	TX2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751553AbZG0RCT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 13:02:19 -0400
-X-SpamScore: -4
-X-BigFish: VPS-4(zz98dNzz1202hzzz32i6bh203h6di62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 8,
-X-WSS-ID: 0KNG9ZI-02-3QW-02
-X-M-MSG: 
-Date: Mon, 27 Jul 2009 19:01:48 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: wan wei <onewayforever@gmail.com>
-CC: dougthompson@xmission.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] amd64_edac: fix insmod fail while ecc is enabled
-Message-ID: <20090727170148.GG28229@aftab>
-References: <86bb1aef0907270947o6219f950xf13a077b30486d41@mail.gmail.com>
+	Mon, 27 Jul 2009 13:02:43 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55501 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753398AbZG0RCm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 13:02:42 -0400
+Date: Mon, 27 Jul 2009 18:59:01 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 1/2] task_struct cleanup: move binfmt field to mm_struct
+Message-ID: <20090727165901.GA8854@redhat.com>
+References: <4A56FEF7.80207@ct.jp.nec.com> <20090722132302.a9889eb3.akpm@linux-foundation.org> <20090722220353.88B2A67B6E@magilla.sf.frob.com> <20090723161806.GA5690@redhat.com> <4A68FD3B.7040606@ct.jp.nec.com> <4A693569.1090009@ct.jp.nec.com> <20090724161449.GA3509@redhat.com> <4A6CF466.9040608@ct.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <86bb1aef0907270947o6219f950xf13a077b30486d41@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 27 Jul 2009 17:01:46.0444 (UTC) FILETIME=[ECA678C0:01CA0EDB]
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <4A6CF466.9040608@ct.jp.nec.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 28, 2009 at 12:47:33AM +0800, wan wei wrote:
-> Signed-off-by: Wan Wei<wanwei@mail.dawning.com.cn>
+(add Rusty)
 
-Thanks for that but I have a patch addressing the issue and wanted
-to test it a bit in linux-next before sending it to Linus. I'd much
-appreciate it if you gave it a try:
+On 07/27, Hiroshi Shimamoto wrote:
+>
+>  void set_binfmt(struct linux_binfmt *new)
+>  {
+> -	if (current->binfmt)
+> -		module_put(current->binfmt->module);
+> +	struct mm_struct *mm = current->mm;
+> +
+> +	BUG_ON(!mm);
+> +	if (mm->binfmt)
 
-http://git.kernel.org/?p=linux/kernel/git/bp/bp.git;a=commit;h=076119c66b80ebc7da2d76c8d414fa9fa0ed577a
+I am not sure we need this BUG_ON() above. If mm == NULL we will
+have the same debug info after the crash.
 
-Thanks.
+> @@ -619,6 +621,9 @@ struct mm_struct *dup_mm(struct task_struct *tsk)
+>  	mm->hiwater_rss = get_mm_rss(mm);
+>  	mm->hiwater_vm = mm->total_vm;
+>
+> +	if (mm->binfmt && !try_module_get(mm->binfmt->module))
+> +		goto free_pt;
 
--- 
-Regards/Gruss,
-Boris.
+free_pt does mmput() which calls module_put(mm->binfmt->module). This
+is not right when try_module_get() fails. Hmm, the same if dup_mmap()
+fails, we are doing an extra module_put().
 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+Perhaps we can use __module_get() again, current->mm->binfmt holds a
+reference. But this is a user-visible change, currently fork() can't
+succeed if ->module->state == MODULE_STATE_GOING.
+
+So I think we need another small change:
+
+	 free_pt:
+	+	mm->binfmt = NULL;
+	 	mmput(mm);
+
+Oleg.
 
