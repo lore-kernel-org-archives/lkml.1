@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbZG0W0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755372AbZG0W1D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755374AbZG0W0H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 18:26:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755363AbZG0W0H
+	id S1755372AbZG0W1D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 18:27:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbZG0W1C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 18:26:07 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:52503 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755360AbZG0W0F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 18:26:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:message-id;
-        b=c0V1udxCfOJnZ4TuhK7eF3aWbIO+6TYddiRMrWnoBpzzEg5jKJynQOzD9jSnH8+ZSu
-         plToCU4n4g5GBnyKl/lmqlHaYjchXmTlWTtRITBvCkArECgc2MMPRE4z2FTDBo0fbyOh
-         a4p1GT6ypEAHXzf8Das+mobQ+IFmBt8PdypLc=
-Date: Mon, 27 Jul 2009 15:25:51 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+	Mon, 27 Jul 2009 18:27:02 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36989 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754126AbZG0W1B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 18:27:01 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+Subject: Re: [Bug #13730] hitting lockdep limits...
+Date: Tue, 28 Jul 2009 00:27:38 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>
-Subject: Re: [Bug #13643] Touchpad lost synchronization after resume from
-	suspend to RAM
-References: <Jya1GruKQpD.A.16.2GObKB@chimera> <3zAHs5O6maO.A.JcF.gIObKB@chimera> <20090726233331.GA4712@vespa.holoscopio.com> <200907280015.56826.rjw@sisk.pl>
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <Jya1GruKQpD.A.16.2GObKB@chimera> <1248675700.6987.1416.camel@twins> <6278d2220907270207g7ff93fd1kdf59e32f139269d3@mail.gmail.com>
+In-Reply-To: <6278d2220907270207g7ff93fd1kdf59e32f139269d3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200907280015.56826.rjw@sisk.pl>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Message-Id: <20090727225946.048A3526EC9@mailhub.coreip.homeip.net>
+Message-Id: <200907280027.39339.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 28, 2009 at 12:15:54AM +0200, Rafael J. Wysocki wrote:
-> On Monday 27 July 2009, Thadeu Lima de Souza Cascardo wrote:
-> > On Sun, Jul 26, 2009 at 10:23:34PM +0200, Rafael J. Wysocki wrote:
-> > > This message has been generated automatically as a part of a report
-> > > of recent regressions.
-> > > 
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.30.  Please verify if it still should be listed and let me know
-> > > (either way).
-> > > 
-> > > 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13643
-> > > Subject		: Touchpad lost synchronization after resume from suspend to RAM
-> > > Submitter	: Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>
-> > > Date		: 2009-06-28 10:42 (29 days old)
-> > > References	: http://lkml.org/lkml/2009/6/23/365
-> > > 		  2.6.30-rc1: touchpad disabled
-> > > 		  http://lkml.org/lkml/2009/6/25/256
-> > > Handled-By	: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-> > > Patch		: http://patchwork.kernel.org/patch/34075/
-> > > 
-> > > 
-> > 
-> > I guess my patch did fix it and we had other confirmations as well,
-> > didn't we?
+On Monday 27 July 2009, Daniel J Blueman wrote:
+> On Mon, Jul 27, 2009 at 7:21 AM, Peter Zijlstra<a.p.zijlstra@chello.nl> wrote:
+> > On Sun, 2009-07-26 at 22:28 +0200, Rafael J. Wysocki wrote:
+> >> This message has been generated automatically as a part of a report
+> >> of recent regressions.
+> >>
+> >> The following bug entry is on the current list of known regressions
+> >> from 2.6.30.  Please verify if it still should be listed and let me know
+> >> (either way).
+> >>
+> >>
+> >> Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=13730
+> >> Subject               : hitting lockdep limits...
+> >> Submitter     : Daniel J Blueman <daniel.blueman@gmail.com>
+> >> Date          : 2009-07-05 18:19 (22 days old)
+> >> References    : http://marc.info/?l=linux-kernel&m=124681799023782&w=4
+> >>
+> >
+> >
+> > Is this still a problem after?
+> >
+> > commit b0a5b83ee0fce9dbf8ff5fe1f8c9ae7dfafe458c
+> > Author: Ingo Molnar <mingo@elte.hu>
+> > Date:   Tue Jun 16 16:11:14 2009 +0200
+> >
+> >    dma-debug: Put all hash-chain locks into the same lock class
 > 
-> Yes, we did.  It's waiting in the Dmirty's tree for Linus to take it AFAICS.
-> 
+> Using the same .config and use profile, I haven't seen this in
+> 2.6.31-rc4, thus this can be closed. I've updated the kernel bugzilla
+> entry also.
 
-I believe it is in -rc4 actually.
+Thanks, closed.
 
--- 
-Dmitry
+Rafael
