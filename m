@@ -1,88 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752572AbZG0Pr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752254AbZG0PuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752572AbZG0Pr4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 11:47:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752059AbZG0Prz
+	id S1752254AbZG0PuA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 11:50:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751110AbZG0Pt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 11:47:55 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:27818
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751896AbZG0Prz (ORCPT
+	Mon, 27 Jul 2009 11:49:59 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:19717 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751097AbZG0Pt6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 11:47:55 -0400
-Message-ID: <4A6DCC28.7000309@panasas.com>
-Date: Mon, 27 Jul 2009 18:47:52 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Mon, 27 Jul 2009 11:49:58 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=lSy7Us0EmisJBL+6zUUc1MSf3ZQulJBZ2EKm2k8eQ0AoVr/3YnRaZb5SP0EYt5j7Q
+	h4jbsK1msy+Gpl2HUfPqQ==
 MIME-Version: 1.0
-To: "Martin K. Petersen" <martin.petersen@oracle.com>
-CC: Matthew Wilcox <matthew@wil.cx>,
-       Tarkan Erimer <tarkan.erimer@turknet.net.tr>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [BISECTED] Re: [BUG] Linux-2.6.31-rc1 Fails To Recognize Some
- USB Disks
-References: <4A4472DF.1050900@turknet.net.tr>	<yq1zlbrn2rj.fsf@sermon.lab.mkp.net> <4A4878AC.3050208@turknet.net.tr>	<yq1fxdji03l.fsf@sermon.lab.mkp.net> <4A69932E.90906@turknet.net.tr>	<yq1fxcmnpqa.fsf@sermon.lab.mkp.net> <4A69D093.8020108@turknet.net.tr>	<yq1hbwykj80.fsf@sermon.lab.mkp.net>	<20090727020611.GC3711@parisc-linux.org>	<yq18wiakfq4.fsf@sermon.lab.mkp.net> <4A6D64DC.3020001@panasas.com>	<yq1ocr66vy6.fsf@sermon.lab.mkp.net> <4A6DBEEB.5020302@panasas.com> <yq1fxci6tmc.fsf@sermon.lab.mkp.net> <4A6DCA7F.4080006@panasas.com>
-In-Reply-To: <4A6DCA7F.4080006@panasas.com>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <4A6D37A4.6020605@cn.fujitsu.com>
+References: <20090724032033.2463.79256.stgit@hastromil.mtv.corp.google.com>
+	 <20090724032150.2463.49019.stgit@hastromil.mtv.corp.google.com>
+	 <4A6D37A4.6020605@cn.fujitsu.com>
+Date: Mon, 27 Jul 2009 11:49:39 -0400
+Message-ID: <2f86c2480907270849x65af933fnc58d3cb243649b1f@mail.gmail.com>
+Subject: Re: [PATCH 3/6] Quick vmalloc vs kmalloc fix to the case where array 
+	size is too large
+From: Benjamin Blum <bblum@google.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       akpm@linux-foundation.org, serue@us.ibm.com, menage@google.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 Jul 2009 15:47:55.0826 (UTC) FILETIME=[9BCBD120:01CA0ED1]
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/27/2009 06:40 PM, Boaz Harrosh wrote:
-> On 07/27/2009 06:19 PM, Martin K. Petersen wrote:
->>>>>>> "Boaz" == Boaz Harrosh <bharrosh@panasas.com> writes:
->> Boaz> Haa, OK. I thought INQUIRY EVPD=1 page=0 was so old it sure must
->> Boaz> be supported but you are saying it's only SBC2/SPC3. So I guess
->> Boaz> there is nothing else we can do.
+On Mon, Jul 27, 2009 at 1:14 AM, Li Zefan<lizf@cn.fujitsu.com> wrote:
+> Ben Blum wrote:
+>> Quick vmalloc vs kmalloc fix to the case where array size is too large
 >>
->> Yes, EVPD must be supported.  USB-ATA bridge firmware writers are
->> dyslexic.  Film at 11.
+>> Separates all pidlist allocation requests to a separate function that judges
+>> based on the requested size whether or not the array needs to be vmalloced or
+>> can be gotten via kmalloc, and similar for kfree/vfree. Should be replaced
+>> entirely with a kernel-wide solution to this general problem.
 >>
->> What I'm saying is that *our* reason for sending out extended inquiry
->> appeared in SBC2 (block limits VPD).  So there is no point in asking
->> devices older than that.
+>> Depends on cgroup-pidlist-namespace.patch, cgroup-procs.patch
 >>
->> The fact that this fixes the problem for Tarkan's crappy disk is a
->> (quasi-intentional) side effect.  My patch simply tries to be
->> conservative about asking for those pages.
+>> Signed-off-by: Ben Blum <bblum@google.com>
 >>
->>
->> Boaz> What I hate about all this is that in USB the scsi_level is hard
->> Boaz> coded at the driver, without actually been able to probe the
->> Boaz> device about it.
->>
->> Huh, what?
->>
-> 
-> Look in drivers/usb/storage::slave_configure
-> 
-> 		/* Some devices report a SCSI revision level above 2 but are
-> 		 * unable to handle the REPORT LUNS command (for which
-> 		 * support is mandatory at level 3).  Since we already have
-> 		 * a Get-Max-LUN request, we won't lose much by setting the
-> 		 * revision level down to 2.  The only devices that would be
-> 		 * affected are those with sparse LUNs. */
-> 		if (sdev->scsi_level > SCSI_2)
-> 			sdev->sdev_target->scsi_level =
-> 					sdev->scsi_level = SCSI_2;
-> 
-Maybe it should be:
+>
+> We'll either use flex_array or implement Paul's proposal, so I think
+> we can drop this patch?
+>
+>
 
-		if (sdev->scsi_level > SCSI_2 && sdev->scsi_level < SCSI_SPC_2)
-			sdev->sdev_target->scsi_level =
-					sdev->scsi_level = SCSI_2;
-
-To account for the devices the comment is talking about. Which seems to be
-written at the time SCSI_3 was the highest level.
-
-> So the scsi_level is hard coded to very low.
-> Or am I reading this code wrong and it is only triggered for some but not
-> all devices?
-> 
-> Boaz
-> --
-
-Sigh
-Boaz
+Depending how long they'll take, yes. This is meant to be an
+intermediate correctness patch.
