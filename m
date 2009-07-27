@@ -1,185 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbZG0DMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755854AbZG0DRv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755836AbZG0DMr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 23:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755576AbZG0DMr
+	id S1755854AbZG0DRv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 23:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbZG0DRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 23:12:47 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59898 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755491AbZG0DMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 23:12:46 -0400
-Message-ID: <4A6D1BCF.1030109@cn.fujitsu.com>
-Date: Mon, 27 Jul 2009 11:15:27 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sun, 26 Jul 2009 23:17:51 -0400
+Received: from mail-qy0-f181.google.com ([209.85.221.181]:36203 "EHLO
+	mail-qy0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755831AbZG0DRu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Jul 2009 23:17:50 -0400
+X-Greylist: delayed 462 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 Jul 2009 23:17:50 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=Y9CuXtVsJBUWOBBuH3UDgxiLFIlN/mKBdkPaBzQumJxmwJJGOW7Tw98Z+hj6idRS+d
+         W8+Wuv/ez2cPtyT731/4mzl3fg8enmBge2CHuRUWGRDcunzcJbAK050L5wyMDJWWPQU9
+         lGOhW7MeS1wurJpLOe8oseYZJRHs3L5rsmX+A=
 MIME-Version: 1.0
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Pavel Machek <pavel@ucw.cz>, mingo@elte.hu, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: Re: [PATCH v3 1/2] Add function to convert between calendar time
- and broken-down time for universal use
-References: <4A5C3BC0.6020701@cn.fujitsu.com>	<20090714151040.b7b3b26d.akpm@linux-foundation.org>	<20090718115019.GH1433@ucw.cz>	<04e101ca08e5$be078fa0$808410ac@zhaoleiwin>	<20090719202018.497f7ec1.akpm@linux-foundation.org>	<4A643EFE.7090103@cn.fujitsu.com> <4A643F36.5090200@cn.fujitsu.com> <87ocr9mi8h.fsf@devron.myhome.or.jp>
-In-Reply-To: <87ocr9mi8h.fsf@devron.myhome.or.jp>
-Content-Type: text/plain; charset=ISO-8859-1
+Date: Mon, 27 Jul 2009 11:10:08 +0800
+Message-ID: <2375c9f90907262010s36980f88q28f10b6bc2b5263f@mail.gmail.com>
+Subject: Boot panic in 2.6.31-rc4
+From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OGAWA Hirofumi wrote:
-> Zhaolei <zhaolei@cn.fujitsu.com> writes:
-> 
->> +/*
->> + * Similar to the struct tm in userspace <time.h>, but it needs to be here so
->> + * that the kernel source is self contained.
->> + */
->> +struct tm {
->> +	/*
->> +	 * the number of seconds after the minute, normally in the range
->> +	 * 0 to 59, but can be up to 60 to allow for leap seconds
->> +	 */
->> +	int tm_sec;
->> +	/* the number of minutes after the hour, in the range 0 to 59*/
->> +	int tm_min;
->> +	/* the number of hours past midnight, in the range 0 to 23 */
->> +	int tm_hour;
->> +	/* the day of the month, in the range 1 to 31 */
->> +	int tm_mday;
->> +	/* the number of months since January, in the range 0 to 11 */
->> +	int tm_mon;
->> +	/* the number of years since 1900 */
->> +	int tm_year;
-> 
-> Why isn't this "long"? "int" can overflow.
+Hi,
 
-Hello, OGAWA-san:
+There is a regression in current Linus tree, I can't boot my RHEL5 any more.
 
-Thanks for your review.
+I can boot it before 2.6.31, I remember, and also the RHEL5's kernel, of course.
+But not since 2.6.31-rc2 or -rc3.
 
-I selected int to make it same with user-space struct tm.
+(I used RHEL5's config and did "make oldconfig")
 
-In 32-bit machine, long have same length with int, and still can overflow,
-It we want to avoid it in all platform, we should use long long,
-and make division complex.
+There is a boot panic now, it happened just after loading dm-*
+modules, and failed
+at not being able to find "/dev/VolGroup00", so I think there is something wrong
+with the dm-* modules.
 
-Maybe make it same with user-space struct tm is ok.
+I checked the compiled kernel modules, and found the following difference:
 
->> +	/* the number of days since Sunday, in the range 0 to 6 */
->> +	int tm_wday;
->> +	/* the number of days since January 1, in the range 0 to 365 */
->> +	int tm_yday;
->> +};
-> 
-> Those are needed? 
+--- /proc/self/fd/11	2009-07-27 10:56:06.975928034 +0800
++++ /proc/self/fd/12	2009-07-27 10:56:06.973928034 +0800
+@@ -1,16 +1,13 @@
+ kernel/drivers/md/dm-crypt.ko
+-kernel/drivers/md/dm-emc.ko
+-kernel/drivers/md/dm-hp-sw.ko
++kernel/drivers/md/dm-delay.ko
+ kernel/drivers/md/dm-log.ko
+-kernel/drivers/md/dm-mem-cache.ko
+-kernel/drivers/md/dm-message.ko
+ kernel/drivers/md/dm-mirror.ko
+ kernel/drivers/md/dm-mod.ko
+ kernel/drivers/md/dm-multipath.ko
+-kernel/drivers/md/dm-raid45.ko  (<=====Note this one!)
+-kernel/drivers/md/dm-rdac.ko
+-kernel/drivers/md/dm-region_hash.ko
++kernel/drivers/md/dm-queue-length.ko
++kernel/drivers/md/dm-region-hash.ko
+ kernel/drivers/md/dm-round-robin.ko
++kernel/drivers/md/dm-service-time.ko
+ kernel/drivers/md/dm-snapshot.ko
+ kernel/drivers/md/dm-zero.ko
+ kernel/drivers/md/faulty.ko
+@@ -20,4 +17,4 @@
+ kernel/drivers/md/raid10.ko
+ kernel/drivers/md/raid1.ko
+ kernel/drivers/md/raid456.ko
+-kernel/drivers/md/xor.ko
++kernel/drivers/md/raid6_pq.ko
 
-Those are not needed by FAT-fs's code, but as a library,
-I keep them for generic use and keep same with user-space struct tm.
+I also tried to make some aliases for dm-region_hash and dm-raid45, but
+that still doesn't work...
 
->> +
->> +extern struct tm *__offtime(__kernel_time_t totalsecs, int offset,
->> +			    struct tm *result);
-> 
-> Why isn't time_t simply, not __kernel_time_t?
+Am I missing something here? Can anyone help me out?
 
-Yes, thanks.
-It should be time_t.
-I will fix it.
-
->> +/**
->> + * gmtime_r - converts the calendar time to UTC broken-down time
->> + *
->> + * @totalsecs	the number of seconds elapsed since 00:00:00 on January 1, 1970,
->> + *		Coordinated Universal Time (UTC).
->> + * @result	pointer to struct tm variable to receive broken-down time
->> + *
->> + * Return a pointer to the broken-down time result on success,
->> + * and NULL on when the year does not fit into an integer.
->> + *
->> + * Similar to the gmtime_r() in glibc, broken-down time is expressed in
->> + * Coordinated Universal Time (UTC).
->> + */
->> +static inline struct tm *gmtime_r(__kernel_time_t totalsecs, struct tm *result)
->> +{
->> +	return __offtime(totalsecs, 0, result);
->> +}
->> +
->> +/**
->> + * localtime_r - converts the calendar time to local broken-down time
->> + *
->> + * @totalsecs	the number of seconds elapsed since 00:00:00 on January 1, 1970,
->> + *		Coordinated Universal Time (UTC).
->> + * @result	pointer to struct tm variable to receive broken-down time
->> + *
->> + * Return a pointer to the broken-down time result on success,
->> + * and NULL on when the year does not fit into an integer.
->> + *
->> + * Similar to the localtime_r() in glibc, broken-down time is expressed
->> + * relative to sys_tz.
->> + */
->> +static inline struct tm *localtime_r(__kernel_time_t totalsecs,
->> +				     struct tm *result)
->> +{
->> +	return __offtime(totalsecs, -sys_tz.tz_minuteswest * 60, result);
->> +}
-> 
-> I think those are confusable. The real function of those needs to handle
-> timezone database. Especially, sys_tz.tz_minuteswest in localtime_r() is
-> known as wrong.
-> 
-> Are you going to fix it? Otherwise I don't think it would not be good to
-> use it easily as generic function like this.
-
-Actually, it is hard to select.
-
-I don't schedule to introduce complex timezone database into kernel,
-but as you said, localtime() without timezone database is not complete.
-But localtime_r is easy to use and understood, it is similar with
-userspace same-name function...
-
->> +/*
->> + * Nonzero if YEAR is a leap year (every 4 years,
->> + * except every 100th isn't, and every 400th is).
->> + */
->> +static int __isleap(unsigned int year)
-> 
-> long year. This breaks negative time_t.
-> 
->> +{
->> +	return (year) % 4 == 0 && ((year) % 100 != 0 || (year) % 400 == 0);
->> +}
-> 
->> +/**
->> + * __offtime - converts the calendar time to local broken-down time
->> + *
->> + * @totalsecs	the number of seconds elapsed since 00:00:00 on January 1, 1970,
->> + *		Coordinated Universal Time (UTC).
->> + * @offset	offset seconds adding to totalsecs.
->> + * @result	pointer to struct tm variable to receive broken-down time
->> + *
->> + * Return a pointer to the broken-down time result on success,
->> + * and NULL on when the year does not fit into an integer.
->> + *
->> + * This function is for internal use, call gmtime_r() and localtime_r() instead.
->> + */ 
->> +struct tm *__offtime(__kernel_time_t totalsecs, int offset, struct tm *result)
->> +{
-> 
-> So, I suggest to consolidate this code only, and don't provide
-> gmtime_r()/localtime_r(), and use more good function name for
-> __offtime() (I'm not sure, however, personally I feel __offtime is not
-> obvious what's doing).
-
-What about just use gmtime_r(rename __offtime->gmtime_r)?
-
-In fact I think both way(hode original localtime/gmtime or delete them) have
-merit and demerit.
-Hode them will make it easy to use, delete them will make function more exact.
-
-Hi, Andrew
-What is your opinion?
-
-Thanks
-Zhaolei
-
+Thanks!
