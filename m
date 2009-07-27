@@ -1,89 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751106AbZG0TYF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753585AbZG0TcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751106AbZG0TYF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 15:24:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750756AbZG0TYE
+	id S1753585AbZG0TcY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 15:32:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbZG0TcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 15:24:04 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:36935 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750732AbZG0TYD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 15:24:03 -0400
-Date: Mon, 27 Jul 2009 20:23:42 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Andreas Dilger <adilger@sun.com>
-Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, malware-list@dmesg.printk.net,
-       Valdis.Kletnieks@vt.edu, greg@kroah.com, jcm@redhat.com,
-       douglas.leeder@sophos.com, tytso@mit.edu, arjan@infradead.org,
-       david@lang.hm, jengelh@medozas.de, aviro@redhat.com, mrkafk@gmail.com,
-       alexl@redhat.com, jack@suse.cz, tvrtko.ursulin@sophos.com,
-       a.p.zijlstra@chello.nl, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
-       mmorley@hcl.in, pavel@suse.cz
-Subject: Re: fanotify - overall design before I start sending patches
-Message-ID: <20090727192342.GA27895@shareable.org>
-References: <1248466429.3567.82.camel@localhost> <20090724224813.GK27755@shareable.org> <1248479367.3567.133.camel@localhost> <20090725002916.GB13556@shareable.org> <20090727183354.GM4231@webber.adilger.int>
+	Mon, 27 Jul 2009 15:32:23 -0400
+Received: from cantor.suse.de ([195.135.220.2]:60961 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752568AbZG0TcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 15:32:22 -0400
+Date: Mon, 27 Jul 2009 12:20:30 -0700
+From: Greg KH <gregkh@suse.de>
+To: Nicolas Palix <npalix@diku.dk>
+Cc: hjanssen@microsoft.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] Staging: hv: Transform typedef HANDLE into void *
+Message-ID: <20090727192030.GA4201@suse.de>
+References: <200907272111.35259.npalix@diku.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090727183354.GM4231@webber.adilger.int>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200907272111.35259.npalix@diku.dk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Dilger wrote:
-> On Jul 25, 2009  01:29 +0100, Jamie Lokier wrote:
-> > Eric Paris wrote:
-> > > But maybe I should jsut do the 'if you have fanotify open, you don't
-> > > create other fanotify events'...   so everyone gets what they expect...
-> > 
-> > O_NONOTIFY.  Similar security concerns, more control.
-> > 
-> > The security concern is clear: If you allow a process with fanotify
-> > open to not create events, then any (root) process can open a fanotify
-> > socket to hide it's behaviour.
+On Mon, Jul 27, 2009 at 09:11:34PM +0200, Nicolas Palix wrote:
 > 
-> I think the "fanotify doesn't generate more fanotify events" makes the
-> most sense.  Given that the open will be done in the kernel specifically
-> due to fanotify, this doesn't actually allow the listener to open files
-> without detection (unlike the "O_NONOTIFY" flag would).  The fanotify
-> "opens" would only be in response to other processes opening the file.
+> Remove typedef HANDLE which aliases a void pointer and use void *
+> anywhere HANDLE was used.
 
-Nice idea (if I understand it) - the file descriptors opened by
-fanotify wouldn't cause fanotify events?  Effectively having an
-in-kernel O_NONOTIFY flag which can't be set from userspace?
+No, I would like to change this to be the "real" pointer that the HANDLE
+was used for, instead of just a void pointer.  These need to point to
+real structures.  I did this already for the locks, and can be done for
+pretty much everything else as well.
 
-'if you have fanotify open, you don't create other fanotify events' is
-too severe - it means you can circumvent fanotify entirely for
-everything your process does by just opening a fanotify socket and not
-using it, which is clearly worse than having an O_NONOTIFY flag.
+> -int WorkQueueQueueWorkItem(HANDLE hWorkQueue, PFN_WORKITEM_CALLBACK workItem, void* context)
+> +int WorkQueueQueueWorkItem(void *hWorkQueue, PFN_WORKITEM_CALLBACK workItem, void *context)
+>  {
+>  	WORKQUEUE *wq = (WORKQUEUE *)hWorkQueue;
 
-All ways to avoid creating fanotify events introduce security and
-cache integrity problems though.
+Here's an example.  This should really be a pointer to a "work queue"
+and not a void pointer at all.  Changes like that would be gladly
+accepted.
 
-Why should processes which simply _watch_ the filesystem, without
-modifying any files, ever fail to receive information about file
-changes?  Why should they be unable to claim they provide integrity
-guarantees because of the loophole?
+thanks,
 
-So before we implement that loophole: let's ask ourselves if we really
-need it at all.
-
-What's wrong with fanotify-using applications generating events when
-they modify files themselves?
-
-An example was given where app A gets an event and modifies the file,
-then app B gets an event and modifies the file, and app A... cycling.
-
-But if you have two "virus checker" style applications fighting over
-modifying the same file without locking, you have much bigger problems
-already.  There's nothing to gain by fixing the fanotify cycle.
-
-Maybe there's no need to suppress events after all.
-
-Programs monitoring for writes to maintain caches or integrity checks
-will be much happier if they know they're getting all file modifications.
-
--- Jamie
+greg k-h
