@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbZG0JhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755934AbZG0Jha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755918AbZG0JhY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 05:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755903AbZG0JhX
+	id S1755934AbZG0Jha (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 05:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755777AbZG0Jh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 05:37:23 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:7637 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755353AbZG0JhW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 05:37:22 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=fiY7X4s6G2W63p7OzmB45bx+8qAFkQ5t2N7wm/R/F1t19bnD70Qh/F8+kDKmV9CaK
-	GfOPbZq2cyqyTa8btKPuQ==
-Date: Mon, 27 Jul 2009 02:37:13 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Larry Finger <Larry.Finger@lwfinger.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
-In-Reply-To: <84144f020907270008h2a985278of68e70ff1ee9265c@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.0907270227420.15760@chino.kir.corp.google.com>
-References: <DizPU9GBfHF.A.kgF.iWObKB@chimera> <H5-1lZIIeYK.A.Pi.BZObKB@chimera> <4A6CF220.7080605@lwfinger.net> <alpine.DEB.2.00.0907261722140.21259@chino.kir.corp.google.com> <84144f020907270008h2a985278of68e70ff1ee9265c@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="497827084-1036803123-1248687436=:15760"
-X-System-Of-Record: true
+	Mon, 27 Jul 2009 05:37:29 -0400
+Received: from slimlogic.co.uk ([89.16.172.20]:50047 "EHLO slimlogic.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755903AbZG0Jh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 05:37:27 -0400
+Subject: Re: [PATCH] regulator: da903x: add support for DA9030 BUCK2 with
+ DVM
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: broonie@opensource.wolfsonmicro.com, eric.y.miao@gmail.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4A6C313C.9050101@compulab.co.il>
+References: <1248594842-23456-1-git-send-email-mike@compulab.co.il>
+	 <1248601239.25964.883.camel@vega.slimlogic.co.uk>
+	 <4A6C313C.9050101@compulab.co.il>
+Content-Type: text/plain
+Date: Mon, 27 Jul 2009 10:37:25 +0100
+Message-Id: <1248687445.25964.977.camel@vega.slimlogic.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sun, 2009-07-26 at 13:34 +0300, Mike Rapoport wrote:
 
---497827084-1036803123-1248687436=:15760
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-
-On Mon, 27 Jul 2009, Pekka Enberg wrote:
-
-> > Hmm, I'm remembering differently.  I thought the root problem here has
-> > only been fixed in Pekka's slab-2.6.git tree with "slub: add option to
-> > disable higher order debugging slabs" and isn't currently in Linus' tree.
 > 
-> Yup, the fix is in slab.git and queued for 2.6.32. There was some
-> complaints from Christoph from the patch that need to be addressed
-> still.
+> > From: Mike Rapoport <mike@compulab.co.il>
+> Date: Sun, 26 Jul 2009 13:33:04 +0300
+> Subject: [PATCH] regulator: da903x: consolidate DA903[045]_DVC macros
+> 
+> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+> ---
+>  drivers/regulator/da903x.c |   66 +++++++++++--------------------------------
+>  1 files changed, 17 insertions(+), 49 deletions(-)
 > 
 
->From what I recall, he asked that calculate_sizes() be called twice, first 
-to determine if get_order(s->size) increased as the result of the metadata 
-and, if so, a second time with the flags disabled.
+Applied.
 
-slab_debug=O only disables debugging options that increase the min order 
-of slab as defined in DEBUG_FLAGS; it doesn't selectively disable some of 
-them when get_order(s->size) grows.  So it's quite sane, like my patch 
-does, to disable all DEBUG_FLAGS when
+Thanks
 
-	get_order(s->objsize) + DEBUG_SIZE_FLAGS > get_order(s->objsize)
+Liam
 
-without calling calculate_sizes() twice.
-
-We need DEBUG_FLAGS to determine which flags to mask off to reduce the 
-minimum order, so I don't see DEBUG_FLAGS_SIZE as troublesome.
-
-Christoph?
---497827084-1036803123-1248687436=:15760--
