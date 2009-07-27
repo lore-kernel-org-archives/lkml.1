@@ -1,92 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755584AbZG0B2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755598AbZG0Bn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755584AbZG0B2l (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 21:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbZG0B2l
+	id S1755598AbZG0Bn0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 21:43:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbZG0BnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 21:28:41 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:47267 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754701AbZG0B2k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 21:28:40 -0400
-To: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [BISECTED] Re: [BUG] Linux-2.6.31-rc1 Fails To Recognize Some USB Disks
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <4A4472DF.1050900@turknet.net.tr>
-	<yq1zlbrn2rj.fsf@sermon.lab.mkp.net> <4A4878AC.3050208@turknet.net.tr>
-	<yq1fxdji03l.fsf@sermon.lab.mkp.net> <4A69932E.90906@turknet.net.tr>
-	<yq1fxcmnpqa.fsf@sermon.lab.mkp.net> <4A69D093.8020108@turknet.net.tr>
-Date: Sun, 26 Jul 2009 21:28:15 -0400
-In-Reply-To: <4A69D093.8020108@turknet.net.tr> (Tarkan Erimer's message of
-	"Fri, 24 Jul 2009 18:17:39 +0300")
-Message-ID: <yq1hbwykj80.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Sun, 26 Jul 2009 21:43:25 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:61852 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754596AbZG0BnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Jul 2009 21:43:25 -0400
+Message-ID: <4A6D05DA.4010301@cn.fujitsu.com>
+Date: Mon, 27 Jul 2009 09:41:46 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Source-IP: abhmt008.oracle.com [141.146.116.17]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4A6D02B1.0100:SCFSTAT5015188,ss=1,fgs=0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/events: Add module tracepoints
+References: <4A6582C1.2040609@cn.fujitsu.com> <20090725153733.GB5295@nowhere>
+In-Reply-To: <20090725153733.GB5295@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Tarkan" == Tarkan Erimer <tarkan.erimer@turknet.net.tr> writes:
+Frederic Weisbecker wrote:
+> On Tue, Jul 21, 2009 at 04:56:33PM +0800, Li Zefan wrote:
+>> Add trace points to trace module_load, module_free, module_get,
+>> module_put and module_request, and use trace_event facility
+>> to get the trace output.
+>>
+>> Here's the sample output:
+>>
+>>      TASK-PID    CPU#    TIMESTAMP  FUNCTION
+>>         | |       |          |         |
+>>     <...>-42    [000]     1.758380: module_request: fb0 wait=1 call_site=fb_open
+>>     ...
+>>     <...>-60    [000]     3.269403: module_load: scsi_wait_scan 
+>>     <...>-60    [000]     3.269432: module_put: scsi_wait_scan call_site=sys_init_module refcnt=0
+>>     <...>-61    [001]     3.273168: module_free: scsi_wait_scan
+>>     ...
+>>     <...>-1021  [000]    13.836081: module_load: sunrpc 
+>>     <...>-1021  [000]    13.840589: module_put: sunrpc call_site=sys_init_module refcnt=-1
+>>     <...>-1027  [000]    13.848098: module_get: sunrpc call_site=try_module_get refcnt=0
+>>     <...>-1027  [000]    13.848308: module_get: sunrpc call_site=get_filesystem refcnt=1
+>>     <...>-1027  [000]    13.848692: module_put: sunrpc call_site=put_filesystem refcnt=0
+>>     ...
+>>  modprobe-2587  [001]  1088.437213: module_load: trace_events_sample F
+>>  modprobe-2587  [001]  1088.437786: module_put: trace_events_sample call_site=sys_init_module refcnt=0
+>>
+>>
+>> Note:
+>>
+>> - the taints flag can be 'F', 'C' and/or 'P' if mod->taints != 0
+>>
+>> - the module refcnt is percpu, so it can be negative in a specific cpu
+>>
+>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> 
+> 
+> Nice.
+> 
+> Just two worries about it.
+> 
+> The ring buffer are flushed on module unloading right?
+> That won't make it easy to perform module event tracing.
+> 
 
-Tarkan> root@tarkane:~# sg_inq -e /dev/sdb
-Tarkan> VPD INQUIRY: extended INQUIRY data page
-Tarkan> inquiry: transport: Host_status=0x05 [DID_ABORT]
-Tarkan> Driver_status=0x00 [DRIVER_OK, SUGGEST_OK]
-Tarkan>     inquiry: failed, res=-1
+Yes, but only when the module has "_ftrace_events" section.
+They are ext4 and gfs2 for the current kernel.
 
-*sigh*
+> Also the events selftests do a lot of random things to trigger
+> each kind of events, I guess some new others will be needed to
+> tests these, unless they will seem to fail on every selftests.
+> Although I can't imagine a module loading/unloading for
+> every ftrace event selftest... I guess these will require
+> a specific treatement and also will need to be selftested once
+> the filesystem is set to be able to load modules.
+> 
 
+It's nice to have more selftests but I don't think it is a
+necessity.
 
-sd: Avoid sending extended inquiry to legacy/broken devices
+Actually the events selftests just confirm the events won't
+crash the system, and no trace entries are generated by them
+in the selftests.
 
-Our existing check for VPD page validity does not handle devices that
-refuse to respond to INQUIRY with the EVPD bit set.
-
-Restrict extended inquiry to devices reporting SBC2/SPC3 or higher.
-
-Signed-off-by: Martin K. Petersen <martin.petersen@oracle.com>
-
----
-
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index 5616cd7..9b703fd 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -1840,6 +1840,13 @@ static void sd_read_block_characteristics(struct scsi_disk *sdkp)
- 	kfree(buffer);
- }
- 
-+static int sd_try_extended_inquiry(struct scsi_device *sdp)
-+{
-+	if (sdp->scsi_level > SCSI_SPC_2)
-+		return 1;
-+	return 0;
-+}
-+
- /**
-  *	sd_revalidate_disk - called the first time a new disk is seen,
-  *	performs disk spin up, read_capacity, etc.
-@@ -1877,8 +1884,12 @@ static int sd_revalidate_disk(struct gendisk *disk)
- 	 */
- 	if (sdkp->media_present) {
- 		sd_read_capacity(sdkp, buffer);
--		sd_read_block_limits(sdkp);
--		sd_read_block_characteristics(sdkp);
-+
-+		if (sd_try_extended_inquiry(sdp)) {
-+			sd_read_block_limits(sdkp);
-+			sd_read_block_characteristics(sdkp);
-+		}
-+
- 		sd_read_write_protect_flag(sdkp, buffer);
- 		sd_read_cache_type(sdkp, buffer);
- 		sd_read_app_tag_own(sdkp, buffer);
