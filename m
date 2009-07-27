@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752284AbZG0QmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbZG0Qmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752284AbZG0QmV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 12:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbZG0QmU
+	id S1752834AbZG0Qmv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 12:42:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZG0Qmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 12:42:20 -0400
-Received: from fifo99.com ([67.223.236.141]:50160 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751387AbZG0QmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 12:42:20 -0400
-Subject: Re: [Patch RFC 36/37] fs: Convert bd_mount_sem to mutex
-From: Daniel Walker <dwalker@fifo99.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Christoph Hellwig <hch@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       matthias@kaehlcke.net, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-In-Reply-To: <alpine.LFD.2.00.0907271730260.2936@localhost.localdomain>
-References: <20090726081459.455111897@linutronix.de>
-	 <20090726081558.081388099@linutronix.de>
-	 <20090727152635.GD31597@infradead.org>
-	 <alpine.LFD.2.00.0907271730260.2936@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 27 Jul 2009 09:42:28 -0700
-Message-Id: <1248712948.28841.56.camel@desktop>
+	Mon, 27 Jul 2009 12:42:50 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33760 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751075AbZG0Qmu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 12:42:50 -0400
+Date: Mon, 27 Jul 2009 17:42:52 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kdesu broken
+Message-ID: <20090727174252.2d987830@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090727161424.GA4233@skywalker>
+References: <20090725150510.35e8854d@lxorguk.ukuu.org.uk>
+	<87ab2sx15g.fsf@devron.myhome.or.jp>
+	<20090725163251.50e6f546@lxorguk.ukuu.org.uk>
+	<87bpn7mzli.fsf@devron.myhome.or.jp>
+	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
+	<873a8iqqgv.fsf@devron.myhome.or.jp>
+	<20090727142303.41096bf5@lxorguk.ukuu.org.uk>
+	<877hxujkuv.fsf@devron.myhome.or.jp>
+	<20090727145805.690afe5d@lxorguk.ukuu.org.uk>
+	<87fxci6ub9.fsf@devron.myhome.or.jp>
+	<20090727161424.GA4233@skywalker>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-27 at 17:30 +0200, Thomas Gleixner wrote:
-> On Mon, 27 Jul 2009, Christoph Hellwig wrote:
-> 
-> > On Sun, Jul 26, 2009 at 08:20:38AM -0000, Thomas Gleixner wrote:
-> > > bd_mount_sem is used as mutex so make it a mutex.
-> > 
-> > Actually we may return to userspace with it held, so the conversion
-> > is a bad idea.  But I have a patch I need to post to completely get
-> > rid of it.
-> 
-> That's why it's RFC :)
 
-You better inspect these at much greater detail.. Matthias (added to the
-CC) , and I did a great number of semaphore to mutex changes and I don't
-recall there being too many clear easy ones remaining .. So unless the
-semaphore was added in the past 12 months or so , I'd treat it as likely
-unsafe for converting to a mutex..
+> > -			if (count > tty->receive_room) {
+> > +			if (count > tty->receive_room)
+> >  				count = tty->receive_room;
+> > -				done = 0;
+> > -			}
+> >  			char_buf = head->char_buf_ptr + head->read;
+> >  			flag_buf = head->flag_buf_ptr + head->read;
+> >  			head->read += count;
+> > _
+> 
+> 
+> I still have the "compile in emacs" bug. So this patch along with
+> http://article.gmane.org/gmane.linux.kernel/869824 doesn't fix the
+> bug for me.
 
-Daniel
+Can you stick some printk calls in and debug it further then because at
+with the fixes Ogawa provided I'm finding it impossible to reproduce even
+on an 8 way x86.
+
+What hardware are you using ?
 
