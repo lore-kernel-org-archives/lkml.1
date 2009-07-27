@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750963AbZG0OHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751484AbZG0OSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750963AbZG0OHW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 10:07:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750756AbZG0OHW
+	id S1751484AbZG0OSN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 10:18:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbZG0OSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 10:07:22 -0400
-Received: from wayne.mcbone.net ([62.104.198.72]:42910 "EHLO wayne.mcbone.net"
+	Mon, 27 Jul 2009 10:18:12 -0400
+Received: from relay.atmel.no ([80.232.32.139]:59699 "EHLO relay.atmel.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750737AbZG0OHV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 10:07:21 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Jul 2009 10:07:20 EDT
-Date: Mon, 27 Jul 2009 16:00:39 +0200
-From: Jens Rosenboom <jens.rosenboom@freenet.ag>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Sonny Rao <sonnyrao@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: futexes: Still infinite loop in get_futex_key() in 2.6.31-rc4
-Message-ID: <20090727140039.GC13577@bo.mcbone.net>
-References: <1248681637.7279.12.camel@fnki-nb00130> <1248694266.6987.1594.camel@twins> <1248697004.7279.31.camel@fnki-nb00130> <1248697409.6987.1617.camel@twins> <1248698755.7279.47.camel@fnki-nb00130> <1248701812.6987.1637.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248701812.6987.1637.camel@twins>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1751334AbZG0OSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 10:18:12 -0400
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: akpm@linux-foundation.org
+Cc: nicolas.ferre@atmel.com, avictor.za@gmail.com,
+       linux-kernel@vger.kernel.org, Albin Tonnerre <albin.tonnerre@gmail.com>,
+       Albin Tonnerre <albin.tonnerre@free-electrons.com>,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Subject: [PATCH] Fix compile when CONFIG_SERIAL_ATMEL=Y and CONFIG_SERIAL_ATMEL_CONSOLE=N
+Date: Mon, 27 Jul 2009 16:17:55 +0200
+Message-Id: <1248704275-14374-1-git-send-email-haavard.skinnemoen@atmel.com>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 27, 2009 at 03:36:52PM +0200, Peter Zijlstra wrote:
-> On Mon, 2009-07-27 at 14:45 +0200, Jens Rosenboom wrote:
-> 
-> > Good question, but as this happens on a production machine, I cannot
-> > easily change the installation to check this.
-> 
-> Uhm, but you do run .31-rc4 on it? :-)
+From: Albin Tonnerre <albin.tonnerre@gmail.com>
 
-In the hope of verifying a patch, yes. Before that we had 2.6.29.4
-for some time.
+When SERIAL_ATMEL_CONSOLE is disabled, ATMEL_CONSOLE_DEVICE is set to
+NULL, and trying to access ATMEL_CONSOLE_DEVICE->flags in
+atmel_serial_probe makes the compile fail. This fixes the issue by only
+accessing it if CONFIG_SERIAL_ATMEL_CONSOLE is defined
 
-> > Attaching an strace to the process gives just
-> > 
-> > # strace -p 12886
-> > Process 12886 attached - interrupt to quit
-> > 
-> > and nothing further.
-> 
-> Bugger.. how easy it is to reproduce?
+Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Signed-off-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+---
+ drivers/serial/atmel_serial.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-There is a lot of stuff happening on this machine, I'm not sure
-what part of it is necessary to trigger the bug. Currently it
-takes anything from a couple of hours to a couple of days for
-the first stuck ps to appear.
+diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
+index 338b15c..607d43a 100644
+--- a/drivers/serial/atmel_serial.c
++++ b/drivers/serial/atmel_serial.c
+@@ -1551,6 +1551,7 @@ static int __devinit atmel_serial_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		goto err_add_port;
+ 
++#ifdef CONFIG_SERIAL_ATMEL_CONSOLE
+ 	if (atmel_is_console_port(&port->uart)
+ 			&& ATMEL_CONSOLE_DEVICE->flags & CON_ENABLED) {
+ 		/*
+@@ -1559,6 +1560,7 @@ static int __devinit atmel_serial_probe(struct platform_device *pdev)
+ 		 */
+ 		clk_disable(port->clk);
+ 	}
++#endif
+ 
+ 	device_init_wakeup(&pdev->dev, 1);
+ 	platform_set_drvdata(pdev, port);
+-- 
+1.6.0.4
+
