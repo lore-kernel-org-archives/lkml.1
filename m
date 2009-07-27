@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752787AbZG0N7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750963AbZG0OHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752787AbZG0N7R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 09:59:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbZG0N7Q
+	id S1750963AbZG0OHW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 10:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750756AbZG0OHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 09:59:16 -0400
-Received: from kroah.org ([198.145.64.141]:43232 "EHLO coco.kroah.org"
+	Mon, 27 Jul 2009 10:07:22 -0400
+Received: from wayne.mcbone.net ([62.104.198.72]:42910 "EHLO wayne.mcbone.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752230AbZG0N7N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 09:59:13 -0400
-Date: Mon, 27 Jul 2009 06:58:22 -0700
-From: Greg KH <greg@kroah.com>
-To: David Rientjes <rientjes@google.com>
-Cc: "Matthew D. Reuther" <mreuther@joust.gpcc.itd.umich.edu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: android lowmemorykiller breaks compile
-Message-ID: <20090727135822.GA9037@kroah.com>
-References: <4A6CE261.mailHX41REN0Z@joust.gpcc.itd.umich.edu>
- <alpine.DEB.2.00.0907261630420.17123@chino.kir.corp.google.com>
+	id S1750737AbZG0OHV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 10:07:21 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Mon, 27 Jul 2009 10:07:20 EDT
+Date: Mon, 27 Jul 2009 16:00:39 +0200
+From: Jens Rosenboom <jens.rosenboom@freenet.ag>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Sonny Rao <sonnyrao@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: futexes: Still infinite loop in get_futex_key() in 2.6.31-rc4
+Message-ID: <20090727140039.GC13577@bo.mcbone.net>
+References: <1248681637.7279.12.camel@fnki-nb00130> <1248694266.6987.1594.camel@twins> <1248697004.7279.31.camel@fnki-nb00130> <1248697409.6987.1617.camel@twins> <1248698755.7279.47.camel@fnki-nb00130> <1248701812.6987.1637.camel@twins>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0907261630420.17123@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1248701812.6987.1637.camel@twins>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 26, 2009 at 04:33:57PM -0700, David Rientjes wrote:
-> On Sun, 26 Jul 2009, Matthew D. Reuther wrote:
+On Mon, Jul 27, 2009 at 03:36:52PM +0200, Peter Zijlstra wrote:
+> On Mon, 2009-07-27 at 14:45 +0200, Jens Rosenboom wrote:
 > 
-> > I don't actually use Android, but I compile it just for giggles. With every one of the 2.6.31-rc releases, my compile breaks when it hits lowmemorykiller:
-> > 
-> > drivers/staging/android/lowmemorykiller.c: In function 'lowmem_shrink':
-> > drivers/staging/android/lowmemorykiller.c:106: error: 'struct task_struct' has no member named 'oomkilladj'
-> > make[3]: *** [drivers/staging/android/lowmemorykiller.o] Error 1
-> > make[2]: *** [drivers/staging/android] Error 2
-> > 
-> > Maybe this should not be selectable for x86? Can't tell.
-> > 
+> > Good question, but as this happens on a production machine, I cannot
+> > easily change the installation to check this.
 > 
-> It's had a fix pending in Greg KH's staging tree for a couple months, 
-> we're just waiting for it to be pushed to Linus.  Greg indicated he will 
-> send it in his next staging pull.
+> Uhm, but you do run .31-rc4 on it? :-)
 
-Yes, sorry, was on vacation, will go to Linus in a day or so.
+In the hope of verifying a patch, yes. Before that we had 2.6.29.4
+for some time.
 
-thanks for your patience,
+> > Attaching an strace to the process gives just
+> > 
+> > # strace -p 12886
+> > Process 12886 attached - interrupt to quit
+> > 
+> > and nothing further.
+> 
+> Bugger.. how easy it is to reproduce?
 
-greg k-h
+There is a lot of stuff happening on this machine, I'm not sure
+what part of it is necessary to trigger the bug. Currently it
+takes anything from a couple of hours to a couple of days for
+the first stuck ps to appear.
