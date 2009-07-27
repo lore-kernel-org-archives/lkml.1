@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752784AbZG0Pe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752281AbZG0PiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752784AbZG0Pe5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 11:34:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZG0Pe4
+	id S1752281AbZG0PiO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 11:38:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZG0PiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 11:34:56 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:55220 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752706AbZG0Pez (ORCPT
+	Mon, 27 Jul 2009 11:38:14 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:55296 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751213AbZG0PiM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 11:34:55 -0400
-Date: Mon, 27 Jul 2009 11:34:55 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Carlos R. Mafra" <crmafra2@gmail.com>
-cc: Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>, Ferenc Wagner <wferi@niif.hu>,
-       Kay Sievers <kay.sievers@vrfy.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bisected] [Bug #13821] Replugging USB serial converter uses
- new device node
-In-Reply-To: <20090727022623.GA6614@Pilar.aei.mpg.de>
-Message-ID: <Pine.LNX.4.44L0.0907271131100.5217-100000@iolanthe.rowland.org>
+	Mon, 27 Jul 2009 11:38:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:references:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent:message-id;
+        b=rjaKZ1dFLssnp9PT+Vin1vv3cfWirW77Ht0yUM1oi6JDp8D5tQ/QWOSmwxYzNlJkBE
+         5rY7iHV6S/fRdJ7fclK8R9A5aIVpf0vHwT3cZw9/7zh5NDwGgmK7V/B80DyMuLjZW6FI
+         nwWfPEED6w6DZckktbaeIPzZ+IMFhIWbJEYO4=
+Date: Mon, 27 Jul 2009 08:38:05 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: Re: [PATCH 13/22] Input: Add support for the WM831x ON pin
+References: <20090727134527.GA12849@rakim.wolfsonmicro.main> <1248702372-29534-13-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1248702372-29534-13-git-send-email-broonie@opensource.wolfsonmicro.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <20090727161151.A9D36526EC9@mailhub.coreip.homeip.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Jul 2009, Carlos R. Mafra wrote:
+Hi Mark,
 
-> On Sun 26.Jul'09 at 22:28:27 +0200, Rafael J. Wysocki wrote:
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13821
-> > Subject		: Replugging USB serial converter uses new device node
-> > Submitter	: Ferenc Wagner <wferi@niif.hu>
-> > Date		: 2009-07-18 20:04 (9 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=124794754015776&w=4
-> 
-> I was scanning the regressions list and noticed that I could reproduce
-> this bug.
-> 
-> So I bisected it to commit 335f8514f200e63d689113d29cb7253a5c282967
-> ("tty: Bring the usb tty port structure into more use"), from Alan
-> Cox.
-> 
-> I did not double check if reverting it from -rc4 fixes the issue,
-> but I noticed that this patch touches drivers/usb/serial/option.c, which
-> is the driver I used to test this problem.
-> 
-> If there is anything else I can do (give more info, test patches etc),
-> please let me know.
+On Mon, Jul 27, 2009 at 02:46:03PM +0100, Mark Brown wrote:
+> --- /dev/null
+> +++ b/drivers/input/misc/wm831x-on.c
+> @@ -0,0 +1,163 @@
+> +/**
+> + * wm831x-on.c - WM831X ON pind river
+> + *
 
-Are you certain this really is a regression?  Under 2.6.30 and 2.6.27
-the same thing happened if I unplugged a USB serial device while it was
-in use.
+"Pind river"? ;)
 
-Can you check whether the device is still being used when you unplug 
-it?  For instance, is there still a pppd process trying to communicate 
-with the device?  If there is, what happens if you kill all the 
-processes using the serial device before you unplug it?
+> +
+> +static irqreturn_t wm831x_on_irq(int irq, void *data)
+> +{
+> +	struct wm831x_on *wm831x_on = data;
+> +
+> +	schedule_work(&wm831x_on->work.work);
 
-In short, it seems likely that this is not new behavior but rather the 
-way usb-serial has worked all along.
+schedule_delayed_work(&wm831x_on->work, 0); - I prefer not to expose
+delayed work implementation details.
 
-Alan Stern
+Other than that:
 
+	Acked-by: Dmitry Torokhov <dtor@mail.ru>
+
+Freel free to push this with the rest of the series. If that does not
+work out let me know and I will get this driver into my tree.
+
+Thanks!
+
+-- 
+Dmitry
