@@ -1,92 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751546AbZG0OZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751795AbZG0O3u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751546AbZG0OZk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 10:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbZG0OZj
+	id S1751795AbZG0O3u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 10:29:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751664AbZG0O3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 10:25:39 -0400
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:63228 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750851AbZG0OZi convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 10:25:38 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AugEAJRPbUpMQWXi/2dsb2JhbACBUc5vhA0F
-Date: Mon, 27 Jul 2009 10:25:32 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Dave Jones <davej@redhat.com>, Thomas Renninger <trenn@suse.de>,
-       linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
-       kernel-testers@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Dave Young <hidave.darkstar@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: cpufreq cleanups - .30 vs .31
-Message-ID: <20090727142532.GA22503@Krystal>
-References: <200907061318.20839.trenn@suse.de> <20090707015115.GB5310@redhat.com>
+	Mon, 27 Jul 2009 10:29:49 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:45389 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751597AbZG0O3s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 10:29:48 -0400
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Tarkan Erimer <tarkan.erimer@turknet.net.tr>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [BISECTED] Re: [BUG] Linux-2.6.31-rc1 Fails To Recognize Some USB Disks
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+Organization: Oracle
+References: <4A4472DF.1050900@turknet.net.tr>
+	<yq1zlbrn2rj.fsf@sermon.lab.mkp.net> <4A4878AC.3050208@turknet.net.tr>
+	<yq1fxdji03l.fsf@sermon.lab.mkp.net> <4A69932E.90906@turknet.net.tr>
+	<yq1fxcmnpqa.fsf@sermon.lab.mkp.net> <4A69D093.8020108@turknet.net.tr>
+	<yq1hbwykj80.fsf@sermon.lab.mkp.net>
+	<20090727020611.GC3711@parisc-linux.org>
+	<yq18wiakfq4.fsf@sermon.lab.mkp.net> <4A6D64DC.3020001@panasas.com>
+Date: Mon, 27 Jul 2009 10:29:21 -0400
+In-Reply-To: <4A6D64DC.3020001@panasas.com> (Boaz Harrosh's message of "Mon,
+	27 Jul 2009 11:27:08 +0300")
+Message-ID: <yq1ocr66vy6.fsf@sermon.lab.mkp.net>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20090707015115.GB5310@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:22:41 up 149 days, 10:48,  4 users,  load average: 0.22, 0.52,
-	0.53
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Source-IP: abhmt001.oracle.com [141.146.116.10]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4A6DB9C4.0165:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dave Jones (davej@redhat.com) wrote:
-> On Mon, Jul 06, 2009 at 01:18:18PM +0200, Thomas Renninger wrote:
-> 
->  > So if not find too intrusive, I'd say:
->  > Venkatesh's whole series of:
->  > [patch 0/4] Take care of cpufreq lockdep issues (take 2)
->  > should be seen in .31.
->  >  ...
->  > The one patch from Mathieu:
->  > [patch 2.6.30 2/4] CPUFREQ: fix (utter) cpufreq_add_dev mess
->  > is a separate, general cleanup which should show up in .31.
-> 
-> I came to the same conclusion after reading the thread, and looking
-> over the patches.  I merged the above, and sent Linus a pull request
-> a few minutes ago.
-> 
-> Thanks Mathieu and Venki for chasing this down.
-> 
-> 	Dave
+>>>>> "Boaz" == Boaz Harrosh <bharrosh@panasas.com> writes:
 
-Given I never got an answer to this question, I'm re-asking a question I
-asked in a previous thread about Venki's patchset:
+Boaz> I don't understand. The device in question breaks when we try to
+Boaz> read a page that it reported it supports?
 
-[CPUFREQ] Cleanup locking in ondemand governor
-commit	5a75c82828e7c088ca6e7b4827911dc29cc8e774
-
->From the earlier thread:
-Subject: Re: [patch 2.6.30 3/4] cpufreq add gov mutex
-
-I am worried about potential races between add_dev/remove_dev, which
-currently lock the rwsem as mean of protection, and execution of timer
-handler that would not take the rwsem to protect itself anymore, due to
-your changes.
-
-I'm especially worried about the call to
-
-              __cpufreq_driver_target(dbs_info->cur_policy,
-                        dbs_info->freq_lo, CPUFREQ_RELATION_H);
-
-which seems to depend on policy-level information, protected at the
-rwsem-level.
-
-By removing the rwsem from the timer handler, I don't see how you plan
-to protect this information from add_dev/remove_dev execution.
-
-
-Mathieu
+No.  The USB-ATA bridge in question locks up when we send it an INQUIRY
+with EVPD=1.  I.e. when we try to get a list of pages. 0xB0 and 0xB1 are
+not even in play here.
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Martin K. Petersen	Oracle Linux Engineering
