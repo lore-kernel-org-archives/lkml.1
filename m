@@ -1,84 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755854AbZG0DRv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbZG0DS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755854AbZG0DRv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 23:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbZG0DRv
+	id S1755860AbZG0DS0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 23:18:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755587AbZG0DS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 23:17:51 -0400
-Received: from mail-qy0-f181.google.com ([209.85.221.181]:36203 "EHLO
-	mail-qy0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755831AbZG0DRu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 23:17:50 -0400
-X-Greylist: delayed 462 seconds by postgrey-1.27 at vger.kernel.org; Sun, 26 Jul 2009 23:17:50 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=Y9CuXtVsJBUWOBBuH3UDgxiLFIlN/mKBdkPaBzQumJxmwJJGOW7Tw98Z+hj6idRS+d
-         W8+Wuv/ez2cPtyT731/4mzl3fg8enmBge2CHuRUWGRDcunzcJbAK050L5wyMDJWWPQU9
-         lGOhW7MeS1wurJpLOe8oseYZJRHs3L5rsmX+A=
+	Sun, 26 Jul 2009 23:18:26 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:56754 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755412AbZG0DSZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Jul 2009 23:18:25 -0400
+Message-ID: <4A6D1D26.10909@cn.fujitsu.com>
+Date: Mon, 27 Jul 2009 11:21:10 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Date: Mon, 27 Jul 2009 11:10:08 +0800
-Message-ID: <2375c9f90907262010s36980f88q28f10b6bc2b5263f@mail.gmail.com>
-Subject: Boot panic in 2.6.31-rc4
-From: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+CC: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: Re: [PATCH v3 2/2] Use common localtime/gmtime in fat_time_unix2fat()
+References: <4A5C3BC0.6020701@cn.fujitsu.com>	<20090714151040.b7b3b26d.akpm@linux-foundation.org>	<20090718115019.GH1433@ucw.cz>	<04e101ca08e5$be078fa0$808410ac@zhaoleiwin>	<20090719202018.497f7ec1.akpm@linux-foundation.org>	<4A643EFE.7090103@cn.fujitsu.com> <4A643F82.5020108@cn.fujitsu.com> <87k51xmi5y.fsf@devron.myhome.or.jp>
+In-Reply-To: <87k51xmi5y.fsf@devron.myhome.or.jp>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+OGAWA Hirofumi wrote:
+> Zhaolei <zhaolei@cn.fujitsu.com> writes:
+> 
+>> +	if (sbi->options.tz_utc) {
+>> +		gmtime_r(ts->tv_sec, &tm);
+>> +	} else {
+>> +		localtime_r(ts->tv_sec, &tm);
+>> +	}
+> 
+> Missing error check.
+> 
+>> -	/* Jan 1 GMT 00:00:00 1980. But what about another time zone? */
+>> -	if (second < UNIX_SECS_1980) {
+>> +	/*  FAT can only support year between 1980 to 2107 */
+>> +	if (tm.tm_year < 1980 - 1900) {
+>>  		*time = 0;
+>>  		*date = cpu_to_le16((0 << 9) | (1 << 5) | 1);
+>>  		if (time_cs)
+>>  			*time_cs = 0;
+>>  		return;
+>>  	}
+>> -#if BITS_PER_LONG == 64
+>> -	if (second >= UNIX_SECS_2108) {
+>> +	if (tm.tm_year > 2107 - 1900) {
+>>  		*time = cpu_to_le16((23 << 11) | (59 << 5) | 29);
+>>  		*date = cpu_to_le16((127 << 9) | (12 << 5) | 31);
+>>  		if (time_cs)
+>>  			*time_cs = 199;
+>>  		return;
+>>  	}
+>> -#endif
+> 
+> I think tm.tm_year is undefine in case of the error.
 
-There is a regression in current Linus tree, I can't boot my RHEL5 any more.
+Hello, Ogawa-san:
 
-I can boot it before 2.6.31, I remember, and also the RHEL5's kernel, of course.
-But not since 2.6.31-rc2 or -rc3.
+Thanks for your review.
+I'll fix them
 
-(I used RHEL5's config and did "make oldconfig")
+Thanks
+Zhaolei
 
-There is a boot panic now, it happened just after loading dm-*
-modules, and failed
-at not being able to find "/dev/VolGroup00", so I think there is something wrong
-with the dm-* modules.
 
-I checked the compiled kernel modules, and found the following difference:
-
---- /proc/self/fd/11	2009-07-27 10:56:06.975928034 +0800
-+++ /proc/self/fd/12	2009-07-27 10:56:06.973928034 +0800
-@@ -1,16 +1,13 @@
- kernel/drivers/md/dm-crypt.ko
--kernel/drivers/md/dm-emc.ko
--kernel/drivers/md/dm-hp-sw.ko
-+kernel/drivers/md/dm-delay.ko
- kernel/drivers/md/dm-log.ko
--kernel/drivers/md/dm-mem-cache.ko
--kernel/drivers/md/dm-message.ko
- kernel/drivers/md/dm-mirror.ko
- kernel/drivers/md/dm-mod.ko
- kernel/drivers/md/dm-multipath.ko
--kernel/drivers/md/dm-raid45.ko  (<=====Note this one!)
--kernel/drivers/md/dm-rdac.ko
--kernel/drivers/md/dm-region_hash.ko
-+kernel/drivers/md/dm-queue-length.ko
-+kernel/drivers/md/dm-region-hash.ko
- kernel/drivers/md/dm-round-robin.ko
-+kernel/drivers/md/dm-service-time.ko
- kernel/drivers/md/dm-snapshot.ko
- kernel/drivers/md/dm-zero.ko
- kernel/drivers/md/faulty.ko
-@@ -20,4 +17,4 @@
- kernel/drivers/md/raid10.ko
- kernel/drivers/md/raid1.ko
- kernel/drivers/md/raid456.ko
--kernel/drivers/md/xor.ko
-+kernel/drivers/md/raid6_pq.ko
-
-I also tried to make some aliases for dm-region_hash and dm-raid45, but
-that still doesn't work...
-
-Am I missing something here? Can anyone help me out?
-
-Thanks!
