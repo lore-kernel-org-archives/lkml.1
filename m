@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755125AbZG0Asz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755295AbZG0Ayn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755125AbZG0Asz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 20:48:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZG0Asy
+	id S1755295AbZG0Ayn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 20:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZG0Aym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 20:48:54 -0400
-Received: from mga03.intel.com ([143.182.124.21]:27924 "EHLO mga03.intel.com"
+	Sun, 26 Jul 2009 20:54:42 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:38316 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750826AbZG0Asx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 20:48:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,273,1246863600"; 
-   d="scan'208";a="169120078"
-Date: Mon, 27 Jul 2009 08:48:51 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       David Howells <dhowells@redhat.com>,
-       MinChan Kim <minchan.kim@gmail.com>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: [Bug #13665] commit 69c854817566 causes OOMs
-Message-ID: <20090727004851.GA10495@localhost>
-References: <Jya1GruKQpD.A.16.2GObKB@chimera> <3zAHs5O6maO.A.44E.QIObKB@chimera>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3zAHs5O6maO.A.44E.QIObKB@chimera>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1752056AbZG0Aym (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Jul 2009 20:54:42 -0400
+Date: Mon, 27 Jul 2009 10:54:40 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Eric Van Hensbergen <ericvh@gmail.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Abhishek Kulkarni <adkulkar@umail.iu.edu>
+Subject: linux-next: v9fs tree build warning
+Message-Id: <20090727105440.f1bd9525.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__27_Jul_2009_10_54_40_+1000_LB7/bbMACSRuu47S"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 27, 2009 at 04:28:20AM +0800, Rafael J. Wysocki wrote:
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13665
-> Subject		: commit 69c854817566 causes OOMs
-> Submitter	: David Howells <dhowells@redhat.com>
-> Date		: 2009-06-27 08:12 (30 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=69c854817566db82c362797b4a6521d0b00fe1d8
-> References	: http://lkml.org/lkml/2009/6/27/28
+--Signature=_Mon__27_Jul_2009_10_54_40_+1000_LB7/bbMACSRuu47S
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Both patches from KOSAKI and Rik can fix the OOM in my tests:
+Hi Eric,
 
-http://lkml.org/lkml/2009/7/7/104
-http://patchwork.kernel.org/patch/34740/
+Today's linux-next build (x86_64 allmodconfig) produced this warning:
 
-The latter one has been included in -mm
+fs/9p/vfs_inode.c: In function 'v9fs_get_inode':
+fs/9p/vfs_inode.c:218: warning: return makes pointer from integer without a=
+ cast
 
-> Handled-By	: Wu Fengguang <fengguang.wu@intel.com>
-> Patch		: http://patchwork.kernel.org/patch/32740/
+Introduced by commit 3cee01293a246cb6e24aef30c37ddd2e2718de9c ("9p: Fix
+possible inode leak in v9fs_get_inode").
 
-This patch is also in -mm.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Thanks,
-Fengguang
+--Signature=_Mon__27_Jul_2009_10_54_40_+1000_LB7/bbMACSRuu47S
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkps+tAACgkQjjKRsyhoI8wMxgCffr8KflZWmWyeG2ZZNdKoBnaE
+ojcAn0ZgHhlX6Y7v5Z1uXONV0R5ASERb
+=Xjxd
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__27_Jul_2009_10_54_40_+1000_LB7/bbMACSRuu47S--
