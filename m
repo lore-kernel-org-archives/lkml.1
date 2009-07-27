@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbZG0Nrn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbZG0NsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755366AbZG0Nrn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 09:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754749AbZG0Nrl
+	id S1755542AbZG0NsX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 09:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755418AbZG0Nrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 09:47:41 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:59135 "EHLO
+	Mon, 27 Jul 2009 09:47:47 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:59145 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754777AbZG0Nqa (ORCPT
+	by vger.kernel.org with ESMTP id S1754702AbZG0Nq3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 09:46:30 -0400
+	Mon, 27 Jul 2009 09:46:29 -0400
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Samuel Ortiz <sameo@linux.intel.com>
 Cc: linux-kernel@vger.kernel.org,
        Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Dmitry Torokhov <dtor@mail.ru>, linux-input@vger.kernel.org
-Subject: [PATCH 13/22] Input: Add support for the WM831x ON pin
-Date: Mon, 27 Jul 2009 14:46:03 +0100
-Message-Id: <1248702372-29534-13-git-send-email-broonie@opensource.wolfsonmicro.com>
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [PATCH 10/22] gpio: Add WM831X GPIO driver
+Date: Mon, 27 Jul 2009 14:46:00 +0100
+Message-Id: <1248702372-29534-10-git-send-email-broonie@opensource.wolfsonmicro.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <20090727134527.GA12849@rakim.wolfsonmicro.main>
 References: <20090727134527.GA12849@rakim.wolfsonmicro.main>
@@ -26,250 +25,373 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The WM831x series of PMICs support control of initial power on
-through the ON pin on the device with soft control of the pin
-at other times. Represent this to userspace as KEY_POWER.
+Add support for the GPIO pins on the WM831x. No direct support is
+currently supplied for configuring non-gpiolib functionality such
+as pull configuration and alternate functions, soft configuration
+of these will be provided in a future patch.
+
+Currently use of these pins as interrupts is not supported due to
+the ongoing issues with generic irq not support interrupt controllers
+on interrupt driven buses. Users can directly request the interrupts
+with the wm831x-specific APIs currently provided if required.
 
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Dmitry Torokhov <dtor@mail.ru>
-Cc: linux-input@vger.kernel.org
+Cc: David Brownell <dbrownell@users.sourceforge.net>
 ---
- drivers/input/misc/Kconfig      |   10 +++
- drivers/input/misc/Makefile     |    1 +
- drivers/input/misc/wm831x-on.c  |  163 +++++++++++++++++++++++++++++++++++++++
- include/linux/mfd/wm831x/core.h |   19 +++++
- 4 files changed, 193 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/misc/wm831x-on.c
+ drivers/gpio/Kconfig            |    7 +
+ drivers/gpio/Makefile           |    1 +
+ drivers/gpio/wm831x-gpio.c      |  252 +++++++++++++++++++++++++++++++++++++++
+ include/linux/mfd/wm831x/gpio.h |   55 +++++++++
+ 4 files changed, 315 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/gpio/wm831x-gpio.c
+ create mode 100644 include/linux/mfd/wm831x/gpio.h
 
-diff --git a/drivers/input/misc/Kconfig b/drivers/input/misc/Kconfig
-index cbe21bc..852941d 100644
---- a/drivers/input/misc/Kconfig
-+++ b/drivers/input/misc/Kconfig
-@@ -279,4 +279,14 @@ config INPUT_BFIN_ROTARY
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called bfin-rotary.
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index 96dda81..6b4c484 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -155,6 +155,13 @@ config GPIO_TWL4030
+ 	  Say yes here to access the GPIO signals of various multi-function
+ 	  power management chips from Texas Instruments.
  
-+config INPUT_WM831X_ON
-+	tristate "WM831X ON pin"
++config GPIO_WM831X
++	tristate "WM831x GPIOs"
 +	depends on MFD_WM831X
 +	help
-+	  Support the ON pin of WM831X PMICs as an input device
-+	  reporting power button status.
++	  Say yes here to access the GPIO signals of WM831x power management
++	  chips from Wolfson Microelectronics.
 +
-+	  To compile this driver as a module, choose M here: the module
-+	  will be called wm831x_on.
-+
- endif
-diff --git a/drivers/input/misc/Makefile b/drivers/input/misc/Makefile
-index 79c1e9a..c97533f 100644
---- a/drivers/input/misc/Makefile
-+++ b/drivers/input/misc/Makefile
-@@ -26,4 +26,5 @@ obj-$(CONFIG_INPUT_SPARCSPKR)		+= sparcspkr.o
- obj-$(CONFIG_INPUT_TWL4030_PWRBUTTON)	+= twl4030-pwrbutton.o
- obj-$(CONFIG_INPUT_UINPUT)		+= uinput.o
- obj-$(CONFIG_INPUT_WISTRON_BTNS)	+= wistron_btns.o
-+obj-$(CONFIG_INPUT_WM831X_ON)		+= wm831x-on.o
- obj-$(CONFIG_INPUT_YEALINK)		+= yealink.o
-diff --git a/drivers/input/misc/wm831x-on.c b/drivers/input/misc/wm831x-on.c
+ comment "PCI GPIO expanders:"
+ 
+ config GPIO_BT8XX
+diff --git a/drivers/gpio/Makefile b/drivers/gpio/Makefile
+index 9244c6f..ea7c745 100644
+--- a/drivers/gpio/Makefile
++++ b/drivers/gpio/Makefile
+@@ -14,3 +14,4 @@ obj-$(CONFIG_GPIO_TWL4030)	+= twl4030-gpio.o
+ obj-$(CONFIG_GPIO_XILINX)	+= xilinx_gpio.o
+ obj-$(CONFIG_GPIO_BT8XX)	+= bt8xxgpio.o
+ obj-$(CONFIG_GPIO_VR41XX)	+= vr41xx_giu.o
++obj-$(CONFIG_GPIO_WM831X)	+= wm831x-gpio.o
+diff --git a/drivers/gpio/wm831x-gpio.c b/drivers/gpio/wm831x-gpio.c
 new file mode 100644
-index 0000000..4c3941c
+index 0000000..f9c09a5
 --- /dev/null
-+++ b/drivers/input/misc/wm831x-on.c
-@@ -0,0 +1,163 @@
-+/**
-+ * wm831x-on.c - WM831X ON pind river
++++ b/drivers/gpio/wm831x-gpio.c
+@@ -0,0 +1,252 @@
++/*
++ * wm831x-gpio.c  --  gpiolib support for Wolfson WM831x PMICs
 + *
-+ * Copyright (C) 2009 Wolfson Microelectronics plc
++ * Copyright 2009 Wolfson Microelectronics PLC.
 + *
-+ * This file is subject to the terms and conditions of the GNU General
-+ * Public License. See the file "COPYING" in the main directory of this
-+ * archive for more details.
++ * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
 + *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
++ *  This program is free software; you can redistribute  it and/or modify it
++ *  under  the terms of  the GNU General  Public License as published by the
++ *  Free Software Foundation;  either version 2 of the  License, or (at your
++ *  option) any later version.
 + *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 + */
 +
-+#include <linux/module.h>
-+#include <linux/init.h>
 +#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/input.h>
-+#include <linux/interrupt.h>
++#include <linux/module.h>
++#include <linux/gpio.h>
++#include <linux/mfd/core.h>
 +#include <linux/platform_device.h>
-+#include <linux/workqueue.h>
-+#include <linux/mfd/wm831x/core.h>
++#include <linux/seq_file.h>
 +
-+struct wm831x_on {
-+	struct input_dev *dev;
-+	struct delayed_work work;
++#include <linux/mfd/wm831x/core.h>
++#include <linux/mfd/wm831x/pdata.h>
++#include <linux/mfd/wm831x/gpio.h>
++
++#define WM831X_GPIO_MAX 16
++
++struct wm831x_gpio {
 +	struct wm831x *wm831x;
++	struct gpio_chip gpio_chip;
 +};
 +
-+/*
-+ * The chip gives us an interrupt when the ON pin is asserted but we
-+ * then need to poll to see when the pin is deasserted.
-+ */
-+static void wm831x_poll_on(struct work_struct *work)
++static inline struct wm831x_gpio *to_wm831x_gpio(struct gpio_chip *chip)
 +{
-+	struct wm831x_on *wm831x_on = container_of(work, struct wm831x_on,
-+						   work.work);
-+	struct wm831x *wm831x = wm831x_on->wm831x;
-+	int poll, ret;
-+
-+	ret = wm831x_reg_read(wm831x, WM831X_ON_PIN_CONTROL);
-+	if (ret >= 0) {
-+		poll = !(ret & WM831X_ON_PIN_STS);
-+
-+		input_report_key(wm831x_on->dev, KEY_POWER, poll);
-+		input_sync(wm831x_on->dev);
-+	} else {
-+		dev_err(wm831x->dev, "Failed to read ON status: %d\n", ret);
-+		poll = 1;
-+	}
-+
-+	if (poll)
-+		schedule_delayed_work(&wm831x_on->work, 100);
++	return container_of(chip, struct wm831x_gpio, gpio_chip);
 +}
 +
-+static irqreturn_t wm831x_on_irq(int irq, void *data)
++static int wm831x_gpio_direction_in(struct gpio_chip *chip, unsigned offset)
 +{
-+	struct wm831x_on *wm831x_on = data;
++	struct wm831x_gpio *wm831x_gpio = to_wm831x_gpio(chip);
++	struct wm831x *wm831x = wm831x_gpio->wm831x;
 +
-+	schedule_work(&wm831x_on->work.work);
-+
-+	return IRQ_HANDLED;
++	return wm831x_set_bits(wm831x, WM831X_GPIO1_CONTROL + offset,
++			       WM831X_GPN_DIR | WM831X_GPN_TRI,
++			       WM831X_GPN_DIR);
 +}
 +
-+static int __devinit wm831x_on_probe(struct platform_device *pdev)
++static int wm831x_gpio_get(struct gpio_chip *chip, unsigned offset)
 +{
-+	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
-+	struct wm831x_on *wm831x_on;
-+	int irq = platform_get_irq(pdev, 0);
++	struct wm831x_gpio *wm831x_gpio = to_wm831x_gpio(chip);
++	struct wm831x *wm831x = wm831x_gpio->wm831x;
 +	int ret;
 +
-+	wm831x_on = kzalloc(sizeof(struct wm831x_on), GFP_KERNEL);
-+	if (!wm831x_on) {
-+		dev_err(&pdev->dev, "Can't allocate data\n");
-+		return -ENOMEM;
++	ret = wm831x_reg_read(wm831x, WM831X_GPIO_LEVEL);
++	if (ret < 0)
++		return ret;
++
++	if (ret & 1 << offset)
++		return 1;
++	else
++		return 0;
++}
++
++static int wm831x_gpio_direction_out(struct gpio_chip *chip,
++				     unsigned offset, int value)
++{
++	struct wm831x_gpio *wm831x_gpio = to_wm831x_gpio(chip);
++	struct wm831x *wm831x = wm831x_gpio->wm831x;
++
++	return wm831x_set_bits(wm831x, WM831X_GPIO1_CONTROL + offset,
++			       WM831X_GPN_DIR | WM831X_GPN_TRI, 0);
++}
++
++static void wm831x_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
++{
++	struct wm831x_gpio *wm831x_gpio = to_wm831x_gpio(chip);
++	struct wm831x *wm831x = wm831x_gpio->wm831x;
++
++	wm831x_set_bits(wm831x, WM831X_GPIO_LEVEL, 1 << offset,
++			value << offset);
++}
++
++#ifdef CONFIG_DEBUG_FS
++static void wm831x_gpio_dbg_show(struct seq_file *s, struct gpio_chip *chip)
++{
++	struct wm831x_gpio *wm831x_gpio = to_wm831x_gpio(chip);
++	struct wm831x *wm831x = wm831x_gpio->wm831x;
++	int i;
++
++	for (i = 0; i < chip->ngpio; i++) {
++		int gpio = i + chip->base;
++		int reg;
++		const char *label, *pull, *powerdomain;
++
++		/* We report the GPIO even if it's not requested since
++		 * we're also reporting things like alternate
++		 * functions which apply even when the GPIO is not in
++		 * use as a GPIO.
++		 */
++		label = gpiochip_is_requested(chip, i);
++		if (!label)
++			label = "Unrequested";
++
++		seq_printf(s, " gpio-%-3d (%-20.20s) ", gpio, label);
++
++		reg = wm831x_reg_read(wm831x, WM831X_GPIO1_CONTROL + i);
++		if (reg < 0) {
++			dev_err(wm831x->dev,
++				"GPIO control %d read failed: %d\n",
++				gpio, reg);
++			seq_printf(s, "\n");
++			continue;
++		}
++
++		switch (reg & WM831X_GPN_PULL_MASK) {
++		case WM831X_GPIO_PULL_NONE:
++			pull = "nopull";
++			break;
++		case WM831X_GPIO_PULL_DOWN:
++			pull = "pulldown";
++			break;
++		case WM831X_GPIO_PULL_UP:
++			pull = "pullup";
++		default:
++			pull = "INVALID PULL";
++			break;
++		}
++
++		switch (i + 1) {
++		case 1 ... 3:
++		case 7 ... 9:
++			if (reg & WM831X_GPN_PWR_DOM)
++				powerdomain = "VPMIC";
++			else
++				powerdomain = "DBVDD";
++			break;
++
++		case 4 ... 6:
++		case 10 ... 12:
++			if (reg & WM831X_GPN_PWR_DOM)
++				powerdomain = "SYSVDD";
++			else
++				powerdomain = "DBVDD";
++			break;
++
++		case 13 ... 16:
++			powerdomain = "TPVDD";
++			break;
++
++		default:
++			BUG();
++			break;
++		}
++
++		seq_printf(s, " %s %s %s %s%s\n"
++			   "                                  %s%s (0x%4x)\n",
++			   reg & WM831X_GPN_DIR ? "in" : "out",
++			   wm831x_gpio_get(chip, i) ? "high" : "low",
++			   pull,
++			   powerdomain,
++			   reg & WM831X_GPN_POL ? " inverted" : "",
++			   reg & WM831X_GPN_OD ? "open-drain" : "CMOS",
++			   reg & WM831X_GPN_TRI ? " tristated" : "",
++			   reg);
 +	}
++}
++#else
++#define wm831x_gpio_dbg_show NULL
++#endif
 +
-+	wm831x_on->wm831x = wm831x;
-+	INIT_DELAYED_WORK(&wm831x_on->work, wm831x_poll_on);
++static struct gpio_chip template_chip = {
++	.label			= "wm831x",
++	.owner			= THIS_MODULE,
++	.direction_input	= wm831x_gpio_direction_in,
++	.get			= wm831x_gpio_get,
++	.direction_output	= wm831x_gpio_direction_out,
++	.set			= wm831x_gpio_set,
++	.dbg_show		= wm831x_gpio_dbg_show,
++	.can_sleep		= 1,
++};
 +
-+	wm831x_on->dev = input_allocate_device();
-+	if (!wm831x_on->dev) {
-+		dev_err(&pdev->dev, "Can't allocate input dev\n");
-+		ret = -ENOMEM;
++static int __devinit wm831x_gpio_probe(struct platform_device *pdev)
++{
++	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
++	struct wm831x_pdata *pdata = wm831x->dev->platform_data;
++	struct wm831x_gpio *wm831x_gpio;
++	int ret;
++
++	wm831x_gpio = kzalloc(sizeof(*wm831x_gpio), GFP_KERNEL);
++	if (wm831x_gpio == NULL)
++		return -ENOMEM;
++
++	wm831x_gpio->wm831x = wm831x;
++	wm831x_gpio->gpio_chip = template_chip;
++	wm831x_gpio->gpio_chip.ngpio = WM831X_GPIO_MAX;
++	wm831x_gpio->gpio_chip.dev = &pdev->dev;
++	if (pdata && pdata->gpio_base)
++		wm831x_gpio->gpio_chip.base = pdata->gpio_base;
++	else
++		wm831x_gpio->gpio_chip.base = -1;
++
++	ret = gpiochip_add(&wm831x_gpio->gpio_chip);
++	if (ret < 0) {
++		dev_err(&pdev->dev, "Could not register gpiochip, %d\n",
++			ret);
 +		goto err;
 +	}
 +
-+	wm831x_on->dev->evbit[0] = BIT_MASK(EV_KEY);
-+	wm831x_on->dev->keybit[BIT_WORD(KEY_POWER)] = BIT_MASK(KEY_POWER);
-+	wm831x_on->dev->name = "wm831x_on";
-+	wm831x_on->dev->phys = "wm831x_on/input0";
-+	wm831x_on->dev->dev.parent = &pdev->dev;
++	platform_set_drvdata(pdev, wm831x_gpio);
 +
-+	ret = wm831x_request_irq(wm831x, irq, wm831x_on_irq,
-+				 IRQF_TRIGGER_RISING, "wm831x_on", wm831x_on);
-+	if (ret < 0) {
-+		dev_err(&pdev->dev, "Unable to request IRQ: %d\n", ret);
-+		goto err_input_dev;
-+	}
-+	ret = input_register_device(wm831x_on->dev);
-+	if (ret) {
-+		dev_dbg(&pdev->dev, "Can't register input device: %d\n", ret);
-+		goto err_irq;
-+	}
++	return ret;
 +
-+	platform_set_drvdata(pdev, wm831x_on);
-+
-+	return 0;
-+
-+err_irq:
-+	wm831x_free_irq(wm831x, irq, NULL);
-+err_input_dev:
-+	input_free_device(wm831x_on->dev);
 +err:
-+	kfree(wm831x_on);
++	kfree(wm831x_gpio);
 +	return ret;
 +}
 +
-+static int __devexit wm831x_on_remove(struct platform_device *pdev)
++static int __devexit wm831x_gpio_remove(struct platform_device *pdev)
 +{
-+	struct wm831x_on *wm831x_on = platform_get_drvdata(pdev);
-+	int irq = platform_get_irq(pdev, 0);
++	struct wm831x_gpio *wm831x_gpio = platform_get_drvdata(pdev);
++	int ret;
 +
-+	wm831x_free_irq(wm831x_on->wm831x, irq, wm831x_on);
-+	cancel_delayed_work_sync(&wm831x_on->work);
-+	input_unregister_device(wm831x_on->dev);
-+	kfree(wm831x_on);
++	ret = gpiochip_remove(&wm831x_gpio->gpio_chip);
++	if (ret == 0)
++		kfree(wm831x_gpio);
 +
-+	return 0;
++	return ret;
 +}
 +
-+static struct platform_driver wm831x_on_driver = {
-+	.probe		= wm831x_on_probe,
-+	.remove		= __devexit_p(wm831x_on_remove),
-+	.driver		= {
-+		.name	= "wm831x-on",
-+		.owner	= THIS_MODULE,
-+	},
++static struct platform_driver wm831x_gpio_driver = {
++	.driver.name	= "wm831x-gpio",
++	.driver.owner	= THIS_MODULE,
++	.probe		= wm831x_gpio_probe,
++	.remove		= __devexit_p(wm831x_gpio_remove),
 +};
 +
-+static int __init wm831x_on_init(void)
++static int __init wm831x_gpio_init(void)
 +{
-+	return platform_driver_register(&wm831x_on_driver);
++	return platform_driver_register(&wm831x_gpio_driver);
 +}
-+module_init(wm831x_on_init);
++subsys_initcall(wm831x_gpio_init);
 +
-+static void __exit wm831x_on_exit(void)
++static void __exit wm831x_gpio_exit(void)
 +{
-+	platform_driver_unregister(&wm831x_on_driver);
++	platform_driver_unregister(&wm831x_gpio_driver);
 +}
-+module_exit(wm831x_on_exit);
++module_exit(wm831x_gpio_exit);
 +
-+MODULE_ALIAS("platform:wm831x-on");
-+MODULE_DESCRIPTION("WM831x ON pin");
-+MODULE_LICENSE("GPL");
 +MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com>");
-+
-diff --git a/include/linux/mfd/wm831x/core.h b/include/linux/mfd/wm831x/core.h
-index d7134df..91eb493 100644
---- a/include/linux/mfd/wm831x/core.h
-+++ b/include/linux/mfd/wm831x/core.h
-@@ -216,6 +216,25 @@
- #define WM831X_PARENT_ID_SHIFT                       0  /* PARENT_ID - [15:0] */
- #define WM831X_PARENT_ID_WIDTH                      16  /* PARENT_ID - [15:0] */
- 
++MODULE_DESCRIPTION("GPIO interface for WM831x PMICs");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:wm831x-gpio");
+diff --git a/include/linux/mfd/wm831x/gpio.h b/include/linux/mfd/wm831x/gpio.h
+new file mode 100644
+index 0000000..2835614
+--- /dev/null
++++ b/include/linux/mfd/wm831x/gpio.h
+@@ -0,0 +1,55 @@
 +/*
-+ * R16389 (0x4005) - ON Pin Control
++ * include/linux/mfd/wm831x/gpio.h -- GPIO for WM831x
++ *
++ * Copyright 2009 Wolfson Microelectronics PLC.
++ *
++ * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
++ *
++ *  This program is free software; you can redistribute  it and/or modify it
++ *  under  the terms of  the GNU General  Public License as published by the
++ *  Free Software Foundation;  either version 2 of the  License, or (at your
++ *  option) any later version.
++ *
 + */
-+#define WM831X_ON_PIN_SECACT_MASK               0x0300  /* ON_PIN_SECACT - [9:8] */
-+#define WM831X_ON_PIN_SECACT_SHIFT                   8  /* ON_PIN_SECACT - [9:8] */
-+#define WM831X_ON_PIN_SECACT_WIDTH                   2  /* ON_PIN_SECACT - [9:8] */
-+#define WM831X_ON_PIN_PRIMACT_MASK              0x0030  /* ON_PIN_PRIMACT - [5:4] */
-+#define WM831X_ON_PIN_PRIMACT_SHIFT                  4  /* ON_PIN_PRIMACT - [5:4] */
-+#define WM831X_ON_PIN_PRIMACT_WIDTH                  2  /* ON_PIN_PRIMACT - [5:4] */
-+#define WM831X_ON_PIN_STS                       0x0008  /* ON_PIN_STS */
-+#define WM831X_ON_PIN_STS_MASK                  0x0008  /* ON_PIN_STS */
-+#define WM831X_ON_PIN_STS_SHIFT                      3  /* ON_PIN_STS */
-+#define WM831X_ON_PIN_STS_WIDTH                      1  /* ON_PIN_STS */
-+#define WM831X_ON_PIN_TO_MASK                   0x0003  /* ON_PIN_TO - [1:0] */
-+#define WM831X_ON_PIN_TO_SHIFT                       0  /* ON_PIN_TO - [1:0] */
-+#define WM831X_ON_PIN_TO_WIDTH                       2  /* ON_PIN_TO - [1:0] */
 +
-+struct regulator_dev;
++#ifndef __MFD_WM831X_GPIO_H__
++#define __MFD_WM831X_GPIO_H__
 +
- struct wm831x {
- 	struct mutex io_lock;
- 
++/*
++ * R16440-16455 (0x4038-0x4047) - GPIOx Control
++ */
++#define WM831X_GPN_DIR                          0x8000  /* GPN_DIR */
++#define WM831X_GPN_DIR_MASK                     0x8000  /* GPN_DIR */
++#define WM831X_GPN_DIR_SHIFT                        15  /* GPN_DIR */
++#define WM831X_GPN_DIR_WIDTH                         1  /* GPN_DIR */
++#define WM831X_GPN_PULL_MASK                    0x6000  /* GPN_PULL - [14:13] */
++#define WM831X_GPN_PULL_SHIFT                       13  /* GPN_PULL - [14:13] */
++#define WM831X_GPN_PULL_WIDTH                        2  /* GPN_PULL - [14:13] */
++#define WM831X_GPN_INT_MODE                     0x1000  /* GPN_INT_MODE */
++#define WM831X_GPN_INT_MODE_MASK                0x1000  /* GPN_INT_MODE */
++#define WM831X_GPN_INT_MODE_SHIFT                   12  /* GPN_INT_MODE */
++#define WM831X_GPN_INT_MODE_WIDTH                    1  /* GPN_INT_MODE */
++#define WM831X_GPN_PWR_DOM                      0x0800  /* GPN_PWR_DOM */
++#define WM831X_GPN_PWR_DOM_MASK                 0x0800  /* GPN_PWR_DOM */
++#define WM831X_GPN_PWR_DOM_SHIFT                    11  /* GPN_PWR_DOM */
++#define WM831X_GPN_PWR_DOM_WIDTH                     1  /* GPN_PWR_DOM */
++#define WM831X_GPN_POL                          0x0400  /* GPN_POL */
++#define WM831X_GPN_POL_MASK                     0x0400  /* GPN_POL */
++#define WM831X_GPN_POL_SHIFT                        10  /* GPN_POL */
++#define WM831X_GPN_POL_WIDTH                         1  /* GPN_POL */
++#define WM831X_GPN_OD                           0x0200  /* GPN_OD */
++#define WM831X_GPN_OD_MASK                      0x0200  /* GPN_OD */
++#define WM831X_GPN_OD_SHIFT                          9  /* GPN_OD */
++#define WM831X_GPN_OD_WIDTH                          1  /* GPN_OD */
++#define WM831X_GPN_TRI                          0x0080  /* GPN_TRI */
++#define WM831X_GPN_TRI_MASK                     0x0080  /* GPN_TRI */
++#define WM831X_GPN_TRI_SHIFT                         7  /* GPN_TRI */
++#define WM831X_GPN_TRI_WIDTH                         1  /* GPN_TRI */
++#define WM831X_GPN_FN_MASK                      0x000F  /* GPN_FN - [3:0] */
++#define WM831X_GPN_FN_SHIFT                          0  /* GPN_FN - [3:0] */
++#define WM831X_GPN_FN_WIDTH                          4  /* GPN_FN - [3:0] */
++
++#define WM831X_GPIO_PULL_NONE (0 << WM831X_GPN_PULL_SHIFT)
++#define WM831X_GPIO_PULL_DOWN (1 << WM831X_GPN_PULL_SHIFT)
++#define WM831X_GPIO_PULL_UP   (2 << WM831X_GPN_PULL_SHIFT)
++#endif
 -- 
 1.6.3.3
 
