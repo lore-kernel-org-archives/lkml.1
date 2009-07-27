@@ -1,102 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753092AbZG0Pce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752784AbZG0Pe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753092AbZG0Pce (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 11:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbZG0PbY
+	id S1752784AbZG0Pe5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 11:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZG0Pe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 11:31:24 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:16449 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752616AbZG0PbV (ORCPT
+	Mon, 27 Jul 2009 11:34:56 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:55220 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752706AbZG0Pez (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 11:31:21 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=subject:to:from:cc:date:message-id:in-reply-to:references:
-	user-agent:mime-version:content-type:
-	content-transfer-encoding:x-system-of-record;
-	b=aU420+IKP8437RLlPhdp2Uq243y6zVZf5HAtDYqFGIghsCpjVuhpN/aDysC/xL5jz
-	WjB+pcNH9a89S78MzxgZg==
-Subject: [RFC][PATCH 4/5] IPVS: debugging output for ip_vs_update_conntrack
-To: lvs-devel@vger.kernel.org
-From: Hannes Eder <heder@google.com>
-Cc: netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Date: Mon, 27 Jul 2009 15:46:31 +0200
-Message-ID: <20090727134631.12897.59167.stgit@jazzy.zrh.corp.google.com>
-In-Reply-To: <20090727134457.12897.272.stgit@jazzy.zrh.corp.google.com>
-References: <20090727134457.12897.272.stgit@jazzy.zrh.corp.google.com>
-User-Agent: StGit/0.14.3.366.gf979
+	Mon, 27 Jul 2009 11:34:55 -0400
+Date: Mon, 27 Jul 2009 11:34:55 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Carlos R. Mafra" <crmafra2@gmail.com>
+cc: Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>, Ferenc Wagner <wferi@niif.hu>,
+       Kay Sievers <kay.sievers@vrfy.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bisected] [Bug #13821] Replugging USB serial converter uses
+ new device node
+In-Reply-To: <20090727022623.GA6614@Pilar.aei.mpg.de>
+Message-ID: <Pine.LNX.4.44L0.0907271131100.5217-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is not ment to be merged, its mere for debugging during
-development.
+On Mon, 27 Jul 2009, Carlos R. Mafra wrote:
 
-Signed-off-by: Hannes Eder <heder@google.com>
+> On Sun 26.Jul'09 at 22:28:27 +0200, Rafael J. Wysocki wrote:
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13821
+> > Subject		: Replugging USB serial converter uses new device node
+> > Submitter	: Ferenc Wagner <wferi@niif.hu>
+> > Date		: 2009-07-18 20:04 (9 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=124794754015776&w=4
+> 
+> I was scanning the regressions list and noticed that I could reproduce
+> this bug.
+> 
+> So I bisected it to commit 335f8514f200e63d689113d29cb7253a5c282967
+> ("tty: Bring the usb tty port structure into more use"), from Alan
+> Cox.
+> 
+> I did not double check if reverting it from -rc4 fixes the issue,
+> but I noticed that this patch touches drivers/usb/serial/option.c, which
+> is the driver I used to test this problem.
+> 
+> If there is anything else I can do (give more info, test patches etc),
+> please let me know.
 
- net/netfilter/ipvs/ip_vs_xmit.c |   26 ++++++++++++++++++++++++++
- 1 files changed, 26 insertions(+), 0 deletions(-)
+Are you certain this really is a regression?  Under 2.6.30 and 2.6.27
+the same thing happened if I unplugged a USB serial device while it was
+in use.
 
-diff --git a/net/netfilter/ipvs/ip_vs_xmit.c b/net/netfilter/ipvs/ip_vs_xmit.c
-index f3b6810..ed6b811 100644
---- a/net/netfilter/ipvs/ip_vs_xmit.c
-+++ b/net/netfilter/ipvs/ip_vs_xmit.c
-@@ -24,6 +24,7 @@
- #include <net/ip6_route.h>
- #include <linux/icmpv6.h>
- #include <linux/netfilter.h>
-+#define DEBUG
- #include <net/netfilter/nf_conntrack.h>
- #include <linux/netfilter_ipv4.h>
- 
-@@ -345,12 +346,31 @@ ip_vs_bypass_xmit_v6(struct sk_buff *skb, struct ip_vs_conn *cp,
- }
- #endif
- 
-+#ifdef DEBUG
-+static void
-+ip_vs_dump_ct_tuple(const struct nf_conntrack_tuple *t)
-+{
-+	/*
-+	 * We ignore the fact that this is not SMP-safe.  Otherwise we would
-+	 * have to duplicate code and this code is not ment to stay here anyway.
-+	 */
-+	printk(KERN_DEBUG "IPVS: ");
-+	nf_ct_dump_tuple(t);
-+}
-+#endif
-+
- static void
- ip_vs_update_conntrack(struct sk_buff *skb, struct ip_vs_conn *cp)
- {
- 	if (skb->nfct) {
- 		struct nf_conn *ct = (struct nf_conn *)skb->nfct;
- 
-+#ifdef DEBUG
-+		ip_vs_dump_ct_tuple(&ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple);
-+		ip_vs_dump_ct_tuple(&ct->tuplehash[IP_CT_DIR_REPLY].tuple);
-+		printk("IPVS: nfct confirmed=%d\n", nf_ct_is_confirmed(ct));
-+#endif
-+
- 		if (ct != &nf_conntrack_untracked && !nf_ct_is_confirmed(ct)) {
- 			/*
- 			 * The connection is not yet in the hashtable, so we
-@@ -365,6 +385,12 @@ ip_vs_update_conntrack(struct sk_buff *skb, struct ip_vs_conn *cp)
- 			ct->tuplehash[IP_CT_DIR_REPLY].tuple.src.u.tcp.port =
- 				cp->dport;
- 		}
-+
-+#ifdef DEBUG
-+		ip_vs_dump_ct_tuple(&ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple);
-+		ip_vs_dump_ct_tuple(&ct->tuplehash[IP_CT_DIR_REPLY].tuple);
-+#endif
-+
- 	}
- }
- 
+Can you check whether the device is still being used when you unplug 
+it?  For instance, is there still a pppd process trying to communicate 
+with the device?  If there is, what happens if you kill all the 
+processes using the serial device before you unplug it?
+
+In short, it seems likely that this is not new behavior but rather the 
+way usb-serial has worked all along.
+
+Alan Stern
 
