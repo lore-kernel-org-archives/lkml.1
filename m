@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755605AbZG0XRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755624AbZG0XYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755605AbZG0XRd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 19:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbZG0XRc
+	id S1755624AbZG0XYX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 19:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750833AbZG0XYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 19:17:32 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40630 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754744AbZG0XRc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 19:17:32 -0400
-Date: Tue, 28 Jul 2009 00:17:40 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Carlos R. Mafra" <crmafra2@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Ferenc Wagner <wferi@niif.hu>,
-       Greg KH <greg@kroah.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bisected] [Bug #13821] Replugging USB serial converter uses
- new device node
-Message-ID: <20090728001740.61b365db@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090727172254.GA19576@Pilar.aei.mpg.de>
-References: <87zlaqcec1.fsf@tac.ki.iif.hu>
-	<Pine.LNX.4.44L0.0907271217441.5217-100000@iolanthe.rowland.org>
-	<20090727164857.GA8908@Pilar.aei.mpg.de>
-	<20090727175525.20ac4869@lxorguk.ukuu.org.uk>
-	<20090727172254.GA19576@Pilar.aei.mpg.de>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Jul 2009 19:24:22 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:59363 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750737AbZG0XYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 19:24:22 -0400
+Date: Mon, 27 Jul 2009 16:21:45 -0700
+From: Greg KH <gregkh@suse.de>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Lucian Adrian Grijincu <lgrijincu@ixiacom.com>
+Subject: Re: [PATCH] documentation: make it clear that sysfs is optional
+Message-ID: <20090727232144.GA29954@suse.de>
+References: <20090727090642.0e495919.randy.dunlap@oracle.com>
+ <20090727161031.GA15328@suse.de>
+ <20090727091824.38d55ea1.randy.dunlap@oracle.com>
+ <20090727162601.GA3632@suse.de>
+ <20090727224930.GB6932@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090727224930.GB6932@khazad-dum.debian.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> And the fact that is, reverting your commit made things work under
-> the same testing conditions.
+On Mon, Jul 27, 2009 at 07:49:30PM -0300, Henrique de Moraes Holschuh wrote:
+> On Mon, 27 Jul 2009, Greg KH wrote:
+> > On Mon, Jul 27, 2009 at 09:18:24AM -0700, Randy Dunlap wrote:
+> > > On Mon, 27 Jul 2009 09:10:33 -0700 Greg KH wrote:
+> > > > On Mon, Jul 27, 2009 at 09:06:42AM -0700, Randy Dunlap wrote:
+> > > > > The original text suggested that sysfs is mandatory and always
+> > > > > compiled in the kernel.
+> > > > 
+> > > > But it should be :)
+> > > 
+> > > Well, you have the option of making it non-optional.
+> > > 
+> > > > Seriously, who turns sysfs off these days, does anyone?  If so, why?
+> > > 
+> > > Why is it configurable then?
+> > 
+> > Probably the same reason /proc is configurable.  No one ever turns it
+> > off, but hey, it's possible :)
 > 
-> Do you have any suggestions as to what I should do between unplugging
-> and plugging it back?
+> But does anyone ever test if the system doesn't go to lunch when you do
+> that?
 
-Got it - if the port is opened twice (eg by two apps) it does this.
-Reproduced and testing a fix.
-
-
-Alan
+I have no idea, I doubt it...
