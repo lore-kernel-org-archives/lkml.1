@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbZG0Spl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbZG0Sru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753411AbZG0Spl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 14:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZG0Spk
+	id S1753972AbZG0Sru (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 14:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbZG0Sru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 14:45:40 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:42219 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750695AbZG0Spk (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 14:45:40 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Anupama Chandwani <anupama.chandwani@gmail.com>
-Cc: linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: Undefined symbol "min_low_pfn"
-In-Reply-To: Your message of "Mon, 27 Jul 2009 11:17:20 PDT."
-             <689eb3470907271117x4638464p72964819a80637c0@mail.gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <689eb3470907271102i904d81em6317302e373e0730@mail.gmail.com>
-            <689eb3470907271117x4638464p72964819a80637c0@mail.gmail.com>
+	Mon, 27 Jul 2009 14:47:50 -0400
+Received: from mga09.intel.com ([134.134.136.24]:34979 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753058AbZG0Srt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 14:47:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,277,1246863600"; 
+   d="scan'208";a="536345642"
+Subject: Re: [PATCH] x86: don't use current_cpu_data in x2apic phys_pkg_id
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: suresh.b.siddha@intel.com
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A6ADD0D.10002@kernel.org>
+References: <4A6ADD0D.10002@kernel.org>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Mon, 27 Jul 2009 11:44:06 -0700
+Message-Id: <1248720246.27006.10764.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1248720339_3074P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
 Content-Transfer-Encoding: 7bit
-Date: Mon, 27 Jul 2009 14:45:39 -0400
-Message-ID: <52058.1248720339@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1248720339_3074P
-Content-Type: text/plain; charset=us-ascii
+On Sat, 2009-07-25 at 03:23 -0700, Yinghai Lu wrote:
+> one system that socket 1 come up as BSP. kexeced kernel report BSP as:
+> [    1.524550] Initializing cgroup subsys cpuacct
+> [    1.536064] initial_apicid:20
+> [    1.537135] ht_mask_width:1
+> [    1.538128] core_select_mask:f
+> [    1.539126] core_plus_mask_width:5
+> [    1.558479] CPU: Physical Processor ID: 0
+> [    1.559501] CPU: Processor Core ID: 0
+> [    1.560539] CPU: L1 I cache: 32K, L1 D cache: 32K
+> [    1.579098] CPU: L2 cache: 256K
+> [    1.580085] CPU: L3 cache: 24576K
+> [    1.581108] CPU 0/0x20 -> Node 0
+> [    1.596193] CPU 0 microcode level: 0xffff0008
+> 
+> it doesn't have correct physical processor id. and will get error
+> [   38.840859] CPU0 attaching sched-domain:
+> [   38.848287]  domain 0: span 0,8,72 level SIBLING
+> [   38.851151]   groups: 0 8 72
+> [   38.858137]   domain 1: span 0,8-15,72-79 level MC
+> [   38.868944]    groups: 0,8,72 9,73 10,74 11,75 12,76 13,77 14,78 15,79
+> [   38.881383] ERROR: parent span is not a superset of domain->span
+> [   38.890724]    domain 2: span 0-7,64-71 level CPU
+> [   38.899237] ERROR: domain->groups does not contain CPU0
+> [   38.909229]     groups: 8-15,72-79
+> [   38.912547] ERROR: groups don't span domain->span
+> [   38.919665]     domain 3: span 0-127 level NODE
+> [   38.930739]      groups: 0-7,64-71 8-15,72-79 16-23,80-87 24-31,88-95 32-39,96-103 40-47,104-111 48-55,112-119 56-63,120-127
+> 
+> it turns out:
+> we can not use current_cpu_data in phys_pgd_id for x2apic.
+> 
+> identify_boot_cpu is called by check_bugs before smp_prepare_cpus.
+> and till smp_prepare_cpus current_cpu_data for bsp is assigned with
+> boot_cpu_data
+> 
+> just make phys_pkg_id for x2apic is aligned to xapic
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-On Mon, 27 Jul 2009 11:17:20 PDT, Anupama Chandwani said:
+Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
 
-> I want to know what pages (page frame numbers) are used by kernel
-> code/data/bss etc. min_low_pfn would have told me the lowest usable
-> pfn.
-> Is there another way of getting this information? Or printing the min_low_pfn?
-
-What are you trying to do with that number?  Perhaps if you explain the
-problem you're trying to solve by looking at min_low_pfn, somebody will have
-a better solution...
-
-
---==_Exmh_1248720339_3074P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFKbfXTcC3lWbTT17ARAgEQAKCOM+zx42gQzoHxPDuFhQ+gTBEF1wCeIByt
-Xb+jUVFQ+2rQl4OSrlRZbOE=
-=b2hV
------END PGP SIGNATURE-----
-
---==_Exmh_1248720339_3074P--
