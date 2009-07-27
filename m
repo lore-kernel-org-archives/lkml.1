@@ -1,83 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752171AbZG0RQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752779AbZG0RR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752171AbZG0RQS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 13:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZG0RQS
+	id S1752779AbZG0RR6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 13:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZG0RR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 13:16:18 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:13277 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751202AbZG0RQR (ORCPT
+	Mon, 27 Jul 2009 13:17:57 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:48527 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751075AbZG0RR5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 13:16:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :x-enigmail-version:content-type;
-        b=rfhNDLI9FE9qv3epiRUqoj70gdKmnmtISyv/MytFi3Lhb7N33smUZSeJ+Gp5x5171L
-         AwKDGQFKHz9ceMnrYogjL7kNAK/Kx5CMRQ3SxRmC5lozILvVVWeBRyMMOuDWGDC0Xaxb
-         dhVHsO5RE9ur5Ivo8y8Gqb7iSZRb5s1fsIpfc=
-Message-ID: <4A6DE0DC.2070207@gmail.com>
-Date: Mon, 27 Jul 2009 13:16:12 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Mon, 27 Jul 2009 13:17:57 -0400
+From: Philipp Reisner <philipp.reisner@linbit.com>
+Organization: LINBIT
+To: Lars Ellenberg <lars.ellenberg@linbit.com>
+Subject: Re: linux-next: drbd tree build failure
+Date: Mon, 27 Jul 2009 19:17:55 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>
+References: <20090727154816.24e81531.sfr@canb.auug.org.au> <20090727080957.GA8046@barkeeper1-xen.linbit>
+In-Reply-To: <20090727080957.GA8046@barkeeper1-xen.linbit>
+X-OTRS-FollowUp-SenderType: agent
 MIME-Version: 1.0
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: Steven Rostedt <rostedt@goodmis.org>
-Subject: [regression] sched_getaffinity fails with EINVAL in 2.6.31-rc4
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig8EF4046C3C6F8707843ABBA2"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907271917.56148.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig8EF4046C3C6F8707843ABBA2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Monday 27 July 2009 10:09:57 Lars Ellenberg wrote:
+> On Mon, Jul 27, 2009 at 03:48:16PM +1000, Stephen Rothwell wrote:
+> > Hi Philipp,
+> >
+> > Today's linux-next build (x86_64 allmodconfig) failed like this:
+> >
+> > drivers/block/drbd/drbd_main.c: In function
+> > 'drbd_thread_current_set_cpu': drivers/block/drbd/drbd_main.c:1592:
+> > error: implicit declaration of function 'set_cpus_allowed'
+> >
+> > Introduced by commit 8a4ebc3fbd90072ac870064a930fe612eea6d9a1 ("DRBD:
+> > main") from the drbd interacting with commit
+> > 84cf7f02712e3491fb9776f950a8c4f413204c8b
+> > ("cpumask:remove-set_cpus_allowed") from the rr tree.
+> >
+> > I am not sure what the transformation to the new infrastructure is here -
+> > maybe Rusty can help?
+> >
+> > For today, I have reverted the rr tree commit above but we need a better
+> > solution.
+>
+> I think we can easily use set_cpus_allowed_ptr() instead,
+> as in fact, we do not have the cpu mask on the stack.
+> But embeded in struct drbd_conf.
 
-I am not sure when this started, but noticed that sched_getaffinity is
-not working in -rc4.
+Ok. Lars' patch is now complete and arrived in the git tree...
 
-[pid  6254] sched_getaffinity(0, 128, 0x7f80586b1fe0) =3D -1 EINVAL
-(Invalid argument)
+It should build now with Rusty's paches.
 
-Here is a simple program for reproduction:
+-phil
+-- 
+: Dipl-Ing Philipp Reisner
+: LINBIT | Your Way to High Availability
+: Tel: +43-1-8178292-50, Fax: +43-1-8178292-82
+: http://www.linbit.com
 
-#include <sched.h>
+DRBD(R) and LINBIT(R) are registered trademarks of LINBIT, Austria.
 
-int main(void)
-{
-	cpu_set_t mask;
-	int ret;
-
-	ret =3D sched_getaffinity(0, sizeof(mask), &mask);
-	if (ret < 0)
-		perror("getaffinity");
-
-	return ret;
-}
-
-If I get time, I will bisect this later today.
-
-Regards,
--Greg
-
-
---------------enig8EF4046C3C6F8707843ABBA2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkpt4NwACgkQP5K2CMvXmqHtDACfesMe+MYITuRmZfg/iR1ktoVW
-BEMAnRam4uxRkjD4X4k/o5VpmW0XVVih
-=HGh2
------END PGP SIGNATURE-----
-
---------------enig8EF4046C3C6F8707843ABBA2--
