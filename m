@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755581AbZG0ByS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755645AbZG0BzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755581AbZG0ByS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 26 Jul 2009 21:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbZG0ByR
+	id S1755645AbZG0BzI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 26 Jul 2009 21:55:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbZG0BzI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 26 Jul 2009 21:54:17 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:44066 "EHLO bilbo.ozlabs.org"
+	Sun, 26 Jul 2009 21:55:08 -0400
+Received: from main.gmane.org ([80.91.229.2]:58052 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754555AbZG0ByR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 26 Jul 2009 21:54:17 -0400
-Date: Mon, 27 Jul 2009 11:51:34 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu, paulus@samba.org,
-       a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/perf_counter: Add alignment-faults and
-	emulation-faults sw events
-Message-ID: <20090727015134.GA18301@kryten>
-References: <20090706121845.GD4391@kryten> <1248659272.28464.29.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248659272.28464.29.camel@pasglop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1754580AbZG0BzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 26 Jul 2009 21:55:07 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Chris Hills <chaz@chaz6.com>
+Subject: Re: [ANNOUNCE] GIT 1.6.4-rc3
+Date: Mon, 27 Jul 2009 03:54:27 +0200
+Message-ID: <4A6D08D3.50404@chaz6.com>
+References: <7vws5vrh93.fsf@alter.siamese.dyndns.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: nobelnet.dk
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.2pre) Gecko/20090726 Shredder/3.0b4pre
+In-Reply-To: <7vws5vrh93.fsf@alter.siamese.dyndns.org>
+Cc: git@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 26/07/09 10:16, Junio C Hamano wrote:
+ > A release candidate GIT 1.6.4.rc3 is available at the usual places
+ > for testing:
+ >
+ >    http://www.kernel.org/pub/software/scm/git/
+ >
+ >    git-1.6.4.rc3.tar.{gz,bz2}			(source tarball)
+ >    git-htmldocs-1.6.4.rc3.tar.{gz,bz2}		(preformatted docs)
+ >    git-manpages-1.6.4.rc3.tar.{gz,bz2}		(preformatted docs)
 
-Hi Ben,
+Hi
 
-> BTW. The patch relies on some perctr changes I don't have in my tree
-> (PERF_COUNT_SW_ALIGNMENT_FAULTS isn't defined for me)
-> 
-> Ingo, how do you want to handle that ? Should I wait til round 2 of the
-> merge window before putting Anton's patch in or can I merge some of your
-> stuff in powerpc-next as pre-reqs ? Or you can just take Anton's patch
-> with my:
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> And stick it in your own queue (though pls, give me a pointer to the git
-> tree in question so I can verify that I don't get new stuff that
-> conflicts before we get to the merge window).
+It seems that running `make distclean` removes the configure script. Is 
+this expected behavior?
 
-I've got another round of this series that I'll send out today.
+Regards,
 
-Anton
+Chris
+
