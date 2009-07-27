@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbZG0QTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753165AbZG0QS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753253AbZG0QTe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 12:19:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbZG0QTd
+	id S1753165AbZG0QS6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 12:18:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753101AbZG0QS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 12:19:33 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:49184 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753011AbZG0QTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 12:19:31 -0400
-Date: Mon, 27 Jul 2009 18:14:11 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: jwoithe@physics.adelaide.edu.au, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 6/12] drivers/platform/x86: Correct redundant test
-Message-ID: <Pine.LNX.4.64.0907271813490.2682@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 27 Jul 2009 12:18:57 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:57261 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753086AbZG0QS4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 12:18:56 -0400
+Date: Mon, 27 Jul 2009 09:18:24 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Greg KH <gregkh@suse.de>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Lucian Adrian Grijincu <lgrijincu@ixiacom.com>
+Subject: Re: [PATCH] documentation: make it clear that sysfs is optional
+Message-Id: <20090727091824.38d55ea1.randy.dunlap@oracle.com>
+In-Reply-To: <20090727161031.GA15328@suse.de>
+References: <20090727090642.0e495919.randy.dunlap@oracle.com>
+	<20090727161031.GA15328@suse.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt007.oracle.com [141.146.116.16]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010208.4A6DD369.0193:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Mon, 27 Jul 2009 09:10:33 -0700 Greg KH wrote:
 
-device and acpi_driver_data(device) were tested just a few lines above.
+> On Mon, Jul 27, 2009 at 09:06:42AM -0700, Randy Dunlap wrote:
+> > From:	Lucian Adrian Grijincu <lgrijincu@ixiacom.com>
+> > Subject: [PATCH] documentation: make it clear that sysfs is optional
+> > 
+> > The original text suggested that sysfs is mandatory and always
+> > compiled in the kernel.
+> 
+> But it should be :)
 
-A simplified version of the semantic match that finds this problem is as
-follows: (http://www.emn.fr/x-info/coccinelle/)
+Well, you have the option of making it non-optional.
 
-// <smpl>
-@r exists@
-local idexpression x;
-expression E;
-@@
 
-if (x == NULL || ...) { ... when forall
-   return ...; }
-... when != \(x=E\|x--\|x++\|--x\|++x\|x-=E\|x+=E\|x|=E\|x&=E\|&x\)
-(
-*x == NULL
-|
-*x != NULL
-)
-// </smpl>
+> Seriously, who turns sysfs off these days, does anyone?  If so, why?
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+Why is it configurable then?
+
 
 ---
- drivers/platform/x86/fujitsu-laptop.c          |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/platform/x86/fujitsu-laptop.c b/drivers/platform/x86/fujitsu-laptop.c
-index 218b9a1..5306901 100644
---- a/drivers/platform/x86/fujitsu-laptop.c
-+++ b/drivers/platform/x86/fujitsu-laptop.c
-@@ -745,9 +745,6 @@ static int acpi_fujitsu_remove(struct acpi_device *device, int type)
- 
- 	fujitsu = acpi_driver_data(device);
- 
--	if (!device || !acpi_driver_data(device))
--		return -EINVAL;
--
- 	fujitsu->acpi_handle = NULL;
- 
- 	return 0;
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
