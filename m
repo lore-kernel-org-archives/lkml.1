@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755645AbZG0NuP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbZG0NtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755645AbZG0NuP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 09:50:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754718AbZG0Nt6
+	id S1755488AbZG0NtR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 09:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754714AbZG0Nq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 09:49:58 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:59116 "EHLO
+	Mon, 27 Jul 2009 09:46:29 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:59111 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754606AbZG0Nq1 (ORCPT
+	by vger.kernel.org with ESMTP id S1754407AbZG0Nq0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 09:46:27 -0400
+	Mon, 27 Jul 2009 09:46:26 -0400
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Samuel Ortiz <sameo@linux.intel.com>
 Cc: linux-kernel@vger.kernel.org,
        Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Wim Van Sebroeck <wim@iguana.be>
-Subject: [PATCH 22/22] [WATCHDOG] Add support for WM831x watchdog
-Date: Mon, 27 Jul 2009 14:46:12 +0100
-Message-Id: <1248702372-29534-22-git-send-email-broonie@opensource.wolfsonmicro.com>
+       lm-sensors@lm-sensors.org
+Subject: [PATCH 12/22] hwmon: WM831x PMIC hardware monitoring driver
+Date: Mon, 27 Jul 2009 14:46:02 +0100
+Message-Id: <1248702372-29534-12-git-send-email-broonie@opensource.wolfsonmicro.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <20090727134527.GA12849@rakim.wolfsonmicro.main>
 References: <20090727134527.GA12849@rakim.wolfsonmicro.main>
@@ -25,557 +25,349 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The WM831x series of devices provide a watchdog with configurable
-behaviour on timer expiry.
+This driver adds support for the hardware monitoring features of
+the WM831x PMICs to the hwmon API. Monitoring is provided for
+the system voltages supported natively by the WM831x, the chip
+temperature, the battery temperature and the auxiliary inputs
+of the WM831x.
 
-Currently this driver support refreshes via a register or GPIO line and
-autonomous refreshes from a hardware source (eg, a clock).
+Currently no alarms are supported, though digital comparators on
+the WM831x devices would allow these to be provided.
+
+Since the auxiliary and battery temperature input scaling depends
+on the system configuration raw ADC values are reported with scaling
+left to userspace.
 
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Wim Van Sebroeck <wim@iguana.be>
+Cc: lm-sensors@lm-sensors.org
 ---
- drivers/watchdog/Kconfig            |    7 +
- drivers/watchdog/Makefile           |    1 +
- drivers/watchdog/wm831x_wdt.c       |  441 +++++++++++++++++++++++++++++++++++
- include/linux/mfd/wm831x/watchdog.h |   52 ++++
- 4 files changed, 501 insertions(+), 0 deletions(-)
- create mode 100644 drivers/watchdog/wm831x_wdt.c
- create mode 100644 include/linux/mfd/wm831x/watchdog.h
+ Documentation/hwmon/wm831x   |   37 +++++++
+ drivers/hwmon/Kconfig        |   11 ++
+ drivers/hwmon/Makefile       |    1 +
+ drivers/hwmon/wm831x-hwmon.c |  236 ++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 285 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/hwmon/wm831x
+ create mode 100644 drivers/hwmon/wm831x-hwmon.c
 
-diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index b1ccc04..2d22ab6 100644
---- a/drivers/watchdog/Kconfig
-+++ b/drivers/watchdog/Kconfig
-@@ -55,6 +55,13 @@ config SOFT_WATCHDOG
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called softdog.
+diff --git a/Documentation/hwmon/wm831x b/Documentation/hwmon/wm831x
+new file mode 100644
+index 0000000..999e525
+--- /dev/null
++++ b/Documentation/hwmon/wm831x
+@@ -0,0 +1,37 @@
++Kernel driver wm831x-hwmon
++==========================
++
++Supported chips:
++  * Wolfson Microelectronics WM831x PMICs
++    Prefix: 'wm831x'
++    Datasheet:
++	http://www.wolfsonmicro.com/products/WM8310
++	http://www.wolfsonmicro.com/products/WM8311
++	http://www.wolfsonmicro.com/products/WM8312
++
++Authors: Mark Brown <broonie@opensource.wolfsonmicro.com>
++
++Description
++-----------
++
++The WM831x series of PMICs include an AUXADC which can be used to
++monitor a range of system operating parameters, including the voltages
++of the major supplies within the system.  Currently the driver provides
++reporting of all the input values but does not provide any alarms.
++
++Voltage Monitoring
++------------------
++
++Voltages are sampled by a 12 bit ADC.  Voltages in milivolts are 1.465
++times the ADC value.
++
++Temperature Monitoring
++----------------------
++
++Temperatures are sampled by a 12 bit ADC.  Chip and battery temperatures
++are available.  The chip temperature is calculated as:
++
++	Degrees celsius = (512.8 - data) / 1.0983
++
++while the battery temperature calculation will depend on the NTC
++termistor component.
+diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
+index 8d17135..6a680e2 100644
+--- a/drivers/hwmon/Kconfig
++++ b/drivers/hwmon/Kconfig
+@@ -930,6 +930,17 @@ config SENSORS_W83627EHF
+ 	  This driver can also be built as a module.  If so, the module
+ 	  will be called w83627ehf.
  
-+config WM831X_WATCHDOG
-+	tristate "WM831x watchdog"
++config SENSORS_WM831X
++	tristate "WM831x PMICs"
 +	depends on MFD_WM831X
 +	help
-+	  Support for the watchdog in the WM831x AudioPlus PMICs.  When
-+	  the watchdog triggers the system will be reset.
++	  If you say yes here you get support for the hardware
++   	  monitoring functionality of the Wolfson Microelectronics
++	  WM831x series of PMICs.
 +
- config WM8350_WATCHDOG
- 	tristate "WM8350 watchdog"
++	  This driver can also be built as a module.  If so, the module
++	  will be called wm831x-hwmon.
++
+ config SENSORS_WM8350
+ 	tristate "Wolfson Microelectronics WM835x"
  	depends on MFD_WM8350
-diff --git a/drivers/watchdog/Makefile b/drivers/watchdog/Makefile
-index 3d77429..244be98 100644
---- a/drivers/watchdog/Makefile
-+++ b/drivers/watchdog/Makefile
-@@ -139,5 +139,6 @@ obj-$(CONFIG_WATCHDOG_CP1XXX)		+= cpwd.o
- # XTENSA Architecture
+diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
+index 6126257..a7e7eb7 100644
+--- a/drivers/hwmon/Makefile
++++ b/drivers/hwmon/Makefile
+@@ -90,6 +90,7 @@ obj-$(CONFIG_SENSORS_VT8231)	+= vt8231.o
+ obj-$(CONFIG_SENSORS_W83627EHF)	+= w83627ehf.o
+ obj-$(CONFIG_SENSORS_W83L785TS)	+= w83l785ts.o
+ obj-$(CONFIG_SENSORS_W83L786NG)	+= w83l786ng.o
++obj-$(CONFIG_SENSORS_WM831X)	+= wm831x-hwmon.o
+ obj-$(CONFIG_SENSORS_WM8350)	+= wm8350-hwmon.o
  
- # Architecture Independant
-+obj-$(CONFIG_WM831X_WATCHDOG) += wm831x_wdt.o
- obj-$(CONFIG_WM8350_WATCHDOG) += wm8350_wdt.o
- obj-$(CONFIG_SOFT_WATCHDOG) += softdog.o
-diff --git a/drivers/watchdog/wm831x_wdt.c b/drivers/watchdog/wm831x_wdt.c
+ ifeq ($(CONFIG_HWMON_DEBUG_CHIP),y)
+diff --git a/drivers/hwmon/wm831x-hwmon.c b/drivers/hwmon/wm831x-hwmon.c
 new file mode 100644
-index 0000000..775bcd8
+index 0000000..0dd9973
 --- /dev/null
-+++ b/drivers/watchdog/wm831x_wdt.c
-@@ -0,0 +1,441 @@
++++ b/drivers/hwmon/wm831x-hwmon.c
+@@ -0,0 +1,236 @@
 +/*
-+ * Watchdog driver for the wm831x PMICs
++ * drivers/hwmon/wm831x-hwmon.c - Wolfson Microelectronics WM831x PMIC
++ *                                hardware monitoring features.
 + *
-+ * Copyright (C) 2009 Wolfson Microelectronics
++ * Copyright (C) 2009 Wolfson Microelectronics plc
 + *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License v2 as published by the
++ * Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but WITHOUT
++ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
++ * more details.
++ *
++ * You should have received a copy of the GNU General Public License along with
++ * this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 + */
 +
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/types.h>
 +#include <linux/kernel.h>
-+#include <linux/fs.h>
-+#include <linux/miscdevice.h>
++#include <linux/module.h>
 +#include <linux/platform_device.h>
-+#include <linux/watchdog.h>
-+#include <linux/uaccess.h>
-+#include <linux/gpio.h>
++#include <linux/err.h>
++#include <linux/hwmon.h>
++#include <linux/hwmon-sysfs.h>
 +
 +#include <linux/mfd/wm831x/core.h>
-+#include <linux/mfd/wm831x/pdata.h>
-+#include <linux/mfd/wm831x/watchdog.h>
++#include <linux/mfd/wm831x/auxadc.h>
 +
-+static int nowayout = WATCHDOG_NOWAYOUT;
-+module_param(nowayout, int, 0);
-+MODULE_PARM_DESC(nowayout,
-+		 "Watchdog cannot be stopped once started (default="
-+		 __MODULE_STRING(WATCHDOG_NOWAYOUT) ")");
-+
-+static unsigned long wm831x_wdt_users;
-+static struct miscdevice wm831x_wdt_miscdev;
-+static int wm831x_wdt_expect_close;
-+static DEFINE_MUTEX(wdt_mutex);
-+static struct wm831x *wm831x;
-+static unsigned int update_gpio;
-+static unsigned int update_state;
-+
-+/* We can't use the sub-second values here but they're included
-+ * for completeness.  */
-+static struct {
-+	int time;  /* Seconds */
-+	u16 val;   /* WDOG_TO value */
-+} wm831x_wdt_cfgs[] = {
-+	{  1, 2 },
-+	{  2, 3 },
-+	{  4, 4 },
-+	{  8, 5 },
-+	{ 16, 6 },
-+	{ 32, 7 },
-+	{ 33, 7 },  /* Actually 32.768s so include both, others round down */
++struct wm831x_hwmon {
++	struct wm831x *wm831x;
++	struct device *classdev;
 +};
 +
-+static int wm831x_wdt_set_timeout(struct wm831x *wm831x, u16 value)
++static ssize_t show_name(struct device *dev,
++			 struct device_attribute *attr, char *buf)
 +{
-+	int ret;
-+
-+	mutex_lock(&wdt_mutex);
-+
-+	ret = wm831x_reg_unlock(wm831x);
-+	if (ret == 0) {
-+		ret = wm831x_set_bits(wm831x, WM831X_WATCHDOG,
-+				      WM831X_WDOG_TO_MASK, value);
-+		wm831x_reg_lock(wm831x);
-+	} else {
-+		dev_err(wm831x->dev, "Failed to unlock security key: %d\n",
-+			ret);
-+	}
-+
-+	mutex_unlock(&wdt_mutex);
-+
-+	return ret;
++	return sprintf(buf, "wm831x\n");
 +}
 +
-+static int wm831x_wdt_start(struct wm831x *wm831x)
++static const char *input_names[] = {
++	[WM831X_AUX_SYSVDD]    = "SYSVDD" ,
++	[WM831X_AUX_USB]       = "USB" ,
++	[WM831X_AUX_BKUP_BATT] = "Backup battery",
++	[WM831X_AUX_BATT]      = "Battery",
++	[WM831X_AUX_WALL]      = "WALL",
++	[WM831X_AUX_CHIP_TEMP] = "PMIC",
++	[WM831X_AUX_BATT_TEMP] = "Battery",
++};
++
++
++static ssize_t show_voltage(struct device *dev,
++			    struct device_attribute *attr, char *buf)
 +{
++	struct wm831x_hwmon *hwmon = dev_get_drvdata(dev);
++	int channel = to_sensor_dev_attr(attr)->index;
 +	int ret;
 +
-+	mutex_lock(&wdt_mutex);
-+
-+	ret = wm831x_reg_unlock(wm831x);
-+	if (ret == 0) {
-+		ret = wm831x_set_bits(wm831x, WM831X_WATCHDOG,
-+				      WM831X_WDOG_ENA, WM831X_WDOG_ENA);
-+		wm831x_reg_lock(wm831x);
-+	} else {
-+		dev_err(wm831x->dev, "Failed to unlock security key: %d\n",
-+			ret);
-+	}
-+
-+	mutex_unlock(&wdt_mutex);
-+
-+	return ret;
-+}
-+
-+static int wm831x_wdt_stop(struct wm831x *wm831x)
-+{
-+	int ret;
-+
-+	mutex_lock(&wdt_mutex);
-+
-+	ret = wm831x_reg_unlock(wm831x);
-+	if (ret == 0) {
-+		ret = wm831x_set_bits(wm831x, WM831X_WATCHDOG,
-+				      WM831X_WDOG_ENA, 0);
-+		wm831x_reg_lock(wm831x);
-+	} else {
-+		dev_err(wm831x->dev, "Failed to unlock security key: %d\n",
-+			ret);
-+	}
-+
-+	mutex_unlock(&wdt_mutex);
-+
-+	return ret;
-+}
-+
-+static int wm831x_wdt_kick(struct wm831x *wm831x)
-+{
-+	int ret;
-+	u16 reg;
-+
-+	mutex_lock(&wdt_mutex);
-+
-+	if (update_gpio) {
-+		gpio_set_value_cansleep(update_gpio, update_state);
-+		update_state = !update_state;
-+		ret = 0;
-+		goto out;
-+	}
-+
-+
-+	reg = wm831x_reg_read(wm831x, WM831X_WATCHDOG);
-+
-+	if (!(reg & WM831X_WDOG_RST_SRC)) {
-+		dev_err(wm831x->dev, "Hardware watchdog update unsupported\n");
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	reg |= WM831X_WDOG_RESET;
-+
-+	ret = wm831x_reg_unlock(wm831x);
-+	if (ret == 0) {
-+		ret = wm831x_reg_write(wm831x, WM831X_WATCHDOG, reg);
-+		wm831x_reg_lock(wm831x);
-+	} else {
-+		dev_err(wm831x->dev, "Failed to unlock security key: %d\n",
-+			ret);
-+	}
-+
-+out:
-+	mutex_unlock(&wdt_mutex);
-+
-+	return ret;
-+}
-+
-+static int wm831x_wdt_open(struct inode *inode, struct file *file)
-+{
-+	int ret;
-+
-+	if (!wm831x)
-+		return -ENODEV;
-+
-+	if (test_and_set_bit(0, &wm831x_wdt_users))
-+		return -EBUSY;
-+
-+	ret = wm831x_wdt_start(wm831x);
-+	if (ret != 0)
++	ret = wm831x_auxadc_read_uv(hwmon->wm831x, channel);
++	if (ret < 0)
 +		return ret;
 +
-+	return nonseekable_open(inode, file);
++	return sprintf(buf, "%d\n", DIV_ROUND_CLOSEST(ret, 1000));
 +}
 +
-+static int wm831x_wdt_release(struct inode *inode, struct file *file)
++static ssize_t show_chip_temp(struct device *dev,
++			      struct device_attribute *attr, char *buf)
 +{
-+	if (wm831x_wdt_expect_close)
-+		wm831x_wdt_stop(wm831x);
-+	else {
-+		dev_warn(wm831x->dev, "Watchdog device closed uncleanly\n");
-+		wm831x_wdt_kick(wm831x);
-+	}
++	struct wm831x_hwmon *hwmon = dev_get_drvdata(dev);
++	int channel = to_sensor_dev_attr(attr)->index;
++	int ret;
 +
-+	clear_bit(0, &wm831x_wdt_users);
++	ret = wm831x_auxadc_read(hwmon->wm831x, channel);
++	if (ret < 0)
++		return ret;
 +
-+	return 0;
++	/* Degrees celsius = (512.18-ret) / 1.0983 */
++	ret = 512180 - (ret * 1000);
++	ret = (ret * 10000) / 10983;
++
++	return sprintf(buf, "%d\n", ret);
 +}
 +
-+static ssize_t wm831x_wdt_write(struct file *file,
-+				const char __user *data, size_t count,
-+				loff_t *ppos)
++static ssize_t show_batt_temp(struct device *dev,
++			      struct device_attribute *attr, char *buf)
 +{
-+	size_t i;
++	struct wm831x_hwmon *hwmon = dev_get_drvdata(dev);
++	int channel = to_sensor_dev_attr(attr)->index;
++	int ret;
 +
-+	if (count) {
-+		wm831x_wdt_kick(wm831x);
++	ret = wm831x_auxadc_read(hwmon->wm831x, channel);
++	if (ret < 0)
++		return ret;
 +
-+		if (!nowayout) {
-+			/* In case it was set long ago */
-+			wm831x_wdt_expect_close = 0;
-+
-+			/* scan to see whether or not we got the magic
-+			   character */
-+			for (i = 0; i != count; i++) {
-+				char c;
-+				if (get_user(c, data + i))
-+					return -EFAULT;
-+				if (c == 'V')
-+					wm831x_wdt_expect_close = 42;
-+			}
-+		}
-+	}
-+	return count;
++	/* The conversion depends on the battery, leave to userspace */
++	return sprintf(buf, "%d\n", ret);
 +}
 +
-+static struct watchdog_info ident = {
-+	.options = WDIOF_SETTIMEOUT | WDIOF_KEEPALIVEPING | WDIOF_MAGICCLOSE,
-+	.identity = "WM831x Watchdog",
++static ssize_t show_label(struct device *dev,
++			  struct device_attribute *attr, char *buf)
++{
++	int channel = to_sensor_dev_attr(attr)->index;
++
++	return sprintf(buf, "%s\n", input_names[channel]);
++}
++
++#define WM831X_VOLTAGE(id, name) \
++	static SENSOR_DEVICE_ATTR(in##id##_input, S_IRUGO, show_voltage, \
++				  NULL, name);
++
++#define WM831X_NAMED_VOLTAGE(id, name) \
++	static SENSOR_DEVICE_ATTR(in##id##_input, S_IRUGO, show_voltage,\
++				  NULL, name);		\
++	static SENSOR_DEVICE_ATTR(in##id##_label, S_IRUGO, show_label,	\
++				  NULL, name)
++
++static DEVICE_ATTR(name, S_IRUGO, show_name, NULL);
++
++WM831X_VOLTAGE(0, WM831X_AUX_AUX1);
++WM831X_VOLTAGE(1, WM831X_AUX_AUX2);
++WM831X_VOLTAGE(2, WM831X_AUX_AUX3);
++WM831X_VOLTAGE(3, WM831X_AUX_AUX4);
++
++WM831X_NAMED_VOLTAGE(4, WM831X_AUX_SYSVDD);
++WM831X_NAMED_VOLTAGE(5, WM831X_AUX_USB);
++WM831X_NAMED_VOLTAGE(6, WM831X_AUX_BATT);
++WM831X_NAMED_VOLTAGE(7, WM831X_AUX_WALL);
++
++static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_chip_temp, NULL,
++			  WM831X_AUX_CHIP_TEMP);
++static SENSOR_DEVICE_ATTR(temp1_label, S_IRUGO, show_label, NULL,
++			  WM831X_AUX_CHIP_TEMP);
++static SENSOR_DEVICE_ATTR(temp2_input, S_IRUGO, show_batt_temp, NULL,
++			  WM831X_AUX_BATT_TEMP);
++static SENSOR_DEVICE_ATTR(temp2_label, S_IRUGO, show_label, NULL,
++			  WM831X_AUX_BATT_TEMP);
++
++static struct attribute *wm831x_attributes[] = {
++	&dev_attr_name.attr,
++
++	&sensor_dev_attr_in0_input.dev_attr.attr,
++	&sensor_dev_attr_in1_input.dev_attr.attr,
++	&sensor_dev_attr_in2_input.dev_attr.attr,
++	&sensor_dev_attr_in3_input.dev_attr.attr,
++
++	&sensor_dev_attr_in4_input.dev_attr.attr,
++	&sensor_dev_attr_in4_label.dev_attr.attr,
++	&sensor_dev_attr_in5_input.dev_attr.attr,
++	&sensor_dev_attr_in5_label.dev_attr.attr,
++	&sensor_dev_attr_in6_input.dev_attr.attr,
++	&sensor_dev_attr_in6_label.dev_attr.attr,
++	&sensor_dev_attr_in7_input.dev_attr.attr,
++	&sensor_dev_attr_in7_label.dev_attr.attr,
++
++	&sensor_dev_attr_temp1_input.dev_attr.attr,
++	&sensor_dev_attr_temp1_label.dev_attr.attr,
++	&sensor_dev_attr_temp2_input.dev_attr.attr,
++	&sensor_dev_attr_temp2_label.dev_attr.attr,
++
++	NULL,
 +};
 +
-+static long wm831x_wdt_ioctl(struct file *file, unsigned int cmd,
-+			     unsigned long arg)
-+{
-+	int ret = -ENOTTY, time, i;
-+	void __user *argp = (void __user *)arg;
-+	int __user *p = argp;
-+	u16 reg;
-+
-+	switch (cmd) {
-+	case WDIOC_GETSUPPORT:
-+		ret = copy_to_user(argp, &ident, sizeof(ident)) ? -EFAULT : 0;
-+		break;
-+
-+	case WDIOC_GETSTATUS:
-+	case WDIOC_GETBOOTSTATUS:
-+		ret = put_user(0, p);
-+		break;
-+
-+	case WDIOC_SETOPTIONS:
-+	{
-+		int options;
-+
-+		if (get_user(options, p))
-+			return -EFAULT;
-+
-+		ret = -EINVAL;
-+
-+		/* Setting both simultaneously means at least one must fail */
-+		if (options == WDIOS_DISABLECARD)
-+			ret = wm831x_wdt_start(wm831x);
-+
-+		if (options == WDIOS_ENABLECARD)
-+			ret = wm831x_wdt_stop(wm831x);
-+		break;
-+	}
-+
-+	case WDIOC_KEEPALIVE:
-+		ret = wm831x_wdt_kick(wm831x);
-+		break;
-+
-+	case WDIOC_SETTIMEOUT:
-+		ret = get_user(time, p);
-+		if (ret)
-+			break;
-+
-+		if (time == 0) {
-+			if (nowayout)
-+				ret = -EINVAL;
-+			else
-+				wm831x_wdt_stop(wm831x);
-+			break;
-+		}
-+
-+		for (i = 0; i < ARRAY_SIZE(wm831x_wdt_cfgs); i++)
-+			if (wm831x_wdt_cfgs[i].time == time)
-+				break;
-+		if (i == ARRAY_SIZE(wm831x_wdt_cfgs))
-+			ret = -EINVAL;
-+		else
-+			ret = wm831x_wdt_set_timeout(wm831x,
-+						     wm831x_wdt_cfgs[i].val);
-+		break;
-+
-+	case WDIOC_GETTIMEOUT:
-+		reg = wm831x_reg_read(wm831x, WM831X_WATCHDOG);
-+		reg &= WM831X_WDOG_TO_MASK;
-+		for (i = 0; i < ARRAY_SIZE(wm831x_wdt_cfgs); i++)
-+			if (wm831x_wdt_cfgs[i].val == reg)
-+				break;
-+		if (i == ARRAY_SIZE(wm831x_wdt_cfgs)) {
-+			dev_warn(wm831x->dev,
-+				 "Unknown watchdog configuration: %x\n", reg);
-+			ret = -EINVAL;
-+		} else
-+			ret = put_user(wm831x_wdt_cfgs[i].time, p);
-+
-+	}
-+
-+	return ret;
-+}
-+
-+static const struct file_operations wm831x_wdt_fops = {
-+	.owner = THIS_MODULE,
-+	.llseek = no_llseek,
-+	.write = wm831x_wdt_write,
-+	.unlocked_ioctl = wm831x_wdt_ioctl,
-+	.open = wm831x_wdt_open,
-+	.release = wm831x_wdt_release,
++static const struct attribute_group wm831x_attr_group = {
++	.attrs	= wm831x_attributes,
 +};
 +
-+static struct miscdevice wm831x_wdt_miscdev = {
-+	.minor = WATCHDOG_MINOR,
-+	.name = "watchdog",
-+	.fops = &wm831x_wdt_fops,
-+};
-+
-+static int __devinit wm831x_wdt_probe(struct platform_device *pdev)
++static int __devinit wm831x_hwmon_probe(struct platform_device *pdev)
 +{
-+	struct wm831x_pdata *chip_pdata;
-+	struct wm831x_watchdog_pdata *pdata;
-+	int reg, ret;
++	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
++	struct wm831x_hwmon *hwmon;
++	int ret;
 +
-+	wm831x = dev_get_drvdata(pdev->dev.parent);
++	hwmon = kzalloc(sizeof(struct wm831x_hwmon), GFP_KERNEL);
++	if (!hwmon)
++		return -ENOMEM;
 +
-+	ret = wm831x_reg_read(wm831x, WM831X_WATCHDOG);
-+	if (ret < 0) {
-+		dev_err(wm831x->dev, "Failed to read watchdog status: %d\n",
-+			ret);
++	hwmon->wm831x = wm831x;
++
++	ret = sysfs_create_group(&pdev->dev.kobj, &wm831x_attr_group);
++	if (ret)
 +		goto err;
-+	}
-+	reg = ret;
 +
-+	if (reg & WM831X_WDOG_DEBUG)
-+		dev_warn(wm831x->dev, "Watchdog is paused\n");
-+
-+	/* Apply any configuration */
-+	if (pdev->dev.parent->platform_data) {
-+		chip_pdata = pdev->dev.parent->platform_data;
-+		pdata = chip_pdata->watchdog;
-+	} else {
-+		pdata = NULL;
++	hwmon->classdev = hwmon_device_register(&pdev->dev);
++	if (IS_ERR(hwmon->classdev)) {
++		ret = PTR_ERR(hwmon->classdev);
++		goto err_sysfs;
 +	}
 +
-+	if (pdata) {
-+		reg &= ~(WM831X_WDOG_SECACT_MASK | WM831X_WDOG_PRIMACT_MASK |
-+			 WM831X_WDOG_RST_SRC);
-+
-+		reg |= pdata->primary << WM831X_WDOG_PRIMACT_SHIFT;
-+		reg |= pdata->secondary << WM831X_WDOG_SECACT_SHIFT;
-+		reg |= pdata->software << WM831X_WDOG_RST_SRC_SHIFT;
-+
-+		if (pdata->update_gpio) {
-+			ret = gpio_request(pdata->update_gpio,
-+					   "Watchdog update");
-+			if (ret < 0) {
-+				dev_err(wm831x->dev,
-+					"Failed to request update GPIO: %d\n",
-+					ret);
-+				goto err;
-+			}
-+
-+			ret = gpio_direction_output(pdata->update_gpio, 0);
-+			if (ret != 0) {
-+				dev_err(wm831x->dev,
-+					"gpio_direction_output returned: %d\n",
-+					ret);
-+				goto err_gpio;
-+			}
-+
-+			update_gpio = pdata->update_gpio;
-+
-+			/* Make sure the watchdog takes hardware updates */
-+			reg |= WM831X_WDOG_RST_SRC;
-+		}
-+
-+		ret = wm831x_reg_unlock(wm831x);
-+		if (ret == 0) {
-+			ret = wm831x_reg_write(wm831x, WM831X_WATCHDOG, reg);
-+			wm831x_reg_lock(wm831x);
-+		} else {
-+			dev_err(wm831x->dev,
-+				"Failed to unlock security key: %d\n", ret);
-+			goto err_gpio;
-+		}
-+	}
-+
-+	wm831x_wdt_miscdev.parent = &pdev->dev;
-+
-+	ret = misc_register(&wm831x_wdt_miscdev);
-+	if (ret != 0) {
-+		dev_err(wm831x->dev, "Failed to register miscdev: %d\n", ret);
-+		goto err_gpio;
-+	}
++	platform_set_drvdata(pdev, hwmon);
 +
 +	return 0;
 +
-+err_gpio:
-+	if (update_gpio) {
-+		gpio_free(update_gpio);
-+		update_gpio = 0;
-+	}
++err_sysfs:
++	sysfs_remove_group(&pdev->dev.kobj, &wm831x_attr_group);
 +err:
++	kfree(hwmon);
 +	return ret;
 +}
 +
-+static int __devexit wm831x_wdt_remove(struct platform_device *pdev)
++static int __devexit wm831x_hwmon_remove(struct platform_device *pdev)
 +{
-+	if (update_gpio) {
-+		gpio_free(update_gpio);
-+		update_gpio = 0;
-+	}
++	struct wm831x_hwmon *hwmon = platform_get_drvdata(pdev);
 +
-+	misc_deregister(&wm831x_wdt_miscdev);
++	hwmon_device_unregister(hwmon->classdev);
++	sysfs_remove_group(&pdev->dev.kobj, &wm831x_attr_group);
++	kfree(hwmon);
 +
 +	return 0;
 +}
 +
-+static struct platform_driver wm831x_wdt_driver = {
-+	.probe = wm831x_wdt_probe,
-+	.remove = __devexit_p(wm831x_wdt_remove),
++static struct platform_driver wm831x_hwmon_driver = {
++	.probe = wm831x_hwmon_probe,
++	.remove = __devexit_p(wm831x_hwmon_remove),
 +	.driver = {
-+		.name = "wm831x-watchdog",
++		.name = "wm831x-hwmon",
++		.owner = THIS_MODULE,
 +	},
 +};
 +
-+static int __init wm831x_wdt_init(void)
++static int __init wm831x_hwmon_init(void)
 +{
-+	return platform_driver_register(&wm831x_wdt_driver);
++	return platform_driver_register(&wm831x_hwmon_driver);
 +}
-+module_init(wm831x_wdt_init);
++module_init(wm831x_hwmon_init);
 +
-+static void __exit wm831x_wdt_exit(void)
++static void __exit wm831x_hwmon_exit(void)
 +{
-+	platform_driver_unregister(&wm831x_wdt_driver);
++	platform_driver_unregister(&wm831x_hwmon_driver);
 +}
-+module_exit(wm831x_wdt_exit);
++module_exit(wm831x_hwmon_exit);
 +
-+MODULE_AUTHOR("Mark Brown");
-+MODULE_DESCRIPTION("WM831x Watchdog");
++MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com>");
++MODULE_DESCRIPTION("WM831x Hardware Monitoring");
 +MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:wm831x-watchdog");
-diff --git a/include/linux/mfd/wm831x/watchdog.h b/include/linux/mfd/wm831x/watchdog.h
-new file mode 100644
-index 0000000..97a99b5
---- /dev/null
-+++ b/include/linux/mfd/wm831x/watchdog.h
-@@ -0,0 +1,52 @@
-+/*
-+ * include/linux/mfd/wm831x/watchdog.h -- Watchdog for WM831x
-+ *
-+ * Copyright 2009 Wolfson Microelectronics PLC.
-+ *
-+ * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
-+ *
-+ *  This program is free software; you can redistribute  it and/or modify it
-+ *  under  the terms of  the GNU General  Public License as published by the
-+ *  Free Software Foundation;  either version 2 of the  License, or (at your
-+ *  option) any later version.
-+ *
-+ */
-+
-+#ifndef __MFD_WM831X_WATCHDOG_H__
-+#define __MFD_WM831X_WATCHDOG_H__
-+
-+
-+/*
-+ * R16388 (0x4004) - Watchdog
-+ */
-+#define WM831X_WDOG_ENA                         0x8000  /* WDOG_ENA */
-+#define WM831X_WDOG_ENA_MASK                    0x8000  /* WDOG_ENA */
-+#define WM831X_WDOG_ENA_SHIFT                       15  /* WDOG_ENA */
-+#define WM831X_WDOG_ENA_WIDTH                        1  /* WDOG_ENA */
-+#define WM831X_WDOG_DEBUG                       0x4000  /* WDOG_DEBUG */
-+#define WM831X_WDOG_DEBUG_MASK                  0x4000  /* WDOG_DEBUG */
-+#define WM831X_WDOG_DEBUG_SHIFT                     14  /* WDOG_DEBUG */
-+#define WM831X_WDOG_DEBUG_WIDTH                      1  /* WDOG_DEBUG */
-+#define WM831X_WDOG_RST_SRC                     0x2000  /* WDOG_RST_SRC */
-+#define WM831X_WDOG_RST_SRC_MASK                0x2000  /* WDOG_RST_SRC */
-+#define WM831X_WDOG_RST_SRC_SHIFT                   13  /* WDOG_RST_SRC */
-+#define WM831X_WDOG_RST_SRC_WIDTH                    1  /* WDOG_RST_SRC */
-+#define WM831X_WDOG_SLPENA                      0x1000  /* WDOG_SLPENA */
-+#define WM831X_WDOG_SLPENA_MASK                 0x1000  /* WDOG_SLPENA */
-+#define WM831X_WDOG_SLPENA_SHIFT                    12  /* WDOG_SLPENA */
-+#define WM831X_WDOG_SLPENA_WIDTH                     1  /* WDOG_SLPENA */
-+#define WM831X_WDOG_RESET                       0x0800  /* WDOG_RESET */
-+#define WM831X_WDOG_RESET_MASK                  0x0800  /* WDOG_RESET */
-+#define WM831X_WDOG_RESET_SHIFT                     11  /* WDOG_RESET */
-+#define WM831X_WDOG_RESET_WIDTH                      1  /* WDOG_RESET */
-+#define WM831X_WDOG_SECACT_MASK                 0x0300  /* WDOG_SECACT - [9:8] */
-+#define WM831X_WDOG_SECACT_SHIFT                     8  /* WDOG_SECACT - [9:8] */
-+#define WM831X_WDOG_SECACT_WIDTH                     2  /* WDOG_SECACT - [9:8] */
-+#define WM831X_WDOG_PRIMACT_MASK                0x0030  /* WDOG_PRIMACT - [5:4] */
-+#define WM831X_WDOG_PRIMACT_SHIFT                    4  /* WDOG_PRIMACT - [5:4] */
-+#define WM831X_WDOG_PRIMACT_WIDTH                    2  /* WDOG_PRIMACT - [5:4] */
-+#define WM831X_WDOG_TO_MASK                     0x0007  /* WDOG_TO - [2:0] */
-+#define WM831X_WDOG_TO_SHIFT                         0  /* WDOG_TO - [2:0] */
-+#define WM831X_WDOG_TO_WIDTH                         3  /* WDOG_TO - [2:0] */
-+
-+#endif
++MODULE_ALIAS("platform:wm831x-hwmon");
 -- 
 1.6.3.3
 
