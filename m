@@ -1,83 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753812AbZG0RhG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753860AbZG0RiF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753812AbZG0RhG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 13:37:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753717AbZG0RhF
+	id S1753860AbZG0RiF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 13:38:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753362AbZG0RiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 13:37:05 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:1781 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751524AbZG0RhD (ORCPT
+	Mon, 27 Jul 2009 13:38:04 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:5977 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751075AbZG0RiC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 13:37:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=LGcfKCZfRQ2wx2qy8dW/Vft4HrtQnpaPMGB+IDGXplDeXlaJzfIP7oaU4fD6lxKtGJ
-         t02Jmuhf9TtMkmo0dmxQ9v4qO8czHuJXxLYIpUEQKYOZ6j40zrqkLPeov3BsdR7Dvk+L
-         UXYNaH1bDXztHVTlhcwFvvjCm+MqTMF79OZno=
-Message-ID: <4A6DE5C0.4000607@gmail.com>
-Date: Mon, 27 Jul 2009 10:37:04 -0700
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Spicebird/0.7.1 (X11; 2009031304)
+	Mon, 27 Jul 2009 13:38:02 -0400
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH 11/12] net/netlabel: Correct redundant test
+Date: Mon, 27 Jul 2009 13:37:29 -0400
+User-Agent: KMail/1.11.4 (Linux/2.6.30-gentoo-r1; KDE/4.2.4; i686; ; )
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+References: <Pine.LNX.4.64.0907271815260.2682@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0907271815260.2682@ask.diku.dk>
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [drm:i915_driver_irq_handler] *ERROR* EIR stuck: 0x00000010,
- masking
-References: <dd18b0c30907261812p673a3ab3p8dd7ca41465c7f05@mail.gmail.com> <20090727101524.778c83ab@jbarnes-g45>
-In-Reply-To: <20090727101524.778c83ab@jbarnes-g45>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907271337.30401.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> On Sun, 26 Jul 2009 21:12:49 -0400
-> Justin Mattock<justinmattock@gmail.com>  wrote:
+On Monday 27 July 2009 12:15:43 pm Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 >
->    
->> to my surprise this machine still works...
->> (dell inspiron 1200)
->> Anyways in dmesg I see:
->>
->> [   10.188083] b43-pci-bridge 0000:03:00.0: setting latency timer to
->> 64 [   10.191947] ssb: Sonics Silicon Backplane found on PCI device
->> 0000:03:00.0 [   10.220248] fb: conflicting fb hw usage inteldrmfb vs
->> VESA VGA - removing generic driver
->> [   10.222343] Console: switching to colour dummy device 80x25
->> [   10.225625] Console: switching to colour frame buffer device 128x48
->> [   10.278714] render error detected, EIR: 0x00000010
->> [   10.278717] page table error
->> [   10.278720]   PGTBL_ER: 0x00000100
->> [   10.278725] [drm:i915_driver_irq_handler] *ERROR* EIR stuck:
->> 0x00000010, masking
->> [   10.278742] render error detected, EIR: 0x00000010
->> [   10.278745] page table error
->> [   10.278747]   PGTBL_ER: 0x00000100
->> [   10.290087] [drm] LVDS-8: set mode 1024x768 c
->> [   10.640403] [drm] fb0: inteldrmfb frame buffer device
->> [   10.640597] [drm] Initialized i915 1.6.0 20080730 for 0000:00:02.0
->> on minor 0 [   10.679818] b43-phy0: Broadcom 4306 WLAN found (core
->> revision 5)
->>
->> direct rendering still seems to be intact,
->> suspend not sure(test in a moment).
->>      
+> entry was tested for NULL near the beginning of the function, followed by a
+> return, and there is no intervening modification of its value.
 >
-> Sounds like a dupe of the issue Frans reported.  We report errors like
-> this now rather than silently ignoring them.  This one must be harmless
-> or your machine wouldn't ever have worked. :)
+> A simplified version of the semantic match that finds this problem is as
+> follows: (http://www.emn.fr/x-info/coccinelle/)
 >
->    
-Seems harmless to me, one thing I see is
-during the boot process Ill see the boot messages, then once
-init/udev starts up, and loads i915 the screen will go black
-for a tenth or so of a second, then goes back to normal. Now keep in mind
-this might be something suse does during the boot process.
-(I can try loading ubuntu/debian to see if the affects are the same
-once I get a chance).
+> // <smpl>
+> @r exists@
+> local idexpression x;
+> expression E;
+> position p1,p2;
+> @@
+>
+> if (x == NULL || ...) { ... when forall
+>    return ...; }
+> ... when != \(x=E\|x--\|x++\|--x\|++x\|x-=E\|x+=E\|x|=E\|x&=E\|&x\)
+> (
+> *x == NULL
+>
+> *x != NULL
+> )
+> // </smpl>
+>
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Justin P. Mattock
+Good catch, thanks.
+
+Acked-by: Paul Moore <paul.moore@hp.com>
+
+> ---
+>  net/netlabel/netlabel_kapi.c        |    6 ++----
+>  1 files changed, 2 insertions(+), 4 deletions(-)
+>
+> diff --git a/net/netlabel/netlabel_kapi.c b/net/netlabel/netlabel_kapi.c
+> index b0e582f..3ff6f32 100644
+> --- a/net/netlabel/netlabel_kapi.c
+> +++ b/net/netlabel/netlabel_kapi.c
+> @@ -185,8 +185,7 @@ int netlbl_cfg_unlbl_map_add(const char *domain,
+>  	return 0;
+>
+>  cfg_unlbl_map_add_failure:
+> -	if (entry != NULL)
+> -		kfree(entry->domain);
+> +	kfree(entry->domain);
+>  	kfree(entry);
+>  	kfree(addrmap);
+>  	kfree(map4);
+> @@ -385,8 +384,7 @@ int netlbl_cfg_cipsov4_map_add(u32 doi,
+>
+>  cfg_cipsov4_map_add_failure:
+>  	cipso_v4_doi_putdef(doi_def);
+> -	if (entry != NULL)
+> -		kfree(entry->domain);
+> +	kfree(entry->domain);
+>  	kfree(entry);
+>  	kfree(addrmap);
+>  	kfree(addrinfo);
+
+-- 
+paul moore
+linux @ hp
+
