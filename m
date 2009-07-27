@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbZG0UE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbZG0UGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754599AbZG0UE1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 16:04:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbZG0UE0
+	id S1754580AbZG0UGj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 16:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbZG0UGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 16:04:26 -0400
-Received: from mail-bw0-f221.google.com ([209.85.218.221]:46975 "EHLO
-	mail-bw0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754555AbZG0UEY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 16:04:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=XdPaRKohVfW2w6DYndKAAFGgkRTvi36pMdkj/Qaz7E9trqDrCR1TcG4+4MAbS3Y50h
-         IVV2dZkqtJkmaFVRgHW+zjaxF/rVtQ8DTYu8m2RiQyqdmY/L2THmFnUnTijofRSc2H2T
-         +8XXtDg0/0LjM5RrdH6u2cCBh5b+4eODsBTqA=
+	Mon, 27 Jul 2009 16:06:38 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:50593 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753648AbZG0UGh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 16:06:37 -0400
+Date: Mon, 27 Jul 2009 21:59:48 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH] drivers/staging: Correct use of ! and &
+Message-ID: <Pine.LNX.4.64.0907272159040.8135@ask.diku.dk>
 MIME-Version: 1.0
-In-Reply-To: <84144f020907271245q1d635e49j15a32c85303bf073@mail.gmail.com>
-References: <20090727192720.GA30366@bit.office.eurotux.com>
-	 <84144f020907271245q1d635e49j15a32c85303bf073@mail.gmail.com>
-Date: Mon, 27 Jul 2009 21:04:23 +0100
-Message-ID: <9b2b86520907271304i3709d1e0s1cf43c6e9f48f794@mail.gmail.com>
-Subject: Re: eeepc_hotkey adds 25s to boot
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: Luciano Rocha <luciano@eurotux.com>
-Cc: linux-kernel@vger.kernel.org, Corentin Chary <corentincj@iksaif.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/27/09, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> (Adding Corentin to cc)
->
-> On Mon, Jul 27, 2009 at 10:27 PM, Luciano Rocha<luciano@eurotux.com> wrote:
->> As subject says, loading the eeepc_hotkeys driver or including it inside
->> the kernel adds 25s to the boot process:
->> [   13.990092] eeepc: Eee PC Hotkey Driver
->> [   39.560645] eeepc: Hotkey init flags 0x41
->> [   39.566131] eeepc: Get control methods supported: 0x101713
->> [   39.566418] input: Asus EeePC extra buttons as ...
->>
->> Kernel is 2.6.30.3 (with tuxonice).
+From: Julia Lawall <julia@diku.dk>
 
-Sounds like <http://bugzilla.kernel.org/show_bug.cgi?id=13620>.  If
-I'm right, it will go away if you blacklist the i2c_i801 module.  E.g.
+Correct priority problem in the use of ! and &.
 
-echo "blacklist i2c_i801" >> /etc/modprobe.d/blacklist.conf
+The semantic patch that makes this change is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
->> Config and full dmesg follows.
->>
->> Also, a "rmmod eeepc_hotkeys" resulted in a kernel panic. If asked, I'll
->> try to replicate it.
->
-> Yes, please.
+// <smpl>
+@@ expression E; constant C; @@
+- !E & C
++ !(E & C)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/staging/rt3090/sta_ioctl.c |    6 ++----
+ drivers/staging/vt6656/iwctl.c     |    3 +--
+ 2 files changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/staging/rt3090/sta_ioctl.c b/drivers/staging/rt3090/sta_ioctl.c
+index 93efd7f..3ddc0f6 100644
+--- a/drivers/staging/rt3090/sta_ioctl.c
++++ b/drivers/staging/rt3090/sta_ioctl.c
+@@ -1840,10 +1840,8 @@ int rt_ioctl_siwencode(struct net_device *dev,
+             }
+         else
+ 			/* Don't complain if only change the mode */
+-		if(!erq->flags & IW_ENCODE_MODE)
+-		{
+-				return -EINVAL;
+-		}
++		if (!(erq->flags & IW_ENCODE_MODE))
++			return -EINVAL;
+ 	}
+ 
+ done:
+diff --git a/drivers/staging/vt6656/iwctl.c b/drivers/staging/vt6656/iwctl.c
+index e4fdb6f..96f2a78 100644
+--- a/drivers/staging/vt6656/iwctl.c
++++ b/drivers/staging/vt6656/iwctl.c
+@@ -1409,8 +1409,7 @@ int iwctl_siwencode(struct net_device *dev,
+ 		// Do we want to just set the transmit key index ?
+ 		if ( index < 4 ) {
+ 		    pDevice->byKeyIndex = index;
+-		}
+-		else if(!wrq->flags & IW_ENCODE_MODE) {
++		} else if (!(wrq->flags & IW_ENCODE_MODE)) {
+ 				rc = -EINVAL;
+ 				return rc;
+ 	    }
