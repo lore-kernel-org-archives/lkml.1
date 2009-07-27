@@ -1,95 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbZG1Sq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbZG1SrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755507AbZG1Sq4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 14:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755411AbZG1Sqz
+	id S1755524AbZG1SrQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 14:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755411AbZG1SrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 14:46:55 -0400
-Received: from mail-fx0-f216.google.com ([209.85.220.216]:42036 "EHLO
-	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755402AbZG1Sqy (ORCPT
+	Tue, 28 Jul 2009 14:47:15 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:19913 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755501AbZG1SrO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 14:46:54 -0400
+	Tue, 28 Jul 2009 14:47:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:from:date:subject:to:cc;
-        b=C4jaN/zRDyCJeidJXkP1Cg/NhrKZqEVjHR6VGyYtqs2Q+TpkLg3FJV4Q9+i8c5aPcS
-         SQz+A4EtGHGtxiLd/Ykh8R6DDs1aFSKZwPz4308xPS/Dgr/Xijw0H8hYjFPhYlOoUsqS
-         tCYtew2tdqu/z2TG2pnvzv5cW3ejEcUgEXhMQ=
-Message-Id: <200907281845.n6SIjIlf025081@home.pavel.comp>
+        b=Cj9OiuZ4C5bgAJd1juxpeHxH0E97K58yFYVzlDvN11+p20uBkSI8W0x/o4ieENBwcA
+         18NIrHjUoubLyhEAQDcVzP/5YyJEnzsKtm9Ut4O/7QcyWW1VQcf3kUYBo8zN76NLUL5g
+         KAZVEw7ytgpJ3EXCNeoW+n5CT95DY0P+ZAt2w=
+Message-Id: <200907281845.n6SIjdjC025315@home.pavel.comp>
 From: Paul Fertser <fercerpav@gmail.com>
-Date: Tue, 28 Jul 2009 00:41:15 +0400
-Subject: [PATCH] pcf50633: use a dedicated workqueue for irq processing
+Date: Tue, 28 Jul 2009 00:58:48 +0400
+Subject: [PATCH] pcf50633: revise locking for ADC
 To: Samuel Ortiz <sameo@linux.intel.com>
 Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Using the default kernel "events" workqueue causes problems with
-synchronous adc readings if initiated from some task on the same
-workqueue.
+Current implementation is prone to races, this patch attempts to remove all
+but one (in pcf50633_adc_sync_read).
 
-I had a deadlock trying to use pcf50633_adc_sync_read from a
-power_supply class driver because the reading was initiated from the
-workqueue and it waited for the irq processing to complete (to get the
-result) and that was put on the same workqueue.
+The idea is that we need to guard the queue access only on inserting and
+removing items. If we insert and there're no more items in the queue it
+means that the last irq already happened and we need to trigger ADC
+manually. If not, then the next conversion will be triggered by the irq
+handler upon completion of the previous.
 
 Signed-off-by: Paul Fertser <fercerpav@gmail.com>
 ---
- drivers/mfd/pcf50633-core.c       |    5 ++++-
- include/linux/mfd/pcf50633/core.h |    1 +
- 2 files changed, 5 insertions(+), 1 deletions(-)
+ drivers/mfd/pcf50633-adc.c |   32 ++++++++++++++++----------------
+ 1 files changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/mfd/pcf50633-core.c b/drivers/mfd/pcf50633-core.c
-index 8d3c38b..d26d774 100644
---- a/drivers/mfd/pcf50633-core.c
-+++ b/drivers/mfd/pcf50633-core.c
-@@ -444,7 +444,7 @@ static irqreturn_t pcf50633_irq(int irq, void *data)
+diff --git a/drivers/mfd/pcf50633-adc.c b/drivers/mfd/pcf50633-adc.c
+index c2d05be..3d31e97 100644
+--- a/drivers/mfd/pcf50633-adc.c
++++ b/drivers/mfd/pcf50633-adc.c
+@@ -73,15 +73,10 @@ static void trigger_next_adc_job_if_any(struct pcf50633 *pcf)
+ 	struct pcf50633_adc *adc = __to_adc(pcf);
+ 	int head;
  
- 	get_device(pcf->dev);
- 	disable_irq_nosync(pcf->irq);
--	schedule_work(&pcf->irq_work);
-+	queue_work(pcf->work_queue, &pcf->irq_work);
+-	mutex_lock(&adc->queue_mutex);
+-
+ 	head = adc->queue_head;
  
- 	return IRQ_HANDLED;
+-	if (!adc->queue[head]) {
+-		mutex_unlock(&adc->queue_mutex);
++	if (!adc->queue[head])
+ 		return;
+-	}
+-	mutex_unlock(&adc->queue_mutex);
+ 
+ 	adc_setup(pcf, adc->queue[head]->mux, adc->queue[head]->avg);
  }
-@@ -575,6 +575,7 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
- 	pcf->dev = &client->dev;
- 	pcf->i2c_client = client;
- 	pcf->irq = client->irq;
-+	pcf->work_queue = create_singlethread_workqueue("pcf50633");
+@@ -99,16 +94,17 @@ adc_enqueue_request(struct pcf50633 *pcf, struct pcf50633_adc_request *req)
  
- 	INIT_WORK(&pcf->irq_work, pcf50633_irq_worker);
+ 	if (adc->queue[tail]) {
+ 		mutex_unlock(&adc->queue_mutex);
++		dev_err(pcf->dev, "ADC queue is full, dropping request\n");
+ 		return -EBUSY;
+ 	}
  
-@@ -651,6 +652,7 @@ static int __devinit pcf50633_probe(struct i2c_client *client,
+ 	adc->queue[tail] = req;
++	if (head == tail)
++		trigger_next_adc_job_if_any(pcf);
+ 	adc->queue_tail = (tail + 1) & (PCF50633_MAX_ADC_FIFO_DEPTH - 1);
+ 
+ 	mutex_unlock(&adc->queue_mutex);
+ 
+-	trigger_next_adc_job_if_any(pcf);
+-
  	return 0;
- 
- err:
-+	destroy_workqueue(pcf->work_queue);
- 	kfree(pcf);
- 	return ret;
  }
-@@ -661,6 +663,7 @@ static int __devexit pcf50633_remove(struct i2c_client *client)
- 	int i;
  
- 	free_irq(pcf->irq, pcf);
-+	destroy_workqueue(pcf->work_queue);
+@@ -124,6 +120,7 @@ pcf50633_adc_sync_read_callback(struct pcf50633 *pcf, void *param, int result)
+ int pcf50633_adc_sync_read(struct pcf50633 *pcf, int mux, int avg)
+ {
+ 	struct pcf50633_adc_request *req;
++	int err;
  
- 	platform_device_unregister(pcf->input_pdev);
- 	platform_device_unregister(pcf->rtc_pdev);
-diff --git a/include/linux/mfd/pcf50633/core.h b/include/linux/mfd/pcf50633/core.h
-index c8f51c3..9aba7b7 100644
---- a/include/linux/mfd/pcf50633/core.h
-+++ b/include/linux/mfd/pcf50633/core.h
-@@ -136,6 +136,7 @@ struct pcf50633 {
- 	int irq;
- 	struct pcf50633_irq irq_handler[PCF50633_NUM_IRQ];
- 	struct work_struct irq_work;
-+	struct workqueue_struct *work_queue;
- 	struct mutex lock;
+ 	/* req is freed when the result is ready, in interrupt handler */
+ 	req = kzalloc(sizeof(*req), GFP_KERNEL);
+@@ -136,9 +133,13 @@ int pcf50633_adc_sync_read(struct pcf50633 *pcf, int mux, int avg)
+ 	req->callback_param = req;
  
- 	u8 mask_regs[5];
+ 	init_completion(&req->completion);
+-	adc_enqueue_request(pcf, req);
++	err = adc_enqueue_request(pcf, req);
++	if (err)
++		return err;
++
+ 	wait_for_completion(&req->completion);
+ 
++	/* FIXME by this time req might be already freed */
+ 	return req->result;
+ }
+ EXPORT_SYMBOL_GPL(pcf50633_adc_sync_read);
+@@ -159,9 +160,7 @@ int pcf50633_adc_async_read(struct pcf50633 *pcf, int mux, int avg,
+ 	req->callback = callback;
+ 	req->callback_param = callback_param;
+ 
+-	adc_enqueue_request(pcf, req);
+-
+-	return 0;
++	return adc_enqueue_request(pcf, req);
+ }
+ EXPORT_SYMBOL_GPL(pcf50633_adc_async_read);
+ 
+@@ -184,7 +183,7 @@ static void pcf50633_adc_irq(int irq, void *data)
+ 	struct pcf50633_adc *adc = data;
+ 	struct pcf50633 *pcf = adc->pcf;
+ 	struct pcf50633_adc_request *req;
+-	int head;
++	int head, res;
+ 
+ 	mutex_lock(&adc->queue_mutex);
+ 	head = adc->queue_head;
+@@ -199,12 +198,13 @@ static void pcf50633_adc_irq(int irq, void *data)
+ 	adc->queue_head = (head + 1) &
+ 				      (PCF50633_MAX_ADC_FIFO_DEPTH - 1);
+ 
++	res = adc_result(pcf);
++	trigger_next_adc_job_if_any(pcf);
++
+ 	mutex_unlock(&adc->queue_mutex);
+ 
+-	req->callback(pcf, req->callback_param, adc_result(pcf));
++	req->callback(pcf, req->callback_param, res);
+ 	kfree(req);
+-
+-	trigger_next_adc_job_if_any(pcf);
+ }
+ 
+ static int __devinit pcf50633_adc_probe(struct platform_device *pdev)
 -- 
 1.6.0.6
 
