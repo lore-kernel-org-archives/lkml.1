@@ -1,58 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbZG0WiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430AbZG0Wkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755432AbZG0WiR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 18:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbZG0WiP
+	id S1755430AbZG0Wkk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 18:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755360AbZG0Wkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 18:38:15 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:50332 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754516AbZG0WiO (ORCPT
+	Mon, 27 Jul 2009 18:40:40 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38409 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755118AbZG0Wkj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 18:38:14 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=LLax8rxN8fBM/2DCB/Tl9CziTVl5T3PBmpOCV4uyDsoc0DzYRJY7V7xG3QICMviip
-	OB/g8JEF9EjZd9Dt1F2og==
-Date: Mon, 27 Jul 2009 15:38:03 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Christoph Lameter <cl@linux-foundation.org>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
-In-Reply-To: <alpine.DEB.1.10.0907271740090.27697@gentwo.org>
-Message-ID: <alpine.DEB.2.00.0907271533070.23587@chino.kir.corp.google.com>
-References: <DizPU9GBfHF.A.kgF.iWObKB@chimera> <H5-1lZIIeYK.A.Pi.BZObKB@chimera> <4A6CF220.7080605@lwfinger.net> <alpine.DEB.2.00.0907261722140.21259@chino.kir.corp.google.com> <84144f020907270008h2a985278of68e70ff1ee9265c@mail.gmail.com>
- <alpine.DEB.2.00.0907270227420.15760@chino.kir.corp.google.com> <alpine.DEB.1.10.0907271320130.13513@gentwo.org> <alpine.DEB.2.00.0907271113460.8408@chino.kir.corp.google.com> <alpine.DEB.1.10.0907271740090.27697@gentwo.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Mon, 27 Jul 2009 18:40:39 -0400
+Date: Mon, 27 Jul 2009 23:41:00 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kdesu broken
+Message-ID: <20090727234100.40157e06@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.01.0907271500110.25224@localhost.localdomain>
+References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
+	<87bpn7mzli.fsf@devron.myhome.or.jp>
+	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
+	<873a8iqqgv.fsf@devron.myhome.or.jp>
+	<20090727142303.41096bf5@lxorguk.ukuu.org.uk>
+	<877hxujkuv.fsf@devron.myhome.or.jp>
+	<20090727145805.690afe5d@lxorguk.ukuu.org.uk>
+	<87fxci6ub9.fsf@devron.myhome.or.jp>
+	<20090727161424.GA4233@skywalker>
+	<20090727174252.2d987830@lxorguk.ukuu.org.uk>
+	<20090727171213.GB4233@skywalker>
+	<87skgikjr8.fsf@devron.myhome.or.jp>
+	<alpine.LFD.2.01.0907271237250.25224@localhost.localdomain>
+	<87ocr5dfpb.fsf@devron.myhome.or.jp>
+	<20090727224220.0e80b926@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907271500110.25224@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Jul 2009, Christoph Lameter wrote:
+> No guarantees. It may or may not compile. It may or may not make any 
+> difference. It might do unspeakable things to your pets. It really is 
+> meant to be an example of what a "flush" function could/should do. There 
+> are probably other things/buffers that may need flushing.
 
-> My prosal was to use the size and objsize parameters. You would only have
-> to call calculate_sizes() twice when the comparison of the order of size
-> and objsize would be different.
-> 
-> Doing so would simplify additing future flags. If you do your own
-> calculations (like in the patch) then you have to replicate the size
-> calculation from calculate_sizes() somehow. Is the duplicate calculation
-> really accurate regarding alignment and other special casing?
-> 
+Wrong end of the stick. close() already flushes the transmit buffers
+properly (and passes the SuS test suite tests on behaviour). Its the
+receive the other end you need to sync which isn't an assumption made or
+something with any meaning on real hardware.
 
-Ok, fair enough.  It seems like a matter of taste in implementation but 
-your proposal is also more extendable than mine, and I'm definitely not 
-going to argue your taste vs. mine when it comes to slub :)
+> +/* This should probably be a generic function */
+> +static void flush_delayed_work(struct delayed_work *work)
+> +{
+> +	if (cancel_delayed_work(work)) {
+> +		schedule_delayed_work(work, 0);
+> +		flush_scheduled_work();
+> +	}
 
-I'll write an incremental patch on top of Pekka's for-next branch to 
-implement your idea.
+If the ldisc is busy the scheduled work will not flush the data to the
+other tty. The tty->low_latency fix actually works better than this
+because it makes tty_flip_buffer_push() force the work through that can
+be done as it calls the ldisc work synchronously.
+
+> + *	Called for every close(), whether the last or not
+
+The pty case is "special" and seems to be an accident of implementations
+in history. The problem on the pty side is on the input not the output
+side.
+
+A normal tty write goes from the ldisc to the device, and in that case
+the close behaviour is defined by the close delay and FIFO flush in the
+driver. In other words it is already done correctly, only done for the
+last close (some apps rely on that as a sneaky way to keep the main
+thread from blocking).
+
+The pty race is quite different
+
+A write to the pty is guaranteed to correctly have completed on the
+close(). The data may however not have been received by the other end as
+the ldisc could be busy or not yet scheduled. If you like the data is
+sitting on the virtual wire". Or more exactly its in the "not yet fed to
+the ldisc" buffers on the other end.
+
+Adding the EOFPENDING/EOF flag fixes the detection of the EOF by the
+receiver but doesn't guarantee the sender blocks. If the sender also
+waits for the EOF flag to be set then the sender knows the receiving
+ldisc has got all the data. Thats a fairly small mod from the existing
+long patch.
+
+Except: The other end could also be in EOFPENDING/EOF wait with both ends
+blocked by the ldisc and not accepting data. In which case you just
+deadlocked. The close() blocks forever waiting for another end which may
+also be close() blocked in the other direction isn't a viable
+implementation although one I'm quite keen to try out on a Mac or BSD box
+out of curiosity.
+
