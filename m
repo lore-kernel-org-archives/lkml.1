@@ -1,93 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753011AbZG0QvL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbZG0Qwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753011AbZG0QvL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 12:51:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbZG0QvK
+	id S1753264AbZG0Qwd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 12:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbZG0Qwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 12:51:10 -0400
-Received: from mail-bw0-f221.google.com ([209.85.218.221]:38547 "EHLO
-	mail-bw0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751076AbZG0QvJ convert rfc822-to-8bit (ORCPT
+	Mon, 27 Jul 2009 12:52:32 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:56504 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751378AbZG0Qwc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 12:51:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:date:message-id:subject:from:to:cc
-         :content-type:content-transfer-encoding;
-        b=Y3nNRkr+mS5pHaeGINbSnE8xdJTWkJ6EoN86O3TYrdJifbFZIaGgv3usMz5u1tvXcA
-         Vfcy9TgzuXYA3/TYEHzj9GoIs0377BMUCC4ZQJ2J9Ro6NXgABW+SEM+8uv9NrmvDk2m1
-         bp+RTPSa47ulgTZ5mQqpHdnbxu5VYG8hz6vmQ=
-MIME-Version: 1.0
-Reply-To: eranian@gmail.com
-Date: Mon, 27 Jul 2009 18:51:02 +0200
-Message-ID: <7c86c4470907270951i48886d56g90bc198f26bb0716@mail.gmail.com>
-Subject: perf_counters issue with self-sampling threads
-From: stephane eranian <eranian@googlemail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
-       Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 27 Jul 2009 12:52:32 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvAIACJzbUpMQWXi/2dsb2JhbACBUYEwzlWCP4FNBQ
+Date: Mon, 27 Jul 2009 12:52:28 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dave Young <hidave.darkstar@gmail.com>
+Subject: Re: [Bug #13475] suspend/hibernate lockdep warning
+Message-ID: <20090727165228.GC25626@Krystal>
+References: <DizPU9GBfHF.A.kgF.iWObKB@chimera> <H5-1lZIIeYK.A.0KH.4XObKB@chimera>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <H5-1lZIIeYK.A.0KH.4XObKB@chimera>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:48:21 up 149 days, 13:14,  3 users,  load average: 0.50, 0.38,
+	0.40
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+It should be fixed now by recents commits to the cpufreq tree, which got  
+into mainline: 
 
-I believe there is a problem with the current perf_counters (PCL)
-code for self-sampling threads. The problem is related to sample
-notifications via signal.
+42a06f2166f2f6f7bf04f32b4e823eacdceafdc9
+b253d2b2d28ead6fed012feb54694b3d0562839a
+b14893a62c73af0eca414cfed505b8c09efc613c
+7d26e2d5e2da37e92c6c7644b26b294dedd8c982
+37c90e8887efd218dc4af949b7f498ca2da4af9f
+5a75c82828e7c088ca6e7b4827911dc29cc8e774
+ee88415caf736b89500f16e0a545614541a45005
+3f4a782b5ce2698b1870b5a7b573cd721d4fce33
+5e1596f75395e7a402e1059c518e633d2732dcf8
 
-PCL (just like perfmon) is using SIGIO, an asynchronous signal,
-to notify user applications of the availability of data in the event
-buffer.
+Mathieu
 
-POSIX does not mandate that asynchronous signals be delivered
-to the thread in which they originated. Any thread in the process
-may process the signal, assuming it does not have the signal
-blocked.
 
-This is a serious problem with any self-sampling program such as
-those built on top of PAPI. When sampling, you do want the signal
-to be delivered to the thread in which the counter overflowed. This is
-not just for convenience but it is required if the signal handler needs
-to operate on the thread's machine state. Although, there is always
-a possibility of forwarding the signal via tkill() to the right thread, I
-do not think this is the right solution as it incurs additional latency
-and therefore skid.
+* Rafael J. Wysocki (rjw@sisk.pl) wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.29 and 2.6.30.
+> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> be listed and let me know (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13475
+> Subject		: suspend/hibernate lockdep warning
+> Submitter	: Dave Young <hidave.darkstar@gmail.com>
+> Date		: 2009-06-02 10:00 (55 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124393723321241&w=4
+> Handled-By	: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Patch		: http://patchwork.kernel.org/patch/28660/
+> 
+> 
+> 
 
-Looking at the kernel source code related to that, it seems that
-kill_fasync() ends up calling group_send_sig_info(). This function
-adds the signal to the process SHARED sigpending queue. Then,
-it picks a thread to "wakeup". It first tries the thread in which the
-signal originated with the following selection test (wants_signal):
-   - signal is not blocked
-   - thread is not exiting
-   - no signal private pending for this thread
-
-If that does not work, it iterates over the other threads of the process.
-
-This explains why in trivial tests, the SIGIO is always delivered
-to the right thread. However it the monitored thread is using any
-other signals, e.g., SIGALRM, then the SIGIO signal can go to the
-wrong thread. The problem also arises if the first SIGIO is not already
-processed by the time a 2nd is pended.
-
-For self-sampling, we want (and in fact require)  asynchronous notifications.
-But we want the extra guarantee that the signal is ALWAYS delivered to
-the thread in which the event occurred.
-
-It seems like we could either create a different version of kill_fasync() or
-pass an extra parameter to force this function to use specific_send_sig_info().
-This would be only when self-monitoring. When a tool is monitoring another
-thread, it is probably okay to have the signal delivered to any threads. Most
-likely, the tool is setup such that threads not processing notifications have
-the signal blocked.
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
