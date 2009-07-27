@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755699AbZG0Xpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbZG0Xss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755699AbZG0Xpz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 19:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755600AbZG0Xpy
+	id S1753413AbZG0Xss (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 19:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZG0Xsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 19:45:54 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:57835 "EHLO
-	IE1EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752587AbZG0Xpt (ORCPT
+	Mon, 27 Jul 2009 19:48:47 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:57674 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752173AbZG0Xsq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 19:45:49 -0400
-X-SpamScore: -13
-X-BigFish: VPS-13(zz1432R98dNzz1202hzzz32i6bh203h43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KNGSNU-03-BVD-01
-Date: Tue, 28 Jul 2009 07:45:30 +0800
-From: "Cai, Crane" <crane.cai@amd.com>
-To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ACPI: add driver for SMBus Control Method Interface
-Message-ID: <20090727234530.GB12622@crane-desktop>
-Mail-Followup-To: "Cai, Crane" <crane.cai@amd.com>,
-	linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090715060219.GA30514@crane-desktop> <20090727030559.GA23792@crane-desktop> <20090727121029.GA4150@srcf.ucam.org>
+	Mon, 27 Jul 2009 19:48:46 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=NS0gckb0yaR/dXjEh63k52qCgEsMRyKyqXD88IyhTuT7yaycoU6Nj2P9W+g6H2Ke0
+	3qzq5N5N1cxLRMJbAG+jg==
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-In-Reply-To: <20090727121029.GA4150@srcf.ucam.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 27 Jul 2009 23:45:35.0697 (UTC) FILETIME=[56691410:01CA0F14]
+In-Reply-To: <alpine.DEB.2.00.0907261446050.12973@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0907261446050.12973@chino.kir.corp.google.com>
+Date: Mon, 27 Jul 2009 16:48:41 -0700
+Message-ID: <6599ad830907271648v41b006c0j727fc09665f4f47e@mail.gmail.com>
+Subject: Re: [patch -mmotm] mm: introduce oom_adj_child
+From: Paul Menage <menage@google.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks.
+On Sun, Jul 26, 2009 at 2:50 PM, David Rientjes<rientjes@google.com> wrote:
+> +If oom_adj_child is set to equal oom_adj, then it will mirror oom_adj whenever
+> +it changes.  This avoids having to set both values when simply tuning oom_adj
+> +and that value should be inherited by all children.
 
-On Mon, Jul 27, 2009 at 01:10:29PM +0100, Matthew Garrett wrote:
-> On Mon, Jul 27, 2009 at 11:05:59AM +0800, Cai, Crane wrote:
-> > Hi,
-> > 
-> > Could some one tell me whether this patch can be applied?
-> 
-> It should go through Len, but I haven't heard from him in a couple of 
-> weeks. I've Cc:ed him so he'll notice it when he's around.
-> 
-> -- 
-> Matthew Garrett | mjg59@srcf.ucam.org
+Maybe have a distinct value for oom_adj_child (the default) that means
+"default to mm->oom_adj" ?
 
--- 
-Best Regards,
-- Crane
+Shouldn't oom_adj_child be per-task? Otherwise you're theoretically
+allowing races between different threads that try to fork children
+with different oom_adj values at the same time. Not a particularly
+likely problem, but it seems bad to bake the change of races into the
+API.
 
+Also, I'm not sure that the requirement that oom_adj_child be >=
+oom_adj is a good restriction. Sure, if a task gives its child a lower
+oom_adj than itself it's potentially playing with fire, but it may
+well be that the new child is expected todaemonize itself in the very
+near future and hence no longer be the child of the current process. I
+don't think that restricting the values that the sysadmin or root
+processes can apply on the grounds that they might not do what they
+want is the right approach.
+
+It would also maybe be nicer to use a prctl() rather than introducing
+yet another file in /proc/<pid> - but I guess that's a style argument
+rather than a strict technical issue.
+
+Paul
