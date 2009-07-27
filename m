@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936AbZG0QSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753069AbZG0QSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752936AbZG0QSh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 12:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbZG0QSh
+	id S1753069AbZG0QSw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 12:18:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753011AbZG0QSv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 12:18:37 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:55582 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751535AbZG0QSf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 12:18:35 -0400
-Date: Mon, 27 Jul 2009 12:18:36 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Ferenc Wagner <wferi@niif.hu>
-cc: "Carlos R. Mafra" <crmafra2@gmail.com>, Greg KH <greg@kroah.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bisected] [Bug #13821] Replugging USB serial converter uses
- new device node
-In-Reply-To: <87zlaqcec1.fsf@tac.ki.iif.hu>
-Message-ID: <Pine.LNX.4.44L0.0907271217441.5217-100000@iolanthe.rowland.org>
+	Mon, 27 Jul 2009 12:18:51 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:44317 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751242AbZG0QSu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 12:18:50 -0400
+Date: Mon, 27 Jul 2009 18:15:25 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: felixb@sgi.com, xfs-masters@oss.sgi.com, xfs@oss.sgi.com,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 10/12] fs/xfs: Correct redundant test
+Message-ID: <Pine.LNX.4.64.0907271815060.2682@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Jul 2009, Ferenc Wagner wrote:
+From: Julia Lawall <julia@diku.dk>
 
-> > Are you certain this really is a regression?  Under 2.6.30 and 2.6.27
-> > the same thing happened if I unplugged a USB serial device while it was
-> > in use.
-> 
-> My original report is about unplugging the USB servial device *after*
-> using it.
-> 
-> > Can you check whether the device is still being used when you unplug 
-> > it?  For instance, is there still a pppd process trying to communicate 
-> > with the device?
-> 
-> I checked and rechecked that the pppd process is already dead by the
-> time I unplug the device.  However, the minor number did not increase
-> if I unplugged the device without using it beforehand, as expected.
-> 
-> > In short, it seems likely that this is not new behavior but rather the 
-> > way usb-serial has worked all along.
-> 
-> I didn't experience this problem with 2.6.30: my ppp script was
-> hardwired to use ttyUSB0 and it always worked.  Now with 2.6.31-rc3 it
-> does not, as the device node keeps changing.
-> 
-> I'll test this with opening ttyUSB directly from the shell, instead of
-> via pppd, and report back whether it makes a difference.
+bp was tested for NULL a few lines before, followed by a return, and there
+is no intervening modification of its value.
 
-Another thing to check is whether this patch (not yet merged) fixes it:
+A simplified version of the semantic match that finds this problem is as
+follows: (http://www.emn.fr/x-info/coccinelle/)
 
-	http://marc.info/?l=linux-usb&m=124825571403844&w=2
+// <smpl>
+@r exists@
+local idexpression x;
+expression E;
+position p1,p2;
+@@
 
-Alan Stern
+if (x == NULL || ...) { ... when forall
+   return ...; }
+... when != \(x=E\|x--\|x++\|--x\|++x\|x-=E\|x+=E\|x|=E\|x&=E\|&x\)
+(
+*x == NULL
+|
+*x != NULL
+)
+// </smpl>
 
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ fs/xfs/xfs_trans_buf.c              |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/fs/xfs/xfs_trans_buf.c b/fs/xfs/xfs_trans_buf.c
+index 8ee2f8c..218829e 100644
+--- a/fs/xfs/xfs_trans_buf.c
++++ b/fs/xfs/xfs_trans_buf.c
+@@ -307,7 +307,7 @@ xfs_trans_read_buf(
+ 			return (flags & XFS_BUF_TRYLOCK) ?
+ 					EAGAIN : XFS_ERROR(ENOMEM);
+ 
+-		if ((bp != NULL) && (XFS_BUF_GETERROR(bp) != 0)) {
++		if (XFS_BUF_GETERROR(bp) != 0) {
+ 			xfs_ioerror_alert("xfs_trans_read_buf", mp,
+ 					  bp, blkno);
+ 			error = XFS_BUF_GETERROR(bp);
+@@ -315,7 +315,7 @@ xfs_trans_read_buf(
+ 			return error;
+ 		}
+ #ifdef DEBUG
+-		if (xfs_do_error && (bp != NULL)) {
++		if (xfs_do_error) {
+ 			if (xfs_error_target == target) {
+ 				if (((xfs_req_num++) % xfs_error_mod) == 0) {
+ 					xfs_buf_relse(bp);
