@@ -1,49 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754591AbZG1Pto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbZG1PuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754591AbZG1Pto (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 11:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbZG1Pto
+	id S1754608AbZG1PuF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 11:50:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbZG1PuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 11:49:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42457 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754535AbZG1Ptn (ORCPT
+	Tue, 28 Jul 2009 11:50:04 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:44730 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754595AbZG1PuC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 11:49:43 -0400
-Date: Tue, 28 Jul 2009 08:49:29 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kdesu broken
-In-Reply-To: <20090728112203.7b70adba@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.2.01.0907280848090.3186@localhost.localdomain>
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk> <87bpn7mzli.fsf@devron.myhome.or.jp> <20090727115723.1e8de60e@lxorguk.ukuu.org.uk> <873a8iqqgv.fsf@devron.myhome.or.jp> <20090727142303.41096bf5@lxorguk.ukuu.org.uk> <877hxujkuv.fsf@devron.myhome.or.jp>
- <20090727145805.690afe5d@lxorguk.ukuu.org.uk> <87fxci6ub9.fsf@devron.myhome.or.jp> <20090727161424.GA4233@skywalker> <20090727174252.2d987830@lxorguk.ukuu.org.uk> <20090727171213.GB4233@skywalker> <87skgikjr8.fsf@devron.myhome.or.jp>
- <20090727222010.1a5efb7b@lxorguk.ukuu.org.uk> <87r5w19xsb.fsf@devron.myhome.or.jp> <20090728112203.7b70adba@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 28 Jul 2009 11:50:02 -0400
+Date: Tue, 28 Jul 2009 11:49:49 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-btrfs@vger.kernel.org
+Subject: [GIT PULL] Btrfs fixes for 2.6.31
+Message-ID: <20090728154949.GB6830@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-btrfs@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: abhmt010.oracle.com [141.146.116.19]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010207.4A6F1E1F.00F6:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello everyone,
 
+This pull request is much bigger than I had planned on sending.  The
+large changes come from patches that Josef Bacik has been refining since
+2.6.28 or so, and they include important fixes.
 
-On Tue, 28 Jul 2009, Alan Cox wrote:
-> 
-> Given the assumptions in emacs are wrong, low_latency fixes the real
-> world cases and we are standards compliant perhaps we are trying too
-> hard ?
+First they change the way we track which extents are free in ram,
+significantly reducing slab usage.  Before his code, a weekend stress
+run could end up using over 1GB of slab for the free extent records, and
+now it is 10MB.
 
-Alan, I really don't understand why you seem to argue _for_ bad code, and 
-not just fixing it. You seem to think that it's ok to leave stuff in 
-buffers and ignore it, just because the other end might have exited. 
+After mount, Btrfs has to read in parts of extent allocation tree to
+find free extents.  This can be somewhat slow, leading to long stalls
+right after a mount (multiple minutes in the worst case).  Josef has
+commits in this pull request that switch us to an async block group
+caching, which gets rid of the stalls entirely.
 
-That seems disingenious and stupid. Why argue for crap?
+I was planning on leaving these out until 2.6.32, but they work well
+and it seems much better to have these issues fixed in .31 than
+leaving them pending.  I'd rather not see fc12 need to carry a backport
+of this for their .31 based kernels.
 
-		Linus
+There are a number of other bug fixes included, including avoiding some
+of the ENOSPC oopsen.
+
+Linus, please pull the master branch of:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git
+
+Chris Mason (2) commits (+12/-3):
+    Btrfs: find smallest available device extent during chunk allocation (+10/-2)
+    Btrfs: clear all space_info->full after removing a block group (+2/-1)
+
+Daniel Cadete (1) commits (+3/-3):
+    Btrfs: remove of redundant btrfs_header_level
+
+David Woodhouse (2) commits (+10/-20):
+    Btrfs: Remove broken sanity check from btrfs_rmap_block() (+0/-20)
+    Btrfs: Fix crash on read failures at mount (+10/-0)
+
+Diego Calleja (1) commits (+1/-13):
+    Btrfs: Remove code duplication in comp_keys
+
+Josef Bacik (3) commits (+1311/-453):
+    Btrfs: use hybrid extents+bitmap rb tree for free space (+826/-216)
+    Btrfs: change how we unpin extents (+46/-113)
+    Btrfs: async block group caching (+439/-124)
+
+Julia Lawall (3) commits (+4/-4):
+    Btrfs: convert nested spin_lock_irqsave to spin_lock (+2/-2)
+    Btrfs: Correct redundant test in add_inode_ref (+1/-1)
+    Btrfs: adjust NULL test (+1/-1)
+
+Sage Weil (1) commits (+5/-3):
+    Btrfs: make flushoncommit mount option correctly wait on ordered_extents
+
+Yan Zheng (9) commits (+128/-84):
+    Btrfs: find_free_dev_extent doesn't handle holes at the start of the device (+7/-3)
+    Btrfs: fix double increment of path->slots[0] in btrfs_next_leaf (+2/-1)
+    Btrfs: properly update space information after shrinking device. (+2/-2)
+    Btrfs: Fix ordering of key field checks in btrfs_previous_item (+2/-2)
+    Btrfs: make sure all dirty blocks are written at commit time (+42/-37)
+    Btrfs: fix definition of struct btrfs_extent_inline_ref (+1/-1)
+    Btrfs: Fix async caching interaction with unmount (+6/-1)
+    Btrfs: fix locking issue in btrfs_find_next_key (+65/-33)
+    Btrfs: Avoid delayed reference update looping (+1/-4)
+
+Total: (22) commits
+
+ fs/btrfs/async-thread.c     |    4 
+ fs/btrfs/ctree.c            |  121 ++---
+ fs/btrfs/ctree.h            |   37 +
+ fs/btrfs/disk-io.c          |   19 
+ fs/btrfs/extent-tree.c      |  722 ++++++++++++++++++++----------
+ fs/btrfs/free-space-cache.c | 1043 ++++++++++++++++++++++++++++++++++----------
+ fs/btrfs/free-space-cache.h |    8 
+ fs/btrfs/inode.c            |    2 
+ fs/btrfs/print-tree.c       |    6 
+ fs/btrfs/relocation.c       |    3 
+ fs/btrfs/transaction.c      |   40 -
+ fs/btrfs/tree-log.c         |    6 
+ fs/btrfs/volumes.c          |   46 -
+ 13 files changed, 1474 insertions(+), 583 deletions(-)
