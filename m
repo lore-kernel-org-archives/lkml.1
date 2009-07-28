@@ -1,61 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbZG1QQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbZG1QSP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754774AbZG1QQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 12:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754572AbZG1QQ4
+	id S1754818AbZG1QSP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 12:18:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbZG1QSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 12:16:56 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:33855 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751470AbZG1QQ4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 12:16:56 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kdesu broken
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
-	<87bpn7mzli.fsf@devron.myhome.or.jp>
-	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
-	<873a8iqqgv.fsf@devron.myhome.or.jp>
-	<20090727142303.41096bf5@lxorguk.ukuu.org.uk>
-	<877hxujkuv.fsf@devron.myhome.or.jp>
-	<20090727145805.690afe5d@lxorguk.ukuu.org.uk>
-	<87fxci6ub9.fsf@devron.myhome.or.jp> <20090727161424.GA4233@skywalker>
-	<20090727174252.2d987830@lxorguk.ukuu.org.uk>
-	<20090727171213.GB4233@skywalker> <87skgikjr8.fsf@devron.myhome.or.jp>
-	<20090727222010.1a5efb7b@lxorguk.ukuu.org.uk>
-	<87r5w19xsb.fsf@devron.myhome.or.jp>
-	<alpine.LFD.2.01.0907280843050.3186@localhost.localdomain>
-Date: Wed, 29 Jul 2009 01:16:51 +0900
-In-Reply-To: <alpine.LFD.2.01.0907280843050.3186@localhost.localdomain> (Linus
-	Torvalds's message of "Tue, 28 Jul 2009 08:48:02 -0700 (PDT)")
-Message-ID: <87y6q8aiks.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	Tue, 28 Jul 2009 12:18:14 -0400
+Received: from fieldses.org ([174.143.236.118]:57575 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754572AbZG1QSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 12:18:13 -0400
+Date: Tue, 28 Jul 2009 12:18:14 -0400
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org,
+       Benny Halevy <bhalevy@panasas.com>
+Subject: Re: [2.6.31-rc4] nfs4 writecount warning...
+Message-ID: <20090728161813.GG19497@fieldses.org>
+References: <6278d2220907271449l38609680n943875d2672da20f@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Disposition: inline
+In-Reply-To: <6278d2220907271449l38609680n943875d2672da20f@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+On Mon, Jul 27, 2009 at 10:49:03PM +0100, Daniel J Blueman wrote:
+> After two days uptime on my NFS4 server with 2.6.31-rc4 and a few
+> 2.6.28 clients, I hit the file write-count
+> WARN_ON(f->f_mnt_write_state != 0) in file_take_write() in the
+> nfsd4_open path [1].
 
->> n_tty_read() checks the pending buffer and consume it before
->> input_available_p().
->
-> Why not move this _inside_ "input_available_p()"? There are only two 
-> call-sites, and strictly speaking they both want it.
+Hm, so probably introduced by:
 
-The only reason for me is this is just quick hack.
+e518f0560a191269bd345178c899c790eb1ad4c8 "nfsd: take file and mnt write
+in nfs4_upgrade_open".
 
-Yes, I guess the input_available_p() is preferable place than my patch.
-I'm still not checking the related path etc. deeply though.
+The other possible file_take_write() caller here is dentry_open (which
+calls it in the (f->f_mode & FMODE_WRITE) case).
 
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Looks like nfs4_upgrade_open() isn't handling error case cleanup
+correctly.  Perhaps that could explain this.
+
+--b.
+
+> 
+> I can't find this reported elsewhere; let me know if it's preferred in
+> bugzilla.kernel.org etc.
+> 
+> Thanks,
+>   Daniel
+> 
+> --- [1]
+> 
+> ------------[ cut here ]------------
+> 
+> WARNING: at include/linux/fs.h:953 nfsd4_process_open2+0x9c3/0xc90()
+> 
+> Hardware name: OEM
+> 
+> Modules linked in: coretemp w83627ehf hwmon_vid ath9k
+> snd_hda_codec_realtek mac80211 led_class ath snd_hda_intel
+> snd_hda_codec snd_pcm snd_timer snd pl2303 soundcore snd_page_alloc
+> 
+> Pid: 2970, comm: nfsd Tainted: G        W  2.6.31-rc4-274sd #1
+> 
+> Call Trace:
+> 
+>  [<ffffffff81190413>] ? nfsd4_process_open2+0x9c3/0xc90
+> 
+>  [<ffffffff810490f8>] warn_slowpath_common+0x78/0xd0
+> 
+>  [<ffffffff8104915f>] warn_slowpath_null+0xf/0x20
+> 
+>  [<ffffffff81190413>] nfsd4_process_open2+0x9c3/0xc90
+> 
+>  [<ffffffff8118420f>] ? do_open_lookup+0x28f/0x300
+> 
+>  [<ffffffff811844b9>] nfsd4_open+0x239/0x420
+> 
+>  [<ffffffff81183c67>] nfsd4_proc_compound+0x2d7/0x530
+> 
+>  [<ffffffff81172115>] nfsd_dispatch+0x115/0x260
+> 
+>  [<ffffffff813f3d12>] svc_process+0x492/0x800
+> 
+>  [<ffffffff8142e507>] ? down_read+0x77/0x80
+> 
+>  [<ffffffff81172740>] ? nfsd+0x0/0x160
+> 
+>  [<ffffffff8117281d>] nfsd+0xdd/0x160
+> 
+>  [<ffffffff81062c9e>] kthread+0x9e/0xb0
+> 
+>  [<ffffffff8100ce9a>] child_rip+0xa/0x20
+> 
+>  [<ffffffff8100c83c>] ? restore_args+0x0/0x30
+> 
+>  [<ffffffff81062c00>] ? kthread+0x0/0xb0
+> 
+>  [<ffffffff8100ce90>] ? child_rip+0x0/0x20
+> 
+> ---[ end trace 8ecb5c2eb0ae54d8 ]---
+> 
+> -- 
+> Daniel J Blueman
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
