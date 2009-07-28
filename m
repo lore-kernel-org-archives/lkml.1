@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932126AbZG1XIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756046AbZG1XJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932126AbZG1XIW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932107AbZG1XIV
+	id S1756046AbZG1XJY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:09:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755897AbZG1XIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:08:21 -0400
-Received: from kroah.org ([198.145.64.141]:42990 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:08:48 -0400
+Received: from kroah.org ([198.145.64.141]:42983 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755897AbZG1XEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:04:00 -0400
+	id S1754903AbZG1XD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:03:59 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 15:59:43 2009
-Message-Id: <20090728225943.726707706@mini.kroah.org>
+Message-Id: <20090728225943.587815056@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 15:58:47 -0700
+Date: Tue, 28 Jul 2009 15:58:46 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Andi Kleen <ak@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 19/37] x86-64: Fix bad_srat() to clear all state
+       Josef Bacik <jbacik@redhat.com>, Nick Piggin <npiggin@suse.de>
+Subject: [patch 18/37] mm: mark page accessed before we write_end()
 References: <20090728225828.431071451@mini.kroah.org>
-Content-Disposition: inline; filename=x86-64-fix-bad_srat-to-clear-all-state.patch
+Content-Disposition: inline; filename=mm-mark-page-accessed-before-we-write_end.patch
 In-Reply-To: <20090728230145.GA10486@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,35 +30,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Andi Kleen <andi@firstfloor.org>
+From: Josef Bacik <josef@redhat.com>
 
-commit 429b2b319af3987e808c18f6b81313104caf782c upstream.
+commit c8236db9cd7aa492dcfcdcca702638e704abed49 upstream.
 
-Need to clear both nodes and nodes_add state for start/end.
+In testing a backport of the write_begin/write_end AOPs, a 10% re-read
+regression was noticed when running iozone.  This regression was
+introduced because the old AOPs would always do a mark_page_accessed(page)
+after the commit_write, but when the new AOPs where introduced, the only
+place this was kept was in pagecache_write_end().
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-LKML-Reference: <20090718065657.GA2898@basil.fritz.box>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+This patch does the same thing in the generic case as what is done in
+pagecache_write_end(), which is just to mark the page accessed before we
+do write_end().
+
+Signed-off-by: Josef Bacik <jbacik@redhat.com>
+Acked-by: Nick Piggin <npiggin@suse.de>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/mm/srat_64.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ mm/filemap.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/arch/x86/mm/srat_64.c
-+++ b/arch/x86/mm/srat_64.c
-@@ -87,8 +87,10 @@ static __init void bad_srat(void)
- 	found_add_area = 0;
- 	for (i = 0; i < MAX_LOCAL_APIC; i++)
- 		apicid_to_node[i] = NUMA_NO_NODE;
--	for (i = 0; i < MAX_NUMNODES; i++)
--		nodes_add[i].start = nodes[i].end = 0;
-+	for (i = 0; i < MAX_NUMNODES; i++) {
-+		nodes[i].start = nodes[i].end = 0;
-+		nodes_add[i].start = nodes_add[i].end = 0;
-+	}
- 	remove_all_active_ranges();
- }
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -2441,6 +2441,7 @@ again:
+ 		pagefault_enable();
+ 		flush_dcache_page(page);
  
++		mark_page_accessed(page);
+ 		status = a_ops->write_end(file, mapping, pos, bytes, copied,
+ 						page, fsdata);
+ 		if (unlikely(status < 0))
 
 
