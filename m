@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919AbZG1Qz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752833AbZG1RAu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752919AbZG1Qz5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 12:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbZG1Qz4
+	id S1752833AbZG1RAu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 13:00:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbZG1RAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 12:55:56 -0400
-Received: from mga14.intel.com ([143.182.124.37]:34157 "EHLO mga14.intel.com"
+	Tue, 28 Jul 2009 13:00:50 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:47085 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752812AbZG1Qzz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 12:55:55 -0400
-X-ExtLoop1: 1
+	id S1751376AbZG1RAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 13:00:49 -0400
 X-IronPort-AV: E=Sophos;i="4.43,284,1246863600"; 
-   d="scan'208";a="169776515"
-Date: Tue, 28 Jul 2009 09:55:52 -0700
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Shut off pci_find_device warnings when the deprecated
- pci functions are enabled.
-Message-ID: <20090728095552.72c41525@jbarnes-g45>
-In-Reply-To: <20090724094115.GA18450@basil.fritz.box>
-References: <20090724094115.GA18450@basil.fritz.box>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+   d="scan'208";a="214056246"
+Subject: Re: [PATCH] nfs: remove superfluous BUG_ON()s
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Dan Carpenter <error27@gmail.com>, corbet@lwn.net, eteo@redhat.com,
+       Julia Lawall <julia@diku.dk>
+In-Reply-To: <200907281704.56870.bzolnier@gmail.com>
+References: <200907281704.56870.bzolnier@gmail.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Tue, 28 Jul 2009 12:59:10 -0400
+Message-Id: <1248800350.6205.7.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+X-OriginalArrivalTime: 28 Jul 2009 17:00:02.0001 (UTC) FILETIME=[D8CF7C10:01CA0FA4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 24 Jul 2009 11:41:15 +0200
-Andi Kleen <andi@firstfloor.org> wrote:
+On Tue, 2009-07-28 at 17:04 +0200, Bartlomiej Zolnierkiewicz wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] nfs: remove superfluous BUG_ON()s
+> 
+> Remove duplicated BUG_ON()s from nfs[4]_create_server()
+> (we make the same checks earlier in both functions).
+> 
+> This takes care of the following entries from Dan's list:
+> 
+> fs/nfs/client.c +1078 nfs_create_server(47) warning: variable derefenced before check 'server->nfs_client'
+> fs/nfs/client.c +1079 nfs_create_server(48) warning: variable derefenced before check 'server->nfs_client->rpc_ops'
+> fs/nfs/client.c +1363 nfs4_create_server(43) warning: variable derefenced before check 'server->nfs_client'
+> fs/nfs/client.c +1364 nfs4_create_server(44) warning: variable derefenced before check 'server->nfs_
+> 
+> Reported-by: Dan Carpenter <error27@gmail.com>
+> Cc: corbet@lwn.net
+> Cc: eteo@redhat.com
+> Cc: Julia Lawall <julia@diku.dk>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-> Shut off pci_find_device warnings when the deprecated pci functions
-> are enabled.
-> 
-> Shut off the long standing
-> 
-> linux/drivers/pci/search.c:144: warning: 'pci_find_device' is
-> deprecated (declared at linux/drivers/pci/search.c:136)
-> linux/drivers/pci/search.c:144: warning: 'pci_find_device' is
-> deprecated (declared at linux/drivers/pci/search.c:136)
-> 
-> warnings that appear on every build when CONFIG_PCI_LEGACY is enabled.
-> 
-> gcc warns for the use in EXPORT_SYMBOL
-> 
-> I moved these to a separate file and disabled the warning in the
-> Makefile for that file.
-> 
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
-Applied to linux-next, thanks.
+Thanks! I will apply...
 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Trond Myklebust
+Linux NFS client maintainer
+
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
