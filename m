@@ -1,92 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbZG1VJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbZG1VMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754667AbZG1VJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 17:09:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754240AbZG1VJ1
+	id S1754764AbZG1VMU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 17:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbZG1VMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 17:09:27 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:37819 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750743AbZG1VJ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 17:09:27 -0400
-Date: Tue, 28 Jul 2009 23:09:18 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Kyle Moffett <kyle@moffetthome.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Zachary Amsden <zamsden@redhat.com>, Tejun Heo <tj@kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       axboe@kernel.dk, hch@infradead.org, akpm@linux-foundation.org,
-       Paul.Clements@steeleye.com, tytso@mit.edu, miklos <miklos@szeredi.hu>
-Subject: Re: [PATCH] Allow userspace block device implementation
-Message-ID: <20090728210918.GP15310@basil.fritz.box>
-References: <4A6D79F6.3050509@redhat.com> <1248699365.6987.1628.camel@twins> <20090727142536.465799aa@lxorguk.ukuu.org.uk> <4A6E529B.9030104@kernel.org> <4A6E764E.80805@redhat.com> <20090728112734.5a75752d@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907280851360.3186@localhost.localdomain> <f73f7ab80907281136k2d7797bat2526d1798aba2f85@mail.gmail.com> <87d47kh9kh.fsf@basil.nowhere.org> <alpine.LFD.2.01.0907281333490.3186@localhost.localdomain>
+	Tue, 28 Jul 2009 17:12:19 -0400
+Received: from fieldses.org ([174.143.236.118]:50337 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753858AbZG1VMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 17:12:18 -0400
+Date: Tue, 28 Jul 2009 17:12:15 -0400
+To: Sylvain Rochet <gradator@gradator.net>
+Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: Re: 2.6.28.9: EXT3/NFS inodes corruption
+Message-ID: <20090728211215.GE28376@fieldses.org>
+References: <20090420162017.GA28079@gradator.net> <20090716172749.GC3740@atrey.karlin.mff.cuni.cz> <20090725151751.GA6419@gradator.net> <20090727154253.GB8332@duck.suse.cz> <20090728112715.GA8442@gradator.net> <20090728135226.GA21682@duck.suse.cz> <20090728164142.GA13662@gradator.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0907281333490.3186@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090728164142.GA13662@gradator.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 28, 2009 at 01:50:56PM -0700, Linus Torvalds wrote:
+On Tue, Jul 28, 2009 at 06:41:42PM +0200, Sylvain Rochet wrote:
+> Hi,
 > 
 > 
-> On Tue, 28 Jul 2009, Andi Kleen wrote:
-> 
-> > Kyle Moffett <kyle@moffetthome.net> writes:
-> > >
-> > >   (1) The ability to rearrange, resize, and restructure
-> > > partition-tables on the fly.  The existing "re-read partition tables"
-> > > infrastructure does not safely and reasonably handle changes to the
-> > > partition-table while partitions are mounted. 
+> On Tue, Jul 28, 2009 at 03:52:26PM +0200, Jan Kara wrote:
+> > On Tue 28-07-09 13:27:15, Sylvain Rochet wrote:
+> > > On Mon, Jul 27, 2009 at 05:42:53PM +0200, Jan Kara wrote:
+> > > > On Sat 25-07-09 17:17:52, Sylvain Rochet wrote:
+> > > > > > 
+> > > > > > Can you still see the corruption with 2.6.30 kernel?
+> > > > > 
+> > > > > Not upgraded yet, we'll give a try.
+> > > 
+> > > Done, now featuring 2.6.30.3 ;)
 > > 
-> > It doesn't today (and I really hate it too), but is there a hard reason it
-> > couldn't be fixed to support that properly? 
+> > OK, drop me an email if you will see corruption also with this kernel.
 > 
-> If something has a partition open (and it doesn't really even have to be a 
-> mounted filesystem, altough that's obviously the most relevant case), how 
-> can you reasonably change the partition from underneath it?
-
-Well LVM can do that, why not standard partitions?
-
-e.g. extending should be totally fine. The file system can continue
-using the old size until you run the online fs extender tool which
-does then the right magic to sync the file system state. I believe
-that is how it works on LVM.
-
-Shrinking is more difficult, but giving root enough rope ... 
-And we got offline shrinkers at least.
-
-> So I assume 
-> you mean that partitions were opened earlier (for a mount) would not be 
-> touched.
-
-Also right now you can't change any other partition.
-
-I know part of the problem is that I like using fdisk 
-(simply because I think the person who designed parted's user interface
-was on something unholy) and apparently it works better
-when you use the right ioctls to add/remove partitions
-instead of wholesale reread like fdisk.
-Perhaps the reread table ioctl can be just fixed.
-
-> It may be that we just have the old check in place ("don't allow 
-> re-reading if something has mounted a partition"), and we could just get 
-> rid of it. I have not looked. 
-
-Yes I'm sure there's lot of historical baggage here.
-
+> Lets move out the corrupted directory ;)
 > 
-> But if you actually meant that re-reading the partition table should 
-> _change_ a "struct block_dev" that is in use, then I think that would be a 
-> bad idea. At the very least, it should involve a re-mount or something.
+> root@bazooka:/data/web/ed/90/48/walotux.walon.org/htdocs/tmp/cache/e# rm -- * .ok 
+> rm: cannot remove `spip%3Farticle19.f8740dca': Input/output error
+> root@bazooka:/data/web/ed/90/48/walotux.walon.org/htdocs/tmp/cache/e# cd ..
+> root@bazooka:/data/web/ed/90/48/walotux.walon.org/htdocs/tmp/cache# mv e/ /data/lost+found/wooops
+> 
+> 
+> > > > This is probably the misleading output from ext3_iget(). It should give
+> > > > you EIO in the latest kernel.
+> > > 
+> > > root@bazooka:/data/web/ed/90/48/walotux.walon.org/htdocs/tmp/cache/e# cat spip%3Farticle19.f8740dca 
+> > > cat: spip%3Farticle19.f8740dca: Input/output error
+> > > 
+> > > It has much more sense now. We thought the problem was around NFS due 
+> > > the the previous error message, actually this is probably not the best 
+> > > looking path.
+> > 
+> > Yes, EIO makes more sence. I think the problem is NFS connected anyway
+> > though :). But I don't have a clue how it can happen yet. Maybe I can try
+> > adding some low-cost debugging checks if you'd be willing to run such
+> > kernel...
+> 
+> Without any problem, we have 24/7/365 physical access and we don't need 
+> to provide high-availability services.
+> 
+> Anyway, the data hosted aren't that important, there is little or even 
+> no need for strict confidentiality, so we will be happy to provide ssh 
+> access to whom would like to look deeper into this issue.
+> 
+> 
+> > I'm adding to CC linux-nfs just in case someone has an idea.
+> > 
+> > > >   Ah, OK, here's the problem. The directory points to a file which is
+> > > > obviously deleted (note the "Links: 0"). All the content of the inode seems
+> > > > to indicate that the file was correctly deleted (you might check that the
+> > > > corresponding bit in the bitmap is cleared via: "icheck 88541562").
+> > > 
+> > > root@bazooka:~# debugfs /dev/md10
+> > > debugfs 1.40-WIP (14-Nov-2006)
+> > > debugfs:  icheck 88541562
+> > > Block   Inode number
+> > > 88541562        <block not found>
+> > 
+> > Ah, wrong debugfs command. I should have written:
+> > testi <88541562>
+> 
+> debugfs:  testi <88541562>
+> Inode 88541562 is not in use
+> 
+> 
+> > > >   The question is how it could happen the directory still points to the
+> > > > inode. Really strange. It looks as if we've lost a write to the directory
+> > > > but I don't see how. Are there any suspitious kernel messages in this case?
+> > > 
+> > > There were nothing for a while, but since the reboot there are some 
+> > > about this inode: 
+> > > 
+> > > EXT3-fs error (device md10): ext3_lookup: deleted inode referenced: 88541562
+> > 
+> > Yes, that's to be expected given the corruption any NFS error messages?
+> 
+> There are some error messages on NFS clients, however they are quite old.
+> 
+> Apr 19 15:38:21 gin kernel: NFS: Buggy server - nlink == 0!
+> May  3 20:00:52 gin kernel: NFS: Buggy server - nlink == 0!
+> May  3 23:24:03 gin kernel: NFS: Buggy server - nlink == 0!
+> May  7 11:40:57 gin kernel: NFS: Buggy server - nlink == 0!
+> May  7 14:41:02 gin kernel: NFS: Buggy server - nlink == 0!
+> May 26 11:10:42 cognac kernel: NFS: Buggy server - nlink == 0!
+> May 26 11:13:28 cognac kernel: NFS: Buggy server - nlink == 0!
+> May 26 12:34:39 cognac kernel: NFS: Buggy server - nlink == 0!
+> May 26 12:39:43 cognac kernel: NFS: Buggy server - nlink == 0!
+> 
+> This is obviously related to the corruption.
 
-LVM already does it afaik.
+It might be interesting to know whether the file that we returned to the
+client with nlink 0 was the same that you later saw corruption on; maybe
+adding a printk of the inode number there would help.
 
--Andi
+Googling around on that error message, a previous thread:
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+	http://marc.info/?t=107429333300004&r=1&w=4
+
+seems to conclude it's a bug, but doesn't followup with a fix.  And I
+don't see any mention of possible filesystem corruption.
+
+Is NFSv4 involved here?  I wonder if something that might otherwise be
+only a problem for the client could become a problem for the server if
+it attempts to do further operations with an unlinked inode in a
+compound operation that follows a lookup.
+
+--b.
