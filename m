@@ -1,122 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752413AbZG1ASL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752462AbZG1ASw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752413AbZG1ASL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 20:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZG1ASK
+	id S1752462AbZG1ASw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 20:18:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZG1ASv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 20:18:10 -0400
-Received: from gate.crashing.org ([63.228.1.57]:43419 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751597AbZG1ASJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 20:18:09 -0400
-Subject: Re: [RFC/PATCH] mm: Pass virtual address to
- [__]p{te,ud,md}_free_tlb()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management <linux-mm@kvack.org>,
-       Linux-Arch <linux-arch@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Hugh Dickins <hugh@tiscali.co.uk>,
-       ralf <ralf@linux-mips.org>, Paul Mundt <lethal@linux-sh.org>
-In-Reply-To: <alpine.LFD.2.01.0907271210210.25224@localhost.localdomain>
-References: <20090715074952.A36C7DDDB2@ozlabs.org>
-	 <20090715135620.GD7298@wotan.suse.de> <1248073873.13067.31.camel@pasglop>
-	 <alpine.LFD.2.01.0907220930320.19335@localhost.localdomain>
-	 <1248310415.3367.22.camel@pasglop>
-	 <alpine.LFD.2.01.0907271210210.25224@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 28 Jul 2009 10:17:40 +1000
-Message-Id: <1248740260.30993.26.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Jul 2009 20:18:51 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:51590 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751597AbZG1ASu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 20:18:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=H+nRvgZ8vKfK6qaBprWrcLBT1H4+mh810YXVM6kX+k2gHy6GbUzkJA+67WkxJg3a7G
+         XsEieKPRR7agWFrC8vqRkvEa7hijDQa/paIQFnmY/83sNGFBRItBtrCyA62wqLT2sKuS
+         oT8MisMmtG8QHLUKfO0MKxbgDKSDtXLqWvKGo=
+Date: Tue, 28 Jul 2009 02:18:46 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
+       Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Anton Blanchard <anton@samba.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       "K . Prasad" <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 5/5] perfcounter: Add support for kernel hardware
+	breakpoints
+Message-ID: <20090728001844.GA5147@nowhere>
+References: <1248109687-7808-1-git-send-email-fweisbec@gmail.com> <1248109687-7808-6-git-send-email-fweisbec@gmail.com> <1248354493.26273.2.camel@twins> <c62985530907240702h2b2de14bw2f0d475f46067e4e@mail.gmail.com> <1248445569.6987.74.camel@twins> <20090724174723.GA11985@nowhere> <1248519416.5780.12.camel@laptop> <20090725141918.GA5295@nowhere> <1248538972.5780.25.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1248538972.5780.25.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-27 at 12:11 -0700, Linus Torvalds wrote:
+On Sat, Jul 25, 2009 at 06:22:52PM +0200, Peter Zijlstra wrote:
+> On Sat, 2009-07-25 at 16:19 +0200, Frederic Weisbecker wrote:
 > 
-> On Thu, 23 Jul 2009, Benjamin Herrenschmidt wrote:
+> > > Ah, but that is sub-optimal, perf counters doesn't actually change the
+> > > state if both tasks have the same counter configuration. Yielding a
+> > > great performance benefit on scheduling intensive workloads. Poking at
+> > > these MSRs, esp. writing to them is very expensive.
 > > 
-> > Hrm... my powerpc-next branch will contain stuff that depend on it, so
-> > I'll probably have to pull it in though, unless I tell all my
-> > sub-maintainers to also pull from that other branch first :-)
+> > 
+> > Ah ok.
+> > 
+> >  
+> > > So I would suggest not using that feature of the breakpoint API for the
+> > > perf counter integration.
+> > 
+> > 
+> > That would forbid some kinds of profiling (explanations below).
+> > 
+> > 
+> > > > However, this patchset only deals with kernel breakpoint for now (wide
+> > > > tracing).
+> > > 
+> > > Right, and that's all you would need for perf counter support, please
+> > > don't use whatever task state handling you have in place.
+> > 
+> > 
+> > I would actually propose to have a separate layer that manages
+> > the hardware registers <-> per thread virtual registers handling
+> > for things like breakpoint api and perfcounter.
+> > 
+> > I know a simple RR of registers is not that hard to write, but at
+> > least that can allow simultaneous use of perfcounter and other users
+> > of breakpoint API without having  two different versions of register
+> > management.
 > 
-> Ok, I'll just apply the patch. It does look obvious enough.
+> I simply cannot see how you would be able to multiplex userspace/debug
+> breakpoints. I'd utterly hate it if I'd missed a breakpoint simply
+> because someone else also wanted to make use of it.
 
-There seem to be a MIPS and SH breakage as a result but I can't see
-how my patch would have broken it, ie, it looks like the bug was
-already in those two archs. The error is that it complains about a
-duplicate definition of __pmd_free_tlb() between those arch pgalloc.h
-and pgtable-nopmd.h
 
-For MIPS, when CONFIG_32BIT is set, asm/pgalloc.h redefines
-__pmd_free_tlb despite the fact that it's already defined by
-asm-generic/pgtable-nopmd.h (via via pgtable.h via linux/mm.h).
+What I mean by multiplexing is that, say in x86, each task can have
+4 breakpoints maximum. Once the task is scheduled out, its breakpoints
+are saved and the hardware debug registers are used for the next task.
+Once a task registers a breakpoint, it never looses it.
 
-I -suspect- what happens is that the compiler, before, would ignore the
-double definition (or maybe just warn) due to the definition being
-strictly identical. With the new argument added, it's no longer the case
-as it's called "a" in asm-generic and "addr" in mips... oops.
-
-In any case, can Ralf and Paul check if the following patch is correct ?
-
->From 41928c7945d855ae0eb053eadad590ab6876847e Mon Sep 17 00:00:00 2001
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 28 Jul 2009 10:16:48 +1000
-Subject: [PATCH] mm: Remove duplicate definitions in MIPS and SH
-
-Those definitions are already provided by asm-generic
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/mips/include/asm/pgalloc.h |   11 -----------
- arch/sh/include/asm/pgalloc.h   |    8 --------
- 2 files changed, 0 insertions(+), 19 deletions(-)
-
-diff --git a/arch/mips/include/asm/pgalloc.h b/arch/mips/include/asm/pgalloc.h
-index f705735..3738f4b 100644
---- a/arch/mips/include/asm/pgalloc.h
-+++ b/arch/mips/include/asm/pgalloc.h
-@@ -104,17 +104,6 @@ do {							\
- 	tlb_remove_page((tlb), pte);			\
- } while (0)
  
--#ifdef CONFIG_32BIT
--
--/*
-- * allocating and freeing a pmd is trivial: the 1-entry pmd is
-- * inside the pgd, so has no extra memory associated with it.
-- */
--#define pmd_free(mm, x)			do { } while (0)
--#define __pmd_free_tlb(tlb, x, addr)	do { } while (0)
--
--#endif
--
- #ifdef CONFIG_64BIT
- 
- static inline pmd_t *pmd_alloc_one(struct mm_struct *mm, unsigned long address)
-diff --git a/arch/sh/include/asm/pgalloc.h b/arch/sh/include/asm/pgalloc.h
-index 89a4827..63ca37b 100644
---- a/arch/sh/include/asm/pgalloc.h
-+++ b/arch/sh/include/asm/pgalloc.h
-@@ -79,14 +79,6 @@ do {							\
- 	tlb_remove_page((tlb), (pte));			\
- } while (0)
- 
--/*
-- * allocating and freeing a pmd is trivial: the 1-entry pmd is
-- * inside the pgd, so has no extra memory associated with it.
-- */
--
--#define pmd_free(mm, x)			do { } while (0)
--#define __pmd_free_tlb(tlb,x,addr)	do { } while (0)
--
- static inline void check_pgt_cache(void)
- {
- 	quicklist_trim(QUICK_PGD, NULL, 25, 16);
--- 
-1.6.1.2.14.gf26b5
+> I'd declare the system broken and useless.
+> 
+> Counters OTOH can be multiplexed because of their statistical nature,
+> you can simply scale them back up based on their time share.
+> 
+> Therefore you'll have to deal with hard reservations anyway.
+> 
+> Also, you don't need to a-priory reserve all breakpoints, you'll simply
+> need as many as the largest group (wrt breakpoints) has.
 
+I still don't understand why it is needed to reserve breakpoints for
+a group of monitored tasks. Once they have registered their breakpoints,
+the number of necessary hardware registers for these will be available
+every time the task is scheduled.
 
+By nature, MAX_NR (4 in x86) breakpoints are available for every tasks, minus
+the number of wide kernel breakpoints in use.
+
+I don't see the need of a reservation here (which is already done by the API),
+I feel a bit confused in this debate.
 
