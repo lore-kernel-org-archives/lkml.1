@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbZG1Mn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753998AbZG1Mq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753933AbZG1Mn7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 08:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbZG1Mn6
+	id S1753998AbZG1Mq0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 08:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913AbZG1MqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 08:43:58 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:60511 "EHLO song.cn.fujitsu.com"
+	Tue, 28 Jul 2009 08:46:25 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:53332 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751431AbZG1Mn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 08:43:57 -0400
-Message-ID: <4A6EF27C.7010605@cn.fujitsu.com>
-Date: Tue, 28 Jul 2009 20:43:40 +0800
+	id S1753263AbZG1MqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 08:46:24 -0400
+Message-ID: <4A6EF315.1050701@cn.fujitsu.com>
+Date: Tue, 28 Jul 2009 20:46:13 +0800
 From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
@@ -22,182 +22,165 @@ CC: Thomas Gleixner <tglx@linutronix.de>,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
        Anton Blanchard <anton@samba.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH v4 1/3] ftrace: add tracepoint for timer
+Subject: [PATCH v4 2/3] ftrace: add tracepoint for hrtimer
+References: <4A6EF27C.7010605@cn.fujitsu.com>
+In-Reply-To: <4A6EF27C.7010605@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is modify from Mathieu's patch base on Ingo's suggestion, the
-original patch can be found here:
-	http://marc.info/?l=linux-kernel&m=123791201816247&w=2
-
-Great thanks to Thomas for giving me so many valuable advices.
-
 Those tracepoints are wanted and useful:
-1: We can detect a timer's delay
-2: We can monitor the lifecycle and behaviors of a timer
+1: We can detect a hrtimer's delay
+2: We can monitor the lifecycle and behaviors of a hrtimer
 
 Thus they help in analysing and debuging.
 
-Example ftrace output:
-  insmod-1712  [000]   145.901459: timer_init: timer=d0ace4b4
-  insmod-1712  [000]   145.901469: timer_start: timer=d0ace4b4 func=timer_fun expires=4294813629 timeout=199
-  <idle>-0     [000]   146.100230: timer_cancel: timer=d0ace4b4
-  <idle>-0     [000]   146.100233: timer_expire: timer=d0ace4b4 jiffies=4294813629
-  <idle>-0     [000]   146.100627: timer_callback_done: func=d0ace4b4
+Great thanks to Thomas for giving me so many valuable advices.
 
-We expect the timer expires at 4294813629, after 199 jiffies, actually the
-timer expires at 4294813629, so it is delayed by 0 jiffies.
-We also realize the timer's callback started at 146.100233, and it finished
-at 146.100627, so it's taking 146.100627-146.100233=0.4ms.
+Example ftrace output:
+  insmod-1824  [001]   606.749538: hrtimer_init: timer=d0ae04c0 clockid=CLOCK_REALTIME mode=HRTIMER_MODE_ABS
+  insmod-1824  [001]   606.749614: hrtimer_start: timer=d0ae04c0 func=hrtimer_fun expires=1246707447252299435ns softexpires=1246707447252299435ns
+  <idle>-0     [001]   606.754372: hrtimer_cancel: timer=d0ae04c0
+  <idle>-0     [001]   606.754374: hrtimer_expire: timer=d0ae04c0 now=1246707447257141331ns
+  <idle>-0     [001]   606.754430: hrtimer_callback_done: timer=d0ae04c0
  
+We expect the hrtimer expires at 1246707447252299435ns, actually the
+hrtimer expires at 1246707447257141331ns, so it is delayed by
+1246707447257141331-1246707447252299435=4841896ns.
+We also realize the hrtimer's callback started at 606.754374, and it
+finished at 606.754430, so it's taking 606.754430-606.754374=0.05ms.
+
 Changelog:
 v1->v2:
-1: Add jiffies info into timer
+1: Remove ktime_to_ns() in TP_fast_assign()
 2: Combine debugobjects and trace as Thomas's suggestion
 v2->v3:
-1: Remove function address from timer_expire and timer_cancel
+1: Remove function address from hrtimer_expire and hrtimer_cancel
    as Thomas's suggestion
-2: Remove debug_and_trace_timer_expire() as Thomas's suggestion
-3: Rename trace_timer_entry() and trace_timer_exit() to match this patch
+2: Remove debug_and_trace_hrtimer_expire() as Thomas's suggestion
+3: Rename trace_hrtimer_entry() and trace_hrtimer_exit() to match this patch
 v3->v4:
 1: Rename debug_and_trace_*() to debug_*() as Peter Zijlstra's suggestion
-2: Integrate Anton Blanchard's patch, which can been found at:
+2: Move trace_hrtimer_expire() to __run_hrtimer() in order to calculate
+   exacts timer latency as Peter Zijlstra's suggestion
+3: Integrate Anton Blanchard's patch, which can been found at:
 	http://marc.info/?l=linux-kernel&m=124331396919301&w=2
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
 ---
- include/trace/events/timer.h |  134 ++++++++++++++++++++++++++++++++++++++++++
- kernel/timer.c               |   32 +++++++++-
- 2 files changed, 162 insertions(+), 4 deletions(-)
- create mode 100644 include/trace/events/timer.h
+ include/trace/events/timer.h |  133 ++++++++++++++++++++++++++++++++++++++++++
+ kernel/hrtimer.c             |   34 +++++++++--
+ 2 files changed, 162 insertions(+), 5 deletions(-)
 
 diff --git a/include/trace/events/timer.h b/include/trace/events/timer.h
-new file mode 100644
-index 0000000..a664afa
---- /dev/null
+index a664afa..dd2f133 100644
+--- a/include/trace/events/timer.h
 +++ b/include/trace/events/timer.h
-@@ -0,0 +1,134 @@
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM timer
+@@ -128,6 +128,139 @@ TRACE_EVENT(timer_cancel,
+ 	TP_printk("timer=%p", __entry->timer)
+ );
+ 
++/**
++ * hrtimer_init - called when the hrtimer is initialized
++ * @timer: pointer to struct hrtimer
++ * @clockid: the hrtimer's clock
++ * @mode: the hrtimer's mode
++ **/
++TRACE_EVENT(hrtimer_init,
 +
-+#if !defined(_TRACE_TIMER_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_TIMER_H
++	TP_PROTO(struct hrtimer *timer, clockid_t clockid, enum hrtimer_mode mode),
 +
-+#include <linux/tracepoint.h>
-+#include <linux/timer.h>
++	TP_ARGS(timer, clockid, mode),
++
++	TP_STRUCT__entry(
++		__field( void *,		timer		)
++		__field( clockid_t,		clockid		)
++		__field( enum hrtimer_mode,	mode		)
++	),
++
++	TP_fast_assign(
++		__entry->timer		= timer;
++		__entry->clockid	= clockid;
++		__entry->mode		= mode;
++	),
++
++	TP_printk("timer=%p clockid=%s mode=%s", __entry->timer,
++		  __entry->clockid == CLOCK_REALTIME ?
++			"CLOCK_REALTIME" : "CLOCK_MONOTONIC",
++		  __entry->mode == HRTIMER_MODE_ABS ?
++			"HRTIMER_MODE_ABS" : "HRTIMER_MODE_REL")
++);
 +
 +/**
-+ * timer_init - called when the timer is initialized
-+ * @timer: pointer to struct timer_list
++ * hrtimer_start - called when the hrtimer is started
++ * @timer: pointer to struct hrtimer
 + **/
-+TRACE_EVENT(timer_init,
++TRACE_EVENT(hrtimer_start,
 +
-+	TP_PROTO(struct timer_list *timer),
++	TP_PROTO(struct hrtimer *timer),
 +
 +	TP_ARGS(timer),
 +
 +	TP_STRUCT__entry(
-+		__field( void *,	timer	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->timer	= timer;
-+	),
-+
-+	TP_printk("timer=%p", __entry->timer)
-+);
-+
-+/**
-+ * timer_start - called when the timer is started
-+ * @timer: pointer to struct timer_list
-+ * @expires: the timer's expire time
-+ **/
-+TRACE_EVENT(timer_start,
-+
-+	TP_PROTO(struct timer_list *timer, unsigned long expires),
-+
-+	TP_ARGS(timer, expires),
-+
-+	TP_STRUCT__entry(
 +		__field( void *,	timer		)
 +		__field( void *,	function	)
-+		__field( unsigned long,	expires		)
-+		__field( int,		timeout		)
++		__field( s64,		expires		)
++		__field( s64,		softexpires	)
 +	),
 +
 +	TP_fast_assign(
 +		__entry->timer		= timer;
 +		__entry->function	= timer->function;
-+		__entry->expires	= expires;
-+		__entry->timeout	= timer->expires - jiffies;
++		__entry->expires	= hrtimer_get_expires(timer).tv64;
++		__entry->softexpires	= hrtimer_get_softexpires(timer).tv64;
 +	),
 +
-+	TP_printk("timer=%p func=%pf expires=%lu timeout=%d", __entry->timer,
-+		  __entry->function, __entry->expires, __entry->timeout)
++	TP_printk("timer=%p func=%pf expires=%lluns softexpires=%lluns",
++		  __entry->timer, __entry->function,
++		 (unsigned long long)__entry->expires,
++		 (unsigned long long)__entry->softexpires)
 +);
 +
 +/**
-+ * timer_expire - called immediately before the timer callback
-+ * @timer: pointer to struct timer_list
++ * htimmer_expire - called immediately before the hrtimer callback
++ * @timer: pointer to struct hrtimer
 + *
-+ * When used in combination with the timer_callback_done tracepoint we can
-+ * determine the timer latency.
++ * When used in combination with the hrtimer_callback_done tracepoint we can
++ * determine the high res timer latency.
 + **/
-+TRACE_EVENT(timer_expire,
++TRACE_EVENT(hrtimer_expire,
 +
-+	TP_PROTO(struct timer_list *timer),
++	TP_PROTO(struct hrtimer *timer),
 +
 +	TP_ARGS(timer),
 +
 +	TP_STRUCT__entry(
 +		__field( void *,	timer	)
-+		__field( unsigned long,	jiffies	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->timer		= timer;
-+		__entry->jiffies	= jiffies;
-+	),
-+
-+	TP_printk("timer=%p jiffies=%lu", __entry->timer, __entry->jiffies)
-+);
-+
-+/**
-+ * timer_callback_done - called immediately after the timer callback returns
-+ * @timer: pointer to struct timer_list
-+ *
-+ * When used in combination with the timer_expire tracepoint we can
-+ * determine the timer latency.
-+ **/
-+TRACE_EVENT(timer_callback_done,
-+
-+	TP_PROTO(struct timer_list *timer),
-+
-+	TP_ARGS(timer),
-+
-+	TP_STRUCT__entry(
-+		__field(void *,	timer	)
++		__field( s64,		now	)
 +	),
 +
 +	TP_fast_assign(
 +		__entry->timer	= timer;
++		__entry->now	= timer->base->get_time().tv64;
 +	),
 +
-+	TP_printk("func=%p", __entry->timer)
-+);
++	TP_printk("timer=%p now=%lluns", __entry->timer,
++		 (unsigned long long)__entry->now)
++ );
 +
-+/**
-+ * timer_cancel - called when the timer is canceled
-+ * @timer: pointer to struct timer_list
-+ **/
-+TRACE_EVENT(timer_cancel,
++ /**
++  * hrtimer_callback_done - called immediately after the hrtimer callback returns
++  * @timer: pointer to struct hrtimer
++  *
++  * When used in combination with the hrtimer_expire tracepoint we can
++  * determine the high res timer latency.
++  **/
++TRACE_EVENT(hrtimer_callback_done,
 +
-+	TP_PROTO(struct timer_list *timer),
++	TP_PROTO(struct hrtimer *timer),
 +
 +	TP_ARGS(timer),
 +
@@ -212,96 +195,126 @@ index 0000000..a664afa
 +	TP_printk("timer=%p", __entry->timer)
 +);
 +
-+#endif /*  _TRACE_TIMER_H */
++/**
++ * hrtimer_cancel - called when the hrtimer is canceled
++ * @timer: pointer to struct hrtimer
++ **/
++TRACE_EVENT(hrtimer_cancel,
 +
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
-diff --git a/kernel/timer.c b/kernel/timer.c
-index a7f07d5..92ff6a7 100644
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -46,6 +46,9 @@
- #include <asm/timex.h>
- #include <asm/io.h>
++	TP_PROTO(struct hrtimer *timer),
++
++	TP_ARGS(timer),
++
++	TP_STRUCT__entry(
++		__field( void *,	timer	)
++	),
++
++	TP_fast_assign(
++		__entry->timer	= timer;
++	),
++
++	TP_printk("timer=%p", __entry->timer)
++);
++
+ #endif /*  _TRACE_TIMER_H */
  
-+#define CREATE_TRACE_POINTS
+ /* This part must be outside protection */
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index e2f91ec..f05c7a1 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -48,6 +48,8 @@
+ 
+ #include <asm/uaccess.h>
+ 
 +#include <trace/events/timer.h>
 +
- u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
- 
- EXPORT_SYMBOL(jiffies_64);
-@@ -520,6 +523,25 @@ static inline void debug_timer_activate(struct timer_list *timer) { }
- static inline void debug_timer_deactivate(struct timer_list *timer) { }
+ /*
+  * The timer bases:
+  *
+@@ -441,6 +443,26 @@ static inline void debug_hrtimer_activate(struct hrtimer *timer) { }
+ static inline void debug_hrtimer_deactivate(struct hrtimer *timer) { }
  #endif
  
-+static inline void debug_init(struct timer_list *timer)
-+{
-+	debug_timer_init(timer);
-+	trace_timer_init(timer);
-+}
-+
 +static inline void
-+debug_activate(struct timer_list *timer, unsigned long expires)
++debug_init(struct hrtimer *timer, clockid_t clockid,
++	   enum hrtimer_mode mode)
 +{
-+	debug_timer_activate(timer);
-+	trace_timer_start(timer, expires);
++	debug_hrtimer_init(timer);
++	trace_hrtimer_init(timer, clockid, mode);
 +}
 +
-+static inline void debug_deactivate(struct timer_list *timer)
++static inline void debug_activate(struct hrtimer *timer)
 +{
-+	debug_timer_deactivate(timer);
-+	trace_timer_cancel(timer);
++	debug_hrtimer_activate(timer);
++	trace_hrtimer_start(timer);
 +}
 +
- static void __init_timer(struct timer_list *timer,
- 			 const char *name,
- 			 struct lock_class_key *key)
-@@ -548,7 +570,7 @@ void init_timer_key(struct timer_list *timer,
- 		    const char *name,
- 		    struct lock_class_key *key)
- {
--	debug_timer_init(timer);
-+	debug_init(timer);
- 	__init_timer(timer, name, key);
- }
- EXPORT_SYMBOL(init_timer_key);
-@@ -567,7 +589,7 @@ static inline void detach_timer(struct timer_list *timer,
- {
- 	struct list_head *entry = &timer->entry;
++static inline void debug_deactivate(struct hrtimer *timer)
++{
++	debug_hrtimer_deactivate(timer);
++	trace_hrtimer_cancel(timer);
++}
++
+ /* High resolution timer related functions */
+ #ifdef CONFIG_HIGH_RES_TIMERS
  
--	debug_timer_deactivate(timer);
-+	debug_deactivate(timer);
+@@ -797,7 +819,7 @@ static int enqueue_hrtimer(struct hrtimer *timer,
+ 	struct hrtimer *entry;
+ 	int leftmost = 1;
  
- 	__list_del(entry->prev, entry->next);
- 	if (clear_pending)
-@@ -628,7 +650,7 @@ __mod_timer(struct timer_list *timer, unsigned long expires,
- 			goto out_unlock;
- 	}
+-	debug_hrtimer_activate(timer);
++	debug_activate(timer);
  
--	debug_timer_activate(timer);
-+	debug_activate(timer, expires);
- 
- 	new_base = __get_cpu_var(tvec_bases);
- 
-@@ -780,7 +802,7 @@ void add_timer_on(struct timer_list *timer, int cpu)
- 	BUG_ON(timer_pending(timer) || !timer->function);
- 	spin_lock_irqsave(&base->lock, flags);
- 	timer_set_base(timer, base);
--	debug_timer_activate(timer);
-+	debug_activate(timer, timer->expires);
- 	internal_add_timer(base, timer);
  	/*
- 	 * Check whether the other CPU is idle and needs to be
-@@ -984,7 +1006,9 @@ static inline void __run_timers(struct tvec_base *base)
- 				 */
- 				lock_map_acquire(&lockdep_map);
+ 	 * Find the right place in the rbtree:
+@@ -883,7 +905,7 @@ remove_hrtimer(struct hrtimer *timer, struct hrtimer_clock_base *base)
+ 		 * reprogramming happens in the interrupt handler. This is a
+ 		 * rare case and less expensive than a smp call.
+ 		 */
+-		debug_hrtimer_deactivate(timer);
++		debug_deactivate(timer);
+ 		timer_stats_hrtimer_clear_start_info(timer);
+ 		reprogram = base->cpu_base == &__get_cpu_var(hrtimer_bases);
+ 		__remove_hrtimer(timer, base, HRTIMER_STATE_INACTIVE,
+@@ -1116,7 +1138,7 @@ static void __hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
+ void hrtimer_init(struct hrtimer *timer, clockid_t clock_id,
+ 		  enum hrtimer_mode mode)
+ {
+-	debug_hrtimer_init(timer);
++	debug_init(timer, clock_id, mode);
+ 	__hrtimer_init(timer, clock_id, mode);
+ }
+ EXPORT_SYMBOL_GPL(hrtimer_init);
+@@ -1149,7 +1171,7 @@ static void __run_hrtimer(struct hrtimer *timer)
  
-+				trace_timer_expire(timer);
- 				fn(data);
-+				trace_timer_callback_done(timer);
+ 	WARN_ON(!irqs_disabled());
  
- 				lock_map_release(&lockdep_map);
+-	debug_hrtimer_deactivate(timer);
++	debug_deactivate(timer);
+ 	__remove_hrtimer(timer, base, HRTIMER_STATE_CALLBACK, 0);
+ 	timer_stats_account_hrtimer(timer);
+ 	fn = timer->function;
+@@ -1160,7 +1182,9 @@ static void __run_hrtimer(struct hrtimer *timer)
+ 	 * the timer base.
+ 	 */
+ 	spin_unlock(&cpu_base->lock);
++	trace_hrtimer_expire(timer);
+ 	restart = fn(timer);
++	trace_hrtimer_callback_done(timer);
+ 	spin_lock(&cpu_base->lock);
  
+ 	/*
+@@ -1569,7 +1593,7 @@ static void migrate_hrtimer_list(struct hrtimer_clock_base *old_base,
+ 	while ((node = rb_first(&old_base->active))) {
+ 		timer = rb_entry(node, struct hrtimer, node);
+ 		BUG_ON(hrtimer_callback_running(timer));
+-		debug_hrtimer_deactivate(timer);
++		debug_deactivate(timer);
+ 
+ 		/*
+ 		 * Mark it as STATE_MIGRATE not INACTIVE otherwise the
 -- 
 1.6.1.2
+
 
