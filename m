@@ -1,74 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbZG1QgD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbZG1Qgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754894AbZG1QgD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 12:36:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbZG1QgB
+	id S1754899AbZG1Qgr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 12:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbZG1Qgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 12:36:01 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:43038 "EHLO e2.ny.us.ibm.com"
+	Tue, 28 Jul 2009 12:36:45 -0400
+Received: from d1.icnet.pl ([212.160.220.21]:36952 "EHLO d1.icnet.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754866AbZG1Qf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 12:35:58 -0400
-Date: Tue, 28 Jul 2009 09:38:35 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Oleg Nesterov <oleg@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, roland@redhat.com,
-       Oren Laadan <orenl@cs.columbia.edu>, serue@us.ibm.com,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Containers <containers@lists.linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] Disable CLONE_PARENT for init
-Message-ID: <20090728163835.GA16040@us.ibm.com>
+	id S1752212AbZG1Qgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 12:36:44 -0400
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Organization: Tele-Info-System, Poznan, PL
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [alsa-devel] [RFC] [PATCH 1/3] ASoC: Add support for Conexant CX20442-11 voice modem codec
+Date: Tue, 28 Jul 2009 18:36:01 +0200
+User-Agent: KMail/1.9.10
+Cc: alsa-devel@alsa-project.org, Jonathan McDowell <noodles@earth.li>,
+       Tony Lindgren <tony@atomide.com>,
+       Peter Ujfalusi <peter.ujfalusi@nokia.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       e3-hacking@earth.li, Arun KS <arunks@mistralsolutions.com>,
+       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <200907220522.29221.jkrzyszt@tis.icnet.pl> <200907281807.31070.jkrzyszt@tis.icnet.pl> <20090728161131.GA22349@rakim.wolfsonmicro.main>
+In-Reply-To: <20090728161131.GA22349@rakim.wolfsonmicro.main>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200907281836.03049.jkrzyszt@tis.icnet.pl>
+X-SA-Exim-Scanned: No (on d1.icnet); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tuesday 28 July 2009 18:11:32 Mark Brown wrote:
+> On Tue, Jul 28, 2009 at 06:07:29PM +0200, Janusz Krzysztofik wrote:
+> > now. Activation of the line discipline would deregister the codec device
+> > from the platform bus and reregister it again, now as the line discipline
+> > provided device. Is this possible with current ASoC framework?
+>
+> No, not currently.  But why would you do that, anyway?
+>
+> Like I say, I'd suggest always keeping the controls registered and just
+> masking and unmasking from user space - the control indexes get used so
+> removing them will just confuse things.
 
-Disable CLONE_PARENT for init.
+However, in order for the machine driver to unmask/mask a machine specific 
+control, the codec driver must drop the machine driver a message about the 
+line discipline being activeted/deactivated, right? The only such existing 
+feedback I can see the codec is able to use is via snd_soc_init_card() that 
+calls snd_soc_dai_link.init() in turn. Am I missing something?
 
-When global or container-init processes use CLONE_PARENT, they create a
-multi-rooted process tree. Besides siblings of global init remain as
-zombies on exit since they are not reaped by their parent (swapper). So
-prevent global and container-inits from creating siblings.
-
-Changelog[v3]:
-	- [Roland, Oleg] Simplify comment describing the change
-Changelog[v2]:
-	- Simplify patch description based on comments from Eric Biederman
-	  and Oleg Nesterov.
-	- [Oleg Nesterov] Use SIGNAL_UNKILLABLE instead of is_global_init()
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Acked-by: Eric W. Biederman <ebiederm@xmission.com>
-Acked-by: Roland McGrath <roland@redhat.com>
----
- kernel/fork.c |   10 ++++++++++
- 1 file changed, 10 insertions(+)
-
-Index: linux-mmotm/kernel/fork.c
-===================================================================
---- linux-mmotm.orig/kernel/fork.c	2009-07-16 10:03:01.000000000 -0700
-+++ linux-mmotm/kernel/fork.c	2009-07-16 11:36:28.000000000 -0700
-@@ -992,6 +992,16 @@
- 	if ((clone_flags & CLONE_SIGHAND) && !(clone_flags & CLONE_VM))
- 		return ERR_PTR(-EINVAL);
- 
-+	/*
-+	 * Siblings of global init remain as zombies on exit since they are
-+	 * not reaped by their parent (swapper). To solve this and to avoid
-+	 * multi-rooted process trees, prevent global and container-inits
-+	 * from creating siblings.
-+	 */
-+	if ((clone_flags & CLONE_PARENT) &&
-+				current->signal->flags & SIGNAL_UNKILLABLE)
-+		return ERR_PTR(-EINVAL);
-+
- 	retval = security_task_create(clone_flags);
- 	if (retval)
- 		goto fork_out;
+Janusz
