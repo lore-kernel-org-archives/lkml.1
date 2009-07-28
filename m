@@ -1,568 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbZG1Uih@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754163AbZG1Uqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754507AbZG1Uih (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 16:38:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754331AbZG1Uig
+	id S1754163AbZG1Uqz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 16:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbZG1Uqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 16:38:36 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:58815 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753595AbZG1UiF (ORCPT
+	Tue, 28 Jul 2009 16:46:54 -0400
+Received: from cobra.newdream.net ([66.33.216.30]:40293 "EHLO
+	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751535AbZG1Uqx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 16:38:05 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=subject:to:from:cc:date:message-id:in-reply-to:references:
-	user-agent:mime-version:content-type:
-	content-transfer-encoding:x-system-of-record;
-	b=oQKASms7HbGegHSHfz/xFSg3nZx4/5bAtPrkKXoYbBCRh9OmYyX+6uVyDrzWJyzbN
-	nEqMEmyTd19iZYTl0vwOA==
-Subject: [PATCH v2 1/2] IPVS: use pr_fmt
-To: lvs-devel@vger.kernel.org, netdev@vger.kernel.org
-From: Hannes Eder <heder@google.com>
-Cc: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
-       Jan Engelhardt <jengelh@medozas.de>
-Date: Tue, 28 Jul 2009 22:35:49 +0200
-Message-ID: <20090728203539.7654.85832.stgit@jazzy.zrh.corp.google.com>
-In-Reply-To: <20090728203414.7654.73236.stgit@jazzy.zrh.corp.google.com>
-References: <20090728203414.7654.73236.stgit@jazzy.zrh.corp.google.com>
-User-Agent: StGit/0.14.3.366.gf979
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+	Tue, 28 Jul 2009 16:46:53 -0400
+From: Sage Weil <sage@newdream.net>
+To: linux-kernel@vger.kernel.org
+Cc: Sage Weil <sage@newdream.net>, Neil Brown <neilb@suse.de>,
+       <linux-raid@vger.kernel.org>, <linux-mm@kvack.org>, <stable@kernel.org>
+Subject: [PATCH] mempool: launder reused items from kzalloc pool
+Date: Tue, 28 Jul 2009 13:46:07 -0700
+Message-Id: <1248813967-27448-1-git-send-email-sage@newdream.net>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While being at it cleanup whitespace.
+The kzalloc pool created by mempool_create_kzalloc_pool() only zeros items
+the first time they are allocated; it doesn't re-zero freed items that are
+returned to the pool.  This only comes up when the pool is used in the
+first place (when memory is very low).
 
-Signed-off-by: Hannes Eder <heder@google.com>
+Fix this by adding a mempool_launder_t method that is called before
+returning items to the pool, and set it in mempool_create_kzalloc_pool.
+This preserves the use of __GFP_ZERO in the common case where the pool
+isn't touched at all.
 
- include/net/ip_vs.h                     |  119 ++++++++++++++++---------------
- net/netfilter/ipvs/ip_vs_app.c          |    3 +
- net/netfilter/ipvs/ip_vs_conn.c         |    3 +
- net/netfilter/ipvs/ip_vs_core.c         |    3 +
- net/netfilter/ipvs/ip_vs_ctl.c          |    3 +
- net/netfilter/ipvs/ip_vs_dh.c           |    3 +
- net/netfilter/ipvs/ip_vs_est.c          |    4 +
- net/netfilter/ipvs/ip_vs_ftp.c          |    3 +
- net/netfilter/ipvs/ip_vs_lblc.c         |    3 +
- net/netfilter/ipvs/ip_vs_lblcr.c        |    3 +
- net/netfilter/ipvs/ip_vs_lc.c           |    3 +
- net/netfilter/ipvs/ip_vs_nq.c           |    3 +
- net/netfilter/ipvs/ip_vs_proto.c        |    7 +-
- net/netfilter/ipvs/ip_vs_proto_ah_esp.c |    7 +-
- net/netfilter/ipvs/ip_vs_proto_tcp.c    |    3 +
- net/netfilter/ipvs/ip_vs_proto_udp.c    |    3 +
- net/netfilter/ipvs/ip_vs_rr.c           |    3 +
- net/netfilter/ipvs/ip_vs_sched.c        |    3 +
- net/netfilter/ipvs/ip_vs_sed.c          |    3 +
- net/netfilter/ipvs/ip_vs_sh.c           |    3 +
- net/netfilter/ipvs/ip_vs_sync.c         |    3 +
- net/netfilter/ipvs/ip_vs_wlc.c          |    3 +
- net/netfilter/ipvs/ip_vs_wrr.c          |    3 +
- net/netfilter/ipvs/ip_vs_xmit.c         |    3 +
- 24 files changed, 134 insertions(+), 63 deletions(-)
+There are currently two in-tree users of mempool_create_kzalloc_pool:
+	drivers/md/multipath.c
+	drivers/scsi/ibmvscsi/ibmvfc.c
+The first appears to be affected by this bug.  The second manually zeros
+each allocation, and can stop doing so after this is fixed.
 
-diff --git a/include/net/ip_vs.h b/include/net/ip_vs.h
-index e01cc2d..b0bd782 100644
---- a/include/net/ip_vs.h
-+++ b/include/net/ip_vs.h
-@@ -99,47 +99,47 @@ static inline const char *ip_vs_dbg_addr(int af, char *buf, size_t buf_len,
- 	return &buf[*idx - len];
+Alternatively, mempool_create_kzalloc_pool() could be removed entirely and
+the callers could zero allocations themselves.
+
+CC: Neil Brown <neilb@suse.de>
+CC: <linux-raid@vger.kernel.org>
+CC: <linux-kernel@vger.kernel.org>
+CC: <linux-mm@kvack.org>
+CC: <stable@kernel.org>
+Signed-off-by: Sage Weil <sage@newdream.net>
+---
+ include/linux/mempool.h |   10 ++++++++--
+ mm/mempool.c            |    9 +++++++++
+ 2 files changed, 17 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/mempool.h b/include/linux/mempool.h
+index 9be484d..889c7e1 100644
+--- a/include/linux/mempool.h
++++ b/include/linux/mempool.h
+@@ -10,6 +10,7 @@ struct kmem_cache;
+ 
+ typedef void * (mempool_alloc_t)(gfp_t gfp_mask, void *pool_data);
+ typedef void (mempool_free_t)(void *element, void *pool_data);
++typedef void (mempool_launder_t)(void *element, void *pool_data);
+ 
+ typedef struct mempool_s {
+ 	spinlock_t lock;
+@@ -20,6 +21,7 @@ typedef struct mempool_s {
+ 	void *pool_data;
+ 	mempool_alloc_t *alloc;
+ 	mempool_free_t *free;
++	mempool_launder_t *launder;
+ 	wait_queue_head_t wait;
+ } mempool_t;
+ 
+@@ -52,6 +54,7 @@ mempool_create_slab_pool(int min_nr, struct kmem_cache *kc)
+  */
+ void *mempool_kmalloc(gfp_t gfp_mask, void *pool_data);
+ void *mempool_kzalloc(gfp_t gfp_mask, void *pool_data);
++void mempool_rezero(void *element, void *pool_data);
+ void mempool_kfree(void *element, void *pool_data);
+ static inline mempool_t *mempool_create_kmalloc_pool(int min_nr, size_t size)
+ {
+@@ -60,8 +63,11 @@ static inline mempool_t *mempool_create_kmalloc_pool(int min_nr, size_t size)
+ }
+ static inline mempool_t *mempool_create_kzalloc_pool(int min_nr, size_t size)
+ {
+-	return mempool_create(min_nr, mempool_kzalloc, mempool_kfree,
+-			      (void *) size);
++	mempool_t *pool = mempool_create(min_nr, mempool_kzalloc, mempool_kfree,
++					 (void *) size);
++	if (pool)
++		pool->launder = mempool_rezero;
++	return pool;
  }
  
--#define IP_VS_DBG_BUF(level, msg...)			\
--    do {						\
--	    char ip_vs_dbg_buf[160];			\
--	    int ip_vs_dbg_idx = 0;			\
--	    if (level <= ip_vs_get_debug_level())	\
--		    printk(KERN_DEBUG "IPVS: " msg);	\
--    } while (0)
--#define IP_VS_ERR_BUF(msg...)				\
--    do {						\
--	    char ip_vs_dbg_buf[160];			\
--	    int ip_vs_dbg_idx = 0;			\
--	    printk(KERN_ERR "IPVS: " msg);		\
--    } while (0)
-+#define IP_VS_DBG_BUF(level, msg, ...)					\
-+	do {								\
-+		char ip_vs_dbg_buf[160];				\
-+		int ip_vs_dbg_idx = 0;					\
-+		if (level <= ip_vs_get_debug_level())			\
-+			printk(KERN_DEBUG pr_fmt(msg), ##__VA_ARGS__);	\
-+	} while (0)
-+#define IP_VS_ERR_BUF(msg...)						\
-+	do {								\
-+		char ip_vs_dbg_buf[160];				\
-+		int ip_vs_dbg_idx = 0;					\
-+		pr_err(msg);						\
-+	} while (0)
- 
- /* Only use from within IP_VS_DBG_BUF() or IP_VS_ERR_BUF macros */
--#define IP_VS_DBG_ADDR(af, addr)			\
--    ip_vs_dbg_addr(af, ip_vs_dbg_buf,			\
--		   sizeof(ip_vs_dbg_buf), addr,		\
--		   &ip_vs_dbg_idx)
--
--#define IP_VS_DBG(level, msg...)			\
--    do {						\
--	    if (level <= ip_vs_get_debug_level())	\
--		    printk(KERN_DEBUG "IPVS: " msg);	\
--    } while (0)
--#define IP_VS_DBG_RL(msg...)				\
--    do {						\
--	    if (net_ratelimit())			\
--		    printk(KERN_DEBUG "IPVS: " msg);	\
--    } while (0)
--#define IP_VS_DBG_PKT(level, pp, skb, ofs, msg)		\
--    do {						\
--	    if (level <= ip_vs_get_debug_level())	\
--		pp->debug_packet(pp, skb, ofs, msg);	\
--    } while (0)
--#define IP_VS_DBG_RL_PKT(level, pp, skb, ofs, msg)	\
--    do {						\
--	    if (level <= ip_vs_get_debug_level() &&	\
--		net_ratelimit())			\
--		pp->debug_packet(pp, skb, ofs, msg);	\
--    } while (0)
-+#define IP_VS_DBG_ADDR(af, addr)					\
-+	ip_vs_dbg_addr(af, ip_vs_dbg_buf,				\
-+		       sizeof(ip_vs_dbg_buf), addr,			\
-+		       &ip_vs_dbg_idx)
-+
-+#define IP_VS_DBG(level, msg, ...)					\
-+	do {								\
-+		if (level <= ip_vs_get_debug_level())			\
-+			printk(KERN_DEBUG pr_fmt(msg), ##__VA_ARGS__);	\
-+	} while (0)
-+#define IP_VS_DBG_RL(msg, ...)						\
-+	do {								\
-+		if (net_ratelimit())					\
-+			printk(KERN_DEBUG pr_fmt(msg), ##__VA_ARGS__);	\
-+	} while (0)
-+#define IP_VS_DBG_PKT(level, pp, skb, ofs, msg)				\
-+	do {								\
-+		if (level <= ip_vs_get_debug_level())			\
-+			pp->debug_packet(pp, skb, ofs, msg);		\
-+	} while (0)
-+#define IP_VS_DBG_RL_PKT(level, pp, skb, ofs, msg)			\
-+	do {								\
-+		if (level <= ip_vs_get_debug_level() &&			\
-+		    net_ratelimit())					\
-+			pp->debug_packet(pp, skb, ofs, msg);		\
-+	} while (0)
- #else	/* NO DEBUGGING at ALL */
- #define IP_VS_DBG_BUF(level, msg...)  do {} while (0)
- #define IP_VS_ERR_BUF(msg...)  do {} while (0)
-@@ -150,29 +150,30 @@ static inline const char *ip_vs_dbg_addr(int af, char *buf, size_t buf_len,
- #endif
- 
- #define IP_VS_BUG() BUG()
--#define IP_VS_ERR(msg...) printk(KERN_ERR "IPVS: " msg)
--#define IP_VS_INFO(msg...) printk(KERN_INFO "IPVS: " msg)
--#define IP_VS_WARNING(msg...) \
--	printk(KERN_WARNING "IPVS: " msg)
--#define IP_VS_ERR_RL(msg...)				\
--    do {						\
--	    if (net_ratelimit())			\
--		    printk(KERN_ERR "IPVS: " msg);	\
--    } while (0)
-+#define IP_VS_ERR(msg...) pr_err(msg)
-+#define IP_VS_INFO(msg...) pr_info(msg)
-+#define IP_VS_WARNING(msg...) pr_warning(msg)
-+#define IP_VS_ERR_RL(msg...)						\
-+	do {								\
-+		if (net_ratelimit())					\
-+			pr_err(msg);					\
-+	} while (0)
- 
- #ifdef CONFIG_IP_VS_DEBUG
- #define EnterFunction(level)						\
--    do {								\
--	    if (level <= ip_vs_get_debug_level())			\
--		    printk(KERN_DEBUG "Enter: %s, %s line %i\n",	\
--			   __func__, __FILE__, __LINE__);		\
--    } while (0)
--#define LeaveFunction(level)                                            \
--    do {                                                                \
--	    if (level <= ip_vs_get_debug_level())                       \
--			printk(KERN_DEBUG "Leave: %s, %s line %i\n",    \
--			       __func__, __FILE__, __LINE__);       \
--    } while (0)
-+	do {								\
-+		if (level <= ip_vs_get_debug_level())			\
-+			printk(KERN_DEBUG				\
-+			       pr_fmt("Enter: %s, %s line %i\n"),	\
-+			       __func__, __FILE__, __LINE__);		\
-+	} while (0)
-+#define LeaveFunction(level)						\
-+	do {								\
-+		if (level <= ip_vs_get_debug_level())			\
-+			printk(KERN_DEBUG				\
-+			       pr_fmt("Leave: %s, %s line %i\n"),	\
-+			       __func__, __FILE__, __LINE__);		\
-+	} while (0)
- #else
- #define EnterFunction(level)   do {} while (0)
- #define LeaveFunction(level)   do {} while (0)
-diff --git a/net/netfilter/ipvs/ip_vs_app.c b/net/netfilter/ipvs/ip_vs_app.c
-index 201b8ea..c1781f8 100644
---- a/net/netfilter/ipvs/ip_vs_app.c
-+++ b/net/netfilter/ipvs/ip_vs_app.c
-@@ -18,6 +18,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/skbuff.h>
-diff --git a/net/netfilter/ipvs/ip_vs_conn.c b/net/netfilter/ipvs/ip_vs_conn.c
-index 928af1c..e613745 100644
---- a/net/netfilter/ipvs/ip_vs_conn.c
-+++ b/net/netfilter/ipvs/ip_vs_conn.c
-@@ -22,6 +22,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/interrupt.h>
- #include <linux/in.h>
- #include <linux/net.h>
-diff --git a/net/netfilter/ipvs/ip_vs_core.c b/net/netfilter/ipvs/ip_vs_core.c
-index 8dddb17..6811dca 100644
---- a/net/netfilter/ipvs/ip_vs_core.c
-+++ b/net/netfilter/ipvs/ip_vs_core.c
-@@ -24,6 +24,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/ip.h>
-diff --git a/net/netfilter/ipvs/ip_vs_ctl.c b/net/netfilter/ipvs/ip_vs_ctl.c
-index beaf129..83a7ab6 100644
---- a/net/netfilter/ipvs/ip_vs_ctl.c
-+++ b/net/netfilter/ipvs/ip_vs_ctl.c
-@@ -18,6 +18,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/types.h>
-diff --git a/net/netfilter/ipvs/ip_vs_dh.c b/net/netfilter/ipvs/ip_vs_dh.c
-index a9dac74..d0c0594 100644
---- a/net/netfilter/ipvs/ip_vs_dh.c
-+++ b/net/netfilter/ipvs/ip_vs_dh.c
-@@ -35,6 +35,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/ip.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
-diff --git a/net/netfilter/ipvs/ip_vs_est.c b/net/netfilter/ipvs/ip_vs_est.c
-index 2eb2860..702b53c 100644
---- a/net/netfilter/ipvs/ip_vs_est.c
-+++ b/net/netfilter/ipvs/ip_vs_est.c
-@@ -11,6 +11,10 @@
-  * Changes:
-  *
-  */
-+
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/kernel.h>
- #include <linux/jiffies.h>
- #include <linux/slab.h>
-diff --git a/net/netfilter/ipvs/ip_vs_ftp.c b/net/netfilter/ipvs/ip_vs_ftp.c
-index 428edbf..9c16a3f 100644
---- a/net/netfilter/ipvs/ip_vs_ftp.c
-+++ b/net/netfilter/ipvs/ip_vs_ftp.c
-@@ -22,6 +22,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/module.h>
- #include <linux/moduleparam.h>
- #include <linux/kernel.h>
-diff --git a/net/netfilter/ipvs/ip_vs_lblc.c b/net/netfilter/ipvs/ip_vs_lblc.c
-index 537a7a1..66f625b 100644
---- a/net/netfilter/ipvs/ip_vs_lblc.c
-+++ b/net/netfilter/ipvs/ip_vs_lblc.c
-@@ -39,6 +39,9 @@
-  * me to write this module.
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/ip.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
-diff --git a/net/netfilter/ipvs/ip_vs_lblcr.c b/net/netfilter/ipvs/ip_vs_lblcr.c
-index c8f8687..63cca2b 100644
---- a/net/netfilter/ipvs/ip_vs_lblcr.c
-+++ b/net/netfilter/ipvs/ip_vs_lblcr.c
-@@ -37,6 +37,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/ip.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
-diff --git a/net/netfilter/ipvs/ip_vs_lc.c b/net/netfilter/ipvs/ip_vs_lc.c
-index d0dadc8..4ecd5e1 100644
---- a/net/netfilter/ipvs/ip_vs_lc.c
-+++ b/net/netfilter/ipvs/ip_vs_lc.c
-@@ -14,6 +14,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/module.h>
- #include <linux/kernel.h>
- 
-diff --git a/net/netfilter/ipvs/ip_vs_nq.c b/net/netfilter/ipvs/ip_vs_nq.c
-index 694952d..2224478 100644
---- a/net/netfilter/ipvs/ip_vs_nq.c
-+++ b/net/netfilter/ipvs/ip_vs_nq.c
-@@ -31,6 +31,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/module.h>
- #include <linux/kernel.h>
- 
-diff --git a/net/netfilter/ipvs/ip_vs_proto.c b/net/netfilter/ipvs/ip_vs_proto.c
-index a01520e..a95bc40 100644
---- a/net/netfilter/ipvs/ip_vs_proto.c
-+++ b/net/netfilter/ipvs/ip_vs_proto.c
-@@ -13,6 +13,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/skbuff.h>
-@@ -181,7 +184,7 @@ ip_vs_tcpudp_debug_packet_v4(struct ip_vs_protocol *pp,
- 				&ih->daddr, ntohs(pptr[1]));
- 	}
- 
--	printk(KERN_DEBUG "IPVS: %s: %s\n", msg, buf);
-+	pr_debug("%s: %s\n", msg, buf);
+ /*
+diff --git a/mm/mempool.c b/mm/mempool.c
+index a46eb1b..6bb3056 100644
+--- a/mm/mempool.c
++++ b/mm/mempool.c
+@@ -269,6 +269,8 @@ void mempool_free(void *element, mempool_t *pool)
+ 	if (pool->curr_nr < pool->min_nr) {
+ 		spin_lock_irqsave(&pool->lock, flags);
+ 		if (pool->curr_nr < pool->min_nr) {
++			if (pool->launder)
++				pool->launder(element, pool->pool_data);
+ 			add_element(pool, element);
+ 			spin_unlock_irqrestore(&pool->lock, flags);
+ 			wake_up(&pool->wait);
+@@ -315,6 +317,13 @@ void *mempool_kzalloc(gfp_t gfp_mask, void *pool_data)
  }
+ EXPORT_SYMBOL(mempool_kzalloc);
  
- #ifdef CONFIG_IP_VS_IPV6
-@@ -215,7 +218,7 @@ ip_vs_tcpudp_debug_packet_v6(struct ip_vs_protocol *pp,
- 				&ih->daddr, ntohs(pptr[1]));
- 	}
- 
--	printk(KERN_DEBUG "IPVS: %s: %s\n", msg, buf);
-+	pr_debug("%s: %s\n", msg, buf);
- }
- #endif
- 
-diff --git a/net/netfilter/ipvs/ip_vs_proto_ah_esp.c b/net/netfilter/ipvs/ip_vs_proto_ah_esp.c
-index 79f56c1..c30b43c 100644
---- a/net/netfilter/ipvs/ip_vs_proto_ah_esp.c
-+++ b/net/netfilter/ipvs/ip_vs_proto_ah_esp.c
-@@ -10,6 +10,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
++void mempool_rezero(void *element, void *pool_data)
++{
++	size_t size = (size_t) pool_data;
++	memset(element, 0, size);
++}
++EXPORT_SYMBOL(mempool_rezero);
 +
- #include <linux/in.h>
- #include <linux/ip.h>
- #include <linux/module.h>
-@@ -138,7 +141,7 @@ ah_esp_debug_packet_v4(struct ip_vs_protocol *pp, const struct sk_buff *skb,
- 		sprintf(buf, "%s %pI4->%pI4",
- 			pp->name, &ih->saddr, &ih->daddr);
- 
--	printk(KERN_DEBUG "IPVS: %s: %s\n", msg, buf);
-+	pr_debug("%s: %s\n", msg, buf);
- }
- 
- #ifdef CONFIG_IP_VS_IPV6
-@@ -156,7 +159,7 @@ ah_esp_debug_packet_v6(struct ip_vs_protocol *pp, const struct sk_buff *skb,
- 		sprintf(buf, "%s %pI6->%pI6",
- 			pp->name, &ih->saddr, &ih->daddr);
- 
--	printk(KERN_DEBUG "IPVS: %s: %s\n", msg, buf);
-+	pr_debug("%s: %s\n", msg, buf);
- }
- #endif
- 
-diff --git a/net/netfilter/ipvs/ip_vs_proto_tcp.c b/net/netfilter/ipvs/ip_vs_proto_tcp.c
-index 8cba418..c36c80d 100644
---- a/net/netfilter/ipvs/ip_vs_proto_tcp.c
-+++ b/net/netfilter/ipvs/ip_vs_proto_tcp.c
-@@ -13,6 +13,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/kernel.h>
- #include <linux/ip.h>
- #include <linux/tcp.h>                  /* for tcphdr */
-diff --git a/net/netfilter/ipvs/ip_vs_proto_udp.c b/net/netfilter/ipvs/ip_vs_proto_udp.c
-index d2930a7..96ebe40 100644
---- a/net/netfilter/ipvs/ip_vs_proto_udp.c
-+++ b/net/netfilter/ipvs/ip_vs_proto_udp.c
-@@ -13,6 +13,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/in.h>
- #include <linux/ip.h>
- #include <linux/kernel.h>
-diff --git a/net/netfilter/ipvs/ip_vs_rr.c b/net/netfilter/ipvs/ip_vs_rr.c
-index 2d16ab7..b01007e 100644
---- a/net/netfilter/ipvs/ip_vs_rr.c
-+++ b/net/netfilter/ipvs/ip_vs_rr.c
-@@ -19,6 +19,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/module.h>
- #include <linux/kernel.h>
- 
-diff --git a/net/netfilter/ipvs/ip_vs_sched.c b/net/netfilter/ipvs/ip_vs_sched.c
-index a46ad9e..87bc5ea 100644
---- a/net/netfilter/ipvs/ip_vs_sched.c
-+++ b/net/netfilter/ipvs/ip_vs_sched.c
-@@ -17,6 +17,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/module.h>
- #include <linux/spinlock.h>
- #include <linux/interrupt.h>
-diff --git a/net/netfilter/ipvs/ip_vs_sed.c b/net/netfilter/ipvs/ip_vs_sed.c
-index 20e4657..4f745dd 100644
---- a/net/netfilter/ipvs/ip_vs_sed.c
-+++ b/net/netfilter/ipvs/ip_vs_sed.c
-@@ -35,6 +35,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/module.h>
- #include <linux/kernel.h>
- 
-diff --git a/net/netfilter/ipvs/ip_vs_sh.c b/net/netfilter/ipvs/ip_vs_sh.c
-index 75709eb..fb4d2d2 100644
---- a/net/netfilter/ipvs/ip_vs_sh.c
-+++ b/net/netfilter/ipvs/ip_vs_sh.c
-@@ -32,6 +32,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/ip.h>
- #include <linux/module.h>
- #include <linux/kernel.h>
-diff --git a/net/netfilter/ipvs/ip_vs_sync.c b/net/netfilter/ipvs/ip_vs_sync.c
-index 5c48378..cc04c99 100644
---- a/net/netfilter/ipvs/ip_vs_sync.c
-+++ b/net/netfilter/ipvs/ip_vs_sync.c
-@@ -17,6 +17,9 @@
-  *	Justin Ossevoort	:	Fix endian problem on sync message size.
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/module.h>
- #include <linux/slab.h>
- #include <linux/inetdevice.h>
-diff --git a/net/netfilter/ipvs/ip_vs_wlc.c b/net/netfilter/ipvs/ip_vs_wlc.c
-index 8e94256..bbddfdb 100644
---- a/net/netfilter/ipvs/ip_vs_wlc.c
-+++ b/net/netfilter/ipvs/ip_vs_wlc.c
-@@ -19,6 +19,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/module.h>
- #include <linux/kernel.h>
- 
-diff --git a/net/netfilter/ipvs/ip_vs_wrr.c b/net/netfilter/ipvs/ip_vs_wrr.c
-index f7d74ef..c39ebb6 100644
---- a/net/netfilter/ipvs/ip_vs_wrr.c
-+++ b/net/netfilter/ipvs/ip_vs_wrr.c
-@@ -18,6 +18,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/module.h>
- #include <linux/kernel.h>
- #include <linux/net.h>
-diff --git a/net/netfilter/ipvs/ip_vs_xmit.c b/net/netfilter/ipvs/ip_vs_xmit.c
-index 425ab14..e5e0025 100644
---- a/net/netfilter/ipvs/ip_vs_xmit.c
-+++ b/net/netfilter/ipvs/ip_vs_xmit.c
-@@ -13,6 +13,9 @@
-  *
-  */
- 
-+#define KMSG_COMPONENT "IPVS"
-+#define pr_fmt(fmt) KMSG_COMPONENT ": " fmt
-+
- #include <linux/kernel.h>
- #include <linux/tcp.h>                  /* for tcphdr */
- #include <net/ip.h>
+ void mempool_kfree(void *element, void *pool_data)
+ {
+ 	kfree(element);
+-- 
+1.5.6.5
 
