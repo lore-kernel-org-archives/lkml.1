@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567AbZG1KmN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752064AbZG1Kig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753567AbZG1KmN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 06:42:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbZG1KmJ
+	id S1752064AbZG1Kig (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 06:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbZG1Kif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 06:42:09 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:32600 "EHLO
+	Tue, 28 Jul 2009 06:38:35 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:31728 "EHLO
 	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753343AbZG1KmH (ORCPT
+	with ESMTP id S1751649AbZG1Kid (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 06:42:07 -0400
+	Tue, 28 Jul 2009 06:38:33 -0400
 From: Adrian Hunter <adrian.hunter@nokia.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>,
@@ -19,107 +19,105 @@ Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>,
        Denis Karpov <ext-denis.2.karpov@nokia.com>,
        Matt Fleming <matt@console-pimps.org>,
        lkml <linux-kernel@vger.kernel.org>
-Date: Tue, 28 Jul 2009 13:41:54 +0300
-Message-Id: <20090728104154.2371.57900.sendpatchset@ahunter-laptop>
-In-Reply-To: <20090728103834.2371.65809.sendpatchset@ahunter-laptop>
-References: <20090728103834.2371.65809.sendpatchset@ahunter-laptop>
-Subject: [PATCH V2 27/32] omap_hsmmc: pass host capabilities for SD only and MMC only
-X-OriginalArrivalTime: 28 Jul 2009 10:41:25.0390 (UTC) FILETIME=[F4A7BAE0:01CA0F6F]
+Date: Tue, 28 Jul 2009 13:38:34 +0300
+Message-Id: <20090728103834.2371.65809.sendpatchset@ahunter-laptop>
+Subject: [PATCH V2 0/32] mmc and omap_hsmmc patches
+X-OriginalArrivalTime: 28 Jul 2009 10:38:06.0768 (UTC) FILETIME=[7E446B00:01CA0F6F]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 6ed0f09877e25af46579c1e7754600d31356e302 Mon Sep 17 00:00:00 2001
-From: Adrian Hunter <adrian.hunter@nokia.com>
-Date: Mon, 18 May 2009 11:33:26 +0300
-Subject: [PATCH] omap_hsmmc: pass host capabilities for SD only and MMC only
+Hi
 
-Some hosts can accept only certain types of cards.
-For example, an eMMC is MMC only and a uSD slot may
-be SD only.  Pass host capabilities from the board
-through to the driver.
+Here is version 2 of our 32 patches for mmc and omap_hsmmc.
 
-Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
----
- arch/arm/mach-omap2/mmc-twl4030.c     |    5 ++---
- arch/arm/mach-omap2/mmc-twl4030.h     |    2 +-
- arch/arm/plat-omap/include/mach/mmc.h |    6 +++---
- drivers/mmc/host/omap_hsmmc.c         |    7 ++++---
- 4 files changed, 10 insertions(+), 10 deletions(-)
+They include Matt Fleming's change for card caps, and 2 other fixes:
+	- use a spin lock rather than enable / diable irq
+	- make disable delay specified in milliseconds not jiffies because the
+	value is an int, and jiffies are unsigned long (also millisecs are
+	better anyway)
 
-diff --git a/arch/arm/mach-omap2/mmc-twl4030.c b/arch/arm/mach-omap2/mmc-twl4030.c
-index f95c702..48765bf 100644
---- a/arch/arm/mach-omap2/mmc-twl4030.c
-+++ b/arch/arm/mach-omap2/mmc-twl4030.c
-@@ -464,12 +464,11 @@ void __init twl4030_mmc_init(struct twl4030_hsmmc_info *controllers)
- 		} else
- 			mmc->slots[0].gpio_wp = -EINVAL;
- 
--		if (c->nonremovable)
--			mmc->slots[0].nonremovable = 1;
--
- 		if (c->power_saving)
- 			mmc->slots[0].power_saving = 1;
- 
-+		mmc->slots[0].caps = c->caps;
-+
- 		/* NOTE:  MMC slots should have a Vcc regulator set up.
- 		 * This may be from a TWL4030-family chip, another
- 		 * controllable regulator, or a fixed supply.
-diff --git a/arch/arm/mach-omap2/mmc-twl4030.h b/arch/arm/mach-omap2/mmc-twl4030.h
-index a47e685..cb43f52 100644
---- a/arch/arm/mach-omap2/mmc-twl4030.h
-+++ b/arch/arm/mach-omap2/mmc-twl4030.h
-@@ -12,8 +12,8 @@ struct twl4030_hsmmc_info {
- 	bool	transceiver;	/* MMC-2 option */
- 	bool	ext_clock;	/* use external pin for input clock */
- 	bool	cover_only;	/* No card detect - just cover switch */
--	bool	nonremovable;	/* Nonremovable e.g. eMMC */
- 	bool	power_saving;	/* Try to sleep or power off when possible */
-+	unsigned long caps;	/* MMC host capabilities */
- 	int	gpio_cd;	/* or -EINVAL */
- 	int	gpio_wp;	/* or -EINVAL */
- 	char	*name;		/* or NULL for default */
-diff --git a/arch/arm/plat-omap/include/mach/mmc.h b/arch/arm/plat-omap/include/mach/mmc.h
-index 9390297..48cf2de 100644
---- a/arch/arm/plat-omap/include/mach/mmc.h
-+++ b/arch/arm/plat-omap/include/mach/mmc.h
-@@ -83,12 +83,12 @@ struct omap_mmc_platform_data {
- 		/* use the internal clock */
- 		unsigned internal_clock:1;
- 
--		/* nonremovable e.g. eMMC */
--		unsigned nonremovable:1;
--
- 		/* Try to sleep or power off when possible */
- 		unsigned power_saving:1;
- 
-+		/* MMC host capabilities */
-+		unsigned long caps;
-+
- 		int switch_pin;			/* gpio (card detect) */
- 		int gpio_wp;			/* gpio (write protect) */
- 
-diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
-index 5213d87..42dfc49 100644
---- a/drivers/mmc/host/omap_hsmmc.c
-+++ b/drivers/mmc/host/omap_hsmmc.c
-@@ -1664,10 +1664,11 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
- 	else if (mmc_slot(host).wires >= 4)
- 		mmc->caps |= MMC_CAP_4_BIT_DATA;
- 
--	if (mmc_slot(host).nonremovable)
--		mmc->caps |= MMC_CAP_NONREMOVABLE;
-+	mmc->caps |= mmc_slot(host).caps;
- 
--	mmc->caps |= MMC_CAP_SDIO | MMC_CAP_SD | MMC_CAP_MMC;
-+	/* If no card caps specified then assume them all */
-+	if (!(mmc->caps & (MMC_CAP_SDIO | MMC_CAP_SD | MMC_CAP_MMC)))
-+		mmc->caps |= MMC_CAP_SDIO | MMC_CAP_SD | MMC_CAP_MMC;
- 
- 	omap_hsmmc_init(host);
- 
--- 
-1.5.6.3
+They split into 2 groups: the first 8 affect mmc core only
+and the remaining ones affect omap_hsmmc only.
 
+Adrian Hunter (19):
+      mmc: add 'enable' and 'disable' methods to mmc host
+      mmc: allow host claim / release nesting
+      mmc: add MMC_CAP_NONREMOVABLE host capability
+      mmc: add ability to save power by powering off cards
+      mmc: check status after MMC SWITCH command
+      omap_hsmmc: make use of new enable/disable interface
+      omap_hsmmc: keep track of power mode
+      omap_hsmmc: ensure workqueues are empty before suspend
+      omap_hsmmc: make use of new MMC_CAP_NONREMOVABLE host capability
+      ARM: OMAP: mmc-twl4030: add regulator sleep / wake function
+      omap_hsmmc: put MMC regulator to sleep
+      omap_hsmmc: clear interrupt status after init sequence
+      omap_hsmmc: cater for weird CMD6 behaviour
+      omap_hsmmc: prevent races with irq handler
+      omap_hsmmc: pass host capabilities for SD only and MMC only
+      omap_hsmmc: protect the card when the cover is open
+      omap_hsmmc: ensure all clock enables and disables are paired
+      omap_hsmmc: set a large data timeout for commands with busy signal
+      ARM: OMAP: RX51: set MMC capabilities and power-saving flag
+
+Denis Karpov (8):
+      mmc: power off once at removal
+      omap_hsmmc: add debugfs entry (host registers)
+      ARM: OMAP: mmc-twl4030: add context loss counter support
+      omap_hsmmc: context save/restore support
+      omap_hsmmc: set open drain bit correctly
+      omap_hsmmc: support for deeper power saving states
+      omap_hsmmc: cleanup macro usage
+      omap_hsmmc: code refactoring
+
+Jarkko Lavinen (4):
+      mmc: add mmc card sleep and awake support
+      omap_hsmmc: fix scatter-gather list sanity checking
+      omap_hsmmc: add mmc card sleep and awake support
+      omap_hsmmc: fix NULL pointer dereference
+
+Matt Fleming (1):
+      mmc: add host capabilities for SD only and MMC only
+
+ arch/arm/mach-omap2/board-rx51-peripherals.c |    5 +
+ arch/arm/mach-omap2/mmc-twl4030.c            |   77 ++
+ arch/arm/mach-omap2/mmc-twl4030.h            |    2 +
+ arch/arm/plat-omap/include/mach/mmc.h        |   11 +
+ drivers/mmc/core/core.c                      |  291 +++++++-
+ drivers/mmc/core/core.h                      |    4 +
+ drivers/mmc/core/host.c                      |    1 +
+ drivers/mmc/core/host.h                      |    2 +
+ drivers/mmc/core/mmc.c                       |  130 +++-
+ drivers/mmc/core/mmc_ops.c                   |   59 ++
+ drivers/mmc/core/mmc_ops.h                   |    1 +
+ drivers/mmc/core/sd.c                        |   52 ++-
+ drivers/mmc/host/at91_mci.c                  |    2 +-
+ drivers/mmc/host/atmel-mci.c                 |    1 +
+ drivers/mmc/host/au1xmmc.c                   |    3 +-
+ drivers/mmc/host/cb710-mmc.c                 |    3 +-
+ drivers/mmc/host/imxmmc.c                    |    3 +-
+ drivers/mmc/host/mmc_spi.c                   |    2 +-
+ drivers/mmc/host/mmci.c                      |    2 +
+ drivers/mmc/host/mvsdio.c                    |    3 +-
+ drivers/mmc/host/mxcmmc.c                    |    3 +-
+ drivers/mmc/host/omap.c                      |    2 +-
+ drivers/mmc/host/omap_hsmmc.c                | 1038 +++++++++++++++++++++-----
+ drivers/mmc/host/pxamci.c                    |    2 +-
+ drivers/mmc/host/s3cmci.c                    |    3 +-
+ drivers/mmc/host/sdhci.c                     |    2 +-
+ drivers/mmc/host/sdricoh_cs.c                |    3 +-
+ drivers/mmc/host/tifm_sd.c                   |    3 +-
+ drivers/mmc/host/tmio_mmc.c                  |    3 +-
+ drivers/mmc/host/via-sdmmc.c                 |    3 +-
+ drivers/mmc/host/wbsd.c                      |    3 +-
+ include/linux/mmc/card.h                     |    2 +
+ include/linux/mmc/core.h                     |    1 +
+ include/linux/mmc/host.h                     |   61 ++
+ include/linux/mmc/mmc.h                      |    3 +
+ 35 files changed, 1554 insertions(+), 232 deletions(-)
+
+
+Regards
+Adrian
