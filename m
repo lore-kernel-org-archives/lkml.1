@@ -1,95 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbZG1WsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755851AbZG1WwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755865AbZG1WsW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 18:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbZG1WsW
+	id S1755851AbZG1WwL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 18:52:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755518AbZG1WwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 18:48:22 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:27405 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755799AbZG1WsV (ORCPT
+	Tue, 28 Jul 2009 18:52:10 -0400
+Received: from mail-pz0-f204.google.com ([209.85.222.204]:48682 "EHLO
+	mail-pz0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754813AbZG1WwJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 18:48:21 -0400
+	Tue, 28 Jul 2009 18:52:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=AoRxQh81ITHM4bt0IxwopzKaDvxRuj0BdAdPpEpIdZ3qtSx1nbgpSY8qwvczUc0OuJ
-         nVCfzf0ssVvWHz/ijpT+5cHww0fQAOXsO2L2qigq0hKKf4KJmulVu1/YODXQaLWDmlIl
-         SPoE4MC09uAmlF/11zsLzvAxcnkGoP1auk0yQ=
-Date: Wed, 29 Jul 2009 00:48:06 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Mel Gorman <mel@csn.ul.ie>, Steven Rostedt <rostedt@goodmis.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH 0/3] Add some trace events for the page allocator
-Message-ID: <20090728224805.GB5104@nowhere>
-References: <1248819819-14931-1-git-send-email-mel@csn.ul.ie>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=hSDiARyfNH9Mt4iR6nhf3Bigbx1az50d10cUXB6iNNWwO2l13fT9q8K4MiROkzwqaF
+         KsS5VPxzSccKlMJYFy62ZTL8pP+2ENDlKT+Ji8xt+KsF1/2NM92zEq39zt+HGJT8KO49
+         pXMJ7EmRjdxwFmxxYgKUODZ+SvJTj9akk+bLI=
+Message-ID: <4A6F8115.7000500@gmail.com>
+Date: Tue, 28 Jul 2009 15:52:05 -0700
+From: "Moussa A. Ba" <moussa.a.ba@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248819819-14931-1-git-send-email-mel@csn.ul.ie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org
+CC: David Rientjes <rientjes@google.com>, xiyou.wangcong@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Matt Mackall <mpm@selenic.com>,
+       Mel Gorman <mel@csn.ul.ie>, Ying Han <yinghan@google.com>,
+       Nick Piggin <npiggin@suse.de>, jaredeh@gmail.com
+Subject: [PATCH 1/1] pagemap clear_refs: modify to specify anon or mapped
+ vma clearing
+References: <4A693122.6060503@gmail.com> <20090724083926.GA6372@cr0.nay.redhat.com> <4A6E0BD6.50102@gmail.com> <alpine.DEB.2.00.0907271339070.17425@chino.kir.corp.google.com> <7928e7bd0907271514y699d1de4j54f9c562b94ef0cc@mail.gmail.com> <alpine.DEB.2.00.0907271543420.23587@chino.kir.corp.google.com> <7928e7bd0907271638x5ddbfd2ckba2802338a33765a@mail.gmail.com> <alpine.DEB.2.00.0907271657160.27881@chino.kir.corp.google.com> <4A6F2AF4.6050505@gmail.com> <alpine.DEB.2.00.0907281401150.7140@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.0907281401150.7140@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 28, 2009 at 11:23:36PM +0100, Mel Gorman wrote:
-> The following three patches add some trace events for the page allocator under
-> the heading of kmem (should there be a pagealloc heading instead?). Testing
-> under qemu seems to show up reasonable results but this is a prototype for
-> comment that hasn't been very heavily tested. I was able to find at least
-> one anomaly looking a the output in relation to anti-fragmentation which
-> I'm still thinking about so minimally, it was useful for that but I've made
-> an attempt to justify each of the events added.
-> 
-> The patches are as follows
-> 
-> 	Patch 1 adds events for plain old allocate and freeing of pages
-> 	Patch 2 gives information useful for analysing fragmentation avoidance
-> 	Patch 3 tracks pages going to and from the buddy lists as an indirect
-> 		indication of zone lock hotness
-> 
-> The first one could be used as an indicator as to whether the workload was
-> heavily dependant on the page allocator or not. You can make a guess based
-> on vmstat but you can't get a per-process breakdown. I did have trouble with
-> the call-site portion of the allocation. Depending on the path, you might
-> just get the address of __get_free_pages() instead of a useful callsite. I
-> didn't see a nice way to always report a "useful" call_site.
-> 
-> The second patch would mainly be useful for users of hugepages and
-> particularly dynamic hugepage pool resizing as it could be used to tune
-> min_free_kbytes to a level that fragmentation was rarely a problem. My
-> main concern is that maybe I'm trying to jam too much into the TP_printk
-> that could be extrapolated after the fact if you were familiar with the
-> implementation. I couldn't determine if it was best to hold the hand of
-> the administrator even if it cost more to figure it out.
-> 
-> The last patch is trickier to draw conclusions from but high activity on
-> those events could explain why there were a large number of cache misses
-> on a page-allocator-intensive workload. The coalescing and splitting of
-> buddies involves a lot of writing of page metadata and cache line bounces
-> not to mention the acquisition of an interrupt-safe lock necessary to enter
-> this path. One problem is that one function traced is likely to change its
-> name in the future.  When that happens, the trace event will be replaced
-> with something similar, but not identical. I've been told this is probably
-> ok but there has been whinging in the past about whether debugfs represents
-> an ABI or not.
-> 
-> This is the first time I've looked at adding trace events so apologies
-> for any obvious mistakes made as I haven't been keeping a close eye on all
-> the tracing discussions describing How Things Should Be Done. checkpatch
-> throws major wobblies about this patchset, but it's consistent with the
-> style of other events so I ignored it. The "To:" list is based taken from
-> another tracepoint mail, if there is a specific list I should have used,
-> feel free to slap with clue stick. All comments indicating whether this is
-> generally useful and how it might be improved are welcome.
+This patch adds anonymous and file backed filters to the clear_refs interface.
+echo 1 > /proc/PID/clear_refs resets the bits on all pages
+echo 2 > /proc/PID/clear_refs resets the bits on anonymous pages only
+echo 3 > /proc/PID/clear_refs resets the bits on file backed pages only
+Any other value is ignored
+---
 
+Signed-off-by: Moussa A. Ba <moussa.a.ba@gmail.com>
+Signed-off-by: Jared E. Hulbert <jaredeh@gmail.com>
+Acked-by: David Rientjes <rientjes@google.com>
 
-(Adding some other tracing + slab allocator/kmemtrace people in Cc)
+--- a/Documentation/filesystems/proc.txt	2009-07-20 17:29:11.000000000 -0700
++++ b/Documentation/filesystems/proc.txt	2009-07-27 16:58:05.000000000 -0700
+@@ -375,6 +375,18 @@ of memory currently marked as referenced
+  This file is only present if the CONFIG_MMU kernel configuration option is
+  enabled.
 
++The /proc/PID/clear_refs is used to reset the PG_Referenced and ACCESSED/YOUNG
++bits on both physical and virtual pages associated with a process.
++To clear the bits for all the pages associated with the process
++    > echo 1 > /proc/PID/clear_refs
++
++To clear the bits for the anonymous pages associated with the process
++    > echo 2 > /proc/PID/clear_refs
++
++To clear the bits for the file mapped pages associated with the process
++    > echo 3 > /proc/PID/clear_refs
++Any other value written to /proc/PID/clear_refs will have no effect.
++
+  1.2 Kernel data
+  ---------------
+
+--- a/fs/proc/task_mmu.c	2009-07-21 14:30:01.000000000 -0700
++++ b/fs/proc/task_mmu.c	2009-07-27 17:05:25.000000000 -0700
+@@ -462,6 +462,10 @@ static int clear_refs_pte_range(pmd_t *
+  	return 0;
+  }
+
++#define CLEAR_REFS_ALL 1
++#define CLEAR_REFS_ANON 2
++#define CLEAR_REFS_MAPPED 3
++
+  static ssize_t clear_refs_write(struct file *file, const char __user * buf,
+  				size_t count, loff_t * ppos)
+  {
+@@ -469,13 +473,15 @@ static ssize_t clear_refs_write(struct f
+  	char buffer[PROC_NUMBUF], *end;
+  	struct mm_struct *mm;
+  	struct vm_area_struct *vma;
++	int type;
+
+  	memset(buffer, 0, sizeof(buffer));
+  	if (count > sizeof(buffer) - 1)
+  		count = sizeof(buffer) - 1;
+  	if (copy_from_user(buffer, buf, count))
+  		return -EFAULT;
+-	if (!simple_strtol(buffer, &end, 0))
++	type = simple_strtol(buffer, &end, 0);
++	if (type < CLEAR_REFS_ALL || type > CLEAR_REFS_MAPPED)
+  		return -EINVAL;
+  	if (*end == '\n')
+  		end++;
+@@ -491,9 +497,23 @@ static ssize_t clear_refs_write(struct f
+  		down_read(&mm->mmap_sem);
+  		for (vma = mm->mmap; vma; vma = vma->vm_next) {
+  			clear_refs_walk.private = vma;
+-			if (!is_vm_hugetlb_page(vma))
+-				walk_page_range(vma->vm_start, vma->vm_end,
+-						&clear_refs_walk);
++			if (is_vm_hugetlb_page(vma))
++				continue;
++			/*
++			 * Writing 1 to /proc/pid/clear_refs affects all pages.
++			 *
++			 * Writing 2 to /proc/pid/clear_refs only affects
++			 * Anonymous pages.
++			 *
++			 * Writing 3 to /proc/pid/clear_refs only affects file
++			 * mapped pages.
++			 */
++			if (type == CLEAR_REFS_ANON && vma->vm_file)
++				continue;
++			if (type == CLEAR_REFS_MAPPED && !vma->vm_file)
++				continue;
++			walk_page_range(vma->vm_start, vma->vm_end,
++					&clear_refs_walk);
+  		}
+  		flush_tlb_mm(mm);
+  		up_read(&mm->mmap_sem);
