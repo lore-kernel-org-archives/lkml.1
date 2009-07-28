@@ -1,78 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbZG1KEG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753063AbZG1KEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752969AbZG1KEG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 06:04:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbZG1KEF
+	id S1753063AbZG1KEQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 06:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbZG1KEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 06:04:05 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:57293 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752003AbZG1KEF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 06:04:05 -0400
-Date: Tue, 28 Jul 2009 12:04:04 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jens Rosenboom <jens.rosenboom@freenet.ag>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Oops when writing to /sys/block/ram0/queue/max_sectors_kb
-Message-ID: <20090728100404.GU4148@kernel.dk>
-References: <1248363032.7237.48.camel@fnki-nb00130> <20090728070711.GN4148@kernel.dk> <20090728093057.GJ21919@bo.mcbone.net>
+	Tue, 28 Jul 2009 06:04:14 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33483 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752993AbZG1KEL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 06:04:11 -0400
+Message-ID: <2c1ca41fbc03aeab347be61920e222b1.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <877hxti405.fsf@basil.nowhere.org>
+References: <20090715182320.39B5.A69D9226@jp.fujitsu.com>
+    <20090728161813.f2fefd29.kamezawa.hiroyu@jp.fujitsu.com>
+    <877hxti405.fsf@basil.nowhere.org>
+Date: Tue, 28 Jul 2009 19:04:07 +0900 (JST)
+Subject: Re: [BUGFIX] set_mempolicy(MPOL_INTERLEAV) N_HIGH_MEMORY aware
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       "Miao Xie" <miaox@cn.fujitsu.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Christoph Lameter" <cl@linux-foundation.org>,
+       "Paul Menage" <menage@google.com>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Yasunori Goto" <y-goto@jp.fujitsu.com>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       "David Rientjes" <rientjes@google.com>,
+       "Lee Schermerhorn" <lee.schermerhorn@hp.com>,
+       "linux-mm" <linux-mm@kvack.org>, "LKML" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090728093057.GJ21919@bo.mcbone.net>
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 28 2009, Jens Rosenboom wrote:
-> On Tue, Jul 28, 2009 at 09:07:11AM +0200, Jens Axboe wrote:
-> [...]
-> > Looks like this will hit nonrot/merge/etc store functions after we
-> > exposed these sysfs knobs for non-request_fn drivers too. Can you try
-> > the below? Should fix all of them up.
-> > 
-> > diff --git a/block/blk-core.c b/block/blk-core.c
-> > index 4b45435..a0c340d 100644
-> > --- a/block/blk-core.c
-> > +++ b/block/blk-core.c
-> > @@ -575,13 +575,6 @@ blk_init_queue_node(request_fn_proc *rfn, spinlock_t *lock, int node_id)
-> >  		return NULL;
-> >  	}
-> >  
-> > -	/*
-> > -	 * if caller didn't supply a lock, they get per-queue locking with
-> > -	 * our embedded lock
-> > -	 */
-> > -	if (!lock)
-> > -		lock = &q->__queue_lock;
-> > -
-> >  	q->request_fn		= rfn;
-> >  	q->prep_rq_fn		= NULL;
-> >  	q->unplug_fn		= generic_unplug_device;
-> > diff --git a/block/blk-settings.c b/block/blk-settings.c
-> > index bd582a7..8a3ea3b 100644
-> > --- a/block/blk-settings.c
-> > +++ b/block/blk-settings.c
-> > @@ -165,6 +165,13 @@ void blk_queue_make_request(struct request_queue *q, make_request_fn *mfn)
-> >  	blk_set_default_limits(&q->limits);
-> >  
-> >  	/*
-> > +	 * If the caller didn't supply a lock, fall back to our embedded
-> > +	 * per-queue locks
-> > +	 */
-> > +	if (!q->queue_lock)
-> > +		q->queue_lock = &q->__queue_lock;
-> > +
-> > +	/*
-> >  	 * by default assume old behaviour and bounce for any highmem page
-> >  	 */
-> >  	blk_queue_bounce_limit(q, BLK_BOUNCE_HIGH);
-> 
-> Works for me, no more Oopses.
+Andi Kleen wrote:
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> writes:
+>
+>> tested on x86-64/fake NUMA and ia64/NUMA.
+>> (That ia64 is a host which orignal bug report used.)
+>>
+>> Maybe this is bigger patch than expected, but NODEMASK_ALLOC() will be a
+>> way
+>> to go, anyway. (even if CPUMASK_ALLOC is not used anyware yet..)
+>> Kosaki tested this on ia64 NUMA. thanks.
+>
+> Note that low/high memory support in NUMA policy is only partial
+> anyways, e.g. the VMA based policy only supports a single zone. That
+> was by design choice and because NUMA has a lot of issues on 32bit due
+> to the limited address space and is not widely used.
+>
+> So small fixes are ok but I wouldn't go to large effort to fix NUMA
+> policy on 32bit.
+>
+ya, maybe you mention to something related to policy_zone.
+It's checked only in bind code now. (from before 2.6.30..)
+The bug was accessing NODE_DATA(nid), which is NULL.
+(All possible node doesn't have pgdat)
 
-Thanks for confirming, I've queued it up for next 2.6.31-rc pull
-request.
+Thanks,
+-Kame
 
--- 
-Jens Axboe
 
