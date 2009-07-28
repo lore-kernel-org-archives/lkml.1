@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074AbZG1NOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbZG1NQl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754074AbZG1NOi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 09:14:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbZG1NOi
+	id S1754091AbZG1NQl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 09:16:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbZG1NQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 09:14:38 -0400
-Received: from server1.wserver.cz ([82.113.45.157]:43251 "EHLO
-	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753524AbZG1NOh (ORCPT
+	Tue, 28 Jul 2009 09:16:41 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49329 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750848AbZG1NQk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 09:14:37 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Alexander Viro <viro@zeniv.linux.org.uk>
-Cc: linux-fsdevel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 1/1] UIO: unbreak uio.h userspace compilation
-Date: Tue, 28 Jul 2009 15:14:37 +0200
-Message-Id: <1248786877-10571-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+	Tue, 28 Jul 2009 09:16:40 -0400
+Date: Tue, 28 Jul 2009 14:17:40 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Oliver Neukum <oliver@neukum.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
+Subject: Re: linux-next: manual merge of the ttydev tree with the
+ usb.current tree
+Message-ID: <20090728141740.44d53b68@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090728223504.6a6ae8e7.sfr@canb.auug.org.au>
+References: <20090728140110.7cfe7c22.sfr@canb.auug.org.au>
+	<20090728112608.09a494e0@lxorguk.ukuu.org.uk>
+	<200907281410.41449.oliver@neukum.org>
+	<20090728132911.03ff78ea@lxorguk.ukuu.org.uk>
+	<20090728223504.6a6ae8e7.sfr@canb.auug.org.au>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To avoid userspace build failures such as:
-.../linux/uio.h:37: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘iov_length’
-.../linux/uio.h:47: error: expected declaration specifiers or ‘...’ before ‘size_t’
-move one uio declaration inside a __KERNEL__ block and use __kernel_size_t
-instead of size_t for iov_length (it's inlined and used in userspace already).
+On Tue, 28 Jul 2009 22:35:04 +1000
+Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- include/linux/uio.h |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+> Hi Alan,
+> 
+> On Tue, 28 Jul 2009 13:29:11 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> >
+> > I need to look at the actual diff, but the combination looks completely
+> > bogus unless I'm misreading the fixup which is possible.
+> 
+> Below is the actual patch from the usb.current tree.
 
-diff --git a/include/linux/uio.h b/include/linux/uio.h
-index b7fe138..9b2623c 100644
---- a/include/linux/uio.h
-+++ b/include/linux/uio.h
-@@ -42,16 +42,18 @@ struct kvec {
-  * segment lengths have been validated.  Because the individual lengths can
-  * overflow a size_t when added together.
-  */
--static inline size_t iov_length(const struct iovec *iov, unsigned long nr_segs)
-+static inline __kernel_size_t iov_length(const struct iovec *iov, unsigned long nr_segs)
- {
- 	unsigned long seg;
--	size_t ret = 0;
-+	__kernel_size_t ret = 0;
- 
- 	for (seg = 0; seg < nr_segs; seg++)
- 		ret += iov[seg].iov_len;
- 	return ret;
- }
- 
-+#ifdef __KERNEL__
- unsigned long iov_shorten(struct iovec *iov, unsigned long nr_segs, size_t to);
-+#endif
- 
- #endif
--- 
-1.6.3.3
+Thanks - ok that is probably safe. The change I was worried about (the
+error paths not adjusting port->count are ok as it gets zeroed within the
+mutex)
 
+Not sure its safe versus hangup but neither was the old code 8)
+
+Oliver: I'll send you an alternative patch later today/tomorrow that uses
+the ASYNC flags.
+
+Alan
