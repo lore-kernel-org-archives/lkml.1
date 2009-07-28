@@ -1,128 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752735AbZG1Iq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751873AbZG1IvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752735AbZG1Iq3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 04:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752345AbZG1Iq2
+	id S1751873AbZG1IvJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 04:51:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbZG1IvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 04:46:28 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:52923 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751949AbZG1Iq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 04:46:27 -0400
-Date: Tue, 28 Jul 2009 18:46:13 +1000
-From: Anton Blanchard <anton@samba.org>
-To: a.p.zijlstra@chello.nl, mingo@elte.hu, paulus@samba.org,
-       fweisbec@gmail.com
-Cc: rdreier@cisco.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: perf_counter: Track all mmaps, heap and stack extensions
-Message-ID: <20090728084612.GA4603@kryten>
+	Tue, 28 Jul 2009 04:51:08 -0400
+Received: from mail-bw0-f221.google.com ([209.85.218.221]:50988 "EHLO
+	mail-bw0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750918AbZG1IvF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 04:51:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=ID6B0Pflo4Stm5TOSV++EDFJXYghGsdUSmYTwfI80mlW/diotsan1y8Wnvqc+n8Wfw
+         yYu1Ij35WcmERE2sMpXIh+mD24pFqbNd5y1huU92i8jMkDC+FQGbZHym/EoPOcvt6mVd
+         tCr9X3F7R/2+QnUtOxMcG3bMoHG9jONfjDqMs=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Reply-To: eranian@gmail.com
+In-Reply-To: <7c86c4470907272213w2ee57080re50dd22a4d73a7e0@mail.gmail.com>
+References: <7c86c4470907270951i48886d56g90bc198f26bb0716@mail.gmail.com>
+	 <20090727212514.GA25386@basil.fritz.box>
+	 <7c86c4470907272213w2ee57080re50dd22a4d73a7e0@mail.gmail.com>
+Date: Tue, 28 Jul 2009 10:51:04 +0200
+Message-ID: <7c86c4470907280151p13e275c0q27a51897351e8e0@mail.gmail.com>
+Subject: Re: perf_counters issue with self-sampling threads
+From: stephane eranian <eranian@googlemail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: perfmon2-devel <perfmon2-devel@lists.sourceforge.net>,
+       Maynard Johnson <mpjohn@us.ibm.com>,
+       Robert Richter <robert.richter@amd.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
+       Carl Love <cel@us.ibm.com>, Corey J Ashford <cjashfor@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Reposting the message because of stupid MIME-encoding error on my part]
+Andi,
 
-Hi,
+Looks like SIGPROF is calling _group_send_sig_info(), so I
+think it is subject to the same problem.
 
-Right now perf_counter only logs executable mmaps. While this is enough
-for instruction profiling, at some stage we are also going to want
-to do data profiling. This will require us to log non-executable mmaps as
-well as stack and heap extensions.
+I have built a perfmon example to test the problem, it is
+relatively easy to trigger by simply self-monitoring a thread
+which is using setitimer() and thus SIGALRM. You just have
+to increase the timer frequency. At some point, the SIGPROF
+signal will be delivered to the wrong thread.
 
-Why would we care about heap and stack? A few examples:
+One thing I did not mention in my message is that one would think
+that forcing a specific signal via F_SETSIG could be a workaround
+if that signal is synchronous, e.g., SIGFPE. F_SETSIG looks like a
+Linux extension but it does not solve the problem. Linux determines
+the mode of delivery not on the signal number but on the code path,
+it seems. If you use F_ASYNC+F_SETOWN, then this is systematically
+considered asynchronous regardless of the signal used.If you come from
+traps.c, then the signal is delivered to the correct thread. All of this does
+not look unreasonable to me.
 
-1. We can monitor TLB miss rates to suggest what regions of memory should be
-   put into hugepages.
- 
-2. We can look into various TLB miss issues. On PowerPC a data prefetch
-   that goes to an unmapped area takes a significant amount of time (it
-   initiates a tablewalk that may take 40+ cycles). With accurate mapping
-   data we can catch areas of code with bad prefetch instructions.
+I believe sampling, be it timer or PMU-based, may be
+a special case here. We want asynchronous + specific
+thread (only) when self- sampling.
 
-Taking it a bit further, since in some sense perf_counter is a channel for
-getting events out to userspace, I wonder if we could solve Roland's RDMA
-address space unmap issue with perf_counter:
+An alternative may be to choose the pending queue based on the signal type
+(synchronous, asynchronous). Then, we could use F_SETSIG to override
+SIGIO with a synchronous signal instead. But I am not a POSIX signal expert.
 
-http://patchwork.kernel.org/patch/37267/
 
-Below is a dodgy hack I've been using to prototype tracking of all mmaps
-and heap/stack extensions. Naturally we'd want a perf_counter feature to turn
-this on and keep instruction profiles more compact. We'd also want munmap
-events.
+On Jul 27, 2009 11:25 PM, "Andi Kleen" <andi@firstfloor.org> wrote:
 
-The only tricky part is having to set start_stack before we call expand_stack
-for the first time, so we can easily identify it in perf_counter_mmap_event.
 
-Thoughts?
+I wonder how SIGPROF gets around the same problem, or is it
+buggy too?
 
-Anton
----
+-Andi
 
-Index: linux.trees.git/mm/mmap.c
-===================================================================
---- linux.trees.git.orig/mm/mmap.c	2009-07-27 10:45:37.000000000 +1000
-+++ linux.trees.git/mm/mmap.c	2009-07-27 10:49:18.000000000 +1000
-@@ -1680,6 +1680,7 @@ static int expand_downwards(struct vm_ar
- 		if (!error) {
- 			vma->vm_start = address;
- 			vma->vm_pgoff -= grow;
-+			perf_counter_mmap(vma);
- 		}
- 	}
- 	anon_vma_unlock(vma);
-@@ -2071,6 +2072,7 @@ unsigned long do_brk(unsigned long addr,
- 	vma->vm_page_prot = vm_get_page_prot(flags);
- 	vma_link(mm, vma, prev, rb_link, rb_parent);
- out:
-+	perf_counter_mmap(vma);
- 	mm->total_vm += len >> PAGE_SHIFT;
- 	if (flags & VM_LOCKED) {
- 		if (!mlock_vma_pages_range(vma, addr, addr + len))
-Index: linux.trees.git/include/linux/perf_counter.h
-===================================================================
---- linux.trees.git.orig/include/linux/perf_counter.h	2009-07-27 10:48:58.000000000 +1000
-+++ linux.trees.git/include/linux/perf_counter.h	2009-07-27 10:49:18.000000000 +1000
-@@ -702,8 +702,7 @@ extern void __perf_counter_mmap(struct v
- 
- static inline void perf_counter_mmap(struct vm_area_struct *vma)
- {
--	if (vma->vm_flags & VM_EXEC)
--		__perf_counter_mmap(vma);
-+	__perf_counter_mmap(vma);
- }
- 
- extern void perf_counter_comm(struct task_struct *tsk);
-Index: linux.trees.git/kernel/perf_counter.c
-===================================================================
---- linux.trees.git.orig/kernel/perf_counter.c	2009-07-27 10:48:58.000000000 +1000
-+++ linux.trees.git/kernel/perf_counter.c	2009-07-27 10:49:18.000000000 +1000
-@@ -3142,6 +3142,14 @@ static void perf_counter_mmap_event(stru
- 		if (!vma->vm_mm) {
- 			name = strncpy(tmp, "[vdso]", sizeof(tmp));
- 			goto got_name;
-+		} else if (vma->vm_start <= vma->vm_mm->start_brk &&
-+				vma->vm_end >= vma->vm_mm->brk) {
-+			name = strncpy(tmp, "[heap]", sizeof(tmp));
-+			goto got_name;
-+		} else if (vma->vm_start <= vma->vm_mm->start_stack &&
-+				vma->vm_end >= vma->vm_mm->start_stack) {
-+			name = strncpy(tmp, "[stack]", sizeof(tmp));
-+			goto got_name;
- 		}
- 
- 		name = strncpy(tmp, "//anon", sizeof(tmp));
-Index: linux.trees.git/fs/exec.c
-===================================================================
---- linux.trees.git.orig/fs/exec.c	2009-07-27 10:49:17.000000000 +1000
-+++ linux.trees.git/fs/exec.c	2009-07-27 10:49:18.000000000 +1000
-@@ -631,6 +631,7 @@ int setup_arg_pages(struct linux_binprm 
- #else
- 	stack_base = vma->vm_start - EXTRA_STACK_VM_PAGES * PAGE_SIZE;
- #endif
-+	current->mm->start_stack = bprm->p;
- 	ret = expand_stack(vma, stack_base);
- 	if (ret)
- 		ret = -EFAULT;
+--
+ak@linux.intel.com -- Speaking for myself only.
