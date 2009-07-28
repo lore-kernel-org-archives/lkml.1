@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbZG1KnD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753743AbZG1Kmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753836AbZG1KnD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 06:43:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbZG1KnA
+	id S1753743AbZG1Kmj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 06:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbZG1Kmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 06:43:00 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:32836 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753560AbZG1Km6 (ORCPT
+	Tue, 28 Jul 2009 06:42:37 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:43328 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753675AbZG1Kmd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 06:42:58 -0400
-From: Adrian Hunter <adrian.hunter@nokia.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>,
-       Adrian Hunter <adrian.hunter@nokia.com>,
-       linux-omap Mailing List <linux-omap@vger.kernel.org>,
-       Pierre Ossman <pierre@ossman.eu>,
-       Denis Karpov <ext-denis.2.karpov@nokia.com>,
-       Matt Fleming <matt@console-pimps.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Date: Tue, 28 Jul 2009 13:42:30 +0300
-Message-Id: <20090728104230.2371.51318.sendpatchset@ahunter-laptop>
-In-Reply-To: <20090728103834.2371.65809.sendpatchset@ahunter-laptop>
-References: <20090728103834.2371.65809.sendpatchset@ahunter-laptop>
-Subject: [PATCH V2 32/32] ARM: OMAP: RX51: set MMC capabilities and power-saving flag
-X-OriginalArrivalTime: 28 Jul 2009 10:42:01.0170 (UTC) FILETIME=[09FB5320:01CA0F70]
-X-Nokia-AV: Clean
+	Tue, 28 Jul 2009 06:42:33 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kdesu broken
+References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
+	<87bpn7mzli.fsf@devron.myhome.or.jp>
+	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
+	<873a8iqqgv.fsf@devron.myhome.or.jp>
+	<20090727142303.41096bf5@lxorguk.ukuu.org.uk>
+	<877hxujkuv.fsf@devron.myhome.or.jp>
+	<20090727145805.690afe5d@lxorguk.ukuu.org.uk>
+	<87fxci6ub9.fsf@devron.myhome.or.jp> <20090727161424.GA4233@skywalker>
+	<20090727174252.2d987830@lxorguk.ukuu.org.uk>
+	<20090727171213.GB4233@skywalker> <87skgikjr8.fsf@devron.myhome.or.jp>
+	<20090727222010.1a5efb7b@lxorguk.ukuu.org.uk>
+	<87r5w19xsb.fsf@devron.myhome.or.jp>
+	<20090728112203.7b70adba@lxorguk.ukuu.org.uk>
+Date: Tue, 28 Jul 2009 19:42:28 +0900
+In-Reply-To: <20090728112203.7b70adba@lxorguk.ukuu.org.uk> (Alan Cox's message
+	of "Tue, 28 Jul 2009 11:22:03 +0100")
+Message-ID: <87prblt7fv.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 3f9b4e7c30012bbad4f5cf678f2e02e943000b67 Mon Sep 17 00:00:00 2001
-From: Adrian Hunter <adrian.hunter@nokia.com>
-Date: Fri, 10 Jul 2009 10:32:44 +0300
-Subject: [PATCH] ARM: OMAP: RX51: set MMC capabilities and power-saving flag
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-Specify MMC capabilities and set the power-saving flag
-for RX51.
+>> Just a quick hack though. Is this wrong/unpreferable way?
+>> 
+>> n_tty_read() checks the pending buffer and consume it before
+>> input_available_p().
+>
+> That won't change the fact that the process could have exited.
 
-Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
----
- arch/arm/mach-omap2/board-rx51-peripherals.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+Yes.
 
-diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
-index 9a0bf67..d2ce938 100644
---- a/arch/arm/mach-omap2/board-rx51-peripherals.c
-+++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
-@@ -19,6 +19,7 @@
- #include <linux/delay.h>
- #include <linux/regulator/machine.h>
- #include <linux/gpio.h>
-+#include <linux/mmc/host.h>
- 
- #include <mach/mcspi.h>
- #include <mach/mux.h>
-@@ -102,6 +103,8 @@ static struct twl4030_hsmmc_info mmc[] = {
- 		.cover_only	= true,
- 		.gpio_cd	= 160,
- 		.gpio_wp	= -EINVAL,
-+		.power_saving	= true,
-+		.caps		= MMC_CAP_SD,
- 	},
- 	{
- 		.name		= "internal",
-@@ -109,6 +112,8 @@ static struct twl4030_hsmmc_info mmc[] = {
- 		.wires		= 8,
- 		.gpio_cd	= -EINVAL,
- 		.gpio_wp	= -EINVAL,
-+		.power_saving	= true,
-+		.caps		= MMC_CAP_MMC | MMC_CAP_NONREMOVABLE,
- 	},
- 	{}	/* Terminator */
- };
+> You can fix the -ENXIO reporting that way (and it is basically what
+> the EOFPENDING/EOF patch did), but the only way I can see to fix the
+> assumption that the process exit means all the data is in the ldisc
+> the other end ready to use is to actually to make the close() path
+> block - but with some kind of limits to prevent deadlocks.
+
+I thought, to check in n_tty_read() may guarantee that tty->buf (slave
+guarantee to sent to tty->buf) is consumed by master side.
+
+I hoped this tty->buf works as the pending data in ldisc.
+
+Thanks.
 -- 
-1.5.6.3
-
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
