@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755354AbZG1SH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbZG1SM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755354AbZG1SH2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 14:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755307AbZG1SH1
+	id S1755366AbZG1SM2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 14:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755350AbZG1SM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 14:07:27 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1268 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753242AbZG1SH0 (ORCPT
+	Tue, 28 Jul 2009 14:12:27 -0400
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:58078 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755321AbZG1SM1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 14:07:26 -0400
-Subject: [PATCH] MAINTAINERS: Add networking wireless drivers section
-From: Joe Perches <joe@perches.com>
-To: David Miller <davem@davemloft.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Cc: julia@diku.dk, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, linux-wireless@vger.kernel.org
-In-Reply-To: <20090728.103044.179053537.davem@davemloft.net>
-References: <Pine.LNX.4.64.0907281753540.28189@ask.diku.dk>
-	 <20090728.103044.179053537.davem@davemloft.net>
-Content-Type: text/plain
-Date: Tue, 28 Jul 2009 11:06:37 -0700
-Message-Id: <1248804397.18284.5.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Jul 2009 14:12:27 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+Content-type: text/plain; CHARSET=US-ASCII
+Date: Tue, 28 Jul 2009 12:11:51 -0600
+From: Andreas Dilger <adilger@sun.com>
+Subject: Re: [PATCH 0/2] implement uid mount option for ext2 and ext3, try 3
+In-reply-to: <1248778903-3596-1-git-send-email-ludwig.nussel@suse.de>
+To: Ludwig Nussel <ludwig.nussel@suse.de>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Message-id: <20090728181151.GZ4231@webber.adilger.int>
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+References: <1248348991-849-1-git-send-email-ludwig.nussel@suse.de>
+ <1248778903-3596-1-git-send-email-ludwig.nussel@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-28 at 10:30 -0700, David Miller wrote:
-> Wireless patches need to be CC:'d to linux-wireless so that
-> John Linville can notice and pick them up
+On Jul 28, 2009  13:01 +0200, Ludwig Nussel wrote:
+> As suggested by  Andreas Dilger, map _all_ files to the specified
+> uid and also store the specified uid on disk instead of using root.
+> Optionally the uid used on disk can be specified.
+> 
+> Additionally the gid can be changed too now in the same way as the
+> uid.
 
-Signed-off-by: Joe Perches <joe@perches.com>
+Looks good, you can add:
+Acked-by: Andreas Dilger <adilger@sun.com>
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index ebc2691..0574aad 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4186,6 +4186,12 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6.git
- S:	Odd Fixes
- F:	drivers/net/
- 
-+NETWORKING WIRELESS DRIVERS
-+L:	linux-wireless@vger.kernel.org
-+T:	git git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git
-+S:	Odd Fixes
-+F:	drivers/net/wireless/
-+
- NETXEN (1/10) GbE SUPPORT
- P:	Dhananjay Phadke
- M:	dhananjay@netxen.com
+Please also submit the same patch for ext4.
 
+Cheers, Andreas
+--
+Andreas Dilger
+Sr. Staff Engineer, Lustre Group
+Sun Microsystems of Canada, Inc.
 
