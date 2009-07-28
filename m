@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbZG2ADa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756184AbZG2ABy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754750AbZG2ADa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 20:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbZG1Xtg
+	id S1756184AbZG2ABy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 20:01:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbZG1Xto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:49:36 -0400
-Received: from kroah.org ([198.145.64.141]:35633 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:49:44 -0400
+Received: from kroah.org ([198.145.64.141]:35665 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753185AbZG1Xtg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:49:36 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:52 2009
-Message-Id: <20090728234152.003836704@mini.kroah.org>
+	id S1753016AbZG1Xtm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:49:42 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:53 2009
+Message-Id: <20090728234153.049587639@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:40:34 -0700
+Date: Tue, 28 Jul 2009 16:40:41 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Matt Mackall <mpm@selenic.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [patch 05/71] fix RCU-callback-after-kmem_cache_destroy problem in sl[aou]b
+       Oliver Neukum <oliver@neukum.org>
+Subject: [patch 12/71] USB: fix uninitialised variable in ti_do_download
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=fix-rcu-callback-after-kmem_cache_destroy-problem-in-slb.patch
+Content-Disposition: inline; filename=usb-fix-uninitialised-variable-in-ti_do_download.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,58 +30,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+From: Oliver Neukum <oliver@neukum.org>
 
-commit 7ed9f7e5db58c6e8c2b4b738a75d5dcd8e17aad5 upstream.
+commit 87ea8c887905d8b13ae90b537117592ed027632a upstream.
 
-Jesper noted that kmem_cache_destroy() invokes synchronize_rcu() rather than
-rcu_barrier() in the SLAB_DESTROY_BY_RCU case, which could result in RCU
-callbacks accessing a kmem_cache after it had been destroyed.
-
-Acked-by: Matt Mackall <mpm@selenic.com>
-Reported-by: Jesper Dangaard Brouer <hawk@comx.dk>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Signed-off-by: Oliver Neukum <oliver@neukum.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/slab.c |    2 +-
- mm/slob.c |    2 ++
- mm/slub.c |    2 ++
- 3 files changed, 5 insertions(+), 1 deletion(-)
+ drivers/usb/serial/ti_usb_3410_5052.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -2592,7 +2592,7 @@ void kmem_cache_destroy(struct kmem_cach
- 	}
+--- a/drivers/usb/serial/ti_usb_3410_5052.c
++++ b/drivers/usb/serial/ti_usb_3410_5052.c
+@@ -1659,7 +1659,7 @@ static int ti_do_download(struct usb_dev
+ 	u8 cs = 0;
+ 	int done;
+ 	struct ti_firmware_header *header;
+-	int status;
++	int status = 0;
+ 	int len;
  
- 	if (unlikely(cachep->flags & SLAB_DESTROY_BY_RCU))
--		synchronize_rcu();
-+		rcu_barrier();
- 
- 	__kmem_cache_destroy(cachep);
- 	mutex_unlock(&cache_chain_mutex);
---- a/mm/slob.c
-+++ b/mm/slob.c
-@@ -590,6 +590,8 @@ EXPORT_SYMBOL(kmem_cache_create);
- 
- void kmem_cache_destroy(struct kmem_cache *c)
- {
-+	if (c->flags & SLAB_DESTROY_BY_RCU)
-+		rcu_barrier();
- 	slob_free(c, sizeof(struct kmem_cache));
- }
- EXPORT_SYMBOL(kmem_cache_destroy);
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2490,6 +2490,8 @@ static inline int kmem_cache_close(struc
-  */
- void kmem_cache_destroy(struct kmem_cache *s)
- {
-+	if (s->flags & SLAB_DESTROY_BY_RCU)
-+		rcu_barrier();
- 	down_write(&slub_lock);
- 	s->refcount--;
- 	if (!s->refcount) {
+ 	for (pos = sizeof(struct ti_firmware_header); pos < size; pos++)
 
 
