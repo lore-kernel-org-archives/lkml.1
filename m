@@ -1,222 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbZG1RVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbZG1RSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755219AbZG1RVf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 13:21:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755070AbZG1RSg
+	id S1755162AbZG1RSt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 13:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbZG1RSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 13:18:36 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:35592 "EHLO
-	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753533AbZG1RSH (ORCPT
+	Tue, 28 Jul 2009 13:18:47 -0400
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:31666
+	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753716AbZG1RSR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 13:18:07 -0400
+	Tue, 28 Jul 2009 13:18:17 -0400
 X-SpamScore: 3
 X-BigFish: VPS3(zzzz1202hzzz32i203h87h43j62h)
 X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KNI5DR-04-A2S-01
+X-WSS-ID: 0KNI5DT-03-BM9-01
 From: Robert Richter <robert.richter@amd.com>
 To: Ingo Molnar <mingo@elte.hu>
 CC: LKML <linux-kernel@vger.kernel.org>,
        oprofile-list <oprofile-list@lists.sourceforge.net>,
        Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 16/26] x86/oprofile: Moving nmi_cpu_switch() in nmi_int.c
-Date: Tue, 28 Jul 2009 19:07:16 +0200
-Message-ID: <1248800846-25422-17-git-send-email-robert.richter@amd.com>
+Subject: [PATCH 23/26] oprofile: Adding switch counter to oprofile statistic variables
+Date: Tue, 28 Jul 2009 19:07:23 +0200
+Message-ID: <1248800846-25422-24-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1248800846-25422-1-git-send-email-robert.richter@amd.com>
 References: <1248800846-25422-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 28 Jul 2009 17:17:49.0931 (UTC) FILETIME=[5558ABB0:01CA0FA7]
+X-OriginalArrivalTime: 28 Jul 2009 17:17:51.0353 (UTC) FILETIME=[5631A690:01CA0FA7]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch moves some code in nmi_int.c to get a single separate
-multiplexing code section.
+This patch moves the multiplexing switch counter from x86 code to
+common oprofile statistic variables. Now the value will be available
+and usable for all architectures. The initialization and
+incrementation also moved to common code.
 
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- arch/x86/oprofile/nmi_int.c |  144 +++++++++++++++++++++----------------------
- 1 files changed, 70 insertions(+), 74 deletions(-)
+ arch/x86/oprofile/nmi_int.c       |    7 -------
+ drivers/oprofile/oprof.c          |    7 +++++--
+ drivers/oprofile/oprofile_stats.c |    9 ++-------
+ drivers/oprofile/oprofile_stats.h |    1 +
+ 4 files changed, 8 insertions(+), 16 deletions(-)
 
 diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
-index f38c5cf..998c7dc 100644
+index da6d2ab..7b3362f 100644
 --- a/arch/x86/oprofile/nmi_int.c
 +++ b/arch/x86/oprofile/nmi_int.c
-@@ -97,6 +97,29 @@ static void nmi_cpu_save_registers(struct op_msrs *msrs)
- 	}
- }
+@@ -34,11 +34,6 @@ static DEFINE_PER_CPU(unsigned long, saved_lvtpc);
+ /* 0 == registered but off, 1 == registered and on */
+ static int nmi_enabled = 0;
  
-+static void nmi_cpu_start(void *dummy)
-+{
-+	struct op_msrs const *msrs = &__get_cpu_var(cpu_msrs);
-+	model->start(msrs);
-+}
-+
-+static int nmi_start(void)
-+{
-+	on_each_cpu(nmi_cpu_start, NULL, 1);
-+	return 0;
-+}
-+
-+static void nmi_cpu_stop(void *dummy)
-+{
-+	struct op_msrs const *msrs = &__get_cpu_var(cpu_msrs);
-+	model->stop(msrs);
-+}
-+
-+static void nmi_stop(void)
-+{
-+	on_each_cpu(nmi_cpu_stop, NULL, 1);
-+}
-+
- #ifdef CONFIG_OPROFILE_EVENT_MULTIPLEX
- 
- static DEFINE_PER_CPU(int, switch_index);
-@@ -171,6 +194,53 @@ static void nmi_cpu_restore_mpx_registers(struct op_msrs *msrs)
- 	}
- }
- 
-+static void nmi_cpu_switch(void *dummy)
-+{
-+	int cpu = smp_processor_id();
-+	int si = per_cpu(switch_index, cpu);
-+	struct op_msrs *msrs = &per_cpu(cpu_msrs, cpu);
-+
-+	nmi_cpu_stop(NULL);
-+	nmi_cpu_save_mpx_registers(msrs);
-+
-+	/* move to next set */
-+	si += model->num_counters;
-+	if ((si > model->num_virt_counters) || (counter_config[si].count == 0))
-+		per_cpu(switch_index, cpu) = 0;
-+	else
-+		per_cpu(switch_index, cpu) = si;
-+
-+	model->switch_ctrl(model, msrs);
-+	nmi_cpu_restore_mpx_registers(msrs);
-+
-+	nmi_cpu_start(NULL);
-+}
-+
-+
-+/*
-+ * Quick check to see if multiplexing is necessary.
-+ * The check should be sufficient since counters are used
-+ * in ordre.
-+ */
-+static int nmi_multiplex_on(void)
-+{
-+	return counter_config[model->num_counters].count ? 0 : -EINVAL;
-+}
-+
-+static int nmi_switch_event(void)
-+{
-+	if (!model->switch_ctrl)
-+		return -ENOSYS;		/* not implemented */
-+	if (nmi_multiplex_on() < 0)
-+		return -EINVAL;		/* not necessary */
-+
-+	on_each_cpu(nmi_cpu_switch, NULL, 1);
-+
-+	atomic_inc(&multiplex_counter);
-+
-+	return 0;
-+}
-+
- #else
- 
- inline int op_x86_phys_to_virt(int phys) { return phys; }
-@@ -325,29 +395,6 @@ static void nmi_shutdown(void)
- 	put_cpu_var(cpu_msrs);
- }
- 
--static void nmi_cpu_start(void *dummy)
--{
--	struct op_msrs const *msrs = &__get_cpu_var(cpu_msrs);
--	model->start(msrs);
--}
 -
--static int nmi_start(void)
--{
--	on_each_cpu(nmi_cpu_start, NULL, 1);
--	return 0;
--}
+-#ifdef CONFIG_OPROFILE_EVENT_MULTIPLEX
+-extern atomic_t multiplex_counter;
+-#endif
 -
--static void nmi_cpu_stop(void *dummy)
--{
--	struct op_msrs const *msrs = &__get_cpu_var(cpu_msrs);
--	model->stop(msrs);
--}
+ struct op_counter_config counter_config[OP_MAX_COUNTER];
+ 
+ /* common functions */
+@@ -253,8 +248,6 @@ static int nmi_switch_event(void)
+ 
+ 	on_each_cpu(nmi_cpu_switch, NULL, 1);
+ 
+-	atomic_inc(&multiplex_counter);
 -
--static void nmi_stop(void)
--{
--	on_each_cpu(nmi_cpu_stop, NULL, 1);
--}
--
- static int nmi_create_files(struct super_block *sb, struct dentry *root)
- {
- 	unsigned int i;
-@@ -379,57 +426,6 @@ static int nmi_create_files(struct super_block *sb, struct dentry *root)
  	return 0;
  }
  
+diff --git a/drivers/oprofile/oprof.c b/drivers/oprofile/oprof.c
+index a48294a..dc8a042 100644
+--- a/drivers/oprofile/oprof.c
++++ b/drivers/oprofile/oprof.c
+@@ -107,8 +107,11 @@ static void stop_switch_worker(void)
+ 
+ static void switch_worker(struct work_struct *work)
+ {
+-	if (!oprofile_ops.switch_events())
+-		start_switch_worker();
++	if (oprofile_ops.switch_events())
++		return;
++
++	atomic_inc(&oprofile_stats.multiplex_counter);
++	start_switch_worker();
+ }
+ 
+ /* User inputs in ms, converts to jiffies */
+diff --git a/drivers/oprofile/oprofile_stats.c b/drivers/oprofile/oprofile_stats.c
+index 77a57a6..61689e8 100644
+--- a/drivers/oprofile/oprofile_stats.c
++++ b/drivers/oprofile/oprofile_stats.c
+@@ -16,9 +16,6 @@
+ #include "cpu_buffer.h"
+ 
+ struct oprofile_stat_struct oprofile_stats;
 -#ifdef CONFIG_OPROFILE_EVENT_MULTIPLEX
--
--static void nmi_cpu_switch(void *dummy)
--{
--	int cpu = smp_processor_id();
--	int si = per_cpu(switch_index, cpu);
--	struct op_msrs *msrs = &per_cpu(cpu_msrs, cpu);
--
--	nmi_cpu_stop(NULL);
--	nmi_cpu_save_mpx_registers(msrs);
--
--	/* move to next set */
--	si += model->num_counters;
--	if ((si > model->num_virt_counters) || (counter_config[si].count == 0))
--		per_cpu(switch_index, cpu) = 0;
--	else
--		per_cpu(switch_index, cpu) = si;
--
--	model->switch_ctrl(model, msrs);
--	nmi_cpu_restore_mpx_registers(msrs);
--
--	nmi_cpu_start(NULL);
--}
--
--
--/*
-- * Quick check to see if multiplexing is necessary.
-- * The check should be sufficient since counters are used
-- * in ordre.
-- */
--static int nmi_multiplex_on(void)
--{
--	return counter_config[model->num_counters].count ? 0 : -EINVAL;
--}
--
--static int nmi_switch_event(void)
--{
--	if (!model->switch_ctrl)
--		return -ENOSYS;		/* not implemented */
--	if (nmi_multiplex_on() < 0)
--		return -EINVAL;		/* not necessary */
--
--	on_each_cpu(nmi_cpu_switch, NULL, 1);
--
--	atomic_inc(&multiplex_counter);
--
--	return 0;
--}
--
+-atomic_t multiplex_counter;
 -#endif
--
- #ifdef CONFIG_SMP
- static int oprofile_cpu_notifier(struct notifier_block *b, unsigned long action,
- 				 void *data)
+ 
+ void oprofile_reset_stats(void)
+ {
+@@ -37,9 +34,7 @@ void oprofile_reset_stats(void)
+ 	atomic_set(&oprofile_stats.sample_lost_no_mapping, 0);
+ 	atomic_set(&oprofile_stats.event_lost_overflow, 0);
+ 	atomic_set(&oprofile_stats.bt_lost_no_mapping, 0);
+-#ifdef CONFIG_OPROFILE_EVENT_MULTIPLEX
+-	atomic_set(&multiplex_counter, 0);
+-#endif
++	atomic_set(&oprofile_stats.multiplex_counter, 0);
+ }
+ 
+ 
+@@ -84,6 +79,6 @@ void oprofile_create_stats_files(struct super_block *sb, struct dentry *root)
+ 		&oprofile_stats.bt_lost_no_mapping);
+ #ifdef CONFIG_OPROFILE_EVENT_MULTIPLEX
+ 	oprofilefs_create_ro_atomic(sb, dir, "multiplex_counter",
+-		&multiplex_counter);
++		&oprofile_stats.multiplex_counter);
+ #endif
+ }
+diff --git a/drivers/oprofile/oprofile_stats.h b/drivers/oprofile/oprofile_stats.h
+index 3da0d08..0b54e46 100644
+--- a/drivers/oprofile/oprofile_stats.h
++++ b/drivers/oprofile/oprofile_stats.h
+@@ -17,6 +17,7 @@ struct oprofile_stat_struct {
+ 	atomic_t sample_lost_no_mapping;
+ 	atomic_t bt_lost_no_mapping;
+ 	atomic_t event_lost_overflow;
++	atomic_t multiplex_counter;
+ };
+ 
+ extern struct oprofile_stat_struct oprofile_stats;
 -- 
 1.6.3.3
 
