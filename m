@@ -1,35 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753162AbZG1OW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751505AbZG1OXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753162AbZG1OW3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 10:22:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbZG1OW2
+	id S1751505AbZG1OXV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 10:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751136AbZG1OXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 10:22:28 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:55708 "EHLO
+	Tue, 28 Jul 2009 10:23:20 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:55715 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753061AbZG1OW1 (ORCPT
+	by vger.kernel.org with ESMTP id S1750961AbZG1OXU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 10:22:27 -0400
+	Tue, 28 Jul 2009 10:23:20 -0400
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Samuel Ortiz <sameo@linux.intel.com>
 Cc: linux-kernel@vger.kernel.org,
        Mark Brown <broonie@opensource.wolfsonmicro.com>,
        Liam Girdwood <lrg@slimlogic.co.uk>
-Subject: [PATCH 19/23] regulator: Add WM831x EPE support
-Date: Tue, 28 Jul 2009 15:22:23 +0100
-Message-Id: <1248790943-26768-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] regulator: Add WM831x DC-DC boost convertor support
+Date: Tue, 28 Jul 2009 15:23:16 +0100
+Message-Id: <1248790996-26872-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1248702372-29534-18-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <1248702372-29534-18-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <1248702372-29534-19-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1248702372-29534-19-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The WM831x series of PMICs provide two optional outputs for
-controlling external devices during power sequencing, for example
-an external regulator. While in essence these are GPIOs the
-hardware presents them as DCDCs with very little control so
-provide support via the regulator API in that fashion.
+The WM831x series of PMICs include a single DC-DC boost convertor.
+This adds basic support for this convertor.
 
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Cc: Liam Girdwood <lrg@slimlogic.co.uk>
@@ -37,44 +34,67 @@ Cc: Liam Girdwood <lrg@slimlogic.co.uk>
 
 Support missing platform data for the chip as a whole.
 
- drivers/regulator/wm831x-dcdc.c |   88 +++++++++++++++++++++++++++++++++++++++
- 1 files changed, 88 insertions(+), 0 deletions(-)
+ drivers/regulator/wm831x-dcdc.c |  131 +++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 131 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/regulator/wm831x-dcdc.c b/drivers/regulator/wm831x-dcdc.c
-index fa5126e..88a7dba 100644
+index 88a7dba..2eefc1a 100644
 --- a/drivers/regulator/wm831x-dcdc.c
 +++ b/drivers/regulator/wm831x-dcdc.c
-@@ -613,6 +613,89 @@ static struct platform_driver wm831x_buckp_driver = {
- 	},
+@@ -614,6 +614,132 @@ static struct platform_driver wm831x_buckp_driver = {
  };
  
-+/*
-+ * External Power Enable
-+ *
-+ * These aren't actually DCDCs but look like them in hardware so share
-+ * code.
+ /*
++ * DCDC boost convertors
 + */
 +
-+#define WM831X_EPE_BASE 6
++static int wm831x_boostp_get_status(struct regulator_dev *rdev)
++{
++	struct wm831x_dcdc *dcdc = rdev_get_drvdata(rdev);
++	struct wm831x *wm831x = dcdc->wm831x;
++	int ret;
 +
-+static struct regulator_ops wm831x_epe_ops = {
++	/* First, check for errors */
++	ret = wm831x_reg_read(wm831x, WM831X_DCDC_UV_STATUS);
++	if (ret < 0)
++		return ret;
++
++	if (ret & (1 << rdev_get_id(rdev))) {
++		dev_dbg(wm831x->dev, "DCDC%d under voltage\n",
++			rdev_get_id(rdev) + 1);
++		return REGULATOR_STATUS_ERROR;
++	}
++
++	/* Is the regulator on? */
++	ret = wm831x_reg_read(wm831x, WM831X_DCDC_STATUS);
++	if (ret < 0)
++		return ret;
++	if (ret & (1 << rdev_get_id(rdev)))
++		return REGULATOR_STATUS_ON;
++	else
++		return REGULATOR_STATUS_OFF;
++}
++
++static struct regulator_ops wm831x_boostp_ops = {
++	.get_status = wm831x_boostp_get_status,
++
 +	.is_enabled = wm831x_dcdc_is_enabled,
 +	.enable = wm831x_dcdc_enable,
 +	.disable = wm831x_dcdc_disable,
-+	.get_status = wm831x_dcdc_get_status,
 +};
 +
-+static __devinit int wm831x_epe_probe(struct platform_device *pdev)
++static __devinit int wm831x_boostp_probe(struct platform_device *pdev)
 +{
 +	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
 +	struct wm831x_pdata *pdata = wm831x->dev->platform_data;
-+	int id = pdev->id % ARRAY_SIZE(pdata->epe);
++	int id = pdev->id % ARRAY_SIZE(pdata->dcdc);
 +	struct wm831x_dcdc *dcdc;
-+	int ret;
++	struct resource *res;
++	int ret, irq;
 +
-+	dev_dbg(&pdev->dev, "Probing EPE%d\n", id + 1);
++	dev_dbg(&pdev->dev, "Probing DCDC%d\n", id + 1);
 +
-+	if (pdata == NULL || pdata->epe[id] == NULL)
++	if (pdata == NULL || pdata->dcdc[id] == NULL)
 +		return -ENODEV;
 +
 +	dcdc = kzalloc(sizeof(struct wm831x_dcdc), GFP_KERNEL);
@@ -85,70 +105,91 @@ index fa5126e..88a7dba 100644
 +
 +	dcdc->wm831x = wm831x;
 +
-+	/* For current parts this is correct; probably need to revisit
-+	 * in future.
-+	 */
-+	snprintf(dcdc->name, sizeof(dcdc->name), "EPE%d", id + 1);
++	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
++	if (res == NULL) {
++		dev_err(&pdev->dev, "No I/O resource\n");
++		ret = -EINVAL;
++		goto err;
++	}
++	dcdc->base = res->start;
++
++	snprintf(dcdc->name, sizeof(dcdc->name), "DCDC%d", id + 1);
 +	dcdc->desc.name = dcdc->name;
-+	dcdc->desc.id = id + WM831X_EPE_BASE; /* Offset in DCDC registers */
-+	dcdc->desc.ops = &wm831x_epe_ops;
++	dcdc->desc.id = id;
 +	dcdc->desc.type = REGULATOR_VOLTAGE;
++	dcdc->desc.ops = &wm831x_boostp_ops;
 +	dcdc->desc.owner = THIS_MODULE;
 +
 +	dcdc->regulator = regulator_register(&dcdc->desc, &pdev->dev,
-+					     pdata->epe[id], dcdc);
++					     pdata->dcdc[id], dcdc);
 +	if (IS_ERR(dcdc->regulator)) {
 +		ret = PTR_ERR(dcdc->regulator);
-+		dev_err(wm831x->dev, "Failed to register EPE%d: %d\n",
++		dev_err(wm831x->dev, "Failed to register DCDC%d: %d\n",
 +			id + 1, ret);
 +		goto err;
++	}
++
++	irq = platform_get_irq_byname(pdev, "UV");
++	ret = wm831x_request_irq(wm831x, irq, wm831x_dcdc_uv_irq,
++				 IRQF_TRIGGER_RISING, dcdc->name,
++				 dcdc);
++	if (ret != 0) {
++		dev_err(&pdev->dev, "Failed to request UV IRQ %d: %d\n",
++			irq, ret);
++		goto err_regulator;
 +	}
 +
 +	platform_set_drvdata(pdev, dcdc);
 +
 +	return 0;
 +
++err_regulator:
++	regulator_unregister(dcdc->regulator);
 +err:
 +	kfree(dcdc);
 +	return ret;
 +}
 +
-+static __devexit int wm831x_epe_remove(struct platform_device *pdev)
++static __devexit int wm831x_boostp_remove(struct platform_device *pdev)
 +{
 +	struct wm831x_dcdc *dcdc = platform_get_drvdata(pdev);
++	struct wm831x *wm831x = dcdc->wm831x;
 +
++	wm831x_free_irq(wm831x, platform_get_irq_byname(pdev, "UV"), dcdc);
 +	regulator_unregister(dcdc->regulator);
 +	kfree(dcdc);
 +
 +	return 0;
 +}
 +
-+static struct platform_driver wm831x_epe_driver = {
-+	.probe = wm831x_epe_probe,
-+	.remove = __devexit_p(wm831x_epe_remove),
++static struct platform_driver wm831x_boostp_driver = {
++	.probe = wm831x_boostp_probe,
++	.remove = __devexit_p(wm831x_boostp_remove),
 +	.driver		= {
-+		.name	= "wm831x-epe",
++		.name	= "wm831x-boostp",
 +	},
 +};
 +
- static int __init wm831x_dcdc_init(void)
- {
- 	int ret;
-@@ -624,12 +707,17 @@ static int __init wm831x_dcdc_init(void)
++/*
+  * External Power Enable
+  *
+  * These aren't actually DCDCs but look like them in hardware so share
+@@ -707,6 +833,10 @@ static int __init wm831x_dcdc_init(void)
  	if (ret != 0)
  		pr_err("Failed to register WM831x BUCKP driver: %d\n", ret);
  
-+	ret = platform_driver_register(&wm831x_epe_driver);
++	ret = platform_driver_register(&wm831x_boostp_driver);
 +	if (ret != 0)
-+		pr_err("Failed to register WM831x EPE driver: %d\n", ret);
++		pr_err("Failed to register WM831x BOOST driver: %d\n", ret);
 +
- 	return 0;
- }
- subsys_initcall(wm831x_dcdc_init);
- 
+ 	ret = platform_driver_register(&wm831x_epe_driver);
+ 	if (ret != 0)
+ 		pr_err("Failed to register WM831x EPE driver: %d\n", ret);
+@@ -718,6 +848,7 @@ subsys_initcall(wm831x_dcdc_init);
  static void __exit wm831x_dcdc_exit(void)
  {
-+	platform_driver_unregister(&wm831x_epe_driver);
+ 	platform_driver_unregister(&wm831x_epe_driver);
++	platform_driver_unregister(&wm831x_boostp_driver);
  	platform_driver_unregister(&wm831x_buckp_driver);
  	platform_driver_unregister(&wm831x_buckv_driver);
  }
