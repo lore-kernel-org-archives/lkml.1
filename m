@@ -1,154 +1,291 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbZG1Xt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbZG1Xtr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753253AbZG1Xt2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753185AbZG1Xt2
+	id S1753859AbZG1Xtr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:49:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbZG1Xtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:49:28 -0400
-Received: from kroah.org ([198.145.64.141]:35605 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:49:46 -0400
+Received: from kroah.org ([198.145.64.141]:35674 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752930AbZG1Xt1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:49:27 -0400
-Date: Tue, 28 Jul 2009 16:47:56 -0700
+	id S1753750AbZG1Xto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:49:44 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:53 2009
+Message-Id: <20090728234153.376866725@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Tue, 28 Jul 2009 16:40:43 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/71] [00/@num@] 2.6.30.4-stable review
-Message-ID: <20090728234756.GA11917@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: [patch 14/71] USB: EHCI: use the new clear_tt_buffer interface
+References: <20090728234029.868717854@mini.kroah.org>
+Content-Disposition: inline; filename=usb-ehci-use-the-new-clear_tt_buffer-interface.patch
+In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
-This is the start of the stable review cycle for the 2.6.30.4 release.
-There are 71 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+------------------
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+From: Alan Stern <stern@rowland.harvard.edu>
 
-Responses should be made by Thursday, July 30, 22:00:00 UTC.
-Anything received after that time might be too late.
+commit 914b701280a76f96890ad63eb0fa99bf204b961c upstream.
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.30.4-rc1.gz
-and the diffstat can be found below.
+This patch (as1256) changes ehci-hcd and all the other drivers in the
+EHCI family to make use of the new clear_tt_buffer callbacks.  When a
+Clear-TT-Buffer request is in progress for a QH, the QH is not allowed
+to be linked into the async schedule until the request is finished.
+At that time, if there are any URBs queued for the QH, it is linked
+into the async schedule.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/usb/host/ehci-au1xxx.c |    2 
+ drivers/usb/host/ehci-fsl.c    |    2 
+ drivers/usb/host/ehci-hcd.c    |    2 
+ drivers/usb/host/ehci-ixp4xx.c |    2 
+ drivers/usb/host/ehci-orion.c  |    2 
+ drivers/usb/host/ehci-pci.c    |    2 
+ drivers/usb/host/ehci-ppc-of.c |    2 
+ drivers/usb/host/ehci-ps3.c    |    2 
+ drivers/usb/host/ehci-q.c      |   91 ++++++++++++++++++++++++++++++-----------
+ drivers/usb/host/ehci.h        |    2 
+ 10 files changed, 86 insertions(+), 23 deletions(-)
+
+--- a/drivers/usb/host/ehci-au1xxx.c
++++ b/drivers/usb/host/ehci-au1xxx.c
+@@ -112,6 +112,8 @@ static const struct hc_driver ehci_au1xx
+ 	.bus_resume		= ehci_bus_resume,
+ 	.relinquish_port	= ehci_relinquish_port,
+ 	.port_handed_over	= ehci_port_handed_over,
++
++	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
+ };
+ 
+ static int ehci_hcd_au1xxx_drv_probe(struct platform_device *pdev)
+--- a/drivers/usb/host/ehci-fsl.c
++++ b/drivers/usb/host/ehci-fsl.c
+@@ -324,6 +324,8 @@ static const struct hc_driver ehci_fsl_h
+ 	.bus_resume = ehci_bus_resume,
+ 	.relinquish_port = ehci_relinquish_port,
+ 	.port_handed_over = ehci_port_handed_over,
++
++	.clear_tt_buffer_complete = ehci_clear_tt_buffer_complete,
+ };
+ 
+ static int ehci_fsl_drv_probe(struct platform_device *pdev)
+--- a/drivers/usb/host/ehci.h
++++ b/drivers/usb/host/ehci.h
+@@ -353,7 +353,9 @@ struct ehci_qh {
+ 	unsigned short		period;		/* polling interval */
+ 	unsigned short		start;		/* where polling starts */
+ #define NO_FRAME ((unsigned short)~0)			/* pick new start */
++
+ 	struct usb_device	*dev;		/* access to TT */
++	unsigned		clearing_tt:1;	/* Clear-TT-Buf in progress */
+ } __attribute__ ((aligned (32)));
+ 
+ /*-------------------------------------------------------------------------*/
+--- a/drivers/usb/host/ehci-hcd.c
++++ b/drivers/usb/host/ehci-hcd.c
+@@ -1003,6 +1003,8 @@ idle_timeout:
+ 		schedule_timeout_uninterruptible(1);
+ 		goto rescan;
+ 	case QH_STATE_IDLE:		/* fully unlinked */
++		if (qh->clearing_tt)
++			goto idle_timeout;
+ 		if (list_empty (&qh->qtd_list)) {
+ 			qh_put (qh);
+ 			break;
+--- a/drivers/usb/host/ehci-ixp4xx.c
++++ b/drivers/usb/host/ehci-ixp4xx.c
+@@ -60,6 +60,8 @@ static const struct hc_driver ixp4xx_ehc
+ #endif
+ 	.relinquish_port	= ehci_relinquish_port,
+ 	.port_handed_over	= ehci_port_handed_over,
++
++	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
+ };
+ 
+ static int ixp4xx_ehci_probe(struct platform_device *pdev)
+--- a/drivers/usb/host/ehci-orion.c
++++ b/drivers/usb/host/ehci-orion.c
+@@ -164,6 +164,8 @@ static const struct hc_driver ehci_orion
+ 	.bus_resume = ehci_bus_resume,
+ 	.relinquish_port = ehci_relinquish_port,
+ 	.port_handed_over = ehci_port_handed_over,
++
++	.clear_tt_buffer_complete = ehci_clear_tt_buffer_complete,
+ };
+ 
+ static void __init
+--- a/drivers/usb/host/ehci-pci.c
++++ b/drivers/usb/host/ehci-pci.c
+@@ -408,6 +408,8 @@ static const struct hc_driver ehci_pci_h
+ 	.bus_resume =		ehci_bus_resume,
+ 	.relinquish_port =	ehci_relinquish_port,
+ 	.port_handed_over =	ehci_port_handed_over,
++
++	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
+ };
+ 
+ /*-------------------------------------------------------------------------*/
+--- a/drivers/usb/host/ehci-ppc-of.c
++++ b/drivers/usb/host/ehci-ppc-of.c
+@@ -78,6 +78,8 @@ static const struct hc_driver ehci_ppc_o
+ #endif
+ 	.relinquish_port	= ehci_relinquish_port,
+ 	.port_handed_over	= ehci_port_handed_over,
++
++	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
+ };
+ 
+ 
+--- a/drivers/usb/host/ehci-ps3.c
++++ b/drivers/usb/host/ehci-ps3.c
+@@ -74,6 +74,8 @@ static const struct hc_driver ps3_ehci_h
+ #endif
+ 	.relinquish_port	= ehci_relinquish_port,
+ 	.port_handed_over	= ehci_port_handed_over,
++
++	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
+ };
+ 
+ static int ps3_ehci_probe(struct ps3_system_bus_device *dev)
+--- a/drivers/usb/host/ehci-q.c
++++ b/drivers/usb/host/ehci-q.c
+@@ -139,6 +139,55 @@ qh_refresh (struct ehci_hcd *ehci, struc
+ 
+ /*-------------------------------------------------------------------------*/
+ 
++static void qh_link_async(struct ehci_hcd *ehci, struct ehci_qh *qh);
++
++static void ehci_clear_tt_buffer_complete(struct usb_hcd *hcd,
++		struct usb_host_endpoint *ep)
++{
++	struct ehci_hcd		*ehci = hcd_to_ehci(hcd);
++	struct ehci_qh		*qh = ep->hcpriv;
++	unsigned long		flags;
++
++	spin_lock_irqsave(&ehci->lock, flags);
++	qh->clearing_tt = 0;
++	if (qh->qh_state == QH_STATE_IDLE && !list_empty(&qh->qtd_list)
++			&& HC_IS_RUNNING(hcd->state))
++		qh_link_async(ehci, qh);
++	spin_unlock_irqrestore(&ehci->lock, flags);
++}
++
++static void ehci_clear_tt_buffer(struct ehci_hcd *ehci, struct ehci_qh *qh,
++		struct urb *urb, u32 token)
++{
++
++	/* If an async split transaction gets an error or is unlinked,
++	 * the TT buffer may be left in an indeterminate state.  We
++	 * have to clear the TT buffer.
++	 *
++	 * Note: this routine is never called for Isochronous transfers.
++	 */
++	if (urb->dev->tt && !usb_pipeint(urb->pipe) && !qh->clearing_tt) {
++#ifdef DEBUG
++		struct usb_device *tt = urb->dev->tt->hub;
++		dev_dbg(&tt->dev,
++			"clear tt buffer port %d, a%d ep%d t%08x\n",
++			urb->dev->ttport, urb->dev->devnum,
++			usb_pipeendpoint(urb->pipe), token);
++#endif /* DEBUG */
++		if (!ehci_is_TDI(ehci)
++				|| urb->dev->tt->hub !=
++				   ehci_to_hcd(ehci)->self.root_hub) {
++			if (usb_hub_clear_tt_buffer(urb) == 0)
++				qh->clearing_tt = 1;
++		} else {
++
++			/* REVISIT ARC-derived cores don't clear the root
++			 * hub TT buffer in this way...
++			 */
++		}
++	}
++}
++
+ static int qtd_copy_status (
+ 	struct ehci_hcd *ehci,
+ 	struct urb *urb,
+@@ -195,28 +244,6 @@ static int qtd_copy_status (
+ 			usb_pipeendpoint (urb->pipe),
+ 			usb_pipein (urb->pipe) ? "in" : "out",
+ 			token, status);
+-
+-		/* if async CSPLIT failed, try cleaning out the TT buffer */
+-		if (status != -EPIPE
+-				&& urb->dev->tt
+-				&& !usb_pipeint(urb->pipe)
+-				&& ((token & QTD_STS_MMF) != 0
+-					|| QTD_CERR(token) == 0)
+-				&& (!ehci_is_TDI(ehci)
+-			                || urb->dev->tt->hub !=
+-					   ehci_to_hcd(ehci)->self.root_hub)) {
+-#ifdef DEBUG
+-			struct usb_device *tt = urb->dev->tt->hub;
+-			dev_dbg (&tt->dev,
+-				"clear tt buffer port %d, a%d ep%d t%08x\n",
+-				urb->dev->ttport, urb->dev->devnum,
+-				usb_pipeendpoint (urb->pipe), token);
+-#endif /* DEBUG */
+-			/* REVISIT ARC-derived cores don't clear the root
+-			 * hub TT buffer in this way...
+-			 */
+-			usb_hub_clear_tt_buffer(urb);
+-		}
+ 	}
+ 
+ 	return status;
+@@ -407,9 +434,16 @@ qh_completions (struct ehci_hcd *ehci, s
+ 			/* qh unlinked; token in overlay may be most current */
+ 			if (state == QH_STATE_IDLE
+ 					&& cpu_to_hc32(ehci, qtd->qtd_dma)
+-						== qh->hw_current)
++						== qh->hw_current) {
+ 				token = hc32_to_cpu(ehci, qh->hw_token);
+ 
++				/* An unlink may leave an incomplete
++				 * async transaction in the TT buffer.
++				 * We have to clear it.
++				 */
++				ehci_clear_tt_buffer(ehci, qh, urb, token);
++			}
++
+ 			/* force halt for unlinked or blocked qh, so we'll
+ 			 * patch the qh later and so that completions can't
+ 			 * activate it while we "know" it's stopped.
+@@ -435,6 +469,13 @@ halt:
+ 					&& (qtd->hw_alt_next
+ 						& EHCI_LIST_END(ehci)))
+ 				last_status = -EINPROGRESS;
++
++			/* As part of low/full-speed endpoint-halt processing
++			 * we must clear the TT buffer (11.17.5).
++			 */
++			if (unlikely(last_status != -EINPROGRESS &&
++					last_status != -EREMOTEIO))
++				ehci_clear_tt_buffer(ehci, qh, urb, token);
+ 		}
+ 
+ 		/* if we're removing something not at the queue head,
+@@ -864,6 +905,10 @@ static void qh_link_async (struct ehci_h
+ 	__hc32		dma = QH_NEXT(ehci, qh->qh_dma);
+ 	struct ehci_qh	*head;
+ 
++	/* Don't link a QH if there's a Clear-TT-Buffer pending */
++	if (unlikely(qh->clearing_tt))
++		return;
++
+ 	/* (re)start the async schedule? */
+ 	head = ehci->async;
+ 	timer_action_done (ehci, TIMER_ASYNC_OFF);
 
 
-thanks,
-
-greg k-h
-
---------------
-
- Documentation/RCU/rculist_nulls.txt                |    7 ++-
- Makefile                                           |    2 +-
- arch/parisc/include/asm/system.h                   |    4 +-
- arch/parisc/include/asm/tlbflush.h                 |   14 ++--
- arch/parisc/kernel/cache.c                         |   23 +++--
- arch/parisc/kernel/pci-dma.c                       |   12 ++-
- arch/powerpc/sysdev/mpic.c                         |   29 ++++---
- arch/x86/boot/video-vga.c                          |   44 +++++++---
- arch/x86/include/asm/fixmap.h                      |   10 +-
- arch/x86/include/asm/io_apic.h                     |    2 +
- arch/x86/include/asm/uaccess.h                     |    4 +-
- arch/x86/include/asm/uaccess_64.h                  |   10 +-
- arch/x86/kernel/apic/io_apic.c                     |   14 +---
- arch/x86/kernel/mfgpt_32.c                         |    2 +-
- arch/x86/kernel/setup.c                            |   13 +++
- arch/x86/mm/gup.c                                  |    9 ++-
- arch/x86/mm/srat_64.c                              |    6 +-
- arch/x86/pci/i386.c                                |    7 ++
- drivers/ata/libata-eh.c                            |    4 +
- drivers/char/vc_screen.c                           |    4 +
- drivers/hid/usbhid/hiddev.c                        |    4 +-
- drivers/hwmon/max6650.c                            |    1 +
- drivers/input/misc/wistron_btns.c                  |    9 ++
- drivers/isdn/gigaset/ev-layer.c                    |   44 +++++-----
- drivers/md/dm-raid1.c                              |    1 +
- drivers/mmc/host/mvsdio.c                          |    4 +-
- drivers/net/8139too.c                              |    1 +
- drivers/net/arm/ixp4xx_eth.c                       |    4 +-
- drivers/net/ehea/ehea_main.c                       |    2 +
- drivers/net/gianfar.c                              |    2 +
- drivers/net/plip.c                                 |    3 +
- drivers/net/ps3_gelic_net.c                        |    1 +
- drivers/net/ps3_gelic_wireless.c                   |    1 +
- drivers/net/smc91x.c                               |    1 +
- drivers/net/smsc911x.c                             |    1 +
- drivers/net/sunvnet.c                              |    2 +
- drivers/net/usb/kaweth.c                           |    3 +
- drivers/net/usb/pegasus.c                          |    3 +
- drivers/net/via-rhine.c                            |    1 +
- drivers/net/wireless/orinoco/main.c                |    3 +-
- drivers/scsi/sg.c                                  |    4 +
- drivers/scsi/zalon.c                               |    2 +-
- drivers/staging/rt2870/rt2870.h                    |    1 +
- .../rtl8187se/ieee80211/ieee80211_softmac_wx.c     |   12 ++--
- drivers/usb/core/devio.c                           |   57 +++++++------
- drivers/usb/core/hcd.h                             |    4 +
- drivers/usb/core/hub.c                             |   40 ++++++---
- drivers/usb/core/hub.h                             |    6 +-
- drivers/usb/core/message.c                         |   63 ++++++++++----
- drivers/usb/gadget/ether.c                         |   11 ++-
- drivers/usb/host/ehci-au1xxx.c                     |    2 +
- drivers/usb/host/ehci-fsl.c                        |    2 +
- drivers/usb/host/ehci-hcd.c                        |    2 +
- drivers/usb/host/ehci-ixp4xx.c                     |    2 +
- drivers/usb/host/ehci-orion.c                      |    2 +
- drivers/usb/host/ehci-pci.c                        |    2 +
- drivers/usb/host/ehci-ppc-of.c                     |    2 +
- drivers/usb/host/ehci-ps3.c                        |    2 +
- drivers/usb/host/ehci-q.c                          |   91 +++++++++++++++-----
- drivers/usb/host/ehci-sched.c                      |   12 ++-
- drivers/usb/host/ehci.h                            |    2 +
- drivers/usb/serial/ti_usb_3410_5052.c              |    3 +-
- fs/binfmt_elf.c                                    |    4 +-
- fs/bio.c                                           |   22 +++--
- fs/cifs/connect.c                                  |    1 +
- fs/cifs/dir.c                                      |    9 ++
- fs/ecryptfs/keystore.c                             |   13 +++
- fs/nfsd/vfs.c                                      |    3 +-
- fs/nilfs2/cpfile.c                                 |    5 +-
- fs/nilfs2/dat.c                                    |    9 --
- fs/nilfs2/segment.c                                |   30 ++-----
- fs/partitions/check.c                              |    2 +-
- include/linux/blkdev.h                             |    1 +
- include/linux/sched.h                              |    3 +-
- include/net/netfilter/nf_conntrack.h               |    4 +-
- kernel/freezer.c                                   |    7 ++
- kernel/sched.c                                     |    1 +
- kernel/sched_rt.c                                  |   18 ++++-
- kernel/trace/trace_functions.c                     |    2 +-
- mm/filemap.c                                       |    1 +
- mm/internal.h                                      |    4 +
- mm/nommu.c                                         |    3 +
- mm/page_alloc.c                                    |   26 +++++-
- mm/slab.c                                          |    2 +-
- mm/slob.c                                          |    2 +
- mm/slub.c                                          |    2 +
- mm/vmscan.c                                        |   11 ++-
- net/dsa/mv88e6xxx.c                                |    2 +-
- net/ipv4/netfilter/nf_nat_helper.c                 |   17 +++--
- net/netfilter/nf_conntrack_core.c                  |   36 +++++++--
- net/netfilter/nf_conntrack_proto_tcp.c             |    6 +-
- net/netfilter/nf_log.c                             |   22 +++--
- net/netfilter/xt_quota.c                           |    1 +
- net/netfilter/xt_rateest.c                         |    2 +-
- net/wireless/scan.c                                |    1 -
- sound/pci/ca0106/ca0106_main.c                     |    4 +-
- sound/pci/hda/patch_realtek.c                      |   33 ++++----
- sound/pci/hda/patch_sigmatel.c                     |    7 +-
- sound/pci/oxygen/virtuoso.c                        |    2 +
- sound/soc/codecs/wm8753.c                          |    2 +-
- sound/usb/usbaudio.c                               |   14 +++-
- 101 files changed, 648 insertions(+), 321 deletions(-)
