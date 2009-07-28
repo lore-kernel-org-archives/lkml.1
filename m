@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752898AbZG1JNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752287AbZG1JVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752898AbZG1JNT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 05:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751284AbZG1JNS
+	id S1752287AbZG1JVc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 05:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbZG1JVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 05:13:18 -0400
-Received: from mail-bw0-f221.google.com ([209.85.218.221]:57321 "EHLO
-	mail-bw0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750900AbZG1JNR (ORCPT
+	Tue, 28 Jul 2009 05:21:31 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34488 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750733AbZG1JVa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 05:13:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=GlZjnpNFRslTrLMAdD8nHG5/jE9Ioe6pLoYyXvbRhVIdd1FXG4gsE5x7woyGGDJlhp
-         7o4TNZpkYqx1QGEz3xXInHWTEGCq3gDIu8ugpVrboF7rdm718hF5T4o0k3cop3Ahv/Ek
-         3GRYXWifkMAorRlX4McstR7blHLkXxmLc45Go=
+	Tue, 28 Jul 2009 05:21:30 -0400
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: James Morris <jmorris@namei.org>, James Carter <jwcart2@tycho.nsa.gov>,
+       Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
+       Stephen Smalley <sds@tycho.nsa.gov>, spender@grsecurity.net,
+       Daniel J Walsh <dwalsh@redhat.com>, cl@linux-foundation.org,
+       Arjan van de Ven <arjan@infradead.org>, kees@outflux.net,
+       Chad Sellers <csellers@tresys.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, mingo@elte.hu
+Subject: Re: mmap_min_addr and your local LSM (ok, just SELinux)
+From: Andi Kleen <andi@firstfloor.org>
+References: <1248132223.2654.278.camel@localhost>
+	<alpine.LRH.2.00.0907211258110.32400@tundra.namei.org>
+	<1248187482.19456.90.camel@moss-lions.epoch.ncsc.mil>
+	<alpine.LRH.2.00.0907221953190.15799@tundra.namei.org>
+	<20090728011943.589176cb@lxorguk.ukuu.org.uk>
+Date: Tue, 28 Jul 2009 11:21:29 +0200
+In-Reply-To: <20090728011943.589176cb@lxorguk.ukuu.org.uk> (Alan Cox's message of "Tue, 28 Jul 2009 01:19:43 +0100")
+Message-ID: <87zlapgo2u.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Reply-To: eranian@gmail.com
-In-Reply-To: <20090728085635.GD15310@basil.fritz.box>
-References: <7c86c4470907270951i48886d56g90bc198f26bb0716@mail.gmail.com>
-	 <20090727212514.GA25386@basil.fritz.box>
-	 <7c86c4470907272213w2ee57080re50dd22a4d73a7e0@mail.gmail.com>
-	 <7c86c4470907280151p13e275c0q27a51897351e8e0@mail.gmail.com>
-	 <20090728085635.GD15310@basil.fritz.box>
-Date: Tue, 28 Jul 2009 11:13:16 +0200
-Message-ID: <7c86c4470907280213o66cbd069l1cc16089f9f07bf7@mail.gmail.com>
-Subject: Re: perf_counters issue with self-sampling threads
-From: stephane eranian <eranian@googlemail.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: perfmon2-devel <perfmon2-devel@lists.sourceforge.net>,
-       Maynard Johnson <mpjohn@us.ibm.com>,
-       Robert Richter <robert.richter@amd.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
-       Carl Love <cel@us.ibm.com>, Corey J Ashford <cjashfor@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi,
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-On Tue, Jul 28, 2009 at 10:56 AM, Andi Kleen<andi@firstfloor.org> wrote:
-> On Tue, Jul 28, 2009 at 10:51:04AM +0200, stephane eranian wrote:
->> [Reposting the message because of stupid MIME-encoding error on my part]
->> Andi,
->>
->> Looks like SIGPROF is calling _group_send_sig_info(), so I
->> think it is subject to the same problem.
->
-> So sounds like a whole class of signals can't be POSIX compliant.
->
+> A dumb question perhaps, but while addling my brain over the tty layer I
+> was wondering if for the specific case of jump through NULL (which seems
+> to be the most common but by no means only problem case that gets
+> exploited) is there any reason we can't set a default breakpoint for
 
-Well, the problem is that I don't where to find the POSIX spec that defines
-signal types and how they should be handled in multi-threaded programs.
-That would be a good starting point.
+You mean a hardware breakpoint? Hardware break points are a precious
+scarce resource. The people who rely on them would be likely
+unhappy if you take one way from them.
 
-> Likely others will run into the same problem.
->
-> Perhaps should define a new sigaction flag for this to make
-> it all explicit.
->
-That's probably a clean way of doing this.
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
