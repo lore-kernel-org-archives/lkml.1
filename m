@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753103AbZG1Ky1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751806AbZG1K7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753103AbZG1Ky1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 06:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZG1Ky1
+	id S1751806AbZG1K7w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 06:59:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbZG1K7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 06:54:27 -0400
-Received: from viefep16-int.chello.at ([62.179.121.36]:25287 "EHLO
-	viefep16-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752832AbZG1Ky0 (ORCPT
+	Tue, 28 Jul 2009 06:59:51 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:53927 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751320AbZG1K7u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 06:54:26 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: perf_counter: Track all mmaps, heap and stack extensions
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Anton Blanchard <anton@samba.org>
-Cc: mingo@elte.hu, paulus@samba.org, fweisbec@gmail.com, rdreier@cisco.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090728084612.GA4603@kryten>
-References: <20090728084612.GA4603@kryten>
-Content-Type: text/plain
-Date: Tue, 28 Jul 2009 12:57:02 +0200
-Message-Id: <1248778622.6987.2983.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Jul 2009 06:59:50 -0400
+Date: Tue, 28 Jul 2009 11:59:49 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] driver core: simplify platform_get_resource()
+Message-ID: <20090728105949.GA16458@rakim.wolfsonmicro.main>
+References: <1248718856-22287-1-git-send-email-vapier@gentoo.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1248718856-22287-1-git-send-email-vapier@gentoo.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-28 at 18:46 +1000, Anton Blanchard wrote:
-> Hi,
-> 
-> Right now perf_counter only logs executable mmaps. While this is enough
-> for instruction profiling, at some stage we are also going to want
-> to do data profiling. This will require us to log non-executable mmaps as
-> well as stack and heap extensions.
-> 
-> Why would we care about heap and stack? A few examples:
-> 
-> 1. We can monitor TLB miss rates to suggest what regions of memory should be
->    put into hugepages.
->  
-> 2. We can look into various TLB miss issues. On PowerPC a data prefetch
->    that goes to an unmapped area takes a significant amount of time (it
->    initiates a tablewalk that may take 40+ cycles). With accurate mapping
->    data we can catch areas of code with bad prefetch instructions.
+On Mon, Jul 27, 2009 at 02:20:56PM -0400, Mike Frysinger wrote:
+> The platform_get_resource() function takes a number for the desired index
+> into the resource array, but then does a for loop on the array to get to
+> that index.  Considering the array is linear, the loop overhead is just
+> that -- overhead.  So unless I missed something, convert it into an index
+> check and access the desired resource directly.  Resulting code makes a
+> lot more sense considering its purpose.
 
-Agreed.
+This showed up in linux-next for me today and is causing breakage on at
+least S3C64xx platforms since it changes the resource numbering when
+there's more than one resource type for a device:
 
-> Taking it a bit further, since in some sense perf_counter is a channel for
-> getting events out to userspace, I wonder if we could solve Roland's RDMA
-> address space unmap issue with perf_counter:
-> 
-> http://patchwork.kernel.org/patch/37267/
+> -	for (i = 0; i < dev->num_resources; i++) {
+> -		struct resource *r = &dev->resource[i];
+> -
+> -		if (type == resource_type(r) && num-- == 0)
+> +	if (num >= 0 && num < dev->num_resources) {
+> +		struct resource *r = &dev->resource[num];
+> +		if (type == resource_type(r))
 
-Yeah, saw some of that, Andrew has some good points there. Haven't had
-time to see the reply yet.
+Previously the resources were indexed within their type (so you'd get
+I/O resources 0, 1, ..., IRQ resources 0, 1, ... and so on) but now the
+index treats all the resources for a device as a single array, causing
+them to be renumbered for callers.
 
-Not sure its a good match, but if so, very nice.
-
-> Below is a dodgy hack I've been using to prototype tracking of all mmaps
-> and heap/stack extensions. Naturally we'd want a perf_counter feature to turn
-> this on and keep instruction profiles more compact. We'd also want munmap
-> events.
-
-I used to have an munmap hook in there at some point. We could restore
-that.
-
-> Thoughts?
-
-Seems like a good direction, go for it ;-)
-
-
+This causes drivers doing lookups by number to fail to find their
+resources and not probe, causing widespread breakage.  Reverting the
+patch fixes the problem.
