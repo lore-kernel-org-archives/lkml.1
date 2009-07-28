@@ -1,64 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbZG1Xzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbZG1XuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756105AbZG1Xzz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755899AbZG1Xzw
+	id S1754855AbZG1XuY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:50:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbZG1XuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:55:52 -0400
-Received: from kroah.org ([198.145.64.141]:35834 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754737AbZG1XuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:50:14 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:58 2009
-Message-Id: <20090728234158.412501982@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:41:15 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Andi Kleen <ak@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 46/71] x86-64: Fix bad_srat() to clear all state
-References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=x86-64-fix-bad_srat-to-clear-all-state.patch
-In-Reply-To: <20090728234756.GA11917@kroah.com>
+	Tue, 28 Jul 2009 19:50:20 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:57660 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754772AbZG1XuP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:50:15 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 29 Jul 2009 08:48:25 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: scgtrp@gmail.com, bugzilla-daemon@bugzilla.kernel.org,
+       bugme-daemon@bugzilla.kernel.org,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [Bugme-new] [Bug 13850] New: reading /proc/kcore causes oops
+Message-Id: <20090729084825.1363c880.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090728160527.1da52682.akpm@linux-foundation.org>
+References: <bug-13850-10286@http.bugzilla.kernel.org/>
+	<20090728160527.1da52682.akpm@linux-foundation.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.30-stable review patch.  If anyone has any objections, please let us know.
+On Tue, 28 Jul 2009 16:05:27 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-------------------
+> 
+> (switched to email.  Please respond via emailed reply-to-all, not via the
+> bugzilla web interface).
+> 
+> On Mon, 27 Jul 2009 03:19:11 GMT
+> bugzilla-daemon@bugzilla.kernel.org wrote:
+> 
+> > http://bugzilla.kernel.org/show_bug.cgi?id=13850
+> > 
+> >            Summary: reading /proc/kcore causes oops
+> >            Product: Other
+> >            Version: 2.5
+> >     Kernel Version: 2.6.30
+> >           Platform: All
+> >         OS/Version: Linux
+> >               Tree: Mainline
+> >             Status: NEW
+> >           Severity: normal
+> >           Priority: P1
+> >          Component: Other
+> >         AssignedTo: other_other@kernel-bugs.osdl.org
+> >         ReportedBy: scgtrp@gmail.com
+> >         Regression: No
+> > 
+> > 
+> > When trying to use an old trick for finding lost data by grep'ing /proc/kcore,
+> > I managed to oops my server's kernel. I tried again on my desktop with cat
+> > /proc/kcore >/dev/null. cat was killed, and a similar oops appeared in my dmesg
+> > which I managed to capture:
+> > 
+> > Jul 26 23:04:13 mike kernel: BUG: unable to handle kernel paging request at
+> > e07cf000
+> > Jul 26 23:04:13 mike kernel: IP: [<c0224dd1>] read_kcore+0x2c1/0x4b0
+> > Jul 26 23:04:13 mike kernel: *pde = 1b5f4067 *pte = 00000000 
+> > Jul 26 23:04:13 mike kernel: Oops: 0000 [#2] PREEMPT SMP 
+> > Jul 26 23:04:13 mike kernel: last sysfs file: /sys/power/state
+> > Jul 26 23:04:13 mike kernel: Modules linked in: ipv6 sg sd_mod fuse usb_storage
+> > usbhid hid snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device
+> > snd_pcm_oss snd_mixer_oss ppdev snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm
+> > snd_timer ohci_hcd parport_pc lp parport snd soundcore snd_page_alloc nvidia(P)
+> > agpgart k8temp ehci_hcd forcedeth i2c_nforce2 i2c_core usbcore evdev thermal
+> > processor fan button battery ac rtc_cmos rtc_core rtc_lib ext3 jbd mbcache
+> > ide_gd_mod ide_cd_mod cdrom sata_nv libata amd74xx ide_pci_generic ide_core
+> > scsi_mod
+> > Jul 26 23:04:13 mike kernel: 
+> > Jul 26 23:04:13 mike kernel: Pid: 4835, comm: cat Tainted: P      D   
+> > (2.6.30-ARCH #1) W3107
+> > Jul 26 23:04:13 mike kernel: EIP: 0060:[<c0224dd1>] EFLAGS: 00210286 CPU: 0
+> > Jul 26 23:04:13 mike kernel: EIP is at read_kcore+0x2c1/0x4b0
+> > Jul 26 23:04:13 mike kernel: EAX: ddb71ac0 EBX: 00001000 ECX: 00000400 EDX:
+> > e07d0000
+> > Jul 26 23:04:13 mike kernel: ESI: e07cf000 EDI: da20e000 EBP: d73fbf30 ESP:
+> > d73fbefc
+> > Jul 26 23:04:13 mike kernel: DS: 007b ES: 007b FS: 00d8 GS: 00e0 SS: 0068
+> > Jul 26 23:04:13 mike kernel: Process cat (pid: 4835, ti=d73fa000 task=d4b5cc00
+> > task.ti=d73fa000)
+> > Jul 26 23:04:13 mike kernel: Stack:
+> > Jul 26 23:04:13 mike kernel: da20e000 e07cf000 d73fbf90 00000000 09459000
+> > 00000000 00008000 00001000
+> > Jul 26 23:04:13 mike kernel: 00000000 6798ed89 ddaf0000 ce920c80 c0224b10
+> > fffffffb c0219e89 d73fbf90
+> > Jul 26 23:04:13 mike kernel: 09459000 00008000 d73fbf90 6798ed89 ce920c80
+> > 00008000 09459000 d73fbf80
+> > Jul 26 23:04:13 mike kernel: Call Trace:
+> > Jul 26 23:04:13 mike kernel: [<c0224b10>] ? read_kcore+0x0/0x4b0
+> > Jul 26 23:04:13 mike kernel: [<c0219e89>] ? proc_reg_read+0x79/0xc0
+> > Jul 26 23:04:13 mike kernel: [<c01d1b43>] ? vfs_read+0xc3/0x1a0
+> > Jul 26 23:04:13 mike kernel: [<c0219e10>] ? proc_reg_read+0x0/0xc0
+> > Jul 26 23:04:13 mike kernel: [<c01d1d28>] ? sys_read+0x58/0xb0
+> > Jul 26 23:04:13 mike kernel: [<c0103c73>] ? sysenter_do_call+0x12/0x28
+> > Jul 26 23:04:13 mike kernel: Code: 89 fb 0f 43 f2 89 ca 29 f2 29 f3 39 f9 0f 46
+> > da 29 5c 24 14 f6 40 0c 01 8d 14 33 75 19 89 d9 89 f7 c1 e9 02 2b 7c 24 04 03
+> > 3c 24 <f3> a5 89 d9 83 e1 03 74 02 f3 a4 8b 4c 24 14 8b 00 85 c9 74 0a 
+> > Jul 26 23:04:13 mike kernel: EIP: [<c0224dd1>] read_kcore+0x2c1/0x4b0 SS:ESP
+> > 0068:d73fbefc
+> > Jul 26 23:04:13 mike kernel: CR2: 00000000e07cf000
+> > Jul 26 23:04:13 mike kernel: ---[ end trace 3bb140bf57c1987e ]---
+> > Jul 26 23:04:13 mike kernel: note: cat[4835] exited with preempt_count 1
+> > 
+> > I understand it's quite a ridiculous thing to do, but userspace shouldn't be
+> > able to cause kernel errors, no matter what kind of insane things I try.
+> > 
+> 
+> gee, read_kcore() is huge.  This makes it pretty hard to work out where
+> exactly the kernel died.
+> 
+> Is it reproducible, or do you still have the vmlinux from the above
+> oops on-disk?
+> 
+> If so, can you please help work out where it crashed?  You could run
+> something like
+> 
+> 	addr2line -e vmlinux 0xc0224dd1
+> 
+> or
+> 
+> 	gdb vmlinux
+> 	(gdb) l *0xc0224dd1
+> 
+yes, disassemble will be helpful.
+If you compiled the kernel by yourself, 
+# objdump -d fs/proc/kcore.o
 
-From: Andi Kleen <andi@firstfloor.org>
+will also help us.
 
-commit 429b2b319af3987e808c18f6b81313104caf782c upstream.
+Hmm, but this message is curious.
 
-Need to clear both nodes and nodes_add state for start/end.
+unable to handle kernel paging request at e07cf000
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-LKML-Reference: <20090718065657.GA2898@basil.fritz.box>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+What's layout of memory does your server have ? Could you show
+# grep "System RAM" /proc/iomem
+or head of dmesg ?
 
----
- arch/x86/mm/srat_64.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+IIUC, current code doesn't assume any memory hole in direct-map area.
+(And my new patch series should handle it even in CONFIG_HIGHMEM case.)
 
---- a/arch/x86/mm/srat_64.c
-+++ b/arch/x86/mm/srat_64.c
-@@ -89,8 +89,10 @@ static __init void bad_srat(void)
- 	found_add_area = 0;
- 	for (i = 0; i < MAX_LOCAL_APIC; i++)
- 		apicid_to_node[i] = NUMA_NO_NODE;
--	for (i = 0; i < MAX_NUMNODES; i++)
--		nodes_add[i].start = nodes[i].end = 0;
-+	for (i = 0; i < MAX_NUMNODES; i++) {
-+		nodes[i].start = nodes[i].end = 0;
-+		nodes_add[i].start = nodes_add[i].end = 0;
-+	}
- 	remove_all_active_ranges();
- }
- 
+Thanks,
+-Kame
 
+
+
+> both of these will need CONFIG_DEBUG_INFO=y.
+> 
+> 
+> It is possible to work out where the kernel crashed using the above
+> Code: line, but it's a bit of a pain.
+> 
+> Thanks.
+> 
+> 
 
