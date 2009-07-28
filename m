@@ -1,51 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751773AbZG1Tti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753101AbZG1TuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751773AbZG1Tti (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 15:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750819AbZG1Tti
+	id S1753101AbZG1TuK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 15:50:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbZG1TuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 15:49:38 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34112 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750744AbZG1Tth (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 15:49:37 -0400
-To: Kyle Moffett <kyle@moffetthome.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Zachary Amsden <zamsden@redhat.com>, Tejun Heo <tj@kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       axboe@kernel.dk, hch@infradead.org, akpm@linux-foundation.org,
-       Paul.Clements@steeleye.com, tytso@mit.edu, miklos <miklos@szeredi.hu>
-Subject: Re: [PATCH] Allow userspace block device implementation
-From: Andi Kleen <andi@firstfloor.org>
-References: <4A6D79F6.3050509@redhat.com> <1248699365.6987.1628.camel@twins>
-	<20090727142536.465799aa@lxorguk.ukuu.org.uk>
-	<4A6E529B.9030104@kernel.org> <4A6E764E.80805@redhat.com>
-	<20090728112734.5a75752d@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907280851360.3186@localhost.localdomain>
-	<f73f7ab80907281136k2d7797bat2526d1798aba2f85@mail.gmail.com>
-Date: Tue, 28 Jul 2009 21:49:34 +0200
-In-Reply-To: <f73f7ab80907281136k2d7797bat2526d1798aba2f85@mail.gmail.com> (Kyle Moffett's message of "Tue, 28 Jul 2009 14:36:31 -0400")
-Message-ID: <87d47kh9kh.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Tue, 28 Jul 2009 15:50:09 -0400
+Received: from claw.goop.org ([74.207.240.146]:47884 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750819AbZG1TuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 15:50:09 -0400
+Message-ID: <4A6F5670.4010405@goop.org>
+Date: Tue, 28 Jul 2009 12:50:08 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@redhat.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Stefan Assmann <sassmann@suse.de>
+Subject: drivers/pci/quirks.c: irq_reroute_variant is dead code?
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle Moffett <kyle@moffetthome.net> writes:
->
->   (1) The ability to rearrange, resize, and restructure
-> partition-tables on the fly.  The existing "re-read partition tables"
-> infrastructure does not safely and reasonably handle changes to the
-> partition-table while partitions are mounted. 
+quirk_reroute_to_boot_interrupts_intel() goes to some effort to scan for
+a bunch of Intel devices and set dev->irq_reroute_variant =
+INTEL_IRQ_REROUTE_VARIANT.  However, as far as I can see that's the only
+reference to dev->irq_reroute_variant and INTEL_IRQ_REROUTE_VARIANT, so
+the whole thing appears to have no effect.
 
-It doesn't today (and I really hate it too), but is there a hard reason it
-couldn't be fixed to support that properly? 
+Is it all dead code?  Is there something else which should be there missing?
 
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Thanks,
+    J
