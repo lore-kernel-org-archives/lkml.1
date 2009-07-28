@@ -1,137 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754550AbZG1Pjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754579AbZG1Ppp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754550AbZG1Pjv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 11:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754500AbZG1Pjv
+	id S1754579AbZG1Ppp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 11:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752706AbZG1Ppl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 11:39:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48562 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754499AbZG1Pju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 11:39:50 -0400
-Message-ID: <4A6F1B4F.6080709@redhat.com>
-Date: Tue, 28 Jul 2009 17:37:51 +0200
-From: Jerome Marchand <jmarchan@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 28 Jul 2009 11:45:41 -0400
+Received: from sg2ehsobe002.messaging.microsoft.com ([207.46.51.76]:19290 "EHLO
+	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754535AbZG1Pph (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 11:45:37 -0400
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i203h87h43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-DOMAIN-IP-MATCH: fail
+X-WSS-ID: 0KNI12B-04-65S-01
+From: Robert Richter <robert.richter@amd.com>
+To: oprofile-list <oprofile-list@lists.sourceforge.net>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Robert Richter <robert.richter@amd.com>
+Subject: [PATCH] x86/oprofile: Fix cast of counter value
+Date: Tue, 28 Jul 2009 17:43:05 +0200
+Message-ID: <1248795785-29786-1-git-send-email-robert.richter@amd.com>
+X-Mailer: git-send-email 1.6.3.3
+X-OriginalArrivalTime: 28 Jul 2009 15:44:36.0995 (UTC) FILETIME=[4FB25D30:01CA0F9A]
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, ryov@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com,
-       agk@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
-Subject: Re: [PATCH 03/24] io-controller: bfq support of in-class preemption
-References: <1248467274-32073-1-git-send-email-vgoyal@redhat.com> <1248467274-32073-4-git-send-email-vgoyal@redhat.com> <4A6DDBDE.8020608@redhat.com> <20090727224138.GA3702@redhat.com> <4A6EE4A0.6080700@redhat.com> <20090728135212.GC6133@redhat.com> <4A6F0B32.7060801@redhat.com> <20090728150310.GA3870@redhat.com>
-In-Reply-To: <20090728150310.GA3870@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Tue, Jul 28, 2009 at 04:29:06PM +0200, Jerome Marchand wrote:
->> Vivek Goyal wrote:
->>> On Tue, Jul 28, 2009 at 01:44:32PM +0200, Jerome Marchand wrote:
->>>> Vivek Goyal wrote:
->>>>> Hi Jerome,
->>>>>
->>>>> Thanks for testing it out. I could also reproduce the issue.
->>>>>
->>>>> I had assumed that RT queue will always preempt non-RT queue and hence if
->>>>> there is an RT ioq/request pending, the sd->next_entity will point to
->>>>> itself and any queue which is preempting it has to be on same service
->>>>> tree.
->>>>>
->>>>> But in your test case it looks like that RT async queue is pending and 
->>>>> there is some sync BE class IO going on. It looks like that CFQ allows
->>>>> sync queue preempting async queue irrespective of class, so in this case
->>>>> sync BE class reader will preempt async RT queue and that's where my
->>>>> assumption is broken and we see BUG_ON() hitting.
->>>>>
->>>>> Can you please tryout following patch. It is a quick patch and requires
->>>>> more testing. It solves the crash but still does not solve the issue of
->>>>> sync queue always preempting async queues irrespective of class. In
->>>>> current scheduler we always schedule the RT queue first (whether it be
->>>>> sync or async). This problem requires little more thought.
->>>> I've tried it: I can't reproduce the issue anymore and I haven't seen any
->>>> other problem so far.
->>>> By the way, what is the expected result regarding fairness among different
->>>> groups when IO from different classes are run on each group? For instance,
->>>> if we have RT IO going on on one group, BE IO on an other and Idle IO on a
->>>> third group, what is the expected result: should the IO time been shared
->>>> fairly between the groups or should RT IO have priority? As it is now, the
->>>> time is shared fairly between BE and RT groups and the last group running
->>>> Idle IO hardly get any time.
->>>>
->>> Hi Jerome,
->>>
->>> If there are two groups RT and BE, I would expect RT group to get all the
->>> bandwidth as long as it is backlogged and starve the BE group.
->> I wasn't clear enough. I meant the class of the process as set by ionice, not
->> the class of the cgroup. That is, of course, only an issue when using CFQ.
->>
->>> I ran quick test of two dd readers. One reader is in RT group and other is
->>> in BE group. I do see that RT group runs away with almost all the BW.
->>>
->>> group1 time=8:16 2479 group1 sectors=8:16 457848
->>> group2 time=8:16 103  group2 sectors=8:16 18936
->>>
->>> Note that when group1 (RT) finished it had got 2479 ms of disk time while
->>> group2 (BE) got only 103 ms.
->>>
->>> Can you send details of your test. It should not be fair sharing between
->>> RT and BE group.
->> Setup:
->>
->> $ mount -t cgroup -o io,blkio none /cgroup
->> $ mkdir /cgroup/test1 /cgroup/test2 /cgroup/test3
->> $ echo 1000 > /cgroup/test1/io.weight
->> $ echo 1000 > /cgroup/test2/io.weight
->> $ echo 1000 > /cgroup/test3/io.weight
->>
->> Test:
->> $ echo 3 > /proc/sys/vm/drop_caches
->>
->> $ ionice -c 1 dd if=/tmp/io-controller-test3 of=/dev/null &
->> $ echo $! > /cgroup/test1/tasks
->>
->> $ ionice -c 2 dd if=/tmp/io-controller-test1 of=/dev/null &
->> $ echo $! > /cgroup/test2/tasks
->>
->> $ ionice -c 3 dd if=/tmp/io-controller-test2 of=/dev/null &
->> $ echo $! > /cgroup/test3/tasks
->>
-> 
-> Ok, got it. So you have created three BE class groups and with-in those
-> groups you are running job of RT, BE and IDLE type.
-> 
-> From group scheduling point of view, because the tree groups have got same
-> class and same weight, they should get equal access to disk and with-in
-> group how bandwidth is divided is left to CFQ.
-> 
-> Because in this case, only one task is present in each group, it should
-> get all the BW available to the group. Hence, in above test case, all the
-> three dd processes should get equal amount of disk time.
+When casting the counter value to a 64 bit value in 32 bit mode, sign
+extension may lead to broken counter values. This patch fixes this by
+casting to (u64) instead of (s64).
 
-OK. That's how I understood it, but I wanted your confirmation.
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+---
+ arch/x86/oprofile/op_model_amd.c |    4 ++--
+ arch/x86/oprofile/op_model_p4.c  |    6 +++---
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-> 
-> You mentioned that RT and BE task are getting fair share but not IDLE
-> task. This is a bug and probably I know where the bug is. I will debug it
-> and fix it soon.
-
-I've tested it with the last version of your patchset (v6) and the problem
-was less acute (the IDLE task got about 5 times less time that RT and BE
-against 50 times less with v7 patchset). I hope that helps you.
-
-Jerome
-
-> 
-> Thanks
-> Vivek
+diff --git a/arch/x86/oprofile/op_model_amd.c b/arch/x86/oprofile/op_model_amd.c
+index e95268e..7ca8306 100644
+--- a/arch/x86/oprofile/op_model_amd.c
++++ b/arch/x86/oprofile/op_model_amd.c
+@@ -111,7 +111,7 @@ static void op_amd_setup_ctrs(struct op_x86_model_spec const *model,
+ 		if (counter_config[i].enabled && msrs->counters[i].addr) {
+ 			reset_value[i] = counter_config[i].count;
+ 			wrmsrl(msrs->counters[i].addr,
+-			       -(s64)counter_config[i].count);
++			       -(u64)counter_config[i].count);
+ 			rdmsrl(msrs->controls[i].addr, val);
+ 			val &= model->reserved;
+ 			val |= op_x86_get_ctrl(model, &counter_config[i]);
+@@ -237,7 +237,7 @@ static int op_amd_check_ctrs(struct pt_regs * const regs,
+ 		if (val & OP_CTR_OVERFLOW)
+ 			continue;
+ 		oprofile_add_sample(regs, i);
+-		wrmsrl(msrs->counters[i].addr, -(s64)reset_value[i]);
++		wrmsrl(msrs->counters[i].addr, -(u64)reset_value[i]);
+ 	}
+ 
+ 	op_amd_handle_ibs(regs, msrs);
+diff --git a/arch/x86/oprofile/op_model_p4.c b/arch/x86/oprofile/op_model_p4.c
+index f01e53b..9db9e36 100644
+--- a/arch/x86/oprofile/op_model_p4.c
++++ b/arch/x86/oprofile/op_model_p4.c
+@@ -580,7 +580,7 @@ static void p4_setup_ctrs(struct op_x86_model_spec const *model,
+ 			reset_value[i] = counter_config[i].count;
+ 			pmc_setup_one_p4_counter(i);
+ 			wrmsrl(p4_counters[VIRT_CTR(stag, i)].counter_address,
+-			       -(s64)counter_config[i].count);
++			       -(u64)counter_config[i].count);
+ 		} else {
+ 			reset_value[i] = 0;
+ 		}
+@@ -625,11 +625,11 @@ static int p4_check_ctrs(struct pt_regs * const regs,
+ 		if (CCCR_OVF_P(low) || !(ctr & OP_CTR_OVERFLOW)) {
+ 			oprofile_add_sample(regs, i);
+ 			wrmsrl(p4_counters[real].counter_address,
+-			       -(s64)reset_value[i]);
++			       -(u64)reset_value[i]);
+ 			CCCR_CLEAR_OVF(low);
+ 			wrmsr(p4_counters[real].cccr_address, low, high);
+ 			wrmsrl(p4_counters[real].counter_address,
+-			       -(s64)reset_value[i]);
++			       -(u64)reset_value[i]);
+ 		}
+ 	}
+ 
+-- 
+1.6.3.3
 
 
