@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754221AbZG1Xt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899AbZG1X50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754221AbZG1Xt4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbZG1Xtz
+	id S1755899AbZG1X50 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbZG1X5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:49:55 -0400
-Received: from kroah.org ([198.145.64.141]:35736 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:57:22 -0400
+Received: from kroah.org ([198.145.64.141]:35826 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754116AbZG1Xty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:49:54 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:55 2009
-Message-Id: <20090728234155.029465877@mini.kroah.org>
+	id S1754316AbZG1XuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:50:09 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:57 2009
+Message-Id: <20090728234157.512872004@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:40:54 -0700
+Date: Tue, 28 Jul 2009 16:41:10 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jiri Slaby <jirislaby@gmail.com>, Jiri Kosina <jkosina@suse.cz>
-Subject: [patch 25/71] HID: hiddev, fix lock imbalance
+       Mikulas Patocka <mpatocka@redhat.com>,
+       Alasdair G Kergon <agk@redhat.com>
+Subject: [patch 41/71] dm raid1: wake kmirrord when requeueing delayed bios after remote recovery
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=hid-hiddev-fix-lock-imbalance.patch
+Content-Disposition: inline; filename=dm-raid1-wake-kmirrord-when-requeueing-delayed-bios-after-remote-recovery.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,33 +31,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jiri Slaby <jirislaby@gmail.com>
+From: Mikulas Patocka <mpatocka@redhat.com>
 
-commit 4859484b0957ddc7fe3e0fa349d98b0f1c7876bd upstream.
+commit 69885683d22d8c05910fd808c01fdce1322739b4 upstream.
 
-Add omitted BKL to one switch/case.
+The recent commit 7513c2a761d69d2a93f17146b3563527d3618ba0 (dm raid1:
+add is_remote_recovering hook for clusters) changed do_writes() to
+update the ms->writes list but forgot to wake up kmirrord to process it.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+The rule is that when anything is being added on ms->reads, ms->writes
+or ms->failures and the list was empty before we must call
+wakeup_mirrord (for immediate processing) or delayed_wake (for delayed
+processing).  Otherwise the bios could sit on the list indefinitely.
+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hid/usbhid/hiddev.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/md/dm-raid1.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/hid/usbhid/hiddev.c
-+++ b/drivers/hid/usbhid/hiddev.c
-@@ -527,8 +527,10 @@ static noinline int hiddev_ioctl_usage(s
- 			goto goodreturn;
+--- a/drivers/md/dm-raid1.c
++++ b/drivers/md/dm-raid1.c
+@@ -638,6 +638,7 @@ static void do_writes(struct mirror_set 
+ 		spin_lock_irq(&ms->lock);
+ 		bio_list_merge(&ms->writes, &requeue);
+ 		spin_unlock_irq(&ms->lock);
++		delayed_wake(ms);
+ 	}
  
- 		case HIDIOCGCOLLECTIONINDEX:
-+			i = field->usage[uref->usage_index].collection_index;
-+			unlock_kernel();
- 			kfree(uref_multi);
--			return field->usage[uref->usage_index].collection_index;
-+			return i;
- 		case HIDIOCGUSAGES:
- 			for (i = 0; i < uref_multi->num_values; i++)
- 				uref_multi->values[i] =
+ 	/*
 
 
