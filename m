@@ -1,108 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944AbZG1Uh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbZG1UiH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753944AbZG1Uh1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 16:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753595AbZG1Uh1
+	id S1753893AbZG1UiH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 16:38:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbZG1UiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 16:37:27 -0400
-Received: from fmmailgate04.web.de ([217.72.192.242]:51735 "EHLO
-	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753474AbZG1Uh0 convert rfc822-to-8bit (ORCPT
+	Tue, 28 Jul 2009 16:38:05 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:19023 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751596AbZG1UiE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 16:37:26 -0400
-Date: Tue, 28 Jul 2009 22:37:24 +0200
-Message-Id: <843616099@web.de>
+	Tue, 28 Jul 2009 16:38:04 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=subject:to:from:cc:date:message-id:user-agent:
+	mime-version:content-type:content-transfer-encoding:x-system-of-record;
+	b=nOPBU1FZOwTbI0ZBWGUDuK9OCHZpvTnTa110HJnOkYM+Z4eZlvh1/s7df6GeyEqXZ
+	Ql9sNPMyy+RCRC3NkILjw==
+Subject: [PATCH v2 0/2] IPVS: make use of pr_fmt and friends
+To: lvs-devel@vger.kernel.org, netdev@vger.kernel.org
+From: Hannes Eder <heder@google.com>
+Cc: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
+       Jan Engelhardt <jengelh@medozas.de>
+Date: Tue, 28 Jul 2009 22:35:34 +0200
+Message-ID: <20090728203414.7654.73236.stgit@jazzy.zrh.corp.google.com>
+User-Agent: StGit/0.14.3.366.gf979
 MIME-Version: 1.0
-From: devzero@web.de
-To: zamsden@redhat.com
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Allow userspace block device implementation
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX1/zPN3Un63OG1zRiscOETij7PY8ZiCXxjDGXrjvBmW5AkVKE
- kHb2l9T77kMEChQhxqCdQyxy66XjnQsgvajy18IF4MeiHdTRzM=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Zach, 
+The following series makes use of pr_fmt and friends instead of printk.
 
-this older thread deals with some aspects of that idea: http://communities.vmware.com/message/577841
-i have collected some links (added there) quite a while ago and also added a project proposal to http://kernelnewbies.org/KernelProjects, too.
-i don`t know if you came across them, but it`s nice to see that someone comes up with this stuff again and maybe it`s of interest for you.
-
-as we had vmware vmdk image mounter v1 being implemented via nbd and v2 via fuse, i assume both are not optimal solutions?
-at least the nbd version sucked big. 
-
-regards
-roland
-
-ps:
-oh, btw - you quit vmware? that`s quite a loss for them and for the vmware community, i think.  too much conflicting basic attitude concerning opensource/gpl? ;)
+v2: use printk instead of pr_debug
 
 
-
-> List:       linux-kernel
-> Subject:    [PATCH] Allow userspace block device implementation
-> From:       Zachary Amsden <zamsden () redhat ! com>
-> Date:       2009-07-27 9:57:10
-> Message-ID: 4A6D79F6.3050509 () redhat ! com
-> [Download message RAW]
-> 
-> Well, it may be a good, bad, idiotic or brilliant idea depending on your
-> personal philosophy.  I went down this route out of pragmatism.
-> Hopefully I have not fully re-invented the wheel.
-> 
-> The patch included allows one to implement a kernel level block device
-> in userspace, using an ioctl() based interface to create a sized device
-> with given properties, and then receive and respond to bio requests
-> issued to the device.  One can poll on the associated control socket to
-> allow efficient servicing of device requests.  So far only strict copy
-> to/from user memory is supported, there is no fancy page flipping or
-> mapping operations.
-> 
-> Which there probably should not be.  This device is not about
-> performance, is it about extending the boundaries of the kernel to the
-> almost improbable.  Now one can literally create any kind of device
-> imaginable and use it as a block device in the kernel, mounting
-> partitions and such and using them as if they existed natively.  I have
-> attached a very simple dummy program showing how to do this.
-> 
-> The design requirements 'kernel block device in user space' to me
-> demanded that the interface be stateless.  Userspace can crash, be
-> killed, or interrupted.  Block devices cannot, they must answer all
-> requests, even if that answer is a failure.  Thus there exists no state
-> between the kernel and the userspace process(es) or threads serving the
-> device.  No establishment of connections, just a queue which can be read
-> and answered via get and put, the ioctl operators available.  This
-> allows a completely flexible userspace implementation, with multiple
-> processes, etc, and allows complete recovery via a simple reset command
-> if those programs fail.  I believe this also prevents any possibility of
-> accidental deadlock.  There may of course be some hidden deep deadlock
-> potential in such a device, especially if one decided to use it as a
-> swap device, but again, this is a philosophical issue.
-> 
-> Enough talking, let's have at it and see where this goes.  Obviously
-> this is experimental and open to feedback.  Considering it turns kernel
-> interfaces on their head, I have given it what I feel is an appropriate
-> name.
-> 
-> If there is any person or list you know that I forgot to copy this to,
-> please forward it on to them.
-> 
-> Thanks,
-> 
-> Zach
-> 
-> _________________________________________________________________
-> Neu: WEB.DE Doppel-FLAT mit Internet-Flatrate + Telefon-Flatrate 
-> für nur 19,99 Euro/mtl.!* http://produkte.web.de/go/01/
-> 
-> 
+Hannes Eder (2):
+      IPVS: use pr_err and friends instead of IP_VS_ERR and friends
+      IPVS: use pr_fmt
 
 
-______________________________________________________
-GRATIS für alle WEB.DE-Nutzer: Die maxdome Movie-FLAT!
-Jetzt freischalten unter http://movieflat.web.de
-
+ include/net/ip_vs.h                     |  116 +++++++++++++++----------------
+ net/netfilter/ipvs/ip_vs_app.c          |    3 +
+ net/netfilter/ipvs/ip_vs_conn.c         |   15 ++--
+ net/netfilter/ipvs/ip_vs_core.c         |   25 ++++---
+ net/netfilter/ipvs/ip_vs_ctl.c          |   59 ++++++++--------
+ net/netfilter/ipvs/ip_vs_dh.c           |    5 +
+ net/netfilter/ipvs/ip_vs_est.c          |    4 +
+ net/netfilter/ipvs/ip_vs_ftp.c          |    7 +-
+ net/netfilter/ipvs/ip_vs_lblc.c         |    7 +-
+ net/netfilter/ipvs/ip_vs_lblcr.c        |    9 ++
+ net/netfilter/ipvs/ip_vs_lc.c           |    3 +
+ net/netfilter/ipvs/ip_vs_nq.c           |    3 +
+ net/netfilter/ipvs/ip_vs_proto.c        |    9 ++
+ net/netfilter/ipvs/ip_vs_proto_ah_esp.c |    7 +-
+ net/netfilter/ipvs/ip_vs_proto_tcp.c    |    3 +
+ net/netfilter/ipvs/ip_vs_proto_udp.c    |    3 +
+ net/netfilter/ipvs/ip_vs_rr.c           |    3 +
+ net/netfilter/ipvs/ip_vs_sched.c        |   39 ++++++----
+ net/netfilter/ipvs/ip_vs_sed.c          |    3 +
+ net/netfilter/ipvs/ip_vs_sh.c           |    5 +
+ net/netfilter/ipvs/ip_vs_sync.c         |   49 +++++++------
+ net/netfilter/ipvs/ip_vs_wlc.c          |    3 +
+ net/netfilter/ipvs/ip_vs_wrr.c          |    5 +
+ net/netfilter/ipvs/ip_vs_xmit.c         |    3 +
+ 24 files changed, 228 insertions(+), 160 deletions(-)
