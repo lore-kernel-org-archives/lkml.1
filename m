@@ -1,144 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932131AbZG1XvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbZG1XwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932131AbZG1XvS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbZG1Xug
+	id S1755881AbZG1XwH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:52:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755225AbZG1XwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:50:36 -0400
-Received: from kroah.org ([198.145.64.141]:35962 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753802AbZG1Xua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:50:30 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:42:01 2009
-Message-Id: <20090728234201.259462843@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:41:32 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Patrick McHardy <kaber@trash.net>
-Subject: [patch 63/71] netfilter: tcp conntrack: fix unacknowledged data detection with NAT
-References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=netfilter-tcp-conntrack-fix-unacknowledged-data-detection-with-nat.patch
-In-Reply-To: <20090728234756.GA11917@kroah.com>
+	Tue, 28 Jul 2009 19:52:06 -0400
+Received: from fias.uni-frankfurt.de ([141.2.248.1]:43032 "EHLO
+	fias.uni-frankfurt.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755193AbZG1XwD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:52:03 -0400
+From: Jan Scholz <scholz@fias.uni-frankfurt.de>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: John Linville <linville@tuxdriver.com>,
+       Jan Scholz <scholz@fias.uni-frankfurt.de>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Bob Copeland <bcopeland@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Tomas Janousek <tomi@nomi.cz>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2.6.31] mac80211: fix suspend
+References: <1248797417.13742.0.camel@johannes.local>
+References: <200907282315.54085.rjw@sisk.pl>
+Date: Wed, 29 Jul 2009 01:51:43 +0200
+In-Reply-To: <1248797417.13742.0.camel@johannes.local> (Johannes Berg's
+	message of "Tue, 28 Jul 2009 18:10:17 +0200")
+Message-ID: <87tz0wjrhs.fsf@scholz.fias.uni-frankfurt.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.96 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.30-stable review patch.  If anyone has any objections, please let us know.
+I applied the patch to v2.6.31-rc4 and suspend works just fine.
 
-------------------
+Thanks,
+   Jan
 
-From: Patrick McHardy <kaber@trash.net>
+Johannes Berg <johannes@sipsolutions.net> writes:
 
-commit a3a9f79e361e864f0e9d75ebe2a0cb43d17c4272 upstream.
-
-When NAT helpers change the TCP packet size, the highest seen sequence
-number needs to be corrected. This is currently only done upwards, when
-the packet size is reduced the sequence number is unchanged. This causes
-TCP conntrack to falsely detect unacknowledged data and decrease the
-timeout.
-
-Fix by updating the highest seen sequence number in both directions after
-packet mangling.
-
-Tested-by: Krzysztof Piotr Oledzki <ole@ans.pl>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- include/net/netfilter/nf_conntrack.h   |    4 ++--
- net/ipv4/netfilter/nf_nat_helper.c     |   17 +++++++++++------
- net/netfilter/nf_conntrack_proto_tcp.c |    6 +++---
- 3 files changed, 16 insertions(+), 11 deletions(-)
-
---- a/include/net/netfilter/nf_conntrack.h
-+++ b/include/net/netfilter/nf_conntrack.h
-@@ -255,8 +255,8 @@ static inline bool nf_ct_kill(struct nf_
- /* Update TCP window tracking data when NAT mangles the packet */
- extern void nf_conntrack_tcp_update(const struct sk_buff *skb,
- 				    unsigned int dataoff,
--				    struct nf_conn *ct,
--				    int dir);
-+				    struct nf_conn *ct, int dir,
-+				    s16 offset);
- 
- /* Fake conntrack entry for untracked connections */
- extern struct nf_conn nf_conntrack_untracked;
---- a/net/ipv4/netfilter/nf_nat_helper.c
-+++ b/net/ipv4/netfilter/nf_nat_helper.c
-@@ -191,7 +191,8 @@ nf_nat_mangle_tcp_packet(struct sk_buff 
- 				    ct, ctinfo);
- 		/* Tell TCP window tracking about seq change */
- 		nf_conntrack_tcp_update(skb, ip_hdrlen(skb),
--					ct, CTINFO2DIR(ctinfo));
-+					ct, CTINFO2DIR(ctinfo),
-+					(int)rep_len - (int)match_len);
- 
- 		nf_conntrack_event_cache(IPCT_NATSEQADJ, ct);
- 	}
-@@ -377,6 +378,7 @@ nf_nat_seq_adjust(struct sk_buff *skb,
- 	struct tcphdr *tcph;
- 	int dir;
- 	__be32 newseq, newack;
-+	s16 seqoff, ackoff;
- 	struct nf_conn_nat *nat = nfct_nat(ct);
- 	struct nf_nat_seq *this_way, *other_way;
- 
-@@ -390,15 +392,18 @@ nf_nat_seq_adjust(struct sk_buff *skb,
- 
- 	tcph = (void *)skb->data + ip_hdrlen(skb);
- 	if (after(ntohl(tcph->seq), this_way->correction_pos))
--		newseq = htonl(ntohl(tcph->seq) + this_way->offset_after);
-+		seqoff = this_way->offset_after;
- 	else
--		newseq = htonl(ntohl(tcph->seq) + this_way->offset_before);
-+		seqoff = this_way->offset_before;
- 
- 	if (after(ntohl(tcph->ack_seq) - other_way->offset_before,
- 		  other_way->correction_pos))
--		newack = htonl(ntohl(tcph->ack_seq) - other_way->offset_after);
-+		ackoff = other_way->offset_after;
- 	else
--		newack = htonl(ntohl(tcph->ack_seq) - other_way->offset_before);
-+		ackoff = other_way->offset_before;
-+
-+	newseq = htonl(ntohl(tcph->seq) + seqoff);
-+	newack = htonl(ntohl(tcph->ack_seq) - ackoff);
- 
- 	inet_proto_csum_replace4(&tcph->check, skb, tcph->seq, newseq, 0);
- 	inet_proto_csum_replace4(&tcph->check, skb, tcph->ack_seq, newack, 0);
-@@ -413,7 +418,7 @@ nf_nat_seq_adjust(struct sk_buff *skb,
- 	if (!nf_nat_sack_adjust(skb, tcph, ct, ctinfo))
- 		return 0;
- 
--	nf_conntrack_tcp_update(skb, ip_hdrlen(skb), ct, dir);
-+	nf_conntrack_tcp_update(skb, ip_hdrlen(skb), ct, dir, seqoff);
- 
- 	return 1;
- }
---- a/net/netfilter/nf_conntrack_proto_tcp.c
-+++ b/net/netfilter/nf_conntrack_proto_tcp.c
-@@ -706,8 +706,8 @@ static bool tcp_in_window(const struct n
- /* Caller must linearize skb at tcp header. */
- void nf_conntrack_tcp_update(const struct sk_buff *skb,
- 			     unsigned int dataoff,
--			     struct nf_conn *ct,
--			     int dir)
-+			     struct nf_conn *ct, int dir,
-+			     s16 offset)
- {
- 	const struct tcphdr *tcph = (const void *)skb->data + dataoff;
- 	const struct ip_ct_tcp_state *sender = &ct->proto.tcp.seen[dir];
-@@ -720,7 +720,7 @@ void nf_conntrack_tcp_update(const struc
- 	/*
- 	 * We have to worry for the ack in the reply packet only...
- 	 */
--	if (after(end, ct->proto.tcp.seen[dir].td_end))
-+	if (ct->proto.tcp.seen[dir].td_end + offset == end)
- 		ct->proto.tcp.seen[dir].td_end = end;
- 	ct->proto.tcp.last_end = end;
- 	write_unlock_bh(&tcp_lock);
-
-
+> Jan reported that his b43-based laptop hangs during suspend.
+> The problem turned out to be mac80211 asking the driver to
+> stop the hardware before removing interfaces, and interface
+> removal caused b43 to touch the hardware (while down, which
+> causes the hang).
+>
+> This patch fixes mac80211 to do reorder these operations to
+> have them in the correct order -- first remove interfaces
+> and then stop the hardware. Some more code is necessary to
+> be able to do so in a race-free manner, in particular it is
+> necessary to not process frames received during quiescing.
+>
+> Fixes http://bugzilla.kernel.org/show_bug.cgi?id=13337.
+>
+> Reported-by: Jan Scholz <scholz@fias.uni-frankfurt.de>
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> ---
+>  net/mac80211/pm.c |   24 +++++++++++++++---------
+>  net/mac80211/rx.c |   12 ++++++++++++
+>  2 files changed, 27 insertions(+), 9 deletions(-)
+>
+> --- wireless-testing.orig/net/mac80211/pm.c	2009-07-28 17:58:11.000000000 +0200
+> +++ wireless-testing/net/mac80211/pm.c	2009-07-28 18:06:25.000000000 +0200
+> @@ -54,15 +54,6 @@ int __ieee80211_suspend(struct ieee80211
+>  
+>  	rcu_read_unlock();
+>  
+> -	/* flush again, in case driver queued work */
+> -	flush_workqueue(local->hw.workqueue);
+> -
+> -	/* stop hardware - this must stop RX */
+> -	if (local->open_count) {
+> -		ieee80211_led_radio(local, false);
+> -		drv_stop(local);
+> -	}
+> -
+>  	/* remove STAs */
+>  	spin_lock_bh(&local->sta_lock);
+>  	list_for_each_entry(sta, &local->sta_list, list) {
+> @@ -110,7 +101,22 @@ int __ieee80211_suspend(struct ieee80211
+>  		drv_remove_interface(local, &conf);
+>  	}
+>  
+> +	/* stop hardware - this must stop RX */
+> +	if (local->open_count) {
+> +		ieee80211_led_radio(local, false);
+> +		drv_stop(local);
+> +	}
+> +
+> +	/*
+> +	 * flush again, in case driver queued work -- it
+> +	 * shouldn't be doing (or cancel everything in the
+> +	 * stop callback) that but better safe than sorry.
+> +	 */
+> +	flush_workqueue(local->hw.workqueue);
+> +
+>  	local->suspended = true;
+> +	/* need suspended to be visible before quiescing is false */
+> +	barrier();
+>  	local->quiescing = false;
+>  
+>  	return 0;
+> --- wireless-testing.orig/net/mac80211/rx.c	2009-07-28 17:58:52.000000000 +0200
+> +++ wireless-testing/net/mac80211/rx.c	2009-07-28 18:04:24.000000000 +0200
+> @@ -2441,6 +2441,18 @@ void __ieee80211_rx(struct ieee80211_hw 
+>  		return;
+>  	}
+>  
+> +	/*
+> +	 * If we're suspending, it is possible although not too likely
+> +	 * that we'd be receiving frames after having already partially
+> +	 * quiesced the stack. We can't process such frames then since
+> +	 * that might, for example, cause stations to be added or other
+> +	 * driver callbacks be invoked.
+> +	 */
+> +	if (unlikely(local->quiescing || local->suspended)) {
+> +		kfree_skb(skb);
+> +		return;
+> +	}
+> +
+>  	if (status->flag & RX_FLAG_HT) {
+>  		/* rate_idx is MCS index */
+>  		if (WARN_ON(status->rate_idx < 0 ||
+>
