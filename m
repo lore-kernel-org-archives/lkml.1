@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932166AbZG1Xwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932153AbZG1Xv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932166AbZG1Xwm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754972AbZG1Xuc
+	id S932153AbZG1Xv6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755052AbZG1Xuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:50:32 -0400
-Received: from kroah.org ([198.145.64.141]:35942 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:50:35 -0400
+Received: from kroah.org ([198.145.64.141]:35958 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753965AbZG1Xu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:50:27 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:42:00 2009
-Message-Id: <20090728234200.577587847@mini.kroah.org>
+	id S1754631AbZG1Xu3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:50:29 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:42:01 2009
+Message-Id: <20090728234201.082668312@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:41:28 -0700
+Date: Tue, 28 Jul 2009 16:41:31 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Patrick McHardy <kaber@trash.net>
-Subject: [patch 59/71] netfilter: nf_conntrack: fix conntrack lookup race
+Subject: [patch 62/71] netfilter: xt_rateest: fix comparison with self
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=netfilter-nf_conntrack-fix-conntrack-lookup-race.patch
+Content-Disposition: inline; filename=netfilter-xt_rateest-fix-comparison-with-self.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,42 +32,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Patrick McHardy <kaber@trash.net>
 
-commit 8d8890b7751387f58ce0a6428773de2fbc0fd596 upstream.
+commit 4d900f9df5f0569c2dc536701e2c11b6d50ebebf upstream.
 
-The RCU protected conntrack hash lookup only checks whether the entry
-has a refcount of zero to decide whether it is stale. This is not
-sufficient, entries are explicitly removed while there is at least
-one reference left, possibly more. Explicitly check whether the entry
-has been marked as dying to fix this.
+As noticed by Török Edwin <edwintorok@gmail.com>:
+
+Compiling the kernel with clang has shown this warning:
+
+net/netfilter/xt_rateest.c:69:16: warning: self-comparison always results in a
+constant value
+                        ret &= pps2 == pps2;
+                                    ^
+Looking at the code:
+if (info->flags & XT_RATEEST_MATCH_BPS)
+            ret &= bps1 == bps2;
+        if (info->flags & XT_RATEEST_MATCH_PPS)
+            ret &= pps2 == pps2;
+
+Judging from the MATCH_BPS case it seems to be a typo, with the intention of
+comparing pps1 with pps2.
+
+http://bugzilla.kernel.org/show_bug.cgi?id=13535
 
 Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/netfilter/nf_conntrack_core.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ net/netfilter/xt_rateest.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/net/netfilter/nf_conntrack_core.c
-+++ b/net/netfilter/nf_conntrack_core.c
-@@ -295,7 +295,8 @@ begin:
- 	h = __nf_conntrack_find(net, tuple);
- 	if (h) {
- 		ct = nf_ct_tuplehash_to_ctrack(h);
--		if (unlikely(!atomic_inc_not_zero(&ct->ct_general.use)))
-+		if (unlikely(nf_ct_is_dying(ct) ||
-+			     !atomic_inc_not_zero(&ct->ct_general.use)))
- 			h = NULL;
- 		else {
- 			if (unlikely(!nf_ct_tuple_equal(tuple, &h->tuple))) {
-@@ -474,7 +475,8 @@ static noinline int early_drop(struct ne
- 			cnt++;
- 		}
+--- a/net/netfilter/xt_rateest.c
++++ b/net/netfilter/xt_rateest.c
+@@ -66,7 +66,7 @@ xt_rateest_mt(const struct sk_buff *skb,
+ 		if (info->flags & XT_RATEEST_MATCH_BPS)
+ 			ret &= bps1 == bps2;
+ 		if (info->flags & XT_RATEEST_MATCH_PPS)
+-			ret &= pps2 == pps2;
++			ret &= pps1 == pps2;
+ 		break;
+ 	}
  
--		if (ct && unlikely(!atomic_inc_not_zero(&ct->ct_general.use)))
-+		if (ct && unlikely(nf_ct_is_dying(ct) ||
-+				   !atomic_inc_not_zero(&ct->ct_general.use)))
- 			ct = NULL;
- 		if (ct || cnt >= NF_CT_EVICTION_RANGE)
- 			break;
 
 
