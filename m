@@ -1,56 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751622AbZG1OkN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752398AbZG1OlM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751622AbZG1OkN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 10:40:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751110AbZG1OkM
+	id S1752398AbZG1OlM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 10:41:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbZG1OlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 10:40:12 -0400
-Received: from viefep20-int.chello.at ([62.179.121.40]:26408 "EHLO
-	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751000AbZG1OkL (ORCPT
+	Tue, 28 Jul 2009 10:41:12 -0400
+Received: from fias.uni-frankfurt.de ([141.2.248.1]:60092 "EHLO
+	fias.uni-frankfurt.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752098AbZG1OlK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 10:40:11 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [RFC][PATCH 5/5] perfcounter: Add support for kernel hardware
- breakpoints
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, prasad@linux.vnet.ibm.com,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Anton Blanchard <anton@samba.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Alan Stern <stern@rowland.harvard.edu>
-In-Reply-To: <20090728140459.GA30412@Krystal>
-References: <c62985530907240702h2b2de14bw2f0d475f46067e4e@mail.gmail.com>
-	 <1248445569.6987.74.camel@twins> <20090724174723.GA11985@nowhere>
-	 <1248519416.5780.12.camel@laptop> <20090725141918.GA5295@nowhere>
-	 <1248538972.5780.25.camel@laptop> <20090725235702.GA5082@in.ibm.com>
-	 <1248684817.6987.1573.camel@twins> <20090728010349.GB5147@nowhere>
-	 <1248765877.6987.2754.camel@twins>  <20090728140459.GA30412@Krystal>
-Content-Type: text/plain
-Date: Tue, 28 Jul 2009 16:42:42 +0200
-Message-Id: <1248792162.6987.3013.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Jul 2009 10:41:10 -0400
+From: Jan Scholz <scholz@fias.uni-frankfurt.de>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Jan Scholz <scholz@fias.uni-frankfurt.de>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Tomas Janousek <tomi@nomi.cz>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [Bug #13337] [post 2.6.29 regression] hang during suspend of b44/b43 modules
+References: <tSdKBEwEOhE.A.2wF.s_oUKB@chimera>
+	<87k52izvd9.fsf@scholz.fias.uni-frankfurt.de>
+	<87y6qxx50z.fsf@scholz.fias.uni-frankfurt.de>
+	<200907092203.10294.rjw@sisk.pl>
+	<1247171295.1905.5.camel@johannes.local>
+	<87prc78ga9.fsf@scholz.fias.uni-frankfurt.de>
+	<1247322985.30647.108.camel@johannes.local>
+	<8763dznnki.fsf@scholz.fias.uni-frankfurt.de>
+	<1247334464.30647.109.camel@johannes.local>
+References: <DizPU9GBfHF.A.kgF.iWObKB@chimera>
+Date: Tue, 28 Jul 2009 16:40:36 +0200
+In-Reply-To: <1247334464.30647.109.camel@johannes.local> (Johannes Berg's
+	message of "Sat, 11 Jul 2009 19:47:44 +0200")
+Message-ID: <87my6ovpjv.fsf@scholz.fias.uni-frankfurt.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.96 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-28 at 10:04 -0400, Mathieu Desnoyers wrote:
+Johannes Berg <johannes@sipsolutions.net> writes:
 
-> As you see, none of these 2 ways to gather trace data allow statistical
-> RR. Therefore, having this feature in the low-level API does not seem to
-> make sense for tracing.
+> On Sat, 2009-07-11 at 19:20 +0200, Jan Scholz wrote:
+>> Johannes Berg <johannes@sipsolutions.net> writes:
+>> 
+>> > On Sat, 2009-07-11 at 16:07 +0200, Jan Scholz wrote:
+>> >
+>> >> > Jan, can you run with console_suspend=0 (or whatever it is now, Rafael
+>> >> > will correct me if I'm wrong) that should work on your platform, and put
+>> >> > a bunch of printk calls into __ieee80211_suspend in net/mac80211/pm.c to
+>> >> > see where in there it's hanging?
+>> >> 
+>> >> Did that, seems like it hangs in
+>> >>   drv_remove_interface(local, &conf);
+>> >
+>> > Ok, thanks! I was going to suggest doing the same in
+>> > b43_op_remove_interface in drivers/net/wireless/b43/main.c, but I think
+>> > the problem is just that we have an ordering problem and call drv_stop
+>> > before drv_remove_interface. I'll try to come up with a fix soon --
+>> > might not be able to today though, in the meantime I guess you can just
+>> > move the drv_stop call to the end of the function and tell me if that
+>> > works -- that would be racy but should be ok most of the time.
+>> 
+>> I moved drv_stop to the end of the function (see patch below) and now
+>> suspend works fine.
+>
+> Thanks, that's what I suspected -- I'll take a closer look into what is
+> required to make it race-free against RX.
+>
 
-I'm not asking for it to be available in the low level API. Quite
-contrary, I'm saying that the current API is too high level and pretty
-useless for perf counters.
+Hi,
 
+The bug is still present in v2.6.31-rc4, it's still fixed by the patch
+(see below) suggested as a test by Johannes.
 
+Regards,
+   Jan
 
+>> diff --git a/net/mac80211/pm.c b/net/mac80211/pm.c
+>> index 7a549f9..0ac15fb 100644
+>> --- a/net/mac80211/pm.c
+>> +++ b/net/mac80211/pm.c
+>> @@ -58,12 +58,6 @@ int __ieee80211_suspend(struct ieee80211_hw *hw)
+>>  	/* flush again, in case driver queued work */
+>>  	flush_workqueue(local->hw.workqueue);
+>>  
+>> -	/* stop hardware - this must stop RX */
+>> -	if (local->open_count) {
+>> -		ieee80211_led_radio(local, false);
+>> -		drv_stop(local);
+>> -	}
+>> -
+>>  	/* remove STAs */
+>>  	spin_lock_irqsave(&local->sta_lock, flags);
+>>  	list_for_each_entry(sta, &local->sta_list, list) {
+>> @@ -111,6 +105,12 @@ int __ieee80211_suspend(struct ieee80211_hw *hw)
+>>  		drv_remove_interface(local, &conf);
+>>  	}
+>>  
+>> +	/* stop hardware - this must stop RX */
+>> +	if (local->open_count) {
+>> +		ieee80211_led_radio(local, false);
+>> +		drv_stop(local);
+>> +	}
+>> +
+>>  	local->suspended = true;
+>>  	local->quiescing = false;
+>> 
+
+-- 
+ Jan Scholz                                ____  ____    __    ___ 
+                                          ( ___)(_  _)  /__\  / __)
+ Frankfurt Institute for Advanced Studies  )__)  _)(_  /(__)\ \__ \
+                                          (__)  (____)(__)(__)(___/
+ Goethe Universitaet Frankfurt
+ Ruth-Moufang-Str. 1                             Tel. 069-798-47534
+ 60438 Frankfurt am Main
