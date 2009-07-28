@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbZG1X5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756140AbZG1X6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756154AbZG1X5h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:57:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbZG1X5g
+	id S1756140AbZG1X6s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:58:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbZG1Xt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:57:36 -0400
-Received: from kroah.org ([198.145.64.141]:35821 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:49:57 -0400
+Received: from kroah.org ([198.145.64.141]:35746 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753786AbZG1XuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:50:08 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:57 2009
-Message-Id: <20090728234157.365935237@mini.kroah.org>
+	id S1754246AbZG1Xt4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:49:56 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:55 2009
+Message-Id: <20090728234155.335851804@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:41:09 -0700
+Date: Tue, 28 Jul 2009 16:40:56 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [patch 40/71] sched: fix nr_uninterruptible accounting of frozen tasks really
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [patch 27/71] ASoC: Fix register cache initialisation for WM8753
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=sched-fix-nr_uninterruptible-accounting-of-frozen-tasks-really.patch
+Content-Disposition: inline; filename=asoc-fix-register-cache-initialisation-for-wm8753.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,70 +30,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-commit 6301cb95c119ebf324bb96ee226fa9ddffad80a7 upstream.
+commit 1df892cba45f9856d369a6a317ad2d1e44bca423 upstream.
 
-commit e3c8ca8336 (sched: do not count frozen tasks toward load) broke
-the nr_uninterruptible accounting on freeze/thaw. On freeze the task
-is excluded from accounting with a check for (task->flags &
-PF_FROZEN), but that flag is cleared before the task is thawed. So
-while we prevent that the task with state TASK_UNINTERRUPTIBLE
-is accounted to nr_uninterruptible on freeze we decrement
-nr_uninterruptible on thaw.
+The wrong register cache variable was being used to provide the size for
+the memcpy(), resulting in a copy of only a void * of data.
 
-Use a separate flag which is handled by the freezing task itself. Set
-it before calling the scheduler with TASK_UNINTERRUPTIBLE state and
-clear it after we return from frozen state.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Reported-by: Lars-Peter Clausen <lars@metafoo.de>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/sched.h |    3 ++-
- kernel/freezer.c      |    7 +++++++
- 2 files changed, 9 insertions(+), 1 deletion(-)
+ sound/soc/codecs/wm8753.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -206,7 +206,7 @@ extern unsigned long long time_sync_thre
- 			((task->state & (__TASK_STOPPED | __TASK_TRACED)) != 0)
- #define task_contributes_to_load(task)	\
- 				((task->state & TASK_UNINTERRUPTIBLE) != 0 && \
--				 (task->flags & PF_FROZEN) == 0)
-+				 (task->flags & PF_FREEZING) == 0)
+--- a/sound/soc/codecs/wm8753.c
++++ b/sound/soc/codecs/wm8753.c
+@@ -1664,7 +1664,7 @@ static int wm8753_register(struct wm8753
+ 	codec->reg_cache = &wm8753->reg_cache;
+ 	codec->private_data = wm8753;
  
- #define __set_task_state(tsk, state_value)		\
- 	do { (tsk)->state = (state_value); } while (0)
-@@ -1630,6 +1630,7 @@ extern cputime_t task_gtime(struct task_
- #define PF_MEMALLOC	0x00000800	/* Allocating memory */
- #define PF_FLUSHER	0x00001000	/* responsible for disk writeback */
- #define PF_USED_MATH	0x00002000	/* if unset the fpu must be initialized before use */
-+#define PF_FREEZING	0x00004000	/* freeze in progress. do not account to load */
- #define PF_NOFREEZE	0x00008000	/* this thread should not be frozen */
- #define PF_FROZEN	0x00010000	/* frozen for system suspend */
- #define PF_FSTRANS	0x00020000	/* inside a filesystem transaction */
---- a/kernel/freezer.c
-+++ b/kernel/freezer.c
-@@ -44,12 +44,19 @@ void refrigerator(void)
- 	recalc_sigpending(); /* We sent fake signal, clean it up */
- 	spin_unlock_irq(&current->sighand->siglock);
+-	memcpy(codec->reg_cache, wm8753_reg, sizeof(codec->reg_cache));
++	memcpy(codec->reg_cache, wm8753_reg, sizeof(wm8753->reg_cache));
+ 	INIT_DELAYED_WORK(&codec->delayed_work, wm8753_work);
  
-+	/* prevent accounting of that task to load */
-+	current->flags |= PF_FREEZING;
-+
- 	for (;;) {
- 		set_current_state(TASK_UNINTERRUPTIBLE);
- 		if (!frozen(current))
- 			break;
- 		schedule();
- 	}
-+
-+	/* Remove the accounting blocker */
-+	current->flags &= ~PF_FREEZING;
-+
- 	pr_debug("%s left refrigerator\n", current->comm);
- 	__set_current_state(save);
- }
+ 	ret = wm8753_reset(codec);
 
 
