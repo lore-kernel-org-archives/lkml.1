@@ -1,99 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbZG1Qmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752811AbZG1Qol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754957AbZG1Qmk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 12:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbZG1Qmj
+	id S1752811AbZG1Qol (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 12:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbZG1Qok
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 12:42:39 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46789 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752267AbZG1Qmj (ORCPT
+	Tue, 28 Jul 2009 12:44:40 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:1517 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750744AbZG1Qok (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 12:42:39 -0400
-Date: Tue, 28 Jul 2009 17:42:13 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kdesu broken
-Message-ID: <20090728174213.5e927428@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.01.0907280848090.3186@localhost.localdomain>
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
-	<87bpn7mzli.fsf@devron.myhome.or.jp>
-	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
-	<873a8iqqgv.fsf@devron.myhome.or.jp>
-	<20090727142303.41096bf5@lxorguk.ukuu.org.uk>
-	<877hxujkuv.fsf@devron.myhome.or.jp>
-	<20090727145805.690afe5d@lxorguk.ukuu.org.uk>
-	<87fxci6ub9.fsf@devron.myhome.or.jp>
-	<20090727161424.GA4233@skywalker>
-	<20090727174252.2d987830@lxorguk.ukuu.org.uk>
-	<20090727171213.GB4233@skywalker>
-	<87skgikjr8.fsf@devron.myhome.or.jp>
-	<20090727222010.1a5efb7b@lxorguk.ukuu.org.uk>
-	<87r5w19xsb.fsf@devron.myhome.or.jp>
-	<20090728112203.7b70adba@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907280848090.3186@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 28 Jul 2009 12:44:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=aiiQf2y/msiCy2sB3hzw5ax7fzxXsjJaG5mEPam5f2kNHKhT2HEr+uqWPDUbyQ847J
+         4oIJrGkKE5RynDvMlIuQbHWeBOSLSP6RDXkdPhsELogICwR+ZmQxObMBtQ0zU5zqy4x5
+         8pBjAaju5VyOpDpUGsgZ+YpRM0VI1ZKjjz5to=
+Message-ID: <4A6F2AF4.6050505@gmail.com>
+Date: Tue, 28 Jul 2009 09:44:36 -0700
+From: "Moussa A. Ba" <moussa.a.ba@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: David Rientjes <rientjes@google.com>, xiyou.wangcong@gmail.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, Matt Mackall <mpm@selenic.com>,
+       Mel Gorman <mel@csn.ul.ie>, Ying Han <yinghan@google.com>,
+       Nick Piggin <npiggin@suse.de>, jaredeh@gmail.com
+Subject: [PATCH 1/1] pagemap clear_refs: modify to specify anon or mapped
+ vma clearing
+References: <4A693122.6060503@gmail.com> <20090724083926.GA6372@cr0.nay.redhat.com> <4A6E0BD6.50102@gmail.com> <alpine.DEB.2.00.0907271339070.17425@chino.kir.corp.google.com> <7928e7bd0907271514y699d1de4j54f9c562b94ef0cc@mail.gmail.com> <alpine.DEB.2.00.0907271543420.23587@chino.kir.corp.google.com> <7928e7bd0907271638x5ddbfd2ckba2802338a33765a@mail.gmail.com> <alpine.DEB.2.00.0907271657160.27881@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.0907271657160.27881@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Jul 2009 08:49:29 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> 
-> 
-> On Tue, 28 Jul 2009, Alan Cox wrote:
-> > 
-> > Given the assumptions in emacs are wrong, low_latency fixes the real
-> > world cases and we are standards compliant perhaps we are trying too
-> > hard ?
-> 
-> Alan, I really don't understand why you seem to argue _for_ bad code, and 
-> not just fixing it. You seem to think that it's ok to leave stuff in 
-> buffers and ignore it, just because the other end might have exited. 
-> 
-> That seems disingenious and stupid. Why argue for crap?
+This patch adds anonymous and file backed filters to the clear_refs interface.
+echo 1 > /proc/PID/clear_refs resets the bits on all pages
+echo 2 > /proc/PID/clear_refs resets the bits on anonymous pages only
+echo 3 > /proc/PID/clear_refs resets the bits on file backed pages only
+Any other value is ignored.
 
-We don't ignore it. What goes in one end comes out the other after tty
-processing (ldisc, echo etc). Reliably. Both the EOF fix and the
-tty->low_latency fix cure that. [The low latency one also provides the
-*exact* same semantics as we had prior to 2.6.31-rc as well]
+---
+Signed-off-by: Moussa A. Ba <moussa.a.ba@gmail.com>
+Signed-off-by: Jared E. Hulbert <jaredeh@gmail.com>
+--- a/Documentation/filesystems/proc.txt	2009-07-20 17:29:11.000000000 -0700
++++ b/Documentation/filesystems/proc.txt	2009-07-27 16:58:05.000000000 -0700
+@@ -375,6 +375,18 @@ of memory currently marked as referenced
+  This file is only present if the CONFIG_MMU kernel configuration option is
+  enabled.
 
-If I understand Ogawa correctly then what emacs thinks is true is quite
-different: Emacs thinks that
++The /proc/PID/clear_refs is used to reset the PG_Referenced and ACCESSED/YOUNG
++bits on both physical and virtual pages associated with a process.
++To clear the bits for all the pages associated with the process
++    > echo 1 > /proc/PID/clear_refs
++
++To clear the bits for the anonymous pages associated with the process
++    > echo 2 > /proc/PID/clear_refs
++
++To clear the bits for the file backed pages associated with the process
++    > echo 3 > /proc/PID/clear_refs
++Any other value written to /proc/PID/clear_refs will have no effect.
++
+  1.2 Kernel data
+  ---------------
 
-	write(pty, "data", length)
-	close(pty)
-	exit()
+--- a/fs/proc/task_mmu.c	2009-07-21 14:30:01.000000000 -0700
++++ b/fs/proc/task_mmu.c	2009-07-27 17:05:25.000000000 -0700
+@@ -462,6 +462,10 @@ static int clear_refs_pte_range(pmd_t *
+  	return 0;
+  }
 
-will always ensure that the other end has already got the data before
-close() completes - or to be more exact before the parent receives SIGCLD.
++#define CLEAR_REFS_ALL 1
++#define CLEAR_REFS_ANON 2
++#define CLEAR_REFS_MAPPED 3
++
+  static ssize_t clear_refs_write(struct file *file, const char __user * buf,
+  				size_t count, loff_t * ppos)
+  {
+@@ -469,13 +473,15 @@ static ssize_t clear_refs_write(struct f
+  	char buffer[PROC_NUMBUF], *end;
+  	struct mm_struct *mm;
+  	struct vm_area_struct *vma;
++	int type;
 
-Unfortunately as both ends could do
-
-	write(pty, "enough to fill all the buffers but not block")
-	close(pty)
-
-at the same time it doesn't strike me as a good idea because it will
-deadlock.
-
-Ogawa's latest experiment is actually quite interesting which is to also
-run the ldisc processing off the back of the user context. Unfortunately
-that breaks assorted assumptions in the kernel because the
-close/hangup/ldisc change paths believe that if they kill the work queue
-for feeding data into the ldisc then the ldisc will stop receiving
-data. It believes that therefore the ldisc will not do things like call
-the write method to echo data back to a device which has gone away, which
-generally involves jumping through null pointers.
-
-So to be clear: WE DO NOT LOSE DATA.
-
-
+  	memset(buffer, 0, sizeof(buffer));
+  	if (count > sizeof(buffer) - 1)
+  		count = sizeof(buffer) - 1;
+  	if (copy_from_user(buffer, buf, count))
+  		return -EFAULT;
+-	if (!simple_strtol(buffer, &end, 0))
++	type = simple_strtol(buffer, &end, 0);
++	if (!type || type < CLEAR_REFS_ALL || type > CLEAR_REFS_MAPPED)
+  		return -EINVAL;
+  	if (*end == '\n')
+  		end++;
+@@ -491,9 +497,23 @@ static ssize_t clear_refs_write(struct f
+  		down_read(&mm->mmap_sem);
+  		for (vma = mm->mmap; vma; vma = vma->vm_next) {
+  			clear_refs_walk.private = vma;
+-			if (!is_vm_hugetlb_page(vma))
+-				walk_page_range(vma->vm_start, vma->vm_end,
+-						&clear_refs_walk);
++			if (is_vm_hugetlb_page(vma))
++				continue;
++			/*
++			 * Writing 1 to /proc/pid/clear_refs affects all pages.
++			 *
++			 * Writing 2 to /proc/pid/clear_refs only affects
++			 * Anonymous pages.
++			 *
++			 * Writing 3 to /proc/pid/clear_refs only affects file
++			 * backed pages.
++			 */
++			if (type == CLEAR_REFS_ANON && vma->vm_file)
++				continue;
++			if (type == CLEAR_REFS_MAPPED && !vma->vm_file)
++				continue;
++			walk_page_range(vma->vm_start, vma->vm_end,
++					&clear_refs_walk);
+  		}
+  		flush_tlb_mm(mm);
+  		up_read(&mm->mmap_sem);
