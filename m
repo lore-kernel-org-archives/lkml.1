@@ -1,98 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbZG1T0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754265AbZG1Tbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754286AbZG1T0h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 15:26:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750743AbZG1T0g
+	id S1754265AbZG1Tbb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 15:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbZG1Tbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 15:26:36 -0400
-Received: from mail-fx0-f216.google.com ([209.85.220.216]:62613 "EHLO
-	mail-fx0-f216.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753522AbZG1T0f (ORCPT
+	Tue, 28 Jul 2009 15:31:31 -0400
+Received: from mail-bw0-f221.google.com ([209.85.218.221]:47537 "EHLO
+	mail-bw0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750743AbZG1Tba (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 15:26:35 -0400
+	Tue, 28 Jul 2009 15:31:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=mYHtchTin1jsAnlx+JsExxiVIUuLNqY693aoeikrZ9frH9SMIstGAMODD5auAJJVlo
-         JXaPc0sCf9XQzbTMCXnUIa1hIH4kYGwDWPS9hf3PsayEgpHgCaqNDS+M+jZPKDU7kQYz
-         W5nUN3bOvBD3kgilB7e7tX98HBScmTFYNVV1M=
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=EjA5Nff+lb8by6nT0clmH8Q9Jf4kFpoXcj+qUDv6z5+mcKAUJu57+LFy0v7dzoZpAc
+         WISzGvt0vpvBq7F5mpi2XDpcyT9ZOYbZ6iwl3SLRqK2F+xh7u3t8Fw+BLpTWY8UmLBNE
+         OCVkFjJRoh2ynlhVPjLPMqMfWCjQllo3WIp9A=
+Message-ID: <4A6F520B.6090202@gmail.com>
+Date: Tue, 28 Jul 2009 13:31:23 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <20090728165416.GI11494@bit.office.eurotux.com>
-References: <20090727192720.GA30366@bit.office.eurotux.com>
-	 <84144f020907271245q1d635e49j15a32c85303bf073@mail.gmail.com>
-	 <20090728165026.GH11494@bit.office.eurotux.com>
-	 <20090728165416.GI11494@bit.office.eurotux.com>
-Date: Tue, 28 Jul 2009 20:19:05 +0100
-Message-ID: <9b2b86520907281219g4d804f05v46af85fdb0690609@mail.gmail.com>
-Subject: Re: eeepc_hotkey adds 25s to boot
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: Luciano Rocha <luciano@eurotux.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org, corentincj@iksaif.net
-Content-Type: text/plain; charset=ISO-8859-1
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linux USB <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [2.6.31-rc4] ftdi_usb maps memory from stack...
+References: <6278d2220907271517u46894cbu69ae52148664e04e@mail.gmail.com>
+In-Reply-To: <6278d2220907271517u46894cbu69ae52148664e04e@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/28/09, Luciano Rocha <luciano@eurotux.com> wrote:
-> On Tue, Jul 28, 2009 at 05:50:26PM +0100, Luciano Rocha wrote:
->> On Mon, Jul 27, 2009 at 10:45:14PM +0300, Pekka Enberg wrote:
->> > (Adding Corentin to cc)
->> >
->> > On Mon, Jul 27, 2009 at 10:27 PM, Luciano Rocha<luciano@eurotux.com>
->> > wrote:
->> > > As subject says, loading the eeepc_hotkeys driver or including it
->> > > inside
->> > > the kernel adds 25s to the boot process:
->> > > [   13.990092] eeepc: Eee PC Hotkey Driver
->> > > [   39.560645] eeepc: Hotkey init flags 0x41
->> > > [   39.566131] eeepc: Get control methods supported: 0x101713
->> > > [   39.566418] input: Asus EeePC extra buttons as ...
->> > >
->> > > Kernel is 2.6.30.3 (with tuxonice).
->> > >
->> > > Config and full dmesg follows.
->> > >
->> > > Also, a "rmmod eeepc_hotkeys" resulted in a kernel panic. If asked,
->> > > I'll
->> > > try to replicate it.
->> >
->> > Yes, please.
->>
->> Hm, rebooted without i2c_i801, browsed some, then did a rmmod
->> eeepc_laptop:
->> ERROR!!! H2M_MAILBOX still hold by MCU. command fail
->> ERROR!!! H2M_MAILBOX still hold by MCU. command fail
->>
->> Two equal lines, yes. What does it mean?
+On 07/27/2009 04:17 PM, Daniel J Blueman wrote:
+> With DMA debugging enabled, I see a warning when the FTDI USB-serial
+> driver loads [1] using a non-DMAable address.
 >
-> Nevermind, the wireless driver didn't like that the hardware
-> disappeared.
+> I can get a disassembly of some of the stack frames to identify the
+> exact call-sites etc, if that helps anyone?
+>
+> Thanks,
+>    Daniel
+>
+> --- [1]
+>
+> usbcore: registered new interface driver usbserial_generic
+>
+> usbserial: USB Serial Driver core
+>
+> USB Serial support registered for FTDI USB Serial Device
+>
+> ftdi_sio 5-1:1.0: FTDI USB Serial Device converter detected
+>
+> usb 5-1: Detected FT8U232AM
+>
+> usb 5-1: Number of endpoints 2
+>
+> usb 5-1: Endpoint 1 MaxPacketSize 64
+>
+> usb 5-1: Endpoint 2 MaxPacketSize 64
+>
+> usb 5-1: Setting MaxPacketSize 64
+>
+> ------------[ cut here ]------------
+>
+> WARNING: at lib/dma-debug.c:856 check_for_stack+0x9a/0xc0()
+>
+> Hardware name: OEM
+>
+> uhci_hcd 0000:00:1d.0: DMA-API: device driver maps memory from stack
+> [addr=ffff88007f89b946]
 
-Thanks for the bug report anyway :-).
-
-So presumably this is what caused your oops earlier.  I assume the
-wireless toggle button doesn't normally cause any errors.
-
-The new rfkill core in 2.6.31 should avoid triggering this bug.  The
-new core won't disable the wireless when the eeepc-laptop module is
-removed.
-
-But we should still fix the underlying problem.  It sounds like
-there's a narrow danger window on module unload.  And it's still there
-in 2.6.31-rc4:
-
-1019 static void eeepc_rfkill_exit(void)
-1020 {
-1021         eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
-1022         eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
-1023         if (ehotk->wlan_rfkill)
-1024                 rfkill_unregister(ehotk->wlan_rfkill);
-
-Really we need to perform these unregistrations "at the same time".
-The rfkill device relies on the notifier, but the notifier callback
-also uses the rfkill device.  I guess we will need to a mutex to
-synchronize unregistration (and registration).
-
-Alan
+Looks like some of the functions in ftdi_sio.c call usb_control_msg with 
+a stack buffer and some use a kmalloc buffer. They should likely all be 
+using a kmalloc buffer.
