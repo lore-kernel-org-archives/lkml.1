@@ -1,78 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754381AbZG1P2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbZG1Pdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754381AbZG1P2T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 11:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbZG1P2T
+	id S1754042AbZG1Pdb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 11:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbZG1Pda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 11:28:19 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:48100 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753682AbZG1P2S (ORCPT
+	Tue, 28 Jul 2009 11:33:30 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:40547 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751296AbZG1Pda (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 11:28:18 -0400
-Subject: Re: [Bug #13337] [post 2.6.29 regression] hang during suspend of
- b44/b43 modules
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jan Scholz <scholz@fias.uni-frankfurt.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Tomas Janousek <tomi@nomi.cz>,
-       "John W. Linville" <linville@tuxdriver.com>
-In-Reply-To: <87my6ovpjv.fsf@scholz.fias.uni-frankfurt.de>
-References: <tSdKBEwEOhE.A.2wF.s_oUKB@chimera>
-	 <87k52izvd9.fsf@scholz.fias.uni-frankfurt.de>
-	 <87y6qxx50z.fsf@scholz.fias.uni-frankfurt.de>
-	 <200907092203.10294.rjw@sisk.pl> <1247171295.1905.5.camel@johannes.local>
-	 <87prc78ga9.fsf@scholz.fias.uni-frankfurt.de>
-	 <1247322985.30647.108.camel@johannes.local>
-	 <8763dznnki.fsf@scholz.fias.uni-frankfurt.de>
-	 <1247334464.30647.109.camel@johannes.local>
-	 <87my6ovpjv.fsf@scholz.fias.uni-frankfurt.de>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-RFvgE9pBbYlgRXxuYTdD"
-Date: Tue, 28 Jul 2009 17:26:17 +0200
-Message-Id: <1248794777.8113.13.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Tue, 28 Jul 2009 11:33:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=QX0PkWMcuBy8JzJiE4WAxO288GP0fyBANKsGCqQCMK/vhctw/NE6xScLMY9E1S4EtB
+         4QQUZR6danNUed73wiEqCv8l0ydDUcqeM0CzAUhXkMVSBrsQU8hVoc6B6otGO7Mu3R4h
+         Pj38QqSV+ArWpZarKZnptgxHvwRtp9OQ+lUDI=
+Date: Tue, 28 Jul 2009 17:33:24 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing: fix invalid function_graph entry
+Message-ID: <20090728153322.GA6215@nowhere>
+References: <4A6EEAEC.3050508@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A6EEAEC.3050508@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jul 28, 2009 at 08:11:24PM +0800, Lai Jiangshan wrote:
+> 
+> print_graph_entry() consumes current event, if this event
+> is the last event in the page, the ring_buffer may reuse
+> the page. It will become invalid.
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
 
---=-RFvgE9pBbYlgRXxuYTdD
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2009-07-28 at 16:40 +0200, Jan Scholz wrote:
+Queued for .31, thanks Lai!
 
-> The bug is still present in v2.6.31-rc4, it's still fixed by the patch
-> (see below) suggested as a test by Johannes.
 
-Sorry, this completely dropped off my radar, I'll take a look today.
-Thanks for reminding me.
-
-johannes
-
---=-RFvgE9pBbYlgRXxuYTdD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKbxiWAAoJEODzc/N7+QmaltcQAI1fx5Hh4REfEqLPex8pw+DV
-jxKdz50ibMx5Vqw30gyDn/6vYTbc+xI7R2uKzj1j4be0tyhrmVDPgMnn9l6k1Lg9
-J/MA66ucotWpf6VuH26aptjIPwZixMDTkB4JTzMKmM/l5UZoz3MhQCCjf5y5vjBv
-CaClot5on7YEgF5Qkbl5TSVkT8Ky+acY+IOhvKqFkryOXaR9VaWHfm8+M4IARSge
-/0sXFAWch+tdf7FSs1ZnPflkWbZgyvSozgl8xrerGNvXJlqjbB3bi62tpDJ4naoO
-ZSIe4353ysdbMhPF8dBHNuQ/1/eyZk8SzJVz/PXpFqlXxgFi+5KrhW4AQlB+A/yq
-3SAKW4jxBfseuEwMuSmU3q14/w7FFL6GlHRviKx1ATJAi86qmwx1qRS6xw4i1SCg
-FkkOV6dFEHa9eHjVO/D1fKedD1P/54q2GZM/mBLVJBYvRZlHYEAAlCjbpHH/TvrZ
-yr/3pb7aRoUu2Ul3AuacpBugBMLb6G7eLxKNCzzF6sEDgVH5LeXr4HC7TpJhFIRs
-0J91XH0dZWNIEm8m/Z1/D/iPSn/4UoJl1+TU4YPXYB1lg2XAhOkZupJZufLZtanv
-W7FRdOBfwacv2Nzr9TZfOBlPwIizYK5CPgop9Jkh8LXmnwFlROm+XGecrHtzdk0v
-QYRinTPYEKhyJ6pL1PVo
-=v7K6
------END PGP SIGNATURE-----
-
---=-RFvgE9pBbYlgRXxuYTdD--
+> diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
+> index abf7c4a..02102a3 100644
+> --- a/kernel/trace/trace_functions_graph.c
+> +++ b/kernel/trace/trace_functions_graph.c
+> @@ -835,9 +835,16 @@ print_graph_function(struct trace_iterator *iter)
+>  
+>  	switch (entry->type) {
+>  	case TRACE_GRAPH_ENT: {
+> -		struct ftrace_graph_ent_entry *field;
+> +		/*
+> +		 * print_graph_entry() may consume the current event,
+> +		 * thus @field may become invalid, so we need to save it.
+> +		 * sizeof(struct ftrace_graph_ent_entry) is very small,
+> +		 * it is safely saved at the stack.
+> +		 */
+> +		struct ftrace_graph_ent_entry *field, saved;
+>  		trace_assign_type(field, entry);
+> -		return print_graph_entry(field, s, iter);
+> +		saved = *field;
+> +		return print_graph_entry(&saved, s, iter);
+>  	}
+>  	case TRACE_GRAPH_RET: {
+>  		struct ftrace_graph_ret_entry *field;
+> 
 
