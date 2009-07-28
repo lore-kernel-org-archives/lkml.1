@@ -1,168 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754449AbZG1PKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbZG1PGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754449AbZG1PKP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 11:10:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754393AbZG1PKM
+	id S1753899AbZG1PGp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 11:06:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbZG1PGo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 11:10:12 -0400
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:39735
-	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753681AbZG1PGm (ORCPT
+	Tue, 28 Jul 2009 11:06:44 -0400
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:12074 "EHLO
+	TX2EHSOBE008.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753686AbZG1PGm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 28 Jul 2009 11:06:42 -0400
-X-SpamScore: -5
-X-BigFish: VPS-5(zz655Nzz1202hzzz32i203h62h)
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i203h43j62h)
 X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KNHZAP-02-6P9-02
-X-M-MSG: 
+X-WSS-ID: 0KNHZAS-03-5WW-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: <mingo@elte.hu>, <hpa@zytor.com>, <tglx@linutronix.de>, <norsk5@yahoo.com>,
        <aris@redhat.com>
-CC: <linux-kernel@vger.kernel.org>, <x86@kernel.org>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>
-Subject: [PATCH 03/20] x86: add cpu_node topology detection for AMD Magny-Cours
-Date: Tue, 28 Jul 2009 17:06:03 +0200
-Message-ID: <1248793580-29899-4-git-send-email-borislav.petkov@amd.com>
+CC: <linux-kernel@vger.kernel.org>, <x86@kernel.org>
+Subject: [PATCH 15/20] EDAC, AMD: decode data cache MCEs
+Date: Tue, 28 Jul 2009 17:06:15 +0200
+Message-ID: <1248793580-29899-16-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1248793580-29899-1-git-send-email-borislav.petkov@amd.com>
 References: <1248793580-29899-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 28 Jul 2009 15:06:23.0691 (UTC) FILETIME=[F8C7F1B0:01CA0F94]
+X-OriginalArrivalTime: 28 Jul 2009 15:06:29.0269 (UTC) FILETIME=[FC1B1450:01CA0F94]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
+Those get reported in MC0_STATUS, see Table 92, F10h BKDG (31116, rev.
+3.28) for more details.
 
-This adapts CPU topology detection for AMD Magny-Cours.
-
-Here is example output from two cores on same package but different
-internal cpu_nodes:
-
-/sys/devices/system/cpu/cpu5:
-  physical_package_id        : 0
-  core_id                    : 5
-  thread_siblings            : 00000020
-  thread_siblings_list       : 5
-  cpu_node_id                : 0
-  cpu_node_siblings          : 0000003f
-  cpu_node_siblings_list     : 0-5
-  core_siblings              : 00000fff
-  core_siblings_list         : 0-11
-/sys/devices/system/cpu/cpu6:
-  physical_package_id        : 0
-  core_id                    : 0
-  thread_siblings            : 00000040
-  thread_siblings_list       : 6
-  cpu_node_id                : 1
-  cpu_node_siblings          : 00000fc0
-  cpu_node_siblings_list     : 6-11
-  core_siblings              : 00000fff
-  core_siblings_list         : 0-11
-
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- arch/x86/include/asm/cpufeature.h |    1 +
- arch/x86/kernel/cpu/amd.c         |   59 ++++++++++++++++++++++++++++++++++++-
- 2 files changed, 59 insertions(+), 1 deletions(-)
+ drivers/edac/edac_mce_amd.c |   56 +++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 54 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
-index 4a28d22..847fee6 100644
---- a/arch/x86/include/asm/cpufeature.h
-+++ b/arch/x86/include/asm/cpufeature.h
-@@ -95,6 +95,7 @@
- #define X86_FEATURE_NONSTOP_TSC	(3*32+24) /* TSC does not stop in C states */
- #define X86_FEATURE_CLFLUSH_MONITOR (3*32+25) /* "" clflush reqd with monitor */
- #define X86_FEATURE_EXTD_APICID	(3*32+26) /* has extended APICID (8 bits) */
-+#define X86_FEATURE_AMD_DCM     (3*32+27) /* multi-node processor */
+diff --git a/drivers/edac/edac_mce_amd.c b/drivers/edac/edac_mce_amd.c
+index e332da0..07875d6 100644
+--- a/drivers/edac/edac_mce_amd.c
++++ b/drivers/edac/edac_mce_amd.c
+@@ -118,6 +118,49 @@ const char *ext_msgs[] = {
+ };
+ EXPORT_SYMBOL_GPL(ext_msgs);
  
- /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
- #define X86_FEATURE_XMM3	(4*32+ 0) /* "pni" SSE-3 */
-diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-index e2485b0..d90abeb 100644
---- a/arch/x86/kernel/cpu/amd.c
-+++ b/arch/x86/kernel/cpu/amd.c
-@@ -251,6 +251,56 @@ static int __cpuinit nearby_node(int apicid)
- #endif
- 
- /*
-+ * Fixup core topology information for AMD multi-node processors.
-+ * Assumption 1: Number of cores in each internal node is the same.
-+ * Assumption 2: Mixed systems with both single-node and dual-node
-+ *               processors are not supported.
-+ */
-+static void __cpuinit amd_fixup_dcm(struct cpuinfo_x86 *c)
++static void amd_decode_dc_mce(u64 mc0_status)
 +{
-+	u32 t, cpn;
-+	u8 n;
++	u32 ec  = mc0_status & 0xffff;
++	u32 xec = (mc0_status >> 16) & 0xf;
 +
-+	/* fixup topology information only once for a core */
-+	if (cpu_has(c, X86_FEATURE_AMD_DCM))
-+		return;
++	pr_emerg(" Data Cache Error");
 +
-+	/* check for multi-node processor on boot cpu */
-+	t = read_pci_config(0, 24, 3, 0xe8);
-+	if (!(t & (1 << 29)))
-+		return;
++	if (xec == 1 && TLB_ERROR(ec))
++		pr_cont(": %s TLB multimatch.\n", LL_MSG(ec));
++	else if (xec == 0) {
++		if (mc0_status & (1ULL << 40))
++			pr_cont(" during Data Scrub.\n");
++		else if (TLB_ERROR(ec))
++			pr_cont(": %s TLB parity error.\n", LL_MSG(ec));
++		else if (MEM_ERROR(ec)) {
++			u8 ll   = ec & 0x3;
++			u8 tt   = (ec >> 2) & 0x3;
++			u8 rrrr = (ec >> 4) & 0xf;
 +
-+	set_cpu_cap(c, X86_FEATURE_AMD_DCM);
++			/* see F10h BKDG (31116), Table 92. */
++			if (ll == 0x1) {
++				if (tt != 0x1)
++					goto wrong_dc_mce;
 +
-+	/* cores per node: each internal node has half the number of cores */
-+	cpn = c->x86_max_cores >> 1;
++				pr_cont(": Data/Tag %s error.\n", RRRR_MSG(ec));
 +
-+	/* even-numbered NB_id of this dual-node processor */
-+	n = c->phys_proc_id << 1;
-+
-+	/*
-+	 * determine internal node id and assign cores fifty-fifty to
-+	 * each node of the dual-node processor
-+	 */
-+	t = read_pci_config(0, 24 + n, 3, 0xe8);
-+	n = (t>>30) & 0x3;
-+	if (n == 0) {
-+		if (c->cpu_core_id < cpn)
-+			c->cpu_node_id = 0;
++			} else if (ll == 0x2 && rrrr == 0x3)
++				pr_cont(" during L1 linefill from L2.\n");
++			else
++				goto wrong_dc_mce;
++		} else if (BUS_ERROR(ec) && boot_cpu_data.x86 == 0xf)
++			pr_cont(" during system linefill.\n");
 +		else
-+			c->cpu_node_id = 1;
-+	} else {
-+		if (c->cpu_core_id < cpn)
-+			c->cpu_node_id = 1;
-+		else
-+			c->cpu_node_id = 0;
-+	}
++			goto wrong_dc_mce;
++	} else
++		goto wrong_dc_mce;
 +
-+	 /* fixup core id to be in range from 0 to cpn */
-+	c->cpu_core_id = c->cpu_core_id % cpn;
++	return;
++
++wrong_dc_mce:
++	pr_warning("Corrupted DC MCE info?\n");
 +}
 +
-+/*
-  * On a AMD dual core setup the lower bits of the APIC id distingush the cores.
-  * Assumes number of cores is a power of two.
-  */
-@@ -267,6 +317,9 @@ static void __cpuinit amd_detect_cmp(struct cpuinfo_x86 *c)
- 	c->phys_proc_id = c->initial_apicid >> bits;
- 	/* use socket ID also for last level cache */
- 	per_cpu(cpu_llc_id, cpu) = c->phys_proc_id;
-+	/* fixup topology information on multi-node processors */
-+	if ((c->x86 == 0x10) && (c->x86_model == 9))
-+		amd_fixup_dcm(c);
- #endif
- }
+ void amd_decode_nb_mce(int node_id, struct err_regs *regs, int handle_errors)
+ {
+ 	u32 ec  = ERROR_CODE(regs->nbsl);
+@@ -201,9 +244,12 @@ void decode_mce(struct mce *m)
  
-@@ -277,7 +330,11 @@ static void __cpuinit srat_detect_node(struct cpuinfo_x86 *c)
- 	int node;
- 	unsigned apicid = cpu_has_apic ? hard_smp_processor_id() : c->apicid;
+ 	pr_cont("\n");
  
--	node = c->phys_proc_id;
-+	if (cpu_has(c, X86_FEATURE_AMD_DCM))
-+		node = (c->phys_proc_id << 1) + c->cpu_node_id;
-+	else
-+		node = c->phys_proc_id;
+-	amd_decode_err_code(m->status & 0xffff);
++	switch (m->bank) {
++	case 0:
++		amd_decode_dc_mce(m->status);
++		break;
+ 
+-	if (m->bank == 4) {
++	case 4:
+ 		regs.nbsl  = (u32) m->status;
+ 		regs.nbsh  = (u32)(m->status >> 32);
+ 		regs.nbeal = (u32) m->addr;
+@@ -211,5 +257,11 @@ void decode_mce(struct mce *m)
+ 		node       = cpu_data(m->extcpu).cpu_node_id;
+ 
+ 		amd_decode_nb_mce(node, &regs, 1);
++		break;
 +
- 	if (apicid_to_node[apicid] != NUMA_NO_NODE)
- 		node = apicid_to_node[apicid];
- 	if (!node_online(node)) {
++	default:
++		break;
+ 	}
++
++	amd_decode_err_code(m->status & 0xffff);
+ }
 -- 
 1.6.3.3
 
