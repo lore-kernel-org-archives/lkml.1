@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbZG1SYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755444AbZG1S2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755435AbZG1SYg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 14:24:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755369AbZG1SYg
+	id S1755444AbZG1S2A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 14:28:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbZG1S2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 14:24:36 -0400
-Received: from bipbip.grupopie.com ([195.23.16.24]:37214 "EHLO
-	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755358AbZG1SYf (ORCPT
+	Tue, 28 Jul 2009 14:28:00 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1304 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755373AbZG1S16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 14:24:35 -0400
-X-Greylist: delayed 1911 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Jul 2009 14:24:34 EDT
-Message-ID: <4A6F3AEA.7090102@grupopie.com>
-Date: Tue, 28 Jul 2009 18:52:42 +0100
-From: Paulo Marques <pmarques@grupopie.com>
-Organization: Grupo PIE
-User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
-MIME-Version: 1.0
-To: Julia Lawall <julia@diku.dk>
-CC: jwoithe@physics.adelaide.edu.au, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 6/12] drivers/platform/x86: Correct redundant test
-References: <Pine.LNX.4.64.0907271813490.2682@ask.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0907271813490.2682@ask.diku.dk>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 28 Jul 2009 14:27:58 -0400
+Subject: Re: [PATCH] MAINTAINERS: Add networking wireless drivers section
+From: Joe Perches <joe@perches.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: David Miller <davem@davemloft.net>,
+       "John W. Linville" <linville@tuxdriver.com>, julia@diku.dk,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org, linux-wireless@vger.kernel.org
+In-Reply-To: <20090728111552.528a2c9a.randy.dunlap@oracle.com>
+References: <Pine.LNX.4.64.0907281753540.28189@ask.diku.dk>
+	 <20090728.103044.179053537.davem@davemloft.net>
+	 <1248804397.18284.5.camel@Joe-Laptop.home>
+	 <20090728111552.528a2c9a.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Date: Tue, 28 Jul 2009 11:27:07 -0700
+Message-Id: <1248805627.18284.11.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Julia Lawall wrote:
-> [...]
-> ---
->  drivers/platform/x86/fujitsu-laptop.c          |    3 ---
->  1 files changed, 0 insertions(+), 3 deletions(-)
+On Tue, 2009-07-28 at 11:15 -0700, Randy Dunlap wrote:
+> On Tue, 28 Jul 2009 11:06:37 -0700 Joe Perches wrote:
+> > On Tue, 2009-07-28 at 10:30 -0700, David Miller wrote:
+> > > Wireless patches need to be CC:'d to linux-wireless so that
+> > > John Linville can notice and pick them up
+> > Signed-off-by: Joe Perches <joe@perches.com>
+> > diff --git a/MAINTAINERS b/MAINTAINERS
+> > index ebc2691..0574aad 100644
+> > --- a/MAINTAINERS
+> > +++ b/MAINTAINERS
+> > @@ -4186,6 +4186,12 @@ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6.git
+> >  S:	Odd Fixes
+> >  F:	drivers/net/
+> >  
+> > +NETWORKING WIRELESS DRIVERS
+> > +L:	linux-wireless@vger.kernel.org
+> > +T:	git git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git
+> > +S:	Odd Fixes
+> > +F:	drivers/net/wireless/
+> > +
 > 
-> diff --git a/drivers/platform/x86/fujitsu-laptop.c b/drivers/platform/x86/fujitsu-laptop.c
-> index 218b9a1..5306901 100644
-> --- a/drivers/platform/x86/fujitsu-laptop.c
-> +++ b/drivers/platform/x86/fujitsu-laptop.c
-> @@ -745,9 +745,6 @@ static int acpi_fujitsu_remove(struct acpi_device *device, int type)
->  
->  	fujitsu = acpi_driver_data(device);
->  
-> -	if (!device || !acpi_driver_data(device))
-> -		return -EINVAL;
-> -
+> Already have this:
+> 
+> NETWORKING [WIRELESS]
+> P:	John W. Linville
+> M:	linville@tuxdriver.com
+> L:	linux-wireless@vger.kernel.org
+> T:	git git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git
+> S:	Maintained
+> F:	net/wireless/
+> F:	include/net/ieee80211*
+> F:	include/linux/wireless.h
 
-Shouldn't this still do a:
+That section does not include drivers/net/wireless/
 
-   if (!fujitsu)
-     return -EINVAL;
+I believe John Linville isn't maintaining all the
+wireless drivers, he's acting as a gatekeeper in
+a similar role as DavidM for drivers/net/.
 
-to avoid dereferencing a NULL pointer below?
+The patch above means scripts/get_maintainer.pl can
+use the linux-wireless@vger list email address for
+any change in driver/net/wireless/
 
->  	fujitsu->acpi_handle = NULL;
->  
->  	return 0;
 
--- 
-Paulo Marques - www.grupopie.com
-
-"All I ask is a chance to prove that money can't make me happy."
