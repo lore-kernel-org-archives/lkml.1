@@ -1,82 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752940AbZG1BNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbZG1BUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752940AbZG1BNz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 21:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbZG1BNy
+	id S1753047AbZG1BUO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 21:20:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbZG1BUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 21:13:54 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36364 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752540AbZG1BNx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 21:13:53 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 28 Jul 2009 10:11:57 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, miaox@cn.fujitsu.com,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Paul Menage <menage@google.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       y-goto@jp.fujitsu.com, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] set_mempolicy(MPOL_INTERLEAV) cause kernel panic
-Message-Id: <20090728101157.9465b2e5.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.0907271758170.29815@chino.kir.corp.google.com>
-References: <20090715182320.39B5.A69D9226@jp.fujitsu.com>
-	<1247679064.4089.26.camel@useless.americas.hpqcorp.net>
-	<alpine.DEB.2.00.0907161257190.31844@chino.kir.corp.google.com>
-	<alpine.DEB.2.00.0907241551070.8573@chino.kir.corp.google.com>
-	<20090724160936.a3b8ad29.akpm@linux-foundation.org>
-	<337c5d83954b38b14a17f0adf4d357d8.squirrel@webmail-b.css.fujitsu.com>
-	<5bb65c0e4c6828b1331d33745f34d9ee.squirrel@webmail-b.css.fujitsu.com>
-	<9443f91bd4648e6214b32acff4512b97.squirrel@webmail-b.css.fujitsu.com>
-	<alpine.DEB.2.00.0907271047590.8408@chino.kir.corp.google.com>
-	<20090728085810.f7ae678a.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0907271710590.27881@chino.kir.corp.google.com>
-	<20090728092529.bb0d7e9c.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0907271731040.29815@chino.kir.corp.google.com>
-	<20090728095453.1fe79de1.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0907271758170.29815@chino.kir.corp.google.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 27 Jul 2009 21:20:14 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51445 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752842AbZG1BUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 21:20:12 -0400
+Message-ID: <4A6E529B.9030104@kernel.org>
+Date: Tue, 28 Jul 2009 10:21:31 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Peter Zijlstra <peterz@infradead.org>, Zachary Amsden <zamsden@redhat.com>,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       axboe@kernel.dk, hch@infradead.org, akpm@linux-foundation.org,
+       Paul.Clements@steeleye.com, tytso@mit.edu, miklos <miklos@szeredi.hu>
+Subject: Re: [PATCH] Allow userspace block device implementation
+References: <4A6D79F6.3050509@redhat.com>	<1248699365.6987.1628.camel@twins> <20090727142536.465799aa@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090727142536.465799aa@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 28 Jul 2009 01:19:30 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Jul 2009 18:02:50 -0700 (PDT)
-David Rientjes <rientjes@google.com> wrote:
+Hello,
 
-> On Tue, 28 Jul 2009, KAMEZAWA Hiroyuki wrote:
+Alan Cox wrote:
+>> Somehow this made me think of FUSE/CUSE... should this be named aBUSE?
+>> Oh wait it is :-), what I'm after is I guess is, can we share some of
+>> the FUSE/CUSE code?
 > 
-> > > The problem originally reported here doesn't appear to have anything to do 
-> > > with hotplug, it looks like it is the result of Lee's observation that 
-> > > ia64 defaults top_cpuset's mems to N_POSSIBLE, which _should_ have been 
-> > > updated by cpuset_init_smp(). 
-> > cpuset_init_smp() just updates cpuset's mask.
-> > init's task->mems_allowed is intizialized independently from cpuset's mask.
-> > 
-> 
-> Presumably the bug is that N_HIGH_MEMORY is not a subset of N_ONLINE at 
-> this point on ia64.
-> 
-N_HIGH_MEMORY is must be subset of N_ONLINE, at the any moment. Hmm,
-I'll look into what happens in ia64 world.
+> It reminds me of the existing and perfectly functional network block
+> device (nbd) we already have and which has also been present for years.
 
-> > Could you teach me a pointer for Lee's observation ?
-> > 
-> 
-> http://marc.info/?l=linux-kernel&m=124767909310293
-> 
-Aha, my patch is very similar to Lee's one.
-And he said "hotplug is issue", yes. it is.
+Yeah, I think this is the biggest hurdle against (a)BUSE.  Is it
+sufficiently different from nbd?  nbd-like functionality can be
+implemented something via FUSE and maybe it can be said that things
+are cleaner that way but nbd has been in the kernel for a long time
+now and it's definitely much easier to do swap over it when the whole
+thing is in kernel.
 
+Thanks.
 
-Thanks,
--Kame
-
+-- 
+tejun
