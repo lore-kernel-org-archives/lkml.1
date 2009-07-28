@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756140AbZG1X6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756124AbZG1X4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756140AbZG1X6s (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:58:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbZG1Xt5
+	id S1756124AbZG1X4R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756116AbZG1X4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:49:57 -0400
-Received: from kroah.org ([198.145.64.141]:35746 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:56:15 -0400
+Received: from kroah.org ([198.145.64.141]:35826 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754246AbZG1Xt4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:49:56 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:55 2009
-Message-Id: <20090728234155.335851804@mini.kroah.org>
+	id S1754706AbZG1XuN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:50:13 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:58 2009
+Message-Id: <20090728234158.285147529@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:40:56 -0700
+Date: Tue, 28 Jul 2009 16:41:14 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [patch 27/71] ASoC: Fix register cache initialisation for WM8753
+       Alexey Fisher <bug-track@fisher-privat.net>,
+       ykzhao <yakui.zhao@intel.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 45/71] x86: Add quirk for Intel DG45ID board to avoid low memory corruption
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=asoc-fix-register-cache-initialisation-for-wm8753.patch
+Content-Disposition: inline; filename=x86-add-quirk-for-intel-dg45id-board-to-avoid-low-memory-corruption.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,31 +31,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+From: Alexey Fisher <bug-track@fisher-privat.net>
 
-commit 1df892cba45f9856d369a6a317ad2d1e44bca423 upstream.
+commit 6aa542a694dc9ea4344a8a590d2628c33d1b9431 upstream.
 
-The wrong register cache variable was being used to provide the size for
-the memcpy(), resulting in a copy of only a void * of data.
+AMI BIOS with low memory corruption was found on Intel DG45ID
+board (Bug 13710). Add this board to the blacklist - in the
+(somewhat optimistic) hope of future boards/BIOSes from Intel
+not having this bug.
 
-Reported-by: Lars-Peter Clausen <lars@metafoo.de>
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Also see:
+
+  http://bugzilla.kernel.org/show_bug.cgi?id=13736
+
+Signed-off-by: Alexey Fisher <bug-track@fisher-privat.net>
+Cc: ykzhao <yakui.zhao@intel.com>
+Cc: alan@lxorguk.ukuu.org.uk
+Cc: <stable@kernel.org>
+LKML-Reference: <1247660169-4503-1-git-send-email-bug-track@fisher-privat.net>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/soc/codecs/wm8753.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/kernel/setup.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
---- a/sound/soc/codecs/wm8753.c
-+++ b/sound/soc/codecs/wm8753.c
-@@ -1664,7 +1664,7 @@ static int wm8753_register(struct wm8753
- 	codec->reg_cache = &wm8753->reg_cache;
- 	codec->private_data = wm8753;
- 
--	memcpy(codec->reg_cache, wm8753_reg, sizeof(codec->reg_cache));
-+	memcpy(codec->reg_cache, wm8753_reg, sizeof(wm8753->reg_cache));
- 	INIT_DELAYED_WORK(&codec->delayed_work, wm8753_work);
- 
- 	ret = wm8753_reset(codec);
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -650,6 +650,19 @@ static struct dmi_system_id __initdata b
+ 			DMI_MATCH(DMI_BIOS_VENDOR, "Phoenix Technologies"),
+ 		},
+ 	},
++	{
++	/*
++	 * AMI BIOS with low memory corruption was found on Intel DG45ID board.
++	 * It hase different DMI_BIOS_VENDOR = "Intel Corp.", for now we will
++	 * match only DMI_BOARD_NAME and see if there is more bad products
++	 * with this vendor.
++	 */
++		.callback = dmi_low_memory_corruption,
++		.ident = "AMI BIOS",
++		.matches = {
++			DMI_MATCH(DMI_BOARD_NAME, "DG45ID"),
++		},
++	},
+ #endif
+ 	{}
+ };
 
 
