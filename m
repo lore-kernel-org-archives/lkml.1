@@ -1,162 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755015AbZG1Qlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbZG1Qmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755015AbZG1Qlq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 12:41:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755000AbZG1Qlp
+	id S1754957AbZG1Qmk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 12:42:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbZG1Qmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 12:41:45 -0400
-Received: from atreides.gradator.net ([212.85.155.42]:47045 "EHLO
-	atreides.gradator.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754983AbZG1Qlo (ORCPT
+	Tue, 28 Jul 2009 12:42:39 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46789 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752267AbZG1Qmj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 12:41:44 -0400
-Date: Tue, 28 Jul 2009 18:41:42 +0200
-From: Sylvain Rochet <gradator@gradator.net>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       linux-nfs@vger.kernel.org
-Message-ID: <20090728164142.GA13662@gradator.net>
-References: <20090420162017.GA28079@gradator.net> <20090716172749.GC3740@atrey.karlin.mff.cuni.cz> <20090725151751.GA6419@gradator.net> <20090727154253.GB8332@duck.suse.cz> <20090728112715.GA8442@gradator.net> <20090728135226.GA21682@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="LQksG6bCIzRHxTLp"
-Content-Disposition: inline
-In-Reply-To: <20090728135226.GA21682@duck.suse.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: gradator@atreides.gradator.net
-Subject: Re: 2.6.28.9: EXT3/NFS inodes corruption
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:51:29 +0000)
-X-SA-Exim-Scanned: Yes (on atreides.gradator.net)
+	Tue, 28 Jul 2009 12:42:39 -0400
+Date: Tue, 28 Jul 2009 17:42:13 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kdesu broken
+Message-ID: <20090728174213.5e927428@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.01.0907280848090.3186@localhost.localdomain>
+References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
+	<87bpn7mzli.fsf@devron.myhome.or.jp>
+	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
+	<873a8iqqgv.fsf@devron.myhome.or.jp>
+	<20090727142303.41096bf5@lxorguk.ukuu.org.uk>
+	<877hxujkuv.fsf@devron.myhome.or.jp>
+	<20090727145805.690afe5d@lxorguk.ukuu.org.uk>
+	<87fxci6ub9.fsf@devron.myhome.or.jp>
+	<20090727161424.GA4233@skywalker>
+	<20090727174252.2d987830@lxorguk.ukuu.org.uk>
+	<20090727171213.GB4233@skywalker>
+	<87skgikjr8.fsf@devron.myhome.or.jp>
+	<20090727222010.1a5efb7b@lxorguk.ukuu.org.uk>
+	<87r5w19xsb.fsf@devron.myhome.or.jp>
+	<20090728112203.7b70adba@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907280848090.3186@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 28 Jul 2009 08:49:29 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
---LQksG6bCIzRHxTLp
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> 
+> 
+> On Tue, 28 Jul 2009, Alan Cox wrote:
+> > 
+> > Given the assumptions in emacs are wrong, low_latency fixes the real
+> > world cases and we are standards compliant perhaps we are trying too
+> > hard ?
+> 
+> Alan, I really don't understand why you seem to argue _for_ bad code, and 
+> not just fixing it. You seem to think that it's ok to leave stuff in 
+> buffers and ignore it, just because the other end might have exited. 
+> 
+> That seems disingenious and stupid. Why argue for crap?
 
-Hi,
+We don't ignore it. What goes in one end comes out the other after tty
+processing (ldisc, echo etc). Reliably. Both the EOF fix and the
+tty->low_latency fix cure that. [The low latency one also provides the
+*exact* same semantics as we had prior to 2.6.31-rc as well]
 
+If I understand Ogawa correctly then what emacs thinks is true is quite
+different: Emacs thinks that
 
-On Tue, Jul 28, 2009 at 03:52:26PM +0200, Jan Kara wrote:
-> On Tue 28-07-09 13:27:15, Sylvain Rochet wrote:
-> > On Mon, Jul 27, 2009 at 05:42:53PM +0200, Jan Kara wrote:
-> > > On Sat 25-07-09 17:17:52, Sylvain Rochet wrote:
-> > > > >=20
-> > > > > Can you still see the corruption with 2.6.30 kernel?
-> > > >=20
-> > > > Not upgraded yet, we'll give a try.
-> >=20
-> > Done, now featuring 2.6.30.3 ;)
->=20
-> OK, drop me an email if you will see corruption also with this kernel.
+	write(pty, "data", length)
+	close(pty)
+	exit()
 
-Lets move out the corrupted directory ;)
+will always ensure that the other end has already got the data before
+close() completes - or to be more exact before the parent receives SIGCLD.
 
-root@bazooka:/data/web/ed/90/48/walotux.walon.org/htdocs/tmp/cache/e# rm --=
- * .ok=20
-rm: cannot remove `spip%3Farticle19.f8740dca': Input/output error
-root@bazooka:/data/web/ed/90/48/walotux.walon.org/htdocs/tmp/cache/e# cd ..
-root@bazooka:/data/web/ed/90/48/walotux.walon.org/htdocs/tmp/cache# mv e/ /=
-data/lost+found/wooops
+Unfortunately as both ends could do
 
+	write(pty, "enough to fill all the buffers but not block")
+	close(pty)
 
-> > > This is probably the misleading output from ext3_iget(). It should gi=
-ve
-> > > you EIO in the latest kernel.
-> >=20
-> > root@bazooka:/data/web/ed/90/48/walotux.walon.org/htdocs/tmp/cache/e# c=
-at spip%3Farticle19.f8740dca=20
-> > cat: spip%3Farticle19.f8740dca: Input/output error
-> >=20
-> > It has much more sense now. We thought the problem was around NFS due=
-=20
-> > the the previous error message, actually this is probably not the best=
-=20
-> > looking path.
->=20
-> Yes, EIO makes more sence. I think the problem is NFS connected anyway
-> though :). But I don't have a clue how it can happen yet. Maybe I can try
-> adding some low-cost debugging checks if you'd be willing to run such
-> kernel...
+at the same time it doesn't strike me as a good idea because it will
+deadlock.
 
-Without any problem, we have 24/7/365 physical access and we don't need=20
-to provide high-availability services.
+Ogawa's latest experiment is actually quite interesting which is to also
+run the ldisc processing off the back of the user context. Unfortunately
+that breaks assorted assumptions in the kernel because the
+close/hangup/ldisc change paths believe that if they kill the work queue
+for feeding data into the ldisc then the ldisc will stop receiving
+data. It believes that therefore the ldisc will not do things like call
+the write method to echo data back to a device which has gone away, which
+generally involves jumping through null pointers.
 
-Anyway, the data hosted aren't that important, there is little or even=20
-no need for strict confidentiality, so we will be happy to provide ssh=20
-access to whom would like to look deeper into this issue.
+So to be clear: WE DO NOT LOSE DATA.
 
 
-> I'm adding to CC linux-nfs just in case someone has an idea.
->=20
-> > >   Ah, OK, here's the problem. The directory points to a file which is
-> > > obviously deleted (note the "Links: 0"). All the content of the inode=
- seems
-> > > to indicate that the file was correctly deleted (you might check that=
- the
-> > > corresponding bit in the bitmap is cleared via: "icheck 88541562").
-> >=20
-> > root@bazooka:~# debugfs /dev/md10
-> > debugfs 1.40-WIP (14-Nov-2006)
-> > debugfs:  icheck 88541562
-> > Block   Inode number
-> > 88541562        <block not found>
->=20
-> Ah, wrong debugfs command. I should have written:
-> testi <88541562>
-
-debugfs:  testi <88541562>
-Inode 88541562 is not in use
-
-
-> > >   The question is how it could happen the directory still points to t=
-he
-> > > inode. Really strange. It looks as if we've lost a write to the direc=
-tory
-> > > but I don't see how. Are there any suspitious kernel messages in this=
- case?
-> >=20
-> > There were nothing for a while, but since the reboot there are some=20
-> > about this inode:=20
-> >=20
-> > EXT3-fs error (device md10): ext3_lookup: deleted inode referenced: 885=
-41562
->=20
-> Yes, that's to be expected given the corruption any NFS error messages?
-
-There are some error messages on NFS clients, however they are quite old.
-
-Apr 19 15:38:21 gin kernel: NFS: Buggy server - nlink =3D=3D 0!
-May  3 20:00:52 gin kernel: NFS: Buggy server - nlink =3D=3D 0!
-May  3 23:24:03 gin kernel: NFS: Buggy server - nlink =3D=3D 0!
-May  7 11:40:57 gin kernel: NFS: Buggy server - nlink =3D=3D 0!
-May  7 14:41:02 gin kernel: NFS: Buggy server - nlink =3D=3D 0!
-May 26 11:10:42 cognac kernel: NFS: Buggy server - nlink =3D=3D 0!
-May 26 11:13:28 cognac kernel: NFS: Buggy server - nlink =3D=3D 0!
-May 26 12:34:39 cognac kernel: NFS: Buggy server - nlink =3D=3D 0!
-May 26 12:39:43 cognac kernel: NFS: Buggy server - nlink =3D=3D 0!
-
-This is obviously related to the corruption.
-
-
-
-Sylvain
-
---LQksG6bCIzRHxTLp
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFKbypGDFub3qtEsS8RAgERAJ9GdWiFQCX8t2oZfFFTS/9UwbqfygCeO05E
-7EIKWVZT8uF3KHO4hFpmolE=
-=+F77
------END PGP SIGNATURE-----
-
---LQksG6bCIzRHxTLp--
