@@ -1,90 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753647AbZG1MKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbZG1MKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753647AbZG1MKX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 08:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbZG1MKV
+	id S1753726AbZG1MKx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 08:10:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbZG1MKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 08:10:21 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:54136 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753382AbZG1MKM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 08:10:12 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: linux-next: manual merge of the ttydev tree with the usb.current tree
-Date: Tue, 28 Jul 2009 14:10:40 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.31-rc4-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-References: <20090728140110.7cfe7c22.sfr@canb.auug.org.au> <20090728112608.09a494e0@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090728112608.09a494e0@lxorguk.ukuu.org.uk>
+	Tue, 28 Jul 2009 08:10:52 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:53716 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753524AbZG1MKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 08:10:51 -0400
+Message-ID: <4A6EEAEC.3050508@cn.fujitsu.com>
+Date: Tue, 28 Jul 2009 20:11:24 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] tracing: fix invalid function_graph entry
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907281410.41449.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 28. Juli 2009 12:26:08 schrieb Alan Cox:
-> On Tue, 28 Jul 2009 14:01:10 +1000
->
-> Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > Hi Alan,
-> >
-> > Today's linux-next merge of the ttydev tree got a conflict in
-> > drivers/usb/serial/usb-serial.c between commit
-> > a00b8d98aca97bfb6fa983f41dae25b424058592 ("USB: fix usage count in usb
-> > serial generic open regarding autoresume") from the usb.current tree	
->
-> That looks wrong. The extra fiddling with port.count looks both unsafe
-> and incorrect. I've never seen the "autoresume" patch referred to so I've
-> no idea what it is trying to do
 
-The problem is subdrivers looking at port->count to determine
-whether URBs have to be resubmitted. That must happen once.
-Therefore if serial_open() needs to do it itself it must make sure
-resume() runs without port->count already incremented.
+print_graph_entry() consumes current event, if this event
+is the last event in the page, the ring_buffer may reuse
+the page. It will become invalid.
 
-As serial_open() takes the lock, resume() must not do so.
-If however, remote wakeup is used a lock must be taken
-to look at port->count reliably. As this is impossible, the patch
-implementing use of remote wakeup for the option driver
-implements a private flag for opened ports.
-
-This code from option_resume():
-
-for (i = 0; i < serial->num_ports; i++) {
-		/* walk all ports */
-		port = serial->port[i];
-		portdata = usb_get_serial_port_data(port);
-		mutex_lock(&port->mutex);
-
-		/* skip closed ports */
-		if (!port->port.count) {
-			mutex_unlock(&port->mutex);
-			continue;
-		}
-
-		for (j = 0; j < N_IN_URB; j++) {
-			urb = portdata->in_urbs[j];
-			err = usb_submit_urb(urb, GFP_NOIO);
-			if (err < 0) {
-				mutex_unlock(&port->mutex);
-				err("%s: Error %d for bulk URB %d",
-					 __func__, err, i);
-				return err;
-			}
-		}
-		mutex_unlock(&port->mutex);
-
-must not take the port->mutex.
-
-Unfortunately I have no access to my trees today and yesterday.
-
-	Regards
-		Oliver
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
+index abf7c4a..02102a3 100644
+--- a/kernel/trace/trace_functions_graph.c
++++ b/kernel/trace/trace_functions_graph.c
+@@ -835,9 +835,16 @@ print_graph_function(struct trace_iterator *iter)
+ 
+ 	switch (entry->type) {
+ 	case TRACE_GRAPH_ENT: {
+-		struct ftrace_graph_ent_entry *field;
++		/*
++		 * print_graph_entry() may consume the current event,
++		 * thus @field may become invalid, so we need to save it.
++		 * sizeof(struct ftrace_graph_ent_entry) is very small,
++		 * it is safely saved at the stack.
++		 */
++		struct ftrace_graph_ent_entry *field, saved;
+ 		trace_assign_type(field, entry);
+-		return print_graph_entry(field, s, iter);
++		saved = *field;
++		return print_graph_entry(&saved, s, iter);
+ 	}
+ 	case TRACE_GRAPH_RET: {
+ 		struct ftrace_graph_ret_entry *field;
 
