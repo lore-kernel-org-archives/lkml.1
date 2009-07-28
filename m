@@ -1,84 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbZG1V4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755730AbZG1WCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755571AbZG1V4v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 17:56:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbZG1V4v
+	id S1755730AbZG1WCX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 18:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755718AbZG1WCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 17:56:51 -0400
-Received: from mx03.kabsi.at ([195.202.128.130]:36657 "EHLO mx03.kabsi.at"
+	Tue, 28 Jul 2009 18:02:23 -0400
+Received: from THUNK.ORG ([69.25.196.29]:44184 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755007AbZG1V4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 17:56:50 -0400
-X-Greylist: delayed 3281 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Jul 2009 17:56:50 EDT
-Date: Tue, 28 Jul 2009 23:01:17 +0200
-From: Jakob Gruber <jakob.gruber@kabelnet.at>
-To: gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Missing device IDs in rt2870
-Message-Id: <20090728230117.8fca2314.jakob.gruber@kabelnet.at>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1754813AbZG1WCW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 18:02:22 -0400
+Date: Tue, 28 Jul 2009 18:02:03 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Greg KH <greg@kroah.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kdesu broken
+Message-ID: <20090728220203.GI31679@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Greg KH <greg@kroah.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <20090728174213.5e927428@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907280944150.3186@localhost.localdomain> <20090728180649.596c5412@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907281141070.3186@localhost.localdomain> <20090728195651.3a402a31@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907281158120.3186@localhost.localdomain> <20090728201553.0eb2d51d@lxorguk.ukuu.org.uk> <20090728195648.GA4833@kroah.com> <20090728204720.GF31679@mit.edu> <20090728210121.GB12155@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090728210121.GB12155@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From http://bugzilla.kernel.org/show_bug.cgi?id=13459#c3
+On Tue, Jul 28, 2009 at 02:01:21PM -0700, Greg KH wrote:
+> On Tue, Jul 28, 2009 at 04:47:20PM -0400, Theodore Tso wrote:
+> > On Tue, Jul 28, 2009 at 12:56:48PM -0700, Greg KH wrote:
+> > > 
+> > > Do you have a pointer to your previous queue before you zapped it so
+> > > that others might be able to pick it up?
+> > > 
+> > 
+> > It's also available from linux-next as commit:
+> > 
+> >      024ea7873598686f3e02002ca23c2e8fa3fddd30
+> 
+> Hm, that's the wrong end of the tree, I think you mean
+> fbfa97a856a4ce2fa86058cff84f589eb7f1364e, right?
 
-In rt2870.h, there are 2 lists of USB devices. One is within 
+It all depends on your point of view, I guess.  The "last" commit in
+the branch is 024ea78, so you can see the whole queue if you use the
+command "git log 024ea78"; hence, it's the most useful if you're
+trying to find the patch series via git.
 
-#ifndef RT30xx
-#endif
+The whole set of tty patches can be found via:
 
-and the other in 
+git log e00b95d..024ea78
 
-#ifdef RT30xx
-#endif
+(where e00b95d is the parent of fbfa978).
 
-Since I'm not sure whether to add the devices to both lists or only the first,
-I'm posting a patch for both variations.
-
-Patch 1, add devices only to first list:
-
---- a/drivers/staging/rt2870/rt2870.h
-+++ b/drivers/staging/rt2870/rt2870.h
-@@ -77,6 +77,9 @@
- #ifndef RT30xx
- #define RT2870_USB_DEVICES    \
- {    \
-+    {USB_DEVICE(0x2019,0xED14)}, /* Planex Communications, Inc. */
-+    {USB_DEVICE(0x1737,0x0070)}, /* Linksys */
-+    {USB_DEVICE(0x050D,0x815C)}, /* Belkin */        \
-     {USB_DEVICE(0x148F,0x2770)}, /* Ralink */        \
-     {USB_DEVICE(0x1737,0x0071)}, /* Linksys WUSB600N */    \
-     {USB_DEVICE(0x148F,0x2870)}, /* Ralink */        \
-
-Patch 2, add devices to both lists:
-
---- a/drivers/staging/rt2870/rt2870.h
-+++ b/drivers/staging/rt2870/rt2870.h
-@@ -77,6 +77,9 @@
- #ifndef RT30xx
- #define RT2870_USB_DEVICES    \
- {    \
-+    {USB_DEVICE(0x2019,0xED14)}, /* Planex Communications, Inc. */
-+    {USB_DEVICE(0x1737,0x0070)}, /* Linksys */
-+    {USB_DEVICE(0x050D,0x815C)}, /* Belkin */        \
-     {USB_DEVICE(0x148F,0x2770)}, /* Ralink */        \
-     {USB_DEVICE(0x1737,0x0071)}, /* Linksys WUSB600N */    \
-     {USB_DEVICE(0x148F,0x2870)}, /* Ralink */        \
-@@ -144,6 +147,9 @@
- #ifdef RT30xx
- #define RT2870_USB_DEVICES    \
- {    \
-+    {USB_DEVICE(0x2019,0xED14)}, /* Planex Communications, Inc. */
-+    {USB_DEVICE(0x1737,0x0070)}, /* Linksys */
-+    {USB_DEVICE(0x050D,0x815C)}, /* Belkin */        \
-     {USB_DEVICE(0x148F,0x2770)}, /* Ralink */        \
-     {USB_DEVICE(0x148F,0x2870)}, /* Ralink */        \
-     {USB_DEVICE(0x148F,0x3070)}, /* Ralink 3070 */    \
-
-Thanks!
-
--- 
-Jakob Gruber <jakob.gruber@kabelnet.at>
+       	       	  					- Ted
