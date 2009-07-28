@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932196AbZG1X7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754447AbZG1XuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932196AbZG1X7r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754824AbZG1X7i
+	id S1754447AbZG1XuB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:50:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbZG1XuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:59:38 -0400
-Received: from kroah.org ([198.145.64.141]:35732 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:50:00 -0400
+Received: from kroah.org ([198.145.64.141]:35762 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754087AbZG1Xtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:49:53 -0400
+	id S1754316AbZG1Xt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:49:58 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:55 2009
-Message-Id: <20090728234154.869808497@mini.kroah.org>
+Message-Id: <20090728234155.604543229@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:40:53 -0700
+Date: Tue, 28 Jul 2009 16:40:58 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 24/71] ALSA: hda - Fix mute control with some ALC262 models
+       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@linux.intel.com>
+Subject: [patch 29/71] vc: create vcs(a) devices for consoles
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=alsa-hda-fix-mute-control-with-some-alc262-models.patch
+Content-Disposition: inline; filename=vc-create-vcs-devices-for-consoles.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,86 +30,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Takashi Iwai <tiwai@suse.de>
+From: Kay Sievers <kay.sievers@vrfy.org>
 
-commit 8de56b7deb2534a586839eda52843c1dae680dc5 upstream.
+commit c46a7aec556ffdbdb7357db0b05904b176cb3375 upstream.
 
-The master mute switch is wrongly implemented as checking the pointer
-instead of its value, thus it can be never muted.  This patch fixes
-the issue.
+The buffer for the consoles are unconditionally allocated at con_init()
+time, which miss the creation of the vcs(a) devices.
 
-Reference: Novell bnc#404873
-	https://bugzilla.novell.com/show_bug.cgi?id=404873
+Since 2.6.30 (commit 4995f8ef9d3aac72745e12419d7fbaa8d01b1d81, 'vcs:
+hook sysfs devices into object lifetime instead of "binding"' to be
+exact) these devices are no longer created at open() and removed on
+close(), but controlled by the lifetime of the buffers.
 
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Reported-by: Gerardo Exequiel Pozzi <vmlinuz386@yahoo.com.ar>
+Tested-by: Gerardo Exequiel Pozzi <vmlinuz386@yahoo.com.ar>
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/hda/patch_realtek.c |   33 ++++++++++++++++-----------------
- 1 file changed, 16 insertions(+), 17 deletions(-)
+ drivers/char/vc_screen.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- a/sound/pci/hda/patch_realtek.c
-+++ b/sound/pci/hda/patch_realtek.c
-@@ -10204,6 +10204,18 @@ static void alc262_lenovo_3000_unsol_eve
- 	alc262_lenovo_3000_automute(codec, 1);
+--- a/drivers/char/vc_screen.c
++++ b/drivers/char/vc_screen.c
+@@ -495,11 +495,15 @@ void vcs_remove_sysfs(int index)
+ 
+ int __init vcs_init(void)
+ {
++	unsigned int i;
++
+ 	if (register_chrdev(VCS_MAJOR, "vcs", &vcs_fops))
+ 		panic("unable to get major %d for vcs device", VCS_MAJOR);
+ 	vc_class = class_create(THIS_MODULE, "vc");
+ 
+ 	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, 0), NULL, "vcs");
+ 	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, 128), NULL, "vcsa");
++	for (i = 0; i < MIN_NR_CONSOLES; i++)
++		vcs_make_sysfs(i);
+ 	return 0;
  }
- 
-+static int amp_stereo_mute_update(struct hda_codec *codec, hda_nid_t nid,
-+				  int dir, int idx, long *valp)
-+{
-+	int i, change = 0;
-+
-+	for (i = 0; i < 2; i++, valp++)
-+		change |= snd_hda_codec_amp_update(codec, nid, i, dir, idx,
-+						   HDA_AMP_MUTE,
-+						   *valp ? 0 : HDA_AMP_MUTE);
-+	return change;
-+}
-+
- /* bind hp and internal speaker mute (with plug check) */
- static int alc262_fujitsu_master_sw_put(struct snd_kcontrol *kcontrol,
- 					 struct snd_ctl_elem_value *ucontrol)
-@@ -10212,13 +10224,8 @@ static int alc262_fujitsu_master_sw_put(
- 	long *valp = ucontrol->value.integer.value;
- 	int change;
- 
--	change = snd_hda_codec_amp_stereo(codec, 0x14, HDA_OUTPUT, 0,
--						 HDA_AMP_MUTE,
--						 valp ? 0 : HDA_AMP_MUTE);
--	change |= snd_hda_codec_amp_stereo(codec, 0x1b, HDA_OUTPUT, 0,
--						 HDA_AMP_MUTE,
--						 valp ? 0 : HDA_AMP_MUTE);
--
-+	change = amp_stereo_mute_update(codec, 0x14, HDA_OUTPUT, 0, valp);
-+	change |= amp_stereo_mute_update(codec, 0x1b, HDA_OUTPUT, 0, valp);
- 	if (change)
- 		alc262_fujitsu_automute(codec, 0);
- 	return change;
-@@ -10253,10 +10260,7 @@ static int alc262_lenovo_3000_master_sw_
- 	long *valp = ucontrol->value.integer.value;
- 	int change;
- 
--	change = snd_hda_codec_amp_stereo(codec, 0x1b, HDA_OUTPUT, 0,
--						 HDA_AMP_MUTE,
--						 valp ? 0 : HDA_AMP_MUTE);
--
-+	change = amp_stereo_mute_update(codec, 0x1b, HDA_OUTPUT, 0, valp);
- 	if (change)
- 		alc262_lenovo_3000_automute(codec, 0);
- 	return change;
-@@ -11377,12 +11381,7 @@ static int alc268_acer_master_sw_put(str
- 	long *valp = ucontrol->value.integer.value;
- 	int change;
- 
--	change = snd_hda_codec_amp_update(codec, 0x14, 0, HDA_OUTPUT, 0,
--					  HDA_AMP_MUTE,
--					  valp[0] ? 0 : HDA_AMP_MUTE);
--	change |= snd_hda_codec_amp_update(codec, 0x14, 1, HDA_OUTPUT, 0,
--					   HDA_AMP_MUTE,
--					   valp[1] ? 0 : HDA_AMP_MUTE);
-+	change = amp_stereo_mute_update(codec, 0x14, HDA_OUTPUT, 0, valp);
- 	if (change)
- 		alc268_acer_automute(codec, 0);
- 	return change;
 
 
