@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756097AbZG1XzL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbZG1XuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756097AbZG1XzL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:55:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbZG1XzG
+	id S1754574AbZG1XuJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:50:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753727AbZG1XuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:55:06 -0400
-Received: from kroah.org ([198.145.64.141]:35913 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:50:07 -0400
+Received: from kroah.org ([198.145.64.141]:35780 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754349AbZG1XuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:50:22 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:59 2009
-Message-Id: <20090728234159.827810561@mini.kroah.org>
+	id S1754450AbZG1XuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:50:01 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:56 2009
+Message-Id: <20090728234156.091259838@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:41:23 -0700
+Date: Tue, 28 Jul 2009 16:41:01 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       WANG Cong <amwang@redhat.com>, Alexander Viro <viro@zeniv.linux.org.uk>,
-       David Howells <dhowells@redhat.com>, Roland McGrath <roland@redhat.com>,
-       James Morris <jmorris@namei.org>
-Subject: [patch 54/71] elf: fix one check-after-use
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [patch 32/71] block: fix sg SG_DXFER_TO_FROM_DEV regression
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=elf-fix-one-check-after-use.patch
+Content-Disposition: inline; filename=block-fix-sg-sg_dxfer_to_from_dev-regression.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,39 +31,143 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Amerigo Wang <amwang@redhat.com>
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-commit e2dbe12557d85d81f4527879499f55681c3cca4f upstream.
+commit ecb554a846f8e9d2a58f6d6c118168a63ac065aa upstream.
 
-Check before use it.
+I overlooked SG_DXFER_TO_FROM_DEV support when I converted sg to use
+the block layer mapping API (2.6.28).
 
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-Cc: David Howells <dhowells@redhat.com>
-Acked-by: Roland McGrath <roland@redhat.com>
-Acked-by: James Morris <jmorris@namei.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Douglas Gilbert explained SG_DXFER_TO_FROM_DEV:
+
+http://www.spinics.net/lists/linux-scsi/msg37135.html
+
+=
+The semantics of SG_DXFER_TO_FROM_DEV were:
+   - copy user space buffer to kernel (LLD) buffer
+   - do SCSI command which is assumed to be of the DATA_IN
+     (data from device) variety. This would overwrite
+     some or all of the kernel buffer
+   - copy kernel (LLD) buffer back to the user space.
+
+The idea was to detect short reads by filling the original
+user space buffer with some marker bytes ("0xec" it would
+seem in this report). The "resid" value is a better way
+of detecting short reads but that was only added this century
+and requires co-operation from the LLD.
+=
+
+This patch changes the block layer mapping API to support this
+semantics. This simply adds another field to struct rq_map_data and
+enables __bio_copy_iov() to copy data from user space even with READ
+requests.
+
+It's better to add the flags field and kills null_mapped and the new
+from_user fields in struct rq_map_data but that approach makes it
+difficult to send this patch to stable trees because st and osst
+drivers use struct rq_map_data (they were converted to use the block
+layer in 2.6.29 and 2.6.30). Well, I should clean up the block layer
+mapping API.
+
+zhou sf reported this regiression and tested this patch:
+
+http://www.spinics.net/lists/linux-scsi/msg37128.html
+http://www.spinics.net/lists/linux-scsi/msg37168.html
+
+Reported-by: zhou sf <sxzzsf@gmail.com>
+Tested-by: zhou sf <sxzzsf@gmail.com>
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/binfmt_elf.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/scsi/sg.c      |    4 ++++
+ fs/bio.c               |   22 ++++++++++++----------
+ include/linux/blkdev.h |    1 +
+ 3 files changed, 17 insertions(+), 10 deletions(-)
 
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -1518,11 +1518,11 @@ static int fill_note_info(struct elfhdr 
- 	info->thread = NULL;
+--- a/drivers/scsi/sg.c
++++ b/drivers/scsi/sg.c
+@@ -1656,6 +1656,10 @@ static int sg_start_req(Sg_request *srp,
+ 		md->nr_entries = req_schp->k_use_sg;
+ 		md->offset = 0;
+ 		md->null_mapped = hp->dxferp ? 0 : 1;
++		if (dxfer_dir == SG_DXFER_TO_FROM_DEV)
++			md->from_user = 1;
++		else
++			md->from_user = 0;
+ 	}
  
- 	psinfo = kmalloc(sizeof(*psinfo), GFP_KERNEL);
--	fill_note(&info->psinfo, "CORE", NT_PRPSINFO, sizeof(*psinfo), psinfo);
--
- 	if (psinfo == NULL)
- 		return 0;
+ 	if (iov_count) {
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -706,14 +706,13 @@ static struct bio_map_data *bio_alloc_ma
+ }
  
-+	fill_note(&info->psinfo, "CORE", NT_PRPSINFO, sizeof(*psinfo), psinfo);
+ static int __bio_copy_iov(struct bio *bio, struct bio_vec *iovecs,
+-			  struct sg_iovec *iov, int iov_count, int uncopy,
+-			  int do_free_page)
++			  struct sg_iovec *iov, int iov_count,
++			  int to_user, int from_user, int do_free_page)
+ {
+ 	int ret = 0, i;
+ 	struct bio_vec *bvec;
+ 	int iov_idx = 0;
+ 	unsigned int iov_off = 0;
+-	int read = bio_data_dir(bio) == READ;
+ 
+ 	__bio_for_each_segment(bvec, bio, i, 0) {
+ 		char *bv_addr = page_address(bvec->bv_page);
+@@ -728,13 +727,14 @@ static int __bio_copy_iov(struct bio *bi
+ 			iov_addr = iov[iov_idx].iov_base + iov_off;
+ 
+ 			if (!ret) {
+-				if (!read && !uncopy)
+-					ret = copy_from_user(bv_addr, iov_addr,
+-							     bytes);
+-				if (read && uncopy)
++				if (to_user)
+ 					ret = copy_to_user(iov_addr, bv_addr,
+ 							   bytes);
+ 
++				if (from_user)
++					ret = copy_from_user(bv_addr, iov_addr,
++							     bytes);
 +
+ 				if (ret)
+ 					ret = -EFAULT;
+ 			}
+@@ -771,7 +771,8 @@ int bio_uncopy_user(struct bio *bio)
+ 
+ 	if (!bio_flagged(bio, BIO_NULL_MAPPED))
+ 		ret = __bio_copy_iov(bio, bmd->iovecs, bmd->sgvecs,
+-				     bmd->nr_sgvecs, 1, bmd->is_our_pages);
++				     bmd->nr_sgvecs, bio_data_dir(bio) == READ,
++				     0, bmd->is_our_pages);
+ 	bio_free_map_data(bmd);
+ 	bio_put(bio);
+ 	return ret;
+@@ -876,8 +877,9 @@ struct bio *bio_copy_user_iov(struct req
  	/*
- 	 * Figure out how many notes we're going to need for each thread.
+ 	 * success
  	 */
+-	if (!write_to_vm && (!map_data || !map_data->null_mapped)) {
+-		ret = __bio_copy_iov(bio, bio->bi_io_vec, iov, iov_count, 0, 0);
++	if ((!write_to_vm && (!map_data || !map_data->null_mapped)) ||
++	    (map_data && map_data->from_user)) {
++		ret = __bio_copy_iov(bio, bio->bi_io_vec, iov, iov_count, 0, 1, 0);
+ 		if (ret)
+ 			goto cleanup;
+ 	}
+--- a/include/linux/blkdev.h
++++ b/include/linux/blkdev.h
+@@ -723,6 +723,7 @@ struct rq_map_data {
+ 	int nr_entries;
+ 	unsigned long offset;
+ 	int null_mapped;
++	int from_user;
+ };
+ 
+ struct req_iterator {
 
 
