@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755005AbZG1XDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755966AbZG1XGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755005AbZG1XDv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbZG1XDs
+	id S1755966AbZG1XGd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:06:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755722AbZG1XGc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:03:48 -0400
-Received: from kroah.org ([198.145.64.141]:42914 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:06:32 -0400
+Received: from kroah.org ([198.145.64.141]:43046 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754208AbZG1XDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:03:46 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 15:59:41 2009
-Message-Id: <20090728225941.579958466@mini.kroah.org>
+	id S1755763AbZG1XEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:04:08 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 15:59:45 2009
+Message-Id: <20090728225945.099608176@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 15:58:32 -0700
+Date: Tue, 28 Jul 2009 15:58:56 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Clemens Ladisch <clemens@ladisch.de>, Takashi Iwai <tiwai@suse.de>
-Subject: [patch 04/37] sound: usb-audio: add workaround for Blue Microphones devices
+       Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+Subject: [patch 28/37] eCryptfs: Check Tag 11 literal data buffer size (CVE-2009-2406)
 References: <20090728225828.431071451@mini.kroah.org>
-Content-Disposition: inline; filename=sound-usb-audio-add-workaround-for-blue-microphones-devices.patch
+Content-Disposition: inline; filename=ecryptfs-check-tag-11-literal-data-buffer-size.patch
 In-Reply-To: <20090728230145.GA10486@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,56 +30,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Clemens Ladisch <clemens@ladisch.de>
+From: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
 
-commit 8886f33f25083a47d5fa24ad7b57bb708c5c5403 upstream.
+commit 6352a29305373ae6196491e6d4669f301e26492e upstream.
 
-Blue Microphones USB devices have an alternate setting that sends two
-channels of data to the computer.  Unfortunately, the descriptors of
-that altsetting have a wrong channel setting, which means that any
-recorded data from such a device has twice the sample rate from what
-would be expected.
+Tag 11 packets are stored in the metadata section of an eCryptfs file to
+store the key signature(s) used to encrypt the file encryption key.
+After extracting the packet length field to determine the key signature
+length, a check is not performed to see if the length would exceed the
+key signature buffer size that was passed into parse_tag_11_packet().
 
-This patch adds a workaround to ignore that altsetting.  Since these
-devices have only one actual channel, no data is lost.
+Thanks to Ramon de Carvalho Valle for finding this bug using fsfuzzer.
 
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/usb/usbaudio.c |   14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+ fs/ecryptfs/keystore.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
---- a/sound/usb/usbaudio.c
-+++ b/sound/usb/usbaudio.c
-@@ -2674,7 +2674,7 @@ static int parse_audio_endpoints(struct 
- 	struct usb_interface_descriptor *altsd;
- 	int i, altno, err, stream;
- 	int format;
--	struct audioformat *fp;
-+	struct audioformat *fp = NULL;
- 	unsigned char *fmt, *csep;
- 	int num;
- 
-@@ -2747,6 +2747,18 @@ static int parse_audio_endpoints(struct 
- 			continue;
- 		}
- 
-+		/*
-+		 * Blue Microphones workaround: The last altsetting is identical
-+		 * with the previous one, except for a larger packet size, but
-+		 * is actually a mislabeled two-channel setting; ignore it.
-+		 */
-+		if (fmt[4] == 1 && fmt[5] == 2 && altno == 2 && num == 3 &&
-+		    fp && fp->altsetting == 1 && fp->channels == 1 &&
-+		    fp->format == SNDRV_PCM_FORMAT_S16_LE &&
-+		    le16_to_cpu(get_endpoint(alts, 0)->wMaxPacketSize) ==
-+							fp->maxpacksize * 2)
-+			continue;
-+
- 		csep = snd_usb_find_desc(alts->endpoint[0].extra, alts->endpoint[0].extralen, NULL, USB_DT_CS_ENDPOINT);
- 		/* Creamware Noah has this descriptor after the 2nd endpoint */
- 		if (!csep && altsd->bNumEndpoints >= 2)
+--- a/fs/ecryptfs/keystore.c
++++ b/fs/ecryptfs/keystore.c
+@@ -876,6 +876,12 @@ parse_tag_11_packet(unsigned char *data,
+ 		rc = -EINVAL;
+ 		goto out;
+ 	}
++	if (unlikely((*tag_11_contents_size) > max_contents_bytes)) {
++		printk(KERN_ERR "Literal data section in tag 11 packet exceeds "
++		       "expected size\n");
++		rc = -EINVAL;
++		goto out;
++	}
+ 	if (data[(*packet_size)++] != 0x62) {
+ 		printk(KERN_WARNING "Unrecognizable packet\n");
+ 		rc = -EINVAL;
 
 
