@@ -1,52 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751875AbZG1AAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752084AbZG1AAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751875AbZG1AAc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 20:00:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZG1AAc
+	id S1752084AbZG1AAk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 20:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbZG1AAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 20:00:32 -0400
-Received: from comal.ext.ti.com ([198.47.26.152]:36348 "EHLO comal.ext.ti.com"
+	Mon, 27 Jul 2009 20:00:40 -0400
+Received: from arroyo.ext.ti.com ([192.94.94.40]:46867 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751621AbZG1AAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 20:00:31 -0400
+	id S1750846AbZG1AAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 20:00:38 -0400
 From: Jon Hunter <jon-hunter@ti.com>
 To: linux-kernel <linux-kernel@vger.kernel.org>
 Cc: Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
        Jon Hunter <jon-hunter@ti.com>
-Subject: [PATCH 0/2] Dynamic Tick: Enabling longer sleep times on 32-bit
-Date: Mon, 27 Jul 2009 19:00:14 -0500
-Message-Id: <1248739216-23761-1-git-send-email-jon-hunter@ti.com>
+Subject: [PATCH 2/2] Dynamic Tick: Allow 32-bit machines to sleep for more than 2.15 seconds
+Date: Mon, 27 Jul 2009 19:00:16 -0500
+Message-Id: <1248739216-23761-3-git-send-email-jon-hunter@ti.com>
 X-Mailer: git-send-email 1.6.0.4
+In-Reply-To: <1248739216-23761-2-git-send-email-jon-hunter@ti.com>
+References: <1248739216-23761-1-git-send-email-jon-hunter@ti.com>
+ <1248739216-23761-2-git-send-email-jon-hunter@ti.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jon Hunter <jon-hunter@ti.com>
 
-This is a resend of the patch series shown here:
-http://www.spinics.net/lists/kernel/msg891029.html
+In the dynamic tick code, "max_delta_ns" (member of the
+"clock_event_device" structure) represents the maximum sleep time
+that can occur between timer events in nanoseconds.
 
-This patch series has been updated based on the feedback received and
-rebased against the current kernel.
+The variable, "max_delta_ns", is defined as an unsigned long
+which is a 32-bit integer for 32-bit machines and a 64-bit
+integer for 64-bit machines (if -m64 option is used for gcc).
+The value of max_delta_ns is set by calling the function
+"clockevent_delta2ns()" which returns a maximum value of LONG_MAX.
+For a 32-bit machine LONG_MAX is equal to 0x7fffffff and in
+nanoseconds this equates to ~2.15 seconds. Hence, the maximum
+sleep time for a 32-bit machine is ~2.15 seconds, where as for
+a 64-bit machine it will be many years.
 
-This patch series ensures that the wrapping of the clocksource will not be
-missed if the kernel sleeps for longer periods and allows 32-bit machines to
-sleep for longer than 2.15 seconds.
+This patch changes the type of max_delta_ns to be "unsigned long
+long" instead of "unsigned long" so that this variable is a 64-bit
+type for both 32-bit and 64-bit machines. It also changes the
+maximum value returned by clockevent_delta2ns() to LLONG_MAX.
+Hence this allows a 32-bit machine to sleep for longer than ~2.15
+seconds. Please note that this patch also changes "min_delta_ns"
+to be "unsigned long long" too and although this is probably
+unnecessary, it makes the patch simpler.
 
-Jon Hunter (2):
-  Dynamic Tick: Prevent clocksource wrapping during idle
-  Dynamic Tick: Allow 32-bit machines to sleep for more than 2.15
-    seconds
+Signed-off-by: Jon Hunter <jon-hunter@ti.com>
+---
+ include/linux/clockchips.h |    6 +++---
+ kernel/hrtimer.c           |    2 +-
+ kernel/time/clockevents.c  |   10 +++++-----
+ kernel/time/tick-oneshot.c |    2 +-
+ kernel/time/timer_list.c   |    4 ++--
+ 5 files changed, 12 insertions(+), 12 deletions(-)
 
- include/linux/clockchips.h  |    6 ++--
- include/linux/clocksource.h |    2 +
- include/linux/time.h        |    1 +
- kernel/hrtimer.c            |    2 +-
- kernel/time/clockevents.c   |   10 ++++----
- kernel/time/clocksource.c   |   47 +++++++++++++++++++++++++++++++++++
- kernel/time/tick-oneshot.c  |    2 +-
- kernel/time/tick-sched.c    |   57 ++++++++++++++++++++++++++++++++----------
- kernel/time/timekeeping.c   |   11 ++++++++
- kernel/time/timer_list.c    |    4 +-
- 10 files changed, 116 insertions(+), 26 deletions(-)
+diff --git a/include/linux/clockchips.h b/include/linux/clockchips.h
+index 3a1dbba..8154bc6 100644
+--- a/include/linux/clockchips.h
++++ b/include/linux/clockchips.h
+@@ -77,8 +77,8 @@ enum clock_event_nofitiers {
+ struct clock_event_device {
+ 	const char		*name;
+ 	unsigned int		features;
+-	unsigned long		max_delta_ns;
+-	unsigned long		min_delta_ns;
++	unsigned long long	max_delta_ns;
++	unsigned long long	min_delta_ns;
+ 	unsigned long		mult;
+ 	int			shift;
+ 	int			rating;
+@@ -116,7 +116,7 @@ static inline unsigned long div_sc(unsigned long ticks, unsigned long nsec,
+ }
+ 
+ /* Clock event layer functions */
+-extern unsigned long clockevent_delta2ns(unsigned long latch,
++extern unsigned long long clockevent_delta2ns(unsigned long latch,
+ 					 struct clock_event_device *evt);
+ extern void clockevents_register_device(struct clock_event_device *dev);
+ 
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index 49da79a..2a69a56 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -1255,7 +1255,7 @@ hrtimer_interrupt_hanging(struct clock_event_device *dev,
+ 	force_clock_reprogram = 1;
+ 	dev->min_delta_ns = (unsigned long)try_time.tv64 * 3;
+ 	printk(KERN_WARNING "hrtimer: interrupt too slow, "
+-		"forcing clock min delta to %lu ns\n", dev->min_delta_ns);
++		"forcing clock min delta to %llu ns\n", dev->min_delta_ns);
+ }
+ /*
+  * High resolution timer interrupt
+diff --git a/kernel/time/clockevents.c b/kernel/time/clockevents.c
+index a6dcd67..6db410f 100644
+--- a/kernel/time/clockevents.c
++++ b/kernel/time/clockevents.c
+@@ -37,10 +37,10 @@ static DEFINE_SPINLOCK(clockevents_lock);
+  *
+  * Math helper, returns latch value converted to nanoseconds (bound checked)
+  */
+-unsigned long clockevent_delta2ns(unsigned long latch,
++unsigned long long clockevent_delta2ns(unsigned long latch,
+ 				  struct clock_event_device *evt)
+ {
+-	u64 clc = ((u64) latch << evt->shift);
++	unsigned long long clc = ((unsigned long long) latch << evt->shift);
+ 
+ 	if (unlikely(!evt->mult)) {
+ 		evt->mult = 1;
+@@ -50,10 +50,10 @@ unsigned long clockevent_delta2ns(unsigned long latch,
+ 	do_div(clc, evt->mult);
+ 	if (clc < 1000)
+ 		clc = 1000;
+-	if (clc > LONG_MAX)
+-		clc = LONG_MAX;
++	if (clc > LLONG_MAX)
++		clc = LLONG_MAX;
+ 
+-	return (unsigned long) clc;
++	return clc;
+ }
+ EXPORT_SYMBOL_GPL(clockevent_delta2ns);
+ 
+diff --git a/kernel/time/tick-oneshot.c b/kernel/time/tick-oneshot.c
+index a96c0e2..327d4ed 100644
+--- a/kernel/time/tick-oneshot.c
++++ b/kernel/time/tick-oneshot.c
+@@ -50,7 +50,7 @@ int tick_dev_program_event(struct clock_event_device *dev, ktime_t expires,
+ 				dev->min_delta_ns += dev->min_delta_ns >> 1;
+ 
+ 			printk(KERN_WARNING
+-			       "CE: %s increasing min_delta_ns to %lu nsec\n",
++			       "CE: %s increasing min_delta_ns to %llu nsec\n",
+ 			       dev->name ? dev->name : "?",
+ 			       dev->min_delta_ns << 1);
+ 
+diff --git a/kernel/time/timer_list.c b/kernel/time/timer_list.c
+index a999b92..3bf30b4 100644
+--- a/kernel/time/timer_list.c
++++ b/kernel/time/timer_list.c
+@@ -204,8 +204,8 @@ print_tickdevice(struct seq_file *m, struct tick_device *td, int cpu)
+ 		return;
+ 	}
+ 	SEQ_printf(m, "%s\n", dev->name);
+-	SEQ_printf(m, " max_delta_ns:   %lu\n", dev->max_delta_ns);
+-	SEQ_printf(m, " min_delta_ns:   %lu\n", dev->min_delta_ns);
++	SEQ_printf(m, " max_delta_ns:   %llu\n", dev->max_delta_ns);
++	SEQ_printf(m, " min_delta_ns:   %llu\n", dev->min_delta_ns);
+ 	SEQ_printf(m, " mult:           %lu\n", dev->mult);
+ 	SEQ_printf(m, " shift:          %d\n", dev->shift);
+ 	SEQ_printf(m, " mode:           %d\n", dev->mode);
+-- 
+1.6.0.4
 
