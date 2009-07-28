@@ -1,81 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbZG1QLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbZG1QLg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754761AbZG1QLU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 12:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754703AbZG1QLT
+	id S1754811AbZG1QLg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 12:11:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754772AbZG1QLe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 12:11:19 -0400
-Received: from ru.mvista.com ([213.79.90.228]:25748 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754686AbZG1QLS (ORCPT
+	Tue, 28 Jul 2009 12:11:34 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:39712 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754771AbZG1QLd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 12:11:18 -0400
-Date: Tue, 28 Jul 2009 20:11:15 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: linuxppc-dev@ozlabs.org, sdhci-devel@lists.ossman.eu,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 8/9] drivers/mmc: correct error-handling code
-Message-ID: <20090728161115.GA8091@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <Pine.LNX.4.64.0907281755340.28189@ask.diku.dk>
+	Tue, 28 Jul 2009 12:11:33 -0400
+Date: Tue, 28 Jul 2009 17:11:32 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Cc: alsa-devel@alsa-project.org, Jonathan McDowell <noodles@earth.li>,
+       Tony Lindgren <tony@atomide.com>,
+       Peter Ujfalusi <peter.ujfalusi@nokia.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       e3-hacking@earth.li, Arun KS <arunks@mistralsolutions.com>,
+       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [alsa-devel] [RFC] [PATCH 1/3] ASoC: Add support for Conexant
+ CX20442-11 voice modem codec
+Message-ID: <20090728161131.GA22349@rakim.wolfsonmicro.main>
+References: <200907220522.29221.jkrzyszt@tis.icnet.pl>
+ <200907281659.36000.jkrzyszt@tis.icnet.pl>
+ <20090728150727.GA10870@rakim.wolfsonmicro.main>
+ <200907281807.31070.jkrzyszt@tis.icnet.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0907281755340.28189@ask.diku.dk>
+In-Reply-To: <200907281807.31070.jkrzyszt@tis.icnet.pl>
+X-Cookie: Yes, but which self do you want to be?
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 28, 2009 at 05:56:00PM +0200, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> sdhci_alloc_host returns an ERR_PTR value in an error case instead of NULL.
-> 
-> A simplified version of the semantic match that finds this problem is as
-> follows: (http://coccinelle.lip6.fr/)
-> 
-> // <smpl>
-> @match exists@
-> expression x, E;
-> statement S1, S2;
-> @@
-> 
-> x = sdhci_alloc_host(...)
-> ... when != x = E
-> (
-> *  if (x == NULL || ...) S1 else S2
-> |
-> *  if (x == NULL && ...) S1 else S2
-> )
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+On Tue, Jul 28, 2009 at 06:07:29PM +0200, Janusz Krzysztofik wrote:
 
-Acked-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> What I would like to retain from the current codec driver are those two modes 
+> of operation: without and with the line discipline activated. Initially, the 
+> codec would be registered as a platform device, as it is now. Activation of 
+> the line discipline would deregister the codec device from the platform bus 
+> and reregister it again, now as the line discipline provided device. Is this 
+> possible with current ASoC framework?
 
-Thanks,
+No, not currently.  But why would you do that, anyway?
 
-> ---
->  drivers/mmc/host/sdhci-of.c         |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
-> index d79fa55..fb00bc5 100644
-> --- a/drivers/mmc/host/sdhci-of.c
-> +++ b/drivers/mmc/host/sdhci-of.c
-> @@ -226,7 +226,7 @@ static int __devinit sdhci_of_probe(struct of_device *ofdev,
->  		return -ENODEV;
->  
->  	host = sdhci_alloc_host(&ofdev->dev, sizeof(*of_host));
-> -	if (!host)
-> +	if (IS_ERR(host))
->  		return -ENOMEM;
->  
->  	of_host = sdhci_priv(host);
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Like I say, I'd suggest always keeping the controls registered and just
+masking and unmasking from user space - the control indexes get used so
+removing them will just confuse things.
