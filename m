@@ -1,104 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbZG1MfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbZG1MfD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754002AbZG1MfH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 08:35:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753998AbZG1MfG
+	id S1753985AbZG1MfD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 08:35:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbZG1MfB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 08:35:06 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:36816 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753945AbZG1MfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 08:35:04 -0400
-Date: Tue, 28 Jul 2009 22:35:04 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Oliver Neukum <oliver@neukum.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: linux-next: manual merge of the ttydev tree with the
- usb.current tree
-Message-Id: <20090728223504.6a6ae8e7.sfr@canb.auug.org.au>
-In-Reply-To: <20090728132911.03ff78ea@lxorguk.ukuu.org.uk>
-References: <20090728140110.7cfe7c22.sfr@canb.auug.org.au>
-	<20090728112608.09a494e0@lxorguk.ukuu.org.uk>
-	<200907281410.41449.oliver@neukum.org>
-	<20090728132911.03ff78ea@lxorguk.ukuu.org.uk>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 28 Jul 2009 08:35:01 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:22603
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753934AbZG1MfA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 08:35:00 -0400
+Message-ID: <4A6EF06E.40101@panasas.com>
+Date: Tue, 28 Jul 2009 15:34:54 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+CC: trivial@kernel.org, linux-doc@vger.kernel.org,
+       linux-kernel@vger.kernel.org, bhalevy@panasas.com,
+       open-osd mailing-list <osd-dev@open-osd.org>
+Subject: Re: [PATCH] trivial: some small fixes in exofs documentation
+References: <1248711992-11183-1-git-send-email-cascardo@holoscopio.com>
+In-Reply-To: <1248711992-11183-1-git-send-email-cascardo@holoscopio.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Jul 2009 12:34:56.0644 (UTC) FILETIME=[D07A9C40:01CA0F7F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
+On 07/27/2009 07:26 PM, Thadeu Lima de Souza Cascardo wrote:
+> Add exofs.txt to filesystems Documentation index and fix some typos,
+> identation and grammar.
+> 
+> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
 
-On Tue, 28 Jul 2009 13:29:11 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->
-> I need to look at the actual diff, but the combination looks completely
-> bogus unless I'm misreading the fixup which is possible.
+Thank you very much Thadeu!
 
-Below is the actual patch from the usb.current tree.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+I appreciate you taking the time, going over this.
+As my English is lacking, I know I need help in this department.
 
->From oliver@neukum.org  Sat Jul 18 15:45:44 2009
-From: Oliver Neukum <oliver@neukum.org>
-Date: Sat, 18 Jul 2009 15:47:17 +0200
-Subject: USB: fix usage count in usb serial generic open regarding autoresume
-To: Matthew Garrett <mjg59@srcf.ucam.org>, Greg KH <greg@kroah.com>, Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org
-Message-ID: <200907181547.17813.oliver@neukum.org>
-Content-Disposition: inline
+I have included this for the next Kernel.
 
+(It will appear on linux-next in the next day or two)
 
-The resume handler has to resubmit the reading URBs if the device is
-resumed while opened. But the open() method bumps the counter before
-it resumes a device. The fix is to increment the counter only after
-the resumption or if no resumption is attempted.
+Boaz
 
-Signed-off-by: Oliver Neukum <oliver@neukum.org>
-Tested-by: Matthew Garrett <mjg@redhat.com>
-Cc: stable <stable@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> ---
+>  Documentation/filesystems/00-INDEX  |    2 ++
+>  Documentation/filesystems/exofs.txt |   23 ++++++++++++-----------
+>  2 files changed, 14 insertions(+), 11 deletions(-)
+> 
+> diff --git a/Documentation/filesystems/00-INDEX b/Documentation/filesystems/00-INDEX
+> index f15621e..7001782 100644
+> --- a/Documentation/filesystems/00-INDEX
+> +++ b/Documentation/filesystems/00-INDEX
+> @@ -36,6 +36,8 @@ dnotify.txt
+>  	- info about directory notification in Linux.
+>  ecryptfs.txt
+>  	- docs on eCryptfs: stacked cryptographic filesystem for Linux.
+> +exofs.txt
+> +	- info, usage, mount options, design about EXOFS.
+>  ext2.txt
+>  	- info, mount options and specifications for the Ext2 filesystem.
+>  ext3.txt
+> diff --git a/Documentation/filesystems/exofs.txt b/Documentation/filesystems/exofs.txt
+> index 0ced74c..abd2a9b 100644
+> --- a/Documentation/filesystems/exofs.txt
+> +++ b/Documentation/filesystems/exofs.txt
+> @@ -60,13 +60,13 @@ USAGE
+>  
+>     mkfs.exofs --pid=65536 --format /dev/osd0
+>  
+> -   The --format is optional if not specified no OSD_FORMAT will be
+> -   preformed and a clean file system will be created in the specified pid,
+> +   The --format is optional. If not specified, no OSD_FORMAT will be
+> +   performed and a clean file system will be created in the specified pid,
+>     in the available space of the target. (Use --format=size_in_meg to limit
+>     the total LUN space available)
+>  
+> -   If pid already exist it will be deleted and a new one will be created in it's
+> -   place. Be careful.
+> +   If pid already exists, it will be deleted and a new one will be created in
+> +   its place. Be careful.
+>  
+>     An exofs lives inside a single OSD partition. You can create multiple exofs
+>     filesystems on the same device using multiple pids.
+> @@ -81,7 +81,7 @@ USAGE
+>  
+>  7. For reference (See do-exofs example script):
+>  	do-exofs start - an example of how to perform the above steps.
+> -	do-exofs stop -  an example of how to unmount the file system.
+> +	do-exofs stop - an example of how to unmount the file system.
+>  	do-exofs format - an example of how to format and mkfs a new exofs.
+>  
+>  8. Extra compilation flags (uncomment in fs/exofs/Kbuild):
+> @@ -104,8 +104,8 @@ Where:
+>      exofs specific options: Options are separated by commas (,)
+>  		pid=<integer> - The partition number to mount/create as
+>                                  container of the filesystem.
+> -                                This option is mandatory
+> -                to=<integer>  - Timeout in ticks for a single command
+> +                                This option is mandatory.
+> +                to=<integer>  - Timeout in ticks for a single command.
+>                                  default is (60 * HZ) [for debugging only]
+>  
+>  ===============================================================================
+> @@ -116,7 +116,7 @@ DESIGN
+>    with a special ID (defined in common.h).
+>    Information included in the file system control block is used to fill the
+>    in-memory superblock structure at mount time. This object is created before
+> -  the file system is used by mkexofs.c It contains information such as:
+> +  the file system is used by mkexofs.c. It contains information such as:
+>  	- The file system's magic number
+>  	- The next inode number to be allocated
+>  
+> @@ -134,8 +134,8 @@ DESIGN
+>    attributes. This applies to both regular files and other types (directories,
+>    device files, symlinks, etc.).
+>  
+> -* Credentials are generated per object (inode and superblock) when they is
+> -  created in memory (read off disk or created). The credential works for all
+> +* Credentials are generated per object (inode and superblock) when they are
+> +  created in memory (read from disk or created). The credential works for all
+>    operations and is used as long as the object remains in memory.
+>  
+>  * Async OSD operations are used whenever possible, but the target may execute
+> @@ -145,7 +145,8 @@ DESIGN
+>    from executing in reverse order:
+>  	- The following are handled with the OBJ_CREATED and OBJ_2BCREATED
+>  	  flags. OBJ_CREATED is set when we know the object exists on the OSD -
+> -	  in create's callback function, and when we successfully do a read_inode.
+> +	  in create's callback function, and when we successfully do a
+> +	  read_inode.
+>  	  OBJ_2BCREATED is set in the beginning of the create function, so we
+>  	  know that we should wait.
+>  		- create/delete: delete should wait until the object is created
 
-
----
- drivers/usb/serial/usb-serial.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
---- a/drivers/usb/serial/usb-serial.c
-+++ b/drivers/usb/serial/usb-serial.c
-@@ -214,15 +214,13 @@ static int serial_open (struct tty_struc
- 		goto bailout_port_put;
- 	}
- 
--	++port->port.count;
--
- 	/* set up our port structure making the tty driver
- 	 * remember our port object, and us it */
- 	tty->driver_data = port;
- 	tty_port_tty_set(&port->port, tty);
- 
- 	/* If the console is attached, the device is already open */
--	if (port->port.count == 1 && !port->console) {
-+	if (!port->port.count && !port->console) {
- 
- 		/* lock this module before we call it
- 		 * this may fail, which means we must bail out,
-@@ -240,12 +238,16 @@ static int serial_open (struct tty_struc
- 		if (retval)
- 			goto bailout_module_put;
- 
-+		++port->port.count;
-+
- 		/* only call the device specific open if this
- 		 * is the first time the port is opened */
- 		retval = serial->type->open(tty, port, filp);
- 		if (retval)
- 			goto bailout_interface_put;
- 		mutex_unlock(&serial->disc_mutex);
-+	} else {
-+		++port->port.count;
- 	}
- 	mutex_unlock(&port->mutex);
- 	/* Now do the correct tty layer semantics */
