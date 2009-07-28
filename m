@@ -1,57 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752010AbZG1FIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752113AbZG1FM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752010AbZG1FIb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 01:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZG1FIa
+	id S1752113AbZG1FM2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 01:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbZG1FM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 01:08:30 -0400
-Received: from imp01.mtu.ru ([62.5.255.10]:47448 "EHLO imp01.mtu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751104AbZG1FIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 01:08:30 -0400
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH]  type without #include <linux/types.h>
-Content-Disposition: inline
-From: Pavel Vasilyev <pavel@pavlinux.ru>
-Reply-To: pavel@pavlinux.ru
-Organization: Pavlinux Inc.
-X-Face: =?utf-8?q?=2EqZWJ=3F=248Zrl=26r=7C-=3B8=7ESTufc!R0d=5E=3FdE-g/S=5FryU2S=5D=27?=
- =?utf-8?q?=24vQ7EYY=3DBSj=5DJ-Gp=5FVXPpl=27ci/i=0A=09yH=5B=249HGUU=3Af?=@6hyHiQKeEv#S(K4XtVe$?0UO@',
- =?utf-8?q?!=25=5CR=3A7a=3BITA=3B=7Cs=7C=3F=25+T6=7E5=3Aq=2E2i=5DzA=25=0A=09?=
- =?utf-8?q?Mn-t3kOWGQ?=(7@ZOZ/0@+baHY#Fj&e/k'#p}#F<U{[DP[@"XbG&pmU~{oOMsPc4q|4/,
- =?utf-8?q?du8=0A=09?="'s*i`2=h[f!7!`#',39O3
-Date: Tue, 28 Jul 2009 09:08:25 +0400
+	Tue, 28 Jul 2009 01:12:27 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:43171 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750835AbZG1FM1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 01:12:27 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
+       Pavel Machek <pavel@ucw.cz>, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 1/2] Add function to convert between calendar time and broken-down time for universal use
+References: <4A5C3BC0.6020701@cn.fujitsu.com>
+	<20090714151040.b7b3b26d.akpm@linux-foundation.org>
+	<20090718115019.GH1433@ucw.cz>
+	<04e101ca08e5$be078fa0$808410ac@zhaoleiwin>
+	<20090719202018.497f7ec1.akpm@linux-foundation.org>
+	<4A643EFE.7090103@cn.fujitsu.com> <4A643F36.5090200@cn.fujitsu.com>
+	<87ocr9mi8h.fsf@devron.myhome.or.jp> <4A6D1BCF.1030109@cn.fujitsu.com>
+	<87k51u8xwa.fsf@devron.myhome.or.jp> <4A6E6ADD.6090602@cn.fujitsu.com>
+Date: Tue, 28 Jul 2009 14:12:24 +0900
+In-Reply-To: <4A6E6ADD.6090602@cn.fujitsu.com> (zhaolei@cn.fujitsu.com's
+	message of "Tue, 28 Jul 2009 11:05:01 +0800")
+Message-ID: <87vdld9yrr.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907280908.27412.pavel@pavlinux.ru>
-X-Spam-Flag: NO
-X-Spam-Yversion: Spamooborona-3.0
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-GCC warning In latest git - 2.6.31-rc4: 
+Zhaolei <zhaolei@cn.fujitsu.com> writes:
 
-include/linux/pps.h:52: found __[us]{8,16,32,64}  
-type without #include <linux/types.h>
+> There is no users of printk("%pf"), why not remove this?
 
+IMO, because it doesn't make slow thing.
 
-diff --git a/include/linux/pps.h b/include/linux/pps.h
-index cfe5c72..bef47e2 100644
---- a/include/linux/pps.h
-+++ b/include/linux/pps.h
-@@ -48,6 +48,9 @@
-  * The simple fix is probably to add an explicit padding.
-  *                                                     [David Woodhouse]
-  */
-+
-+#include <linux/types.h>
-+
- struct pps_ktime {
-        __s64 sec;
-        __s32 nsec;
+> And at least, I found one: drivers/char/efirtc.c
+> If I continue searching, maybe more.
 
---- 
-Signed-of: pavel@pavlinux.ru
+If there is a user, I think it's ok.
+
+> IHMO, user of these functions should understand what these functions is and
+> use these functions for right way.
+> If we give user a cdrom, it is user's responsibility not using is as cup stand.
+>
+> At least, there function can make following source a fairy:
+> fs/ncpfs/dir.c
+> fs/smbfs/proc.c
+> fs/fat/misc.c
+> fs/udf/udftime.c
+> fs/cifs/netmisc.c
+> net/netfilter/xt_time.c
+> drivers/scsi/ips.c
+> ...
+>
+> It is different with user-land just because it lakes of large-complex locale
+> database.
+
+Yes, and I'm understanding FAT has the bug, and there is actual bug
+report (bug FAT requires this as on-disk format). However, my point is
+why we increase the known bugs.
+
+>> gmtime() also need to handle timezone actually.
+>
+> So, maybe another function name as unmktime?
+
+Maybe. Um..., or time_to_tm()? I'm not sure.
+
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
