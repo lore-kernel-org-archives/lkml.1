@@ -1,58 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751800AbZG1QtW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbZG1Qtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751800AbZG1QtW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 12:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbZG1QtW
+	id S1754880AbZG1Qtj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 12:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbZG1Qti
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 12:49:22 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:35320 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751508AbZG1QtU (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 12:49:20 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Jiri Kosina <jkosina@suse.cz>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: 31-rc3-mmotm0716 - dead USB trackball mouse kills entire system
-In-Reply-To: Your message of "Tue, 28 Jul 2009 10:33:46 EDT."
-             <Pine.LNX.4.44L0.0907281031020.2881-100000@iolanthe.rowland.org>
-From: Valdis.Kletnieks@vt.edu
-References: <Pine.LNX.4.44L0.0907281031020.2881-100000@iolanthe.rowland.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1248799741_10289P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 28 Jul 2009 12:49:01 -0400
-Message-ID: <15436.1248799741@turing-police.cc.vt.edu>
+	Tue, 28 Jul 2009 12:49:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59212 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754176AbZG1Qth (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 12:49:37 -0400
+Date: Tue, 28 Jul 2009 09:49:14 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kdesu broken
+In-Reply-To: <20090728174213.5e927428@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.LFD.2.01.0907280944150.3186@localhost.localdomain>
+References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk> <87bpn7mzli.fsf@devron.myhome.or.jp> <20090727115723.1e8de60e@lxorguk.ukuu.org.uk> <873a8iqqgv.fsf@devron.myhome.or.jp> <20090727142303.41096bf5@lxorguk.ukuu.org.uk> <877hxujkuv.fsf@devron.myhome.or.jp>
+ <20090727145805.690afe5d@lxorguk.ukuu.org.uk> <87fxci6ub9.fsf@devron.myhome.or.jp> <20090727161424.GA4233@skywalker> <20090727174252.2d987830@lxorguk.ukuu.org.uk> <20090727171213.GB4233@skywalker> <87skgikjr8.fsf@devron.myhome.or.jp>
+ <20090727222010.1a5efb7b@lxorguk.ukuu.org.uk> <87r5w19xsb.fsf@devron.myhome.or.jp> <20090728112203.7b70adba@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907280848090.3186@localhost.localdomain> <20090728174213.5e927428@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1248799741_10289P
-Content-Type: text/plain; charset=us-ascii
 
-On Tue, 28 Jul 2009 10:33:46 EDT, Alan Stern said:
-> A question for you: Do you now observe any warnings in the dmesg log if
-> you rmmod ehci-hcd after the trackball mouse is gone?  Apparently the 
-> patch you tested isn't perfect and some stuff gets leaked.  I'm trying 
-> to track down the problem.
 
-Hmm.. Let me go cook up a test kernel - I have ehci-hcd built-in rather
-than a module.  Might take a day or two...
+On Tue, 28 Jul 2009, Alan Cox wrote:
+> 
+> We don't ignore it.
 
---==_Exmh_1248799741_10289P
-Content-Type: application/pgp-signature
+Yes we do. Look at Ogawa-san's patch. And read my email answer to it.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+> What goes in one end comes out the other after tty
+> processing (ldisc, echo etc). Reliably. Both the EOF fix and the
+> tty->low_latency fix cure that. [The low latency one also provides the
+> *exact* same semantics as we had prior to 2.6.31-rc as well]
 
-iD8DBQFKbyv9cC3lWbTT17ARApUoAKDf18OCRDahMphQ4fvL4u2NbntyqACgoWZF
-PfWuOJLKXF1NOm62DzihXW8=
-=zrki
------END PGP SIGNATURE-----
+I agree that the low-latency thing should fix things, and I applied it. 
+But I think that Ogawa's patch is fundamentally "correct" at a much higher 
+level. Rather than depend on low-latency being set, it just "Does The 
+Right Thing(tm)", by making sure that readers never even look at the EOF 
+bits etc until they have flushed the tty ldisc state.
 
---==_Exmh_1248799741_10289P--
+> If I understand Ogawa correctly then what emacs thinks is true is quite
+> different: Emacs thinks that
+> 
+> 	write(pty, "data", length)
+> 	close(pty)
+> 	exit()
+> 
+> will always ensure that the other end has already got the data before
+> close() completes - or to be more exact before the parent receives SIGCLD.
+
+.. and depending on what emacs does with signals and it's select() loop, 
+that may actually be _entirely_reasonable_.
+
+Imagine being in 'select()' (or read, for that matter), and getting EINTR 
+due to SIGCHLD. What is the correct expectations?
+
+The correct expectation is that the select() (or read()) should have 
+returned any data that it saw _before_ it returns EINTR.
+
+		Linus
