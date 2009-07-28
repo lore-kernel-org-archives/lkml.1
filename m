@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703AbZG1ICS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752019AbZG1Iau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752703AbZG1ICS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 04:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbZG1ICR
+	id S1752019AbZG1Iau (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 04:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbZG1Iat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 04:02:17 -0400
-Received: from www84.your-server.de ([213.133.104.84]:53116 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752527AbZG1ICP (ORCPT
+	Tue, 28 Jul 2009 04:30:49 -0400
+Received: from mail-bw0-f221.google.com ([209.85.218.221]:35192 "EHLO
+	mail-bw0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750895AbZG1Iar convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 04:02:15 -0400
-Subject: [PATCH] fbcon: rotate upside down crash
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 28 Jul 2009 10:01:58 +0200
-Message-Id: <1248768118.2992.12.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+	Tue, 28 Jul 2009 04:30:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=kncVJsnQQumHyGDhtRAgZF46sWCoZlFz9vWcYCTSJ1Tlefxfrd8EBCTZoGuCvIbV9I
+         OoagTyXDbt5zRIeWBGUcqVEpasgXjdELRYcSminA6MJs4gYWCJI9cZemdI3nOdEN08VB
+         II6R3DzRTB5CELDDDW5tsvtA5eNiTfv/dNvrg=
+MIME-Version: 1.0
+In-Reply-To: <2375c9f90907262229t2def934emb9340c31d3efdc21@mail.gmail.com>
+References: <Jya1GruKQpD.A.16.2GObKB@chimera>
+	 <3zAHs5O6maO.A.B5B.IHObKB@chimera>
+	 <2375c9f90907262229t2def934emb9340c31d3efdc21@mail.gmail.com>
+Date: Tue, 28 Jul 2009 10:30:46 +0200
+Message-ID: <68676e00907280130tbbf5672x83182641b0c977b3@mail.gmail.com>
+Subject: Re: [Bug #13838] kernel BUG at include/net/netns/generic.h:41!
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: =?UTF-8?Q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       netdev@vger.kernel.org, herbert@gondor.apana.org.au,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Attached is a bug fix for the frame console. 
+On Mon, Jul 27, 2009 at 7:29 AM, Américo Wang<xiyou.wangcong@gmail.com> wrote:
+> On Mon, Jul 27, 2009 at 4:28 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
+>>
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.30.  Please verify if it still should be listed and let me know
+>> (either way).
+>>
+>>
+>> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13838
+>> Subject         : kernel BUG at include/net/netns/generic.h:41!
+>> Submitter       : Luca Tettamanti <kronos.it@gmail.com>
+>> Date            : 2009-07-20 15:27 (7 days old)
+>> References      : http://lkml.org/lkml/2009/7/20/105
+>
+> Hmm, it looks like that 'pfkey_net_id' is still zero after ipsec_pfkey_init()...
+>
+> Add Herbert and net-dev into Cc.
+>
+> Luca, would you mind to provide your .config and the steps to reproduce this?
 
-The current frame buffer console upside down functionality will crash
-using a font which has not a width of multiple by 8. 
+I cannot reproduce it anymore with the current git kernel. The BUG was
+triggered by racoon at startup.
+Should I go back to an older kernel to investigate or can we consider
+it "fixed"?
 
-The following 1 liner will fix the rotate_ud() function,
-
-ChangeLog:
- Fix the rotate_ud() function not to crash in case of a font which has not a width of multiple by 8: The 
- inner loop of the font pixel copy should not access a bit outside the font memory area. Subtract the shift
- offset from the font width will prevent this.
-
- fbcon_rotate.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Signed-off-by: Stefani Seibold <stefani@seibold.net>
-
---- linux-2.6.31-rc4.orig/drivers/video/console/fbcon_rotate.h	2009-06-10 05:05:27.000000000 +0200
-+++ linux-2.6.31-rc4/drivers/video/console/fbcon_rotate.h	2009-07-24 20:37:31.000000000 +0200
-@@ -45,7 +45,7 @@
- 	width = (width + 7) & ~7;
- 
- 	for (i = 0; i < height; i++) {
--		for (j = 0; j < width; j++) {
-+		for (j = 0; j < width - shift; j++) {
- 			if (pattern_test_bit(j, i, width, in))
- 				pattern_set_bit(width - (1 + j + shift),
- 						height - (1 + i),
-
-
+Luca
