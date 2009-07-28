@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753079AbZG1OtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbZG1OuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753079AbZG1OtA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 10:49:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbZG1OtA
+	id S1753225AbZG1OuH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 10:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752885AbZG1OuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 10:49:00 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:47162 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751209AbZG1Os7 (ORCPT
+	Tue, 28 Jul 2009 10:50:05 -0400
+Received: from fias.uni-frankfurt.de ([141.2.248.1]:39977 "EHLO
+	fias.uni-frankfurt.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751034AbZG1OuE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 10:48:59 -0400
-Date: Tue, 28 Jul 2009 16:48:54 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Brad Spengler <spender@grsecurity.net>
-Cc: Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       James Morris <jmorris@namei.org>, James Carter <jwcart2@tycho.nsa.gov>,
-       Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
-       Stephen Smalley <sds@tycho.nsa.gov>, Daniel J Walsh <dwalsh@redhat.com>,
-       cl@linux-foundation.org, Arjan van de Ven <arjan@infradead.org>,
-       kees@outflux.net, Chad Sellers <csellers@tresys.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, mingo@elte.hu
-Subject: Re: mmap_min_addr and your local LSM (ok, just SELinux)
-Message-ID: <20090728144854.GN15310@basil.fritz.box>
-References: <1248132223.2654.278.camel@localhost> <alpine.LRH.2.00.0907211258110.32400@tundra.namei.org> <1248187482.19456.90.camel@moss-lions.epoch.ncsc.mil> <alpine.LRH.2.00.0907221953190.15799@tundra.namei.org> <20090728011943.589176cb@lxorguk.ukuu.org.uk> <87zlapgo2u.fsf@basil.nowhere.org> <20090728110028.31fa9a6f@lxorguk.ukuu.org.uk> <20090728112137.GF15310@basil.fritz.box> <20090728133547.GA23858@grsecurity.net>
+	Tue, 28 Jul 2009 10:50:04 -0400
+From: Jan Scholz <scholz@fias.uni-frankfurt.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+       "Jan Scholz" <scholz@fias.uni-frankfurt.de>
+Subject: Re: [Bug #13407] adb trackpad disappears after suspend to ram
+References: <DizPU9GBfHF.A.kgF.iWObKB@chimera>
+	<H5-1lZIIeYK.A.BsH.IYObKB@chimera>
+Date: Tue, 28 Jul 2009 16:49:56 +0200
+In-Reply-To: <H5-1lZIIeYK.A.BsH.IYObKB@chimera> (Rafael J. Wysocki's message
+	of "Sun, 26 Jul 2009 22:45:28 +0200 (CEST)")
+Message-ID: <87iqhcvp4b.fsf@scholz.fias.uni-frankfurt.de>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.96 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090728133547.GA23858@grsecurity.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 28, 2009 at 09:35:47AM -0400, Brad Spengler wrote:
-> > If you use all available break points (making all gdb users unhappy)
-> > then you could still only cover 64 bytes on 64bit, 32 on 32bit.
-> 
-> Might want to double-check that math I think ;)
+Hi,
 
-Good catch. I was off by one bit. It's 32 / 16.
-Doesn't change the result I would guess though.
+The bug is still present in v2.6.31-rc4, it is fixed by commenting out
+{suspend,resume}_device_irqs() in drivers/base/power/main.c as suggested
+by Rafael. Any success in reproducing it?
 
--Andi
+Regards,
+   Jan
+
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.29 and 2.6.30.
+>
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> be listed and let me know (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13407
+> Subject		: adb trackpad disappears after suspend to ram
+> Submitter	: Jan Scholz <scholz@fias.uni-frankfurt.de>
+> Date		: 2009-05-28 7:59 (60 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=2ed8d2b3a81bdbb0418301628ccdb008ac9f40b7
+> References	: http://marc.info/?l=linux-kernel&m=124349762314976&w=4
+> Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
+>
+>
+>
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+ Jan Scholz                                ____  ____    __    ___ 
+                                          ( ___)(_  _)  /__\  / __)
+ Frankfurt Institute for Advanced Studies  )__)  _)(_  /(__)\ \__ \
+                                          (__)  (____)(__)(__)(___/
+ Goethe Universitaet Frankfurt
+ Ruth-Moufang-Str. 1                             Tel. 069-798-47534
+ 60438 Frankfurt am Main
