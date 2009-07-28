@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbZG1Xtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756217AbZG2ABE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753565AbZG1Xtj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbZG1Xth
+	id S1756217AbZG2ABE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 20:01:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756184AbZG2ABB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:49:37 -0400
-Received: from kroah.org ([198.145.64.141]:35630 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 20:01:01 -0400
+Received: from kroah.org ([198.145.64.141]:35706 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753354AbZG1Xtf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:49:35 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:51 2009
-Message-Id: <20090728234151.868198371@mini.kroah.org>
+	id S1753881AbZG1Xtt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:49:49 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:54 2009
+Message-Id: <20090728234154.144353948@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:40:33 -0700
+Date: Tue, 28 Jul 2009 16:40:48 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Clemens Ladisch <clemens@ladisch.de>, Takashi Iwai <tiwai@suse.de>
-Subject: [patch 04/71] sound: usb-audio: add workaround for Blue Microphones devices
+       Jeff Layton <jlayton@redhat.com>, Steve French <sfrench@us.ibm.com>
+Subject: [patch 19/71] cifs: fix regression with O_EXCL creates and optimize away lookup
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=sound-usb-audio-add-workaround-for-blue-microphones-devices.patch
+Content-Disposition: inline; filename=cifs-fix-regression-with-o_excl-creates-and-optimize-away-lookup.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,56 +30,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Clemens Ladisch <clemens@ladisch.de>
+From: Jeff Layton <jlayton@redhat.com>
 
-commit 8886f33f25083a47d5fa24ad7b57bb708c5c5403 upstream.
+commit 5ddf1e0ff00fd808c048d0b920784828276cc516 upstream.
 
-Blue Microphones USB devices have an alternate setting that sends two
-channels of data to the computer.  Unfortunately, the descriptors of
-that altsetting have a wrong channel setting, which means that any
-recorded data from such a device has twice the sample rate from what
-would be expected.
+cifs: fix regression with O_EXCL creates and optimize away lookup
 
-This patch adds a workaround to ignore that altsetting.  Since these
-devices have only one actual channel, no data is lost.
-
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+Tested-by: Shirish Pargaonkar <shirishp@gmail.com>
+Signed-off-by: Steve French <sfrench@us.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/usb/usbaudio.c |   14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+ fs/cifs/dir.c |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
---- a/sound/usb/usbaudio.c
-+++ b/sound/usb/usbaudio.c
-@@ -2649,7 +2649,7 @@ static int parse_audio_endpoints(struct 
- 	struct usb_interface_descriptor *altsd;
- 	int i, altno, err, stream;
- 	int format;
--	struct audioformat *fp;
-+	struct audioformat *fp = NULL;
- 	unsigned char *fmt, *csep;
- 	int num;
+--- a/fs/cifs/dir.c
++++ b/fs/cifs/dir.c
+@@ -641,6 +641,15 @@ cifs_lookup(struct inode *parent_dir_ino
+ 			}
+ 	}
  
-@@ -2722,6 +2722,18 @@ static int parse_audio_endpoints(struct 
- 			continue;
- 		}
- 
-+		/*
-+		 * Blue Microphones workaround: The last altsetting is identical
-+		 * with the previous one, except for a larger packet size, but
-+		 * is actually a mislabeled two-channel setting; ignore it.
-+		 */
-+		if (fmt[4] == 1 && fmt[5] == 2 && altno == 2 && num == 3 &&
-+		    fp && fp->altsetting == 1 && fp->channels == 1 &&
-+		    fp->format == SNDRV_PCM_FORMAT_S16_LE &&
-+		    le16_to_cpu(get_endpoint(alts, 0)->wMaxPacketSize) ==
-+							fp->maxpacksize * 2)
-+			continue;
++	/*
++	 * O_EXCL: optimize away the lookup, but don't hash the dentry. Let
++	 * the VFS handle the create.
++	 */
++	if (nd->flags & LOOKUP_EXCL) {
++		d_instantiate(direntry, NULL);
++		return 0;
++	}
 +
- 		csep = snd_usb_find_desc(alts->endpoint[0].extra, alts->endpoint[0].extralen, NULL, USB_DT_CS_ENDPOINT);
- 		/* Creamware Noah has this descriptor after the 2nd endpoint */
- 		if (!csep && altsd->bNumEndpoints >= 2)
+ 	/* can not grab the rename sem here since it would
+ 	deadlock in the cases (beginning of sys_rename itself)
+ 	in which we already have the sb rename sem */
 
 
