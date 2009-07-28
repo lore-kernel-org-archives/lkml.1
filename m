@@ -1,101 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751581AbZG1AKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752191AbZG1AKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751581AbZG1AKJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 20:10:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbZG1AKI
+	id S1752191AbZG1AKk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 20:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbZG1AKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 20:10:08 -0400
-Received: from liberdade.minaslivre.org ([72.232.18.203]:36615 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750735AbZG1AKH (ORCPT
+	Mon, 27 Jul 2009 20:10:39 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:27969 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752041AbZG1AKi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 20:10:07 -0400
-Date: Mon, 27 Jul 2009 21:09:46 -0300
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>
-Subject: Re: [Bug #13643] Touchpad lost synchronization after resume from
-	suspend to RAM
-Message-ID: <20090728000945.GA13815@vespa.holoscopio.com>
-References: <Jya1GruKQpD.A.16.2GObKB@chimera> <3zAHs5O6maO.A.JcF.gIObKB@chimera> <20090726233331.GA4712@vespa.holoscopio.com> <200907280015.56826.rjw@sisk.pl> <20090727225946.048A3526EC9@mailhub.coreip.homeip.net>
+	Mon, 27 Jul 2009 20:10:38 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:content-id:x-system-of-record;
+	b=oWth/u/KbyMkV3+qAVw3PDmQLc/s3tkEo0CJp1fao7NmYhsKaPRrz97bz1GHVr/sg
+	52HZ3723rJ7KYAhfWEDcw==
+Date: Mon, 27 Jul 2009 17:10:26 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Menage <menage@google.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch -mmotm] mm: introduce oom_adj_child
+In-Reply-To: <6599ad830907271648v41b006c0j727fc09665f4f47e@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0907271658550.27881@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0907261446050.12973@chino.kir.corp.google.com> <6599ad830907271648v41b006c0j727fc09665f4f47e@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="C7zPtVaVf+AK4Oqc"
-Content-Disposition: inline
-In-Reply-To: <20090727225946.048A3526EC9@mailhub.coreip.homeip.net>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: MULTIPART/MIXED; BOUNDARY="497827084-1972524973-1248739587=:27881"
+Content-ID: <alpine.DEB.2.00.0907271706540.27881@chino.kir.corp.google.com>
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
---C7zPtVaVf+AK4Oqc
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+--497827084-1972524973-1248739587=:27881
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <alpine.DEB.2.00.0907271706541.27881@chino.kir.corp.google.com>
 
-On Mon, Jul 27, 2009 at 03:25:51PM -0700, Dmitry Torokhov wrote:
-> On Tue, Jul 28, 2009 at 12:15:54AM +0200, Rafael J. Wysocki wrote:
-> > On Monday 27 July 2009, Thadeu Lima de Souza Cascardo wrote:
-> > > On Sun, Jul 26, 2009 at 10:23:34PM +0200, Rafael J. Wysocki wrote:
-> > > > This message has been generated automatically as a part of a report
-> > > > of recent regressions.
-> > > >=20
-> > > > The following bug entry is on the current list of known regressions
-> > > > from 2.6.30.  Please verify if it still should be listed and let me=
- know
-> > > > (either way).
-> > > >=20
-> > > >=20
-> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D13643
-> > > > Subject		: Touchpad lost synchronization after resume from suspend =
-to RAM
-> > > > Submitter	: Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>
-> > > > Date		: 2009-06-28 10:42 (29 days old)
-> > > > References	: http://lkml.org/lkml/2009/6/23/365
-> > > > 		  2.6.30-rc1: touchpad disabled
-> > > > 		  http://lkml.org/lkml/2009/6/25/256
-> > > > Handled-By	: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-> > > > Patch		: http://patchwork.kernel.org/patch/34075/
-> > > >=20
-> > > >=20
-> > >=20
-> > > I guess my patch did fix it and we had other confirmations as well,
-> > > didn't we?
-> >=20
-> > Yes, we did.  It's waiting in the Dmirty's tree for Linus to take it AF=
-AICS.
-> >=20
->=20
-> I believe it is in -rc4 actually.
->=20
-> --=20
-> Dmitry
+On Mon, 27 Jul 2009, Paul Menage wrote:
 
-It entered in v2.6.31-rc3. Thanks, Dimitry.
+> On Sun, Jul 26, 2009 at 2:50 PM, David Rientjes<rientjes@google.com> wrote:
+> > +If oom_adj_child is set to equal oom_adj, then it will mirror oom_adj whenever
+> > +it changes.  This avoids having to set both values when simply tuning oom_adj
+> > +and that value should be inherited by all children.
+> 
+> Maybe have a distinct value for oom_adj_child (the default) that means
+> "default to mm->oom_adj" ?
+> 
 
-cascardo@vespa:~/linux$ git log1 --author=3Dcascardo v2.6.31-rc2..v2.6.31-r=
-c3
-ddaa43433dd77535e4e132787f199f58ce224f44 Input: mark serio and i8042 as sus=
-pende
-cascardo@vespa:~/linux$
+That's implicitly what mm->oom_adj == mm->oom_adj_child means.  If they 
+are equal at the time oom_adj is changed, oom_adj_child also changes, but 
+if oom_adj_child differs then it remains static.
 
---C7zPtVaVf+AK4Oqc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+> Shouldn't oom_adj_child be per-task? Otherwise you're theoretically
+> allowing races between different threads that try to fork children
+> with different oom_adj values at the same time. Not a particularly
+> likely problem, but it seems bad to bake the change of races into the
+> API.
+> 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Good point, the newly initialized mm can get its oom_adj value from 
+current rather than current->mm.
 
-iEYEARECAAYFAkpuQckACgkQyTpryRcqtS2y4gCdG1nAnxC+aO3bGcL7Op80wSNO
-QaIAoJKThprOS7HkYsL7Nv0v1x18pVD9
-=7CEo
------END PGP SIGNATURE-----
+> Also, I'm not sure that the requirement that oom_adj_child be >=
+> oom_adj is a good restriction. Sure, if a task gives its child a lower
+> oom_adj than itself it's potentially playing with fire, but it may
+> well be that the new child is expected todaemonize itself in the very
+> near future and hence no longer be the child of the current process. I
+> don't think that restricting the values that the sysadmin or root
+> processes can apply on the grounds that they might not do what they
+> want is the right approach.
+> 
 
---C7zPtVaVf+AK4Oqc--
+Ok, we can allow oom_adj_child to be less than oom_adj for 
+CAP_SYS_RESOURCE.
+
+> It would also maybe be nicer to use a prctl() rather than introducing
+> yet another file in /proc/<pid> - but I guess that's a style argument
+> rather than a strict technical issue.
+> 
+
+Right, you had mentioned that to me earlier.  I opted to use procfs 
+because it puts all the tunables in one place so adjusting it from 
+userspace is easier for applications that care about oom_adj.  prctl() 
+only affects signals and capabilities at the moment and lacks any other 
+tunables that correspond to functionalities of procfs entities.
+
+
+Andrew, please disregard this version, I'll be sending a v2 based on 
+Paul's comments.
+--497827084-1972524973-1248739587=:27881--
