@@ -1,115 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752516AbZG1ObB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbZG1Ods@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752516AbZG1ObB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 10:31:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbZG1ObA
+	id S1752262AbZG1Ods (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 10:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbZG1Odr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 10:31:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54599 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751811AbZG1ObA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 10:31:00 -0400
-Message-ID: <4A6F0B32.7060801@redhat.com>
-Date: Tue, 28 Jul 2009 16:29:06 +0200
-From: Jerome Marchand <jmarchan@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	Tue, 28 Jul 2009 10:33:47 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:38891 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750902AbZG1Odq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 10:33:46 -0400
+Date: Tue, 28 Jul 2009 10:33:46 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Valdis.Kletnieks@vt.edu
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Jiri Kosina <jkosina@suse.cz>, Greg Kroah-Hartman <gregkh@suse.de>,
+       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>
+Subject: Re: 31-rc3-mmotm0716 - dead USB trackball mouse kills entire system
+In-Reply-To: <70893.1248739158@turing-police.cc.vt.edu>
+Message-ID: <Pine.LNX.4.44L0.0907281031020.2881-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, ryov@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com,
-       agk@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
-Subject: Re: [PATCH 03/24] io-controller: bfq support of in-class preemption
-References: <1248467274-32073-1-git-send-email-vgoyal@redhat.com> <1248467274-32073-4-git-send-email-vgoyal@redhat.com> <4A6DDBDE.8020608@redhat.com> <20090727224138.GA3702@redhat.com> <4A6EE4A0.6080700@redhat.com> <20090728135212.GC6133@redhat.com>
-In-Reply-To: <20090728135212.GC6133@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Tue, Jul 28, 2009 at 01:44:32PM +0200, Jerome Marchand wrote:
->> Vivek Goyal wrote:
->>> Hi Jerome,
->>>
->>> Thanks for testing it out. I could also reproduce the issue.
->>>
->>> I had assumed that RT queue will always preempt non-RT queue and hence if
->>> there is an RT ioq/request pending, the sd->next_entity will point to
->>> itself and any queue which is preempting it has to be on same service
->>> tree.
->>>
->>> But in your test case it looks like that RT async queue is pending and 
->>> there is some sync BE class IO going on. It looks like that CFQ allows
->>> sync queue preempting async queue irrespective of class, so in this case
->>> sync BE class reader will preempt async RT queue and that's where my
->>> assumption is broken and we see BUG_ON() hitting.
->>>
->>> Can you please tryout following patch. It is a quick patch and requires
->>> more testing. It solves the crash but still does not solve the issue of
->>> sync queue always preempting async queues irrespective of class. In
->>> current scheduler we always schedule the RT queue first (whether it be
->>> sync or async). This problem requires little more thought.
->> I've tried it: I can't reproduce the issue anymore and I haven't seen any
->> other problem so far.
->> By the way, what is the expected result regarding fairness among different
->> groups when IO from different classes are run on each group? For instance,
->> if we have RT IO going on on one group, BE IO on an other and Idle IO on a
->> third group, what is the expected result: should the IO time been shared
->> fairly between the groups or should RT IO have priority? As it is now, the
->> time is shared fairly between BE and RT groups and the last group running
->> Idle IO hardly get any time.
->>
+On Mon, 27 Jul 2009 Valdis.Kletnieks@vt.edu wrote:
+
+> Confirming - the patch in that thread prevents the system lockup I was
+> seeing.
 > 
-> Hi Jerome,
+> So it looks like hid_reset() getting more chatty sometime in the last 2 weeks
+> was a red herring, and one I can't actually complain about - it was quite
+> legitimately whinging about not being able to reset a device that was in fact
+> dead in the water at the time.  Given that, and a working patch for ehci-hcd.c,
+> I'm having a hard time finding the enthusiasm to track down what exactly
+> changed in hid-core.c. :)
 > 
-> If there are two groups RT and BE, I would expect RT group to get all the
-> bandwidth as long as it is backlogged and starve the BE group.
-
-I wasn't clear enough. I meant the class of the process as set by ionice, not
-the class of the cgroup. That is, of course, only an issue when using CFQ.
-
+> The change in hid-core.c behavior just had the bad luck to land in -mmotm at
+> the exact same time the bug in ehci-hcd.c landed.  So we had two user-visible
+> behavior changes in the same area of code at the same time.  Hilarity ensues. :)
 > 
-> I ran quick test of two dd readers. One reader is in RT group and other is
-> in BE group. I do see that RT group runs away with almost all the BW.
-> 
-> group1 time=8:16 2479 group1 sectors=8:16 457848
-> group2 time=8:16 103  group2 sectors=8:16 18936
-> 
-> Note that when group1 (RT) finished it had got 2479 ms of disk time while
-> group2 (BE) got only 103 ms.
-> 
-> Can you send details of your test. It should not be fair sharing between
-> RT and BE group.
+> Thanks for pointing me at the actual fix. ;)
 
-Setup:
+A question for you: Do you now observe any warnings in the dmesg log if
+you rmmod ehci-hcd after the trackball mouse is gone?  Apparently the 
+patch you tested isn't perfect and some stuff gets leaked.  I'm trying 
+to track down the problem.
 
-$ mount -t cgroup -o io,blkio none /cgroup
-$ mkdir /cgroup/test1 /cgroup/test2 /cgroup/test3
-$ echo 1000 > /cgroup/test1/io.weight
-$ echo 1000 > /cgroup/test2/io.weight
-$ echo 1000 > /cgroup/test3/io.weight
+Alan Stern
 
-Test:
-$ echo 3 > /proc/sys/vm/drop_caches
-
-$ ionice -c 1 dd if=/tmp/io-controller-test3 of=/dev/null &
-$ echo $! > /cgroup/test1/tasks
-
-$ ionice -c 2 dd if=/tmp/io-controller-test1 of=/dev/null &
-$ echo $! > /cgroup/test2/tasks
-
-$ ionice -c 3 dd if=/tmp/io-controller-test2 of=/dev/null &
-$ echo $! > /cgroup/test3/tasks
-
-
-> 
-> Thanks
-> Vivek
-
-Jerome
