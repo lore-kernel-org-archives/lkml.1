@@ -1,75 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZG1RS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056AbZG1RSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754630AbZG1RS1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 13:18:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbZG1RS0
+	id S1754056AbZG1RSY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 13:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbZG1RSV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 13:18:26 -0400
-Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:9627 "EHLO
-	VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753392AbZG1RSF (ORCPT
+	Tue, 28 Jul 2009 13:18:21 -0400
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:28292
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753272AbZG1RSE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 13:18:05 -0400
-X-SpamScore: 3
-X-BigFish: VPS3(zzzz1202hzzz32i203h87h43j65h)
-X-Spam-TCS-SCL: 4:0
+	Tue, 28 Jul 2009 13:18:04 -0400
+X-SpamScore: 11
+X-BigFish: VPS11(zz78fbpzz1202hzzz32i203h87h43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KNI5DN-04-A2I-01
+X-WSS-ID: 0KNI5DR-04-A2P-01
 From: Robert Richter <robert.richter@amd.com>
 To: Ingo Molnar <mingo@elte.hu>
 CC: LKML <linux-kernel@vger.kernel.org>,
        oprofile-list <oprofile-list@lists.sourceforge.net>,
        Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 07/26] oprofile: oprofile_set_timeout(), return with error for invalid args
-Date: Tue, 28 Jul 2009 19:07:07 +0200
-Message-ID: <1248800846-25422-8-git-send-email-robert.richter@amd.com>
+Subject: [PATCH 20/26] x86/oprofile: Add function has_mux() to check multiplexing support
+Date: Tue, 28 Jul 2009 19:07:20 +0200
+Message-ID: <1248800846-25422-21-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1248800846-25422-1-git-send-email-robert.richter@amd.com>
 References: <1248800846-25422-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 28 Jul 2009 17:17:48.0056 (UTC) FILETIME=[543A9180:01CA0FA7]
+X-OriginalArrivalTime: 28 Jul 2009 17:17:50.0744 (UTC) FILETIME=[55D4B980:01CA0FA7]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Return with -EINVAL for invalid parameters instead of setting the
-default value in oprofile_set_timeout().
+The check is used to prevent running multiplexing code for models not
+supporting multiplexing. Before, the code was running but without
+effect.
 
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- drivers/oprofile/oprof.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
+ arch/x86/oprofile/nmi_int.c |   19 ++++++++++++++++++-
+ 1 files changed, 18 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/oprofile/oprof.c b/drivers/oprofile/oprof.c
-index 7bc64af..42c9c76 100644
---- a/drivers/oprofile/oprof.c
-+++ b/drivers/oprofile/oprof.c
-@@ -196,6 +196,7 @@ post_sync:
- int oprofile_set_timeout(unsigned long val_msec)
- {
- 	int err = 0;
-+	unsigned long time_slice;
+diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
+index 82ee295..dca7240 100644
+--- a/arch/x86/oprofile/nmi_int.c
++++ b/arch/x86/oprofile/nmi_int.c
+@@ -124,6 +124,11 @@ static void nmi_stop(void)
  
- 	mutex_lock(&start_mutex);
+ static DEFINE_PER_CPU(int, switch_index);
  
-@@ -209,9 +210,13 @@ int oprofile_set_timeout(unsigned long val_msec)
- 		goto out;
- 	}
- 
--	timeout_jiffies = msecs_to_jiffies(val_msec);
--	if (timeout_jiffies == MAX_JIFFY_OFFSET)
--		timeout_jiffies = msecs_to_jiffies(MULTIPLEXING_TIMER_DEFAULT);
-+	time_slice = msecs_to_jiffies(val_msec);
-+	if (time_slice == MAX_JIFFY_OFFSET) {
-+		err = -EINVAL;
-+		goto out;
-+	}
++static inline int has_mux(void)
++{
++	return !!model->switch_ctrl;
++}
 +
-+	timeout_jiffies = time_slice;
+ inline int op_x86_phys_to_virt(int phys)
+ {
+ 	return __get_cpu_var(switch_index) + phys;
+@@ -132,6 +137,10 @@ inline int op_x86_phys_to_virt(int phys)
+ static void nmi_shutdown_mux(void)
+ {
+ 	int i;
++
++	if (!has_mux())
++		return;
++
+ 	for_each_possible_cpu(i) {
+ 		kfree(per_cpu(cpu_msrs, i).multiplex);
+ 		per_cpu(cpu_msrs, i).multiplex = NULL;
+@@ -144,12 +153,17 @@ static int nmi_setup_mux(void)
+ 	size_t multiplex_size =
+ 		sizeof(struct op_msr) * model->num_virt_counters;
+ 	int i;
++
++	if (!has_mux())
++		return 1;
++
+ 	for_each_possible_cpu(i) {
+ 		per_cpu(cpu_msrs, i).multiplex =
+ 			kmalloc(multiplex_size, GFP_KERNEL);
+ 		if (!per_cpu(cpu_msrs, i).multiplex)
+ 			return 0;
+ 	}
++
+ 	return 1;
+ }
  
- out:
- 	mutex_unlock(&start_mutex);
+@@ -158,6 +172,9 @@ static void nmi_cpu_setup_mux(int cpu, struct op_msrs const * const msrs)
+ 	int i;
+ 	struct op_msr *multiplex = msrs->multiplex;
+ 
++	if (!has_mux())
++		return;
++
+ 	for (i = 0; i < model->num_virt_counters; ++i) {
+ 		if (counter_config[i].enabled) {
+ 			multiplex[i].saved = -(u64)counter_config[i].count;
+@@ -229,7 +246,7 @@ static int nmi_multiplex_on(void)
+ 
+ static int nmi_switch_event(void)
+ {
+-	if (!model->switch_ctrl)
++	if (!has_mux())
+ 		return -ENOSYS;		/* not implemented */
+ 	if (nmi_multiplex_on() < 0)
+ 		return -EINVAL;		/* not necessary */
 -- 
 1.6.3.3
 
