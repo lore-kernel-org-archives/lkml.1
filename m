@@ -1,81 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753713AbZG1Pe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbZG1Pfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753713AbZG1Pe7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 11:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbZG1Pe6
+	id S1754541AbZG1Pfr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 11:35:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbZG1Pfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 11:34:58 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:64723 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750848AbZG1Pe6 (ORCPT
+	Tue, 28 Jul 2009 11:35:46 -0400
+Received: from mail-qy0-f196.google.com ([209.85.221.196]:33284 "EHLO
+	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750961AbZG1Pfp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 11:34:58 -0400
+	Tue, 28 Jul 2009 11:35:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=OIfwVZVrGa1p0+e7reqADf4IYSXIg0C+M6MnVlpGlojOOdOvkyWGc+dbNVrpfHIi1G
-         2jzh70hz/A0oEiZDL3oHG0SHdzVqHLmiOStRfhx0xw3h5Gu40zuAhfdGxLJBrbntd3Vz
-         zZwQS3RRwKETdkRoCb9D4gA9aEN1ri6tUjbCw=
-Date: Tue, 28 Jul 2009 17:34:55 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing: fix missing function_graph events when we
-	splice_read from trace_pipe
-Message-ID: <20090728153454.GB6215@nowhere>
-References: <4A6EEC52.90704@cn.fujitsu.com>
+        h=mime-version:sender:in-reply-to:references:from:date
+         :x-google-sender-auth:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=wjvepiAOJJsouAiKG5+P3J8BMqTiveZIW2vjBS5xziXhmsr9JPliiBX1LOWkE/xOgh
+         eshMQZ39FfjzXisltxEaKbPZWr73nKFr87OeMYn7muHFiz61xDX1gP1pv4ObcNvmTCN7
+         XbNWFlDZy5BE+3/ZHFz1sVVmwzxD2BgHZDykc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A6EEC52.90704@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090728141753.GI28349@ghostprotocols.net>
+References: <20090728001041.GG28349@ghostprotocols.net> <2c0942db0907272058h3e1fc583w77925d0cc761c47f@mail.gmail.com> 
+	<20090728141753.GI28349@ghostprotocols.net>
+From: Ray Lee <ray-lk@madrabbit.org>
+Date: Tue, 28 Jul 2009 08:35:24 -0700
+X-Google-Sender-Auth: 9ba285ca90fe1a6e
+Message-ID: <2c0942db0907280835t62601e59ya65f1aa7cc00e05a@mail.gmail.com>
+Subject: Re: [PATCH 1/1 tip] perf top: Move hard coded list to 
+	/etc/perfconfig/symbols.skip
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 28, 2009 at 08:17:22PM +0800, Lai Jiangshan wrote:
-> 
-> About a half events are missing when we splice_read
-> from trace_pipe. They are consumed unexpected.
-> 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
+On Tue, Jul 28, 2009 at 7:17 AM, Arnaldo Carvalho de
+Melo<acme@redhat.com> wrote:
+>> I like approaching things from the 'everything works even in a
+>> broken/hasty installation' point of view, and it's paid off for me.
+>> Sane defaults are a wonderfully useful thing.
+>
+> While in general we agree with you, in this case the only problem would
+> be that we would see a few functions on idle systems, i.e. not something
+> catastrophic.
 
-
-Also queued for .31
-Thanks!
-
-
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index e30e6b1..41996fc 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -3085,7 +3085,8 @@ tracing_fill_pipe_page(size_t rem, struct trace_iterator *iter)
->  			break;
->  		}
->  
-> -		trace_consume(iter);
-> +		if (ret != TRACE_TYPE_NO_CONSUME)
-> +			trace_consume(iter);
->  		rem -= count;
->  		if (!find_next_entry_inc(iter))	{
->  			rem = 0;
-> @@ -4230,8 +4231,11 @@ static void __ftrace_dump(bool disable_tracing)
->  		iter.pos = -1;
->  
->  		if (find_next_entry_inc(&iter) != NULL) {
-> -			print_trace_line(&iter);
-> -			trace_consume(&iter);
-> +			int ret;
-> +
-> +			ret = print_trace_line(&iter);
-> +			if (ret != TRACE_TYPE_NO_CONSUME)
-> +				trace_consume(&iter);
->  		}
->  
->  		trace_printk_seq(&iter.seq);
-> 
-> 
-
+This is userspace we're talking about here. Where's the harm in
+getting things right by default?
