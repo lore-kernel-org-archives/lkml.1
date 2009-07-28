@@ -1,368 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752729AbZG1Ow1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753263AbZG1OzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752729AbZG1Ow1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 10:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbZG1Ow1
+	id S1753263AbZG1OzL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 10:55:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZG1OzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 10:52:27 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:32801 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750974AbZG1Ow0 (ORCPT
+	Tue, 28 Jul 2009 10:55:10 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:1700 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751484AbZG1OzH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 10:52:26 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Jean Delvare <khali@linux-fr.org>, lm-sensors@lm-sensors.org
-Subject: [PATCH] hwmon: WM831x PMIC hardware monitoring driver
-Date: Tue, 28 Jul 2009 15:52:22 +0100
-Message-Id: <1248792742-5864-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <20090728145048.GB3013@sirena.org.uk>
-References: <20090728145048.GB3013@sirena.org.uk>
+	Tue, 28 Jul 2009 10:55:07 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=XVicGcC7o36WtnKVLlZavY9B3/pSq2Uvpfy0CCig+n/am9ILkAgzjfgh3dGrRxIi5
+	FJMG94TdqdvIMX32E4w+A==
+MIME-Version: 1.0
+In-Reply-To: <alpine.LSU.2.00.0907272017280.20984@fbirervta.pbzchgretzou.qr>
+References: <20090727134457.12897.272.stgit@jazzy.zrh.corp.google.com>
+	 <20090727134621.12897.75558.stgit@jazzy.zrh.corp.google.com>
+	 <alpine.LSU.2.00.0907272017280.20984@fbirervta.pbzchgretzou.qr>
+Date: Tue, 28 Jul 2009 16:55:01 +0200
+Message-ID: <b5ddba180907280755k725440fag79d39f18ebc7d28d@mail.gmail.com>
+Subject: Re: [RFC][PATCH 2/5] netfilter: xt_ipvs (netfilter matcher for ipvs)
+From: Hannes Eder <heder@google.com>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: lvs-devel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This driver adds support for the hardware monitoring features of
-the WM831x PMICs to the hwmon API. Monitoring is provided for
-the system voltages supported natively by the WM831x, the chip
-temperature, the battery temperature and the auxiliary inputs
-of the WM831x.
+On Mon, Jul 27, 2009 at 20:35, Jan Engelhardt<jengelh@medozas.de> wrote:
+>
+> On Monday 2009-07-27 15:46, Hannes Eder wrote:
+>>--- /dev/null
+>>+++ b/include/linux/netfilter/xt_ipvs.h
+>>@@ -0,0 +1,32 @@
+>>+#ifndef _XT_IPVS_H
+>>+#define _XT_IPVS_H 1
+>>+
+>>+#ifndef _IP_VS_H
+>
+> Do the definitions (should probably be enums) exist in
+> very old <linux/ip_vs.h>? Then maybe you can get rid of them
+> from xt_ipvs.h.
 
-Currently no alarms are supported, though digital comparators on
-the WM831x devices would allow these to be provided.
+Definitions removed from xt_ipvs.h.  For xt_ipvs.c I just included
+linux/ip_vs.h.  For libxt_ipvs (user space library) I added the entire
+linux/ip_vs.h.  Do you think this is better?
 
-Since the auxiliary and battery temperature input scaling depends
-on the system configuration the value is reported as a voltage to
-userspace.
+>>+#define IP_VS_CONN_F_FWD_MASK 0x0007          /* mask for the fwd methods */
+>>+#define IP_VS_CONN_F_MASQ     0x0000          /* masquerading/NAT */
+>>+#define IP_VS_CONN_F_LOCALNODE        0x0001          /* local node */
+>>+#define IP_VS_CONN_F_TUNNEL   0x0002          /* tunneling */
+>>+#define IP_VS_CONN_F_DROUTE   0x0003          /* direct routing */
+>>+#define IP_VS_CONN_F_BYPASS   0x0004          /* cache bypass */
+>>+#endif
+>>+
+>>+#define XT_IPVS_IPVS          0x01 /* this is implied by all other options */
+>>+#define XT_IPVS_PROTO         0x02
+>>+#define XT_IPVS_VADDR         0x04
+>>+#define XT_IPVS_VPORT         0x08
+>>+#define XT_IPVS_DIR           0x10
+>>+#define XT_IPVS_METHOD                0x20
+>>+#define XT_IPVS_MASK          (0x40 - 1)
+>>+#define XT_IPVS_ONCE_MASK     (XT_IPVS_MASK & ~XT_IPVS_IPVS)
+>>+
+>>+struct xt_ipvs {
+>>+      union nf_inet_addr      vaddr, vmask;
+>>+      __be16                  vport;
+>>+      u_int16_t               l4proto;
+>>+      u_int16_t               fwd_method;
+>>+
+>>+      u_int8_t invert;
+>>+      u_int8_t bitmask;
+>>+};
+>
+> As per the "Writing Netfilter modules" e-book, __u16/__u8 is required.
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Jean Delvare <khali@linux-fr.org>
-Cc: lm-sensors@lm-sensors.org
----
+Done.
 
-Fix typo, ordering of NULL of driver data and factor out battery
-temperature report.
+>>+config NETFILTER_XT_MATCH_IPVS
+>>+      tristate '"ipvs" match support'
+>>+      depends on NETFILTER_ADVANCED
+>>+      help
+>>+        This option allows you to match against ipvs properties of a packet.
+>>+
+>>+          To compile it as a module, choos M here.  If unsure, say N.
+>>+
+>IMHO the "to compile it as a module, choos[e] M" is a relict from
+> old times and should just be dropped. These days, I stupilate,
+> everyone knows that M makes modules. And if it doesnot, then
+> it's not allowed by Kconfig :>
 
- Documentation/hwmon/wm831x   |   37 +++++++
- drivers/hwmon/Kconfig        |   11 ++
- drivers/hwmon/Makefile       |    1 +
- drivers/hwmon/wm831x-hwmon.c |  226 ++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 275 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/hwmon/wm831x
- create mode 100644 drivers/hwmon/wm831x-hwmon.c
+Done.
 
-diff --git a/Documentation/hwmon/wm831x b/Documentation/hwmon/wm831x
-new file mode 100644
-index 0000000..24f47d8
---- /dev/null
-+++ b/Documentation/hwmon/wm831x
-@@ -0,0 +1,37 @@
-+Kernel driver wm831x-hwmon
-+==========================
-+
-+Supported chips:
-+  * Wolfson Microelectronics WM831x PMICs
-+    Prefix: 'wm831x'
-+    Datasheet:
-+	http://www.wolfsonmicro.com/products/WM8310
-+	http://www.wolfsonmicro.com/products/WM8311
-+	http://www.wolfsonmicro.com/products/WM8312
-+
-+Authors: Mark Brown <broonie@opensource.wolfsonmicro.com>
-+
-+Description
-+-----------
-+
-+The WM831x series of PMICs include an AUXADC which can be used to
-+monitor a range of system operating parameters, including the voltages
-+of the major supplies within the system.  Currently the driver provides
-+reporting of all the input values but does not provide any alarms.
-+
-+Voltage Monitoring
-+------------------
-+
-+Voltages are sampled by a 12 bit ADC.  Voltages in milivolts are 1.465
-+times the ADC value.
-+
-+Temperature Monitoring
-+----------------------
-+
-+Temperatures are sampled by a 12 bit ADC.  Chip and battery temperatures
-+are available.  The chip temperature is calculated as:
-+
-+	Degrees celsius = (512.18 - data) / 1.0983
-+
-+while the battery temperature calculation will depend on the NTC
-+thermistor component.
-diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
-index 8d17135..ed85909 100644
---- a/drivers/hwmon/Kconfig
-+++ b/drivers/hwmon/Kconfig
-@@ -930,6 +930,17 @@ config SENSORS_W83627EHF
- 	  This driver can also be built as a module.  If so, the module
- 	  will be called w83627ehf.
- 
-+config SENSORS_WM831X
-+	tristate "WM831x PMICs"
-+	depends on MFD_WM831X
-+	help
-+	  If you say yes here you get support for the hardware
-+	  monitoring functionality of the Wolfson Microelectronics
-+	  WM831x series of PMICs.
-+
-+	  This driver can also be built as a module.  If so, the module
-+	  will be called wm831x-hwmon.
-+
- config SENSORS_WM8350
- 	tristate "Wolfson Microelectronics WM835x"
- 	depends on MFD_WM8350
-diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
-index 6126257..a7e7eb7 100644
---- a/drivers/hwmon/Makefile
-+++ b/drivers/hwmon/Makefile
-@@ -90,6 +90,7 @@ obj-$(CONFIG_SENSORS_VT8231)	+= vt8231.o
- obj-$(CONFIG_SENSORS_W83627EHF)	+= w83627ehf.o
- obj-$(CONFIG_SENSORS_W83L785TS)	+= w83l785ts.o
- obj-$(CONFIG_SENSORS_W83L786NG)	+= w83l786ng.o
-+obj-$(CONFIG_SENSORS_WM831X)	+= wm831x-hwmon.o
- obj-$(CONFIG_SENSORS_WM8350)	+= wm8350-hwmon.o
- 
- ifeq ($(CONFIG_HWMON_DEBUG_CHIP),y)
-diff --git a/drivers/hwmon/wm831x-hwmon.c b/drivers/hwmon/wm831x-hwmon.c
-new file mode 100644
-index 0000000..c16e9e7
---- /dev/null
-+++ b/drivers/hwmon/wm831x-hwmon.c
-@@ -0,0 +1,226 @@
-+/*
-+ * drivers/hwmon/wm831x-hwmon.c - Wolfson Microelectronics WM831x PMIC
-+ *                                hardware monitoring features.
-+ *
-+ * Copyright (C) 2009 Wolfson Microelectronics plc
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License v2 as published by the
-+ * Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/err.h>
-+#include <linux/hwmon.h>
-+#include <linux/hwmon-sysfs.h>
-+
-+#include <linux/mfd/wm831x/core.h>
-+#include <linux/mfd/wm831x/auxadc.h>
-+
-+struct wm831x_hwmon {
-+	struct wm831x *wm831x;
-+	struct device *classdev;
-+};
-+
-+static ssize_t show_name(struct device *dev,
-+			 struct device_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "wm831x\n");
-+}
-+
-+static const char *input_names[] = {
-+	[WM831X_AUX_SYSVDD]    = "SYSVDD",
-+	[WM831X_AUX_USB]       = "USB",
-+	[WM831X_AUX_BKUP_BATT] = "Backup battery",
-+	[WM831X_AUX_BATT]      = "Battery",
-+	[WM831X_AUX_WALL]      = "WALL",
-+	[WM831X_AUX_CHIP_TEMP] = "PMIC",
-+	[WM831X_AUX_BATT_TEMP] = "Battery",
-+};
-+
-+
-+static ssize_t show_voltage(struct device *dev,
-+			    struct device_attribute *attr, char *buf)
-+{
-+	struct wm831x_hwmon *hwmon = dev_get_drvdata(dev);
-+	int channel = to_sensor_dev_attr(attr)->index;
-+	int ret;
-+
-+	ret = wm831x_auxadc_read_uv(hwmon->wm831x, channel);
-+	if (ret < 0)
-+		return ret;
-+
-+	return sprintf(buf, "%d\n", DIV_ROUND_CLOSEST(ret, 1000));
-+}
-+
-+static ssize_t show_chip_temp(struct device *dev,
-+			      struct device_attribute *attr, char *buf)
-+{
-+	struct wm831x_hwmon *hwmon = dev_get_drvdata(dev);
-+	int channel = to_sensor_dev_attr(attr)->index;
-+	int ret;
-+
-+	ret = wm831x_auxadc_read(hwmon->wm831x, channel);
-+	if (ret < 0)
-+		return ret;
-+
-+	/* Degrees celsius = (512.18-ret) / 1.0983 */
-+	ret = 512180 - (ret * 1000);
-+	ret = DIV_ROUND_CLOSEST(ret * 10000, 10983);
-+
-+	return sprintf(buf, "%d\n", ret);
-+}
-+
-+static ssize_t show_label(struct device *dev,
-+			  struct device_attribute *attr, char *buf)
-+{
-+	int channel = to_sensor_dev_attr(attr)->index;
-+
-+	return sprintf(buf, "%s\n", input_names[channel]);
-+}
-+
-+#define WM831X_VOLTAGE(id, name) \
-+	static SENSOR_DEVICE_ATTR(in##id##_input, S_IRUGO, show_voltage, \
-+				  NULL, name)
-+
-+#define WM831X_NAMED_VOLTAGE(id, name) \
-+	WM831X_VOLTAGE(id, name); \
-+	static SENSOR_DEVICE_ATTR(in##id##_label, S_IRUGO, show_label,	\
-+				  NULL, name)
-+
-+static DEVICE_ATTR(name, S_IRUGO, show_name, NULL);
-+
-+WM831X_VOLTAGE(0, WM831X_AUX_AUX1);
-+WM831X_VOLTAGE(1, WM831X_AUX_AUX2);
-+WM831X_VOLTAGE(2, WM831X_AUX_AUX3);
-+WM831X_VOLTAGE(3, WM831X_AUX_AUX4);
-+
-+WM831X_NAMED_VOLTAGE(4, WM831X_AUX_SYSVDD);
-+WM831X_NAMED_VOLTAGE(5, WM831X_AUX_USB);
-+WM831X_NAMED_VOLTAGE(6, WM831X_AUX_BATT);
-+WM831X_NAMED_VOLTAGE(7, WM831X_AUX_WALL);
-+WM831X_NAMED_VOLTAGE(8, WM831X_AUX_BKUP_BATT);
-+
-+static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_chip_temp, NULL,
-+			  WM831X_AUX_CHIP_TEMP);
-+static SENSOR_DEVICE_ATTR(temp1_label, S_IRUGO, show_label, NULL,
-+			  WM831X_AUX_CHIP_TEMP);
-+/* Report as a voltage since conversion depends on external components
-+ * and that's what the ABI wants. */
-+static SENSOR_DEVICE_ATTR(temp2_input, S_IRUGO, show_voltage, NULL,
-+			  WM831X_AUX_BATT_TEMP);
-+static SENSOR_DEVICE_ATTR(temp2_label, S_IRUGO, show_label, NULL,
-+			  WM831X_AUX_BATT_TEMP);
-+
-+static struct attribute *wm831x_attributes[] = {
-+	&dev_attr_name.attr,
-+
-+	&sensor_dev_attr_in0_input.dev_attr.attr,
-+	&sensor_dev_attr_in1_input.dev_attr.attr,
-+	&sensor_dev_attr_in2_input.dev_attr.attr,
-+	&sensor_dev_attr_in3_input.dev_attr.attr,
-+
-+	&sensor_dev_attr_in4_input.dev_attr.attr,
-+	&sensor_dev_attr_in4_label.dev_attr.attr,
-+	&sensor_dev_attr_in5_input.dev_attr.attr,
-+	&sensor_dev_attr_in5_label.dev_attr.attr,
-+	&sensor_dev_attr_in6_input.dev_attr.attr,
-+	&sensor_dev_attr_in6_label.dev_attr.attr,
-+	&sensor_dev_attr_in7_input.dev_attr.attr,
-+	&sensor_dev_attr_in7_label.dev_attr.attr,
-+	&sensor_dev_attr_in8_input.dev_attr.attr,
-+	&sensor_dev_attr_in8_label.dev_attr.attr,
-+
-+	&sensor_dev_attr_temp1_input.dev_attr.attr,
-+	&sensor_dev_attr_temp1_label.dev_attr.attr,
-+	&sensor_dev_attr_temp2_input.dev_attr.attr,
-+	&sensor_dev_attr_temp2_label.dev_attr.attr,
-+
-+	NULL
-+};
-+
-+static const struct attribute_group wm831x_attr_group = {
-+	.attrs	= wm831x_attributes,
-+};
-+
-+static int __devinit wm831x_hwmon_probe(struct platform_device *pdev)
-+{
-+	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
-+	struct wm831x_hwmon *hwmon;
-+	int ret;
-+
-+	hwmon = kzalloc(sizeof(struct wm831x_hwmon), GFP_KERNEL);
-+	if (!hwmon)
-+		return -ENOMEM;
-+
-+	hwmon->wm831x = wm831x;
-+
-+	ret = sysfs_create_group(&pdev->dev.kobj, &wm831x_attr_group);
-+	if (ret)
-+		goto err;
-+
-+	hwmon->classdev = hwmon_device_register(&pdev->dev);
-+	if (IS_ERR(hwmon->classdev)) {
-+		ret = PTR_ERR(hwmon->classdev);
-+		goto err_sysfs;
-+	}
-+
-+	platform_set_drvdata(pdev, hwmon);
-+
-+	return 0;
-+
-+err_sysfs:
-+	sysfs_remove_group(&pdev->dev.kobj, &wm831x_attr_group);
-+err:
-+	kfree(hwmon);
-+	return ret;
-+}
-+
-+static int __devexit wm831x_hwmon_remove(struct platform_device *pdev)
-+{
-+	struct wm831x_hwmon *hwmon = platform_get_drvdata(pdev);
-+
-+	hwmon_device_unregister(hwmon->classdev);
-+	sysfs_remove_group(&pdev->dev.kobj, &wm831x_attr_group);
-+	platform_set_drvdata(pdev, NULL);
-+	kfree(hwmon);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver wm831x_hwmon_driver = {
-+	.probe = wm831x_hwmon_probe,
-+	.remove = __devexit_p(wm831x_hwmon_remove),
-+	.driver = {
-+		.name = "wm831x-hwmon",
-+		.owner = THIS_MODULE,
-+	},
-+};
-+
-+static int __init wm831x_hwmon_init(void)
-+{
-+	return platform_driver_register(&wm831x_hwmon_driver);
-+}
-+module_init(wm831x_hwmon_init);
-+
-+static void __exit wm831x_hwmon_exit(void)
-+{
-+	platform_driver_unregister(&wm831x_hwmon_driver);
-+}
-+module_exit(wm831x_hwmon_exit);
-+
-+MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com>");
-+MODULE_DESCRIPTION("WM831x Hardware Monitoring");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:wm831x-hwmon");
--- 
-1.6.3.3
+>>+MODULE_AUTHOR("Hannes Eder <heder@google.com>");
+>>+MODULE_DESCRIPTION("Xtables: match ipvs");
+>
+> "Match IPVS connection properties" is what you previously stated,
+> and which I think is good. Use it here, too.
 
+Done.
+
+>>+bool ipvs_mt(const struct sk_buff *skb, const struct xt_match_param *par)
+>>+{
+>>+      const struct xt_ipvs *data = par->matchinfo;
+>>+      const u_int8_t family = par->family;
+>>+      struct ip_vs_iphdr iph;
+>>+      struct ip_vs_protocol *pp;
+>>+      struct ip_vs_conn *cp;
+>>+      int af;
+>>+      bool match = true;
+>>+
+>>+      if (data->bitmask == XT_IPVS_IPVS) {
+>>+              match = !!(skb->ipvs_property)
+>>+                      ^ !!(data->invert & XT_IPVS_IPVS);
+>>+              goto out;
+>>+      }
+>
+> XT_IPVS_IPVS? What's that supposed to tell me...
+
+Just matching aginst the skb->ipvs_property, I changed to name to
+XT_IPVS_IPVS_PROPERTY.
+
+> Anyway, this can be made much shorter, given that all following
+> the "out" label is a return:
+
+You are right.  For the moment, I'll keep it as is.  Having a single
+entry/exit point makes it easier to instrument the function for
+debugging.
+
+>
+>        if (data->bitmask == XT_IPVS_IPVS)
+>                return skb->ipvs_property ^ !!(data->invert & XT_IPVS_IPVS);
+>
+>>+      /* other flags than XT_IPVS_IPVS are set */
+>>+      if (!skb->ipvs_property) {
+>>+              match = false;
+>>+              goto out;
+>>+      }
+>
+>        if (!skb->ipvs_property)
+>                return false;
+>
+>>+      ip_vs_fill_iphdr(af, skb_network_header(skb), &iph);
+>>+
+>>+      if (data->bitmask & XT_IPVS_PROTO)
+>>+              if ((iph.protocol == data->l4proto)
+>>+                  ^ !(data->invert & XT_IPVS_PROTO)) {
+>>+                      match = false;
+>>+                      goto out;
+>>+              }
+>
+>                if (iph.protocol == data->l4proto ^
+>                    !(data->invert & XT_IPVS_PROTO))
+>                        return false;
+>
+>>+      pp = ip_vs_proto_get(iph.protocol);
+>>+      if (unlikely(!pp)) {
+>>+              match = false;
+>>+              goto out;
+>>+      }
+>
+>        if (unlikely(pp == NULL))
+>                return false;
+>
+> Only after here we really need goto (to put pp).
+>
+>>+      /*
+>>+       * Check if the packet belongs to an existing entry
+>>+       */
+>>+      /* TODO: why does it only match in inverse? */
+>
+> FIXME: Figure it out :)
+
+Still working on that ;)
+
+>>+      cp = pp->conn_out_get(af, skb, pp, &iph, iph.len, 1 /* inverse */);
+>>+      if (unlikely(!cp)) {
+>>+              match = false;
+>>+              goto out;
+>>+      }
+>>+
+>>+      /*
+>>+       * We found a connection, i.e. ct != 0, make sure to call
+>>+       * __ip_vs_conn_put before returning.  In our case jump to out_put_con.
+>>+       */
+>>+
+>>+      if (data->bitmask & XT_IPVS_VPORT)
+>>+              if ((cp->vport == data->vport)
+>>+                  ^ !(data->invert & XT_IPVS_VPORT)) {
+>>+                      match = false;
+>>+                      goto out_put_ct;
+>>+              }
+>>+
+>>+      if (data->bitmask & XT_IPVS_DIR) {
+>>+              /* TODO: implement */
+>
+>                /* Yes please */
+
+Here we go:
+
+	if (data->bitmask & XT_IPVS_DIR) {
+		enum ip_conntrack_info ctinfo;
+		struct nf_conn *ct = nf_ct_get(skb, &ctinfo);
+
+		if (ct == NULL || ct == &nf_conntrack_untracked) {
+			match = false;
+			goto out_put_cp;
+		}
+
+		if ((ctinfo >= IP_CT_IS_REPLY) ^
+		    !!(data->invert & XT_IPVS_DIR)) {
+			match = false;
+			goto out_put_cp;
+		}
+	}
+
+>>+      }
+>>+
+>>+      if (data->bitmask & XT_IPVS_METHOD)
+>>+              if (((cp->flags & IP_VS_CONN_F_FWD_MASK) == data->fwd_method)
+>>+                  ^ !(data->invert & XT_IPVS_METHOD)) {
+>>+                      match = false;
+>>+                      goto out_put_ct;
+>>+              }
+>>+
+>>+      if (data->bitmask & XT_IPVS_VADDR) {
+>>+              if (af != family) {
+>>+                      match = false;
+>>+                      goto out_put_ct;
+>>+              }
+>>+
+>>+              if (ipvs_mt_addrcmp(&cp->vaddr, &data->vaddr, &data->vmask, af)
+>>+                  ^ !(data->invert & XT_IPVS_VADDR)) {
+>
+> I think the operator (^ in this case) always goes onto the same line as the ')'
+> ((a) ^\n(b), not ((a)\n ^(b)), though some legacy code seems to do it
+> random so-so.)
+
+I changed it as suggested, though I could not find anything in
+Documentation/CodingStyle about that.
+
+>>+      return match;
+>>+}
+>>+EXPORT_SYMBOL(ipvs_mt);
+>
+> What will be using ipvs_mt?
+
+Nobody, EXPORT_SYMBOL removed.
+
+>>+static struct xt_match xt_ipvs_mt_reg[] __read_mostly = {
+>>+      {
+>>+              .name       = "ipvs",
+>>+              .revision   = 0,
+>>+              .family     = NFPROTO_UNSPEC,
+>>+              .match      = ipvs_mt,
+>>+              .matchsize  = sizeof(struct xt_ipvs),
+>>+              .me         = THIS_MODULE,
+>>+      },
+>>+};
+>
+> There is just one element, so no strict need for the [] array.
+
+You are right.  Done.
+
+Thanks for the review.
+
+Cheers,
+-Hannes
