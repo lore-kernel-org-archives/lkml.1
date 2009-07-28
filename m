@@ -1,53 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbZG1BUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753081AbZG1BWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753047AbZG1BUO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 21:20:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbZG1BUO
+	id S1753081AbZG1BWj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 21:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbZG1BWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 21:20:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51445 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752842AbZG1BUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 21:20:12 -0400
-Message-ID: <4A6E529B.9030104@kernel.org>
-Date: Tue, 28 Jul 2009 10:21:31 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Mon, 27 Jul 2009 21:22:38 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:39364 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752873AbZG1BWi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 21:22:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Ui8cFP+SWU3paoRAyBG7T+nW8UT3EhLwUqvXu87lp7VVXwhUcsILT0D+wKe0nU1kYl
+         RSpt+qUjzXo3KURWogplmlaYxS/DC/fhAkveRrbYfbNnTsbgCd1da7JJDskYavCuQ6Qe
+         Mrwnzsge7BtuWp+/hsaxgKS1K2AwHF5jQe+uU=
+Date: Tue, 28 Jul 2009 03:22:34 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing/events: Add module tracepoints
+Message-ID: <20090728012233.GD5147@nowhere>
+References: <4A6582C1.2040609@cn.fujitsu.com> <20090725153733.GB5295@nowhere> <4A6D05DA.4010301@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Peter Zijlstra <peterz@infradead.org>, Zachary Amsden <zamsden@redhat.com>,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       axboe@kernel.dk, hch@infradead.org, akpm@linux-foundation.org,
-       Paul.Clements@steeleye.com, tytso@mit.edu, miklos <miklos@szeredi.hu>
-Subject: Re: [PATCH] Allow userspace block device implementation
-References: <4A6D79F6.3050509@redhat.com>	<1248699365.6987.1628.camel@twins> <20090727142536.465799aa@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090727142536.465799aa@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 28 Jul 2009 01:19:30 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A6D05DA.4010301@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Alan Cox wrote:
->> Somehow this made me think of FUSE/CUSE... should this be named aBUSE?
->> Oh wait it is :-), what I'm after is I guess is, can we share some of
->> the FUSE/CUSE code?
+On Mon, Jul 27, 2009 at 09:41:46AM +0800, Li Zefan wrote:
+> Frederic Weisbecker wrote:
+> > On Tue, Jul 21, 2009 at 04:56:33PM +0800, Li Zefan wrote:
+> >> Add trace points to trace module_load, module_free, module_get,
+> >> module_put and module_request, and use trace_event facility
+> >> to get the trace output.
+> >>
+> >> Here's the sample output:
+> >>
+> >>      TASK-PID    CPU#    TIMESTAMP  FUNCTION
+> >>         | |       |          |         |
+> >>     <...>-42    [000]     1.758380: module_request: fb0 wait=1 call_site=fb_open
+> >>     ...
+> >>     <...>-60    [000]     3.269403: module_load: scsi_wait_scan 
+> >>     <...>-60    [000]     3.269432: module_put: scsi_wait_scan call_site=sys_init_module refcnt=0
+> >>     <...>-61    [001]     3.273168: module_free: scsi_wait_scan
+> >>     ...
+> >>     <...>-1021  [000]    13.836081: module_load: sunrpc 
+> >>     <...>-1021  [000]    13.840589: module_put: sunrpc call_site=sys_init_module refcnt=-1
+> >>     <...>-1027  [000]    13.848098: module_get: sunrpc call_site=try_module_get refcnt=0
+> >>     <...>-1027  [000]    13.848308: module_get: sunrpc call_site=get_filesystem refcnt=1
+> >>     <...>-1027  [000]    13.848692: module_put: sunrpc call_site=put_filesystem refcnt=0
+> >>     ...
+> >>  modprobe-2587  [001]  1088.437213: module_load: trace_events_sample F
+> >>  modprobe-2587  [001]  1088.437786: module_put: trace_events_sample call_site=sys_init_module refcnt=0
+> >>
+> >>
+> >> Note:
+> >>
+> >> - the taints flag can be 'F', 'C' and/or 'P' if mod->taints != 0
+> >>
+> >> - the module refcnt is percpu, so it can be negative in a specific cpu
+> >>
+> >> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> > 
+> > 
+> > Nice.
+> > 
+> > Just two worries about it.
+> > 
+> > The ring buffer are flushed on module unloading right?
+> > That won't make it easy to perform module event tracing.
+> > 
 > 
-> It reminds me of the existing and perfectly functional network block
-> device (nbd) we already have and which has also been present for years.
+> Yes, but only when the module has "_ftrace_events" section.
+> They are ext4 and gfs2 for the current kernel.
 
-Yeah, I think this is the biggest hurdle against (a)BUSE.  Is it
-sufficiently different from nbd?  nbd-like functionality can be
-implemented something via FUSE and maybe it can be said that things
-are cleaner that way but nbd has been in the kernel for a long time
-now and it's definitely much easier to do swap over it when the whole
-thing is in kernel.
+
+Ah, good point.
+
+ 
+> > Also the events selftests do a lot of random things to trigger
+> > each kind of events, I guess some new others will be needed to
+> > tests these, unless they will seem to fail on every selftests.
+> > Although I can't imagine a module loading/unloading for
+> > every ftrace event selftest... I guess these will require
+> > a specific treatement and also will need to be selftested once
+> > the filesystem is set to be able to load modules.
+> > 
+> 
+> It's nice to have more selftests but I don't think it is a
+> necessity.
+> 
+> Actually the events selftests just confirm the events won't
+> crash the system, and no trace entries are generated by them
+> in the selftests.
+
+
+Indeed, forget about these worries :)
 
 Thanks.
 
--- 
-tejun
