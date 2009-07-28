@@ -1,156 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751587AbZG1DCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752077AbZG1DKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751587AbZG1DCY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 23:02:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbZG1DCX
+	id S1752077AbZG1DKz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 23:10:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbZG1DKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 23:02:23 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54151 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750799AbZG1DCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 23:02:23 -0400
-Message-ID: <4A6E6ADD.6090602@cn.fujitsu.com>
-Date: Tue, 28 Jul 2009 11:05:01 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 27 Jul 2009 23:10:54 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:57558 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751107AbZG1DKx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 23:10:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=DtIIzZI1p4yEC4Fw6PB2x0051FmQRqY8RCqSt5yBhdLbo0CETHmd4SgZQ2jNKJww0E
+         GdEo4ev6oqClQ3R2x0noCs/F/OK1UUosSPL3tEVzi3ReS718GkzTCVmOgzk2aUaxKy/i
+         xMCnrQQ+qR9E83P0d7lfRHyury+5bHCF6Nxbk=
+Date: Tue, 28 Jul 2009 05:10:50 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Clark Williams <williams@redhat.com>, Mike Galbraith <efault@gmx.de>,
+       Paul Mackerras <paulus@samba.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1 tip] perf report: Introduce -u/--unresolved-symbols
+Message-ID: <20090728031049.GG5147@nowhere>
+References: <20090721201126.GH3091@ghostprotocols.net>
 MIME-Version: 1.0
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-CC: Pavel Machek <pavel@ucw.cz>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: Re: [PATCH v3 1/2] Add function to convert between calendar time
- and broken-down time for universal use
-References: <4A5C3BC0.6020701@cn.fujitsu.com>	<20090714151040.b7b3b26d.akpm@linux-foundation.org>	<20090718115019.GH1433@ucw.cz>	<04e101ca08e5$be078fa0$808410ac@zhaoleiwin>	<20090719202018.497f7ec1.akpm@linux-foundation.org>	<4A643EFE.7090103@cn.fujitsu.com> <4A643F36.5090200@cn.fujitsu.com>	<87ocr9mi8h.fsf@devron.myhome.or.jp> <4A6D1BCF.1030109@cn.fujitsu.com> <87k51u8xwa.fsf@devron.myhome.or.jp>
-In-Reply-To: <87k51u8xwa.fsf@devron.myhome.or.jp>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090721201126.GH3091@ghostprotocols.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OGAWA Hirofumi wrote:
-> Zhaolei <zhaolei@cn.fujitsu.com> writes:
+On Tue, Jul 21, 2009 at 05:11:26PM -0300, Arnaldo Carvalho de Melo wrote:
+> So that we can concentrate on getting more symtabs or on figuring out
+> which files we have to recompile with -g or ask proprietary vendors for
+> graciously ship us rich symtabs.
 > 
->>>> +	/* the number of years since 1900 */
->>>> +	int tm_year;
->>> Why isn't this "long"? "int" can overflow.
->> I selected int to make it same with user-space struct tm.
->>
->> In 32-bit machine, long have same length with int, and still can overflow,
->> It we want to avoid it in all platform, we should use long long,
->> and make division complex.
->>
->> Maybe make it same with user-space struct tm is ok.
+> For instance, shame on me:
 > 
-> time_t is also "long" on 32-bit machine, it does overflow?
-
-Hello, Ogawa-san:
-CC: Andrew, ingo:
-
-Yes, time_t on 32-bit machine will overflow on year-2038.
-So tm.tm_year will NEVER overflow on 32-bit machine.
-
-And in 64-bit machine, int type of tm.tm_year will overflow in
-year 2,147,485,548, Is that enough?
-
-I also like your suggestion to use long for year, so gmtime/localtime
-will never return false on both 32 and 64 bit machine.
-
-(btw, I don't understand why time_t is long, it have different length(limit)
-in different arch, and make disunity)
-
->>>> +	/* the number of days since Sunday, in the range 0 to 6 */
->>>> +	int tm_wday;
->>>> +	/* the number of days since January 1, in the range 0 to 365 */
->>>> +	int tm_yday;
->>>> +};
->>> Those are needed? 
->> Those are not needed by FAT-fs's code, but as a library,
->> I keep them for generic use and keep same with user-space struct tm.
+>  [acme@doppio ~]$ perf report -us comm,dso,symbol | head -7
+>  # Samples: 22501
+>  #
+>  # Overhead       Command                           Shared Object        Symbol
+>  # ........  ............  ............................................  ......
+>  # 
+>      82.53%  npviewer.bin  /usr/lib64/mozilla/plugins/libflashplayer.so  [.] 0x000000003820d7
+>       6.34%         skype  /opt/skype_static-2.0.0.72/skype              [.] 0x00000000e1e0b1
 > 
-> Yes. But, if there is no users, why need?
-> I guess it makes slow thing, and it is slow than FAT's one
-> (because FAT's one is optimized for FAT's timestamp range more or less).
-
-There is no users of printk("%pf"), why not remove this?
-And at least, I found one: drivers/char/efirtc.c
-If I continue searching, maybe more.
-
->>>> +static inline struct tm *localtime_r(__kernel_time_t totalsecs,
->>>> +				     struct tm *result)
->>>> +{
->>>> +	return __offtime(totalsecs, -sys_tz.tz_minuteswest * 60, result);
->>>> +}
->>> I think those are confusable. The real function of those needs to handle
->>> timezone database. Especially, sys_tz.tz_minuteswest in localtime_r() is
->>> known as wrong.
->>>
->>> Are you going to fix it? Otherwise I don't think it would not be good to
->>> use it easily as generic function like this.
->> Actually, it is hard to select.
->>
->> I don't schedule to introduce complex timezone database into kernel,
->> but as you said, localtime() without timezone database is not complete.
->> But localtime_r is easy to use and understood, it is similar with
->> userspace same-name function...
+> ;-)
 > 
-> Actually it is both (gmtime() is also needed to handle timezone).
+> But the next cset should be rather nice, as I realized that doing:
 > 
-> I worry someone uses it and display/export to userland. After that, the
-> user will report the bug of it.
-
-IHMO, user of these functions should understand what these functions is and
-use these functions for right way.
-If we give user a cdrom, it is user's responsibility not using is as cup stand.
-
-At least, there function can make following source a fairy:
-fs/ncpfs/dir.c
-fs/smbfs/proc.c
-fs/fat/misc.c
-fs/udf/udftime.c
-fs/cifs/netmisc.c
-net/netfilter/xt_time.c
-drivers/scsi/ips.c
-...
-
-It is different with user-land just because it lakes of large-complex locale
-database.
-
->>>> +/*
->>>> + * Nonzero if YEAR is a leap year (every 4 years,
->>>> + * except every 100th isn't, and every 400th is).
->>>> + */
->>>> +static int __isleap(unsigned int year)
->>> long year. This breaks negative time_t.
+> yum install /usr/lib/debug/<DSO NAME WITH MISSING SYMTAB>.debug
 > 
-> Please "long year".
-
-Ok, or int year(after we get conclusion of long/int).
-
->>>> +struct tm *__offtime(__kernel_time_t totalsecs, int offset, struct tm *result)
->>>> +{
->>> So, I suggest to consolidate this code only, and don't provide
->>> gmtime_r()/localtime_r(), and use more good function name for
->>> __offtime() (I'm not sure, however, personally I feel __offtime is not
->>> obvious what's doing).
->> What about just use gmtime_r(rename __offtime->gmtime_r)?
+> Works!
 > 
-> gmtime() also need to handle timezone actually.
-
-So, maybe another function name as unmktime?
-
->> In fact I think both way(hode original localtime/gmtime or delete them) have
->> merit and demerit.
->> Hode them will make it easy to use, delete them will make function more exact.
+> Now think about a world where:
 > 
-> Yes. But, how do you handle bug report?
+> yum install /usr/lib/debug/<DSO NAME WITH MISSING SYMTAB>.symtab
+> 
+> Works, makes the internet a better place by not downloading whales,
+> oops, debuginfo files full of crap we don't need.
+> 
+> Don't get me wrong, the aforementioned crap has its place in this world,
+> just not for the perf tools, _so far_.
+> 
+> Ah, and replace 'yum' with zypper, apt-get (I tried!), smart, urpmi,
+> whatever-is-your-still-non-standardized way to get needed pieces to do
+> real work.
+> 
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Mike Galbraith <efault@gmx.de>
+> Cc: Paul Mackerras <paulus@samba.org>,
+> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+> ---
 
-I will thanks you for attention and reporting first, then discuss on LKML
-about detail of this problem, and get a conclusion and fix.
 
-Now we are in step2: discussing.
-We need to get a best way to fix this to make users happy.
 
-Thanks
-Zhaolei
+Looks pretty useful :-)
+
+Thanks!
+Frederic.
+
+
+
+>  tools/perf/Documentation/perf-report.txt |    5 +++++
+>  tools/perf/builtin-report.c              |   11 +++++++++--
+>  2 files changed, 14 insertions(+), 2 deletions(-)
+> 
+> diff --git a/tools/perf/Documentation/perf-report.txt b/tools/perf/Documentation/perf-report.txt
+> index e72e931..86aec08 100644
+> --- a/tools/perf/Documentation/perf-report.txt
+> +++ b/tools/perf/Documentation/perf-report.txt
+> @@ -48,6 +48,11 @@ OPTIONS
+>  	all occurances of this separator in symbol names (and other output)
+>  	with a '.' character, that thus it's the only non valid separator.
+>  
+> +-u::
+> +--unresolved-symbols
+> +
+> +	Consider only unresolved symbols.
+> +
+>  SEE ALSO
+>  --------
+>  linkperf:perf-stat[1]
+> diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
+> index a118bc7..c30f4cd 100644
+> --- a/tools/perf/builtin-report.c
+> +++ b/tools/perf/builtin-report.c
+> @@ -52,6 +52,7 @@ static int		modules;
+>  
+>  static int		full_paths;
+>  static int		show_nr_samples;
+> +static int		show_only_unresolved_symbols;
+>  
+>  static unsigned long	page_size;
+>  static unsigned long	mmap_window = 32;
+> @@ -1556,8 +1557,12 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+>  		if (dso_list && dso && dso->name && !strlist__has_entry(dso_list, dso->name))
+>  			return 0;
+>  
+> -		if (sym_list && sym && !strlist__has_entry(sym_list, sym->name))
+> -			return 0;
+> +		if (sym) {
+> +			if (show_only_unresolved_symbols)
+> +				return 0;
+> +			if (sym_list && !strlist__has_entry(sym_list, sym->name))
+> +				return 0;
+> +		}
+>  
+>  		if (hist_entry__add(thread, map, dso, sym, ip, chain, level, period)) {
+>  			eprintf("problem incrementing symbol count, skipping event\n");
+> @@ -2020,6 +2025,8 @@ static const struct option options[] = {
+>  	OPT_STRING('t', "field-separator", &field_sep, "separator",
+>  		   "separator for columns, no spaces will be added between "
+>  		   "columns '.' is reserved."),
+> +	OPT_BOOLEAN('u', "unresolved-symbols", &show_only_unresolved_symbols,
+> +		    "Show only the symbols that were no resolved to names"),
+>  	OPT_END()
+>  };
+>  
+> -- 
+> 1.6.2.5
+> 
 
