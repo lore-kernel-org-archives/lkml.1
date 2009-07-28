@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754909AbZG1XuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756105AbZG1Xzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754909AbZG1XuZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753965AbZG1XuV
+	id S1756105AbZG1Xzz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:55:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755899AbZG1Xzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:50:21 -0400
-Received: from kroah.org ([198.145.64.141]:35874 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:55:52 -0400
+Received: from kroah.org ([198.145.64.141]:35834 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754349AbZG1XuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:50:16 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:59 2009
-Message-Id: <20090728234158.845281426@mini.kroah.org>
+	id S1754737AbZG1XuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:50:14 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:58 2009
+Message-Id: <20090728234158.412501982@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:41:17 -0700
+Date: Tue, 28 Jul 2009 16:41:15 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Dave Anglin <dave.anglin@nrc-cnrc.gc.ca>, Helge Deller <deller@gmx.de>,
-       Kyle McMartin <kyle@mcmartin.ca>
-Subject: [patch 48/71] parisc: fix ldcw inline assembler
+       Andi Kleen <ak@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [patch 46/71] x86-64: Fix bad_srat() to clear all state
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=parisc-fix-ldcw-inline-assembler.patch
+Content-Disposition: inline; filename=x86-64-fix-bad_srat-to-clear-all-state.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,44 +30,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Helge Deller <deller@gmx.de>
+From: Andi Kleen <andi@firstfloor.org>
 
-commit 7d17e2763129ea307702fcdc91f6e9d114b65c2d upstream.
+commit 429b2b319af3987e808c18f6b81313104caf782c upstream.
 
-There are two reasons to expose the memory *a in the asm:
+Need to clear both nodes and nodes_add state for start/end.
 
-1) To prevent the compiler from discarding a preceeding write to *a, and
-2) to prevent it from caching *a in a register over the asm.
-
-The change has had a few days testing with a SMP build of 2.6.22.19
-running on a rp3440.
-
-This patch is about the correctness of the __ldcw() macro itself.
-The use of the macro should be confined to small inline functions
-to try to limit the effect of clobbering memory on GCC's optimization
-of loads and stores.
-
-Signed-off-by: Dave Anglin <dave.anglin@nrc-cnrc.gc.ca>
-Signed-off-by: Helge Deller <deller@gmx.de>
-Signed-off-by: Kyle McMartin <kyle@mcmartin.ca>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+LKML-Reference: <20090718065657.GA2898@basil.fritz.box>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/parisc/include/asm/system.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/mm/srat_64.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/arch/parisc/include/asm/system.h
-+++ b/arch/parisc/include/asm/system.h
-@@ -168,8 +168,8 @@ static inline void set_eiem(unsigned lon
- /* LDCW, the only atomic read-write operation PA-RISC has. *sigh*.  */
- #define __ldcw(a) ({						\
- 	unsigned __ret;						\
--	__asm__ __volatile__(__LDCW " 0(%1),%0"			\
--		: "=r" (__ret) : "r" (a));			\
-+	__asm__ __volatile__(__LDCW " 0(%2),%0"			\
-+		: "=r" (__ret), "+m" (*(a)) : "r" (a));		\
- 	__ret;							\
- })
+--- a/arch/x86/mm/srat_64.c
++++ b/arch/x86/mm/srat_64.c
+@@ -89,8 +89,10 @@ static __init void bad_srat(void)
+ 	found_add_area = 0;
+ 	for (i = 0; i < MAX_LOCAL_APIC; i++)
+ 		apicid_to_node[i] = NUMA_NO_NODE;
+-	for (i = 0; i < MAX_NUMNODES; i++)
+-		nodes_add[i].start = nodes[i].end = 0;
++	for (i = 0; i < MAX_NUMNODES; i++) {
++		nodes[i].start = nodes[i].end = 0;
++		nodes_add[i].start = nodes_add[i].end = 0;
++	}
+ 	remove_all_active_ranges();
+ }
  
 
 
