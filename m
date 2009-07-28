@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754060AbZG1N1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754161AbZG1Nf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754060AbZG1N1i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 09:27:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752025AbZG1N1h
+	id S1754161AbZG1Nf4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 09:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754142AbZG1Nfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 09:27:37 -0400
-Received: from smtprelay10.ispgateway.de ([80.67.29.24]:45362 "EHLO
-	smtprelay10.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750848AbZG1N1h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 09:27:37 -0400
-References: <1247672919-13089-1-git-send-email-petkovbb@gmail.com> <cone.1247683003.40459.21332.1000@deskpiie> <20090723082904.GE3997@dtor-d630.eng.vmware.com> <cone.1248339143.133822.15136.1000@arca> <9ea470500907230221m1664be8ft2aaf63d2550de6f8@mail.gmail.com> <9ea470500907230553h3ae169c0nc6abaeedb08bef1e@mail.gmail.com> <20090727162940.DA90C526EC9@mailhub.coreip.homeip.net> <20090727183733.GB3044@liondog.tnic> <cone.1248765902.464745.15136.1000@arca> <9ea470500907280208v1d8140b5v9d7d7f09df8f060f@mail.gmail.com>
-Message-ID: <cone.1248787508.386883.15136.1000@arca>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, lenb@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] acerhdf: convert to dev_pm_ops
-Date: Tue, 28 Jul 2009 15:25:08 +0200
+	Tue, 28 Jul 2009 09:35:55 -0400
+Received: from place.holder ([209.9.226.146]:46801 "EHLO grsecurity.net"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754148AbZG1Nfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 09:35:54 -0400
+Date: Tue, 28 Jul 2009 09:35:47 -0400
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, James Morris <jmorris@namei.org>,
+       James Carter <jwcart2@tycho.nsa.gov>, Eric Paris <eparis@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       selinux@tycho.nsa.gov, Stephen Smalley <sds@tycho.nsa.gov>,
+       Daniel J Walsh <dwalsh@redhat.com>, cl@linux-foundation.org,
+       Arjan van de Ven <arjan@infradead.org>, kees@outflux.net,
+       Chad Sellers <csellers@tresys.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, mingo@elte.hu
+Subject: Re: mmap_min_addr and your local LSM (ok, just SELinux)
+Message-ID: <20090728133547.GA23858@grsecurity.net>
+References: <1248132223.2654.278.camel@localhost> <alpine.LRH.2.00.0907211258110.32400@tundra.namei.org> <1248187482.19456.90.camel@moss-lions.epoch.ncsc.mil> <alpine.LRH.2.00.0907221953190.15799@tundra.namei.org> <20090728011943.589176cb@lxorguk.ukuu.org.uk> <87zlapgo2u.fsf@basil.nowhere.org> <20090728110028.31fa9a6f@lxorguk.ukuu.org.uk> <20090728112137.GF15310@basil.fritz.box>
 Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="zYM0uCDKw75PZbzx"
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-X-Df-Sender: 404094
+In-Reply-To: <20090728112137.GF15310@basil.fritz.box>
+User-Agent: Mutt/1.5.9i
+From: spender@grsecurity.net (Brad Spengler)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Borislav Petkov writes:
+--zYM0uCDKw75PZbzx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> Hi,
-> 
-> On Tue, Jul 28, 2009 at 9:25 AM, Peter Feuerer<peter@piie.net> wrote:
-> 
-> [..]
-> 
->>>> Hmm, looking at the driver I think the only function that actually
->>>> is needed is poweroff() that would turn the fan in automatic mode
->>>> before shutting down. The driver does not perform any actions when
->>>> resuming so why bother?
->>>
->>> Agreed.
->>>
->>> Also, the fan comes out of warm and cold reboot in mode AUTO and
->>> when the driver is enabled, the fan is turned off on the next run of
->>> thermal_zone_device_update() when the read out temperature is within
->>> limits.
->>>
->>> Correct me if I'm wrong, but the only reason I see for setting the
->>> fan to mode AUTO before suspending/hibernating/etc is if it is taking
->>> a really long time to hibernate and write RAM image to disk and the
->>> machine is getting hot during that process. Otherwise, we might just
->>> as well do _nothing_ when suspending and remove all suspend/resume
->>> functionality altogether, no?
->>
->> This is right, currently the only reason for calling the suspend /
->> hibernate functions is to set the fan to auto to ensure it doesn't get
->> too hot while the kernel prepares the machine to suspend / hibernate.
->>
->> I would like to keep the resume function too. It's a nice to see
->> what's happening with verbose=1.
-> 
-> That's not a reason for keeping code in the kernel and raising bloat
-> levels unnecessarily. If the driver doesn't need to do anything on
-> resume, then no function is needed.
+> If you use all available break points (making all gdb users unhappy)
+> then you could still only cover 64 bytes on 64bit, 32 on 32bit.
 
-I don't think the verbose message is useless. If an user has a problem with 
-suspend / hibernate I can just ask him to load the module with verbose=1 and 
-dmesg tells whether the module is waking up or not. Searching for such an 
-error is much easier this way as the user doesn't have to recompile the 
-kernelmodule. In my opinion keeping these 4 lines of code is worth it.
+Might want to double-check that math I think ;)
 
-kind regards,
---peter
+-Brad
+
+--zYM0uCDKw75PZbzx
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFKbv6ymHm2SUJF1GoRAtUhAJ4jFj9fWk9XMhAr8wB9iAG1L1mhbgCdFT9w
+8u8nna/ottq/y9tVDMD4kDA=
+=UBYc
+-----END PGP SIGNATURE-----
+
+--zYM0uCDKw75PZbzx--
