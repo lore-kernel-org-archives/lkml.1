@@ -1,81 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753253AbZG1Bx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753312AbZG1CIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753253AbZG1Bx4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 21:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbZG1Bxz
+	id S1753312AbZG1CIc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 22:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbZG1CIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 21:53:55 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:63909 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbZG1Bxy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 21:53:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=bhWr2xVr3cCr9VTG+JF7kHxA/ci+BvDmi7qhSCkNYbEgOUbcVjJw2BNnKp4hAgm4HC
-         MNkmeVumWCdAMPHtERjILYfMz9MjlXfwgQJxXEbOL5iDuUVOdqAiD1YSPv4fB5qEbHTC
-         tpiQ9sJ6E8F0WI/kuSE88Heax30jzlaluPDoE=
-Date: Tue, 28 Jul 2009 03:53:52 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/3] Add walltime support for ring-buffer
-Message-ID: <20090728015351.GF5147@nowhere>
-References: <4A698F90.90501@cn.fujitsu.com> <alpine.DEB.2.00.0907240902030.17438@gandalf.stny.rr.com> <20090728103227.D7FB.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090728103227.D7FB.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 27 Jul 2009 22:08:23 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:53312 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752879AbZG1CIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 22:08:18 -0400
+Date: Tue, 28 Jul 2009 11:59:15 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Reinette Chatre <reinette.chatre@intel.com>
+Subject: linux-next: manual merge of the net tree with the wireless-current
+ tree
+Message-Id: <20090728115915.7544ad44.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 28, 2009 at 10:43:11AM +0900, KOSAKI Motohiro wrote:
-> Hi Zhaolei,
-> 
-> > Hi Zhaolei,
-> > 
-> > Could you not just save the wall time in some 64bit format within the 
-> > current timestamp?  Right now there's three clocks that can be used by 
-> > ftrace. Two that you can really get two (I need to add access to the 
-> > third).  The default clock is sched_clock. But there's an option to get to 
-> > global_clock:
-> > 
-> >  debug/tracing/options/global-clock
-> > 
-> > # echo 1 > /debug/tracing/options/global-clock
-> > 
-> > Will enable the global clock. Perhaps we can add a "wall clock" version 
-> > that will map the timestamps to the wall clock?
-> > 
-> > I really hate adding any more fields to the ring buffer headers. That 
-> > takes away from the amount that you can record per page.
-> 
-> I think wall-time recording on every event is too slow. slower tracer
-> isn't useful.
-> Instead, Can we make pseudo wall-time recording event periodically?
-> 
-> In nowadays, many workload run on cluster machine environment. Then
-> We often need compare different machines tracing log. it mean TSC isn't
-> sufficient. but nobody want performance reduce.
-> Fortunatelly, ntp time adjustment is not happend so frequently. we
-> don't need wall-time on _every_ event.
-> 
-> Thanks.
+Hi David,
 
+Today's linux-next merge of the net tree got a conflict in
+drivers/net/wireless/iwlwifi/iwl-tx.c between commit
+3995bd9332a51b626237d6671cfeb7235e6c1305 ("iwlwifi: fix TX queue race")
+from the wireless-current tree and commit
+45af81956e990440fe78d6d41f847664cb620609 ("iwlwifi: make software queue
+assignment more efficient") from the net tree.
 
-Yeah, that would really slow the tracing.
+Just overlapping context.  I fixed it up (see below) and can carry the
+fix as necessary.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Can't we get a snapshot of the couple (walltime, cpu clock) once
-at startup.
-Then we can retrieve the walltime when cpu_clock was 0 and compute
-the walltime for each traces at output time using the trace timestamp as
-a delta?
-
-Thanks,
-Frederic.
-
+diff --cc drivers/net/wireless/iwlwifi/iwl-tx.c
+index 2e89040,0912987..0000000
+--- a/drivers/net/wireless/iwlwifi/iwl-tx.c
++++ b/drivers/net/wireless/iwlwifi/iwl-tx.c
+@@@ -744,21 -749,16 +747,19 @@@ int iwl_tx_skb(struct iwl_priv *priv, s
+  		hdr->seq_ctrl |= cpu_to_le16(seq_number);
+  		seq_number += 0x10;
+  		/* aggregation is on for this <sta,tid> */
+- 		if (info->flags & IEEE80211_TX_CTL_AMPDU) {
++ 		if (info->flags & IEEE80211_TX_CTL_AMPDU)
+  			txq_id = priv->stations[sta_id].tid[tid].agg.txq_id;
+  	}
+  
+  	txq = &priv->txq[txq_id];
++ 	swq_id = txq->swq_id;
+  	q = &txq->q;
+- 	txq->swq_id = swq_id;
+  
+ -	spin_lock_irqsave(&priv->lock, flags);
+ +	if (unlikely(iwl_queue_space(q) < q->high_mark))
+ +		goto drop_unlock;
+ +
+ +	if (ieee80211_is_data_qos(fc))
+ +		priv->stations[sta_id].tid[tid].tfds_in_queue++;
+  
+  	/* Set up driver data for this TFD */
+  	memset(&(txq->txb[q->write_ptr]), 0, sizeof(struct iwl_tx_info));
