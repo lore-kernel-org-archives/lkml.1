@@ -1,64 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753560AbZG1Lu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753362AbZG1L4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753560AbZG1Lu2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 07:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbZG1Lu2
+	id S1753362AbZG1L4r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 07:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbZG1L4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 07:50:28 -0400
-Received: from d112a2.x-mailer.de ([212.162.53.4]:43776 "EHLO
-	d112a2.x-mailer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753170AbZG1LuZ (ORCPT
+	Tue, 28 Jul 2009 07:56:47 -0400
+Received: from dakia2.marvell.com ([65.219.4.35]:53606 "EHLO
+	dakia2.marvell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751237AbZG1L4q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 07:50:25 -0400
-Message-Id: <467d0b871314c60818f541024fcacca686f3e354.1248781021.git.keil@b1-systems.de>
-In-Reply-To: <cover.1248781021.git.keil@b1-systems.de>
-References: <cover.1248781021.git.keil@b1-systems.de>
-Date: Mon, 27 Jul 2009 19:24:04 +0200
-Subject: [PATCH 1/1] mISDN: Fix handling of receive buffer size in L1oIP
-From: Karsten Keil <keil@b1-systems.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       David Miller <davem@davemloft.net>, i4ldeveloper@listserv.isdn4linux.de,
-       Andreas Eversberg <andreas@eversberg.eu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-X-Info: valid message
-X-Info: original Date
+	Tue, 28 Jul 2009 07:56:46 -0400
+X-ASG-Debug-ID: 1248782206-48b800120000-xx1T2L
+X-Barracuda-URL: http://10.68.76.222:80/cgi-bin/mark.cgi
+From: Saeed Bishara <saeed@marvell.com>
+To: linux-kernel@vger.kernel.org, testers@vger.kernel.org, david-b@pacbell.net,
+       David.Woodhouse@intel.com, eric.y.miao@gmail.com
+Cc: Saeed Bishara <saeed@marvell.com>
+X-ASG-Orig-Subj: [PATCH] [MTD] fix the conversion from dev to mtd_info
+Subject: [PATCH] [MTD] fix the conversion from dev to mtd_info
+Date: Tue, 28 Jul 2009 14:56:43 +0300
+Message-Id: <1248782203-13095-1-git-send-email-saeed@marvell.com>
+X-Mailer: git-send-email 1.6.0.4
+X-Barracuda-Connect: maili.marvell.com[10.68.76.51]
+X-Barracuda-Start-Time: 1248782206
+X-Barracuda-Virus-Scanned: by dakia2.marvell.com at marvell.com
+X-Barracuda-Spam-Score: -1002.00
+X-Barracuda-Spam-Status: No, SCORE=-1002.00 using global scores of TAG_LEVEL=1000.0 QUARANTINE_LEVEL=1000.0 KILL_LEVEL=1000.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andreas Eversberg <andreas@eversberg.eu>
+The patch fixes a bug when converting dev to mtd_info by using the
+drvdata of the dev, the previous code used
+container_of(dev, struct mtd_info, dev), but won't work for the mtdXro
+devices as they created without being contained inside mtd_info structure.
 
-The size of receive buffer pointer was used to get size of
-receive buffer instead of recvbuf_size itself, so only 4/8
-bytes could be transfered.
-
-This is a regression to 2.6.30 introduced by commit 8c90e11e3543d7de612194a042a148caeaab5f1d
-mISDN: Use kernel_{send,recv}msg instead of open coding
-
-Signed-off-by: Andreas Eversberg <andreas@eversberg.eu>
-Signed-off-by: Karsten Keil <keil@b1-systems.de>
+Signed-off-by: Saeed Bishara <saeed@marvell.com>
 ---
- drivers/isdn/mISDN/l1oip_core.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/mtd/mtdcore.c   |    7 ++++---
+ include/linux/mtd/mtd.h |    2 +-
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/isdn/mISDN/l1oip_core.c b/drivers/isdn/mISDN/l1oip_core.c
-index 990e6a7..c3b661a 100644
---- a/drivers/isdn/mISDN/l1oip_core.c
-+++ b/drivers/isdn/mISDN/l1oip_core.c
-@@ -731,10 +731,10 @@ l1oip_socket_thread(void *data)
- 	while (!signal_pending(current)) {
- 		struct kvec iov = {
- 			.iov_base = recvbuf,
--			.iov_len = sizeof(recvbuf),
-+			.iov_len = recvbuf_size,
- 		};
- 		recvlen = kernel_recvmsg(socket, &msg, &iov, 1,
--					 sizeof(recvbuf), 0);
-+					 recvbuf_size, 0);
- 		if (recvlen > 0) {
- 			l1oip_socket_parse(hc, &sin_rx, recvbuf, recvlen);
- 		} else {
+diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
+index fac54a3..00ebf7a 100644
+--- a/drivers/mtd/mtdcore.c
++++ b/drivers/mtd/mtdcore.c
+@@ -65,8 +65,8 @@ static void mtd_release(struct device *dev)
+ static int mtd_cls_suspend(struct device *dev, pm_message_t state)
+ {
+ 	struct mtd_info *mtd = dev_to_mtd(dev);
+-	
+-	if (mtd->suspend)
++
++	if (mtd && mtd->suspend)
+ 		return mtd->suspend(mtd);
+ 	else
+ 		return 0;
+@@ -76,7 +76,7 @@ static int mtd_cls_resume(struct device *dev)
+ {
+ 	struct mtd_info *mtd = dev_to_mtd(dev);
+ 	
+-	if (mtd->resume)
++	if (mtd && mtd->resume)
+ 		mtd->resume(mtd);
+ 	return 0;
+ }
+@@ -298,6 +298,7 @@ int add_mtd_device(struct mtd_info *mtd)
+ 			mtd->dev.class = &mtd_class;
+ 			mtd->dev.devt = MTD_DEVT(i);
+ 			dev_set_name(&mtd->dev, "mtd%d", i);
++			dev_set_drvdata(&mtd->dev, mtd);
+ 			if (device_register(&mtd->dev) != 0) {
+ 				mtd_table[i] = NULL;
+ 				break;
+diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
+index 5675b63..0f32a9b 100644
+--- a/include/linux/mtd/mtd.h
++++ b/include/linux/mtd/mtd.h
+@@ -251,7 +251,7 @@ struct mtd_info {
+ 
+ static inline struct mtd_info *dev_to_mtd(struct device *dev)
+ {
+-	return dev ? container_of(dev, struct mtd_info, dev) : NULL;
++	return dev ? dev_get_drvdata(dev) : NULL;
+ }
+ 
+ static inline uint32_t mtd_div_by_eb(uint64_t sz, struct mtd_info *mtd)
 -- 
-1.6.0.2
+1.6.0.4
 
