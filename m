@@ -1,145 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751850AbZG1DiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751795AbZG1Duj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751850AbZG1DiQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 23:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbZG1DiP
+	id S1751795AbZG1Duj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 23:50:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZG1Dui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 23:38:15 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:64438 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750833AbZG1DiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 23:38:15 -0400
-Message-ID: <4A6E7253.9050906@cn.fujitsu.com>
-Date: Tue, 28 Jul 2009 11:36:51 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Mon, 27 Jul 2009 23:50:38 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:45214 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750896AbZG1Dui (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 23:50:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=TvOzWlJnuV+VGzvxxcBaXCyKxVCrlYf5Rg/uouLhU/tvVAHSntXBAEUFT706VlGOH4
+         TVM8AmExehfL754FXup5kDdUl++yvMMiQbcmJYGCXFHA8EV9aTmfi9nF2E7Q26/uEicB
+         t1/7iVZhnf5yMtlZ9unvQmueMGPqdPVTeX1oc=
+Date: Tue, 28 Jul 2009 05:50:35 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: Fix traceback seen when resuming after suspend-to-ram
+Message-ID: <20090728035032.GI5147@nowhere>
+References: <20090722151123.GA4934@in.ibm.com>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [RFC] IO scheduler based IO controller V6
-References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <4A6D0C9A.3080600@cn.fujitsu.com> <20090727125503.GA24449@redhat.com> <20090728032712.GC3620@redhat.com>
-In-Reply-To: <20090728032712.GC3620@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090722151123.GA4934@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Mon, Jul 27, 2009 at 08:55:03AM -0400, Vivek Goyal wrote:
->> On Mon, Jul 27, 2009 at 10:10:34AM +0800, Gui Jianfeng wrote:
->>> Hi，
->>>
->>> Here are some fio test results for IO Controller V6 built and not built.
->>> Iozone test results are also attached.
->>>
->> Hi Gui,
->>
->> Thanks a lot for some performance numbers. It seems to be a mixed chart.
->> Performance gains at some places and loss at others. I am curious about
->> that -7.0% for normal writes. Not sure what can contribute to that.
->>
+On Wed, Jul 22, 2009 at 08:41:23PM +0530, K.Prasad wrote:
+> Hi Ingo,
+> 	Please accept a patch that fixes the warning message and traceback
+> seen upon a resume after suspend-to-ram.
 > 
-> Gui, can you also try with CONFIG_TRACK_ASYNC_CONTEXT=n and see if it improves
-> buffered write performance.
+> The warning message is emitted because
+> spin_unlock_bh()<--load_debug_registers() is invoked with interrupts
+> disabled upon 'resume' unlike when invoked at boot-time, and was
+> reported on LKML here: http://lkml.org/lkml/2009/7/18/145.
+> 
+> This patch modifies load_debug_registers() to block all interrupts and not
+> just bottom-halves (bottom-halves were blocked in load_debug_registers()
+> prevent flush_thread_hw_breakpoint() from interfering when invoked from
+> SoftIRQ context).
+> 
+> Fix traceback seen when resuming after suspend-to-ram
+> 
+> This patch fixes a traceback when resuming after a suspend-to-ram operation.
+> The traceback warns about entering slowpatch due to a spin_unlock_bh() done
+> from interrupt context.
+> 
+> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> ---
+>  kernel/hw_breakpoint.c |    8 +++-----
+>  1 file changed, 3 insertions(+), 5 deletions(-)
+> 
+> Index: linux-2.6-tip/kernel/hw_breakpoint.c
+> ===================================================================
+> --- linux-2.6-tip.orig/kernel/hw_breakpoint.c
+> +++ linux-2.6-tip/kernel/hw_breakpoint.c
+> @@ -80,17 +80,15 @@ void load_debug_registers(void)
+>  	unsigned long flags;
+>  	struct task_struct *tsk = current;
+>  
+> -	spin_lock_bh(&hw_breakpoint_lock);
+> -
+>  	/* Prevent IPIs for new kernel breakpoint updates */
+> -	local_irq_save(flags);
+> +	spin_lock_irqsave(&hw_breakpoint_lock, flags);
+> +
+>  	arch_update_kernel_hw_breakpoint(NULL);
+> -	local_irq_restore(flags);
+>  
+>  	if (test_tsk_thread_flag(tsk, TIF_DEBUG))
+>  		arch_install_thread_hw_breakpoint(tsk);
+>  
+> -	spin_unlock_bh(&hw_breakpoint_lock);
+> +	spin_unlock_irqrestore(&hw_breakpoint_lock, flags);
+>  }
+>  
+>  /*
 
-  Hi Vivek,
 
-  Ok, I'll do it, and i'll do the performance test for IO Controller V7, and post
-  the results as soon as i get them.
+Hmm, this may lead to a state in which lockdep would complain because
+your lock is taken as softirq-safe from flush_thread_hw_breakpoint()
+and hardirq-safe in load_debug_registers().
 
-> 
-> Thanks
-> Vivek
-> 
->> What was the value of "fairness" parameter when you ran those tests? Can you
->> please set fairness = 0 and re-run the tests (if you have already not done so).
->>
->> By default fairness is set to 1 in V6. With fairness = 0, we should be very
->> close to existing CFQ behavior. If not, then we need to dive deeper and
->> see why variations are happening.
->>
->> Is it also possible to run the same tests with V7. 
->>
->> Thanks
->> Vivek
->>
->>> Arch: X86
->>> Mem:  1G
->>> Disk: 320G
->>> IO Scheduler: CFQ
->>>
->>> ============
->>> By normal read and write syscall.
->>>
->>> Block Size:32K
->>> File Size: 1G * 10
->>>
->>> Mode                    Normal read   |   Random read   |   Normal write   |   Random write | Direct read | Direct write
->>>
->>> 2.6.31-rc1              47,932KiB/s       3,566KiB/s        45,693KiB/s        8,501KiB/s     50,088KiB/s   43,473KiB/s
->>>
->>> 2.6.31-rc1-Vivek-V6     47,231KiB/s       3,411KiB/s        42,451KiB/s        8,714KiB/s     51,284KiB/s   42,341KiB/s
->>>
->>> Performance             -1.5%             -4.4%             -7.0%              +2.5%          +2.4%         -2.6%
->>>
->>> ============
->>>
->>> By mmap.
->>>
->>> Block Size:32K
->>> File Size: 500M
->>>
->>> Mode                    Normal read   |   Random read   |   Normal write   |   Random write
->>>
->>> 2.6.31-rc1              49,951KiB/s       3,245KiB/s        21,950KiB/s        2,771KiB/s
->>>
->>> 2.6.31-rc1-Vivek-V6     49,951KiB/s       3,154KiB/s        22,593KiB/s        2,648KiB/s
->>>
->>> Performance             0%                -2.8%             +2.9%              -4.4%
->>>
->>> ============
->>>  
->>> By libaio calls
->>>
->>> Block Size:32K
->>> File Size: 500M
->>>
->>> Mode                    Normal read   |  Random read   |   Normal write   |   Random write
->>>
->>> 2.6.31-rc1              49,447KiB/s       3,296KiB/s        57,519KiB/s        21,093KiB/s
->>>
->>> 2.6.31-rc1-Vivek-V6     50,142KiB/s       3,238KiB/s        57,791KiB/s        21,283KiB/s
->>>
->>> Performance             +1.4%             -1.8%             0%                 +0.1%
->>>
->>> ============
->>>
->>>
->>>
->>>
->>>
->>>
->>>
->>>
->>>
->>>
->>>
->>
->>
-> 
-> 
-> 
+Lockdep will think that you have an unsafe state in
+flush_thread_hw_breakpoint() because your lock has been taken in
+a hardirq-safe fashion elsewhere and therefore can be taken in a
+hardirq path.
 
--- 
-Regards
-Gui Jianfeng
+We know it's safe, but lockdep will warn anyway.
+
+BTW: how is it possible that flush_thread_hw_breakpoint() can be called
+from softirq? It can called in a failed fork or any case when a thread
+is released. Does such thing sometimes happen in softirq?
+
+Thanks.
+
 
