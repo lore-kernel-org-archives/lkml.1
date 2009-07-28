@@ -1,166 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752025AbZG1ALE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752316AbZG1ALS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752025AbZG1ALE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 20:11:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750967AbZG1ALE
+	id S1752316AbZG1ALS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 20:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbZG1ALR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 20:11:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37546 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750930AbZG1ALD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 20:11:03 -0400
-Date: Mon, 27 Jul 2009 21:10:41 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Mike Galbraith <efault@gmx.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/1 tip] perf top: Move hard coded list to
-	/etc/perfconfig/symbols.skip
-Message-ID: <20090728001041.GG28349@ghostprotocols.net>
+	Mon, 27 Jul 2009 20:11:17 -0400
+Received: from bitwagon.com ([74.82.39.175]:47087 "HELO bitwagon.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752140AbZG1ALQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 20:11:16 -0400
+Message-ID: <4A6E4222.4080302@bitwagon.com>
+Date: Mon, 27 Jul 2009 17:11:14 -0700
+From: John Reiser <jreiser@bitwagon.com>
+Organization: -
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Sam Ravnborg <sam@ravnborg.org>, Tejun Heo <tj@kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: ftrace: __start_mcount_loc should be .init.rodata
+References: <4A6DF0B6.7080402@bitwagon.com> <alpine.DEB.2.00.0907271641260.30108@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0907271641260.30108@gandalf.stny.rr.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This also paves the way to add more symbol lists to be filtered out,
-spinlock anyone?
+Steven Rostedt wrote:
+> 
+> 
+> On Mon, 27 Jul 2009, John Reiser wrote:
+> 
+>> __start_mcount_loc[] is unused after init, yet occupies RAM forever
+>> as part of .rodata.  152kiB is typical on a 64-bit architecture.  Instead,
+>> __start_mcount_loc should be in the interval [__init_begin, __init_end)
+>> so that the space is reclaimed after init.
+> 
+> Are you sure about that?
 
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/Makefile       |    6 ++++--
- tools/perf/builtin-top.c  |   26 +++++++-------------------
- tools/perf/util/strlist.c |   10 ++++++++--
- 3 files changed, 19 insertions(+), 23 deletions(-)
+Data follows from a direct A<->B comparison.
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index a5e9b87..385a1bc 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -193,11 +193,10 @@ template_dir = share/perf-core/templates
- htmldir = share/doc/perf-doc
- ifeq ($(prefix),/usr)
- sysconfdir = /etc
--ETC_PERFCONFIG = $(sysconfdir)/perfconfig
- else
- sysconfdir = $(prefix)/etc
--ETC_PERFCONFIG = etc/perfconfig
- endif
-+ETC_PERFCONFIG = $(sysconfdir)/perfconfig
- lib = lib
- # DESTDIR=
- 
-@@ -596,6 +595,7 @@ PERL_PATH_SQ = $(subst ','\'',$(PERL_PATH))
- LIBS = $(PERFLIBS) $(EXTLIBS)
- 
- BASIC_CFLAGS += -DSHA1_HEADER='$(SHA1_HEADER_SQ)' \
-+		-DPERF_ETC_PATH='"$(ETC_PERFCONFIG)"' \
- 	$(COMPAT_CFLAGS)
- LIB_OBJS += $(COMPAT_OBJS)
- 
-@@ -804,6 +804,8 @@ export perfexec_instdir
- install: all
- 	$(INSTALL) -d -m 755 '$(DESTDIR_SQ)$(bindir_SQ)'
- 	$(INSTALL) perf$X '$(DESTDIR_SQ)$(bindir_SQ)'
-+	$(INSTALL) -d -m 755 '$(DESTDIR_SQ)$(ETC_PERFCONFIG_SQ)'
-+	$(INSTALL) symbols.skip '$(DESTDIR_SQ)$(ETC_PERFCONFIG_SQ)'
- ifdef BUILT_INS
- 	$(INSTALL) -d -m 755 '$(DESTDIR_SQ)$(perfexec_instdir_SQ)'
- 	$(INSTALL) $(BUILT_INS) '$(DESTDIR_SQ)$(perfexec_instdir_SQ)'
-diff --git a/tools/perf/builtin-top.c b/tools/perf/builtin-top.c
-index f139f1a..628ef29 100644
---- a/tools/perf/builtin-top.c
-+++ b/tools/perf/builtin-top.c
-@@ -20,6 +20,7 @@
- 
- #include "perf.h"
- 
-+#include "util/strlist.h"
- #include "util/symbol.h"
- #include "util/color.h"
- #include "util/util.h"
-@@ -279,24 +280,12 @@ static void *display_thread(void *arg __used)
- }
- 
- /* Tag samples to be skipped. */
--static const char *skip_symbols[] = {
--	"default_idle",
--	"cpu_idle",
--	"enter_idle",
--	"exit_idle",
--	"mwait_idle",
--	"mwait_idle_with_hints",
--	"ppc64_runlatch_off",
--	"pseries_dedicated_idle_sleep",
--	NULL
--};
-+static struct strlist *skip_symbols;
- 
- static int symbol_filter(struct dso *self, struct symbol *sym)
- {
- 	static int filter_match;
--	struct sym_entry *syme;
- 	const char *name = sym->name;
--	int i;
- 
- 	/*
- 	 * ppc64 uses function descriptors and appends a '.' to the
-@@ -314,12 +303,9 @@ static int symbol_filter(struct dso *self, struct symbol *sym)
- 	    strstr(name, "_text_end"))
- 		return 1;
- 
--	syme = dso__sym_priv(self, sym);
--	for (i = 0; skip_symbols[i]; i++) {
--		if (!strcmp(skip_symbols[i], name)) {
--			syme->skip = 1;
--			break;
--		}
-+	if (strlist__has_entry(skip_symbols, name)) {
-+		struct sym_entry *syme = dso__sym_priv(self, sym);
-+		syme->skip = 1;
- 	}
- 
- 	if (filter_match == 1) {
-@@ -733,6 +719,8 @@ int cmd_top(int argc, const char **argv, const char *prefix __used)
- 	if (delay_secs < 1)
- 		delay_secs = 1;
- 
-+	skip_symbols = strlist__new(true, "file://" PERF_ETC_PATH "/symbols.skip");
-+
- 	parse_symbols();
- 
- 	/*
-diff --git a/tools/perf/util/strlist.c b/tools/perf/util/strlist.c
-index 7ad3817..d1d63f7 100644
---- a/tools/perf/util/strlist.c
-+++ b/tools/perf/util/strlist.c
-@@ -104,8 +104,14 @@ void strlist__remove(struct strlist *self, struct str_node *sn)
- 
- bool strlist__has_entry(struct strlist *self, const char *entry)
- {
--	struct rb_node **p = &self->entries.rb_node;
--	struct rb_node *parent = NULL;
-+	struct rb_node **p;
-+	struct rb_node *parent;
-+
-+	if (self == NULL)
-+		return false;
-+
-+	p = &self->entries.rb_node;
-+	parent = NULL;
- 
- 	while (*p != NULL) {
- 		struct str_node *sn;
+My .config is same as Fedora Project, except for CONFIG_DEBUG_PAGEALLOC=y.
+----- /var/log/messages
+ftrace: allocating 18889 entries ...
+	    # 18889 * 8 = 151112 bytes (147kiB) for __start_mcount_loc[]
+		on 64-bit architecture
+-----
+
+With MCOUNT_REC() in original RO_DATA in include/asm-generic/vmlinux.lds.h:
+===================================
+----- /var/log/messages
+kernel: Freeing initrd memory: 3134k freed
+kernel: debug: unmapping init memory ffffffff8163d000..ffffffff81783000
+	## The only message about unmapping;  length is 0x146000 or 1335296 bytes
+kernel: Write protecting the kernel read-only data: 1844k   ## 148kiB more than later
+-----
+
+----- System.map
+ffffffff8155c850 R __start_mcount_loc  # below unmapped range
+ffffffff81581698 R __stop_mcount_loc
+-----
+
+----- "readelf --sections vmlinux" has these "\.init" strings:
+  [12] __init_rodata     PROGBITS         ffffffff8155c850  0075c850  # _below_ unmapped range
+  [15] .init.rodata      PROGBITS         ffffffff815f01c0  007f01c0  # _below_ unmapped range
+  [25] .data.init_task   PROGBITS         ffffffff81612000  00a12000
+  [28] .init.text        PROGBITS         ffffffff8163d000  00a3d000  # low end of unmapped range
+  [29] .init.data        PROGBITS         ffffffff81675620  00a75620
+  [30] .init.setup       PROGBITS         ffffffff8175d980  00b5d980
+  [31] .initcall.init    PROGBITS         ffffffff8175eca0  00b5eca0
+  [33] .x86_cpu_dev.init PROGBITS         ffffffff8175fa00  00b5fa00
+  [39] .init.ramfs       PROGBITS         ffffffff81776000  00b76000  # still in unmapped range
+   01     .data .init.rodata .data.cacheline_aligned .data.read_mostly
+## Note that .init.rodata is in segment 1, with .data
+   03     .data.init_task .data.page_aligned .smp_locks .init.text .init.data .init.setup .initcall.init .con_initcall.init .x86_cpu_dev.init .secu
+rity_initcall.init .parainstructions .altinstructions .altinstr_replacement .exit.text .init.ramfs .data.percpu .data_nosave .bss
+## Note that .init.text and .init.data are in segment 3
+-----
+
+
+With MCOUNT_REC() moved to INIT_DATA as patched to include/asm-generic/vmlinux.lds.h:
+==================================
+----- /var/log/messages:
+kernel: Freeing initrd memory: 3134k freed
+kernel: debug: unmapping init memory ffffffff81619000..ffffffff81784000
+	## The only message about unmapping;  length is 0x16b000 or 1486848 bytes
+kernel: Write protecting the kernel read-only data: 1696k   ## 148kiB less than before
+-----
+
+----- System.map
+ffffffff816a28d0 T __start_mcount_loc  # within unmapped range
+ffffffff816c7718 T __stop_mcount_loc
+-----
+
+----- "readelf --sections vmlinux" has these "\.init" strings:
+  [14] .init.rodata      PROGBITS         ffffffff815cb1c0  007cb1c0  # _below_ unmapped range
+  [24] .data.init_task   PROGBITS         ffffffff815ee000  009ee000
+  [27] .init.text        PROGBITS         ffffffff81619000  00a19000  # low end of unmapped range
+  [28] .init.data        PROGBITS         ffffffff81651620  00a51620
+  [29] .init.setup       PROGBITS         ffffffff8175e7c0  00b5e7c0
+  [30] .initcall.init    PROGBITS         ffffffff8175fae0  00b5fae0
+  [32] .x86_cpu_dev.init PROGBITS         ffffffff81760840  00b60840
+  [38] .init.ramfs       PROGBITS         ffffffff81777000  00b77000  # still in unmapped range
+   01     .data .init.rodata .data.cacheline_aligned .data.read_mostly
+   03     .data.init_task .data.page_aligned .smp_locks .init.text .init.data .init.setup .initcall.init .con_initcall.init .x86_cpu_dev.init .secu
+rity_initcall.init .parainstructions .altinstructions .altinstr_replacement .exit.text .init.ramfs .data.percpu .data_nosave .bss
+-----
+
+Perusing the source:
+arch/x86/mm/init_64.c: free_init_pages() called from
+   ./arch/x86/kernel/alternative.c:		free_init_pages("SMP alternatives",
+   ./arch/x86/mm/init_64.c:	free_init_pages("unused kernel memory",
+   ./arch/x86/mm/init_64.c:	free_init_pages("initrd memory", start, end);
+All other calls also are architecture-specific and in other architectures,
+and also are similar to these.
+
+
+>> @@ -331,7 +332,6 @@
+>>  	/* __*init sections */						\
+>>  	__init_rodata : AT(ADDR(__init_rodata) - LOAD_OFFSET) {		\
+> 
+> Isn't this in __init_rodata? Doesn't this get removed too?
+
+In my vmlinux it is _not_ removed; it is with .rodata, not .init.rodata
+(and not .init.data), and is outside (below) the removed range.
+
 -- 
-1.6.2.5
-
