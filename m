@@ -1,128 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753540AbZG1PEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753599AbZG1PFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753540AbZG1PEX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 11:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbZG1PEX
+	id S1753599AbZG1PFU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 11:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753304AbZG1PFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 11:04:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49744 "EHLO mx2.redhat.com"
+	Tue, 28 Jul 2009 11:05:19 -0400
+Received: from mail.windriver.com ([147.11.1.11]:64333 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750786AbZG1PEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 11:04:22 -0400
-Date: Tue, 28 Jul 2009 11:03:10 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Jerome Marchand <jmarchan@redhat.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, ryov@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com,
-       agk@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
-Subject: Re: [PATCH 03/24] io-controller: bfq support of in-class preemption
-Message-ID: <20090728150310.GA3870@redhat.com>
-References: <1248467274-32073-1-git-send-email-vgoyal@redhat.com> <1248467274-32073-4-git-send-email-vgoyal@redhat.com> <4A6DDBDE.8020608@redhat.com> <20090727224138.GA3702@redhat.com> <4A6EE4A0.6080700@redhat.com> <20090728135212.GC6133@redhat.com> <4A6F0B32.7060801@redhat.com>
+	id S1752520AbZG1PFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 11:05:17 -0400
+Message-ID: <4A6F139C.6070806@windriver.com>
+Date: Tue, 28 Jul 2009 10:05:00 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A6F0B32.7060801@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       "Deng, Dongdong" <Dongdong.Deng@windriver.com>
+Subject: Re: [PATCH] softlockup: fix problem with long kernel pauses from
+ kgdb
+References: <4A6E0825.3020604@windriver.com> <1248725893.6987.2055.camel@twins>
+In-Reply-To: <1248725893.6987.2055.camel@twins>
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Jul 2009 15:04:57.0640 (UTC) FILETIME=[C57D9A80:01CA0F94]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 28, 2009 at 04:29:06PM +0200, Jerome Marchand wrote:
-> Vivek Goyal wrote:
-> > On Tue, Jul 28, 2009 at 01:44:32PM +0200, Jerome Marchand wrote:
-> >> Vivek Goyal wrote:
-> >>> Hi Jerome,
-> >>>
-> >>> Thanks for testing it out. I could also reproduce the issue.
-> >>>
-> >>> I had assumed that RT queue will always preempt non-RT queue and hence if
-> >>> there is an RT ioq/request pending, the sd->next_entity will point to
-> >>> itself and any queue which is preempting it has to be on same service
-> >>> tree.
-> >>>
-> >>> But in your test case it looks like that RT async queue is pending and 
-> >>> there is some sync BE class IO going on. It looks like that CFQ allows
-> >>> sync queue preempting async queue irrespective of class, so in this case
-> >>> sync BE class reader will preempt async RT queue and that's where my
-> >>> assumption is broken and we see BUG_ON() hitting.
-> >>>
-> >>> Can you please tryout following patch. It is a quick patch and requires
-> >>> more testing. It solves the crash but still does not solve the issue of
-> >>> sync queue always preempting async queues irrespective of class. In
-> >>> current scheduler we always schedule the RT queue first (whether it be
-> >>> sync or async). This problem requires little more thought.
-> >> I've tried it: I can't reproduce the issue anymore and I haven't seen any
-> >> other problem so far.
-> >> By the way, what is the expected result regarding fairness among different
-> >> groups when IO from different classes are run on each group? For instance,
-> >> if we have RT IO going on on one group, BE IO on an other and Idle IO on a
-> >> third group, what is the expected result: should the IO time been shared
-> >> fairly between the groups or should RT IO have priority? As it is now, the
-> >> time is shared fairly between BE and RT groups and the last group running
-> >> Idle IO hardly get any time.
-> >>
-> > 
-> > Hi Jerome,
-> > 
-> > If there are two groups RT and BE, I would expect RT group to get all the
-> > bandwidth as long as it is backlogged and starve the BE group.
+Peter Zijlstra wrote:
+> On Mon, 2009-07-27 at 15:03 -0500, Jason Wessel wrote:
+>> The fix is to simply invoke sched_clock_tick() to update "cpu sched
+>> clock" on exit from kgdb_handle_exception.
 > 
-> I wasn't clear enough. I meant the class of the process as set by ionice, not
-> the class of the cgroup. That is, of course, only an issue when using CFQ.
+> Is that a regular IRQ context, or is that NMI context?
 > 
-> > 
-> > I ran quick test of two dd readers. One reader is in RT group and other is
-> > in BE group. I do see that RT group runs away with almost all the BW.
-> > 
-> > group1 time=8:16 2479 group1 sectors=8:16 457848
-> > group2 time=8:16 103  group2 sectors=8:16 18936
-> > 
-> > Note that when group1 (RT) finished it had got 2479 ms of disk time while
-> > group2 (BE) got only 103 ms.
-> > 
-> > Can you send details of your test. It should not be fair sharing between
-> > RT and BE group.
+>> Signed-off-by: Dongdong Deng <Dongdong.Deng@windriver.com>
+>> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+>> Cc: Ingo Molnar <mingo@elte.hu>
+>> Cc: peterz@infradead.org
+>> ---
+>>  kernel/softlockup.c |    3 +++
+>>  1 file changed, 3 insertions(+)
+>>
+>> --- a/kernel/softlockup.c
+>> +++ b/kernel/softlockup.c
+>> @@ -118,6 +118,9 @@ void softlockup_tick(void)
+>>         }
+>>  
+>>         if (touch_timestamp == 0) {
+>> +               /* If the time stamp was touched externally make sure the
+>> +                * scheduler tick is up to date as well */
+>> +               sched_clock_tick();
+>>                 __touch_softlockup_watchdog();
+>>                 return;
+>>         }
+>>
 > 
-> Setup:
-> 
-> $ mount -t cgroup -o io,blkio none /cgroup
-> $ mkdir /cgroup/test1 /cgroup/test2 /cgroup/test3
-> $ echo 1000 > /cgroup/test1/io.weight
-> $ echo 1000 > /cgroup/test2/io.weight
-> $ echo 1000 > /cgroup/test3/io.weight
-> 
-> Test:
-> $ echo 3 > /proc/sys/vm/drop_caches
-> 
-> $ ionice -c 1 dd if=/tmp/io-controller-test3 of=/dev/null &
-> $ echo $! > /cgroup/test1/tasks
-> 
-> $ ionice -c 2 dd if=/tmp/io-controller-test1 of=/dev/null &
-> $ echo $! > /cgroup/test2/tasks
-> 
-> $ ionice -c 3 dd if=/tmp/io-controller-test2 of=/dev/null &
-> $ echo $! > /cgroup/test3/tasks
-> 
+> Aside from the funny comment style (please fix) the fix does look
+> sensible.
 
-Ok, got it. So you have created three BE class groups and with-in those
-groups you are running job of RT, BE and IDLE type.
+It turns out that further testing of this patch shows a regression in
+the ability to detect certain lockups.  It is a direct result of the
+way the scheduling code makes use of the touch_softlockup_watchdog().
+With the above proposed patch the tick was getting updated after a
+resume, but was also getting updated with the run_timers(), and if
+that happened before the softlockup tick, no softlockup would get
+reported (note that I was using some test code to induce softlockups).
 
->From group scheduling point of view, because the tree groups have got same
-class and same weight, they should get equal access to disk and with-in
-group how bandwidth is divided is left to CFQ.
+The patch below is a bit more invasive but solves the problem by
+allowing kgdb to request that the sched cpu clock is updated only when
+returning from a state where we know we need to force the update.
 
-Because in this case, only one task is present in each group, it should
-get all the BW available to the group. Hence, in above test case, all the
-three dd processes should get equal amount of disk time.
+Would this change be an acceptable solution to allow kgdb to
+peacefully exist with the softlockup code?
 
-You mentioned that RT and BE task are getting fair share but not IDLE
-task. This is a bug and probably I know where the bug is. I will debug it
-and fix it soon.
+Thanks,
+Jason.
 
-Thanks
-Vivek
+
+-----
+From: Jason Wessel <jason.wessel@windriver.com>
+Subject: [PATCH] softlockup: add sched_clock_tick() to avoid kernel warning on kgdb resume
+
+When CONFIG_HAVE_UNSTABLE_SCHED_CLOCK is set sched_clock() gets the
+time from hardware, such as from TSC.  In this configuration kgdb will
+report a softlock warning messages on resuming or detaching from a
+debug session.
+
+Sequence of events in the problem case:
+
+1) "cpu sched clock" and "hardware time" are at 100 sec prior
+   to a call to kgdb_handle_exception()
+
+2) Debugger waits in kgdb_handle_exception() for 80 sec and on exit
+   the following is called ...  touch_softlockup_watchdog() -->
+   __raw_get_cpu_var(touch_timestamp) = 0;
+
+3) "cpu sched clock" = 100s (it was not updated, because the interrupt
+   was disabled in kgdb) but the "hardware time" = 180 sec
+
+4) The first timer interrupt after resuming from kgdb_handle_exception
+   updates the watchdog from the "cpu sched clock"
+
+update_process_times() { ...  run_local_timers() --> softlockup_tick()
+--> check (touch_timestamp == 0) (it is "YES" here, we have set
+"touch_timestamp = 0" at kgdb) --> __touch_softlockup_watchdog()
+***(A)--> reset "touch_timestamp" to "get_timestamp()" (Here, the
+"touch_timestamp" will still be set to 100s.)  ...
+
+    scheduler_tick() ***(B)--> sched_clock_tick() (update "cpu sched
+    clock" to "hardware time" = 180s) ...  }
+
+5) The Second timer interrupt handler appears to have a large jump and
+   trips the softlockup warning.
+
+update_process_times() { ...  run_local_timers() --> softlockup_tick()
+--> "cpu sched clock" - "touch_timestamp" = 180s-100s > 60s --> printk
+"soft lockup error messages" ...  }
+
+note: ***(A) reset "touch_timestamp" to "get_timestamp(this_cpu)"
+
+Why "touch_timestamp" is 100 sec, instead of 180 sec?
+
+With the CONFIG_HAVE_UNSTABLE_SCHED_CLOCK" set the call trace of
+get_timestamp() is:
+
+get_timestamp(this_cpu) -->cpu_clock(this_cpu)
+-->sched_clock_cpu(this_cpu) -->__update_sched_clock(sched_clock_data,
+now)
+
+The __update_sched_clock() function uses the GTOD tick value to create
+a window to normalize the "now" values.  So if "now" values is too big
+for sched_clock_data, it will be ignored.
+
+The fix is to invoke sched_clock_tick() to update "cpu sched clock" in
+order to recover from this state.  This is done by introducing the
+function touch_softlockup_watchdog_sync(), which allows kgdb to
+request that the sched clock is updated when the watchdog thread runs
+the first time after a resume from kgdb.
+
+Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+Signed-off-by: Dongdong Deng <Dongdong.Deng@windriver.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: peterz@infradead.org
+
+---
+ include/linux/sched.h |    4 ++++
+ kernel/kgdb.c         |    6 +++---
+ kernel/softlockup.c   |   16 ++++++++++++++++
+ 3 files changed, 23 insertions(+), 3 deletions(-)
+
+--- a/kernel/softlockup.c
++++ b/kernel/softlockup.c
+@@ -79,6 +79,14 @@ void touch_softlockup_watchdog(void)
+ }
+ EXPORT_SYMBOL(touch_softlockup_watchdog);
+ 
++static int softlock_touch_sync[NR_CPUS];
++
++void touch_softlockup_watchdog_sync(void)
++{
++	softlock_touch_sync[raw_smp_processor_id()] = 1;
++	__raw_get_cpu_var(touch_timestamp) = 0;
++}
++
+ void touch_all_softlockup_watchdogs(void)
+ {
+ 	int cpu;
+@@ -118,6 +126,14 @@ void softlockup_tick(void)
+ 	}
+ 
+ 	if (touch_timestamp == 0) {
++		if (unlikely(softlock_touch_sync[this_cpu])) {
++			/*
++			 * If the time stamp was touched atomically
++			 * make sure the scheduler tick is up to date.
++			 */
++			softlock_touch_sync[this_cpu] = 0;
++			sched_clock_tick();
++		}
+ 		__touch_softlockup_watchdog();
+ 		return;
+ 	}
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -300,6 +300,7 @@ extern void sched_show_task(struct task_
+ #ifdef CONFIG_DETECT_SOFTLOCKUP
+ extern void softlockup_tick(void);
+ extern void touch_softlockup_watchdog(void);
++extern void touch_softlockup_watchdog_sync(void);
+ extern void touch_all_softlockup_watchdogs(void);
+ extern int proc_dosoftlockup_thresh(struct ctl_table *table, int write,
+ 				    struct file *filp, void __user *buffer,
+@@ -313,6 +314,9 @@ static inline void softlockup_tick(void)
+ static inline void touch_softlockup_watchdog(void)
+ {
+ }
++static inline void touch_softlockup_watchdog_sync(void)
++{
++}
+ static inline void touch_all_softlockup_watchdogs(void)
+ {
+ }
+--- a/kernel/kgdb.c
++++ b/kernel/kgdb.c
+@@ -590,7 +590,7 @@ static void kgdb_wait(struct pt_regs *re
+ 
+ 	/* Signal the primary CPU that we are done: */
+ 	atomic_set(&cpu_in_kgdb[cpu], 0);
+-	touch_softlockup_watchdog();
++	touch_softlockup_watchdog_sync();
+ 	clocksource_touch_watchdog();
+ 	local_irq_restore(flags);
+ }
+@@ -1433,7 +1433,7 @@ acquirelock:
+ 	    atomic_read(&kgdb_cpu_doing_single_step) != cpu) {
+ 
+ 		atomic_set(&kgdb_active, -1);
+-		touch_softlockup_watchdog();
++		touch_softlockup_watchdog_sync();
+ 		clocksource_touch_watchdog();
+ 		local_irq_restore(flags);
+ 
+@@ -1526,7 +1526,7 @@ acquirelock:
+ kgdb_restore:
+ 	/* Free kgdb_active */
+ 	atomic_set(&kgdb_active, -1);
+-	touch_softlockup_watchdog();
++	touch_softlockup_watchdog_sync();
+ 	clocksource_touch_watchdog();
+ 	local_irq_restore(flags);
+ 
