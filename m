@@ -1,55 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbZG1Urs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754358AbZG1UwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754245AbZG1Urs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 16:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753681AbZG1Urr
+	id S1754358AbZG1UwY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 16:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbZG1UwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 16:47:47 -0400
-Received: from THUNK.ORG ([69.25.196.29]:43683 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751535AbZG1Urr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 16:47:47 -0400
-Date: Tue, 28 Jul 2009 16:47:20 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Greg KH <greg@kroah.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kdesu broken
-Message-ID: <20090728204720.GF31679@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Greg KH <greg@kroah.com>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20090728112203.7b70adba@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907280848090.3186@localhost.localdomain> <20090728174213.5e927428@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907280944150.3186@localhost.localdomain> <20090728180649.596c5412@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907281141070.3186@localhost.localdomain> <20090728195651.3a402a31@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907281158120.3186@localhost.localdomain> <20090728201553.0eb2d51d@lxorguk.ukuu.org.uk> <20090728195648.GA4833@kroah.com>
+	Tue, 28 Jul 2009 16:52:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60555 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750765AbZG1UwX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 16:52:23 -0400
+Date: Tue, 28 Jul 2009 13:50:56 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andi Kleen <andi@firstfloor.org>
+cc: Kyle Moffett <kyle@moffetthome.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Zachary Amsden <zamsden@redhat.com>, Tejun Heo <tj@kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       axboe@kernel.dk, hch@infradead.org, akpm@linux-foundation.org,
+       Paul.Clements@steeleye.com, tytso@mit.edu, miklos <miklos@szeredi.hu>
+Subject: Re: [PATCH] Allow userspace block device implementation
+In-Reply-To: <87d47kh9kh.fsf@basil.nowhere.org>
+Message-ID: <alpine.LFD.2.01.0907281333490.3186@localhost.localdomain>
+References: <4A6D79F6.3050509@redhat.com> <1248699365.6987.1628.camel@twins> <20090727142536.465799aa@lxorguk.ukuu.org.uk> <4A6E529B.9030104@kernel.org> <4A6E764E.80805@redhat.com> <20090728112734.5a75752d@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907280851360.3186@localhost.localdomain>
+ <f73f7ab80907281136k2d7797bat2526d1798aba2f85@mail.gmail.com> <87d47kh9kh.fsf@basil.nowhere.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090728195648.GA4833@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 28, 2009 at 12:56:48PM -0700, Greg KH wrote:
+
+
+On Tue, 28 Jul 2009, Andi Kleen wrote:
+
+> Kyle Moffett <kyle@moffetthome.net> writes:
+> >
+> >   (1) The ability to rearrange, resize, and restructure
+> > partition-tables on the fly.  The existing "re-read partition tables"
+> > infrastructure does not safely and reasonably handle changes to the
+> > partition-table while partitions are mounted. 
 > 
-> Do you have a pointer to your previous queue before you zapped it so
-> that others might be able to pick it up?
-> 
+> It doesn't today (and I really hate it too), but is there a hard reason it
+> couldn't be fixed to support that properly? 
 
-It's also available from linux-next as commit:
+If something has a partition open (and it doesn't really even have to be a 
+mounted filesystem, altough that's obviously the most relevant case), how 
+can you reasonably change the partition from underneath it? So I assume 
+you mean that partitions were opened earlier (for a mount) would not be 
+touched.
 
-     024ea7873598686f3e02002ca23c2e8fa3fddd30
+And these days, that _should_ just work. The "reread partition table" 
+operation should just leave the old bdev's around (so a mounted filesystem 
+simply won't _see_ the new partitions, but will continue to use the old 
+one), and for all I know that might even work these days.
 
-						- Ted
+[ Here "these days" is admittedly only in comparison to the _original_ 
+ Linux code, which used block numbers. Many years ago. ]
+
+Filesystems long ago _used_ to index things by device number and block - 
+and that meant that re-reading partition tables was _really_ dangerous, 
+because the "device number" would just magically mean something else for a 
+mounted filesystem. But we've indexed things by bdev for a longish time 
+now, and most (all?) filesystems use "sb_bread()" instead of bread etc.
+
+So I think re-reading the partition tables should be safe these days. It 
+definitely didn't _use_ to be the case due to dev_t issues, but that's 
+really ancient.
+
+It may be that we just have the old check in place ("don't allow 
+re-reading if something has mounted a partition"), and we could just get 
+rid of it. I have not looked. 
+
+But if you actually meant that re-reading the partition table should 
+_change_ a "struct block_dev" that is in use, then I think that would be a 
+bad idea. At the very least, it should involve a re-mount or something.
+
+		Linus
