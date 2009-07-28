@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbZG1XIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932132AbZG1XKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755958AbZG1XIv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:08:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbZG1XIu
+	id S932132AbZG1XKn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:10:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754903AbZG1XKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:08:50 -0400
-Received: from kroah.org ([198.145.64.141]:42974 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:10:40 -0400
+Received: from kroah.org ([198.145.64.141]:42921 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752882AbZG1XD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:03:57 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 15:59:43 2009
-Message-Id: <20090728225943.299958558@mini.kroah.org>
+	id S1752853AbZG1XDr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:03:47 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 15:59:41 2009
+Message-Id: <20090728225941.717703138@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 15:58:44 -0700
+Date: Tue, 28 Jul 2009 15:58:33 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jiri Slaby <jirislaby@gmail.com>, "Hans J. Koch" <hjk@linutronix.de>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: [patch 16/37] hwmon: (max6650) Fix lock imbalance
+       Clemens Ladisch <clemens@ladisch.de>, Takashi Iwai <tiwai@suse.de>
+Subject: [patch 05/37] sound: virtuoso: fix Xonar D1/DX silence after resume
 References: <20090728225828.431071451@mini.kroah.org>
-Content-Disposition: inline; filename=hwmon-fix-lock-imbalance.patch
+Content-Disposition: inline; filename=sound-virtuoso-fix-xonar-d1-dx-silence-after-resume.patch
 In-Reply-To: <20090728230145.GA10486@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,30 +30,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jiri Slaby <jirislaby@gmail.com>
+From: Clemens Ladisch <clemens@ladisch.de>
 
-commit 025dc740d01f99ccba945df1f9ef9e06b1c15d96 upstream.
+commit 826390796d09444b93e1f957582f8970ddfd9b3d upstream.
 
-Add omitted update_lock to one switch/case in set_div.
+When resuming, we better take the DACs out of the reset state before
+trying to use them.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Acked-by: Hans J. Koch <hjk@linutronix.de>
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Reference: kernel bug #13599
+	http://bugzilla.kernel.org/show_bug.cgi?id=13599
+
+Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hwmon/max6650.c |    1 +
- 1 file changed, 1 insertion(+)
+ sound/pci/oxygen/virtuoso.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/drivers/hwmon/max6650.c
-+++ b/drivers/hwmon/max6650.c
-@@ -407,6 +407,7 @@ static ssize_t set_div(struct device *de
- 		data->count = 3;
- 		break;
- 	default:
-+		mutex_unlock(&data->update_lock);
- 		dev_err(&client->dev,
- 			"illegal value for fan divider (%d)\n", div);
- 		return -EINVAL;
+--- a/sound/pci/oxygen/virtuoso.c
++++ b/sound/pci/oxygen/virtuoso.c
+@@ -376,6 +376,8 @@ static void xonar_d2_resume(struct oxyge
+ 
+ static void xonar_d1_resume(struct oxygen *chip)
+ {
++	oxygen_set_bits8(chip, OXYGEN_FUNCTION, OXYGEN_FUNCTION_RESET_CODEC);
++	msleep(1);
+ 	cs43xx_init(chip);
+ 	xonar_enable_output(chip);
+ }
 
 
