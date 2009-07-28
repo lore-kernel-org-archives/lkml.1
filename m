@@ -1,77 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755942AbZG1XEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932082AbZG1XEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755942AbZG1XEI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:04:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755926AbZG1XEF
+	id S932082AbZG1XEg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756007AbZG1XER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:04:05 -0400
-Received: from kroah.org ([198.145.64.141]:43014 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:04:17 -0400
+Received: from kroah.org ([198.145.64.141]:43110 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755922AbZG1XED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:04:03 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 15:59:44 2009
-Message-Id: <20090728225944.172813639@mini.kroah.org>
+	id S1755993AbZG1XEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:04:16 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 15:59:46 2009
+Message-Id: <20090728225946.368524184@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 15:58:50 -0700
+Date: Tue, 28 Jul 2009 15:59:04 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [patch 22/37] SUNRPC: Ensure we set XPRT_CLOSING only after weve sent a tcp FIN...
+       Krzysztof Halasa <khc@pm.waw.pl>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 36/37] E100: work around the driver using streaming DMA mapping for RX descriptors.
 References: <20090728225828.431071451@mini.kroah.org>
-Content-Disposition: inline; filename=sunrpc-ensure-we-set-xprt_closing-only-after-we-ve-sent-a-tcp-fin.patch
+Content-Disposition: inline; filename=e100-work-around-the-driver-using-streaming-dma-mapping-for-rx-descriptors.patch
 In-Reply-To: <20090728230145.GA10486@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+From: Krzysztof Halasa <khc@pm.waw.pl>
 
-commit 670f94573104b4a25525d3fcdcd6496c678df172 upstream.
+[ Upstream commit 303d67c288319768b19ed8dbed429fef7eb7c275 ]
 
-...so that we can distinguish between when we need to shutdown and when we
-don't. Also remove the call to xs_tcp_shutdown() from xs_tcp_connect(),
-since xprt_connect() makes the same test.
+E100 places it's RX packet descriptors inside skb->data and uses them
+with bidirectional streaming DMA mapping. Unfortunately it fails to
+transfer skb->data ownership to the device after it reads the
+descriptor's status, breaking on non-coherent (e.g., ARM) platforms.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+This have to be converted to use coherent memory for the descriptors.
+
+Signed-off-by: Krzysztof Halasa <khc@pm.waw.pl>
+Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- net/sunrpc/xprtsock.c |    5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ drivers/net/e100.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/net/sunrpc/xprtsock.c
-+++ b/net/sunrpc/xprtsock.c
-@@ -1150,7 +1150,6 @@ static void xs_tcp_state_change(struct s
- 		break;
- 	case TCP_CLOSE_WAIT:
- 		/* The server initiated a shutdown of the socket */
--		set_bit(XPRT_CLOSING, &xprt->state);
- 		xprt_force_disconnect(xprt);
- 	case TCP_SYN_SENT:
- 		xprt->connect_cookie++;
-@@ -1163,6 +1162,7 @@ static void xs_tcp_state_change(struct s
- 			xprt->reestablish_timeout = XS_TCP_INIT_REEST_TO;
- 		break;
- 	case TCP_LAST_ACK:
-+		set_bit(XPRT_CLOSING, &xprt->state);
- 		smp_mb__before_clear_bit();
- 		clear_bit(XPRT_CONNECTED, &xprt->state);
- 		smp_mb__after_clear_bit();
-@@ -1780,9 +1780,6 @@ static void xs_tcp_connect(struct rpc_ta
- {
- 	struct rpc_xprt *xprt = task->tk_xprt;
+--- a/drivers/net/e100.c
++++ b/drivers/net/e100.c
+@@ -1840,6 +1840,9 @@ static int e100_rx_indicate(struct nic *
  
--	/* Initiate graceful shutdown of the socket if not already done */
--	if (test_bit(XPRT_CONNECTED, &xprt->state))
--		xs_tcp_shutdown(xprt);
- 	/* Exit if we need to wait for socket shutdown to complete */
- 	if (test_bit(XPRT_CLOSING, &xprt->state))
- 		return;
+ 			if (ioread8(&nic->csr->scb.status) & rus_no_res)
+ 				nic->ru_running = RU_SUSPENDED;
++		pci_dma_sync_single_for_device(nic->pdev, rx->dma_addr,
++					       sizeof(struct rfd),
++					       PCI_DMA_BIDIRECTIONAL);
+ 		return -ENODATA;
+ 	}
+ 
 
 
