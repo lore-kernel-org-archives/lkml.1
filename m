@@ -1,83 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751470AbZG1TE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752019AbZG1TIF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751470AbZG1TE0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 15:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750769AbZG1TE0
+	id S1752019AbZG1TIF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 15:08:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751320AbZG1TIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 15:04:26 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:60926 "EHLO e6.ny.us.ibm.com"
+	Tue, 28 Jul 2009 15:08:04 -0400
+Received: from smtp.witbe.net ([81.88.96.48]:40441 "EHLO smtp.witbe.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750744AbZG1TEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 15:04:25 -0400
-Date: Tue, 28 Jul 2009 12:06:54 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Andrew Morton <akpm@osdl.org>, oleg@redhat.com, roland@redhat.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Oren Laadan <orenl@cs.columbia.edu>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Containers <containers@lists.linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Deny CLONE_PARENT|CLONE_NEWPID combination
-Message-ID: <20090728190654.GA5806@us.ibm.com>
-References: <20090728164406.GA17275@us.ibm.com> <20090728180553.GB6427@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090728180553.GB6427@us.ibm.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751514AbZG1TIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 15:08:04 -0400
+Date: Tue, 28 Jul 2009 21:08:03 +0200
+From: Paul Rolland <rol@as2917.net>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org, rol@witbe.net
+Subject: Re: Linux-2.6.31-rc4 - shut the annoying "failed to acquire
+ vblank..."
+Message-ID: <20090728210803.19556ba7@tux.DEF.witbe.net>
+In-Reply-To: <20090728092319.52ea57f1@jbarnes-g45>
+References: <20090728091622.50e9933b@tux.DEF.witbe.net>
+	<200907281244.13467.elendil@planet.nl>
+	<20090728145359.252ff759@tux.DEF.witbe.net>
+	<20090728092319.52ea57f1@jbarnes-g45>
+Organization: AS2917.net
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.2; x86_64-unknown-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn [serue@us.ibm.com] wrote:
-| Quoting Sukadev Bhattiprolu (sukadev@linux.vnet.ibm.com):
-| > 
-| > Deny CLONE_PARENT|CLONE_NEWPID combination.
-| > 
-| > CLONE_PARENT was used to implement an older threading model.  For consistency
-| > with the CLONE_THREAD check in copy_pid_ns(), disable CLONE_PARENT and
-| > CLONE_SIGHAND with CLONE_NEWPID, at least until the required semantics of
-| > the pid namespaces are clear.
-| > 
-| > Changelog[v3]:
-| > 	Remove CLONE_SIGHAND and for now only fail CLONE_NEWPID|CLONE_PARENT.
-| 
-| (FWIW your patch description does not reflect this...)
+Hi Jesse,
 
-You are right. Here is the patch with updated description.
----
+On Tue, 28 Jul 2009 09:23:19 -0700
+Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 
-Deny CLONE_PARENT|CLONE_NEWPID|CLONE_SIGHAND combination.
+> It indicates a userland problem, and yes we shouldn't print that
+> message.  I've also posted a patch to quiet it a few times, but Dave
+> hasn't picked it up yet.  Feel free to send it straight to Linus with
+> my Reviewed-by if you want.
+> 
 
-CLONE_PARENT was used to implement an older threading model.  For consistency
-with the CLONE_THREAD check in copy_pid_ns(), disable CLONE_PARENT with
-CLONE_NEWPID, at least until the required semantics of pid namespaces are
-clear.
+Thx, will do that tomorrow morning, after making it compliant with Linux
+rules for patch submission ;)
 
-Changelog[v3]:
-	Remove CLONE_SIGHAND and for now only fail CLONE_NEWPID|CLONE_PARENT.
-Changelog[v2]:
-	[Eric Biederman] Disable CLONE_SIGHAND also ?
+Rgds,
+Paul
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
-Acked-by: Roland McGrath <roland@redhat.com>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
----
- kernel/pid_namespace.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-mmotm/kernel/pid_namespace.c
-===================================================================
---- linux-mmotm.orig/kernel/pid_namespace.c	2009-07-16 10:03:01.000000000 -0700
-+++ linux-mmotm/kernel/pid_namespace.c	2009-07-16 11:37:24.000000000 -0700
-@@ -118,7 +118,7 @@
- {
- 	if (!(flags & CLONE_NEWPID))
- 		return get_pid_ns(old_ns);
--	if (flags & CLONE_THREAD)
-+	if (flags & (CLONE_THREAD|CLONE_PARENT))
- 		return ERR_PTR(-EINVAL);
- 	return create_pid_namespace(old_ns);
- }
