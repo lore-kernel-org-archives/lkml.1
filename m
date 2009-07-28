@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbZG1XxN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932186AbZG1Xx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932167AbZG1XxN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:53:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754900AbZG1Xu0
+	id S932186AbZG1Xx7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:53:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932101AbZG1Xx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:50:26 -0400
-Received: from kroah.org ([198.145.64.141]:35879 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:53:57 -0400
+Received: from kroah.org ([198.145.64.141]:35932 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754802AbZG1XuR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:50:17 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:59 2009
-Message-Id: <20090728234159.070814850@mini.kroah.org>
+	id S1754887AbZG1XuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:50:25 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:42:00 2009
+Message-Id: <20090728234200.257182735@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:41:18 -0700
+Date: Tue, 28 Jul 2009 16:41:26 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       "H. Peter Anvin" <hpa@linux.intel.com>, x86@kernel.org,
-       Research.Support@ualberta.ca, Marc Aurele La France <tsi@xfree86.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 49/71] x86, setup (2.6.30-stable) fix 80x34 and 80x60 console modes
+       Patrick McHardy <kaber@trash.net>
+Subject: [patch 57/71] netfilter: nf_log: fix sleeping function called from invalid context
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=x86-setup-fix-80x34-and-80x60-console-modes.patch
+Content-Disposition: inline; filename=netfilter-nf_log-fix-sleeping-function-called-from-invalid-context.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,130 +30,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Marc Aurele La France <root@ualberta.ca>
+From: Patrick McHardy <kaber@trash.net>
 
-Note: this is not in upstream since upstream is not affected due to the
-      new "BIOS glovebox" subsystem.
+commit 266d07cb1c9a0c345d7d3aea889f92062894059e upstream.
 
-As coded, most INT10 calls in video-vga.c allow the compiler to assume
-EAX remains unchanged across them, which is not always the case.  This
-triggers an optimisation issue that causes vga_set_vertical_end() to be
-called with an incorrect number of scanlines.  Fix this by beefing up
-the asm constraints on these calls.
+Fix regression introduced by 17625274 "netfilter: sysctl support of
+logger choice":
 
-Reported-by: Marc Aurele La France <tsi@xfree86.org>
-Signed-off-by: Marc Aurele La France <tsi@xfree86.org>
-Acked-by: H. Peter Anvin <hpa@zytor.com>
+BUG: sleeping function called from invalid context at /mnt/s390test/linux-2.6-tip/arch/s390/include/asm/uaccess.h:234
+in_atomic(): 1, irqs_disabled(): 0, pid: 3245, name: sysctl
+CPU: 1 Not tainted 2.6.30-rc8-tipjun10-02053-g39ae214 #1
+Process sysctl (pid: 3245, task: 000000007f675da0, ksp: 000000007eb17cf0)
+0000000000000000 000000007eb17be8 0000000000000002 0000000000000000
+       000000007eb17c88 000000007eb17c00 000000007eb17c00 0000000000048156
+       00000000003e2de8 000000007f676118 000000007eb17f10 0000000000000000
+       0000000000000000 000000007eb17be8 000000000000000d 000000007eb17c58
+       00000000003e2050 000000000001635c 000000007eb17be8 000000007eb17c30
+Call Trace:
+(Ý<00000000000162e6>¨ show_trace+0x13a/0x148)
+ Ý<00000000000349ea>¨ __might_sleep+0x13a/0x164
+ Ý<0000000000050300>¨ proc_dostring+0x134/0x22c
+ Ý<0000000000312b70>¨ nf_log_proc_dostring+0xfc/0x188
+ Ý<0000000000136f5e>¨ proc_sys_call_handler+0xf6/0x118
+ Ý<0000000000136fda>¨ proc_sys_read+0x26/0x34
+ Ý<00000000000d6e9c>¨ vfs_read+0xac/0x158
+ Ý<00000000000d703e>¨ SyS_read+0x56/0x88
+ Ý<0000000000027f42>¨ sysc_noemu+0x10/0x16
+
+Use the nf_log_mutex instead of RCU to fix this.
+
+Reported-and-tested-by: Maran Pakkirisamy <maranpsamy@in.ibm.com>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/boot/video-vga.c |   44 +++++++++++++++++++++++++++++++-------------
- 1 file changed, 31 insertions(+), 13 deletions(-)
+ net/netfilter/nf_log.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/arch/x86/boot/video-vga.c
-+++ b/arch/x86/boot/video-vga.c
-@@ -45,8 +45,10 @@ static u8 vga_set_basic_mode(void)
- 
- #ifdef CONFIG_VIDEO_400_HACK
- 	if (adapter >= ADAPTER_VGA) {
-+		ax = 0x1202;
- 		asm volatile(INT10
--			     : : "a" (0x1202), "b" (0x0030)
-+			     : "+a" (ax)
-+			     : "b" (0x0030)
- 			     : "ecx", "edx", "esi", "edi");
+--- a/net/netfilter/nf_log.c
++++ b/net/netfilter/nf_log.c
+@@ -248,14 +248,14 @@ static int nf_log_proc_dostring(ctl_tabl
+ 		rcu_assign_pointer(nf_loggers[tindex], logger);
+ 		mutex_unlock(&nf_log_mutex);
+ 	} else {
+-		rcu_read_lock();
+-		logger = rcu_dereference(nf_loggers[tindex]);
++		mutex_lock(&nf_log_mutex);
++		logger = nf_loggers[tindex];
+ 		if (!logger)
+ 			table->data = "NONE";
+ 		else
+ 			table->data = logger->name;
+ 		r = proc_dostring(table, write, filp, buffer, lenp, ppos);
+-		rcu_read_unlock();
++		mutex_unlock(&nf_log_mutex);
  	}
- #endif
-@@ -81,44 +83,59 @@ static u8 vga_set_basic_mode(void)
  
- static void vga_set_8font(void)
- {
-+	u16 ax;
-+
- 	/* Set 8x8 font - 80x43 on EGA, 80x50 on VGA */
- 
- 	/* Set 8x8 font */
--	asm volatile(INT10 : : "a" (0x1112), "b" (0));
-+	ax = 0x1112;
-+	asm volatile(INT10 : "+a" (ax) : "b" (0));
- 
- 	/* Use alternate print screen */
--	asm volatile(INT10 : : "a" (0x1200), "b" (0x20));
-+	ax = 0x1200;
-+	asm volatile(INT10 : "+a" (ax) : "b" (0x20));
- 
- 	/* Turn off cursor emulation */
--	asm volatile(INT10 : : "a" (0x1201), "b" (0x34));
-+	ax = 0x1201;
-+	asm volatile(INT10 : "+a" (ax) : "b" (0x34));
- 
- 	/* Cursor is scan lines 6-7 */
--	asm volatile(INT10 : : "a" (0x0100), "c" (0x0607));
-+	ax = 0x0100;
-+	asm volatile(INT10 : "+a" (ax) : "c" (0x0607));
- }
- 
- static void vga_set_14font(void)
- {
-+	u16 ax;
-+
- 	/* Set 9x14 font - 80x28 on VGA */
- 
- 	/* Set 9x14 font */
--	asm volatile(INT10 : : "a" (0x1111), "b" (0));
-+	ax = 0x1111;
-+	asm volatile(INT10 : "+a" (ax) : "b" (0));
- 
- 	/* Turn off cursor emulation */
--	asm volatile(INT10 : : "a" (0x1201), "b" (0x34));
-+	ax = 0x1201;
-+	asm volatile(INT10 : "+a" (ax) : "b" (0x34));
- 
- 	/* Cursor is scan lines 11-12 */
--	asm volatile(INT10 : : "a" (0x0100), "c" (0x0b0c));
-+	ax = 0x0100;
-+	asm volatile(INT10 : "+a" (ax) : "c" (0x0b0c));
- }
- 
- static void vga_set_80x43(void)
- {
-+	u16 ax;
-+
- 	/* Set 80x43 mode on VGA (not EGA) */
- 
- 	/* Set 350 scans */
--	asm volatile(INT10 : : "a" (0x1201), "b" (0x30));
-+	ax = 0x1201;
-+	asm volatile(INT10 : "+a" (ax) : "b" (0x30));
- 
- 	/* Reset video mode */
--	asm volatile(INT10 : : "a" (0x0003));
-+	ax = 0x0003;
-+	asm volatile(INT10 : "+a" (ax));
- 
- 	vga_set_8font();
- }
-@@ -225,7 +242,7 @@ static int vga_set_mode(struct mode_info
-  */
- static int vga_probe(void)
- {
--	u16 ega_bx;
-+	u16 ax, ega_bx;
- 
- 	static const char *card_name[] = {
- 		"CGA/MDA/HGC", "EGA", "VGA"
-@@ -242,9 +259,10 @@ static int vga_probe(void)
- 	};
- 	u8 vga_flag;
- 
-+	ax = 0x1200;
- 	asm(INT10
--	    : "=b" (ega_bx)
--	    : "a" (0x1200), "b" (0x10) /* Check EGA/VGA */
-+	    : "+a" (ax), "=b" (ega_bx)
-+	    : "b" (0x10) /* Check EGA/VGA */
- 	    : "ecx", "edx", "esi", "edi");
- 
- #ifndef _WAKEUP
+ 	return r;
 
 
