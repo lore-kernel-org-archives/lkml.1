@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932159AbZG1X5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753429AbZG1Xth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932159AbZG1X5F (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:57:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754549AbZG1XuK
+	id S1753429AbZG1Xth (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbZG1Xtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:50:10 -0400
-Received: from kroah.org ([198.145.64.141]:35798 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:49:35 -0400
+Received: from kroah.org ([198.145.64.141]:35623 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754525AbZG1XuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:50:05 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:56 2009
-Message-Id: <20090728234156.742096252@mini.kroah.org>
+	id S1753262AbZG1Xte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:49:34 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:51 2009
+Message-Id: <20090728234151.732830684@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:41:05 -0700
+Date: Tue, 28 Jul 2009 16:40:32 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jiro SEKIBA <jir@unicus.jp>,
-       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [patch 36/71] nilfs2: fix disorder in cp count on error during deleting checkpoints
+       Clemens Ladisch <clemens@ladisch.de>, Takashi Iwai <tiwai@suse.de>
+Subject: [patch 03/71] sound: virtuoso: fix Xonar D1/DX silence after resume
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=nilfs2-fix-disorder-in-cp-count-on-error-during-deleting-checkpoints.patch
+Content-Disposition: inline; filename=sound-virtuoso-fix-xonar-d1-dx-silence-after-resume.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,52 +30,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jiro SEKIBA <jir@unicus.jp>
+From: Clemens Ladisch <clemens@ladisch.de>
 
-commit d9a0a345ab7a58a30ec38e5bb7401a28714914d2 upstream.
+commit 826390796d09444b93e1f957582f8970ddfd9b3d upstream.
 
-This fixes a bug that checkpoint count gets wrong on errors when
-deleting a series of checkpoints.
+When resuming, we better take the DACs out of the reset state before
+trying to use them.
 
-The count error is persistent since the checkpoint count is stored on
-disk.  Some userland programs refer to the count via ioctl, and this
-bugfix is needed to prevent malfunction of such programs.
+Reference: kernel bug #13599
+	http://bugzilla.kernel.org/show_bug.cgi?id=13599
 
-Signed-off-by: Jiro SEKIBA <jir@unicus.jp>
-Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nilfs2/cpfile.c |    5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ sound/pci/oxygen/virtuoso.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/fs/nilfs2/cpfile.c
-+++ b/fs/nilfs2/cpfile.c
-@@ -311,7 +311,7 @@ int nilfs_cpfile_delete_checkpoints(stru
- 		ret = nilfs_cpfile_get_checkpoint_block(cpfile, cno, 0, &cp_bh);
- 		if (ret < 0) {
- 			if (ret != -ENOENT)
--				goto out_header;
-+				break;
- 			/* skip hole */
- 			ret = 0;
- 			continue;
-@@ -344,7 +344,7 @@ int nilfs_cpfile_delete_checkpoints(stru
- 					continue;
- 				printk(KERN_ERR "%s: cannot delete block\n",
- 				       __func__);
--				goto out_header;
-+				break;
- 			}
- 		}
+--- a/sound/pci/oxygen/virtuoso.c
++++ b/sound/pci/oxygen/virtuoso.c
+@@ -621,6 +621,8 @@ static void xonar_d2_resume(struct oxyge
  
-@@ -362,7 +362,6 @@ int nilfs_cpfile_delete_checkpoints(stru
- 		kunmap_atomic(kaddr, KM_USER0);
- 	}
- 
-- out_header:
- 	brelse(header_bh);
- 
-  out_sem:
+ static void xonar_d1_resume(struct oxygen *chip)
+ {
++	oxygen_set_bits8(chip, OXYGEN_FUNCTION, OXYGEN_FUNCTION_RESET_CODEC);
++	msleep(1);
+ 	cs43xx_init(chip);
+ 	xonar_enable_output(chip);
+ }
 
 
