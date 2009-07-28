@@ -1,109 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754301AbZG1ODL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbZG1OFJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754301AbZG1ODL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 10:03:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbZG1ODJ
+	id S1754305AbZG1OFJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 10:05:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbZG1OFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 10:03:09 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:57483 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753343AbZG1ODJ (ORCPT
+	Tue, 28 Jul 2009 10:05:08 -0400
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:63171 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750848AbZG1OFG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 10:03:09 -0400
-Date: Tue, 28 Jul 2009 16:03:08 +0200
-From: Andreas Mohr <andi@lisas.de>
-To: Andreas Mohr <andi@lisas.de>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Corrado Zoccolo <czoccolo@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
-Subject: Re: Dynamic configure max_cstate
-Message-ID: <20090728140308.GA17543@rhlx01.hs-esslingen.de>
-References: <20090727073338.GA12669@rhlx01.hs-esslingen.de> <1248748935.2560.669.camel@ymzhang> <4e5e476b0907280020x242d9ef7gfa05c3d7b66f941f@mail.gmail.com> <1248771635.2560.682.camel@ymzhang> <20090728101135.GA22358@rhlx01.hs-esslingen.de>
-MIME-Version: 1.0
+	Tue, 28 Jul 2009 10:05:06 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqEEAD+hbkpMQWXi/2dsb2JhbACBUdJRhAwF
+Date: Tue, 28 Jul 2009 10:04:59 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, prasad@linux.vnet.ibm.com,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
+       Paul Mackerras <paulus@samba.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Anton Blanchard <anton@samba.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [RFC][PATCH 5/5] perfcounter: Add support for kernel hardware
+	breakpoints
+Message-ID: <20090728140459.GA30412@Krystal>
+References: <c62985530907240702h2b2de14bw2f0d475f46067e4e@mail.gmail.com> <1248445569.6987.74.camel@twins> <20090724174723.GA11985@nowhere> <1248519416.5780.12.camel@laptop> <20090725141918.GA5295@nowhere> <1248538972.5780.25.camel@laptop> <20090725235702.GA5082@in.ibm.com> <1248684817.6987.1573.camel@twins> <20090728010349.GB5147@nowhere> <1248765877.6987.2754.camel@twins>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090728101135.GA22358@rhlx01.hs-esslingen.de>
-X-Priority: none
+In-Reply-To: <1248765877.6987.2754.camel@twins>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 09:49:34 up 150 days, 10:15,  3 users,  load average: 1.02, 0.97,
+	0.74
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 28, 2009 at 12:11:35PM +0200, Andreas Mohr wrote:
-> As a very quick test, I tried a
-> while :; do :; done
-> loop in shell and renicing shell to 19 (to keep my CPU out of ACPI idle),
-> but bonnie -s 100 results initially looked promising yet turned out to
-> be inconsistent. The real way to test this would be idle=poll.
-> My test system was Athlon XP with /proc/acpi/processor/CPU0/power
-> latencies of 000 and 100 (the maximum allowed value, BTW) for C1/C2.
+* Peter Zijlstra (a.p.zijlstra@chello.nl) wrote:
+> On Tue, 2009-07-28 at 03:03 +0200, Frederic Weisbecker wrote:
+> > > Thirdly, we can multiplex perf counters beyond their hardware maximum,
+> > > something you simply cannot do for a debug interface.
+> > 
+> > 
+> > Again, I'm stuck in what you mean by multiplexing here :-)
+> 
+> If you'd create say 16 breakpoint counters, we'd RR them over the 4
+> available hardware breakpoints (or less when others are taken by someone
+> else).
+> 
+> Since its all statistics anyway, we can simply scale the event counts up
+> by the time-share they received.
+> 
 
-OK, I just tested it properly.
-Rebooted, did 5 bonnie -s 100 with ACPI idle, rebooted and did another 5
-bonnie -s 100 with idle=poll, results:
+Although hw breakpoint and performance counters could be multiplexed to
+be used in RR for profiling, I fear using these for tracing does not
+necessarily fit well with these statistical artefacts.
 
+Therefore I'd recommend leaving such bp RR as a feature separate from
+a low-level breakpoint API, because it seem only useful to profilers.
 
-$ cat bonnie_ACPI_* /tmp/line bonnie_poll_*
-              -------Sequential Output-------- ---Sequential Input-- --Random--
-              -Per Char- --Block--- -Rewrite-- -Per Char- --Block--- --Seeks---
-Machine    MB K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU  /sec %CPU
-       1* 100 20084 95.3 19037  9.5 12286  4.7 18074 99.6 581752 96.6 28792.3 93.6
-              -------Sequential Output-------- ---Sequential Input-- --Random--
-              -Per Char- --Block--- -Rewrite-- -Per Char- --Block--- --Seeks---
-Machine    MB K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU  /sec %CPU
-       1* 100 19235 93.5 24591 11.8 13916  4.3 17934 99.8 604429 100.3 27993.8 98.0
-              -------Sequential Output-------- ---Sequential Input-- --Random--
-              -Per Char- --Block--- -Rewrite-- -Per Char- --Block--- --Seeks---
-Machine    MB K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU  /sec %CPU
-       1* 100 17221 86.3 30591 16.1 15404  5.4 18689 99.3 593296 92.7 28146.0 98.5
-              -------Sequential Output-------- ---Sequential Input-- --Random--
-              -Per Char- --Block--- -Rewrite-- -Per Char- --Block--- --Seeks---
-Machine    MB K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU  /sec %CPU
-       1* 100 20254 99.3 110095 55.9 15722  6.1 17901 99.5 601185 99.8 28675.5 100.4
-              -------Sequential Output-------- ---Sequential Input-- --Random--
-              -Per Char- --Block--- -Rewrite-- -Per Char- --Block--- --Seeks---
-Machine    MB K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU  /sec %CPU
-       1* 100 18274 88.5 106909 53.2 10614  4.1 18759 99.7 598833 99.4 28461.6 92.5
-========
-              -------Sequential Output-------- ---Sequential Input-- --Random--
-              -Per Char- --Block--- -Rewrite-- -Per Char- --Block--- --Seeks---
-Machine    MB K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU  /sec %CPU
-       1* 100 15274 98.2 20206  9.7 17286  7.3 18055 99.4 608112 101.0 28424.0 99.5
-              -------Sequential Output-------- ---Sequential Input-- --Random--
-              -Per Char- --Block--- -Rewrite-- -Per Char- --Block--- --Seeks---
-Machine    MB K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU  /sec %CPU
-       1* 100 20545 99.1 25332 12.6 16392  6.1 17957 99.4 606706 100.7 27906.8 90.7
-              -------Sequential Output-------- ---Sequential Input-- --Random--
-              -Per Char- --Block--- -Rewrite-- -Per Char- --Block--- --Seeks---
-Machine    MB K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU  /sec %CPU
-       1* 100 20482 99.2 30907 13.6 17585  6.2 17867 99.1 608090 101.0 27919.1 97.7
-              -------Sequential Output-------- ---Sequential Input-- --Random--
-              -Per Char- --Block--- -Rewrite-- -Per Char- --Block--- --Seeks---
-Machine    MB K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU  /sec %CPU
-       1* 100 20863 99.4 138383 66.2 18945  7.6 17938 99.5 581421 96.5 27094.6 94.8
-              -------Sequential Output-------- ---Sequential Input-- --Random--
-              -Per Char- --Block--- -Rewrite-- -Per Char- --Block--- --Seeks---
-Machine    MB K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU K/sec %CPU  /sec %CPU
-       1* 100 20821 98.8 156821 70.4 11536  4.4 18747 99.0 603556 100.2 27677.8 96.9
+I think we all have our very precise use-case in mind, and this is what
+makes discussion so difficult. So, for my point of view (tracing), I'd
+like to be able to set performance counters and breakpoints both
+monitoring userspace and kernel. The userspace breakpoints would be
+exchanged when a different process is scheduled.
 
+I see 2 complementary ways to collect data into the trace:
 
-And these values (cumulative) result in:
+- triggering an interrupt each X hardware events, trace this interrupt.
+- reading the performance counter value at tracepoints identifying
+  execution context change (e.g. system call entry/exit, interrupt
+  entry/exit...)
 
-         ACPI		poll
-Per Char 95068		97985		+3.06%
-Block   291223		371649		+27.62%
-Rewrite	67942		81744		+20.31%
-Per Char 91357		90564		-0.87%
-Block  2979495		3007885		+0.95%
-RndSeek	142069.2	139022.3	-2.1%
-				average: +8.16%
+As you see, none of these 2 ways to gather trace data allow statistical
+RR. Therefore, having this feature in the low-level API does not seem to
+make sense for tracing.
 
-Now the question is how much is due to idle state entry/exit latency
-and how much is due to ACPI idle/wakeup code path execution.
+So if other use-cases could be explained, maybe we can factor out the
+common interfaces.
 
-Still, an average of +8.16% during 5 test runs each should be quite some incentive,
-and once there's a proper "idle latency skipping during expected I/O replies"
-even with idle/wakeup code path reinstated we should hopefully be able to keep
-some 5% improvement in disk access.
+Thanks,
 
-Andreas Mohr
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
