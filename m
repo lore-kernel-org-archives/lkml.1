@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbZG1MKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753743AbZG1MMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753726AbZG1MKx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 08:10:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbZG1MKw
+	id S1753743AbZG1MMV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 08:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZG1MMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 08:10:52 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53716 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753524AbZG1MKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 08:10:51 -0400
-Message-ID: <4A6EEAEC.3050508@cn.fujitsu.com>
-Date: Tue, 28 Jul 2009 20:11:24 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tracing: fix invalid function_graph entry
-Content-Type: text/plain; charset=UTF-8
+	Tue, 28 Jul 2009 08:12:21 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:56176 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753257AbZG1MMU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 08:12:20 -0400
+Date: Tue, 28 Jul 2009 21:09:34 +0900 (JST)
+Message-Id: <20090728.210934.193696111.ryov@valinux.co.jp>
+To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+Subject: [PATCH 1/7] blkio-cgroup-v10: Introduction
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
-print_graph_entry() consumes current event, if this event
-is the last event in the page, the ring_buffer may reuse
-the page. It will become invalid.
+This is a new release of blkio-cgroup v10. This release reduces
+IO tracking overhead and fixes an issue that could cause a deadlock
+since lock_page_cgroup() is no longer used.
+Thank you KAMEZAWA-san for your suggestions and pointing out the issue.
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index abf7c4a..02102a3 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -835,9 +835,16 @@ print_graph_function(struct trace_iterator *iter)
- 
- 	switch (entry->type) {
- 	case TRACE_GRAPH_ENT: {
--		struct ftrace_graph_ent_entry *field;
-+		/*
-+		 * print_graph_entry() may consume the current event,
-+		 * thus @field may become invalid, so we need to save it.
-+		 * sizeof(struct ftrace_graph_ent_entry) is very small,
-+		 * it is safely saved at the stack.
-+		 */
-+		struct ftrace_graph_ent_entry *field, saved;
- 		trace_assign_type(field, entry);
--		return print_graph_entry(field, s, iter);
-+		saved = *field;
-+		return print_graph_entry(&saved, s, iter);
- 	}
- 	case TRACE_GRAPH_RET: {
- 		struct ftrace_graph_ret_entry *field;
+This patch can be applied to 2.6.31-rc3-mmotm0716 and 2.6.31-rc4.
 
+The list of the patches:
+  [PATCH 1/7] blkio-cgroup-v10: Introduction
+  [PATCH 2/7] blkio-cgroup-v10: The new page_cgroup framework
+  [PATCH 3/7] blkio-cgroup-v10: Refactoring io-context initialization
+  [PATCH 4/7] blkio-cgroup-v10: The body of blkio-cgroup
+  [PATCH 5/7] blkio-cgroup-v10: The document of blkio-cgroup
+  [PATCH 6/7] blkio-cgroup-v10: Page tracking hooks
+  [PATCH 7/7] blkio-cgroup-v10: Add a cgroup support to dm-ioband
+
+About blkio-cgroup:
+blkio-cgroup is a block I/O tracking mechanism implemented on the
+cgroup memory subsystem. Using this feature the owners of any type of
+I/O can be determined. This allows dm-ioband to control block I/O
+bandwidth even when it is accepting delayed write requests. dm-ioband
+can find the cgroup of each request. It is also for possible that
+others working on I/O bandwidth throttling to use this functionality
+to control asynchronous I/O with a little enhancement.
+
+Please visit our website, the patches and more information are available.
+  Linux Block I/O Bandwidth Control Project
+  http://sourceforge.net/apps/trac/ioband/
+
+I'd like to get some feedbacks from the list. Any comments are
+appreciated.
+
+Thanks,
+Ryo Tsuruta
