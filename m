@@ -1,73 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754740AbZG1QXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754850AbZG1QX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754740AbZG1QXZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 12:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754640AbZG1QXZ
+	id S1754850AbZG1QX4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 12:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbZG1QXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 12:23:25 -0400
-Received: from outbound-mail-149.bluehost.com ([67.222.38.39]:50493 "HELO
-	outbound-mail-149.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752251AbZG1QXY (ORCPT
+	Tue, 28 Jul 2009 12:23:55 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:59348 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754831AbZG1QXz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 12:23:24 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=sM8pLDsGYBSIEc8VY+n7nyAMByXPzwBTo1nHEveEK81qUW1cjhKh5N3z06a1rKu/e9regeLK1oBcVlsr7pSDKfE1ULXBhBrj+qSW5zsBqp1SQfCUm+5h3Ul30WMS9Qc8;
-Date: Tue, 28 Jul 2009 09:23:19 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Paul Rolland <rol@as2917.net>
-Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org, rol@witbe.net
-Subject: Re: Linux-2.6.31-rc4 - shut the annoying "failed to acquire
- vblank..."
-Message-ID: <20090728092319.52ea57f1@jbarnes-g45>
-In-Reply-To: <20090728145359.252ff759@tux.DEF.witbe.net>
-References: <20090728091622.50e9933b@tux.DEF.witbe.net>
-	<200907281244.13467.elendil@planet.nl>
-	<20090728145359.252ff759@tux.DEF.witbe.net>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Tue, 28 Jul 2009 12:23:55 -0400
+Date: Tue, 28 Jul 2009 18:23:53 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Kees Cook <kees@ubuntu.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       James Morris <jmorris@namei.org>, James Carter <jwcart2@tycho.nsa.gov>,
+       Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
+       Stephen Smalley <sds@tycho.nsa.gov>, spender@grsecurity.net,
+       Daniel J Walsh <dwalsh@redhat.com>, cl@linux-foundation.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Chad Sellers <csellers@tresys.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, mingo@elte.hu
+Subject: Re: mmap_min_addr and your local LSM (ok, just SELinux)
+Message-ID: <20090728162353.GO15310@basil.fritz.box>
+References: <1248132223.2654.278.camel@localhost> <alpine.LRH.2.00.0907211258110.32400@tundra.namei.org> <1248187482.19456.90.camel@moss-lions.epoch.ncsc.mil> <alpine.LRH.2.00.0907221953190.15799@tundra.namei.org> <20090728011943.589176cb@lxorguk.ukuu.org.uk> <87zlapgo2u.fsf@basil.nowhere.org> <20090728155622.GO7316@outflux.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090728155622.GO7316@outflux.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Jul 2009 14:53:59 +0200
-Paul Rolland <rol@as2917.net> wrote:
+> Could the page table flags be used to mask this region?  i.e. force
+> PROT_NONE (with the "desired" flags stored elsewhere) and in the segv
+> handler check if it is kernel or user space, and then fix-up the flags and
+> continue if it's userspace?  (I really don't know the internals on this,
+> but it would need to restore PROT_NONE on task-switch or something...)
 
-> Hi Frans,
-> 
-> On Tue, 28 Jul 2009 12:44:12 +0200
-> Frans Pop <elendil@planet.nl> wrote:
-> 
-> > > I sent a mail long ago about this message :
-> > > tux kernel: [drm:drm_wait_vblank] *ERROR* failed to acquire vblank
-> > > counter, -22 showing up more than 10 times per second, but was
-> > > told that I had some old userspace apps running... As I was using
-> > > an old FC8, I forgot about it.
-> > 
-> > The message does not only show with old applications, it also shows:
-> > - every time I suspend my notebook
-> > - every time I start a second X session to log in as a different
-> > user
-> Well, with the so-called "old apps", it's 20 times per second, as
-> long as the app is running, which really makes it painful, because it
-> causes all the logs to show off quickly :(
->  
-> > I agree that the message is very annoying and would be glad to be
-> > rid of it, especially as the only comment from the maintainers so
-> > far has been to just ignore it.
-> Well, I'd really like some feedback from the maintainer... because if
-> no one cares, I agree it should be removed.
-> 
-> > IMHO, If it is "ignoreable", then it is also "suppressable".
-> Seconded, unless someone is using it to try to fix the problem ?
-
-It indicates a userland problem, and yes we shouldn't print that
-message.  I've also posted a patch to quiet it a few times, but Dave
-hasn't picked it up yet.  Feel free to send it straight to Linus with
-my Reviewed-by if you want.
+That's racy with multiple threads.
+-Andi
 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+ak@linux.intel.com -- Speaking for myself only.
