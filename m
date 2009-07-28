@@ -1,270 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbZG1RSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755043AbZG1RSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753338AbZG1RSY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 13:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbZG1RSX
+	id S1755043AbZG1RSc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 13:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbZG1RSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 13:18:23 -0400
-Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:31292
-	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753317AbZG1RSE (ORCPT
+	Tue, 28 Jul 2009 13:18:31 -0400
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:9627 "EHLO
+	VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753489AbZG1RSF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 13:18:04 -0400
+	Tue, 28 Jul 2009 13:18:05 -0400
 X-SpamScore: 3
-X-BigFish: VPS3(zzzz1202hzzz32i87h203h43j62h)
-X-Spam-TCS-SCL: 1:0
+X-BigFish: VPS3(zzzz1202hzzz32i87h203h43j61h)
+X-Spam-TCS-SCL: 0:0
 X-FB-SS: 5,
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KNI5DO-03-BLW-01
+X-WSS-ID: 0KNI5DR-03-BM4-01
 From: Robert Richter <robert.richter@amd.com>
 To: Ingo Molnar <mingo@elte.hu>
 CC: LKML <linux-kernel@vger.kernel.org>,
        oprofile-list <oprofile-list@lists.sourceforge.net>,
        Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 11/26] oprofile: Introduce op_x86_phys_to_virt()
-Date: Tue, 28 Jul 2009 19:07:11 +0200
-Message-ID: <1248800846-25422-12-git-send-email-robert.richter@amd.com>
+Subject: [PATCH 17/26] x86/oprofile: Remove const qualifier from struct op_x86_model_spec
+Date: Tue, 28 Jul 2009 19:07:17 +0200
+Message-ID: <1248800846-25422-18-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1248800846-25422-1-git-send-email-robert.richter@amd.com>
 References: <1248800846-25422-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 28 Jul 2009 17:17:48.0884 (UTC) FILETIME=[54B8E940:01CA0FA7]
+X-OriginalArrivalTime: 28 Jul 2009 17:17:50.0134 (UTC) FILETIME=[5577A560:01CA0FA7]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This new function translates physical to virtual counter numbers.
+This patch removes the const qualifier from struct
+op_x86_model_spec to make model parameters changable.
 
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- arch/x86/oprofile/nmi_int.c      |   43 +++++++++++---------
- arch/x86/oprofile/op_model_amd.c |   80 +++++++++++++++-----------------------
- arch/x86/oprofile/op_x86_model.h |    1 +
- 3 files changed, 55 insertions(+), 69 deletions(-)
+ arch/x86/oprofile/nmi_int.c       |    4 ++--
+ arch/x86/oprofile/op_model_amd.c  |    2 +-
+ arch/x86/oprofile/op_model_p4.c   |    4 ++--
+ arch/x86/oprofile/op_model_ppro.c |    2 +-
+ arch/x86/oprofile/op_x86_model.h  |    8 ++++----
+ 5 files changed, 10 insertions(+), 10 deletions(-)
 
 diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
-index b211d33..02b57b8 100644
+index 998c7dc..826f391 100644
 --- a/arch/x86/oprofile/nmi_int.c
 +++ b/arch/x86/oprofile/nmi_int.c
-@@ -27,12 +27,6 @@
+@@ -27,7 +27,7 @@
  #include "op_counter.h"
  #include "op_x86_model.h"
  
--
--#ifdef CONFIG_OPROFILE_EVENT_MULTIPLEX
--DEFINE_PER_CPU(int, switch_index);
--#endif
--
--
- static struct op_x86_model_spec const *model;
+-static struct op_x86_model_spec const *model;
++static struct op_x86_model_spec *model;
  static DEFINE_PER_CPU(struct op_msrs, cpu_msrs);
  static DEFINE_PER_CPU(unsigned long, saved_lvtpc);
-@@ -103,6 +97,21 @@ static void nmi_cpu_save_registers(struct op_msrs *msrs)
- 	}
- }
  
-+#ifdef CONFIG_OPROFILE_EVENT_MULTIPLEX
-+
-+static DEFINE_PER_CPU(int, switch_index);
-+
-+inline int op_x86_phys_to_virt(int phys)
-+{
-+	return __get_cpu_var(switch_index) + phys;
-+}
-+
-+#else
-+
-+inline int op_x86_phys_to_virt(int phys) { return phys; }
-+
-+#endif
-+
- static void free_msrs(void)
+@@ -542,7 +542,7 @@ module_param_call(cpu_type, force_cpu_type, NULL, NULL, 0);
+ static int __init ppro_init(char **cpu_type)
  {
- 	int i;
-@@ -248,31 +257,25 @@ static int nmi_setup(void)
+ 	__u8 cpu_model = boot_cpu_data.x86_model;
+-	struct op_x86_model_spec const *spec = &op_ppro_spec;	/* default */
++	struct op_x86_model_spec *spec = &op_ppro_spec;	/* default */
  
- static void nmi_cpu_save_mpx_registers(struct op_msrs *msrs)
- {
--	unsigned int si = __get_cpu_var(switch_index);
- 	struct op_msr *multiplex = msrs->multiplex;
--	unsigned int i;
-+	int i;
- 
- 	for (i = 0; i < model->num_counters; ++i) {
--		int offset = i + si;
--		if (multiplex[offset].addr) {
--			rdmsrl(multiplex[offset].addr,
--			       multiplex[offset].saved);
--		}
-+		int virt = op_x86_phys_to_virt(i);
-+		if (multiplex[virt].addr)
-+			rdmsrl(multiplex[virt].addr, multiplex[virt].saved);
- 	}
- }
- 
- static void nmi_cpu_restore_mpx_registers(struct op_msrs *msrs)
- {
--	unsigned int si = __get_cpu_var(switch_index);
- 	struct op_msr *multiplex = msrs->multiplex;
--	unsigned int i;
-+	int i;
- 
- 	for (i = 0; i < model->num_counters; ++i) {
--		int offset = i + si;
--		if (multiplex[offset].addr) {
--			wrmsrl(multiplex[offset].addr,
--			       multiplex[offset].saved);
--		}
-+		int virt = op_x86_phys_to_virt(i);
-+		if (multiplex[virt].addr)
-+			wrmsrl(multiplex[virt].addr, multiplex[virt].saved);
- 	}
- }
- 
+ 	if (force_arch_perfmon && cpu_has_arch_perfmon)
+ 		return 0;
 diff --git a/arch/x86/oprofile/op_model_amd.c b/arch/x86/oprofile/op_model_amd.c
-index dcfd450..67f830d 100644
+index 644980f..39604b4 100644
 --- a/arch/x86/oprofile/op_model_amd.c
 +++ b/arch/x86/oprofile/op_model_amd.c
-@@ -42,9 +42,6 @@
- #define MSR_AMD_EVENTSEL_RESERVED	((0xFFFFFCF0ULL<<32)|(1ULL<<21))
+@@ -526,7 +526,7 @@ static void op_amd_exit(void) {}
  
- static unsigned long reset_value[NUM_VIRT_COUNTERS];
--#ifdef CONFIG_OPROFILE_EVENT_MULTIPLEX
--DECLARE_PER_CPU(int, switch_index);
--#endif
+ #endif /* CONFIG_OPROFILE_IBS */
  
- #ifdef CONFIG_OPROFILE_IBS
+-struct op_x86_model_spec const op_amd_spec = {
++struct op_x86_model_spec op_amd_spec = {
+ 	.num_counters		= NUM_COUNTERS,
+ 	.num_controls		= NUM_CONTROLS,
+ 	.num_virt_counters	= NUM_VIRT_COUNTERS,
+diff --git a/arch/x86/oprofile/op_model_p4.c b/arch/x86/oprofile/op_model_p4.c
+index 65b9237..40df028 100644
+--- a/arch/x86/oprofile/op_model_p4.c
++++ b/arch/x86/oprofile/op_model_p4.c
+@@ -695,7 +695,7 @@ static void p4_shutdown(struct op_msrs const * const msrs)
  
-@@ -141,21 +138,20 @@ static void op_amd_setup_ctrs(struct op_x86_model_spec const *model,
  
- 	/* enable active counters */
- 	for (i = 0; i < NUM_COUNTERS; ++i) {
--#ifdef CONFIG_OPROFILE_EVENT_MULTIPLEX
--		int offset = i + __get_cpu_var(switch_index);
--#else
--		int offset = i;
--#endif
--		if (counter_config[offset].enabled && msrs->counters[i].addr) {
--			/* setup counter registers */
--			wrmsrl(msrs->counters[i].addr, -(u64)reset_value[offset]);
--
--			/* setup control registers */
--			rdmsrl(msrs->controls[i].addr, val);
--			val &= model->reserved;
--			val |= op_x86_get_ctrl(model, &counter_config[offset]);
--			wrmsrl(msrs->controls[i].addr, val);
--		}
-+		int virt = op_x86_phys_to_virt(i);
-+		if (!counter_config[virt].enabled)
-+			continue;
-+		if (!msrs->counters[i].addr)
-+			continue;
-+
-+		/* setup counter registers */
-+		wrmsrl(msrs->counters[i].addr, -(u64)reset_value[virt]);
-+
-+		/* setup control registers */
-+		rdmsrl(msrs->controls[i].addr, val);
-+		val &= model->reserved;
-+		val |= op_x86_get_ctrl(model, &counter_config[virt]);
-+		wrmsrl(msrs->controls[i].addr, val);
- 	}
+ #ifdef CONFIG_SMP
+-struct op_x86_model_spec const op_p4_ht2_spec = {
++struct op_x86_model_spec op_p4_ht2_spec = {
+ 	.num_counters		= NUM_COUNTERS_HT2,
+ 	.num_controls		= NUM_CONTROLS_HT2,
+ 	.num_virt_counters	= NUM_COUNTERS_HT2,
+@@ -709,7 +709,7 @@ struct op_x86_model_spec const op_p4_ht2_spec = {
+ };
+ #endif
+ 
+-struct op_x86_model_spec const op_p4_spec = {
++struct op_x86_model_spec op_p4_spec = {
+ 	.num_counters		= NUM_COUNTERS_NON_HT,
+ 	.num_controls		= NUM_CONTROLS_NON_HT,
+ 	.num_virt_counters	= NUM_COUNTERS_NON_HT,
+diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
+index 098cbca..659f3b6 100644
+--- a/arch/x86/oprofile/op_model_ppro.c
++++ b/arch/x86/oprofile/op_model_ppro.c
+@@ -203,7 +203,7 @@ static void ppro_shutdown(struct op_msrs const * const msrs)
  }
  
-@@ -170,14 +166,13 @@ static void op_amd_switch_ctrl(struct op_x86_model_spec const *model,
  
- 	/* enable active counters */
- 	for (i = 0; i < NUM_COUNTERS; ++i) {
--		int offset = i + __get_cpu_var(switch_index);
--		if (counter_config[offset].enabled) {
--			/* setup control registers */
--			rdmsrl(msrs->controls[i].addr, val);
--			val &= model->reserved;
--			val |= op_x86_get_ctrl(model, &counter_config[offset]);
--			wrmsrl(msrs->controls[i].addr, val);
--		}
-+		int virt = op_x86_phys_to_virt(i);
-+		if (!counter_config[virt].enabled)
-+			continue;
-+		rdmsrl(msrs->controls[i].addr, val);
-+		val &= model->reserved;
-+		val |= op_x86_get_ctrl(model, &counter_config[virt]);
-+		wrmsrl(msrs->controls[i].addr, val);
- 	}
- }
- 
-@@ -292,19 +287,15 @@ static int op_amd_check_ctrs(struct pt_regs * const regs,
- 	int i;
- 
- 	for (i = 0; i < NUM_COUNTERS; ++i) {
--#ifdef CONFIG_OPROFILE_EVENT_MULTIPLEX
--		int offset = i + __get_cpu_var(switch_index);
--#else
--		int offset = i;
--#endif
--		if (!reset_value[offset])
-+		int virt = op_x86_phys_to_virt(i);
-+		if (!reset_value[virt])
- 			continue;
- 		rdmsrl(msrs->counters[i].addr, val);
- 		/* bit is clear if overflowed: */
- 		if (val & OP_CTR_OVERFLOW)
- 			continue;
--		oprofile_add_sample(regs, offset);
--		wrmsrl(msrs->counters[i].addr, -(u64)reset_value[offset]);
-+		oprofile_add_sample(regs, virt);
-+		wrmsrl(msrs->counters[i].addr, -(u64)reset_value[virt]);
- 	}
- 
- 	op_amd_handle_ibs(regs, msrs);
-@@ -319,16 +310,11 @@ static void op_amd_start(struct op_msrs const * const msrs)
- 	int i;
- 
- 	for (i = 0; i < NUM_COUNTERS; ++i) {
--#ifdef CONFIG_OPROFILE_EVENT_MULTIPLEX
--		int offset = i + __get_cpu_var(switch_index);
--#else
--		int offset = i;
--#endif
--		if (reset_value[offset]) {
--			rdmsrl(msrs->controls[i].addr, val);
--			val |= ARCH_PERFMON_EVENTSEL0_ENABLE;
--			wrmsrl(msrs->controls[i].addr, val);
--		}
-+		if (!reset_value[op_x86_phys_to_virt(i)])
-+			continue;
-+		rdmsrl(msrs->controls[i].addr, val);
-+		val |= ARCH_PERFMON_EVENTSEL0_ENABLE;
-+		wrmsrl(msrs->controls[i].addr, val);
- 	}
- 
- 	op_amd_start_ibs();
-@@ -344,11 +330,7 @@ static void op_amd_stop(struct op_msrs const * const msrs)
- 	 * pm callback
- 	 */
- 	for (i = 0; i < NUM_COUNTERS; ++i) {
--#ifdef CONFIG_OPROFILE_EVENT_MULTIPLEX
--		if (!reset_value[i + per_cpu(switch_index, smp_processor_id())])
--#else
--		if (!reset_value[i])
--#endif
-+		if (!reset_value[op_x86_phys_to_virt(i)])
- 			continue;
- 		rdmsrl(msrs->controls[i].addr, val);
- 		val &= ~ARCH_PERFMON_EVENTSEL0_ENABLE;
+-struct op_x86_model_spec const op_ppro_spec = {
++struct op_x86_model_spec op_ppro_spec = {
+ 	.num_counters		= 2,
+ 	.num_controls		= 2,
+ 	.num_virt_counters	= 2,
 diff --git a/arch/x86/oprofile/op_x86_model.h b/arch/x86/oprofile/op_x86_model.h
-index 0d07d23..e874dc3 100644
+index e874dc3..0c886fa 100644
 --- a/arch/x86/oprofile/op_x86_model.h
 +++ b/arch/x86/oprofile/op_x86_model.h
-@@ -60,6 +60,7 @@ struct op_counter_config;
- 
- extern u64 op_x86_get_ctrl(struct op_x86_model_spec const *model,
+@@ -62,10 +62,10 @@ extern u64 op_x86_get_ctrl(struct op_x86_model_spec const *model,
  			   struct op_counter_config *counter_config);
-+extern int op_x86_phys_to_virt(int phys);
+ extern int op_x86_phys_to_virt(int phys);
  
- extern struct op_x86_model_spec const op_ppro_spec;
- extern struct op_x86_model_spec const op_p4_spec;
+-extern struct op_x86_model_spec const op_ppro_spec;
+-extern struct op_x86_model_spec const op_p4_spec;
+-extern struct op_x86_model_spec const op_p4_ht2_spec;
+-extern struct op_x86_model_spec const op_amd_spec;
++extern struct op_x86_model_spec op_ppro_spec;
++extern struct op_x86_model_spec op_p4_spec;
++extern struct op_x86_model_spec op_p4_ht2_spec;
++extern struct op_x86_model_spec op_amd_spec;
+ extern struct op_x86_model_spec op_arch_perfmon_spec;
+ 
+ #endif /* OP_X86_MODEL_H */
 -- 
 1.6.3.3
 
