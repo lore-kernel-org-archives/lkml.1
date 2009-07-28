@@ -1,119 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751415AbZG1H1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751016AbZG1Hb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751415AbZG1H1a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 03:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbZG1H1a
+	id S1751016AbZG1Hb3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 03:31:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750886AbZG1Hb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 03:27:30 -0400
-Received: from smtprelay01.ispgateway.de ([80.67.31.24]:51829 "EHLO
-	smtprelay01.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750809AbZG1H13 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 03:27:29 -0400
-References: <1247672919-13089-1-git-send-email-petkovbb@gmail.com> <cone.1247683003.40459.21332.1000@deskpiie> <20090723082904.GE3997@dtor-d630.eng.vmware.com> <cone.1248339143.133822.15136.1000@arca> <9ea470500907230221m1664be8ft2aaf63d2550de6f8@mail.gmail.com> <9ea470500907230553h3ae169c0nc6abaeedb08bef1e@mail.gmail.com> <20090727162940.DA90C526EC9@mailhub.coreip.homeip.net> <20090727183733.GB3044@liondog.tnic>
-Message-ID: <cone.1248765902.464745.15136.1000@arca>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, lenb@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] acerhdf: convert to dev_pm_ops
-Date: Tue, 28 Jul 2009 09:25:02 +0200
+	Tue, 28 Jul 2009 03:31:29 -0400
+Received: from smtp.witbe.net ([81.88.96.48]:48601 "EHLO smtp.witbe.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750841AbZG1Hb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 03:31:28 -0400
+X-Greylist: delayed 884 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Jul 2009 03:31:28 EDT
+Date: Tue, 28 Jul 2009 09:16:22 +0200
+From: Paul Rolland <rol@as2917.net>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: rol@witbe.net
+Subject: Linux-2.6.31-rc4 - shut the annoying "failed to acquire vblank..."
+Message-ID: <20090728091622.50e9933b@tux.DEF.witbe.net>
+Organization: AS2917.net
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.2; x86_64-unknown-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
 Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
-Content-Disposition: inline
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Df-Sender: 404094
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov writes:
+Hello,
 
-> On Mon, Jul 27, 2009 at 08:55:51AM -0700, Dmitry Torokhov wrote:
->> On Thu, Jul 23, 2009 at 02:53:17PM +0200, Borislav Petkov wrote:
->> > > Dmitry's right, suspend() and resume() are used only for S2R. Since
->> > > the only thing we do when suspending/hibernating is set fan speed to
->> > > auto, we might just as well replicate those functions to .freeze() and
->> > > .thaw().
->> > 
->> > here's a fix:
->> > 
->> > --
->> > From: Borislav Petkov <petkovbb@gmail.com>
->> > Date: Wed, 15 Jul 2009 17:33:32 +0200
->> > Subject: [PATCH] acerhdf: convert to dev_pm_ops
->> > 
->> > v 1.1:
->> > Add .freeze/.thaw func ptrs to support
->> > suspend-to-disk, as suggested by Dmitry Torokhov.
->> > 
->> > Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
->> > ---
->> >  drivers/platform/x86/acerhdf.c |   16 +++++++++++-----
->> >  1 files changed, 11 insertions(+), 5 deletions(-)
->> > 
->> > diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
->> > index aa298d6..8cd7a7b 100644
->> > --- a/drivers/platform/x86/acerhdf.c
->> > +++ b/drivers/platform/x86/acerhdf.c
->> > @@ -435,7 +435,7 @@ struct thermal_cooling_device_ops acerhdf_cooling_ops = {
->> >  };
->> > 
->> >  /* suspend / resume functionality */
->> > -static int acerhdf_suspend(struct platform_device *dev, pm_message_t state)
->> > +static int acerhdf_suspend(struct device *dev)
->> >  {
->> >  	if (kernelmode)
->> >  		acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
->> > @@ -446,7 +446,7 @@ static int acerhdf_suspend(struct platform_device
->> > *dev, pm_message_t state)
->> >  	return 0;
->> >  }
->> > 
->> > -static int acerhdf_resume(struct platform_device *device)
->> > +static int acerhdf_resume(struct device *dev)
->> >  {
->> >  	if (verbose)
->> >  		pr_notice("resuming\n");
->> > @@ -464,15 +464,21 @@ static int acerhdf_remove(struct platform_device *device)
->> >  	return 0;
->> >  }
->> > 
->> > +static struct dev_pm_ops acerhdf_pm_ops = {
->> > +	.suspend = acerhdf_suspend,
->> > +	.resume  = acerhdf_resume,
->> > +	.freeze  = acerhdf_suspend,
->> > +	.thaw	 = acerhdf_resume,
->> > +};
->> > +
->> 
->> Hmm, looking at the driver I think the only function that actually is
->> needed is poweroff() that would turn the fan in automatic mode before
->> shutting down. The driver does not perform any actions when resuming so
->> why bother?
-> 
-> Agreed.
-> 
-> Also, the fan comes out of warm and cold reboot in mode AUTO and
-> when the driver is enabled, the fan is turned off on the next run of
-> thermal_zone_device_update() when the read out temperature is within
-> limits.
-> 
-> Correct me if I'm wrong, but the only reason I see for setting the
-> fan to mode AUTO before suspending/hibernating/etc is if it is taking
-> a really long time to hibernate and write RAM image to disk and the
-> machine is getting hot during that process. Otherwise, we might just
-> as well do _nothing_ when suspending and remove all suspend/resume
-> functionality altogether, no?
+I sent a mail long ago about this message :
+tux kernel: [drm:drm_wait_vblank] *ERROR* failed to acquire vblank counter,
+-22 showing up more than 10 times per second, but was told that I had some
+old userspace apps running... As I was using an old FC8, I forgot about it.
 
-This is right, currently the only reason for calling the suspend / 
-hibernate functions is to set the fan to auto to ensure it doesn't get too 
-hot while the kernel prepares the machine to suspend / hibernate.
+But I'm now running a quite recent FC11, pure 64bit machine, and when I run
+a vanilla kernel, I have this message showing again and again.
 
-I don't see a way to remove those functionality completely and I would like 
-to keep the resume function too. It's a nice to see what's happening with 
-verbose=1.
+I propose to apply the following patch :
 
-kind regards,
---peter
+--- drm_irq.c.orig      2009-07-26 21:36:20.000000000 +0200
++++ drm_irq.c   2009-07-26 21:36:34.000000000 +0200
+@@ -566,7 +566,7 @@
+ 
+        ret = drm_vblank_get(dev, crtc);
+        if (ret) {
+-               DRM_ERROR("failed to acquire vblank counter, %d\n", ret);
++               DRM_DEBUG("failed to acquire vblank counter, %d\n", ret);
+                return ret;
+        }
+        seq = drm_vblank_count(dev, crtc);
+
+to shut the message. This is at least what I do on my machine to have it
+running quietly.
+
+Anyway, if anyone care to explain why we have this "error", I'd be glad to
+learn about it. 
+And if anyone wants me to test some patches, I'll be glad to.
+
+Regards,
+Paul
+
+
+-- 
+Paul Rolland                                E-Mail : rol(at)witbe.net
+CTO - Witbe.net SA                          Tel. +33 (0)1 47 67 77 77
+Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
+F-92057 Paris La Defense                    RIPE : PR12-RIPE
+
+Please no HTML, I'm not a browser - Pas d'HTML, je ne suis pas un
+navigateur "Some people dream of success... while others wake up and work
+hard at it" 
+
+"I worry about my child and the Internet all the time, even though she's
+too young to have logged on yet. Here's what I worry about. I worry that 10
+or 15 years from now, she will come to me and say 'Daddy, where were you
+when they took freedom of the press away from the Internet?'"
+--Mike Godwin, Electronic Frontier Foundation 
