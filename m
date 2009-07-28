@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753022AbZG1Kjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753263AbZG1Kkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753022AbZG1Kjk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 06:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbZG1Kja
+	id S1753263AbZG1Kkh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 06:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbZG1Kkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 06:39:30 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:31999 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752854AbZG1KjY (ORCPT
+	Tue, 28 Jul 2009 06:40:35 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:16578 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753253AbZG1Kkc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 06:39:24 -0400
+	Tue, 28 Jul 2009 06:40:32 -0400
 From: Adrian Hunter <adrian.hunter@nokia.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>,
@@ -19,114 +19,126 @@ Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>,
        Denis Karpov <ext-denis.2.karpov@nokia.com>,
        Matt Fleming <matt@console-pimps.org>,
        lkml <linux-kernel@vger.kernel.org>
-Date: Tue, 28 Jul 2009 13:39:42 +0300
-Message-Id: <20090728103942.2371.17144.sendpatchset@ahunter-laptop>
+Date: Tue, 28 Jul 2009 13:40:55 +0300
+Message-Id: <20090728104055.2371.8723.sendpatchset@ahunter-laptop>
 In-Reply-To: <20090728103834.2371.65809.sendpatchset@ahunter-laptop>
 References: <20090728103834.2371.65809.sendpatchset@ahunter-laptop>
-Subject: [PATCH V2 9/32] omap_hsmmc: add debugfs entry (host registers)
-X-OriginalArrivalTime: 28 Jul 2009 10:39:10.0408 (UTC) FILETIME=[A4331C80:01CA0F6F]
+Subject: [PATCH V2 19/32] ARM: OMAP: mmc-twl4030: add regulator sleep / wake function
+X-OriginalArrivalTime: 28 Jul 2009 10:40:23.0703 (UTC) FILETIME=[CFE30A70:01CA0F6F]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 4ea575689bc8933cb7370871fb10696c3b226b2d Mon Sep 17 00:00:00 2001
-From: Denis Karpov <ext-denis.2.karpov@nokia.com>
-Date: Wed, 22 Apr 2009 14:21:34 +0200
-Subject: [PATCH] omap_hsmmc: add debugfs entry (host registers)
+>From b5f863cd167b6e3a1fb06be4e51513964fa83cb4 Mon Sep 17 00:00:00 2001
+From: Adrian Hunter <adrian.hunter@nokia.com>
+Date: Wed, 8 Jul 2009 13:20:30 +0300
+Subject: [PATCH] ARM: OMAP: mmc-twl4030: add regulator sleep / wake function
 
-Adds <debugfs_root>/kernel/debug/mmc<N>/regs entry,
-contents show registers' state and some driver internal
-state variables.
+Add the ability for the driver to put the card power
+regulators to sleep and wake them up again.
 
-Signed-off-by: Denis Karpov <ext-denis.2.karpov@nokia.com>
 Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
 ---
- drivers/mmc/host/omap_hsmmc.c |   57 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 57 insertions(+), 0 deletions(-)
+ arch/arm/mach-omap2/mmc-twl4030.c     |   57 +++++++++++++++++++++++++++++++++
+ arch/arm/plat-omap/include/mach/mmc.h |    2 +
+ 2 files changed, 59 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
-index 056bcaf..0444de1 100644
---- a/drivers/mmc/host/omap_hsmmc.c
-+++ b/drivers/mmc/host/omap_hsmmc.c
-@@ -17,6 +17,8 @@
+diff --git a/arch/arm/mach-omap2/mmc-twl4030.c b/arch/arm/mach-omap2/mmc-twl4030.c
+index 3678f0e..f95c702 100644
+--- a/arch/arm/mach-omap2/mmc-twl4030.c
++++ b/arch/arm/mach-omap2/mmc-twl4030.c
+@@ -334,6 +334,61 @@ static int twl_mmc23_set_power(struct device *dev, int slot, int power_on, int v
+ 	return ret;
+ }
  
- #include <linux/module.h>
- #include <linux/init.h>
-+#include <linux/debugfs.h>
-+#include <linux/seq_file.h>
- #include <linux/interrupt.h>
- #include <linux/delay.h>
- #include <linux/dma-mapping.h>
-@@ -967,6 +969,59 @@ static struct mmc_host_ops mmc_omap_ops = {
- 	/* NYET -- enable_sdio_irq */
- };
- 
-+#ifdef CONFIG_DEBUG_FS
-+
-+static int mmc_regs_show(struct seq_file *s, void *data)
++static int twl_mmc1_set_sleep(struct device *dev, int slot, int sleep, int vdd,
++			      int cardsleep)
 +{
-+	struct mmc_host *mmc = s->private;
-+	struct mmc_omap_host *host = mmc_priv(mmc);
++	struct twl_mmc_controller *c = &hsmmc[0];
++	int mode = sleep ? REGULATOR_MODE_STANDBY : REGULATOR_MODE_NORMAL;
 +
-+	seq_printf(s, "mmc%d regs:\n", mmc->index);
-+
-+	seq_printf(s, "SYSCONFIG:\t0x%08x\n",
-+			OMAP_HSMMC_READ(host->base, SYSCONFIG));
-+	seq_printf(s, "CON:\t\t0x%08x\n",
-+			OMAP_HSMMC_READ(host->base, CON));
-+	seq_printf(s, "HCTL:\t\t0x%08x\n",
-+			OMAP_HSMMC_READ(host->base, HCTL));
-+	seq_printf(s, "SYSCTL:\t\t0x%08x\n",
-+			OMAP_HSMMC_READ(host->base, SYSCTL));
-+	seq_printf(s, "IE:\t\t0x%08x\n",
-+			OMAP_HSMMC_READ(host->base, IE));
-+	seq_printf(s, "ISE:\t\t0x%08x\n",
-+			OMAP_HSMMC_READ(host->base, ISE));
-+	seq_printf(s, "CAPA:\t\t0x%08x\n",
-+			OMAP_HSMMC_READ(host->base, CAPA));
-+	return 0;
++	return regulator_set_mode(c->vcc, mode);
 +}
 +
-+static int mmc_regs_open(struct inode *inode, struct file *file)
++static int twl_mmc23_set_sleep(struct device *dev, int slot, int sleep, int vdd,
++			       int cardsleep)
 +{
-+	return single_open(file, mmc_regs_show, inode->i_private);
++	struct twl_mmc_controller *c = NULL;
++	struct omap_mmc_platform_data *mmc = dev->platform_data;
++	int i, err, mode;
++
++	for (i = 1; i < ARRAY_SIZE(hsmmc); i++) {
++		if (mmc == hsmmc[i].mmc) {
++			c = &hsmmc[i];
++			break;
++		}
++	}
++
++	if (c == NULL)
++		return -ENODEV;
++
++	/*
++	 * If we don't see a Vcc regulator, assume it's a fixed
++	 * voltage always-on regulator.
++	 */
++	if (!c->vcc)
++		return 0;
++
++	mode = sleep ? REGULATOR_MODE_STANDBY : REGULATOR_MODE_NORMAL;
++
++	if (!c->vcc_aux)
++		return regulator_set_mode(c->vcc, mode);
++
++	if (cardsleep) {
++		/* VCC can be turned off if card is asleep */
++		struct regulator *vcc_aux = c->vcc_aux;
++
++		c->vcc_aux = NULL;
++		if (sleep)
++			err = twl_mmc23_set_power(dev, slot, 0, 0);
++		else
++			err = twl_mmc23_set_power(dev, slot, 1, vdd);
++		c->vcc_aux = vcc_aux;
++	} else
++		err = regulator_set_mode(c->vcc, mode);
++	if (err)
++		return err;
++	return regulator_set_mode(c->vcc_aux, mode);
 +}
 +
-+static const struct file_operations mmc_regs_fops = {
-+	.open           = mmc_regs_open,
-+	.read           = seq_read,
-+	.llseek         = seq_lseek,
-+	.release        = single_release,
-+};
-+
-+static void omap_mmc_debugfs(struct mmc_host *mmc)
-+{
-+	if (mmc->debugfs_root)
-+		debugfs_create_file("regs", S_IRUSR, mmc->debugfs_root,
-+			mmc, &mmc_regs_fops);
-+}
-+
-+#else
-+
-+static void omap_mmc_debugfs(struct mmc_host *mmc)
-+{
-+}
-+
-+#endif
-+
- static int __init omap_mmc_probe(struct platform_device *pdev)
- {
- 	struct omap_mmc_platform_data *pdata = pdev->dev.platform_data;
-@@ -1152,6 +1207,8 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
- 			goto err_cover_switch;
- 	}
+ static struct omap_mmc_platform_data *hsmmc_data[OMAP34XX_NR_MMC] __initdata;
  
-+	omap_mmc_debugfs(mmc);
-+
- 	return 0;
+ void __init twl4030_mmc_init(struct twl4030_hsmmc_info *controllers)
+@@ -427,6 +482,7 @@ void __init twl4030_mmc_init(struct twl4030_hsmmc_info *controllers)
+ 		case 1:
+ 			/* on-chip level shifting via PBIAS0/PBIAS1 */
+ 			mmc->slots[0].set_power = twl_mmc1_set_power;
++			mmc->slots[0].set_sleep = twl_mmc1_set_sleep;
+ 			break;
+ 		case 2:
+ 			if (c->ext_clock)
+@@ -437,6 +493,7 @@ void __init twl4030_mmc_init(struct twl4030_hsmmc_info *controllers)
+ 		case 3:
+ 			/* off-chip level shifting, or none */
+ 			mmc->slots[0].set_power = twl_mmc23_set_power;
++			mmc->slots[0].set_sleep = twl_mmc23_set_sleep;
+ 			break;
+ 		default:
+ 			pr_err("MMC%d configuration not supported!\n", c->mmc);
+diff --git a/arch/arm/plat-omap/include/mach/mmc.h b/arch/arm/plat-omap/include/mach/mmc.h
+index 82f1e29..9390297 100644
+--- a/arch/arm/plat-omap/include/mach/mmc.h
++++ b/arch/arm/plat-omap/include/mach/mmc.h
+@@ -95,6 +95,8 @@ struct omap_mmc_platform_data {
+ 		int (* set_bus_mode)(struct device *dev, int slot, int bus_mode);
+ 		int (* set_power)(struct device *dev, int slot, int power_on, int vdd);
+ 		int (* get_ro)(struct device *dev, int slot);
++		int (*set_sleep)(struct device *dev, int slot, int sleep,
++				 int vdd, int cardsleep);
  
- err_cover_switch:
+ 		/* return MMC cover switch state, can be NULL if not supported.
+ 		 *
 -- 
 1.5.6.3
 
