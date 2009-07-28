@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932138AbZG1XJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755958AbZG1XIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932138AbZG1XJz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:09:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754950AbZG1XDu
+	id S1755958AbZG1XIv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:08:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbZG1XIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:03:50 -0400
-Received: from kroah.org ([198.145.64.141]:42929 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:08:50 -0400
+Received: from kroah.org ([198.145.64.141]:42974 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754124AbZG1XDt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:03:49 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 15:59:42 2009
-Message-Id: <20090728225941.990136151@mini.kroah.org>
+	id S1752882AbZG1XD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:03:57 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 15:59:43 2009
+Message-Id: <20090728225943.299958558@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 15:58:35 -0700
+Date: Tue, 28 Jul 2009 15:58:44 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Oliver Neukum <oliver@neukum.org>
-Subject: [patch 07/37] USB: fix memleak in usbfs
+       Jiri Slaby <jirislaby@gmail.com>, "Hans J. Koch" <hjk@linutronix.de>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: [patch 16/37] hwmon: (max6650) Fix lock imbalance
 References: <20090728225828.431071451@mini.kroah.org>
-Content-Disposition: inline; filename=usb-fix-memleak-in-usbfs.patch
+Content-Disposition: inline; filename=hwmon-fix-lock-imbalance.patch
 In-Reply-To: <20090728230145.GA10486@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,63 +31,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Oliver Neukum <oliver@neukum.org>
+From: Jiri Slaby <jirislaby@gmail.com>
 
-commit d794a02111cd3393da69bc7d6dd2b6074bd037cc upstream.
+commit 025dc740d01f99ccba945df1f9ef9e06b1c15d96 upstream.
 
-This patch fixes a memory leak in devio.c::processcompl
+Add omitted update_lock to one switch/case in set_div.
 
-If writing to user space fails the packet must be discarded, as it
-already has been removed from the queue of completed packets.
-
-Signed-off-by: Oliver Neukum <oliver@neukum.org>
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Acked-by: Hans J. Koch <hjk@linutronix.de>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/core/devio.c |   16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
+ drivers/hwmon/max6650.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/usb/core/devio.c
-+++ b/drivers/usb/core/devio.c
-@@ -1228,22 +1228,22 @@ static int processcompl(struct async *as
- 	if (as->userbuffer)
- 		if (copy_to_user(as->userbuffer, urb->transfer_buffer,
- 				 urb->transfer_buffer_length))
--			return -EFAULT;
-+			goto err_out;
- 	if (put_user(as->status, &userurb->status))
--		return -EFAULT;
-+		goto err_out;
- 	if (put_user(urb->actual_length, &userurb->actual_length))
--		return -EFAULT;
-+		goto err_out;
- 	if (put_user(urb->error_count, &userurb->error_count))
--		return -EFAULT;
-+		goto err_out;
- 
- 	if (usb_endpoint_xfer_isoc(&urb->ep->desc)) {
- 		for (i = 0; i < urb->number_of_packets; i++) {
- 			if (put_user(urb->iso_frame_desc[i].actual_length,
- 				     &userurb->iso_frame_desc[i].actual_length))
--				return -EFAULT;
-+				goto err_out;
- 			if (put_user(urb->iso_frame_desc[i].status,
- 				     &userurb->iso_frame_desc[i].status))
--				return -EFAULT;
-+				goto err_out;
- 		}
- 	}
- 
-@@ -1252,6 +1252,10 @@ static int processcompl(struct async *as
- 	if (put_user(addr, (void __user * __user *)arg))
- 		return -EFAULT;
- 	return 0;
-+
-+err_out:
-+	free_async(as);
-+	return -EFAULT;
- }
- 
- static struct async *reap_as(struct dev_state *ps)
+--- a/drivers/hwmon/max6650.c
++++ b/drivers/hwmon/max6650.c
+@@ -407,6 +407,7 @@ static ssize_t set_div(struct device *de
+ 		data->count = 3;
+ 		break;
+ 	default:
++		mutex_unlock(&data->update_lock);
+ 		dev_err(&client->dev,
+ 			"illegal value for fan divider (%d)\n", div);
+ 		return -EINVAL;
 
 
