@@ -1,134 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752639AbZG1JvF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752199AbZG1KBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752639AbZG1JvF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 05:51:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbZG1JvE
+	id S1752199AbZG1KBl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 06:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750743AbZG1KBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 05:51:04 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:53362 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750997AbZG1JvC (ORCPT
+	Tue, 28 Jul 2009 06:01:40 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32831 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750733AbZG1KBk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 05:51:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Y0uE0eYEpXD+MiU4zPMo2JPwHPMJxrj/If3cQa1qujTP352Rk3B2TpBK/i1JqeMtou
-         zT+3BplUSUr6hnh6W3CoR/2bAAbI2DuTWZPxOiz3B/15QphZyte5OxqBVvpuTbsN4pYF
-         tsCOB5AN0VJJGH3bg0mPeMy7jEXwswq603aQU=
-MIME-Version: 1.0
-In-Reply-To: <4A6DA77B.7080600@vlnb.net>
-References: <4A3CD62B.1020407@vlnb.net> <4A5CD3E2.2060307@vlnb.net>
-	 <4A5D7794.2070607@vlnb.net>
-	 <a0272b440907160032u482bd483s54540001aef7ac73@mail.gmail.com>
-	 <4A5F0293.3010206@vlnb.net>
-	 <a0272b440907170715q72af7bb8l53c9dbd5e553fe2c@mail.gmail.com>
-	 <4A60C1A8.9020504@vlnb.net> <4A641AAC.9030300@vlnb.net>
-	 <a0272b440907220144i159baca4u1a1f1f2d0c36193a@mail.gmail.com>
-	 <4A6DA77B.7080600@vlnb.net>
-Date: Tue, 28 Jul 2009 11:51:00 +0200
-Message-ID: <a0272b440907280251g2dd38df6ja1bf10f3fa38d333@mail.gmail.com>
-Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
-From: Ronald Moesbergen <intercommit@gmail.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       Alan.Brunelle@hp.com, linux-fsdevel@vger.kernel.org,
-       jens.axboe@oracle.com, randy.dunlap@oracle.com,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 28 Jul 2009 06:01:40 -0400
+Date: Tue, 28 Jul 2009 11:00:28 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: James Morris <jmorris@namei.org>, James Carter <jwcart2@tycho.nsa.gov>,
+       Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
+       Stephen Smalley <sds@tycho.nsa.gov>, spender@grsecurity.net,
+       Daniel J Walsh <dwalsh@redhat.com>, cl@linux-foundation.org,
+       Arjan van de Ven <arjan@infradead.org>, kees@outflux.net,
+       Chad Sellers <csellers@tresys.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, mingo@elte.hu
+Subject: Re: mmap_min_addr and your local LSM (ok, just SELinux)
+Message-ID: <20090728110028.31fa9a6f@lxorguk.ukuu.org.uk>
+In-Reply-To: <87zlapgo2u.fsf@basil.nowhere.org>
+References: <1248132223.2654.278.camel@localhost>
+	<alpine.LRH.2.00.0907211258110.32400@tundra.namei.org>
+	<1248187482.19456.90.camel@moss-lions.epoch.ncsc.mil>
+	<alpine.LRH.2.00.0907221953190.15799@tundra.namei.org>
+	<20090728011943.589176cb@lxorguk.ukuu.org.uk>
+	<87zlapgo2u.fsf@basil.nowhere.org>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/27 Vladislav Bolkhovitin <vst@vlnb.net>:
->
-> Hmm, it's really weird, why the case of 2 threads is faster. There must be
-> some commands reordering somewhere in SCST, which I'm missing, like
-> list_add() instead of list_add_tail().
->
-> Can you apply the attached patch and repeat tests 5, 8 and 11 with 1 and 2
-> threads, please. The patch will enable forced commands order protection,
-> i.e. with it all the commands will be executed in exactly the same order as
-> they were received.
+On Tue, 28 Jul 2009 11:21:29 +0200
+Andi Kleen <andi@firstfloor.org> wrote:
 
-The patched source doesn't compile. I changed the code to this:
+> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+> 
+> > A dumb question perhaps, but while addling my brain over the tty layer I
+> > was wondering if for the specific case of jump through NULL (which seems
+> > to be the most common but by no means only problem case that gets
+> > exploited) is there any reason we can't set a default breakpoint for
+> 
+> You mean a hardware breakpoint? Hardware break points are a precious
+> scarce resource. The people who rely on them would be likely
+> unhappy if you take one way from them.
 
-@ line 3184:
-
-        case SCST_CMD_QUEUE_UNTAGGED:
-#if 1 /* left for future performance investigations */
-                goto ordered;
-#endif
-
-The results:
-
-Overall performance seems lower.
-
-client kernel: 2.6.26-15lenny3 (debian)
-server kernel: 2.6.29.5 with readahead-context, blk_run_backing_dev
-and io_context, forced_order
-
-With one IO thread:
-5) client: default, server: default (cfq)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  16.484   16.417   16.068   62.741    0.706    0.980
- 33554432  15.684   16.348   16.011   63.961    1.083    1.999
- 16777216  16.044   16.239   15.938   63.710    0.493    3.982
-
-8) client: default, server: 64 max_sectors_kb, RA 2MB (cfq)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  16.127   15.784   16.210   63.847    0.740    0.998
- 33554432  16.103   16.072   16.106   63.627    0.061    1.988
- 16777216  16.637   16.058   16.154   62.902    0.970    3.931
-
-11) client: 64 max_sectors_kb, 2MB. RA server: 64 max_sectors_kb, RA 2MB (cfq)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  13.417   15.219   13.912   72.405    3.785    1.131
- 33554432  13.868   13.789   14.110   73.558    0.718    2.299
- 16777216  13.691   13.784   10.280   82.898   11.822    5.181
-
-11) client: 64 max_sectors_kb, 2MB. RA server: 64 max_sectors_kb, RA
-2MB (deadline)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  13.604   13.532   13.978   74.733    1.055    1.168
- 33554432  13.523   13.166   13.504   76.443    0.945    2.389
- 16777216  13.434   13.409   13.632   75.902    0.557    4.744
-
-With two threads:
-5) client: default, server: default (cfq)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  16.206   16.001   15.908   63.851    0.493    0.998
- 33554432  16.927   16.033   15.991   62.799    1.631    1.962
- 16777216  16.566   15.968   16.212   63.035    0.950    3.940
-
-8) client: default, server: 64 max_sectors_kb, RA 2MB (cfq)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  16.017   15.849   15.748   64.521    0.450    1.008
- 33554432  16.652   15.542   16.259   63.454    1.823    1.983
- 16777216  16.456   16.071   15.943   63.392    0.849    3.962
-
-11) client: 64 max_sectors_kb, 2MB. RA server: 64 max_sectors_kb, RA 2MB (cfq)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  14.109    9.985   13.548   83.572   13.478    1.306
- 33554432  13.698   14.236   13.754   73.711    1.267    2.303
- 16777216  13.610   12.090   14.136   77.458    5.244    4.841
-
-11) client: 64 max_sectors_kb, 2MB. RA server: 64 max_sectors_kb, RA
-2MB (deadline)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  13.542   13.975   13.978   74.049    1.110    1.157
- 33554432   9.921   13.272   13.321   85.746   12.349    2.680
- 16777216  13.850   13.600   13.344   75.324    1.144    4.708
-
-Ronald.
+They are a tiny minority and could always turn such protection off.
