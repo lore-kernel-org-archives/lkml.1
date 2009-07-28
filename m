@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755179AbZG1Vts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755411AbZG1Vzi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755179AbZG1Vts (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 17:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753997AbZG1Vtr
+	id S1755411AbZG1Vzi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 17:55:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754728AbZG1Vzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 17:49:47 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:6622 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753474AbZG1Vtq convert rfc822-to-8bit (ORCPT
+	Tue, 28 Jul 2009 17:55:38 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:44231 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754496AbZG1Vzh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 17:49:46 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=v28x2tUyaekrn9R6ax6qXvquaMaMGeLi0mrHvuYk1DrX0BmUyYJITiRmkxXGt2u4i
-	/CygfNo/MR/C4OUf7s0Lw==
-MIME-Version: 1.0
-In-Reply-To: <1786ab030907281211x6e432ba6ha6afe9de73f24e0c@mail.gmail.com>
-References: <1786ab030907281211x6e432ba6ha6afe9de73f24e0c@mail.gmail.com>
-Date: Tue, 28 Jul 2009 14:49:38 -0700
-Message-ID: <33307c790907281449k5e8d4f6cib2c93848f5ec2661@mail.gmail.com>
-Subject: Re: Bug in kernel 2.6.31, Slow wb_kupdate writeout
-From: Martin Bligh <mbligh@google.com>
-To: Chad Talbott <ctalbott@google.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, wfg@mail.ustc.edu.cn,
-       Michael Rubin <mrubin@google.com>, Andrew Morton <akpm@google.com>,
-       sandeen@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Tue, 28 Jul 2009 17:55:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=qrZh+5UyHd3aZnLqI7df+kqo1Ab30S/A2/d+iaB9+x5Xi026ZovYiUy9YjtKZTbztC
+         cY9BGrzJXj643ikp7x5tjsaztpy9+9TYJf/zwKAONTF512uWk3PLHpOYlZUcJjrW7cqV
+         BhwHuB7QSuEsuyne57aVsAa5JSjofm4r2CAPw=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH 0/2] tracing/function_graph fixes for 2.6.31
+Date: Tue, 28 Jul 2009 23:55:32 +0200
+Message-Id: <1248818134-5231-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> An interesting recent-ish change is "writeback: speed up writeback of
-> big dirty files."  When I revert the change to __sync_single_inode the
-> problem appears to go away and background writeout proceeds at disk
-> speed.  Interestingly, that code is in the git commit [2], but not in
-> the post to LKML. [3]  This is may not be the fix, but it makes this
-> test behave better.
+Ingo, Thomas,
 
-I'm fairly sure this is not fixing the root cause - but putting it at the head
-rather than the tail of the queue causes the error not to starve wb_kupdate
-for nearly so long - as long as we keep the queue full, the bug is hidden.
+Those are two fixes for the function graph tracer for .31
 
-M.
+The first one fixes a possible race condition between a function graph trace
+reader and ring buffer writers, leading to a mixup inside an event entry, or
+worst.
+
+The second one fixes some issues in the output of the function graph tracer
+while using splice on the trace_pipe file or ftrace_dump().
+
+Both fixes should also be backported on .30 for the -stable branch.
+
+Thanks,
+Frederic.
+
+The following changes since commit 4733fd328f14280900435d9dbae1487d110a4d56:
+  Benjamin Herrenschmidt (1):
+        mm: Remove duplicate definitions in MIPS and SH
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git tracing/fixes
+
+Lai Jiangshan (2):
+      tracing: Fix invalid function_graph entry
+      tracing: Fix missing function_graph events when we splice_read from trace_pipe
+
+ kernel/trace/trace.c                 |   10 +++++++---
+ kernel/trace/trace_functions_graph.c |   11 +++++++++--
+ 2 files changed, 16 insertions(+), 5 deletions(-)
