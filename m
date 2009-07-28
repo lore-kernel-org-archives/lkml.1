@@ -1,60 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753324AbZG1MyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754024AbZG1Mz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753324AbZG1MyP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 08:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbZG1MyO
+	id S1754024AbZG1Mz2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 08:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752828AbZG1Mz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 08:54:14 -0400
-Received: from smtp.witbe.net ([81.88.96.48]:32903 "EHLO smtp.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751320AbZG1MyO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 08:54:14 -0400
-Date: Tue, 28 Jul 2009 14:53:59 +0200
-From: Paul Rolland <rol@as2917.net>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org, rol@witbe.net
-Subject: Re: Linux-2.6.31-rc4 - shut the annoying "failed to acquire
- vblank..."
-Message-ID: <20090728145359.252ff759@tux.DEF.witbe.net>
-In-Reply-To: <200907281244.13467.elendil@planet.nl>
-References: <20090728091622.50e9933b@tux.DEF.witbe.net>
-	<200907281244.13467.elendil@planet.nl>
-Organization: AS2917.net
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.2; x86_64-unknown-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
+	Tue, 28 Jul 2009 08:55:27 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:37518 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751581AbZG1Mz1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 08:55:27 -0400
+Subject: Re: iwlwifi (4965) regression since 2.6.30
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: reinette chatre <reinette.chatre@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090728112102.GA3382@ics.muni.cz>
+References: <20090726075738.GA21333@ics.muni.cz>
+	 <1248710618.1216.452.camel@rc-desk>
+	 <1248710775.9958.0.camel@johannes.local>
+	 <20090728112102.GA3382@ics.muni.cz>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-jqesdeayUn5HBRq83Wc7"
+Date: Tue, 28 Jul 2009 14:54:50 +0200
+Message-Id: <1248785690.8113.9.camel@johannes.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Frans,
 
-On Tue, 28 Jul 2009 12:44:12 +0200
-Frans Pop <elendil@planet.nl> wrote:
+--=-jqesdeayUn5HBRq83Wc7
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> > I sent a mail long ago about this message :
-> > tux kernel: [drm:drm_wait_vblank] *ERROR* failed to acquire vblank
-> > counter, -22 showing up more than 10 times per second, but was told
-> > that I had some old userspace apps running... As I was using an old
-> > FC8, I forgot about it.
-> 
-> The message does not only show with old applications, it also shows:
-> - every time I suspend my notebook
-> - every time I start a second X session to log in as a different user
-Well, with the so-called "old apps", it's 20 times per second, as long as
-the app is running, which really makes it painful, because it causes all
-the logs to show off quickly :(
- 
-> I agree that the message is very annoying and would be glad to be rid of 
-> it, especially as the only comment from the maintainers so far has been 
-> to just ignore it.
-Well, I'd really like some feedback from the maintainer... because if no
-one cares, I agree it should be removed.
+Henrique, any ideas on this?
 
-> IMHO, If it is "ignoreable", then it is also "suppressable".
-Seconded, unless someone is using it to try to fix the problem ?
- 
-Paul
+On Tue, 2009-07-28 at 13:21 +0200, Lukas Hejtmanek wrote:
+> On Mon, Jul 27, 2009 at 06:06:15PM +0200, Johannes Berg wrote:
+> > I'm not aware of any thinkpad-acpi rfkill problems, can you get the
+> > rfkill tool and dump the status/list?
+> >=20
+> > http://wireless.kernel.org/en/users/Documentation/rfkill
+>=20
+> I figured it out.
+>=20
+> I disable bluetooth usually just after system startup.
+>=20
+> I disable bt using Fn+F5 which generates ACPI event:=20
+> ibm/hotkey HKEY 00000080 00001005
+>=20
+> Which is OK.
+>=20
+> But now (sinc 2.6.31-rcX), it silently toggles Soft block of WIFI. I have
+> separate HW rfkill switch, it is only soft blocked.=20
+>=20
+
+--=-jqesdeayUn5HBRq83Wc7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKbvUXAAoJEODzc/N7+QmarN0QAIbHYZnsaP/xRx0YEkOnT7mf
+JExJeq4GGKKYfreaL1aoexydNRmA7Bv6mD1wdR613yUqq5FMSHD4NKq6prDiwLAt
+M8SpjiqTh9MXuCN4vZBwix5j/jhcSM11r709kyT0mrDmiG4oEl0dTqnXZ9kRRfdV
+eUUj6i/gEatcdS+v9FIVT20qceUHHwUncxGGQNlLrM0EF2/+0e1EeliEk9lp3xE1
+YdaJynq5INUCRCMPL7W85W+/8ZwpQuRDjkhI5TbmevmvFORm0mWGhDMhvk+zHOoX
+QABTrG24+rcrnMKi3464Hr3l6uft+S6Rj2bSQt3nRFAPCXFAj1LpYvGFU6qjiIy8
+o8fRockgOu4J5mslsN54MNtuQSGuBGRLS+BFfwaGkT6WKqqnsmvr6ryho6arL+Pp
+CvnGJ6rJDavrVk62MJ91LsNsj2M+IA0fbIncsi8Om3W3zxUBpmbFgxYYuG+7XenC
+BPRVb7MpSElWDS1TfKcgzXQKGMKvRvDS4bv6A7qvXacX2bPFq2btTE69MFnCyzGV
+/9aKT5zDWALJo3SR6ZEZ/WINnw9Fa3cjBgGcIdbthbBYrArOymAo2fEPf/X420IN
+tRra881YcJ0CFl9Yt9xx85V111MzqvlBDMzqEbZUeBbPfO0YBJ0ZvpeW/WSfK+MZ
+8vNr90QgS15Ob4mikJJ/
+=Kmvg
+-----END PGP SIGNATURE-----
+
+--=-jqesdeayUn5HBRq83Wc7--
 
