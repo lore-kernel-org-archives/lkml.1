@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753976AbZG1Xtx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756266AbZG2ACs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753976AbZG1Xtx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:49:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753886AbZG1Xtv
+	id S1756266AbZG2ACs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 20:02:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZG1Xtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:49:51 -0400
-Received: from kroah.org ([198.145.64.141]:35693 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:49:39 -0400
+Received: from kroah.org ([198.145.64.141]:35641 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753786AbZG1Xtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:49:47 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:53 2009
-Message-Id: <20090728234153.843240873@mini.kroah.org>
+	id S1753354AbZG1Xti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:49:38 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:52 2009
+Message-Id: <20090728234152.302607706@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:40:46 -0700
+Date: Tue, 28 Jul 2009 16:40:36 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Daniel Mack <daniel@caiaq.de>, Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 17/71] USB: fix LANGID=0 regression
+       Tilman Schmidt <tilman@imap.cc>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 07/71] gigaset: accept connection establishment messages in any order
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=usb-fix-langid-0-regression.patch
+Content-Disposition: inline; filename=gigaset-accept-connection-establishment-messages-in-any-order.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,114 +31,100 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Daniel Mack <daniel@caiaq.de>
+From: Tilman Schmidt <tilman@imap.cc>
 
-commit 0cce2eda19923e5e5ccc8b042dec5af87b3ffad0 upstream.
+commit bceb0f126f25184eaec3f3c8f00c92b0d899e5de upstream.
 
-commit b7af0bb ("USB: allow malformed LANGID descriptors") broke support
-for devices without string descriptor support.
+ISDN connection setup failed if the "connection active" and
+"B channel up" messages from the device arrived in a different
+order than expected. Modify the state machine to accept them in
+any order.
 
-Reporting string descriptors is optional to USB devices, and a device
-lets us know it can't deal with strings by responding to the LANGID
-request with a STALL token.
+Impact: bugfix
 
-The kernel handled that correctly before b7af0bb came in, but failed
-hard if the LANGID was reported but broken. More than that, if a device
-was not able to provide string descriptors, the LANGID was retrieved
-over and over again at each string read request.
-
-This patch changes the behaviour so that
-
- a) the LANGID is only queried once
- b) devices which can't handle string requests are not asked again
- c) devices with malformed LANGID values have a sane fallback to 0x0409
-
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/core/message.c |   63 ++++++++++++++++++++++++++++++++-------------
- 1 file changed, 45 insertions(+), 18 deletions(-)
+ drivers/isdn/gigaset/ev-layer.c |   44 ++++++++++++++++++----------------------
+ 1 file changed, 20 insertions(+), 24 deletions(-)
 
---- a/drivers/usb/core/message.c
-+++ b/drivers/usb/core/message.c
-@@ -758,6 +758,48 @@ static int usb_string_sub(struct usb_dev
- 	return rc;
- }
+--- a/drivers/isdn/gigaset/ev-layer.c
++++ b/drivers/isdn/gigaset/ev-layer.c
+@@ -294,32 +294,33 @@ struct reply_t gigaset_tab_cid_m10x[] = 
+ 	{RSP_OK,      604,604, -1,                605, 5, {ACT_CMD+AT_MSN}},
+ 	{RSP_OK,      605,605, -1,                606, 5, {ACT_CMD+AT_ISO}},
+ 	{RSP_NULL,    605,605, -1,                606, 5, {ACT_CMD+AT_ISO}},
+-	{RSP_OK,      606,606, -1,                607, 5, {0},             "+VLS=17\r"}, /* set "Endgeraetemodus" */
++	{RSP_OK,      606,606, -1,                607, 5, {0}, "+VLS=17\r"},
+ 	{RSP_OK,      607,607, -1,                608,-1},
+-	//{RSP_ZSAU,    608,608,ZSAU_PROCEEDING,    608, 0, {ACT_ERROR}},//DELETE
+ 	{RSP_ZSAU,    608,608,ZSAU_PROCEEDING,    609, 5, {ACT_CMD+AT_DIAL}},
+ 	{RSP_OK,      609,609, -1,                650, 0, {ACT_DIALING}},
  
-+static int usb_get_langid(struct usb_device *dev, unsigned char *tbuf)
-+{
-+	int err;
-+
-+	if (dev->have_langid)
-+		return 0;
-+
-+	if (dev->string_langid < 0)
-+		return -EPIPE;
-+
-+	err = usb_string_sub(dev, 0, 0, tbuf);
-+
-+	/* If the string was reported but is malformed, default to english
-+	 * (0x0409) */
-+	if (err == -ENODATA || (err > 0 && err < 4)) {
-+		dev->string_langid = 0x0409;
-+		dev->have_langid = 1;
-+		dev_err(&dev->dev,
-+			"string descriptor 0 malformed (err = %d), "
-+			"defaulting to 0x%04x\n",
-+				err, dev->string_langid);
-+		return 0;
-+	}
-+
-+	/* In case of all other errors, we assume the device is not able to
-+	 * deal with strings at all. Set string_langid to -1 in order to
-+	 * prevent any string to be retrieved from the device */
-+	if (err < 0) {
-+		dev_err(&dev->dev, "string descriptor 0 read error: %d\n",
-+					err);
-+		dev->string_langid = -1;
-+		return -EPIPE;
-+	}
-+
-+	/* always use the first langid listed */
-+	dev->string_langid = tbuf[2] | (tbuf[3] << 8);
-+	dev->have_langid = 1;
-+	dev_dbg(&dev->dev, "default language 0x%04x\n",
-+				dev->string_langid);
-+	return 0;
-+}
-+
- /**
-  * usb_string - returns ISO 8859-1 version of a string descriptor
-  * @dev: the device whose string descriptor is being retrieved
-@@ -797,24 +839,9 @@ int usb_string(struct usb_device *dev, i
- 	if (!tbuf)
- 		return -ENOMEM;
+-	{RSP_ZVLS,    608,608, 17,                 -1,-1, {ACT_DEBUG}},
+-	{RSP_ZCTP,    609,609, -1,                 -1,-1, {ACT_DEBUG}},
+-	{RSP_ZCPN,    609,609, -1,                 -1,-1, {ACT_DEBUG}},
+ 	{RSP_ERROR,   601,609, -1,                  0, 0, {ACT_ABORTDIAL}},
+ 	{EV_TIMEOUT,  601,609, -1,                  0, 0, {ACT_ABORTDIAL}},
  
--	/* get langid for strings if it's not yet known */
--	if (!dev->have_langid) {
--		err = usb_string_sub(dev, 0, 0, tbuf);
--		if (err < 0) {
--			dev_err(&dev->dev,
--				"string descriptor 0 read error: %d\n",
--				err);
--		} else if (err < 4) {
--			dev_err(&dev->dev, "string descriptor 0 too short\n");
--		} else {
--			dev->string_langid = tbuf[2] | (tbuf[3] << 8);
--			/* always use the first langid listed */
--			dev_dbg(&dev->dev, "default language 0x%04x\n",
--				dev->string_langid);
--		}
+-	/* dialing */
+-	{RSP_ZCTP,    650,650, -1,                 -1,-1, {ACT_DEBUG}},
+-	{RSP_ZCPN,    650,650, -1,                 -1,-1, {ACT_DEBUG}},
+-	{RSP_ZSAU,    650,650,ZSAU_CALL_DELIVERED, -1,-1, {ACT_DEBUG}}, /* some devices don't send this */
 -
--		dev->have_langid = 1;
--	}
-+	err = usb_get_langid(dev, tbuf);
-+	if (err < 0)
-+		goto errout;
+-	/* connection established  */
+-	{RSP_ZSAU,    650,650,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT}}, //FIXME -> DLE1
+-	{RSP_ZSAU,    750,750,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT}}, //FIXME -> DLE1
+-
+-	{EV_BC_OPEN,  800,800, -1,                800,-1, {ACT_NOTIFY_BC_UP}}, //FIXME new constate + timeout
++	/* optional dialing responses */
++	{EV_BC_OPEN,  650,650, -1,                651,-1},
++	{RSP_ZVLS,    608,651, 17,                 -1,-1, {ACT_DEBUG}},
++	{RSP_ZCTP,    609,651, -1,                 -1,-1, {ACT_DEBUG}},
++	{RSP_ZCPN,    609,651, -1,                 -1,-1, {ACT_DEBUG}},
++	{RSP_ZSAU,    650,651,ZSAU_CALL_DELIVERED, -1,-1, {ACT_DEBUG}},
++
++	/* connect */
++	{RSP_ZSAU,    650,650,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT}},
++	{RSP_ZSAU,    651,651,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT,
++							   ACT_NOTIFY_BC_UP}},
++	{RSP_ZSAU,    750,750,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT}},
++	{RSP_ZSAU,    751,751,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT,
++							   ACT_NOTIFY_BC_UP}},
++	{EV_BC_OPEN,  800,800, -1,                800,-1, {ACT_NOTIFY_BC_UP}},
  
- 	err = usb_string_sub(dev, dev->string_langid, index, tbuf);
- 	if (err < 0)
+ 	/* remote hangup */
+-	{RSP_ZSAU,    650,650,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEREJECT}},
+-	{RSP_ZSAU,    750,750,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEHUP}},
++	{RSP_ZSAU,    650,651,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEREJECT}},
++	{RSP_ZSAU,    750,751,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEHUP}},
+ 	{RSP_ZSAU,    800,800,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEHUP}},
+ 
+ 	/* hangup */
+@@ -358,7 +359,8 @@ struct reply_t gigaset_tab_cid_m10x[] = 
+ 	{RSP_ZSAU,    700,729,ZSAU_ACTIVE,          0, 0, {ACT_ABORTACCEPT}},
+ 	{RSP_ZSAU,    700,729,ZSAU_DISCONNECT_IND,  0, 0, {ACT_ABORTACCEPT}},
+ 
+-	{EV_TIMEOUT,  750,750, -1,                  0, 0, {ACT_CONNTIMEOUT}},
++	{EV_BC_OPEN,  750,750, -1,                751,-1},
++	{EV_TIMEOUT,  750,751, -1,                  0, 0, {ACT_CONNTIMEOUT}},
+ 
+ 	/* B channel closed (general case) */
+ 	{EV_BC_CLOSED, -1, -1, -1,                 -1,-1, {ACT_NOTIFY_BC_DOWN}}, //FIXME
+@@ -876,12 +878,6 @@ static void bchannel_down(struct bc_stat
+ 
+ static void bchannel_up(struct bc_state *bcs)
+ {
+-	if (!(bcs->chstate & CHS_D_UP)) {
+-		dev_notice(bcs->cs->dev, "%s: D channel not up\n", __func__);
+-		bcs->chstate |= CHS_D_UP;
+-		gigaset_i4l_channel_cmd(bcs, ISDN_STAT_DCONN);
+-	}
+-
+ 	if (bcs->chstate & CHS_B_UP) {
+ 		dev_notice(bcs->cs->dev, "%s: B channel already up\n",
+ 			   __func__);
 
 
