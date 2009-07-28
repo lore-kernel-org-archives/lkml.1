@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756220AbZG2ADn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbZG1Xtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756220AbZG2ADn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 20:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753341AbZG1Xtf
+	id S1753565AbZG1Xtj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbZG1Xth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:49:35 -0400
-Received: from kroah.org ([198.145.64.141]:35616 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:49:37 -0400
+Received: from kroah.org ([198.145.64.141]:35630 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753295AbZG1Xtd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:49:33 -0400
+	id S1753354AbZG1Xtf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:49:35 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:51 2009
-Message-Id: <20090728234151.596651226@mini.kroah.org>
+Message-Id: <20090728234151.868198371@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:40:31 -0700
+Date: Tue, 28 Jul 2009 16:40:33 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       David Howells <dhowells@redhat.com>,
-       "J. Bruce Fields" <bfields@citi.umich.edu>
-Subject: [patch 02/71] NFSD: Dont hold unrefcounted creds over call to nfsd_setuser()
+       Clemens Ladisch <clemens@ladisch.de>, Takashi Iwai <tiwai@suse.de>
+Subject: [patch 04/71] sound: usb-audio: add workaround for Blue Microphones devices
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=nfsd-don-t-hold-unrefcounted-creds-over-call-to-nfsd_setuser.patch
+Content-Disposition: inline; filename=sound-usb-audio-add-workaround-for-blue-microphones-devices.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,52 +30,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: David Howells <dhowells@redhat.com>
+From: Clemens Ladisch <clemens@ladisch.de>
 
-commit 033a666ccb842ab4134fcd0c861d5ba9f5d6bf3a upstream.
+commit 8886f33f25083a47d5fa24ad7b57bb708c5c5403 upstream.
 
-nfsd_open() gets an unrefcounted pointer to the current process's effective
-credentials at the top of the function, then calls nfsd_setuser() via
-fh_verify() - which may replace and destroy the current process's effective
-credentials - and then passes the unrefcounted pointer to dentry_open() - but
-the credentials may have been destroyed by this point.
+Blue Microphones USB devices have an alternate setting that sends two
+channels of data to the computer.  Unfortunately, the descriptors of
+that altsetting have a wrong channel setting, which means that any
+recorded data from such a device has twice the sample rate from what
+would be expected.
 
-Instead, the value from current_cred() should be passed directly to
-dentry_open() as one of its arguments, rather than being cached in a variable.
+This patch adds a workaround to ignore that altsetting.  Since these
+devices have only one actual channel, no data is lost.
 
-Possibly fh_verify() should return the creds to use.
-
-This is a regression introduced by
-745ca2475a6ac596e3d8d37c2759c0fbe2586227 "CRED: Pass credentials through
-dentry_open()".
-
-Signed-off-by: David Howells <dhowells@redhat.com>
-Tested-and-Verified-By: Steve Dickson <steved@redhat.com>
-Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nfsd/vfs.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ sound/usb/usbaudio.c |   14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
---- a/fs/nfsd/vfs.c
-+++ b/fs/nfsd/vfs.c
-@@ -677,7 +677,6 @@ __be32
- nfsd_open(struct svc_rqst *rqstp, struct svc_fh *fhp, int type,
- 			int access, struct file **filp)
- {
--	const struct cred *cred = current_cred();
- 	struct dentry	*dentry;
- 	struct inode	*inode;
- 	int		flags = O_RDONLY|O_LARGEFILE;
-@@ -732,7 +731,7 @@ nfsd_open(struct svc_rqst *rqstp, struct
- 		vfs_dq_init(inode);
- 	}
- 	*filp = dentry_open(dget(dentry), mntget(fhp->fh_export->ex_path.mnt),
--			    flags, cred);
-+			    flags, current_cred());
- 	if (IS_ERR(*filp))
- 		host_err = PTR_ERR(*filp);
- out_nfserr:
+--- a/sound/usb/usbaudio.c
++++ b/sound/usb/usbaudio.c
+@@ -2649,7 +2649,7 @@ static int parse_audio_endpoints(struct 
+ 	struct usb_interface_descriptor *altsd;
+ 	int i, altno, err, stream;
+ 	int format;
+-	struct audioformat *fp;
++	struct audioformat *fp = NULL;
+ 	unsigned char *fmt, *csep;
+ 	int num;
+ 
+@@ -2722,6 +2722,18 @@ static int parse_audio_endpoints(struct 
+ 			continue;
+ 		}
+ 
++		/*
++		 * Blue Microphones workaround: The last altsetting is identical
++		 * with the previous one, except for a larger packet size, but
++		 * is actually a mislabeled two-channel setting; ignore it.
++		 */
++		if (fmt[4] == 1 && fmt[5] == 2 && altno == 2 && num == 3 &&
++		    fp && fp->altsetting == 1 && fp->channels == 1 &&
++		    fp->format == SNDRV_PCM_FORMAT_S16_LE &&
++		    le16_to_cpu(get_endpoint(alts, 0)->wMaxPacketSize) ==
++							fp->maxpacksize * 2)
++			continue;
++
+ 		csep = snd_usb_find_desc(alts->endpoint[0].extra, alts->endpoint[0].extralen, NULL, USB_DT_CS_ENDPOINT);
+ 		/* Creamware Noah has this descriptor after the 2nd endpoint */
+ 		if (!csep && altsd->bNumEndpoints >= 2)
 
 
