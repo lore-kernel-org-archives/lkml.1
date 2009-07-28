@@ -1,63 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753764AbZG1MQt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbZG1MR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753764AbZG1MQt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 08:16:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752366AbZG1MQt
+	id S1753631AbZG1MR4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 08:17:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753019AbZG1MRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 08:16:49 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:55424 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751320AbZG1MQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 08:16:48 -0400
-Message-ID: <4A6EEC52.90704@cn.fujitsu.com>
-Date: Tue, 28 Jul 2009 20:17:22 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tracing: fix missing function_graph events when we splice_read
- from trace_pipe
-Content-Type: text/plain; charset=UTF-8
+	Tue, 28 Jul 2009 08:17:55 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:33746 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752366AbZG1MRy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 08:17:54 -0400
+Date: Tue, 28 Jul 2009 21:17:54 +0900 (JST)
+Message-Id: <20090728.211754.226789461.ryov@valinux.co.jp>
+To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+Subject: [PATCH 2/7] blkio-cgroup-v10: The new page_cgroup framework
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090728.210934.193696111.ryov@valinux.co.jp>
+References: <20090728.210934.193696111.ryov@valinux.co.jp>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch makes the page_cgroup framework be able to be used even if
+the compile option of the cgroup memory controller is off.
+So blkio-cgroup can use this framework without the memory controller.
 
-About a half events are missing when we splice_read
-from trace_pipe. They are consumed unexpected.
+Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
+Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 ---
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index e30e6b1..41996fc 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -3085,7 +3085,8 @@ tracing_fill_pipe_page(size_t rem, struct trace_iterator *iter)
- 			break;
- 		}
+ include/linux/memcontrol.h  |    6 ++++++
+ include/linux/mmzone.h      |    4 ++--
+ include/linux/page_cgroup.h |    5 +++--
+ init/Kconfig                |    4 ++++
+ mm/Makefile                 |    3 ++-
+ mm/memcontrol.c             |    6 ++++++
+ mm/page_cgroup.c            |    3 +--
+ 7 files changed, 24 insertions(+), 7 deletions(-)
+
+Index: linux-2.6.31-rc3-mm1/include/linux/memcontrol.h
+===================================================================
+--- linux-2.6.31-rc3-mm1.orig/include/linux/memcontrol.h
++++ linux-2.6.31-rc3-mm1/include/linux/memcontrol.h
+@@ -37,6 +37,8 @@ struct mm_struct;
+  * (Of course, if memcg does memory allocation in future, GFP_KERNEL is sane.)
+  */
  
--		trace_consume(iter);
-+		if (ret != TRACE_TYPE_NO_CONSUME)
-+			trace_consume(iter);
- 		rem -= count;
- 		if (!find_next_entry_inc(iter))	{
- 			rem = 0;
-@@ -4230,8 +4231,11 @@ static void __ftrace_dump(bool disable_tracing)
- 		iter.pos = -1;
- 
- 		if (find_next_entry_inc(&iter) != NULL) {
--			print_trace_line(&iter);
--			trace_consume(&iter);
-+			int ret;
++extern void __init_mem_page_cgroup(struct page_cgroup *pc);
 +
-+			ret = print_trace_line(&iter);
-+			if (ret != TRACE_TYPE_NO_CONSUME)
-+				trace_consume(&iter);
- 		}
+ extern int mem_cgroup_newpage_charge(struct page *page, struct mm_struct *mm,
+ 				gfp_t gfp_mask);
+ /* for swap handling */
+@@ -121,6 +123,10 @@ void mem_cgroup_update_mapped_file_stat(
+ #else /* CONFIG_CGROUP_MEM_RES_CTLR */
+ struct mem_cgroup;
  
- 		trace_printk_seq(&iter.seq);
-
-
++static inline void __init_mem_page_cgroup(struct page_cgroup *pc)
++{
++}
++
+ static inline int mem_cgroup_newpage_charge(struct page *page,
+ 					struct mm_struct *mm, gfp_t gfp_mask)
+ {
+Index: linux-2.6.31-rc3-mm1/include/linux/mmzone.h
+===================================================================
+--- linux-2.6.31-rc3-mm1.orig/include/linux/mmzone.h
++++ linux-2.6.31-rc3-mm1/include/linux/mmzone.h
+@@ -609,7 +609,7 @@ typedef struct pglist_data {
+ 	int nr_zones;
+ #ifdef CONFIG_FLAT_NODE_MEM_MAP	/* means !SPARSEMEM */
+ 	struct page *node_mem_map;
+-#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++#ifdef CONFIG_CGROUP_PAGE
+ 	struct page_cgroup *node_page_cgroup;
+ #endif
+ #endif
+@@ -960,7 +960,7 @@ struct mem_section {
+ 
+ 	/* See declaration of similar field in struct zone */
+ 	unsigned long *pageblock_flags;
+-#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++#ifdef CONFIG_CGROUP_PAGE
+ 	/*
+ 	 * If !SPARSEMEM, pgdat doesn't have page_cgroup pointer. We use
+ 	 * section. (see memcontrol.h/page_cgroup.h about this.)
+Index: linux-2.6.31-rc3-mm1/include/linux/page_cgroup.h
+===================================================================
+--- linux-2.6.31-rc3-mm1.orig/include/linux/page_cgroup.h
++++ linux-2.6.31-rc3-mm1/include/linux/page_cgroup.h
+@@ -1,7 +1,7 @@
+ #ifndef __LINUX_PAGE_CGROUP_H
+ #define __LINUX_PAGE_CGROUP_H
+ 
+-#ifdef CONFIG_CGROUP_MEM_RES_CTLR
++#ifdef CONFIG_CGROUP_PAGE
+ #include <linux/bit_spinlock.h>
+ /*
+  * Page Cgroup can be considered as an extended mem_map.
+@@ -14,6 +14,7 @@ struct page_cgroup {
+ 	unsigned long flags;
+ 	struct mem_cgroup *mem_cgroup;
+ 	struct page *page;
++	unsigned long blkio_cgroup_id;
+ 	struct list_head lru;		/* per cgroup LRU list */
+ };
+ 
+@@ -96,7 +97,7 @@ static inline void unlock_page_cgroup(st
+ 	bit_spin_unlock(PCG_LOCK, &pc->flags);
+ }
+ 
+-#else /* CONFIG_CGROUP_MEM_RES_CTLR */
++#else /* CONFIG_CGROUP_PAGE */
+ struct page_cgroup;
+ 
+ static inline void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat)
+Index: linux-2.6.31-rc3-mm1/init/Kconfig
+===================================================================
+--- linux-2.6.31-rc3-mm1.orig/init/Kconfig
++++ linux-2.6.31-rc3-mm1/init/Kconfig
+@@ -610,6 +610,10 @@ config CGROUP_MEM_RES_CTLR_SWAP
+ 
+ endif # CGROUPS
+ 
++config CGROUP_PAGE
++	def_bool y
++	depends on CGROUP_MEM_RES_CTLR
++
+ config MM_OWNER
+ 	bool
+ 
+Index: linux-2.6.31-rc3-mm1/mm/Makefile
+===================================================================
+--- linux-2.6.31-rc3-mm1.orig/mm/Makefile
++++ linux-2.6.31-rc3-mm1/mm/Makefile
+@@ -40,6 +40,7 @@ else
+ obj-$(CONFIG_SMP) += allocpercpu.o
+ endif
+ obj-$(CONFIG_QUICKLIST) += quicklist.o
+-obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
++obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o
++obj-$(CONFIG_CGROUP_PAGE) += page_cgroup.o
+ obj-$(CONFIG_DEBUG_KMEMLEAK) += kmemleak.o
+ obj-$(CONFIG_DEBUG_KMEMLEAK_TEST) += kmemleak-test.o
+Index: linux-2.6.31-rc3-mm1/mm/memcontrol.c
+===================================================================
+--- linux-2.6.31-rc3-mm1.orig/mm/memcontrol.c
++++ linux-2.6.31-rc3-mm1/mm/memcontrol.c
+@@ -130,6 +130,12 @@ struct mem_cgroup_lru_info {
+ 	struct mem_cgroup_per_node *nodeinfo[MAX_NUMNODES];
+ };
+ 
++void __meminit __init_mem_page_cgroup(struct page_cgroup *pc)
++{
++	pc->mem_cgroup = NULL;
++	INIT_LIST_HEAD(&pc->lru);
++}
++
+ /*
+  * The memory controller data structure. The memory controller controls both
+  * page cache and RSS per cgroup. We would eventually like to provide
+Index: linux-2.6.31-rc3-mm1/mm/page_cgroup.c
+===================================================================
+--- linux-2.6.31-rc3-mm1.orig/mm/page_cgroup.c
++++ linux-2.6.31-rc3-mm1/mm/page_cgroup.c
+@@ -14,9 +14,8 @@ static void __meminit
+ __init_page_cgroup(struct page_cgroup *pc, unsigned long pfn)
+ {
+ 	pc->flags = 0;
+-	pc->mem_cgroup = NULL;
+ 	pc->page = pfn_to_page(pfn);
+-	INIT_LIST_HEAD(&pc->lru);
++	__init_mem_page_cgroup(pc);
+ }
+ static unsigned long total_usage;
+ 
