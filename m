@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbZG1Xtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbZG1Xte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753859AbZG1Xtr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:49:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbZG1Xtq
+	id S1753339AbZG1Xte (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753185AbZG1Xtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:49:46 -0400
-Received: from kroah.org ([198.145.64.141]:35674 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:49:33 -0400
+Received: from kroah.org ([198.145.64.141]:35611 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753750AbZG1Xto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:49:44 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:53 2009
-Message-Id: <20090728234153.376866725@mini.kroah.org>
+	id S1753262AbZG1Xtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:49:32 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:51 2009
+Message-Id: <20090728234151.459738282@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:40:43 -0700
+Date: Tue, 28 Jul 2009 16:40:30 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 14/71] USB: EHCI: use the new clear_tt_buffer interface
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 01/71] SCSI: zalon: fix oops on attach failure
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=usb-ehci-use-the-new-clear_tt_buffer-interface.patch
+Content-Disposition: inline; filename=scsi-zalon-fix-oops-on-attach-failure.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,262 +30,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alan Stern <stern@rowland.harvard.edu>
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
 
-commit 914b701280a76f96890ad63eb0fa99bf204b961c upstream.
+commit d3a263a8168f78874254ea9da9595cfb0f3e96d7 upstream.
 
-This patch (as1256) changes ehci-hcd and all the other drivers in the
-EHCI family to make use of the new clear_tt_buffer callbacks.  When a
-Clear-TT-Buffer request is in progress for a QH, the QH is not allowed
-to be linked into the async schedule until the request is finished.
-At that time, if there are any URBs queued for the QH, it is linked
-into the async schedule.
+I recently discovered on my zalon that if the attachment fails because
+of a bus misconfiguration (I scrapped my HVD array, so the card is now
+unterminated) then the system oopses.  The reason is that if
+ncr_attach() returns NULL (signalling failure) that NULL is passed by
+the goto failed straight into ncr_detach() which oopses.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+The fix is just to return -ENODEV in this case.
+
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/ehci-au1xxx.c |    2 
- drivers/usb/host/ehci-fsl.c    |    2 
- drivers/usb/host/ehci-hcd.c    |    2 
- drivers/usb/host/ehci-ixp4xx.c |    2 
- drivers/usb/host/ehci-orion.c  |    2 
- drivers/usb/host/ehci-pci.c    |    2 
- drivers/usb/host/ehci-ppc-of.c |    2 
- drivers/usb/host/ehci-ps3.c    |    2 
- drivers/usb/host/ehci-q.c      |   91 ++++++++++++++++++++++++++++++-----------
- drivers/usb/host/ehci.h        |    2 
- 10 files changed, 86 insertions(+), 23 deletions(-)
+ drivers/scsi/zalon.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/usb/host/ehci-au1xxx.c
-+++ b/drivers/usb/host/ehci-au1xxx.c
-@@ -112,6 +112,8 @@ static const struct hc_driver ehci_au1xx
- 	.bus_resume		= ehci_bus_resume,
- 	.relinquish_port	= ehci_relinquish_port,
- 	.port_handed_over	= ehci_port_handed_over,
-+
-+	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
- };
+--- a/drivers/scsi/zalon.c
++++ b/drivers/scsi/zalon.c
+@@ -134,7 +134,7 @@ zalon_probe(struct parisc_device *dev)
  
- static int ehci_hcd_au1xxx_drv_probe(struct platform_device *pdev)
---- a/drivers/usb/host/ehci-fsl.c
-+++ b/drivers/usb/host/ehci-fsl.c
-@@ -324,6 +324,8 @@ static const struct hc_driver ehci_fsl_h
- 	.bus_resume = ehci_bus_resume,
- 	.relinquish_port = ehci_relinquish_port,
- 	.port_handed_over = ehci_port_handed_over,
-+
-+	.clear_tt_buffer_complete = ehci_clear_tt_buffer_complete,
- };
+ 	host = ncr_attach(&zalon7xx_template, unit, &device);
+ 	if (!host)
+-		goto fail;
++		return -ENODEV;
  
- static int ehci_fsl_drv_probe(struct platform_device *pdev)
---- a/drivers/usb/host/ehci.h
-+++ b/drivers/usb/host/ehci.h
-@@ -353,7 +353,9 @@ struct ehci_qh {
- 	unsigned short		period;		/* polling interval */
- 	unsigned short		start;		/* where polling starts */
- #define NO_FRAME ((unsigned short)~0)			/* pick new start */
-+
- 	struct usb_device	*dev;		/* access to TT */
-+	unsigned		clearing_tt:1;	/* Clear-TT-Buf in progress */
- } __attribute__ ((aligned (32)));
- 
- /*-------------------------------------------------------------------------*/
---- a/drivers/usb/host/ehci-hcd.c
-+++ b/drivers/usb/host/ehci-hcd.c
-@@ -1003,6 +1003,8 @@ idle_timeout:
- 		schedule_timeout_uninterruptible(1);
- 		goto rescan;
- 	case QH_STATE_IDLE:		/* fully unlinked */
-+		if (qh->clearing_tt)
-+			goto idle_timeout;
- 		if (list_empty (&qh->qtd_list)) {
- 			qh_put (qh);
- 			break;
---- a/drivers/usb/host/ehci-ixp4xx.c
-+++ b/drivers/usb/host/ehci-ixp4xx.c
-@@ -60,6 +60,8 @@ static const struct hc_driver ixp4xx_ehc
- #endif
- 	.relinquish_port	= ehci_relinquish_port,
- 	.port_handed_over	= ehci_port_handed_over,
-+
-+	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
- };
- 
- static int ixp4xx_ehci_probe(struct platform_device *pdev)
---- a/drivers/usb/host/ehci-orion.c
-+++ b/drivers/usb/host/ehci-orion.c
-@@ -164,6 +164,8 @@ static const struct hc_driver ehci_orion
- 	.bus_resume = ehci_bus_resume,
- 	.relinquish_port = ehci_relinquish_port,
- 	.port_handed_over = ehci_port_handed_over,
-+
-+	.clear_tt_buffer_complete = ehci_clear_tt_buffer_complete,
- };
- 
- static void __init
---- a/drivers/usb/host/ehci-pci.c
-+++ b/drivers/usb/host/ehci-pci.c
-@@ -408,6 +408,8 @@ static const struct hc_driver ehci_pci_h
- 	.bus_resume =		ehci_bus_resume,
- 	.relinquish_port =	ehci_relinquish_port,
- 	.port_handed_over =	ehci_port_handed_over,
-+
-+	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
- };
- 
- /*-------------------------------------------------------------------------*/
---- a/drivers/usb/host/ehci-ppc-of.c
-+++ b/drivers/usb/host/ehci-ppc-of.c
-@@ -78,6 +78,8 @@ static const struct hc_driver ehci_ppc_o
- #endif
- 	.relinquish_port	= ehci_relinquish_port,
- 	.port_handed_over	= ehci_port_handed_over,
-+
-+	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
- };
- 
- 
---- a/drivers/usb/host/ehci-ps3.c
-+++ b/drivers/usb/host/ehci-ps3.c
-@@ -74,6 +74,8 @@ static const struct hc_driver ps3_ehci_h
- #endif
- 	.relinquish_port	= ehci_relinquish_port,
- 	.port_handed_over	= ehci_port_handed_over,
-+
-+	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
- };
- 
- static int ps3_ehci_probe(struct ps3_system_bus_device *dev)
---- a/drivers/usb/host/ehci-q.c
-+++ b/drivers/usb/host/ehci-q.c
-@@ -139,6 +139,55 @@ qh_refresh (struct ehci_hcd *ehci, struc
- 
- /*-------------------------------------------------------------------------*/
- 
-+static void qh_link_async(struct ehci_hcd *ehci, struct ehci_qh *qh);
-+
-+static void ehci_clear_tt_buffer_complete(struct usb_hcd *hcd,
-+		struct usb_host_endpoint *ep)
-+{
-+	struct ehci_hcd		*ehci = hcd_to_ehci(hcd);
-+	struct ehci_qh		*qh = ep->hcpriv;
-+	unsigned long		flags;
-+
-+	spin_lock_irqsave(&ehci->lock, flags);
-+	qh->clearing_tt = 0;
-+	if (qh->qh_state == QH_STATE_IDLE && !list_empty(&qh->qtd_list)
-+			&& HC_IS_RUNNING(hcd->state))
-+		qh_link_async(ehci, qh);
-+	spin_unlock_irqrestore(&ehci->lock, flags);
-+}
-+
-+static void ehci_clear_tt_buffer(struct ehci_hcd *ehci, struct ehci_qh *qh,
-+		struct urb *urb, u32 token)
-+{
-+
-+	/* If an async split transaction gets an error or is unlinked,
-+	 * the TT buffer may be left in an indeterminate state.  We
-+	 * have to clear the TT buffer.
-+	 *
-+	 * Note: this routine is never called for Isochronous transfers.
-+	 */
-+	if (urb->dev->tt && !usb_pipeint(urb->pipe) && !qh->clearing_tt) {
-+#ifdef DEBUG
-+		struct usb_device *tt = urb->dev->tt->hub;
-+		dev_dbg(&tt->dev,
-+			"clear tt buffer port %d, a%d ep%d t%08x\n",
-+			urb->dev->ttport, urb->dev->devnum,
-+			usb_pipeendpoint(urb->pipe), token);
-+#endif /* DEBUG */
-+		if (!ehci_is_TDI(ehci)
-+				|| urb->dev->tt->hub !=
-+				   ehci_to_hcd(ehci)->self.root_hub) {
-+			if (usb_hub_clear_tt_buffer(urb) == 0)
-+				qh->clearing_tt = 1;
-+		} else {
-+
-+			/* REVISIT ARC-derived cores don't clear the root
-+			 * hub TT buffer in this way...
-+			 */
-+		}
-+	}
-+}
-+
- static int qtd_copy_status (
- 	struct ehci_hcd *ehci,
- 	struct urb *urb,
-@@ -195,28 +244,6 @@ static int qtd_copy_status (
- 			usb_pipeendpoint (urb->pipe),
- 			usb_pipein (urb->pipe) ? "in" : "out",
- 			token, status);
--
--		/* if async CSPLIT failed, try cleaning out the TT buffer */
--		if (status != -EPIPE
--				&& urb->dev->tt
--				&& !usb_pipeint(urb->pipe)
--				&& ((token & QTD_STS_MMF) != 0
--					|| QTD_CERR(token) == 0)
--				&& (!ehci_is_TDI(ehci)
--			                || urb->dev->tt->hub !=
--					   ehci_to_hcd(ehci)->self.root_hub)) {
--#ifdef DEBUG
--			struct usb_device *tt = urb->dev->tt->hub;
--			dev_dbg (&tt->dev,
--				"clear tt buffer port %d, a%d ep%d t%08x\n",
--				urb->dev->ttport, urb->dev->devnum,
--				usb_pipeendpoint (urb->pipe), token);
--#endif /* DEBUG */
--			/* REVISIT ARC-derived cores don't clear the root
--			 * hub TT buffer in this way...
--			 */
--			usb_hub_clear_tt_buffer(urb);
--		}
- 	}
- 
- 	return status;
-@@ -407,9 +434,16 @@ qh_completions (struct ehci_hcd *ehci, s
- 			/* qh unlinked; token in overlay may be most current */
- 			if (state == QH_STATE_IDLE
- 					&& cpu_to_hc32(ehci, qtd->qtd_dma)
--						== qh->hw_current)
-+						== qh->hw_current) {
- 				token = hc32_to_cpu(ehci, qh->hw_token);
- 
-+				/* An unlink may leave an incomplete
-+				 * async transaction in the TT buffer.
-+				 * We have to clear it.
-+				 */
-+				ehci_clear_tt_buffer(ehci, qh, urb, token);
-+			}
-+
- 			/* force halt for unlinked or blocked qh, so we'll
- 			 * patch the qh later and so that completions can't
- 			 * activate it while we "know" it's stopped.
-@@ -435,6 +469,13 @@ halt:
- 					&& (qtd->hw_alt_next
- 						& EHCI_LIST_END(ehci)))
- 				last_status = -EINPROGRESS;
-+
-+			/* As part of low/full-speed endpoint-halt processing
-+			 * we must clear the TT buffer (11.17.5).
-+			 */
-+			if (unlikely(last_status != -EINPROGRESS &&
-+					last_status != -EREMOTEIO))
-+				ehci_clear_tt_buffer(ehci, qh, urb, token);
- 		}
- 
- 		/* if we're removing something not at the queue head,
-@@ -864,6 +905,10 @@ static void qh_link_async (struct ehci_h
- 	__hc32		dma = QH_NEXT(ehci, qh->qh_dma);
- 	struct ehci_qh	*head;
- 
-+	/* Don't link a QH if there's a Clear-TT-Buffer pending */
-+	if (unlikely(qh->clearing_tt))
-+		return;
-+
- 	/* (re)start the async schedule? */
- 	head = ehci->async;
- 	timer_action_done (ehci, TIMER_ASYNC_OFF);
+ 	if (request_irq(dev->irq, ncr53c8xx_intr, IRQF_SHARED, "zalon", host)) {
+ 	  dev_printk(KERN_ERR, &dev->dev, "irq problem with %d, detaching\n ",
 
 
