@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932185AbZG1X6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZG1X55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932185AbZG1X6z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:58:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756198AbZG1X6r
+	id S1756177AbZG1X55 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:57:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbZG1X54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:58:47 -0400
-Received: from kroah.org ([198.145.64.141]:35752 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:57:56 -0400
+Received: from kroah.org ([198.145.64.141]:35818 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754277AbZG1Xt5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:49:57 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:55 2009
-Message-Id: <20090728234155.471526594@mini.kroah.org>
+	id S1753260AbZG1XuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:50:08 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:57 2009
+Message-Id: <20090728234157.216634289@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:40:57 -0700
+Date: Tue, 28 Jul 2009 16:41:08 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Ming Lei <tom.leiming@gmail.com>
-Subject: [patch 28/71] partitions: fix broken uevent_suppress conversion
+       Yinghai Lu <yinghai@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [patch 39/71] x86/pci: insert ioapic resource before assigning unassigned resources
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=partitions-fix-broken-uevent_suppress-conversion.patch
+Content-Disposition: inline; filename=x86-pci-insert-ioapic-resource-before-assigning-unassigned-resources.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,41 +31,116 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+From: Yinghai Lu <yinghai@kernel.org>
 
-commit f8c73c790c588fd70fda1632c8927a87b3d31dcd upstream.
+commit 857fdc53a0a90c3ba7fcf5b1fb4c7a62ae03cf82 upstream.
 
-git commit f67f129e "Driver core: implement uevent suppress in kobject"
-contains this chunk for fs/partitions/check.c:
+Stephen reported that his DL585 G2 needed noapic after 2.6.22 (?)
 
- 	/* suppress uevent if the disk supresses it */
--	if (!ddev->uevent_suppress)
-+	if (!dev_get_uevent_suppress(pdev))
- 		kobject_uevent(&pdev->kobj, KOBJ_ADD);
+Dann bisected it down to:
+  commit 30a18d6c3f1e774de656ebd8ff219d53e2ba4029
+  Date:   Tue Feb 19 03:21:20 2008 -0800
 
-However that should have been
+      x86: multi pci root bus with different io resource range, on
+      64-bit
 
--	if (!ddev->uevent_suppress)
-+	if (!dev_get_uevent_suppress(ddev))
+It turns out that:
+  1. that AMD-based systems have two HT chains.
+  2. BIOS doesn't allocate resources for BAR 6 of devices under 8132 etc
+  3. that multi-peer-root patch will try to split root resources to peer
+     root resources according to PCI conf of NB
+  4. PCI core assigns unassigned resources, but they overlap with BARs
+     that are used by ioapic addr of io4 and 8132.
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Acked-by: Ming Lei <tom.leiming@gmail.com>
+The reason: at that point ioapic address are not inserted yet.  Solution
+is to insert ioapic resources into the tree a bit earlier.
+
+Reported-by: Stephen Frost <sfrost@snowman.net>
+Reported-and-Tested-by: dann frazier <dannf@hp.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/partitions/check.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/x86/include/asm/io_apic.h |    2 ++
+ arch/x86/kernel/apic/io_apic.c |   14 +++-----------
+ arch/x86/pci/i386.c            |    7 +++++++
+ 3 files changed, 12 insertions(+), 11 deletions(-)
 
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -426,7 +426,7 @@ struct hd_struct *add_partition(struct g
- 	rcu_assign_pointer(ptbl->part[partno], p);
+--- a/arch/x86/include/asm/io_apic.h
++++ b/arch/x86/include/asm/io_apic.h
+@@ -160,6 +160,7 @@ extern int io_apic_set_pci_routing(int i
  
- 	/* suppress uevent if the disk supresses it */
--	if (!dev_get_uevent_suppress(pdev))
-+	if (!dev_get_uevent_suppress(ddev))
- 		kobject_uevent(&pdev->kobj, KOBJ_ADD);
+ extern int (*ioapic_renumber_irq)(int ioapic, int irq);
+ extern void ioapic_init_mappings(void);
++extern void ioapic_insert_resources(void);
  
- 	return p;
+ #ifdef CONFIG_X86_64
+ extern struct IO_APIC_route_entry **alloc_ioapic_entries(void);
+@@ -183,6 +184,7 @@ extern void ioapic_write_entry(int apic,
+ #define io_apic_assign_pci_irqs 0
+ static const int timer_through_8259 = 0;
+ static inline void ioapic_init_mappings(void)	{ }
++static inline void ioapic_insert_resources(void) { }
+ 
+ static inline void probe_nr_irqs_gsi(void)	{ }
+ #endif
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -4182,28 +4182,20 @@ fake_ioapic_page:
+ 	}
+ }
+ 
+-static int __init ioapic_insert_resources(void)
++void __init ioapic_insert_resources(void)
+ {
+ 	int i;
+ 	struct resource *r = ioapic_resources;
+ 
+ 	if (!r) {
+-		if (nr_ioapics > 0) {
++		if (nr_ioapics > 0)
+ 			printk(KERN_ERR
+ 				"IO APIC resources couldn't be allocated.\n");
+-			return -1;
+-		}
+-		return 0;
++		return;
+ 	}
+ 
+ 	for (i = 0; i < nr_ioapics; i++) {
+ 		insert_resource(&iomem_resource, r);
+ 		r++;
+ 	}
+-
+-	return 0;
+ }
+-
+-/* Insert the IO APIC resources after PCI initialization has occured to handle
+- * IO APICS that are mapped in on a BAR in PCI space. */
+-late_initcall(ioapic_insert_resources);
+--- a/arch/x86/pci/i386.c
++++ b/arch/x86/pci/i386.c
+@@ -35,6 +35,7 @@
+ #include <asm/pat.h>
+ #include <asm/e820.h>
+ #include <asm/pci_x86.h>
++#include <asm/io_apic.h>
+ 
+ 
+ static int
+@@ -230,6 +231,12 @@ void __init pcibios_resource_survey(void
+ 	pcibios_allocate_resources(1);
+ 
+ 	e820_reserve_resources_late();
++	/*
++	 * Insert the IO APIC resources after PCI initialization has
++	 * occured to handle IO APICS that are mapped in on a BAR in
++	 * PCI space, but before trying to assign unassigned pci res.
++	 */
++	ioapic_insert_resources();
+ }
+ 
+ /**
 
 
