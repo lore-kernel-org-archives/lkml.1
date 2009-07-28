@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbZG1XEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932126AbZG1XIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755904AbZG1XEA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:04:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbZG1XD5
+	id S932126AbZG1XIW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932107AbZG1XIV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:03:57 -0400
-Received: from kroah.org ([198.145.64.141]:42956 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:08:21 -0400
+Received: from kroah.org ([198.145.64.141]:42990 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755574AbZG1XDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:03:54 -0400
+	id S1755897AbZG1XEA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:04:00 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 15:59:43 2009
-Message-Id: <20090728225942.866538668@mini.kroah.org>
+Message-Id: <20090728225943.726707706@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 15:58:41 -0700
+Date: Tue, 28 Jul 2009 15:58:47 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 13/37] ALSA: hda - Fix mute control with some ALC262 models
+       Andi Kleen <ak@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [patch 19/37] x86-64: Fix bad_srat() to clear all state
 References: <20090728225828.431071451@mini.kroah.org>
-Content-Disposition: inline; filename=alsa-hda-fix-mute-control-with-some-alc262-models.patch
+Content-Disposition: inline; filename=x86-64-fix-bad_srat-to-clear-all-state.patch
 In-Reply-To: <20090728230145.GA10486@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,86 +30,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Takashi Iwai <tiwai@suse.de>
+From: Andi Kleen <andi@firstfloor.org>
 
-commit 8de56b7deb2534a586839eda52843c1dae680dc5 upstream.
+commit 429b2b319af3987e808c18f6b81313104caf782c upstream.
 
-The master mute switch is wrongly implemented as checking the pointer
-instead of its value, thus it can be never muted.  This patch fixes
-the issue.
+Need to clear both nodes and nodes_add state for start/end.
 
-Reference: Novell bnc#404873
-	https://bugzilla.novell.com/show_bug.cgi?id=404873
-
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+LKML-Reference: <20090718065657.GA2898@basil.fritz.box>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/hda/patch_realtek.c |   33 ++++++++++++++++-----------------
- 1 file changed, 16 insertions(+), 17 deletions(-)
+ arch/x86/mm/srat_64.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/sound/pci/hda/patch_realtek.c
-+++ b/sound/pci/hda/patch_realtek.c
-@@ -9214,6 +9214,18 @@ static void alc262_lenovo_3000_unsol_eve
- 	alc262_lenovo_3000_automute(codec, 1);
+--- a/arch/x86/mm/srat_64.c
++++ b/arch/x86/mm/srat_64.c
+@@ -87,8 +87,10 @@ static __init void bad_srat(void)
+ 	found_add_area = 0;
+ 	for (i = 0; i < MAX_LOCAL_APIC; i++)
+ 		apicid_to_node[i] = NUMA_NO_NODE;
+-	for (i = 0; i < MAX_NUMNODES; i++)
+-		nodes_add[i].start = nodes[i].end = 0;
++	for (i = 0; i < MAX_NUMNODES; i++) {
++		nodes[i].start = nodes[i].end = 0;
++		nodes_add[i].start = nodes_add[i].end = 0;
++	}
+ 	remove_all_active_ranges();
  }
  
-+static int amp_stereo_mute_update(struct hda_codec *codec, hda_nid_t nid,
-+				  int dir, int idx, long *valp)
-+{
-+	int i, change = 0;
-+
-+	for (i = 0; i < 2; i++, valp++)
-+		change |= snd_hda_codec_amp_update(codec, nid, i, dir, idx,
-+						   HDA_AMP_MUTE,
-+						   *valp ? 0 : HDA_AMP_MUTE);
-+	return change;
-+}
-+
- /* bind hp and internal speaker mute (with plug check) */
- static int alc262_fujitsu_master_sw_put(struct snd_kcontrol *kcontrol,
- 					 struct snd_ctl_elem_value *ucontrol)
-@@ -9222,13 +9234,8 @@ static int alc262_fujitsu_master_sw_put(
- 	long *valp = ucontrol->value.integer.value;
- 	int change;
- 
--	change = snd_hda_codec_amp_stereo(codec, 0x14, HDA_OUTPUT, 0,
--						 HDA_AMP_MUTE,
--						 valp ? 0 : HDA_AMP_MUTE);
--	change |= snd_hda_codec_amp_stereo(codec, 0x1b, HDA_OUTPUT, 0,
--						 HDA_AMP_MUTE,
--						 valp ? 0 : HDA_AMP_MUTE);
--
-+	change = amp_stereo_mute_update(codec, 0x14, HDA_OUTPUT, 0, valp);
-+	change |= amp_stereo_mute_update(codec, 0x1b, HDA_OUTPUT, 0, valp);
- 	if (change)
- 		alc262_fujitsu_automute(codec, 0);
- 	return change;
-@@ -9265,10 +9272,7 @@ static int alc262_lenovo_3000_master_sw_
- 	long *valp = ucontrol->value.integer.value;
- 	int change;
- 
--	change = snd_hda_codec_amp_stereo(codec, 0x1b, HDA_OUTPUT, 0,
--						 HDA_AMP_MUTE,
--						 valp ? 0 : HDA_AMP_MUTE);
--
-+	change = amp_stereo_mute_update(codec, 0x1b, HDA_OUTPUT, 0, valp);
- 	if (change)
- 		alc262_lenovo_3000_automute(codec, 0);
- 	return change;
-@@ -10280,12 +10284,7 @@ static int alc268_acer_master_sw_put(str
- 	long *valp = ucontrol->value.integer.value;
- 	int change;
- 
--	change = snd_hda_codec_amp_update(codec, 0x14, 0, HDA_OUTPUT, 0,
--					  HDA_AMP_MUTE,
--					  valp[0] ? 0 : HDA_AMP_MUTE);
--	change |= snd_hda_codec_amp_update(codec, 0x14, 1, HDA_OUTPUT, 0,
--					   HDA_AMP_MUTE,
--					   valp[1] ? 0 : HDA_AMP_MUTE);
-+	change = amp_stereo_mute_update(codec, 0x14, HDA_OUTPUT, 0, valp);
- 	if (change)
- 		alc268_acer_automute(codec, 0);
- 	return change;
 
 
