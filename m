@@ -1,140 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755043AbZG1RSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753489AbZG1RSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755043AbZG1RSc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 13:18:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbZG1RSb
+	id S1753489AbZG1RSh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 13:18:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755049AbZG1RSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 13:18:31 -0400
-Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:9627 "EHLO
-	VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753489AbZG1RSF (ORCPT
+	Tue, 28 Jul 2009 13:18:32 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:35481 "EHLO
+	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753476AbZG1RSF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 28 Jul 2009 13:18:05 -0400
 X-SpamScore: 3
-X-BigFish: VPS3(zzzz1202hzzz32i87h203h43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
+X-BigFish: VPS3(zzzz1202hzzz32i203h87h43j62h)
+X-Spam-TCS-SCL: 1:0
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KNI5DR-03-BM4-01
+X-WSS-ID: 0KNI5DO-04-A2J-01
 From: Robert Richter <robert.richter@amd.com>
 To: Ingo Molnar <mingo@elte.hu>
 CC: LKML <linux-kernel@vger.kernel.org>,
        oprofile-list <oprofile-list@lists.sourceforge.net>,
        Robert Richter <robert.richter@amd.com>
-Subject: [PATCH 17/26] x86/oprofile: Remove const qualifier from struct op_x86_model_spec
-Date: Tue, 28 Jul 2009 19:07:17 +0200
-Message-ID: <1248800846-25422-18-git-send-email-robert.richter@amd.com>
+Subject: [PATCH 08/26] oprofile: Rename variable timeout_jiffies and move to oprofile_files.c
+Date: Tue, 28 Jul 2009 19:07:08 +0200
+Message-ID: <1248800846-25422-9-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1248800846-25422-1-git-send-email-robert.richter@amd.com>
 References: <1248800846-25422-1-git-send-email-robert.richter@amd.com>
-X-OriginalArrivalTime: 28 Jul 2009 17:17:50.0134 (UTC) FILETIME=[5577A560:01CA0FA7]
+X-OriginalArrivalTime: 28 Jul 2009 17:17:48.0322 (UTC) FILETIME=[54632820:01CA0FA7]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the const qualifier from struct
-op_x86_model_spec to make model parameters changable.
+This patch renames timeout_jiffies into an oprofile specific name. The
+macro MULTIPLEXING_TIMER_DEFAULT is changed too.
+
+Also, since this variable is controlled using oprofilefs, its
+definition is moved to oprofile_files.c.
 
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- arch/x86/oprofile/nmi_int.c       |    4 ++--
- arch/x86/oprofile/op_model_amd.c  |    2 +-
- arch/x86/oprofile/op_model_p4.c   |    4 ++--
- arch/x86/oprofile/op_model_ppro.c |    2 +-
- arch/x86/oprofile/op_x86_model.h  |    8 ++++----
- 5 files changed, 10 insertions(+), 10 deletions(-)
+ drivers/oprofile/oprof.c          |    9 ++++-----
+ drivers/oprofile/oprof.h          |    3 ++-
+ drivers/oprofile/oprofile_files.c |    5 +++--
+ 3 files changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/oprofile/nmi_int.c b/arch/x86/oprofile/nmi_int.c
-index 998c7dc..826f391 100644
---- a/arch/x86/oprofile/nmi_int.c
-+++ b/arch/x86/oprofile/nmi_int.c
-@@ -27,7 +27,7 @@
- #include "op_counter.h"
- #include "op_x86_model.h"
+diff --git a/drivers/oprofile/oprof.c b/drivers/oprofile/oprof.c
+index 42c9c76..2b33de7 100644
+--- a/drivers/oprofile/oprof.c
++++ b/drivers/oprofile/oprof.c
+@@ -33,8 +33,7 @@ static DEFINE_MUTEX(start_mutex);
  
--static struct op_x86_model_spec const *model;
-+static struct op_x86_model_spec *model;
- static DEFINE_PER_CPU(struct op_msrs, cpu_msrs);
- static DEFINE_PER_CPU(unsigned long, saved_lvtpc);
+ static void switch_worker(struct work_struct *work);
+ static DECLARE_DELAYED_WORK(switch_work, switch_worker);
+-unsigned long timeout_jiffies;
+-#define MULTIPLEXING_TIMER_DEFAULT 1
++#define TIME_SLICE_DEFAULT		1
  
-@@ -542,7 +542,7 @@ module_param_call(cpu_type, force_cpu_type, NULL, NULL, 0);
- static int __init ppro_init(char **cpu_type)
- {
- 	__u8 cpu_model = boot_cpu_data.x86_model;
--	struct op_x86_model_spec const *spec = &op_ppro_spec;	/* default */
-+	struct op_x86_model_spec *spec = &op_ppro_spec;	/* default */
- 
- 	if (force_arch_perfmon && cpu_has_arch_perfmon)
- 		return 0;
-diff --git a/arch/x86/oprofile/op_model_amd.c b/arch/x86/oprofile/op_model_amd.c
-index 644980f..39604b4 100644
---- a/arch/x86/oprofile/op_model_amd.c
-+++ b/arch/x86/oprofile/op_model_amd.c
-@@ -526,7 +526,7 @@ static void op_amd_exit(void) {}
- 
- #endif /* CONFIG_OPROFILE_IBS */
- 
--struct op_x86_model_spec const op_amd_spec = {
-+struct op_x86_model_spec op_amd_spec = {
- 	.num_counters		= NUM_COUNTERS,
- 	.num_controls		= NUM_CONTROLS,
- 	.num_virt_counters	= NUM_VIRT_COUNTERS,
-diff --git a/arch/x86/oprofile/op_model_p4.c b/arch/x86/oprofile/op_model_p4.c
-index 65b9237..40df028 100644
---- a/arch/x86/oprofile/op_model_p4.c
-+++ b/arch/x86/oprofile/op_model_p4.c
-@@ -695,7 +695,7 @@ static void p4_shutdown(struct op_msrs const * const msrs)
- 
- 
- #ifdef CONFIG_SMP
--struct op_x86_model_spec const op_p4_ht2_spec = {
-+struct op_x86_model_spec op_p4_ht2_spec = {
- 	.num_counters		= NUM_COUNTERS_HT2,
- 	.num_controls		= NUM_CONTROLS_HT2,
- 	.num_virt_counters	= NUM_COUNTERS_HT2,
-@@ -709,7 +709,7 @@ struct op_x86_model_spec const op_p4_ht2_spec = {
- };
  #endif
  
--struct op_x86_model_spec const op_p4_spec = {
-+struct op_x86_model_spec op_p4_spec = {
- 	.num_counters		= NUM_COUNTERS_NON_HT,
- 	.num_controls		= NUM_CONTROLS_NON_HT,
- 	.num_virt_counters	= NUM_COUNTERS_NON_HT,
-diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
-index 098cbca..659f3b6 100644
---- a/arch/x86/oprofile/op_model_ppro.c
-+++ b/arch/x86/oprofile/op_model_ppro.c
-@@ -203,7 +203,7 @@ static void ppro_shutdown(struct op_msrs const * const msrs)
+@@ -102,7 +101,7 @@ out:
+ 
+ static void start_switch_worker(void)
+ {
+-	schedule_delayed_work(&switch_work, timeout_jiffies);
++	schedule_delayed_work(&switch_work, oprofile_time_slice);
+ }
+ 
+ static void switch_worker(struct work_struct *work)
+@@ -216,7 +215,7 @@ int oprofile_set_timeout(unsigned long val_msec)
+ 		goto out;
+ 	}
+ 
+-	timeout_jiffies = time_slice;
++	oprofile_time_slice = time_slice;
+ 
+ out:
+ 	mutex_unlock(&start_mutex);
+@@ -253,7 +252,7 @@ out:
+ 
+ static void __init oprofile_multiplexing_init(void)
+ {
+-	timeout_jiffies = msecs_to_jiffies(MULTIPLEXING_TIMER_DEFAULT);
++	oprofile_time_slice = msecs_to_jiffies(TIME_SLICE_DEFAULT);
+ }
+ 
+ #endif
+diff --git a/drivers/oprofile/oprof.h b/drivers/oprofile/oprof.h
+index ee38abc..cb92f5c 100644
+--- a/drivers/oprofile/oprof.h
++++ b/drivers/oprofile/oprof.h
+@@ -24,10 +24,11 @@ struct oprofile_operations;
+ extern unsigned long oprofile_buffer_size;
+ extern unsigned long oprofile_cpu_buffer_size;
+ extern unsigned long oprofile_buffer_watershed;
++extern unsigned long oprofile_time_slice;
++
+ extern struct oprofile_operations oprofile_ops;
+ extern unsigned long oprofile_started;
+ extern unsigned long oprofile_backtrace_depth;
+-extern unsigned long timeout_jiffies;
+ 
+ struct super_block;
+ struct dentry;
+diff --git a/drivers/oprofile/oprofile_files.c b/drivers/oprofile/oprofile_files.c
+index 468ec3e..4c5b947 100644
+--- a/drivers/oprofile/oprofile_files.c
++++ b/drivers/oprofile/oprofile_files.c
+@@ -22,14 +22,15 @@
+ unsigned long oprofile_buffer_size;
+ unsigned long oprofile_cpu_buffer_size;
+ unsigned long oprofile_buffer_watershed;
++unsigned long oprofile_time_slice;
+ 
+ #ifdef CONFIG_OPROFILE_EVENT_MULTIPLEX
+ 
+ static ssize_t timeout_read(struct file *file, char __user *buf,
+ 		size_t count, loff_t *offset)
+ {
+-	return oprofilefs_ulong_to_user(jiffies_to_msecs(timeout_jiffies),
+-				buf, count, offset);
++	return oprofilefs_ulong_to_user(jiffies_to_msecs(oprofile_time_slice),
++					buf, count, offset);
  }
  
  
--struct op_x86_model_spec const op_ppro_spec = {
-+struct op_x86_model_spec op_ppro_spec = {
- 	.num_counters		= 2,
- 	.num_controls		= 2,
- 	.num_virt_counters	= 2,
-diff --git a/arch/x86/oprofile/op_x86_model.h b/arch/x86/oprofile/op_x86_model.h
-index e874dc3..0c886fa 100644
---- a/arch/x86/oprofile/op_x86_model.h
-+++ b/arch/x86/oprofile/op_x86_model.h
-@@ -62,10 +62,10 @@ extern u64 op_x86_get_ctrl(struct op_x86_model_spec const *model,
- 			   struct op_counter_config *counter_config);
- extern int op_x86_phys_to_virt(int phys);
- 
--extern struct op_x86_model_spec const op_ppro_spec;
--extern struct op_x86_model_spec const op_p4_spec;
--extern struct op_x86_model_spec const op_p4_ht2_spec;
--extern struct op_x86_model_spec const op_amd_spec;
-+extern struct op_x86_model_spec op_ppro_spec;
-+extern struct op_x86_model_spec op_p4_spec;
-+extern struct op_x86_model_spec op_p4_ht2_spec;
-+extern struct op_x86_model_spec op_amd_spec;
- extern struct op_x86_model_spec op_arch_perfmon_spec;
- 
- #endif /* OP_X86_MODEL_H */
 -- 
 1.6.3.3
 
