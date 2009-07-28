@@ -1,440 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752798AbZG1X2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752643AbZG1Xdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752798AbZG1X2A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbZG1X17
+	id S1752643AbZG1Xdk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbZG1Xdj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:27:59 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:39300 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751052AbZG1X15 (ORCPT
+	Tue, 28 Jul 2009 19:33:39 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:59509 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751052AbZG1Xdi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:27:57 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=from:subject:to:cc:date:message-id:in-reply-to:references:
-	user-agent:mime-version:content-type:
-	content-transfer-encoding:x-system-of-record;
-	b=sxYau9fYsIe+EG+5CkNYXXNiUy6MszL7L+wjo1k2bi5veZ6ePeOw8mgWdUHc9SYHn
-	dugIzoCNcPqQI7/pLnJHg==
-From: Paul Menage <menage@google.com>
-Subject: [PATCH 3/4] Add a back-pointer from struct cg_cgroup_link to struct
-	cgroup
-To: lizf@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
-       kamezawa.hiroyu@jp.fujitsu.com
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       containers@lists.linux-foundation.org
-Date: Tue, 28 Jul 2009 16:26:31 -0700
-Message-ID: <20090728232631.20156.21291.stgit@menage.mtv.corp.google.com>
-In-Reply-To: <20090728232508.20156.17943.stgit@menage.mtv.corp.google.com>
-References: <20090728232508.20156.17943.stgit@menage.mtv.corp.google.com>
-User-Agent: StGIT/0.14.3
+	Tue, 28 Jul 2009 19:33:38 -0400
+Date: Wed, 29 Jul 2009 09:33:38 +1000
+From: Simon Horman <horms@verge.net.au>
+To: Joe Perches <joe@perches.com>
+Cc: Hannes Eder <heder@google.com>, lvs-devel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jan Engelhardt <jengelh@medozas.de>
+Subject: Re: [PATCH v2 2/2] IPVS: use pr_err and friends instead of
+	IP_VS_ERR and friends
+Message-ID: <20090728233338.GD4026@verge.net.au>
+References: <20090728203414.7654.73236.stgit@jazzy.zrh.corp.google.com> <20090728203554.7654.29628.stgit@jazzy.zrh.corp.google.com> <1248814615.18284.22.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1248814615.18284.22.camel@Joe-Laptop.home>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a back-pointer from struct cg_cgroup_link to struct cgroup
+On Tue, Jul 28, 2009 at 01:56:55PM -0700, Joe Perches wrote:
+> On Tue, 2009-07-28 at 22:35 +0200, Hannes Eder wrote:
+> > Since pr_err and friends is used instead of printk there is not point
+> > in keeping IP_VS_ERR and friends.
+> > +			pr_err("Schedule: port zero only supported "
+> > +			       "in persistent services, "
+> > +			       "check your ipvs configuration\n");
+> 
+> You might consider ignoring the checkpatch 80 char limit here
+> and consolidate the message into a single string.
 
-Currently the cgroups code makes the assumption that the subsystem
-pointers in a struct css_set uniquely identify the hierarchy->cgroup
-mappings associated with the css_set; and there's no way to directly
-identify the associated set of cgroups other than by indirecting
-through the appropriate subsystem state pointers.
+Personally, I prefer it the way it is.
 
-This patch removes the need for that assumption by adding a
-back-pointer from struct cg_cgroup_link object to its associated
-cgroup; this allows the set of cgroups to be determined by traversing
-the cg_links list in the struct css_set.
-
-Signed-off-by: Paul Menage <menage@google.com>
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
-
----
-
- kernel/cgroup.c |  248 ++++++++++++++++++++++++++++++++++++++++++++-----------
- 1 files changed, 199 insertions(+), 49 deletions(-)
-
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 9491dbb..9972814 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -207,6 +207,7 @@ struct cg_cgroup_link {
- 	 * cgroup, anchored on cgroup->css_sets
- 	 */
- 	struct list_head cgrp_link_list;
-+	struct cgroup *cgrp;
- 	/*
- 	 * List running through cg_cgroup_links pointing at a
- 	 * single css_set object, anchored on css_set->cg_links
-@@ -233,8 +234,11 @@ static int cgroup_subsys_init_idr(struct cgroup_subsys *ss);
- static DEFINE_RWLOCK(css_set_lock);
- static int css_set_count;
- 
--/* hash table for cgroup groups. This improves the performance to
-- * find an existing css_set */
-+/*
-+ * hash table for cgroup groups. This improves the performance to find
-+ * an existing css_set. This hash doesn't (currently) take into
-+ * account cgroups in empty hierarchies.
-+ */
- #define CSS_SET_HASH_BITS	7
- #define CSS_SET_TABLE_SIZE	(1 << CSS_SET_HASH_BITS)
- static struct hlist_head css_set_table[CSS_SET_TABLE_SIZE];
-@@ -344,6 +348,78 @@ static inline void put_css_set_taskexit(struct css_set *cg)
- }
- 
- /*
-+ * compare_css_sets - helper function for find_existing_css_set().
-+ * @cg: candidate css_set being tested
-+ * @old_cg: existing css_set for a task
-+ * @new_cgrp: cgroup that's being entered by the task
-+ * @template: desired set of css pointers in css_set (pre-calculated)
-+ *
-+ * Returns true if "cg" matches "old_cg" except for the hierarchy
-+ * which "new_cgrp" belongs to, for which it should match "new_cgrp".
-+ */
-+static bool compare_css_sets(struct css_set *cg,
-+			     struct css_set *old_cg,
-+			     struct cgroup *new_cgrp,
-+			     struct cgroup_subsys_state *template[])
-+{
-+	struct list_head *l1, *l2;
-+
-+	if (memcmp(template, cg->subsys, sizeof(cg->subsys))) {
-+		/* Not all subsystems matched */
-+		return false;
-+	}
-+
-+	/*
-+	 * Compare cgroup pointers in order to distinguish between
-+	 * different cgroups in heirarchies with no subsystems. We
-+	 * could get by with just this check alone (and skip the
-+	 * memcmp above) but on most setups the memcmp check will
-+	 * avoid the need for this more expensive check on almost all
-+	 * candidates.
-+	 */
-+
-+	l1 = &cg->cg_links;
-+	l2 = &old_cg->cg_links;
-+	while (1) {
-+		struct cg_cgroup_link *cgl1, *cgl2;
-+		struct cgroup *cg1, *cg2;
-+
-+		l1 = l1->next;
-+		l2 = l2->next;
-+		/* See if we reached the end - both lists are equal length. */
-+		if (l1 == &cg->cg_links) {
-+			BUG_ON(l2 != &old_cg->cg_links);
-+			break;
-+		} else {
-+			BUG_ON(l2 == &old_cg->cg_links);
-+		}
-+		/* Locate the cgroups associated with these links. */
-+		cgl1 = list_entry(l1, struct cg_cgroup_link, cg_link_list);
-+		cgl2 = list_entry(l2, struct cg_cgroup_link, cg_link_list);
-+		cg1 = cgl1->cgrp;
-+		cg2 = cgl2->cgrp;
-+		/* Hierarchies should be linked in the same order. */
-+		BUG_ON(cg1->root != cg2->root);
-+
-+		/*
-+		 * If this hierarchy is the hierarchy of the cgroup
-+		 * that's changing, then we need to check that this
-+		 * css_set points to the new cgroup; if it's any other
-+		 * hierarchy, then this css_set should point to the
-+		 * same cgroup as the old css_set.
-+		 */
-+		if (cg1->root == new_cgrp->root) {
-+			if (cg1 != new_cgrp)
-+				return false;
-+		} else {
-+			if (cg1 != cg2)
-+				return false;
-+		}
-+	}
-+	return true;
-+}
-+
-+/*
-  * find_existing_css_set() is a helper for
-  * find_css_set(), and checks to see whether an existing
-  * css_set is suitable.
-@@ -384,10 +460,11 @@ static struct css_set *find_existing_css_set(
- 
- 	hhead = css_set_hash(template);
- 	hlist_for_each_entry(cg, node, hhead, hlist) {
--		if (!memcmp(template, cg->subsys, sizeof(cg->subsys))) {
--			/* All subsystems matched */
--			return cg;
--		}
-+		if (!compare_css_sets(cg, oldcg, cgrp, template))
-+			continue;
-+
-+		/* This css_set matches what we need */
-+		return cg;
- 	}
- 
- 	/* No existing cgroup group matched */
-@@ -441,8 +518,13 @@ static void link_css_set(struct list_head *tmp_cg_links,
- 	link = list_first_entry(tmp_cg_links, struct cg_cgroup_link,
- 				cgrp_link_list);
- 	link->cg = cg;
-+	link->cgrp = cgrp;
- 	list_move(&link->cgrp_link_list, &cgrp->css_sets);
--	list_add(&link->cg_link_list, &cg->cg_links);
-+	/*
-+	 * Always add links to the tail of the list so that the list
-+	 * is sorted by order of hierarchy creation
-+	 */
-+	list_add_tail(&link->cg_link_list, &cg->cg_links);
- }
- 
- /*
-@@ -462,6 +544,7 @@ static struct css_set *find_css_set(
- 	struct list_head tmp_cg_links;
- 
- 	struct hlist_head *hhead;
-+	struct cg_cgroup_link *link;
- 
- 	/* First see if we already have a cgroup group that matches
- 	 * the desired set */
-@@ -497,18 +580,14 @@ static struct css_set *find_css_set(
- 	/* Add reference counts and links from the new css_set. */
- 	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
- 		struct cgroup *cgrp = res->subsys[i]->cgroup;
--		struct cgroup_subsys *ss = subsys[i];
- 		atomic_inc(&cgrp->count);
--		/*
--		 * We want to add a link once per cgroup, so we
--		 * only do it for the first subsystem in each
--		 * hierarchy
--		 */
--		if (ss->root->subsys_list.next == &ss->sibling)
--			link_css_set(&tmp_cg_links, res, cgrp);
- 	}
--	if (list_empty(&rootnode.subsys_list))
--		link_css_set(&tmp_cg_links, res, dummytop);
-+	list_for_each_entry(link, &oldcg->cg_links, cg_link_list) {
-+		struct cgroup *c = link->cgrp;
-+		if (c->root == cgrp->root)
-+			c = cgrp;
-+		link_css_set(&tmp_cg_links, res, c);
-+	}
- 
- 	BUG_ON(!list_empty(&tmp_cg_links));
- 
-@@ -524,6 +603,41 @@ static struct css_set *find_css_set(
- }
- 
- /*
-+ * Return the cgroup for "task" from the given hierarchy. Must be
-+ * called with cgroup_mutex held.
-+ */
-+static struct cgroup *task_cgroup_from_root(struct task_struct *task,
-+					    struct cgroupfs_root *root)
-+{
-+	struct css_set *css;
-+	struct cgroup *res = NULL;
-+
-+	BUG_ON(!mutex_is_locked(&cgroup_mutex));
-+	read_lock(&css_set_lock);
-+	/*
-+	 * No need to lock the task - since we hold cgroup_mutex the
-+	 * task can't change groups, so the only thing that can happen
-+	 * is that it exits and its css is set back to init_css_set.
-+	 */
-+	css = task->cgroups;
-+	if (css == &init_css_set) {
-+		res = &root->top_cgroup;
-+	} else {
-+		struct cg_cgroup_link *link;
-+		list_for_each_entry(link, &css->cg_links, cg_link_list) {
-+			struct cgroup *c = link->cgrp;
-+			if (c->root == root) {
-+				res = c;
-+				break;
-+			}
-+		}
-+	}
-+	read_unlock(&css_set_lock);
-+	BUG_ON(!res);
-+	return res;
-+}
-+
-+/*
-  * There is one global cgroup mutex. We also require taking
-  * task_lock() when dereferencing a task's cgroup subsys pointers.
-  * See "The task_lock() exception", at the end of this comment.
-@@ -1350,27 +1464,6 @@ int cgroup_path(const struct cgroup *cgrp, char *buf, int buflen)
- 	return 0;
- }
- 
--/*
-- * Return the first subsystem attached to a cgroup's hierarchy, and
-- * its subsystem id.
-- */
--
--static void get_first_subsys(const struct cgroup *cgrp,
--			struct cgroup_subsys_state **css, int *subsys_id)
--{
--	const struct cgroupfs_root *root = cgrp->root;
--	const struct cgroup_subsys *test_ss;
--	BUG_ON(list_empty(&root->subsys_list));
--	test_ss = list_entry(root->subsys_list.next,
--			     struct cgroup_subsys, sibling);
--	if (css) {
--		*css = cgrp->subsys[test_ss->subsys_id];
--		BUG_ON(!*css);
--	}
--	if (subsys_id)
--		*subsys_id = test_ss->subsys_id;
--}
--
- /**
-  * cgroup_attach_task - attach task 'tsk' to cgroup 'cgrp'
-  * @cgrp: the cgroup the task is attaching to
-@@ -1387,12 +1480,9 @@ int cgroup_attach_task(struct cgroup *cgrp, struct task_struct *tsk)
- 	struct css_set *cg;
- 	struct css_set *newcg;
- 	struct cgroupfs_root *root = cgrp->root;
--	int subsys_id;
--
--	get_first_subsys(cgrp, NULL, &subsys_id);
- 
- 	/* Nothing to do if the task is already in that cgroup */
--	oldcgrp = task_cgroup(tsk, subsys_id);
-+	oldcgrp = task_cgroup_from_root(tsk, root);
- 	if (cgrp == oldcgrp)
- 		return 0;
- 
-@@ -1950,7 +2040,7 @@ int cgroup_task_count(const struct cgroup *cgrp)
-  * the start of a css_set
-  */
- static void cgroup_advance_iter(struct cgroup *cgrp,
--					  struct cgroup_iter *it)
-+				struct cgroup_iter *it)
- {
- 	struct list_head *l = it->cg_link;
- 	struct cg_cgroup_link *link;
-@@ -2944,6 +3034,7 @@ int __init cgroup_init_early(void)
- 	init_task.cgroups = &init_css_set;
- 
- 	init_css_set_link.cg = &init_css_set;
-+	init_css_set_link.cgrp = dummytop;
- 	list_add(&init_css_set_link.cgrp_link_list,
- 		 &rootnode.top_cgroup.css_sets);
- 	list_add(&init_css_set_link.cg_link_list,
-@@ -3051,7 +3142,6 @@ static int proc_cgroup_show(struct seq_file *m, void *v)
- 	for_each_active_root(root) {
- 		struct cgroup_subsys *ss;
- 		struct cgroup *cgrp;
--		int subsys_id;
- 		int count = 0;
- 
- 		seq_printf(m, "%lu:", root->subsys_bits);
-@@ -3061,8 +3151,7 @@ static int proc_cgroup_show(struct seq_file *m, void *v)
- 			seq_printf(m, "%sname=%s", count ? "," : "",
- 				   root->name);
- 		seq_putc(m, ':');
--		get_first_subsys(&root->top_cgroup, NULL, &subsys_id);
--		cgrp = task_cgroup(tsk, subsys_id);
-+		cgrp = task_cgroup_from_root(tsk, root);
- 		retval = cgroup_path(cgrp, buf, PAGE_SIZE);
- 		if (retval < 0)
- 			goto out_unlock;
-@@ -3388,13 +3477,11 @@ int cgroup_is_descendant(const struct cgroup *cgrp, struct task_struct *task)
- {
- 	int ret;
- 	struct cgroup *target;
--	int subsys_id;
- 
- 	if (cgrp == dummytop)
- 		return 1;
- 
--	get_first_subsys(cgrp, NULL, &subsys_id);
--	target = task_cgroup(task, subsys_id);
-+	target = task_cgroup_from_root(task, cgrp->root);
- 	while (cgrp != target && cgrp!= cgrp->top_cgroup)
- 		cgrp = cgrp->parent;
- 	ret = (cgrp == target);
-@@ -3804,6 +3891,59 @@ static u64 current_css_set_refcount_read(struct cgroup *cont,
- 	return count;
- }
- 
-+static int current_css_set_cg_links_read(struct cgroup *cont,
-+					 struct cftype *cft,
-+					 struct seq_file *seq)
-+{
-+	struct cg_cgroup_link *link;
-+	struct css_set *cg;
-+
-+	read_lock(&css_set_lock);
-+	rcu_read_lock();
-+	cg = rcu_dereference(current->cgroups);
-+	list_for_each_entry(link, &cg->cg_links, cg_link_list) {
-+		struct cgroup *c = link->cgrp;
-+		const char *name;
-+
-+		if (c->dentry)
-+			name = c->dentry->d_name.name;
-+		else
-+			name = "?";
-+		seq_printf(seq, "Root %lu group %s\n",
-+			   c->root->subsys_bits, name);
-+	}
-+	rcu_read_unlock();
-+	read_unlock(&css_set_lock);
-+	return 0;
-+}
-+
-+#define MAX_TASKS_SHOWN_PER_CSS 25
-+static int cgroup_css_links_read(struct cgroup *cont,
-+				 struct cftype *cft,
-+				 struct seq_file *seq)
-+{
-+	struct cg_cgroup_link *link;
-+
-+	read_lock(&css_set_lock);
-+	list_for_each_entry(link, &cont->css_sets, cgrp_link_list) {
-+		struct css_set *cg = link->cg;
-+		struct task_struct *task;
-+		int count = 0;
-+		seq_printf(seq, "css_set %p\n", cg);
-+		list_for_each_entry(task, &cg->tasks, cg_list) {
-+			if (count++ > MAX_TASKS_SHOWN_PER_CSS) {
-+				seq_puts(seq, "  ...\n");
-+				break;
-+			} else {
-+				seq_printf(seq, "  task %d\n",
-+					   task_pid_vnr(task));
-+			}
-+		}
-+	}
-+	read_unlock(&css_set_lock);
-+	return 0;
-+}
-+
- static u64 releasable_read(struct cgroup *cgrp, struct cftype *cft)
- {
- 	return test_bit(CGRP_RELEASABLE, &cgrp->flags);
-@@ -3830,6 +3970,16 @@ static struct cftype debug_files[] =  {
- 	},
- 
- 	{
-+		.name = "current_css_set_cg_links",
-+		.read_seq_string = current_css_set_cg_links_read,
-+	},
-+
-+	{
-+		.name = "cgroup_css_links",
-+		.read_seq_string = cgroup_css_links_read,
-+	},
-+
-+	{
- 		.name = "releasable",
- 		.read_u64 = releasable_read,
- 	},
-
+> It helps when grepping.
+> 
+> > @@ -377,8 +377,8 @@ static int ip_vs_svc_hash(struct ip_vs_service *svc)
+> >  static int ip_vs_svc_unhash(struct ip_vs_service *svc)
+> >  {
+> >  	if (!(svc->flags & IP_VS_SVC_F_HASHED)) {
+> > -		IP_VS_ERR("ip_vs_svc_unhash(): request for unhash flagged, "
+> > -			  "called from %p\n", __builtin_return_address(0));
+> > +		pr_err("ip_vs_svc_unhash(): request for unhash flagged, "
+> > +		       "called from %p\n", __builtin_return_address(0));
+> 
+> Maybe use something like:
+> 	"%s(): <foo> called from %pf",
+> 	 __func__, __builtin_return_address(0)
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
