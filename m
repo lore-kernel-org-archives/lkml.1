@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753069AbZG1RF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751675AbZG1RIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753069AbZG1RF6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 13:05:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbZG1RF6
+	id S1751675AbZG1RIR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 13:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbZG1RIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 13:05:58 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54517 "EHLO
+	Tue, 28 Jul 2009 13:08:16 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54524 "EHLO
 	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751657AbZG1RF5 (ORCPT
+	with ESMTP id S1752256AbZG1RIP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 13:05:57 -0400
-Date: Tue, 28 Jul 2009 18:06:49 +0100
+	Tue, 28 Jul 2009 13:08:15 -0400
+Date: Tue, 28 Jul 2009 18:09:00 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
@@ -19,8 +19,8 @@ Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
        LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [PATCH] kdesu broken
-Message-ID: <20090728180649.596c5412@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.01.0907280944150.3186@localhost.localdomain>
+Message-ID: <20090728180900.54b2f0b7@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.01.0907280949250.3186@localhost.localdomain>
 References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
 	<87bpn7mzli.fsf@devron.myhome.or.jp>
 	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
@@ -39,6 +39,7 @@ References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
 	<alpine.LFD.2.01.0907280848090.3186@localhost.localdomain>
 	<20090728174213.5e927428@lxorguk.ukuu.org.uk>
 	<alpine.LFD.2.01.0907280944150.3186@localhost.localdomain>
+	<alpine.LFD.2.01.0907280949250.3186@localhost.localdomain>
 X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -47,87 +48,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Imagine being in 'select()' (or read, for that matter), and getting EINTR 
-> due to SIGCHLD. What is the correct expectations?
+> Put another way: our pty code is simply _buggy_ if it returns EINTR when 
+> there is actually data pending on a pty.
 
-If you are asking that question I don't think you understand the bug
-report.
+Good job it doesn't do that then - although be careful what "data
+pending" means. If the buffer contains "wombat" and you are in ICANON
+mode then there is no data pending, and poll() likewise will say there is
+no data pending. Only when newline is hit do you have data pending (which
+is why test t3 is buggy)
 
-> The correct expectation is that the select() (or read()) should have 
-> returned any data that it saw _before_ it returns EINTR.
-
-read() handles that correctly, has always done so.
-
-emacs from the traces does this
-
-	set O_NDELAY
-	wait for SIGCLD
-	read()
-		EAGAIN
-		shit_myself();
-
-The EWOULDBLOCK is perfectly correctly reporting that at that precise
-instant no data is available.
-
-Correctly written code does this
-
-	loop: 	read()
-		EAGAIN
-		poll
-		goto loop
-
-and in that case our code all works correctly.
-
-If you put the whole thing on a timeline it looks like this (without
-lowlatency being enabled but with the EOF thing fixed)
-
-
-Slave			Emacs		Kernel
-
-write "errors"
-					Queue to tty->buf
-close
-					This is all the data
-					Other end closed
-exit
-			SIGCLD
-			read pty
-			EWOULDBLOCK
-			shit myself
-					schedule n_tty ldisc
-					queue bytes to parent
-
-			died rather than waited
-
-Had emacs used poll() properly then it ought to have all worked, although
-a spot of review of that wouldn't be a bad thing.
-
-Also calling into the n_tty ldisc side processing in the receiver
-unfortunately opens up this stuff
-
-
-	** interrupt path **
-	data received
-	queue to tty->buf, and wake
-
-	** hangup **
-	closes the ldisc down
-	waits for the workqueue to complete
-	physical instance goes away
-
-	** a read already in progress **
-	(new reads will go via tty_hung_up_write())
-	process n_tty ldisc
-		(which is already closed)
-	echo char
-		write to non-existant device
-		jump to fishkill (or exploitville or wherever)
-
-Because the hangup code, ldisc and open/close code all work on the basis
-that
-
-	- a hang up means the caller will not call tty_flip_buffer_push
-	  after calling tty_hangup.
-	- the only other path (the non low latency path) is the workqueue
-	  which it takes care to kill off
-
+Alan
