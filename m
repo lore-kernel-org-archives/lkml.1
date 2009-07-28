@@ -1,113 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753790AbZG1PGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754472AbZG1PKL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753790AbZG1PGn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 11:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbZG1PGm
+	id S1754472AbZG1PKL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 11:10:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbZG1PKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 11:06:42 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:26547 "EHLO
-	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753634AbZG1PGi (ORCPT
+	Tue, 28 Jul 2009 11:10:10 -0400
+Received: from sg2ehsobe002.messaging.microsoft.com ([207.46.51.76]:12288 "EHLO
+	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753710AbZG1PKF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 11:06:38 -0400
+	Tue, 28 Jul 2009 11:10:05 -0400
 X-SpamScore: 1
-X-BigFish: VPS1(zzzz1202hzzz32i203h61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KNHZAQ-01-0O9-02
+X-BigFish: VPS1(zzzz1202hzzz32i203h65h)
+X-Spam-TCS-SCL: 4:0
+X-WSS-ID: 0KNHZAQ-02-6PD-02
 X-M-MSG: 
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: <mingo@elte.hu>, <hpa@zytor.com>, <tglx@linutronix.de>, <norsk5@yahoo.com>,
        <aris@redhat.com>
-CC: <linux-kernel@vger.kernel.org>, <x86@kernel.org>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>
-Subject: [PATCH 04/20] x86: cacheinfo: fixup L3 cache information for AMD Magny-Cours
-Date: Tue, 28 Jul 2009 17:06:04 +0200
-Message-ID: <1248793580-29899-5-git-send-email-borislav.petkov@amd.com>
+CC: <linux-kernel@vger.kernel.org>, <x86@kernel.org>
+Subject: [PATCH 07/20] EDAC: beef up ErrorCodeExt error signatures
+Date: Tue, 28 Jul 2009 17:06:07 +0200
+Message-ID: <1248793580-29899-8-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1248793580-29899-1-git-send-email-borislav.petkov@amd.com>
 References: <1248793580-29899-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 28 Jul 2009 15:06:24.0097 (UTC) FILETIME=[F905E510:01CA0F94]
+X-OriginalArrivalTime: 28 Jul 2009 15:06:25.0472 (UTC) FILETIME=[F9D7B400:01CA0F94]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-
-L3 cache size, associativity and shared_cpu information need to be
-adapted to show information for an internal node instead of the
-entire physical package.
-
-Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- arch/x86/kernel/cpu/intel_cacheinfo.c |   20 ++++++++++++++------
- 1 files changed, 14 insertions(+), 6 deletions(-)
+ drivers/edac/edac_mce_amd.c |   71 ++++++++++++++++++++++--------------------
+ 1 files changed, 37 insertions(+), 34 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index 789efe2..3b54a1e 100644
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -241,7 +241,7 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
- 	case 0:
- 		if (!l1->val)
- 			return;
--		assoc = l1->assoc;
-+		assoc = assocs[l1->assoc];
- 		line_size = l1->line_size;
- 		lines_per_tag = l1->lines_per_tag;
- 		size_in_kb = l1->size_in_kb;
-@@ -249,7 +249,7 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
- 	case 2:
- 		if (!l2.val)
- 			return;
--		assoc = l2.assoc;
-+		assoc = assocs[l2.assoc];
- 		line_size = l2.line_size;
- 		lines_per_tag = l2.lines_per_tag;
- 		/* cpu_data has errata corrections for K7 applied */
-@@ -258,10 +258,14 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
- 	case 3:
- 		if (!l3.val)
- 			return;
--		assoc = l3.assoc;
-+		assoc = assocs[l3.assoc];
- 		line_size = l3.line_size;
- 		lines_per_tag = l3.lines_per_tag;
- 		size_in_kb = l3.size_encoded * 512;
-+		if (boot_cpu_has(X86_FEATURE_AMD_DCM)) {
-+			size_in_kb = size_in_kb >> 1;
-+			assoc = assoc >> 1;
-+		}
- 		break;
- 	default:
- 		return;
-@@ -278,10 +282,10 @@ amd_cpuid4(int leaf, union _cpuid4_leaf_eax *eax,
- 	eax->split.num_cores_on_die = current_cpu_data.x86_max_cores - 1;
+diff --git a/drivers/edac/edac_mce_amd.c b/drivers/edac/edac_mce_amd.c
+index cf84654..918567e 100644
+--- a/drivers/edac/edac_mce_amd.c
++++ b/drivers/edac/edac_mce_amd.c
+@@ -63,39 +63,42 @@ const char *ii_msgs[] = {	/* memory or i/o */
+ };
+ EXPORT_SYMBOL_GPL(ii_msgs);
  
- 
--	if (assoc == 0xf)
-+	if (assoc == 0xffff)
- 		eax->split.is_fully_associative = 1;
- 	ebx->split.coherency_line_size = line_size - 1;
--	ebx->split.ways_of_associativity = assocs[assoc] - 1;
-+	ebx->split.ways_of_associativity = assoc - 1;
- 	ebx->split.physical_line_partition = lines_per_tag - 1;
- 	ecx->split.number_of_sets = (size_in_kb * 1024) / line_size /
- 		(ebx->split.ways_of_associativity + 1) - 1;
-@@ -598,7 +602,11 @@ static void __cpuinit get_cpu_leaves(void *_retval)
- 				cache_remove_shared_cpu_map(cpu, i);
- 			break;
- 		}
--		cache_shared_cpu_map_setup(cpu, j);
-+		if (boot_cpu_has(X86_FEATURE_AMD_DCM))
-+			cpumask_copy(to_cpumask(this_leaf->shared_cpu_map),
-+				     topology_cpu_node_cpumask(cpu));
-+		else
-+			cache_shared_cpu_map_setup(cpu, j);
- 	}
- }
- 
+-/* Map the 5 bits of Extended Error code to the string table. */
+-const char *ext_msgs[] = {	/* extended error */
+-	"K8 ECC error/F10 reserved",	/* 0_0000b */
+-	"CRC error",			/* 0_0001b */
+-	"sync error",			/* 0_0010b */
+-	"mst abort",			/* 0_0011b */
+-	"tgt abort",			/* 0_0100b */
+-	"GART error",			/* 0_0101b */
+-	"RMW error",			/* 0_0110b */
+-	"Wdog timer error",		/* 0_0111b */
+-	"F10-ECC/K8-Chipkill error",	/* 0_1000b */
+-	"DEV Error",			/* 0_1001b */
+-	"Link Data error",		/* 0_1010b */
+-	"Link or L3 Protocol error",	/* 0_1011b */
+-	"NB Array error",		/* 0_1100b */
+-	"DRAM Parity error",		/* 0_1101b */
+-	"Link Retry/GART Table Walk/DEV Table Walk error", /* 0_1110b */
+-	"Res 0x0ff error",		/* 0_1111b */
+-	"Res 0x100 error",		/* 1_0000b */
+-	"Res 0x101 error",		/* 1_0001b */
+-	"Res 0x102 error",		/* 1_0010b */
+-	"Res 0x103 error",		/* 1_0011b */
+-	"Res 0x104 error",		/* 1_0100b */
+-	"Res 0x105 error",		/* 1_0101b */
+-	"Res 0x106 error",		/* 1_0110b */
+-	"Res 0x107 error",		/* 1_0111b */
+-	"Res 0x108 error",		/* 1_1000b */
+-	"Res 0x109 error",		/* 1_1001b */
+-	"Res 0x10A error",		/* 1_1010b */
+-	"Res 0x10B error",		/* 1_1011b */
+-	"L3 Cache Data error",		/* 1_1100b */
+-	"L3 CacheTag error",		/* 1_1101b */
+-	"L3 Cache LRU error",		/* 1_1110b */
+-	"Res 0x1FF error"		/* 1_1111b */
++/*
++ * Map the 4 or 5 (family-specific) bits of Extended Error code to the
++ * string table.
++ */
++const char *ext_msgs[] = {
++	"K8 ECC error",					/* 0_0000b */
++	"CRC error on link",				/* 0_0001b */
++	"Sync error packets on link",			/* 0_0010b */
++	"Master Abort during link operation",		/* 0_0011b */
++	"Target Abort during link operation",		/* 0_0100b */
++	"Invalid GART PTE entry during table walk",	/* 0_0101b */
++	"Unsupported atomic RMW command received",	/* 0_0110b */
++	"WDT error: NB transaction timeout",		/* 0_0111b */
++	"ECC/ChipKill ECC error",			/* 0_1000b */
++	"SVM DEV Error",				/* 0_1001b */
++	"Link Data error",				/* 0_1010b */
++	"Link/L3/Probe Filter Protocol error",		/* 0_1011b */
++	"NB Internal Arrays Parity error",		/* 0_1100b */
++	"DRAM Address/Control Parity error",		/* 0_1101b */
++	"Link Transmission error",			/* 0_1110b */
++	"GART/DEV Table Walk Data error"		/* 0_1111b */
++	"Res 0x100 error",				/* 1_0000b */
++	"Res 0x101 error",				/* 1_0001b */
++	"Res 0x102 error",				/* 1_0010b */
++	"Res 0x103 error",				/* 1_0011b */
++	"Res 0x104 error",				/* 1_0100b */
++	"Res 0x105 error",				/* 1_0101b */
++	"Res 0x106 error",				/* 1_0110b */
++	"Res 0x107 error",				/* 1_0111b */
++	"Res 0x108 error",				/* 1_1000b */
++	"Res 0x109 error",				/* 1_1001b */
++	"Res 0x10A error",				/* 1_1010b */
++	"Res 0x10B error",				/* 1_1011b */
++	"ECC error in L3 Cache Data",			/* 1_1100b */
++	"L3 Cache Tag error",				/* 1_1101b */
++	"L3 Cache LRU Parity error",			/* 1_1110b */
++	"Probe Filter error"				/* 1_1111b */
+ };
+ EXPORT_SYMBOL_GPL(ext_msgs);
 -- 
 1.6.3.3
 
