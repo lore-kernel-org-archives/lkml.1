@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754447AbZG1XuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756165AbZG1X5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754447AbZG1XuB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:50:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754349AbZG1XuA
+	id S1756165AbZG1X5i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:57:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbZG1XuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:50:00 -0400
-Received: from kroah.org ([198.145.64.141]:35762 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:50:08 -0400
+Received: from kroah.org ([198.145.64.141]:35792 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754316AbZG1Xt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:49:58 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:55 2009
-Message-Id: <20090728234155.604543229@mini.kroah.org>
+	id S1754373AbZG1XuE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:50:04 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:56 2009
+Message-Id: <20090728234156.607583909@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:40:58 -0700
+Date: Tue, 28 Jul 2009 16:41:04 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@linux.intel.com>
-Subject: [patch 29/71] vc: create vcs(a) devices for consoles
+       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Subject: [patch 35/71] nilfs2: fix incorrect KERN_CRIT messages in case of write failures
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=vc-create-vcs-devices-for-consoles.patch
+Content-Disposition: inline; filename=nilfs2-fix-incorrect-kern_crit-messages-in-case-of-write-failures.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,46 +30,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Kay Sievers <kay.sievers@vrfy.org>
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 
-commit c46a7aec556ffdbdb7357db0b05904b176cb3375 upstream.
+commit 4a52df779700080de4afb0436d9dd9188514a69b upstream.
 
-The buffer for the consoles are unconditionally allocated at con_init()
-time, which miss the creation of the vcs(a) devices.
+In case of write-failure retries, the following KERN_CRIT level
+messages are mistakenly output by nilfs_dat_commit_start() function:
 
-Since 2.6.30 (commit 4995f8ef9d3aac72745e12419d7fbaa8d01b1d81, 'vcs:
-hook sysfs devices into object lifetime instead of "binding"' to be
-exact) these devices are no longer created at open() and removed on
-close(), but controlled by the lifetime of the buffers.
+nilfs_dat_commit_start: vbn = 408463, start = 12506, end = 18446744073709551615, pbn = 530210
+nilfs_dat_commit_start: vbn = 408515, start = 12506, end = 18446744073709551615, pbn = 530211
+nilfs_dat_commit_start: vbn = 408464, start = 12506, end = 18446744073709551615, pbn = 530212
+...
 
-Reported-by: Gerardo Exequiel Pozzi <vmlinuz386@yahoo.com.ar>
-Tested-by: Gerardo Exequiel Pozzi <vmlinuz386@yahoo.com.ar>
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: Alan Cox <alan@linux.intel.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+This suppresses these messages.
+
+Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/vc_screen.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ fs/nilfs2/dat.c |    9 ---------
+ 1 file changed, 9 deletions(-)
 
---- a/drivers/char/vc_screen.c
-+++ b/drivers/char/vc_screen.c
-@@ -495,11 +495,15 @@ void vcs_remove_sysfs(int index)
+--- a/fs/nilfs2/dat.c
++++ b/fs/nilfs2/dat.c
+@@ -149,15 +149,6 @@ void nilfs_dat_commit_start(struct inode
+ 	entry = nilfs_palloc_block_get_entry(dat, req->pr_entry_nr,
+ 					     req->pr_entry_bh, kaddr);
+ 	entry->de_start = cpu_to_le64(nilfs_mdt_cno(dat));
+-	if (entry->de_blocknr != cpu_to_le64(0) ||
+-	    entry->de_end != cpu_to_le64(NILFS_CNO_MAX)) {
+-		printk(KERN_CRIT
+-		       "%s: vbn = %llu, start = %llu, end = %llu, pbn = %llu\n",
+-		       __func__, (unsigned long long)req->pr_entry_nr,
+-		       (unsigned long long)le64_to_cpu(entry->de_start),
+-		       (unsigned long long)le64_to_cpu(entry->de_end),
+-		       (unsigned long long)le64_to_cpu(entry->de_blocknr));
+-	}
+ 	entry->de_blocknr = cpu_to_le64(blocknr);
+ 	kunmap_atomic(kaddr, KM_USER0);
  
- int __init vcs_init(void)
- {
-+	unsigned int i;
-+
- 	if (register_chrdev(VCS_MAJOR, "vcs", &vcs_fops))
- 		panic("unable to get major %d for vcs device", VCS_MAJOR);
- 	vc_class = class_create(THIS_MODULE, "vc");
- 
- 	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, 0), NULL, "vcs");
- 	device_create(vc_class, NULL, MKDEV(VCS_MAJOR, 128), NULL, "vcsa");
-+	for (i = 0; i < MIN_NR_CONSOLES; i++)
-+		vcs_make_sysfs(i);
- 	return 0;
- }
 
 
