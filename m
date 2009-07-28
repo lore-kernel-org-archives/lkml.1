@@ -1,62 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755411AbZG1Vzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbZG1Vzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755411AbZG1Vzi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 17:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754728AbZG1Vzi
+	id S1755585AbZG1Vzw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 17:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbZG1Vzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 17:55:38 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:44231 "EHLO
+	Tue, 28 Jul 2009 17:55:43 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:41260 "EHLO
 	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754496AbZG1Vzh (ORCPT
+	with ESMTP id S1754813AbZG1Vzi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 17:55:37 -0400
+	Tue, 28 Jul 2009 17:55:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=qrZh+5UyHd3aZnLqI7df+kqo1Ab30S/A2/d+iaB9+x5Xi026ZovYiUy9YjtKZTbztC
-         cY9BGrzJXj643ikp7x5tjsaztpy9+9TYJf/zwKAONTF512uWk3PLHpOYlZUcJjrW7cqV
-         BhwHuB7QSuEsuyne57aVsAa5JSjofm4r2CAPw=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=QAix3RSFZK+nSRAEgMgj3IlnDZZujfHa503cuNb1UGb/+HG4b7uLZKEoQD/6tDDtNJ
+         0zbqjDyauPsTeQVKyvDGD0DWowEpUwsQ6HaNAM1eBStCt5/GgIZuiQpFQOQp6FF+6kfK
+         RsenD8kYWDIbOaK5I4haKoDQK4gh4u/SpsCbc=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 0/2] tracing/function_graph fixes for 2.6.31
-Date: Tue, 28 Jul 2009 23:55:32 +0200
-Message-Id: <1248818134-5231-1-git-send-email-fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>, stable@kernel.org,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 1/2] tracing: Fix invalid function_graph entry
+Date: Tue, 28 Jul 2009 23:55:33 +0200
+Message-Id: <1248818134-5231-2-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <1248818134-5231-1-git-send-email-fweisbec@gmail.com>
+References: <1248818134-5231-1-git-send-email-fweisbec@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo, Thomas,
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
 
-Those are two fixes for the function graph tracer for .31
+When print_graph_entry() computes a function call entry event, it needs
+to also check the next entry to guess if it matches the return event of
+the current function entry.
+In order to look at this next event, it needs to consume the current
+entry before going ahead in the ring buffer.
 
-The first one fixes a possible race condition between a function graph trace
-reader and ring buffer writers, leading to a mixup inside an event entry, or
-worst.
+However, if the current event that gets consumed is the last one in the
+ring buffer head page, the ring_buffer may reuse the page for writers.
+The consumed entry will then become invalid because of possible
+racy overwriting.
 
-The second one fixes some issues in the output of the function graph tracer
-while using splice on the trace_pipe file or ftrace_dump().
+Me must then handle this entry by making a copy of it.
 
-Both fixes should also be backported on .30 for the -stable branch.
+The fix also applies on 2.6.30
 
-Thanks,
-Frederic.
-
-The following changes since commit 4733fd328f14280900435d9dbae1487d110a4d56:
-  Benjamin Herrenschmidt (1):
-        mm: Remove duplicate definitions in MIPS and SH
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git tracing/fixes
-
-Lai Jiangshan (2):
-      tracing: Fix invalid function_graph entry
-      tracing: Fix missing function_graph events when we splice_read from trace_pipe
-
- kernel/trace/trace.c                 |   10 +++++++---
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: stable@kernel.org
+LKML-Reference: <4A6EEAEC.3050508@cn.fujitsu.com>
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
  kernel/trace/trace_functions_graph.c |   11 +++++++++--
- 2 files changed, 16 insertions(+), 5 deletions(-)
+ 1 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
+index d2249ab..420ec34 100644
+--- a/kernel/trace/trace_functions_graph.c
++++ b/kernel/trace/trace_functions_graph.c
+@@ -843,9 +843,16 @@ print_graph_function(struct trace_iterator *iter)
+ 
+ 	switch (entry->type) {
+ 	case TRACE_GRAPH_ENT: {
+-		struct ftrace_graph_ent_entry *field;
++		/*
++		 * print_graph_entry() may consume the current event,
++		 * thus @field may become invalid, so we need to save it.
++		 * sizeof(struct ftrace_graph_ent_entry) is very small,
++		 * it can be safely saved at the stack.
++		 */
++		struct ftrace_graph_ent_entry *field, saved;
+ 		trace_assign_type(field, entry);
+-		return print_graph_entry(field, s, iter);
++		saved = *field;
++		return print_graph_entry(&saved, s, iter);
+ 	}
+ 	case TRACE_GRAPH_RET: {
+ 		struct ftrace_graph_ret_entry *field;
+-- 
+1.6.2.3
+
