@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZG1X55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbZG1X4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756177AbZG1X55 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:57:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbZG1X54
+	id S1756135AbZG1X4S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbZG1XuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:57:56 -0400
-Received: from kroah.org ([198.145.64.141]:35818 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:50:13 -0400
+Received: from kroah.org ([198.145.64.141]:35804 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753260AbZG1XuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:50:08 -0400
+	id S1753289AbZG1XuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:50:06 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:57 2009
-Message-Id: <20090728234157.216634289@mini.kroah.org>
+Message-Id: <20090728234156.900371671@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:41:08 -0700
+Date: Tue, 28 Jul 2009 16:41:06 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Yinghai Lu <yinghai@kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 39/71] x86/pci: insert ioapic resource before assigning unassigned resources
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Gregory Haskins <ghaskins@novell.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 37/71] sched_rt: Fix overload bug on rt group scheduling
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=x86-pci-insert-ioapic-resource-before-assigning-unassigned-resources.patch
+Content-Disposition: inline; filename=sched_rt-fix-overload-bug-on-rt-group-scheduling.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,116 +31,96 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Yinghai Lu <yinghai@kernel.org>
+From: Peter Zijlstra <peterz@infradead.org>
 
-commit 857fdc53a0a90c3ba7fcf5b1fb4c7a62ae03cf82 upstream.
+commit a1ba4d8ba9f06a397e97cbd67a93ee306860b40a upstream.
 
-Stephen reported that his DL585 G2 needed noapic after 2.6.22 (?)
+Fixes an easily triggerable BUG() when setting process affinities.
 
-Dann bisected it down to:
-  commit 30a18d6c3f1e774de656ebd8ff219d53e2ba4029
-  Date:   Tue Feb 19 03:21:20 2008 -0800
+Make sure to count the number of migratable tasks in the same place:
+the root rt_rq. Otherwise the number doesn't make sense and we'll hit
+the BUG in set_cpus_allowed_rt().
 
-      x86: multi pci root bus with different io resource range, on
-      64-bit
+Also, make sure we only count tasks, not groups (this is probably
+already taken care of by the fact that rt_se->nr_cpus_allowed will be 0
+for groups, but be more explicit)
 
-It turns out that:
-  1. that AMD-based systems have two HT chains.
-  2. BIOS doesn't allocate resources for BAR 6 of devices under 8132 etc
-  3. that multi-peer-root patch will try to split root resources to peer
-     root resources according to PCI conf of NB
-  4. PCI core assigns unassigned resources, but they overlap with BARs
-     that are used by ioapic addr of io4 and 8132.
-
-The reason: at that point ioapic address are not inserted yet.  Solution
-is to insert ioapic resources into the tree a bit earlier.
-
-Reported-by: Stephen Frost <sfrost@snowman.net>
-Reported-and-Tested-by: dann frazier <dannf@hp.com>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Tested-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Acked-by: Gregory Haskins <ghaskins@novell.com>
+LKML-Reference: <1247067476.9777.57.camel@twins>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/include/asm/io_apic.h |    2 ++
- arch/x86/kernel/apic/io_apic.c |   14 +++-----------
- arch/x86/pci/i386.c            |    7 +++++++
- 3 files changed, 12 insertions(+), 11 deletions(-)
+ kernel/sched.c    |    1 +
+ kernel/sched_rt.c |   18 +++++++++++++++++-
+ 2 files changed, 18 insertions(+), 1 deletion(-)
 
---- a/arch/x86/include/asm/io_apic.h
-+++ b/arch/x86/include/asm/io_apic.h
-@@ -160,6 +160,7 @@ extern int io_apic_set_pci_routing(int i
- 
- extern int (*ioapic_renumber_irq)(int ioapic, int irq);
- extern void ioapic_init_mappings(void);
-+extern void ioapic_insert_resources(void);
- 
- #ifdef CONFIG_X86_64
- extern struct IO_APIC_route_entry **alloc_ioapic_entries(void);
-@@ -183,6 +184,7 @@ extern void ioapic_write_entry(int apic,
- #define io_apic_assign_pci_irqs 0
- static const int timer_through_8259 = 0;
- static inline void ioapic_init_mappings(void)	{ }
-+static inline void ioapic_insert_resources(void) { }
- 
- static inline void probe_nr_irqs_gsi(void)	{ }
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -497,6 +497,7 @@ struct rt_rq {
  #endif
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -4182,28 +4182,20 @@ fake_ioapic_page:
- 	}
- }
+ #ifdef CONFIG_SMP
+ 	unsigned long rt_nr_migratory;
++	unsigned long rt_nr_total;
+ 	int overloaded;
+ 	struct plist_head pushable_tasks;
+ #endif
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -10,6 +10,8 @@ static inline struct task_struct *rt_tas
  
--static int __init ioapic_insert_resources(void)
-+void __init ioapic_insert_resources(void)
+ #ifdef CONFIG_RT_GROUP_SCHED
+ 
++#define rt_entity_is_task(rt_se) (!(rt_se)->my_q)
++
+ static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
  {
- 	int i;
- 	struct resource *r = ioapic_resources;
+ 	return rt_rq->rq;
+@@ -22,6 +24,8 @@ static inline struct rt_rq *rt_rq_of_se(
  
- 	if (!r) {
--		if (nr_ioapics > 0) {
-+		if (nr_ioapics > 0)
- 			printk(KERN_ERR
- 				"IO APIC resources couldn't be allocated.\n");
--			return -1;
--		}
--		return 0;
+ #else /* CONFIG_RT_GROUP_SCHED */
+ 
++#define rt_entity_is_task(rt_se) (1)
++
+ static inline struct rq *rq_of_rt_rq(struct rt_rq *rt_rq)
+ {
+ 	return container_of(rt_rq, struct rq, rt);
+@@ -73,7 +77,7 @@ static inline void rt_clear_overload(str
+ 
+ static void update_rt_migration(struct rt_rq *rt_rq)
+ {
+-	if (rt_rq->rt_nr_migratory && (rt_rq->rt_nr_running > 1)) {
++	if (rt_rq->rt_nr_migratory && rt_rq->rt_nr_total > 1) {
+ 		if (!rt_rq->overloaded) {
+ 			rt_set_overload(rq_of_rt_rq(rt_rq));
+ 			rt_rq->overloaded = 1;
+@@ -86,6 +90,12 @@ static void update_rt_migration(struct r
+ 
+ static void inc_rt_migration(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
+ {
++	if (!rt_entity_is_task(rt_se))
 +		return;
- 	}
++
++	rt_rq = &rq_of_rt_rq(rt_rq)->rt;
++
++	rt_rq->rt_nr_total++;
+ 	if (rt_se->nr_cpus_allowed > 1)
+ 		rt_rq->rt_nr_migratory++;
  
- 	for (i = 0; i < nr_ioapics; i++) {
- 		insert_resource(&iomem_resource, r);
- 		r++;
- 	}
--
--	return 0;
- }
--
--/* Insert the IO APIC resources after PCI initialization has occured to handle
-- * IO APICS that are mapped in on a BAR in PCI space. */
--late_initcall(ioapic_insert_resources);
---- a/arch/x86/pci/i386.c
-+++ b/arch/x86/pci/i386.c
-@@ -35,6 +35,7 @@
- #include <asm/pat.h>
- #include <asm/e820.h>
- #include <asm/pci_x86.h>
-+#include <asm/io_apic.h>
+@@ -94,6 +104,12 @@ static void inc_rt_migration(struct sche
  
+ static void dec_rt_migration(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
+ {
++	if (!rt_entity_is_task(rt_se))
++		return;
++
++	rt_rq = &rq_of_rt_rq(rt_rq)->rt;
++
++	rt_rq->rt_nr_total--;
+ 	if (rt_se->nr_cpus_allowed > 1)
+ 		rt_rq->rt_nr_migratory--;
  
- static int
-@@ -230,6 +231,12 @@ void __init pcibios_resource_survey(void
- 	pcibios_allocate_resources(1);
- 
- 	e820_reserve_resources_late();
-+	/*
-+	 * Insert the IO APIC resources after PCI initialization has
-+	 * occured to handle IO APICS that are mapped in on a BAR in
-+	 * PCI space, but before trying to assign unassigned pci res.
-+	 */
-+	ioapic_insert_resources();
- }
- 
- /**
 
 
