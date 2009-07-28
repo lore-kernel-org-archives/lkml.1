@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754726AbZG1QCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697AbZG1QHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754726AbZG1QCk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 12:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbZG1QCj
+	id S1754697AbZG1QHb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 12:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbZG1QH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 12:02:39 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44777 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754629AbZG1QCi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 12:02:38 -0400
-Date: Tue, 28 Jul 2009 09:00:49 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Zachary Amsden <zamsden@redhat.com>, Tejun Heo <tj@kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       axboe@kernel.dk, hch@infradead.org, akpm@linux-foundation.org,
-       Paul.Clements@steeleye.com, tytso@mit.edu, miklos <miklos@szeredi.hu>
-Subject: Re: [PATCH] Allow userspace block device implementation
-In-Reply-To: <20090728112734.5a75752d@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.2.01.0907280851360.3186@localhost.localdomain>
-References: <4A6D79F6.3050509@redhat.com> <1248699365.6987.1628.camel@twins> <20090727142536.465799aa@lxorguk.ukuu.org.uk> <4A6E529B.9030104@kernel.org> <4A6E764E.80805@redhat.com> <20090728112734.5a75752d@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 28 Jul 2009 12:07:29 -0400
+Received: from smtp.outflux.net ([198.145.64.163]:32961 "EHLO smtp.outflux.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753321AbZG1QH2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 12:07:28 -0400
+X-Greylist: delayed 534 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Jul 2009 12:07:28 EDT
+Date: Tue, 28 Jul 2009 08:56:22 -0700
+From: Kees Cook <kees@ubuntu.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, James Morris <jmorris@namei.org>,
+       James Carter <jwcart2@tycho.nsa.gov>, Eric Paris <eparis@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       selinux@tycho.nsa.gov, Stephen Smalley <sds@tycho.nsa.gov>,
+       spender@grsecurity.net, Daniel J Walsh <dwalsh@redhat.com>,
+       cl@linux-foundation.org, Arjan van de Ven <arjan@infradead.org>,
+       Chad Sellers <csellers@tresys.com>,
+       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, mingo@elte.hu
+Subject: Re: mmap_min_addr and your local LSM (ok, just SELinux)
+Message-ID: <20090728155622.GO7316@outflux.net>
+References: <1248132223.2654.278.camel@localhost>
+ <alpine.LRH.2.00.0907211258110.32400@tundra.namei.org>
+ <1248187482.19456.90.camel@moss-lions.epoch.ncsc.mil>
+ <alpine.LRH.2.00.0907221953190.15799@tundra.namei.org>
+ <20090728011943.589176cb@lxorguk.ukuu.org.uk>
+ <87zlapgo2u.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87zlapgo2u.fsf@basil.nowhere.org>
+Organization: Ubuntu
+X-HELO: www.outflux.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jul 28, 2009 at 11:21:29AM +0200, Andi Kleen wrote:
+> Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+> 
+> > A dumb question perhaps, but while addling my brain over the tty layer I
+> > was wondering if for the specific case of jump through NULL (which seems
+> > to be the most common but by no means only problem case that gets
+> > exploited) is there any reason we can't set a default breakpoint for
+> 
+> You mean a hardware breakpoint? Hardware break points are a precious
+> scarce resource. The people who rely on them would be likely
+> unhappy if you take one way from them.
 
+Could the page table flags be used to mask this region?  i.e. force
+PROT_NONE (with the "desired" flags stored elsewhere) and in the segv
+handler check if it is kernel or user space, and then fix-up the flags and
+continue if it's userspace?  (I really don't know the internals on this,
+but it would need to restore PROT_NONE on task-switch or something...)
 
-On Tue, 28 Jul 2009, Alan Cox wrote:
->
-> Use device mapper. Really we should shoot all the partition code in the
-> kernel but the back compatibility is a bit tricky. We don't actually need
-> the partition code any more.
+-Kees
 
-Really, we should _not_ "shoot all the partition code in the kernel". 
-Quite the reverse.
-
-You need the kernel to read the disk anyway, you're _much_ better off 
-having the kernel know about the partitioning etc. There are absolutely 
-zero upsides to making the bootup be dependent on yet another user land 
-tool, and then effectively forcing people to use initrd whether they want 
-it or not - just in order to find the real root.
-
-The fact that some distributions already go too far, and use DM whether it 
-makes sense or not is only inconveniencing real users. It makes things 
-like data portability much harder. I have had real-life cases where I 
-wanted to move a disk from one machine to another, only to notice that the 
-crazy default for the distro I had used was to make it impossible, because 
-all the filesystems crossed disks.
-
-I've since learnt to not use DM (and instead doing a very inconvenient 
-"partition everything by hand because the install tool doesn't allow for 
-any simple automated way to make a sane install"), and to just put /home 
-on one disk and / on the other, and then I can way more easily just move 
-my /home disk around, for example.
-
-Yes, I realize that MD is convenient for a certain class of users, but a 
-_lot_ of distro people seem to totally miss all the inconveniences. 
-Possibly because they care more about "enterprise" customers than about 
-people who tinker.
-
-				Linus
+-- 
+Kees Cook
+Ubuntu Security Team
