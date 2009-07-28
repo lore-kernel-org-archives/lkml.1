@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbZG1Qkn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754912AbZG1Qld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754966AbZG1Qkn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 12:40:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbZG1Qkn
+	id S1754912AbZG1Qld (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 12:41:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbZG1Qlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 12:40:43 -0400
-Received: from wf-out-1516.google.com ([209.85.200.160]:15755 "EHLO
-	wf-out-1516.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752212AbZG1Qkm convert rfc822-to-8bit (ORCPT
+	Tue, 28 Jul 2009 12:41:32 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:38478 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751471AbZG1Qlb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 12:40:42 -0400
+	Tue, 28 Jul 2009 12:41:31 -0400
+Date: Tue, 28 Jul 2009 09:44:06 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: oleg@redhat.com, roland@redhat.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Oren Laadan <orenl@cs.columbia.edu>, serue@us.ibm.com,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Containers <containers@lists.linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] Deny CLONE_PARENT|CLONE_NEWPID combination
+Message-ID: <20090728164406.GA17275@us.ibm.com>
 MIME-Version: 1.0
-Date: Tue, 28 Jul 2009 09:40:42 -0700 (PDT)
-In-Reply-To: <ct4xS-63o-27@gated-at.bofh.it>
-X-IP: 62.172.74.16
-References: <ct4xS-63o-27@gated-at.bofh.it>
-User-Agent: G2/1.0
-X-HTTP-UserAgent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) 
-	Gecko/20090716 Ubuntu/9.04 (jaunty) Shiretoko/3.5.1,gzip(gfe),gzip(gfe)
-Message-ID: <ba6a8e0d-946b-4d69-9f70-991e93c18f90@o15g2000yqm.googlegroups.com>
-Subject: Re: 2.6.28.9: EXT3/NFS inodes corruption
-From: Daniel J Blueman <daniel.blueman@gmail.com>
-To: Sylvain Rochet <gradator@gradator.net>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Apr 20, 5:30 pm, Sylvain Rochet <grada...@gradator.net> wrote:
-> Hi,
->
-> We(TuxFamily) are having some inodes corruptions on a NFS server.
->
-> So, let's start with the facts.
->
-> ==== NFS Server
->
-> Linux bazooka 2.6.28.9 #1 SMP Mon Mar 30 12:58:22 CEST 2009 x86_64 GNU/Linux
-[snip]
 
-Can you do a 'lspci -v' on the server please?
+Deny CLONE_PARENT|CLONE_NEWPID combination.
 
-Daniel
---
-Daniel J Blueman
+CLONE_PARENT was used to implement an older threading model.  For consistency
+with the CLONE_THREAD check in copy_pid_ns(), disable CLONE_PARENT and
+CLONE_SIGHAND with CLONE_NEWPID, at least until the required semantics of
+the pid namespaces are clear.
+
+Changelog[v3]:
+	Remove CLONE_SIGHAND and for now only fail CLONE_NEWPID|CLONE_PARENT.
+Changelog[v2]:
+	[Eric Biederman] Disable CLONE_SIGHAND also ?
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Acked-by: Roland McGrath <roland@redhat.com>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+---
+ kernel/pid_namespace.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-mmotm/kernel/pid_namespace.c
+===================================================================
+--- linux-mmotm.orig/kernel/pid_namespace.c	2009-07-16 10:03:01.000000000 -0700
++++ linux-mmotm/kernel/pid_namespace.c	2009-07-16 11:37:24.000000000 -0700
+@@ -118,7 +118,7 @@
+ {
+ 	if (!(flags & CLONE_NEWPID))
+ 		return get_pid_ns(old_ns);
+-	if (flags & CLONE_THREAD)
++	if (flags & (CLONE_THREAD|CLONE_PARENT))
+ 		return ERR_PTR(-EINVAL);
+ 	return create_pid_namespace(old_ns);
+ }
