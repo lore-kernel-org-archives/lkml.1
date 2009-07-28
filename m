@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbZG1XuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbZG1X4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754574AbZG1XuJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:50:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753727AbZG1XuH
+	id S1756138AbZG1X4x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:56:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbZG1X4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:50:07 -0400
-Received: from kroah.org ([198.145.64.141]:35780 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:56:51 -0400
+Received: from kroah.org ([198.145.64.141]:35834 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754450AbZG1XuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:50:01 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:56 2009
-Message-Id: <20090728234156.091259838@mini.kroah.org>
+	id S1754604AbZG1XuK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:50:10 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:57 2009
+Message-Id: <20090728234157.690467627@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:41:01 -0700
+Date: Tue, 28 Jul 2009 16:41:11 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 32/71] block: fix sg SG_DXFER_TO_FROM_DEV regression
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andres Salomon <dilinger@debian.org>
+Subject: [patch 42/71] x86: geode: Mark mfgpt irq IRQF_TIMER to prevent resume failure
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=block-fix-sg-sg_dxfer_to_from_dev-regression.patch
+Content-Disposition: inline; filename=x86-geode-mark-mfgpt-irq-irqf_timer-to-prevent-resume-failure.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,143 +31,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+From: Thomas Gleixner <tglx@linutronix.de>
 
-commit ecb554a846f8e9d2a58f6d6c118168a63ac065aa upstream.
+commit d6c585a4342a2ff627a29f9aea77c5ed4cd76023 upstream.
 
-I overlooked SG_DXFER_TO_FROM_DEV support when I converted sg to use
-the block layer mapping API (2.6.28).
+Timer interrupts are excluded from being disabled during suspend. The
+clock events code manages the disabling of clock events on its own
+because the timer interrupt needs to be functional before the resume
+code reenables the device interrupts.
 
-Douglas Gilbert explained SG_DXFER_TO_FROM_DEV:
+The mfgpt timer request its interrupt without setting the IRQF_TIMER
+flag so suspend_device_irqs() disables it as well which results in a
+fatal resume failure.
 
-http://www.spinics.net/lists/linux-scsi/msg37135.html
+Adding IRQF_TIMER to the interupt flags when requesting the mrgpt
+timer interrupt solves the problem.
 
-=
-The semantics of SG_DXFER_TO_FROM_DEV were:
-   - copy user space buffer to kernel (LLD) buffer
-   - do SCSI command which is assumed to be of the DATA_IN
-     (data from device) variety. This would overwrite
-     some or all of the kernel buffer
-   - copy kernel (LLD) buffer back to the user space.
-
-The idea was to detect short reads by filling the original
-user space buffer with some marker bytes ("0xec" it would
-seem in this report). The "resid" value is a better way
-of detecting short reads but that was only added this century
-and requires co-operation from the LLD.
-=
-
-This patch changes the block layer mapping API to support this
-semantics. This simply adds another field to struct rq_map_data and
-enables __bio_copy_iov() to copy data from user space even with READ
-requests.
-
-It's better to add the flags field and kills null_mapped and the new
-from_user fields in struct rq_map_data but that approach makes it
-difficult to send this patch to stable trees because st and osst
-drivers use struct rq_map_data (they were converted to use the block
-layer in 2.6.29 and 2.6.30). Well, I should clean up the block layer
-mapping API.
-
-zhou sf reported this regiression and tested this patch:
-
-http://www.spinics.net/lists/linux-scsi/msg37128.html
-http://www.spinics.net/lists/linux-scsi/msg37168.html
-
-Reported-by: zhou sf <sxzzsf@gmail.com>
-Tested-by: zhou sf <sxzzsf@gmail.com>
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+LKML-Reference: <new-submission>
+Cc: Andres Salomon <dilinger@debian.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/sg.c      |    4 ++++
- fs/bio.c               |   22 ++++++++++++----------
- include/linux/blkdev.h |    1 +
- 3 files changed, 17 insertions(+), 10 deletions(-)
+ arch/x86/kernel/mfgpt_32.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/scsi/sg.c
-+++ b/drivers/scsi/sg.c
-@@ -1656,6 +1656,10 @@ static int sg_start_req(Sg_request *srp,
- 		md->nr_entries = req_schp->k_use_sg;
- 		md->offset = 0;
- 		md->null_mapped = hp->dxferp ? 0 : 1;
-+		if (dxfer_dir == SG_DXFER_TO_FROM_DEV)
-+			md->from_user = 1;
-+		else
-+			md->from_user = 0;
- 	}
+--- a/arch/x86/kernel/mfgpt_32.c
++++ b/arch/x86/kernel/mfgpt_32.c
+@@ -347,7 +347,7 @@ static irqreturn_t mfgpt_tick(int irq, v
  
- 	if (iov_count) {
---- a/fs/bio.c
-+++ b/fs/bio.c
-@@ -706,14 +706,13 @@ static struct bio_map_data *bio_alloc_ma
- }
- 
- static int __bio_copy_iov(struct bio *bio, struct bio_vec *iovecs,
--			  struct sg_iovec *iov, int iov_count, int uncopy,
--			  int do_free_page)
-+			  struct sg_iovec *iov, int iov_count,
-+			  int to_user, int from_user, int do_free_page)
- {
- 	int ret = 0, i;
- 	struct bio_vec *bvec;
- 	int iov_idx = 0;
- 	unsigned int iov_off = 0;
--	int read = bio_data_dir(bio) == READ;
- 
- 	__bio_for_each_segment(bvec, bio, i, 0) {
- 		char *bv_addr = page_address(bvec->bv_page);
-@@ -728,13 +727,14 @@ static int __bio_copy_iov(struct bio *bi
- 			iov_addr = iov[iov_idx].iov_base + iov_off;
- 
- 			if (!ret) {
--				if (!read && !uncopy)
--					ret = copy_from_user(bv_addr, iov_addr,
--							     bytes);
--				if (read && uncopy)
-+				if (to_user)
- 					ret = copy_to_user(iov_addr, bv_addr,
- 							   bytes);
- 
-+				if (from_user)
-+					ret = copy_from_user(bv_addr, iov_addr,
-+							     bytes);
-+
- 				if (ret)
- 					ret = -EFAULT;
- 			}
-@@ -771,7 +771,8 @@ int bio_uncopy_user(struct bio *bio)
- 
- 	if (!bio_flagged(bio, BIO_NULL_MAPPED))
- 		ret = __bio_copy_iov(bio, bmd->iovecs, bmd->sgvecs,
--				     bmd->nr_sgvecs, 1, bmd->is_our_pages);
-+				     bmd->nr_sgvecs, bio_data_dir(bio) == READ,
-+				     0, bmd->is_our_pages);
- 	bio_free_map_data(bmd);
- 	bio_put(bio);
- 	return ret;
-@@ -876,8 +877,9 @@ struct bio *bio_copy_user_iov(struct req
- 	/*
- 	 * success
- 	 */
--	if (!write_to_vm && (!map_data || !map_data->null_mapped)) {
--		ret = __bio_copy_iov(bio, bio->bi_io_vec, iov, iov_count, 0, 0);
-+	if ((!write_to_vm && (!map_data || !map_data->null_mapped)) ||
-+	    (map_data && map_data->from_user)) {
-+		ret = __bio_copy_iov(bio, bio->bi_io_vec, iov, iov_count, 0, 1, 0);
- 		if (ret)
- 			goto cleanup;
- 	}
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -723,6 +723,7 @@ struct rq_map_data {
- 	int nr_entries;
- 	unsigned long offset;
- 	int null_mapped;
-+	int from_user;
+ static struct irqaction mfgptirq  = {
+ 	.handler = mfgpt_tick,
+-	.flags = IRQF_DISABLED | IRQF_NOBALANCING,
++	.flags = IRQF_DISABLED | IRQF_NOBALANCING | IRQF_TIMER,
+ 	.name = "mfgpt-timer"
  };
  
- struct req_iterator {
 
 
