@@ -1,56 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752829AbZG1HKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753343AbZG1HM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752829AbZG1HKp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 03:10:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbZG1HKo
+	id S1753343AbZG1HM7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 03:12:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbZG1HM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 03:10:44 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:47912 "EHLO kernel.dk"
+	Tue, 28 Jul 2009 03:12:58 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:58605 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750756AbZG1HKn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 03:10:43 -0400
-Date: Tue, 28 Jul 2009 09:10:44 +0200
+	id S1751665AbZG1HM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 03:12:56 -0400
+Date: Tue, 28 Jul 2009 09:12:56 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Xiaotian Feng <dfeng@redhat.com>
-Cc: tj@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] block: fix improper kobject release in
-	blk_integrity_unregister
-Message-ID: <20090728071043.GP4148@kernel.dk>
-References: <1248425548-30600-1-git-send-email-dfeng@redhat.com>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: Hannes Reinecke <hare@suse.de>, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>,
+       device-mapper development <dm-devel@redhat.com>
+Subject: Re: [RESEND][PATCH] Send uevents for disk write_protect changes
+Message-ID: <20090728071256.GQ4148@kernel.dk>
+References: <200907211128.07252.knikanth@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1248425548-30600-1-git-send-email-dfeng@redhat.com>
+In-Reply-To: <200907211128.07252.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 24 2009, Xiaotian Feng wrote:
-> blk_integrity_unregister should use kobject_put to release the kobject,
-> otherwise after bi is freed, memory of bi->kobj->name is leaked.
+On Tue, Jul 21 2009, Nikanth Karthikesan wrote:
+> Hi
+> 
+> This patch is needed for the dm-multipath, so that the daemon can capture the 
+> event and reload the dm table when the read-only setting of the disk changes. 
+> Can this be merged?
 
-Applied, thanks.
+Looks fine to me, merged for 2.6.32.
 
 > 
-> Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+> Thanks
+> Nikanth
+> 
+> From: Hannes Reinecke <hare@suse.de>
+> Subject: Send uevents for write_protect changes
+> 
+> Whenever a block device changes it's read-only attribute
+> notify the userspace about it.
+> 
+> Signed-off-by: Hannes Reinecke <hare@suse.de>
+> Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+> 
 > ---
->  block/blk-integrity.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
 > 
-> diff --git a/block/blk-integrity.c b/block/blk-integrity.c
-> index 73e28d3..15c6308 100644
-> --- a/block/blk-integrity.c
-> +++ b/block/blk-integrity.c
-> @@ -379,6 +379,7 @@ void blk_integrity_unregister(struct gendisk *disk)
+> diff --git a/block/genhd.c b/block/genhd.c
+> index f4c64c2..b89328e 100644
+> --- a/block/genhd.c
+> +++ b/block/genhd.c
+> @@ -1215,6 +1215,16 @@ void put_disk(struct gendisk *disk)
 >  
->  	kobject_uevent(&bi->kobj, KOBJ_REMOVE);
->  	kobject_del(&bi->kobj);
-> +	kobject_put(&bi->kobj);
->  	kmem_cache_free(integrity_cachep, bi);
->  	disk->integrity = NULL;
->  }
-> -- 
-> 1.6.2.5
+>  EXPORT_SYMBOL(put_disk);
+>  
+> +static void set_disk_ro_uevent(struct gendisk *gd, int ro)
+> +{
+> +	char event[] = "DISK_RO=1";
+> +	char *envp[] = { event, NULL };
+> +
+> +	if (!ro)
+> +		event[8] = '0';
+> +	kobject_uevent_env(&disk_to_dev(gd)->kobj, KOBJ_CHANGE, envp);
+> +}
+> +
+>  void set_device_ro(struct block_device *bdev, int flag)
+>  {
+>  	bdev->bd_part->policy = flag;
+> @@ -1227,8 +1237,12 @@ void set_disk_ro(struct gendisk *disk, int flag)
+>  	struct disk_part_iter piter;
+>  	struct hd_struct *part;
+>  
+> -	disk_part_iter_init(&piter, disk,
+> -			    DISK_PITER_INCL_EMPTY | DISK_PITER_INCL_PART0);
+> +	if (disk->part0.policy != flag) {
+> +		set_disk_ro_uevent(disk, flag);
+> +		disk->part0.policy = flag;
+> +	}
+> +
+> +	disk_part_iter_init(&piter, disk, DISK_PITER_INCL_EMPTY);
+>  	while ((part = disk_part_iter_next(&piter)))
+>  		part->policy = flag;
+>  	disk_part_iter_exit(&piter);
+> 
 > 
 
 -- 
