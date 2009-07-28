@@ -1,81 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753710AbZG1TYJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754180AbZG1TYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753710AbZG1TYJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 15:24:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbZG1TYI
+	id S1754180AbZG1TYX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 15:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858AbZG1TYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 15:24:08 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:14842 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752812AbZG1TYH (ORCPT
+	Tue, 28 Jul 2009 15:24:19 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:48862 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753850AbZG1TYS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 15:24:07 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH 03/12] SFI: document boot param "sfi=off"
-Date: Tue, 28 Jul 2009 13:24:02 -0600
-User-Agent: KMail/1.9.10
-Cc: x86@kernel.org, sfi-devel@simplefirmware.org, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Feng Tang <feng.tang@intel.com>,
-       Len Brown <len.brown@intel.com>
-References: <1247026438-20891-1-git-send-email-lenb@kernel.org> <57dac60d76c191e3bd72f186833fac01e4c5f8f1.1247025117.git.len.brown@intel.com>
-In-Reply-To: <57dac60d76c191e3bd72f186833fac01e4c5f8f1.1247025117.git.len.brown@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Tue, 28 Jul 2009 15:24:18 -0400
+Date: Tue, 28 Jul 2009 12:23:52 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Dhananjay Phadke <dhananjay@netxen.com>
+Cc: davem@davemloft.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org
+Subject: Re: [PATCH NEXT] netxen: fix CONFIG_INET=n build
+Message-Id: <20090728122352.6d4a2b05.randy.dunlap@oracle.com>
+In-Reply-To: <1248808203-9578-1-git-send-email-dhananjay@netxen.com>
+References: <1248808203-9578-1-git-send-email-dhananjay@netxen.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907281324.03237.bjorn.helgaas@hp.com>
+X-Source-IP: abhmt007.oracle.com [141.146.116.16]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4A6F505D.0116:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 07 July 2009 10:13:49 pm Len Brown wrote:
-> From: Feng Tang <feng.tang@intel.com>
+On Tue, 28 Jul 2009 12:10:03 -0700 Dhananjay Phadke wrote:
+
+> Wrap dest IP hashing code with #ifdef CONFIG_INET,
+> this feature makes no sense without INET, but other
+> driver can still work.
 > 
-> "sfi=off" is analogous to "acpi=off"
-> 
-> In practice, "sfi=off" isn't likely to be very useful, for
-> 1. SFI is used only when ACPI is not available
-> 2. Today's SFI systems are not legacy PC-compatible
-> 
-> ie. "sfi=off" on an ACPI-platform is a NO-OP,
-> and "sfi=off" on an SFI-platform will likely result in boot failure.
-> 
-> Signed-off-by: Feng Tang <feng.tang@intel.com>
-> Signed-off-by: Len Brown <len.brown@intel.com>
+> Signed-off-by: Dhananjay Phadke <dhananjay@netxen.com>
+
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+
+Thanks.
+
 > ---
->  Documentation/kernel-parameters.txt |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
-
-I think the documentation update should be part of the patch
-that changes the functionality, so the doc always matches the
-code.
-
-Bjorn
-
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index d77fbd8..68337e6 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -92,6 +92,7 @@ parameter is applicable:
->  	SECURITY Different security models are enabled.
->  	SELINUX SELinux support is enabled.
->  	SERIAL	Serial support is enabled.
-> +	SFI	Simple Firmware Interface
->  	SH	SuperH architecture is enabled.
->  	SMP	The kernel is an SMP kernel.
->  	SPARC	Sparc architecture is enabled.
-> @@ -2162,6 +2163,10 @@ and is between 256 and 4096 characters. It is defined in the file
->  			If enabled at boot time, /selinux/disable can be used
->  			later to disable prior to initial policy load.
+>  drivers/net/netxen/netxen_nic_main.c |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/net/netxen/netxen_nic_main.c b/drivers/net/netxen/netxen_nic_main.c
+> index 2bbefa6..40549a0 100644
+> --- a/drivers/net/netxen/netxen_nic_main.c
+> +++ b/drivers/net/netxen/netxen_nic_main.c
+> @@ -1875,6 +1875,8 @@ static void netxen_nic_poll_controller(struct net_device *netdev)
+>  }
+>  #endif
 >  
-> +	sfi=		[SFI,X86] Simple Firmware Interface
-> +			Format: { "off" }
-> +			off -- disable SFI
+> +#ifdef CONFIG_INET
 > +
->  	serialnumber	[BUGS=X86-32]
+>  #define is_netxen_netdev(dev) (dev->netdev_ops == &netxen_netdev_ops)
 >  
->  	shapers=	[NET]
+>  static int
+> @@ -1993,6 +1995,7 @@ static struct notifier_block	netxen_netdev_cb = {
+>  static struct notifier_block netxen_inetaddr_cb = {
+>  	.notifier_call = netxen_inetaddr_event,
+>  };
+> +#endif
+>  
+>  static struct pci_driver netxen_driver = {
+>  	.name = netxen_nic_driver_name,
+> @@ -2012,8 +2015,10 @@ static int __init netxen_init_module(void)
+>  	if ((netxen_workq = create_singlethread_workqueue("netxen")) == NULL)
+>  		return -ENOMEM;
+>  
+> +#ifdef CONFIG_INET
+>  	register_netdevice_notifier(&netxen_netdev_cb);
+>  	register_inetaddr_notifier(&netxen_inetaddr_cb);
+> +#endif
+>  
+>  	return pci_register_driver(&netxen_driver);
+>  }
+> @@ -2024,8 +2029,10 @@ static void __exit netxen_exit_module(void)
+>  {
+>  	pci_unregister_driver(&netxen_driver);
+>  
+> +#ifdef CONFIG_INET
+>  	unregister_inetaddr_notifier(&netxen_inetaddr_cb);
+>  	unregister_netdevice_notifier(&netxen_netdev_cb);
+> +#endif
+>  	destroy_workqueue(netxen_workq);
+>  }
+>  
+> -- 
+> 1.6.0.2
+> 
 
 
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
