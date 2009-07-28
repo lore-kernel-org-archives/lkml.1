@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbZG1BnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbZG1BtG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753208AbZG1BnP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 21:43:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbZG1BnP
+	id S1753234AbZG1BtG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 21:49:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbZG1BtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 21:43:15 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46312 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751597AbZG1BnO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 21:43:14 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 0/3] Add walltime support for ring-buffer
-Cc: kosaki.motohiro@jp.fujitsu.com, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.DEB.2.00.0907240902030.17438@gandalf.stny.rr.com>
-References: <4A698F90.90501@cn.fujitsu.com> <alpine.DEB.2.00.0907240902030.17438@gandalf.stny.rr.com>
-Message-Id: <20090728103227.D7FB.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Mon, 27 Jul 2009 21:49:05 -0400
+Received: from gate.crashing.org ([63.228.1.57]:58620 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752446AbZG1BtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 27 Jul 2009 21:49:04 -0400
+Subject: [PATCH] mm: Make it easier to catch NULL cache names
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Content-Type: text/plain
+Date: Tue, 28 Jul 2009 11:48:55 +1000
+Message-Id: <1248745735.30993.38.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue, 28 Jul 2009 10:43:11 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Zhaolei,
+Right now, if you inadvertently pass NULL to kmem_cache_create() at boot
+time, it crashes much later after boot somewhere deep inside sysfs which
+makes it very non obvious to figure out what's going on.
 
-> Hi Zhaolei,
-> 
-> Could you not just save the wall time in some 64bit format within the 
-> current timestamp?  Right now there's three clocks that can be used by 
-> ftrace. Two that you can really get two (I need to add access to the 
-> third).  The default clock is sched_clock. But there's an option to get to 
-> global_clock:
-> 
->  debug/tracing/options/global-clock
-> 
-> # echo 1 > /debug/tracing/options/global-clock
-> 
-> Will enable the global clock. Perhaps we can add a "wall clock" version 
-> that will map the timestamps to the wall clock?
-> 
-> I really hate adding any more fields to the ring buffer headers. That 
-> takes away from the amount that you can record per page.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-I think wall-time recording on every event is too slow. slower tracer
-isn't useful.
-Instead, Can we make pseudo wall-time recording event periodically?
+Yes, I did hit that :-) Something in ppc land using an array of caches
+and got the names array out of sync with changes to the list of indices.
 
-In nowadays, many workload run on cluster machine environment. Then
-We often need compare different machines tracing log. it mean TSC isn't
-sufficient. but nobody want performance reduce.
-Fortunatelly, ntp time adjustment is not happend so frequently. we
-don't need wall-time on _every_ event.
+diff --git a/mm/slub.c b/mm/slub.c
+index b9f1491..b5b5653 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -3292,6 +3292,8 @@ struct kmem_cache *kmem_cache_create(const char *name, size_t size,
+ {
+ 	struct kmem_cache *s;
+ 
++	BUG_ON(name == NULL);
++
+ 	down_write(&slub_lock);
+ 	s = find_mergeable(size, align, flags, name, ctor);
+ 	if (s) {
+-- 
+1.6.1.2.14.gf26b5
 
-Thanks.
 
 
