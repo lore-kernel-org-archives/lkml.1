@@ -1,60 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751675AbZG1RIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753361AbZG1RJP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751675AbZG1RIR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 13:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbZG1RIQ
+	id S1753361AbZG1RJP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 13:09:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbZG1RJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 13:08:16 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54524 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752256AbZG1RIP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 13:08:15 -0400
-Date: Tue, 28 Jul 2009 18:09:00 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kdesu broken
-Message-ID: <20090728180900.54b2f0b7@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.01.0907280949250.3186@localhost.localdomain>
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
-	<87bpn7mzli.fsf@devron.myhome.or.jp>
-	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
-	<873a8iqqgv.fsf@devron.myhome.or.jp>
-	<20090727142303.41096bf5@lxorguk.ukuu.org.uk>
-	<877hxujkuv.fsf@devron.myhome.or.jp>
-	<20090727145805.690afe5d@lxorguk.ukuu.org.uk>
-	<87fxci6ub9.fsf@devron.myhome.or.jp>
-	<20090727161424.GA4233@skywalker>
-	<20090727174252.2d987830@lxorguk.ukuu.org.uk>
-	<20090727171213.GB4233@skywalker>
-	<87skgikjr8.fsf@devron.myhome.or.jp>
-	<20090727222010.1a5efb7b@lxorguk.ukuu.org.uk>
-	<87r5w19xsb.fsf@devron.myhome.or.jp>
-	<20090728112203.7b70adba@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907280848090.3186@localhost.localdomain>
-	<20090728174213.5e927428@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907280944150.3186@localhost.localdomain>
-	<alpine.LFD.2.01.0907280949250.3186@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 28 Jul 2009 13:09:15 -0400
+Received: from mail.mnementh.co.uk ([173.45.232.4]:52615 "EHLO mnementh.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752728AbZG1RJO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 13:09:14 -0400
+Message-ID: <4A6F30AF.4000004@mnementh.co.uk>
+Date: Tue, 28 Jul 2009 18:09:03 +0100
+From: Ian Molton <ian@mnementh.co.uk>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+CC: linux-kernel@vger.kernel.org, Magnus Damm <damm@opensource.se>,
+       akpm@linux-foundation.org, Matt Fleming <matt@console-pimps.org>,
+       Philip Langdale <philipl@overt.org>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH] tmio_mmc: Optionally support using platform clock
+References: <Pine.LNX.4.64.0907280937000.4943@axis700.grange> <4A6F0123.9040809@mnementh.co.uk> <Pine.LNX.4.64.0907281556160.6219@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.0907281556160.6219@axis700.grange>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Put another way: our pty code is simply _buggy_ if it returns EINTR when 
-> there is actually data pending on a pty.
+Guennadi Liakhovetski wrote:
 
-Good job it doesn't do that then - although be careful what "data
-pending" means. If the buffer contains "wombat" and you are in ICANON
-mode then there is no data pending, and poll() likewise will say there is
-no data pending. Only when newline is hit do you have data pending (which
-is why test t3 is buggy)
+> Hi Ian
 
-Alan
+Hi!
+
+> Thanks for the review.
+
+No problem - I hope you dont feel that I am picking on you in particular 
+here, this problem is not isolated to your patches.
+
+> I understand your concerns. Of course, the _proper_ solution would be to 
+> implement an architecture-independent clock API, something like what 
+> clocklib was trying to do. So, yes, if clocklib were in place now, I 
+> certainly would have used it.
+
+Which is of course a chicken/egg situation. I dealt with this a number 
+of times during the e-series development, and every time, integration 
+with mainline has gone more swiftly and with better quality, when the 
+job was done properly to begin with.
+
+> I searched for those clocklib submission attempts (Dmitry added to CC). 
+
+Also adding RMK to the CC:
+
+> Last one I can find (maybe I missed some) is from July 2008 - more than a 
+> year ago. So, looks like our options currently are:
+> 
+> 1. wait for new submissions of clocklib - if any are planned
+
+Dmitry: whats the current status of your clocklib work?
+
+> 2. develop a completely new arch-independent clock API approach
+
+No chance.
+
+> 3. take over patches from Dmitry and bring them to a state acceptable for 
+> mainline
+
+Take over / collaborate with. I'll happily help people push these patches.
+
+> I personally don't have free (as in beer) time to work on 2 or 3. Anyone?
+
+If I can find out what the current state of this stuff is, I'll help get 
+it working - I can test / update all the TC6x and T7x MFD devices (and 
+probably asic3 too)
+
+> So, unless we hear, that one of the 1-3 is going to happen real soon now, 
+> I think, it would be unfair to leave SuperH without a proper MMC driver in 
+> the mainline for an indefinite time, when one can be trivially achieved.
+
+Yes, because listening makes code write itself...
+
+If the changes are so trivial, it wont hurt to maintain them as a patch. 
+certainly tmio-mmc doesnt change very rapidly so the patch wont need 
+regenerating much. You already have this patchset.
+
+So since thats taken care of, we're all now free to work on updating 
+the clock API. And once thats done, you can drop your patch and add one 
+line to create / alias the clock in your superH platform code.
+
+> As for your debugging concern, we could allow configuration-less operation 
+> only on SuperH in tmio_mmc, how about that?
+
+No. The correct way to support optional parts of the hardware is to 
+simply not access them when they are not there.
+
+As I said, I'll happily take a patch to abstract power control for the 
+tmio-mmc driver. This should remove most of the config area accesses 
+from the driver (and shrink your patch!). The remainder are all about 
+clock config, and will disappear once we sort the clock API.
+
+Mainline isn't about 'fair' its about 'right'.
+
+-Ian
