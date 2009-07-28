@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753185AbZG1KkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753103AbZG1Ky1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753185AbZG1KkG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 06:40:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbZG1KkE
+	id S1753103AbZG1Ky1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 06:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZG1Ky1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 06:40:04 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:32144 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752895AbZG1KkB (ORCPT
+	Tue, 28 Jul 2009 06:54:27 -0400
+Received: from viefep16-int.chello.at ([62.179.121.36]:25287 "EHLO
+	viefep16-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752832AbZG1Ky0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 06:40:01 -0400
-From: Adrian Hunter <adrian.hunter@nokia.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>,
-       Adrian Hunter <adrian.hunter@nokia.com>,
-       linux-omap Mailing List <linux-omap@vger.kernel.org>,
-       Pierre Ossman <pierre@ossman.eu>,
-       Denis Karpov <ext-denis.2.karpov@nokia.com>,
-       Matt Fleming <matt@console-pimps.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Date: Tue, 28 Jul 2009 13:40:18 +0300
-Message-Id: <20090728104018.2371.72076.sendpatchset@ahunter-laptop>
-In-Reply-To: <20090728103834.2371.65809.sendpatchset@ahunter-laptop>
-References: <20090728103834.2371.65809.sendpatchset@ahunter-laptop>
-Subject: [PATCH V2 14/32] omap_hsmmc: set open drain bit correctly
-X-OriginalArrivalTime: 28 Jul 2009 10:39:49.0827 (UTC) FILETIME=[BBB1F930:01CA0F6F]
-X-Nokia-AV: Clean
+	Tue, 28 Jul 2009 06:54:26 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: perf_counter: Track all mmaps, heap and stack extensions
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Anton Blanchard <anton@samba.org>
+Cc: mingo@elte.hu, paulus@samba.org, fweisbec@gmail.com, rdreier@cisco.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090728084612.GA4603@kryten>
+References: <20090728084612.GA4603@kryten>
+Content-Type: text/plain
+Date: Tue, 28 Jul 2009 12:57:02 +0200
+Message-Id: <1248778622.6987.2983.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 60dc8abdafb94824a5984f769a05c9b82f784e6b Mon Sep 17 00:00:00 2001
-From: Denis Karpov <ext-denis.2.karpov@nokia.com>
-Date: Thu, 23 Apr 2009 16:44:58 +0300
-Subject: [PATCH] omap_hsmmc: set open drain bit correctly
+On Tue, 2009-07-28 at 18:46 +1000, Anton Blanchard wrote:
+> Hi,
+> 
+> Right now perf_counter only logs executable mmaps. While this is enough
+> for instruction profiling, at some stage we are also going to want
+> to do data profiling. This will require us to log non-executable mmaps as
+> well as stack and heap extensions.
+> 
+> Why would we care about heap and stack? A few examples:
+> 
+> 1. We can monitor TLB miss rates to suggest what regions of memory should be
+>    put into hugepages.
+>  
+> 2. We can look into various TLB miss issues. On PowerPC a data prefetch
+>    that goes to an unmapped area takes a significant amount of time (it
+>    initiates a tablewalk that may take 40+ cycles). With accurate mapping
+>    data we can catch areas of code with bad prefetch instructions.
 
-The code could set the bit to 1 but not reset it to 0.
+Agreed.
 
-Signed-off-by: Denis Karpov <ext-denis.2.karpov@nokia.com>
-Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
----
- drivers/mmc/host/omap_hsmmc.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+> Taking it a bit further, since in some sense perf_counter is a channel for
+> getting events out to userspace, I wonder if we could solve Roland's RDMA
+> address space unmap issue with perf_counter:
+> 
+> http://patchwork.kernel.org/patch/37267/
 
-diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
-index ac1a3bf..2b242c2 100644
---- a/drivers/mmc/host/omap_hsmmc.c
-+++ b/drivers/mmc/host/omap_hsmmc.c
-@@ -1111,9 +1111,11 @@ static void omap_mmc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
- 	if (do_send_init_stream)
- 		send_init_stream(host);
- 
-+	con = OMAP_HSMMC_READ(host->base, CON);
- 	if (ios->bus_mode == MMC_BUSMODE_OPENDRAIN)
--		OMAP_HSMMC_WRITE(host->base, CON,
--				OMAP_HSMMC_READ(host->base, CON) | OD);
-+		OMAP_HSMMC_WRITE(host->base, CON, con | OD);
-+	else
-+		OMAP_HSMMC_WRITE(host->base, CON, con & ~OD);
- 
- 	mmc_host_lazy_disable(host->mmc);
- }
--- 
-1.5.6.3
+Yeah, saw some of that, Andrew has some good points there. Haven't had
+time to see the reply yet.
+
+Not sure its a good match, but if so, very nice.
+
+> Below is a dodgy hack I've been using to prototype tracking of all mmaps
+> and heap/stack extensions. Naturally we'd want a perf_counter feature to turn
+> this on and keep instruction profiles more compact. We'd also want munmap
+> events.
+
+I used to have an munmap hook in there at some point. We could restore
+that.
+
+> Thoughts?
+
+Seems like a good direction, go for it ;-)
+
 
