@@ -1,243 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752787AbZG1Xjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752869AbZG1Xk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752787AbZG1Xjf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752488AbZG1Xje
+	id S1752869AbZG1Xk1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbZG1Xk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:39:34 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:42876 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751052AbZG1Xjd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:39:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Wd6QsymMmB7n4ixbxmI4Jhvx4V4csQMeDjxalYg5Heww22WhItgQg/27K7dIsfOkEK
-         R8oNMa2PHpEL5LvI9/Mgj1XU5xuV7Bmq6a2+sIcvef5jPFjKzQ/oWJY+qX/9FJdaXcT3
-         gG2X/MXWDngv3jDlzE43Pwoex65z8h81274bY=
-Subject: Re: [PATCH 1/1] acer-wmi: switch driver to dev_pm_ops
-From: Arnaud Faucher <arnaud.faucher@gmail.com>
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Frans Pop <elendil@planet.nl>,
-       Manuel Lauss <manuel.lauss@gmail.com>, Erik Ekman <erik@kryo.se>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <1248648663.3718.7.camel@green>
-References: <1248527091-18246-1-git-send-email-arnaud.faucher@gmail.com>
-	 <200907261523.30378.carlos@strangeworlds.co.uk>
-	 <20090726180809.GA31396@dtor-d630.eng.vmware.com>
-	 <200907261935.08762.carlos@strangeworlds.co.uk>
-	 <1248640128.4216.13.camel@green>
-	 <EF5CB084-D774-49E3-9E9F-6803ECB9862C@gmail.com>
-	 <1248648663.3718.7.camel@green>
-Content-Type: text/plain
-Date: Tue, 28 Jul 2009 19:39:27 -0400
-Message-Id: <1248824367.4112.31.camel@green>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.27.5 
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Jul 2009 19:40:26 -0400
+Received: from kroah.org ([198.145.64.141]:53143 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752151AbZG1Xk0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:40:26 -0400
+Date: Tue, 28 Jul 2009 16:39:36 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/37] 2.6.27.29-stable review
+Message-ID: <20090728233936.GA7846@kroah.com>
+References: <20090728230145.GA10486@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090728230145.GA10486@kroah.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 26, 2009 at 18:51 -0400, Arnaud Faucher wrote :
-> On dim, 2009-07-26 at 14:33 -0700, Dmitry Torokhov wrote:
-> > On Jul 26, 2009, at 1:28 PM, Arnaud Faucher <arnaud.faucher@gmail.com>  
-> > wrote:
-> > 
-> > > On dim, 2009-07-26 at 19:35 +0100, Carlos Corbacho wrote:
-> > >> On Sunday 26 July 2009 19:08:09 Dmitry Torokhov wrote:
-> > >>> On Sun, Jul 26, 2009 at 03:23:29PM +0100, Carlos Corbacho wrote:
-> > >>>> [Removing linux-mips from CC - I don't know why they'd be  
-> > >>>> interested in
-> > >>>> an x86 only platform driver...]
-> > >>>>
-> > >>>> On Sunday 26 July 2009 14:53:33 Arnaud Faucher wrote:
-> > >>>>> Gets rid of the following warning:
-> > >>>>> Platform driver 'acer-wmi' needs updating - please use dev_pm_ops
-> > >>>>>
-> > >>>>> Take 2, thanks to Dmitry, Rafael and Frans for pointing out PM  
-> > >>>>> issue on
-> > >>>>> hibernation when using dev_pm_ops blindly.
-> > >>>>>
-> > >>>>> This patch was tested against suspendand hibernation (Acer mail  
-> > >>>>> led
-> > >>>>> status).
-> > >>>>>
-> > >>>>> Signed-off-by: Arnaud Faucher <arnaud.faucher@gmail.com>
-> > >>>>> ---
-> > >>>>> drivers/platform/x86/acer-wmi.c |   17 ++++++++++++-----
-> > >>>>> 1 files changed, 12 insertions(+), 5 deletions(-)
-> > >>>>>
-> > >>>>> diff --git a/drivers/platform/x86/acer-wmi.c
-> > >>>>> b/drivers/platform/x86/acer-wmi.c
-> > >>>>> index be2fd6f..29374bc 100644
-> > >>>>> --- a/drivers/platform/x86/acer-wmi.c
-> > >>>>> +++ b/drivers/platform/x86/acer-wmi.c
-> > >>>>> @@ -1152,8 +1152,7 @@ static int acer_platform_remove(struct
-> > >>>>> platform_device *device)
-> > >>>>>    return 0;
-> > >>>>> }
-> > >>>>>
-> > >>>>> -static int acer_platform_suspend(struct platform_device *dev,
-> > >>>>> -pm_message_t state)
-> > >>>>> +static int acer_platform_suspend(struct device *dev)
-> > >>>>> {
-> > >>>>>    u32 value;
-> > >>>>>    struct acer_data *data = &interface->data;
-> > >>>>> @@ -1174,7 +1173,7 @@ pm_message_t state)
-> > >>>>>    return 0;
-> > >>>>> }
-> > >>>>>
-> > >>>>> -static int acer_platform_resume(struct platform_device *device)
-> > >>>>> +static int acer_platform_resume(struct device *dev)
-> > >>>>> {
-> > >>>>>    struct acer_data *data = &interface->data;
-> > >>>>>
-> > >>>>> @@ -1190,15 +1189,23 @@ static int acer_platform_resume(struct
-> > >>>>> platform_device *device)
-> > >>>>>    return 0;
-> > >>>>> }
-> > >>>>>
-> > >>>>> +static struct dev_pm_ops acer_platform_pm_ops = {
-> > >>>>> +    .suspend = acer_platform_suspend,
-> > >>>>> +    .resume = acer_platform_resume,
-> > >>>>
-> > >>>> Are these necessary? For suspend-to-RAM, I've never needed these.  
-> > >>>> The old
-> > >>>> callbacks here were just for suspend-to-disk.
-> > >>>
-> > >>> That is not correct. Old suspend and resume callbacks were called  
-> > >>> for
-> > >>> both S2R and S2D. Whether it is actually needed for S2R I don't  
-> > >>> know but
-> > >>> looking at the code they should not hurt.
-> > >>
-> > >> I'm aware they were called for S2RAM as well, but that was just a  
-> > >> limitation
-> > >> of the old calls - as I say, they're not needed for it (at least on  
-> > >> my
-> > >> hardware anyway).
-> > >>
-> > >
-> > > I was looking for similar functionality.
-> > >
-> > >>>>> +    .freeze = acer_platform_suspend,
-> > >>>>> +    .thaw = acer_platform_resume,
-> > >>>>
-> > >>>> If we only need these callbacks for freeze & thaw, they should be
-> > >>>> rebamed.
-> > >>>>
-> > >>>>> +    .poweroff = acer_platform_suspend,
-> > >>>>> +    .restore = acer_platform_resume,
-> > >>>>
-> > >>>> What do poweroff and restore mean in this context. Do my comments  
-> > >>>> above
-> > >>>> apply again (i.e. are the callbacks necessary here)?
-> > >>>
-> > >>> I don't think poweroff handler is needed.
-> > >
-> > > After testing many combinations, I observed that I had to use that  
-> > > much
-> > > callbacks. For example, when omitting to wire .poweroff/.restore,
-> > > with .freeze/.thaw linked to suspend()/resume(), the state (of the  
-> > > mail
-> > > led) is not restored correctly after S2D.
-> > 
-> > 
-> > Have you tried with just 3 - freeze, thaw and restore?
-> > 
-> 
-> State restoration seems to be OK with only those three ones (tested
-> against both S2RAM and S2D on my Acer Aspire 5680).
-> 
-> BTW, in the "struct dev_pm_ops" documentation, it would be interesting
-> to know which callback sequence occurs in case of S2RAM and S2D events.
-> 
-> 
+On Tue, Jul 28, 2009 at 04:01:45PM -0700, Greg KH wrote:
+> The whole patch series can be found in one patch at:
+> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.29-rc1.gz
+> and the diffstat can be found below.
 
-Here are my observations regarding PM events and callbacks:
+Oops, forgot the diffstat, here it is.
 
-S2RAM ("Suspend"):
-event trigged -> .suspend gets called
-recover from S2RAM -> .resume gets called
-For *this module*, these callbacks seem not necessary, because the state
-of hardware seems to be automatically restored on resume from S2RAM (by
-BIOS ???).
-
-S2DISK ("Hibernation"):
-event trigged -> .freeze, then .thaw gets called
-recover from S2DISK -> .restore gets called
-As per the pm.h documentation .thaw is called after RAM image has been
-created, in order to restore hardware state in case RAM image failed and
-the system cannot power off. So this callback should be linked to
-something similar to the .restore callback. For *this module*, though it
-may not be necessary because the state of both LCD backlight and mail
-LED persist after RAM image creation, I have linked this callback
-anyway.
-
-After around 2 days of testing, here is a third attempt for this patch.
-Please note that I renamed the functions to better reflect their use.
-Can you please stress it ?
-
-Signed-off-by: Arnaud Faucher <arnaud.faucher@gmail.com>
----
- drivers/platform/x86/acer-wmi.c |   14 +++++++++-----
- 1 files changed, 9 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/platform/x86/acer-wmi.c
-b/drivers/platform/x86/acer-wmi.c
-index fb45f5e..331771d 100644
---- a/drivers/platform/x86/acer-wmi.c
-+++ b/drivers/platform/x86/acer-wmi.c
-@@ -1152,8 +1152,7 @@ static int acer_platform_remove(struct
-platform_device *device)
- 	return 0;
- }
- 
--static int acer_platform_suspend(struct platform_device *dev,
--pm_message_t state)
-+static int acer_platform_freeze(struct device *dev)
- {
- 	u32 value;
- 	struct acer_data *data = &interface->data;
-@@ -1174,7 +1173,7 @@ pm_message_t state)
- 	return 0;
- }
- 
--static int acer_platform_resume(struct platform_device *device)
-+static int acer_platform_restore(struct device *dev)
- {
- 	struct acer_data *data = &interface->data;
- 
-@@ -1190,15 +1189,20 @@ static int acer_platform_resume(struct
-platform_device *device)
- 	return 0;
- }
- 
-+static struct dev_pm_ops acer_platform_pm_ops = {
-+	.freeze = acer_platform_freeze,
-+	.thaw = acer_platform_restore,
-+	.restore = acer_platform_restore,
-+};
-+
- static struct platform_driver acer_platform_driver = {
- 	.driver = {
- 		.name = "acer-wmi",
- 		.owner = THIS_MODULE,
-+		.pm = &acer_platform_pm_ops,
- 	},
- 	.probe = acer_platform_probe,
- 	.remove = acer_platform_remove,
--	.suspend = acer_platform_suspend,
--	.resume = acer_platform_resume,
- };
- 
- static struct platform_device *acer_platform_device;
--- 
-1.6.3.3
-
-
+ Makefile                              |    2 +-
+ arch/x86/mm/gup.c                     |    9 ++-
+ arch/x86/mm/srat_64.c                 |    6 +-
+ drivers/acpi/ec.c                     |    3 +-
+ drivers/hid/usbhid/hiddev.c           |    4 +-
+ drivers/hwmon/max6650.c               |    1 +
+ drivers/input/misc/wistron_btns.c     |    9 +++
+ drivers/isdn/gigaset/ev-layer.c       |   44 +++++++--------
+ drivers/md/md.c                       |    6 +-
+ drivers/net/e100.c                    |    3 +
+ drivers/net/hamradio/6pack.c          |   10 ++-
+ drivers/net/hamradio/mkiss.c          |   41 ++++++++------
+ drivers/net/ppp_async.c               |   11 ++-
+ drivers/net/ppp_synctty.c             |   11 ++-
+ drivers/net/r8169.c                   |  102 ++++++++++++++++++--------------
+ drivers/net/sky2.c                    |    2 +-
+ drivers/net/usb/cdc_subset.c          |    7 +-
+ drivers/net/usb/pegasus.c             |   29 ++++++----
+ drivers/net/wireless/strip.c          |   39 ++++++++-----
+ drivers/pnp/pnpacpi/core.c            |   21 +++++--
+ drivers/scsi/zalon.c                  |    2 +-
+ drivers/usb/core/devio.c              |   57 ++++++++++---------
+ drivers/usb/gadget/ether.c            |   11 ++--
+ drivers/usb/host/ehci-sched.c         |   12 +++-
+ drivers/usb/serial/ti_usb_3410_5052.c |    3 +-
+ fs/binfmt_elf.c                       |    4 +-
+ fs/ecryptfs/keystore.c                |   13 ++++
+ include/net/x25.h                     |    2 +-
+ mm/filemap.c                          |    1 +
+ mm/slab.c                             |    2 +-
+ mm/slob.c                             |    2 +
+ mm/slub.c                             |    2 +
+ net/sunrpc/clnt.c                     |   26 ++++++---
+ net/sunrpc/xprtsock.c                 |   23 +++++---
+ net/x25/af_x25.c                      |   23 ++++++--
+ net/x25/x25_timer.c                   |    2 +-
+ net/xfrm/xfrm_algo.c                  |    4 +-
+ sound/pci/ca0106/ca0106_main.c        |    4 +-
+ sound/pci/hda/patch_realtek.c         |   33 +++++------
+ sound/pci/oxygen/virtuoso.c           |    2 +
+ sound/usb/usbaudio.c                  |   14 ++++-
+ 41 files changed, 370 insertions(+), 232 deletions(-)
