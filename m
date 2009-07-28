@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753737AbZG1KoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753555AbZG1Kn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753737AbZG1KoS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 06:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbZG1KoQ
+	id S1753555AbZG1Kn5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 06:43:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbZG1Knz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 06:44:16 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:16644 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753233AbZG1Klf (ORCPT
+	Tue, 28 Jul 2009 06:43:55 -0400
+Received: from smtp.nokia.com ([192.100.122.233]:47736 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752697AbZG1Klk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 06:41:35 -0400
+	Tue, 28 Jul 2009 06:41:40 -0400
 From: Adrian Hunter <adrian.hunter@nokia.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>,
@@ -19,304 +19,170 @@ Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>,
        Denis Karpov <ext-denis.2.karpov@nokia.com>,
        Matt Fleming <matt@console-pimps.org>,
        lkml <linux-kernel@vger.kernel.org>
-Date: Tue, 28 Jul 2009 13:41:08 +0300
-Message-Id: <20090728104108.2371.1450.sendpatchset@ahunter-laptop>
+Date: Tue, 28 Jul 2009 13:41:25 +0300
+Message-Id: <20090728104125.2371.14266.sendpatchset@ahunter-laptop>
 In-Reply-To: <20090728103834.2371.65809.sendpatchset@ahunter-laptop>
 References: <20090728103834.2371.65809.sendpatchset@ahunter-laptop>
-Subject: [PATCH V2 21/32] omap_hsmmc: add mmc card sleep and awake support
-X-OriginalArrivalTime: 28 Jul 2009 10:40:40.0498 (UTC) FILETIME=[D9E5C120:01CA0F6F]
+Subject: [PATCH V2 23/32] omap_hsmmc: cleanup macro usage
+X-OriginalArrivalTime: 28 Jul 2009 10:40:53.0078 (UTC) FILETIME=[E1654F60:01CA0F6F]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 372d05a33f04d6a664ad1d3a80bed3d9ae80e495 Mon Sep 17 00:00:00 2001
-From: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-Date: Tue, 12 May 2009 19:46:14 +0300
-Subject: [PATCH] omap_hsmmc: add mmc card sleep and awake support
+>From 6a8acf9de3b12869c76ff2819e61c54c81b2c753 Mon Sep 17 00:00:00 2001
+From: Denis Karpov <ext-denis.2.karpov@nokia.com>
+Date: Thu, 14 May 2009 09:11:38 +0200
+Subject: [PATCH] omap_hsmmc: cleanup macro usage
 
-After 1 second of inactivity, put card and/or regulator
-to sleep.  After 8 seconds of inactivity, turn off the
-power.
+Use macro mmc_slot() in omap_hsmmc.
 
-Signed-off-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
+Signed-off-by: Denis Karpov <ext-denis.2.karpov@nokia.com>
 Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
 ---
- drivers/mmc/host/omap_hsmmc.c |  162 ++++++++++++++++++++++-------------------
- 1 files changed, 88 insertions(+), 74 deletions(-)
+ drivers/mmc/host/omap_hsmmc.c |   42 ++++++++++++++++++----------------------
+ 1 files changed, 19 insertions(+), 23 deletions(-)
 
 diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
-index 7a17901..d5fb066 100644
+index 4309031..0373bdd 100644
 --- a/drivers/mmc/host/omap_hsmmc.c
 +++ b/drivers/mmc/host/omap_hsmmc.c
-@@ -27,6 +27,7 @@
- #include <linux/timer.h>
- #include <linux/clk.h>
- #include <linux/mmc/host.h>
-+#include <linux/mmc/core.h>
- #include <linux/io.h>
- #include <linux/semaphore.h>
- #include <mach/dma.h>
-@@ -113,7 +114,8 @@
+@@ -366,9 +366,8 @@ int mmc_omap_cover_is_closed(struct mmc_omap_host *host)
+ {
+ 	int r = 1;
  
- /* Timeouts for entering power saving states on inactivity, msec */
- #define OMAP_MMC_DISABLED_TIMEOUT	100
--#define OMAP_MMC_OFF_TIMEOUT		1000
-+#define OMAP_MMC_SLEEP_TIMEOUT		1000
-+#define OMAP_MMC_OFF_TIMEOUT		8000
- 
- /*
-  * One controller can have multiple slots, like on some omap boards using
-@@ -1175,20 +1177,21 @@ static void omap_hsmmc_init(struct mmc_omap_host *host)
- 
- /*
-  * Dynamic power saving handling, FSM:
-- *   ENABLED -> DISABLED -> OFF / REGSLEEP
-- *     ^___________|          |
-- *     |______________________|
-+ *   ENABLED -> DISABLED -> CARDSLEEP / REGSLEEP -> OFF
-+ *     ^___________|          |                      |
-+ *     |______________________|______________________|
-  *
-  * ENABLED:   mmc host is fully functional
-  * DISABLED:  fclk is off
-- * OFF:       fclk is off,voltage regulator is off
-- * REGSLEEP:  fclk is off,voltage regulator is asleep
-+ * CARDSLEEP: fclk is off, card is asleep, voltage regulator is asleep
-+ * REGSLEEP:  fclk is off, voltage regulator is asleep
-+ * OFF:       fclk is off, voltage regulator is off
-  *
-  * Transition handlers return the timeout for the next state transition
-  * or negative error.
-  */
- 
--enum {ENABLED = 0, DISABLED, REGSLEEP, OFF};
-+enum {ENABLED = 0, DISABLED, CARDSLEEP, REGSLEEP, OFF};
- 
- /* Handler for [ENABLED -> DISABLED] transition */
- static int omap_mmc_enabled_to_disabled(struct mmc_omap_host *host)
-@@ -1202,46 +1205,72 @@ static int omap_mmc_enabled_to_disabled(struct mmc_omap_host *host)
- 	if (host->power_mode == MMC_POWER_OFF)
- 		return 0;
- 
--	return msecs_to_jiffies(OMAP_MMC_OFF_TIMEOUT);
-+	return msecs_to_jiffies(OMAP_MMC_SLEEP_TIMEOUT);
+-	if (host->pdata->slots[host->slot_id].get_cover_state)
+-		r = host->pdata->slots[host->slot_id].get_cover_state(host->dev,
+-			host->slot_id);
++	if (mmc_slot(host).get_cover_state)
++		r = mmc_slot(host).get_cover_state(host->dev, host->slot_id);
+ 	return r;
  }
  
--/* Handler for [DISABLED -> OFF] transition */
--static int omap_mmc_disabled_to_off(struct mmc_omap_host *host)
-+/* Handler for [DISABLED -> REGSLEEP / CARDSLEEP] transition */
-+static int omap_mmc_disabled_to_sleep(struct mmc_omap_host *host)
+@@ -391,9 +390,8 @@ mmc_omap_show_slot_name(struct device *dev, struct device_attribute *attr,
  {
--	int new_state;
--
--	dev_dbg(mmc_dev(host->mmc), "DISABLED -> OFF\n");
-+	int err, new_state;
+ 	struct mmc_host *mmc = container_of(dev, struct mmc_host, class_dev);
+ 	struct mmc_omap_host *host = mmc_priv(mmc);
+-	struct omap_mmc_slot_data slot = host->pdata->slots[host->slot_id];
  
- 	if (!mmc_try_claim_host(host->mmc))
- 		return 0;
+-	return sprintf(buf, "%s\n", slot.name);
++	return sprintf(buf, "%s\n", mmc_slot(host).name);
+ }
  
- 	clk_enable(host->fclk);
--
- 	omap_mmc_restore_ctx(host);
-+	if (mmc_card_can_sleep(host->mmc)) {
-+		err = mmc_card_sleep(host->mmc);
-+		if (err < 0) {
-+			clk_disable(host->fclk);
-+			mmc_release_host(host->mmc);
-+			return err;
-+		}
-+		new_state = CARDSLEEP;
-+	} else
-+		new_state = REGSLEEP;
-+	if (mmc_slot(host).set_sleep)
-+		mmc_slot(host).set_sleep(host->dev, host->slot_id, 1, 0,
-+					 new_state == CARDSLEEP);
-+	/* FIXME: turn off bus power and perhaps interrupts too */
-+	clk_disable(host->fclk);
-+	host->dpm_state = new_state;
-+
-+	mmc_release_host(host->mmc);
-+
-+	dev_dbg(mmc_dev(host->mmc), "DISABLED -> %s\n",
-+		host->dpm_state == CARDSLEEP ? "CARDSLEEP" : "REGSLEEP");
+ static DEVICE_ATTR(slot_name, S_IRUGO, mmc_omap_show_slot_name, NULL);
+@@ -625,7 +623,8 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 			(status & CMD_CRC)) {
+ 			if (host->cmd) {
+ 				if (status & CMD_TIMEOUT) {
+-					mmc_omap_reset_controller_fsm(host, SRC);
++					mmc_omap_reset_controller_fsm(host,
++								      SRC);
+ 					host->cmd->error = -ETIMEDOUT;
+ 				} else {
+ 					host->cmd->error = -EILSEQ;
+@@ -768,7 +767,7 @@ static void mmc_omap_detect(struct work_struct *work)
  
- 	if ((host->mmc->caps & MMC_CAP_NONREMOVABLE) ||
- 	    mmc_slot(host).card_detect ||
- 	    (mmc_slot(host).get_cover_state &&
--	     mmc_slot(host).get_cover_state(host->dev, host->slot_id))) {
--		mmc_power_save_host(host->mmc);
--		new_state = OFF;
--	} else {
--		if (mmc_slot(host).set_sleep)
--			mmc_slot(host).set_sleep(host->dev, host->slot_id,
--						 1, 0, 0);
--		new_state = REGSLEEP;
-+	     mmc_slot(host).get_cover_state(host->dev, host->slot_id)))
-+		return msecs_to_jiffies(OMAP_MMC_OFF_TIMEOUT);
-+
-+	return 0;
-+}
-+
-+/* Handler for [REGSLEEP / CARDSLEEP -> OFF] transition */
-+static int omap_mmc_sleep_to_off(struct mmc_omap_host *host)
-+{
-+	if (!mmc_try_claim_host(host->mmc))
-+		return 0;
-+
-+	if (!((host->mmc->caps & MMC_CAP_NONREMOVABLE) ||
-+	      mmc_slot(host).card_detect ||
-+	      (mmc_slot(host).get_cover_state &&
-+	       mmc_slot(host).get_cover_state(host->dev, host->slot_id)))) {
-+		mmc_release_host(host->mmc);
-+		return 0;
+ 	sysfs_notify(&host->mmc->class_dev.kobj, NULL, "cover_switch");
+ 
+-	if (mmc_slot(host).card_detect)
++	if (slot->card_detect)
+ 		carddetect = slot->card_detect(slot->card_detect_irq);
+ 	else
+ 		carddetect = -ENOSYS;
+@@ -823,7 +822,7 @@ static void mmc_omap_config_dma_params(struct mmc_omap_host *host,
+ 			sg_dma_address(sgl), 0, 0);
+ 	} else {
+ 		omap_set_dma_src_params(dma_ch, 0, OMAP_DMA_AMODE_CONSTANT,
+-					(host->mapbase + OMAP_HSMMC_DATA), 0, 0);
++			(host->mapbase + OMAP_HSMMC_DATA), 0, 0);
+ 		omap_set_dma_dest_params(dma_ch, 0, OMAP_DMA_AMODE_POST_INC,
+ 			sg_dma_address(sgl), 0, 0);
+ 	}
+@@ -911,7 +910,7 @@ mmc_omap_start_dma_transfer(struct mmc_omap_host *host, struct mmc_request *req)
  	}
  
--	OMAP_HSMMC_WRITE(host->base, ISE, 0);
--	OMAP_HSMMC_WRITE(host->base, IE, 0);
--	OMAP_HSMMC_WRITE(host->base, HCTL,
--		 OMAP_HSMMC_READ(host->base, HCTL) & ~SDBP);
-+	mmc_slot(host).set_power(host->dev, host->slot_id, 0, 0);
-+	host->vdd = 0;
-+	host->power_mode = MMC_POWER_OFF;
- 
--	clk_disable(host->fclk);
--	clk_disable(host->iclk);
--	clk_disable(host->dbclk);
-+	dev_dbg(mmc_dev(host->mmc), "%s -> OFF\n",
-+		host->dpm_state == CARDSLEEP ? "CARDSLEEP" : "REGSLEEP");
- 
--	host->dpm_state = new_state;
-+	host->dpm_state = OFF;
- 
- 	mmc_release_host(host->mmc);
- 
-@@ -1266,62 +1295,43 @@ static int omap_mmc_disabled_to_enabled(struct mmc_omap_host *host)
- 	return 0;
- }
- 
--/* Handler for [OFF -> ENABLED] transition */
--static int omap_mmc_off_to_enabled(struct mmc_omap_host *host)
-+/* Handler for [SLEEP -> ENABLED] transition */
-+static int omap_mmc_sleep_to_enabled(struct mmc_omap_host *host)
+ 	ret = omap_request_dma(mmc_omap_get_dma_sync_dev(host, data), "MMC/SD",
+-			       mmc_omap_dma_cb,host, &dma_ch);
++			       mmc_omap_dma_cb, host, &dma_ch);
+ 	if (ret != 0) {
+ 		dev_err(mmc_dev(host->mmc),
+ 			"%s: omap_request_dma() failed with %d\n",
+@@ -1131,21 +1130,19 @@ static void omap_mmc_set_ios(struct mmc_host *mmc, struct mmc_ios *ios)
+ static int omap_hsmmc_get_cd(struct mmc_host *mmc)
  {
--	clk_enable(host->fclk);
--	clk_enable(host->iclk);
--
--	if (clk_enable(host->dbclk))
--		dev_dbg(mmc_dev(host->mmc),
--			"Enabling debounce clk failed\n");
-+	if (!mmc_try_claim_host(host->mmc))
-+		return 0;
+ 	struct mmc_omap_host *host = mmc_priv(mmc);
+-	struct omap_mmc_platform_data *pdata = host->pdata;
  
-+	clk_enable(host->fclk);
- 	omap_mmc_restore_ctx(host);
--	omap_hsmmc_init(host);
--	mmc_power_restore_host(host->mmc);
-+	if (mmc_slot(host).set_sleep)
-+		mmc_slot(host).set_sleep(host->dev, host->slot_id, 0,
-+			 host->vdd, host->dpm_state == CARDSLEEP);
-+	if (mmc_card_can_sleep(host->mmc))
-+		mmc_card_awake(host->mmc);
-+
-+	dev_dbg(mmc_dev(host->mmc), "%s -> ENABLED\n",
-+		host->dpm_state == CARDSLEEP ? "CARDSLEEP" : "REGSLEEP");
- 
- 	host->dpm_state = ENABLED;
- 
--	dev_dbg(mmc_dev(host->mmc), "OFF -> ENABLED\n");
-+	mmc_release_host(host->mmc);
- 
- 	return 0;
+-	if (!pdata->slots[0].card_detect)
++	if (!mmc_slot(host).card_detect)
+ 		return -ENOSYS;
+-	return pdata->slots[0].card_detect(pdata->slots[0].card_detect_irq);
++	return mmc_slot(host).card_detect(mmc_slot(host).card_detect_irq);
  }
  
--/* Handler for [REGSLEEP -> ENABLED] transition */
--static int omap_mmc_regsleep_to_enabled(struct mmc_omap_host *host)
-+/* Handler for [OFF -> ENABLED] transition */
-+static int omap_mmc_off_to_enabled(struct mmc_omap_host *host)
+ static int omap_hsmmc_get_ro(struct mmc_host *mmc)
  {
--	unsigned long timeout;
--
--	dev_dbg(mmc_dev(host->mmc), "REGSLEEP -> ENABLED\n");
--
- 	clk_enable(host->fclk);
--	clk_enable(host->iclk);
--
--	if (clk_enable(host->dbclk))
--		dev_dbg(mmc_dev(host->mmc),
--			"Enabling debounce clk failed\n");
+ 	struct mmc_omap_host *host = mmc_priv(mmc);
+-	struct omap_mmc_platform_data *pdata = host->pdata;
  
- 	omap_mmc_restore_ctx(host);
--
--	/*
--	 * We turned off interrupts and bus power.  Interrupts
--	 * are turned on by 'mmc_omap_start_command()' so we
--	 * just need to turn on the bus power here.
--	 */
--	OMAP_HSMMC_WRITE(host->base, HCTL,
--			 OMAP_HSMMC_READ(host->base, HCTL) | SDBP);
--
--	timeout = jiffies + msecs_to_jiffies(MMC_TIMEOUT_MS);
--	while ((OMAP_HSMMC_READ(host->base, HCTL) & SDBP) != SDBP &&
--	       time_before(jiffies, timeout))
--		;
--
--	if (mmc_slot(host).set_sleep)
--		mmc_slot(host).set_sleep(host->dev, host->slot_id,
--					 0, host->vdd, 0);
-+	omap_hsmmc_init(host);
-+	mmc_power_restore_host(host->mmc);
- 
- 	host->dpm_state = ENABLED;
- 
-+	dev_dbg(mmc_dev(host->mmc), "OFF -> ENABLED\n");
-+
- 	return 0;
+-	if (!pdata->slots[0].get_ro)
++	if (!mmc_slot(host).get_ro)
+ 		return -ENOSYS;
+-	return pdata->slots[0].get_ro(host->dev, 0);
++	return mmc_slot(host).get_ro(host->dev, 0);
  }
  
-@@ -1335,8 +1345,9 @@ static int omap_mmc_enable(struct mmc_host *mmc)
- 	switch (host->dpm_state) {
- 	case DISABLED:
- 		return omap_mmc_disabled_to_enabled(host);
-+	case CARDSLEEP:
- 	case REGSLEEP:
--		return omap_mmc_regsleep_to_enabled(host);
-+		return omap_mmc_sleep_to_enabled(host);
- 	case OFF:
- 		return omap_mmc_off_to_enabled(host);
- 	default:
-@@ -1362,7 +1373,10 @@ static int omap_mmc_disable(struct mmc_host *mmc, int lazy)
- 		return 0;
- 	}
- 	case DISABLED:
--		return omap_mmc_disabled_to_off(host);
-+		return omap_mmc_disabled_to_sleep(host);
-+	case CARDSLEEP:
-+	case REGSLEEP:
-+		return omap_mmc_sleep_to_off(host);
- 	default:
- 		dev_dbg(mmc_dev(host->mmc), "UNKNOWN state\n");
- 		return -EINVAL;
-@@ -1434,8 +1448,7 @@ static int mmc_regs_show(struct seq_file *s, void *data)
- 			host->dpm_state, mmc->nesting_cnt,
- 			host->context_loss, context_loss);
+ static void omap_hsmmc_init(struct mmc_omap_host *host)
+@@ -1556,7 +1553,7 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, host);
+ 	INIT_WORK(&host->mmc_carddetect_work, mmc_omap_detect);
  
--	if (host->suspended || host->dpm_state == OFF ||
--	    host->dpm_state == REGSLEEP) {
-+	if (host->suspended || host->dpm_state == OFF) {
- 		seq_printf(s, "host suspended, can't read registers\n");
- 		return 0;
- 	}
-@@ -1610,7 +1623,8 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
- 	mmc->max_req_size = mmc->max_blk_size * mmc->max_blk_count;
- 	mmc->max_seg_size = mmc->max_req_size;
+-	if (pdata->slots[host->slot_id].power_saving)
++	if (mmc_slot(host).power_saving)
+ 		mmc->ops	= &mmc_omap_ps_ops;
+ 	else
+ 		mmc->ops	= &mmc_omap_ops;
+@@ -1626,12 +1623,12 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
+ 	mmc->caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED |
+ 		     MMC_CAP_WAIT_WHILE_BUSY;
  
--	mmc->caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED;
-+	mmc->caps |= MMC_CAP_MMC_HIGHSPEED | MMC_CAP_SD_HIGHSPEED |
-+		     MMC_CAP_WAIT_WHILE_BUSY;
- 
- 	if (pdata->slots[host->slot_id].wires >= 8)
+-	if (pdata->slots[host->slot_id].wires >= 8)
++	if (mmc_slot(host).wires >= 8)
  		mmc->caps |= MMC_CAP_8_BIT_DATA;
+-	else if (pdata->slots[host->slot_id].wires >= 4)
++	else if (mmc_slot(host).wires >= 4)
+ 		mmc->caps |= MMC_CAP_4_BIT_DATA;
+ 
+-	if (pdata->slots[host->slot_id].nonremovable)
++	if (mmc_slot(host).nonremovable)
+ 		mmc->caps |= MMC_CAP_NONREMOVABLE;
+ 
+ 	mmc->caps |= MMC_CAP_SDIO | MMC_CAP_SD | MMC_CAP_MMC;
+@@ -1695,13 +1692,12 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
+ 
+ 	mmc_add_host(mmc);
+ 
+-	if (host->pdata->slots[host->slot_id].name != NULL) {
++	if (mmc_slot(host).name != NULL) {
+ 		ret = device_create_file(&mmc->class_dev, &dev_attr_slot_name);
+ 		if (ret < 0)
+ 			goto err_slot_name;
+ 	}
+-	if (mmc_slot(host).card_detect_irq &&
+-	    host->pdata->slots[host->slot_id].get_cover_state) {
++	if (mmc_slot(host).card_detect_irq && mmc_slot(host).get_cover_state) {
+ 		ret = device_create_file(&mmc->class_dev,
+ 					&dev_attr_cover_switch);
+ 		if (ret < 0)
+@@ -1807,7 +1803,7 @@ static int omap_mmc_suspend(struct platform_device *pdev, pm_message_t state)
+ 
+ 
+ 			OMAP_HSMMC_WRITE(host->base, HCTL,
+-					 OMAP_HSMMC_READ(host->base, HCTL) & ~SDBP);
++				OMAP_HSMMC_READ(host->base, HCTL) & ~SDBP);
+ 			mmc_host_disable(host->mmc);
+ 			clk_disable(host->iclk);
+ 			clk_disable(host->dbclk);
 -- 
 1.5.6.3
 
