@@ -1,34 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752287AbZG1JVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbZG1JXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752287AbZG1JVc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 05:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbZG1JVb
+	id S1752707AbZG1JXg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 05:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbZG1JXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 05:21:31 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34488 "EHLO
+	Tue, 28 Jul 2009 05:23:35 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34498 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750733AbZG1JVa (ORCPT
+	with ESMTP id S1751266AbZG1JXf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 05:21:30 -0400
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: James Morris <jmorris@namei.org>, James Carter <jwcart2@tycho.nsa.gov>,
-       Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
-       Stephen Smalley <sds@tycho.nsa.gov>, spender@grsecurity.net,
-       Daniel J Walsh <dwalsh@redhat.com>, cl@linux-foundation.org,
-       Arjan van de Ven <arjan@infradead.org>, kees@outflux.net,
-       Chad Sellers <csellers@tresys.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, mingo@elte.hu
-Subject: Re: mmap_min_addr and your local LSM (ok, just SELinux)
+	Tue, 28 Jul 2009 05:23:35 -0400
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: NMI between switch_mm and switch_to
 From: Andi Kleen <andi@firstfloor.org>
-References: <1248132223.2654.278.camel@localhost>
-	<alpine.LRH.2.00.0907211258110.32400@tundra.namei.org>
-	<1248187482.19456.90.camel@moss-lions.epoch.ncsc.mil>
-	<alpine.LRH.2.00.0907221953190.15799@tundra.namei.org>
-	<20090728011943.589176cb@lxorguk.ukuu.org.uk>
-Date: Tue, 28 Jul 2009 11:21:29 +0200
-In-Reply-To: <20090728011943.589176cb@lxorguk.ukuu.org.uk> (Alan Cox's message of "Tue, 28 Jul 2009 01:19:43 +0100")
-Message-ID: <87zlapgo2u.fsf@basil.nowhere.org>
+References: <19054.33655.297932.261580@cargo.ozlabs.ibm.com>
+	<1248767472.6987.2806.camel@twins>
+Date: Tue, 28 Jul 2009 11:23:34 +0200
+In-Reply-To: <1248767472.6987.2806.camel@twins> (Peter Zijlstra's message of "Tue, 28 Jul 2009 09:51:12 +0200")
+Message-ID: <87vdldgnzd.fsf@basil.nowhere.org>
 User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -36,16 +27,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+Peter Zijlstra <a.p.zijlstra@chello.nl> writes:
 
-> A dumb question perhaps, but while addling my brain over the tty layer I
-> was wondering if for the specific case of jump through NULL (which seems
-> to be the most common but by no means only problem case that gets
-> exploited) is there any reason we can't set a default breakpoint for
+> We could use preempt notifiers (or put in our own hooks) to disable
+> callchains during the context switch I suppose.
 
-You mean a hardware breakpoint? Hardware break points are a precious
-scarce resource. The people who rely on them would be likely
-unhappy if you take one way from them.
+You can simply check if cr3 matches the current->mm page tables
+and not dump if they are not.
 
 -Andi
 
