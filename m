@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751621AbZG1Tye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751149AbZG1T5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751621AbZG1Tye (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 15:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750776AbZG1Tyd
+	id S1751149AbZG1T5q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 15:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750794AbZG1T5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 15:54:33 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:58542 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750765AbZG1Tyc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 15:54:32 -0400
-Date: Tue, 28 Jul 2009 21:54:31 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>, linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] UIO: mark uio.h functions __KERNEL__ only
-Message-ID: <20090728195431.GA20914@merkur.ravnborg.org>
-References: <20090728193139.GA11468@infradead.org> <1248810094-30094-1-git-send-email-jirislaby@gmail.com>
+	Tue, 28 Jul 2009 15:57:46 -0400
+Received: from kroah.org ([198.145.64.141]:50339 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750786AbZG1T5p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 15:57:45 -0400
+Date: Tue, 28 Jul 2009 12:56:48 -0700
+From: Greg KH <greg@kroah.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kdesu broken
+Message-ID: <20090728195648.GA4833@kroah.com>
+References: <87r5w19xsb.fsf@devron.myhome.or.jp>
+ <20090728112203.7b70adba@lxorguk.ukuu.org.uk>
+ <alpine.LFD.2.01.0907280848090.3186@localhost.localdomain>
+ <20090728174213.5e927428@lxorguk.ukuu.org.uk>
+ <alpine.LFD.2.01.0907280944150.3186@localhost.localdomain>
+ <20090728180649.596c5412@lxorguk.ukuu.org.uk>
+ <alpine.LFD.2.01.0907281141070.3186@localhost.localdomain>
+ <20090728195651.3a402a31@lxorguk.ukuu.org.uk>
+ <alpine.LFD.2.01.0907281158120.3186@localhost.localdomain>
+ <20090728201553.0eb2d51d@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1248810094-30094-1-git-send-email-jirislaby@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090728201553.0eb2d51d@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 28, 2009 at 09:41:34PM +0200, Jiri Slaby wrote:
-> To avoid userspace build failures such as:
-> .../linux/uio.h:37: error: expected ???=???, ???,???, ???;???, ???asm??? or ???__attribute__??? before ???iov_length???
-> .../linux/uio.h:47: error: expected declaration specifiers or ???...??? before ???size_t???
-> move uio functions inside a __KERNEL__ block.
+On Tue, Jul 28, 2009 at 08:15:53PM +0100, Alan Cox wrote:
 > 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> ---
->  include/linux/uio.h |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
+> > Quite frankly, I don't understand why I should even have to bring these 
+> > issues up. You should have tried to fix the problem immediately, without 
+> > arguing against fixing the kernel. Without blaming user space. Without 
+> > making idiotic excuses for bad kernel behavior.
+> > 
+> > The fact is, breaking regular user applications is simply not acceptable. 
+> > Trying to blame kernel breakage on the app being "buggy" is not ok. And 
+> > arguing for almost a week against fixing it - that's just crazy.
 > 
-> diff --git a/include/linux/uio.h b/include/linux/uio.h
-> index b7fe138..693c149 100644
-> --- a/include/linux/uio.h
-> +++ b/include/linux/uio.h
-> @@ -35,6 +35,7 @@ struct kvec {
->  #define UIO_FASTIOV	8
->  #define UIO_MAXIOV	1024
->  
-> +#ifdef __KERNEL__
->  /*
->   * Total number of bytes covered by an iovec.
->   *
-> @@ -53,5 +54,6 @@ static inline size_t iov_length(const struct iovec *iov, unsigned long nr_segs)
->  }
->  
->  unsigned long iov_shorten(struct iovec *iov, unsigned long nr_segs, size_t to);
-> +#endif
->  
->  #endif
+> I've been working on fixing it. I have spent a huge amount of time
+> working on the tty stuff trying to gradually get it sane without breaking
+> anything and fixing security holes along the way as they came up. I spent
+> the past two evenings working on the tty regressions.
+> 
+> However I've had enough. If you think that problem is easy to fix you fix
+> it.
+> 
+> Have fun.
+> 
+> I've zapped the tty merge queue so anyone with patches for the tty layer
+> can send them to the new maintainer.
 
-Can we get this fixed up so we have a single #ifdef __KERNEL__ block?
-It would be prettier, and nothing the in non-kernel part would rely
-on the kernel part so you can put the kernel part in the bottom of
-the file.
+Do you have a pointer to your previous queue before you zapped it so
+that others might be able to pick it up?
 
-	Sam
+thanks,
+
+greg k-h
