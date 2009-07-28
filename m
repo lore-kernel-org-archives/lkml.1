@@ -1,73 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755890AbZG1WYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755599AbZG1WYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755890AbZG1WYE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 18:24:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755856AbZG1WXn
+	id S1755599AbZG1WYn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 18:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755296AbZG1WYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 18:23:43 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:40437 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755775AbZG1WXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 18:23:41 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: LKML <linux-kernel@vger.kernel.org>, Mel Gorman <mel@csn.ul.ie>
-Subject: [RFC PATCH 0/3] Add some trace events for the page allocator
-Date: Tue, 28 Jul 2009 23:23:36 +0100
-Message-Id: <1248819819-14931-1-git-send-email-mel@csn.ul.ie>
-X-Mailer: git-send-email 1.6.3.3
+	Tue, 28 Jul 2009 18:24:42 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:34503 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755005AbZG1WYm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 18:24:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=l85yM7K33cAv0QRYucoqJvXptaHNflXOBr4iLsXf0j97L9J5kmnf2ER1ZX3zZTGm/T
+         ir0oxAgQWhRXk1vQ55CD6kwRx8yJkQaE0DGL8cIzYGcUnwcXVbdGyO8/EVrFBCQqWRPV
+         Vj9pwEvY9MC1VmvRyhnz1aG/cQX9w48VbFmgI=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: [PATCH] cyclades: allow overriding ISA defaults also when the driver is built-in
+Date: Wed, 29 Jul 2009 00:23:47 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc4-next-20090728-04869-gdae50fe-dirty; KDE/4.2.4; i686; ; )
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907290023.48870.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following three patches add some trace events for the page allocator under
-the heading of kmem (should there be a pagealloc heading instead?). Testing
-under qemu seems to show up reasonable results but this is a prototype for
-comment that hasn't been very heavily tested. I was able to find at least
-one anomaly looking a the output in relation to anti-fragmentation which
-I'm still thinking about so minimally, it was useful for that but I've made
-an attempt to justify each of the events added.
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] cyclades: allow overriding ISA defaults also when the driver is built-in
 
-The patches are as follows
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/char/cyclades.c |    9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-	Patch 1 adds events for plain old allocate and freeing of pages
-	Patch 2 gives information useful for analysing fragmentation avoidance
-	Patch 3 tracks pages going to and from the buddy lists as an indirect
-		indication of zone lock hotness
-
-The first one could be used as an indicator as to whether the workload was
-heavily dependant on the page allocator or not. You can make a guess based
-on vmstat but you can't get a per-process breakdown. I did have trouble with
-the call-site portion of the allocation. Depending on the path, you might
-just get the address of __get_free_pages() instead of a useful callsite. I
-didn't see a nice way to always report a "useful" call_site.
-
-The second patch would mainly be useful for users of hugepages and
-particularly dynamic hugepage pool resizing as it could be used to tune
-min_free_kbytes to a level that fragmentation was rarely a problem. My
-main concern is that maybe I'm trying to jam too much into the TP_printk
-that could be extrapolated after the fact if you were familiar with the
-implementation. I couldn't determine if it was best to hold the hand of
-the administrator even if it cost more to figure it out.
-
-The last patch is trickier to draw conclusions from but high activity on
-those events could explain why there were a large number of cache misses
-on a page-allocator-intensive workload. The coalescing and splitting of
-buddies involves a lot of writing of page metadata and cache line bounces
-not to mention the acquisition of an interrupt-safe lock necessary to enter
-this path. One problem is that one function traced is likely to change its
-name in the future.  When that happens, the trace event will be replaced
-with something similar, but not identical. I've been told this is probably
-ok but there has been whinging in the past about whether debugfs represents
-an ABI or not.
-
-This is the first time I've looked at adding trace events so apologies
-for any obvious mistakes made as I haven't been keeping a close eye on all
-the tracing discussions describing How Things Should Be Done. checkpatch
-throws major wobblies about this patchset, but it's consistent with the
-style of other events so I ignored it. The "To:" list is based taken from
-another tracepoint mail, if there is a specific list I should have used,
-feel free to slap with clue stick. All comments indicating whether this is
-generally useful and how it might be improved are welcome.
+Index: b/drivers/char/cyclades.c
+===================================================================
+--- a/drivers/char/cyclades.c
++++ b/drivers/char/cyclades.c
+@@ -158,13 +158,11 @@ static unsigned int cy_isa_addresses[] =
+ 
+ #define NR_ISA_ADDRS ARRAY_SIZE(cy_isa_addresses)
+ 
+-#ifdef MODULE
+ static long maddr[NR_CARDS];
+ static int irq[NR_CARDS];
+ 
+ module_param_array(maddr, long, NULL, 0);
+ module_param_array(irq, int, NULL, 0);
+-#endif
+ 
+ #endif				/* CONFIG_ISA */
+ 
+@@ -3319,13 +3317,10 @@ static int __init cy_detect_isa(void)
+ 	unsigned short cy_isa_irq, nboard;
+ 	void __iomem *cy_isa_address;
+ 	unsigned short i, j, cy_isa_nchan;
+-#ifdef MODULE
+ 	int isparam = 0;
+-#endif
+ 
+ 	nboard = 0;
+ 
+-#ifdef MODULE
+ 	/* Check for module parameters */
+ 	for (i = 0; i < NR_CARDS; i++) {
+ 		if (maddr[i] || i) {
+@@ -3335,7 +3330,6 @@ static int __init cy_detect_isa(void)
+ 		if (!maddr[i])
+ 			break;
+ 	}
+-#endif
+ 
+ 	/* scan the address table probing for Cyclom-Y/ISA boards */
+ 	for (i = 0; i < NR_ISA_ADDRS; i++) {
+@@ -3356,11 +3350,10 @@ static int __init cy_detect_isa(void)
+ 			iounmap(cy_isa_address);
+ 			continue;
+ 		}
+-#ifdef MODULE
++
+ 		if (isparam && irq[i])
+ 			cy_isa_irq = irq[i];
+ 		else
+-#endif
+ 			/* find out the board's irq by probing */
+ 			cy_isa_irq = detect_isa_irq(cy_isa_address);
+ 		if (cy_isa_irq == 0) {
