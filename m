@@ -1,126 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754163AbZG1Uqz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbZG1Urs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754163AbZG1Uqz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 16:46:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbZG1Uqy
+	id S1754245AbZG1Urs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 16:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753681AbZG1Urr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 16:46:54 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:40293 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751535AbZG1Uqx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 16:46:53 -0400
-From: Sage Weil <sage@newdream.net>
-To: linux-kernel@vger.kernel.org
-Cc: Sage Weil <sage@newdream.net>, Neil Brown <neilb@suse.de>,
-       <linux-raid@vger.kernel.org>, <linux-mm@kvack.org>, <stable@kernel.org>
-Subject: [PATCH] mempool: launder reused items from kzalloc pool
-Date: Tue, 28 Jul 2009 13:46:07 -0700
-Message-Id: <1248813967-27448-1-git-send-email-sage@newdream.net>
-X-Mailer: git-send-email 1.5.6.5
+	Tue, 28 Jul 2009 16:47:47 -0400
+Received: from THUNK.ORG ([69.25.196.29]:43683 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751535AbZG1Urr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 16:47:47 -0400
+Date: Tue, 28 Jul 2009 16:47:20 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Greg KH <greg@kroah.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kdesu broken
+Message-ID: <20090728204720.GF31679@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Greg KH <greg@kroah.com>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+References: <20090728112203.7b70adba@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907280848090.3186@localhost.localdomain> <20090728174213.5e927428@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907280944150.3186@localhost.localdomain> <20090728180649.596c5412@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907281141070.3186@localhost.localdomain> <20090728195651.3a402a31@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907281158120.3186@localhost.localdomain> <20090728201553.0eb2d51d@lxorguk.ukuu.org.uk> <20090728195648.GA4833@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090728195648.GA4833@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The kzalloc pool created by mempool_create_kzalloc_pool() only zeros items
-the first time they are allocated; it doesn't re-zero freed items that are
-returned to the pool.  This only comes up when the pool is used in the
-first place (when memory is very low).
+On Tue, Jul 28, 2009 at 12:56:48PM -0700, Greg KH wrote:
+> 
+> Do you have a pointer to your previous queue before you zapped it so
+> that others might be able to pick it up?
+> 
 
-Fix this by adding a mempool_launder_t method that is called before
-returning items to the pool, and set it in mempool_create_kzalloc_pool.
-This preserves the use of __GFP_ZERO in the common case where the pool
-isn't touched at all.
+It's also available from linux-next as commit:
 
-There are currently two in-tree users of mempool_create_kzalloc_pool:
-	drivers/md/multipath.c
-	drivers/scsi/ibmvscsi/ibmvfc.c
-The first appears to be affected by this bug.  The second manually zeros
-each allocation, and can stop doing so after this is fixed.
+     024ea7873598686f3e02002ca23c2e8fa3fddd30
 
-Alternatively, mempool_create_kzalloc_pool() could be removed entirely and
-the callers could zero allocations themselves.
-
-CC: Neil Brown <neilb@suse.de>
-CC: <linux-raid@vger.kernel.org>
-CC: <linux-kernel@vger.kernel.org>
-CC: <linux-mm@kvack.org>
-CC: <stable@kernel.org>
-Signed-off-by: Sage Weil <sage@newdream.net>
----
- include/linux/mempool.h |   10 ++++++++--
- mm/mempool.c            |    9 +++++++++
- 2 files changed, 17 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/mempool.h b/include/linux/mempool.h
-index 9be484d..889c7e1 100644
---- a/include/linux/mempool.h
-+++ b/include/linux/mempool.h
-@@ -10,6 +10,7 @@ struct kmem_cache;
- 
- typedef void * (mempool_alloc_t)(gfp_t gfp_mask, void *pool_data);
- typedef void (mempool_free_t)(void *element, void *pool_data);
-+typedef void (mempool_launder_t)(void *element, void *pool_data);
- 
- typedef struct mempool_s {
- 	spinlock_t lock;
-@@ -20,6 +21,7 @@ typedef struct mempool_s {
- 	void *pool_data;
- 	mempool_alloc_t *alloc;
- 	mempool_free_t *free;
-+	mempool_launder_t *launder;
- 	wait_queue_head_t wait;
- } mempool_t;
- 
-@@ -52,6 +54,7 @@ mempool_create_slab_pool(int min_nr, struct kmem_cache *kc)
-  */
- void *mempool_kmalloc(gfp_t gfp_mask, void *pool_data);
- void *mempool_kzalloc(gfp_t gfp_mask, void *pool_data);
-+void mempool_rezero(void *element, void *pool_data);
- void mempool_kfree(void *element, void *pool_data);
- static inline mempool_t *mempool_create_kmalloc_pool(int min_nr, size_t size)
- {
-@@ -60,8 +63,11 @@ static inline mempool_t *mempool_create_kmalloc_pool(int min_nr, size_t size)
- }
- static inline mempool_t *mempool_create_kzalloc_pool(int min_nr, size_t size)
- {
--	return mempool_create(min_nr, mempool_kzalloc, mempool_kfree,
--			      (void *) size);
-+	mempool_t *pool = mempool_create(min_nr, mempool_kzalloc, mempool_kfree,
-+					 (void *) size);
-+	if (pool)
-+		pool->launder = mempool_rezero;
-+	return pool;
- }
- 
- /*
-diff --git a/mm/mempool.c b/mm/mempool.c
-index a46eb1b..6bb3056 100644
---- a/mm/mempool.c
-+++ b/mm/mempool.c
-@@ -269,6 +269,8 @@ void mempool_free(void *element, mempool_t *pool)
- 	if (pool->curr_nr < pool->min_nr) {
- 		spin_lock_irqsave(&pool->lock, flags);
- 		if (pool->curr_nr < pool->min_nr) {
-+			if (pool->launder)
-+				pool->launder(element, pool->pool_data);
- 			add_element(pool, element);
- 			spin_unlock_irqrestore(&pool->lock, flags);
- 			wake_up(&pool->wait);
-@@ -315,6 +317,13 @@ void *mempool_kzalloc(gfp_t gfp_mask, void *pool_data)
- }
- EXPORT_SYMBOL(mempool_kzalloc);
- 
-+void mempool_rezero(void *element, void *pool_data)
-+{
-+	size_t size = (size_t) pool_data;
-+	memset(element, 0, size);
-+}
-+EXPORT_SYMBOL(mempool_rezero);
-+
- void mempool_kfree(void *element, void *pool_data)
- {
- 	kfree(element);
--- 
-1.5.6.5
-
+						- Ted
