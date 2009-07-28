@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751887AbZG1Hsi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752101AbZG1Hth@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751887AbZG1Hsi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 03:48:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbZG1Hsi
+	id S1752101AbZG1Hth (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 03:49:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbZG1Hth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 03:48:38 -0400
-Received: from viefep18-int.chello.at ([62.179.121.38]:53168 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750925AbZG1Hsh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 03:48:37 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: NMI between switch_mm and switch_to
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <19054.33655.297932.261580@cargo.ozlabs.ibm.com>
-References: <19054.33655.297932.261580@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Tue, 28 Jul 2009 09:51:12 +0200
-Message-Id: <1248767472.6987.2806.camel@twins>
+	Tue, 28 Jul 2009 03:49:37 -0400
+Received: from bamako.nerim.net ([62.4.17.28]:64821 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751284AbZG1Htg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 03:49:36 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Jul 2009 03:49:36 EDT
+Date: Tue, 28 Jul 2009 09:26:47 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] [PATCH 12/22] hwmon: WM831x PMIC hardware 
+ monitoring  driver
+Message-ID: <20090728092647.23ff0eaa@hyperion.delvare>
+In-Reply-To: <20090727204614.GA4386@sirena.org.uk>
+References: <20090727134527.GA12849@rakim.wolfsonmicro.main>
+	<1248702372-29534-12-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<20090727214419.5a503821@hyperion.delvare>
+	<20090727204614.GA4386@sirena.org.uk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-28 at 14:49 +1000, Paul Mackerras wrote:
-> Ben H. suggested there might be a problem if we get a PMU interrupt
-> and try to do a stack trace of userspace in the interval between when
-> we call switch_mm() from sched.c:context_switch() and when we call
-> switch_to().  If we get an NMI in that interval and do a stack trace
-> of userspace, we'll see the registers of the old task but when we peek
-> at user addresses we'll see the memory image for the new task, so the
-> stack trace we get will be completely bogus.
+On Mon, 27 Jul 2009 21:46:14 +0100, Mark Brown wrote:
+> On Mon, Jul 27, 2009 at 09:44:19PM +0200, Jean Delvare wrote:
+> > On Mon, 27 Jul 2009 14:46:02 +0100, Mark Brown wrote:
+> > > +#define WM831X_NAMED_VOLTAGE(id, name) \
+> > > +	static SENSOR_DEVICE_ATTR(in##id##_input, S_IRUGO, show_voltage,\
+> > > +				  NULL, name);		\
+> > 
+> > I guess you could just call WM831X_VOLTAGE(id, name).
 > 
-> Is this in fact also a problem on x86, or is there some subtle reason
-> why it can't happen there?
+> That clashes with the unnamed voltage above.  I could also call them
+> _NAMED and _UNNAMED, I suppose.
 
-I can't spot one, maybe Ingo can when he's back :-)
+Sorry for not being clear. I simply meant you could write the following:
 
-So I think this is very good spotting from Ben.
+define WM831X_VOLTAGE(id, name) \
+	static SENSOR_DEVICE_ATTR(in##id##_input, S_IRUGO, show_voltage, \
+				  NULL, name)
 
-We could use preempt notifiers (or put in our own hooks) to disable
-callchains during the context switch I suppose.
+#define WM831X_NAMED_VOLTAGE(id, name) \
+	WM831X_VOLTAGE(id, name);					\
+	static SENSOR_DEVICE_ATTR(in##id##_label, S_IRUGO, show_label,	\
+				  NULL, name)
 
+Which makes it more obvious that WM831X_NAMED_VOLTAGE is WM831X_VOLTAGE
++ label. But it's really up to you which way you prefer.
+
+-- 
+Jean Delvare
