@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbZG1Xte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932166AbZG1Xwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753339AbZG1Xte (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:49:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753185AbZG1Xtd
+	id S932166AbZG1Xwm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:52:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754972AbZG1Xuc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:49:33 -0400
-Received: from kroah.org ([198.145.64.141]:35611 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:50:32 -0400
+Received: from kroah.org ([198.145.64.141]:35942 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753262AbZG1Xtc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:49:32 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:51 2009
-Message-Id: <20090728234151.459738282@mini.kroah.org>
+	id S1753965AbZG1Xu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:50:27 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:42:00 2009
+Message-Id: <20090728234200.577587847@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:40:30 -0700
+Date: Tue, 28 Jul 2009 16:41:28 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 01/71] SCSI: zalon: fix oops on attach failure
+       Patrick McHardy <kaber@trash.net>
+Subject: [patch 59/71] netfilter: nf_conntrack: fix conntrack lookup race
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=scsi-zalon-fix-oops-on-attach-failure.patch
+Content-Disposition: inline; filename=netfilter-nf_conntrack-fix-conntrack-lookup-race.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,35 +30,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
+From: Patrick McHardy <kaber@trash.net>
 
-commit d3a263a8168f78874254ea9da9595cfb0f3e96d7 upstream.
+commit 8d8890b7751387f58ce0a6428773de2fbc0fd596 upstream.
 
-I recently discovered on my zalon that if the attachment fails because
-of a bus misconfiguration (I scrapped my HVD array, so the card is now
-unterminated) then the system oopses.  The reason is that if
-ncr_attach() returns NULL (signalling failure) that NULL is passed by
-the goto failed straight into ncr_detach() which oopses.
+The RCU protected conntrack hash lookup only checks whether the entry
+has a refcount of zero to decide whether it is stale. This is not
+sufficient, entries are explicitly removed while there is at least
+one reference left, possibly more. Explicitly check whether the entry
+has been marked as dying to fix this.
 
-The fix is just to return -ENODEV in this case.
-
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/zalon.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/netfilter/nf_conntrack_core.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/drivers/scsi/zalon.c
-+++ b/drivers/scsi/zalon.c
-@@ -134,7 +134,7 @@ zalon_probe(struct parisc_device *dev)
+--- a/net/netfilter/nf_conntrack_core.c
++++ b/net/netfilter/nf_conntrack_core.c
+@@ -295,7 +295,8 @@ begin:
+ 	h = __nf_conntrack_find(net, tuple);
+ 	if (h) {
+ 		ct = nf_ct_tuplehash_to_ctrack(h);
+-		if (unlikely(!atomic_inc_not_zero(&ct->ct_general.use)))
++		if (unlikely(nf_ct_is_dying(ct) ||
++			     !atomic_inc_not_zero(&ct->ct_general.use)))
+ 			h = NULL;
+ 		else {
+ 			if (unlikely(!nf_ct_tuple_equal(tuple, &h->tuple))) {
+@@ -474,7 +475,8 @@ static noinline int early_drop(struct ne
+ 			cnt++;
+ 		}
  
- 	host = ncr_attach(&zalon7xx_template, unit, &device);
- 	if (!host)
--		goto fail;
-+		return -ENODEV;
- 
- 	if (request_irq(dev->irq, ncr53c8xx_intr, IRQF_SHARED, "zalon", host)) {
- 	  dev_printk(KERN_ERR, &dev->dev, "irq problem with %d, detaching\n ",
+-		if (ct && unlikely(!atomic_inc_not_zero(&ct->ct_general.use)))
++		if (ct && unlikely(nf_ct_is_dying(ct) ||
++				   !atomic_inc_not_zero(&ct->ct_general.use)))
+ 			ct = NULL;
+ 		if (ct || cnt >= NF_CT_EVICTION_RANGE)
+ 			break;
 
 
