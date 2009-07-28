@@ -1,67 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750874AbZG1EBO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750824AbZG1EEN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750874AbZG1EBO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 00:01:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750722AbZG1EBN
+	id S1750824AbZG1EEN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 00:04:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750733AbZG1EEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 00:01:13 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:56396 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750710AbZG1EBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 00:01:13 -0400
-Date: Tue, 28 Jul 2009 14:01:10 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Oliver Neukum <oliver@neukum.org>, Greg KH <greg@kroah.com>
-Subject: linux-next: manual merge of the ttydev tree with the usb.current
- tree
-Message-Id: <20090728140110.7cfe7c22.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 28 Jul 2009 00:04:12 -0400
+Received: from mail-yw0-f175.google.com ([209.85.211.175]:53666 "EHLO
+	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750722AbZG1EEM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 00:04:12 -0400
+X-Greylist: delayed 341 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Jul 2009 00:04:12 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:from:date
+         :x-google-sender-auth:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=ut1iJMBzRCu3+5dOsxqOt09GGQ9Ii8lquF3srlWoi0+tFqHVmWpgjMLiWEUsqg1P2w
+         7NaSHDwMHEk/sxfF11rd4kjjBFB6Fq/yUOIIHG7CRTgKOM9boN+NVTP+v3DA02WDeytP
+         AhbabRnVT+96czCeUIOtsrB5wjxOUz5MiuggQ=
+MIME-Version: 1.0
+In-Reply-To: <20090728001041.GG28349@ghostprotocols.net>
+References: <20090728001041.GG28349@ghostprotocols.net>
+From: Ray Lee <ray-lk@madrabbit.org>
+Date: Mon, 27 Jul 2009 20:58:08 -0700
+X-Google-Sender-Auth: ef48eaf74bad9a1e
+Message-ID: <2c0942db0907272058h3e1fc583w77925d0cc761c47f@mail.gmail.com>
+Subject: Re: [PATCH 1/1 tip] perf top: Move hard coded list to 
+	/etc/perfconfig/symbols.skip
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
+On Mon, Jul 27, 2009 at 5:10 PM, Arnaldo Carvalho de
+Melo<acme@redhat.com> wrote:
+> This also paves the way to add more symbol lists to be filtered out,
+> spinlock anyone?
 
-Today's linux-next merge of the ttydev tree got a conflict in
-drivers/usb/serial/usb-serial.c between commit
-a00b8d98aca97bfb6fa983f41dae25b424058592 ("USB: fix usage count in usb
-serial generic open regarding autoresume") from the usb.current tree and
-commit 73fed8403623653560cc2f35c9b62891adaf6b4b
-("tty-usb-error-unlock-fix") from the ttydev tree.
+Generally, the way I've found is best to handle things like this is to either:
 
-Just context changes.  I have fixed it up (see below) and can carry the
-fix as necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+A. Have a fall-back list to use if the file isn't found, or
+B. Start with the fall-back list of symbols to filter, then add to
+them via /etc/... and ~/.perf/...
 
-diff --cc drivers/usb/serial/usb-serial.c
-index 06579a8,99188c9..0000000
---- a/drivers/usb/serial/usb-serial.c
-+++ b/drivers/usb/serial/usb-serial.c
-@@@ -220,8 -224,8 +222,8 @@@ static int serial_open (struct tty_stru
-  	tty_port_tty_set(&port->port, tty);
-  
-  	/* If the console is attached, the device is already open */
- -	if (port->port.count == 1 && !port->console) {
- +	if (!port->port.count && !port->console) {
-- 
-+ 		first = 1;
-  		/* lock this module before we call it
-  		 * this may fail, which means we must bail out,
-  		 * safe because we are called with BKL held */
-@@@ -246,8 -248,7 +248,9 @@@
-  		if (retval)
-  			goto bailout_interface_put;
-  		mutex_unlock(&serial->disc_mutex);
-+ 		set_bit(ASYNCB_INITIALIZED, &port->port.flags);
- +	} else {
- +		++port->port.count;
-  	}
-  	mutex_unlock(&port->mutex);
-  	/* Now do the correct tty layer semantics */
+I like approaching things from the 'everything works even in a
+broken/hasty installation' point of view, and it's paid off for me.
+Sane defaults are a wonderfully useful thing.
