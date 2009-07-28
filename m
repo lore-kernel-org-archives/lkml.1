@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752983AbZG1Qfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbZG1QgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752983AbZG1Qfw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 12:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbZG1Qfv
+	id S1754894AbZG1QgD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 12:36:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbZG1QgB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 12:35:51 -0400
-Received: from kroah.org ([198.145.64.141]:50026 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 12:36:01 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:43038 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751457AbZG1Qfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 12:35:50 -0400
-Date: Tue, 28 Jul 2009 09:34:20 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Oliver Neukum <oliver@neukum.org>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: linux-next: manual merge of the ttydev tree with the
- usb.current tree
-Message-ID: <20090728163420.GB14899@kroah.com>
-References: <20090728140110.7cfe7c22.sfr@canb.auug.org.au>
- <20090728112608.09a494e0@lxorguk.ukuu.org.uk>
- <200907281410.41449.oliver@neukum.org>
- <20090728132911.03ff78ea@lxorguk.ukuu.org.uk>
- <20090728223504.6a6ae8e7.sfr@canb.auug.org.au>
- <20090728141740.44d53b68@lxorguk.ukuu.org.uk>
- <20090728163222.GA14899@kroah.com>
+	id S1754866AbZG1Qf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 12:35:58 -0400
+Date: Tue, 28 Jul 2009 09:38:35 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Oleg Nesterov <oleg@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, roland@redhat.com,
+       Oren Laadan <orenl@cs.columbia.edu>, serue@us.ibm.com,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Containers <containers@lists.linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] Disable CLONE_PARENT for init
+Message-ID: <20090728163835.GA16040@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090728163222.GA14899@kroah.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 28, 2009 at 09:32:22AM -0700, Greg KH wrote:
-> On Tue, Jul 28, 2009 at 02:17:40PM +0100, Alan Cox wrote:
-> > On Tue, 28 Jul 2009 22:35:04 +1000
-> > Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > 
-> > > Hi Alan,
-> > > 
-> > > On Tue, 28 Jul 2009 13:29:11 +0100 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > > >
-> > > > I need to look at the actual diff, but the combination looks completely
-> > > > bogus unless I'm misreading the fixup which is possible.
-> > > 
-> > > Below is the actual patch from the usb.current tree.
-> > 
-> > Thanks - ok that is probably safe. The change I was worried about (the
-> > error paths not adjusting port->count are ok as it gets zeroed within the
-> > mutex)
-> > 
-> > Not sure its safe versus hangup but neither was the old code 8)
-> > 
-> > Oliver: I'll send you an alternative patch later today/tomorrow that uses
-> > the ASYNC flags.
-> 
-> Should I just drop Oliver's existing patch from my tree for now then?
 
-Ok, in order to get a good merge for today, I've dropped it now.
+Disable CLONE_PARENT for init.
 
-Oliver, care to work with Alan to get something that is agreeable to
-everyone?
+When global or container-init processes use CLONE_PARENT, they create a
+multi-rooted process tree. Besides siblings of global init remain as
+zombies on exit since they are not reaped by their parent (swapper). So
+prevent global and container-inits from creating siblings.
 
-thanks,
+Changelog[v3]:
+	- [Roland, Oleg] Simplify comment describing the change
+Changelog[v2]:
+	- Simplify patch description based on comments from Eric Biederman
+	  and Oleg Nesterov.
+	- [Oleg Nesterov] Use SIGNAL_UNKILLABLE instead of is_global_init()
 
-greg k-h
+Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+Acked-by: Eric W. Biederman <ebiederm@xmission.com>
+Acked-by: Roland McGrath <roland@redhat.com>
+---
+ kernel/fork.c |   10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+Index: linux-mmotm/kernel/fork.c
+===================================================================
+--- linux-mmotm.orig/kernel/fork.c	2009-07-16 10:03:01.000000000 -0700
++++ linux-mmotm/kernel/fork.c	2009-07-16 11:36:28.000000000 -0700
+@@ -992,6 +992,16 @@
+ 	if ((clone_flags & CLONE_SIGHAND) && !(clone_flags & CLONE_VM))
+ 		return ERR_PTR(-EINVAL);
+ 
++	/*
++	 * Siblings of global init remain as zombies on exit since they are
++	 * not reaped by their parent (swapper). To solve this and to avoid
++	 * multi-rooted process trees, prevent global and container-inits
++	 * from creating siblings.
++	 */
++	if ((clone_flags & CLONE_PARENT) &&
++				current->signal->flags & SIGNAL_UNKILLABLE)
++		return ERR_PTR(-EINVAL);
++
+ 	retval = security_task_create(clone_flags);
+ 	if (retval)
+ 		goto fork_out;
