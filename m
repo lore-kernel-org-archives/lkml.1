@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbZG1Xui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755041AbZG1Xue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755077AbZG1Xui (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbZG1Xu3
+	id S1755041AbZG1Xue (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:50:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbZG1Xub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:50:29 -0400
-Received: from kroah.org ([198.145.64.141]:35891 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:50:31 -0400
+Received: from kroah.org ([198.145.64.141]:35939 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754631AbZG1XuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:50:19 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:59 2009
-Message-Id: <20090728234159.392170276@mini.kroah.org>
+	id S1754933AbZG1Xu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:50:26 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:42:00 2009
+Message-Id: <20090728234200.417694192@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:41:20 -0700
+Date: Tue, 28 Jul 2009 16:41:27 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, riel@redhat.com,
-       cl@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       fengguang.wu@intel.com, Mel Gorman <mel@csn.ul.ie>
-Subject: [patch 51/71] vmscan: do not unconditionally treat zones that fail zone_reclaim() as full
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Patrick McHardy <kaber@trash.net>
+Subject: [patch 58/71] netfilter: nf_conntrack: fix confirmation race condition
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=vmscan-do-not-unconditionally-treat-zones-that-fail-zone_reclaim-as-full.patch
+Content-Disposition: inline; filename=netfilter-nf_conntrack-fix-confirmation-race-condition.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,149 +30,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mel Gorman <mel@csn.ul.ie>
+From: Patrick McHardy <kaber@trash.net>
 
-commit fa5e084e43eb14c14942027e1e2e894aeed96097 upstream.
+commit 5c8ec910e789a92229978d8fd1fce7b62e8ac711 upstream.
 
-vmscan: do not unconditionally treat zones that fail zone_reclaim() as full
+New connection tracking entries are inserted into the hash before they
+are fully set up, namely the CONFIRMED bit is not set and the timer not
+started yet. This can theoretically lead to a race with timer, which
+would set the timeout value to a relative value, most likely already in
+the past.
 
-On NUMA machines, the administrator can configure zone_reclaim_mode that
-is a more targetted form of direct reclaim.  On machines with large NUMA
-distances for example, a zone_reclaim_mode defaults to 1 meaning that
-clean unmapped pages will be reclaimed if the zone watermarks are not
-being met.  The problem is that zone_reclaim() failing at all means the
-zone gets marked full.
+Perform hash insertion as the final step to fix this.
 
-This can cause situations where a zone is usable, but is being skipped
-because it has been considered full.  Take a situation where a large tmpfs
-mount is occuping a large percentage of memory overall.  The pages do not
-get cleaned or reclaimed by zone_reclaim(), but the zone gets marked full
-and the zonelist cache considers them not worth trying in the future.
-
-This patch makes zone_reclaim() return more fine-grained information about
-what occured when zone_reclaim() failued.  The zone only gets marked full
-if it really is unreclaimable.  If it's a case that the scan did not occur
-or if enough pages were not reclaimed with the limited reclaim_mode, then
-the zone is simply skipped.
-
-There is a side-effect to this patch.  Currently, if zone_reclaim()
-successfully reclaimed SWAP_CLUSTER_MAX, an allocation attempt would go
-ahead.  With this patch applied, zone watermarks are rechecked after
-zone_reclaim() does some work.
-
-This bug was introduced by commit 9276b1bc96a132f4068fdee00983c532f43d3a26
-("memory page_alloc zonelist caching speedup") way back in 2.6.19 when the
-zonelist_cache was introduced.  It was not intended that zone_reclaim()
-aggressively consider the zone to be full when it failed as full direct
-reclaim can still be an option.  Due to the age of the bug, it should be
-considered a -stable candidate.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
-Reviewed-by: Rik van Riel <riel@redhat.com>
-Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/internal.h   |    4 ++++
- mm/page_alloc.c |   26 ++++++++++++++++++++++----
- mm/vmscan.c     |   11 ++++++-----
- 3 files changed, 32 insertions(+), 9 deletions(-)
+ net/netfilter/nf_conntrack_core.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -284,4 +284,8 @@ int __get_user_pages(struct task_struct 
- 		     unsigned long start, int len, int flags,
- 		     struct page **pages, struct vm_area_struct **vmas);
+--- a/net/netfilter/nf_conntrack_core.c
++++ b/net/netfilter/nf_conntrack_core.c
+@@ -385,7 +385,6 @@ __nf_conntrack_confirm(struct sk_buff *s
+ 	/* Remove from unconfirmed list */
+ 	hlist_nulls_del_rcu(&ct->tuplehash[IP_CT_DIR_ORIGINAL].hnnode);
  
-+#define ZONE_RECLAIM_NOSCAN	-2
-+#define ZONE_RECLAIM_FULL	-1
-+#define ZONE_RECLAIM_SOME	0
-+#define ZONE_RECLAIM_SUCCESS	1
- #endif
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1420,20 +1420,38 @@ zonelist_scan:
- 
- 		if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
- 			unsigned long mark;
-+			int ret;
- 			if (alloc_flags & ALLOC_WMARK_MIN)
- 				mark = zone->pages_min;
- 			else if (alloc_flags & ALLOC_WMARK_LOW)
- 				mark = zone->pages_low;
- 			else
- 				mark = zone->pages_high;
--			if (!zone_watermark_ok(zone, order, mark,
--				    classzone_idx, alloc_flags)) {
--				if (!zone_reclaim_mode ||
--				    !zone_reclaim(zone, gfp_mask, order))
+-	__nf_conntrack_hash_insert(ct, hash, repl_hash);
+ 	/* Timer relative to confirmation time, not original
+ 	   setting time, otherwise we'd get timer wrap in
+ 	   weird delay cases. */
+@@ -393,8 +392,16 @@ __nf_conntrack_confirm(struct sk_buff *s
+ 	add_timer(&ct->timeout);
+ 	atomic_inc(&ct->ct_general.use);
+ 	set_bit(IPS_CONFIRMED_BIT, &ct->status);
 +
-+			if (zone_watermark_ok(zone, order, mark,
-+				    classzone_idx, alloc_flags))
-+				goto try_this_zone;
++	/* Since the lookup is lockless, hash insertion must be done after
++	 * starting the timer and setting the CONFIRMED bit. The RCU barriers
++	 * guarantee that no other CPU can find the conntrack before the above
++	 * stores are visible.
++	 */
++	__nf_conntrack_hash_insert(ct, hash, repl_hash);
+ 	NF_CT_STAT_INC(net, insert);
+ 	spin_unlock_bh(&nf_conntrack_lock);
 +
-+			if (zone_reclaim_mode == 0)
-+				goto this_zone_full;
-+
-+			ret = zone_reclaim(zone, gfp_mask, order);
-+			switch (ret) {
-+			case ZONE_RECLAIM_NOSCAN:
-+				/* did not scan */
-+				goto try_next_zone;
-+			case ZONE_RECLAIM_FULL:
-+				/* scanned but unreclaimable */
-+				goto this_zone_full;
-+			default:
-+				/* did we reclaim enough */
-+				if (!zone_watermark_ok(zone, order, mark,
-+						classzone_idx, alloc_flags))
- 					goto this_zone_full;
- 			}
- 		}
- 
-+try_this_zone:
- 		page = buffered_rmqueue(preferred_zone, zone, order, gfp_mask);
- 		if (page)
- 			break;
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -2426,16 +2426,16 @@ int zone_reclaim(struct zone *zone, gfp_
- 	 */
- 	if (zone_pagecache_reclaimable(zone) <= zone->min_unmapped_pages &&
- 	    zone_page_state(zone, NR_SLAB_RECLAIMABLE) <= zone->min_slab_pages)
--		return 0;
-+		return ZONE_RECLAIM_FULL;
- 
- 	if (zone_is_all_unreclaimable(zone))
--		return 0;
-+		return ZONE_RECLAIM_FULL;
- 
- 	/*
- 	 * Do not scan if the allocation should not be delayed.
- 	 */
- 	if (!(gfp_mask & __GFP_WAIT) || (current->flags & PF_MEMALLOC))
--			return 0;
-+		return ZONE_RECLAIM_NOSCAN;
- 
- 	/*
- 	 * Only run zone reclaim on the local zone or on zones that do not
-@@ -2445,10 +2445,11 @@ int zone_reclaim(struct zone *zone, gfp_
- 	 */
- 	node_id = zone_to_nid(zone);
- 	if (node_state(node_id, N_CPU) && node_id != numa_node_id())
--		return 0;
-+		return ZONE_RECLAIM_NOSCAN;
- 
- 	if (zone_test_and_set_flag(zone, ZONE_RECLAIM_LOCKED))
--		return 0;
-+		return ZONE_RECLAIM_NOSCAN;
-+
- 	ret = __zone_reclaim(zone, gfp_mask, order);
- 	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
- 
+ 	help = nfct_help(ct);
+ 	if (help && help->helper)
+ 		nf_conntrack_event_cache(IPCT_HELPER, ct);
 
 
