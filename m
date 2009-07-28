@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755795AbZG1XIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932121AbZG1XJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755795AbZG1XIt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbZG1XD4
+	id S932121AbZG1XJn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:09:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932085AbZG1XJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:03:56 -0400
-Received: from kroah.org ([198.145.64.141]:42959 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:09:41 -0400
+Received: from kroah.org ([198.145.64.141]:42938 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752882AbZG1XDz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:03:55 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 15:59:43 2009
-Message-Id: <20090728225943.016915816@mini.kroah.org>
+	id S1754991AbZG1XDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:03:51 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 15:59:42 2009
+Message-Id: <20090728225942.274478017@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 15:58:42 -0700
+Date: Tue, 28 Jul 2009 15:58:37 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jiri Slaby <jirislaby@gmail.com>, Jiri Kosina <jkosina@suse.cz>
-Subject: [patch 14/37] HID: hiddev, fix lock imbalance
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: [patch 09/37] USB: handle zero-length usbfs submissions correctly
 References: <20090728225828.431071451@mini.kroah.org>
-Content-Disposition: inline; filename=hid-hiddev-fix-lock-imbalance.patch
+Content-Disposition: inline; filename=usb-handle-zero-length-usbfs-submissions-correctly.patch
 In-Reply-To: <20090728230145.GA10486@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,33 +30,123 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jiri Slaby <jirislaby@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 4859484b0957ddc7fe3e0fa349d98b0f1c7876bd upstream.
+commit 9180135bc80ab11199d482b6111e23f74d65af4a upstream.
 
-Add omitted BKL to one switch/case.
+This patch (as1262) fixes a bug in usbfs: It refuses to accept
+zero-length transfers, and it insists that the buffer pointer be valid
+even if there is no data being transferred.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+The patch also consolidates a bunch of repetitive access_ok() checks
+into a single check, which incidentally fixes the lack of such a check
+for Isochronous URBs.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hid/usbhid/hiddev.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/usb/core/devio.c |   41 ++++++++++++++++++++---------------------
+ 1 file changed, 20 insertions(+), 21 deletions(-)
 
---- a/drivers/hid/usbhid/hiddev.c
-+++ b/drivers/hid/usbhid/hiddev.c
-@@ -484,8 +484,10 @@ static noinline int hiddev_ioctl_usage(s
- 			goto goodreturn;
+--- a/drivers/usb/core/devio.c
++++ b/drivers/usb/core/devio.c
+@@ -976,7 +976,7 @@ static int proc_do_submiturb(struct dev_
+ 				USBDEVFS_URB_ZERO_PACKET |
+ 				USBDEVFS_URB_NO_INTERRUPT))
+ 		return -EINVAL;
+-	if (!uurb->buffer)
++	if (uurb->buffer_length > 0 && !uurb->buffer)
+ 		return -EINVAL;
+ 	if (uurb->signr != 0 && (uurb->signr < SIGRTMIN ||
+ 				 uurb->signr > SIGRTMAX))
+@@ -1035,11 +1035,6 @@ static int proc_do_submiturb(struct dev_
+ 			is_in = 0;
+ 			uurb->endpoint &= ~USB_DIR_IN;
+ 		}
+-		if (!access_ok(is_in ? VERIFY_WRITE : VERIFY_READ,
+-				uurb->buffer, uurb->buffer_length)) {
+-			kfree(dr);
+-			return -EFAULT;
+-		}
+ 		snoop(&ps->dev->dev, "control urb: bRequest=%02x "
+ 			"bRrequestType=%02x wValue=%04x "
+ 			"wIndex=%04x wLength=%04x\n",
+@@ -1059,9 +1054,6 @@ static int proc_do_submiturb(struct dev_
+ 		uurb->number_of_packets = 0;
+ 		if (uurb->buffer_length > MAX_USBFS_BUFFER_SIZE)
+ 			return -EINVAL;
+-		if (!access_ok(is_in ? VERIFY_WRITE : VERIFY_READ,
+-				uurb->buffer, uurb->buffer_length))
+-			return -EFAULT;
+ 		snoop(&ps->dev->dev, "bulk urb\n");
+ 		break;
  
- 		case HIDIOCGCOLLECTIONINDEX:
-+			i = field->usage[uref->usage_index].collection_index;
-+			unlock_kernel();
- 			kfree(uref_multi);
--			return field->usage[uref->usage_index].collection_index;
-+			return i;
- 		case HIDIOCGUSAGES:
- 			for (i = 0; i < uref_multi->num_values; i++)
- 				uref_multi->values[i] =
+@@ -1103,28 +1095,35 @@ static int proc_do_submiturb(struct dev_
+ 			return -EINVAL;
+ 		if (uurb->buffer_length > MAX_USBFS_BUFFER_SIZE)
+ 			return -EINVAL;
+-		if (!access_ok(is_in ? VERIFY_WRITE : VERIFY_READ,
+-				uurb->buffer, uurb->buffer_length))
+-			return -EFAULT;
+ 		snoop(&ps->dev->dev, "interrupt urb\n");
+ 		break;
+ 
+ 	default:
+ 		return -EINVAL;
+ 	}
+-	as = alloc_async(uurb->number_of_packets);
+-	if (!as) {
++	if (uurb->buffer_length > 0 &&
++			!access_ok(is_in ? VERIFY_WRITE : VERIFY_READ,
++				uurb->buffer, uurb->buffer_length)) {
+ 		kfree(isopkt);
+ 		kfree(dr);
+-		return -ENOMEM;
++		return -EFAULT;
+ 	}
+-	as->urb->transfer_buffer = kmalloc(uurb->buffer_length, GFP_KERNEL);
+-	if (!as->urb->transfer_buffer) {
++	as = alloc_async(uurb->number_of_packets);
++	if (!as) {
+ 		kfree(isopkt);
+ 		kfree(dr);
+-		free_async(as);
+ 		return -ENOMEM;
+ 	}
++	if (uurb->buffer_length > 0) {
++		as->urb->transfer_buffer = kmalloc(uurb->buffer_length,
++				GFP_KERNEL);
++		if (!as->urb->transfer_buffer) {
++			kfree(isopkt);
++			kfree(dr);
++			free_async(as);
++			return -ENOMEM;
++		}
++	}
+ 	as->urb->dev = ps->dev;
+ 	as->urb->pipe = (uurb->type << 30) |
+ 			__create_pipe(ps->dev, uurb->endpoint & 0xf) |
+@@ -1166,7 +1165,7 @@ static int proc_do_submiturb(struct dev_
+ 	kfree(isopkt);
+ 	as->ps = ps;
+ 	as->userurb = arg;
+-	if (uurb->endpoint & USB_DIR_IN)
++	if (is_in && uurb->buffer_length > 0)
+ 		as->userbuffer = uurb->buffer;
+ 	else
+ 		as->userbuffer = NULL;
+@@ -1176,9 +1175,9 @@ static int proc_do_submiturb(struct dev_
+ 	as->uid = current->uid;
+ 	as->euid = current->euid;
+ 	security_task_getsecid(current, &as->secid);
+-	if (!is_in) {
++	if (!is_in && uurb->buffer_length > 0) {
+ 		if (copy_from_user(as->urb->transfer_buffer, uurb->buffer,
+-				as->urb->transfer_buffer_length)) {
++				uurb->buffer_length)) {
+ 			free_async(as);
+ 			return -EFAULT;
+ 		}
 
 
