@@ -1,51 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbZG1AVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbZG1AZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752596AbZG1AVl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 20:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbZG1AVk
+	id S1752612AbZG1AZc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 20:25:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752216AbZG1AZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 20:21:40 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33035 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752368AbZG1AVk (ORCPT
+	Mon, 27 Jul 2009 20:25:30 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:38469 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751597AbZG1AZa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 20:21:40 -0400
-Date: Tue, 28 Jul 2009 01:19:43 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: James Morris <jmorris@namei.org>
-Cc: James Carter <jwcart2@tycho.nsa.gov>, Eric Paris <eparis@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       selinux@tycho.nsa.gov, Stephen Smalley <sds@tycho.nsa.gov>,
-       spender@grsecurity.net, Daniel J Walsh <dwalsh@redhat.com>,
-       cl@linux-foundation.org, Arjan van de Ven <arjan@infradead.org>,
-       kees@outflux.net, Chad Sellers <csellers@tresys.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, mingo@elte.hu
-Subject: Re: mmap_min_addr and your local LSM (ok, just SELinux)
-Message-ID: <20090728011943.589176cb@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LRH.2.00.0907221953190.15799@tundra.namei.org>
-References: <1248132223.2654.278.camel@localhost>
-	<alpine.LRH.2.00.0907211258110.32400@tundra.namei.org>
-	<1248187482.19456.90.camel@moss-lions.epoch.ncsc.mil>
-	<alpine.LRH.2.00.0907221953190.15799@tundra.namei.org>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 27 Jul 2009 20:25:30 -0400
+Date: Tue, 28 Jul 2009 09:25:29 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management <linux-mm@kvack.org>,
+       Linux-Arch <linux-arch@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Hugh Dickins <hugh@tiscali.co.uk>,
+       ralf <ralf@linux-mips.org>
+Subject: Re: [RFC/PATCH] mm: Pass virtual address to [__]p{te,ud,md}_free_tlb()
+Message-ID: <20090728002529.GB22668@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Nick Piggin <npiggin@suse.de>,
+	Linux Memory Management <linux-mm@kvack.org>,
+	Linux-Arch <linux-arch@vger.kernel.org>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Hugh Dickins <hugh@tiscali.co.uk>, ralf <ralf@linux-mips.org>
+References: <20090715074952.A36C7DDDB2@ozlabs.org> <20090715135620.GD7298@wotan.suse.de> <1248073873.13067.31.camel@pasglop> <alpine.LFD.2.01.0907220930320.19335@localhost.localdomain> <1248310415.3367.22.camel@pasglop> <alpine.LFD.2.01.0907271210210.25224@localhost.localdomain> <1248740260.30993.26.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1248740260.30993.26.camel@pasglop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jul 28, 2009 at 10:17:40AM +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2009-07-27 at 12:11 -0700, Linus Torvalds wrote:
+> > On Thu, 23 Jul 2009, Benjamin Herrenschmidt wrote:
+> > > 
+> > > Hrm... my powerpc-next branch will contain stuff that depend on it, so
+> > > I'll probably have to pull it in though, unless I tell all my
+> > > sub-maintainers to also pull from that other branch first :-)
+> > 
+> > Ok, I'll just apply the patch. It does look obvious enough.
+> 
+> There seem to be a MIPS and SH breakage as a result but I can't see
+> how my patch would have broken it, ie, it looks like the bug was
+> already in those two archs. The error is that it complains about a
+> duplicate definition of __pmd_free_tlb() between those arch pgalloc.h
+> and pgtable-nopmd.h
+> 
+> For MIPS, when CONFIG_32BIT is set, asm/pgalloc.h redefines
+> __pmd_free_tlb despite the fact that it's already defined by
+> asm-generic/pgtable-nopmd.h (via via pgtable.h via linux/mm.h).
+> 
+> I -suspect- what happens is that the compiler, before, would ignore the
+> double definition (or maybe just warn) due to the definition being
+> strictly identical. With the new argument added, it's no longer the case
+> as it's called "a" in asm-generic and "addr" in mips... oops.
+> 
+> In any case, can Ralf and Paul check if the following patch is correct ?
+> 
+Yup, that seems to be what happened. I've never seen a warning about this
+with any compiler version, otherwise we would have caught this much
+earlier. As soon as the addr -> a rename took place it blew up
+immediately as a redefinition. Is there a magical gcc flag we can turn on
+to warn on identical definitions, even if just for testing?
 
-A dumb question perhaps, but while addling my brain over the tty layer I
-was wondering if for the specific case of jump through NULL (which seems
-to be the most common but by no means only problem case that gets
-exploited) is there any reason we can't set a default breakpoint for
-executing 0 and fix that up as a trap in the kernel ?
+> >From 41928c7945d855ae0eb053eadad590ab6876847e Mon Sep 17 00:00:00 2001
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date: Tue, 28 Jul 2009 10:16:48 +1000
+> Subject: [PATCH] mm: Remove duplicate definitions in MIPS and SH
+> 
+> Those definitions are already provided by asm-generic
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Even user code that needs zero page mapped such as BIOS hackery doesn't
-actually jump through zero often if ever, and would be a userspace not a
-kernel space trap source so could be fixed up.
+Builds and boots fine, thanks.
 
-Just a random "I've been staring at code too long today" thought ?
-
-Alan
+Acked-by: Paul Mundt <lethal@linux-sh.org>
