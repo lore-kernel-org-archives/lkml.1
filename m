@@ -1,109 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753081AbZG1BWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753108AbZG1B0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753081AbZG1BWj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 21:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbZG1BWi
+	id S1753108AbZG1B0I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 21:26:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752555AbZG1B0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 21:22:38 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:39364 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752873AbZG1BWi (ORCPT
+	Mon, 27 Jul 2009 21:26:07 -0400
+Received: from vms173013pub.verizon.net ([206.46.173.13]:48391 "EHLO
+	vms173013pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752015AbZG1B0G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 21:22:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Ui8cFP+SWU3paoRAyBG7T+nW8UT3EhLwUqvXu87lp7VVXwhUcsILT0D+wKe0nU1kYl
-         RSpt+qUjzXo3KURWogplmlaYxS/DC/fhAkveRrbYfbNnTsbgCd1da7JJDskYavCuQ6Qe
-         Mrwnzsge7BtuWp+/hsaxgKS1K2AwHF5jQe+uU=
-Date: Tue, 28 Jul 2009 03:22:34 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/events: Add module tracepoints
-Message-ID: <20090728012233.GD5147@nowhere>
-References: <4A6582C1.2040609@cn.fujitsu.com> <20090725153733.GB5295@nowhere> <4A6D05DA.4010301@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A6D05DA.4010301@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 27 Jul 2009 21:26:06 -0400
+Date: Mon, 27 Jul 2009 21:25:54 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH 2/2] acpi_power_meter: hwmon driver for ACPI 4.0 power
+ meters
+In-reply-to: <20090725004335.20709.52288.stgit@elm3a70.beaverton.ibm.com>
+Message-id: <alpine.LFD.2.00.0907272124110.4445@localhost.localdomain>
+References: <20090725004322.20709.96804.stgit@elm3a70.beaverton.ibm.com>
+ <20090725004335.20709.52288.stgit@elm3a70.beaverton.ibm.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 27, 2009 at 09:41:46AM +0800, Li Zefan wrote:
-> Frederic Weisbecker wrote:
-> > On Tue, Jul 21, 2009 at 04:56:33PM +0800, Li Zefan wrote:
-> >> Add trace points to trace module_load, module_free, module_get,
-> >> module_put and module_request, and use trace_event facility
-> >> to get the trace output.
-> >>
-> >> Here's the sample output:
-> >>
-> >>      TASK-PID    CPU#    TIMESTAMP  FUNCTION
-> >>         | |       |          |         |
-> >>     <...>-42    [000]     1.758380: module_request: fb0 wait=1 call_site=fb_open
-> >>     ...
-> >>     <...>-60    [000]     3.269403: module_load: scsi_wait_scan 
-> >>     <...>-60    [000]     3.269432: module_put: scsi_wait_scan call_site=sys_init_module refcnt=0
-> >>     <...>-61    [001]     3.273168: module_free: scsi_wait_scan
-> >>     ...
-> >>     <...>-1021  [000]    13.836081: module_load: sunrpc 
-> >>     <...>-1021  [000]    13.840589: module_put: sunrpc call_site=sys_init_module refcnt=-1
-> >>     <...>-1027  [000]    13.848098: module_get: sunrpc call_site=try_module_get refcnt=0
-> >>     <...>-1027  [000]    13.848308: module_get: sunrpc call_site=get_filesystem refcnt=1
-> >>     <...>-1027  [000]    13.848692: module_put: sunrpc call_site=put_filesystem refcnt=0
-> >>     ...
-> >>  modprobe-2587  [001]  1088.437213: module_load: trace_events_sample F
-> >>  modprobe-2587  [001]  1088.437786: module_put: trace_events_sample call_site=sys_init_module refcnt=0
-> >>
-> >>
-> >> Note:
-> >>
-> >> - the taints flag can be 'F', 'C' and/or 'P' if mod->taints != 0
-> >>
-> >> - the module refcnt is percpu, so it can be negative in a specific cpu
-> >>
-> >> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> > 
-> > 
-> > Nice.
-> > 
-> > Just two worries about it.
-> > 
-> > The ring buffer are flushed on module unloading right?
-> > That won't make it easy to perform module event tracing.
-> > 
-> 
-> Yes, but only when the module has "_ftrace_events" section.
-> They are ext4 and gfs2 for the current kernel.
+Hi Darrick,
+On the system you are planning to run this on...
+Are the power meters in the processor, or elsewhere?
 
+If they are the ones in the processor, I'd rather that
+Linux use a native model-specific driver to access those
+registers and not use ACPI.
 
-Ah, good point.
-
- 
-> > Also the events selftests do a lot of random things to trigger
-> > each kind of events, I guess some new others will be needed to
-> > tests these, unless they will seem to fail on every selftests.
-> > Although I can't imagine a module loading/unloading for
-> > every ftrace event selftest... I guess these will require
-> > a specific treatement and also will need to be selftested once
-> > the filesystem is set to be able to load modules.
-> > 
-> 
-> It's nice to have more selftests but I don't think it is a
-> necessity.
-> 
-> Actually the events selftests just confirm the events won't
-> crash the system, and no trace entries are generated by them
-> in the selftests.
-
-
-Indeed, forget about these worries :)
-
-Thanks.
-
+thanks,
+Len Brown, Intel Open Source Technology Center
