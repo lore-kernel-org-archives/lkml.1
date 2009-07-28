@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756124AbZG1X4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754150AbZG1Xtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756124AbZG1X4R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756116AbZG1X4P
+	id S1754150AbZG1Xtz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbZG1Xty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:56:15 -0400
-Received: from kroah.org ([198.145.64.141]:35826 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:49:54 -0400
+Received: from kroah.org ([198.145.64.141]:35721 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754706AbZG1XuN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:50:13 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:58 2009
-Message-Id: <20090728234158.285147529@mini.kroah.org>
+	id S1753922AbZG1Xtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:49:52 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:54 2009
+Message-Id: <20090728234154.560168803@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:41:14 -0700
+Date: Tue, 28 Jul 2009 16:40:51 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alexey Fisher <bug-track@fisher-privat.net>,
-       ykzhao <yakui.zhao@intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 45/71] x86: Add quirk for Intel DG45ID board to avoid low memory corruption
+       Takashi Iwai <tiwai@suse.de>
+Subject: [patch 22/71] ALSA: hda - Fix pin-setup for Sony VAIO with STAC9872 codecs
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=x86-add-quirk-for-intel-dg45id-board-to-avoid-low-memory-corruption.patch
+Content-Disposition: inline; filename=alsa-hda-fix-pin-setup-for-sony-vaio-with-stac9872-codecs.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,52 +30,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alexey Fisher <bug-track@fisher-privat.net>
+From: Takashi Iwai <tiwai@suse.de>
 
-commit 6aa542a694dc9ea4344a8a590d2628c33d1b9431 upstream.
+commit b04add956616b6d89ff21da749b46ad2bd58ef32 upstream.
 
-AMI BIOS with low memory corruption was found on Intel DG45ID
-board (Bug 13710). Add this board to the blacklist - in the
-(somewhat optimistic) hope of future boards/BIOSes from Intel
-not having this bug.
+The recent rewrite of the codec parser for STAC9872 caused a regression
+for some Sony VAIO models that don't give proper pin default configs
+by BIOS.  Even using model=vaio doesn't work because the pin definitions
+are set after the pin overrides.
 
-Also see:
+This patch fixes the pin definitions in patch_stac9872() to be put
+in the right place before the pin overrides.  Also the patch adds the
+new quirk entry for VAIO F/S to have the correct pin default configs.
 
-  http://bugzilla.kernel.org/show_bug.cgi?id=13736
-
-Signed-off-by: Alexey Fisher <bug-track@fisher-privat.net>
-Cc: ykzhao <yakui.zhao@intel.com>
-Cc: alan@lxorguk.ukuu.org.uk
-Cc: <stable@kernel.org>
-LKML-Reference: <1247660169-4503-1-git-send-email-bug-track@fisher-privat.net>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/setup.c |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ sound/pci/hda/patch_sigmatel.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -650,6 +650,19 @@ static struct dmi_system_id __initdata b
- 			DMI_MATCH(DMI_BIOS_VENDOR, "Phoenix Technologies"),
- 		},
- 	},
-+	{
-+	/*
-+	 * AMI BIOS with low memory corruption was found on Intel DG45ID board.
-+	 * It hase different DMI_BIOS_VENDOR = "Intel Corp.", for now we will
-+	 * match only DMI_BOARD_NAME and see if there is more bad products
-+	 * with this vendor.
-+	 */
-+		.callback = dmi_low_memory_corruption,
-+		.ident = "AMI BIOS",
-+		.matches = {
-+			DMI_MATCH(DMI_BOARD_NAME, "DG45ID"),
-+		},
-+	},
- #endif
- 	{}
+--- a/sound/pci/hda/patch_sigmatel.c
++++ b/sound/pci/hda/patch_sigmatel.c
+@@ -5661,6 +5661,8 @@ static unsigned int *stac9872_brd_tbl[ST
  };
+ 
+ static struct snd_pci_quirk stac9872_cfg_tbl[] = {
++	SND_PCI_QUIRK_MASK(0x104d, 0xfff0, 0x81e0,
++			   "Sony VAIO F/S", STAC_9872_VAIO),
+ 	{} /* terminator */
+ };
+ 
+@@ -5673,6 +5675,8 @@ static int patch_stac9872(struct hda_cod
+ 	if (spec == NULL)
+ 		return -ENOMEM;
+ 	codec->spec = spec;
++	spec->num_pins = ARRAY_SIZE(stac9872_pin_nids);
++	spec->pin_nids = stac9872_pin_nids;
+ 
+ 	spec->board_config = snd_hda_check_board_config(codec, STAC_9872_MODELS,
+ 							stac9872_models,
+@@ -5684,8 +5688,6 @@ static int patch_stac9872(struct hda_cod
+ 		stac92xx_set_config_regs(codec,
+ 					 stac9872_brd_tbl[spec->board_config]);
+ 
+-	spec->num_pins = ARRAY_SIZE(stac9872_pin_nids);
+-	spec->pin_nids = stac9872_pin_nids;
+ 	spec->multiout.dac_nids = spec->dac_nids;
+ 	spec->num_adcs = ARRAY_SIZE(stac9872_adc_nids);
+ 	spec->adc_nids = stac9872_adc_nids;
 
 
