@@ -1,62 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752879AbZG1TLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752991AbZG1TPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752879AbZG1TLk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 15:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752701AbZG1TLj
+	id S1752991AbZG1TPx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 15:15:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbZG1TPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 15:11:39 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:7135 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752638AbZG1TLi (ORCPT
+	Tue, 28 Jul 2009 15:15:52 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51530 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751406AbZG1TPw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 15:11:38 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:date:message-id:subject:from:to:cc:
-	content-type:content-transfer-encoding:x-system-of-record;
-	b=F69SKA8pD1sec35Eqp/LMA6vm/+hUZzILtyozYpKdKDCIo5APKtpGUnYkmzMBahwb
-	pQFw6QBcYivjOhE6keGbA==
-MIME-Version: 1.0
-Date: Tue, 28 Jul 2009 12:11:31 -0700
-Message-ID: <1786ab030907281211x6e432ba6ha6afe9de73f24e0c@mail.gmail.com>
-Subject: Bug in kernel 2.6.31, Slow wb_kupdate writeout
-From: Chad Talbott <ctalbott@google.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org, wfg@mail.ustc.edu.cn, Martin Bligh <mbligh@google.com>,
-       Michael Rubin <mrubin@google.com>, Andrew Morton <akpm@google.com>,
-       sandeen@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 28 Jul 2009 15:15:52 -0400
+Date: Tue, 28 Jul 2009 20:15:53 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kdesu broken
+Message-ID: <20090728201553.0eb2d51d@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.01.0907281158120.3186@localhost.localdomain>
+References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
+	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
+	<873a8iqqgv.fsf@devron.myhome.or.jp>
+	<20090727142303.41096bf5@lxorguk.ukuu.org.uk>
+	<877hxujkuv.fsf@devron.myhome.or.jp>
+	<20090727145805.690afe5d@lxorguk.ukuu.org.uk>
+	<87fxci6ub9.fsf@devron.myhome.or.jp>
+	<20090727161424.GA4233@skywalker>
+	<20090727174252.2d987830@lxorguk.ukuu.org.uk>
+	<20090727171213.GB4233@skywalker>
+	<87skgikjr8.fsf@devron.myhome.or.jp>
+	<20090727222010.1a5efb7b@lxorguk.ukuu.org.uk>
+	<87r5w19xsb.fsf@devron.myhome.or.jp>
+	<20090728112203.7b70adba@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907280848090.3186@localhost.localdomain>
+	<20090728174213.5e927428@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907280944150.3186@localhost.localdomain>
+	<20090728180649.596c5412@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907281141070.3186@localhost.localdomain>
+	<20090728195651.3a402a31@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907281158120.3186@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I run a simple workload on a 4GB machine which dirties a few largish
-inodes like so:
 
-# seq 10 | xargs -P0 -n1 -i\{} dd if=/dev/zero of=/tmp/dump\{}
-bs=1024k count=100
+> Quite frankly, I don't understand why I should even have to bring these 
+> issues up. You should have tried to fix the problem immediately, without 
+> arguing against fixing the kernel. Without blaming user space. Without 
+> making idiotic excuses for bad kernel behavior.
+> 
+> The fact is, breaking regular user applications is simply not acceptable. 
+> Trying to blame kernel breakage on the app being "buggy" is not ok. And 
+> arguing for almost a week against fixing it - that's just crazy.
 
-While the dds are running data is written out at disk speed.  However,
-once the dds have run to completion and exited there is ~500MB of
-dirty memory left.  Background writeout then takes about 3 more
-minutes to clean memory at only ~3.3MB/s.  When I explicitly sync, I
-can see that the disk is capable of 40MB/s, which finishes off the
-files in ~10s. [1]
+I've been working on fixing it. I have spent a huge amount of time
+working on the tty stuff trying to gradually get it sane without breaking
+anything and fixing security holes along the way as they came up. I spent
+the past two evenings working on the tty regressions.
 
-An interesting recent-ish change is "writeback: speed up writeback of
-big dirty files."  When I revert the change to __sync_single_inode the
-problem appears to go away and background writeout proceeds at disk
-speed.  Interestingly, that code is in the git commit [2], but not in
-the post to LKML. [3]  This is may not be the fix, but it makes this
-test behave better.
+However I've had enough. If you think that problem is easy to fix you fix
+it.
 
-Thanks,
-Chad
+Have fun.
 
-[1] I've plotted the dirty memory from /proc/meminfo and disk write
-speed from iostat at
-http://sites.google.com/site/cwtlinux/2-6-31-writeback-bug
-[2] git commit:
-http://mirror.celinuxforum.org/gitstat/commit-detail.php?commit=8bc3be2751b4f74ab90a446da1912fd8204d53f7
-[3] LKML post: http://marc.info/?l=linux-kernel&m=119131601130372&w=2
+I've zapped the tty merge queue so anyone with patches for the tty layer
+can send them to the new maintainer.
+
+--- MAINTAINERS~	2009-07-23 15:36:41.000000000 +0100
++++ MAINTAINERS	2009-07-28 20:09:32.200685827 +0100
+@@ -5815,10 +5815,7 @@
+ S:	Maintained
+ 
+ TTY LAYER
+-P:	Alan Cox
+-M:	alan@lxorguk.ukuu.org.uk
+-S:	Maintained
+-T:	stgit http://zeniv.linux.org.uk/~alan/ttydev/
++S:	Unmaintained
+ F:	drivers/char/tty_*
+ F:	drivers/serial/serial_core.c
+ F:	include/linux/serial_core.h
