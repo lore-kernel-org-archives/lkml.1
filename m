@@ -1,73 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbZG1LVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbZG1L1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753264AbZG1LVn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 07:21:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbZG1LVm
+	id S1753173AbZG1L1T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 07:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752550AbZG1L1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 07:21:42 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40460 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752640AbZG1LVl (ORCPT
+	Tue, 28 Jul 2009 07:27:18 -0400
+Received: from atreides.gradator.net ([212.85.155.42]:51217 "EHLO
+	atreides.gradator.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752366AbZG1L1R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 07:21:41 -0400
-Date: Tue, 28 Jul 2009 13:21:37 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andi Kleen <andi@firstfloor.org>, James Morris <jmorris@namei.org>,
-       James Carter <jwcart2@tycho.nsa.gov>, Eric Paris <eparis@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       selinux@tycho.nsa.gov, Stephen Smalley <sds@tycho.nsa.gov>,
-       spender@grsecurity.net, Daniel J Walsh <dwalsh@redhat.com>,
-       cl@linux-foundation.org, Arjan van de Ven <arjan@infradead.org>,
-       kees@outflux.net, Chad Sellers <csellers@tresys.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, mingo@elte.hu
-Subject: Re: mmap_min_addr and your local LSM (ok, just SELinux)
-Message-ID: <20090728112137.GF15310@basil.fritz.box>
-References: <1248132223.2654.278.camel@localhost> <alpine.LRH.2.00.0907211258110.32400@tundra.namei.org> <1248187482.19456.90.camel@moss-lions.epoch.ncsc.mil> <alpine.LRH.2.00.0907221953190.15799@tundra.namei.org> <20090728011943.589176cb@lxorguk.ukuu.org.uk> <87zlapgo2u.fsf@basil.nowhere.org> <20090728110028.31fa9a6f@lxorguk.ukuu.org.uk>
+	Tue, 28 Jul 2009 07:27:17 -0400
+Date: Tue, 28 Jul 2009 13:27:15 +0200
+From: Sylvain Rochet <gradator@gradator.net>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Message-ID: <20090728112715.GA8442@gradator.net>
+References: <20090420162017.GA28079@gradator.net> <20090716172749.GC3740@atrey.karlin.mff.cuni.cz> <20090725151751.GA6419@gradator.net> <20090727154253.GB8332@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="YZ5djTAD1cGYuMQK"
 Content-Disposition: inline
-In-Reply-To: <20090728110028.31fa9a6f@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090727154253.GB8332@duck.suse.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: gradator@atreides.gradator.net
+Subject: Re: 2.6.28.9: EXT3/NFS inodes corruption
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:51:29 +0000)
+X-SA-Exim-Scanned: Yes (on atreides.gradator.net)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 28, 2009 at 11:00:28AM +0100, Alan Cox wrote:
-> On Tue, 28 Jul 2009 11:21:29 +0200
-> Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
-> > 
-> > > A dumb question perhaps, but while addling my brain over the tty layer I
-> > > was wondering if for the specific case of jump through NULL (which seems
-> > > to be the most common but by no means only problem case that gets
-> > > exploited) is there any reason we can't set a default breakpoint for
-> > 
-> > You mean a hardware breakpoint? Hardware break points are a precious
-> > scarce resource. The people who rely on them would be likely
-> > unhappy if you take one way from them.
-> 
-> They are a tiny minority and could always turn such protection off.
 
-"I don't use it so I don't care"
+--YZ5djTAD1cGYuMQK
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-... in addition it doesn't help anyways because the x86 hardware
-breakpoints can only trap an upto 4-8 bytes area. So if you set that
-to 0 then a reference to >8(%reg),%reg==0 wouldn't trap.
+Hi,
 
-That's a pretty common case with
 
-	x->member
+On Mon, Jul 27, 2009 at 05:42:53PM +0200, Jan Kara wrote:
+> On Sat 25-07-09 17:17:52, Sylvain Rochet wrote:
+> > >=20
+> > > Can you still see the corruption with 2.6.30 kernel?
+> >=20
+> > Not upgraded yet, we'll give a try.
 
-where offsetof(..,, member) >= 8 (or 4 on 32bit)
+Done, now featuring 2.6.30.3 ;)
 
-Was very likely even the case on the original exploit.
 
-If you use all available break points (making all gdb users unhappy)
-then you could still only cover 64 bytes on 64bit, 32 on 32bit.
+> > > If you can still see this problem, could you run: debugfs /dev/md10
+> > > and send output of the command:
+> > > stat <40420228>
+> > > (or whatever the corrupted inode number will be)
+> > > and also:
+> > > dump <40420228> /tmp/corrupted_dir
+> >=20
+> > One inode get corrupted recently, here is the output:
+> >=20
+> > root@bazooka:/data/web/ed/90/48/walotux.walon.org/htdocs/tmp/cache/e# l=
+s -lai
+> > total 64
+> > 88539836 drwxr-sr-x  2 18804 23084  4096 2009-07-25 07:53 .
+> > 88539821 drwxr-sr-x 20 18804 23084  4096 2008-08-20 10:14 ..
+> > 88541578 -rw-rw-rw-  1 18804 23084   471 2009-07-25 04:55 -inc_forum-10=
+-wa.3cb1921f
+> > 88541465 -rw-rw-rw-  1 18804 23084  6693 2009-07-25 07:53 -inc_rss_item=
+-32-wa.23d91cc2
+> > 88541471 -rw-rw-rw-  1 18804 23084  1625 2009-07-25 07:53 -inc_rubrique=
+s-17-wa.f2f152f0
+> > 88541549 -rw-rw-rw-  1 18804 23084  2813 2009-07-25 03:04 INDEX-.edfac5=
+2c
+> > 88541366 -rw-rw-rw-  1 18804 23084     0 2008-08-17 20:44 .ok
+> >        ? ?---------  ? ?     ?         ?                ? spip%3Farticl=
+e19.f8740dca
+> > 88541671 -rw-rw-rw-  1 18804 23084  5619 2009-07-24 21:07 spip%3Fauteur=
+1.c64f7f7e
+> > 88541460 -rw-rw-rw-  1 18804 23084  5636 2009-07-24 19:30 spip%3Fmot5.f=
+3e9adda
+> > 88540284 -rw-rw-rw-  1 18804 23084  3802 2009-07-25 16:10 spip%3Fpage%3=
+Dforum-30.63b2c1b1
+> > 88541539 -rw-rw-rw-  1 18804 23084 12972 2009-07-25 11:14 spip%3Fpage%3=
+Djquery.cce608b6.gz
+>   OK, so we couldn't stat a directory...
+>=20
+> > root@bazooka:/data/web/ed/90/48/walotux.walon.org/htdocs/tmp/cache/e# c=
+at spip%3Farticle19.f8740dca
+> > cat: spip%3Farticle19.f8740dca: Stale NFS file handle
+>   This is probably the misleading output from ext3_iget(). It should give
+> you EIO in the latest kernel.
 
--Andi
+root@bazooka:/data/web/ed/90/48/walotux.walon.org/htdocs/tmp/cache/e# cat s=
+pip%3Farticle19.f8740dca=20
+cat: spip%3Farticle19.f8740dca: Input/output error
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+It has much more sense now. We thought the problem was around NFS due=20
+the the previous error message, actually this is probably not the best=20
+looking path.
+
+
+> > root@bazooka:~# debugfs /dev/md10
+> > debugfs 1.40-WIP (14-Nov-2006)
+> >=20
+> >     debugfs:  stat <88539836>
+> >=20
+> > Inode: 88539836   Type: directory    Mode:  0755   Flags: 0x0   Generat=
+ion: 791796957
+> > User: 18804   Group: 23084   Size: 4096
+> > File ACL: 0    Directory ACL: 0
+> > Links: 2   Blockcount: 8
+> > Fragment:  Address: 0    Number: 0    Size: 0
+> > ctime: 0x4a6a9dd5 -- Sat Jul 25 07:53:25 2009
+> > atime: 0x4a0de585 -- Fri May 15 23:58:29 2009
+> > mtime: 0x4a6a9dd5 -- Sat Jul 25 07:53:25 2009
+> > Size of extra inode fields: 4
+> > BLOCKS:
+> > (0):177096928
+> > TOTAL: 1
+> >=20
+> >=20
+> >     debugfs:  ls <88539836>
+> >=20
+> >  88539836  (12) .    88539821  (32) ..    88541366  (12) .ok
+> >  88541465  (56) -inc_rss_item-32-wa.23d91cc2
+> >  88541539  (40) spip%3Fpage%3Djquery.cce608b6.gz
+> >  88540284  (40) spip%3Fpage%3Dforum-30.63b2c1b1
+> >  88541460  (28) spip%3Fmot5.f3e9adda
+> >  88541471  (160) -inc_rubriques-17-wa.f2f152f0
+> >  88541549  (24) INDEX-.edfac52c    88541578  (284) -inc_forum-10-wa.3cb=
+1921f
+> >  88541562  (36) spip%3Farticle19.f8740dca
+> >  88541671  (3372) spip%3Fauteur1.c64f7f7e
+>   The directory itself looks fine...
+>=20
+> >     debugfs:  stat <88541562>
+> >=20
+> > Inode: 88541562   Type: regular    Mode:  0666   Flags: 0x0   Generatio=
+n: 860068541
+> > User: 18804   Group: 23084   Size: 0
+> > File ACL: 0    Directory ACL: 0
+> > Links: 0   Blockcount: 0
+> > Fragment:  Address: 0    Number: 0    Size: 0
+> > ctime: 0x4a6a8fac -- Sat Jul 25 06:53:00 2009
+> > atime: 0x4a6a612f -- Sat Jul 25 03:34:39 2009
+> > mtime: 0x4a6a8fac -- Sat Jul 25 06:53:00 2009
+> > dtime: 0x4a6a8fac -- Sat Jul 25 06:53:00 2009
+> > Size of extra inode fields: 4
+> > BLOCKS:
+>=20
+>   Ah, OK, here's the problem. The directory points to a file which is
+> obviously deleted (note the "Links: 0"). All the content of the inode see=
+ms
+> to indicate that the file was correctly deleted (you might check that the
+> corresponding bit in the bitmap is cleared via: "icheck 88541562").
+
+root@bazooka:~# debugfs /dev/md10
+debugfs 1.40-WIP (14-Nov-2006)
+debugfs:  icheck 88541562
+Block   Inode number
+88541562        <block not found>
+
+
+>   The question is how it could happen the directory still points to the
+> inode. Really strange. It looks as if we've lost a write to the directory
+> but I don't see how. Are there any suspitious kernel messages in this cas=
+e?
+
+There were nothing for a while, but since the reboot there are some=20
+about this inode:=20
+
+EXT3-fs error (device md10): ext3_lookup: deleted inode referenced: 88541562
+
+
+> > We'll try.
+>=20
+>   It probably won't help. This particular directory had just one block so
+> DIR_INDEX had no effect on it.
+
+Let's keep dir_index for now, then.
+
+
+>   OK, so it's probably not a storage device problem. Good to know.
+
+We also thought about motherboard, CPU, or chassis issues, but=20
+everything has been replaced.
+
+
+The check of the MD raid6 array always ends happily:
+
+Jul  5 01:06:01 bazooka kernel: md: data-check of RAID array md10
+Jul  5 01:06:01 bazooka kernel: md: minimum _guaranteed_  speed: 1000 KB/se=
+c/disk.
+Jul  5 01:06:01 bazooka kernel: md: using maximum available idle IO bandwid=
+th (but not more than 200000 KB/sec) for data-check.
+Jul  5 01:06:01 bazooka kernel: md: using 128k window, over a total of 1433=
+73888 blocks.
+Jul  5 04:28:28 bazooka kernel: md: md10: data-check done.
+
+
+We never saw modification to the data of files themselves, maybe it=20
+happened, but we never saw any evidence of that. Of course, due to the=20
+modification of the filesystem structure, we saw files replaced by other=20
+files ;)
+
+
+Sylvain
+
+--YZ5djTAD1cGYuMQK
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFKbuCTDFub3qtEsS8RAmBdAJ49nfGy2vhDsEPqG8TStFizCaTNwQCgl/Fv
+wf/R1wWJxpD+e0b178q3/Ow=
+=m6T5
+-----END PGP SIGNATURE-----
+
+--YZ5djTAD1cGYuMQK--
