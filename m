@@ -1,310 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753586AbZG1HUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753632AbZG1HUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753586AbZG1HUU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 03:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbZG1HUT
+	id S1753632AbZG1HUf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 03:20:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbZG1HUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 03:20:19 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:32912 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750862AbZG1HUR (ORCPT
+	Tue, 28 Jul 2009 03:20:34 -0400
+Received: from mail-ew0-f226.google.com ([209.85.219.226]:40193 "EHLO
+	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753635AbZG1HUd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 03:20:17 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 28 Jul 2009 16:18:13 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Miao Xie <miaox@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Paul Menage <menage@google.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Yasunori Goto <y-goto@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       David Rientjes <rientjes@google.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [BUGFIX] set_mempolicy(MPOL_INTERLEAV) N_HIGH_MEMORY aware
-Message-Id: <20090728161813.f2fefd29.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090715182320.39B5.A69D9226@jp.fujitsu.com>
-References: <20090715182320.39B5.A69D9226@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Jul 2009 03:20:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=R4ir9YfZaw3IGFhY/3ks3Cv3ROopc3XbuuxvVWbplM9OCAF7y1Y6TXR2XkKXLuQfvR
+         yBEi24nyh61R49J4PtKUQduKjlPUK3saffJuMgAEdUh6h3wCnosj4T3Up1N3k0Mr9CAW
+         /RRkRHr7vTyURP02XgkfcS3oYLfDJDE5C2EUQ=
+MIME-Version: 1.0
+In-Reply-To: <1248748935.2560.669.camel@ymzhang>
+References: <20090727073338.GA12669@rhlx01.hs-esslingen.de>
+	 <1248748935.2560.669.camel@ymzhang>
+Date: Tue, 28 Jul 2009 09:20:32 +0200
+Message-ID: <4e5e476b0907280020x242d9ef7gfa05c3d7b66f941f@mail.gmail.com>
+Subject: Re: Dynamic configure max_cstate
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Andreas Mohr <andi@lisas.de>, LKML <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tested on x86-64/fake NUMA and ia64/NUMA.
-(That ia64 is a host which orignal bug report used.)
+Hi,
+On Tue, Jul 28, 2009 at 4:42 AM, Zhang,
+Yanmin<yanmin_zhang@linux.intel.com> wrote:
+> On Mon, 2009-07-27 at 09:33 +0200, Andreas Mohr wrote:
+>> Hi,
+>>
+>> > When running a fio workload, I found sometimes cpu C state has
+>> > big impact on the result. Mostly, fio is a disk I/O workload
+>> > which doesn't spend much time with cpu, so cpu switch to C2/C3
+>> > freqently and the latency is big.
+>>
+>> Rather than inventing ways to limit ACPI Cx state usefulness, we should
+>> perhaps be thinking of what's wrong here.
+> Andreas,
+>
+> Thanks for your kind comments.
+>
+>>
+>> And your complaint might just fit into a thought I had recently:
+>> are we actually taking ACPI Cx exit latency into account, for timers???
+> I tried both tickless kernel and non-tickless kernels. The result is similiar.
+>
+> Originally, I also thought it's related to timer. As you know, I/O block layer
+> has many timers. Such timers don't expire normally. For example, an I/O request
+> is submitted to driver and driver delievers it to disk and hardware triggers
+> an interrupt after finishing I/O. Mostly, the I/O submit and interrupt, not
+> the timer, drive the I/O.
+>
+>>
+>> If we program a timer to fire at some point, then it is quite imaginable
+>> that any ACPI Cx exit latency due to the CPU being idle at that moment
+>> could add to actual timer trigger time significantly.
+>>
+>> To combat this, one would need to tweak the timer expiration time
+>> to include the exit latency. But of course once the CPU is running
+>> again, one would need to re-add the latency amount (read: reprogram the
+>> timer hardware, ugh...) to prevent the timer from firing too early.
+>>
+>> Given that one would need to reprogram timer hardware quite often,
+>> I don't know whether taking Cx exit latency into account is feasible.
+>> OTOH analysis of the single next timer value and actual hardware reprogramming
+>> would have to be done only once (in ACPI sleep and wake paths each),
+>> thus it might just turn out to be very beneficial after all
+>> (minus prolonging ACPI Cx path activity and thus aggravating CPU power
+>> savings, of course).
+>>
+>> Arjan mentioned examples of maybe 10us for C2 and 185us for C3/C4 in an
+>> article.
+>>
+>> OTOH even 185us is only 0.185ms, which, when compared to disk seek
+>> latency (around 7ms still, except for SSD), doesn't seem to be all that much.
+>> Or what kind of ballpark figure do you have for percentage of I/O
+>> deterioration?
+> I have lots of FIO sub test cases which test I/O on single disk and JBOD (a disk
+> bos which mostly has 12~13 disks) on nahelam machines. Your analysis on disk seek
+> is reasonable. I found sequential buffered read has the worst regression while rand
+> read is far better. For example, I start 12 processes per disk and every disk has 24
+> 1-G files. There are 12 disks. The sequential read fio result is about 593MB/second
+> with idle=poll, and about 375MB/s without idle=poll. Read block size is 4KB.
+>
+> Another exmaple is single fio direct seqential read (block size is 4K) on a single
+> SATA disk. The result is about 28MB/s without idle=poll and about 32.5MB with
+> idle=poll.
+>
+> How did I find C state has impact on disk I/O result? Frankly, I found a regression
+> between kernel 2.6.27 and 2.6.28. Bisect located a nonstop tsc patch, but the patch
+> is quite good. I found the patch changes the default clocksource from hpet to
+> tsc. Then, I tried all clocksources and got the best result with acpi_pm clocksource.
+> But oprofile data shows acpi_pm has more cpu utilization. clocksource jiffies has
+> worst result but least cpu utilization. As you know, fio calls gettimeofday frequently.
+> Then, I tried boot parameter processor.max_cstate and idle=poll.
+> I get the similar result with ﻿processor.max_cstate=1 like the one with idle=poll.
+>
 
-Maybe this is bigger patch than expected, but NODEMASK_ALLOC() will be a way
-to go, anyway. (even if CPUMASK_ALLOC is not used anyware yet..)
-Kosaki tested this on ia64 NUMA. thanks.
+Is it possible that the different bandwidths figures are due to
+incorrect timing, instead of C-state latencies?
+Entering a deep C state can cause strange things to timers: some of
+them, especially tsc, become unreliable.
+Maybe the patch you found that re-enables tsc is actually wrong for
+your machine, for which tsc is unreliable in deep C states.
 
-I'll wonder more fundamental fix to tsk->mems_allowed but this patch
-is enough as a fix for now, I think.
+> I also run the testing on 2 stoakley machines and don't find such issues.
+> /proc/acpi/processor/CPUXXX/power shows stoakley cpu only has C1.
+>
+>> I'm wondering whether we might have an even bigger problem with disk I/O
+>> related to this than just the raw ACPI exit latency value itself.
+> We might have. I'm still doing more testing. With Venki's tool (write/read MSR registers),
+> I collected some C state switch stat.
+>
+You can see the latencies (expressed in us) on your machine with:
+[root@localhost corrado]# cat
+/sys/devices/system/cpu/cpu0/cpuidle/state*/latency
+0
+0
+1
+133
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Can you post your numbers, to see if they are unusually high?
 
-mpol_set_nodemask() should be aware of N_HIGH_MEMORY and policy's nodemask
-should be includes only online nodes.
-In old behavior, this is guaranteed by frequent reference to cpuset's code.
-Now, most of them are removed and mempolicy has to check it by itself.
+> Current cpuidle has a good consideration on cpu utilization, but doesn't have
+> consideration on devices. So with I/O delivery and interrupt drive model
+> with little cpu utilization, performance might be hurt if C state exit has a long
+> latency.
+>
+> Yanmin
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
-To do check, a few nodemask_t will be used for calculating nodemask. But,
-size of nodemask_t can be big and it's not good to allocate them on stack.
 
-Now, cpumask_t has CPUMASK_ALLOC/FREE an easy code for get scratch area.
-NODEMASK_ALLOC/FREE shoudl be there.
 
-Tested-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- include/linux/nodemask.h |   31 +++++++++++++++++
- mm/mempolicy.c           |   82 ++++++++++++++++++++++++++++++++---------------
- 2 files changed, 87 insertions(+), 26 deletions(-)
+-- 
+__________________________________________________________________________
 
-Index: task-mems-allowed-fix/include/linux/nodemask.h
-===================================================================
---- task-mems-allowed-fix.orig/include/linux/nodemask.h
-+++ task-mems-allowed-fix/include/linux/nodemask.h
-@@ -82,6 +82,13 @@
-  *    to generate slightly worse code.  So use a simple one-line #define
-  *    for node_isset(), instead of wrapping an inline inside a macro, the
-  *    way we do the other calls.
-+ *
-+ * NODEMASK_SCRATCH
-+ * For doing above logical AND, OR, XOR, Remap, etc...the caller tend to be
-+ * necessary to use temporal nodemask_t on stack. But if NODES_SHIFT is large,
-+ * size of nodemask_t can be very big and not suitable for allocating in stack.
-+ * NODEMASK_SCRATCH is a helper for such situaions. See below and CPUMASK_ALLOC
-+ * also.
-  */
- 
- #include <linux/kernel.h>
-@@ -473,4 +480,28 @@ static inline int num_node_state(enum no
- #define for_each_node(node)	   for_each_node_state(node, N_POSSIBLE)
- #define for_each_online_node(node) for_each_node_state(node, N_ONLINE)
- 
-+/*
-+ * For nodemask scrach area.(See CPUMASK_ALLOC() in cpumask.h)
-+ */
-+
-+#if NODES_SHIFT > 8 /* nodemask_t > 64 bytes */
-+#define NODEMASK_ALLOC(x, m) struct x *m = kmalloc(sizeof(*m), GFP_KERNEL)
-+#define NODEMASK_FREE(m) kfree(m)
-+#else
-+#define NODEMASK_ALLOC(x, m) struct x _m, *m = &_m
-+#define NODEMASK_FREE(m)
-+#endif
-+
-+#define NODEMASK_POINTER(v, m) nodemask_t *v = &(m->v)
-+
-+/* A example struture for using NODEMASK_ALLOC, used in mempolicy. */
-+struct nodemask_scratch {
-+	nodemask_t	mask1;
-+	nodemask_t	mask2;
-+};
-+
-+#define NODEMASK_SCRATCH(x) NODEMASK_ALLOC(nodemask_scratch, x)
-+#define NODEMASK_SCRATCH_FREE(x)  NODEMASK_FREE(x)
-+
-+
- #endif /* __LINUX_NODEMASK_H */
-Index: task-mems-allowed-fix/mm/mempolicy.c
-===================================================================
---- task-mems-allowed-fix.orig/mm/mempolicy.c
-+++ task-mems-allowed-fix/mm/mempolicy.c
-@@ -191,25 +191,27 @@ static int mpol_new_bind(struct mempolic
-  * Must be called holding task's alloc_lock to protect task's mems_allowed
-  * and mempolicy.  May also be called holding the mmap_semaphore for write.
-  */
--static int mpol_set_nodemask(struct mempolicy *pol, const nodemask_t *nodes)
-+static int mpol_set_nodemask(struct mempolicy *pol,
-+		     const nodemask_t *nodes, struct nodemask_scratch *nsc)
- {
--	nodemask_t cpuset_context_nmask;
- 	int ret;
- 
- 	/* if mode is MPOL_DEFAULT, pol is NULL. This is right. */
- 	if (pol == NULL)
- 		return 0;
-+	/* Check N_HIGH_MEMORY */
-+	nodes_and(nsc->mask1,
-+		  cpuset_current_mems_allowed, node_states[N_HIGH_MEMORY]);
- 
- 	VM_BUG_ON(!nodes);
- 	if (pol->mode == MPOL_PREFERRED && nodes_empty(*nodes))
- 		nodes = NULL;	/* explicit local allocation */
- 	else {
- 		if (pol->flags & MPOL_F_RELATIVE_NODES)
--			mpol_relative_nodemask(&cpuset_context_nmask, nodes,
--					       &cpuset_current_mems_allowed);
-+			mpol_relative_nodemask(&nsc->mask2, nodes,&nsc->mask1);
- 		else
--			nodes_and(cpuset_context_nmask, *nodes,
--				  cpuset_current_mems_allowed);
-+			nodes_and(nsc->mask2, *nodes, nsc->mask1);
-+
- 		if (mpol_store_user_nodemask(pol))
- 			pol->w.user_nodemask = *nodes;
- 		else
-@@ -217,8 +219,10 @@ static int mpol_set_nodemask(struct memp
- 						cpuset_current_mems_allowed;
- 	}
- 
--	ret = mpol_ops[pol->mode].create(pol,
--				nodes ? &cpuset_context_nmask : NULL);
-+	if (nodes)
-+		ret = mpol_ops[pol->mode].create(pol, &nsc->mask2);
-+	else
-+		ret = mpol_ops[pol->mode].create(pol, NULL);
- 	return ret;
- }
- 
-@@ -620,12 +624,17 @@ static long do_set_mempolicy(unsigned sh
- {
- 	struct mempolicy *new, *old;
- 	struct mm_struct *mm = current->mm;
-+	NODEMASK_SCRATCH(scratch);
- 	int ret;
- 
--	new = mpol_new(mode, flags, nodes);
--	if (IS_ERR(new))
--		return PTR_ERR(new);
-+	if (!scratch)
-+		return -ENOMEM;
- 
-+	new = mpol_new(mode, flags, nodes);
-+	if (IS_ERR(new)) {
-+		ret = PTR_ERR(new);
-+		goto out;
-+	}
- 	/*
- 	 * prevent changing our mempolicy while show_numa_maps()
- 	 * is using it.
-@@ -635,13 +644,13 @@ static long do_set_mempolicy(unsigned sh
- 	if (mm)
- 		down_write(&mm->mmap_sem);
- 	task_lock(current);
--	ret = mpol_set_nodemask(new, nodes);
-+	ret = mpol_set_nodemask(new, nodes, scratch);
- 	if (ret) {
- 		task_unlock(current);
- 		if (mm)
- 			up_write(&mm->mmap_sem);
- 		mpol_put(new);
--		return ret;
-+		goto out;
- 	}
- 	old = current->mempolicy;
- 	current->mempolicy = new;
-@@ -654,7 +663,10 @@ static long do_set_mempolicy(unsigned sh
- 		up_write(&mm->mmap_sem);
- 
- 	mpol_put(old);
--	return 0;
-+	ret = 0;
-+out:
-+	NODEMASK_SCRATCH_FREE(scratch);
-+	return ret;
- }
- 
- /*
-@@ -1014,10 +1026,17 @@ static long do_mbind(unsigned long start
- 		if (err)
- 			return err;
- 	}
--	down_write(&mm->mmap_sem);
--	task_lock(current);
--	err = mpol_set_nodemask(new, nmask);
--	task_unlock(current);
-+	{
-+		NODEMASK_SCRATCH(scratch);
-+		if (scratch) {
-+			down_write(&mm->mmap_sem);
-+			task_lock(current);
-+			err = mpol_set_nodemask(new, nmask, scratch);
-+			task_unlock(current);
-+		} else
-+			err = -ENOMEM;
-+		NODEMASK_SCRATCH_FREE(scratch);
-+	}
- 	if (err) {
- 		up_write(&mm->mmap_sem);
- 		mpol_put(new);
-@@ -1891,10 +1910,12 @@ restart:
-  * Install non-NULL @mpol in inode's shared policy rb-tree.
-  * On entry, the current task has a reference on a non-NULL @mpol.
-  * This must be released on exit.
-+ * This is called at get_inode() calls and we can use GFP_KERNEL.
-  */
- void mpol_shared_policy_init(struct shared_policy *sp, struct mempolicy *mpol)
- {
- 	int ret;
-+	NODEMASK_SCRATCH(scratch);
- 
- 	sp->root = RB_ROOT;		/* empty tree == default mempolicy */
- 	spin_lock_init(&sp->lock);
-@@ -1902,19 +1923,22 @@ void mpol_shared_policy_init(struct shar
- 	if (mpol) {
- 		struct vm_area_struct pvma;
- 		struct mempolicy *new;
--
-+		if (!scratch)
-+			return;
- 		/* contextualize the tmpfs mount point mempolicy */
- 		new = mpol_new(mpol->mode, mpol->flags, &mpol->w.user_nodemask);
- 		if (IS_ERR(new)) {
- 			mpol_put(mpol);	/* drop our ref on sb mpol */
-+			NODEMASK_SCRATCH_FREE(scratch);
- 			return;		/* no valid nodemask intersection */
- 		}
- 
- 		task_lock(current);
--		ret = mpol_set_nodemask(new, &mpol->w.user_nodemask);
-+		ret = mpol_set_nodemask(new, &mpol->w.user_nodemask, scratch);
- 		task_unlock(current);
- 		mpol_put(mpol);	/* drop our ref on sb mpol */
- 		if (ret) {
-+			NODEMASK_SCRATCH_FREE(scratch);
- 			mpol_put(new);
- 			return;
- 		}
-@@ -1925,6 +1949,7 @@ void mpol_shared_policy_init(struct shar
- 		mpol_set_shared_policy(sp, &pvma, new); /* adds ref */
- 		mpol_put(new);			/* drop initial ref */
- 	}
-+	NODEMASK_SCRATCH_FREE(scratch);
- }
- 
- int mpol_set_shared_policy(struct shared_policy *info,
-@@ -2140,13 +2165,18 @@ int mpol_parse_str(char *str, struct mem
- 		err = 1;
- 	else {
- 		int ret;
--
--		task_lock(current);
--		ret = mpol_set_nodemask(new, &nodes);
--		task_unlock(current);
--		if (ret)
-+		NODEMASK_SCRATCH(scratch);
-+		if (scratch) {
-+			task_lock(current);
-+			ret = mpol_set_nodemask(new, &nodes, scratch);
-+			task_unlock(current);
-+		} else
-+			ret = -ENOMEM;
-+		NODEMASK_SCRATCH_FREE(scratch);
-+		if (ret) {
- 			err = 1;
--		else if (no_context) {
-+			mpol_put(new);
-+		} else if (no_context) {
- 			/* save for contextualization */
- 			new->w.user_nodemask = nodes;
- 		}
-
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
