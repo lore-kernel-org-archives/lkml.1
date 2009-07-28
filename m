@@ -1,139 +1,307 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753985AbZG1MfD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbZG1Mn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753985AbZG1MfD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 08:35:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbZG1MfB
+	id S1753933AbZG1Mn7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 08:43:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbZG1Mn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 08:35:01 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:22603
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753934AbZG1MfA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 08:35:00 -0400
-Message-ID: <4A6EF06E.40101@panasas.com>
-Date: Tue, 28 Jul 2009 15:34:54 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Tue, 28 Jul 2009 08:43:58 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60511 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751431AbZG1Mn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 08:43:57 -0400
+Message-ID: <4A6EF27C.7010605@cn.fujitsu.com>
+Date: Tue, 28 Jul 2009 20:43:40 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-CC: trivial@kernel.org, linux-doc@vger.kernel.org,
-       linux-kernel@vger.kernel.org, bhalevy@panasas.com,
-       open-osd mailing-list <osd-dev@open-osd.org>
-Subject: Re: [PATCH] trivial: some small fixes in exofs documentation
-References: <1248711992-11183-1-git-send-email-cascardo@holoscopio.com>
-In-Reply-To: <1248711992-11183-1-git-send-email-cascardo@holoscopio.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
+       Anton Blanchard <anton@samba.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH v4 1/3] ftrace: add tracepoint for timer
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Jul 2009 12:34:56.0644 (UTC) FILETIME=[D07A9C40:01CA0F7F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/27/2009 07:26 PM, Thadeu Lima de Souza Cascardo wrote:
-> Add exofs.txt to filesystems Documentation index and fix some typos,
-> identation and grammar.
-> 
-> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+This patch is modify from Mathieu's patch base on Ingo's suggestion, the
+original patch can be found here:
+	http://marc.info/?l=linux-kernel&m=123791201816247&w=2
 
-Thank you very much Thadeu!
+Great thanks to Thomas for giving me so many valuable advices.
 
-I appreciate you taking the time, going over this.
-As my English is lacking, I know I need help in this department.
+Those tracepoints are wanted and useful:
+1: We can detect a timer's delay
+2: We can monitor the lifecycle and behaviors of a timer
 
-I have included this for the next Kernel.
+Thus they help in analysing and debuging.
 
-(It will appear on linux-next in the next day or two)
+Example ftrace output:
+  insmod-1712  [000]   145.901459: timer_init: timer=d0ace4b4
+  insmod-1712  [000]   145.901469: timer_start: timer=d0ace4b4 func=timer_fun expires=4294813629 timeout=199
+  <idle>-0     [000]   146.100230: timer_cancel: timer=d0ace4b4
+  <idle>-0     [000]   146.100233: timer_expire: timer=d0ace4b4 jiffies=4294813629
+  <idle>-0     [000]   146.100627: timer_callback_done: func=d0ace4b4
 
-Boaz
+We expect the timer expires at 4294813629, after 199 jiffies, actually the
+timer expires at 4294813629, so it is delayed by 0 jiffies.
+We also realize the timer's callback started at 146.100233, and it finished
+at 146.100627, so it's taking 146.100627-146.100233=0.4ms.
+ 
+Changelog:
+v1->v2:
+1: Add jiffies info into timer
+2: Combine debugobjects and trace as Thomas's suggestion
+v2->v3:
+1: Remove function address from timer_expire and timer_cancel
+   as Thomas's suggestion
+2: Remove debug_and_trace_timer_expire() as Thomas's suggestion
+3: Rename trace_timer_entry() and trace_timer_exit() to match this patch
+v3->v4:
+1: Rename debug_and_trace_*() to debug_*() as Peter Zijlstra's suggestion
+2: Integrate Anton Blanchard's patch, which can been found at:
+	http://marc.info/?l=linux-kernel&m=124331396919301&w=2
 
-> ---
->  Documentation/filesystems/00-INDEX  |    2 ++
->  Documentation/filesystems/exofs.txt |   23 ++++++++++++-----------
->  2 files changed, 14 insertions(+), 11 deletions(-)
-> 
-> diff --git a/Documentation/filesystems/00-INDEX b/Documentation/filesystems/00-INDEX
-> index f15621e..7001782 100644
-> --- a/Documentation/filesystems/00-INDEX
-> +++ b/Documentation/filesystems/00-INDEX
-> @@ -36,6 +36,8 @@ dnotify.txt
->  	- info about directory notification in Linux.
->  ecryptfs.txt
->  	- docs on eCryptfs: stacked cryptographic filesystem for Linux.
-> +exofs.txt
-> +	- info, usage, mount options, design about EXOFS.
->  ext2.txt
->  	- info, mount options and specifications for the Ext2 filesystem.
->  ext3.txt
-> diff --git a/Documentation/filesystems/exofs.txt b/Documentation/filesystems/exofs.txt
-> index 0ced74c..abd2a9b 100644
-> --- a/Documentation/filesystems/exofs.txt
-> +++ b/Documentation/filesystems/exofs.txt
-> @@ -60,13 +60,13 @@ USAGE
->  
->     mkfs.exofs --pid=65536 --format /dev/osd0
->  
-> -   The --format is optional if not specified no OSD_FORMAT will be
-> -   preformed and a clean file system will be created in the specified pid,
-> +   The --format is optional. If not specified, no OSD_FORMAT will be
-> +   performed and a clean file system will be created in the specified pid,
->     in the available space of the target. (Use --format=size_in_meg to limit
->     the total LUN space available)
->  
-> -   If pid already exist it will be deleted and a new one will be created in it's
-> -   place. Be careful.
-> +   If pid already exists, it will be deleted and a new one will be created in
-> +   its place. Be careful.
->  
->     An exofs lives inside a single OSD partition. You can create multiple exofs
->     filesystems on the same device using multiple pids.
-> @@ -81,7 +81,7 @@ USAGE
->  
->  7. For reference (See do-exofs example script):
->  	do-exofs start - an example of how to perform the above steps.
-> -	do-exofs stop -  an example of how to unmount the file system.
-> +	do-exofs stop - an example of how to unmount the file system.
->  	do-exofs format - an example of how to format and mkfs a new exofs.
->  
->  8. Extra compilation flags (uncomment in fs/exofs/Kbuild):
-> @@ -104,8 +104,8 @@ Where:
->      exofs specific options: Options are separated by commas (,)
->  		pid=<integer> - The partition number to mount/create as
->                                  container of the filesystem.
-> -                                This option is mandatory
-> -                to=<integer>  - Timeout in ticks for a single command
-> +                                This option is mandatory.
-> +                to=<integer>  - Timeout in ticks for a single command.
->                                  default is (60 * HZ) [for debugging only]
->  
->  ===============================================================================
-> @@ -116,7 +116,7 @@ DESIGN
->    with a special ID (defined in common.h).
->    Information included in the file system control block is used to fill the
->    in-memory superblock structure at mount time. This object is created before
-> -  the file system is used by mkexofs.c It contains information such as:
-> +  the file system is used by mkexofs.c. It contains information such as:
->  	- The file system's magic number
->  	- The next inode number to be allocated
->  
-> @@ -134,8 +134,8 @@ DESIGN
->    attributes. This applies to both regular files and other types (directories,
->    device files, symlinks, etc.).
->  
-> -* Credentials are generated per object (inode and superblock) when they is
-> -  created in memory (read off disk or created). The credential works for all
-> +* Credentials are generated per object (inode and superblock) when they are
-> +  created in memory (read from disk or created). The credential works for all
->    operations and is used as long as the object remains in memory.
->  
->  * Async OSD operations are used whenever possible, but the target may execute
-> @@ -145,7 +145,8 @@ DESIGN
->    from executing in reverse order:
->  	- The following are handled with the OBJ_CREATED and OBJ_2BCREATED
->  	  flags. OBJ_CREATED is set when we know the object exists on the OSD -
-> -	  in create's callback function, and when we successfully do a read_inode.
-> +	  in create's callback function, and when we successfully do a
-> +	  read_inode.
->  	  OBJ_2BCREATED is set in the beginning of the create function, so we
->  	  know that we should wait.
->  		- create/delete: delete should wait until the object is created
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+---
+ include/trace/events/timer.h |  134 ++++++++++++++++++++++++++++++++++++++++++
+ kernel/timer.c               |   32 +++++++++-
+ 2 files changed, 162 insertions(+), 4 deletions(-)
+ create mode 100644 include/trace/events/timer.h
+
+diff --git a/include/trace/events/timer.h b/include/trace/events/timer.h
+new file mode 100644
+index 0000000..a664afa
+--- /dev/null
++++ b/include/trace/events/timer.h
+@@ -0,0 +1,134 @@
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM timer
++
++#if !defined(_TRACE_TIMER_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_TIMER_H
++
++#include <linux/tracepoint.h>
++#include <linux/timer.h>
++
++/**
++ * timer_init - called when the timer is initialized
++ * @timer: pointer to struct timer_list
++ **/
++TRACE_EVENT(timer_init,
++
++	TP_PROTO(struct timer_list *timer),
++
++	TP_ARGS(timer),
++
++	TP_STRUCT__entry(
++		__field( void *,	timer	)
++	),
++
++	TP_fast_assign(
++		__entry->timer	= timer;
++	),
++
++	TP_printk("timer=%p", __entry->timer)
++);
++
++/**
++ * timer_start - called when the timer is started
++ * @timer: pointer to struct timer_list
++ * @expires: the timer's expire time
++ **/
++TRACE_EVENT(timer_start,
++
++	TP_PROTO(struct timer_list *timer, unsigned long expires),
++
++	TP_ARGS(timer, expires),
++
++	TP_STRUCT__entry(
++		__field( void *,	timer		)
++		__field( void *,	function	)
++		__field( unsigned long,	expires		)
++		__field( int,		timeout		)
++	),
++
++	TP_fast_assign(
++		__entry->timer		= timer;
++		__entry->function	= timer->function;
++		__entry->expires	= expires;
++		__entry->timeout	= timer->expires - jiffies;
++	),
++
++	TP_printk("timer=%p func=%pf expires=%lu timeout=%d", __entry->timer,
++		  __entry->function, __entry->expires, __entry->timeout)
++);
++
++/**
++ * timer_expire - called immediately before the timer callback
++ * @timer: pointer to struct timer_list
++ *
++ * When used in combination with the timer_callback_done tracepoint we can
++ * determine the timer latency.
++ **/
++TRACE_EVENT(timer_expire,
++
++	TP_PROTO(struct timer_list *timer),
++
++	TP_ARGS(timer),
++
++	TP_STRUCT__entry(
++		__field( void *,	timer	)
++		__field( unsigned long,	jiffies	)
++	),
++
++	TP_fast_assign(
++		__entry->timer		= timer;
++		__entry->jiffies	= jiffies;
++	),
++
++	TP_printk("timer=%p jiffies=%lu", __entry->timer, __entry->jiffies)
++);
++
++/**
++ * timer_callback_done - called immediately after the timer callback returns
++ * @timer: pointer to struct timer_list
++ *
++ * When used in combination with the timer_expire tracepoint we can
++ * determine the timer latency.
++ **/
++TRACE_EVENT(timer_callback_done,
++
++	TP_PROTO(struct timer_list *timer),
++
++	TP_ARGS(timer),
++
++	TP_STRUCT__entry(
++		__field(void *,	timer	)
++	),
++
++	TP_fast_assign(
++		__entry->timer	= timer;
++	),
++
++	TP_printk("func=%p", __entry->timer)
++);
++
++/**
++ * timer_cancel - called when the timer is canceled
++ * @timer: pointer to struct timer_list
++ **/
++TRACE_EVENT(timer_cancel,
++
++	TP_PROTO(struct timer_list *timer),
++
++	TP_ARGS(timer),
++
++	TP_STRUCT__entry(
++		__field( void *,	timer	)
++	),
++
++	TP_fast_assign(
++		__entry->timer	= timer;
++	),
++
++	TP_printk("timer=%p", __entry->timer)
++);
++
++#endif /*  _TRACE_TIMER_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
+diff --git a/kernel/timer.c b/kernel/timer.c
+index a7f07d5..92ff6a7 100644
+--- a/kernel/timer.c
++++ b/kernel/timer.c
+@@ -46,6 +46,9 @@
+ #include <asm/timex.h>
+ #include <asm/io.h>
+ 
++#define CREATE_TRACE_POINTS
++#include <trace/events/timer.h>
++
+ u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
+ 
+ EXPORT_SYMBOL(jiffies_64);
+@@ -520,6 +523,25 @@ static inline void debug_timer_activate(struct timer_list *timer) { }
+ static inline void debug_timer_deactivate(struct timer_list *timer) { }
+ #endif
+ 
++static inline void debug_init(struct timer_list *timer)
++{
++	debug_timer_init(timer);
++	trace_timer_init(timer);
++}
++
++static inline void
++debug_activate(struct timer_list *timer, unsigned long expires)
++{
++	debug_timer_activate(timer);
++	trace_timer_start(timer, expires);
++}
++
++static inline void debug_deactivate(struct timer_list *timer)
++{
++	debug_timer_deactivate(timer);
++	trace_timer_cancel(timer);
++}
++
+ static void __init_timer(struct timer_list *timer,
+ 			 const char *name,
+ 			 struct lock_class_key *key)
+@@ -548,7 +570,7 @@ void init_timer_key(struct timer_list *timer,
+ 		    const char *name,
+ 		    struct lock_class_key *key)
+ {
+-	debug_timer_init(timer);
++	debug_init(timer);
+ 	__init_timer(timer, name, key);
+ }
+ EXPORT_SYMBOL(init_timer_key);
+@@ -567,7 +589,7 @@ static inline void detach_timer(struct timer_list *timer,
+ {
+ 	struct list_head *entry = &timer->entry;
+ 
+-	debug_timer_deactivate(timer);
++	debug_deactivate(timer);
+ 
+ 	__list_del(entry->prev, entry->next);
+ 	if (clear_pending)
+@@ -628,7 +650,7 @@ __mod_timer(struct timer_list *timer, unsigned long expires,
+ 			goto out_unlock;
+ 	}
+ 
+-	debug_timer_activate(timer);
++	debug_activate(timer, expires);
+ 
+ 	new_base = __get_cpu_var(tvec_bases);
+ 
+@@ -780,7 +802,7 @@ void add_timer_on(struct timer_list *timer, int cpu)
+ 	BUG_ON(timer_pending(timer) || !timer->function);
+ 	spin_lock_irqsave(&base->lock, flags);
+ 	timer_set_base(timer, base);
+-	debug_timer_activate(timer);
++	debug_activate(timer, timer->expires);
+ 	internal_add_timer(base, timer);
+ 	/*
+ 	 * Check whether the other CPU is idle and needs to be
+@@ -984,7 +1006,9 @@ static inline void __run_timers(struct tvec_base *base)
+ 				 */
+ 				lock_map_acquire(&lockdep_map);
+ 
++				trace_timer_expire(timer);
+ 				fn(data);
++				trace_timer_callback_done(timer);
+ 
+ 				lock_map_release(&lockdep_map);
+ 
+-- 
+1.6.1.2
 
