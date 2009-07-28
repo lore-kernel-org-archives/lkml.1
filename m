@@ -1,89 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752991AbZG1TPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbZG1TSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752991AbZG1TPx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 15:15:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbZG1TPw
+	id S1753239AbZG1TSK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 15:18:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbZG1TSK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 15:15:52 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51530 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751406AbZG1TPw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 15:15:52 -0400
-Date: Tue, 28 Jul 2009 20:15:53 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kdesu broken
-Message-ID: <20090728201553.0eb2d51d@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.01.0907281158120.3186@localhost.localdomain>
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
-	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
-	<873a8iqqgv.fsf@devron.myhome.or.jp>
-	<20090727142303.41096bf5@lxorguk.ukuu.org.uk>
-	<877hxujkuv.fsf@devron.myhome.or.jp>
-	<20090727145805.690afe5d@lxorguk.ukuu.org.uk>
-	<87fxci6ub9.fsf@devron.myhome.or.jp>
-	<20090727161424.GA4233@skywalker>
-	<20090727174252.2d987830@lxorguk.ukuu.org.uk>
-	<20090727171213.GB4233@skywalker>
-	<87skgikjr8.fsf@devron.myhome.or.jp>
-	<20090727222010.1a5efb7b@lxorguk.ukuu.org.uk>
-	<87r5w19xsb.fsf@devron.myhome.or.jp>
-	<20090728112203.7b70adba@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907280848090.3186@localhost.localdomain>
-	<20090728174213.5e927428@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907280944150.3186@localhost.localdomain>
-	<20090728180649.596c5412@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907281141070.3186@localhost.localdomain>
-	<20090728195651.3a402a31@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907281158120.3186@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Jul 2009 15:18:10 -0400
+Received: from nxgate.netxen.com ([38.99.60.130]:43380 "EHLO unm84.unmin.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752121AbZG1TSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 15:18:09 -0400
+X-Greylist: delayed 483 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Jul 2009 15:18:09 EDT
+From: Dhananjay Phadke <dhananjay@netxen.com>
+To: davem@davemloft.net
+Cc: netdev@vger.kernel.org, randy.dunlap@oracle.com,
+       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org
+Subject: [PATCH NEXT] netxen: fix CONFIG_INET=n build
+Date: Tue, 28 Jul 2009 12:10:03 -0700
+Message-Id: <1248808203-9578-1-git-send-email-dhananjay@netxen.com>
+X-Mailer: git-send-email 1.6.0.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Wrap dest IP hashing code with #ifdef CONFIG_INET,
+this feature makes no sense without INET, but other
+driver can still work.
 
-> Quite frankly, I don't understand why I should even have to bring these 
-> issues up. You should have tried to fix the problem immediately, without 
-> arguing against fixing the kernel. Without blaming user space. Without 
-> making idiotic excuses for bad kernel behavior.
-> 
-> The fact is, breaking regular user applications is simply not acceptable. 
-> Trying to blame kernel breakage on the app being "buggy" is not ok. And 
-> arguing for almost a week against fixing it - that's just crazy.
+Signed-off-by: Dhananjay Phadke <dhananjay@netxen.com>
+---
+ drivers/net/netxen/netxen_nic_main.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-I've been working on fixing it. I have spent a huge amount of time
-working on the tty stuff trying to gradually get it sane without breaking
-anything and fixing security holes along the way as they came up. I spent
-the past two evenings working on the tty regressions.
-
-However I've had enough. If you think that problem is easy to fix you fix
-it.
-
-Have fun.
-
-I've zapped the tty merge queue so anyone with patches for the tty layer
-can send them to the new maintainer.
-
---- MAINTAINERS~	2009-07-23 15:36:41.000000000 +0100
-+++ MAINTAINERS	2009-07-28 20:09:32.200685827 +0100
-@@ -5815,10 +5815,7 @@
- S:	Maintained
+diff --git a/drivers/net/netxen/netxen_nic_main.c b/drivers/net/netxen/netxen_nic_main.c
+index 2bbefa6..40549a0 100644
+--- a/drivers/net/netxen/netxen_nic_main.c
++++ b/drivers/net/netxen/netxen_nic_main.c
+@@ -1875,6 +1875,8 @@ static void netxen_nic_poll_controller(struct net_device *netdev)
+ }
+ #endif
  
- TTY LAYER
--P:	Alan Cox
--M:	alan@lxorguk.ukuu.org.uk
--S:	Maintained
--T:	stgit http://zeniv.linux.org.uk/~alan/ttydev/
-+S:	Unmaintained
- F:	drivers/char/tty_*
- F:	drivers/serial/serial_core.c
- F:	include/linux/serial_core.h
++#ifdef CONFIG_INET
++
+ #define is_netxen_netdev(dev) (dev->netdev_ops == &netxen_netdev_ops)
+ 
+ static int
+@@ -1993,6 +1995,7 @@ static struct notifier_block	netxen_netdev_cb = {
+ static struct notifier_block netxen_inetaddr_cb = {
+ 	.notifier_call = netxen_inetaddr_event,
+ };
++#endif
+ 
+ static struct pci_driver netxen_driver = {
+ 	.name = netxen_nic_driver_name,
+@@ -2012,8 +2015,10 @@ static int __init netxen_init_module(void)
+ 	if ((netxen_workq = create_singlethread_workqueue("netxen")) == NULL)
+ 		return -ENOMEM;
+ 
++#ifdef CONFIG_INET
+ 	register_netdevice_notifier(&netxen_netdev_cb);
+ 	register_inetaddr_notifier(&netxen_inetaddr_cb);
++#endif
+ 
+ 	return pci_register_driver(&netxen_driver);
+ }
+@@ -2024,8 +2029,10 @@ static void __exit netxen_exit_module(void)
+ {
+ 	pci_unregister_driver(&netxen_driver);
+ 
++#ifdef CONFIG_INET
+ 	unregister_inetaddr_notifier(&netxen_inetaddr_cb);
+ 	unregister_netdevice_notifier(&netxen_netdev_cb);
++#endif
+ 	destroy_workqueue(netxen_workq);
+ }
+ 
+-- 
+1.6.0.2
+
