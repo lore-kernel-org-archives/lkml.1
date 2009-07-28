@@ -1,130 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755944AbZG1XK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751184AbZG1XR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755944AbZG1XK7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754779AbZG1XK6
+	id S1751184AbZG1XR5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:17:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbZG1XR4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:10:58 -0400
-Received: from kroah.org ([198.145.64.141]:42903 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752947AbZG1XDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:03:44 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 15:59:41 2009
-Message-Id: <20090728225941.294377254@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 15:58:30 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tilman Schmidt <tilman@imap.cc>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 02/37] gigaset: accept connection establishment messages in any order
-References: <20090728225828.431071451@mini.kroah.org>
-Content-Disposition: inline; filename=gigaset-accept-connection-establishment-messages-in-any-order.patch
-In-Reply-To: <20090728230145.GA10486@kroah.com>
+	Tue, 28 Jul 2009 19:17:56 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:17161 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750842AbZG1XR4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:17:56 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=H/IlthK+Mtutc+fq0AEFbIAyNcAQmm5uoKwRnbRxUpcU67GGU5nvH3jJOW/Gv3n4S
+	pNba9aXCDF1uKUfUeqVJQ==
+MIME-Version: 1.0
+In-Reply-To: <4A68082C.8010604@cn.fujitsu.com>
+References: <20090722194644.7481.47805.stgit@menage.mtv.corp.google.com>
+	 <20090722195029.7481.94700.stgit@menage.mtv.corp.google.com>
+	 <4A68013A.2020302@cn.fujitsu.com>
+	 <6599ad830907222327s31340956y9783db39d076520f@mail.gmail.com>
+	 <4A68082C.8010604@cn.fujitsu.com>
+Date: Tue, 28 Jul 2009 16:17:51 -0700
+Message-ID: <6599ad830907281617i4c03ee52u93e7eb69275379e9@mail.gmail.com>
+Subject: Re: [PATCH 1/4] Support named cgroups hierarchies
+From: Paul Menage <menage@google.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+On Wed, Jul 22, 2009 at 11:50 PM, Li Zefan<lizf@cn.fujitsu.com> wrote:
+>> Because it's not needed for the entire scope of the function. Keeping
+>> its scope as small as possible makes it clearer what it's being used
+>> for.
+>>
+>
+> If we had been doing this, we'll see many:
+>
+>        (no if, while, for)
+>        {
+>                ...
+>        }
+>
+> in kernel code, but I don't remember I ever saw this style.
+>
 
-------------------
+Documentation/CodingStyle is silent on this subject. But OK, I've
+moved new_root back to the top level. I think that it's a net loss to
+readability though.
 
-From: Tilman Schmidt <tilman@imap.cc>
-
-commit bceb0f126f25184eaec3f3c8f00c92b0d899e5de upstream.
-
-ISDN connection setup failed if the "connection active" and
-"B channel up" messages from the device arrived in a different
-order than expected. Modify the state machine to accept them in
-any order.
-
-Impact: bugfix
-
-Signed-off-by: Tilman Schmidt <tilman@imap.cc>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/isdn/gigaset/ev-layer.c |   44 ++++++++++++++++++----------------------
- 1 file changed, 20 insertions(+), 24 deletions(-)
-
---- a/drivers/isdn/gigaset/ev-layer.c
-+++ b/drivers/isdn/gigaset/ev-layer.c
-@@ -307,32 +307,33 @@ struct reply_t gigaset_tab_cid_m10x[] = 
- 	{RSP_OK,      604,604, -1,                605, 5, {ACT_CMD+AT_MSN}},
- 	{RSP_OK,      605,605, -1,                606, 5, {ACT_CMD+AT_ISO}},
- 	{RSP_NULL,    605,605, -1,                606, 5, {ACT_CMD+AT_ISO}},
--	{RSP_OK,      606,606, -1,                607, 5, {0},             "+VLS=17\r"}, /* set "Endgeraetemodus" */
-+	{RSP_OK,      606,606, -1,                607, 5, {0}, "+VLS=17\r"},
- 	{RSP_OK,      607,607, -1,                608,-1},
--	//{RSP_ZSAU,    608,608,ZSAU_PROCEEDING,    608, 0, {ACT_ERROR}},//DELETE
- 	{RSP_ZSAU,    608,608,ZSAU_PROCEEDING,    609, 5, {ACT_CMD+AT_DIAL}},
- 	{RSP_OK,      609,609, -1,                650, 0, {ACT_DIALING}},
- 
--	{RSP_ZVLS,    608,608, 17,                 -1,-1, {ACT_DEBUG}},
--	{RSP_ZCTP,    609,609, -1,                 -1,-1, {ACT_DEBUG}},
--	{RSP_ZCPN,    609,609, -1,                 -1,-1, {ACT_DEBUG}},
- 	{RSP_ERROR,   601,609, -1,                  0, 0, {ACT_ABORTDIAL}},
- 	{EV_TIMEOUT,  601,609, -1,                  0, 0, {ACT_ABORTDIAL}},
- 
--	/* dialing */
--	{RSP_ZCTP,    650,650, -1,                 -1,-1, {ACT_DEBUG}},
--	{RSP_ZCPN,    650,650, -1,                 -1,-1, {ACT_DEBUG}},
--	{RSP_ZSAU,    650,650,ZSAU_CALL_DELIVERED, -1,-1, {ACT_DEBUG}}, /* some devices don't send this */
--
--	/* connection established  */
--	{RSP_ZSAU,    650,650,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT}}, //FIXME -> DLE1
--	{RSP_ZSAU,    750,750,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT}}, //FIXME -> DLE1
--
--	{EV_BC_OPEN,  800,800, -1,                800,-1, {ACT_NOTIFY_BC_UP}}, //FIXME new constate + timeout
-+	/* optional dialing responses */
-+	{EV_BC_OPEN,  650,650, -1,                651,-1},
-+	{RSP_ZVLS,    608,651, 17,                 -1,-1, {ACT_DEBUG}},
-+	{RSP_ZCTP,    609,651, -1,                 -1,-1, {ACT_DEBUG}},
-+	{RSP_ZCPN,    609,651, -1,                 -1,-1, {ACT_DEBUG}},
-+	{RSP_ZSAU,    650,651,ZSAU_CALL_DELIVERED, -1,-1, {ACT_DEBUG}},
-+
-+	/* connect */
-+	{RSP_ZSAU,    650,650,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT}},
-+	{RSP_ZSAU,    651,651,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT,
-+							   ACT_NOTIFY_BC_UP}},
-+	{RSP_ZSAU,    750,750,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT}},
-+	{RSP_ZSAU,    751,751,ZSAU_ACTIVE,        800,-1, {ACT_CONNECT,
-+							   ACT_NOTIFY_BC_UP}},
-+	{EV_BC_OPEN,  800,800, -1,                800,-1, {ACT_NOTIFY_BC_UP}},
- 
- 	/* remote hangup */
--	{RSP_ZSAU,    650,650,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEREJECT}},
--	{RSP_ZSAU,    750,750,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEHUP}},
-+	{RSP_ZSAU,    650,651,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEREJECT}},
-+	{RSP_ZSAU,    750,751,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEHUP}},
- 	{RSP_ZSAU,    800,800,ZSAU_DISCONNECT_IND,  0, 0, {ACT_REMOTEHUP}},
- 
- 	/* hangup */
-@@ -371,7 +372,8 @@ struct reply_t gigaset_tab_cid_m10x[] = 
- 	{RSP_ZSAU,    700,729,ZSAU_ACTIVE,          0, 0, {ACT_ABORTACCEPT}},
- 	{RSP_ZSAU,    700,729,ZSAU_DISCONNECT_IND,  0, 0, {ACT_ABORTACCEPT}},
- 
--	{EV_TIMEOUT,  750,750, -1,                  0, 0, {ACT_CONNTIMEOUT}},
-+	{EV_BC_OPEN,  750,750, -1,                751,-1},
-+	{EV_TIMEOUT,  750,751, -1,                  0, 0, {ACT_CONNTIMEOUT}},
- 
- 	/* B channel closed (general case) */
- 	{EV_BC_CLOSED, -1, -1, -1,                 -1,-1, {ACT_NOTIFY_BC_DOWN}}, //FIXME
-@@ -914,12 +916,6 @@ static void bchannel_down(struct bc_stat
- 
- static void bchannel_up(struct bc_state *bcs)
- {
--	if (!(bcs->chstate & CHS_D_UP)) {
--		dev_notice(bcs->cs->dev, "%s: D channel not up\n", __func__);
--		bcs->chstate |= CHS_D_UP;
--		gigaset_i4l_channel_cmd(bcs, ISDN_STAT_DCONN);
--	}
--
- 	if (bcs->chstate & CHS_B_UP) {
- 		dev_notice(bcs->cs->dev, "%s: B channel already up\n",
- 			   __func__);
-
-
+Paul
