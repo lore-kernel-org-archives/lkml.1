@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753239AbZG1TSK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbZG1TTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753239AbZG1TSK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 15:18:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbZG1TSK
+	id S1753368AbZG1TTn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 15:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbZG1TTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 15:18:10 -0400
-Received: from nxgate.netxen.com ([38.99.60.130]:43380 "EHLO unm84.unmin.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752121AbZG1TSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 15:18:09 -0400
-X-Greylist: delayed 483 seconds by postgrey-1.27 at vger.kernel.org; Tue, 28 Jul 2009 15:18:09 EDT
-From: Dhananjay Phadke <dhananjay@netxen.com>
-To: davem@davemloft.net
-Cc: netdev@vger.kernel.org, randy.dunlap@oracle.com,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org
-Subject: [PATCH NEXT] netxen: fix CONFIG_INET=n build
-Date: Tue, 28 Jul 2009 12:10:03 -0700
-Message-Id: <1248808203-9578-1-git-send-email-dhananjay@netxen.com>
-X-Mailer: git-send-email 1.6.0.2
+	Tue, 28 Jul 2009 15:19:42 -0400
+Received: from kroah.org ([198.145.64.141]:53045 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752946AbZG1TTk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 15:19:40 -0400
+Date: Tue, 28 Jul 2009 12:15:41 -0700
+From: Greg KH <greg@kroah.com>
+To: Witold Szczeponik <Witold.Szczeponik@gmx.net>
+Cc: Thomas Renninger <trenn@suse.de>, stable@kernel.org, rjw@sisk.pl,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       abelay@mit.edu, bjorn.helgaas@hp.com
+Subject: Re: [stable] [PATCH] PNPACPI: Enable PNPACPI _PSx Support, v3
+Message-ID: <20090728191541.GB25665@kroah.com>
+References: <49D101DA.50201@gmx.net>
+ <200904021510.37517.trenn@suse.de>
+ <20090630230314.GD2634@kroah.com>
+ <4A53AAD1.1050308@gmx.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A53AAD1.1050308@gmx.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wrap dest IP hashing code with #ifdef CONFIG_INET,
-this feature makes no sense without INET, but other
-driver can still work.
+On Tue, Jul 07, 2009 at 10:06:41PM +0200, Witold Szczeponik wrote:
+> Greg KH wrote:
+> 
+> [snip]
+> 
+> > 
+> > What specific git commit id in Linus's tree is this?
+> > 
+> > thanks,
+> > 
+> > greg k-h
+> > 
+> 
+> Hi Greg,
+> 
+> the git commit id of this patch would be 
+> 6328a57401dc5f5cf9931738eb7268fcd8058c49, but the patch triggered a 
+> regression which is described in 
+> http://bugzilla.kernel.org/show_bug.cgi?id=13243 and which was fixed in 
+> 19bde778c1fd2574cc020a618d7d576f260271ca.
 
-Signed-off-by: Dhananjay Phadke <dhananjay@netxen.com>
----
- drivers/net/netxen/netxen_nic_main.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+Ok, I've queued up both of these for the next .27 stable release.
 
-diff --git a/drivers/net/netxen/netxen_nic_main.c b/drivers/net/netxen/netxen_nic_main.c
-index 2bbefa6..40549a0 100644
---- a/drivers/net/netxen/netxen_nic_main.c
-+++ b/drivers/net/netxen/netxen_nic_main.c
-@@ -1875,6 +1875,8 @@ static void netxen_nic_poll_controller(struct net_device *netdev)
- }
- #endif
- 
-+#ifdef CONFIG_INET
-+
- #define is_netxen_netdev(dev) (dev->netdev_ops == &netxen_netdev_ops)
- 
- static int
-@@ -1993,6 +1995,7 @@ static struct notifier_block	netxen_netdev_cb = {
- static struct notifier_block netxen_inetaddr_cb = {
- 	.notifier_call = netxen_inetaddr_event,
- };
-+#endif
- 
- static struct pci_driver netxen_driver = {
- 	.name = netxen_nic_driver_name,
-@@ -2012,8 +2015,10 @@ static int __init netxen_init_module(void)
- 	if ((netxen_workq = create_singlethread_workqueue("netxen")) == NULL)
- 		return -ENOMEM;
- 
-+#ifdef CONFIG_INET
- 	register_netdevice_notifier(&netxen_netdev_cb);
- 	register_inetaddr_notifier(&netxen_inetaddr_cb);
-+#endif
- 
- 	return pci_register_driver(&netxen_driver);
- }
-@@ -2024,8 +2029,10 @@ static void __exit netxen_exit_module(void)
- {
- 	pci_unregister_driver(&netxen_driver);
- 
-+#ifdef CONFIG_INET
- 	unregister_inetaddr_notifier(&netxen_inetaddr_cb);
- 	unregister_netdevice_notifier(&netxen_netdev_cb);
-+#endif
- 	destroy_workqueue(netxen_workq);
- }
- 
--- 
-1.6.0.2
+thanks,
 
+greg k-h
