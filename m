@@ -1,323 +1,409 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752907AbZG1OXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752021AbZG1O1E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752907AbZG1OXt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 10:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbZG1OXs
+	id S1752021AbZG1O1E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 10:27:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbZG1O1D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 10:23:48 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:55718 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751296AbZG1OXs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 10:23:48 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>
-Subject: [PATCH] regulator: Add WM831x ISINK support
-Date: Tue, 28 Jul 2009 15:23:46 +0100
-Message-Id: <1248791026-26958-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1248702372-29534-20-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <1248702372-29534-20-git-send-email-broonie@opensource.wolfsonmicro.com>
+	Tue, 28 Jul 2009 10:27:03 -0400
+Received: from bamako.nerim.net ([62.4.17.28]:61814 "EHLO bamako.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750842AbZG1O1B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 10:27:01 -0400
+Date: Tue, 28 Jul 2009 16:26:58 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [PATCH] hwmon: WM831x PMIC hardware monitoring driver
+Message-ID: <20090728162658.0ac35362@hyperion.delvare>
+In-Reply-To: <1248790260-26211-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1248702372-29534-12-git-send-email-broonie@opensource.wolfsonmicro.com>
+	<1248790260-26211-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The WM831x series of PMICs provide two constant current sinks
-designed to drive strings of serially connected LEDs for applications
-such as backlights. This driver adds support for those regulators.
+Hi Mark,
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>
----
+On Tue, 28 Jul 2009 15:11:00 +0100, Mark Brown wrote:
+> This driver adds support for the hardware monitoring features of
+> the WM831x PMICs to the hwmon API. Monitoring is provided for
+> the system voltages supported natively by the WM831x, the chip
+> temperature, the battery temperature and the auxiliary inputs
+> of the WM831x.
+> 
+> Currently no alarms are supported, though digital comparators on
+> the WM831x devices would allow these to be provided.
+> 
+> Since the auxiliary and battery temperature input scaling depends
+> on the system configuration the value is reported as a voltage to
+> userspace.
+> 
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> Cc: Jean Delvare <khali@linux-fr.org>
+> Cc: lm-sensors@lm-sensors.org
+> ---
+> 
+> Changes from review from Jean:
+>  - Hook up backup battery monitoring.
+>  - Use DIV_ROUND_CLOSEST().
+>  - Report battery temperature as a voltage.
+>  - Various formatting cleanups.
+> 
+>  Documentation/hwmon/wm831x   |   37 +++++++
+>  drivers/hwmon/Kconfig        |   11 ++
+>  drivers/hwmon/Makefile       |    1 +
+>  drivers/hwmon/wm831x-hwmon.c |  240 ++++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 289 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/hwmon/wm831x
+>  create mode 100644 drivers/hwmon/wm831x-hwmon.c
+> 
+> diff --git a/Documentation/hwmon/wm831x b/Documentation/hwmon/wm831x
+> new file mode 100644
+> index 0000000..ab10068
+> --- /dev/null
+> +++ b/Documentation/hwmon/wm831x
+> @@ -0,0 +1,37 @@
+> +Kernel driver wm831x-hwmon
+> +==========================
+> +
+> +Supported chips:
+> +  * Wolfson Microelectronics WM831x PMICs
+> +    Prefix: 'wm831x'
+> +    Datasheet:
+> +	http://www.wolfsonmicro.com/products/WM8310
+> +	http://www.wolfsonmicro.com/products/WM8311
+> +	http://www.wolfsonmicro.com/products/WM8312
+> +
+> +Authors: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> +
+> +Description
+> +-----------
+> +
+> +The WM831x series of PMICs include an AUXADC which can be used to
+> +monitor a range of system operating parameters, including the voltages
+> +of the major supplies within the system.  Currently the driver provides
+> +reporting of all the input values but does not provide any alarms.
+> +
+> +Voltage Monitoring
+> +------------------
+> +
+> +Voltages are sampled by a 12 bit ADC.  Voltages in milivolts are 1.465
+> +times the ADC value.
+> +
+> +Temperature Monitoring
+> +----------------------
+> +
+> +Temperatures are sampled by a 12 bit ADC.  Chip and battery temperatures
+> +are available.  The chip temperature is calculated as:
+> +
+> +	Degrees celsius = (512.18 - data) / 1.0983
+> +
+> +while the battery temperature calculation will depend on the NTC
+> +termistor component.
 
-Support missing platform data for the core chip.
+I think the correct spelling is thermistor.
 
- drivers/regulator/Makefile       |    1 +
- drivers/regulator/wm831x-isink.c |  260 ++++++++++++++++++++++++++++++++++++++
- 2 files changed, 261 insertions(+), 0 deletions(-)
- create mode 100644 drivers/regulator/wm831x-isink.c
+> diff --git a/drivers/hwmon/Kconfig b/drivers/hwmon/Kconfig
+> index 8d17135..ed85909 100644
+> --- a/drivers/hwmon/Kconfig
+> +++ b/drivers/hwmon/Kconfig
+> @@ -930,6 +930,17 @@ config SENSORS_W83627EHF
+>  	  This driver can also be built as a module.  If so, the module
+>  	  will be called w83627ehf.
+>  
+> +config SENSORS_WM831X
+> +	tristate "WM831x PMICs"
+> +	depends on MFD_WM831X
+> +	help
+> +	  If you say yes here you get support for the hardware
+> +	  monitoring functionality of the Wolfson Microelectronics
+> +	  WM831x series of PMICs.
+> +
+> +	  This driver can also be built as a module.  If so, the module
+> +	  will be called wm831x-hwmon.
+> +
+>  config SENSORS_WM8350
+>  	tristate "Wolfson Microelectronics WM835x"
+>  	depends on MFD_WM8350
+> diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
+> index 6126257..a7e7eb7 100644
+> --- a/drivers/hwmon/Makefile
+> +++ b/drivers/hwmon/Makefile
+> @@ -90,6 +90,7 @@ obj-$(CONFIG_SENSORS_VT8231)	+= vt8231.o
+>  obj-$(CONFIG_SENSORS_W83627EHF)	+= w83627ehf.o
+>  obj-$(CONFIG_SENSORS_W83L785TS)	+= w83l785ts.o
+>  obj-$(CONFIG_SENSORS_W83L786NG)	+= w83l786ng.o
+> +obj-$(CONFIG_SENSORS_WM831X)	+= wm831x-hwmon.o
+>  obj-$(CONFIG_SENSORS_WM8350)	+= wm8350-hwmon.o
+>  
+>  ifeq ($(CONFIG_HWMON_DEBUG_CHIP),y)
+> diff --git a/drivers/hwmon/wm831x-hwmon.c b/drivers/hwmon/wm831x-hwmon.c
+> new file mode 100644
+> index 0000000..a3a9b78
+> --- /dev/null
+> +++ b/drivers/hwmon/wm831x-hwmon.c
+> @@ -0,0 +1,240 @@
+> +/*
+> + * drivers/hwmon/wm831x-hwmon.c - Wolfson Microelectronics WM831x PMIC
+> + *                                hardware monitoring features.
+> + *
+> + * Copyright (C) 2009 Wolfson Microelectronics plc
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of the GNU General Public License v2 as published by the
+> + * Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful, but WITHOUT
+> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+> + * more details.
+> + *
+> + * You should have received a copy of the GNU General Public License along with
+> + * this program; if not, write to the Free Software Foundation, Inc.,
+> + * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/err.h>
+> +#include <linux/hwmon.h>
+> +#include <linux/hwmon-sysfs.h>
+> +
+> +#include <linux/mfd/wm831x/core.h>
+> +#include <linux/mfd/wm831x/auxadc.h>
+> +
+> +struct wm831x_hwmon {
+> +	struct wm831x *wm831x;
+> +	struct device *classdev;
+> +};
+> +
+> +static ssize_t show_name(struct device *dev,
+> +			 struct device_attribute *attr, char *buf)
+> +{
+> +	return sprintf(buf, "wm831x\n");
+> +}
+> +
+> +static const char *input_names[] = {
+> +	[WM831X_AUX_SYSVDD]    = "SYSVDD",
+> +	[WM831X_AUX_USB]       = "USB",
+> +	[WM831X_AUX_BKUP_BATT] = "Backup battery",
+> +	[WM831X_AUX_BATT]      = "Battery",
+> +	[WM831X_AUX_WALL]      = "WALL",
+> +	[WM831X_AUX_CHIP_TEMP] = "PMIC",
+> +	[WM831X_AUX_BATT_TEMP] = "Battery",
+> +};
+> +
+> +
+> +static ssize_t show_voltage(struct device *dev,
+> +			    struct device_attribute *attr, char *buf)
+> +{
+> +	struct wm831x_hwmon *hwmon = dev_get_drvdata(dev);
+> +	int channel = to_sensor_dev_attr(attr)->index;
+> +	int ret;
+> +
+> +	ret = wm831x_auxadc_read_uv(hwmon->wm831x, channel);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	return sprintf(buf, "%d\n", DIV_ROUND_CLOSEST(ret, 1000));
+> +}
+> +
+> +static ssize_t show_chip_temp(struct device *dev,
+> +			      struct device_attribute *attr, char *buf)
+> +{
+> +	struct wm831x_hwmon *hwmon = dev_get_drvdata(dev);
+> +	int channel = to_sensor_dev_attr(attr)->index;
+> +	int ret;
+> +
+> +	ret = wm831x_auxadc_read(hwmon->wm831x, channel);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	/* Degrees celsius = (512.18-ret) / 1.0983 */
+> +	ret = 512180 - (ret * 1000);
+> +	ret = DIV_ROUND_CLOSEST(ret * 10000, 10983);
+> +
+> +	return sprintf(buf, "%d\n", ret);
+> +}
+> +
+> +static ssize_t show_batt_temp(struct device *dev,
+> +			      struct device_attribute *attr, char *buf)
+> +{
+> +	struct wm831x_hwmon *hwmon = dev_get_drvdata(dev);
+> +	int channel = to_sensor_dev_attr(attr)->index;
+> +	int ret;
+> +
+> +	ret = wm831x_auxadc_read_uv(hwmon->wm831x, channel);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	/* The conversion depends on the battery, leave to userspace but
+> +	 * report as voltage for ABI reasons. */
+> +	return sprintf(buf, "%d\n", DIV_ROUND_CLOSEST(ret, 1000));
+> +}
 
-diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
-index a0a635f..3a4cdf5 100644
---- a/drivers/regulator/Makefile
-+++ b/drivers/regulator/Makefile
-@@ -13,6 +13,7 @@ obj-$(CONFIG_REGULATOR_LP3971) += lp3971.o
- obj-$(CONFIG_REGULATOR_MAX1586) += max1586.o
- obj-$(CONFIG_REGULATOR_TWL4030) += twl4030-regulator.o
- obj-$(CONFIG_REGULATOR_WM831X) += wm831x-dcdc.o
-+obj-$(CONFIG_REGULATOR_WM831X) += wm831x-isink.o
- obj-$(CONFIG_REGULATOR_WM831X) += wm831x-ldo.o
- obj-$(CONFIG_REGULATOR_WM8350) += wm8350-regulator.o
- obj-$(CONFIG_REGULATOR_WM8400) += wm8400-regulator.o
-diff --git a/drivers/regulator/wm831x-isink.c b/drivers/regulator/wm831x-isink.c
-new file mode 100644
-index 0000000..1d8d987
---- /dev/null
-+++ b/drivers/regulator/wm831x-isink.c
-@@ -0,0 +1,260 @@
-+/*
-+ * wm831x-isink.c  --  Current sink driver for the WM831x series
-+ *
-+ * Copyright 2009 Wolfson Microelectronics PLC.
-+ *
-+ * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
-+ *
-+ *  This program is free software; you can redistribute  it and/or modify it
-+ *  under  the terms of  the GNU General  Public License as published by the
-+ *  Free Software Foundation;  either version 2 of the  License, or (at your
-+ *  option) any later version.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/init.h>
-+#include <linux/bitops.h>
-+#include <linux/err.h>
-+#include <linux/i2c.h>
-+#include <linux/platform_device.h>
-+#include <linux/regulator/driver.h>
-+
-+#include <linux/mfd/wm831x/core.h>
-+#include <linux/mfd/wm831x/regulator.h>
-+#include <linux/mfd/wm831x/pdata.h>
-+
-+#define WM831X_ISINK_MAX_NAME 7
-+
-+struct wm831x_isink {
-+	char name[WM831X_ISINK_MAX_NAME];
-+	struct regulator_desc desc;
-+	int reg;
-+	struct wm831x *wm831x;
-+	struct regulator_dev *regulator;
-+};
-+
-+static int wm831x_isink_enable(struct regulator_dev *rdev)
-+{
-+	struct wm831x_isink *isink = rdev_get_drvdata(rdev);
-+	struct wm831x *wm831x = isink->wm831x;
-+	int ret;
-+
-+	/* We have a two stage enable: first start the ISINK... */
-+	ret = wm831x_set_bits(wm831x, isink->reg, WM831X_CS1_ENA,
-+			      WM831X_CS1_ENA);
-+	if (ret != 0)
-+		return ret;
-+
-+	/* ...then enable drive */
-+	ret = wm831x_set_bits(wm831x, isink->reg, WM831X_CS1_DRIVE,
-+			      WM831X_CS1_DRIVE);
-+	if (ret != 0)
-+		wm831x_set_bits(wm831x, isink->reg, WM831X_CS1_ENA, 0);
-+
-+	return ret;
-+
-+}
-+
-+static int wm831x_isink_disable(struct regulator_dev *rdev)
-+{
-+	struct wm831x_isink *isink = rdev_get_drvdata(rdev);
-+	struct wm831x *wm831x = isink->wm831x;
-+	int ret;
-+
-+	ret = wm831x_set_bits(wm831x, isink->reg, WM831X_CS1_DRIVE, 0);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = wm831x_set_bits(wm831x, isink->reg, WM831X_CS1_ENA, 0);
-+	if (ret < 0)
-+		return ret;
-+
-+	return ret;
-+
-+}
-+
-+static int wm831x_isink_is_enabled(struct regulator_dev *rdev)
-+{
-+	struct wm831x_isink *isink = rdev_get_drvdata(rdev);
-+	struct wm831x *wm831x = isink->wm831x;
-+	int ret;
-+
-+	ret = wm831x_reg_read(wm831x, isink->reg);
-+	if (ret < 0)
-+		return ret;
-+
-+	if ((ret & (WM831X_CS1_ENA | WM831X_CS1_DRIVE)) ==
-+	    (WM831X_CS1_ENA | WM831X_CS1_DRIVE))
-+		return 1;
-+	else
-+		return 0;
-+}
-+
-+static int wm831x_isink_set_current(struct regulator_dev *rdev,
-+				    int min_uA, int max_uA)
-+{
-+	struct wm831x_isink *isink = rdev_get_drvdata(rdev);
-+	struct wm831x *wm831x = isink->wm831x;
-+	int ret, i;
-+
-+	for (i = 0; i < ARRAY_SIZE(wm831x_isinkv_values); i++) {
-+		int val = wm831x_isinkv_values[i];
-+		if (min_uA >= val && val <= max_uA) {
-+			ret = wm831x_set_bits(wm831x, isink->reg,
-+					      WM831X_CS1_ISEL_MASK, i);
-+			return ret;
-+		}
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static int wm831x_isink_get_current(struct regulator_dev *rdev)
-+{
-+	struct wm831x_isink *isink = rdev_get_drvdata(rdev);
-+	struct wm831x *wm831x = isink->wm831x;
-+	int ret;
-+
-+	ret = wm831x_reg_read(wm831x, isink->reg);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret &= WM831X_CS1_ISEL_MASK;
-+	if (ret > WM831X_ISINK_MAX_ISEL)
-+		ret = WM831X_ISINK_MAX_ISEL;
-+
-+	return wm831x_isinkv_values[ret];
-+}
-+
-+static struct regulator_ops wm831x_isink_ops = {
-+	.is_enabled = wm831x_isink_is_enabled,
-+	.enable = wm831x_isink_enable,
-+	.disable = wm831x_isink_disable,
-+	.set_current_limit = wm831x_isink_set_current,
-+	.get_current_limit = wm831x_isink_get_current,
-+};
-+
-+static irqreturn_t wm831x_isink_irq(int irq, void *data)
-+{
-+	struct wm831x_isink *isink = data;
-+
-+	regulator_notifier_call_chain(isink->regulator,
-+				      REGULATOR_EVENT_OVER_CURRENT,
-+				      NULL);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+
-+static __devinit int wm831x_isink_probe(struct platform_device *pdev)
-+{
-+	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
-+	struct wm831x_pdata *pdata = wm831x->dev->platform_data;
-+	struct wm831x_isink *isink;
-+	int id = pdev->id % ARRAY_SIZE(pdata->isink);
-+	struct resource *res;
-+	int ret, irq;
-+
-+	dev_dbg(&pdev->dev, "Probing ISINK%d\n", id + 1);
-+
-+	if (pdata == NULL || pdata->isink[id] == NULL)
-+		return -ENODEV;
-+
-+	isink = kzalloc(sizeof(struct wm831x_isink), GFP_KERNEL);
-+	if (isink == NULL) {
-+		dev_err(&pdev->dev, "Unable to allocate private data\n");
-+		return -ENOMEM;
-+	}
-+
-+	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
-+	if (res == NULL) {
-+		dev_err(&pdev->dev, "No I/O resource\n");
-+		ret = -EINVAL;
-+		goto err;
-+	}
-+	isink->reg = res->start;
-+
-+	/* For current parts this is correct; probably need to revisit
-+	 * in future.
-+	 */
-+	snprintf(isink->name, sizeof(isink->name), "ISINK%d", id + 1);
-+	isink->desc.name = isink->name;
-+	isink->desc.id = id;
-+	isink->desc.ops = &wm831x_isink_ops;
-+	isink->desc.type = REGULATOR_CURRENT;
-+	isink->desc.owner = THIS_MODULE;
-+
-+	isink->regulator = regulator_register(&isink->desc, &pdev->dev,
-+					     pdata->isink[id], isink);
-+	if (IS_ERR(isink->regulator)) {
-+		ret = PTR_ERR(isink->regulator);
-+		dev_err(wm831x->dev, "Failed to register ISINK%d: %d\n",
-+			id + 1, ret);
-+		goto err;
-+	}
-+
-+	irq = platform_get_irq(pdev, 0);
-+	ret = wm831x_request_irq(wm831x, irq, wm831x_isink_irq,
-+				 IRQF_TRIGGER_RISING, isink->name,
-+				 isink);
-+	if (ret != 0) {
-+		dev_err(&pdev->dev, "Failed to request ISINK IRQ %d: %d\n",
-+			irq, ret);
-+		goto err_regulator;
-+	}
-+
-+	platform_set_drvdata(pdev, isink);
-+
-+	return 0;
-+
-+err_regulator:
-+	regulator_unregister(isink->regulator);
-+err:
-+	kfree(isink);
-+	return ret;
-+}
-+
-+static __devexit int wm831x_isink_remove(struct platform_device *pdev)
-+{
-+	struct wm831x_isink *isink = platform_get_drvdata(pdev);
-+	struct wm831x *wm831x = isink->wm831x;
-+
-+	wm831x_free_irq(wm831x, platform_get_irq(pdev, 0), isink);
-+
-+	regulator_unregister(isink->regulator);
-+	kfree(isink);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver wm831x_isink_driver = {
-+	.probe = wm831x_isink_probe,
-+	.remove = __devexit_p(wm831x_isink_remove),
-+	.driver		= {
-+		.name	= "wm831x-isink",
-+	},
-+};
-+
-+static int __init wm831x_isink_init(void)
-+{
-+	int ret;
-+	ret = platform_driver_register(&wm831x_isink_driver);
-+	if (ret != 0)
-+		pr_err("Failed to register WM831x ISINK driver: %d\n", ret);
-+
-+	return ret;
-+}
-+subsys_initcall(wm831x_isink_init);
-+
-+static void __exit wm831x_isink_exit(void)
-+{
-+	platform_driver_unregister(&wm831x_isink_driver);
-+}
-+module_exit(wm831x_isink_exit);
-+
-+/* Module information */
-+MODULE_AUTHOR("Mark Brown");
-+MODULE_DESCRIPTION("WM831x current sink driver");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:wm831x-isink");
+If I am not mistaken, the above function is an exact copy of
+show_voltage(), so you might as well use it?
+
+> +
+> +static ssize_t show_label(struct device *dev,
+> +			  struct device_attribute *attr, char *buf)
+> +{
+> +	int channel = to_sensor_dev_attr(attr)->index;
+> +
+> +	return sprintf(buf, "%s\n", input_names[channel]);
+> +}
+> +
+> +#define WM831X_VOLTAGE(id, name) \
+> +	static SENSOR_DEVICE_ATTR(in##id##_input, S_IRUGO, show_voltage, \
+> +				  NULL, name)
+> +
+> +#define WM831X_NAMED_VOLTAGE(id, name) \
+> +	WM831X_VOLTAGE(id, name); \
+> +	static SENSOR_DEVICE_ATTR(in##id##_label, S_IRUGO, show_label,	\
+> +				  NULL, name)
+> +
+> +static DEVICE_ATTR(name, S_IRUGO, show_name, NULL);
+> +
+> +WM831X_VOLTAGE(0, WM831X_AUX_AUX1);
+> +WM831X_VOLTAGE(1, WM831X_AUX_AUX2);
+> +WM831X_VOLTAGE(2, WM831X_AUX_AUX3);
+> +WM831X_VOLTAGE(3, WM831X_AUX_AUX4);
+> +
+> +WM831X_NAMED_VOLTAGE(4, WM831X_AUX_SYSVDD);
+> +WM831X_NAMED_VOLTAGE(5, WM831X_AUX_USB);
+> +WM831X_NAMED_VOLTAGE(6, WM831X_AUX_BATT);
+> +WM831X_NAMED_VOLTAGE(7, WM831X_AUX_WALL);
+> +WM831X_NAMED_VOLTAGE(8, WM831X_AUX_BKUP_BATT);
+> +
+> +static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_chip_temp, NULL,
+> +			  WM831X_AUX_CHIP_TEMP);
+> +static SENSOR_DEVICE_ATTR(temp1_label, S_IRUGO, show_label, NULL,
+> +			  WM831X_AUX_CHIP_TEMP);
+> +static SENSOR_DEVICE_ATTR(temp2_input, S_IRUGO, show_batt_temp, NULL,
+> +			  WM831X_AUX_BATT_TEMP);
+> +static SENSOR_DEVICE_ATTR(temp2_label, S_IRUGO, show_label, NULL,
+> +			  WM831X_AUX_BATT_TEMP);
+> +
+> +static struct attribute *wm831x_attributes[] = {
+> +	&dev_attr_name.attr,
+> +
+> +	&sensor_dev_attr_in0_input.dev_attr.attr,
+> +	&sensor_dev_attr_in1_input.dev_attr.attr,
+> +	&sensor_dev_attr_in2_input.dev_attr.attr,
+> +	&sensor_dev_attr_in3_input.dev_attr.attr,
+> +
+> +	&sensor_dev_attr_in4_input.dev_attr.attr,
+> +	&sensor_dev_attr_in4_label.dev_attr.attr,
+> +	&sensor_dev_attr_in5_input.dev_attr.attr,
+> +	&sensor_dev_attr_in5_label.dev_attr.attr,
+> +	&sensor_dev_attr_in6_input.dev_attr.attr,
+> +	&sensor_dev_attr_in6_label.dev_attr.attr,
+> +	&sensor_dev_attr_in7_input.dev_attr.attr,
+> +	&sensor_dev_attr_in7_label.dev_attr.attr,
+> +	&sensor_dev_attr_in8_input.dev_attr.attr,
+> +	&sensor_dev_attr_in8_label.dev_attr.attr,
+> +
+> +	&sensor_dev_attr_temp1_input.dev_attr.attr,
+> +	&sensor_dev_attr_temp1_label.dev_attr.attr,
+> +	&sensor_dev_attr_temp2_input.dev_attr.attr,
+> +	&sensor_dev_attr_temp2_label.dev_attr.attr,
+> +
+> +	NULL
+> +};
+> +
+> +static const struct attribute_group wm831x_attr_group = {
+> +	.attrs	= wm831x_attributes,
+> +};
+> +
+> +static int __devinit wm831x_hwmon_probe(struct platform_device *pdev)
+> +{
+> +	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
+> +	struct wm831x_hwmon *hwmon;
+> +	int ret;
+> +
+> +	hwmon = kzalloc(sizeof(struct wm831x_hwmon), GFP_KERNEL);
+> +	if (!hwmon)
+> +		return -ENOMEM;
+> +
+> +	hwmon->wm831x = wm831x;
+> +
+> +	ret = sysfs_create_group(&pdev->dev.kobj, &wm831x_attr_group);
+> +	if (ret)
+> +		goto err;
+> +
+> +	hwmon->classdev = hwmon_device_register(&pdev->dev);
+> +	if (IS_ERR(hwmon->classdev)) {
+> +		ret = PTR_ERR(hwmon->classdev);
+> +		goto err_sysfs;
+> +	}
+> +
+> +	platform_set_drvdata(pdev, hwmon);
+> +
+> +	return 0;
+> +
+> +err_sysfs:
+> +	sysfs_remove_group(&pdev->dev.kobj, &wm831x_attr_group);
+> +err:
+> +	kfree(hwmon);
+> +	return ret;
+> +}
+> +
+> +static int __devexit wm831x_hwmon_remove(struct platform_device *pdev)
+> +{
+> +	struct wm831x_hwmon *hwmon = platform_get_drvdata(pdev);
+> +
+> +	hwmon_device_unregister(hwmon->classdev);
+> +	sysfs_remove_group(&pdev->dev.kobj, &wm831x_attr_group);
+> +	kfree(hwmon);
+> +	platform_set_drvdata(pdev, NULL);
+
+Preferably the other way around (yes I am nitpicking ;))
+
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver wm831x_hwmon_driver = {
+> +	.probe = wm831x_hwmon_probe,
+> +	.remove = __devexit_p(wm831x_hwmon_remove),
+> +	.driver = {
+> +		.name = "wm831x-hwmon",
+> +		.owner = THIS_MODULE,
+> +	},
+> +};
+> +
+> +static int __init wm831x_hwmon_init(void)
+> +{
+> +	return platform_driver_register(&wm831x_hwmon_driver);
+> +}
+> +module_init(wm831x_hwmon_init);
+> +
+> +static void __exit wm831x_hwmon_exit(void)
+> +{
+> +	platform_driver_unregister(&wm831x_hwmon_driver);
+> +}
+> +module_exit(wm831x_hwmon_exit);
+> +
+> +MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com>");
+> +MODULE_DESCRIPTION("WM831x Hardware Monitoring");
+> +MODULE_LICENSE("GPL");
+> +MODULE_ALIAS("platform:wm831x-hwmon");
+
+All the rest looks good to me now, so:
+
+Acked-by: Jean Delvare <khali@linux-fr.org>
+
+And as I said before for the wm8350-hwmon driver: I can pick this patch
+and push it to Linux in 2.6.32 if you want, but if you want it to take
+a different route this is equally fine with me. Just tell me if you
+want me to pick it.
+
 -- 
-1.6.3.3
-
+Jean Delvare
