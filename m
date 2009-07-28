@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755197AbZG1Xum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755077AbZG1Xui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755197AbZG1Xum (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:50:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754945AbZG1Xui
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1755077AbZG1Xui (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 28 Jul 2009 19:50:38 -0400
-Received: from kroah.org ([198.145.64.141]:35970 "EHLO coco.kroah.org"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbZG1Xu3
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 28 Jul 2009 19:50:29 -0400
+Received: from kroah.org ([198.145.64.141]:35891 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754976AbZG1Xuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:50:32 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:42:01 2009
-Message-Id: <20090728234201.430401674@mini.kroah.org>
+	id S1754631AbZG1XuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:50:19 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:59 2009
+Message-Id: <20090728234159.392170276@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:41:33 -0700
+Date: Tue, 28 Jul 2009 16:41:20 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       Patrick McHardy <kaber@trash.net>,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [patch 64/71] nf_conntrack: nf_conntrack_alloc() fixes
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, riel@redhat.com,
+       cl@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+       fengguang.wu@intel.com, Mel Gorman <mel@csn.ul.ie>
+Subject: [patch 51/71] vmscan: do not unconditionally treat zones that fail zone_reclaim() as full
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=nf_conntrack-nf_conntrack_alloc-fixes.patch
+Content-Disposition: inline; filename=vmscan-do-not-unconditionally-treat-zones-that-fail-zone_reclaim-as-full.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,106 +31,149 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Eric Dumazet <eric.dumazet@gmail.com>
+From: Mel Gorman <mel@csn.ul.ie>
 
-commit 941297f443f871b8c3372feccf27a8733f6ce9e9 upstream.
+commit fa5e084e43eb14c14942027e1e2e894aeed96097 upstream.
 
-When a slab cache uses SLAB_DESTROY_BY_RCU, we must be careful when allocating
-objects, since slab allocator could give a freed object still used by lockless
-readers.
+vmscan: do not unconditionally treat zones that fail zone_reclaim() as full
 
-In particular, nf_conntrack RCU lookups rely on ct->tuplehash[xxx].hnnode.next
-being always valid (ie containing a valid 'nulls' value, or a valid pointer to next
-object in hash chain.)
+On NUMA machines, the administrator can configure zone_reclaim_mode that
+is a more targetted form of direct reclaim.  On machines with large NUMA
+distances for example, a zone_reclaim_mode defaults to 1 meaning that
+clean unmapped pages will be reclaimed if the zone watermarks are not
+being met.  The problem is that zone_reclaim() failing at all means the
+zone gets marked full.
 
-kmem_cache_zalloc() setups object with NULL values, but a NULL value is not valid
-for ct->tuplehash[xxx].hnnode.next.
+This can cause situations where a zone is usable, but is being skipped
+because it has been considered full.  Take a situation where a large tmpfs
+mount is occuping a large percentage of memory overall.  The pages do not
+get cleaned or reclaimed by zone_reclaim(), but the zone gets marked full
+and the zonelist cache considers them not worth trying in the future.
 
-Fix is to call kmem_cache_alloc() and do the zeroing ourself.
+This patch makes zone_reclaim() return more fine-grained information about
+what occured when zone_reclaim() failued.  The zone only gets marked full
+if it really is unreclaimable.  If it's a case that the scan did not occur
+or if enough pages were not reclaimed with the limited reclaim_mode, then
+the zone is simply skipped.
 
-As spotted by Patrick, we also need to make sure lookup keys are committed to
-memory before setting refcount to 1, or a lockless reader could get a reference
-on the old version of the object. Its key re-check could then pass the barrier.
+There is a side-effect to this patch.  Currently, if zone_reclaim()
+successfully reclaimed SWAP_CLUSTER_MAX, an allocation attempt would go
+ahead.  With this patch applied, zone watermarks are rechecked after
+zone_reclaim() does some work.
 
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+This bug was introduced by commit 9276b1bc96a132f4068fdee00983c532f43d3a26
+("memory page_alloc zonelist caching speedup") way back in 2.6.19 when the
+zonelist_cache was introduced.  It was not intended that zone_reclaim()
+aggressively consider the zone to be full when it failed as full direct
+reclaim can still be an option.  Due to the age of the bug, it should be
+considered a -stable candidate.
+
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+Reviewed-by: Rik van Riel <riel@redhat.com>
+Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- Documentation/RCU/rculist_nulls.txt |    7 ++++++-
- net/netfilter/nf_conntrack_core.c   |   21 ++++++++++++++++++---
- 2 files changed, 24 insertions(+), 4 deletions(-)
+ mm/internal.h   |    4 ++++
+ mm/page_alloc.c |   26 ++++++++++++++++++++++----
+ mm/vmscan.c     |   11 ++++++-----
+ 3 files changed, 32 insertions(+), 9 deletions(-)
 
---- a/Documentation/RCU/rculist_nulls.txt
-+++ b/Documentation/RCU/rculist_nulls.txt
-@@ -83,11 +83,12 @@ not detect it missed following items in 
- obj = kmem_cache_alloc(...);
- lock_chain(); // typically a spin_lock()
- obj->key = key;
--atomic_inc(&obj->refcnt);
- /*
-  * we need to make sure obj->key is updated before obj->next
-+ * or obj->refcnt
-  */
- smp_wmb();
-+atomic_set(&obj->refcnt, 1);
- hlist_add_head_rcu(&obj->obj_node, list);
- unlock_chain(); // typically a spin_unlock()
+--- a/mm/internal.h
++++ b/mm/internal.h
+@@ -284,4 +284,8 @@ int __get_user_pages(struct task_struct 
+ 		     unsigned long start, int len, int flags,
+ 		     struct page **pages, struct vm_area_struct **vmas);
  
-@@ -159,6 +160,10 @@ out:
- obj = kmem_cache_alloc(cachep);
- lock_chain(); // typically a spin_lock()
- obj->key = key;
-+/*
-+ * changes to obj->key must be visible before refcnt one
-+ */
-+smp_wmb();
- atomic_set(&obj->refcnt, 1);
- /*
-  * insert obj in RCU way (readers might be traversing chain)
---- a/net/netfilter/nf_conntrack_core.c
-+++ b/net/netfilter/nf_conntrack_core.c
-@@ -525,22 +525,37 @@ struct nf_conn *nf_conntrack_alloc(struc
- 		}
- 	}
- 
--	ct = kmem_cache_zalloc(nf_conntrack_cachep, gfp);
-+	/*
-+	 * Do not use kmem_cache_zalloc(), as this cache uses
-+	 * SLAB_DESTROY_BY_RCU.
-+	 */
-+	ct = kmem_cache_alloc(nf_conntrack_cachep, gfp);
- 	if (ct == NULL) {
- 		pr_debug("nf_conntrack_alloc: Can't alloc conntrack.\n");
- 		atomic_dec(&net->ct.count);
- 		return ERR_PTR(-ENOMEM);
- 	}
--
--	atomic_set(&ct->ct_general.use, 1);
-+	/*
-+	 * Let ct->tuplehash[IP_CT_DIR_ORIGINAL].hnnode.next
-+	 * and ct->tuplehash[IP_CT_DIR_REPLY].hnnode.next unchanged.
-+	 */
-+	memset(&ct->tuplehash[IP_CT_DIR_MAX], 0,
-+	       sizeof(*ct) - offsetof(struct nf_conn, tuplehash[IP_CT_DIR_MAX]));
- 	ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple = *orig;
-+	ct->tuplehash[IP_CT_DIR_ORIGINAL].hnnode.pprev = NULL;
- 	ct->tuplehash[IP_CT_DIR_REPLY].tuple = *repl;
-+	ct->tuplehash[IP_CT_DIR_REPLY].hnnode.pprev = NULL;
- 	/* Don't set timer yet: wait for confirmation */
- 	setup_timer(&ct->timeout, death_by_timeout, (unsigned long)ct);
- #ifdef CONFIG_NET_NS
- 	ct->ct_net = net;
++#define ZONE_RECLAIM_NOSCAN	-2
++#define ZONE_RECLAIM_FULL	-1
++#define ZONE_RECLAIM_SOME	0
++#define ZONE_RECLAIM_SUCCESS	1
  #endif
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1420,20 +1420,38 @@ zonelist_scan:
  
-+	/*
-+	 * changes to lookup keys must be done before setting refcnt to 1
-+	 */
-+	smp_wmb();
-+	atomic_set(&ct->ct_general.use, 1);
- 	return ct;
- }
- EXPORT_SYMBOL_GPL(nf_conntrack_alloc);
+ 		if (!(alloc_flags & ALLOC_NO_WATERMARKS)) {
+ 			unsigned long mark;
++			int ret;
+ 			if (alloc_flags & ALLOC_WMARK_MIN)
+ 				mark = zone->pages_min;
+ 			else if (alloc_flags & ALLOC_WMARK_LOW)
+ 				mark = zone->pages_low;
+ 			else
+ 				mark = zone->pages_high;
+-			if (!zone_watermark_ok(zone, order, mark,
+-				    classzone_idx, alloc_flags)) {
+-				if (!zone_reclaim_mode ||
+-				    !zone_reclaim(zone, gfp_mask, order))
++
++			if (zone_watermark_ok(zone, order, mark,
++				    classzone_idx, alloc_flags))
++				goto try_this_zone;
++
++			if (zone_reclaim_mode == 0)
++				goto this_zone_full;
++
++			ret = zone_reclaim(zone, gfp_mask, order);
++			switch (ret) {
++			case ZONE_RECLAIM_NOSCAN:
++				/* did not scan */
++				goto try_next_zone;
++			case ZONE_RECLAIM_FULL:
++				/* scanned but unreclaimable */
++				goto this_zone_full;
++			default:
++				/* did we reclaim enough */
++				if (!zone_watermark_ok(zone, order, mark,
++						classzone_idx, alloc_flags))
+ 					goto this_zone_full;
+ 			}
+ 		}
+ 
++try_this_zone:
+ 		page = buffered_rmqueue(preferred_zone, zone, order, gfp_mask);
+ 		if (page)
+ 			break;
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -2426,16 +2426,16 @@ int zone_reclaim(struct zone *zone, gfp_
+ 	 */
+ 	if (zone_pagecache_reclaimable(zone) <= zone->min_unmapped_pages &&
+ 	    zone_page_state(zone, NR_SLAB_RECLAIMABLE) <= zone->min_slab_pages)
+-		return 0;
++		return ZONE_RECLAIM_FULL;
+ 
+ 	if (zone_is_all_unreclaimable(zone))
+-		return 0;
++		return ZONE_RECLAIM_FULL;
+ 
+ 	/*
+ 	 * Do not scan if the allocation should not be delayed.
+ 	 */
+ 	if (!(gfp_mask & __GFP_WAIT) || (current->flags & PF_MEMALLOC))
+-			return 0;
++		return ZONE_RECLAIM_NOSCAN;
+ 
+ 	/*
+ 	 * Only run zone reclaim on the local zone or on zones that do not
+@@ -2445,10 +2445,11 @@ int zone_reclaim(struct zone *zone, gfp_
+ 	 */
+ 	node_id = zone_to_nid(zone);
+ 	if (node_state(node_id, N_CPU) && node_id != numa_node_id())
+-		return 0;
++		return ZONE_RECLAIM_NOSCAN;
+ 
+ 	if (zone_test_and_set_flag(zone, ZONE_RECLAIM_LOCKED))
+-		return 0;
++		return ZONE_RECLAIM_NOSCAN;
++
+ 	ret = __zone_reclaim(zone, gfp_mask, order);
+ 	zone_clear_flag(zone, ZONE_RECLAIM_LOCKED);
+ 
 
 
