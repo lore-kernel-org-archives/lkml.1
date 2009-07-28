@@ -1,68 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbZG1S4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751034AbZG1S5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755553AbZG1S4r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 14:56:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbZG1S4r
+	id S1751034AbZG1S5u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 14:57:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750744AbZG1S5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 14:56:47 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55028 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753307AbZG1S4q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 14:56:46 -0400
-Date: Tue, 28 Jul 2009 19:56:51 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kdesu broken
-Message-ID: <20090728195651.3a402a31@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.01.0907281141070.3186@localhost.localdomain>
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
-	<87bpn7mzli.fsf@devron.myhome.or.jp>
-	<20090727115723.1e8de60e@lxorguk.ukuu.org.uk>
-	<873a8iqqgv.fsf@devron.myhome.or.jp>
-	<20090727142303.41096bf5@lxorguk.ukuu.org.uk>
-	<877hxujkuv.fsf@devron.myhome.or.jp>
-	<20090727145805.690afe5d@lxorguk.ukuu.org.uk>
-	<87fxci6ub9.fsf@devron.myhome.or.jp>
-	<20090727161424.GA4233@skywalker>
-	<20090727174252.2d987830@lxorguk.ukuu.org.uk>
-	<20090727171213.GB4233@skywalker>
-	<87skgikjr8.fsf@devron.myhome.or.jp>
-	<20090727222010.1a5efb7b@lxorguk.ukuu.org.uk>
-	<87r5w19xsb.fsf@devron.myhome.or.jp>
-	<20090728112203.7b70adba@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907280848090.3186@localhost.localdomain>
-	<20090728174213.5e927428@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907280944150.3186@localhost.localdomain>
-	<20090728180649.596c5412@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907281141070.3186@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 28 Jul 2009 14:57:49 -0400
+Received: from kroah.org ([198.145.64.141]:60837 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750743AbZG1S5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 14:57:48 -0400
+Date: Tue, 28 Jul 2009 11:31:47 -0700
+From: Greg KH <greg@kroah.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Kasparek Tomas <kasparek@fit.vutbr.cz>, linux-nfs@vger.kernel.org,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [stable] NFS client packet storm on 2.6.27.x
+Message-ID: <20090728183147.GI32209@kroah.com>
+References: <20090120150301.GG47559@fit.vutbr.cz>
+ <1232465547.7055.3.camel@heimdal.trondhjem.org>
+ <20090303120848.GV89843@fit.vutbr.cz>
+ <1236089767.9631.4.camel@heimdal.trondhjem.org>
+ <20090418051739.GL64731@fit.vutbr.cz>
+ <20090422172707.GC57877@fit.vutbr.cz>
+ <20090625055532.GC50277@fit.vutbr.cz>
+ <20090713111214.GC30754@fit.vutbr.cz>
+ <20090713172001.GA22775@kroah.com>
+ <1247506817.14524.25.camel@heimdal.trondhjem.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247506817.14524.25.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> My point is that a program _should_ be able to depend on simple causality 
-> when it comes to ordering rules. If the child did a write() before 
-> exiting, then we should see the data before SIGCHLD.
+On Mon, Jul 13, 2009 at 01:40:17PM -0400, Trond Myklebust wrote:
+> On Mon, 2009-07-13 at 10:20 -0700, Greg KH wrote:
+> > On Mon, Jul 13, 2009 at 01:12:15PM +0200, Kasparek Tomas wrote:
+> > > On Thu, Jun 25, 2009 at 07:55:32AM +0200, Kasparek Tomas wrote:
+> > > > http://www.linux-nfs.org/Linux-2.6.x/2.6.27/
+> > > > 
+> > > > .../fixups_4/linux-2.6.27-001-respond_promptly_to_socket_errors.dif
+> > > > .../fixups_4/linux-2.6.27-002-respond_promptly_to_socket_errors_2.dif
+> > > > 
+> > > > ...
+> > > > Together with tcp_linger patch it seems to improve the situation a lot to
+> > > > state when it is possible for me to use 2.6.27.x kernels.
+> > > > 
+> > > > Trond, will it be possible to get tcp_linger and the upper twho patches to
+> > > > 2.6.27.x stable queue so others get these fixes?
+> > > 
+> > > I got no response so far, is there someone who could advise me what to do
+> > > to get above patches to 2.6.27.x stable? Or is there some reason, why this
+> > > is not possible at all?
+> > 
+> > Can you backport them and send them to stable@kernel.org with the git
+> > commit ids of the orignal patches?
 > 
-> It's really that simple.
+> When testing at a customer site, we recently found that we actually need
+> 4 patches in order to completely fix the storming problem in 2.6.27.y,
+> and ensure a timely socket reconnect.
+> 
+> commit 15f081ca8ddfe150fb639c591b18944a539da0fc (SUNRPC: Avoid an
+> unnecessary task reschedule on ENOTCONN)
+> 
+> commit 670f94573104b4a25525d3fcdcd6496c678df172 (SUNRPC: Ensure we set
+> XPRT_CLOSING only after we've sent a tcp FIN...)
+> 
+> commit 40d2549db5f515e415894def98b49db7d4c56714 (SUNRPC: Don't
+> disconnect if a connection is still in progress.)
 
-In which case you need the write to be synchronous to the ldisc
-processing. Which is what tty->low_latency = 1 did. That provides your
-required causality.
+I've now applied all of these to the .27 stable tree.
 
-So what exactly is the problem. Setting ->low_latency has a small
-performance impact which was why I was trying the other stuff, but that
-is all.
+> and finally
+> 
+> commit f75e6745aa3084124ae1434fd7629853bdaf6798 (SUNRPC: Fix the problem
+> of EADDRNOTAVAIL syslog floods on reconnect)
+> 
+> The first three need to be applied to kernels 2.6.27.y to 2.6.29.y,
+> while the last needs to be applied to 2.6.27.y to 2.6.30.y.
 
-As I said tty->low_latency = 1 gives you the previous semantics.
+The last one is in .30, so it doesn't need to go there again :)
 
-Alan
+But this last one doesn't apply at all to the .27 stable tree.  Care to
+refresh it and send it to stable@kernel.org if you think it is also
+needed?
+
+thanks,
+
+greg k-h
