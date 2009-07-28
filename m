@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbZG1Xw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755197AbZG1Xum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbZG1Xw0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754988AbZG1XwY
+	id S1755197AbZG1Xum (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:50:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754945AbZG1Xui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:52:24 -0400
-Received: from kroah.org ([198.145.64.141]:35987 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:50:38 -0400
+Received: from kroah.org ([198.145.64.141]:35970 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755037AbZG1Xue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:50:34 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:42:02 2009
-Message-Id: <20090728234201.936390565@mini.kroah.org>
+	id S1754976AbZG1Xuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:50:32 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:42:01 2009
+Message-Id: <20090728234201.430401674@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:41:36 -0700
+Date: Tue, 28 Jul 2009 16:41:33 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Giuseppe Mazzotta <g.mazzotta@iragan.com>,
-       Dmitry Torokhov <dtor@mail.ru>
-Subject: [patch 67/71] Input: wistron_btns - recognize Maxdata Pro 7000 notebooks
+       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       Patrick McHardy <kaber@trash.net>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [patch 64/71] nf_conntrack: nf_conntrack_alloc() fixes
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=input-wistron_btns-recognize-maxdata-pro-7000-notebooks.patch
+Content-Disposition: inline; filename=nf_conntrack-nf_conntrack_alloc-fixes.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,45 +33,106 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Giuseppe Mazzotta <g.mazzotta@iragan.com>
+From: Eric Dumazet <eric.dumazet@gmail.com>
 
-commit e705cee427e319665969ef7ac664f3612dec8899 upstream.
+commit 941297f443f871b8c3372feccf27a8733f6ce9e9 upstream.
 
-This patch adds DMI information to automatically load the correct
-layout for the Maxdata Pro 7000X/DX notebook models. Such notebooks
-are clones of Fujitsu Amilo V2000, the hook for the v2000 is being
-used and I have tested that perfectly works.
+When a slab cache uses SLAB_DESTROY_BY_RCU, we must be careful when allocating
+objects, since slab allocator could give a freed object still used by lockless
+readers.
 
-The immediate result of integrating this patch is that the five
-special buttons will work on these specific notebook models and that
-the RF killswitch will not be activated after suspend. This patch
-definitively obsoletes the fsam7400 module which I was still needing
-to enable wifi and to fix the RF killswitch suspend problem; in the
-current 2.6.30 kernel it is necessary to load the wistron_btns module
-with options 'force=1 keymap=1557/MS2141', which was not anyway a
-complete workaround.
+In particular, nf_conntrack RCU lookups rely on ct->tuplehash[xxx].hnnode.next
+being always valid (ie containing a valid 'nulls' value, or a valid pointer to next
+object in hash chain.)
 
-Signed-off-by: Giuseppe Mazzotta <g.mazzotta@iragan.com>
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+kmem_cache_zalloc() setups object with NULL values, but a NULL value is not valid
+for ct->tuplehash[xxx].hnnode.next.
+
+Fix is to call kmem_cache_alloc() and do the zeroing ourself.
+
+As spotted by Patrick, we also need to make sure lookup keys are committed to
+memory before setting refcount to 1, or a lockless reader could get a reference
+on the old version of the object. Its key re-check could then pass the barrier.
+
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
---- a/drivers/input/misc/wistron_btns.c
-+++ b/drivers/input/misc/wistron_btns.c
-@@ -646,6 +646,15 @@ static struct dmi_system_id dmi_ids[] __initdata = {
- 	},
- 	{
- 		.callback = dmi_matched,
-+		.ident = "Maxdata Pro 7000 DX",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "MAXDATA"),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "Pro 7000"),
-+		},
-+		.driver_data = keymap_fs_amilo_pro_v2000
-+	},
-+	{
-+		.callback = dmi_matched,
- 		.ident = "Fujitsu N3510",
- 		.matches = {
- 			DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU"),
+---
+ Documentation/RCU/rculist_nulls.txt |    7 ++++++-
+ net/netfilter/nf_conntrack_core.c   |   21 ++++++++++++++++++---
+ 2 files changed, 24 insertions(+), 4 deletions(-)
+
+--- a/Documentation/RCU/rculist_nulls.txt
++++ b/Documentation/RCU/rculist_nulls.txt
+@@ -83,11 +83,12 @@ not detect it missed following items in 
+ obj = kmem_cache_alloc(...);
+ lock_chain(); // typically a spin_lock()
+ obj->key = key;
+-atomic_inc(&obj->refcnt);
+ /*
+  * we need to make sure obj->key is updated before obj->next
++ * or obj->refcnt
+  */
+ smp_wmb();
++atomic_set(&obj->refcnt, 1);
+ hlist_add_head_rcu(&obj->obj_node, list);
+ unlock_chain(); // typically a spin_unlock()
+ 
+@@ -159,6 +160,10 @@ out:
+ obj = kmem_cache_alloc(cachep);
+ lock_chain(); // typically a spin_lock()
+ obj->key = key;
++/*
++ * changes to obj->key must be visible before refcnt one
++ */
++smp_wmb();
+ atomic_set(&obj->refcnt, 1);
+ /*
+  * insert obj in RCU way (readers might be traversing chain)
+--- a/net/netfilter/nf_conntrack_core.c
++++ b/net/netfilter/nf_conntrack_core.c
+@@ -525,22 +525,37 @@ struct nf_conn *nf_conntrack_alloc(struc
+ 		}
+ 	}
+ 
+-	ct = kmem_cache_zalloc(nf_conntrack_cachep, gfp);
++	/*
++	 * Do not use kmem_cache_zalloc(), as this cache uses
++	 * SLAB_DESTROY_BY_RCU.
++	 */
++	ct = kmem_cache_alloc(nf_conntrack_cachep, gfp);
+ 	if (ct == NULL) {
+ 		pr_debug("nf_conntrack_alloc: Can't alloc conntrack.\n");
+ 		atomic_dec(&net->ct.count);
+ 		return ERR_PTR(-ENOMEM);
+ 	}
+-
+-	atomic_set(&ct->ct_general.use, 1);
++	/*
++	 * Let ct->tuplehash[IP_CT_DIR_ORIGINAL].hnnode.next
++	 * and ct->tuplehash[IP_CT_DIR_REPLY].hnnode.next unchanged.
++	 */
++	memset(&ct->tuplehash[IP_CT_DIR_MAX], 0,
++	       sizeof(*ct) - offsetof(struct nf_conn, tuplehash[IP_CT_DIR_MAX]));
+ 	ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple = *orig;
++	ct->tuplehash[IP_CT_DIR_ORIGINAL].hnnode.pprev = NULL;
+ 	ct->tuplehash[IP_CT_DIR_REPLY].tuple = *repl;
++	ct->tuplehash[IP_CT_DIR_REPLY].hnnode.pprev = NULL;
+ 	/* Don't set timer yet: wait for confirmation */
+ 	setup_timer(&ct->timeout, death_by_timeout, (unsigned long)ct);
+ #ifdef CONFIG_NET_NS
+ 	ct->ct_net = net;
+ #endif
+ 
++	/*
++	 * changes to lookup keys must be done before setting refcnt to 1
++	 */
++	smp_wmb();
++	atomic_set(&ct->ct_general.use, 1);
+ 	return ct;
+ }
+ EXPORT_SYMBOL_GPL(nf_conntrack_alloc);
 
 
