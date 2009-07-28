@@ -1,85 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752628AbZG1A1b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbZG1AaO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752628AbZG1A1b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 27 Jul 2009 20:27:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbZG1A1b
+	id S1752723AbZG1AaO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 27 Jul 2009 20:30:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbZG1AaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 27 Jul 2009 20:27:31 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47263 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751597AbZG1A1a (ORCPT
+	Mon, 27 Jul 2009 20:30:13 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:29872 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752555AbZG1AaL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 27 Jul 2009 20:27:30 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 28 Jul 2009 09:25:29 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 27 Jul 2009 20:30:11 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=NP8CKQe41u/fyeXmMmydS/V+wNBzqCzAkvxC27QYzZHdvTLybq069FyjNyUTiZY7K
+	VHLU0Y3p7vvukGjkV9rLQ==
+MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.2.00.0907271658550.27881@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0907261446050.12973@chino.kir.corp.google.com>
+	 <6599ad830907271648v41b006c0j727fc09665f4f47e@mail.gmail.com>
+	 <alpine.DEB.2.00.0907271658550.27881@chino.kir.corp.google.com>
+Date: Mon, 27 Jul 2009 17:30:03 -0700
+Message-ID: <6599ad830907271730y2f783042q87e1bed5d7130550@mail.gmail.com>
+Subject: Re: [patch -mmotm] mm: introduce oom_adj_child
+From: Paul Menage <menage@google.com>
 To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, miaox@cn.fujitsu.com,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Paul Menage <menage@google.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       y-goto@jp.fujitsu.com, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] set_mempolicy(MPOL_INTERLEAV) cause kernel panic
-Message-Id: <20090728092529.bb0d7e9c.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.0907271710590.27881@chino.kir.corp.google.com>
-References: <20090715182320.39B5.A69D9226@jp.fujitsu.com>
-	<1247679064.4089.26.camel@useless.americas.hpqcorp.net>
-	<alpine.DEB.2.00.0907161257190.31844@chino.kir.corp.google.com>
-	<alpine.DEB.2.00.0907241551070.8573@chino.kir.corp.google.com>
-	<20090724160936.a3b8ad29.akpm@linux-foundation.org>
-	<337c5d83954b38b14a17f0adf4d357d8.squirrel@webmail-b.css.fujitsu.com>
-	<5bb65c0e4c6828b1331d33745f34d9ee.squirrel@webmail-b.css.fujitsu.com>
-	<9443f91bd4648e6214b32acff4512b97.squirrel@webmail-b.css.fujitsu.com>
-	<alpine.DEB.2.00.0907271047590.8408@chino.kir.corp.google.com>
-	<20090728085810.f7ae678a.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0907271710590.27881@chino.kir.corp.google.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Jul 2009 17:14:32 -0700 (PDT)
-David Rientjes <rientjes@google.com> wrote:
+On Mon, Jul 27, 2009 at 5:10 PM, David Rientjes<rientjes@google.com> wrote:
+> On Mon, 27 Jul 2009, Paul Menage wrote:
+>
+>> On Sun, Jul 26, 2009 at 2:50 PM, David Rientjes<rientjes@google.com> wrote:
+>> > +If oom_adj_child is set to equal oom_adj, then it will mirror oom_adj whenever
+>> > +it changes.  This avoids having to set both values when simply tuning oom_adj
+>> > +and that value should be inherited by all children.
+>>
+>> Maybe have a distinct value for oom_adj_child (the default) that means
+>> "default to mm->oom_adj" ?
+>>
+>
+> That's implicitly what mm->oom_adj == mm->oom_adj_child means.  If they
+> are equal at the time oom_adj is changed, oom_adj_child also changes, but
+> if oom_adj_child differs then it remains static.
 
-> On Tue, 28 Jul 2009, KAMEZAWA Hiroyuki wrote:
-> 
-> > > The nodemask for each task is updated to reflect the removal of a node and 
-> > > it calls mpol_rebind_mm() with the new nodemask.
-> > > 
-> > yes, but _not_ updated at online.
-> > 
-> 
-> Well, I disagreed that we needed to alter any pre-existing mempolicies for 
-> MEM_GOING_ONLINE or MEM_ONLINE since it may diverge from the original 
-> intent of the policy.  MPOL_PREFERRED certain shouldn't change, 
-> MPOL_INTERLEAVE would be unbalanced, and MPOL_BIND could diverge from 
-> memory isolation or affinity requirements.
-> 
-> I'd be interested to hear any real world use cases for MEM_ONLINE updating 
-> of mempolicies.
-> 
-Sorry, I was a bit condused. I thought I said about task->mems_allowed.
-Not each policy.
+So a process that sets its oom_adj value from A to B and back A again
+might unintentionally synchronize oom_adj and oom_adj_child for the
+future, if oom_adj_child was originally set to B?
 
-Because we dont' update, task->mems_allowed need to be initilaized as
-N_POSSIBLE_NODES. At usual thinking,  it should be N_HIGH_MEMORY or
-N_ONLINE_NODES, as my patch does.
+Besides, if oom_adj_child is per-task as suggested below, changing
+oom_adj_child when oom_adj changes involves scanning the entire task
+list to find mm users.
 
-> > What I felt at reading cpuset/mempolicy again is that it's too complex ;)
-> > The 1st question is why mems_allowed which can be 1024bytes when max_node=4096
-> > is copied per tasks....
-> 
-> The page allocator needs lockless access to mems_allowed.
-> 
-Hmm, ok, I'll take care of that. 
+>
+>> Shouldn't oom_adj_child be per-task? Otherwise you're theoretically
+>> allowing races between different threads that try to fork children
+>> with different oom_adj values at the same time. Not a particularly
+>> likely problem, but it seems bad to bake the change of races into the
+>> API.
+>>
+>
+> Good point, the newly initialized mm can get its oom_adj value from
+> current rather than current->mm.
+>
+>> Also, I'm not sure that the requirement that oom_adj_child be >=
+>> oom_adj is a good restriction. Sure, if a task gives its child a lower
+>> oom_adj than itself it's potentially playing with fire, but it may
+>> well be that the new child is expected todaemonize itself in the very
+>> near future and hence no longer be the child of the current process. I
+>> don't think that restricting the values that the sysadmin or root
+>> processes can apply on the grounds that they might not do what they
+>> want is the right approach.
+>>
+>
+> Ok, we can allow oom_adj_child to be less than oom_adj for
+> CAP_SYS_RESOURCE.
 
-Thanks,
--Kame
+Sounds fine to me, since you already need CAP_SYS_RESOURCE to set
+oom_adj anyway. But actually, shouldn't you just be requiring
+CAP_SYS_RESOURCE to set oom_adj_child at all?
 
+Otherwise an unprivileged process that starts with oom_adj=0 could set
+its oom_adj_child value to something slightly less immune than its
+oom_adj, say 1; then even if the sysadmin sets if oom_adj value to
+very non-immune, it would still be able to create children with
+oom_adj 1.
+
+Paul
