@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755041AbZG1Xue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbZG1XxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755041AbZG1Xue (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:50:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbZG1Xub
+	id S1756075AbZG1XxM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:53:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754941AbZG1Xu1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:50:31 -0400
-Received: from kroah.org ([198.145.64.141]:35939 "EHLO coco.kroah.org"
+	Tue, 28 Jul 2009 19:50:27 -0400
+Received: from kroah.org ([198.145.64.141]:35902 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754933AbZG1Xu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:50:26 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:42:00 2009
-Message-Id: <20090728234200.417694192@mini.kroah.org>
+	id S1754804AbZG1XuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:50:20 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:59 2009
+Message-Id: <20090728234159.545268094@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:41:27 -0700
+Date: Tue, 28 Jul 2009 16:41:21 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Patrick McHardy <kaber@trash.net>
-Subject: [patch 58/71] netfilter: nf_conntrack: fix confirmation race condition
+       Ingo Molnar <mingo@elte.hu>, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Chris Wright <chrisw@sous-sol.org>, Nick Piggin <npiggin@suse.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [patch 52/71] x86: dont use access_ok() as a range check in get_user_pages_fast()
 References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=netfilter-nf_conntrack-fix-confirmation-race-condition.patch
+Content-Disposition: inline; filename=x86-don-t-use-access_ok-as-a-range-check-in-get_user_pages_fast.patch
 In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,51 +33,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Patrick McHardy <kaber@trash.net>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-commit 5c8ec910e789a92229978d8fd1fce7b62e8ac711 upstream.
+[ Upstream commit 7f8189068726492950bf1a2dcfd9b51314560abf - modified
+  for stable to not use the sloppy __VIRTUAL_MASK_SHIFT ]
 
-New connection tracking entries are inserted into the hash before they
-are fully set up, namely the CONFIRMED bit is not set and the timer not
-started yet. This can theoretically lead to a race with timer, which
-would set the timeout value to a relative value, most likely already in
-the past.
+It's really not right to use 'access_ok()', since that is meant for the
+normal "get_user()" and "copy_from/to_user()" accesses, which are done
+through the TLB, rather than through the page tables.
 
-Perform hash insertion as the final step to fix this.
+Why? access_ok() does both too few, and too many checks.  Too many,
+because it is meant for regular kernel accesses that will not honor the
+'user' bit in the page tables, and because it honors the USER_DS vs
+KERNEL_DS distinction that we shouldn't care about in GUP.  And too few,
+because it doesn't do the 'canonical' check on the address on x86-64,
+since the TLB will do that for us.
 
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+So instead of using a function that isn't meant for this, and does
+something else and much more complicated, just do the real rules: we
+don't want the range to overflow, and on x86-64, we want it to be a
+canonical low address (on 32-bit, all addresses are canonical).
+
+Acked-by: Ingo Molnar <mingo@elte.hu>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/netfilter/nf_conntrack_core.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ arch/x86/mm/gup.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
---- a/net/netfilter/nf_conntrack_core.c
-+++ b/net/netfilter/nf_conntrack_core.c
-@@ -385,7 +385,6 @@ __nf_conntrack_confirm(struct sk_buff *s
- 	/* Remove from unconfirmed list */
- 	hlist_nulls_del_rcu(&ct->tuplehash[IP_CT_DIR_ORIGINAL].hnnode);
+--- a/arch/x86/mm/gup.c
++++ b/arch/x86/mm/gup.c
+@@ -247,10 +247,15 @@ int get_user_pages_fast(unsigned long st
+ 	start &= PAGE_MASK;
+ 	addr = start;
+ 	len = (unsigned long) nr_pages << PAGE_SHIFT;
++
+ 	end = start + len;
+-	if (unlikely(!access_ok(write ? VERIFY_WRITE : VERIFY_READ,
+-					(void __user *)start, len)))
++	if (end < start)
++		goto slow_irqon;
++
++#ifdef CONFIG_X86_64
++	if (end >> 47)
+ 		goto slow_irqon;
++#endif
  
--	__nf_conntrack_hash_insert(ct, hash, repl_hash);
- 	/* Timer relative to confirmation time, not original
- 	   setting time, otherwise we'd get timer wrap in
- 	   weird delay cases. */
-@@ -393,8 +392,16 @@ __nf_conntrack_confirm(struct sk_buff *s
- 	add_timer(&ct->timeout);
- 	atomic_inc(&ct->ct_general.use);
- 	set_bit(IPS_CONFIRMED_BIT, &ct->status);
-+
-+	/* Since the lookup is lockless, hash insertion must be done after
-+	 * starting the timer and setting the CONFIRMED bit. The RCU barriers
-+	 * guarantee that no other CPU can find the conntrack before the above
-+	 * stores are visible.
-+	 */
-+	__nf_conntrack_hash_insert(ct, hash, repl_hash);
- 	NF_CT_STAT_INC(net, insert);
- 	spin_unlock_bh(&nf_conntrack_lock);
-+
- 	help = nfct_help(ct);
- 	if (help && help->helper)
- 		nf_conntrack_event_cache(IPCT_HELPER, ct);
+ 	/*
+ 	 * XXX: batch / limit 'nr', to avoid large irq off latency
 
 
