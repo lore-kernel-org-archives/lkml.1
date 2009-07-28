@@ -1,124 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbZG1XwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbZG1Xw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755881AbZG1XwH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 19:52:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755225AbZG1XwG
+	id S1756038AbZG1Xw0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 19:52:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754988AbZG1XwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 19:52:06 -0400
-Received: from fias.uni-frankfurt.de ([141.2.248.1]:43032 "EHLO
-	fias.uni-frankfurt.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755193AbZG1XwD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:52:03 -0400
-From: Jan Scholz <scholz@fias.uni-frankfurt.de>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: John Linville <linville@tuxdriver.com>,
-       Jan Scholz <scholz@fias.uni-frankfurt.de>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Bob Copeland <bcopeland@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Tomas Janousek <tomi@nomi.cz>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2.6.31] mac80211: fix suspend
-References: <1248797417.13742.0.camel@johannes.local>
-References: <200907282315.54085.rjw@sisk.pl>
-Date: Wed, 29 Jul 2009 01:51:43 +0200
-In-Reply-To: <1248797417.13742.0.camel@johannes.local> (Johannes Berg's
-	message of "Tue, 28 Jul 2009 18:10:17 +0200")
-Message-ID: <87tz0wjrhs.fsf@scholz.fias.uni-frankfurt.de>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.96 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 28 Jul 2009 19:52:24 -0400
+Received: from kroah.org ([198.145.64.141]:35987 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755037AbZG1Xue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 19:50:34 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:42:02 2009
+Message-Id: <20090728234201.936390565@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Tue, 28 Jul 2009 16:41:36 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Giuseppe Mazzotta <g.mazzotta@iragan.com>,
+       Dmitry Torokhov <dtor@mail.ru>
+Subject: [patch 67/71] Input: wistron_btns - recognize Maxdata Pro 7000 notebooks
+References: <20090728234029.868717854@mini.kroah.org>
+Content-Disposition: inline; filename=input-wistron_btns-recognize-maxdata-pro-7000-notebooks.patch
+In-Reply-To: <20090728234756.GA11917@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I applied the patch to v2.6.31-rc4 and suspend works just fine.
+2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
-Thanks,
-   Jan
+------------------
 
-Johannes Berg <johannes@sipsolutions.net> writes:
+From: Giuseppe Mazzotta <g.mazzotta@iragan.com>
 
-> Jan reported that his b43-based laptop hangs during suspend.
-> The problem turned out to be mac80211 asking the driver to
-> stop the hardware before removing interfaces, and interface
-> removal caused b43 to touch the hardware (while down, which
-> causes the hang).
->
-> This patch fixes mac80211 to do reorder these operations to
-> have them in the correct order -- first remove interfaces
-> and then stop the hardware. Some more code is necessary to
-> be able to do so in a race-free manner, in particular it is
-> necessary to not process frames received during quiescing.
->
-> Fixes http://bugzilla.kernel.org/show_bug.cgi?id=13337.
->
-> Reported-by: Jan Scholz <scholz@fias.uni-frankfurt.de>
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> ---
->  net/mac80211/pm.c |   24 +++++++++++++++---------
->  net/mac80211/rx.c |   12 ++++++++++++
->  2 files changed, 27 insertions(+), 9 deletions(-)
->
-> --- wireless-testing.orig/net/mac80211/pm.c	2009-07-28 17:58:11.000000000 +0200
-> +++ wireless-testing/net/mac80211/pm.c	2009-07-28 18:06:25.000000000 +0200
-> @@ -54,15 +54,6 @@ int __ieee80211_suspend(struct ieee80211
->  
->  	rcu_read_unlock();
->  
-> -	/* flush again, in case driver queued work */
-> -	flush_workqueue(local->hw.workqueue);
-> -
-> -	/* stop hardware - this must stop RX */
-> -	if (local->open_count) {
-> -		ieee80211_led_radio(local, false);
-> -		drv_stop(local);
-> -	}
-> -
->  	/* remove STAs */
->  	spin_lock_bh(&local->sta_lock);
->  	list_for_each_entry(sta, &local->sta_list, list) {
-> @@ -110,7 +101,22 @@ int __ieee80211_suspend(struct ieee80211
->  		drv_remove_interface(local, &conf);
->  	}
->  
-> +	/* stop hardware - this must stop RX */
-> +	if (local->open_count) {
-> +		ieee80211_led_radio(local, false);
-> +		drv_stop(local);
-> +	}
-> +
-> +	/*
-> +	 * flush again, in case driver queued work -- it
-> +	 * shouldn't be doing (or cancel everything in the
-> +	 * stop callback) that but better safe than sorry.
-> +	 */
-> +	flush_workqueue(local->hw.workqueue);
-> +
->  	local->suspended = true;
-> +	/* need suspended to be visible before quiescing is false */
-> +	barrier();
->  	local->quiescing = false;
->  
->  	return 0;
-> --- wireless-testing.orig/net/mac80211/rx.c	2009-07-28 17:58:52.000000000 +0200
-> +++ wireless-testing/net/mac80211/rx.c	2009-07-28 18:04:24.000000000 +0200
-> @@ -2441,6 +2441,18 @@ void __ieee80211_rx(struct ieee80211_hw 
->  		return;
->  	}
->  
-> +	/*
-> +	 * If we're suspending, it is possible although not too likely
-> +	 * that we'd be receiving frames after having already partially
-> +	 * quiesced the stack. We can't process such frames then since
-> +	 * that might, for example, cause stations to be added or other
-> +	 * driver callbacks be invoked.
-> +	 */
-> +	if (unlikely(local->quiescing || local->suspended)) {
-> +		kfree_skb(skb);
-> +		return;
-> +	}
-> +
->  	if (status->flag & RX_FLAG_HT) {
->  		/* rate_idx is MCS index */
->  		if (WARN_ON(status->rate_idx < 0 ||
->
+commit e705cee427e319665969ef7ac664f3612dec8899 upstream.
+
+This patch adds DMI information to automatically load the correct
+layout for the Maxdata Pro 7000X/DX notebook models. Such notebooks
+are clones of Fujitsu Amilo V2000, the hook for the v2000 is being
+used and I have tested that perfectly works.
+
+The immediate result of integrating this patch is that the five
+special buttons will work on these specific notebook models and that
+the RF killswitch will not be activated after suspend. This patch
+definitively obsoletes the fsam7400 module which I was still needing
+to enable wifi and to fix the RF killswitch suspend problem; in the
+current 2.6.30 kernel it is necessary to load the wistron_btns module
+with options 'force=1 keymap=1557/MS2141', which was not anyway a
+complete workaround.
+
+Signed-off-by: Giuseppe Mazzotta <g.mazzotta@iragan.com>
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+--- a/drivers/input/misc/wistron_btns.c
++++ b/drivers/input/misc/wistron_btns.c
+@@ -646,6 +646,15 @@ static struct dmi_system_id dmi_ids[] __initdata = {
+ 	},
+ 	{
+ 		.callback = dmi_matched,
++		.ident = "Maxdata Pro 7000 DX",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "MAXDATA"),
++			DMI_MATCH(DMI_PRODUCT_NAME, "Pro 7000"),
++		},
++		.driver_data = keymap_fs_amilo_pro_v2000
++	},
++	{
++		.callback = dmi_matched,
+ 		.ident = "Fujitsu N3510",
+ 		.matches = {
+ 			DMI_MATCH(DMI_SYS_VENDOR, "FUJITSU"),
+
+
