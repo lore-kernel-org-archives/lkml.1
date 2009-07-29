@@ -1,67 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755730AbZG2Qjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbZG2Qk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755730AbZG2Qjk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 12:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755575AbZG2Qjj
+	id S1755835AbZG2Qk1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 12:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755773AbZG2Qk0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 12:39:39 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58799 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754452AbZG2Qjj (ORCPT
+	Wed, 29 Jul 2009 12:40:26 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:45123 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755663AbZG2QkZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 12:39:39 -0400
-Date: Wed, 29 Jul 2009 17:39:55 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kdesu broken
-Message-ID: <20090729173955.125a7ae0@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.01.0907290859230.3161@localhost.localdomain>
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
-	<87r5w19xsb.fsf@devron.myhome.or.jp>
-	<20090728112203.7b70adba@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907280848090.3186@localhost.localdomain>
-	<20090728174213.5e927428@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907280944150.3186@localhost.localdomain>
-	<20090728180649.596c5412@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907281141070.3186@localhost.localdomain>
-	<20090728195651.3a402a31@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907281158120.3186@localhost.localdomain>
-	<20090729004639.71f0eabc@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907281651160.3186@localhost.localdomain>
-	<20090729013442.493effa6@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907281736260.3161@localhost.localdomain>
-	<20090729095923.4ca5ca3e@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907290842420.3161@localhost.localdomain>
-	<20090729165513.2a1ccb7c@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907290859230.3161@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Jul 2009 12:40:25 -0400
+X-Greylist: delayed 1058 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Jul 2009 12:40:24 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=x/GDiJJx58swippukSqYPN3cvfjKRLWxCLPOSssBFVpi4NR5Vr5eOV4ufld9nC27kD
+         PhO3AeURGtjIiUjhM1NNMFIXsMis6X4XJrgr52eVy1j1+4l6WMvB647DdhUoLFQKHVk9
+         dTP7ZNgElYKkdJDDMLA9a0KVHH2oh6sUyt8II=
+MIME-Version: 1.0
+In-Reply-To: <1244461122-3303-1-git-send-email-alexander.shishckin@gmail.com>
+References: <1244461122-3303-1-git-send-email-alexander.shishckin@gmail.com>
+Date: Wed, 29 Jul 2009 19:17:00 +0300
+Message-ID: <71a0d6ff0907290917u1f0c0e68p8036d53c69320392@mail.gmail.com>
+Subject: Re: [PATCH] [RFC] List per-process file descriptor consumption when 
+	hitting file-max
+From: Alexander Shishkin <alexander.shishckin@gmail.com>
+To: linux-fsdevel@vger.kernel.org
+Cc: Alexander Shishkin <alexander.shishckin@gmail.com>,
+       akpm@linux-foundation.org, viro@zeniv.linux.org.uk,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n6TGf07T031541
 
->  		tty_ldisc_deref(ld);
-> +		tty_ldisc_halt(tty);
-> +		tty_ldisc_wait_idle(tty);
-
-Needs to be
-	mutex_lock(&tty->ldisc_mutex);
-	if (tty->ldisc)
-		....
-	}
-	mutex_unlock(&tty->ldisc_mutex)
-
-We can't wait for the reference to go away if we hold one, and if we
-don't hold one the ldisc reference might go away during the hangup if we
-close()
-
-Odds of hitting it minimal however. Or maybe we need a smarter
-tty_ldisc_wait_self_idle(ld) ?
-
+2009/6/8  <alexander.shishckin@gmail.com>:> From: Alexander Shishkin <alexander.shishckin@gmail.com>>> When a file descriptor limit is hit, it might be useful to see all the> users to be able to identify those that leak descriptors.Is there anything dramatically wrong with this one, or could someoneplease review this?
+> Signed-off-by: Alexander Shishkin <alexander.shishckin@gmail.com>> --->  fs/file_table.c |   27 +++++++++++++++++++++++++++>  1 files changed, 27 insertions(+), 0 deletions(-)>> diff --git a/fs/file_table.c b/fs/file_table.c> index 54018fe..9e53167 100644> --- a/fs/file_table.c> +++ b/fs/file_table.c> @@ -136,8 +136,35 @@ struct file *get_empty_filp(void)>  over:>        /* Ran out of filps - report that */>        if (get_nr_files() > old_max) {> +               struct task_struct *p;> +               struct files_struct *files;> +               struct fdtable *fdt;> +               int i, count = 0;> +>                printk(KERN_INFO "VFS: file-max limit %d reached\n",>                                        get_max_files());> +> +               read_lock(&tasklist_lock);> +               for_each_process(p) {> +                       files = get_files_struct(p);> +                       if (!files)> +                               continue;> +> +                       spin_lock(&files->file_lock);> +                       fdt = files_fdtable(files);> +> +                       /* we have to actually *count* the fds */> +                       for (count = i = 0; i < fdt->max_fds; i++)> +                               count += !!fcheck_files(files, i);> +> +                       printk(KERN_INFO "=> %s [%d]: %d\n", p->comm,> +                                       p->pid, count);> +> +                       spin_unlock(&files->file_lock);> +                       put_files_struct(files);> +               }> +               read_unlock(&tasklist_lock);> +>                old_max = get_nr_files();>        }>        goto fail;> --> 1.6.1.3>>
+TIA,--Alex���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
