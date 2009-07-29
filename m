@@ -1,91 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbZG2MEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbZG2MGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754484AbZG2MEj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 08:04:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbZG2MEj
+	id S1754496AbZG2MGr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 08:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473AbZG2MGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 08:04:39 -0400
-Received: from zelda.netsplit.com ([87.194.19.211]:36633 "EHLO
-	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754331AbZG2MEi (ORCPT
+	Wed, 29 Jul 2009 08:06:46 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:58872 "EHLO
+	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754411AbZG2MGo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 08:04:38 -0400
-Subject: Re: [Bug #13845] inotify regression, missing events
-From: Scott James Remnant <scott@ubuntu.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-In-Reply-To: <1248812102.15671.0.camel@localhost>
-References: <Jya1GruKQpD.A.16.2GObKB@chimera>
-	 <3zAHs5O6maO.A.ATB.-GObKB@chimera> <1248683738.22308.0.camel@quest>
-	 <200907280052.44653.rjw@sisk.pl>  <1248812102.15671.0.camel@localhost>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-NgBWNOL97O7ujlzklrCb"
-Date: Wed, 29 Jul 2009 13:04:20 +0100
-Message-Id: <1248869060.23840.10.camel@quest>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 29 Jul 2009 08:06:44 -0400
+Date: Wed, 29 Jul 2009 14:06:42 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoffrey.levand@am.sony.com>,
+       Jens Axboe <axboe@kernel.dk>,
+       Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>,
+       cbe-oss-dev@ozlabs.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] powerpc/cell: Move CBE_IOPTE_* to <asm/cell-regs.h> (was:
+ Re: [PATCH 10/33] powerpc/cell: Extract duplicated IOPTE_* to
+ <asm/iommu.h>)
+In-Reply-To: <1245049942.19217.57.camel@pasglop>
+Message-ID: <alpine.LRH.2.00.0907291402520.26399@vixen.sonytel.be>
+References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <1244644748-24211-11-git-send-email-Geert.Uytterhoeven@sonycom.com> <1245030085.19217.5.camel@pasglop> <200906150905.30744.arnd@arndb.de> <1245049942.19217.57.camel@pasglop>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 15 Jun 2009, Benjamin Herrenschmidt wrote:
+> On Mon, 2009-06-15 at 09:05 +0200, Arnd Bergmann wrote:
+> > Good point, that file does not contain hardware specific definitions
+> > but
+> > only interfaces.
+> > 
+> > Geert, how about putting them into
+> > arch/powerpc/include/asm/cell-regs.h
+> > instead?
+> 
+> I've put the patch in powerpc-next for now. But you may want to send
+> another patch later on to move things.
 
---=-NgBWNOL97O7ujlzklrCb
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+At your service!
 
-On Tue, 2009-07-28 at 16:15 -0400, Eric Paris wrote:
+---
+>From bb2fab2f78b24a80669cc6424bf621e4d113cfe4 Mon Sep 17 00:00:00 2001
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Date: Wed, 29 Jul 2009 13:56:57 +0200
+Subject: [PATCH] powerpc/cell: Move CBE_IOPTE_* to <asm/cell-regs.h>
 
-> On Tue, 2009-07-28 at 00:52 +0200, Rafael J. Wysocki wrote:
-> > On Monday 27 July 2009, Scott James Remnant wrote:
-> > > On Sun, 2009-07-26 at 22:28 +0200, Rafael J. Wysocki wrote:
-> > >=20
-> > > > This message has been generated automatically as a part of a report
-> > > > of recent regressions.
-> > > >=20
-> > > > The following bug entry is on the current list of known regressions
-> > > > from 2.6.30.  Please verify if it still should be listed and let me=
- know
-> > > > (either way).
-> > > >=20
-> > > >=20
-> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D13845
-> > > > Subject		: inotify regression, missing events
-> > > > Submitter	: Scott James Remnant <scott@ubuntu.com>
-> > > > Date		: 2009-07-11 16:02 (16 days old)
-> > > > References	: http://marc.info/?l=3Dlinux-kernel&m=3D124732816314881=
-&w=3D4
-> > > > Handled-By	: Eric Paris <eparis@redhat.com>
-> > > >=20
-> > > This patch hasn't found its way into Linus' tree yet, so it's definit=
-ely
-> > > still an issue and should be listed.
-> >=20
-> > Thanks for the update
->=20
-> Looks like it was pulled into Linus's tree last night if you would like
-> to test and verify.
->=20
-Tested and verified, good work!
+As <asm/iommu.h> doesn't contain any other hardware specific definitions
+but only interfaces.
 
-Thanks,
+Reported-by: Arnd Bergmann <arnd@arndb.de>
+Cc: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: Jens Axboe <axboe@kernel.dk>
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ arch/powerpc/include/asm/cell-regs.h    |   11 +++++++++++
+ arch/powerpc/include/asm/iommu.h        |   10 ----------
+ arch/powerpc/platforms/ps3/mm.c         |    2 +-
+ arch/powerpc/platforms/ps3/system-bus.c |    2 +-
+ drivers/block/ps3vram.c                 |    2 +-
+ drivers/video/ps3fb.c                   |    2 +-
+ 6 files changed, 15 insertions(+), 14 deletions(-)
 
-Scott
---=20
-Scott James Remnant
-scott@ubuntu.com
+diff --git a/arch/powerpc/include/asm/cell-regs.h b/arch/powerpc/include/asm/cell-regs.h
+index fd6fd00..fdf64fd 100644
+--- a/arch/powerpc/include/asm/cell-regs.h
++++ b/arch/powerpc/include/asm/cell-regs.h
+@@ -303,6 +303,17 @@ struct cbe_mic_tm_regs {
+ extern struct cbe_mic_tm_regs __iomem *cbe_get_mic_tm_regs(struct device_node *np);
+ extern struct cbe_mic_tm_regs __iomem *cbe_get_cpu_mic_tm_regs(int cpu);
+ 
++
++/* Cell page table entries */
++#define CBE_IOPTE_PP_W		0x8000000000000000ul /* protection: write */
++#define CBE_IOPTE_PP_R		0x4000000000000000ul /* protection: read */
++#define CBE_IOPTE_M		0x2000000000000000ul /* coherency required */
++#define CBE_IOPTE_SO_R		0x1000000000000000ul /* ordering: writes */
++#define CBE_IOPTE_SO_RW		0x1800000000000000ul /* ordering: r & w */
++#define CBE_IOPTE_RPN_Mask	0x07fffffffffff000ul /* RPN */
++#define CBE_IOPTE_H		0x0000000000000800ul /* cache hint */
++#define CBE_IOPTE_IOID_Mask	0x00000000000007fful /* ioid */
++
+ /* some utility functions to deal with SMT */
+ extern u32 cbe_get_hw_thread_id(int cpu);
+ extern u32 cbe_cpu_to_node(int cpu);
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index 7ead7c1..7464c0d 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -35,16 +35,6 @@
+ #define IOMMU_PAGE_MASK       (~((1 << IOMMU_PAGE_SHIFT) - 1))
+ #define IOMMU_PAGE_ALIGN(addr) _ALIGN_UP(addr, IOMMU_PAGE_SIZE)
+ 
+-/* Cell page table entries */
+-#define CBE_IOPTE_PP_W		0x8000000000000000ul /* protection: write */
+-#define CBE_IOPTE_PP_R		0x4000000000000000ul /* protection: read */
+-#define CBE_IOPTE_M		0x2000000000000000ul /* coherency required */
+-#define CBE_IOPTE_SO_R		0x1000000000000000ul /* ordering: writes */
+-#define CBE_IOPTE_SO_RW		0x1800000000000000ul /* ordering: r & w */
+-#define CBE_IOPTE_RPN_Mask	0x07fffffffffff000ul /* RPN */
+-#define CBE_IOPTE_H		0x0000000000000800ul /* cache hint */
+-#define CBE_IOPTE_IOID_Mask	0x00000000000007fful /* ioid */
+-
+ /* Boot time flags */
+ extern int iommu_is_off;
+ extern int iommu_force_on;
+diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
+index 846eb8b..189a25b 100644
+--- a/arch/powerpc/platforms/ps3/mm.c
++++ b/arch/powerpc/platforms/ps3/mm.c
+@@ -23,8 +23,8 @@
+ #include <linux/memory_hotplug.h>
+ #include <linux/lmb.h>
+ 
++#include <asm/cell-regs.h>
+ #include <asm/firmware.h>
+-#include <asm/iommu.h>
+ #include <asm/prom.h>
+ #include <asm/udbg.h>
+ #include <asm/lv1call.h>
+diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
+index 3f763c5..676f989 100644
+--- a/arch/powerpc/platforms/ps3/system-bus.c
++++ b/arch/powerpc/platforms/ps3/system-bus.c
+@@ -27,7 +27,7 @@
+ #include <asm/udbg.h>
+ #include <asm/lv1call.h>
+ #include <asm/firmware.h>
+-#include <asm/iommu.h>
++#include <asm/cell-regs.h>
+ 
+ #include "platform.h"
+ 
+diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
+index 095f97e..c8753a9 100644
+--- a/drivers/block/ps3vram.c
++++ b/drivers/block/ps3vram.c
+@@ -13,8 +13,8 @@
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
+ 
++#include <asm/cell-regs.h>
+ #include <asm/firmware.h>
+-#include <asm/iommu.h>
+ #include <asm/lv1call.h>
+ #include <asm/ps3.h>
+ #include <asm/ps3gpu.h>
+diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
+index c0af638..9c0144e 100644
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -32,7 +32,7 @@
+ #include <linux/init.h>
+ 
+ #include <asm/abs_addr.h>
+-#include <asm/iommu.h>
++#include <asm/cell-regs.h>
+ #include <asm/lv1call.h>
+ #include <asm/ps3av.h>
+ #include <asm/ps3fb.h>
+-- 
+1.6.2.4
 
---=-NgBWNOL97O7ujlzklrCb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+With kind regards,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Geert Uytterhoeven
+Software Architect
+Techsoft Centre
 
-iEYEABECAAYFAkpwOsQACgkQSnQiFMl4yK7sxgCdH0q6Usn3wYpConvBUUsv5DfV
-ggYAn3XOQspHdY2ebOdkbDq75q1c60/A
-=xlzn
------END PGP SIGNATURE-----
+Technology and Software Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
---=-NgBWNOL97O7ujlzklrCb--
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
 
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
