@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbZG2MnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbZG2MpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754717AbZG2MnR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 08:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754677AbZG2MnQ
+	id S1754739AbZG2MpQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 08:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbZG2MpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 08:43:16 -0400
-Received: from viefep18-int.chello.at ([62.179.121.38]:27447 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754511AbZG2MnP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 08:43:15 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: perf_counters issue with self-sampling threads
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: eranian@gmail.com
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
-       Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>, oleg <oleg@redhat.com>
-In-Reply-To: <7c86c4470907290537q42195dc6s61d0f6d4a3a70154@mail.gmail.com>
-References: <7c86c4470907270951i48886d56g90bc198f26bb0716@mail.gmail.com>
-	 <1248869948.6987.3083.camel@twins>
-	 <7c86c4470907290537q42195dc6s61d0f6d4a3a70154@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 29 Jul 2009 14:46:05 +0200
-Message-Id: <1248871565.6987.3087.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 29 Jul 2009 08:45:15 -0400
+Received: from mail.mnementh.co.uk ([173.45.232.4]:37992 "EHLO mnementh.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754686AbZG2MpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 08:45:15 -0400
+Message-ID: <4A704451.1070004@mnementh.co.uk>
+Date: Wed, 29 Jul 2009 13:45:05 +0100
+From: Ian Molton <ian@mnementh.co.uk>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Daniel Mack <daniel@caiaq.de>
+CC: linux-kernel@vger.kernel.org, Anton Vorontsov <cbou@mail.ru>,
+       Matt Reimer <mreimer@vpop.net>
+Subject: Re: [PATCH 1/2] power_supply: get_by_name and set_charged	functionality
+References: <20090723183451.GI13236@buzzloop.caiaq.de> <1248374154-15606-1-git-send-email-daniel@caiaq.de> <20090728220635.GH19257@buzzloop.caiaq.de> <4A70249C.6060705@f2s.com> <20090729103659.GI19257@buzzloop.caiaq.de>
+In-Reply-To: <20090729103659.GI19257@buzzloop.caiaq.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-29 at 14:37 +0200, stephane eranian wrote:
+Daniel Mack wrote:
+> On Wed, Jul 29, 2009 at 11:29:48AM +0100, Ian molton wrote:
+>> Looks ok. the only comment I have right now is that the comment doesnt  
+>> quite match the patch - it suggests that the patch doesnt include the  
+>> power_supply_set_battery_charged() function, when it does in fact.
 > 
-> >
-> > Now I was considering teaching send_sigio_to_task() to use
-> > specific_send_sig_info() when fown->pid != fown->group_leader->pid or
-> > something, but I'm not sure that won't break anything.
-> >
-> Yes, that's the problem with touching this. I don't know if this will break
-> things. That's why I was suggested creating a parallel code path which
-> does what we want without modifying the existing path. Unless you know
-> some signal expert at redhat or elsewhere.
+> The subject mentions it, and the body references it again. Hmm. Anyway.
+> Want me to resend? Or could the commiter add another sentence to point
+> that out? I think that would be Anton, as he agreed to pick all the
+> other patches I recently sent in.
 
-His name is Oleg, and he's on CC ;-)
+I'm not that fussed - you just seemed to want feedback, so I had a read ;-)
 
-> > Alternatively, I've missed a detail and I either read the manpage wrong,
-> > or the code, or both of them.
-> >
-> The code does not correspond to the manpage. Not clear which one
-> is correct though. This F_SETOWN trick looks very Linux specific.
+If you change it, I'd write something like:
 
-Linus specific sounds good enough to me. Michael might have something so
-say on this though...
+This adds a function that indicates that a battery is fully charged. It 
+also includes functions to get a power_supply device from the class of 
+registered devices by name reference. These can be used to find a 
+specific battery to call power_supply_set_battery_charged() on.
 
+Some battery drivers might need this information to calibrate
+themselves.
+
+Or something.
