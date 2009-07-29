@@ -1,136 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754462AbZG2MCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbZG2MEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754462AbZG2MCW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 08:02:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbZG2MCV
+	id S1754484AbZG2MEj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 08:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbZG2MEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 08:02:21 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:51587 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754438AbZG2MCU (ORCPT
+	Wed, 29 Jul 2009 08:04:39 -0400
+Received: from zelda.netsplit.com ([87.194.19.211]:36633 "EHLO
+	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754331AbZG2MEi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 08:02:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:reply-to:user-agent:mime-version:to:cc
-         :subject:references:in-reply-to:content-type
-         :content-transfer-encoding;
-        b=VI41RLu220QpGk8X3phM3pT2EoBQnWuRdb/7QbWeXWflF6H+YV1awsfWw/7EhdS87P
-         hEmHgMrq5Xm2AsHDG4fWl/K7pnbL3REbwQkVFA9do+TRld8jvGLRfRoBGNuM7YjWDWEG
-         O8V9vuW2F/4tVcQOZiEjaAVCBH/DLtPINbOBY=
-Message-ID: <4A703A43.8050808@googlemail.com>
-Date: Wed, 29 Jul 2009 13:02:11 +0100
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Reply-To: alan-jenkins@tuffmail.co.uk
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Corentin Chary <corentin.chary@gmail.com>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: eeepc_hotkey rmmod issues
-References: <9b2b86520907290301w79d5bfa5j27c7e0142cc44ba9@mail.gmail.com> <71cd59b00907290321i50a51790ld2ba87cb2c61abc7@mail.gmail.com>
-In-Reply-To: <71cd59b00907290321i50a51790ld2ba87cb2c61abc7@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Jul 2009 08:04:38 -0400
+Subject: Re: [Bug #13845] inotify regression, missing events
+From: Scott James Remnant <scott@ubuntu.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <1248812102.15671.0.camel@localhost>
+References: <Jya1GruKQpD.A.16.2GObKB@chimera>
+	 <3zAHs5O6maO.A.ATB.-GObKB@chimera> <1248683738.22308.0.camel@quest>
+	 <200907280052.44653.rjw@sisk.pl>  <1248812102.15671.0.camel@localhost>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-NgBWNOL97O7ujlzklrCb"
+Date: Wed, 29 Jul 2009 13:04:20 +0100
+Message-Id: <1248869060.23840.10.camel@quest>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/29/09, Corentin Chary <corentin.chary@gmail.com> wrote:
-> On Wed, Jul 29, 2009 at 12:01 PM, Alan
-> Jenkins<sourcejedi.lkml@googlemail.com> wrote:
->> On 7/28/09, Corentin Chary <corentin.chary@gmail.com> wrote:
->>> On Tue, Jul 28, 2009 at 9:19 PM, Alan
->>> Jenkins<sourcejedi.lkml@googlemail.com> wrote:
 
->>>> But we should still fix the underlying problem.  It sounds like
->>>> there's a narrow danger window on module unload.  And it's still there
->>>> in 2.6.31-rc4:
->>>>
->>>> 1019 static void eeepc_rfkill_exit(void)
->>>> 1020 {
->>>> 1021         eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
->>>> 1022         eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
->>>> 1023         if (ehotk->wlan_rfkill)
->>>> 1024                 rfkill_unregister(ehotk->wlan_rfkill);
->>>>
->>>> Really we need to perform these unregistrations "at the same time".
->>>> The rfkill device relies on the notifier, but the notifier callback
->>>> also uses the rfkill device.  I guess we will need to a mutex to
->>>> synchronize unregistration (and registration).
->>>
->>> I think 2.6.31 is ok,
->>
->>> In 2.6.30, we called eeepc_unregister_rfkill_notifier after
->>> rfkill_free, which was an error because
->>> the notifier callback uses the rfkill device.
->>
->> Ok.  I don't see how that causes Luciano's errors.  So I guess he was
->> right to blame the wireless driver.
->
-> If he was using 2.6.30, then :
-> eeepc_unregister_rfkill_notifier() was called after rfkill_unregister()
-> And the callback was still registered after rfkill_unregister(), *Ooops*
->
-> In 2.6.31 we first unregister the callback, and then rfkill, so rmmod
-> should works.
->
->>> But I believe that the rfkill device can work without the notifier
->>> (which is an acpi notifier).
->>
->> I don't think it can.
->>
->> If the rfkill device is set to "soft blocked", the pci device is
->> removed.  If the acpi notifier is not called, the pci driver (e.g.
->> ath5k) won't realise the device is gone.  The network device (e.g.
->> wlan0) will remain present, but it won't work.
->
-> Hum, there is a misunderstanding here. What I mean is : I think
-> eeepc_rfkill_exit(void) is ok in 2.6.31 (Luciano used 2.6.30).
->
-> And eeepc_rfkill_exit() is only called on rmmod eeepc-laptop
->
-> Commit 7de39389d8f61aa517ce2a8b4d925acc62696ae5 did a lot of
-> change in rfkill code.
->
->> So I believe there's a circular dependency which we need to resolve.
->> Would you like me to write a patch for it?
->
-> It's possible that I miss the issue here, so go ahead :)
+--=-NgBWNOL97O7ujlzklrCb
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Thanks :)
+On Tue, 2009-07-28 at 16:15 -0400, Eric Paris wrote:
 
-Here is a test case to show the race I am talking about
+> On Tue, 2009-07-28 at 00:52 +0200, Rafael J. Wysocki wrote:
+> > On Monday 27 July 2009, Scott James Remnant wrote:
+> > > On Sun, 2009-07-26 at 22:28 +0200, Rafael J. Wysocki wrote:
+> > >=20
+> > > > This message has been generated automatically as a part of a report
+> > > > of recent regressions.
+> > > >=20
+> > > > The following bug entry is on the current list of known regressions
+> > > > from 2.6.30.  Please verify if it still should be listed and let me=
+ know
+> > > > (either way).
+> > > >=20
+> > > >=20
+> > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D13845
+> > > > Subject		: inotify regression, missing events
+> > > > Submitter	: Scott James Remnant <scott@ubuntu.com>
+> > > > Date		: 2009-07-11 16:02 (16 days old)
+> > > > References	: http://marc.info/?l=3Dlinux-kernel&m=3D124732816314881=
+&w=3D4
+> > > > Handled-By	: Eric Paris <eparis@redhat.com>
+> > > >=20
+> > > This patch hasn't found its way into Linus' tree yet, so it's definit=
+ely
+> > > still an issue and should be listed.
+> >=20
+> > Thanks for the update
+>=20
+> Looks like it was pulled into Linus's tree last night if you would like
+> to test and verify.
+>=20
+Tested and verified, good work!
 
-diff --git a/drivers/platform/x86/eeepc-laptop.c b/drivers/platform/x86/eeepc-laptop.c
-index ec560f1..c478db5 100644
---- a/drivers/platform/x86/eeepc-laptop.c
-+++ b/drivers/platform/x86/eeepc-laptop.c
-@@ -1020,6 +1020,17 @@ static void eeepc_rfkill_exit(void)
- {
- 	eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
- 	eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
-+
-+	//
-+	// Simulated error
-+	// Imagine that userspace set the wifi to "soft blocked" at this exact moment
-+	// (or the wireless toggle key was pressed)
-+	//
-+	// The PCI device will disappear, but we will not see any notification
-+	//
-+	set_acpi(CM_ASL_WLAN, 0);
-+	rfkill_set_sw_state(ehotk->wlan_rfkill, true);
-+
- 	if (ehotk->wlan_rfkill)
- 		rfkill_unregister(ehotk->wlan_rfkill);
- 	if (ehotk->bluetooth_rfkill)
+Thanks,
 
+Scott
+--=20
+Scott James Remnant
+scott@ubuntu.com
 
+--=-NgBWNOL97O7ujlzklrCb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-If you unload eeepc-laptop with this simulated race, the wireless
-interface stays around but stops working. 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-[  191.391155] ath5k phy0: can't reset hardware (-5)
-[  191.432983] ath5k phy0: failed to wakeup the MAC Chip
-[  196.940835] __ratelimit: 21 callbacks suppressed
+iEYEABECAAYFAkpwOsQACgkQSnQiFMl4yK7sxgCdH0q6Usn3wYpConvBUUsv5DfV
+ggYAn3XOQspHdY2ebOdkbDq75q1c60/A
+=xlzn
+-----END PGP SIGNATURE-----
 
-Alan
+--=-NgBWNOL97O7ujlzklrCb--
+
