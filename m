@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932073AbZG2Nff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbZG2NjF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932073AbZG2Nff (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 09:35:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbZG2Nfe
+	id S1755500AbZG2NjF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 09:39:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbZG2NjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 09:35:34 -0400
-Received: from kroah.org ([198.145.64.141]:38976 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754684AbZG2Nfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 09:35:33 -0400
-Date: Wed, 29 Jul 2009 06:29:12 -0700
-From: Greg KH <greg@kroah.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alexander Kaltsas <alexkaltsas@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [Bug #13681] A number of usb Devices causes Oops messages and
- kernel panics.
-Message-ID: <20090729132912.GA28227@kroah.com>
-References: <DizPU9GBfHF.A.kgF.iWObKB@chimera>
- <H5-1lZIIeYK.A.88F.6WObKB@chimera>
+	Wed, 29 Jul 2009 09:39:04 -0400
+Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:33091 "EHLO
+	TX2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754469AbZG2NjC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 09:39:02 -0400
+X-SpamScore: -26
+X-BigFish: VPS-26(zz1432R98dN936eM9371Pzz1202hzzz32i6bh203h43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KNJPWG-03-7L4-01
+Date: Wed, 29 Jul 2009 15:38:40 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Avi Kivity <avi@redhat.com>
+CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/12] Nested SVM cleanups
+Message-ID: <20090729133840.GG18313@amd.com>
+References: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com>
+ <4A70492E.2080705@redhat.com>
+ <20090729130944.GE18313@amd.com>
+ <4A704F5B.9000800@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <H5-1lZIIeYK.A.88F.6WObKB@chimera>
+In-Reply-To: <4A704F5B.9000800@redhat.com>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Sitz=3A_Dornach=2C_Gemeinde_Aschheim=2C_Land?=
+	=?iso-8859-1?Q?kreis_M=FCnchen=2C_Registergericht_M=FCnchen?=
+	=?iso-8859-1?Q?=2C?= HRB Nr. 43632
 User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 29 Jul 2009 13:38:40.0989 (UTC) FILETIME=[E26118D0:01CA1051]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 26, 2009 at 10:45:34PM +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.29 and 2.6.30.
+On Wed, Jul 29, 2009 at 04:32:11PM +0300, Avi Kivity wrote:
+> On 07/29/2009 04:09 PM, Joerg Roedel wrote:
+> >>I seem to recall nested smp used to be broken.  Am I mistaken, or do
+> >>these patches fix rather than clean up?
+> >
+> >Nested SMP was broken in one of the early version of the nested SVM
+> >code. In the current upstream version it works quite well.
 > 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13681
-> Subject		: A number of usb Devices causes Oops messages and kernel panics.
-> Submitter	: Alexander Kaltsas <alexkaltsas@gmail.com>
-> Date		: 2009-06-30 13:06 (27 days old)
+> In that case, the next interesting target is nested npt.  This may
+> actually make nsvm perform well.  Any plans?
 
-This can no longer be reproduced by the original reporter, so it should
-be closed.
+Yes. Plan is to implement this when I am through with the cleanups.
 
-thanks,
+	Joerg
 
-greg k-h
+
