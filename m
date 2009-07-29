@@ -1,99 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbZG2QHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbZG2QHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755170AbZG2QHb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 12:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbZG2QHa
+	id S1755547AbZG2QHo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 12:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755492AbZG2QHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 12:07:30 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:40908 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751524AbZG2QH3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 12:07:29 -0400
-X-Trace: 234018190/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.35.3/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.35.3
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Av0EAN4PcEpPRSMD/2dsb2JhbACBUtMehBEF
-X-IronPort-AV: E=Sophos;i="4.43,289,1246834800"; 
-   d="scan'208";a="234018190"
-Date: Wed, 29 Jul 2009 17:07:24 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Laurent Pinchart <laurent.pinchart@skynet.be>
-cc: linux-kernel@vger.kernel.org, v4l2_linux <linux-media@vger.kernel.org>
-Subject: Re: Is get_user_pages() enough to prevent pages from being swapped
- out ?
-In-Reply-To: <200907291741.52783.laurent.pinchart@skynet.be>
-Message-ID: <Pine.LNX.4.64.0907291653510.20238@sister.anvils>
-References: <200907291123.12811.laurent.pinchart@skynet.be>
- <Pine.LNX.4.64.0907291551050.16769@sister.anvils> <200907291741.52783.laurent.pinchart@skynet.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 29 Jul 2009 12:07:44 -0400
+Received: from mx02.kabsi.at ([62.40.128.130]:41689 "EHLO mx02.kabsi.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754798AbZG2QHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 12:07:43 -0400
+X-Greylist: delayed 3334 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Jul 2009 12:07:42 EDT
+Date: Wed, 29 Jul 2009 17:11:07 +0200
+From: Jakob Gruber <jakob.gruber@kabelnet.at>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Missing device IDs in rt2870
+Message-Id: <20090729171107.155719b5.jakob.gruber@kabelnet.at>
+In-Reply-To: <20090728211216.GA12363@suse.de>
+References: <20090728230117.8fca2314.jakob.gruber@kabelnet.at>
+	<20090728211216.GA12363@suse.de>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="Multipart=_Wed__29_Jul_2009_17_11_07_+0200_7i_y_oxMZEqdVCW0"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Jul 2009, Laurent Pinchart wrote:
-> On Wednesday 29 July 2009 17:26:11 Hugh Dickins wrote:
-> > On Wed, 29 Jul 2009, Laurent Pinchart wrote:
-> > > what's the proper way to make sure the pages won't disappear during DMA ?
-> >
-> > You're right that get_user_pages() (called with a pagelist as you're
-> > using) increments the page reference count.
-> >
-> > And that is enough to pin the page in memory, in a sense that suits
-> > the use of DMA.
-> >
-> > I'm expressing it in that peculiar way, because:- On the one hand,
-> > the page can only disappear from memory by memory hotremove, but
-> > what you'll be worrying about is the page getting freed and reused
-> > for another purpose while DMA is acting upon it - but raising the
-> > reference count prevents that (and will prevent hotremove succeeding).
-> 
-> Sorry about that confusion. I'm not too familiar with memory management so I 
-> mixed the proper terms.
+This is a multi-part message in MIME format.
 
-Nothing to apologize for!  You expressed yourself in a vivid and
-natural way, then I gave you a pedantic response.  It's right to be
-pedantic here, to distinguish these cases, but you were not wrong.
+--Multipart=_Wed__29_Jul_2009_17_11_07_+0200_7i_y_oxMZEqdVCW0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-> 
-> > On the other hand, despite the raised reference count, under memory
-> > pressure that page might get unmapped from the user pagetable, and
-> > might even be written out to swap in its half-dirty state (though
-> > is_page_cache_freeable() tries to avoid that); but it won't get
-> > freed, and DMA will be to the physical address of the page (somebody
-> > will correct me that it's actually the bus address or something else),
-> > not to the userspace virtual address.  So it's irrelevant if that
-> > vanishes for a while - when userspace accesses it again, the same
-> > page (the one DMA occurs to) will be faulted back in there.
-> 
-> Just to make sure I understand things properly, the copy of the page written 
-> to swap will not be read back when the page is faulted back in by the kernel 
-> as a result of the userspace process accessing it, right ?
+On Tue, 28 Jul 2009 14:12:16 -0700
+Greg KH <gregkh@suse.de> wrote:
 
-Absolutely right.  It's a waste of time and diskspace if we write
-it at all, but to avoid the possibility of such writes completely
-would involve a locking overhead we're better off without.
+> On Tue, Jul 28, 2009 at 11:01:17PM +0200, Jakob Gruber wrote:
+> > >From http://bugzilla.kernel.org/show_bug.cgi?id=13459#c3
+> > 
+> > In rt2870.h, there are 2 lists of USB devices. One is within 
+> > 
+> > #ifndef RT30xx
+> > #endif
+> > 
+> > and the other in 
+> > 
+> > #ifdef RT30xx
+> > #endif
+> 
+> That kind of implies that the 2870 driver should not support this
+> device, right?
+
+I think there's been a misunderstanding - I wasn't saying that the device ID is included in one block but not in another. I wanted to point out that I wasn't sure whether to add the ID to both lists or just the first one.
 
 > 
-> Why would the page be written out to swap if it's not going to be
-> freed anyway ?
+> > 
+> > Since I'm not sure whether to add the devices to both lists or only the first,
+> > I'm posting a patch for both variations.
+> > 
+> > Patch 1, add devices only to first list:
+> 
+> Well, pick one :)
+> 
+> I'd prefer someone with one of these devices to test the patch and
+> verify that it works before blindly applying.  Fair enough?
 
-is_page_cache_freeable() tries to avoid such a write, by checking
-that the reference count is what we'd expect it to be if nobody else
-is interested in the page - at that instant.  But an instant later,
-anything might take a new reference to the page: pageout() has the
-page lock, but we really don't want to demand that everybody else
-has to acquire the page lock just to increment page count.
+I own the Belkin device in question (0x050D,0x815C), and it worked perfectly with kernel 2.6.29 after adding the device ID to rt2870.h.
+The patch is also included in the Archlinux kernel, see 
+http://projects.archlinux.org/?p=linux-2.6-ARCH.git;a=tree;f=patches;hb=HEAD
 
-We could scatter further is_page_cache_freeable() checks around;
-but how ever many we added, it could always go up just after the
-last check.
+I haven't tested rt2870 in 2.6.30 thoroughly because of this bug (http://bugzilla.kernel.org/show_bug.cgi?id=13638), which forces me to use the driver from the Ralink website instead of the kernel module.
+However, I can confirm that - until running into the bug - the Belkin card also works in 2.6.30. 
 
-Hugh
+A patch for adding the Belkin device ID is attached. I removed the other 2 IDs from http://bugzilla.kernel.org/show_bug.cgi?id=13459 since I do not own these devices and cannot verify them. The ID is only added to the "#ifndef RT30xx" block, same as the patch applied to the Archlinux kernel.
+
+> 
+> thanks,
+> 
+> greg k-h
+
+Thanks for your work, it's appreciated.
+
+-- 
+Jakob Gruber <jakob.gruber@kabelnet.at>
+
+--Multipart=_Wed__29_Jul_2009_17_11_07_+0200_7i_y_oxMZEqdVCW0
+Content-Type: text/plain;
+ name="rt2870_missing_id.patch"
+Content-Disposition: attachment;
+ filename="rt2870_missing_id.patch"
+Content-Transfer-Encoding: base64
+
+RnJvbSA5MjY4ZDIwODQ1NDgyNGQwYjVhYWZmZjY4NzU2NjIxOTFkY2VjY2ZmIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQ0KRnJvbTogSmFrb2IgR3J1YmVyIDxqYWtvYi5ncnViZXJAa2FiZWxuZXQu
+YXQ+DQpEYXRlOiBXZWQsIDI5IEp1bCAyMDA5IDE2OjUzOjE1ICswMjAwDQpTdWJqZWN0OiBbUEFU
+Q0hdIFJUMjg3MCBtaXNzaW5nIGRldmljZSBJRA0KDQotLS0NCiBkcml2ZXJzL3N0YWdpbmcvcnQy
+ODcwL3J0Mjg3MC5oIHwgICAgMSArDQogMSBmaWxlcyBjaGFuZ2VkLCAxIGluc2VydGlvbnMoKyks
+IDAgZGVsZXRpb25zKC0pDQoNCmRpZmYgLS1naXQgYS9kcml2ZXJzL3N0YWdpbmcvcnQyODcwL3J0
+Mjg3MC5oIGIvZHJpdmVycy9zdGFnaW5nL3J0Mjg3MC9ydDI4NzAuaA0KaW5kZXggMjllM2I1My4u
+NjJiNmVmMiAxMDA2NDQNCi0tLSBhL2RyaXZlcnMvc3RhZ2luZy9ydDI4NzAvcnQyODcwLmgNCisr
+KyBiL2RyaXZlcnMvc3RhZ2luZy9ydDI4NzAvcnQyODcwLmgNCkBAIC05OSw2ICs5OSw3IEBADQog
+CXtVU0JfREVWSUNFKDB4MTRCMiwweDNDMDcpfSwgLyogQUwgKi8JCQlcDQogCXtVU0JfREVWSUNF
+KDB4MTRCMiwweDNDMTIpfSwgLyogQUwgKi8gICAgICAgICAgIFwNCiAJe1VTQl9ERVZJQ0UoMHgw
+NTBELDB4ODA1Myl9LCAvKiBCZWxraW4gKi8JCVwNCisJe1VTQl9ERVZJQ0UoMHgwNTBELDB4ODE1
+Qyl9LCAvKiBCZWxraW4gKi8JCVwNCiAJe1VTQl9ERVZJQ0UoMHgxNEIyLDB4M0MyMyl9LCAvKiBB
+aXJsaW5rICovCQlcDQogCXtVU0JfREVWSUNFKDB4MTRCMiwweDNDMjcpfSwgLyogQWlybGluayAq
+LwkJXA0KIAl7VVNCX0RFVklDRSgweDA3QUEsMHgwMDJGKX0sIC8qIENvcmVnYSAqLwkJXA0KLS0g
+DQoxLjYuMy4zDQoNCg==
+
+--Multipart=_Wed__29_Jul_2009_17_11_07_+0200_7i_y_oxMZEqdVCW0--
