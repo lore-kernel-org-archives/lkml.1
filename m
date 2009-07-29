@@ -1,106 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752140AbZG2Ihs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752567AbZG2Iim@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752140AbZG2Ihs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 04:37:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbZG2Ihs
+	id S1752567AbZG2Iim (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 04:38:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbZG2Iim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 04:37:48 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48361 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750842AbZG2Ihq (ORCPT
+	Wed, 29 Jul 2009 04:38:42 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60806 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751394AbZG2Iil (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 04:37:46 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 29 Jul 2009 17:36:00 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Mike Smith <scgtrp@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH 1/2] vmalloc: reorder unmap and removal entry
-Message-Id: <20090729173600.540878a3.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090729123209.690baa48.kamezawa.hiroyu@jp.fujitsu.com>
-References: <bug-13850-10286@http.bugzilla.kernel.org/>
-	<20090728160527.1da52682.akpm@linux-foundation.org>
-	<20090729084825.1363c880.kamezawa.hiroyu@jp.fujitsu.com>
-	<525c5a6c0907281946t249ef288v77ee94edd16f054@mail.gmail.com>
-	<20090729123209.690baa48.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 29 Jul 2009 04:38:41 -0400
+Subject: Re: [PATCH 1/2] sched: check for pushing rt tasks after all
+ scheduling
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <20090729042526.205923666@goodmis.org>
+References: <20090729042121.727652581@goodmis.org>
+	 <20090729042526.205923666@goodmis.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Wed, 29 Jul 2009 10:41:24 +0200
+Message-Id: <1248856884.6987.3043.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I wonder fs/proc/kcore.c's vmalloc area access needs some fix. let me try.
+On Wed, 2009-07-29 at 00:21 -0400, Steven Rostedt wrote:
+> plain text document attachment
+> (0001-sched-check-for-pushing-rt-tasks-after-all-schedulin.patch)
+> From: Steven Rostedt <srostedt@redhat.com>
 > 
-> Thanks,
-Finally, I wrote 2 patches. maybe 2/2 is a fix for the bug.
-but needs comments.
+> The current method for pushing RT tasks after scheduling only
+> happens after a context switch. But we found cases where a task
+> is set up on a run queue to be pushed but the push never happens
+> because the schedule chooses the same task.
+> 
+> This bug was found with the help of Gregory Haskins and the use of
+> ftrace (trace_printk). It tooks several days for both of us analyzing
+> the code and the trace output to find this.
 
-Comaparing 2 calls, vfree() and vread()
-==
-vfree()
-  -> __vumap()
-     -> remove_vm_area()
-       -> free_unmap_vmap_area         #
-	 -> try_purge_vmap_area_lazy() #
-           ->__purge_vmap_area_lazy(); #
-             -> unmap_vmap_area()      # unmap memory here.
-       -> write_lock(&vmlist_lock)
-          remvoe vm_struct from list
-          write_unlock(&vmlist_lock).
-==
-vread()
- -> read_lock(&vmlist_lock);
-    get vm_struct -> do memcpy
-    read_unlock(&vmlist_lock);
-==
 
-Hmm, maybe not related to original bug but above order should be fixed.
+> +               if (current->sched_class->needs_post_schedule)
+> +                       post_schedule = current->sched_class->needs_post_schedule(rq);
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-vmap area should be purged after vm_struct is removed from the list
-because vread/vwrite etc...believes the range is valid while it's on
-vm_struct list.
+> +       if (post_schedule)
+> +               current->sched_class->post_schedule(rq);
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- mm/vmalloc.c |   14 +++++++++-----
- 1 file changed, 9 insertions(+), 5 deletions(-)
 
-Index: linux-2.6.31-rc4/mm/vmalloc.c
-===================================================================
---- linux-2.6.31-rc4.orig/mm/vmalloc.c
-+++ linux-2.6.31-rc4/mm/vmalloc.c
-@@ -1256,17 +1256,21 @@ struct vm_struct *remove_vm_area(const v
- 	if (va && va->flags & VM_VM_AREA) {
- 		struct vm_struct *vm = va->private;
- 		struct vm_struct *tmp, **p;
--
--		vmap_debug_free_range(va->va_start, va->va_end);
--		free_unmap_vmap_area(va);
--		vm->size -= PAGE_SIZE;
--
-+		/*
-+		 * remove from list and disallow access to this vm_struct
-+		 * before unmap. (address range confliction is maintained by
-+		 * vmap.)
-+		 */
- 		write_lock(&vmlist_lock);
- 		for (p = &vmlist; (tmp = *p) != vm; p = &tmp->next)
- 			;
- 		*p = tmp->next;
- 		write_unlock(&vmlist_lock);
- 
-+		vmap_debug_free_range(va->va_start, va->va_end);
-+		free_unmap_vmap_area(va);
-+		vm->size -= PAGE_SIZE;
-+
- 		return vm;
- 	}
- 	return NULL;
-
+Why can't we omit that first call, and do the second unconditionally,
+using storage in the class rq to save state?
