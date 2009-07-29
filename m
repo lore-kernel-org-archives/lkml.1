@@ -1,66 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbZG2UM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755584AbZG2UN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755477AbZG2UM0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 16:12:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbZG2UMZ
+	id S1755584AbZG2UN7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 16:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755356AbZG2UN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 16:12:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33528 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754269AbZG2UMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 16:12:24 -0400
-Subject: Re: fanotify - overall design before I start sending patches
-From: Eric Paris <eparis@redhat.com>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: Jamie Lokier <jamie@shareable.org>, david@lang.hm,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       malware-list@dmesg.printk.net, Valdis.Kletnieks@vt.edu, greg@kroah.com,
-       jcm@redhat.com, douglas.leeder@sophos.com, tytso@mit.edu,
-       arjan@infradead.org, jengelh@medozas.de, aviro@redhat.com,
-       mrkafk@gmail.com, alexl@redhat.com, jack@suse.cz,
-       tvrtko.ursulin@sophos.com, a.p.zijlstra@chello.nl, hch@infradead.org,
-       alan@lxorguk.ukuu.org.uk, mmorley@hcl.in
-In-Reply-To: <20090727175225.GA27999@ioremap.net>
-References: <1248466429.3567.82.camel@localhost>
-	 <alpine.DEB.1.10.0907241340580.28013@asgard.lang.hm>
-	 <1248469278.3567.88.camel@localhost> <20090724214401.GJ27755@shareable.org>
-	 <20090727175225.GA27999@ioremap.net>
-Content-Type: text/plain
-Date: Wed, 29 Jul 2009 16:11:03 -0400
-Message-Id: <1248898263.2597.56.camel@localhost>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Jul 2009 16:13:59 -0400
+Received: from mailc.microsoft.com ([131.107.115.214]:52980 "EHLO
+	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755349AbZG2UN6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 16:13:58 -0400
+From: Hank Janssen <hjanssen@microsoft.com>
+To: Greg KH <gregkh@suse.de>, Nicolas Palix <npalix@diku.dk>
+CC: "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: RE: [PATCH 4/4] Staging: hv: Fix warning by casting a (const void
+ *) to (void *)
+Thread-Topic: [PATCH 4/4] Staging: hv: Fix warning by casting a (const void
+ *) to (void *)
+Thread-Index: AQHKEEY6lMcsxfhqK0S+Itty7KG93pCM7niA///JPlA=
+Date: Wed, 29 Jul 2009 20:13:56 +0000
+Message-ID: <8AFC7968D54FB448A30D8F38F259C56209A7E5D8@TK5EX14MBXC116.redmond.corp.microsoft.com>
+References: <200907291410.29355.npalix@diku.dk>
+ <20090729130233.GA27054@suse.de>
+In-Reply-To: <20090729130233.GA27054@suse.de>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-27 at 21:52 +0400, Evgeniy Polyakov wrote:
-> Hi.
-> 
-> On Fri, Jul 24, 2009 at 10:44:01PM +0100, Jamie Lokier (jamie@shareable.org) wrote:
-> > > No, I will NOT EVER pass a pathname.  Period.  End of story.  I stated
-> > > the if userspace wants to deal with pathnames (and they understand the
-> > > system setup well enough to know if pathnames even make sense to them)
-> > > they can use readlink(2) on /proc/self/fd
-> > 
-> > That makes sense.
-> > 
-> > In most cases where events trigger userspace cache or index updates,
-> > userspace already has enough information to calculate the path (and
-> > any derived data) from the inode number (in the case of non-hard-link
-> > files) or from the inode number of the parent directory and the name
-> > (not full path).
-> 
-> Except that rlimits may forbid to open new file descriptor while queue
-> length is enough to put another event with the full or partial path
-> name.
-> 
-> I will read initial mail next, but if it is not described there, how
-> rlimit problem is handled?
 
-At the moment if you run out of rlimit fds you start getting (useless)
-events with the fd equal to some errno (don't remember what hitting
-rlimit errno is offhand)
+>On Wed, Jul 29, 2009 at 02:10:28PM +0200, Nicolas Palix wrote:
+>>
+>> Fix compilation warning by casting the const void *Buffer
+>> variable into a void *.
+>>
+>>>
+[....]
+>> Signed-off-by: Nicolas Palix <npalix@diku.dk>
+>> ---
+>>  drivers/staging/hv/Channel.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/drivers/staging/hv/Channel.c b/drivers/staging/hv/Channel.c
+>> index 68f3442..854fa30 100644
+>> --- a/drivers/staging/hv/Channel.c
+>> +++ b/drivers/staging/hv/Channel.c
+>> @@ -787,7 +787,7 @@ VmbusChannelSendPacket(
+>>       bufferList[0].Data = &desc;
+>>       bufferList[0].Length = sizeof(VMPACKET_DESCRIPTOR);
+>>
+>> -     bufferList[1].Data = Buffer;
+>> +     bufferList[1].Data = (void *)Buffer;
+>
+>Yeah, I thought about doing this as well, but it's wrong.  If this
+>buffer really isn't being modified, then the Data pointer needs to be
+>const.
+>
+>Or, if the Data pointer really is going to not be const, then the
+>function parameters need to be changed, but that means lots of code
+>needs to be changed.
+>
+>Hank, what do you think is the correct thing to do here?
+>
+>thanks,
+>
+>greg k-h
 
--Eric
+I think both will work. At some point in the past for this design was
+To leave open the possibility for having the buffer modified. Right
+Now I am pretty sure that it does not get modified.
+
+I am not tied to using either void or const. What makes more sense, are
+The kernel guidelines that if it does not get modified to define it as const?
+
+The only thing about changing the API signature is that it does trickle into
+A bunch of changes (primarily in Channel.[ch], ChannelInterface.[ch] and RingBuffer.[ch])
+
+
+Thanks,
+
+Hank.
+
 
