@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbZG2Qz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbZG2Q5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755856AbZG2Qz6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 12:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755699AbZG2Qz5
+	id S1755907AbZG2Q5y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 12:57:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755883AbZG2Q5x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 12:55:57 -0400
-Received: from nox.protox.org ([88.191.38.29]:41587 "EHLO nox.protox.org"
+	Wed, 29 Jul 2009 12:57:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33400 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755458AbZG2Qz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 12:55:56 -0400
-From: Jerome Glisse <jglisse@redhat.com>
-To: airlied@gmail.com
-Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
-       Jerome Glisse <jglisse@redhat.com>
-Subject: [PATCH] drm/radeon/kms: Fix caching mode selection for GTT object
-Date: Wed, 29 Jul 2009 18:55:53 +0200
-Message-Id: <1248886553-10164-1-git-send-email-jglisse@redhat.com>
-X-Mailer: git-send-email 1.6.2.5
+	id S1755881AbZG2Q5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 12:57:52 -0400
+Message-ID: <4A707F85.5090008@redhat.com>
+Date: Wed, 29 Jul 2009 18:57:41 +0200
+From: Milan Broz <mbroz@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Paul Clements <paul.clements@steeleye.com>
+CC: linux-raid@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       kernel list <linux-kernel@vger.kernel.org>, ian.campbell@citrix.com
+Subject: Re: [BUG] raid1 behind writes alter bio structure illegally
+References: <4A707578.3010901@steeleye.com>
+In-Reply-To: <4A707578.3010901@steeleye.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-GTT object can either be cached,uncached or wc just let core ttm
-pick the best mode according to how the bo driver and GTT memory
-type was initialized.
+Hi Paul,
 
-Signed-off-by: Jerome Glisse <jglisse@redhat.com>
----
- drivers/gpu/drm/radeon/radeon_object.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Paul Clements wrote:
+> I've run into this bug on a 2.6.18 kernel, but I think the fix is still 
+> applicable to the latest kernels (even though the symptoms would be 
+> slightly different).
+> 
+> Perhaps someone who knows the block and/or SCSI layers well can comment 
+> on the legality of attaching new pages to a bio without fixing up the 
+> internal bio counters (details below)?
 
-diff --git a/drivers/gpu/drm/radeon/radeon_object.c b/drivers/gpu/drm/radeon/radeon_object.c
-index dd9ac2f..e98cae3 100644
---- a/drivers/gpu/drm/radeon/radeon_object.c
-+++ b/drivers/gpu/drm/radeon/radeon_object.c
-@@ -106,7 +106,7 @@ static inline uint32_t radeon_object_flags_from_domain(uint32_t domain)
- 		flags |= TTM_PL_FLAG_VRAM | TTM_PL_FLAG_WC | TTM_PL_FLAG_UNCACHED;
- 	}
- 	if (domain & RADEON_GEM_DOMAIN_GTT) {
--		flags |= TTM_PL_FLAG_TT | TTM_PL_FLAG_WC | TTM_PL_FLAG_UNCACHED;
-+		flags |= TTM_PL_FLAG_TT | TTM_PL_MASK_CACHING;
- 	}
- 	if (domain & RADEON_GEM_DOMAIN_CPU) {
- 		flags |= TTM_PL_FLAG_SYSTEM | TTM_PL_MASK_CACHING;
--- 
-1.6.2.5
+> LVM over raid1 over SCSI/nbd
+
+Please can you try that backporting of this patch helps?
+
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=5d84070ee0a433620c57e85dac7f82faaec5fbb3
+
+(If so, see https://bugzilla.redhat.com/show_bug.cgi?id=512387)
+
+Milan
+--
+mbroz@redhat.com
 
