@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755900AbZG2RJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbZG2RNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755900AbZG2RJu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 13:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755730AbZG2RJu
+	id S1755949AbZG2RNe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 13:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755829AbZG2RNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 13:09:50 -0400
-Received: from mtagate1.uk.ibm.com ([194.196.100.161]:44845 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755009AbZG2RJt (ORCPT
+	Wed, 29 Jul 2009 13:13:33 -0400
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:63379 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755793AbZG2RNc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 13:09:49 -0400
-Date: Wed, 29 Jul 2009 19:09:38 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: dwalker@fifo99.com
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
-Subject: Re: [RFC][patch 00/12] clocksource / timekeeping rework V2
-Message-ID: <20090729190938.1e4c45e9@skybase>
-In-Reply-To: <200907291702.n6TH2LEt017305@d06av05.portsmouth.uk.ibm.com>
-References: <200907291702.n6TH2LEt017305@d06av05.portsmouth.uk.ibm.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Jul 2009 13:13:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=wyzNhYKXq+uRcJC/Slr8W5VP+M4G80ayz9VjN8IVx9MT86XY0qvLmFVkfY+PYby4Xw
+         0F7ybhGvb9CTooMGMkZhxflBWnVFHM+zf5ZuAXNFFbxxKWSRl8EPathnkGW8H+Cmnosv
+         Z201todGjXNwujvrlzz6kHdzQqz2Vg+ND+xgg=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>
+Subject: [GIT PULL] tracing: Various cleanups for 2.6.32
+Date: Wed, 29 Jul 2009 19:13:23 +0200
+Message-Id: <1248887609-5147-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Jul 2009 11:02:21 -0600
-dwalker@fifo99.com wrote:
+Hi Thomas, Ingo,
 
-> On Wed, 2009-07-29 at 18:50 +0200, Martin Schwidefsky wrote:
-> 
-> > void clocksource_change_rating(struct clocksource *cs, int rating)
-> 
-> > the two functions do different things. What exactly is the idea you've
-> > got in mind?
-> 
-> It's only the case when the rating goes to zero .. That makes the
-> clocksource unusable, which is very much like unregistering it..
+These patches are the result of various cleanups in the tracing
+subsystem: algorithms simpifications, and various trace.c to tracer
+files moving.
 
-True, the clocksource code won't pick the clock any more as long as
-there is an alternative clock available. It still shows up in the list
-of clocks though and you can do an override with it. 
+Thanks,
+Frederic.
 
--- 
-blue skies,
-   Martin.
+The following changes since commit d34a4debef933061924ee17c2ede33f5c44925fb:
+  jolsa@redhat.com (1):
+        tracing: Remove .globl in the scripts/recordmcount.pl doc
 
-"Reality continues to ruin my life." - Calvin.
+are available in the git repository at:
 
+  git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git tracing/core
+
+Frederic Weisbecker (5):
+      tracing/function-graph-tracer: Drop the useless nmi protection
+      tracing/function-tracer: Move trace_function() in the function tracer file
+      tracing/core: Make the stack entry helpers global
+      tracing: Move sched event insertion helpers in the sched switch tracer file
+      tracing/function-graph-tracer: Move graph event insertion helpers in the graph tracer file
+
+Lai Jiangshan (1):
+      tracing: Simplify print_graph_cpu()
+
+ arch/x86/kernel/ftrace.c             |    4 -
+ kernel/trace/trace.c                 |  217 ++--------------------------------
+ kernel/trace/trace.h                 |   30 ++++-
+ kernel/trace/trace_functions.c       |   25 ++++
+ kernel/trace/trace_functions_graph.c |  152 +++++++++++++++++++-----
+ kernel/trace/trace_sched_switch.c    |   57 +++++++++
+ kernel/trace/trace_selftest.c        |    1 +
+ 7 files changed, 242 insertions(+), 244 deletions(-)
