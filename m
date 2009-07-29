@@ -1,87 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbZG2DDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753686AbZG2DFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754217AbZG2DDh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 23:03:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbZG2DDh
+	id S1753686AbZG2DFb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 23:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752829AbZG2DFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 23:03:37 -0400
-Received: from mga10.intel.com ([192.55.52.92]:56833 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752728AbZG2DDg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 23:03:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,286,1246863600"; 
-   d="scan'208";a="711985727"
-From: Sheng Yang <sheng@linux.intel.com>
-Organization: Intel Opensource Technology Center
-To: kvm@vger.kernel.org
-Subject: Re: [PATCH] kvm: remove superfluous NULL pointer check in kvm_inject_pit_timer_irqs()
-Date: Wed, 29 Jul 2009 11:02:36 +0800
-User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; x86_64; ; )
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Avi Kivity <avi@redhat.com>, linux-kernel@vger.kernel.org,
-       Dan Carpenter <error27@gmail.com>, corbet@lwn.net, eteo@redhat.com,
-       Julia Lawall <julia@diku.dk>
-References: <200907290046.40596.bzolnier@gmail.com>
-In-Reply-To: <200907290046.40596.bzolnier@gmail.com>
+	Tue, 28 Jul 2009 23:05:30 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50257 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751657AbZG2DFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 23:05:30 -0400
+Message-ID: <4A6FBC6F.6040404@garzik.org>
+Date: Tue, 28 Jul 2009 23:05:19 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Greg KH <greg@kroah.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       kevin.huang@rdc.com.tw, Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] pata_rdc: driver for RDC ATA devices
+References: <20090624172930.24354.80799.stgit@t61.ukuu.org.uk> <4A6FA304.6070501@garzik.org> <20090729025307.GA25100@kroah.com>
+In-Reply-To: <20090729025307.GA25100@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907291102.38682.sheng@linux.intel.com>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 July 2009 06:46:38 Bartlomiej Zolnierkiewicz wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] kvm: remove superfluous NULL pointer check in
-> kvm_inject_pit_timer_irqs()
->
-> This takes care of the following entries from Dan's list:
->
-> arch/x86/kvm/i8254.c +714 kvm_inject_pit_timer_irqs(6) warning: variable
-> derefenced in initializer 'vcpu' arch/x86/kvm/i8254.c +714
-> kvm_inject_pit_timer_irqs(6) warning: variable derefenced before check
-> 'vcpu'
->
-> Reported-by: Dan Carpenter <error27@gmail.com>
-> Cc: corbet@lwn.net
-> Cc: eteo@redhat.com
-> Cc: Julia Lawall <julia@diku.dk>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> ---
->  arch/x86/kvm/i8254.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> Index: b/arch/x86/kvm/i8254.c
-> ===================================================================
-> --- a/arch/x86/kvm/i8254.c
-> +++ b/arch/x86/kvm/i8254.c
-> @@ -713,7 +713,7 @@ void kvm_inject_pit_timer_irqs(struct kv
->  	struct kvm *kvm = vcpu->kvm;
->  	struct kvm_kpit_state *ps;
->
-> -	if (vcpu && pit) {
-> +	if (pit) {
->  		int inject = 0;
->  		ps = &pit->pit_state;
->
-Oh, follow up for the recent zero day exploit, right? :)
+Greg KH wrote:
+> On Tue, Jul 28, 2009 at 09:16:52PM -0400, Jeff Garzik wrote:
+>> Alan Cox wrote:
+>>> Try this version instead - forgot to refresh the patch before sending
+>>>
+>>> From: Alan Cox <alan@linux.intel.com>
+>>>
+>>> Signed-off-by: Alan Cox <alan@linux.intel.com>
+>>> ---
+>>>
+>>>  drivers/ata/Kconfig    |   10 +
+>>>  drivers/ata/Makefile   |    1 
+>>>  drivers/ata/pata_rdc.c |  400 ++++++++++++++++++++++++++++++++++++++++++++++++
+>>>  3 files changed, 411 insertions(+), 0 deletions(-)
+>>>  create mode 100644 drivers/ata/pata_rdc.c
+>> applied... and ata_piix+pata_rdc cleanups queued on todo list
+> 
+> Great!  Let me know when this goes to Linus so I delete the one in the
+> staging tree.
 
-Yes, vcpu NULL check is not necessary here.
+FWIW, it's in libata-dev.git#upstream and libata-dev.git#NEXT, so 
+linux-next should pick it up automatically.
 
-Acked-by: Sheng Yang <sheng@linux.intel.com>
+	Jeff
 
--- 
-regards
-Yang, Sheng
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 
