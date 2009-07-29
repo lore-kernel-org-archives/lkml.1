@@ -1,62 +1,450 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753926AbZG2KoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbZG2KoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753926AbZG2KoQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 06:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbZG2KoP
+	id S1754025AbZG2KoY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 06:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753974AbZG2KoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 06:44:15 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56872 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753459AbZG2KoO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 06:44:14 -0400
-From: Xiaotian Feng <dfeng@redhat.com>
-To: trivial@kernel.org
-Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Xiaotian Feng <dfeng@redhat.com>
-Subject: [PATCH] trivial: Fix stale definition of file-nr in documentation
-Date: Wed, 29 Jul 2009 18:37:37 +0800
-Message-Id: <1248863857-5629-1-git-send-email-dfeng@redhat.com>
+	Wed, 29 Jul 2009 06:44:23 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:40386 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753973AbZG2KoT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 06:44:19 -0400
+Date: Wed, 29 Jul 2009 16:13:33 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Paul Menage <menage@google.com>
+Cc: lizf@cn.fujitsu.com, balbir@linux.vnet.ibm.com,
+       kamezawa.hiroyu@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, containers@lists.linux-foundation.org
+Subject: Re: [PATCH 1/4] Support named cgroups hierarchies
+Message-ID: <20090729104333.GB3640@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20090728232508.20156.17943.stgit@menage.mtv.corp.google.com> <20090728232621.20156.45418.stgit@menage.mtv.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090728232621.20156.45418.stgit@menage.mtv.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit 760df9 merged /proc/sys/fs documentation in Documentation/sysctl/
-fs.txt and Documentation/filesystem/proc.txt, but stale file-nr definition
-is remained. This patch add back the right fs-nr definition for 2.6 kernel.
+On Tue, Jul 28, 2009 at 04:26:21PM -0700, Paul Menage wrote:
+> Support named cgroups hierarchies
+> 
+> To simplify referring to cgroup hierarchies in mount statements, and
+> to allow disambiguation in the presence of empty hierarchies and
+> multiply-bindable subsystems this patch adds support for naming a new
+> cgroup hierarchy via the "name=" mount option
+> 
+> A pre-existing hierarchy may be specified by either name or by
+> subsystems; a hierarchy's name cannot be changed by a remount
+> operation.
+> 
+> Example usage:
+> 
+> # To create a hierarchy called "foo" containing the "cpu" subsystem
+> mount -t cgroup -oname=foo,cpu cgroup /mnt/cgroup1
+> 
+> # To mount the "foo" hierarchy on a second location
+> mount -t cgroup -oname=foo cgroup /mnt/cgroup2
+> 
+> 
+> Signed-off-by: Paul Menage <menage@google.com>
+> Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+> 
+> ---
+> 
+>  Documentation/cgroups/cgroups.txt |   20 ++++
+>  kernel/cgroup.c                   |  185 +++++++++++++++++++++++++++----------
+>  2 files changed, 157 insertions(+), 48 deletions(-)
+> 
+> diff --git a/Documentation/cgroups/cgroups.txt b/Documentation/cgroups/cgroups.txt
+> index 6eb1a97..4bccfc1 100644
+> --- a/Documentation/cgroups/cgroups.txt
+> +++ b/Documentation/cgroups/cgroups.txt
+> @@ -408,6 +408,26 @@ You can attach the current shell task by echoing 0:
+> 
+>  # echo 0 > tasks
+> 
+> +2.3 Mounting hierarchies by name
+> +--------------------------------
+> +
+> +Passing the name=<x> option when mounting a cgroups hierarchy
+> +associates the given name with the hierarchy.  This can be used when
+> +mounting a pre-existing hierarchy, in order to refer to it by name
+> +rather than by its set of active subsystems.  Each hierarchy is either
+> +nameless, or has a unique name.
+> +
+> +The name should match [\w.-]+
+> +
+> +When passing a name=<x> option for a new hierarchy, you need to
+> +specify subsystems manually; the legacy behaviour of mounting all
+> +subsystems when none are explicitly specified is not supported when
+> +you give a subsystem a name.
+> +
+> +The name of the subsystem appears as part of the hierarchy description
+> +in /proc/mounts and /proc/<pid>/cgroups.
+> +
+> +
+>  3. Kernel API
+>  =============
+> 
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index 18acba7..85573e8 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -23,6 +23,7 @@
+>   */
+> 
+>  #include <linux/cgroup.h>
+> +#include <linux/ctype.h>
+>  #include <linux/errno.h>
+>  #include <linux/fs.h>
+>  #include <linux/kernel.h>
+> @@ -60,6 +61,8 @@ static struct cgroup_subsys *subsys[] = {
+>  #include <linux/cgroup_subsys.h>
+>  };
+> 
+> +#define MAX_CGROUP_ROOT_NAMELEN 64
+> +
+>  /*
+>   * A cgroupfs_root represents the root of a cgroup hierarchy,
+>   * and may be associated with a superblock to form an active
+> @@ -94,6 +97,9 @@ struct cgroupfs_root {
+> 
+>  	/* The path to use for release notifications. */
+>  	char release_agent_path[PATH_MAX];
+> +
+> +	/* The name for this hierarchy - may be empty */
+> +	char name[MAX_CGROUP_ROOT_NAMELEN];
+>  };
+> 
+>  /*
+> @@ -829,6 +835,8 @@ static int cgroup_show_options(struct seq_file *seq, struct vfsmount *vfs)
+>  		seq_puts(seq, ",noprefix");
+>  	if (strlen(root->release_agent_path))
+>  		seq_printf(seq, ",release_agent=%s", root->release_agent_path);
+> +	if (strlen(root->name))
+> +		seq_printf(seq, ",name=%s", root->name);
+>  	mutex_unlock(&cgroup_mutex);
+>  	return 0;
+>  }
+> @@ -837,6 +845,9 @@ struct cgroup_sb_opts {
+>  	unsigned long subsys_bits;
+>  	unsigned long flags;
+>  	char *release_agent;
+> +	char *name;
+> +
+> +	struct cgroupfs_root *new_root;
+>  };
+> 
+>  /* Convert a hierarchy specifier into a bitmask of subsystems and
+> @@ -851,9 +862,7 @@ static int parse_cgroupfs_options(char *data,
+>  	mask = ~(1UL << cpuset_subsys_id);
+>  #endif
+> 
+> -	opts->subsys_bits = 0;
+> -	opts->flags = 0;
+> -	opts->release_agent = NULL;
+> +	memset(opts, 0, sizeof(*opts));
+> 
+>  	while ((token = strsep(&o, ",")) != NULL) {
+>  		if (!*token)
+> @@ -873,11 +882,33 @@ static int parse_cgroupfs_options(char *data,
+>  			/* Specifying two release agents is forbidden */
+>  			if (opts->release_agent)
+>  				return -EINVAL;
+> -			opts->release_agent = kzalloc(PATH_MAX, GFP_KERNEL);
+> +			opts->release_agent =
+> +				kstrndup(token + 14, PATH_MAX, GFP_KERNEL);
 
-Signed-off-by: Xiaotian Feng<dfeng@redhat.com>
----
- Documentation/sysctl/fs.txt |   17 ++++++++++-------
- 1 files changed, 10 insertions(+), 7 deletions(-)
+I am not sure how it can be acheived, but can we avoid using 14 here (it
+took me a moment before I realized it was strlen("release_agent")
 
-diff --git a/Documentation/sysctl/fs.txt b/Documentation/sysctl/fs.txt
-index 1458448..6268250 100644
---- a/Documentation/sysctl/fs.txt
-+++ b/Documentation/sysctl/fs.txt
-@@ -96,13 +96,16 @@ handles that the Linux kernel will allocate. When you get lots
- of error messages about running out of file handles, you might
- want to increase this limit.
- 
--The three values in file-nr denote the number of allocated
--file handles, the number of unused file handles and the maximum
--number of file handles. When the allocated file handles come
--close to the maximum, but the number of unused file handles is
--significantly greater than 0, you've encountered a peak in your 
--usage of file handles and you don't need to increase the maximum.
--
-+Historically, the three values in file-nr denoted the number of
-+allocated file handles, the number of allocated but unused file
-+handles, and the maximum number of file handles. Linux 2.6 always
-+reports 0 as the number of free file handles -- this is not an
-+error, it just means that the number of allocated file handles
-+exactly matches the number of used file handles.
-+
-+Attempts to allocate more file descriptors than file-max are
-+reported with printk, look for "VFS: file-max limit <number>
-+reached".
- ==============================================================
- 
- nr_open:
+>  			if (!opts->release_agent)
+>  				return -ENOMEM;
+> -			strncpy(opts->release_agent, token + 14, PATH_MAX - 1);
+> -			opts->release_agent[PATH_MAX - 1] = 0;
+> +		} else if (!strncmp(token, "name=", 5)) {
+> +			int i;
+> +			const char *name = token + 5;
+
+similarly here as well
+
+> +			/* Can't specify an empty name */
+> +			if (!strlen(name))
+> +				return -EINVAL;
+> +			/* Must match [\w.-]+ */
+> +			for (i = 0; i < strlen(name); i++) {
+> +				char c = name[i];
+> +				if (isalnum(c))
+> +					continue;
+> +				if ((c == '.') || (c == '-') || (c == '_'))
+> +					continue;
+> +				return -EINVAL;
+> +			}
+> +			/* Specifying two names is forbidden */
+> +			if (opts->name)
+> +				return -EINVAL;
+> +			opts->name = kstrndup(name,
+> +					      MAX_CGROUP_ROOT_NAMELEN,
+> +					      GFP_KERNEL);
+> +			if (!opts->name)
+> +				return -ENOMEM;
+>  		} else {
+>  			struct cgroup_subsys *ss;
+>  			int i;
+> @@ -904,7 +935,7 @@ static int parse_cgroupfs_options(char *data,
+>  		return -EINVAL;
+> 
+>  	/* We can't have an empty hierarchy */
+> -	if (!opts->subsys_bits)
+> +	if (!opts->subsys_bits && !opts->name)
+>  		return -EINVAL;
+> 
+>  	return 0;
+> @@ -932,6 +963,12 @@ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
+>  		goto out_unlock;
+>  	}
+> 
+> +	/* Don't allow name to change at remount */
+> +	if (opts.name && strcmp(opts.name, root->name)) {
+> +		ret = -EINVAL;
+> +		goto out_unlock;
+> +	}
+> +
+>  	ret = rebind_subsystems(root, opts.subsys_bits);
+>  	if (ret)
+>  		goto out_unlock;
+> @@ -943,6 +980,7 @@ static int cgroup_remount(struct super_block *sb, int *flags, char *data)
+>  		strcpy(root->release_agent_path, opts.release_agent);
+>   out_unlock:
+>  	kfree(opts.release_agent);
+> +	kfree(opts.name);
+>  	mutex_unlock(&cgroup_mutex);
+>  	mutex_unlock(&cgrp->dentry->d_inode->i_mutex);
+>  	unlock_kernel();
+> @@ -965,6 +1003,7 @@ static void init_cgroup_housekeeping(struct cgroup *cgrp)
+>  	INIT_LIST_HEAD(&cgrp->pids_list);
+>  	init_rwsem(&cgrp->pids_mutex);
+>  }
+> +
+>  static void init_cgroup_root(struct cgroupfs_root *root)
+>  {
+>  	struct cgroup *cgrp = &root->top_cgroup;
+> @@ -978,31 +1017,59 @@ static void init_cgroup_root(struct cgroupfs_root *root)
+> 
+>  static int cgroup_test_super(struct super_block *sb, void *data)
+>  {
+> -	struct cgroupfs_root *new = data;
+> +	struct cgroup_sb_opts *opts = data;
+>  	struct cgroupfs_root *root = sb->s_fs_info;
+> 
+> -	/* First check subsystems */
+> -	if (new->subsys_bits != root->subsys_bits)
+> -	    return 0;
+> +	/* If we asked for a name then it must match */
+> +	if (opts->name && strcmp(opts->name, root->name))
+> +		return 0;
+> 
+> -	/* Next check flags */
+> -	if (new->flags != root->flags)
+> +	/* If we asked for subsystems then they must match */
+> +	if (opts->subsys_bits && (opts->subsys_bits != root->subsys_bits))
+>  		return 0;
+> 
+>  	return 1;
+>  }
+> 
+> +static struct cgroupfs_root *cgroup_root_from_opts(struct cgroup_sb_opts *opts)
+> +{
+> +	struct cgroupfs_root *root;
+> +
+> +	/* Empty hierarchies aren't supported */
+> +	if (!opts->subsys_bits)
+> +		return NULL;
+> +
+> +	root = kzalloc(sizeof(*root), GFP_KERNEL);
+> +	if (!root)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	init_cgroup_root(root);
+> +	root->subsys_bits = opts->subsys_bits;
+> +	root->flags = opts->flags;
+> +	if (opts->release_agent)
+> +		strcpy(root->release_agent_path, opts->release_agent);
+> +	if (opts->name)
+> +		strcpy(root->name, opts->name);
+> +	return root;
+> +}
+> +
+>  static int cgroup_set_super(struct super_block *sb, void *data)
+>  {
+>  	int ret;
+> -	struct cgroupfs_root *root = data;
+> +	struct cgroup_sb_opts *opts = data;
+> +
+> +	/* If we don't have a new root, we can't set up a new sb */
+> +	if (!opts->new_root)
+> +		return -EINVAL;
+> +
+> +	BUG_ON(!opts->subsys_bits);
+> 
+>  	ret = set_anon_super(sb, NULL);
+>  	if (ret)
+>  		return ret;
+> 
+> -	sb->s_fs_info = root;
+> -	root->sb = sb;
+> +	sb->s_fs_info = opts->new_root;
+> +	opts->new_root->sb = sb;
+> 
+>  	sb->s_blocksize = PAGE_CACHE_SIZE;
+>  	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
+> @@ -1039,48 +1106,43 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+>  			 void *data, struct vfsmount *mnt)
+>  {
+>  	struct cgroup_sb_opts opts;
+> +	struct cgroupfs_root *root;
+>  	int ret = 0;
+>  	struct super_block *sb;
+> -	struct cgroupfs_root *root;
+> -	struct list_head tmp_cg_links;
+> +	struct cgroupfs_root *new_root;
+> 
+>  	/* First find the desired set of subsystems */
+>  	ret = parse_cgroupfs_options(data, &opts);
+> -	if (ret) {
+> -		kfree(opts.release_agent);
+> -		return ret;
+> -	}
+> -
+> -	root = kzalloc(sizeof(*root), GFP_KERNEL);
+> -	if (!root) {
+> -		kfree(opts.release_agent);
+> -		return -ENOMEM;
+> -	}
+> +	if (ret)
+> +		goto out_err;
+> 
+> -	init_cgroup_root(root);
+> -	root->subsys_bits = opts.subsys_bits;
+> -	root->flags = opts.flags;
+> -	if (opts.release_agent) {
+> -		strcpy(root->release_agent_path, opts.release_agent);
+> -		kfree(opts.release_agent);
+> +	/*
+> +	 * Allocate a new cgroup root. We may not need it if we're
+> +	 * reusing an existing hierarchy.
+> +	 */
+> +	new_root = cgroup_root_from_opts(&opts);
+> +	if (IS_ERR(new_root)) {
+> +		ret = PTR_ERR(new_root);
+> +		goto out_err;
+>  	}
+> +	opts.new_root = new_root;
+> 
+> -	sb = sget(fs_type, cgroup_test_super, cgroup_set_super, root);
+> -
+> +	/* Locate an existing or new sb for this hierarchy */
+> +	sb = sget(fs_type, cgroup_test_super, cgroup_set_super, &opts);
+>  	if (IS_ERR(sb)) {
+> -		kfree(root);
+> -		return PTR_ERR(sb);
+> +		ret = PTR_ERR(sb);
+> +		kfree(opts.new_root);
+> +		goto out_err;
+>  	}
+> 
+> -	if (sb->s_fs_info != root) {
+> -		/* Reusing an existing superblock */
+> -		BUG_ON(sb->s_root == NULL);
+> -		kfree(root);
+> -		root = NULL;
+> -	} else {
+> -		/* New superblock */
+> +	root = sb->s_fs_info;
+> +	BUG_ON(!root);
+> +	if (root == opts.new_root) {
+> +		/* We used the new root structure, so this is a new hierarchy */
+> +		struct list_head tmp_cg_links;
+>  		struct cgroup *root_cgrp = &root->top_cgroup;
+>  		struct inode *inode;
+> +		struct cgroupfs_root *existing_root;
+>  		int i;
+> 
+>  		BUG_ON(sb->s_root != NULL);
+> @@ -1093,6 +1155,18 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+>  		mutex_lock(&inode->i_mutex);
+>  		mutex_lock(&cgroup_mutex);
+> 
+> +		if (strlen(root->name)) {
+> +			/* Check for name clashes with existing mounts */
+> +			for_each_active_root(existing_root) {
+> +				if (!strcmp(existing_root->name, root->name)) {
+> +					ret = -EBUSY;
+> +					mutex_unlock(&cgroup_mutex);
+> +					mutex_unlock(&inode->i_mutex);
+> +					goto drop_new_super;
+> +				}
+> +			}
+> +		}
+> +
+>  		/*
+>  		 * We're accessing css_set_count without locking
+>  		 * css_set_lock here, but that's OK - it can only be
+> @@ -1111,7 +1185,8 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+>  		if (ret == -EBUSY) {
+>  			mutex_unlock(&cgroup_mutex);
+>  			mutex_unlock(&inode->i_mutex);
+> -			goto free_cg_links;
+> +			free_cg_links(&tmp_cg_links);
+> +			goto drop_new_super;
+>  		}
+> 
+>  		/* EBUSY should be the only error here */
+> @@ -1145,15 +1220,26 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+>  		cgroup_populate_dir(root_cgrp);
+>  		mutex_unlock(&inode->i_mutex);
+>  		mutex_unlock(&cgroup_mutex);
+> +	} else {
+> +		/*
+> +		 * We re-used an existing hierarchy - the new root (if
+> +		 * any) is not needed
+> +		 */
+> +		kfree(opts.new_root);
+>  	}
+> 
+>  	simple_set_mnt(mnt, sb);
+> +	kfree(opts.release_agent);
+> +	kfree(opts.name);
+>  	return 0;
+> 
+> - free_cg_links:
+> -	free_cg_links(&tmp_cg_links);
+>   drop_new_super:
+>  	deactivate_locked_super(sb);
+> +
+> + out_err:
+> +	kfree(opts.release_agent);
+> +	kfree(opts.name);
+> +
+>  	return ret;
+>  }
+> 
+> @@ -2971,6 +3057,9 @@ static int proc_cgroup_show(struct seq_file *m, void *v)
+>  		seq_printf(m, "%lu:", root->subsys_bits);
+>  		for_each_subsys(root, ss)
+>  			seq_printf(m, "%s%s", count++ ? "," : "", ss->name);
+> +		if (strlen(root->name))
+> +			seq_printf(m, "%sname=%s", count ? "," : "",
+> +				   root->name);
+>  		seq_putc(m, ':');
+>  		get_first_subsys(&root->top_cgroup, NULL, &subsys_id);
+>  		cgrp = task_cgroup(tsk, subsys_id);
+> 
+
 -- 
-1.6.2.5
-
+regards,
+Dhaval
