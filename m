@@ -1,89 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbZG2CYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbZG2CFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756130AbZG2CYM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 22:24:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756001AbZG2CYL
+	id S1754279AbZG2CFW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 22:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbZG2CFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 22:24:11 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:39609 "EHLO mgw2.diku.dk"
+	Tue, 28 Jul 2009 22:05:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33931 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755930AbZG2CYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 22:24:10 -0400
-Date: Wed, 29 Jul 2009 04:22:51 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Cc: Paulo Marques <pmarques@grupopie.com>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 6/12] drivers/platform/x86: Correct redundant test
-In-Reply-To: <200907290050.n6T0oL0o024740@mercury.physics.adelaide.edu.au>
-Message-ID: <Pine.LNX.4.64.0907290422121.16543@ask.diku.dk>
-References: <200907290050.n6T0oL0o024740@mercury.physics.adelaide.edu.au>
+	id S1752977AbZG2CFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 22:05:20 -0400
+Date: Wed, 29 Jul 2009 04:01:40 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>, utrace-devel@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH -mm] introduce tracehook_finish_jctl() helper
+Message-ID: <20090729020139.GA7381@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Jul 2009, Jonathan Woithe wrote:
+(textually depends on signals-tracehook_notify_jctl-change.patch)
 
-> Hi guys
-> 
-> > Julia Lawall wrote:
-> > > [...]
-> > > ---
-> > >  drivers/platform/x86/fujitsu-laptop.c          |    3 ---
-> > >  1 files changed, 0 insertions(+), 3 deletions(-)
-> > > 
-> > > diff --git a/drivers/platform/x86/fujitsu-laptop.c b/drivers/platform/x86/fujitsu-laptop.c
-> > > index 218b9a1..5306901 100644
-> > > --- a/drivers/platform/x86/fujitsu-laptop.c
-> > > +++ b/drivers/platform/x86/fujitsu-laptop.c
-> > > @@ -745,9 +745,6 @@ static int acpi_fujitsu_remove(struct acpi_device *device, int type)
-> > >  
-> > >  	fujitsu = acpi_driver_data(device);
-> > >  
-> > > -	if (!device || !acpi_driver_data(device))
-> > > -		return -EINVAL;
-> > > -
-> > 
-> > Shouldn't this still do a:
-> > 
-> >    if (!fujitsu)
-> >      return -EINVAL;
-> > 
-> > to avoid dereferencing a NULL pointer below?
-> 
-> Hmm, yes it should.  Well spotted.  And I'm not certain how the duplicate
-> test on "device" got in there in the first place.  I suspect it came about
-> due to some structural changes made a few versions ago and I failed to
-> notice that the second check became redundant.
+Introduce the empty inline tracehook_finish_jctl() helper called by
+do_signal_stop() after wakeup.
 
-If you are going to check fujitsu afterwards, then I think there is no 
-need to test the result of acpi_driver_data before.
+Currently we lack the ability to report this state change.
 
-julia
+Also fix the comment, it should be placed before schedule().
 
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+---
+
+ include/linux/tracehook.h |    9 +++++++++
+ kernel/signal.c           |    2 ++
+ 2 files changed, 11 insertions(+)
+
+--- __UTRACE/include/linux/tracehook.h~2_FINISH_JCTL	2009-07-29 03:10:10.000000000 +0200
++++ __UTRACE/include/linux/tracehook.h	2009-07-29 03:51:42.000000000 +0200
+@@ -521,6 +521,15 @@ static inline int tracehook_notify_jctl(
+ 	return notify ?: (current->ptrace & PT_PTRACED) ? why : 0;
+ }
  
-> So, combining this with the above patch we should instead do
-> 
-> Signed-off-by: jwoithe@physics.adelaide.edu.au <Jonathan Woithe>
-> 
-> --- a/drivers/platform/x86/fujitsu-laptop.c	2009-06-12 19:51:45.333234000 +0930
-> +++ b/drivers/platform/x86/fujitsu-laptop.c	2009-07-29 10:14:30.610249941 +0930
-> @@ -745,7 +745,7 @@ static int acpi_fujitsu_remove(struct ac
->  
->  	fujitsu = acpi_driver_data(device);
->  
-> -	if (!device || !acpi_driver_data(device))
-> +	if (!fujitsu)
->  		return -EINVAL;
->  
->  	fujitsu->acpi_handle = NULL;
-> 
-> Regards
->   jonathan
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
++/**
++ * tracehook_finish_jctl - report about return from job control stop
++ *
++ * This is called by do_signal_stop() after wakeup.
++ */
++static inline void tracehook_finish_jctl(void)
++{
++}
++
+ #define DEATH_REAP			-1
+ #define DEATH_DELAYED_GROUP_LEADER	-2
+ 
+--- __UTRACE/kernel/signal.c~2_FINISH_JCTL	2009-07-29 03:17:49.000000000 +0200
++++ __UTRACE/kernel/signal.c	2009-07-29 03:57:07.000000000 +0200
+@@ -1735,12 +1735,12 @@ static int do_signal_stop(int signr)
+ 		read_unlock(&tasklist_lock);
+ 	}
+ 
++	/* Now we don't run again until woken by SIGCONT or SIGKILL */
+ 	do {
+ 		schedule();
+ 	} while (try_to_freeze());
+-	/*
+-	 * Now we don't run again until continued.
+-	 */
++
++	tracehook_finish_jctl();
+ 	current->exit_code = 0;
+ 
+ 	return 1;
+
