@@ -1,150 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752819AbZG2InZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbZG2Iqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752819AbZG2InZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 04:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbZG2InY
+	id S1752929AbZG2Iqa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 04:46:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbZG2Iqa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 04:43:24 -0400
-Received: from mail-yx0-f190.google.com ([209.85.210.190]:51006 "EHLO
-	mail-yx0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752695AbZG2InX convert rfc822-to-8bit (ORCPT
+	Wed, 29 Jul 2009 04:46:30 -0400
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:41406 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752798AbZG2Iq2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 04:43:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=sfpHnYJrXCHVkfhOpK1uscxKvA/z/xKR2wfD6pJXqx8GIqda5bVpnl4df65t1msf3y
-         cgfx8BeW5wHk1l/sSrIDh+d4wNbOtpIMkIntEzfa/INQ7I/hVg99qWw5su9aaddll7Ey
-         yCT2zodQh+rtjAjhOAoggtOP26gGr/6szz0cA=
+	Wed, 29 Jul 2009 04:46:28 -0400
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.6.3.4
+From: Junio C Hamano <gitster@pobox.com>
+Date: Wed, 29 Jul 2009 01:46:17 -0700
+Message-ID: <7vhbwvx4fa.fsf@alter.siamese.dyndns.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <1248851712.19733.214.camel@macbook.infradead.org>
-References: <1248707041.6100.35.camel@macbook.infradead.org>
-	 <21d7e9970907282328l4a44b9a2of4500c5c84a3586b@mail.gmail.com>
-	 <1248851712.19733.214.camel@macbook.infradead.org>
-Date: Wed, 29 Jul 2009 18:43:22 +1000
-Message-ID: <21d7e9970907290143q6778511cvda1c6b915f61654a@mail.gmail.com>
-Subject: Re: [RFC] Make AGP work with IOMMU
-From: Dave Airlie <airlied@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Zhenyu Wang <zhenyu.z.wang@intel.com>, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, Joerg Roedel <joerg.roedel@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Pobox-Relay-ID: 4C155738-7C1C-11DE-827D-F699A5B33865-77302942!a-sasl-quonix.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 29, 2009 at 5:15 PM, David Woodhouse<dwmw2@infradead.org> wrote:
-> On Wed, 2009-07-29 at 16:28 +1000, Dave Airlie wrote:
->> Yup pretty much we always got lucky, its not like AGP and IOMMU systems
->> are a huge item, its really only Intel IGPs which use the AGP
->> subsystem these days.
->
-> Ah, really? One thing which was bothering me was what happens when I use
-> non-onboard graphics in one of these beasts -- are individual gfx
-> drivers going to need to be fixed too?
+The latest maintenance release GIT 1.6.3.4 is available at the
+usual places:
 
-Yes, more than likely. I think radeon and radeon kms drivers dtrt, at
-least they
-call pci_map_single for the pages they use in their on-chip translation units,
-and the cards have been used in sparc64 and ppc64 with iommu stuff happening.
+  http://www.kernel.org/pub/software/scm/git/
 
-nouveau might work when it gets upstream but it may not.
+  git-1.6.3.4.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.6.3.4.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.6.3.4.tar.{gz,bz2}		(preformatted docs)
 
-Other PCI and/or PCIE1x cards still around would be MGA and SiS based,
-and I suspect
-they would need work, but they might just work.
+The RPM binary packages for a few architectures are found in:
 
-nvidia/fglrx binary drivers, who knows.
+  RPMS/$arch/git-*-1.6.3.4-1.fc9.$arch.rpm	(RPM)
 
->
->> > † † † † † † † †cur_gatt = GET_GATT(addr);
->> > † † † † † † † †writel(agp_generic_mask_memory(agp_bridge,
->> > - † † † † † † † † † † † mem->pages[i], mem->type), cur_gatt+GET_GATT_OFF(addr));
->> > + † † † † † † † † † † † † † † † † † † † † † † †phys_to_gart(page_to_phys(mem->pages[i])),
->>
->> don't suppose we want page_to_gart or is the double function nicer?
->
-> I pondered that briefly. But then observed that phys_to_gart() and
-> gart_to_phys() _always_ describe an identity mapping, so perhaps they
-> could just be ditched completely?
+This is primarily to flush accumulated fixes on the 'maint' branch
+before going forward with 1.6.4 series.
 
-Yeah that could work too, no idea why they were introduced, well before my time.
+GIT v1.6.3.4 Release Notes
+==========================
 
->
->> > @@ -150,8 +150,17 @@ static int agp_backend_initialize(struct agp_bridge_data *bridge)
->> > † † † † † † † †}
->> >
->> > † † † † † † † †bridge->scratch_page_real = phys_to_gart(page_to_phys(page));
->> > - † † † † † † † bridge->scratch_page =
->> > - † † † † † † † † † bridge->driver->mask_memory(bridge, page, 0);
->> > + † † † † † † † bridge->scratch_page = bridge->driver->mask_memory(bridge,
->> > + † † † † † † † † † † † † † † † † † † † † †phys_to_gart(page_to_phys(page)), 0);
->> > +
->> > + † † † † † † † if (bridge->driver->agp_map_page &&
->> > + † † † † † † † † † bridge->driver->agp_map_page(phys_to_virt(page_to_phys(page)),
->>
->> and maybe page_to_virt.
->
-> That's called page_address(), and it (as well as the above construct) is
-> broken with highmem pages. It's actually OK here, since this page is
-> allocated with GFP_DMA32 -- but for cleanliness' sake I should probably
-> switch agp_map_page() to take a 'struct page *' rather than a virtual
-> address.
+Fixes since v1.6.3.3
+--------------------
 
-Yes that might be best, having a function called map_page taking an
-address seems wrong.
+ * "git add --no-ignore-errors" did not override configured
+   add.ignore-errors configuration.
 
->
->> > + † † † if ((mem->page_count * sizeof(*mem->sg_list)) < 2*PAGE_SIZE)
->> > + † † † † † † † mem->sg_list = kcalloc(mem->page_count, sizeof(*mem->sg_list),
->> > + † † † † † † † † † † † † † † † † † † †GFP_KERNEL);
->> > +
->> > + † † † if (mem->sg_list == NULL) {
->> > + † † † † † † † mem->sg_list = vmalloc(mem->page_count * sizeof(*mem->sg_list));
->> > + † † † † † † † mem->sg_vmalloc_flag = 1;
->>
->> Can we drop vmalloc_flag and use is_vmalloc_addr on the free function?
->
-> I suppose so -- we could eliminate the other vmalloc_flag field in
-> 'struct agp_memory' that way too? Doesn't shrink the structure any --
-> we'd just end up with padding where the flags were.
+ * "git apply --whitespace=fix" did not fix trailing whitespace on an
+   incomplete line.
 
-Yeah we should drop both of them maybe I can do that as a cleanup
-after this patch.
+ * "git branch" opened too many commit objects unnecessarily.
 
->
->> (aside: yet another place that wants a kmalloc/vmalloc allocator. I suspect
->> vmalloc here to be slow but I suppose there isn't much we can do.)
->
-> http://lwn.net/Articles/342915/ ?
->
-> In fact, can't scatterlists do something like that already?
+ * "git checkout -f $commit" with a path that is a file (or a symlink) in
+   the work tree to a commit that has a directory at the path issued an
+   unnecessary error message.
 
-no idea, I think I've seen vmalloc used in other places before.
+ * "git diff -c/--cc" was very inefficient in coalescing the removed lines
+   shared between parents.
 
->
->> > + † † † mem->num_sg = pci_map_sg(intel_private.pcidev, mem->sg_list,
->> > + † † † † † † † † † † † † † † † †mem->page_count, PCI_DMA_BIDIRECTIONAL);
->> > + † † † if (!mem->num_sg) {
->> > + † † † † † † † if (mem->sg_vmalloc_flag)
->> > + † † † † † † † † † † † vfree(mem->sg_list);
->> > + † † † † † † † else
->> > + † † † † † † † † † † † kfree(mem->sg_list);
->> > + † † † † † † † mem->sg_list = NULL;
->> > + † † † † † † † mem->sg_vmalloc_flag = 0;
->>
->> some common cleanup function?
-> †...
->> since we reproduce it here.
->
-> Yeah, probably a good idea.
->
-> --
-> David Woodhouse † † † † † † † † † † † † † †Open Source Technology Centre
-> David.Woodhouse@intel.com † † † † † † † † † † † † † † †Intel Corporation
->
->
+ * "git diff -c/--cc" showed removed lines at the beginning of a file
+   incorrectly.
 
-Dave.
+ * "git remote show nickname" did not honor configured
+   remote.nickname.uploadpack when inspecting the branches at the remote.
+
+ * "git request-pull" when talking to the terminal for a preview
+   showed some of the output in the pager.
+
+ * "git request-pull start nickname [end]" did not honor configured
+   remote.nickname.uploadpack when it ran git-ls-remote against the remote
+   repository to learn the current tip of branches.
+
+Includes other documentation updates and minor fixes.
+
+----------------------------------------------------------------
+
+Changes since v1.6.3.3 are as follows:
+
+Brandon Casey (2):
+      refs.c: release file descriptor on error return
+      sha1_name.c: avoid unnecessary strbuf_release
+
+Chris Frey (1):
+      git-remote: fix missing .uploadpack usage for show command
+
+Clemens Buchacher (1):
+      fetch: do not create ref from empty name
+
+Giuseppe Bilotta (1):
+      gitweb/README: fix AliasMatch in example
+
+Johannes Sixt (2):
+      t3700-add: add a POSIXPERM prerequisite to a new test
+      Makefile: git.o depends on library headers
+
+Junio C Hamano (9):
+      request-pull: really disable pager
+      checkout -f: deal with a D/F conflict entry correctly
+      combine-diff.c: fix performance problem when folding common deleted lines
+      diff --cc: a lost line at the beginning of the file is shown incorrectly
+      do_one_ref(): null_sha1 check is not about broken ref
+      SunOS grep does not understand -C<n> nor -e
+      Fix severe breakage in "git-apply --whitespace=fix"
+      t8005: Nobody writes Russian in shift_jis
+      GIT 1.6.3.4
+
+Linus Torvalds (3):
+      git branch: fix performance problem
+      git branch: avoid unnecessary object lookups
+      git branch: clean up detached branch handling
+
+Matthias Andree (1):
+      Fix export_marks() error handling.
+
+Michal Marek (1):
+      request-pull: really really disable pager
+
+Miklos Vajna (1):
+      git-submodule documentation: fix foreach example
+
+Ren√© Scharfe (1):
+      attr: plug minor memory leak
+
+Roel Kluin (1):
+      fread does not return negative on error
+
+SZEDER G√°bor (1):
+      Trailing whitespace and no newline fix
+
+Sitaram Chamarty (1):
+      Documentation: update description of shell aliases
+
+Stephen Boyd (2):
+      add: allow configurations to be overriden by command line
+      config.txt: document add.ignore-errors
+
+Thadeu Lima de Souza Cascardo (1):
+      Makes some cleanup/review in gittutorial
+
+Thomas Rast (2):
+      Test git archive --remote
+      Test grep --and/--or/--not
+
+Tom Grennan (1):
+      request-pull: allow ls-remote to notice remote.$nickname.uploadpack
+
