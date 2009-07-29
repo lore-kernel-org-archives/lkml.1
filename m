@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbZG2PK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754376AbZG2PLZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753528AbZG2PK0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 11:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbZG2PK0
+	id S1754376AbZG2PLZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 11:11:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752905AbZG2PLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 11:10:26 -0400
-Received: from fifo99.com ([67.223.236.141]:43611 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750848AbZG2PKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 11:10:25 -0400
-Subject: Re: [RFC][patch 00/12] clocksource / timekeeping rework V2
-From: Daniel Walker <dwalker@fifo99.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
-In-Reply-To: <20090729134125.313191633@de.ibm.com>
-References: <20090729134125.313191633@de.ibm.com>
-Content-Type: text/plain
-Date: Wed, 29 Jul 2009 08:10:42 -0700
-Message-Id: <1248880242.28841.185.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Wed, 29 Jul 2009 11:11:25 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:50533 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751447AbZG2PLY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 11:11:24 -0400
+From: Philipp Reisner <philipp.reisner@linbit.com>
+Organization: LINBIT
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: linux-next: drbd tree build failure
+Date: Wed, 29 Jul 2009 17:11:22 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20090727154816.24e81531.sfr@canb.auug.org.au> <20090728142040.9b2df926.sfr@canb.auug.org.au> <200907291110.56241.rusty@rustcorp.com.au>
+In-Reply-To: <200907291110.56241.rusty@rustcorp.com.au>
+X-OTRS-FollowUp-SenderType: agent
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907291711.22466.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-29 at 15:41 +0200, Martin Schwidefsky wrote:
-> There is still more room for improvement. Some sore points are:
-> 
-> 1) The cycle_last value still is in the struct clocksource. It should
->    be in the struct timekeeper but the check against cycles_last in
-> the
->    read function of the TSC clock source makes it hard.
-> 2) read_persistent_clock returns seconds. With a really good initial
->    time source this is not very precise. read_persistent_clock should
->    return a struct timespec.
-> 3) xtime, raw_time, total_sleep_time, timekeeping_suspended, jiffies,
->    the ntp state and probably a few other values may be better located
->    in the struct timekeeper as well.
+On Wednesday 29 July 2009 03:40:55 Rusty Russell wrote:
+> On Tue, 28 Jul 2009 01:50:40 pm Stephen Rothwell wrote:
+> > Hi Philipp, Lars,
+> >
+> > On Mon, 27 Jul 2009 19:17:55 +0200 Philipp Reisner 
+<philipp.reisner@linbit.com> wrote:
+> > > Ok. Lars' patch is now complete and arrived in the git tree...
+> > >
+> > > It should build now with Rusty's paches.
+> >
+> > Thanks.
+>
+> This is untested, but fairly trivial transform to avoid cpumask_t in the
+> struct as well:
+>
 
+Thanks,
 
-You could also consolidate the clocksource_unregister() path and the
-clocksource_change_rating(0) path  , both are basically doing the same
-thing.. Neither one is heavily used..
+I have commited that patch to the DRBD git tree.
 
-Daniel
+-phil
+-- 
+: Dipl-Ing Philipp Reisner
+: LINBIT | Your Way to High Availability
+: Tel: +43-1-8178292-50, Fax: +43-1-8178292-82
+: http://www.linbit.com
+
+DRBD(R) and LINBIT(R) are registered trademarks of LINBIT, Austria.
 
