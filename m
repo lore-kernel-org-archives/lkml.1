@@ -1,64 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755249AbZG2Dhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751266AbZG2Ds7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755249AbZG2Dhg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 23:37:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbZG2Dhf
+	id S1751266AbZG2Ds7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 23:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbZG2Ds7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 23:37:35 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:34429 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754485AbZG2Dhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 23:37:35 -0400
-Date: Wed, 29 Jul 2009 13:37:28 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org, kevin.huang@rdc.com.tw
-Subject: Re: [PATCH] pata_rdc: driver for RDC ATA devices
-Message-Id: <20090729133728.34b738eb.sfr@canb.auug.org.au>
-In-Reply-To: <4A6FBC6F.6040404@garzik.org>
-References: <20090624172930.24354.80799.stgit@t61.ukuu.org.uk>
-	<4A6FA304.6070501@garzik.org>
-	<20090729025307.GA25100@kroah.com>
-	<4A6FBC6F.6040404@garzik.org>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__29_Jul_2009_13_37_28_+1000_lr56nkY4KReQKOdg"
+	Tue, 28 Jul 2009 23:48:59 -0400
+Received: from mail-yx0-f190.google.com ([209.85.210.190]:61679 "EHLO
+	mail-yx0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750695AbZG2Ds6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 23:48:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=u3xbEOWX6PbOZ9cfZDPVHc6iuTi1FwTtiBsAZfNlQJzbmeY2++TRD4vic+jSIqKqln
+         V2e6cQLlRX5yNEhb16EHlCc6tXh3Xk+Kh/W3/jAq5eWYSmn7QtPHKBho1K4gBsDvPaR5
+         bDkC1mw1Vr8EjbKIhX2IQetwKWM6xkIrDKM+g=
+Message-ID: <4A6FC6A5.9030508@gmail.com>
+Date: Tue, 28 Jul 2009 23:48:53 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: David Rientjes <rientjes@google.com>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [regression] sched_getaffinity fails with EINVAL in 2.6.31-rc4
+References: <4A6DE0DC.2070207@gmail.com> <alpine.DEB.2.00.0907271108350.8408@chino.kir.corp.google.com> <200907291118.53912.rusty@rustcorp.com.au>
+In-Reply-To: <200907291118.53912.rusty@rustcorp.com.au>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig199504FE185C731B55E537D6"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__29_Jul_2009_13_37_28_+1000_lr56nkY4KReQKOdg
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig199504FE185C731B55E537D6
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+Rusty Russell wrote:
+> On Tue, 28 Jul 2009 03:42:15 am David Rientjes wrote:
+>> On Mon, 27 Jul 2009, Gregory Haskins wrote:
+>>
+>>> I am not sure when this started, but noticed that sched_getaffinity i=
+s
+>>> not working in -rc4.
+>>>
+>>> [pid  6254] sched_getaffinity(0, 128, 0x7f80586b1fe0) =3D -1 EINVAL
+>>> (Invalid argument)
+>>>
+>>> Here is a simple program for reproduction:
+>>>
+>>> #include <sched.h>
+>>>
+>>> int main(void)
+>>> {
+>>> 	cpu_set_t mask;
+>>> 	int ret;
+>>>
+>>> 	ret =3D sched_getaffinity(0, sizeof(mask), &mask);
+>>> 	if (ret < 0)
+>>> 		perror("getaffinity");
+>>>
+>>> 	return ret;
+>>> }
+>>>
+>>> If I get time, I will bisect this later today.
+>>>
+>> It's most likely due to the cpumask changes.  I don't know what cpu_se=
+t_t=20
+>> is, but it's probably smaller than CONFIG_NR_CPUS rounded up to a mult=
+iple=20
+>> of sizeof(long).
+>=20
+> It's simply that you finally ran this on a kernel which had
+> CONFIG_NR_CPUS > 1024.
 
-On Tue, 28 Jul 2009 23:05:19 -0400 Jeff Garzik <jeff@garzik.org> wrote:
->
-> FWIW, it's in libata-dev.git#upstream and libata-dev.git#NEXT, so=20
-> linux-next should pick it up automatically.
+Indeed.  I thought I had replied to the list that I figured that out,
+but I think it might have been a trimmed list from someone elses reply.
 
-It will be in tomorrow's tree (unless it is important enough for me to
-grab it for today).
+Long story short, MAXSMP=3Dy crept in, which set NR_CPUS=3D4096.  Backing=
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+this off < 1024 indeed fixes the issue.
 
---Signature=_Wed__29_Jul_2009_13_37_28_+1000_lr56nkY4KReQKOdg
-Content-Type: application/pgp-signature
+Thanks to all who replied!
+-Greg
+
+
+--------------enig199504FE185C731B55E537D6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-iEYEARECAAYFAkpvw/gACgkQjjKRsyhoI8y5fQCcDwcSUUOtknAv5hrXxtawD8b6
-xVQAnioBnRNeZMVOLwnpH0trN0jaw6Pe
-=bDNY
+iEYEARECAAYFAkpvxqUACgkQP5K2CMvXmqGdUQCcCesANaiV5ZsKsRjPBjD2iP93
+6hMAmgNNqKxAp+Wm+8x9blM6u2RH7msF
+=T7V1
 -----END PGP SIGNATURE-----
 
---Signature=_Wed__29_Jul_2009_13_37_28_+1000_lr56nkY4KReQKOdg--
+--------------enig199504FE185C731B55E537D6--
