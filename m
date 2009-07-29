@@ -1,42 +1,311 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753700AbZG2J4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753729AbZG2J5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753700AbZG2J4O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 05:56:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZG2J4O
+	id S1753729AbZG2J5V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 05:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbZG2J5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 05:56:14 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51231 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753475AbZG2J4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 05:56:13 -0400
-Message-ID: <4A701DD1.7000300@redhat.com>
-Date: Wed, 29 Jul 2009 13:00:49 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	Wed, 29 Jul 2009 05:57:21 -0400
+Received: from mail-px0-f184.google.com ([209.85.216.184]:57655 "EHLO
+	mail-px0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753632AbZG2J5U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 05:57:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=WCGNphPrfgWdjYODpu2XmjcfzIckEUAE+9XpoVP5oIzp4ltzwABr7QeUUINcVbS4m6
+         jzByute6O5bjLOgIR4yJr5S8WUVODuQlcwZA0J7/5lzSOirP+YGKm2WhKWf5YFr/BJ8e
+         W0vFm/Rx9kALGtOH9k01xXdkbEWBkw3wsJMiY=
+Date: Wed, 29 Jul 2009 17:59:32 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Mike Smith <scgtrp@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
+       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 2/2] vmalloc: vread vwrite avoid memory hole.
+Message-ID: <20090729095932.GG5856@cr0.nay.redhat.com>
+References: <bug-13850-10286@http.bugzilla.kernel.org/> <20090728160527.1da52682.akpm@linux-foundation.org> <20090729084825.1363c880.kamezawa.hiroyu@jp.fujitsu.com> <525c5a6c0907281946t249ef288v77ee94edd16f054@mail.gmail.com> <20090729123209.690baa48.kamezawa.hiroyu@jp.fujitsu.com> <20090729173600.540878a3.kamezawa.hiroyu@jp.fujitsu.com> <20090729174810.4aea1283.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [PATCH 0/7 v5] KVM: support for 1gb pages
-References: <1248705048-22607-1-git-send-email-joerg.roedel@amd.com>
-In-Reply-To: <1248705048-22607-1-git-send-email-joerg.roedel@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090729174810.4aea1283.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/27/2009 05:30 PM, Joerg Roedel wrote:
-> Hello,
+On Wed, Jul 29, 2009 at 05:48:10PM +0900, KAMEZAWA Hiroyuki wrote:
+>Considering recent changes, I think this an answer to this bug.
 >
-> this is the latest version of the changes to KVM MMU code to support 1gb
-> pages.  Pages with a size of 1gb are a feature of all Fam10h AMD CPUs
-> and this patch set makes them available for guests and allows to map the
-> nested page table with 1gb pages.
->    
+>All get_vm_area() calls specified VM_IOREMAP before 2.6.30.
+>Now, percpu calls get_vm_area() without IOREMAP (it means kcore doesn't skip this)
+>And it seems pcpu does delayed map to pre-allocated vmalloc-area.
+>Then, now, vmalloc() area has memory holes. (I'm sorry if I misunderstand.)
 
-Applied, thanks.
 
--- 
-error compiling committee.c: too many arguments to function
+You mean the guard holes in vmalloc area?
 
+IIRC, there are some guard holes between vmalloc areas, but I haven't
+checked the source code. ;)
+
+
+>Then, vread()/vwrite() should be aware of memory holes in vmalloc.
+>And yes, /proc/kcore should be.
+>
+>plz review. 
+>==
+>vread/vwrite access vmalloc area without checking there is a page or not.
+>In most case, this works well.
+>
+>After per-cpu-alloc patch, There tend to be a hole in valid vmalloc area.
+>Then, skip the hole (not mapped page) is necessary.
+>
+>/proc/kcore has the same problem, now, it uses its own code but
+>it's better to use vread().
+>
+>Question: vread() should skip IOREMAP area always ?
+>
+>Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+
+Some comments below..
+
+
+>---
+> drivers/char/mem.c      |    3 +
+> fs/proc/kcore.c         |   32 +----------------
+> include/linux/vmalloc.h |    3 +
+> mm/vmalloc.c            |   90 +++++++++++++++++++++++++++++++++++++-----------
+> 4 files changed, 77 insertions(+), 51 deletions(-)
+>
+>Index: linux-2.6.31-rc4/mm/vmalloc.c
+>===================================================================
+>--- linux-2.6.31-rc4.orig/mm/vmalloc.c
+>+++ linux-2.6.31-rc4/mm/vmalloc.c
+>@@ -1629,7 +1629,61 @@ void *vmalloc_32_user(unsigned long size
+> }
+> EXPORT_SYMBOL(vmalloc_32_user);
+> 
+>-long vread(char *buf, char *addr, unsigned long count)
+>+/*
+>+ * small helper routine , copy contents to buf from addr.
+>+ * If the page is not present, fill zero.
+>+ */
+>+
+>+static int aligned_vread(char *buf, char *addr, unsigned long count)
+>+{
+>+	struct page *p;
+>+	int copied;
+>+
+>+	while (count) {
+>+		unsigned long offset, length;
+>+
+>+		offset = (unsinged long)addr & PAGE_MASK;
+>+		length = PAGE_SIZE - offset;
+>+		if (length > count)
+>+			length = count;
+>+		p = vmalloc_to_page(addr);
+>+		if (p)
+>+			memcpy(buf, addr, length);
+>+		else
+>+			memset(buf, 0, length);
+>+		addr += length;
+>+		buf += length;
+>+		copiled += length;
+>+		count -= length;
+>+	}
+>+	return copied;
+>+}
+>+
+>+static int aligned_vwrite(char *buf, char *addr, unsigned long count)
+>+{
+>+	struct page *p;
+>+	int copied;
+>+
+>+	while (count) {
+>+		unsigned long offset, length;
+>+
+>+		offset = (unsinged long)addr & PAGE_MASK;
+>+		length = PAGE_SIZE - offset;
+>+		if (length > count)
+>+			length = count;
+>+		/* confirm the page is present */
+>+		p = vmalloc_to_page(addr);
+>+		if (p)
+>+			memcpy(addr, buf, length);
+
+
+So when !p, you copy nothing, but still increase the length,
+*silently*?
+
+This looks a bit weird for me... I am thinking if we need
+to return the number of bytes that is *actually* copied?
+
+
+>+		addr += length;
+>+		buf += length;
+>+		copiled += length;
+>+		count -= length;
+>+	}
+>+	return copied;
+>+}
+>+
+>+long vread(char *buf, char *addr, unsigned long count, bool skip_ioremap)
+> {
+> 	struct vm_struct *tmp;
+> 	char *vaddr, *buf_start = buf;
+>@@ -1640,10 +1694,11 @@ long vread(char *buf, char *addr, unsign
+> 		count = -(unsigned long) addr;
+> 
+> 	read_lock(&vmlist_lock);
+>-	for (tmp = vmlist; tmp; tmp = tmp->next) {
+>+	for (tmp = vmlist; count && tmp; tmp = tmp->next) {
+> 		vaddr = (char *) tmp->addr;
+> 		if (addr >= vaddr + tmp->size - PAGE_SIZE)
+> 			continue;
+>+
+> 		while (addr < vaddr) {
+> 			if (count == 0)
+> 				goto finished;
+>@@ -1653,14 +1708,15 @@ long vread(char *buf, char *addr, unsign
+> 			count--;
+> 		}
+> 		n = vaddr + tmp->size - PAGE_SIZE - addr;
+>-		do {
+>-			if (count == 0)
+>-				goto finished;
+>-			*buf = *addr;
+>-			buf++;
+>-			addr++;
+>-			count--;
+>-		} while (--n > 0);
+>+		if (n > count)
+>+			n = count;
+>+		if (!(tmp->flags & VM_IOREMAP) || !skip_ioremap)
+>+			aligned_vread(buf, addr, n);
+>+		else
+>+			memset(buf, 0, n);
+>+		buf += n;
+>+		addr += n;
+>+		count -= n;
+
+
+If I set 'skip_ioremap' true, I want the return value can be
+what it _actually_ copies, i.e. kick out the bytes counted
+for VM_IOREMAP. What do you think?
+
+
+> 	}
+> finished:
+> 	read_unlock(&vmlist_lock);
+>@@ -1678,7 +1734,7 @@ long vwrite(char *buf, char *addr, unsig
+> 		count = -(unsigned long) addr;
+> 
+> 	read_lock(&vmlist_lock);
+>-	for (tmp = vmlist; tmp; tmp = tmp->next) {
+>+	for (tmp = vmlist; count && tmp; tmp = tmp->next) {
+> 		vaddr = (char *) tmp->addr;
+> 		if (addr >= vaddr + tmp->size - PAGE_SIZE)
+> 			continue;
+>@@ -1690,14 +1746,10 @@ long vwrite(char *buf, char *addr, unsig
+> 			count--;
+> 		}
+> 		n = vaddr + tmp->size - PAGE_SIZE - addr;
+>-		do {
+>-			if (count == 0)
+>-				goto finished;
+>-			*addr = *buf;
+>-			buf++;
+>-			addr++;
+>-			count--;
+>-		} while (--n > 0);
+>+		copied = aligned_vwrite(buf, addr, n);
+>+		buf += n;
+>+		addr += n;
+>+		count -= n;
+> 	}
+> finished:
+> 	read_unlock(&vmlist_lock);
+>Index: linux-2.6.31-rc4/drivers/char/mem.c
+>===================================================================
+>--- linux-2.6.31-rc4.orig/drivers/char/mem.c
+>+++ linux-2.6.31-rc4/drivers/char/mem.c
+>@@ -466,7 +466,8 @@ static ssize_t read_kmem(struct file *fi
+> 
+> 			if (len > PAGE_SIZE)
+> 				len = PAGE_SIZE;
+>-			len = vread(kbuf, (char *)p, len);
+>+			/* we read memory even if ioremap...*/
+>+			len = vread(kbuf, (char *)p, len, false);
+> 			if (!len)
+> 				break;
+> 			if (copy_to_user(buf, kbuf, len)) {
+>Index: linux-2.6.31-rc4/fs/proc/kcore.c
+>===================================================================
+>--- linux-2.6.31-rc4.orig/fs/proc/kcore.c
+>+++ linux-2.6.31-rc4/fs/proc/kcore.c
+>@@ -331,40 +331,12 @@ read_kcore(struct file *file, char __use
+> 			struct vm_struct *m;
+> 			unsigned long curstart = start;
+> 			unsigned long cursize = tsz;
+>-
+>+			
+
+
+I am sure this change, a line only has spaces, is not what you want. :-)
+
+
+
+> 			elf_buf = kzalloc(tsz, GFP_KERNEL);
+> 			if (!elf_buf)
+> 				return -ENOMEM;
+> 
+>-			read_lock(&vmlist_lock);
+>-			for (m=vmlist; m && cursize; m=m->next) {
+>-				unsigned long vmstart;
+>-				unsigned long vmsize;
+>-				unsigned long msize = m->size - PAGE_SIZE;
+>-
+>-				if (((unsigned long)m->addr + msize) < 
+>-								curstart)
+>-					continue;
+>-				if ((unsigned long)m->addr > (curstart + 
+>-								cursize))
+>-					break;
+>-				vmstart = (curstart < (unsigned long)m->addr ? 
+>-					(unsigned long)m->addr : curstart);
+>-				if (((unsigned long)m->addr + msize) > 
+>-							(curstart + cursize))
+>-					vmsize = curstart + cursize - vmstart;
+>-				else
+>-					vmsize = (unsigned long)m->addr + 
+>-							msize - vmstart;
+>-				curstart = vmstart + vmsize;
+>-				cursize -= vmsize;
+>-				/* don't dump ioremap'd stuff! (TA) */
+>-				if (m->flags & VM_IOREMAP)
+>-					continue;
+>-				memcpy(elf_buf + (vmstart - start),
+>-					(char *)vmstart, vmsize);
+>-			}
+>-			read_unlock(&vmlist_lock);
+>+			vread(elf_buf, start, tsz, true);
+> 			if (copy_to_user(buffer, elf_buf, tsz)) {
+> 				kfree(elf_buf);
+> 				return -EFAULT;
+>Index: linux-2.6.31-rc4/include/linux/vmalloc.h
+>===================================================================
+>--- linux-2.6.31-rc4.orig/include/linux/vmalloc.h
+>+++ linux-2.6.31-rc4/include/linux/vmalloc.h
+>@@ -105,7 +105,8 @@ extern struct vm_struct *alloc_vm_area(s
+> extern void free_vm_area(struct vm_struct *area);
+> 
+> /* for /dev/kmem */
+>-extern long vread(char *buf, char *addr, unsigned long count);
+>+extern long vread(char *buf, char *addr, unsigned long count,
+>+		  bool skip_ioremap);
+> extern long vwrite(char *buf, char *addr, unsigned long count);
+> 
+> /*
+>
