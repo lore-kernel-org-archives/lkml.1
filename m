@@ -1,87 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbZG2Pcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbZG2PdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754598AbZG2Pcf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 11:32:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbZG2Pcf
+	id S1754764AbZG2PdL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 11:33:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbZG2PdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 11:32:35 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:42536 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752875AbZG2Pce (ORCPT
+	Wed, 29 Jul 2009 11:33:10 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:55421 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752357AbZG2PdJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 11:32:34 -0400
-Date: Wed, 29 Jul 2009 17:32:31 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: dwalker@fifo99.com
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
-Subject: Re: [RFC][patch 02/12] remove clocksource inline functions
-Message-ID: <20090729173231.012d0b89@skybase>
-In-Reply-To: <200907291457.n6TEvDAt003701@d06av06.portsmouth.uk.ibm.com>
-References: <200907291457.n6TEvDAt003701@d06av06.portsmouth.uk.ibm.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.4; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Jul 2009 11:33:09 -0400
+X-Greylist: delayed 328 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Jul 2009 11:33:08 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=dC2Lkd1qs86Is40hLHLVQTwu8sl6TsKE/o4djT+3eRWnnqdMdwJr8vHG2rlUD1BHLN
+         fcdxvJ8eGLnHmPCVzMrW/E6gkLLaJP/Yb15B86INezOL8rFdpR3CQ8NNJp19rgzvrmD0
+         HTkTJLLqynMX7IR7Asgn7YoTMZVHEhw+POhyg=
+MIME-Version: 1.0
+In-Reply-To: <aec7e5c30907290824p5e20fb14g3d14aece2d3e33c6@mail.gmail.com>
+References: <Pine.LNX.4.64.0907280937000.4943@axis700.grange>
+	 <74d0deb30907290820x13214f68u82dea4ad229ebdac@mail.gmail.com>
+	 <aec7e5c30907290824p5e20fb14g3d14aece2d3e33c6@mail.gmail.com>
+Date: Wed, 29 Jul 2009 17:33:08 +0200
+Message-ID: <74d0deb30907290833m3d1ff596s180759fb961a8a8d@mail.gmail.com>
+Subject: Re: [PATCH] tmio_mmc: Optionally support using platform clock
+From: pHilipp Zabel <philipp.zabel@gmail.com>
+To: Magnus Damm <magnus.damm@gmail.com>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       Ian Molton <ian@mnementh.co.uk>, linux-kernel@vger.kernel.org,
+       Magnus Damm <damm@opensource.se>, akpm@linux-foundation.org,
+       Matt Fleming <matt@console-pimps.org>,
+       Philip Langdale <philipl@overt.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Jul 2009 08:57:13 -0600
-dwalker@fifo99.com wrote:
+On Wed, Jul 29, 2009 at 5:24 PM, Magnus Damm<magnus.damm@gmail.com> wrote:
+> On Thu, Jul 30, 2009 at 12:20 AM, pHilipp Zabel<philipp.zabel@gmail.com> wrote:
+>> On Tue, Jul 28, 2009 at 9:51 AM, Guennadi
+>> Liakhovetski<g.liakhovetski@gmx.de> wrote:
+>>> If the platform device has a clock associated with the tmio-mmc device,
+>>> use it.
+>>>
+>>> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+>>> Cc: Magnus Damm <damm@opensource.se>
+>>> ---
+>>>
+>>> Depends (at least logically) on
+>>> http://marc.info/?l=linux-kernel&m=124782904228865&w=2
+>>>
+>>> Sorry if I forgot anyone who volunteered to help out with MMC patches.
+>>>
+>>>  drivers/mmc/host/tmio_mmc.c |   21 +++++++++++++++++++++
+>>>  drivers/mmc/host/tmio_mmc.h |    3 +++
+>>>  include/linux/mfd/tmio.h    |    1 +
+>>>  3 files changed, 25 insertions(+), 0 deletions(-)
+>>>
+>>> diff --git a/drivers/mmc/host/tmio_mmc.c b/drivers/mmc/host/tmio_mmc.c
+>>> index c246191..2a01572 100644
+>>> --- a/drivers/mmc/host/tmio_mmc.c
+>>> +++ b/drivers/mmc/host/tmio_mmc.c
+>>> @@ -567,6 +576,11 @@ static int __devinit tmio_mmc_probe(struct platform_device *dev)
+>>>                        goto unmap_cnf;
+>>>        }
+>>>
+>>> +       host->clk = clk_get(&dev->dev, pdata->clk_name);
+>>
+>> Instead of pdata->clk_name, this should be either NULL or better
+>> "HCLK" (to differentiate from CLK32, not sure if we want to be able to
+>> toggle that, too, in the future).
+>> Passing the clock consumer ID via pdata is just wrong and shouldn't be
+>> needed with clkdev.
+>
+> Really? I think that depends on the clock framework implementation.
+> Remember that this needs to work on other architectures than just ARM.
 
-> On Wed, 2009-07-29 at 16:44 +0200, Martin Schwidefsky wrote:
-> > On Wed, 29 Jul 2009 08:15:19 -0600
-> > dwalker@fifo99.com wrote:
-> > 
-> > > > Remove clocksource_read, clocksource_enable and clocksource_disable
-> > > > inline functions. No functional change.
-> > > > 
-> > > 
-> > > Your still not really explaining this one, is this suppose to be
-> > > cleaner? Or is this related to some other part of your clean up?
-> > 
-> > The only one of the three inline functions that is a bit more
-> > complicated is clocksource_enable() because of the mult_orig logic. But
-> > that goes away with a later patch. The function aren't accessors either,
-> > they are used exclusively by the timekeeping code. In short, they are
-> > useless, don't you think?
-> 
-> Above is what should go in your patch description .. 
+Oh, clkdev is an ARM only thing. Maybe it would be worthwile to make
+this even more generic instead?
 
-Ok, sounds reasonable.
- 
-> The reason that I'm not totally into this one is cause these inlines
-> help to document to the code..
-> 
-> If you have ,
-> 
-> struct clocksource cs;
-> 
-> then several lines later you have
-> 
-> cs->read(); 
-> 
-> vs,
-> 
-> clocksource_read(cs);
-> 
-> The later is completely clear, and the former isn't.. Instead of "cs"
-> you could pick any obscure name, and read() isn't exactly unique.. So
-> really any function in the clocksource structure has the potential for a
-> helper, and the inlines don't really cost anything ..
-
-Hmm, you have an object of type struct clocksource and you do
-cs->read(cs). If that is not clear enough then I don't know what is. We
-do that all over the place in the linux kernel. And I personally find
-these useless wrappers rather annoying. I don't like to have to jump to
-another place to find out that it just calls the read function of the
-object.
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+regards
+Philipp
