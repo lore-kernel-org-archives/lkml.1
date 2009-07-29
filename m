@@ -1,82 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754476AbZG2PP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZG2PUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754476AbZG2PP7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 11:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbZG2PP7
+	id S1754630AbZG2PUr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 11:20:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbZG2PUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 11:15:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58010 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751387AbZG2PP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 11:15:58 -0400
-Message-ID: <4A7068C9.40802@redhat.com>
-Date: Wed, 29 Jul 2009 18:20:41 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	Wed, 29 Jul 2009 11:20:47 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:53992 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752357AbZG2PUq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 11:20:46 -0400
+Date: Wed, 29 Jul 2009 16:20:41 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Zhang Rui <rui.zhang@intel.com>, Richard Purdie <rpurdie@rpsys.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "lenb@kernel.org" <lenb@kernel.org>,
+       "corentincj@iksaif.net" <corentincj@iksaif.net>
+Subject: Re: [PATCH 1/3] backlight: Allow drivers to update the core, and
+	generate events on changes
+Message-ID: <20090729152041.GA15650@srcf.ucam.org>
+References: <1247517685-7719-1-git-send-email-mjg@redhat.com> <1247574573.23871.8.camel@dax.rpnet.com> <1247644518.26272.88.camel@rzhang-dt> <1247646153.6248.3.camel@dax.rpnet.com> <1247647105.26272.99.camel@rzhang-dt> <1247649089.20241.5.camel@dax.rpnet.com> <20090715135808.GA19054@srcf.ucam.org> <1247711974.26272.190.camel@rzhang-dt> <20090716024057.GA2461@srcf.ucam.org> <20090729150524.GD1534@ucw.cz>
 MIME-Version: 1.0
-To: dm-devel@redhat.com, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: 2.6.31-rc4 oops in fsnotify extending logical volume
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090729150524.GD1534@ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-# lvextend -L +50G /dev/vg0/images
+On Wed, Jul 29, 2009 at 05:05:24PM +0200, Pavel Machek wrote:
+> > No, I mean that the only default policy you could reasonably have in the 
+> > kernel would be tying the backlight directly to the ALS. And that sucks. 
+> > You need some degree of smoothing, and that's a job better left to 
+> > userspace.
+> 
+> How would that be done? Wake up userspace 100times a second so it can
+> read an integer and ardd it to running average?
 
-[ 6818.345369] BUG: unable to handle kernel NULL pointer dereference at 
-(null)
-[ 6818.345408] IP: [<ffffffff811156fc>] fsnotify+0xd8/0x11a
-[ 6818.345441] PGD 3a71dd067 PUD 3dfc49067 PMD 0
-[ 6818.345475] Oops: 0000 [#1] PREEMPT SMP
-[ 6818.345508] last sysfs file: /sys/devices/virtual/block/ram9/uevent
-[ 6818.345530] CPU 4
-[ 6818.345547] Modules linked in: kvm_intel nfs lockd nfs_acl autofs4 
-sunrpc cpufreq_ondemand acpi_cpufreq freq_table kvm bnx2 shpchp [last 
-unloaded: kvm_intel]
-[ 6818.345667] Pid: 5005, comm: lvextend Not tainted 2.6.31-rc4 #45 IBM 
-System x -[794622G]-
-[ 6818.345694] RIP: 0010:[<ffffffff811156fc>]  [<ffffffff811156fc>] 
-fsnotify+0xd8/0x11a
-[ 6818.345727] RSP: 0018:ffff8803a71b9e58  EFLAGS: 00010246
-[ 6818.345746] RAX: 0000000000000000 RBX: 0000000000000000 RCX: 
-ffff880351450270
-[ 6818.345770] RDX: 0000000000000000 RSI: ffffffff81117e3f RDI: 
-ffff8803a71b8000
-[ 6818.345793] RBP: ffff8803a71b9eb8 R08: ffff8803a71b9e08 R09: 
-ffff880351450270
-[ 6818.345817] R10: 00000037c8811140 R11: ffff8803a71b9d58 R12: 
-0000000000000008
-[ 6818.345840] R13: ffff88027c38dec8 R14: 0000000000000008 R15: 
-0000000000000000
-[ 6818.345864] FS:  00007f7bbf907790(0000) GS:ffffc90000800000(0000) 
-knlGS:0000000000000000
-[ 6818.346199] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-[ 6818.346524] CR2: 0000000000000000 CR3: 000000021bf13000 CR4: 
-00000000000026e0
-[ 6818.346852] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[ 6818.347185] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[ 6818.347514] Process lvextend (pid: 5005, threadinfo ffff8803a71b8000, 
-task ffff88047f102e60)
-[ 6818.348215] Stack:
-[ 6818.348531]  0000000000001000 ffff880351450270 0000000000000000 
-0000000300000000
-[ 6818.348876] <0> ffff88039488a900 000000007ef22600 ffff88027c38dec8 
-ffff88039488a900
-[ 6818.349533] <0> 0000000000000008 ffff88027c38dec8 ffff88027ef22600 
-ffff88027c38dec8
-[ 6818.350498] Call Trace:
-[ 6818.350820]  [<ffffffff810eec08>] __fput+0xc4/0x1c5
-[ 6818.351147]  [<ffffffff810eed23>] fput+0x1a/0x1c
-[ 6818.351473]  [<ffffffff810ebde5>] filp_close+0x68/0x72
-[ 6818.351797]  [<ffffffff810ebe9c>] sys_close+0xad/0xe7
-[ 6818.352142]  [<ffffffff8100bd32>] system_call_fastpath+0x16/0x1b
-[ 6818.352469] Code: 44 89 f6 4c 89 ef e8 bf 02 00 00 48 85 c0 48 89 c1 
-74 27 48 8b 43 20 48 89 ce 48 89 4d a8 48 89 df ff 50 08 48 8b 4d a8 48 
-8b 1b <48> 8b 03 48 81 fb 80 fc 55 81 0f 18 08 75 92 8b 75 cc 48 c7 c7
+I don't think you'd need more than once a second, possibly modified by 
+the size of the change since the last measurement. Response doesn't need 
+to be immediate.
+
+> Is ALS device stupid sensor, or can it do some smoothing/watermarks
+> itself?
+
+Generally stupid.
 
 -- 
-error compiling committee.c: too many arguments to function
-
+Matthew Garrett | mjg59@srcf.ucam.org
