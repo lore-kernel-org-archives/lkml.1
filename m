@@ -1,91 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271AbZG2CnJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbZG2Cq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756271AbZG2CnJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 22:43:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756241AbZG2CnJ
+	id S1756261AbZG2Cq5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 22:46:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbZG2Cq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 22:43:09 -0400
-Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:54586 "EHLO
-	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756115AbZG2CnH (ORCPT
+	Tue, 28 Jul 2009 22:46:56 -0400
+Received: from mail-gx0-f213.google.com ([209.85.217.213]:59277 "EHLO
+	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750971AbZG2Cq4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 22:43:07 -0400
-From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Message-Id: <200907290242.n6T2gbP1025488@mercury.physics.adelaide.edu.au>
-Subject: Re: [PATCH 6/12] drivers/platform/x86: Correct redundant test
-To: julia@diku.dk (Julia Lawall)
-Date: Wed, 29 Jul 2009 12:12:37 +0930 (CST)
-Cc: jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
-       pmarques@grupopie.com (Paulo Marques), linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0907290422121.16543@ask.diku.dk> from "Julia Lawall" at Jul 29, 2009 04:22:51 AM
-X-Mailer: ELM [version 2.5 PL6]
+	Tue, 28 Jul 2009 22:46:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=wLi35boNmMmiC0kvHvIFeIE08305y2oofqGR2qu4rd1NOoHIXineDEewjozyAKp6Dq
+         0h5+Y8eb8qfZlz1HeS4mjNcNlZE6T/L5XHs+gXlK0JcZ59FLJoWkaqzsU0dWf4gz5Jbz
+         E7xV+6MoAs0xKAuQKdqqVDO3lETNmMdx9U0eY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090729084825.1363c880.kamezawa.hiroyu@jp.fujitsu.com>
+References: <bug-13850-10286@http.bugzilla.kernel.org/>
+	 <20090728160527.1da52682.akpm@linux-foundation.org>
+	 <20090729084825.1363c880.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Tue, 28 Jul 2009 22:46:56 -0400
+Message-ID: <525c5a6c0907281946t249ef288v77ee94edd16f054@mail.gmail.com>
+Subject: Re: [Bugme-new] [Bug 13850] New: reading /proc/kcore causes oops
+From: Mike Smith <scgtrp@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Julia
+> What's layout of memory does your server have ?
+The log I gave was from my desktop, so I'll assume you wanted that
+instead of the server:
+[mike: mike in ~]$ grep "System RAM" /proc/iomem
+00010000-0009efff : System RAM
+00100000-1dedffff : System RAM
 
-> > > Julia Lawall wrote:
-> > > > [...]
-> > > > ---
-> > > >  drivers/platform/x86/fujitsu-laptop.c          |    3 ---
-> > > >  1 files changed, 0 insertions(+), 3 deletions(-)
-> > > > 
-> > > > diff --git a/drivers/platform/x86/fujitsu-laptop.c b/drivers/platform/x86/fujitsu-laptop.c
-> > > > index 218b9a1..5306901 100644
-> > > > --- a/drivers/platform/x86/fujitsu-laptop.c
-> > > > +++ b/drivers/platform/x86/fujitsu-laptop.c
-> > > > @@ -745,9 +745,6 @@ static int acpi_fujitsu_remove(struct acpi_device *device, int type)
-> > > >  
-> > > >  	fujitsu = acpi_driver_data(device);
-> > > >  
-> > > > -	if (!device || !acpi_driver_data(device))
-> > > > -		return -EINVAL;
-> > > > -
-> > > 
-> > > Shouldn't this still do a:
-> > > 
-> > >    if (!fujitsu)
-> > >      return -EINVAL;
-> > > 
-> > > to avoid dereferencing a NULL pointer below?
-> > 
-> > Hmm, yes it should.  Well spotted.  And I'm not certain how the duplicate
-> > test on "device" got in there in the first place.  I suspect it came about
-> > due to some structural changes made a few versions ago and I failed to
-> > notice that the second check became redundant.
-> 
-> If you are going to check fujitsu afterwards, then I think there is no 
-> need to test the result of acpi_driver_data before.
-
-Yes, of course.  I'll wake up soon, promise!
-
-So we're left with this.
-
-Signed-off-by: jwoithe@physics.adelaide.edu.au <Jonathan Woithe>
-
---- a/drivers/platform/x86/fujitsu-laptop.c	2009-06-12 19:51:45.333234000 +0930
-+++ b/drivers/platform/x86/fujitsu-laptop.c	2009-07-29 12:10:11.504901871 +0930
-@@ -740,12 +740,12 @@ static int acpi_fujitsu_remove(struct ac
- {
-        struct fujitsu_t *fujitsu = NULL;
- 
--	if (!device || !acpi_driver_data(device))
-+	if (!device)
- 		return -EINVAL;
- 
- 	fujitsu = acpi_driver_data(device);
- 
--	if (!device || !acpi_driver_data(device))
-+	if (!fujitsu)
- 		return -EINVAL;
- 
-	fujitsu->acpi_handle = NULL;
+> If so, can you please help work out where it crashed?
+I didn't compile the kernel myself; it's the stock Arch Linux kernel,
+which may explain the following useless output (this was the only file
+I could find called vmlinux):
+[mike: mike in /usr/src/linux-2.6.30-ARCH]$ addr2line -e vmlinux 0xc0224dd1
+kcore.c:0
+[mike: mike in /usr/src/linux-2.6.30-ARCH]$ gdb vmlinux
+GNU gdb 6.8
+Copyright (C) 2008 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "i686-pc-linux-gnu"...
+(no debugging symbols found)
+(gdb) l *0xc0224dd1
+No symbol table is loaded.  Use the "file" command.
 
 
-Regards
-  jonathan
+I'll compile a minimal kernel later with debug symbols and see if I
+can reproduce it on that.
