@@ -1,122 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753749AbZG2KhI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbZG2KlN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753749AbZG2KhI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 06:37:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753401AbZG2KhI
+	id S1753882AbZG2KlN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 06:41:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZG2KlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 06:37:08 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:33881 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752284AbZG2KhH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 06:37:07 -0400
-Date: Wed, 29 Jul 2009 12:36:59 +0200
-From: Daniel Mack <daniel@caiaq.de>
-To: ian@mnementh.co.uk
-Cc: linux-kernel@vger.kernel.org, Anton Vorontsov <cbou@mail.ru>,
-       Matt Reimer <mreimer@vpop.net>
-Subject: Re: [PATCH 1/2] power_supply: get_by_name and set_charged
-	functionality
-Message-ID: <20090729103659.GI19257@buzzloop.caiaq.de>
-References: <20090723183451.GI13236@buzzloop.caiaq.de> <1248374154-15606-1-git-send-email-daniel@caiaq.de> <20090728220635.GH19257@buzzloop.caiaq.de> <4A70249C.6060705@f2s.com>
-MIME-Version: 1.0
+	Wed, 29 Jul 2009 06:41:12 -0400
+Received: from cmpxchg.org ([85.214.51.133]:38394 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751997AbZG2KlM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 06:41:12 -0400
+Date: Wed, 29 Jul 2009 12:39:04 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Another memory leak in drivers/char/vt.c
+Message-ID: <20090729103903.GA2175@cmpxchg.org>
+References: <1248859884.2305.7.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A70249C.6060705@f2s.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1248859884.2305.7.camel@pc1117.cambridge.arm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 29, 2009 at 11:29:48AM +0100, Ian molton wrote:
-> Looks ok. the only comment I have right now is that the comment doesnt  
-> quite match the patch - it suggests that the patch doesnt include the  
-> power_supply_set_battery_charged() function, when it does in fact.
+Hello Catalin,
 
-The subject mentions it, and the body references it again. Hmm. Anyway.
-Want me to resend? Or could the commiter add another sentence to point
-that out? I think that would be Anton, as he agreed to pick all the
-other patches I recently sent in.
+On Wed, Jul 29, 2009 at 10:31:23AM +0100, Catalin Marinas wrote:
+> Hi,
+> 
+> There was a memory leak fixed recently by commit 1a8f458f6d. However,
+> there seems to be another with this kmemleak trace:
+> 
+> unreferenced object 0xde158000 (size 12288):
+>   comm "Xorg", pid 1439, jiffies 4294961016
+>   hex dump (first 32 bytes):
+>     20 00 20 00 20 00 20 00 20 00 20 00 20 00 20 00   . . . . . . . .
+>     20 00 20 00 20 00 20 00 20 00 20 00 20 00 20 00   . . . . . . . .
+>   backtrace:
+>     [<c006f74b>] __save_stack_trace+0x17/0x1c
+>     [<c006f81d>] create_object+0xcd/0x188
+>     [<c01f5457>] kmemleak_alloc+0x1b/0x3c
+>     [<c006e303>] __kmalloc+0xdb/0xe8
+>     [<c012cc4b>] vc_do_resize+0x73/0x1e0
+>     [<c012cdf1>] vc_resize+0x15/0x18
+>     [<c011afc1>] fbcon_init+0x1f9/0x2b8
+>     [<c0129e87>] visual_init+0x9f/0xdc
+>     [<c012aff3>] vc_allocate+0x7f/0xfc
+>     [<c012b087>] con_open+0x17/0x80
+>     [<c0120e43>] tty_open+0x1f7/0x2e4
+>     [<c0072fa1>] chrdev_open+0x101/0x118
+>     [<c006ffad>] __dentry_open+0x105/0x1cc
+>     [<c00700fd>] nameidata_to_filp+0x2d/0x38
+>     [<c00788cd>] do_filp_open+0x2c1/0x54c
+>     [<c006fdff>] do_sys_open+0x3b/0xb4
+> 
+> The problem happens in the vc_allocate() function where vc->vc_screenbuf
+> is set to the kmalloc() returned value. However, the visual_init()
+> function called 3 lines before also allocates the vc->vc_screenbuf.
 
-Thanks,
-Daniel
+The common way seems to be that ->con_init(init=1) just sets the
+dimensions manually (instead of using vc_resize()) and vc_allocate()
+uses them to actually allocate a properly sized screen buffer.
 
+So it seems like fbcon is at fault here.  It calls vc_resize() from
+->con_init(init=1) and updates the console dimensions manually on
+init=0 (after calling vc_resize()) which is completely mixed up.
 
->> On Thu, Jul 23, 2009 at 08:35:53PM +0200, Daniel Mack wrote:
->>> This adds a function to get a power_supply device from the class of
->>> registered devices by name reference. It can be used to find a specific
->>> battery to call power_supply_set_battery_charged() on.
->>>
->>> Some battery drivers might need that information to calibrate
->>> themselves.
->>>
->>> Signed-off-by: Daniel Mack <daniel@caiaq.de>
->>> Cc: Ian Molton <spyro@f2s.com>
->>> Cc: Anton Vorontsov <cbou@mail.ru>
->>> Cc: Matt Reimer <mreimer@vpop.net>
->>> ---
->>>  drivers/power/power_supply_core.c |   28 ++++++++++++++++++++++++++++
->>>  include/linux/power_supply.h      |    3 +++
->>>  2 files changed, 31 insertions(+), 0 deletions(-)
->>>
->>> diff --git a/drivers/power/power_supply_core.c b/drivers/power/power_supply_core.c
->>> index 58f10ac..ddb4800 100644
->>> --- a/drivers/power/power_supply_core.c
->>> +++ b/drivers/power/power_supply_core.c
->>> @@ -117,6 +117,34 @@ int power_supply_is_system_supplied(void)
->>>  }
->>>  EXPORT_SYMBOL_GPL(power_supply_is_system_supplied);
->>>  +int power_supply_set_battery_charged(struct power_supply *psy)
->>> +{
->>> +	if (psy->type == POWER_SUPPLY_TYPE_BATTERY && psy->set_charged) {
->>> +		psy->set_charged(psy);
->>> +		return 0;
->>> +	}
->>> +
->>> +	return -EINVAL;
->>> +}
->>> +EXPORT_SYMBOL_GPL(power_supply_set_battery_charged);
->>> +
->>> +static int power_supply_match_device_by_name(struct device *dev, void *data)
->>> +{
->>> +	const char *name = data;
->>> +	struct power_supply *psy = dev_get_drvdata(dev);
->>> +
->>> +	return strcmp(psy->name, name) == 0;
->>> +}
->>> +
->>> +struct power_supply *power_supply_get_by_name(char *name)
->>> +{
->>> +	struct device *dev = class_find_device(power_supply_class, NULL, name,
->>> +					power_supply_match_device_by_name);
->>> +
->>> +	return dev ? dev_get_drvdata(dev) : NULL;
->>> +}
->>> +EXPORT_SYMBOL_GPL(power_supply_get_by_name);
->>> +
->>>  int power_supply_register(struct device *parent, struct power_supply *psy)
->>>  {
->>>  	int rc = 0;
->>> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
->>> index 594c494..49f3296 100644
->>> --- a/include/linux/power_supply.h
->>> +++ b/include/linux/power_supply.h
->>> @@ -126,6 +126,7 @@ struct power_supply {
->>>  			    enum power_supply_property psp,
->>>  			    union power_supply_propval *val);
->>>  	void (*external_power_changed)(struct power_supply *psy);
->>> +	void (*set_charged)(struct power_supply *psy);
->>>   	/* For APM emulation, think legacy userspace. */
->>>  	int use_for_apm;
->>> @@ -165,8 +166,10 @@ struct power_supply_info {
->>>  	int use_for_apm;
->>>  };
->>>  +extern struct power_supply *power_supply_get_by_name(char *name);
->>>  extern void power_supply_changed(struct power_supply *psy);
->>>  extern int power_supply_am_i_supplied(struct power_supply *psy);
->>> +extern int power_supply_set_battery_charged(struct power_supply *psy);
->>>   #if defined(CONFIG_POWER_SUPPLY) || 
->>> defined(CONFIG_POWER_SUPPLY_MODULE)
->>>  extern int power_supply_is_system_supplied(void);
->>> -- 
->
+I think the quick fix is something like the appended (untested!).
+
+In the long run it is probably good to re-evaluate whether vc_resize()
+can be called unconditionally from ->con_init() and remove the
+allocation from vc_allocate().
+
+	Hannes
+
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 471a9a6..3a44695 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -1082,7 +1082,6 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 	new_rows = FBCON_SWAP(ops->rotate, info->var.yres, info->var.xres);
+ 	new_cols /= vc->vc_font.width;
+ 	new_rows /= vc->vc_font.height;
+-	vc_resize(vc, new_cols, new_rows);
+ 
+ 	/*
+ 	 * We must always set the mode. The mode of the previous console
+@@ -1111,10 +1110,11 @@ static void fbcon_init(struct vc_data *vc, int init)
+ 	 *  vc_{cols,rows}, but we must not set those if we are only
+ 	 *  resizing the console.
+ 	 */
+-	if (!init) {
++	if (init) {
+ 		vc->vc_cols = new_cols;
+ 		vc->vc_rows = new_rows;
+-	}
++	} else
++		vc_resize(vc, new_cols, new_rows);
+ 
+ 	if (logo)
+ 		fbcon_prepare_logo(vc, info, cols, rows, new_cols, new_rows);
