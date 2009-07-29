@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753816AbZG2TIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbZG2TIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753816AbZG2TIK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 15:08:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZG2TIJ
+	id S1754043AbZG2TIU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 15:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbZG2TIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 15:08:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35874 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753528AbZG2TIJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 15:08:09 -0400
-Date: Wed, 29 Jul 2009 12:07:20 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
+	Wed, 29 Jul 2009 15:08:18 -0400
+Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:51081 "EHLO
+	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753691AbZG2TIQ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 15:08:16 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Gene Heskett <gene.heskett@verizon.net>
 Subject: Re: [PATCH] kdesu broken
-In-Reply-To: <20090729173955.125a7ae0@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.2.01.0907291147570.3161@localhost.localdomain>
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk> <20090728112203.7b70adba@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907280848090.3186@localhost.localdomain> <20090728174213.5e927428@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907280944150.3186@localhost.localdomain>
- <20090728180649.596c5412@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907281141070.3186@localhost.localdomain> <20090728195651.3a402a31@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907281158120.3186@localhost.localdomain> <20090729004639.71f0eabc@lxorguk.ukuu.org.uk>
- <alpine.LFD.2.01.0907281651160.3186@localhost.localdomain> <20090729013442.493effa6@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907281736260.3161@localhost.localdomain> <20090729095923.4ca5ca3e@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907290842420.3161@localhost.localdomain>
- <20090729165513.2a1ccb7c@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907290859230.3161@localhost.localdomain> <20090729173955.125a7ae0@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+Date: Wed, 29 Jul 2009 21:08:12 +0200
+User-Agent: KMail/1.9.9
+Cc: alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org,
+       hirofumi@mail.parknet.co.jp, aneesh.kumar@linux.vnet.ibm.com,
+       rjw@sisk.pl, ray-lk@madrabbit.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, stern@rowland.harvard.edu
+References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk> <200907292028.32320.elendil@planet.nl> <200907291443.13983.gene.heskett@verizon.net>
+In-Reply-To: <200907291443.13983.gene.heskett@verizon.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200907292108.15839.elendil@planet.nl>
+X-OriginalArrivalTime: 29 Jul 2009 19:08:16.0189 (UTC) FILETIME=[ED5126D0:01CA107F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 29 July 2009, Gene Heskett wrote:
+> Yes, some of it will.  But thanks to fedora's broken disk partitioner,
+> something I've been screaming about for a damned decade, my /boot
+> partition isn't big enough to absorb a whole chain of those, hence the
+> fixed version request.
 
+My /boot isn't big enough for a full series either, but my $HOME is :-)
 
-On Wed, 29 Jul 2009, Alan Cox wrote:
-> 
-> Odds of hitting it minimal however. Or maybe we need a smarter
-> tty_ldisc_wait_idle(ld) ?
+The fact that the packages I create all have the same package name and 
+only the package version differs, means that I do get the complete series 
+but only have one version installed in /boot at any time (as installing a 
+new version overwrites the version from the previous bisect iteration). 
 
-Just adding the ldisc_mutex around the call sounds like the simplest 
-solution. 
-
-That said, looking at the callers of tty_ldisc_wait_idle(), it looks like 
-we have other similar problems already in tty_ldisc_release(), which also 
-calls it without holding the lock, both for the "self" case and then 
-recursively for o_tty.
-
-Moving the mutex_lock() up a bit in tty_ldisc_release() looks like the 
-trivial solution, although I suspect there are any deadlock issues there 
-(ie refs that won't go away because we hold the lock and the thing we are 
-waiting for needs the lock to release the ldisc!).
-
-So making tty_ldisc_wait_idle() more careful adn work without the lock 
-would definitely be the safer thing to do. Requiring the lock looks 
-potentially pretty dangerous.
-
-		Linus
+No idea if you can do the same on an RPM-based system easily.
