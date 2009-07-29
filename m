@@ -1,232 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbZG2Vqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754359AbZG2VrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754300AbZG2Vqj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 17:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbZG2Vqi
+	id S1754359AbZG2VrN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 17:47:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbZG2VrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 17:46:38 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:35176 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754138AbZG2Vqh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 17:46:37 -0400
-Date: Wed, 29 Jul 2009 22:44:46 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Jean Delvare <khali@linux-fr.org>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/7] spi: Add support for device table matching
-Message-ID: <20090729214446.GB1728@fluff.org.uk>
-References: <20090729170345.GA26787@oksana.dev.rtsoft.ru> <20090729170457.GA4803@oksana.dev.rtsoft.ru>
+	Wed, 29 Jul 2009 17:47:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60203 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753253AbZG2VrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 17:47:10 -0400
+Date: Wed, 29 Jul 2009 23:43:10 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, Li Zefan <lizf@cn.fujitsu.com>,
+       Miao Xie <miaox@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Gautham R Shenoy <ego@in.ibm.com>
+Subject: [PATCH 1/1] cpu_hotplug: don't play with current->cpus_allowed
+Message-ID: <20090729214310.GB24631@redhat.com>
+References: <20090729023302.GA8899@redhat.com> <20090729212125.GA16970@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090729170457.GA4803@oksana.dev.rtsoft.ru>
-X-Disclaimer: These are my own opinions, so there!
+In-Reply-To: <20090729212125.GA16970@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 29, 2009 at 09:04:57PM +0400, Anton Vorontsov wrote:
-> With this patch spi drivers can use standard spi_driver.id_table and
-> MODULE_DEVICE_TABLE() mechanisms to bind against the devices. Just
-> like we do with I2C drivers.
-> 
-> This is useful when a single driver supports several variants of
-> devices but it is not possible to detect them in run-time (like
-> non-JEDEC chips probing in drivers/mtd/devices/m25p80.c), and
-> when platform_data usage is overkill.
-> 
-> This patch also makes life a lot easier on OpenFirmware platforms,
-> since with OF we extensively use proper device IDs in modaliases.
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
->  drivers/spi/spi.c               |   26 +++++++++++++++++++++++++-
->  include/linux/mod_devicetable.h |   13 +++++++++++++
->  include/linux/spi/spi.h         |   10 ++++++++--
->  scripts/mod/file2alias.c        |   13 +++++++++++++
->  4 files changed, 59 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
-> index 70845cc..1431bf2 100644
-> --- a/drivers/spi/spi.c
-> +++ b/drivers/spi/spi.c
-> @@ -59,9 +59,24 @@ static struct device_attribute spi_dev_attrs[] = {
->   * and the sysfs version makes coldplug work too.
->   */
->  
-> +static const struct spi_device_id *spi_match_id(const struct spi_device_id *id,
-> +						const struct spi_device *sdev)
-> +{
-> +	while (id->name[0]) {
-> +		if (!strcmp(sdev->modalias, id->name))
-> +			return id;
-> +		id++;
-> +	}
-> +	return NULL;
-> +}
-> +
->  static int spi_match_device(struct device *dev, struct device_driver *drv)
->  {
->  	const struct spi_device	*spi = to_spi_device(dev);
-> +	const struct spi_driver	*sdrv = to_spi_driver(drv);
-> +
-> +	if (sdrv->id_table)
-> +		return !!spi_match_id(sdrv->id_table, spi);
->  
->  	return strcmp(spi->modalias, drv->name) == 0;
->  }
-> @@ -121,6 +136,13 @@ struct bus_type spi_bus_type = {
->  };
->  EXPORT_SYMBOL_GPL(spi_bus_type);
->  
-> +static int spi_drv_probe_id(struct device *dev)
-> +{
-> +	const struct spi_driver		*sdrv = to_spi_driver(dev->driver);
-> +	struct spi_device		*sdev = to_spi_device(dev);
-> +
-> +	return sdrv->probe_id(sdev, spi_match_id(sdrv->id_table, sdev));
-> +}
->  
->  static int spi_drv_probe(struct device *dev)
->  {
-> @@ -151,7 +173,9 @@ static void spi_drv_shutdown(struct device *dev)
->  int spi_register_driver(struct spi_driver *sdrv)
->  {
->  	sdrv->driver.bus = &spi_bus_type;
-> -	if (sdrv->probe)
-> +	if (sdrv->probe_id)
-> +		sdrv->driver.probe = spi_drv_probe_id;
-> +	else if (sdrv->probe)
->  		sdrv->driver.probe = spi_drv_probe;
->  	if (sdrv->remove)
->  		sdrv->driver.remove = spi_drv_remove;
-> diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
-> index 1bf5900..9660dca 100644
-> --- a/include/linux/mod_devicetable.h
-> +++ b/include/linux/mod_devicetable.h
-> @@ -399,6 +399,19 @@ struct i2c_device_id {
->  			__attribute__((aligned(sizeof(kernel_ulong_t))));
->  };
->  
-> +/* spi */
-> +
-> +#define SPI_NAME_SIZE	20
-> +
-> +struct spi_device_id {
-> +	char name[SPI_NAME_SIZE];
-> +#ifdef __KERNEL__
-> +	void *data;
-> +#else
-> +	kernel_ulong_t data;
-> +#endif
-> +};
-> +
->  /* dmi */
->  enum dmi_field {
->  	DMI_NONE,
-> diff --git a/include/linux/spi/spi.h b/include/linux/spi/spi.h
-> index c47c4b4..c8d92a1 100644
-> --- a/include/linux/spi/spi.h
-> +++ b/include/linux/spi/spi.h
-> @@ -20,6 +20,7 @@
->  #define __LINUX_SPI_H
->  
->  #include <linux/device.h>
-> +#include <linux/mod_devicetable.h>
->  
->  /*
->   * INTERFACES between SPI master-side drivers and SPI infrastructure.
-> @@ -86,7 +87,7 @@ struct spi_device {
->  	int			irq;
->  	void			*controller_state;
->  	void			*controller_data;
-> -	char			modalias[32];
-> +	char			modalias[SPI_NAME_SIZE];
->  
->  	/*
->  	 * likely need more hooks for more protocol options affecting how
-> @@ -145,6 +146,8 @@ struct spi_message;
->  
->  /**
->   * struct spi_driver - Host side "protocol" driver
-> + * @id_table: List of SPI devices supported by this driver
-> + * @probe_id: Binds this driver to the spi device via id_table matching.
->   * @probe: Binds this driver to the spi device.  Drivers can verify
->   *	that the device is actually present, and may need to configure
->   *	characteristics (such as bits_per_word) which weren't needed for
-> @@ -170,6 +173,9 @@ struct spi_message;
->   * MMC, RTC, filesystem character device nodes, and hardware monitoring.
->   */
->  struct spi_driver {
-> +	const struct spi_device_id *id_table;
-> +	int			(*probe_id)(struct spi_device *spi,
-> +					    const struct spi_device_id *id);
+_cpu_down() changes the current task's affinity and then recovers it at
+the end. The problems are well known: we can't restore old_allowed if it
+was bound to the now-dead-cpu, and we can race with the userspace which
+can change cpu-affinity during unplug.
 
-how about leaving it at just probe and have either a call or a field
-in the device that you can look at to see if this was a new style of
-call?
+_cpu_down() should not play with current->cpus_allowed at all. Instead,
+take_cpu_down() can migrate the caller of _cpu_down() after __cpu_disable()
+removes the dying cpu from cpu_online_mask.
 
->  	int			(*probe)(struct spi_device *spi);
->  	int			(*remove)(struct spi_device *spi);
->  	void			(*shutdown)(struct spi_device *spi);
-> @@ -732,7 +738,7 @@ struct spi_board_info {
->  	 * controller_data goes to spi_device.controller_data,
->  	 * irq is copied too
->  	 */
-> -	char		modalias[32];
-> +	char		modalias[SPI_NAME_SIZE];
->  	const void	*platform_data;
->  	void		*controller_data;
->  	int		irq;
-> diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
-> index 40e0045..9d446e3 100644
-> --- a/scripts/mod/file2alias.c
-> +++ b/scripts/mod/file2alias.c
-> @@ -657,6 +657,15 @@ static int do_i2c_entry(const char *filename, struct i2c_device_id *id,
->  	return 1;
->  }
->  
-> +/* Looks like: S */
-> +static int do_spi_entry(const char *filename, struct spi_device_id *id,
-> +			char *alias)
-> +{
-> +	sprintf(alias, "%s", id->name);
-> +
-> +	return 1;
-> +}
-> +
->  static const struct dmifield {
->  	const char *prefix;
->  	int field;
-> @@ -853,6 +862,10 @@ void handle_moddevtable(struct module *mod, struct elf_info *info,
->  		do_table(symval, sym->st_size,
->  			 sizeof(struct i2c_device_id), "i2c",
->  			 do_i2c_entry, mod);
-> +	else if (sym_is(symname, "__mod_spi_device_table"))
-> +		do_table(symval, sym->st_size,
-> +			 sizeof(struct spi_device_id), "spi",
-> +			 do_spi_entry, mod);
->  	else if (sym_is(symname, "__mod_dmi_device_table"))
->  		do_table(symval, sym->st_size,
->  			 sizeof(struct dmi_system_id), "dmi",
-> -- 
-> 1.6.3.3
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Reported-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+---
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
+ include/linux/sched.h |    1 +
+ kernel/sched.c        |    2 +-
+ kernel/cpu.c          |   19 ++++++-------------
+ 3 files changed, 8 insertions(+), 14 deletions(-)
 
-  'a smiley only costs 4 bytes'
+--- CPUHP/include/linux/sched.h~CPU_DOWN_AFF	2009-07-23 17:06:39.000000000 +0200
++++ CPUHP/include/linux/sched.h	2009-07-29 23:27:44.000000000 +0200
+@@ -1794,6 +1794,7 @@ extern void sched_clock_idle_sleep_event
+ extern void sched_clock_idle_wakeup_event(u64 delta_ns);
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
++extern void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p);
+ extern void idle_task_exit(void);
+ #else
+ static inline void idle_task_exit(void) {}
+--- CPUHP/kernel/sched.c~CPU_DOWN_AFF	2009-07-29 22:18:33.000000000 +0200
++++ CPUHP/kernel/sched.c	2009-07-29 23:27:44.000000000 +0200
+@@ -7118,7 +7118,7 @@ static int __migrate_task_irq(struct tas
+ /*
+  * Figure out where task on dead CPU should go, use force if necessary.
+  */
+-static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
++void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
+ {
+ 	int dest_cpu;
+ 	const struct cpumask *nodemask = cpumask_of_node(cpu_to_node(dead_cpu));
+--- CPUHP/kernel/cpu.c~CPU_DOWN_AFF	2009-06-23 14:23:52.000000000 +0200
++++ CPUHP/kernel/cpu.c	2009-07-29 23:27:44.000000000 +0200
+@@ -163,6 +163,7 @@ static inline void check_for_tasks(int c
+ }
+ 
+ struct take_cpu_down_param {
++	struct task_struct *caller;
+ 	unsigned long mod;
+ 	void *hcpu;
+ };
+@@ -171,6 +172,7 @@ struct take_cpu_down_param {
+ static int __ref take_cpu_down(void *_param)
+ {
+ 	struct take_cpu_down_param *param = _param;
++	unsigned int cpu = (unsigned long)param->hcpu;
+ 	int err;
+ 
+ 	/* Ensure this CPU doesn't handle any more interrupts. */
+@@ -181,6 +183,8 @@ static int __ref take_cpu_down(void *_pa
+ 	raw_notifier_call_chain(&cpu_chain, CPU_DYING | param->mod,
+ 				param->hcpu);
+ 
++	if (task_cpu(param->caller) == cpu)
++		move_task_off_dead_cpu(cpu, param->caller);
+ 	/* Force idle task to run as soon as we yield: it should
+ 	   immediately notice cpu is offline and die quickly. */
+ 	sched_idle_next();
+@@ -191,10 +195,10 @@ static int __ref take_cpu_down(void *_pa
+ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
+ {
+ 	int err, nr_calls = 0;
+-	cpumask_var_t old_allowed;
+ 	void *hcpu = (void *)(long)cpu;
+ 	unsigned long mod = tasks_frozen ? CPU_TASKS_FROZEN : 0;
+ 	struct take_cpu_down_param tcd_param = {
++		.caller = current,
+ 		.mod = mod,
+ 		.hcpu = hcpu,
+ 	};
+@@ -205,9 +209,6 @@ static int __ref _cpu_down(unsigned int 
+ 	if (!cpu_online(cpu))
+ 		return -EINVAL;
+ 
+-	if (!alloc_cpumask_var(&old_allowed, GFP_KERNEL))
+-		return -ENOMEM;
+-
+ 	cpu_hotplug_begin();
+ 	err = __raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE | mod,
+ 					hcpu, -1, &nr_calls);
+@@ -221,11 +222,6 @@ static int __ref _cpu_down(unsigned int 
+ 		goto out_release;
+ 	}
+ 
+-	/* Ensure that we are not runnable on dying cpu */
+-	cpumask_copy(old_allowed, &current->cpus_allowed);
+-	set_cpus_allowed_ptr(current,
+-			     cpumask_of(cpumask_any_but(cpu_online_mask, cpu)));
+-
+ 	err = __stop_machine(take_cpu_down, &tcd_param, cpumask_of(cpu));
+ 	if (err) {
+ 		/* CPU didn't die: tell everyone.  Can't complain. */
+@@ -233,7 +229,7 @@ static int __ref _cpu_down(unsigned int 
+ 					    hcpu) == NOTIFY_BAD)
+ 			BUG();
+ 
+-		goto out_allowed;
++		goto out_release;
+ 	}
+ 	BUG_ON(cpu_online(cpu));
+ 
+@@ -251,8 +247,6 @@ static int __ref _cpu_down(unsigned int 
+ 
+ 	check_for_tasks(cpu);
+ 
+-out_allowed:
+-	set_cpus_allowed_ptr(current, old_allowed);
+ out_release:
+ 	cpu_hotplug_done();
+ 	if (!err) {
+@@ -260,7 +254,6 @@ out_release:
+ 					    hcpu) == NOTIFY_BAD)
+ 			BUG();
+ 	}
+-	free_cpumask_var(old_allowed);
+ 	return err;
+ }
+ 
+
