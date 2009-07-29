@@ -1,58 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbZG2OTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752798AbZG2OUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752764AbZG2OTi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 10:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbZG2OTh
+	id S1752798AbZG2OUh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 10:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752125AbZG2OUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 10:19:37 -0400
-Received: from kroah.org ([198.145.64.141]:37873 "EHLO coco.kroah.org"
+	Wed, 29 Jul 2009 10:20:37 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44309 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752039AbZG2OTg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 10:19:36 -0400
-Date: Wed, 29 Jul 2009 07:17:50 -0700
-From: Greg KH <greg@kroah.com>
-To: David Miller <davem@davemloft.net>
-Cc: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kaber@trash.net
-Subject: Re: linux-next: manual merge of the staging tree with the net tree
-Message-ID: <20090729141750.GA28973@kroah.com>
-References: <20090729165211.c13f3ca3.sfr@canb.auug.org.au>
- <20090729124406.GA26931@kroah.com>
- <20090729.064659.193718905.davem@davemloft.net>
+	id S1751326AbZG2OUg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 10:20:36 -0400
+Message-ID: <4A705AB4.90103@suse.de>
+Date: Wed, 29 Jul 2009 16:20:36 +0200
+From: Alexander Graf <agraf@suse.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090729.064659.193718905.davem@davemloft.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 11/12] kvm/svm: handle #pf intercepts in nested_svm_exit_handled
+ directly
+References: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com> <1248872192-30881-12-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <1248872192-30881-12-git-send-email-joerg.roedel@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 29, 2009 at 06:46:59AM -0700, David Miller wrote:
-> From: Greg KH <greg@kroah.com>
-> Date: Wed, 29 Jul 2009 05:44:06 -0700
-> 
-> > On Wed, Jul 29, 2009 at 04:52:11PM +1000, Stephen Rothwell wrote:
-> >> Hi Greg,
-> >> 
-> >> Today's linux-next merge of the staging tree got a conflict in
-> >> drivers/staging/epl/VirtualEthernetLinux.c between commit
-> >> 6ed106549d17474ca17a16057f4c0ed4eba5a7ca ("net: use NETDEV_TX_OK instead
-> >> of 0 in ndo_start_xmit() functions") from the net tree and commit
-> >> 49acb975a21d150c4beba4e581f3e1d004dd2867 ("Staging: remove epl driver")
-> >> from the staging tree.
-> >> 
-> >> The latter just removes the file, so I did that.
-> > 
-> > Thanks a lot.  Yes, the epl driver has been dropped from staging, so
-> > that's the right thing to do.
-> 
-> Please make sure you integrate that change, if the driver is
-> simply moving out of staging to somewhere else.
+Joerg Roedel wrote:
+> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 
-Nope, the driver is getting dropped into the bin, it's not maintained
-upstream, no one cares about it, and is a total and complete mess.
+Acked-by: Alexander Graf <agraf@suse.de>
 
-thanks,
-
-greg k-h
+I'm really starting to miss comments on the commits ...
