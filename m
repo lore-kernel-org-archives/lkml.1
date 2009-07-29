@@ -1,116 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbZG2Csx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbZG2CvH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754830AbZG2Csx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 22:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbZG2Csx
+	id S1755147AbZG2CvH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 22:51:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbZG2CvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 22:48:53 -0400
-Received: from mail-qy0-f179.google.com ([209.85.221.179]:46775 "EHLO
-	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750776AbZG2Csw convert rfc822-to-8bit (ORCPT
+	Tue, 28 Jul 2009 22:51:06 -0400
+Received: from vms173017pub.verizon.net ([206.46.173.17]:55845 "EHLO
+	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750695AbZG2CvF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 22:48:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=wwUhVjPgp0m/GoUAllI8Hbnnmt2TGRd6XlhhMSl689zh7bBTZF4L8YrLJj/QM3AHiZ
-         l/bI4hjJlVyrAMo3G9M4gGmRVWMB7FsY/V0iEun1682cL5f2exPw0k4h3M+MbW7SeANt
-         GmRIwHaou/0RPJ2MXnUS8ODOws5A3V8bCKJnQ=
-MIME-Version: 1.0
-In-Reply-To: <4A6F033B.7030302@mnementh.co.uk>
-References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>
-	 <4A6F033B.7030302@mnementh.co.uk>
-Date: Wed, 29 Jul 2009 11:48:51 +0900
-Message-ID: <aec7e5c30907281948s2a0dcd0csd3e580251d6c4f5a@mail.gmail.com>
-Subject: Re: MMC: Make the configuration memory resource optional
-From: Magnus Damm <magnus.damm@gmail.com>
-To: Ian Molton <ian@mnementh.co.uk>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
-       Magnus Damm <damm@opensource.se>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 28 Jul 2009 22:51:05 -0400
+From: Gene Heskett <gene.heskett@verizon.net>
+Organization: Organization? Not detectable
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] kdesu broken
+Date: Tue, 28 Jul 2009 22:50:45 -0400
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc4; KDE/4.2.4; i686; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
+ <20090729004639.71f0eabc@lxorguk.ukuu.org.uk>
+ <alpine.LFD.2.01.0907281651160.3186@localhost.localdomain>
+In-reply-to: <alpine.LFD.2.01.0907281651160.3186@localhost.localdomain>
+MIME-version: 1.0
+Content-type: Text/Plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+Message-id: <200907282250.46018.gene.heskett@verizon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ian,
-
-On Tue, Jul 28, 2009 at 10:55 PM, Ian Molton<ian@mnementh.co.uk> wrote:
-> Guennadi Liakhovetski wrote:
->>
->> Add support for tmio_mmc hardware configurations, that lack the cnf io
->> area, like SuperH SoCs. With this patch such hardware can pass a single ctl
->> io area with the platform data.
+On Tuesday 28 July 2009, Linus Torvalds wrote:
+>On Wed, 29 Jul 2009, Alan Cox wrote:
+>> BTW: The tty->low_latency fix doesn't work, because the ->write method
+>> can be called from an IRQ and that means we can't use ->low_latency=1 as
+>> we take mutexes.
 >
-> NAK
-
-That's not a very polite way to begin your email. How about "hey, hi
-or good day"?
-
-> I dont like this approach - although it involves minimal changes to the
-> driver, it will leave people puzzling over why their accesses to the cnf
-> registers do nothing when debugging.
-
-Half a year ago I posted a set of tmio_mmc patches, and the MMC
-maintainer kindly picked out the bug fixes and merged them. No problem
-there. The feature request to allow the driver to work with a single
-memory window (similar to this patch) was NAKed by you in a very
-similar way.
-
-One of the reasons for NAKing my patches at that time was that you
-didn't have time to review the 100 lines of code. This time you
-dislike it because "it will leave people puzzling".
-
-> The cnf area is basically clock and power control for devices that have it.
-> If I had known of the existence of other tmio devices that didnt do it that
-> way when I wrote the driver, it would never have been put in there directly.
+>Ok. So the end result is that Ogawa-san's fix is the right one. Then we
+>can revert the low_latency=1 thing for pty's entirely. No?
 >
-> The *right* way to do this is to use the clk API for clocks and provide a
-> small API for power control that the driver will use, if present.
+>And this is also the one that _looks_ the sanest - ie we do it on the read
+>side, where it matters, rather than on the write side or the flush side
+>(where the proper flushing can _also_ fix the problem, but where it's much
+>more problematic, and where it's a lot less direct about what we care
+>about).
+>
+>This is just Ogawa's patch, redone against current -git, and with commit
+>3a54297478e6578f96fd54bf4daa1751130aca86 reverted (Ogawa's patch already
+>undid the non-low_latency part of it).
+>
+>Now, I wonder if some _other_ line discipline might want to do that same
+>tty_flush_to_ldisc thing in their "do I have data" logic, but I didn't
+>look any closer.
+>
+>So does this work for everyone? I haven't tested it yet myself, but this
+>is the patch that "looks" right.
+>
+>		Linus
 
-Yes, I think everyone wants to use the clock API to control clocks.
+It doesn't seem to do anything for bz 13841 here.  Sorry, I wish it did.
 
-However, the clock API does not solve the issue with a single address
-window. That's the issue that this patch and my earlier patches are
-trying to solve. Which is the issue that you keep on ignoring.
+Thanks Linus.
+>
+>---
+> drivers/char/n_tty.c      |    1 +
+> drivers/char/pty.c        |    2 --
+> drivers/char/tty_buffer.c |   13 +++++++++++++
+> include/linux/tty.h       |    1 +
+> 4 files changed, 15 insertions(+), 2 deletions(-)
+>
+>diff --git a/drivers/char/n_tty.c b/drivers/char/n_tty.c
+>index ff47907..973be2f 100644
+>--- a/drivers/char/n_tty.c
+>+++ b/drivers/char/n_tty.c
+>@@ -1583,6 +1583,7 @@ static int n_tty_open(struct tty_struct *tty)
+>
+> static inline int input_available_p(struct tty_struct *tty, int amt)
+> {
+>+	tty_flush_to_ldisc(tty);
+> 	if (tty->icanon) {
+> 		if (tty->canon_data)
+> 			return 1;
+>diff --git a/drivers/char/pty.c b/drivers/char/pty.c
+>index 3850a68..6e6942c 100644
+>--- a/drivers/char/pty.c
+>+++ b/drivers/char/pty.c
+>@@ -52,7 +52,6 @@ static void pty_close(struct tty_struct *tty, struct file
+> *filp) return;
+> 	tty->link->packet = 0;
+> 	set_bit(TTY_OTHER_CLOSED, &tty->link->flags);
+>-	tty_flip_buffer_push(tty->link);
+> 	wake_up_interruptible(&tty->link->read_wait);
+> 	wake_up_interruptible(&tty->link->write_wait);
+> 	if (tty->driver->subtype == PTY_TYPE_MASTER) {
+>@@ -208,7 +207,6 @@ static int pty_open(struct tty_struct *tty, struct file
+> *filp) clear_bit(TTY_OTHER_CLOSED, &tty->link->flags);
+> 	set_bit(TTY_THROTTLED, &tty->flags);
+> 	retval = 0;
+>-	tty->low_latency = 1;
+> out:
+> 	return retval;
+> }
+>diff --git a/drivers/char/tty_buffer.c b/drivers/char/tty_buffer.c
+>index 810ee25..3108991 100644
+>--- a/drivers/char/tty_buffer.c
+>+++ b/drivers/char/tty_buffer.c
+>@@ -462,6 +462,19 @@ static void flush_to_ldisc(struct work_struct *work)
+> }
+>
+> /**
+>+ *	tty_flush_to_ldisc
+>+ *	@tty: tty to push
+>+ *
+>+ *	Push the terminal flip buffers to the line discipline.
+>+ *
+>+ *	Must not be called from IRQ context.
+>+ */
+>+void tty_flush_to_ldisc(struct tty_struct *tty)
+>+{
+>+	flush_to_ldisc(&tty->buf.work.work);
+>+}
+>+
+>+/**
+>  *	tty_flip_buffer_push	-	terminal
+>  *	@tty: tty to push
+>  *
+>diff --git a/include/linux/tty.h b/include/linux/tty.h
+>index 1488d8c..e8c6c91 100644
+>--- a/include/linux/tty.h
+>+++ b/include/linux/tty.h
+>@@ -394,6 +394,7 @@ extern void __do_SAK(struct tty_struct *tty);
+> extern void disassociate_ctty(int priv);
+> extern void no_tty(void);
+> extern void tty_flip_buffer_push(struct tty_struct *tty);
+>+extern void tty_flush_to_ldisc(struct tty_struct *tty);
+> extern void tty_buffer_free_all(struct tty_struct *tty);
+> extern void tty_buffer_flush(struct tty_struct *tty);
+> extern void tty_buffer_init(struct tty_struct *tty);
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
 
-> If people want to change the situation in TMIO re: clocks, as I have said
-> before, they should start a discussion on how to adapt the clk API.  so that
-> more than just the CPU can use it. This will make everyone happy all in one
-> go.
 
-Regardless of how the clock API is implemented, sooner or later the
-driver needs to support a single address window if it's going to run
-on such hardware. This is not exactly rocket science.
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+The NRA is offering FREE Associate memberships to anyone who wants them.
+<https://www.nrahq.org/nrabonus/accept-membership.asp>
 
-> I will happily take a patch abstracting power control from tmio-mmc,
-> however.
+Small animal kamikaze attack on power supplies
 
-I see it as you are blocking progress without any technical reasons.
-It's basically exactly the same as half a year ago. And exactly what
-has happened with clocklib in that time?
-
-I understand that you want to have clocklib so you can manage clocks
-dynamically for your mfd drivers, but in our use case we already have
-working clock framework implementations withing our SoC. There is no
-need for any dynamic clock registration and unregistration. With that
-in mind it can't be very difficult to understand that there is no
-point for SoC vendors to work on clocklib. If's mainly an issue for
-mfd.
-
-You talk about correctness in the upstream kernel and refuse to
-include things because of your special view of correctness. At the
-same time you suggest Guennadi and me to keep the patches local
-instead of picking up the changes and merging them in your upstream
-driver. This local patch suggestion does not help. If we wanted to
-have local patches then we wouldn't submit things upstream.
-
-Your role as a maintainer is to work with the community. Just NAKing
-and saying you want some highlevel framework merged first is not very
-constructive. I recommend you to evaluate your position in the
-communtiy. Use git shortlog to compare your own contributions over
-time with what Guennadi has done.
-
-/ magnus
