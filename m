@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752853AbZG2GVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752922AbZG2GXF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752853AbZG2GVK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 02:21:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbZG2GVJ
+	id S1752922AbZG2GXF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 02:23:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbZG2GXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 02:21:09 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:48900 "EHLO kernel.dk"
+	Wed, 29 Jul 2009 02:23:05 -0400
+Received: from leia.mcbone.net ([194.97.104.42]:43815 "EHLO leia.mcbone.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751876AbZG2GVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 02:21:08 -0400
-Date: Wed, 29 Jul 2009 08:20:58 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Philipp Reisner <philipp.reisner@linbit.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: drbd tree build failure
-Message-ID: <20090729062058.GE4148@kernel.dk>
-References: <20090729152933.47664b18.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090729152933.47664b18.sfr@canb.auug.org.au>
+	id S1751876AbZG2GXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 02:23:04 -0400
+Subject: Re: futexes: Still infinite loop in get_futex_key() in 2.6.31-rc4
+From: Jens Rosenboom <jens@mcbone.net>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Sonny Rao <sonnyrao@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1248701812.6987.1637.camel@twins>
+References: <1248681637.7279.12.camel@fnki-nb00130>
+	 <1248694266.6987.1594.camel@twins>  <1248697004.7279.31.camel@fnki-nb00130>
+	 <1248697409.6987.1617.camel@twins>  <1248698755.7279.47.camel@fnki-nb00130>
+	 <1248701812.6987.1637.camel@twins>
+Content-Type: multipart/mixed; boundary="=-DhK6LyDHAURgMire+2tt"
+Date: Wed, 29 Jul 2009 08:22:48 +0200
+Message-Id: <1248848568.6757.13.camel@fnki-nb00130>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 29 2009, Stephen Rothwell wrote:
-> Hi Philipp,
-> 
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
-> 
-> drivers/block/drbd/drbd_req.c: In function 'drbd_make_request_26':
-> drivers/block/drbd/drbd_req.c:1023: error: implicit declaration of function 'bio_barrier'
-> drivers/block/drbd/drbd_actlog.c: In function '_drbd_md_sync_page_io':
-> drivers/block/drbd/drbd_actlog.c:120: error: implicit declaration of function 'bio_barrier'
-> drivers/block/drbd/drbd_main.c: In function 'drbd_send_dblock':
-> drivers/block/drbd/drbd_main.c:2373: error: implicit declaration of function 'bio_barrier'
-> drivers/block/drbd/drbd_main.c:2375: error: implicit declaration of function 'bio_sync'
-> 
-> Caused by commit d206aaff0c5ee065f382c626ea21c5166a3047a7 ("bio: first
-> step in sanitizing the bio->bi_rw flag testing") from the block tree.
-> 
-> I applied the following patch for today.
 
-That fixup looks good, thanks Stephen.
+--=-DhK6LyDHAURgMire+2tt
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
+On Mon, 2009-07-27 at 15:36 +0200, Peter Zijlstra wrote:
+[...]
+> Bugger.. how easy it is to reproduce?
 
--- 
-Jens Axboe
+Okay, my colleague found the right combination of scripts, take the two
+attached, run them both a couple of times in parallel for some hours,
+and get a stuck ps. This happens both on an old 2.6.29.1 I happened to
+still have on one machine as with 2.6.31-rc4. Both of them dual-core
+Opterons as the original one. If you want further tracebacks or other
+information, let me know.
+
+--=-DhK6LyDHAURgMire+2tt
+Content-Disposition: attachment; filename="null.pl"
+Content-Type: application/x-perl; name="null.pl"
+Content-Transfer-Encoding: 7bit
+
+#!/usr/bin/perl -w
+use strict;
+
+my $a = 'a';
+while (1) {
+ $0 = "null_".$a++;
+}
+
+--=-DhK6LyDHAURgMire+2tt
+Content-Disposition: attachment; filename="pees.pl"
+Content-Type: application/x-perl; name="pees.pl"
+Content-Transfer-Encoding: 7bit
+
+#!/usr/bin/perl -w
+use strict;
+
+while (1) {
+ my @a = grep (/ SOMETHING: /, `ps ax 2>/dev/null`);
+}
+
+--=-DhK6LyDHAURgMire+2tt--
 
