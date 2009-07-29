@@ -1,132 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755188AbZG2M6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbZG2M5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755188AbZG2M6T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 08:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbZG2M6R
+	id S1754899AbZG2M5V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 08:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754864AbZG2M5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 08:58:17 -0400
-Received: from cantor.suse.de ([195.135.220.2]:40521 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755041AbZG2M6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 08:58:13 -0400
-Date: Wed, 29 Jul 2009 14:58:12 +0200
-From: Jan Kara <jack@suse.cz>
-To: Sylvain Rochet <gradator@gradator.net>
-Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, linux-nfs@vger.kernel.org
-Subject: Re: 2.6.28.9: EXT3/NFS inodes corruption
-Message-ID: <20090729125812.GL19209@duck.suse.cz>
-References: <20090420162017.GA28079@gradator.net> <20090716172749.GC3740@atrey.karlin.mff.cuni.cz> <20090725151751.GA6419@gradator.net> <20090727154253.GB8332@duck.suse.cz> <20090728112715.GA8442@gradator.net> <20090728135226.GA21682@duck.suse.cz> <20090728164142.GA13662@gradator.net>
+	Wed, 29 Jul 2009 08:57:20 -0400
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:23006
+	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754682AbZG2M44 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 08:56:56 -0400
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i203h43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KNJNYI-04-402-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Avi Kivity <avi@redhat.com>
+CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 12/12] kvm/svm: simplify nested_svm_check_exception
+Date: Wed, 29 Jul 2009 14:56:32 +0200
+Message-ID: <1248872192-30881-13-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com>
+References: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 29 Jul 2009 12:56:37.0186 (UTC) FILETIME=[02135220:01CA104C]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090728164142.GA13662@gradator.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 28-07-09 18:41:42, Sylvain Rochet wrote:
-> Hi,
-> 
-> 
-> On Tue, Jul 28, 2009 at 03:52:26PM +0200, Jan Kara wrote:
-> > On Tue 28-07-09 13:27:15, Sylvain Rochet wrote:
-> > > On Mon, Jul 27, 2009 at 05:42:53PM +0200, Jan Kara wrote:
-> > > > On Sat 25-07-09 17:17:52, Sylvain Rochet wrote:
-> > > > > > 
-> > > > > > Can you still see the corruption with 2.6.30 kernel?
-> > > > > 
-> > > > > Not upgraded yet, we'll give a try.
-> > > 
-> > > Done, now featuring 2.6.30.3 ;)
-> > 
-> > OK, drop me an email if you will see corruption also with this kernel.
-> 
-> Lets move out the corrupted directory ;)
-> 
-> root@bazooka:/data/web/ed/90/48/walotux.walon.org/htdocs/tmp/cache/e# rm -- * .ok 
-> rm: cannot remove `spip%3Farticle19.f8740dca': Input/output error
-> root@bazooka:/data/web/ed/90/48/walotux.walon.org/htdocs/tmp/cache/e# cd ..
-> root@bazooka:/data/web/ed/90/48/walotux.walon.org/htdocs/tmp/cache# mv e/ /data/lost+found/wooops
-  Actually, leaving that file in the filesystem can potentially lead to
-strange effects because eventually the inode "spip%3Farticle19.f8740dca"
-points to gets reallocated and then you can get e.g. a hardlinked
-directory. On the other hand having it lost+found should be safe enough.
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kvm/svm.c |   19 ++++++++-----------
+ 1 files changed, 8 insertions(+), 11 deletions(-)
 
-> > > > This is probably the misleading output from ext3_iget(). It should give
-> > > > you EIO in the latest kernel.
-> > > 
-> > > root@bazooka:/data/web/ed/90/48/walotux.walon.org/htdocs/tmp/cache/e# cat spip%3Farticle19.f8740dca 
-> > > cat: spip%3Farticle19.f8740dca: Input/output error
-> > > 
-> > > It has much more sense now. We thought the problem was around NFS due 
-> > > the the previous error message, actually this is probably not the best 
-> > > looking path.
-> > 
-> > Yes, EIO makes more sence. I think the problem is NFS connected anyway
-> > though :). But I don't have a clue how it can happen yet. Maybe I can try
-> > adding some low-cost debugging checks if you'd be willing to run such
-> > kernel...
-> 
-> Without any problem, we have 24/7/365 physical access and we don't need 
-> to provide high-availability services.
-  Cool, I'll try to cook up something then.
-
-> Anyway, the data hosted aren't that important, there is little or even 
-> no need for strict confidentiality, so we will be happy to provide ssh 
-> access to whom would like to look deeper into this issue.
-  I don't need to go that far (at least for now) but thanks for the offer.
-
-> > I'm adding to CC linux-nfs just in case someone has an idea.
-> > 
-> > > >   Ah, OK, here's the problem. The directory points to a file which is
-> > > > obviously deleted (note the "Links: 0"). All the content of the inode seems
-> > > > to indicate that the file was correctly deleted (you might check that the
-> > > > corresponding bit in the bitmap is cleared via: "icheck 88541562").
-> > > 
-> > > root@bazooka:~# debugfs /dev/md10
-> > > debugfs 1.40-WIP (14-Nov-2006)
-> > > debugfs:  icheck 88541562
-> > > Block   Inode number
-> > > 88541562        <block not found>
-> > 
-> > Ah, wrong debugfs command. I should have written:
-> > testi <88541562>
-> 
-> debugfs:  testi <88541562>
-> Inode 88541562 is not in use
-  Yes, again this confirms that the inode was just correctly deleted. But
-somehow a pointer to it remained in the directory.
-
-> > > >   The question is how it could happen the directory still points to the
-> > > > inode. Really strange. It looks as if we've lost a write to the directory
-> > > > but I don't see how. Are there any suspitious kernel messages in this case?
-> > > 
-> > > There were nothing for a while, but since the reboot there are some 
-> > > about this inode: 
-> > > 
-> > > EXT3-fs error (device md10): ext3_lookup: deleted inode referenced: 88541562
-> > 
-> > Yes, that's to be expected given the corruption any NFS error messages?
-> 
-> There are some error messages on NFS clients, however they are quite old.
-> 
-> Apr 19 15:38:21 gin kernel: NFS: Buggy server - nlink == 0!
-> May  3 20:00:52 gin kernel: NFS: Buggy server - nlink == 0!
-> May  3 23:24:03 gin kernel: NFS: Buggy server - nlink == 0!
-> May  7 11:40:57 gin kernel: NFS: Buggy server - nlink == 0!
-> May  7 14:41:02 gin kernel: NFS: Buggy server - nlink == 0!
-> May 26 11:10:42 cognac kernel: NFS: Buggy server - nlink == 0!
-> May 26 11:13:28 cognac kernel: NFS: Buggy server - nlink == 0!
-> May 26 12:34:39 cognac kernel: NFS: Buggy server - nlink == 0!
-> May 26 12:39:43 cognac kernel: NFS: Buggy server - nlink == 0!
-> 
-> This is obviously related to the corruption.
-  Yes, this is a consequence of the bug - somebody deleted an inode because
-i_nlink dropped down to 0 but the inode was in fact still referenced.
-
-									Honza
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 381ed38..f81de35 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -1366,18 +1366,15 @@ static int nested_svm_check_permissions(struct vcpu_svm *svm)
+ static int nested_svm_check_exception(struct vcpu_svm *svm, unsigned nr,
+ 				      bool has_error_code, u32 error_code)
+ {
+-	if (is_nested(svm)) {
+-		svm->vmcb->control.exit_code = SVM_EXIT_EXCP_BASE + nr;
+-		svm->vmcb->control.exit_code_hi = 0;
+-		svm->vmcb->control.exit_info_1 = error_code;
+-		svm->vmcb->control.exit_info_2 = svm->vcpu.arch.cr2;
+-		if (nested_svm_exit_handled(svm, false)) {
+-			nsvm_printk("VMexit -> EXCP 0x%x\n", nr);
+-			return 1;
+-		}
+-	}
++	if (!is_nested(svm))
++		return 0;
+ 
+-	return 0;
++	svm->vmcb->control.exit_code = SVM_EXIT_EXCP_BASE + nr;
++	svm->vmcb->control.exit_code_hi = 0;
++	svm->vmcb->control.exit_info_1 = error_code;
++	svm->vmcb->control.exit_info_2 = svm->vcpu.arch.cr2;
++
++	return nested_svm_exit_handled(svm, false);
+ }
+ 
+ static inline int nested_svm_intr(struct vcpu_svm *svm)
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+1.6.3.3
+
+
