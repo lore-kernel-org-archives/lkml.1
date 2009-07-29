@@ -1,54 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbZG2Jgx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753434AbZG2Ji0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753339AbZG2Jgx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 05:36:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZG2Jgw
+	id S1753434AbZG2Ji0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 05:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbZG2JiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 05:36:52 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:56751 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751355AbZG2Jgw (ORCPT
+	Wed, 29 Jul 2009 05:38:25 -0400
+Received: from mail-px0-f184.google.com ([209.85.216.184]:35667 "EHLO
+	mail-px0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751458AbZG2JiZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 05:36:52 -0400
-Subject: Re: [RFC] Make AGP work with IOMMU
-From: David Woodhouse <dwmw2@infradead.org>
-To: Dave Airlie <airlied@gmail.com>, Keir Fraser <kier.fraser@eu.citrix.com>,
-       xen-devel@lists.xensource.com
-Cc: Zhenyu Wang <zhenyu.z.wang@intel.com>, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, Joerg Roedel <joerg.roedel@amd.com>
-In-Reply-To: <21d7e9970907290143q6778511cvda1c6b915f61654a@mail.gmail.com>
-References: <1248707041.6100.35.camel@macbook.infradead.org>
-	 <21d7e9970907282328l4a44b9a2of4500c5c84a3586b@mail.gmail.com>
-	 <1248851712.19733.214.camel@macbook.infradead.org>
-	 <21d7e9970907290143q6778511cvda1c6b915f61654a@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 29 Jul 2009 10:36:45 +0100
-Message-Id: <1248860205.19733.238.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 29 Jul 2009 05:38:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=DYarz9e7vVIbdW/zEyIgWJO0XGGTKyk/dy9FuUQQnF4xAQVBFi4THMP5XxEsZ9crF1
+         1tcitZCm5rO0b/mexdDPuAIsee8T8gK4FgjmxBcDms6tuTEl4mOgPqmn+HqtFgK5Vwy6
+         K2iBmiVbcGx1EvtAaa5kjU8TNGxHLuHvLbuNA=
+Date: Wed, 29 Jul 2009 17:40:34 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Mike Smith <scgtrp@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
+       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/2] vmalloc: reorder unmap and removal entry
+Message-ID: <20090729094034.GF5856@cr0.nay.redhat.com>
+References: <bug-13850-10286@http.bugzilla.kernel.org/> <20090728160527.1da52682.akpm@linux-foundation.org> <20090729084825.1363c880.kamezawa.hiroyu@jp.fujitsu.com> <525c5a6c0907281946t249ef288v77ee94edd16f054@mail.gmail.com> <20090729123209.690baa48.kamezawa.hiroyu@jp.fujitsu.com> <20090729173600.540878a3.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090729173600.540878a3.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-29 at 18:43 +1000, Dave Airlie wrote:
-> >> don't suppose we want page_to_gart or is the double function nicer?
-> >
-> > I pondered that briefly. But then observed that phys_to_gart() and
-> > gart_to_phys() _always_ describe an identity mapping, so perhaps they
-> > could just be ditched completely?
+On Wed, Jul 29, 2009 at 05:36:00PM +0900, KAMEZAWA Hiroyuki wrote:
+>> I wonder fs/proc/kcore.c's vmalloc area access needs some fix. let me try.
+>> 
+>> Thanks,
+>Finally, I wrote 2 patches. maybe 2/2 is a fix for the bug.
+>but needs comments.
+>
+>Comaparing 2 calls, vfree() and vread()
+>==
+>vfree()
+>  -> __vumap()
+>     -> remove_vm_area()
+>       -> free_unmap_vmap_area         #
+>	 -> try_purge_vmap_area_lazy() #
+>           ->__purge_vmap_area_lazy(); #
+>             -> unmap_vmap_area()      # unmap memory here.
+>       -> write_lock(&vmlist_lock)
+>          remvoe vm_struct from list
+>          write_unlock(&vmlist_lock).
+>==
+>vread()
+> -> read_lock(&vmlist_lock);
+>    get vm_struct -> do memcpy
+>    read_unlock(&vmlist_lock);
+>==
+
+
+I think this is a very good catch!
+
+Your patch looks reasonable for me.
+
+>
+>Hmm, maybe not related to original bug but above order should be fixed.
+>
+>From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>
+>vmap area should be purged after vm_struct is removed from the list
+>because vread/vwrite etc...believes the range is valid while it's on
+>vm_struct list.
+>
+>Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+
+Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
+
+Aside, would you like to replace vmlist, a single list, with our
+generic list API? :) Just as you did for kcore. Pls send it in
+a seprate patch.
+
+Thanks!
+
+
+>---
+> mm/vmalloc.c |   14 +++++++++-----
+> 1 file changed, 9 insertions(+), 5 deletions(-)
+>
+>Index: linux-2.6.31-rc4/mm/vmalloc.c
+>===================================================================
+>--- linux-2.6.31-rc4.orig/mm/vmalloc.c
+>+++ linux-2.6.31-rc4/mm/vmalloc.c
+>@@ -1256,17 +1256,21 @@ struct vm_struct *remove_vm_area(const v
+> 	if (va && va->flags & VM_VM_AREA) {
+> 		struct vm_struct *vm = va->private;
+> 		struct vm_struct *tmp, **p;
+>-
+>-		vmap_debug_free_range(va->va_start, va->va_end);
+>-		free_unmap_vmap_area(va);
+>-		vm->size -= PAGE_SIZE;
+>-
+>+		/*
+>+		 * remove from list and disallow access to this vm_struct
+>+		 * before unmap. (address range confliction is maintained by
+>+		 * vmap.)
+>+		 */
+> 		write_lock(&vmlist_lock);
+> 		for (p = &vmlist; (tmp = *p) != vm; p = &tmp->next)
+> 			;
+> 		*p = tmp->next;
+> 		write_unlock(&vmlist_lock);
 > 
-> Yeah that could work too, no idea why they were introduced, well before my time.
-
-http://git.infradead.org/users/dwmw2/iommu-agp.git?a=commitdiff;h=8bf2f3a9
-
-It was introduced by Keir in 2005 for Xen (commit 07eee78e). I suspect
-it can die though, and that the right answer there is also to use the
-DMA API correctly.
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+>+		vmap_debug_free_range(va->va_start, va->va_end);
+>+		free_unmap_vmap_area(va);
+>+		vm->size -= PAGE_SIZE;
+>+
+> 		return vm;
+> 	}
+> 	return NULL;
+>
