@@ -1,188 +1,432 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbZG2MGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbZG2MOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754496AbZG2MGr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 08:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473AbZG2MGq
+	id S1754523AbZG2MOl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 08:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbZG2MOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 08:06:46 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:58872 "EHLO
-	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754411AbZG2MGo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 08:06:44 -0400
-Date: Wed, 29 Jul 2009 14:06:42 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Arnd Bergmann <arnd@arndb.de>, Geoff Levand <geoffrey.levand@am.sony.com>,
-       Jens Axboe <axboe@kernel.dk>,
-       Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>,
-       cbe-oss-dev@ozlabs.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH] powerpc/cell: Move CBE_IOPTE_* to <asm/cell-regs.h> (was:
- Re: [PATCH 10/33] powerpc/cell: Extract duplicated IOPTE_* to
- <asm/iommu.h>)
-In-Reply-To: <1245049942.19217.57.camel@pasglop>
-Message-ID: <alpine.LRH.2.00.0907291402520.26399@vixen.sonytel.be>
-References: <1244644748-24211-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <1244644748-24211-11-git-send-email-Geert.Uytterhoeven@sonycom.com> <1245030085.19217.5.camel@pasglop> <200906150905.30744.arnd@arndb.de> <1245049942.19217.57.camel@pasglop>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Wed, 29 Jul 2009 08:14:40 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:45482 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754235AbZG2MOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 08:14:39 -0400
+From: Nicolas Palix <npalix@diku.dk>
+To: gregkh@suse.de, hjanssen@microsoft.com, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/4] Staging: hv: Remove typedef DRIVER_OBJECT and PDRIVER_OBJECT
+Date: Wed, 29 Jul 2009 14:09:45 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200907291409.46342.npalix@diku.dk>
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 15 Jun 2009, Benjamin Herrenschmidt wrote:
-> On Mon, 2009-06-15 at 09:05 +0200, Arnd Bergmann wrote:
-> > Good point, that file does not contain hardware specific definitions
-> > but
-> > only interfaces.
-> > 
-> > Geert, how about putting them into
-> > arch/powerpc/include/asm/cell-regs.h
-> > instead?
-> 
-> I've put the patch in powerpc-next for now. But you may want to send
-> another patch later on to move things.
 
-At your service!
+typedef DRIVER_OBJECT and PDRIVER_OBJECT are removed and their usages
+are replace by the use of struct hv_driver and struct hv_driver *
+respectively.
 
+Here is the semantic patch generated to perform this transformation:
+(http://coccinelle.lip6.fr/)
+
+//<smpl>
+@rm_DRIVER_OBJECT@
+@@
+-typedef struct _DRIVER_OBJECT
++struct hv_driver
+{...}
+-DRIVER_OBJECT
+;
+
+@rm_PDRIVER_OBJECT@
+@@
+-typedef struct _DRIVER_OBJECT *PDRIVER_OBJECT;
++struct hv_driver;
+
+@fixtypedef_DRIVER_OBJECT@
+typedef DRIVER_OBJECT;
+@@
+-DRIVER_OBJECT
++struct hv_driver
+
+@fixstruct__DRIVER_OBJECT@
+@@
+struct
+-_DRIVER_OBJECT
++hv_driver
+
+@fixtypedef_PDRIVER_OBJECT@
+typedef PDRIVER_OBJECT;
+@@
+-PDRIVER_OBJECT
++struct hv_driver*
+//</smpl>
+
+Signed-off-by: Nicolas Palix <npalix@diku.dk>
 ---
->From bb2fab2f78b24a80669cc6424bf621e4d113cfe4 Mon Sep 17 00:00:00 2001
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Date: Wed, 29 Jul 2009 13:56:57 +0200
-Subject: [PATCH] powerpc/cell: Move CBE_IOPTE_* to <asm/cell-regs.h>
+ drivers/staging/hv/BlkVsc.c             |    2 +-
+ drivers/staging/hv/NetVsc.c             |    6 +++---
+ drivers/staging/hv/RndisFilter.c        |    4 ++--
+ drivers/staging/hv/StorVsc.c            |    6 +++---
+ drivers/staging/hv/Vmbus.c              |   20 ++++++++++----------
+ drivers/staging/hv/include/NetVscApi.h  |    4 ++--
+ drivers/staging/hv/include/StorVscApi.h |    6 +++---
+ drivers/staging/hv/include/VmbusApi.h   |   26 ++++++++++----------------
+ drivers/staging/hv/include/vmbus.h      |    4 ++--
+ drivers/staging/hv/vmbus_drv.c          |    2 +-
+ 10 files changed, 37 insertions(+), 43 deletions(-)
 
-As <asm/iommu.h> doesn't contain any other hardware specific definitions
-but only interfaces.
-
-Reported-by: Arnd Bergmann <arnd@arndb.de>
-Cc: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: Jens Axboe <axboe@kernel.dk>
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- arch/powerpc/include/asm/cell-regs.h    |   11 +++++++++++
- arch/powerpc/include/asm/iommu.h        |   10 ----------
- arch/powerpc/platforms/ps3/mm.c         |    2 +-
- arch/powerpc/platforms/ps3/system-bus.c |    2 +-
- drivers/block/ps3vram.c                 |    2 +-
- drivers/video/ps3fb.c                   |    2 +-
- 6 files changed, 15 insertions(+), 14 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/cell-regs.h b/arch/powerpc/include/asm/cell-regs.h
-index fd6fd00..fdf64fd 100644
---- a/arch/powerpc/include/asm/cell-regs.h
-+++ b/arch/powerpc/include/asm/cell-regs.h
-@@ -303,6 +303,17 @@ struct cbe_mic_tm_regs {
- extern struct cbe_mic_tm_regs __iomem *cbe_get_mic_tm_regs(struct device_node *np);
- extern struct cbe_mic_tm_regs __iomem *cbe_get_cpu_mic_tm_regs(int cpu);
+diff --git a/drivers/staging/hv/BlkVsc.c b/drivers/staging/hv/BlkVsc.c
+index 059b134..d2bde5d 100644
+--- a/drivers/staging/hv/BlkVsc.c
++++ b/drivers/staging/hv/BlkVsc.c
+@@ -41,7 +41,7 @@ BlkVscOnDeviceAdd(
  
-+
-+/* Cell page table entries */
-+#define CBE_IOPTE_PP_W		0x8000000000000000ul /* protection: write */
-+#define CBE_IOPTE_PP_R		0x4000000000000000ul /* protection: read */
-+#define CBE_IOPTE_M		0x2000000000000000ul /* coherency required */
-+#define CBE_IOPTE_SO_R		0x1000000000000000ul /* ordering: writes */
-+#define CBE_IOPTE_SO_RW		0x1800000000000000ul /* ordering: r & w */
-+#define CBE_IOPTE_RPN_Mask	0x07fffffffffff000ul /* RPN */
-+#define CBE_IOPTE_H		0x0000000000000800ul /* cache hint */
-+#define CBE_IOPTE_IOID_Mask	0x00000000000007fful /* ioid */
-+
- /* some utility functions to deal with SMT */
- extern u32 cbe_get_hw_thread_id(int cpu);
- extern u32 cbe_cpu_to_node(int cpu);
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index 7ead7c1..7464c0d 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -35,16 +35,6 @@
- #define IOMMU_PAGE_MASK       (~((1 << IOMMU_PAGE_SHIFT) - 1))
- #define IOMMU_PAGE_ALIGN(addr) _ALIGN_UP(addr, IOMMU_PAGE_SIZE)
+ int
+ BlkVscInitialize(
+-	DRIVER_OBJECT *Driver
++	struct hv_driver *Driver
+ 	)
+ {
+ 	STORVSC_DRIVER_OBJECT* storDriver = (STORVSC_DRIVER_OBJECT*)Driver;
+diff --git a/drivers/staging/hv/NetVsc.c b/drivers/staging/hv/NetVsc.c
+index e2a75ce..d653f95 100644
+--- a/drivers/staging/hv/NetVsc.c
++++ b/drivers/staging/hv/NetVsc.c
+@@ -51,7 +51,7 @@ NetVscOnDeviceRemove(
  
--/* Cell page table entries */
--#define CBE_IOPTE_PP_W		0x8000000000000000ul /* protection: write */
--#define CBE_IOPTE_PP_R		0x4000000000000000ul /* protection: read */
--#define CBE_IOPTE_M		0x2000000000000000ul /* coherency required */
--#define CBE_IOPTE_SO_R		0x1000000000000000ul /* ordering: writes */
--#define CBE_IOPTE_SO_RW		0x1800000000000000ul /* ordering: r & w */
--#define CBE_IOPTE_RPN_Mask	0x07fffffffffff000ul /* RPN */
--#define CBE_IOPTE_H		0x0000000000000800ul /* cache hint */
--#define CBE_IOPTE_IOID_Mask	0x00000000000007fful /* ioid */
+ static void
+ NetVscOnCleanup(
+-	DRIVER_OBJECT *Driver
++	struct hv_driver *Driver
+ 	);
+ 
+ static void
+@@ -231,7 +231,7 @@ Description:
+ --*/
+ int
+ NetVscInitialize(
+-	DRIVER_OBJECT *drv
++	struct hv_driver *drv
+ 	)
+ {
+ 	NETVSC_DRIVER_OBJECT* driver = (NETVSC_DRIVER_OBJECT*)drv;
+@@ -983,7 +983,7 @@ Description:
+ --*/
+ void
+ NetVscOnCleanup(
+-	DRIVER_OBJECT *drv
++	struct hv_driver *drv
+ 	)
+ {
+ 	DPRINT_ENTER(NETVSC);
+diff --git a/drivers/staging/hv/RndisFilter.c b/drivers/staging/hv/RndisFilter.c
+index ddeede1..96133a4 100644
+--- a/drivers/staging/hv/RndisFilter.c
++++ b/drivers/staging/hv/RndisFilter.c
+@@ -168,7 +168,7 @@ RndisFilterOnDeviceRemove(
+ 
+ static void
+ RndisFilterOnCleanup(
+-	DRIVER_OBJECT *Driver
++	struct hv_driver *Driver
+ 	);
+ 
+ static int
+@@ -1032,7 +1032,7 @@ RndisFilterOnDeviceRemove(
+ 
+ static void
+ RndisFilterOnCleanup(
+-	DRIVER_OBJECT *Driver
++	struct hv_driver *Driver
+ 	)
+ {
+ 	DPRINT_ENTER(NETVSC);
+diff --git a/drivers/staging/hv/StorVsc.c b/drivers/staging/hv/StorVsc.c
+index 4a406f0..bc313a6 100644
+--- a/drivers/staging/hv/StorVsc.c
++++ b/drivers/staging/hv/StorVsc.c
+@@ -118,7 +118,7 @@ StorVscOnHostReset(
+ 
+ static void
+ StorVscOnCleanup(
+-	DRIVER_OBJECT	*Device
++	struct hv_driver *Device
+ 	);
+ 
+ static void
+@@ -263,7 +263,7 @@ Description:
+ --*/
+ int
+ StorVscInitialize(
+-	DRIVER_OBJECT *Driver
++	struct hv_driver *Driver
+ 	)
+ {
+ 	STORVSC_DRIVER_OBJECT* storDriver = (STORVSC_DRIVER_OBJECT*)Driver;
+@@ -807,7 +807,7 @@ Description:
+ --*/
+ void
+ StorVscOnCleanup(
+-	DRIVER_OBJECT *Driver
++	struct hv_driver *Driver
+ 	)
+ {
+ 	DPRINT_ENTER(STORVSC);
+diff --git a/drivers/staging/hv/Vmbus.c b/drivers/staging/hv/Vmbus.c
+index f6be5b5..60f9afc 100644
+--- a/drivers/staging/hv/Vmbus.c
++++ b/drivers/staging/hv/Vmbus.c
+@@ -45,7 +45,7 @@ static const GUID gVmbusDeviceId={
+ 	.Data = {0xfc, 0x60, 0x37, 0xac, 0xdf, 0x9a, 0xaa, 0x40, 0x94, 0x27, 0xa7, 0x0e, 0xd6, 0xde, 0x95, 0xc5}
+ };
+ 
+-static DRIVER_OBJECT* gDriver; /* vmbus driver object */
++static struct hv_driver *gDriver; /* vmbus driver object */
+ static struct hv_device* gDevice; /* vmbus root device */
+ 
+ 
+@@ -82,22 +82,22 @@ VmbusOnDeviceRemove(
+ 
+ static void
+ VmbusOnCleanup(
+-	DRIVER_OBJECT* drv
++	struct hv_driver *drv
+ 	);
+ 
+ static int
+ VmbusOnISR(
+-	DRIVER_OBJECT* drv
++	struct hv_driver *drv
+ 	);
+ 
+ static void
+ VmbusOnMsgDPC(
+-	DRIVER_OBJECT* drv
++	struct hv_driver *drv
+ 	);
+ 
+ static void
+ VmbusOnEventDPC(
+-	DRIVER_OBJECT* drv
++	struct hv_driver *drv
+ 	);
+ 
+ /*++;
+@@ -111,7 +111,7 @@ Description:
+ --*/
+ int
+ VmbusInitialize(
+-	DRIVER_OBJECT* drv
++	struct hv_driver *drv
+ 	)
+ {
+ 	VMBUS_DRIVER_OBJECT* driver = (VMBUS_DRIVER_OBJECT*)drv;
+@@ -377,7 +377,7 @@ Description:
+ --*/
+ void
+ VmbusOnCleanup(
+-	DRIVER_OBJECT* drv
++	struct hv_driver *drv
+ 	)
+ {
+ 	/* VMBUS_DRIVER_OBJECT* driver = (VMBUS_DRIVER_OBJECT*)drv; */
+@@ -401,7 +401,7 @@ Description:
+ --*/
+ void
+ VmbusOnMsgDPC(
+-	DRIVER_OBJECT* drv
++	struct hv_driver *drv
+ 	)
+ {
+ 	void *page_addr = gHvContext.synICMessagePage[0];
+@@ -460,7 +460,7 @@ Description:
+ --*/
+ void
+ VmbusOnEventDPC(
+-	DRIVER_OBJECT* drv
++	struct hv_driver* drv
+ 	)
+ {
+ 	/* TODO: Process any events */
+@@ -479,7 +479,7 @@ Description:
+ --*/
+ int
+ VmbusOnISR(
+-	DRIVER_OBJECT* drv
++	struct hv_driver *drv
+ 	)
+ {
+ 	/* VMBUS_DRIVER_OBJECT* driver = (VMBUS_DRIVER_OBJECT*)drv; */
+diff --git a/drivers/staging/hv/include/NetVscApi.h b/drivers/staging/hv/include/NetVscApi.h
+index 56ae23a..83e746d 100644
+--- a/drivers/staging/hv/include/NetVscApi.h
++++ b/drivers/staging/hv/include/NetVscApi.h
+@@ -109,7 +109,7 @@ typedef struct _NETVSC_PACKET {
+ 
+ /* Represents the net vsc driver */
+ typedef struct _NETVSC_DRIVER_OBJECT {
+-	DRIVER_OBJECT				Base; /* Must be the first field */
++	struct hv_driver Base; /* Must be the first field */
+ 
+ 	u32						RingBufferSize;
+ 	u32						RequestExtSize;
+@@ -147,7 +147,7 @@ typedef struct _NETVSC_DEVICE_INFO {
+ 
+ int
+ NetVscInitialize(
+-	DRIVER_OBJECT* drv
++	struct hv_driver *drv
+ 	);
+ 
+ #endif /* _NETVSC_API_H_ */
+diff --git a/drivers/staging/hv/include/StorVscApi.h b/drivers/staging/hv/include/StorVscApi.h
+index bd09409..f6c9742 100644
+--- a/drivers/staging/hv/include/StorVscApi.h
++++ b/drivers/staging/hv/include/StorVscApi.h
+@@ -98,7 +98,7 @@ typedef struct _STORVSC_REQUEST {
+ 
+ /* Represents the block vsc driver */
+ typedef struct _STORVSC_DRIVER_OBJECT {
+-	DRIVER_OBJECT			Base; /* Must be the first field */
++	struct hv_driver Base; /* Must be the first field */
+ 
+ 	/* Set by caller (in bytes) */
+ 	u32					RingBufferSize;
+@@ -129,11 +129,11 @@ typedef struct _STORVSC_DEVICE_INFO {
+ 
+ int
+ StorVscInitialize(
+-	DRIVER_OBJECT	*Driver
++	struct hv_driver *Driver
+ 	);
+ 
+ int
+ BlkVscInitialize(
+-	DRIVER_OBJECT	*Driver
++	struct hv_driver *Driver
+ 	);
+ #endif /* _STORVSC_API_H_ */
+diff --git a/drivers/staging/hv/include/VmbusApi.h b/drivers/staging/hv/include/VmbusApi.h
+index c09f589..0a87085 100644
+--- a/drivers/staging/hv/include/VmbusApi.h
++++ b/drivers/staging/hv/include/VmbusApi.h
+@@ -34,13 +34,6 @@
+ #define MAX_PAGE_BUFFER_COUNT				16
+ #define MAX_MULTIPAGE_BUFFER_COUNT			32 /* 128K */
+ 
 -
- /* Boot time flags */
- extern int iommu_is_off;
- extern int iommu_force_on;
-diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
-index 846eb8b..189a25b 100644
---- a/arch/powerpc/platforms/ps3/mm.c
-+++ b/arch/powerpc/platforms/ps3/mm.c
-@@ -23,8 +23,8 @@
- #include <linux/memory_hotplug.h>
- #include <linux/lmb.h>
+-
+-/* Fwd declarations */
+-
+-typedef struct _DRIVER_OBJECT *PDRIVER_OBJECT;
+-
+-
+ /* Data types */
  
-+#include <asm/cell-regs.h>
- #include <asm/firmware.h>
--#include <asm/iommu.h>
- #include <asm/prom.h>
- #include <asm/udbg.h>
- #include <asm/lv1call.h>
-diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
-index 3f763c5..676f989 100644
---- a/arch/powerpc/platforms/ps3/system-bus.c
-+++ b/arch/powerpc/platforms/ps3/system-bus.c
-@@ -27,7 +27,7 @@
- #include <asm/udbg.h>
- #include <asm/lv1call.h>
- #include <asm/firmware.h>
--#include <asm/iommu.h>
-+#include <asm/cell-regs.h>
  
- #include "platform.h"
+@@ -68,19 +61,20 @@ typedef struct _MULTIPAGE_BUFFER {
  
-diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
-index 095f97e..c8753a9 100644
---- a/drivers/block/ps3vram.c
-+++ b/drivers/block/ps3vram.c
-@@ -13,8 +13,8 @@
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
+ #pragma pack(pop)
  
-+#include <asm/cell-regs.h>
- #include <asm/firmware.h>
--#include <asm/iommu.h>
- #include <asm/lv1call.h>
- #include <asm/ps3.h>
- #include <asm/ps3gpu.h>
-diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
-index c0af638..9c0144e 100644
---- a/drivers/video/ps3fb.c
-+++ b/drivers/video/ps3fb.c
-@@ -32,7 +32,7 @@
- #include <linux/init.h>
++struct hv_driver;
+ struct hv_device;
  
- #include <asm/abs_addr.h>
--#include <asm/iommu.h>
-+#include <asm/cell-regs.h>
- #include <asm/lv1call.h>
- #include <asm/ps3av.h>
- #include <asm/ps3fb.h>
+ /* All drivers */
+ typedef int (*PFN_ON_DEVICEADD)(struct hv_device *Device, void* AdditionalInfo);
+ typedef int (*PFN_ON_DEVICEREMOVE)(struct hv_device *Device);
+ typedef char** (*PFN_ON_GETDEVICEIDS)(void);
+-typedef void (*PFN_ON_CLEANUP)(PDRIVER_OBJECT Driver);
++typedef void (*PFN_ON_CLEANUP)(struct hv_driver *Driver);
+ 
+ /* Vmbus extensions */
+-/* typedef int (*PFN_ON_MATCH)(struct hv_device *dev, PDRIVER_OBJECT drv); */
++/* typedef int (*PFN_ON_MATCH)(struct hv_device *dev, struct hv_driver *drv); */
+ /* typedef int (*PFN_ON_PROBE)(struct hv_device *dev); */
+-typedef int	(*PFN_ON_ISR)(PDRIVER_OBJECT drv);
+-typedef void (*PFN_ON_DPC)(PDRIVER_OBJECT drv);
++typedef int	(*PFN_ON_ISR)(struct hv_driver *drv);
++typedef void (*PFN_ON_DPC)(struct hv_driver *drv);
+ typedef void (*PFN_GET_CHANNEL_OFFERS)(void);
+ 
+ typedef struct hv_device *(*PFN_ON_CHILDDEVICE_CREATE)(GUID DeviceType, GUID DeviceInstance, void *Context);
+@@ -205,7 +199,7 @@ typedef struct _VMBUS_CHANNEL_INTERFACE {
+ typedef void (*VMBUS_GET_CHANNEL_INTERFACE)(VMBUS_CHANNEL_INTERFACE *Interface);
+ 
+ /* Base driver object */
+-typedef struct _DRIVER_OBJECT {
++struct hv_driver {
+ 	const char*				name;
+ 	GUID					deviceType; /* the device type supported by this driver */
+ 
+@@ -215,12 +209,12 @@ typedef struct _DRIVER_OBJECT {
+ 	PFN_ON_CLEANUP			OnCleanup;
+ 
+ 	VMBUS_CHANNEL_INTERFACE VmbusChannelInterface;
+-} DRIVER_OBJECT;
++};
+ 
+ 
+ /* Base device object */
+ struct hv_device {
+-	DRIVER_OBJECT*		Driver;		/* the driver for this device */
++	struct hv_driver *Driver;		/* the driver for this device */
+ 	char				name[64];
+ 	GUID				deviceType; /* the device type id of this device */
+ 	GUID				deviceInstance; /* the device instance id of this device */
+@@ -231,7 +225,7 @@ struct hv_device {
+ 
+ /* Vmbus driver object */
+ typedef struct _VMBUS_DRIVER_OBJECT {
+-	DRIVER_OBJECT		Base; /* !! Must be the 1st field !! */
++	struct hv_driver Base; /* !! Must be the 1st field !! */
+ 
+ 	/* Set by the caller */
+ 	PFN_ON_CHILDDEVICE_CREATE	OnChildDeviceCreate;
+@@ -257,7 +251,7 @@ typedef struct _VMBUS_DRIVER_OBJECT {
+ 
+ int
+ VmbusInitialize(
+-	DRIVER_OBJECT* drv
++	struct hv_driver *drv
+ 	);
+ 
+ #endif /* _VMBUS_API_H_ */
+diff --git a/drivers/staging/hv/include/vmbus.h b/drivers/staging/hv/include/vmbus.h
+index b99c4b5..6f7eecb 100644
+--- a/drivers/staging/hv/include/vmbus.h
++++ b/drivers/staging/hv/include/vmbus.h
+@@ -33,8 +33,8 @@
+ /* Data types */
+ 
+ 
+-typedef int (*PFN_DRIVERINITIALIZE)(DRIVER_OBJECT *drv);
+-typedef int (*PFN_DRIVEREXIT)(DRIVER_OBJECT *drv);
++typedef int (*PFN_DRIVERINITIALIZE)(struct hv_driver *drv);
++typedef int (*PFN_DRIVEREXIT)(struct hv_driver *drv);
+ 
+ struct driver_context {
+ 	GUID					class_id;
+diff --git a/drivers/staging/hv/vmbus_drv.c b/drivers/staging/hv/vmbus_drv.c
+index 32ae68c..699baf5 100644
+--- a/drivers/staging/hv/vmbus_drv.c
++++ b/drivers/staging/hv/vmbus_drv.c
+@@ -765,7 +765,7 @@ static int vmbus_match(struct device *device, struct device_driver *driver)
+ 	if (memcmp(&device_ctx->class_id, &driver_ctx->class_id, sizeof(GUID)) == 0)
+ 	{
+ 		/* !! NOTE: The driver_ctx is not a vmbus_drv_ctx. We typecast it here to access the */
+-		/* DRIVER_OBJECT field */
++		/* struct hv_driver field */
+ 		struct vmbus_driver_context *vmbus_drv_ctx = (struct vmbus_driver_context*)driver_ctx;
+ 		device_ctx->device_obj.Driver = &vmbus_drv_ctx->drv_obj.Base;
+ 		DPRINT_INFO(VMBUS_DRV, "device object (%p) set to driver object (%p)", &device_ctx->device_obj, device_ctx->device_obj.Driver);
 -- 
-1.6.2.4
+1.6.0.4
 
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
-
-Technology and Software Centre Europe
-The Corporate Village � Da Vincilaan 7-D1 � B-1935 Zaventem � Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 � RPR Brussels
-Fortis � BIC GEBABEBB � IBAN BE41293037680010
+	
+-- 
+Nicolas Palix
