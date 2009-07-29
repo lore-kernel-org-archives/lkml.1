@@ -1,162 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752406AbZG2KY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752898AbZG2K02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752406AbZG2KY3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 06:24:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750779AbZG2KY3
+	id S1752898AbZG2K02 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 06:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZG2K02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 06:24:29 -0400
-Received: from mail.mnementh.co.uk ([173.45.232.4]:40846 "EHLO mnementh.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750795AbZG2KY2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 06:24:28 -0400
-Message-ID: <4A702350.8080609@mnementh.co.uk>
-Date: Wed, 29 Jul 2009 11:24:16 +0100
-From: Ian Molton <ian@mnementh.co.uk>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 29 Jul 2009 06:26:28 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:61505 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751923AbZG2K01 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 06:26:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=kI6QMzCiwhAakiQ66ooS23UuvbHCvTvFpwWNLidh2oCr8nSU0qxmYzoSE3pTz2x32u
+         hoiOzjz7v4CnkgAFSb0Whlt+Ma9HNTBV+q4oQI16mDQoy85piJAv1nsl+IF12Oe0WS+M
+         e1VVGyiJad6UDGtir3xkRPAAW+OuollVhmC60=
 MIME-Version: 1.0
-To: Magnus Damm <magnus.damm@gmail.com>
-CC: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
-       Magnus Damm <damm@opensource.se>
-Subject: Re: MMC: Make the configuration memory resource optional
-References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>	 <4A6F033B.7030302@mnementh.co.uk> <aec7e5c30907281948s2a0dcd0csd3e580251d6c4f5a@mail.gmail.com>
-In-Reply-To: <aec7e5c30907281948s2a0dcd0csd3e580251d6c4f5a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <9b2b86520907290301w79d5bfa5j27c7e0142cc44ba9@mail.gmail.com>
+References: <9b2b86520907290301w79d5bfa5j27c7e0142cc44ba9@mail.gmail.com>
+Date: Wed, 29 Jul 2009 12:21:13 +0200
+Message-ID: <71cd59b00907290321i50a51790ld2ba87cb2c61abc7@mail.gmail.com>
+Subject: Re: eeepc_hotkey rmmod issues
+From: Corentin Chary <corentin.chary@gmail.com>
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+Cc: Luciano Rocha <luciano@eurotux.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Magnus Damm wrote:
-> Hi Ian,
-> 
-> That's not a very polite way to begin your email. How about "hey, hi
-> or good day"?
+On Wed, Jul 29, 2009 at 12:01 PM, Alan
+Jenkins<sourcejedi.lkml@googlemail.com> wrote:
+> On 7/28/09, Corentin Chary <corentin.chary@gmail.com> wrote:
+>> On Tue, Jul 28, 2009 at 9:19 PM, Alan
+>> Jenkins<sourcejedi.lkml@googlemail.com> wrote:
+>>> On 7/28/09, Luciano Rocha <luciano@eurotux.com> wrote:
+>>>> On Tue, Jul 28, 2009 at 05:50:26PM +0100, Luciano Rocha wrote:
+>>>>> On Mon, Jul 27, 2009 at 10:45:14PM +0300, Pekka Enberg wrote:
+>>>>> > (Adding Corentin to cc)
+>>>>> >
+>>>>> > On Mon, Jul 27, 2009 at 10:27 PM, Luciano Rocha<luciano@eurotux.com>
+>>>>> > wrote:
+>>>>> > > Also, a "rmmod eeepc_hotkeys" resulted in a kernel panic. If asked,
+>>>>> > > I'll
+>>>>> > > try to replicate it.
+>>>>> >
+>>>>> > Yes, please.
+>>>>>
+>>>>> Hm, rebooted without i2c_i801, browsed some, then did a rmmod
+>>>>> eeepc_laptop:
+>>>>> ERROR!!! H2M_MAILBOX still hold by MCU. command fail
+>>>>> ERROR!!! H2M_MAILBOX still hold by MCU. command fail
+>>>>>
+>>>>> Two equal lines, yes. What does it mean?
+>>>>
+>>>> Nevermind, the wireless driver didn't like that the hardware
+>>>> disappeared.
+>>>
+>>> Thanks for the bug report anyway :-).
+>>>
+>>> So presumably this is what caused your oops earlier.  I assume the
+>>> wireless toggle button doesn't normally cause any errors.
+>>>
+>>> The new rfkill core in 2.6.31 should avoid triggering this bug.  The
+>>> new core won't disable the wireless when the eeepc-laptop module is
+>>> removed.
+>>>
+>>> But we should still fix the underlying problem.  It sounds like
+>>> there's a narrow danger window on module unload.  And it's still there
+>>> in 2.6.31-rc4:
+>>>
+>>> 1019 static void eeepc_rfkill_exit(void)
+>>> 1020 {
+>>> 1021         eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
+>>> 1022         eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
+>>> 1023         if (ehotk->wlan_rfkill)
+>>> 1024                 rfkill_unregister(ehotk->wlan_rfkill);
+>>>
+>>> Really we need to perform these unregistrations "at the same time".
+>>> The rfkill device relies on the notifier, but the notifier callback
+>>> also uses the rfkill device.  I guess we will need to a mutex to
+>>> synchronize unregistration (and registration).
+>>
+>> I think 2.6.31 is ok,
+>
+>> In 2.6.30, we called eeepc_unregister_rfkill_notifier after
+>> rfkill_free, which was an error because
+>> the notifier callback uses the rfkill device.
+>
+> Ok.  I don't see how that causes Luciano's errors.  So I guess he was
+> right to blame the wireless driver.
 
-Hey, hi, good day.
+If he was using 2.6.30, then :
+eeepc_unregister_rfkill_notifier() was called after rfkill_unregister()
+And the callback was still registered after rfkill_unregister(), *Ooops*
 
-I dont think I wrote anything impolite and NAK is commonly used on 
-kernel mailinglists as simply the opposite of Ack. Please stick to the 
-technical issues.
+In 2.6.31 we first unregister the callback, and then rfkill, so rmmod
+should works.
 
-> Half a year ago I posted a set of tmio_mmc patches, and the MMC
-> maintainer kindly picked out the bug fixes and merged them.
+>> But I believe that the rfkill device can work without the notifier
+>> (which is an acpi notifier).
+>
+> I don't think it can.
+>
+> If the rfkill device is set to "soft blocked", the pci device is
+> removed.  If the acpi notifier is not called, the pci driver (e.g.
+> ath5k) won't realise the device is gone.  The network device (e.g.
+> wlan0) will remain present, but it won't work.
 
-Yes, I remember acking some patches around then.
+Hum, there is a misunderstanding here. What I mean is : I think
+eeepc_rfkill_exit(void) is ok in 2.6.31 (Luciano used 2.6.30).
 
-> The feature request to allow the driver to work with a single
-> memory window (similar to this patch) was NAKed by you in a very
-> similar way.
-> 
-> One of the reasons for NAKing my patches at that time was that you
-> didn't have time to review the 100 lines of code. This time you
-> dislike it because "it will leave people puzzling".
+And eeepc_rfkill_exit() is only called on rmmod eeepc-laptop
 
-Just to be clear,  I did later review the code, and I didnt like the 
-implementation. I'm reasonably sure I said so then, too.
+Commit 7de39389d8f61aa517ce2a8b4d925acc62696ae5 did a lot of
+change in rfkill code.
 
-So, on to the present day:
+> So I believe there's a circular dependency which we need to resolve.
+> Would you like me to write a patch for it?
 
->> The *right* way to do this is to use the clk API for clocks and provide a
->> small API for power control that the driver will use, if present.
-> 
-> Yes, I think everyone wants to use the clock API to control clocks.
+It's possible that I miss the issue here, so go ahead :)
 
-Good. Talk to Dmitry about his clock API patches. Find out why they 
-didnt go upstream. I already said I will help with this. I helped get 
-the MFD core code merged in the same way. Just stop writing patches that 
-avoid doing this properly.
 
-> However, the clock API does not solve the issue with a single address
-> window. That's the issue that this patch and my earlier patches are
-> trying to solve. Which is the issue that you keep on ignoring.
-
-No, it doesnt. it solves _half_ that problem. The other half would be 
-solved by a patch (which I will happily review / modify / apply) that 
-removes power switching from the tmio driver.
-
-So now you have a choice of two areas to work on.
-
-> Regardless of how the clock API is implemented, sooner or later the
-> driver needs to support a single address window if it's going to run
-> on such hardware. This is not exactly rocket science.
-
-Try not to be insulting. And  this is exactly the reason why I wrote:
-
->> I will happily take a patch abstracting power control from tmio-mmc,
->> however.
-
-Which is your other 'problem' regarging the second address window.
-
-Once both clocks and power switching are implemented properly, the cnf 
-window will dissapear completely from the driver. In the case of TCxx 
-and t7lx devices, it'll move to the MFD core. For others, it'll move to 
-the platform code, but it _will_ just work.
-
-> I see it as you are blocking progress without any technical reasons.
-
-That you choose to ignore my reasons does not invalidate them.
-
-> It's basically exactly the same as half a year ago. And exactly what
-> has happened with clocklib in that time?
-
-How have you helped get the clocklib patches merged during that time?
-
-> I understand that you want to have clocklib so you can manage clocks
-> dynamically for your mfd drivers, but in our use case we already have
-> working clock framework implementations withing our SoC.
-
-Well, unluckily for you, the driver was written prior to my having any 
-knowledge of your SoC. At the time, I thought all tmio devices had a cnf 
-area. Im not going to rip the code out (thus breaking 3 devices and 6 
-platforms) and I'm not going to apply band-aids because I *know* that if 
-I do that it'll be the last anyone hears on the matter and clocklib will 
-  never be patched to support this case.
-
-> There is no
-> need for any dynamic clock registration and unregistration. With that
-> in mind it can't be very difficult to understand that there is no
-> point for SoC vendors to work on clocklib. If's mainly an issue for
-> mfd.
-
-I dont care who *you* think should do the work. If you want to change 
-it, then _do_ something.
-
-> You talk about correctness in the upstream kernel and refuse to
-> include things because of your special view of correctness.
-
-The code there now is correct for the hardware it handles. You want it 
-to handle new hardware in a way that is a hack and will never be fixed up.
-
-> At the
-> same time you suggest Guennadi and me to keep the patches local
-> instead of picking up the changes and merging them in your upstream
-> driver. This local patch suggestion does not help. If we wanted to
-> have local patches then we wouldn't submit things upstream.
-
-I've wanted to submit things upstream before that upstream felt should 
-be done another way. Oddly enough, I ended up rewriting them 9 times out 
-of 10. Your patches are small, and wont go stale quickly. Which leaves 
-you with:
-
-* working hardware.
-* time to do it properly.
-
-> Your role as a maintainer is to work with the community. Just NAKing
-> and saying you want some highlevel framework merged first is not very
-> constructive.
-
-Clocklib is already merged. It needs modifying.
-
-> I recommend you to evaluate your position in the
-> communtiy. Use git shortlog to compare your own contributions over
-> time with what Guennadi has done.
-
-Im not going to enter a pissing contest over this.
-
-I've made clear the path I'd like people to take if they want to remove 
-the second io area from the driver 6 months ago. I've now  seen about 4 
-different approaches to doing it as a hack. If the same effort had been 
-put into doing it properly, we wouldnt be having this 'discussion'.
-
--Ian
+-- 
+Corentin Chary
+http://xf.iksaif.net - http://uffs.org
