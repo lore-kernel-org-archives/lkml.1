@@ -1,66 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756261AbZG2Cq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbZG2Csx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756261AbZG2Cq5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 22:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbZG2Cq4
+	id S1754830AbZG2Csx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 22:48:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbZG2Csx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 22:46:56 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:59277 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750971AbZG2Cq4 (ORCPT
+	Tue, 28 Jul 2009 22:48:53 -0400
+Received: from mail-qy0-f179.google.com ([209.85.221.179]:46775 "EHLO
+	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750776AbZG2Csw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 22:46:56 -0400
+	Tue, 28 Jul 2009 22:48:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=wLi35boNmMmiC0kvHvIFeIE08305y2oofqGR2qu4rd1NOoHIXineDEewjozyAKp6Dq
-         0h5+Y8eb8qfZlz1HeS4mjNcNlZE6T/L5XHs+gXlK0JcZ59FLJoWkaqzsU0dWf4gz5Jbz
-         E7xV+6MoAs0xKAuQKdqqVDO3lETNmMdx9U0eY=
+        b=wwUhVjPgp0m/GoUAllI8Hbnnmt2TGRd6XlhhMSl689zh7bBTZF4L8YrLJj/QM3AHiZ
+         l/bI4hjJlVyrAMo3G9M4gGmRVWMB7FsY/V0iEun1682cL5f2exPw0k4h3M+MbW7SeANt
+         GmRIwHaou/0RPJ2MXnUS8ODOws5A3V8bCKJnQ=
 MIME-Version: 1.0
-In-Reply-To: <20090729084825.1363c880.kamezawa.hiroyu@jp.fujitsu.com>
-References: <bug-13850-10286@http.bugzilla.kernel.org/>
-	 <20090728160527.1da52682.akpm@linux-foundation.org>
-	 <20090729084825.1363c880.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 28 Jul 2009 22:46:56 -0400
-Message-ID: <525c5a6c0907281946t249ef288v77ee94edd16f054@mail.gmail.com>
-Subject: Re: [Bugme-new] [Bug 13850] New: reading /proc/kcore causes oops
-From: Mike Smith <scgtrp@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <4A6F033B.7030302@mnementh.co.uk>
+References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>
+	 <4A6F033B.7030302@mnementh.co.uk>
+Date: Wed, 29 Jul 2009 11:48:51 +0900
+Message-ID: <aec7e5c30907281948s2a0dcd0csd3e580251d6c4f5a@mail.gmail.com>
+Subject: Re: MMC: Make the configuration memory resource optional
+From: Magnus Damm <magnus.damm@gmail.com>
+To: Ian Molton <ian@mnementh.co.uk>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
+       Magnus Damm <damm@opensource.se>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> What's layout of memory does your server have ?
-The log I gave was from my desktop, so I'll assume you wanted that
-instead of the server:
-[mike: mike in ~]$ grep "System RAM" /proc/iomem
-00010000-0009efff : System RAM
-00100000-1dedffff : System RAM
+Hi Ian,
 
-> If so, can you please help work out where it crashed?
-I didn't compile the kernel myself; it's the stock Arch Linux kernel,
-which may explain the following useless output (this was the only file
-I could find called vmlinux):
-[mike: mike in /usr/src/linux-2.6.30-ARCH]$ addr2line -e vmlinux 0xc0224dd1
-kcore.c:0
-[mike: mike in /usr/src/linux-2.6.30-ARCH]$ gdb vmlinux
-GNU gdb 6.8
-Copyright (C) 2008 Free Software Foundation, Inc.
-License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
-and "show warranty" for details.
-This GDB was configured as "i686-pc-linux-gnu"...
-(no debugging symbols found)
-(gdb) l *0xc0224dd1
-No symbol table is loaded.  Use the "file" command.
+On Tue, Jul 28, 2009 at 10:55 PM, Ian Molton<ian@mnementh.co.uk> wrote:
+> Guennadi Liakhovetski wrote:
+>>
+>> Add support for tmio_mmc hardware configurations, that lack the cnf io
+>> area, like SuperH SoCs. With this patch such hardware can pass a single ctl
+>> io area with the platform data.
+>
+> NAK
 
+That's not a very polite way to begin your email. How about "hey, hi
+or good day"?
 
-I'll compile a minimal kernel later with debug symbols and see if I
-can reproduce it on that.
+> I dont like this approach - although it involves minimal changes to the
+> driver, it will leave people puzzling over why their accesses to the cnf
+> registers do nothing when debugging.
+
+Half a year ago I posted a set of tmio_mmc patches, and the MMC
+maintainer kindly picked out the bug fixes and merged them. No problem
+there. The feature request to allow the driver to work with a single
+memory window (similar to this patch) was NAKed by you in a very
+similar way.
+
+One of the reasons for NAKing my patches at that time was that you
+didn't have time to review the 100 lines of code. This time you
+dislike it because "it will leave people puzzling".
+
+> The cnf area is basically clock and power control for devices that have it.
+> If I had known of the existence of other tmio devices that didnt do it that
+> way when I wrote the driver, it would never have been put in there directly.
+>
+> The *right* way to do this is to use the clk API for clocks and provide a
+> small API for power control that the driver will use, if present.
+
+Yes, I think everyone wants to use the clock API to control clocks.
+
+However, the clock API does not solve the issue with a single address
+window. That's the issue that this patch and my earlier patches are
+trying to solve. Which is the issue that you keep on ignoring.
+
+> If people want to change the situation in TMIO re: clocks, as I have said
+> before, they should start a discussion on how to adapt the clk API.  so that
+> more than just the CPU can use it. This will make everyone happy all in one
+> go.
+
+Regardless of how the clock API is implemented, sooner or later the
+driver needs to support a single address window if it's going to run
+on such hardware. This is not exactly rocket science.
+
+> I will happily take a patch abstracting power control from tmio-mmc,
+> however.
+
+I see it as you are blocking progress without any technical reasons.
+It's basically exactly the same as half a year ago. And exactly what
+has happened with clocklib in that time?
+
+I understand that you want to have clocklib so you can manage clocks
+dynamically for your mfd drivers, but in our use case we already have
+working clock framework implementations withing our SoC. There is no
+need for any dynamic clock registration and unregistration. With that
+in mind it can't be very difficult to understand that there is no
+point for SoC vendors to work on clocklib. If's mainly an issue for
+mfd.
+
+You talk about correctness in the upstream kernel and refuse to
+include things because of your special view of correctness. At the
+same time you suggest Guennadi and me to keep the patches local
+instead of picking up the changes and merging them in your upstream
+driver. This local patch suggestion does not help. If we wanted to
+have local patches then we wouldn't submit things upstream.
+
+Your role as a maintainer is to work with the community. Just NAKing
+and saying you want some highlevel framework merged first is not very
+constructive. I recommend you to evaluate your position in the
+communtiy. Use git shortlog to compare your own contributions over
+time with what Guennadi has done.
+
+/ magnus
