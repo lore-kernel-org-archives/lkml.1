@@ -1,60 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbZG2H23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753292AbZG2HbD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753225AbZG2H23 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 03:28:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbZG2H22
+	id S1753292AbZG2HbD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 03:31:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752774AbZG2HbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 03:28:28 -0400
-Received: from smtprelay09.ispgateway.de ([80.67.31.43]:34161 "EHLO
-	smtprelay09.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751136AbZG2H22 (ORCPT
+	Wed, 29 Jul 2009 03:31:03 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:49760 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751199AbZG2HbB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 03:28:28 -0400
-References: <1247672919-13089-1-git-send-email-petkovbb@gmail.com> <20090723082904.GE3997@dtor-d630.eng.vmware.com> <cone.1248339143.133822.15136.1000@arca> <9ea470500907230221m1664be8ft2aaf63d2550de6f8@mail.gmail.com> <9ea470500907230553h3ae169c0nc6abaeedb08bef1e@mail.gmail.com> <20090727162940.DA90C526EC9@mailhub.coreip.homeip.net> <20090727183733.GB3044@liondog.tnic> <cone.1248765902.464745.15136.1000@arca> <9ea470500907280208v1d8140b5v9d7d7f09df8f060f@mail.gmail.com> <cone.1248787508.386883.15136.1000@arca> <9ea470500907280659m5a65ac2et67651247bf6925c7@mail.gmail.com>
-Message-ID: <cone.1248852351.306728.15136.1000@arca>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, lenb@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] acerhdf: convert to dev_pm_ops
-Date: Wed, 29 Jul 2009 09:25:51 +0200
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="UTF-8"
+	Wed, 29 Jul 2009 03:31:01 -0400
+Date: Wed, 29 Jul 2009 16:31:00 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Ian Molton <ian@mnementh.co.uk>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
+       Magnus Damm <damm@opensource.se>
+Subject: Re: MMC: Make the configuration memory resource optional
+Message-ID: <20090729073059.GA31506@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Ian Molton <ian@mnementh.co.uk>,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
+	Magnus Damm <damm@opensource.se>
+References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange> <4A6F033B.7030302@mnementh.co.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-X-Df-Sender: 404094
+In-Reply-To: <4A6F033B.7030302@mnementh.co.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Boris,
-
-Borislav Petkov writes:
-
-> On Tue, Jul 28, 2009 at 3:25 PM, Peter Feuerer<peter@piie.net> wrote:
+On Tue, Jul 28, 2009 at 02:55:07PM +0100, Ian Molton wrote:
+> Guennadi Liakhovetski wrote:
+> >Add support for tmio_mmc hardware configurations, that lack the cnf io 
+> >area, like SuperH SoCs. With this patch such hardware can pass a single 
+> >ctl io area with the platform data.
 > 
-> [..]
+> NAK
 > 
->>> That's not a reason for keeping code in the kernel and raising bloat
->>> levels unnecessarily. If the driver doesn't need to do anything on
->>> resume, then no function is needed.
->>
->> I don't think the verbose message is useless. If an user has a problem
->> with suspend / hibernate I can just ask him to load the module with
->> verbose=1 and dmesg tells whether the module is waking up or not.
+> I dont like this approach - although it involves minimal changes to the 
+> driver, it will leave people puzzling over why their accesses to the cnf 
+> registers do nothing when debugging.
 > 
-> Since the driver doesn't do anything upon resume, it _is_ _going_ to
-> resume just fine. If not, then the problem is located somewhere else,
-> i.e. you can safely assume that you are resuming ok. Also, it's not like
-> this is the only verbose printk you have in the driver to not be able to
-> follow what's going on...
+Are you serious? The cnf window does _not exist_ in these cases. How much
+more simply do you want it spelled out for you? And there are plenty of
+cases where drivers take a variable number of resources for these sorts
+of things already in tree. The only one confused here seems to be you.
 
-Ok, I think you are right. So we will remove the resume functionality and 
-keep just the suspend + freeze calls?
+> The cnf area is basically clock and power control for devices that have 
+> it. If I had known of the existence of other tmio devices that didnt do 
+> it that way when I wrote the driver, it would never have been put in 
+> there directly.
+> 
+.. devices that have it, yes. It however is entirely an optional area,
+and there are those that do not. Your lack of foresight in this area is
+entirely unrelated to the issue at hand. These devices exist, you don't
+want to deal with them, so we need to figure out how to move on from that
+point.
 
-Btw, should I resend the 0.5.13 → 0.5.16 patch splitted up, so that Len can 
-apply them?
+> The *right* way to do this is to use the clk API for clocks and provide 
+> a small API for power control that the driver will use, if present.
+> 
+The right way is to pretend that the area exists when it really doesn't?
+As far as tying in the clocks, yes, that can use a virtual name that we
+just map out on the CPU side. But as far as the power control, this area
+again does not exist, and we will not be doing anything that pretends
+otherwise. The driver has to be aware of the fact that this is an
+optional area, and deal with that, rather than the other way around.
 
-kind regards,
---peter
+> If people want to change the situation in TMIO re: clocks, as I have 
+> said before, they should start a discussion on how to adapt the clk API. 
+>  so that more than just the CPU can use it. This will make everyone 
+> happy all in one go.
+> 
+This is an orthogonal change, and is certainly something that could be
+looked at at a later point in time. Presently however this does not
+exist, and making that a requirement for something you didn't think of is
+quite frankly absurd. The changes as they are are non-invasive, and you
+have had ample time to construct technical reasons for why you are
+opposed to them.
+
+> I will happily take a patch abstracting power control from tmio-mmc, 
+> however.
+> 
+Which is one of the things that this patch works towards. Quite frankly I
+have a hard time understanding what your objections to any of this are.
+You didn't consider the fact that these were optional components, and you
+reject anything that works in that direction. If you don't want to
+support those sorts of devices, that's your problem, and it's no reason
+to keep the kernel back. 6 months to review 100 lines, seriously?
+
+We will not now nor at any point maintain a local patchset for devices
+that are in the wild for which upstream support mostly exists. The kernel
+needs to deal with them, rather than just dealing with the class of
+devices it supported when the driver was first merged. Any suggestions
+that maintaining local patches is more useful than trying to work with
+upstream only reflects on the maintainer's unwillingness to work with
+others.
+
+In summary, unless you have some real technical objections, I'll be
+merging these patches through my tree in the next merge window. You are
+free to NAK away all day long at that point.
