@@ -1,63 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751496AbZG2FEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751635AbZG2FJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751496AbZG2FEP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 01:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbZG2FEO
+	id S1751635AbZG2FJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 01:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbZG2FJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 01:04:14 -0400
-Received: from vms173001pub.verizon.net ([206.46.173.1]:36767 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750872AbZG2FEO (ORCPT
+	Wed, 29 Jul 2009 01:09:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43893 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751352AbZG2FJ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 01:04:14 -0400
-From: Gene Heskett <gene.heskett@verizon.net>
-Organization: Organization? Not detectable
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] kdesu broken
-Date: Wed, 29 Jul 2009 01:04:09 -0400
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc4; KDE/4.2.4; i686; ; )
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Wed, 29 Jul 2009 01:09:26 -0400
+Date: Tue, 28 Jul 2009 22:08:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gene Heskett <gene.heskett@verizon.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
        OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
        "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
        "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] kdesu broken
+Message-Id: <20090728220843.3d353f36.akpm@linux-foundation.org>
+In-Reply-To: <200907290100.46160.gene.heskett@verizon.net>
 References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
- <alpine.LFD.2.01.0907282146580.3161@localhost.localdomain>
- <alpine.LFD.2.01.0907282153300.3161@localhost.localdomain>
-In-reply-to: <alpine.LFD.2.01.0907282153300.3161@localhost.localdomain>
-MIME-version: 1.0
-Content-type: Text/Plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-Message-id: <200907290104.09732.gene.heskett@verizon.net>
+	<200907282250.46018.gene.heskett@verizon.net>
+	<alpine.LFD.2.01.0907282146580.3161@localhost.localdomain>
+	<200907290100.46160.gene.heskett@verizon.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 July 2009, Linus Torvalds wrote:
->On Tue, 28 Jul 2009, Linus Torvalds wrote:
->> could you bisect the 13841 behavior?
->
->Oh - and have you checked current -git? There's commit c56d300086, which
->may well have fixed some problems with openign a serial USB device.
->
->		Linus
+On Wed, 29 Jul 2009 01:00:45 -0400 Gene Heskett <gene.heskett@verizon.net> wrote:
 
-No I haven't Linus, been running on your vanilla releases.  I'd say I know 
-just enough about this to be dangerous (to myself) :)
+> Link to a tutorial plz?
 
-Syntax to do that if my git is new enough?
+http://landley.net/writing/git-quick.html
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-The NRA is offering FREE Associate memberships to anyone who wants them.
-<https://www.nrahq.org/nrabonus/accept-membership.asp>
-
-The average Ph.D thesis is nothing but the transference of bones from
-one graveyard to another.
-		-- J. Frank Dobie, "A Texan in England"
-
+That used to be at http://www.kernel.org/doc/local/git-quick.html but some
+dope removed it.
