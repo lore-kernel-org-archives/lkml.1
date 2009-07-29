@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbZG2RE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756020AbZG2RFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755903AbZG2RE7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 13:04:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755696AbZG2RE6
+	id S1756020AbZG2RFW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 13:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755995AbZG2RFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 13:04:58 -0400
-Received: from ru.mvista.com ([213.79.90.228]:28644 "EHLO
+	Wed, 29 Jul 2009 13:05:17 -0400
+Received: from ru.mvista.com ([213.79.90.228]:28692 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755547AbZG2RE5 (ORCPT
+	by vger.kernel.org with ESMTP id S1755994AbZG2RFO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 13:04:57 -0400
-Date: Wed, 29 Jul 2009 21:04:57 +0400
+	Wed, 29 Jul 2009 13:05:14 -0400
+Date: Wed, 29 Jul 2009 21:05:14 +0400
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: David Brownell <dbrownell@users.sourceforge.net>,
@@ -19,8 +19,8 @@ Cc: David Brownell <dbrownell@users.sourceforge.net>,
        Jean Delvare <khali@linux-fr.org>, linux-mtd@lists.infradead.org,
        linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
        linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/7] spi: Add support for device table matching
-Message-ID: <20090729170457.GA4803@oksana.dev.rtsoft.ru>
+Subject: [PATCH 6/7] hwmon: adxx: Convert to device table matching
+Message-ID: <20090729170514.GF4803@oksana.dev.rtsoft.ru>
 References: <20090729170345.GA26787@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -31,184 +31,170 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With this patch spi drivers can use standard spi_driver.id_table and
-MODULE_DEVICE_TABLE() mechanisms to bind against the devices. Just
-like we do with I2C drivers.
-
-This is useful when a single driver supports several variants of
-devices but it is not possible to detect them in run-time (like
-non-JEDEC chips probing in drivers/mtd/devices/m25p80.c), and
-when platform_data usage is overkill.
-
-This patch also makes life a lot easier on OpenFirmware platforms,
-since with OF we extensively use proper device IDs in modaliases.
+This patch makes the code a little bit nicer, and shorter.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/spi/spi.c               |   26 +++++++++++++++++++++++++-
- include/linux/mod_devicetable.h |   13 +++++++++++++
- include/linux/spi/spi.h         |   10 ++++++++--
- scripts/mod/file2alias.c        |   13 +++++++++++++
- 4 files changed, 59 insertions(+), 3 deletions(-)
+ drivers/hwmon/adcxx.c |  106 ++++++++-----------------------------------------
+ 1 files changed, 17 insertions(+), 89 deletions(-)
 
-diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
-index 70845cc..1431bf2 100644
---- a/drivers/spi/spi.c
-+++ b/drivers/spi/spi.c
-@@ -59,9 +59,24 @@ static struct device_attribute spi_dev_attrs[] = {
-  * and the sysfs version makes coldplug work too.
-  */
- 
-+static const struct spi_device_id *spi_match_id(const struct spi_device_id *id,
-+						const struct spi_device *sdev)
-+{
-+	while (id->name[0]) {
-+		if (!strcmp(sdev->modalias, id->name))
-+			return id;
-+		id++;
-+	}
-+	return NULL;
-+}
-+
- static int spi_match_device(struct device *dev, struct device_driver *drv)
- {
- 	const struct spi_device	*spi = to_spi_device(dev);
-+	const struct spi_driver	*sdrv = to_spi_driver(drv);
-+
-+	if (sdrv->id_table)
-+		return !!spi_match_id(sdrv->id_table, spi);
- 
- 	return strcmp(spi->modalias, drv->name) == 0;
- }
-@@ -121,6 +136,13 @@ struct bus_type spi_bus_type = {
- };
- EXPORT_SYMBOL_GPL(spi_bus_type);
- 
-+static int spi_drv_probe_id(struct device *dev)
-+{
-+	const struct spi_driver		*sdrv = to_spi_driver(dev->driver);
-+	struct spi_device		*sdev = to_spi_device(dev);
-+
-+	return sdrv->probe_id(sdev, spi_match_id(sdrv->id_table, sdev));
-+}
- 
- static int spi_drv_probe(struct device *dev)
- {
-@@ -151,7 +173,9 @@ static void spi_drv_shutdown(struct device *dev)
- int spi_register_driver(struct spi_driver *sdrv)
- {
- 	sdrv->driver.bus = &spi_bus_type;
--	if (sdrv->probe)
-+	if (sdrv->probe_id)
-+		sdrv->driver.probe = spi_drv_probe_id;
-+	else if (sdrv->probe)
- 		sdrv->driver.probe = spi_drv_probe;
- 	if (sdrv->remove)
- 		sdrv->driver.remove = spi_drv_remove;
-diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
-index 1bf5900..9660dca 100644
---- a/include/linux/mod_devicetable.h
-+++ b/include/linux/mod_devicetable.h
-@@ -399,6 +399,19 @@ struct i2c_device_id {
- 			__attribute__((aligned(sizeof(kernel_ulong_t))));
- };
- 
-+/* spi */
-+
-+#define SPI_NAME_SIZE	20
-+
-+struct spi_device_id {
-+	char name[SPI_NAME_SIZE];
-+#ifdef __KERNEL__
-+	void *data;
-+#else
-+	kernel_ulong_t data;
-+#endif
-+};
-+
- /* dmi */
- enum dmi_field {
- 	DMI_NONE,
-diff --git a/include/linux/spi/spi.h b/include/linux/spi/spi.h
-index c47c4b4..c8d92a1 100644
---- a/include/linux/spi/spi.h
-+++ b/include/linux/spi/spi.h
-@@ -20,6 +20,7 @@
- #define __LINUX_SPI_H
- 
- #include <linux/device.h>
+diff --git a/drivers/hwmon/adcxx.c b/drivers/hwmon/adcxx.c
+index b01c0d5..6b3b057 100644
+--- a/drivers/hwmon/adcxx.c
++++ b/drivers/hwmon/adcxx.c
+@@ -43,6 +43,7 @@
+ #include <linux/hwmon.h>
+ #include <linux/hwmon-sysfs.h>
+ #include <linux/mutex.h>
 +#include <linux/mod_devicetable.h>
+ #include <linux/spi/spi.h>
  
- /*
-  * INTERFACES between SPI master-side drivers and SPI infrastructure.
-@@ -86,7 +87,7 @@ struct spi_device {
- 	int			irq;
- 	void			*controller_state;
- 	void			*controller_data;
--	char			modalias[32];
-+	char			modalias[SPI_NAME_SIZE];
+ #define DRVNAME		"adcxx"
+@@ -157,8 +158,10 @@ static struct sensor_device_attribute ad_input[] = {
  
- 	/*
- 	 * likely need more hooks for more protocol options affecting how
-@@ -145,6 +146,8 @@ struct spi_message;
+ /*----------------------------------------------------------------------*/
  
- /**
-  * struct spi_driver - Host side "protocol" driver
-+ * @id_table: List of SPI devices supported by this driver
-+ * @probe_id: Binds this driver to the spi device via id_table matching.
-  * @probe: Binds this driver to the spi device.  Drivers can verify
-  *	that the device is actually present, and may need to configure
-  *	characteristics (such as bits_per_word) which weren't needed for
-@@ -170,6 +173,9 @@ struct spi_message;
-  * MMC, RTC, filesystem character device nodes, and hardware monitoring.
-  */
- struct spi_driver {
-+	const struct spi_device_id *id_table;
-+	int			(*probe_id)(struct spi_device *spi,
-+					    const struct spi_device_id *id);
- 	int			(*probe)(struct spi_device *spi);
- 	int			(*remove)(struct spi_device *spi);
- 	void			(*shutdown)(struct spi_device *spi);
-@@ -732,7 +738,7 @@ struct spi_board_info {
- 	 * controller_data goes to spi_device.controller_data,
- 	 * irq is copied too
- 	 */
--	char		modalias[32];
-+	char		modalias[SPI_NAME_SIZE];
- 	const void	*platform_data;
- 	void		*controller_data;
- 	int		irq;
-diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
-index 40e0045..9d446e3 100644
---- a/scripts/mod/file2alias.c
-+++ b/scripts/mod/file2alias.c
-@@ -657,6 +657,15 @@ static int do_i2c_entry(const char *filename, struct i2c_device_id *id,
- 	return 1;
+-static int __devinit adcxx_probe(struct spi_device *spi, int channels)
++static int __devinit adcxx_probe(struct spi_device *spi,
++				 const struct spi_device_id *id)
+ {
++	int channels = (int)id->data;
+ 	struct adcxx *adc;
+ 	int status;
+ 	int i;
+@@ -204,30 +207,6 @@ out_err:
+ 	return status;
  }
  
-+/* Looks like: S */
-+static int do_spi_entry(const char *filename, struct spi_device_id *id,
-+			char *alias)
-+{
-+	sprintf(alias, "%s", id->name);
-+
-+	return 1;
-+}
-+
- static const struct dmifield {
- 	const char *prefix;
- 	int field;
-@@ -853,6 +862,10 @@ void handle_moddevtable(struct module *mod, struct elf_info *info,
- 		do_table(symval, sym->st_size,
- 			 sizeof(struct i2c_device_id), "i2c",
- 			 do_i2c_entry, mod);
-+	else if (sym_is(symname, "__mod_spi_device_table"))
-+		do_table(symval, sym->st_size,
-+			 sizeof(struct spi_device_id), "spi",
-+			 do_spi_entry, mod);
- 	else if (sym_is(symname, "__mod_dmi_device_table"))
- 		do_table(symval, sym->st_size,
- 			 sizeof(struct dmi_system_id), "dmi",
+-static int __devinit adcxx1s_probe(struct spi_device *spi,
+-				   const struct spi_device_id *id)
+-{
+-	return adcxx_probe(spi, 1);
+-}
+-
+-static int __devinit adcxx2s_probe(struct spi_device *spi,
+-				   const struct spi_device_id *id)
+-{
+-	return adcxx_probe(spi, 2);
+-}
+-
+-static int __devinit adcxx4s_probe(struct spi_device *spi,
+-				   const struct spi_device_id *id)
+-{
+-	return adcxx_probe(spi, 4);
+-}
+-
+-static int __devinit adcxx8s_probe(struct spi_device *spi,
+-				   const struct spi_device_id *id)
+-{
+-	return adcxx_probe(spi, 8);
+-}
+-
+ static int __devexit adcxx_remove(struct spi_device *spi)
+ {
+ 	struct adcxx *adc = dev_get_drvdata(&spi->dev);
+@@ -245,79 +224,33 @@ static int __devexit adcxx_remove(struct spi_device *spi)
+ 	return 0;
+ }
+ 
+-static struct spi_driver adcxx1s_driver = {
+-	.driver = {
+-		.name	= "adcxx1s",
+-		.owner	= THIS_MODULE,
+-	},
+-	.probe	= adcxx1s_probe,
+-	.remove	= __devexit_p(adcxx_remove),
++static const struct spi_device_id adcxx_ids[] = {
++	{ "adcxx1s", (void *)1 },
++	{ "adcxx2s", (void *)2 },
++	{ "adcxx4s", (void *)4 },
++	{ "adcxx8s", (void *)8 },
++	{ },
+ };
++MODULE_DEVICE_TABLE(spi, adcxx_ids);
+ 
+-static struct spi_driver adcxx2s_driver = {
++static struct spi_driver adcxx_driver = {
+ 	.driver = {
+-		.name	= "adcxx2s",
++		.name	= "adcxx",
+ 		.owner	= THIS_MODULE,
+ 	},
+-	.probe	= adcxx2s_probe,
+-	.remove	= __devexit_p(adcxx_remove),
+-};
+-
+-static struct spi_driver adcxx4s_driver = {
+-	.driver = {
+-		.name	= "adcxx4s",
+-		.owner	= THIS_MODULE,
+-	},
+-	.probe	= adcxx4s_probe,
+-	.remove	= __devexit_p(adcxx_remove),
+-};
+-
+-static struct spi_driver adcxx8s_driver = {
+-	.driver = {
+-		.name	= "adcxx8s",
+-		.owner	= THIS_MODULE,
+-	},
+-	.probe	= adcxx8s_probe,
++	.id_table = adcxx_ids,
++	.probe	= adcxx_probe,
+ 	.remove	= __devexit_p(adcxx_remove),
+ };
+ 
+ static int __init init_adcxx(void)
+ {
+-	int status;
+-	status = spi_register_driver(&adcxx1s_driver);
+-	if (status)
+-		goto reg_1_failed;
+-
+-	status = spi_register_driver(&adcxx2s_driver);
+-	if (status)
+-		goto reg_2_failed;
+-
+-	status = spi_register_driver(&adcxx4s_driver);
+-	if (status)
+-		goto reg_4_failed;
+-
+-	status = spi_register_driver(&adcxx8s_driver);
+-	if (status)
+-		goto reg_8_failed;
+-
+-	return status;
+-
+-reg_8_failed:
+-	spi_unregister_driver(&adcxx4s_driver);
+-reg_4_failed:
+-	spi_unregister_driver(&adcxx2s_driver);
+-reg_2_failed:
+-	spi_unregister_driver(&adcxx1s_driver);
+-reg_1_failed:
+-	return status;
++	return spi_register_driver(&adcxx_driver);
+ }
+ 
+ static void __exit exit_adcxx(void)
+ {
+-	spi_unregister_driver(&adcxx1s_driver);
+-	spi_unregister_driver(&adcxx2s_driver);
+-	spi_unregister_driver(&adcxx4s_driver);
+-	spi_unregister_driver(&adcxx8s_driver);
++	spi_unregister_driver(&adcxx_driver);
+ }
+ 
+ module_init(init_adcxx);
+@@ -326,8 +259,3 @@ module_exit(exit_adcxx);
+ MODULE_AUTHOR("Marc Pignat");
+ MODULE_DESCRIPTION("National Semiconductor adcxx8sxxx Linux driver");
+ MODULE_LICENSE("GPL");
+-
+-MODULE_ALIAS("spi:adcxx1s");
+-MODULE_ALIAS("spi:adcxx2s");
+-MODULE_ALIAS("spi:adcxx4s");
+-MODULE_ALIAS("spi:adcxx8s");
 -- 
 1.6.3.3
 
