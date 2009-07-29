@@ -1,105 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752956AbZG2HTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbZG2H23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752956AbZG2HTz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 03:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbZG2HTz
+	id S1753225AbZG2H23 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 03:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbZG2H22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 03:19:55 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:37217 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751629AbZG2HTy (ORCPT
+	Wed, 29 Jul 2009 03:28:28 -0400
+Received: from smtprelay09.ispgateway.de ([80.67.31.43]:34161 "EHLO
+	smtprelay09.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751136AbZG2H22 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 03:19:54 -0400
-Subject: Re: 31-rc3-mmotm0716 - wonky wireless statistics..
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Zhu Yi <yi.zhu@intel.com>
-Cc: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-In-Reply-To: <1248831078.3747.1117.camel@debian>
-References: <5934.1248814870@turing-police.cc.vt.edu>
-	 <1248831078.3747.1117.camel@debian>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-f4FY58J+oUxAJBL7zAfQ"
-Date: Wed, 29 Jul 2009 09:19:12 +0200
-Message-Id: <1248851953.13742.12.camel@johannes.local>
+	Wed, 29 Jul 2009 03:28:28 -0400
+References: <1247672919-13089-1-git-send-email-petkovbb@gmail.com> <20090723082904.GE3997@dtor-d630.eng.vmware.com> <cone.1248339143.133822.15136.1000@arca> <9ea470500907230221m1664be8ft2aaf63d2550de6f8@mail.gmail.com> <9ea470500907230553h3ae169c0nc6abaeedb08bef1e@mail.gmail.com> <20090727162940.DA90C526EC9@mailhub.coreip.homeip.net> <20090727183733.GB3044@liondog.tnic> <cone.1248765902.464745.15136.1000@arca> <9ea470500907280208v1d8140b5v9d7d7f09df8f060f@mail.gmail.com> <cone.1248787508.386883.15136.1000@arca> <9ea470500907280659m5a65ac2et67651247bf6925c7@mail.gmail.com>
+Message-ID: <cone.1248852351.306728.15136.1000@arca>
+X-Mailer: http://www.courier-mta.org/cone/
+From: Peter Feuerer <peter@piie.net>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, lenb@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] acerhdf: convert to dev_pm_ops
+Date: Wed, 29 Jul 2009 09:25:51 +0200
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+Content-Type: text/plain; format=flowed; charset="UTF-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-Df-Sender: 404094
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Boris,
 
---=-f4FY58J+oUxAJBL7zAfQ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Borislav Petkov writes:
 
-On Wed, 2009-07-29 at 09:31 +0800, Zhu Yi wrote:
+> On Tue, Jul 28, 2009 at 3:25 PM, Peter Feuerer<peter@piie.net> wrote:
+> 
+> [..]
+> 
+>>> That's not a reason for keeping code in the kernel and raising bloat
+>>> levels unnecessarily. If the driver doesn't need to do anything on
+>>> resume, then no function is needed.
+>>
+>> I don't think the verbose message is useless. If an user has a problem
+>> with suspend / hibernate I can just ask him to load the module with
+>> verbose=1 and dmesg tells whether the module is waking up or not.
+> 
+> Since the driver doesn't do anything upon resume, it _is_ _going_ to
+> resume just fine. If not, then the problem is located somewhere else,
+> i.e. you can safely assume that you are resuming ok. Also, it's not like
+> this is the only verbose printk you have in the driver to not be able to
+> follow what's going on...
 
-> > # cat /proc/net/wireless
-> > Inter-| sta-|   Quality        |   Discarded packets               | Mi=
-ssed | WE
-> >  face | tus | link level noise |  nwid  crypt   frag  retry   misc | be=
-acon | 22
-> >  wlan0: 0000   63.  -47.  -256        0      0      0      0      0    =
-    0
-> >  wlan1: 0000    0     0     0        0      0      0      0      0     =
-   0
-> >  wlan2: 0000    0     0     0        0      0      0      0      0     =
-   0
-> >=20
-> > Where did that -256 for "noise" come from?  It ends up confusing the
-> > gkrellm-wifi plugin, it reports a S/N of 219dB ;)
->=20
-> This should be related to http://git.kernel.org/?p=3Dlinux/kernel/git/lin=
-ville/wireless-testing.git;a=3Dcommit;h=3Dfdb897ea5c77836f890033d563336ab0c=
-94c9222
->=20
-> But I don't think this is an ABI broken. User space should parse the
-> trailing '.' to see if a field is updated or not because there are cards
-> not capable to report hardware noise level anyway. Johannes?
+Ok, I think you are right. So we will remove the resume functionality and 
+keep just the suspend + freeze calls?
 
-So I had to look at the code to figure out wtf is going on.
+Btw, should I resend the 0.5.13 → 0.5.16 patch splitted up, so that Len can 
+apply them?
 
-Then the value shown is calculated as:
-	((__s32) stats->qual.noise) - ((stats->qual.updated & IW_QUAL_DBM) ? 0x100=
- : 0)
-
-and since we have dBm for the signal strength (and dBm is "all or
-nothing") you get -256 since we don't fill noise right now.
-
-However, it goes on like this:
-	stats->qual.updated & IW_QUAL_NOISE_UPDATED ? '.' : ' '
-
-so you're right -- the tool shouldn't be using the value unless followed
-by a dot (".").
-
-Thus, your analysis is correct as far as I can tell -- it's a userspace
-bug and your userspace just happened to work correctly with this card,
-but would have been broken with almost all other wireless cards.
-
-johannes
-
---=-f4FY58J+oUxAJBL7zAfQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKb/ftAAoJEODzc/N7+QmaXHEQAKCZi1mLwi6gkqCj+OqCw6dX
-jdYNfDRDi3+GSoSmjZgfg1/P/EC/XtsDj+F5ijLjHfj4uk8OqJqlteWfllbcfH9X
-TGjEGZizUlsQPXuFHLHa0MIWNvakzweGfiST5CxdOFSbiaPxQ1xWwsi8ky6QFNoI
-n1iNdF4ZJK6f2nQU0jv9jHeTdZPL5y1RcxXf7YaWoFw6lzMP1ke8FXIlr6c9BEMK
-aaM+OSzpTo+Lm2+k+PB8Ey2KOxrakcBcPtvqWQGP+PnOxNVs71ra2kScjFQCkdqY
-e3ZidN21rNg5G3tP/iCPSma4reRLwPFhXA95cFdfllBUFdnIdvzqopuGo5aBct8O
-b0ooe8Lwg8fghKGxq13FF33cDAsBLXsbes/t9zTZDh7r40U8OlfvoSSmPfZJ/qEP
-E6zdTiAgpCBL/nfjHvCZA/LPgqqT3MeGDCv095SdHwtGamt/jKqyPJWMRpU34mzb
-ESgd641IH9qd4sSBtzFi1AmuJzoHFzBzCCHUDQwEKwYArUTrUU368mpYlYRqpbHa
-IvBFofAeOxfNRfRkUy9YB/JczOeE3cx8PrCH+iHSLh8XGm5AmxI2pDHwqivrJh3z
-E2Wqmv76AP6TThJ8RJTi1/rGoIjHrkVqNerr+IISDXzqXhOFcWJCLGprZl0EIfwW
-w7R8A5fJkFEt/8IhRcY3
-=DD4g
------END PGP SIGNATURE-----
-
---=-f4FY58J+oUxAJBL7zAfQ--
-
+kind regards,
+--peter
