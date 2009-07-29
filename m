@@ -1,42 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbZG2Qk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755840AbZG2QmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755835AbZG2Qk1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 12:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755773AbZG2Qk0
+	id S1755840AbZG2QmB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 12:42:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755663AbZG2QmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 12:40:26 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:45123 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755663AbZG2QkZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 12:40:25 -0400
-X-Greylist: delayed 1058 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Jul 2009 12:40:24 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=x/GDiJJx58swippukSqYPN3cvfjKRLWxCLPOSssBFVpi4NR5Vr5eOV4ufld9nC27kD
-         PhO3AeURGtjIiUjhM1NNMFIXsMis6X4XJrgr52eVy1j1+4l6WMvB647DdhUoLFQKHVk9
-         dTP7ZNgElYKkdJDDMLA9a0KVHH2oh6sUyt8II=
-MIME-Version: 1.0
-In-Reply-To: <1244461122-3303-1-git-send-email-alexander.shishckin@gmail.com>
-References: <1244461122-3303-1-git-send-email-alexander.shishckin@gmail.com>
-Date: Wed, 29 Jul 2009 19:17:00 +0300
-Message-ID: <71a0d6ff0907290917u1f0c0e68p8036d53c69320392@mail.gmail.com>
-Subject: Re: [PATCH] [RFC] List per-process file descriptor consumption when 
-	hitting file-max
-From: Alexander Shishkin <alexander.shishckin@gmail.com>
-To: linux-fsdevel@vger.kernel.org
-Cc: Alexander Shishkin <alexander.shishckin@gmail.com>,
-       akpm@linux-foundation.org, viro@zeniv.linux.org.uk,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 29 Jul 2009 12:42:01 -0400
+Received: from waste.org ([66.93.16.53]:37034 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755624AbZG2QmA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 12:42:00 -0400
+Subject: Re: [PATCH 1/1] pagemap clear_refs: modify to specify anon or
+ mapped vma clearing
+From: Matt Mackall <mpm@selenic.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Moussa Ba <moussa.a.ba@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       rientjes@google.com, xiyou.wangcong@gmail.com, adobriyan@gmail.com,
+       yinghan@google.com, npiggin@suse.de, jaredeh@gmail.com
+In-Reply-To: <20090729145839.GB15102@csn.ul.ie>
+References: <alpine.DEB.2.00.0907271339070.17425@chino.kir.corp.google.com>
+	 <7928e7bd0907271514y699d1de4j54f9c562b94ef0cc@mail.gmail.com>
+	 <alpine.DEB.2.00.0907271543420.23587@chino.kir.corp.google.com>
+	 <7928e7bd0907271638x5ddbfd2ckba2802338a33765a@mail.gmail.com>
+	 <alpine.DEB.2.00.0907271657160.27881@chino.kir.corp.google.com>
+	 <4A6F2AF4.6050505@gmail.com>
+	 <alpine.DEB.2.00.0907281401150.7140@chino.kir.corp.google.com>
+	 <4A6F8115.7000500@gmail.com>
+	 <20090728165245.65d5cb23.akpm@linux-foundation.org>
+	 <7928e7bd0907281700s13d9937yc3b2933b13cfae9f@mail.gmail.com>
+	 <20090729145839.GB15102@csn.ul.ie>
+Content-Type: text/plain
+Date: Wed, 29 Jul 2009 11:41:07 -0500
+Message-Id: <1248885667.4545.2673.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n6TGf07T031541
 
-2009/6/8  <alexander.shishckin@gmail.com>:> From: Alexander Shishkin <alexander.shishckin@gmail.com>>> When a file descriptor limit is hit, it might be useful to see all the> users to be able to identify those that leak descriptors.Is there anything dramatically wrong with this one, or could someoneplease review this?
-> Signed-off-by: Alexander Shishkin <alexander.shishckin@gmail.com>> --->  fs/file_table.c |   27 +++++++++++++++++++++++++++>  1 files changed, 27 insertions(+), 0 deletions(-)>> diff --git a/fs/file_table.c b/fs/file_table.c> index 54018fe..9e53167 100644> --- a/fs/file_table.c> +++ b/fs/file_table.c> @@ -136,8 +136,35 @@ struct file *get_empty_filp(void)>  over:>        /* Ran out of filps - report that */>        if (get_nr_files() > old_max) {> +               struct task_struct *p;> +               struct files_struct *files;> +               struct fdtable *fdt;> +               int i, count = 0;> +>                printk(KERN_INFO "VFS: file-max limit %d reached\n",>                                        get_max_files());> +> +               read_lock(&tasklist_lock);> +               for_each_process(p) {> +                       files = get_files_struct(p);> +                       if (!files)> +                               continue;> +> +                       spin_lock(&files->file_lock);> +                       fdt = files_fdtable(files);> +> +                       /* we have to actually *count* the fds */> +                       for (count = i = 0; i < fdt->max_fds; i++)> +                               count += !!fcheck_files(files, i);> +> +                       printk(KERN_INFO "=> %s [%d]: %d\n", p->comm,> +                                       p->pid, count);> +> +                       spin_unlock(&files->file_lock);> +                       put_files_struct(files);> +               }> +               read_unlock(&tasklist_lock);> +>                old_max = get_nr_files();>        }>        goto fail;> --> 1.6.1.3>>
-TIA,--Alex���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
+On Wed, 2009-07-29 at 15:58 +0100, Mel Gorman wrote:
+> Total aside, is there potential to really mess with LRU aging by abusing
+> clear_refs a lot, partcularly as clear_refs is writable by the process
+> owner? Does it matter?
+
+Absolutely. However, it's generally the process owner who will suffer.
+
+-- 
+http://selenic.com : development and support for Mercurial and Linux
+
+
