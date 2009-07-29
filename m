@@ -1,82 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbZG2Mvb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbZG2M44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754764AbZG2Mvb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 08:51:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbZG2Mva
+	id S1754773AbZG2M44 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 08:56:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbZG2M4z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 08:51:30 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:29393 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751152AbZG2Mva convert rfc822-to-8bit (ORCPT
+	Wed, 29 Jul 2009 08:56:55 -0400
+Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:19610 "EHLO
+	TX2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751194AbZG2M4y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 08:51:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=JmQ5YAgmGd1ga2bbEcs/5vM/LPdg61TQo6mMhNJw9yIQ6U+TSRI+iSL/SyXVxiapCc
-         WDnyJZom774U8t2ATH5fGhGiR2gmXZfWIcavM+PkGkz8oy9fiEsyZDKiP8VLemY0ymCj
-         MB2KBxW49nv8FuX3pyZg/5fHijS4WltyHmBXs=
+	Wed, 29 Jul 2009 08:56:54 -0400
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i203h43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KNJNYF-04-3ZY-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Avi Kivity <avi@redhat.com>
+CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 03/12] kvm/svm: optimize nested #vmexit
+Date: Wed, 29 Jul 2009 14:56:23 +0200
+Message-ID: <1248872192-30881-4-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com>
+References: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 29 Jul 2009 12:56:36.0655 (UTC) FILETIME=[01C24BF0:01CA104C]
 MIME-Version: 1.0
-In-Reply-To: <20090729124233.GA12802@rakim.wolfsonmicro.main>
-References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>
-	 <4A6F033B.7030302@mnementh.co.uk>
-	 <aec7e5c30907281948s2a0dcd0csd3e580251d6c4f5a@mail.gmail.com>
-	 <20090729115817.GA12223@rakim.wolfsonmicro.main>
-	 <aec7e5c30907290527w39a89895n285e932459e6c953@mail.gmail.com>
-	 <20090729124233.GA12802@rakim.wolfsonmicro.main>
-Date: Wed, 29 Jul 2009 21:51:30 +0900
-Message-ID: <aec7e5c30907290551y77edc6d7qb7b3d787215c2b4@mail.gmail.com>
-Subject: Re: MMC: Make the configuration memory resource optional
-From: Magnus Damm <magnus.damm@gmail.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Ian Molton <ian@mnementh.co.uk>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
-       Magnus Damm <damm@opensource.se>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 29, 2009 at 9:42 PM, Mark
-Brown<broonie@opensource.wolfsonmicro.com> wrote:
-> On Wed, Jul 29, 2009 at 09:27:54PM +0900, Magnus Damm wrote:
->> On Wed, Jul 29, 2009 at 8:58 PM, Mark
->> Brown<broonie@opensource.wolfsonmicro.com> wrote:
->
->> > While it's true that this doesn't bother SoCs the fact that most clock
->> > API implementations don't allow any off-chip drivers to register clocks
->> > renders the clock API essentially unusable for fairly large parts of the
->
->> Yeah, clocks outside the SoC are not well supported today. From what
->> I've seen, most embedded boards come with external chips for cameras,
->> audio codecs and/or phy devices. These devices often get their clocks
->> from the main SoC. Allowing the drivers for such chips to use the
->> clock framework to register clocks for internal divisors would allow
->> driver writers to write better code which in turn would make life
->> easier for most people hacking on embedded kernels.
->
-> That's not actually abundantly clear for the audio stuff, or rather the
-> audio stuff would like additional features like constraint based
-> configuration.
+It is more efficient to copy only the relevant parts of the vmcb back to
+the nested vmcb when we emulate an vmexit.
 
-Without knowing too much about this, wouldn't camera sensors want
-similar features?
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kvm/svm.c |   68 +++++++++++++++++++++++++--------------------------
+ 1 files changed, 33 insertions(+), 35 deletions(-)
 
->> The problem with the clock framework API is that the data structures
->> varies depending on implementation. So the ops callback structure on
->> SuperH is different compared to ARM. I suspect that adding generic
->> clocklib support across the architectures will take quite a bit of
->> time to implement propely.
->
-> Indeed.  It's actually much worse than you say, each individual ARM
-> architecture has its own clock API implementation of varying quality and
-> of course there are architectures that don't do the clock API at all.
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 9f69b25..3e794f0 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -1579,53 +1579,52 @@ static int nested_svm_vmexit_real(struct vcpu_svm *svm, void *arg1,
+ {
+ 	struct vmcb *nested_vmcb = (struct vmcb *)arg1;
+ 	struct vmcb *hsave = svm->hsave;
+-	u64 nested_save[] = { nested_vmcb->save.cr0,
+-			      nested_vmcb->save.cr3,
+-			      nested_vmcb->save.cr4,
+-			      nested_vmcb->save.efer,
+-			      nested_vmcb->control.intercept_cr_read,
+-			      nested_vmcb->control.intercept_cr_write,
+-			      nested_vmcb->control.intercept_dr_read,
+-			      nested_vmcb->control.intercept_dr_write,
+-			      nested_vmcb->control.intercept_exceptions,
+-			      nested_vmcb->control.intercept,
+-			      nested_vmcb->control.msrpm_base_pa,
+-			      nested_vmcb->control.iopm_base_pa,
+-			      nested_vmcb->control.tsc_offset };
++	struct vmcb *vmcb = svm->vmcb;
+ 
+ 	/* Give the current vmcb to the guest */
+-	memcpy(nested_vmcb, svm->vmcb, sizeof(struct vmcb));
+-	nested_vmcb->save.cr0 = nested_save[0];
+-	if (!npt_enabled)
+-		nested_vmcb->save.cr3 = nested_save[1];
+-	nested_vmcb->save.cr4 = nested_save[2];
+-	nested_vmcb->save.efer = nested_save[3];
+-	nested_vmcb->control.intercept_cr_read = nested_save[4];
+-	nested_vmcb->control.intercept_cr_write = nested_save[5];
+-	nested_vmcb->control.intercept_dr_read = nested_save[6];
+-	nested_vmcb->control.intercept_dr_write = nested_save[7];
+-	nested_vmcb->control.intercept_exceptions = nested_save[8];
+-	nested_vmcb->control.intercept = nested_save[9];
+-	nested_vmcb->control.msrpm_base_pa = nested_save[10];
+-	nested_vmcb->control.iopm_base_pa = nested_save[11];
+-	nested_vmcb->control.tsc_offset = nested_save[12];
++	disable_gif(svm);
++
++	nested_vmcb->save.es     = vmcb->save.es;
++	nested_vmcb->save.cs     = vmcb->save.cs;
++	nested_vmcb->save.ss     = vmcb->save.ss;
++	nested_vmcb->save.ds     = vmcb->save.ds;
++	nested_vmcb->save.gdtr   = vmcb->save.gdtr;
++	nested_vmcb->save.idtr   = vmcb->save.idtr;
++	if (npt_enabled)
++		nested_vmcb->save.cr3    = vmcb->save.cr3;
++	nested_vmcb->save.cr2    = vmcb->save.cr2;
++	nested_vmcb->save.rflags = vmcb->save.rflags;
++	nested_vmcb->save.rip    = vmcb->save.rip;
++	nested_vmcb->save.rsp    = vmcb->save.rsp;
++	nested_vmcb->save.rax    = vmcb->save.rax;
++	nested_vmcb->save.dr7    = vmcb->save.dr7;
++	nested_vmcb->save.dr6    = vmcb->save.dr6;
++	nested_vmcb->save.cpl    = vmcb->save.cpl;
++
++	nested_vmcb->control.int_ctl           = vmcb->control.int_ctl;
++	nested_vmcb->control.int_vector        = vmcb->control.int_vector;
++	nested_vmcb->control.int_state         = vmcb->control.int_state;
++	nested_vmcb->control.exit_code         = vmcb->control.exit_code;
++	nested_vmcb->control.exit_code_hi      = vmcb->control.exit_code_hi;
++	nested_vmcb->control.exit_info_1       = vmcb->control.exit_info_1;
++	nested_vmcb->control.exit_info_2       = vmcb->control.exit_info_2;
++	nested_vmcb->control.exit_int_info     = vmcb->control.exit_int_info;
++	nested_vmcb->control.exit_int_info_err = vmcb->control.exit_int_info_err;
++	nested_vmcb->control.tlb_ctl           = 0;
++	nested_vmcb->control.event_inj         = 0;
++	nested_vmcb->control.event_inj_err     = 0;
+ 
+ 	/* We always set V_INTR_MASKING and remember the old value in hflags */
+ 	if (!(svm->vcpu.arch.hflags & HF_VINTR_MASK))
+ 		nested_vmcb->control.int_ctl &= ~V_INTR_MASKING_MASK;
+ 
+-	if ((nested_vmcb->control.int_ctl & V_IRQ_MASK) &&
+-	    (nested_vmcb->control.int_vector)) {
+-		nsvm_printk("WARNING: IRQ 0x%x still enabled on #VMEXIT\n",
+-				nested_vmcb->control.int_vector);
+-	}
+-
+ 	/* Restore the original control entries */
+ 	svm->vmcb->control = hsave->control;
+ 
+ 	/* Kill any pending exceptions */
+ 	if (svm->vcpu.arch.exception.pending == true)
+ 		nsvm_printk("WARNING: Pending Exception\n");
++
+ 	kvm_clear_exception_queue(&svm->vcpu);
+ 	kvm_clear_interrupt_queue(&svm->vcpu);
+ 
+@@ -1653,7 +1652,6 @@ static int nested_svm_vmexit_real(struct vcpu_svm *svm, void *arg1,
+ 	svm->vmcb->save.cpl = 0;
+ 	svm->vmcb->control.exit_int_info = 0;
+ 
+-	disable_gif(svm);
+ 	/* Exit nested SVM mode */
+ 	svm->nested_vmcb = 0;
+ 
+-- 
+1.6.3.3
 
-Yeah. This is exactly why I don't want to block on the clocklib implementation.
 
-Cheers,
-
-/ magnus
