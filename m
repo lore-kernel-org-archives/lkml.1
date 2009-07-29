@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbZG2ROA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbZG2RNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756118AbZG2ROA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 13:14:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755959AbZG2RNl
+	id S1756076AbZG2RNm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 13:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755967AbZG2RNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 13:13:41 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:37745 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755966AbZG2RNg (ORCPT
+	Wed, 29 Jul 2009 13:13:40 -0400
+Received: from mail-ew0-f209.google.com ([209.85.219.209]:63379 "EHLO
+	mail-ew0-f209.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755976AbZG2RNh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 13:13:36 -0400
+	Wed, 29 Jul 2009 13:13:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=BMCs5WEMRz++1lIpeUyrp8hv9sm+lwDilAz6m7C4mkjaZEFQ8SdDieeNnbHMVo1quW
-         G68wfCEqoDLH8k55Il1KHcj5ASqhWIiIn15mmeKx8fJyK5AcruRhqVHiHR/232HnHi0q
-         f0RLRTKBLm1ZVf4/vI/Ie87kdlxrOiFZ918cQ=
+        b=tIc0t0BeiLuj4kFOImeAKIJx4zQ5cpA05npJi/oLY6FZSJYslIZaAJY6Qe1DVOAmLH
+         tuClWdzNW8e57w/VE6sQfqLJtXWZAZ5tzkGiIX/KCSLVTXzVvvvEmRbQ7VUbF46cI5Ev
+         oxiv8aeoZ+wP6IBHp8ehg4RsSDa9bIjKdRYC8=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
        Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 3/6] tracing/function-tracer: Move trace_function() in the function tracer file
-Date: Wed, 29 Jul 2009 19:13:26 +0200
-Message-Id: <1248887609-5147-4-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 4/6] tracing/core: Make the stack entry helpers global
+Date: Wed, 29 Jul 2009 19:13:27 +0200
+Message-Id: <1248887609-5147-5-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1248887609-5147-1-git-send-email-fweisbec@gmail.com>
 References: <1248887609-5147-1-git-send-email-fweisbec@gmail.com>
@@ -32,114 +32,140 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The trace_function() helper which inserts the function events into
-the ring buffer is currently in trace.c
-But this file is quite overloaded and the right place for this helper
-is in the function tracer file.
+Make the stacktrace event insertion helpers globals.
+This has two effects:
 
-Then move it in trace_functions.c
+- Prepare for moving the sched events insertion helpers to
+  the sched switch tracer file.
+- Move some ifdef outside function definitions
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/trace.c           |   27 +--------------------------
- kernel/trace/trace.h           |    1 +
- kernel/trace/trace_functions.c |   25 +++++++++++++++++++++++++
- 3 files changed, 27 insertions(+), 26 deletions(-)
+ kernel/trace/trace.c |   24 ++++++++----------------
+ kernel/trace/trace.h |   28 +++++++++++++++++++++++++---
+ 2 files changed, 33 insertions(+), 19 deletions(-)
 
 diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index e30e6b1..769d5cf 100644
+index 769d5cf..d126c88 100644
 --- a/kernel/trace/trace.c
 +++ b/kernel/trace/trace.c
-@@ -89,7 +89,7 @@ static int dummy_set_flag(u32 old_flags, u32 bit, int set)
-  */
- static int tracing_disabled = 1;
+@@ -866,10 +866,6 @@ struct ring_buffer_event *trace_buffer_lock_reserve(struct trace_array *tr,
  
--static DEFINE_PER_CPU(local_t, ftrace_cpu_disabled);
-+DEFINE_PER_CPU(local_t, ftrace_cpu_disabled);
+ 	return event;
+ }
+-static void ftrace_trace_stack(struct trace_array *tr,
+-			       unsigned long flags, int skip, int pc);
+-static void ftrace_trace_userstack(struct trace_array *tr,
+-				   unsigned long flags, int pc);
  
- static inline void ftrace_disable_cpu(void)
+ static inline void __trace_buffer_unlock_commit(struct trace_array *tr,
+ 					struct ring_buffer_event *event,
+@@ -978,11 +974,11 @@ ftrace(struct trace_array *tr, struct trace_array_cpu *data,
+ 		trace_function(tr, ip, parent_ip, flags, pc);
+ }
+ 
++#ifdef CONFIG_STACKTRACE
+ static void __ftrace_trace_stack(struct trace_array *tr,
+ 				 unsigned long flags,
+ 				 int skip, int pc)
  {
-@@ -921,31 +921,6 @@ void trace_current_buffer_discard_commit(struct ring_buffer_event *event)
- }
- EXPORT_SYMBOL_GPL(trace_current_buffer_discard_commit);
- 
--void
--trace_function(struct trace_array *tr,
--	       unsigned long ip, unsigned long parent_ip, unsigned long flags,
--	       int pc)
--{
--	struct ftrace_event_call *call = &event_function;
--	struct ring_buffer_event *event;
--	struct ftrace_entry *entry;
--
--	/* If we are reading the ring buffer, don't trace */
--	if (unlikely(local_read(&__get_cpu_var(ftrace_cpu_disabled))))
--		return;
--
--	event = trace_buffer_lock_reserve(tr, TRACE_FN, sizeof(*entry),
--					  flags, pc);
--	if (!event)
--		return;
--	entry	= ring_buffer_event_data(event);
--	entry->ip			= ip;
--	entry->parent_ip		= parent_ip;
--
--	if (!filter_check_discard(call, entry, tr->buffer, event))
--		ring_buffer_unlock_commit(tr->buffer, event);
--}
--
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- static int __trace_graph_entry(struct trace_array *tr,
- 				struct ftrace_graph_ent *trace,
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 94305c7..186543a 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -519,6 +519,7 @@ extern int DYN_FTRACE_TEST_NAME(void);
- 
- extern int ring_buffer_expanded;
- extern bool tracing_selftest_disabled;
-+DECLARE_PER_CPU(local_t, ftrace_cpu_disabled);
- 
- #ifdef CONFIG_FTRACE_STARTUP_TEST
- extern int trace_selftest_startup_function(struct tracer *trace,
-diff --git a/kernel/trace/trace_functions.c b/kernel/trace/trace_functions.c
-index 5b01b94..28d3295 100644
---- a/kernel/trace/trace_functions.c
-+++ b/kernel/trace/trace_functions.c
-@@ -47,6 +47,31 @@ static void function_trace_start(struct trace_array *tr)
- 	tracing_reset_online_cpus(tr);
+-#ifdef CONFIG_STACKTRACE
+ 	struct ftrace_event_call *call = &event_kernel_stack;
+ 	struct ring_buffer_event *event;
+ 	struct stack_entry *entry;
+@@ -1003,12 +999,10 @@ static void __ftrace_trace_stack(struct trace_array *tr,
+ 	save_stack_trace(&trace);
+ 	if (!filter_check_discard(call, entry, tr->buffer, event))
+ 		ring_buffer_unlock_commit(tr->buffer, event);
+-#endif
  }
  
-+void
-+trace_function(struct trace_array *tr,
-+	       unsigned long ip, unsigned long parent_ip, unsigned long flags,
-+	       int pc)
-+{
-+	struct ftrace_event_call *call = &event_function;
-+	struct ring_buffer_event *event;
-+	struct ftrace_entry *entry;
-+
-+	/* If we are reading the ring buffer, don't trace */
-+	if (unlikely(local_read(&__get_cpu_var(ftrace_cpu_disabled))))
-+		return;
-+
-+	event = trace_buffer_lock_reserve(tr, TRACE_FN, sizeof(*entry),
-+					  flags, pc);
-+	if (!event)
-+		return;
-+	entry	= ring_buffer_event_data(event);
-+	entry->ip			= ip;
-+	entry->parent_ip		= parent_ip;
-+
-+	if (!filter_check_discard(call, entry, tr->buffer, event))
-+		ring_buffer_unlock_commit(tr->buffer, event);
-+}
+-static void ftrace_trace_stack(struct trace_array *tr,
+-			       unsigned long flags,
+-			       int skip, int pc)
++void ftrace_trace_stack(struct trace_array *tr, unsigned long flags, int skip,
++			int pc)
+ {
+ 	if (!(trace_flags & TRACE_ITER_STACKTRACE))
+ 		return;
+@@ -1016,17 +1010,14 @@ static void ftrace_trace_stack(struct trace_array *tr,
+ 	__ftrace_trace_stack(tr, flags, skip, pc);
+ }
+ 
+-void __trace_stack(struct trace_array *tr,
+-		   unsigned long flags,
+-		   int skip, int pc)
++void __trace_stack(struct trace_array *tr, unsigned long flags, int skip,
++		   int pc)
+ {
+ 	__ftrace_trace_stack(tr, flags, skip, pc);
+ }
+ 
+-static void ftrace_trace_userstack(struct trace_array *tr,
+-				   unsigned long flags, int pc)
++void ftrace_trace_userstack(struct trace_array *tr, unsigned long flags, int pc)
+ {
+-#ifdef CONFIG_STACKTRACE
+ 	struct ftrace_event_call *call = &event_user_stack;
+ 	struct ring_buffer_event *event;
+ 	struct userstack_entry *entry;
+@@ -1051,7 +1042,6 @@ static void ftrace_trace_userstack(struct trace_array *tr,
+ 	save_stack_trace_user(&trace);
+ 	if (!filter_check_discard(call, entry, tr->buffer, event))
+ 		ring_buffer_unlock_commit(tr->buffer, event);
+-#endif
+ }
+ 
+ #ifdef UNUSED
+@@ -1061,6 +1051,8 @@ static void __trace_userstack(struct trace_array *tr, unsigned long flags)
+ }
+ #endif /* UNUSED */
+ 
++#endif /* CONFIG_STACKTRACE */
 +
  static void
- function_trace_call_preempt_only(unsigned long ip, unsigned long parent_ip)
- {
+ ftrace_trace_special(void *__tr,
+ 		     unsigned long arg1, unsigned long arg2, unsigned long arg3,
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 186543a..e5802a2 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -489,9 +489,31 @@ void update_max_tr(struct trace_array *tr, struct task_struct *tsk, int cpu);
+ void update_max_tr_single(struct trace_array *tr,
+ 			  struct task_struct *tsk, int cpu);
+ 
+-void __trace_stack(struct trace_array *tr,
+-		   unsigned long flags,
+-		   int skip, int pc);
++#ifdef CONFIG_STACKTRACE
++void ftrace_trace_stack(struct trace_array *tr, unsigned long flags,
++			int skip, int pc);
++
++void ftrace_trace_userstack(struct trace_array *tr, unsigned long flags,
++			    int pc);
++
++void __trace_stack(struct trace_array *tr, unsigned long flags, int skip,
++		   int pc);
++#else
++static inline void ftrace_trace_stack(struct trace_array *tr,
++				      unsigned long flags, int skip, int pc)
++{
++}
++
++static inline void ftrace_trace_userstack(struct trace_array *tr,
++					  unsigned long flags, int pc)
++{
++}
++
++static inline void __trace_stack(struct trace_array *tr, unsigned long flags,
++				 int skip, int pc)
++{
++}
++#endif /* CONFIG_STACKTRACE */
+ 
+ extern cycle_t ftrace_now(int cpu);
+ 
 -- 
 1.6.2.3
 
