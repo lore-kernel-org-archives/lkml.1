@@ -1,112 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbZG2NGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbZG2NIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755331AbZG2NGT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 09:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755320AbZG2NGS
+	id S1755070AbZG2NIc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 09:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbZG2NIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 09:06:18 -0400
-Received: from nox.protox.org ([88.191.38.29]:37170 "EHLO nox.protox.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755085AbZG2NGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 09:06:17 -0400
-Subject: Re: ttm_mem_global
-From: Jerome Glisse <glisse@freedesktop.org>
-To: Thomas =?ISO-8859-1?Q?Hellstr=F6m?= <thomas@shipmail.org>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-In-Reply-To: <4A7018DA.807@shipmail.org>
-References: <1245931298.13359.8.camel@localhost.localdomain>
-	 <4A439D7D.9030401@shipmail.org>  <1248197676.2368.11.camel@localhost>
-	 <1248199231.2368.17.camel@localhost> <1248204128.2368.20.camel@localhost>
-	 <4A66CFDE.9090705@shipmail.org> <1248799724.2288.11.camel@localhost>
-	 <4A6F498E.8090601@shipmail.org> <1248857973.2426.6.camel@localhost>
-	 <4A7018DA.807@shipmail.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 29 Jul 2009 15:04:51 +0200
-Message-Id: <1248872692.2886.0.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 8bit
+	Wed, 29 Jul 2009 09:08:31 -0400
+Received: from moutng.kundenserver.de ([212.227.17.9]:60991 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754507AbZG2NIb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 09:08:31 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Nicolas Palix <npalix@diku.dk>
+Subject: Re: [PATCH 4/4] Staging: hv: Fix warning by casting a (const void *) to (void *)
+Date: Wed, 29 Jul 2009 15:08:24 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-3-generic; KDE/4.2.96; x86_64; ; )
+Cc: gregkh@suse.de, hjanssen@microsoft.com, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200907291410.29355.npalix@diku.dk>
+In-Reply-To: <200907291410.29355.npalix@diku.dk>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200907291508.24608.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18nQ5O/hNVq7aQxkCCzf8iYZYr9slPc8doXFUu
+ cSS1lGRSO1UttmqecI9eWJGoMT9TZ3Wo4A7wa5eHBqbnm3UNcT
+ l8nSNrwAxBhKwTtxAL3Yg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-29 at 11:39 +0200, Thomas Hellström wrote:
-> Jerome Glisse wrote:
-> > On Tue, 2009-07-28 at 20:55 +0200, Thomas Hellström wrote:
-> >   
-> >> Jerome Glisse skrev:
-> >>     
-> >>> On Wed, 2009-07-22 at 10:37 +0200, Thomas Hellström wrote:
-> >>>   
-> >>>       
-> >>>> TTM has a device struct per device and an optional global struct that is 
-> >>>> common for all devices and intended to be per subsystem.
-> >>>>
-> >>>> The only subsystem currently having a global structure is the memory 
-> >>>> accounting subsystem:
-> >>>> struct ttm_mem_global
-> >>>>     
-> >>>>         
-> >>> Thomas i don't think the way we init ttm_mem_global today make
-> >>> it follow the 1 struct ttm_mem_global for everyone. I think it
-> >>> should be initialized and refcounted by device struct.
-> >>>
-> >>> So on first device creation a ttm_mem_global is created and
-> >>> then anytime a new device is created the refcount of ttm_mem_global
-> >>> is increased. 
-> >>>       
-> >> Jerome,
-> >> This is exactly what the current code intends to do.
-> >>
-> >> Are you seeing something different?
-> >>     
-> >
-> > I definitly don't see that :) In radeon we do create a structure
-> > which hold the ttm_mem_global struct so it's not shared at all
-> > it got inited & destroyed along the driver. This is why i think
-> > it's better to remove the driver initialization and let bo_device
-> > init path take care of initializing one and only one object which
-> > can be shared by multiple driverttm_mem_global_inits.
-> >
-> >   
-> Which radeon struct is holding the ttm_mem_global struct?
+On Wednesday 29 July 2009, Nicolas Palix wrote:
+> Fix compilation warning by casting the const void *Buffer
+> variable into a void *.
 > 
-> The radeon code looks very similar to the openchrome code in which the 
-> struct ttm_mem_global is allocated at ttm_global.c, line 74 and freed at 
-> ttm_global.c, line 108 when its refcount has reached zero.
-> 
-> So the device holds a struct ttm_global_reference that *only points* to 
-> the global item, and which is destroyed on device takedown. If there are 
-> more than one device pointing to the mem_global object, it won't get 
-> destroyed.
-> 
-> So the code should be working perfectly fine unless there is a bug.
-> 
-> > So what i propose is remove mem_glob parameter from :
-> > ttm_bo_device_init, add a call to ttm_mem_global_init in
-> > ttm_bo_device_init 
-> 
-> Nope, The ttm_mem_global object is used by other  ttm subsystems 
-> (fencing, user-space objects),
-> so that can't be done.
-> 
-> > and add some static refcount in ttm_memory.c
-> > if refcount = 0 then ttm_mem_global_init create a ttm_mem_global
-> > struct and initialize things, if refcount > 0 then it gives
-> > back the already initialized ttm_mem_global.
-> >
-> >   
-> 
-> This is exactly what ttm_global was created to do, and what it hopefully 
-> does. If you create two radeon devices the ttm_mem_global object should 
-> be the same, even though the global references pointing to it are of 
-> course different. Have you actually tried this?
-> 
-> /Thomas
-> 
+> Signed-off-by: Nicolas Palix <npalix@diku.dk>
 
-Ok code wasn't clear for me until i read ttm_global.c
+Not sure if this one is worthwhile. Replacing SG_BUFFER_LIST
+with the existing struct scatterlist might be a better
+fix, as sg_set_buf() does not generate a warning like this
+anyway.
 
-Cheers,
-Jerome
-
+	Arnd <><
