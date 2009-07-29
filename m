@@ -1,99 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752999AbZG2Sn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753260AbZG2Sqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752999AbZG2Sn3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 14:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbZG2Sn2
+	id S1753260AbZG2Sqd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 14:46:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752671AbZG2Sqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 14:43:28 -0400
-Received: from vms173005pub.verizon.net ([206.46.173.5]:46589 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750977AbZG2Sn2 (ORCPT
+	Wed, 29 Jul 2009 14:46:32 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:59565 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751474AbZG2Sqb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 14:43:28 -0400
-From: Gene Heskett <gene.heskett@verizon.net>
-Organization: Organization? Not detectable
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: [PATCH] kdesu broken
-Date: Wed, 29 Jul 2009 14:43:13 -0400
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc3; KDE/4.2.4; i686; ; )
-Cc: alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org,
-       hirofumi@mail.parknet.co.jp, aneesh.kumar@linux.vnet.ibm.com,
-       rjw@sisk.pl, ray-lk@madrabbit.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, stern@rowland.harvard.edu
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
- <200907291340.38620.gene.heskett@verizon.net>
- <200907292028.32320.elendil@planet.nl>
-In-reply-to: <200907292028.32320.elendil@planet.nl>
-MIME-version: 1.0
-Content-type: Text/Plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-Message-id: <200907291443.13983.gene.heskett@verizon.net>
+	Wed, 29 Jul 2009 14:46:31 -0400
+X-Greylist: delayed 2624 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Jul 2009 14:46:31 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=NbU/rLO9S5NJK1CvgihBbFevarp/k8vfsc7q+k2a/B7ZdM3hOpC8XQ/nFsQjy5xyWa
+         zeXkHaVXrWLqOcQCirByrW5RByZ1nM/61ujn0P+wm/a25LlZ5Au5UCHIqDtegow13E0D
+         s7YJxrBmhpcXrs6w3blBgXL+qUl3aD3QWBR5w=
+Date: Wed, 29 Jul 2009 20:46:28 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Borislav Petkov <borislav.petkov@amd.com>, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [x86, msr]: execute on the correct CPU subset
+Message-ID: <20090729184628.GB28534@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Borislav Petkov <borislav.petkov@amd.com>, x86@kernel.org,
+	linux-kernel@vger.kernel.org
+References: <1246890592-12256-1-git-send-email-borislav.petkov@amd.com>
+ <4A526D38.7000803@zytor.com>
+ <20090707103723.GD5668@aftab>
+ <4A537010.3050905@zytor.com>
+ <20090708111911.GC19315@aftab>
+ <4A6E1222.5010709@zytor.com>
+ <20090729164941.GA9388@aftab>
+ <4A708745.5040203@zytor.com>
+ <20090729180244.GA28534@liondog.tnic>
+ <4A708F75.3030907@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4A708F75.3030907@zytor.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 July 2009, Frans Pop wrote:
->> What is needed for a mistake free bisect is a 'doesn't matter as long
->> as it matches' Makefile version that survives all the way through a
->> bisect run.
->
->I have a wrapper script I use for kernel builds that takes care of that
->(it also supports cross building and building some out-of-tree modules).
->Some snippets from that script below.
->
->BISECTING=
->if [ -e .git/BISECT_LOG ]; then
->        BISECTING=1
->fi
->[...]
->if [ "$BISECTING" ]; then
->        # The version in the next line may need updating before a bisect
->        sed -i "s/^SUBLEVEL = .*/SUBLEVEL = 31/" Makefile
->        sed -i "s/^EXTRAVERSION =.*/EXTRAVERSION = -bisect/" Makefile
->fi
->[...]
->make ...
->[...]
->if [ "$BISECTING" ]; then
->	# Revert Makefile to avoid errors on 'git bisect good/bad'
->        git checkout Makefile
-Ahh, I see that now, which I was objecting to below.  I'll go quietly. :)
->fi
->
->I use the deb-pkg target and also set the .deb package version in the
->second hunk:
->KERNELDEBREVISION=$(grep "^git[- ]bisect" .git/BISECT_LOG | wc -l)
->
->This way I end up with a nice series of packages whose numbering matches
->the steps in .git/BISECT_LOG:
->linux-image-2.6.31-bisect_1_amd64.deb
->linux-image-2.6.31-bisect_2_amd64.deb
->linux-image-2.6.31-bisect_3_amd64.deb
->...
->
->Hope that help.
->
->Cheers,
->FJP
+On Wed, Jul 29, 2009 at 11:05:41AM -0700, H. Peter Anvin wrote:
+> On 07/29/2009 11:02 AM, Borislav Petkov wrote:
+> >  
+> >> Furthermore, are there any users for this interface at this time?
+> > 
+> > Yep, drivers/edac/amd64_edac.c.
+> > 
+> 
+> So let's see... you're asking to change an in-use interface late in the
+> -rc series when it has active users?
 
-Yes, some of it will.  But thanks to fedora's broken disk partitioner, 
-something I've been screaming about for a damned decade, my /boot partition 
-isn't big enough to absorb a whole chain of those, hence the fixed version 
-request.
-
-This script would appear to need a restore function for the Makefile version 
-because one of my 'git bisect bad's returned that it couldn't switch branches 
-because of the handmade Makefile changes I'd done on the first build.  How 
-have you been handling that?
+Ok, I could create a minimal patch with only the bugfix and send
+the remaining changes later during the next merge window, if that's
+preferred?
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-The NRA is offering FREE Associate memberships to anyone who wants them.
-<https://www.nrahq.org/nrabonus/accept-membership.asp>
-
-When you don't know what to do, walk fast and look worried.
-
+Regards/Gruss,
+    Boris.
