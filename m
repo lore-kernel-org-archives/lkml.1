@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754907AbZG2NKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbZG2NL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754907AbZG2NKM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 09:10:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbZG2NKL
+	id S1755033AbZG2NL4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 09:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844AbZG2NL4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 09:10:11 -0400
-Received: from sg2ehsobe002.messaging.microsoft.com ([207.46.51.76]:30594 "EHLO
-	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754673AbZG2NKJ (ORCPT
+	Wed, 29 Jul 2009 09:11:56 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:37232 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754841AbZG2NLz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 09:10:09 -0400
-X-SpamScore: -28
-X-BigFish: VPS-28(zz1432R98dN936eM1442J9371Pzz1202hzzz32i6bh203h43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KNJOK8-03-6FF-01
-Date: Wed, 29 Jul 2009 15:09:44 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Avi Kivity <avi@redhat.com>
-CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/12] Nested SVM cleanups
-Message-ID: <20090729130944.GE18313@amd.com>
-References: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com>
- <4A70492E.2080705@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <4A70492E.2080705@redhat.com>
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Sitz=3A_Dornach=2C_Gemeinde_Aschheim=2C_Land?=
-	=?iso-8859-1?Q?kreis_M=FCnchen=2C_Registergericht_M=FCnchen?=
-	=?iso-8859-1?Q?=2C?= HRB Nr. 43632
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 29 Jul 2009 13:09:44.0401 (UTC) FILETIME=[D74ACC10:01CA104D]
+	Wed, 29 Jul 2009 09:11:55 -0400
+References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>	 <4A6F033B.7030302@mnementh.co.uk>	 <aec7e5c30907281948s2a0dcd0csd3e580251d6c4f5a@mail.gmail.com>	 <20090729115817.GA12223@rakim.wolfsonmicro.main>	 <aec7e5c30907290527w39a89895n285e932459e6c953@mail.gmail.com>	 <20090729124233.GA12802@rakim.wolfsonmicro.main> <aec7e5c30907290551y77edc6d7qb7b3d787215c2b4@mail.gmail.com> <4A704777.70001@mnementh.co.uk> (sfid-20090729_135848_331445_664D487E)
+Message-Id: <9C1AC001-2FA6-4C19-B9D3-23FB63BAF20B@opensource.wolfsonmicro.com>
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Ian Molton <ian@mnementh.co.uk>
+In-Reply-To: <4A704777.70001@mnementh.co.uk> (sfid-20090729_135848_331445_664D487E)
+Content-Type: text/plain;
+	charset=us-ascii;
+	format=flowed;
+	delsp=yes
+Content-Transfer-Encoding: 7bit
+X-Mailer: iPhone Mail (7A341)
+Mime-Version: 1.0 (iPhone Mail 7A341)
+Subject: Re: MMC: Make the configuration memory resource optional
+Date: Wed, 29 Jul 2009 14:11:52 +0100
+Cc: Magnus Damm <magnus.damm@gmail.com>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Pierre Ossman <drzeus@drzeus.cx>, Magnus Damm <damm@opensource.se>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 29, 2009 at 04:05:50PM +0300, Avi Kivity wrote:
-> On 07/29/2009 03:56 PM, Joerg Roedel wrote:
-> >Hi,
-> >
-> >here is a first round of patches to clean up the code for SVM virtualization
-> >for KVM on AMD. There is more to clean up but since I am on vacation the rest
-> >of the week here is what I have queued up so far. Maybe this saves me from
-> >rebasing this code next week ;-)
-> >I tested these patches with KVM in KVM and it works stable with and without
-> >nested SMP. It doesn't seem to break anything.
-> >
-> 
-> I seem to recall nested smp used to be broken.  Am I mistaken, or do
-> these patches fix rather than clean up?
+On 29 Jul 2009, at 13:58, Ian Molton <ian@mnementh.co.uk> wrote:
 
-Nested SMP was broken in one of the early version of the nested SVM
-code. In the current upstream version it works quite well.
+> Magnus Damm wrote:
+>
+>>> Indeed.  It's actually much worse than you say, each individual ARM
+>>> architecture has its own clock API implementation of varying  
+>>> quality and
+>>> of course there are architectures that don't do the clock API at  
+>>> all.
+>> Yeah. This is exactly why I don't want to block on the clocklib  
+>> implementation.
+>
+> Yeah, good idea... lets ignore the problem until its so big we cant  
+> fix it at all...
 
-> 
-> >       kvm/svm: make nested svm debugging runtime configurable
-> 
-> Should be migrated to tracepoints.
-
-Ok, I tried to align debugging to the mmu debugging code. But
-tracepoints are better of course.
-
-	Joerg
-
-
+The problem here is sufficiently substantial that I'd be impressed if  
+we managed to get a good solution in within a single kernel release.  
+This does help encourage people to keep local hacks but those are much  
+more realistic.
