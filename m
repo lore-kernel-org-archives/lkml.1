@@ -1,101 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbZG2K43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753982AbZG2LCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753934AbZG2K43 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 06:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbZG2K42
+	id S1753982AbZG2LCy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 07:02:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbZG2LCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 06:56:28 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:37453 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750780AbZG2K42 (ORCPT
+	Wed, 29 Jul 2009 07:02:54 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:34251 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751123AbZG2LCx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 06:56:28 -0400
-Message-ID: <4A702AC2.2060003@gmail.com>
-Date: Wed, 29 Jul 2009 12:56:02 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Wed, 29 Jul 2009 07:02:53 -0400
+Date: Wed, 29 Jul 2009 13:02:52 +0200
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: slqb enables interrupts very early
+Message-ID: <20090729110252.GA4414@Chamillionaire.breakpoint.cc>
+References: <20090725180321.GA24814@Chamillionaire.breakpoint.cc> <4A6D59B6.3040400@cs.helsinki.fi> <20090729065824.GE25390@wotan.suse.de>
 MIME-Version: 1.0
-To: Jens Rosenboom <jens@mcbone.net>
-CC: Peter Zijlstra <peterz@infradead.org>, Sonny Rao <sonnyrao@us.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: futexes: Still infinite loop in get_futex_key() in 2.6.31-rc4
-References: <1248681637.7279.12.camel@fnki-nb00130>	 <1248694266.6987.1594.camel@twins>  <1248697004.7279.31.camel@fnki-nb00130>	 <1248697409.6987.1617.camel@twins>  <1248698755.7279.47.camel@fnki-nb00130>	 <1248701812.6987.1637.camel@twins>  <1248848568.6757.13.camel@fnki-nb00130> <1248861443.6757.20.camel@fnki-nb00130> <4A7023BC.6000109@cosmosbay.com>
-In-Reply-To: <4A7023BC.6000109@cosmosbay.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 29 Jul 2009 12:56:02 +0200 (CEST)
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090729065824.GE25390@wotan.suse.de>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet a écrit :
-> Jens Rosenboom a écrit :
->> On Wed, 2009-07-29 at 08:22 +0200, Jens Rosenboom wrote:
->>> On Mon, 2009-07-27 at 15:36 +0200, Peter Zijlstra wrote:
->>> [...]
->>>> Bugger.. how easy it is to reproduce?
->>> Okay, my colleague found the right combination of scripts, take the two
->>> attached, run them both a couple of times in parallel for some hours,
->>> and get a stuck ps. This happens both on an old 2.6.29.1 I happened to
->>> still have on one machine as with 2.6.31-rc4. Both of them dual-core
->>> Opterons as the original one. If you want further tracebacks or other
->>> information, let me know.
->> Forget about null.pl even, just run pees.pl twice and a top to watch it,
->> has worked for me within less than an hour several times now.
->>
-> 
-> Ah that makes sense now...
-> 
-> maybe execve() forgets to clear clear_child_tid 
-> 
+* Nick Piggin | 2009-07-29 08:58:24 [+0200]:
 
-Sorry , I hit 'Send' before completing the mail...
+>We need it when called from kmem_cache_create, but not from
+>the rest of kmem_cache_init. Thanks for finding this, how
+>about this?
+Seems to be fine. The box boots and warning is gone.
 
-Could you please try following patch ?
-
-[PATCH] exec: must clear clear_child_tid
-
-"ps", while reading /proc/xxx files, has to raise mm_users count
-(via a call to get_task_mm())
-
-So when the exiting process (and spied by a ps) calls mm_release() we could go through :
-
-        if (tsk->clear_child_tid
-            && !(tsk->flags & PF_SIGNALED)
-            && atomic_read(&mm->mm_users) > 1) {
-                u32 __user * tidptr = tsk->clear_child_tid;
-                tsk->clear_child_tid = NULL;
-
-                /*
-                 * We don't check the error code - if userspace has
-                 * not set up a proper pointer then tough luck.
-                 */
-                put_user(0, tidptr);
-                sys_futex(tidptr, FUTEX_WAKE, 1, NULL, NULL, 0);
-        }
-
-It can happen if execve() doesnt set clear_child_tid to NULL,
-and we try to futex() to a tidptr that has no meaning (it had  a
-meaning only in bash space, before its thread did the execve())
-
-Furthermore, we can call put_user(0, tidptr), overwriting some integer
-in our user space and corrupt user memory. (if the initial thread exits)
-
-
-Reported-by: Jens Rosenboom <jens@mcbone.net>
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
----
-diff --git a/fs/exec.c b/fs/exec.c
-index 4a8849e..e275652 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -1343,6 +1343,7 @@ int do_execve(char * filename,
- 	mutex_unlock(&current->cred_guard_mutex);
- 	acct_update_integrals(current);
- 	free_bprm(bprm);
-+	current->clear_child_tid = NULL;
- 	if (displaced)
- 		put_files_struct(displaced);
- 	return retval;
-
+Sebastian
