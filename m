@@ -1,175 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbZG2M7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbZG2M6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755059AbZG2M7e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 08:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbZG2M5S
+	id S1755292AbZG2M6v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 08:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755064AbZG2M6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 08:57:18 -0400
-Received: from sg2ehsobe003.messaging.microsoft.com ([207.46.51.77]:14361 "EHLO
-	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754650AbZG2M47 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 08:56:59 -0400
-X-SpamScore: 3
-X-BigFish: VPS3(zzzz1202hzzz32i203h43j64h)
-X-Spam-TCS-SCL: 3:0
-X-WSS-ID: 0KNJNYJ-04-405-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Avi Kivity <avi@redhat.com>
-CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 09/12] kvm/svm: consolidate nested_svm_exit_handled
-Date: Wed, 29 Jul 2009 14:56:29 +0200
-Message-ID: <1248872192-30881-10-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com>
-References: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 29 Jul 2009 12:56:37.0045 (UTC) FILETIME=[01FDCE50:01CA104C]
+	Wed, 29 Jul 2009 08:58:49 -0400
+Received: from kroah.org ([198.145.64.141]:47853 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755219AbZG2M6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 08:58:47 -0400
+Date: Wed, 29 Jul 2009 05:44:06 -0700
+From: Greg KH <greg@kroah.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Patrick McHardy <kaber@trash.net>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: linux-next: manual merge of the staging tree with the net tree
+Message-ID: <20090729124406.GA26931@kroah.com>
+References: <20090729165211.c13f3ca3.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090729165211.c13f3ca3.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When caching guest intercepts there is no need anymore for the
-nested_svm_exit_handled_real function. So move its code into
-nested_svm_exit_handled.
+On Wed, Jul 29, 2009 at 04:52:11PM +1000, Stephen Rothwell wrote:
+> Hi Greg,
+> 
+> Today's linux-next merge of the staging tree got a conflict in
+> drivers/staging/epl/VirtualEthernetLinux.c between commit
+> 6ed106549d17474ca17a16057f4c0ed4eba5a7ca ("net: use NETDEV_TX_OK instead
+> of 0 in ndo_start_xmit() functions") from the net tree and commit
+> 49acb975a21d150c4beba4e581f3e1d004dd2867 ("Staging: remove epl driver")
+> from the staging tree.
+> 
+> The latter just removes the file, so I did that.
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kvm/svm.c |  108 +++++++++++++++++++++++-----------------------------
- 1 files changed, 48 insertions(+), 60 deletions(-)
+Thanks a lot.  Yes, the epl driver has been dropped from staging, so
+that's the right thing to do.
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 9192c9a..263dfa4 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -1463,15 +1463,57 @@ static int nested_svm_do(struct vcpu_svm *svm,
- 	return retval;
- }
- 
--static int nested_svm_exit_handled_real(struct vcpu_svm *svm,
--					void *arg1,
--					void *arg2,
--					void *opaque)
-+static int nested_svm_exit_handled_msr(struct vcpu_svm *svm,
-+				       void *arg1, void *arg2,
-+				       void *opaque)
-+{
-+	struct vmcb *nested_vmcb = (struct vmcb *)arg1;
-+	u8 *msrpm = (u8 *)arg2;
-+        u32 t0, t1;
-+	u32 msr = svm->vcpu.arch.regs[VCPU_REGS_RCX];
-+	u32 param = svm->vmcb->control.exit_info_1 & 1;
-+
-+	if (!(nested_vmcb->control.intercept & (1ULL << INTERCEPT_MSR_PROT)))
-+		return 0;
-+
-+	switch(msr) {
-+	case 0 ... 0x1fff:
-+		t0 = (msr * 2) % 8;
-+		t1 = msr / 8;
-+		break;
-+	case 0xc0000000 ... 0xc0001fff:
-+		t0 = (8192 + msr - 0xc0000000) * 2;
-+		t1 = (t0 / 8);
-+		t0 %= 8;
-+		break;
-+	case 0xc0010000 ... 0xc0011fff:
-+		t0 = (16384 + msr - 0xc0010000) * 2;
-+		t1 = (t0 / 8);
-+		t0 %= 8;
-+		break;
-+	default:
-+		return 1;
-+		break;
-+	}
-+	if (msrpm[t1] & ((1 << param) << t0))
-+		return 1;
-+
-+	return 0;
-+}
-+
-+static int nested_svm_exit_handled(struct vcpu_svm *svm, bool kvm_override)
- {
--	bool kvm_overrides = *(bool *)opaque;
- 	u32 exit_code = svm->vmcb->control.exit_code;
- 
--	if (kvm_overrides) {
-+	switch (svm->vmcb->control.exit_code) {
-+	case SVM_EXIT_MSR:
-+		return nested_svm_do(svm, svm->nested.vmcb,
-+				     svm->nested.vmcb_msrpm, NULL,
-+				     nested_svm_exit_handled_msr);
-+	default: break;
-+	}
-+
-+	if (kvm_override) {
- 		switch (exit_code) {
- 		case SVM_EXIT_INTR:
- 		case SVM_EXIT_NMI:
-@@ -1533,60 +1575,6 @@ static int nested_svm_exit_handled_real(struct vcpu_svm *svm,
- 	return 0;
- }
- 
--static int nested_svm_exit_handled_msr(struct vcpu_svm *svm,
--				       void *arg1, void *arg2,
--				       void *opaque)
--{
--	struct vmcb *nested_vmcb = (struct vmcb *)arg1;
--	u8 *msrpm = (u8 *)arg2;
--        u32 t0, t1;
--	u32 msr = svm->vcpu.arch.regs[VCPU_REGS_RCX];
--	u32 param = svm->vmcb->control.exit_info_1 & 1;
--
--	if (!(nested_vmcb->control.intercept & (1ULL << INTERCEPT_MSR_PROT)))
--		return 0;
--
--	switch(msr) {
--	case 0 ... 0x1fff:
--		t0 = (msr * 2) % 8;
--		t1 = msr / 8;
--		break;
--	case 0xc0000000 ... 0xc0001fff:
--		t0 = (8192 + msr - 0xc0000000) * 2;
--		t1 = (t0 / 8);
--		t0 %= 8;
--		break;
--	case 0xc0010000 ... 0xc0011fff:
--		t0 = (16384 + msr - 0xc0010000) * 2;
--		t1 = (t0 / 8);
--		t0 %= 8;
--		break;
--	default:
--		return 1;
--		break;
--	}
--	if (msrpm[t1] & ((1 << param) << t0))
--		return 1;
--
--	return 0;
--}
--
--static int nested_svm_exit_handled(struct vcpu_svm *svm, bool kvm_override)
--{
--	bool k = kvm_override;
--
--	switch (svm->vmcb->control.exit_code) {
--	case SVM_EXIT_MSR:
--		return nested_svm_do(svm, svm->nested.vmcb,
--				     svm->nested.vmcb_msrpm, NULL,
--				     nested_svm_exit_handled_msr);
--	default: break;
--	}
--
--	return nested_svm_do(svm, svm->nested.vmcb, 0, &k,
--			     nested_svm_exit_handled_real);
--}
--
- static inline void copy_vmcb_control_area(struct vmcb *dst_vmcb, struct vmcb *from_vmcb)
- {
- 	struct vmcb_control_area *dst  = &dst_vmcb->control;
--- 
-1.6.3.3
-
-
+greg k-h
