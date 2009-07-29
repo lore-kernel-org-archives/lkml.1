@@ -1,131 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbZG2PkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754987AbZG2Plc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754899AbZG2PkT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 11:40:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754166AbZG2PkS
+	id S1754987AbZG2Plc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 11:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbZG2Plb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 11:40:18 -0400
-Received: from perceval.irobotique.be ([92.243.18.41]:46867 "EHLO
-	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753622AbZG2PkR (ORCPT
+	Wed, 29 Jul 2009 11:41:31 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:64114 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753622AbZG2Plb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 11:40:17 -0400
-From: Laurent Pinchart <laurent.pinchart@skynet.be>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: Is get_user_pages() enough to prevent pages from being swapped out ?
-Date: Wed, 29 Jul 2009 17:41:52 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.30; KDE/4.2.4; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, "v4l2_linux" <linux-media@vger.kernel.org>
-References: <200907291123.12811.laurent.pinchart@skynet.be> <Pine.LNX.4.64.0907291551050.16769@sister.anvils>
-In-Reply-To: <Pine.LNX.4.64.0907291551050.16769@sister.anvils>
+	Wed, 29 Jul 2009 11:41:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ZOOI14RpPVeYPv4TTJeRW5+oeHocmy/LzwFyFK0iiIhY/n6Pi7o10ZOFqdGdjHRnoP
+         Tdkn+TvrdCJmzCYbrDXjA5vUwemGE+vAKmzDPAK3rBFZorySVVG9XdauZotFiWEmuzxN
+         6u4sWhYktu2I+rLRQrx7WQjwuM+tumLbcxaiE=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907291741.52783.laurent.pinchart@skynet.be>
+In-Reply-To: <Pine.LNX.4.64.0907280937000.4943@axis700.grange>
+References: <Pine.LNX.4.64.0907280937000.4943@axis700.grange>
+Date: Wed, 29 Jul 2009 17:20:40 +0200
+Message-ID: <74d0deb30907290820x13214f68u82dea4ad229ebdac@mail.gmail.com>
+Subject: Re: [PATCH] tmio_mmc: Optionally support using platform clock
+From: pHilipp Zabel <philipp.zabel@gmail.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Ian Molton <ian@mnementh.co.uk>, linux-kernel@vger.kernel.org,
+       Magnus Damm <damm@opensource.se>, akpm@linux-foundation.org,
+       Matt Fleming <matt@console-pimps.org>,
+       Philip Langdale <philipl@overt.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hugh,
-
-first of all, thanks for your answer.
-
-On Wednesday 29 July 2009 17:26:11 Hugh Dickins wrote:
-> On Wed, 29 Jul 2009, Laurent Pinchart wrote:
-> > I'm trying to debug a video acquisition device driver and found myself
-> > having to dive deep into the memory management subsystem.
-> >
-> > The driver uses videobuf-dma-sg to manage video buffers. videobuf-dma-sg
-> > gets pointers to buffers from userspace and calls get_user_pages() to
-> > retrieve the list of pages underlying those buffers. The page list is
-> > used to build a scatter-gather list that is given to the hardware. The
-> > device then performs DMA directly to the memory.
-> >
-> > Pages underlying the buffers must obviously not be swapped out during
-> > DMA. The get_user_pages() (mm/memory.c) documentation seems to imply that
-> > returned pages are pinned to memory (my understanding of "pinned" is that
-> > they will not be swapped out):
+On Tue, Jul 28, 2009 at 9:51 AM, Guennadi
+Liakhovetski<g.liakhovetski@gmx.de> wrote:
+> If the platform device has a clock associated with the tmio-mmc device,
+> use it.
 >
-> ...
+> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> Cc: Magnus Damm <damm@opensource.se>
+> ---
 >
-> > However, all is seems to do for that purpose is incrementing the page
-> > reference count using get_page().
-> >
-> > I had a look through the memory management subsystem code and it seems to
-> > me that incrementing the reference count is not sufficient to make sure
-> > the page won't be swapped out. To ensure that, it should instead be
-> > marked as unevictable, either directly or by marking an associated VMA as
-> > VM_LOCKED. This is what the mlock() syscall does, in addition to calling
-> > get_user_pages().
-> >
-> > The MM subsystem is quite complex and my understanding might not be
-> > correct, so I'd appreciate if someone could shed light on the issue. Does
-> > get_user_pages() really pin pages to memory and prevent them from being
-> > swapped out in all circumstances ? If so, how does it do so ? If not,
-> > what's the proper way to make sure the pages won't disappear during DMA ?
+> Depends (at least logically) on
+> http://marc.info/?l=linux-kernel&m=124782904228865&w=2
 >
-> You're right that get_user_pages() (called with a pagelist as you're
-> using) increments the page reference count.
+> Sorry if I forgot anyone who volunteered to help out with MMC patches.
 >
-> And that is enough to pin the page in memory, in a sense that suits
-> the use of DMA.
+>  drivers/mmc/host/tmio_mmc.c |   21 +++++++++++++++++++++
+>  drivers/mmc/host/tmio_mmc.h |    3 +++
+>  include/linux/mfd/tmio.h    |    1 +
+>  3 files changed, 25 insertions(+), 0 deletions(-)
 >
-> I'm expressing it in that peculiar way, because:- On the one hand,
-> the page can only disappear from memory by memory hotremove, but
-> what you'll be worrying about is the page getting freed and reused
-> for another purpose while DMA is acting upon it - but raising the
-> reference count prevents that (and will prevent hotremove succeeding).
-
-Sorry about that confusion. I'm not too familiar with memory management so I 
-mixed the proper terms.
-
-> On the other hand, despite the raised reference count, under memory
-> pressure that page might get unmapped from the user pagetable, and
-> might even be written out to swap in its half-dirty state (though
-> is_page_cache_freeable() tries to avoid that); but it won't get
-> freed, and DMA will be to the physical address of the page (somebody
-> will correct me that it's actually the bus address or something else),
-> not to the userspace virtual address.  So it's irrelevant if that
-> vanishes for a while - when userspace accesses it again, the same
-> page (the one DMA occurs to) will be faulted back in there.
-
-Just to make sure I understand things properly, the copy of the page written 
-to swap will not be read back when the page is faulted back in by the kernel 
-as a result of the userspace process accessing it, right ?
-
-Why would the page be written out to swap if it's not going to be freed anyway 
-?
-
-> In contrast, mlock() is not enough to pin a page in memory in this
-> sense: from a userspace point of view, an mlock()ed page indeed is
-> locked into memory, but page migration (for NUMA balancing or for
-> memory hotremove) is still free to substitute an alternative page
-> there.  get_user_pages()'s raised reference count prevents that,
-> but mlock() does not.
-
-Thanks for pointing that "detail" out.
-
-> There is one little problem with the get_user_pages() pinning,
-> hopefully one that can never affect you at all.  If the task that
-> did the get_user_pages() forks, and parent or child userspace tries
-> to write to one of the pages in question while it's pinned (and it's
-> an anonymous page, not a pagecache page shared with underlying file),
-> then the first to touch it will get a copy of the original DMA page
-> at that instant, thereafter losing contact with the original DMA page.
+> diff --git a/drivers/mmc/host/tmio_mmc.c b/drivers/mmc/host/tmio_mmc.c
+> index c246191..2a01572 100644
+> --- a/drivers/mmc/host/tmio_mmc.c
+> +++ b/drivers/mmc/host/tmio_mmc.c
+> @@ -32,6 +32,7 @@
+>  #include <linux/mmc/host.h>
+>  #include <linux/mfd/core.h>
+>  #include <linux/mfd/tmio.h>
+> +#include <linux/clk.h>
 >
-> One answer to that is to madvise such an area with MADV_DONTFORK,
-> then fork won't duplicate that area, so no Copy-on-Write issues
-> will arise.  That satisfies many of us, but others look for a
-> way to eliminate this issue completely.
+>  #include "tmio_mmc.h"
+>
+> @@ -57,10 +58,18 @@ static void tmio_mmc_clk_stop(struct tmio_mmc_host *host)
+>        sd_ctrl_write16(host, CTL_SD_CARD_CLK_CTL, ~0x0100 &
+>                sd_ctrl_read16(host, CTL_SD_CARD_CLK_CTL));
+>        msleep(10);
+> +       if (!IS_ERR(host->clk) && host->clk_is_running) {
+> +               clk_disable(host->clk);
+> +               host->clk_is_running = false;
+> +       }
+>  }
+>
+>  static void tmio_mmc_clk_start(struct tmio_mmc_host *host)
+>  {
+> +       if (!IS_ERR(host->clk) && !host->clk_is_running &&
+> +           !clk_enable(host->clk))
+> +               host->clk_is_running = true;
+> +
+>        sd_ctrl_write16(host, CTL_SD_CARD_CLK_CTL, 0x0100 |
+>                sd_ctrl_read16(host, CTL_SD_CARD_CLK_CTL));
+>        msleep(10);
+> @@ -567,6 +576,11 @@ static int __devinit tmio_mmc_probe(struct platform_device *dev)
+>                        goto unmap_cnf;
+>        }
+>
+> +       host->clk = clk_get(&dev->dev, pdata->clk_name);
 
-I don't think the userspace processes we use here to access the video buffers 
-fork, but I'll double check that and use madvise in that case.
+Instead of pdata->clk_name, this should be either NULL or better
+"HCLK" (to differentiate from CLK32, not sure if we want to be able to
+toggle that, too, in the future).
+Passing the clock consumer ID via pdata is just wrong and shouldn't be
+needed with clkdev.
 
-Thank you very much for your help.
+> +
+> +       if (!IS_ERR(host->clk) && !clk_enable(host->clk))
+> +               host->clk_is_running = true;
+> +
+>        /* Enable the MMC/SD Control registers */
+>        sd_config_write16(host, CNF_CMD, SDCREN);
+>        sd_config_write32(host, CNF_CTL_BASE,
+> @@ -608,6 +622,11 @@ static int __devinit tmio_mmc_probe(struct platform_device *dev)
+>        return 0;
+>
+>  unmap_cnf:
+> +       if (!IS_ERR(host->clk)) {
+> +               clk_disable(host->clk);
+> +               host->clk_is_running = false;
+> +               clk_put(host->clk);
+> +       }
+>        if (host->cnf)
+>                iounmap(host->cnf);
+>  unmap_ctl:
+> @@ -632,6 +651,8 @@ static int __devexit tmio_mmc_remove(struct platform_device *dev)
+>                if (host->cnf)
+>                        iounmap(host->cnf);
+>                mmc_free_host(mmc);
+> +               if (!IS_ERR(host->clk))
+> +                       clk_put(host->clk);
+>        }
+>
+>        return 0;
+> diff --git a/drivers/mmc/host/tmio_mmc.h b/drivers/mmc/host/tmio_mmc.h
+> index 45f06aa..a76d237 100644
+> --- a/drivers/mmc/host/tmio_mmc.h
+> +++ b/drivers/mmc/host/tmio_mmc.h
+> @@ -108,6 +108,7 @@
+>                sd_ctrl_write32((host), CTL_STATUS, mask); \
+>        } while (0)
+>
+> +struct clk;
+>
+>  struct tmio_mmc_host {
+>        void __iomem *cnf;
+> @@ -117,6 +118,8 @@ struct tmio_mmc_host {
+>        struct mmc_request      *mrq;
+>        struct mmc_data         *data;
+>        struct mmc_host         *mmc;
+> +       struct clk              *clk;
+> +       bool                    clk_is_running;
+>        int                     irq;
+>
+>        /* pio related stuff */
+> diff --git a/include/linux/mfd/tmio.h b/include/linux/mfd/tmio.h
+> index 6b9c5d0..e405895 100644
+> --- a/include/linux/mfd/tmio.h
+> +++ b/include/linux/mfd/tmio.h
+> @@ -23,6 +23,7 @@
+>  */
+>  struct tmio_mmc_data {
+>        const unsigned int              hclk;
+> +       const char                      *clk_name;
 
-Best regards,
+Drop that.
 
-Laurent Pinchart
+>  };
+>
+>  /*
+> --
+> 1.6.2.4
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
+Otherwise that patch doesn't seem wrong to me?
+As soon as we have the possibility for MFD drivers to provide their
+own clk API implementation, this should also work with ASIC3/TMIO.
+I'll try to register my ASIC3 HCLK with clkdev and see if this patch
+works.
+
+regards
+Philipp
