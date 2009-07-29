@@ -1,185 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753091AbZG2Iqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753009AbZG2Irv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753091AbZG2Iqj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 04:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZG2Iqi
+	id S1753009AbZG2Irv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 04:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbZG2Iru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 04:46:38 -0400
-Received: from a-pb-sasl-sd.pobox.com ([64.74.157.62]:63676 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752977AbZG2Iqe (ORCPT
+	Wed, 29 Jul 2009 04:47:50 -0400
+Received: from mail-px0-f184.google.com ([209.85.216.184]:35162 "EHLO
+	mail-px0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752703AbZG2Irt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 04:46:34 -0400
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.6.4
-From: Junio C Hamano <gitster@pobox.com>
-Date: Wed, 29 Jul 2009 01:46:27 -0700
-Message-ID: <7vfxcfx4f0.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 29 Jul 2009 04:47:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=u5cUGt29aRC6+3ivey/DrTnFwzjYKZUpmytdebBxn17Qb6pJCi1S7FWL2HsApkM2Uu
+         NRp9tnDEPENUsfH8DufBxFMLE1e4N1ZBpJjBLFTBBxNrLwR5V9Kek5tWtB0XxZsh6bEk
+         FoO1KlQukce8a6e6ViLs61kbg0aV2catTOTfY=
+Date: Wed, 29 Jul 2009 16:50:03 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       ralf@linux-mips.org, benh@kernel.crashing.org, lethal@linux-sh.org
+Subject: Re: [RFC][PATCH 5/6] kcore: check physical memory range  in
+	correct way.
+Message-ID: <20090729085003.GD5856@cr0.nay.redhat.com>
+References: <20090724170819.2625ba07.kamezawa.hiroyu@jp.fujitsu.com> <20090724171927.f663cacc.kamezawa.hiroyu@jp.fujitsu.com> <20090728102411.GG6036@cr0.nay.redhat.com> <20090729085810.c1a6b75a.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: 52072E64-7C1C-11DE-8D9F-AEF1826986A2-77302942!a-pb-sasl-sd.pobox.com
+Content-Disposition: inline
+In-Reply-To: <20090729085810.c1a6b75a.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest feature release GIT 1.6.4 is available at the usual
-places:
+On Wed, Jul 29, 2009 at 08:58:10AM +0900, KAMEZAWA Hiroyuki wrote:
+>On Tue, 28 Jul 2009 18:24:11 +0800
+>Amerigo Wang <xiyou.wangcong@gmail.com> wrote:
+>
+>> On Fri, Jul 24, 2009 at 05:19:27PM +0900, KAMEZAWA Hiroyuki wrote:
+>> >From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>> >
+>> >For /proc/kcore, each arch registers its memory range by kclist_add().
+>> >In usual,
+>> >	- range of physical memory
+>> >	- range of vmalloc area
+>> >	- text, etc...
+>> >are registered but "range of physical memory" has some troubles.
+>> >
+>> >It doesn't updated at memory hotplug and it tend to include
+>> >unnecessary memory holes. Now, /proc/iomem (kernel/resource.c)
+>> >includes required physical memory range information and it's
+>> >properly updated at memory hotplug. Then, it's good to avoid
+>> >using its own code(duplicating information) and to rebuild
+>> >kclist for physical memory based on /proc/iomem.
+>> >
+>> >Note: IIUC, /proc/iomem information is used for kdump.
+>> >
+>> >Changelog: v2 -> v3
+>> > - fixed HIGHMEM codes.(At least, no compile error)
+>> > - enhnanced sanity chesk in !HIGHMEM codes. (See kclist_add_private())
+>> > - after this, x86-32, ia64, sh, powerpc has no private kclist codes.
+>> >   x86-64 and mips still have some.
+>> 
+>> 
+>> <snip>
+>> 
+>> 
+>> 
+>> >Index: mmotm-2.6.31-Jul16/include/linux/ioport.h
+>> >===================================================================
+>> >--- mmotm-2.6.31-Jul16.orig/include/linux/ioport.h
+>> >+++ mmotm-2.6.31-Jul16/include/linux/ioport.h
+>> >@@ -186,5 +186,13 @@ extern void __devm_release_region(struct
+>> > extern int iomem_map_sanity_check(resource_size_t addr, unsigned long size);
+>> > extern int iomem_is_exclusive(u64 addr);
+>> > 
+>> >+/*
+>> >+ * Walk through all SYSTEM_RAM which is registered as resource.
+>> >+ * arg is (start_pfn, nr_pages, private_arg_pointer)
+>> >+ */
+>> >+extern int walk_memory_resource(unsigned long start_pfn,
+>> >+			unsigned long nr_pages, void *arg,
+>> >+			int (*func)(unsigned long, unsigned long, void *));
+>> >+
+>> > #endif /* __ASSEMBLY__ */
+>> > #endif	/* _LINUX_IOPORT_H */
+>> >Index: mmotm-2.6.31-Jul16/include/linux/memory_hotplug.h
+>> >===================================================================
+>> >--- mmotm-2.6.31-Jul16.orig/include/linux/memory_hotplug.h
+>> >+++ mmotm-2.6.31-Jul16/include/linux/memory_hotplug.h
+>> >@@ -191,13 +191,6 @@ static inline void register_page_bootmem
+>> > 
+>> > #endif /* ! CONFIG_MEMORY_HOTPLUG */
+>> > 
+>> >-/*
+>> >- * Walk through all memory which is registered as resource.
+>> >- * arg is (start_pfn, nr_pages, private_arg_pointer)
+>> >- */
+>> >-extern int walk_memory_resource(unsigned long start_pfn,
+>> >-			unsigned long nr_pages, void *arg,
+>> >-			int (*func)(unsigned long, unsigned long, void *));
+>> 
+>> 
+>> Why moving it? :)
+>> 
+>Ah, this declaration is in memory_hotplug.h because it's only for memory
+>hotplug. For generic use, it's better to move this to iomem.h as other
+>resource related ops, I think.
+>
 
-  http://www.kernel.org/pub/software/scm/git/
 
-  git-1.6.4.tar.{gz,bz2}			(source tarball)
-  git-htmldocs-1.6.4.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.6.4.tar.{gz,bz2}		(preformatted docs)
-
-The RPM binary packages for a few architectures are found in:
-
-  RPMS/$arch/git-*-1.6.4-1.fc9.$arch.rpm	(RPM)
-
-GIT v1.6.4 Release Notes
-========================
-
-With the next major release, "git push" into a branch that is
-currently checked out will be refused by default.  You can choose
-what should happen upon such a push by setting the configuration
-variable receive.denyCurrentBranch in the receiving repository.
-
-To ease the transition plan, the receiving repository of such a
-push running this release will issue a big warning when the
-configuration variable is missing.  Please refer to:
-
-  http://git.or.cz/gitwiki/GitFaq#non-bare
-  http://thread.gmane.org/gmane.comp.version-control.git/107758/focus=108007
-
-for more details on the reason why this change is needed and the
-transition plan.
-
-For a similar reason, "git push $there :$killed" to delete the branch
-$killed in a remote repository $there, if $killed branch is the current
-branch pointed at by its HEAD, gets a large warning.  You can choose what
-should happen upon such a push by setting the configuration variable
-receive.denyDeleteCurrent in the receiving repository.
+Ok, it's better if you can put this in your changelog. ;)
 
 
-Updates since v1.6.3
---------------------
+>
+>
+>> > 
+>> > #ifdef CONFIG_MEMORY_HOTREMOVE
+>> > 
+>> >Index: mmotm-2.6.31-Jul16/kernel/resource.c
+>> >===================================================================
+>> >--- mmotm-2.6.31-Jul16.orig/kernel/resource.c
+>> >+++ mmotm-2.6.31-Jul16/kernel/resource.c
+>> >@@ -234,7 +234,7 @@ int release_resource(struct resource *ol
+>> > 
+>> > EXPORT_SYMBOL(release_resource);
+>> > 
+>> >-#if defined(CONFIG_MEMORY_HOTPLUG) && !defined(CONFIG_ARCH_HAS_WALK_MEMORY)
+>> >+#if !defined(CONFIG_ARCH_HAS_WALK_MEMORY)
+>> > /*
+>> >  * Finds the lowest memory reosurce exists within [res->start.res->end)
+>> >  * the caller must specify res->start, res->end, res->flags.
+>> 
+>> 
+>> Shouldn't this part be in patch 6/6 instead of this one?
+>> 
+>Hmm, ok, I'll reorder 5/6 and 6/6 and define walk_system_ram_range() before
+>this patch.
 
-(subsystems)
-
- * gitweb Perl style clean-up.
-
- * git-svn updates, including a new --authors-prog option to map author
-   names by invoking an external program, 'git svn reset' to unwind
-   'git svn fetch', support for more than one branches, documenting
-   of the useful --minimize-url feature, new "git svn gc" command, etc.
-
-(portability)
-
- * We feed iconv with "UTF-8" instead of "utf8"; the former is
-   understood more widely.  Similarly updated test scripts to use
-   encoding names more widely understood (e.g. use "ISO8859-1" instead
-   of "ISO-8859-1").
-
- * Various portability fixes/workarounds for different vintages of
-   SunOS, IRIX, and Windows.
-
- * Git-over-ssh transport on Windows supports PuTTY plink and TortoisePlink.
-
-(performance)
-
- * Many repeated use of lstat() are optimized out in "checkout" codepath.
-
- * git-status (and underlying git-diff-index --cached) are optimized
-   to take advantage of cache-tree information in the index.
-
-(usability, bells and whistles)
-
- * "git add --edit" lets users edit the whole patch text to fine-tune what
-   is added to the index.
-
- * "git am" accepts StGIT series file as its input.
-
- * "git bisect skip" skips to a more randomly chosen place in the hope
-   to avoid testing a commit that is too close to a commit that is
-   already known to be untestable.
-
- * "git cvsexportcommit" learned -k option to stop CVS keywords expansion
-
- * "git fast-export" learned to handle history simplification more
-   gracefully.
-
- * "git fast-export" learned an option --tag-of-filtered-object to handle
-   dangling tags resulting from history simplification more usefully.
-
- * "git grep" learned -p option to show the location of the match using the
-   same context hunk marker "git diff" uses.
-
- * https transport can optionally be told that the used client
-   certificate is password protected, in which case it asks the
-   password only once.
-
- * "git imap-send" is IPv6 aware.
-
- * "git log --graph" draws graphs more compactly by using horizontal lines
-   when able.
-
- * "git log --decorate" shows shorter refnames by stripping well-known
-   refs/* prefix.
-
- * "git push $name" honors remote.$name.pushurl if present before
-   using remote.$name.url.  In other words, the URL used for fetching
-   and pushing can be different.
-
- * "git send-email" understands quoted aliases in .mailrc files (might
-   have to be backported to 1.6.3.X).
-
- * "git send-email" can fetch the sender address from the configuration
-   variable "sendmail.from" (and "sendmail.<identity>.from").
-
- * "git show-branch" can color its output.
-
- * "add" and "update" subcommands to "git submodule" learned --reference
-   option to use local clone with references.
-
- * "git submodule update" learned --rebase option to update checked
-   out submodules by rebasing the local changes.
-
- * "gitweb" can optionally use gravatar to adorn author/committer names.
-
-(developers)
-
- * A major part of the "git bisect" wrapper has moved to C.
-
- * Formatting with the new version of AsciiDoc 8.4.1 is now supported.
-
-Fixes since v1.6.3
-------------------
-
-All of the fixes in v1.6.3.X maintenance series are included in this
-release, unless otherwise noted.
-
-Here are fixes that this release has, but have not been backported to
-v1.6.3.X series.
-
- * "git diff-tree -r -t" used to omit new or removed directories from
-   the output.  df533f3 (diff-tree -r -t: include added/removed
-   directories in the output, 2009-06-13) may need to be cherry-picked
-   to backport this fix.
-
- * The way Git.pm sets up a Repository object was not friendly to callers
-   that chdir around.  It now internally records the repository location
-   as an absolute path when autodetected.
-
- * Removing a section with "git config --remove-section", when its
-   section header has a variable definition on the same line, lost
-   that variable definition.
-
- * "git rebase -p --onto" used to always leave side branches of a merge
-   intact, even when both branches are subject to rewriting.
-
- * "git repack" used to faithfully follow grafts and considered true
-   parents recorded in the commit object unreachable from the commit.
-   After such a repacking, you cannot remove grafts without corrupting
-   the repository.
-
- * "git send-email" did not detect erroneous loops in alias expansion.
+Thank you for keeping working on this! :)
