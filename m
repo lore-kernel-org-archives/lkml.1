@@ -1,51 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754986AbZG2M7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754954AbZG2M5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754986AbZG2M7u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 08:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbZG2M7s
+	id S1754954AbZG2M5Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 08:57:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754909AbZG2M5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 08:59:48 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:40776 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754619AbZG2M7r (ORCPT
+	Wed, 29 Jul 2009 08:57:24 -0400
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:51935
+	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754796AbZG2M5E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 08:59:47 -0400
-Date: Wed, 29 Jul 2009 13:59:42 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: Ian Molton <ian@mnementh.co.uk>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
-       Magnus Damm <damm@opensource.se>
-Subject: Re: MMC: Make the configuration memory resource optional
-Message-ID: <20090729125942.GA13337@rakim.wolfsonmicro.main>
-References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>
- <4A6F033B.7030302@mnementh.co.uk>
- <aec7e5c30907281948s2a0dcd0csd3e580251d6c4f5a@mail.gmail.com>
- <20090729115817.GA12223@rakim.wolfsonmicro.main>
- <aec7e5c30907290527w39a89895n285e932459e6c953@mail.gmail.com>
- <20090729124233.GA12802@rakim.wolfsonmicro.main>
- <aec7e5c30907290551y77edc6d7qb7b3d787215c2b4@mail.gmail.com>
+	Wed, 29 Jul 2009 08:57:04 -0400
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i203h43j65h)
+X-Spam-TCS-SCL: 4:0
+X-FB-SS: 5,
+X-WSS-ID: 0KNJNYI-04-403-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Avi Kivity <avi@redhat.com>
+CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH 05/12] kvm/svm: copy only necessary parts of the control area on vmrun/vmexit
+Date: Wed, 29 Jul 2009 14:56:25 +0200
+Message-ID: <1248872192-30881-6-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com>
+References: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com>
+X-OriginalArrivalTime: 29 Jul 2009 12:56:37.0030 (UTC) FILETIME=[01FB8460:01CA104C]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aec7e5c30907290551y77edc6d7qb7b3d787215c2b4@mail.gmail.com>
-X-Cookie: Without fools there would be no wisdom.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 29, 2009 at 09:51:30PM +0900, Magnus Damm wrote:
-> On Wed, Jul 29, 2009 at 9:42 PM, Mark
-> Brown<broonie@opensource.wolfsonmicro.com> wrote:
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kvm/svm.c |   36 ++++++++++++++++++++++++++++++++++--
+ 1 files changed, 34 insertions(+), 2 deletions(-)
 
-> > That's not actually abundantly clear for the audio stuff, or rather the
-> > audio stuff would like additional features like constraint based
-> > configuration.
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index b85da3f..0a0b3e1 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -1574,6 +1574,38 @@ static int nested_svm_exit_handled(struct vcpu_svm *svm, bool kvm_override)
+ 			     nested_svm_exit_handled_real);
+ }
+ 
++static inline void copy_vmcb_control_area(struct vmcb *dst_vmcb, struct vmcb *from_vmcb)
++{
++	struct vmcb_control_area *dst  = &dst_vmcb->control;
++	struct vmcb_control_area *from = &from_vmcb->control;
++
++	dst->intercept_cr_read    = from->intercept_cr_read;
++	dst->intercept_cr_write   = from->intercept_cr_write;
++	dst->intercept_dr_read    = from->intercept_dr_read;
++	dst->intercept_dr_write   = from->intercept_dr_write;
++	dst->intercept_exceptions = from->intercept_exceptions;
++	dst->intercept            = from->intercept;
++	dst->iopm_base_pa         = from->iopm_base_pa;
++	dst->msrpm_base_pa        = from->msrpm_base_pa;
++	dst->tsc_offset           = from->tsc_offset;
++	dst->asid                 = from->asid;
++	dst->tlb_ctl              = from->tlb_ctl;
++	dst->int_ctl              = from->int_ctl;
++	dst->int_vector           = from->int_vector;
++	dst->int_state            = from->int_state;
++	dst->exit_code            = from->exit_code;
++	dst->exit_code_hi         = from->exit_code_hi;
++	dst->exit_info_1          = from->exit_info_1;
++	dst->exit_info_2          = from->exit_info_2;
++	dst->exit_int_info        = from->exit_int_info;
++	dst->exit_int_info_err    = from->exit_int_info_err;
++	dst->nested_ctl           = from->nested_ctl;
++	dst->event_inj            = from->event_inj;
++	dst->event_inj_err        = from->event_inj_err;
++	dst->nested_cr3           = from->nested_cr3;
++	dst->lbr_ctl              = from->lbr_ctl;
++}
++
+ static int nested_svm_vmexit_real(struct vcpu_svm *svm, void *arg1,
+ 				  void *arg2, void *opaque)
+ {
+@@ -1619,7 +1651,7 @@ static int nested_svm_vmexit_real(struct vcpu_svm *svm, void *arg1,
+ 		nested_vmcb->control.int_ctl &= ~V_INTR_MASKING_MASK;
+ 
+ 	/* Restore the original control entries */
+-	svm->vmcb->control = hsave->control;
++	copy_vmcb_control_area(vmcb, hsave);
+ 
+ 	/* Kill any pending exceptions */
+ 	if (svm->vcpu.arch.exception.pending == true)
+@@ -1717,7 +1749,7 @@ static int nested_svm_vmrun(struct vcpu_svm *svm, void *arg1,
+ 	else
+ 		hsave->save.cr3    = svm->vcpu.arch.cr3;
+ 
+-	hsave->control = vmcb->control;
++	copy_vmcb_control_area(hsave, vmcb);
+ 
+ 	if (svm->vmcb->save.rflags & X86_EFLAGS_IF)
+ 		svm->vcpu.arch.hflags |= HF_HIF_MASK;
+-- 
+1.6.3.3
 
-> Without knowing too much about this, wouldn't camera sensors want
-> similar features?
 
-They may well but I'm not familiar with them; I can speak much more
-confidently about audio.
