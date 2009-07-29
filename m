@@ -1,84 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755354AbZG2QG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755170AbZG2QHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755354AbZG2QG0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 12:06:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbZG2QGZ
+	id S1755170AbZG2QHb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 12:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbZG2QHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 12:06:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48512 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752891AbZG2QGZ (ORCPT
+	Wed, 29 Jul 2009 12:07:30 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:40908 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751524AbZG2QH3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 12:06:25 -0400
-Date: Wed, 29 Jul 2009 09:05:46 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kdesu broken
-In-Reply-To: <20090729165513.2a1ccb7c@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.2.01.0907290859230.3161@localhost.localdomain>
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk> <87skgikjr8.fsf@devron.myhome.or.jp> <20090727222010.1a5efb7b@lxorguk.ukuu.org.uk> <87r5w19xsb.fsf@devron.myhome.or.jp> <20090728112203.7b70adba@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907280848090.3186@localhost.localdomain>
- <20090728174213.5e927428@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907280944150.3186@localhost.localdomain> <20090728180649.596c5412@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907281141070.3186@localhost.localdomain> <20090728195651.3a402a31@lxorguk.ukuu.org.uk>
- <alpine.LFD.2.01.0907281158120.3186@localhost.localdomain> <20090729004639.71f0eabc@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907281651160.3186@localhost.localdomain> <20090729013442.493effa6@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907281736260.3161@localhost.localdomain>
- <20090729095923.4ca5ca3e@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907290842420.3161@localhost.localdomain> <20090729165513.2a1ccb7c@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Wed, 29 Jul 2009 12:07:29 -0400
+X-Trace: 234018190/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.35.3/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.35.3
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Av0EAN4PcEpPRSMD/2dsb2JhbACBUtMehBEF
+X-IronPort-AV: E=Sophos;i="4.43,289,1246834800"; 
+   d="scan'208";a="234018190"
+Date: Wed, 29 Jul 2009 17:07:24 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Laurent Pinchart <laurent.pinchart@skynet.be>
+cc: linux-kernel@vger.kernel.org, v4l2_linux <linux-media@vger.kernel.org>
+Subject: Re: Is get_user_pages() enough to prevent pages from being swapped
+ out ?
+In-Reply-To: <200907291741.52783.laurent.pinchart@skynet.be>
+Message-ID: <Pine.LNX.4.64.0907291653510.20238@sister.anvils>
+References: <200907291123.12811.laurent.pinchart@skynet.be>
+ <Pine.LNX.4.64.0907291551050.16769@sister.anvils> <200907291741.52783.laurent.pinchart@skynet.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 29 Jul 2009, Alan Cox wrote:
-
-> > The tty_ldisc_hangup() already does tty_ldisc_wait_idle() after disabling 
-> > the timer (and clearing the TTY_LDISC bit), so that all seems fine 
-> > already. No?
+On Wed, 29 Jul 2009, Laurent Pinchart wrote:
+> On Wednesday 29 July 2009 17:26:11 Hugh Dickins wrote:
+> > On Wed, 29 Jul 2009, Laurent Pinchart wrote:
+> > > what's the proper way to make sure the pages won't disappear during DMA ?
+> >
+> > You're right that get_user_pages() (called with a pagelist as you're
+> > using) increments the page reference count.
+> >
+> > And that is enough to pin the page in memory, in a sense that suits
+> > the use of DMA.
+> >
+> > I'm expressing it in that peculiar way, because:- On the one hand,
+> > the page can only disappear from memory by memory hotremove, but
+> > what you'll be worrying about is the page getting freed and reused
+> > for another purpose while DMA is acting upon it - but raising the
+> > reference count prevents that (and will prevent hotremove succeeding).
 > 
-> We only do tty_ldisc_wait_idle if tty->driver->flags & TTY_RESET_TERMIOS
-> is set that I can see ?
+> Sorry about that confusion. I'm not too familiar with memory management so I 
+> mixed the proper terms.
 
-I agree, but that's also the only time we do that 'tty_ldisc_halt()' that 
-cancels the timer. So if there is something that depends on the 
-flush_to_ldisc() not happening, the bug was pre-existing since it never 
-got rid of the flush to begin with, so the flush_to_ldisc() would happen 
-at some random later time as a result of the delayed-work timer.
+Nothing to apologize for!  You expressed yourself in a vivid and
+natural way, then I gave you a pedantic response.  It's right to be
+pedantic here, to distinguish these cases, but you were not wrong.
 
-That said, I suspect that from a sanity standpoint, I suspect something 
-like the appended migth be a good idea. But I think it's an independent 
-issue (and unless somebody can actually point to an actual problem, I'd 
-only apply something like this during the merge window, not after -rc4).
+> 
+> > On the other hand, despite the raised reference count, under memory
+> > pressure that page might get unmapped from the user pagetable, and
+> > might even be written out to swap in its half-dirty state (though
+> > is_page_cache_freeable() tries to avoid that); but it won't get
+> > freed, and DMA will be to the physical address of the page (somebody
+> > will correct me that it's actually the bus address or something else),
+> > not to the userspace virtual address.  So it's irrelevant if that
+> > vanishes for a while - when userspace accesses it again, the same
+> > page (the one DMA occurs to) will be faulted back in there.
+> 
+> Just to make sure I understand things properly, the copy of the page written 
+> to swap will not be read back when the page is faulted back in by the kernel 
+> as a result of the userspace process accessing it, right ?
 
-		Linus
----
- drivers/char/tty_ldisc.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Absolutely right.  It's a waste of time and diskspace if we write
+it at all, but to avoid the possibility of such writes completely
+would involve a locking overhead we're better off without.
 
-diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
-index acd76b7..640b100 100644
---- a/drivers/char/tty_ldisc.c
-+++ b/drivers/char/tty_ldisc.c
-@@ -778,6 +778,8 @@ void tty_ldisc_hangup(struct tty_struct *tty)
- 		if (ld->ops->hangup)
- 			ld->ops->hangup(tty);
- 		tty_ldisc_deref(ld);
-+		tty_ldisc_halt(tty);
-+		tty_ldisc_wait_idle(tty);
- 	}
- 	/*
- 	 * FIXME: Once we trust the LDISC code better we can wait here for
-@@ -794,8 +796,6 @@ void tty_ldisc_hangup(struct tty_struct *tty)
- 		mutex_lock(&tty->ldisc_mutex);
- 		if (tty->ldisc) {	/* Not yet closed */
- 			/* Switch back to N_TTY */
--			tty_ldisc_halt(tty);
--			tty_ldisc_wait_idle(tty);
- 			tty_ldisc_reinit(tty);
- 			/* At this point we have a closed ldisc and we want to
- 			   reopen it. We could defer this to the next open but
+> 
+> Why would the page be written out to swap if it's not going to be
+> freed anyway ?
+
+is_page_cache_freeable() tries to avoid such a write, by checking
+that the reference count is what we'd expect it to be if nobody else
+is interested in the page - at that instant.  But an instant later,
+anything might take a new reference to the page: pageout() has the
+page lock, but we really don't want to demand that everybody else
+has to acquire the page lock just to increment page count.
+
+We could scatter further is_page_cache_freeable() checks around;
+but how ever many we added, it could always go up just after the
+last check.
+
+Hugh
