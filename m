@@ -1,108 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbZG2KBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753868AbZG2KFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753875AbZG2KBs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 06:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753767AbZG2KBr
+	id S1753868AbZG2KFO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 06:05:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbZG2KFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 06:01:47 -0400
-Received: from mail-bw0-f221.google.com ([209.85.218.221]:39967 "EHLO
-	mail-bw0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753724AbZG2KBq (ORCPT
+	Wed, 29 Jul 2009 06:05:13 -0400
+Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:37259 "EHLO
+	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753618AbZG2KFM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 06:01:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=fCYNHqw3bfWDd4ssh2MMkeAmXWH2IRhAzpBN3Yoo4HKZ+FWvi8OA/CLADkcHdBJTsD
-         jp8yM0lvrV+UUuhakgLdNhF9JSqJy1xK7+weBtkSSgp8D4P55BUePXCF3m1DWQFF6M7P
-         fKbDzF1iqu8OxXxGULpI/gZPBUOKN0jEcNFdc=
-MIME-Version: 1.0
-Date: Wed, 29 Jul 2009 11:01:45 +0100
-Message-ID: <9b2b86520907290301w79d5bfa5j27c7e0142cc44ba9@mail.gmail.com>
-Subject: Re: eeepc_hotkey rmmod issues
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: Corentin Chary <corentin.chary@gmail.com>
-Cc: Luciano Rocha <luciano@eurotux.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+	Wed, 29 Jul 2009 06:05:12 -0400
+Subject: Re: [RFC][PATCH] mm: reorder balance_dirty_pages to improve (some)
+ write performance
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: jens.axboe@oracle.com, a.p.zijlstra@chello.nl,
        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20090727155739.0e96b9e3.akpm@linux-foundation.org>
+References: <1248445717.19856.63.camel@localhost.localdomain>
+	 <20090727155739.0e96b9e3.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 29 Jul 2009 11:05:08 +0100
+Message-Id: <1248861908.3280.36.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/28/09, Corentin Chary <corentin.chary@gmail.com> wrote:
-> On Tue, Jul 28, 2009 at 9:19 PM, Alan
-> Jenkins<sourcejedi.lkml@googlemail.com> wrote:
->> On 7/28/09, Luciano Rocha <luciano@eurotux.com> wrote:
->>> On Tue, Jul 28, 2009 at 05:50:26PM +0100, Luciano Rocha wrote:
->>>> On Mon, Jul 27, 2009 at 10:45:14PM +0300, Pekka Enberg wrote:
->>>> > (Adding Corentin to cc)
->>>> >
->>>> > On Mon, Jul 27, 2009 at 10:27 PM, Luciano Rocha<luciano@eurotux.com>
->>>> > wrote:
->>>> > > Also, a "rmmod eeepc_hotkeys" resulted in a kernel panic. If asked,
->>>> > > I'll
->>>> > > try to replicate it.
->>>> >
->>>> > Yes, please.
->>>>
->>>> Hm, rebooted without i2c_i801, browsed some, then did a rmmod
->>>> eeepc_laptop:
->>>> ERROR!!! H2M_MAILBOX still hold by MCU. command fail
->>>> ERROR!!! H2M_MAILBOX still hold by MCU. command fail
->>>>
->>>> Two equal lines, yes. What does it mean?
->>>
->>> Nevermind, the wireless driver didn't like that the hardware
->>> disappeared.
->>
->> Thanks for the bug report anyway :-).
->>
->> So presumably this is what caused your oops earlier.  I assume the
->> wireless toggle button doesn't normally cause any errors.
->>
->> The new rfkill core in 2.6.31 should avoid triggering this bug.  The
->> new core won't disable the wireless when the eeepc-laptop module is
->> removed.
->>
->> But we should still fix the underlying problem.  It sounds like
->> there's a narrow danger window on module unload.  And it's still there
->> in 2.6.31-rc4:
->>
->> 1019 static void eeepc_rfkill_exit(void)
->> 1020 {
->> 1021         eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
->> 1022         eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
->> 1023         if (ehotk->wlan_rfkill)
->> 1024                 rfkill_unregister(ehotk->wlan_rfkill);
->>
->> Really we need to perform these unregistrations "at the same time".
->> The rfkill device relies on the notifier, but the notifier callback
->> also uses the rfkill device.  I guess we will need to a mutex to
->> synchronize unregistration (and registration).
->
-> I think 2.6.31 is ok,
+On Mon, 2009-07-27 at 15:57 -0700, Andrew Morton wrote:
+> On Fri, 24 Jul 2009 15:28:37 +0100
+> Richard Kennedy <richard@rsk.demon.co.uk> wrote:
+> 
+> > Reorder balance_dirty_pages to do less work in the default case &
+> > improve write performance in some cases.
+> > 
+> > Running simple fio mmap write tests on x86_64 with 3gb of memory on
+> > 2.6.31-rc3 where each test was run 10 times, dropping the slowest &
+> > fastest results the average write speeds are
+> > 
+> > size rc3 | +patch  difference
+> >      MiB/s (s.d.)
+> > 
+> > 400m 374.75  ( 8.15) | 382.575 ( 8.24)  + 7.825
+> > 500m 363.625 (10.91) | 378.375 (10.86)  +14.75
+> > 600m 308.875 (10.86) | 374.25  ( 7.91)  +65.375
+> > 700m 188     ( 4.75) | 209     ( 7.23)  +21
+> > 800m 140.375 ( 2.56) | 154.5   ( 2.98)  +14.275
+> > 900m 124.875 ( 0.99) | 125.5   ( 9.62)  +0.625
+> > 
+> > 
+> > This patch helps write performance when the test size is close to the
+> > allowed number of dirty pages (approx 600m on this machine). Once the
+> > test size becomes larger than 900m there is no significant difference.
+> > 
+> > 
+> > Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+> > ----
+> > 
+> > This change only make a difference to workloads where the number of
+> > dirty pages is close to (dirty_ratio * memory size). Once a test writes
+> > more than that the speed of the disk is the most important factor so any
+> > effect of this patch is lost.
+> > I've only tried this on my desktop, so it really needs testing on
+> > different hardware.
+> > Does anyone feel like trying it ? 
+> 
+> So what does the patch actually do?
+> 
+> AFACIT the main change is to move this:
+> 
+> 			if (bdi->dirty_exceeded)
+> 				bdi->dirty_exceeded = 0;
+> 
+> from after the loop and into the body of the loop.
+> 
+> So that we no longer clear dirty_exceeded in the three other places
+> where we break out of the loop.
+> 
+> IOW, dirty_exceeded can be left true (even if it shouldn't be?) on exit
+> from balance_dirty_pages().
+> 
+> What was the rationale for leaving dirty_exceeded true in those cases,
+> and why did it speed up that workload?
+> 
+> Thanks.
 
-> In 2.6.30, we called eeepc_unregister_rfkill_notifier after
-> rfkill_free, which was an error because
-> the notifier callback uses the rfkill device.
+Hi Andrew,
 
-Ok.  I don't see how that causes Luciano's errors.  So I guess he was
-right to blame the wireless driver.
+The main intent was to reduce the number of times that global_page_state
+gets called as the counters are in a v. hot cacheline, see the perf
+stats below.
+I added the changes to the dirty_exceeded as a bit of an afterthought, I
+guess I should drop them.
+ 
+But to answer your question, in general calling writeback_inodes will
+just move some pages from dirty to writeback so the total will stay
+about the same, so we exit with the same dirty_exceeded state without
+having to check it again. 
+However, it could get dirty_exceed wrong if it gets pre-empted or
+stalled and enough pages get removed from writeback, but
+balance_dirty_limits_ratelimited will call it again after 8 new pages
+are dirtied and we'll get another chance to get it right!       
 
-> But I believe that the rfkill device can work without the notifier
-> (which is an acpi notifier).
+I'll drop the dirty_exceed change & re-test just the global_page_state
+stuff.
 
-I don't think it can.
+regards
+Richard
 
-If the rfkill device is set to "soft blocked", the pci device is
-removed.  If the acpi notifier is not called, the pci driver (e.g.
-ath5k) won't realise the device is gone.  The network device (e.g.
-wlan0) will remain present, but it won't work.
 
-So I believe there's a circular dependency which we need to resolve.
-Would you like me to write a patch for it?
+typical numbers from `perf stat`
+2.6.31-rc4
+ Performance counter stats for 'fio ./mm-sz2/t2.fio':
 
-Regards
-Alan
+    2387.447419  task-clock-msecs         #      0.480 CPUs 
+            498  context-switches         #      0.000 M/sec
+              1  CPU-migrations           #      0.000 M/sec
+         155070  page-faults              #      0.065 M/sec
+     4703977113  cycles                   #   1970.296 M/sec
+      971788179  instructions             #      0.207 IPC  
+      509718907  cache-references         #    213.500 M/sec
+        8928883  cache-misses             #      3.740 M/sec
+
+    4.971956711  seconds time elapsed
+2.6.31-rc4 + patch
+ Performance counter stats for 'fio ./mm-sz2/t2.fio':
+
+    2116.794967  task-clock-msecs         #      0.648 CPUs 
+            383  context-switches         #      0.000 M/sec
+              1  CPU-migrations           #      0.000 M/sec
+         155048  page-faults              #      0.073 M/sec
+     4792565245  cycles                   #   2264.067 M/sec
+      967653864  instructions             #      0.202 IPC  
+      473096290  cache-references         #    223.497 M/sec
+        8723087  cache-misses             #      4.121 M/sec
+
+    3.269128919  seconds time elapsed
+
+
+
