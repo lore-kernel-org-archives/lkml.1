@@ -1,104 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751940AbZG2Uze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751959AbZG2U5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751940AbZG2Uze (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 16:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbZG2Uzd
+	id S1751959AbZG2U5m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 16:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbZG2U5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 16:55:33 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:34927 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751120AbZG2Uzc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 16:55:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=sUm6qpHk1u+AOcZ2ODkyq+Qkz66f0GwScUvUypbJqMgtrAhktcCjRhpD7ESg8mrMOa
-         vR96s5SLk/mGlbqm47z+gt6QKHH0yfELmGdLxP2UnM/hwx2la7Mijc7smglpO18ZYRpW
-         zmMyEoINjPbLl2d+nu9KteiB15llUSqxWTnmQ=
+	Wed, 29 Jul 2009 16:57:42 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41892 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751564AbZG2U5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 16:57:41 -0400
+Date: Wed, 29 Jul 2009 23:56:28 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scsi: consistent use of __u8 in scsi/scsi.h
+Message-ID: <20090729205626.GA3592@redhat.com>
+References: <20090729111114.GA15239@redhat.com> <1248875763.3900.1.camel@mulgrave.site> <4A705831.3010002@panasas.com>
 MIME-Version: 1.0
-In-Reply-To: <20090729201702.GA28202@linux-sh.org>
-References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>
-	 <aec7e5c30907281948s2a0dcd0csd3e580251d6c4f5a@mail.gmail.com>
-	 <20090729115817.GA12223@rakim.wolfsonmicro.main>
-	 <aec7e5c30907290527w39a89895n285e932459e6c953@mail.gmail.com>
-	 <20090729124233.GA12802@rakim.wolfsonmicro.main>
-	 <aec7e5c30907290551y77edc6d7qb7b3d787215c2b4@mail.gmail.com>
-	 <4A704777.70001@mnementh.co.uk>
-	 <aec7e5c30907290608i43a80fe1xe4ef0f3847855709@mail.gmail.com>
-	 <4A7053E8.8050303@mnementh.co.uk>
-	 <20090729201702.GA28202@linux-sh.org>
-Date: Wed, 29 Jul 2009 22:55:31 +0200
-Message-ID: <74d0deb30907291355n39df7db0v1d7afc93917adc14@mail.gmail.com>
-Subject: Re: MMC: Make the configuration memory resource optional
-From: pHilipp Zabel <philipp.zabel@gmail.com>
-To: Paul Mundt <lethal@linux-sh.org>, Ian Molton <ian@mnementh.co.uk>,
-       Magnus Damm <magnus.damm@gmail.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
-       Magnus Damm <damm@opensource.se>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A705831.3010002@panasas.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 29, 2009 at 10:17 PM, Paul Mundt<lethal@linux-sh.org> wrote:
-> On Wed, Jul 29, 2009 at 02:51:36PM +0100, Ian Molton wrote:
->> Magnus Damm wrote:
->> >Note that I don't need clocklib to get the tmio_mmc driver working for
->> >my platform. It's something _you_ need for the MFD chips. But you seem
->> >to want me to fix it for you even though I don't have any particular
->> >need for it.
->>
->> Actually, the tmio-mmc driver works perfectly on the MFD chips right
->> now. These are the chips it was written to handle.
->>
-> And these patches are fixing up the mmc driver to support the non-MFD
-> case. If you want to fix up the MFD driver to expose a similar interface
-> to the mmc one as what we are doing with the clock framework, that is
-> fine, but is likewise an unrelated change.
->
-> Lets evaluate the clock options we have today:
->
->        1) clock framework
->        2) clkdev
+On Wed, Jul 29, 2009 at 05:09:53PM +0300, Boaz Harrosh wrote:
+> TODO:
+> * Fix up Kernel headers by complying to check_headers
 
-2) is nothing more than an implementation detail of 1). How clk_get
-looks up the struct clk internally should not be of any concern to the
-consumer.
+This is accomplished by applying the following on top
+of my previous patch:
 
->        3) clocklib
->
-> #1 is what these patches are written for, and the only standard in-tree
-> interface that we have cross platform today. #2 could be generalized, but
-> that needs discussion by itself, as it was never proposed as a standard
-> interface and never submitted to l-k for review. #3 is not in the kernel
-> today and it's not clear that it ever will be.
+Subject: scsi: make scsi/scsi.h headers_check clean
 
-Yes, 3) is unlikely to happen in the near future.
+place extern declarations in scsi/scsi.h within ifdef __KERNEL__
+so that make headers_install strips them out.
 
-[...]
-> If you can show what is wrong with how the clock framework is being used
-> in the patch that Guennadi posted, we will certainly rework it as
-> necessary. However, I will not at this point be merging clkdev in to my
-> architecture tree, and clocklib I have never supported. These are things
-> that can be done and supported incrementally, but making these
-> prerequisites is simply blocking progress, especially when there is no
-> consensus on the clkdev/clocklib parts.
+Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
+---
+ include/scsi/scsi.h |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-Providing the clock consumer ID via platform data is wrong. As I
-understand it, that ID should be either NULL if the clock can be
-determined from the struct device pointer (i.e. if it's the only clock
-provided to that device), or it should be used to distinguish the
-device's clock input pins (in the tmio-mmc case that would be 'hclk'
-or 'clk32' if I remember the datasheet correctly).
+diff --git a/include/scsi/scsi.h b/include/scsi/scsi.h
+index dfcfaab..418465a 100644
+--- a/include/scsi/scsi.h
++++ b/include/scsi/scsi.h
+@@ -150,6 +150,7 @@ struct scsi_varlen_cdb_hdr {
+ 	/* service specific data follows */
+ };
+ 
++#ifdef __KERNEL__
+ static inline unsigned
+ scsi_varlen_cdb_length(const void *hdr)
+ {
+@@ -165,6 +166,7 @@ scsi_command_size(const unsigned char *cmnd)
+ 	return (cmnd[0] == VARIABLE_LENGTH_CMD) ?
+ 		scsi_varlen_cdb_length(cmnd) : COMMAND_SIZE(cmnd[0]);
+ }
++#endif
+ 
+ /*
+  *  SCSI Architecture Model (SAM) Status codes. Taken from SAM-3 draft
+@@ -281,8 +283,10 @@ enum scsi_protocol {
+ 	SCSI_PROTOCOL_UNSPEC = 0xf, /* No specific protocol */
+ };
+ 
++#ifdef __KERNEL__
+ /* Returns a human-readable name for the device */
+ extern const char * scsi_device_type(unsigned type);
++#endif
+ 
+ /*
+  * standard mode-select header prepended to all mode-select commands
+-- 
+1.6.2.5
 
->> Can we keep it technical now, please?
 
-[...]
-
-regards
-Philipp
