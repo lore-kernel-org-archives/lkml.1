@@ -1,138 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbZG2MsN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbZG2Mvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754750AbZG2MsN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 08:48:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbZG2MsM
+	id S1754764AbZG2Mvb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 08:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbZG2Mva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 08:48:12 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:11514 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754668AbZG2MsL (ORCPT
+	Wed, 29 Jul 2009 08:51:30 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:29393 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751152AbZG2Mva convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 08:48:11 -0400
+	Wed, 29 Jul 2009 08:51:30 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=JNah+d6Zeu2NkExDXHIMAegfN8zROl4Gl5itJn01tnpAjnVO26L0aVfs7LEwDVGSuD
-         KXXiEXXZ0XXonEp+iVlEYJonYI6Use4OQQTWlcD5GLzx54gTShguNxOIEF7NKTjvr3y5
-         xLJJupyROUvAb8DPbjQE+IQM0emryQ8s0xLiE=
+        b=JmQ5YAgmGd1ga2bbEcs/5vM/LPdg61TQo6mMhNJw9yIQ6U+TSRI+iSL/SyXVxiapCc
+         WDnyJZom774U8t2ATH5fGhGiR2gmXZfWIcavM+PkGkz8oy9fiEsyZDKiP8VLemY0ymCj
+         MB2KBxW49nv8FuX3pyZg/5fHijS4WltyHmBXs=
 MIME-Version: 1.0
-In-Reply-To: <4A6F4C81.10600@vlnb.net>
-References: <4A3CD62B.1020407@vlnb.net>
-	 <a0272b440907160032u482bd483s54540001aef7ac73@mail.gmail.com>
-	 <4A5F0293.3010206@vlnb.net>
-	 <a0272b440907170715q72af7bb8l53c9dbd5e553fe2c@mail.gmail.com>
-	 <4A60C1A8.9020504@vlnb.net> <4A641AAC.9030300@vlnb.net>
-	 <a0272b440907220144i159baca4u1a1f1f2d0c36193a@mail.gmail.com>
-	 <4A6DA77B.7080600@vlnb.net>
-	 <a0272b440907280251g2dd38df6ja1bf10f3fa38d333@mail.gmail.com>
-	 <4A6F4C81.10600@vlnb.net>
-Date: Wed, 29 Jul 2009 14:48:09 +0200
-Message-ID: <a0272b440907290548k266a975br8c6bdf4d5d992d20@mail.gmail.com>
-Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
-From: Ronald Moesbergen <intercommit@gmail.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       Alan.Brunelle@hp.com, linux-fsdevel@vger.kernel.org,
-       jens.axboe@oracle.com, randy.dunlap@oracle.com,
-       Bart Van Assche <bart.vanassche@gmail.com>
+In-Reply-To: <20090729124233.GA12802@rakim.wolfsonmicro.main>
+References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>
+	 <4A6F033B.7030302@mnementh.co.uk>
+	 <aec7e5c30907281948s2a0dcd0csd3e580251d6c4f5a@mail.gmail.com>
+	 <20090729115817.GA12223@rakim.wolfsonmicro.main>
+	 <aec7e5c30907290527w39a89895n285e932459e6c953@mail.gmail.com>
+	 <20090729124233.GA12802@rakim.wolfsonmicro.main>
+Date: Wed, 29 Jul 2009 21:51:30 +0900
+Message-ID: <aec7e5c30907290551y77edc6d7qb7b3d787215c2b4@mail.gmail.com>
+Subject: Re: MMC: Make the configuration memory resource optional
+From: Magnus Damm <magnus.damm@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Ian Molton <ian@mnementh.co.uk>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
+       Magnus Damm <damm@opensource.se>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/28 Vladislav Bolkhovitin <vst@vlnb.net>:
+On Wed, Jul 29, 2009 at 9:42 PM, Mark
+Brown<broonie@opensource.wolfsonmicro.com> wrote:
+> On Wed, Jul 29, 2009 at 09:27:54PM +0900, Magnus Damm wrote:
+>> On Wed, Jul 29, 2009 at 8:58 PM, Mark
+>> Brown<broonie@opensource.wolfsonmicro.com> wrote:
 >
-> Can you perform the tests 5 and 8 the deadline? I asked for deadline..
+>> > While it's true that this doesn't bother SoCs the fact that most clock
+>> > API implementations don't allow any off-chip drivers to register clocks
+>> > renders the clock API essentially unusable for fairly large parts of the
 >
-> What I/O scheduler do you use on the initiator? Can you check if changing it
-> to deadline or noop makes any difference?
+>> Yeah, clocks outside the SoC are not well supported today. From what
+>> I've seen, most embedded boards come with external chips for cameras,
+>> audio codecs and/or phy devices. These devices often get their clocks
+>> from the main SoC. Allowing the drivers for such chips to use the
+>> clock framework to register clocks for internal divisors would allow
+>> driver writers to write better code which in turn would make life
+>> easier for most people hacking on embedded kernels.
 >
+> That's not actually abundantly clear for the audio stuff, or rather the
+> audio stuff would like additional features like constraint based
+> configuration.
 
-client kernel: 2.6.26-15lenny3 (debian)
-server kernel: 2.6.29.5 with readahead-context, blk_run_backing_dev
-and io_context, forced_order
+Without knowing too much about this, wouldn't camera sensors want
+similar features?
 
-With one IO thread:
-5) client: default, server: default (server deadline, client cfq)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  15.739   15.339   16.511   64.613    1.959    1.010
- 33554432  15.411   12.384   15.400   71.876    7.646    2.246
- 16777216  16.564   15.569   16.279   63.498    1.667    3.969
+>> The problem with the clock framework API is that the data structures
+>> varies depending on implementation. So the ops callback structure on
+>> SuperH is different compared to ARM. I suspect that adding generic
+>> clocklib support across the architectures will take quite a bit of
+>> time to implement propely.
+>
+> Indeed.  It's actually much worse than you say, each individual ARM
+> architecture has its own clock API implementation of varying quality and
+> of course there are architectures that don't do the clock API at all.
 
-5) client: default, server: default (server deadline, client deadline)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  17.578   20.051   18.010   55.395    3.111    0.866
- 33554432  19.247   12.607   17.930   63.846   12.390    1.995
- 16777216  14.587   19.631   18.032   59.718    7.650    3.732
+Yeah. This is exactly why I don't want to block on the clocklib implementation.
 
-8) client: default, server: 64 max_sectors_kb, RA 2MB (server
-deadline, client deadline)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  17.418   19.520   22.050   52.564    5.043    0.821
- 33554432  21.263   17.623   17.782   54.616    4.571    1.707
- 16777216  17.896   18.335   19.407   55.278    1.864    3.455
+Cheers,
 
-8) client: default, server: 64 max_sectors_kb, RA 2MB (server
-deadline, client cfq)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  16.639   15.216   16.035   64.233    2.365    1.004
- 33554432  15.750   16.511   16.092   63.557    1.224    1.986
- 16777216  16.390   15.866   15.331   64.604    1.763    4.038
-
-11) client: 2MB RA, 64 max_sectors_kb, server: 64 max_sectors_kb, RA
-2MB (server deadline, client deadline)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  14.117   13.610   13.558   74.435    1.347    1.163
- 33554432  13.450   10.344   13.556   83.555   10.918    2.611
- 16777216  13.408   13.319   13.239   76.867    0.398    4.804
-
-With two threads:
-5) client: default, server: default (server deadline, client cfq)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  15.723   16.535   16.189   63.438    1.312    0.991
- 33554432  16.152   16.363   15.782   63.621    0.954    1.988
- 16777216  15.174   16.084   16.682   64.178    2.516    4.011
-
-5) client: default, server: default (server deadline, client deadline)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  18.087   18.082   17.639   57.099    0.674    0.892
- 33554432  18.377   15.750   17.551   59.694    3.912    1.865
- 16777216  18.490   15.553   18.778   58.585    5.143    3.662
-
-8) client: default, server: 64 max_sectors_kb, RA 2MB (server
-deadline, client deadline)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  18.140   19.114   17.442   56.244    2.103    0.879
- 33554432  17.183   17.233   21.367   55.646    5.461    1.739
- 16777216  19.813   17.965   18.132   55.053    2.393    3.441
-
-8) client: default, server: 64 max_sectors_kb, RA 2MB (server
-deadline, client cfq)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  15.753   16.085   16.522   63.548    1.239    0.993
- 33554432  13.502   15.912   15.507   68.743    5.065    2.148
- 16777216  16.584   16.171   15.959   63.077    1.003    3.942
-
-11) client: 2MB RA, 64 max_sectors_kb, server: 64 max_sectors_kb, RA
-2MB (server deadline, client deadline)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  14.051   13.427   13.498   75.001    1.510    1.172
- 33554432  13.397   14.008   13.453   75.217    1.503    2.351
- 16777216  13.277    9.942   14.318   83.882   13.712    5.243
-
-
-Ronald.
+/ magnus
