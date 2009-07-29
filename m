@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755429AbZG2NPN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755395AbZG2NV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755429AbZG2NPN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 09:15:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbZG2NPN
+	id S1755395AbZG2NV1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 09:21:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912AbZG2NV1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 09:15:13 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:58600 "EHLO mx2.suse.de"
+	Wed, 29 Jul 2009 09:21:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46852 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754650AbZG2NPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 09:15:11 -0400
-Message-ID: <4A704B5F.5000206@suse.de>
-Date: Wed, 29 Jul 2009 15:15:11 +0200
-From: Alexander Graf <agraf@suse.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1754684AbZG2NV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 09:21:26 -0400
+Message-ID: <4A704DEA.8040101@redhat.com>
+Date: Wed, 29 Jul 2009 16:26:02 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
 To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 02/12] kvm/svm: add helper functions for global interrupt
- flag
-References: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com> <1248872192-30881-3-git-send-email-joerg.roedel@amd.com>
-In-Reply-To: <1248872192-30881-3-git-send-email-joerg.roedel@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [PATCH 08/12] kvm/svm: cache nested intercepts
+References: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com> <1248872192-30881-9-git-send-email-joerg.roedel@amd.com> <4A704AFF.8070702@redhat.com> <20090729131319.GF18313@amd.com>
+In-Reply-To: <20090729131319.GF18313@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  arch/x86/kvm/svm.c |   31 +++++++++++++++++++++++--------
->  1 files changed, 23 insertions(+), 8 deletions(-)
+On 07/29/2009 04:13 PM, Joerg Roedel wrote:
+> On Wed, Jul 29, 2009 at 04:13:35PM +0300, Avi Kivity wrote:
+>    
+>> I don't see the benefit of this patch.  Accessing the cache is just
+>> as expensive as accessing the real vmcb.
+>>      
 >
-> diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-> index 27d26c3..9f69b25 100644
-> --- a/arch/x86/kvm/svm.c
-> +++ b/arch/x86/kvm/svm.c
-> @@ -136,6 +136,21 @@ static inline bool is_nested(struct vcpu_svm *svm)
->  	return svm->nested_vmcb;
->  }
->  
-> +static inline void enable_gif(struct vcpu_svm *svm)
-> +{
-> +	svm->vcpu.arch.hflags |= HF_GIF_MASK;
-> +}
-> +
-> +static inline void disable_gif(struct vcpu_svm *svm)
-> +{
-> +	svm->vcpu.arch.hflags &= ~HF_GIF_MASK;
-> +}
-> +
-> +static inline bool gif_set(struct vcpu_svm *svm)
-> +{
-> +	return !!(svm->vcpu.arch.hflags & HF_GIF_MASK);
-> +}
-> +
->  static unsigned long iopm_base;
->  
->  struct kvm_ldttss_desc {
-> @@ -630,7 +645,7 @@ static void init_vmcb(struct vcpu_svm *svm)
->  	force_new_asid(&svm->vcpu);
->  
->  	svm->nested_vmcb = 0;
-> -	svm->vcpu.arch.hflags = HF_GIF_MASK;
-> +	enable_gif(svm);
->   
+> The benefit is that we don't have to gup and map the nested vmcb just
+> for checking who will take the intercept.
 
-Are we sure hflags is always 0 here?
+Makes sense.
+
+> Another reason is that with
+> this patch the behavior of nested SVM is more aligned to real hardware.
+>    
+
+Even more important, please put this in the commit log.
+
+-- 
+error compiling committee.c: too many arguments to function
 
