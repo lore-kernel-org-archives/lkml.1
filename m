@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbZG2PGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754166AbZG2PHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754141AbZG2PGU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 11:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbZG2PGT
+	id S1754166AbZG2PHZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 11:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbZG2PHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 11:06:19 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54084 "EHLO
+	Wed, 29 Jul 2009 11:07:24 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54150 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752137AbZG2PGT (ORCPT
+	with ESMTP id S1750983AbZG2PHX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 11:06:19 -0400
-Date: Wed, 29 Jul 2009 17:06:12 +0200
+	Wed, 29 Jul 2009 11:07:23 -0400
+Date: Wed, 29 Jul 2009 17:07:16 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org,
-       sds@tycho.nsa.gov, jmorris@namei.org, spender@grsecurity.net,
-       dwalsh@redhat.com, cl@linux-foundation.org, arjan@infradead.org,
-       kyle@mcmartin.ca, cpardy@redhat.com, arnd@arndb.de
-Subject: Re: [PATCH 1/2] VM/SELinux: require CAP_SYS_RAWIO for all
-	mmap_zero operations
-Message-ID: <20090729150612.GF1534@ucw.cz>
-References: <20090721144157.14159.23439.stgit@paris.rdu.redhat.com> <20090721160437.5bda68b4@lxorguk.ukuu.org.uk> <1248189524.2654.301.camel@localhost> <20090721163813.0cb5d7ab@lxorguk.ukuu.org.uk>
+To: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
+       Andreas Dilger <adilger@sun.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       Neil Brown <neilb@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: How to handle >16TB devices on 32 bit hosts ??
+Message-ID: <20090729150716.GG1534@ucw.cz>
+References: <19041.4714.686158.130252@notabene.brown> <20090718043155.GI4231@webber.adilger.int> <871voewm6y.fsf@basil.nowhere.org> <20090718065213.GK4231@webber.adilger.int> <20090718074811.GA2682@basil.fritz.box> <20090718134946.GA25546@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090721163813.0cb5d7ab@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090718134946.GA25546@mit.edu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-07-21 16:38:13, Alan Cox wrote:
-> > turns it off for the whole system when you install WINE.  This patch
-> > doesn't change that fact.  All it does is add that requirement to
-> > SELinux systems that already exists on non-selinux systems.
-> 
-> Prior to this an SELinux system could implement sensible security. The
-> fact Fedora didn't was paranoia and fear over a bad experience made what
-> five years ago ?
+Hi!
 
-OTOH enabling selinux previously only taken your rights away... which
-is not the case with min_mmap_addr. Making it consistent seems useful.
-								Pavel
+> > > Also, for filesystems like btrfs or ZFS the checking can be done
+> > > online and incrementally without storing a full representation of
+> > > the state in memory.
+> > 
+> > You could, but I suspect it would be cheaper to just use a
+> > 64bit system than to rewrite fsck. 64bit is available
+> > for a lot of embedded setups these days too.
+> 
+> We don't have to rewrite fsck; most of the framework for supporting an
+> run-length-conding for compressed bitmaps is already in patches that
+> add > 32-bit block numbers to e2fsprogs; we've just been more focused
+> on getting 64-bit block numbers support merged than implementing
+> compressed bitmaps, but it's only one file that would need to be
+> added, and we might be able to steal the compressed bitmap support
+> from xfsprogs --- which does this already.
+
+Well... 'If allocation pattern is bad your fsck runs out of address
+space and breaks on your 15T fs' would scare me.
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
