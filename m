@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbZG2S2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753068AbZG2Skk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752822AbZG2S2e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 14:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbZG2S2e
+	id S1753068AbZG2Skk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 14:40:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbZG2Skk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 14:28:34 -0400
-Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:57417 "EHLO
-	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752695AbZG2S2d (ORCPT
+	Wed, 29 Jul 2009 14:40:40 -0400
+Received: from fmmailgate04.web.de ([217.72.192.242]:48329 "EHLO
+	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751559AbZG2Skj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 14:28:33 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Gene Heskett <gene.heskett@verizon.net>
-Subject: Re: [PATCH] kdesu broken
-Date: Wed, 29 Jul 2009 20:28:29 +0200
-User-Agent: KMail/1.9.9
-Cc: alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org,
-       hirofumi@mail.parknet.co.jp, aneesh.kumar@linux.vnet.ibm.com,
-       rjw@sisk.pl, ray-lk@madrabbit.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, stern@rowland.harvard.edu
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0907282146580.3161@localhost.localdomain> <20090729120704.3299ff2e@lxorguk.ukuu.org.uk> <20090729120704.3299ff2e@lxorguk.ukuu.org.uk> <200907291340.38620.gene.heskett@verizon.net>
-In-reply-To: <200907291340.38620.gene.heskett@verizon.net>
+	Wed, 29 Jul 2009 14:40:39 -0400
+Date: Wed, 29 Jul 2009 20:40:39 +0200
+Message-Id: <844950876@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907292028.32320.elendil@planet.nl>
-X-OriginalArrivalTime: 29 Jul 2009 18:28:32.0898 (UTC) FILETIME=[60C3CE20:01CA107A]
+From: devzero@web.de
+To: Tomas Carnecky <tom@dbservice.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Show module version sysfs file for built-in modules?
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX1/sRGD3zdLmwe8JM9KqYjLeVxndYE3il05Y9Z7RqMuyZDLrQ
+ 94Pjdq02cZ4DiwzTrhu4vinMy5dSfCr2XBRIaVucYmCjDNSOcg=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> What is needed for a mistake free bisect is a 'doesn't matter as long
-> as it matches' Makefile version that survives all the way through a
-> bisect run.
+what about this ?
 
-I have a wrapper script I use for kernel builds that takes care of that 
-(it also supports cross building and building some out-of-tree modules). 
-Some snippets from that script below.
+neoware:/sys/module/8139too # cat /sys/module/8139too/version
+0.9.28
 
-BISECTING=
-if [ -e .git/BISECT_LOG ]; then
-        BISECTING=1
-fi
-[...]
-if [ "$BISECTING" ]; then
-        # The version in the next line may need updating before a bisect
-        sed -i "s/^SUBLEVEL = .*/SUBLEVEL = 31/" Makefile
-        sed -i "s/^EXTRAVERSION =.*/EXTRAVERSION = -bisect/" Makefile
-fi
-[...]
-make ...
-[...]
-if [ "$BISECTING" ]; then
-	# Revert Makefile to avoid errors on 'git bisect good/bad'
-        git checkout Makefile
-fi
+neoware:/sys/module/8139too # modinfo 8139too |grep "^version:"
+version:        0.9.28
 
-I use the deb-pkg target and also set the .deb package version in the 
-second hunk:
-KERNELDEBREVISION=$(grep "^git[- ]bisect" .git/BISECT_LOG | wc -l)
+the latter should work completely without consulting the kernel for that information. 
 
-This way I end up with a nice series of packages whose numbering matches 
-the steps in .git/BISECT_LOG:
-linux-image-2.6.31-bisect_1_amd64.deb
-linux-image-2.6.31-bisect_2_amd64.deb
-linux-image-2.6.31-bisect_3_amd64.deb
-...
+regards
+roland
 
-Hope that help.
+>List:       linux-kernel
+>Subject:    Show module version sysfs file for built-in modules?
+>From:       Tomas Carnecky <tom () dbservice ! com>
+>Date:       2009-07-24 19:08:51
+>Message-ID: 5A77D882-B628-4105-85A3-ADE423BBD9F8 () dbservice ! com
+>[Download message RAW]
+>
+>Some userspace tools check /sys/modules/XYZ/version to determine  
+>whether the required module is available and the version compatible  
+>with the userspace tool. But that sysfs file is not shown when the  
+>module is built into the kernel (as opposed being a loadable module).  
+>Is there a reason for that behavior? Or is there another way for  
+>userspace to check the presence and version of a module?
+>The userspace tool in question here is the open-iscsi daemon (iscsid)  
+vwhich checks /sys/modules/scsi_transport_iscsi/version and refuses to  
+>start if that file doesn't exist.
+>
+>thanks
+>tom
 
-Cheers,
-FJP
+________________________________________________________________
+Neu: WEB.DE Doppel-FLAT mit Internet-Flatrate + Telefon-Flatrate
+für nur 19,99 Euro/mtl.!* http://produkte.web.de/go/02/
+
