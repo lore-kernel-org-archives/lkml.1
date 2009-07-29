@@ -1,21 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754279AbZG2CFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbZG2Cgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754279AbZG2CFW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 22:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbZG2CFV
+	id S1756214AbZG2Cgy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 22:36:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754406AbZG2Cgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 22:05:21 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33931 "EHLO mx2.redhat.com"
+	Tue, 28 Jul 2009 22:36:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60193 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752977AbZG2CFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 22:05:20 -0400
-Date: Wed, 29 Jul 2009 04:01:40 +0200
+	id S1751657AbZG2Cgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 22:36:53 -0400
+Date: Wed, 29 Jul 2009 04:33:02 +0200
 From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>, utrace-devel@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH -mm] introduce tracehook_finish_jctl() helper
-Message-ID: <20090729020139.GA7381@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: + cpu_hotplug-dont-affect-current-tasks-affinity.patch added
+	to -mm tree
+Message-ID: <20090729023302.GA8899@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,56 +26,112 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(textually depends on signals-tracehook_notify_jctl-change.patch)
+Noticed this patch by accident...
 
-Introduce the empty inline tracehook_finish_jctl() helper called by
-do_signal_stop() after wakeup.
+> Subject: cpu_hotplug: don't affect current task's affinity
+> From: Lai Jiangshan <laijs@cn.fujitsu.com>
+>
+> _cpu_down() changes the current task's affinity and then recovers it at
+> the end.
+>
+> It has two problems:
 
-Currently we lack the ability to report this state change.
+Yes.
 
-Also fix the comment, it should be placed before schedule().
+But can't we make a much more simple patch ?
 
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
----
+Why should we play with set_cpus_allowed() at all? We can just migrate
+the caller of _cpu_down() before other tasks, right after take_cpu_down()
+does __cpu_disable()->remove_cpu_from_maps().
 
- include/linux/tracehook.h |    9 +++++++++
- kernel/signal.c           |    2 ++
- 2 files changed, 11 insertions(+)
+No?
 
---- __UTRACE/include/linux/tracehook.h~2_FINISH_JCTL	2009-07-29 03:10:10.000000000 +0200
-+++ __UTRACE/include/linux/tracehook.h	2009-07-29 03:51:42.000000000 +0200
-@@ -521,6 +521,15 @@ static inline int tracehook_notify_jctl(
- 	return notify ?: (current->ptrace & PT_PTRACED) ? why : 0;
+Oleg.
+
+------------------------------------------------------------------------
+Uncompiled, and we need to export move_task_off_dead_cpu(). Just to
+explain what I mean.
+
+ kernel/cpu.c |   18 +++++-------------
+ 1 file changed, 5 insertions(+), 13 deletions(-)
+
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -163,6 +163,7 @@ static inline void check_for_tasks(int c
  }
  
-+/**
-+ * tracehook_finish_jctl - report about return from job control stop
-+ *
-+ * This is called by do_signal_stop() after wakeup.
-+ */
-+static inline void tracehook_finish_jctl(void)
-+{
-+}
-+
- #define DEATH_REAP			-1
- #define DEATH_DELAYED_GROUP_LEADER	-2
+ struct take_cpu_down_param {
++	struct task_struct *caller;
+ 	unsigned long mod;
+ 	void *hcpu;
+ };
+@@ -181,6 +182,8 @@ static int __ref take_cpu_down(void *_pa
+ 	raw_notifier_call_chain(&cpu_chain, CPU_DYING | param->mod,
+ 				param->hcpu);
  
---- __UTRACE/kernel/signal.c~2_FINISH_JCTL	2009-07-29 03:17:49.000000000 +0200
-+++ __UTRACE/kernel/signal.c	2009-07-29 03:57:07.000000000 +0200
-@@ -1735,12 +1735,12 @@ static int do_signal_stop(int signr)
- 		read_unlock(&tasklist_lock);
++	move_task_off_dead_cpu(param->hcpu, param->caller);
++
+ 	/* Force idle task to run as soon as we yield: it should
+ 	   immediately notice cpu is offline and die quickly. */
+ 	sched_idle_next();
+@@ -191,10 +194,10 @@ static int __ref take_cpu_down(void *_pa
+ static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
+ {
+ 	int err, nr_calls = 0;
+-	cpumask_var_t old_allowed;
+ 	void *hcpu = (void *)(long)cpu;
+ 	unsigned long mod = tasks_frozen ? CPU_TASKS_FROZEN : 0;
+ 	struct take_cpu_down_param tcd_param = {
++		.caller = current,
+ 		.mod = mod,
+ 		.hcpu = hcpu,
+ 	};
+@@ -205,9 +208,6 @@ static int __ref _cpu_down(unsigned int 
+ 	if (!cpu_online(cpu))
+ 		return -EINVAL;
+ 
+-	if (!alloc_cpumask_var(&old_allowed, GFP_KERNEL))
+-		return -ENOMEM;
+-
+ 	cpu_hotplug_begin();
+ 	err = __raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE | mod,
+ 					hcpu, -1, &nr_calls);
+@@ -221,11 +221,6 @@ static int __ref _cpu_down(unsigned int 
+ 		goto out_release;
  	}
  
-+	/* Now we don't run again until woken by SIGCONT or SIGKILL */
- 	do {
- 		schedule();
- 	} while (try_to_freeze());
--	/*
--	 * Now we don't run again until continued.
--	 */
-+
-+	tracehook_finish_jctl();
- 	current->exit_code = 0;
+-	/* Ensure that we are not runnable on dying cpu */
+-	cpumask_copy(old_allowed, &current->cpus_allowed);
+-	set_cpus_allowed_ptr(current,
+-			     cpumask_of(cpumask_any_but(cpu_online_mask, cpu)));
+-
+ 	err = __stop_machine(take_cpu_down, &tcd_param, cpumask_of(cpu));
+ 	if (err) {
+ 		/* CPU didn't die: tell everyone.  Can't complain. */
+@@ -233,7 +228,7 @@ static int __ref _cpu_down(unsigned int 
+ 					    hcpu) == NOTIFY_BAD)
+ 			BUG();
  
- 	return 1;
+-		goto out_allowed;
++		goto out_release;
+ 	}
+ 	BUG_ON(cpu_online(cpu));
+ 
+@@ -251,8 +246,6 @@ static int __ref _cpu_down(unsigned int 
+ 
+ 	check_for_tasks(cpu);
+ 
+-out_allowed:
+-	set_cpus_allowed_ptr(current, old_allowed);
+ out_release:
+ 	cpu_hotplug_done();
+ 	if (!err) {
+@@ -260,7 +253,6 @@ out_release:
+ 					    hcpu) == NOTIFY_BAD)
+ 			BUG();
+ 	}
+-	free_cpumask_var(old_allowed);
+ 	return err;
+ }
+ 
 
