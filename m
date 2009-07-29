@@ -1,119 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752516AbZG2HP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752956AbZG2HTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752516AbZG2HP5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 03:15:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750959AbZG2HP4
+	id S1752956AbZG2HTz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 03:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbZG2HTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 03:15:56 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:62578 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751505AbZG2HPz convert rfc822-to-8bit (ORCPT
+	Wed, 29 Jul 2009 03:19:55 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:37217 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751629AbZG2HTy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 03:15:55 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=IxPgrfb08p6yPTzdPBlNMSW3lMq1HWjEw3/R0FMb4mXoYA3BXRbi3ecR1Dr8EiTkM
-	SvmY7wsRlahxf2S14U06w==
-MIME-Version: 1.0
-In-Reply-To: <33307c790907281449k5e8d4f6cib2c93848f5ec2661@mail.gmail.com>
-References: <1786ab030907281211x6e432ba6ha6afe9de73f24e0c@mail.gmail.com>
-	 <33307c790907281449k5e8d4f6cib2c93848f5ec2661@mail.gmail.com>
-Date: Wed, 29 Jul 2009 00:15:48 -0700
-Message-ID: <33307c790907290015m1e6b5666x9c0014cdaf5ed08@mail.gmail.com>
-Subject: Re: Bug in kernel 2.6.31, Slow wb_kupdate writeout
-From: Martin Bligh <mbligh@google.com>
-To: Chad Talbott <ctalbott@google.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, wfg@mail.ustc.edu.cn,
-       Michael Rubin <mrubin@google.com>, Andrew Morton <akpm@google.com>,
-       sandeen@redhat.com, Michael Davidson <md@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Wed, 29 Jul 2009 03:19:54 -0400
+Subject: Re: 31-rc3-mmotm0716 - wonky wireless statistics..
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Zhu Yi <yi.zhu@intel.com>
+Cc: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+In-Reply-To: <1248831078.3747.1117.camel@debian>
+References: <5934.1248814870@turing-police.cc.vt.edu>
+	 <1248831078.3747.1117.camel@debian>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-f4FY58J+oUxAJBL7zAfQ"
+Date: Wed, 29 Jul 2009 09:19:12 +0200
+Message-Id: <1248851953.13742.12.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 28, 2009 at 2:49 PM, Martin Bligh<mbligh@google.com> wrote:
->> An interesting recent-ish change is "writeback: speed up writeback of
->> big dirty files."  When I revert the change to __sync_single_inode the
->> problem appears to go away and background writeout proceeds at disk
->> speed.  Interestingly, that code is in the git commit [2], but not in
->> the post to LKML. [3]  This is may not be the fix, but it makes this
->> test behave better.
->
-> I'm fairly sure this is not fixing the root cause - but putting it at the head
-> rather than the tail of the queue causes the error not to starve wb_kupdate
-> for nearly so long - as long as we keep the queue full, the bug is hidden.
 
-OK, it seems this is the root cause - I wasn't clear why all the pages weren't
-being written back, and thought there was another bug. What happens is
-we go into write_cache_pages, and stuff the disk queue with as much as
-we can put into it, and then inevitably hit the congestion limit.
+--=-f4FY58J+oUxAJBL7zAfQ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Then we back out to __sync_single_inode, who says "huh, you didn't manage
-to write your whole slice", and penalizes the poor blameless inode in question
-by putting it back into the penalty box for 30s.
+On Wed, 2009-07-29 at 09:31 +0800, Zhu Yi wrote:
 
-This results in very lumpy I/O writeback at 5s intervals, and very
-poor throughput.
+> > # cat /proc/net/wireless
+> > Inter-| sta-|   Quality        |   Discarded packets               | Mi=
+ssed | WE
+> >  face | tus | link level noise |  nwid  crypt   frag  retry   misc | be=
+acon | 22
+> >  wlan0: 0000   63.  -47.  -256        0      0      0      0      0    =
+    0
+> >  wlan1: 0000    0     0     0        0      0      0      0      0     =
+   0
+> >  wlan2: 0000    0     0     0        0      0      0      0      0     =
+   0
+> >=20
+> > Where did that -256 for "noise" come from?  It ends up confusing the
+> > gkrellm-wifi plugin, it reports a S/N of 219dB ;)
+>=20
+> This should be related to http://git.kernel.org/?p=3Dlinux/kernel/git/lin=
+ville/wireless-testing.git;a=3Dcommit;h=3Dfdb897ea5c77836f890033d563336ab0c=
+94c9222
+>=20
+> But I don't think this is an ABI broken. User space should parse the
+> trailing '.' to see if a field is updated or not because there are cards
+> not capable to report hardware noise level anyway. Johannes?
 
-Patch below is inline and probably text munged, but is for RFC only.
-I'll test it
-more thoroughly tomorrow. As for the comment about starving other writes,
-I believe requeue_io moves it from s_io to s_more_io which should at least
-allow some progress of other files.
+So I had to look at the code to figure out wtf is going on.
 
---- linux-2.6.30/fs/fs-writeback.c.old  2009-07-29 00:08:29.000000000 -0700
-+++ linux-2.6.30/fs/fs-writeback.c      2009-07-29 00:11:28.000000000 -0700
-@@ -322,46 +322,11 @@ __sync_single_inode(struct inode *inode,
-                        /*
-                         * We didn't write back all the pages.  nfs_writepages()
-                         * sometimes bales out without doing anything. Redirty
--                        * the inode; Move it from s_io onto s_more_io/s_dirty.
-+                        * the inode; Move it from s_io onto s_more_io. It
-+                        * may well have just encountered congestion
-                         */
--                       /*
--                        * akpm: if the caller was the kupdate function we put
--                        * this inode at the head of s_dirty so it gets first
--                        * consideration.  Otherwise, move it to the tail, for
--                        * the reasons described there.  I'm not really sure
--                        * how much sense this makes.  Presumably I had a good
--                        * reasons for doing it this way, and I'd rather not
--                        * muck with it at present.
--                        */
--                       if (wbc->for_kupdate) {
--                               /*
--                                * For the kupdate function we move the inode
--                                * to s_more_io so it will get more writeout as
--                                * soon as the queue becomes uncongested.
--                                */
--                               inode->i_state |= I_DIRTY_PAGES;
--                               if (wbc->nr_to_write <= 0) {
--                                       /*
--                                        * slice used up: queue for next turn
--                                        */
--                                       requeue_io(inode);
--                               } else {
--                                       /*
--                                        * somehow blocked: retry later
--                                        */
--                                       redirty_tail(inode);
--                               }
--                       } else {
--                               /*
--                                * Otherwise fully redirty the inode so that
--                                * other inodes on this superblock will get some
--                                * writeout.  Otherwise heavy writing to one
--                                * file would indefinitely suspend writeout of
--                                * all the other files.
--                                */
--                               inode->i_state |= I_DIRTY_PAGES;
--                               redirty_tail(inode);
--                       }
-+                       inode->i_state |= I_DIRTY_PAGES;
-+                       requeue_io(inode);
-                } else if (inode->i_state & I_DIRTY) {
-                        /*
-                         * Someone redirtied the inode while were writing back
+Then the value shown is calculated as:
+	((__s32) stats->qual.noise) - ((stats->qual.updated & IW_QUAL_DBM) ? 0x100=
+ : 0)
+
+and since we have dBm for the signal strength (and dBm is "all or
+nothing") you get -256 since we don't fill noise right now.
+
+However, it goes on like this:
+	stats->qual.updated & IW_QUAL_NOISE_UPDATED ? '.' : ' '
+
+so you're right -- the tool shouldn't be using the value unless followed
+by a dot (".").
+
+Thus, your analysis is correct as far as I can tell -- it's a userspace
+bug and your userspace just happened to work correctly with this card,
+but would have been broken with almost all other wireless cards.
+
+johannes
+
+--=-f4FY58J+oUxAJBL7zAfQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKb/ftAAoJEODzc/N7+QmaXHEQAKCZi1mLwi6gkqCj+OqCw6dX
+jdYNfDRDi3+GSoSmjZgfg1/P/EC/XtsDj+F5ijLjHfj4uk8OqJqlteWfllbcfH9X
+TGjEGZizUlsQPXuFHLHa0MIWNvakzweGfiST5CxdOFSbiaPxQ1xWwsi8ky6QFNoI
+n1iNdF4ZJK6f2nQU0jv9jHeTdZPL5y1RcxXf7YaWoFw6lzMP1ke8FXIlr6c9BEMK
+aaM+OSzpTo+Lm2+k+PB8Ey2KOxrakcBcPtvqWQGP+PnOxNVs71ra2kScjFQCkdqY
+e3ZidN21rNg5G3tP/iCPSma4reRLwPFhXA95cFdfllBUFdnIdvzqopuGo5aBct8O
+b0ooe8Lwg8fghKGxq13FF33cDAsBLXsbes/t9zTZDh7r40U8OlfvoSSmPfZJ/qEP
+E6zdTiAgpCBL/nfjHvCZA/LPgqqT3MeGDCv095SdHwtGamt/jKqyPJWMRpU34mzb
+ESgd641IH9qd4sSBtzFi1AmuJzoHFzBzCCHUDQwEKwYArUTrUU368mpYlYRqpbHa
+IvBFofAeOxfNRfRkUy9YB/JczOeE3cx8PrCH+iHSLh8XGm5AmxI2pDHwqivrJh3z
+E2Wqmv76AP6TThJ8RJTi1/rGoIjHrkVqNerr+IISDXzqXhOFcWJCLGprZl0EIfwW
+w7R8A5fJkFEt/8IhRcY3
+=DD4g
+-----END PGP SIGNATURE-----
+
+--=-f4FY58J+oUxAJBL7zAfQ--
+
