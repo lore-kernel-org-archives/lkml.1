@@ -1,81 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbZG2JVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752614AbZG2Jba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753352AbZG2JVs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 05:21:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbZG2JVs
+	id S1752614AbZG2Jba (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 05:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752076AbZG2Jb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 05:21:48 -0400
-Received: from perceval.irobotique.be ([92.243.18.41]:33169 "EHLO
-	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751761AbZG2JVr (ORCPT
+	Wed, 29 Jul 2009 05:31:29 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:38139 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751536AbZG2Jb2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 05:21:47 -0400
-From: Laurent Pinchart <laurent.pinchart@skynet.be>
-To: linux-kernel@vger.kernel.org, "v4l2_linux" <linux-media@vger.kernel.org>
-Subject: Is get_user_pages() enough to prevent pages from being swapped out ?
-Date: Wed, 29 Jul 2009 11:23:12 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.30; KDE/4.2.4; x86_64; ; )
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+	Wed, 29 Jul 2009 05:31:28 -0400
+Subject: Another memory leak in drivers/char/vt.c
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Johannes Weiner <hannes@cmpxchg.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Wed, 29 Jul 2009 10:31:23 +0100
+Message-Id: <1248859884.2305.7.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907291123.12811.laurent.pinchart@skynet.be>
+X-OriginalArrivalTime: 29 Jul 2009 09:31:25.0032 (UTC) FILETIME=[5775B680:01CA102F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everybody,
+Hi,
 
-I'm trying to debug a video acquisition device driver and found myself having 
-to dive deep into the memory management subsystem.
+There was a memory leak fixed recently by commit 1a8f458f6d. However,
+there seems to be another with this kmemleak trace:
 
-The driver uses videobuf-dma-sg to manage video buffers. videobuf-dma-sg gets 
-pointers to buffers from userspace and calls get_user_pages() to retrieve the 
-list of pages underlying those buffers. The page list is used to build a 
-scatter-gather list that is given to the hardware. The device then performs 
-DMA directly to the memory.
+unreferenced object 0xde158000 (size 12288):
+  comm "Xorg", pid 1439, jiffies 4294961016
+  hex dump (first 32 bytes):
+    20 00 20 00 20 00 20 00 20 00 20 00 20 00 20 00   . . . . . . . .
+    20 00 20 00 20 00 20 00 20 00 20 00 20 00 20 00   . . . . . . . .
+  backtrace:
+    [<c006f74b>] __save_stack_trace+0x17/0x1c
+    [<c006f81d>] create_object+0xcd/0x188
+    [<c01f5457>] kmemleak_alloc+0x1b/0x3c
+    [<c006e303>] __kmalloc+0xdb/0xe8
+    [<c012cc4b>] vc_do_resize+0x73/0x1e0
+    [<c012cdf1>] vc_resize+0x15/0x18
+    [<c011afc1>] fbcon_init+0x1f9/0x2b8
+    [<c0129e87>] visual_init+0x9f/0xdc
+    [<c012aff3>] vc_allocate+0x7f/0xfc
+    [<c012b087>] con_open+0x17/0x80
+    [<c0120e43>] tty_open+0x1f7/0x2e4
+    [<c0072fa1>] chrdev_open+0x101/0x118
+    [<c006ffad>] __dentry_open+0x105/0x1cc
+    [<c00700fd>] nameidata_to_filp+0x2d/0x38
+    [<c00788cd>] do_filp_open+0x2c1/0x54c
+    [<c006fdff>] do_sys_open+0x3b/0xb4
 
-Pages underlying the buffers must obviously not be swapped out during DMA. The 
-get_user_pages() (mm/memory.c) documentation seems to imply that returned 
-pages are pinned to memory (my understanding of "pinned" is that they will not 
-be swapped out):
+The problem happens in the vc_allocate() function where vc->vc_screenbuf
+is set to the kmalloc() returned value. However, the visual_init()
+function called 3 lines before also allocates the vc->vc_screenbuf.
 
-/**
- * get_user_pages() - pin user pages in memory
- * @tsk:        task_struct of target task
- * @mm:         mm_struct of target mm
- * @start:      starting user address
- * @len:        number of pages from start to pin
- * @write:      whether pages will be written to by the caller
- * @force:      whether to force write access even if user mapping is
- *              readonly. This will result in the page being COWed even
- *              in MAP_SHARED mappings. You do not want this.
- * @pages:      array that receives pointers to the pages pinned.
- *              Should be at least nr_pages long. Or NULL, if caller
- *              only intends to ensure the pages are faulted in.
- * @vmas:       array of pointers to vmas corresponding to each page.
- *              Or NULL if the caller does not require them.
+One solution is below (another would be to kfree the vc_screenbuf and
+reallocate):
 
-However, all is seems to do for that purpose is incrementing the page 
-reference count using get_page().
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index 404f4c1..1da75ef 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -770,7 +770,9 @@ int vc_allocate(unsigned int currcons)	/* return 0 on success */
+ 	    visual_init(vc, currcons, 1);
+ 	    if (!*vc->vc_uni_pagedir_loc)
+ 		con_set_default_unimap(vc);
+-	    vc->vc_screenbuf = kmalloc(vc->vc_screenbuf_size, GFP_KERNEL);
++	    if (!vc->vc_screenbuf)
++		    vc->vc_screenbuf = kmalloc(vc->vc_screenbuf_size,
++					       GFP_KERNEL);
+ 	    if (!vc->vc_screenbuf) {
+ 		kfree(vc);
+ 		vc_cons[currcons].d = NULL;
 
-I had a look through the memory management subsystem code and it seems to me 
-that incrementing the reference count is not sufficient to make sure the page 
-won't be swapped out. To ensure that, it should instead be marked as 
-unevictable, either directly or by marking an associated VMA as VM_LOCKED. 
-This is what the mlock() syscall does, in addition to calling 
-get_user_pages().
+Thanks.
 
-The MM subsystem is quite complex and my understanding might not be correct, 
-so I'd appreciate if someone could shed light on the issue. Does 
-get_user_pages() really pin pages to memory and prevent them from being 
-swapped out in all circumstances ? If so, how does it do so ? If not, what's 
-the proper way to make sure the pages won't disappear during DMA ?
-
-Please CC me on answers.
-
-Regards,
-
-Laurent Pinchart
+-- 
+Catalin
 
