@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbZG2TIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753766AbZG2TJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754043AbZG2TIU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 15:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbZG2TIS
+	id S1753766AbZG2TJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 15:09:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbZG2TJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 15:08:18 -0400
-Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:51081 "EHLO
-	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753691AbZG2TIQ convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 15:08:16 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Gene Heskett <gene.heskett@verizon.net>
-Subject: Re: [PATCH] kdesu broken
-Date: Wed, 29 Jul 2009 21:08:12 +0200
-User-Agent: KMail/1.9.9
-Cc: alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org,
-       hirofumi@mail.parknet.co.jp, aneesh.kumar@linux.vnet.ibm.com,
-       rjw@sisk.pl, ray-lk@madrabbit.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, stern@rowland.harvard.edu
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk> <200907292028.32320.elendil@planet.nl> <200907291443.13983.gene.heskett@verizon.net>
-In-Reply-To: <200907291443.13983.gene.heskett@verizon.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200907292108.15839.elendil@planet.nl>
-X-OriginalArrivalTime: 29 Jul 2009 19:08:16.0189 (UTC) FILETIME=[ED5126D0:01CA107F]
+	Wed, 29 Jul 2009 15:09:55 -0400
+Received: from vms173013pub.verizon.net ([206.46.173.13]:43419 "EHLO
+	vms173013pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752764AbZG2TJz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 15:09:55 -0400
+From: Gene Heskett <gene.heskett@verizon.net>
+Organization: Organization? Not detectable
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [Regression] kdesu broken, now usb fixed in current git pull
+Date: Wed, 29 Jul 2009 15:09:15 -0400
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc4; KDE/4.2.4; i686; ; )
+Cc: Ray Lee <ray-lk@madrabbit.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+References: <200907240145.31935.rjw@sisk.pl>
+ <2c0942db0907231721q124dc8f9mdbe64ed33c69ffbf@mail.gmail.com>
+ <20090724182547.GB29851@skywalker>
+In-reply-to: <20090724182547.GB29851@skywalker>
+MIME-version: 1.0
+Content-type: Text/Plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+Message-id: <200907291509.15244.gene.heskett@verizon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 July 2009, Gene Heskett wrote:
-> Yes, some of it will.  But thanks to fedora's broken disk partitioner,
-> something I've been screaming about for a damned decade, my /boot
-> partition isn't big enough to absorb a whole chain of those, hence the
-> fixed version request.
+On Friday 24 July 2009, Aneesh Kumar K.V wrote:
+>On Thu, Jul 23, 2009 at 05:21:36PM -0700, Ray Lee wrote:
+>> On Thu, Jul 23, 2009 at 4:45 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+>> > A recent kernel change broke kdesu (from KDE 4.2) on my test boxes.
+>> >  ISTR a discussion about that, but I can't find it right now.  Any
+>> > clues?
+>>
+>> See the thread starting here: ("possible regression with pty.c commit")
+>>    http://lkml.org/lkml/2009/7/11/125
+>
+>I am also facing a similar problem.
+>
+>http://bugzilla.kernel.org/show_bug.cgi?id=13815
+>
+>-aneesh
 
-My /boot isn't big enough for a full series either, but my $HOME is :-)
+I just did a git bisect reset master;git pull and built a new 2.6.31-rc4.  The 
+problem with my bash script has now been resolved.  Many thanks.
 
-The fact that the packages I create all have the same package name and 
-only the package version differs, means that I do get the complete series 
-but only have one version installed in /boot at any time (as installing a 
-new version overwrites the version from the previous bisect iteration). 
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+The NRA is offering FREE Associate memberships to anyone who wants them.
+<https://www.nrahq.org/nrabonus/accept-membership.asp>
 
-No idea if you can do the same on an RPM-based system easily.
+Nothing cures insomnia like the realization that it's time to get up.
+
