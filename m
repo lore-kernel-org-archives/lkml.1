@@ -1,36 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752905AbZG2OVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753070AbZG2OY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752905AbZG2OVz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 10:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbZG2OVy
+	id S1753070AbZG2OY4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 10:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZG2OYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 10:21:54 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33437 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752628AbZG2OVx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 10:21:53 -0400
-Message-ID: <4A705B00.60108@suse.de>
-Date: Wed, 29 Jul 2009 16:21:52 +0200
-From: Alexander Graf <agraf@suse.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 29 Jul 2009 10:24:55 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:60851 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752819AbZG2OYz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 10:24:55 -0400
+Date: Wed, 29 Jul 2009 10:24:55 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <gregkh@suse.de>
+cc: linux-kernel@vger.kernel.org, <stable@kernel.org>,
+       <stable-review@kernel.org>, <torvalds@linux-foundation.org>,
+       <akpm@linux-foundation.org>, <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [patch 14/71] USB: EHCI: use the new clear_tt_buffer interface
+In-Reply-To: <20090729140308.GA15088@suse.de>
+Message-ID: <Pine.LNX.4.44L0.0907291022520.3087-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 12/12] kvm/svm: simplify nested_svm_check_exception
-References: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com> <1248872192-30881-13-git-send-email-joerg.roedel@amd.com>
-In-Reply-To: <1248872192-30881-13-git-send-email-joerg.roedel@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
->   
+On Wed, 29 Jul 2009, Greg KH wrote:
 
-My poor debug output ... :)
+> On Wed, Jul 29, 2009 at 09:56:31AM -0400, Alan Stern wrote:
+> > On Tue, 28 Jul 2009, Greg KH wrote:
+> > 
+> > > 2.6.30-stable review patch.  If anyone has any objections, please let us know.
+> > > 
+> > > ------------------
+> > > 
+> > > From: Alan Stern <stern@rowland.harvard.edu>
+> > > 
+> > > commit 914b701280a76f96890ad63eb0fa99bf204b961c upstream.
+> > > 
+> > > This patch (as1256) changes ehci-hcd and all the other drivers in the
+> > > EHCI family to make use of the new clear_tt_buffer callbacks.  When a
+> > > Clear-TT-Buffer request is in progress for a QH, the QH is not allowed
+> > > to be linked into the async schedule until the request is finished.
+> > > At that time, if there are any URBs queued for the QH, it is linked
+> > > into the async schedule.
+> > 
+> > Greg, can we hold off on applying this patch to the stable tree?
+> > 
+> > It turns out that this change causes a WARN_ON to trigger in some 
+> > circumstances, and the proposed patch to fix _that_ hasn't yet been 
+> > submitted to the mainline because a few people have reported that it 
+> > leaks DMA pool memory.  So far there hasn't been much progress in 
+> > tracking this down.
+> 
+> Sure, I'll drop it.  Should I also drop the patch before this one as
+> well, which was there only because this patch needed it?
 
-Acked-by: Alexander Graf <agraf@suse.de>
+In terms of functionality, it doesn't matter.  I guess you might as 
+well.
+
+> Let me know when/if you ever want it added to the -stable trees in the
+> future.
+
+I will.
+
+Alan Stern
 
