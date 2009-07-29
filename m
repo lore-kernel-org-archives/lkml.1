@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbZG2BK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZG2BKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754813AbZG2BK3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 21:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753775AbZG2BK3
+	id S1754737AbZG2BKm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 21:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754900AbZG2BKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 21:10:29 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:59197 "EHLO mail.dvmed.net"
+	Tue, 28 Jul 2009 21:10:42 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:59203 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752903AbZG2BK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 21:10:28 -0400
-Message-ID: <4A6FA17F.20507@pobox.com>
-Date: Tue, 28 Jul 2009 21:10:23 -0400
+	id S1754376AbZG2BKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 21:10:41 -0400
+Message-ID: <4A6FA18D.1070808@pobox.com>
+Date: Tue, 28 Jul 2009 21:10:37 -0400
 From: Jeff Garzik <jgarzik@pobox.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
 To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
        Dan Carpenter <error27@gmail.com>, corbet@lwn.net, eteo@redhat.com
-Subject: Re: [PATCH] libata: remove superfluous NULL pointer checks
-References: <200907261605.14619.bzolnier@gmail.com>
-In-Reply-To: <200907261605.14619.bzolnier@gmail.com>
+Subject: Re: [PATCH] libata: add missing NULL pointer check to ata_eh_reset()
+References: <200907261621.01893.bzolnier@gmail.com>
+In-Reply-To: <200907261621.01893.bzolnier@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -31,27 +31,27 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Bartlomiej Zolnierkiewicz wrote:
 > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] libata: remove superfluous NULL pointer checks
+> Subject: [PATCH] libata: add missing NULL pointer check to ata_eh_reset()
 > 
-> host->ports[] always contain pointers to valid port structures since
-> a "dummy port" structure is used in case if there is no physical port.
+>>From Dan's list:
 > 
-> This patch takes care of two entries from Dan's list:
+> drivers/ata/libata-eh.c +2403 ata_eh_reset(80) warning: variable derefenced before check 'slave'
 > 
-> drivers/ata/sata_sil.c +535 sil_interrupt(13) warning: variable derefenced before check 'ap'
-> drivers/ata/sata_mv.c +2517 mv_unexpected_intr(6) warning: variable derefenced before check 'ap'
+> Please note that this is _not_ a real bug at the moment since ata_eh_context
+> structure is embedded into ata_list structure and the code alwas checks for
+> 'slave' before accessing 'sehc'.
 > 
-> and of another needless NULL pointer check in pata_octeon_cf.c.
+> Anyway lets add missing check and always have a valid 'sehc' pointer (which
+> makes code easier to understand and prevents introducing some possible bugs
+> in the future).
 > 
 > Reported-by: Dan Carpenter <error27@gmail.com>
 > Cc: corbet@lwn.net
 > Cc: eteo@redhat.com
 > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 > ---
->  drivers/ata/pata_octeon_cf.c |    3 ++-
->  drivers/ata/sata_mv.c        |    2 +-
->  drivers/ata/sata_sil.c       |    2 +-
->  3 files changed, 4 insertions(+), 3 deletions(-)
+>  drivers/ata/libata-eh.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
 applied to #upstream-fixes
 
