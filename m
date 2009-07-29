@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753070AbZG2OY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753184AbZG2O2D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753070AbZG2OY4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 10:24:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZG2OYz
+	id S1753184AbZG2O2D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 10:28:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZG2O2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 10:24:55 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:60851 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752819AbZG2OYz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 10:24:55 -0400
-Date: Wed, 29 Jul 2009 10:24:55 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Greg KH <gregkh@suse.de>
-cc: linux-kernel@vger.kernel.org, <stable@kernel.org>,
-       <stable-review@kernel.org>, <torvalds@linux-foundation.org>,
-       <akpm@linux-foundation.org>, <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [patch 14/71] USB: EHCI: use the new clear_tt_buffer interface
-In-Reply-To: <20090729140308.GA15088@suse.de>
-Message-ID: <Pine.LNX.4.44L0.0907291022520.3087-100000@iolanthe.rowland.org>
+	Wed, 29 Jul 2009 10:28:03 -0400
+Received: from mga14.intel.com ([143.182.124.37]:58869 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751474AbZG2O2B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 10:28:01 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,289,1246863600"; 
+   d="scan'208";a="170145426"
+Message-ID: <4A705C6F.1000203@intel.com>
+Date: Wed, 29 Jul 2009 07:27:59 -0700
+From: Dan Williams <dan.j.williams@intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+CC: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
+       "haavard.skinnemoen@atmel.com" <haavard.skinnemoen@atmel.com>,
+       "nicolas.ferre@atmel.com" <nicolas.ferre@atmel.com>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "patrice.vilchez@atmel.com" <patrice.vilchez@atmel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] dmaengine: at_hdmac: add DMA slave transfers
+References: <20090724.222919.240484146.anemo@mba.ocn.ne.jp>	<20090724161001.412e0199@siona>	<129600E5E5FB004392DDC3FB599660D7B271F468@irsmsx504.ger.corp.intel.com> <20090729.001330.172537373.anemo@mba.ocn.ne.jp>
+In-Reply-To: <20090729.001330.172537373.anemo@mba.ocn.ne.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Jul 2009, Greg KH wrote:
-
-> On Wed, Jul 29, 2009 at 09:56:31AM -0400, Alan Stern wrote:
-> > On Tue, 28 Jul 2009, Greg KH wrote:
-> > 
-> > > 2.6.30-stable review patch.  If anyone has any objections, please let us know.
-> > > 
-> > > ------------------
-> > > 
-> > > From: Alan Stern <stern@rowland.harvard.edu>
-> > > 
-> > > commit 914b701280a76f96890ad63eb0fa99bf204b961c upstream.
-> > > 
-> > > This patch (as1256) changes ehci-hcd and all the other drivers in the
-> > > EHCI family to make use of the new clear_tt_buffer callbacks.  When a
-> > > Clear-TT-Buffer request is in progress for a QH, the QH is not allowed
-> > > to be linked into the async schedule until the request is finished.
-> > > At that time, if there are any URBs queued for the QH, it is linked
-> > > into the async schedule.
-> > 
-> > Greg, can we hold off on applying this patch to the stable tree?
-> > 
-> > It turns out that this change causes a WARN_ON to trigger in some 
-> > circumstances, and the proposed patch to fix _that_ hasn't yet been 
-> > submitted to the mainline because a few people have reported that it 
-> > leaks DMA pool memory.  So far there hasn't been much progress in 
-> > tracking this down.
+Atsushi Nemoto wrote:
+> On Mon, 27 Jul 2009 14:24:26 +0100, "Sosnowski, Maciej" <maciej.sosnowski@intel.com> wrote:
+>>>> Your atc_chain_complete() calls dma_unmap_xxx unless
+>>>> DMA_COMPL_SKIP_XXX_UNMAP specified.  But atmel-mci driver does not set
+>>>> the flag on dma_async_tx_descriptor.  I suppose one of them should be
+>>>> fixed.
+>>> atmel-mci should definitely set that flag.
+>>>
+>>> Haavard
+>> I agree with Haavard.
 > 
-> Sure, I'll drop it.  Should I also drop the patch before this one as
-> well, which was there only because this patch needed it?
+> Then, what should dma driver do when client driver did not set these
+> flags?  If it should call dma_unmap_sg(), the dma driver should keep
+> sg and direction somewhere...
+> 
+> Also, calling dma_map_sg() in its prep_slave_sg function will not fit
+> for sound drivers, which use DMA buffers prepared in its framework.
+> 
+> For slave DMA, doing all mapping/unmapping in DMA client is better,
+> isn't it?
+> 
 
-In terms of functionality, it doesn't matter.  I guess you might as 
-well.
+Yes it is.  The whole point of the dma driver doing its own unmapping is 
+specifically for clients that use the async_tx api, i.e. where they do 
+not know if the transaction is carried out in hardware and have no way 
+of tracking the details necessary to perform the unmap.  DMA-slave 
+clients request specific channels and know the hardware details at a low 
+level, so it should not be too high an expectation to push dma mapping 
+responsibility to the client.
 
-> Let me know when/if you ever want it added to the -stable trees in the
-> future.
-
-I will.
-
-Alan Stern
-
+--
+Dan
