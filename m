@@ -1,85 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755005AbZG2M52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755059AbZG2M7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755005AbZG2M52 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 08:57:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbZG2M51
+	id S1755059AbZG2M7e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 08:59:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbZG2M5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 08:57:27 -0400
-Received: from sg2ehsobe005.messaging.microsoft.com ([207.46.51.79]:18767 "EHLO
-	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754798AbZG2M5L (ORCPT
+	Wed, 29 Jul 2009 08:57:18 -0400
+Received: from sg2ehsobe003.messaging.microsoft.com ([207.46.51.77]:14361 "EHLO
+	SG2EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754650AbZG2M47 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 08:57:11 -0400
-X-SpamScore: 13
-X-BigFish: VPS13(z1857rzzz1202hzzz32i203h43j63h)
-X-Spam-TCS-SCL: 2:0
-X-WSS-ID: 0KNJNYG-03-5SS-01
+	Wed, 29 Jul 2009 08:56:59 -0400
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i203h43j64h)
+X-Spam-TCS-SCL: 3:0
+X-WSS-ID: 0KNJNYJ-04-405-01
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: Avi Kivity <avi@redhat.com>
 CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
        linux-kernel@vger.kernel.org, Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 11/12] kvm/svm: handle #pf intercepts in nested_svm_exit_handled directly
-Date: Wed, 29 Jul 2009 14:56:31 +0200
-Message-ID: <1248872192-30881-12-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 09/12] kvm/svm: consolidate nested_svm_exit_handled
+Date: Wed, 29 Jul 2009 14:56:29 +0200
+Message-ID: <1248872192-30881-10-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com>
 References: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 29 Jul 2009 12:56:36.0983 (UTC) FILETIME=[01F45870:01CA104C]
+X-OriginalArrivalTime: 29 Jul 2009 12:56:37.0045 (UTC) FILETIME=[01FDCE50:01CA104C]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+When caching guest intercepts there is no need anymore for the
+nested_svm_exit_handled_real function. So move its code into
+nested_svm_exit_handled.
+
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/kvm/svm.c |   26 ++++++++++++++++++++++++--
- 1 files changed, 24 insertions(+), 2 deletions(-)
+ arch/x86/kvm/svm.c |  108 +++++++++++++++++++++++-----------------------------
+ 1 files changed, 48 insertions(+), 60 deletions(-)
 
 diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 1a44e43..381ed38 100644
+index 9192c9a..263dfa4 100644
 --- a/arch/x86/kvm/svm.c
 +++ b/arch/x86/kvm/svm.c
-@@ -1498,6 +1498,9 @@ static int nested_svm_exit_handled_msr(struct vcpu_svm *svm,
+@@ -1463,15 +1463,57 @@ static int nested_svm_do(struct vcpu_svm *svm,
+ 	return retval;
+ }
+ 
+-static int nested_svm_exit_handled_real(struct vcpu_svm *svm,
+-					void *arg1,
+-					void *arg2,
+-					void *opaque)
++static int nested_svm_exit_handled_msr(struct vcpu_svm *svm,
++				       void *arg1, void *arg2,
++				       void *opaque)
++{
++	struct vmcb *nested_vmcb = (struct vmcb *)arg1;
++	u8 *msrpm = (u8 *)arg2;
++        u32 t0, t1;
++	u32 msr = svm->vcpu.arch.regs[VCPU_REGS_RCX];
++	u32 param = svm->vmcb->control.exit_info_1 & 1;
++
++	if (!(nested_vmcb->control.intercept & (1ULL << INTERCEPT_MSR_PROT)))
++		return 0;
++
++	switch(msr) {
++	case 0 ... 0x1fff:
++		t0 = (msr * 2) % 8;
++		t1 = msr / 8;
++		break;
++	case 0xc0000000 ... 0xc0001fff:
++		t0 = (8192 + msr - 0xc0000000) * 2;
++		t1 = (t0 / 8);
++		t0 %= 8;
++		break;
++	case 0xc0010000 ... 0xc0011fff:
++		t0 = (16384 + msr - 0xc0010000) * 2;
++		t1 = (t0 / 8);
++		t0 %= 8;
++		break;
++	default:
++		return 1;
++		break;
++	}
++	if (msrpm[t1] & ((1 << param) << t0))
++		return 1;
++
++	return 0;
++}
++
++static int nested_svm_exit_handled(struct vcpu_svm *svm, bool kvm_override)
+ {
+-	bool kvm_overrides = *(bool *)opaque;
+ 	u32 exit_code = svm->vmcb->control.exit_code;
+ 
+-	if (kvm_overrides) {
++	switch (svm->vmcb->control.exit_code) {
++	case SVM_EXIT_MSR:
++		return nested_svm_do(svm, svm->nested.vmcb,
++				     svm->nested.vmcb_msrpm, NULL,
++				     nested_svm_exit_handled_msr);
++	default: break;
++	}
++
++	if (kvm_override) {
+ 		switch (exit_code) {
+ 		case SVM_EXIT_INTR:
+ 		case SVM_EXIT_NMI:
+@@ -1533,60 +1575,6 @@ static int nested_svm_exit_handled_real(struct vcpu_svm *svm,
  	return 0;
  }
  
-+/*
-+ * If this function returns true, this #vmexit was already handled
-+ */
- static int nested_svm_exit_handled(struct vcpu_svm *svm, bool kvm_override)
+-static int nested_svm_exit_handled_msr(struct vcpu_svm *svm,
+-				       void *arg1, void *arg2,
+-				       void *opaque)
+-{
+-	struct vmcb *nested_vmcb = (struct vmcb *)arg1;
+-	u8 *msrpm = (u8 *)arg2;
+-        u32 t0, t1;
+-	u32 msr = svm->vcpu.arch.regs[VCPU_REGS_RCX];
+-	u32 param = svm->vmcb->control.exit_info_1 & 1;
+-
+-	if (!(nested_vmcb->control.intercept & (1ULL << INTERCEPT_MSR_PROT)))
+-		return 0;
+-
+-	switch(msr) {
+-	case 0 ... 0x1fff:
+-		t0 = (msr * 2) % 8;
+-		t1 = msr / 8;
+-		break;
+-	case 0xc0000000 ... 0xc0001fff:
+-		t0 = (8192 + msr - 0xc0000000) * 2;
+-		t1 = (t0 / 8);
+-		t0 %= 8;
+-		break;
+-	case 0xc0010000 ... 0xc0011fff:
+-		t0 = (16384 + msr - 0xc0010000) * 2;
+-		t1 = (t0 / 8);
+-		t0 %= 8;
+-		break;
+-	default:
+-		return 1;
+-		break;
+-	}
+-	if (msrpm[t1] & ((1 << param) << t0))
+-		return 1;
+-
+-	return 0;
+-}
+-
+-static int nested_svm_exit_handled(struct vcpu_svm *svm, bool kvm_override)
+-{
+-	bool k = kvm_override;
+-
+-	switch (svm->vmcb->control.exit_code) {
+-	case SVM_EXIT_MSR:
+-		return nested_svm_do(svm, svm->nested.vmcb,
+-				     svm->nested.vmcb_msrpm, NULL,
+-				     nested_svm_exit_handled_msr);
+-	default: break;
+-	}
+-
+-	return nested_svm_do(svm, svm->nested.vmcb, 0, &k,
+-			     nested_svm_exit_handled_real);
+-}
+-
+ static inline void copy_vmcb_control_area(struct vmcb *dst_vmcb, struct vmcb *from_vmcb)
  {
- 	u32 exit_code = svm->vmcb->control.exit_code;
-@@ -1515,8 +1518,27 @@ static int nested_svm_exit_handled(struct vcpu_svm *svm, bool kvm_override)
- 			break;
- 		/* When we're shadowing, trap PFs */
- 		case SVM_EXIT_EXCP_BASE + PF_VECTOR:
--			if (!npt_enabled)
--				return 0;
-+			if (!npt_enabled) {
-+				u64 fault_address;
-+				u32 error_code;
-+
-+				fault_address  = svm->vmcb->control.exit_info_2;
-+				error_code     = svm->vmcb->control.exit_info_1;
-+
-+				kvm_mmu_page_fault(&svm->vcpu,
-+						   fault_address,
-+						   error_code);
-+
-+				/*
-+				 * If we are still nested here the pending
-+				 * irqs/exceptions must be reinjected
-+				 */
-+				//if (is_nested(svm))
-+				//	svm_complete_interrupts(svm);
-+
-+				return true;
-+			}
-+
- 			break;
- 		default:
- 			break;
+ 	struct vmcb_control_area *dst  = &dst_vmcb->control;
 -- 
 1.6.3.3
 
