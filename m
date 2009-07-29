@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbZG2PNO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbZG2PNG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754491AbZG2PNO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 11:13:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbZG2PNM
+	id S1754227AbZG2PNG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 11:13:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbZG2PNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 11:13:12 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:50555 "EHLO
-	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753653AbZG2PNK (ORCPT
+	Wed, 29 Jul 2009 11:13:05 -0400
+Received: from zelda.netsplit.com ([87.194.19.211]:57562 "EHLO
+	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751667AbZG2PNF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 11:13:10 -0400
-From: Philipp Reisner <philipp.reisner@linbit.com>
-Organization: LINBIT
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: drbd tree build failure
-Date: Wed, 29 Jul 2009 17:13:09 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20090729152933.47664b18.sfr@canb.auug.org.au> <20090729062058.GE4148@kernel.dk>
-In-Reply-To: <20090729062058.GE4148@kernel.dk>
-X-OTRS-FollowUp-SenderType: agent
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907291713.09695.philipp.reisner@linbit.com>
+	Wed, 29 Jul 2009 11:13:05 -0400
+Subject: Re: [PATCH] exec: Make do_coredump more robust and safer when
+ using pipes in core_pattern
+From: Scott James Remnant <scott@canonical.com>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       earl_chew@agilent.com
+In-Reply-To: <20090622172818.GB14673@hmsreliant.think-freely.org>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-NOB0l3LGJYr8MTamdPAm"
+Date: Wed, 29 Jul 2009 16:13:02 +0100
+Message-Id: <1248880382.23840.78.camel@quest>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 July 2009 08:20:58 Jens Axboe wrote:
-> On Wed, Jul 29 2009, Stephen Rothwell wrote:
-> > Hi Philipp,
-> >
-> > Today's linux-next build (x86_64 allmodconfig) failed like this:
-> >
-> > drivers/block/drbd/drbd_req.c: In function 'drbd_make_request_26':
-> > drivers/block/drbd/drbd_req.c:1023: error: implicit declaration of
-> > function 'bio_barrier' drivers/block/drbd/drbd_actlog.c: In function
-> > '_drbd_md_sync_page_io': drivers/block/drbd/drbd_actlog.c:120: error:
-> > implicit declaration of function 'bio_barrier'
-> > drivers/block/drbd/drbd_main.c: In function 'drbd_send_dblock':
-> > drivers/block/drbd/drbd_main.c:2373: error: implicit declaration of
-> > function 'bio_barrier' drivers/block/drbd/drbd_main.c:2375: error:
-> > implicit declaration of function 'bio_sync'
-> >
-> > Caused by commit d206aaff0c5ee065f382c626ea21c5166a3047a7 ("bio: first
-> > step in sanitizing the bio->bi_rw flag testing") from the block tree.
-> >
-> > I applied the following patch for today.
->
-> That fixup looks good, thanks Stephen.
 
-Thanks,
-I have commited that patch also to the drbd git tree. I think we have
-now fixed all open issues (currently).
+--=-NOB0l3LGJYr8MTamdPAm
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
--phil
--- 
-: Dipl-Ing Philipp Reisner
-: LINBIT | Your Way to High Availability
-: Tel: +43-1-8178292-50, Fax: +43-1-8178292-82
-: http://www.linbit.com
+On Mon, 2009-06-22 at 13:28 -0400, Neil Horman wrote:
 
-DRBD(R) and LINBIT(R) are registered trademarks of LINBIT, Austria.
+> 2) Allow for the kernel to wait for a core_pattern process to complete.  =
+One of
+> the things core_pattern processes might do is interrogate the status of a
+> crashing process via its /proc/pid directory.  To ensure that that direct=
+ory is
+> not removed prematurely, we wait for the process to exit prior to cleanin=
+g it
+> up.
+>=20
+Would this mean that the kernel would wait for the pattern process to
+complete before PANIC in the case of init core dumping?
+
+I'd find that useful :-)
+
+Scott
+--=20
+Scott James Remnant
+scott@canonical.com
+
+--=-NOB0l3LGJYr8MTamdPAm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkpwZv4ACgkQSnQiFMl4yK5FRACfYjhPEtSziIJH7Jydz1w4NmqL
+JgsAn1L4se9fWiB2zWaLJiaRUXx1gFcG
+=7pe7
+-----END PGP SIGNATURE-----
+
+--=-NOB0l3LGJYr8MTamdPAm--
 
