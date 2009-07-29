@@ -1,113 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753560AbZG2Jjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753653AbZG2Jty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753560AbZG2Jjz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 05:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbZG2Jjy
+	id S1753653AbZG2Jty (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 05:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZG2Jtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 05:39:54 -0400
-Received: from ns2.gothnet.se ([82.193.160.251]:15676 "EHLO
-	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753252AbZG2Jjx convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 05:39:53 -0400
-Message-ID: <4A7018DA.807@shipmail.org>
-Date: Wed, 29 Jul 2009 11:39:38 +0200
-From: =?UTF-8?B?VGhvbWFzIEhlbGxzdHLDtm0=?= <thomas@shipmail.org>
-Organization: VMware
-User-Agent: Thunderbird 1.5.0.7 (X11/20060921)
+	Wed, 29 Jul 2009 05:49:53 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:40076 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751413AbZG2Jtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 05:49:52 -0400
+Date: Wed, 29 Jul 2009 10:49:52 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: akpm@linux-foundation.org
+Cc: apw@shadowen.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH] page-allocator: Change migratetype for all pageblocks
+	within a high-order page during __rmqueue_fallback
+Message-ID: <20090729094951.GA15102@csn.ul.ie>
 MIME-Version: 1.0
-To: Jerome Glisse <glisse@freedesktop.org>
-CC: linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: Re: ttm_mem_global
-References: <1245931298.13359.8.camel@localhost.localdomain>	 <4A439D7D.9030401@shipmail.org>  <1248197676.2368.11.camel@localhost>	 <1248199231.2368.17.camel@localhost> <1248204128.2368.20.camel@localhost>	 <4A66CFDE.9090705@shipmail.org> <1248799724.2288.11.camel@localhost>	 <4A6F498E.8090601@shipmail.org> <1248857973.2426.6.camel@localhost>
-In-Reply-To: <1248857973.2426.6.camel@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-X-BitDefender-Scanner: Mail not scanned due to license constraints
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jerome Glisse wrote:
-> On Tue, 2009-07-28 at 20:55 +0200, Thomas Hellström wrote:
->   
->> Jerome Glisse skrev:
->>     
->>> On Wed, 2009-07-22 at 10:37 +0200, Thomas Hellström wrote:
->>>   
->>>       
->>>> TTM has a device struct per device and an optional global struct that is 
->>>> common for all devices and intended to be per subsystem.
->>>>
->>>> The only subsystem currently having a global structure is the memory 
->>>> accounting subsystem:
->>>> struct ttm_mem_global
->>>>     
->>>>         
->>> Thomas i don't think the way we init ttm_mem_global today make
->>> it follow the 1 struct ttm_mem_global for everyone. I think it
->>> should be initialized and refcounted by device struct.
->>>
->>> So on first device creation a ttm_mem_global is created and
->>> then anytime a new device is created the refcount of ttm_mem_global
->>> is increased. 
->>>       
->> Jerome,
->> This is exactly what the current code intends to do.
->>
->> Are you seeing something different?
->>     
->
-> I definitly don't see that :) In radeon we do create a structure
-> which hold the ttm_mem_global struct so it's not shared at all
-> it got inited & destroyed along the driver. This is why i think
-> it's better to remove the driver initialization and let bo_device
-> init path take care of initializing one and only one object which
-> can be shared by multiple driverttm_mem_global_inits.
->
->   
-Which radeon struct is holding the ttm_mem_global struct?
+When there are no pages of a target migratetype free, the page allocator
+selects a high-order block of another migratetype to allocate from. When
+the order of the page taken is greater than pageblock_order, all pageblocks
+within that high-order page should change migratetype so that pages are
+later freed to the correct free-lists.
 
-The radeon code looks very similar to the openchrome code in which the 
-struct ttm_mem_global is allocated at ttm_global.c, line 74 and freed at 
-ttm_global.c, line 108 when its refcount has reached zero.
+The current behaviour is that pageblocks change migratetype if the order
+being split matches the pageblock_order.  When pageblock_order < MAX_ORDER-1,
+ownership is not changing correct and pages are being later freed to the
+incorrect list and this impacts fragmentation avoidance.
 
-So the device holds a struct ttm_global_reference that *only points* to 
-the global item, and which is destroyed on device takedown. If there are 
-more than one device pointing to the mem_global object, it won't get 
-destroyed.
+This patch changes all pageblocks within the high-order page being split to
+the correct migratetype. Without the patch, allocation success rates for
+hugepages under stress were about 59% of physical memory on x86-64. With
+the patch applied, this goes up to 65%.
 
-So the code should be working perfectly fine unless there is a bug.
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+--- 
+ mm/page_alloc.c |   16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
-> So what i propose is remove mem_glob parameter from :
-> ttm_bo_device_init, add a call to ttm_mem_global_init in
-> ttm_bo_device_init 
-
-Nope, The ttm_mem_global object is used by other  ttm subsystems 
-(fencing, user-space objects),
-so that can't be done.
-
-> and add some static refcount in ttm_memory.c
-> if refcount = 0 then ttm_mem_global_init create a ttm_mem_global
-> struct and initialize things, if refcount > 0 then it gives
-> back the already initialized ttm_mem_global.
->
->   
-
-This is exactly what ttm_global was created to do, and what it hopefully 
-does. If you create two radeon devices the ttm_mem_global object should 
-be the same, even though the global references pointing to it are of 
-course different. Have you actually tried this?
-
-/Thomas
-
-> Of course we unref with ttm_mem_global_release and destroy
-> once refcount reach 0.
->
-> Cheers,
-> Jerome
->
->   
-
-
-
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index caa9268..c158466 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -783,6 +783,17 @@ static int move_freepages_block(struct zone *zone, struct page *page,
+ 	return move_freepages(zone, start_page, end_page, migratetype);
+ }
+ 
++static void change_pageblock_range(struct page *pageblock_page,
++					int start_order, int migratetype)
++{
++	int nr_pageblocks = 1 << (MAX_ORDER - 1 - start_order);
++
++	while (nr_pageblocks--) {
++		set_pageblock_migratetype(pageblock_page, migratetype);
++		pageblock_page += pageblock_nr_pages;
++	}
++}
++
+ /* Remove an element from the buddy allocator from the fallback list */
+ static inline struct page *
+ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
+@@ -834,8 +845,9 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
+ 			list_del(&page->lru);
+ 			rmv_page_order(page);
+ 
+-			if (current_order == pageblock_order)
+-				set_pageblock_migratetype(page,
++			/* Take ownership for orders >= pageblock_order */
++			if (current_order >= pageblock_order)
++				change_pageblock_range(page, current_order,
+ 							start_migratetype);
+ 
+ 			expand(zone, page, order, current_order, area, migratetype);
