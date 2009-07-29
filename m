@@ -1,81 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753653AbZG2Jty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753700AbZG2J4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753653AbZG2Jty (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 05:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752086AbZG2Jtx
+	id S1753700AbZG2J4O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 05:56:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZG2J4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 05:49:53 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:40076 "EHLO gir.skynet.ie"
+	Wed, 29 Jul 2009 05:56:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51231 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751413AbZG2Jtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 05:49:52 -0400
-Date: Wed, 29 Jul 2009 10:49:52 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: akpm@linux-foundation.org
-Cc: apw@shadowen.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH] page-allocator: Change migratetype for all pageblocks
-	within a high-order page during __rmqueue_fallback
-Message-ID: <20090729094951.GA15102@csn.ul.ie>
+	id S1753475AbZG2J4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 05:56:13 -0400
+Message-ID: <4A701DD1.7000300@redhat.com>
+Date: Wed, 29 Jul 2009 13:00:49 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Joerg Roedel <joerg.roedel@amd.com>
+CC: Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [PATCH 0/7 v5] KVM: support for 1gb pages
+References: <1248705048-22607-1-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <1248705048-22607-1-git-send-email-joerg.roedel@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When there are no pages of a target migratetype free, the page allocator
-selects a high-order block of another migratetype to allocate from. When
-the order of the page taken is greater than pageblock_order, all pageblocks
-within that high-order page should change migratetype so that pages are
-later freed to the correct free-lists.
+On 07/27/2009 05:30 PM, Joerg Roedel wrote:
+> Hello,
+>
+> this is the latest version of the changes to KVM MMU code to support 1gb
+> pages.  Pages with a size of 1gb are a feature of all Fam10h AMD CPUs
+> and this patch set makes them available for guests and allows to map the
+> nested page table with 1gb pages.
+>    
 
-The current behaviour is that pageblocks change migratetype if the order
-being split matches the pageblock_order.  When pageblock_order < MAX_ORDER-1,
-ownership is not changing correct and pages are being later freed to the
-incorrect list and this impacts fragmentation avoidance.
+Applied, thanks.
 
-This patch changes all pageblocks within the high-order page being split to
-the correct migratetype. Without the patch, allocation success rates for
-hugepages under stress were about 59% of physical memory on x86-64. With
-the patch applied, this goes up to 65%.
+-- 
+error compiling committee.c: too many arguments to function
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
---- 
- mm/page_alloc.c |   16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
-
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index caa9268..c158466 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -783,6 +783,17 @@ static int move_freepages_block(struct zone *zone, struct page *page,
- 	return move_freepages(zone, start_page, end_page, migratetype);
- }
- 
-+static void change_pageblock_range(struct page *pageblock_page,
-+					int start_order, int migratetype)
-+{
-+	int nr_pageblocks = 1 << (MAX_ORDER - 1 - start_order);
-+
-+	while (nr_pageblocks--) {
-+		set_pageblock_migratetype(pageblock_page, migratetype);
-+		pageblock_page += pageblock_nr_pages;
-+	}
-+}
-+
- /* Remove an element from the buddy allocator from the fallback list */
- static inline struct page *
- __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
-@@ -834,8 +845,9 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
- 			list_del(&page->lru);
- 			rmv_page_order(page);
- 
--			if (current_order == pageblock_order)
--				set_pageblock_migratetype(page,
-+			/* Take ownership for orders >= pageblock_order */
-+			if (current_order >= pageblock_order)
-+				change_pageblock_range(page, current_order,
- 							start_migratetype);
- 
- 			expand(zone, page, order, current_order, area, migratetype);
