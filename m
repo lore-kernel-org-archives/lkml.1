@@ -1,282 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751326AbZG2Ut2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751940AbZG2Uze@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751326AbZG2Ut2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 16:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756164AbZG2Ut1
+	id S1751940AbZG2Uze (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 16:55:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbZG2Uzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 16:49:27 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49546 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756133AbZG2Ut0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 16:49:26 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Arnaud Faucher <arnaud.faucher@gmail.com>
-Subject: Re: [PATCH 1/1] acer-wmi: switch driver to dev_pm_ops
-Date: Wed, 29 Jul 2009 22:49:46 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Carlos Corbacho <carlos@strangeworlds.co.uk>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Frans Pop <elendil@planet.nl>, Manuel Lauss <manuel.lauss@gmail.com>,
-       Erik Ekman <erik@kryo.se>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-References: <1248527091-18246-1-git-send-email-arnaud.faucher@gmail.com> <1248648663.3718.7.camel@green> <1248824367.4112.31.camel@green>
-In-Reply-To: <1248824367.4112.31.camel@green>
+	Wed, 29 Jul 2009 16:55:33 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:34927 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751120AbZG2Uzc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 16:55:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=sUm6qpHk1u+AOcZ2ODkyq+Qkz66f0GwScUvUypbJqMgtrAhktcCjRhpD7ESg8mrMOa
+         vR96s5SLk/mGlbqm47z+gt6QKHH0yfELmGdLxP2UnM/hwx2la7Mijc7smglpO18ZYRpW
+         zmMyEoINjPbLl2d+nu9KteiB15llUSqxWTnmQ=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907292249.47761.rjw@sisk.pl>
+In-Reply-To: <20090729201702.GA28202@linux-sh.org>
+References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>
+	 <aec7e5c30907281948s2a0dcd0csd3e580251d6c4f5a@mail.gmail.com>
+	 <20090729115817.GA12223@rakim.wolfsonmicro.main>
+	 <aec7e5c30907290527w39a89895n285e932459e6c953@mail.gmail.com>
+	 <20090729124233.GA12802@rakim.wolfsonmicro.main>
+	 <aec7e5c30907290551y77edc6d7qb7b3d787215c2b4@mail.gmail.com>
+	 <4A704777.70001@mnementh.co.uk>
+	 <aec7e5c30907290608i43a80fe1xe4ef0f3847855709@mail.gmail.com>
+	 <4A7053E8.8050303@mnementh.co.uk>
+	 <20090729201702.GA28202@linux-sh.org>
+Date: Wed, 29 Jul 2009 22:55:31 +0200
+Message-ID: <74d0deb30907291355n39df7db0v1d7afc93917adc14@mail.gmail.com>
+Subject: Re: MMC: Make the configuration memory resource optional
+From: pHilipp Zabel <philipp.zabel@gmail.com>
+To: Paul Mundt <lethal@linux-sh.org>, Ian Molton <ian@mnementh.co.uk>,
+       Magnus Damm <magnus.damm@gmail.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
+       Magnus Damm <damm@opensource.se>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 July 2009, Arnaud Faucher wrote:
-> On Sun, Jul 26, 2009 at 18:51 -0400, Arnaud Faucher wrote :
-> > On dim, 2009-07-26 at 14:33 -0700, Dmitry Torokhov wrote:
-> > > On Jul 26, 2009, at 1:28 PM, Arnaud Faucher <arnaud.faucher@gmail.com>  
-> > > wrote:
-> > > 
-> > > > On dim, 2009-07-26 at 19:35 +0100, Carlos Corbacho wrote:
-> > > >> On Sunday 26 July 2009 19:08:09 Dmitry Torokhov wrote:
-> > > >>> On Sun, Jul 26, 2009 at 03:23:29PM +0100, Carlos Corbacho wrote:
-> > > >>>> [Removing linux-mips from CC - I don't know why they'd be  
-> > > >>>> interested in
-> > > >>>> an x86 only platform driver...]
-> > > >>>>
-> > > >>>> On Sunday 26 July 2009 14:53:33 Arnaud Faucher wrote:
-> > > >>>>> Gets rid of the following warning:
-> > > >>>>> Platform driver 'acer-wmi' needs updating - please use dev_pm_ops
-> > > >>>>>
-> > > >>>>> Take 2, thanks to Dmitry, Rafael and Frans for pointing out PM  
-> > > >>>>> issue on
-> > > >>>>> hibernation when using dev_pm_ops blindly.
-> > > >>>>>
-> > > >>>>> This patch was tested against suspendand hibernation (Acer mail  
-> > > >>>>> led
-> > > >>>>> status).
-> > > >>>>>
-> > > >>>>> Signed-off-by: Arnaud Faucher <arnaud.faucher@gmail.com>
-> > > >>>>> ---
-> > > >>>>> drivers/platform/x86/acer-wmi.c |   17 ++++++++++++-----
-> > > >>>>> 1 files changed, 12 insertions(+), 5 deletions(-)
-> > > >>>>>
-> > > >>>>> diff --git a/drivers/platform/x86/acer-wmi.c
-> > > >>>>> b/drivers/platform/x86/acer-wmi.c
-> > > >>>>> index be2fd6f..29374bc 100644
-> > > >>>>> --- a/drivers/platform/x86/acer-wmi.c
-> > > >>>>> +++ b/drivers/platform/x86/acer-wmi.c
-> > > >>>>> @@ -1152,8 +1152,7 @@ static int acer_platform_remove(struct
-> > > >>>>> platform_device *device)
-> > > >>>>>    return 0;
-> > > >>>>> }
-> > > >>>>>
-> > > >>>>> -static int acer_platform_suspend(struct platform_device *dev,
-> > > >>>>> -pm_message_t state)
-> > > >>>>> +static int acer_platform_suspend(struct device *dev)
-> > > >>>>> {
-> > > >>>>>    u32 value;
-> > > >>>>>    struct acer_data *data = &interface->data;
-> > > >>>>> @@ -1174,7 +1173,7 @@ pm_message_t state)
-> > > >>>>>    return 0;
-> > > >>>>> }
-> > > >>>>>
-> > > >>>>> -static int acer_platform_resume(struct platform_device *device)
-> > > >>>>> +static int acer_platform_resume(struct device *dev)
-> > > >>>>> {
-> > > >>>>>    struct acer_data *data = &interface->data;
-> > > >>>>>
-> > > >>>>> @@ -1190,15 +1189,23 @@ static int acer_platform_resume(struct
-> > > >>>>> platform_device *device)
-> > > >>>>>    return 0;
-> > > >>>>> }
-> > > >>>>>
-> > > >>>>> +static struct dev_pm_ops acer_platform_pm_ops = {
-> > > >>>>> +    .suspend = acer_platform_suspend,
-> > > >>>>> +    .resume = acer_platform_resume,
-> > > >>>>
-> > > >>>> Are these necessary? For suspend-to-RAM, I've never needed these.  
-> > > >>>> The old
-> > > >>>> callbacks here were just for suspend-to-disk.
-> > > >>>
-> > > >>> That is not correct. Old suspend and resume callbacks were called  
-> > > >>> for
-> > > >>> both S2R and S2D. Whether it is actually needed for S2R I don't  
-> > > >>> know but
-> > > >>> looking at the code they should not hurt.
-> > > >>
-> > > >> I'm aware they were called for S2RAM as well, but that was just a  
-> > > >> limitation
-> > > >> of the old calls - as I say, they're not needed for it (at least on  
-> > > >> my
-> > > >> hardware anyway).
-> > > >>
-> > > >
-> > > > I was looking for similar functionality.
-> > > >
-> > > >>>>> +    .freeze = acer_platform_suspend,
-> > > >>>>> +    .thaw = acer_platform_resume,
-> > > >>>>
-> > > >>>> If we only need these callbacks for freeze & thaw, they should be
-> > > >>>> rebamed.
-> > > >>>>
-> > > >>>>> +    .poweroff = acer_platform_suspend,
-> > > >>>>> +    .restore = acer_platform_resume,
-> > > >>>>
-> > > >>>> What do poweroff and restore mean in this context. Do my comments  
-> > > >>>> above
-> > > >>>> apply again (i.e. are the callbacks necessary here)?
-> > > >>>
-> > > >>> I don't think poweroff handler is needed.
-> > > >
-> > > > After testing many combinations, I observed that I had to use that  
-> > > > much
-> > > > callbacks. For example, when omitting to wire .poweroff/.restore,
-> > > > with .freeze/.thaw linked to suspend()/resume(), the state (of the  
-> > > > mail
-> > > > led) is not restored correctly after S2D.
-> > > 
-> > > 
-> > > Have you tried with just 3 - freeze, thaw and restore?
-> > > 
-> > 
-> > State restoration seems to be OK with only those three ones (tested
-> > against both S2RAM and S2D on my Acer Aspire 5680).
-> > 
-> > BTW, in the "struct dev_pm_ops" documentation, it would be interesting
-> > to know which callback sequence occurs in case of S2RAM and S2D events.
-> > 
-> > 
-> 
-> Here are my observations regarding PM events and callbacks:
-> 
-> S2RAM ("Suspend"):
-> event trigged -> .suspend gets called
-> recover from S2RAM -> .resume gets called
+On Wed, Jul 29, 2009 at 10:17 PM, Paul Mundt<lethal@linux-sh.org> wrote:
+> On Wed, Jul 29, 2009 at 02:51:36PM +0100, Ian Molton wrote:
+>> Magnus Damm wrote:
+>> >Note that I don't need clocklib to get the tmio_mmc driver working for
+>> >my platform. It's something _you_ need for the MFD chips. But you seem
+>> >to want me to fix it for you even though I don't have any particular
+>> >need for it.
+>>
+>> Actually, the tmio-mmc driver works perfectly on the MFD chips right
+>> now. These are the chips it was written to handle.
+>>
+> And these patches are fixing up the mmc driver to support the non-MFD
+> case. If you want to fix up the MFD driver to expose a similar interface
+> to the mmc one as what we are doing with the clock framework, that is
+> fine, but is likewise an unrelated change.
+>
+> Lets evaluate the clock options we have today:
+>
+>        1) clock framework
+>        2) clkdev
 
-That's correct, plus there are .suspend_noirq() which is called during suspend,
-after suspend_device_irqs(), and .resume_noirq() which is called during resume,
-before resume_device_irqs().
+2) is nothing more than an implementation detail of 1). How clk_get
+looks up the struct clk internally should not be of any concern to the
+consumer.
 
-> For *this module*,
+>        3) clocklib
+>
+> #1 is what these patches are written for, and the only standard in-tree
+> interface that we have cross platform today. #2 could be generalized, but
+> that needs discussion by itself, as it was never proposed as a standard
+> interface and never submitted to l-k for review. #3 is not in the kernel
+> today and it's not clear that it ever will be.
 
-What's *this module*? acer-wmi?
+Yes, 3) is unlikely to happen in the near future.
 
-> these callbacks seem not necessary, because the state
-> of hardware seems to be automatically restored on resume from S2RAM (by
-> BIOS ???).
-> 
-> S2DISK ("Hibernation"):
-> event trigged -> .freeze, then .thaw gets called
+[...]
+> If you can show what is wrong with how the clock framework is being used
+> in the patch that Guennadi posted, we will certainly rework it as
+> necessary. However, I will not at this point be merging clkdev in to my
+> architecture tree, and clocklib I have never supported. These are things
+> that can be done and supported incrementally, but making these
+> prerequisites is simply blocking progress, especially when there is no
+> consensus on the clkdev/clocklib parts.
 
-To be precise, the ordering is
+Providing the clock consumer ID via platform data is wrong. As I
+understand it, that ID should be either NULL if the clock can be
+determined from the struct device pointer (i.e. if it's the only clock
+provided to that device), or it should be used to distinguish the
+device's clock input pins (in the tmio-mmc case that would be 'hclk'
+or 'clk32' if I remember the datasheet correctly).
 
-.freeze()
-  .freeze_noirq()
-    create image
-  .thaw_noirq()
-.thaw()
-  save image
-.poweroff()
-  .poweroff_noirq()
-    enter sleep state
+>> Can we keep it technical now, please?
 
-> recover from S2DISK -> .restore gets called
+[...]
 
-To be precise, the ordering is:
-
-Boot kernel:
-load image
-.freeze()
-  .freeze_noirq()
-    pass control to the image kernel
-Image kernel:
-  .restore_noirq()
-.restore()
-
-> As per the pm.h documentation .thaw is called after RAM image has been
-> created, in order to restore hardware state in case RAM image failed and
-> the system cannot power off.
-
-That's not correct (please see above).  .thaw() is called after creating the
-image in case .freeze() has changed the state of the device.  This often is not
-necessary, though, so .thaw() may be skipped in many cases.  Of course, you
-should know exactly what you're doing.
-
-> So this callback should be linked to
-> something similar to the .restore callback. For *this module*, though it
-> may not be necessary because the state of both LCD backlight and mail
-> LED persist after RAM image creation, I have linked this callback
-> anyway.
-> 
-> After around 2 days of testing, here is a third attempt for this patch.
-> Please note that I renamed the functions to better reflect their use.
-> Can you please stress it ?
-> 
-> Signed-off-by: Arnaud Faucher <arnaud.faucher@gmail.com>
-> ---
->  drivers/platform/x86/acer-wmi.c |   14 +++++++++-----
->  1 files changed, 9 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/platform/x86/acer-wmi.c
-> b/drivers/platform/x86/acer-wmi.c
-> index fb45f5e..331771d 100644
-> --- a/drivers/platform/x86/acer-wmi.c
-> +++ b/drivers/platform/x86/acer-wmi.c
-> @@ -1152,8 +1152,7 @@ static int acer_platform_remove(struct
-> platform_device *device)
->  	return 0;
->  }
->  
-> -static int acer_platform_suspend(struct platform_device *dev,
-> -pm_message_t state)
-> +static int acer_platform_freeze(struct device *dev)
->  {
->  	u32 value;
->  	struct acer_data *data = &interface->data;
-> @@ -1174,7 +1173,7 @@ pm_message_t state)
->  	return 0;
->  }
->  
-> -static int acer_platform_resume(struct platform_device *device)
-> +static int acer_platform_restore(struct device *dev)
->  {
->  	struct acer_data *data = &interface->data;
->  
-> @@ -1190,15 +1189,20 @@ static int acer_platform_resume(struct
-> platform_device *device)
->  	return 0;
->  }
->  
-> +static struct dev_pm_ops acer_platform_pm_ops = {
-> +	.freeze = acer_platform_freeze,
-
-+	.suspend = acer_platform_freeze,
-
-> +	.thaw = acer_platform_restore,
-
-.thaw is not necessary AFAICS.
-
-> +	.restore = acer_platform_restore,
-
-+	.resume = acer_platform_restore,
-
-> +};
-> +
->  static struct platform_driver acer_platform_driver = {
->  	.driver = {
->  		.name = "acer-wmi",
->  		.owner = THIS_MODULE,
-> +		.pm = &acer_platform_pm_ops,
->  	},
->  	.probe = acer_platform_probe,
->  	.remove = acer_platform_remove,
-> -	.suspend = acer_platform_suspend,
-> -	.resume = acer_platform_resume,
->  };
->  
->  static struct platform_device *acer_platform_device;
-
-Thanks,
-Rafael
+regards
+Philipp
