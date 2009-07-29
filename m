@@ -1,42 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbZG2Cij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756271AbZG2CnJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756246AbZG2Cij (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 22:38:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756169AbZG2Cii
+	id S1756271AbZG2CnJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 22:43:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756241AbZG2CnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 22:38:38 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:40856 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756161AbZG2Cii (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 22:38:38 -0400
-Date: Tue, 28 Jul 2009 22:38:38 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Yoichi Yuasa <yyuasa@linux.com>, Ralf Baechle <ralf@linux-mips.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] remove zero-length file in tree
-Message-ID: <20090729023838.GA15427@havoc.gtf.org>
-Mime-Version: 1.0
+	Tue, 28 Jul 2009 22:43:09 -0400
+Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:54586 "EHLO
+	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756115AbZG2CnH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 22:43:07 -0400
+From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Message-Id: <200907290242.n6T2gbP1025488@mercury.physics.adelaide.edu.au>
+Subject: Re: [PATCH 6/12] drivers/platform/x86: Correct redundant test
+To: julia@diku.dk (Julia Lawall)
+Date: Wed, 29 Jul 2009 12:12:37 +0930 (CST)
+Cc: jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
+       pmarques@grupopie.com (Paulo Marques), linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0907290422121.16543@ask.diku.dk> from "Julia Lawall" at Jul 29, 2009 04:22:51 AM
+X-Mailer: ELM [version 2.5 PL6]
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Julia
 
-Please pull from 'zero-length' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git zero-length
+> > > Julia Lawall wrote:
+> > > > [...]
+> > > > ---
+> > > >  drivers/platform/x86/fujitsu-laptop.c          |    3 ---
+> > > >  1 files changed, 0 insertions(+), 3 deletions(-)
+> > > > 
+> > > > diff --git a/drivers/platform/x86/fujitsu-laptop.c b/drivers/platform/x86/fujitsu-laptop.c
+> > > > index 218b9a1..5306901 100644
+> > > > --- a/drivers/platform/x86/fujitsu-laptop.c
+> > > > +++ b/drivers/platform/x86/fujitsu-laptop.c
+> > > > @@ -745,9 +745,6 @@ static int acpi_fujitsu_remove(struct acpi_device *device, int type)
+> > > >  
+> > > >  	fujitsu = acpi_driver_data(device);
+> > > >  
+> > > > -	if (!device || !acpi_driver_data(device))
+> > > > -		return -EINVAL;
+> > > > -
+> > > 
+> > > Shouldn't this still do a:
+> > > 
+> > >    if (!fujitsu)
+> > >      return -EINVAL;
+> > > 
+> > > to avoid dereferencing a NULL pointer below?
+> > 
+> > Hmm, yes it should.  Well spotted.  And I'm not certain how the duplicate
+> > test on "device" got in there in the first place.  I suspect it came about
+> > due to some structural changes made a few versions ago and I failed to
+> > notice that the second check became redundant.
+> 
+> If you are going to check fujitsu afterwards, then I think there is no 
+> need to test the result of acpi_driver_data before.
 
-to receive the following updates:
+Yes, of course.  I'll wake up soon, promise!
 
- 0 files changed, 0 insertions(+), 0 deletions(-)
- delete mode 100644 drivers/char/vr41xx_giu.c
+So we're left with this.
 
-Jeff Garzik (1):
-      Remove zero-length file drivers/char/vr41xx_giu.c
+Signed-off-by: jwoithe@physics.adelaide.edu.au <Jonathan Woithe>
 
-diff --git a/drivers/char/vr41xx_giu.c b/drivers/char/vr41xx_giu.c
-deleted file mode 100644
-index e69de29..0000000
+--- a/drivers/platform/x86/fujitsu-laptop.c	2009-06-12 19:51:45.333234000 +0930
++++ b/drivers/platform/x86/fujitsu-laptop.c	2009-07-29 12:10:11.504901871 +0930
+@@ -740,12 +740,12 @@ static int acpi_fujitsu_remove(struct ac
+ {
+        struct fujitsu_t *fujitsu = NULL;
+ 
+-	if (!device || !acpi_driver_data(device))
++	if (!device)
+ 		return -EINVAL;
+ 
+ 	fujitsu = acpi_driver_data(device);
+ 
+-	if (!device || !acpi_driver_data(device))
++	if (!fujitsu)
+ 		return -EINVAL;
+ 
+	fujitsu->acpi_handle = NULL;
+
+
+Regards
+  jonathan
