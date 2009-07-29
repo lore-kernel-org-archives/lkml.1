@@ -1,98 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbZG2CUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbZG2CWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755478AbZG2CUf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 22:20:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753304AbZG2CUe
+	id S1756076AbZG2CWM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 22:22:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbZG2CWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 22:20:34 -0400
-Received: from vms173001pub.verizon.net ([206.46.173.1]:22480 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750974AbZG2CUe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 22:20:34 -0400
-From: Gene Heskett <gene.heskett@verizon.net>
-Organization: Organization? Not detectable
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [Regression] kdesu broken
-Date: Tue, 28 Jul 2009 22:20:20 -0400
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc4; KDE/4.2.4; i686; ; )
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200907240145.31935.rjw@sisk.pl>
- <87ws5xjo2x.fsf@devron.myhome.or.jp>
- <20090725150510.35e8854d@lxorguk.ukuu.org.uk>
-In-reply-to: <20090725150510.35e8854d@lxorguk.ukuu.org.uk>
-MIME-version: 1.0
-Content-type: Text/Plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-Message-id: <200907282220.20205.gene.heskett@verizon.net>
+	Tue, 28 Jul 2009 22:22:11 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:46977 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753725AbZG2CWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 22:22:10 -0400
+Date: Wed, 29 Jul 2009 04:20:32 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
+Subject: Re: [PATCH 9/9] drivers/acpi: correct error-handling code
+In-Reply-To: <1248828809.2670.144.camel@rzhang-dt>
+Message-ID: <Pine.LNX.4.64.0907290420120.16543@ask.diku.dk>
+References: <Pine.LNX.4.64.0907281756010.28189@ask.diku.dk>
+ <1248828809.2670.144.camel@rzhang-dt>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-511516320-1931889447-1248834032=:16543"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 25 July 2009, Alan Cox wrote:
->Actually try this:
->
->
->commit b0e6bdde87725a5d46273ecc4bd00c54bd675848
->Author: Alan Cox <alan@linux.intel.com>
->Date:   Sat Jul 25 15:00:04 2009 +0100
->
->    pty: ensure writes hit the reader before close
->
->    This is elegant in all the wrong ways. Put the pty into low latency mode
-> (which we can do as we always post bytes from user context). The
-> tty_flip_buffer_push then always calls into the ldisc which means we clear
-> the ldisc buffer before we set the TTY_OTHER_CLOSED flag.
->
->    Means pty has subtle knowledge of tty internals we really don't want it
-> to, but it fixes the problem for the moment.
->
->    Signed-off-by: Alan Cox <alan@linux.intel.com>
->
->diff --git a/drivers/char/pty.c b/drivers/char/pty.c
->index 6e6942c..87d729b 100644
->--- a/drivers/char/pty.c
->+++ b/drivers/char/pty.c
->@@ -47,10 +47,12 @@ static void pty_close(struct tty_struct *tty, struct
-> file *filp) }
-> 	wake_up_interruptible(&tty->read_wait);
-> 	wake_up_interruptible(&tty->write_wait);
->+
-> 	tty->packet = 0;
-> 	if (!tty->link)
-> 		return;
-> 	tty->link->packet = 0;
->+	tty_flip_buffer_push(tty->link);
-> 	set_bit(TTY_OTHER_CLOSED, &tty->link->flags);
-> 	wake_up_interruptible(&tty->link->read_wait);
-> 	wake_up_interruptible(&tty->link->write_wait);
->@@ -207,6 +209,7 @@ static int pty_open(struct tty_struct *tty, struct file
-> *filp) clear_bit(TTY_OTHER_CLOSED, &tty->link->flags);
-> 	set_bit(TTY_THROTTLED, &tty->flags);
-> 	retval = 0;
->+	tty->low_latency = 1;
-> out:
-> 	return retval;
-> }
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Tracing this kdesu thread down per advice from Rafael W.  This patch doesn't 
-seem to do anything about bz 13841. There are more patches in this thread, 
-I'll give them some testing too.
+---511516320-1931889447-1248834032=:16543
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-The NRA is offering FREE Associate memberships to anyone who wants them.
-<https://www.nrahq.org/nrabonus/accept-membership.asp>
+On Wed, 29 Jul 2009, Zhang Rui wrote:
 
-"Microsoft is the epitome of innovation and product quality."
+> On Tue, 2009-07-28 at 23:56 +0800, Julia Lawall wrote:
+> > From: Julia Lawall <julia@diku.dk>
+> > 
+> > backlight_device_register may return an ERR_PTR value rather than a valid
+> > pointer.
+> > 
+> > A simplified version of the semantic match that finds this problem is as
+> > follows: (http://coccinelle.lip6.fr/)
+> 
+> > Signed-off-by: Julia Lawall <julia@diku.dk>
+> > 
+> > ---
+> >  drivers/acpi/video.c                |    2 ++
+> >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
+> > index 8851315..29788db 100644
+> > --- a/drivers/acpi/video.c
+> > +++ b/drivers/acpi/video.c
+> > @@ -982,6 +982,8 @@ static void acpi_video_device_find_cap(struct acpi_video_device *device)
+> >  		sprintf(name, "acpi_video%d", count++);
+> >  		device->backlight = backlight_device_register(name,
+> >  			NULL, device, &acpi_backlight_ops);
+> > +		if (IS_ERR(device->backlight))
+> > +			return;
+> 
+> we should kfree(name) here.
 
-   -- This testimonial paid for by Microsoft. 
+Yes, good point.
 
+thanks,
+julia
+
+> >  		device->backlight->props.max_brightness = device->brightness->count-3;
+> >  		kfree(name);
+> 
+> how about this one?
+> 
+> ÿÿbacklight_device_register may return an ERR_PTR value rather than a valid
+> pointer.
+> 
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  drivers/acpi/video.c |    4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/drivers/acpi/video.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/acpi/video.c
+> +++ linux-2.6/drivers/acpi/video.c
+> @@ -982,8 +982,10 @@ static void acpi_video_device_find_cap(s
+>  		sprintf(name, "acpi_video%d", count++);
+>  		device->backlight = backlight_device_register(name,
+>  			NULL, device, &acpi_backlight_ops);
+> -		device->backlight->props.max_brightness = device->brightness->count-3;
+>  		kfree(name);
+> +		if (IS_ERR(device->backlight))
+> +			return;
+> +		device->backlight->props.max_brightness = device->brightness->count-3;
+>  
+>  		result = sysfs_create_link(&device->backlight->dev.kobj,
+>  					   &device->dev->dev.kobj, "device");
+> 
+> 
+> 
+>  
+> 
+> 
+---511516320-1931889447-1248834032=:16543--
