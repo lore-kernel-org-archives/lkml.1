@@ -1,107 +1,258 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755941AbZG2URJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbZG2URX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755941AbZG2URJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 16:17:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755805AbZG2URI
+	id S1755965AbZG2URX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 16:17:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755805AbZG2URW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 16:17:08 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:49800 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755624AbZG2URH (ORCPT
+	Wed, 29 Jul 2009 16:17:22 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:58350 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755571AbZG2URU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 16:17:07 -0400
-Date: Thu, 30 Jul 2009 05:17:05 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Ian Molton <ian@mnementh.co.uk>
-Cc: Magnus Damm <magnus.damm@gmail.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
-       Magnus Damm <damm@opensource.se>
-Subject: Re: MMC: Make the configuration memory resource optional
-Message-ID: <20090729201702.GA28202@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Ian Molton <ian@mnementh.co.uk>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-	linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
-	Magnus Damm <damm@opensource.se>
-References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange> <4A6F033B.7030302@mnementh.co.uk> <aec7e5c30907281948s2a0dcd0csd3e580251d6c4f5a@mail.gmail.com> <20090729115817.GA12223@rakim.wolfsonmicro.main> <aec7e5c30907290527w39a89895n285e932459e6c953@mail.gmail.com> <20090729124233.GA12802@rakim.wolfsonmicro.main> <aec7e5c30907290551y77edc6d7qb7b3d787215c2b4@mail.gmail.com> <4A704777.70001@mnementh.co.uk> <aec7e5c30907290608i43a80fe1xe4ef0f3847855709@mail.gmail.com> <4A7053E8.8050303@mnementh.co.uk>
+	Wed, 29 Jul 2009 16:17:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=L21V4UGdVZgJIwarR5pHS9f0dkHdyNF1AMloeq9dEN0m+stWcAon8rqbUIPCOkCSLZ
+         01DhVweckj4EaQpEx3MTWOh5Mst9IpHAf5+w6STAcEKlB6D3xmsfMvU54bFNfw+dE2dJ
+         LC8i6q/CBWx4aKkzUaN3msw8T7Cf7d3NhTnWE=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Subject: [PATCH] fujitsu-laptop: driver [un]registration fixes
+Date: Wed, 29 Jul 2009 22:15:33 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc3-next-20090722-04415-ge5aa24a-dirty; KDE/4.2.4; i686; ; )
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4A7053E8.8050303@mnementh.co.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200907292215.33182.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 29, 2009 at 02:51:36PM +0100, Ian Molton wrote:
-> Magnus Damm wrote:
-> >Note that I don't need clocklib to get the tmio_mmc driver working for
-> >my platform. It's something _you_ need for the MFD chips. But you seem
-> >to want me to fix it for you even though I don't have any particular
-> >need for it.
-> 
-> Actually, the tmio-mmc driver works perfectly on the MFD chips right 
-> now. These are the chips it was written to handle.
-> 
-And these patches are fixing up the mmc driver to support the non-MFD
-case. If you want to fix up the MFD driver to expose a similar interface
-to the mmc one as what we are doing with the clock framework, that is
-fine, but is likewise an unrelated change.
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] fujitsu-laptop: driver [un]registration fixes
 
-Lets evaluate the clock options we have today:
+* Move led_classdev_unregister() calls from fujitsu_cleanup() to
+  acpi_fujitsu_hotkey_remove().
 
-	1) clock framework
-	2) clkdev
-	3) clocklib
+* Fix ordering in fujitsu_cleanup().
 
-#1 is what these patches are written for, and the only standard in-tree
-interface that we have cross platform today. #2 could be generalized, but
-that needs discussion by itself, as it was never proposed as a standard
-interface and never submitted to l-k for review. #3 is not in the kernel
-today and it's not clear that it ever will be.
+* Fix backlight_device_register() failure handling in fujitsu_init().
 
-> YOU want to change it, not me. Don't try to turn the argument around.
-> 
-We wish to make constructive changes to the MMC driver to accomodate
-devices you hadn't considered. It is not an MFD in our case, we have no
-ability to test the MFD code, and we will not be making any changes to
-the MFD code. You are the one with the MFD, you get to handle it. While
-we will work with you to make sure nothing on the MFD side breaks,
-holding the MMC driver hostage until MFD is reworked or some random bits
-of unrelated infrastructure are merged is not constructive.
+* Add missing sysfs group removal on failure to fujitsu_init().
 
-If you can show what is wrong with how the clock framework is being used
-in the patch that Guennadi posted, we will certainly rework it as
-necessary. However, I will not at this point be merging clkdev in to my
-architecture tree, and clocklib I have never supported. These are things
-that can be done and supported incrementally, but making these
-prerequisites is simply blocking progress, especially when there is no
-consensus on the clkdev/clocklib parts.
+* Add input device unregistering on failure to acpi_fujitsu_add()
+  and acpi_fujitsu_hotkey_add().
 
-> Can we keep it technical now, please?
-> 
-So far you have not produced a technical rebuttal to any of the patches.
+* Add input device unregistering/freeing to acpi_fujitsu_remove()
+  and acpi_fujitsu_hotkey_remove() (also remove superfluous 'device'
+  and 'acpi_driver_data(device)' checks while at it).
 
-You object to #1 because you think it confuses things, despite the fact
-that in our case this cnf window just doesn't exist at all, and there are
-plenty of existing cases in the kernel today where variable number of
-resources are handled for fairly similar situations. We have no intention
-of pretending the resource exists when it does not. However you want to
-rework the MFD driver to support clocks and power control is entirely up
-to you, but none of that has any real bearing on the MMC driver.
+* Do few minor cleanups.
 
-Your objections to #2 are non-obvious, since you haven't stated any other
-than the fact you would like to see it solved using APIs that do not
-exist in the kernel. Perhaps in the long term we can move towards clkdev
-or clocklib if they are proposed as generic interfaces and merged in to
-the kernel at some point in the future, but today the clock framework is
-what we have to work with, and that is what we will be working with.
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/platform/x86/fujitsu-laptop.c |   86 ++++++++++++++++------------------
+ 1 file changed, 41 insertions(+), 45 deletions(-)
 
-If you don't want to expand on either one of those points, then I can
-just include your NAKed-by in the commit logs and we can take it from
-there. You can always maintain a local patchset that drops support for
-non-MFD chips.
+Index: b/drivers/platform/x86/fujitsu-laptop.c
+===================================================================
+--- a/drivers/platform/x86/fujitsu-laptop.c
++++ b/drivers/platform/x86/fujitsu-laptop.c
+@@ -691,7 +691,7 @@ static int acpi_fujitsu_add(struct acpi_
+ 	result = acpi_bus_get_power(fujitsu->acpi_handle, &state);
+ 	if (result) {
+ 		printk(KERN_ERR "Error reading power state\n");
+-		goto end;
++		goto err_unregister_input_dev;
+ 	}
+ 
+ 	printk(KERN_INFO PREFIX "%s [%s] (%s)\n",
+@@ -722,22 +722,22 @@ static int acpi_fujitsu_add(struct acpi_
+ 
+ 	return result;
+ 
+-end:
++err_unregister_input_dev:
++	input_unregister_device(input);
+ err_free_input_dev:
+ 	input_free_device(input);
+ err_stop:
+-
+ 	return result;
+ }
+ 
+ static int acpi_fujitsu_remove(struct acpi_device *device, int type)
+ {
+-	struct fujitsu_t *fujitsu = NULL;
++	struct fujitsu_t *fujitsu = acpi_driver_data(device);
++	struct input_dev *input = fujitsu->input;
+ 
+-	if (!device || !acpi_driver_data(device))
+-		return -EINVAL;
++	input_unregister_device(input);
+ 
+-	fujitsu = acpi_driver_data(device);
++	input_free_device(input);
+ 
+ 	fujitsu->acpi_handle = NULL;
+ 
+@@ -862,7 +862,7 @@ static int acpi_fujitsu_hotkey_add(struc
+ 	result = acpi_bus_get_power(fujitsu_hotkey->acpi_handle, &state);
+ 	if (result) {
+ 		printk(KERN_ERR "Error reading power state\n");
+-		goto end;
++		goto err_unregister_input_dev;
+ 	}
+ 
+ 	printk(KERN_INFO PREFIX "%s [%s] (%s)\n",
+@@ -902,7 +902,7 @@ static int acpi_fujitsu_hotkey_add(struc
+ 	printk(KERN_INFO "fujitsu-laptop: BTNI: [0x%x]\n",
+ 		call_fext_func(FUNC_BUTTONS, 0x0, 0x0, 0x0));
+ 
+-	#ifdef CONFIG_LEDS_CLASS
++#ifdef CONFIG_LEDS_CLASS
+ 	if (call_fext_func(FUNC_LEDS, 0x0, 0x0, 0x0) & LOGOLAMP_POWERON) {
+ 		result = led_classdev_register(&fujitsu->pf_device->dev,
+ 						&logolamp_led);
+@@ -925,33 +925,41 @@ static int acpi_fujitsu_hotkey_add(struc
+ 			"LED handler for keyboard lamps, error %i\n", result);
+ 		}
+ 	}
+-	#endif
++#endif
+ 
+ 	return result;
+ 
+-end:
++err_unregister_input_dev:
++	input_unregister_device(input);
+ err_free_input_dev:
+ 	input_free_device(input);
+ err_free_fifo:
+ 	kfifo_free(fujitsu_hotkey->fifo);
+ err_stop:
+-
+ 	return result;
+ }
+ 
+ static int acpi_fujitsu_hotkey_remove(struct acpi_device *device, int type)
+ {
+-	struct fujitsu_hotkey_t *fujitsu_hotkey = NULL;
++	struct fujitsu_hotkey_t *fujitsu_hotkey = acpi_driver_data(device);
++	struct input_dev *input = fujitsu_hotkey->input;
+ 
+-	if (!device || !acpi_driver_data(device))
+-		return -EINVAL;
++#ifdef CONFIG_LEDS_CLASS
++	if (fujitsu_hotkey->logolamp_registered)
++		led_classdev_unregister(&logolamp_led);
++
++	if (fujitsu_hotkey->kblamps_registered)
++		led_classdev_unregister(&kblamps_led);
++#endif
+ 
+-	fujitsu_hotkey = acpi_driver_data(device);
++	input_unregister_device(input);
+ 
+-	fujitsu_hotkey->acpi_handle = NULL;
++	input_free_device(input);
+ 
+ 	kfifo_free(fujitsu_hotkey->fifo);
+ 
++	fujitsu_hotkey->acpi_handle = NULL;
++
+ 	return 0;
+ }
+ 
+@@ -1121,8 +1129,11 @@ static int __init fujitsu_init(void)
+ 		fujitsu->bl_device =
+ 			backlight_device_register("fujitsu-laptop", NULL, NULL,
+ 						  &fujitsubl_ops);
+-		if (IS_ERR(fujitsu->bl_device))
+-			return PTR_ERR(fujitsu->bl_device);
++		if (IS_ERR(fujitsu->bl_device)) {
++			ret = PTR_ERR(fujitsu->bl_device);
++			fujitsu->bl_device = NULL;
++			goto fail_sysfs_group;
++		}
+ 		max_brightness = fujitsu->max_brightness;
+ 		fujitsu->bl_device->props.max_brightness = max_brightness - 1;
+ 		fujitsu->bl_device->props.brightness = fujitsu->brightness_level;
+@@ -1162,32 +1173,22 @@ static int __init fujitsu_init(void)
+ 	return 0;
+ 
+ fail_hotkey1:
+-
+ 	kfree(fujitsu_hotkey);
+-
+ fail_hotkey:
+-
+ 	platform_driver_unregister(&fujitsupf_driver);
+-
+ fail_backlight:
+-
+ 	if (fujitsu->bl_device)
+ 		backlight_device_unregister(fujitsu->bl_device);
+-
++fail_sysfs_group:
++	sysfs_remove_group(&fujitsu->pf_device->dev.kobj,
++			   &fujitsupf_attribute_group);
+ fail_platform_device2:
+-
+ 	platform_device_del(fujitsu->pf_device);
+-
+ fail_platform_device1:
+-
+ 	platform_device_put(fujitsu->pf_device);
+-
+ fail_platform_driver:
+-
+ 	acpi_bus_unregister_driver(&acpi_fujitsu_driver);
+-
+ fail_acpi:
+-
+ 	kfree(fujitsu);
+ 
+ 	return ret;
+@@ -1195,28 +1196,23 @@ fail_acpi:
+ 
+ static void __exit fujitsu_cleanup(void)
+ {
+-	#ifdef CONFIG_LEDS_CLASS
+-	if (fujitsu_hotkey->logolamp_registered != 0)
+-		led_classdev_unregister(&logolamp_led);
++	acpi_bus_unregister_driver(&acpi_fujitsu_hotkey_driver);
+ 
+-	if (fujitsu_hotkey->kblamps_registered != 0)
+-		led_classdev_unregister(&kblamps_led);
+-	#endif
++	kfree(fujitsu_hotkey);
+ 
+-	sysfs_remove_group(&fujitsu->pf_device->dev.kobj,
+-			   &fujitsupf_attribute_group);
+-	platform_device_unregister(fujitsu->pf_device);
+ 	platform_driver_unregister(&fujitsupf_driver);
++
+ 	if (fujitsu->bl_device)
+ 		backlight_device_unregister(fujitsu->bl_device);
+ 
+-	acpi_bus_unregister_driver(&acpi_fujitsu_driver);
++	sysfs_remove_group(&fujitsu->pf_device->dev.kobj,
++			   &fujitsupf_attribute_group);
+ 
+-	kfree(fujitsu);
++	platform_device_unregister(fujitsu->pf_device);
+ 
+-	acpi_bus_unregister_driver(&acpi_fujitsu_hotkey_driver);
++	acpi_bus_unregister_driver(&acpi_fujitsu_driver);
+ 
+-	kfree(fujitsu_hotkey);
++	kfree(fujitsu);
+ 
+ 	printk(KERN_INFO "fujitsu-laptop: driver unloaded.\n");
+ }
