@@ -1,28 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbZG2QiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755730AbZG2Qjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755798AbZG2QiA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 12:38:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755784AbZG2Qh7
+	id S1755730AbZG2Qjk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 12:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755575AbZG2Qjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 12:37:59 -0400
-Received: from mtagate1.uk.ibm.com ([194.196.100.161]:39226 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755781AbZG2Qh7 (ORCPT
+	Wed, 29 Jul 2009 12:39:39 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:58799 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754452AbZG2Qjj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 12:37:59 -0400
-Date: Wed, 29 Jul 2009 18:37:56 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
-Subject: Re: [RFC][patch 02/12] remove clocksource inline functions
-Message-ID: <20090729183756.7c1314ce@skybase>
-In-Reply-To: <1248882770.28841.236.camel@desktop>
-References: <200907291457.n6TEvDAt003701@d06av06.portsmouth.uk.ibm.com>
-	<20090729173231.012d0b89@skybase>
-	<1248882770.28841.236.camel@desktop>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.4; i486-pc-linux-gnu)
+	Wed, 29 Jul 2009 12:39:39 -0400
+Date: Wed, 29 Jul 2009 17:39:55 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kdesu broken
+Message-ID: <20090729173955.125a7ae0@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.01.0907290859230.3161@localhost.localdomain>
+References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
+	<87r5w19xsb.fsf@devron.myhome.or.jp>
+	<20090728112203.7b70adba@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907280848090.3186@localhost.localdomain>
+	<20090728174213.5e927428@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907280944150.3186@localhost.localdomain>
+	<20090728180649.596c5412@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907281141070.3186@localhost.localdomain>
+	<20090728195651.3a402a31@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907281158120.3186@localhost.localdomain>
+	<20090729004639.71f0eabc@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907281651160.3186@localhost.localdomain>
+	<20090729013442.493effa6@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907281736260.3161@localhost.localdomain>
+	<20090729095923.4ca5ca3e@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907290842420.3161@localhost.localdomain>
+	<20090729165513.2a1ccb7c@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907290859230.3161@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -30,45 +47,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Jul 2009 08:52:50 -0700
-Daniel Walker <dwalker@fifo99.com> wrote:
+>  		tty_ldisc_deref(ld);
+> +		tty_ldisc_halt(tty);
+> +		tty_ldisc_wait_idle(tty);
 
-> On Wed, 2009-07-29 at 17:32 +0200, Martin Schwidefsky wrote:
-> > Hmm, you have an object of type struct clocksource and you do
-> > cs->read(cs). If that is not clear enough then I don't know what is.
-> 
-> It's not as clear as it could be .. In the case above you have to look
-> in at least two places to know what's going on.. First to see the
-> cs->read() , and second to see if "cs" is actually a clocksource or
-> something else.. "cs" could be declared anyplace with any name.
+Needs to be
+	mutex_lock(&tty->ldisc_mutex);
+	if (tty->ldisc)
+		....
+	}
+	mutex_unlock(&tty->ldisc_mutex)
 
-Well you have something like that in the code:
+We can't wait for the reference to go away if we hold one, and if we
+don't hold one the ldisc reference might go away during the hangup if we
+close()
 
-	struct clocksource *clock;
-
-	clock = timekeeper.clock;
-	cycle_now = clock->read(clock);
-
-If I read the function top to bottom I immediately see that clock is a
-clocksource and that the code does a read on it. That is not the case
-if I need to lookup the clocksource_read wrapper.
-
-> If you see clocksource_read(cs) , you might need to once check what
-> clocksource_read() is actually doing, but only once.. After that when
-> you see that function you know that variable is a clocksource, and it's
-> "read()" is getting called. So you only need to review one line in the
-> simplest case.
-
-After you learned (once) that timekeeper.clock is a clock source you
-have no trouble to understand the 6 occurrences of clock->read(clock)
-there are in the code.
-
-Anyway this seems to be a matter of personal preference, in the end I
-don't care too much about the inline functions.
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+Odds of hitting it minimal however. Or maybe we need a smarter
+tty_ldisc_wait_self_idle(ld) ?
 
