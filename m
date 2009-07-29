@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753742AbZG2AQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbZG2ARe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753742AbZG2AQP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 20:16:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbZG2AQO
+	id S1754077AbZG2ARe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 20:17:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbZG2ARd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 20:16:14 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:26002 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753295AbZG2AQN (ORCPT
+	Tue, 28 Jul 2009 20:17:33 -0400
+Received: from vms173005pub.verizon.net ([206.46.173.5]:57297 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753299AbZG2ARc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 20:16:13 -0400
-Date: Tue, 28 Jul 2009 18:16:13 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Jesse Barnes <jesse.barnes@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org, kernelnewbies@nl.linux.org
-Subject: Re: [PATCH] Shut off pci_find_device warnings when the deprecated
-	pci functions are enabled.
-Message-ID: <20090729001613.GA19369@ldl.fc.hp.com>
-References: <20090724094115.GA18450@basil.fritz.box> <20090728095552.72c41525@jbarnes-g45>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090728095552.72c41525@jbarnes-g45>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 28 Jul 2009 20:17:32 -0400
+Date: Tue, 28 Jul 2009 20:17:09 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Andreas Mohr <andi@lisas.de>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Subject: Re: Dynamic configure max_cstate
+In-reply-to: <20090727073338.GA12669@rhlx01.hs-esslingen.de>
+Message-id: <alpine.LFD.2.00.0907282014030.17102@localhost.localdomain>
+References: <20090727073338.GA12669@rhlx01.hs-esslingen.de>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jesse Barnes <jesse.barnes@intel.com>:
-> On Fri, 24 Jul 2009 11:41:15 +0200
-> Andi Kleen <andi@firstfloor.org> wrote:
+
+
+thanks,
+Len Brown, Intel Open Source Technology Center
+
+On Mon, 27 Jul 2009, Andreas Mohr wrote:
+
+> Hi,
 > 
-> > Shut off pci_find_device warnings when the deprecated pci functions
-> > are enabled.
-> > 
-> > Shut off the long standing
-> > 
-> > linux/drivers/pci/search.c:144: warning: 'pci_find_device' is
-> > deprecated (declared at linux/drivers/pci/search.c:136)
-> > linux/drivers/pci/search.c:144: warning: 'pci_find_device' is
-> > deprecated (declared at linux/drivers/pci/search.c:136)
-> > 
-> > warnings that appear on every build when CONFIG_PCI_LEGACY is enabled.
-> > 
-> > gcc warns for the use in EXPORT_SYMBOL
-> > 
-> > I moved these to a separate file and disabled the warning in the
-> > Makefile for that file.
-> > 
-> > Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> > When running a fio workload, I found sometimes cpu C state has
+> > big impact on the result. Mostly, fio is a disk I/O workload
+> > which doesn't spend much time with cpu, so cpu switch to C2/C3
+> > freqently and the latency is big.
 > 
-> Applied to linux-next, thanks.
+> Rather than inventing ways to limit ACPI Cx state usefulness, we should
+> perhaps be thinking of what's wrong here.
+> 
+> And your complaint might just fit into a thought I had recently:
+> are we actually taking ACPI Cx exit latency into account, for timers???
 
-Maybe it's too late now, but I thought those warnings were
-supposed to motivate people to convert old, buggy drivers to get
-off the deprecated interface.
+Yes.
+menu_select() calls tick_nohz_get_sleep_length() specifically
+to compare the expiration of the next timer vs. the expected sleep length.
 
-That's what finally motivated me to get rid of pci_find_slot()
-earlier...
+The problem here is likely that the expected sleep length
+is shorter than expected, for IO interrupts are not timers...
+Thus we add long deep C-state wakeup time to the IO interrupt latency...
 
-By the way, this would also be a perfect kernelnewbies/kernel
-janitor cleanup, as it would require actually digging into
-drivers and making real, substantial changes as opposed to
-whitespace/checkpatch/typo patches.
-
-Just a thought.
-
-/ac
+-Len Brown, Intel Open Source Technology Center
 
