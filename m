@@ -1,37 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbZG2QV6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbZG2Q1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755500AbZG2QV6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 12:21:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbZG2QV5
+	id S1755519AbZG2Q1d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 12:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510AbZG2Q1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 12:21:57 -0400
-Received: from scan.ji-net.com ([203.130.156.2]:34698 "EHLO scan.ji-net.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753280AbZG2QV5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 12:21:57 -0400
-X-Greylist: delayed 5836 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Jul 2009 12:21:56 EDT
-To: info@winner.com
-Subject: Payment Department!!
-Message-ID: <1248878616.4a7060186ab8f@webmail.ji-net.com>
-Date: Wed, 29 Jul 2009 21:43:36 +0700 (ICT)
-From: Dunhill Promo <baankrood@ji-net.com>
+	Wed, 29 Jul 2009 12:27:33 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:55427 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751095AbZG2Q1c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 12:27:32 -0400
+X-Greylist: delayed 342 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Jul 2009 12:27:31 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=aTCX3KVA5RcHAerZCOzfTJ/AwgEXcKuvlLanPSL+7HLGL+so9WHKXuXiRzQzTdUzeU
+         dtOWiKHaImZUPguS50dSsfxgjeeYQHpR5JtLfhRjjpoMI9P7fT4/wV4vY6Y49uh8ggwl
+         loudsPaYUBRVQEO2C9DbApssUg3HzfBVqZuuo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=TIS-620
-Content-Transfer-Encoding: 8bit
-User-Agent: IMP/PHP IMAP webmail program 2.2.4
-X-Originating-IP: 65.120.56.2
-X-HTTP_X_FORWARDED_FOR: 
+Date: Wed, 29 Jul 2009 12:21:49 -0400
+Message-ID: <194f62550907290921h89d6e7fjad427816b07dcdd4@mail.gmail.com>
+Subject: User-space traffic shaper?
+From: Clemens Eisserer <linuxhippy@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+I would like to use an embedded device as traffic shaper (Nokia 770),
+unfourtunatly the wlan driver is a binary blob so I am stuck with
+2.6.16.27.
+As soon as I enable "QoS and/or fair queueing" the device doesn't boot
+anymore, however tun/tap seems to work fine.
 
-The Sum Of 750,000.00 Pounds has been won by your EMAIL Address in our 
-Dunhill Online Promo.Send your info:
+Are there are traffic-shapers that work in userspace?
 
-Payment department Contact email: ukdunhill01@gmail.com
-
-Name:
-Occupation:
-Country: 
+Thank you in advance, Clemens
