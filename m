@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751095AbZG2Hqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751318AbZG2Hxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751095AbZG2Hqh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 03:46:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbZG2Hqh
+	id S1751318AbZG2Hxm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 03:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750745AbZG2Hxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 03:46:37 -0400
-Received: from vms173003pub.verizon.net ([206.46.173.3]:61353 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750779AbZG2Hqg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 03:46:36 -0400
-From: Gene Heskett <gene.heskett@verizon.net>
-Organization: Organization? Not detectable
+	Wed, 29 Jul 2009 03:53:41 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49811 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751178AbZG2Hxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 03:53:41 -0400
+Message-ID: <4A6FFFE9.5070204@cn.fujitsu.com>
+Date: Wed, 29 Jul 2009 15:53:13 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kdesu broken
-Date: Wed, 29 Jul 2009 03:46:35 -0400
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc4; KDE/4.2.4; i686; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+CC: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
        LKML <linux-kernel@vger.kernel.org>
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
- <200907290100.46160.gene.heskett@verizon.net>
- <20090728220843.3d353f36.akpm@linux-foundation.org>
-In-reply-to: <20090728220843.3d353f36.akpm@linux-foundation.org>
-MIME-version: 1.0
-Content-type: Text/Plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-Message-id: <200907290346.35603.gene.heskett@verizon.net>
+Subject: [PATCH 1/3 -mm] generic-ipi: fix hotplug_cfd()
+References: <4A6983D8.8090805@cn.fujitsu.com>
+In-Reply-To: <4A6983D8.8090805@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 July 2009, Andrew Morton wrote:
->On Wed, 29 Jul 2009 01:00:45 -0400 Gene Heskett <gene.heskett@verizon.net> 
-wrote:
->> Link to a tutorial plz?
->
->http://landley.net/writing/git-quick.html
->
->That used to be at http://www.kernel.org/doc/local/git-quick.html but some
->dope removed it.
+Use CONFIG_HOTPLUG_CPU, not CONFIG_CPU_HOTPLUG
 
-The ./configure line fails, on page 2 of that document, so I moved the .config 
-files from 31-rc4 into that tree, and I'm using my own script to do the build 
-and install, fiddling with the version numbers to track, calling the first 
-build 2.6.31-rc3.5.  The build seems to be going ok, but I had to pull in the 
-firmware/radeon tree from my own 31-rc4 in order to get the firmware my script 
-& the .config expects.
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+---
+ kernel/smp.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-As my script bounces in and out of the src tree, it needs the src tree named 
-consistently.  So I had to restart it a couple of times to fix all those 
-gotcha's.  But now I am ready to reboot, starting with me some zz's.  The 
-build didn't spit any more stuff than usual.  5 section miss-matches I've been 
-looking at for over a year, and some recent adds of rnonce.data stuff that are 
-fussing about not being initialized.  I'll test for good/bad in the morning.
-
-
+diff --git a/kernel/smp.c b/kernel/smp.c
+index bf9f18b..1b5fd2e 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -54,7 +54,7 @@ hotplug_cfd(struct notifier_block *nfb, unsigned long action, void *hcpu)
+ 			return NOTIFY_BAD;
+ 		break;
+ 
+-#ifdef CONFIG_CPU_HOTPLUG
++#ifdef CONFIG_HOTPLUG_CPU
+ 	case CPU_UP_CANCELED:
+ 	case CPU_UP_CANCELED_FROZEN:
+ 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-The NRA is offering FREE Associate memberships to anyone who wants them.
-<https://www.nrahq.org/nrabonus/accept-membership.asp>
+1.6.1.2
 
-The new Congressmen say they're going to turn the government around.  I
-hope I don't get run over again.
 
