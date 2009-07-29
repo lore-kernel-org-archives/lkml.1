@@ -1,45 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbZG2UFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755396AbZG2UJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755284AbZG2UFA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 16:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZG2UE7
+	id S1755396AbZG2UJQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 16:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbZG2UJP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 16:04:59 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:43700 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751051AbZG2UE7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 16:04:59 -0400
-Message-ID: <4A70AA64.4020301@zytor.com>
-Date: Wed, 29 Jul 2009 13:00:36 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-CC: linux@arm.linux.org.uk, alain@knaff.lu, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 5/5] Add support for LZO-compressed kernels on x86
-References: <1248271279-9920-1-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-2-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-3-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-4-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-5-git-send-email-albin.tonnerre@free-electrons.com>
-In-Reply-To: <1248271279-9920-5-git-send-email-albin.tonnerre@free-electrons.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 29 Jul 2009 16:09:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33388 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755184AbZG2UJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 16:09:15 -0400
+Subject: Re: fanotify - overall design before I start sending patches
+From: Eric Paris <eparis@redhat.com>
+To: Niraj kumar <niraj17@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <b82a89170907250722o572e741dq372ab11faf58261@mail.gmail.com>
+References: <1248466429.3567.82.camel@localhost>
+	 <b82a89170907250722o572e741dq372ab11faf58261@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 29 Jul 2009 16:08:42 -0400
+Message-Id: <1248898122.2597.54.camel@localhost>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/22/2009 07:01 AM, Albin Tonnerre wrote:
-> This is the third and last part of the patch, which contains the
-> necessary changes to the x86 Kconfig and boot/compressed to allow the
-> use of this new compression method
+On Sat, 2009-07-25 at 19:52 +0530, Niraj kumar wrote:
+> >
+> > - subtree notification.
+> >        Currently to only watch /home and all of it's descendants one must
+> > either register a directed watch on every directory or use a global
+> > listener.  The global listener with ignored_mask is not as bad as it
+> > sounds in my testing, but decent subtree registration and notification
+> > would be a big win in a lot of people's mind.
 > 
-> Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+> Unless it's already covered in some way, I would also be interested
+> in notification based on "process subtree".  What this means is that
+> for whatever notification a particular process requests, it's only
+> interested in events generated  by itself and it's children.
+> This is useful in doing auditing for file system related access.
 
-Acked-by: H. Peter Anvin <hpa@zytor.com>
+Has not been considered.   You'd have to really flesh out the use case
+before I could.....
 
-Since the patchset otherwise isn't really x86-related it probably makes
-more sense to pass this through the kbuild tree, or perhaps via akpm,
-rather than -tip?
+-Eric
 
-	-hpa
