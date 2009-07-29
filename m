@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbZG2TTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbZG2TXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbZG2TTf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 15:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbZG2TTf
+	id S1754148AbZG2TXV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 15:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbZG2TXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 15:19:35 -0400
-Received: from vms173005pub.verizon.net ([206.46.173.5]:44273 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752800AbZG2TTe (ORCPT
+	Wed, 29 Jul 2009 15:23:21 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:38884 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751110AbZG2TXU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 15:19:34 -0400
-From: Gene Heskett <gene.heskett@verizon.net>
-Organization: Organization? Not detectable
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: [PATCH] kdesu broken
-Date: Wed, 29 Jul 2009 15:19:19 -0400
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc4; KDE/4.2.4; i686; ; )
-Cc: alan@lxorguk.ukuu.org.uk, torvalds@linux-foundation.org,
-       hirofumi@mail.parknet.co.jp, aneesh.kumar@linux.vnet.ibm.com,
-       rjw@sisk.pl, ray-lk@madrabbit.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, stern@rowland.harvard.edu
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
- <200907291443.13983.gene.heskett@verizon.net>
- <200907292108.15839.elendil@planet.nl>
-In-reply-to: <200907292108.15839.elendil@planet.nl>
-MIME-version: 1.0
-Content-type: Text/Plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-Message-id: <200907291519.19567.gene.heskett@verizon.net>
+	Wed, 29 Jul 2009 15:23:20 -0400
+X-Greylist: delayed 327 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Jul 2009 15:23:20 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=Bg+V/RzjAwaP2V6/MWrkjV1HTN/i6J3iudFYRDKy0Ba/jQERV7CyI2Ll1ZD9c4WivE
+         AJehu4lccRnIF9vzPlqeYqZF+BYD6lhxncrRhB6Vw85sMn/+YhN1M22VAPuMZXicFjXj
+         G/dknWyq7R4exP3S7kwLx6tbp1C4GDguduRn8=
+Message-ID: <4A70A10D.6030503@gmail.com>
+Date: Wed, 29 Jul 2009 21:20:45 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] newport_con: Read outside array bounds
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 July 2009, Frans Pop wrote:
->On Wednesday 29 July 2009, Gene Heskett wrote:
->> Yes, some of it will.  But thanks to fedora's broken disk partitioner,
->> something I've been screaming about for a damned decade, my /boot
->> partition isn't big enough to absorb a whole chain of those, hence the
->> fixed version request.
->
->My /boot isn't big enough for a full series either, but my $HOME is :-)
->
->The fact that the packages I create all have the same package name and
->only the package version differs, means that I do get the complete series
->but only have one version installed in /boot at any time (as installing a
->new version overwrites the version from the previous bisect iteration).
->
->No idea if you can do the same on an RPM-based system easily.
+It read linetable[] before checking bounds of index, and ARRAY_SIZE
+is required because linetable[] are unsigned shorts.
 
-I do not normally use rpms to do that.  My makeit script handles all of that, 
-keeping one old version of everything in /boot and /lib/modules that I can 
-revert by hand if the new kernel is a showstopper.
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+This one wasn't spotted by parfait.
 
-Whenever I let rpm get access to my grub.conf, I always have to go back in 
-with vim & fix the stanza numbers I keep track of the boots with.  Grub 
-doesn't really care, but I do. :)  rpm should be so neat...
-
-Anybody that wants this script (actually there are 2 of them), I can attach 
-them, makeit and buildit26 (which unpacks and applies the patches plus running 
-a make oldconfig) are about 100 lines each.
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-The NRA is offering FREE Associate memberships to anyone who wants them.
-<https://www.nrahq.org/nrabonus/accept-membership.asp>
-
-I just got out of the hospital after a speed reading accident.
-I hit a bookmark.
-		-- Steven Wright
-
+diff --git a/drivers/video/console/newport_con.c b/drivers/video/console/newport_con.c
+index d31b203..3772433 100644
+--- a/drivers/video/console/newport_con.c
++++ b/drivers/video/console/newport_con.c
+@@ -216,7 +216,7 @@ static void newport_get_screensize(void)
+ 	}
+ 
+ 	newport_xsize = newport_ysize = 0;
+-	for (i = 0; linetable[i + 1] && (i < sizeof(linetable)); i += 2) {
++	for (i = 0; i < ARRAY_SIZE(linetable) - 1 && linetable[i + 1]; i += 2) {
+ 		cols = 0;
+ 		newport_vc2_set(npregs, VC2_IREG_RADDR, linetable[i]);
+ 		npregs->set.dcbmode = (NPORT_DMODE_AVC2 | VC2_REGADDR_RAM |
