@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752787AbZG2U7C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753217AbZG2VDA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752787AbZG2U7C (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 16:59:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZG2U7A
+	id S1753217AbZG2VDA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 17:03:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbZG2VC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 16:59:00 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49603 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752555AbZG2U7A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 16:59:00 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Frans Pop <elendil@planet.nl>
-Subject: Re: [Bug 13865] New: Can only resume with HP_WMI selected on compaq nc6000 when 4c395bdd3f2ca8f7e8efad881e16071182c3b8ca is reverted
-Date: Wed, 29 Jul 2009 22:57:40 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
-References: <bug-13865-10028@http.bugzilla.kernel.org/>
-In-Reply-To: <bug-13865-10028@http.bugzilla.kernel.org/>
-Cc: bugzilla-daemon@bugzilla.kernel.org, Len Brown <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+	Wed, 29 Jul 2009 17:02:59 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:59818 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752974AbZG2VC7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 17:02:59 -0400
+Date: Wed, 29 Jul 2009 23:02:58 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Albin Tonnerre <albin.tonnerre@free-electrons.com>, linux@arm.linux.org.uk,
+       alain@knaff.lu, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 5/5] Add support for LZO-compressed kernels on x86
+Message-ID: <20090729210257.GA22975@merkur.ravnborg.org>
+References: <1248271279-9920-1-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-2-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-3-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-4-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-5-git-send-email-albin.tonnerre@free-electrons.com> <4A70AA64.4020301@zytor.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907292257.41573.rjw@sisk.pl>
+In-Reply-To: <4A70AA64.4020301@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 July 2009, you wrote:
-> http://bugzilla.kernel.org/show_bug.cgi?id=13865
+On Wed, Jul 29, 2009 at 01:00:36PM -0700, H. Peter Anvin wrote:
+> On 07/22/2009 07:01 AM, Albin Tonnerre wrote:
+> > This is the third and last part of the patch, which contains the
+> > necessary changes to the x86 Kconfig and boot/compressed to allow the
+> > use of this new compression method
+> > 
+> > Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
 > 
->            Summary: Can only resume with HP_WMI selected on compaq nc6000
->                     when 4c395bdd3f2ca8f7e8efad881e16071182c3b8ca is
->                     reverted
->            Product: Power Management
->            Version: 2.5
->     Kernel Version: 2.6.30
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: normal
->           Priority: P1
->          Component: Hibernation/Suspend
->         AssignedTo: power-management_other@kernel-bugs.osdl.org
->         ReportedBy: cedric@belbone.be
->         Regression: No
+> Acked-by: H. Peter Anvin <hpa@zytor.com>
 > 
-> 
-> Just for testing I enabled HP_WMI. But from then, I could not resume anymore.
-> I just reverted the last git commit on the 'drivers/platform/x86/hp-wmi.c' code
-> (4c395bdd3f2ca8f7e8efad881e16071182c3b8ca) and now I can resume.
-> The problem still persists on .31-rc serie
+> Since the patchset otherwise isn't really x86-related it probably makes
+> more sense to pass this through the kbuild tree, or perhaps via akpm,
+> rather than -tip?
 
-Frans, that's something for you to take care of.
+I can take it via kbuild if I get a fewsh patch-set with proper
+ack's added.
+I've long lost the original patch-set.
 
-Best,
-Rafael
+	Sam
