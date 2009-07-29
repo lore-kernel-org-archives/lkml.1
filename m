@@ -1,42 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbZG2Ooh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753653AbZG2Opu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753830AbZG2Ooh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 10:44:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbZG2Oog
+	id S1753653AbZG2Opu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 10:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753381AbZG2Opt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 10:44:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56827 "EHLO mx2.redhat.com"
+	Wed, 29 Jul 2009 10:45:49 -0400
+Received: from cantor.suse.de ([195.135.220.2]:45404 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753721AbZG2Oof (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 10:44:35 -0400
-Message-ID: <4A706168.2090804@redhat.com>
-Date: Wed, 29 Jul 2009 17:49:12 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
+	id S1752156AbZG2Opt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 10:45:49 -0400
+Date: Wed, 29 Jul 2009 07:44:51 -0700
+From: Greg KH <gregkh@suse.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 14/71] USB: EHCI: use the new clear_tt_buffer interface
+Message-ID: <20090729144451.GA563@suse.de>
+References: <20090729140308.GA15088@suse.de>
+ <Pine.LNX.4.44L0.0907291022520.3087-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Alexander Graf <agraf@suse.de>
-CC: Joerg Roedel <joerg.roedel@amd.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 11/12] kvm/svm: handle #pf intercepts in nested_svm_exit_handled
- directly
-References: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com> <1248872192-30881-12-git-send-email-joerg.roedel@amd.com> <4A705AB4.90103@suse.de> <4A706035.9020502@redhat.com> <4A705F7F.3030507@suse.de>
-In-Reply-To: <4A705F7F.3030507@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0907291022520.3087-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/29/2009 05:41 PM, Alexander Graf wrote:
->> Me too.  Why ack then?
->>      
->
-> Because the patch is fine. It's just the description that's missing.
-> Shouldn't I ack when the only thing I don't like is the description?
->    
+On Wed, Jul 29, 2009 at 10:24:55AM -0400, Alan Stern wrote:
+> On Wed, 29 Jul 2009, Greg KH wrote:
+> 
+> > On Wed, Jul 29, 2009 at 09:56:31AM -0400, Alan Stern wrote:
+> > > On Tue, 28 Jul 2009, Greg KH wrote:
+> > > 
+> > > > 2.6.30-stable review patch.  If anyone has any objections, please let us know.
+> > > > 
+> > > > ------------------
+> > > > 
+> > > > From: Alan Stern <stern@rowland.harvard.edu>
+> > > > 
+> > > > commit 914b701280a76f96890ad63eb0fa99bf204b961c upstream.
+> > > > 
+> > > > This patch (as1256) changes ehci-hcd and all the other drivers in the
+> > > > EHCI family to make use of the new clear_tt_buffer callbacks.  When a
+> > > > Clear-TT-Buffer request is in progress for a QH, the QH is not allowed
+> > > > to be linked into the async schedule until the request is finished.
+> > > > At that time, if there are any URBs queued for the QH, it is linked
+> > > > into the async schedule.
+> > > 
+> > > Greg, can we hold off on applying this patch to the stable tree?
+> > > 
+> > > It turns out that this change causes a WARN_ON to trigger in some 
+> > > circumstances, and the proposed patch to fix _that_ hasn't yet been 
+> > > submitted to the mainline because a few people have reported that it 
+> > > leaks DMA pool memory.  So far there hasn't been much progress in 
+> > > tracking this down.
+> > 
+> > Sure, I'll drop it.  Should I also drop the patch before this one as
+> > well, which was there only because this patch needed it?
+> 
+> In terms of functionality, it doesn't matter.  I guess you might as 
+> well.
 
-The description is part of the patch, an important one.
+Ok, I've now dropped them both.
 
--- 
-error compiling committee.c: too many arguments to function
+thanks,
 
+greg k-h
