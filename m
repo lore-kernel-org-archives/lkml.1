@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZG2BKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755373AbZG2BRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754737AbZG2BKm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 21:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754900AbZG2BKm
+	id S1755373AbZG2BRP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 21:17:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbZG2BRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 21:10:42 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:59203 "EHLO mail.dvmed.net"
+	Tue, 28 Jul 2009 21:17:13 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:60151 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754376AbZG2BKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 21:10:41 -0400
-Message-ID: <4A6FA18D.1070808@pobox.com>
-Date: Tue, 28 Jul 2009 21:10:37 -0400
+	id S1755267AbZG2BRH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 21:17:07 -0400
+Message-ID: <4A6FA310.9010600@pobox.com>
+Date: Tue, 28 Jul 2009 21:17:04 -0400
 From: Jeff Garzik <jgarzik@pobox.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Dan Carpenter <error27@gmail.com>, corbet@lwn.net, eteo@redhat.com
-Subject: Re: [PATCH] libata: add missing NULL pointer check to ata_eh_reset()
-References: <200907261621.01893.bzolnier@gmail.com>
-In-Reply-To: <200907261621.01893.bzolnier@gmail.com>
+To: Joe Perches <joe@perches.com>
+CC: linux-kernel@vger.kernel.org, trivial@kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 12/62] drivers/ata: Remove unnecessary semicolons
+References: <cover.1246173664.git.joe@perches.com> <1aed30c4ed1f1cb58c6101e943ca62900bc170ff.1246173680.git.joe@perches.com>
+In-Reply-To: <1aed30c4ed1f1cb58c6101e943ca62900bc170ff.1246173680.git.joe@perches.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -29,30 +29,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Subject: [PATCH] libata: add missing NULL pointer check to ata_eh_reset()
-> 
->>From Dan's list:
-> 
-> drivers/ata/libata-eh.c +2403 ata_eh_reset(80) warning: variable derefenced before check 'slave'
-> 
-> Please note that this is _not_ a real bug at the moment since ata_eh_context
-> structure is embedded into ata_list structure and the code alwas checks for
-> 'slave' before accessing 'sehc'.
-> 
-> Anyway lets add missing check and always have a valid 'sehc' pointer (which
-> makes code easier to understand and prevents introducing some possible bugs
-> in the future).
-> 
-> Reported-by: Dan Carpenter <error27@gmail.com>
-> Cc: corbet@lwn.net
-> Cc: eteo@redhat.com
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Joe Perches wrote:
+> Signed-off-by: Joe Perches <joe@perches.com>
 > ---
->  drivers/ata/libata-eh.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/ata/pata_octeon_cf.c |    2 +-
+>  drivers/ata/sata_inic162x.c  |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 
-applied to #upstream-fixes
+applied
 
 
