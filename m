@@ -1,94 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755900AbZG2AxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbZG2BBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755900AbZG2AxV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 20:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754165AbZG2AxV
+	id S1753924AbZG2BBz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 21:01:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753185AbZG2BBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 20:53:21 -0400
-Received: from mga02.intel.com ([134.134.136.20]:8659 "EHLO mga02.intel.com"
+	Tue, 28 Jul 2009 21:01:54 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:35288 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750961AbZG2AxU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 20:53:20 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,285,1246863600"; 
-   d="scan'208";a="434184958"
-Subject: Re: [PATCH 9/9] drivers/acpi: correct error-handling code
-From: Zhang Rui <rui.zhang@intel.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0907281756010.28189@ask.diku.dk>
-References: <Pine.LNX.4.64.0907281756010.28189@ask.diku.dk>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 29 Jul 2009 08:53:29 +0800
-Message-Id: <1248828809.2670.144.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	id S1752769AbZG2BBx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 21:01:53 -0400
+Message-ID: <4A6F9F51.4010107@garzik.org>
+Date: Tue, 28 Jul 2009 21:01:05 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: mingo@redhat.com, hpa@zytor.com, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+CC: paulus@samba.org, linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: perf_counter: hook up the tracepoint events
+References: <20090319194233.744044174@chello.nl> <tip-ee78a855ff4d8d3d77b46696994dca393228bb8a@git.kernel.org>
+In-Reply-To: <tip-ee78a855ff4d8d3d77b46696994dca393228bb8a@git.kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-28 at 23:56 +0800, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> backlight_device_register may return an ERR_PTR value rather than a valid
-> pointer.
-> 
-> A simplified version of the semantic match that finds this problem is as
-> follows: (http://coccinelle.lip6.fr/)
+Peter Zijlstra wrote:
+> diff --git a/init/Kconfig b/init/Kconfig
+> index 8a38443..761129a 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -945,6 +945,11 @@ config PERF_COUNTERS
+>  
+>  	  Say Y if unsure.
+>  
+> +config EVENT_PROFILE
+> +	bool "Tracepoint profile sources"
+> +	depends on PERF_COUNTERS && EVENT_TRACER
+> +	default y
+> +
+>  endmenu
 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
-> ---
->  drivers/acpi/video.c                |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/acpi/video.c b/drivers/acpi/video.c
-> index 8851315..29788db 100644
-> --- a/drivers/acpi/video.c
-> +++ b/drivers/acpi/video.c
-> @@ -982,6 +982,8 @@ static void acpi_video_device_find_cap(struct acpi_video_device *device)
->  		sprintf(name, "acpi_video%d", count++);
->  		device->backlight = backlight_device_register(name,
->  			NULL, device, &acpi_backlight_ops);
-> +		if (IS_ERR(device->backlight))
-> +			return;
+Adding help text would be... helpful.   :)
 
-we should kfree(name) here.
+The net result in this case was the addition of a completely-unexplained 
+Kconfig option late in 2.6.31-rc.
 
->  		device->backlight->props.max_brightness = device->brightness->count-3;
->  		kfree(name);
+Maybe the x86 maintainers could help see that they don't push 
+unexplained Kconfig options upstream -- particularly ones we are asked 
+to enable by default?
 
-how about this one?
-
-﻿backlight_device_register may return an ERR_PTR value rather than a valid
-pointer.
-
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/acpi/video.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/drivers/acpi/video.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/video.c
-+++ linux-2.6/drivers/acpi/video.c
-@@ -982,8 +982,10 @@ static void acpi_video_device_find_cap(s
- 		sprintf(name, "acpi_video%d", count++);
- 		device->backlight = backlight_device_register(name,
- 			NULL, device, &acpi_backlight_ops);
--		device->backlight->props.max_brightness = device->brightness->count-3;
- 		kfree(name);
-+		if (IS_ERR(device->backlight))
-+			return;
-+		device->backlight->props.max_brightness = device->brightness->count-3;
- 
- 		result = sysfs_create_link(&device->backlight->dev.kobj,
- 					   &device->dev->dev.kobj, "device");
+	Jeff
 
 
-
- 
 
