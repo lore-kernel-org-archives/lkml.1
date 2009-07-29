@@ -1,80 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751959AbZG2U5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752787AbZG2U7C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751959AbZG2U5m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 16:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbZG2U5m
+	id S1752787AbZG2U7C (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 16:59:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZG2U7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 16:57:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41892 "EHLO mx2.redhat.com"
+	Wed, 29 Jul 2009 16:59:00 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49603 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751564AbZG2U5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 16:57:41 -0400
-Date: Wed, 29 Jul 2009 23:56:28 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scsi: consistent use of __u8 in scsi/scsi.h
-Message-ID: <20090729205626.GA3592@redhat.com>
-References: <20090729111114.GA15239@redhat.com> <1248875763.3900.1.camel@mulgrave.site> <4A705831.3010002@panasas.com>
+	id S1752555AbZG2U7A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 16:59:00 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: [Bug 13865] New: Can only resume with HP_WMI selected on compaq nc6000 when 4c395bdd3f2ca8f7e8efad881e16071182c3b8ca is reverted
+Date: Wed, 29 Jul 2009 22:57:40 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
+References: <bug-13865-10028@http.bugzilla.kernel.org/>
+In-Reply-To: <bug-13865-10028@http.bugzilla.kernel.org/>
+Cc: bugzilla-daemon@bugzilla.kernel.org, Len Brown <lenb@kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4A705831.3010002@panasas.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200907292257.41573.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 29, 2009 at 05:09:53PM +0300, Boaz Harrosh wrote:
-> TODO:
-> * Fix up Kernel headers by complying to check_headers
+On Wednesday 29 July 2009, you wrote:
+> http://bugzilla.kernel.org/show_bug.cgi?id=13865
+> 
+>            Summary: Can only resume with HP_WMI selected on compaq nc6000
+>                     when 4c395bdd3f2ca8f7e8efad881e16071182c3b8ca is
+>                     reverted
+>            Product: Power Management
+>            Version: 2.5
+>     Kernel Version: 2.6.30
+>           Platform: All
+>         OS/Version: Linux
+>               Tree: Mainline
+>             Status: NEW
+>           Severity: normal
+>           Priority: P1
+>          Component: Hibernation/Suspend
+>         AssignedTo: power-management_other@kernel-bugs.osdl.org
+>         ReportedBy: cedric@belbone.be
+>         Regression: No
+> 
+> 
+> Just for testing I enabled HP_WMI. But from then, I could not resume anymore.
+> I just reverted the last git commit on the 'drivers/platform/x86/hp-wmi.c' code
+> (4c395bdd3f2ca8f7e8efad881e16071182c3b8ca) and now I can resume.
+> The problem still persists on .31-rc serie
 
-This is accomplished by applying the following on top
-of my previous patch:
+Frans, that's something for you to take care of.
 
-Subject: scsi: make scsi/scsi.h headers_check clean
-
-place extern declarations in scsi/scsi.h within ifdef __KERNEL__
-so that make headers_install strips them out.
-
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
----
- include/scsi/scsi.h |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/include/scsi/scsi.h b/include/scsi/scsi.h
-index dfcfaab..418465a 100644
---- a/include/scsi/scsi.h
-+++ b/include/scsi/scsi.h
-@@ -150,6 +150,7 @@ struct scsi_varlen_cdb_hdr {
- 	/* service specific data follows */
- };
- 
-+#ifdef __KERNEL__
- static inline unsigned
- scsi_varlen_cdb_length(const void *hdr)
- {
-@@ -165,6 +166,7 @@ scsi_command_size(const unsigned char *cmnd)
- 	return (cmnd[0] == VARIABLE_LENGTH_CMD) ?
- 		scsi_varlen_cdb_length(cmnd) : COMMAND_SIZE(cmnd[0]);
- }
-+#endif
- 
- /*
-  *  SCSI Architecture Model (SAM) Status codes. Taken from SAM-3 draft
-@@ -281,8 +283,10 @@ enum scsi_protocol {
- 	SCSI_PROTOCOL_UNSPEC = 0xf, /* No specific protocol */
- };
- 
-+#ifdef __KERNEL__
- /* Returns a human-readable name for the device */
- extern const char * scsi_device_type(unsigned type);
-+#endif
- 
- /*
-  * standard mode-select header prepended to all mode-select commands
--- 
-1.6.2.5
-
-
+Best,
+Rafael
