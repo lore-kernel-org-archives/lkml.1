@@ -1,156 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbZG2Phl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754452AbZG2PiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754867AbZG2Phl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 11:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbZG2Phk
+	id S1754452AbZG2PiS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 11:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754166AbZG2PiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 11:37:40 -0400
-Received: from mail.free-electrons.com ([88.191.76.200]:56643 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752999AbZG2Phj (ORCPT
+	Wed, 29 Jul 2009 11:38:17 -0400
+Received: from mail-fx0-f215.google.com ([209.85.220.215]:52849 "EHLO
+	mail-fx0-f215.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753528AbZG2PiR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 11:37:39 -0400
-Date: Wed, 29 Jul 2009 17:37:36 +0200
-From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-To: linux@arm.linux.org.uk, hpa@zytor.com
-Cc: alain@knaff.lu, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org
-Subject: [PATCH] Add LZO compression support for initramfs and old-style
-	initrd
-Message-ID: <20090729153736.GI4052@pc-ras4041.res.insa>
-References: <1248271279-9920-1-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-2-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-3-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-4-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-5-git-send-email-albin.tonnerre@free-electrons.com>
+	Wed, 29 Jul 2009 11:38:17 -0400
+X-Greylist: delayed 1055 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Jul 2009 11:38:16 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=IvF6aRDsCTSGpMjiM/pNEPiOBs+FBi0asGw0erxvmuD77blZcsrbK8gbGVgIdNJsR+
+         B9VYXuUXsc1IlTQjA82ipRkw7Sc0lBS37ygRHGTzVKRqyt1WEiQVfzRRJX9nwvflKuwk
+         xPTHVd9nlins3F9YVbLu3jjY4k5nc5X8CzYEY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248271279-9920-5-git-send-email-albin.tonnerre@free-electrons.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <74d0deb30907290820x13214f68u82dea4ad229ebdac@mail.gmail.com>
+References: <Pine.LNX.4.64.0907280937000.4943@axis700.grange>
+	 <74d0deb30907290820x13214f68u82dea4ad229ebdac@mail.gmail.com>
+Date: Wed, 29 Jul 2009 17:32:11 +0200
+Message-ID: <74d0deb30907290832u6f718443nab9daf996417c9be@mail.gmail.com>
+Subject: Re: [PATCH] tmio_mmc: Optionally support using platform clock
+From: pHilipp Zabel <philipp.zabel@gmail.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Ian Molton <ian@mnementh.co.uk>, linux-kernel@vger.kernel.org,
+       Magnus Damm <damm@opensource.se>, akpm@linux-foundation.org,
+       Matt Fleming <matt@console-pimps.org>,
+       Philip Langdale <philipl@overt.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
----
- lib/Kconfig      |    4 ++++
- lib/Makefile     |    1 +
- lib/decompress.c |    5 +++++
- usr/Kconfig      |   25 ++++++++++++++++++++-----
- 4 files changed, 30 insertions(+), 5 deletions(-)
+On Wed, Jul 29, 2009 at 5:20 PM, pHilipp Zabel<philipp.zabel@gmail.com> wrote:
+> On Tue, Jul 28, 2009 at 9:51 AM, Guennadi
+> Liakhovetski<g.liakhovetski@gmx.de> wrote:
+>> If the platform device has a clock associated with the tmio-mmc device,
+>> use it.
+>>
+>> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+>> Cc: Magnus Damm <damm@opensource.se>
+>> ---
+>>
+>> Depends (at least logically) on
+>> http://marc.info/?l=linux-kernel&m=124782904228865&w=2
+>>
+>> Sorry if I forgot anyone who volunteered to help out with MMC patches.
+>>
+>>  drivers/mmc/host/tmio_mmc.c |   21 +++++++++++++++++++++
+>>  drivers/mmc/host/tmio_mmc.h |    3 +++
+>>  include/linux/mfd/tmio.h    |    1 +
+>>  3 files changed, 25 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/mmc/host/tmio_mmc.c b/drivers/mmc/host/tmio_mmc.c
+>> index c246191..2a01572 100644
+>> --- a/drivers/mmc/host/tmio_mmc.c
+>> +++ b/drivers/mmc/host/tmio_mmc.c
+>> @@ -32,6 +32,7 @@
+>>  #include <linux/mmc/host.h>
+>>  #include <linux/mfd/core.h>
+>>  #include <linux/mfd/tmio.h>
+>> +#include <linux/clk.h>
+>>
+>>  #include "tmio_mmc.h"
+>>
+>> @@ -57,10 +58,18 @@ static void tmio_mmc_clk_stop(struct tmio_mmc_host *host)
+>>        sd_ctrl_write16(host, CTL_SD_CARD_CLK_CTL, ~0x0100 &
+>>                sd_ctrl_read16(host, CTL_SD_CARD_CLK_CTL));
+>>        msleep(10);
+>> +       if (!IS_ERR(host->clk) && host->clk_is_running) {
+>> +               clk_disable(host->clk);
+>> +               host->clk_is_running = false;
+>> +       }
+>>  }
+>>
+>>  static void tmio_mmc_clk_start(struct tmio_mmc_host *host)
+>>  {
+>> +       if (!IS_ERR(host->clk) && !host->clk_is_running &&
+>> +           !clk_enable(host->clk))
+>> +               host->clk_is_running = true;
+>> +
+>>        sd_ctrl_write16(host, CTL_SD_CARD_CLK_CTL, 0x0100 |
+>>                sd_ctrl_read16(host, CTL_SD_CARD_CLK_CTL));
+>>        msleep(10);
+>> @@ -567,6 +576,11 @@ static int __devinit tmio_mmc_probe(struct platform_device *dev)
+>>                        goto unmap_cnf;
+>>        }
+>>
+>> +       host->clk = clk_get(&dev->dev, pdata->clk_name);
+>
+> Instead of pdata->clk_name, this should be either NULL or better
+> "HCLK" (to differentiate from CLK32, not sure if we want to be able to
+> toggle that, too, in the future).
+> Passing the clock consumer ID via pdata is just wrong and shouldn't be
+> needed with clkdev.
+>
+>> +
+>> +       if (!IS_ERR(host->clk) && !clk_enable(host->clk))
+>> +               host->clk_is_running = true;
+>> +
+>>        /* Enable the MMC/SD Control registers */
+>>        sd_config_write16(host, CNF_CMD, SDCREN);
+>>        sd_config_write32(host, CNF_CTL_BASE,
+>> @@ -608,6 +622,11 @@ static int __devinit tmio_mmc_probe(struct platform_device *dev)
+>>        return 0;
+>>
+>>  unmap_cnf:
+>> +       if (!IS_ERR(host->clk)) {
+>> +               clk_disable(host->clk);
+>> +               host->clk_is_running = false;
+>> +               clk_put(host->clk);
+>> +       }
+>>        if (host->cnf)
+>>                iounmap(host->cnf);
+>>  unmap_ctl:
+>> @@ -632,6 +651,8 @@ static int __devexit tmio_mmc_remove(struct platform_device *dev)
+>>                if (host->cnf)
+>>                        iounmap(host->cnf);
+>>                mmc_free_host(mmc);
+>> +               if (!IS_ERR(host->clk))
+>> +                       clk_put(host->clk);
+>>        }
+>>
+>>        return 0;
+>> diff --git a/drivers/mmc/host/tmio_mmc.h b/drivers/mmc/host/tmio_mmc.h
+>> index 45f06aa..a76d237 100644
+>> --- a/drivers/mmc/host/tmio_mmc.h
+>> +++ b/drivers/mmc/host/tmio_mmc.h
+>> @@ -108,6 +108,7 @@
+>>                sd_ctrl_write32((host), CTL_STATUS, mask); \
+>>        } while (0)
+>>
+>> +struct clk;
+>>
+>>  struct tmio_mmc_host {
+>>        void __iomem *cnf;
+>> @@ -117,6 +118,8 @@ struct tmio_mmc_host {
+>>        struct mmc_request      *mrq;
+>>        struct mmc_data         *data;
+>>        struct mmc_host         *mmc;
+>> +       struct clk              *clk;
+>> +       bool                    clk_is_running;
+>>        int                     irq;
+>>
+>>        /* pio related stuff */
+>> diff --git a/include/linux/mfd/tmio.h b/include/linux/mfd/tmio.h
+>> index 6b9c5d0..e405895 100644
+>> --- a/include/linux/mfd/tmio.h
+>> +++ b/include/linux/mfd/tmio.h
+>> @@ -23,6 +23,7 @@
+>>  */
+>>  struct tmio_mmc_data {
+>>        const unsigned int              hclk;
+>> +       const char                      *clk_name;
+>
+> Drop that.
 
-diff --git a/lib/Kconfig b/lib/Kconfig
-index bb1326d..8639349 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -117,6 +117,10 @@ config DECOMPRESS_BZIP2
- config DECOMPRESS_LZMA
- 	tristate
- 
-+config DECOMPRESS_LZO
-+	select LZO_DECOMPRESS
-+	tristate
-+
- #
- # Generic allocator support is selected if needed
- #
-diff --git a/lib/Makefile b/lib/Makefile
-index b6d1857..cd3d37b 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -69,6 +69,7 @@ obj-$(CONFIG_LZO_DECOMPRESS) += lzo/
- lib-$(CONFIG_DECOMPRESS_GZIP) += decompress_inflate.o
- lib-$(CONFIG_DECOMPRESS_BZIP2) += decompress_bunzip2.o
- lib-$(CONFIG_DECOMPRESS_LZMA) += decompress_unlzma.o
-+lib-$(CONFIG_DECOMPRESS_LZO) += decompress_unlzo.o
- 
- obj-$(CONFIG_TEXTSEARCH) += textsearch.o
- obj-$(CONFIG_TEXTSEARCH_KMP) += ts_kmp.o
-diff --git a/lib/decompress.c b/lib/decompress.c
-index d2842f5..a760681 100644
---- a/lib/decompress.c
-+++ b/lib/decompress.c
-@@ -9,6 +9,7 @@
- #include <linux/decompress/bunzip2.h>
- #include <linux/decompress/unlzma.h>
- #include <linux/decompress/inflate.h>
-+#include <linux/decompress/unlzo.h>
- 
- #include <linux/types.h>
- #include <linux/string.h>
-@@ -22,6 +23,9 @@
- #ifndef CONFIG_DECOMPRESS_LZMA
- # define unlzma NULL
- #endif
-+#ifndef CONFIG_DECOMPRESS_LZO
-+# define unlzo NULL
-+#endif
- 
- static const struct compress_format {
- 	unsigned char magic[2];
-@@ -32,6 +36,7 @@ static const struct compress_format {
- 	{ {037, 0236}, "gzip", gunzip },
- 	{ {0x42, 0x5a}, "bzip2", bunzip2 },
- 	{ {0x5d, 0x00}, "lzma", unlzma },
-+	{ {0x89, 0x4c}, "lzo", unlzo },
- 	{ {0, 0}, NULL, NULL }
- };
- 
-diff --git a/usr/Kconfig b/usr/Kconfig
-index 1c3039f..04a826e 100644
---- a/usr/Kconfig
-+++ b/usr/Kconfig
-@@ -72,6 +72,15 @@ config RD_LZMA
- 	  Support loading of a LZMA encoded initial ramdisk or cpio buffer
- 	  If unsure, say N.
- 
-+config RD_LZO
-+	bool "Support initial ramdisks compressed using LZO" if EMBEDDED
-+	default !EMBEDDED
-+	depends on BLK_DEV_INITRD
-+	select DECOMPRESS_LZO
-+	help
-+	  Support loading of a LZO encoded initial ramdisk or cpio buffer
-+	  If unsure, say N.
-+
- choice
- 	prompt "Built-in initramfs compression mode" if INITRAMFS_SOURCE!=""
- 	help
-@@ -108,16 +117,15 @@ config INITRAMFS_COMPRESSION_GZIP
- 	bool "Gzip"
- 	depends on RD_GZIP
- 	help
--	  The old and tried gzip compression. Its compression ratio is
--	  the poorest among the 3 choices; however its speed (both
--	  compression and decompression) is the fastest.
-+	  The old and tried gzip compression. It provides a good balance
-+	  between compression ration and decompression speed.
- 
- config INITRAMFS_COMPRESSION_BZIP2
- 	bool "Bzip2"
- 	depends on RD_BZIP2
- 	help
- 	  Its compression ratio and speed is intermediate.
--	  Decompression speed is slowest among the three.  The initramfs
-+	  Decompression speed is slowest among the four.  The initramfs
- 	  size is about 10% smaller with bzip2, in comparison to gzip.
- 	  Bzip2 uses a large amount of memory. For modern kernels you
- 	  will need at least 8MB RAM or more for booting.
-@@ -128,7 +136,14 @@ config INITRAMFS_COMPRESSION_LZMA
- 	help
- 	  The most recent compression algorithm.
- 	  Its ratio is best, decompression speed is between the other
--	  two. Compression is slowest.	The initramfs size is about 33%
-+	  three. Compression is slowest. The initramfs size is about 33%
- 	  smaller with LZMA in comparison to gzip.
- 
-+config INITRAMFS_COMPRESSION_LZO
-+	bool "LZO"
-+	depends on RD_LZO
-+	help
-+	  Its compression ratio is the poorest among the four. The kernel
-+	  size is about about 10% bigger than gzip; however its speed
-+
- endchoice
--- 
-Albin Tonnerre, Free Electrons
-Kernel, drivers and embedded Linux development,
-consulting, training and support.
-http://free-electrons.com
+Actually, this struct can be dropped completely and the HCLK rate can
+be determined with clk_get_rate.
+
+>>  };
+>>
+>>  /*
+>> --
+>> 1.6.2.4
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>
+> Otherwise that patch doesn't seem wrong to me?
+> As soon as we have the possibility for MFD drivers to provide their
+> own clk API implementation, this should also work with ASIC3/TMIO.
+> I'll try to register my ASIC3 HCLK with clkdev and see if this patch
+> works.
+>
+> regards
+> Philipp
+>
