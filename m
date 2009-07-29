@@ -1,76 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754060AbZG2O6F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753622AbZG2O6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754060AbZG2O6F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 10:58:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbZG2O6E
+	id S1753622AbZG2O6n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 10:58:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbZG2O6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 10:58:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59952 "EHLO mx2.redhat.com"
+	Wed, 29 Jul 2009 10:58:42 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:49316 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752258AbZG2O6D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 10:58:03 -0400
-Date: Wed, 29 Jul 2009 11:57:18 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: prasad@linux.vnet.ibm.com, Frederic Weisbecker <fweisbec@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Mike Galbraith <efault@gmx.de>,
-       Paul Mackerras <paulus@samba.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Anton Blanchard <anton@samba.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [RFC][PATCH 5/5] perfcounter: Add support for kernel hardware
-	breakpoints
-Message-ID: <20090729145718.GB3040@ghostprotocols.net>
-References: <20090724174723.GA11985@nowhere> <1248519416.5780.12.camel@laptop> <20090725141918.GA5295@nowhere> <1248538972.5780.25.camel@laptop> <20090725235702.GA5082@in.ibm.com> <1248684817.6987.1573.camel@twins> <20090728161218.GA3526@in.ibm.com> <1248799286.6987.3026.camel@twins> <20090729063704.GA3297@in.ibm.com> <1248859372.6987.3062.camel@twins>
+	id S1751326AbZG2O6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 10:58:42 -0400
+Date: Wed, 29 Jul 2009 15:58:39 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Moussa Ba <moussa.a.ba@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       rientjes@google.com, xiyou.wangcong@gmail.com, adobriyan@gmail.com,
+       mpm@selenic.com, yinghan@google.com, npiggin@suse.de, jaredeh@gmail.com
+Subject: Re: [PATCH 1/1] pagemap clear_refs: modify to specify anon or
+	mapped vma clearing
+Message-ID: <20090729145839.GB15102@csn.ul.ie>
+References: <alpine.DEB.2.00.0907271339070.17425@chino.kir.corp.google.com> <7928e7bd0907271514y699d1de4j54f9c562b94ef0cc@mail.gmail.com> <alpine.DEB.2.00.0907271543420.23587@chino.kir.corp.google.com> <7928e7bd0907271638x5ddbfd2ckba2802338a33765a@mail.gmail.com> <alpine.DEB.2.00.0907271657160.27881@chino.kir.corp.google.com> <4A6F2AF4.6050505@gmail.com> <alpine.DEB.2.00.0907281401150.7140@chino.kir.corp.google.com> <4A6F8115.7000500@gmail.com> <20090728165245.65d5cb23.akpm@linux-foundation.org> <7928e7bd0907281700s13d9937yc3b2933b13cfae9f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <1248859372.6987.3062.camel@twins>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <7928e7bd0907281700s13d9937yc3b2933b13cfae9f@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Wed, Jul 29, 2009 at 11:22:52AM +0200, Peter Zijlstra escreveu:
-> On Wed, 2009-07-29 at 12:07 +0530, K.Prasad wrote:
+On Tue, Jul 28, 2009 at 05:00:54PM -0700, Moussa Ba wrote:
+> The patch makes the clear_refs more versatile in adding the option to
+> select anonymous pages or file backed pages for clearing.  This
+> addition has a measurable impact on user space application performance
+> as it decreases the number of pagewalks in scenarios where one is only
+> interested in a specific type of page (anonymous or file mapped).
 > 
-> > > That still doesn't provide per-cpu breakpoints.
-> > > 
-> > 
-> > Yes, it doesn't provide a per-cpu only implementation. One can obtain
-> > the per-cpu data from the system-wide breakpoints by filtering it for a
-> > given CPU (agreed, it will associated overhead).
-> > 
-> > A true per-cpu breakpoint implementation that co-exists with
-> > system-wide and per-task breakpoints will be difficult. It might require
-> > the re-introduction of some old features and a few new ones (like switching
-> > between kernel and user-space breakpoints at syscall time) that were
-> > rejected earlier by the community.
-> 
-> I'm not clear on why you'd need to switch breakpoints on syscall entry.
-> You can simply leave the kernel address breakpoint around in userspace,
-> they're not able to poke at that address space anyway.
-> 
-> > Also, the reason for a per-cpu only breakpoint (user and kernel-space)
-> > isn't very obvious. While kernel variables can be read/written
-> > throughout the system and user-space variables are per-task, the need
-> > for obtaining per-cpu information isn't clear.
-> 
-> Well, suppose you're monitoring a per-cpu variable, or interested in the
-> effects of a workload confined to 1 cpu or node, there is no reason to
-> have this breakpoint on all cpus.
 
-I was going to talk about exactly that, CPU isolation for one specific
-workload, I don't want that hits on tcp_v4_rcv on another CPU get
-counted, just the ones on that specific CPU.
+I think what Andrew might be looking for is a repeat of the use-case for
+using clear_refs at all and what the additional usecase is that makes this
+patch beneficial. To be honest, I had to go digging for a bit to find out
+why clear_refs is used at all and the potential benefits of this patch were
+initially unclear to me although they were obvious to others. I confess I
+haven't read the patch closely to determine if it's behaving as advertised
+or not.
 
-The other CPUs can be given a break (pun intended :-P) by not having to
-process traps we're uninterested in.
+Bonus points for a wee illustration of a script that measures the apparent
+working set of a process using clear_refs, showing the working set for anon
+vs filebacked and the difference of measuring just anon versus the full
+process for example. Such a script could be added to Documentation/vm as
+I didn't spot any example in there already.
 
-- Arnaldo
+Total aside, is there potential to really mess with LRU aging by abusing
+clear_refs a lot, partcularly as clear_refs is writable by the process
+owner? Does it matter?
+
+> 
+> On Tue, Jul 28, 2009 at 4:52 PM, Andrew Morton<akpm@linux-foundation.org> wrote:
+> > On Tue, 28 Jul 2009 15:52:05 -0700
+> > "Moussa A. Ba" <moussa.a.ba@gmail.com> wrote:
+> >
+> >> This patch adds anonymous and file backed filters to the clear_refs interface.
+> >> echo 1 > /proc/PID/clear_refs resets the bits on all pages
+> >> echo 2 > /proc/PID/clear_refs resets the bits on anonymous pages only
+> >> echo 3 > /proc/PID/clear_refs resets the bits on file backed pages only
+> >> Any other value is ignored
+> >
+> > The changelog is missing any rationale for making this change.
+> > Originally we were told that it "makes the clear_refs proc interface a
+> > bit more versatile", but that's a bit thin.
+> >
+> > How do we justify making this change to Linux?  What value does it
+> > have?  Can you describe a usage scenario which would help people
+> > understand the usefulness of the change?
+> >
+> > Thanks.
+> >
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
