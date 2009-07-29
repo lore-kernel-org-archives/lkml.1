@@ -1,70 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754743AbZG2PVg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbZG2PYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754743AbZG2PVg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 11:21:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754590AbZG2PVf
+	id S1753352AbZG2PYq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 11:24:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbZG2PYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 11:21:35 -0400
-Received: from mba.ocn.ne.jp ([122.28.14.163]:59869 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754484AbZG2PVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 11:21:35 -0400
-Date: Thu, 30 Jul 2009 00:16:32 +0900 (JST)
-Message-Id: <20090730.001632.39159752.anemo@mba.ocn.ne.jp>
-To: maciej.sosnowski@intel.com
-Cc: haavard.skinnemoen@atmel.com, nicolas.ferre@atmel.com,
-       dan.j.williams@intel.com, linux-arm-kernel@lists.arm.linux.org.uk,
-       patrice.vilchez@atmel.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dmaengine: at_hdmac: add DMA slave transfers
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <129600E5E5FB004392DDC3FB599660D7B2980817@irsmsx504.ger.corp.intel.com>
-References: <129600E5E5FB004392DDC3FB599660D7B271F468@irsmsx504.ger.corp.intel.com>
-	<20090729.001330.172537373.anemo@mba.ocn.ne.jp>
-	<129600E5E5FB004392DDC3FB599660D7B2980817@irsmsx504.ger.corp.intel.com>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Jul 2009 11:24:46 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:57707 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751165AbZG2PYp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 11:24:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Wu8LqOyIlWdkZdbdm30WgUsDZUZRKPSkHr8lXibU5RsRr8XGW0iLN2fBmKlxIfifAZ
+         x+kXfTv8eyycjdbv2bURNhelv06JlFJn4GdtJBlaId6UdUASW5Lu+1/SmKmVaL1wQ4Sq
+         eb1C2eJuiCb/9Be9Wk4BfFuqGX56D5Ihw9PPk=
+MIME-Version: 1.0
+In-Reply-To: <74d0deb30907290820x13214f68u82dea4ad229ebdac@mail.gmail.com>
+References: <Pine.LNX.4.64.0907280937000.4943@axis700.grange>
+	 <74d0deb30907290820x13214f68u82dea4ad229ebdac@mail.gmail.com>
+Date: Thu, 30 Jul 2009 00:24:44 +0900
+Message-ID: <aec7e5c30907290824p5e20fb14g3d14aece2d3e33c6@mail.gmail.com>
+Subject: Re: [PATCH] tmio_mmc: Optionally support using platform clock
+From: Magnus Damm <magnus.damm@gmail.com>
+To: pHilipp Zabel <philipp.zabel@gmail.com>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       Ian Molton <ian@mnementh.co.uk>, linux-kernel@vger.kernel.org,
+       Magnus Damm <damm@opensource.se>, akpm@linux-foundation.org,
+       Matt Fleming <matt@console-pimps.org>,
+       Philip Langdale <philipl@overt.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Jul 2009 14:05:17 +0100, "Sosnowski, Maciej" <maciej.sosnowski@intel.com> wrote:
-> Atsushi Nemoto wrote:
-> > On Mon, 27 Jul 2009 14:24:26 +0100, "Sosnowski, Maciej" <maciej.sosnowski@intel.com> wrote:
-> >>>> Your atc_chain_complete() calls dma_unmap_xxx unless
-> >>>> DMA_COMPL_SKIP_XXX_UNMAP specified.  But atmel-mci driver does not set
-> >>>> the flag on dma_async_tx_descriptor.  I suppose one of them should be
-> >>>> fixed.
-> >>> 
-> >>> atmel-mci should definitely set that flag.
-> >>> 
-> >>> Haavard
-> >> 
-> >> I agree with Haavard.
-> > 
-> > Then, what should dma driver do when client driver did not set these
-> > flags?  If it should call dma_unmap_sg(), the dma driver should keep
-> > sg and direction somewhere...
-> 
-> Well, what about BUG_ON?
+On Thu, Jul 30, 2009 at 12:20 AM, pHilipp Zabel<philipp.zabel@gmail.com> wrote:
+> On Tue, Jul 28, 2009 at 9:51 AM, Guennadi
+> Liakhovetski<g.liakhovetski@gmx.de> wrote:
+>> If the platform device has a clock associated with the tmio-mmc device,
+>> use it.
+>>
+>> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+>> Cc: Magnus Damm <damm@opensource.se>
+>> ---
+>>
+>> Depends (at least logically) on
+>> http://marc.info/?l=linux-kernel&m=124782904228865&w=2
+>>
+>> Sorry if I forgot anyone who volunteered to help out with MMC patches.
+>>
+>>  drivers/mmc/host/tmio_mmc.c |   21 +++++++++++++++++++++
+>>  drivers/mmc/host/tmio_mmc.h |    3 +++
+>>  include/linux/mfd/tmio.h    |    1 +
+>>  3 files changed, 25 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/drivers/mmc/host/tmio_mmc.c b/drivers/mmc/host/tmio_mmc.c
+>> index c246191..2a01572 100644
+>> --- a/drivers/mmc/host/tmio_mmc.c
+>> +++ b/drivers/mmc/host/tmio_mmc.c
+>> @@ -567,6 +576,11 @@ static int __devinit tmio_mmc_probe(struct platform_device *dev)
+>>                        goto unmap_cnf;
+>>        }
+>>
+>> +       host->clk = clk_get(&dev->dev, pdata->clk_name);
+>
+> Instead of pdata->clk_name, this should be either NULL or better
+> "HCLK" (to differentiate from CLK32, not sure if we want to be able to
+> toggle that, too, in the future).
+> Passing the clock consumer ID via pdata is just wrong and shouldn't be
+> needed with clkdev.
 
-Or prep_slave_sg can preset both DMA_COMPL_SKIP_XXX_UNMAP flags, or do
-not unmap in dma driver for slave channel.  I suppose latter is safe
-and simple.
+Really? I think that depends on the clock framework implementation.
+Remember that this needs to work on other architectures than just ARM.
 
-> > Also, calling dma_map_sg() in its prep_slave_sg function will not fit
-> > for sound drivers, which use DMA buffers prepared in its framework.
-> 
-> It looks like a need for one more flag: DMA_SKIP_MAP_SG.
-> What do you think?
+Cheers,
 
-I do not think it is worth to introduce new flag.
-
-As Dan said, pushing dma mapping responsibility to the client looks
-simple and clean way for me.
-
----
-Atsushi Nemoto
+/ magnus
