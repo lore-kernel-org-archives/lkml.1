@@ -1,83 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753991AbZG2LEd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754060AbZG2LHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753991AbZG2LEd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 07:04:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbZG2LEc
+	id S1754060AbZG2LHO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 07:07:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbZG2LHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 07:04:32 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:43183 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750901AbZG2LEc (ORCPT
+	Wed, 29 Jul 2009 07:07:14 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38504 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753459AbZG2LHN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 07:04:32 -0400
-Subject: Re: Another memory leak in drivers/char/vt.c
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090729103903.GA2175@cmpxchg.org>
-References: <1248859884.2305.7.camel@pc1117.cambridge.arm.com>
-	 <20090729103903.GA2175@cmpxchg.org>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Wed, 29 Jul 2009 12:04:16 +0100
-Message-Id: <1248865456.2305.12.camel@pc1117.cambridge.arm.com>
+	Wed, 29 Jul 2009 07:07:13 -0400
+Date: Wed, 29 Jul 2009 12:07:04 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Gene Heskett <gene.heskett@verizon.net>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] kdesu broken
+Message-ID: <20090729120704.3299ff2e@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.01.0907282146580.3161@localhost.localdomain>
+References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
+	<20090729004639.71f0eabc@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907281651160.3186@localhost.localdomain>
+	<200907282250.46018.gene.heskett@verizon.net>
+	<alpine.LFD.2.01.0907282146580.3161@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Jul 2009 11:04:17.0226 (UTC) FILETIME=[50BF0AA0:01CA103C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-29 at 12:39 +0200, Johannes Weiner wrote:
-> On Wed, Jul 29, 2009 at 10:31:23AM +0100, Catalin Marinas wrote:
-> > There was a memory leak fixed recently by commit 1a8f458f6d. However,
-> > there seems to be another with this kmemleak trace:
+On Tue, 28 Jul 2009 21:49:05 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> 
+> 
+> On Tue, 28 Jul 2009, Gene Heskett wrote:
 > > 
-> > unreferenced object 0xde158000 (size 12288):
-> >   comm "Xorg", pid 1439, jiffies 4294961016
-> >   hex dump (first 32 bytes):
-> >     20 00 20 00 20 00 20 00 20 00 20 00 20 00 20 00   . . . . . . . .
-> >     20 00 20 00 20 00 20 00 20 00 20 00 20 00 20 00   . . . . . . . .
-> >   backtrace:
-> >     [<c006f74b>] __save_stack_trace+0x17/0x1c
-> >     [<c006f81d>] create_object+0xcd/0x188
-> >     [<c01f5457>] kmemleak_alloc+0x1b/0x3c
-> >     [<c006e303>] __kmalloc+0xdb/0xe8
-> >     [<c012cc4b>] vc_do_resize+0x73/0x1e0
-> >     [<c012cdf1>] vc_resize+0x15/0x18
-> >     [<c011afc1>] fbcon_init+0x1f9/0x2b8
-> >     [<c0129e87>] visual_init+0x9f/0xdc
-> >     [<c012aff3>] vc_allocate+0x7f/0xfc
-> >     [<c012b087>] con_open+0x17/0x80
-> >     [<c0120e43>] tty_open+0x1f7/0x2e4
-> >     [<c0072fa1>] chrdev_open+0x101/0x118
-> >     [<c006ffad>] __dentry_open+0x105/0x1cc
-> >     [<c00700fd>] nameidata_to_filp+0x2d/0x38
-> >     [<c00788cd>] do_filp_open+0x2c1/0x54c
-> >     [<c006fdff>] do_sys_open+0x3b/0xb4
-> > 
-> > The problem happens in the vc_allocate() function where vc->vc_screenbuf
-> > is set to the kmalloc() returned value. However, the visual_init()
-> > function called 3 lines before also allocates the vc->vc_screenbuf.
+> > It doesn't seem to do anything for bz 13841 here.  Sorry, I wish it did.
 > 
-> The common way seems to be that ->con_init(init=1) just sets the
-> dimensions manually (instead of using vc_resize()) and vc_allocate()
-> uses them to actually allocate a properly sized screen buffer.
+> No, bz 13841 isn't about pty's, it's about usb serial. The patches in this 
+> thread would mainly be pty-related, and would affect other tty drivers 
+> (like your usb one) only purely by chance.
 > 
-> So it seems like fbcon is at fault here.  It calls vc_resize() from
-> ->con_init(init=1) and updates the console dimensions manually on
-> init=0 (after calling vc_resize()) which is completely mixed up.
-> 
-> I think the quick fix is something like the appended (untested!).
+> could you bisect the 13841 behavior?
 
-This patch seems to fix the leak, you can add
+See the thread in 13821 on linux-usb list which extends from the "why do
+we leak ttyUSB numbers" into this as well. Its been pinned down and the in
+tree fix is confirmed to do the job for that case. Not perfectly because
+it needs a further small fix as
 
-Tested-by: Catalin Marinas <catalin.marinas@arm.com>
+a) it should call drv->close() within the mutex on the error path if the
+tty_block_til_ready() fails without which you get a leak on a few drivers
+but nothing too harmful. (Noted by Alan Stern inspecting the patch)
 
-Thanks.
+b) it fails the 'variable frequency generator on carrier pin' test - but
+that isn't a regression as such as all 2.6 kernels I've tried crash
+during that test with USB.  (Running my 'extreme violence' test setup)
 
--- 
-Catalin
+I suspect that doing
+
+        retval = tty_port_block_til_ready(&port->port, tty, filp);
+        if (retval == 0) {
+                if (!first)
+                        usb_serial_put(serial);
+                return 0;
+        }
+        mutex_lock(&port->mutex);
+
+
+	if (tty_hung_up_p(filp)) {
+		mutex_unlock(&port->mutex);
+		return retval;
+	}
+	dev->close(port);
+
+	...
+
+fixes both. The race basically is
+
+		open
+		drop mutex so we can wait for the port
+		wait for the port
+						[hangup]
+						[serial_do_down]
+		block_til_ready reports an error
+		take mutex
+			duplicate serial_do_down
+
+
+Most serial drivers don't try and do open clean up in open() instead they
+do it in close() which is called by the tty layer on an open failure
+(always has been) and which turns out to be a useful design
+decision as it means the driver doesn't have to tie itself in knots and
+tty_port_close_start() handles all the mechanics. Plus they use
+ASYNC_INITIALIZED as flag to avoid double shutdowns on a device.
+
+Simply deleting most of the clean up from serial_open and letting close()
+do its job would I think clean that up no end but not in an -rc perhaps.
+
 
