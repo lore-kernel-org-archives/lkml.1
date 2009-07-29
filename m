@@ -1,64 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbZG2Mfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbZG2MhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754654AbZG2Mfx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 08:35:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbZG2Mfw
+	id S1754665AbZG2MhN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 08:37:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754622AbZG2MhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 08:35:52 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:58926 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754617AbZG2Mfw (ORCPT
+	Wed, 29 Jul 2009 08:37:13 -0400
+Received: from mail-fx0-f218.google.com ([209.85.220.218]:54269 "EHLO
+	mail-fx0-f218.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754502AbZG2MhL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 08:35:52 -0400
-Date: Wed, 29 Jul 2009 21:35:46 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Ian Molton <ian@mnementh.co.uk>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
-       Magnus Damm <damm@opensource.se>
-Subject: Re: MMC: Make the configuration memory resource optional
-Message-ID: <20090729123545.GA23683@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Magnus Damm <magnus.damm@gmail.com>,
-	Mark Brown <broonie@opensource.wolfsonmicro.com>,
-	Ian Molton <ian@mnementh.co.uk>,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-	linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
-	Magnus Damm <damm@opensource.se>
-References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange> <4A6F033B.7030302@mnementh.co.uk> <aec7e5c30907281948s2a0dcd0csd3e580251d6c4f5a@mail.gmail.com> <20090729115817.GA12223@rakim.wolfsonmicro.main> <aec7e5c30907290527w39a89895n285e932459e6c953@mail.gmail.com>
+	Wed, 29 Jul 2009 08:37:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=M8HKZC/sHmpgRHGfHIlcEX80oryOUVJgbG+xckeHmxQKFGcHSHwbVPkq+ap3rxGM5S
+         1o6J2TXxrJEcLfDoJTDzwDXA8uVQ83WkYzJRtmB7SFL+3ZXko2SqKFCAMLR8S8oSoI2G
+         zwHYv1FB8tNYiADomcMvgP+aqgJhuLQLLUHos=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aec7e5c30907290527w39a89895n285e932459e6c953@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Reply-To: eranian@gmail.com
+In-Reply-To: <1248869948.6987.3083.camel@twins>
+References: <7c86c4470907270951i48886d56g90bc198f26bb0716@mail.gmail.com>
+	 <1248869948.6987.3083.camel@twins>
+Date: Wed, 29 Jul 2009 14:37:10 +0200
+Message-ID: <7c86c4470907290537q42195dc6s61d0f6d4a3a70154@mail.gmail.com>
+Subject: Re: perf_counters issue with self-sampling threads
+From: stephane eranian <eranian@googlemail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
+       Corey J Ashford <cjashfor@us.ibm.com>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>, oleg <oleg@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 29, 2009 at 09:27:54PM +0900, Magnus Damm wrote:
-> On Wed, Jul 29, 2009 at 8:58 PM, Mark
-> Brown<broonie@opensource.wolfsonmicro.com> wrote:
-> > Looking at the original patch I'm not sure exactly why it runs into
-> > clock API issues so I'm not sure if this is a relevant concern or not
-> > here but I'm mentioning it since I'd kind of expect an impact on the
-> > SoCs from addressing it due to the way the clock API functions are
-> > currently provided.
-> 
-> In my opinion this patch has nothing to do with the clock framework.
-> 
-> But fixing up clocklib properly would certainly be beneficial for
-> everyone. Holding the driver hostage until clocklib is upstream
-> however, that's just silly.
-> 
-It also presupposes that people want clocklib upstream. The last time I
-saw it pass through my inbox, I wasn't convinced that it really bought us
-anything. The ARM clkdev thing on the other hand is something I plan to
-drag in on the SH side as well, but that too is a separate thing.
+Peter,
 
-If folks are of the mindset that the current patch is a misuse of the
-clock framework, then the objection needs to be specifically noted. I'm
-willing to make concessions on the clock framework side if Ian has
-problems with the current scheme, but I am not at all convinced of the
-relative merit of clocklib, or holding drivers hostage to such. 
+On Wed, Jul 29, 2009 at 2:19 PM, Peter Zijlstra<a.p.zijlstra@chello.nl> wrote:
+> On Mon, 2009-07-27 at 18:51 +0200, stephane eranian wrote:
+>> I believe there is a problem with the current perf_counters (PCL)
+>> code for self-sampling threads. The problem is related to sample
+>> notifications via signal.
+>>
+>> PCL (just like perfmon) is using SIGIO, an asynchronous signal,
+>> to notify user applications of the availability of data in the event
+>> buffer.
+>>
+>> POSIX does not mandate that asynchronous signals be delivered
+>> to the thread in which they originated. Any thread in the process
+>> may process the signal, assuming it does not have the signal
+>> blocked.
+>
+> This signal stuff makes my head spin a little, however:
+>
+> fcntl(2) for F_SETOWN says:
+>
+> If a non-zero value is given to F_SETSIG  in  a  multi‐ threaded
+> process running with a threading library that supports thread groups
+> (e.g., NPTL),  then  a  positive value  given  to  F_SETOWN  has  a
+> different  meaning: instead of being a process ID identifying a whole
+> pro‐ cess,  it  is a thread ID identifying a specific thread within a
+> process.  Consequently, it may be necessary to pass  F_SETOWN  the
+> result of gettid(2) instead of get‐ pid(2) to get sensible results
+> when F_SETSIG  is  used.  (In  current  Linux  threading
+> implementations, a main thread’s thread ID is the same as its process
+> ID.  This means  that  a  single-threaded program can equally use
+> gettid(2) or getpid(2) in this scenario.)   Note,  how‐ ever,  that
+> the  statements  in  this paragraph do not apply to the SIGURG signal
+> generated  for  out-of-band data  on a socket: this signal is always
+> sent to either a process or a process group, depending  on  the  value
+> given  to  F_SETOWN.   Note  also  that Linux imposes a limit on the
+> number of real-time signals  that  may  be queued  to  a  process (see
+> getrlimit(2) and signal(7)) and if this limit is reached, then the
+> kernel  reverts to  delivering  SIGIO,  and this signal is delivered
+> to the entire process rather than to a specific thread.
+>
+>
+> Which seems to imply that when we feed fcntl(F_SETOWN) a TID instead of
+> a PID it should deliver SIGIO to the thread instead of the whole process
+> -- which, to me, seems a sane semantic.
+>
+Yes, I remember that manpage. I got the same impression and in fact that is
+what I document in some of my test programs. So you read this right.
+
+> However,
+>
+>  kill_fasync(SIGIO)
+>    __kill_fasync()
+>      send_sigio()
+>        /* if pid_type is a PIDTYPE_PID and pid a TID this should
+>           only iterate the one thread, I think */
+>        do_each_pid_task() {
+>          send_sigio_to_task();
+>        } while_each_pid_task();
+>
+> where:
+>
+>  send_sigio_to_task()
+>    group_send_sig_info()
+>      __group_send_sig_info()
+>        send_signal(.group = 1) /* uh-ow trouble */
+>          __send_signal()
+>            if (group)
+>               pending = &t->signal->shared_pending
+>
+> which will result in the signal being send to the whole process anyway.
+>
+Exactly! That is the code path and this is why this does not work as
+expected. Nowhere along that path is there special casing for that
+F_SETOWN of tid vs. pid. kill_fasync() implies group.
+
+
+>
+> Now I was considering teaching send_sigio_to_task() to use
+> specific_send_sig_info() when fown->pid != fown->group_leader->pid or
+> something, but I'm not sure that won't break anything.
+>
+Yes, that's the problem with touching this. I don't know if this will break
+things. That's why I was suggested creating a parallel code path which
+does what we want without modifying the existing path. Unless you know
+some signal expert at redhat or elsewhere.
+
+> Alternatively, I've missed a detail and I either read the manpage wrong,
+> or the code, or both of them.
+>
+The code does not correspond to the manpage. Not clear which one
+is correct though. This F_SETOWN trick looks very Linux specific.
