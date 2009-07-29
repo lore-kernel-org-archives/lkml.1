@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751944AbZG2GHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752156AbZG2GNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751944AbZG2GHy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 02:07:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbZG2GHy
+	id S1752156AbZG2GNh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 02:13:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbZG2GNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 02:07:54 -0400
-Received: from mail-pz0-f204.google.com ([209.85.222.204]:58753 "EHLO
-	mail-pz0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750974AbZG2GHx (ORCPT
+	Wed, 29 Jul 2009 02:13:36 -0400
+Received: from rv-out-0506.google.com ([209.85.198.239]:47724 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751701AbZG2GNf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 02:07:53 -0400
+	Wed, 29 Jul 2009 02:13:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:user-agent:mime-version:to:cc:subject
          :references:in-reply-to:content-type:content-transfer-encoding;
-        b=p4SPqhrNjuFTiK4rOTF8e66b+vWHcs6XUKY4stY6IFOmxy1crYv8XPSe2Z+04ApQ/Z
-         ZUacaHrBxXr2Cy60CggTgJg2wawtMEXM8TLv9F47LtqtbR22XmzFOTlTm1X1byAWR+l8
-         O0Vkd3mv+uLjijeKpfgMfNrJ2xgwOBWxsyJ74=
-Message-ID: <4A6FE740.7020302@gmail.com>
-Date: Tue, 28 Jul 2009 23:08:00 -0700
+        b=kydaIJmpRpgFxpmX2z/1Re7aH1uoYA66x0Jixt3K7c2NkhIAjJG0EXjgZBmKCg4zot
+         gM8cOifdyxvtj3XVZ9MptmdEuWz4xKked57BaFfizmyiJp+DlU8cms5em7Kwlnk+LzFh
+         5sU1lsGWEDA8voIQ0JSwaSN8OXnpn6yzzhne8=
+Message-ID: <4A6FE897.6010803@gmail.com>
+Date: Tue, 28 Jul 2009 23:13:43 -0700
 From: "Justin P. Mattock" <justinmattock@gmail.com>
 User-Agent: Spicebird/0.7.1 (X11; 2009031304)
 MIME-Version: 1.0
@@ -56,7 +56,6 @@ Prabhu Chawandi wrote:
 > Please read the FAQ at  http://www.tux.org/lkml/
 >
 >    
-showkeys is the command for bash
-xev is for xserver.
+My bad, it's showkey not showkeys.
 
-Justin P. Matock
+Justin P. Mattock
