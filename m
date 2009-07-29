@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbZG2T3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754445AbZG2Tyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754217AbZG2T3b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 15:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753710AbZG2T3a
+	id S1754445AbZG2Tyh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 15:54:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754384AbZG2Tyh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 15:29:30 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:49605 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753622AbZG2T3a (ORCPT
+	Wed, 29 Jul 2009 15:54:37 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:15357 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754362AbZG2Tyg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 15:29:30 -0400
-Date: Wed, 29 Jul 2009 21:29:28 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: "Michael S. Tsirkin" <mst@redhat.com>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scsi: consistent use of __u8 in scsi/scsi.h
-Message-ID: <20090729192928.GA22759@merkur.ravnborg.org>
-References: <20090729111114.GA15239@redhat.com> <1248875763.3900.1.camel@mulgrave.site> <20090729162844.GA22561@merkur.ravnborg.org> <1248885456.3900.48.camel@mulgrave.site>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248885456.3900.48.camel@mulgrave.site>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 29 Jul 2009 15:54:36 -0400
+From: Abhishek Kulkarni <adkulkar@umail.iu.edu>
+To: v9fs-developer@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [RESEND 2/2] net/9p: Insulate the client against an invalid error code sent by a 9p server.
+Date: Wed, 29 Jul 2009 13:49:02 -0600
+Message-Id: <1248896942-13027-2-git-send-email-adkulkar@umail.iu.edu>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1248896942-13027-1-git-send-email-adkulkar@umail.iu.edu>
+References: <1248896942-13027-1-git-send-email-adkulkar@umail.iu.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 29, 2009 at 04:37:36PM +0000, James Bottomley wrote:
-> On Wed, 2009-07-29 at 18:28 +0200, Sam Ravnborg wrote:
-> > On Wed, Jul 29, 2009 at 08:56:03AM -0500, James Bottomley wrote:
-> > > On Wed, 2009-07-29 at 14:11 +0300, Michael S. Tsirkin wrote:
-> > > > scsi/scsi.h is exported to userspace, so it should
-> > > > use __u8 instead of u8 as other userspace-visible headers do.
-> > > 
-> > > Actually, can we just put a hold on this until we decide what we're
-> > > doing with exporting include/scsi.
-> > > 
-> > > Arguments so far are
-> > > 
-> > >      1. Don't export and let glibc supply the headers (as it does now)
-> > >      2. Move headers to be exported to include/linux
-> > >      3. Take over include/scsi export from glibc: this will necessitate
-> > >         comparing our current headers and those of glibc and moving
-> > >         stuff around.
-> > 
-> > 2 + 3...
-> > Let include/scsi be kernel internal stuff.
-> > And have the exported headers in include/linux.
-> 
-> I don't quite understand what you're saying here.  I think 2 and 3 are
-> either/or options.  Either we move the exported files to include/linux
-> or we export from include/scsi.
-That we should in any case look at what glibc have defined in
-their respective headers when we prepare the kernel versions for export.
+A looney tunes server sending an invalid error code (which is !IS_ERR_VALUE)
+can result in a client oops. So fix it by adding a check and converting unknown
+or invalid error codes to -ESERVERFAULT.
 
-> 
-> I have to say I don't like option 2 because the breakage is visible to
-> user level programs (unless we can persuade glibc people to #include
-> <linux/scsi.h> in scsi/scsi.h).
+Signed-off-by: Abhishek Kulkarni <adkulkar@umail.iu.edu>
+---
+:100644 100644 7bbd2d5... 5bf5f22... M	net/9p/client.c
+:100644 100644 fdebe43... 5251851... M	net/9p/error.c
+ net/9p/client.c |    7 +------
+ net/9p/error.c  |    2 +-
+ 2 files changed, 2 insertions(+), 7 deletions(-)
 
-We could turn this the other way around...
-glibc could add a wrapper file when they are ready to rely on the kernel
-version.
-So userspace continue to work independent of glibc using their own set
-of headers for scsi or they use the kernel supplied headers via the
-wrapper header file . Just an idea.
+diff --git a/net/9p/client.c b/net/9p/client.c
+index 7bbd2d5..5bf5f22 100644
+--- a/net/9p/client.c
++++ b/net/9p/client.c
+@@ -411,14 +411,9 @@ static int p9_check_errors(struct p9_client *c, struct p9_req_t *req)
+ 		if (c->dotu)
+ 			err = -ecode;
+ 
+-		if (!err) {
++		if (!err || !IS_ERR_VALUE(err))
+ 			err = p9_errstr2errno(ename, strlen(ename));
+ 
+-			/* string match failed */
+-			if (!err)
+-				err = -ESERVERFAULT;
+-		}
+-
+ 		P9_DPRINTK(P9_DEBUG_9P, "<<< RERROR (%d) %s\n", -ecode, ename);
+ 
+ 		kfree(ename);
+diff --git a/net/9p/error.c b/net/9p/error.c
+index fdebe43..5251851 100644
+--- a/net/9p/error.c
++++ b/net/9p/error.c
+@@ -239,7 +239,7 @@ int p9_errstr2errno(char *errstr, int len)
+ 		errstr[len] = 0;
+ 		printk(KERN_ERR "%s: server reported unknown error %s\n",
+ 			__func__, errstr);
+-		errno = 1;
++		errno = ESERVERFAULT;
+ 	}
+ 
+ 	return -errno;
+-- 
+1.6.3.3
 
-It would be bad if userspace had to do something strange to pick
-up scsi.h in scsi/ for some glibc versions and from linux/ for
-other glibc versions.
-
-	Sam
