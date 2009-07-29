@@ -1,74 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394AbZG2QBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbZG2QD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755394AbZG2QBz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 12:01:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755042AbZG2QBy
+	id S1755423AbZG2QD1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 12:03:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755206AbZG2QD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 12:01:54 -0400
-Received: from ru.mvista.com ([213.79.90.228]:28444 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754415AbZG2QBx (ORCPT
+	Wed, 29 Jul 2009 12:03:26 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:34401 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755176AbZG2QDZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 12:01:53 -0400
-Date: Wed, 29 Jul 2009 20:01:53 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] mtd: m25p80: Fix null pointer dereference bug
-Message-ID: <20090729160153.GA27872@oksana.dev.rtsoft.ru>
+	Wed, 29 Jul 2009 12:03:25 -0400
+X-Greylist: delayed 1599 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Jul 2009 12:03:25 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=eQtdTlCAKSFKyC4a9gK5KM0idinfRqElIgFlHbkmg487O+zEcTK5Nbh48RrskDt7Ng
+         aYd27oU3Ola0vnPWiea23cDN7GNXWH5O4A5/O5VVNsVWH4Kd7cmVkti0ByRLFq47pLUO
+         MGSHRVGEKCZQduH1jFGBUYj4aj+UIRmmBFB5o=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20090729173231.012d0b89@skybase>
+References: <200907291457.n6TEvDAt003701@d06av06.portsmouth.uk.ibm.com>
+	 <20090729173231.012d0b89@skybase>
+Date: Wed, 29 Jul 2009 16:36:46 +0100
+Message-ID: <87a5b0800907290836n6bb6da36tb0124e6d4f0673ea@mail.gmail.com>
+Subject: Re: [RFC][patch 02/12] remove clocksource inline functions
+From: Will Newton <will.newton@gmail.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: dwalker@fifo99.com, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       john stultz <johnstul@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following oops, observed with MTD_PARTITIONS=n:
+On Wed, Jul 29, 2009 at 4:32 PM, Martin
+Schwidefsky<schwidefsky@de.ibm.com> wrote:
 
-m25p80 spi32766.0: m25p80 (1024 Kbytes)
-Unable to handle kernel paging request for data at address 0x00000008
-Faulting instruction address: 0xc03a54b0
-Oops: Kernel access of bad area, sig: 11 [#1]
-Modules linked in:
-NIP: c03a54b0 LR: c03a5494 CTR: c01e98b8
-REGS: ef82bb60 TRAP: 0300   Not tainted  (2.6.31-rc4-00167-g4733fd3)
-MSR: 00029000 <EE,ME,CE>  CR: 24022022  XER: 20000000
-DEAR: 00000008, ESR: 00000000
-TASK = ef82c000[1] 'swapper' THREAD: ef82a000
-GPR00: 00000000 ef82bc10 ef82c000 0000002e 00001eb8 ffffffff c01e9824 00000036
-GPR08: c054ed40 c0542a08 00001eb8 00004000 22022022 1001a1a0 3ff8fd00 00000000
-GPR16: 00000000 00000001 00000000 00000000 ef82bddc c0530000 efbef500 ef8356d0
-GPR24: 00000000 ef8356d0 00000000 efbf7a00 c0530ec4 ffffffed efbf5300 c0541f98
-NIP [c03a54b0] m25p_probe+0x22c/0x354
-LR [c03a5494] m25p_probe+0x210/0x354
-Call Trace:
-[ef82bc10] [c03a5494] m25p_probe+0x210/0x354 (unreliable)
-[ef82bca0] [c024e37c] spi_drv_probe+0x2c/0x3c
-[ef82bcb0] [c01f1afc] driver_probe_device+0xa4/0x178
-[ef82bcd0] [c01f06e8] bus_for_each_drv+0x6c/0xa8
-[ef82bd00] [c01f1a34] device_attach+0x84/0xa8
-...
+> Hmm, you have an object of type struct clocksource and you do
+> cs->read(cs). If that is not clear enough then I don't know what is. We
+> do that all over the place in the linux kernel. And I personally find
+> these useless wrappers rather annoying. I don't like to have to jump to
+> another place to find out that it just calls the read function of the
+> object.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- drivers/mtd/devices/m25p80.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
-index ae5fe91..10ed195 100644
---- a/drivers/mtd/devices/m25p80.c
-+++ b/drivers/mtd/devices/m25p80.c
-@@ -736,7 +736,7 @@ static int __devinit m25p_probe(struct spi_device *spi)
- 			flash->partitioned = 1;
- 			return add_mtd_partitions(&flash->mtd, parts, nr_parts);
- 		}
--	} else if (data->nr_parts)
-+	} else if (data && data->nr_parts)
- 		dev_warn(&spi->dev, "ignoring %d default partitions on %s\n",
- 				data->nr_parts, data->name);
- 
--- 
-1.6.3.3
+An argument for the helper is that it eases grepability. Sure you can
+search for "->read" but that's going to turn up all kinds of
+non-clocksource code as well. grep clocksource_read will get you
+exactly what you want.
