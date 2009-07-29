@@ -1,229 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756249AbZG2ACJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbZG2AHL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756249AbZG2ACJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 20:02:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756235AbZG2ACH
+	id S1753321AbZG2AHL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 28 Jul 2009 20:07:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbZG2AHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 20:02:07 -0400
-Received: from kroah.org ([198.145.64.141]:35672 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753705AbZG1Xtn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 19:49:43 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Tue Jul 28 16:41:53 2009
-Message-Id: <20090728234153.193026263@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Tue, 28 Jul 2009 16:40:42 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 13/71] USB: fix the clear_tt_buffer interface
-References: <20090728234029.868717854@mini.kroah.org>
-Content-Disposition: inline; filename=usb-fix-the-clear_tt_buffer-interface.patch
-In-Reply-To: <20090728234756.GA11917@kroah.com>
+	Tue, 28 Jul 2009 20:07:10 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51956 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753183AbZG2AHI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 28 Jul 2009 20:07:08 -0400
+Date: Tue, 28 Jul 2009 17:06:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH] mm: Make it easier to catch NULL cache names
+Message-Id: <20090728170632.2d136ce6.akpm@linux-foundation.org>
+In-Reply-To: <1248754289.30993.45.camel@pasglop>
+References: <1248754289.30993.45.camel@pasglop>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.30-stable review patch.  If anyone has any objections, please let us know.
+On Tue, 28 Jul 2009 14:11:29 +1000
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-------------------
+> Right now, if you inadvertently pass NULL to kmem_cache_create() at boot
+> time, it crashes much later after boot somewhere deep inside sysfs which
+> makes it very non obvious to figure out what's going on.
 
-From: Alan Stern <stern@rowland.harvard.edu>
+That must have been a pretty dumb piece of kernel code.  It's a bit
+questionable (IMO) whether we need to cater for really exceptional
+bugs.  But whatever.
 
-commit cb88a1b887bb8908f6e00ce29e893ea52b074940 upstream.
+slab used to have a check (__get_user) to see whether the ->name field
+was still readable.  This was to detect the case where the slab cache
+was created from a kernel module and the module forgot to remove the
+cache at rmmod-time.  Subsequent reads of /proc/slabinfo would
+confusingly go splat.  The check seems to have been removed (from
+slab.c, at least).  If it is still there then it should be applied
+consistently and across all slab versions.  In which case that check
+would make your patch arguably-unneeded.  But it seems to have got
+itself zapped.
 
-This patch (as1255) updates the interface for calling
-usb_hub_clear_tt_buffer().  Even the name of the function is changed!
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+> Yes, I did hit that :-) Something in ppc land using an array of caches
+> and got the names array out of sync with changes to the list of indices.
+> 
+>  mm/slub.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/mm/slub.c b/mm/slub.c
+> index b9f1491..e31fbe6 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -3292,6 +3292,9 @@ struct kmem_cache *kmem_cache_create(const char *name, size_t size,
+>  {
+>  	struct kmem_cache *s;
+>  
+> +	if (WARN_ON(!name))
+> +		return NULL;
+> +
+>  	down_write(&slub_lock);
+>  	s = find_mergeable(size, align, flags, name, ctor);
+>  	if (s) {
 
-When an async URB (i.e., Control or Bulk) going through a high-speed
-hub to a non-high-speed device is cancelled or fails, the hub's
-Transaction Translator buffer may be left busy still trying to
-complete the transaction.  The buffer has to be cleared; that's what
-usb_hub_clear_tt_buffer() does.
+Let's see:
 
-It isn't safe to send any more URBs to the same endpoint until the TT
-buffer is fully clear.  Therefore the HCD needs to be told when the
-Clear-TT-Buffer request has finished.  This patch adds a callback
-method to struct hc_driver for that purpose, and makes the hub driver
-invoke the callback at the proper time.
-
-The patch also changes a couple of names; "hub_tt_kevent" and
-"tt.kevent" now look rather antiquated.
-
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/usb/core/hcd.h    |    4 ++++
- drivers/usb/core/hub.c    |   40 ++++++++++++++++++++++++++--------------
- drivers/usb/core/hub.h    |    6 ++++--
- drivers/usb/host/ehci-q.c |    2 +-
- 4 files changed, 35 insertions(+), 17 deletions(-)
-
---- a/drivers/usb/core/hcd.h
-+++ b/drivers/usb/core/hcd.h
-@@ -224,6 +224,10 @@ struct hc_driver {
- 	void	(*relinquish_port)(struct usb_hcd *, int);
- 		/* has a port been handed over to a companion? */
- 	int	(*port_handed_over)(struct usb_hcd *, int);
-+
-+		/* CLEAR_TT_BUFFER completion callback */
-+	void	(*clear_tt_buffer_complete)(struct usb_hcd *,
-+				struct usb_host_endpoint *);
- };
- 
- extern int usb_hcd_link_urb_to_ep(struct usb_hcd *hcd, struct urb *urb);
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -448,10 +448,10 @@ hub_clear_tt_buffer (struct usb_device *
-  * talking to TTs must queue control transfers (not just bulk and iso), so
-  * both can talk to the same hub concurrently.
-  */
--static void hub_tt_kevent (struct work_struct *work)
-+static void hub_tt_work(struct work_struct *work)
- {
- 	struct usb_hub		*hub =
--		container_of(work, struct usb_hub, tt.kevent);
-+		container_of(work, struct usb_hub, tt.clear_work);
- 	unsigned long		flags;
- 	int			limit = 100;
- 
-@@ -460,6 +460,7 @@ static void hub_tt_kevent (struct work_s
- 		struct list_head	*temp;
- 		struct usb_tt_clear	*clear;
- 		struct usb_device	*hdev = hub->hdev;
-+		const struct hc_driver	*drv;
- 		int			status;
- 
- 		temp = hub->tt.clear_list.next;
-@@ -469,21 +470,25 @@ static void hub_tt_kevent (struct work_s
- 		/* drop lock so HCD can concurrently report other TT errors */
- 		spin_unlock_irqrestore (&hub->tt.lock, flags);
- 		status = hub_clear_tt_buffer (hdev, clear->devinfo, clear->tt);
--		spin_lock_irqsave (&hub->tt.lock, flags);
--
- 		if (status)
- 			dev_err (&hdev->dev,
- 				"clear tt %d (%04x) error %d\n",
- 				clear->tt, clear->devinfo, status);
-+
-+		/* Tell the HCD, even if the operation failed */
-+		drv = clear->hcd->driver;
-+		if (drv->clear_tt_buffer_complete)
-+			(drv->clear_tt_buffer_complete)(clear->hcd, clear->ep);
-+
- 		kfree(clear);
-+		spin_lock_irqsave(&hub->tt.lock, flags);
- 	}
- 	spin_unlock_irqrestore (&hub->tt.lock, flags);
- }
- 
- /**
-- * usb_hub_tt_clear_buffer - clear control/bulk TT state in high speed hub
-- * @udev: the device whose split transaction failed
-- * @pipe: identifies the endpoint of the failed transaction
-+ * usb_hub_clear_tt_buffer - clear control/bulk TT state in high speed hub
-+ * @urb: an URB associated with the failed or incomplete split transaction
-  *
-  * High speed HCDs use this to tell the hub driver that some split control or
-  * bulk transaction failed in a way that requires clearing internal state of
-@@ -493,8 +498,10 @@ static void hub_tt_kevent (struct work_s
-  * It may not be possible for that hub to handle additional full (or low)
-  * speed transactions until that state is fully cleared out.
-  */
--void usb_hub_tt_clear_buffer (struct usb_device *udev, int pipe)
-+int usb_hub_clear_tt_buffer(struct urb *urb)
- {
-+	struct usb_device	*udev = urb->dev;
-+	int			pipe = urb->pipe;
- 	struct usb_tt		*tt = udev->tt;
- 	unsigned long		flags;
- 	struct usb_tt_clear	*clear;
-@@ -506,7 +513,7 @@ void usb_hub_tt_clear_buffer (struct usb
- 	if ((clear = kmalloc (sizeof *clear, GFP_ATOMIC)) == NULL) {
- 		dev_err (&udev->dev, "can't save CLEAR_TT_BUFFER state\n");
- 		/* FIXME recover somehow ... RESET_TT? */
--		return;
-+		return -ENOMEM;
- 	}
- 
- 	/* info that CLEAR_TT_BUFFER needs */
-@@ -518,14 +525,19 @@ void usb_hub_tt_clear_buffer (struct usb
- 			: (USB_ENDPOINT_XFER_BULK << 11);
- 	if (usb_pipein (pipe))
- 		clear->devinfo |= 1 << 15;
--	
-+
-+	/* info for completion callback */
-+	clear->hcd = bus_to_hcd(udev->bus);
-+	clear->ep = urb->ep;
-+
- 	/* tell keventd to clear state for this TT */
- 	spin_lock_irqsave (&tt->lock, flags);
- 	list_add_tail (&clear->clear_list, &tt->clear_list);
--	schedule_work (&tt->kevent);
-+	schedule_work(&tt->clear_work);
- 	spin_unlock_irqrestore (&tt->lock, flags);
-+	return 0;
- }
--EXPORT_SYMBOL_GPL(usb_hub_tt_clear_buffer);
-+EXPORT_SYMBOL_GPL(usb_hub_clear_tt_buffer);
- 
- /* If do_delay is false, return the number of milliseconds the caller
-  * needs to delay.
-@@ -816,7 +828,7 @@ static void hub_quiesce(struct usb_hub *
- 	if (hub->has_indicators)
- 		cancel_delayed_work_sync(&hub->leds);
- 	if (hub->tt.hub)
--		cancel_work_sync(&hub->tt.kevent);
-+		cancel_work_sync(&hub->tt.clear_work);
- }
- 
- /* caller has locked the hub device */
-@@ -933,7 +945,7 @@ static int hub_configure(struct usb_hub 
- 
- 	spin_lock_init (&hub->tt.lock);
- 	INIT_LIST_HEAD (&hub->tt.clear_list);
--	INIT_WORK (&hub->tt.kevent, hub_tt_kevent);
-+	INIT_WORK(&hub->tt.clear_work, hub_tt_work);
- 	switch (hdev->descriptor.bDeviceProtocol) {
- 		case 0:
- 			break;
---- a/drivers/usb/core/hub.h
-+++ b/drivers/usb/core/hub.h
-@@ -185,16 +185,18 @@ struct usb_tt {
- 	/* for control/bulk error recovery (CLEAR_TT_BUFFER) */
- 	spinlock_t		lock;
- 	struct list_head	clear_list;	/* of usb_tt_clear */
--	struct work_struct			kevent;
-+	struct work_struct	clear_work;
- };
- 
- struct usb_tt_clear {
- 	struct list_head	clear_list;
- 	unsigned		tt;
- 	u16			devinfo;
-+	struct usb_hcd		*hcd;
-+	struct usb_host_endpoint	*ep;
- };
- 
--extern void usb_hub_tt_clear_buffer(struct usb_device *dev, int pipe);
-+extern int usb_hub_clear_tt_buffer(struct urb *urb);
- extern void usb_ep0_reinit(struct usb_device *);
- 
- #endif /* __LINUX_HUB_H */
---- a/drivers/usb/host/ehci-q.c
-+++ b/drivers/usb/host/ehci-q.c
-@@ -215,7 +215,7 @@ static int qtd_copy_status (
- 			/* REVISIT ARC-derived cores don't clear the root
- 			 * hub TT buffer in this way...
- 			 */
--			usb_hub_tt_clear_buffer (urb->dev, urb->pipe);
-+			usb_hub_clear_tt_buffer(urb);
- 		}
- 	}
- 
+slab.c: goes BUG
+slob.c: will apparently go oops at some later time
+slqb.c: does dump_stack(), returns NULL from kmem_cache_create()
+slub.c: does WARN(), returns NULL from kmem_cache_create()
 
 
+I think I'll apply the patch, cc Pekka then run away.
