@@ -1,107 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751266AbZG2Ds7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751052AbZG2EZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751266AbZG2Ds7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 28 Jul 2009 23:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750842AbZG2Ds7
+	id S1751052AbZG2EZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 00:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750974AbZG2EZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 28 Jul 2009 23:48:59 -0400
-Received: from mail-yx0-f190.google.com ([209.85.210.190]:61679 "EHLO
-	mail-yx0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750695AbZG2Ds6 (ORCPT
+	Wed, 29 Jul 2009 00:25:28 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:53903 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750872AbZG2EZ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 28 Jul 2009 23:48:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=u3xbEOWX6PbOZ9cfZDPVHc6iuTi1FwTtiBsAZfNlQJzbmeY2++TRD4vic+jSIqKqln
-         V2e6cQLlRX5yNEhb16EHlCc6tXh3Xk+Kh/W3/jAq5eWYSmn7QtPHKBho1K4gBsDvPaR5
-         bDkC1mw1Vr8EjbKIhX2IQetwKWM6xkIrDKM+g=
-Message-ID: <4A6FC6A5.9030508@gmail.com>
-Date: Tue, 28 Jul 2009 23:48:53 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: David Rientjes <rientjes@google.com>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [regression] sched_getaffinity fails with EINVAL in 2.6.31-rc4
-References: <4A6DE0DC.2070207@gmail.com> <alpine.DEB.2.00.0907271108350.8408@chino.kir.corp.google.com> <200907291118.53912.rusty@rustcorp.com.au>
-In-Reply-To: <200907291118.53912.rusty@rustcorp.com.au>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig199504FE185C731B55E537D6"
+	Wed, 29 Jul 2009 00:25:27 -0400
+Message-Id: <20090729042121.727652581@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 29 Jul 2009 00:21:21 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>
+Subject: [PATCH 0/2] [GIT PULL] sched: fixes for rt-migration-test failures
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig199504FE185C731B55E537D6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Rusty Russell wrote:
-> On Tue, 28 Jul 2009 03:42:15 am David Rientjes wrote:
->> On Mon, 27 Jul 2009, Gregory Haskins wrote:
->>
->>> I am not sure when this started, but noticed that sched_getaffinity i=
-s
->>> not working in -rc4.
->>>
->>> [pid  6254] sched_getaffinity(0, 128, 0x7f80586b1fe0) =3D -1 EINVAL
->>> (Invalid argument)
->>>
->>> Here is a simple program for reproduction:
->>>
->>> #include <sched.h>
->>>
->>> int main(void)
->>> {
->>> 	cpu_set_t mask;
->>> 	int ret;
->>>
->>> 	ret =3D sched_getaffinity(0, sizeof(mask), &mask);
->>> 	if (ret < 0)
->>> 		perror("getaffinity");
->>>
->>> 	return ret;
->>> }
->>>
->>> If I get time, I will bisect this later today.
->>>
->> It's most likely due to the cpumask changes.  I don't know what cpu_se=
-t_t=20
->> is, but it's probably smaller than CONFIG_NR_CPUS rounded up to a mult=
-iple=20
->> of sizeof(long).
->=20
-> It's simply that you finally ran this on a kernel which had
-> CONFIG_NR_CPUS > 1024.
+Ingo,
 
-Indeed.  I thought I had replied to the list that I figured that out,
-but I think it might have been a trimmed list from someone elses reply.
+We've been experiencing rt-migration-test failures
 
-Long story short, MAXSMP=3Dy crept in, which set NR_CPUS=3D4096.  Backing=
+ http://rostedt.homelinux.com/code/rt-migrate-test.c
 
-this off < 1024 indeed fixes the issue.
+Gregory Haskins and myself have been debugging this for several days.
+We found three bugs so far in the code that causes the failure
+of this test. The failure is that an RT task may not migrate
+properly and may wait behind a lower RT prio task for the migration.
 
-Thanks to all who replied!
--Greg
+These two patches solve two of the bugs. There's also a bug that
+is triggered with RT_GROUP scheduling that we will look at later.
+
+The test can still fail after a long time running and we are still
+looking into other issues. But for now this solves two of those
+issues.
+
+Please pull the latest update tree, which can be found at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+update
 
 
---------------enig199504FE185C731B55E537D6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Steven Rostedt (2):
+      sched: check for pushing rt tasks after all scheduling
+      sched: add new prio to cpupri before removing old prio
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkpvxqUACgkQP5K2CMvXmqGdUQCcCesANaiV5ZsKsRjPBjD2iP93
-6hMAmgNNqKxAp+Wm+8x9blM6u2RH7msF
-=T7V1
------END PGP SIGNATURE-----
-
---------------enig199504FE185C731B55E537D6--
+----
+ kernel/sched.c        |   38 +++++++++++++++++++++++++++-----------
+ kernel/sched_cpupri.c |   30 ++++++++++++++++--------------
+ 2 files changed, 43 insertions(+), 25 deletions(-)
+-- 
