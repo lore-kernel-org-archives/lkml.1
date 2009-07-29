@@ -1,84 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbZG2UW0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbZG2U34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755980AbZG2UW0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 16:22:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755809AbZG2UW0
+	id S1756034AbZG2U34 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 16:29:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755826AbZG2U3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 16:22:26 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38315 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755793AbZG2UWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 16:22:25 -0400
-Subject: Re: fanotify - overall design before I start sending patches
-From: Eric Paris <eparis@redhat.com>
-To: Jon Masters <jonathan@jonmasters.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       malware-list@dmesg.printk.net, Valdis.Kletnieks@vt.edu, greg@kroah.com,
-       douglas.leeder@sophos.com, tytso@mit.edu, arjan@infradead.org,
-       david@lang.hm, jengelh@medozas.de, aviro@redhat.com, mrkafk@gmail.com,
-       alexl@redhat.com, jack@suse.cz, tvrtko.ursulin@sophos.com,
-       a.p.zijlstra@chello.nl, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
-       mmorley@hcl.in, pavel@suse.cz
-In-Reply-To: <1248781708.14145.21.camel@localhost.localdomain>
-References: <1248466429.3567.82.camel@localhost>
-	 <1248781708.14145.21.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 29 Jul 2009 16:20:33 -0400
-Message-Id: <1248898833.2597.66.camel@localhost>
+	Wed, 29 Jul 2009 16:29:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48860 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755326AbZG2U3y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 16:29:54 -0400
+Date: Wed, 29 Jul 2009 13:28:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH] fbcon: rotate upside down crash
+Message-Id: <20090729132840.2a13a04e.akpm@linux-foundation.org>
+In-Reply-To: <1248768118.2992.12.camel@wall-e>
+References: <1248768118.2992.12.camel@wall-e>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-28 at 07:48 -0400, Jon Masters wrote:
-> On Fri, 2009-07-24 at 16:13 -0400, Eric Paris wrote:
+
+(let's cc linux-fbdev-devel)
+
+On Tue, 28 Jul 2009 10:01:58 +0200
+Stefani Seibold <stefani@seibold.net> wrote:
+
+> Attached is a bug fix for the frame console. 
 > 
-> > I plan to start sending patches for fanotify in the next week or two.
+> The current frame buffer console upside down functionality will crash
+> using a font which has not a width of multiple by 8. 
 > 
-> Generally, I appreciate your effort (as I'm sure does everyone else).
+> The following 1 liner will fix the rotate_ud() function,
 > 
-> I agree with Jamie that it's good to consider extending inotify and also
-> that the special socket idea probably won't work for mainline. Also:
-
-The special socket idea was Alan Cox's idea and I haven't heard a usable
-alternative.
-
-> 1). Ability to watch only certain mount-points, not just directories. Or
-> directories and block on mount operations as Jamie suggested. Or both :)
-
-Show me the user and I'll consider it.
-
-> 2). Add event on mmap perhaps. Future theoretical cloud cuckoo land
-> ideas include forcing all mmap operations to be read-only and then
-> having the page fault handler fire an event for every write so that the
-> anti-malware thing can monitor every single touched page...joke.
+> ChangeLog:
+>  Fix the rotate_ud() function not to crash in case of a font which has not a width of multiple by 8: The 
+>  inner loop of the font pixel copy should not access a bit outside the font memory area. Subtract the shift
+>  offset from the font width will prevent this.
 > 
-> 3). Sounds a lot like netlink could be close enough. Kay and others have
-> been playing with in-kernel multiplexing and re-broadcasting of netlink
-> events, and I'm pretty sure most of the rest is doable.
+>  fbcon_rotate.h |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Signed-off-by: Stefani Seibold <stefani@seibold.net>
+> 
+> --- linux-2.6.31-rc4.orig/drivers/video/console/fbcon_rotate.h	2009-06-10 05:05:27.000000000 +0200
+> +++ linux-2.6.31-rc4/drivers/video/console/fbcon_rotate.h	2009-07-24 20:37:31.000000000 +0200
+> @@ -45,7 +45,7 @@
+>  	width = (width + 7) & ~7;
+>  
+>  	for (i = 0; i < height; i++) {
+> -		for (j = 0; j < width; j++) {
+> +		for (j = 0; j < width - shift; j++) {
+>  			if (pattern_test_bit(j, i, width, in))
+>  				pattern_set_bit(width - (1 + j + shift),
+>  						height - (1 + i),
 
-Jeez, about the 50th time someone has said netlink.  I need to do the fd
-open in the context of the receiving process.  How do I do that with
-netlink?  It cannot be done at the netlink msg send side (which is the
-context of the original process accessing the file)
+Thanks.
 
-> I'm looking forward to updatedb using this.
+It seems that the bug has been there for a very very long time.  I
+wonder why - presumably nobody has tried to do an upside-down rotate
+before.
 
-Well, that's still in the future work, as all updatedb cares about it
-rename events, and the kernel does have enough information to send
-fanotify events during rename.
-
-> Let's try up-playing the use
-> cases outside malware for this stuff.
-
-I'm not playing any spin or bullshit.  I've got HSM users who wants it.
-Readahead profiling wants it.  I'm told that wine can properly do
-windows style notification with it instead of some hack they have now.
-I've also got a need to get people who want to run integrity
-checkers/virus scanners to stop binary patching/hacking my kernels.  I'd
-say I've found plenty of use cases today even if you don't find them as
-sexy as beagle   :)
-
--Eric
+So given that this code sees very little use, I guess it's pretty safe
+to merge the fix into 2.6.31.
 
