@@ -1,233 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752087AbZG2IW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752282AbZG2IY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752087AbZG2IW4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 04:22:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750948AbZG2IWz
+	id S1752282AbZG2IY3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 04:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbZG2IY2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 04:22:55 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:34341 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750896AbZG2IWw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 04:22:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=YwDcDQ9rMiaP8GA4TQzWVGejjfXCg3chhL6TOHDqRdDwj8UsM9ydD/fSfzbu39bGGa
-         AZjzBsYDAQW8pJLJ08cGJuPZm9Ip6F2nZY5lpympQoybGs3BcxOlu1kr00rib975OUZt
-         4DAvfzjOEKHOoWSlGzuEWLUZI2CpGSjlk/buY=
+	Wed, 29 Jul 2009 04:24:28 -0400
+Received: from blu0-omc1-s22.blu0.hotmail.com ([65.55.116.33]:62821 "EHLO
+	blu0-omc1-s22.blu0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751149AbZG2IY1 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 04:24:27 -0400
+Message-ID: <BLU141-W7E99313C2CA3BE069EC5DD4120@phx.gbl>
+X-Originating-IP: [198.62.10.11]
+From: manu gautam <manugautam25@hotmail.com>
+To: <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: FW: System Hang while trying to send over TCP socket with very less
+ free m/m
+Date: Wed, 29 Jul 2009 13:54:27 +0530
+Importance: Normal
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-In-Reply-To: <f5a7b3810907170007i33bc5b01sf2dd2810e4615c41@mail.gmail.com>
-References: <f5a7b3810905220417m5bbef733s54524e1180a9d4f7@mail.gmail.com>
-	 <cfd18e0f0906012207i61621045je6d98db91d986c5f@mail.gmail.com>
-	 <f5a7b3810906040414me72f8b6h583ff3c05b99693@mail.gmail.com>
-	 <f5a7b3810907170007i33bc5b01sf2dd2810e4615c41@mail.gmail.com>
-Date: Wed, 29 Jul 2009 13:52:51 +0530
-Message-ID: <f5a7b3810907290122q21745252n620c3a25ee35b1eb@mail.gmail.com>
-Subject: Re: adjtimex system man page EINVAL
-From: naresh kamboju <naresh.kernel@gmail.com>
-To: mtk.manpages@gmail.com
-Cc: mtk.manpages@googlemail.com, ziegler@uni-freiburg.de,
-       akpm@linux-foundation.org, johnstul@us.ibm.com, zippel@linux-m68k.org,
-       linux-kernel@vger.kernel.org, saji.kumar@wipro.com,
-       ltp-list <ltp-list@lists.sourceforge.net>, michal.simek@petalogix.com,
-       Garrett Cooper <yanegomi@gmail.com>, Mike Frysinger <vapier@gentoo.org>,
-       Subrata Modak <subrata@linux.vnet.ibm.com>
-Content-Type: multipart/mixed; boundary=0015174c0e8caa2c84046fd3e441
+X-OriginalArrivalTime: 29 Jul 2009 08:24:27.0416 (UTC) FILETIME=[FCC62980:01CA1025]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0015174c0e8caa2c84046fd3e441
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: quoted-printable
 
-Hi  Michael Kerrisk,
+Hi,
 
-With reference to the LTP (Linux Test Project) test cases
-ltp/testcases/kernel/syscalls/adjtimex/adjtimex02.c
+I am running 2.6.12 kernel with kernel PREEMPTION being OFF. 
+While sending data over TCP socket I am experiencing system hang. What is happening actually is that the system is low in free memory and the sk_stream_alloc_pskb call in tcp_sendmsg fails and the control goes to "sk_stream_wait_memory" function. Inside this function we are calling schedule_timeout only if "sk_stream_memory_free(sk) && vm_wait" check is false. In my case what happens is that this check is always true and we don't do schedule_timeout which results in the system hang.
+With preemption being OFF it becomes a kind of deadlock where the one thread is waiting for the memory to be freed but it is not getting scheduled out. 
 
-GIT commit:
-http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcomm=
-itdiff;h=3Deea83d896e318bda54be2d2770d2c5d6668d11db
+I also checked on the latest kernel but there also I dont see any fix for this issue. 
 
-There are changes noticed in latest kernel from 2.6.26 and above.
-adjtimex EINVAL error check for offset is removed from 2.6.26 and above ker=
-nels
-
-Kernels source lines are
-
-To make sure the offset value following lines are added in
-linux/kernel/time/ntp.c
-
-+       /*
-+        * Scale the phase adjustment and
-+        * clamp to the operating range.
-+        */
-+       offset =3D min(offset, MAXPHASE);
-+       offset =3D max(offset, -MAXPHASE);
-+
-
-Please review the patch.
-If you have any issues please let me know.
-
-Ref Links:
-
-GIT commit:
-http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcomm=
-itdiff;h=3Deea83d896e318bda54be2d2770d2c5d6668d11db
-
-LTP:
-http://www.mail-archive.com/ltp-list@lists.sourceforge.net/msg02498.html
-
-http://ltp.cvs.sourceforge.net/viewvc/ltp/ltp/testcases/kernel/syscalls/adj=
-timex/adjtimex02.c?view=3Dlog
-
-Best regards,
-Naresh Kamboju
-
-Signed-off-by: Naresh Kamboju < naresh.kernel@gmail.com >
-
-diff -Naurb man-pages-3.21/man2/adjtimex.2 man-pages-3.21_mod/man2/adjtimex=
-.2
---- man-pages-3.21/man2/adjtimex.2	2009-04-15 21:35:32.000000000 +0530
-+++ man-pages-3.21_mod/man2/adjtimex.2	2009-06-04 14:19:34.000000000 +0530
-@@ -118,7 +118,8 @@
- .B EINVAL
- An attempt is made to set
- .I buf.offset
--to a value outside the range \-131071 to +131071,
-+to a value outside the range \-131071 to +131071 applicable upto 2.6.25
-+kernels, EINVAL error check with buf.offset been removed from 2.6.25 and a=
-bove,
- or to set
- .I buf.status
- to a value other than those listed above,
-
-
-
-On Fri, Jul 17, 2009 at 12:37 PM, naresh kamboju<naresh.kernel@gmail.com> w=
-rote:
-> Dear Michael Kerrisk,
->
-> As per our discussion =85 I have sent below mail explaining the issue
-> with adjtimex man page.
-> Is that information and patch =A0OK?
->
-> When would be the next man page release?
->
-> Please let me know if there are any issues.
->
-> Best regards
-> Naresh Kamboju
->
->
->
-> On Thu, Jun 4, 2009 at 4:44 PM, naresh kamboju<naresh.kernel@gmail.com> w=
-rote:
->> Dear Michael Kerrisk,
->>
->> After comparing the changes between 2.6.25 and 2.6.29 kernels
->> As per my understanding EINVAL error check is removed with
->> timex.offset after 2.6.25 kernels and above.
->>
->> To make sure the offset value following lines are added in
->> linux-2.6.29/kernel/time/ntp.c +80
->>
->>
->> + =A0 =A0 =A0 /*
->> + =A0 =A0 =A0 =A0* Scale the phase adjustment and
->> + =A0 =A0 =A0 =A0* clamp to the operating range.
->> + =A0 =A0 =A0 =A0*/
->> + =A0 =A0 =A0 offset =3D min(offset, MAXPHASE);
->> + =A0 =A0 =A0 offset =3D max(offset, -MAXPHASE);
->> +
->>
->>
->> I have attached patch as adjtimex_man.patch
->>
->>
->> Best wishes,
->> Naresh Kamboju
->>
->> Signed-off-by: Naresh Kamboju < naresh.kernel@gmail.com >
->> diff -Naurb man-pages-3.21/man2/adjtimex.2 man-pages-3.21_mod/man2/adjti=
-mex.2
->> --- man-pages-3.21/man2/adjtimex.2 =A0 =A0 =A02009-04-15 21:35:32.000000=
-000 +0530
->> +++ man-pages-3.21_mod/man2/adjtimex.2 =A02009-06-04 14:19:34.000000000 =
-+0530
->> @@ -118,7 +118,8 @@
->> =A0.B EINVAL
->> =A0An attempt is made to set
->> =A0.I buf.offset
->> -to a value outside the range \-131071 to +131071,
->> +to a value outside the range \-131071 to +131071 applicable upto 2.6.25
->> +kernels, EINVAL error check with buf.offset been removed from 2.6.25 an=
-d above,
->> =A0or to set
->> =A0.I buf.status
->> =A0to a value other than those listed above,
->>
->>
->>
->>
->>
->> On Tue, Jun 2, 2009 at 10:37 AM, Michael Kerrisk
->> <mtk.manpages@googlemail.com> wrote:
->>> Naresh,
->>>
->>> On Fri, May 22, 2009 at 1:17 PM, naresh kamboju <naresh.kernel@gmail.co=
-m> wrote:
->>>> Hi,
->>>>
->>>> Regarding adjtimex system man page,
->>>>
->>>> Since there are modifications noticed in
->>>> /kerel/time/ntp.c
->>>> /include/linux/timex.h
->>>>
->>>> compared with /kerel/time/ntp.c 2.6.23 and 2.6.29 and above i have
->>>> attached adjtimex_2.6.23_vs_2.6.29.log : line number 330.
->>>>
->>>> In adjtimex (2) man page under the EINVAL Error check section changes
->>>> are required w.r.t buf.offset.
->>>> Could you conform and update the man page.
->>>
->>> Could you please summarize in a couple of sentence what the actual
->>> changes are that you think are required.
->>>
->>> Cheers,
->>>
->>> Michael
->>>
->>>
->>> --
->>> Michael Kerrisk
->>> Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
->>> git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
->>> man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
->>> Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
->>>
->>
->
-
---0015174c0e8caa2c84046fd3e441
-Content-Type: application/octet-stream; name="adjtimex_man.patch"
-Content-Disposition: attachment; filename="adjtimex_man.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fxpqe8xt0
-
-ZGlmZiAtTmF1cmIgbWFuLXBhZ2VzLTMuMjEvbWFuMi9hZGp0aW1leC4yIG1hbi1wYWdlcy0zLjIx
-X21vZC9tYW4yL2FkanRpbWV4LjIKLS0tIG1hbi1wYWdlcy0zLjIxL21hbjIvYWRqdGltZXguMgky
-MDA5LTA0LTE1IDIxOjM1OjMyLjAwMDAwMDAwMCArMDUzMAorKysgbWFuLXBhZ2VzLTMuMjFfbW9k
-L21hbjIvYWRqdGltZXguMgkyMDA5LTA2LTA0IDE0OjE5OjM0LjAwMDAwMDAwMCArMDUzMApAQCAt
-MTE4LDcgKzExOCw4IEBACiAuQiBFSU5WQUwKIEFuIGF0dGVtcHQgaXMgbWFkZSB0byBzZXQKIC5J
-IGJ1Zi5vZmZzZXQKLXRvIGEgdmFsdWUgb3V0c2lkZSB0aGUgcmFuZ2UgXC0xMzEwNzEgdG8gKzEz
-MTA3MSwKK3RvIGEgdmFsdWUgb3V0c2lkZSB0aGUgcmFuZ2UgXC0xMzEwNzEgdG8gKzEzMTA3MSBh
-cHBsaWNhYmxlIHVwdG8gMi42LjI1IAora2VybmVscywgRUlOVkFMIGVycm9yIGNoZWNrIHdpdGgg
-YnVmLm9mZnNldCBiZWVuIHJlbW92ZWQgZnJvbSAyLjYuMjUgYW5kIGFib3ZlLAogb3IgdG8gc2V0
-CiAuSSBidWYuc3RhdHVzCiB0byBhIHZhbHVlIG90aGVyIHRoYW4gdGhvc2UgbGlzdGVkIGFib3Zl
-LAo=
---0015174c0e8caa2c84046fd3e441--
+Please excuse me if I have pasted it to some wrong mailing list.
+Regards,Manu
+_________________________________________________________________
+Missed any of the IPL matches ? Catch a recap of all the action on MSN Videos
+http://msnvideos.in/iplt20/msnvideoplayer.aspx
