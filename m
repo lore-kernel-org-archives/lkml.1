@@ -1,137 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753163AbZG2GyK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752454AbZG2G60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753163AbZG2GyK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 02:54:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbZG2GyJ
+	id S1752454AbZG2G60 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 02:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbZG2G60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 02:54:09 -0400
-Received: from smtp.witbe.net ([81.88.96.48]:50324 "EHLO smtp.witbe.net"
+	Wed, 29 Jul 2009 02:58:26 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56720 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751150AbZG2GyI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 02:54:08 -0400
-Date: Wed, 29 Jul 2009 08:54:02 +0200
-From: Paul Rolland <rol@as2917.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Frans Pop <elendil@planet.nl>,
-       linux-kernel@vger.kernel.org, rol@witbe.net
-Subject: Re: Linux-2.6.31-rc4 - shut the annoying "failed to acquire
- vblank..."
-Message-ID: <20090729085402.3bb7e3d9@tux.DEF.witbe.net>
-In-Reply-To: <20090728092319.52ea57f1@jbarnes-g45>
-References: <20090728091622.50e9933b@tux.DEF.witbe.net>
-	<200907281244.13467.elendil@planet.nl>
-	<20090728145359.252ff759@tux.DEF.witbe.net>
-	<20090728092319.52ea57f1@jbarnes-g45>
-Organization: AS2917.net
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.2; x86_64-unknown-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
+	id S1751213AbZG2G6Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 02:58:25 -0400
+Date: Wed, 29 Jul 2009 08:58:24 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>,
+       linux-kernel@vger.kernel.org
+Subject: Re: slqb enables interrupts very early
+Message-ID: <20090729065824.GE25390@wotan.suse.de>
+References: <20090725180321.GA24814@Chamillionaire.breakpoint.cc> <4A6D59B6.3040400@cs.helsinki.fi>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="MP_/nhI2IpiS0lN+0Y9VWLRpT+7"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A6D59B6.3040400@cs.helsinki.fi>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---MP_/nhI2IpiS0lN+0Y9VWLRpT+7
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hi Linus,
-
-On Tue, 28 Jul 2009 09:23:19 -0700
-Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-
-> On Tue, 28 Jul 2009 14:53:59 +0200
-> Paul Rolland <rol@as2917.net> wrote:
+On Mon, Jul 27, 2009 at 10:39:34AM +0300, Pekka Enberg wrote:
+> Sebastian Andrzej Siewior wrote:
+> >I've checkout slab-2.6/linux-next and noticed that the interrupts are
+> >enabled very early by accident. Please look at the following call stack:
+> >
+> >    start_kernel()
+> >    kmem_cache_init()
+> >    kmem_cache_open()
+> >    down_write(&slqb_lock);
+> >    __down_write()
+> >    __down_write_nested()
+> >
+> >Now, __down_write_nested() protects its internal structure the follwing
+> >way:
+> >    spin_lock_irq(&sem->wait_lock);
+> >    ...
+> >    spin_unlock_irq(&sem->wait_lock);
+> >
+> >so once we return, we return with interrupts on.
 > 
-> > Hi Frans,
-> > 
-> > On Tue, 28 Jul 2009 12:44:12 +0200
-> > Frans Pop <elendil@planet.nl> wrote:
-> > 
-> > > > I sent a mail long ago about this message :
-> > > > tux kernel: [drm:drm_wait_vblank] *ERROR* failed to acquire vblank
-> > > > counter, -22 showing up more than 10 times per second, but was
-> > > > told that I had some old userspace apps running... As I was using
-> > > > an old FC8, I forgot about it.
-> > > 
-> > > The message does not only show with old applications, it also shows:
-> > > - every time I suspend my notebook
-> > > - every time I start a second X session to log in as a different
-> > > user
-> > Well, with the so-called "old apps", it's 20 times per second, as
-> > long as the app is running, which really makes it painful, because it
-> > causes all the logs to show off quickly :(
-> >  
-> > > I agree that the message is very annoying and would be glad to be
-> > > rid of it, especially as the only comment from the maintainers so
-> > > far has been to just ignore it.
-> > Well, I'd really like some feedback from the maintainer... because if
-> > no one cares, I agree it should be removed.
-> > 
-> > > IMHO, If it is "ignoreable", then it is also "suppressable".
-> > Seconded, unless someone is using it to try to fix the problem ?
-> 
-> It indicates a userland problem, and yes we shouldn't print that
-> message.  I've also posted a patch to quiet it a few times, but Dave
-> hasn't picked it up yet.  Feel free to send it straight to Linus with
-> my Reviewed-by if you want.
+> Indeed. Nick, do we need to take ->slqb_lock in kmem_cache_open()? A 
+> quick read on the code suggests that we could just drop it.
 
-Could you please apply the included patch ?
+We need it when called from kmem_cache_create, but not from
+the rest of kmem_cache_init. Thanks for finding this, how
+about this?
 
-Some applications/hardware combinations are triggering the message "failed to 
-acquire vblank counter" to be issued up to 20 times a second, which makes it 
-both useless and dangerous, as this may hide other important messages.
-This changes makes it only appear when people are debugging.
+--
+Sebastian discovered that SLQB can enable interrupts early in boot due
+to taking the rwsem. It should not be contended here, so XADD algorithm
+implementations should not be affected, however spinlock algorithm
+implementations do a spin_lock_irq in down_write fastpath and would be
+affected.
 
-Signed-off-by: Paul Rolland <rol@as2917.net>
-Reviewed-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Move the lock out of early init path, comment why. This also covers
+a very small (and basically insignificant) race where kmem_cache_create_ok
+checks succeed but kmem_cache_create still creates a duplicate named
+cache because the lock was dropped and retaken.
 
---- linux-2.6.31-rc4/drivers/gpu/drm/drm_irq.c.orig	2009-07-26 21:36:20.000000000 +0200
-+++ linux-2.6.31-rc4/drivers/gpu/drm/drm_irq.c	2009-07-26 21:36:34.000000000 +0200
-@@ -566,7 +566,7 @@ int drm_wait_vblank(struct drm_device *d
+Reported-by: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+---
+ mm/slqb.c |   32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
+
+Index: linux-2.6/mm/slqb.c
+===================================================================
+--- linux-2.6.orig/mm/slqb.c
++++ linux-2.6/mm/slqb.c
+@@ -2234,6 +2234,10 @@ static void kmem_cache_dyn_array_free(vo
+ }
+ #endif
  
- 	ret = drm_vblank_get(dev, crtc);
- 	if (ret) {
--		DRM_ERROR("failed to acquire vblank counter, %d\n", ret);
-+		DRM_DEBUG("failed to acquire vblank counter, %d\n", ret);
- 		return ret;
++/*
++ * Except in early boot, this should be called with slqb_lock held for write
++ * to lock out hotplug, and protect list modifications.
++ */
+ static int kmem_cache_open(struct kmem_cache *s,
+ 			const char *name, size_t size, size_t align,
+ 			unsigned long flags, void (*ctor)(void *), int alloc)
+@@ -2259,16 +2263,10 @@ static int kmem_cache_open(struct kmem_c
+ 		s->colour_range = 0;
  	}
- 	seq = drm_vblank_count(dev, crtc);
-
-
-
--- 
-Paul Rolland                                E-Mail : rol(at)witbe.net
-CTO - Witbe.net SA                          Tel. +33 (0)1 47 67 77 77
-Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
-F-92057 Paris La Defense                    RIPE : PR12-RIPE
-
-Please no HTML, I'm not a browser - Pas d'HTML, je ne suis pas un
-navigateur "Some people dream of success... while others wake up and work
-hard at it" 
-
-"I worry about my child and the Internet all the time, even though she's
-too young to have logged on yet. Here's what I worry about. I worry that 10
-or 15 years from now, she will come to me and say 'Daddy, where were you
-when they took freedom of the press away from the Internet?'"
---Mike Godwin, Electronic Frontier Foundation 
-
---MP_/nhI2IpiS0lN+0Y9VWLRpT+7
-Content-Type: text/x-patch
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=drm.patch
-
---- linux-2.6.31-rc4/drivers/gpu/drm/drm_irq.c.orig	2009-07-26 21:36:20.000000000 +0200
-+++ linux-2.6.31-rc4/drivers/gpu/drm/drm_irq.c	2009-07-26 21:36:34.000000000 +0200
-@@ -566,7 +566,7 @@ int drm_wait_vblank(struct drm_device *d
  
- 	ret = drm_vblank_get(dev, crtc);
- 	if (ret) {
--		DRM_ERROR("failed to acquire vblank counter, %d\n", ret);
-+		DRM_DEBUG("failed to acquire vblank counter, %d\n", ret);
- 		return ret;
+-	/*
+-	 * Protect all alloc_kmem_cache_cpus/nodes allocations with slqb_lock
+-	 * to lock out hotplug, just in case (probably not strictly needed
+-	 * here).
+-	 */
+-	down_write(&slqb_lock);
+ #ifdef CONFIG_SMP
+ 	s->cpu_slab = kmem_cache_dyn_array_alloc(nr_cpu_ids);
+ 	if (!s->cpu_slab)
+-		goto error_lock;
++		goto error;
+ # ifdef CONFIG_NUMA
+ 	s->node_slab = kmem_cache_dyn_array_alloc(nr_node_ids);
+ 	if (!s->node_slab)
+@@ -2286,7 +2284,6 @@ static int kmem_cache_open(struct kmem_c
+ 
+ 	sysfs_slab_add(s);
+ 	list_add(&s->list, &slab_caches);
+-	up_write(&slqb_lock);
+ 
+ 	return 1;
+ 
+@@ -2299,9 +2296,7 @@ error_cpu_array:
+ #endif
+ #ifdef CONFIG_SMP
+ 	kmem_cache_dyn_array_free(s->cpu_slab);
+-error_lock:
+ #endif
+-	up_write(&slqb_lock);
+ error:
+ 	if (flags & SLAB_PANIC)
+ 		panic("%s: failed to create slab `%s'\n", __func__, name);
+@@ -2870,6 +2865,12 @@ void __init kmem_cache_init(void)
+ 	 * All the ifdefs are rather ugly here, but it's just the setup code,
+ 	 * so it doesn't have to be too readable :)
+ 	 */
++
++	/*
++	 * No need to take slqb_lock here: there should be no concurrency
++	 * anyway, and spin_unlock_irq in rwsem code could enable interrupts
++	 * too early.
++	 */
+ 	kmem_cache_open(&kmem_cache_cache, "kmem_cache",
+ 			sizeof(struct kmem_cache), 0, flags, NULL, 0);
+ #ifdef CONFIG_SMP
+@@ -3011,8 +3012,6 @@ static int kmem_cache_create_ok(const ch
+ 		return 0;
  	}
- 	seq = drm_vblank_count(dev, crtc);
-
---MP_/nhI2IpiS0lN+0Y9VWLRpT+7--
+ 
+-	down_read(&slqb_lock);
+-
+ 	list_for_each_entry(tmp, &slab_caches, list) {
+ 		char x;
+ 		int res;
+@@ -3034,14 +3033,11 @@ static int kmem_cache_create_ok(const ch
+ 			printk(KERN_ERR
+ 			       "SLAB: duplicate cache %s\n", name);
+ 			dump_stack();
+-			up_read(&slqb_lock);
+ 
+ 			return 0;
+ 		}
+ 	}
+ 
+-	up_read(&slqb_lock);
+-
+ 	WARN_ON(strchr(name, ' '));	/* It confuses parsers */
+ 	if (flags & SLAB_DESTROY_BY_RCU)
+ 		WARN_ON(flags & SLAB_POISON);
+@@ -3054,6 +3050,7 @@ struct kmem_cache *kmem_cache_create(con
+ {
+ 	struct kmem_cache *s;
+ 
++	down_write(&slqb_lock);
+ 	if (!kmem_cache_create_ok(name, size, align, flags))
+ 		goto err;
+ 
+@@ -3061,12 +3058,15 @@ struct kmem_cache *kmem_cache_create(con
+ 	if (!s)
+ 		goto err;
+ 
+-	if (kmem_cache_open(s, name, size, align, flags, ctor, 1))
++	if (kmem_cache_open(s, name, size, align, flags, ctor, 1)) {
++		up_write(&slqb_lock);
+ 		return s;
++	}
+ 
+ 	kmem_cache_free(&kmem_cache_cache, s);
+ 
+ err:
++	up_write(&slqb_lock);
+ 	if (flags & SLAB_PANIC)
+ 		panic("%s: failed to create slab `%s'\n", __func__, name);
+ 
