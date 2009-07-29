@@ -1,86 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbZG2PdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754818AbZG2Pd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754764AbZG2PdL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 11:33:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752628AbZG2PdK
+	id S1754818AbZG2Pd6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 11:33:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZG2Pd5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 11:33:10 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:55421 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752357AbZG2PdJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 11:33:09 -0400
-X-Greylist: delayed 328 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Jul 2009 11:33:08 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=dC2Lkd1qs86Is40hLHLVQTwu8sl6TsKE/o4djT+3eRWnnqdMdwJr8vHG2rlUD1BHLN
-         fcdxvJ8eGLnHmPCVzMrW/E6gkLLaJP/Yb15B86INezOL8rFdpR3CQ8NNJp19rgzvrmD0
-         HTkTJLLqynMX7IR7Asgn7YoTMZVHEhw+POhyg=
-MIME-Version: 1.0
-In-Reply-To: <aec7e5c30907290824p5e20fb14g3d14aece2d3e33c6@mail.gmail.com>
-References: <Pine.LNX.4.64.0907280937000.4943@axis700.grange>
-	 <74d0deb30907290820x13214f68u82dea4ad229ebdac@mail.gmail.com>
-	 <aec7e5c30907290824p5e20fb14g3d14aece2d3e33c6@mail.gmail.com>
-Date: Wed, 29 Jul 2009 17:33:08 +0200
-Message-ID: <74d0deb30907290833m3d1ff596s180759fb961a8a8d@mail.gmail.com>
-Subject: Re: [PATCH] tmio_mmc: Optionally support using platform clock
-From: pHilipp Zabel <philipp.zabel@gmail.com>
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       Ian Molton <ian@mnementh.co.uk>, linux-kernel@vger.kernel.org,
-       Magnus Damm <damm@opensource.se>, akpm@linux-foundation.org,
-       Matt Fleming <matt@console-pimps.org>,
-       Philip Langdale <philipl@overt.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 29 Jul 2009 11:33:57 -0400
+Received: from dan.rpsys.net ([93.97.175.187]:59336 "EHLO dan.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752616AbZG2Pd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 11:33:56 -0400
+Subject: Re: [PATCH 1/3] backlight: Allow drivers to update the core, and
+	generate events on changes
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Zhang Rui <rui.zhang@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "lenb@kernel.org" <lenb@kernel.org>,
+       "corentincj@iksaif.net" <corentincj@iksaif.net>
+In-Reply-To: <20090729152041.GA15650@srcf.ucam.org>
+References: <1247517685-7719-1-git-send-email-mjg@redhat.com>
+	 <1247574573.23871.8.camel@dax.rpnet.com>
+	 <1247644518.26272.88.camel@rzhang-dt>
+	 <1247646153.6248.3.camel@dax.rpnet.com>
+	 <1247647105.26272.99.camel@rzhang-dt>
+	 <1247649089.20241.5.camel@dax.rpnet.com>
+	 <20090715135808.GA19054@srcf.ucam.org>
+	 <1247711974.26272.190.camel@rzhang-dt>
+	 <20090716024057.GA2461@srcf.ucam.org> <20090729150524.GD1534@ucw.cz>
+	 <20090729152041.GA15650@srcf.ucam.org>
+Content-Type: text/plain
+Date: Wed, 29 Jul 2009 16:31:39 +0100
+Message-Id: <1248881499.2289.137.camel@dax.rpnet.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 29, 2009 at 5:24 PM, Magnus Damm<magnus.damm@gmail.com> wrote:
-> On Thu, Jul 30, 2009 at 12:20 AM, pHilipp Zabel<philipp.zabel@gmail.com> wrote:
->> On Tue, Jul 28, 2009 at 9:51 AM, Guennadi
->> Liakhovetski<g.liakhovetski@gmx.de> wrote:
->>> If the platform device has a clock associated with the tmio-mmc device,
->>> use it.
->>>
->>> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
->>> Cc: Magnus Damm <damm@opensource.se>
->>> ---
->>>
->>> Depends (at least logically) on
->>> http://marc.info/?l=linux-kernel&m=124782904228865&w=2
->>>
->>> Sorry if I forgot anyone who volunteered to help out with MMC patches.
->>>
->>>  drivers/mmc/host/tmio_mmc.c |   21 +++++++++++++++++++++
->>>  drivers/mmc/host/tmio_mmc.h |    3 +++
->>>  include/linux/mfd/tmio.h    |    1 +
->>>  3 files changed, 25 insertions(+), 0 deletions(-)
->>>
->>> diff --git a/drivers/mmc/host/tmio_mmc.c b/drivers/mmc/host/tmio_mmc.c
->>> index c246191..2a01572 100644
->>> --- a/drivers/mmc/host/tmio_mmc.c
->>> +++ b/drivers/mmc/host/tmio_mmc.c
->>> @@ -567,6 +576,11 @@ static int __devinit tmio_mmc_probe(struct platform_device *dev)
->>>                        goto unmap_cnf;
->>>        }
->>>
->>> +       host->clk = clk_get(&dev->dev, pdata->clk_name);
->>
->> Instead of pdata->clk_name, this should be either NULL or better
->> "HCLK" (to differentiate from CLK32, not sure if we want to be able to
->> toggle that, too, in the future).
->> Passing the clock consumer ID via pdata is just wrong and shouldn't be
->> needed with clkdev.
->
-> Really? I think that depends on the clock framework implementation.
-> Remember that this needs to work on other architectures than just ARM.
+On Wed, 2009-07-29 at 16:20 +0100, Matthew Garrett wrote:
+> On Wed, Jul 29, 2009 at 05:05:24PM +0200, Pavel Machek wrote:
+> > > No, I mean that the only default policy you could reasonably have in the 
+> > > kernel would be tying the backlight directly to the ALS. And that sucks. 
+> > > You need some degree of smoothing, and that's a job better left to 
+> > > userspace.
+> > 
+> > How would that be done? Wake up userspace 100times a second so it can
+> > read an integer and ardd it to running average?
+> 
+> I don't think you'd need more than once a second, possibly modified by 
+> the size of the change since the last measurement. Response doesn't need 
+> to be immediate.
 
-Oh, clkdev is an ARM only thing. Maybe it would be worthwile to make
-this even more generic instead?
+It depends how fancy your algorithm is really. If its not that complex
+and not floating point etc. then you probably could have some basic
+kernel implementation in a few lines of code which used a timer callback
+to smooth things out. I agree that userspace should be able to run the
+show if it wants to or its some horrible complex calculation though.
 
-regards
-Philipp
+Assuming no complaints I'll queue the patches from this series in the
+backlight tree in the next could of days. I'll probably include the ACPI
+bits since they're more backlight than APCI unless Len has an objection.
+
+Cheers,
+
+Richard
+
+-- 
+Richard Purdie
+Intel Open Source Technology Centre
+
