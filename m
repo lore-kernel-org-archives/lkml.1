@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754555AbZG2MOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbZG2MP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754555AbZG2MOo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 08:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754531AbZG2MOm
+	id S1754574AbZG2MP0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 08:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbZG2MPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 08:14:42 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:45486 "EHLO mgw2.diku.dk"
+	Wed, 29 Jul 2009 08:15:25 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:60446 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754384AbZG2MOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 08:14:40 -0400
+	id S1754533AbZG2MPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 08:15:23 -0400
 From: Nicolas Palix <npalix@diku.dk>
 To: gregkh@suse.de, hjanssen@microsoft.com, kernel-janitors@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/4] Staging: hv: Remove typedef NETVSC_PACKET and PNETVSC_PACKET
-Date: Wed, 29 Jul 2009 14:10:10 +0200
+Subject: [PATCH 3/4] Staging: hv: Remove typedef STORVSC_REQUEST and PSTORVSC_REQUEST
+Date: Wed, 29 Jul 2009 14:10:19 +0200
 User-Agent: KMail/1.11.2 (Linux/2.6.28-13-generic; KDE/4.2.2; i686; ; )
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200907291410.10683.npalix@diku.dk>
+Message-Id: <200907291410.20138.npalix@diku.dk>
 Content-Type: Text/Plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -26,394 +26,246 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-typedef NETVSC_PACKET and PNETVSC_PACKET are removed and their usages
-are replace by the use of struct hv_netvsc_packet and
-struct hv_netvsc_packet * respectively.
+typedef STORVSC_REQUEST and PSTORVSC_REQUEST are removed and their
+usages are replace by the use of struct hv_storvsc_request and
+struct hv_storvsc_request * respectively.
 
 Here is the semantic patch generated to perform this transformation:
 (http://coccinelle.lip6.fr/)
 
 //<smpl>
-@rm_NETVSC_PACKET@
+@rm_STORVSC_REQUEST@
 @@
--typedef struct _NETVSC_PACKET
-+struct hv_netvsc_packet
+-typedef struct _STORVSC_REQUEST
++struct hv_storvsc_request
 {...}
--NETVSC_PACKET
+-STORVSC_REQUEST
 ;
 
-@rm_PNETVSC_PACKET@
+@rm_PSTORVSC_REQUEST@
 @@
--typedef struct _NETVSC_PACKET *PNETVSC_PACKET;
-+struct hv_netvsc_packet;
+-typedef struct _STORVSC_REQUEST *PSTORVSC_REQUEST;
++struct hv_storvsc_request;
 
-@fixtypedef_NETVSC_PACKET@
-typedef NETVSC_PACKET;
+@fixtypedef_STORVSC_REQUEST@
+typedef STORVSC_REQUEST;
 @@
--NETVSC_PACKET
-+struct hv_netvsc_packet
+-STORVSC_REQUEST
++struct hv_storvsc_request
 
-@fixstruct__NETVSC_PACKET@
+@fixstruct__STORVSC_REQUEST@
 @@
 struct
--_NETVSC_PACKET
-+hv_netvsc_packet
+-_STORVSC_REQUEST
++hv_storvsc_request
 
-@fixtypedef_PNETVSC_PACKET@
-typedef PNETVSC_PACKET;
+@fixtypedef_PSTORVSC_REQUEST@
+typedef PSTORVSC_REQUEST;
 @@
--PNETVSC_PACKET
-+struct hv_netvsc_packet*
+-PSTORVSC_REQUEST
++struct hv_storvsc_request*
 //</smpl>
 
 Signed-off-by: Nicolas Palix <npalix@diku.dk>
 ---
- drivers/staging/hv/NetVsc.c            |   32 ++++++++++++++++----------------
- drivers/staging/hv/NetVsc.h            |    2 +-
- drivers/staging/hv/RndisFilter.c       |   16 ++++++++--------
- drivers/staging/hv/include/NetVscApi.h |   10 +++++-----
- drivers/staging/hv/netvsc_drv.c        |   16 ++++++++--------
- 5 files changed, 38 insertions(+), 38 deletions(-)
+ drivers/staging/hv/StorVsc.c            |   10 +++++-----
+ drivers/staging/hv/blkvsc_drv.c         |   18 +++++++++---------
+ drivers/staging/hv/include/StorVscApi.h |   10 +++++-----
+ drivers/staging/hv/storvsc_drv.c        |    6 +++---
+ 4 files changed, 22 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/staging/hv/NetVsc.c b/drivers/staging/hv/NetVsc.c
-index d653f95..b24a870 100644
---- a/drivers/staging/hv/NetVsc.c
-+++ b/drivers/staging/hv/NetVsc.c
-@@ -93,7 +93,7 @@ NetVscOnSendCompletion(
+diff --git a/drivers/staging/hv/StorVsc.c b/drivers/staging/hv/StorVsc.c
+index bc313a6..5955999 100644
+--- a/drivers/staging/hv/StorVsc.c
++++ b/drivers/staging/hv/StorVsc.c
+@@ -43,7 +43,7 @@
+ typedef struct _STORVSC_REQUEST_EXTENSION {
+ 	/* LIST_ENTRY						ListEntry; */
+ 
+-	STORVSC_REQUEST					*Request;
++	struct hv_storvsc_request *Request;
+ 	struct hv_device *Device;
+ 
+ 	/* Synchronize the request/response if needed */
+@@ -108,7 +108,7 @@ StorVscOnDeviceRemove(
  static int
- NetVscOnSend(
+ StorVscOnIORequest(
  	struct hv_device *Device,
--	NETVSC_PACKET	*Packet
-+	struct hv_netvsc_packet	*Packet
+-	STORVSC_REQUEST	*Request
++	struct hv_storvsc_request *Request
  	);
  
- static void
-@@ -239,8 +239,8 @@ NetVscInitialize(
+ static int
+@@ -272,7 +272,7 @@ StorVscInitialize(
+ 	DPRINT_ENTER(STORVSC);
  
- 	DPRINT_ENTER(NETVSC);
- 
--	DPRINT_DBG(NETVSC, "sizeof(NETVSC_PACKET)=%zd, sizeof(NVSP_MESSAGE)=%zd, sizeof(VMTRANSFER_PAGE_PACKET_HEADER)=%zd",
--		sizeof(NETVSC_PACKET), sizeof(NVSP_MESSAGE), sizeof(VMTRANSFER_PAGE_PACKET_HEADER));
-+	DPRINT_DBG(NETVSC, "sizeof(struct hv_netvsc_packet)=%zd, sizeof(NVSP_MESSAGE)=%zd, sizeof(VMTRANSFER_PAGE_PACKET_HEADER)=%zd",
-+		sizeof(struct hv_netvsc_packet), sizeof(NVSP_MESSAGE), sizeof(VMTRANSFER_PAGE_PACKET_HEADER));
+ 	DPRINT_DBG(STORVSC, "sizeof(STORVSC_REQUEST)=%zd sizeof(STORVSC_REQUEST_EXTENSION)=%zd sizeof(VSTOR_PACKET)=%zd, sizeof(VMSCSI_REQUEST)=%zd",
+-		sizeof(STORVSC_REQUEST), sizeof(STORVSC_REQUEST_EXTENSION), sizeof(VSTOR_PACKET), sizeof(VMSCSI_REQUEST));
++		sizeof(struct hv_storvsc_request), sizeof(STORVSC_REQUEST_EXTENSION), sizeof(VSTOR_PACKET), sizeof(VMSCSI_REQUEST));
  
  	/* Make sure we are at least 2 pages since 1 page is used for control */
- 	ASSERT(driver->RingBufferSize >= (PAGE_SIZE << 1));
-@@ -802,7 +802,7 @@ NetVscOnDeviceAdd(
- 	int i;
- 
- 	struct NETVSC_DEVICE *netDevice;
--	NETVSC_PACKET* packet;
-+	struct hv_netvsc_packet *packet;
- 	LIST_ENTRY *entry;
- 
- 	NETVSC_DRIVER_OBJECT *netDriver = (NETVSC_DRIVER_OBJECT*) Device->Driver;;
-@@ -828,7 +828,7 @@ NetVscOnDeviceAdd(
- 
- 	for (i=0; i < NETVSC_RECEIVE_PACKETLIST_COUNT; i++)
- 	{
--		packet = kzalloc(sizeof(NETVSC_PACKET) + (NETVSC_RECEIVE_SG_COUNT* sizeof(PAGE_BUFFER)), GFP_KERNEL);
-+		packet = kzalloc(sizeof(struct hv_netvsc_packet) + (NETVSC_RECEIVE_SG_COUNT* sizeof(PAGE_BUFFER)), GFP_KERNEL);
- 		if (!packet)
- 		{
- 			DPRINT_DBG(NETVSC, "unable to allocate netvsc pkts for receive pool (wanted %d got %d)", NETVSC_RECEIVE_PACKETLIST_COUNT, i);
-@@ -885,7 +885,7 @@ Cleanup:
- 		while (!IsListEmpty(&netDevice->ReceivePacketList))
- 		{
- 			entry = REMOVE_HEAD_LIST(&netDevice->ReceivePacketList);
--			packet = CONTAINING_RECORD(entry, NETVSC_PACKET, ListEntry);
-+			packet = CONTAINING_RECORD(entry, struct hv_netvsc_packet, ListEntry);
- 			kfree(packet);
- 		}
- 
-@@ -915,7 +915,7 @@ NetVscOnDeviceRemove(
- 	)
- {
- 	struct NETVSC_DEVICE *netDevice;
--	NETVSC_PACKET *netvscPacket;
-+	struct hv_netvsc_packet *netvscPacket;
- 	int ret=0;
- 	LIST_ENTRY *entry;
- 
-@@ -958,7 +958,7 @@ NetVscOnDeviceRemove(
- 	while (!IsListEmpty(&netDevice->ReceivePacketList))
- 	{
- 		entry = REMOVE_HEAD_LIST(&netDevice->ReceivePacketList);
--		netvscPacket = CONTAINING_RECORD(entry, NETVSC_PACKET, ListEntry);
-+		netvscPacket = CONTAINING_RECORD(entry, struct hv_netvsc_packet, ListEntry);
- 
- 		kfree(netvscPacket);
- 	}
-@@ -999,7 +999,7 @@ NetVscOnSendCompletion(
- {
- 	struct NETVSC_DEVICE *netDevice;
- 	NVSP_MESSAGE *nvspPacket;
--	NETVSC_PACKET *nvscPacket;
-+	struct hv_netvsc_packet *nvscPacket;
- 
- 	DPRINT_ENTER(NETVSC);
- 
-@@ -1026,7 +1026,7 @@ NetVscOnSendCompletion(
- 	else if (nvspPacket->Header.MessageType == NvspMessage1TypeSendRNDISPacketComplete)
- 	{
- 		/* Get the send context */
--		nvscPacket = (NETVSC_PACKET *)(unsigned long)Packet->TransactionId;
-+		nvscPacket = (struct hv_netvsc_packet *)(unsigned long)Packet->TransactionId;
- 		ASSERT(nvscPacket);
- 
- 		/* Notify the layer above us */
-@@ -1048,7 +1048,7 @@ NetVscOnSendCompletion(
- static int
- NetVscOnSend(
+ 	ASSERT(storDriver->RingBufferSize >= (PAGE_SIZE << 1));
+@@ -704,7 +704,7 @@ Description:
+ int
+ StorVscOnIORequest(
  	struct hv_device *Device,
--	NETVSC_PACKET *Packet
-+	struct hv_netvsc_packet *Packet
+-	STORVSC_REQUEST	*Request
++	struct hv_storvsc_request *Request
  	)
  {
- 	struct NETVSC_DEVICE *netDevice;
-@@ -1118,7 +1118,7 @@ NetVscOnReceive(
- 	struct NETVSC_DEVICE *netDevice;
- 	VMTRANSFER_PAGE_PACKET_HEADER *vmxferpagePacket;
- 	NVSP_MESSAGE *nvspPacket;
--	NETVSC_PACKET *netvscPacket=NULL;
-+	struct hv_netvsc_packet *netvscPacket=NULL;
- 	LIST_ENTRY* entry;
- 	unsigned long start;
- 	unsigned long end, endVirtual;
-@@ -1183,7 +1183,7 @@ NetVscOnReceive(
- 	while (!IsListEmpty(&netDevice->ReceivePacketList))
- 	{
- 		entry = REMOVE_HEAD_LIST(&netDevice->ReceivePacketList);
--		netvscPacket = CONTAINING_RECORD(entry, NETVSC_PACKET, ListEntry);
-+		netvscPacket = CONTAINING_RECORD(entry, struct hv_netvsc_packet, ListEntry);
- 
- 		INSERT_TAIL_LIST(&listHead, &netvscPacket->ListEntry);
- 
-@@ -1206,7 +1206,7 @@ NetVscOnReceive(
- 		for (i=count; i != 0; i--)
- 		{
- 			entry = REMOVE_HEAD_LIST(&listHead);
--			netvscPacket = CONTAINING_RECORD(entry, NETVSC_PACKET, ListEntry);
-+			netvscPacket = CONTAINING_RECORD(entry, struct hv_netvsc_packet, ListEntry);
- 
- 			INSERT_TAIL_LIST(&netDevice->ReceivePacketList, &netvscPacket->ListEntry);
- 		}
-@@ -1233,7 +1233,7 @@ NetVscOnReceive(
- 	for (i=0; i < (count - 1); i++)
- 	{
- 		entry = REMOVE_HEAD_LIST(&listHead);
--		netvscPacket = CONTAINING_RECORD(entry, NETVSC_PACKET, ListEntry);
-+		netvscPacket = CONTAINING_RECORD(entry, struct hv_netvsc_packet, ListEntry);
- 
- 		/* Initialize the netvsc packet */
- 		netvscPacket->XferPagePacket = xferpagePacket;
-@@ -1357,7 +1357,7 @@ static void
- NetVscOnReceiveCompletion(
- 	void * Context)
- {
--	NETVSC_PACKET *packet = (NETVSC_PACKET*)Context;
-+	struct hv_netvsc_packet *packet = (struct hv_netvsc_packet*)Context;
- 	struct hv_device *device = (struct hv_device*)packet->Device;
- 	struct NETVSC_DEVICE *netDevice;
- 	u64	transactionId=0;
-diff --git a/drivers/staging/hv/NetVsc.h b/drivers/staging/hv/NetVsc.h
-index 7636654..0389318 100644
---- a/drivers/staging/hv/NetVsc.h
-+++ b/drivers/staging/hv/NetVsc.h
-@@ -60,7 +60,7 @@ struct NETVSC_DEVICE {
- 	int								RefCount;
- 
- 	int								NumOutstandingSends;
--	/* List of free preallocated NETVSC_PACKET to represent receive packet */
-+	/* List of free preallocated hv_netvsc_packet to represent receive packet */
- 	LIST_ENTRY						ReceivePacketList;
- 	spinlock_t receive_packet_list_lock;
- 
-diff --git a/drivers/staging/hv/RndisFilter.c b/drivers/staging/hv/RndisFilter.c
-index 96133a4..a6bbb1c 100644
---- a/drivers/staging/hv/RndisFilter.c
-+++ b/drivers/staging/hv/RndisFilter.c
-@@ -68,7 +68,7 @@ typedef struct _RNDIS_REQUEST {
- 	RNDIS_MESSAGE				ResponseMessage;
- 
- 	/* Simplify allocation by having a netvsc packet inline */
--	NETVSC_PACKET				Packet;
-+	struct hv_netvsc_packet	Packet;
- 	PAGE_BUFFER					Buffer;
- 	/* FIXME: We assumed a fixed size request here. */
- 	RNDIS_MESSAGE				RequestMessage;
-@@ -107,13 +107,13 @@ static void
- RndisFilterReceiveData(
- 	RNDIS_DEVICE	*Device,
- 	RNDIS_MESSAGE	*Message,
--	NETVSC_PACKET	*Packet
-+	struct hv_netvsc_packet	*Packet
- 	);
- 
- static int
- RndisFilterOnReceive(
- 	struct hv_device *Device,
--	NETVSC_PACKET		*Packet
-+	struct hv_netvsc_packet	*Packet
- 	);
- 
- static int
-@@ -184,7 +184,7 @@ RndisFilterOnClose(
- static int
- RndisFilterOnSend(
- 	struct hv_device *Device,
--	NETVSC_PACKET		*Packet
-+	struct hv_netvsc_packet	*Packet
- 	);
- 
- static void
-@@ -345,7 +345,7 @@ RndisFilterSendRequest(
+ 	STORVSC_DEVICE *storDevice;
+@@ -822,7 +822,7 @@ StorVscOnIOCompletion(
+ 	STORVSC_REQUEST_EXTENSION *RequestExt
  	)
  {
- 	int ret=0;
--	NETVSC_PACKET *packet;
-+	struct hv_netvsc_packet *packet;
+-	STORVSC_REQUEST *request;
++	struct hv_storvsc_request *request;
+ 	STORVSC_DEVICE *storDevice;
  
- 	DPRINT_ENTER(NETVSC);
+ 	DPRINT_ENTER(STORVSC);
+diff --git a/drivers/staging/hv/blkvsc_drv.c b/drivers/staging/hv/blkvsc_drv.c
+index c5f3ce9..9de9654 100644
+--- a/drivers/staging/hv/blkvsc_drv.c
++++ b/drivers/staging/hv/blkvsc_drv.c
+@@ -54,7 +54,7 @@ enum blkvsc_device_type {
  
-@@ -458,7 +458,7 @@ static void
- RndisFilterReceiveData(
- 	RNDIS_DEVICE	*Device,
- 	RNDIS_MESSAGE	*Message,
--	NETVSC_PACKET	*Packet
-+	struct hv_netvsc_packet	*Packet
- 	)
- {
- 	RNDIS_PACKET *rndisPacket;
-@@ -491,7 +491,7 @@ RndisFilterReceiveData(
- static int
- RndisFilterOnReceive(
- 	struct hv_device *Device,
--	NETVSC_PACKET		*Packet
-+	struct hv_netvsc_packet	*Packet
- 	)
- {
- 	struct NETVSC_DEVICE *netDevice = (struct NETVSC_DEVICE*)Device->Extension;
-@@ -1080,7 +1080,7 @@ RndisFilterOnClose(
- static int
- RndisFilterOnSend(
- 	struct hv_device *Device,
--	NETVSC_PACKET		*Packet
-+	struct hv_netvsc_packet	*Packet
- 	)
- {
- 	int ret=0;
-diff --git a/drivers/staging/hv/include/NetVscApi.h b/drivers/staging/hv/include/NetVscApi.h
-index 83e746d..79b9e4b 100644
---- a/drivers/staging/hv/include/NetVscApi.h
-+++ b/drivers/staging/hv/include/NetVscApi.h
-@@ -37,7 +37,7 @@
- 
- /* Fwd declaration */
- 
--typedef struct _NETVSC_PACKET	*PNETVSC_PACKET;
-+struct hv_netvsc_packet;
- 
- 
- 
-@@ -48,10 +48,10 @@ typedef int (*PFN_ON_OPEN)(struct hv_device *Device);
- typedef int (*PFN_ON_CLOSE)(struct hv_device *Device);
- 
- typedef void (*PFN_QUERY_LINKSTATUS)(struct hv_device *Device);
--typedef int (*PFN_ON_SEND)(struct hv_device *dev, PNETVSC_PACKET packet);
-+typedef int (*PFN_ON_SEND)(struct hv_device *dev, struct hv_netvsc_packet *packet);
- typedef void (*PFN_ON_SENDRECVCOMPLETION)(void * Context);
- 
--typedef int (*PFN_ON_RECVCALLBACK)(struct hv_device *dev, PNETVSC_PACKET packet);
-+typedef int (*PFN_ON_RECVCALLBACK)(struct hv_device *dev, struct hv_netvsc_packet *packet);
- typedef void (*PFN_ON_LINKSTATUS_CHANGED)(struct hv_device *dev, u32 Status);
- 
- /* Represent the xfer page packet which contains 1 or more netvsc packet */
-@@ -70,7 +70,7 @@ typedef struct _XFERPAGE_PACKET {
-  * Represent netvsc packet which contains 1 RNDIS and 1 ethernet frame
-  * within the RNDIS
+ /*
+  * This request ties the struct request and struct
+- * blkvsc_request/STORVSC_REQUEST together A struct request may be
++ * blkvsc_request/hv_storvsc_request together A struct request may be
+  * represented by 1 or more struct blkvsc_request
   */
--typedef struct _NETVSC_PACKET {
-+struct hv_netvsc_packet {
- 	/* Bookkeeping stuff */
- 	DLIST_ENTRY				ListEntry;
+ struct blkvsc_request_group {
+@@ -85,7 +85,7 @@ struct blkvsc_request {
+ 	unsigned char cmd_len;
+ 	unsigned char cmnd[MAX_COMMAND_SIZE];
  
-@@ -104,7 +104,7 @@ typedef struct _NETVSC_PACKET {
- 	u32					PageBufferCount;
- 	PAGE_BUFFER				PageBuffers[NETVSC_PACKET_MAXPAGE];
+-	STORVSC_REQUEST		request;
++	struct hv_storvsc_request request;
+ 	/* !!!DO NOT ADD ANYTHING BELOW HERE!!! Otherwise, memory can overlap, because - */
+ 	/* The extension buffer falls right here and is pointed to by request.Extension; */
+ };
+@@ -132,11 +132,11 @@ static int blkvsc_getgeo(struct block_device *bd, struct hd_geometry *hg);
+ static int blkvsc_ioctl(struct block_device *bd, fmode_t mode,
+ 			unsigned cmd, unsigned long argument);
+ static void blkvsc_request(struct request_queue *queue);
+-static void blkvsc_request_completion(STORVSC_REQUEST* request);
++static void blkvsc_request_completion(struct hv_storvsc_request *request);
+ static int blkvsc_do_request(struct block_device_context *blkdev, struct request *req);
+-static int blkvsc_submit_request(struct blkvsc_request *blkvsc_req, void (*request_completion)(STORVSC_REQUEST*) );
++static int blkvsc_submit_request(struct blkvsc_request *blkvsc_req, void (*request_completion)(struct hv_storvsc_request*) );
+ static void blkvsc_init_rw(struct blkvsc_request *blkvsc_req);
+-static void blkvsc_cmd_completion(STORVSC_REQUEST* request);
++static void blkvsc_cmd_completion(struct hv_storvsc_request *request);
+ static int blkvsc_do_inquiry(struct block_device_context *blkdev);
+ static int blkvsc_do_read_capacity(struct block_device_context *blkdev);
+ static int blkvsc_do_read_capacity16(struct block_device_context *blkdev);
+@@ -900,7 +900,7 @@ static void blkvsc_init_rw(struct blkvsc_request *blkvsc_req)
+ 	}
+ }
  
--} NETVSC_PACKET;
+-static int blkvsc_submit_request(struct blkvsc_request *blkvsc_req, void (*request_completion)(STORVSC_REQUEST*) )
++static int blkvsc_submit_request(struct blkvsc_request *blkvsc_req, void (*request_completion)(struct hv_storvsc_request*) )
+ {
+ 	struct block_device_context *blkdev = blkvsc_req->dev;
+ 	struct device_context *device_ctx=blkdev->device_ctx;
+@@ -909,7 +909,7 @@ static int blkvsc_submit_request(struct blkvsc_request *blkvsc_req, void (*reque
+ 	STORVSC_DRIVER_OBJECT* storvsc_drv_obj = &blkvsc_drv_ctx->drv_obj;
+ 	int ret =0;
+ 
+-	STORVSC_REQUEST *storvsc_req;
++	struct hv_storvsc_request *storvsc_req;
+ 
+ 	DPRINT_DBG(BLKVSC_DRV, "blkvsc_submit_request() - req %p type %s start_sector %lu count %ld offset %d len %d\n",
+ 		blkvsc_req,
+@@ -1104,7 +1104,7 @@ static int blkvsc_do_request(struct block_device_context *blkdev, struct request
+ 	return pending;
+ }
+ 
+-static void blkvsc_cmd_completion(STORVSC_REQUEST* request)
++static void blkvsc_cmd_completion(struct hv_storvsc_request *request)
+ {
+ 	struct blkvsc_request *blkvsc_req=(struct blkvsc_request*)request->Context;
+ 	struct block_device_context *blkdev = (struct block_device_context*)blkvsc_req->dev;
+@@ -1127,7 +1127,7 @@ static void blkvsc_cmd_completion(STORVSC_REQUEST* request)
+ 	wake_up_interruptible(&blkvsc_req->wevent);
+ }
+ 
+-static void blkvsc_request_completion(STORVSC_REQUEST* request)
++static void blkvsc_request_completion(struct hv_storvsc_request *request)
+ {
+ 	struct blkvsc_request *blkvsc_req=(struct blkvsc_request*)request->Context;
+ 	struct block_device_context *blkdev = (struct block_device_context*)blkvsc_req->dev;
+diff --git a/drivers/staging/hv/include/StorVscApi.h b/drivers/staging/hv/include/StorVscApi.h
+index f6c9742..5d72f29 100644
+--- a/drivers/staging/hv/include/StorVscApi.h
++++ b/drivers/staging/hv/include/StorVscApi.h
+@@ -51,13 +51,13 @@
+ /* Fwd decl */
+ 
+ /* struct VMBUS_CHANNEL; */
+-typedef struct _STORVSC_REQUEST* PSTORVSC_REQUEST;
++struct hv_storvsc_request;
+ 
+ 
+ /* Data types */
+ 
+-typedef int (*PFN_ON_IO_REQUEST)(struct hv_device *Device, PSTORVSC_REQUEST Request);
+-typedef void (*PFN_ON_IO_REQUEST_COMPLTN)(PSTORVSC_REQUEST Request);
++typedef int (*PFN_ON_IO_REQUEST)(struct hv_device *Device, struct hv_storvsc_request *Request);
++typedef void (*PFN_ON_IO_REQUEST_COMPLTN)(struct hv_storvsc_request *Request);
+ 
+ typedef int (*PFN_ON_HOST_RESET)(struct hv_device *Device);
+ typedef void (*PFN_ON_HOST_RESCAN)(struct hv_device *Device);
+@@ -71,7 +71,7 @@ typedef enum _STORVSC_REQUEST_TYPE{
+ } STORVSC_REQUEST_TYPE;
+ 
+ 
+-typedef struct _STORVSC_REQUEST {
++struct hv_storvsc_request {
+ 	STORVSC_REQUEST_TYPE		Type;
+ 	u32					Host;
+ 	u32					Bus;
+@@ -93,7 +93,7 @@ typedef struct _STORVSC_REQUEST {
+ 	void *					Extension;
+ 
+ 	MULTIPAGE_BUFFER		DataBuffer;
+-} STORVSC_REQUEST;
 +};
  
  
- /* Represents the net vsc driver */
-diff --git a/drivers/staging/hv/netvsc_drv.c b/drivers/staging/hv/netvsc_drv.c
-index 9010f0e..02b200b 100644
---- a/drivers/staging/hv/netvsc_drv.c
-+++ b/drivers/staging/hv/netvsc_drv.c
-@@ -51,7 +51,7 @@ static int netvsc_remove(struct device *device);
- static int netvsc_open(struct net_device *net);
- static void netvsc_xmit_completion(void *context);
- static int netvsc_start_xmit (struct sk_buff *skb, struct net_device *net);
--static int netvsc_recv_callback(struct hv_device *device_obj, NETVSC_PACKET* Packet);
-+static int netvsc_recv_callback(struct hv_device *device_obj, struct hv_netvsc_packet *Packet);
- static int netvsc_close(struct net_device *net);
- static struct net_device_stats *netvsc_get_stats(struct net_device *net);
- static void netvsc_linkstatus_callback(struct hv_device *device_obj, unsigned int status);
-@@ -371,7 +371,7 @@ Desc:	Send completion processing
- --*/
- static void netvsc_xmit_completion(void *context)
- {
--	NETVSC_PACKET *packet = (NETVSC_PACKET *)context;
-+	struct hv_netvsc_packet *packet = (struct hv_netvsc_packet *)context;
- 	struct sk_buff *skb = (struct sk_buff *)(unsigned long)packet->Completion.Send.SendCompletionTid;
- 	struct net_device* net;
+ /* Represents the block vsc driver */
+diff --git a/drivers/staging/hv/storvsc_drv.c b/drivers/staging/hv/storvsc_drv.c
+index 120ec52..9a7ebca 100644
+--- a/drivers/staging/hv/storvsc_drv.c
++++ b/drivers/staging/hv/storvsc_drv.c
+@@ -64,7 +64,7 @@ struct storvsc_cmd_request {
+ 	unsigned int bounce_sgl_count;
+ 	struct scatterlist	*bounce_sgl;
  
-@@ -412,7 +412,7 @@ static int netvsc_start_xmit (struct sk_buff *skb, struct net_device *net)
- 	NETVSC_DRIVER_OBJECT *net_drv_obj = &net_drv_ctx->drv_obj;
- 
- 	int i=0;
--	NETVSC_PACKET* packet;
-+	struct hv_netvsc_packet *packet;
- 	int num_frags;
- 	int retries=0;
- 
-@@ -428,14 +428,14 @@ static int netvsc_start_xmit (struct sk_buff *skb, struct net_device *net)
- 	num_frags = skb_shinfo(skb)->nr_frags + 1 + net_drv_obj->AdditionalRequestPageBufferCount;
- 
- 	/* Allocate a netvsc packet based on # of frags. */
--	packet = kzalloc(sizeof(NETVSC_PACKET) + (num_frags * sizeof(PAGE_BUFFER)) + net_drv_obj->RequestExtSize, GFP_ATOMIC);
-+	packet = kzalloc(sizeof(struct hv_netvsc_packet) + (num_frags * sizeof(PAGE_BUFFER)) + net_drv_obj->RequestExtSize, GFP_ATOMIC);
- 	if (!packet)
- 	{
--		DPRINT_ERR(NETVSC_DRV, "unable to allocate NETVSC_PACKET");
-+		DPRINT_ERR(NETVSC_DRV, "unable to allocate hv_netvsc_packet");
- 		return -1;
- 	}
- 
--	packet->Extension = (void*)(unsigned long)packet + sizeof(NETVSC_PACKET) + (num_frags * sizeof(PAGE_BUFFER)) ;
-+	packet->Extension = (void*)(unsigned long)packet + sizeof(struct hv_netvsc_packet) + (num_frags * sizeof(PAGE_BUFFER)) ;
- 
- 	/* Setup the rndis header */
- 	packet->PageBufferCount = num_frags;
-@@ -549,7 +549,7 @@ Name:	netvsc_recv_callback()
- Desc:	Callback when we receive a packet from the "wire" on the specify device
+-	STORVSC_REQUEST		request;
++	struct hv_storvsc_request request;
+ 	/* !!!DO NOT ADD ANYTHING BELOW HERE!!! */
+ 	/* The extension buffer falls right here and is pointed to by request.Extension; */
+ };
+@@ -388,7 +388,7 @@ Name:	storvsc_commmand_completion()
+ Desc:	Command completion processing
  
  --*/
--static int netvsc_recv_callback(struct hv_device *device_obj, NETVSC_PACKET* packet)
-+static int netvsc_recv_callback(struct hv_device *device_obj, struct hv_netvsc_packet *packet)
+-static void storvsc_commmand_completion(STORVSC_REQUEST* request)
++static void storvsc_commmand_completion(struct hv_storvsc_request *request)
  {
- 	int ret=0;
- 	struct device_context *device_ctx = to_device_context(device_obj);
-@@ -581,7 +581,7 @@ static int netvsc_recv_callback(struct hv_device *device_obj, NETVSC_PACKET* pac
- 	/* for kmap_atomic */
- 	local_irq_save(flags);
+ 	struct storvsc_cmd_request *cmd_request = (struct storvsc_cmd_request*)request->Context;
+ 	struct scsi_cmnd *scmnd = cmd_request->cmd;
+@@ -667,7 +667,7 @@ static int storvsc_queuecommand(struct scsi_cmnd *scmnd, void (*done)(struct scs
+ 	struct storvsc_driver_context *storvsc_drv_ctx = (struct storvsc_driver_context*)driver_ctx;
+ 	STORVSC_DRIVER_OBJECT* storvsc_drv_obj = &storvsc_drv_ctx->drv_obj;
  
--	/* Copy to skb. This copy is needed here since the memory pointed by NETVSC_PACKET */
-+	/* Copy to skb. This copy is needed here since the memory pointed by hv_netvsc_packet */
- 	/* cannot be deallocated */
- 	for (i=0; i<packet->PageBufferCount; i++)
- 	{
+-	STORVSC_REQUEST *request;
++	struct hv_storvsc_request *request;
+ 	struct storvsc_cmd_request *cmd_request;
+ 	unsigned int request_size=0;
+ 	int i;
 -- 
 1.6.0.4
 
