@@ -1,152 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbZG2MRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbZG2M1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754533AbZG2MRR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 08:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbZG2MRQ
+	id S1754516AbZG2M1z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 08:27:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754362AbZG2M1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 08:17:16 -0400
-Received: from mail-ew0-f226.google.com ([209.85.219.226]:44116 "EHLO
-	mail-ew0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754115AbZG2MRQ (ORCPT
+	Wed, 29 Jul 2009 08:27:55 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:17426 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754283AbZG2M1y convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 08:17:16 -0400
+	Wed, 29 Jul 2009 08:27:54 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=LVc4khrd4D0p8eqr/TITommzcWjnANAzl+NWhjcf2aLkHkme0dtnkviVTUrMRcpgPc
-         qnvo9SDnisEoOq/wLnVUnSOv72su0R3JydqipmhW9Yd3+xeoEeRgrzHOznyt47FVaViD
-         snEBo2vjoU+dUE1GZtixeZxESxX+4oR8NB/cs=
-Message-ID: <4A703DC8.40509@tuffmail.co.uk>
-Date: Wed, 29 Jul 2009 13:17:12 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=E0ZHdEZJ+dxDcN7bQ9sceB8zSzZCTkTm5BQIgvuI2qNmMpRbrHus79OEeISs76NyVt
+         ftP/26bmE/+wyhWpg5XDkHEfk480W9zJ26oA+pNepYV8hgnmg3YzjOpp9JWybM+ZGjCU
+         LmSktC7gcEMOZ77SjfsdL3VqhS5PaopYN6Fgs=
 MIME-Version: 1.0
-To: Corentin Chary <corentin.chary@gmail.com>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: eeepc_hotkey rmmod issues
-References: <9b2b86520907290301w79d5bfa5j27c7e0142cc44ba9@mail.gmail.com>	 <71cd59b00907290321i50a51790ld2ba87cb2c61abc7@mail.gmail.com>	 <4A703A43.8050808@googlemail.com> <71cd59b00907290515h6b02d43fkccca980f5ddefba9@mail.gmail.com>
-In-Reply-To: <71cd59b00907290515h6b02d43fkccca980f5ddefba9@mail.gmail.com>
+In-Reply-To: <20090729115817.GA12223@rakim.wolfsonmicro.main>
+References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>
+	 <4A6F033B.7030302@mnementh.co.uk>
+	 <aec7e5c30907281948s2a0dcd0csd3e580251d6c4f5a@mail.gmail.com>
+	 <20090729115817.GA12223@rakim.wolfsonmicro.main>
+Date: Wed, 29 Jul 2009 21:27:54 +0900
+Message-ID: <aec7e5c30907290527w39a89895n285e932459e6c953@mail.gmail.com>
+Subject: Re: MMC: Make the configuration memory resource optional
+From: Magnus Damm <magnus.damm@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Ian Molton <ian@mnementh.co.uk>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
+       Magnus Damm <damm@opensource.se>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corentin Chary wrote:
-> On Wed, Jul 29, 2009 at 2:02 PM, Alan
-> Jenkins<sourcejedi.lkml@googlemail.com> wrote:
->   
->> On 7/29/09, Corentin Chary <corentin.chary@gmail.com> wrote:
->>     
->>> On Wed, Jul 29, 2009 at 12:01 PM, Alan
->>> Jenkins<sourcejedi.lkml@googlemail.com> wrote:
->>>       
->>>> On 7/28/09, Corentin Chary <corentin.chary@gmail.com> wrote:
->>>>         
->>>>> On Tue, Jul 28, 2009 at 9:19 PM, Alan
->>>>> Jenkins<sourcejedi.lkml@googlemail.com> wrote:
->>>>>           
->>>>>> But we should still fix the underlying problem.  It sounds like
->>>>>> there's a narrow danger window on module unload.  And it's still there
->>>>>> in 2.6.31-rc4:
->>>>>>
->>>>>> 1019 static void eeepc_rfkill_exit(void)
->>>>>> 1020 {
->>>>>> 1021         eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
->>>>>> 1022         eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
->>>>>> 1023         if (ehotk->wlan_rfkill)
->>>>>> 1024                 rfkill_unregister(ehotk->wlan_rfkill);
->>>>>>
->>>>>> Really we need to perform these unregistrations "at the same time".
->>>>>> The rfkill device relies on the notifier, but the notifier callback
->>>>>> also uses the rfkill device.  I guess we will need to a mutex to
->>>>>> synchronize unregistration (and registration).
->>>>>>             
->>>>> I think 2.6.31 is ok,
->>>>>           
->>>>> In 2.6.30, we called eeepc_unregister_rfkill_notifier after
->>>>> rfkill_free, which was an error because
->>>>> the notifier callback uses the rfkill device.
->>>>>           
->>>> Ok.  I don't see how that causes Luciano's errors.  So I guess he was
->>>> right to blame the wireless driver.
->>>>         
->>> If he was using 2.6.30, then :
->>> eeepc_unregister_rfkill_notifier() was called after rfkill_unregister()
->>> And the callback was still registered after rfkill_unregister(), *Ooops*
->>>
->>> In 2.6.31 we first unregister the callback, and then rfkill, so rmmod
->>> should works.
->>>
->>>       
->>>>> But I believe that the rfkill device can work without the notifier
->>>>> (which is an acpi notifier).
->>>>>           
->>>> I don't think it can.
->>>>
->>>> If the rfkill device is set to "soft blocked", the pci device is
->>>> removed.  If the acpi notifier is not called, the pci driver (e.g.
->>>> ath5k) won't realise the device is gone.  The network device (e.g.
->>>> wlan0) will remain present, but it won't work.
->>>>         
->>> Hum, there is a misunderstanding here. What I mean is : I think
->>> eeepc_rfkill_exit(void) is ok in 2.6.31 (Luciano used 2.6.30).
->>>
->>> And eeepc_rfkill_exit() is only called on rmmod eeepc-laptop
->>>
->>> Commit 7de39389d8f61aa517ce2a8b4d925acc62696ae5 did a lot of
->>> change in rfkill code.
->>>
->>>       
->>>> So I believe there's a circular dependency which we need to resolve.
->>>> Would you like me to write a patch for it?
->>>>         
->>> It's possible that I miss the issue here, so go ahead :)
->>>       
->> Thanks :)
->>
->> Here is a test case to show the race I am talking about
->>
->> diff --git a/drivers/platform/x86/eeepc-laptop.c b/drivers/platform/x86/eeepc-laptop.c
->> index ec560f1..c478db5 100644
->> --- a/drivers/platform/x86/eeepc-laptop.c
->> +++ b/drivers/platform/x86/eeepc-laptop.c
->> @@ -1020,6 +1020,17 @@ static void eeepc_rfkill_exit(void)
->>  {
->>        eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P6");
->>        eeepc_unregister_rfkill_notifier("\\_SB.PCI0.P0P7");
->> +
->> +       //
->> +       // Simulated error
->> +       // Imagine that userspace set the wifi to "soft blocked" at this exact moment
->> +       // (or the wireless toggle key was pressed)
->> +       //
->> +       // The PCI device will disappear, but we will not see any notification
->> +       //
->> +       set_acpi(CM_ASL_WLAN, 0);
->> +       rfkill_set_sw_state(ehotk->wlan_rfkill, true);
->> +
->>        if (ehotk->wlan_rfkill)
->>                rfkill_unregister(ehotk->wlan_rfkill);
->>        if (ehotk->bluetooth_rfkill)
->>
->>
->>
->> If you unload eeepc-laptop with this simulated race, the wireless
->> interface stays around but stops working.
->>
->> [  191.391155] ath5k phy0: can't reset hardware (-5)
->> [  191.432983] ath5k phy0: failed to wakeup the MAC Chip
->> [  196.940835] __ratelimit: 21 callbacks suppressed
->>
->> Alan
->>
->>     
+On Wed, Jul 29, 2009 at 8:58 PM, Mark
+Brown<broonie@opensource.wolfsonmicro.com> wrote:
+> On Wed, Jul 29, 2009 at 11:48:51AM +0900, Magnus Damm wrote:
 >
-> Indeed :) . Let's serialize that. Do you want me to do it ?
-> Thanks,
->   
+>> I understand that you want to have clocklib so you can manage clocks
+>> dynamically for your mfd drivers, but in our use case we already have
+>> working clock framework implementations withing our SoC. There is no
+>> need for any dynamic clock registration and unregistration. With that
+>> in mind it can't be very difficult to understand that there is no
+>> point for SoC vendors to work on clocklib. If's mainly an issue for
+>> mfd.
+>
+> While it's true that this doesn't bother SoCs the fact that most clock
+> API implementations don't allow any off-chip drivers to register clocks
+> renders the clock API essentially unusable for fairly large parts of the
+> kernel.  This is especially problematic where the clocks cross from
+> the SoC domain to the off-SoC domain and clocks from each domain may be
+> used interchangably.
 
-It's ok, I'm already working on a fix.
+Yeah, clocks outside the SoC are not well supported today. From what
+I've seen, most embedded boards come with external chips for cameras,
+audio codecs and/or phy devices. These devices often get their clocks
+from the main SoC. Allowing the drivers for such chips to use the
+clock framework to register clocks for internal divisors would allow
+driver writers to write better code which in turn would make life
+easier for most people hacking on embedded kernels.
 
+So I'm all for working towards allowing off-chip drivers to register
+and unregister clocks.
+
+The problem with the clock framework API is that the data structures
+varies depending on implementation. So the ops callback structure on
+SuperH is different compared to ARM. I suspect that adding generic
+clocklib support across the architectures will take quite a bit of
+time to implement propely.
+
+> Looking at the original patch I'm not sure exactly why it runs into
+> clock API issues so I'm not sure if this is a relevant concern or not
+> here but I'm mentioning it since I'd kind of expect an impact on the
+> SoCs from addressing it due to the way the clock API functions are
+> currently provided.
+
+In my opinion this patch has nothing to do with the clock framework.
+
+But fixing up clocklib properly would certainly be beneficial for
+everyone. Holding the driver hostage until clocklib is upstream
+however, that's just silly.
+
+Cheers,
+
+/ magnus
