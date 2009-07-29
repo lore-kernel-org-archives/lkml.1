@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755748AbZG2N6D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932141AbZG2N7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755748AbZG2N6D (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 09:58:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755715AbZG2N6B
+	id S932141AbZG2N7S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 09:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755598AbZG2N7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 09:58:01 -0400
-Received: from kroah.org ([198.145.64.141]:59052 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755705AbZG2N6A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 09:58:00 -0400
-Date: Wed, 29 Jul 2009 06:56:20 -0700
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org, kevin.huang@rdc.com.tw
-Subject: Re: [PATCH] pata_rdc: driver for RDC ATA devices
-Message-ID: <20090729135620.GB20016@kroah.com>
-References: <20090624172930.24354.80799.stgit@t61.ukuu.org.uk>
- <4A6FA304.6070501@garzik.org>
- <20090729025307.GA25100@kroah.com>
- <4A6FBC6F.6040404@garzik.org>
- <20090729133728.34b738eb.sfr@canb.auug.org.au>
+	Wed, 29 Jul 2009 09:59:18 -0400
+Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:7632 "EHLO
+	VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755200AbZG2N7Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 09:59:16 -0400
+X-SpamScore: -26
+X-BigFish: VPS-26(zz1432R98dN936eM9371Pzz1202hzzz32i6bh203h43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KNJQUF-04-6EE-01
+Date: Wed, 29 Jul 2009 15:58:59 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Avi Kivity <avi@redhat.com>
+CC: Alexander Graf <agraf@suse.de>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/12] Nested SVM cleanups
+Message-ID: <20090729135859.GN18313@amd.com>
+References: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com>
+ <4A70492E.2080705@redhat.com>
+ <20090729130944.GE18313@amd.com>
+ <4A704F5B.9000800@redhat.com>
+ <20090729133840.GG18313@amd.com>
+ <4A705327.8050101@redhat.com>
+ <20090729134857.GL18313@amd.com>
+ <4A7055D4.7000905@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <20090729133728.34b738eb.sfr@canb.auug.org.au>
+In-Reply-To: <4A7055D4.7000905@redhat.com>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Sitz=3A_Dornach=2C_Gemeinde_Aschheim=2C_Land?=
+	=?iso-8859-1?Q?kreis_M=FCnchen=2C_Registergericht_M=FCnchen?=
+	=?iso-8859-1?Q?=2C?= HRB Nr. 43632
 User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 29 Jul 2009 13:58:59.0669 (UTC) FILETIME=[B8C4E850:01CA1054]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 29, 2009 at 01:37:28PM +1000, Stephen Rothwell wrote:
-> Hi all,
+On Wed, Jul 29, 2009 at 04:59:48PM +0300, Avi Kivity wrote:
+> On 07/29/2009 04:48 PM, Joerg Roedel wrote:
+> >Performance isn't too bad even without this. At least if the host
+> >supports nested paging :) But shadow nested paging should give nested
+> >svm a real boost, thats very true.
 > 
-> On Tue, 28 Jul 2009 23:05:19 -0400 Jeff Garzik <jeff@garzik.org> wrote:
-> >
-> > FWIW, it's in libata-dev.git#upstream and libata-dev.git#NEXT, so 
-> > linux-next should pick it up automatically.
-> 
-> It will be in tomorrow's tree (unless it is important enough for me to
-> grab it for today).
+> Well, any workload that benefits from npt would benefit from nnpt a
+> lot more.
 
-No, no rush here.
+Most complicated part will be the two dimensional software page walker.
+That will be a somewhat intrusive change (at least if I do it without
+code duplication). But lets see how challenging this will become...
 
-I've now removed the driver from the staging tree, so everything should
-be good.
+	Joerg
 
-thanks,
 
-greg k-h
