@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbZG2Nqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbZG2Nrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754983AbZG2Nqy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 09:46:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755085AbZG2Nqx
+	id S1755567AbZG2Nrb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 09:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755475AbZG2Nra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 09:46:53 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35144
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755565AbZG2Nqw (ORCPT
+	Wed, 29 Jul 2009 09:47:30 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:35275 "EHLO
+	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754813AbZG2Nr3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 09:46:52 -0400
-Date: Wed, 29 Jul 2009 06:46:59 -0700 (PDT)
-Message-Id: <20090729.064659.193718905.davem@davemloft.net>
-To: greg@kroah.com
-Cc: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kaber@trash.net
-Subject: Re: linux-next: manual merge of the staging tree with the net tree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090729124406.GA26931@kroah.com>
-References: <20090729165211.c13f3ca3.sfr@canb.auug.org.au>
-	<20090729124406.GA26931@kroah.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 29 Jul 2009 09:47:29 -0400
+X-SpamScore: -11
+X-BigFish: VPS-11(z34a4jz1432R98dNzz1202hzzz32i6bh203h43j)
+X-WSS-ID: 0KNJQAP-04-60P-01
+Date: Wed, 29 Jul 2009 15:47:14 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Alexander Graf <agraf@suse.de>
+CC: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 05/12] kvm/svm: copy only necessary parts of the
+ control area on vmrun/vmexit
+Message-ID: <20090729134714.GJ18313@amd.com>
+References: <1248872192-30881-1-git-send-email-joerg.roedel@amd.com>
+ <1248872192-30881-6-git-send-email-joerg.roedel@amd.com>
+ <4A704ED9.2000604@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <4A704ED9.2000604@suse.de>
+Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
+	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
+	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
+	=?iso-8859-1?Q?ano_Meroni=2C_Sitz=3A_Dornach=2C_Gemeinde_Aschheim=2C_Land?=
+	=?iso-8859-1?Q?kreis_M=FCnchen=2C_Registergericht_M=FCnchen?=
+	=?iso-8859-1?Q?=2C?= HRB Nr. 43632
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 29 Jul 2009 13:47:14.0325 (UTC) FILETIME=[1459F450:01CA1053]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Greg KH <greg@kroah.com>
-Date: Wed, 29 Jul 2009 05:44:06 -0700
-
-> On Wed, Jul 29, 2009 at 04:52:11PM +1000, Stephen Rothwell wrote:
->> Hi Greg,
->> 
->> Today's linux-next merge of the staging tree got a conflict in
->> drivers/staging/epl/VirtualEthernetLinux.c between commit
->> 6ed106549d17474ca17a16057f4c0ed4eba5a7ca ("net: use NETDEV_TX_OK instead
->> of 0 in ndo_start_xmit() functions") from the net tree and commit
->> 49acb975a21d150c4beba4e581f3e1d004dd2867 ("Staging: remove epl driver")
->> from the staging tree.
->> 
->> The latter just removes the file, so I did that.
+On Wed, Jul 29, 2009 at 03:30:01PM +0200, Alexander Graf wrote:
+> Joerg Roedel wrote:
+> > Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> >   
 > 
-> Thanks a lot.  Yes, the epl driver has been dropped from staging, so
-> that's the right thing to do.
+> What's the reason behind this?
+> 
+> Acked-by: Alexander Graf <agraf@suse.de>
 
-Please make sure you integrate that change, if the driver is
-simply moving out of staging to somewhere else.
+Reason is to not copy the reserved fields of the control area. These
+fields sum up to size of 899 bytes which are unnecessarily copied.
+
+	Joerg
+
+
