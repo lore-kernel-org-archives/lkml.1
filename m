@@ -1,108 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754060AbZG2LHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074AbZG2LLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754060AbZG2LHO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 07:07:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbZG2LHO
+	id S1754074AbZG2LLP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 07:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754015AbZG2LLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 07:07:14 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38504 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753459AbZG2LHN (ORCPT
+	Wed, 29 Jul 2009 07:11:14 -0400
+Received: from mail-bw0-f221.google.com ([209.85.218.221]:54739 "EHLO
+	mail-bw0-f221.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754030AbZG2LLN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 07:07:13 -0400
-Date: Wed, 29 Jul 2009 12:07:04 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Gene Heskett <gene.heskett@verizon.net>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH] kdesu broken
-Message-ID: <20090729120704.3299ff2e@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.01.0907282146580.3161@localhost.localdomain>
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk>
-	<20090729004639.71f0eabc@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907281651160.3186@localhost.localdomain>
-	<200907282250.46018.gene.heskett@verizon.net>
-	<alpine.LFD.2.01.0907282146580.3161@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 29 Jul 2009 07:11:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=jJYeppHl0G1ek0S796Csvfzm6+2KJdWnHUOzgsnbLUb0EdzwBoM40DiQTQgTz2nSEN
+         nFWeaggWQthE507BmSz9+lRpSD8F/TsjlOYI83bxjhKi3Pvj9lKJt/twZAbZcbXpd21m
+         EZe8lM2/TtAMKxpnWjpFU0M93OcVWwCkmtjhQ=
+Message-ID: <4A702E51.9010504@gmail.com>
+Date: Wed, 29 Jul 2009 13:11:13 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.8 Thunderbird/3.0b3pre
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cyclades: allow overriding ISA defaults also when the
+ driver is built-in
+References: <200907290023.48870.bzolnier@gmail.com>
+In-Reply-To: <200907290023.48870.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Jul 2009 21:49:05 -0700 (PDT)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On 07/29/2009 12:23 AM, Bartlomiej Zolnierkiewicz wrote:
+> Subject: [PATCH] cyclades: allow overriding ISA defaults also when the driver is built-in
 
-> 
-> 
-> On Tue, 28 Jul 2009, Gene Heskett wrote:
-> > 
-> > It doesn't seem to do anything for bz 13841 here.  Sorry, I wish it did.
-> 
-> No, bz 13841 isn't about pty's, it's about usb serial. The patches in this 
-> thread would mainly be pty-related, and would affect other tty drivers 
-> (like your usb one) only purely by chance.
-> 
-> could you bisect the 13841 behavior?
-
-See the thread in 13821 on linux-usb list which extends from the "why do
-we leak ttyUSB numbers" into this as well. Its been pinned down and the in
-tree fix is confirmed to do the job for that case. Not perfectly because
-it needs a further small fix as
-
-a) it should call drv->close() within the mutex on the error path if the
-tty_block_til_ready() fails without which you get a leak on a few drivers
-but nothing too harmful. (Noted by Alan Stern inspecting the patch)
-
-b) it fails the 'variable frequency generator on carrier pin' test - but
-that isn't a regression as such as all 2.6 kernels I've tried crash
-during that test with USB.  (Running my 'extreme violence' test setup)
-
-I suspect that doing
-
-        retval = tty_port_block_til_ready(&port->port, tty, filp);
-        if (retval == 0) {
-                if (!first)
-                        usb_serial_put(serial);
-                return 0;
-        }
-        mutex_lock(&port->mutex);
-
-
-	if (tty_hung_up_p(filp)) {
-		mutex_unlock(&port->mutex);
-		return retval;
-	}
-	dev->close(port);
-
-	...
-
-fixes both. The race basically is
-
-		open
-		drop mutex so we can wait for the port
-		wait for the port
-						[hangup]
-						[serial_do_down]
-		block_til_ready reports an error
-		take mutex
-			duplicate serial_do_down
-
-
-Most serial drivers don't try and do open clean up in open() instead they
-do it in close() which is called by the tty layer on an open failure
-(always has been) and which turns out to be a useful design
-decision as it means the driver doesn't have to tie itself in knots and
-tty_port_close_start() handles all the mechanics. Plus they use
-ASYNC_INITIALIZED as flag to avoid double shutdowns on a device.
-
-Simply deleting most of the clean up from serial_open and letting close()
-do its job would I think clean that up no end but not in an -rc perhaps.
-
-
+Thanks, I rebased it on the top of Roel Kluin's fix.
