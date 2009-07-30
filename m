@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750952AbZG3Mgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751169AbZG3MhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750952AbZG3Mgf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 08:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750776AbZG3Mge
+	id S1751169AbZG3MhY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 08:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbZG3MhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 08:36:34 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:55113 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750745AbZG3Mge (ORCPT
+	Thu, 30 Jul 2009 08:37:23 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:48572 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750859AbZG3MhV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 08:36:34 -0400
-Date: Thu, 30 Jul 2009 13:36:33 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Roger Quadros <quadros.roger@gmail.com>
-Cc: lrg@slimlogic.co.uk, linux-kernel@vger.kernel.org
-Subject: Re: regulator: adding enable control to fixed regulator interface
-Message-ID: <20090730123633.GA2739@rakim.wolfsonmicro.main>
-References: <b90c0690907300520t1dfbd722j73417b1beb6992bc@mail.gmail.com>
+	Thu, 30 Jul 2009 08:37:21 -0400
+Date: Thu, 30 Jul 2009 13:37:11 +0100
+From: Matthew Garrett <mjg@redhat.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, bugzilla-daemon@bugzilla.kernel.org,
+       Len Brown <lenb@kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       =?iso-8859-1?Q?C=E9dric?= Godin <cedric@belbone.be>
+Subject: Re: [Bug 13865] [PATCH] hp-wmi: check that an input device exists
+	in resume handler
+Message-ID: <20090730123711.GB14127@srcf.ucam.org>
+References: <bug-13865-10028@http.bugzilla.kernel.org/> <200907292257.41573.rjw@sisk.pl> <200907301242.07973.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <b90c0690907300520t1dfbd722j73417b1beb6992bc@mail.gmail.com>
-X-Cookie: Flattery will get you everywhere.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200907301242.07973.elendil@planet.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 30, 2009 at 03:20:24PM +0300, Roger Quadros wrote:
+On Thu, Jul 30, 2009 at 12:42:05PM +0200, Frans Pop wrote:
+> From: Frans Pop <elendil@planet.nl>
+> Subject: hp-wmi: check that an input device exists in resume handler
+> 
+> Some systems may not support input events, or registering the input
+> handler may have failed. So check that an input device exists before
+> trying to set the docking and tablet mode state during resume.
+> 
+> Fixes: http://bugzilla.kernel.org/show_bug.cgi?id=13865
+> 
+> Reported-and-tested-by: Cédric Godin <cedric@belbone.be>
+> Signed-off-by: Frans Pop <elendil@planet.nl>
+> Cc: Matthew Garrett <mjg59@srcf.ucam.org>
+Acked-by: Matthew Garrett <mjg@redhat.com>
 
-[Cut description of GPIO-switched regulator.]
-
-> What is the best way to implement this within the regulator framework?
-> Writing a regulator driver is one solution but I'm sure there must be
-> many instances like this and writing a driver for each case is not
-> that nice.
-
-Only one driver should be needed even if a new driver is implemented for
-this - we already have an abstracted API for GPIOs in the form of
-gpiolib (see drivers/gpio) so the driver can just take in platform data
-with the gpio number and a voltage as platform data.
-
-> I want to use the fixed regulator driver but this does not have
-> regulator enable/disable control.
-
-> Isn't it a good idea to have enable/disable control for the current
-> implementation of the fixed voltage regulator i.e. drivers/regulator/fixed.c ?
-
-It should be possible to do it with platform data for the fixed voltage
-regulator, though without looking at the code I can't say for certain if
-it'd be easier to just add a separate driver rather than have the
-conditional code to handle cases both with and without GPIO.  I'd expect
-it'll be fine to combine, though.
-
-> The regulator enabling/disabling functionality can be implemented by
-> platform code and the required function pointers could be passed through
-> fixed_voltage_config structure.
-
-I don't see any need for platform code to provide callbacks here given
-the existing gpiolib abstraction.
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
