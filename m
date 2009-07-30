@@ -1,81 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752860AbZG3WsJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752968AbZG3Wtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752860AbZG3WsJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 18:48:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbZG3WsI
+	id S1752968AbZG3Wtb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 18:49:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbZG3Wtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 18:48:08 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:61780 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752304AbZG3WsH (ORCPT
+	Thu, 30 Jul 2009 18:49:31 -0400
+Received: from chip2og101.obsmtp.com ([64.18.13.51]:51111 "HELO
+	chip2og101.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752406AbZG3Wta convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 18:48:07 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=uhb5azQE1WFO8del9lWakaLpikyt/Nav6zA7w+dcDarDJi0YlkHQMffxstG9bvqoO
-	shJtN07SPESQbiKjKQ6IQ==
+	Thu, 30 Jul 2009 18:49:30 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-In-Reply-To: <20090730224308.GJ12579@kernel.dk>
-References: <1786ab030907281211x6e432ba6ha6afe9de73f24e0c@mail.gmail.com>
-	 <20090730213956.GH12579@kernel.dk>
-	 <33307c790907301501v4c605ea8oe57762b21d414445@mail.gmail.com>
-	 <20090730221727.GI12579@kernel.dk>
-	 <33307c790907301534v64c08f59o66fbdfbd3174ff5f@mail.gmail.com>
-	 <20090730224308.GJ12579@kernel.dk>
-Date: Thu, 30 Jul 2009 15:48:02 -0700
-Message-ID: <33307c790907301548t2ef1bb72k4adbe81865d2bde9@mail.gmail.com>
-Subject: Re: Bug in kernel 2.6.31, Slow wb_kupdate writeout
-From: Martin Bligh <mbligh@google.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Chad Talbott <ctalbott@google.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, wfg@mail.ustc.edu.cn,
-       Michael Rubin <mrubin@google.com>, sandeen@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH 1/1] [ARM] ep93xx clockevent support
+Date: Thu, 30 Jul 2009 18:49:28 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901B77380@mi8nycmail19.Mi8.com>
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901B77371@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/1] [ARM] ep93xx clockevent support
+Thread-Index: AcoKtfDPeJvW/43qTk6vhRgkIsJwSgGq/eEgAADdtbA=
+References: <1248253786-18993-2-git-send-email-b33fc0d3@gentoo.org><1248257565-11333-1-git-send-email-b33fc0d3@gentoo.org> <BD79186B4FD85F4B8E60E381CAEE190901B77371@mi8nycmail19.Mi8.com>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "Ahmed Ammar" <b33fc0d3@gentoo.org>, <linux-kernel@vger.kernel.org>
+Cc: <linux-arm-kernel@lists.arm.linux.org.uk>,
+       "Ahmed Ammar" <aammar@edge-techno.com>
+X-OriginalArrivalTime: 30 Jul 2009 22:49:29.0979 (UTC) FILETIME=[FF8684B0:01CA1167]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 30, 2009 at 3:43 PM, Jens Axboe<jens.axboe@oracle.com> wrote:
-> On Thu, Jul 30 2009, Martin Bligh wrote:
->> > The test case above on a 4G machine is only generating 1G of dirty data.
->> > I ran the same test case on the 16G, resulting in only background
->> > writeout. The relevant bit here being that the background writeout
->> > finished quickly, writing at disk speed.
->> >
->> > I re-ran the same test, but using 300 100MB files instead. While the
->> > dd's are running, we are going at ~80MB/sec (this is disk speed, it's an
->> > x25-m). When the dd's are done, it continues doing 80MB/sec for 10
->> > seconds or so. Then the remainder (about 2G) is written in bursts at
->> > disk speeds, but with some time in between.
->>
->> OK, I think the test case is sensitive to how many files you have - if
->> we punt them to the back of the list, and yet we still have 299 other
->> ones, it may well be able to keep the disk spinning despite the bug
->> I outlined.Try using 30 1GB files?
+On Thursday, July 30, 2009 3:18 PM, H Hartley Sweeten wrote:
+>> From: Ahmed Ammar <aammar@edge-techno.com>
+>> 
+>> Based on previous work by Thomas Gleixner.
+>> 
+>> Signed-off-by: Ahmed Ammar <aammar@edge-techno.com>
 >
-> If this disk starts spinning, then we have bigger bugs :-)
->>
->> Though it doesn't seem to happen with just one dd streamer, and
->> I don't see why the bug doesn't trigger in that case either.
->>
->> I believe the bugfix is correct independent of any bdi changes?
+> Hmm..  With kernel 2.6.30.2 this does not build.  See below.
+
+Oops..  My bad.  One of the issues was my fault...
+
+[snip]
+
+>>  static irqreturn_t ep93xx_timer_interrupt(int irq, void *dev_id)
+>>  {
+>> -	__raw_writel(1, EP93XX_TIMER1_CLEAR);
+>> -	while ((signed long)
+>> -		(__raw_readl(EP93XX_TIMER4_VALUE_LOW) - last_jiffy_time)
+>> -						>= TIMER4_TICKS_PER_JIFFY) {
+>> -		last_jiffy_time += TIMER4_TICKS_PER_JIFFY;
+>> -		timer_tick();
+>> -	}
+>> -
+>> +	struct clock_event_device *evt = dev_id;
+>> + 	__raw_writel(EP93XX_TC_CLEAR, EP93XX_TIMER1_CLEAR);
+>> +	evt->event_handler(evt);
 >
-> Yeah I think so too, I'll run some more tests on this tomorrow and
-> verify it there as well.
+> Here I get "error: dereferencing pointer to incomplete type" 
 
-There's another issue I was discussing with Peter Z. earlier that the
-bdi changes might help with - if you look at where the dirty pages
-get to, they are capped hard at the average of the dirty and
-background thresholds, meaning we can only dirty about half the
-pages we should be able to. That does very slowly go away when
-the bdi limit catches up, but it seems to start at 0, and it's progess
-seems glacially slow (at least if you're impatient ;-))
+I added a typo that caused this... ;-)
 
-This seems to affect some of our workloads badly when they have
-a sharp spike in dirty data to one device, they get throttled heavily
-when they wouldn't have before the per-bdi dirty limits.
+[snip]
+
+>> -	setup_irq(IRQ_EP93XX_TIMER1, &ep93xx_timer_irq);
+>> +cycle_t ep93xx_get_cycles(void)
+>> +{
+>> +	return __raw_readl(EP93XX_TIMER4_VALUE_LOW);
+>>  }
+>>  
+>> -static unsigned long ep93xx_gettimeoffset(void)
+>> +static struct clocksource clocksource_ep93xx = {
+>> +	.name		= "ep93xx_timer4",
+>> +	.rating		= 200,
+>> +	.read		= ep93xx_get_cycles,
+>
+> Here I get "warning: initialization from incompatible pointer type"
+
+This one is real.
+
+The read callback is supposed to be:
+
+	cycle_t (*read)(struct clocksource *cs);
+
+You need to fix the ep93xx_get_cycles() function and the call below.
+
+>> +	.mask		= 0xFFFFFFFF,
+>> +	.shift		= 20,
+>> +	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
+>> +};
+>> +
+>> +/*
+>> + * Returns current time from boot in nsecs. It's OK for this to wrap
+>> + * around for now, as it's just a relative time stamp.
+>> + */
+>> +unsigned long long sched_clock(void)
+>>  {
+>> -	int offset;
+>> +	return cyc2ns(&clocksource_ep93xx, ep93xx_get_cycles());
+
+Here.
+
+Regards,
+Hartley
