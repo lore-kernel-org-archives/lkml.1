@@ -1,292 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751335AbZG3IV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751302AbZG3IYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751335AbZG3IV4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 04:21:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751110AbZG3IVz
+	id S1751302AbZG3IYv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 04:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbZG3IYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 04:21:55 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:53779 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750701AbZG3IVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 04:21:51 -0400
-Date: Thu, 30 Jul 2009 18:21:43 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for July 30
-Message-Id: <20090730182143.eadf36e6.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+	Thu, 30 Jul 2009 04:24:51 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:39130 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751140AbZG3IYu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 04:24:50 -0400
+Subject: Re: [PATCH] kmemleak: Protect the seq start/next/stop sequence by
+	rcu_read_lock()
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090729170007.f4e60858.akpm@linux-foundation.org>
+References: <20090729152101.1878.71159.stgit@pc1117.cambridge.arm.com>
+	 <20090729170007.f4e60858.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Thu, 30 Jul 2009 09:24:44 +0100
+Message-Id: <1248942284.3376.2.camel@pc1117.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__30_Jul_2009_18_21_43_+1000_rvytwkqFSVYnhx=v"
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 30 Jul 2009 08:24:45.0003 (UTC) FILETIME=[31AB79B0:01CA10EF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__30_Jul_2009_18_21_43_+1000_rvytwkqFSVYnhx=v
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2009-07-29 at 17:00 -0700, Andrew Morton wrote:
+> On Wed, 29 Jul 2009 16:26:57 +0100
+> Catalin Marinas <catalin.marinas@arm.com> wrote:
+> 
+> > Objects passed to kmemleak_seq_next() have an incremented reference
+> > count (hence not freed) but they may point via object_list.next to
+> > other freed objects. To avoid this, the whole start/next/stop sequence
+> > must be protected by rcu_read_lock().
+> > 
+> > Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+> > ---
+> > 
+> > This is a fix for bug #13761 in buzilla.kernel.org. If there are no
+> > objections, please apply it before 2.6.31. Thanks.
+> 
+> Administrivia:
+> 
+> When referencing a bugzilla report, please quote the full URL within
+> the changelog (not after the ^---$).  I use:
+> 
+> 	Addresses http://bugzilla.kernel.org/show_bug.cgi?id=13761
+> 
+> This is because people ocassionally troll the commit logs, closing off
+> bugzilla reports.  Using a standardised format simplifies that job, and
+> makes it more reliable.
+> 
+> Also, it's nice to give the original bug reporter a Reported-by: in the
+> changelog.  As a little thank-you, and so they know what's going on.
 
-Hi all,
+Yes, I agree. Thanks for adjusting these in the -mm tree patch.
 
-Changes since 20090729:
+-- 
+Catalin
 
-New trees: kmemleak (really this time - it was accidentally left out of
-	yesterday's tree)
-
-Dropped tree: kmemleak (build problem)
-
-This tree fails to build for powerpc allyesconfig (final link problem).
-
-The scsi-rc-fixes tree gained a build failure so I reverted a commit.
-
-The i2c series failed to import so I used the version from next-20090729.
-
-The edac-amd tree gained a conflict against the rr tree.
-
-The fsnotify tree lost its conflict.
-
-The drbd tree lost one of its build failures.
-
-The kmemleak tree gained a build failure so I dropped it for today as I
-have no previous version to use.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 135 trees (counting Linus' and 19 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/for-next
-Merging pxa/for-next
-Merging thumb-2/thumb-2
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-CONFLICT (content): Merge conflict in arch/mips/cavium-octeon/dma-octeon.c
-CONFLICT (add/add): Merge conflict in arch/mips/cavium-octeon/executive/cvm=
-x-helper-errata.c
-CONFLICT (content): Merge conflict in arch/mips/mm/tlbex.c
-CONFLICT (content): Merge conflict in arch/mips/sibyte/swarm/setup.c
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Kconfig
-CONFLICT (content): Merge conflict in drivers/char/hw_random/Makefile
-CONFLICT (add/add): Merge conflict in drivers/dma/txx9dmac.c
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging cifs/master
-Merging configfs/linux-next
-CONFLICT (content): Merge conflict in fs/configfs/dir.c
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging v9fs/for-next
-Merging ubifs/linux-next
-Merging xfs/master
-Merging reiserfs-bkl/reiserfs/kill-bkl-rc6
-CONFLICT (content): Merge conflict in fs/reiserfs/journal.c
-CONFLICT (content): Merge conflict in fs/reiserfs/super.c
-Merging vfs/for-next
-Merging pci/linux-next
-Merging hid/for-next
-Merging quilt/i2c
-CONFLICT (content): Merge conflict in drivers/i2c/chips/tsl2550.c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-CONFLICT (content): Merge conflict in arch/arm/mach-davinci/board-dm646x-ev=
-m.c
-CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm355.c
-CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm644x.c
-CONFLICT (content): Merge conflict in arch/arm/mach-davinci/dm646x.c
-CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
-355.h
-CONFLICT (content): Merge conflict in arch/arm/mach-davinci/include/mach/dm=
-644x.h
-CONFLICT (content): Merge conflict in drivers/media/dvb/b2c2/flexcop-fe-tun=
-er.c
-Merging quota/for_next
-Merging kbuild/master
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl-3945=
-.h
-CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl-tx.c
-CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl3945-=
-base.c
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-Merging mmc/next
-Merging input/next
-Merging lsm/for-next
-Merging block/for-next
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging agp/agp-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging edac-amd/for-next
-CONFLICT (content): Merge conflict in include/linux/topology.h
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging hwlat/for-linus
-Merging drbd/drbd
-Applying: drbd: fix for removal of blk_queue_stack_limits
-Merging kmemleak/kmemleak
-$ git reset --hard HEAD^
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in drivers/oprofile/oprofile_stats.c
-CONFLICT (content): Merge conflict in include/linux/rcupdate.h
-Merging percpu/for-next
-CONFLICT (content): Merge conflict in arch/sh/kernel/vmlinux.lds.S
-CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/perf_counter.c
-CONFLICT (content): Merge conflict in drivers/cpufreq/cpufreq_ondemand.c
-Merging sfi/sfi-test
-Merging asm-generic/next
-Merging quilt/driver-core
-CONFLICT (content): Merge conflict in init/main.c
-Merging quilt/usb
-CONFLICT (content): Merge conflict in drivers/usb/gadget/m66592-udc.c
-CONFLICT (content): Merge conflict in drivers/usb/host/r8a66597-hcd.c
-Merging quilt/staging
-CONFLICT (delete/modify): drivers/staging/epl/VirtualEthernetLinux.c delete=
-d in quilt/staging and modified in HEAD. Version HEAD of drivers/staging/ep=
-l/VirtualEthernetLinux.c left in tree.
-$ git rm -f drivers/staging/epl/VirtualEthernetLinux.c
-Merging scsi-post-merge/master
-[master 469ff03] Revert "[SCSI] libsas: fix wide port hotplug issues"
-
---Signature=_Thu__30_Jul_2009_18_21_43_+1000_rvytwkqFSVYnhx=v
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpxWBcACgkQjjKRsyhoI8xjrQCdEiQhoIIeKuyxSCtX6fZXWhLd
-2QsAoILU4YoWimwQH24j0fzBPSRWtOcn
-=sgJa
------END PGP SIGNATURE-----
-
---Signature=_Thu__30_Jul_2009_18_21_43_+1000_rvytwkqFSVYnhx=v--
