@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751370AbZG3Phb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751318AbZG3PjL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751370AbZG3Phb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 11:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbZG3Phb
+	id S1751318AbZG3PjL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 11:39:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbZG3PjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 11:37:31 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:56862 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750759AbZG3Pha (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 11:37:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=lRr10kWt693x0HiUN2FzwBVysX9gTm/kxzBqdnWyAvicZf9uk24uBSlJjnrzq0bl3v
-         7EyilCd2TCs9tLFUQkcc4CTbZrnSTtdTTRb9ZiG2bWB1W2zDYlNCxHV1O9zBnKxHjrRG
-         lqN0GNV3smQx+cugJgnQLawLmDcrjIEh91Hvk=
-Subject: Re: Firewire debugging tools - firedump & fireproxy?
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jun Koi <junkoi2004@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <87k51qfqve.fsf@basil.nowhere.org>
-References: <fdaac4d50907042242s6534d63at12a26df47a0f3b2a@mail.gmail.com>
-	 <87k51qfqve.fsf@basil.nowhere.org>
-Content-Type: text/plain
-Date: Thu, 30 Jul 2009 18:37:22 +0300
-Message-Id: <1248968242.3624.28.camel@maxim-laptop>
+	Thu, 30 Jul 2009 11:39:11 -0400
+Received: from cmpxchg.org ([85.214.51.133]:37066 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750933AbZG3PjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 11:39:10 -0400
+Date: Thu, 30 Jul 2009 17:36:58 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Julia Lawall <julia@diku.dk>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/5] mm: Add kmalloc NULL tests
+Message-ID: <20090730153658.GA22986@cmpxchg.org>
+References: <Pine.LNX.4.64.0907301608350.8734@ask.diku.dk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0907301608350.8734@ask.diku.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-30 at 11:43 +0200, Andi Kleen wrote:
-> Jun Koi <junkoi2004@gmail.com> writes:
-> 
-> > Hi,
-> >
-> > I am doing some debugging via firewire. I found some references to
-> > some tools named firedump & fireproxy, made by Bernhard Kaindl,
-> > supposed put at following addresses:
-> >
-> > ftp://ftp.suse.de/private/bk/firewire/tools/firedump-0.1.tar.bz2
-> > ftp://ftp.suse.de/private/bk/firewire/tools/fireproxy-0.33.tar.bz2
-> 
-> I have a copy of Bernd's website on http://halobates.de/firewire
-> 
-> firescope is also on my servers (I did the original x86 version)
-> 
-> -Andi
-> 
+Hello Julia,
+
+On Thu, Jul 30, 2009 at 04:10:22PM +0200, Julia Lawall wrote:
+
+> diff --git a/mm/slab.c b/mm/slab.c
+> index 7b5d4de..972e427 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -1502,6 +1502,7 @@ void __init kmem_cache_init(void)
 >  
+>  		ptr = kmalloc(sizeof(struct arraycache_init), GFP_NOWAIT);
+>  
+> +		BUG_ON(!ptr);
+>  		BUG_ON(cpu_cache_get(&cache_cache) != &initarray_cache.cache);
+>  		memcpy(ptr, cpu_cache_get(&cache_cache),
+>  		       sizeof(struct arraycache_init));
 
-Thanks a lot.
-Don't know what to say about what I could do to help...
-I could help to make this tool better, don't know how much time will
-permit me, or at least I think that kgdbom can be merged almost as is
-already.
-As it stands from the source, it just creates a ring buffer in memory
-for commands as if there were send over gdb. Dead simple it seems.
-Thus, fireproxy could be reduced (if it isn't...) to simple "read string
-from memory over firewire and hand over to gdb via tcp and vise versa.
-This should give back all power kgdb has for free (currently fireproxy
-states that only very basic support is implemented)
+This does not change the end result when the allocation fails: you get
+a stacktrace and a kernel panic.  Leaving it as is saves a line of
+code.
 
-Could some of you put these tools on kernel.org?
-Debugging over firewire seems to be the best of the best.
+> @@ -1514,6 +1515,7 @@ void __init kmem_cache_init(void)
+>  
+>  		ptr = kmalloc(sizeof(struct arraycache_init), GFP_NOWAIT);
+>  
+> +		BUG_ON(!ptr);
+>  		BUG_ON(cpu_cache_get(malloc_sizes[INDEX_AC].cs_cachep)
+>  		       != &initarray_generic.cache);
+>  		memcpy(ptr, cpu_cache_get(malloc_sizes[INDEX_AC].cs_cachep),
 
-
-BTW, it is almost always possible to take over the CPU even without help
-of kgdbom (if system got in state even it doesn't work)
-Say CPU is in protected mode, and you know where the IDT lives.
-You could program some device to trigger an IRQ (HPET seems to be the
-best), set up the APIC to route it, and then trigger, and now the CPU
-should enter the IRQ handler. (Of course this needs that firewire device
-be able to access HPET and IOAPIC which are nowadays located on
-southbridge)
-
-And probably the only device that can't be debugged, is the firewire
-driver itself that is standard compliant, and well tested...
-
-Best regards,
-	Maxim Levitsky
-
+	Hannes
