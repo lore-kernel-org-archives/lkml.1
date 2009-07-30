@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751498AbZG3Qgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751669AbZG3Qht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751498AbZG3Qgv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 12:36:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbZG3Qgu
+	id S1751669AbZG3Qht (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 12:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbZG3Qhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 12:36:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49621 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751270AbZG3Qgt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 12:36:49 -0400
-Date: Thu, 30 Jul 2009 18:32:58 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       Li Zefan <lizf@cn.fujitsu.com>, Miao Xie <miaox@cn.fujitsu.com>,
-       Paul Menage <menage@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [PATCH 1/1] cpu_hotplug: don't play with current->cpus_allowed
-Message-ID: <20090730163258.GB3617@redhat.com>
-References: <20090729023302.GA8899@redhat.com> <20090729212125.GA16970@redhat.com> <20090729214310.GB24631@redhat.com> <4A70FEE3.2070302@cn.fujitsu.com>
+	Thu, 30 Jul 2009 12:37:48 -0400
+Received: from mx-out.daemonmail.net ([216.104.160.38]:53382 "EHLO
+	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750933AbZG3Qhr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 12:37:47 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: linux-kernel@vger.kernel.org
+Subject: [RFC] Uni-processor interrupt state preservation.
+Date: Thu, 30 Jul 2009 11:37:18 -0500
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4A70FEE3.2070302@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200907301137.22035.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/30, Lai Jiangshan wrote:
->
-> Oleg Nesterov wrote:
-> > _cpu_down() changes the current task's affinity and then recovers it at
-> > the end. The problems are well known: we can't restore old_allowed if it
-> > was bound to the now-dead-cpu, and we can race with the userspace which
-> > can change cpu-affinity during unplug.
-> >
-> > _cpu_down() should not play with current->cpus_allowed at all. Instead,
-> > take_cpu_down() can migrate the caller of _cpu_down() after __cpu_disable()
-> > removes the dying cpu from cpu_online_mask.
-> >
-> >  static int __ref take_cpu_down(void *_param)
-> >  {
-> >  	struct take_cpu_down_param *param = _param;
-> > +	unsigned int cpu = (unsigned long)param->hcpu;
-> >  	int err;
-> >
-> >  	/* Ensure this CPU doesn't handle any more interrupts. */
-> > @@ -181,6 +183,8 @@ static int __ref take_cpu_down(void *_pa
-> >  	raw_notifier_call_chain(&cpu_chain, CPU_DYING | param->mod,
-> >  				param->hcpu);
-> >
-> > +	if (task_cpu(param->caller) == cpu)
-> > +		move_task_off_dead_cpu(cpu, param->caller);
->
-> move_task_off_dead_cpu() calls cpuset_cpus_allowed_locked() which
-> needs callback_mutex held. But actually we don't hold it, it'll
-> will corrupt the work of other task which holds callback_mutex.
-> Is it right?
+In kernel/up.c - -
 
-Of course it is not. That is why I tried to kill cpuset_lock() first.
+int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+                                int wait)
+{
+        unsigned long flags;
 
-And I still think it must die. But I don't know how to remove it.
+        WARN_ON(cpu != 0);
 
-Oleg.
+        local_irq_save(flags);
+        (func)(info);
+        local_irq_restore(flags);
 
+        return 0;
+}
+
+It **looks** reasonable - - 
+but:
+
+.L2:
+#APP
+        # ul native_save_fl(void)
+        pushf ; pop %ebx
+        # native_irq_disable(void)
+        cli
+#NO_APP
+#(insn:TI 29 27 30 (set (reg:SI 0 ax [ info ])
+#        (reg/v/f:SI 4 si [orig:62 info ] [62])) 34 {*movsi_1} (insn_list:REG_DEP_TRUE 27 (nil))
+#    (expr_list:REG_DEAD (reg/v/f:SI 4 si [orig:62 info ] [62])
+#        (nil)))
+        movl    %esi, %eax      # 29    *movsi_1/1      [length = 2]
+#(call_insn:TI 30 29 43 (call (mem:QI (reg/v/f:SI 5 di [orig:61 func ] [61]) [0 S1 A8])
+#        (const_int 0 [0x0])) 386 {*call_1} (insn_list:REG_DEP_TRUE 29 (insn_list:REG_DEP_TRUE 27 (nil)))
+#    (expr_list:REG_DEAD (reg:SI 0 ax [ info ])
+#        (expr_list:REG_DEAD (reg/v/f:SI 5 di [orig:61 func ] [61])
+#            (nil)))
+#    (expr_list:REG_DEP_TRUE (use (reg:SI 0 ax [ info ]))
+#        (nil)))
+        call    *%edi   # 30    *call_1 [length = 2]
+#APP
+        # native_restore_fl(ul flags)
+        push %ebx ; popf
+#NO_APP
+
+Just how is the interrupt state (in ebx) supposed to be preserved across the function call?
+(assembly comments where added in macros, just to clarify where this is coming from.)
+
+Mike
