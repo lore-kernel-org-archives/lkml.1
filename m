@@ -1,103 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751783AbZG3OUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751739AbZG3O0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751783AbZG3OUz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 10:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbZG3OUz
+	id S1751739AbZG3O0S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 10:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbZG3O0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 10:20:55 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:47123 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751045AbZG3OUy convert rfc822-to-8bit (ORCPT
+	Thu, 30 Jul 2009 10:26:17 -0400
+Received: from ru.mvista.com ([213.79.90.228]:31806 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751167AbZG3O0R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 10:20:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=wuMZ5Iaia+h6wuTZw95FEX9avsObVBj456cKexQXewjNpp/ERmCVB9KO9/LOYzWLoa
-         u2mStkHZn6J+XyDcU7oPwKWMMS7cZ5+ocj/IZ9d+4WpdchPti/fGnAl3E2wiNQX5/gzB
-         hXq3kyNsFPgN5knz2tok3bvxzB/FEjc34UdZ8=
+	Thu, 30 Jul 2009 10:26:17 -0400
+Date: Thu, 30 Jul 2009 18:26:16 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org, Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>,
+       Matt Reimer <mreimer@vpop.net>, Anton Vorontsov <cbou@mail.ru>
+Subject: Re: [PATCH] ds2760: fix integer overflow for time_to_empty_now
+Message-ID: <20090730142616.GA797@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1248441573-32712-1-git-send-email-daniel@caiaq.de>
+ <20090730140041.GA25759@oksana.dev.rtsoft.ru>
+ <20090730141259.GV19257@buzzloop.caiaq.de>
 MIME-Version: 1.0
-In-Reply-To: <1248782203-13095-1-git-send-email-saeed@marvell.com>
-References: <1248782203-13095-1-git-send-email-saeed@marvell.com>
-Date: Thu, 30 Jul 2009 17:20:53 +0300
-Message-ID: <c70ff3ad0907300720m599c184ahcffa7db47573a4bd@mail.gmail.com>
-Subject: Re: [PATCH] [MTD] fix the conversion from dev to mtd_info
-From: saeed bishara <saeed.bishara@gmail.com>
-To: Saeed Bishara <saeed@marvell.com>
-Cc: linux-kernel@vger.kernel.org, testers@vger.kernel.org, david-b@pacbell.net,
-       David.Woodhouse@intel.com, eric.y.miao@gmail.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20090730141259.GV19257@buzzloop.caiaq.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ping?
+On Thu, Jul 30, 2009 at 04:12:59PM +0200, Daniel Mack wrote:
+> On Thu, Jul 30, 2009 at 06:00:41PM +0400, Anton Vorontsov wrote:
+> > On Fri, Jul 24, 2009 at 03:19:33PM +0200, Daniel Mack wrote:
+> > > On the device we're currently developing, battery sizes of ~2.8Ah and
+> > > current flow of ~600mA are typical.
+> > > 
+> > > With that values, the life_sec computation overflows due to the
+> > > multiplication by 3600.
+> > > 
+> > > Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> > > Cc: Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
+> > > Cc: Matt Reimer <mreimer@vpop.net>
+> > > Cc: Anton Vorontsov <cbou@mail.ru>
+> > > 
+> > > Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> > > ---
+> > >  drivers/power/ds2760_battery.c |    4 ++--
+> > >  1 files changed, 2 insertions(+), 2 deletions(-)
+> > > 
+> > > diff --git a/drivers/power/ds2760_battery.c b/drivers/power/ds2760_battery.c
+> > > index d545fee..5d30dc0 100644
+> > > --- a/drivers/power/ds2760_battery.c
+> > > +++ b/drivers/power/ds2760_battery.c
+> > > @@ -212,8 +212,8 @@ static int ds2760_battery_read_status(struct ds2760_device_info *di)
+> > >  		di->rem_capacity = 100;
+> > >  
+> > >  	if (di->current_uA)
+> > > -		di->life_sec = -((di->accum_current_uAh - di->empty_uAh) *
+> > > -				 3600L) / di->current_uA;
+> > > +		di->life_sec = -((di->accum_current_uAh - di->empty_uAh) * 36L)
+> > > +					/ (di->current_uA / 100L);
+> > 
+> > Hm... "(di->current_uA / 100L)" might result to 0, so you'll get
+> > div by zero. Removing the parenthesis will help.
+> 
+> Hmm, no, then it gets the precedence wrong.
 
-On Tue, Jul 28, 2009 at 2:56 PM, Saeed Bishara<saeed@marvell.com> wrote:
-> The patch fixes a bug when converting dev to mtd_info by using the
-> drvdata of the dev, the previous code used
-> container_of(dev, struct mtd_info, dev), but won't work for the mtdXro
-> devices as they created without being contained inside mtd_info structure.
->
-> Signed-off-by: Saeed Bishara <saeed@marvell.com>
+Ah.
+
+> But checking for values >=
+> 100 of current_uA helps. Thanks for spotting this.
+
+Yeah, that'll be fine indeed.
+
+> Daniel
+> 
+> 
+> >From c60e23e2ba6667bec882338bfe3cb12304ee1ab6 Mon Sep 17 00:00:00 2001
+> From: Daniel Mack <daniel@caiaq.de>
+> Date: Fri, 24 Jul 2009 15:08:11 +0200
+> Subject: [PATCH] ds2760: fix integer overflow for time_to_empty_now
+> 
+> On the device we're currently developing, battery sizes of ~2.8Ah and
+> current flow of ~600mA are typical.
+> 
+> With that values, the life_sec computation overflows due to the
+> multiplication by 3600.
+> 
+> Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> Cc: Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
+> Cc: Matt Reimer <mreimer@vpop.net>
+> Cc: Anton Vorontsov <cbou@mail.ru>
+> 
+> Signed-off-by: Daniel Mack <daniel@caiaq.de>
 > ---
->  drivers/mtd/mtdcore.c   |    7 ++++---
->  include/linux/mtd/mtd.h |    2 +-
->  2 files changed, 5 insertions(+), 4 deletions(-)
->
-> diff --git a/drivers/mtd/mtdcore.c b/drivers/mtd/mtdcore.c
-> index fac54a3..00ebf7a 100644
-> --- a/drivers/mtd/mtdcore.c
-> +++ b/drivers/mtd/mtdcore.c
-> @@ -65,8 +65,8 @@ static void mtd_release(struct device *dev)
->  static int mtd_cls_suspend(struct device *dev, pm_message_t state)
->  {
->        struct mtd_info *mtd = dev_to_mtd(dev);
-> -
-> -       if (mtd->suspend)
-> +
-> +       if (mtd && mtd->suspend)
->                return mtd->suspend(mtd);
->        else
->                return 0;
-> @@ -76,7 +76,7 @@ static int mtd_cls_resume(struct device *dev)
->  {
->        struct mtd_info *mtd = dev_to_mtd(dev);
->
-> -       if (mtd->resume)
-> +       if (mtd && mtd->resume)
->                mtd->resume(mtd);
->        return 0;
->  }
-> @@ -298,6 +298,7 @@ int add_mtd_device(struct mtd_info *mtd)
->                        mtd->dev.class = &mtd_class;
->                        mtd->dev.devt = MTD_DEVT(i);
->                        dev_set_name(&mtd->dev, "mtd%d", i);
-> +                       dev_set_drvdata(&mtd->dev, mtd);
->                        if (device_register(&mtd->dev) != 0) {
->                                mtd_table[i] = NULL;
->                                break;
-> diff --git a/include/linux/mtd/mtd.h b/include/linux/mtd/mtd.h
-> index 5675b63..0f32a9b 100644
-> --- a/include/linux/mtd/mtd.h
-> +++ b/include/linux/mtd/mtd.h
-> @@ -251,7 +251,7 @@ struct mtd_info {
->
->  static inline struct mtd_info *dev_to_mtd(struct device *dev)
->  {
-> -       return dev ? container_of(dev, struct mtd_info, dev) : NULL;
-> +       return dev ? dev_get_drvdata(dev) : NULL;
->  }
->
->  static inline uint32_t mtd_div_by_eb(uint64_t sz, struct mtd_info *mtd)
-> --
-> 1.6.0.4
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+>  drivers/power/ds2760_battery.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/power/ds2760_battery.c b/drivers/power/ds2760_battery.c
+> index d545fee..2ef29dd 100644
+> --- a/drivers/power/ds2760_battery.c
+> +++ b/drivers/power/ds2760_battery.c
+> @@ -211,9 +211,9 @@ static int ds2760_battery_read_status(struct ds2760_device_info *di)
+>  	if (di->rem_capacity > 100)
+>  		di->rem_capacity = 100;
+>  
+> -	if (di->current_uA)
+> -		di->life_sec = -((di->accum_current_uAh - di->empty_uAh) *
+> -				 3600L) / di->current_uA;
+> +	if (di->current_uA >= 100L)
+> +		di->life_sec = -((di->accum_current_uAh - di->empty_uAh) * 36L)
+> +					/ (di->current_uA / 100L);
+>  	else
+>  		di->life_sec = 0;
+>  
+> -- 
+> 1.6.3.3
+> 
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
