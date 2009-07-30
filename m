@@ -1,46 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbZG3KAJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752572AbZG3KEG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752524AbZG3KAJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 06:00:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZG3KAI
+	id S1752572AbZG3KEG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 06:04:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbZG3KEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 06:00:08 -0400
-Received: from mail.mnementh.co.uk ([173.45.232.4]:37552 "EHLO mnementh.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751908AbZG3KAH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 06:00:07 -0400
-Message-ID: <4A716F1C.2050805@mnementh.co.uk>
-Date: Thu, 30 Jul 2009 10:59:56 +0100
-From: Ian Molton <ian@mnementh.co.uk>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: pHilipp Zabel <philipp.zabel@gmail.com>
-CC: Paul Mundt <lethal@linux-sh.org>, Magnus Damm <magnus.damm@gmail.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
-       Magnus Damm <damm@opensource.se>
-Subject: Re: MMC: Make the configuration memory resource optional
-References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>	 <aec7e5c30907281948s2a0dcd0csd3e580251d6c4f5a@mail.gmail.com>	 <20090729115817.GA12223@rakim.wolfsonmicro.main>	 <aec7e5c30907290527w39a89895n285e932459e6c953@mail.gmail.com>	 <20090729124233.GA12802@rakim.wolfsonmicro.main>	 <aec7e5c30907290551y77edc6d7qb7b3d787215c2b4@mail.gmail.com>	 <4A704777.70001@mnementh.co.uk>	 <aec7e5c30907290608i43a80fe1xe4ef0f3847855709@mail.gmail.com>	 <4A7053E8.8050303@mnementh.co.uk>	 <20090729201702.GA28202@linux-sh.org> <74d0deb30907291355n39df7db0v1d7afc93917adc14@mail.gmail.com>
-In-Reply-To: <74d0deb30907291355n39df7db0v1d7afc93917adc14@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 30 Jul 2009 06:04:06 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39366 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752017AbZG3KEF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 06:04:05 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Thu, 30 Jul 2009 19:02:16 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Paul Menage <menage@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
+Message-Id: <20090730190216.5aae685a.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.0907300219580.13674@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0907282125260.554@chino.kir.corp.google.com>
+	<20090730180029.c4edcc09.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0907300219580.13674@chino.kir.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok I've spent some time thinking on this.
+On Thu, 30 Jul 2009 02:31:04 -0700 (PDT)
+David Rientjes <rientjes@google.com> wrote:
 
-There is _no_ clean solution at present and Im not happy with having 
-more than one clocking system co-existing in the mmc driver.
+> On Thu, 30 Jul 2009, KAMEZAWA Hiroyuki wrote:
+> 
+> > 1. IIUC, the name is strange.
+> > 
+> > At job scheduler, which does this.
+> > 
+> > if (vfork() == 0) {
+> > 	/* do some job */
+> > 	execve(.....)
+> > }
+> > 
+> > Then, when oom_adj_child can be effective is after execve().
+> > IIUC, the _child_ means a process created by vfork().
+> > 
+> 
+> It's certainly a difficult thing to name and I don't claim that "child" is 
+> completely accurate since, as you said, vfork'd tasks are also children 
+> of the parent yet they share the same oom_adj value since it's an 
+> attribute of the shared mm.
+> 
+> If you have suggestions for a better name, I'd happily ack it.
+> 
 
-I will produce a patch to  completely remove all clocking and power 
-control from the driver and make it use callbacks in order to achieve 
-this. This will leave us with a clean driver that will be simple to 
-adapt to the clock API.
+Simply, reset_oom_adj_at_new_mm_context or some.
 
-I wont have time to work on it until next week, however, so if anyone 
-wants to take a stab at it in the meantime, feel free to do so, and I'll 
-review it next week.
+> > 2. More simple plan is like this, IIUC.
+> > 
+> >   fix oom-killer's select_bad_process() not to be in deadlock.
+> > 
+> 
+> Alternate ideas?
+> 
+At brief thiking.
 
--Ian
+1. move oom_adj from mm_struct to signal struct. or somewhere.
+   (see copy_signal())
+   Then,
+    - all threads in a process will have the same oom_adj.
+    - vfork()'ed thread will inherit its parent's oom_adj.   
+    - vfork()'ed thread can override oom_adj of its own.
+
+    In other words, oom_adj is shared when CLONE_PARENT is not set.
+
+2. rename  mm_struct's oom_adj as shadow_oom_adj.
+
+   update this shadow_oom_adj as the highest oom_adj among
+   the values all threads share this mm_struct have.
+   This update is done when
+   - mm_init()
+   - oom_adj is written.
+
+   User's 
+   # echo XXXX > /proc/<x>/oom_adj
+   is not necessary to be very very fast.
+
+   I don't think a process which calls vfork() is multi-threaded.
+
+3. use shadow_oom_adj in select_bad_process().
+
+
+
+> > rather than this new stupid interface.
+> > 
+> 
+> Well, thank you.  Regardless of whether you think it's stupid or not, it 
+> doesn't allow you to livelock the kernel in a very trivial way when the 
+> oom killer gets invoked prior to execve() and the parent is OOM_DISABLE.
+> 
+
+
+just plz consider more.
+
+Thanks,
+-Kame
+
