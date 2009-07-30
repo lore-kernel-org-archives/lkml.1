@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753081AbZG3Vax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbZG3Vc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753081AbZG3Vax (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 17:30:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZG3Vaw
+	id S1753018AbZG3Vc0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 17:32:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbZG3VcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 17:30:52 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:56083 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753008AbZG3Vav (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 17:30:51 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=EOumy3uJkGkQKlfSyPOCs71lFPkkmdNGnpXyqytYqdeG9lnibsV1LBhSOtg0dShe3
-	i9YcmU8s1tbvnmhfDv7QQ==
-Date: Thu, 30 Jul 2009 14:30:42 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Stephan von Krawczynski <skraw@ithnet.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Justin Piszcz <jpiszcz@lucidpixels.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "David S. Miller" <davem@davemloft.com>
-Subject: Re: [Bug #13648] nfsd: page allocation failure
-In-Reply-To: <20090727130420.1514cf5c.skraw@ithnet.com>
-Message-ID: <alpine.DEB.2.00.0907301423250.18531@chino.kir.corp.google.com>
-References: <DizPU9GBfHF.A.kgF.iWObKB@chimera> <H5-1lZIIeYK.A.HXG.DXObKB@chimera> <20090727130420.1514cf5c.skraw@ithnet.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 30 Jul 2009 17:32:25 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:34078 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751855AbZG3VcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 17:32:24 -0400
+Message-ID: <4A721163.7030700@garzik.org>
+Date: Thu, 30 Jul 2009 17:32:19 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Don Fry <pcnet32@verizon.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Dan Carpenter <error27@gmail.com>,
+       corbet@lwn.net, eteo@redhat.com, Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH] pcnet32: VLB support fixes
+References: <200907302317.52648.bzolnier@gmail.com>
+In-Reply-To: <200907302317.52648.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 27 Jul 2009, Stephan von Krawczynski wrote:
-
-> This is no regression between 2.6.29 and 2.6.30.
-> In fact we could reproduce the problem with kernel versions:
+Bartlomiej Zolnierkiewicz wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] pcnet32: VLB support fixes
 > 
-> 2.6.27.26 < X <= 2.6.30.3
+> VLB support has been broken since at least 2004-2005 period as some
+> changes introduced back then assumed that ->pci_dev is always valid,
+> lets try to fix it:
 > 
-> (Meaning 2.6.27.26 is the last one _not_ showing the problem).
+> - remove duplicated SET_NETDEV_DEV() call
 > 
+> - call SET_NETDEV_DEV() only for PCI devices
+> 
+> - check for ->pci_dev validity in pcnet32_open()
+> 
+> [ Alternatively we may consider removing VLB support but there would not
+>   be much gain in it since an extra driver code needed for VLB support is
+>   minimal and quite simple. ]
+> 
+> This takes care of the following entry from Dan's list:
+> 
+> drivers/net/pcnet32.c +1889 pcnet32_probe1(298) warning: variable derefenced before check 'pdev'
+> 
+> Reported-by: Dan Carpenter <error27@gmail.com>
+> Cc: corbet@lwn.net
+> Cc: eteo@redhat.com
+> Cc: Julia Lawall <julia@diku.dk>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+> PS I still keep the original cc: list from the smatch thread -- please let
+> me know if you don't want to be spammed.. ;-)
+> 
+>  drivers/net/pcnet32.c |   12 +++++++-----
+>  1 file changed, 7 insertions(+), 5 deletions(-)
 
-And 2.6.28.10 is showing the exact same problem as initially reported, 
-right?
+ACK -- the patch is correct AFAICS -- but would it not be better to have 
+a struct device for the VLB device?
 
-I noticed your /var/log/messages is showing you're using slub as opposed 
-to slab (which Justin was using, and causing order-0 allocations errors).  
-SLUB uses order-1 allocations for this cache growth and it's failing 
-because of memory fragmentation, not because you're truly oom.
+We have capability to create struct device for isa and eisa, so VLB is 
+quite doable.
 
-The only thing that is immediately apparent that changed in this path over 
-these kernel versions (there were significant changes to e1000e) is the 
-CRC stripping.  If it's loaded as a module, perhaps you could try
+	Jeff, who converted old-ISDN ISA+EISA+PCI drivers to
+	      hotplug model, once upon a time
 
-	modprobe e1000e CrcStripping=0,0
 
-(assuming you have two adapters).
 
-I've cc'd some relevant e1000e driver people in the hopes they'll be able 
-to diagnose this problem.  Memory fragmentation as the result of page 
-group changes wouldn't affect order-0 allocations such as this on slab, so 
-it's doubtful the VM regressed if you can reproduce the problem with 
-CONFIG_SLAB.
