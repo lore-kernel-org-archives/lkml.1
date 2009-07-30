@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751912AbZG3RQi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752014AbZG3RV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751912AbZG3RQi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 13:16:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbZG3RQi
+	id S1752014AbZG3RV1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 13:21:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbZG3RV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 13:16:38 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:44373 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751474AbZG3RQh (ORCPT
+	Thu, 30 Jul 2009 13:21:26 -0400
+Received: from moutng.kundenserver.de ([212.227.17.10]:60040 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751669AbZG3RVZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 13:16:37 -0400
-Subject: Re: [RFC][patch 00/12] clocksource / timekeeping rework V2
-From: john stultz <johnstul@us.ibm.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1248961750.6046.35.camel@desktop>
-References: <200907291717.n6THHG6f001426@d06av06.portsmouth.uk.ibm.com>
-	 <20090730125351.6f16e9ec@skybase> <1248958173.6046.32.camel@desktop>
-	 <20090730150456.6c87b997@skybase>  <1248961750.6046.35.camel@desktop>
-Content-Type: text/plain
-Date: Thu, 30 Jul 2009 10:16:27 -0700
-Message-Id: <1248974187.3331.6.camel@work-vm>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 30 Jul 2009 13:21:25 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: eranian@gmail.com
+Subject: Re: I.1 - System calls - ioctl
+Date: Thu, 30 Jul 2009 19:20:52 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-3-generic; KDE/4.2.96; x86_64; ; )
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
+       Corey J Ashford <cjashfor@us.ibm.com>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       "perfmon2-devel" <perfmon2-devel@lists.sourceforge.net>
+References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com> <200907301840.50894.arnd@arndb.de> <7c86c4470907300953g255c6088t7caaa1188be164e3@mail.gmail.com>
+In-Reply-To: <7c86c4470907300953g255c6088t7caaa1188be164e3@mail.gmail.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200907301920.52257.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+P9ZOq2dJCaibttFW8Eh2S8r72nRkOYzbzJ+e
+ Nh8mI1eLEbW451npXXC4K2tbRx9ph/LUmFjhzNUV4jcpKzILHZ
+ DKNKZT706k05m/s0Krumw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-30 at 06:49 -0700, Daniel Walker wrote:
-> On Thu, 2009-07-30 at 15:04 +0200, Martin Schwidefsky wrote:
-> > On Thu, 30 Jul 2009 05:49:33 -0700
-> > Daniel Walker <dwalker@fifo99.com> wrote:
-> > 
-> > > On Thu, 2009-07-30 at 12:53 +0200, Martin Schwidefsky wrote:
-> > > 
-> > > > > I'm not sure allowing that type of override a good idea tho .. I don't
-> > > > > think it's considered a usable clock when the rating goes to zero.
-> > > > 
-> > > > Override as the root user -> your foot, no? The whole override stuff is
-> > > > there for the case that the clocksource selection picked a broken clock
-> > > > and you want to force the system into a semi-working state. Ideally the
-> > > > whole override would go away, but that is probably wishful thinking..
-> > > 
-> > > I would agree if the system doesn't crash as a result, if it just starts
-> > > to operate funny then that's maybe acceptable. If you keep the change
-> > > rating function, you could potentially remove the unregister path..
-> > 
-> > Why shouldn't it be possible to have a clocksource as a module? I think
-> > that the unregister path should stay. To really make it work we'd need
-> > a function to force the system out of the one-shot mode though.
-> 
-> Because I don't think there is a sane reason to allow it. It should be
-> more like if someone has a need for it, then let them add back the
-> unregister path and explain why they need it.
+On Thursday 30 July 2009, stephane eranian wrote:
+> But that won't always work in the case of a 32-bit monitoring tool
+> running on top of
+> a 64-bit OS. Imagine the target id is indeed 64-bit, e.g., inode
+> number (as suggested
+> by Peter). It's not because you are a 32-bit tool than you cannot name
+> a monitoring
+> resource in a 64-bit OS.
 
-Clocksources as modules was one of the initial design goals I had way
-back. The benefit being that an older distro kernel could be made to
-support newer stranger hardware via a clocksource driver. While the
-hardware vendors have for the most part consolidated on HPET/ACPI PM
-which has mostly avoided the need, I still think its worth preserving.
+Right, there are obviously things that you cannot address with 
+a 'long', but there are potentially other things that you could
+that you cannot address with an 'int', e.g. an opaque user
+token (representing a user pointer) that you can get back in
+the sample data.
 
-thanks
--john
+In the worst case, you could still redefine the argument as a
+transparent union to a long and pointer in the future if you
+use a 'long' now. AFAICT, there are no advantages of using
+an 'int' instead of a 'long', but there are disadvantages of
+using a 'long long'.
 
-
+	Arnd <><
