@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752019AbZG3Rln@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752088AbZG3RwC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752019AbZG3Rln (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 13:41:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbZG3Rln
+	id S1752088AbZG3RwC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 13:52:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751757AbZG3RwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 13:41:43 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:48663 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751209AbZG3Rlm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 13:41:42 -0400
-Date: Thu, 30 Jul 2009 19:41:39 +0200
-From: Daniel Mack <daniel@caiaq.de>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Ian Molton <ian@mnementh.co.uk>, linux-kernel@vger.kernel.org,
-       Anton Vorontsov <cbou@mail.ru>, Matt Reimer <mreimer@vpop.net>
-Subject: Re: [PATCH 1/2] power_supply: get_by_name and set_charged
-	functionality
-Message-ID: <20090730174139.GZ19257@buzzloop.caiaq.de>
-References: <20090723183451.GI13236@buzzloop.caiaq.de> <1248374154-15606-1-git-send-email-daniel@caiaq.de> <20090728220635.GH19257@buzzloop.caiaq.de> <4A70249C.6060705@f2s.com> <20090729103659.GI19257@buzzloop.caiaq.de> <4A704451.1070004@mnementh.co.uk> <20090730141134.GB25759@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090730141134.GB25759@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 30 Jul 2009 13:52:01 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40996 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751429AbZG3RwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 13:52:00 -0400
+Subject: Re: [PATCH -v3 1/3] Capabilities: move cap_file_mmap to commoncap.c
+From: Eric Paris <eparis@redhat.com>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
+       jwcart2@tycho.nsa.gov, spender@grsecurity.net, dwalsh@redhat.com,
+       cl@linux-foundation.org, arjan@infradead.org, alan@lxorguk.ukuu.org.uk,
+       kees@outflux.net, csellers@tresys.com,
+       penguin-kernel@i-love.sakura.ne.jp
+In-Reply-To: <1248969492.11627.172.camel@moss-pluto.epoch.ncsc.mil>
+References: <20090729185620.21757.44366.stgit@paris.rdu.redhat.com>
+	 <20090730051426.GA6082@us.ibm.com> <1248968428.2597.79.camel@localhost>
+	 <20090730155403.GA13939@us.ibm.com>
+	 <1248969492.11627.172.camel@moss-pluto.epoch.ncsc.mil>
+Content-Type: text/plain
+Date: Thu, 30 Jul 2009 13:50:52 -0400
+Message-Id: <1248976252.2771.1.camel@localhost>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 30, 2009 at 06:11:34PM +0400, Anton Vorontsov wrote:
-> Ian, Matt, much thanks for reviews and acks!
-> Daniel, thanks for the patches, and for the patience. :-)
+On Thu, 2009-07-30 at 11:58 -0400, Stephen Smalley wrote:
+> On Thu, 2009-07-30 at 10:54 -0500, Serge E. Hallyn wrote:
+> > Quoting Eric Paris (eparis@redhat.com):
+> > > On Thu, 2009-07-30 at 00:14 -0500, Serge E. Hallyn wrote:
+> > > > Quoting Eric Paris (eparis@redhat.com):
+> > > > > Currently we duplicate the mmap_min_addr test in cap_file_mmap and in
+> > > > > security_file_mmap if !CONFIG_SECURITY.  This patch moves cap_file_mmap
+> > > > > into commoncap.c and then calls that function directly from
+> > > > > security_file_mmap ifndef CONFIG_SECURITY like all of the other capability
+> > > > > checks are done.
+> > > > 
+> > > > It also
+> > > > 
+> > > > 	1. changes the return value in error case from -EACCES to
+> > > > 	   -EPERM
+> > > > 	2. no onger sets PF_SUPERPRIV in t->flags if the capability
+> > > > 	   is used.
+> > > > 
+> > > > Do we care about these?
+> > > 
+> > > Personally, not really, but I'll gladly put them back if you care.   #2
+> > > seems more interesting to me than number 1.   I actually kinda like
+> > > getting EPERM from caps rather than EACCES since them I know if I was
+> > > denied by selinux or by caps.....
+> > > 
+> > > -Eric
+> > 
+> > Yup, I asked bc I didn't particularly care myself.
+> > 
+> > I think I agree with you about -EPERM being better anyway.  However I
+> > (now) think in this case PF_SUPERPRIV definately should be set, as this
+> > is a clear use of a capability to do something that couldn't have been
+> > done without it.
 > 
-> 
-> Following patches applied to battery-2.6.git (for -next):
-> 
-> Daniel Mack (8):
->       ds2760_battery: delay power supply registration
->       ds2760_battery: export more features
->       ds2760_battery: add rated_capacity module parameter
->       ds2760_battery: handle full_active_uAh == 0 case correctly
->       ds2760_battery: add current_accum module parameter
->       power_supply: EXPORT_SYMBOL cleanups
->       power_supply: get_by_name and set_charged functionality
->       ds2760_battery: implement set_charged() feature
-> 
-> Let me know if I missed anything.
+> On a related but different note, we should consider all current uses of
+> cap_capable(), as they represent capability checks that will not be
+> subject to a further restrictive check by other security modules.  In
+> this case and in the vm_enough_memory case, that is intentional, but not
+> so clear for other uses in commoncap.c.
 
-Looks good. Thanks a lot :) There might be some more coming up the next
-days.
+Most of commoncap.c is called either as a secondary hook from the active
+lsm (aka selinux calls the commoncap.c functions) or in the !
+CONFIG_SECURITY case.
 
-Daniel
+I'll audit this afternoon to see which of them might not fit these
+rules....
+
+-Eric
 
