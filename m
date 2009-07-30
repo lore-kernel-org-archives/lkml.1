@@ -1,62 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbZG3HbP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754024AbZG3Hd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753899AbZG3HbP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 03:31:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbZG3HbO
+	id S1754024AbZG3Hd0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 03:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbZG3Hd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 03:31:14 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:35576 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751306AbZG3HbO (ORCPT
+	Thu, 30 Jul 2009 03:33:26 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38834 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751212AbZG3HdZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 03:31:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=GRwY+ORMhNCZrB0hHdPOvHsABUTLLrIRLszL2F6RxEvvaNGk29sTnkcuE699aTuceT
-         jP0nZIogBzoUnDat6GHXJxKuvHn+eyY/DqXOtQvgf/bJLuqEL86rSzckVkX/vz93PcRA
-         BnlGfwHRKaaSXyXEYzG/BqpoBgZ8cXUBpJmEY=
-MIME-Version: 1.0
-In-Reply-To: <1248932218.27010.8.camel@maxim-laptop>
-References: <fdaac4d50907042242s6534d63at12a26df47a0f3b2a@mail.gmail.com> 
-	<1248932218.27010.8.camel@maxim-laptop>
-From: Jun Koi <junkoi2004@gmail.com>
-Date: Thu, 30 Jul 2009 16:01:48 +0900
-Message-ID: <fdaac4d50907300001v559610f7ue1fce515e48729a0@mail.gmail.com>
-Subject: Re: Firewire debugging tools - firedump & fireproxy?
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Jason Wessel <jason.wessel@windriver.com>,
-       Bernhard Kaindl <bk@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 30 Jul 2009 03:33:25 -0400
+Subject: Re: [PATCH] sched: enhance the pre/post scheduling logic
+From: Peter Zijlstra <peterz@infradead.org>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: linux-kernel@vger.kernel.org, rostedt@goodmis.org, mingo@elte.hu,
+       akpm@linux-foundation.org, tglx@linutronix.de
+In-Reply-To: <20090729150422.17691.55590.stgit@dev.haskins.net>
+References: <1248856884.6987.3043.camel@twins>
+	 <20090729150422.17691.55590.stgit@dev.haskins.net>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Thu, 30 Jul 2009 09:36:25 +0200
+Message-Id: <1248939385.6391.7.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 30, 2009 at 2:36 PM, Maxim Levitsky<maximlevitsky@gmail.com> wrote:
-> On Sun, 2009-07-05 at 14:42 +0900, Jun Koi wrote:
->> Hi,
->>
->> I am doing some debugging via firewire. I found some references to
->> some tools named firedump & fireproxy, made by Bernhard Kaindl,
->> supposed put at following addresses:
->>
->> ftp://ftp.suse.de/private/bk/firewire/tools/firedump-0.1.tar.bz2
->> ftp://ftp.suse.de/private/bk/firewire/tools/fireproxy-0.33.tar.bz2
->>
->> However, these URLs are nolonger available. I am wondering if they
->> have been moved to somewhere else? Anybody know?
+On Wed, 2009-07-29 at 11:08 -0400, Gregory Haskins wrote:
 
-> Me having the same question. I have just bought everything for firewire
-> debugging.
->
-> Jason Wessel, what the fate of kgdbom ?
-> (and kgdboe btw ....)
->
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 3ab08e4..df14cae 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1045,7 +1045,6 @@ struct sched_class {
+>  			      struct rq *busiest, struct sched_domain *sd,
+>  			      enum cpu_idle_type idle);
+>  	void (*pre_schedule) (struct rq *this_rq, struct task_struct *task);
+> -	int (*needs_post_schedule) (struct rq *this_rq);
+>  	void (*post_schedule) (struct rq *this_rq);
+>  	void (*task_wake_up) (struct rq *this_rq, struct task_struct *task);
 
-These URLs are provided in Documentation/debugging-via-ohci1394.txt,
-and not available now. So that should be fixed, or removed, at least.
+awesome, one method less ;-)
 
-Thanks,
-J
+> +#ifdef CONFIG_SMP
+> +
+> +/* assumes rq->lock is held */
+> +static inline void pre_schedule(struct rq *rq, struct task_struct *prev)
+> +{
+> +	if (prev->sched_class->pre_schedule)
+> +		prev->sched_class->pre_schedule(rq, prev);
+> +}
+> +
+> +/* rq->lock is NOT held, but preemption is disabled */
+> +static inline void post_schedule(struct rq *rq)
+> +{
+> +	if (rq->post_schedule) {
+> +		unsigned long flags;
+> +
+> +		spin_lock_irqsave(&rq->lock, flags);
+> +		if (rq->curr->sched_class->post_schedule)
+> +			rq->curr->sched_class->post_schedule(rq);
+> +		spin_unlock_irqrestore(&rq->lock, flags);
+> +
+> +		rq->post_schedule = 0;
+> +	}
+> +}
+> +
+> +#else
+>  
+> -	return post_schedule;
+> +static inline void pre_schedule(struct rq *rq, struct task_struct *p)
+> +{
+> +}
+> +
+> +static inline void post_schedule(struct rq *rq)
+> +{
+>  }
+>  
+> +#endif
+
+Wouldn't you sleep much safer at night if both versions were to check
+those assumptions under SCHED_DEBUG? :-)
+
+> @@ -2844,14 +2873,14 @@ asmlinkage void schedule_tail(struct task_struct *prev)
+>  	__releases(rq->lock)
+>  {
+>  	struct rq *rq = this_rq();
+> -	int post_schedule;
+>  
+> -	post_schedule = finish_task_switch(rq, prev);
+> +	finish_task_switch(rq, prev);
+>  
+> -#ifdef CONFIG_SMP
+> -	if (post_schedule)
+> -		current->sched_class->post_schedule(rq);
+> -#endif
+> +	/*
+> +	 * FIXME: do we need to worry about rq being invalidated by the
+> +	 * task_switch?
+> +	 */
+> +	post_schedule(rq);
+>  
+>  #ifdef __ARCH_WANT_UNLOCKED_CTXSW
+>  	/* In this case, finish_task_switch does not reenable preemption */
+
+You know I really can't take patches with FIXME's in ;-)
+
+I think only switch_to() messes with your stacks, finish_task_switch()
+should be safe, but double check me.
+
+
+OK, so I stuck the patch in anyway.. 
