@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752230AbZG3Kx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752708AbZG3K4b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752230AbZG3Kx5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 06:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbZG3Kx4
+	id S1752708AbZG3K4b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 06:56:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbZG3K4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 06:53:56 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:35999 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751479AbZG3Kx4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 06:53:56 -0400
-Date: Thu, 30 Jul 2009 12:53:51 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: dwalker@fifo99.com
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
-Subject: Re: [RFC][patch 00/12] clocksource / timekeeping rework V2
-Message-ID: <20090730125351.6f16e9ec@skybase>
-In-Reply-To: <200907291717.n6THHG6f001426@d06av06.portsmouth.uk.ibm.com>
-References: <200907291717.n6THHG6f001426@d06av06.portsmouth.uk.ibm.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Jul 2009 06:56:30 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49248 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751541AbZG3K4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 06:56:30 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18CMXN5NugC2ZGa78lARVmdpmyHgHekmyf/Mfvw9a
+	VT0yGnpaDeSaGW
+Date: Thu, 30 Jul 2009 12:56:31 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Ian Molton <ian@mnementh.co.uk>
+cc: pHilipp Zabel <philipp.zabel@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
+       Magnus Damm <magnus.damm@gmail.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
+       Magnus Damm <damm@opensource.se>
+Subject: Re: MMC: Make the configuration memory resource optional
+In-Reply-To: <4A716F1C.2050805@mnementh.co.uk>
+Message-ID: <Pine.LNX.4.64.0907301246330.4462@axis700.grange>
+References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange> 
+ <aec7e5c30907281948s2a0dcd0csd3e580251d6c4f5a@mail.gmail.com> 
+ <20090729115817.GA12223@rakim.wolfsonmicro.main> 
+ <aec7e5c30907290527w39a89895n285e932459e6c953@mail.gmail.com> 
+ <20090729124233.GA12802@rakim.wolfsonmicro.main> 
+ <aec7e5c30907290551y77edc6d7qb7b3d787215c2b4@mail.gmail.com> 
+ <4A704777.70001@mnementh.co.uk>  <aec7e5c30907290608i43a80fe1xe4ef0f3847855709@mail.gmail.com>
+  <4A7053E8.8050303@mnementh.co.uk>  <20090729201702.GA28202@linux-sh.org>
+ <74d0deb30907291355n39df7db0v1d7afc93917adc14@mail.gmail.com>
+ <4A716F1C.2050805@mnementh.co.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Jul 2009 11:17:16 -0600
-dwalker@fifo99.com wrote:
+On Thu, 30 Jul 2009, Ian Molton wrote:
 
-> On Wed, 2009-07-29 at 19:09 +0200, Martin Schwidefsky wrote:
-> > On Wed, 29 Jul 2009 11:02:21 -0600
-> > dwalker@fifo99.com wrote:
-> > 
-> > > On Wed, 2009-07-29 at 18:50 +0200, Martin Schwidefsky wrote:
-> > > 
-> > > > void clocksource_change_rating(struct clocksource *cs, int rating)
-> > > 
-> > > > the two functions do different things. What exactly is the idea you've
-> > > > got in mind?
-> > > 
-> > > It's only the case when the rating goes to zero .. That makes the
-> > > clocksource unusable, which is very much like unregistering it..
-> > 
-> > True, the clocksource code won't pick the clock any more as long as
-> > there is an alternative clock available. It still shows up in the list
-> > of clocks though and you can do an override with it. 
+> Ok I've spent some time thinking on this.
 > 
-> I'm not sure allowing that type of override a good idea tho .. I don't
-> think it's considered a usable clock when the rating goes to zero.
+> There is _no_ clean solution at present and Im not happy with having more than
+> one clocking system co-existing in the mmc driver.
+> 
+> I will produce a patch to  completely remove all clocking and power control
+> from the driver and make it use callbacks in order to achieve this. This will
+> leave us with a clean driver that will be simple to adapt to the clock API.
+> 
+> I wont have time to work on it until next week, however, so if anyone wants to
+> take a stab at it in the meantime, feel free to do so, and I'll review it next
+> week.
 
-Override as the root user -> your foot, no? The whole override stuff is
-there for the case that the clocksource selection picked a broken clock
-and you want to force the system into a semi-working state. Ideally the
-whole override would go away, but that is probably wishful thinking..
+While you're at it, please, consider swapping the two lines in 
+tmio_mmc_probe():
 
--- 
-blue skies,
-   Martin.
+-	tmio_mmc_clk_stop(host);
+	reset(host);
++	tmio_mmc_clk_stop(host);
 
-"Reality continues to ruin my life." - Calvin.
+Otherwise, I think, reset causes problems trying to access the controller 
+with disabled clock. At least this is needed on SuperH.
 
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
