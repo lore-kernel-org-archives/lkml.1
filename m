@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751552AbZG3Mtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751097AbZG3Mw4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751552AbZG3Mtv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 08:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZG3Mtu
+	id S1751097AbZG3Mw4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 08:52:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750759AbZG3Mw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 08:49:50 -0400
-Received: from dscas1.ad.uiuc.edu ([128.174.68.119]:49345 "EHLO
-	dscas1.ad.uiuc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbZG3Mtu (ORCPT
+	Thu, 30 Jul 2009 08:52:56 -0400
+Received: from mail-px0-f203.google.com ([209.85.216.203]:50134 "EHLO
+	mail-px0-f203.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750701AbZG3Mwz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 08:49:50 -0400
-From: Stoyan Gaydarov <sgayda2@uiuc.edu>
-To: linux-kernel@vger.kernel.org
-CC: Stoyan Gaydarov <sgayda2@uiuc.edu>, David.Woodhouse@intel.com, sr@denx.de,
-       bigeasy@linutronix.de, kay.sievers@vrfy.org, gregkh@suse.de,
-       linux-mtd@lists.infradead.org
-Subject: Re: [PATCH] [mtd] fixed faulty check
-Date: Thu, 30 Jul 2009 07:49:38 -0500
-Message-ID: <1248958178-22599-1-git-send-email-sgayda2@uiuc.edu>
-X-Mailer: git-send-email 1.6.3.3
+	Thu, 30 Jul 2009 08:52:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Kq8hd1jkANnckax6QBsigFIOWSzZ40dLKjXwhsi5Cfnu5u+U/A4wZymeGyM2RQuG2v
+         yxeWr5x3dNkokb7u/WwWM/YBCFM4qp5s+2AM90cqebxj13OisCGkWhBdRgPwQSYgiIgA
+         WC406BOffFzm6X7MOO7nRVD9iyxmG0yX8nmo8=
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <20090730123633.GA2739@rakim.wolfsonmicro.main>
+References: <b90c0690907300520t1dfbd722j73417b1beb6992bc@mail.gmail.com>
+	 <20090730123633.GA2739@rakim.wolfsonmicro.main>
+Date: Thu, 30 Jul 2009 15:52:55 +0300
+Message-ID: <b90c0690907300552h21157341v5820cf51261ddf42@mail.gmail.com>
+Subject: Re: regulator: adding enable control to fixed regulator interface
+From: Roger Quadros <quadros.roger@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: lrg@slimlogic.co.uk, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resubmit of a patch with some additions, see http://lkml.org/lkml/2009/7/30/97
+On Thu, Jul 30, 2009 at 3:36 PM, Mark
+Brown<broonie@opensource.wolfsonmicro.com> wrote:
+> On Thu, Jul 30, 2009 at 03:20:24PM +0300, Roger Quadros wrote:
+>
+> [Cut description of GPIO-switched regulator.]
+>
+>> What is the best way to implement this within the regulator framework?
+>> Writing a regulator driver is one solution but I'm sure there must be
+>> many instances like this and writing a driver for each case is not
+>> that nice.
+>
+> Only one driver should be needed even if a new driver is implemented for
+> this - we already have an abstracted API for GPIOs in the form of
+> gpiolib (see drivers/gpio) so the driver can just take in platform data
+> with the gpio number and a voltage as platform data.
+>
 
-Signed-off-by: Stoyan Gaydarov <sgayda2@uiuc.edu>
----
- drivers/mtd/maps/physmap_of.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+Yes using gpiolib makes sense. In this case we need to obtain GPIO number
+and enabling polarity (active high/low) through platform data.
 
-diff --git a/drivers/mtd/maps/physmap_of.c b/drivers/mtd/maps/physmap_of.c
-index 39d357b..e7ab5f0 100644
---- a/drivers/mtd/maps/physmap_of.c
-+++ b/drivers/mtd/maps/physmap_of.c
-@@ -215,7 +215,8 @@ static int __devinit of_flash_probe(struct of_device *dev,
- 		goto err_out;
- 
- 	mtd_list = kzalloc(sizeof(struct mtd_info) * count, GFP_KERNEL);
--	if (!info)
-+	if (!mtd_list)
-+		kfree(info);
- 		goto err_out;
- 
- 	dev_set_drvdata(&dev->dev, info);
--- 
-1.6.3.3
-
+>> I want to use the fixed regulator driver but this does not have
+>> regulator enable/disable control.
+>
+>> Isn't it a good idea to have enable/disable control for the current
+>> implementation of the fixed voltage regulator i.e. drivers/regulator/fixed.c ?
+>
+> It should be possible to do it with platform data for the fixed voltage
+> regulator, though without looking at the code I can't say for certain if
+> it'd be easier to just add a separate driver rather than have the
+> conditional code to handle cases both with and without GPIO.  I'd expect
+> it'll be fine to combine, though.
+>
+>> The regulator enabling/disabling functionality can be implemented by
+>> platform code and the required function pointers could be passed through
+>> fixed_voltage_config structure.
+>
+> I don't see any need for platform code to provide callbacks here given
+> the existing gpiolib abstraction.
+>
