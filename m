@@ -1,67 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753798AbZG3HnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbZG3HoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753798AbZG3HnU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 03:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbZG3HnU
+	id S1753739AbZG3HoZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 03:44:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbZG3HoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 03:43:20 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:53819 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752093AbZG3HnT (ORCPT
+	Thu, 30 Jul 2009 03:44:25 -0400
+Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:43959 "EHLO
+	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752539AbZG3HoY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 03:43:19 -0400
-Date: Thu, 30 Jul 2009 09:42:50 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
-Subject: Re: [RFC][patch 00/12] clocksource / timekeeping rework V2
-Message-ID: <20090730094250.3885961d@skybase>
-In-Reply-To: <1248888877.6046.11.camel@desktop>
-References: <200907291702.n6TH2LEt017305@d06av05.portsmouth.uk.ibm.com>
-	<20090729190938.1e4c45e9@skybase>
-	<1248888877.6046.11.camel@desktop>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 30 Jul 2009 03:44:24 -0400
+From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Message-Id: <200907300743.n6U7hnK6000821@mercury.physics.adelaide.edu.au>
+Subject: Re: [PATCH] fujitsu-laptop: remove superfluous NULL pointer checks
+To: bzolnier@gmail.com (Bartlomiej Zolnierkiewicz)
+Date: Thu, 30 Jul 2009 17:13:49 +0930 (CST)
+Cc: jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       error27@gmail.com (Dan Carpenter), corbet@lwn.net, eteo@redhat.com,
+       julia@diku.dk (Julia Lawall)
+In-Reply-To: <200907292214.31038.bzolnier@gmail.com> from "Bartlomiej Zolnierkiewicz" at Jul 29, 2009 10:14:30 PM
+X-Mailer: ELM [version 2.5 PL6]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Jul 2009 10:34:37 -0700
-Daniel Walker <dwalker@fifo99.com> wrote:
+Hi Bart
 
-> On Wed, 2009-07-29 at 19:09 +0200, Martin Schwidefsky wrote:
-> > On Wed, 29 Jul 2009 11:02:21 -0600
-> > dwalker@fifo99.com wrote:
-> > 
-> > > On Wed, 2009-07-29 at 18:50 +0200, Martin Schwidefsky wrote:
-> > > 
-> > > > void clocksource_change_rating(struct clocksource *cs, int rating)
-> > > 
-> > > > the two functions do different things. What exactly is the idea you've
-> > > > got in mind?
-> > > 
-> > > It's only the case when the rating goes to zero .. That makes the
-> > > clocksource unusable, which is very much like unregistering it..
-> > 
-> > True, the clocksource code won't pick the clock any more as long as
-> > there is an alternative clock available. It still shows up in the list
-> > of clocks though and you can do an override with it. 
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] fujitsu-laptop: remove superfluous NULL pointer checks
 > 
-> Now that you mention it, if the clocks are sorted by rating (something
-> your removing) then the sysfs override available listing isn't in rated
-> order .. So if you do have zero rated clocks you wouldn't have any idea
-> from looking at the available list.. It could be solved just by printing
-> them in rated order in the sysfs code tho.
+> This takes care of the following entries from Dan's list:
+> 
+> drivers/platform/x86/fujitsu-laptop.c +327 set_lcd_level(13) warning: variable derefenced before check 'fujitsu'
+> drivers/platform/x86/fujitsu-laptop.c +358 set_lcd_level_alt(13) warning: variable derefenced before check 'fujitsu'
 
-Ok, I'll readd the sorting. It is a user visible change after all.
+I'd rather keep the test for a non-null fujitsu in there, but obviously it's
+kind of pointless doing it after the first dereference.  Since this fixup
+overlaps with the one previously discussed with Julia I've taken the liberty
+of consolidating these - I'll send the result to the list as a separate
+email.
 
--- 
-blue skies,
-   Martin.
+Regards
+  jonathan
 
-"Reality continues to ruin my life." - Calvin.
-
+> Reported-by: Dan Carpenter <error27@gmail.com>
+> Cc: corbet@lwn.net
+> Cc: eteo@redhat.com
+> Cc: Julia Lawall <julia@diku.dk>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+>  drivers/platform/x86/fujitsu-laptop.c |    6 ------
+>  1 file changed, 6 deletions(-)
+> 
+> Index: b/drivers/platform/x86/fujitsu-laptop.c
+> ===================================================================
+> --- a/drivers/platform/x86/fujitsu-laptop.c
+> +++ b/drivers/platform/x86/fujitsu-laptop.c
+> @@ -324,9 +324,6 @@ static int set_lcd_level(int level)
+>  	if (level < 0 || level >= fujitsu->max_brightness)
+>  		return -EINVAL;
+>  
+> -	if (!fujitsu)
+> -		return -EINVAL;
+> -
+>  	status = acpi_get_handle(fujitsu->acpi_handle, "SBLL", &handle);
+>  	if (ACPI_FAILURE(status)) {
+>  		vdbg_printk(FUJLAPTOP_DBG_ERROR, "SBLL not present\n");
+> @@ -355,9 +352,6 @@ static int set_lcd_level_alt(int level)
+>  	if (level < 0 || level >= fujitsu->max_brightness)
+>  		return -EINVAL;
+>  
+> -	if (!fujitsu)
+> -		return -EINVAL;
+> -
+>  	status = acpi_get_handle(fujitsu->acpi_handle, "SBL2", &handle);
+>  	if (ACPI_FAILURE(status)) {
+>  		vdbg_printk(FUJLAPTOP_DBG_ERROR, "SBL2 not present\n");
