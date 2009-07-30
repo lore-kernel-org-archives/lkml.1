@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752629AbZG3KZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752780AbZG3KZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752629AbZG3KZF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 06:25:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbZG3KZE
+	id S1752780AbZG3KZV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 06:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbZG3KZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 06:25:04 -0400
-Received: from dscas1.ad.uiuc.edu ([128.174.68.119]:37889 "EHLO
+	Thu, 30 Jul 2009 06:25:20 -0400
+Received: from dscas1.ad.uiuc.edu ([128.174.68.119]:37908 "EHLO
 	dscas1.ad.uiuc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752427AbZG3KZD (ORCPT
+	with ESMTP id S1752686AbZG3KZS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 06:25:03 -0400
+	Thu, 30 Jul 2009 06:25:18 -0400
 From: Stoyan Gaydarov <sgayda2@uiuc.edu>
 To: linux-kernel@vger.kernel.org
-CC: Stoyan Gaydarov <sgayda2@uiuc.edu>, chas@cmf.nrl.navy.mil,
-       David.Woodhouse@intel.com, nathan@traverse.com.au,
-       netdev@vger.kernel.org
-Subject: [PATCH 1/4] [atm] fixed faulty check
-Date: Thu, 30 Jul 2009 05:24:51 -0500
-Message-ID: <1248949491-20796-1-git-send-email-sgayda2@uiuc.edu>
+CC: Stoyan Gaydarov <sgayda2@uiuc.edu>, David.Woodhouse@intel.com, sr@denx.de,
+       bigeasy@linutronix.de, kay.sievers@vrfy.org, gregkh@suse.de,
+       linux-mtd@lists.infradead.org
+Subject: [PATCH 2/4] [mtd] fixed faulty check
+Date: Thu, 30 Jul 2009 05:25:06 -0500
+Message-ID: <1248949506-20827-1-git-send-email-sgayda2@uiuc.edu>
 X-Mailer: git-send-email 1.6.3.3
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -29,22 +29,22 @@ This patche fixes a spelling error that has resulted from copy and pasting. The 
 
 Signed-off-by: Stoyan Gaydarov <sgayda2@uiuc.edu>
 ---
- drivers/atm/solos-pci.c |    2 +-
+ drivers/mtd/maps/physmap_of.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/atm/solos-pci.c b/drivers/atm/solos-pci.c
-index 9359613..307321b 100644
---- a/drivers/atm/solos-pci.c
-+++ b/drivers/atm/solos-pci.c
-@@ -372,7 +372,7 @@ static int process_status(struct solos_card *card, int port, struct sk_buff *skb
- 	}
+diff --git a/drivers/mtd/maps/physmap_of.c b/drivers/mtd/maps/physmap_of.c
+index 39d357b..2cc0b0d 100644
+--- a/drivers/mtd/maps/physmap_of.c
++++ b/drivers/mtd/maps/physmap_of.c
+@@ -215,7 +215,7 @@ static int __devinit of_flash_probe(struct of_device *dev,
+ 		goto err_out;
  
- 	snr = next_string(skb);
--	if (!str)
-+	if (!snr)
- 		return -EIO;
- 	attn = next_string(skb);
- 	if (!attn)
+ 	mtd_list = kzalloc(sizeof(struct mtd_info) * count, GFP_KERNEL);
+-	if (!info)
++	if (!mtd_list)
+ 		goto err_out;
+ 
+ 	dev_set_drvdata(&dev->dev, info);
 -- 
 1.6.3.3
 
