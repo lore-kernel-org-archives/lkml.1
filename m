@@ -1,60 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751459AbZG3IZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751426AbZG3IcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751459AbZG3IZV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 04:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751057AbZG3IZU
+	id S1751426AbZG3IcO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 04:32:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbZG3IcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 04:25:20 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54858 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750945AbZG3IZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 04:25:19 -0400
-Message-ID: <4A71589C.6030708@cn.fujitsu.com>
-Date: Thu, 30 Jul 2009 16:23:56 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Thu, 30 Jul 2009 04:32:13 -0400
+Received: from mail.windriver.com ([147.11.1.11]:49842 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751202AbZG3IcM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 04:32:12 -0400
+Message-ID: <4A715A7B.3070406@windriver.com>
+Date: Thu, 30 Jul 2009 03:31:55 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       jens.axboe@oracle.com, nickpiggin@yahoo.com.au, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3 -mm] generic-ipi: fix the race between generic_smp_call_function_*()
- and hotplug_cfd()
-References: <4A6983D8.8090805@cn.fujitsu.com>	 <4A6FFFE9.5070204@cn.fujitsu.com> <4A7000FF.6040402@cn.fujitsu.com>	 <20090729163120.2e27be41.akpm@linux-foundation.org> <1248936657.6987.3095.camel@twins> <4A7155C7.90400@cn.fujitsu.com>
-In-Reply-To: <4A7155C7.90400@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+CC: Jun Koi <junkoi2004@gmail.com>, linux-kernel@vger.kernel.org,
+       Bernhard Kaindl <bk@suse.de>,
+       KGDB Mailing List <kgdb-bugreport@lists.sourceforge.net>
+Subject: Re: Firewire debugging tools - firedump & fireproxy?
+References: <fdaac4d50907042242s6534d63at12a26df47a0f3b2a@mail.gmail.com> <1248932218.27010.8.camel@maxim-laptop>
+In-Reply-To: <1248932218.27010.8.camel@maxim-laptop>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 30 Jul 2009 08:31:54.0522 (UTC) FILETIME=[31AEDFA0:01CA10F0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xiao Guangrong wrote:
-> 
-> Peter Zijlstra wrote:
-> 
->> It introduces this run_callbacks thing to two functions, but nothing
->> actually uses that... makes me suspicious there's something missing.
+Maxim Levitsky wrote:
+> On Sun, 2009-07-05 at 14:42 +0900, Jun Koi wrote:
+>   
+>> Hi,
 >>
-> 
-> Hi Peter,
-> 
-> Thanks for your point out.
-> I'm sorry for making a mistake when I make this patch, I'll send the new
-> patch soon
-> 
-> Hi Andrew,
-> 
-> I can't apply "kernel/smp.c: relocate some code" because this patch are
-> base on my other patch: "generic-ipi: make struct call_function_data lockless",
-> which can be found at:
-> 	http://lkml.org/lkml/2009/7/24/63
-> 
+>> I am doing some debugging via firewire. I found some references to
+>> some tools named firedump & fireproxy, made by Bernhard Kaindl,
+>> supposed put at following addresses:
+>>
+>> ftp://ftp.suse.de/private/bk/firewire/tools/firedump-0.1.tar.bz2
+>> ftp://ftp.suse.de/private/bk/firewire/tools/fireproxy-0.33.tar.bz2
+>>
+>> However, these URLs are nolonger available. I am wondering if they
+>> have been moved to somewhere else? Anybody know?
+>>
+>>     
+> Me having the same question. I have just bought everything for firewire
+> debugging.
+>
+> Jason Wessel, what the fate of kgdbom ?
+> (and kgdboe btw ....)
+>
+>   
 
-I'm a bit confused what's the problem here.
+kgdbom ?   I had heard of it in regard to fireproxy, but I have never
+received any patches specific to a kgdbom implementation.  Should you or
+anyone else create patches for kgdbom, please cc:
+kgdb-bugreport@lists.sourceforge.net.
 
-> I'll rewrite your patch base on it
-> 
+As for kgdboe, I do not find it to be extremely reliable.  It does exist
+however in the kgdb development tree.  You can pick a kernel from
+2.6.21-> latest. 
 
-No, instead you should cook *your* patch against lastest -mm tree.
+http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=heads
 
+In order to make kgdboe reliable it must get altered in one of several
+ways before it would be robust enough for mainline kernel consideration. 
+
+1) The key problem is that preemption of irq code causes locks to be
+held which prevent operation of the polled ethernet driver.  This could
+be be solved at the ethernet driver level by creating a polled interface
+that has no requirement on any kind of locking.  I have yet to see an
+ethernet driver with such an implementation.  Most if not all the polled
+ethernet implementations make use of disable_irq() which is 1/2 the
+battle, the other 1/2 being the spin locks or mutexs which can deadlock.
+
+2) A possible (but not practical or desirable) solution would be to
+change the kernel mechanism for synchronizing a driver or running a
+thread to free a lock so as to safely use the ethernet driver for
+another purpose.  This solution is not worth the time because the
+possibility for deadlock is far too high.
+
+3) Develop a low level dedicated ethernet debug interface.  If you have
+more than one ethernet, or an ethernet device that has multiple hardware
+queues, it is plausible to have a dedicated way to talk to a device
+which has no restrictions on getting preempted, or used by another part
+of the kernel.  This lends itself to an ideal medium for kgdb
+communications.
+
+
+Jason.
