@@ -1,120 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752607AbZG3UBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752443AbZG3UE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752607AbZG3UBs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 16:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbZG3UBr
+	id S1752443AbZG3UE7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 16:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752157AbZG3UE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 16:01:47 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:35561 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752052AbZG3UBq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 16:01:46 -0400
-Date: Thu, 30 Jul 2009 15:01:44 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Stephen Smalley <sds@tycho.nsa.gov>
-Cc: Eric Paris <eparis@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
-       jwcart2@tycho.nsa.gov, spender@grsecurity.net, dwalsh@redhat.com,
-       cl@linux-foundation.org, arjan@infradead.org, alan@lxorguk.ukuu.org.uk,
-       kees@outflux.net, csellers@tresys.com,
-       penguin-kernel@i-love.sakura.ne.jp, Andrew Morgan <morgan@kernel.org>
-Subject: Re: [PATCH -v3 1/3] Capabilities: move cap_file_mmap to commoncap.c
-Message-ID: <20090730200144.GB20292@us.ibm.com>
-References: <20090729185620.21757.44366.stgit@paris.rdu.redhat.com> <20090730051426.GA6082@us.ibm.com> <1248968428.2597.79.camel@localhost> <20090730155403.GA13939@us.ibm.com> <1248969492.11627.172.camel@moss-pluto.epoch.ncsc.mil> <1248976252.2771.1.camel@localhost> <1248982958.11627.187.camel@moss-pluto.epoch.ncsc.mil>
+	Thu, 30 Jul 2009 16:04:58 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:55471 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752121AbZG3UE6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 16:04:58 -0400
+Date: Thu, 30 Jul 2009 12:51:54 -0700
+From: Greg KH <gregkh@suse.de>
+To: Jakob Gruber <jakob.gruber@kabelnet.at>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Missing device IDs in rt2870
+Message-ID: <20090730195154.GA27953@suse.de>
+References: <20090728230117.8fca2314.jakob.gruber@kabelnet.at>
+ <20090728211216.GA12363@suse.de>
+ <20090729171107.155719b5.jakob.gruber@kabelnet.at>
+ <20090729161643.GA6313@suse.de>
+ <20090730203736.f1efbbfe.jakob.gruber@kabelnet.at>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1248982958.11627.187.camel@moss-pluto.epoch.ncsc.mil>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090730203736.f1efbbfe.jakob.gruber@kabelnet.at>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Stephen Smalley (sds@tycho.nsa.gov):
-> On Thu, 2009-07-30 at 13:50 -0400, Eric Paris wrote:
-> > On Thu, 2009-07-30 at 11:58 -0400, Stephen Smalley wrote:
-> > > On Thu, 2009-07-30 at 10:54 -0500, Serge E. Hallyn wrote:
-> > > > Quoting Eric Paris (eparis@redhat.com):
-> > > > > On Thu, 2009-07-30 at 00:14 -0500, Serge E. Hallyn wrote:
-> > > > > > Quoting Eric Paris (eparis@redhat.com):
-> > > > > > > Currently we duplicate the mmap_min_addr test in cap_file_mmap and in
-> > > > > > > security_file_mmap if !CONFIG_SECURITY.  This patch moves cap_file_mmap
-> > > > > > > into commoncap.c and then calls that function directly from
-> > > > > > > security_file_mmap ifndef CONFIG_SECURITY like all of the other capability
-> > > > > > > checks are done.
-> > > > > > 
-> > > > > > It also
-> > > > > > 
-> > > > > > 	1. changes the return value in error case from -EACCES to
-> > > > > > 	   -EPERM
-> > > > > > 	2. no onger sets PF_SUPERPRIV in t->flags if the capability
-> > > > > > 	   is used.
-> > > > > > 
-> > > > > > Do we care about these?
-> > > > > 
-> > > > > Personally, not really, but I'll gladly put them back if you care.   #2
-> > > > > seems more interesting to me than number 1.   I actually kinda like
-> > > > > getting EPERM from caps rather than EACCES since them I know if I was
-> > > > > denied by selinux or by caps.....
-> > > > > 
-> > > > > -Eric
-> > > > 
-> > > > Yup, I asked bc I didn't particularly care myself.
-> > > > 
-> > > > I think I agree with you about -EPERM being better anyway.  However I
-> > > > (now) think in this case PF_SUPERPRIV definately should be set, as this
-> > > > is a clear use of a capability to do something that couldn't have been
-> > > > done without it.
+On Thu, Jul 30, 2009 at 08:37:36PM +0200, Jakob Gruber wrote:
+> On Wed, 29 Jul 2009 09:16:43 -0700
+> Greg KH <gregkh@suse.de> wrote:
+> 
+> <snip>
 > > > 
-> > > On a related but different note, we should consider all current uses of
-> > > cap_capable(), as they represent capability checks that will not be
-> > > subject to a further restrictive check by other security modules.  In
-> > > this case and in the vm_enough_memory case, that is intentional, but not
-> > > so clear for other uses in commoncap.c.
+> > > I haven't tested rt2870 in 2.6.30 thoroughly because of this bug
+> > > (http://bugzilla.kernel.org/show_bug.cgi?id=13638), which forces me to
+> > > use the driver from the Ralink website instead of the kernel module.
+> > > However, I can confirm that - until running into the bug - the Belkin
+> > > card also works in 2.6.30. 
 > > 
-> > Most of commoncap.c is called either as a secondary hook from the active
-> > lsm (aka selinux calls the commoncap.c functions) or in the !
-> > CONFIG_SECURITY case.
+> > Ah, that sucks.  I should revert that patch, if you do that, does the
+> > device work properly for you?
+> 
+> 'git revert' didn't work out of the box, and I don't think I'm skilled
+> enough to revert it manually :) However, I posted some more
+> information at http://bugzilla.kernel.org/show_bug.cgi?id=13638#c9 ,
+> including everything.log during the crash.
+
+I just got confirmation from someone else on lkml that reverting this on
+2.6.30.1 worked for them, so I'll port it to mainline and apply it there
+as well as get it into the .30-stable tree.
+
+> 
 > > 
-> > I'll audit this afternoon to see which of them might not fit these
-> > rules....
+> > > A patch for adding the Belkin device ID is attached. I removed the
+> > > other 2 IDs from http://bugzilla.kernel.org/show_bug.cgi?id=13459
+> > > since I do not own these devices and cannot verify them. The ID is
+> > > only added to the "#ifndef RT30xx" block, same as the patch applied to
+> > > the Archlinux kernel.
+> > 
+> > I'll take the other two ids, now that it makes more sense.
+> > 
+> > Care to respin with the 2 new ids, and add a "Signed-off-by:" to the
+> > patch so I can properly apply it?
 > 
-> That isn't what I meant.  Most of the commoncap functions call capable()
-> rather than directly calling cap_capable(), thereby causing:
-> - PF_SUPERPRIV to be set, and
-> - The primary security module (e.g. SELinux) to apply its own
-> restrictive check.
-> 
-> That is useful as it allows SELinux or AppArmor or TOMOYO to veto e.g.
-> CAP_SYS_PTRACE without replicating the same logic within its own hook.
-> 
-> The current exceptions are:
-> cap_inh_is_capped() called from cap_capset(),
-> cap_task_prctl() in the PR_SET_SECUREBITS case,
-> cap_vm_enough_memory(),
-> cap_file_mmap() after your patch.
-> 
-> The latter two are indeed cases where we made a conscious choice that
-> SELinux would not apply its capability check against policy.  But the
-> first two are unclear to me.
+> Done, patch is attached. 
 
-cap_inh_is_capped:
+Looks good, I'll queue it up.
 
-I'm not sure why it's cap_capable() instead of capable().  However, if we
-switch to using capable(), then we should switch the conditions in the caller
-around, since at the moment just because the capable() check returned true
-doesn't mean that we actually end up needing it.
+thanks,
 
-(CC:ing Andrew Morgan as I believe he wrote this and may have had a reason)
-
-cap_task_prctl: I don't see any reason why that shouldn't be capable().
-
-cap_vm_enough_memory(): I seem to recall we explicitly decided that we
-did not want PF_SUPERPRIV set in this case.
-
-cap_file_mmap(): well now that you mention it, it does seem like SELinux
-would want a say in whether the task gets CAP_SYS_RAWIO here, so maybe
-it should be capable() after all?
-
--serge
+greg k-h
