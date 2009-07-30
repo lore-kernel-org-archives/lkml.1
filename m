@@ -1,97 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753056AbZG3W0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751997AbZG3Wae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753056AbZG3W0x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 18:26:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbZG3W0w
+	id S1751997AbZG3Wae (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 18:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbZG3Wad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 18:26:52 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:52274 "EHLO
+	Thu, 30 Jul 2009 18:30:33 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:44822 "EHLO
 	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752516AbZG3W0v (ORCPT
+	with ESMTP id S1750994AbZG3Wac (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 18:26:51 -0400
+	Thu, 30 Jul 2009 18:30:32 -0400
+X-Greylist: delayed 493 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Jul 2009 18:30:32 EDT
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=oJhsNm7OCsFvREUJJPemw2clvyKR996K86TCiRb/g+qIAfXe3SjoAlaGPfK6DZ1BZd
-         QpKt+06UmaSbMUDD9HyfTT09XbYi0b6YOf+XFHj/txRjsKOZEG7/v8LgVpIbs4Y0WTCg
-         YXpxJxvocWf/i4vJyN162y68e2U6anfM/By3c=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH] pcnet32: VLB support fixes
-Date: Fri, 31 Jul 2009 00:25:44 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc3-next-20090722-04415-ge5aa24a-dirty; KDE/4.2.4; i686; ; )
-Cc: Don Fry <pcnet32@verizon.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Dan Carpenter <error27@gmail.com>,
-       corbet@lwn.net, eteo@redhat.com, Julia Lawall <julia@diku.dk>
-References: <200907302317.52648.bzolnier@gmail.com> <200907302346.26017.bzolnier@gmail.com> <4A721768.2060102@garzik.org>
-In-Reply-To: <4A721768.2060102@garzik.org>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=JopMze3D7DFguHKmwfhwr2tR/Yyo6Oze3xKh6Le5lbeBRcjAYj33hYz4+hCT7wVizs
+         SbGM8tj0UrI+mky2DSynjX7S3bIkl0JoS1Z7XtS2FWtsiU+l108KrncBhOPHfdAsUFI5
+         TpydzWbgTV5OwUAyCTK9AJBlKVsrm+I6rus7E=
+Message-ID: <4A721D16.7030000@gmail.com>
+Date: Fri, 31 Jul 2009 00:22:14 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.8 Thunderbird/3.0b3pre
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: mingo@redhat.com, hpa@zytor.com, x86@kernel.org, yinghai@kernel.org,
+       linux-kernel@vger.kernel.org, Bernhard Walle <bernhard.walle@gmx.de>
+Subject: Re: [PATCH 1/2] IRQ: fix performance regression on large IA64 systems
+References: <1246611709-9919-1-git-send-email-jirislaby@gmail.com> <alpine.LFD.2.00.0907051810030.2771@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0907051810030.2771@localhost.localdomain>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907310025.44576.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 30 July 2009 23:58:00 Jeff Garzik wrote:
-> Bartlomiej Zolnierkiewicz wrote:
-> > On Thursday 30 July 2009 23:32:19 Jeff Garzik wrote:
-> >> Bartlomiej Zolnierkiewicz wrote:
-> >>> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> >>> Subject: [PATCH] pcnet32: VLB support fixes
-> >>>
-> >>> VLB support has been broken since at least 2004-2005 period as some
-> >>> changes introduced back then assumed that ->pci_dev is always valid,
-> >>> lets try to fix it:
-> >>>
-> >>> - remove duplicated SET_NETDEV_DEV() call
-> >>>
-> >>> - call SET_NETDEV_DEV() only for PCI devices
-> >>>
-> >>> - check for ->pci_dev validity in pcnet32_open()
-> >>>
-> >>> [ Alternatively we may consider removing VLB support but there would not
-> >>>   be much gain in it since an extra driver code needed for VLB support is
-> >>>   minimal and quite simple. ]
-> >>>
-> >>> This takes care of the following entry from Dan's list:
-> >>>
-> >>> drivers/net/pcnet32.c +1889 pcnet32_probe1(298) warning: variable derefenced before check 'pdev'
-> >>>
-> >>> Reported-by: Dan Carpenter <error27@gmail.com>
-> >>> Cc: corbet@lwn.net
-> >>> Cc: eteo@redhat.com
-> >>> Cc: Julia Lawall <julia@diku.dk>
-> >>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> >>> ---
-> >>> PS I still keep the original cc: list from the smatch thread -- please let
-> >>> me know if you don't want to be spammed.. ;-)
-> >>>
-> >>>  drivers/net/pcnet32.c |   12 +++++++-----
-> >>>  1 file changed, 7 insertions(+), 5 deletions(-)
-> >> ACK -- the patch is correct AFAICS -- but would it not be better to have 
-> >> a struct device for the VLB device?
-> > 
-> > Sure, such addition would be needed for sysfs support on VLB devices..
-> 
-> 
-> >> We have capability to create struct device for isa and eisa, so VLB is 
-> >> quite doable.
-> >>
-> >> 	Jeff, who converted old-ISDN ISA+EISA+PCI drivers to
-> >> 	      hotplug model, once upon a time
-> > 
-> > ..and it seems that you've the needed experience! :)
-> 
-> <grin>  In my esteemed experience, I point you to the 39-line 
-> include/linux/isa.h as a starting point for grep...  :)
+On 07/05/2009 09:26 PM, Thomas Gleixner wrote:
+> On Fri, 3 Jul 2009, Jiri Slaby wrote:
+>> Commit b60c1f6ffd88850079ae419aa933ab0eddbd5535
+>> (drop note_interrupt() for per-CPU for proper scaling) removed call to
+>> note_interrupt() in __do_IRQ(). Commit
+>> d85a60d85ea5b7c597508c1510c88e657773d378
+>> (Add IRQF_IRQPOLL flag (common code)) added it again, because it's needed
+>> for irqpoll.
+>>
+>> This patch now introduces a new parameter 'only_fixup' for
+>> note_interrupt(). This parameter determines two cases:
+...
+> Hmm. I'm not really happy about that patch. It's all about percpu
+> interrupts which happen to have the same irq number. I think the
+> correct thing to do is to use the handle_percpu_irq() handler and
+> modify handle_percpu_irq to call note_interrupt() only when the return
+> value of the action handler is IRQ_NONE. Otherwise we can leave
+> everything untouched.
 
-Send patches.
+Sorry for the delay, I waited for test results. I have the patch
+attached and the boot still lasts very long. Do you see any obvious
+mistake which I don't see? (It's 2.6.27-based, therefore no irq_to_desc.)
 
-I don't have a time/motivation for enhancing VLB support, not even
-mentioning the access to hardware needed to test such changes..
+Thanks.
+
+---
+ arch/ia64/kernel/irq_ia64.c |    9 ++++-----
+ kernel/irq/chip.c           |    2 +-
+ 2 files changed, 5 insertions(+), 6 deletions(-)
+
+--- a/arch/ia64/kernel/irq_ia64.c
++++ b/arch/ia64/kernel/irq_ia64.c
+@@ -624,14 +624,13 @@ static struct irqaction tlb_irqaction =
+ void
+ ia64_native_register_percpu_irq (ia64_vector vec, struct irqaction *action)
+ {
+-       irq_desc_t *desc;
+-       unsigned int irq;
++       unsigned int irq = vec;
++       irq_desc_t *desc = irq_desc + irq;
+
+-       irq = vec;
+        BUG_ON(bind_irq_vector(irq, vec, CPU_MASK_ALL));
+-       desc = irq_desc + irq;
+        desc->status |= IRQ_PER_CPU;
+-       desc->chip = &irq_type_ia64_lsapic;
++       set_irq_chip_and_handler(irq, &irq_type_ia64_lsapic,
++                       &handle_percpu_irq);
+        if (action)
+                setup_irq(irq, action);
+ }
+--- a/kernel/irq/chip.c
++++ b/kernel/irq/chip.c
+@@ -531,7 +531,7 @@ handle_percpu_irq(unsigned int irq, stru
+                desc->chip->ack(irq);
+
+        action_ret = handle_IRQ_event(irq, desc->action);
+-       if (!noirqdebug)
++       if (!noirqdebug && action_ret == IRQ_NONE)
+                note_interrupt(irq, desc, action_ret);
+
+        if (desc->chip->eoi)
