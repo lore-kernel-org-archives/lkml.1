@@ -1,69 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752014AbZG3RV1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751862AbZG3R2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752014AbZG3RV1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 13:21:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbZG3RV0
+	id S1751862AbZG3R2A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 13:28:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbZG3R17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 13:21:26 -0400
-Received: from moutng.kundenserver.de ([212.227.17.10]:60040 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751669AbZG3RVZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 13:21:25 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: eranian@gmail.com
-Subject: Re: I.1 - System calls - ioctl
-Date: Thu, 30 Jul 2009 19:20:52 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-3-generic; KDE/4.2.96; x86_64; ; )
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
-       Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       "perfmon2-devel" <perfmon2-devel@lists.sourceforge.net>
-References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com> <200907301840.50894.arnd@arndb.de> <7c86c4470907300953g255c6088t7caaa1188be164e3@mail.gmail.com>
-In-Reply-To: <7c86c4470907300953g255c6088t7caaa1188be164e3@mail.gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 30 Jul 2009 13:27:59 -0400
+Received: from kroah.org ([198.145.64.141]:59900 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751149AbZG3R17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 13:27:59 -0400
+Date: Thu, 30 Jul 2009 10:26:57 -0700
+From: Greg KH <greg@kroah.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Ivo van Doorn <ivdoorn@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Luis Correia <luis.f.correia@gmail.com>, Mike Galbraith <efault@gmx.de>,
+       linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [wireless] rt2870sta BUGs on shutdown,
+ 2.6.30.2->git.today+git.wireless.today
+Message-ID: <20090730172657.GA8266@kroah.com>
+References: <1248945770.7910.24.camel@marge.simson.net>
+ <efe7343f0907300306o44d0e718p2880b7406a38fc6a@mail.gmail.com>
+ <200907301517.57811.bzolnier@gmail.com>
+ <200907301852.28172.IvDoorn@gmail.com>
+ <1248973862.22552.4.camel@johannes.local>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907301920.52257.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+P9ZOq2dJCaibttFW8Eh2S8r72nRkOYzbzJ+e
- Nh8mI1eLEbW451npXXC4K2tbRx9ph/LUmFjhzNUV4jcpKzILHZ
- DKNKZT706k05m/s0Krumw==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1248973862.22552.4.camel@johannes.local>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 30 July 2009, stephane eranian wrote:
-> But that won't always work in the case of a 32-bit monitoring tool
-> running on top of
-> a 64-bit OS. Imagine the target id is indeed 64-bit, e.g., inode
-> number (as suggested
-> by Peter). It's not because you are a 32-bit tool than you cannot name
-> a monitoring
-> resource in a 64-bit OS.
+On Thu, Jul 30, 2009 at 07:11:02PM +0200, Johannes Berg wrote:
+> On Thu, 2009-07-30 at 18:52 +0200, Ivo van Doorn wrote:
+> 
+> > [some text expressing his frustration]
+> 
+> This is exactly why I was against staging all the time. Now suddenly
+> "The Crap" seems like a viable alternative. WAKE UP PEOPLE. The code is
+> not useful. Just look at the code that Mike pasted into his email. That
+> alone should be enough to send cold shivers down your spine!
 
-Right, there are obviously things that you cannot address with 
-a 'long', but there are potentially other things that you could
-that you cannot address with an 'int', e.g. an opaque user
-token (representing a user pointer) that you can get back in
-the sample data.
+Hm, "useful" is in the eye of the beholder.
 
-In the worst case, you could still redefine the argument as a
-transparent union to a long and pointer in the future if you
-use a 'long' now. AFAICT, there are no advantages of using
-an 'int' instead of a 'long', but there are disadvantages of
-using a 'long long'.
+There is no driver in the mainline kernel tree for this device, so a
+"normal" user has no chance of getting it working, right?  That's why
+-staging is working, there is a semi-working driver, and most
+importantly, people willing to help out getting it working better.
 
-	Arnd <><
+The combination of the two is what works here.
+
+So please, I understand your frustration on a lack of people helping out
+with out-of-tree wireless drivers that don't quite work properly, but
+please, that has NOTHING to do with the staging drivers.
+
+Meanwhile, I'm off on the driver-devel list helping Mike fix this
+problem, which seems simple enough to solve...
+
+> What staging has achieved here is giving the crap vendor code a
+> blessing, receiving it welcomingly and forgivingly instead of saying
+> "well screw you, go ahead and ship this to your users but don't ever say
+> you support Linux well" ... now even some hackers and just just "dumb
+> users" think that the crap in staging could possibly at some point
+> become useful code!
+
+Odd, I don't seem to be giving anyone such a "blessing", you are reading
+way too much into this.  The fact is this vendor does code drops and
+runs away all the time, despite the code being in the staging tree or
+not.  Without it in the staging tree users would be worse off, not
+better, there is no pressure able to be applied here at all, so please
+stop thinking that.
+
+> It won't. EVER. No matter _how_ much you clean it up, it will NEVER fit
+> into the code scheme that everything else wireless has adopted.
+
+never say never, it will happen, just give us time :)
+
+In the meanwhile, people like Bart and others are doing real work on
+getting the staging code into shape and working for real users.  Who are
+you to tell them to not do such work?
+
+thanks,
+
+greg "i love crap" k-h
