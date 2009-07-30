@@ -1,60 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752932AbZG3WFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752220AbZG3WPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752932AbZG3WFX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 18:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbZG3WFV
+	id S1752220AbZG3WPb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 18:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbZG3WPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 18:05:21 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:50324 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751828AbZG3WFR (ORCPT
+	Thu, 30 Jul 2009 18:15:31 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:55232 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751765AbZG3WPa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 18:05:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=fgIloiIaHWzmb+A1dm24mzYY73pB70BOWQ5OvKIWhj6Tq9UU79w7+DGUF3lRDQkGTH
-         VhbfWI0IEmE15B2DpclL1IECu4L/5YaPt8Logc0j5WEnz7cRCiu2Oe66k71uW7ypdmW5
-         EPcm+Vw3QCxg39/FjaTc6FkUK0oaXnbW+lrMc=
-Subject: Re: [PATCH 1/1] acer-wmi: switch driver to dev_pm_ops
-From: Arnaud Faucher <arnaud.faucher@gmail.com>
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Frans Pop <elendil@planet.nl>, Manuel Lauss <manuel.lauss@gmail.com>,
-       Erik Ekman <erik@kryo.se>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <1248908025.3998.15.camel@green>
-References: <1248527091-18246-1-git-send-email-arnaud.faucher@gmail.com>
-	 <1248648663.3718.7.camel@green> <1248824367.4112.31.camel@green>
-	 <200907292249.47761.rjw@sisk.pl>
-	 <20090729213756.D23EF526EC9@mailhub.coreip.homeip.net>
-	 <1248908025.3998.15.camel@green>
+	Thu, 30 Jul 2009 18:15:30 -0400
+Subject: Re: [RFC][patch 09/12] add xtime_shift and ntp_error_shift to
+ struct timekeeper
+From: john stultz <johnstul@us.ibm.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Daniel Walker <dwalker@fifo99.com>
+In-Reply-To: <20090729134231.269077552@de.ibm.com>
+References: <20090729134125.313191633@de.ibm.com>
+	 <20090729134231.269077552@de.ibm.com>
 Content-Type: text/plain
-Date: Thu, 30 Jul 2009 18:05:09 -0400
-Message-Id: <1248991509.4901.9.camel@green>
+Date: Thu, 30 Jul 2009 15:15:23 -0700
+Message-Id: <1248992123.3374.24.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.27.5 
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 29, 2009 at 18:53 -0400, Arnaud Faucher wrote :
-> As of today, acer_platform_freeze() does not stop/reset any device, so,
-> I agree with Rafael that for acer-wmi, .thaw() can be skipped. I had
-> also tested this configuration and it was working like the non-patched
-> code.
+On Wed, 2009-07-29 at 15:41 +0200, Martin Schwidefsky wrote:
+> plain text document attachment (timekeeper-shift.diff)
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 > 
-> Carlos, do you think that any acer-specific hardware could be switched
-> off or reset inside acer_platform_freeze() ? If this was the case, we
-> would have to wire .thaw()...
+> The xtime_nsec value in the timekeeper structure is shifted by a few
+> bits to improve precision. This happens to be the same value as the
+> clock->shift. To improve readability add xtime_shift to the timekeeper
+> and use it instead of the clock->shift. Likewise add ntp_error_shift
+> and replace all (NTP_SCALE_SHIFT - clock->shift) expressions.
 > 
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: john stultz <johnstul@us.ibm.com>
+> Cc: Daniel Walker <dwalker@fifo99.com>
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> ---
+>  kernel/time/timekeeping.c |   33 ++++++++++++++++++---------------
+>  1 file changed, 18 insertions(+), 15 deletions(-)
+> 
+> Index: linux-2.6/kernel/time/timekeeping.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/time/timekeeping.c
+> +++ linux-2.6/kernel/time/timekeeping.c
+> @@ -27,6 +27,8 @@ struct timekeeper {
+>  	u32	raw_interval;
+>  	u64	xtime_nsec;
+>  	s64	ntp_error;
+> +	int	xtime_shift;
+> +	int	ntp_error_shift;
+>  };
 
-Should I send a new patch with only .freeze() and .restore() wired ?
+I suspect ntp_error_shift is one of the lease intuitive values in the
+timekeeper structure. They all probably need nice comments explaining
+what they store, but especially this one. 
 
----
-Hope to see Cox and Torvalds reconcile...
+Something like:
+
+struct clocksource *clock; /* current clocksource used for timekeeping*/
+cycle_t cycle_interval;	   /* fixed chunk of cycles used in accumulation */
+u64     xtime_interval;    /* number clock shifted nsecs accumulated per cycle_interval */
+u32	raw_interval;      /* raw nsecs accumulated per cycle_interval */
+u64	xtime_nsec;        /* clock shifted nsecs remainder not stored in xtime.tv_nsec */
+s64	ntp_error;         /* Difference between accumulated time and NTP time in ntp shifted nsecs */
+int	xtime_shift;       /* The shift value of the current clocksource */
+int	ntp_error_shift;   /* Shift conversion between clock shifted nsecs and ntp shifted nsecs */
+
+
+Other then that this patch looks ok, but will need rigorous testing, as
+its very complicated and difficult to understand code thats being
+changed.
+
+thanks
+-john
+
 
