@@ -1,100 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751709AbZG3SEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752023AbZG3SIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751709AbZG3SEL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 14:04:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbZG3SEK
+	id S1752023AbZG3SIg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 14:08:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbZG3SIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 14:04:10 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35521 "EHLO mx2.redhat.com"
+	Thu, 30 Jul 2009 14:08:35 -0400
+Received: from fifo99.com ([67.223.236.141]:52027 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751709AbZG3SEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 14:04:09 -0400
-Subject: Re: [wireless] rt2870sta BUGs on shutdown,
- 2.6.30.2->git.today+git.wireless.today
-From: Dan Williams <dcbw@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Ivo van Doorn <ivdoorn@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Luis Correia <luis.f.correia@gmail.com>, Mike Galbraith <efault@gmx.de>,
-       linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-In-Reply-To: <20090730172657.GA8266@kroah.com>
-References: <1248945770.7910.24.camel@marge.simson.net>
-	 <efe7343f0907300306o44d0e718p2880b7406a38fc6a@mail.gmail.com>
-	 <200907301517.57811.bzolnier@gmail.com>
-	 <200907301852.28172.IvDoorn@gmail.com>
-	 <1248973862.22552.4.camel@johannes.local> <20090730172657.GA8266@kroah.com>
+	id S1751234AbZG3SIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 14:08:35 -0400
+Subject: Re: [RFC][patch 00/12] clocksource / timekeeping rework V2
+From: Daniel Walker <dwalker@fifo99.com>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1248974187.3331.6.camel@work-vm>
+References: <200907291717.n6THHG6f001426@d06av06.portsmouth.uk.ibm.com>
+	 <20090730125351.6f16e9ec@skybase> <1248958173.6046.32.camel@desktop>
+	 <20090730150456.6c87b997@skybase>  <1248961750.6046.35.camel@desktop>
+	 <1248974187.3331.6.camel@work-vm>
 Content-Type: text/plain
-Date: Thu, 30 Jul 2009 14:04:43 -0400
-Message-Id: <1248977083.24886.4.camel@localhost.localdomain>
+Date: Thu, 30 Jul 2009 11:08:40 -0700
+Message-Id: <1248977320.6046.66.camel@desktop>
 Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-30 at 10:26 -0700, Greg KH wrote:
-> On Thu, Jul 30, 2009 at 07:11:02PM +0200, Johannes Berg wrote:
-> > On Thu, 2009-07-30 at 18:52 +0200, Ivo van Doorn wrote:
-> > 
-> > > [some text expressing his frustration]
-> > 
-> > This is exactly why I was against staging all the time. Now suddenly
-> > "The Crap" seems like a viable alternative. WAKE UP PEOPLE. The code is
-> > not useful. Just look at the code that Mike pasted into his email. That
-> > alone should be enough to send cold shivers down your spine!
-> 
-> Hm, "useful" is in the eye of the beholder.
-> 
-> There is no driver in the mainline kernel tree for this device, so a
-> "normal" user has no chance of getting it working, right?  That's why
-> -staging is working, there is a semi-working driver, and most
-> importantly, people willing to help out getting it working better.
-> 
-> The combination of the two is what works here.
-> 
-> So please, I understand your frustration on a lack of people helping out
-> with out-of-tree wireless drivers that don't quite work properly, but
-> please, that has NOTHING to do with the staging drivers.
-> 
-> Meanwhile, I'm off on the driver-devel list helping Mike fix this
-> problem, which seems simple enough to solve...
+On Thu, 2009-07-30 at 10:16 -0700, john stultz wrote:
+> Clocksources as modules was one of the initial design goals I had way
+> back. The benefit being that an older distro kernel could be made to
+> support newer stranger hardware via a clocksource driver. While the
+> hardware vendors have for the most part consolidated on HPET/ACPI PM
+> which has mostly avoided the need, I still think its worth preserving.
 
-Except that the energy you're now investing in fixing this could have
-gone into rt2x00, and we would come out ahead in the end.  Instead, the
-energy is sapped away by something that will *never* be mainlined.
+If the PIT case is a real use case for unregister than we can keep it
+around. If not, then that path just becomes unused and all unused code
+is open for removal from my perspective.
 
-Dan
+If the case you describe above is a good one, then someone eventually
+will add back the unregister path. Which should come with a good reason
+and with an actual user of the code..
 
-> > What staging has achieved here is giving the crap vendor code a
-> > blessing, receiving it welcomingly and forgivingly instead of saying
-> > "well screw you, go ahead and ship this to your users but don't ever say
-> > you support Linux well" ... now even some hackers and just just "dumb
-> > users" think that the crap in staging could possibly at some point
-> > become useful code!
-> 
-> Odd, I don't seem to be giving anyone such a "blessing", you are reading
-> way too much into this.  The fact is this vendor does code drops and
-> runs away all the time, despite the code being in the staging tree or
-> not.  Without it in the staging tree users would be worse off, not
-> better, there is no pressure able to be applied here at all, so please
-> stop thinking that.
-> 
-> > It won't. EVER. No matter _how_ much you clean it up, it will NEVER fit
-> > into the code scheme that everything else wireless has adopted.
-> 
-> never say never, it will happen, just give us time :)
-> 
-> In the meanwhile, people like Bart and others are doing real work on
-> getting the staging code into shape and working for real users.  Who are
-> you to tell them to not do such work?
-> 
-> thanks,
-> 
-> greg "i love crap" k-h
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Daniel
 
