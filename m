@@ -1,174 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752122AbZG3TSB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752169AbZG3TVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752122AbZG3TSB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 15:18:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbZG3TSB
+	id S1752169AbZG3TVU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 15:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbZG3TVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 15:18:01 -0400
-Received: from mga09.intel.com ([134.134.136.24]:14920 "EHLO mga09.intel.com"
+	Thu, 30 Jul 2009 15:21:20 -0400
+Received: from mail.mnementh.co.uk ([173.45.232.4]:40448 "EHLO mnementh.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751228AbZG3TSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 15:18:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,296,1246863600"; 
-   d="scan'208";a="537325363"
-Date: Thu, 30 Jul 2009 12:17:57 -0700
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Jerome Glisse <glisse@freedesktop.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       suresh.b.siddha@intel.com
-Subject: Re: PAT wc & vmap mapping count issue ?
-Message-ID: <20090730191757.GA16239@linux-os.sc.intel.com>
-References: <1248952269.2462.33.camel@localhost> <1248973593.2462.35.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248973593.2462.35.camel@localhost>
-User-Agent: Mutt/1.4.1i
+	id S1751948AbZG3TVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 15:21:19 -0400
+Message-ID: <4A71F2A5.4060206@mnementh.co.uk>
+Date: Thu, 30 Jul 2009 20:21:09 +0100
+From: Ian Molton <ian@mnementh.co.uk>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+CC: pHilipp Zabel <philipp.zabel@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
+       Magnus Damm <magnus.damm@gmail.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
+       Magnus Damm <damm@opensource.se>
+Subject: Re: MMC: Make the configuration memory resource optional
+References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>  <aec7e5c30907281948s2a0dcd0csd3e580251d6c4f5a@mail.gmail.com>  <20090729115817.GA12223@rakim.wolfsonmicro.main>  <aec7e5c30907290527w39a89895n285e932459e6c953@mail.gmail.com>  <20090729124233.GA12802@rakim.wolfsonmicro.main>  <aec7e5c30907290551y77edc6d7qb7b3d787215c2b4@mail.gmail.com>  <4A704777.70001@mnementh.co.uk>  <aec7e5c30907290608i43a80fe1xe4ef0f3847855709@mail.gmail.com>  <4A7053E8.8050303@mnementh.co.uk>  <20090729201702.GA28202@linux-sh.org> <74d0deb30907291355n39df7db0v1d7afc93917adc14@mail.gmail.com> <4A716F1C.2050805@mnementh.co.uk> <Pine.LNX.4.64.0907301246330.4462@axis700.grange>
+In-Reply-To: <Pine.LNX.4.64.0907301246330.4462@axis700.grange>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 30, 2009 at 10:06:33AM -0700, Jerome Glisse wrote:
-> On Thu, 2009-07-30 at 13:11 +0200, Jerome Glisse wrote:
-> > Hello,
-> > 
-> > I think i am facing a PAT issue code (at bottom of the mail) leads
-> > to mapping count issue such as one at bottom of mail. Is my test
-> > code buggy ? If so what is wrong with it ? Otherwise how could i
-> > track this down ? (Tested with lastest Linus tree). Note that
-> > the mapping count sometimes is negative, sometimes it's positive
-> > but without proper mapping.
-> > 
-> > (With AMD Athlon(tm) Dual Core Processor 4450e)
-> > 
-> > Note that bad page might takes time to happen 256 pages is bit
-> > too little either increasing that or doing memory hungry task
-> > will helps triggering the bug faster.
-> > 
-> > Cheers,
-> > Jerome
-> > 
-> > Jul 30 11:12:36 localhost kernel: BUG: Bad page state in process bash
-> > pfn:6daed
-> > Jul 30 11:12:36 localhost kernel: page:ffffea0001b6bb40
-> > flags:4000000000000000 count:1 mapcount:1 mapping:(null) index:6d8
-> > Jul 30 11:12:36 localhost kernel: Pid: 1876, comm: bash Not tainted
-> > 2.6.31-rc2 #30
-> > Jul 30 11:12:36 localhost kernel: Call Trace:
-> > Jul 30 11:12:36 localhost kernel: [<ffffffff81098570>] bad_page
-> > +0xf8/0x10d
-> > Jul 30 11:12:36 localhost kernel: [<ffffffff810997aa>]
-> > get_page_from_freelist+0x357/0x475
-> > Jul 30 11:12:36 localhost kernel: [<ffffffff810a72e3>] ? cond_resched
-> > +0x9/0xb
-> > Jul 30 11:12:36 localhost kernel: [<ffffffff810a9958>] ? copy_page_range
-> > +0x4cc/0x558
-> > Jul 30 11:12:36 localhost kernel: [<ffffffff810999e0>]
-> > __alloc_pages_nodemask+0x118/0x562
-> > Jul 30 11:12:36 localhost kernel: [<ffffffff812a92c3>] ?
-> > _spin_unlock_irq+0xe/0x11
-> > Jul 30 11:12:36 localhost kernel: [<ffffffff810a9dda>]
-> > alloc_pages_node.clone.0+0x14/0x16
-> > Jul 30 11:12:36 localhost kernel: [<ffffffff810aa0b1>] do_wp_page
-> > +0x2d5/0x57d
-> > Jul 30 11:12:36 localhost kernel: [<ffffffff810aac00>] handle_mm_fault
-> > +0x586/0x5e0
-> > Jul 30 11:12:36 localhost kernel: [<ffffffff812ab635>] do_page_fault
-> > +0x20a/0x21f
-> > Jul 30 11:12:36 localhost kernel: [<ffffffff812a968f>] page_fault
-> > +0x1f/0x30
-> > Jul 30 11:12:36 localhost kernel: Disabling lock debugging due to kernel
-> > taint
-> > 
-> > #define NPAGEST 256
-> > void test_wc(void)
-> > {
-> >         struct page *pages[NPAGEST];
-> >         int i, j;
-> >         void *virt;
-> > 
-> >         for (i = 0; i < NPAGEST; i++) {
-> >                 pages[i] = NULL;
-> >         }
-> >         for (i = 0; i < NPAGEST; i++) {
-> >                 pages[i] = alloc_page(__GFP_DMA32 | GFP_USER);
-> >                 if (pages[i] == NULL) {
-> >                         printk(KERN_ERR "Failled allocating page %d\n",
-> > i);
-> >                         goto out_free;
-> >                 }
-> >                 if (!PageHighMem(pages[i]))
-> >                         if (set_memory_wc((unsigned long)
-> > page_address(pages[i]), 1)) {
-> >                                 printk(KERN_ERR "Failled setting page %d
-> > wc\n", i);
-> >                                 goto out_free;
-> >                         }
-> >         }
-> >         virt = vmap(pages, NPAGEST, 0,
-> > pgprot_writecombine(PAGE_KERNEL));
-> >         if (virt == NULL) {
-> >                 printk(KERN_ERR "Failled vmapping\n");
-> >                 goto out_free;
-> >         }
-> >         vunmap(virt);
-> > out_free:
-> >         for (i = 0; i < NPAGEST; i++) {
-> >                 if (pages[i]) {
-> >                         if (!PageHighMem(pages[i]))
-> >                                 set_memory_wb((unsigned long)
-> > page_address(pages[i]), 1);
-> >                         __free_page(pages[i]);
-> >                 }
-> >         }
-> > }
+Guennadi Liakhovetski wrote:
+
+> While you're at it, please, consider swapping the two lines in 
+> tmio_mmc_probe():
 > 
-> vmaping doesn't seems to be involved with the corruption simply
-> setting some pages with set_memory_wc is enough.
+> -	tmio_mmc_clk_stop(host);
+> 	reset(host);
+> +	tmio_mmc_clk_stop(host);
 > 
-> 
+> Otherwise, I think, reset causes problems trying to access the controller 
+> with disabled clock. At least this is needed on SuperH.
 
-This seems to be a regression from changeset
-3869c4aa18835c8c61b44bd0f3ace36e9d3b5bd0
+Interesting. I'll see what the result of this is on TMIO - This sequence 
+was garnered from the WinCE driver for the chip.
 
-Below test patch should fix the problem. Can you please try it and let use know.
-We can then send a cleaner patch with changelog etc to upstream+stable kernels.
+I cant see _why_ this should be a problem, as this disables the card 
+clock, not HCLK. Could you debug further in tmio_mmc_clk_stop() please 
+and see if reordering only one of the two IO accesses cures this?
 
-Thanks,
-Venki
+Let me know what you find out.
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
----
- arch/x86/mm/pageattr.c |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index 1b734d7..895d90e 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -997,12 +997,15 @@ EXPORT_SYMBOL(set_memory_array_uc);
- int _set_memory_wc(unsigned long addr, int numpages)
- {
- 	int ret;
-+	unsigned long addr_copy = addr;
-+
- 	ret = change_page_attr_set(&addr, numpages,
- 				    __pgprot(_PAGE_CACHE_UC_MINUS), 0);
--
- 	if (!ret) {
--		ret = change_page_attr_set(&addr, numpages,
--				    __pgprot(_PAGE_CACHE_WC), 0);
-+		ret = change_page_attr_set_clr(&addr_copy, numpages,
-+					       __pgprot(_PAGE_CACHE_WC),
-+					       __pgprot(_PAGE_CACHE_MASK),
-+					       0, 0, NULL);
- 	}
- 	return ret;
- }
--- 
-1.6.0.6
-
-
+-Ian
