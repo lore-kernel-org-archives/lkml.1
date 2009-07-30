@@ -1,50 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752094AbZG3R6z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751709AbZG3SEL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752094AbZG3R6z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 13:58:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751884AbZG3R6y
+	id S1751709AbZG3SEL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 14:04:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbZG3SEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 13:58:54 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43957
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751924AbZG3R6x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 13:58:53 -0400
-Date: Thu, 30 Jul 2009 10:59:00 -0700 (PDT)
-Message-Id: <20090730.105900.232424702.davem@davemloft.net>
-To: paul.moore@hp.com
-Cc: julia@diku.dk, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 4/5] net/netlabel: Add kmalloc NULL tests
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200907301053.37416.paul.moore@hp.com>
-References: <200907301032.20318.paul.moore@hp.com>
-	<Pine.LNX.4.64.0907301637570.8734@ask.diku.dk>
-	<200907301053.37416.paul.moore@hp.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 30 Jul 2009 14:04:10 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35521 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751709AbZG3SEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 14:04:09 -0400
+Subject: Re: [wireless] rt2870sta BUGs on shutdown,
+ 2.6.30.2->git.today+git.wireless.today
+From: Dan Williams <dcbw@redhat.com>
+To: Greg KH <greg@kroah.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Ivo van Doorn <ivdoorn@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Luis Correia <luis.f.correia@gmail.com>, Mike Galbraith <efault@gmx.de>,
+       linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+In-Reply-To: <20090730172657.GA8266@kroah.com>
+References: <1248945770.7910.24.camel@marge.simson.net>
+	 <efe7343f0907300306o44d0e718p2880b7406a38fc6a@mail.gmail.com>
+	 <200907301517.57811.bzolnier@gmail.com>
+	 <200907301852.28172.IvDoorn@gmail.com>
+	 <1248973862.22552.4.camel@johannes.local> <20090730172657.GA8266@kroah.com>
+Content-Type: text/plain
+Date: Thu, 30 Jul 2009 14:04:43 -0400
+Message-Id: <1248977083.24886.4.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Moore <paul.moore@hp.com>
-Date: Thu, 30 Jul 2009 10:53:37 -0400
-
-> On Thursday 30 July 2009 10:38:19 am Julia Lawall wrote:
->> From: Julia Lawall <julia@diku.dk>
->>
->> The test on map4 should be a test on map6.
->>
->> The semantic match that finds this problem is as follows:
->> (http://www.emn.fr/x-info/coccinelle/)
- ...
->> Signed-off-by: Julia Lawall <julia@diku.dk>
+On Thu, 2009-07-30 at 10:26 -0700, Greg KH wrote:
+> On Thu, Jul 30, 2009 at 07:11:02PM +0200, Johannes Berg wrote:
+> > On Thu, 2009-07-30 at 18:52 +0200, Ivo van Doorn wrote:
+> > 
+> > > [some text expressing his frustration]
+> > 
+> > This is exactly why I was against staging all the time. Now suddenly
+> > "The Crap" seems like a viable alternative. WAKE UP PEOPLE. The code is
+> > not useful. Just look at the code that Mike pasted into his email. That
+> > alone should be enough to send cold shivers down your spine!
 > 
-> Much better, thank you.
+> Hm, "useful" is in the eye of the beholder.
 > 
-> Acked-by: Paul Moore <paul.moore@hp.com>
+> There is no driver in the mainline kernel tree for this device, so a
+> "normal" user has no chance of getting it working, right?  That's why
+> -staging is working, there is a semi-working driver, and most
+> importantly, people willing to help out getting it working better.
+> 
+> The combination of the two is what works here.
+> 
+> So please, I understand your frustration on a lack of people helping out
+> with out-of-tree wireless drivers that don't quite work properly, but
+> please, that has NOTHING to do with the staging drivers.
+> 
+> Meanwhile, I'm off on the driver-devel list helping Mike fix this
+> problem, which seems simple enough to solve...
 
-Applied, thanks.
+Except that the energy you're now investing in fixing this could have
+gone into rt2x00, and we would come out ahead in the end.  Instead, the
+energy is sapped away by something that will *never* be mainlined.
+
+Dan
+
+> > What staging has achieved here is giving the crap vendor code a
+> > blessing, receiving it welcomingly and forgivingly instead of saying
+> > "well screw you, go ahead and ship this to your users but don't ever say
+> > you support Linux well" ... now even some hackers and just just "dumb
+> > users" think that the crap in staging could possibly at some point
+> > become useful code!
+> 
+> Odd, I don't seem to be giving anyone such a "blessing", you are reading
+> way too much into this.  The fact is this vendor does code drops and
+> runs away all the time, despite the code being in the staging tree or
+> not.  Without it in the staging tree users would be worse off, not
+> better, there is no pressure able to be applied here at all, so please
+> stop thinking that.
+> 
+> > It won't. EVER. No matter _how_ much you clean it up, it will NEVER fit
+> > into the code scheme that everything else wireless has adopted.
+> 
+> never say never, it will happen, just give us time :)
+> 
+> In the meanwhile, people like Bart and others are doing real work on
+> getting the staging code into shape and working for real users.  Who are
+> you to tell them to not do such work?
+> 
+> thanks,
+> 
+> greg "i love crap" k-h
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
