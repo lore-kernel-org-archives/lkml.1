@@ -1,87 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752220AbZG3WPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbZG3WQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752220AbZG3WPb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 18:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbZG3WPb
+	id S1752483AbZG3WQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 18:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbZG3WQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 18:15:31 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:55232 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751765AbZG3WPa (ORCPT
+	Thu, 30 Jul 2009 18:16:25 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:58145 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751477AbZG3WQY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 18:15:30 -0400
-Subject: Re: [RFC][patch 09/12] add xtime_shift and ntp_error_shift to
- struct timekeeper
-From: john stultz <johnstul@us.ibm.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Daniel Walker <dwalker@fifo99.com>
-In-Reply-To: <20090729134231.269077552@de.ibm.com>
-References: <20090729134125.313191633@de.ibm.com>
-	 <20090729134231.269077552@de.ibm.com>
-Content-Type: text/plain
-Date: Thu, 30 Jul 2009 15:15:23 -0700
-Message-Id: <1248992123.3374.24.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Jul 2009 18:16:24 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=tODPtBeobzXbcdZZ1gaQyXnk44Fxte6bHX9L967+M0+Vun5hjHsTttF0h6BH68CZU
+	dDFFkw09OD+TdJmTqPbXA==
+Date: Thu, 30 Jul 2009 15:16:17 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Kurt Roeckx <kurt@roeckx.be>, Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [Bug #13780] NULL pointer dereference loading powernowk8
+In-Reply-To: <H5-1lZIIeYK.A.qoF.sWObKB@chimera>
+Message-ID: <alpine.DEB.2.00.0907301514510.18807@chino.kir.corp.google.com>
+References: <DizPU9GBfHF.A.kgF.iWObKB@chimera> <H5-1lZIIeYK.A.qoF.sWObKB@chimera>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-07-29 at 15:41 +0200, Martin Schwidefsky wrote:
-> plain text document attachment (timekeeper-shift.diff)
-> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+On Sun, 26 Jul 2009, Rafael J. Wysocki wrote:
+
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.29 and 2.6.30.
 > 
-> The xtime_nsec value in the timekeeper structure is shifted by a few
-> bits to improve precision. This happens to be the same value as the
-> clock->shift. To improve readability add xtime_shift to the timekeeper
-> and use it instead of the clock->shift. Likewise add ntp_error_shift
-> and replace all (NTP_SCALE_SHIFT - clock->shift) expressions.
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> be listed and let me know (either way).
 > 
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: john stultz <johnstul@us.ibm.com>
-> Cc: Daniel Walker <dwalker@fifo99.com>
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> ---
->  kernel/time/timekeeping.c |   33 ++++++++++++++++++---------------
->  1 file changed, 18 insertions(+), 15 deletions(-)
 > 
-> Index: linux-2.6/kernel/time/timekeeping.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/time/timekeeping.c
-> +++ linux-2.6/kernel/time/timekeeping.c
-> @@ -27,6 +27,8 @@ struct timekeeper {
->  	u32	raw_interval;
->  	u64	xtime_nsec;
->  	s64	ntp_error;
-> +	int	xtime_shift;
-> +	int	ntp_error_shift;
->  };
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13780
+> Subject		: NULL pointer dereference loading powernowk8
+> Submitter	: Kurt Roeckx <kurt@roeckx.be>
+> Date		: 2009-07-15 18:00 (12 days old)
+> 
 
-I suspect ntp_error_shift is one of the lease intuitive values in the
-timekeeper structure. They all probably need nice comments explaining
-what they store, but especially this one. 
+powernowk8_cpu_init() has since been largely modified for cpumask changes 
+commit 1ff6e97f1d993dff2f9b6f4a9173687370660232.  
 
-Something like:
-
-struct clocksource *clock; /* current clocksource used for timekeeping*/
-cycle_t cycle_interval;	   /* fixed chunk of cycles used in accumulation */
-u64     xtime_interval;    /* number clock shifted nsecs accumulated per cycle_interval */
-u32	raw_interval;      /* raw nsecs accumulated per cycle_interval */
-u64	xtime_nsec;        /* clock shifted nsecs remainder not stored in xtime.tv_nsec */
-s64	ntp_error;         /* Difference between accumulated time and NTP time in ntp shifted nsecs */
-int	xtime_shift;       /* The shift value of the current clocksource */
-int	ntp_error_shift;   /* Shift conversion between clock shifted nsecs and ntp shifted nsecs */
-
-
-Other then that this patch looks ok, but will need rigorous testing, as
-its very complicated and difficult to understand code thats being
-changed.
-
-thanks
--john
-
-
+Kurt, could you try 2.6.31-rc4?  If it still hits a bug, please post the 
+dmesg and your .config.
