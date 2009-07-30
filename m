@@ -1,40 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752484AbZG3VJu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752412AbZG3VKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752484AbZG3VJu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 17:09:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbZG3VJt
+	id S1752412AbZG3VKz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 17:10:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbZG3VKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 17:09:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54623 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752169AbZG3VJs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 17:09:48 -0400
-Date: Thu, 30 Jul 2009 17:09:46 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steve French <sfrench@us.ibm.com>
-Subject: Re: [Patch RFC 20/37] cifs: convert semaphore to mutex
-Message-ID: <20090730210946.GA14722@infradead.org>
-References: <20090726081459.455111897@linutronix.de> <20090726081555.873287270@linutronix.de>
+	Thu, 30 Jul 2009 17:10:54 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:34938 "EHLO smtp2.it.da.ut.ee"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752004AbZG3VKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 17:10:54 -0400
+X-Greylist: delayed 1190 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Jul 2009 17:10:54 EDT
+Date: Fri, 31 Jul 2009 00:10:50 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Thinkpad X20 docking troubles - irq routing, USB strangeness
+In-Reply-To: <Pine.SOC.4.64.0907302339550.23777@math.ut.ee>
+Message-ID: <Pine.SOC.4.64.0907310007040.24315@math.ut.ee>
+References: <Pine.SOC.4.64.0907302339550.23777@math.ut.ee>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090726081555.873287270@linutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 26, 2009 at 08:18:39AM -0000, Thomas Gleixner wrote:
-> -	struct semaphore sesSem;
-> +	struct mutex sesSem;
+> The first is irq-related. As soon as yenta driver discovers the 
+> additional ports, screaming irq happens and this shared irq is disabled.
+> This documented in the dmesg below. This is my main problem, others may 
+> be secondary to it (at least the usb one).
 
-If we touch every user of this anyway any chance we could give it a sane
-name, e.g. session_mutex?
+One more data point: the behaviour seems to be consistent at least since 
+2.6.27 (the oldest sequential kernel I have around). I also have 2.6.21 
+laying around, this kernel did not support docking at all.
 
+Another data point: starting the system without dock and later docking, 
+PCI devices in dock are not found and no yenta irq problems occur.
+
+When docking, USB 4-port hub is found and works.
+
+-- 
+Meelis Roos (mroos@linux.ee)
