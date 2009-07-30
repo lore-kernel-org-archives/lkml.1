@@ -1,298 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751707AbZG3IxJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751838AbZG3IxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751707AbZG3IxJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 04:53:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbZG3IxI
+	id S1751838AbZG3IxM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 04:53:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbZG3IxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 04:53:08 -0400
-Received: from mga01.intel.com ([192.55.52.88]:47176 "EHLO mga01.intel.com"
+	Thu, 30 Jul 2009 04:53:10 -0400
+Received: from mga01.intel.com ([192.55.52.88]:47187 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751672AbZG3IxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 04:53:03 -0400
+	id S1751710AbZG3IxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 04:53:06 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.43,294,1246863600"; 
-   d="scan'208";a="479226464"
+   d="scan'208";a="479226481"
 From: Huang Ying <ying.huang@intel.com>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@linux.intel.com>,
        linux-kernel@vger.kernel.org, Huang Ying <ying.huang@intel.com>
-Subject: [PATCH -v4 1/4] x86: MCE: Support specifying context for software mce injection
-Date: Thu, 30 Jul 2009 16:52:30 +0800
-Message-Id: <1248943953-26100-2-git-send-email-ying.huang@intel.com>
+Subject: [PATCH -v4 3/4] x86: MCE: Move debugfs mce dir creating to mce.c
+Date: Thu, 30 Jul 2009 16:52:32 +0800
+Message-Id: <1248943953-26100-4-git-send-email-ying.huang@intel.com>
 X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1248943953-26100-1-git-send-email-ying.huang@intel.com>
+In-Reply-To: <1248943953-26100-3-git-send-email-ying.huang@intel.com>
 References: <1248943953-26100-1-git-send-email-ying.huang@intel.com>
+ <1248943953-26100-2-git-send-email-ying.huang@intel.com>
+ <1248943953-26100-3-git-send-email-ying.huang@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The cpu context is specified via the new mce.inject_flags fields.
-This allows more realistic machine check testing in different
-situations. "RANDOM" context is implemented via NMI broadcasting to
-add randomization to testing.
-
-AK: Fix NMI broadcasting check. Fix 32-bit building. Some race
-fixes. Move to module. Various changes
+Because more debugfs files under mce dir will be create in mce.c.
 
 Signed-off-by: Huang Ying <ying.huang@intel.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
-
-ChangeLog:
-
-v3:
-
-- Re-based on latest x86-tip.git/mce4
-
-- Fix 32-bit building
-
-v2:
-
-- Re-base on latest x86-tip.git/mce3
 ---
- arch/x86/include/asm/mce.h              |   11 ++-
- arch/x86/kernel/cpu/mcheck/mce-inject.c |  156 +++++++++++++++++++++++++------
- 2 files changed, 135 insertions(+), 32 deletions(-)
+ arch/x86/kernel/cpu/mcheck/mce-internal.h |    1 +
+ arch/x86/kernel/cpu/mcheck/mce-severity.c |    6 +++---
+ arch/x86/kernel/cpu/mcheck/mce.c          |   13 +++++++++++++
+ 3 files changed, 17 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/include/asm/mce.h b/arch/x86/include/asm/mce.h
-index 5cdd8d1..7196cdc 100644
---- a/arch/x86/include/asm/mce.h
-+++ b/arch/x86/include/asm/mce.h
-@@ -38,6 +38,13 @@
- #define MCM_ADDR_MEM	 3	/* memory address */
- #define MCM_ADDR_GENERIC 7	/* generic */
- 
-+#define MCJ_CTX_MASK		3
-+#define MCJ_CTX(flags)		((flags) & MCJ_CTX_MASK)
-+#define MCJ_CTX_RANDOM		0    /* inject context: random */
-+#define MCJ_CTX_PROCESS		1    /* inject context: process */
-+#define MCJ_CTX_IRQ		2    /* inject context: IRQ */
-+#define MCJ_NMI_BROADCAST	4    /* do NMI broadcasting */
-+
- /* Fields are zero when not available */
- struct mce {
- 	__u64 status;
-@@ -48,8 +55,8 @@ struct mce {
- 	__u64 tsc;	/* cpu time stamp counter */
- 	__u64 time;	/* wall time_t when error was detected */
- 	__u8  cpuvendor;	/* cpu vendor as encoded in system.h */
--	__u8  pad1;
--	__u16 pad2;
-+	__u8  inject_flags;	/* software inject flags */
-+	__u16  pad;
- 	__u32 cpuid;	/* CPUID 1 EAX */
- 	__u8  cs;		/* code segment */
- 	__u8  bank;	/* machine check bank */
-diff --git a/arch/x86/kernel/cpu/mcheck/mce-inject.c b/arch/x86/kernel/cpu/mcheck/mce-inject.c
-index a3a235a..ad5d927 100644
---- a/arch/x86/kernel/cpu/mcheck/mce-inject.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce-inject.c
-@@ -18,7 +18,12 @@
- #include <linux/string.h>
- #include <linux/fs.h>
- #include <linux/smp.h>
-+#include <linux/notifier.h>
-+#include <linux/kdebug.h>
-+#include <linux/cpu.h>
-+#include <linux/sched.h>
- #include <asm/mce.h>
-+#include <asm/apic.h>
- 
- /* Update fake mce registers on current CPU. */
- static void inject_mce(struct mce *m)
-@@ -39,44 +44,141 @@ static void inject_mce(struct mce *m)
- 	i->finished = 1;
- }
- 
--struct delayed_mce {
--	struct timer_list timer;
--	struct mce m;
-+static void raise_corrected(struct mce *m)
-+{
-+	unsigned long flags;
-+	mce_banks_t b;
-+
-+	memset(&b, 0xff, sizeof(mce_banks_t));
-+	local_irq_save(flags);
-+	machine_check_poll(0, &b);
-+	local_irq_restore(flags);
-+	m->finished = 0;
-+}
-+
-+static void raise_uncorrected(struct mce *m, struct pt_regs *pregs)
-+{
-+	struct pt_regs regs;
-+	unsigned long flags;
-+
-+	if (!pregs) {
-+		memset(&regs, 0, sizeof(struct pt_regs));
-+		regs.ip = m->ip;
-+		regs.cs = m->cs;
-+		pregs = &regs;
-+	}
-+	/* in mcheck exeception handler, irq will be disabled */
-+	local_irq_save(flags);
-+	do_machine_check(pregs, 0);
-+	local_irq_restore(flags);
-+	m->finished = 0;
-+}
-+
-+static cpumask_t mce_inject_cpumask;
-+
-+static int mce_raise_notify(struct notifier_block *self,
-+			    unsigned long val, void *data)
-+{
-+	struct die_args *args = (struct die_args *)data;
-+	int cpu = smp_processor_id();
-+	struct mce *m = &__get_cpu_var(injectm);
-+	if (val != DIE_NMI_IPI || !cpu_isset(cpu, mce_inject_cpumask))
-+		return NOTIFY_DONE;
-+	cpu_clear(cpu, mce_inject_cpumask);
-+	if (m->status & MCI_STATUS_UC)
-+		raise_uncorrected(m, args->regs);
-+	else if (m->status)
-+		raise_corrected(m);
-+	return NOTIFY_STOP;
-+}
-+
-+static struct notifier_block mce_raise_nb = {
-+	.notifier_call = mce_raise_notify,
-+	.priority = 1000,
+diff --git a/arch/x86/kernel/cpu/mcheck/mce-internal.h b/arch/x86/kernel/cpu/mcheck/mce-internal.h
+index 54dcb8f..2179f87 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce-internal.h
++++ b/arch/x86/kernel/cpu/mcheck/mce-internal.h
+@@ -11,5 +11,6 @@ enum severity_level {
  };
  
- /* Inject mce on current CPU */
--static void raise_mce(unsigned long data)
-+static int raise_local(struct mce *m)
- {
--	struct delayed_mce *dm = (struct delayed_mce *)data;
--	struct mce *m = &dm->m;
-+	int context = MCJ_CTX(m->inject_flags);
-+	int ret = 0;
- 	int cpu = m->extcpu;
+ int mce_severity(struct mce *a, int tolerant, char **msg);
++struct dentry *mce_get_debugfs_dir(void);
  
--	inject_mce(m);
- 	if (m->status & MCI_STATUS_UC) {
--		struct pt_regs regs;
--		memset(&regs, 0, sizeof(struct pt_regs));
--		regs.ip = m->ip;
--		regs.cs = m->cs;
- 		printk(KERN_INFO "Triggering MCE exception on CPU %d\n", cpu);
--		do_machine_check(&regs, 0);
-+		switch (context) {
-+		case MCJ_CTX_IRQ:
-+			/*
-+			 * Could do more to fake interrupts like
-+			 * calling irq_enter, but the necessary
-+			 * machinery isn't exported currently.
-+			 */
-+			/*FALL THROUGH*/
-+		case MCJ_CTX_PROCESS:
-+			raise_uncorrected(m, NULL);
-+			break;
-+		default:
-+			printk(KERN_INFO "Invalid MCE context\n");
-+			ret = -EINVAL;
-+		}
- 		printk(KERN_INFO "MCE exception done on CPU %d\n", cpu);
--	} else {
--		mce_banks_t b;
--		memset(&b, 0xff, sizeof(mce_banks_t));
-+	} else if (m->status) {
- 		printk(KERN_INFO "Starting machine check poll CPU %d\n", cpu);
--		machine_check_poll(0, &b);
-+		raise_corrected(m);
- 		mce_notify_irq();
--		printk(KERN_INFO "Finished machine check poll on CPU %d\n",
--		       cpu);
--	}
--	kfree(dm);
-+		printk(KERN_INFO "Machine check poll done on CPU %d\n", cpu);
-+	} else
-+		m->finished = 0;
-+
-+	return ret;
-+}
-+
-+static void raise_mce(struct mce *m)
-+{
-+	int context = MCJ_CTX(m->inject_flags);
-+
-+	inject_mce(m);
-+
-+	if (context == MCJ_CTX_RANDOM)
-+		return;
-+
-+#ifdef CONFIG_X86_LOCAL_APIC
-+	if (m->inject_flags & MCJ_NMI_BROADCAST) {
-+		unsigned long start;
-+		int cpu;
-+		get_online_cpus();
-+		mce_inject_cpumask = cpu_online_map;
-+		cpu_clear(get_cpu(), mce_inject_cpumask);
-+		for_each_online_cpu(cpu) {
-+			struct mce *mcpu = &per_cpu(injectm, cpu);
-+			if (!mcpu->finished ||
-+			    MCJ_CTX(mcpu->inject_flags) != MCJ_CTX_RANDOM)
-+				cpu_clear(cpu, mce_inject_cpumask);
-+		}
-+		if (!cpus_empty(mce_inject_cpumask))
-+			apic->send_IPI_mask(&mce_inject_cpumask, NMI_VECTOR);
-+		start = jiffies;
-+		while (!cpus_empty(mce_inject_cpumask)) {
-+			if (!time_before(jiffies, start + 2*HZ)) {
-+				printk(KERN_ERR
-+				"Timeout waiting for mce inject NMI %lx\n",
-+					*cpus_addr(mce_inject_cpumask));
-+				break;
-+			}
-+			cpu_relax();
-+		}
-+		raise_local(m);
-+		put_cpu();
-+		put_online_cpus();
-+	} else
+ extern int mce_ser;
+diff --git a/arch/x86/kernel/cpu/mcheck/mce-severity.c b/arch/x86/kernel/cpu/mcheck/mce-severity.c
+index ff0807f..1392c96 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce-severity.c
++++ b/arch/x86/kernel/cpu/mcheck/mce-severity.c
+@@ -139,6 +139,7 @@ int mce_severity(struct mce *a, int tolerant, char **msg)
+ 	}
+ }
+ 
++#ifdef CONFIG_DEBUG_FS
+ static void *s_start(struct seq_file *f, loff_t *pos)
+ {
+ 	if (*pos >= ARRAY_SIZE(severities))
+@@ -197,7 +198,7 @@ static int __init severities_debugfs_init(void)
+ {
+ 	struct dentry *dmce = NULL, *fseverities_coverage = NULL;
+ 
+-	dmce = debugfs_create_dir("mce", NULL);
++	dmce = mce_get_debugfs_dir();
+ 	if (dmce == NULL)
+ 		goto err_out;
+ 	fseverities_coverage = debugfs_create_file("severities-coverage",
+@@ -211,8 +212,7 @@ static int __init severities_debugfs_init(void)
+ err_out:
+ 	if (fseverities_coverage)
+ 		debugfs_remove(fseverities_coverage);
+-	if (dmce)
+-		debugfs_remove(dmce);
+ 	return -ENOMEM;
+ }
+ late_initcall(severities_debugfs_init);
 +#endif
-+		raise_local(m);
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index 484c1e5..b57b6aa 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -34,6 +34,7 @@
+ #include <linux/smp.h>
+ #include <linux/fs.h>
+ #include <linux/mm.h>
++#include <linux/debugfs.h>
+ 
+ #include <asm/processor.h>
+ #include <asm/hw_irq.h>
+@@ -2047,3 +2048,15 @@ static int __init mcheck_disable(char *str)
+ 	return 1;
  }
- 
- /* Error injection interface */
- static ssize_t mce_write(struct file *filp, const char __user *ubuf,
- 			 size_t usize, loff_t *off)
- {
--	struct delayed_mce *dm;
- 	struct mce m;
- 
- 	if (!capable(CAP_SYS_ADMIN))
-@@ -96,19 +198,12 @@ static ssize_t mce_write(struct file *filp, const char __user *ubuf,
- 	if (m.extcpu >= num_possible_cpus() || !cpu_online(m.extcpu))
- 		return -EINVAL;
- 
--	dm = kmalloc(sizeof(struct delayed_mce), GFP_KERNEL);
--	if (!dm)
--		return -ENOMEM;
--
- 	/*
- 	 * Need to give user space some time to set everything up,
- 	 * so do it a jiffie or two later everywhere.
--	 * Should we use a hrtimer here for better synchronization?
- 	 */
--	memcpy(&dm->m, &m, sizeof(struct mce));
--	setup_timer(&dm->timer, raise_mce, (unsigned long)dm);
--	dm->timer.expires = jiffies + 2;
--	add_timer_on(&dm->timer, m.extcpu);
-+	schedule_timeout(2);
-+	raise_mce(&m);
- 	return usize;
- }
- 
-@@ -116,6 +211,7 @@ static int inject_init(void)
- {
- 	printk(KERN_INFO "Machine check injector initialized\n");
- 	mce_chrdev_ops.write = mce_write;
-+	register_die_notifier(&mce_raise_nb);
- 	return 0;
- }
- 
+ __setup("nomce", mcheck_disable);
++
++#ifdef CONFIG_DEBUG_FS
++struct dentry *mce_get_debugfs_dir(void)
++{
++	static struct dentry *dmce;
++
++	if (!dmce)
++		dmce = debugfs_create_dir("mce", NULL);
++
++	return dmce;
++}
++#endif
 -- 
 1.6.3.3
 
