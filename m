@@ -1,67 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751260AbZG3OAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751439AbZG3OBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751260AbZG3OAm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 10:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbZG3OAm
+	id S1751439AbZG3OBf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 10:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbZG3OBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 10:00:42 -0400
-Received: from ru.mvista.com ([213.79.90.228]:31734 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751070AbZG3OAl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 10:00:41 -0400
-Date: Thu, 30 Jul 2009 18:00:41 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Daniel Mack <daniel@caiaq.de>
-Cc: linux-kernel@vger.kernel.org, Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>,
-       Matt Reimer <mreimer@vpop.net>, Anton Vorontsov <cbou@mail.ru>
-Subject: Re: [PATCH] ds2760: fix integer overflow for time_to_empty_now
-Message-ID: <20090730140041.GA25759@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <1248441573-32712-1-git-send-email-daniel@caiaq.de>
+	Thu, 30 Jul 2009 10:01:35 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:41457 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751097AbZG3OBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 10:01:34 -0400
+Date: Thu, 30 Jul 2009 16:00:33 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/5] drivers/video: Add kmalloc NULL tests
+Message-ID: <Pine.LNX.4.64.0907301559530.8734@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1248441573-32712-1-git-send-email-daniel@caiaq.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 24, 2009 at 03:19:33PM +0200, Daniel Mack wrote:
-> On the device we're currently developing, battery sizes of ~2.8Ah and
-> current flow of ~600mA are typical.
-> 
-> With that values, the life_sec computation overflows due to the
-> multiplication by 3600.
-> 
-> Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> Cc: Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
-> Cc: Matt Reimer <mreimer@vpop.net>
-> Cc: Anton Vorontsov <cbou@mail.ru>
-> 
-> Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> ---
->  drivers/power/ds2760_battery.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/power/ds2760_battery.c b/drivers/power/ds2760_battery.c
-> index d545fee..5d30dc0 100644
-> --- a/drivers/power/ds2760_battery.c
-> +++ b/drivers/power/ds2760_battery.c
-> @@ -212,8 +212,8 @@ static int ds2760_battery_read_status(struct ds2760_device_info *di)
->  		di->rem_capacity = 100;
->  
->  	if (di->current_uA)
-> -		di->life_sec = -((di->accum_current_uAh - di->empty_uAh) *
-> -				 3600L) / di->current_uA;
-> +		di->life_sec = -((di->accum_current_uAh - di->empty_uAh) * 36L)
-> +					/ (di->current_uA / 100L);
+From: Julia Lawall <julia@diku.dk>
 
-Hm... "(di->current_uA / 100L)" might result to 0, so you'll get
-div by zero. Removing the parenthesis will help.
+Check that the result of kmalloc is not NULL before passing it to other
+functions.
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+The semantic match that finds this problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
+
+// <smpl>
+@@
+expression *x;
+identifier f;
+constant char *C;
+@@
+
+x = \(kmalloc\|kcalloc\|kzalloc\)(...);
+... when != x == NULL
+    when != x != NULL
+    when != (x || ...)
+(
+kfree(x)
+|
+f(...,C,...,x,...)
+|
+*f(...,x,...)
+|
+*x->f
+)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ drivers/video/au1100fb.c            |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
+index 378f277..1766846 100644
+--- a/drivers/video/au1100fb.c
++++ b/drivers/video/au1100fb.c
+@@ -716,6 +716,10 @@ int au1100fb_setup(char *options)
+ 			/* Mode option (only option that start with digit) */
+ 			else if (isdigit(this_opt[0])) {
+ 				mode = kmalloc(strlen(this_opt) + 1, GFP_KERNEL);
++				if (!mode) {
++					print_err("memory allocation failed");
++					return -ENOMEM;
++				}
+ 				strncpy(mode, this_opt, strlen(this_opt) + 1);
+ 			}
+ 			/* Unsupported option */
