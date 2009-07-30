@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbZG3WQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752667AbZG3WR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752483AbZG3WQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 18:16:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbZG3WQZ
+	id S1752667AbZG3WR3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 18:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbZG3WR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 18:16:25 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:58145 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751477AbZG3WQY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 18:16:24 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=tODPtBeobzXbcdZZ1gaQyXnk44Fxte6bHX9L967+M0+Vun5hjHsTttF0h6BH68CZU
-	dDFFkw09OD+TdJmTqPbXA==
-Date: Thu, 30 Jul 2009 15:16:17 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Kurt Roeckx <kurt@roeckx.be>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [Bug #13780] NULL pointer dereference loading powernowk8
-In-Reply-To: <H5-1lZIIeYK.A.qoF.sWObKB@chimera>
-Message-ID: <alpine.DEB.2.00.0907301514510.18807@chino.kir.corp.google.com>
-References: <DizPU9GBfHF.A.kgF.iWObKB@chimera> <H5-1lZIIeYK.A.qoF.sWObKB@chimera>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 30 Jul 2009 18:17:28 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:60572 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751953AbZG3WR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 18:17:28 -0400
+Date: Fri, 31 Jul 2009 00:17:28 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Martin Bligh <mbligh@google.com>
+Cc: Chad Talbott <ctalbott@google.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, wfg@mail.ustc.edu.cn,
+       Michael Rubin <mrubin@google.com>, Andrew Morton <akpm@google.com>,
+       sandeen@redhat.com
+Subject: Re: Bug in kernel 2.6.31, Slow wb_kupdate writeout
+Message-ID: <20090730221727.GI12579@kernel.dk>
+References: <1786ab030907281211x6e432ba6ha6afe9de73f24e0c@mail.gmail.com> <20090730213956.GH12579@kernel.dk> <33307c790907301501v4c605ea8oe57762b21d414445@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <33307c790907301501v4c605ea8oe57762b21d414445@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 26 Jul 2009, Rafael J. Wysocki wrote:
+On Thu, Jul 30 2009, Martin Bligh wrote:
+> On Thu, Jul 30, 2009 at 2:39 PM, Jens Axboe<jens.axboe@oracle.com> wrote:
+> > On Tue, Jul 28 2009, Chad Talbott wrote:
+> >> I run a simple workload on a 4GB machine which dirties a few largish
+> >> inodes like so:
+> >>
+> >> # seq 10 | xargs -P0 -n1 -i\{} dd if=/dev/zero of=/tmp/dump\{}
+> >> bs=1024k count=100
+> >>
+> >> While the dds are running data is written out at disk speed.  However,
+> >> once the dds have run to completion and exited there is ~500MB of
+> >> dirty memory left.  Background writeout then takes about 3 more
+> >> minutes to clean memory at only ~3.3MB/s.  When I explicitly sync, I
+> >> can see that the disk is capable of 40MB/s, which finishes off the
+> >> files in ~10s. [1]
+> >>
+> >> An interesting recent-ish change is "writeback: speed up writeback of
+> >> big dirty files."  When I revert the change to __sync_single_inode the
+> >> problem appears to go away and background writeout proceeds at disk
+> >> speed.  Interestingly, that code is in the git commit [2], but not in
+> >> the post to LKML. [3]  This is may not be the fix, but it makes this
+> >> test behave better.
+> >
+> > Can I talk you into trying the per-bdi writeback patchset? I just tried
+> > your test on a 16gb machine, and the dd's finish immediately since it
+> > wont trip the writeout at that percentage of dirty memory. The 1GB of
+> > dirty memory is flushed when it gets too old, 30 seconds later in two
+> > chunks of writeout running at disk speed.
+> 
+> How big did you make the dds? It has to be writing more data than
+> you have RAM, or it's not going to do anything much interesting ;-)
 
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.29 and 2.6.30.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13780
-> Subject		: NULL pointer dereference loading powernowk8
-> Submitter	: Kurt Roeckx <kurt@roeckx.be>
-> Date		: 2009-07-15 18:00 (12 days old)
-> 
+The test case above on a 4G machine is only generating 1G of dirty data.
+I ran the same test case on the 16G, resulting in only background
+writeout. The relevant bit here being that the background writeout
+finished quickly, writing at disk speed.
 
-powernowk8_cpu_init() has since been largely modified for cpumask changes 
-commit 1ff6e97f1d993dff2f9b6f4a9173687370660232.  
+I re-ran the same test, but using 300 100MB files instead. While the
+dd's are running, we are going at ~80MB/sec (this is disk speed, it's an
+x25-m). When the dd's are done, it continues doing 80MB/sec for 10
+seconds or so. Then the remainder (about 2G) is written in bursts at
+disk speeds, but with some time in between.
 
-Kurt, could you try 2.6.31-rc4?  If it still hits a bug, please post the 
-dmesg and your .config.
+-- 
+Jens Axboe
+
