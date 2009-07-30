@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752706AbZG3XQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753124AbZG3XRQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752706AbZG3XQX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 19:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbZG3XQW
+	id S1753124AbZG3XRQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 19:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbZG3XRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 19:16:22 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43327 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750994AbZG3XQW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 19:16:22 -0400
-Date: Fri, 31 Jul 2009 00:16:21 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Theodore Tso <tytso@mit.edu>, Greg KH <greg@kroah.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] kdesu broken
-Message-ID: <20090731001621.6d5a1da9@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090729004941.3a78d4b3@lxorguk.ukuu.org.uk>
-References: <20090728174213.5e927428@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907280944150.3186@localhost.localdomain>
-	<20090728180649.596c5412@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907281141070.3186@localhost.localdomain>
-	<20090728195651.3a402a31@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0907281158120.3186@localhost.localdomain>
-	<20090728201553.0eb2d51d@lxorguk.ukuu.org.uk>
-	<20090728195648.GA4833@kroah.com>
-	<20090728204720.GF31679@mit.edu>
-	<20090728210121.GB12155@kroah.com>
-	<20090728220203.GI31679@mit.edu>
-	<20090729004941.3a78d4b3@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Jul 2009 19:17:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36089 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752559AbZG3XRP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 19:17:15 -0400
+Date: Thu, 30 Jul 2009 19:17:02 -0400
+From: Dave Jones <davej@redhat.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: "Langsdorf, Mark" <mark.langsdorf@amd.com>,
+       Eric Sesterhenn <eric.sesterhenn@lsexperts.de>,
+       linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+Subject: Re: Warning during suspend with MS-7310 mainboard
+Message-ID: <20090730231702.GA15520@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Rusty Russell <rusty@rustcorp.com.au>,
+	"Langsdorf, Mark" <mark.langsdorf@amd.com>,
+	Eric Sesterhenn <eric.sesterhenn@lsexperts.de>,
+	linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org
+References: <1248936650.3313.6.camel@queen> <6453C3CB8E2B3646B0D020C11261327303620A01@sausexmb4.amd.com> <20090730164629.GC2593@redhat.com> <200907310837.23487.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200907310837.23487.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'll fish them out tomorrow. What is in the -next tree is only some of
-> the bits.
-> 
-> We still have races on the USB side too btw I put a frequency generator
-> on the carrier line of my pl2303 with an app continually opening the
-> port and it oopses after about 10 minutes. On the bright side so does
-> 2.6.29, 2.6.27 ....
+On Fri, Jul 31, 2009 at 08:37:22AM +0930, Rusty Russell wrote:
+ > On Fri, 31 Jul 2009 02:16:29 am Dave Jones wrote:
+ > > On Thu, Jul 30, 2009 at 11:38:22AM -0500, Langsdorf, Mark wrote:
+ > >  > I'll look into it.
+ > >  > 
+ > >  > First time I've had this bug reported, though.
+ > >  > 
+ > > 
+ > > It's happening because the suspend code runs with interrupts disabled,
+ > > and the powerpc workaround we do in the cpufreq suspend hook
+ > > calls the drivers ->get method.
+ > > 
+ > > powernow-k8's ->get does an smp_call_function_single
+ > > which needs interrupts enabled
+ > 
+ > Yeah, I was confused: my patch changed set_cpus_allowed_ptr() to
+ > an smp_call_function.  If the latter is a bad idea with irqs disabled, the
+ > former certainly was...
 
-Just an update - I've not posted them yet as I've been putting the
-various branches into some kind of sane order with the tested stuff first
-and the "in progress" serial -> tty_port stuff last.
+Right, the only reason reverting your change 'fixes' the problem is
+that we don't have a BUG() in set_cpus_allowed_ptr to check for interrupts
+being disabled.
 
+hmm, does adding an equivalent check make sense?
+cpufreq seemed to cope just fine when we used set_cpus_allowed_ptr,
+but we might have just got lucky. As we were suspending in this path,
+interaction from the scheduler is minimal. Other callers might not
+be so lucky?
+
+	Dave
+ 
