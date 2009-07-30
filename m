@@ -1,62 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751807AbZG3SkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752087AbZG3SuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751807AbZG3SkX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 14:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751320AbZG3SkX
+	id S1752087AbZG3SuU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 14:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbZG3SuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 14:40:23 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:34398 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751228AbZG3SkW (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 14:40:22 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Gene Heskett <gene.heskett@verizon.net>
-Cc: Frans Pop <elendil@planet.nl>, alan@lxorguk.ukuu.org.uk,
-       torvalds@linux-foundation.org, hirofumi@mail.parknet.co.jp,
-       aneesh.kumar@linux.vnet.ibm.com, rjw@sisk.pl, ray-lk@madrabbit.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       stern@rowland.harvard.edu
-Subject: Re: [PATCH] kdesu broken
-In-Reply-To: Your message of "Thu, 30 Jul 2009 11:35:03 EDT."
-             <200907301135.03509.gene.heskett@verizon.net>
-From: Valdis.Kletnieks@vt.edu
-References: <20090725163251.50e6f546@lxorguk.ukuu.org.uk> <200907291519.19567.gene.heskett@verizon.net> <28783.1248957815@turing-police.cc.vt.edu>
-            <200907301135.03509.gene.heskett@verizon.net>
+	Thu, 30 Jul 2009 14:50:19 -0400
+Received: from nox.protox.org ([88.191.38.29]:38325 "EHLO nox.protox.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751320AbZG3SuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 14:50:19 -0400
+Subject: RE: PAT wc & vmap mapping count issue ?
+From: Jerome Glisse <glisse@freedesktop.org>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+In-Reply-To: <7E82351C108FA840AB1866AC776AEC466D4513C4@orsmsx505.amr.corp.intel.com>
+References: <1248952269.2462.33.camel@localhost>
+	 <1248973593.2462.35.camel@localhost>
+	 <7E82351C108FA840AB1866AC776AEC466D4513C4@orsmsx505.amr.corp.intel.com>
+Content-Type: text/plain
+Date: Thu, 30 Jul 2009 20:48:56 +0200
+Message-Id: <1248979736.2462.39.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1248979154_3306P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
-Date: Thu, 30 Jul 2009 14:39:14 -0400
-Message-ID: <25546.1248979154@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1248979154_3306P
-Content-Type: text/plain; charset=us-ascii
+On Thu, 2009-07-30 at 11:01 -0700, Pallipadi, Venkatesh wrote:
+> 
+> >-----Original Message-----
+> >From: Jerome Glisse [mailto:glisse@freedesktop.org] 
+> >Sent: Thursday, July 30, 2009 10:07 AM
+> >To: linux-kernel@vger.kernel.org
+> >Cc: Pallipadi, Venkatesh
+> >Subject: Re: PAT wc & vmap mapping count issue ?
+> >
+> >On Thu, 2009-07-30 at 13:11 +0200, Jerome Glisse wrote:
+> >> Hello,
+> >> 
+> >> I think i am facing a PAT issue code (at bottom of the mail) leads
+> >> to mapping count issue such as one at bottom of mail. Is my test
+> >> code buggy ? If so what is wrong with it ? Otherwise how could i
+> >> track this down ? (Tested with lastest Linus tree). Note that
+> >> the mapping count sometimes is negative, sometimes it's positive
+> >> but without proper mapping.
+> >> 
+> >> (With AMD Athlon(tm) Dual Core Processor 4450e)
+> >> 
+> >> Note that bad page might takes time to happen 256 pages is bit
+> >> too little either increasing that or doing memory hungry task
+> >> will helps triggering the bug faster.
+> >> 
+> >> Cheers,
+> >> Jerome
+> >> 
+> >> Jul 30 11:12:36 localhost kernel: BUG: Bad page state in process bash
+> >> pfn:6daed
+> >> Jul 30 11:12:36 localhost kernel: page:ffffea0001b6bb40
+> >> flags:4000000000000000 count:1 mapcount:1 mapping:(null) index:6d8
+> >> Jul 30 11:12:36 localhost kernel: Pid: 1876, comm: bash Not tainted
+> >> 2.6.31-rc2 #30
+> >> Jul 30 11:12:36 localhost kernel: Call Trace:
+> >> Jul 30 11:12:36 localhost kernel: [<ffffffff81098570>] bad_page
+> >> +0xf8/0x10d
+> >> Jul 30 11:12:36 localhost kernel: [<ffffffff810997aa>]
+> >> get_page_from_freelist+0x357/0x475
+> >> Jul 30 11:12:36 localhost kernel: [<ffffffff810a72e3>] ? cond_resched
+> >> +0x9/0xb
+> >> Jul 30 11:12:36 localhost kernel: [<ffffffff810a9958>] ? 
+> >copy_page_range
+> >> +0x4cc/0x558
+> >> Jul 30 11:12:36 localhost kernel: [<ffffffff810999e0>]
+> >> __alloc_pages_nodemask+0x118/0x562
+> >> Jul 30 11:12:36 localhost kernel: [<ffffffff812a92c3>] ?
+> >> _spin_unlock_irq+0xe/0x11
+> >> Jul 30 11:12:36 localhost kernel: [<ffffffff810a9dda>]
+> >> alloc_pages_node.clone.0+0x14/0x16
+> >> Jul 30 11:12:36 localhost kernel: [<ffffffff810aa0b1>] do_wp_page
+> >> +0x2d5/0x57d
+> >> Jul 30 11:12:36 localhost kernel: [<ffffffff810aac00>] 
+> >handle_mm_fault
+> >> +0x586/0x5e0
+> >> Jul 30 11:12:36 localhost kernel: [<ffffffff812ab635>] do_page_fault
+> >> +0x20a/0x21f
+> >> Jul 30 11:12:36 localhost kernel: [<ffffffff812a968f>] page_fault
+> >> +0x1f/0x30
+> >> Jul 30 11:12:36 localhost kernel: Disabling lock debugging 
+> >due to kernel
+> >> taint
+> >> 
+> >> #define NPAGEST 256
+> >> void test_wc(void)
+> >> {
+> >>         struct page *pages[NPAGEST];
+> >>         int i, j;
+> >>         void *virt;
+> >> 
+> >>         for (i = 0; i < NPAGEST; i++) {
+> >>                 pages[i] = NULL;
+> >>         }
+> >>         for (i = 0; i < NPAGEST; i++) {
+> >>                 pages[i] = alloc_page(__GFP_DMA32 | GFP_USER);
+> >>                 if (pages[i] == NULL) {
+> >>                         printk(KERN_ERR "Failled allocating 
+> >page %d\n",
+> >> i);
+> >>                         goto out_free;
+> >>                 }
+> >>                 if (!PageHighMem(pages[i]))
+> >>                         if (set_memory_wc((unsigned long)
+> >> page_address(pages[i]), 1)) {
+> >>                                 printk(KERN_ERR "Failled 
+> >setting page %d
+> >> wc\n", i);
+> >>                                 goto out_free;
+> >>                         }
+> >>         }
+> >>         virt = vmap(pages, NPAGEST, 0,
+> >> pgprot_writecombine(PAGE_KERNEL));
+> >>         if (virt == NULL) {
+> >>                 printk(KERN_ERR "Failled vmapping\n");
+> >>                 goto out_free;
+> >>         }
+> >>         vunmap(virt);
+> >> out_free:
+> >>         for (i = 0; i < NPAGEST; i++) {
+> >>                 if (pages[i]) {
+> >>                         if (!PageHighMem(pages[i]))
+> >>                                 set_memory_wb((unsigned long)
+> >> page_address(pages[i]), 1);
+> >>                         __free_page(pages[i]);
+> >>                 }
+> >>         }
+> >> }
+> >
+> >vmaping doesn't seems to be involved with the corruption simply
+> >setting some pages with set_memory_wc is enough.
+> >
+> 
+> Hmm.. We have been able to reproduce a problem with code similar to above,
+> but the exact failure seems to be slightly different than one reported here.
+> Digging it a bit more to see what exactly is going on here. Will get back.....
+> 
+> Thanks,
+> Venki
 
-On Thu, 30 Jul 2009 11:35:03 EDT, Gene Heskett said:
-> Humm, kewl.  And the src's for grubby are where?  Hopefully in C so thois old
-> fart can grok...
+Don't know if it's usefull but it seems that page which are considered
+as bad are not the page that where set wc. Beside i checked that after
+set_wb page status were clean. Also it seems that the pat debugfs still
+shows wc range while the wc page were already return to wb (it's hard
+to say as most time i don't enough time to read this debugfs files
+before completely loosing control of the computer).
 
-% rpm -qi grubby
+Cheers,
+Jerome
 
-should provide pointers for the .src.rpm and the upstream source...
-
-(That trick should work for *every* RPM - if you find one it doesn't work
-for, that's probably a reportable bug to RedHat.)
-
---==_Exmh_1248979154_3306P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFKcejScC3lWbTT17ARAt9PAJkBUz+fb8fnLO3Al2N7QJdnTcfB/ACgpDjb
-F/HIui2eUNXbldlKtA0/cf4=
-=76bt
------END PGP SIGNATURE-----
-
---==_Exmh_1248979154_3306P--
