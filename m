@@ -1,118 +1,258 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752780AbZG3WZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbZG3WZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752780AbZG3WZO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 18:25:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbZG3WZO
+	id S1752946AbZG3WZd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 18:25:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbZG3WZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 18:25:14 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:51380 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751477AbZG3WZM (ORCPT
+	Thu, 30 Jul 2009 18:25:32 -0400
+Received: from chip2og113.obsmtp.com ([64.18.13.75]:38884 "HELO
+	chip2og113.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752459AbZG3WZb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 18:25:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=jW827GaoT3V9YDleGnaY7T7r2RT49dLDiR9ov9kipyKAmkBRAkjurJgHRi0sY0i8m1
-         rkvilMQ/S3i9NEOLcywnxrLW6uF+W16voodnIPBTVnht17Wp3PBk6VHD7EUEYsN7qAa2
-         hRNiARlTxHExt5crxOBmHwO6hFh8eyD5WIi90=
+	Thu, 30 Jul 2009 18:25:31 -0400
+X-Greylist: delayed 428 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Jul 2009 18:25:30 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Date: Fri, 31 Jul 2009 00:25:11 +0200
-Message-ID: <c93f91ee0907301525s7629435eged67b330e333f191@mail.gmail.com>
-Subject: issues with mmap() on raw socket with rx_ring
-From: leo mueller <llug.dan@googlemail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary=0016e64be264e71a83046ff3c6e1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH 1/1] [ARM] ep93xx clockevent support
+Date: Thu, 30 Jul 2009 18:18:20 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901B77371@mi8nycmail19.Mi8.com>
+In-Reply-To: <1248257565-11333-1-git-send-email-b33fc0d3@gentoo.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/1] [ARM] ep93xx clockevent support
+Thread-Index: AcoKtfDPeJvW/43qTk6vhRgkIsJwSgGq/eEg
+References: <1248253786-18993-2-git-send-email-b33fc0d3@gentoo.org> <1248257565-11333-1-git-send-email-b33fc0d3@gentoo.org>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "Ahmed Ammar" <b33fc0d3@gentoo.org>, <linux-kernel@vger.kernel.org>
+Cc: <linux-arm-kernel@lists.arm.linux.org.uk>,
+       "Ahmed Ammar" <aammar@edge-techno.com>
+X-OriginalArrivalTime: 30 Jul 2009 22:18:22.0790 (UTC) FILETIME=[A6981660:01CA1163]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0016e64be264e71a83046ff3c6e1
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Wednesday, July 22, 2009 3:13 AM, Ahmed Ammar wrote:
+> From: Ahmed Ammar <aammar@edge-techno.com>
+> 
+> Based on previous work by Thomas Gleixner.
+> 
+> Signed-off-by: Ahmed Ammar <aammar@edge-techno.com>
 
-hi all,
+Hmm..  With kernel 2.6.30.2 this does not build.  See below.
 
-i tried to follow the procedures described in
-Documentation/networking/packet_mmap.txt to
-create an "zero copy" rx_ring for packet capturing.
+> ---
+>  arch/arm/Kconfig                                |    2 +
+>  arch/arm/mach-ep93xx/core.c                     |  130 ++++++++++++++++++-----
+>  arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h |    6 +
+>  3 files changed, 112 insertions(+), 26 deletions(-)
+> 
+> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> index 74713a5..f33fd06 100644
+> --- a/arch/arm/Kconfig
+> +++ b/arch/arm/Kconfig
+> @@ -273,6 +273,8 @@ config ARCH_EP93XX
+>  	select HAVE_CLK
+>  	select COMMON_CLKDEV
+>  	select ARCH_REQUIRE_GPIOLIB
+> +	select GENERIC_TIME
+> +	select GENERIC_CLOCKEVENTS
+>  	help
+>  	  This enables support for the Cirrus EP93xx series of CPUs.
+>  
+> diff --git a/arch/arm/mach-ep93xx/core.c b/arch/arm/mach-ep93xx/core.c
+> index 7983a3b..cbd9187 100644
+> --- a/arch/arm/mach-ep93xx/core.c
+> +++ b/arch/arm/mach-ep93xx/core.c
+> @@ -33,6 +33,9 @@
+>  #include <linux/termios.h>
+>  #include <linux/amba/bus.h>
+>  #include <linux/amba/serial.h>
+> +#include <linux/clocksource.h>
+> +#include <linux/clockchips.h>
+> +
+>  #include <linux/io.h>
+>  #include <linux/i2c.h>
+>  #include <linux/i2c-gpio.h>
+> @@ -100,55 +103,130 @@ void __init ep93xx_map_io(void)
+>   * to use this timer for something else.  We also use timer 4 for keeping
+>   * track of lost jiffies.
+>   */
+> -static unsigned int last_jiffy_time;
+> -
+> -#define TIMER4_TICKS_PER_JIFFY		((CLOCK_TICK_RATE + (HZ/2)) / HZ)
+>  
+>  static irqreturn_t ep93xx_timer_interrupt(int irq, void *dev_id)
+>  {
+> -	__raw_writel(1, EP93XX_TIMER1_CLEAR);
+> -	while ((signed long)
+> -		(__raw_readl(EP93XX_TIMER4_VALUE_LOW) - last_jiffy_time)
+> -						>= TIMER4_TICKS_PER_JIFFY) {
+> -		last_jiffy_time += TIMER4_TICKS_PER_JIFFY;
+> -		timer_tick();
+> -	}
+> -
+> +	struct clock_event_device *evt = dev_id;
+> + 	__raw_writel(EP93XX_TC_CLEAR, EP93XX_TIMER1_CLEAR);
+> +	evt->event_handler(evt);
 
-i've attached an simple example and my output (see test_mmap.txt).
-despite i compiled
-the 2.6.30 kernel with CONFIG_PACKET_MMAP=y it won't work.
+Here I get "error: dereferencing pointer to incomplete type" 
 
-mem'mapping to the socket buffer always fails with -EINVAL and i have
-no clue why.... :-/
+>  	return IRQ_HANDLED;
+>  }
+> 
+> + 
+> +static int ep93xx_set_next_event(unsigned long evt,
+> +				  struct clock_event_device *unused)
+> +{
+> +	u32 tmode = __raw_readl(EP93XX_TIMER1_CONTROL);
+> +
+> +	/* stop timer */
+> +	__raw_writel(tmode & ~EP93XX_TC123_ENABLE, EP93XX_TIMER1_CONTROL);
+> +	/* program timer */
+> +	__raw_writel(evt, EP93XX_TIMER1_LOAD);
+> +	/* start timer */
+> +	__raw_writel(tmode | EP93XX_TC123_ENABLE, EP93XX_TIMER1_CONTROL);
+> +
+> +	return 0;
+> +}
+> +
+> +static void ep93xx_set_mode(enum clock_event_mode mode,
+> +			    struct clock_event_device *evt)
+> +{
+> +	u32 tmode = EP93XX_TC123_SEL_508KHZ;
+> +	/* Disable timer */
+> +	__raw_writel(tmode, EP93XX_TIMER1_CONTROL);
+> +
+> +	switch(mode) {
+> +	case CLOCK_EVT_MODE_PERIODIC:
+> +		/* Set timer period  */
+> +		__raw_writel((508469 / HZ) - 1, EP93XX_TIMER1_LOAD);
+> +		tmode |= EP93XX_TC123_PERIODIC;
+> +
+> +	case CLOCK_EVT_MODE_ONESHOT:
+> +		tmode |= EP93XX_TC123_ENABLE;
+> +		__raw_writel(tmode, EP93XX_TIMER1_CONTROL);
+> +		break;
+> +
+> +	case CLOCK_EVT_MODE_SHUTDOWN:
+> +	case CLOCK_EVT_MODE_UNUSED:
+> +	case CLOCK_EVT_MODE_RESUME:
+> +		return;
+> +	}
+> +}
+> +
+> +static struct clock_event_device clockevent_ep93xx = {
+> +	.name		= "ep93xx-timer1",
+> +	.features	= CLOCK_EVT_FEAT_ONESHOT | CLOCK_EVT_FEAT_PERIODIC,
+> +	.shift		= 32,
+> +	.set_mode	= ep93xx_set_mode,
+> +	.set_next_event	= ep93xx_set_next_event,
+> +};
+> +
+>  static struct irqaction ep93xx_timer_irq = {
+>  	.name		= "ep93xx timer",
+>  	.flags		= IRQF_DISABLED | IRQF_TIMER | IRQF_IRQPOLL,
+>  	.handler	= ep93xx_timer_interrupt,
+> +	.dev_id 	= &clockevent_ep93xx,
+>  };
+>  
+> -static void __init ep93xx_timer_init(void)
+> +static void __init ep93xx_clockevent_init(void)
+>  {
+> -	/* Enable periodic HZ timer.  */
+> -	__raw_writel(0x48, EP93XX_TIMER1_CONTROL);
+> -	__raw_writel((508469 / HZ) - 1, EP93XX_TIMER1_LOAD);
+> -	__raw_writel(0xc8, EP93XX_TIMER1_CONTROL);
+> +	setup_irq(IRQ_EP93XX_TIMER1, &ep93xx_timer_irq);
+> +	clockevent_ep93xx.mult = div_sc(508469, NSEC_PER_SEC,
+> +					clockevent_ep93xx.shift);
+> +	clockevent_ep93xx.max_delta_ns =
+> +		clockevent_delta2ns(0xfffffffe, &clockevent_ep93xx);
+> +	clockevent_ep93xx.min_delta_ns =
+> +		clockevent_delta2ns(0xf, &clockevent_ep93xx);
+> +	clockevent_ep93xx.cpumask = cpumask_of(0);
+> +	clockevents_register_device(&clockevent_ep93xx);
+> +}
+>  
+> -	/* Enable lost jiffy timer.  */
+> -	__raw_writel(0x100, EP93XX_TIMER4_VALUE_HIGH);
+> +/*
+> + * timer4 is a 40 Bit timer, separated in a 32bit and a 8 bit
+> + * register, EP93XX_TIMER4_VALUE_LOW stores 32 bit word. The
+> + * controlregister is in EP93XX_TIMER4_VALUE_HIGH
+> + */
+>  
+> -	setup_irq(IRQ_EP93XX_TIMER1, &ep93xx_timer_irq);
+> +cycle_t ep93xx_get_cycles(void)
+> +{
+> +	return __raw_readl(EP93XX_TIMER4_VALUE_LOW);
+>  }
+>  
+> -static unsigned long ep93xx_gettimeoffset(void)
+> +static struct clocksource clocksource_ep93xx = {
+> +	.name		= "ep93xx_timer4",
+> +	.rating		= 200,
+> +	.read		= ep93xx_get_cycles,
 
-do you have any idea?
+Here I get "warning: initialization from incompatible pointer type"
 
-thanks for help
-
---0016e64be264e71a83046ff3c6e1
-Content-Type: text/plain; charset=US-ASCII; name="test_mmap.txt"
-Content-Disposition: attachment; filename="test_mmap.txt"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fxs1zfq91
-
-I2luY2x1ZGUgPHN0ZGlvLmg+CiNpbmNsdWRlIDxzdGRsaWIuaD4KI2luY2x1ZGUgPHN0cmluZy5o
-PgojaW5jbHVkZSA8dW5pc3RkLmg+CiNpbmNsdWRlIDxhcnBhL2luZXQuaD4KI2luY2x1ZGUgPGFz
-c2VydC5oPgojaW5jbHVkZSA8bGludXgvaWZfZXRoZXIuaD4KI2luY2x1ZGUgPGxpbnV4L2lmX3Bh
-Y2tldC5oPgojaW5jbHVkZSA8c3lzL21tYW4uaD4KCmludCBtYWluKCkKewogICAgaW50IHNvY2s7
-CiAgICBpbnQgcmV0OwogICAgdm9pZCAqbWVtOwogICAgc2l6ZV90IG1hcHNpemU7CiAgICBzdHJ1
-Y3QgdHBhY2tldF9yZXEgcmVxOwogIAogICAgc29jayA9IHNvY2tldChQRl9QQUNLRVQsIFNPQ0tf
-UkFXLCBodG9ucyhFVEhfUF9JUCkpOwogICAgYXNzZXJ0KHNvY2sgIT0gLSAxKTsKCiAgICBtZW1z
-ZXQoJnJlcSwgMCwgc2l6ZW9mKHJlcSkpOwogICAgCiAgICByZXEudHBfYmxvY2tfc2l6ZSA9IDQw
-OTY7CiAgICByZXEudHBfZnJhbWVfc2l6ZSA9IDIwNDg7CiAgICByZXEudHBfYmxvY2tfbnIgPSA0
-OwogICAgcmVxLnRwX2ZyYW1lX25yID0gODsKCiAgICByZXQgPSBzZXRzb2Nrb3B0KHNvY2ssIFNP
-TF9TT0NLRVQsIFBBQ0tFVF9SWF9SSU5HLCAodm9pZCAqKSAmcmVxLCBzaXplb2YocmVxKSk7CiAg
-ICBhc3NlcnQocmV0ID09IDApOwoKICAgIG1hcHNpemUgPSByZXEudHBfYmxvY2tfbnIgKiByZXEu
-dHBfYmxvY2tfc2l6ZTsKICAgIG1lbSA9IG1tYXAoMCwgbWFwc2l6ZSwgUFJPVF9SRUFEIHwgUFJP
-VF9XUklURSwgTUFQX1NIQVJFRCwgc29jaywgMCApOwogICAgYXNzZXJ0KG1lbSAhPSBNQVBfRkFJ
-TEVEKTsKICAgIAogICAgLy8uLi4KICAgIC8vcG9sbCgpCiAgICAvLy4uLgogICAgCiAgICBjbG9z
-ZShzb2NrKTsKICAgIHJldHVybiAwOwp9CgovKgoKLmNvbmZpZzoKWy4uLl0KQ09ORklHX01NVT15
-CkNPTkZJR19QQUNLRVQ9eQpDT05GSUdfUEFDS0VUX01NQVA9eQpbLi4uXQoKb3V0cHV0OgoKJCB1
-bmFtZSAtYQpMaW51eCBkYXJrc3Rhci1sYXB0b3AgMi42LjMwLjMgIzEgU01QIFRodSBKdWwgMzAg
-MjM6MDA6MTAgQ0VTVCAyMDA5IGk2ODYgR05VL0xpbnV4CgokIGdjYyAtV2FsbCAuL3Rlc3RfbW1h
-cC5jCiQgc3VkbyAuL2Eub3V0IAphLm91dDogLi90ZXN0X21tYXAuYzozNDogbWFpbjogQXNzZXJ0
-aW9uIGBtZW0gIT0gKCh2b2lkICopIC0xKScgZmFpbGVkLgpBYm9ydGVkCgoqLwoKLS0tLS0tc25p
-cC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tPgpzdHJhY2Ugc2F5czoKCmV4
-ZWN2ZSgiLi9hLm91dCIsIFsiLi9hLm91dCJdLCBbLyogMzggdmFycyAqL10pID0gMApicmsoMCkg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPSAweDg3ZDkwMDAKYWNjZXNzKCIvZXRj
-L2xkLnNvLm5vaHdjYXAiLCBGX09LKSAgICAgID0gLTEgRU5PRU5UIChObyBzdWNoIGZpbGUgb3Ig
-ZGlyZWN0b3J5KQptbWFwMihOVUxMLCA4MTkyLCBQUk9UX1JFQUR8UFJPVF9XUklURSwgTUFQX1BS
-SVZBVEV8TUFQX0FOT05ZTU9VUywgLTEsIDApID0gMHhiODAxMjAwMAphY2Nlc3MoIi9ldGMvbGQu
-c28ucHJlbG9hZCIsIFJfT0spICAgICAgPSAtMSBFTk9FTlQgKE5vIHN1Y2ggZmlsZSBvciBkaXJl
-Y3RvcnkpCm9wZW4oIi9ldGMvbGQuc28uY2FjaGUiLCBPX1JET05MWSkgICAgICA9IDMKZnN0YXQ2
-NCgzLCB7c3RfbW9kZT1TX0lGUkVHfDA2NDQsIHN0X3NpemU9ODA0NDAsIC4uLn0pID0gMAptbWFw
-MihOVUxMLCA4MDQ0MCwgUFJPVF9SRUFELCBNQVBfUFJJVkFURSwgMywgMCkgPSAweGI3ZmZlMDAw
-CmNsb3NlKDMpICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA9IDAKYWNjZXNzKCIvZXRj
-L2xkLnNvLm5vaHdjYXAiLCBGX09LKSAgICAgID0gLTEgRU5PRU5UIChObyBzdWNoIGZpbGUgb3Ig
-ZGlyZWN0b3J5KQpvcGVuKCIvbGliL3Rscy9pNjg2L2Ntb3YvbGliYy5zby42IiwgT19SRE9OTFkp
-ID0gMwpyZWFkKDMsICJcMTc3RUxGXDFcMVwxXDBcMFwwXDBcMFwwXDBcMFwwXDNcMFwzXDBcMVww
-XDBcMFwyNjBlXDEiLi4uLCA1MTIpID0gNTEyCmZzdGF0NjQoMywge3N0X21vZGU9U19JRlJFR3ww
-NzU1LCBzdF9zaXplPTEzNjQzODgsIC4uLn0pID0gMAptbWFwMihOVUxMLCAxMzY5NzEyLCBQUk9U
-X1JFQUR8UFJPVF9FWEVDLCBNQVBfUFJJVkFURXxNQVBfREVOWVdSSVRFLCAzLCAwKSA9IDB4Yjdl
-YWYwMDAKbW1hcDIoMHhiN2ZmODAwMCwgMTIyODgsIFBST1RfUkVBRHxQUk9UX1dSSVRFLCBNQVBf
-UFJJVkFURXxNQVBfRklYRUR8TUFQX0RFTllXUklURSwgMywgMHgxNDkpID0gMHhiN2ZmODAwMApt
-bWFwMigweGI3ZmZiMDAwLCA5ODQwLCBQUk9UX1JFQUR8UFJPVF9XUklURSwgTUFQX1BSSVZBVEV8
-TUFQX0ZJWEVEfE1BUF9BTk9OWU1PVVMsIC0xLCAwKSA9IDB4YjdmZmIwMDAKY2xvc2UoMykgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgID0gMAptbWFwMihOVUxMLCA0MDk2LCBQUk9UX1JF
-QUR8UFJPVF9XUklURSwgTUFQX1BSSVZBVEV8TUFQX0FOT05ZTU9VUywgLTEsIDApID0gMHhiN2Vh
-ZTAwMApzZXRfdGhyZWFkX2FyZWEoe2VudHJ5X251bWJlcjotMSAtPiA2LCBiYXNlX2FkZHI6MHhi
-N2VhZTZiMCwgbGltaXQ6MTA0ODU3NSwgc2VnXzMyYml0OjEsIGNvbnRlbnRzOjAsIHJlYWRfZXhl
-Y19vbmx5OjAsIGxpbWl0X2luX3BhZ2VzOjEsIHNlZ19ub3RfcHJlc2VudDowLCB1c2VhYmxlOjF9
-KSA9IDAKbXByb3RlY3QoMHhiN2ZmODAwMCwgNDA5NiwgUFJPVF9SRUFEKSAgID0gMAptdW5tYXAo
-MHhiN2ZmZTAwMCwgODA0NDApICAgICAgICAgICAgICAgPSAwCnNvY2tldChQRl9QQUNLRVQsIFNP
-Q0tfUkFXLCA4KSAgICAgICAgICA9IDMKc2V0c29ja29wdCgzLCBTT0xfU09DS0VULCBTT19ET05U
-Uk9VVEUsICJcMFwyMFwwXDBcNFwwXDBcMFwwXDEwXDBcMFwxMFwwXDBcMCIsIDE2KSA9IDAKbW1h
-cDIoTlVMTCwgMTYzODQsIFBST1RfUkVBRHxQUk9UX1dSSVRFLCBNQVBfU0hBUkVELCAzLCAwKSA9
-IC0xIEVJTlZBTCAoSW52YWxpZCBhcmd1bWVudCkKYnJrKDApICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgID0gMHg4N2Q5MDAwCmJyaygweDg3ZmEwMDApICAgICAgICAgICAgICAgICAg
-ICAgICAgICA9IDB4ODdmYTAwMAp3cml0ZSgyLCAiYS5vdXQ6IC4vdGVzdF9tbWFwLmM6MzQ6IG1h
-aW46IEEiLi4uLCA3MmEub3V0OiAuL3Rlc3RfbW1hcC5jOjM0OiBtYWluOiBBc3NlcnRpb24gYG1l
-bSAhPSAoKHZvaWQgKikgLTEpJyBmYWlsZWQuCikgPSA3MgpydF9zaWdwcm9jbWFzayhTSUdfVU5C
-TE9DSywgW0FCUlRdLCBOVUxMLCA4KSA9IDAKZ2V0dGlkKCkgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgID0gNjg0Ngp0Z2tpbGwoNjg0NiwgNjg0NiwgU0lHQUJSVCkgICAgICAgICAgICAg
-PSAwCi0tLSBTSUdBQlJUIChBYm9ydGVkKSBAIDAgKDApIC0tLQorKysga2lsbGVkIGJ5IFNJR0FC
-UlQgKysrCgo=
---0016e64be264e71a83046ff3c6e1--
+> +	.mask		= 0xFFFFFFFF,
+> +	.shift		= 20,
+> +	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
+> +};
+> +
+> +/*
+> + * Returns current time from boot in nsecs. It's OK for this to wrap
+> + * around for now, as it's just a relative time stamp.
+> + */
+> +unsigned long long sched_clock(void)
+>  {
+> -	int offset;
+> +	return cyc2ns(&clocksource_ep93xx, ep93xx_get_cycles());
+> +}
+>  
+> -	offset = __raw_readl(EP93XX_TIMER4_VALUE_LOW) - last_jiffy_time;
+> +static void __init ep93xx_clocksource_init(void)
+> +{
+> +	/* Reset time-stamp counter */
+> +	__raw_writel(0x100, EP93XX_TIMER4_VALUE_HIGH);
+> +	clocksource_ep93xx.mult =
+> +		clocksource_hz2mult(983040, clocksource_ep93xx.shift);
+> +	clocksource_register(&clocksource_ep93xx);
+> +}
+>  
+> -	/* Calculate (1000000 / 983040) * offset.  */
+> -	return offset + (53 * offset / 3072);
+> +static void __init ep93xx_timer_init(void)
+> +{
+> +	ep93xx_clocksource_init();
+> +	ep93xx_clockevent_init();
+>  }
+>  
+>  struct sys_timer ep93xx_timer = {
+> -	.init		= ep93xx_timer_init,
+> -	.offset		= ep93xx_gettimeoffset,
+> + 	.init			= ep93xx_timer_init,
+>  };
+>  
+>  
+> diff --git a/arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h b/arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h
+> index 36c23fb..473cdec 100644
+> --- a/arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h
+> +++ b/arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h
+> @@ -101,6 +101,12 @@
+>  #define EP93XX_TIMER3_CONTROL		EP93XX_TIMER_REG(0x88)
+>  #define EP93XX_TIMER3_CLEAR		EP93XX_TIMER_REG(0x8c)
+>  
+> +#define EP93XX_TC_CLEAR			0x00000001
+> +#define EP93XX_TC123_ENABLE		0x00000080
+> +#define EP93XX_TC123_PERIODIC		0x00000040
+> +#define EP93XX_TC123_SEL_508KHZ		0x00000008
+> +#define EP93XX_TC4_ENABLE		0x00000100
+> +
+>  #define EP93XX_I2S_BASE			(EP93XX_APB_VIRT_BASE + 0x00020000)
+>  
+>  #define EP93XX_SECURITY_BASE		(EP93XX_APB_VIRT_BASE + 0x00030000)
