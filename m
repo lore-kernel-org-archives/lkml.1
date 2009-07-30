@@ -1,94 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbZG3Dbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750999AbZG3EII@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754157AbZG3Dbu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 23:31:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbZG3Dbu
+	id S1750999AbZG3EII (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 00:08:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbZG3EIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 23:31:50 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:61991 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753724AbZG3Dbt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 23:31:49 -0400
-Message-ID: <4A711415.2020308@cn.fujitsu.com>
-Date: Thu, 30 Jul 2009 11:31:33 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 30 Jul 2009 00:08:07 -0400
+Received: from mga03.intel.com ([143.182.124.21]:54176 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750800AbZG3EIH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 00:08:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,292,1246863600"; 
+   d="scan'208";a="170412606"
+Date: Thu, 30 Jul 2009 12:08:03 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Martin Bligh <mbligh@google.com>
+Cc: Chad Talbott <ctalbott@google.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Michael Rubin <mrubin@google.com>, Andrew Morton <akpm@google.com>,
+       "sandeen@redhat.com" <sandeen@redhat.com>,
+       Michael Davidson <md@google.com>
+Subject: Re: Bug in kernel 2.6.31, Slow wb_kupdate writeout
+Message-ID: <20090730040803.GA20652@localhost>
+References: <1786ab030907281211x6e432ba6ha6afe9de73f24e0c@mail.gmail.com> <33307c790907281449k5e8d4f6cib2c93848f5ec2661@mail.gmail.com> <33307c790907290015m1e6b5666x9c0014cdaf5ed08@mail.gmail.com> <20090729114322.GA9335@localhost> <33307c790907290711s320607b0i79c939104d4c2d61@mail.gmail.com> <20090730010630.GA7326@localhost> <33307c790907291812j40146a96tc2e9c5e097a33615@mail.gmail.com> <20090730015754.GC7326@localhost> <33307c790907291959r47b1bd3ap7cfa06fd5154aaad@mail.gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: mingo@elte.hu, jens.axboe@oracle.com, nickpiggin@yahoo.com.au,
-       peterz@infradead.org, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3 -mm] generic-ipi: fix the race between generic_smp_call_function_*()
- and hotplug_cfd()
-References: <4A6983D8.8090805@cn.fujitsu.com>	<4A6FFFE9.5070204@cn.fujitsu.com>	<4A7000FF.6040402@cn.fujitsu.com> <20090729163120.2e27be41.akpm@linux-foundation.org>
-In-Reply-To: <20090729163120.2e27be41.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <33307c790907291959r47b1bd3ap7cfa06fd5154aaad@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jul 30, 2009 at 10:59:09AM +0800, Martin Bligh wrote:
+> On Wed, Jul 29, 2009 at 6:57 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
+> > On Thu, Jul 30, 2009 at 09:12:26AM +0800, Martin Bligh wrote:
+> >> > I agree on the unification of kupdate and sync paths. In fact I had a
+> >> > patch for doing this. And I'd recommend to do it in two patches:
+> >> > one to fix the congestion case, another to do the code unification.
+> >> >
+> >> > The sync path don't care whether requeue_io() or redirty_tail() is
+> >> > used, because they disregard the time stamps totally - only order of
+> >> > inodes matters (ie. starvation), which is same for requeue_io()/redirty_tail().
+> >>
+> >> But, as I understand it, both paths share the same lists, so we still have
+> >> to be consistent?
+> >
+> > Then let's first unify the code, then fix the congestion case? :)
+> 
+> OK, I will send it out as separate patches. I am just finishing up the testing
+> first.
 
+Note that this is a simple fix that may have suboptimal write performance.
+Here is an old reasoning:
 
-Andrew Morton wrote:
-> On Wed, 29 Jul 2009 15:57:51 +0800
-> Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
-> 
->> It have race between generic_smp_call_function_*() and hotplug_cfd()
->> in many cases, see below examples:
->>
->> 1: hotplug_cfd() can free cfd->cpumask, the system will crash if the
->>    cpu's cfd still in the call_function list:
->>   
->>   
->>       CPU A:                         CPU B
->>    
->>  smp_call_function_many()	    ......
->>    cpu_down()                      ......
->>   hotplug_cfd() ->                 ......
->>  free_cpumask_var(cfd->cpumask)  (receive function IPI interrupte)
->>                                 /* read cfd->cpumask */           
->>                           generic_smp_call_function_interrupt() ->
->>                          cpumask_test_and_clear_cpu(cpu, data->cpumask)
->>
->>                          	CRASH!!!
->>
->> 2: It's not handle call_function list when cpu down, It's will lead to
->>    dead-wait if other path is waiting this cpu to execute function
->>    
->>     CPU A:                           CPU B
->>
->>  smp_call_function_many(wait=0)					
->>         ......			    CPU B down
->>    smp_call_function_many() -->  (cpu down before recevie function
->>     csd_lock(&data->csd);         IPI interrupte)
->>
->>     DEAD-WAIT!!!!
->>        
->>   So, CPU A will dead-wait in csd_lock(), the same as
->>   smp_call_function_single()
->>
->> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
->> ---
->>  kernel/smp.c |  140 ++++++++++++++++++++++++++++++++-------------------------
->>  1 files changed, 79 insertions(+), 61 deletions(-)
->>
-> 
-> It was unfortunate that this patch moved a screenful of code around and
-> changed that code at the same time - it makes it hard to see what the
-> functional change was.
-> 
-> So I split this patch into two.  The first patch simply moves
-> hotplug_cfd() to the end of the file and the second makes the
-> functional changes.  The second patch is below, for easier review.
-> 
-> Do we think that this patch should be merged into 2.6.31?  2.6.30.x?
->
-
-This bug is conceal from v2.6.26 when kernel/smp.c created and be
-found by my review, no one is bothered by it and sends us a bug
-report, besides, this patch can't be applied to <= 2.6.30 cleanly,
-so I think we can just fix it for .31
+        http://lkml.org/lkml/2009/3/28/235
 
 Thanks,
-Xiao
+Fengguang
