@@ -1,140 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751284AbZG3FOa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751317AbZG3Fgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751284AbZG3FOa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 01:14:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbZG3FO3
+	id S1751317AbZG3Fgb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 01:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbZG3Fga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 01:14:29 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:40149 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750912AbZG3FO2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 01:14:28 -0400
-Date: Thu, 30 Jul 2009 00:14:26 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       selinux@tycho.nsa.gov, jwcart2@tycho.nsa.gov, sds@tycho.nsa.gov,
-       spender@grsecurity.net, dwalsh@redhat.com, cl@linux-foundation.org,
-       arjan@infradead.org, alan@lxorguk.ukuu.org.uk, kees@outflux.net,
-       csellers@tresys.com, penguin-kernel@i-love.sakura.ne.jp
-Subject: Re: [PATCH -v3 1/3] Capabilities: move cap_file_mmap to commoncap.c
-Message-ID: <20090730051426.GA6082@us.ibm.com>
-References: <20090729185620.21757.44366.stgit@paris.rdu.redhat.com>
+	Thu, 30 Jul 2009 01:36:30 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:61570 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750859AbZG3Fg3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 01:36:29 -0400
+Message-ID: <4A713204.7030005@cn.fujitsu.com>
+Date: Thu, 30 Jul 2009 13:39:16 +0800
+From: Zhaolei <zhaolei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090729185620.21757.44366.stgit@paris.rdu.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, Pavel Machek <pavel@ucw.cz>,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: [PATCH v4 0/2] Add function to convert between calendar time and
+ broken-down time for universal use
+References: <4A5C3BC0.6020701@cn.fujitsu.com>	<20090714151040.b7b3b26d.akpm@linux-foundation.org>	<20090718115019.GH1433@ucw.cz>	<04e101ca08e5$be078fa0$808410ac@zhaoleiwin>	<20090719202018.497f7ec1.akpm@linux-foundation.org>	<4A643EFE.7090103@cn.fujitsu.com> <4A643F36.5090200@cn.fujitsu.com>	<87ocr9mi8h.fsf@devron.myhome.or.jp> <4A6D1BCF.1030109@cn.fujitsu.com>	<87k51u8xwa.fsf@devron.myhome.or.jp> <4A6E6ADD.6090602@cn.fujitsu.com> <87vdld9yrr.fsf@devron.myhome.or.jp>
+In-Reply-To: <87vdld9yrr.fsf@devron.myhome.or.jp>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Eric Paris (eparis@redhat.com):
-> Currently we duplicate the mmap_min_addr test in cap_file_mmap and in
-> security_file_mmap if !CONFIG_SECURITY.  This patch moves cap_file_mmap
-> into commoncap.c and then calls that function directly from
-> security_file_mmap ifndef CONFIG_SECURITY like all of the other capability
-> checks are done.
+Hello, Andrew
 
-It also
+This is Patch v4.
+I updated this patch bases on Ogawa-san's suggestion.
 
-	1. changes the return value in error case from -EACCES to
-	   -EPERM
-	2. no onger sets PF_SUPERPRIV in t->flags if the capability
-	   is used.
+Changelog v3->v4:
+1: Use long instead of int for tm.tm_year to avoid overflow
+2: Remove localtime() and gmtime() because they can't support timezone
+   database as user-more. And rename __offtime() to time_to_tm()
+3: Use time_t instead of __kernel_time_t as function's argument type
+4: __isleap(unsigned int year)->__isleap(long year) to avoid overflow
 
-Do we care about these?
+Changelog v2->v3:
+Using a struct to save year/mon/.../yday.
 
--serge
+Changelog v1->v2:
+1: Fix "no tabs" error caused by email client.
+2: Remove explicit 'inline' in __isleap()
+3: Move DIV() and LEAPS_THRU_END_OF(y) into regular C function along with
+   comment
+4: Move gmtime() and localtime() into header file.
 
-> Signed-off-by: Eric Paris <eparis@redhat.com>
-> ---
-> 
->  include/linux/security.h |    7 ++++---
->  security/capability.c    |    9 ---------
->  security/commoncap.c     |   24 ++++++++++++++++++++++++
->  3 files changed, 28 insertions(+), 12 deletions(-)
-> 
-> diff --git a/include/linux/security.h b/include/linux/security.h
-> index 1459091..963a48f 100644
-> --- a/include/linux/security.h
-> +++ b/include/linux/security.h
-> @@ -66,6 +66,9 @@ extern int cap_inode_setxattr(struct dentry *dentry, const char *name,
->  extern int cap_inode_removexattr(struct dentry *dentry, const char *name);
->  extern int cap_inode_need_killpriv(struct dentry *dentry);
->  extern int cap_inode_killpriv(struct dentry *dentry);
-> +extern int cap_file_mmap(struct file *file, unsigned long reqprot,
-> +			 unsigned long prot, unsigned long flags,
-> +			 unsigned long addr, unsigned long addr_only);
->  extern int cap_task_fix_setuid(struct cred *new, const struct cred *old, int flags);
->  extern int cap_task_prctl(int option, unsigned long arg2, unsigned long arg3,
->  			  unsigned long arg4, unsigned long arg5);
-> @@ -2197,9 +2200,7 @@ static inline int security_file_mmap(struct file *file, unsigned long reqprot,
->  				     unsigned long addr,
->  				     unsigned long addr_only)
->  {
-> -	if ((addr < mmap_min_addr) && !capable(CAP_SYS_RAWIO))
-> -		return -EACCES;
-> -	return 0;
-> +	return cap_file_mmap(file, reqprot, prot, flags, addr, addr_only);
->  }
-> 
->  static inline int security_file_mprotect(struct vm_area_struct *vma,
-> diff --git a/security/capability.c b/security/capability.c
-> index f218dd3..ec05730 100644
-> --- a/security/capability.c
-> +++ b/security/capability.c
-> @@ -330,15 +330,6 @@ static int cap_file_ioctl(struct file *file, unsigned int command,
->  	return 0;
->  }
-> 
-> -static int cap_file_mmap(struct file *file, unsigned long reqprot,
-> -			 unsigned long prot, unsigned long flags,
-> -			 unsigned long addr, unsigned long addr_only)
-> -{
-> -	if ((addr < mmap_min_addr) && !capable(CAP_SYS_RAWIO))
-> -		return -EACCES;
-> -	return 0;
-> -}
-> -
->  static int cap_file_mprotect(struct vm_area_struct *vma, unsigned long reqprot,
->  			     unsigned long prot)
->  {
-> diff --git a/security/commoncap.c b/security/commoncap.c
-> index aa97704..9a731d7 100644
-> --- a/security/commoncap.c
-> +++ b/security/commoncap.c
-> @@ -984,3 +984,27 @@ int cap_vm_enough_memory(struct mm_struct *mm, long pages)
->  		cap_sys_admin = 1;
->  	return __vm_enough_memory(mm, pages, cap_sys_admin);
->  }
-> +
-> +/*
-> + * cap_file_mmap - check if able to map given addr
-> + * @file: unused
-> + * @reqprot: unused
-> + * @prot: unused
-> + * @flags: unused
-> + * @addr: address attempting to be mapped
-> + * @addr_only: unused
-> + *
-> + * If the process is attempting to map memory below mmap_min_addr they need
-> + * CAP_SYS_RAWIO.  The other parameters to this function are unused by the
-> + * capability security module.  Returns 0 if this mapping should be allowed
-> + * -EPERM if not.
-> + */
-> +int cap_file_mmap(struct file *file, unsigned long reqprot,
-> +		  unsigned long prot, unsigned long flags,
-> +		  unsigned long addr, unsigned long addr_only)
-> +{
-> +	if (addr < mmap_min_addr)
-> +		return cap_capable(current, current_cred(), CAP_SYS_RAWIO,
-> +				   SECURITY_CAP_AUDIT);
-> +	return 0;
-> +}
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Thanks
+Zhaolei
+
