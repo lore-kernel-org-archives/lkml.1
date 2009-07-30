@@ -1,90 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751704AbZG3Sb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751992AbZG3Sc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751704AbZG3Sb0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 14:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbZG3SbZ
+	id S1751992AbZG3Sc4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 14:32:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbZG3Scz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 14:31:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41832 "EHLO mx2.redhat.com"
+	Thu, 30 Jul 2009 14:32:55 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37510 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750786AbZG3SbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 14:31:24 -0400
-Date: Thu, 30 Jul 2009 14:30:14 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Jerome Marchand <jmarchan@redhat.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, ryov@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com,
-       agk@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
-Subject: Re: [PATCH 05/24] io-controller: Modify cfq to make use of flat
-	elevator fair queuing
-Message-ID: <20090730183014.GA6067@redhat.com>
-References: <1248467274-32073-1-git-send-email-vgoyal@redhat.com> <1248467274-32073-6-git-send-email-vgoyal@redhat.com> <4A71BF76.6040709@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A71BF76.6040709@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751120AbZG3Scz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 14:32:55 -0400
+Subject: Re: [PATCH -v3 1/3] Capabilities: move cap_file_mmap to commoncap.c
+From: Eric Paris <eparis@redhat.com>
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, selinux@tycho.nsa.gov,
+       jwcart2@tycho.nsa.gov, spender@grsecurity.net, dwalsh@redhat.com,
+       cl@linux-foundation.org, arjan@infradead.org, alan@lxorguk.ukuu.org.uk,
+       kees@outflux.net, csellers@tresys.com,
+       penguin-kernel@i-love.sakura.ne.jp
+In-Reply-To: <1248976252.2771.1.camel@localhost>
+References: <20090729185620.21757.44366.stgit@paris.rdu.redhat.com>
+	 <20090730051426.GA6082@us.ibm.com> <1248968428.2597.79.camel@localhost>
+	 <20090730155403.GA13939@us.ibm.com>
+	 <1248969492.11627.172.camel@moss-pluto.epoch.ncsc.mil>
+	 <1248976252.2771.1.camel@localhost>
+Content-Type: text/plain
+Date: Thu, 30 Jul 2009 14:31:19 -0400
+Message-Id: <1248978679.2771.24.camel@localhost>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 30, 2009 at 05:42:46PM +0200, Jerome Marchand wrote:
-> Vivek Goyal wrote:
-> > @@ -1616,11 +1234,12 @@ static void changed_ioprio(struct io_context *ioc, struct cfq_io_context *cic)
-> >  	struct cfq_data *cfqd = cic->key;
-> >  	struct cfq_queue *cfqq;
-> >  	unsigned long flags;
-> > +	struct request_queue *q = cfqd->queue;
+On Thu, 2009-07-30 at 13:50 -0400, Eric Paris wrote:
+> On Thu, 2009-07-30 at 11:58 -0400, Stephen Smalley wrote:
+> > On Thu, 2009-07-30 at 10:54 -0500, Serge E. Hallyn wrote:
+> > > Quoting Eric Paris (eparis@redhat.com):
+> > > > On Thu, 2009-07-30 at 00:14 -0500, Serge E. Hallyn wrote:
+> > > > > Quoting Eric Paris (eparis@redhat.com):
+> > > > > > Currently we duplicate the mmap_min_addr test in cap_file_mmap and in
+> > > > > > security_file_mmap if !CONFIG_SECURITY.  This patch moves cap_file_mmap
+> > > > > > into commoncap.c and then calls that function directly from
+> > > > > > security_file_mmap ifndef CONFIG_SECURITY like all of the other capability
+> > > > > > checks are done.
+> > > > > 
+> > > > > It also
+> > > > > 
+> > > > > 	1. changes the return value in error case from -EACCES to
+> > > > > 	   -EPERM
+> > > > > 	2. no onger sets PF_SUPERPRIV in t->flags if the capability
+> > > > > 	   is used.
+> > > > > 
+> > > > > Do we care about these?
+> > > > 
+> > > > Personally, not really, but I'll gladly put them back if you care.   #2
+> > > > seems more interesting to me than number 1.   I actually kinda like
+> > > > getting EPERM from caps rather than EACCES since them I know if I was
+> > > > denied by selinux or by caps.....
+> > > > 
+> > > > -Eric
+> > > 
+> > > Yup, I asked bc I didn't particularly care myself.
+> > > 
+> > > I think I agree with you about -EPERM being better anyway.  However I
+> > > (now) think in this case PF_SUPERPRIV definately should be set, as this
+> > > is a clear use of a capability to do something that couldn't have been
+> > > done without it.
+> > 
+> > On a related but different note, we should consider all current uses of
+> > cap_capable(), as they represent capability checks that will not be
+> > subject to a further restrictive check by other security modules.  In
+> > this case and in the vm_enough_memory case, that is intentional, but not
+> > so clear for other uses in commoncap.c.
 > 
-> cfqd may be NULL here. We'd better test it before using it.
+> Most of commoncap.c is called either as a secondary hook from the active
+> lsm (aka selinux calls the commoncap.c functions) or in the !
+> CONFIG_SECURITY case.
 > 
+> I'll audit this afternoon to see which of them might not fit these
+> rules....
 
-Thanks Jerome. 
+I just went through all of the cap_* function in commoncap.c to see
+which of them are being or are not being called from the selinux hooks.
+Only 3 of them look interesting.
 
-Actually I will drop this chage altogether. This is not required. I don't
-know why did I change original code to introduce another local variable. 
+cap_inode_setxattr
+cap_inode_removexattr
+cap_vm_enough_memory
 
-Thanks
-Vivek
+All of the other functions are either called from hooks.c or SELinux
+does not define that LSM hook, so it just defaults to the cap_* hook.
 
-> >  
-> >  	if (unlikely(!cfqd))
-> >  		return;
-> >  
-> > -	spin_lock_irqsave(cfqd->queue->queue_lock, flags);
-> > +	spin_lock_irqsave(q->queue_lock, flags);
-> >  
-> >  	cfqq = cic->cfqq[BLK_RW_ASYNC];
-> >  	if (cfqq) {
-> > @@ -1637,7 +1256,7 @@ static void changed_ioprio(struct io_context *ioc, struct cfq_io_context *cic)
-> >  	if (cfqq)
-> >  		cfq_mark_cfqq_prio_changed(cfqq);
-> >  
-> > -	spin_unlock_irqrestore(cfqd->queue->queue_lock, flags);
-> > +	spin_unlock_irqrestore(q->queue_lock, flags);
-> >  }
-> >  
-> >  static void cfq_ioc_set_ioprio(struct io_context *ioc)
-> 
-> 
-> --- block/cfq-iosched.c.orig	2009-07-29 10:22:08.000000000 +0200
-> +++ block/cfq-iosched.c	2009-07-30 17:25:05.000000000 +0200
-> @@ -1271,11 +1271,12 @@ static void changed_ioprio(struct io_con
->  	struct cfq_data *cfqd = cic->key;
->  	struct cfq_queue *cfqq;
->  	unsigned long flags;
-> -	struct request_queue *q = cfqd->queue;
-> +	struct request_queue *q;
->  
->  	if (unlikely(!cfqd))
->  		return;
->  
-> +	q = cfqd->queue;
->  	spin_lock_irqsave(q->queue_lock, flags);
->  
->  	cfqq = cic->cfqq[BLK_RW_ASYNC];
+These 3 are all a bit odd because the logic inside the cap_ hook is
+duplicated inside the selinux_ hook.  I'd much rather see the selinux_
+hook call the cap_ hook.  I'm going to think on that topic, but it's a
+different set of patches and I don't see missing checks today as the
+logic seems to line up.
+
+-Eric
+
