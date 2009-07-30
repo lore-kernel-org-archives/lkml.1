@@ -1,50 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754110AbZG3D2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbZG3Dbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754110AbZG3D2G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 23:28:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753684AbZG3D2F
+	id S1754157AbZG3Dbu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 23:31:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbZG3Dbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 23:28:05 -0400
-Received: from mga05.intel.com ([192.55.52.89]:43226 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752012AbZG3D2E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 23:28:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,292,1246863600"; 
-   d="scan'208";a="479165221"
-Subject: [SLUB] change kmem_cache->align to record the real alignment
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
+	Wed, 29 Jul 2009 23:31:50 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:61991 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753724AbZG3Dbt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 23:31:49 -0400
+Message-ID: <4A711415.2020308@cn.fujitsu.com>
+Date: Thu, 30 Jul 2009 11:31:33 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: mingo@elte.hu, jens.axboe@oracle.com, nickpiggin@yahoo.com.au,
+       peterz@infradead.org, rusty@rustcorp.com.au,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3 -mm] generic-ipi: fix the race between generic_smp_call_function_*()
+ and hotplug_cfd()
+References: <4A6983D8.8090805@cn.fujitsu.com>	<4A6FFFE9.5070204@cn.fujitsu.com>	<4A7000FF.6040402@cn.fujitsu.com> <20090729163120.2e27be41.akpm@linux-foundation.org>
+In-Reply-To: <20090729163120.2e27be41.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=UTF-8
-Date: Thu, 30 Jul 2009 11:28:11 +0800
-Message-Id: <1248924491.2560.725.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kmem_cache->align records the original align parameter value specified
-by users. Function calculate_alignment might change it based on cache
-line size. So change kmem_cache->align correspondingly.
-
-﻿Signed-off-by: Zhang Yanmin <yanmin_zhang@linux.intel.com>
-
----
-
---- linux-2.6.31-rc3/mm/slub.c	2009-07-20 00:29:39.000000000 +0800
-+++ linux-2.6.31-rc3_slubalign/mm/slub.c	2009-07-30 01:19:29.000000000 +0800
-@@ -2400,6 +2400,7 @@ static int calculate_sizes(struct kmem_c
- 	 * on bootup.
- 	 */
- 	align = calculate_alignment(flags, align, s->objsize);
-+	s->align = align;
- 
- 	/*
- 	 * SLUB stores one object immediately after another beginning from
 
 
+Andrew Morton wrote:
+> On Wed, 29 Jul 2009 15:57:51 +0800
+> Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
+> 
+>> It have race between generic_smp_call_function_*() and hotplug_cfd()
+>> in many cases, see below examples:
+>>
+>> 1: hotplug_cfd() can free cfd->cpumask, the system will crash if the
+>>    cpu's cfd still in the call_function list:
+>>   
+>>   
+>>       CPU A:                         CPU B
+>>    
+>>  smp_call_function_many()	    ......
+>>    cpu_down()                      ......
+>>   hotplug_cfd() ->                 ......
+>>  free_cpumask_var(cfd->cpumask)  (receive function IPI interrupte)
+>>                                 /* read cfd->cpumask */           
+>>                           generic_smp_call_function_interrupt() ->
+>>                          cpumask_test_and_clear_cpu(cpu, data->cpumask)
+>>
+>>                          	CRASH!!!
+>>
+>> 2: It's not handle call_function list when cpu down, It's will lead to
+>>    dead-wait if other path is waiting this cpu to execute function
+>>    
+>>     CPU A:                           CPU B
+>>
+>>  smp_call_function_many(wait=0)					
+>>         ......			    CPU B down
+>>    smp_call_function_many() -->  (cpu down before recevie function
+>>     csd_lock(&data->csd);         IPI interrupte)
+>>
+>>     DEAD-WAIT!!!!
+>>        
+>>   So, CPU A will dead-wait in csd_lock(), the same as
+>>   smp_call_function_single()
+>>
+>> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+>> ---
+>>  kernel/smp.c |  140 ++++++++++++++++++++++++++++++++-------------------------
+>>  1 files changed, 79 insertions(+), 61 deletions(-)
+>>
+> 
+> It was unfortunate that this patch moved a screenful of code around and
+> changed that code at the same time - it makes it hard to see what the
+> functional change was.
+> 
+> So I split this patch into two.  The first patch simply moves
+> hotplug_cfd() to the end of the file and the second makes the
+> functional changes.  The second patch is below, for easier review.
+> 
+> Do we think that this patch should be merged into 2.6.31?  2.6.30.x?
+>
+
+This bug is conceal from v2.6.26 when kernel/smp.c created and be
+found by my review, no one is bothered by it and sends us a bug
+report, besides, this patch can't be applied to <= 2.6.30 cleanly,
+so I think we can just fix it for .31
+
+Thanks,
+Xiao
