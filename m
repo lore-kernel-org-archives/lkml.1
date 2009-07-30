@@ -1,54 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751317AbZG3Fgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751403AbZG3FhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751317AbZG3Fgb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 01:36:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbZG3Fga
+	id S1751403AbZG3FhB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 01:37:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbZG3FhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 01:36:30 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:61570 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750859AbZG3Fg3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 01:36:29 -0400
-Message-ID: <4A713204.7030005@cn.fujitsu.com>
-Date: Thu, 30 Jul 2009 13:39:16 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 30 Jul 2009 01:37:00 -0400
+Received: from mail-yx0-f188.google.com ([209.85.210.188]:54823 "EHLO
+	mail-yx0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750921AbZG3Fg7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 01:36:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TR4h7P3YA9OOa5x66eWCkT7OWwweK7PzATHMUYv4SMaY/3AN/TfW3n+CSJpkJKpGMi
+         OGS1kkuElL3qLK/PsFVu+ZKHDFmA/KMyyp+2aX/iTGKnnHFG/dHRMDIUU1w+1sKyNYl2
+         bpCSkH4lXKF1bDLUKkz/vEzIoB3lYWaUkQDFM=
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
-CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, Pavel Machek <pavel@ucw.cz>,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: [PATCH v4 0/2] Add function to convert between calendar time and
- broken-down time for universal use
-References: <4A5C3BC0.6020701@cn.fujitsu.com>	<20090714151040.b7b3b26d.akpm@linux-foundation.org>	<20090718115019.GH1433@ucw.cz>	<04e101ca08e5$be078fa0$808410ac@zhaoleiwin>	<20090719202018.497f7ec1.akpm@linux-foundation.org>	<4A643EFE.7090103@cn.fujitsu.com> <4A643F36.5090200@cn.fujitsu.com>	<87ocr9mi8h.fsf@devron.myhome.or.jp> <4A6D1BCF.1030109@cn.fujitsu.com>	<87k51u8xwa.fsf@devron.myhome.or.jp> <4A6E6ADD.6090602@cn.fujitsu.com> <87vdld9yrr.fsf@devron.myhome.or.jp>
-In-Reply-To: <87vdld9yrr.fsf@devron.myhome.or.jp>
+In-Reply-To: <7a7c22420907280357p71c495f8x9923227eef000391@mail.gmail.com>
+References: <7a7c22420907142137o4253dfb5gcd72176cd6a38beb@mail.gmail.com>
+	 <7a7c22420907142326t3b8d4f5fqaf3813cb456186ec@mail.gmail.com>
+	 <7a7c22420907150803v4f4ae9dn9eff41b5d5a7edf6@mail.gmail.com>
+	 <1247670563.4236.16.camel@mulgrave.site> <4A645FCE.5030506@suse.de>
+	 <7a7c22420907220626t11f510b7q835add0d5b7ecc94@mail.gmail.com>
+	 <7a7c22420907280357p71c495f8x9923227eef000391@mail.gmail.com>
+Date: Thu, 30 Jul 2009 11:06:59 +0530
+Message-ID: <7a7c22420907292236x1b528153pe22e53473c22626a@mail.gmail.com>
+Subject: Re: SCSI command (SP-OUT) failing on SLES 9 32-bit
+From: rohan a <info1686@gmail.com>
+To: Hannes Reinecke <hare@suse.de>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Andrew
-
-This is Patch v4.
-I updated this patch bases on Ogawa-san's suggestion.
-
-Changelog v3->v4:
-1: Use long instead of int for tm.tm_year to avoid overflow
-2: Remove localtime() and gmtime() because they can't support timezone
-   database as user-more. And rename __offtime() to time_to_tm()
-3: Use time_t instead of __kernel_time_t as function's argument type
-4: __isleap(unsigned int year)->__isleap(long year) to avoid overflow
-
-Changelog v2->v3:
-Using a struct to save year/mon/.../yday.
-
-Changelog v1->v2:
-1: Fix "no tabs" error caused by email client.
-2: Remove explicit 'inline' in __isleap()
-3: Move DIV() and LEAPS_THRU_END_OF(y) into regular C function along with
-   comment
-4: Move gmtime() and localtime() into header file.
+Hi,
+      I checked var/log/messages
+These are the errors reported:
+=======================================================
+kernel: mptbase: ioc0: IOCStatus(0x0003): Invalid SGL
+kernel: mptbase: ioc0: LogInfo(0x11070000): F/W: DMA Error
+kernel: mptbase: ioc0: LogInfo(0x11070000): F/W: DMA Error
+kernel: mptbase: ioc0: IOCStatus(0x004b): SCSI IOC Terminated
+kernel: st0: Error with sense data: Current st0: sense key Unit Attention
+kernel: Additional sense: Scsi bus reset occurred
+=========================================================
 
 Thanks
-Zhaolei
 
+
+On 7/28/09, rohan a <info1686@gmail.com> wrote:
+> Hi all/Hannes,
+>
+> Any help/suggestions?
+>
+>
+> On Wed, Jul 22, 2009 at 6:56 PM, rohan a<info1686@gmail.com> wrote:
+> > Hi,
+> >       Thanks for a reply.
+> > I have 2 SLES 9 32-bit machines, on one I am using an FC HBA card and
+> > another a SCSI HBA card to connect LTO-4 standalone drives and drive
+> > based encryption is not working in both cases.
+> >
+> > Thanks
+> >
+> > On Mon, Jul 20, 2009 at 5:45 PM, Hannes Reinecke<hare@suse.de> wrote:
+> >> James Bottomley wrote:
+> >>> On Wed, 2009-07-15 at 20:33 +0530, rohan a wrote:
+> >>>> Hi guys,
+> >>>>
+> >>>> Any suggestions...please help
+> >>>
+> >>> I know of no kernel bug that could be causing this.  The SLES9 kernel is
+> >>> just too old though for me to remember clearly.  I'd suggest you file a
+> >>> support incident with SUSE ... they'll debug and fix this on the older
+> >>> kernels; we really only deal with the new kernel and one or two back
+> >>> revisions here on linux-scsi.
+> >>>
+> >> You did that on purpose.
+> >> The 'they' is actually me :-(
+> >>
+> >> Actually, there already _is_ a bug, so no need to open another one.
+> >> Which HBA are you using?
+> >>
+> >> Cheers,
+> >>
+> >> Hannes
+> >> --
+> >> Dr. Hannes Reinecke                   zSeries & Storage
+> >> hare@suse.de                          +49 911 74053 688
+> >> SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
+> >> GF: Markus Rex, HRB 16746 (AG Nürnberg)
+> >>
+> >
+>
