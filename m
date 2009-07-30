@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751429AbZG3Qdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751498AbZG3Qgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751429AbZG3Qdv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 12:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbZG3Qdu
+	id S1751498AbZG3Qgv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 12:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbZG3Qgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 12:33:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49561 "EHLO mx2.redhat.com"
+	Thu, 30 Jul 2009 12:36:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49621 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750759AbZG3Qdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 12:33:50 -0400
-Date: Thu, 30 Jul 2009 18:30:35 +0200
+	id S1751270AbZG3Qgt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 12:36:49 -0400
+Date: Thu, 30 Jul 2009 18:32:58 +0200
 From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: roland@redhat.com, utrace-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] introduce tracehook_finish_jctl() helper
-Message-ID: <20090730163035.GA3617@redhat.com>
-References: <20090729020139.GA7381@redhat.com> <20090729155007.f4f5a793.akpm@linux-foundation.org>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       Li Zefan <lizf@cn.fujitsu.com>, Miao Xie <miaox@cn.fujitsu.com>,
+       Paul Menage <menage@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: [PATCH 1/1] cpu_hotplug: don't play with current->cpus_allowed
+Message-ID: <20090730163258.GB3617@redhat.com>
+References: <20090729023302.GA8899@redhat.com> <20090729212125.GA16970@redhat.com> <20090729214310.GB24631@redhat.com> <4A70FEE3.2070302@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090729155007.f4f5a793.akpm@linux-foundation.org>
+In-Reply-To: <4A70FEE3.2070302@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/29, Andrew Morton wrote:
+On 07/30, Lai Jiangshan wrote:
 >
-> On Wed, 29 Jul 2009 04:01:40 +0200
-> Oleg Nesterov <oleg@redhat.com> wrote:
+> Oleg Nesterov wrote:
+> > _cpu_down() changes the current task's affinity and then recovers it at
+> > the end. The problems are well known: we can't restore old_allowed if it
+> > was bound to the now-dead-cpu, and we can race with the userspace which
+> > can change cpu-affinity during unplug.
+> >
+> > _cpu_down() should not play with current->cpus_allowed at all. Instead,
+> > take_cpu_down() can migrate the caller of _cpu_down() after __cpu_disable()
+> > removes the dying cpu from cpu_online_mask.
+> >
+> >  static int __ref take_cpu_down(void *_param)
+> >  {
+> >  	struct take_cpu_down_param *param = _param;
+> > +	unsigned int cpu = (unsigned long)param->hcpu;
+> >  	int err;
+> >
+> >  	/* Ensure this CPU doesn't handle any more interrupts. */
+> > @@ -181,6 +183,8 @@ static int __ref take_cpu_down(void *_pa
+> >  	raw_notifier_call_chain(&cpu_chain, CPU_DYING | param->mod,
+> >  				param->hcpu);
+> >
+> > +	if (task_cpu(param->caller) == cpu)
+> > +		move_task_off_dead_cpu(cpu, param->caller);
 >
-> > +static inline void tracehook_finish_jctl(void)
-> > +{
-> > +}
-> > +
-> >  #define DEATH_REAP			-1
-> >  #define DEATH_DELAYED_GROUP_LEADER	-2
-> >
-> > --- __UTRACE/kernel/signal.c~2_FINISH_JCTL	2009-07-29 03:17:49.000000000 +0200
-> > +++ __UTRACE/kernel/signal.c	2009-07-29 03:57:07.000000000 +0200
-> > @@ -1735,12 +1735,12 @@ static int do_signal_stop(int signr)
-> >  		read_unlock(&tasklist_lock);
-> >  	}
-> >
-> > +	/* Now we don't run again until woken by SIGCONT or SIGKILL */
-> >  	do {
-> >  		schedule();
-> >  	} while (try_to_freeze());
-> > -	/*
-> > -	 * Now we don't run again until continued.
-> > -	 */
-> > +
-> > +	tracehook_finish_jctl();
-> >  	current->exit_code = 0;
-> >
->
-> Confused.  This patch has no effect.
+> move_task_off_dead_cpu() calls cpuset_cpus_allowed_locked() which
+> needs callback_mutex held. But actually we don't hold it, it'll
+> will corrupt the work of other task which holds callback_mutex.
+> Is it right?
 
-Yes, currently tracehook_finish_jctl() does nothing. This patch is
-needed to add the functional changes later, without touching the code
-outside of tracehook/etc. It is like tracehook_notify_resume() which
-does nothing until we add the real tracing.
+Of course it is not. That is why I tried to kill cpuset_lock() first.
+
+And I still think it must die. But I don't know how to remove it.
 
 Oleg.
 
