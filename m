@@ -1,73 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751629AbZG3Rft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752054AbZG3RgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751629AbZG3Rft (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 13:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbZG3Rft
+	id S1752054AbZG3RgQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 13:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbZG3RgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 13:35:49 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:48252 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750903AbZG3Rfs (ORCPT
+	Thu, 30 Jul 2009 13:36:16 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55728
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750994AbZG3RgP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 13:35:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:message-id;
-        b=NEJH3LcQghIq00dlPF4Mai+IePWNr2f+0TPhqVj07OkEJdEKvmnzhKePF99KQEw5vz
-         3TGnMAtmoGFvZsV7ltEVrTQKXiU8sh7yka2aUAtFJY9Vn/SfdOEZURbFVm+lt233w2Qv
-         cATErp9QSWUBbx8ykZB3f+KXvcDBwy2rRKx1Y=
-Date: Thu, 30 Jul 2009 10:35:39 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: TJ <linux@tjworld.net>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Bug 346586 <346586@bugs.launchpad.net>
-Subject: Re: wistron_btns: support Prestigio Wifi RF kill button over
-	suspend
-References: <1248939530.3410.10.camel@hephaestion>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248939530.3410.10.camel@hephaestion>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Message-Id: <20090730180947.6B391526EC9@mailhub.coreip.homeip.net>
+	Thu, 30 Jul 2009 13:36:15 -0400
+Date: Thu, 30 Jul 2009 10:36:22 -0700 (PDT)
+Message-Id: <20090730.103622.35100964.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2009-07-29
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090729203007.GB10056@tuxdriver.com>
+References: <20090729203007.GB10056@tuxdriver.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Wed, 29 Jul 2009 16:30:07 -0400
 
-On Thu, Jul 30, 2009 at 08:38:50AM +0100, TJ wrote:
-> We've been carrying this patch in Ubuntu since March 2009. I emailed the
-> upstream maintainer prior to that but there was no reply or action so it
-> hasn't been pushed upstream as I had expected.
-> 
-> https://launchpad.net/bugs/346586
-> 
-> I wonder if the maintainer field for this module should be changed to
-> reflect that?
-> 
-> ----
-> 
-> The Prestigio 157, an old no-name clone laptop uses input keys very
-> similar to the Wistron 1557/MS2141 with the addition of BIOS-controlled
-> wireless radio frequency kill switch.
-> 
-> This patch adds support for the RF kill switch control and adds manual
-> identification of the model.
-> 
-> The Prestigio does not expose any recognisable identity via dmidecode
-> and so requires manual selection at module init using
-> 
-> force=1 keymap=prestigio
-> 
-> Signed-off-by: TJ <ubuntu@tjworld.net>
-> 
+> Here is a small collection of fixes intended for 2.6.31.  Several of
+> them are small fixes dug-out by the usual static analysis suspects.
+> There are also a couple of iwlwifi fixes that the Intel team thinks are
+> important -- they look reasonably safe to me and they should only effect
+> their drivers.  Their are also some small fixes from Luis and Johannes.
 
-I'd like to pick up this patch but you really need to use your name instead
-of just initials in your signoff line. Care to resend, please?
-
-Thanks!
-
--- 
-Dmitry
+Pulled, thanks John.
