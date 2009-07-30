@@ -1,145 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752561AbZG3Tzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752634AbZG3Tz4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752561AbZG3Tzw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 15:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbZG3Tzv
+	id S1752634AbZG3Tz4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 15:55:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752602AbZG3Tzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 15:55:51 -0400
-Received: from hera.kernel.org ([140.211.167.34]:32891 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752568AbZG3Tzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 15:55:49 -0400
-Date: Thu, 30 Jul 2009 19:55:25 GMT
-From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, lizf@cn.fujitsu.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       lizf@cn.fujitsu.com, rostedt@goodmis.org, tglx@linutronix.de
-In-Reply-To: <4A67D92B.4060704@cn.fujitsu.com>
-References: <4A67D92B.4060704@cn.fujitsu.com>
-Subject: [tip:tracing/urgent] tracing/stat: Fix seqfile memory leak
-Message-ID: <tip-636eacee3b0c76915151db37203cc624becb6d7b@git.kernel.org>
-Git-Commit-ID: 636eacee3b0c76915151db37203cc624becb6d7b
-X-Mailer: tip-git-log-daemon
+	Thu, 30 Jul 2009 15:55:52 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:43219 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752561AbZG3Tzu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 15:55:50 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=VxSXyIFan6jsylWc3PYliEFGu1AihKzPBn1LB8B8lym0E21mJxmmSXkEpPdgx4V5F
+	tg5artsGd05RelXQcdc6g==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 30 Jul 2009 19:55:26 +0000 (UTC)
+In-Reply-To: <20090730040803.GA20652@localhost>
+References: <1786ab030907281211x6e432ba6ha6afe9de73f24e0c@mail.gmail.com>
+	 <33307c790907281449k5e8d4f6cib2c93848f5ec2661@mail.gmail.com>
+	 <33307c790907290015m1e6b5666x9c0014cdaf5ed08@mail.gmail.com>
+	 <20090729114322.GA9335@localhost>
+	 <33307c790907290711s320607b0i79c939104d4c2d61@mail.gmail.com>
+	 <20090730010630.GA7326@localhost>
+	 <33307c790907291812j40146a96tc2e9c5e097a33615@mail.gmail.com>
+	 <20090730015754.GC7326@localhost>
+	 <33307c790907291959r47b1bd3ap7cfa06fd5154aaad@mail.gmail.com>
+	 <20090730040803.GA20652@localhost>
+Date: Thu, 30 Jul 2009 12:55:44 -0700
+Message-ID: <33307c790907301255j136e003dtac0e4ba2032e890e@mail.gmail.com>
+Subject: Re: Bug in kernel 2.6.31, Slow wb_kupdate writeout
+From: Martin Bligh <mbligh@google.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Michael Rubin <mrubin@google.com>,
+       "sandeen@redhat.com" <sandeen@redhat.com>,
+       Michael Davidson <md@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  636eacee3b0c76915151db37203cc624becb6d7b
-Gitweb:     http://git.kernel.org/tip/636eacee3b0c76915151db37203cc624becb6d7b
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Thu, 23 Jul 2009 11:29:47 +0800
-Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Thu, 23 Jul 2009 09:53:55 -0400
+> Note that this is a simple fix that may have suboptimal write performance.
+> Here is an old reasoning:
+>
+>        http://lkml.org/lkml/2009/3/28/235
 
-tracing/stat: Fix seqfile memory leak
+The other thing I've been experimenting with is to disable the per-page
+check in write_cache_pages, ie:
 
-Every time we cat a trace_stat file, we leak memory allocated by
-seq_open().
+                        if (wbc->nonblocking && bdi_write_congested(bdi)) {
+                                wb_stats_inc(WB_STATS_WCP_SECTION_CONG);
+                                wbc->encountered_congestion = 1;
+                                /* done = 1; */
 
-Also fix memory leak in a failure path in tracing_stat_open().
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-LKML-Reference: <4A67D92B.4060704@cn.fujitsu.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-
-
----
- kernel/trace/trace_stat.c |   34 ++++++++++++++++++++++------------
- 1 files changed, 22 insertions(+), 12 deletions(-)
-
-diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
-index e66f5e4..aea321c 100644
---- a/kernel/trace/trace_stat.c
-+++ b/kernel/trace/trace_stat.c
-@@ -73,7 +73,7 @@ static struct rb_node *release_next(struct rb_node *node)
- 	}
- }
- 
--static void reset_stat_session(struct stat_session *session)
-+static void __reset_stat_session(struct stat_session *session)
- {
- 	struct rb_node *node = session->stat_root.rb_node;
- 
-@@ -83,10 +83,17 @@ static void reset_stat_session(struct stat_session *session)
- 	session->stat_root = RB_ROOT;
- }
- 
-+static void reset_stat_session(struct stat_session *session)
-+{
-+	mutex_lock(&session->stat_mutex);
-+	__reset_stat_session(session);
-+	mutex_unlock(&session->stat_mutex);
-+}
-+
- static void destroy_session(struct stat_session *session)
- {
- 	debugfs_remove(session->file);
--	reset_stat_session(session);
-+	__reset_stat_session(session);
- 	mutex_destroy(&session->stat_mutex);
- 	kfree(session);
- }
-@@ -150,7 +157,7 @@ static int stat_seq_init(struct stat_session *session)
- 	int i;
- 
- 	mutex_lock(&session->stat_mutex);
--	reset_stat_session(session);
-+	__reset_stat_session(session);
- 
- 	if (!ts->stat_cmp)
- 		ts->stat_cmp = dummy_cmp;
-@@ -183,7 +190,7 @@ exit:
- 	return ret;
- 
- exit_free_rbtree:
--	reset_stat_session(session);
-+	__reset_stat_session(session);
- 	mutex_unlock(&session->stat_mutex);
- 	return ret;
- }
-@@ -250,16 +257,21 @@ static const struct seq_operations trace_stat_seq_ops = {
- static int tracing_stat_open(struct inode *inode, struct file *file)
- {
- 	int ret;
--
-+	struct seq_file *m;
- 	struct stat_session *session = inode->i_private;
- 
-+	ret = stat_seq_init(session);
-+	if (ret)
-+		return ret;
-+
- 	ret = seq_open(file, &trace_stat_seq_ops);
--	if (!ret) {
--		struct seq_file *m = file->private_data;
--		m->private = session;
--		ret = stat_seq_init(session);
-+	if (ret) {
-+		reset_stat_session(session);
-+		return ret;
- 	}
- 
-+	m = file->private_data;
-+	m->private = session;
- 	return ret;
- }
- 
-@@ -270,11 +282,9 @@ static int tracing_stat_release(struct inode *i, struct file *f)
- {
- 	struct stat_session *session = i->i_private;
- 
--	mutex_lock(&session->stat_mutex);
- 	reset_stat_session(session);
--	mutex_unlock(&session->stat_mutex);
- 
--	return 0;
-+	return seq_release(i, f);
- }
- 
- static const struct file_operations tracing_stat_fops = {
+This treats the congestion limits as soft, but encourages us to write
+back in larger, more efficient chunks. If that's not going to scare
+people unduly, I can submit that as well.
