@@ -1,130 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753028AbZG3Vt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752579AbZG3V6G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753028AbZG3Vt4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 17:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbZG3Vty
+	id S1752579AbZG3V6G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 17:58:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbZG3V6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 17:49:54 -0400
-Received: from server1.wserver.cz ([82.113.45.157]:33920 "EHLO
-	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751761AbZG3Vtx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 17:49:53 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH repost2 1/2] V4L: hdpvr, fix lock imbalances
-Date: Thu, 30 Jul 2009 23:49:48 +0200
-Message-Id: <1248990589-25005-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
+	Thu, 30 Jul 2009 17:58:06 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:42353 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751367AbZG3V6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 17:58:05 -0400
+Message-ID: <4A721768.2060102@garzik.org>
+Date: Thu, 30 Jul 2009 17:58:00 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Don Fry <pcnet32@verizon.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Dan Carpenter <error27@gmail.com>,
+       corbet@lwn.net, eteo@redhat.com, Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH] pcnet32: VLB support fixes
+References: <200907302317.52648.bzolnier@gmail.com> <4A721163.7030700@garzik.org> <200907302346.26017.bzolnier@gmail.com>
+In-Reply-To: <200907302346.26017.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hrm, nobody picked these up, twice. Maybe this time :)?
---
+Bartlomiej Zolnierkiewicz wrote:
+> On Thursday 30 July 2009 23:32:19 Jeff Garzik wrote:
+>> Bartlomiej Zolnierkiewicz wrote:
+>>> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>>> Subject: [PATCH] pcnet32: VLB support fixes
+>>>
+>>> VLB support has been broken since at least 2004-2005 period as some
+>>> changes introduced back then assumed that ->pci_dev is always valid,
+>>> lets try to fix it:
+>>>
+>>> - remove duplicated SET_NETDEV_DEV() call
+>>>
+>>> - call SET_NETDEV_DEV() only for PCI devices
+>>>
+>>> - check for ->pci_dev validity in pcnet32_open()
+>>>
+>>> [ Alternatively we may consider removing VLB support but there would not
+>>>   be much gain in it since an extra driver code needed for VLB support is
+>>>   minimal and quite simple. ]
+>>>
+>>> This takes care of the following entry from Dan's list:
+>>>
+>>> drivers/net/pcnet32.c +1889 pcnet32_probe1(298) warning: variable derefenced before check 'pdev'
+>>>
+>>> Reported-by: Dan Carpenter <error27@gmail.com>
+>>> Cc: corbet@lwn.net
+>>> Cc: eteo@redhat.com
+>>> Cc: Julia Lawall <julia@diku.dk>
+>>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+>>> ---
+>>> PS I still keep the original cc: list from the smatch thread -- please let
+>>> me know if you don't want to be spammed.. ;-)
+>>>
+>>>  drivers/net/pcnet32.c |   12 +++++++-----
+>>>  1 file changed, 7 insertions(+), 5 deletions(-)
+>> ACK -- the patch is correct AFAICS -- but would it not be better to have 
+>> a struct device for the VLB device?
+> 
+> Sure, such addition would be needed for sysfs support on VLB devices..
 
-There are many lock imbalances in this driver. Fix all found.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- drivers/media/video/hdpvr/hdpvr-core.c  |   12 ++++++------
- drivers/media/video/hdpvr/hdpvr-video.c |    6 ++++--
- 2 files changed, 10 insertions(+), 8 deletions(-)
+>> We have capability to create struct device for isa and eisa, so VLB is 
+>> quite doable.
+>>
+>> 	Jeff, who converted old-ISDN ISA+EISA+PCI drivers to
+>> 	      hotplug model, once upon a time
+> 
+> ..and it seems that you've the needed experience! :)
 
-diff --git a/drivers/media/video/hdpvr/hdpvr-core.c b/drivers/media/video/hdpvr/hdpvr-core.c
-index 188bd5a..1c9bc94 100644
---- a/drivers/media/video/hdpvr/hdpvr-core.c
-+++ b/drivers/media/video/hdpvr/hdpvr-core.c
-@@ -126,7 +126,7 @@ static int device_authorization(struct hdpvr_device *dev)
- 	char *print_buf = kzalloc(5*buf_size+1, GFP_KERNEL);
- 	if (!print_buf) {
- 		v4l2_err(&dev->v4l2_dev, "Out of memory\n");
--		goto error;
-+		return retval;
- 	}
- #endif
- 
-@@ -140,7 +140,7 @@ static int device_authorization(struct hdpvr_device *dev)
- 	if (ret != 46) {
- 		v4l2_err(&dev->v4l2_dev,
- 			 "unexpected answer of status request, len %d\n", ret);
--		goto error;
-+		goto unlock;
- 	}
- #ifdef HDPVR_DEBUG
- 	else {
-@@ -163,7 +163,7 @@ static int device_authorization(struct hdpvr_device *dev)
- 		v4l2_err(&dev->v4l2_dev, "unknown firmware version 0x%x\n",
- 			dev->usbc_buf[1]);
- 		ret = -EINVAL;
--		goto error;
-+		goto unlock;
- 	}
- 
- 	response = dev->usbc_buf+38;
-@@ -188,10 +188,10 @@ static int device_authorization(struct hdpvr_device *dev)
- 			      10000);
- 	v4l2_dbg(MSG_INFO, hdpvr_debug, &dev->v4l2_dev,
- 		 "magic request returned %d\n", ret);
--	mutex_unlock(&dev->usbc_mutex);
- 
- 	retval = ret != 8;
--error:
-+unlock:
-+	mutex_unlock(&dev->usbc_mutex);
- 	return retval;
- }
- 
-@@ -350,6 +350,7 @@ static int hdpvr_probe(struct usb_interface *interface,
- 
- 	mutex_lock(&dev->io_mutex);
- 	if (hdpvr_alloc_buffers(dev, NUM_BUFFERS)) {
-+		mutex_unlock(&dev->io_mutex);
- 		v4l2_err(&dev->v4l2_dev,
- 			 "allocating transfer buffers failed\n");
- 		goto error;
-@@ -381,7 +382,6 @@ static int hdpvr_probe(struct usb_interface *interface,
- 
- error:
- 	if (dev) {
--		mutex_unlock(&dev->io_mutex);
- 		/* this frees allocated memory */
- 		hdpvr_delete(dev);
- 	}
-diff --git a/drivers/media/video/hdpvr/hdpvr-video.c b/drivers/media/video/hdpvr/hdpvr-video.c
-index ccd47f5..5937de2 100644
---- a/drivers/media/video/hdpvr/hdpvr-video.c
-+++ b/drivers/media/video/hdpvr/hdpvr-video.c
-@@ -375,6 +375,7 @@ static int hdpvr_open(struct file *file)
- 	 * in resumption */
- 	mutex_lock(&dev->io_mutex);
- 	dev->open_count++;
-+	mutex_unlock(&dev->io_mutex);
- 
- 	fh->dev = dev;
- 
-@@ -383,7 +384,6 @@ static int hdpvr_open(struct file *file)
- 
- 	retval = 0;
- err:
--	mutex_unlock(&dev->io_mutex);
- 	return retval;
- }
- 
-@@ -519,8 +519,10 @@ static unsigned int hdpvr_poll(struct file *filp, poll_table *wait)
- 
- 	mutex_lock(&dev->io_mutex);
- 
--	if (video_is_unregistered(dev->video_dev))
-+	if (video_is_unregistered(dev->video_dev)) {
-+		mutex_unlock(&dev->io_mutex);
- 		return -EIO;
-+	}
- 
- 	if (dev->status == STATUS_IDLE) {
- 		if (hdpvr_start_streaming(dev)) {
--- 
-1.6.3.3
+<grin>  In my esteemed experience, I point you to the 39-line 
+include/linux/isa.h as a starting point for grep...  :)
+
+	Jeff
+
+
+
 
