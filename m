@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752163AbZG3Uh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751819AbZG3Upx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752163AbZG3Uh0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 16:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbZG3UhY
+	id S1751819AbZG3Upx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 16:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbZG3Upx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 16:37:24 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:60167 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752054AbZG3UhX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 16:37:23 -0400
-Date: Thu, 30 Jul 2009 22:37:23 +0200
-From: Andreas Mohr <andi@lisas.de>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: john stultz <johnstul@us.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [RFC][patch 00/12] clocksource / timekeeping rework V2
-Message-ID: <20090730203723.GA20820@rhlx01.hs-esslingen.de>
+	Thu, 30 Jul 2009 16:45:53 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56411 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751591AbZG3Upw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 16:45:52 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [Bug #13666] WARNING: at mm/page_alloc.c:1743 __alloc_pages_nodemask
+Date: Thu, 30 Jul 2009 22:46:17 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Thomas Meyer <thomas@m3y3r.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <Jya1GruKQpD.A.16.2GObKB@chimera> <200907280021.26320.rjw@sisk.pl> <alpine.DEB.2.00.0907300021330.7540@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.0907300021330.7540@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1248977320.6046.66.camel@desktop>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200907302246.17742.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-> On Thu, 2009-07-30 at 10:16 -0700, john stultz wrote:
-> > Clocksources as modules was one of the initial design goals I had way
-> > back. The benefit being that an older distro kernel could be made to
-> > support newer stranger hardware via a clocksource driver. While the
-> > hardware vendors have for the most part consolidated on HPET/ACPI PM
-> > which has mostly avoided the need, I still think its worth preserving.
+On Thursday 30 July 2009, David Rientjes wrote:
+> On Tue, 28 Jul 2009, Rafael J. Wysocki wrote:
 > 
-> If the PIT case is a real use case for unregister than we can keep it
-> around. If not, then that path just becomes unused and all unused code
-> is open for removal from my perspective.
+> > > This is fixed in mmotm with the following patches, waiting for Andrew's 
+> > > push to Linus:
+> > > 
+> > > 	page-allocator-allow-too-high-order-warning-messages-to-be-suppressed-with-__gfp_nowarn.patch
+> > > 	net-dccp-suppress-warning-about-large-allocations-from-dccp.patch
+> > 
+> > Thanks, updated.
+> > 
 > 
-> If the case you describe above is a good one, then someone eventually
-> will add back the unregister path. Which should come with a good reason
-> and with an actual user of the code..
-> 
-> Daniel
+> These patches have made it to Linus' tree, so this issue is resolved.
 
-I'm still having a tendency towards unhappiness about my snd-azf3328
-PCI soundcard driver and its new use of clock_event_device,
-without a proper unload path existing (read: clock_event_device is the sole one
-of about 7 different driver components - PCM, I2S, OPL3, MPU401, AC97 mixer,
-joystick, ALSA sequencer timer / clock_event_device - which now suddenly
-managed to prevent the driver from being unloadable for the first time
-in its entire history) and not too many explanations as to how to
-get this working optimally...
+Thanks, bug closed.
 
-Would that be enough of a justification? ;-P
-
-Plus [OT], would anyone perhaps have an explanation why I'm getting stalls
-every couple seconds (probably a race between set_next_event() programming
-the next value already and timer-related interrupt handling causing a
-nearby trigger to get lost, but I don't know how to resolve this
-- how do other drivers manage to handle this easily racey activity??).
-BTW mouse interrupt activity does NOT manage to cancel these stalls.
-This is especially noticeable during video playback.
-
-Thanks,
-
-Andreas Mohr
+Rafael
