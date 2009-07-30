@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751517AbZG3JFi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751389AbZG3JKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751517AbZG3JFi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 05:05:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbZG3JFh
+	id S1751389AbZG3JKE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 05:10:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751261AbZG3JKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 05:05:37 -0400
-Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:23102
-	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751037AbZG3JFg (ORCPT
+	Thu, 30 Jul 2009 05:10:04 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:52363 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751003AbZG3JKD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 05:05:36 -0400
-Message-ID: <4A71625C.8060707@panasas.com>
-Date: Thu, 30 Jul 2009 12:05:32 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Thu, 30 Jul 2009 05:10:03 -0400
+Date: Thu, 30 Jul 2009 11:10:02 +0200
+From: Andreas Mohr <andim2@users.sourceforge.net>
+To: Andreas Mohr <andi@lisas.de>
+Cc: Dave Airlie <airlied@linux.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       Roberto Oppedisano <roppedisano@infracomspa.it>,
+       LKML <linux-kernel@vger.kernel.org>, dri-devel@lists.sourceforge.net
+Subject: Re: drm:radeon_cp_idle/reset error storm, console lockup (-rc4 git)
+Message-ID: <20090730091002.GA17934@rhlx01.hs-esslingen.de>
+Reply-To: andi@lisas.de
+References: <alpine.DEB.0.82.0809090914300.1221@skynet.skynet.ie> <20090730090005.GA4885@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scsi: consistent use of __u8 in scsi/scsi.h
-References: <20090729111114.GA15239@redhat.com> <1248875763.3900.1.camel@mulgrave.site> <4A705831.3010002@panasas.com> <20090729205626.GA3592@redhat.com>
-In-Reply-To: <20090729205626.GA3592@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Jul 2009 09:05:34.0909 (UTC) FILETIME=[E5ED76D0:01CA10F4]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090730090005.GA4885@rhlx01.hs-esslingen.de>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/29/2009 11:56 PM, Michael S. Tsirkin wrote:
-> On Wed, Jul 29, 2009 at 05:09:53PM +0300, Boaz Harrosh wrote:
->> TODO:
->> * Fix up Kernel headers by complying to check_headers
+Hi,
+
+On Thu, Jul 30, 2009 at 11:00:05AM +0200, Andreas Mohr wrote:
+> Hi,
 > 
-> This is accomplished by applying the following on top
-> of my previous patch:
-> 
+> encountered this problem myself, was able to regain access only via
+> remote login, then saw tons of (ratelimited)
 
-This is not enough. The same should be done to the other 3 
-include/scsi headers I mentioned and export them.
+...proceeded to kill -9 the X server to try to restart things,
+and the result was a nice box taken off anything whatsoever (==> paperweight).
+(it's still doing _something_ however, since there seems to be moderate disk
+access, but...)
 
-<snip>
-
-Boaz
+Andreas Mohr
