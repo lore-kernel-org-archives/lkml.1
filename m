@@ -1,54 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226AbZG3L1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753252AbZG3L2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753226AbZG3L1o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 07:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbZG3L1n
+	id S1753252AbZG3L2a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 07:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbZG3L23
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 07:27:43 -0400
-Received: from www.tglx.de ([62.245.132.106]:58711 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753152AbZG3L1n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 07:27:43 -0400
-Message-ID: <4A718390.4080103@linutronix.de>
-Date: Thu, 30 Jul 2009 13:27:12 +0200
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
-MIME-Version: 1.0
-To: Stoyan Gaydarov <sgayda2@uiuc.edu>
-CC: linux-kernel@vger.kernel.org, David.Woodhouse@intel.com, sr@denx.de,
-       kay.sievers@vrfy.org, gregkh@suse.de, linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 2/4] [mtd] fixed faulty check
-References: <1248949506-20827-1-git-send-email-sgayda2@uiuc.edu>
-In-Reply-To: <1248949506-20827-1-git-send-email-sgayda2@uiuc.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Jul 2009 07:28:29 -0400
+Received: from viefep18-int.chello.at ([62.179.121.38]:50252 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751805AbZG3L22 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 07:28:28 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: perf_counters issue with self-sampling threads
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: eranian@gmail.com, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
+       Corey J Ashford <cjashfor@us.ibm.com>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       roland <roland@redhat.com>
+In-Reply-To: <20090729221703.GA25368@redhat.com>
+References: <7c86c4470907270951i48886d56g90bc198f26bb0716@mail.gmail.com>
+	 <1248869948.6987.3083.camel@twins>  <20090729221703.GA25368@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 30 Jul 2009 13:31:25 +0200
+Message-Id: <1248953485.6391.41.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stoyan Gaydarov wrote:
-> This patche fixes a spelling error that has resulted from copy and pasting. The location of the error was found using a semantic patch but the semantic patch was not trying to find these errors. After looking things over it seemed logical that this change was needed. Please review it and then include the patch if it is in fact the correct change.
-> 
-> Signed-off-by: Stoyan Gaydarov <sgayda2@uiuc.edu>
-> ---
->  drivers/mtd/maps/physmap_of.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/mtd/maps/physmap_of.c b/drivers/mtd/maps/physmap_of.c
-> index 39d357b..2cc0b0d 100644
-> --- a/drivers/mtd/maps/physmap_of.c
-> +++ b/drivers/mtd/maps/physmap_of.c
-> @@ -215,7 +215,7 @@ static int __devinit of_flash_probe(struct of_device *dev,
->  		goto err_out;
->  
->  	mtd_list = kzalloc(sizeof(struct mtd_info) * count, GFP_KERNEL);
-> -	if (!info)
-> +	if (!mtd_list)
->  		goto err_out;
->  
->  	dev_set_drvdata(&dev->dev, info);
-Yes, !mtd_list should be checked instead of !info. This is correct. 
-However in error case you have to free info as well.
-Can please make another patch?
+On Thu, 2009-07-30 at 00:17 +0200, Oleg Nesterov wrote:
+> (add Roland)
 
-Sebastian
+but you seem to have forgotten to actually edit the CC line, fixed
+that ;-)
+
+> On 07/29, Peter Zijlstra wrote:
+> >
+> > On Mon, 2009-07-27 at 18:51 +0200, stephane eranian wrote:
+> > >
+> > > POSIX does not mandate that asynchronous signals be delivered
+> > > to the thread in which they originated. Any thread in the process
+> > > may process the signal, assuming it does not have the signal
+> > > blocked.
+> 
+> Yes. I now nothing about POSIX, but this is what Linux does at least.
+> I don't think we can/should change this behaviour.
+
+Well, we have plenty exceptions to that rule already, we have itimer
+extentions, tkill sys_rt_tgsigqueueinfo and plenty more..
+
+> > fcntl(2) for F_SETOWN says:
+> >
+> > If a non-zero value is given to F_SETSIG  in  a  multi‐ threaded
+> > process running with a threading library that supports thread groups
+> > (e.g., NPTL),  then  a  positive value  given  to  F_SETOWN  has  a
+> > different  meaning: instead of being a process ID identifying a whole
+> > pro‐ cess,  it  is a thread ID identifying a specific thread within a
+> > process.
+> 
+> Heh. Definitely this is not what Linux does ;)
+
+Right, so the question is, did we ever? Why does the man page say this.
+
+Looking at the .12 source (git start) we did:
+
+  440 			if (!send_sig_info(fown->signum, &si, p))
+  441 				break;
+  442 		/* fall-through: fall back on the old plain SIGIO signal */
+  443 		case 0:
+  444 			send_group_sig_info(SIGIO, SEND_SIG_PRIV, p);
+
+Which was 'corrected' in:
+
+commit fc9c9ab22d5650977c417ef2032d02f455011b23
+Author: Bharath Ramesh <bramesh@vt.edu>
+Date:   Sat Apr 16 15:25:41 2005 -0700
+
+    [PATCH] AYSNC IO using singals other than SIGIO
+
+    A question on sigwaitinfo based IO mechanism in multithreaded applications.
+
+    I am trying to use RT signals to notify me of IO events using RT signals
+    instead of SIGIO in a multithreaded applications.  I noticed that there was
+    some discussion on lkml during november 1999 with the subject of the
+    discussion as "Signal driven IO".  In the thread I noticed that RT signals
+    were being delivered to the worker thread.  I am running 2.6.10 kernel and
+    I am trying to use the very same mechanism and I find that only SIGIO being
+    propogated to the worker threads and RT signals only being propogated to
+    the main thread and not the worker threads where I actually want them to be
+    propogated too.  On further inspection I found that the following patch
+    which I have attached solves the problem.
+
+    I am not sure if this is a bug or feature in the kernel.
+
+
+    Roland McGrath <roland@redhat.com> said:
+
+    This relates only to fcntl F_SETSIG, which is a Linux extension.  So there is
+    no POSIX issue.  When changing various things like the normal SIGIO signalling
+    to do group signals, I was concerned strictly with the POSIX semantics and
+    generally avoided touching things in the domain of Linux inventions.  That's
+    why I didn't change this when I changed the call right next to it.  There is
+    no reason I can see that F_SETSIG-requested signals shouldn't use a group
+    signal like normal SIGIO does.  I'm happy to ACK this patch, there is nothing
+    wrong with its change to the semantics in my book.  But neither POSIX nor I
+    care a whit what F_SETSIG does.
+
+    Signed-off-by: Andrew Morton <akpm@osdl.org>
+    Signed-off-by: Linus Torvalds <torvalds@osdl.org>
+
+> > Which seems to imply that when we feed fcntl(F_SETOWN) a TID instead of
+> > a PID it should deliver SIGIO to the thread instead of the whole process
+> > -- which, to me, seems a sane semantic.
+> 
+> I am not sure I understand the man above... But to me it looks like we
+> should always send a private signal when fown->signum != 0 ?
+> 
+> The change should be simple, but as you pointed out we can break things.
+
+Right, so the change I had in mind is like the below (except I don't
+know if we can compare struct pid things by pointer value or if we
+should look at the content).
+
+In any case, we should either do something like the below (yay!), or
+amend the manpage (Michael?) and introduce something like F_SETOWN2
+which does have the below semantics :-(.
+
+---
+Index: linux-2.6/fs/fcntl.c
+===================================================================
+--- linux-2.6.orig/fs/fcntl.c
++++ linux-2.6/fs/fcntl.c
+@@ -431,6 +431,16 @@ static void send_sigio_to_task(struct ta
+ 			       int fd,
+ 			       int reason)
+ {
++	int (*send_sig)(int, struct siginfo *, struct task_struct *);
++
++	send_sig = group_send_sig_info;
++	/*
++	 * If the fown points to a specific TID instead of to a PID
++	 * we'll send the signal to the thread only.
++	 */
++	if (fown->pid_type == PIDTYPE_PID && fown->pid != task_tgid(p))
++		send_sig = send_sig_info;
++
+ 	/*
+ 	 * F_SETSIG can change ->signum lockless in parallel, make
+ 	 * sure we read it once and use the same value throughout.
+@@ -461,11 +472,11 @@ static void send_sigio_to_task(struct ta
+ 			else
+ 				si.si_band = band_table[reason - POLL_IN];
+ 			si.si_fd    = fd;
+-			if (!group_send_sig_info(signum, &si, p))
++			if (!send_sig(signum, &si, p))
+ 				break;
+ 		/* fall-through: fall back on the old plain SIGIO signal */
+ 		case 0:
+-			group_send_sig_info(SIGIO, SEND_SIG_PRIV, p);
++			send_sig(SIGIO, SEND_SIG_PRIV, p);
+ 	}
+ }
+ 
+
+
