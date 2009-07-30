@@ -1,107 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751865AbZG3O5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751162AbZG3PBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751865AbZG3O5l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 10:57:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbZG3O5k
+	id S1751162AbZG3PBy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 11:01:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750759AbZG3PBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 10:57:40 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:60678 "EHLO
+	Thu, 30 Jul 2009 11:01:53 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:42432 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751798AbZG3O5j (ORCPT
+	with ESMTP id S1750701AbZG3PBx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 10:57:39 -0400
+	Thu, 30 Jul 2009 11:01:53 -0400
+Message-ID: <4A71B5DD.4010503@novell.com>
+Date: Thu, 30 Jul 2009 11:01:49 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 2/2] sched: fix race in cpupri introduced by cpumask_var
-	changes
-To: linux-kernel@vger.kernel.org
-Cc: peterz@infradead.org, rostedt@goodmis.org, rusty@rustcorp.com.au,
-       maxk@qualcomm.com, mingo@elte.hu
-Date: Thu, 30 Jul 2009 10:57:28 -0400
-Message-ID: <20090730145728.25226.92769.stgit@dev.haskins.net>
-In-Reply-To: <20090730145623.25226.29033.stgit@dev.haskins.net>
-References: <20090730145623.25226.29033.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+CC: peterz@infradead.org, rostedt@goodmis.org, rusty@rustcorp.com.au,
+       maxk@qualcomm.com, mingo@elte.hu
+Subject: Re: [PATCH 1/2] [RESEND] sched: Fully integrate cpus_active_map and
+ root-domain code
+References: <20090730145623.25226.29033.stgit@dev.haskins.net> <20090730145723.25226.24493.stgit@dev.haskins.net>
+In-Reply-To: <20090730145723.25226.24493.stgit@dev.haskins.net>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig3C48D8532B0F5183A0D68823"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[
-	Note: obsoletes c8cab1ddfafd112c82a69a6cc4ec608984eeac97,
-	though it should be harmless to leave the old patch applied.
-]
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig3C48D8532B0F5183A0D68823
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Background:
+Gregory Haskins wrote:
+> (Applies to 2.6.31-rc4)
+>=20
+> [
+> 	This patch was originaly sent about a year ago, but got dropped
+> 	presumably by accident.  Here is the original thread.
+>=20
+> 	http://lkml.org/lkml/2008/7/22/281
+>=20
+> 	At that time, Peter and Max acked it.  It has now been forward
+> 	ported to the new cpumask interface.  I will be so bold as to
+> 	carry their acks forward since the basic logic is the same.
+> 	However, a new acknowledgement, if they have the time to review,
+> 	would be ideal.
+>=20
+> 	I have tested this patch on a 4-way system using Max's recommended
+> 	"echo 0|1 > cpu1/online" technique and it appears to work properly
+> ]
+>=20
+> What: Reflect "active" cpus in the rq->rd->online field, instead of the=
 
-Several race conditions in the scheduler have cropped up recently,
-which Steven and I have tracked down using ftrace.  The most recent
-one turns out to be a race in how the scheduler determines a
-suitable migration target for RT tasks, introduced recently with commit:
+> online_map.
+>=20
+> Motivation:  Things that use the root-domain code (such as cpupri) only=
 
-    commit 68e74568fbe5854952355e942acca51f138096d9
-    Author: Rusty Russell <rusty@rustcorp.com.au>
-    Date:   Tue Nov 25 02:35:13 2008 +1030
+> care about cpus classified as "active" anyway.  By synchronizing the
+> root-domain state with the active map, we allow several optimizations.
+>=20
+> For instance, we can remove an extra cpumask_and from the scheduler
+> hotpath by utilizing rq->rd->online (since it is now a cached version
+> of cpu_active_map & rq->rd->span).
+>=20
+> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+> Acked-by: Peter Zijlstra <peterz@infradead.org>
+> Acked-by: Max Krasnyansky <maxk@qualcomm.com>
+> ---
+>=20
+>  kernel/sched.c      |    2 +-
+>  kernel/sched_fair.c |   10 +++++++---
+>  kernel/sched_rt.c   |    7 -------
+>  3 files changed, 8 insertions(+), 11 deletions(-)
+>=20
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 1a104e6..38a1526 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -7874,7 +7874,7 @@ static void rq_attach_root(struct rq *rq, struct =
+root_domain *rd)
+>  	rq->rd =3D rd;
+> =20
+>  	cpumask_set_cpu(rq->cpu, rd->span);
+> -	if (cpumask_test_cpu(rq->cpu, cpu_online_mask))
+> +	if (cpumask_test_cpu(rq->cpu, cpu_active_mask))
+>  		set_rq_online(rq);
+> =20
+>  	spin_unlock_irqrestore(&rq->lock, flags);
+> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> index 9ffb2b2..2b9cae6 100644
+> --- a/kernel/sched_fair.c
+> +++ b/kernel/sched_fair.c
+> @@ -1040,17 +1040,21 @@ static void yield_task_fair(struct rq *rq)
+>   * search starts with cpus closest then further out as needed,
+>   * so we always favor a closer, idle cpu.
+>   * Domains may include CPUs that are not usable for migration,
+> - * hence we need to mask them out (cpu_active_mask)
+> + * hence we need to mask them out (rq->rd->online)
+>   *
+>   * Returns the CPU we should wake onto.
+>   */
+>  #if defined(ARCH_HAS_SCHED_WAKE_IDLE)
+> +
+> +#define cpu_rd_active(cpu, rq) cpumask_test_cpu(cpu, rq->rd->online)
+> +
+>  static int wake_idle(int cpu, struct task_struct *p)
+>  {
+>  	struct sched_domain *sd;
+>  	int i;
+>  	unsigned int chosen_wakeup_cpu;
+>  	int this_cpu;
+> +	struct rq *task_rq =3D task_rq(p);
+> =20
+>  	/*
+>  	 * At POWERSAVINGS_BALANCE_WAKEUP level, if both this_cpu and prev_cp=
+u
+> @@ -1083,10 +1087,10 @@ static int wake_idle(int cpu, struct task_struc=
+t *p)
+>  	for_each_domain(cpu, sd) {
+>  		if ((sd->flags & SD_WAKE_IDLE)
+>  		    || ((sd->flags & SD_WAKE_IDLE_FAR)
+> -			&& !task_hot(p, task_rq(p)->clock, sd))) {
+> +			&& !task_hot(p, task_rq->clock, sd))) {
+>  			for_each_cpu_and(i, sched_domain_span(sd),
+>  					 &p->cpus_allowed) {
 
-        sched: convert struct cpupri_vec cpumask_var_t.
+Hmm, something got suboptimal in translation from the original patch.
 
-The original design of cpupri allowed lockless readers to quickly
-determine a best-estimate target.  Races between the pri_active
-bitmap and the vec->mask were handled in the original code because
-we would detect and return "0" when this occured.  The design was
-predicated on the *effective* atomicity (*) of caching the result
-of cpus_and() between the cpus_allowed and the vec->mask.
+This would be better expressed as:
 
-Commit 68e74568 changed the behavior such that vec->mask is accessed
-multiple times.  This introduces a subtle race, the result of which
-means we can have a result that returns "1", but with an empty bitmap.
+for_each_cpu_and(i, rq->rd->online, &p->cpus_allowed) {
+	if (idle_cpu(i)...
+}
 
-*) yes, we know cpus_and() is not a locked operator across the entire
-   composite array, but it is implicitly atomic on a per-word basis
-   which is all the design required to work.
+> -				if (cpu_active(i) && idle_cpu(i)) {
+> +				if (cpu_rd_active(i, task_rq) && idle_cpu(i)) {
+>  					if (i !=3D task_cpu(p)) {
+>  						schedstat_inc(p,
+>  						       se.nr_wakeups_idle);
+> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+> index a8f89bc..13f728e 100644
+> --- a/kernel/sched_rt.c
+> +++ b/kernel/sched_rt.c
+> @@ -1173,13 +1173,6 @@ static int find_lowest_rq(struct task_struct *ta=
+sk)
+>  		return -1; /* No targets found */
+> =20
+>  	/*
+> -	 * Only consider CPUs that are usable for migration.
+> -	 * I guess we might want to change cpupri_find() to ignore those
+> -	 * in the first place.
+> -	 */
+> -	cpumask_and(lowest_mask, lowest_mask, cpu_active_mask);
+> -
+> -	/*
+>  	 * At this point we have built a mask of cpus representing the
+>  	 * lowest priority tasks in the system.  Now we want to elect
+>  	 * the best one based on our affinity and topology.
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Implementation:
 
-Rather than forgoing the lockless design, or reverting to a stack-based
-cpumask_t, we simply check for when the race has been encountered and
-continue processing in the event that the race is hit.  This renders the
-removal race as if the priority bit had been atomically cleared as well,
-and allows the algorithm to execute correctly.
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-CC: Rusty Russell <rusty@rustcorp.com.au>
-CC: Steven Rostedt <srostedt@redhat.com>
----
+--------------enig3C48D8532B0F5183A0D68823
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
- kernel/sched_cpupri.c |   15 ++++++++++++++-
- 1 files changed, 14 insertions(+), 1 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-diff --git a/kernel/sched_cpupri.c b/kernel/sched_cpupri.c
-index aef68b6..0f052fc 100644
---- a/kernel/sched_cpupri.c
-+++ b/kernel/sched_cpupri.c
-@@ -81,8 +81,21 @@ int cpupri_find(struct cpupri *cp, struct task_struct *p,
- 		if (cpumask_any_and(&p->cpus_allowed, vec->mask) >= nr_cpu_ids)
- 			continue;
- 
--		if (lowest_mask)
-+		if (lowest_mask) {
- 			cpumask_and(lowest_mask, &p->cpus_allowed, vec->mask);
-+
-+			/*
-+			 * We have to ensure that we have at least one bit
-+			 * still set in the array, since the map could have
-+			 * been concurrently emptied between the first and
-+			 * second reads of vec->mask.  If we hit this
-+			 * condition, simply act as though we never hit this
-+			 * priority level and continue on.
-+			 */
-+			if (cpumask_any(lowest_mask) >= nr_cpu_ids)
-+				continue;
-+		}
-+
- 		return 1;
- 	}
- 
+iEYEARECAAYFAkpxtd0ACgkQP5K2CMvXmqFl8gCfXrQsJn9oL5FfQZFA7WmCiDgd
+4nIAnioMJ18tI0Iw1MslHoq1gZAIEh3D
+=oNJT
+-----END PGP SIGNATURE-----
 
+--------------enig3C48D8532B0F5183A0D68823--
