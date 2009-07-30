@@ -1,39 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751300AbZG3NsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751333AbZG3NtI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751300AbZG3NsM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 09:48:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbZG3NsL
+	id S1751333AbZG3NtI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 09:49:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750776AbZG3NtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 09:48:11 -0400
-Received: from www.tglx.de ([62.245.132.106]:46279 "EHLO www.tglx.de"
+	Thu, 30 Jul 2009 09:49:07 -0400
+Received: from fifo99.com ([67.223.236.141]:44545 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750960AbZG3NsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 09:48:11 -0400
-Message-ID: <4A71A483.30507@linutronix.de>
-Date: Thu, 30 Jul 2009 15:47:47 +0200
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
-MIME-Version: 1.0
-To: vimal singh <vimal.newwork@gmail.com>
-CC: Stoyan Gaydarov <sgayda2@uiuc.edu>, linux-kernel@vger.kernel.org,
-       David.Woodhouse@intel.com, sr@denx.de, kay.sievers@vrfy.org,
-       gregkh@suse.de, linux-mtd@lists.infradead.org
-Subject: Re: [PATCH] [mtd] fixed faulty check
-References: <1248958178-22599-1-git-send-email-sgayda2@uiuc.edu> 	<4A719A27.8050509@linutronix.de> <ce9ab5790907300639k3173446csbd07198055bfe122@mail.gmail.com>
-In-Reply-To: <ce9ab5790907300639k3173446csbd07198055bfe122@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1750759AbZG3NtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 09:49:06 -0400
+Subject: Re: [RFC][patch 00/12] clocksource / timekeeping rework V2
+From: Daniel Walker <dwalker@fifo99.com>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
+In-Reply-To: <20090730150456.6c87b997@skybase>
+References: <200907291717.n6THHG6f001426@d06av06.portsmouth.uk.ibm.com>
+	 <20090730125351.6f16e9ec@skybase> <1248958173.6046.32.camel@desktop>
+	 <20090730150456.6c87b997@skybase>
+Content-Type: text/plain
+Date: Thu, 30 Jul 2009 06:49:10 -0700
+Message-Id: <1248961750.6046.35.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-vimal singh wrote:
-> What if you go to 'err_out' due to some other error?? Do not you need
-> to free 'info'?
-We have to and of_flash_remove() takes care of it.
+On Thu, 2009-07-30 at 15:04 +0200, Martin Schwidefsky wrote:
+> On Thu, 30 Jul 2009 05:49:33 -0700
+> Daniel Walker <dwalker@fifo99.com> wrote:
+> 
+> > On Thu, 2009-07-30 at 12:53 +0200, Martin Schwidefsky wrote:
+> > 
+> > > > I'm not sure allowing that type of override a good idea tho .. I don't
+> > > > think it's considered a usable clock when the rating goes to zero.
+> > > 
+> > > Override as the root user -> your foot, no? The whole override stuff is
+> > > there for the case that the clocksource selection picked a broken clock
+> > > and you want to force the system into a semi-working state. Ideally the
+> > > whole override would go away, but that is probably wishful thinking..
+> > 
+> > I would agree if the system doesn't crash as a result, if it just starts
+> > to operate funny then that's maybe acceptable. If you keep the change
+> > rating function, you could potentially remove the unregister path..
+> 
+> Why shouldn't it be possible to have a clocksource as a module? I think
+> that the unregister path should stay. To really make it work we'd need
+> a function to force the system out of the one-shot mode though.
 
-The initial patch would be shorter if
-   dev_set_drvdata(&dev->dev, info);
-would be moved prior the kzalloc()
+Because I don't think there is a sane reason to allow it. It should be
+more like if someone has a need for it, then let them add back the
+unregister path and explain why they need it.
 
-Sebastian
+Daniel
+
