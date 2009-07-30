@@ -1,82 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753364AbZG3HGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbZG3HI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753364AbZG3HGt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 03:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZG3HGt
+	id S1753514AbZG3HI7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 03:08:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbZG3HI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 03:06:49 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:1697 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751947AbZG3HGs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 03:06:48 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=tmwB+o5ygtpYVnNPHXb5EPAplqn7ZClyqP7bzQgude3duCoPjUcpgdpHQS18pIAmw
-	MG18Ub9y/A8tMtOH01O9A==
-Date: Thu, 30 Jul 2009 00:06:38 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
-In-Reply-To: <20090730090855.E415.A69D9226@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0907292356410.5581@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0907282125260.554@chino.kir.corp.google.com> <20090730090855.E415.A69D9226@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Thu, 30 Jul 2009 03:08:58 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:40016 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751330AbZG3HI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 03:08:58 -0400
+Date: Thu, 30 Jul 2009 17:08:50 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Cc: Borislav Petkov <borislav.petkov@amd.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>
+Subject: Re: linux-next: manual merge of the edac-amd tree with the rr tree
+Message-Id: <20090730170850.6d777e96.sfr@canb.auug.org.au>
+In-Reply-To: <20090730062309.GA15057@liondog.tnic>
+References: <20090730154150.d4c326b5.sfr@canb.auug.org.au>
+	<20090730062309.GA15057@liondog.tnic>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__30_Jul_2009_17_08_50_+1000_1/VEQ4kLXH=0nOac"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Jul 2009, KOSAKI Motohiro wrote:
+--Signature=_Thu__30_Jul_2009_17_08_50_+1000_1/VEQ4kLXH=0nOac
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > diff --git a/kernel/fork.c b/kernel/fork.c
-> > --- a/kernel/fork.c
-> > +++ b/kernel/fork.c
-> > @@ -426,7 +426,7 @@ static struct mm_struct * mm_init(struct mm_struct * mm, struct task_struct *p)
-> >  	init_rwsem(&mm->mmap_sem);
-> >  	INIT_LIST_HEAD(&mm->mmlist);
-> >  	mm->flags = (current->mm) ? current->mm->flags : default_dump_filter;
-> > -	mm->oom_adj = (current->mm) ? current->mm->oom_adj : 0;
-> > +	mm->oom_adj = p->oom_adj_child;
-> 
-> This code doesn't fix anything.
-> mm->oom_adj assignment still change vfork() parent process oom_adj value.
-> (Again, vfork() parent and child use the same mm)
-> 
+Hi Borislav,
 
-That's because the oom killer only really considers the highest oom_adj 
-value amongst all threads that share the same mm.  Allowing those threads 
-to each have different oom_adj values leads (i) to an inconsistency in 
-reporting /proc/pid/oom_score for how the oom killer selects a task to 
-kill and (ii) the oom killer livelock that it fixes when one thread 
-happens to be OOM_DISABLE.
+On Thu, 30 Jul 2009 08:23:09 +0200 Borislav Petkov <petkovbb@googlemail.com=
+> wrote:
+>
+> thanks for fixing that. Yep, the topology patches in the edac tree are
+> not final yet, I've added them to the mix only because edac depends on
+> the node_id functionality. I'll fix them up later against the rr stuff.
 
-So, yes, changing the oom_adj value for a thread may have side-effects 
-on other threads that didn't exist prior to 2.6.31-rc1 because the oom_adj 
-value now represents a killable quantity of memory instead of a being a 
-characteristic of the task itself.  But we now provide the inheritance 
-property in a new way, via /proc/pid/oom_adj_child, that gives you all the 
-functionality that the previous way did but without the potential for 
-livelock.
+Thanks.
 
-> IOW, in vfork case, oom_adj_child parameter doesn't only change child oom_adj,
-> but also parent oom_adj value.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Changing oom_adj_child for a task never changes oom_adj for any mm, it 
-simply specifies what default value shall be given for a child's newly 
-initialized mm.  Chaning oom_adj, on the other hand, will 
+--Signature=_Thu__30_Jul_2009_17_08_50_+1000_1/VEQ4kLXH=0nOac
+Content-Type: application/pgp-signature
 
-> IOW, oom_adj_child is NOT child effective parameter.
-> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-It's not meant to be, it's only meant to specify a default value for newly 
-initialized mm's of its descendants.  What happens after that is governed 
-completely by the child's own /proc/pid/oom_adj.  That's pretty clearly 
-explained in Documentation/filesystems/proc.txt.
+iEYEARECAAYFAkpxRwIACgkQjjKRsyhoI8w2+wCgijLy3zqmCFJBDrt73h/fensD
+ZyIAoJaaJXq7IoX8R03q0PTwZ8J9uKZc
+=weBn
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__30_Jul_2009_17_08_50_+1000_1/VEQ4kLXH=0nOac--
