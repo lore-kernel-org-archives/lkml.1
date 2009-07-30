@@ -1,47 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751685AbZG3JnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752243AbZG3JpE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751685AbZG3JnT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 05:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbZG3JnS
+	id S1752243AbZG3JpE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 05:45:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZG3JpD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 05:43:18 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:39439 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750933AbZG3JnS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 05:43:18 -0400
-To: Jun Koi <junkoi2004@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Firewire debugging tools - firedump & fireproxy?
-From: Andi Kleen <andi@firstfloor.org>
-References: <fdaac4d50907042242s6534d63at12a26df47a0f3b2a@mail.gmail.com>
-Date: Thu, 30 Jul 2009 11:43:17 +0200
-In-Reply-To: <fdaac4d50907042242s6534d63at12a26df47a0f3b2a@mail.gmail.com> (Jun Koi's message of "Sun, 5 Jul 2009 14:42:50 +0900")
-Message-ID: <87k51qfqve.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 30 Jul 2009 05:45:03 -0400
+Received: from mail.gmx.net ([213.165.64.20]:55518 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751589AbZG3JpC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 05:45:02 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19nV897K81nH9t7x/woyej0TWOE1PZPateDdyoYyB
+	b5X3j/QRZ80+rH
+Subject: Re: [wireless] rt2870sta BUGs on shutdown,
+ 2.6.30.2->git.today+git.wireless.today
+From: Mike Galbraith <efault@gmx.de>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+In-Reply-To: <1248946195.8925.9.camel@johannes.local>
+References: <1248945770.7910.24.camel@marge.simson.net>
+	 <1248946195.8925.9.camel@johannes.local>
+Content-Type: text/plain
+Date: Thu, 30 Jul 2009 11:44:59 +0200
+Message-Id: <1248947099.8396.6.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jun Koi <junkoi2004@gmail.com> writes:
+On Thu, 2009-07-30 at 11:29 +0200, Johannes Berg wrote:
+> On Thu, 2009-07-30 at 11:22 +0200, Mike Galbraith wrote:
+> 
+> > drivers/staging/rt2870/../rt2860/sta_ioctl.c
+> 
+> Sorry, but that '/staging/' thing in there means we cannot support this.
+> If you must, take your query to the staging list,
+> devel@driverdev.osuosl.org (according to MAINTAINERS).
 
-> Hi,
->
-> I am doing some debugging via firewire. I found some references to
-> some tools named firedump & fireproxy, made by Bernhard Kaindl,
-> supposed put at following addresses:
->
-> ftp://ftp.suse.de/private/bk/firewire/tools/firedump-0.1.tar.bz2
-> ftp://ftp.suse.de/private/bk/firewire/tools/fireproxy-0.33.tar.bz2
+Forwarded, thanks.
 
-I have a copy of Bernd's website on http://halobates.de/firewire
+....hm.  Does "If you must" mean reports aren't welcome?
 
-firescope is also on my servers (I did the original x86 version)
+	-Mike
 
--Andi
-
- 
--- 
-ak@linux.intel.com -- Speaking for myself only.
