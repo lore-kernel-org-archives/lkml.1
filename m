@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbZG3BMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbZG3BUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756104AbZG3BMb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 21:12:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756062AbZG3BMb
+	id S1756089AbZG3BUH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 21:20:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755598AbZG3BUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 21:12:31 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:32168 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756009AbZG3BMa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 21:12:30 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=BPXAsbKqamL6eySyO43ImugzuDH/Qva+8j6v1l1OZRH1t8ywH1qwKkT1eQTfwvmwa
-	ntu2IGjvpFbP51IzUgHBw==
+	Wed, 29 Jul 2009 21:20:06 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62783 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755228AbZG3BUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 29 Jul 2009 21:20:05 -0400
+Message-ID: <4A70F4EA.8010503@cn.fujitsu.com>
+Date: Thu, 30 Jul 2009 09:18:34 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <20090730010630.GA7326@localhost>
-References: <1786ab030907281211x6e432ba6ha6afe9de73f24e0c@mail.gmail.com>
-	 <33307c790907281449k5e8d4f6cib2c93848f5ec2661@mail.gmail.com>
-	 <33307c790907290015m1e6b5666x9c0014cdaf5ed08@mail.gmail.com>
-	 <20090729114322.GA9335@localhost>
-	 <33307c790907290711s320607b0i79c939104d4c2d61@mail.gmail.com>
-	 <20090730010630.GA7326@localhost>
-Date: Wed, 29 Jul 2009 18:12:26 -0700
-Message-ID: <33307c790907291812j40146a96tc2e9c5e097a33615@mail.gmail.com>
-Subject: Re: Bug in kernel 2.6.31, Slow wb_kupdate writeout
-From: Martin Bligh <mbligh@google.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Chad Talbott <ctalbott@google.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Michael Rubin <mrubin@google.com>, Andrew Morton <akpm@google.com>,
-       "sandeen@redhat.com" <sandeen@redhat.com>,
-       Michael Davidson <md@google.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>, mingo@elte.hu,
+       jens.axboe@oracle.com, nickpiggin@yahoo.com.au, peterz@infradead.org,
+       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3 -mm] generic-ipi: fix hotplug_cfd()
+References: <4A6983D8.8090805@cn.fujitsu.com>	<4A6FFFE9.5070204@cn.fujitsu.com> <20090729162756.20a34174.akpm@linux-foundation.org>
+In-Reply-To: <20090729162756.20a34174.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I agree on the unification of kupdate and sync paths. In fact I had a
-> patch for doing this. And I'd recommend to do it in two patches:
-> one to fix the congestion case, another to do the code unification.
->
-> The sync path don't care whether requeue_io() or redirty_tail() is
-> used, because they disregard the time stamps totally - only order of
-> inodes matters (ie. starvation), which is same for requeue_io()/redirty_tail().
+07:27, Andrew Morton wrote:
+> On Wed, 29 Jul 2009 15:53:13 +0800
+> Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
+> 
+>> Use CONFIG_HOTPLUG_CPU, not CONFIG_CPU_HOTPLUG
+>>
+>> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+>> ---
+>>  kernel/smp.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/kernel/smp.c b/kernel/smp.c
+>> index bf9f18b..1b5fd2e 100644
+>> --- a/kernel/smp.c
+>> +++ b/kernel/smp.c
+>> @@ -54,7 +54,7 @@ hotplug_cfd(struct notifier_block *nfb, unsigned long action, void *hcpu)
+>>  			return NOTIFY_BAD;
+>>  		break;
+>>  
+>> -#ifdef CONFIG_CPU_HOTPLUG
+>> +#ifdef CONFIG_HOTPLUG_CPU
+>>  	case CPU_UP_CANCELED:
+>>  	case CPU_UP_CANCELED_FROZEN:
+>>  
+> 
+> Dammit, that mistake is easy to make.  We should have used #if from day
+> one, not #ifdef.  Oh well.
+> 
+> What's the impact of this bug?  Do we think the fix should be present
+> in 2.6.31?  2.6.30.x?
+> 
 
-But, as I understand it, both paths share the same lists, so we still have
-to be consistent?
+When hot-unpluging a cpu, it will leak memory allocated at cpu hotplug,
+but only if CPUMASK_OFFSTACK=y, which is default to n, and I guess no
+distro turns it on? All that said, I agree to add this patch to
+-stable.
 
-Also, you set flags like more_io higher up in sync_sb_inodes() based on
-whether there's anything in s_more_io queue, so it still seems to have
-some effect to me?
+The bug is introduced by:
+
+| commit 8969a5ede0f9e17da4b943712429aef2c9bcd82b
+| Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+| Date:   Wed Feb 25 13:59:47 2009 +0100
+|
+|    generic-ipi: remove kmalloc()
+
+So this patch can be applied to 2.6.29..2.6.31
+
