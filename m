@@ -1,70 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751905AbZG3Oc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751946AbZG3Oen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751905AbZG3Oc3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 10:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbZG3Oc2
+	id S1751946AbZG3Oen (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 10:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbZG3Oen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 10:32:28 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:36180 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751675AbZG3Oc1 (ORCPT
+	Thu, 30 Jul 2009 10:34:43 -0400
+Received: from mail-qy0-f196.google.com ([209.85.221.196]:57188 "EHLO
+	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751680AbZG3Oem convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 10:32:27 -0400
-From: Paul Moore <paul.moore@hp.com>
-Organization: Hewlett-Packard
-To: Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH 4/5] net/netlabel: Add kmalloc NULL tests
-Date: Thu, 30 Jul 2009 10:32:20 -0400
-User-Agent: KMail/1.11.4 (Linux/2.6.30-gentoo-r1; KDE/4.2.4; i686; ; )
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-References: <Pine.LNX.4.64.0907301610230.8734@ask.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0907301610230.8734@ask.diku.dk>
+	Thu, 30 Jul 2009 10:34:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=q+sBkGP58ZUjooJxrwi9fLhoflzyVWZUlGGMUkfjgWKW9MLEbREoskNKyCryghraAk
+         WUgtB90ktTw8B+2GIT+nkq3Ve4C0AsDqfDgV8yprnka0VXMT58VthUPAnf4xkF+ThJns
+         brY4GtbD/zyQCD4kDDat24fEAJ/3JXGig+iVA=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907301032.20318.paul.moore@hp.com>
+In-Reply-To: <4A71AD5E.4080704@uiuc.edu>
+References: <1248958178-22599-1-git-send-email-sgayda2@uiuc.edu> 
+	<4A719A27.8050509@linutronix.de> <ce9ab5790907300639k3173446csbd07198055bfe122@mail.gmail.com> 
+	<4A71A483.30507@linutronix.de> <ce9ab5790907300714u5c88f1cdk8c0387de5ba9f413@mail.gmail.com> 
+	<4A71AD5E.4080704@uiuc.edu>
+From: vimal singh <vimal.newwork@gmail.com>
+Date: Thu, 30 Jul 2009 20:04:22 +0530
+Message-ID: <ce9ab5790907300734l134c8d4agcf8b22b40129b8d9@mail.gmail.com>
+Subject: Re: [PATCH] [mtd] fixed faulty check
+To: Stoyan Gaydarov <sgayda2@uiuc.edu>
+Cc: Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+       linux-kernel@vger.kernel.org, David.Woodhouse@intel.com, sr@denx.de,
+       kay.sievers@vrfy.org, gregkh@suse.de, linux-mtd@lists.infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 30 July 2009 10:10:54 am Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
+On Thu, Jul 30, 2009 at 7:55 PM, Stoyan Gaydarov<sgayda2@uiuc.edu> wrote:
+> vimal singh wrote:
 >
-> The test on map4 should be a test on map6.
-
-...
-
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+> On Thu, Jul 30, 2009 at 7:17 PM, Sebastian Andrzej
+> Siewior<bigeasy@linutronix.de> wrote:
 >
-> ---
->  net/netlabel/netlabel_kapi.c        |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
 >
-> diff --git a/net/netlabel/netlabel_kapi.c b/net/netlabel/netlabel_kapi.c
-> index 3ff6f32..6ce0020 100644
-> --- a/net/netlabel/netlabel_kapi.c
-> +++ b/net/netlabel/netlabel_kapi.c
-> @@ -151,7 +151,7 @@ int netlbl_cfg_unlbl_map_add(const char *domain,
->  			addr6 = addr;
->  			mask6 = mask;
->  			map6 = kzalloc(sizeof(*map6), GFP_ATOMIC);
-> -			if (map4 == NULL)
-> +			if (!map6)
->  				goto cfg_unlbl_map_add_failure;
->  			map6->type = NETLBL_NLTYPE_UNLABELED;
->  			ipv6_addr_copy(&map6->list.addr, addr6);
+> vimal singh wrote:
+>
+>
+> What if you go to 'err_out' due to some other error?? Do not you need
+> to free 'info'?
+>
+>
+> We have to and of_flash_remove() takes care of it.
+>
+>
+>
+>
+> Does this mean that the original patch is fine or does it still need the
+> kfree? From what i understand when going to err_out it will take care of
+> info using of_flash_remove() so then it is not needed in the if check.
 
-Another good find, although I would suggest changing it to the following to 
-stay consistent with the rest of the function:
+Yes.
+But I think, you should still correct freeing 'mtd_list' in the label,
+when you jump there even before memory gets allocated for that.
 
-		map6 = kzalloc(...);
-		if (map6 == NULL)
-			goto ...;
+-vimal
 
--- 
-paul moore
-linux @ hp
-
+>
+> -Stoyan
+>
+> that's correct...
+>
+>
+>
+> The initial patch would be shorter if
+>  dev_set_drvdata(&dev->dev, info);
+> would be moved prior the kzalloc()
+>
+> Sebastian
+>
+>
+>
+>
+>
