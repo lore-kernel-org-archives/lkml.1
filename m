@@ -1,52 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751938AbZG3Rws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752076AbZG3RyG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751938AbZG3Rws (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 13:52:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751284AbZG3Rwr
+	id S1752076AbZG3RyG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 13:54:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751505AbZG3RyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 13:52:47 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:36215 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751167AbZG3Rwq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 13:52:46 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [RFC] Uni-processor interrupt state preservation.
-Date: Thu, 30 Jul 2009 12:51:44 -0500
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <200907301137.22035.lkml@morethan.org> <200907301201.12197.lkml@morethan.org> <ada7hxqrt3h.fsf@cisco.com>
-In-Reply-To: <ada7hxqrt3h.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200907301251.46635.lkml@morethan.org>
+	Thu, 30 Jul 2009 13:54:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56022 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751284AbZG3RyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 13:54:03 -0400
+Subject: Re: [PATCH -v3 1/3] Capabilities: move cap_file_mmap to commoncap.c
+From: Eric Paris <eparis@redhat.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       selinux@tycho.nsa.gov, jwcart2@tycho.nsa.gov, sds@tycho.nsa.gov,
+       spender@grsecurity.net, dwalsh@redhat.com, cl@linux-foundation.org,
+       arjan@infradead.org, alan@lxorguk.ukuu.org.uk, kees@outflux.net,
+       csellers@tresys.com, penguin-kernel@i-love.sakura.ne.jp
+In-Reply-To: <20090730155403.GA13939@us.ibm.com>
+References: <20090729185620.21757.44366.stgit@paris.rdu.redhat.com>
+	 <20090730051426.GA6082@us.ibm.com> <1248968428.2597.79.camel@localhost>
+	 <20090730155403.GA13939@us.ibm.com>
+Content-Type: text/plain
+Date: Thu, 30 Jul 2009 13:53:03 -0400
+Message-Id: <1248976383.2771.4.camel@localhost>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu July 30 2009, Roland Dreier wrote:
+On Thu, 2009-07-30 at 10:54 -0500, Serge E. Hallyn wrote:
+> Quoting Eric Paris (eparis@redhat.com):
+> > On Thu, 2009-07-30 at 00:14 -0500, Serge E. Hallyn wrote:
+> > > Quoting Eric Paris (eparis@redhat.com):
+> > > > Currently we duplicate the mmap_min_addr test in cap_file_mmap and in
+> > > > security_file_mmap if !CONFIG_SECURITY.  This patch moves cap_file_mmap
+> > > > into commoncap.c and then calls that function directly from
+> > > > security_file_mmap ifndef CONFIG_SECURITY like all of the other capability
+> > > > checks are done.
+> > > 
+> > > It also
+> > > 
+> > > 	1. changes the return value in error case from -EACCES to
+> > > 	   -EPERM
+> > > 	2. no onger sets PF_SUPERPRIV in t->flags if the capability
+> > > 	   is used.
+> > > 
+> > > Do we care about these?
+> > 
+> > Personally, not really, but I'll gladly put them back if you care.   #2
+> > seems more interesting to me than number 1.   I actually kinda like
+> > getting EPERM from caps rather than EACCES since them I know if I was
+> > denied by selinux or by caps.....
+> > 
+> > -Eric
 > 
->  > If it does, then that is the answer to my question -
->  > Link to the ABI document please.
+> Yup, I asked bc I didn't particularly care myself.
 > 
-> www.sco.com/developers/devspecs/abi386-4.pdf:
-> 
->    Registers %ebp, %ebx, %edi, %esi, and %esp ‘‘belong’’ to the cal-
->    ling function. In other words, a called function must preserve these
->    registers’ values for its caller.
-> 
-> 
+> I think I agree with you about -EPERM being better anyway.  However I
+> (now) think in this case PF_SUPERPRIV definately should be set, as this
+> is a clear use of a capability to do something that couldn't have been
+> done without it.
 
-Super!
+Easy enough, if I add PF_SUPERPRIV can I add your ACK?  Basically just
 
-Should not be too big a job to make sure that is indeed happening as expected.
-Most uses of this function dispatcher are not built in Uni-processor builds.
-Only a small handful of references.
+ret = cap_capable();
+if (!ret)
+	current->flags |= PF_SUPERPRIV;
 
-Thanks,
-Mike
+return ret;
+
