@@ -1,80 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755769AbZG3AKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755807AbZG3ANB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755769AbZG3AKf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 29 Jul 2009 20:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755659AbZG3AKf
+	id S1755807AbZG3ANB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 29 Jul 2009 20:13:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755679AbZG3ANA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 29 Jul 2009 20:10:35 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:48178 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755653AbZG3AKe (ORCPT
+	Wed, 29 Jul 2009 20:13:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49154 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755599AbZG3ANA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 29 Jul 2009 20:10:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=hlI0pMG/fHITsAm4/mjkzpcAW9BYKmwq/6Q5MTor84KWsr/Z93/lWZm9Fnm0kWroWj
-         vxm9L04H4PrzI4ATCeNAYUtqbUiNg2T9mT1sKmjYsn5IBi4EYovXr3XR6BlBAKvYDwYu
-         FpCqV8BbMawe4PQFxMTlxjpkRpxOHTClBHYUw=
-Subject: Re: [PATCH] net: Keep interface binding when sending packets with 
-	ipi_ifindex = 0
-From: John Dykstra <john.dykstra1@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Chia-chi Yeh <chiachi@android.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20090727144402.513369f1.akpm@linux-foundation.org>
-References: <6c039e090907231439t1def08a4n10978733bee55bec@mail.gmail.com>
-	 <20090727144402.513369f1.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 29 Jul 2009 19:10:21 -0500
-Message-Id: <1248912621.13447.12.camel@merlyn>
+	Wed, 29 Jul 2009 20:13:00 -0400
+Date: Wed, 29 Jul 2009 17:12:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: alexander.shishckin@gmail.com
+Cc: linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org, alexander.shishckin@gmail.com
+Subject: Re: [PATCH] [RESEND] RFC: List per-process file descriptor
+ consumption when hitting file-max
+Message-Id: <20090729171248.764570f2.akpm@linux-foundation.org>
+In-Reply-To: <1244538071-992-1-git-send-email-alexander.shishckin@gmail.com>
+References: <1244538071-992-1-git-send-email-alexander.shishckin@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-27 at 14:44 -0700, Andrew Morton wrote:
-> (cc netdev)
-> 
-> On Thu, 23 Jul 2009 14:39:28 -0700
-> Chia-chi Yeh (_________) <chiachi@android.com> wrote:
-> 
-> > In IPv4, sending a packet with ipi_ifindex = 0 via an interface-bound
-> > socket will unbind the packet to that interface. This behavior is
-> > different from IPv6 which treats ipi6_ifindex = 0 as unspecified.
-> > Furthermore, IPv6 does not allow sending packets to other interface
-> > than the bound one, but I am not sure if it is necessary in IPv4. The
-> > following patch keeps the interface binding when ipi_ifindex = 0.
-> > 
-> > Thanks,
-> > Chia-chi
-> > 
-> > --- a/net/ipv4/ip_sockglue.c	2009-07-24 04:50:45.000000000 +0800
-> > +++ b/net/ipv4/ip_sockglue.c	2009-07-24 04:51:09.000000000 +0800
-> > @@ -213,7 +213,8 @@
-> >  			if (cmsg->cmsg_len != CMSG_LEN(sizeof(struct in_pktinfo)))
-> >  				return -EINVAL;
-> >  			info = (struct in_pktinfo *)CMSG_DATA(cmsg);
-> > -			ipc->oif = info->ipi_ifindex;
-> > +			if (info->ipi_ifindex)
-> > +				ipc->oif = info->ipi_ifindex;
-> >  			ipc->addr = info->ipi_spec_dst.s_addr;
-> >  			break;
-> >  		}
+On Tue,  9 Jun 2009 12:01:11 +0300
+alexander.shishckin@gmail.com wrote:
 
-A convenient copy of the man page says "When ipi_ifindex is not zero the
-primary local address of the interface specified by the index overwrites
-ipi_spec_dst for the routing table lookup."
+> When a file descriptor limit is hit, it might be useful to see all the
+> users to be able to identify those that leak descriptors.
 
-But this is changing API behavior that's been this way since at least
-the beginning of git history.
+Well... maybe.
 
-I guess Dave's letting this stand.  I'm posting this just to make sure
-this is an explicit decision.
+There is no end to the amount of code which we could add to the kernel
+to help userspace developers and administrators resolve userspace bugs.
+But that doesn't mean that we should add all these things to the
+kernel.
 
---
-John
+If there's some reason why the problem is particularly severe and
+particularly hard to resolve by other means then sure, perhaps explicit
+kernel support is justified.  But is that the case with this specific
+userspace bug?
+
 
