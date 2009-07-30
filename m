@@ -1,41 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752412AbZG3VKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbZG3VLN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752412AbZG3VKz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 17:10:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbZG3VKy
+	id S1752587AbZG3VLN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 17:11:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbZG3VLM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 17:10:54 -0400
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:34938 "EHLO smtp2.it.da.ut.ee"
+	Thu, 30 Jul 2009 17:11:12 -0400
+Received: from mail.windriver.com ([147.11.1.11]:64716 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752004AbZG3VKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 17:10:54 -0400
-X-Greylist: delayed 1190 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Jul 2009 17:10:54 EDT
-Date: Fri, 31 Jul 2009 00:10:50 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: Thinkpad X20 docking troubles - irq routing, USB strangeness
-In-Reply-To: <Pine.SOC.4.64.0907302339550.23777@math.ut.ee>
-Message-ID: <Pine.SOC.4.64.0907310007040.24315@math.ut.ee>
-References: <Pine.SOC.4.64.0907302339550.23777@math.ut.ee>
+	id S1752514AbZG3VLL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 17:11:11 -0400
+Message-ID: <4A720C5D.5090701@windriver.com>
+Date: Thu, 30 Jul 2009 16:10:53 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+CC: Jun Koi <junkoi2004@gmail.com>, linux-kernel@vger.kernel.org,
+       Bernhard Kaindl <bk@suse.de>,
+       KGDB Mailing List <kgdb-bugreport@lists.sourceforge.net>
+Subject: Re: Firewire debugging tools - firedump & fireproxy?
+References: <fdaac4d50907042242s6534d63at12a26df47a0f3b2a@mail.gmail.com> <1248932218.27010.8.camel@maxim-laptop>  <4A715A7B.3070406@windriver.com> <1248987456.13069.24.camel@maxim-laptop>
+In-Reply-To: <1248987456.13069.24.camel@maxim-laptop>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 30 Jul 2009 21:10:48.0796 (UTC) FILETIME=[3639B1C0:01CA115A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The first is irq-related. As soon as yenta driver discovers the 
-> additional ports, screaming irq happens and this shared irq is disabled.
-> This documented in the dmesg below. This is my main problem, others may 
-> be secondary to it (at least the usb one).
+Maxim Levitsky wrote:
+> On Thu, 2009-07-30 at 03:31 -0500, Jason Wessel wrote:
+>>
+>> 3) Develop a low level dedicated ethernet debug interface.  If you have
+>> more than one ethernet, or an ethernet device that has multiple hardware
+>> queues, it is plausible to have a dedicated way to talk to a device
+>> which has no restrictions on getting preempted, or used by another part
+>> of the kernel.  This lends itself to an ideal medium for kgdb
+>> communications.
 
-One more data point: the behaviour seems to be consistent at least since 
-2.6.27 (the oldest sequential kernel I have around). I also have 2.6.21 
-laying around, this kernel did not support docking at all.
+> Or, even better, to make in possible to switch between a normal, and
+> exclusive mode?  Maybe this cab be done without (or with slight)
+> modifications to network drivers.  Why not to make kgdb own the
+> network device (use it exclusively), but use same interfaces as
+> regular kernel does?
 
-Another data point: starting the system without dock and later docking, 
-PCI devices in dock are not found and no yenta irq problems occur.
+The key problem is how such a switch is governed between normal and
+exclusive mode works.  If it involves locks kgdboe is not going to
+work reliably from the exception context.
 
-When docking, USB 4-port hub is found and works.
+Having kgdboe directly own an interface and use the same kernel API as
+the network stack won't work out of the box because there is probing,
+interrupt control and lots of other tidbits.  This is a case where the
+polling API needs some work or a dedicated API is needed, because this
+is a case where you really don't want the whole network stack
+involved.  IE it would be nice to be able to debug the networking
+stack with kgdboe.
 
--- 
-Meelis Roos (mroos@linux.ee)
+Patches which implement new functionality, ideas and discussion about
+any aspect of kernel debugging are always welcome on the kgdb mailing
+list. :-)
+
+Cheers,
+Jason.
+
