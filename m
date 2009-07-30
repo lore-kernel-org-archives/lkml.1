@@ -1,159 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752087AbZG3SuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752163AbZG3SvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752087AbZG3SuU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 14:50:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbZG3SuT
+	id S1752163AbZG3SvU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 14:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZG3SvU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 14:50:19 -0400
-Received: from nox.protox.org ([88.191.38.29]:38325 "EHLO nox.protox.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751320AbZG3SuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 14:50:19 -0400
-Subject: RE: PAT wc & vmap mapping count issue ?
-From: Jerome Glisse <glisse@freedesktop.org>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-In-Reply-To: <7E82351C108FA840AB1866AC776AEC466D4513C4@orsmsx505.amr.corp.intel.com>
-References: <1248952269.2462.33.camel@localhost>
-	 <1248973593.2462.35.camel@localhost>
-	 <7E82351C108FA840AB1866AC776AEC466D4513C4@orsmsx505.amr.corp.intel.com>
-Content-Type: text/plain
-Date: Thu, 30 Jul 2009 20:48:56 +0200
-Message-Id: <1248979736.2462.39.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Jul 2009 14:51:20 -0400
+Received: from cs20.apochromatic.org ([204.152.189.161]:50084 "EHLO
+	cs20.apochromatic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751705AbZG3SvT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 14:51:19 -0400
+Date: Thu, 30 Jul 2009 19:50:44 +0100
+From: Matt Fleming <matt@console-pimps.org>
+To: Ohad Ben-Cohen <ohad@bencohen.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Philip Langdale <philipl@overt.org>, ian@mnementh.co.uk,
+       pierre@ossman.eu, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org, nico@cam.org,
+       nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com, tony@atomide.com,
+       david-b@pacbell.net, manuel.lauss@gmail.com, mirq-l@jasper.es,
+       Adrian Hunter <adrian.hunter@nokia.com>, Madhusudhan <madhu.cr@ti.com>
+Subject: Re: [PATCH] sdio: add CD disable support
+Message-ID: <20090730185044.GH3058@console-pimps.org>
+References: <1248954848.5396.6.camel@localhost> <20090730124543.GF3058@console-pimps.org> <bd5b16740907300855y2ee0f76fv5886606fcee241b7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <bd5b16740907300855y2ee0f76fv5886606fcee241b7@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-30 at 11:01 -0700, Pallipadi, Venkatesh wrote:
+On Thu, Jul 30, 2009 at 06:55:14PM +0300, Ohad Ben-Cohen wrote:
+> On Thu, Jul 30, 2009 at 3:45 PM, Matt Fleming<matt@console-pimps.org> wrote:
+> > Do you have a follow-up patch to make use of this new functionality?
 > 
-> >-----Original Message-----
-> >From: Jerome Glisse [mailto:glisse@freedesktop.org] 
-> >Sent: Thursday, July 30, 2009 10:07 AM
-> >To: linux-kernel@vger.kernel.org
-> >Cc: Pallipadi, Venkatesh
-> >Subject: Re: PAT wc & vmap mapping count issue ?
-> >
-> >On Thu, 2009-07-30 at 13:11 +0200, Jerome Glisse wrote:
-> >> Hello,
-> >> 
-> >> I think i am facing a PAT issue code (at bottom of the mail) leads
-> >> to mapping count issue such as one at bottom of mail. Is my test
-> >> code buggy ? If so what is wrong with it ? Otherwise how could i
-> >> track this down ? (Tested with lastest Linus tree). Note that
-> >> the mapping count sometimes is negative, sometimes it's positive
-> >> but without proper mapping.
-> >> 
-> >> (With AMD Athlon(tm) Dual Core Processor 4450e)
-> >> 
-> >> Note that bad page might takes time to happen 256 pages is bit
-> >> too little either increasing that or doing memory hungry task
-> >> will helps triggering the bug faster.
-> >> 
-> >> Cheers,
-> >> Jerome
-> >> 
-> >> Jul 30 11:12:36 localhost kernel: BUG: Bad page state in process bash
-> >> pfn:6daed
-> >> Jul 30 11:12:36 localhost kernel: page:ffffea0001b6bb40
-> >> flags:4000000000000000 count:1 mapcount:1 mapping:(null) index:6d8
-> >> Jul 30 11:12:36 localhost kernel: Pid: 1876, comm: bash Not tainted
-> >> 2.6.31-rc2 #30
-> >> Jul 30 11:12:36 localhost kernel: Call Trace:
-> >> Jul 30 11:12:36 localhost kernel: [<ffffffff81098570>] bad_page
-> >> +0xf8/0x10d
-> >> Jul 30 11:12:36 localhost kernel: [<ffffffff810997aa>]
-> >> get_page_from_freelist+0x357/0x475
-> >> Jul 30 11:12:36 localhost kernel: [<ffffffff810a72e3>] ? cond_resched
-> >> +0x9/0xb
-> >> Jul 30 11:12:36 localhost kernel: [<ffffffff810a9958>] ? 
-> >copy_page_range
-> >> +0x4cc/0x558
-> >> Jul 30 11:12:36 localhost kernel: [<ffffffff810999e0>]
-> >> __alloc_pages_nodemask+0x118/0x562
-> >> Jul 30 11:12:36 localhost kernel: [<ffffffff812a92c3>] ?
-> >> _spin_unlock_irq+0xe/0x11
-> >> Jul 30 11:12:36 localhost kernel: [<ffffffff810a9dda>]
-> >> alloc_pages_node.clone.0+0x14/0x16
-> >> Jul 30 11:12:36 localhost kernel: [<ffffffff810aa0b1>] do_wp_page
-> >> +0x2d5/0x57d
-> >> Jul 30 11:12:36 localhost kernel: [<ffffffff810aac00>] 
-> >handle_mm_fault
-> >> +0x586/0x5e0
-> >> Jul 30 11:12:36 localhost kernel: [<ffffffff812ab635>] do_page_fault
-> >> +0x20a/0x21f
-> >> Jul 30 11:12:36 localhost kernel: [<ffffffff812a968f>] page_fault
-> >> +0x1f/0x30
-> >> Jul 30 11:12:36 localhost kernel: Disabling lock debugging 
-> >due to kernel
-> >> taint
-> >> 
-> >> #define NPAGEST 256
-> >> void test_wc(void)
-> >> {
-> >>         struct page *pages[NPAGEST];
-> >>         int i, j;
-> >>         void *virt;
-> >> 
-> >>         for (i = 0; i < NPAGEST; i++) {
-> >>                 pages[i] = NULL;
-> >>         }
-> >>         for (i = 0; i < NPAGEST; i++) {
-> >>                 pages[i] = alloc_page(__GFP_DMA32 | GFP_USER);
-> >>                 if (pages[i] == NULL) {
-> >>                         printk(KERN_ERR "Failled allocating 
-> >page %d\n",
-> >> i);
-> >>                         goto out_free;
-> >>                 }
-> >>                 if (!PageHighMem(pages[i]))
-> >>                         if (set_memory_wc((unsigned long)
-> >> page_address(pages[i]), 1)) {
-> >>                                 printk(KERN_ERR "Failled 
-> >setting page %d
-> >> wc\n", i);
-> >>                                 goto out_free;
-> >>                         }
-> >>         }
-> >>         virt = vmap(pages, NPAGEST, 0,
-> >> pgprot_writecombine(PAGE_KERNEL));
-> >>         if (virt == NULL) {
-> >>                 printk(KERN_ERR "Failled vmapping\n");
-> >>                 goto out_free;
-> >>         }
-> >>         vunmap(virt);
-> >> out_free:
-> >>         for (i = 0; i < NPAGEST; i++) {
-> >>                 if (pages[i]) {
-> >>                         if (!PageHighMem(pages[i]))
-> >>                                 set_memory_wb((unsigned long)
-> >> page_address(pages[i]), 1);
-> >>                         __free_page(pages[i]);
-> >>                 }
-> >>         }
-> >> }
-> >
-> >vmaping doesn't seems to be involved with the corruption simply
-> >setting some pages with set_memory_wc is enough.
-> >
+> Well, sort of:
 > 
-> Hmm.. We have been able to reproduce a problem with code similar to above,
-> but the exact failure seems to be slightly different than one reported here.
-> Digging it a bit more to see what exactly is going on here. Will get back.....
+> The patch sets disable_cd for TI wl1271 embedded wlan sdio device on a
+> ZOOM2 platform.
 > 
-> Thanks,
-> Venki
+> Since the patch is very board/device specific, we first route it via
+> internal maintainers, so it is not posted yet.
+> 
+> It's nothing fancy:
+> 
+> diff --git a/arch/arm/mach-omap2/mmc-twl4030.c
+> b/arch/arm/mach-omap2/mmc-twl4030.c
+> index 5b64bf1..caa8b16 100644
+> --- a/arch/arm/mach-omap2/mmc-twl4030.c
+> +++ b/arch/arm/mach-omap2/mmc-twl4030.c
+> @@ -81,6 +81,7 @@ static struct embedded_sdio_data omap_wifi_emb_data = {
+>  		.wide_bus       = 1,
+>  		.high_power     = 0,
+>  		.high_speed     = 0,
+> +		.disable_cd	= 1,
+>  	},
+>  	.funcs  = wifi_func_array,
+>  	.num_funcs = 2,
 
-Don't know if it's usefull but it seems that page which are considered
-as bad are not the page that where set wc. Beside i checked that after
-set_wb page status were clean. Also it seems that the pat debugfs still
-shows wc range while the wc page were already return to wb (it's hard
-to say as most time i don't enough time to read this debugfs files
-before completely loosing control of the computer).
+Ah, that's fair enough then. I just wanted to make sure that a patch
+that used this functionality was in the pipeline :-)
 
-Cheers,
-Jerome
-
+As David has already said, both comments need fixing up. It is the host
+controller driver that decides whether to disable the DAT[3] pull-up,
+not the card. If you make those changes then you can add my Acked-by.
