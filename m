@@ -1,66 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbZG3VkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752412AbZG3VnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752542AbZG3VkF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 17:40:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbZG3Vj6
+	id S1752412AbZG3VnU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 17:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752075AbZG3VnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 17:39:58 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:44408 "EHLO kernel.dk"
+	Thu, 30 Jul 2009 17:43:20 -0400
+Received: from mga09.intel.com ([134.134.136.24]:6846 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751447AbZG3Vj4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 17:39:56 -0400
-Date: Thu, 30 Jul 2009 23:39:56 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Chad Talbott <ctalbott@google.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, wfg@mail.ustc.edu.cn,
-       Martin Bligh <mbligh@google.com>, Michael Rubin <mrubin@google.com>,
-       Andrew Morton <akpm@google.com>, sandeen@redhat.com
-Subject: Re: Bug in kernel 2.6.31, Slow wb_kupdate writeout
-Message-ID: <20090730213956.GH12579@kernel.dk>
-References: <1786ab030907281211x6e432ba6ha6afe9de73f24e0c@mail.gmail.com>
-MIME-Version: 1.0
+	id S1751385AbZG3VnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 17:43:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,297,1246863600"; 
+   d="scan'208";a="537359717"
+Date: Thu, 30 Jul 2009 14:43:19 -0700
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, suresh.b.siddha@intel.com,
+       Jerome Glisse <glisse@freedesktop.org>
+Subject: [PATCH] x86: Fix set_memory_wc related corruption
+Message-ID: <20090730214319.GA1889@linux-os.sc.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1786ab030907281211x6e432ba6ha6afe9de73f24e0c@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 28 2009, Chad Talbott wrote:
-> I run a simple workload on a 4GB machine which dirties a few largish
-> inodes like so:
-> 
-> # seq 10 | xargs -P0 -n1 -i\{} dd if=/dev/zero of=/tmp/dump\{}
-> bs=1024k count=100
-> 
-> While the dds are running data is written out at disk speed.  However,
-> once the dds have run to completion and exited there is ~500MB of
-> dirty memory left.  Background writeout then takes about 3 more
-> minutes to clean memory at only ~3.3MB/s.  When I explicitly sync, I
-> can see that the disk is capable of 40MB/s, which finishes off the
-> files in ~10s. [1]
-> 
-> An interesting recent-ish change is "writeback: speed up writeback of
-> big dirty files."  When I revert the change to __sync_single_inode the
-> problem appears to go away and background writeout proceeds at disk
-> speed.  Interestingly, that code is in the git commit [2], but not in
-> the post to LKML. [3]  This is may not be the fix, but it makes this
-> test behave better.
 
-Can I talk you into trying the per-bdi writeback patchset? I just tried
-your test on a 16gb machine, and the dd's finish immediately since it
-wont trip the writeout at that percentage of dirty memory. The 1GB of
-dirty memory is flushed when it gets too old, 30 seconds later in two
-chunks of writeout running at disk speed.
+Changeset 3869c4aa18835c8c61b44bd0f3ace36e9d3b5bd0
+that went in after 2.6.30-rc1 was a seemingly small change to _set_memory_wc()
+to make it complaint with SDM requirements. But, introduced a nasty bug, which
+can result in crash and/or strange corruptions when set_memory_wc is used.
+One such crash reported here
+http://lkml.org/lkml/2009/7/30/94
 
-http://lkml.org/lkml/2009/7/30/302
+Actually, that changeset introduced two bugs.
+* change_page_attr_set() takes &addr as first argument and can the addr value
+  might have changed on return, even for single page change_page_attr_set()
+  call. That will make the second change_page_attr_set() in this routine
+  operate on unrelated addr, that can eventually cause strange corruptions
+  and bad page state crash.
+* The second change_page_attr_set() call, before setting _PAGE_CACHE_WC, should
+  clear the earlier _PAGE_CACHE_UC_MINUS, as otherwise cache attribute will not
+  be WC (will be UC instead).
 
-You can either use the git branch, or just download
+The patch below fixes both these problems. Sending a single patch to fix both
+the problems, as the change is to the same line of code. The change to have a
+addr_copy is not very clean. But, it is simpler than making more changes
+through various routines in pageattr.c.
 
-http://kernel.dk/writeback-v13.patch
+A huge thanks to Jerome for reporting this problem and providing a simple test
+case that helped us root cause the problem.
 
-and apply that to -git (or -rc4) directly.
+Reported-by: Jerome Glisse <glisse@freedesktop.org>
 
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+---
+
+Patch needed for 2.6.30-stable as well
+
+ arch/x86/mm/pageattr.c |    9 ++++++---
+ 1 files changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index 1b734d7..895d90e 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -997,12 +997,15 @@ EXPORT_SYMBOL(set_memory_array_uc);
+ int _set_memory_wc(unsigned long addr, int numpages)
+ {
+ 	int ret;
++	unsigned long addr_copy = addr;
++
+ 	ret = change_page_attr_set(&addr, numpages,
+ 				    __pgprot(_PAGE_CACHE_UC_MINUS), 0);
+-
+ 	if (!ret) {
+-		ret = change_page_attr_set(&addr, numpages,
+-				    __pgprot(_PAGE_CACHE_WC), 0);
++		ret = change_page_attr_set_clr(&addr_copy, numpages,
++					       __pgprot(_PAGE_CACHE_WC),
++					       __pgprot(_PAGE_CACHE_MASK),
++					       0, 0, NULL);
+ 	}
+ 	return ret;
+ }
 -- 
-Jens Axboe
+1.6.0.6
 
