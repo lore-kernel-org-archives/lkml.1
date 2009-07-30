@@ -1,148 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751769AbZG3JCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751517AbZG3JFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751769AbZG3JCV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 05:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbZG3JCV
+	id S1751517AbZG3JFi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 05:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbZG3JFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 05:02:21 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40829 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751155AbZG3JCT (ORCPT
+	Thu, 30 Jul 2009 05:05:37 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:23102
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751037AbZG3JFg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 05:02:19 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 30 Jul 2009 18:00:29 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Paul Menage <menage@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
-Message-Id: <20090730180029.c4edcc09.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.0907282125260.554@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0907282125260.554@chino.kir.corp.google.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 30 Jul 2009 05:05:36 -0400
+Message-ID: <4A71625C.8060707@panasas.com>
+Date: Thu, 30 Jul 2009 12:05:32 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+MIME-Version: 1.0
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] scsi: consistent use of __u8 in scsi/scsi.h
+References: <20090729111114.GA15239@redhat.com> <1248875763.3900.1.camel@mulgrave.site> <4A705831.3010002@panasas.com> <20090729205626.GA3592@redhat.com>
+In-Reply-To: <20090729205626.GA3592@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 30 Jul 2009 09:05:34.0909 (UTC) FILETIME=[E5ED76D0:01CA10F4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Jul 2009 21:27:15 -0700 (PDT)
-David Rientjes <rientjes@google.com> wrote:
-
-> It's helpful to be able to specify an oom_adj value for newly forked
-> children that do not share memory with the parent.
+On 07/29/2009 11:56 PM, Michael S. Tsirkin wrote:
+> On Wed, Jul 29, 2009 at 05:09:53PM +0300, Boaz Harrosh wrote:
+>> TODO:
+>> * Fix up Kernel headers by complying to check_headers
 > 
-> Before making oom_adj values a characteristic of a task's mm in
-> 2ff05b2b4eac2e63d345fc731ea151a060247f53, it was possible to change the
-> oom_adj value of a vfork() child prior to execve() without implicitly
-> changing the oom_adj value of the parent.  With the new behavior, the
-> oom_adj values of both threads would change since they represent the same
-> memory.
+> This is accomplished by applying the following on top
+> of my previous patch:
 > 
-> That change was necessary to fix an oom killer livelock which would occur
-> when a child would be selected for oom kill prior to execve() and the
-> task could not be killed because it shared memory with an OOM_DISABLE
-> parent.  In fact, only the most negative (most immune) oom_adj value for
-> all threads sharing the same memory would actually be used by the oom
-> killer, leaving inconsistencies amongst all other threads having
-> different oom_adj values (and, thus, incorrectly exported
-> /proc/pid/oom_score values).
-> 
-> This patch adds a new per-process parameter: /proc/pid/oom_adj_child.
-> This defaults to mirror the value of /proc/pid/oom_adj but may be changed
-> so that mm's initialized by their children are preferred over the parent
-> by the oom killer.  Setting oom_adj_child to be less (i.e. more immune)
-> than the task's oom_adj value itself is governed by the CAP_SYS_RESOURCE
-> capability.
-> 
-> When a mm is initialized, the initial oom_adj value will be set to the
-> parent's oom_adj_child.  This allows tasks to elevate the oom_adj value
-> of a vfork'd child prior to execve() before the execution actually takes
-> place.
-> 
-> Furthermore, /proc/pid/oom_adj_child is inherited from the task that
-> forked it.
-> 
-> Cc: Rik van Riel <riel@redhat.com>
-> Cc: Paul Menage <menage@google.com>
-> Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Signed-off-by: David Rientjes <rientjes@google.com>
-> ---
->  Documentation/filesystems/proc.txt |   38 ++++++++++++++++----
->  fs/proc/base.c                     |   68 ++++++++++++++++++++++++++++++++++++
->  include/linux/sched.h              |    1 +
->  kernel/fork.c                      |    3 +-
->  4 files changed, 101 insertions(+), 9 deletions(-)
-> 
-> diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
-> --- a/Documentation/filesystems/proc.txt
-> +++ b/Documentation/filesystems/proc.txt
-> @@ -34,10 +34,11 @@ Table of Contents
->  
->    3	Per-Process Parameters
->    3.1	/proc/<pid>/oom_adj - Adjust the oom-killer score
-> -  3.2	/proc/<pid>/oom_score - Display current oom-killer score
-> -  3.3	/proc/<pid>/io - Display the IO accounting fields
-> -  3.4	/proc/<pid>/coredump_filter - Core dump filtering settings
-> -  3.5	/proc/<pid>/mountinfo - Information about mounts
-> +  3.2	/proc/<pid>/oom_adj_child - Change default oom_adj for children
-> +  3.3	/proc/<pid>/oom_score - Display current oom-killer score
-> +  3.4	/proc/<pid>/io - Display the IO accounting fields
-> +  3.5	/proc/<pid>/coredump_filter - Core dump filtering settings
-> +  3.6	/proc/<pid>/mountinfo - Information about mounts
->  
->  
->  ------------------------------------------------------------------------------
-> @@ -1206,7 +1207,28 @@ The task with the highest badness score is then selected and its children
->  are killed, process itself will be killed in an OOM situation when it does
->  not have children or some of them disabled oom like described above.
->  
-> -3.2 /proc/<pid>/oom_score - Display current oom-killer score
-> +
-> +3.2 /proc/<pid>/oom_adj_child - Change default oom_adj for children
-> +-------------------------------------------------------------------
-> +
-> +This file can be used to change the default oom_adj value for children when a
-> +new mm is initialized.  The oom_adj value for a child's mm is typically the
-> +task's oom_adj value itself, however this value can be altered by writing to
-> +this file.
-> +
-> +This is particularly helpful when a child is vfork'd and its mm following exec
-> +should have a higher priority oom_adj value than its parent.  The new mm will
-> +default to oom_adj_child of the parent task.
-> +
-> +oom_adj_child will mirror oom_adj whenever the latter changes for all tasks
-> +that share its memory.  This avoids having to set both values when simply
-> +tuning oom_adj and that value should be inherited by all children.
-> +
-> +Setting oom_adj_child to be more immune than the task's mm itself (i.e. less
-> +than oom_adj) is governed by the CAP_SYS_RESOURCE capability.
-> +
-a few comments.
 
-1. IIUC, the name is strange.
+This is not enough. The same should be done to the other 3 
+include/scsi headers I mentioned and export them.
 
-At job scheduler, which does this.
+<snip>
 
-if (vfork() == 0) {
-	/* do some job */
-	execve(.....)
-}
-
-Then, when oom_adj_child can be effective is after execve().
-IIUC, the _child_ means a process created by vfork().
-
-2. More simple plan is like this, IIUC.
-
-  fix oom-killer's select_bad_process() not to be in deadlock.
-
-rather than this new stupid interface.
-
-Thanks,
--Kame
-
+Boaz
