@@ -1,63 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751614AbZG3Fl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751954AbZG3FmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751614AbZG3Fl6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 01:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751340AbZG3Fl6
+	id S1751954AbZG3FmN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 01:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbZG3FmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 01:41:58 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:41990 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751270AbZG3Fl5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 01:41:57 -0400
-Date: Thu, 30 Jul 2009 15:41:50 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Borislav Petkov <borislav.petkov@amd.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>
-Subject: linux-next: manual merge of the edac-amd tree with the rr tree
-Message-Id: <20090730154150.d4c326b5.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__30_Jul_2009_15_41_50_+1000_uKzOXmkgptQLYFdS"
+	Thu, 30 Jul 2009 01:42:12 -0400
+Received: from kirsty.vergenet.net ([202.4.237.240]:47507 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751814AbZG3FmL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 01:42:11 -0400
+Date: Thu, 30 Jul 2009 15:42:10 +1000
+From: Simon Horman <horms@verge.net.au>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: agk@redhat.com, dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org,
+       virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com
+Subject: Re: [PATCH] dm-ioband-v1.12.2: I/O bandwidth controller
+Message-ID: <20090730054204.GA11291@verge.net.au>
+References: <20090730.115454.226775179.ryov@valinux.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090730.115454.226775179.ryov@valinux.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__30_Jul_2009_15_41_50_+1000_uKzOXmkgptQLYFdS
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Jul 30, 2009 at 11:54:54AM +0900, Ryo Tsuruta wrote:
+> Hi Alasdair,
+> 
+> This is dm-ioband v1.12.2 release that is a minor update to fit the
+> current dm-devel tree.
+>   
+> Could you please replace dm-add-ioband.patch in your tree with this
+> patch? And I would appreciate it if you would let me know your
+> thoughts about merging dm-ioband to upstream.
+> 
+> Thanks,
+> Ryo Tsuruta
+> 
+> About dm-ioband:
+> dm-ioband is an I/O bandwidth controller implemented as a
+> device-mapper driver and can control bandwidth on per partition, per
+> user, per process, per virtual machine (such as KVM or Xen) basis.
+> Please visit our website for further information.
+> http://sourceforge.net/apps/trac/ioband/
+> 
+> Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
+> Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
 
-Hi Borislav,
+Hi Tsuruta-san,
 
-Today's linux-next merge of the edac-amd tree got a conflict in
-include/linux/topology.h between commit
-11c0109a8c24b27fd6eff8c2c0ddca598675212d
-("cpumask:remove-topology_core_siblings-and-topology_thread_siblings-core")
-from the rr tree and commit 86aebc88b40884510c914ad71e81c8536a15052e
-("topology: introduce cpu_node information for multi-node processors")
-from the edac-amd tree.
+have you run sparse over this code? There seem to be a few interesting
+warnings generated (and some at the top noise too).
 
-The latter adds topology_cpu_node_siblings() which is not needed (the
-former makes it clear that the _cpumask versions of these should be used
-instead).  I fixed it up and can carry the fix as necessary.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+$ make C=1 CF="-D__CHECK_ENDIAN__"
+[snip]
+include/trace/events/dm-ioband.h:9:1: warning: symbol 'ftrace_raw_output_ioband_hold_urgent_bio' was not declared. Should it be static?
+include/trace/events/dm-ioband.h:44:1: warning: symbol 'ftrace_raw_output_ioband_hold_bio' was not declared. Should it be static?
+include/trace/events/dm-ioband.h:79:1: warning: symbol 'ftrace_raw_output_ioband_make_pback_list' was not declared. Should it be static?
+include/trace/events/dm-ioband.h:114:1: warning: symbol 'ftrace_raw_output_ioband_make_issue_list' was not declared. Should it be static?
+include/trace/events/dm-ioband.h:149:1: warning: symbol 'ftrace_raw_output_ioband_release_urgent_bios' was not declared. Should it be static?
+include/trace/events/dm-ioband.h:180:1: warning: symbol 'ftrace_raw_output_ioband_make_request' was not declared. Should it be static?
+include/trace/events/dm-ioband.h:210:1: warning: symbol 'ftrace_raw_output_ioband_pushback_bio' was not declared. Should it be static?
+include/trace/events/dm-ioband.h:9:1: warning: symbol 'ftrace_define_fields_ioband_hold_urgent_bio' was not declared. Should it be static?
+include/trace/events/dm-ioband.h:44:1: warning: symbol 'ftrace_define_fields_ioband_hold_bio' was not declared. Should it be static?
+include/trace/events/dm-ioband.h:79:1: warning: symbol 'ftrace_define_fields_ioband_make_pback_list' was not declared. Should it be static?
+include/trace/events/dm-ioband.h:114:1: warning: symbol 'ftrace_define_fields_ioband_make_issue_list' was not declared. Should it be static?
+include/trace/events/dm-ioband.h:149:1: warning: symbol 'ftrace_define_fields_ioband_release_urgent_bios' was not declared. Should it be static?
+include/trace/events/dm-ioband.h:180:1: warning: symbol 'ftrace_define_fields_ioband_make_request' was not declared. Should it be static?
+include/trace/events/dm-ioband.h:210:1: warning: symbol 'ftrace_define_fields_ioband_pushback_bio' was not declared. Should it be static?
+drivers/md/dm-ioband-ctl.c:178:2: warning: context problem in 'suspend_ioband_device': '_spin_unlock_irqrestore' expected different context
+drivers/md/dm-ioband-ctl.c:178:2:    context 'lock': wanted >= 1, got 0
+drivers/md/dm-ioband-ctl.c:600:3: warning: context imbalance in 'prevent_burst_bios': unexpected unlock
+drivers/md/dm-ioband-ctl.c:600:3:    context '<noident>': wanted 0, got -1
+drivers/md/dm-ioband-ctl.c:816:3: warning: context imbalance in 'ioband_map': __context__ statement expected different context
+drivers/md/dm-ioband-ctl.c:816:3:    context '<noident>': wanted >= 0, got -1
+  CC [M]  drivers/md/dm-ioband-ctl.o
+  CHECK   drivers/md/dm-ioband-policy.c
+  CC [M]  drivers/md/dm-ioband-policy.o
+  CHECK   drivers/md/dm-ioband-rangebw.c
+drivers/md/dm-ioband-rangebw.c:592:6: warning: symbol 'range_bw_timeover' was not declared. Should it be static?
+drivers/md/dm-ioband-rangebw.c:287:4: warning: context imbalance in 'range_bw_queue_full': __context__ statement expected different context
+drivers/md/dm-ioband-rangebw.c:287:4:    context '<noident>': wanted >= 0, got -1
+  CC [M]  drivers/md/dm-ioband-rangebw.o
+drivers/md/dm-ioband-rangebw.c: In function 'range_bw_prepare_token':
+drivers/md/dm-ioband-rangebw.c:210: warning: 'io_mode' may be used uninitialized in this function
 
---Signature=_Thu__30_Jul_2009_15_41_50_+1000_uKzOXmkgptQLYFdS
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpxMp4ACgkQjjKRsyhoI8xnaACeOdvkyXQluAfhaEIA57Tc3kKj
-diYAn3DSby5g1AjFYceaYtLRaoh3MweL
-=Wgz7
------END PGP SIGNATURE-----
-
---Signature=_Thu__30_Jul_2009_15_41_50_+1000_uKzOXmkgptQLYFdS--
