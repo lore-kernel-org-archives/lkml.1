@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752296AbZG3JqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752385AbZG3J4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752296AbZG3JqY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 05:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbZG3JqX
+	id S1752385AbZG3J4G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 05:56:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbZG3J4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 05:46:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44903 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751953AbZG3JqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 05:46:22 -0400
-Date: Thu, 30 Jul 2009 12:45:18 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] scsi: consistent use of __u8 in scsi/scsi.h
-Message-ID: <20090730094517.GC11381@redhat.com>
-References: <20090729111114.GA15239@redhat.com> <1248875763.3900.1.camel@mulgrave.site> <4A705831.3010002@panasas.com> <20090729205626.GA3592@redhat.com> <4A71625C.8060707@panasas.com>
+	Thu, 30 Jul 2009 05:56:06 -0400
+Received: from cpsmtpm-eml103.kpnxchange.com ([195.121.3.7]:54790 "EHLO
+	CPSMTPM-EML103.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752293AbZG3J4F convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 05:56:05 -0400
+From: Frans Pop <elendil@planet.nl>
+To: =?utf-8?q?C=C3=A9dric_Godin?= <cedric@belbone.be>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Bug 13865] Can only resume with HP_WMI selected on compaq nc6000 when 4c395bdd3f2ca8f7e8efad881e16071182c3b8ca is reverted
+Date: Thu, 30 Jul 2009 11:56:01 +0200
+User-Agent: KMail/1.9.9
+Cc: bugzilla-daemon@bugzilla.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+References: <bug-13865-10028@http.bugzilla.kernel.org/> <200907292331.34214.elendil@planet.nl> <4A7165D8.8060705@belbone.be>
+In-Reply-To: <4A7165D8.8060705@belbone.be>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <4A71625C.8060707@panasas.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200907301156.03248.elendil@planet.nl>
+X-OriginalArrivalTime: 30 Jul 2009 09:56:03.0490 (UTC) FILETIME=[F31A4020:01CA10FB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 30, 2009 at 12:05:32PM +0300, Boaz Harrosh wrote:
-> On 07/29/2009 11:56 PM, Michael S. Tsirkin wrote:
-> > On Wed, Jul 29, 2009 at 05:09:53PM +0300, Boaz Harrosh wrote:
-> >> TODO:
-> >> * Fix up Kernel headers by complying to check_headers
-> > 
-> > This is accomplished by applying the following on top
-> > of my previous patch:
-> > 
-> 
-> This is not enough. The same should be done to the other 3 
-> include/scsi headers I mentioned and export them.
+On Thursday 30 July 2009, Cédric Godin wrote:
+> > The strange thing is that the resume function does not do anything
+> > that's not also done in hp_wmi_input_setup(). The only thing I can
+> > think of is that we might need to test for
+> > wmi_has_guid(HPWMI_EVENT_GUID) because that model simply does not
+> > support input events.
+>
+> I tested your patch (from buzilla) and now I can resume.
 
-Right. Well, that's easy enough, isn't it?
+Great.
 
-Subject: scsi: export scsi_ioctl.h and sg.h headers
+> Thanks ! You have my tested-by ;-)
+>
+> PS: I suppose you don't need this infos anymore ?
 
-glibc uses scsi/sg.h and scsi/scsi_ioctl.h, so we need to
-export these headers.
+I'd still like to see the following if it's not too much trouble, 
+basically to confirm that the theory was indeed correct.
 
-Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
----
- include/scsi/Kbuild |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+$ grep . /sys/devices/platform/hp-wmi/*
+$ cat /proc/bus/input/devices
 
-diff --git a/include/scsi/Kbuild b/include/scsi/Kbuild
-index 33b2750..a61932c 100644
---- a/include/scsi/Kbuild
-+++ b/include/scsi/Kbuild
-@@ -1,3 +1,5 @@
-+header-y += sg.h
-+header-y += scsi_ioctl.h
- header-y += scsi.h
- header-y += scsi_netlink.h
- header-y += scsi_netlink_fc.h
--- 
-1.6.2.5
-
+Thanks,
+FJP
