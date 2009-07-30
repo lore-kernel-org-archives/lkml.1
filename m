@@ -1,44 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751925AbZG3RCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751553AbZG3RHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751925AbZG3RCf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 13:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbZG3RCe
+	id S1751553AbZG3RHz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 13:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbZG3RHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 13:02:34 -0400
-Received: from mx-out.daemonmail.net ([216.104.160.38]:47018 "EHLO
-	mx-out.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751209AbZG3RCe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 13:02:34 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [RFC] Uni-processor interrupt state preservation.
-Date: Thu, 30 Jul 2009 12:01:09 -0500
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <200907301137.22035.lkml@morethan.org> <adabpn2rty9.fsf@cisco.com>
-In-Reply-To: <adabpn2rty9.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Thu, 30 Jul 2009 13:07:54 -0400
+Received: from nox.protox.org ([88.191.38.29]:47982 "EHLO nox.protox.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751333AbZG3RHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 13:07:54 -0400
+Subject: Re: PAT wc & vmap mapping count issue ?
+From: Jerome Glisse <glisse@freedesktop.org>
+To: linux-kernel@vger.kernel.org
+Cc: venkatesh.pallipadi@intel.com
+In-Reply-To: <1248952269.2462.33.camel@localhost>
+References: <1248952269.2462.33.camel@localhost>
+Content-Type: text/plain
+Date: Thu, 30 Jul 2009 19:06:33 +0200
+Message-Id: <1248973593.2462.35.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907301201.12197.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu July 30 2009, Roland Dreier wrote:
+On Thu, 2009-07-30 at 13:11 +0200, Jerome Glisse wrote:
+> Hello,
 > 
->  > Just how is the interrupt state (in ebx) supposed to be preserved across
->  > the function call?
+> I think i am facing a PAT issue code (at bottom of the mail) leads
+> to mapping count issue such as one at bottom of mail. Is my test
+> code buggy ? If so what is wrong with it ? Otherwise how could i
+> track this down ? (Tested with lastest Linus tree). Note that
+> the mapping count sometimes is negative, sometimes it's positive
+> but without proper mapping.
 > 
-> Doesn't the i386 ABI say that ebx is preserved across function calls?
+> (With AMD Athlon(tm) Dual Core Processor 4450e)
 > 
+> Note that bad page might takes time to happen 256 pages is bit
+> too little either increasing that or doing memory hungry task
+> will helps triggering the bug faster.
 > 
+> Cheers,
+> Jerome
+> 
+> Jul 30 11:12:36 localhost kernel: BUG: Bad page state in process bash
+> pfn:6daed
+> Jul 30 11:12:36 localhost kernel: page:ffffea0001b6bb40
+> flags:4000000000000000 count:1 mapcount:1 mapping:(null) index:6d8
+> Jul 30 11:12:36 localhost kernel: Pid: 1876, comm: bash Not tainted
+> 2.6.31-rc2 #30
+> Jul 30 11:12:36 localhost kernel: Call Trace:
+> Jul 30 11:12:36 localhost kernel: [<ffffffff81098570>] bad_page
+> +0xf8/0x10d
+> Jul 30 11:12:36 localhost kernel: [<ffffffff810997aa>]
+> get_page_from_freelist+0x357/0x475
+> Jul 30 11:12:36 localhost kernel: [<ffffffff810a72e3>] ? cond_resched
+> +0x9/0xb
+> Jul 30 11:12:36 localhost kernel: [<ffffffff810a9958>] ? copy_page_range
+> +0x4cc/0x558
+> Jul 30 11:12:36 localhost kernel: [<ffffffff810999e0>]
+> __alloc_pages_nodemask+0x118/0x562
+> Jul 30 11:12:36 localhost kernel: [<ffffffff812a92c3>] ?
+> _spin_unlock_irq+0xe/0x11
+> Jul 30 11:12:36 localhost kernel: [<ffffffff810a9dda>]
+> alloc_pages_node.clone.0+0x14/0x16
+> Jul 30 11:12:36 localhost kernel: [<ffffffff810aa0b1>] do_wp_page
+> +0x2d5/0x57d
+> Jul 30 11:12:36 localhost kernel: [<ffffffff810aac00>] handle_mm_fault
+> +0x586/0x5e0
+> Jul 30 11:12:36 localhost kernel: [<ffffffff812ab635>] do_page_fault
+> +0x20a/0x21f
+> Jul 30 11:12:36 localhost kernel: [<ffffffff812a968f>] page_fault
+> +0x1f/0x30
+> Jul 30 11:12:36 localhost kernel: Disabling lock debugging due to kernel
+> taint
+> 
+> #define NPAGEST 256
+> void test_wc(void)
+> {
+>         struct page *pages[NPAGEST];
+>         int i, j;
+>         void *virt;
+> 
+>         for (i = 0; i < NPAGEST; i++) {
+>                 pages[i] = NULL;
+>         }
+>         for (i = 0; i < NPAGEST; i++) {
+>                 pages[i] = alloc_page(__GFP_DMA32 | GFP_USER);
+>                 if (pages[i] == NULL) {
+>                         printk(KERN_ERR "Failled allocating page %d\n",
+> i);
+>                         goto out_free;
+>                 }
+>                 if (!PageHighMem(pages[i]))
+>                         if (set_memory_wc((unsigned long)
+> page_address(pages[i]), 1)) {
+>                                 printk(KERN_ERR "Failled setting page %d
+> wc\n", i);
+>                                 goto out_free;
+>                         }
+>         }
+>         virt = vmap(pages, NPAGEST, 0,
+> pgprot_writecombine(PAGE_KERNEL));
+>         if (virt == NULL) {
+>                 printk(KERN_ERR "Failled vmapping\n");
+>                 goto out_free;
+>         }
+>         vunmap(virt);
+> out_free:
+>         for (i = 0; i < NPAGEST; i++) {
+>                 if (pages[i]) {
+>                         if (!PageHighMem(pages[i]))
+>                                 set_memory_wb((unsigned long)
+> page_address(pages[i]), 1);
+>                         __free_page(pages[i]);
+>                 }
+>         }
+> }
 
-If it does, then that is the answer to my question -
-Link to the ABI document please.
+vmaping doesn't seems to be involved with the corruption simply
+setting some pages with set_memory_wc is enough.
 
-Mike
+Cheers,
+Jerome
+
