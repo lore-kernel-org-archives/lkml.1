@@ -1,86 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbZG3XZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753218AbZG3XZz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753141AbZG3XZp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 19:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbZG3XZo
+	id S1753218AbZG3XZz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 19:25:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbZG3XZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 19:25:44 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:37166 "EHLO smtps.tip.net.au"
+	Thu, 30 Jul 2009 19:25:55 -0400
+Received: from kroah.org ([198.145.64.141]:57959 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751709AbZG3XZo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752682AbZG3XZo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 30 Jul 2009 19:25:44 -0400
-Date: Fri, 31 Jul 2009 09:25:37 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Robert Richter <robert.richter@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: OProfile for linux-next
-Message-Id: <20090731092537.239995b5.sfr@canb.auug.org.au>
-In-Reply-To: <20090730120738.GA24694@erda.amd.com>
-References: <20090730120738.GA24694@erda.amd.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__31_Jul_2009_09_25_37_+1000_wlQNhOvGg_4pFV=Z"
+Date: Thu, 30 Jul 2009 16:24:43 -0700
+From: Greg KH <greg@kroah.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kdesu broken
+Message-ID: <20090730232443.GA20367@kroah.com>
+References: <alpine.LFD.2.01.0907281141070.3186@localhost.localdomain>
+ <20090728195651.3a402a31@lxorguk.ukuu.org.uk>
+ <alpine.LFD.2.01.0907281158120.3186@localhost.localdomain>
+ <20090728201553.0eb2d51d@lxorguk.ukuu.org.uk>
+ <20090728195648.GA4833@kroah.com>
+ <20090728204720.GF31679@mit.edu>
+ <20090728210121.GB12155@kroah.com>
+ <20090728220203.GI31679@mit.edu>
+ <20090729004941.3a78d4b3@lxorguk.ukuu.org.uk>
+ <20090731001621.6d5a1da9@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090731001621.6d5a1da9@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__31_Jul_2009_09_25_37_+1000_wlQNhOvGg_4pFV=Z
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Jul 31, 2009 at 12:16:21AM +0100, Alan Cox wrote:
+> > I'll fish them out tomorrow. What is in the -next tree is only some of
+> > the bits.
+> > 
+> > We still have races on the USB side too btw I put a frequency generator
+> > on the carrier line of my pl2303 with an app continually opening the
+> > port and it oopses after about 10 minutes. On the bright side so does
+> > 2.6.29, 2.6.27 ....
+> 
+> Just an update - I've not posted them yet as I've been putting the
+> various branches into some kind of sane order with the tested stuff first
+> and the "in progress" serial -> tty_port stuff last.
 
-Hi Robert,
+Thanks for the update, I appreciate it.
 
-On Thu, 30 Jul 2009 14:07:38 +0200 Robert Richter <robert.richter@amd.com> =
-wrote:
->
-> please add following tree to linux-next:
->=20
->  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git for-next
->=20
-> This is the oprofile master branch containing all changes for the next
-> merge window.
-
-Added from today.
-
-> The general way of sending oprofile to linux-next is via tip. So, this
-> will be a temporary solution until Ingo will be back.
-
-I added it after the tip tree, so if it hangs around for a few days after
-Ingo has integrated it, it should not be a problem.
-
-What I tell everyone: all patches/commits in the tree/series must
-have been:
-
-	posted to a relevant mailing list
-	reviewed
-	unit tested
-	destined for the next merge window (or the current release)
-
-*before* they are included.  The linux-next tree is for integration
-testing and to lower the impact of conflicts between subsystems in the
-next merge window.
-
-Basically, this should be just what you would send to Linus or in this
-case, Ingo, (or ask him to fetch).  It is allowed to be rebased if you
-deem it necessary.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__31_Jul_2009_09_25_37_+1000_wlQNhOvGg_4pFV=Z
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpyK/EACgkQjjKRsyhoI8yq5gCdG1+tcx1h73+pSdMs/DCJNuME
-vvEAn2nZzjQSwKy+IeO0joj7ihdyzfjQ
-=A0bI
------END PGP SIGNATURE-----
-
---Signature=_Fri__31_Jul_2009_09_25_37_+1000_wlQNhOvGg_4pFV=Z--
+greg k-h
