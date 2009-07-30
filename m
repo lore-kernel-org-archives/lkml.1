@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751685AbZG3Pxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751944AbZG3Pyj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751685AbZG3Pxm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 11:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbZG3Pxl
+	id S1751944AbZG3Pyj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 11:54:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbZG3Pyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 11:53:41 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:34941 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750933AbZG3Pxl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 11:53:41 -0400
-To: Paul Rolland <rol@as2917.net>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.31-rc4 - slab entry tak_delay_info leaking ???
-References: <20090729082047.048ee1a8@tux.DEF.witbe.net>
-	<20090730120715.65bf01ff@tux.DEF.witbe.net>
-	<20090730122605.465d4f8b@tux.DEF.witbe.net>
-From: Catalin Marinas <catalin.marinas@arm.com>
-Date: Thu, 30 Jul 2009 16:53:33 +0100
-In-Reply-To: <20090730122605.465d4f8b@tux.DEF.witbe.net> (Paul Rolland's message of "Thu\, 30 Jul 2009 12\:26\:05 +0200")
-Message-ID: <tnxeiry88w2.fsf@pc1117.cambridge.arm.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Thu, 30 Jul 2009 11:54:39 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:42368 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751429AbZG3Pyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 11:54:38 -0400
+Date: Thu, 30 Jul 2009 10:54:03 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       selinux@tycho.nsa.gov, jwcart2@tycho.nsa.gov, sds@tycho.nsa.gov,
+       spender@grsecurity.net, dwalsh@redhat.com, cl@linux-foundation.org,
+       arjan@infradead.org, alan@lxorguk.ukuu.org.uk, kees@outflux.net,
+       csellers@tresys.com, penguin-kernel@i-love.sakura.ne.jp
+Subject: Re: [PATCH -v3 1/3] Capabilities: move cap_file_mmap to commoncap.c
+Message-ID: <20090730155403.GA13939@us.ibm.com>
+References: <20090729185620.21757.44366.stgit@paris.rdu.redhat.com> <20090730051426.GA6082@us.ibm.com> <1248968428.2597.79.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 30 Jul 2009 15:53:39.0065 (UTC) FILETIME=[E79F2E90:01CA112D]
+Content-Disposition: inline
+In-Reply-To: <1248968428.2597.79.camel@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Rolland <rol@as2917.net> wrote:
->> On Wed, 29 Jul 2009 08:20:47 +0200
->> Paul Rolland <rol@as2917.net> wrote:
->> > Since I'm running 2.6.31-rc? (3 or 4 I think), I often find my machine
->> > with my X session killed in the morning, and the kdm login screen
->> > displayed.
-[...]
-> Well, I've killed my X session, and it stopped the "leak"... but
-> didn't recover the "lost" task_delay_info...
+Quoting Eric Paris (eparis@redhat.com):
+> On Thu, 2009-07-30 at 00:14 -0500, Serge E. Hallyn wrote:
+> > Quoting Eric Paris (eparis@redhat.com):
+> > > Currently we duplicate the mmap_min_addr test in cap_file_mmap and in
+> > > security_file_mmap if !CONFIG_SECURITY.  This patch moves cap_file_mmap
+> > > into commoncap.c and then calls that function directly from
+> > > security_file_mmap ifndef CONFIG_SECURITY like all of the other capability
+> > > checks are done.
+> > 
+> > It also
+> > 
+> > 	1. changes the return value in error case from -EACCES to
+> > 	   -EPERM
+> > 	2. no onger sets PF_SUPERPRIV in t->flags if the capability
+> > 	   is used.
+> > 
+> > Do we care about these?
+> 
+> Personally, not really, but I'll gladly put them back if you care.   #2
+> seems more interesting to me than number 1.   I actually kinda like
+> getting EPERM from caps rather than EACCES since them I know if I was
+> denied by selinux or by caps.....
+> 
+> -Eric
 
-You could try to enable CONFIG_KMEMLEAK and see if you get any leaks
-reported for the "lost" task_delay_info (see Documentation/kmemleak.txt).
+Yup, I asked bc I didn't particularly care myself.
 
--- 
-Catalin
+I think I agree with you about -EPERM being better anyway.  However I
+(now) think in this case PF_SUPERPRIV definately should be set, as this
+is a clear use of a capability to do something that couldn't have been
+done without it.
+
+thanks,
+-serge
