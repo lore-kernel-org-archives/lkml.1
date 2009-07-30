@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752478AbZG3TsI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751541AbZG3Tzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752478AbZG3TsI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 15:48:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbZG3TsG
+	id S1751541AbZG3Tzb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 15:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbZG3Tz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 15:48:06 -0400
-Received: from msux-gh1-uea02.nsa.gov ([63.239.67.2]:53217 "EHLO
+	Thu, 30 Jul 2009 15:55:29 -0400
+Received: from msux-gh1-uea02.nsa.gov ([63.239.67.2]:56816 "EHLO
 	msux-gh1-uea02.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752400AbZG3TsE (ORCPT
+	with ESMTP id S1751477AbZG3Tz2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 15:48:04 -0400
+	Thu, 30 Jul 2009 15:55:28 -0400
 Subject: Re: [PATCH -v3 1/3] Capabilities: move cap_file_mmap to commoncap.c
 From: Stephen Smalley <sds@tycho.nsa.gov>
 To: Eric Paris <eparis@redhat.com>
@@ -19,16 +19,17 @@ Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org,
        cl@linux-foundation.org, arjan@infradead.org, alan@lxorguk.ukuu.org.uk,
        kees@outflux.net, csellers@tresys.com,
        penguin-kernel@i-love.sakura.ne.jp
-In-Reply-To: <1248978679.2771.24.camel@localhost>
+In-Reply-To: <1248982958.11627.187.camel@moss-pluto.epoch.ncsc.mil>
 References: <20090729185620.21757.44366.stgit@paris.rdu.redhat.com>
 	 <20090730051426.GA6082@us.ibm.com> <1248968428.2597.79.camel@localhost>
 	 <20090730155403.GA13939@us.ibm.com>
 	 <1248969492.11627.172.camel@moss-pluto.epoch.ncsc.mil>
-	 <1248976252.2771.1.camel@localhost>  <1248978679.2771.24.camel@localhost>
+	 <1248976252.2771.1.camel@localhost>
+	 <1248982958.11627.187.camel@moss-pluto.epoch.ncsc.mil>
 Content-Type: text/plain
 Organization: National Security Agency
-Date: Thu, 30 Jul 2009 15:47:47 -0400
-Message-Id: <1248983267.11627.193.camel@moss-pluto.epoch.ncsc.mil>
+Date: Thu, 30 Jul 2009 15:54:52 -0400
+Message-Id: <1248983692.11627.194.camel@moss-pluto.epoch.ncsc.mil>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
@@ -36,7 +37,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-30 at 14:31 -0400, Eric Paris wrote:
+On Thu, 2009-07-30 at 15:42 -0400, Stephen Smalley wrote:
 > On Thu, 2009-07-30 at 13:50 -0400, Eric Paris wrote:
 > > On Thu, 2009-07-30 at 11:58 -0400, Stephen Smalley wrote:
 > > > On Thu, 2009-07-30 at 10:54 -0500, Serge E. Hallyn wrote:
@@ -85,26 +86,28 @@ On Thu, 2009-07-30 at 14:31 -0400, Eric Paris wrote:
 > > I'll audit this afternoon to see which of them might not fit these
 > > rules....
 > 
-> I just went through all of the cap_* function in commoncap.c to see
-> which of them are being or are not being called from the selinux hooks.
-> Only 3 of them look interesting.
+> That isn't what I meant.  Most of the commoncap functions call capable()
+> rather than directly calling cap_capable(), thereby causing:
+> - PF_SUPERPRIV to be set, and
+> - The primary security module (e.g. SELinux) to apply its own
+> restrictive check.
 > 
-> cap_inode_setxattr
-> cap_inode_removexattr
-> cap_vm_enough_memory
+> That is useful as it allows SELinux or AppArmor or TOMOYO to veto e.g.
+> CAP_SYS_PTRACE without replicating the same logic within its own hook.
 > 
-> All of the other functions are either called from hooks.c or SELinux
-> does not define that LSM hook, so it just defaults to the cap_* hook.
+> The current exceptions are:
+> cap_inh_is_capped() called from cap_capset(),
+> cap_task_prctl() in the PR_SET_SECUREBITS case,
+> cap_vm_enough_memory(),
+> cap_file_mmap() after your patch.
 > 
-> These 3 are all a bit odd because the logic inside the cap_ hook is
-> duplicated inside the selinux_ hook.  I'd much rather see the selinux_
-> hook call the cap_ hook.  I'm going to think on that topic, but it's a
-> different set of patches and I don't see missing checks today as the
-> logic seems to line up.
+> The latter two are indeed cases where we made a conscious choice that
+> SELinux would not apply its capability check against policy.  But the
+> first two are unclear to me.
 
-Yes, those 3 aren't a problem.  I suppose selinux_inode_setotherxattr()
-could be changed to call cap_inode_setxattr() before the SELinux setattr
-check, as that would only happen in the non-selinux attribute case.
+Sorry, the vm_enough_memory case was about auditing, not about applying
+the check itself.  Which might have been rendered moot by your later
+changes to introduce SECURITY_CAP_NOAUDIT.
 
 -- 
 Stephen Smalley
