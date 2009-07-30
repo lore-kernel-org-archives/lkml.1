@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbZG3WeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbZG3We5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752596AbZG3WeT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 18:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbZG3WeS
+	id S1752834AbZG3We5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 18:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbZG3We4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 18:34:18 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:1036 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751143AbZG3WeS (ORCPT
+	Thu, 30 Jul 2009 18:34:56 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49175 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751570AbZG3We4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 18:34:18 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=K+wElHqAlKLmRL2W8ZOZxA/xK9Qmh+yVdz+lDWVZdyt3qOD6dSP6VrHyImmVhdNEL
-	GNtVdUEx8uCCzlMpaH+5A==
-MIME-Version: 1.0
-In-Reply-To: <20090730221727.GI12579@kernel.dk>
-References: <1786ab030907281211x6e432ba6ha6afe9de73f24e0c@mail.gmail.com>
-	 <20090730213956.GH12579@kernel.dk>
-	 <33307c790907301501v4c605ea8oe57762b21d414445@mail.gmail.com>
-	 <20090730221727.GI12579@kernel.dk>
-Date: Thu, 30 Jul 2009 15:34:12 -0700
-Message-ID: <33307c790907301534v64c08f59o66fbdfbd3174ff5f@mail.gmail.com>
-Subject: Re: Bug in kernel 2.6.31, Slow wb_kupdate writeout
-From: Martin Bligh <mbligh@google.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Chad Talbott <ctalbott@google.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, wfg@mail.ustc.edu.cn,
-       Michael Rubin <mrubin@google.com>, Andrew Morton <akpm@google.com>,
-       sandeen@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 30 Jul 2009 18:34:56 -0400
+Date: Thu, 30 Jul 2009 15:34:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Fertser <fercerpav@gmail.com>
+Cc: sameo@linux.intel.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pcf50633: use a dedicated workqueue for irq processing
+Message-Id: <20090730153425.9a3fc5ac.akpm@linux-foundation.org>
+In-Reply-To: <200907281845.n6SIjIlf025081@home.pavel.comp>
+References: <200907281845.n6SIjIlf025081@home.pavel.comp>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The test case above on a 4G machine is only generating 1G of dirty data.
-> I ran the same test case on the 16G, resulting in only background
-> writeout. The relevant bit here being that the background writeout
-> finished quickly, writing at disk speed.
->
-> I re-ran the same test, but using 300 100MB files instead. While the
-> dd's are running, we are going at ~80MB/sec (this is disk speed, it's an
-> x25-m). When the dd's are done, it continues doing 80MB/sec for 10
-> seconds or so. Then the remainder (about 2G) is written in bursts at
-> disk speeds, but with some time in between.
+On Tue, 28 Jul 2009 00:41:15 +0400
+Paul Fertser <fercerpav@gmail.com> wrote:
 
-OK, I think the test case is sensitive to how many files you have - if
-we punt them to the back of the list, and yet we still have 299 other
-ones, it may well be able to keep the disk spinning despite the bug
-I outlined.Try using 30 1GB files?
+> Using the default kernel "events" workqueue causes problems with
+> synchronous adc readings if initiated from some task on the same
+> workqueue.
+> 
+> I had a deadlock trying to use pcf50633_adc_sync_read from a
+> power_supply class driver because the reading was initiated from the
+> workqueue and it waited for the irq processing to complete (to get the
+> result) and that was put on the same workqueue.
 
-Though it doesn't seem to happen with just one dd streamer, and
-I don't see why the bug doesn't trigger in that case either.
+I don't get it.
 
-I believe the bugfix is correct independent of any bdi changes?
+Do you meant that pcf50633_adc_sync_read() was called via a
+schedule_work() handler?  If so, wasn't that a bug?
 
-M.
+The patch looks reasonable, but creating yet another kernel thread is a
+bit sad.  And I suspect that other MFD drivers are doing the same thing
+as pcf50633-core.c, in which case we should change those as well?
+
+So..  please provide a more complete description of the problem which
+is being solved so that we can explore alternative fixes.
+
