@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751326AbZG3Mta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751552AbZG3Mtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751326AbZG3Mta (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 08:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbZG3Mt3
+	id S1751552AbZG3Mtv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 08:49:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZG3Mtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 08:49:29 -0400
-Received: from fifo99.com ([67.223.236.141]:51617 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750776AbZG3Mt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 08:49:29 -0400
-Subject: Re: [RFC][patch 00/12] clocksource / timekeeping rework V2
-From: Daniel Walker <dwalker@fifo99.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
-In-Reply-To: <20090730125351.6f16e9ec@skybase>
-References: <200907291717.n6THHG6f001426@d06av06.portsmouth.uk.ibm.com>
-	 <20090730125351.6f16e9ec@skybase>
+	Thu, 30 Jul 2009 08:49:50 -0400
+Received: from dscas1.ad.uiuc.edu ([128.174.68.119]:49345 "EHLO
+	dscas1.ad.uiuc.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751003AbZG3Mtu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 08:49:50 -0400
+From: Stoyan Gaydarov <sgayda2@uiuc.edu>
+To: linux-kernel@vger.kernel.org
+CC: Stoyan Gaydarov <sgayda2@uiuc.edu>, David.Woodhouse@intel.com, sr@denx.de,
+       bigeasy@linutronix.de, kay.sievers@vrfy.org, gregkh@suse.de,
+       linux-mtd@lists.infradead.org
+Subject: Re: [PATCH] [mtd] fixed faulty check
+Date: Thu, 30 Jul 2009 07:49:38 -0500
+Message-ID: <1248958178-22599-1-git-send-email-sgayda2@uiuc.edu>
+X-Mailer: git-send-email 1.6.3.3
+MIME-Version: 1.0
 Content-Type: text/plain
-Date: Thu, 30 Jul 2009 05:49:33 -0700
-Message-Id: <1248958173.6046.32.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-30 at 12:53 +0200, Martin Schwidefsky wrote:
+Resubmit of a patch with some additions, see http://lkml.org/lkml/2009/7/30/97
 
-> > I'm not sure allowing that type of override a good idea tho .. I don't
-> > think it's considered a usable clock when the rating goes to zero.
-> 
-> Override as the root user -> your foot, no? The whole override stuff is
-> there for the case that the clocksource selection picked a broken clock
-> and you want to force the system into a semi-working state. Ideally the
-> whole override would go away, but that is probably wishful thinking..
+Signed-off-by: Stoyan Gaydarov <sgayda2@uiuc.edu>
+---
+ drivers/mtd/maps/physmap_of.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-I would agree if the system doesn't crash as a result, if it just starts
-to operate funny then that's maybe acceptable. If you keep the change
-rating function, you could potentially remove the unregister path..
-
-Daniel
+diff --git a/drivers/mtd/maps/physmap_of.c b/drivers/mtd/maps/physmap_of.c
+index 39d357b..e7ab5f0 100644
+--- a/drivers/mtd/maps/physmap_of.c
++++ b/drivers/mtd/maps/physmap_of.c
+@@ -215,7 +215,8 @@ static int __devinit of_flash_probe(struct of_device *dev,
+ 		goto err_out;
+ 
+ 	mtd_list = kzalloc(sizeof(struct mtd_info) * count, GFP_KERNEL);
+-	if (!info)
++	if (!mtd_list)
++		kfree(info);
+ 		goto err_out;
+ 
+ 	dev_set_drvdata(&dev->dev, info);
+-- 
+1.6.3.3
 
