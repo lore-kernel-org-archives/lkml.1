@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753295AbZG3Ljy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350AbZG3LlE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753295AbZG3Ljy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 07:39:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbZG3Ljy
+	id S1753350AbZG3LlE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 07:41:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbZG3LlE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 07:39:54 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:44742 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751385AbZG3Ljx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 07:39:53 -0400
-Date: Thu, 30 Jul 2009 06:39:51 -0500
-From: Robin Holt <holt@sgi.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Laurent Pinchart <laurent.pinchart@skynet.be>,
-       linux-kernel@vger.kernel.org, v4l2_linux <linux-media@vger.kernel.org>
-Subject: Re: Is get_user_pages() enough to prevent pages from being swapped
-	out ?
-Message-ID: <20090730113951.GA2763@sgi.com>
-References: <200907291123.12811.laurent.pinchart@skynet.be> <Pine.LNX.4.64.0907291551050.16769@sister.anvils> <200907291741.52783.laurent.pinchart@skynet.be> <Pine.LNX.4.64.0907291653510.20238@sister.anvils>
+	Thu, 30 Jul 2009 07:41:04 -0400
+Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:54106 "EHLO
+	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751642AbZG3LlD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 07:41:03 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Dave Airlie <airlied@gmail.com>
+Subject: Re: [Bug #13667] drm: display arifacts when X.Org is stopped
+Date: Thu, 30 Jul 2009 13:40:59 +0200
+User-Agent: KMail/1.9.9
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+References: <35kKlbXMqWN.A.RXD.D0oUKB@chimera> <200907251833.42598.elendil@planet.nl> <21d7e9970907300340t79e063e1n18cdba11538c2fdc@mail.gmail.com>
+In-Reply-To: <21d7e9970907300340t79e063e1n18cdba11538c2fdc@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0907291653510.20238@sister.anvils>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200907301341.01693.elendil@planet.nl>
+X-OriginalArrivalTime: 30 Jul 2009 11:41:02.0176 (UTC) FILETIME=[9D697600:01CA110A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > On Wednesday 29 July 2009 17:26:11 Hugh Dickins wrote:
-...
-> > > On the other hand, despite the raised reference count, under memory
-> > > pressure that page might get unmapped from the user pagetable, and
-> > > might even be written out to swap in its half-dirty state (though
+On Thursday 30 July 2009, Dave Airlie wrote:
+> On Sun, Jul 26, 2009 at 2:33 AM, Frans Pop<elendil@planet.nl> wrote:
+> > On Thursday 09 July 2009, Frans Pop wrote:
+> >> > However we shall endeavour to fix this issues as it may be
+> >> > systemic of something else going wrong in the new PAT/AGP code.
+> >>
+> >> Great. Thanks in advance, I do appreciate it.
+> >
+> > Any news on this?
+>
+> http://git.infradead.org/users/dwmw2/iommu-agp.git
+>
+> don't suppose you could pull that tree in and see if it helps?
 
-One thing you did not mention in the above description is that the page
-is marked clean by the write-out to swap.  I am not sure I recall the
-method of mapping involved here, but it is necessary to ensure the page
-is marked dirty again before the driver releases it.  If the page is
-not marked dirty as part of your method of releasing it, the changes
-you have made between when the page was first written out and when you
-are freeing it will get lost.
+Sure I can :-)
+I merged its master branch on top of current mainline + some local patches 
+I have. But I'm afraid it does not make any difference.
 
-Thanks,
-Robin
+Note that I also added Venki's PAT patch set for .32 [1] in my local 
+patches because of this issue, but that does not make any difference 
+either.
+
+Cheers,
+FJP
+
+[1] http://lkml.org/lkml/2009/7/10/284
