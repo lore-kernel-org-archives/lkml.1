@@ -1,76 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752667AbZG3WR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752780AbZG3WZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752667AbZG3WR3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 18:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbZG3WR2
+	id S1752780AbZG3WZO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 18:25:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbZG3WZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 18:17:28 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:60572 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751953AbZG3WR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 18:17:28 -0400
-Date: Fri, 31 Jul 2009 00:17:28 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Martin Bligh <mbligh@google.com>
-Cc: Chad Talbott <ctalbott@google.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, wfg@mail.ustc.edu.cn,
-       Michael Rubin <mrubin@google.com>, Andrew Morton <akpm@google.com>,
-       sandeen@redhat.com
-Subject: Re: Bug in kernel 2.6.31, Slow wb_kupdate writeout
-Message-ID: <20090730221727.GI12579@kernel.dk>
-References: <1786ab030907281211x6e432ba6ha6afe9de73f24e0c@mail.gmail.com> <20090730213956.GH12579@kernel.dk> <33307c790907301501v4c605ea8oe57762b21d414445@mail.gmail.com>
+	Thu, 30 Jul 2009 18:25:14 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:51380 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751477AbZG3WZM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 18:25:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=jW827GaoT3V9YDleGnaY7T7r2RT49dLDiR9ov9kipyKAmkBRAkjurJgHRi0sY0i8m1
+         rkvilMQ/S3i9NEOLcywnxrLW6uF+W16voodnIPBTVnht17Wp3PBk6VHD7EUEYsN7qAa2
+         hRNiARlTxHExt5crxOBmHwO6hFh8eyD5WIi90=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <33307c790907301501v4c605ea8oe57762b21d414445@mail.gmail.com>
+Date: Fri, 31 Jul 2009 00:25:11 +0200
+Message-ID: <c93f91ee0907301525s7629435eged67b330e333f191@mail.gmail.com>
+Subject: issues with mmap() on raw socket with rx_ring
+From: leo mueller <llug.dan@googlemail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary=0016e64be264e71a83046ff3c6e1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 30 2009, Martin Bligh wrote:
-> On Thu, Jul 30, 2009 at 2:39 PM, Jens Axboe<jens.axboe@oracle.com> wrote:
-> > On Tue, Jul 28 2009, Chad Talbott wrote:
-> >> I run a simple workload on a 4GB machine which dirties a few largish
-> >> inodes like so:
-> >>
-> >> # seq 10 | xargs -P0 -n1 -i\{} dd if=/dev/zero of=/tmp/dump\{}
-> >> bs=1024k count=100
-> >>
-> >> While the dds are running data is written out at disk speed.  However,
-> >> once the dds have run to completion and exited there is ~500MB of
-> >> dirty memory left.  Background writeout then takes about 3 more
-> >> minutes to clean memory at only ~3.3MB/s.  When I explicitly sync, I
-> >> can see that the disk is capable of 40MB/s, which finishes off the
-> >> files in ~10s. [1]
-> >>
-> >> An interesting recent-ish change is "writeback: speed up writeback of
-> >> big dirty files."  When I revert the change to __sync_single_inode the
-> >> problem appears to go away and background writeout proceeds at disk
-> >> speed.  Interestingly, that code is in the git commit [2], but not in
-> >> the post to LKML. [3]  This is may not be the fix, but it makes this
-> >> test behave better.
-> >
-> > Can I talk you into trying the per-bdi writeback patchset? I just tried
-> > your test on a 16gb machine, and the dd's finish immediately since it
-> > wont trip the writeout at that percentage of dirty memory. The 1GB of
-> > dirty memory is flushed when it gets too old, 30 seconds later in two
-> > chunks of writeout running at disk speed.
-> 
-> How big did you make the dds? It has to be writing more data than
-> you have RAM, or it's not going to do anything much interesting ;-)
+--0016e64be264e71a83046ff3c6e1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-The test case above on a 4G machine is only generating 1G of dirty data.
-I ran the same test case on the 16G, resulting in only background
-writeout. The relevant bit here being that the background writeout
-finished quickly, writing at disk speed.
+hi all,
 
-I re-ran the same test, but using 300 100MB files instead. While the
-dd's are running, we are going at ~80MB/sec (this is disk speed, it's an
-x25-m). When the dd's are done, it continues doing 80MB/sec for 10
-seconds or so. Then the remainder (about 2G) is written in bursts at
-disk speeds, but with some time in between.
+i tried to follow the procedures described in
+Documentation/networking/packet_mmap.txt to
+create an "zero copy" rx_ring for packet capturing.
 
--- 
-Jens Axboe
+i've attached an simple example and my output (see test_mmap.txt).
+despite i compiled
+the 2.6.30 kernel with CONFIG_PACKET_MMAP=y it won't work.
 
+mem'mapping to the socket buffer always fails with -EINVAL and i have
+no clue why.... :-/
+
+do you have any idea?
+
+thanks for help
+
+--0016e64be264e71a83046ff3c6e1
+Content-Type: text/plain; charset=US-ASCII; name="test_mmap.txt"
+Content-Disposition: attachment; filename="test_mmap.txt"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fxs1zfq91
+
+I2luY2x1ZGUgPHN0ZGlvLmg+CiNpbmNsdWRlIDxzdGRsaWIuaD4KI2luY2x1ZGUgPHN0cmluZy5o
+PgojaW5jbHVkZSA8dW5pc3RkLmg+CiNpbmNsdWRlIDxhcnBhL2luZXQuaD4KI2luY2x1ZGUgPGFz
+c2VydC5oPgojaW5jbHVkZSA8bGludXgvaWZfZXRoZXIuaD4KI2luY2x1ZGUgPGxpbnV4L2lmX3Bh
+Y2tldC5oPgojaW5jbHVkZSA8c3lzL21tYW4uaD4KCmludCBtYWluKCkKewogICAgaW50IHNvY2s7
+CiAgICBpbnQgcmV0OwogICAgdm9pZCAqbWVtOwogICAgc2l6ZV90IG1hcHNpemU7CiAgICBzdHJ1
+Y3QgdHBhY2tldF9yZXEgcmVxOwogIAogICAgc29jayA9IHNvY2tldChQRl9QQUNLRVQsIFNPQ0tf
+UkFXLCBodG9ucyhFVEhfUF9JUCkpOwogICAgYXNzZXJ0KHNvY2sgIT0gLSAxKTsKCiAgICBtZW1z
+ZXQoJnJlcSwgMCwgc2l6ZW9mKHJlcSkpOwogICAgCiAgICByZXEudHBfYmxvY2tfc2l6ZSA9IDQw
+OTY7CiAgICByZXEudHBfZnJhbWVfc2l6ZSA9IDIwNDg7CiAgICByZXEudHBfYmxvY2tfbnIgPSA0
+OwogICAgcmVxLnRwX2ZyYW1lX25yID0gODsKCiAgICByZXQgPSBzZXRzb2Nrb3B0KHNvY2ssIFNP
+TF9TT0NLRVQsIFBBQ0tFVF9SWF9SSU5HLCAodm9pZCAqKSAmcmVxLCBzaXplb2YocmVxKSk7CiAg
+ICBhc3NlcnQocmV0ID09IDApOwoKICAgIG1hcHNpemUgPSByZXEudHBfYmxvY2tfbnIgKiByZXEu
+dHBfYmxvY2tfc2l6ZTsKICAgIG1lbSA9IG1tYXAoMCwgbWFwc2l6ZSwgUFJPVF9SRUFEIHwgUFJP
+VF9XUklURSwgTUFQX1NIQVJFRCwgc29jaywgMCApOwogICAgYXNzZXJ0KG1lbSAhPSBNQVBfRkFJ
+TEVEKTsKICAgIAogICAgLy8uLi4KICAgIC8vcG9sbCgpCiAgICAvLy4uLgogICAgCiAgICBjbG9z
+ZShzb2NrKTsKICAgIHJldHVybiAwOwp9CgovKgoKLmNvbmZpZzoKWy4uLl0KQ09ORklHX01NVT15
+CkNPTkZJR19QQUNLRVQ9eQpDT05GSUdfUEFDS0VUX01NQVA9eQpbLi4uXQoKb3V0cHV0OgoKJCB1
+bmFtZSAtYQpMaW51eCBkYXJrc3Rhci1sYXB0b3AgMi42LjMwLjMgIzEgU01QIFRodSBKdWwgMzAg
+MjM6MDA6MTAgQ0VTVCAyMDA5IGk2ODYgR05VL0xpbnV4CgokIGdjYyAtV2FsbCAuL3Rlc3RfbW1h
+cC5jCiQgc3VkbyAuL2Eub3V0IAphLm91dDogLi90ZXN0X21tYXAuYzozNDogbWFpbjogQXNzZXJ0
+aW9uIGBtZW0gIT0gKCh2b2lkICopIC0xKScgZmFpbGVkLgpBYm9ydGVkCgoqLwoKLS0tLS0tc25p
+cC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tPgpzdHJhY2Ugc2F5czoKCmV4
+ZWN2ZSgiLi9hLm91dCIsIFsiLi9hLm91dCJdLCBbLyogMzggdmFycyAqL10pID0gMApicmsoMCkg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgPSAweDg3ZDkwMDAKYWNjZXNzKCIvZXRj
+L2xkLnNvLm5vaHdjYXAiLCBGX09LKSAgICAgID0gLTEgRU5PRU5UIChObyBzdWNoIGZpbGUgb3Ig
+ZGlyZWN0b3J5KQptbWFwMihOVUxMLCA4MTkyLCBQUk9UX1JFQUR8UFJPVF9XUklURSwgTUFQX1BS
+SVZBVEV8TUFQX0FOT05ZTU9VUywgLTEsIDApID0gMHhiODAxMjAwMAphY2Nlc3MoIi9ldGMvbGQu
+c28ucHJlbG9hZCIsIFJfT0spICAgICAgPSAtMSBFTk9FTlQgKE5vIHN1Y2ggZmlsZSBvciBkaXJl
+Y3RvcnkpCm9wZW4oIi9ldGMvbGQuc28uY2FjaGUiLCBPX1JET05MWSkgICAgICA9IDMKZnN0YXQ2
+NCgzLCB7c3RfbW9kZT1TX0lGUkVHfDA2NDQsIHN0X3NpemU9ODA0NDAsIC4uLn0pID0gMAptbWFw
+MihOVUxMLCA4MDQ0MCwgUFJPVF9SRUFELCBNQVBfUFJJVkFURSwgMywgMCkgPSAweGI3ZmZlMDAw
+CmNsb3NlKDMpICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA9IDAKYWNjZXNzKCIvZXRj
+L2xkLnNvLm5vaHdjYXAiLCBGX09LKSAgICAgID0gLTEgRU5PRU5UIChObyBzdWNoIGZpbGUgb3Ig
+ZGlyZWN0b3J5KQpvcGVuKCIvbGliL3Rscy9pNjg2L2Ntb3YvbGliYy5zby42IiwgT19SRE9OTFkp
+ID0gMwpyZWFkKDMsICJcMTc3RUxGXDFcMVwxXDBcMFwwXDBcMFwwXDBcMFwwXDNcMFwzXDBcMVww
+XDBcMFwyNjBlXDEiLi4uLCA1MTIpID0gNTEyCmZzdGF0NjQoMywge3N0X21vZGU9U19JRlJFR3ww
+NzU1LCBzdF9zaXplPTEzNjQzODgsIC4uLn0pID0gMAptbWFwMihOVUxMLCAxMzY5NzEyLCBQUk9U
+X1JFQUR8UFJPVF9FWEVDLCBNQVBfUFJJVkFURXxNQVBfREVOWVdSSVRFLCAzLCAwKSA9IDB4Yjdl
+YWYwMDAKbW1hcDIoMHhiN2ZmODAwMCwgMTIyODgsIFBST1RfUkVBRHxQUk9UX1dSSVRFLCBNQVBf
+UFJJVkFURXxNQVBfRklYRUR8TUFQX0RFTllXUklURSwgMywgMHgxNDkpID0gMHhiN2ZmODAwMApt
+bWFwMigweGI3ZmZiMDAwLCA5ODQwLCBQUk9UX1JFQUR8UFJPVF9XUklURSwgTUFQX1BSSVZBVEV8
+TUFQX0ZJWEVEfE1BUF9BTk9OWU1PVVMsIC0xLCAwKSA9IDB4YjdmZmIwMDAKY2xvc2UoMykgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgID0gMAptbWFwMihOVUxMLCA0MDk2LCBQUk9UX1JF
+QUR8UFJPVF9XUklURSwgTUFQX1BSSVZBVEV8TUFQX0FOT05ZTU9VUywgLTEsIDApID0gMHhiN2Vh
+ZTAwMApzZXRfdGhyZWFkX2FyZWEoe2VudHJ5X251bWJlcjotMSAtPiA2LCBiYXNlX2FkZHI6MHhi
+N2VhZTZiMCwgbGltaXQ6MTA0ODU3NSwgc2VnXzMyYml0OjEsIGNvbnRlbnRzOjAsIHJlYWRfZXhl
+Y19vbmx5OjAsIGxpbWl0X2luX3BhZ2VzOjEsIHNlZ19ub3RfcHJlc2VudDowLCB1c2VhYmxlOjF9
+KSA9IDAKbXByb3RlY3QoMHhiN2ZmODAwMCwgNDA5NiwgUFJPVF9SRUFEKSAgID0gMAptdW5tYXAo
+MHhiN2ZmZTAwMCwgODA0NDApICAgICAgICAgICAgICAgPSAwCnNvY2tldChQRl9QQUNLRVQsIFNP
+Q0tfUkFXLCA4KSAgICAgICAgICA9IDMKc2V0c29ja29wdCgzLCBTT0xfU09DS0VULCBTT19ET05U
+Uk9VVEUsICJcMFwyMFwwXDBcNFwwXDBcMFwwXDEwXDBcMFwxMFwwXDBcMCIsIDE2KSA9IDAKbW1h
+cDIoTlVMTCwgMTYzODQsIFBST1RfUkVBRHxQUk9UX1dSSVRFLCBNQVBfU0hBUkVELCAzLCAwKSA9
+IC0xIEVJTlZBTCAoSW52YWxpZCBhcmd1bWVudCkKYnJrKDApICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgID0gMHg4N2Q5MDAwCmJyaygweDg3ZmEwMDApICAgICAgICAgICAgICAgICAg
+ICAgICAgICA9IDB4ODdmYTAwMAp3cml0ZSgyLCAiYS5vdXQ6IC4vdGVzdF9tbWFwLmM6MzQ6IG1h
+aW46IEEiLi4uLCA3MmEub3V0OiAuL3Rlc3RfbW1hcC5jOjM0OiBtYWluOiBBc3NlcnRpb24gYG1l
+bSAhPSAoKHZvaWQgKikgLTEpJyBmYWlsZWQuCikgPSA3MgpydF9zaWdwcm9jbWFzayhTSUdfVU5C
+TE9DSywgW0FCUlRdLCBOVUxMLCA4KSA9IDAKZ2V0dGlkKCkgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgID0gNjg0Ngp0Z2tpbGwoNjg0NiwgNjg0NiwgU0lHQUJSVCkgICAgICAgICAgICAg
+PSAwCi0tLSBTSUdBQlJUIChBYm9ydGVkKSBAIDAgKDApIC0tLQorKysga2lsbGVkIGJ5IFNJR0FC
+UlQgKysrCgo=
+--0016e64be264e71a83046ff3c6e1--
