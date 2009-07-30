@@ -1,75 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751794AbZG3OiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751367AbZG3Ox3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751794AbZG3OiZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 10:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbZG3OiX
+	id S1751367AbZG3Ox3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 10:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbZG3Ox2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 10:38:23 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:33807 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750759AbZG3OiV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 10:38:21 -0400
-Date: Thu, 30 Jul 2009 16:38:19 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Paul Moore <paul.moore@hp.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 4/5] net/netlabel: Add kmalloc NULL tests
-In-Reply-To: <200907301032.20318.paul.moore@hp.com>
-Message-ID: <Pine.LNX.4.64.0907301637570.8734@ask.diku.dk>
-References: <Pine.LNX.4.64.0907301610230.8734@ask.diku.dk>
- <200907301032.20318.paul.moore@hp.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 30 Jul 2009 10:53:28 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:43018 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751033AbZG3Ox1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 10:53:27 -0400
+Subject: Re: linux-next: scsi-rc-fixes tree build failure
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tom Peng <tom_peng@usish.com>, Jack Wang <jack_wang@usish.com>,
+       Lindar Liu <lindar_liu@usish.com>, Kevin Ao <aoqingyun@usish.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <1248961882.3880.4.camel@mulgrave.site>
+References: <20090730181345.cec774b2.sfr@canb.auug.org.au>
+	 <1248961882.3880.4.camel@mulgrave.site>
+Content-Type: text/plain
+Date: Thu, 30 Jul 2009 09:53:23 -0500
+Message-Id: <1248965603.3880.64.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Thu, 2009-07-30 at 08:51 -0500, James Bottomley wrote:
+> On Thu, 2009-07-30 at 18:13 +1000, Stephen Rothwell wrote:
+> > Hi James,
+> > 
+> > Today's linux-next build (powerpc allyesconfig) failed like this:
+> > 
+> > drivers/scsi/libsas/sas_expander.c: In function 'sas_find_bcast_dev':
+> > drivers/scsi/libsas/sas_expander.c:1701: error: 'FALSE' undeclared (first use in this function)
+> > drivers/scsi/libsas/sas_expander.c: In function 'sas_discover_new':
+> > drivers/scsi/libsas/sas_expander.c:1809: error: 'FALSE' undeclared (first use in this function)
+> > drivers/scsi/libsas/sas_expander.c:1824: error: 'TRUE' undeclared (first use in this function)
+> > drivers/scsi/libsas/sas_expander.c: In function 'sas_rediscover':
+> > drivers/scsi/libsas/sas_expander.c:1903: error: 'TRUE' undeclared (first use in this function)
+> > drivers/scsi/libsas/sas_expander.c:1918: error: 'FALSE' undeclared (first use in this function)
+> > drivers/scsi/libsas/sas_expander.c: In function 'sas_ex_revalidate_domain':
+> > drivers/scsi/libsas/sas_expander.c:1951: error: 'TRUE' undeclared (first use in this function)
+> > 
+> > Caused by commit 4c70d933a41e1d712f3db90d2a41141730383d5a ("[SCSI]
+> > libsas: fix wide port hotplug issues").  Presumably a missing include
+> > file.
+> 
+> Actually, I don't think so.  It's confusion over the use of boolean
+> variables.  I think they have to be set to lower case true, false, not
+> upper case.  There's obviously some accidental definition of TRUE and
+> FALSE in x86.
+> 
+> > I have reverted that commit for today.
+> 
+> Thanks, I've dropped it from my tree ... I'll put it back when this is
+> sorted out.
 
-The test on map4 should be a test on map6.
+This fixes it on my ppc64 box, so I'll fold it into the original patch
+and put it back into the tree.
 
-The semantic match that finds this problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
-
-// <smpl>
-@@
-expression *x;
-identifier f;
-constant char *C;
-@@
-
-x = \(kmalloc\|kcalloc\|kzalloc\)(...);
-... when != x == NULL
-    when != x != NULL
-    when != (x || ...)
-(
-kfree(x)
-|
-f(...,C,...,x,...)
-|
-*f(...,x,...)
-|
-*x->f
-)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
+James
 
 ---
- net/netlabel/netlabel_kapi.c        |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/net/netlabel/netlabel_kapi.c b/net/netlabel/netlabel_kapi.c
-index 3ff6f32..6ce0020 100644
---- a/net/netlabel/netlabel_kapi.c
-+++ b/net/netlabel/netlabel_kapi.c
-@@ -151,7 +151,7 @@ int netlbl_cfg_unlbl_map_add(const char *domain,
- 			addr6 = addr;
- 			mask6 = mask;
- 			map6 = kzalloc(sizeof(*map6), GFP_ATOMIC);
--			if (map4 == NULL)
-+			if (map6 == NULL)
- 				goto cfg_unlbl_map_add_failure;
- 			map6->type = NETLBL_NLTYPE_UNLABELED;
- 			ipv6_addr_copy(&map6->list.addr, addr6);
+diff --git a/drivers/scsi/libsas/sas_expander.c b/drivers/scsi/libsas/sas_expander.c
+index 296d008..b338195 100644
+--- a/drivers/scsi/libsas/sas_expander.c
++++ b/drivers/scsi/libsas/sas_expander.c
+@@ -1698,7 +1698,7 @@ static int sas_find_bcast_dev(struct domain_device *dev,
+ 		* in order to determine if this expander originate BROADCAST,
+ 		* and do not update phy change count field in our structure.
+ 		*/
+-		res = sas_find_bcast_phy(dev, &phy_id, 0, FALSE);
++		res = sas_find_bcast_phy(dev, &phy_id, 0, false);
+ 		if (phy_id != -1) {
+ 			*src_dev = dev;
+ 			ex->ex_change_count = ex_change_count;
+@@ -1806,7 +1806,7 @@ static int sas_discover_new(struct domain_device *dev, int phy_id)
+ {
+ 	struct ex_phy *ex_phy = &dev->ex_dev.ex_phy[phy_id];
+ 	struct domain_device *child;
+-	bool found = FALSE;
++	bool found = false;
+ 	int res, i;
+ 
+ 	SAS_DPRINTK("ex %016llx phy%d new device attached\n",
+@@ -1821,7 +1821,7 @@ static int sas_discover_new(struct domain_device *dev, int phy_id)
+ 			continue;
+ 		if (SAS_ADDR(ex_phy_temp->attached_sas_addr) ==
+ 		    SAS_ADDR(ex_phy->attached_sas_addr)) {
+-			found = TRUE;
++			found = true;
+ 			break;
+ 		}
+ 	}
+@@ -1900,7 +1900,7 @@ static int sas_rediscover(struct domain_device *dev, const int phy_id)
+ 	struct ex_phy *changed_phy = &ex->ex_phy[phy_id];
+ 	int res = 0;
+ 	int i;
+-	bool last = TRUE;	/* is this the last phy of the port */
++	bool last = true;	/* is this the last phy of the port */
+ 
+ 	SAS_DPRINTK("ex %016llx phy%d originated BROADCAST(CHANGE)\n",
+ 		    SAS_ADDR(dev->sas_addr), phy_id);
+@@ -1915,7 +1915,7 @@ static int sas_rediscover(struct domain_device *dev, const int phy_id)
+ 			    SAS_ADDR(changed_phy->attached_sas_addr)) {
+ 				SAS_DPRINTK("phy%d part of wide port with "
+ 					    "phy%d\n", phy_id, i);
+-				last = FALSE;
++				last = false;
+ 				break;
+ 			}
+ 		}
+@@ -1948,7 +1948,7 @@ int sas_ex_revalidate_domain(struct domain_device *port_dev)
+ 
+ 		do {
+ 			phy_id = -1;
+-			res = sas_find_bcast_phy(dev, &phy_id, i, TRUE);
++			res = sas_find_bcast_phy(dev, &phy_id, i, true);
+ 			if (phy_id == -1)
+ 				break;
+ 			res = sas_rediscover(dev, phy_id);
+
+
