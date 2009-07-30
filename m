@@ -1,74 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752708AbZG3K4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752844AbZG3LAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752708AbZG3K4b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 06:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbZG3K4a
+	id S1752844AbZG3LAf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 07:00:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbZG3LAe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 06:56:30 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49248 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751541AbZG3K4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 06:56:30 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18CMXN5NugC2ZGa78lARVmdpmyHgHekmyf/Mfvw9a
-	VT0yGnpaDeSaGW
-Date: Thu, 30 Jul 2009 12:56:31 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Ian Molton <ian@mnementh.co.uk>
-cc: pHilipp Zabel <philipp.zabel@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
-       Magnus Damm <magnus.damm@gmail.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
-       Magnus Damm <damm@opensource.se>
-Subject: Re: MMC: Make the configuration memory resource optional
-In-Reply-To: <4A716F1C.2050805@mnementh.co.uk>
-Message-ID: <Pine.LNX.4.64.0907301246330.4462@axis700.grange>
-References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange> 
- <aec7e5c30907281948s2a0dcd0csd3e580251d6c4f5a@mail.gmail.com> 
- <20090729115817.GA12223@rakim.wolfsonmicro.main> 
- <aec7e5c30907290527w39a89895n285e932459e6c953@mail.gmail.com> 
- <20090729124233.GA12802@rakim.wolfsonmicro.main> 
- <aec7e5c30907290551y77edc6d7qb7b3d787215c2b4@mail.gmail.com> 
- <4A704777.70001@mnementh.co.uk>  <aec7e5c30907290608i43a80fe1xe4ef0f3847855709@mail.gmail.com>
-  <4A7053E8.8050303@mnementh.co.uk>  <20090729201702.GA28202@linux-sh.org>
- <74d0deb30907291355n39df7db0v1d7afc93917adc14@mail.gmail.com>
- <4A716F1C.2050805@mnementh.co.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.64
+	Thu, 30 Jul 2009 07:00:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50561 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751368AbZG3LAe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 07:00:34 -0400
+Date: Thu, 30 Jul 2009 03:59:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alek Du <alek.du@intel.com>
+Cc: David Brownell <david-b@pacbell.net>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH v3] gpio: add Intel Moorestown Platform Langwell chip
+ gpio driver
+Message-Id: <20090730035941.16124ec0.akpm@linux-foundation.org>
+In-Reply-To: <20090703210706.41288a2a@dxy.sh.intel.com>
+References: <20090703210706.41288a2a@dxy.sh.intel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Jul 2009, Ian Molton wrote:
+On Fri, 3 Jul 2009 21:07:06 +0800 Alek Du <alek.du@intel.com> wrote:
 
-> Ok I've spent some time thinking on this.
+> Changes from v2:
+> 1. Add missed MODULE_DEVICE_TABLE
 > 
-> There is _no_ clean solution at present and Im not happy with having more than
-> one clocking system co-existing in the mmc driver.
+> Changes from v1:
+> 1. driver name changed from lnw.c ==> langwell_gpio.c
+> 2. removed hard coded driver data, now we get it from PCI bar1 (platform init code fills it)
+> 3. removed alternative function setting code, it should be called in platform init part.
+> 4. misc. style clean
 > 
-> I will produce a patch to  completely remove all clocking and power control
-> from the driver and make it use callbacks in order to achieve this. This will
-> leave us with a clean driver that will be simple to adapt to the clock API.
 > 
-> I wont have time to work on it until next week, however, so if anyone wants to
-> take a stab at it in the meantime, feel free to do so, and I'll review it next
-> week.
+> >From 8eaad3aac8cffda193adcfc4b9fcbb7c461fd4b9 Mon Sep 17 00:00:00 2001
+> From: Alek Du <alek.du@intel.com>
+> Date: Tue, 30 Jun 2009 12:13:27 +0800
+> Subject: [PATCH] gpio: add Intel Moorestown Platform Langwell chip gpio driver
+> 
+> The Langwell chip is the IO hub for Intel Moorestown platform which has a
+> 64-pin gpio block device inside. It is exposed as a dedicated PCI device.
+> We use it to control outside peripheral as well as to do IRQ demuxing. The
+> gpio block uses MSI to send level type interrupt to IOAPIC.
 
-While you're at it, please, consider swapping the two lines in 
-tmio_mmc_probe():
+The driver breaks the x86-64 allmodconfig build:
 
--	tmio_mmc_clk_stop(host);
-	reset(host);
-+	tmio_mmc_clk_stop(host);
+ERROR: "irq_to_desc" [drivers/gpio/langwell_gpio.ko] undefined!
+ERROR: "set_irq_chip_and_handler_name" [drivers/gpio/langwell_gpio.ko] undefined!
+ERROR: "handle_simple_irq" [drivers/gpio/langwell_gpio.ko] undefined!
 
-Otherwise, I think, reset causes problems trying to access the controller 
-with disabled clock. At least this is needed on SuperH.
+Does it make any sense to build this driver as a module?  If not, it
+should be changed to def_bool.  If so...
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+
+
+ kernel/irq/chip.c   |    2 ++
+ kernel/irq/handle.c |    1 +
+ 2 files changed, 3 insertions(+)
+
+diff -puN kernel/irq/handle.c~kernel-irq-export-symbols-needed-by-gpio-add-intel-moorestown-platform-langwell-chip-gpio-driverpatch kernel/irq/handle.c
+--- a/kernel/irq/handle.c~kernel-irq-export-symbols-needed-by-gpio-add-intel-moorestown-platform-langwell-chip-gpio-driverpatch
++++ a/kernel/irq/handle.c
+@@ -192,6 +192,7 @@ struct irq_desc *irq_to_desc(unsigned in
+ 
+ 	return NULL;
+ }
++EXPORT_SYMBOL(irq_to_desc);
+ 
+ struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
+ {
+diff -puN kernel/irq/chip.c~kernel-irq-export-symbols-needed-by-gpio-add-intel-moorestown-platform-langwell-chip-gpio-driverpatch kernel/irq/chip.c
+--- a/kernel/irq/chip.c~kernel-irq-export-symbols-needed-by-gpio-add-intel-moorestown-platform-langwell-chip-gpio-driverpatch
++++ a/kernel/irq/chip.c
+@@ -340,6 +340,7 @@ handle_simple_irq(unsigned int irq, stru
+ out_unlock:
+ 	spin_unlock(&desc->lock);
+ }
++EXPORT_SYMBOL(handle_simple_irq);
+ 
+ /**
+  *	handle_level_irq - Level type irq handler
+@@ -609,6 +610,7 @@ set_irq_chip_and_handler_name(unsigned i
+ 	set_irq_chip(irq, chip);
+ 	__set_irq_handler(irq, handle, 0, name);
+ }
++EXPORT_SYMBOL(set_irq_chip_and_handler_name);
+ 
+ void __init set_irq_noprobe(unsigned int irq)
+ {
+_
+
+
