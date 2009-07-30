@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752068AbZG3Rci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751629AbZG3Rft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752068AbZG3Rci (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 13:32:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbZG3Rch
+	id S1751629AbZG3Rft (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 13:35:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbZG3Rft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 13:32:37 -0400
-Received: from jester.euphonynet.be ([212.87.96.13]:55005 "EHLO
-	mailpush2.euphonynet.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751498AbZG3Rch (ORCPT
+	Thu, 30 Jul 2009 13:35:49 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:48252 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750903AbZG3Rfs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 13:32:37 -0400
-X-Greylist: delayed 1895 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Jul 2009 13:32:37 EDT
-From: Bart Van Assche <bart.vanassche@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.30] schedule_work() documentation improvements
-Date: Thu, 30 Jul 2009 19:00:53 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.30.3-scst-debug; KDE/4.1.3; x86_64; ; )
-Cc: "Greg Kroah-Hartman" <gregkh@suse.de>, Ingo Molnar <mingo@elte.hu>
+	Thu, 30 Jul 2009 13:35:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:references:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent:message-id;
+        b=NEJH3LcQghIq00dlPF4Mai+IePWNr2f+0TPhqVj07OkEJdEKvmnzhKePF99KQEw5vz
+         3TGnMAtmoGFvZsV7ltEVrTQKXiU8sh7yka2aUAtFJY9Vn/SfdOEZURbFVm+lt233w2Qv
+         cATErp9QSWUBbx8ykZB3f+KXvcDBwy2rRKx1Y=
+Date: Thu, 30 Jul 2009 10:35:39 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: TJ <linux@tjworld.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Bug 346586 <346586@bugs.launchpad.net>
+Subject: Re: wistron_btns: support Prestigio Wifi RF kill button over
+	suspend
+References: <1248939530.3410.10.camel@hephaestion>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907301900.54202.bart.vanassche@gmail.com>
+In-Reply-To: <1248939530.3410.10.camel@hephaestion>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <20090730180947.6B391526EC9@mailhub.coreip.homeip.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Two important aspects of the schedule_work() function are not yet documented:
-- that it is allowed to pass a struct work_struct * to this function that
-  is already on the kernel-global workqueue;
-- the meaning of its return value.
-The patch below documents both aspects.
+Hi,
 
-Signed-off-by: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>
+On Thu, Jul 30, 2009 at 08:38:50AM +0100, TJ wrote:
+> We've been carrying this patch in Ubuntu since March 2009. I emailed the
+> upstream maintainer prior to that but there was no reply or action so it
+> hasn't been pushed upstream as I had expected.
+> 
+> https://launchpad.net/bugs/346586
+> 
+> I wonder if the maintainer field for this module should be changed to
+> reflect that?
+> 
+> ----
+> 
+> The Prestigio 157, an old no-name clone laptop uses input keys very
+> similar to the Wistron 1557/MS2141 with the addition of BIOS-controlled
+> wireless radio frequency kill switch.
+> 
+> This patch adds support for the RF kill switch control and adds manual
+> identification of the model.
+> 
+> The Prestigio does not expose any recognisable identity via dmidecode
+> and so requires manual selection at module init using
+> 
+> force=1 keymap=prestigio
+> 
+> Signed-off-by: TJ <ubuntu@tjworld.net>
+> 
 
-diff -uprN orig/linux-2.6.30/kernel/workqueue.c linux-2.6.30/kernel/workqueue.c
---- orig/linux-2.6.30/kernel/workqueue.c	2009-06-10 05:05:27.000000000 +0200
-+++ linux-2.6.30/kernel/workqueue.c	2009-07-30 18:58:07.000000000 +0200
-@@ -603,7 +603,11 @@ static struct workqueue_struct *keventd_
-  * schedule_work - put work task in global workqueue
-  * @work: job to be done
-  *
-- * This puts a job in the kernel-global workqueue.
-+ * Returns zero if @work was already on the kernel-global workqueue and
-+ * non-zero otherwise.
-+ *
-+ * This puts a job in the kernel-global workqueue if it was not already queued
-+ * and leaves it in the same position on the kernel-global workqueue otherwise.
-  */
- int schedule_work(struct work_struct *work)
- {
+I'd like to pick up this patch but you really need to use your name instead
+of just initials in your signoff line. Care to resend, please?
+
+Thanks!
+
+-- 
+Dmitry
