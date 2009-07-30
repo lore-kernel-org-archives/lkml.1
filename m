@@ -1,101 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752844AbZG3LAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbZG3LGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752844AbZG3LAf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 07:00:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751642AbZG3LAe
+	id S1752483AbZG3LGy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 07:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZG3LGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 07:00:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50561 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751368AbZG3LAe (ORCPT
+	Thu, 30 Jul 2009 07:06:53 -0400
+Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:57763 "EHLO
+	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751668AbZG3LGw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 07:00:34 -0400
-Date: Thu, 30 Jul 2009 03:59:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alek Du <alek.du@intel.com>
-Cc: David Brownell <david-b@pacbell.net>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH v3] gpio: add Intel Moorestown Platform Langwell chip
- gpio driver
-Message-Id: <20090730035941.16124ec0.akpm@linux-foundation.org>
-In-Reply-To: <20090703210706.41288a2a@dxy.sh.intel.com>
-References: <20090703210706.41288a2a@dxy.sh.intel.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 30 Jul 2009 07:06:52 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Paul Rolland <rol@as2917.net>
+Subject: Re: Linux-2.6.31-rc4 - shut the annoying "failed to acquire vblank..."
+Date: Thu, 30 Jul 2009 13:06:50 +0200
+User-Agent: KMail/1.9.9
+Cc: torvalds@linux-foundation.org, jbarnes@virtuousgeek.org,
+       linux-kernel@vger.kernel.org, rol@witbe.net
+References: <20090728091622.50e9933b@tux.DEF.witbe.net> <200907281244.13467.elendil@planet.nl> <20090728145359.252ff759@tux.DEF.witbe.net> <20090728092319.52ea57f1@jbarnes-g45> <20090728092319.52ea57f1@jbarnes-g45> <20090729085402.3bb7e3d9@tux.DEF.witbe.net>
+In-reply-To: <20090729085402.3bb7e3d9@tux.DEF.witbe.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907301306.51496.elendil@planet.nl>
+X-OriginalArrivalTime: 30 Jul 2009 11:06:52.0010 (UTC) FILETIME=[D76AF4A0:01CA1105]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Jul 2009 21:07:06 +0800 Alek Du <alek.du@intel.com> wrote:
-
-> Changes from v2:
-> 1. Add missed MODULE_DEVICE_TABLE
+Paul Rolland wrote:
+> Some applications/hardware combinations are triggering the message
+> "failed to acquire vblank counter" to be issued up to 20 times a second,
+> which makes it both useless and dangerous, as this may hide other
+> important messages. This changes makes it only appear when people are
+> debugging. 
 > 
-> Changes from v1:
-> 1. driver name changed from lnw.c ==> langwell_gpio.c
-> 2. removed hard coded driver data, now we get it from PCI bar1 (platform init code fills it)
-> 3. removed alternative function setting code, it should be called in platform init part.
-> 4. misc. style clean
+> Signed-off-by: Paul Rolland <rol@as2917.net>
+> Reviewed-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 > 
+> --- linux-2.6.31-rc4/drivers/gpu/drm/drm_irq.c.orig     2009-07-26 21:36:20.000000000 +0200
+> +++ linux-2.6.31-rc4/drivers/gpu/drm/drm_irq.c  2009-07-26 21:36:34.000000000 +0200
+> @@ -566,7 +566,7 @@ int drm_wait_vblank(struct drm_device *d
 > 
-> >From 8eaad3aac8cffda193adcfc4b9fcbb7c461fd4b9 Mon Sep 17 00:00:00 2001
-> From: Alek Du <alek.du@intel.com>
-> Date: Tue, 30 Jun 2009 12:13:27 +0800
-> Subject: [PATCH] gpio: add Intel Moorestown Platform Langwell chip gpio driver
-> 
-> The Langwell chip is the IO hub for Intel Moorestown platform which has a
-> 64-pin gpio block device inside. It is exposed as a dedicated PCI device.
-> We use it to control outside peripheral as well as to do IRQ demuxing. The
-> gpio block uses MSI to send level type interrupt to IOAPIC.
+> ret = drm_vblank_get(dev, crtc);
+> 	if (ret) {
+> -		DRM_ERROR("failed to acquire vblank counter, %d\n", ret);
+> +		DRM_DEBUG("failed to acquire vblank counter, %d\n", ret);
+> 		return ret;
+> 	}
+> 	seq = drm_vblank_count(dev, crtc);
 
-The driver breaks the x86-64 allmodconfig build:
+Actually, I just see that I get a different, but related error on suspend
+and when opening/closing a second X session:
+   *ERROR* trying to get vblank count for disabled pipe 0/1
 
-ERROR: "irq_to_desc" [drivers/gpio/langwell_gpio.ko] undefined!
-ERROR: "set_irq_chip_and_handler_name" [drivers/gpio/langwell_gpio.ko] undefined!
-ERROR: "handle_simple_irq" [drivers/gpio/langwell_gpio.ko] undefined!
+Would it make sense to add the following to this patch:
 
-Does it make any sense to build this driver as a module?  If not, it
-should be changed to def_bool.  If so...
-
-
-
- kernel/irq/chip.c   |    2 ++
- kernel/irq/handle.c |    1 +
- 2 files changed, 3 insertions(+)
-
-diff -puN kernel/irq/handle.c~kernel-irq-export-symbols-needed-by-gpio-add-intel-moorestown-platform-langwell-chip-gpio-driverpatch kernel/irq/handle.c
---- a/kernel/irq/handle.c~kernel-irq-export-symbols-needed-by-gpio-add-intel-moorestown-platform-langwell-chip-gpio-driverpatch
-+++ a/kernel/irq/handle.c
-@@ -192,6 +192,7 @@ struct irq_desc *irq_to_desc(unsigned in
+diff --git a/drivers/gpu/drm/i915/i915_irq.c b/drivers/gpu/drm/i915/i915_irq.c
+index 7ba23a6..d8b86ed 100644
+--- a/drivers/gpu/drm/i915/i915_irq.c
++++ b/drivers/gpu/drm/i915/i915_irq.c
+@@ -190,7 +190,7 @@ u32 i915_get_vblank_counter(struct drm_device *dev, int pipe)
+ 	low_frame = pipe ? PIPEBFRAMEPIXEL : PIPEAFRAMEPIXEL;
  
- 	return NULL;
- }
-+EXPORT_SYMBOL(irq_to_desc);
+ 	if (!i915_pipe_enabled(dev, pipe)) {
+-		DRM_ERROR("trying to get vblank count for disabled pipe %d\n", pipe);
++		DRM_DEBUG("trying to get vblank count for disabled pipe %d\n", pipe);
+ 		return 0;
+ 	}
  
- struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
- {
-diff -puN kernel/irq/chip.c~kernel-irq-export-symbols-needed-by-gpio-add-intel-moorestown-platform-langwell-chip-gpio-driverpatch kernel/irq/chip.c
---- a/kernel/irq/chip.c~kernel-irq-export-symbols-needed-by-gpio-add-intel-moorestown-platform-langwell-chip-gpio-driverpatch
-+++ a/kernel/irq/chip.c
-@@ -340,6 +340,7 @@ handle_simple_irq(unsigned int irq, stru
- out_unlock:
- 	spin_unlock(&desc->lock);
- }
-+EXPORT_SYMBOL(handle_simple_irq);
+@@ -219,7 +219,7 @@ u32 gm45_get_vblank_counter(struct drm_device *dev, int pipe)
+ 	int reg = pipe ? PIPEB_FRMCOUNT_GM45 : PIPEA_FRMCOUNT_GM45;
  
- /**
-  *	handle_level_irq - Level type irq handler
-@@ -609,6 +610,7 @@ set_irq_chip_and_handler_name(unsigned i
- 	set_irq_chip(irq, chip);
- 	__set_irq_handler(irq, handle, 0, name);
- }
-+EXPORT_SYMBOL(set_irq_chip_and_handler_name);
+ 	if (!i915_pipe_enabled(dev, pipe)) {
+-		DRM_ERROR("trying to get vblank count for disabled pipe %d\n", pipe);
++		DRM_DEBUG("trying to get vblank count for disabled pipe %d\n", pipe);
+ 		return 0;
+ 	}
  
- void __init set_irq_noprobe(unsigned int irq)
- {
-_
-
-
