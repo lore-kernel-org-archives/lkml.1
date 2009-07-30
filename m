@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751908AbZG3MrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751764AbZG3Mqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751908AbZG3MrX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 08:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbZG3Mqt
+	id S1751764AbZG3Mqy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 08:46:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbZG3Mqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 08:46:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46424 "EHLO mx2.redhat.com"
+	Thu, 30 Jul 2009 08:46:52 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46427 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751501AbZG3Mqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 08:46:45 -0400
+	id S1751592AbZG3Mqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 08:46:49 -0400
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
 Cc: Benjamin Marzinski <bmarzins@redhat.com>,
        Steven Whitehouse <swhiteho@redhat.com>
-Subject: [PATCH 3/7] GFS2: Fix panic in glock memory shrinker
-Date: Thu, 30 Jul 2009 14:45:20 +0100
-Message-Id: <1248961524-30913-4-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1248961524-30913-3-git-send-email-swhiteho@redhat.com>
+Subject: [PATCH 6/7] GFS2: Fix incorrent statfs consistency check
+Date: Thu, 30 Jul 2009 14:45:23 +0100
+Message-Id: <1248961524-30913-7-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1248961524-30913-6-git-send-email-swhiteho@redhat.com>
 References: <1248961524-30913-1-git-send-email-swhiteho@redhat.com>
  <1248961524-30913-2-git-send-email-swhiteho@redhat.com>
  <1248961524-30913-3-git-send-email-swhiteho@redhat.com>
+ <1248961524-30913-4-git-send-email-swhiteho@redhat.com>
+ <1248961524-30913-5-git-send-email-swhiteho@redhat.com>
+ <1248961524-30913-6-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Benjamin Marzinski <bmarzins@redhat.com>
 
-It is possible for gfs2_shrink_glock_memory() to check a glock for
-demotion
-that's in the process of being freed by gfs2_glock_put().  In this case,
-gfs2_shrink_glock_memory() will acquire a new reference to this glock,
-and
-then try to free the glock itself when it drops the refernce.  To solve
-this, gfs2_shrink_glock_memory() just needs to check if the glock is in
-the process of being freed, and if so skip it without ever unlocking the
-lru_lock.
+Since both linked and unlinked inodes are counted by rgd->rd_dinodes, It
+makes no sense to count them with the used data blocks (first check that
+I changed), it makes sense to count them with the linked inodes (second
+check), and it makes no sense to care if there are more unlinked inodes
+than linked ones. This fixes these errors.
 
 Signed-off-by: Benjamin Marzinski <bmarzins@redhat.com>
-Acked-by: Bob Peterson <rpeterso@redhat.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
 ---
- fs/gfs2/glock.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ fs/gfs2/rgrp.c |   14 +++-----------
+ 1 files changed, 3 insertions(+), 11 deletions(-)
 
-diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
-index fdb796c..827136e 100644
---- a/fs/gfs2/glock.c
-+++ b/fs/gfs2/glock.c
-@@ -1314,6 +1314,10 @@ static int gfs2_shrink_glock_memory(int nr, gfp_t gfp_mask)
- 		list_del_init(&gl->gl_lru);
- 		atomic_dec(&lru_count);
+diff --git a/fs/gfs2/rgrp.c b/fs/gfs2/rgrp.c
+index 5e50741..fba7957 100644
+--- a/fs/gfs2/rgrp.c
++++ b/fs/gfs2/rgrp.c
+@@ -285,27 +285,19 @@ void gfs2_rgrp_verify(struct gfs2_rgrpd *rgd)
+ 	}
  
-+		/* Check if glock is about to be freed */
-+		if (atomic_read(&gl->gl_ref) == 0)
-+			continue;
-+
- 		/* Test for being demotable */
- 		if (!test_and_set_bit(GLF_LOCK, &gl->gl_flags)) {
- 			gfs2_glock_hold(gl);
+ 	tmp = rgd->rd_data - rgd->rd_free - rgd->rd_dinodes;
+-	if (count[1] + count[2] != tmp) {
++	if (count[1] != tmp) {
+ 		if (gfs2_consist_rgrpd(rgd))
+ 			fs_err(sdp, "used data mismatch:  %u != %u\n",
+ 			       count[1], tmp);
+ 		return;
+ 	}
+ 
+-	if (count[3] != rgd->rd_dinodes) {
++	if (count[2] + count[3] != rgd->rd_dinodes) {
+ 		if (gfs2_consist_rgrpd(rgd))
+ 			fs_err(sdp, "used metadata mismatch:  %u != %u\n",
+-			       count[3], rgd->rd_dinodes);
++			       count[2] + count[3], rgd->rd_dinodes);
+ 		return;
+ 	}
+-
+-	if (count[2] > count[3]) {
+-		if (gfs2_consist_rgrpd(rgd))
+-			fs_err(sdp, "unlinked inodes > inodes:  %u\n",
+-			       count[2]);
+-		return;
+-	}
+-
+ }
+ 
+ static inline int rgrp_contains_block(struct gfs2_rgrpd *rgd, u64 block)
 -- 
 1.6.2.2
 
