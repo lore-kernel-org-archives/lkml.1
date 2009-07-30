@@ -1,53 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752334AbZG3T1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752412AbZG3TdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752334AbZG3T1v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 15:27:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbZG3T1v
+	id S1752412AbZG3TdN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 15:33:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbZG3TdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 15:27:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53388 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751143AbZG3T1u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 15:27:50 -0400
+	Thu, 30 Jul 2009 15:33:12 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:62641 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751315AbZG3TdL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 15:33:11 -0400
+Message-ID: <4A71F585.7090201@nokia.com>
+Date: Thu, 30 Jul 2009 22:33:25 +0300
+From: Adrian Hunter <adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Madhusudhan <madhu.cr@ti.com>
+CC: "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "Lavinen Jarkko (Nokia-D/Helsinki)" <jarkko.lavinen@nokia.com>,
+       "'linux-omap Mailing List'" <linux-omap@vger.kernel.org>,
+       "'Pierre Ossman'" <pierre@ossman.eu>,
+       "Karpov Denis.2 (EXT-Teleca/Helsinki)" <ext-denis.2.karpov@nokia.com>,
+       "'Matt Fleming'" <matt@console-pimps.org>,
+       "'lkml'" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH V2 13/32] omap_hsmmc: context save/restore support
+References: <20090728103834.2371.65809.sendpatchset@ahunter-laptop> <20090728104011.2371.89249.sendpatchset@ahunter-laptop> <00ad01ca10b9$82a5d260$544ff780@am.dhcp.ti.com> <4A714E59.7080902@nokia.com> <00c501ca1149$affb7ea0$544ff780@am.dhcp.ti.com>
+In-Reply-To: <00c501ca1149$affb7ea0$544ff780@am.dhcp.ti.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 1/1] task_struct cleanup: move binfmt field to mm_struct
-In-Reply-To: Oleg Nesterov's message of  Thursday, 30 July 2009 19:55:47 +0200 <20090730175547.GD3617@redhat.com>
-References: <20090723161806.GA5690@redhat.com>
-	<4A68FD3B.7040606@ct.jp.nec.com>
-	<4A693569.1090009@ct.jp.nec.com>
-	<20090724161449.GA3509@redhat.com>
-	<4A6CF466.9040608@ct.jp.nec.com>
-	<20090727165901.GA8854@redhat.com>
-	<4A6E98DC.5020200@ct.jp.nec.com>
-	<20090728143734.GA6664@redhat.com>
-	<4A70EC76.6060109@ct.jp.nec.com>
-	<4A70ECAD.203@ct.jp.nec.com>
-	<20090730175547.GD3617@redhat.com>
-X-Windows: a mistake carried out to perfection.
-Message-Id: <20090730192700.D1F784C7A4@magilla.sf.frob.com>
-Date: Thu, 30 Jul 2009 12:27:00 -0700 (PDT)
+X-OriginalArrivalTime: 30 Jul 2009 19:32:54.0197 (UTC) FILETIME=[88B10650:01CA114C]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On 07/30, Hiroshi Shimamoto wrote:
-> >
-> > Because the binfmt is not different between threads in the same process,
-> > it can be moved from task_struct to mm_struct. And binfmt moudle is handled
-> > per mm_struct instead of task_struct.
+ext Madhusudhan wrote:
 > 
-> Looks like a nice patch to me.
+>> -----Original Message-----
+>> From: Adrian Hunter [mailto:adrian.hunter@nokia.com]
+>> Sent: Thursday, July 30, 2009 2:40 AM
+>> To: Madhusudhan
+>> Cc: 'Andrew Morton'; Lavinen Jarkko (Nokia-D/Helsinki); 'linux-omap
+>> Mailing List'; 'Pierre Ossman'; Karpov Denis.2 (EXT-Teleca/Helsinki);
+>> 'Matt Fleming'; 'lkml'
+>> Subject: Re: [PATCH V2 13/32] omap_hsmmc: context save/restore support
+>>
+>> Madhusudhan wrote:
+>>>> -----Original Message-----
+>>>> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
+>>>> owner@vger.kernel.org] On Behalf Of Adrian Hunter
+>>>> Sent: Tuesday, July 28, 2009 5:40 AM
+>>>> To: Andrew Morton
+>>>> Cc: Jarkko Lavinen; Adrian Hunter; linux-omap Mailing List; Pierre
+>> Ossman;
+>>>> Denis Karpov; Matt Fleming; lkml
+>>>> Subject: [PATCH V2 13/32] omap_hsmmc: context save/restore support
+>>>>
+>>>> From 43e9fa346d7e386328876a8535dc8619bd1f47ae Mon Sep 17 00:00:00 2001
+>>>> From: Denis Karpov <ext-denis.2.karpov@nokia.com>
+>>>> Date: Wed, 22 Apr 2009 16:04:25 +0200
+>>>> Subject: [PATCH] omap_hsmmc: context save/restore support
+>>>>
+>>>> Keep the context over PM dynamic OFF states.
+>>>>
+>>>> Signed-off-by: Denis Karpov <ext-denis.2.karpov@nokia.com>
+>>>> Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
+>>>> ---
+>>>>  drivers/mmc/host/omap_hsmmc.c |  194
+>>>> ++++++++++++++++++++++++++++++++++++++--
+>>>>  1 files changed, 184 insertions(+), 10 deletions(-)
+>>>>
+>>>> diff --git a/drivers/mmc/host/omap_hsmmc.c
+>> b/drivers/mmc/host/omap_hsmmc.c
+>>>> index c28d055..ac1a3bf 100644
+>>>> --- a/drivers/mmc/host/omap_hsmmc.c
+>>>> +++ b/drivers/mmc/host/omap_hsmmc.c
+>>>> @@ -37,6 +37,7 @@
+>>>>
+>>>>  /* OMAP HSMMC Host Controller Registers */
+>>>>  #define OMAP_HSMMC_SYSCONFIG	0x0010
+>>>> +#define OMAP_HSMMC_SYSSTATUS	0x0014
+>>>>  #define OMAP_HSMMC_CON		0x002C
+>>>>  #define OMAP_HSMMC_BLK		0x0104
+>>>>  #define OMAP_HSMMC_ARG		0x0108
+>>>> @@ -94,6 +95,8 @@
+>>>>  #define DUAL_VOLT_OCR_BIT	7
+>>>>  #define SRC			(1 << 25)
+>>>>  #define SRD			(1 << 26)
+>>>> +#define SOFTRESET		(1 << 1)
+>>>> +#define RESETDONE		(1 << 0)
+>>>>
+>>>>  /*
+>>>>   * FIXME: Most likely all the data using these _DEVID defines should
+>> come
+>>>> @@ -152,6 +155,8 @@ struct mmc_omap_host {
+>>>>  	int			slot_id;
+>>>>  	int			dbclk_enabled;
+>>>>  	int			response_busy;
+>>>> +	int			context_loss;
+>>>> +
+>>>>  	struct	omap_mmc_platform_data	*pdata;
+>>>>  };
+>>>>
+>>>> @@ -166,6 +171,166 @@ static void omap_mmc_stop_clock(struct
+>> mmc_omap_host
+>>>> *host)
+>>>>  		dev_dbg(mmc_dev(host->mmc), "MMC Clock is not stoped\n");
+>>>>  }
+>>>>
+>>>> +#ifdef CONFIG_PM
+>>>> +
+>>>> +/*
+>>>> + * Restore the MMC host context, if it was lost as result of a
+>>>> + * power state change.
+>>>> + */
+>>>> +static int omap_mmc_restore_ctx(struct mmc_omap_host *host)
+>>>> +{
+>>>> +	struct mmc_ios *ios = &host->mmc->ios;
+>>>> +	struct omap_mmc_platform_data *pdata = host->pdata;
+>>>> +	int context_loss = 0;
+>>>> +	u32 hctl, capa, con;
+>>>> +	u16 dsor = 0;
+>>>> +	unsigned long timeout;
+>>>> +
+>>>> +	if (pdata->get_context_loss_count) {
+>>>> +		context_loss = pdata->get_context_loss_count(host->dev);
+>>>> +		if (context_loss < 0)
+>>>> +			return 1;
+>>>> +	}
+>>> This seems to restore the context always. The context should be restored
+>>> only if the card was powered OFF, Right?
+>> Not exactly. The "context" is just the host controller registers, which
+>> get
+>> lost if power management decides to power off the host controller, which
+>> it
+>> will if it decides it is not doing anything.  For us, switching off the
+>> functional clock lets PM power off the host controller.  The card can be
+>> in
+>> any power state: on, off, card/regulator sleep.
+>>
+>> The context is restored only when it has been lost - see the following
+>> lines.  But this is done from the "enable" method, so this is only called
+>> if someone is trying to access the card.
+>>
+>> +	dev_dbg(mmc_dev(host->mmc), "context was %slost\n",
+>> +		context_loss == host->context_loss ? "not " : "");
+>> +	if (host->context_loss == context_loss)
+>> +		return 1;
+>>
+>> And then further down, we skip some things if the card is off:
+>>
+>> +	/* Do not initialize card-specific things if the power is off */
+>> +	if (host->power_mode == MMC_POWER_OFF)
+>> +		goto out;
+>>
+>>
+>>> The context could also be lost if the CORE transitions to OFF. I assume
+>> that
+>>> case gets handled here without anything extra required if "power_saving"
+>> is
+>>> set to true. Am I right?
+>> Yes, "power_saving" is not related to "Power Management".  "power_saving"
+>> is about controlling the power regulators, which the host controller does
+>> itself without any support from PM.
+>>
+>> To put it another way, "power_saving" and CONFIG_PM can be set
+>> independently
+>> of one another.
+> 
+> But the "omap_hsmmc_context_save" and " omap_hsmmc_context_restore" are
+> under CONFIG_PM. They are empty functions if CONFIG_PM is not set. Does this
+> mean that if CONFIG_PM is not set the host regulators are not turned OFF
+> even if there is no activity on MMC?
 
-I agree!  It's a good clean-up to move this field.
+No.  Context save/restore *is* a part of Power Management.  It is needed
+to support Dynamic Power Switching (DPS).
+
+The voltage regulators are controlled via the enable/disable methods
+even when CONFIG_PM is not defined.
+
+Note that the voltage regulators to which I refer, power the cards not
+the host controllers.
+
+So the power to the host controller is under the control of Power Management
+and is supported by context save/restore.
+
+The power to the cards is controlled by the driver (omap_hsmmc) using the
+enable/disable methods.
 
 
-Thanks,
-Roland
