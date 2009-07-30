@@ -1,54 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751202AbZG3NqP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751300AbZG3NsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751202AbZG3NqP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 09:46:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751143AbZG3NqP
+	id S1751300AbZG3NsM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 09:48:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbZG3NsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 09:46:15 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36894 "EHLO mx2.redhat.com"
+	Thu, 30 Jul 2009 09:48:11 -0400
+Received: from www.tglx.de ([62.245.132.106]:46279 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750938AbZG3NqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 09:46:14 -0400
-Message-ID: <4A71A3FD.6030802@redhat.com>
-Date: Thu, 30 Jul 2009 09:45:33 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	id S1750960AbZG3NsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 09:48:11 -0400
+Message-ID: <4A71A483.30507@linutronix.de>
+Date: Thu, 30 Jul 2009 15:47:47 +0200
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
 MIME-Version: 1.0
-To: Mel Gorman <mel@csn.ul.ie>
-CC: Larry Woodman <lwoodman@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [PATCH 4/4] tracing, page-allocator: Add a postprocessing script
- for page-allocator-related ftrace events
-References: <1248901551-7072-1-git-send-email-mel@csn.ul.ie> <1248901551-7072-5-git-send-email-mel@csn.ul.ie>
-In-Reply-To: <1248901551-7072-5-git-send-email-mel@csn.ul.ie>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: vimal singh <vimal.newwork@gmail.com>
+CC: Stoyan Gaydarov <sgayda2@uiuc.edu>, linux-kernel@vger.kernel.org,
+       David.Woodhouse@intel.com, sr@denx.de, kay.sievers@vrfy.org,
+       gregkh@suse.de, linux-mtd@lists.infradead.org
+Subject: Re: [PATCH] [mtd] fixed faulty check
+References: <1248958178-22599-1-git-send-email-sgayda2@uiuc.edu> 	<4A719A27.8050509@linutronix.de> <ce9ab5790907300639k3173446csbd07198055bfe122@mail.gmail.com>
+In-Reply-To: <ce9ab5790907300639k3173446csbd07198055bfe122@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mel Gorman wrote:
-> This patch adds a simple post-processing script for the page-allocator-related
-> trace events. It can be used to give an indication of who the most
-> allocator-intensive processes are and how often the zone lock was taken
-> during the tracing period. Example output looks like
-> 
-> find-2840
->  o pages allocd            = 1877
->  o pages allocd under lock = 1817
->  o pages freed directly    = 9
->  o pcpu refills            = 1078
->  o migrate fallbacks       = 48
->    - fragmentation causing = 48
->      - severe              = 46
->      - moderate            = 2
->    - changed migratetype   = 7
+vimal singh wrote:
+> What if you go to 'err_out' due to some other error?? Do not you need
+> to free 'info'?
+We have to and of_flash_remove() takes care of it.
 
-I like it.
+The initial patch would be shorter if
+   dev_set_drvdata(&dev->dev, info);
+would be moved prior the kzalloc()
 
-Acked-by: Rik van Riel <riel@redhat.com>
-
--- 
-All rights reversed.
+Sebastian
