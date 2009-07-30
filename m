@@ -1,65 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbZG3XcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752169AbZG3XrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752812AbZG3XcH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 19:32:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZG3XcG
+	id S1752169AbZG3XrT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 19:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbZG3XrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 19:32:06 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:34526 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752400AbZG3XcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 19:32:04 -0400
-Date: Fri, 31 Jul 2009 09:31:59 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tom Peng <tom_peng@usish.com>, Jack Wang <jack_wang@usish.com>,
-       Lindar Liu <lindar_liu@usish.com>, Kevin Ao <aoqingyun@usish.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: linux-next: scsi-rc-fixes tree build failure
-Message-Id: <20090731093159.32960632.sfr@canb.auug.org.au>
-In-Reply-To: <1248965603.3880.64.camel@mulgrave.site>
-References: <20090730181345.cec774b2.sfr@canb.auug.org.au>
-	<1248961882.3880.4.camel@mulgrave.site>
-	<1248965603.3880.64.camel@mulgrave.site>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+	Thu, 30 Jul 2009 19:47:18 -0400
+Received: from mail-yw0-f183.google.com ([209.85.211.183]:54775 "EHLO
+	mail-yw0-f183.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751477AbZG3XrR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 19:47:17 -0400
+X-Greylist: delayed 2396 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Jul 2009 19:47:17 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=xd4hqfPNZneR8oNiEhE+JYKF1kBHs8E4kznxLwGUzFNMCGt+yMbyI+RnsYxn7TVqoo
+         snFQVF5jAUjhBKIguOnd+hNnopu4ksa8kxShCDO52VAst7XmvWxVT2C74pn1Mqh7aL9B
+         RoVnMFKf7DcaDdMylC9AI0mZ1fIZAnJ7pSI4w=
+Date: Thu, 30 Jul 2009 16:39:00 -0400
+From: Douglas Schilling Landgraf <dougsland@gmail.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [PATCH repost2 1/2] V4L: hdpvr, fix lock imbalances
+Message-ID: <20090730163900.1a643c3a@gmail.com>
+In-Reply-To: <1248990589-25005-1-git-send-email-jirislaby@gmail.com>
+References: <1248990589-25005-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; i586-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__31_Jul_2009_09_31_59_+1000_H8j8xJ+LiYKJEi6i"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__31_Jul_2009_09_31_59_+1000_H8j8xJ+LiYKJEi6i
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hello Jiri,
 
-Hi James,
+On Thu, 30 Jul 2009 23:49:48 +0200
+Jiri Slaby <jirislaby@gmail.com> wrote:
 
-On Thu, 30 Jul 2009 09:53:23 -0500 James Bottomley <James.Bottomley@HansenP=
-artnership.com> wrote:
->
-> This fixes it on my ppc64 box, so I'll fold it into the original patch
-> and put it back into the tree.
+> Hrm, nobody picked these up, twice. Maybe this time :)?
+> --
 
-Thanks.
+Thanks for this email. Both patches are applied to devel tree.
 
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Douglas
+ 
+> There are many lock imbalances in this driver. Fix all found.
+> 
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> ---
+>  drivers/media/video/hdpvr/hdpvr-core.c  |   12 ++++++------
+>  drivers/media/video/hdpvr/hdpvr-video.c |    6 ++++--
+>  2 files changed, 10 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/media/video/hdpvr/hdpvr-core.c
+> b/drivers/media/video/hdpvr/hdpvr-core.c index 188bd5a..1c9bc94 100644
+> --- a/drivers/media/video/hdpvr/hdpvr-core.c
+> +++ b/drivers/media/video/hdpvr/hdpvr-core.c
+> @@ -126,7 +126,7 @@ static int device_authorization(struct
+> hdpvr_device *dev) char *print_buf = kzalloc(5*buf_size+1,
+> GFP_KERNEL); if (!print_buf) {
+>  		v4l2_err(&dev->v4l2_dev, "Out of memory\n");
+> -		goto error;
+> +		return retval;
+>  	}
+>  #endif
+>  
+> @@ -140,7 +140,7 @@ static int device_authorization(struct
+> hdpvr_device *dev) if (ret != 46) {
+>  		v4l2_err(&dev->v4l2_dev,
+>  			 "unexpected answer of status request, len
+> %d\n", ret);
+> -		goto error;
+> +		goto unlock;
+>  	}
+>  #ifdef HDPVR_DEBUG
+>  	else {
+> @@ -163,7 +163,7 @@ static int device_authorization(struct
+> hdpvr_device *dev) v4l2_err(&dev->v4l2_dev, "unknown firmware version
+> 0x%x\n", dev->usbc_buf[1]);
+>  		ret = -EINVAL;
+> -		goto error;
+> +		goto unlock;
+>  	}
+>  
+>  	response = dev->usbc_buf+38;
+> @@ -188,10 +188,10 @@ static int device_authorization(struct
+> hdpvr_device *dev) 10000);
+>  	v4l2_dbg(MSG_INFO, hdpvr_debug, &dev->v4l2_dev,
+>  		 "magic request returned %d\n", ret);
+> -	mutex_unlock(&dev->usbc_mutex);
+>  
+>  	retval = ret != 8;
+> -error:
+> +unlock:
+> +	mutex_unlock(&dev->usbc_mutex);
+>  	return retval;
+>  }
+>  
+> @@ -350,6 +350,7 @@ static int hdpvr_probe(struct usb_interface
+> *interface, 
+>  	mutex_lock(&dev->io_mutex);
+>  	if (hdpvr_alloc_buffers(dev, NUM_BUFFERS)) {
+> +		mutex_unlock(&dev->io_mutex);
+>  		v4l2_err(&dev->v4l2_dev,
+>  			 "allocating transfer buffers failed\n");
+>  		goto error;
+> @@ -381,7 +382,6 @@ static int hdpvr_probe(struct usb_interface
+> *interface, 
+>  error:
+>  	if (dev) {
+> -		mutex_unlock(&dev->io_mutex);
+>  		/* this frees allocated memory */
+>  		hdpvr_delete(dev);
+>  	}
+> diff --git a/drivers/media/video/hdpvr/hdpvr-video.c
+> b/drivers/media/video/hdpvr/hdpvr-video.c index ccd47f5..5937de2
+> 100644 --- a/drivers/media/video/hdpvr/hdpvr-video.c
+> +++ b/drivers/media/video/hdpvr/hdpvr-video.c
+> @@ -375,6 +375,7 @@ static int hdpvr_open(struct file *file)
+>  	 * in resumption */
+>  	mutex_lock(&dev->io_mutex);
+>  	dev->open_count++;
+> +	mutex_unlock(&dev->io_mutex);
+>  
+>  	fh->dev = dev;
+>  
+> @@ -383,7 +384,6 @@ static int hdpvr_open(struct file *file)
+>  
+>  	retval = 0;
+>  err:
+> -	mutex_unlock(&dev->io_mutex);
+>  	return retval;
+>  }
+>  
+> @@ -519,8 +519,10 @@ static unsigned int hdpvr_poll(struct file
+> *filp, poll_table *wait) 
+>  	mutex_lock(&dev->io_mutex);
+>  
+> -	if (video_is_unregistered(dev->video_dev))
+> +	if (video_is_unregistered(dev->video_dev)) {
+> +		mutex_unlock(&dev->io_mutex);
+>  		return -EIO;
+> +	}
+>  
+>  	if (dev->status == STATUS_IDLE) {
+>  		if (hdpvr_start_streaming(dev)) {
 
---Signature=_Fri__31_Jul_2009_09_31_59_+1000_H8j8xJ+LiYKJEi6i
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpyLW8ACgkQjjKRsyhoI8xWzgCbBjGLp82Pc9pCewU4D9aGvdSr
-YlQAnitc616arNZFMsq7URJzYauOpTh5
-=5VIW
------END PGP SIGNATURE-----
-
---Signature=_Fri__31_Jul_2009_09_31_59_+1000_H8j8xJ+LiYKJEi6i--
