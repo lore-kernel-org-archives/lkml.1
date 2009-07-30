@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752686AbZG3URZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752727AbZG3UTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752686AbZG3URZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 16:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbZG3URY
+	id S1752727AbZG3UTl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 16:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbZG3UTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 16:17:24 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:60744 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751228AbZG3URY (ORCPT
+	Thu, 30 Jul 2009 16:19:40 -0400
+Received: from lazybastard.de ([212.112.238.170]:39054 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752370AbZG3UTk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 16:17:24 -0400
-Date: Thu, 30 Jul 2009 22:17:20 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Jonathan Reed <jdreed@MIT.EDU>
-Cc: Geoffrey Thomas <geofft@MIT.EDU>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Return ENOEXEC, not ENOENT, if a binary's or script's
-	interpreter doesn't exist.
-Message-ID: <20090730201720.GA30001@elf.ucw.cz>
-References: <alpine.DEB.2.00.0907301259170.5785@infinite-loop.mit.edu>
+	Thu, 30 Jul 2009 16:19:40 -0400
+Date: Thu, 30 Jul 2009 22:19:31 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Julia Lawall <julia@diku.dk>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/5] mm: Add kmalloc NULL tests
+Message-ID: <20090730201931.GA12965@logfs.org>
+References: <Pine.LNX.4.64.0907301608350.8734@ask.diku.dk> <20090730153658.GA22986@cmpxchg.org> <20090730183558.GA11763@logfs.org> <20090730191213.GA9471@cmpxchg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0907301259170.5785@infinite-loop.mit.edu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090730191213.GA9471@cmpxchg.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-07-30 13:08:58, Jonathan Reed wrote:
->> NAK. Current behaviour is useful -- and it is really file thats
->> missing.
->
-> The current behavior is only useful to people who have an understanding 
-> of how interpreters and binaries work on Linux.  The average desktop
-> user 
+On Thu, 30 July 2009 21:12:14 +0200, Johannes Weiner wrote:
+> 
+> You will probably have a hard time establishing a userspace mapping
+> before slab is initializied :)
 
-Proposed behaviour is useless to everyone.
+Agreed.
 
-> does not have that understanding.  The average user gets an error message
-> such as:
->
-> /usr/bin/foo: No such file or directory.
->
-> They then go and look at /usr/bin/foo, find that it exists, and are  
-> extremely confused.
+Jörn
 
-ENOEXEC is confusing, too. It will have x bit.
-
->> Please improve manpage instead.
->
-> What manpage do you suggest needs improvement?  execve(2)?  That
->again  
-
-execve, I'd say.
-
-> requires an average user to realize that they need to go look at the  
-> execve(2) manpage.  The average user is not going to realize that.
-
-Improve shells to provide more helpful error message?
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+The story so far:
+In the beginning the Universe was created.  This has made a lot
+of people very angry and been widely regarded as a bad move.
+-- Douglas Adams
