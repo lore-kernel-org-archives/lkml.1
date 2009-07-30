@@ -1,174 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751479AbZG3PK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751624AbZG3PON@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751479AbZG3PK5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 11:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751356AbZG3PK4
+	id S1751624AbZG3PON (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 11:14:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbZG3POM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 11:10:56 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:6383 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750994AbZG3PKz (ORCPT
+	Thu, 30 Jul 2009 11:14:12 -0400
+Received: from mail-qy0-f196.google.com ([209.85.221.196]:47101 "EHLO
+	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751275AbZG3POM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 11:10:55 -0400
+	Thu, 30 Jul 2009 11:14:12 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=UBiVKJGqBBD6ksvjhkkkWEpmean/GiBjHdQgqYRXLLxfEPX6YTtmExGnggoKOiA3t9
-         7Cb/DJp9TdpZblWgNfXkMjdNaZp+JfJO6c2Q9RTf/SQhDW2E7MlfYehtAHNHp8WjmN6M
-         ShN1ikx6z3QwUnvARiuu7XdCWkfTnpPzyZ96k=
-Message-ID: <4A71B7FA.4030509@gmail.com>
-Date: Thu, 30 Jul 2009 11:10:50 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=YixnuhCWrUHf/SOxqcO4/W4w+nKqbWV8jJDsPEHnO2rhO65NH460VMOqbsx4oHjk16
+         TFR7yY1hYZDXP1wIh2qrj8uYh4BGTBDLKSrSpPNkruxyX2Eo1iDgxKxkPvVq2SftafSI
+         2x5H5JjrOBidcShl4auVVK2GdPgJ/ebTTawpo=
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: linux-kernel@vger.kernel.org, peterz@infradead.org, rostedt@goodmis.org,
-       rusty@rustcorp.com.au, maxk@qualcomm.com, mingo@elte.hu
-Subject: Re: [PATCH 1/2] [RESEND] sched: Fully integrate cpus_active_map and
- root-domain code
-References: <20090730145623.25226.29033.stgit@dev.haskins.net> <20090730145723.25226.24493.stgit@dev.haskins.net> <4A71B5DD.4010503@novell.com>
-In-Reply-To: <4A71B5DD.4010503@novell.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig5AD225849B2CE05A19BA6DA4"
+In-Reply-To: <4A71B401.1090208@linutronix.de>
+References: <1248958178-22599-1-git-send-email-sgayda2@uiuc.edu> 
+	<4A719A27.8050509@linutronix.de> <ce9ab5790907300639k3173446csbd07198055bfe122@mail.gmail.com> 
+	<4A71A483.30507@linutronix.de> <ce9ab5790907300714u5c88f1cdk8c0387de5ba9f413@mail.gmail.com> 
+	<4A71AD5E.4080704@uiuc.edu> <4A71B401.1090208@linutronix.de>
+From: vimal singh <vimal.newwork@gmail.com>
+Date: Thu, 30 Jul 2009 20:43:51 +0530
+Message-ID: <ce9ab5790907300813r2c35249csbce608a0f7533562@mail.gmail.com>
+Subject: Re: [PATCH] [mtd] fixed faulty check
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: Stoyan Gaydarov <sgayda2@uiuc.edu>, linux-kernel@vger.kernel.org,
+       David.Woodhouse@intel.com, sr@denx.de, kay.sievers@vrfy.org,
+       gregkh@suse.de, linux-mtd@lists.infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig5AD225849B2CE05A19BA6DA4
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Gregory Haskins wrote:
-> Gregory Haskins wrote:
->> (Applies to 2.6.31-rc4)
+On Thu, Jul 30, 2009 at 8:23 PM, Sebastian Andrzej
+Siewior<bigeasy@linutronix.de> wrote:
+> Stoyan Gaydarov wrote:
+>>>>
+>>>> We have to and of_flash_remove() takes care of it.
+>>>>
+>>>
+>>>
 >>
->> [
->> 	This patch was originaly sent about a year ago, but got dropped
->> 	presumably by accident.  Here is the original thread.
->>
->> 	http://lkml.org/lkml/2008/7/22/281
->>
->> 	At that time, Peter and Max acked it.  It has now been forward
->> 	ported to the new cpumask interface.  I will be so bold as to
->> 	carry their acks forward since the basic logic is the same.
->> 	However, a new acknowledgement, if they have the time to review,
->> 	would be ideal.
->>
->> 	I have tested this patch on a 4-way system using Max's recommended
->> 	"echo 0|1 > cpu1/online" technique and it appears to work properly
->> ]
->>
->> What: Reflect "active" cpus in the rq->rd->online field, instead of th=
-e
->> online_map.
->>
->> Motivation:  Things that use the root-domain code (such as cpupri) onl=
-y
->> care about cpus classified as "active" anyway.  By synchronizing the
->> root-domain state with the active map, we allow several optimizations.=
+>> Does this mean that the original patch is fine or does it still need the
+>> kfree? From what i understand when going to err_out it will take care of
+>> info using of_flash_remove() so then it is not needed in the if check.
+>
+> The original patch was fine but it leaked info. of_flash_remove() does the
+> cleanup of info but only if it is part of driver's data (after the
+> of_flash_remove()). So you have to call dev_set_drvdata(&dev->dev, info)
+> earlier, after the kzalloc() to save the data or else there is no clean
+> up.
+>
 
->>
->> For instance, we can remove an extra cpumask_and from the scheduler
->> hotpath by utilizing rq->rd->online (since it is now a cached version
->> of cpu_active_map & rq->rd->span).
->>
->> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->> Acked-by: Peter Zijlstra <peterz@infradead.org>
->> Acked-by: Max Krasnyansky <maxk@qualcomm.com>
->> ---
->>
->>  kernel/sched.c      |    2 +-
->>  kernel/sched_fair.c |   10 +++++++---
->>  kernel/sched_rt.c   |    7 -------
->>  3 files changed, 8 insertions(+), 11 deletions(-)
->>
->> diff --git a/kernel/sched.c b/kernel/sched.c
->> index 1a104e6..38a1526 100644
->> --- a/kernel/sched.c
->> +++ b/kernel/sched.c
->> @@ -7874,7 +7874,7 @@ static void rq_attach_root(struct rq *rq, struct=
- root_domain *rd)
->>  	rq->rd =3D rd;
->> =20
->>  	cpumask_set_cpu(rq->cpu, rd->span);
->> -	if (cpumask_test_cpu(rq->cpu, cpu_online_mask))
->> +	if (cpumask_test_cpu(rq->cpu, cpu_active_mask))
->>  		set_rq_online(rq);
->> =20
->>  	spin_unlock_irqrestore(&rq->lock, flags);
->> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
->> index 9ffb2b2..2b9cae6 100644
->> --- a/kernel/sched_fair.c
->> +++ b/kernel/sched_fair.c
->> @@ -1040,17 +1040,21 @@ static void yield_task_fair(struct rq *rq)
->>   * search starts with cpus closest then further out as needed,
->>   * so we always favor a closer, idle cpu.
->>   * Domains may include CPUs that are not usable for migration,
->> - * hence we need to mask them out (cpu_active_mask)
->> + * hence we need to mask them out (rq->rd->online)
->>   *
->>   * Returns the CPU we should wake onto.
->>   */
->>  #if defined(ARCH_HAS_SCHED_WAKE_IDLE)
->> +
->> +#define cpu_rd_active(cpu, rq) cpumask_test_cpu(cpu, rq->rd->online)
->> +
->>  static int wake_idle(int cpu, struct task_struct *p)
->>  {
->>  	struct sched_domain *sd;
->>  	int i;
->>  	unsigned int chosen_wakeup_cpu;
->>  	int this_cpu;
->> +	struct rq *task_rq =3D task_rq(p);
->> =20
->>  	/*
->>  	 * At POWERSAVINGS_BALANCE_WAKEUP level, if both this_cpu and prev_c=
-pu
->> @@ -1083,10 +1087,10 @@ static int wake_idle(int cpu, struct task_stru=
-ct *p)
->>  	for_each_domain(cpu, sd) {
->>  		if ((sd->flags & SD_WAKE_IDLE)
->>  		    || ((sd->flags & SD_WAKE_IDLE_FAR)
->> -			&& !task_hot(p, task_rq(p)->clock, sd))) {
->> +			&& !task_hot(p, task_rq->clock, sd))) {
->>  			for_each_cpu_and(i, sched_domain_span(sd),
->>  					 &p->cpus_allowed) {
->=20
-> Hmm, something got suboptimal in translation from the original patch.
->=20
-> This would be better expressed as:
->=20
-> for_each_cpu_and(i, rq->rd->online, &p->cpus_allowed) {
-> 	if (idle_cpu(i)...
-> }
+Is this patch looks OK??
 
 
-NM.  My first instinct was correct.
+diff --git a/drivers/mtd/maps/physmap_of.c b/drivers/mtd/maps/physmap_of.c
+index 39d357b..d104cfc 100644
+--- a/drivers/mtd/maps/physmap_of.c
++++ b/drivers/mtd/maps/physmap_of.c
+@@ -204,7 +204,7 @@ static int __devinit of_flash_probe(struct of_device *dev,
+ 		dev_err(&dev->dev, "Malformed reg property on %s\n",
+ 				dev->node->full_name);
+ 		err = -EINVAL;
+-		goto err_out;
++		goto err_flash_remove;
+ 	}
+ 	count /= reg_tuple_size;
 
-We need the result of sd->span, cpus_allowed, and active_map.  The
-submitted logic (or the original) is correct, and my comment above is wro=
-ng.
+@@ -212,14 +212,14 @@ static int __devinit of_flash_probe(struct of_device *dev,
+ 	info = kzalloc(sizeof(struct of_flash) +
+ 		       sizeof(struct of_flash_list) * count, GFP_KERNEL);
+ 	if (!info)
+-		goto err_out;
+-
+-	mtd_list = kzalloc(sizeof(struct mtd_info) * count, GFP_KERNEL);
+-	if (!info)
+-		goto err_out;
++		goto err_flash_remove;
 
-Sorry for the noise,
--Greg
+ 	dev_set_drvdata(&dev->dev, info);
 
++	mtd_list = kzalloc(sizeof(struct mtd_info) * count, GFP_KERNEL);
++	if (!mtd_list)
++		goto err_flash_remove;
++
+ 	for (i = 0; i < count; i++) {
+ 		err = -ENXIO;
+ 		if (of_address_to_resource(dp, i, &res)) {
+@@ -338,6 +338,7 @@ static int __devinit of_flash_probe(struct of_device *dev,
 
---------------enig5AD225849B2CE05A19BA6DA4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+ err_out:
+ 	kfree(mtd_list);
++eerr_flash_remov:
+ 	of_flash_remove(dev);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkpxt/oACgkQP5K2CMvXmqHu3wCfZunKMZadL1TcoaVwFjNKY6Pp
-mn0An2fISK90Z87juZaCTt2hsJNhYcOY
-=H/dX
------END PGP SIGNATURE-----
-
---------------enig5AD225849B2CE05A19BA6DA4--
+ 	return err;
