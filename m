@@ -1,42 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751358AbZG3Oh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751469AbZG3OiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751358AbZG3Oh0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 10:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbZG3OhZ
+	id S1751469AbZG3OiA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 10:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbZG3Oh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 10:37:25 -0400
-Received: from colo3.heeltoe.com ([207.210.106.184]:42253 "EHLO
-	colo3.heeltoe.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750759AbZG3OhZ (ORCPT
+	Thu, 30 Jul 2009 10:37:59 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:35045 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751208AbZG3Oh6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 10:37:25 -0400
-To: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] forced recalibration for the OLPC hgpk touchpad 
-From: Paul Fox <pgf@laptop.org>
-In-reply-to: <20090730061803.C05C3526EC9@mailhub.coreip.homeip.net> (sfid-20090730_014410_549939_B9FD9B58) 
-References: <3026.1243972079@foxharp.boston.ma.us> <29774.1248905330@foxharp.boston.ma.us> <20090730061803.C05C3526EC9@mailhub.coreip.homeip.net> (sfid-20090730_014410_549939_B9FD9B58)
+	Thu, 30 Jul 2009 10:37:58 -0400
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH 4/5] net/netlabel: Add kmalloc NULL tests
+Date: Thu, 30 Jul 2009 10:37:56 -0400
+User-Agent: KMail/1.11.4 (Linux/2.6.30-gentoo-r1; KDE/4.2.4; i686; ; )
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+References: <Pine.LNX.4.64.0907301610230.8734@ask.diku.dk> <200907301032.20318.paul.moore@hp.com> <Pine.LNX.4.64.0907301636280.8734@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0907301636280.8734@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-ID: <18564.1248964644.1@foxharp.boston.ma.us>
-Date: Thu, 30 Jul 2009 10:37:24 -0400
-Message-ID: <18567.1248964644@foxharp.boston.ma.us>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907301037.56146.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi dmitry --
+On Thursday 30 July 2009 10:36:47 am Julia Lawall wrote:
+> On Thu, 30 Jul 2009, Paul Moore wrote:
+> > On Thursday 30 July 2009 10:10:54 am Julia Lawall wrote:
+> > > From: Julia Lawall <julia@diku.dk>
+> > >
+> > > The test on map4 should be a test on map6.
+> >
+> > ...
+> >
+> > > Signed-off-by: Julia Lawall <julia@diku.dk>
+> > >
+> > > ---
+> > >  net/netlabel/netlabel_kapi.c        |    2 +-
+> > >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > >
+> > > diff --git a/net/netlabel/netlabel_kapi.c
+> > > b/net/netlabel/netlabel_kapi.c index 3ff6f32..6ce0020 100644
+> > > --- a/net/netlabel/netlabel_kapi.c
+> > > +++ b/net/netlabel/netlabel_kapi.c
+> > > @@ -151,7 +151,7 @@ int netlbl_cfg_unlbl_map_add(const char *domain,
+> > >  			addr6 = addr;
+> > >  			mask6 = mask;
+> > >  			map6 = kzalloc(sizeof(*map6), GFP_ATOMIC);
+> > > -			if (map4 == NULL)
+> > > +			if (!map6)
+> > >  				goto cfg_unlbl_map_add_failure;
+> > >  			map6->type = NETLBL_NLTYPE_UNLABELED;
+> > >  			ipv6_addr_copy(&map6->list.addr, addr6);
+> >
+> > Another good find, although I would suggest changing it to the following
+> > to stay consistent with the rest of the function:
+> >
+> > 		map6 = kzalloc(...);
+> > 		if (map6 == NULL)
+> > 			goto ...;
+>
+> OK, I hesitated...  I'll send a new patch shortly.
 
-dmitry wrote:
- > Sorry, I completely forgot about this patch... I am going to apply
- > it, however I think that we should not be creating the attribute
- > if the touchpad does not support recalibration. Also, I don't see
- > the reason why we can't schedule recalibration immediately instead
- > of waiting for 1 msec.
- > 
- > Could you please try updated version of the patch below?
+Great, thank you.
 
-looks and works fine.  thanks!
+-- 
+paul moore
+linux @ hp
 
-paul
-=---------------------
- paul fox, pgf@laptop.org
