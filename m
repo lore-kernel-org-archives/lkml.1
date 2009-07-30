@@ -1,79 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751675AbZG3SQo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751704AbZG3Sb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751675AbZG3SQo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 14:16:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbZG3SQo
+	id S1751704AbZG3Sb0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 14:31:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbZG3SbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 14:16:44 -0400
-Received: from kroah.org ([198.145.64.141]:59583 "EHLO coco.kroah.org"
+	Thu, 30 Jul 2009 14:31:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41832 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751363AbZG3SQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 14:16:43 -0400
-Date: Thu, 30 Jul 2009 11:13:17 -0700
-From: Greg KH <greg@kroah.com>
-To: Dan Williams <dcbw@redhat.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Ivo van Doorn <ivdoorn@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Luis Correia <luis.f.correia@gmail.com>, Mike Galbraith <efault@gmx.de>,
-       linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [wireless] rt2870sta BUGs on shutdown,
- 2.6.30.2->git.today+git.wireless.today
-Message-ID: <20090730181317.GA27543@kroah.com>
-References: <1248945770.7910.24.camel@marge.simson.net>
- <efe7343f0907300306o44d0e718p2880b7406a38fc6a@mail.gmail.com>
- <200907301517.57811.bzolnier@gmail.com>
- <200907301852.28172.IvDoorn@gmail.com>
- <1248973862.22552.4.camel@johannes.local>
- <20090730172657.GA8266@kroah.com>
- <1248977083.24886.4.camel@localhost.localdomain>
+	id S1750786AbZG3SbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 14:31:24 -0400
+Date: Thu, 30 Jul 2009 14:30:14 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Jerome Marchand <jmarchan@redhat.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, ryov@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com,
+       agk@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
+Subject: Re: [PATCH 05/24] io-controller: Modify cfq to make use of flat
+	elevator fair queuing
+Message-ID: <20090730183014.GA6067@redhat.com>
+References: <1248467274-32073-1-git-send-email-vgoyal@redhat.com> <1248467274-32073-6-git-send-email-vgoyal@redhat.com> <4A71BF76.6040709@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1248977083.24886.4.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4A71BF76.6040709@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 30, 2009 at 02:04:43PM -0400, Dan Williams wrote:
-> On Thu, 2009-07-30 at 10:26 -0700, Greg KH wrote:
-> > On Thu, Jul 30, 2009 at 07:11:02PM +0200, Johannes Berg wrote:
-> > > On Thu, 2009-07-30 at 18:52 +0200, Ivo van Doorn wrote:
-> > > 
-> > > > [some text expressing his frustration]
-> > > 
-> > > This is exactly why I was against staging all the time. Now suddenly
-> > > "The Crap" seems like a viable alternative. WAKE UP PEOPLE. The code is
-> > > not useful. Just look at the code that Mike pasted into his email. That
-> > > alone should be enough to send cold shivers down your spine!
-> > 
-> > Hm, "useful" is in the eye of the beholder.
-> > 
-> > There is no driver in the mainline kernel tree for this device, so a
-> > "normal" user has no chance of getting it working, right?  That's why
-> > -staging is working, there is a semi-working driver, and most
-> > importantly, people willing to help out getting it working better.
-> > 
-> > The combination of the two is what works here.
-> > 
-> > So please, I understand your frustration on a lack of people helping out
-> > with out-of-tree wireless drivers that don't quite work properly, but
-> > please, that has NOTHING to do with the staging drivers.
-> > 
-> > Meanwhile, I'm off on the driver-devel list helping Mike fix this
-> > problem, which seems simple enough to solve...
+On Thu, Jul 30, 2009 at 05:42:46PM +0200, Jerome Marchand wrote:
+> Vivek Goyal wrote:
+> > @@ -1616,11 +1234,12 @@ static void changed_ioprio(struct io_context *ioc, struct cfq_io_context *cic)
+> >  	struct cfq_data *cfqd = cic->key;
+> >  	struct cfq_queue *cfqq;
+> >  	unsigned long flags;
+> > +	struct request_queue *q = cfqd->queue;
 > 
-> Except that the energy you're now investing in fixing this could have
-> gone into rt2x00, and we would come out ahead in the end.  Instead, the
-> energy is sapped away by something that will *never* be mainlined.
+> cfqd may be NULL here. We'd better test it before using it.
+> 
 
-On the contrary, I would have never spent any time working on rt2x00 :)
+Thanks Jerome. 
 
-And are you trying to tell people _what_ to work on here?  That's a
-slippery slope...
+Actually I will drop this chage altogether. This is not required. I don't
+know why did I change original code to introduce another local variable. 
 
-thanks,
+Thanks
+Vivek
 
-greg k-h
+> >  
+> >  	if (unlikely(!cfqd))
+> >  		return;
+> >  
+> > -	spin_lock_irqsave(cfqd->queue->queue_lock, flags);
+> > +	spin_lock_irqsave(q->queue_lock, flags);
+> >  
+> >  	cfqq = cic->cfqq[BLK_RW_ASYNC];
+> >  	if (cfqq) {
+> > @@ -1637,7 +1256,7 @@ static void changed_ioprio(struct io_context *ioc, struct cfq_io_context *cic)
+> >  	if (cfqq)
+> >  		cfq_mark_cfqq_prio_changed(cfqq);
+> >  
+> > -	spin_unlock_irqrestore(cfqd->queue->queue_lock, flags);
+> > +	spin_unlock_irqrestore(q->queue_lock, flags);
+> >  }
+> >  
+> >  static void cfq_ioc_set_ioprio(struct io_context *ioc)
+> 
+> 
+> --- block/cfq-iosched.c.orig	2009-07-29 10:22:08.000000000 +0200
+> +++ block/cfq-iosched.c	2009-07-30 17:25:05.000000000 +0200
+> @@ -1271,11 +1271,12 @@ static void changed_ioprio(struct io_con
+>  	struct cfq_data *cfqd = cic->key;
+>  	struct cfq_queue *cfqq;
+>  	unsigned long flags;
+> -	struct request_queue *q = cfqd->queue;
+> +	struct request_queue *q;
+>  
+>  	if (unlikely(!cfqd))
+>  		return;
+>  
+> +	q = cfqd->queue;
+>  	spin_lock_irqsave(q->queue_lock, flags);
+>  
+>  	cfqq = cic->cfqq[BLK_RW_ASYNC];
