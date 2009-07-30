@@ -1,65 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751592AbZG3Ql4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751385AbZG3Qqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751592AbZG3Ql4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 12:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbZG3Qlz
+	id S1751385AbZG3Qqh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 12:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbZG3Qqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 12:41:55 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:58622 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751096AbZG3Qly (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 12:41:54 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: eranian@gmail.com
-Subject: Re: I.1 - System calls - ioctl
-Date: Thu, 30 Jul 2009 18:40:50 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-3-generic; KDE/4.2.96; x86_64; ; )
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
-       Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       "perfmon2-devel" <perfmon2-devel@lists.sourceforge.net>
-References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com> <1248963211.6391.45.camel@twins> <7c86c4470907300917s5d3f2bf0iefe333cefc08c7fa@mail.gmail.com>
-In-Reply-To: <7c86c4470907300917s5d3f2bf0iefe333cefc08c7fa@mail.gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 30 Jul 2009 12:46:36 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47980 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750774AbZG3Qqf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 12:46:35 -0400
+Date: Thu, 30 Jul 2009 12:46:29 -0400
+From: Dave Jones <davej@redhat.com>
+To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
+Cc: Eric Sesterhenn <eric.sesterhenn@lsexperts.de>,
+       linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
+       rusty@rustcorp.com.au
+Subject: Re: Warning during suspend with MS-7310 mainboard
+Message-ID: <20090730164629.GC2593@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"Langsdorf, Mark" <mark.langsdorf@amd.com>,
+	Eric Sesterhenn <eric.sesterhenn@lsexperts.de>,
+	linux-kernel@vger.kernel.org, cpufreq@vger.kernel.org,
+	rusty@rustcorp.com.au
+References: <1248936650.3313.6.camel@queen> <1248949671.3313.10.camel@queen> <20090730154734.GB2593@redhat.com> <6453C3CB8E2B3646B0D020C11261327303620A01@sausexmb4.amd.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200907301840.50894.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/kveurx76K3AQa327zCEQlmqqs3BJcSXQl82s
- tRfiAKYp9Hm75YvGxbFfMfB14Snq/f7j8Mr1xiVH7ZjtQ6f+Wx
- dfhpl+7d4Ag3OZpWkmrsA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6453C3CB8E2B3646B0D020C11261327303620A01@sausexmb4.amd.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 30 July 2009, stephane eranian wrote:
-> long sys_perf_counter_open(
->        struct perf_counter_attr *attr,
->        enum perf_target_type  target_type,
->        int target_id,
->        int group_fd,
->        unsigned long flags);
-> 
-> Which is what you had, except without the struct.
-> 
-> Then, it boils down to whether expressing a target id in 32 bits is enough.
-> Obviously, 64-bit would be the safest but then I understand this causes issues
-> on 32-bit systems.
+On Thu, Jul 30, 2009 at 11:38:22AM -0500, Langsdorf, Mark wrote:
+ > I'll look into it.
+ > 
+ > First time I've had this bug reported, though.
+ > 
 
-Just make it an unsigned long then, that still covers all cases
-where you only need the 64-bit type on 64-bit systems.
+It's happening because the suspend code runs with interrupts disabled,
+and the powerpc workaround we do in the cpufreq suspend hook
+calls the drivers ->get method.
 
-	Arnd <><
+powernow-k8's ->get does an smp_call_function_single
+which needs interrupts enabled
+
+If we just make the suspend code conditional on ppc, this whole problem
+goes away.
+
+Something like the patch below..
+
+	Dave
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 5cc77fb..8d3b3d1 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1288,6 +1288,14 @@ static int cpufreq_suspend(struct sys_device *sysdev, pm_message_t pmsg)
+ 
+ 	dprintk("suspending cpu %u\n", cpu);
+ 
++	/*
++	 * This whole bogosity is here because Powerbooks are made of fail.
++	 * No sane platform should need any of the code below to be run.
++	 * (it's entirely the wrong thing to do, as driver->get may
++	 *  reenable interrupts on some architectures).
++	 */
++
++#ifdef __powerpc__
+ 	if (!cpu_online(cpu))
+ 		return 0;
+ 
+@@ -1346,6 +1354,7 @@ static int cpufreq_suspend(struct sys_device *sysdev, pm_message_t pmsg)
+ 
+ out:
+ 	cpufreq_cpu_put(cpu_policy);
++#endif	/* __powerpc__ */
+ 	return ret;
+ }
+ 
+@@ -1365,6 +1374,11 @@ static int cpufreq_resume(struct sys_device *sysdev)
+ 
+ 	dprintk("resuming cpu %u\n", cpu);
+ 
++	/* As with the ->suspend method, all the code below is
++	 * only necessary because Powerbooks suck.
++	 * See commit 42d4dc3f4e1e for jokes. */
++#ifdef __powerpc__
++
+ 	if (!cpu_online(cpu))
+ 		return 0;
+ 
+@@ -1428,6 +1442,7 @@ out:
+ 	schedule_work(&cpu_policy->update);
+ fail:
+ 	cpufreq_cpu_put(cpu_policy);
++#endif	/* __powerpc__ */
+ 	return ret;
+ }
+ 
