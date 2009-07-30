@@ -1,48 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752805AbZG3UcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752406AbZG3UdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752805AbZG3UcJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 16:32:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752776AbZG3UcI
+	id S1752406AbZG3UdP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 16:33:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbZG3UdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 16:32:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36435 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752113AbZG3UcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 16:32:07 -0400
-Date: Thu, 30 Jul 2009 22:28:04 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: eranian@gmail.com, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
-       Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       roland <roland@redhat.com>
-Subject: Re: perf_counters issue with self-sampling threads
-Message-ID: <20090730202804.GA13675@redhat.com>
-References: <7c86c4470907270951i48886d56g90bc198f26bb0716@mail.gmail.com> <1248869948.6987.3083.camel@twins> <20090729221703.GA25368@redhat.com> <1248953485.6391.41.camel@twins> <20090730192040.GA9503@redhat.com> <1248984003.4164.0.camel@laptop>
+	Thu, 30 Jul 2009 16:33:15 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:48443 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751447AbZG3UdO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 16:33:14 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=Qxj4VbtkVMPQPB1oD7rLp+c8j5povfY2dgwSkHN+DkljN6M4qQ37NdY6NJ6dFRVhR
+	bheQJayK1fGsAjgrLC+tQ==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248984003.4164.0.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090730031927.GA17669@localhost>
+References: <1786ab030907281211x6e432ba6ha6afe9de73f24e0c@mail.gmail.com>
+	 <33307c790907281449k5e8d4f6cib2c93848f5ec2661@mail.gmail.com>
+	 <33307c790907290015m1e6b5666x9c0014cdaf5ed08@mail.gmail.com>
+	 <20090729114322.GA9335@localhost>
+	 <33307c790907291719r2caf7914xb543877464ba6fc2@mail.gmail.com>
+	 <33307c790907291828x6906e874l4d75e695116aa874@mail.gmail.com>
+	 <20090730020922.GD7326@localhost>
+	 <33307c790907291957n35c55afehfe809c6583b10a76@mail.gmail.com>
+	 <20090730031927.GA17669@localhost>
+Date: Thu, 30 Jul 2009 13:33:09 -0700
+Message-ID: <33307c790907301333i28b571eat29460164d558d370@mail.gmail.com>
+Subject: Re: Bug in kernel 2.6.31, Slow wb_kupdate writeout
+From: Martin Bligh <mbligh@google.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Chad Talbott <ctalbott@google.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       Michael Rubin <mrubin@google.com>, Andrew Morton <akpm@google.com>,
+       "sandeen@redhat.com" <sandeen@redhat.com>,
+       Michael Davidson <md@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/30, Peter Zijlstra wrote:
+(BTW: background ... I'm not picking through this code for fun, I'm
+trying to debug writeback problems introduced in our new kernel
+that are affecting Google production workloads ;-))
+
+>> Well, I see two problems. One is that we set more_io based on
+>> whether s_more_io is empty or not before we finish the loop.
+>> I can't see how this can be correct, especially as there can be
+>> other concurrent writers. So somehow we need to check when
+>> we exit the loop, not during it.
 >
-> I'll make a patch for F_SETOWN_TID then, unless someone
-> comes up with a better name for the creature ;-)
+> It is correct inside the loop, however with some overheads.
+>
+> We put it inside the loop because sometimes the whole filesystem is
+> skipped and we shall not set more_io on them whether or not s_more_io
+> is empty.
 
-I think you are right. It is not safe to change the current
-behaviour.
+My point was that you're setting more_io based on a condition
+at a point in time that isn't when you return to the caller.
 
-Oleg.
+By the time you return to the caller (after several more loops
+iterations), that condition may no longer be true.
 
+One other way to address that would to be only to set if if we're
+about to fall off the end of the loop, ie change it to:
+
+if (!list_empty(&sb->s_more_io) && list_empty(&sb->s_io))
+       wbc->more_io = 1;
+
+>> The other is that we're saying we are setting more_io when
+>> nr_to_write is <=0 ... but we only really check it when
+>> nr_to_write is > 0 ... I can't see how this can be useful?
+>
+> That's the caller's fault - I guess the logic was changed a bit by
+> Jens in linux-next. I noticed this just now. It shall be fixed.
+
+I am guessing you're setting more_io here because we're stopping
+because our slice expired, presumably without us completing
+all the io there was to do? That doesn't seem entirely accurate,
+we could have finished all the pending IO (particularly given that
+we can go over nr_to_write somewhat and send it negative).
+Hence, I though that checking whether s_more_io and s_io were
+empty at the time of return might be a more accurate check,
+but on the other hand they are shared lists.
