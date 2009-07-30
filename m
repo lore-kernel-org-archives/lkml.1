@@ -1,66 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751912AbZG3Ix2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751877AbZG3IxN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751912AbZG3Ix2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 04:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbZG3Ix0
+	id S1751877AbZG3IxN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 04:53:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbZG3IxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 04:53:26 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:33256 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751881AbZG3IxY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 04:53:24 -0400
-Date: Thu, 30 Jul 2009 17:53:21 +0900 (JST)
-Message-Id: <20090730.175321.193708040.ryov@valinux.co.jp>
-To: horms@verge.net.au
-Cc: agk@redhat.com, dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com
-Subject: Re: [PATCH] dm-ioband-v1.12.2: I/O bandwidth controller
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090730054204.GA11291@verge.net.au>
-References: <20090730.115454.226775179.ryov@valinux.co.jp>
-	<20090730054204.GA11291@verge.net.au>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Jul 2009 04:53:11 -0400
+Received: from mga01.intel.com ([192.55.52.88]:47187 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751722AbZG3IxI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 04:53:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,294,1246863600"; 
+   d="scan'208";a="479226487"
+From: Huang Ying <ying.huang@intel.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@linux.intel.com>,
+       linux-kernel@vger.kernel.org, Huang Ying <ying.huang@intel.com>
+Subject: [PATCH -v4 4/4] x86: MCE: Fake panic support for MCE testing
+Date: Thu, 30 Jul 2009 16:52:33 +0800
+Message-Id: <1248943953-26100-5-git-send-email-ying.huang@intel.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1248943953-26100-4-git-send-email-ying.huang@intel.com>
+References: <1248943953-26100-1-git-send-email-ying.huang@intel.com>
+ <1248943953-26100-2-git-send-email-ying.huang@intel.com>
+ <1248943953-26100-3-git-send-email-ying.huang@intel.com>
+ <1248943953-26100-4-git-send-email-ying.huang@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Simon,
+If "fake panic" mode is turned on, just log panic message instead of
+go real panic. This is used for testing only, so that the test suite
+can check for the correct panic message and do regression testing for
+MCE would go panic.
 
-> Hi Tsuruta-san,
-> 
-> have you run sparse over this code? There seem to be a few interesting
-> warnings generated (and some at the top noise too).
+This patch is based on x86-tip.git/mce3.
 
-Thank you for your comment.
-I'll do sparse every time from now on.
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+
+
+ChangeLog:
+
+v4:
+
+- Move config file from sysfs to debugfs
+---
+ arch/x86/kernel/cpu/mcheck/mce.c |   75 ++++++++++++++++++++++++++++++++------
+ 1 files changed, 64 insertions(+), 11 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index b57b6aa..c3a9f07 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -223,6 +223,9 @@ static void print_mce_tail(void)
  
-> $ make C=1 CF="-D__CHECK_ENDIAN__"
-> [snip]
-> include/trace/events/dm-ioband.h:9:1: warning: symbol 'ftrace_raw_output_ioband_hold_urgent_bio' was not declared. Should it be static?
-[snip ftrace warnings]
+ static atomic_t mce_paniced;
+ 
++static int fake_panic;
++static atomic_t mce_fake_paniced;
++
+ /* Panic in progress. Enable interrupts and wait for final IPI */
+ static void wait_for_panic(void)
+ {
+@@ -240,15 +243,21 @@ static void mce_panic(char *msg, struct mce *final, char *exp)
+ {
+ 	int i;
+ 
+-	/*
+-	 * Make sure only one CPU runs in machine check panic
+-	 */
+-	if (atomic_add_return(1, &mce_paniced) > 1)
+-		wait_for_panic();
+-	barrier();
++	if (!fake_panic) {
++		/*
++		 * Make sure only one CPU runs in machine check panic
++		 */
++		if (atomic_add_return(1, &mce_paniced) > 1)
++			wait_for_panic();
++		barrier();
+ 
+-	bust_spinlocks(1);
+-	console_verbose();
++		bust_spinlocks(1);
++		console_verbose();
++	} else {
++		/* Don't log too much for fake panic */
++		if (atomic_add_return(1, &mce_fake_paniced) > 1)
++			return;
++	}
+ 	print_mce_head();
+ 	/* First print corrected ones that are still unlogged */
+ 	for (i = 0; i < MCE_LOG_LEN; i++) {
+@@ -275,9 +284,12 @@ static void mce_panic(char *msg, struct mce *final, char *exp)
+ 	print_mce_tail();
+ 	if (exp)
+ 		printk(KERN_EMERG "Machine check: %s\n", exp);
+-	if (panic_timeout == 0)
+-		panic_timeout = mce_panic_timeout;
+-	panic(msg);
++	if (!fake_panic) {
++		if (panic_timeout == 0)
++			panic_timeout = mce_panic_timeout;
++		panic(msg);
++	} else
++		printk(KERN_EMERG "Fake kernel panic: %s\n", msg);
+ }
+ 
+ /* Support code for software error injection */
+@@ -2059,4 +2071,45 @@ struct dentry *mce_get_debugfs_dir(void)
+ 
+ 	return dmce;
+ }
++
++static void mce_reset(void)
++{
++	cpu_missing = 0;
++	atomic_set(&mce_fake_paniced, 0);
++	atomic_set(&mce_executing, 0);
++	atomic_set(&mce_callin, 0);
++	atomic_set(&global_nwo, 0);
++}
++
++static int fake_panic_get(void *data, u64 *val)
++{
++	*val = fake_panic;
++	return 0;
++}
++
++static int fake_panic_set(void *data, u64 val)
++{
++	mce_reset();
++	fake_panic = val;
++	return 0;
++}
++
++DEFINE_SIMPLE_ATTRIBUTE(fake_panic_fops, fake_panic_get,
++			fake_panic_set, "%llu\n");
++
++static int __init mce_debugfs_init(void)
++{
++	struct dentry *dmce, *ffake_panic;
++
++	dmce = mce_get_debugfs_dir();
++	if (!dmce)
++		return -ENOMEM;
++	ffake_panic = debugfs_create_file("fake_panic", 0444, dmce, NULL,
++					  &fake_panic_fops);
++	if (!ffake_panic)
++		return -ENOMEM;
++
++	return 0;
++}
++late_initcall(mce_debugfs_init);
+ #endif
+-- 
+1.6.3.3
 
-> drivers/md/dm-ioband-ctl.c:178:2: warning: context problem in 'suspend_ioband_device': '_spin_unlock_irqrestore' expected different context
-> drivers/md/dm-ioband-ctl.c:178:2:    context 'lock': wanted >= 1, got 0
-> drivers/md/dm-ioband-ctl.c:600:3: warning: context imbalance in 'prevent_burst_bios': unexpected unlock
-> drivers/md/dm-ioband-ctl.c:600:3:    context '<noident>': wanted 0, got -1
-> drivers/md/dm-ioband-ctl.c:816:3: warning: context imbalance in 'ioband_map': __context__ statement expected different context
-> drivers/md/dm-ioband-ctl.c:816:3:    context '<noident>': wanted >= 0, got -1
-> drivers/md/dm-ioband-rangebw.c:287:4: warning: context imbalance in 'range_bw_queue_full': __context__ statement expected different context
-> drivers/md/dm-ioband-rangebw.c:287:4:    context '<noident>': wanted >= 0, got -1
-
-These imbalances are not warned by the latest sparse command retrieved
-from the git repository, and actually they are not imbalanced.
-
-> drivers/md/dm-ioband-rangebw.c:592:6: warning: symbol 'range_bw_timeover' was not declared. Should it be static?
-> drivers/md/dm-ioband-rangebw.c:210: warning: 'io_mode' may be used uninitialized in this function
-
-I'll fix these warnings and post the update soon.
-
-Thanks,
-Ryo Tsuruta
