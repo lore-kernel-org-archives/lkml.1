@@ -1,117 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751794AbZG3Qrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751938AbZG3Qwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751794AbZG3Qrg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 12:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbZG3Qrf
+	id S1751938AbZG3Qwd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 12:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbZG3Qwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 12:47:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48001 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750903AbZG3Qre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 12:47:34 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, dm-devel@redhat.com,
-       Neil Brown <neilb@suse.de>
-Subject: Re: Why does __do_page_cache_readahead submit READ, not READA?
-References: <20090729161456.GB8059@barkeeper1-xen.linbit>
-	<20090729211845.GB4148@kernel.dk> <20090729225501.GH24801@think>
-	<20090730060649.GC4148@kernel.dk> <20090730143409.GJ24801@think>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Thu, 30 Jul 2009 12:47:21 -0400
-In-Reply-To: <20090730143409.GJ24801@think> (Chris Mason's message of "Thu, 30
-	Jul 2009 10:34:09 -0400")
-Message-ID: <x49fxcedso6.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 30 Jul 2009 12:52:32 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:37527 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751356AbZG3Qwb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 12:52:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=a4HHZRHYuVLIhwNm2zpifE1yL4+JRMuxUrF9BtvC6oHWDaKEM0CEZdyhvHMfIlS2SK
+         sOfYowC9wW7LvmBNcwed27JxzKGxyvioPXXpNbWQUJofF6efxB+8eKwILLy6RMJqtMbi
+         OtIQ08BStNNo8EsNErDMZ5K4Oqm/B7GPCRC6E=
+From: Ivo van Doorn <ivdoorn@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [wireless] rt2870sta BUGs on shutdown, 2.6.30.2->git.today+git.wireless.today
+Date: Thu, 30 Jul 2009 18:52:27 +0200
+User-Agent: KMail/1.9.10
+Cc: Luis Correia <luis.f.correia@gmail.com>, Mike Galbraith <efault@gmx.de>,
+       linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Johannes Berg <johannes@sipsolutions.net>
+References: <1248945770.7910.24.camel@marge.simson.net> <efe7343f0907300306o44d0e718p2880b7406a38fc6a@mail.gmail.com> <200907301517.57811.bzolnier@gmail.com>
+In-Reply-To: <200907301517.57811.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907301852.28172.IvDoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason <chris.mason@oracle.com> writes:
+I planned, and actually did write, a lengthy reply for this thread, when I completed the reply
+I reconsidred and opted for this shorter reply. Every 2 or 3 months this discussion is started
+again and I am f***ing tired of it, so excuse me but I am not going to throw myself into
+this completely pointless discussion
 
-> On Thu, Jul 30, 2009 at 08:06:49AM +0200, Jens Axboe wrote:
->> On Wed, Jul 29 2009, Chris Mason wrote:
->> > On Wed, Jul 29, 2009 at 11:18:45PM +0200, Jens Axboe wrote:
->> > > On Wed, Jul 29 2009, Lars Ellenberg wrote:
->> > > > I naively assumed, from the "readahead" in the name, that readahead
->> > > > would be submitting READA bios. It does not.
->> > > > 
->> > > > I recently did some statistics on how many READ and READA requests
->> > > > we actually see on the block device level.
->> > > > I was suprised that READA is basically only used for file system
->> > > > internal meta data (and not even for all file systems),
->> > > > but _never_ for file data.
->> > > > 
->> > > > A simple
->> > > > 	dd if=bigfile of=/dev/null bs=4k count=1
->> > > > will absolutely cause readahead of the configured amount, no problem.
->> > > > But on the block device level, these are READ requests, where I'd
->> > > > expected them to be READA requests, based on the name.
->> > > > 
->> > > > This is because __do_page_cache_readahead() calls read_pages(),
->> > > > which in turn is mapping->a_ops->readpages(), or, as fallback,
->> > > > mapping->a_ops->readpage().
->> > > > 
->> > > > On that level, all variants end up submitting as READ.
->> > > > 
->> > > > This may even be intentional.
->> > > > But if so, I'd like to understand that.
->> > > 
->> > > I don't think it's intentional, and if memory serves, we used to use
->> > > READA when submitting read-ahead. Not sure how best to improve the
->> > > situation, since (as you describe), we lose the read-ahead vs normal
->> > > read at that level. I did some experimentation some time ago for
->> > > flagging this, see:
->> > > 
->> > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=16cfe64e3568cda412b3cf6b7b891331946b595e
->> > > 
->> > > which should pass down READA properly.
->> > 
->> > One of the problems in the past was that reada would fail if there
->> > wasn't a free request when we actually wanted it to go ahead and wait.
->> > Or something.  We've switched it around a few times I think.
->> 
->> Yes, we did used to do that, whether it was 2.2 or 2.4 I
->> don't recall :-)
->> 
->> It should be safe to enable know, whether there's a prettier way
->> than the above, I don't know. It works by detecting the read-ahead
->> marker, but it's a bit of a fragile design.
->
-> I dug through my old email and found this fun bug w/buffer heads and
-> reada.
->
-> 1) submit reada ll_rw_block on ext3 directory block
-> 2) decide that we really really need to wait on this block
-> 3) wait_on_buffer(bh) ; check up to date bit when done
->
-> The problem in the bugzilla was that reada was returning EAGAIN or
-> EWOULDBLOCK, and the whole filesystem world expects that if we
-> wait_on_buffer and don't find the buffer up to date, its time
-> set things read only and run around screaming.
->
-> The expectations in the code at the time were that the caller needs to
-> be aware the request may fail with EAGAIN/EWOULDBLOCK, but the reality
-> was that everyone who found that locked buffer also needed to be able to
-> check for it.  This one bugzilla had a teeny window where the reada
-> buffer head was leaked to the world.
->
-> So, I think we can start using it again if it is just a hint to the
-> elevator about what to do with the IO, and we never actually turn the
-> READA into a transient failure (which I think is mostly true today, there
-> weren't many READA tests in the code I could see).
+What you are suggesting in your mail is something the rt2x00 project did for 5 years, we stopped
+with that 4 months ago because it wasn't working out. Apparently you have more experience in this
+matter so I hope you will find a way to make that solution work out.
 
-Well, is it a hint to the elevator or to the driver (or both)?  The one
-bug I remember regarding READA failing was due to the FAILFAST bit
-getting set for READA I/O, and the powerpath driver returning a failure.
-Is that the bug to which you are referring?
+If you want to maintain the legacy drivers then do it, start a new project and start maintaining
+the code. I can forward you all the users with complains about the "good enough" drivers. It is
+good to know that you apparently have the resources to maintain the old drivers. 
+Most people who are helping with the rt2800pci/usb drivers lack the required time to boost the driver
+into such a state it can be widely adopted. But every time it amazes me that the people who want
+to develop and have the time to do it, all want to jump on the old Ralink code... Apparently there
+is some appeal to maintaining crap rather then helping to ship out proper drivers to the users.
 
-Cheers,
-Jeff
+But I'll shut up now, as I said this discussion is held every few months, so perhaps that when
+the discussion is started again in a couple of months I am more interested in a lengthy reply.
+
+Ivo
