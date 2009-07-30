@@ -1,258 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbZG3WZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753056AbZG3W0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752946AbZG3WZd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 18:25:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbZG3WZc
+	id S1753056AbZG3W0x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 18:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbZG3W0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 18:25:32 -0400
-Received: from chip2og113.obsmtp.com ([64.18.13.75]:38884 "HELO
-	chip2og113.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752459AbZG3WZb convert rfc822-to-8bit (ORCPT
+	Thu, 30 Jul 2009 18:26:52 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:52274 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752516AbZG3W0v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 18:25:31 -0400
-X-Greylist: delayed 428 seconds by postgrey-1.27 at vger.kernel.org; Thu, 30 Jul 2009 18:25:30 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 30 Jul 2009 18:26:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=oJhsNm7OCsFvREUJJPemw2clvyKR996K86TCiRb/g+qIAfXe3SjoAlaGPfK6DZ1BZd
+         QpKt+06UmaSbMUDD9HyfTT09XbYi0b6YOf+XFHj/txRjsKOZEG7/v8LgVpIbs4Y0WTCg
+         YXpxJxvocWf/i4vJyN162y68e2U6anfM/By3c=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH] pcnet32: VLB support fixes
+Date: Fri, 31 Jul 2009 00:25:44 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc3-next-20090722-04415-ge5aa24a-dirty; KDE/4.2.4; i686; ; )
+Cc: Don Fry <pcnet32@verizon.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Dan Carpenter <error27@gmail.com>,
+       corbet@lwn.net, eteo@redhat.com, Julia Lawall <julia@diku.dk>
+References: <200907302317.52648.bzolnier@gmail.com> <200907302346.26017.bzolnier@gmail.com> <4A721768.2060102@garzik.org>
+In-Reply-To: <4A721768.2060102@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH 1/1] [ARM] ep93xx clockevent support
-Date: Thu, 30 Jul 2009 18:18:20 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901B77371@mi8nycmail19.Mi8.com>
-In-Reply-To: <1248257565-11333-1-git-send-email-b33fc0d3@gentoo.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/1] [ARM] ep93xx clockevent support
-Thread-Index: AcoKtfDPeJvW/43qTk6vhRgkIsJwSgGq/eEg
-References: <1248253786-18993-2-git-send-email-b33fc0d3@gentoo.org> <1248257565-11333-1-git-send-email-b33fc0d3@gentoo.org>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "Ahmed Ammar" <b33fc0d3@gentoo.org>, <linux-kernel@vger.kernel.org>
-Cc: <linux-arm-kernel@lists.arm.linux.org.uk>,
-       "Ahmed Ammar" <aammar@edge-techno.com>
-X-OriginalArrivalTime: 30 Jul 2009 22:18:22.0790 (UTC) FILETIME=[A6981660:01CA1163]
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200907310025.44576.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, July 22, 2009 3:13 AM, Ahmed Ammar wrote:
-> From: Ahmed Ammar <aammar@edge-techno.com>
+On Thursday 30 July 2009 23:58:00 Jeff Garzik wrote:
+> Bartlomiej Zolnierkiewicz wrote:
+> > On Thursday 30 July 2009 23:32:19 Jeff Garzik wrote:
+> >> Bartlomiej Zolnierkiewicz wrote:
+> >>> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> >>> Subject: [PATCH] pcnet32: VLB support fixes
+> >>>
+> >>> VLB support has been broken since at least 2004-2005 period as some
+> >>> changes introduced back then assumed that ->pci_dev is always valid,
+> >>> lets try to fix it:
+> >>>
+> >>> - remove duplicated SET_NETDEV_DEV() call
+> >>>
+> >>> - call SET_NETDEV_DEV() only for PCI devices
+> >>>
+> >>> - check for ->pci_dev validity in pcnet32_open()
+> >>>
+> >>> [ Alternatively we may consider removing VLB support but there would not
+> >>>   be much gain in it since an extra driver code needed for VLB support is
+> >>>   minimal and quite simple. ]
+> >>>
+> >>> This takes care of the following entry from Dan's list:
+> >>>
+> >>> drivers/net/pcnet32.c +1889 pcnet32_probe1(298) warning: variable derefenced before check 'pdev'
+> >>>
+> >>> Reported-by: Dan Carpenter <error27@gmail.com>
+> >>> Cc: corbet@lwn.net
+> >>> Cc: eteo@redhat.com
+> >>> Cc: Julia Lawall <julia@diku.dk>
+> >>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> >>> ---
+> >>> PS I still keep the original cc: list from the smatch thread -- please let
+> >>> me know if you don't want to be spammed.. ;-)
+> >>>
+> >>>  drivers/net/pcnet32.c |   12 +++++++-----
+> >>>  1 file changed, 7 insertions(+), 5 deletions(-)
+> >> ACK -- the patch is correct AFAICS -- but would it not be better to have 
+> >> a struct device for the VLB device?
+> > 
+> > Sure, such addition would be needed for sysfs support on VLB devices..
 > 
-> Based on previous work by Thomas Gleixner.
 > 
-> Signed-off-by: Ahmed Ammar <aammar@edge-techno.com>
-
-Hmm..  With kernel 2.6.30.2 this does not build.  See below.
-
-> ---
->  arch/arm/Kconfig                                |    2 +
->  arch/arm/mach-ep93xx/core.c                     |  130 ++++++++++++++++++-----
->  arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h |    6 +
->  3 files changed, 112 insertions(+), 26 deletions(-)
+> >> We have capability to create struct device for isa and eisa, so VLB is 
+> >> quite doable.
+> >>
+> >> 	Jeff, who converted old-ISDN ISA+EISA+PCI drivers to
+> >> 	      hotplug model, once upon a time
+> > 
+> > ..and it seems that you've the needed experience! :)
 > 
-> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-> index 74713a5..f33fd06 100644
-> --- a/arch/arm/Kconfig
-> +++ b/arch/arm/Kconfig
-> @@ -273,6 +273,8 @@ config ARCH_EP93XX
->  	select HAVE_CLK
->  	select COMMON_CLKDEV
->  	select ARCH_REQUIRE_GPIOLIB
-> +	select GENERIC_TIME
-> +	select GENERIC_CLOCKEVENTS
->  	help
->  	  This enables support for the Cirrus EP93xx series of CPUs.
->  
-> diff --git a/arch/arm/mach-ep93xx/core.c b/arch/arm/mach-ep93xx/core.c
-> index 7983a3b..cbd9187 100644
-> --- a/arch/arm/mach-ep93xx/core.c
-> +++ b/arch/arm/mach-ep93xx/core.c
-> @@ -33,6 +33,9 @@
->  #include <linux/termios.h>
->  #include <linux/amba/bus.h>
->  #include <linux/amba/serial.h>
-> +#include <linux/clocksource.h>
-> +#include <linux/clockchips.h>
-> +
->  #include <linux/io.h>
->  #include <linux/i2c.h>
->  #include <linux/i2c-gpio.h>
-> @@ -100,55 +103,130 @@ void __init ep93xx_map_io(void)
->   * to use this timer for something else.  We also use timer 4 for keeping
->   * track of lost jiffies.
->   */
-> -static unsigned int last_jiffy_time;
-> -
-> -#define TIMER4_TICKS_PER_JIFFY		((CLOCK_TICK_RATE + (HZ/2)) / HZ)
->  
->  static irqreturn_t ep93xx_timer_interrupt(int irq, void *dev_id)
->  {
-> -	__raw_writel(1, EP93XX_TIMER1_CLEAR);
-> -	while ((signed long)
-> -		(__raw_readl(EP93XX_TIMER4_VALUE_LOW) - last_jiffy_time)
-> -						>= TIMER4_TICKS_PER_JIFFY) {
-> -		last_jiffy_time += TIMER4_TICKS_PER_JIFFY;
-> -		timer_tick();
-> -	}
-> -
-> +	struct clock_event_device *evt = dev_id;
-> + 	__raw_writel(EP93XX_TC_CLEAR, EP93XX_TIMER1_CLEAR);
-> +	evt->event_handler(evt);
+> <grin>  In my esteemed experience, I point you to the 39-line 
+> include/linux/isa.h as a starting point for grep...  :)
 
-Here I get "error: dereferencing pointer to incomplete type" 
+Send patches.
 
->  	return IRQ_HANDLED;
->  }
-> 
-> + 
-> +static int ep93xx_set_next_event(unsigned long evt,
-> +				  struct clock_event_device *unused)
-> +{
-> +	u32 tmode = __raw_readl(EP93XX_TIMER1_CONTROL);
-> +
-> +	/* stop timer */
-> +	__raw_writel(tmode & ~EP93XX_TC123_ENABLE, EP93XX_TIMER1_CONTROL);
-> +	/* program timer */
-> +	__raw_writel(evt, EP93XX_TIMER1_LOAD);
-> +	/* start timer */
-> +	__raw_writel(tmode | EP93XX_TC123_ENABLE, EP93XX_TIMER1_CONTROL);
-> +
-> +	return 0;
-> +}
-> +
-> +static void ep93xx_set_mode(enum clock_event_mode mode,
-> +			    struct clock_event_device *evt)
-> +{
-> +	u32 tmode = EP93XX_TC123_SEL_508KHZ;
-> +	/* Disable timer */
-> +	__raw_writel(tmode, EP93XX_TIMER1_CONTROL);
-> +
-> +	switch(mode) {
-> +	case CLOCK_EVT_MODE_PERIODIC:
-> +		/* Set timer period  */
-> +		__raw_writel((508469 / HZ) - 1, EP93XX_TIMER1_LOAD);
-> +		tmode |= EP93XX_TC123_PERIODIC;
-> +
-> +	case CLOCK_EVT_MODE_ONESHOT:
-> +		tmode |= EP93XX_TC123_ENABLE;
-> +		__raw_writel(tmode, EP93XX_TIMER1_CONTROL);
-> +		break;
-> +
-> +	case CLOCK_EVT_MODE_SHUTDOWN:
-> +	case CLOCK_EVT_MODE_UNUSED:
-> +	case CLOCK_EVT_MODE_RESUME:
-> +		return;
-> +	}
-> +}
-> +
-> +static struct clock_event_device clockevent_ep93xx = {
-> +	.name		= "ep93xx-timer1",
-> +	.features	= CLOCK_EVT_FEAT_ONESHOT | CLOCK_EVT_FEAT_PERIODIC,
-> +	.shift		= 32,
-> +	.set_mode	= ep93xx_set_mode,
-> +	.set_next_event	= ep93xx_set_next_event,
-> +};
-> +
->  static struct irqaction ep93xx_timer_irq = {
->  	.name		= "ep93xx timer",
->  	.flags		= IRQF_DISABLED | IRQF_TIMER | IRQF_IRQPOLL,
->  	.handler	= ep93xx_timer_interrupt,
-> +	.dev_id 	= &clockevent_ep93xx,
->  };
->  
-> -static void __init ep93xx_timer_init(void)
-> +static void __init ep93xx_clockevent_init(void)
->  {
-> -	/* Enable periodic HZ timer.  */
-> -	__raw_writel(0x48, EP93XX_TIMER1_CONTROL);
-> -	__raw_writel((508469 / HZ) - 1, EP93XX_TIMER1_LOAD);
-> -	__raw_writel(0xc8, EP93XX_TIMER1_CONTROL);
-> +	setup_irq(IRQ_EP93XX_TIMER1, &ep93xx_timer_irq);
-> +	clockevent_ep93xx.mult = div_sc(508469, NSEC_PER_SEC,
-> +					clockevent_ep93xx.shift);
-> +	clockevent_ep93xx.max_delta_ns =
-> +		clockevent_delta2ns(0xfffffffe, &clockevent_ep93xx);
-> +	clockevent_ep93xx.min_delta_ns =
-> +		clockevent_delta2ns(0xf, &clockevent_ep93xx);
-> +	clockevent_ep93xx.cpumask = cpumask_of(0);
-> +	clockevents_register_device(&clockevent_ep93xx);
-> +}
->  
-> -	/* Enable lost jiffy timer.  */
-> -	__raw_writel(0x100, EP93XX_TIMER4_VALUE_HIGH);
-> +/*
-> + * timer4 is a 40 Bit timer, separated in a 32bit and a 8 bit
-> + * register, EP93XX_TIMER4_VALUE_LOW stores 32 bit word. The
-> + * controlregister is in EP93XX_TIMER4_VALUE_HIGH
-> + */
->  
-> -	setup_irq(IRQ_EP93XX_TIMER1, &ep93xx_timer_irq);
-> +cycle_t ep93xx_get_cycles(void)
-> +{
-> +	return __raw_readl(EP93XX_TIMER4_VALUE_LOW);
->  }
->  
-> -static unsigned long ep93xx_gettimeoffset(void)
-> +static struct clocksource clocksource_ep93xx = {
-> +	.name		= "ep93xx_timer4",
-> +	.rating		= 200,
-> +	.read		= ep93xx_get_cycles,
-
-Here I get "warning: initialization from incompatible pointer type"
-
-> +	.mask		= 0xFFFFFFFF,
-> +	.shift		= 20,
-> +	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
-> +};
-> +
-> +/*
-> + * Returns current time from boot in nsecs. It's OK for this to wrap
-> + * around for now, as it's just a relative time stamp.
-> + */
-> +unsigned long long sched_clock(void)
->  {
-> -	int offset;
-> +	return cyc2ns(&clocksource_ep93xx, ep93xx_get_cycles());
-> +}
->  
-> -	offset = __raw_readl(EP93XX_TIMER4_VALUE_LOW) - last_jiffy_time;
-> +static void __init ep93xx_clocksource_init(void)
-> +{
-> +	/* Reset time-stamp counter */
-> +	__raw_writel(0x100, EP93XX_TIMER4_VALUE_HIGH);
-> +	clocksource_ep93xx.mult =
-> +		clocksource_hz2mult(983040, clocksource_ep93xx.shift);
-> +	clocksource_register(&clocksource_ep93xx);
-> +}
->  
-> -	/* Calculate (1000000 / 983040) * offset.  */
-> -	return offset + (53 * offset / 3072);
-> +static void __init ep93xx_timer_init(void)
-> +{
-> +	ep93xx_clocksource_init();
-> +	ep93xx_clockevent_init();
->  }
->  
->  struct sys_timer ep93xx_timer = {
-> -	.init		= ep93xx_timer_init,
-> -	.offset		= ep93xx_gettimeoffset,
-> + 	.init			= ep93xx_timer_init,
->  };
->  
->  
-> diff --git a/arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h b/arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h
-> index 36c23fb..473cdec 100644
-> --- a/arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h
-> +++ b/arch/arm/mach-ep93xx/include/mach/ep93xx-regs.h
-> @@ -101,6 +101,12 @@
->  #define EP93XX_TIMER3_CONTROL		EP93XX_TIMER_REG(0x88)
->  #define EP93XX_TIMER3_CLEAR		EP93XX_TIMER_REG(0x8c)
->  
-> +#define EP93XX_TC_CLEAR			0x00000001
-> +#define EP93XX_TC123_ENABLE		0x00000080
-> +#define EP93XX_TC123_PERIODIC		0x00000040
-> +#define EP93XX_TC123_SEL_508KHZ		0x00000008
-> +#define EP93XX_TC4_ENABLE		0x00000100
-> +
->  #define EP93XX_I2S_BASE			(EP93XX_APB_VIRT_BASE + 0x00020000)
->  
->  #define EP93XX_SECURITY_BASE		(EP93XX_APB_VIRT_BASE + 0x00030000)
+I don't have a time/motivation for enhancing VLB support, not even
+mentioning the access to hardware needed to test such changes..
