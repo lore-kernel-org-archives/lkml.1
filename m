@@ -1,116 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752774AbZGaNQD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752667AbZGaNTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752774AbZGaNQD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 09:16:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbZGaNQB
+	id S1752667AbZGaNTl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 09:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbZGaNTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 09:16:01 -0400
-Received: from sg2ehsobe002.messaging.microsoft.com ([207.46.51.76]:36780 "EHLO
-	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752665AbZGaNQB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 09:16:01 -0400
-X-SpamScore: 3
-X-BigFish: VPS3(zzzz1202hzzz32i203h87h43j63h)
-X-Spam-TCS-SCL: 2:0
-X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KNNE61-03-UQG-01
-From: Robert Richter <robert.richter@amd.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Robert Richter <robert.richter@amd.com>,
-       Steven Rostedt <rostedt@goodmis.org>, <stable@kernel.org>
-Subject: [PATCH] ring-buffer: Fix advance of reader in rb_buffer_peek()
-Date: Fri, 31 Jul 2009 14:56:03 +0200
-Message-ID: <1249044963-26878-1-git-send-email-robert.richter@amd.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <alpine.DEB.2.00.0907271601210.30108@gandalf.stny.rr.com>
-References: <alpine.DEB.2.00.0907271601210.30108@gandalf.stny.rr.com>
-X-OriginalArrivalTime: 31 Jul 2009 13:14:10.0864 (UTC) FILETIME=[CAF15300:01CA11E0]
+	Fri, 31 Jul 2009 09:19:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48900 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752293AbZGaNTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 09:19:39 -0400
+Date: Fri, 31 Jul 2009 09:18:13 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, ryov@valinux.co.jp, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org
+Subject: Re: [PATCH 05/24] io-controller: Modify cfq to make use of flat
+	elevator fair queuing
+Message-ID: <20090731131813.GB3668@redhat.com>
+References: <1248467274-32073-1-git-send-email-vgoyal@redhat.com> <1248467274-32073-6-git-send-email-vgoyal@redhat.com> <4A713E10.2030204@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A713E10.2030204@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When calling rb_buffer_peek() from ring_buffer_consume() and a padding
-event is returned, the function rb_advance_reader() is called
-twice. This may lead to missing samples or under high workloads to the
-warning below. This patch fixes this. If a padding event is returned
-by rb_buffer_peek() it will be consumed by the calling function now.
+On Thu, Jul 30, 2009 at 02:30:40PM +0800, Gui Jianfeng wrote:
+> Vivek Goyal wrote:
+> ...
+> >  /*
+> >   * Check if new_cfqq should preempt the currently active queue. Return 0 for
+> > - * no or if we aren't sure, a 1 will cause a preempt.
+> > + * no or if we aren't sure, a 1 will cause a preemption attempt.
+> > + * Some of the preemption logic has been moved to common layer. Only cfq
+> > + * specific parts are left here.
+> >   */
+> >  static int
+> > -cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
+> > -		   struct request *rq)
+> > +cfq_should_preempt(struct request_queue *q, void *new_cfqq, struct request *rq)
+> >  {
+> > -	struct cfq_queue *cfqq;
+> > +	struct cfq_data *cfqd = q->elevator->elevator_data;
+> > +	struct cfq_queue *cfqq = elv_active_sched_queue(q->elevator);
+> >  
+> > -	cfqq = cfqd->active_queue;
+> >  	if (!cfqq)
+> >  		return 0;
+> >  
+> > -	if (cfq_slice_used(cfqq))
+> > +	if (elv_ioq_slice_used(cfqq->ioq))
+> >  		return 1;
+> >  
+> >  	if (cfq_class_idle(new_cfqq))
+> > @@ -2018,13 +1661,7 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
+> >  	if (rq_is_meta(rq) && !cfqq->meta_pending)
+> >  		return 1;
+> >  
+> > -	/*
+> > -	 * Allow an RT request to pre-empt an ongoing non-RT cfqq timeslice.
+> > -	 */
+> > -	if (cfq_class_rt(new_cfqq) && !cfq_class_rt(cfqq))
+> > -		return 1;
+> > -
+> > -	if (!cfqd->active_cic || !cfq_cfqq_wait_request(cfqq))
+> > +	if (!cfqd->active_cic || !elv_ioq_wait_request(cfqq->ioq))
+> >  		return 0;
+> >  
+> >  	/*
+> 
+> Hi Vivek,
+> 
+> cfq_should_preempt() will do the check "if (cfq_rq_close(cfqd, rq)) to see whether
+> it should preempt the current cfqq. From fairness point of view,  should we also 
+> check "fairness" value, if it's set fairness == 1, don't allow to preempt the current
+> cfqq?
 
-Also, I simplified some code in ring_buffer_consume().
+Hi Gui,
 
-------------[ cut here ]------------
-WARNING: at /dev/shm/.source/linux/kernel/trace/ring_buffer.c:2289 rb_advance_reader+0x2e/0xc5()
-Hardware name: Anaheim
-Modules linked in:
-Pid: 29, comm: events/2 Tainted: G        W  2.6.31-rc3-oprofile-x86_64-standard-00059-g5050dc2 #1
-Call Trace:
-[<ffffffff8106776f>] ? rb_advance_reader+0x2e/0xc5
-[<ffffffff81039ffe>] warn_slowpath_common+0x77/0x8f
-[<ffffffff8103a025>] warn_slowpath_null+0xf/0x11
-[<ffffffff8106776f>] rb_advance_reader+0x2e/0xc5
-[<ffffffff81068bda>] ring_buffer_consume+0xa0/0xd2
-[<ffffffff81326933>] op_cpu_buffer_read_entry+0x21/0x9e
-[<ffffffff810be3af>] ? __find_get_block+0x4b/0x165
-[<ffffffff8132749b>] sync_buffer+0xa5/0x401
-[<ffffffff810be3af>] ? __find_get_block+0x4b/0x165
-[<ffffffff81326c1b>] ? wq_sync_buffer+0x0/0x78
-[<ffffffff81326c76>] wq_sync_buffer+0x5b/0x78
-[<ffffffff8104aa30>] worker_thread+0x113/0x1ac
-[<ffffffff8104dd95>] ? autoremove_wake_function+0x0/0x38
-[<ffffffff8104a91d>] ? worker_thread+0x0/0x1ac
-[<ffffffff8104dc9a>] kthread+0x88/0x92
-[<ffffffff8100bdba>] child_rip+0xa/0x20
-[<ffffffff8104dc12>] ? kthread+0x0/0x92
-[<ffffffff8100bdb0>] ? child_rip+0x0/0x20
----[ end trace f561c0a58fcc89bd ]---
+In V7, fairness=1 means that we try to dispatch request only from one
+queue at a time and wait for requests to finish from that queue before
+next queue is scheduled in. This helps in better disk time accounting for the
+queue.
 
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: <stable@kernel.org>
-Signed-off-by: Robert Richter <robert.richter@amd.com>
----
- kernel/trace/ring_buffer.c |   10 ++++------
- 1 files changed, 4 insertions(+), 6 deletions(-)
+But currently this is not true for preemption path. So if we decide to
+preempt the current queue (either by elevator layer or by cfq), we expire
+the queue immediately and bring in the new one. So this is just not
+cfq_rq_close() but the whole preemption path.
 
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index bf27bb7..6eb8b97 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -2383,7 +2383,6 @@ rb_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
- 		 * the box. Return the padding, and we will release
- 		 * the current locks, and try again.
- 		 */
--		rb_advance_reader(cpu_buffer);
- 		return event;
- 
- 	case RINGBUF_TYPE_TIME_EXTEND:
-@@ -2519,6 +2518,8 @@ ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
- 	if (dolock)
- 		spin_lock(&cpu_buffer->reader_lock);
- 	event = rb_buffer_peek(buffer, cpu, ts);
-+	if (event && event->type_len == RINGBUF_TYPE_PADDING)
-+		rb_advance_reader(cpu_buffer);
- 	if (dolock)
- 		spin_unlock(&cpu_buffer->reader_lock);
- 	local_irq_restore(flags);
-@@ -2590,12 +2591,9 @@ ring_buffer_consume(struct ring_buffer *buffer, int cpu, u64 *ts)
- 		spin_lock(&cpu_buffer->reader_lock);
- 
- 	event = rb_buffer_peek(buffer, cpu, ts);
--	if (!event)
--		goto out_unlock;
--
--	rb_advance_reader(cpu_buffer);
-+	if (event)
-+		rb_advance_reader(cpu_buffer);
- 
-- out_unlock:
- 	if (dolock)
- 		spin_unlock(&cpu_buffer->reader_lock);
- 	local_irq_restore(flags);
--- 
-1.6.3.3
+Currently I will leave it as it is but if we run into significant issues, 
+then we can fix it. It will require extra logic of keeping track that
+current queue has been preempted. Also keep track who preempted etc and
+as soon as last request from queue completes, expire it.
 
-
+Thanks
+Vivek
