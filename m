@@ -1,84 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbZGaViK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302AbZGaVit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753240AbZGaViK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 17:38:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbZGaViJ
+	id S1753302AbZGaVit (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 17:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbZGaVis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 17:38:09 -0400
-Received: from mail.windriver.com ([147.11.1.11]:38831 "EHLO mail.wrs.com"
+	Fri, 31 Jul 2009 17:38:48 -0400
+Received: from are.twiddle.net ([75.149.56.221]:46197 "EHLO are.twiddle.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753190AbZGaViI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 17:38:08 -0400
-Message-ID: <4A736380.8030101@windriver.com>
-Date: Fri, 31 Jul 2009 16:34:56 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	id S1751464AbZGaViq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 17:38:46 -0400
+Message-ID: <4A736460.5070509@twiddle.net>
+Date: Fri, 31 Jul 2009 14:38:40 -0700
+From: Richard Henderson <rth@twiddle.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dbrownell@users.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Yinghai Lu <yinghai@kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 07/10] ehci-dbgp,ehci: Allow early or late use of the
- dbgp device
-References: <Pine.LNX.4.44L0.0907311448460.2643-100000@iolanthe.rowland.org> <4A7355EA.60107@windriver.com>
-In-Reply-To: <4A7355EA.60107@windriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Tim Abbott <tabbott@ksplice.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Anders Kaseorg <andersk@ksplice.com>,
+       Nelson Elhage <nelhage@ksplice.com>, linux-alpha@vger.kernel.org
+Subject: Re: [PATCH 1/2] alpha: use .data.init_task instead of .data.init_thread.
+References: <1249073786-29788-1-git-send-email-tabbott@ksplice.com> <4A7360C3.2060507@twiddle.net>
+In-Reply-To: <4A7360C3.2060507@twiddle.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 31 Jul 2009 21:34:58.0442 (UTC) FILETIME=[C0B1DEA0:01CA1226]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
-> What happens across a system suspend?
->
->   
+On 07/31/2009 02:23 PM, Richard Henderson wrote:
+> Similarly it is *not* a bug that the page_aligned sections were before
+> data, because we already knew we had 2 page alignment from the end of
+> init + 2 pages of init_thread.
 
-I assume you mean as a test case:
+Indeed, I'll go further and say that the common definition of 
+RW_DATA_SECTION is buggy.
 
-echo -n mem > /sys/power/state
+> #define RW_DATA_SECTION(cacheline, nosave, pagealigned, inittask)       \
+>         . = ALIGN(PAGE_SIZE);                                           \
+>         .data : AT(ADDR(.data) - LOAD_OFFSET) {                         \
+>                 INIT_TASK(inittask)                                     \
+>                 CACHELINE_ALIGNED_DATA(cacheline)                       \
+>                 READ_MOSTLY_DATA(cacheline)                             \
+>                 DATA_DATA                                               \
+>                 CONSTRUCTORS                                            \
+>                 NOSAVE_DATA(nosave)                                     \
+>                 PAGE_ALIGNED_DATA(pagealigned)                          \
+>         }
 
-The dbgp device goes away entirely, when used with
-earlyprintk=dbgp,keep.  But there is a way to fix it reasonably
-easily.  Perhaps you might ack this resume patch, if you agree?
+Given that we align the entire .data section why have interior padding 
+to re-align for page-aligned data?  Surely a better ordering would be
 
-Jason.
+	. = ALIGN(PAGE_SIZE);
+	.data : AT(ADDR(.data) - LOAD_OFFSET) {
+		INIT_TASK(inittask)
+		NOSAVE_DATA
+		PAGE_ALIGNED_DATA(pagealigned)
+		CACHELINE_ALIGNED_DATA(cacheline)
+		READ_MOSTLY_DATA(cacheline)
+		DATA_DATA
+		CONSTRUCTORS
+	}
 
----
-From: Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH] ehci-dbgp,ehci: Allow dbpg to work with suspend/resume
+with that change, and without
 
-In order for the dbgp driver to survive suspend/resume, on every ehci
-resume operation the debug controller must get re-initialized.
+> -	. = ALIGN(2 * PAGE_SIZE);
+> +	. = ALIGN(PAGE_SIZE);
+>  	__init_end = .;
 
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-Cc: Greg KH <gregkh@suse.de>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: dbrownell@users.sourceforge.net
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Yinghai Lu <yinghai@kernel.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+the patch looks like it'd be ok.  All you're doing with this fragment is 
+failing to free a page of padding.  You could change it to
 
----
- drivers/usb/host/ehci-hub.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+	. = ALIGN(THREAD_SIZE)
 
---- a/drivers/usb/host/ehci-hub.c
-+++ b/drivers/usb/host/ehci-hub.c
-@@ -204,6 +204,13 @@ static int ehci_bus_resume (struct usb_h
- 		return -ESHUTDOWN;
- 	}
- 
-+	if (unlikely(ehci->debug)) {
-+		if (ehci->debug && !dbgp_reset_prep())
-+			ehci->debug = NULL;
-+		else
-+			dbgp_external_startup();
-+	}
-+
- 	/* Ideally and we've got a real resume here, and no port's power
- 	 * was lost.  (For PCI, that means Vaux was maintained.)  But we
- 	 * could instead be restoring a swsusp snapshot -- so that BIOS was
+if it makes you feel better.
+
+
+r~
