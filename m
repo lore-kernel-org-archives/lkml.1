@@ -1,126 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbZGaSpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbZGaSxG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752832AbZGaSpo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 14:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbZGaSpo
+	id S1752875AbZGaSxG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 14:53:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbZGaSxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 14:45:44 -0400
-Received: from vms173001pub.verizon.net ([206.46.173.1]:10731 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752722AbZGaSpn (ORCPT
+	Fri, 31 Jul 2009 14:53:06 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:45199 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752296AbZGaSxF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 14:45:43 -0400
-Subject: Re: [PATCH] pcnet32: VLB support fixes
-From: Don Fry <pcnet32@verizon.net>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Dan Carpenter <error27@gmail.com>, corbet@lwn.net, eteo@redhat.com,
-       Julia Lawall <julia@diku.dk>
-In-reply-to: <200907302317.52648.bzolnier@gmail.com>
-References: <200907302317.52648.bzolnier@gmail.com>
-Content-type: text/plain
-Date: Fri, 31 Jul 2009 11:45:29 -0700
-Message-id: <1249065929.4229.3.camel@localhost.localdomain>
-MIME-version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10)
-Content-transfer-encoding: 7bit
+	Fri, 31 Jul 2009 14:53:05 -0400
+Date: Fri, 31 Jul 2009 14:53:03 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jason Wessel <jason.wessel@windriver.com>
+cc: gregkh@suse.de, <linux-usb@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <dbrownell@users.sourceforge.net>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 07/10] ehci-dbgp,ehci: Allow early or late use of the
+ dbgp device
+In-Reply-To: <4A73284B.6030903@windriver.com>
+Message-ID: <Pine.LNX.4.44L0.0907311448460.2643-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by:  Don Fry <pcnet32@verizon.net>
----
-I do not have any VLB hardware to test this, which is why I probably
-introduced the error in 2004/5.
+On Fri, 31 Jul 2009, Jason Wessel wrote:
 
------Original Message-----
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Don Fry <pcnet32@verizon.net>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, Dan Carpenter
-<error27@gmail.com>, corbet@lwn.net, eteo@redhat.com, Julia Lawall
-<julia@diku.dk>
-Subject: [PATCH] pcnet32: VLB support fixes
-Date: Thu, 30 Jul 2009 23:17:52 +0200
+> >> --- a/drivers/usb/host/ehci-hub.c
+> >> +++ b/drivers/usb/host/ehci-hub.c
+> >> @@ -816,6 +816,15 @@ static int ehci_hub_control (
+> >>      case SetPortFeature:
+> >>          selector = wIndex >> 8;
+> >>          wIndex &= 0xff;
+> >> +        if (unlikely(ehci->debug)) {
+> >
+> > Don't you need a similar test for ClearPortFeature?  Or does that not
+> > matter?
+> 
+> I guess it depends if the user space tries to poke it, and then
+> perhaps yes.  Do you know if that would be the case?
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] pcnet32: VLB support fixes
+It's extremely unlikely.
 
-VLB support has been broken since at least 2004-2005 period as some
-changes introduced back then assumed that ->pci_dev is always valid,
-lets try to fix it:
+> The rejection of the SetPortFeature at this level prevents the generic
+> hub code from activating the port, in so far as all my tests cases
+> show.
+> 
+> Given that it won't hurt anything to have the same code in the
+> ClearPortFeature I can put it in.
 
-- remove duplicated SET_NETDEV_DEV() call
+It probably doesn't matter.
 
-- call SET_NETDEV_DEV() only for PCI devices
+> >> +                retval = -ENODEV;
+> >> +                goto error_exit;
+> >
+> > This is the wrong return value.  You should return -EPIPE, i.e., goto
+> > error instead of error_exit.
+> 
+> 
+> Do you have some insight as to how to account for the not using the
+> port another way?  If I return -EPIPE, vs -ENODEV.  The kernel code
+> does very different things.  I chose -ENODEV based on the results
+> below.
+> 
+> With -ENODEV the kernel emits the following when trying to probe the
+> usb port with the dbgp device.
+> 
+> 
+> hub 2-0:1.0: cannot reset port 1 (err = -19)
+> hub 2-0:1.0: cannot reset port 1 (err = -19)
+> hub 2-0:1.0: cannot reset port 1 (err = -19)
+> hub 2-0:1.0: cannot reset port 1 (err = -19)
+> hub 2-0:1.0: unable to enumerate USB device on port 1
+> 
+> 
+> With returning -EPIPE you get this result.
+> 
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> USB Serial support registered for generic
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: Cannot enable port 1.  Maybe the USB cable is bad?
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: Cannot enable port 1.  Maybe the USB cable is bad?
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: Cannot enable port 1.  Maybe the USB cable is bad?
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: cannot reset port 1 (err = -32)
+> hub 2-0:1.0: Cannot enable port 1.  Maybe the USB cable is bad?
+> hub 2-0:1.0: unable to enumerate USB device on port 1
+> 
+> 
+> I was looking for the easiest maintainable approach to disabling the
+> physical port from getting reset by the HCD hub driver, which does
+> different things depending on the error code that is passed back.
 
-- check for ->pci_dev validity in pcnet32_open()
+Evidently I was wrong; -ENODEV is better.
 
-[ Alternatively we may consider removing VLB support but there would not
-  be much gain in it since an extra driver code needed for VLB support is
-  minimal and quite simple. ]
+> Knowing what happens with -EPIPE, would you still prefer it to be
+> changed that way?  Another possibility here is to implement the
+> restriction on the port reset another way, if you have any
+> suggestions.
+> 
+> In general folks may not need to use earlyprintk=dbpg,keep too often,
+> but it sure is nice when it works because you can use it as a full
+> console monitoring device after the /sbin/init handoff, including
+> debugging USB printk's because the usb debug controller driver is
+> completely separate.
 
-This takes care of the following entry from Dan's list:
+What happens across a system suspend?
 
-drivers/net/pcnet32.c +1889 pcnet32_probe1(298) warning: variable derefenced before check 'pdev'
-
-Reported-by: Dan Carpenter <error27@gmail.com>
-Cc: corbet@lwn.net
-Cc: eteo@redhat.com
-Cc: Julia Lawall <julia@diku.dk>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-PS I still keep the original cc: list from the smatch thread -- please let
-me know if you don't want to be spammed.. ;-)
-
- drivers/net/pcnet32.c |   12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
-
-Index: b/drivers/net/pcnet32.c
-===================================================================
---- a/drivers/net/pcnet32.c
-+++ b/drivers/net/pcnet32.c
-@@ -1719,7 +1719,9 @@ pcnet32_probe1(unsigned long ioaddr, int
- 		ret = -ENOMEM;
- 		goto err_release_region;
- 	}
--	SET_NETDEV_DEV(dev, &pdev->dev);
-+
-+	if (pdev)
-+		SET_NETDEV_DEV(dev, &pdev->dev);
- 
- 	if (pcnet32_debug & NETIF_MSG_PROBE)
- 		printk(KERN_INFO PFX "%s at %#3lx,", chipname, ioaddr);
-@@ -1818,7 +1820,6 @@ pcnet32_probe1(unsigned long ioaddr, int
- 
- 	spin_lock_init(&lp->lock);
- 
--	SET_NETDEV_DEV(dev, &pdev->dev);
- 	lp->name = chipname;
- 	lp->shared_irq = shared;
- 	lp->tx_ring_size = TX_RING_SIZE;	/* default tx ring size */
-@@ -2089,6 +2090,7 @@ static void pcnet32_free_ring(struct net
- static int pcnet32_open(struct net_device *dev)
- {
- 	struct pcnet32_private *lp = netdev_priv(dev);
-+	struct pci_dev *pdev = lp->pci_dev;
- 	unsigned long ioaddr = dev->base_addr;
- 	u16 val;
- 	int i;
-@@ -2149,9 +2151,9 @@ static int pcnet32_open(struct net_devic
- 	lp->a.write_csr(ioaddr, 124, val);
- 
- 	/* Allied Telesyn AT 2700/2701 FX are 100Mbit only and do not negotiate */
--	if (lp->pci_dev->subsystem_vendor == PCI_VENDOR_ID_AT &&
--	    (lp->pci_dev->subsystem_device == PCI_SUBDEVICE_ID_AT_2700FX ||
--	     lp->pci_dev->subsystem_device == PCI_SUBDEVICE_ID_AT_2701FX)) {
-+	if (pdev && pdev->subsystem_vendor == PCI_VENDOR_ID_AT &&
-+	    (pdev->subsystem_device == PCI_SUBDEVICE_ID_AT_2700FX ||
-+	     pdev->subsystem_device == PCI_SUBDEVICE_ID_AT_2701FX)) {
- 		if (lp->options & PCNET32_PORT_ASEL) {
- 			lp->options = PCNET32_PORT_FD | PCNET32_PORT_100;
- 			if (netif_msg_link(lp))
---
-To unsubscribe from this list: send the line "unsubscribe netdev" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Alan Stern
 
