@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753181AbZGaVnI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753204AbZGaVoJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753181AbZGaVnI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 17:43:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbZGaVnI
+	id S1753204AbZGaVoJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 17:44:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbZGaVoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 17:43:08 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:54744 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752945AbZGaVnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 17:43:07 -0400
-From: Nicolas Palix <npalix@diku.dk>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] Fix compilation error in amd.c when SMP is not set
-Date: Fri, 31 Jul 2009 23:36:44 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; i686; ; )
-Cc: x86@kernel.org, Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Ingo Molnar <mingo@redhat.com>, linux-kernel@vger.kernel.org
-References: <200907311640.25585.npalix@diku.dk> <4A7325E5.7040102@zytor.com>
-In-Reply-To: <4A7325E5.7040102@zytor.com>
+	Fri, 31 Jul 2009 17:44:08 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:45769 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753011AbZGaVoH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 17:44:07 -0400
+Date: Fri, 31 Jul 2009 22:44:01 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Roger Quadros <quadros.roger@gmail.com>
+Cc: pHilipp Zabel <philipp.zabel@gmail.com>, linux-kernel@vger.kernel.org
+Message-ID: <20090731214401.GC6335@sirena.org.uk>
+References: <1249057189-11992-1-git-send-email-quadros.roger@gmail.com>
+ <20090731172002.GA32578@rakim.wolfsonmicro.main>
+ <74d0deb30907311038w1b6cdd23iec3cfb2175fdedd0@mail.gmail.com>
+ <b90c0690907311332o958b7f4nd025aa7a8b273a88@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907312336.44778.npalix@diku.dk>
+In-Reply-To: <b90c0690907311332o958b7f4nd025aa7a8b273a88@mail.gmail.com>
+X-Cookie: Advancement in position.
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [PATCH v2] regulator: Add GPIO enable control to fixed voltage
+ regulator driver
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 31 July 2009 19:12:05 H. Peter Anvin wrote:
-> On 07/31/2009 07:40 AM, Nicolas Palix wrote:
-> > The function amd_fixup_dcm requires SMP to be set
-> > but it is called only when CONFIG_X86_HT is set.
-> > 
-> > It thus defined only if CONFIG_X86_HT is set.
-> > 
-> > Signed-off-by: Nicolas Palix <npalix@diku.dk>
-> 
-> I'm confused... I don't see this function anywhere in my trees, nor do I
-> see git revision e06fa7c that this was based on either in my trees or
-> the stable trees.  What is the base rev of this patch?
-> 
-> 	-hpa
-> 
+On Fri, Jul 31, 2009 at 11:32:32PM +0300, Roger Quadros wrote:
 
-It's in next, commit 29160dfe027e90532bd60a97db1dd158d996be8b.
+> Not having gpio_get_direction() in gpiolib is a limitation I think.
+> Can we just do the following for now ? (i.e. disable regulator by default)
+> Will there be any glitch? If yes, then how?
 
-It's broken since the 30 as also reported by
-http://kisskb.ellerman.id.au/kisskb/target/629/
-
-
--- 
-Nicolas Palix
+If you're going to do this then like I say you should make the default
+state controllable by platform data.  If we unconditionally disable the
+regulator then if, for example, the regulator is controlling the display
+backlight and it's on when Linux get controls then the user will see the
+backlight blink off then on during startup.
