@@ -1,112 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751655AbZGaHxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751413AbZGaIHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751655AbZGaHxb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 03:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbZGaHxb
+	id S1751413AbZGaIHb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 04:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbZGaIHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 03:53:31 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:55283 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750967AbZGaHxa (ORCPT
+	Fri, 31 Jul 2009 04:07:30 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:47619 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750774AbZGaIH2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 03:53:30 -0400
-Date: Fri, 31 Jul 2009 09:52:54 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: john stultz <johnstul@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Daniel Walker <dwalker@fifo99.com>
-Subject: Re: [RFC][patch 10/12] move NTP adjusted clock multiplier to struct
- timekeeper
-Message-ID: <20090731095254.3ed0cb7d@skybase>
-In-Reply-To: <1248991488.3374.14.camel@localhost>
-References: <20090729134125.313191633@de.ibm.com>
-	<20090729134231.515027738@de.ibm.com>
-	<1248991488.3374.14.camel@localhost>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 31 Jul 2009 04:07:28 -0400
+Date: Fri, 31 Jul 2009 10:07:28 +0200
+From: Andreas Mohr <andi@lisas.de>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: Robert Hancock <hancockrwd@gmail.com>, Andreas Mohr <andi@lisas.de>,
+       Corrado Zoccolo <czoccolo@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Subject: Re: Dynamic configure max_cstate
+Message-ID: <20090731080728.GA25049@rhlx01.hs-esslingen.de>
+References: <20090727073338.GA12669@rhlx01.hs-esslingen.de> <1248748935.2560.669.camel@ymzhang> <4e5e476b0907280020x242d9ef7gfa05c3d7b66f941f@mail.gmail.com> <1248771635.2560.682.camel@ymzhang> <20090728101135.GA22358@rhlx01.hs-esslingen.de> <4A726844.7040505@gmail.com> <1249024006.2560.735.camel@ymzhang>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249024006.2560.735.camel@ymzhang>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Jul 2009 15:04:48 -0700
-john stultz <johnstul@us.ibm.com> wrote:
+Hi,
 
-> On Wed, 2009-07-29 at 15:41 +0200, Martin Schwidefsky wrote:
-> > plain text document attachment (timekeeper-mult.diff)
-> > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+On Fri, Jul 31, 2009 at 03:06:46PM +0800, Zhang, Yanmin wrote:
+> On Thu, 2009-07-30 at 21:43 -0600, Robert Hancock wrote:
+> > On 07/28/2009 04:11 AM, Andreas Mohr wrote:
+> > > Oh, and about the places which submit I/O requests where one would have to
+> > > flag this: are they in any way correlated with the scheduler I/O wait
+> > > value? Would the I/O wait mechanism be a place to more easily and centrally
+> > > indicate that we're waiting for a request to come back in "very soon"?
+> > > OTOH I/O requests may have vastly differing delay expectations,
+> > > thus specifically only short-term expected I/O replies should be flagged,
+> > > otherwise we're wasting lots of ACPI deep idle opportunities.
 > > 
-> > The clocksource structure has two multipliers, the unmodified multiplier
-> > clock->mult_orig and the NTP corrected multiplier clock->mult. The NTP
-> > multiplier is misplaced in the struct clocksource, this is private
-> > information of the timekeeping code. Add the mult field to the struct
-> > timekeeper to contain the NTP corrected value, keep the unmodifed
-> > multiplier in clock->mult and remove clock->mult_orig. For consistency
-> > add the shift value associated with the NTP corrected mult value to
-> > struct timekeeper as well.
-> > 
-> > Cc: Ingo Molnar <mingo@elte.hu>
-> > Cc: Thomas Gleixner <tglx@linutronix.de>
-> > Cc: john stultz <johnstul@us.ibm.com>
-> > Cc: Daniel Walker <dwalker@fifo99.com>
-> > Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > ---
-> >  arch/arm/plat-omap/common.c |    2 +-
-> >  include/linux/clocksource.h |    4 +---
-> >  kernel/time/timekeeping.c   |   43 +++++++++++++++++++++++++------------------
-> >  3 files changed, 27 insertions(+), 22 deletions(-)
-> > 
-> > Index: linux-2.6/include/linux/clocksource.h
-> > ===================================================================
-> > --- linux-2.6.orig/include/linux/clocksource.h
-> > +++ linux-2.6/include/linux/clocksource.h
-> > @@ -149,8 +149,7 @@ extern u64 timecounter_cyc2time(struct t
-> >   * @disable:		optional function to disable the clocksource
-> >   * @mask:		bitmask for two's complement
-> >   *			subtraction of non 64 bit counters
-> > - * @mult:		cycle to nanosecond multiplier (adjusted by NTP)
-> > - * @mult_orig:		cycle to nanosecond multiplier (unadjusted by NTP)
-> > + * @mult:		cycle to nanosecond multiplier
-> >   * @shift:		cycle to nanosecond divisor (power of two)
-> >   * @flags:		flags describing special properties
-> >   * @vread:		vsyscall based read
-> > @@ -168,7 +167,6 @@ struct clocksource {
-> >  	void (*disable)(struct clocksource *cs);
-> >  	cycle_t mask;
-> >  	u32 mult;
-> > -	u32 mult_orig;
-> >  	u32 shift;
-> >  	unsigned long flags;
-> >  	cycle_t (*vread)(void);
-> > Index: linux-2.6/kernel/time/timekeeping.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/time/timekeeping.c
-> > +++ linux-2.6/kernel/time/timekeeping.c
-> > @@ -29,6 +29,8 @@ struct timekeeper {
-> >  	s64	ntp_error;
-> >  	int	xtime_shift;
-> >  	int	ntp_error_shift;
-> > +	u32	mult;			/* NTP adjusted clock multiplier */
-> > +	u32	shift;			/* NTP adjusted clock shift */
-> 
-> I'm a little confused here. NTP doesn't adjust the shift value. This
-> seems redundant with the xtime_shift value introduced in [patch 9/12].
+> > Did the results show a big difference in performance between maximum C2 
+> > and maximum C3? 
+> No big difference. I tried different max cstate by processor.max_cstate.
+> Mostly, processor.max_cstate=1 could get the similiar result like idle=poll.
 
-True the NTP code does not adjust the shift value. But mult and shift
-build a pair, no? I think it is more readable if we use timekeeper.mult 
-and timekeeper.shift instead of timekeeper.mult and clock->shift.
-And the xtime_shift does not need to be the same value as the clock
-shift - at least in theory. It is just a shift to increase precision. 
-Therefore I would like to use the xtime_shift and ntp_error_shift values
-exclusively as the shifts for the respective xtime_nsec and ntp_error
-values. Makes sense ?
+OK, but I'd say that this doesn't mean that we should implement a
+hard-coded mechanism which simply says "in such cases, don't do anything > C1".
+Instead we should strive for a far-reaching _generic_ mechanism
+which gathers average latencies of various I/O activities/devices
+and then uses some formula to determine the maximum (not necessarily ACPI)
+idle latency that we're willing to endure (e.g. average device I/O reply latency
+divided by 10 or so).
 
--- 
-blue skies,
-   Martin.
+And in addition to this, we should also take into account (read: skip)
+any idle states which kill busmaster DMA completely
+(in case of busmaster DMA I/O activities, that is).
 
-"Reality continues to ruin my life." - Calvin.
+_Lots_ of very nice opportunities for improvement here, I'd say...
+(in the 5, 10 or even 40% range in the case of certain network I/O)
 
+Andreas
