@@ -1,83 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752611AbZGaSEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752771AbZGaSK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752611AbZGaSEg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 14:04:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbZGaSEf
+	id S1752771AbZGaSK5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 14:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbZGaSK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 14:04:35 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:28466 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752063AbZGaSEe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 14:04:34 -0400
-Date: Fri, 31 Jul 2009 11:03:56 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: rusty@rustcorp.com.au, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, lguest@ozlabs.org,
-       sfr@canb.auug.org.au
-Subject: Re: [PATCH] next-20090730 lguest build breaks with pfn_pmd()
-Message-Id: <20090731110356.cd0bc550.randy.dunlap@oracle.com>
-In-Reply-To: <20090730120533.GB4955@linux.vnet.ibm.com>
-References: <20090729173611.b82478cd.sfr@canb.auug.org.au>
-	<20090730120533.GB4955@linux.vnet.ibm.com>
-Organization: Oracle Linux Eng.
+	Fri, 31 Jul 2009 14:10:56 -0400
+Received: from xenotime.net ([72.52.64.118]:52578 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751819AbZGaSK4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 14:10:56 -0400
+Date: Fri, 31 Jul 2009 11:10:45 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: devel@driverdev.osuosl.org, gregkh@suse.de
+Subject: [PATCH] staging/android/lowmemorykiller: fix module param errors
+Message-Id: <20090731111045.8dfd1ea5.rdunlap@xenotime.net>
+Organization: YPO4
 X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt005.oracle.com [141.146.116.14]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010207.4A73321B.00B9:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Jul 2009 17:35:33 +0530 Kamalesh Babulal wrote:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> Hi Rusty,
-> 
-> 	next-20090729 allmodconfig build breaks at
-> 
-> drivers/lguest/page_tables.c: In function 'setup_pagetables':
-> drivers/lguest/page_tables.c:987: error: incompatible type for argument 2 of 'pfn_pmd'
-> drivers/lguest/page_tables.c:994: error: expected ';' before ')' token
-> drivers/lguest/page_tables.c:994: error: expected statement before ')' token
-> make[2]: *** [drivers/lguest/page_tables.o] Error 1
-> 
-> build failure is introduced by commit e07dd6220a4bf81a2549e7e37523a2557547d9d7
-> I have tested the patch for the build failure only.
-> 
-> Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> --
->  drivers/lguest/page_tables.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/lguest/page_tables.c b/drivers/lguest/page_tables.c
-> index 8c86446..c610b82 100644
-> --- a/drivers/lguest/page_tables.c
-> +++ b/drivers/lguest/page_tables.c
-> @@ -984,14 +984,14 @@ static unsigned long setup_pagetables(struct lguest *lg,
->  	for (i = j = 0; i < mapped_pages && j < PTRS_PER_PMD;
->  	     i += PTRS_PER_PTE, j++) {
->  		pmd = pfn_pmd(((unsigned long)&linear[i] - mem_base)/PAGE_SIZE,
-> -			      _PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
-> +			      __pgrot(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+Move module_params to near the end of the source file so that
+their references are already known/defined.  Fixes build errors:
 
-s/__pgrot/__pgprot/
+drivers/staging/android/lowmemorykiller.c: In function '__check_cost':
+drivers/staging/android/lowmemorykiller.c:60: error: 'lowmem_shrinker' undeclared (first use in this function)
+drivers/staging/android/lowmemorykiller.c: At top level:
+drivers/staging/android/lowmemorykiller.c:60: error: 'lowmem_shrinker' undeclared here (not in a function)
+drivers/staging/android/lowmemorykiller.c:60: warning: type defaults to 'int' in declaration of 'type name'
 
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/staging/android/lowmemorykiller.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
->  
->  		if (copy_to_user(&pmds[j], &pmd, sizeof(pmd)) != 0)
->  			return -EFAULT;
->  	}
->  
->  	/* One PGD entry, pointing to that PMD page. */
-> -	pgd = __pgd(((unsigned long)pmds - mem_base) | _PAGE_PRESENT));
-> +	pgd = __pgd(((unsigned long)pmds - mem_base) | _PAGE_PRESENT);
->  	/* Copy it in as the first PGD entry (ie. addresses 0-1G). */
->  	if (copy_to_user(&pgdir[0], &pgd, sizeof(pgd)) != 0)
->  		return -EFAULT;
+--- linux-next-20090731.orig/drivers/staging/android/lowmemorykiller.c
++++ linux-next-20090731/drivers/staging/android/lowmemorykiller.c
+@@ -57,13 +57,6 @@ static int lowmem_minfree_size = 4;
+ 			printk(x);			\
+ 	} while (0)
+ 
+-module_param_named(cost, lowmem_shrinker.seeks, int, S_IRUGO | S_IWUSR);
+-module_param_array_named(adj, lowmem_adj, int, &lowmem_adj_size,
+-			 S_IRUGO | S_IWUSR);
+-module_param_array_named(minfree, lowmem_minfree, uint, &lowmem_minfree_size,
+-			 S_IRUGO | S_IWUSR);
+-module_param_named(debug_level, lowmem_debug_level, uint, S_IRUGO | S_IWUSR);
+-
+ static int lowmem_shrink(int nr_to_scan, gfp_t gfp_mask)
+ {
+ 	struct task_struct *p;
+@@ -166,6 +159,13 @@ static void __exit lowmem_exit(void)
+ 	unregister_shrinker(&lowmem_shrinker);
+ }
+ 
++module_param_named(cost, lowmem_shrinker.seeks, int, S_IRUGO | S_IWUSR);
++module_param_array_named(adj, lowmem_adj, int, &lowmem_adj_size,
++			 S_IRUGO | S_IWUSR);
++module_param_array_named(minfree, lowmem_minfree, uint, &lowmem_minfree_size,
++			 S_IRUGO | S_IWUSR);
++module_param_named(debug_level, lowmem_debug_level, uint, S_IRUGO | S_IWUSR);
++
+ module_init(lowmem_init);
+ module_exit(lowmem_exit);
+ 
+
 
 
 ---
