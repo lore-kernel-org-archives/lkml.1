@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753206AbZGaVCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753096AbZGaVBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753206AbZGaVCO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 17:02:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbZGaVCM
+	id S1753096AbZGaVBU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 17:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbZGaVBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 17:02:12 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:54589 "EHLO
+	Fri, 31 Jul 2009 17:01:18 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:54488 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752993AbZGaVCJ (ORCPT
+	by vger.kernel.org with ESMTP id S1752993AbZGaVBQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 17:02:09 -0400
+	Fri, 31 Jul 2009 17:01:16 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>, Anders Kaseorg <andersk@ksplice.com>,
        Nelson Elhage <nelhage@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 1/2] arm: convert to use __HEAD and HEAD_TEXT macros.
-Date: Fri, 31 Jul 2009 16:56:47 -0400
-Message-Id: <1249073808-29842-1-git-send-email-tabbott@ksplice.com>
+       Hirokazu Takata <takata@linux-m32r.org>
+Subject: [PATCH 1/3] m32r: Remove unused .altinstructions and .exit.* code from linker script.
+Date: Fri, 31 Jul 2009 16:58:05 -0400
+Message-Id: <1249073887-30086-1-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
@@ -26,69 +25,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This has the consequence of changing the section name used for head
-code from ".text.head" to ".head.text".  Since this commit changes all
-users in the architecture, this change should be harmless.
+It appears that m32r copied the .altinstructions definition from x86
+when the architecture was first merged into Linux.  m32r doesn't put
+anything in .altinstructions, so this is just dead code.
 
-The .text.head output section is eliminated and the head text code is
-included at the start of the .init output section.
+The following block affecting .exit.text/.exit.data, which has a
+comment also copied from x86, should also be deleted; the linker
+script later discards the .exit.text and .exit.data sections.
 
 Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Hirokazu Takata <takata@linux-m32r.org>
 ---
- arch/arm/kernel/head-nommu.S  |    2 +-
- arch/arm/kernel/head.S        |    2 +-
- arch/arm/kernel/vmlinux.lds.S |    8 +++-----
- 3 files changed, 5 insertions(+), 7 deletions(-)
+ arch/m32r/kernel/vmlinux.lds.S |    9 ---------
+ 1 files changed, 0 insertions(+), 9 deletions(-)
 
-diff --git a/arch/arm/kernel/head-nommu.S b/arch/arm/kernel/head-nommu.S
-index cc87e17..4f10d1c 100644
---- a/arch/arm/kernel/head-nommu.S
-+++ b/arch/arm/kernel/head-nommu.S
-@@ -32,7 +32,7 @@
-  * numbers for r1.
-  *
-  */
--	.section ".text.head", "ax"
-+	__HEAD
- ENTRY(stext)
- 	msr	cpsr_c, #PSR_F_BIT | PSR_I_BIT | SVC_MODE @ ensure svc mode
- 						@ and irqs disabled
-diff --git a/arch/arm/kernel/head.S b/arch/arm/kernel/head.S
-index 21e17dc..f1877a5 100644
---- a/arch/arm/kernel/head.S
-+++ b/arch/arm/kernel/head.S
-@@ -74,7 +74,7 @@
-  * crap here - that's what the boot loader (or in extreme, well justified
-  * circumstances, zImage) is for.
-  */
--	.section ".text.head", "ax"
-+	__HEAD
- ENTRY(stext)
- 	msr	cpsr_c, #PSR_F_BIT | PSR_I_BIT | SVC_MODE @ ensure svc mode
- 						@ and irqs disabled
-diff --git a/arch/arm/kernel/vmlinux.lds.S b/arch/arm/kernel/vmlinux.lds.S
-index 6937102..86c44e6 100644
---- a/arch/arm/kernel/vmlinux.lds.S
-+++ b/arch/arm/kernel/vmlinux.lds.S
-@@ -24,13 +24,11 @@ SECTIONS
- #else
- 	. = PAGE_OFFSET + TEXT_OFFSET;
- #endif
--	.text.head : {
--		_stext = .;
--		_sinittext = .;
--		*(.text.head)
--	}
+diff --git a/arch/m32r/kernel/vmlinux.lds.S b/arch/m32r/kernel/vmlinux.lds.S
+index 4179adf..eb3e425 100644
+--- a/arch/m32r/kernel/vmlinux.lds.S
++++ b/arch/m32r/kernel/vmlinux.lds.S
+@@ -91,15 +91,6 @@ SECTIONS
+   .con_initcall.init : { *(.con_initcall.init) }
+   __con_initcall_end = .;
+   SECURITY_INIT
+-  . = ALIGN(4);
+-  __alt_instructions = .;
+-  .altinstructions : { *(.altinstructions) }
+-  __alt_instructions_end = .;
+-  .altinstr_replacement : { *(.altinstr_replacement) }
+-  /* .exit.text is discard at runtime, not link time, to deal with references
+-     from .altinstructions and .eh_frame */
+-  .exit.text : { EXIT_TEXT }
+-  .exit.data : { EXIT_DATA }
  
- 	.init : {			/* Init code and data		*/
-+		_stext = .;
-+		_sinittext = .;
-+			HEAD_TEXT
- 			INIT_TEXT
- 		_einittext = .;
- 		__proc_info_begin = .;
+ #ifdef CONFIG_BLK_DEV_INITRD
+   . = ALIGN(4096);
 -- 
 1.6.3.3
 
