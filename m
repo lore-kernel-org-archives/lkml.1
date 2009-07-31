@@ -1,100 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752687AbZGaRQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbZGaRUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752687AbZGaRQk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 13:16:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbZGaRQj
+	id S1752722AbZGaRUG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 13:20:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbZGaRUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 13:16:39 -0400
-Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:63029 "EHLO
-	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751089AbZGaRQi (ORCPT
+	Fri, 31 Jul 2009 13:20:05 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:43591 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752491AbZGaRUF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 13:16:38 -0400
-From: Frans Pop <elendil@planet.nl>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: RomFS: enless loop during make oldconfig from 2.6.24 -> 2.6.31-rc4 (parisc)
-Date: Fri, 31 Jul 2009 19:16:36 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-       David Woodhouse <David.Woodhouse@intel.com>
-References: <200907311730.08804.elendil@planet.nl> <17615.1249045054@redhat.com> <18884.1249058776@redhat.com>
-In-Reply-To: <18884.1249058776@redhat.com>
+	Fri, 31 Jul 2009 13:20:05 -0400
+Date: Fri, 31 Jul 2009 18:20:02 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Roger Quadros <quadros.roger@gmail.com>
+Cc: philipp.zabel@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] regulator: Add GPIO enable control to fixed voltage
+ regulator driver
+Message-ID: <20090731172002.GA32578@rakim.wolfsonmicro.main>
+References: <1249057189-11992-1-git-send-email-quadros.roger@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200907311916.37389.elendil@planet.nl>
-X-OriginalArrivalTime: 31 Jul 2009 17:16:37.0946 (UTC) FILETIME=[A9ADE1A0:01CA1202]
+In-Reply-To: <1249057189-11992-1-git-send-email-quadros.roger@gmail.com>
+X-Cookie: Hire the morally handicapped.
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 31 July 2009, David Howells wrote:
-> Frans Pop <elendil@planet.nl> wrote:
-> > I've tried again too. With all defaults I cannot reproduce it either.
-> > But if I answer the questions below as follows, I do get the loop
-> > again:
-> >
-> > Advanced netfilter configuration: N
-> > Wireless: N
-> > * sound drivers: N (* = "PCI","USB" and one or two others)
-> > Default ext3 to "data=ordered": Y
->
-> I still don't see it.  I have:
->
-> 	# CONFIG_NETFILTER_ADVANCED is not set
-> 	# CONFIG_WIRELESS is not set
-> 	# CONFIG_SND_PCI is not set
-> 	# CONFIG_SND_SPI is not set
-> 	# CONFIG_SND_USB is not set
-> 	# CONFIG_SND_GSC is not set
-> 	# CONFIG_SND_SOC is not set
-> 	CONFIG_EXT3_DEFAULTS_TO_ORDERED=y
->
-> Can you accept all the defaults, then delete the above symbols from
-> .config and run make oldconfig again, see if the problem crops up?
+On Fri, Jul 31, 2009 at 07:19:49PM +0300, Roger Quadros wrote:
 
-No, I can not reproduce it that way. But I have just reproduced it for a
-third time giving those answers starting from the original .config. So
-the "good" news is that at least it's reproducible for me.
+> Signed-off-by: Roger Quadros <ext-roger.quadros@nokia.com>
+> Reviewed-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-My guess is it's not a RomFS issue, but rather some kbuild weirdness
-(and maybe even architecture or userland related).
-Note how in the loop the help text for ROMFS_BACKED_BY_BLOCK gets
-displayed somehow, while in the normal case you don't get that.
+Err...  no, it isn't.  I reviewed a previous version of the patch but
+there were some issues that needed fixing.  I've not reviewed this
+version.
 
-With all default answers, I get:
-<snip>
-  ROM file system support (ROMFS_FS) [M/n/y/?] m
-    RomFS backing stores
-    > 1. Block device-backed ROM file system support (ROMFS_BACKED_BY_BLOCK) (NEW)
-    choice[1]: 1
-  System V/Xenix/V7/Coherent file system support (SYSV_FS) [N/m/y/?] n
-  UFS file system support (read only) (UFS_FS) [N/m/y/?] n
-  NILFS2 file system support (EXPERIMENTAL) (NILFS2_FS) [N/m/y/?] (NEW)
-</snip>
+>  static int fixed_voltage_is_enabled(struct regulator_dev *dev)
+>  {
+> -	return 1;
+> +	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
+> +
+> +	if (data->gpio)
+> +		return data->is_enabled;
 
-Compared to what I get in the loop:
-<snip>
-    RomFS backing stores
-    > 1. Block device-backed ROM file system support (ROMFS_BACKED_BY_BLOCK) (NEW)
-    choice[1]: 1
+Please use gpio_is_valid() as Phillip previously suggested.  For this
+particular use you could simplify the code marginally by just setting
+is_enabled at probe() time if there's no GPIO, not that it really
+matters.
 
-This permits ROMFS to use block devices buffered through the page
-cache as the medium from which to retrieve data.  It does not allow
-direct mapping of the medium.
+> +       if (data->gpio) {
+> +               gpio_set_value(data->gpio,
+> +                               data->enable_high ? 1 : 0);
 
-If unsure, answer Y.
-</snip>
+_cansleep(), please, as previously requested.
+ 
+> +		ret = gpio_get_value(config->gpio);
 
-Is there some debugging mode for 'make oldconfig'? Or maybe we should
-just wait until Sam can comment.
+Can this fail?  It returns an int...
 
+> +		ret = gpio_direction_output(config->gpio, ret);
+> +		if (ret) {
+> +			dev_err(&pdev->dev, "Could not configure "
+> +				"enable GPIO %d direction: %d\n",
+> +						config->gpio, ret);
+> +			goto err_gpio;
 
-One minor issue for RomFS is that the "If unsure, answer Y." text for
-ROMFS_BACKED_BY_BLOCK and ROMFS_BACKED_BY_MTD does not really make
-much sense given that they are now alternative choices...
+As previously requested please don't split for log messages text over
+lines unless you have to.  It makes it easier to find the message from a
+kernel log - grep for 'configure enable GPIO' won't match this source
+file the way you've written it above.
 
-Cheers,
-FJP
+> +		}
+> +	} else
+> +		dev_warn(&pdev->dev, "Not using GPIO 0 for enable control\n");
+
+Probably better to soldier on and use the GPIO here but either way is
+fine; the warning is for the benefit of existing out of tree users to
+help them transition gracefully.
