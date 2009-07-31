@@ -1,148 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984AbZGaBw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751828AbZGaCAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752984AbZGaBw5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 21:52:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZGaBv7
+	id S1751828AbZGaCAO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 22:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751493AbZGaCAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 21:51:59 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:17579 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752337AbZGaBvx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 21:51:53 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=from:subject:to:date:message-id:in-reply-to:references:
-	user-agent:mime-version:content-type:content-transfer-encoding;
-	b=uhWMEZ0e5smkiwOSo5a58Ojgt67ToDux417OGXlsxaieE1piRPGwaas/nEMMMcRN+
-	GbqMnlEkCLBOMs6U0Ogeg==
-From: Ben Blum <bblum@google.com>
-Subject: [PATCH 3/6] Quick vmalloc vs kmalloc fix to the case where array size
-	is too large
-To: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       akpm@linux-foundation.org, serue@us.ibm.com, lizf@cn.fujitsu.com,
-       menage@google.com, bblum@google.com
-Date: Thu, 30 Jul 2009 18:51:38 -0700
-Message-ID: <20090731015138.27908.71536.stgit@hastromil.mtv.corp.google.com>
-In-Reply-To: <20090731012908.27908.62208.stgit@hastromil.mtv.corp.google.com>
-References: <20090731012908.27908.62208.stgit@hastromil.mtv.corp.google.com>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Thu, 30 Jul 2009 22:00:14 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:41536 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751200AbZGaCAN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 22:00:13 -0400
+Date: Fri, 31 Jul 2009 12:00:05 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: linux-next: kmemleak tree build failure
+Message-Id: <20090731120005.22f6af5b.sfr@canb.auug.org.au>
+In-Reply-To: <1248944337.3376.5.camel@pc1117.cambridge.arm.com>
+References: <20090730160012.5814e251.sfr@canb.auug.org.au>
+	<1248944337.3376.5.camel@pc1117.cambridge.arm.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__31_Jul_2009_12_00_05_+1000_h3QLOiWlosqyge3B"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quick vmalloc vs kmalloc fix to the case where array size is too large
+--Signature=_Fri__31_Jul_2009_12_00_05_+1000_h3QLOiWlosqyge3B
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Separates all pidlist allocation requests to a separate function that judges
-based on the requested size whether or not the array needs to be vmalloced or
-can be gotten via kmalloc, and similar for kfree/vfree. Should be replaced
-entirely with a kernel-wide solution to this general problem.
+Hi Catalin,
 
-Depends on cgroup-pidlist-namespace.patch, cgroup-procs.patch
+On Thu, 30 Jul 2009 09:58:57 +0100 Catalin Marinas <catalin.marinas@arm.com=
+> wrote:
+>
+> Yes, it's missing this (I was only testing it with slub which has
+> kmemleak.h included in its header file).
+>=20
+> I updated the kmemleak branch now. Thanks.
 
-Signed-off-by: Ben Blum <bblum@google.com>
+Thanks.
 
----
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
- kernel/cgroup.c |   47 ++++++++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 42 insertions(+), 5 deletions(-)
+--Signature=_Fri__31_Jul_2009_12_00_05_+1000_h3QLOiWlosqyge3B
+Content-Type: application/pgp-signature
 
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index cdd0112..f6d5969 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -48,6 +48,7 @@
- #include <linux/namei.h>
- #include <linux/smp_lock.h>
- #include <linux/pid_namespace.h>
-+#include <linux/vmalloc.h> /* TODO: replace with more sophisticated array */
- 
- #include <asm/atomic.h>
- 
-@@ -2123,6 +2124,42 @@ int cgroup_scan_tasks(struct cgroup_scanner *scan)
-  */
- 
- /*
-+ * The following two functions "fix" the issue where there are more pids
-+ * than kmalloc will give memory for; in such cases, we use vmalloc/vfree.
-+ * TODO: replace with a kernel-wide solution to this problem
-+ */
-+#define PIDLIST_TOO_LARGE(c) ((c) * sizeof(pid_t) > (PAGE_SIZE * 2))
-+static void *pidlist_allocate(int count)
-+{
-+	if (PIDLIST_TOO_LARGE(count))
-+		return vmalloc(count * sizeof(pid_t));
-+	else
-+		return kmalloc(count * sizeof(pid_t), GFP_KERNEL);
-+}
-+static void pidlist_free(void *p)
-+{
-+	if (is_vmalloc_addr(p))
-+		vfree(p);
-+	else
-+		kfree(p);
-+}
-+static void *pidlist_resize(void *p, int newcount)
-+{
-+	void *newlist;
-+	/* note: if new alloc fails, old p will still be valid either way */
-+	if (is_vmalloc_addr(p)) {
-+		newlist = vmalloc(newcount * sizeof(pid_t));
-+		if (!newlist)
-+			return NULL;
-+		memcpy(newlist, p, newcount * sizeof(pid_t));
-+		vfree(p);
-+	} else {
-+		newlist = krealloc(p, newcount * sizeof(pid_t), GFP_KERNEL);
-+	}
-+	return newlist;
-+}
-+
-+/*
-  * pidlist_uniq - given a kmalloc()ed list, strip out all duplicate entries
-  * If the new stripped list is sufficiently smaller and there's enough memory
-  * to allocate a new buffer, will let go of the unneeded memory. Returns the
-@@ -2161,7 +2198,7 @@ after:
- 	 * we'll just stay with what we've got.
- 	 */
- 	if (PIDLIST_REALLOC_DIFFERENCE(length, dest)) {
--		newlist = krealloc(list, dest * sizeof(pid_t), GFP_KERNEL);
-+		newlist = pidlist_resize(list, dest);
- 		if (newlist)
- 			*p = newlist;
- 	}
-@@ -2242,7 +2279,7 @@ static int pidlist_array_load(struct cgroup *cgrp, enum cgroup_filetype type,
- 	 * show up until sometime later on.
- 	 */
- 	length = cgroup_task_count(cgrp);
--	array = kmalloc(length * sizeof(pid_t), GFP_KERNEL);
-+	array = pidlist_allocate(length);
- 	if (!array)
- 		return -ENOMEM;
- 	/* now, populate the array */
-@@ -2266,11 +2303,11 @@ static int pidlist_array_load(struct cgroup *cgrp, enum cgroup_filetype type,
- 		length = pidlist_uniq(&array, length);
- 	l = cgroup_pidlist_find(cgrp, type);
- 	if (!l) {
--		kfree(array);
-+		pidlist_free(array);
- 		return -ENOMEM;
- 	}
- 	/* store array, freeing old if necessary - lock already held */
--	kfree(l->list);
-+	pidlist_free(l->list);
- 	l->list = array;
- 	l->length = length;
- 	l->use_count++;
-@@ -2431,7 +2468,7 @@ static void cgroup_release_pid_array(struct cgroup_pidlist *l)
- 		/* we're the last user if refcount is 0; remove and free */
- 		list_del(&l->links);
- 		mutex_unlock(&l->owner->pidlist_mutex);
--		kfree(l->list);
-+		pidlist_free(l->list);
- 		put_pid_ns(l->key.ns);
- 		up_write(&l->mutex);
- 		kfree(l);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
+iEYEARECAAYFAkpyUCUACgkQjjKRsyhoI8wCCgCgiMGb3FvlHOOIkG/mc02VWsrD
+O9QAn22ZeIZjnEnLjtN0TxhvVVWP75gG
+=bk6B
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__31_Jul_2009_12_00_05_+1000_h3QLOiWlosqyge3B--
