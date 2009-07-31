@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752140AbZGaPOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752349AbZGaPRC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752140AbZGaPOh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 11:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750863AbZGaPOg
+	id S1752349AbZGaPRC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 11:17:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbZGaPRA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 11:14:36 -0400
-Received: from vms173015pub.verizon.net ([206.46.173.15]:62077 "EHLO
-	vms173015pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbZGaPOf (ORCPT
+	Fri, 31 Jul 2009 11:17:00 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57543 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751621AbZGaPQ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 11:14:35 -0400
-Date: Fri, 31 Jul 2009 11:14:05 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Andreas Mohr <andi@lisas.de>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Robert Hancock <hancockrwd@gmail.com>,
-       Corrado Zoccolo <czoccolo@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: Dynamic configure max_cstate
-In-reply-to: <20090731080728.GA25049@rhlx01.hs-esslingen.de>
-Message-id: <alpine.LFD.2.00.0907311059560.5528@localhost.localdomain>
-References: <20090727073338.GA12669@rhlx01.hs-esslingen.de>
- <1248748935.2560.669.camel@ymzhang>
- <4e5e476b0907280020x242d9ef7gfa05c3d7b66f941f@mail.gmail.com>
- <1248771635.2560.682.camel@ymzhang>
- <20090728101135.GA22358@rhlx01.hs-esslingen.de> <4A726844.7040505@gmail.com>
- <1249024006.2560.735.camel@ymzhang>
- <20090731080728.GA25049@rhlx01.hs-esslingen.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 31 Jul 2009 11:16:59 -0400
+Date: Fri, 31 Jul 2009 16:17:35 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ozan =?UTF-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Subject: Re: [Bug #13471] Loading parport_pc kills the keyboard if ACPI is
+ enabled
+Message-ID: <20090731161735.6a94ad9c@lxorguk.ukuu.org.uk>
+In-Reply-To: <4A7308E8.1000200@pardus.org.tr>
+References: <DizPU9GBfHF.A.kgF.iWObKB@chimera>
+	<H5-1lZIIeYK.A.dWH.9XObKB@chimera>
+	<20090731151417.568094e5@lxorguk.ukuu.org.uk>
+	<4A7308E8.1000200@pardus.org.tr>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> And in addition to this, we should also take into account (read: skip)
-> any idle states which kill busmaster DMA completely
-> (in case of busmaster DMA I/O activities, that is).
+O> Finally, it seems that the problem is available with 2.6.28, so the starting
+> point is still fuzzy to me. I remember that the keyboard was working OK with
+> 2.6.29_rc7 but now it's not.
+> 
+> Maybe we should drop this report from the regression list."
+> 
+> 
+> Monday I'll have access to the computer. I'll build and try to find the last working version.
+> Meanwhile, I'd like to hear about your possible finding.
 
-It isn't so simple.
-This is system specific.
+There have been few changes to parport_pc but one thing recent changed
+the probe for SuperIO chips via low addresses and that could be
+interfering.
 
-In the old days, a c3-type C-state would lock down the bus
-in order to assure no DMA could pass by to memory
-before the processor could wake up to snoop.
+commit e2434dc1c19412639dd047a4d4eff8ed0e5d0d50
+Author: Jens Rottmann <JRottmann@LiPPERTEmbedded.de>
+Date:   Mon Jun 22 16:51:49 2009 +0100
 
-Then a few years ago the hardware would allow us to
-enter C3-type C-states, but transparently "pop-up"
-into C2 to retire the snoop activity without ever
-waking the processor to C0.  This was good b/c
-it was more efficient than waking to C0, but bad
-b/c the OS could not easily tell if it actually
-got the C3 time it requested, or if it was actually
-spending a bunch of time demoted to C2...
+changed the behaviour slightly (hence asking about which release if it
+was a recent breakage). Its also a code area with very few changes so if
+you can find which one worked last, you should be able to transplant that
+parport_pc into 2.6.current and see if its parport or acpi triggered
+breakage.
 
-In the most recent hardware, the core's cache is flushed
-in deep C-states so that the core need not be woken
-at all to snoop DMA activity.
-
-Indeed, Yanmin's Nehalem box advertises two C3-type C-states,
-but in reality, Nehalem doesn't have _any_ C3-type C-states,
-only C2-type.  The BIOS advertises C3-type C-states
-to not break the installed base, which uses the presence
-of C3-type C-states to work around the broken LAPIC timer.
-
-I think the issue at hand on the system at hand is waking
-up the processor in response to an IO interrupt break events.
-ie. Linux doees a good job with timer interrupts, but
-isn't so smart about using IO interrupts for demoting
-C-states.  Arjan is looking at fixing this.
-
-cheers,
-Len Brown, Intel Opoen Source TEchnology Center
-
+Alan
