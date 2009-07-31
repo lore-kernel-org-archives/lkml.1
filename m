@@ -1,119 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751688AbZGaJD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751712AbZGaJJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751688AbZGaJD0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 05:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbZGaJDZ
+	id S1751712AbZGaJJx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 05:09:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbZGaJJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 05:03:25 -0400
-Received: from mga01.intel.com ([192.55.52.88]:26768 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751480AbZGaJDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 05:03:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,301,1246863600"; 
-   d="scan'208";a="712743750"
-Date: Fri, 31 Jul 2009 17:02:10 +0800
-From: Alek Du <alek.du@intel.com>
+	Fri, 31 Jul 2009 05:09:52 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:49106 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751340AbZGaJJv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 05:09:51 -0400
+Subject: Re: [patch] fbcon: don't use vc_resize() on initialization
+From: Catalin Marinas <catalin.marinas@arm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: David Brownell <david-b@pacbell.net>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: [PATCH v3] gpio: add Intel Moorestown Platform Langwell chip
- gpio driver
-Message-ID: <20090731170210.3372ca73@dxy.sh.intel.com>
-In-Reply-To: <20090730035941.16124ec0.akpm@linux-foundation.org>
-References: <20090703210706.41288a2a@dxy.sh.intel.com>
-	<20090730035941.16124ec0.akpm@linux-foundation.org>
-Organization: Intel Corp.
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Cc: Johannes Weiner <hannes@cmpxchg.org>, penberg@cs.helsinki.fi,
+       linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+In-Reply-To: <20090730161149.657e8e9a.akpm@linux-foundation.org>
+References: <1248859884.2305.7.camel@pc1117.cambridge.arm.com>
+	 <20090729103903.GA2175@cmpxchg.org>
+	 <1248865456.2305.12.camel@pc1117.cambridge.arm.com>
+	 <20090729172123.GA14192@cmpxchg.org>
+	 <20090730161149.657e8e9a.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Fri, 31 Jul 2009 10:09:15 +0100
+Message-Id: <1249031355.29967.1.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 31 Jul 2009 09:09:16.0430 (UTC) FILETIME=[9460A2E0:01CA11BE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
-
-Sorry for late response. Yes, you are right, there is no meaning to build it as module, it should be changed to bool.
-I will submit a new patch soon, I also need a mask handler to irqchip .... otherwise the free_irq will report a error.
-
-Thanks,
-Alek
-
-
-
-
-On Thu, 30 Jul 2009 18:59:41 +0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Fri, 3 Jul 2009 21:07:06 +0800 Alek Du <alek.du@intel.com> wrote:
+On Thu, 2009-07-30 at 16:11 -0700, Andrew Morton wrote:
+> On Wed, 29 Jul 2009 19:21:23 +0200
+> Johannes Weiner <hannes@cmpxchg.org> wrote:
 > 
-> > Changes from v2:
-> > 1. Add missed MODULE_DEVICE_TABLE
+> > Catalin and kmemleak spotted a leak of a VC screen buffer in
+> > vc_allocate() due to the following chain of events:
 > > 
-> > Changes from v1:
-> > 1. driver name changed from lnw.c ==> langwell_gpio.c
-> > 2. removed hard coded driver data, now we get it from PCI bar1 (platform init code fills it)
-> > 3. removed alternative function setting code, it should be called in platform init part.
-> > 4. misc. style clean
+> > 	vc_allocate()
+> > 	  visual_init(init=1)
+> > 	    vc->vc_sw->con_init(init=1)
+> >               fbcon_init()
+> > 	        vc_resize()
+> > 	          vc->screen_buf = kmalloc()
+> > 	  vc->screen_buf = kmalloc()
 > > 
+> > The common way for the VC drivers is to set the screen dimension
+> > parameters manually in the init case and only call vc_resize() for
+> > !init - which allocates a screen buffer according to the new
+> > dimensions.
 > > 
-> > >From 8eaad3aac8cffda193adcfc4b9fcbb7c461fd4b9 Mon Sep 17 00:00:00 2001
-> > From: Alek Du <alek.du@intel.com>
-> > Date: Tue, 30 Jun 2009 12:13:27 +0800
-> > Subject: [PATCH] gpio: add Intel Moorestown Platform Langwell chip gpio driver
+> > fbcon instead would do vc_resize() unconditionally and afterwards set
+> > the dimensions manually (again) for !init - i.e. completely upside
+> > down.  The vc_resize() allocated buffer would then get lost by
+> > vc_allocate() allocating a fresh one.
 > > 
-> > The Langwell chip is the IO hub for Intel Moorestown platform which has a
-> > 64-pin gpio block device inside. It is exposed as a dedicated PCI device.
-> > We use it to control outside peripheral as well as to do IRQ demuxing. The
-> > gpio block uses MSI to send level type interrupt to IOAPIC.
+> > Use vc_resize() only for actual resizing to close the leak.
+> > 
+> > Set the dimensions manually only in initialization mode to remove the
+> > redundant setting in resize mode.
+> > 
+> > The kmemleak trace from Catalin:
+> > 
+> > unreferenced object 0xde158000 (size 12288):
 > 
-> The driver breaks the x86-64 allmodconfig build:
+> That's a big leak!
 > 
-> ERROR: "irq_to_desc" [drivers/gpio/langwell_gpio.ko] undefined!
-> ERROR: "set_irq_chip_and_handler_name" [drivers/gpio/langwell_gpio.ko] undefined!
-> ERROR: "handle_simple_irq" [drivers/gpio/langwell_gpio.ko] undefined!
-> 
-> Does it make any sense to build this driver as a module?  If not, it
-> should be changed to def_bool.  If so...
-> 
-> 
-> 
->  kernel/irq/chip.c   |    2 ++
->  kernel/irq/handle.c |    1 +
->  2 files changed, 3 insertions(+)
-> 
-> diff -puN kernel/irq/handle.c~kernel-irq-export-symbols-needed-by-gpio-add-intel-moorestown-platform-langwell-chip-gpio-driverpatch kernel/irq/handle.c
-> --- a/kernel/irq/handle.c~kernel-irq-export-symbols-needed-by-gpio-add-intel-moorestown-platform-langwell-chip-gpio-driverpatch
-> +++ a/kernel/irq/handle.c
-> @@ -192,6 +192,7 @@ struct irq_desc *irq_to_desc(unsigned in
->  
->  	return NULL;
->  }
-> +EXPORT_SYMBOL(irq_to_desc);
->  
->  struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
->  {
-> diff -puN kernel/irq/chip.c~kernel-irq-export-symbols-needed-by-gpio-add-intel-moorestown-platform-langwell-chip-gpio-driverpatch kernel/irq/chip.c
-> --- a/kernel/irq/chip.c~kernel-irq-export-symbols-needed-by-gpio-add-intel-moorestown-platform-langwell-chip-gpio-driverpatch
-> +++ a/kernel/irq/chip.c
-> @@ -340,6 +340,7 @@ handle_simple_irq(unsigned int irq, stru
->  out_unlock:
->  	spin_unlock(&desc->lock);
->  }
-> +EXPORT_SYMBOL(handle_simple_irq);
->  
->  /**
->   *	handle_level_irq - Level type irq handler
-> @@ -609,6 +610,7 @@ set_irq_chip_and_handler_name(unsigned i
->  	set_irq_chip(irq, chip);
->  	__set_irq_handler(irq, handle, 0, name);
->  }
-> +EXPORT_SYMBOL(set_irq_chip_and_handler_name);
->  
->  void __init set_irq_noprobe(unsigned int irq)
->  {
-> _
-> 
-> 
+> What sequence of user actions would cause it to occur?
+
+In my case, I think anything that causes a tty_open() call with a
+framebuffer console. I get a leak when logging in on the console and
+another when starting the X server.
+
+-- 
+Catalin
+
