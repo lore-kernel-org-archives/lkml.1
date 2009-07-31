@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751917AbZGaUah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751849AbZGaUce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751917AbZGaUah (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 16:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751550AbZGaUah
+	id S1751849AbZGaUce (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 16:32:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbZGaUce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 16:30:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50786 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751338AbZGaUag (ORCPT
+	Fri, 31 Jul 2009 16:32:34 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:14427 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751152AbZGaUcd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 16:30:36 -0400
-Date: Fri, 31 Jul 2009 13:29:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Robert Richter <robert.richter@amd.com>
-Cc: jaswinder@kernel.org, mingo@elte.hu, x86@kernel.org,
+	Fri, 31 Jul 2009 16:32:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=hL7QKrR5/hLo98YUeNXQJ5Hj2FEkqHHAw2uCjw1zTlWVRNCyjrlrXCzzUJKO7wtTCA
+         c2zuMqvlFKhrGXl3o+zl9dvTagbcrbAIT47f9ADXLGZJHvycyRXV9WYPdI4MAqGeDBh5
+         mG1dVWSj0kR2zfJ4JKLLeAGXxFLbbDIgbVYbY=
+MIME-Version: 1.0
+In-Reply-To: <74d0deb30907311038w1b6cdd23iec3cfb2175fdedd0@mail.gmail.com>
+References: <1249057189-11992-1-git-send-email-quadros.roger@gmail.com>
+	 <20090731172002.GA32578@rakim.wolfsonmicro.main>
+	 <74d0deb30907311038w1b6cdd23iec3cfb2175fdedd0@mail.gmail.com>
+Date: Fri, 31 Jul 2009 23:32:32 +0300
+Message-ID: <b90c0690907311332o958b7f4nd025aa7a8b273a88@mail.gmail.com>
+Subject: Re: [PATCH v2] regulator: Add GPIO enable control to fixed voltage 
+	regulator driver
+From: Roger Quadros <quadros.roger@gmail.com>
+To: pHilipp Zabel <philipp.zabel@gmail.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip] x86: oprofile/op_model_amd.c set return values for
- op_amd_handle_ibs()
-Message-Id: <20090731132927.88c400cc.akpm@linux-foundation.org>
-In-Reply-To: <20090618144731.GX18016@erda.amd.com>
-References: <1245325167.7189.9.camel@localhost.localdomain>
-	<20090618144731.GX18016@erda.amd.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 18 Jun 2009 16:47:31 +0200
-Robert Richter <robert.richter@amd.com> wrote:
+On Fri, Jul 31, 2009 at 8:38 PM, pHilipp Zabel<philipp.zabel@gmail.com> wrote:
+> On Fri, Jul 31, 2009 at 7:20 PM, Mark
+> Brown<broonie@opensource.wolfsonmicro.com> wrote:
+>> On Fri, Jul 31, 2009 at 07:19:49PM +0300, Roger Quadros wrote:
+>>
+>>
+>>> +             ret = gpio_get_value(config->gpio);
+>>
+>> Can this fail?  It returns an int...
+>
+> No, gpio_get_value(_cansleep) return either zero or non-zero.
+> I think some I2C gpio chips just return zero when the read fails.
+> Also that's the return value if a gpiochip doesn't define the .get method.
+>
+> Only problem: drivers/gpio/gpiolib.c contains this piece of wisdom:
+>
+> /* Drivers MUST set GPIO direction before making get/set calls.  In
+>  * some cases this is done in early boot, before IRQs are enabled.
+>  [...]
+>  */
+>
 
-> On 18.06.09 17:09:27, Jaswinder Singh Rajput wrote:
-> > 
-> > op_amd_handle_ibs() should return 0 when IBS is not present or not defined.
-> > 
-> > Fix compilation warning:
-> >  CC [M]  arch/x86/oprofile/op_model_amd.o
-> >  arch/x86/oprofile/op_model_amd.c: In function ___op_amd_handle_ibs___:
-> >  arch/x86/oprofile/op_model_amd.c:217: warning: no return statement in function returning non-void
-> > 
-> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > ---
-> >  arch/x86/oprofile/op_model_amd.c |    7 +++++--
-> >  1 files changed, 5 insertions(+), 2 deletions(-)
-> 
-> Applied to:
-> 
->  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git master
-> 
+Not having gpio_get_direction() in gpiolib is a limitation I think.
+Can we just do the following for now ? (i.e. disable regulator by default)
+Will there be any glitch? If yes, then how?
 
-Something has gone badly wrong.  This patch took six weeks to turn up
-in linux-next.
+                ret = gpio_request(config->gpio, config->supply_name);
+                ...
 
-Apart from anything else this led me to have to fix something which was
-already fixed.
-
-All you guys *saw* that fix and still this didn't prompt anyone to
-wonder what had gone wrong.
-
-My fix is better, too.  The op_amd_handle_ibs() return value is
-ignored, so it should return void.
-
+-               ret = gpio_get_value(config->gpio);
+-               ret = gpio_direction_output(config->gpio, ret);
++               ret = gpio_direction_output(config->gpio, !config->enable_high);
+                if (ret) {
+                        dev_err(&pdev->dev, "Could not configure
+enable GPIO %d direction: %d\n",
+                                                        config->gpio, ret);
+                        goto err_gpio;
+                }
