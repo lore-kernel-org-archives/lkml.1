@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752953AbZGaVDL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753220AbZGaVDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752953AbZGaVDL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 17:03:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbZGaVDJ
+	id S1753220AbZGaVDS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 17:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbZGaVDP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 17:03:09 -0400
+	Fri, 31 Jul 2009 17:03:15 -0400
 Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:54671 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753047AbZGaVDI (ORCPT
+	by vger.kernel.org with ESMTP id S1753173AbZGaVDM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 17:03:08 -0400
+	Fri, 31 Jul 2009 17:03:12 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>, Anders Kaseorg <andersk@ksplice.com>,
        Nelson Elhage <nelhage@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [PATCH 1/2] s390: Use macros for .data.page_aligned.
-Date: Fri, 31 Jul 2009 16:58:30 -0400
-Message-Id: <1249073911-30208-1-git-send-email-tabbott@ksplice.com>
+       Richard Henderson <rth@twiddle.net>, linux-alpha@vger.kernel.org
+Subject: [PATCH 1/2] alpha: use .data.init_task instead of .data.init_thread.
+Date: Fri, 31 Jul 2009 16:56:25 -0400
+Message-Id: <1249073786-29788-1-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
@@ -25,53 +25,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-.data.page_aligned should not need a separate output section, so as
-part of this cleanup I moved into the .data output section in the
-linker scripts in order to eliminate unnecessary references to the
-section name.
+alpha is the only architecture that uses the section name
+.data.init_thread instead of .data.init_task.  So convert alpha to use
+.data.init_task like everything else.
 
-Remove the reference to .data.idt, since nothing is put into the
-.data.idt section on the s390 architecture.  It looks like Cyrill
-Gorcunov posted a patch to remove the .data.idt code on s390
-previously:
-
-<http://lkml.indiana.edu/hypermail/linux/kernel/0802.2/2536.html>
-
-CCing him and the people who acked that patch in case there's a reason
-it wasn't applied.
+.data.init_task does not need a separate output section; this change
+also moves it into the .data output section.
 
 Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Acked-by: Cyrill Gorcunov <gorcunov@openvz.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: linux-alpha@vger.kernel.org
 ---
- arch/s390/kernel/vmlinux.lds.S |    6 +-----
- 1 files changed, 1 insertions(+), 5 deletions(-)
+ arch/alpha/kernel/init_task.c   |    5 ++---
+ arch/alpha/kernel/vmlinux.lds.S |    7 ++-----
+ 2 files changed, 4 insertions(+), 8 deletions(-)
 
-diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
-index a53db23..8e023c8 100644
---- a/arch/s390/kernel/vmlinux.lds.S
-+++ b/arch/s390/kernel/vmlinux.lds.S
-@@ -60,6 +60,7 @@ SECTIONS
- 	} :data
+diff --git a/arch/alpha/kernel/init_task.c b/arch/alpha/kernel/init_task.c
+index 19b8632..6f80ca4 100644
+--- a/arch/alpha/kernel/init_task.c
++++ b/arch/alpha/kernel/init_task.c
+@@ -13,6 +13,5 @@ static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
+ struct task_struct init_task = INIT_TASK(init_task);
+ EXPORT_SYMBOL(init_task);
  
- 	.data : {		/* Data */
-+		PAGE_ALIGNED_DATA(PAGE_SIZE)
+-union thread_union init_thread_union
+-	__attribute__((section(".data.init_thread")))
+-	= { INIT_THREAD_INFO(init_task) };
++union thread_union init_thread_union __init_task_data =
++	{ INIT_THREAD_INFO(init_task) };
+diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
+index b9d6568..a4bb75e 100644
+--- a/arch/alpha/kernel/vmlinux.lds.S
++++ b/arch/alpha/kernel/vmlinux.lds.S
+@@ -1,5 +1,6 @@
+ #include <asm-generic/vmlinux.lds.h>
+ #include <asm/page.h>
++#include <asm/thread_info.h>
+ 
+ OUTPUT_FORMAT("elf64-alpha")
+ OUTPUT_ARCH(alpha)
+@@ -92,11 +93,6 @@ SECTIONS
+ 	__init_end = .;
+ 	/* Freed after init ends here */
+ 
+-	/* Note 2 page alignment above.  */
+-	.data.init_thread : {
+-		*(.data.init_thread)
+-	}
+-
+ 	. = ALIGN(PAGE_SIZE);
+ 	.data.page_aligned : {
+ 		*(.data.page_aligned)
+@@ -110,6 +106,7 @@ SECTIONS
+ 	_data = .;
+ 	/* Data */
+ 	.data : {
++		INIT_TASK_DATA(THREAD_SIZE)
  		DATA_DATA
  		CONSTRUCTORS
  	}
-@@ -72,11 +73,6 @@ SECTIONS
- 	. = ALIGN(PAGE_SIZE);
- 	__nosave_end = .;
- 
--	. = ALIGN(PAGE_SIZE);
--	.data.page_aligned : {
--		*(.data.idt)
--	}
--
- 	. = ALIGN(0x100);
- 	.data.cacheline_aligned : {
- 		*(.data.cacheline_aligned)
 -- 
 1.6.3.3
 
