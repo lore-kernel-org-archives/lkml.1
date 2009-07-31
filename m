@@ -1,195 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751464AbZGaTie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751655AbZGaTqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751464AbZGaTie (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 15:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbZGaTid
+	id S1751655AbZGaTqH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 15:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbZGaTqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 15:38:33 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:10917 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751302AbZGaTid (ORCPT
+	Fri, 31 Jul 2009 15:46:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52412 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751436AbZGaTqF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 15:38:33 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=jBvDszkx3g88CebMSczGTtbWBL7FCNjU7TjQbVyhFhvT5zrY+8tk6oM9TsssJ/rlH
-	IZiT/22W4VP1jIOfisAbw==
-Date: Fri, 31 Jul 2009 12:38:24 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Paul Menage <menage@google.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
-In-Reply-To: <20090731154823.B6EF.A69D9226@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0907311225480.22732@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0907301157100.9652@chino.kir.corp.google.com> <20090731093305.50bcc58d.kamezawa.hiroyu@jp.fujitsu.com> <20090731154823.B6EF.A69D9226@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 31 Jul 2009 15:46:05 -0400
+Date: Fri, 31 Jul 2009 12:45:41 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Wei Chong Tan <wei.chong.tan@intel.com>
+Subject: Re: [GIT PULL] Additional x86 fixes for 2.6.31-rc5
+In-Reply-To: <200907311813.n6VIDe9S023442@voreg.hos.anvin.org>
+Message-ID: <alpine.LFD.2.01.0907311218080.3161@localhost.localdomain>
+References: <200907311813.n6VIDe9S023442@voreg.hos.anvin.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Jul 2009, KOSAKI Motohiro wrote:
 
-> diff --git a/fs/proc/base.c b/fs/proc/base.c
-> index 3ce5ae9..c64499e 100644
-> --- a/fs/proc/base.c
-> +++ b/fs/proc/base.c
-> @@ -1008,7 +1008,7 @@ static ssize_t oom_adjust_read(struct file *file, char __user *buf,
->  		return -ESRCH;
->  	task_lock(task);
->  	if (task->mm)
-> -		oom_adjust = task->mm->oom_adj;
-> +		oom_adjust = task->signal->oom_adj;
->  	else
->  		oom_adjust = OOM_DISABLE;
->  	task_unlock(task);
 
-This may display a /proc/pid/oom_adj that is radically different from 
-task->mm->oom_adj_cached without knowledge to userspace and you can't 
-simply display task->mm>oom_adj_cached here because it gets reset on every 
-write to /proc/pid/oom_adj.
+On Fri, 31 Jul 2009, H. Peter Anvin wrote:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+> 
+> Tan, Wei Chong (1):
+>       x86: SMI workaround for pit_expect_msb
 
-> @@ -1046,12 +1046,13 @@ static ssize_t oom_adjust_write(struct file *file, const char __user *buf,
->  		put_task_struct(task);
->  		return -EINVAL;
->  	}
-> -	if (oom_adjust < task->mm->oom_adj && !capable(CAP_SYS_RESOURCE)) {
-> +	if (oom_adjust < task->signal->oom_adj && !capable(CAP_SYS_RESOURCE)) {
->  		task_unlock(task);
->  		put_task_struct(task);
->  		return -EACCES;
->  	}
-> -	task->mm->oom_adj = oom_adjust;
-> +	task->signal->oom_adj = oom_adjust;
-> +	task->mm->oom_adj_cached = OOM_CACHE_DEFAULT;
->  	task_unlock(task);
->  	put_task_struct(task);
->  	if (end - buffer == 0)
-> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
-> index 7acc843..f93f97f 100644
-> --- a/include/linux/mm_types.h
-> +++ b/include/linux/mm_types.h
-> @@ -240,7 +240,8 @@ struct mm_struct {
->  
->  	unsigned long saved_auxv[AT_VECTOR_SIZE]; /* for /proc/PID/auxv */
->  
-> -	s8 oom_adj;	/* OOM kill score adjustment (bit shift) */
-> +	s8 oom_adj_cached;	/* mirror from signal_struct->oom_adj.
-> +				   in vfork case, multiple processes use the same mm. */
->  
->  	cpumask_t cpu_vm_mask;
->  
-> diff --git a/include/linux/oom.h b/include/linux/oom.h
-> index a7979ba..a219480 100644
-> --- a/include/linux/oom.h
-> +++ b/include/linux/oom.h
-> @@ -3,6 +3,7 @@
->  
->  /* /proc/<pid>/oom_adj set to -17 protects from the oom-killer */
->  #define OOM_DISABLE (-17)
-> +#define OOM_CACHE_DEFAULT (15)
->  /* inclusive */
->  #define OOM_ADJUST_MIN (-16)
->  #define OOM_ADJUST_MAX 15
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 3ab08e4..e10b12b 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -629,6 +629,8 @@ struct signal_struct {
->  	unsigned audit_tty;
->  	struct tty_audit_buf *tty_audit_buf;
->  #endif
-> +
-> +	s8 oom_adj;	/* OOM kill score adjustment (bit shift) */
->  };
->  
->  /* Context switch must be unlocked if interrupts are to be enabled */
+I really think that last one (commit fb34a8ee86) is incorrect.
 
-I don't believe oom_adj is an appropriate use of signal_struct, sorry.
+We do _not_ want to do that SMI workaround in the loop, and the logic of 
+that patch is broken anyway.
 
-> diff --git a/kernel/exit.c b/kernel/exit.c
-> index 869dc22..c741a45 100644
-> --- a/kernel/exit.c
-> +++ b/kernel/exit.c
-> @@ -688,6 +689,7 @@ static void exit_mm(struct task_struct * tsk)
->  	enter_lazy_tlb(mm, current);
->  	/* We don't want this task to be frozen prematurely */
->  	clear_freeze_flag(tsk);
-> +	mm->oom_adj_cached = OOM_CACHE_DEFAULT;
->  	task_unlock(tsk);
->  	mm_update_next_owner(mm);
->  	mmput(mm);
+If an SMI kicks in, then it's true that tscp will be off, but that's what 
+the error term is there for. If the error term is sufficiently small, then 
+we don't care.
 
-This is similiar to an early proposal that wanted to keep an array of 
-oom_adj values for tasks attached to the mm in mm_struct.  The problem is 
-that you're obviously losing information about all threads attached to the 
-mm any time one of the threads exits or writes to /proc/pid/oom_adj.  That 
-information can only be regenerated with a tasklist scan.
+Sure, we might want the error term to be even smaller, but in no way does 
+it actually invalidate any of the logic - the 'tsc' reading is just a 
+guess anyway.
 
-> diff --git a/kernel/fork.c b/kernel/fork.c
-> index 9b42695..b7cb474 100644
-> --- a/kernel/fork.c
-> +++ b/kernel/fork.c
-> @@ -426,6 +427,7 @@ static struct mm_struct * mm_init(struct mm_struct * mm, struct task_struct *p)
->  	init_rwsem(&mm->mmap_sem);
->  	INIT_LIST_HEAD(&mm->mmlist);
->  	mm->flags = (current->mm) ? current->mm->flags : default_dump_filter;
-> +	mm->oom_adj_cached = OOM_CACHE_DEFAULT;
->  	mm->core_state = NULL;
->  	mm->nr_ptes = 0;
->  	set_mm_counter(mm, file_rss, 0);
-> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-> index 175a67a..eae2d78 100644
-> --- a/mm/oom_kill.c
-> +++ b/mm/oom_kill.c
-> @@ -58,7 +58,7 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
->  	unsigned long points, cpu_time, run_time;
->  	struct mm_struct *mm;
->  	struct task_struct *child;
-> -	int oom_adj;
-> +	s8 oom_adj;
->  
->  	task_lock(p);
->  	mm = p->mm;
-> @@ -66,7 +66,10 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
->  		task_unlock(p);
->  		return 0;
->  	}
-> -	oom_adj = mm->oom_adj;
-> +
-> +	if (mm->oom_adj_cached < p->signal->oom_adj)
-> +		mm->oom_adj_cached = p->signal->oom_adj;
+Also, I think that the real issue isn't even an SMI - but the fact that in 
+the very last iteration of the loop, there's no serializing instruction 
+_after_ the last 'rdtsc'. So even in the absense of SMI's, we do have a 
+situation where the cycle counter was read without proper serialization.
 
-This conditional will never be true since mm->oom_adj_cached is 
-initialized to 15, which is the upper bound on which p->signal->oom_adj 
-may ever be, so mm->oom_adj_cached never gets changed from 
-OOM_CACHE_DEFAULT.
+So I think the patch does fix something, I just think it's done the wrong 
+way.
 
-Thus, this patch doesn't even work, and you probably would have noticed 
-that if you'd checked /proc/pid/oom_score for any pid.
+The last check shouldn't be done the way that commit does it. It should be 
+done outside the outer loop, since _inside_ the outer loop, we'll be 
+testing that the PIT has the right MSB value has the right value in the 
+next iteration. 
 
-Even if mm->oom_adj_cached _was_ properly updated here, 
-/proc/pid/oom_score would be out of sync with more negative oom_adj values 
-for threads sharing the mm_struct since it calls badness() for only a 
-single thread.
+So only the _last_ iteration is special, because that's the one that 
+will not check the PIT MSB value any more, and because the final 
+'get_cycles()' isn't serialized.
 
-> +	oom_adj = mm->oom_adj_cached;
->  	if (oom_adj == OOM_DISABLE) {
->  		task_unlock(p);
->  		return 0;
-> @@ -350,7 +354,7 @@ static int oom_kill_task(struct task_struct *p)
->  
->  	task_lock(p);
->  	mm = p->mm;
-> -	if (!mm || mm->oom_adj == OOM_DISABLE) {
-> +	if (!mm || p->signal->oom_adj == OOM_DISABLE) {
->  		task_unlock(p);
->  		return 1;
->  	}
+In other words: 
+ - I'd like to move the PIT MSB check to after the last iteration, rather 
+   than in every iteration
+
+ - I think we should comment on the fact that it's also a serializing 
+   instruction and so 'fences in' the TSC read.
+
+Here's a suggested replacement - BUT NOTE THAT IT'S ENTIRELY UNTESTED!
+
+(Ok, so the patch is bigger than it strictly needs to be - I hate 
+repeating code, so I made that 'read PIT counter twice and compare MSB' be 
+a new helper routine)
+
+Hmm? What do you guys think?
+
+		Linus
+
+---
+ arch/x86/kernel/tsc.c |   29 ++++++++++++++++++++++-------
+ 1 files changed, 22 insertions(+), 7 deletions(-)
+
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index 6e1a368..71f4368 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -275,15 +275,20 @@ static unsigned long pit_calibrate_tsc(u32 latch, unsigned long ms, int loopmin)
+  * use the TSC value at the transitions to calculate a pretty
+  * good value for the TSC frequencty.
+  */
++static inline int pit_verify_msb(unsigned char val)
++{
++	/* Ignore LSB */
++	inb(0x42);
++	return inb(0x42) == val;
++}
++
+ static inline int pit_expect_msb(unsigned char val, u64 *tscp, unsigned long *deltap)
+ {
+ 	int count;
+ 	u64 tsc = 0;
+ 
+ 	for (count = 0; count < 50000; count++) {
+-		/* Ignore LSB */
+-		inb(0x42);
+-		if (inb(0x42) != val)
++		if (!pit_verify_msb(val))
+ 			break;
+ 		tsc = get_cycles();
+ 	}
+@@ -336,8 +341,7 @@ static unsigned long quick_pit_calibrate(void)
+ 	 * to do that is to just read back the 16-bit counter
+ 	 * once from the PIT.
+ 	 */
+-	inb(0x42);
+-	inb(0x42);
++	pit_verify_msb(0);
+ 
+ 	if (pit_expect_msb(0xff, &tsc, &d1)) {
+ 		for (i = 1; i <= MAX_QUICK_PIT_ITERATIONS; i++) {
+@@ -348,8 +352,19 @@ static unsigned long quick_pit_calibrate(void)
+ 			 * Iterate until the error is less than 500 ppm
+ 			 */
+ 			delta -= tsc;
+-			if (d1+d2 < delta >> 11)
+-				goto success;
++			if (d1+d2 >= delta >> 11)
++				continue;
++
++			/*
++			 * Check the PIT one more time to verify that
++			 * all TSC reads were stable wrt the PIT.
++			 *
++			 * This also guarantees serialization of the
++			 * last cycle read ('d2') in pit_expect_msb.
++			 */
++			if (!pit_verify_msb(0xfe - i))
++				break;
++			goto success;
+ 		}
+ 	}
+ 	printk("Fast TSC calibration failed\n");
