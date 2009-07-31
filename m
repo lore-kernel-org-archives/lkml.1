@@ -1,87 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751972AbZGaJg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751842AbZGaJoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751972AbZGaJg2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 05:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbZGaJg1
+	id S1751842AbZGaJoz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 05:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZGaJoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 05:36:27 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:61826 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751887AbZGaJgY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 05:36:24 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=dp7ngSnEbP6tw1TxJCmZUBDrDezx8NtLNdGVVxsQp8i7KqrzmiYbsiRzEKABd7MxV
-	dXCoYqjbGq+zyxkquB1nw==
-Date: Fri, 31 Jul 2009 02:36:17 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Paul Menage <menage@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
-In-Reply-To: <20090731093305.50bcc58d.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0907310231370.25447@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0907282125260.554@chino.kir.corp.google.com> <20090730180029.c4edcc09.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0907300219580.13674@chino.kir.corp.google.com> <20090730190216.5aae685a.kamezawa.hiroyu@jp.fujitsu.com>
- <alpine.DEB.2.00.0907301157100.9652@chino.kir.corp.google.com> <20090731093305.50bcc58d.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Fri, 31 Jul 2009 05:44:54 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:58992 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751766AbZGaJoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 05:44:54 -0400
+Date: Fri, 31 Jul 2009 11:44:47 +0200
+From: Pierre Ossman <pierre@ossman.eu>
+To: Nicolas Pitre <nico@cam.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mvsdio: fix handling of partial word at the end of PIO
+ transfer
+Message-ID: <20090731114447.26c6414f@mjolnir.ossman.eu>
+In-Reply-To: <alpine.LFD.2.00.0907101348210.3138@xanadu.home>
+References: <alpine.LFD.2.00.0907101348210.3138@xanadu.home>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-2023-1249033491-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Jul 2009, KAMEZAWA Hiroyuki wrote:
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-> > > Simply, reset_oom_adj_at_new_mm_context or some.
-> > > 
-> > 
-> > I think it's preferred to keep the name relatively short which is an 
-> > unfortuante requirement in this case.  I also prefer to start the name 
-> > with "oom_adj" so it appears alongside /proc/pid/oom_adj when listed 
-> > alphabetically.
-> > 
-> But misleading name is bad.
-> 
+--=_freyr.ossman.eu-2023-1249033491-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Can you help think of any names that start with oom_adj_* and are 
-relatively short?  I'd happily ack it.
+On Fri, 10 Jul 2009 14:19:42 -0400 (EDT)
+Nicolas Pitre <nico@cam.org> wrote:
 
-> Why don't you think select_bad_process()-> oom_kill_task() implementation is bad ?
+> Standard data flow for MMC/SD/SDIO cards requires that the mvsdio=20
+> controller be set for big endian operation.  This is causing problems=20
+> with buffers which length is not a multiple of 4 bytes as the last=20
+> partial word doesn't get shifted all the way and stored properly in=20
+> memory.  Let's compensate for this.
+>=20
+> Signed-off-by: Nicolas Pitre <nico@marvell.com>
+> CC: stable@kernel.org
+> ---
 
-It livelocks if a thread is chosen and passed to oom_kill_task() while 
-another per-thread oom_adj value is OOM_DISABLE for a thread sharing the 
-same memory.
+Queued.
 
-> IMHO, it's bad manner to fix an os-implementation problem by adding _new_ user
-> interface which is hard to understand.
-> 
+--=20
+     -- Pierre Ossman
 
-How else do you propose the oom killer use oom_adj values on a per-thread 
-basis without considering other threads sharing the same memory?  It does 
-no good for the oom killer to kill a thread if another one sharing its 
-memory is OOM_DISABLE because it can't kill all of them.  That means the 
-memory cannot be freed and it must choose another task, but the end result 
-is that it needlessly killed others.  That's not a desirable result, 
-sorry.
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
 
-> > In other words, the issue here is larger than the inheritance of the 
-> > oom_adj value amongst children, it addresses a livelock that neither of 
-> > your approaches solve.  The fix actually makes /proc/pid/oom_adj (and 
-> > /proc/pid/oom_score) consistent with how the oom killer behaves.
-> 
-> This oom_adj_child itself is not related to livelock problem. Don't make
-> the problem bigger than it is.
-> oom_adj_child itself is just a problem how to handle vfork().
-> 
+--=_freyr.ossman.eu-2023-1249033491-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
-Right, that's why it wasn't part of my original patchset which fixed the 
-livelock.  We had seen that others had use cases where they still needed 
-to set a newly initialized mm to have a starting oom_adj value different 
-from its parent.  That's entirely understandable, and that's why I 
-proposed oom_adj_child.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAkpyvRIACgkQ7b8eESbyJLhM9wCginNq8Fogjq6n7oZ5GWtwoyeO
+B40AniZ8ltMti1ZGqgUnfxYMfHqvsB/f
+=+M+H
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-2023-1249033491-0001-2--
