@@ -1,94 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752031AbZGaWka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752972AbZGaWsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752031AbZGaWka (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 18:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbZGaWk3
+	id S1752972AbZGaWsY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 18:48:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbZGaWsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 18:40:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46005 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750859AbZGaWk3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 18:40:29 -0400
-Date: Sat, 1 Aug 2009 00:29:59 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, eric.dumazet@gmail.com, drepper@redhat.com,
-       jens@mcbone.net, mingo@elte.hu, peterz@infradead.org,
-       sonnyrao@us.ibm.com, stable@kernel.org, tglx@linutronix.de,
-       torvalds@linux-foundation.org
-Subject: Re: + execve-must-clear-current-clear_child_tid.patch added to -mm
-	tree
-Message-ID: <20090731222959.GA8195@redhat.com>
-References: <200907312142.n6VLgKfx021454@imap1.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200907312142.n6VLgKfx021454@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 31 Jul 2009 18:48:23 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:33052 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751416AbZGaWsW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 18:48:22 -0400
+Date: Fri, 31 Jul 2009 15:47:17 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, linux-media@vger.kernel.org,
+       akpm <akpm@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       Antoine Jacquet <royale@zerezo.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: [PATCH -next] media/zr364xx: fix build errors
+Message-Id: <20090731154717.43efbbfc.randy.dunlap@oracle.com>
+In-Reply-To: <20090731180943.8f30c49d.sfr@canb.auug.org.au>
+References: <20090731180943.8f30c49d.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt003.oracle.com [141.146.116.12]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.4A737482.009A:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Eric Dumazet <eric.dumazet@gmail.com>
->
-> diff -puN fs/compat.c~execve-must-clear-current-clear_child_tid fs/compat.c
-> --- a/fs/compat.c~execve-must-clear-current-clear_child_tid
-> +++ a/fs/compat.c
-> @@ -1550,6 +1550,7 @@ int compat_do_execve(char * filename,
->  	mutex_unlock(&current->cred_guard_mutex);
->  	acct_update_integrals(current);
->  	free_bprm(bprm);
-> +	current->clear_child_tid = NULL;
->  	if (displaced)
->  		put_files_struct(displaced);
->  	return retval;
-> diff -puN fs/exec.c~execve-must-clear-current-clear_child_tid fs/exec.c
-> --- a/fs/exec.c~execve-must-clear-current-clear_child_tid
-> +++ a/fs/exec.c
-> @@ -1343,6 +1343,7 @@ int do_execve(char * filename,
->  	mutex_unlock(&current->cred_guard_mutex);
->  	acct_update_integrals(current);
->  	free_bprm(bprm);
-> +	current->clear_child_tid = NULL;
->  	if (displaced)
->  		put_files_struct(displaced);
->  	return retval;
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Perhaps it is better to change mm_release() ? It has to play with
-->clear_child_tid anyway.
+Fix build errors in zr364xx by adding selects:
 
-Oleg.
+zr364xx.c:(.text+0x195ed7): undefined reference to `videobuf_streamon'
+zr364xx.c:(.text+0x196030): undefined reference to `videobuf_dqbuf'
+zr364xx.c:(.text+0x1960c4): undefined reference to `videobuf_qbuf'
+zr364xx.c:(.text+0x196123): undefined reference to `videobuf_querybuf'
+zr364xx.c:(.text+0x196182): undefined reference to `videobuf_reqbufs'
+zr364xx.c:(.text+0x196224): undefined reference to `videobuf_queue_is_busy'
+zr364xx.c:(.text+0x196390): undefined reference to `videobuf_vmalloc_free'
+zr364xx.c:(.text+0x196571): undefined reference to `videobuf_iolock'
+zr364xx.c:(.text+0x196678): undefined reference to `videobuf_mmap_mapper'
+zr364xx.c:(.text+0x196760): undefined reference to `videobuf_poll_stream'
+zr364xx.c:(.text+0x19689a): undefined reference to `videobuf_read_one'
+zr364xx.c:(.text+0x1969ec): undefined reference to `videobuf_mmap_free'
+zr364xx.c:(.text+0x197862): undefined reference to `videobuf_queue_vmalloc_init'
+zr364xx.c:(.text+0x197a28): undefined reference to `videobuf_streamoff'
+zr364xx.c:(.text+0x198203): undefined reference to `videobuf_to_vmalloc'
+zr364xx.c:(.text+0x198603): undefined reference to `videobuf_streamoff'
+drivers/built-in.o: In function `free_buffer':
+zr364xx.c:(.text+0x19930c): undefined reference to `videobuf_vmalloc_free'
+drivers/built-in.o: In function `zr364xx_open':
+zr364xx.c:(.text+0x19a7de): undefined reference to `videobuf_queue_vmalloc_init'
+drivers/built-in.o: In function `read_pipe_completion':
+zr364xx.c:(.text+0x19b17f): undefined reference to `videobuf_to_vmalloc'
 
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -568,18 +568,18 @@ void mm_release(struct task_struct *tsk,
- 	 * the value intact in a core dump, and to save the unnecessary
- 	 * trouble otherwise.  Userland only wants this done for a sys_exit.
- 	 */
--	if (tsk->clear_child_tid
--	    && !(tsk->flags & PF_SIGNALED)
--	    && atomic_read(&mm->mm_users) > 1) {
--		u32 __user * tidptr = tsk->clear_child_tid;
-+	if (tsk->clear_child_tid) {
-+		if (!(tsk->flags & PF_SIGNALED) &&
-+		    atomic_read(&mm->mm_users) > 1) {
-+			/*
-+			 * We don't check the error code - if userspace has
-+			 * not set up a proper pointer then tough luck.
-+			 */
-+			put_user(0, tsk->clear_child_tid);
-+			sys_futex(tsk->clear_child_tid, FUTEX_WAKE,
-+					1, NULL, NULL, 0);
-+		}
- 		tsk->clear_child_tid = NULL;
--
--		/*
--		 * We don't check the error code - if userspace has
--		 * not set up a proper pointer then tough luck.
--		 */
--		put_user(0, tidptr);
--		sys_futex(tidptr, FUTEX_WAKE, 1, NULL, NULL, 0);
- 	}
- }
- 
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/media/video/Kconfig |    2 ++
+ 1 file changed, 2 insertions(+)
 
+--- linux-next-20090729.orig/drivers/media/video/Kconfig
++++ linux-next-20090729/drivers/media/video/Kconfig
+@@ -991,6 +991,8 @@ source "drivers/media/video/pwc/Kconfig"
+ config USB_ZR364XX
+ 	tristate "USB ZR364XX Camera support"
+ 	depends on VIDEO_V4L2
++	select VIDEOBUF_GEN
++	select VIDEOBUF_VMALLOC
+ 	---help---
+ 	  Say Y here if you want to connect this type of camera to your
+ 	  computer's USB port.
+
+
+
+
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
