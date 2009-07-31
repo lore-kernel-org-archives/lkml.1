@@ -1,202 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751883AbZGaGZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751825AbZGaG2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751883AbZGaGZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 02:25:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751800AbZGaGZ5
+	id S1751825AbZGaG2d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 02:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbZGaG2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 02:25:57 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:41021 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751160AbZGaGZ4 (ORCPT
+	Fri, 31 Jul 2009 02:28:33 -0400
+Received: from n57.bullet.mail.sp1.yahoo.com ([98.136.44.49]:30080 "HELO
+	n57.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751089AbZGaG2c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 02:25:56 -0400
-Message-ID: <4A728E74.1070805@oss.ntt.co.jp>
-Date: Fri, 31 Jul 2009 15:25:56 +0900
-From: =?UTF-8?B?RmVybmFuZG8gTHVpcyBWw6F6cXVleiBDYW8=?= 
-	<fernando@oss.ntt.co.jp>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Fri, 31 Jul 2009 02:28:32 -0400
+X-Greylist: delayed 361 seconds by postgrey-1.27 at vger.kernel.org; Fri, 31 Jul 2009 02:28:32 EDT
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 494069.16551.bm@omp102.mail.gq1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=ymail.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type;
+  b=nRhhZ/9+ThtuO+usPybJZI2Tv0sKICTrWM58BDIzYchWx71dZW0SYjQv0iKf1uYVv446nnzNIypzUZIp4S72/vMWgQMGzrjgHl/XPUUi5FQtRFBAbTjIsI2PKSNJnK5TkGZklfBNnvq+hYbyZIO3DxG0ZxWxLsXAVjD2vjYdKw4=;
+Message-ID: <937390.49428.qm@web111003.mail.gq1.yahoo.com>
+X-YMail-OSG: lDue6qoVM1kM_CF._KqiwUS84nDrvi7YERnxdqz_g9m2e7xbb8Y0wd0Y3tucPFh7NJR2J1N40x1EqmbGySthTJ1ddwdeAdOXgWfepkUT0UV.E1pIcnm8zv4maOxt7WgWTfv.xG67CwOR1zmCddwnPQs8bd4jPjFnL_ixUyBur6g5tdXq0_zIsO6FC7m66rYEWJnlVfIhMaNl_gHWL1Z1IshcHDZjWnIbE7o5hzcna7BT9dsHXnLboImqj6K7GBJD4DOgOqRCjQrp1Cip0A--
+X-Mailer: YahooMailClassic/6.0.19 YahooMailWebService/0.7.338.2
+Date: Thu, 30 Jul 2009 23:22:31 -0700 (PDT)
+From: Andrew Watts <akwatts@ymail.com>
+Subject: Bug report (suspend to disk is broken in 2.6.29+ with EIDE drive)
+To: linux-kernel@vger.kernel.org
+Cc: akwatts@ymail.com
 MIME-Version: 1.0
-To: rusty@rustcorp.com.au,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Add virtio IDs file
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Virtio IDs are spread all over the tree which makes assigning new IDs
-bothersome. Putting them together should make the process less error-prone.
+Description: s2disk worked in 2.6.28 and no longer works in 2.6.30.2
+(s2disk here means: echo disk > /sys/power/state); screen blanks but
+system hangs.
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
----
+Bisection reveals that the problem commit has hash:
+295f00042aaf6b553b5f37348f89bab463d4a469.
 
-diff -urNp linux-2.6.31-rc4-orig/Documentation/lguest/lguest.c linux-2.6.31-rc4/Documentation/lguest/lguest.c
---- linux-2.6.31-rc4-orig/Documentation/lguest/lguest.c	2009-07-29 17:13:14.416245339 +0900
-+++ linux-2.6.31-rc4/Documentation/lguest/lguest.c	2009-07-31 13:40:56.315410807 +0900
-@@ -40,6 +40,7 @@
-  #include <signal.h>
-  #include "linux/lguest_launcher.h"
-  #include "linux/virtio_config.h"
-+#include <linux/virtio_ids.h>
-  #include "linux/virtio_net.h"
-  #include "linux/virtio_blk.h"
-  #include "linux/virtio_console.h"
-diff -urNp linux-2.6.31-rc4-orig/drivers/block/virtio_blk.c linux-2.6.31-rc4/drivers/block/virtio_blk.c
---- linux-2.6.31-rc4-orig/drivers/block/virtio_blk.c	2009-07-29 17:14:42.447244755 +0900
-+++ linux-2.6.31-rc4/drivers/block/virtio_blk.c	2009-07-31 13:41:32.679092389 +0900
-@@ -3,6 +3,7 @@
-  #include <linux/blkdev.h>
-  #include <linux/hdreg.h>
-  #include <linux/virtio.h>
-+#include <linux/virtio_ids.h>
-  #include <linux/virtio_blk.h>
-  #include <linux/scatterlist.h>
+~Andy
 
-diff -urNp linux-2.6.31-rc4-orig/drivers/char/hw_random/virtio-rng.c linux-2.6.31-rc4/drivers/char/hw_random/virtio-rng.c
---- linux-2.6.31-rc4-orig/drivers/char/hw_random/virtio-rng.c	2009-07-29 17:14:45.415742419 +0900
-+++ linux-2.6.31-rc4/drivers/char/hw_random/virtio-rng.c	2009-07-31 13:43:03.476180870 +0900
-@@ -21,6 +21,7 @@
-  #include <linux/scatterlist.h>
-  #include <linux/spinlock.h>
-  #include <linux/virtio.h>
-+#include <linux/virtio_ids.h>
-  #include <linux/virtio_rng.h>
+PS I wrote some months ago about a thermal problem on my HW with
+2.6.28 (needed noapic, nolapic to have it not run hot @ idle).
+This problem has disappeared in 2.6.30.2. Any devs have an idea what
+commit fixed this?
 
-  /* The host will fill any buffer we give it with sweet, sweet randomness.  We
-diff -urNp linux-2.6.31-rc4-orig/drivers/char/virtio_console.c linux-2.6.31-rc4/drivers/char/virtio_console.c
---- linux-2.6.31-rc4-orig/drivers/char/virtio_console.c	2009-07-29 17:14:49.507745715 +0900
-+++ linux-2.6.31-rc4/drivers/char/virtio_console.c	2009-07-31 13:45:23.170519870 +0900
-@@ -31,6 +31,7 @@
-  #include <linux/err.h>
-  #include <linux/init.h>
-  #include <linux/virtio.h>
-+#include <linux/virtio_ids.h>
-  #include <linux/virtio_console.h>
-  #include "hvc_console.h"
 
-diff -urNp linux-2.6.31-rc4-orig/drivers/net/virtio_net.c linux-2.6.31-rc4/drivers/net/virtio_net.c
---- linux-2.6.31-rc4-orig/drivers/net/virtio_net.c	2009-07-29 17:15:48.727745405 +0900
-+++ linux-2.6.31-rc4/drivers/net/virtio_net.c	2009-07-31 13:46:13.937912171 +0900
-@@ -22,6 +22,7 @@
-  #include <linux/ethtool.h>
-  #include <linux/module.h>
-  #include <linux/virtio.h>
-+#include <linux/virtio_ids.h>
-  #include <linux/virtio_net.h>
-  #include <linux/scatterlist.h>
-  #include <linux/if_vlan.h>
-diff -urNp linux-2.6.31-rc4-orig/drivers/virtio/virtio_balloon.c linux-2.6.31-rc4/drivers/virtio/virtio_balloon.c
---- linux-2.6.31-rc4-orig/drivers/virtio/virtio_balloon.c	2009-07-29 17:16:29.155745508 +0900
-+++ linux-2.6.31-rc4/drivers/virtio/virtio_balloon.c	2009-07-31 13:47:18.547759028 +0900
-@@ -19,6 +19,7 @@
-   */
-  //#define DEBUG
-  #include <linux/virtio.h>
-+#include <linux/virtio_ids.h>
-  #include <linux/virtio_balloon.h>
-  #include <linux/swap.h>
-  #include <linux/kthread.h>
-diff -urNp linux-2.6.31-rc4-orig/include/linux/virtio_9p.h linux-2.6.31-rc4/include/linux/virtio_9p.h
---- linux-2.6.31-rc4-orig/include/linux/virtio_9p.h	2009-06-10 12:05:27.000000000 +0900
-+++ linux-2.6.31-rc4/include/linux/virtio_9p.h	2009-07-31 13:51:35.907410676 +0900
-@@ -4,8 +4,6 @@
-   * compatible drivers/servers. */
-  #include <linux/virtio_config.h>
+      
 
--/* The ID for virtio console */
--#define VIRTIO_ID_9P	9
-  /* Maximum number of virtio channels per partition (1 for now) */
-  #define MAX_9P_CHAN	1
-
-diff -urNp linux-2.6.31-rc4-orig/include/linux/virtio_balloon.h linux-2.6.31-rc4/include/linux/virtio_balloon.h
---- linux-2.6.31-rc4-orig/include/linux/virtio_balloon.h	2009-06-10 12:05:27.000000000 +0900
-+++ linux-2.6.31-rc4/include/linux/virtio_balloon.h	2009-07-31 13:53:30.395410975 +0900
-@@ -4,9 +4,6 @@
-   * compatible drivers/servers. */
-  #include <linux/virtio_config.h>
-
--/* The ID for virtio_balloon */
--#define VIRTIO_ID_BALLOON	5
--
-  /* The feature bitmap for virtio balloon */
-  #define VIRTIO_BALLOON_F_MUST_TELL_HOST	0 /* Tell before reclaiming pages */
-
-diff -urNp linux-2.6.31-rc4-orig/include/linux/virtio_blk.h linux-2.6.31-rc4/include/linux/virtio_blk.h
---- linux-2.6.31-rc4-orig/include/linux/virtio_blk.h	2009-07-29 17:17:36.274541593 +0900
-+++ linux-2.6.31-rc4/include/linux/virtio_blk.h	2009-07-31 14:00:29.715412122 +0900
-@@ -5,9 +5,6 @@
-  #include <linux/types.h>
-  #include <linux/virtio_config.h>
-
--/* The ID for virtio_block */
--#define VIRTIO_ID_BLOCK	2
--
-  /* Feature bits */
-  #define VIRTIO_BLK_F_BARRIER	0	/* Does host support barriers? */
-  #define VIRTIO_BLK_F_SIZE_MAX	1	/* Indicates maximum segment size */
-diff -urNp linux-2.6.31-rc4-orig/include/linux/virtio_console.h linux-2.6.31-rc4/include/linux/virtio_console.h
---- linux-2.6.31-rc4-orig/include/linux/virtio_console.h	2009-06-10 12:05:27.000000000 +0900
-+++ linux-2.6.31-rc4/include/linux/virtio_console.h	2009-07-31 13:56:07.087410608 +0900
-@@ -5,9 +5,6 @@
-  /* This header, excluding the #ifdef __KERNEL__ part, is BSD licensed so
-   * anyone can use the definitions to implement compatible drivers/servers. */
-
--/* The ID for virtio console */
--#define VIRTIO_ID_CONSOLE	3
--
-  /* Feature bits */
-  #define VIRTIO_CONSOLE_F_SIZE	0	/* Does host provide console size? */
-
-diff -urNp linux-2.6.31-rc4-orig/include/linux/virtio_ids.h linux-2.6.31-rc4/include/linux/virtio_ids.h
---- linux-2.6.31-rc4-orig/include/linux/virtio_ids.h	1970-01-01 09:00:00.000000000 +0900
-+++ linux-2.6.31-rc4/include/linux/virtio_ids.h	2009-07-31 14:01:08.738140436 +0900
-@@ -0,0 +1,13 @@
-+/*
-+ * Virtio IDs
-+ *
-+ * This header is BSD licensed so anyone can use the definitions to implement
-+ * compatible drivers/servers.
-+ */
-+
-+#define VIRTIO_ID_NET		1 /* virtio net */
-+#define VIRTIO_ID_BLOCK		2 /* virtio block */
-+#define VIRTIO_ID_CONSOLE	3 /* virtio console */
-+#define VIRTIO_ID_RNG		4 /* virtio ring */
-+#define VIRTIO_ID_BALLOON	5 /* virtio balloon */
-+#define VIRTIO_ID_9P		9 /* 9p virtio console */
-diff -urNp linux-2.6.31-rc4-orig/include/linux/virtio_net.h linux-2.6.31-rc4/include/linux/virtio_net.h
---- linux-2.6.31-rc4-orig/include/linux/virtio_net.h	2009-07-29 17:17:36.475242342 +0900
-+++ linux-2.6.31-rc4/include/linux/virtio_net.h	2009-07-31 14:02:02.259866229 +0900
-@@ -6,9 +6,6 @@
-  #include <linux/virtio_config.h>
-  #include <linux/if_ether.h>
-
--/* The ID for virtio_net */
--#define VIRTIO_ID_NET	1
--
-  /* The feature bitmap for virtio net */
-  #define VIRTIO_NET_F_CSUM	0	/* Host handles pkts w/ partial csum */
-  #define VIRTIO_NET_F_GUEST_CSUM	1	/* Guest handles pkts w/ partial csum */
-diff -urNp linux-2.6.31-rc4-orig/include/linux/virtio_rng.h linux-2.6.31-rc4/include/linux/virtio_rng.h
---- linux-2.6.31-rc4-orig/include/linux/virtio_rng.h	2009-06-10 12:05:27.000000000 +0900
-+++ linux-2.6.31-rc4/include/linux/virtio_rng.h	2009-07-31 13:59:35.223412171 +0900
-@@ -4,7 +4,4 @@
-   * compatible drivers/servers. */
-  #include <linux/virtio_config.h>
-
--/* The ID for virtio_rng */
--#define VIRTIO_ID_RNG	4
--
-  #endif /* _LINUX_VIRTIO_RNG_H */
-diff -urNp linux-2.6.31-rc4-orig/net/9p/trans_virtio.c linux-2.6.31-rc4/net/9p/trans_virtio.c
---- linux-2.6.31-rc4-orig/net/9p/trans_virtio.c	2009-07-31 12:15:04.537910882 +0900
-+++ linux-2.6.31-rc4/net/9p/trans_virtio.c	2009-07-31 14:03:15.287410913 +0900
-@@ -43,6 +43,7 @@
-  #include <net/9p/transport.h>
-  #include <linux/scatterlist.h>
-  #include <linux/virtio.h>
-+#include <linux/virtio_ids.h>
-  #include <linux/virtio_9p.h>
-
-  #define VIRTQUEUE_NUM	128
