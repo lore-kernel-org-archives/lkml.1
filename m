@@ -1,71 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751842AbZGaJoz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751948AbZGaJwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751842AbZGaJoz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 05:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZGaJoy
+	id S1751948AbZGaJwj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 05:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbZGaJwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 05:44:54 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:58992 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751766AbZGaJoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 05:44:54 -0400
-Date: Fri, 31 Jul 2009 11:44:47 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: Nicolas Pitre <nico@cam.org>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mvsdio: fix handling of partial word at the end of PIO
- transfer
-Message-ID: <20090731114447.26c6414f@mjolnir.ossman.eu>
-In-Reply-To: <alpine.LFD.2.00.0907101348210.3138@xanadu.home>
-References: <alpine.LFD.2.00.0907101348210.3138@xanadu.home>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-2023-1249033491-0001-2"
+	Fri, 31 Jul 2009 05:52:38 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:38660 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751661AbZGaJwh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 05:52:37 -0400
+Date: Fri, 31 Jul 2009 10:52:34 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jarkko Nikula <jhnikula@gmail.com>, Jonathan McDowell <noodles@earth.li>,
+       Peter Ujfalusi <peter.ujfalusi@nokia.com>,
+       Tony Lindgren <tony@atomide.com>, alsa-devel@alsa-project.org,
+       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       e3-hacking@earth.li, Arun KS <arunks@mistralsolutions.com>
+Subject: Re: [RFC] [PATCH 3/3 v2] ASoC: add support for Amstrad E3 (Delta)
+ machine
+Message-ID: <20090731095234.GB10844@rakim.wolfsonmicro.main>
+References: <200907291318.54897.jkrzyszt@tis.icnet.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200907291318.54897.jkrzyszt@tis.icnet.pl>
+X-Cookie: I have a TINY BOWL in my HEAD
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Wed, Jul 29, 2009 at 01:18:53PM +0200, Janusz Krzysztofik wrote:
 
---=_freyr.ossman.eu-2023-1249033491-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+> 2) patch 2/3 form this series: TTY: Add definition of a new line
+>    discipline required by Amstrad E3 (Delta) ASoC driver[2].
 
-On Fri, 10 Jul 2009 14:19:42 -0400 (EDT)
-Nicolas Pitre <nico@cam.org> wrote:
-
-> Standard data flow for MMC/SD/SDIO cards requires that the mvsdio=20
-> controller be set for big endian operation.  This is causing problems=20
-> with buffers which length is not a multiple of 4 bytes as the last=20
-> partial word doesn't get shifted all the way and stored properly in=20
-> memory.  Let's compensate for this.
->=20
-> Signed-off-by: Nicolas Pitre <nico@marvell.com>
-> CC: stable@kernel.org
-> ---
-
-Queued.
-
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-2023-1249033491-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkpyvRIACgkQ7b8eESbyJLhM9wCginNq8Fogjq6n7oZ5GWtwoyeO
-B40AniZ8ltMti1ZGqgUnfxYMfHqvsB/f
-=+M+H
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-2023-1249033491-0001-2--
+The ASoC parts of this all look OK - what's the status of the TTY patch?
