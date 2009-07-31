@@ -1,223 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753075AbZGaC3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752232AbZGaDJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753075AbZGaC3L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 22:29:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbZGaC3J
+	id S1752232AbZGaDJA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 23:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbZGaDI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 22:29:09 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:56102 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752855AbZGaC3G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 22:29:06 -0400
-Date: Thu, 30 Jul 2009 22:29:04 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>
-cc: Thomas Gleixner <tglx@linutronix.de>,
-       Clark Williams <clark.williams@gmail.com>,
-       Darren Hart <dvhltc@us.ibm.com>
-Subject: [PATCH][RT] stacktrace: dump out last preempt disable locations
-Message-ID: <alpine.DEB.2.00.0907302225500.21267@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 30 Jul 2009 23:08:59 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52425 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750896AbZGaDI6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 23:08:58 -0400
+Message-ID: <4A7260A5.2040502@cn.fujitsu.com>
+Date: Fri, 31 Jul 2009 11:10:29 +0800
+From: Shan Wei <shanwei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH]cfq: add the document of the tuning parameters
+References: <4A715DB5.1020502@cn.fujitsu.com> <4A7160B5.8010301@cn.fujitsu.com>
+In-Reply-To: <4A7160B5.8010301@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas,
+This little file attempts to document how the cfq io scheduler works.
+In particular, it will clarify the meaning of the tuning parameters. 
 
-This patch was somehow dropped from the 31-rt port. It is very useful 
-since it shows the last locations that preemption was disabled. The bugs 
-that Darren and Clark are seeing would probably be spotted by this patch. 
-Could you add it back.
 
-Ingo wrote the original version of this code, but as things changed I 
-needed to rewrite it.
+Signed-off-by: Shan Wei <shanwei@cn.fujitsu.com>
+Cc: Randy Dunlap <rdunlap@xenotime.net>
 
--- Steve
-
------
-Track preempt disable nesting
-
-This code was largly influenced by work from Ingo Molnar.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- arch/arm/kernel/traps.c      |    1 +
- include/linux/preempt.h      |    3 ++-
- include/linux/sched.h        |   11 +++++++++++
- kernel/sched.c               |   17 +++++++++++++++--
- kernel/trace/Kconfig         |    8 ++++++++
- kernel/trace/Makefile        |    2 ++
- kernel/trace/preempt-trace.c |   30 ++++++++++++++++++++++++++++++
- 7 files changed, 69 insertions(+), 3 deletions(-)
+ Documentation/block/00-INDEX        |    2 +
+ Documentation/block/cfq-iosched.txt |   82 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 84 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/block/cfq-iosched.txt
 
-Index: linux-2.6.31-rc4-rt1/arch/arm/kernel/traps.c
-===================================================================
---- linux-2.6.31-rc4-rt1.orig/arch/arm/kernel/traps.c	2009-07-30 21:28:57.000000000 -0400
-+++ linux-2.6.31-rc4-rt1/arch/arm/kernel/traps.c	2009-07-30 21:30:58.000000000 -0400
-@@ -365,6 +365,7 @@ asmlinkage void do_unexp_fiq (struct pt_
- {
- 	printk("Hmm.  Unexpected FIQ received, but trying to continue\n");
- 	printk("You may have a hardware problem...\n");
-+	print_preempt_trace(current);
- }
- 
- /*
-Index: linux-2.6.31-rc4-rt1/include/linux/preempt.h
-===================================================================
---- linux-2.6.31-rc4-rt1.orig/include/linux/preempt.h	2009-07-30 21:28:58.000000000 -0400
-+++ linux-2.6.31-rc4-rt1/include/linux/preempt.h	2009-07-30 21:30:58.000000000 -0400
-@@ -10,7 +10,8 @@
- #include <linux/linkage.h>
- #include <linux/list.h>
- 
--#if defined(CONFIG_DEBUG_PREEMPT) || defined(CONFIG_PREEMPT_TRACER)
-+#if defined(CONFIG_DEBUG_PREEMPT) || defined(CONFIG_PREEMPT_TRACER) || \
-+	defined(CONFIG_PREEMPT_TRACE)
-   extern void add_preempt_count(int val);
-   extern void sub_preempt_count(int val);
- #else
-Index: linux-2.6.31-rc4-rt1/include/linux/sched.h
-===================================================================
---- linux-2.6.31-rc4-rt1.orig/include/linux/sched.h	2009-07-30 21:28:58.000000000 -0400
-+++ linux-2.6.31-rc4-rt1/include/linux/sched.h	2009-07-30 21:33:50.000000000 -0400
-@@ -1437,6 +1437,11 @@ struct task_struct {
- 
- #define MAX_PREEMPT_TRACE 25
- #define MAX_LOCK_STACK	MAX_PREEMPT_TRACE
-+#ifdef CONFIG_PREEMPT_TRACE
-+	unsigned long preempt_trace_eip[MAX_PREEMPT_TRACE];
-+	unsigned long preempt_trace_parent_eip[MAX_PREEMPT_TRACE];
-+#endif
+diff --git a/Documentation/block/00-INDEX b/Documentation/block/00-INDEX
+index 961a051..2ce5c7a 100644
+--- a/Documentation/block/00-INDEX
++++ b/Documentation/block/00-INDEX
+@@ -8,6 +8,8 @@ biodoc.txt
+ 	- Notes on the Generic Block Layer Rewrite in Linux 2.5
+ capability.txt
+ 	- Generic Block Device Capability (/sys/block/<disk>/capability)
++cfq-iosched.txt
++	- CFQ(Complete Fairness Queueing) IO scheduler tunables
+ deadline-iosched.txt
+ 	- Deadline IO scheduler tunables
+ ioprio.txt
+diff --git a/Documentation/block/cfq-iosched.txt b/Documentation/block/cfq-iosched.txt
+new file mode 100644
+index 0000000..ccf5c61
+--- /dev/null
++++ b/Documentation/block/cfq-iosched.txt
+@@ -0,0 +1,82 @@
++CFQ(Complete Fairness Queueing) IO scheduler tunables
++=====================================================
++Shan Wei <shanwei@cn.fujitsu.com>         30 Jun 2009
 +
- #ifdef CONFIG_DEBUG_PREEMPT
- 	atomic_t lock_count;
- # ifdef CONFIG_PREEMPT_RT
-@@ -2605,6 +2610,12 @@ static inline int task_is_current(struct
- }
- #endif
- 
-+#ifdef CONFIG_PREEMPT_TRACE
-+void print_preempt_trace(struct task_struct *tsk);
-+#else
-+static inline void print_preempt_trace(struct task_struct *tsk) { }
-+#endif
 +
- #endif /* __KERNEL__ */
- 
- #endif
-Index: linux-2.6.31-rc4-rt1/kernel/sched.c
-===================================================================
---- linux-2.6.31-rc4-rt1.orig/kernel/sched.c	2009-07-30 21:28:58.000000000 -0400
-+++ linux-2.6.31-rc4-rt1/kernel/sched.c	2009-07-30 22:01:03.000000000 -0400
-@@ -5349,10 +5349,14 @@ EXPORT_SYMBOL(preempt_enable_no_resched)
- #endif
- 
- #if defined(CONFIG_PREEMPT) && (defined(CONFIG_DEBUG_PREEMPT) || \
--				defined(CONFIG_PREEMPT_TRACER))
-+				defined(CONFIG_PREEMPT_TRACER) || \
-+				defined(CONFIG_PREEMPT_TRACE))
- 
- void __kprobes add_preempt_count(int val)
- {
-+	unsigned long eip = CALLER_ADDR0;
-+	unsigned long parent_eip = get_parent_ip(CALLER_ADDR1);
++The main goal of he "Complete Fairness Queueing" elevator is ensuring
++a fair allocation of the disk I/O bandwidth among all the processes
++that trigger the I/O requests.
 +
- #ifdef CONFIG_DEBUG_PREEMPT
- 	/*
- 	 * Underflow?
-@@ -5361,6 +5365,15 @@ void __kprobes add_preempt_count(int val
- 		return;
- #endif
- 	preempt_count() += val;
-+#ifdef CONFIG_PREEMPT_TRACE
-+	if (val <= 10) {
-+		unsigned int idx = preempt_count() & PREEMPT_MASK;
-+		if (idx < MAX_PREEMPT_TRACE) {
-+			current->preempt_trace_eip[idx] = eip;
-+			current->preempt_trace_parent_eip[idx] = parent_eip;
-+		}
-+	}
-+#endif
- #ifdef CONFIG_DEBUG_PREEMPT
- 	/*
- 	 * Spinlock count overflowing soon?
-@@ -5369,7 +5382,7 @@ void __kprobes add_preempt_count(int val
- 				PREEMPT_MASK - 10);
- #endif
- 	if (preempt_count() == val)
--		trace_preempt_off(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
-+		trace_preempt_off(eip, parent_eip);
- }
- EXPORT_SYMBOL(add_preempt_count);
- 
-Index: linux-2.6.31-rc4-rt1/kernel/trace/Kconfig
-===================================================================
---- linux-2.6.31-rc4-rt1.orig/kernel/trace/Kconfig	2009-07-30 21:28:58.000000000 -0400
-+++ linux-2.6.31-rc4-rt1/kernel/trace/Kconfig	2009-07-30 21:36:14.000000000 -0400
-@@ -502,6 +502,14 @@ config RING_BUFFER_BENCHMARK
- 
- 	  If unsure, say N
- 
-+config PREEMPT_TRACE
-+	bool "Keep a record of preempt disabled spots"
-+	depends on DEBUG_KERNEL
-+	depends on PREEMPT
-+	select TRACING
-+	help
-+	  Keeps a record of the last 25 preempt disabled locations.
++For synchronous requests, CFQ creates per-process queues to manage the requests.
++But asynchronous requests are batched together in fewer queues,
++one per IO priority. See Documentation/block/ioprio.txt for details
++of the IO priority. CFQ schedules queues in a round-robin manner and
++dispatches requests in queue's time slice, so that it can ensure that
++every process accesses the disk fairly.
 +
- endif # FTRACE
- 
- endif # TRACING_SUPPORT
-Index: linux-2.6.31-rc4-rt1/kernel/trace/Makefile
-===================================================================
---- linux-2.6.31-rc4-rt1.orig/kernel/trace/Makefile	2009-07-30 21:26:32.000000000 -0400
-+++ linux-2.6.31-rc4-rt1/kernel/trace/Makefile	2009-07-30 21:34:40.000000000 -0400
-@@ -55,4 +55,6 @@ obj-$(CONFIG_FTRACE_SYSCALLS) += trace_s
- obj-$(CONFIG_EVENT_PROFILE) += trace_event_profile.o
- obj-$(CONFIG_EVENT_TRACING) += trace_events_filter.o
- 
-+obj-$(CONFIG_PREEMPT_TRACE) += preempt-trace.o
++Now, CFQ is the default IO scheduler.
 +
- libftrace-y := ftrace.o
-Index: linux-2.6.31-rc4-rt1/kernel/trace/preempt-trace.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.31-rc4-rt1/kernel/trace/preempt-trace.c	2009-07-30 21:30:58.000000000 -0400
-@@ -0,0 +1,30 @@
-+#include <linux/sched.h>
-+#include <linux/hardirq.h>
-+#include <linux/kallsyms.h>
 +
-+void print_preempt_trace(struct task_struct *task)
-+{
-+	unsigned int count;
-+	unsigned int i, lim;
++Selecting IO schedulers
++-----------------------
++Refer to Documentation/block/switching-sched.txt for information on
++selecting an io scheduler on a per-device basis.
 +
-+	if (!task)
-+		task = current;
 +
-+	count = task_thread_info(task)->preempt_count;
-+	lim = count & PREEMPT_MASK;
++Tuning the CFQ IO scheduler
++---------------------------
++When using 'cfq', there are 9 parameters under /sys/block/*/queue/iosched/.
 +
-+	if (lim >= MAX_PREEMPT_TRACE)
-+		lim = MAX_PREEMPT_TRACE-1;
-+	printk("---------------------------\n");
-+	printk("| preempt count: %08x ]\n", count);
-+	printk("| %d-level deep critical section nesting:\n", lim);
-+	printk("----------------------------------------\n");
-+	for (i = 1; i <= lim; i++) {
-+		printk(".. [<%08lx>] .... ", task->preempt_trace_eip[i]);
-+		print_symbol("%s\n", task->preempt_trace_eip[i]);
-+		printk(".....[<%08lx>] ..   ( <= ",
-+				task->preempt_trace_parent_eip[i]);
-+		print_symbol("%s)\n", task->preempt_trace_parent_eip[i]);
-+	}
-+	printk("\n");
-+}
-
++The parameters are:
++* back_seek_max 	(in KByte)
++    The parameter sets the max distance for backward seeking,
++    default is 16MBytes. The idea comes from the AS scheduler.
++    Like forward requests, CFQ may dispatch a back request that accesses sector
++    at the backward of current magnetic head.
++
++* back_seek_penalty
++    The parameter is used to calculate the cost of backward seeking,
++    default is 2. Relative to front request, if the backward distance of
++    a request is just 1/2 (1/back_seek_penalty) of it,
++    the seeking cost of the two requests is considered equivalent.
++
++* fifo_expire_async	(in ms)
++    The parameter is used to set the timeout of asynchronous requests,
++    default is 250ms. CFQ maintains a fifo list to manage timeout requests.
++    CFQ doesn't check the expired requests from the fifo queue, after one
++    timeout request is dispatched.
++
++* fifo_expire_sync	(in ms)
++    Same as fifo_expire_async, but the parameter is for synchronous requests,
++    default is 125ms.
++
++* slice_sync	(in ms)
++    The parameter is used to calculate time slice of synchronous queue,
++    default is 100ms. But the actual time slice also depends on
++    the io priority. The formula is:
++    time_slice = slice_sync + (slice_sync / 5 * (4 - io_priority)).
++
++* slice_async	(in ms)
++    Same as slice_sync, but the parameter is for asynchronous queue,
++    default is 40ms.
++
++* slice_async_rq
++    The parameter is used to limit dispatching of asynchronous requests
++    to the device request-queue in queue's slice time, default is 2.
++    The max number of requests that are allowed to be dispatched also
++    depends on the io priority. The formula is: max_nr_requests =
++    2 * (slice_async_rq + slice_async_rq * (7 - io_priority)).
++
++* slice_idle	(in ms)
++    The parameter is the idle time for synchronous queue only, default is 8ms.
++    In queue's time slice, when there is no request in the synchronous queue,
++    CFQ will not switch to another queue, but idle to wait for process creating
++    more requests. If no new requests are submitted, the queue will expire.
++
++* quantum	(number of requests)
++    The number of dispatched requests to the device request-queue is restricted
++    by this parameter, default is 4. In queue's time slice, request will not be
++    dispatched if the number of requests in the device request-queue
++    exceeds the limit. For asynchronous queue, dispatching is also
++    restricted by slice_async_rq. Note, the parameter has no effect
++    on the IDLE queue(IDLE is the class of the IO priority).
+-- 
+1.6.0.4
