@@ -1,28 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751340AbZGaIQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751480AbZGaIZZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751340AbZGaIQu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 04:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750966AbZGaIQt
+	id S1751480AbZGaIZZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 04:25:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbZGaIZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 04:16:49 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:40552 "EHLO mx2.suse.de"
+	Fri, 31 Jul 2009 04:25:24 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54729 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750861AbZGaIQr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 04:16:47 -0400
-Date: Fri, 31 Jul 2009 10:16:46 +0200
-Message-ID: <s5hljm5i7wx.wl%tiwai@suse.de>
+	id S1751155AbZGaIZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 04:25:23 -0400
+Date: Fri, 31 Jul 2009 10:25:22 +0200
+Message-ID: <s5hiqh9i7il.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Julia Lawall <julia@diku.dk>
-Cc: Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@ozlabs.org,
-       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 5/5] sound/aoa: Add kmalloc NULL tests
-In-Reply-To: <Pine.LNX.4.64.0907310831330.13462@ask.diku.dk>
-References: <Pine.LNX.4.64.0907301610550.8734@ask.diku.dk>
-	<1248963420.16129.0.camel@johannes.local>
-	<Pine.LNX.4.64.0907301627260.8734@ask.diku.dk>
-	<s5hws5pid6u.wl%tiwai@suse.de>
-	<Pine.LNX.4.64.0907310831330.13462@ask.diku.dk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sound fixes
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.3
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -32,67 +24,156 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Fri, 31 Jul 2009 08:32:03 +0200 (CEST),
-Julia Lawall wrote:
-> 
-> From: Julia Lawall <julia@diku.dk>
-> 
-> Check that the result of kzalloc is not NULL before a dereference.
-> 
-> The semantic match that finds this problem is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @@
-> expression *x;
-> identifier f;
-> constant char *C;
-> @@
-> 
-> x = \(kmalloc\|kcalloc\|kzalloc\)(...);
-> ... when != x == NULL
->     when != x != NULL
->     when != (x || ...)
-> (
-> kfree(x)
-> |
-> f(...,C,...,x,...)
-> |
-> *f(...,x,...)
-> |
-> *x->f
-> )
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+Linus,
 
-Applied now.
-But, please fix the path of the file correctly applicable to linux
-kernel tree at the next time.  It includes /var/x/y, and confuses git
-am totally.
+please pull another ALSA fixes for v2.6.31-rc4 from:
 
-thanks,
+  git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git for-linus
+
+containing only the following trivial patches.
+
+
+Thanks!
 
 Takashi
 
-> 
-> ---
->  sound/aoa/core/gpio-pmf.c           |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
-> 
-> diff --git a/var/linuxes/linux-next/sound/aoa/core/gpio-pmf.c b/var/julia/linuxcopy/sound/aoa/core/gpio-pmf.c
-> index 5ca2220..1dd0c28 100644
-> --- a/var/linuxes/linux-next/sound/aoa/core/gpio-pmf.c
-> +++ b/var/julia/linuxcopy/sound/aoa/core/gpio-pmf.c
-> @@ -182,6 +182,10 @@ static int pmf_set_notify(struct gpio_runtime *rt,
->  	if (!old && notify) {
->  		irq_client = kzalloc(sizeof(struct pmf_irq_client),
->  				     GFP_KERNEL);
-> +		if (!irq_client) {
-> +			err = -ENOMEM;
-> +			goto out_unlock;
-> +		}
->  		irq_client->data = notif;
->  		irq_client->handler = pmf_handle_notify_irq;
->  		irq_client->owner = THIS_MODULE;
-> 
+===
+
+Julia Lawall (1):
+      ALSA: sound/aoa: Add kmalloc NULL tests
+
+Roel Kluin (3):
+      ALSA: hda: fix out-of-bound hdmi_eld.sad[] write
+      sound: aedsp16: Buffer overflow
+      sound: mpu401.c: Buffer overflow
+
+Takashi Iwai (2):
+      ALSA: hda - Add quirk for Dell Studio 1555
+      ALSA: hda - Increase PCM stream name buf in patch_realtek.c
+
+---
+ sound/aoa/core/gpio-pmf.c      |    4 ++++
+ sound/oss/aedsp16.c            |    9 +++++----
+ sound/oss/mpu401.c             |    2 +-
+ sound/pci/hda/hda_eld.c        |    4 ++--
+ sound/pci/hda/patch_realtek.c  |    4 ++--
+ sound/pci/hda/patch_sigmatel.c |    2 ++
+ 6 files changed, 16 insertions(+), 9 deletions(-)
+
+diff --git a/sound/aoa/core/gpio-pmf.c b/sound/aoa/core/gpio-pmf.c
+index 5ca2220..1dd0c28 100644
+--- a/sound/aoa/core/gpio-pmf.c
++++ b/sound/aoa/core/gpio-pmf.c
+@@ -182,6 +182,10 @@ static int pmf_set_notify(struct gpio_runtime *rt,
+ 	if (!old && notify) {
+ 		irq_client = kzalloc(sizeof(struct pmf_irq_client),
+ 				     GFP_KERNEL);
++		if (!irq_client) {
++			err = -ENOMEM;
++			goto out_unlock;
++		}
+ 		irq_client->data = notif;
+ 		irq_client->handler = pmf_handle_notify_irq;
+ 		irq_client->owner = THIS_MODULE;
+diff --git a/sound/oss/aedsp16.c b/sound/oss/aedsp16.c
+index 3ee9900..35b5912 100644
+--- a/sound/oss/aedsp16.c
++++ b/sound/oss/aedsp16.c
+@@ -325,8 +325,9 @@
+ /*
+  * Size of character arrays that store name and version of sound card
+  */
+-#define CARDNAMELEN 15		/* Size of the card's name in chars     */
+-#define CARDVERLEN  2		/* Size of the card's version in chars  */
++#define CARDNAMELEN	15	/* Size of the card's name in chars     */
++#define CARDVERLEN	10	/* Size of the card's version in chars	*/
++#define CARDVERDIGITS	2	/* Number of digits in the version	*/
+ 
+ #if defined(CONFIG_SC6600)
+ /*
+@@ -410,7 +411,7 @@
+ 
+ static int      soft_cfg __initdata = 0;	/* bitmapped config */
+ static int      soft_cfg_mss __initdata = 0;	/* bitmapped mss config */
+-static int      ver[CARDVERLEN] __initdata = {0, 0};	/* DSP Ver:
++static int      ver[CARDVERDIGITS] __initdata = {0, 0};	/* DSP Ver:
+ 						   hi->ver[0] lo->ver[1] */
+ 
+ #if defined(CONFIG_SC6600)
+@@ -957,7 +958,7 @@ static int __init aedsp16_dsp_version(int port)
+ 	 * string is finished.
+ 	 */
+ 		ver[len++] = ret;
+-	  } while (len < CARDVERLEN);
++	  } while (len < CARDVERDIGITS);
+ 	sprintf(DSPVersion, "%d.%d", ver[0], ver[1]);
+ 
+ 	DBG(("success.\n"));
+diff --git a/sound/oss/mpu401.c b/sound/oss/mpu401.c
+index 1b2316f..734b8f9 100644
+--- a/sound/oss/mpu401.c
++++ b/sound/oss/mpu401.c
+@@ -1074,7 +1074,7 @@ int attach_mpu401(struct address_info *hw_config, struct module *owner)
+ 			sprintf(mpu_synth_info[m].name, "%s (MPU401)", hw_config->name);
+ 		else
+ 			sprintf(mpu_synth_info[m].name,
+-				"MPU-401 %d.%d%c Midi interface #%d",
++				"MPU-401 %d.%d%c MIDI #%d",
+ 				(int) (devc->version & 0xf0) >> 4,
+ 				devc->version & 0x0f,
+ 				revision_char,
+diff --git a/sound/pci/hda/hda_eld.c b/sound/pci/hda/hda_eld.c
+index fcad5ec..9446a5a 100644
+--- a/sound/pci/hda/hda_eld.c
++++ b/sound/pci/hda/hda_eld.c
+@@ -508,7 +508,7 @@ static void hdmi_write_eld_info(struct snd_info_entry *entry,
+ 	char name[64];
+ 	char *sname;
+ 	long long val;
+-	int n;
++	unsigned int n;
+ 
+ 	while (!snd_info_get_line(buffer, line, sizeof(line))) {
+ 		if (sscanf(line, "%s %llx", name, &val) != 2)
+@@ -539,7 +539,7 @@ static void hdmi_write_eld_info(struct snd_info_entry *entry,
+ 				sname++;
+ 				n = 10 * n + name[4] - '0';
+ 			}
+-			if (n < 0 || n > 31) /* double the CEA limit */
++			if (n >= ELD_MAX_SAD)
+ 				continue;
+ 			if (!strcmp(sname, "_coding_type"))
+ 				e->sad[n].format = val;
+diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
+index 8c8b273..b95df5d 100644
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -275,13 +275,13 @@ struct alc_spec {
+ 						 */
+ 	unsigned int num_init_verbs;
+ 
+-	char stream_name_analog[16];	/* analog PCM stream */
++	char stream_name_analog[32];	/* analog PCM stream */
+ 	struct hda_pcm_stream *stream_analog_playback;
+ 	struct hda_pcm_stream *stream_analog_capture;
+ 	struct hda_pcm_stream *stream_analog_alt_playback;
+ 	struct hda_pcm_stream *stream_analog_alt_capture;
+ 
+-	char stream_name_digital[16];	/* digital PCM stream */
++	char stream_name_digital[32];	/* digital PCM stream */
+ 	struct hda_pcm_stream *stream_digital_playback;
+ 	struct hda_pcm_stream *stream_digital_capture;
+ 
+diff --git a/sound/pci/hda/patch_sigmatel.c b/sound/pci/hda/patch_sigmatel.c
+index 512f3b9..5383d8c 100644
+--- a/sound/pci/hda/patch_sigmatel.c
++++ b/sound/pci/hda/patch_sigmatel.c
+@@ -1809,6 +1809,8 @@ static struct snd_pci_quirk stac92hd73xx_cfg_tbl[] = {
+ 				"Dell Studio 1537", STAC_DELL_M6_DMIC),
+ 	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL, 0x02a0,
+ 				"Dell Studio 17", STAC_DELL_M6_DMIC),
++	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL, 0x02be,
++				"Dell Studio 1555", STAC_DELL_M6_DMIC),
+ 	{} /* terminator */
+ };
+ 
