@@ -1,90 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752122AbZGaMRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752398AbZGaMRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752122AbZGaMRA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 08:17:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbZGaMQ7
+	id S1752398AbZGaMRP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 08:17:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752290AbZGaMRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 08:16:59 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35607 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751852AbZGaMQ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 08:16:59 -0400
-Date: Fri, 31 Jul 2009 12:16:22 GMT
-From: tip-bot for Magnus Damm <magnus.damm@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       damm@igel.co.jp, tglx@linutronix.de, magnus.damm@gmail.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       damm@igel.co.jp, tglx@linutronix.de, magnus.damm@gmail.com
-In-Reply-To: <20090618152432.10136.9932.sendpatchset@rx1.opensource.se>
-References: <20090618152432.10136.9932.sendpatchset@rx1.opensource.se>
-Subject: [tip:timers/urgent] clocksource: Save mult_orig in clocksource_disable()
-Message-ID: <tip-c7121843685de2bf7f3afd3ae1d6a146010bf1fc@git.kernel.org>
-Git-Commit-ID: c7121843685de2bf7f3afd3ae1d6a146010bf1fc
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 31 Jul 2009 12:16:24 +0000 (UTC)
+	Fri, 31 Jul 2009 08:17:14 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49591 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752228AbZGaMRG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 08:17:06 -0400
+Date: Fri, 31 Jul 2009 13:16:47 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Jarkko Nikula <jhnikula@gmail.com>,
+       Jonathan McDowell <noodles@earth.li>,
+       Peter Ujfalusi <peter.ujfalusi@nokia.com>,
+       Tony Lindgren <tony@atomide.com>, alsa-devel@alsa-project.org,
+       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       e3-hacking@earth.li, Arun KS <arunks@mistralsolutions.com>
+Subject: Re: [RFC] [PATCH 3/3 v2] ASoC: add support for Amstrad E3 (Delta)
+ machine
+Message-ID: <20090731131647.012afb23@lxorguk.ukuu.org.uk>
+In-Reply-To: <4A72DC71.6020904@tis.icnet.pl>
+References: <200907291318.54897.jkrzyszt@tis.icnet.pl>
+	<20090731095234.GB10844@rakim.wolfsonmicro.main>
+	<4A72DC71.6020904@tis.icnet.pl>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c7121843685de2bf7f3afd3ae1d6a146010bf1fc
-Gitweb:     http://git.kernel.org/tip/c7121843685de2bf7f3afd3ae1d6a146010bf1fc
-Author:     Magnus Damm <magnus.damm@gmail.com>
-AuthorDate: Tue, 28 Jul 2009 14:09:55 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 31 Jul 2009 14:12:36 +0200
 
-clocksource: Save mult_orig in clocksource_disable()
+> > Furthermore, I am still thinking about renaming the ldisc with a more 
+> > generic name. That way, it could be probably reused by other similiar 
+> > implementations. As long as the ldisc is registered from a board 
+> > specific code, it should not interfere with other implemnetations 
+> > reusing the same ldisc number, even if compiled in side by side.
+> 
+> Any objections on renaming ldisc from N_AMSDLETA to N_V253?
 
-To fix the common case where ->enable() does not set up
-mult, make sure mult_orig is saved in mult on disable.
-
-Also add comments to explain why we do this.
-
-Signed-off-by: Magnus Damm <damm@igel.co.jp>
-Cc: johnstul@us.ibm.com
-Cc: lethal@linux-sh.org
-Cc: akpm@linux-foundation.org
-LKML-Reference: <20090618152432.10136.9932.sendpatchset@rx1.opensource.se>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-
----
- include/linux/clocksource.h |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index c56457c..1219be4 100644
---- a/include/linux/clocksource.h
-+++ b/include/linux/clocksource.h
-@@ -293,7 +293,12 @@ static inline int clocksource_enable(struct clocksource *cs)
- 	if (cs->enable)
- 		ret = cs->enable(cs);
- 
--	/* save mult_orig on enable */
-+	/*
-+	 * The frequency may have changed while the clocksource
-+	 * was disabled. If so the code in ->enable() must update
-+	 * the mult value to reflect the new frequency. Make sure
-+	 * mult_orig follows this change.
-+	 */
- 	cs->mult_orig = cs->mult;
- 
- 	return ret;
-@@ -309,6 +314,13 @@ static inline int clocksource_enable(struct clocksource *cs)
-  */
- static inline void clocksource_disable(struct clocksource *cs)
- {
-+	/*
-+	 * Save mult_orig in mult so clocksource_enable() can
-+	 * restore the value regardless if ->enable() updates
-+	 * the value of mult or not.
-+	 */
-+	cs->mult = cs->mult_orig;
-+
- 	if (cs->disable)
- 		cs->disable(cs);
- }
+None
