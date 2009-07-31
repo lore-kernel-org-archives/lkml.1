@@ -1,34 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752118AbZGaHXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751464AbZGaHqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752118AbZGaHXh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 03:23:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751413AbZGaHXg
+	id S1751464AbZGaHqI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 03:46:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZGaHqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 03:23:36 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:47353 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751120AbZGaHXf (ORCPT
+	Fri, 31 Jul 2009 03:46:07 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:49886 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751355AbZGaHqG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 03:23:35 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 31 Jul 2009 16:21:46 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Mike Smith <scgtrp@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [BUGFIX][PATCH 0/3] fix bug for /proc/kcore causes panic  (Was:
- [Bugme-new] [Bug 13850] New: reading /proc/kcore causes oops
-Message-Id: <20090731162146.0c211a1e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090731160748.279845da.kamezawa.hiroyu@jp.fujitsu.com>
-References: <bug-13850-10286@http.bugzilla.kernel.org/>
-	<20090728160527.1da52682.akpm@linux-foundation.org>
-	<20090729084825.1363c880.kamezawa.hiroyu@jp.fujitsu.com>
-	<525c5a6c0907281946t249ef288v77ee94edd16f054@mail.gmail.com>
-	<20090729123209.690baa48.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090731160748.279845da.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Fri, 31 Jul 2009 03:46:06 -0400
+Date: Fri, 31 Jul 2009 09:45:49 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: john stultz <johnstul@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Daniel Walker <dwalker@fifo99.com>
+Subject: Re: [RFC][patch 11/12] timekeeper read clock helper functions
+Message-ID: <20090731094549.335fb996@skybase>
+In-Reply-To: <1248989994.3374.13.camel@localhost>
+References: <20090729134125.313191633@de.ibm.com>
+	<20090729134231.768960500@de.ibm.com>
+	<1248989994.3374.13.camel@localhost>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -36,63 +31,68 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Jul 2009 16:07:48 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On Thu, 30 Jul 2009 14:39:54 -0700
+john stultz <johnstul@us.ibm.com> wrote:
 
-> On Wed, 29 Jul 2009 12:32:09 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
-> > On Tue, 28 Jul 2009 22:46:56 -0400
-> > Mike Smith <scgtrp@gmail.com> wrote:
+> On Wed, 2009-07-29 at 15:41 +0200, Martin Schwidefsky wrote:
+> > plain text document attachment (timekeeper-helper.diff)
+> > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 > > 
-> > > > What's layout of memory does your server have ?
-> > > The log I gave was from my desktop, so I'll assume you wanted that
-> > > instead of the server:
-> > > [mike: mike in ~]$ grep "System RAM" /proc/iomem
-> > > 00010000-0009efff : System RAM
-> > > 00100000-1dedffff : System RAM
-> > > 
-> > From this, your kernel's valid direct-map address range will be
+> > Add timekeeper_read_clock_ntp and timekeeper_read_clock_raw and use
+> > them for getnstimeofday, ktime_get, ktime_get_ts and getrawmonotonic.
+> >
+> > Cc: Ingo Molnar <mingo@elte.hu>
+> > Cc: Thomas Gleixner <tglx@linutronix.de>
+> > Cc: john stultz <johnstul@us.ibm.com>
+> > Cc: Daniel Walker <dwalker@fifo99.com>
+> > Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > ---
+> >  kernel/time/timekeeping.c |   91 +++++++++++++++++++---------------------------
+> >  1 file changed, 38 insertions(+), 53 deletions(-)
 > > 
-> > c0010000-c009efff
-> > c0100000-ddedffff
+> > Index: linux-2.6/kernel/time/timekeeping.c
+> > ===================================================================
+> > --- linux-2.6.orig/kernel/time/timekeeping.c
+> > +++ linux-2.6/kernel/time/timekeeping.c
+> > @@ -84,6 +84,40 @@ static void timekeeper_setup_internals(s
+> >  	timekeeper.shift = clock->shift;
+> >  }
 > > 
-> Ok, I reproduced the bug on x86-32 and here is a fix.
+> > +/* Timekeeper helper functions. */
+> > +static inline s64 timekeeper_read_clock_ntp(void)
+> > +{
+> > +	cycle_t cycle_now, cycle_delta;
+> > +	struct clocksource *clock;
+> > +
+> > +	/* read clocksource: */
+> > +	clock = timekeeper.clock;
+> > +	cycle_now = clock->read(clock);
+> > +
 > 
-> I reproduced the bug on x86-32 host with mem=512M boot option.
+> I know it seems nice to have it here, but I think these helpers would be
+> more reusable in other contexts if they took the cycle_now value as an
+> argument. Also I'd drop the ntp bit, just to avoid confusing it with
+> some ntp specific function. So:
 > 
-> As I expected, the bug is from holes in vmalloc area.
-> (This hole means thera are a memory hole withing [start ...start+size-PAGE_SIZE) 
->  of valid vm_struct.)
+>  timekeeping_get_ns(cycle_t now);
+>  timekeeping_get_ns_raw(cycle_t now);
 > 
-> For review, I divided all into 3 patches. all series will be reply to this email.
+> That way in some situations we don't have to make two accesses to the
+> hardware if we want to get both values at the same point.
 > 
-A memo.
+> Seem reasonable?
 
-[1/3] fixes the bug in /dev/kmem, also.
-      This causes machine check on my host (and one of cpu was disabled)
-      # dd if=/dev/kmem of=/dev/null bs=1024 count=1048576 skip=3145728
-      I hope all users of kmem are sane people...but the patch fixes this.
-      (If kmem has to access IOREMAP area, please teach me .)
+The new names are fine but if we pull out the ->read call to the
+caller we again have a rather strange mix. The caller gets the cycle
+value using some clock, the helper uses the value of the timekeeper
+clock or the timerkeeper mult/shift. I would like to keep the ->read
+call in the helper. Is there a situation where we need both
+calculations for the same cycles value? There is none in the current
+code as far as I can see.
 
-[2/3] fix for this /proc/kcore bug based on [1/3]
+-- 
+blue skies,
+   Martin.
 
-[3/3] fix for vread/vwrite race conditions.
-      not related to this reproducable bug itself but a fix for potential bug.
-
-Thanks,
--Kame
-
-
-
-
-> Thanks,
-> -Kame
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+"Reality continues to ruin my life." - Calvin.
 
