@@ -1,71 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752491AbZGaQnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752514AbZGaQo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752491AbZGaQnz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 12:43:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbZGaQny
+	id S1752514AbZGaQo0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 12:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbZGaQoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 12:43:54 -0400
-Received: from kroah.org ([198.145.64.141]:54123 "EHLO coco.kroah.org"
+	Fri, 31 Jul 2009 12:44:25 -0400
+Received: from fifo99.com ([67.223.236.141]:40477 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752440AbZGaQny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 12:43:54 -0400
-Date: Fri, 31 Jul 2009 09:41:59 -0700
-From: Greg KH <greg@kroah.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Driver core: add new device to bus's list before
- probing
-Message-ID: <20090731164159.GA25624@kroah.com>
-References: <Pine.LNX.4.44L0.0907301522570.6087-100000@iolanthe.rowland.org>
- <ac3eb2510907301357j43189388lae6ec5d4e6ad365e@mail.gmail.com>
- <20090731160544.GA3430@kroah.com>
- <ac3eb2510907310930h2e5978een68341c15024aec30@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ac3eb2510907310930h2e5978een68341c15024aec30@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1752412AbZGaQoZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 12:44:25 -0400
+Subject: Re: [RFC][patch 00/12] clocksource / timekeeping rework V2
+From: Daniel Walker <dwalker@fifo99.com>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1249029241.3322.2.camel@work-vm>
+References: <200907291717.n6THHG6f001426@d06av06.portsmouth.uk.ibm.com>
+	 <20090730125351.6f16e9ec@skybase> <1248958173.6046.32.camel@desktop>
+	 <20090730150456.6c87b997@skybase>  <1248961750.6046.35.camel@desktop>
+	 <1248974187.3331.6.camel@work-vm>  <1248977320.6046.66.camel@desktop>
+	 <1248987409.3374.5.camel@localhost>  <1249018430.6046.73.camel@desktop>
+	 <1249029241.3322.2.camel@work-vm>
+Content-Type: text/plain
+Date: Fri, 31 Jul 2009 09:44:34 -0700
+Message-Id: <1249058674.6046.92.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 31, 2009 at 12:30:03PM -0400, Kay Sievers wrote:
-> On Fri, Jul 31, 2009 at 12:05, Greg KH<greg@kroah.com> wrote:
-> > On Thu, Jul 30, 2009 at 04:57:06PM -0400, Kay Sievers wrote:
-> >> On Thu, Jul 30, 2009 at 15:27, Alan Stern<stern@rowland.harvard.edu> wrote:
-> 
-> >> > Kay, do you want this merged into 2.6.31 or are you okay with waiting
-> >> > for 2.6.32-rc1?  It changes a major core routine.  On the other hand,
-> >> > the problem it fixes does affect real users.
-> >>
-> >> I think it should go into -next and we wait a few days. It seems like
-> >> the proper fix, but we should make sure, we didn't miss something.
-> >>
-> >> After that, it would be nice if we can get that into 2.6.31, as we
-> >> have several problems already, which are likely solved by this.
-> >
-> > But as this isn't a regression (it's how things always have worked,
-> > right?),
-> 
-> Yeah, that sounds right, but I guess we have just been the needed bit
-> slower in the past, and with the recent speedups I would expect more
-> cases to uncover this issue.
-> 
-> > I'm a bit leary of pushing it to .31 right now, so late in the
-> > release cycle.  How about it goes to Linus for .32, and we backport it
-> > to -stable if it looks ok?
-> 
-> Sure, sounds fine too.
-> 
-> Would be good though to have it in -next soon. Three major distros are
-> preparing a new distro release at the moment, and they will likely
-> need to add that to their kernel to make this issue, USB firmware
-> loading, and similar things working again.
+On Fri, 2009-07-31 at 01:34 -0700, john stultz wrote:
 
-It will show up in the next linux-next release.
+> 
+> Again, distro kernels. Users can't rebuild them without possibly losing
+> the support they've paid for, and often recompiling them can cause 3rd
+> party drivers to fail to work (some distros preserve kernel ABI
+> stability between minor releases). Waiting 6 months or two years for the
+> next release where everything is fixed upstream isn't going to make
+> users happy.
 
-thanks,
+It wouldn't need to be a module. The distro would update the kernel as
+needed.. Just the act of loading an unauthorized kernel module would
+potentially invalidate any distro support someone might get.. Distro's
+typically provide backported fixes also.
 
-greg k-h
+> Now, with most hardware vendors implementing decent HPET/ACPI PM
+> counters, maybe this case is more me reacting to a bad situation I had
+> to deal with in the past then what we can realistically expect in the
+> future. But given hardware designers like to break assumptions to
+> squeeze out performance or features, I'd suspect there will be future
+> situations where having some extra flexibility would be valuable.
+> 
+> Imaginary example: broken BIOS has incorrect HPET freq and the TSCs are
+> not in sync. Savvy IT dude finds the problem, copies the HPET driver,
+> names it hpet-fix and hard codes the proper HPET freq in. Sets the
+> rating higher then HPET, builds it as a module and loads it on the
+> affected hardware.
+
+The IT guy more than likely would need to rebuild the kernel multiple
+times to discover what the problem was .. In the end the distro would
+push a fix for this to mainline, and provide a new kernel for the distro
+users with a backported fix.
+
+If there a potential for a clocksource to have some type of issue like
+what you describe for the HPET, wouldn't it be easier to have all those
+as tunable boot args or sysfs options .. 
+
+Daniel
+
