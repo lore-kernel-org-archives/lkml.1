@@ -1,62 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753103AbZGaWCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751471AbZGaWi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753103AbZGaWCb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 18:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752845AbZGaWCb
+	id S1751471AbZGaWi3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 18:38:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbZGaWi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 18:02:31 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:64597 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752832AbZGaWCa (ORCPT
+	Fri, 31 Jul 2009 18:38:28 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:41860 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751113AbZGaWi1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 18:02:30 -0400
-Date: Fri, 31 Jul 2009 18:02:07 -0400 (EDT)
-From: Tim Abbott <tabbott@ksplice.com>
-X-X-Sender: tabbott@vinegar-pot.mit.edu
-To: Richard Henderson <rth@twiddle.net>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Anders Kaseorg <andersk@ksplice.com>,
-       Nelson Elhage <nelhage@ksplice.com>, linux-alpha@vger.kernel.org
-Subject: Re: [PATCH 1/2] alpha: use .data.init_task instead of
- .data.init_thread.
-In-Reply-To: <4A7360C3.2060507@twiddle.net>
-Message-ID: <alpine.DEB.1.10.0907311739040.2539@vinegar-pot.mit.edu>
-References: <1249073786-29788-1-git-send-email-tabbott@ksplice.com> <4A7360C3.2060507@twiddle.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 31 Jul 2009 18:38:27 -0400
+Message-ID: <4A737261.20601@us.ibm.com>
+Date: Fri, 31 Jul 2009 15:38:25 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+To: "lkml, " <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] futex: futex_wait_requeue_pi commentary corrections
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Jul 2009, Richard Henderson wrote:
+futex: futex_wait_requeue_pi commentary corrections
 
-> On 07/31/2009 01:56 PM, Tim Abbott wrote:
-> > -	/* Note 2 page alignment above.  */
-> > -	.data.init_thread : {
-> > -		*(.data.init_thread)
-> > -	}
-> 
-> NACK.
-> 
-> You can change the section name, sure, but you cannot remove the 2 page
-> alignment that we had via the alignment at the end of the init sections.
-> You'll break current_thread_info which is always computed as
-> (kernel-stack-pointer & -(2*PAGE_SIZE)).
+From: Darren Hart <dvhltc@us.ibm.com>
 
-The INIT_TASK_DATA(THREAD_SIZE) macro call aligns to THREAD_SIZE (= 
-2*PAGE_SIZE).  So I'm not removing the 2 page alignment; I'm just moving 
-it along with the code that needs to be aligned.
+The state machine described in the comments wasn't updated with a follow-on
+fix.  Address that and cleanup the corresponding commentary in the function.
 
-This change:
+Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
 
--	. = ALIGN(2 * PAGE_SIZE);
-+	. = ALIGN(PAGE_SIZE);
- 	__init_end = .;
+ kernel/futex.c |   23 ++++++++++-------------
+ 1 files changed, 10 insertions(+), 13 deletions(-)
 
-removes the now-unnecessary (2 * PAGE_SIZE) alignment for __init_end 
-caused by moving .data.init_task (it should have been in the first patch).
 
-	-Tim Abbott
+diff --git a/kernel/futex.c b/kernel/futex.c
+index 0672ff8..18752ae 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -2102,11 +2102,11 @@ int handle_early_requeue_pi_wakeup(struct futex_hash_bucket *hb,
+  * We call schedule in futex_wait_queue_me() when we enqueue and return there
+  * via the following:
+  * 1) wakeup on uaddr2 after an atomic lock acquisition by futex_requeue()
+- * 2) wakeup on uaddr2 after a requeue and subsequent unlock
+- * 3) signal (before or after requeue)
+- * 4) timeout (before or after requeue)
++ * 2) wakeup on uaddr2 after a requeue
++ * 3) signal
++ * 4) timeout
+  *
+- * If 3, we setup a restart_block with futex_wait_requeue_pi() as the function.
++ * If 3, we setup a restart_block and return -ERESTARTNOINTR.
+  *
+  * If 2, we may then block on trying to take the rt_mutex and return via:
+  * 5) successful lock
+@@ -2114,7 +2114,7 @@ int handle_early_requeue_pi_wakeup(struct futex_hash_bucket *hb,
+  * 7) timeout
+  * 8) other lock acquisition failure
+  *
+- * If 6, we setup a restart_block with futex_lock_pi() as the function.
++ * If 6, return -EWOULDBLOCK (restarting the syscall would do the same).
+  *
+  * If 4 or 7, we cleanup and return with -ETIMEDOUT.
+  *
+@@ -2232,14 +2232,11 @@ static int futex_wait_requeue_pi(u32 __user *uaddr, int fshared,
+ 			rt_mutex_unlock(pi_mutex);
+ 	} else if (ret == -EINTR) {
+ 		/*
+-		 * We've already been requeued, but we have no way to
+-		 * restart by calling futex_lock_pi() directly. We
+-		 * could restart the syscall, but that will look at
+-		 * the user space value and return right away. So we
+-		 * drop back with EWOULDBLOCK to tell user space that
+-		 * "val" has been changed. That's the same what the
+-		 * restart of the syscall would do in
+-		 * futex_wait_setup().
++		 * We've already been requeued, but cannot restart by calling
++		 * futex_lock_pi() directly. We could restart this syscall, but
++		 * it would detect that the user space "val" changed and return
++		 * -EWOULDBLOCK.  Save the overhead of the restart and return
++		 * -EWOULDBLOCK directly.
+ 		 */
+ 		ret = -EWOULDBLOCK;
+ 	}
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
