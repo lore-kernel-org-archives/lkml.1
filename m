@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751673AbZGaHJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752122AbZGaHNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751673AbZGaHJh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 03:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbZGaHJh
+	id S1752122AbZGaHNQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 03:13:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbZGaHNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 03:09:37 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46677 "EHLO
+	Fri, 31 Jul 2009 03:13:15 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46848 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751024AbZGaHJg (ORCPT
+	with ESMTP id S1751160AbZGaHNO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 03:09:36 -0400
+	Fri, 31 Jul 2009 03:13:14 -0400
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 31 Jul 2009 16:07:48 +0900
+Date: Fri, 31 Jul 2009 16:11:28 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Cc: Mike Smith <scgtrp@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
        bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
        Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
-Subject: [BUGFIX][PATCH 0/3] fix bug for /proc/kcore causes panic  (Was:
- [Bugme-new] [Bug 13850] New: reading /proc/kcore causes oops
-Message-Id: <20090731160748.279845da.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090729123209.690baa48.kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [BUGFIX][PATCH 1/3] fix vread/vwrite to be aware of memory hole
+Message-Id: <20090731161128.347216e6.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090731160748.279845da.kamezawa.hiroyu@jp.fujitsu.com>
 References: <bug-13850-10286@http.bugzilla.kernel.org/>
 	<20090728160527.1da52682.akpm@linux-foundation.org>
 	<20090729084825.1363c880.kamezawa.hiroyu@jp.fujitsu.com>
 	<525c5a6c0907281946t249ef288v77ee94edd16f054@mail.gmail.com>
 	<20090729123209.690baa48.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090731160748.279845da.kamezawa.hiroyu@jp.fujitsu.com>
 Organization: FUJITSU Co. LTD.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -35,34 +35,254 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 29 Jul 2009 12:32:09 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-> On Tue, 28 Jul 2009 22:46:56 -0400
-> Mike Smith <scgtrp@gmail.com> wrote:
-> 
-> > > What's layout of memory does your server have ?
-> > The log I gave was from my desktop, so I'll assume you wanted that
-> > instead of the server:
-> > [mike: mike in ~]$ grep "System RAM" /proc/iomem
-> > 00010000-0009efff : System RAM
-> > 00100000-1dedffff : System RAM
-> > 
-> From this, your kernel's valid direct-map address range will be
-> 
-> c0010000-c009efff
-> c0100000-ddedffff
-> 
-Ok, I reproduced the bug on x86-32 and here is a fix.
+vread/vwrite access vmalloc area without checking there is a page or not.
 
-I reproduced the bug on x86-32 host with mem=512M boot option.
+In old ages, the caller of get_vm_ara() is only IOREMAP and there is no
+memory hole within vm_struct's [addr...addr + size - PAGE_SIZE]
+( -PAGE_SIZE is for a guard page.)
 
-As I expected, the bug is from holes in vmalloc area.
-(This hole means thera are a memory hole withing [start ...start+size-PAGE_SIZE) 
- of valid vm_struct.)
+After per-cpu-alloc patch, it uses get_vm_area() for reserve continuous
+virtual address but remap _later_. There tend to be a hole in valid vmalloc
+area in vm_struct lists.
+Then, skip the hole (not mapped page) is necessary.
+This patch updates vread/vwrite() for avoiding memory hole.
 
-For review, I divided all into 3 patches. all series will be reply to this email.
+Routines which access vmalloc area without knowing for which addr is used
+are
+  - /proc/kcore
+  - /dev/kmem
 
-Thanks,
--Kame
+kcore checks IOREMAP, /dev/kmem doesn't. After this patch, IOREMAP is
+checked and /dev/kmem will avoid to read/write it.
+Fixes to /proc/kcore will be in the next patch in series.
+
+And, this itself fixes the bug as
+# dd if=/dev/kmem of=/dev/null bs=1024 count=1048576 skip=3145728
+can cause panic.
+
+
+Changelog v1->v2:
+ - enhanced comments.
+ - treat IOREMAP as hole always.
+ - zero-fill memory hole if [addr...addr+size] includes valid pages.
+ - returns 0 if [addr...addr+size) includes no valid pages.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ mm/vmalloc.c |  157 +++++++++++++++++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 136 insertions(+), 21 deletions(-)
+
+Index: linux-2.6.31-rc4/mm/vmalloc.c
+===================================================================
+--- linux-2.6.31-rc4.orig/mm/vmalloc.c	2009-07-31 14:06:41.000000000 +0900
++++ linux-2.6.31-rc4/mm/vmalloc.c	2009-07-31 15:51:56.000000000 +0900
+@@ -1625,10 +1625,89 @@
+ }
+ EXPORT_SYMBOL(vmalloc_32_user);
+ 
++/*
++ * small helper routine , copy contents to buf from addr.
++ * If the page is not present, fill zero.
++ */
++
++static int aligned_vread(char *buf, char *addr, unsigned long count)
++{
++	struct page *p;
++	int copied;
++
++	while (count) {
++		unsigned long offset, length;
++
++		offset = (unsigned long)addr & PAGE_MASK;
++		length = PAGE_SIZE - offset;
++		if (length > count)
++			length = count;
++		p = vmalloc_to_page(addr);
++		if (p)
++			memcpy(buf, addr, length);
++		else
++			memset(buf, 0, length);
++		/* If no page, we fill 0 this area and incremetns buffer addr */
++		addr += length;
++		buf += length;
++		copied += length;
++		count -= length;
++	}
++	return copied;
++}
++
++static int aligned_vwrite(char *buf, char *addr, unsigned long count)
++{
++	struct page *p;
++	int copied;
++
++	while (count) {
++		unsigned long offset, length;
++
++		offset = (unsigned long)addr & PAGE_MASK;
++		length = PAGE_SIZE - offset;
++		if (length > count)
++			length = count;
++		/* confirm the page is present */
++		p = vmalloc_to_page(addr);
++		if (p)
++			memcpy(addr, buf, length);
++		/* If no page, we skip this area but incremetns buffer addr */
++		addr += length;
++		buf += length;
++		copied += length;
++		count -= length;
++	}
++	return copied;
++}
++
++/**
++ *	vread() -  read vmalloc area in safe way.
++ *	@buf:		buffer for reading data
++ *	@addr:		vm address.
++ *	@count:		number of bytes to be read.
++ *
++ *	Returns # of bytes which addr and buf shuld be incremented
++ *	(same to count).
++ *	If [addr...addr+count) doesn't includes any valid area, returns 0.
++ *
++ *	This function checks that addr is a valid vmalloc'ed area, and
++ *	copy data from that area to given buffer. If given memory range of
++ *	[addr...addr+count) includes some valid address, data is copied to
++ *	proper area of @buf. If there are memory holes, they'll be zero-filled.
++ *	IOREMAP area is treated as memory hole and no copy is done.
++ *
++ *	Note: In usual ops, vread() is never necessary because the caller should
++ *	know vmalloc() area is valid and can use memcpy(). This is for routines
++ *	which have to access vmalloc area without any informaion, as /dev/kmem.
++ *
++ */
++
+ long vread(char *buf, char *addr, unsigned long count)
+ {
+ 	struct vm_struct *tmp;
+ 	char *vaddr, *buf_start = buf;
++	unsigned long buflen = count;
+ 	unsigned long n;
+ 
+ 	/* Don't allow overflow */
+@@ -1636,7 +1715,7 @@
+ 		count = -(unsigned long) addr;
+ 
+ 	read_lock(&vmlist_lock);
+-	for (tmp = vmlist; tmp; tmp = tmp->next) {
++	for (tmp = vmlist; count && tmp; tmp = tmp->next) {
+ 		vaddr = (char *) tmp->addr;
+ 		if (addr >= vaddr + tmp->size - PAGE_SIZE)
+ 			continue;
+@@ -1649,32 +1728,65 @@
+ 			count--;
+ 		}
+ 		n = vaddr + tmp->size - PAGE_SIZE - addr;
+-		do {
+-			if (count == 0)
+-				goto finished;
+-			*buf = *addr;
+-			buf++;
+-			addr++;
+-			count--;
+-		} while (--n > 0);
++		if (n > count)
++			n = count;
++		if (!(tmp->flags & VM_IOREMAP))
++			aligned_vread(buf, addr, n);
++		else /* IOREMAP area is treated as memory hole */
++			memset(buf, 0, n);
++		buf += n;
++		addr += n;
++		count -= n;
+ 	}
+ finished:
+ 	read_unlock(&vmlist_lock);
+-	return buf - buf_start;
++
++	if (buf == buf_start)
++		return 0;
++	/* zero-fill memory holes */
++	if (buf != buf_start + buflen)
++		memset(buf, 0, buflen - (buf - buf_start));
++
++	return buflen;
+ }
+ 
++/**
++ *	vwrite() -  write vmalloc area in safe way.
++ *	@buf:		buffer for source data
++ *	@addr:		vm address.
++ *	@count:		number of bytes to be read.
++ *
++ *	Returns # of bytes which addr and buf shuld be incremented
++ *	(same to count).
++ *	If [addr...addr+count) doesn't includes any valid area, returns 0.
++ *
++ *	This function checks that addr is a valid vmalloc'ed area, and
++ *	copy data from that buffer to there. If given memory range of
++ *	[addr...addr+count) includes some valid address, data is copied from
++ *	proper area of @buf. If there are memory holes, no copy. just skip.
++ *	IOREMAP area is treated as memory hole and no copy is done.
++ *
++ *	Note: In usual ops, vwrite() is never necessary because the caller
++ *	should know vmalloc() area is valid and can use memcpy().
++ *	This is for routines which have to access vmalloc area without
++ *	any informaion, as /dev/kmem.
++ */
++
+ long vwrite(char *buf, char *addr, unsigned long count)
+ {
+ 	struct vm_struct *tmp;
+-	char *vaddr, *buf_start = buf;
++	char *vaddr;
++	unsigned long buflen;
+ 	unsigned long n;
++	int copied = 0;
+ 
+ 	/* Don't allow overflow */
+ 	if ((unsigned long) addr + count < count)
+ 		count = -(unsigned long) addr;
++	buflen = count;
+ 
+ 	read_lock(&vmlist_lock);
+-	for (tmp = vmlist; tmp; tmp = tmp->next) {
++	for (tmp = vmlist; count && tmp; tmp = tmp->next) {
+ 		vaddr = (char *) tmp->addr;
+ 		if (addr >= vaddr + tmp->size - PAGE_SIZE)
+ 			continue;
+@@ -1686,18 +1798,21 @@
+ 			count--;
+ 		}
+ 		n = vaddr + tmp->size - PAGE_SIZE - addr;
+-		do {
+-			if (count == 0)
+-				goto finished;
+-			*addr = *buf;
+-			buf++;
+-			addr++;
+-			count--;
+-		} while (--n > 0);
++		if (n > count)
++			n = count;
++		if (!(tmp->flags & VM_IOREMAP)) {
++			aligned_vwrite(buf, addr, n);
++			copied++;
++		}
++		buf += n;
++		addr += n;
++		count -= n;
+ 	}
+ finished:
+ 	read_unlock(&vmlist_lock);
+-	return buf - buf_start;
++	if (!copied)
++		return 0;
++	return buflen;
+ }
+ 
+ /**
 
