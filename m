@@ -1,89 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753220AbZGaVDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbZGaVDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753220AbZGaVDS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 17:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbZGaVDP
+	id S1753227AbZGaVDc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 17:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbZGaVDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 17:03:15 -0400
+	Fri, 31 Jul 2009 17:03:31 -0400
 Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:54671 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753173AbZGaVDM (ORCPT
+	by vger.kernel.org with ESMTP id S1751655AbZGaVDJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 17:03:12 -0400
+	Fri, 31 Jul 2009 17:03:09 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>, Anders Kaseorg <andersk@ksplice.com>,
-       Nelson Elhage <nelhage@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Richard Henderson <rth@twiddle.net>, linux-alpha@vger.kernel.org
-Subject: [PATCH 1/2] alpha: use .data.init_task instead of .data.init_thread.
-Date: Fri, 31 Jul 2009 16:56:25 -0400
-Message-Id: <1249073786-29788-1-git-send-email-tabbott@ksplice.com>
+       Nelson Elhage <nelhage@ksplice.com>,
+       David Howells <dhowells@redhat.com>
+Subject: [PATCH 2/2] frv: clean up linker script using new linker script macros.
+Date: Fri, 31 Jul 2009 16:57:44 -0400
+Message-Id: <1249073864-29975-2-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1249073864-29975-1-git-send-email-tabbott@ksplice.com>
+References: <1249073864-29975-1-git-send-email-tabbott@ksplice.com>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-alpha is the only architecture that uses the section name
-.data.init_thread instead of .data.init_task.  So convert alpha to use
-.data.init_task like everything else.
+From: Nelson Elhage <nelhage@ksplice.com>
 
-.data.init_task does not need a separate output section; this change
-also moves it into the .data output section.
+This is largely a straightforward conversion. The patch results in
+fewer output sections, and some data being reordered, but should have
+no functional impact.
 
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: linux-alpha@vger.kernel.org
+Also, note that this patch moves some data (namely, init_task and
+cacheline-aligned) inside [_sdata,_edata].
+
+Because frv already builds using -ffunction-sections -fdata-sections,
+we can't use BSS_SECTION or RW_DATA_SECTION yet, since they do not
+currently include the required .bss.* and .data.* sections.
+
+Signed-off-by: Nelson Elhage <nelhage@ksplice.com>
+Cc: David Howells <dhowells@redhat.com>
 ---
- arch/alpha/kernel/init_task.c   |    5 ++---
- arch/alpha/kernel/vmlinux.lds.S |    7 ++-----
- 2 files changed, 4 insertions(+), 8 deletions(-)
+ arch/frv/kernel/vmlinux.lds.S |   64 +++++-----------------------------------
+ 1 files changed, 8 insertions(+), 56 deletions(-)
 
-diff --git a/arch/alpha/kernel/init_task.c b/arch/alpha/kernel/init_task.c
-index 19b8632..6f80ca4 100644
---- a/arch/alpha/kernel/init_task.c
-+++ b/arch/alpha/kernel/init_task.c
-@@ -13,6 +13,5 @@ static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
- struct task_struct init_task = INIT_TASK(init_task);
- EXPORT_SYMBOL(init_task);
- 
--union thread_union init_thread_union
--	__attribute__((section(".data.init_thread")))
--	= { INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data =
-+	{ INIT_THREAD_INFO(init_task) };
-diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
-index b9d6568..a4bb75e 100644
---- a/arch/alpha/kernel/vmlinux.lds.S
-+++ b/arch/alpha/kernel/vmlinux.lds.S
-@@ -1,5 +1,6 @@
- #include <asm-generic/vmlinux.lds.h>
- #include <asm/page.h>
-+#include <asm/thread_info.h>
- 
- OUTPUT_FORMAT("elf64-alpha")
- OUTPUT_ARCH(alpha)
-@@ -92,11 +93,6 @@ SECTIONS
- 	__init_end = .;
- 	/* Freed after init ends here */
- 
--	/* Note 2 page alignment above.  */
--	.data.init_thread : {
--		*(.data.init_thread)
--	}
+diff --git a/arch/frv/kernel/vmlinux.lds.S b/arch/frv/kernel/vmlinux.lds.S
+index be7a33f..7775d49 100644
+--- a/arch/frv/kernel/vmlinux.lds.S
++++ b/arch/frv/kernel/vmlinux.lds.S
+@@ -35,45 +35,13 @@ SECTIONS
+ #endif
+   }
+   _einittext = .;
+-  .init.data : { INIT_DATA }
 -
- 	. = ALIGN(PAGE_SIZE);
- 	.data.page_aligned : {
- 		*(.data.page_aligned)
-@@ -110,6 +106,7 @@ SECTIONS
- 	_data = .;
- 	/* Data */
- 	.data : {
-+		INIT_TASK_DATA(THREAD_SIZE)
- 		DATA_DATA
- 		CONSTRUCTORS
+-  . = ALIGN(8);
+-  __setup_start = .;
+-  .setup.init : { KEEP(*(.init.setup)) }
+-  __setup_end = .;
+-
+-  __initcall_start = .;
+-  .initcall.init : {
+-	INITCALLS
+-  }
+-  __initcall_end = .;
+-  __con_initcall_start = .;
+-  .con_initcall.init : { *(.con_initcall.init) }
+-  __con_initcall_end = .;
+-  SECURITY_INIT
+ 
++  INIT_DATA_SECTION(8)
+   PERCPU(4096)
+ 
+-#ifdef CONFIG_BLK_DEV_INITRD
+-  . = ALIGN(4096);
+-  __initramfs_start = .;
+-  .init.ramfs : { *(.init.ramfs) }
+-  __initramfs_end = .;
+-#endif
+-
+-  . = ALIGN(THREAD_SIZE);
++  . = ALIGN(PAGE_SIZE);
+   __init_end = .;
+ 
+-  /* put sections together that have massive alignment issues */
+-  . = ALIGN(THREAD_SIZE);
+-  .data.init_task : {
+-	  /* init task record & stack */
+-	  *(.data.init_task)
+-  }
+-
+-  . = ALIGN(L1_CACHE_BYTES);
+-  .data.cacheline_aligned : { *(.data.cacheline_aligned) }
+-
+   .trap : {
+ 	/* trap table management - read entry-table.S before modifying */
+ 	. = ALIGN(8192);
+@@ -119,13 +87,12 @@ SECTIONS
+ 
  	}
+ 
+-  . = ALIGN(8);		/* Exception table */
+-  __start___ex_table = .;
+-  __ex_table : { KEEP(*(__ex_table)) }
+-  __stop___ex_table = .;
++  EXCEPTION_TABLE(8)
+ 
+   _sdata = .;
+   .data : {			/* Data */
++	INIT_TASK_DATA(THREAD_SIZE)
++	CACHELINE_ALIGNED_DATA(L1_CACHE_BYTES)
+ 	DATA_DATA
+ 	*(.data.*)
+ 	EXIT_DATA
+@@ -154,24 +121,9 @@ SECTIONS
+   . = ALIGN(PAGE_SIZE);
+   __kernel_image_end = .;
+ 
+-  /* Stabs debugging sections.  */
+-  .stab 0 : { *(.stab) }
+-  .stabstr 0 : { *(.stabstr) }
+-  .stab.excl 0 : { *(.stab.excl) }
+-  .stab.exclstr 0 : { *(.stab.exclstr) }
+-  .stab.index 0 : { *(.stab.index) }
+-  .stab.indexstr 0 : { *(.stab.indexstr) }
+-
+-  .debug_line		0 : { *(.debug_line) }
+-  .debug_info		0 : { *(.debug_info) }
+-  .debug_abbrev		0 : { *(.debug_abbrev) }
+-  .debug_aranges	0 : { *(.debug_aranges) }
+-  .debug_frame		0 : { *(.debug_frame) }
+-  .debug_pubnames	0 : { *(.debug_pubnames) }
+-  .debug_str		0 : { *(.debug_str) }
+-  .debug_ranges		0 : { *(.debug_ranges) }
+-
+-  .comment 0 : { *(.comment) }
++  STABS_DEBUG
++  DWARF_DEBUG
++
+ }
+ 
+ __kernel_image_size_no_bss = __bss_start - __kernel_image_start;
 -- 
 1.6.3.3
 
