@@ -1,102 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752446AbZGaKtI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752420AbZGaKyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752446AbZGaKtI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 06:49:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752417AbZGaKtH
+	id S1752420AbZGaKyh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 06:54:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbZGaKyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 06:49:07 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36809 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752414AbZGaKtG (ORCPT
+	Fri, 31 Jul 2009 06:54:36 -0400
+Received: from cs20.apochromatic.org ([204.152.189.161]:65398 "EHLO
+	cs20.apochromatic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751748AbZGaKyg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 06:49:06 -0400
-Message-ID: <7f54310137837631f2526d4e335287fc.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.0907310231370.25447@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0907282125260.554@chino.kir.corp.google.com>
-    <20090730180029.c4edcc09.kamezawa.hiroyu@jp.fujitsu.com>
-    <alpine.DEB.2.00.0907300219580.13674@chino.kir.corp.google.com>
-    <20090730190216.5aae685a.kamezawa.hiroyu@jp.fujitsu.com>
-    <alpine.DEB.2.00.0907301157100.9652@chino.kir.corp.google.com>
-    <20090731093305.50bcc58d.kamezawa.hiroyu@jp.fujitsu.com>
-    <alpine.DEB.2.00.0907310231370.25447@chino.kir.corp.google.com>
-Date: Fri, 31 Jul 2009 19:49:02 +0900 (JST)
-Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "David Rientjes" <rientjes@google.com>
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Rik van Riel" <riel@redhat.com>, "Paul Menage" <menage@google.com>,
-       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-User-Agent: SquirrelMail/1.4.16
+	Fri, 31 Jul 2009 06:54:36 -0400
+Date: Fri, 31 Jul 2009 11:54:07 +0100
+From: Matt Fleming <matt@console-pimps.org>
+To: Pierre Ossman <pierre@ossman.eu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org, nico@cam.org,
+       nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com, tony@atomide.com,
+       david-b@pacbell.net, manuel.lauss@gmail.com, mirq-linux@rere.qmqm.pl,
+       ppisa@pikron.com, jarkko.lavinen@nokia.com, ben@fluff.org,
+       saschasommer@freenet.de, avorontsov@ru.mvista.com, oakad@yahoo.com,
+       ian@mnementh.co.uk, HaraldWelte@viatech.com, JosephChan@via.com.tw,
+       adrian.hunter@nokia.com
+Subject: Re: New MMC maintainer needed
+Message-ID: <20090731105407.GA31900@console-pimps.org>
+References: <20090714153601.6dfe70ff@mjolnir.ossman.eu> <20090722151744.fffd7bf5.akpm@linux-foundation.org> <20090728222334.0c543c47@mjolnir.ossman.eu> <20090731122623.254fd0f1@mjolnir.ossman.eu>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090731122623.254fd0f1@mjolnir.ossman.eu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
-> On Fri, 31 Jul 2009, KAMEZAWA Hiroyuki wrote:
->
->> > > Simply, reset_oom_adj_at_new_mm_context or some.
->> > >
->> >
->> > I think it's preferred to keep the name relatively short which is an
->> > unfortuante requirement in this case.  I also prefer to start the name
->> > with "oom_adj" so it appears alongside /proc/pid/oom_adj when listed
->> > alphabetically.
->> >
->> But misleading name is bad.
->>
->
-> Can you help think of any names that start with oom_adj_* and are
-> relatively short?  I'd happily ack it.
->
-There have been traditional name "effective" as uid and euid.
+On Fri, Jul 31, 2009 at 12:26:23PM +0200, Pierre Ossman wrote:
+> 
+> [PATCH 0/32] mmc and omap_hsmmc patches
+> http://marc.info/?t=124722953900010&r=1&w=2
+> 
+> I haven't looked through these at all. The ones affecting the core
+> probably need some thorough reviews.
+> 
+> I did notice the patch to say which cards a controller supports though,
+> and I'm very sceptical about that one. The scanning process should work
+> anyway, and the performance impact should be negligible as it is only
+> on init. So that patch only adds complexity and confusion IMO.
+> 
 
- then,  per thread oom_adj as oom_adj
-        per proc   oom_adj as effective_oom_adj
+How much complexity does it really add? Surely it's better to give the
+host controller driver writers the ability to not entertain supporting
+some cards if they cannot be used? If they want to avoid the scanning
+process for certain cards, why not let them?
 
-is an natural way as Unix, I think.
-
-
-
->> Why don't you think select_bad_process()-> oom_kill_task()
->> implementation is bad ?
->
-> It livelocks if a thread is chosen and passed to oom_kill_task() while
-> another per-thread oom_adj value is OOM_DISABLE for a thread sharing the
-> same memory.
->
-I say "why don't modify buggy selection logic?"
-
-Why we have to scan all threads ?
-As fs/proc/readdir does, you can scan only "process group leader".
-
-per-thread scan itself is buggy because now we have per-process
-effective-oom-adj.
-
-
->> IMHO, it's bad manner to fix an os-implementation problem by adding
->> _new_ user
->> interface which is hard to understand.
->>
->
-> How else do you propose the oom killer use oom_adj values on a per-thread
-> basis without considering other threads sharing the same memory?
-As I wrote.
-   per-process(signal struct) or per-thread oom_adj and add
-   mm->effecitve_oom_adj
-
-task scanning isn't necessary to do per-thread scan and you can scan
-only process-group-leader. What's bad ?
-If oom_score is problem, plz fix it to show effective_oom_score.
-
-If you can wait until the end of August, plz wait. I'll do some.
-
-Thanks,
--Kame
 
