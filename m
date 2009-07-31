@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751905AbZGaL7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752243AbZGaL7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751905AbZGaL7a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 07:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751460AbZGaL7a
+	id S1752243AbZGaL7l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 07:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbZGaL7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 07:59:30 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:43668 "EHLO
-	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751367AbZGaL73 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 07:59:29 -0400
-Date: Fri, 31 Jul 2009 13:59:27 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Steven Rostedt <srostedt@redhat.com>
-cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH] spelling: trace - "interfer with"
-Message-ID: <alpine.LRH.2.00.0907311358550.21349@vixen.sonytel.be>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Fri, 31 Jul 2009 07:59:40 -0400
+Received: from d1.icnet.pl ([212.160.220.21]:60447 "EHLO d1.icnet.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751947AbZGaL7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 07:59:39 -0400
+Message-ID: <4A72DC71.6020904@tis.icnet.pl>
+Date: Fri, 31 Jul 2009 13:58:41 +0200
+From: Janusz Krzysztofik <jkrzyszt@tis.icnet.pl>
+Organization: Tele-Info-System
+User-Agent: IceDove 1.5.0.14pre (X11/20080304)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jarkko Nikula <jhnikula@gmail.com>,
+       Jonathan McDowell <noodles@earth.li>,
+       Peter Ujfalusi <peter.ujfalusi@nokia.com>,
+       Tony Lindgren <tony@atomide.com>, alsa-devel@alsa-project.org,
+       "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       e3-hacking@earth.li, Arun KS <arunks@mistralsolutions.com>
+Subject: Re: [RFC] [PATCH 3/3 v2] ASoC: add support for Amstrad E3 (Delta)
+ machine
+References: <200907291318.54897.jkrzyszt@tis.icnet.pl> <20090731095234.GB10844@rakim.wolfsonmicro.main>
+In-Reply-To: <20090731095234.GB10844@rakim.wolfsonmicro.main>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Scanned: No (on d1.icnet); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- kernel/trace/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Mark Brown wrote:
+> On Wed, Jul 29, 2009 at 01:18:53PM +0200, Janusz Krzysztofik wrote:
+> 
+>> 2) patch 2/3 form this series: TTY: Add definition of a new line
+>>    discipline required by Amstrad E3 (Delta) ASoC driver[2].
+> 
+> The ASoC parts of this all look OK - what's the status of the TTY patch?
+> 
 
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index 019f380..be97c3c 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -490,7 +490,7 @@ config RING_BUFFER_BENCHMARK
- 	depends on RING_BUFFER
- 	help
- 	  This option creates a test to stress the ring buffer and bench mark it.
--	  It creates its own ring buffer such that it will not interfer with
-+	  It creates its own ring buffer such that it will not interfere with
- 	  any other users of the ring buffer (such as ftrace). It then creates
- 	  a producer and consumer that will run for 10 seconds and sleep for
- 	  10 seconds. Each interval it will print out the number of events
--- 
-1.6.2.4
+Alan replied off-list yet before v2 submission. Then I replied him 
+off-list as well... I hope he doesn't mind quoting him here.
 
-With kind regards,
+Janusz Krzysztofik wrote:
+> Alan Cox wrote:
+>> Interesting use of a line discipline. The tty/ldisc bits look good to me
+>>
+> 
+> Thanks.
+> Could you please have a look at today's version 2 of the patch 3/3 as 
+> well? The ldisc bits has been split into machine and codec related parts 
+> and, what's more important, updated with locking that I am not quite 
+> sure about its correctness.
+> 
+> Furthermore, I am still thinking about renaming the ldisc with a more 
+> generic name. That way, it could be probably reused by other similiar 
+> implementations. As long as the ldisc is registered from a board 
+> specific code, it should not interfere with other implemnetations 
+> reusing the same ldisc number, even if compiled in side by side.
 
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
+Any objections on renaming ldisc from N_AMSDLETA to N_V253?
 
-Technology and Software Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+Thnaks,
+Janusz
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
