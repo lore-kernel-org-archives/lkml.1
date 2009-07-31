@@ -1,61 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752197AbZGaHPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752798AbZGaHP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752197AbZGaHPU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 03:15:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbZGaHPT
+	id S1752798AbZGaHP3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 03:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbZGaHP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 03:15:19 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:56413 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751408AbZGaHPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 03:15:18 -0400
-Date: Fri, 31 Jul 2009 09:15:18 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Damien Wyart <damien.wyart@free.fr>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
-       richard@rsk.demon.co.uk, fweisbec@gmail.com, Alan.Brunelle@hp.com
-Subject: Re: [PATCH 0/9] Per-bdi writeback flusher threads v13
-Message-ID: <20090731071518.GN12579@kernel.dk>
-References: <1248989044-21605-1-git-send-email-jens.axboe@oracle.com> <20090731063008.GA2796@brouette>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090731063008.GA2796@brouette>
+	Fri, 31 Jul 2009 03:15:27 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55166 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752351AbZGaHPY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 03:15:24 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 31 Jul 2009 16:13:37 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Mike Smith <scgtrp@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
+       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       Amerigo Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
+Subject: [BUGFIX][PATCH 3/3] unmap vmalloc area after hide it
+Message-Id: <20090731161337.7c517937.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090731160748.279845da.kamezawa.hiroyu@jp.fujitsu.com>
+References: <bug-13850-10286@http.bugzilla.kernel.org/>
+	<20090728160527.1da52682.akpm@linux-foundation.org>
+	<20090729084825.1363c880.kamezawa.hiroyu@jp.fujitsu.com>
+	<525c5a6c0907281946t249ef288v77ee94edd16f054@mail.gmail.com>
+	<20090729123209.690baa48.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090731160748.279845da.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 31 2009, Damien Wyart wrote:
-> Hello,
-> 
-> > Here's the 13th version of the writeback patches. Changes since v12:
-> 
-> > - Update to 2.6.31-rc4 ('ish, it's on top of current -git, but wil apply
-> >   to -rc4 as well).
-> > - Drop the last patch in the series, it was a questionable optimization
-> >   that needs to be tested and evaluated separately.
-> 
-> fs/sync.c has changed some time ago and I think your patch needs this
-> (which I had lazyly added by hand in v12 without telling):
-> 
-> --- a/fs/sync.c	2009-07-31 07:32:08.927926281 +0200
-> +++ b/fs/sync.c.new	2009-07-31 07:31:52.499801359 +0200
-> @@ -118,7 +118,7 @@ restart:
->   */
->  SYSCALL_DEFINE0(sync)
->  {
-> -	wakeup_pdflush(0);
-> +	wakeup_flusher_threads(0);
->  	sync_filesystems(0);
->  	sync_filesystems(1);
->  	if (unlikely(laptop_mode))
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Argh, I had fixed that long ago, but a branch problem yesterday caused
-it to be lost just before posting. How annoying. Thanks for the hint,
-I'll update the v13 branch and patch.
+vmap area should be purged after vm_struct is removed from the list
+because vread/vwrite etc...believes the range is valid while it's on
+vm_struct list.
 
--- 
-Jens Axboe
+Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ mm/vmalloc.c |   14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+Index: linux-2.6.31-rc4/mm/vmalloc.c
+===================================================================
+--- linux-2.6.31-rc4.orig/mm/vmalloc.c	2009-07-31 15:51:56.000000000 +0900
++++ linux-2.6.31-rc4/mm/vmalloc.c	2009-07-31 15:52:42.000000000 +0900
+@@ -1256,17 +1256,21 @@
+ 	if (va && va->flags & VM_VM_AREA) {
+ 		struct vm_struct *vm = va->private;
+ 		struct vm_struct *tmp, **p;
+-
+-		vmap_debug_free_range(va->va_start, va->va_end);
+-		free_unmap_vmap_area(va);
+-		vm->size -= PAGE_SIZE;
+-
++		/*
++		 * remove from list and disallow access to this vm_struct
++		 * before unmap. (address range confliction is maintained by
++		 * vmap.)
++		 */
+ 		write_lock(&vmlist_lock);
+ 		for (p = &vmlist; (tmp = *p) != vm; p = &tmp->next)
+ 			;
+ 		*p = tmp->next;
+ 		write_unlock(&vmlist_lock);
+ 
++		vmap_debug_free_range(va->va_start, va->va_end);
++		free_unmap_vmap_area(va);
++		vm->size -= PAGE_SIZE;
++
+ 		return vm;
+ 	}
+ 	return NULL;
 
