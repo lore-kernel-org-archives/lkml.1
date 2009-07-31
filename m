@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751825AbZGaG2d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751959AbZGaGaK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751825AbZGaG2d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 02:28:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbZGaG2d
+	id S1751959AbZGaGaK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 02:30:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751587AbZGaGaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 02:28:33 -0400
-Received: from n57.bullet.mail.sp1.yahoo.com ([98.136.44.49]:30080 "HELO
-	n57.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751089AbZGaG2c (ORCPT
+	Fri, 31 Jul 2009 02:30:10 -0400
+Received: from smtp-104-thursday.nerim.net ([62.4.16.104]:54111 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751483AbZGaGaJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 02:28:32 -0400
-X-Greylist: delayed 361 seconds by postgrey-1.27 at vger.kernel.org; Fri, 31 Jul 2009 02:28:32 EDT
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 494069.16551.bm@omp102.mail.gq1.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=ymail.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type;
-  b=nRhhZ/9+ThtuO+usPybJZI2Tv0sKICTrWM58BDIzYchWx71dZW0SYjQv0iKf1uYVv446nnzNIypzUZIp4S72/vMWgQMGzrjgHl/XPUUi5FQtRFBAbTjIsI2PKSNJnK5TkGZklfBNnvq+hYbyZIO3DxG0ZxWxLsXAVjD2vjYdKw4=;
-Message-ID: <937390.49428.qm@web111003.mail.gq1.yahoo.com>
-X-YMail-OSG: lDue6qoVM1kM_CF._KqiwUS84nDrvi7YERnxdqz_g9m2e7xbb8Y0wd0Y3tucPFh7NJR2J1N40x1EqmbGySthTJ1ddwdeAdOXgWfepkUT0UV.E1pIcnm8zv4maOxt7WgWTfv.xG67CwOR1zmCddwnPQs8bd4jPjFnL_ixUyBur6g5tdXq0_zIsO6FC7m66rYEWJnlVfIhMaNl_gHWL1Z1IshcHDZjWnIbE7o5hzcna7BT9dsHXnLboImqj6K7GBJD4DOgOqRCjQrp1Cip0A--
-X-Mailer: YahooMailClassic/6.0.19 YahooMailWebService/0.7.338.2
-Date: Thu, 30 Jul 2009 23:22:31 -0700 (PDT)
-From: Andrew Watts <akwatts@ymail.com>
-Subject: Bug report (suspend to disk is broken in 2.6.29+ with EIDE drive)
-To: linux-kernel@vger.kernel.org
-Cc: akwatts@ymail.com
+	Fri, 31 Jul 2009 02:30:09 -0400
+Date: Fri, 31 Jul 2009 08:30:08 +0200
+From: Damien Wyart <damien.wyart@free.fr>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
+       richard@rsk.demon.co.uk, fweisbec@gmail.com, Alan.Brunelle@hp.com
+Subject: Re: [PATCH 0/9] Per-bdi writeback flusher threads v13
+Message-ID: <20090731063008.GA2796@brouette>
+References: <1248989044-21605-1-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1248989044-21605-1-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Description: s2disk worked in 2.6.28 and no longer works in 2.6.30.2
-(s2disk here means: echo disk > /sys/power/state); screen blanks but
-system hangs.
+Hello,
 
-Bisection reveals that the problem commit has hash:
-295f00042aaf6b553b5f37348f89bab463d4a469.
+> Here's the 13th version of the writeback patches. Changes since v12:
 
-~Andy
+> - Update to 2.6.31-rc4 ('ish, it's on top of current -git, but wil apply
+>   to -rc4 as well).
+> - Drop the last patch in the series, it was a questionable optimization
+>   that needs to be tested and evaluated separately.
 
-PS I wrote some months ago about a thermal problem on my HW with
-2.6.28 (needed noapic, nolapic to have it not run hot @ idle).
-This problem has disappeared in 2.6.30.2. Any devs have an idea what
-commit fixed this?
+fs/sync.c has changed some time ago and I think your patch needs this
+(which I had lazyly added by hand in v12 without telling):
+
+--- a/fs/sync.c	2009-07-31 07:32:08.927926281 +0200
++++ b/fs/sync.c.new	2009-07-31 07:31:52.499801359 +0200
+@@ -118,7 +118,7 @@ restart:
+  */
+ SYSCALL_DEFINE0(sync)
+ {
+-	wakeup_pdflush(0);
++	wakeup_flusher_threads(0);
+ 	sync_filesystems(0);
+ 	sync_filesystems(1);
+ 	if (unlikely(laptop_mode))
 
 
-      
 
+Best,
+
+-- 
+Damien Wyart
