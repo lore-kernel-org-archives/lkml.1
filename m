@@ -1,119 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752504AbZGaKzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbZGaK5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752504AbZGaKzr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 06:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZGaKzq
+	id S1752524AbZGaK5a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 06:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbZGaK53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 06:55:46 -0400
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:33139 "EHLO
-	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751866AbZGaKzp (ORCPT
+	Fri, 31 Jul 2009 06:57:29 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:51191 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752320AbZGaK52 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 06:55:45 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Cc: bugzilla.kernel.org@falkensweb.com
-Subject: [PATCH] cifs: reinstate original behavior when uid=/gid= options are specified
-Date: Fri, 31 Jul 2009 06:55:42 -0400
-Message-Id: <1249037742-7862-1-git-send-email-jlayton@redhat.com>
-X-Mailer: git-send-email 1.6.0.6
+	Fri, 31 Jul 2009 06:57:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=xF3YhhwwGjMdKUM4KpqFOsIeuo1u4b53MT3LqxuenjFPcrn54WyOuCUdooHwi3NUfX
+         fyae2aElUwT0/7z9z4PfHp8piTpqL+qxpKAKI568ETyyUAtDSKc+yozhkl9+1iM0Olxk
+         8jPpRiXQlDK9RNO5bKrv9O+y/aiy8NqG1OGBk=
+MIME-Version: 1.0
+Date: Fri, 31 Jul 2009 12:57:27 +0200
+Message-ID: <c4e36d110907310357s1a143522h6fd1b5fc6f43eff9@mail.gmail.com>
+Subject: INFO: possible circular locking dependency detected kacpi_hotplug
+From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: willy@linux.intel.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the regression reported here:
+Hello
 
-http://bugzilla.kernel.org/show_bug.cgi?id=13861
+I've noticed this INFO trace in my message log - happened during
+undocking T61 C2D 4GB
 
-commit 4ae1507f6d266d0cc3dd36e474d83aad70fec9e4 changed the default
-behavior when the uid= or gid= option was specified for a mount. The
-existing behavior was to always clobber the ownership information
-provided by the server when these options were specified. The above
-commit changed this behavior so that these options simply provided
-defaults when the server did not provide this information.
+Zdenek
 
-This patch reverts this change so that the default behavior is restored.
-It also adds "noforceuid" and "noforcegid" options to make it so that
-ownership information from the server is preserved, even when the mount
-has uid= or gid= options specified.
 
-It also adds a couple of printk notices that pop up when forceuid or
-forcegid options are specified without a uid= or gid= option.
+=======================================================
+[ INFO: possible circular locking dependency detected ]
+2.6.31-rc4-00001-gec938c6 #74
+-------------------------------------------------------
+ /113 is trying to acquire lock:
+ (kacpid){+.+.+.}, at: [<ffffffff81062ca0>] flush_workqueue+0x0/0xc0
 
-Reported-by: Tom Chiverton <bugzilla.kernel.org@falkensweb.com>
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/cifs/connect.c |   42 ++++++++++++++++++++++++++++++------------
- 1 files changed, 30 insertions(+), 12 deletions(-)
+but task is already holding lock:
+ (&dpc->work){+.+.+.}, at: [<ffffffff81061286>] worker_thread+0x196/0x3a0
 
-diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
-index f248688..1f3345d 100644
---- a/fs/cifs/connect.c
-+++ b/fs/cifs/connect.c
-@@ -803,6 +803,10 @@ cifs_parse_mount_options(char *options, const char *devname,
- 	char *data;
- 	unsigned int  temp_len, i, j;
- 	char separator[2];
-+	short int override_uid = -1;
-+	short int override_gid = -1;
-+	bool uid_specified = false;
-+	bool gid_specified = false;
- 
- 	separator[0] = ',';
- 	separator[1] = 0;
-@@ -1093,18 +1097,20 @@ cifs_parse_mount_options(char *options, const char *devname,
- 						    "too long.\n");
- 				return 1;
- 			}
--		} else if (strnicmp(data, "uid", 3) == 0) {
--			if (value && *value)
--				vol->linux_uid =
--					simple_strtoul(value, &value, 0);
--		} else if (strnicmp(data, "forceuid", 8) == 0) {
--				vol->override_uid = 1;
--		} else if (strnicmp(data, "gid", 3) == 0) {
--			if (value && *value)
--				vol->linux_gid =
--					simple_strtoul(value, &value, 0);
--		} else if (strnicmp(data, "forcegid", 8) == 0) {
--				vol->override_gid = 1;
-+		} else if (!strnicmp(data, "uid", 3) && value && *value) {
-+			vol->linux_uid = simple_strtoul(value, &value, 0);
-+			uid_specified = true;
-+		} else if (!strnicmp(data, "forceuid", 8)) {
-+			override_uid = 1;
-+		} else if (!strnicmp(data, "noforceuid", 10)) {
-+			override_uid = 0;
-+		} else if (!strnicmp(data, "gid", 3) && value && *value) {
-+			vol->linux_gid = simple_strtoul(value, &value, 0);
-+			gid_specified = true;
-+		} else if (!strnicmp(data, "forcegid", 8)) {
-+			override_gid = 1;
-+		} else if (!strnicmp(data, "noforcegid", 10)) {
-+			override_gid = 0;
- 		} else if (strnicmp(data, "file_mode", 4) == 0) {
- 			if (value && *value) {
- 				vol->file_mode =
-@@ -1355,6 +1361,18 @@ cifs_parse_mount_options(char *options, const char *devname,
- 	if (vol->UNCip == NULL)
- 		vol->UNCip = &vol->UNC[2];
- 
-+	if (uid_specified)
-+		vol->override_uid = override_uid;
-+	else if (override_uid == 1)
-+		printk(KERN_NOTICE "CIFS: ignoring forceuid mount option "
-+				   "specified with no uid= option.\n");
-+
-+	if (gid_specified)
-+		vol->override_gid = override_gid;
-+	else if (override_gid == 1)
-+		printk(KERN_NOTICE "CIFS: ignoring forcegid mount option "
-+				   "specified with no gid= option.\n");
-+
- 	return 0;
- }
- 
--- 
-1.6.0.6
+which lock already depends on the new lock.
 
+
+the existing dependency chain (in reverse order) is:
+
+-> #1 (&dpc->work){+.+.+.}:
+       [<ffffffff8107be6c>] __lock_acquire+0xc5c/0x1090
+       [<ffffffff8107c338>] lock_acquire+0x98/0x140
+       [<ffffffff810612d2>] worker_thread+0x1e2/0x3a0
+       [<ffffffff8106687e>] kthread+0x9e/0xb0
+       [<ffffffff8100d1da>] child_rip+0xa/0x20
+       [<ffffffffffffffff>] 0xffffffffffffffff
+
+-> #0 (kacpid){+.+.+.}:
+       [<ffffffff8107bf3f>] __lock_acquire+0xd2f/0x1090
+       [<ffffffff8107c338>] lock_acquire+0x98/0x140
+       [<ffffffff81062d02>] flush_workqueue+0x62/0xc0
+       [<ffffffff8120bbd0>] acpi_os_wait_events_complete+0x15/0x23
+       [<ffffffff8120bc0d>] acpi_os_execute_hp_deferred+0x2f/0x43
+       [<ffffffff810612d8>] worker_thread+0x1e8/0x3a0
+       [<ffffffff8106687e>] kthread+0x9e/0xb0
+       [<ffffffff8100d1da>] child_rip+0xa/0x20
+       [<ffffffffffffffff>] 0xffffffffffffffff
+
+other info that might help us debug this:
+
+2 locks held by kacpi_hotplug/113:
+ #0:  (kacpi_hotplug){+.+...}, at: [<ffffffff81061286>]
+worker_thread+0x196/0x3a0
+ #1:  (&dpc->work){+.+.+.}, at: [<ffffffff81061286>] worker_thread+0x196/0x3a0
+
+stack backtrace:
+Pid: 113, comm: kacpi_hotplug Not tainted 2.6.31-rc4-00001-gec938c6 #74
+Call Trace:
+ [<ffffffff81079e65>] print_circular_bug_tail+0xa5/0xf0
+ [<ffffffff8107bf3f>] __lock_acquire+0xd2f/0x1090
+ [<ffffffff8107857f>] ? save_trace+0x3f/0xb0
+ [<ffffffff8107c338>] lock_acquire+0x98/0x140
+ [<ffffffff81062ca0>] ? flush_workqueue+0x0/0xc0
+ [<ffffffff8120bbde>] ? acpi_os_execute_hp_deferred+0x0/0x43
+ [<ffffffff81062d02>] flush_workqueue+0x62/0xc0
+ [<ffffffff81062ca0>] ? flush_workqueue+0x0/0xc0
+ [<ffffffff81061286>] ? worker_thread+0x196/0x3a0
+ [<ffffffff8120bbd0>] acpi_os_wait_events_complete+0x15/0x23
+ [<ffffffff8120bc0d>] acpi_os_execute_hp_deferred+0x2f/0x43
+ [<ffffffff810612d8>] worker_thread+0x1e8/0x3a0
+ [<ffffffff81061286>] ? worker_thread+0x196/0x3a0
+ [<ffffffff81378c5b>] ? thread_return+0x3e/0x703
+ [<ffffffff81066c60>] ? autoremove_wake_function+0x0/0x40
+ [<ffffffff810610f0>] ? worker_thread+0x0/0x3a0
+ [<ffffffff8106687e>] kthread+0x9e/0xb0
+ [<ffffffff8100d1da>] child_rip+0xa/0x20
+ [<ffffffff8100cb7c>] ? restore_args+0x0/0x30
+ [<ffffffff810667e0>] ? kthread+0x0/0xb0
+ [<ffffffff8100d1d0>] ? child_rip+0x0/0x20
+ACPI: \_SB_.GDCK - undocking
+usb 1-4: USB disconnect, address 4
+usb 1-4.3: USB disconnect, address 5
+usb 1-4.4: USB disconnect, address 6
+e1000e: eth0 NIC Link is Down
