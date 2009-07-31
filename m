@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752667AbZGaPRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752412AbZGaPaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752667AbZGaPRY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 11:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbZGaPRX
+	id S1752412AbZGaPaL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 11:30:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbZGaPaK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 11:17:23 -0400
-Received: from smtp239.poczta.interia.pl ([217.74.64.239]:8225 "EHLO
-	smtp239.poczta.interia.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751863AbZGaPRX (ORCPT
+	Fri, 31 Jul 2009 11:30:10 -0400
+Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:51928 "EHLO
+	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751863AbZGaPaJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 11:17:23 -0400
-Date: Fri, 31 Jul 2009 17:17:25 +0200
-To: linux-kernel@vger.kernel.org
-Subject: Intel 3945ABG - problems on 2.6.30.X
-From: dienet <dienet@poczta.fm>
-Content-Type: text/plain; format=flowed; delsp=yes; charset=iso-8859-2
+	Fri, 31 Jul 2009 11:30:09 -0400
+From: Frans Pop <elendil@planet.nl>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: RomFS: enless loop during make oldconfig from 2.6.24 -> 2.6.31-rc4 (parisc)
+Date: Fri, 31 Jul 2009 17:30:07 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       David Woodhouse <David.Woodhouse@intel.com>
+References: <200907311227.20132.elendil@planet.nl> <17615.1249045054@redhat.com>
+In-Reply-To: <17615.1249045054@redhat.com>
 MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <op.uxxt3bv7wcw97g@t61.dienet.ath.cx>
-User-Agent: Opera Mail/9.64 (Linux)
-X-EMID: 7a05bae4
+Content-Disposition: inline
+Message-Id: <200907311730.08804.elendil@planet.nl>
+X-OriginalArrivalTime: 31 Jul 2009 15:30:09.0413 (UTC) FILETIME=[C9D11B50:01CA11F3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
+Thanks for the quick response David.
 
-I got 03:00.0 Network controller: Intel Corporation PRO/Wireless 3945ABG  
-[Golan] Network Connection (rev 02) in my T61.
+On Friday 31 July 2009, David Howells wrote:
+> Frans Pop <elendil@planet.nl> wrote:
+> > Near the end of the 'make oldconfig' I got into an endless loop. I
+> > never even got a chance to make a choice, it just continued looping
+> > on the display.
+>
+> It works fine for me, using a GNUmakefile with:
+>
+> 	CROSS_COMPILE	:= hppa-linux-
+> 	ARCH		:= parisc
+>
+> set.  I used whatever was latest from Linus's tree.  I did just hold
+> enter down to select all the defaults.
 
-I use this acpi script to switch it on and off:
+I've tried again too. With all defaults I cannot reproduce it either.
+But if I answer the questions below as follows, I do get the loop again:
 
-#!/bin/bash
+Advanced netfilter configuration: N
+Wireless: N
+* sound drivers: N (* = "PCI","USB" and one or two others)
+Default ext3 to "data=ordered": Y
 
-state=`cat /sys/bus/pci/drivers/iwl3945/0000:03:00.0/enable`
-
-if [ "$state" == "1" ]; then
-
-         logger "Wifi off"
-
-         if [ -x /etc/rc.d/rc.inet1 ]; then
-                 . /etc/rc.d/rc.inet1 stop
-         fi
-
-         echo disable > /proc/acpi/ibm/bluetooth
-
-         /usr/bin/osd.sh "Wifi: [Off]"
-else
-         logger "Wifi on"
-
-         if [ -x /etc/rc.d/rc.inet1 ]; then
-                 . /etc/rc.d/rc.inet1 start
-         fi
-
-         if [ -x /etc/rc.d/rc.inet1 ]; then
-                 . /etc/rc.d/rc.inet1 eth0_stop
-         fi
-
-         echo disable > /proc/acpi/ibm/bluetooth
-
-         /usr/bin/osd.sh "Wifi: [On]"
-fi
-
-
-and it works quite nice on 2.6.29. Value in  
-/sys/bus/pci/drivers/iwl3945/0000:03:00.0/enable is changing.
-I just want to try this out on some 2.6.30.X. But on 2.6.30.X it don't  
-works :/ How should I do it on 2.6.30.X?
-
-I tried to do some echo 0 > enable but with no sucess.
-
-There's one more thing. On 2.6.30.X LED from wifi indicator is not  
-blinking when there is wifi traffic.
-On 2.6.29 this LED blinks until you do not do supsend-to-ram. After STR it  
-do not blinks.
-
-If I need to post some parts of .config (from 2.6.30.X) or any other data,  
-just tell me, but I thinkg I configured it out good.
-
--- 
-pozdr0
-dienet
-
-"Old C programmers never die. They're just cast into void."
-
-----------------------------------------------------------------------
-Wygraj zestaw kosmetykow!
-Sprawdz >> http://link.interia.pl/f22ac
-
+Cheers,
+FJP
