@@ -1,73 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751712AbZGaFuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751528AbZGaGAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751712AbZGaFuM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 01:50:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbZGaFuM
+	id S1751528AbZGaGAU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 02:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbZGaGAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 01:50:12 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:45684 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751498AbZGaFuL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 01:50:11 -0400
-Date: Fri, 31 Jul 2009 15:50:04 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: linux-next: manual merge of the reiserfs-bkl tree with Linus'
- tree
-Message-Id: <20090731155004.c151e2ce.sfr@canb.auug.org.au>
-In-Reply-To: <20090731050505.GA6115@nowhere>
-References: <20090713115114.a871ea68.sfr@canb.auug.org.au>
-	<20090731050505.GA6115@nowhere>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__31_Jul_2009_15_50_04_+1000_6_gkFS3oduIC7MdC"
+	Fri, 31 Jul 2009 02:00:19 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:49640 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750865AbZGaGAS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 02:00:18 -0400
+Date: Fri, 31 Jul 2009 01:00:15 -0500
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
+Subject: [GIT PULL] XFS update for 2.6.31-rc5
+User-Agent: Heirloom mailx 12.2 01/07/07
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090731060015.45A8FA23CA6C@attica.americas.sgi.com>
+From: felixb@sgi.com (Felix Blyakher)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__31_Jul_2009_15_50_04_+1000_6_gkFS3oduIC7MdC
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The following changes since commit b592972493c38665efd7d429a01b23fcb21e331a:
+  Linus Torvalds (1):
+        Merge branch 'tracing-fixes-for-linus' of git://git.kernel.org/.../tip/linux-2.6-tip
 
-Hi Frederic,
+are available in the git repository at:
 
-On Fri, 31 Jul 2009 07:05:07 +0200 Frederic Weisbecker <fweisbec@gmail.com>=
- wrote:
->
-> I've pushed the latest update/rebase of the reiserfs/kill-bkl tree
-> there:
->=20
-> git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git=
- \
-> reiserfs/kill-bkl
+  git://oss.sgi.com/xfs/xfs for-linus
 
-Thanks.
+Eric Sandeen (2):
+      xfs: reduce bmv_count in xfs_vn_fiemap
+      xfs: bump up nr_to_write in xfs_vm_writepage
 
-> I've changed the branch name because the previous one had a fixed rc vers=
-ion
-> inside. This new branch will keep beeing the most up to date.
-> Could you please drop the old branch and integrate this new one?
-
-OK, I will fetch the new branch starting on Monday.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__31_Jul_2009_15_50_04_+1000_6_gkFS3oduIC7MdC
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkpyhgwACgkQjjKRsyhoI8wK7QCfYIwDmpooKSxnpzeHRZeiBWWD
-w0YAoItnqtOTtjp3KyR+QZTSsq+S7oQL
-=pxFR
------END PGP SIGNATURE-----
-
---Signature=_Fri__31_Jul_2009_15_50_04_+1000_6_gkFS3oduIC7MdC--
+ fs/xfs/linux-2.6/xfs_aops.c |    8 ++++++++
+ fs/xfs/linux-2.6/xfs_iops.c |    4 ++--
+ 2 files changed, 10 insertions(+), 2 deletions(-)
