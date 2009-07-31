@@ -1,126 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbZGaSOG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbZGaSRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752794AbZGaSOG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 14:14:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752676AbZGaSOF
+	id S1752722AbZGaSRn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 14:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbZGaSRn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 14:14:05 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42505 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752063AbZGaSOE (ORCPT
+	Fri, 31 Jul 2009 14:17:43 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:55330 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751672AbZGaSRm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 14:14:04 -0400
-Date: Fri, 31 Jul 2009 11:13:40 -0700
-Message-Id: <200907311813.n6VIDe9S023442@voreg.hos.anvin.org>
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] Additional x86 fixes for 2.6.31-rc5
+	Fri, 31 Jul 2009 14:17:42 -0400
+Date: Fri, 31 Jul 2009 14:14:57 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Randy Dunlap <rdunlap@xenotime.net>
+cc: lkml <linux-kernel@vger.kernel.org>, devel@driverdev.osuosl.org,
+       gregkh@suse.de
+Subject: Re: [PATCH] staging/android/lowmemorykiller: fix module param
+ errors
+In-Reply-To: <20090731111045.8dfd1ea5.rdunlap@xenotime.net>
+Message-ID: <alpine.LFD.2.00.0907311412560.6962@localhost>
+References: <20090731111045.8dfd1ea5.rdunlap@xenotime.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit e00b95debb9a0f023b61abcd4b1e74f687276b47:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../bp/bp
+On Fri, 31 Jul 2009, Randy Dunlap wrote:
 
-are available in the git repository at:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+>
+> Move module_params to near the end of the source file so that
+> their references are already known/defined.  Fixes build errors:
+>
+> drivers/staging/android/lowmemorykiller.c: In function '__check_cost':
+> drivers/staging/android/lowmemorykiller.c:60: error: 'lowmem_shrinker' undeclared (first use in this function)
+> drivers/staging/android/lowmemorykiller.c: At top level:
+> drivers/staging/android/lowmemorykiller.c:60: error: 'lowmem_shrinker' undeclared here (not in a function)
+> drivers/staging/android/lowmemorykiller.c:60: warning: type defaults to 'int' in declaration of 'type name'
+>
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  drivers/staging/android/lowmemorykiller.c |   14 +++++++-------
+>  1 file changed, 7 insertions(+), 7 deletions(-)
+>
+> --- linux-next-20090731.orig/drivers/staging/android/lowmemorykiller.c
+> +++ linux-next-20090731/drivers/staging/android/lowmemorykiller.c
+> @@ -57,13 +57,6 @@ static int lowmem_minfree_size = 4;
+>  			printk(x);			\
+>  	} while (0)
+>
+> -module_param_named(cost, lowmem_shrinker.seeks, int, S_IRUGO | S_IWUSR);
+> -module_param_array_named(adj, lowmem_adj, int, &lowmem_adj_size,
+> -			 S_IRUGO | S_IWUSR);
+> -module_param_array_named(minfree, lowmem_minfree, uint, &lowmem_minfree_size,
+> -			 S_IRUGO | S_IWUSR);
+> -module_param_named(debug_level, lowmem_debug_level, uint, S_IRUGO | S_IWUSR);
+> -
+>  static int lowmem_shrink(int nr_to_scan, gfp_t gfp_mask)
+>  {
+>  	struct task_struct *p;
+> @@ -166,6 +159,13 @@ static void __exit lowmem_exit(void)
+>  	unregister_shrinker(&lowmem_shrinker);
+>  }
+>
+> +module_param_named(cost, lowmem_shrinker.seeks, int, S_IRUGO | S_IWUSR);
+> +module_param_array_named(adj, lowmem_adj, int, &lowmem_adj_size,
+> +			 S_IRUGO | S_IWUSR);
+> +module_param_array_named(minfree, lowmem_minfree, uint, &lowmem_minfree_size,
+> +			 S_IRUGO | S_IWUSR);
+> +module_param_named(debug_level, lowmem_debug_level, uint, S_IRUGO | S_IWUSR);
+> +
+>  module_init(lowmem_init);
+>  module_exit(lowmem_exit);
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+  isn't that a bit non-standard?  from what i've seen, the standard
+seems to be to define something as a module parameter *immediately*
+after its definition, not to collect them all at the bottom of the
+source file separate from the definitions.  *is* there a standard for
+that?
 
-H. Peter Anvin (1):
-      x86: comment formatting cleanup in arch/x86/kernel/tsc.c
+rday
+--
 
-Pallipadi, Venkatesh (1):
-      x86, pat: Fix set_memory_wc related corruption
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
 
-Robert Richter (1):
-      x86: fix section mismatch for i386 init code
+        Linux Consulting, Training and Annoying Kernel Pedantry.
 
-Tan, Wei Chong (1):
-      x86: SMI workaround for pit_expect_msb
-
- arch/x86/kernel/head_32.S |    6 +++++-
- arch/x86/kernel/tsc.c     |   22 ++++++++++++++++++++++
- arch/x86/mm/pageattr.c    |    9 ++++++---
- 3 files changed, 33 insertions(+), 4 deletions(-)
-
-diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-index 8663afb..0d98a01 100644
---- a/arch/x86/kernel/head_32.S
-+++ b/arch/x86/kernel/head_32.S
-@@ -602,7 +602,11 @@ ignore_int:
- #endif
- 	iret
- 
--.section .cpuinit.data,"wa"
-+#ifndef CONFIG_HOTPLUG_CPU
-+	__CPUINITDATA
-+#else
-+	__REFDATA
-+#endif
- .align 4
- ENTRY(initial_code)
- 	.long i386_start_kernel
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index 6e1a368..261ff00 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -285,10 +285,32 @@ static inline int pit_expect_msb(unsigned char val, u64 *tscp, unsigned long *de
- 		inb(0x42);
- 		if (inb(0x42) != val)
- 			break;
-+		/* 
-+		 * What if an SMI kicks in here when count is just
-+		 * slightly over 5 and SMI run long enough so that PIT
-+		 * MSB value is way bigger then val?  Then tscp will
-+		 * have an unreasonably large value, since the code
-+		 * has no notion of how much inb(0x42) MSB is bigger
-+		 * then val when it return from SMI.
-+		 *
-+		 * In addition, since the 2 get_cycles() are near,
-+		 * deltap may get a sane value.  If this happen on the
-+		 * final few readings just before
-+		 * (d1+d2 < delta >> * 11), this may skew the average
-+		 * delta variable of quick_pit_calibrate().
-+		 */
- 		tsc = get_cycles();
- 	}
- 	*deltap = get_cycles() - tsc;
- 	*tscp = tsc;
-+	/*
-+	 * inb(0x42) will need to be separately repeated here as the
-+	 * SMI may take so long that the old reading is no longer
-+	 * reliable. inb(0x42) after all get_cycles is the safest.
-+	 */
-+	inb(0x42);
-+	if (inb(0x42) < (val - 1))
-+		return 0;
- 
- 	/*
- 	 * We require _some_ success, but the quality control
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index 1b734d7..895d90e 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -997,12 +997,15 @@ EXPORT_SYMBOL(set_memory_array_uc);
- int _set_memory_wc(unsigned long addr, int numpages)
- {
- 	int ret;
-+	unsigned long addr_copy = addr;
-+
- 	ret = change_page_attr_set(&addr, numpages,
- 				    __pgprot(_PAGE_CACHE_UC_MINUS), 0);
--
- 	if (!ret) {
--		ret = change_page_attr_set(&addr, numpages,
--				    __pgprot(_PAGE_CACHE_WC), 0);
-+		ret = change_page_attr_set_clr(&addr_copy, numpages,
-+					       __pgprot(_PAGE_CACHE_WC),
-+					       __pgprot(_PAGE_CACHE_MASK),
-+					       0, 0, NULL);
- 	}
- 	return ret;
- }
+Web page:                                          http://crashcourse.ca
+Twitter:                                       http://twitter.com/rpjday
+"Kernel Newbie Corner" column @ linux.com:          http://cli.gs/WG6WYX
+========================================================================
