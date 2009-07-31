@@ -1,90 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751608AbZGaUEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752063AbZGaUU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751608AbZGaUEW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 16:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZGaUEV
+	id S1752063AbZGaUU0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 16:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbZGaUU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 16:04:21 -0400
-Received: from smtp.witbe.net ([81.88.96.48]:48685 "EHLO smtp.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751501AbZGaUEV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 16:04:21 -0400
-Date: Fri, 31 Jul 2009 22:03:56 +0200
-From: Paul Rolland <rol@as2917.net>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.31-rc4 - slab entry tak_delay_info leaking ???
-Message-ID: <20090731220356.4e5c8d0b@tux.DEF.witbe.net>
-In-Reply-To: <tnxeiry88w2.fsf@pc1117.cambridge.arm.com>
-References: <20090729082047.048ee1a8@tux.DEF.witbe.net>
-	<20090730120715.65bf01ff@tux.DEF.witbe.net>
-	<20090730122605.465d4f8b@tux.DEF.witbe.net>
-	<tnxeiry88w2.fsf@pc1117.cambridge.arm.com>
-Organization: AS2917.net
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.2; x86_64-unknown-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
+	Fri, 31 Jul 2009 16:20:26 -0400
+Received: from zelda.netsplit.com ([87.194.19.211]:35881 "EHLO
+	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751517AbZGaUUZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 16:20:25 -0400
+Subject: Re: [PATCH] exec: Make do_coredump more robust and safer when
+ using pipes in core_pattern
+From: Scott James Remnant <scott@ubuntu.com>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       earl_chew@agilent.com
+In-Reply-To: <20090729201857.GC17410@hmsreliant.think-freely.org>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org>
+	 <1248880382.23840.78.camel@quest>
+	 <20090729201857.GC17410@hmsreliant.think-freely.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-B0EJ+Zixww5Ef2aeMehk"
+Date: Fri, 31 Jul 2009 21:20:10 +0100
+Message-Id: <1249071610.4800.5.camel@wing-commander>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.27.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Catalin,
 
-On Thu, 30 Jul 2009 16:53:33 +0100
-Catalin Marinas <catalin.marinas@arm.com> wrote:
+--=-B0EJ+Zixww5Ef2aeMehk
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> Paul Rolland <rol@as2917.net> wrote:
-> >> On Wed, 29 Jul 2009 08:20:47 +0200
-> >> Paul Rolland <rol@as2917.net> wrote:
-> >> > Since I'm running 2.6.31-rc? (3 or 4 I think), I often find my
-> >> > machine with my X session killed in the morning, and the kdm login
-> >> > screen displayed.
-> [...]
-> > Well, I've killed my X session, and it stopped the "leak"... but
-> > didn't recover the "lost" task_delay_info...
-> 
-> You could try to enable CONFIG_KMEMLEAK and see if you get any leaks
-> reported for the "lost" task_delay_info (see Documentation/kmemleak.txt).
+On Wed, 2009-07-29 at 16:18 -0400, Neil Horman wrote:
 
-I'm now running a kmemleak-eanbled version of the kernel, and waiting for
-the same problem to happen again.
+> On Wed, Jul 29, 2009 at 04:13:02PM +0100, Scott James Remnant wrote:
+> > On Mon, 2009-06-22 at 13:28 -0400, Neil Horman wrote:
+> >=20
+> > > 2) Allow for the kernel to wait for a core_pattern process to complet=
+e.  One of
+> > > the things core_pattern processes might do is interrogate the status =
+of a
+> > > crashing process via its /proc/pid directory.  To ensure that that di=
+rectory is
+> > > not removed prematurely, we wait for the process to exit prior to cle=
+aning it
+> > > up.
+> > >=20
+> > Would this mean that the kernel would wait for the pattern process to
+> > complete before PANIC in the case of init core dumping?
+> >=20
+> > I'd find that useful :-)
+> >=20
+> Not without additional work.  If init crashed in the initramfs, I don't t=
+hink
+> theres a way to handle that.  If it crashes at some later time, I think i=
+t just
+> gets restarted IIRC.  I'm sure you can change that behavior, but this pat=
+ch
+> doesn't address that.
+>=20
+When the system init daemon crashes, the kernel PANICs.  When not using
+core_pattern, this is ok, we get a core file - when using apport, as far
+as I can tell it never waits for apport to finish so we don't get the
+crash.
 
-In the meantime, my machine is kmemleak-complaining a lot :
-Jul 31 20:57:35 tux kernel: kmemleak: 52 new suspected memory leaks
-(see /sys/kernel/debug/kmemleak) 
-Jul 31 21:07:41 tux kernel: kmemleak: 34 new suspected memory leaks
-(see /sys/kernel/debug/kmemleak) 
-Jul 31 21:17:47 tux kernel: kmemleak: 23 new suspected memory leaks
-(see /sys/kernel/debug/kmemleak) 
-Jul 31 21:27:54 tux kernel: kmemleak: 33 new suspected memory leaks
-(see /sys/kernel/debug/kmemleak) 
-Jul 31 21:38:01 tux kernel: kmemleak: 20 new suspected memory leaks
-(see /sys/kernel/debug/kmemleak) 
-Jul 31 21:48:07 tux kernel: kmemleak: 21 new suspected memory leaks
-(see /sys/kernel/debug/kmemleak) 
-Jul 31 21:58:15 tux kernel: kmemleak: 32 new suspected memory leaks 
-(see /sys/kernel/debug/kmemleak)
- 
-What should I do with these reports ? Is there an easy way to check if they
-are normal (false-positive) ?
+I was hoping that by waiting for the core_pattern process to finish,
+this might solve this issue.
 
-Regards,
-Paul
+The other obvious fix I can apply to the init daemon is to reset the
+core pattern and deliberately dump core somewhere that can be picked up.
 
--- 
-Paul Rolland                                E-Mail : rol(at)witbe.net
-CTO - Witbe.net SA                          Tel. +33 (0)1 47 67 77 77
-Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
-F-92057 Paris La Defense                    RIPE : PR12-RIPE
+> If you want to debug a custom init process, why not run a wrapper program=
+ as
+> init, that just forks the init you want to run and captures the core when=
+ it
+> crashes?
+>=20
+Because then that's not the init daemon; it's not pid 1, it doesn't have
+processes reparented to it.  And it's very annoying having the entire
+system reparented to gdb, which doesn't deal so well with that ;-)
 
-Please no HTML, I'm not a browser - Pas d'HTML, je ne suis pas un
-navigateur "Some people dream of success... while others wake up and work
-hard at it" 
+Scott
+--=20
+Scott James Remnant
+scott@ubuntu.com
 
-"I worry about my child and the Internet all the time, even though she's
-too young to have logged on yet. Here's what I worry about. I worry that 10
-or 15 years from now, she will come to me and say 'Daddy, where were you
-when they took freedom of the press away from the Internet?'"
---Mike Godwin, Electronic Frontier Foundation 
+--=-B0EJ+Zixww5Ef2aeMehk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkpzUfUACgkQSnQiFMl4yK5e/QCdEI3CbFyM2wHUxgjgvZ9mXfu4
+5YcAoIYW0luDvVuN3MBsoaS+uLsxsmMW
+=P5Lo
+-----END PGP SIGNATURE-----
+
+--=-B0EJ+Zixww5Ef2aeMehk--
+
