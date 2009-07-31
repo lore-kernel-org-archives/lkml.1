@@ -1,57 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751851AbZGaJbL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751903AbZGaJb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751851AbZGaJbL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 05:31:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbZGaJbK
+	id S1751903AbZGaJb0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 05:31:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751877AbZGaJb0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 05:31:10 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:34294 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751717AbZGaJbJ (ORCPT
+	Fri, 31 Jul 2009 05:31:26 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:53158 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751857AbZGaJbZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 05:31:09 -0400
-Date: Fri, 31 Jul 2009 11:31:07 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux@arm.linux.org.uk, alain@knaff.lu,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 5/5] Add support for LZO-compressed kernels on x86
-Message-ID: <20090731093107.GA29704@merkur.ravnborg.org>
-References: <1248271279-9920-1-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-2-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-3-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-4-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-5-git-send-email-albin.tonnerre@free-electrons.com> <4A70AA64.4020301@zytor.com> <20090729210257.GA22975@merkur.ravnborg.org> <20090731075119.GB7139@pc-ras4041.res.insa>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090731075119.GB7139@pc-ras4041.res.insa>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 31 Jul 2009 05:31:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:in-reply-to:references
+         :x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=d3UEF+zer2ylLAvKWYQ1xb4s3Rld8XI2YpGbx1efu0/BcxH2Wx06xPQhRDxcLZvRS3
+         fi8L/8k4mVwnksxIo3iYPQ4O7yBQW6YXj/if2AcjKKBuTOJfsymfczlk4B6Lgi5j4+Js
+         vXjzKg+db7kXHD/q8eejDL37skDmfvbELVZuQ=
+Date: Fri, 31 Jul 2009 12:32:19 +0300
+From: Pekka Paalanen <pq@iki.fi>
+To: Thomas =?ISO-8859-1?Q?Hellstr=F6m?= <thomas@shipmail.org>
+Cc: Thomas Hellstrom <thellstrom@vmware.com>, dri-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] ttm: Fix ttm in-kernel copying of pages with
+ non-standard caching attributes.
+Message-ID: <20090731123219.2961640e@iki.fi>
+In-Reply-To: <4A72B28D.8050801@shipmail.org>
+References: <1248422254-32193-1-git-send-email-thellstrom@vmware.com>
+	<1248422254-32193-2-git-send-email-thellstrom@vmware.com>
+	<20090730190010.649589ba@iki.fi>
+	<4A72B28D.8050801@shipmail.org>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 31, 2009 at 09:51:19AM +0200, Albin Tonnerre wrote:
-> On Wed, Jul 29, 2009 at 11:02:58PM +0200, Sam Ravnborg wrote :
-> > On Wed, Jul 29, 2009 at 01:00:36PM -0700, H. Peter Anvin wrote:
-> > > On 07/22/2009 07:01 AM, Albin Tonnerre wrote:
-> > > > This is the third and last part of the patch, which contains the
-> > > > necessary changes to the x86 Kconfig and boot/compressed to allow the
-> > > > use of this new compression method
-> > > > 
-> > > > Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-> > > 
-> > > Acked-by: H. Peter Anvin <hpa@zytor.com>
-> > > 
-> > > Since the patchset otherwise isn't really x86-related it probably makes
-> > > more sense to pass this through the kbuild tree, or perhaps via akpm,
-> > > rather than -tip?
-> > 
-> > I can take it via kbuild if I get a fewsh patch-set with proper
-> > ack's added.
-> > I've long lost the original patch-set.
+On Fri, 31 Jul 2009 10:59:57 +0200
+Thomas Hellström <thomas@shipmail.org> wrote:
+
+> Pekka Paalanen wrote:
+> >> @@ -145,17 +146,35 @@ static int ttm_copy_io_ttm_page(struct ttm_tt *ttm, void *src,
+> >>  		return -ENOMEM;
+> >>  
+> >>  	src = (void *)((unsigned long)src + (page << PAGE_SHIFT));
+> >> -	dst = kmap(d);
+> >> +
+> >> +#ifdef CONFIG_X86
+> >> +	dst = kmap_atomic_prot(d, KM_USER0, prot);
+> >> +#else
+> >> +	if (prot != PAGE_KERNEL)
+> >> +		dst = vmap(&d, 1, 0, prot);
+> >> +	else
+> >> +		dst = kmap(d);
+> >> +#endif
+> >>     
+> >
+> > What are the implications of choosing the non-CONFIG_X86 path
+> > even on x86?
+> >   
 > 
-> Only the x86-specific part of the patch has been acked so far, and it relies on
-> 3 other patches which have not been acked. If there's anything I can do to get
-> feedback on the remaining patches, please let me know.
+> The only implication is a slowdown if dealing with highmem pages or 
+> pages with
+> a non standard caching policy. Also you need the patch I just posted to 
+> dri-devel / lkml to make it compile.
+> I should've done more thorough testing of the non-x86 path.
+> 
+> > Is kmap_atomic_prot() simply an optimization allowed by the x86
+> > arch, and the alternate way also works, although it uses the
+> > precious vmalloc address space?
+> >   
+> 
+> Exactly, although it's only using one page out of vmalloc space and for 
+> the time it
+> takes to copy a page to / from io.
+> 
+> > Since kmap_atomic_prot() is not exported on earlier kernels,
+> > I'm tempted to just do the non-CONFIG_X86 path.
+> >   
+> For compat I think that should be fine. If your driver is using 
+> accelerated copy to / from
+> VRAM, you shouldn't even hit this path.
 
-Please resend the full serie then I may take a short look at it.
+Okay, thank you very much.
 
-	Sam
+-- 
+Pekka Paalanen
+http://www.iki.fi/pq/
+
