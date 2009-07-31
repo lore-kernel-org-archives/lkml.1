@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752406AbZGaM4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752585AbZGaM5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752406AbZGaM4j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 08:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbZGaM4i
+	id S1752585AbZGaM5X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 08:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbZGaM5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 08:56:38 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:59684 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751820AbZGaM4i (ORCPT
+	Fri, 31 Jul 2009 08:57:22 -0400
+Received: from mga01.intel.com ([192.55.52.88]:61036 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752121AbZGaM5V convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 08:56:38 -0400
-Subject: Re: kmemleak report from network usage
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux.nics@intel.com
-In-Reply-To: <c4e36d110907310521v1234e8fdg99a101a4057dc51e@mail.gmail.com>
-References: <c4e36d110907310521v1234e8fdg99a101a4057dc51e@mail.gmail.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 31 Jul 2009 13:56:32 +0100
-Message-Id: <1249044992.29967.17.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 31 Jul 2009 12:56:33.0689 (UTC) FILETIME=[54D13890:01CA11DE]
+	Fri, 31 Jul 2009 08:57:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,302,1246863600"; 
+   d="scan'208";a="712787712"
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       "Williams, Dan J" <dan.j.williams@intel.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Nicolas Ferre <nicolas.ferre@atmel.com>,
+       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
+       Pierre Ossman <pierre@ossman.eu>
+Date: Fri, 31 Jul 2009 13:56:58 +0100
+Subject: RE: [PATCH] dmaengine: Move all map_sg/unmap_sg for slave channel
+ to its client
+Thread-Topic: [PATCH] dmaengine: Move all map_sg/unmap_sg for slave channel
+ to its client
+Thread-Index: AcoRlBKYeMW+skqnSIKvPDuM9LofQgAShZ1g
+Message-ID: <129600E5E5FB004392DDC3FB599660D7B298123F@irsmsx504.ger.corp.intel.com>
+References: <1249012788-965-1-git-send-email-anemo@mba.ocn.ne.jp>
+In-Reply-To: <1249012788-965-1-git-send-email-anemo@mba.ocn.ne.jp>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Zdenek,
-
-On Fri, 2009-07-31 at 14:21 +0200, Zdenek Kabelac wrote:
-> Recently I'm running kernel with kmemleak.
-
-Which kernel version?
-
-> Here are some frequently repeating messages:
+Atsushi Nemoto wrote:
+> Dan Williams wrote:
+> ... DMA-slave clients request specific channels and know the hardware
+> details at a low level, so it should not be too high an expectation to
+> push dma mapping responsibility to the client.
 > 
-> Are they false positives or some real leaks?
+> Also this patch includes DMA_COMPL_{SRC,DEST}_UNMAP_SINGLE support for
+> dw_dmac driver.
+> 
+> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> ---
 
-Could be either (but it depends on the kernel version as well since
-there were some kmemleak fixes during the -rc stages).
+The patch looks fine to me.
 
-Can you merge the "kmemleak-fixes" branch from
-git://linux-arm.org/linux-2.6.git (or just pick
-http://www.linux-arm.org/git?p=linux-2.6.git;a=commitdiff;h=4d2b5efa46639b704fd5db1ccd3bdf51cadda50e which ensures that all thread stacks are scanned)?
-
-Are the same leaks still reported reported after a few
-"echo scan > /sys/kernel/debug/kmemleak"? If not, they are just
-transient leaks, happening especially on SMP systems. If they are still
-present, could you please also post the relevant .config entries?
-
-Thanks.
-
--- 
-Catalin
-
+Acked-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
