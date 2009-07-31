@@ -1,78 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302AbZGaVit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322AbZGaVi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753302AbZGaVit (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 17:38:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbZGaVis
+	id S1753322AbZGaVi5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 17:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753263AbZGaViz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 17:38:48 -0400
-Received: from are.twiddle.net ([75.149.56.221]:46197 "EHLO are.twiddle.net"
+	Fri, 31 Jul 2009 17:38:55 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38969 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751464AbZGaViq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 17:38:46 -0400
-Message-ID: <4A736460.5070509@twiddle.net>
-Date: Fri, 31 Jul 2009 14:38:40 -0700
-From: Richard Henderson <rth@twiddle.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	id S1753305AbZGaVix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 17:38:53 -0400
+Message-ID: <4A73641C.7070404@redhat.com>
+Date: Fri, 31 Jul 2009 14:37:32 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Tim Abbott <tabbott@ksplice.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Anders Kaseorg <andersk@ksplice.com>,
-       Nelson Elhage <nelhage@ksplice.com>, linux-alpha@vger.kernel.org
-Subject: Re: [PATCH 1/2] alpha: use .data.init_task instead of .data.init_thread.
-References: <1249073786-29788-1-git-send-email-tabbott@ksplice.com> <4A7360C3.2060507@twiddle.net>
-In-Reply-To: <4A7360C3.2060507@twiddle.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] information leak in sigaltstack
+References: <200907311948.n6VJm5Gf010118@hs20-bc2-1.build.redhat.com> <alpine.LFD.2.01.0907311407040.24841@localhost.localdomain> <alpine.LFD.2.01.0907311428370.3304@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0907311428370.3304@localhost.localdomain>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/31/2009 02:23 PM, Richard Henderson wrote:
-> Similarly it is *not* a bug that the page_aligned sections were before
-> data, because we already knew we had 2 page alignment from the end of
-> init + 2 pages of init_thread.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Indeed, I'll go further and say that the common definition of 
-RW_DATA_SECTION is buggy.
+Linus Torvalds wrote:
 
-> #define RW_DATA_SECTION(cacheline, nosave, pagealigned, inittask)       \
->         . = ALIGN(PAGE_SIZE);                                           \
->         .data : AT(ADDR(.data) - LOAD_OFFSET) {                         \
->                 INIT_TASK(inittask)                                     \
->                 CACHELINE_ALIGNED_DATA(cacheline)                       \
->                 READ_MOSTLY_DATA(cacheline)                             \
->                 DATA_DATA                                               \
->                 CONSTRUCTORS                                            \
->                 NOSAVE_DATA(nosave)                                     \
->                 PAGE_ALIGNED_DATA(pagealigned)                          \
->         }
+> 	if (alignof(oss.ss_flags) != alignof(oss))
+> 		memset(&oss, 0, sizeof(oss));
+> 
+> instead? That would seem to be less subtle, and more to-the-point.
 
-Given that we align the entire .data section why have interior padding 
-to re-align for page-aligned data?  Surely a better ordering would be
+I was just composing a reply with basically this.  So  you'll apply this
+and don't wait for me to send a new version of the patch, right?
 
-	. = ALIGN(PAGE_SIZE);
-	.data : AT(ADDR(.data) - LOAD_OFFSET) {
-		INIT_TASK(inittask)
-		NOSAVE_DATA
-		PAGE_ALIGNED_DATA(pagealigned)
-		CACHELINE_ALIGNED_DATA(cacheline)
-		READ_MOSTLY_DATA(cacheline)
-		DATA_DATA
-		CONSTRUCTORS
-	}
+- --
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-with that change, and without
-
-> -	. = ALIGN(2 * PAGE_SIZE);
-> +	. = ALIGN(PAGE_SIZE);
->  	__init_end = .;
-
-the patch looks like it'd be ok.  All you're doing with this fragment is 
-failing to free a page of padding.  You could change it to
-
-	. = ALIGN(THREAD_SIZE)
-
-if it makes you feel better.
-
-
-r~
+iEYEARECAAYFAkpzZBwACgkQ2ijCOnn/RHSMUACeJkKaHTG97OcSkCa3jFCIFxvL
+9JsAoK7IuTCiW+i1oR9Xlt3wo0YZPTCw
+=9A0Y
+-----END PGP SIGNATURE-----
