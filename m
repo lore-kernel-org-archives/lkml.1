@@ -1,103 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752414AbZGaCKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751876AbZGaCWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752414AbZGaCKv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 30 Jul 2009 22:10:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbZGaCKu
+	id S1751876AbZGaCWW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 30 Jul 2009 22:22:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbZGaCWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 30 Jul 2009 22:10:50 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45345 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750876AbZGaCKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 30 Jul 2009 22:10:49 -0400
-Date: Fri, 31 Jul 2009 02:07:01 GMT
-From: "tip-bot for Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
-       airlied@redhat.com, tglx@linutronix.de, glisse@freedesktop.org
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       venkatesh.pallipadi@intel.com, airlied@redhat.com,
-       suresh.b.siddha@intel.com, tglx@linutronix.de, glisse@freedesktop.org
-In-Reply-To: <20090730214319.GA1889@linux-os.sc.intel.com>
-References: <20090730214319.GA1889@linux-os.sc.intel.com>
-Subject: [tip:x86/urgent] x86, pat: Fix set_memory_wc related corruption
-Message-ID: <tip-bdc6340f4eb68295b1e7c0ade2356b56dca93d93@git.kernel.org>
-Git-Commit-ID: bdc6340f4eb68295b1e7c0ade2356b56dca93d93
-X-Mailer: tip-git-log-daemon
+	Thu, 30 Jul 2009 22:22:21 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:55762 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751143AbZGaCWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 30 Jul 2009 22:22:21 -0400
+Message-ID: <4A725594.8020205@cn.fujitsu.com>
+Date: Fri, 31 Jul 2009 10:23:16 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
+To: Oleg Nesterov <oleg@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       Li Zefan <lizf@cn.fujitsu.com>, Miao Xie <miaox@cn.fujitsu.com>,
+       Paul Menage <menage@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Gautham R Shenoy <ego@in.ibm.com>
+Subject: Re: [PATCH] cpusets: fix deadlock with cpu_down()->cpuset_lock()
+References: <20090729023302.GA8899@redhat.com> <20090729212125.GA16970@redhat.com> <20090729212216.GB16970@redhat.com> <20090729230043.GA28175@redhat.com> <4A70FD26.1010800@cn.fujitsu.com> <20090730175108.GC3617@redhat.com>
+In-Reply-To: <20090730175108.GC3617@redhat.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 31 Jul 2009 02:07:02 +0000 (UTC)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  bdc6340f4eb68295b1e7c0ade2356b56dca93d93
-Gitweb:     http://git.kernel.org/tip/bdc6340f4eb68295b1e7c0ade2356b56dca93d93
-Author:     Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
-AuthorDate: Thu, 30 Jul 2009 14:43:19 -0700
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Thu, 30 Jul 2009 17:48:34 -0700
+Oleg Nesterov wrote:
+> On 07/30, Lai Jiangshan wrote:
+>> Oleg Nesterov wrote:
+>>> On 07/29, Oleg Nesterov wrote:
+>>>> I strongly believe the bug does exist, but this patch needs the review
+>>>> from maintainers.
+>>> Yes...
+>>>
+>>>> IOW, with this patch migration_call(CPU_DEAD) runs without callback_mutex,
+>>>> but kernel/cpuset.c always takes get_online_cpus() before callback_mutex.
+>>> Oh. I'm afraid this is not an option.
+>>>
+>>> callback_mutex should nest under cgroup_mutex, but cpu hotplu pathes
+>>> take cgroup_mutex under cpu_hotplug->lock. Lockdep won't be happy.
+>>>
+>>> Oleg.
+>>>
+>> We have made great effort to remove get_online_cpus() from cgroup_mutex
+>> critical region.
+> 
+> Agreed.
+> 
+>> We can migrate the owner of callback_mutex in migration_call(CPU_DEAD)
+>> at first(and then take callback_mutex and migrate others).
+> 
+> Not sure I understand how can we do this. Even if we know the owner
+> of callback_mutex, if we can migrate it safely without callback_mutex
+> why we can't migrate other tasks without this lock?
 
-x86, pat: Fix set_memory_wc related corruption
+Since we have migrated the owner, we can take callback_mutex to
+migrate others ... 
 
-Changeset 3869c4aa18835c8c61b44bd0f3ace36e9d3b5bd0
-that went in after 2.6.30-rc1 was a seemingly small change to _set_memory_wc()
-to make it complaint with SDM requirements. But, introduced a nasty bug, which
-can result in crash and/or strange corruptions when set_memory_wc is used.
-One such crash reported here
-http://lkml.org/lkml/2009/7/30/94
+> 
+> In any case this doesn't look like a clean solution,
 
-Actually, that changeset introduced two bugs.
-* change_page_attr_set() takes &addr as first argument and can the addr value
-  might have changed on return, even for single page change_page_attr_set()
-  call. That will make the second change_page_attr_set() in this routine
-  operate on unrelated addr, that can eventually cause strange corruptions
-  and bad page state crash.
-* The second change_page_attr_set() call, before setting _PAGE_CACHE_WC, should
-  clear the earlier _PAGE_CACHE_UC_MINUS, as otherwise cache attribute will not
-  be WC (will be UC instead).
+No, it's not a clean solution.
 
-The patch below fixes both these problems. Sending a single patch to fix both
-the problems, as the change is to the same line of code. The change to have a
-addr_copy is not very clean. But, it is simpler than making more changes
-through various routines in pageattr.c.
-
-A huge thanks to Jerome for reporting this problem and providing a simple test
-case that helped us root cause the problem.
-
-Reported-by: Jerome Glisse <glisse@freedesktop.org>
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-LKML-Reference: <20090730214319.GA1889@linux-os.sc.intel.com>
-Acked-by: Dave Airlie <airlied@redhat.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+> imho. But I hardly understand what cpuset is,
 
 
----
- arch/x86/mm/pageattr.c |    9 ++++++---
- 1 files changed, 6 insertions(+), 3 deletions(-)
+> can't suggest something clever.
 
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index 1b734d7..895d90e 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -997,12 +997,15 @@ EXPORT_SYMBOL(set_memory_array_uc);
- int _set_memory_wc(unsigned long addr, int numpages)
- {
- 	int ret;
-+	unsigned long addr_copy = addr;
-+
- 	ret = change_page_attr_set(&addr, numpages,
- 				    __pgprot(_PAGE_CACHE_UC_MINUS), 0);
--
- 	if (!ret) {
--		ret = change_page_attr_set(&addr, numpages,
--				    __pgprot(_PAGE_CACHE_WC), 0);
-+		ret = change_page_attr_set_clr(&addr_copy, numpages,
-+					       __pgprot(_PAGE_CACHE_WC),
-+					       __pgprot(_PAGE_CACHE_MASK),
-+					       0, 0, NULL);
- 	}
- 	return ret;
- }
+We can add cpuset_lock()/cpuset_unlock() around __stop_machine()
+in _cpu_down().
+
+cpuset_lock()
+__stop_machine()
+	......
+	mutex_lock(&lock);
+	# It's OK, because we don't require any other lock in this
+	# critical region. It's will not cause any kinds of deadlock.
+	......
+	flush_workqueue(stop_machine_wq);
+	# It's OK too. because all work functions(chill(),stop_cpu())
+	# of stop_machine_wq don't require any other lock.
+	......
+	mutex_unlock(&lock);
+cpuset_unlock()
+
+
+This fixes the bug in migrate_call(). Because there is no task which
+holds callback_mutex in dead cpu after we add
+cpuset_lock()/cpuset_unlock() around __stop_machine() in _cpu_down().
+
+And it helps for your "cpu_hotplug: don't play with current->cpus_allowed"
+Am I right?
+
+Lai
+
