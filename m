@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752982AbZGaVck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753034AbZGaVeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752982AbZGaVck (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 17:32:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbZGaVck
+	id S1753034AbZGaVeN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 17:34:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752926AbZGaVeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 17:32:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57400 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751840AbZGaVcj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 17:32:39 -0400
-Date: Fri, 31 Jul 2009 14:31:51 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ulrich Drepper <drepper@redhat.com>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] information leak in sigaltstack
-In-Reply-To: <alpine.LFD.2.01.0907311407040.24841@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0907311428370.3304@localhost.localdomain>
-References: <200907311948.n6VJm5Gf010118@hs20-bc2-1.build.redhat.com> <alpine.LFD.2.01.0907311407040.24841@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Fri, 31 Jul 2009 17:34:12 -0400
+Received: from are.twiddle.net ([75.149.56.221]:42399 "EHLO are.twiddle.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751442AbZGaVeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 17:34:11 -0400
+X-Greylist: delayed 648 seconds by postgrey-1.27 at vger.kernel.org; Fri, 31 Jul 2009 17:34:11 EDT
+Message-ID: <4A7360C3.2060507@twiddle.net>
+Date: Fri, 31 Jul 2009 14:23:15 -0700
+From: Richard Henderson <rth@twiddle.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Tim Abbott <tabbott@ksplice.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Anders Kaseorg <andersk@ksplice.com>,
+       Nelson Elhage <nelhage@ksplice.com>, linux-alpha@vger.kernel.org
+Subject: Re: [PATCH 1/2] alpha: use .data.init_task instead of .data.init_thread.
+References: <1249073786-29788-1-git-send-email-tabbott@ksplice.com>
+In-Reply-To: <1249073786-29788-1-git-send-email-tabbott@ksplice.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 07/31/2009 01:56 PM, Tim Abbott wrote:
+> -	/* Note 2 page alignment above.  */
+> -	.data.init_thread : {
+> -		*(.data.init_thread)
+> -	}
+
+NACK.
+
+You can change the section name, sure, but you cannot remove the 2 page 
+alignment that we had via the alignment at the end of the init sections. 
+  You'll break current_thread_info which is always computed as 
+(kernel-stack-pointer & -(2*PAGE_SIZE)).
+
+Similarly it is *not* a bug that the page_aligned sections were before 
+data, because we already knew we had 2 page alignment from the end of 
+init + 2 pages of init_thread.
 
 
-On Fri, 31 Jul 2009, Linus Torvalds wrote:
-> 
-> Now, you'd end up with a memset() in that case (since it certainly won't 
-> match the offsetof), but my point is, the conditional really looks very 
-> arbitrary and rather strange. I'd rather see it unconditional, even if it 
-> costs three unnecessary writes or whatever.
-
-.. and if we really do want the conditional, maybe just make it something 
-like
-
-	/*
-	 * ss_flags is often generally 'int', and may cause
-	 * holes in the structure due to alignment.
-	 */
-	if (alignof(oss.ss_flags) != alignof(oss))
-		memset(&oss, 0, sizeof(oss));
-
-instead? That would seem to be less subtle, and more to-the-point.
-
-			Linus
+r~
