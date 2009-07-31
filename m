@@ -1,105 +1,225 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752667AbZGaNTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752698AbZGaNW6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752667AbZGaNTl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 09:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbZGaNTk
+	id S1752698AbZGaNW6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 09:22:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbZGaNW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 09:19:40 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48900 "EHLO mx2.redhat.com"
+	Fri, 31 Jul 2009 09:22:57 -0400
+Received: from mga02.intel.com ([134.134.136.20]:35284 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752293AbZGaNTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 09:19:39 -0400
-Date: Fri, 31 Jul 2009 09:18:13 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, ryov@valinux.co.jp, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org
-Subject: Re: [PATCH 05/24] io-controller: Modify cfq to make use of flat
-	elevator fair queuing
-Message-ID: <20090731131813.GB3668@redhat.com>
-References: <1248467274-32073-1-git-send-email-vgoyal@redhat.com> <1248467274-32073-6-git-send-email-vgoyal@redhat.com> <4A713E10.2030204@cn.fujitsu.com>
+	id S1752412AbZGaNW4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 09:22:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,302,1246863600"; 
+   d="scan'208";a="537530157"
+Date: Fri, 31 Jul 2009 21:22:48 +0800
+From: Alek Du <alek.du@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: David Brownell <david-b@pacbell.net>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
+Subject: [PATCH] mm gpio: Some fixing for Langwell GPIO driver
+Message-ID: <20090731212248.7a3aa095@dxy.sh.intel.com>
+In-Reply-To: <20090731170210.3372ca73@dxy.sh.intel.com>
+References: <20090703210706.41288a2a@dxy.sh.intel.com>
+	<20090730035941.16124ec0.akpm@linux-foundation.org>
+	<20090731170210.3372ca73@dxy.sh.intel.com>
+Organization: Intel Corp.
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A713E10.2030204@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 30, 2009 at 02:30:40PM +0800, Gui Jianfeng wrote:
-> Vivek Goyal wrote:
-> ...
-> >  /*
-> >   * Check if new_cfqq should preempt the currently active queue. Return 0 for
-> > - * no or if we aren't sure, a 1 will cause a preempt.
-> > + * no or if we aren't sure, a 1 will cause a preemption attempt.
-> > + * Some of the preemption logic has been moved to common layer. Only cfq
-> > + * specific parts are left here.
-> >   */
-> >  static int
-> > -cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
-> > -		   struct request *rq)
-> > +cfq_should_preempt(struct request_queue *q, void *new_cfqq, struct request *rq)
+Andrew,
+
+Here is an incremental patch against gpio-add-intel-moorestown-platform-langwell-chip-gpio-driver.patch in mm tree.
+And I think you can revert 2f69806ebbdd67a816ff971ede66ac6597ffb991 export symbols patch now.
+
+BR,
+Alek
+
+
+>From 626bf5fede836670db918d47d38b6956e6f7f759 Mon Sep 17 00:00:00 2001
+From: Alek Du <alek.du@intel.com>
+Date: Fri, 31 Jul 2009 21:07:44 +0800
+Subject: [PATCH] gpio: Some fixing for Langwell GPIO driver
+
+1. remove module support.
+2. add a mask handler to irqchip.
+
+Signed-off-by: Alek Du <alek.du@intel.com>
+---
+ drivers/gpio/Kconfig         |    2 +-
+ drivers/gpio/langwell_gpio.c |   34 ++++++----------------------------
+ 2 files changed, 7 insertions(+), 29 deletions(-)
+
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index c310d67..9748c0c 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -174,7 +174,7 @@ config GPIO_BT8XX
+ 	  If unsure, say N.
+ 
+ config GPIO_LANGWELL
+-	tristate "Intel Moorestown Platform Langwell GPIO support"
++	bool "Intel Moorestown Platform Langwell GPIO support"
+ 	depends on PCI
+ 	help
+ 	  Say Y here to support Intel Moorestown platform GPIO.
+diff --git a/drivers/gpio/langwell_gpio.c b/drivers/gpio/langwell_gpio.c
+index e338baa..e100583 100644
+--- a/drivers/gpio/langwell_gpio.c
++++ b/drivers/gpio/langwell_gpio.c
+@@ -152,8 +152,13 @@ static void lnw_irq_unmask(unsigned irq)
+ 	writel(BIT(gpio % 32), gedr);
+ };
+ 
++static void lnw_irq_mask(unsigned irq)
++{
++};
++
+ static struct irq_chip lnw_irqchip = {
+ 	.name		= "LNW-GPIO",
++	.mask		= lnw_irq_mask,
+ 	.unmask		= lnw_irq_unmask,
+ 	.set_type	= lnw_irq_type,
+ };
+@@ -277,27 +282,10 @@ done:
+ 	return retval;
+ }
+ 
+-static void __devexit lnw_gpio_remove(struct pci_dev *pdev)
+-{
+-	struct lnw_gpio *lnw = (struct lnw_gpio *)pci_get_drvdata(pdev);
+-
+-	if (gpiochip_remove(&lnw->chip)) {
+-		dev_err(&pdev->dev, "langwell gpio driver remove error\n");
+-		return;
+-	}
+-	pci_disable_device(pdev);
+-	set_irq_chained_handler(pdev->irq, NULL);
+-	pci_release_regions(pdev);
+-	iounmap(lnw->reg_base);
+-	pci_set_drvdata(pdev, NULL);
+-	kfree(lnw);
+-}
+-
+ static struct pci_driver lnw_gpio_driver = {
+ 	.name		= "langwell_gpio",
+ 	.id_table	= lnw_gpio_ids,
+ 	.probe		= lnw_gpio_probe,
+-	.remove		= lnw_gpio_remove,
+ };
+ 
+ static int __init lnw_gpio_init(void)
+@@ -305,14 +293,4 @@ static int __init lnw_gpio_init(void)
+ 	return pci_register_driver(&lnw_gpio_driver);
+ }
+ 
+-static void __exit lnw_gpio_exit(void)
+-{
+-	pci_unregister_driver(&lnw_gpio_driver);
+-}
+-
+-MODULE_AUTHOR("Alek Du <alek.du@intel.com>");
+-MODULE_DESCRIPTION("Intel Moorestown Platform Langwell chip GPIO driver");
+-MODULE_LICENSE("GPL v2");
+-
+-module_init(lnw_gpio_init);
+-module_exit(lnw_gpio_exit);
++device_initcall(lnw_gpio_init);
+-- 
+1.6.0.4
+
+
+On Fri, 31 Jul 2009 17:02:10 +0800
+Alek Du <alek.du@intel.com> wrote:
+
+> Andrew,
+> 
+> Sorry for late response. Yes, you are right, there is no meaning to build it as module, it should be changed to bool.
+> I will submit a new patch soon, I also need a mask handler to irqchip .... otherwise the free_irq will report a error.
+> 
+> Thanks,
+> Alek
+> 
+> 
+> 
+> 
+> On Thu, 30 Jul 2009 18:59:41 +0800
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Fri, 3 Jul 2009 21:07:06 +0800 Alek Du <alek.du@intel.com> wrote:
+> > 
+> > > Changes from v2:
+> > > 1. Add missed MODULE_DEVICE_TABLE
+> > > 
+> > > Changes from v1:
+> > > 1. driver name changed from lnw.c ==> langwell_gpio.c
+> > > 2. removed hard coded driver data, now we get it from PCI bar1 (platform init code fills it)
+> > > 3. removed alternative function setting code, it should be called in platform init part.
+> > > 4. misc. style clean
+> > > 
+> > > 
+> > > >From 8eaad3aac8cffda193adcfc4b9fcbb7c461fd4b9 Mon Sep 17 00:00:00 2001
+> > > From: Alek Du <alek.du@intel.com>
+> > > Date: Tue, 30 Jun 2009 12:13:27 +0800
+> > > Subject: [PATCH] gpio: add Intel Moorestown Platform Langwell chip gpio driver
+> > > 
+> > > The Langwell chip is the IO hub for Intel Moorestown platform which has a
+> > > 64-pin gpio block device inside. It is exposed as a dedicated PCI device.
+> > > We use it to control outside peripheral as well as to do IRQ demuxing. The
+> > > gpio block uses MSI to send level type interrupt to IOAPIC.
+> > 
+> > The driver breaks the x86-64 allmodconfig build:
+> > 
+> > ERROR: "irq_to_desc" [drivers/gpio/langwell_gpio.ko] undefined!
+> > ERROR: "set_irq_chip_and_handler_name" [drivers/gpio/langwell_gpio.ko] undefined!
+> > ERROR: "handle_simple_irq" [drivers/gpio/langwell_gpio.ko] undefined!
+> > 
+> > Does it make any sense to build this driver as a module?  If not, it
+> > should be changed to def_bool.  If so...
+> > 
+> > 
+> > 
+> >  kernel/irq/chip.c   |    2 ++
+> >  kernel/irq/handle.c |    1 +
+> >  2 files changed, 3 insertions(+)
+> > 
+> > diff -puN kernel/irq/handle.c~kernel-irq-export-symbols-needed-by-gpio-add-intel-moorestown-platform-langwell-chip-gpio-driverpatch kernel/irq/handle.c
+> > --- a/kernel/irq/handle.c~kernel-irq-export-symbols-needed-by-gpio-add-intel-moorestown-platform-langwell-chip-gpio-driverpatch
+> > +++ a/kernel/irq/handle.c
+> > @@ -192,6 +192,7 @@ struct irq_desc *irq_to_desc(unsigned in
+> >  
+> >  	return NULL;
+> >  }
+> > +EXPORT_SYMBOL(irq_to_desc);
+> >  
+> >  struct irq_desc * __ref irq_to_desc_alloc_node(unsigned int irq, int node)
 > >  {
-> > -	struct cfq_queue *cfqq;
-> > +	struct cfq_data *cfqd = q->elevator->elevator_data;
-> > +	struct cfq_queue *cfqq = elv_active_sched_queue(q->elevator);
+> > diff -puN kernel/irq/chip.c~kernel-irq-export-symbols-needed-by-gpio-add-intel-moorestown-platform-langwell-chip-gpio-driverpatch kernel/irq/chip.c
+> > --- a/kernel/irq/chip.c~kernel-irq-export-symbols-needed-by-gpio-add-intel-moorestown-platform-langwell-chip-gpio-driverpatch
+> > +++ a/kernel/irq/chip.c
+> > @@ -340,6 +340,7 @@ handle_simple_irq(unsigned int irq, stru
+> >  out_unlock:
+> >  	spin_unlock(&desc->lock);
+> >  }
+> > +EXPORT_SYMBOL(handle_simple_irq);
 > >  
-> > -	cfqq = cfqd->active_queue;
-> >  	if (!cfqq)
-> >  		return 0;
+> >  /**
+> >   *	handle_level_irq - Level type irq handler
+> > @@ -609,6 +610,7 @@ set_irq_chip_and_handler_name(unsigned i
+> >  	set_irq_chip(irq, chip);
+> >  	__set_irq_handler(irq, handle, 0, name);
+> >  }
+> > +EXPORT_SYMBOL(set_irq_chip_and_handler_name);
 > >  
-> > -	if (cfq_slice_used(cfqq))
-> > +	if (elv_ioq_slice_used(cfqq->ioq))
-> >  		return 1;
-> >  
-> >  	if (cfq_class_idle(new_cfqq))
-> > @@ -2018,13 +1661,7 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
-> >  	if (rq_is_meta(rq) && !cfqq->meta_pending)
-> >  		return 1;
-> >  
-> > -	/*
-> > -	 * Allow an RT request to pre-empt an ongoing non-RT cfqq timeslice.
-> > -	 */
-> > -	if (cfq_class_rt(new_cfqq) && !cfq_class_rt(cfqq))
-> > -		return 1;
-> > -
-> > -	if (!cfqd->active_cic || !cfq_cfqq_wait_request(cfqq))
-> > +	if (!cfqd->active_cic || !elv_ioq_wait_request(cfqq->ioq))
-> >  		return 0;
-> >  
-> >  	/*
-> 
-> Hi Vivek,
-> 
-> cfq_should_preempt() will do the check "if (cfq_rq_close(cfqd, rq)) to see whether
-> it should preempt the current cfqq. From fairness point of view,  should we also 
-> check "fairness" value, if it's set fairness == 1, don't allow to preempt the current
-> cfqq?
-
-Hi Gui,
-
-In V7, fairness=1 means that we try to dispatch request only from one
-queue at a time and wait for requests to finish from that queue before
-next queue is scheduled in. This helps in better disk time accounting for the
-queue.
-
-But currently this is not true for preemption path. So if we decide to
-preempt the current queue (either by elevator layer or by cfq), we expire
-the queue immediately and bring in the new one. So this is just not
-cfq_rq_close() but the whole preemption path.
-
-Currently I will leave it as it is but if we run into significant issues, 
-then we can fix it. It will require extra logic of keeping track that
-current queue has been preempted. Also keep track who preempted etc and
-as soon as last request from queue completes, expire it.
-
-Thanks
-Vivek
+> >  void __init set_irq_noprobe(unsigned int irq)
+> >  {
+> > _
+> > 
+> > 
