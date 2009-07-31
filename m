@@ -1,22 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752947AbZGaU4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752943AbZGaU5K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752947AbZGaU4r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 16:56:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbZGaU4q
+	id S1752943AbZGaU5K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 16:57:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbZGaU5J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 16:56:46 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:53368 "EHLO
+	Fri, 31 Jul 2009 16:57:09 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:53457 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752634AbZGaU4p (ORCPT
+	by vger.kernel.org with ESMTP id S1752524AbZGaU5H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 16:56:45 -0400
+	Fri, 31 Jul 2009 16:57:07 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>, Anders Kaseorg <andersk@ksplice.com>,
-       Nelson Elhage <nelhage@ksplice.com>, Joe Perches <joe@perches.com>
-Subject: [PATCH 1/4] Use new __init_task_data macro in arch init_task.c files.
-Date: Fri, 31 Jul 2009 16:54:21 -0400
-Message-Id: <1249073664-29550-2-git-send-email-tabbott@ksplice.com>
+       Nelson Elhage <nelhage@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [PATCH 4/4] Use macros for .data.page_aligned section.
+Date: Fri, 31 Jul 2009 16:54:24 -0400
+Message-Id: <1249073664-29550-5-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1249073664-29550-1-git-send-email-tabbott@ksplice.com>
 References: <1249073664-29550-1-git-send-email-tabbott@ksplice.com>
@@ -26,367 +32,170 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joe Perches <joe@perches.com>
+This patch changes the remaining direct references to
+.data.page_aligned in C and assembly code to use the macros in
+include/linux/linkage.h.
 
-Signed-off-by: Joe Perches <joe@perches.com>
+Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
 ---
- arch/arm/kernel/init_task.c            |    5 ++---
- arch/avr32/kernel/init_task.c          |    5 ++---
- arch/cris/kernel/process.c             |    5 ++---
- arch/frv/kernel/init_task.c            |    5 ++---
- arch/h8300/kernel/init_task.c          |    5 ++---
- arch/ia64/kernel/init_task.c           |    3 ++-
- arch/m32r/kernel/init_task.c           |    5 ++---
- arch/m68k/kernel/process.c             |    6 +++---
- arch/m68knommu/kernel/init_task.c      |    5 ++---
- arch/microblaze/kernel/init_task.c     |    5 ++---
- arch/mips/kernel/init_task.c           |    5 ++---
- arch/mn10300/kernel/init_task.c        |    5 ++---
- arch/parisc/kernel/init_task.c         |    4 ++--
- arch/powerpc/kernel/init_task.c        |    5 ++---
- arch/powerpc/kernel/machine_kexec_64.c |    5 +++--
- arch/s390/kernel/init_task.c           |    5 ++---
- arch/sh/kernel/init_task.c             |    5 ++---
- arch/sparc/kernel/init_task.c          |    5 ++---
- arch/um/kernel/init_task.c             |    5 ++---
- arch/x86/kernel/init_task.c            |    5 ++---
- arch/xtensa/kernel/init_task.c         |    5 ++---
- 21 files changed, 44 insertions(+), 59 deletions(-)
+ arch/avr32/mm/init.c                        |    4 +---
+ arch/powerpc/kernel/vdso.c                  |    3 ++-
+ arch/powerpc/kernel/vdso32/vdso32_wrapper.S |    3 ++-
+ arch/powerpc/kernel/vdso64/vdso64_wrapper.S |    3 ++-
+ arch/s390/kernel/vdso.c                     |    2 +-
+ arch/s390/kernel/vdso32/vdso32_wrapper.S    |    3 ++-
+ arch/s390/kernel/vdso64/vdso64_wrapper.S    |    3 ++-
+ arch/x86/include/asm/cache.h                |    4 +++-
+ arch/x86/kernel/head_32.S                   |    2 +-
+ 9 files changed, 16 insertions(+), 11 deletions(-)
 
-diff --git a/arch/arm/kernel/init_task.c b/arch/arm/kernel/init_task.c
-index 3f47086..e7cbb50 100644
---- a/arch/arm/kernel/init_task.c
-+++ b/arch/arm/kernel/init_task.c
-@@ -24,9 +24,8 @@ static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
-  *
-  * The things we do for performance..
-  */
--union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
--		{ INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data =
-+	{ INIT_THREAD_INFO(init_task) };
+diff --git a/arch/avr32/mm/init.c b/arch/avr32/mm/init.c
+index e819fa6..cc60d10 100644
+--- a/arch/avr32/mm/init.c
++++ b/arch/avr32/mm/init.c
+@@ -24,11 +24,9 @@
+ #include <asm/setup.h>
+ #include <asm/sections.h>
  
+-#define __page_aligned	__attribute__((section(".data.page_aligned")))
+-
+ DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
+ 
+-pgd_t swapper_pg_dir[PTRS_PER_PGD] __page_aligned;
++pgd_t swapper_pg_dir[PTRS_PER_PGD] __page_aligned_data;
+ 
+ struct page *empty_zero_page;
+ EXPORT_SYMBOL(empty_zero_page);
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index ad06d5c..f075591 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -1,3 +1,4 @@
++
  /*
-  * Initial task structure.
-diff --git a/arch/avr32/kernel/init_task.c b/arch/avr32/kernel/init_task.c
-index 57ec9f2..6b2343e 100644
---- a/arch/avr32/kernel/init_task.c
-+++ b/arch/avr32/kernel/init_task.c
-@@ -18,9 +18,8 @@ static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
- /*
-  * Initial thread structure. Must be aligned on an 8192-byte boundary.
-  */
--union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
--		{ INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data =
-+	{ INIT_THREAD_INFO(init_task) };
+  *    Copyright (C) 2004 Benjamin Herrenschmidt, IBM Corp.
+  *			 <benh@kernel.crashing.org>
+@@ -74,7 +75,7 @@ static int vdso_ready;
+ static union {
+ 	struct vdso_data	data;
+ 	u8			page[PAGE_SIZE];
+-} vdso_data_store __attribute__((__section__(".data.page_aligned")));
++} vdso_data_store __page_aligned_data;
+ struct vdso_data *vdso_data = &vdso_data_store.data;
  
- /*
-  * Initial task structure.
-diff --git a/arch/cris/kernel/process.c b/arch/cris/kernel/process.c
-index 51dcd04..c99aeab 100644
---- a/arch/cris/kernel/process.c
-+++ b/arch/cris/kernel/process.c
-@@ -45,9 +45,8 @@ static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
-  * way process stacks are handled. This is done by having a special
-  * "init_task" linker map entry..
-  */
--union thread_union init_thread_union 
--	__attribute__((__section__(".data.init_task"))) =
--		{ INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data =
-+	{ INIT_THREAD_INFO(init_task) };
- 
- /*
-  * Initial task structure.
-diff --git a/arch/frv/kernel/init_task.c b/arch/frv/kernel/init_task.c
-index 1d3df1d..3c3e0b3 100644
---- a/arch/frv/kernel/init_task.c
-+++ b/arch/frv/kernel/init_task.c
-@@ -19,9 +19,8 @@ static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
-  * way process stacks are handled. This is done by having a special
-  * "init_task" linker map entry..
-  */
--union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
--		{ INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data =
-+	{ INIT_THREAD_INFO(init_task) };
- 
- /*
-  * Initial task structure.
-diff --git a/arch/h8300/kernel/init_task.c b/arch/h8300/kernel/init_task.c
-index 089c65e..54c1062 100644
---- a/arch/h8300/kernel/init_task.c
-+++ b/arch/h8300/kernel/init_task.c
-@@ -31,7 +31,6 @@ EXPORT_SYMBOL(init_task);
-  * way process stacks are handled. This is done by having a special
-  * "init_task" linker map entry..
-  */
--union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
--		{ INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data =
-+	{ INIT_THREAD_INFO(init_task) };
- 
-diff --git a/arch/ia64/kernel/init_task.c b/arch/ia64/kernel/init_task.c
-index c475fc2..e253ab8 100644
---- a/arch/ia64/kernel/init_task.c
-+++ b/arch/ia64/kernel/init_task.c
-@@ -33,7 +33,8 @@ union {
- 		struct thread_info thread_info;
- 	} s;
- 	unsigned long stack[KERNEL_STACK_SIZE/sizeof (unsigned long)];
--} init_task_mem asm ("init_task") __attribute__((section(".data.init_task"))) = {{
-+} init_task_mem asm ("init_task") __init_task_data =
-+	{{
- 	.task =		INIT_TASK(init_task_mem.s.task),
- 	.thread_info =	INIT_THREAD_INFO(init_task_mem.s.task)
- }};
-diff --git a/arch/m32r/kernel/init_task.c b/arch/m32r/kernel/init_task.c
-index fce57e5..6c42d5f 100644
---- a/arch/m32r/kernel/init_task.c
-+++ b/arch/m32r/kernel/init_task.c
-@@ -20,9 +20,8 @@ static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
-  * way process stacks are handled. This is done by having a special
-  * "init_task" linker map entry..
-  */
--union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
--		{ INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data =
-+	{ INIT_THREAD_INFO(init_task) };
- 
- /*
-  * Initial task structure.
-diff --git a/arch/m68k/kernel/process.c b/arch/m68k/kernel/process.c
-index 72bad65..41230c5 100644
---- a/arch/m68k/kernel/process.c
-+++ b/arch/m68k/kernel/process.c
-@@ -42,9 +42,9 @@
-  */
- static struct signal_struct init_signals = INIT_SIGNALS(init_signals);
- static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
--union thread_union init_thread_union
--__attribute__((section(".data.init_task"), aligned(THREAD_SIZE)))
--       = { INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data
-+	__attribute__((aligned(THREAD_SIZE))) =
-+		{ INIT_THREAD_INFO(init_task) };
- 
- /* initial task structure */
- struct task_struct init_task = INIT_TASK(init_task);
-diff --git a/arch/m68knommu/kernel/init_task.c b/arch/m68knommu/kernel/init_task.c
-index 45e97a2..cbf9dc3 100644
---- a/arch/m68knommu/kernel/init_task.c
-+++ b/arch/m68knommu/kernel/init_task.c
-@@ -31,7 +31,6 @@ EXPORT_SYMBOL(init_task);
-  * way process stacks are handled. This is done by having a special
-  * "init_task" linker map entry..
-  */
--union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
--		{ INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data =
-+	{ INIT_THREAD_INFO(init_task) };
- 
-diff --git a/arch/microblaze/kernel/init_task.c b/arch/microblaze/kernel/init_task.c
-index 67da225..b5d711f 100644
---- a/arch/microblaze/kernel/init_task.c
-+++ b/arch/microblaze/kernel/init_task.c
-@@ -19,9 +19,8 @@
- static struct signal_struct init_signals = INIT_SIGNALS(init_signals);
- static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
- 
--union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
--{ INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data =
-+	{ INIT_THREAD_INFO(init_task) };
- 
- struct task_struct init_task = INIT_TASK(init_task);
- EXPORT_SYMBOL(init_task);
-diff --git a/arch/mips/kernel/init_task.c b/arch/mips/kernel/init_task.c
-index 5b457a4..6d6ca53 100644
---- a/arch/mips/kernel/init_task.c
-+++ b/arch/mips/kernel/init_task.c
-@@ -21,9 +21,8 @@ static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
-  *
-  * The things we do for performance..
-  */
--union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"),
--	               __aligned__(THREAD_SIZE))) =
-+union thread_union init_thread_union __init_task_data
-+	__attribute__((__aligned__(THREAD_SIZE))) =
- 		{ INIT_THREAD_INFO(init_task) };
- 
- /*
-diff --git a/arch/mn10300/kernel/init_task.c b/arch/mn10300/kernel/init_task.c
-index 80d423b..a481b04 100644
---- a/arch/mn10300/kernel/init_task.c
-+++ b/arch/mn10300/kernel/init_task.c
-@@ -27,9 +27,8 @@ static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
-  * way process stacks are handled. This is done by having a special
-  * "init_task" linker map entry..
-  */
--union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
--		{ INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data =
-+	{ INIT_THREAD_INFO(init_task) };
- 
- /*
-  * Initial task structure.
-diff --git a/arch/parisc/kernel/init_task.c b/arch/parisc/kernel/init_task.c
-index 82974b2..d020eae 100644
---- a/arch/parisc/kernel/init_task.c
-+++ b/arch/parisc/kernel/init_task.c
-@@ -43,8 +43,8 @@ static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
-  * way process stacks are handled. This is done by having a special
-  * "init_task" linker map entry..
-  */
--union thread_union init_thread_union
--	__attribute__((aligned(128))) __attribute__((__section__(".data.init_task"))) =
-+union thread_union init_thread_union __init_task_data
-+	__attribute__((aligned(128))) =
- 		{ INIT_THREAD_INFO(init_task) };
- 
- #if PT_NLEVELS == 3
-diff --git a/arch/powerpc/kernel/init_task.c b/arch/powerpc/kernel/init_task.c
-index ffc4253..2375b7e 100644
---- a/arch/powerpc/kernel/init_task.c
-+++ b/arch/powerpc/kernel/init_task.c
-@@ -16,9 +16,8 @@ static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
-  * way process stacks are handled. This is done by having a special
-  * "init_task" linker map entry..
-  */
--union thread_union init_thread_union 
--	__attribute__((__section__(".data.init_task"))) =
--		{ INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data =
-+	{ INIT_THREAD_INFO(init_task) };
- 
- /*
-  * Initial task structure.
-diff --git a/arch/powerpc/kernel/machine_kexec_64.c b/arch/powerpc/kernel/machine_kexec_64.c
-index 49e705f..040bd1d 100644
---- a/arch/powerpc/kernel/machine_kexec_64.c
-+++ b/arch/powerpc/kernel/machine_kexec_64.c
-@@ -13,6 +13,7 @@
- #include <linux/kexec.h>
- #include <linux/smp.h>
- #include <linux/thread_info.h>
-+#include <linux/init_task.h>
- #include <linux/errno.h>
- 
+ /* Format of the patch table */
+diff --git a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
+index 556f0ca..6e8f507 100644
+--- a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
++++ b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
+@@ -1,7 +1,8 @@
+ #include <linux/init.h>
++#include <linux/linkage.h>
  #include <asm/page.h>
-@@ -249,8 +250,8 @@ static void kexec_prepare_cpus(void)
-  * We could use a smaller stack if we don't care about anything using
-  * current, but that audit has not been performed.
-  */
--static union thread_union kexec_stack
--	__attribute__((__section__(".data.init_task"))) = { };
-+static union thread_union kexec_stack __init_task_data =
-+	{ };
  
- /* Our assembly helper, in kexec_stub.S */
- extern NORET_TYPE void kexec_sequence(void *newstack, unsigned long start,
-diff --git a/arch/s390/kernel/init_task.c b/arch/s390/kernel/init_task.c
-index fe787f9..4d1c9fb 100644
---- a/arch/s390/kernel/init_task.c
-+++ b/arch/s390/kernel/init_task.c
-@@ -25,9 +25,8 @@ static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
-  * way process stacks are handled. This is done by having a special
-  * "init_task" linker map entry..
-  */
--union thread_union init_thread_union 
--	__attribute__((__section__(".data.init_task"))) =
--		{ INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data =
-+	{ INIT_THREAD_INFO(init_task) };
+-	.section ".data.page_aligned"
++	__PAGE_ALIGNED_DATA
  
- /*
-  * Initial task structure.
-diff --git a/arch/sh/kernel/init_task.c b/arch/sh/kernel/init_task.c
-index 1719957..11f2ea5 100644
---- a/arch/sh/kernel/init_task.c
-+++ b/arch/sh/kernel/init_task.c
-@@ -17,9 +17,8 @@ struct pt_regs fake_swapper_regs;
-  * way process stacks are handled. This is done by having a special
-  * "init_task" linker map entry..
-  */
--union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
--		{ INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data =
-+	{ INIT_THREAD_INFO(init_task) };
+ 	.globl vdso32_start, vdso32_end
+ 	.balign PAGE_SIZE
+diff --git a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
+index 0529cb9..b8553d6 100644
+--- a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
++++ b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
+@@ -1,7 +1,8 @@
+ #include <linux/init.h>
++#include <linux/linkage.h>
+ #include <asm/page.h>
+ 
+-	.section ".data.page_aligned"
++	__PAGE_ALIGNED_DATA
+ 
+ 	.globl vdso64_start, vdso64_end
+ 	.balign PAGE_SIZE
+diff --git a/arch/s390/kernel/vdso.c b/arch/s390/kernel/vdso.c
+index 45e1708..45a3e9a 100644
+--- a/arch/s390/kernel/vdso.c
++++ b/arch/s390/kernel/vdso.c
+@@ -75,7 +75,7 @@ __setup("vdso=", vdso_setup);
+ static union {
+ 	struct vdso_data	data;
+ 	u8			page[PAGE_SIZE];
+-} vdso_data_store __attribute__((__section__(".data.page_aligned")));
++} vdso_data_store __page_aligned_data;
+ struct vdso_data *vdso_data = &vdso_data_store.data;
  
  /*
-  * Initial task structure.
-diff --git a/arch/sparc/kernel/init_task.c b/arch/sparc/kernel/init_task.c
-index 28125c5..5fe3d65 100644
---- a/arch/sparc/kernel/init_task.c
-+++ b/arch/sparc/kernel/init_task.c
-@@ -18,6 +18,5 @@ EXPORT_SYMBOL(init_task);
-  * If this is not aligned on a 8k boundry, then you should change code
-  * in etrap.S which assumes it.
+diff --git a/arch/s390/kernel/vdso32/vdso32_wrapper.S b/arch/s390/kernel/vdso32/vdso32_wrapper.S
+index 61639a8..ae42f8c 100644
+--- a/arch/s390/kernel/vdso32/vdso32_wrapper.S
++++ b/arch/s390/kernel/vdso32/vdso32_wrapper.S
+@@ -1,7 +1,8 @@
+ #include <linux/init.h>
++#include <linux/linkage.h>
+ #include <asm/page.h>
+ 
+-	.section ".data.page_aligned"
++	__PAGE_ALIGNED_DATA
+ 
+ 	.globl vdso32_start, vdso32_end
+ 	.balign PAGE_SIZE
+diff --git a/arch/s390/kernel/vdso64/vdso64_wrapper.S b/arch/s390/kernel/vdso64/vdso64_wrapper.S
+index d8e2ac1..c245842 100644
+--- a/arch/s390/kernel/vdso64/vdso64_wrapper.S
++++ b/arch/s390/kernel/vdso64/vdso64_wrapper.S
+@@ -1,7 +1,8 @@
+ #include <linux/init.h>
++#include <linux/linkage.h>
+ #include <asm/page.h>
+ 
+-	.section ".data.page_aligned"
++	__PAGE_ALIGNED_DATA
+ 
+ 	.globl vdso64_start, vdso64_end
+ 	.balign PAGE_SIZE
+diff --git a/arch/x86/include/asm/cache.h b/arch/x86/include/asm/cache.h
+index 5d367ca..549860d 100644
+--- a/arch/x86/include/asm/cache.h
++++ b/arch/x86/include/asm/cache.h
+@@ -1,6 +1,8 @@
+ #ifndef _ASM_X86_CACHE_H
+ #define _ASM_X86_CACHE_H
+ 
++#include <linux/linkage.h>
++
+ /* L1 cache line size */
+ #define L1_CACHE_SHIFT	(CONFIG_X86_L1_CACHE_SHIFT)
+ #define L1_CACHE_BYTES	(1 << L1_CACHE_SHIFT)
+@@ -13,7 +15,7 @@
+ #ifdef CONFIG_SMP
+ #define __cacheline_aligned_in_smp					\
+ 	__attribute__((__aligned__(1 << (INTERNODE_CACHE_SHIFT))))	\
+-	__attribute__((__section__(".data.page_aligned")))
++	__page_aligned_data
+ #endif
+ #endif
+ 
+diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
+index 6368497..524c86b 100644
+--- a/arch/x86/kernel/head_32.S
++++ b/arch/x86/kernel/head_32.S
+@@ -628,7 +628,7 @@ ENTRY(empty_zero_page)
+  * This starts the data section.
   */
--union thread_union init_thread_union
--	__attribute__((section (".data.init_task")))
--	= { INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data =
-+	{ INIT_THREAD_INFO(init_task) };
-diff --git a/arch/um/kernel/init_task.c b/arch/um/kernel/init_task.c
-index b25121b..8aa77b6 100644
---- a/arch/um/kernel/init_task.c
-+++ b/arch/um/kernel/init_task.c
-@@ -30,9 +30,8 @@ EXPORT_SYMBOL(init_task);
-  * "init_task" linker map entry..
-  */
- 
--union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
--		{ INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data =
-+	{ INIT_THREAD_INFO(init_task) };
- 
- union thread_union cpu0_irqstack
- 	__attribute__((__section__(".data.init_irqstack"))) =
-diff --git a/arch/x86/kernel/init_task.c b/arch/x86/kernel/init_task.c
-index 270ff83..3a54dcb 100644
---- a/arch/x86/kernel/init_task.c
-+++ b/arch/x86/kernel/init_task.c
-@@ -20,9 +20,8 @@ static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
-  * way process stacks are handled. This is done by having a special
-  * "init_task" linker map entry..
-  */
--union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
--		{ INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data =
-+	{ INIT_THREAD_INFO(init_task) };
- 
- /*
-  * Initial task structure.
-diff --git a/arch/xtensa/kernel/init_task.c b/arch/xtensa/kernel/init_task.c
-index c4302f0..cd122fb 100644
---- a/arch/xtensa/kernel/init_task.c
-+++ b/arch/xtensa/kernel/init_task.c
-@@ -23,9 +23,8 @@
- 
- static struct signal_struct init_signals = INIT_SIGNALS(init_signals);
- static struct sighand_struct init_sighand = INIT_SIGHAND(init_sighand);
--union thread_union init_thread_union
--	__attribute__((__section__(".data.init_task"))) =
--{ INIT_THREAD_INFO(init_task) };
-+union thread_union init_thread_union __init_task_data =
-+	{ INIT_THREAD_INFO(init_task) };
- 
- struct task_struct init_task = INIT_TASK(init_task);
- 
+ #ifdef CONFIG_X86_PAE
+-.section ".data.page_aligned","wa"
++__PAGE_ALIGNED_DATA
+ 	/* Page-aligned for the benefit of paravirt? */
+ 	.align PAGE_SIZE_asm
+ ENTRY(swapper_pg_dir)
 -- 
 1.6.3.3
 
