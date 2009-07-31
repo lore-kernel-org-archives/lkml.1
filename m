@@ -1,81 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbZGaRUG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752614AbZGaRYB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752722AbZGaRUG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 13:20:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbZGaRUF
+	id S1752614AbZGaRYB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 13:24:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbZGaRYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 13:20:05 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:43591 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752491AbZGaRUF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 13:20:05 -0400
-Date: Fri, 31 Jul 2009 18:20:02 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Roger Quadros <quadros.roger@gmail.com>
-Cc: philipp.zabel@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] regulator: Add GPIO enable control to fixed voltage
- regulator driver
-Message-ID: <20090731172002.GA32578@rakim.wolfsonmicro.main>
-References: <1249057189-11992-1-git-send-email-quadros.roger@gmail.com>
+	Fri, 31 Jul 2009 13:24:00 -0400
+Received: from mail.windriver.com ([147.11.1.11]:64515 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751820AbZGaRYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 13:24:00 -0400
+Message-ID: <4A73284B.6030903@windriver.com>
+Date: Fri, 31 Jul 2009 12:22:19 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249057189-11992-1-git-send-email-quadros.roger@gmail.com>
-X-Cookie: Hire the morally handicapped.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       dbrownell@users.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 07/10] ehci-dbgp,ehci: Allow early or late use of the
+ dbgp device
+References: <Pine.LNX.4.44L0.0907311135030.3152-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0907311135030.3152-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 31 Jul 2009 17:22:20.0272 (UTC) FILETIME=[75B8AF00:01CA1203]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 31, 2009 at 07:19:49PM +0300, Roger Quadros wrote:
+Alan Stern wrote:
+> On Fri, 31 Jul 2009, Jason Wessel wrote:
+>
+>> If the EHCI debug port is initialized and in use, the EHCI host
+>> controller driver must follow two rules.
+>>
+>> 1) If the EHCI host driver issues a controller reset, the debug
+>>    controller driver re-initialization must get called after the reset
+>>    is completed.
+>>
+>> 2) The EHCI host driver should ignore any requests to the physical
+>>    EHCI debug port when the EHCI debug port is in use.
+>>
+>> The code to check for the debug port was moved from ehci_pci_reinit()
+>> to ehci_pci_setup because it must get called prior to ehci_reset()
+>> which will clear the debug port registers.
+>> --- a/drivers/usb/host/ehci-hub.c
+>> +++ b/drivers/usb/host/ehci-hub.c
+>> @@ -816,6 +816,15 @@ static int ehci_hub_control (
+>>      case SetPortFeature:
+>>          selector = wIndex >> 8;
+>>          wIndex &= 0xff;
+>> +        if (unlikely(ehci->debug)) {
+>
+> Don't you need a similar test for ClearPortFeature?  Or does that not
+> matter?
 
-> Signed-off-by: Roger Quadros <ext-roger.quadros@nokia.com>
-> Reviewed-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+I guess it depends if the user space tries to poke it, and then
+perhaps yes.  Do you know if that would be the case?
 
-Err...  no, it isn't.  I reviewed a previous version of the patch but
-there were some issues that needed fixing.  I've not reviewed this
-version.
+The rejection of the SetPortFeature at this level prevents the generic
+hub code from activating the port, in so far as all my tests cases
+show.
 
->  static int fixed_voltage_is_enabled(struct regulator_dev *dev)
->  {
-> -	return 1;
-> +	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
-> +
-> +	if (data->gpio)
-> +		return data->is_enabled;
+Given that it won't hurt anything to have the same code in the
+ClearPortFeature I can put it in.
 
-Please use gpio_is_valid() as Phillip previously suggested.  For this
-particular use you could simplify the code marginally by just setting
-is_enabled at probe() time if there's no GPIO, not that it really
-matters.
+>
+>> +            /* If the debug port is active any port
+>> +             * feature requests should get denied */
+>> +            if ((readl(&ehci->debug->control) & DBGP_ENABLED) &&
+>> +                wIndex == HCS_DEBUG_PORT(ehci->hcs_params)) {
+>
+> The order of the two tests here should be reversed, to avoid an
+> unnecessary I/O access in the common case.
+>
 
-> +       if (data->gpio) {
-> +               gpio_set_value(data->gpio,
-> +                               data->enable_high ? 1 : 0);
+Yes.  I agree here.
 
-_cansleep(), please, as previously requested.
- 
-> +		ret = gpio_get_value(config->gpio);
 
-Can this fail?  It returns an int...
+>> +                retval = -ENODEV;
+>> +                goto error_exit;
+>
+> This is the wrong return value.  You should return -EPIPE, i.e., goto
+> error instead of error_exit.
 
-> +		ret = gpio_direction_output(config->gpio, ret);
-> +		if (ret) {
-> +			dev_err(&pdev->dev, "Could not configure "
-> +				"enable GPIO %d direction: %d\n",
-> +						config->gpio, ret);
-> +			goto err_gpio;
 
-As previously requested please don't split for log messages text over
-lines unless you have to.  It makes it easier to find the message from a
-kernel log - grep for 'configure enable GPIO' won't match this source
-file the way you've written it above.
+Do you have some insight as to how to account for the not using the
+port another way?  If I return -EPIPE, vs -ENODEV.  The kernel code
+does very different things.  I chose -ENODEV based on the results
+below.
 
-> +		}
-> +	} else
-> +		dev_warn(&pdev->dev, "Not using GPIO 0 for enable control\n");
+With -ENODEV the kernel emits the following when trying to probe the
+usb port with the dbgp device.
 
-Probably better to soldier on and use the GPIO here but either way is
-fine; the warning is for the benefit of existing out of tree users to
-help them transition gracefully.
+
+hub 2-0:1.0: cannot reset port 1 (err = -19)
+hub 2-0:1.0: cannot reset port 1 (err = -19)
+hub 2-0:1.0: cannot reset port 1 (err = -19)
+hub 2-0:1.0: cannot reset port 1 (err = -19)
+hub 2-0:1.0: unable to enumerate USB device on port 1
+
+
+With returning -EPIPE you get this result.
+
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+USB Serial support registered for generic
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: Cannot enable port 1.  Maybe the USB cable is bad?
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: Cannot enable port 1.  Maybe the USB cable is bad?
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: Cannot enable port 1.  Maybe the USB cable is bad?
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: cannot reset port 1 (err = -32)
+hub 2-0:1.0: Cannot enable port 1.  Maybe the USB cable is bad?
+hub 2-0:1.0: unable to enumerate USB device on port 1
+
+
+I was looking for the easiest maintainable approach to disabling the
+physical port from getting reset by the HCD hub driver, which does
+different things depending on the error code that is passed back.
+
+Knowing what happens with -EPIPE, would you still prefer it to be
+changed that way?  Another possibility here is to implement the
+restriction on the port reset another way, if you have any
+suggestions.
+
+In general folks may not need to use earlyprintk=dbpg,keep too often,
+but it sure is nice when it works because you can use it as a full
+console monitoring device after the /sbin/init handoff, including
+debugging USB printk's because the usb debug controller driver is
+completely separate.
+
+
+Jason.
+
+
