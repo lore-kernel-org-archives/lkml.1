@@ -1,201 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752943AbZGaU5K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbZGaU6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752943AbZGaU5K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 16:57:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbZGaU5J
+	id S1752926AbZGaU6P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 16:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbZGaU6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 16:57:09 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:53457 "EHLO
+	Fri, 31 Jul 2009 16:58:14 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:53725 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752524AbZGaU5H (ORCPT
+	by vger.kernel.org with ESMTP id S1751917AbZGaU6N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 16:57:07 -0400
+	Fri, 31 Jul 2009 16:58:13 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>, Anders Kaseorg <andersk@ksplice.com>,
        Nelson Elhage <nelhage@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [PATCH 4/4] Use macros for .data.page_aligned section.
-Date: Fri, 31 Jul 2009 16:54:24 -0400
-Message-Id: <1249073664-29550-5-git-send-email-tabbott@ksplice.com>
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [PATCH] avr32: clean up linker script using standard macros.
+Date: Fri, 31 Jul 2009 16:57:01 -0400
+Message-Id: <1249073821-29895-1-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1249073664-29550-1-git-send-email-tabbott@ksplice.com>
-References: <1249073664-29550-1-git-send-email-tabbott@ksplice.com>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes the remaining direct references to
-.data.page_aligned in C and assembly code to use the macros in
-include/linux/linkage.h.
+From: Nelson Elhage <nelhage@ksplice.com>
 
+As a side effect, this patch changes the .init.ramfs data to be
+PAGE_SIZE-aligned, instead of 32-byte aligned.  Also, the init data is
+moved into its own output sections rather than the .init output
+section.
+
+There should be no other changes to the resulting vmlinux as a result
+of this patch.
+
+Signed-off-by: Nelson Elhage <nelhage@ksplice.com>
 Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
 Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
 ---
- arch/avr32/mm/init.c                        |    4 +---
- arch/powerpc/kernel/vdso.c                  |    3 ++-
- arch/powerpc/kernel/vdso32/vdso32_wrapper.S |    3 ++-
- arch/powerpc/kernel/vdso64/vdso64_wrapper.S |    3 ++-
- arch/s390/kernel/vdso.c                     |    2 +-
- arch/s390/kernel/vdso32/vdso32_wrapper.S    |    3 ++-
- arch/s390/kernel/vdso64/vdso64_wrapper.S    |    3 ++-
- arch/x86/include/asm/cache.h                |    4 +++-
- arch/x86/kernel/head_32.S                   |    2 +-
- 9 files changed, 16 insertions(+), 11 deletions(-)
+ arch/avr32/kernel/vmlinux.lds.S |   64 +++++---------------------------------
+ 1 files changed, 9 insertions(+), 55 deletions(-)
 
-diff --git a/arch/avr32/mm/init.c b/arch/avr32/mm/init.c
-index e819fa6..cc60d10 100644
---- a/arch/avr32/mm/init.c
-+++ b/arch/avr32/mm/init.c
-@@ -24,11 +24,9 @@
- #include <asm/setup.h>
- #include <asm/sections.h>
+diff --git a/arch/avr32/kernel/vmlinux.lds.S b/arch/avr32/kernel/vmlinux.lds.S
+index 7910d41..8fe5b8f 100644
+--- a/arch/avr32/kernel/vmlinux.lds.S
++++ b/arch/avr32/kernel/vmlinux.lds.S
+@@ -39,30 +39,10 @@ SECTIONS
+ 		__tagtable_begin = .;
+ 			*(.taglist.init)
+ 		__tagtable_end = .;
+-			INIT_DATA
+-		. = ALIGN(16);
+-		__setup_start = .;
+-			*(.init.setup)
+-		__setup_end = .;
+-		. = ALIGN(4);
+-		__initcall_start = .;
+-			INITCALLS
+-		__initcall_end = .;
+-		__con_initcall_start = .;
+-			*(.con_initcall.init)
+-		__con_initcall_end = .;
+-		__security_initcall_start = .;
+-			*(.security_initcall.init)
+-		__security_initcall_end = .;
+-#ifdef CONFIG_BLK_DEV_INITRD
+-		. = ALIGN(32);
+-		__initramfs_start = .;
+-			*(.init.ramfs)
+-		__initramfs_end = .;
+-#endif
+-		. = ALIGN(PAGE_SIZE);
+-		__init_end = .;
+ 	}
++	INIT_DATA_SECTION(16)
++	. = ALIGN(PAGE_SIZE);
++	__init_end = .;
  
--#define __page_aligned	__attribute__((section(".data.page_aligned")))
+ 	.text		: AT(ADDR(.text) - LOAD_OFFSET) {
+ 		_evba = .;
+@@ -78,34 +58,16 @@ SECTIONS
+ 		_etext = .;
+ 	} = 0xd703d703
+ 
+-	. = ALIGN(4);
+-	__ex_table	: AT(ADDR(__ex_table) - LOAD_OFFSET) {
+-		__start___ex_table = .;
+-		*(__ex_table)
+-		__stop___ex_table = .;
+-	}
 -
- DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
++	EXCEPTION_TABLE(4)
+ 	RODATA
  
--pgd_t swapper_pg_dir[PTRS_PER_PGD] __page_aligned;
-+pgd_t swapper_pg_dir[PTRS_PER_PGD] __page_aligned_data;
+-	. = ALIGN(THREAD_SIZE);
+-
+ 	.data		: AT(ADDR(.data) - LOAD_OFFSET) {
+ 		_data = .;
+ 		_sdata = .;
+-		/*
+-		 * First, the init task union, aligned to an 8K boundary.
+-		 */
+-		*(.data.init_task)
  
- struct page *empty_zero_page;
- EXPORT_SYMBOL(empty_zero_page);
-diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index ad06d5c..f075591 100644
---- a/arch/powerpc/kernel/vdso.c
-+++ b/arch/powerpc/kernel/vdso.c
-@@ -1,3 +1,4 @@
-+
- /*
-  *    Copyright (C) 2004 Benjamin Herrenschmidt, IBM Corp.
-  *			 <benh@kernel.crashing.org>
-@@ -74,7 +75,7 @@ static int vdso_ready;
- static union {
- 	struct vdso_data	data;
- 	u8			page[PAGE_SIZE];
--} vdso_data_store __attribute__((__section__(".data.page_aligned")));
-+} vdso_data_store __page_aligned_data;
- struct vdso_data *vdso_data = &vdso_data_store.data;
+-		/* Then, the page-aligned data */
+-		. = ALIGN(PAGE_SIZE);
+-		*(.data.page_aligned)
+-
+-		/* Then, the cacheline aligned data */
+-		. = ALIGN(L1_CACHE_BYTES);
+-		*(.data.cacheline_aligned)
+-
+-		/* And the rest... */
++		INIT_TASK_DATA(THREAD_SIZE)
++		PAGE_ALIGNED_DATA(PAGE_SIZE);
++		CACHELINE_ALIGNED_DATA(L1_CACHE_BYTES)
+ 		*(.data.rel*)
+ 		DATA_DATA
+ 		CONSTRUCTORS
+@@ -113,16 +75,8 @@ SECTIONS
+ 		_edata = .;
+ 	}
  
- /* Format of the patch table */
-diff --git a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-index 556f0ca..6e8f507 100644
---- a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-+++ b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-@@ -1,7 +1,8 @@
- #include <linux/init.h>
-+#include <linux/linkage.h>
- #include <asm/page.h>
+-
+-	. = ALIGN(8);
+-	.bss    	: AT(ADDR(.bss) - LOAD_OFFSET) {
+-		__bss_start = .;
+-		*(.bss)
+-		*(COMMON)
+-		. = ALIGN(8);
+-		__bss_stop = .;
+-		_end = .;
+-	}
++	BSS_SECTION(0, 8, 8)
++	_end = .;
  
--	.section ".data.page_aligned"
-+	__PAGE_ALIGNED_DATA
- 
- 	.globl vdso32_start, vdso32_end
- 	.balign PAGE_SIZE
-diff --git a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-index 0529cb9..b8553d6 100644
---- a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-+++ b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-@@ -1,7 +1,8 @@
- #include <linux/init.h>
-+#include <linux/linkage.h>
- #include <asm/page.h>
- 
--	.section ".data.page_aligned"
-+	__PAGE_ALIGNED_DATA
- 
- 	.globl vdso64_start, vdso64_end
- 	.balign PAGE_SIZE
-diff --git a/arch/s390/kernel/vdso.c b/arch/s390/kernel/vdso.c
-index 45e1708..45a3e9a 100644
---- a/arch/s390/kernel/vdso.c
-+++ b/arch/s390/kernel/vdso.c
-@@ -75,7 +75,7 @@ __setup("vdso=", vdso_setup);
- static union {
- 	struct vdso_data	data;
- 	u8			page[PAGE_SIZE];
--} vdso_data_store __attribute__((__section__(".data.page_aligned")));
-+} vdso_data_store __page_aligned_data;
- struct vdso_data *vdso_data = &vdso_data_store.data;
- 
- /*
-diff --git a/arch/s390/kernel/vdso32/vdso32_wrapper.S b/arch/s390/kernel/vdso32/vdso32_wrapper.S
-index 61639a8..ae42f8c 100644
---- a/arch/s390/kernel/vdso32/vdso32_wrapper.S
-+++ b/arch/s390/kernel/vdso32/vdso32_wrapper.S
-@@ -1,7 +1,8 @@
- #include <linux/init.h>
-+#include <linux/linkage.h>
- #include <asm/page.h>
- 
--	.section ".data.page_aligned"
-+	__PAGE_ALIGNED_DATA
- 
- 	.globl vdso32_start, vdso32_end
- 	.balign PAGE_SIZE
-diff --git a/arch/s390/kernel/vdso64/vdso64_wrapper.S b/arch/s390/kernel/vdso64/vdso64_wrapper.S
-index d8e2ac1..c245842 100644
---- a/arch/s390/kernel/vdso64/vdso64_wrapper.S
-+++ b/arch/s390/kernel/vdso64/vdso64_wrapper.S
-@@ -1,7 +1,8 @@
- #include <linux/init.h>
-+#include <linux/linkage.h>
- #include <asm/page.h>
- 
--	.section ".data.page_aligned"
-+	__PAGE_ALIGNED_DATA
- 
- 	.globl vdso64_start, vdso64_end
- 	.balign PAGE_SIZE
-diff --git a/arch/x86/include/asm/cache.h b/arch/x86/include/asm/cache.h
-index 5d367ca..549860d 100644
---- a/arch/x86/include/asm/cache.h
-+++ b/arch/x86/include/asm/cache.h
-@@ -1,6 +1,8 @@
- #ifndef _ASM_X86_CACHE_H
- #define _ASM_X86_CACHE_H
- 
-+#include <linux/linkage.h>
-+
- /* L1 cache line size */
- #define L1_CACHE_SHIFT	(CONFIG_X86_L1_CACHE_SHIFT)
- #define L1_CACHE_BYTES	(1 << L1_CACHE_SHIFT)
-@@ -13,7 +15,7 @@
- #ifdef CONFIG_SMP
- #define __cacheline_aligned_in_smp					\
- 	__attribute__((__aligned__(1 << (INTERNODE_CACHE_SHIFT))))	\
--	__attribute__((__section__(".data.page_aligned")))
-+	__page_aligned_data
- #endif
- #endif
- 
-diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-index 6368497..524c86b 100644
---- a/arch/x86/kernel/head_32.S
-+++ b/arch/x86/kernel/head_32.S
-@@ -628,7 +628,7 @@ ENTRY(empty_zero_page)
-  * This starts the data section.
-  */
- #ifdef CONFIG_X86_PAE
--.section ".data.page_aligned","wa"
-+__PAGE_ALIGNED_DATA
- 	/* Page-aligned for the benefit of paravirt? */
- 	.align PAGE_SIZE_asm
- ENTRY(swapper_pg_dir)
+ 	/* When something in the kernel is NOT compiled as a module, the module
+ 	 * cleanup code and data are put into these segments. Both can then be
 -- 
 1.6.3.3
 
