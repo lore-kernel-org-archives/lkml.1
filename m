@@ -1,109 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbZGaVEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbZGaVEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753106AbZGaVEq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 17:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbZGaVEq
+	id S1753240AbZGaVEt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 17:04:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbZGaVEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 31 Jul 2009 17:04:48 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42993 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753109AbZGaVEq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 31 Jul 2009 17:04:46 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:54893 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752993AbZGaVEp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 17:04:45 -0400
-From: Tim Abbott <tabbott@ksplice.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Anders Kaseorg <andersk@ksplice.com>,
-       Nelson Elhage <nelhage@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Paul Mundt <lethal@linux-sh.org>,
-       Chris Zankel <chris@zankel.net>
-Subject: [PATCH 2/4] Use macros for .bss.page_aligned section.
-Date: Fri, 31 Jul 2009 16:54:22 -0400
-Message-Id: <1249073664-29550-3-git-send-email-tabbott@ksplice.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1249073664-29550-1-git-send-email-tabbott@ksplice.com>
-References: <1249073664-29550-1-git-send-email-tabbott@ksplice.com>
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Date: Fri, 31 Jul 2009 22:52:46 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: eranian@gmail.com, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
+       Corey J Ashford <cjashfor@us.ibm.com>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       roland <roland@redhat.com>
+Subject: Re: [RFC][PATCH] fcntl: F_[SG]ETOWN_TID
+Message-ID: <20090731205246.GA3457@redhat.com>
+References: <7c86c4470907270951i48886d56g90bc198f26bb0716@mail.gmail.com> <1248869948.6987.3083.camel@twins> <20090729221703.GA25368@redhat.com> <1248953485.6391.41.camel@twins> <20090730192040.GA9503@redhat.com> <1248984003.4164.0.camel@laptop> <20090730202804.GA13675@redhat.com> <1249029320.6391.72.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249029320.6391.72.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes the remaining direct references to
-.bss.page_aligned in C and assembly code to use the macros in
-include/linux/linkage.h.
+On 07/31, Peter Zijlstra wrote:
+>
+> In order to direct the SIGIO signal to a particular thread of a
+> multi-threaded application we cannot, like suggested by the manpage, put
+> a TID into the regular fcntl(F_SETOWN) call. It will still be send to
+> the whole process of which that thread is part.
+>
+> Since people do want to properly direct SIGIO we introduce F_SETOWN_TID,
+> which functions similarly to F_SETOWN, except positive arguments are
+> interpreted as TIDs and negative arguments are interpreted as PIDs.
 
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Chris Zankel <chris@zankel.net>
-Cc: Sam Ravnborg <sam@ravnborg.org>
----
- arch/sh/kernel/irq.c      |    6 ++----
- arch/x86/kernel/head_32.S |    2 +-
- arch/x86/kernel/head_64.S |    2 +-
- arch/xtensa/kernel/head.S |    2 +-
- 4 files changed, 5 insertions(+), 7 deletions(-)
+I think this is correct. But,
 
-diff --git a/arch/sh/kernel/irq.c b/arch/sh/kernel/irq.c
-index 3d09062..e8f31a5 100644
---- a/arch/sh/kernel/irq.c
-+++ b/arch/sh/kernel/irq.c
-@@ -182,11 +182,9 @@ asmlinkage int do_IRQ(unsigned int irq, struct pt_regs *regs)
- }
- 
- #ifdef CONFIG_IRQSTACKS
--static char softirq_stack[NR_CPUS * THREAD_SIZE]
--		__attribute__((__section__(".bss.page_aligned")));
-+static char softirq_stack[NR_CPUS * THREAD_SIZE] __page_aligned_bss;
- 
--static char hardirq_stack[NR_CPUS * THREAD_SIZE]
--		__attribute__((__section__(".bss.page_aligned")));
-+static char hardirq_stack[NR_CPUS * THREAD_SIZE] __page_aligned_bss;
- 
- /*
-  * allocate per-cpu stacks for hardirq and for softirq processing
-diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-index 8663afb..6368497 100644
---- a/arch/x86/kernel/head_32.S
-+++ b/arch/x86/kernel/head_32.S
-@@ -610,7 +610,7 @@ ENTRY(initial_code)
- /*
-  * BSS section
-  */
--.section ".bss.page_aligned","wa"
-+__PAGE_ALIGNED_BSS
- 	.align PAGE_SIZE_asm
- #ifdef CONFIG_X86_PAE
- swapper_pg_pmd:
-diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
-index fa54f78..d0bc0a1 100644
---- a/arch/x86/kernel/head_64.S
-+++ b/arch/x86/kernel/head_64.S
-@@ -418,7 +418,7 @@ ENTRY(phys_base)
- ENTRY(idt_table)
- 	.skip IDT_ENTRIES * 16
- 
--	.section .bss.page_aligned, "aw", @nobits
-+	__PAGE_ALIGNED_BSS
- 	.align PAGE_SIZE
- ENTRY(empty_zero_page)
- 	.skip PAGE_SIZE
-diff --git a/arch/xtensa/kernel/head.S b/arch/xtensa/kernel/head.S
-index d9ddc1b..d215adc 100644
---- a/arch/xtensa/kernel/head.S
-+++ b/arch/xtensa/kernel/head.S
-@@ -235,7 +235,7 @@ should_never_return:
-  * BSS section
-  */
- 	
--.section ".bss.page_aligned", "w"
-+__PAGE_ALIGNED_BSS
- #ifdef CONFIG_MMU
- ENTRY(swapper_pg_dir)
- 	.fill	PAGE_SIZE, 1, 0
--- 
-1.6.3.3
+> @@ -431,6 +474,7 @@ static void send_sigio_to_task(struct task_struct *p,
+>  			       int fd,
+>  			       int reason)
+>  {
+> +	int (*send_sig)(int, struct siginfo *, struct task_struct *);
+>  	/*
+>  	 * F_SETSIG can change ->signum lockless in parallel, make
+>  	 * sure we read it once and use the same value throughout.
+> @@ -440,6 +484,8 @@ static void send_sigio_to_task(struct task_struct *p,
+>  	if (!sigio_perm(p, fown, signum))
+>  		return;
+>
+> +	send_sig = fown->task_only ? send_sig_info : group_send_sig_info;
+
+this is ugly.
+
+I do not blame your patch, I blame signal.c which has a lot of helpers
+to send a signal but it is never possible to find the right one.
+
+I think we need a new trivial helper,
+
+	int xxx(int sig, struct siginfo *info, struct task_struct *p, bool group)
+	{
+		unsigned long flags;
+		int ret = -ESRCH;
+
+		if (lock_task_sighand(p, &flags)) {
+			ret = send_signal(sig, info, p, group);
+			unlock_task_sighand(p, &flags);
+		}
+
+		return ret;
+	}
+
+send_sigio_to_task() can just do: send_signal(..., !fown->task_only).
+
+group_send_sig_info(), send_sig_info() should use this helper too.
+
+
+Also. without the new helper, F_SETOWN does check_kill_permission()
+while F_SETOWN_TID does not. This doesn't really matter, but this
+looks a bit odd.
+
+Note that send_sigio_to_task() does not need check_kill_permission().
+We use either SEND_SIG_PRIV or SI_FROMKERNEL() signals, so we never
+actually check permissions. Even if we did, it would be just wrong
+to deny the signal here using current_cred().
+
+
+Peter, may I suggest to to re-diff your patch on top of the trivial
+patch I am going to send a bit later today?
+
+Oleg.
 
