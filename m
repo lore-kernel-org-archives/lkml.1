@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751959AbZGaGaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752164AbZGaGbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751959AbZGaGaK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 02:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751587AbZGaGaK
+	id S1752164AbZGaGbj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 02:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbZGaGbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 02:30:10 -0400
-Received: from smtp-104-thursday.nerim.net ([62.4.16.104]:54111 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751483AbZGaGaJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 02:30:09 -0400
-Date: Fri, 31 Jul 2009 08:30:08 +0200
-From: Damien Wyart <damien.wyart@free.fr>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, yanmin_zhang@linux.intel.com,
-       richard@rsk.demon.co.uk, fweisbec@gmail.com, Alan.Brunelle@hp.com
-Subject: Re: [PATCH 0/9] Per-bdi writeback flusher threads v13
-Message-ID: <20090731063008.GA2796@brouette>
-References: <1248989044-21605-1-git-send-email-jens.axboe@oracle.com>
+	Fri, 31 Jul 2009 02:31:38 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:60765 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751587AbZGaGbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 02:31:37 -0400
+Date: Fri, 31 Jul 2009 08:31:30 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@ozlabs.org,
+       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 5/5] sound/aoa: Add kmalloc NULL tests
+In-Reply-To: <s5hws5pid6u.wl%tiwai@suse.de>
+Message-ID: <Pine.LNX.4.64.0907310831160.13462@ask.diku.dk>
+References: <Pine.LNX.4.64.0907301610550.8734@ask.diku.dk>
+ <1248963420.16129.0.camel@johannes.local> <Pine.LNX.4.64.0907301627260.8734@ask.diku.dk>
+ <s5hws5pid6u.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248989044-21605-1-git-send-email-jens.axboe@oracle.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Fri, 31 Jul 2009, Takashi Iwai wrote:
 
-> Here's the 13th version of the writeback patches. Changes since v12:
+> At Thu, 30 Jul 2009 16:29:54 +0200 (CEST),
+> Julia Lawall wrote:
+> > 
+> > On Thu, 30 Jul 2009, Johannes Berg wrote:
+> > 
+> > > On Thu, 2009-07-30 at 16:11 +0200, Julia Lawall wrote:
+> > > > From: Julia Lawall <julia@diku.dk>
+> > > > 
+> > > > Check that the result of kzalloc is not NULL before a dereference.
+> > > 
+> > > >  		irq_client = kzalloc(sizeof(struct pmf_irq_client),
+> > > >  				     GFP_KERNEL);
+> > > > +		if (!irq_client) {
+> > > > +			err = -ENOMEM;
+> > > > +			printk(KERN_ERR "snd-aoa: gpio layer failed to"
+> > > > +				" register %s irq (%d)\n", name, err);
+> > > > +			goto out_unlock;
+> > > > +		}
+> > > 
+> > > Looks good, thanks, but I'd really drop the printk if only to not have
+> > > the string there, that doesn't really seem interesting.
+> > 
+> > The printk is based on similar error handling code a few lines later:
+> 
+> But another problem is that the same error message is reused although
+> the error condition is totally different.  The kzalloc NULL isn't
+> about the registration error.  So, it's rather confusing.
+> 
+> However, for this particular error path, I agree with Johannes; we can
+> skip the error message since the error code ENOMEM is obvious.
 
-> - Update to 2.6.31-rc4 ('ish, it's on top of current -git, but wil apply
->   to -rc4 as well).
-> - Drop the last patch in the series, it was a questionable optimization
->   that needs to be tested and evaluated separately.
+OK, I will send a new patch.
 
-fs/sync.c has changed some time ago and I think your patch needs this
-(which I had lazyly added by hand in v12 without telling):
-
---- a/fs/sync.c	2009-07-31 07:32:08.927926281 +0200
-+++ b/fs/sync.c.new	2009-07-31 07:31:52.499801359 +0200
-@@ -118,7 +118,7 @@ restart:
-  */
- SYSCALL_DEFINE0(sync)
- {
--	wakeup_pdflush(0);
-+	wakeup_flusher_threads(0);
- 	sync_filesystems(0);
- 	sync_filesystems(1);
- 	if (unlikely(laptop_mode))
-
-
-
-Best,
-
--- 
-Damien Wyart
+julia
