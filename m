@@ -1,196 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751732AbZGaEEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752302AbZGaEE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751732AbZGaEEt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 00:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751160AbZGaEEs
+	id S1752302AbZGaEE4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 00:04:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbZGaEEz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 00:04:48 -0400
-Received: from mba.ocn.ne.jp ([122.28.14.163]:52375 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750970AbZGaEEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 00:04:47 -0400
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: linux-kernel@vger.kernel.org,
-       Maciej Sosnowski <maciej.sosnowski@intel.com>,
-       Nicolas Ferre <nicolas.ferre@atmel.com>,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       Pierre Ossman <pierre@ossman.eu>
-Subject: [PATCH] dmaengine: Move all map_sg/unmap_sg for slave channel to its client
-Date: Fri, 31 Jul 2009 12:59:48 +0900
-Message-Id: <1249012788-965-1-git-send-email-anemo@mba.ocn.ne.jp>
-X-Mailer: git-send-email 1.5.6.5
+	Fri, 31 Jul 2009 00:04:55 -0400
+Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:60966 "EHLO
+	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751991AbZGaEEw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 00:04:52 -0400
+From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Message-Id: <200907310404.n6V44Qn0005781@mercury.physics.adelaide.edu.au>
+Subject: Re: [PATCH] fujitsu-laptop: consolidated fixes (NULL pointer checks, [un]registration fixes, etc)
+To: bzolnier@gmail.com (Bartlomiej Zolnierkiewicz)
+Date: Fri, 31 Jul 2009 13:34:26 +0930 (CST)
+Cc: jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       error27@gmail.com (Dan Carpenter), corbet@lwn.net, eteo@redhat.com,
+       julia@diku.dk (Julia Lawall)
+In-Reply-To: <200907301408.10864.bzolnier@gmail.com> from "Bartlomiej Zolnierkiewicz" at Jul 30, 2009 02:08:10 PM
+X-Mailer: ELM [version 2.5 PL6]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Williams wrote:
-... DMA-slave clients request specific channels and know the hardware
-details at a low level, so it should not be too high an expectation to
-push dma mapping responsibility to the client.
+Hi all
 
-Also this patch includes DMA_COMPL_{SRC,DEST}_UNMAP_SINGLE support for
-dw_dmac driver.
+> > This patch consolidates the two patches posted by Bartlomiej Zolnierkiewicz
+> > and the NULL pointer patch which came out of a discussion with Julia Lawall.
+> > Some additional NULL pointer check tidy-ups have also been done.
+> > 
+> > To summarise:
+> 
+> I think that for the increased readability and to preserve proper credits it
+> would be better to keep separate patches (updating the driver version can be
+> as well handled in an incremental patch).
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
-This patch is against next branch of async_tx tree.
-This patch is not tested.  I appreciate if someone test this patch with those
-devices.
+Ok, leave it with me and I'll re-split along these lines.
 
- drivers/dma/at_hdmac.c       |   43 +++++++++++++++++++++--------------------
- drivers/dma/dw_dmac.c        |   31 ++++++++++++++++++-----------
- drivers/mmc/host/atmel-mci.c |    9 +++++++-
- 3 files changed, 49 insertions(+), 34 deletions(-)
+> I would also strongly insist on removing the following needless NULL pointer
+> checks introduced by this version.  They may hide real bugs in the ACPI driver
+> code (which should make sure that we always have valid 'device' in the ACPI
+> driver methods and that it doesn't go away while the method executes) or in
+> the fujitsu-laptop itself (which has to always provide valid 'fujitsu_hotkey',
+> 'fujitsu' and 'input' pointers and not free them while there are still some
+> users left).
 
-diff --git a/drivers/dma/at_hdmac.c b/drivers/dma/at_hdmac.c
-index 9a1e5fb..3d10525 100644
---- a/drivers/dma/at_hdmac.c
-+++ b/drivers/dma/at_hdmac.c
-@@ -252,25 +252,28 @@ atc_chain_complete(struct at_dma_chan *atchan, struct at_desc *desc)
- 	list_move(&desc->desc_node, &atchan->free_list);
- 
- 	/* unmap dma addresses */
--	if (!(txd->flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
--		if (txd->flags & DMA_COMPL_DEST_UNMAP_SINGLE)
--			dma_unmap_single(chan2parent(&atchan->chan_common),
--					desc->lli.daddr,
--					desc->len, DMA_FROM_DEVICE);
--		else
--			dma_unmap_page(chan2parent(&atchan->chan_common),
--					desc->lli.daddr,
--					desc->len, DMA_FROM_DEVICE);
--	}
--	if (!(txd->flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
--		if (txd->flags & DMA_COMPL_SRC_UNMAP_SINGLE)
--			dma_unmap_single(chan2parent(&atchan->chan_common),
--					desc->lli.saddr,
--					desc->len, DMA_TO_DEVICE);
--		else
--			dma_unmap_page(chan2parent(&atchan->chan_common),
--					desc->lli.saddr,
--					desc->len, DMA_TO_DEVICE);
-+	if (!atchan->chan_common.private) {
-+		struct device *parent = chan2parent(&atchan->chan_common);
-+		if (!(txd->flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
-+			if (txd->flags & DMA_COMPL_DEST_UNMAP_SINGLE)
-+				dma_unmap_single(parent,
-+						desc->lli.daddr,
-+						desc->len, DMA_FROM_DEVICE);
-+			else
-+				dma_unmap_page(parent,
-+						desc->lli.daddr,
-+						desc->len, DMA_FROM_DEVICE);
-+		}
-+		if (!(txd->flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
-+			if (txd->flags & DMA_COMPL_SRC_UNMAP_SINGLE)
-+				dma_unmap_single(parent,
-+						desc->lli.saddr,
-+						desc->len, DMA_TO_DEVICE);
-+			else
-+				dma_unmap_page(parent,
-+						desc->lli.saddr,
-+						desc->len, DMA_TO_DEVICE);
-+		}
- 	}
- 
- 	/*
-@@ -646,8 +649,6 @@ atc_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
- 
- 	reg_width = atslave->reg_width;
- 
--	sg_len = dma_map_sg(chan2parent(chan), sgl, sg_len, direction);
--
- 	ctrla = ATC_DEFAULT_CTRLA | atslave->ctrla;
- 	ctrlb = ATC_DEFAULT_CTRLB | ATC_IEN;
- 
-diff --git a/drivers/dma/dw_dmac.c b/drivers/dma/dw_dmac.c
-index 98c9a84..a5a5050 100644
---- a/drivers/dma/dw_dmac.c
-+++ b/drivers/dma/dw_dmac.c
-@@ -212,16 +212,25 @@ dwc_descriptor_complete(struct dw_dma_chan *dwc, struct dw_desc *desc)
- 	list_splice_init(&txd->tx_list, &dwc->free_list);
- 	list_move(&desc->desc_node, &dwc->free_list);
- 
--	/*
--	 * We use dma_unmap_page() regardless of how the buffers were
--	 * mapped before they were submitted...
--	 */
--	if (!(txd->flags & DMA_COMPL_SKIP_DEST_UNMAP))
--		dma_unmap_page(chan2parent(&dwc->chan), desc->lli.dar,
--			       desc->len, DMA_FROM_DEVICE);
--	if (!(txd->flags & DMA_COMPL_SKIP_SRC_UNMAP))
--		dma_unmap_page(chan2parent(&dwc->chan), desc->lli.sar,
--			       desc->len, DMA_TO_DEVICE);
-+	if (!dwc->chan.private) {
-+		struct device *parent = chan2parent(&dwc->chan);
-+		if (!(txd->flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
-+			if (txd->flags & DMA_COMPL_DEST_UNMAP_SINGLE)
-+				dma_unmap_single(parent, desc->lli.dar,
-+						desc->len, DMA_FROM_DEVICE);
-+			else
-+				dma_unmap_page(parent, desc->lli.dar,
-+						desc->len, DMA_FROM_DEVICE);
-+		}
-+		if (!(txd->flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
-+			if (txd->flags & DMA_COMPL_SRC_UNMAP_SINGLE)
-+				dma_unmap_single(parent, desc->lli.sar,
-+						desc->len, DMA_TO_DEVICE);
-+			else
-+				dma_unmap_page(parent, desc->lli.sar,
-+						desc->len, DMA_TO_DEVICE);
-+		}
-+	}
- 
- 	/*
- 	 * The API requires that no submissions are done from a
-@@ -658,8 +667,6 @@ dwc_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
- 	reg_width = dws->reg_width;
- 	prev = first = NULL;
- 
--	sg_len = dma_map_sg(chan2parent(chan), sgl, sg_len, direction);
--
- 	switch (direction) {
- 	case DMA_TO_DEVICE:
- 		ctllo = (DWC_DEFAULT_CTLLO
-diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
-index cf6a100..2ec3803 100644
---- a/drivers/mmc/host/atmel-mci.c
-+++ b/drivers/mmc/host/atmel-mci.c
-@@ -574,6 +574,7 @@ atmci_submit_data_dma(struct atmel_mci *host, struct mmc_data *data)
- 	struct scatterlist		*sg;
- 	unsigned int			i;
- 	enum dma_data_direction		direction;
-+	unsigned int			sglen;
- 
- 	/*
- 	 * We don't do DMA on "complex" transfers, i.e. with
-@@ -603,11 +604,14 @@ atmci_submit_data_dma(struct atmel_mci *host, struct mmc_data *data)
- 	else
- 		direction = DMA_TO_DEVICE;
- 
-+	sglen = dma_map_sg(&host->pdev->dev, data->sg, data->sg_len, direction);
-+	if (sglen != data->sg_len)
-+		goto unmap_exit;
- 	desc = chan->device->device_prep_slave_sg(chan,
- 			data->sg, data->sg_len, direction,
- 			DMA_PREP_INTERRUPT | DMA_CTRL_ACK);
- 	if (!desc)
--		return -ENOMEM;
-+		goto unmap_exit;
- 
- 	host->dma.data_desc = desc;
- 	desc->callback = atmci_dma_complete;
-@@ -618,6 +622,9 @@ atmci_submit_data_dma(struct atmel_mci *host, struct mmc_data *data)
- 	chan->device->device_issue_pending(chan);
- 
- 	return 0;
-+unmap_exit:
-+	dma_unmap_sg(&host->pdev->dev, data->sg, sglen, direction);
-+	return -ENOMEM;
- }
- 
- #else /* CONFIG_MMC_ATMELMCI_DMA */
--- 
-1.5.6.5
+I'll take another look at these.  What I was concerned about was whether the
+hotkey pointer in particular was valid in all cases (since some of the
+relevant laptops don't in fact have hotkeys) - and I was very short of time
+yesterday.  I've had a very quick look through the code just now and it
+seems that this may not be a problem after all.  In any case I'll confirm
+this over the next day or so and redo/reisssue the patches accordingly.
 
+Regards
+  jonathan
