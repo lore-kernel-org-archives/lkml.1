@@ -1,130 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752974AbZGaU7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752995AbZGaU7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752974AbZGaU7U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 16:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbZGaU7T
+	id S1752995AbZGaU7s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 16:59:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbZGaU7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 16:59:19 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:54019 "EHLO
+	Fri, 31 Jul 2009 16:59:47 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:54108 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751606AbZGaU7S (ORCPT
+	by vger.kernel.org with ESMTP id S1751655AbZGaU7r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 16:59:18 -0400
+	Fri, 31 Jul 2009 16:59:47 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>, Anders Kaseorg <andersk@ksplice.com>,
        Nelson Elhage <nelhage@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Hirokazu Takata <takata@linux-m32r.org>
-Subject: [PATCH 3/3] m32r: Cleanup linker script using new linker script macros.
-Date: Fri, 31 Jul 2009 16:58:07 -0400
-Message-Id: <1249073887-30086-3-git-send-email-tabbott@ksplice.com>
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, linux-s390@vger.kernel.org
+Subject: [PATCH 2/2] s390: clean up linker script using new linker script macros.
+Date: Fri, 31 Jul 2009 16:58:31 -0400
+Message-Id: <1249073911-30208-2-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1249073887-30086-1-git-send-email-tabbott@ksplice.com>
-References: <1249073887-30086-1-git-send-email-tabbott@ksplice.com>
+In-Reply-To: <1249073911-30208-1-git-send-email-tabbott@ksplice.com>
+References: <1249073911-30208-1-git-send-email-tabbott@ksplice.com>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is largely a straightforward conversion.  One thing to note
-is that the new macros use fewer separate output sections than the old
-code; this should have no functional impact but is relevant for people
-objdumping vmlinux files.
+From: Nelson Elhage <nelhage@ksplice.com>
 
-Also note that it moves the .data.init_task output sections inside
-_edata.
+Note that this patch moves .data.init_task inside _edata.  In
+addition, the alignment of .init.ramfs changes: It is now PAGE_ALIGNED
+and __initramfs_end is arbitrarily aligned; Previously it was
+only aligned to a 0x100-byte boundary, and always ended on an even
+byte.
 
+This change results in fewer output sections and in some data being
+reordered, but should have no functional effect.
+
+Signed-off-by: Nelson Elhage <nelhage@ksplice.com>
 Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Hirokazu Takata <takata@linux-m32r.org>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux-s390@vger.kernel.org
 ---
- arch/m32r/kernel/vmlinux.lds.S |   66 +++++-----------------------------------
- 1 files changed, 8 insertions(+), 58 deletions(-)
+ arch/s390/kernel/vmlinux.lds.S |   83 +++------------------------------------
+ 1 files changed, 7 insertions(+), 76 deletions(-)
 
-diff --git a/arch/m32r/kernel/vmlinux.lds.S b/arch/m32r/kernel/vmlinux.lds.S
-index 1984b9f..9b5a7eb 100644
---- a/arch/m32r/kernel/vmlinux.lds.S
-+++ b/arch/m32r/kernel/vmlinux.lds.S
-@@ -40,72 +40,22 @@ SECTIONS
- #endif
-   _etext = .;			/* End of text section */
+diff --git a/arch/s390/kernel/vmlinux.lds.S b/arch/s390/kernel/vmlinux.lds.S
+index 8e023c8..7315f9e 100644
+--- a/arch/s390/kernel/vmlinux.lds.S
++++ b/arch/s390/kernel/vmlinux.lds.S
+@@ -52,51 +52,18 @@ SECTIONS
+ 	. = ALIGN(PAGE_SIZE);
+ 	_eshared = .;		/* End of shareable data */
  
--  . = ALIGN(16);		/* Exception table */
--  __start___ex_table = .;
--  __ex_table : { *(__ex_table) }
--  __stop___ex_table = .;
+-	. = ALIGN(16);		/* Exception table */
+-	__ex_table : {
+-		__start___ex_table = .;
+-		*(__ex_table)
+-		__stop___ex_table = .;
+-	} :data
 -
-+  EXCEPTION_TABLE(16)
-   RODATA
--
--  /* writeable */
--  .data : {			/* Data */
--	DATA_DATA
--	CONSTRUCTORS
+-	.data : {		/* Data */
+-		PAGE_ALIGNED_DATA(PAGE_SIZE)
+-		DATA_DATA
+-		CONSTRUCTORS
 -	}
 -
--  . = ALIGN(4096);
--  __nosave_begin = .;
--  .data_nosave : { *(.data.nosave) }
--  . = ALIGN(4096);
--  __nosave_end = .;
--
--  . = ALIGN(32);
--  .data.cacheline_aligned : { *(.data.cacheline_aligned) }
--
-+  RW_DATA_SECTION(32, PAGE_SIZE, THREAD_SIZE)
-   _edata = .;			/* End of data section */
+-	. = ALIGN(PAGE_SIZE);
+-	.data_nosave : {
+-	__nosave_begin = .;
+-		*(.data.nosave)
+-	}
+-	. = ALIGN(PAGE_SIZE);
+-	__nosave_end = .;
++	EXCEPTION_TABLE(16) :data
  
--  . = ALIGN(8192);		/* init_task */
--  .data.init_task : { *(.data.init_task) }
+-	. = ALIGN(0x100);
+-	.data.cacheline_aligned : {
+-		*(.data.cacheline_aligned)
+-	}
++	RW_DATA_SECTION(0x100, PAGE_SIZE, THREAD_SIZE)
+ 
+-	. = ALIGN(0x100);
+-	.data.read_mostly : {
+-		*(.data.read_mostly)
+-	}
+ 	_edata = .;		/* End of data section */
+ 
+-	. = ALIGN(THREAD_SIZE);	/* init_task */
+-	.data.init_task : {
+-		*(.data.init_task)
+-	}
 -
-   /* will be freed after init */
--  . = ALIGN(4096);		/* Init code and data */
-+  . = ALIGN(PAGE_SIZE);		/* Init code and data */
-   __init_begin = .;
--  .init.text : {
--	_sinittext = .;
--	INIT_TEXT
--	_einittext = .;
--  }
--  .init.data : { INIT_DATA }
--  . = ALIGN(16);
--  __setup_start = .;
--  .init.setup : { *(.init.setup) }
--  __setup_end = .;
--  __initcall_start = .;
--  .initcall.init : {
--	INITCALLS
--  }
--  __initcall_end = .;
--  __con_initcall_start = .;
--  .con_initcall.init : { *(.con_initcall.init) }
--  __con_initcall_end = .;
--  SECURITY_INIT
+ 	/* will be freed after init */
+ 	. = ALIGN(PAGE_SIZE);	/* Init code and data */
+ 	__init_begin = .;
+-	.init.text : {
+-		_sinittext = .;
+-		INIT_TEXT
+-		_einittext = .;
+-	}
++
++	INIT_TEXT_SECTION(PAGE_SIZE)
++
+ 	/*
+ 	 * .exit.text is discarded at runtime, not link time,
+ 	 * to deal with references from __bug_table
+@@ -107,49 +74,13 @@ SECTIONS
+ 
+ 	/* early.c uses stsi, which requires page aligned data. */
+ 	. = ALIGN(PAGE_SIZE);
+-	.init.data : {
+-		INIT_DATA
+-	}
+-	. = ALIGN(0x100);
+-	.init.setup : {
+-		__setup_start = .;
+-		*(.init.setup)
+-		__setup_end = .;
+-	}
+-	.initcall.init : {
+-		__initcall_start = .;
+-		INITCALLS
+-		__initcall_end = .;
+-	}
+-
+-	.con_initcall.init : {
+-		__con_initcall_start = .;
+-		*(.con_initcall.init)
+-		__con_initcall_end = .;
+-	}
+-	SECURITY_INIT
 -
 -#ifdef CONFIG_BLK_DEV_INITRD
--  . = ALIGN(4096);
--  __initramfs_start = .;
--  .init.ramfs : { *(.init.ramfs) }
--  __initramfs_end = .;
+-	. = ALIGN(0x100);
+-	.init.ramfs : {
+-		__initramfs_start = .;
+-		*(.init.ramfs)
+-		. = ALIGN(2);
+-		__initramfs_end = .;
+-	}
 -#endif
--
--  PERCPU(4096)
--  . = ALIGN(4096);
-+  INIT_TEXT_SECTION(PAGE_SIZE)
-+  INIT_DATA_SECTION(16)
-+  PERCPU(PAGE_SIZE)
-+  . = ALIGN(PAGE_SIZE);
-   __init_end = .;
-   /* freed after init ends here */
++	INIT_DATA_SECTION(0x100)
  
--  __bss_start = .;		/* BSS */
--  .bss : { *(.bss) }
--  . = ALIGN(4);
--  __bss_stop = .;
-+  BSS_SECTION(0, 0, 4)
+ 	PERCPU(PAGE_SIZE)
+ 	. = ALIGN(PAGE_SIZE);
+ 	__init_end = .;		/* freed after init ends here */
  
-   _end = . ;
+-	/* BSS */
+-	.bss : {
+-		__bss_start = .;
+-		*(.bss)
+-		. = ALIGN(2);
+-		__bss_stop = .;
+-	}
++	BSS_SECTION(0, 2, 0)
+ 
+ 	_end = . ;
  
 -- 
 1.6.3.3
