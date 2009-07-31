@@ -1,199 +1,469 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbZGaNOL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752735AbZGaNO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752707AbZGaNOL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 09:14:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbZGaNOK
+	id S1752735AbZGaNO7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 09:14:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZGaNO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 09:14:10 -0400
-Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:23456
-	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752390AbZGaNOJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 09:14:09 -0400
-X-SpamScore: -18
-X-BigFish: VPS-18(z6f5iz62a3L1432R98dN936eM3b5bkzz1202hzzz32i6bh203h43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KNNE35-04-9MJ-01
-Date: Fri, 31 Jul 2009 15:13:39 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: WARNING: at kernel/trace/ring_buffer.c:2289
-	rb_advance_reader+0x2e/0xc5()
-Message-ID: <20090731131339.GN14610@erda.amd.com>
-References: <20090727195058.GA25478@erda.amd.com> <alpine.DEB.2.00.0907271601210.30108@gandalf.stny.rr.com>
+	Fri, 31 Jul 2009 09:14:58 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38268 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752559AbZGaNO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 09:14:57 -0400
+Date: Fri, 31 Jul 2009 09:13:59 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, ryov@valinux.co.jp, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org
+Subject: Re: [RFC] IO scheduler based IO controller V7
+Message-ID: <20090731131359.GA3668@redhat.com>
+References: <1248467274-32073-1-git-send-email-vgoyal@redhat.com> <4A727F6F.9010005@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0907271601210.30108@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 31 Jul 2009 13:13:40.0584 (UTC) FILETIME=[B8E4F680:01CA11E0]
+In-Reply-To: <4A727F6F.9010005@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steve,
+On Fri, Jul 31, 2009 at 01:21:51PM +0800, Gui Jianfeng wrote:
+> Hi Vivek,
+> 
+> Here are some test results for normal reads and write for IO Controller V7 by fio.
+> Tested with "fairness == 0". It seems performance gets better comparing with V6.
+> 
+> Mode         Normal read   |   Random read   |   Normal write   |   Random write  |  Direct read  |  Direct Write
+> 
+> 2.6.31-rc1   71,613KiB/s       3,606KiB/s        66,250KiB/s        9,420KiB/s       51,535KiB/s     55,752KiB/s
+> 
+> V7           70,540KiB/s       3,551KiB/s        64,548KiB/s        9,677KiB/s       53,530KiB/s     54,145KiB/s
+> 
+> Performance  -1.5%             -1.5%             -2.6%              +2.7%            +3.9%           -2.9%
+> 
 
-thanks for your detailed description. I found the root cause for the
-warning, a patch is on the way. See also my comments below.
+Thanks Gui. Can you also try V7 with CONFIG_TRACK_ASYNC_CONTEXT=n. I tried
+that and I got better results for buffered writes.
 
-On 27.07.09 17:24:29, Steven Rostedt wrote:
+In my testing I still see some performance regression for buffered writes
+which goes away if I disable group io scheduling and just use flat mode.
+
+I will spend more time to find out where it is coming from.
+
+Thanks
+Vivek
+
+
 > 
-> Hi Robert,
-> 
-> 
-> On Mon, 27 Jul 2009, Robert Richter wrote:
-> 
-> > Steven,
+> Vivek Goyal wrote:
+> > Hi All,
 > > 
-> > I have workloads for oprofile that trigger warnings like this:
+> > Here is the V7 of the IO controller patches generated on top of 2.6.31-rc4.
 > > 
-> > ------------[ cut here ]------------
-> > WARNING: at /dev/shm/.source/linux/kernel/trace/ring_buffer.c:2289 rb_advance_reader+0x2e/0xc5()
-> 
-> So this is this code:
-> 
->         reader = rb_get_reader_page(cpu_buffer);
-> 
->         /* This function should not be called when buffer is empty */
->         if (RB_WARN_ON(cpu_buffer, !reader))
->                 return;
-> 
-> 
-> > Hardware name: Anaheim
-> > Modules linked in:
-> > Pid: 29, comm: events/2 Tainted: G        W  2.6.31-rc3-oprofile-x86_64-standard-00059-g5050dc2 #1
-> > Call Trace:
-> > [<ffffffff8106776f>] ? rb_advance_reader+0x2e/0xc5
-> > [<ffffffff81039ffe>] warn_slowpath_common+0x77/0x8f
-> > [<ffffffff8103a025>] warn_slowpath_null+0xf/0x11
-> > [<ffffffff8106776f>] rb_advance_reader+0x2e/0xc5
-> > [<ffffffff81068bda>] ring_buffer_consume+0xa0/0xd2
-> > [<ffffffff81326933>] op_cpu_buffer_read_entry+0x21/0x9e
-> > [<ffffffff810be3af>] ? __find_get_block+0x4b/0x165
-> > [<ffffffff8132749b>] sync_buffer+0xa5/0x401
-> > [<ffffffff810be3af>] ? __find_get_block+0x4b/0x165
-> > [<ffffffff81326c1b>] ? wq_sync_buffer+0x0/0x78
-> > [<ffffffff81326c76>] wq_sync_buffer+0x5b/0x78
-> > [<ffffffff8104aa30>] worker_thread+0x113/0x1ac
-> > [<ffffffff8104dd95>] ? autoremove_wake_function+0x0/0x38
-> > [<ffffffff8104a91d>] ? worker_thread+0x0/0x1ac
-> > [<ffffffff8104dc9a>] kthread+0x88/0x92
-> > [<ffffffff8100bdba>] child_rip+0xa/0x20
-> > [<ffffffff8104dc12>] ? kthread+0x0/0x92
-> > [<ffffffff8100bdb0>] ? child_rip+0x0/0x20
-> > ---[ end trace f561c0a58fcc89bd ]---
+> > For ease of patching, a consolidated patch is available here.
 > > 
-> > I am wondering when this may happen. It seems the following code in
-> > rb_get_reader_page() triggers this:
+> > http://people.redhat.com/~vgoyal/io-controller/io-scheduler-based-io-controller-v7.patch
 > > 
-> >         /* check if we caught up to the tail */
-> >         reader = NULL;
-> >         if (cpu_buffer->commit_page == cpu_buffer->reader_page)
-> >                 goto out;
-> 
-> So you see that rb_advance_reader is called while the commit_page is the 
-> same as the reader page? Which means that there's nothing left in the 
-> buffer. This is interesting? Because in ring_buffer_consume we have:
-> 
->         event = rb_buffer_peek(buffer, cpu, ts);
->         if (!event)
->                 goto out_unlock;
-> 
->         rb_advance_reader(cpu_buffer);
-> 
-> Where rb_buffer_peak checks to see if there's anything in the buffer, if 
-> there is, it returns an event, but does not increment the pointer. What 
-> you see is that we got an event, but then the event went away? Is there 
-> something else that could have read this buffer? You are not reading this 
-> from an NMI or something?
-
-There was only one thread reading from the buffer. Writes did go
-always to the _other_ write buffer, and the buffer switch was only
-made by the reading thread. So there is no one else using the buffers.
-
-> 
-> Or do you see any other WARN ONs happening? This would cause the locks to 
-> not be taken for reads.
-
-No, also no other warnings, also with lockdep enabled.
-
-> 
-> 
+> > Previous versions of the patches was posted here.
 > > 
-> > It is very hard to find out the conditions for equal commit and reader
-> > pages.
+> > (V1) http://lkml.org/lkml/2009/3/11/486
+> > (V2) http://lkml.org/lkml/2009/5/5/275
+> > (V3) http://lkml.org/lkml/2009/5/26/472
+> > (V4) http://lkml.org/lkml/2009/6/8/580
+> > (V5) http://lkml.org/lkml/2009/6/19/279
+> > (V6) http://lkml.org/lkml/2009/7/2/369
 > > 
-> > Maybe you have any idea or could shortly explain the use of head,
-> > tail, commit and reader page pointers? When an overrun happens?
-> > (... or point me to some documentation.)
+> > Changes from V6
+> > ===============
+> > - Introduced the notion of group_idling where we idle for next request to
+> >   come from the same group before we expire it. It is along the lines of
+> >   cfq's slice_idle thing to provide fairness. Switching to group idling
+> >   now helps in the sense that we don't have to rely whether queue idling
+> >   was turned on or not by CFQ. It becomes too much of debugging pain with
+> >   different work loads and different kind of storage media. Introduction
+> >   of group_idle should help.
+> > 
+> > - Moved some of the code like dynamic queue idling update, arming queue
+> >   idling timer, keeping track of average think time etc back to CFQ. With
+> >   group idling we don't need it now. Reduce the amount of change.
+> > 
+> > - Enabled cfq's close cooperator functionality in groups. So far this worked
+> >   only in root group. Now it should work in non-root groups also.
+> > 
+> > - Got rid of the patch where we calculated disk time based on average disk
+> >   rate in some circumstances. It was giving bad numbers in early queue
+> >   deletion cases. Also did not think that it was helping a lot. Remvoed it
+> >   for the time being.
+> >  
+> > - Added an experimental patch to map sync requests using bio tracking info and
+> >   not task context. This is only for noop, deadline and AS.
+> > 
+> > - Got rid of experimental patch of idling for async queues. Don't think it
+> >   was helping.
+> > 
+> > - Got rid of wait_busy and wait_busy_done logic from queue. Instead
+> >   implemented it for groups.
+> > 
+> > - Introduced oom_ioq to accomodate oom_cfqq change recently.
+> > 
+> > - Broke-up elv_init_ioq() fn into smaller functions. It had 7 arguments and
+> >   looked complicated.
+> > 
+> > - Fixed a bug in blk_queue_io_group_congested(). Thanks to Munehiro Ikeda.
+> > 
+> > - Merged gui's patch to fix the cgroup file format issue.
+> > 
+> > - Merged gui's patch to update per group congestion limit when
+> >   q->nr_group_requests is updated.
+> > 
+> > - Fixed a bug where close cooperation will not work if we wait for all the
+> >   requests to finish from previous queue.
+> > 
+> > - Fixed group deletion accouting where deletion from idle tree were also
+> >   appearing in the log.
+> > 
+> > - Got rid of busy_rt_queues infrastructure.
+> > 
+> > - Got rid of elv_ioq_request_dispatched(). An helper function just to
+> >   increment a variable.
+> >   
+> > Limitations
+> > ===========
+> > 
+> > - This IO controller provides the bandwidth control at the IO scheduler
+> >   level (leaf node in stacked hiearchy of logical devices). So there can
+> >   be cases (depending on configuration) where application does not see
+> >   proportional BW division at higher logical level device.
+> > 
+> >   LWN has written an article about the issue here.
+> > 
+> > 	http://lwn.net/Articles/332839/
+> > 
+> > How to solve the issue of fairness at higher level logical devices
+> > ==================================================================
+> > (Do we really need it? That's not where the contention for resources is.)
+> > 
+> > Couple of suggestions have come forward.
+> > 
+> > - Implement IO control at IO scheduler layer and then with the help of
+> >   some daemon, adjust the weight on underlying devices dynamiclly, depending
+> >   on what kind of BW gurantees are to be achieved at higher level logical
+> >   block devices.
+> > 
+> > - Also implement a higher level IO controller along with IO scheduler
+> >   based controller and let user choose one depending on his needs.
+> > 
+> >   A higher level controller does not know about the assumptions/policies
+> >   of unerldying IO scheduler, hence it has the potential to break down
+> >   the IO scheduler's policy with-in cgroup. A lower level controller
+> >   can work with IO scheduler much more closely and efficiently.
+> >  
+> > Other active IO controller developments
+> > =======================================
+> > 
+> > IO throttling
+> > -------------
+> > 
+> >   This is a max bandwidth controller and not the proportional one. Secondly
+> >   it is a second level controller which can break the IO scheduler's
+> >   policy/assumtions with-in cgroup. 
+> > 
+> > dm-ioband
+> > ---------
+> > 
+> >  This is a proportional bandwidth controller implemented as device mapper
+> >  driver. It is also a second level controller which can break the
+> >  IO scheduler's policy/assumptions with-in cgroup.
+> > 
+> > TODO
+> > ====
+> > - code cleanups, testing, bug fixing, optimizations, benchmarking etc...
+> > 
+> > Testing
+> > =======
+> > 
+> > I have been able to do some testing as follows. All my testing is with ext3
+> > file system with a SATA drive which supports queue depth of 31.
+> > 
+> > Test1 (Isolation between two KVM virtual machines)
+> > ==================================================
+> > Created two KVM virtual machines. Partitioned a disk on host in two partitions
+> > and gave one partition to each virtual machine. Put both the virtual machines
+> > in two different cgroup of weight 1000 and 500 each. Virtual machines created
+> > ext3 file system on the partitions exported from host and did buffered writes.
+> > Host seems writes as synchronous and virtual machine with higher weight gets
+> > double the disk time of virtual machine of lower weight. Used deadline
+> > scheduler in this test case.
+> > 
+> > Some more details about configuration are in documentation patch.
+> > 
+> > Test2 (Fairness for synchronous reads)
+> > ======================================
+> > - Two dd in two cgroups with cgrop weights 1000 and 500. Ran two "dd" in those
+> >   cgroups (With CFQ scheduler and /sys/block/<device>/queue/fairness = 1)
+> > 
+> >   Higher weight dd finishes first and at that point of time my script takes
+> >   care of reading cgroup files io.disk_time and io.disk_sectors for both the
+> >   groups and display the results.
+> > 
+> >   dd if=/mnt/$BLOCKDEV/zerofile1 of=/dev/null &
+> >   dd if=/mnt/$BLOCKDEV/zerofile2 of=/dev/null &
+> > 
+> >   234179072 bytes (234 MB) copied, 3.9065 s, 59.9 MB/s
+> >   234179072 bytes (234 MB) copied, 5.19232 s, 45.1 MB/s
+> > 
+> >   group1 time=8 16 2471 group1 sectors=8 16 457840
+> >   group2 time=8 16 1220 group2 sectors=8 16 225736
+> > 
+> > First two fields in time and sectors statistics represent major and minor
+> > number of the device. Third field represents disk time in milliseconds and
+> > number of sectors transferred respectively.
+> > 
+> > This patchset tries to provide fairness in terms of disk time received. group1
+> > got almost double of group2 disk time (At the time of first dd finish). These
+> > time and sectors statistics can be read using io.disk_time and io.disk_sector
+> > files in cgroup. More about it in documentation file.
+> > 
+> > Test3 (Reader Vs Buffered Writes)
+> > ================================
+> > Buffered writes can be problematic and can overwhelm readers, especially with
+> > noop and deadline. IO controller can provide isolation between readers and
+> > buffered (async) writers.
+> > 
+> > First I ran the test without io controller to see the severity of the issue.
+> > Ran a hostile writer and then after 10 seconds started a reader and then
+> > monitored the completion time of reader. Reader reads a 256 MB file. Tested
+> > this with noop scheduler.
+> > 
+> > sample script
+> > ------------
+> > sync
+> > echo 3 > /proc/sys/vm/drop_caches
+> > time dd if=/dev/zero of=/mnt/sdb/reader-writer-zerofile bs=4K count=2097152
+> > conv=fdatasync &
+> > sleep 10
+> > time dd if=/mnt/sdb/256M-file of=/dev/null &
+> > 
+> > Results
+> > -------
+> > 8589934592 bytes (8.6 GB) copied, 106.045 s, 81.0 MB/s (Writer)
+> > 268435456 bytes (268 MB) copied, 96.5237 s, 2.8 MB/s (Reader)
+> > 
+> > Now it was time to test io controller whether it can provide isolation between
+> > readers and writers with noop. I created two cgroups of weight 1000 each and
+> > put reader in group1 and writer in group 2 and ran the test again. Upon
+> > comletion of reader, my scripts read io.dis_time and io.disk_group cgroup
+> > files to get an estimate how much disk time each group got and how many
+> > sectors each group did IO for. 
+> > 
+> > For more accurate accounting of disk time for buffered writes with queuing
+> > hardware I had to set /sys/block/<disk>/queue/iosched/fairness to "1".
+> > 
+> > sample script
+> > -------------
+> > echo $$ > /cgroup/bfqio/test2/tasks
+> > dd if=/dev/zero of=/mnt/$BLOCKDEV/testzerofile bs=4K count=2097152 &
+> > sleep 10
+> > echo noop > /sys/block/$BLOCKDEV/queue/scheduler
+> > echo  1 > /sys/block/$BLOCKDEV/queue/iosched/fairness
+> > echo $$ > /cgroup/bfqio/test1/tasks
+> > dd if=/mnt/$BLOCKDEV/256M-file of=/dev/null &
+> > wait $!
+> > # Some code for reading cgroup files upon completion of reader.
+> > -------------------------
+> > 
+> > Results
+> > =======
+> > 268435456 bytes (268 MB) copied, 6.65819 s, 40.3 MB/s (Reader) 
+> > 
+> > group1 time=8 16 3063	group1 sectors=8 16 524808
+> > group2 time=8 16 3071	group2 sectors=8 16 441752
+> > 
+> > Note, reader finishes now much lesser time and both group1 and group2
+> > got almost 3 seconds of disk time. Hence io-controller provides isolation
+> > from buffered writes.
+> > 
+> > Test4 (AIO)
+> > ===========
+> > 
+> > AIO reads
+> > -----------
+> > Set up two fio, AIO read jobs in two cgroup with weight 1000 and 500
+> > respectively. I am using cfq scheduler. Following are some lines from my test
+> > script.
+> > 
+> > ---------------------------------------------------------------
+> > echo 1000 > /cgroup/bfqio/test1/io.weight
+> > echo 500 > /cgroup/bfqio/test2/io.weight
+> > 
+> > fio_args="--ioengine=libaio --rw=read --size=512M --direct=1"
+> > echo 1 > /sys/block/$BLOCKDEV/queue/iosched/fairness
+> > 
+> > echo $$ > /cgroup/bfqio/test1/tasks
+> > fio $fio_args --name=test1 --directory=/mnt/$BLOCKDEV/fio1/
+> > --output=/mnt/$BLOCKDEV/fio1/test1.log
+> > --exec_postrun="../read-and-display-group-stats.sh $maj_dev $minor_dev" &
+> > 
+> > echo $$ > /cgroup/bfqio/test2/tasks
+> > fio $fio_args --name=test2 --directory=/mnt/$BLOCKDEV/fio2/
+> > --output=/mnt/$BLOCKDEV/fio2/test2.log &
+> > ----------------------------------------------------------------
+> > 
+> > test1 and test2 are two groups with weight 1000 and 500 respectively.
+> > "read-and-display-group-stats.sh" is one small script which reads the
+> > test1 and test2 cgroup files to determine how much disk time each group
+> > got till first fio job finished.
+> > 
+> > Results
+> > ------
+> > test1 statistics: time=8 16 22403   sectors=8 16 1049640
+> > test2 statistics: time=8 16 11400   sectors=8 16 552864
+> > 
+> > Above shows that by the time first fio (higher weight), finished, group
+> > test1 got 22403 ms of disk time and group test2 got 11400 ms of disk time.
+> > similarly the statistics for number of sectors transferred are also shown.
+> > 
+> > Note that disk time given to group test1 is almost double of group2 disk
+> > time.
+> > 
+> > AIO writes
+> > ----------
+> > Set up two fio, AIO direct write jobs in two cgroup with weight 1000 and 500
+> > respectively. I am using cfq scheduler. Following are some lines from my test
+> > script.
+> > 
+> > ------------------------------------------------
+> > echo 1000 > /cgroup/bfqio/test1/io.weight
+> > echo 500 > /cgroup/bfqio/test2/io.weight
+> > fio_args="--ioengine=libaio --rw=write --size=512M --direct=1"
+> > 
+> > echo 1 > /sys/block/$BLOCKDEV/queue/iosched/fairness
+> > 
+> > echo $$ > /cgroup/bfqio/test1/tasks
+> > fio $fio_args --name=test1 --directory=/mnt/$BLOCKDEV/fio1/
+> > --output=/mnt/$BLOCKDEV/fio1/test1.log
+> > --exec_postrun="../read-and-display-group-stats.sh $maj_dev $minor_dev" &
+> > 
+> > echo $$ > /cgroup/bfqio/test2/tasks
+> > fio $fio_args --name=test2 --directory=/mnt/$BLOCKDEV/fio2/
+> > --output=/mnt/$BLOCKDEV/fio2/test2.log &
+> > -------------------------------------------------
+> > 
+> > test1 and test2 are two groups with weight 1000 and 500 respectively.
+> > "read-and-display-group-stats.sh" is one small script which reads the
+> > test1 and test2 cgroup files to determine how much disk time each group
+> > got till first fio job finished.
+> > 
+> > Following are the results.
+> > 
+> > test1 statistics: time=8 16 29085   sectors=8 16 1049656
+> > test2 statistics: time=8 16 14652   sectors=8 16 516728
+> > 
+> > Above shows that by the time first fio (higher weight), finished, group
+> > test1 got 28085 ms of disk time and group test2 got 14652 ms of disk time.
+> > similarly the statistics for number of sectors transferred are also shown.
+> > 
+> > Note that disk time given to group test1 is almost double of group2 disk
+> > time.
+> > 
+> > Test5 (Fairness for async writes, Buffered Write Vs Buffered Write)
+> > ===================================================================
+> > Fairness for async writes is tricky and biggest reason is that async writes
+> > are cached in higher layers (page cahe) as well as possibly in file system
+> > layer also (btrfs, xfs etc), and are dispatched to lower layers not necessarily
+> > in proportional manner.
+> > 
+> > For example, consider two dd threads reading /dev/zero as input file and doing
+> > writes of huge files. Very soon we will cross vm_dirty_ratio and dd thread will
+> > be forced to write out some pages to disk before more pages can be dirtied. But
+> > not necessarily dirty pages of same thread are picked. It can very well pick
+> > the inode of lesser priority dd thread and do some writeout. So effectively
+> > higher weight dd is doing writeouts of lower weight dd pages and we don't see
+> > service differentation.
+> > 
+> > IOW, the core problem with async write fairness is that higher weight thread
+> > does not throw enought IO traffic at IO controller to keep the queue
+> > continuously backlogged. In my testing, there are many .2 to .8 second
+> > intervals where higher weight queue is empty and in that duration lower weight
+> > queue get lots of job done giving the impression that there was no service
+> > differentiation.
+> > 
+> > In summary, from IO controller point of view async writes support is there.
+> > Because page cache has not been designed in such a manner that higher 
+> > prio/weight writer can do more write out as compared to lower prio/weight
+> > writer, gettting service differentiation is hard and it is visible in some
+> > cases and not visible in some cases.
+> > 
+> > Do we really care that much for fairness among two writer cgroups? One can
+> > choose to do direct writes or sync writes if fairness for writes really
+> > matters for him.
+> > 
+> > Following is the only case where it is hard to ensure fairness between cgroups.
+> > 
+> > - Buffered writes Vs Buffered Writes.
+> > 
+> > So to test async writes I created two partitions on a disk and created ext3
+> > file systems on both the partitions.  Also created two cgroups and generated
+> > lots of write traffic in two cgroups (50 fio threads) and watched the disk
+> > time statistics in respective cgroups at the interval of 2 seconds. Thanks to
+> > ryo tsuruta for the test case.
+> > 
+> > *****************************************************************
+> > sync
+> > echo 3 > /proc/sys/vm/drop_caches
+> > 
+> > fio_args="--size=64m --rw=write --numjobs=50 --group_reporting"
+> > 
+> > echo $$ > /cgroup/bfqio/test1/tasks
+> > fio $fio_args --name=test1 --directory=/mnt/sdd1/fio/ --output=/mnt/sdd1/fio/test1.log &
+> > 
+> > echo $$ > /cgroup/bfqio/test2/tasks
+> > fio $fio_args --name=test2 --directory=/mnt/sdd2/fio/ --output=/mnt/sdd2/fio/test2.log &
+> > *********************************************************************** 
+> > 
+> > And watched the disk time and sector statistics for the both the cgroups
+> > every 2 seconds using a script. How is snippet from output.
+> > 
+> > test1 statistics: time=8 48 1315   sectors=8 48 55776 dq=8 48 1
+> > test2 statistics: time=8 48 633   sectors=8 48 14720 dq=8 48 2
+> > 
+> > test1 statistics: time=8 48 5586   sectors=8 48 339064 dq=8 48 2
+> > test2 statistics: time=8 48 2985   sectors=8 48 146656 dq=8 48 3
+> > 
+> > test1 statistics: time=8 48 9935   sectors=8 48 628728 dq=8 48 3
+> > test2 statistics: time=8 48 5265   sectors=8 48 278688 dq=8 48 4
+> > 
+> > test1 statistics: time=8 48 14156   sectors=8 48 932488 dq=8 48 6
+> > test2 statistics: time=8 48 7646   sectors=8 48 412704 dq=8 48 7
+> > 
+> > test1 statistics: time=8 48 18141   sectors=8 48 1231488 dq=8 48 10
+> > test2 statistics: time=8 48 9820   sectors=8 48 548400 dq=8 48 8
+> > 
+> > test1 statistics: time=8 48 21953   sectors=8 48 1485632 dq=8 48 13
+> > test2 statistics: time=8 48 12394   sectors=8 48 698288 dq=8 48 10
+> > 
+> > test1 statistics: time=8 48 25167   sectors=8 48 1705264 dq=8 48 13
+> > test2 statistics: time=8 48 14042   sectors=8 48 817808 dq=8 48 10
+> > 
+> > First two fields in time and sectors statistics represent major and minor
+> > number of the device. Third field represents disk time in milliseconds and
+> > number of sectors transferred respectively.
+> > 
+> > So disk time consumed by group1 is almost double of group2 in this case.
+> > 
+> > Your feedback is welcome.
+> > 
+> > Thanks
+> > Vivek
+> > 
+> > 
+> > 
 > 
-> OK, I'll do it here, but there is documentation already posted, but I'm 
-> too lazy to search for it (writing it is easier ;-)
-> 
-> The ring buffer is made up of 3 pointers. New writes go to the tail 
-> pointer, and new reads, read from the head pointer.
-> 
-> To prevent races with the writer over writing the reader as the reader is 
-> reading the buffer, the reader is given a separate page. When a read wants 
-> to read the buffer, it swaps a blank page with the "head" page of the 
-> buffer. If there is less then a page worth of data in the ring buffer, the 
-> writer will also be on this page. When the write goes to the next page, it 
-> simply moves back into the ring buffer because the next pointer of the 
-> reader page points back into the ring buffer.
-> 
-> Since the write side is mosly lockless (and is totally lockless for the 32 
-> queue), when a writer wants data it must first reserve space in the ring 
-> buffer. Then the writer may copy directly into the ring buffer, and then 
-> it "commits" it. This is where the commit pointer comes from. The 
-> reserving of space from the ring buffer moves the tail. But the commit 
-> pointer points to the last committed entry is. That is, data that the 
-> reader can read. We can not allow a reader to read part of the ring buffer 
-> that the writer has yet to write to.
-> 
-> When the writer is done and commits the changes, the commit pointer goes 
-> to the end of that entry. This allows interrupts to preempt another 
-> writer, but it will not overwrite the data of the preempted writer. A 
-> write that interrupted another write will reserve data at the tail after 
-> the data that was already reserved.
-> 
-> The head, tail and commit pointers are made up in two. There is a page and 
-> index pointer. The page pointer points to the page and the index points to 
-> the index in that page. A commit page pointer points to the page that 
-> holds the commit and the commit index pointer points to the index in that 
-> page.
-> 
-> To make things easier, if the writer wraps the ring buffer and comes back 
-> to the head page, it will move the entire page.
-> 
-> The code you pointed out that shows the the reader == commit page, means 
-> that there was less than a page worth of data when the reader swapped the 
-> page from the buffer and the writer (or at least the commit page) was on 
-> the page that was swapped. Thus the commit page is the same as the reader 
-> page.
-> 
-> The conditions before hand checked to see if there was data left on the 
-> page to read. If there was, then it would return the reader page, but when 
-> the reader index == the commit index it means that there is no more data 
-> left to read on that page and returns NULL.
-> 
-> This is strange because it is the same code that the peak uses, but the 
-> previous call found something?
-
-What I finally found out: rb_buffer_peek() was returning an event and
-simultaneously advancing the reader. This is in case of padding events
-and caused the 2nd rb_advance_reader() call to warn.
-
-A patch is out now. I have a 2nd patch sent out too with some little
-code rework.
-
-Steve, thanks for your support.
-
--Robert
-
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+> -- 
+> Regards
+> Gui Jianfeng
