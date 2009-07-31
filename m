@@ -1,231 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752643AbZGaPJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752836AbZGaPJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752643AbZGaPJe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 11:09:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbZGaPJc
+	id S1752836AbZGaPJv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 11:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbZGaPJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 11:09:32 -0400
-Received: from mail.windriver.com ([147.11.1.11]:43584 "EHLO mail.wrs.com"
+	Fri, 31 Jul 2009 11:09:50 -0400
+Received: from mail.windriver.com ([147.11.1.11]:43635 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752320AbZGaPJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 11:09:26 -0400
+	id S1752349AbZGaPJl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 11:09:41 -0400
 From: Jason Wessel <jason.wessel@windriver.com>
 To: gregkh@suse.de
 Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
        Jason Wessel <jason.wessel@windriver.com>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Yinghai Lu <yinghai@kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [PATCH 05/10] printk,early_printk,console: Allow more than one early console
-Date: Fri, 31 Jul 2009 10:07:08 -0500
-Message-Id: <1249052833-9655-6-git-send-email-jason.wessel@windriver.com>
+       dbrownell@users.sourceforge.net, Yinghai Lu <yinghai@kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [PATCH 03/10] ehci-dbgp: Execute early BIOS hand off
+Date: Fri, 31 Jul 2009 10:07:06 -0500
+Message-Id: <1249052833-9655-4-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.0.3.523.g304d0
-In-Reply-To: <1249052833-9655-5-git-send-email-jason.wessel@windriver.com>
+In-Reply-To: <1249052833-9655-3-git-send-email-jason.wessel@windriver.com>
 References: <1249052833-9655-1-git-send-email-jason.wessel@windriver.com>
  <1249052833-9655-2-git-send-email-jason.wessel@windriver.com>
  <1249052833-9655-3-git-send-email-jason.wessel@windriver.com>
- <1249052833-9655-4-git-send-email-jason.wessel@windriver.com>
- <1249052833-9655-5-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 31 Jul 2009 15:07:28.0503 (UTC) FILETIME=[9EA6B870:01CA11F0]
+X-OriginalArrivalTime: 31 Jul 2009 15:07:25.0909 (UTC) FILETIME=[9D1AE850:01CA11F0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is very nice to be able to use one early boot device to debug
-another or to have multiple places you can see the early boot
-diagnostics, such as the vga screen or serial device.
-
-This patch changes the early_printk console device registration to
-allow more than one early printk device to get registered via
-register_console().
-
-A corresponding change is required to the console registration code
-such that it will properly unregister any console marked with the
-CON_BOOT flag via a simple loop during a console handover or at late
-init time.
+The PCI quirk code executes a BIOS hand off to obtain full control of
+the EHCI host controller, the self contained ehci-dbgp driver must do
+the same thing using the early PCI API, else the BIOS can cause a
+fatal fault.
 
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 Cc: Greg KH <gregkh@suse.de>
 Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: dbrownell@users.sourceforge.net
 Cc: Yinghai Lu <yinghai@kernel.org>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- arch/x86/kernel/early_printk.c |   65 ++++++++++++++++++++-------------------
- kernel/printk.c                |   41 ++++++++++++++++---------
- 2 files changed, 59 insertions(+), 47 deletions(-)
+ drivers/usb/early/ehci-dbgp.c |   49 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 49 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kernel/early_printk.c b/arch/x86/kernel/early_printk.c
-index 519a5e1..2acfd3f 100644
---- a/arch/x86/kernel/early_printk.c
-+++ b/arch/x86/kernel/early_printk.c
-@@ -176,10 +176,19 @@ asmlinkage void early_printk(const char *fmt, ...)
- 	va_end(ap);
- }
- 
-+static inline void early_console_register(struct console *con, int keep_early)
-+{
-+	early_console = con;
-+	if (keep_early)
-+		early_console->flags &= ~CON_BOOT;
-+	else
-+		early_console->flags |= CON_BOOT;
-+	register_console(early_console);
-+}
- 
- static int __init setup_early_printk(char *buf)
- {
--	int keep_early;
-+	int keep;
- 
- 	if (!buf)
- 		return 0;
-@@ -188,42 +197,34 @@ static int __init setup_early_printk(char *buf)
- 		return 0;
- 	early_console_initialized = 1;
- 
--	keep_early = (strstr(buf, "keep") != NULL);
--
--	if (!strncmp(buf, "serial", 6)) {
--		early_serial_init(buf + 6);
--		early_console = &early_serial_console;
--	} else if (!strncmp(buf, "ttyS", 4)) {
--		early_serial_init(buf);
--		early_console = &early_serial_console;
--	} else if (!strncmp(buf, "vga", 3)
--		&& boot_params.screen_info.orig_video_isVGA == 1) {
--		max_xpos = boot_params.screen_info.orig_video_cols;
--		max_ypos = boot_params.screen_info.orig_video_lines;
--		current_ypos = boot_params.screen_info.orig_y;
--		early_console = &early_vga_console;
-+	keep = (strstr(buf, "keep") != NULL);
-+
-+	while (*buf != '\0') {
-+		if (!strncmp(buf, "serial", 6)) {
-+			early_serial_init(buf + 6);
-+			early_console_register(&early_serial_console, keep);
-+		}
-+		if (!strncmp(buf, "ttyS", 4)) {
-+			early_serial_init(buf + 4);
-+			early_console_register(&early_serial_console, keep);
-+		}
-+		if (!strncmp(buf, "vga", 3) &&
-+		    boot_params.screen_info.orig_video_isVGA == 1) {
-+			max_xpos = boot_params.screen_info.orig_video_cols;
-+			max_ypos = boot_params.screen_info.orig_video_lines;
-+			current_ypos = boot_params.screen_info.orig_y;
-+			early_console_register(&early_vga_console, keep);
-+		}
- #ifdef CONFIG_EARLY_PRINTK_DBGP
--	} else if (!strncmp(buf, "dbgp", 4)) {
--		if (early_dbgp_init(buf+4) < 0)
--			return 0;
--		early_console = &early_dbgp_console;
--		/*
--		 * usb subsys will reset ehci controller, so don't keep
--		 * that early console
--		 */
--		keep_early = 0;
-+		if (!strncmp(buf, "dbgp", 4) && !early_dbgp_init(buf + 4))
-+			early_console_register(&early_dbgp_console, keep);
- #endif
- #ifdef CONFIG_HVC_XEN
--	} else if (!strncmp(buf, "xen", 3)) {
--		early_console = &xenboot_console;
-+		if (!strncmp(buf, "xen", 3))
-+			early_console_register(&xenboot_console, keep);
- #endif
-+		buf++;
+diff --git a/drivers/usb/early/ehci-dbgp.c b/drivers/usb/early/ehci-dbgp.c
+index 51ec414..f4bfe31 100644
+--- a/drivers/usb/early/ehci-dbgp.c
++++ b/drivers/usb/early/ehci-dbgp.c
+@@ -435,6 +435,53 @@ static void __init detect_set_debug_port(void)
  	}
--
--	if (keep_early)
--		early_console->flags &= ~CON_BOOT;
--	else
--		early_console->flags |= CON_BOOT;
--	register_console(early_console);
- 	return 0;
  }
  
-diff --git a/kernel/printk.c b/kernel/printk.c
-index b4d97b5..45e0cec 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -1129,6 +1129,28 @@ void console_start(struct console *console)
- }
- EXPORT_SYMBOL(console_start);
- 
-+static int disable_boot_consoles(void)
++/* The code in early_ehci_bios_handoff() is derived from the usb pci
++ * quirk initialization, but altered so as to use the early PCI
++ * routines. */
++#define EHCI_USBLEGSUP_BIOS	(1 << 16)	/* BIOS semaphore */
++#define EHCI_USBLEGCTLSTS	4		/* legacy control/status */
++static void __init early_ehci_bios_handoff(void)
 +{
-+	struct console *bootconsole = console_drivers;
-+	struct console *nextcon;
-+	if (!bootconsole)
-+		return 0;
-+	while (bootconsole) {
-+		nextcon = bootconsole->next;
-+		if (bootconsole->flags & CON_BOOT) {
-+			printk(KERN_INFO "turn off boot console %s%d\n",
-+			       console_drivers->name, console_drivers->index);
-+			if (unregister_console(bootconsole) != 0)
-+				printk(KERN_ERR "ERROR unregistering %s%d\n",
-+				       console_drivers->name,
-+				       console_drivers->index);
-+		}
-+		bootconsole = nextcon;
++	u32 hcc_params = readl(&ehci_caps->hcc_params);
++	int offset = (hcc_params >> 8) & 0xff;
++	u32 cap;
++	int msec;
++
++	if (!offset)
++		return;
++
++	cap = read_pci_config(ehci_dev.bus, ehci_dev.slot,
++			      ehci_dev.func, offset);
++	dbgp_printk("dbgp: ehci BIOS state %08x\n", cap);
++
++	if ((cap & 0xff) == 1 && (cap & EHCI_USBLEGSUP_BIOS)) {
++		dbgp_printk("dbgp: BIOS handoff\n");
++		write_pci_config_byte(ehci_dev.bus, ehci_dev.slot,
++				      ehci_dev.func, offset + 3, 1);
 +	}
-+	return 0;
++
++	/* if boot firmware now owns EHCI, spin till it hands it over. */
++	msec = 1000;
++	while ((cap & EHCI_USBLEGSUP_BIOS) && (msec > 0)) {
++		mdelay(10);
++		msec -= 10;
++		cap = read_pci_config(ehci_dev.bus, ehci_dev.slot,
++				      ehci_dev.func, offset);
++	}
++
++	if (cap & EHCI_USBLEGSUP_BIOS) {
++		/* well, possibly buggy BIOS... try to shut it down,
++		 * and hope nothing goes too wrong */
++		dbgp_printk("dbgp: BIOS handoff failed: %08x\n", cap);
++		write_pci_config_byte(ehci_dev.bus, ehci_dev.slot,
++				      ehci_dev.func, offset + 2, 0);
++	}
++
++	/* just in case, always disable EHCI SMIs */
++	write_pci_config_byte(ehci_dev.bus, ehci_dev.slot, ehci_dev.func,
++			      offset + EHCI_USBLEGCTLSTS, 0);
 +}
-+late_initcall(disable_boot_consoles);
 +
- /*
-  * The console driver calls this routine during kernel initialization
-  * to register the console printing procedure with printk() and to
-@@ -1142,8 +1164,7 @@ void register_console(struct console *console)
- 	struct console *bootconsole = NULL;
+ static int __init ehci_setup(void)
+ {
+ 	struct usb_debug_descriptor dbgp_desc;
+@@ -446,6 +493,8 @@ static int __init ehci_setup(void)
+ 	int port_map_tried;
+ 	int playtimes = 3;
  
- 	if (console_drivers) {
--		if (console->flags & CON_BOOT)
--			return;
++	early_ehci_bios_handoff();
 +
- 		if (console_drivers->flags & CON_BOOT)
- 			bootconsole = console_drivers;
- 	}
-@@ -1216,6 +1237,7 @@ void register_console(struct console *console)
- 		       console->name, console->index);
- 		unregister_console(bootconsole);
- 		console->flags &= ~CON_PRINTBUFFER;
-+		disable_boot_consoles();
- 	} else {
- 		printk(KERN_INFO "console [%s%d] enabled\n",
- 		       console->name, console->index);
-@@ -1280,24 +1302,13 @@ int unregister_console(struct console *console)
- 	if (console_drivers != NULL && console->flags & CON_CONSDEV)
- 		console_drivers->flags |= CON_CONSDEV;
+ try_next_time:
+ 	port_map_tried = 0;
  
-+	if (!res)
-+		console->index = -1;
- 	release_console_sem();
- 	return res;
- }
- EXPORT_SYMBOL(unregister_console);
- 
--static int __init disable_boot_consoles(void)
--{
--	if (console_drivers != NULL) {
--		if (console_drivers->flags & CON_BOOT) {
--			printk(KERN_INFO "turn off boot console %s%d\n",
--				console_drivers->name, console_drivers->index);
--			return unregister_console(console_drivers);
--		}
--	}
--	return 0;
--}
--late_initcall(disable_boot_consoles);
--
- #if defined CONFIG_PRINTK
- 
- /*
 -- 
 1.6.0.3.523.g304d0
 
