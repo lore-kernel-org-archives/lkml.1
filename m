@@ -1,121 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751774AbZGaJAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751863AbZGaJA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751774AbZGaJAP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 05:00:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZGaJAO
+	id S1751863AbZGaJA0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 05:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbZGaJAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 05:00:14 -0400
-Received: from relay.gothnet.se ([82.193.160.251]:50585 "EHLO
-	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751370AbZGaJAN (ORCPT
+	Fri, 31 Jul 2009 05:00:22 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:43637 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751558AbZGaJAT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 05:00:13 -0400
-Message-ID: <4A72B28D.8050801@shipmail.org>
-Date: Fri, 31 Jul 2009 10:59:57 +0200
-From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>
-Organization: VMware
-User-Agent: Thunderbird 1.5.0.7 (X11/20060921)
-MIME-Version: 1.0
-To: Pekka Paalanen <pq@iki.fi>
-CC: Thomas Hellstrom <thellstrom@vmware.com>, dri-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] ttm: Fix ttm in-kernel copying of pages with	non-standard
- caching attributes.
-References: <1248422254-32193-1-git-send-email-thellstrom@vmware.com>	<1248422254-32193-2-git-send-email-thellstrom@vmware.com> <20090730190010.649589ba@iki.fi>
-In-Reply-To: <20090730190010.649589ba@iki.fi>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 31 Jul 2009 05:00:19 -0400
+Date: Fri, 31 Jul 2009 11:00:03 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: john stultz <johnstul@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Daniel Walker <dwalker@fifo99.com>
+Subject: Re: [RFC][patch 10/12] move NTP adjusted clock multiplier to struct
+ timekeeper
+Message-ID: <20090731110003.44cc16a9@skybase>
+In-Reply-To: <1249027979.3333.8.camel@work-vm>
+References: <20090729134125.313191633@de.ibm.com>
+	<20090729134231.515027738@de.ibm.com>
+	<1248991488.3374.14.camel@localhost>
+	<20090731095254.3ed0cb7d@skybase>
+	<1249027979.3333.8.camel@work-vm>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-BitDefender-Scanner: Mail not scanned due to license constraints
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Paalanen wrote:
-> Hi,
->
-> since I see this patch in Linus' tree, and I likely have to patch
-> TTM in Nouveau's compat-branch to compile with older kernels,
-> I have a question below.
->
-> (The Nouveau kernel tree's compat branch offers drm.ko, ttm.ko and
-> nouveau.ko to be built against kernels 2.6.28 and later.)
->
-> On Fri, 24 Jul 2009 09:57:34 +0200
-> Thomas Hellstrom <thellstrom@vmware.com> wrote:
->
->   
->> For x86 this affected highmem pages only, since they were always kmapped
->> cache-coherent, and this is fixed using kmap_atomic_prot().
->>
->> For other architectures that may not modify the linear kernel map we
->> resort to vmap() for now, since kmap_atomic_prot() generally uses the
->> linear kernel map for lowmem pages. This of course comes with a
->> performance impact and should be optimized when possible.
->>
->> Signed-off-by: Thomas Hellstrom <thellstrom@vmware.com>
->> ---
->>  drivers/gpu/drm/ttm/ttm_bo_util.c |   63 ++++++++++++++++++++++++++++++------
->>  1 files changed, 52 insertions(+), 11 deletions(-)
->>
->> diff --git a/drivers/gpu/drm/ttm/ttm_bo_util.c b/drivers/gpu/drm/ttm/ttm_bo_util.c
->> index 3e5d0c4..ce2e6f3 100644
->> --- a/drivers/gpu/drm/ttm/ttm_bo_util.c
->> +++ b/drivers/gpu/drm/ttm/ttm_bo_util.c
->> @@ -136,7 +136,8 @@ static int ttm_copy_io_page(void *dst, void *src, unsigned long page)
->>  }
->>  
->>  static int ttm_copy_io_ttm_page(struct ttm_tt *ttm, void *src,
->> -				unsigned long page)
->> +				unsigned long page,
->> +				pgprot_t prot)
->>  {
->>  	struct page *d = ttm_tt_get_page(ttm, page);
->>  	void *dst;
->> @@ -145,17 +146,35 @@ static int ttm_copy_io_ttm_page(struct ttm_tt *ttm, void *src,
->>  		return -ENOMEM;
->>  
->>  	src = (void *)((unsigned long)src + (page << PAGE_SHIFT));
->> -	dst = kmap(d);
->> +
->> +#ifdef CONFIG_X86
->> +	dst = kmap_atomic_prot(d, KM_USER0, prot);
->> +#else
->> +	if (prot != PAGE_KERNEL)
->> +		dst = vmap(&d, 1, 0, prot);
->> +	else
->> +		dst = kmap(d);
->> +#endif
->>     
->
-> What are the implications of choosing the non-CONFIG_X86 path
-> even on x86?
->   
+On Fri, 31 Jul 2009 01:12:59 -0700
+john stultz <johnstul@us.ibm.com> wrote:
 
-The only implication is a slowdown if dealing with highmem pages or 
-pages with
-a non standard caching policy. Also you need the patch I just posted to 
-dri-devel / lkml to make it compile.
-I should've done more thorough testing of the non-x86 path.
+> On Fri, 2009-07-31 at 09:52 +0200, Martin Schwidefsky wrote:
+> > On Thu, 30 Jul 2009 15:04:48 -0700
+> > john stultz <johnstul@us.ibm.com> wrote:
+> > 
+> > > On Wed, 2009-07-29 at 15:41 +0200, Martin Schwidefsky wrote:
+> > > > plain text document attachment (timekeeper-mult.diff)
+> > > > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > > > 
+> > > > The clocksource structure has two multipliers, the unmodified multiplier
+> > > > clock->mult_orig and the NTP corrected multiplier clock->mult. The NTP
+> > > > multiplier is misplaced in the struct clocksource, this is private
+> > > > information of the timekeeping code. Add the mult field to the struct
+> > > > timekeeper to contain the NTP corrected value, keep the unmodifed
+> > > > multiplier in clock->mult and remove clock->mult_orig. For consistency
+> > > > add the shift value associated with the NTP corrected mult value to
+> > > > struct timekeeper as well.
+> > > > 
+> > > > Cc: Ingo Molnar <mingo@elte.hu>
+> > > > Cc: Thomas Gleixner <tglx@linutronix.de>
+> > > > Cc: john stultz <johnstul@us.ibm.com>
+> > > > Cc: Daniel Walker <dwalker@fifo99.com>
+> > > > Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > > > ---
+> > > >  arch/arm/plat-omap/common.c |    2 +-
+> > > >  include/linux/clocksource.h |    4 +---
+> > > >  kernel/time/timekeeping.c   |   43 +++++++++++++++++++++++++------------------
+> > > >  3 files changed, 27 insertions(+), 22 deletions(-)
+> > > > 
+> > > > Index: linux-2.6/include/linux/clocksource.h
+> > > > ===================================================================
+> > > > --- linux-2.6.orig/include/linux/clocksource.h
+> > > > +++ linux-2.6/include/linux/clocksource.h
+> > > > @@ -149,8 +149,7 @@ extern u64 timecounter_cyc2time(struct t
+> > > >   * @disable:		optional function to disable the clocksource
+> > > >   * @mask:		bitmask for two's complement
+> > > >   *			subtraction of non 64 bit counters
+> > > > - * @mult:		cycle to nanosecond multiplier (adjusted by NTP)
+> > > > - * @mult_orig:		cycle to nanosecond multiplier (unadjusted by NTP)
+> > > > + * @mult:		cycle to nanosecond multiplier
+> > > >   * @shift:		cycle to nanosecond divisor (power of two)
+> > > >   * @flags:		flags describing special properties
+> > > >   * @vread:		vsyscall based read
+> > > > @@ -168,7 +167,6 @@ struct clocksource {
+> > > >  	void (*disable)(struct clocksource *cs);
+> > > >  	cycle_t mask;
+> > > >  	u32 mult;
+> > > > -	u32 mult_orig;
+> > > >  	u32 shift;
+> > > >  	unsigned long flags;
+> > > >  	cycle_t (*vread)(void);
+> > > > Index: linux-2.6/kernel/time/timekeeping.c
+> > > > ===================================================================
+> > > > --- linux-2.6.orig/kernel/time/timekeeping.c
+> > > > +++ linux-2.6/kernel/time/timekeeping.c
+> > > > @@ -29,6 +29,8 @@ struct timekeeper {
+> > > >  	s64	ntp_error;
+> > > >  	int	xtime_shift;
+> > > >  	int	ntp_error_shift;
+> > > > +	u32	mult;			/* NTP adjusted clock multiplier */
+> > > > +	u32	shift;			/* NTP adjusted clock shift */
+> > > 
+> > > I'm a little confused here. NTP doesn't adjust the shift value. This
+> > > seems redundant with the xtime_shift value introduced in [patch 9/12].
+> > 
+> > True the NTP code does not adjust the shift value. But mult and shift
+> > build a pair, no? I think it is more readable if we use timekeeper.mult 
+> > and timekeeper.shift instead of timekeeper.mult and clock->shift.
+> > And the xtime_shift does not need to be the same value as the clock
+> > shift - at least in theory. It is just a shift to increase precision. 
+> > Therefore I would like to use the xtime_shift and ntp_error_shift values
+> > exclusively as the shifts for the respective xtime_nsec and ntp_error
+> > values. Makes sense ?
+> 
+> But can't we drop the xtime_shift if we have the clocksource shift kept
+> internally? Unless I'm missing something more subtle in your patches,
+> they should be the same at all times.
 
-> Is kmap_atomic_prot() simply an optimization allowed by the x86
-> arch, and the alternate way also works, although it uses the
-> precious vmalloc address space?
->   
+How about this definition for struct timekeeper?
 
-Exactly, although it's only using one page out of vmalloc space and for 
-the time it
-takes to copy a page to / from io.
+/* Structure holding internal timekeeping values. */
+struct timekeeper {
+        /* Current clocksource used for timekeeping. */
+        struct clocksource *clock;
+        /* The shift value of the current clocksource. */
+        int     shift;
 
-> Since kmap_atomic_prot() is not exported on earlier kernels,
-> I'm tempted to just do the non-CONFIG_X86 path.
->   
-For compat I think that should be fine. If your driver is using 
-accelerated copy to / from
-VRAM, you shouldn't even hit this path.
+        /* Number of clock cycles in one NTP interval. */
+        cycle_t cycle_interval;
+        /* Number of clock shifted nano seconds in one NTP interval. */
+        u64     xtime_interval;
+        /* Raw nano seconds accumulated per NTP interval. */
+        u32     raw_interval;
 
-/Thomas
+        /* Clock shifted nano seconds remainder not stored in xtime.tv_nsec. */
+        u64     xtime_nsec;
+        /* Difference between accumulated time and NTP time in ntp
+         * shifted nano seconds. */
+        s64     ntp_error;
+        /* Shift conversion between clock shifted nano seconds and
+         * ntp shifted nano seconds. */
+        int     ntp_error_shift;
+        /* NTP adjusted clock multiplier */
+        u32     mult;
+};
 
+-- 
+blue skies,
+   Martin.
 
-
-
+"Reality continues to ruin my life." - Calvin.
 
