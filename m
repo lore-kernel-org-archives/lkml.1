@@ -1,144 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752867AbZGaT0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751464AbZGaTie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752867AbZGaT0R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 15:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbZGaT0R
+	id S1751464AbZGaTie (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 15:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbZGaTid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 15:26:17 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:64939 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751710AbZGaT0Q convert rfc822-to-8bit (ORCPT
+	Fri, 31 Jul 2009 15:38:33 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:10917 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751302AbZGaTid (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 15:26:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=d5/xaE1DUYAMkfMl8YAgIUEHYG9gIyE0CRS3nC6OARW7FIigy5xMlFdsyKbeYyzGMa
-         4ZmxONCuimz3SjAMIQ6b1zK86TOoxeknLzuNQaJulZc6Mxec7wnHKxwmntn8NRfZmeFe
-         NMTzGA/6VX3R6EkX/1Idgi1Kass+BdD2S0G00=
+	Fri, 31 Jul 2009 15:38:33 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=jBvDszkx3g88CebMSczGTtbWBL7FCNjU7TjQbVyhFhvT5zrY+8tk6oM9TsssJ/rlH
+	IZiT/22W4VP1jIOfisAbw==
+Date: Fri, 31 Jul 2009 12:38:24 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Paul Menage <menage@google.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
+In-Reply-To: <20090731154823.B6EF.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0907311225480.22732@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0907301157100.9652@chino.kir.corp.google.com> <20090731093305.50bcc58d.kamezawa.hiroyu@jp.fujitsu.com> <20090731154823.B6EF.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <1249037742-7862-1-git-send-email-jlayton@redhat.com>
-References: <1249037742-7862-1-git-send-email-jlayton@redhat.com>
-Date: Fri, 31 Jul 2009 14:26:15 -0500
-Message-ID: <4a4634330907311226g409e4098s83059caf8db4f03b@mail.gmail.com>
-Subject: Re: [linux-cifs-client] [PATCH] cifs: reinstate original behavior 
-	when uid=/gid= options are specified
-From: Shirish Pargaonkar <shirishpargaonkar@gmail.com>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 31, 2009 at 5:55 AM, Jeff Layton<jlayton@redhat.com> wrote:
-> This patch fixes the regression reported here:
->
-> http://bugzilla.kernel.org/show_bug.cgi?id=13861
->
-> commit 4ae1507f6d266d0cc3dd36e474d83aad70fec9e4 changed the default
-> behavior when the uid= or gid= option was specified for a mount. The
-> existing behavior was to always clobber the ownership information
-> provided by the server when these options were specified. The above
-> commit changed this behavior so that these options simply provided
-> defaults when the server did not provide this information.
->
-> This patch reverts this change so that the default behavior is restored.
-> It also adds "noforceuid" and "noforcegid" options to make it so that
-> ownership information from the server is preserved, even when the mount
-> has uid= or gid= options specified.
->
-> It also adds a couple of printk notices that pop up when forceuid or
-> forcegid options are specified without a uid= or gid= option.
->
-> Reported-by: Tom Chiverton <bugzilla.kernel.org@falkensweb.com>
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> ---
->  fs/cifs/connect.c |   42 ++++++++++++++++++++++++++++++------------
->  1 files changed, 30 insertions(+), 12 deletions(-)
->
-> diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
-> index f248688..1f3345d 100644
-> --- a/fs/cifs/connect.c
-> +++ b/fs/cifs/connect.c
-> @@ -803,6 +803,10 @@ cifs_parse_mount_options(char *options, const char *devname,
->        char *data;
->        unsigned int  temp_len, i, j;
->        char separator[2];
-> +       short int override_uid = -1;
-> +       short int override_gid = -1;
-> +       bool uid_specified = false;
-> +       bool gid_specified = false;
+On Fri, 31 Jul 2009, KOSAKI Motohiro wrote:
 
-Should override_uid  and override_gid be initialized to 1 so that if
-uid and/or gid
-are specified and none of the options, either forceuid/gid and or
-noforceuid/gid are
-specified, the vol-> override defaults to 1 (i.e. forceuid/gid)?
+> diff --git a/fs/proc/base.c b/fs/proc/base.c
+> index 3ce5ae9..c64499e 100644
+> --- a/fs/proc/base.c
+> +++ b/fs/proc/base.c
+> @@ -1008,7 +1008,7 @@ static ssize_t oom_adjust_read(struct file *file, char __user *buf,
+>  		return -ESRCH;
+>  	task_lock(task);
+>  	if (task->mm)
+> -		oom_adjust = task->mm->oom_adj;
+> +		oom_adjust = task->signal->oom_adj;
+>  	else
+>  		oom_adjust = OOM_DISABLE;
+>  	task_unlock(task);
 
->
->        separator[0] = ',';
->        separator[1] = 0;
-> @@ -1093,18 +1097,20 @@ cifs_parse_mount_options(char *options, const char *devname,
->                                                    "too long.\n");
->                                return 1;
->                        }
-> -               } else if (strnicmp(data, "uid", 3) == 0) {
-> -                       if (value && *value)
-> -                               vol->linux_uid =
-> -                                       simple_strtoul(value, &value, 0);
-> -               } else if (strnicmp(data, "forceuid", 8) == 0) {
-> -                               vol->override_uid = 1;
-> -               } else if (strnicmp(data, "gid", 3) == 0) {
-> -                       if (value && *value)
-> -                               vol->linux_gid =
-> -                                       simple_strtoul(value, &value, 0);
-> -               } else if (strnicmp(data, "forcegid", 8) == 0) {
-> -                               vol->override_gid = 1;
-> +               } else if (!strnicmp(data, "uid", 3) && value && *value) {
-> +                       vol->linux_uid = simple_strtoul(value, &value, 0);
-> +                       uid_specified = true;
-> +               } else if (!strnicmp(data, "forceuid", 8)) {
-> +                       override_uid = 1;
-> +               } else if (!strnicmp(data, "noforceuid", 10)) {
-> +                       override_uid = 0;
-> +               } else if (!strnicmp(data, "gid", 3) && value && *value) {
-> +                       vol->linux_gid = simple_strtoul(value, &value, 0);
-> +                       gid_specified = true;
-> +               } else if (!strnicmp(data, "forcegid", 8)) {
-> +                       override_gid = 1;
-> +               } else if (!strnicmp(data, "noforcegid", 10)) {
-> +                       override_gid = 0;
->                } else if (strnicmp(data, "file_mode", 4) == 0) {
->                        if (value && *value) {
->                                vol->file_mode =
-> @@ -1355,6 +1361,18 @@ cifs_parse_mount_options(char *options, const char *devname,
->        if (vol->UNCip == NULL)
->                vol->UNCip = &vol->UNC[2];
->
-> +       if (uid_specified)
-> +               vol->override_uid = override_uid;
-> +       else if (override_uid == 1)
-> +               printk(KERN_NOTICE "CIFS: ignoring forceuid mount option "
-> +                                  "specified with no uid= option.\n");
+This may display a /proc/pid/oom_adj that is radically different from 
+task->mm->oom_adj_cached without knowledge to userspace and you can't 
+simply display task->mm>oom_adj_cached here because it gets reset on every 
+write to /proc/pid/oom_adj.
+
+> @@ -1046,12 +1046,13 @@ static ssize_t oom_adjust_write(struct file *file, const char __user *buf,
+>  		put_task_struct(task);
+>  		return -EINVAL;
+>  	}
+> -	if (oom_adjust < task->mm->oom_adj && !capable(CAP_SYS_RESOURCE)) {
+> +	if (oom_adjust < task->signal->oom_adj && !capable(CAP_SYS_RESOURCE)) {
+>  		task_unlock(task);
+>  		put_task_struct(task);
+>  		return -EACCES;
+>  	}
+> -	task->mm->oom_adj = oom_adjust;
+> +	task->signal->oom_adj = oom_adjust;
+> +	task->mm->oom_adj_cached = OOM_CACHE_DEFAULT;
+>  	task_unlock(task);
+>  	put_task_struct(task);
+>  	if (end - buffer == 0)
+> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+> index 7acc843..f93f97f 100644
+> --- a/include/linux/mm_types.h
+> +++ b/include/linux/mm_types.h
+> @@ -240,7 +240,8 @@ struct mm_struct {
+>  
+>  	unsigned long saved_auxv[AT_VECTOR_SIZE]; /* for /proc/PID/auxv */
+>  
+> -	s8 oom_adj;	/* OOM kill score adjustment (bit shift) */
+> +	s8 oom_adj_cached;	/* mirror from signal_struct->oom_adj.
+> +				   in vfork case, multiple processes use the same mm. */
+>  
+>  	cpumask_t cpu_vm_mask;
+>  
+> diff --git a/include/linux/oom.h b/include/linux/oom.h
+> index a7979ba..a219480 100644
+> --- a/include/linux/oom.h
+> +++ b/include/linux/oom.h
+> @@ -3,6 +3,7 @@
+>  
+>  /* /proc/<pid>/oom_adj set to -17 protects from the oom-killer */
+>  #define OOM_DISABLE (-17)
+> +#define OOM_CACHE_DEFAULT (15)
+>  /* inclusive */
+>  #define OOM_ADJUST_MIN (-16)
+>  #define OOM_ADJUST_MAX 15
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 3ab08e4..e10b12b 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -629,6 +629,8 @@ struct signal_struct {
+>  	unsigned audit_tty;
+>  	struct tty_audit_buf *tty_audit_buf;
+>  #endif
 > +
-> +       if (gid_specified)
-> +               vol->override_gid = override_gid;
-> +       else if (override_gid == 1)
-> +               printk(KERN_NOTICE "CIFS: ignoring forcegid mount option "
-> +                                  "specified with no gid= option.\n");
+> +	s8 oom_adj;	/* OOM kill score adjustment (bit shift) */
+>  };
+>  
+>  /* Context switch must be unlocked if interrupts are to be enabled */
+
+I don't believe oom_adj is an appropriate use of signal_struct, sorry.
+
+> diff --git a/kernel/exit.c b/kernel/exit.c
+> index 869dc22..c741a45 100644
+> --- a/kernel/exit.c
+> +++ b/kernel/exit.c
+> @@ -688,6 +689,7 @@ static void exit_mm(struct task_struct * tsk)
+>  	enter_lazy_tlb(mm, current);
+>  	/* We don't want this task to be frozen prematurely */
+>  	clear_freeze_flag(tsk);
+> +	mm->oom_adj_cached = OOM_CACHE_DEFAULT;
+>  	task_unlock(tsk);
+>  	mm_update_next_owner(mm);
+>  	mmput(mm);
+
+This is similiar to an early proposal that wanted to keep an array of 
+oom_adj values for tasks attached to the mm in mm_struct.  The problem is 
+that you're obviously losing information about all threads attached to the 
+mm any time one of the threads exits or writes to /proc/pid/oom_adj.  That 
+information can only be regenerated with a tasklist scan.
+
+> diff --git a/kernel/fork.c b/kernel/fork.c
+> index 9b42695..b7cb474 100644
+> --- a/kernel/fork.c
+> +++ b/kernel/fork.c
+> @@ -426,6 +427,7 @@ static struct mm_struct * mm_init(struct mm_struct * mm, struct task_struct *p)
+>  	init_rwsem(&mm->mmap_sem);
+>  	INIT_LIST_HEAD(&mm->mmlist);
+>  	mm->flags = (current->mm) ? current->mm->flags : default_dump_filter;
+> +	mm->oom_adj_cached = OOM_CACHE_DEFAULT;
+>  	mm->core_state = NULL;
+>  	mm->nr_ptes = 0;
+>  	set_mm_counter(mm, file_rss, 0);
+> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+> index 175a67a..eae2d78 100644
+> --- a/mm/oom_kill.c
+> +++ b/mm/oom_kill.c
+> @@ -58,7 +58,7 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
+>  	unsigned long points, cpu_time, run_time;
+>  	struct mm_struct *mm;
+>  	struct task_struct *child;
+> -	int oom_adj;
+> +	s8 oom_adj;
+>  
+>  	task_lock(p);
+>  	mm = p->mm;
+> @@ -66,7 +66,10 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
+>  		task_unlock(p);
+>  		return 0;
+>  	}
+> -	oom_adj = mm->oom_adj;
 > +
->        return 0;
->  }
->
-> --
-> 1.6.0.6
->
-> _______________________________________________
-> linux-cifs-client mailing list
-> linux-cifs-client@lists.samba.org
-> https://lists.samba.org/mailman/listinfo/linux-cifs-client
->
+> +	if (mm->oom_adj_cached < p->signal->oom_adj)
+> +		mm->oom_adj_cached = p->signal->oom_adj;
+
+This conditional will never be true since mm->oom_adj_cached is 
+initialized to 15, which is the upper bound on which p->signal->oom_adj 
+may ever be, so mm->oom_adj_cached never gets changed from 
+OOM_CACHE_DEFAULT.
+
+Thus, this patch doesn't even work, and you probably would have noticed 
+that if you'd checked /proc/pid/oom_score for any pid.
+
+Even if mm->oom_adj_cached _was_ properly updated here, 
+/proc/pid/oom_score would be out of sync with more negative oom_adj values 
+for threads sharing the mm_struct since it calls badness() for only a 
+single thread.
+
+> +	oom_adj = mm->oom_adj_cached;
+>  	if (oom_adj == OOM_DISABLE) {
+>  		task_unlock(p);
+>  		return 0;
+> @@ -350,7 +354,7 @@ static int oom_kill_task(struct task_struct *p)
+>  
+>  	task_lock(p);
+>  	mm = p->mm;
+> -	if (!mm || mm->oom_adj == OOM_DISABLE) {
+> +	if (!mm || p->signal->oom_adj == OOM_DISABLE) {
+>  		task_unlock(p);
+>  		return 1;
+>  	}
