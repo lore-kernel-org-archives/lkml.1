@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752522AbZGaM27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752492AbZGaMcN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752522AbZGaM27 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 08:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbZGaM26
+	id S1752492AbZGaMcN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 08:32:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbZGaMcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 08:28:58 -0400
-Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:49527 "EHLO
-	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751953AbZGaM26 (ORCPT
+	Fri, 31 Jul 2009 08:32:12 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:35301 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751944AbZGaMcL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 08:28:58 -0400
-From: Frans Pop <elendil@planet.nl>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: RomFS: enless loop during make oldconfig from 2.6.24 -> 2.6.31-rc4 (parisc)
-Date: Fri, 31 Jul 2009 14:28:55 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-       David Woodhouse <David.Woodhouse@intel.com>
-References: <200907311227.20132.elendil@planet.nl> <4977.1249041840@redhat.com>
-In-Reply-To: <4977.1249041840@redhat.com>
+	Fri, 31 Jul 2009 08:32:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition
+         :message-id:content-type:content-transfer-encoding;
+        b=GOa+viXh/q0mCx31lXkamSsubX9zRXrjxohDhO2xK2cNF/WHp+WpwBmYp8oWp9kCJ3
+         GlV/17DnhLqJUfWrj7xwfV1fit+d96FBdt+ldGMGJd7248fVnsaDBStqqBWsibKmD89m
+         mOwFFIxzl7TfIJ7qAfMp8bRPWDa7NbaZArKJU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: RTL8192SE support status
+Date: Fri, 31 Jul 2009 14:31:16 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc3-next-20090722-04415-ge5aa24a-dirty; KDE/4.2.4; i686; ; )
+Cc: linux-wireless@vger.kernel.org, Greg KH <greg@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200907311428.56932.elendil@planet.nl>
-X-OriginalArrivalTime: 31 Jul 2009 12:28:57.0547 (UTC) FILETIME=[79AE01B0:01CA11DA]
+Message-Id: <200907311431.17043.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 31 July 2009, David Howells wrote:
-> Frans Pop <elendil@planet.nl> wrote:
-> > # Linux kernel version: 2.6.24-rc3test
->
-> I presume this is not the version of the kernel you're using.  This
-> RomFS feature was not upstream back then.  What version are you using?
 
-As the Subject says, the make oldconfig was for 2.6.31-rc4 :-)
+Hi,
 
-$ git describe master
-v2.6.31-rc4-294-gf5886c7
+I've been getting some private mail regarding the status of RTL8192SE
+wireless chipset support (the chipset is used in some newer netbooks,
+i.e. Medion Akoya E1312) so the current situation is:
 
-Cheers,
-FJP
+* I'm not working on it and I don't know if/when the driver is coming.
+
+* Realtek has been queried about the issue two weeks ago but we haven't
+  heard anything back yet.
+
+* rtl8192su driver present in staging area of the kernel is for RTL8192SU
+  (USB version of the chipset) and never contained working/complete code
+  for RTL8192SE (PCI-E version of the chipset) so there is no point in
+  attempts of reverting some patches in hope that it will make the things
+  magically work (it won't, please save your time).
+
+Thanks,
+Bart
