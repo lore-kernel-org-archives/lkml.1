@@ -1,93 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbZGaNPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752774AbZGaNQD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752764AbZGaNPi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 09:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbZGaNPi
+	id S1752774AbZGaNQD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 09:16:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbZGaNQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 09:15:38 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:27642 "EHLO
-	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752647AbZGaNPh (ORCPT
+	Fri, 31 Jul 2009 09:16:01 -0400
+Received: from sg2ehsobe002.messaging.microsoft.com ([207.46.51.76]:36780 "EHLO
+	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752665AbZGaNQB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 09:15:37 -0400
-X-SpamScore: 1
-X-BigFish: VPS1(zzzz1202hzzz32i203h87h)
+	Fri, 31 Jul 2009 09:16:01 -0400
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i203h87h43j63h)
+X-Spam-TCS-SCL: 2:0
 X-FB-DOMAIN-IP-MATCH: fail
-X-WSS-ID: 0KNNE4R-02-H38-02
-X-M-MSG: 
+X-WSS-ID: 0KNNE61-03-UQG-01
 From: Robert Richter <robert.richter@amd.com>
 To: Steven Rostedt <rostedt@goodmis.org>
 CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Robert Richter <robert.richter@amd.com>
-Subject: [PATCH] ring-buffer: Change function interface of rb_buffer_peek()
-Date: Fri, 31 Jul 2009 14:58:04 +0200
-Message-ID: <1249045084-3028-1-git-send-email-robert.richter@amd.com>
+       Robert Richter <robert.richter@amd.com>,
+       Steven Rostedt <rostedt@goodmis.org>, <stable@kernel.org>
+Subject: [PATCH] ring-buffer: Fix advance of reader in rb_buffer_peek()
+Date: Fri, 31 Jul 2009 14:56:03 +0200
+Message-ID: <1249044963-26878-1-git-send-email-robert.richter@amd.com>
 X-Mailer: git-send-email 1.6.3.3
-X-OriginalArrivalTime: 31 Jul 2009 13:14:19.0457 (UTC) FILETIME=[D0108310:01CA11E0]
+In-Reply-To: <alpine.DEB.2.00.0907271601210.30108@gandalf.stny.rr.com>
+References: <alpine.DEB.2.00.0907271601210.30108@gandalf.stny.rr.com>
+X-OriginalArrivalTime: 31 Jul 2009 13:14:10.0864 (UTC) FILETIME=[CAF15300:01CA11E0]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-rb_buffer_peek() operates with struct ring_buffer_per_cpu *cpu_buffer
-only. Thus, instead of passing variables buffer and cpu it is better
-to use cpu_buffer directly. This also reduces the risk of races since
-cpu_buffer is not calculated twice.
+When calling rb_buffer_peek() from ring_buffer_consume() and a padding
+event is returned, the function rb_advance_reader() is called
+twice. This may lead to missing samples or under high workloads to the
+warning below. This patch fixes this. If a padding event is returned
+by rb_buffer_peek() it will be consumed by the calling function now.
 
+Also, I simplified some code in ring_buffer_consume().
+
+------------[ cut here ]------------
+WARNING: at /dev/shm/.source/linux/kernel/trace/ring_buffer.c:2289 rb_advance_reader+0x2e/0xc5()
+Hardware name: Anaheim
+Modules linked in:
+Pid: 29, comm: events/2 Tainted: G        W  2.6.31-rc3-oprofile-x86_64-standard-00059-g5050dc2 #1
+Call Trace:
+[<ffffffff8106776f>] ? rb_advance_reader+0x2e/0xc5
+[<ffffffff81039ffe>] warn_slowpath_common+0x77/0x8f
+[<ffffffff8103a025>] warn_slowpath_null+0xf/0x11
+[<ffffffff8106776f>] rb_advance_reader+0x2e/0xc5
+[<ffffffff81068bda>] ring_buffer_consume+0xa0/0xd2
+[<ffffffff81326933>] op_cpu_buffer_read_entry+0x21/0x9e
+[<ffffffff810be3af>] ? __find_get_block+0x4b/0x165
+[<ffffffff8132749b>] sync_buffer+0xa5/0x401
+[<ffffffff810be3af>] ? __find_get_block+0x4b/0x165
+[<ffffffff81326c1b>] ? wq_sync_buffer+0x0/0x78
+[<ffffffff81326c76>] wq_sync_buffer+0x5b/0x78
+[<ffffffff8104aa30>] worker_thread+0x113/0x1ac
+[<ffffffff8104dd95>] ? autoremove_wake_function+0x0/0x38
+[<ffffffff8104a91d>] ? worker_thread+0x0/0x1ac
+[<ffffffff8104dc9a>] kthread+0x88/0x92
+[<ffffffff8100bdba>] child_rip+0xa/0x20
+[<ffffffff8104dc12>] ? kthread+0x0/0x92
+[<ffffffff8100bdb0>] ? child_rip+0x0/0x20
+---[ end trace f561c0a58fcc89bd ]---
+
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: <stable@kernel.org>
 Signed-off-by: Robert Richter <robert.richter@amd.com>
 ---
- kernel/trace/ring_buffer.c |   11 ++++-------
- 1 files changed, 4 insertions(+), 7 deletions(-)
+ kernel/trace/ring_buffer.c |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
 
 diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 6eb8b97..0133f20 100644
+index bf27bb7..6eb8b97 100644
 --- a/kernel/trace/ring_buffer.c
 +++ b/kernel/trace/ring_buffer.c
-@@ -2346,15 +2346,12 @@ static void rb_advance_iter(struct ring_buffer_iter *iter)
- }
- 
- static struct ring_buffer_event *
--rb_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
-+rb_buffer_peek(struct ring_buffer_per_cpu *cpu_buffer, u64 *ts)
- {
--	struct ring_buffer_per_cpu *cpu_buffer;
- 	struct ring_buffer_event *event;
- 	struct buffer_page *reader;
- 	int nr_loops = 0;
- 
--	cpu_buffer = buffer->buffers[cpu];
--
-  again:
- 	/*
- 	 * We repeat when a timestamp is encountered. It is possible
-@@ -2398,7 +2395,7 @@ rb_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
- 	case RINGBUF_TYPE_DATA:
- 		if (ts) {
- 			*ts = cpu_buffer->read_stamp + event->time_delta;
--			ring_buffer_normalize_time_stamp(buffer,
-+			ring_buffer_normalize_time_stamp(cpu_buffer->buffer,
- 							 cpu_buffer->cpu, ts);
- 		}
+@@ -2383,7 +2383,6 @@ rb_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
+ 		 * the box. Return the padding, and we will release
+ 		 * the current locks, and try again.
+ 		 */
+-		rb_advance_reader(cpu_buffer);
  		return event;
-@@ -2517,7 +2514,7 @@ ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
- 	local_irq_save(flags);
+ 
+ 	case RINGBUF_TYPE_TIME_EXTEND:
+@@ -2519,6 +2518,8 @@ ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
  	if (dolock)
  		spin_lock(&cpu_buffer->reader_lock);
--	event = rb_buffer_peek(buffer, cpu, ts);
-+	event = rb_buffer_peek(cpu_buffer, ts);
- 	if (event && event->type_len == RINGBUF_TYPE_PADDING)
- 		rb_advance_reader(cpu_buffer);
+ 	event = rb_buffer_peek(buffer, cpu, ts);
++	if (event && event->type_len == RINGBUF_TYPE_PADDING)
++		rb_advance_reader(cpu_buffer);
  	if (dolock)
-@@ -2590,7 +2587,7 @@ ring_buffer_consume(struct ring_buffer *buffer, int cpu, u64 *ts)
- 	if (dolock)
+ 		spin_unlock(&cpu_buffer->reader_lock);
+ 	local_irq_restore(flags);
+@@ -2590,12 +2591,9 @@ ring_buffer_consume(struct ring_buffer *buffer, int cpu, u64 *ts)
  		spin_lock(&cpu_buffer->reader_lock);
  
--	event = rb_buffer_peek(buffer, cpu, ts);
-+	event = rb_buffer_peek(cpu_buffer, ts);
- 	if (event)
- 		rb_advance_reader(cpu_buffer);
+ 	event = rb_buffer_peek(buffer, cpu, ts);
+-	if (!event)
+-		goto out_unlock;
+-
+-	rb_advance_reader(cpu_buffer);
++	if (event)
++		rb_advance_reader(cpu_buffer);
  
+- out_unlock:
+ 	if (dolock)
+ 		spin_unlock(&cpu_buffer->reader_lock);
+ 	local_irq_restore(flags);
 -- 
 1.6.3.3
 
