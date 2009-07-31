@@ -1,129 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751953AbZGaJbe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751877AbZGaJgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751953AbZGaJbe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 05:31:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbZGaJbd
+	id S1751877AbZGaJgU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 05:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbZGaJgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 05:31:33 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:60818 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751877AbZGaJbb (ORCPT
+	Fri, 31 Jul 2009 05:36:19 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:39613 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751568AbZGaJgS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 05:31:31 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=pwBHpNzM49LZz4mSBjI9hdE4rEw34ZV7dVSgGi1eDfdh+9nWkBC/oYrGs4faK8z1P
-	vM720kJnEe4qZLgi6JVZQ==
-Date: Fri, 31 Jul 2009 02:31:21 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
-In-Reply-To: <20090731091744.B6DE.A69D9226@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0907310210460.25447@chino.kir.corp.google.com>
-References: <20090730090855.E415.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0907292356410.5581@chino.kir.corp.google.com> <20090731091744.B6DE.A69D9226@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 31 Jul 2009 05:36:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=qZ2Xu2XAc0GbY6Oj7+SO9l6a6E80EwS1TKsWdmYayLPGrnNMnXzfjw6mFGVQU5FSvU
+         3x7io2qQV90ZXjnnrbJQzgDRE8DjgUveq3WZugbHqlFYRG26lhgx4s55xLRIO5nMjLDx
+         vTmYJ98107ZoF8DQ+vJAp822dKXLIy8T+R/fQ=
+Date: Fri, 31 Jul 2009 17:38:30 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Amerigo Wang <xiyou.wangcong@gmail.com>, Mike Smith <scgtrp@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 2/2] vmalloc: vread vwrite avoid memory hole.
+Message-ID: <20090731093830.GC5048@cr0.nay.redhat.com>
+References: <bug-13850-10286@http.bugzilla.kernel.org/> <20090728160527.1da52682.akpm@linux-foundation.org> <20090729084825.1363c880.kamezawa.hiroyu@jp.fujitsu.com> <525c5a6c0907281946t249ef288v77ee94edd16f054@mail.gmail.com> <20090729123209.690baa48.kamezawa.hiroyu@jp.fujitsu.com> <20090729173600.540878a3.kamezawa.hiroyu@jp.fujitsu.com> <20090729174810.4aea1283.kamezawa.hiroyu@jp.fujitsu.com> <20090729095932.GG5856@cr0.nay.redhat.com> <20090729205123.978971b8.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090729205123.978971b8.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Jul 2009, KOSAKI Motohiro wrote:
+On Wed, Jul 29, 2009 at 08:51:23PM +0900, KAMEZAWA Hiroyuki wrote:
+>On Wed, 29 Jul 2009 17:59:32 +0800
+>Amerigo Wang <xiyou.wangcong@gmail.com> wrote:
+>
+>> On Wed, Jul 29, 2009 at 05:48:10PM +0900, KAMEZAWA Hiroyuki wrote:
+>> >Considering recent changes, I think this an answer to this bug.
+>> >
+>> >All get_vm_area() calls specified VM_IOREMAP before 2.6.30.
+>> >Now, percpu calls get_vm_area() without IOREMAP (it means kcore doesn't skip this)
+>> >And it seems pcpu does delayed map to pre-allocated vmalloc-area.
+>> >Then, now, vmalloc() area has memory holes. (I'm sorry if I misunderstand.)
+>> 
+>> 
+>> You mean the guard holes in vmalloc area?
+>> 
+>no, not guard hole.  memory hole in the middle of valid vmalloc area, like this
+>
+>start             end
+>      XXXXX0XXXXXG   XXXXXXXXG  XXXXXXXXG
+>X= pte is present
+>O= pte is none
+>G= pte is none as guard page.
+>
 
-> > That's because the oom killer only really considers the highest oom_adj 
-> > value amongst all threads that share the same mm.  Allowing those threads 
-> > to each have different oom_adj values leads (i) to an inconsistency in 
-> > reporting /proc/pid/oom_score for how the oom killer selects a task to 
-> > kill and (ii) the oom killer livelock that it fixes when one thread 
-> > happens to be OOM_DISABLE.
-> 
-> I agree both. again I only disagree ABI breakage regression and
-> stupid new /proc interface.
 
-Let's state the difference in behavior as of 2.6.31-rc1: applications can 
-no longer change the oom_adj value of a vfork() child prior to exec() 
-without it also affecting the parent.  I agree that was previously 
-allowed.  And it was that very allowance that LEADS TO THE LIVELOCK 
-because they both share a VM and it was possible for the oom killer to 
-select the one of the threads while the other was OOM_DISABLE.
+Hmm, I get your meaning now... thanks
 
-This is an extremely simple livelock to trigger, AND YOU DON'T EVEN NEED 
-CAP_SYS_RESOURCE TO DO IT.  Consider a job scheduler that superuser has 
-set to OOM_DISABLE because of its necessity to the system.  Imagine if 
-that job scheduler vfork's a child and sets its inherited oom_adj value of 
-OOM_DISABLE to something higher so that the machine doesn't panic on 
-exec() when the child spikes in memory usage when the application first 
-starts.
 
-Now imagine that either there are no other user threads or the job 
-scheduler itself has allocated more pages than any other thread.  Or, more 
-simply, imagine that it sets the child's oom_adj value to a higher 
-priority than other threads based on some heuristic.  Regardless, if the 
-system becomes oom before the exec() can happen and before the new VM is 
-attached to the child, the machine livelocks.
+>> >+
+>> >+static int aligned_vwrite(char *buf, char *addr, unsigned long count)
+>> >+{
+>> >+	struct page *p;
+>> >+	int copied;
+>> >+
+>> >+	while (count) {
+>> >+		unsigned long offset, length;
+>> >+
+>> >+		offset = (unsinged long)addr & PAGE_MASK;
+>> >+		length = PAGE_SIZE - offset;
+>> >+		if (length > count)
+>> >+			length = count;
+>> >+		/* confirm the page is present */
+>> >+		p = vmalloc_to_page(addr);
+>> >+		if (p)
+>> >+			memcpy(addr, buf, length);
+>> 
+>> 
+>> So when !p, you copy nothing, but still increase the length,
+>> *silently*?
+>Ah, thanks, it's careless bug...will fix.
+>
+>
+>
+>> 
+>> This looks a bit weird for me... I am thinking if we need
+>> to return the number of bytes that is *actually* copied?
+>> 
+>I think it makes the caller complex.
+>
+>Then, I have 2 options.
+> a) skip memory hole
+> b) if we find memory hole, return immediately.
+>
+>Do you like b) ? 
+>But in old behavior, vwrite()/vread() incremetns its "addr"
+>(at read zero-fill).
+>
+>Then, I used a).
 
-That happens because of two things:
 
- - the oom killer uses the oom_adj value to adjust the oom_score for a
-   task, and that score is mainly based on the size of each thread's VM,
-   and
+Ok, just want to make sure it's safe to do a).
 
- - the oom killer cannot kill a thread that shares a VM with an
-   OOM_DISABLE thread because it will not lead to future memory freeing.
 
-So the preferred solution for complete consistency and to fix the livelock 
-is to make the oom_adj value a characteristic of the VM, because THAT'S 
-WHAT IT ACTS ON.  The effective oom_adj value for a thread is always equal 
-to the highest oom_adj value of any thread sharing its VM.
 
-Do we really want to keep this inconsistency around forever in the kernel 
-so that /proc/pid/oom_score actually means NOTHING because another thread 
-sharing the memory has a different oom_adj?  Or do we want to take the 
-opportunity to fix a broken userspace model that leads to a livelock to 
-fix it and move on with a consistent interface and, with oom_adj_child, 
-all the functionality you had before.
+>
+>
+>> 
+>> >+		addr += length;
+>> >+		buf += length;
+>> >+		copiled += length;
+>> >+		count -= length;
+>> >+	}
+>> >+	return copied;
+>> >+}
+>> >+
+>> >+long vread(char *buf, char *addr, unsigned long count, bool skip_ioremap)
+>> > {
+>> > 	struct vm_struct *tmp;
+>> > 	char *vaddr, *buf_start = buf;
+>> >@@ -1640,10 +1694,11 @@ long vread(char *buf, char *addr, unsign
+>> > 		count = -(unsigned long) addr;
+>> > 
+>> > 	read_lock(&vmlist_lock);
+>> >-	for (tmp = vmlist; tmp; tmp = tmp->next) {
+>> >+	for (tmp = vmlist; count && tmp; tmp = tmp->next) {
+>> > 		vaddr = (char *) tmp->addr;
+>> > 		if (addr >= vaddr + tmp->size - PAGE_SIZE)
+>> > 			continue;
+>> >+
+>> > 		while (addr < vaddr) {
+>> > 			if (count == 0)
+>> > 				goto finished;
+>> >@@ -1653,14 +1708,15 @@ long vread(char *buf, char *addr, unsign
+>> > 			count--;
+>> > 		}
+>> > 		n = vaddr + tmp->size - PAGE_SIZE - addr;
+>> >-		do {
+>> >-			if (count == 0)
+>> >-				goto finished;
+>> >-			*buf = *addr;
+>> >-			buf++;
+>> >-			addr++;
+>> >-			count--;
+>> >-		} while (--n > 0);
+>> >+		if (n > count)
+>> >+			n = count;
+>> >+		if (!(tmp->flags & VM_IOREMAP) || !skip_ioremap)
+>> >+			aligned_vread(buf, addr, n);
+>> >+		else
+>> >+			memset(buf, 0, n);
+>> >+		buf += n;
+>> >+		addr += n;
+>> >+		count -= n;
+>> 
+>> 
+>> If I set 'skip_ioremap' true, I want the return value can be
+>> what it _actually_ copies, i.e. kick out the bytes counted
+>> for VM_IOREMAP. What do you think?
+>> 
+>
+>One one od the reasons is The same reason to above. 
+>(adjusted to old behavior)
+>
+>IIUC, In following kind of codes,
+>
+>	len = vread(buf,addr,xxx);
+>	bud += len;
+>	addr += len
+>
+>len should be the length that the caller should increment buffer address.
+>So, I just skipped hole.
 
-And you and KAMEZAWA-san can continue to call my patches stupid, but 
-that's not adding anything to your argument.
 
-> Paul already pointed out this issue can be fixed without ABI change.
-> 
+Well... old code doesn't have the parameter 'skip_ioremap'. :-)
+For new code, we can do:
 
-I'm unaware of any viable solution that has been proposed, sorry.
+  len = vread(buf, addr, count, true);
+  buf += len;
+  addr += count;
 
-> if you feel my stand point is double standard, I need explain me more.
-> So, I don't think per-process oom_adj makes any regression on _real_ world.
-
-Wrong, our machines have livelocked because of the exact scenario I 
-described above.
-
-> but vfork()'s one is real world issue.
-> 
-
-And it's based on a broken assumption that oom_adj values actually mean 
-anything independent of other threads sharing the same memory.  That's a 
-completely false assumption.  Applications that are tuning oom_adj value 
-will rely on oom_scores, which are currently false if oom_adj differs 
-amongst those threads, and should be written to how the oom killer uses 
-the value.
-
-> And, May I explay why I think your oom_adj_child is wrong idea?
-> The fact is: new feature introducing never fix regression. yes, some
-> application use new interface and disappear the problem. but other
-> application still hit the problem. that's not correct development style
-> in kernel.
-> 
-
-So you're proposing that we forever allow /proc/pid/oom_score to be 
-completely wrong for pid without any knowledge to userspace?  That we 
-falsely advertise what it represents and allow userspace to believe that 
-changing oom_adj for a thread sharing memory with other threads actually 
-changes how the oom killer selects tasks?
-
-Please.
