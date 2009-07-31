@@ -1,58 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752371AbZGaKqM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752446AbZGaKtI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752371AbZGaKqM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 06:46:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbZGaKqL
+	id S1752446AbZGaKtI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 06:49:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752417AbZGaKtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 06:46:11 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45114 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752220AbZGaKqK (ORCPT
+	Fri, 31 Jul 2009 06:49:07 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36809 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752414AbZGaKtG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 06:46:10 -0400
-Subject: Re: [GIT pull] timers fixes for 2.6.31
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "hpa@zytor.com" <hpa@zytor.com>
-In-Reply-To: <alpine.LFD.2.01.0907301648540.3161@localhost.localdomain>
-References: <alpine.LFD.2.00.0907302158180.2936@localhost.localdomain>
-	 <alpine.LFD.2.01.0907301648540.3161@localhost.localdomain>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 31 Jul 2009 12:45:59 +0200
-Message-Id: <1249037159.7924.1.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 31 Jul 2009 06:49:06 -0400
+Message-ID: <7f54310137837631f2526d4e335287fc.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.0907310231370.25447@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0907282125260.554@chino.kir.corp.google.com>
+    <20090730180029.c4edcc09.kamezawa.hiroyu@jp.fujitsu.com>
+    <alpine.DEB.2.00.0907300219580.13674@chino.kir.corp.google.com>
+    <20090730190216.5aae685a.kamezawa.hiroyu@jp.fujitsu.com>
+    <alpine.DEB.2.00.0907301157100.9652@chino.kir.corp.google.com>
+    <20090731093305.50bcc58d.kamezawa.hiroyu@jp.fujitsu.com>
+    <alpine.DEB.2.00.0907310231370.25447@chino.kir.corp.google.com>
+Date: Fri, 31 Jul 2009 19:49:02 +0900 (JST)
+Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "David Rientjes" <rientjes@google.com>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Rik van Riel" <riel@redhat.com>, "Paul Menage" <menage@google.com>,
+       "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+User-Agent: SquirrelMail/1.4.16
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-30 at 16:49 -0700, Linus Torvalds wrote:
-> 
-> On Thu, 30 Jul 2009, Thomas Gleixner wrote:
-> > 
-> > Please pull the latest timers-fixes-for-linus git tree from:
-> > 
-> >    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-fixes-for-linus
-> > 
-> > Thanks,
-> > 
-> > 	tglx
-> > 
-> > ------------------>
-> > Magnus Damm (1):
-> >       clocksource: save mult_orig in clocksource_disable()
-> > 
-> >  include/linux/clocksource.h |   12 +++++++++++-
-> >  1 files changed, 11 insertions(+), 1 deletions(-)
-> 
-> Hmm. You seem to have forgotten to push this out. I realize you're off to 
-> vacation, do you have time to check that?
+David Rientjes wrote:
+> On Fri, 31 Jul 2009, KAMEZAWA Hiroyuki wrote:
+>
+>> > > Simply, reset_oom_adj_at_new_mm_context or some.
+>> > >
+>> >
+>> > I think it's preferred to keep the name relatively short which is an
+>> > unfortuante requirement in this case.  I also prefer to start the name
+>> > with "oom_adj" so it appears alongside /proc/pid/oom_adj when listed
+>> > alphabetically.
+>> >
+>> But misleading name is bad.
+>>
+>
+> Can you help think of any names that start with oom_adj_* and are
+> relatively short?  I'd happily ack it.
+>
+There have been traditional name "effective" as uid and euid.
 
-I can't find this merge in Linus' tree as of this writing, so I'm
-assuming tglx vanished. Peter can you put that commit in the mentioned
-tip branch?
+ then,  per thread oom_adj as oom_adj
+        per proc   oom_adj as effective_oom_adj
 
-Alternatively, I can stick it in a git tree for Linus.
+is an natural way as Unix, I think.
+
+
+
+>> Why don't you think select_bad_process()-> oom_kill_task()
+>> implementation is bad ?
+>
+> It livelocks if a thread is chosen and passed to oom_kill_task() while
+> another per-thread oom_adj value is OOM_DISABLE for a thread sharing the
+> same memory.
+>
+I say "why don't modify buggy selection logic?"
+
+Why we have to scan all threads ?
+As fs/proc/readdir does, you can scan only "process group leader".
+
+per-thread scan itself is buggy because now we have per-process
+effective-oom-adj.
+
+
+>> IMHO, it's bad manner to fix an os-implementation problem by adding
+>> _new_ user
+>> interface which is hard to understand.
+>>
+>
+> How else do you propose the oom killer use oom_adj values on a per-thread
+> basis without considering other threads sharing the same memory?
+As I wrote.
+   per-process(signal struct) or per-thread oom_adj and add
+   mm->effecitve_oom_adj
+
+task scanning isn't necessary to do per-thread scan and you can scan
+only process-group-leader. What's bad ?
+If oom_score is problem, plz fix it to show effective_oom_score.
+
+If you can wait until the end of August, plz wait. I'll do some.
+
+Thanks,
+-Kame
+
