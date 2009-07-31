@@ -1,58 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752412AbZGaPaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752287AbZGaPlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752412AbZGaPaL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 11:30:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbZGaPaK
+	id S1752287AbZGaPlj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 11:41:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbZGaPlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 11:30:10 -0400
-Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:51928 "EHLO
-	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751863AbZGaPaJ (ORCPT
+	Fri, 31 Jul 2009 11:41:39 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:44678 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751368AbZGaPli (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 11:30:09 -0400
-From: Frans Pop <elendil@planet.nl>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: RomFS: enless loop during make oldconfig from 2.6.24 -> 2.6.31-rc4 (parisc)
-Date: Fri, 31 Jul 2009 17:30:07 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-       David Woodhouse <David.Woodhouse@intel.com>
-References: <200907311227.20132.elendil@planet.nl> <17615.1249045054@redhat.com>
-In-Reply-To: <17615.1249045054@redhat.com>
+	Fri, 31 Jul 2009 11:41:38 -0400
+Date: Fri, 31 Jul 2009 11:41:38 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jason Wessel <jason.wessel@windriver.com>
+cc: gregkh@suse.de, <linux-usb@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <dbrownell@users.sourceforge.net>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Yinghai Lu <yinghai@kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 07/10] ehci-dbgp,ehci: Allow early or late use of the
+ dbgp device
+In-Reply-To: <1249052833-9655-8-git-send-email-jason.wessel@windriver.com>
+Message-ID: <Pine.LNX.4.44L0.0907311135030.3152-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907311730.08804.elendil@planet.nl>
-X-OriginalArrivalTime: 31 Jul 2009 15:30:09.0413 (UTC) FILETIME=[C9D11B50:01CA11F3]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the quick response David.
+On Fri, 31 Jul 2009, Jason Wessel wrote:
 
-On Friday 31 July 2009, David Howells wrote:
-> Frans Pop <elendil@planet.nl> wrote:
-> > Near the end of the 'make oldconfig' I got into an endless loop. I
-> > never even got a chance to make a choice, it just continued looping
-> > on the display.
->
-> It works fine for me, using a GNUmakefile with:
->
-> 	CROSS_COMPILE	:= hppa-linux-
-> 	ARCH		:= parisc
->
-> set.  I used whatever was latest from Linus's tree.  I did just hold
-> enter down to select all the defaults.
+> If the EHCI debug port is initialized and in use, the EHCI host
+> controller driver must follow two rules.
+> 
+> 1) If the EHCI host driver issues a controller reset, the debug
+>    controller driver re-initialization must get called after the reset
+>    is completed.
+> 
+> 2) The EHCI host driver should ignore any requests to the physical
+>    EHCI debug port when the EHCI debug port is in use.
+> 
+> The code to check for the debug port was moved from ehci_pci_reinit()
+> to ehci_pci_setup because it must get called prior to ehci_reset()
+> which will clear the debug port registers.
 
-I've tried again too. With all defaults I cannot reproduce it either.
-But if I answer the questions below as follows, I do get the loop again:
+> --- a/drivers/usb/host/ehci-hub.c
+> +++ b/drivers/usb/host/ehci-hub.c
+> @@ -816,6 +816,15 @@ static int ehci_hub_control (
+>  	case SetPortFeature:
+>  		selector = wIndex >> 8;
+>  		wIndex &= 0xff;
+> +		if (unlikely(ehci->debug)) {
 
-Advanced netfilter configuration: N
-Wireless: N
-* sound drivers: N (* = "PCI","USB" and one or two others)
-Default ext3 to "data=ordered": Y
+Don't you need a similar test for ClearPortFeature?  Or does that not
+matter?
 
-Cheers,
-FJP
+> +			/* If the debug port is active any port
+> +			 * feature requests should get denied */
+> +			if ((readl(&ehci->debug->control) & DBGP_ENABLED) &&
+> +			    wIndex == HCS_DEBUG_PORT(ehci->hcs_params)) {
+
+The order of the two tests here should be reversed, to avoid an 
+unnecessary I/O access in the common case.
+
+> +				retval = -ENODEV;
+> +				goto error_exit;
+
+This is the wrong return value.  You should return -EPIPE, i.e., goto
+error instead of error_exit.
+
+> +			}
+> +		}
+>  		if (!wIndex || wIndex > ports)
+>  			goto error;
+>  		wIndex--;
+> @@ -894,6 +903,7 @@ error:
+>  		/* "stall" on error */
+>  		retval = -EPIPE;
+>  	}
+> +error_exit:
+
+And then this new label isn't needed.
+
+>  	spin_unlock_irqrestore (&ehci->lock, flags);
+>  	return retval;
+>  }
+
+Alan Stern
+
