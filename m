@@ -1,93 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751574AbZGaHvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751655AbZGaHxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751574AbZGaHvY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 03:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751320AbZGaHvX
+	id S1751655AbZGaHxb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 03:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbZGaHxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 03:51:23 -0400
-Received: from mail.free-electrons.com ([88.191.76.200]:37910 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751240AbZGaHvW (ORCPT
+	Fri, 31 Jul 2009 03:53:31 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:55283 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750967AbZGaHxa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 03:51:22 -0400
-Date: Fri, 31 Jul 2009 09:51:19 +0200
-From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux@arm.linux.org.uk, alain@knaff.lu,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 5/5] Add support for LZO-compressed kernels on x86
-Message-ID: <20090731075119.GB7139@pc-ras4041.res.insa>
-References: <1248271279-9920-1-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-2-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-3-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-4-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-5-git-send-email-albin.tonnerre@free-electrons.com> <4A70AA64.4020301@zytor.com> <20090729210257.GA22975@merkur.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-	protocol="application/pgp-signature"; boundary="rS8CxjVDS/+yyDmU"
-Content-Disposition: inline
-In-Reply-To: <20090729210257.GA22975@merkur.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 31 Jul 2009 03:53:30 -0400
+Date: Fri, 31 Jul 2009 09:52:54 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: john stultz <johnstul@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Daniel Walker <dwalker@fifo99.com>
+Subject: Re: [RFC][patch 10/12] move NTP adjusted clock multiplier to struct
+ timekeeper
+Message-ID: <20090731095254.3ed0cb7d@skybase>
+In-Reply-To: <1248991488.3374.14.camel@localhost>
+References: <20090729134125.313191633@de.ibm.com>
+	<20090729134231.515027738@de.ibm.com>
+	<1248991488.3374.14.camel@localhost>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 30 Jul 2009 15:04:48 -0700
+john stultz <johnstul@us.ibm.com> wrote:
 
---rS8CxjVDS/+yyDmU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On Wed, 2009-07-29 at 15:41 +0200, Martin Schwidefsky wrote:
+> > plain text document attachment (timekeeper-mult.diff)
+> > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > 
+> > The clocksource structure has two multipliers, the unmodified multiplier
+> > clock->mult_orig and the NTP corrected multiplier clock->mult. The NTP
+> > multiplier is misplaced in the struct clocksource, this is private
+> > information of the timekeeping code. Add the mult field to the struct
+> > timekeeper to contain the NTP corrected value, keep the unmodifed
+> > multiplier in clock->mult and remove clock->mult_orig. For consistency
+> > add the shift value associated with the NTP corrected mult value to
+> > struct timekeeper as well.
+> > 
+> > Cc: Ingo Molnar <mingo@elte.hu>
+> > Cc: Thomas Gleixner <tglx@linutronix.de>
+> > Cc: john stultz <johnstul@us.ibm.com>
+> > Cc: Daniel Walker <dwalker@fifo99.com>
+> > Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > ---
+> >  arch/arm/plat-omap/common.c |    2 +-
+> >  include/linux/clocksource.h |    4 +---
+> >  kernel/time/timekeeping.c   |   43 +++++++++++++++++++++++++------------------
+> >  3 files changed, 27 insertions(+), 22 deletions(-)
+> > 
+> > Index: linux-2.6/include/linux/clocksource.h
+> > ===================================================================
+> > --- linux-2.6.orig/include/linux/clocksource.h
+> > +++ linux-2.6/include/linux/clocksource.h
+> > @@ -149,8 +149,7 @@ extern u64 timecounter_cyc2time(struct t
+> >   * @disable:		optional function to disable the clocksource
+> >   * @mask:		bitmask for two's complement
+> >   *			subtraction of non 64 bit counters
+> > - * @mult:		cycle to nanosecond multiplier (adjusted by NTP)
+> > - * @mult_orig:		cycle to nanosecond multiplier (unadjusted by NTP)
+> > + * @mult:		cycle to nanosecond multiplier
+> >   * @shift:		cycle to nanosecond divisor (power of two)
+> >   * @flags:		flags describing special properties
+> >   * @vread:		vsyscall based read
+> > @@ -168,7 +167,6 @@ struct clocksource {
+> >  	void (*disable)(struct clocksource *cs);
+> >  	cycle_t mask;
+> >  	u32 mult;
+> > -	u32 mult_orig;
+> >  	u32 shift;
+> >  	unsigned long flags;
+> >  	cycle_t (*vread)(void);
+> > Index: linux-2.6/kernel/time/timekeeping.c
+> > ===================================================================
+> > --- linux-2.6.orig/kernel/time/timekeeping.c
+> > +++ linux-2.6/kernel/time/timekeeping.c
+> > @@ -29,6 +29,8 @@ struct timekeeper {
+> >  	s64	ntp_error;
+> >  	int	xtime_shift;
+> >  	int	ntp_error_shift;
+> > +	u32	mult;			/* NTP adjusted clock multiplier */
+> > +	u32	shift;			/* NTP adjusted clock shift */
+> 
+> I'm a little confused here. NTP doesn't adjust the shift value. This
+> seems redundant with the xtime_shift value introduced in [patch 9/12].
 
-On Wed, Jul 29, 2009 at 11:02:58PM +0200, Sam Ravnborg wrote :
-> On Wed, Jul 29, 2009 at 01:00:36PM -0700, H. Peter Anvin wrote:
-> > On 07/22/2009 07:01 AM, Albin Tonnerre wrote:
-> > > This is the third and last part of the patch, which contains the
-> > > necessary changes to the x86 Kconfig and boot/compressed to allow the
-> > > use of this new compression method
-> > >=20
-> > > Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-> >=20
-> > Acked-by: H. Peter Anvin <hpa@zytor.com>
-> >=20
-> > Since the patchset otherwise isn't really x86-related it probably makes
-> > more sense to pass this through the kbuild tree, or perhaps via akpm,
-> > rather than -tip?
->=20
-> I can take it via kbuild if I get a fewsh patch-set with proper
-> ack's added.
-> I've long lost the original patch-set.
+True the NTP code does not adjust the shift value. But mult and shift
+build a pair, no? I think it is more readable if we use timekeeper.mult 
+and timekeeper.shift instead of timekeeper.mult and clock->shift.
+And the xtime_shift does not need to be the same value as the clock
+shift - at least in theory. It is just a shift to increase precision. 
+Therefore I would like to use the xtime_shift and ntp_error_shift values
+exclusively as the shifts for the respective xtime_nsec and ntp_error
+values. Makes sense ?
 
-Only the x86-specific part of the patch has been acked so far, and it relie=
-s on
-3 other patches which have not been acked. If there's anything I can do to =
-get
-feedback on the remaining patches, please let me know.
+-- 
+blue skies,
+   Martin.
 
-Regards,
---=20
-Albin Tonnerre, Free Electrons
-Kernel, drivers and embedded Linux development,
-consulting, training and support.
-http://free-electrons.com
+"Reality continues to ruin my life." - Calvin.
 
---rS8CxjVDS/+yyDmU
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iQIcBAEBCAAGBQJKcqJ3AAoJEBEG8gBbtuSl0MkQAKfyyTMCzxLUATsEgH7c+UvZ
-fpAvxeRDkGShu3+jzoTEHDgFf4AU0SuTtKydUcqwx44uIycznPcEjDqPku8Iv6Pa
-uNdJ+NDajuqvUPFY+k1/pXAxqneHGSVhBe7GKHtYVbo45EaAmUMswIBQl31Bd+3y
-m6HjKcOYx/wKA8DveLFnkawJpddD1d8yAjOr5qAnwSR6BWGcN69UljLAQJZuDxPL
-YbWSra5gp70o8TDrd81/XC1MZ2Vf7ER101KaoMJGvIviDFp0/eud+Ihb7o63C9n+
-STwwRP9fk1Re6snpaPs3cxpWmxaZOyL3bUX4Ieeag0QPYm1huLfubfg4mgq/Bnwg
-p9mFFPRc+A8HmaSu3cA86e8Ec0BAAtdEnM5fXp4Fyp7psoytoHNcddIn7JSzqzN8
-QUY6aO68Q+brTTPKV0TEfH43ns8VMTQiHTG7uIwHcOBZGjHkmn4jaERqtMdhUsfd
-cqX9TMPpySBQpir2TOYwko7ByqDbqFXmrLh//h6vTwf1tqO9O6jrQ3dSDritYQEc
-NGbsZC4cERF/+Z2lPdCx9z730PoL/YdKTdj4K3sk3CJCuBl19I+JMuP/A/Yf0XPR
-3GGApy2GrWDAaOnmv1Ok36VYWJNhKh6zNHKOKj+H+05KIBCzvK4eeErwVTdK24Iu
-3Vn7r0unOMd8x9yQw7so
-=riEt
------END PGP SIGNATURE-----
-
---rS8CxjVDS/+yyDmU--
