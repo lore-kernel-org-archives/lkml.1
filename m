@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551AbZGaQrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbZGaQ7P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752551AbZGaQrl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 12:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbZGaQrl
+	id S1752524AbZGaQ7P (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 12:59:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbZGaQ7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 12:47:41 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52690 "EHLO mx2.redhat.com"
+	Fri, 31 Jul 2009 12:59:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50082 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752443AbZGaQrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 12:47:40 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200907311730.08804.elendil@planet.nl>
-References: <200907311730.08804.elendil@planet.nl> <200907311227.20132.elendil@planet.nl> <17615.1249045054@redhat.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org,
-       linux-kbuild@vger.kernel.org,
-       David Woodhouse <David.Woodhouse@intel.com>
-Subject: Re: RomFS: enless loop during make oldconfig from 2.6.24 -> 2.6.31-rc4 (parisc)
-Date: Fri, 31 Jul 2009 17:46:16 +0100
-Message-ID: <18884.1249058776@redhat.com>
+	id S1751556AbZGaQ7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 12:59:07 -0400
+From: Eric Paris <eparis@redhat.com>
+Subject: [PATCH -v4 2/3] SELinux: call cap_file_mmap in selinux_file_mmap
+To: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       selinux@tycho.nsa.gov
+Cc: jwcart2@tycho.nsa.gov, eparis@redhat.com, sds@tycho.nsa.gov,
+       spender@grsecurity.net, dwalsh@redhat.com, cl@linux-foundation.org,
+       arjan@infradead.org, alan@lxorguk.ukuu.org.uk, kees@outflux.net,
+       csellers@tresys.com, penguin-kernel@i-love.sakura.ne.jp,
+       serue@us.ibm.com
+Date: Fri, 31 Jul 2009 12:54:05 -0400
+Message-ID: <20090731165405.20992.78883.stgit@paris.rdu.redhat.com>
+In-Reply-To: <20090731165358.20992.14757.stgit@paris.rdu.redhat.com>
+References: <20090731165358.20992.14757.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frans Pop <elendil@planet.nl> wrote:
+Currently SELinux does not check CAP_SYS_RAWIO in the file_mmap hook.  This
+means there is no DAC check on the ability to mmap low addresses in the
+memory space.  This function adds the DAC check for CAP_SYS_RAWIO while
+maintaining the selinux check on mmap_zero.  This means that processes
+which need to mmap low memory will need CAP_SYS_RAWIO and mmap_zero but will
+NOT need the SELinux sys_rawio capability.
 
-> I've tried again too. With all defaults I cannot reproduce it either.
-> But if I answer the questions below as follows, I do get the loop again:
-> 
-> Advanced netfilter configuration: N
-> Wireless: N
-> * sound drivers: N (* = "PCI","USB" and one or two others)
-> Default ext3 to "data=ordered": Y
+Signed-off-by: Eric Paris <eparis@redhat.com>
+---
 
-I still don't see it.  I have:
+ security/selinux/hooks.c |   14 +++++++++++++-
+ 1 files changed, 13 insertions(+), 1 deletions(-)
 
-	# CONFIG_NETFILTER_ADVANCED is not set
-	# CONFIG_WIRELESS is not set
-	# CONFIG_SND_PCI is not set
-	# CONFIG_SND_SPI is not set
-	# CONFIG_SND_USB is not set
-	# CONFIG_SND_GSC is not set
-	# CONFIG_SND_SOC is not set
-	CONFIG_EXT3_DEFAULTS_TO_ORDERED=y
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index e65677d..8a78f58 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -3034,9 +3034,21 @@ static int selinux_file_mmap(struct file *file, unsigned long reqprot,
+ 	int rc = 0;
+ 	u32 sid = current_sid();
+ 
+-	if (addr < mmap_min_addr)
++	/*
++	 * notice that we are intentionally putting the SELinux check before
++	 * the secondary cap_file_mmap check.  This is such a likely attempt
++	 * at bad behaviour/exploit that we always want to get the AVC, even
++	 * if DAC would have also denied the operation.
++	 */
++	if (addr < mmap_min_addr) {
+ 		rc = avc_has_perm(sid, sid, SECCLASS_MEMPROTECT,
+ 				  MEMPROTECT__MMAP_ZERO, NULL);
++		if (rc)
++			return rc;
++	}
++
++	/* do DAC check on address space usage */
++	rc = cap_file_mmap(file, reqprot, prot, flags, addr, addr_only);
+ 	if (rc || addr_only)
+ 		return rc;
+ 
 
-Can you accept all the defaults, then delete the above symbols from .config
-and run make oldconfig again, see if the problem crops up?
-
-David
