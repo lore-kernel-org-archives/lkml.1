@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751540AbZGaILX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751614AbZGaINF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751540AbZGaILX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 04:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbZGaILW
+	id S1751614AbZGaINF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 04:13:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbZGaINE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 04:11:22 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:57294 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751034AbZGaILV (ORCPT
+	Fri, 31 Jul 2009 04:13:04 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:57994 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751095AbZGaINC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 04:11:21 -0400
-Subject: Re: [RFC][patch 11/12] timekeeper read clock helper functions
+	Fri, 31 Jul 2009 04:13:02 -0400
+Subject: Re: [RFC][patch 10/12] move NTP adjusted clock multiplier to
+ struct timekeeper
 From: john stultz <johnstul@us.ibm.com>
 To: Martin Schwidefsky <schwidefsky@de.ibm.com>
 Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>,
        Daniel Walker <dwalker@fifo99.com>
-In-Reply-To: <20090731094549.335fb996@skybase>
+In-Reply-To: <20090731095254.3ed0cb7d@skybase>
 References: <20090729134125.313191633@de.ibm.com>
-	 <20090729134231.768960500@de.ibm.com>	<1248989994.3374.13.camel@localhost>
-	 <20090731094549.335fb996@skybase>
+	 <20090729134231.515027738@de.ibm.com>	<1248991488.3374.14.camel@localhost>
+	 <20090731095254.3ed0cb7d@skybase>
 Content-Type: text/plain
-Date: Fri, 31 Jul 2009 01:11:19 -0700
-Message-Id: <1249027879.3333.6.camel@work-vm>
+Date: Fri, 31 Jul 2009 01:12:59 -0700
+Message-Id: <1249027979.3333.8.camel@work-vm>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
@@ -30,80 +31,85 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-31 at 09:45 +0200, Martin Schwidefsky wrote:
-> On Thu, 30 Jul 2009 14:39:54 -0700
+On Fri, 2009-07-31 at 09:52 +0200, Martin Schwidefsky wrote:
+> On Thu, 30 Jul 2009 15:04:48 -0700
 > john stultz <johnstul@us.ibm.com> wrote:
 > 
 > > On Wed, 2009-07-29 at 15:41 +0200, Martin Schwidefsky wrote:
-> > > plain text document attachment (timekeeper-helper.diff)
+> > > plain text document attachment (timekeeper-mult.diff)
 > > > From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 > > > 
-> > > Add timekeeper_read_clock_ntp and timekeeper_read_clock_raw and use
-> > > them for getnstimeofday, ktime_get, ktime_get_ts and getrawmonotonic.
-> > >
+> > > The clocksource structure has two multipliers, the unmodified multiplier
+> > > clock->mult_orig and the NTP corrected multiplier clock->mult. The NTP
+> > > multiplier is misplaced in the struct clocksource, this is private
+> > > information of the timekeeping code. Add the mult field to the struct
+> > > timekeeper to contain the NTP corrected value, keep the unmodifed
+> > > multiplier in clock->mult and remove clock->mult_orig. For consistency
+> > > add the shift value associated with the NTP corrected mult value to
+> > > struct timekeeper as well.
+> > > 
 > > > Cc: Ingo Molnar <mingo@elte.hu>
 > > > Cc: Thomas Gleixner <tglx@linutronix.de>
 > > > Cc: john stultz <johnstul@us.ibm.com>
 > > > Cc: Daniel Walker <dwalker@fifo99.com>
 > > > Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 > > > ---
-> > >  kernel/time/timekeeping.c |   91 +++++++++++++++++++---------------------------
-> > >  1 file changed, 38 insertions(+), 53 deletions(-)
+> > >  arch/arm/plat-omap/common.c |    2 +-
+> > >  include/linux/clocksource.h |    4 +---
+> > >  kernel/time/timekeeping.c   |   43 +++++++++++++++++++++++++------------------
+> > >  3 files changed, 27 insertions(+), 22 deletions(-)
 > > > 
+> > > Index: linux-2.6/include/linux/clocksource.h
+> > > ===================================================================
+> > > --- linux-2.6.orig/include/linux/clocksource.h
+> > > +++ linux-2.6/include/linux/clocksource.h
+> > > @@ -149,8 +149,7 @@ extern u64 timecounter_cyc2time(struct t
+> > >   * @disable:		optional function to disable the clocksource
+> > >   * @mask:		bitmask for two's complement
+> > >   *			subtraction of non 64 bit counters
+> > > - * @mult:		cycle to nanosecond multiplier (adjusted by NTP)
+> > > - * @mult_orig:		cycle to nanosecond multiplier (unadjusted by NTP)
+> > > + * @mult:		cycle to nanosecond multiplier
+> > >   * @shift:		cycle to nanosecond divisor (power of two)
+> > >   * @flags:		flags describing special properties
+> > >   * @vread:		vsyscall based read
+> > > @@ -168,7 +167,6 @@ struct clocksource {
+> > >  	void (*disable)(struct clocksource *cs);
+> > >  	cycle_t mask;
+> > >  	u32 mult;
+> > > -	u32 mult_orig;
+> > >  	u32 shift;
+> > >  	unsigned long flags;
+> > >  	cycle_t (*vread)(void);
 > > > Index: linux-2.6/kernel/time/timekeeping.c
 > > > ===================================================================
 > > > --- linux-2.6.orig/kernel/time/timekeeping.c
 > > > +++ linux-2.6/kernel/time/timekeeping.c
-> > > @@ -84,6 +84,40 @@ static void timekeeper_setup_internals(s
-> > >  	timekeeper.shift = clock->shift;
-> > >  }
-> > > 
-> > > +/* Timekeeper helper functions. */
-> > > +static inline s64 timekeeper_read_clock_ntp(void)
-> > > +{
-> > > +	cycle_t cycle_now, cycle_delta;
-> > > +	struct clocksource *clock;
-> > > +
-> > > +	/* read clocksource: */
-> > > +	clock = timekeeper.clock;
-> > > +	cycle_now = clock->read(clock);
-> > > +
+> > > @@ -29,6 +29,8 @@ struct timekeeper {
+> > >  	s64	ntp_error;
+> > >  	int	xtime_shift;
+> > >  	int	ntp_error_shift;
+> > > +	u32	mult;			/* NTP adjusted clock multiplier */
+> > > +	u32	shift;			/* NTP adjusted clock shift */
 > > 
-> > I know it seems nice to have it here, but I think these helpers would be
-> > more reusable in other contexts if they took the cycle_now value as an
-> > argument. Also I'd drop the ntp bit, just to avoid confusing it with
-> > some ntp specific function. So:
-> > 
-> >  timekeeping_get_ns(cycle_t now);
-> >  timekeeping_get_ns_raw(cycle_t now);
-> > 
-> > That way in some situations we don't have to make two accesses to the
-> > hardware if we want to get both values at the same point.
-> > 
-> > Seem reasonable?
+> > I'm a little confused here. NTP doesn't adjust the shift value. This
+> > seems redundant with the xtime_shift value introduced in [patch 9/12].
 > 
-> The new names are fine but if we pull out the ->read call to the
-> caller we again have a rather strange mix. The caller gets the cycle
-> value using some clock, the helper uses the value of the timekeeper
-> clock or the timerkeeper mult/shift. I would like to keep the ->read
-> call in the helper. Is there a situation where we need both
-> calculations for the same cycles value? There is none in the current
-> code as far as I can see.
+> True the NTP code does not adjust the shift value. But mult and shift
+> build a pair, no? I think it is more readable if we use timekeeper.mult 
+> and timekeeper.shift instead of timekeeper.mult and clock->shift.
+> And the xtime_shift does not need to be the same value as the clock
+> shift - at least in theory. It is just a shift to increase precision. 
+> Therefore I would like to use the xtime_shift and ntp_error_shift values
+> exclusively as the shifts for the respective xtime_nsec and ntp_error
+> values. Makes sense ?
 
-One instance: Changing it would allow us to use this code in
-timekeeping_forward() as we want to be able to accumulate the current
-cycles into xtime and then set cycles_last equal to the read value at
-that time. By embedding the read into the timekeeping_read_clock_x() it
-avoids us from using the function with any of the management calls. If
-you look at the mega-patch I sent out earlier, I think there were a few
-uses for such helper functions in update_wall_time and other spots.
-
-Also I have had some discussions with folks that would like to have the
-ability to generate multiple CLOCK_ID values at the same "instance".
-There isn't a good interface to userland for such a feature, but I'm
-hesitant to make it difficult to compute on the kernel side.
+But can't we drop the xtime_shift if we have the clocksource shift kept
+internally? Unless I'm missing something more subtle in your patches,
+they should be the same at all times.
 
 thanks
 -john
+
 
 
