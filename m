@@ -1,196 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752057AbZGaQ1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752201AbZGaQaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752057AbZGaQ1w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 12:27:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbZGaQ1v
+	id S1752201AbZGaQaV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 12:30:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751904AbZGaQaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 12:27:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54083 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751185AbZGaQ1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 12:27:51 -0400
-Subject: Re: kernel bug
-From: Eric Paris <eparis@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Christoph Thielecke <christoph.thielecke@gmx.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.01.0907310853270.3161@localhost.localdomain>
-References: <200907311139.55095.christoph.thielecke@gmx.de>
-	 <alpine.LFD.2.01.0907310853270.3161@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 31 Jul 2009 12:26:42 -0400
-Message-Id: <1249057602.4219.5.camel@dhcp231-142.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Fri, 31 Jul 2009 12:30:20 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:55810 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751819AbZGaQaT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 12:30:19 -0400
+MIME-Version: 1.0
+In-Reply-To: <20090731160544.GA3430@kroah.com>
+References: <Pine.LNX.4.44L0.0907301522570.6087-100000@iolanthe.rowland.org> 
+	<ac3eb2510907301357j43189388lae6ec5d4e6ad365e@mail.gmail.com> 
+	<20090731160544.GA3430@kroah.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Fri, 31 Jul 2009 12:30:03 -0400
+Message-ID: <ac3eb2510907310930h2e5978een68341c15024aec30@mail.gmail.com>
+Subject: Re: [PATCH] Driver core: add new device to bus's list before probing
+To: Greg KH <greg@kroah.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-31 at 09:01 -0700, Linus Torvalds wrote:
-> Hmm. We have some fsnotify fixes since -rc4 (and I'm planning on doing 
-> -rc5 today), so it's worth checking if this problem is perhaps already ok.
+On Fri, Jul 31, 2009 at 12:05, Greg KH<greg@kroah.com> wrote:
+> On Thu, Jul 30, 2009 at 04:57:06PM -0400, Kay Sievers wrote:
+>> On Thu, Jul 30, 2009 at 15:27, Alan Stern<stern@rowland.harvard.edu> wrote:
 
-there is one patch in -rc5 that might fix it
+>> > Kay, do you want this merged into 2.6.31 or are you okay with waiting
+>> > for 2.6.32-rc1?  It changes a major core routine.  On the other hand,
+>> > the problem it fixes does affect real users.
+>>
+>> I think it should go into -next and we wait a few days. It seems like
+>> the proper fix, but we should make sure, we didn't miss something.
+>>
+>> After that, it would be nice if we can get that into 2.6.31, as we
+>> have several problems already, which are likely solved by this.
+>
+> But as this isn't a regression (it's how things always have worked,
+> right?),
 
-f44aebcc566d1d6275f7191867b9633dc11de2ee
+Yeah, that sounds right, but I guess we have just been the needed bit
+slower in the past, and with the recent speedups I would expect more
+cases to uncover this issue.
 
-Since i stop using a single static ignored event, but I honestly don't
-understand why that fixes it.  It looks like the same thing Mikko had
-but his magically went away before this patch.  (It might have coincided
-with when he turned ON SLAB_DEBUG, but I haven't ask him to turn it back
-off)  I haven't yet found the problem with the original code, if you can
-reproduce with -rc5 PLEASE let me know, I've got some debugging code the
-other person was trying but he never had problems after we started
-debugging......
+> I'm a bit leary of pushing it to .31 right now, so late in the
+> release cycle.  How about it goes to Linus for .32, and we backport it
+> to -stable if it looks ok?
 
--Eric
+Sure, sounds fine too.
 
-> But looking at the fixes, I don't think any of them affect this particular 
-> BUG_ON, though, so I'm adding Eric to the email participants list, and 
-> lkml to keep it archived and google-ready.
-> 
-> This seems to also be
-> 
-> 	http://bugzilla.kernel.org/show_bug.cgi?id=13729
-> 	http://lkml.org/lkml/2009/7/4/12
-> 
-> with only slight variations.
-> 
-> 		Linus
-> 
-> On Fri, 31 Jul 2009, Christoph Thielecke wrote:
-> >
-> > Hello Linus,
-> > 
-> > today my machine stops rapidly (running 2.6.31-rc4). After revisited the log I 
-> > found 2 kernel bug entries which maybe could useful:
-> > 
-> > Jul 31 11:23:05 develop kernel: ------------[ cut here ]------------
-> > Jul 31 11:23:05 develop kernel: kernel BUG at fs/notify/notification.c:93!
-> > Jul 31 11:23:05 develop kernel: invalid opcode: 0000 [#1] PREEMPT SMP
-> > Jul 31 11:23:05 develop kernel: last sysfs file: /sys/devices/pci0000:00/0000:00:1d.7/usb1/1-4/1-4.1/product
-> > Jul 31 11:23:05 develop kernel: Modules linked in: b44 nvidia(P) binfmt_misc ppdev parport_pc lp parport rfcomm l2cap bluetooth tun vboxnetadp vboxnetflt vboxdrv pppol2tp pppox ppp_generic slhc ipv6 capifs acpi_cpufreq cpufreq_ondemand cpufreq_powersave cpufreq_stats freq_table cpufreq_userspace cpufreq_conservative nfsd nfs lockd fscache nfs_acl auth_rpcgss sunrpc deflate zlib_deflate ctr twofish twofish_common camellia serpent blowfish cast5 des_generic cbc aes_i586 aes_generic xcbc rmd160 sha256_generic sha1_generic crypto_null af_key nls_iso8859_1 nls_cp437 vfat fat fuse loop asix pl2303 dm9601 usbnet usbserial usbhid hid snd_hda_codec_idt snd_hda_intel snd_hda_codec snd_hwdep snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss snd_seq_midi snd_rawmidi firewire_ohci firewire_core arc4 snd_seq_midi_event snd_seq crc_itu_t ecb snd_timer snd_seq_device ssb ohci1394 iwl3945 sdhci_pci sdhci iTCO_wdt iTCO_vendor_support snd pcmcia pcmcia_core iwlcore mmc_core uhci_!
- hc!
->  d joydev intel_agp i2c_i801 soundcore ieee1394 mii ehci_hcd mac80211 led_class ricoh_mmc agpgart i2c_core snd_page_alloc cfg80211 usbcore psmouse rtc_cmos rtc_core rtc_lib video output serio_raw wmi dell_laptop button battery ac processor rfkill evdev dcdbas sg sr_mod cdrom dm_mirror dm_region_hash dm_log dm_snapshot dm_mod thermal fan sd_mod crc_t10dif [last unloaded: b44]
-> > Jul 31 11:23:05 develop kernel:
-> > Jul 31 11:23:05 develop kernel: Pid: 8207, comm: kdevelop Tainted: P           (2.6.31-rc4 #2) MP061
-> > Jul 31 11:23:05 develop kernel: EIP: 0060:[<c10db67b>] EFLAGS: 00210283 CPU: 0
-> > Jul 31 11:23:05 develop kernel: EIP is at fsnotify_put_event+0x46/0x4a
-> > Jul 31 11:23:05 develop kernel: EAX: f6865d04 EBX: f6865cd0 ECX: 00000000 EDX: bffd8f01
-> > Jul 31 11:23:05 develop kernel: ESI: bffd8f72 EDI: f6865cd0 EBP: f15abf0c ESP: f15abf08
-> > Jul 31 11:23:05 develop kernel: DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> > Jul 31 11:23:05 develop kernel: Process kdevelop (pid: 8207, ti=f15aa000 task=f1571130 task.ti=f15aa000)
-> > Jul 31 11:23:05 develop kernel: Stack:
-> > Jul 31 11:23:05 develop kernel: 00000020 f15abf64 c10dd775 000000b0 bffd8f14 f46488c0 f1fcc174 f1fcc158
-> > Jul 31 11:23:05 develop kernel: <0> f1fcc140 bffd8f54 0000000e 00000000 f1571130 c104699f f1fcc178 f1fcc178
-> > Jul 31 11:23:05 develop kernel: <0> 00000152 00000002 00000000 00000010 f46488c0 bffd8f14 000000f0 f15abf8c
-> > Jul 31 11:23:05 develop kernel: Call Trace:
-> > Jul 31 11:23:05 develop kernel: [<c10dd775>] ? inotify_read+0x24a/0x269
-> > Jul 31 11:23:05 develop kernel: [<c104699f>] ? autoremove_wake_function+0x0/0x3a
-> > Jul 31 11:23:05 develop kernel: [<c10b3206>] ? vfs_read+0x8b/0x142
-> > Jul 31 11:23:05 develop kernel: [<c10dd52b>] ? inotify_read+0x0/0x269
-> > Jul 31 11:23:05 develop kernel: [<c10b3366>] ? sys_read+0x3d/0x6b
-> > Jul 31 11:23:05 develop kernel: [<c1003610>] ? sysenter_do_call+0x12/0x2c
-> > Jul 31 11:23:05 develop kernel: Code: 74 1f 8d 43 34 39 43 34 75 21 8b 43 2c e8 ba fe fc ff 89 da a1 c4 23 54 c1 e8 79 ff fc ff 5b 5d c3 8d 43 14 e8 b3 e6 fd ff eb d7 <0f> 0b eb fe 55 89 e5 57 56 53 83 ec 0c 89 c6 8d 40 18 89 45 e8
-> > Jul 31 11:23:05 develop kernel: EIP: [<c10db67b>] fsnotify_put_event+0x46/0x4a SS:ESP 0068:f15abf08
-> > Jul 31 11:23:05 develop kernel: ---[ end trace 1290e7d176f2655e ]---
-> > 
-> > Jul 31 11:23:17 develop kernel: ------------[ cut here ]------------
-> > Jul 31 11:23:17 develop kernel: kernel BUG at fs/notify/notification.c:93!
-> > Jul 31 11:23:17 develop kernel: invalid opcode: 0000 [#2] PREEMPT SMP
-> > Jul 31 11:23:17 develop kernel: last sysfs file: /sys/devices/pci0000:00/0000:00:1d.7/usb1/1-4/1-4.1/product
-> > Jul 31 11:23:17 develop kernel: Modules linked in: b44 nvidia(P) binfmt_misc ppdev parport_pc lp parport rfcomm l2cap bluetooth tun vboxnetadp vboxnetflt vboxdrv pppol2tp pppox ppp_generic slhc ipv6 capifs acpi_cpufreq cpufreq_ondemand cpufreq_powersave cpufreq_stats freq_table cpufreq_userspace cpufreq_conservative nfsd nfs lockd fscache nfs_acl auth_rpcgss sunrpc deflate zlib_deflate ctr twofish twofish_common camellia serpent blowfish cast5 des_generic cbc aes_i586 aes_generic xcbc rmd160 sha256_generic sha1_generic crypto_null af_key nls_iso8859_1 nls_cp437 vfat fat fuse loop asix pl2303 dm9601 usbnet usbserial usbhid hid snd_hda_codec_idt snd_hda_intel snd_hda_codec snd_hwdep snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss snd_seq_midi snd_rawmidi firewire_ohci firewire_core arc4 snd_seq_midi_event snd_seq crc_itu_t ecb snd_timer snd_seq_device ssb ohci1394 iwl3945 sdhci_pci sdhci iTCO_wdt iTCO_vendor_support snd pcmcia pcmcia_core iwlcore mmc_core uhci_!
- hc!
->  d joydev intel_agp i2c_i801 soundcore ieee1394 mii ehci_hcd mac80211 led_class ricoh_mmc agpgart i2c_core snd_page_alloc cfg80211 usbcore psmouse rtc_cmos rtc_core rtc_lib video output serio_raw wmi dell_laptop button battery ac processor rfkill evdev dcdbas sg sr_mod cdrom dm_mirror dm_region_hash dm_log dm_snapshot dm_mod thermal fan sd_mod crc_t10dif [last unloaded: b44]
-> > Jul 31 11:23:17 develop kernel:
-> > Jul 31 11:23:17 develop kernel: Pid: 2462, comm: firefox-bin Tainted: P      D    (2.6.31-rc4 #2) MP061
-> > Jul 31 11:23:17 develop kernel: EIP: 0060:[<c10db67b>] EFLAGS: 00010283 CPU: 0
-> > Jul 31 11:23:17 develop kernel: EIP is at fsnotify_put_event+0x46/0x4a
-> > Jul 31 11:23:17 develop kernel: EAX: f68656b0 EBX: f686567c ECX: 00000000 EDX: 092aa801
-> > Jul 31 11:23:17 develop kernel: ESI: 092aa818 EDI: f686567c EBP: f3f23f0c ESP: f3f23f08
-> > Jul 31 11:23:17 develop kernel: DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> > Jul 31 11:23:17 develop kernel: Process firefox-bin (pid: 2462, ti=f3f22000 task=f06c8b90 task.ti=f3f22000)
-> > Jul 31 11:23:17 develop kernel: Stack:
-> > Jul 31 11:23:17 develop kernel: 00000030 f3f23f64 c10dd775 00000400 092aa7f0 f1662c40 f29cfef4 f29cfed8
-> > Jul 31 11:23:17 develop kernel: <0> f29cfec0 092aa7f0 00000018 00000000 f06c8b90 c104699f f29cfef8 f29cfef8
-> > Jul 31 11:23:17 develop kernel: <0> 00000002 00000100 00000000 00000020 f1662c40 092aa7f0 00000400 f3f23f8c
-> > Jul 31 11:23:17 develop kernel: Call Trace:
-> > Jul 31 11:23:17 develop kernel: [<c10dd775>] ? inotify_read+0x24a/0x269
-> > Jul 31 11:23:17 develop kernel: [<c104699f>] ? autoremove_wake_function+0x0/0x3a
-> > Jul 31 11:23:17 develop kernel: [<c10b3206>] ? vfs_read+0x8b/0x142
-> > Jul 31 11:23:17 develop kernel: [<c10dd52b>] ? inotify_read+0x0/0x269
-> > Jul 31 11:23:17 develop kernel: [<c10b3366>] ? sys_read+0x3d/0x6b
-> > Jul 31 11:23:17 develop kernel: [<c1003610>] ? sysenter_do_call+0x12/0x2c
-> > Jul 31 11:23:17 develop kernel: Code: 74 1f 8d 43 34 39 43 34 75 21 8b 43 2c e8 ba fe fc ff 89 da a1 c4 23 54 c1 e8 79 ff fc ff 5b 5d c3 8d 43 14 e8 b3 e6 fd ff eb d7 <0f> 0b eb fe 55 89 e5 57 56 53 83 ec 0c 89 c6 8d 40 18 89 45 e8
-> > Jul 31 11:23:17 develop kernel: EIP: [<c10db67b>] fsnotify_put_event+0x46/0x4a SS:ESP 0068:f3f23f08
-> > Jul 31 11:23:17 develop kernel: ---[ end trace 1290e7d176f2655f ]---
-> > 
-> > crissi@develop:~$ uname -a
-> > Linux develop 2.6.31-rc4 #2 SMP PREEMPT Mon Jul 27 11:47:00 CEST 2009 i686 
-> > GNU/Linux
-> > 
-> > crissi@develop:~$ cat /proc/cpuinfo
-> > processor       : 0
-> > vendor_id       : GenuineIntel
-> > cpu family      : 6
-> > model           : 14
-> > model name      : Intel(R) Pentium(R) M CPU        000  @ 2.00GHz
-> > stepping        : 4
-> > cpu MHz         : 2000.000
-> > cache size      : 2048 KB
-> > physical id     : 0
-> > siblings        : 2
-> > core id         : 0
-> > cpu cores       : 2
-> > apicid          : 0
-> > initial apicid  : 0
-> > fdiv_bug        : no
-> > hlt_bug         : no
-> > f00f_bug        : no
-> > coma_bug        : no
-> > fpu             : yes
-> > fpu_exception   : yes
-> > cpuid level     : 10
-> > wp              : yes
-> > flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx constant_tsc arch_perfmon bts pni monitor vmx est tm2 xtpr pdcm
-> > bogomips        : 3990.57
-> > clflush size    : 64
-> > power management:
-> > 
-> > processor       : 1
-> > vendor_id       : GenuineIntel
-> > cpu family      : 6
-> > model           : 14
-> > model name      : Intel(R) Pentium(R) M CPU        000  @ 2.00GHz
-> > stepping        : 4
-> > cpu MHz         : 2000.000
-> > cache size      : 2048 KB
-> > physical id     : 0
-> > siblings        : 2
-> > core id         : 1
-> > cpu cores       : 2
-> > apicid          : 1
-> > initial apicid  : 1
-> > fdiv_bug        : no
-> > hlt_bug         : no
-> > f00f_bug        : no
-> > coma_bug        : no
-> > fpu             : yes
-> > fpu_exception   : yes
-> > cpuid level     : 10
-> > wp              : yes
-> > flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx constant_tsc arch_perfmon bts pni monitor vmx est tm2 xtpr pdcm
-> > bogomips        : 3990.06
-> > clflush size    : 64
-> > power management:
-> > 
-> > 
-> > Its a debian lenny machine with self compiled kernel from kernel.org.
-> > 
-> > 
-> > Best regards
-> > -- 
-> > Linux User Group Wernigerode
-> > http://www.lug-wr.de/
-> > 
+Would be good though to have it in -next soon. Three major distros are
+preparing a new distro release at the moment, and they will likely
+need to add that to their kernel to make this issue, USB firmware
+loading, and similar things working again.
 
+Thanks,
+Kay
