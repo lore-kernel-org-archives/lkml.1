@@ -1,90 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752895AbZGaTSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752867AbZGaT0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752895AbZGaTSy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 15:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751710AbZGaTSx
+	id S1752867AbZGaT0R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 15:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbZGaT0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 15:18:53 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:11765 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751095AbZGaTSw (ORCPT
+	Fri, 31 Jul 2009 15:26:17 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:64939 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751710AbZGaT0Q convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 15:18:52 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=vlxU1ETKLncApWqZdw+xFhV1S4FAjfm3Ywm3gwgj4upMChjBZHsEdbMVtLkHB49ZK
-	fE6EQYVWypxQqWQhFmpuQ==
-Date: Fri, 31 Jul 2009 12:18:42 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Paul Menage <menage@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
-In-Reply-To: <7f54310137837631f2526d4e335287fc.squirrel@webmail-b.css.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0907311212240.22732@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0907282125260.554@chino.kir.corp.google.com> <20090730180029.c4edcc09.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0907300219580.13674@chino.kir.corp.google.com> <20090730190216.5aae685a.kamezawa.hiroyu@jp.fujitsu.com>
- <alpine.DEB.2.00.0907301157100.9652@chino.kir.corp.google.com> <20090731093305.50bcc58d.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0907310231370.25447@chino.kir.corp.google.com> <7f54310137837631f2526d4e335287fc.squirrel@webmail-b.css.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 31 Jul 2009 15:26:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=d5/xaE1DUYAMkfMl8YAgIUEHYG9gIyE0CRS3nC6OARW7FIigy5xMlFdsyKbeYyzGMa
+         4ZmxONCuimz3SjAMIQ6b1zK86TOoxeknLzuNQaJulZc6Mxec7wnHKxwmntn8NRfZmeFe
+         NMTzGA/6VX3R6EkX/1Idgi1Kass+BdD2S0G00=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+In-Reply-To: <1249037742-7862-1-git-send-email-jlayton@redhat.com>
+References: <1249037742-7862-1-git-send-email-jlayton@redhat.com>
+Date: Fri, 31 Jul 2009 14:26:15 -0500
+Message-ID: <4a4634330907311226g409e4098s83059caf8db4f03b@mail.gmail.com>
+Subject: Re: [linux-cifs-client] [PATCH] cifs: reinstate original behavior 
+	when uid=/gid= options are specified
+From: Shirish Pargaonkar <shirishpargaonkar@gmail.com>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Jul 2009, KAMEZAWA Hiroyuki wrote:
+On Fri, Jul 31, 2009 at 5:55 AM, Jeff Layton<jlayton@redhat.com> wrote:
+> This patch fixes the regression reported here:
+>
+> http://bugzilla.kernel.org/show_bug.cgi?id=13861
+>
+> commit 4ae1507f6d266d0cc3dd36e474d83aad70fec9e4 changed the default
+> behavior when the uid= or gid= option was specified for a mount. The
+> existing behavior was to always clobber the ownership information
+> provided by the server when these options were specified. The above
+> commit changed this behavior so that these options simply provided
+> defaults when the server did not provide this information.
+>
+> This patch reverts this change so that the default behavior is restored.
+> It also adds "noforceuid" and "noforcegid" options to make it so that
+> ownership information from the server is preserved, even when the mount
+> has uid= or gid= options specified.
+>
+> It also adds a couple of printk notices that pop up when forceuid or
+> forcegid options are specified without a uid= or gid= option.
+>
+> Reported-by: Tom Chiverton <bugzilla.kernel.org@falkensweb.com>
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> ---
+>  fs/cifs/connect.c |   42 ++++++++++++++++++++++++++++++------------
+>  1 files changed, 30 insertions(+), 12 deletions(-)
+>
+> diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
+> index f248688..1f3345d 100644
+> --- a/fs/cifs/connect.c
+> +++ b/fs/cifs/connect.c
+> @@ -803,6 +803,10 @@ cifs_parse_mount_options(char *options, const char *devname,
+>        char *data;
+>        unsigned int  temp_len, i, j;
+>        char separator[2];
+> +       short int override_uid = -1;
+> +       short int override_gid = -1;
+> +       bool uid_specified = false;
+> +       bool gid_specified = false;
 
-> > Can you help think of any names that start with oom_adj_* and are
-> > relatively short?  I'd happily ack it.
-> >
-> There have been traditional name "effective" as uid and euid.
-> 
->  then,  per thread oom_adj as oom_adj
->         per proc   oom_adj as effective_oom_adj
-> 
-> is an natural way as Unix, I think.
-> 
+Should override_uid  and override_gid be initialized to 1 so that if
+uid and/or gid
+are specified and none of the options, either forceuid/gid and or
+noforceuid/gid are
+specified, the vol-> override defaults to 1 (i.e. forceuid/gid)?
 
-I don't think effective_oom_adj is a suitable name replacement for 
-oom_adj_child since it doesn't imply that the value is a no-op for the 
-thread itself and only serves a purpose when an mm is initialized for a 
-child.
-
-> > It livelocks if a thread is chosen and passed to oom_kill_task() while
-> > another per-thread oom_adj value is OOM_DISABLE for a thread sharing the
-> > same memory.
-> >
-> I say "why don't modify buggy selection logic?"
-> 
-> Why we have to scan all threads ?
-> As fs/proc/readdir does, you can scan only "process group leader".
-> 
-> per-thread scan itself is buggy because now we have per-process
-> effective-oom-adj.
-> 
-
-Without my patches to change oom_adj from task_struct to mm_struct, you'd 
-need to scan all tasks and not just the tgids because their oom_adj values 
-can differ amongst threads in the same thread group.  So while it may now 
-be possible to shorten the scan as a result of my approach, it isn't a 
-solution itself to the problem.
-
-> > How else do you propose the oom killer use oom_adj values on a per-thread
-> > basis without considering other threads sharing the same memory?
-> As I wrote.
->    per-process(signal struct) or per-thread oom_adj and add
->    mm->effecitve_oom_adj
-> 
-> task scanning isn't necessary to do per-thread scan and you can scan
-> only process-group-leader. What's bad ?
-> If oom_score is problem, plz fix it to show effective_oom_score.
-> 
-
-When only using (and showing) mm->effective_oom_adj for a task, userspace 
-will not be able to adjust /proc/pid/oom_score with /proc/pid/oom_adj 
-as Documentation/filesystems/proc.txt says you can for a thread unless it 
-exceeds effective_oom_adj.
+>
+>        separator[0] = ',';
+>        separator[1] = 0;
+> @@ -1093,18 +1097,20 @@ cifs_parse_mount_options(char *options, const char *devname,
+>                                                    "too long.\n");
+>                                return 1;
+>                        }
+> -               } else if (strnicmp(data, "uid", 3) == 0) {
+> -                       if (value && *value)
+> -                               vol->linux_uid =
+> -                                       simple_strtoul(value, &value, 0);
+> -               } else if (strnicmp(data, "forceuid", 8) == 0) {
+> -                               vol->override_uid = 1;
+> -               } else if (strnicmp(data, "gid", 3) == 0) {
+> -                       if (value && *value)
+> -                               vol->linux_gid =
+> -                                       simple_strtoul(value, &value, 0);
+> -               } else if (strnicmp(data, "forcegid", 8) == 0) {
+> -                               vol->override_gid = 1;
+> +               } else if (!strnicmp(data, "uid", 3) && value && *value) {
+> +                       vol->linux_uid = simple_strtoul(value, &value, 0);
+> +                       uid_specified = true;
+> +               } else if (!strnicmp(data, "forceuid", 8)) {
+> +                       override_uid = 1;
+> +               } else if (!strnicmp(data, "noforceuid", 10)) {
+> +                       override_uid = 0;
+> +               } else if (!strnicmp(data, "gid", 3) && value && *value) {
+> +                       vol->linux_gid = simple_strtoul(value, &value, 0);
+> +                       gid_specified = true;
+> +               } else if (!strnicmp(data, "forcegid", 8)) {
+> +                       override_gid = 1;
+> +               } else if (!strnicmp(data, "noforcegid", 10)) {
+> +                       override_gid = 0;
+>                } else if (strnicmp(data, "file_mode", 4) == 0) {
+>                        if (value && *value) {
+>                                vol->file_mode =
+> @@ -1355,6 +1361,18 @@ cifs_parse_mount_options(char *options, const char *devname,
+>        if (vol->UNCip == NULL)
+>                vol->UNCip = &vol->UNC[2];
+>
+> +       if (uid_specified)
+> +               vol->override_uid = override_uid;
+> +       else if (override_uid == 1)
+> +               printk(KERN_NOTICE "CIFS: ignoring forceuid mount option "
+> +                                  "specified with no uid= option.\n");
+> +
+> +       if (gid_specified)
+> +               vol->override_gid = override_gid;
+> +       else if (override_gid == 1)
+> +               printk(KERN_NOTICE "CIFS: ignoring forcegid mount option "
+> +                                  "specified with no gid= option.\n");
+> +
+>        return 0;
+>  }
+>
+> --
+> 1.6.0.6
+>
+> _______________________________________________
+> linux-cifs-client mailing list
+> linux-cifs-client@lists.samba.org
+> https://lists.samba.org/mailman/listinfo/linux-cifs-client
+>
