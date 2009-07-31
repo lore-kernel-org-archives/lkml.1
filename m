@@ -1,83 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751805AbZGaJaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751851AbZGaJbL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751805AbZGaJaf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 05:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbZGaJaf
+	id S1751851AbZGaJbL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 05:31:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbZGaJbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 05:30:35 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:38802 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751368AbZGaJae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 05:30:34 -0400
-Date: Fri, 31 Jul 2009 11:30:26 +0200
-From: Pierre Ossman <pierre@ossman.eu>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Pisa <ppisa@pikron.com>
-Subject: Re: [PATCH 26/62] drivers/mmc/host/imxmmc.c: Remove unnecessary
- semicolons
-Message-ID: <20090731113026.5e025c94@mjolnir.ossman.eu>
-In-Reply-To: <d76aa5b943c6cd92a1a02565c681575ecac48678.1246173681.git.joe@perches.com>
-References: <cover.1246173664.git.joe@perches.com>
-	<d76aa5b943c6cd92a1a02565c681575ecac48678.1246173681.git.joe@perches.com>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-1550-1249032631-0001-2"
+	Fri, 31 Jul 2009 05:31:10 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:34294 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751717AbZGaJbJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 05:31:09 -0400
+Date: Fri, 31 Jul 2009 11:31:07 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux@arm.linux.org.uk, alain@knaff.lu,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 5/5] Add support for LZO-compressed kernels on x86
+Message-ID: <20090731093107.GA29704@merkur.ravnborg.org>
+References: <1248271279-9920-1-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-2-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-3-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-4-git-send-email-albin.tonnerre@free-electrons.com> <1248271279-9920-5-git-send-email-albin.tonnerre@free-electrons.com> <4A70AA64.4020301@zytor.com> <20090729210257.GA22975@merkur.ravnborg.org> <20090731075119.GB7139@pc-ras4041.res.insa>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090731075119.GB7139@pc-ras4041.res.insa>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Fri, Jul 31, 2009 at 09:51:19AM +0200, Albin Tonnerre wrote:
+> On Wed, Jul 29, 2009 at 11:02:58PM +0200, Sam Ravnborg wrote :
+> > On Wed, Jul 29, 2009 at 01:00:36PM -0700, H. Peter Anvin wrote:
+> > > On 07/22/2009 07:01 AM, Albin Tonnerre wrote:
+> > > > This is the third and last part of the patch, which contains the
+> > > > necessary changes to the x86 Kconfig and boot/compressed to allow the
+> > > > use of this new compression method
+> > > > 
+> > > > Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+> > > 
+> > > Acked-by: H. Peter Anvin <hpa@zytor.com>
+> > > 
+> > > Since the patchset otherwise isn't really x86-related it probably makes
+> > > more sense to pass this through the kbuild tree, or perhaps via akpm,
+> > > rather than -tip?
+> > 
+> > I can take it via kbuild if I get a fewsh patch-set with proper
+> > ack's added.
+> > I've long lost the original patch-set.
+> 
+> Only the x86-specific part of the patch has been acked so far, and it relies on
+> 3 other patches which have not been acked. If there's anything I can do to get
+> feedback on the remaining patches, please let me know.
 
---=_freyr.ossman.eu-1550-1249032631-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Please resend the full serie then I may take a short look at it.
 
-On Sun, 28 Jun 2009 09:26:31 -0700
-Joe Perches <joe@perches.com> wrote:
-
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  drivers/mmc/host/imxmmc.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->=20
-> diff --git a/drivers/mmc/host/imxmmc.c b/drivers/mmc/host/imxmmc.c
-> index e0be21a..bf98d7c 100644
-> --- a/drivers/mmc/host/imxmmc.c
-> +++ b/drivers/mmc/host/imxmmc.c
-> @@ -652,7 +652,7 @@ static irqreturn_t imxmci_irq(int irq, void *devid)
->  	set_bit(IMXMCI_PEND_STARTED_b, &host->pending_events);
->  	tasklet_schedule(&host->tasklet);
-> =20
-> -	return IRQ_RETVAL(handled);;
-> +	return IRQ_RETVAL(handled);
->  }
-> =20
->  static void imxmci_tasklet_fnc(unsigned long data)
-
-Queued.
-
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-1550-1249032631-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkpyubYACgkQ7b8eESbyJLgzsgCfQaF8NsdumsYeU8Avy4ufLclc
-K4IAoJO+bH2B64kk8Fp7Ynr9B0eDYR3l
-=K2Lv
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-1550-1249032631-0001-2--
+	Sam
