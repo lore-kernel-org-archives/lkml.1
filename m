@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbZGaPJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752572AbZGaPJc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752707AbZGaPJf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 11:09:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751389AbZGaPJe
+	id S1752572AbZGaPJc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 11:09:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbZGaPJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 11:09:34 -0400
-Received: from mail.windriver.com ([147.11.1.11]:43587 "EHLO mail.wrs.com"
+	Fri, 31 Jul 2009 11:09:31 -0400
+Received: from mail.windriver.com ([147.11.1.11]:43552 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752315AbZGaPJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 11:09:27 -0400
+	id S1752040AbZGaPJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 11:09:15 -0400
 From: Jason Wessel <jason.wessel@windriver.com>
 To: gregkh@suse.de
 Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
        Jason Wessel <jason.wessel@windriver.com>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>,
        Yinghai Lu <yinghai@kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [PATCH 04/10] usb,early_printk: EHCI debug controller initialization delays
-Date: Fri, 31 Jul 2009 10:07:07 -0500
-Message-Id: <1249052833-9655-5-git-send-email-jason.wessel@windriver.com>
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Sarah Sharp <sarah.a.sharp@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [PATCH 10/10] ehci-dbgp,documentation: Documentation updates for ehci-dbgp
+Date: Fri, 31 Jul 2009 10:07:13 -0500
+Message-Id: <1249052833-9655-11-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.0.3.523.g304d0
-In-Reply-To: <1249052833-9655-4-git-send-email-jason.wessel@windriver.com>
+In-Reply-To: <1249052833-9655-10-git-send-email-jason.wessel@windriver.com>
 References: <1249052833-9655-1-git-send-email-jason.wessel@windriver.com>
  <1249052833-9655-2-git-send-email-jason.wessel@windriver.com>
  <1249052833-9655-3-git-send-email-jason.wessel@windriver.com>
  <1249052833-9655-4-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 31 Jul 2009 15:07:27.0128 (UTC) FILETIME=[9DD4E980:01CA11F0]
+ <1249052833-9655-5-git-send-email-jason.wessel@windriver.com>
+ <1249052833-9655-6-git-send-email-jason.wessel@windriver.com>
+ <1249052833-9655-7-git-send-email-jason.wessel@windriver.com>
+ <1249052833-9655-8-git-send-email-jason.wessel@windriver.com>
+ <1249052833-9655-9-git-send-email-jason.wessel@windriver.com>
+ <1249052833-9655-10-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 31 Jul 2009 15:07:34.0675 (UTC) FILETIME=[A2547E30:01CA11F0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When using the EHCI host controller as a polled device, a bit more
-tolerance is required in terms of delays.  On some 3+ghz systems the
-cpu loops were faster than the EHCI device mmio and resulted in the
-controller failing to initialize.
-
-On at least one first generation EHCI controller when it was not
-operating in interrupt mode, it would fail to report a port change
-status, but executing the port reset allowed the debug controller to
-work correctly anyway.  This errata causes a one time 300ms delay in
-the boot time, where as the typical delay is 1-5ms for an EHCI
-controller that does not have this errata.
-
-The debug printk's were fixed to have the correct state messages, and
-there was a conversion from using early_printk to printk to avoid
-calling the dbgp driver while debugging the initialization.
+Add missing information about requirements of using the EHCI usb debug
+controller as well as to mention you can use a debug controller other
+than the first one in the system.
 
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 Cc: Greg KH <gregkh@suse.de>
@@ -52,128 +49,91 @@ Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Yinghai Lu <yinghai@kernel.org>
 Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Sarah Sharp <sarah.a.sharp@intel.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- drivers/usb/early/ehci-dbgp.c |   45 +++++++++++++++++++++++-----------------
- 1 files changed, 26 insertions(+), 19 deletions(-)
+ Documentation/kernel-parameters.txt |    2 +-
+ Documentation/x86/earlyprintk.txt   |   39 +++++++++++++++++++++++++++++++++-
+ 2 files changed, 38 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/usb/early/ehci-dbgp.c b/drivers/usb/early/ehci-dbgp.c
-index f4bfe31..6198ebd 100644
---- a/drivers/usb/early/ehci-dbgp.c
-+++ b/drivers/usb/early/ehci-dbgp.c
-@@ -9,6 +9,12 @@
- #include <asm/pci-direct.h>
- #include <asm/fixmap.h>
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index dd1a6d4..e709fc0 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -670,7 +670,7 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	earlyprintk=	[X86,SH,BLACKFIN]
+ 			earlyprintk=vga
+ 			earlyprintk=serial[,ttySn[,baudrate]]
+-			earlyprintk=dbgp
++			earlyprintk=dbgp[debugController#]
  
-+#ifdef DBGP_DEBUG
-+# define dbgp_printk printk
-+#else
-+static inline void dbgp_printk(const char *fmt, ...) { }
-+#endif
+ 			Append ",keep" to not disable it when the real console
+ 			takes over.
+diff --git a/Documentation/x86/earlyprintk.txt b/Documentation/x86/earlyprintk.txt
+index 607b1a0..f19802c 100644
+--- a/Documentation/x86/earlyprintk.txt
++++ b/Documentation/x86/earlyprintk.txt
+@@ -7,7 +7,7 @@ and two USB cables, connected like this:
+ 
+   [host/target] <-------> [USB debug key] <-------> [client/console]
+ 
+-1. There are three specific hardware requirements:
++1. There are a number of specific hardware requirements:
+ 
+  a.) Host/target system needs to have USB debug port capability.
+ 
+@@ -42,7 +42,35 @@ and two USB cables, connected like this:
+      This is a small blue plastic connector with two USB connections,
+      it draws power from its USB connections.
+ 
+- c.) Thirdly, you need a second client/console system with a regular USB port.
++ c.) You need a second client/console system with a high speed USB 2.0
++     port.
 +
- static struct ehci_caps __iomem *ehci_caps;
- static struct ehci_regs __iomem *ehci_regs;
- static struct ehci_dbg_port __iomem *ehci_debug;
-@@ -342,6 +348,7 @@ static int __init ehci_reset_port(int port)
- 	u32 delay_time, delay;
- 	int loop;
++ d.) The Netchip device must be plugged directly into the physical
++     debug port on the "host/target" system.  You cannot use a USB hub in
++     between the physical debug port and the "host/target" system.
++
++     The EHCI debug controller is bound to a specific physical USB
++     port and the Netchip device will only work as an early printk
++     device in this port.  The EHCI host controllers are electrically
++     wired such that the EHCI debug controller is hooked up to the
++     first physical and there is no way to change this via software.
++     You can find the physical port through experimentation by trying
++     each physical port on the system and rebooting.  Or you can try
++     and use lsusb or look at the kernel info messages emitted by the
++     usb stack when you plug a usb device into various ports on the
++     "host/target" system.
++
++     Some hardware vendors do not expose the usb debug port with a
++     physical connector and if you find such a device send a complaint
++     to the hardware vendor, because there is no reason not to wire
++     this port into one of the physically accessible ports.
++
++ e.) It is also important to note, that many versions of the Netchip
++     device require the "client/console" system to be plugged into the
++     right and side of the device (with the product logo facing up and
++     readable left to right).  The reason being is that the 5 volt
++     power supply is taken from only one side of the device and it
++     must be the side that does not get rebooted.
  
-+	dbgp_printk("ehci_reset_port %i\n", port);
- 	/* Reset the usb debug port */
- 	portsc = readl(&ehci_regs->port_status[port - 1]);
- 	portsc &= ~PORT_PE;
-@@ -352,14 +359,17 @@ static int __init ehci_reset_port(int port)
- 	for (delay_time = 0; delay_time < HUB_RESET_TIMEOUT;
- 	     delay_time += delay) {
- 		dbgp_mdelay(delay);
--
- 		portsc = readl(&ehci_regs->port_status[port - 1]);
-+		if (!(portsc & PORT_RESET))
-+			break;
-+	}
- 		if (portsc & PORT_RESET) {
- 			/* force reset to complete */
--			loop = 2;
-+			loop = 100 * 1000;
- 			writel(portsc & ~(PORT_RWC_BITS | PORT_RESET),
- 				&ehci_regs->port_status[port - 1]);
- 			do {
-+				udelay(1);
- 				portsc = readl(&ehci_regs->port_status[port-1]);
- 			} while ((portsc & PORT_RESET) && (--loop > 0));
- 		}
-@@ -375,7 +385,6 @@ static int __init ehci_reset_port(int port)
- 		/* If we've finished resetting, then break out of the loop */
- 		if (!(portsc & PORT_RESET) && (portsc & PORT_PE))
- 			return 0;
--	}
- 	return -EBUSY;
- }
+ 2. Software requirements:
  
-@@ -384,24 +393,18 @@ static int __init ehci_wait_for_port(int port)
- 	u32 status;
- 	int ret, reps;
+@@ -56,6 +84,13 @@ and two USB cables, connected like this:
+     (If you are using Grub, append it to the 'kernel' line in
+      /etc/grub.conf)
  
--	for (reps = 0; reps < 3; reps++) {
--		dbgp_mdelay(100);
-+	for (reps = 0; reps < 300; reps++) {
- 		status = readl(&ehci_regs->status);
--		if (status & STS_PCD) {
--			ret = ehci_reset_port(port);
--			if (ret == 0)
--				return 0;
--		}
-+		if (status & STS_PCD)
-+			break;
-+		dbgp_mdelay(1);
- 	}
-+	ret = ehci_reset_port(port);
-+	if (ret == 0)
-+		return 0;
- 	return -ENOTCONN;
- }
- 
--#ifdef DBGP_DEBUG
--# define dbgp_printk early_printk
--#else
--static inline void dbgp_printk(const char *fmt, ...) { }
--#endif
--
- typedef void (*set_debug_port_t)(int port);
- 
- static void __init default_set_debug_port(int port)
-@@ -520,7 +523,7 @@ try_next_port:
- 		return -1;
- 	}
- 
--	loop = 10;
-+	loop = 250 * 1000;
- 	/* Reset the EHCI controller */
- 	cmd = readl(&ehci_regs->command);
- 	cmd |= CMD_RESET;
-@@ -540,6 +543,7 @@ try_next_port:
- 	ctrl |= DBGP_OWNER;
- 	ctrl &= ~(DBGP_ENABLED | DBGP_INUSE);
- 	writel(ctrl, &ehci_debug->control);
-+	udelay(1);
- 
- 	/* Start the ehci running */
- 	cmd = readl(&ehci_regs->command);
-@@ -554,10 +558,13 @@ try_next_port:
- 	loop = 10;
- 	do {
- 		status = readl(&ehci_regs->status);
--	} while ((status & STS_HALT) && (--loop > 0));
-+		if (!(status & STS_HALT))
-+			break;
-+		udelay(1);
-+	} while (--loop > 0);
- 
- 	if (!loop) {
--		dbgp_printk("ehci can be started\n");
-+		dbgp_printk("ehci can not be started\n");
- 		return -1;
- 	}
- 	dbgp_printk("ehci started\n");
++    On systems with more than one EHCI debug controller you must
++    specify the correct EHCI debug controller number.  The ordering
++    comes from the PCI bus enumeration of the EHCI controllers.  The
++    default with no number argument is "0" the first EHCI debug
++    controller.  To use the second EHCI debug controller, you would
++    use the command line: "earlyprintk=dbgp1"
++
+     NOTE: normally earlyprintk console gets turned off once the
+     regular console is alive - use "earlyprintk=dbgp,keep" to keep
+     this channel open beyond early bootup. This can be useful for
 -- 
 1.6.0.3.523.g304d0
 
