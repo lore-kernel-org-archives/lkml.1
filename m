@@ -1,39 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751795AbZGaIcN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751848AbZGaIeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751795AbZGaIcN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 04:32:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbZGaIcM
+	id S1751848AbZGaIeG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 04:34:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbZGaIeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 04:32:12 -0400
-Received: from viefep16-int.chello.at ([62.179.121.36]:31775 "EHLO
-	viefep16-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751125AbZGaIcK (ORCPT
+	Fri, 31 Jul 2009 04:34:06 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:41973 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750863AbZGaIeE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 04:32:10 -0400
-X-SourceIP: 213.93.53.227
-Subject: [RFC][PATCH] fcntl: F_[SG]ETOWN_TID
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: eranian@gmail.com, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
-       Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       roland <roland@redhat.com>
-In-Reply-To: <20090730202804.GA13675@redhat.com>
-References: <7c86c4470907270951i48886d56g90bc198f26bb0716@mail.gmail.com>
-	 <1248869948.6987.3083.camel@twins> <20090729221703.GA25368@redhat.com>
-	 <1248953485.6391.41.camel@twins> <20090730192040.GA9503@redhat.com>
-	 <1248984003.4164.0.camel@laptop>  <20090730202804.GA13675@redhat.com>
+	Fri, 31 Jul 2009 04:34:04 -0400
+Subject: Re: [RFC][patch 00/12] clocksource / timekeeping rework V2
+From: john stultz <johnstul@us.ibm.com>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1249018430.6046.73.camel@desktop>
+References: <200907291717.n6THHG6f001426@d06av06.portsmouth.uk.ibm.com>
+	 <20090730125351.6f16e9ec@skybase> <1248958173.6046.32.camel@desktop>
+	 <20090730150456.6c87b997@skybase>  <1248961750.6046.35.camel@desktop>
+	 <1248974187.3331.6.camel@work-vm>  <1248977320.6046.66.camel@desktop>
+	 <1248987409.3374.5.camel@localhost>  <1249018430.6046.73.camel@desktop>
 Content-Type: text/plain
-Date: Fri, 31 Jul 2009 10:35:20 +0200
-Message-Id: <1249029320.6391.72.camel@twins>
+Date: Fri, 31 Jul 2009 01:34:01 -0700
+Message-Id: <1249029241.3322.2.camel@work-vm>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
@@ -41,243 +31,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to direct the SIGIO signal to a particular thread of a
-multi-threaded application we cannot, like suggested by the manpage, put
-a TID into the regular fcntl(F_SETOWN) call. It will still be send to
-the whole process of which that thread is part.
+On Thu, 2009-07-30 at 22:33 -0700, Daniel Walker wrote: 
+> On Thu, 2009-07-30 at 13:56 -0700, john stultz wrote:
+> > On Thu, 2009-07-30 at 11:08 -0700, Daniel Walker wrote:
+> > > On Thu, 2009-07-30 at 10:16 -0700, john stultz wrote:
+> > > > Clocksources as modules was one of the initial design goals I had way
+> > > > back. The benefit being that an older distro kernel could be made to
+> > > > support newer stranger hardware via a clocksource driver. While the
+> > > > hardware vendors have for the most part consolidated on HPET/ACPI PM
+> > > > which has mostly avoided the need, I still think its worth preserving.
+> > > 
+> > > If the PIT case is a real use case for unregister than we can keep it
+> > > around. If not, then that path just becomes unused and all unused code
+> > > is open for removal from my perspective.
+> > > 
+> > > If the case you describe above is a good one, then someone eventually
+> > > will add back the unregister path. Which should come with a good reason
+> > > and with an actual user of the code..
+> > 
+> > The case I describe above is one where the user of the code doesn't
+> > necessarily have the ability to add back the unregister path. 
+> 
+> I'm not sure I understand your example.. Your saying a situation where
+> the kernel can't modified and reloaded, and the hardware clocks aren't
+> fully implemented in code yet?
 
-Since people do want to properly direct SIGIO we introduce F_SETOWN_TID,
-which functions similarly to F_SETOWN, except positive arguments are
-interpreted as TIDs and negative arguments are interpreted as PIDs.
+Right. Distro kernels. 
 
-This extension is fully bug compatible with the old F_GETOWN
-implementation in that F_GETOWN_TID will be troubled by the negative
-return value for PIDs similarly to F_GETOWN's trouble with process
-groups.
+> > Old distro kernels can be difficult to make changes to when new hardware
+> > is later released, so being able to just backport a module, compile and
+> > load it to get a unexpectedly strange new bit of hardware to work with
+> > an older distro kernel seems valuable enough to keep the code around to
+> > me.
+> 
+> You can just as easily back port the code as a built in, and reload the
+> kernel right? Why would it need to be a module?
 
-[ compile tested only so far ]
+Again, distro kernels. Users can't rebuild them without possibly losing
+the support they've paid for, and often recompiling them can cause 3rd
+party drivers to fail to work (some distros preserve kernel ABI
+stability between minor releases). Waiting 6 months or two years for the
+next release where everything is fixed upstream isn't going to make
+users happy.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- arch/parisc/include/asm/fcntl.h |    2 +
- fs/fcntl.c                      |   64 +++++++++++++++++++++++++++++++++-----
- include/asm-generic/fcntl.h     |    4 ++
- include/linux/fs.h              |   11 +++++-
- net/socket.c                    |    2 +-
- 5 files changed, 71 insertions(+), 12 deletions(-)
+Now, with most hardware vendors implementing decent HPET/ACPI PM
+counters, maybe this case is more me reacting to a bad situation I had
+to deal with in the past then what we can realistically expect in the
+future. But given hardware designers like to break assumptions to
+squeeze out performance or features, I'd suspect there will be future
+situations where having some extra flexibility would be valuable.
 
-diff --git a/arch/parisc/include/asm/fcntl.h b/arch/parisc/include/asm/fcntl.h
-index 1e1c824..5d5235a 100644
---- a/arch/parisc/include/asm/fcntl.h
-+++ b/arch/parisc/include/asm/fcntl.h
-@@ -28,6 +28,8 @@
- #define F_SETOWN	12	/*  for sockets. */
- #define F_SETSIG	13	/*  for sockets. */
- #define F_GETSIG	14	/*  for sockets. */
-+#define F_GETOWN_TID	15
-+#define F_SETOWN_TID	16
- 
- /* for posix fcntl() and lockf() */
- #define F_RDLCK		01
-diff --git a/fs/fcntl.c b/fs/fcntl.c
-index ae41308..8d0b7f9 100644
---- a/fs/fcntl.c
-+++ b/fs/fcntl.c
-@@ -197,13 +197,15 @@ static int setfl(int fd, struct file * filp, unsigned long arg)
- }
- 
- static void f_modown(struct file *filp, struct pid *pid, enum pid_type type,
--                     int force)
-+                     int flags)
- {
- 	write_lock_irq(&filp->f_owner.lock);
--	if (force || !filp->f_owner.pid) {
-+	if ((flags & FF_SETOWN_FORCE) || !filp->f_owner.pid) {
- 		put_pid(filp->f_owner.pid);
- 		filp->f_owner.pid = get_pid(pid);
- 		filp->f_owner.pid_type = type;
-+		filp->f_owner.task_only =
-+			(type == PIDTYPE_PID && (flags & FF_SETOWN_TID));
- 
- 		if (pid) {
- 			const struct cred *cred = current_cred();
-@@ -215,7 +217,7 @@ static void f_modown(struct file *filp, struct pid *pid, enum pid_type type,
- }
- 
- int __f_setown(struct file *filp, struct pid *pid, enum pid_type type,
--		int force)
-+		int flags)
- {
- 	int err;
- 
-@@ -223,12 +225,12 @@ int __f_setown(struct file *filp, struct pid *pid, enum pid_type type,
- 	if (err)
- 		return err;
- 
--	f_modown(filp, pid, type, force);
-+	f_modown(filp, pid, type, flags);
- 	return 0;
- }
- EXPORT_SYMBOL(__f_setown);
- 
--int f_setown(struct file *filp, unsigned long arg, int force)
-+int f_setown(struct file *filp, unsigned long arg, int flags)
- {
- 	enum pid_type type;
- 	struct pid *pid;
-@@ -241,7 +243,7 @@ int f_setown(struct file *filp, unsigned long arg, int force)
- 	}
- 	rcu_read_lock();
- 	pid = find_vpid(who);
--	result = __f_setown(filp, pid, type, force);
-+	result = __f_setown(filp, pid, type, flags);
- 	rcu_read_unlock();
- 	return result;
- }
-@@ -263,6 +265,40 @@ pid_t f_getown(struct file *filp)
- 	return pid;
- }
- 
-+static int f_setown_tid(struct file *filp, unsigned long arg)
-+{
-+	int flags = FF_SETOWN_FORCE;
-+	struct pid *pid;
-+	int who = arg;
-+	int ret = 0;
-+
-+	if (who < 0)
-+		who = -who;
-+	else
-+		flags |= FF_SETOWN_TID;
-+
-+	rcu_read_lock();
-+	pid = find_vpid(who);
-+	ret = __f_setown(filp, pid, PIDTYPE_PID, flags);
-+	rcu_read_unlock();
-+
-+	return ret;
-+}
-+
-+static pid_t f_getown_tid(struct file *filp)
-+{
-+	pid_t tid;
-+
-+	read_lock(&filp->f_owner.lock);
-+	tid = pid_vnr(filp->f_owner.pid);
-+	if (filp->f_owner.pid_type == PIDTYPE_PGID)
-+		tid = 0;
-+	if (!filp->f_owner.task_only)
-+		tid = -tid;
-+	read_unlock(&filp->f_owner.lock);
-+	return tid;
-+}
-+
- static long do_fcntl(int fd, unsigned int cmd, unsigned long arg,
- 		struct file *filp)
- {
-@@ -311,7 +347,14 @@ static long do_fcntl(int fd, unsigned int cmd, unsigned long arg,
- 		force_successful_syscall_return();
- 		break;
- 	case F_SETOWN:
--		err = f_setown(filp, arg, 1);
-+		err = f_setown(filp, arg, FF_SETOWN_FORCE);
-+		break;
-+	case F_GETOWN_TID:
-+		err = f_getown_tid(filp);
-+		force_successful_syscall_return();
-+		break;
-+	case F_SETOWN_TID:
-+		err = f_setown_tid(filp, arg);
- 		break;
- 	case F_GETSIG:
- 		err = filp->f_owner.signum;
-@@ -431,6 +474,7 @@ static void send_sigio_to_task(struct task_struct *p,
- 			       int fd,
- 			       int reason)
- {
-+	int (*send_sig)(int, struct siginfo *, struct task_struct *);
- 	/*
- 	 * F_SETSIG can change ->signum lockless in parallel, make
- 	 * sure we read it once and use the same value throughout.
-@@ -440,6 +484,8 @@ static void send_sigio_to_task(struct task_struct *p,
- 	if (!sigio_perm(p, fown, signum))
- 		return;
- 
-+	send_sig = fown->task_only ? send_sig_info : group_send_sig_info;
-+
- 	switch (signum) {
- 		siginfo_t si;
- 		default:
-@@ -461,11 +507,11 @@ static void send_sigio_to_task(struct task_struct *p,
- 			else
- 				si.si_band = band_table[reason - POLL_IN];
- 			si.si_fd    = fd;
--			if (!group_send_sig_info(signum, &si, p))
-+			if (!send_sig(signum, &si, p))
- 				break;
- 		/* fall-through: fall back on the old plain SIGIO signal */
- 		case 0:
--			group_send_sig_info(SIGIO, SEND_SIG_PRIV, p);
-+			send_sig(SIGIO, SEND_SIG_PRIV, p);
- 	}
- }
- 
-diff --git a/include/asm-generic/fcntl.h b/include/asm-generic/fcntl.h
-index 4d3e483..d7906b8 100644
---- a/include/asm-generic/fcntl.h
-+++ b/include/asm-generic/fcntl.h
-@@ -73,6 +73,10 @@
- #define F_SETSIG	10	/* for sockets. */
- #define F_GETSIG	11	/* for sockets. */
- #endif
-+#ifndef F_SETOWN_TID
-+#define F_SETOWN_TID	12
-+#define F_GETOWN_TID	13
-+#endif
- 
- /* for F_[GET|SET]FL */
- #define FD_CLOEXEC	1	/* actually anything with low bit set goes */
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 0872372..42697e7 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -872,6 +872,7 @@ struct fown_struct {
- 	rwlock_t lock;          /* protects pid, uid, euid fields */
- 	struct pid *pid;	/* pid or -pgrp where SIGIO should be sent */
- 	enum pid_type pid_type;	/* Kind of process group SIGIO should be sent to */
-+	bool task_only;		/* task or group signal */
- 	uid_t uid, euid;	/* uid/euid of process setting the owner */
- 	int signum;		/* posix.1b rt signal to be delivered on IO */
- };
-@@ -1291,8 +1292,14 @@ extern void kill_fasync(struct fasync_struct **, int, int);
- /* only for net: no internal synchronization */
- extern void __kill_fasync(struct fasync_struct *, int, int);
- 
--extern int __f_setown(struct file *filp, struct pid *, enum pid_type, int force);
--extern int f_setown(struct file *filp, unsigned long arg, int force);
-+/*
-+ * setown flags
-+ */ 
-+#define FF_SETOWN_FORCE		1
-+#define FF_SETOWN_TID		2
-+
-+extern int __f_setown(struct file *filp, struct pid *, enum pid_type, int flags);
-+extern int f_setown(struct file *filp, unsigned long arg, int flags);
- extern void f_delown(struct file *filp);
- extern pid_t f_getown(struct file *filp);
- extern int send_sigurg(struct fown_struct *fown);
-diff --git a/net/socket.c b/net/socket.c
-index 791d71a..ac57f8e 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -916,7 +916,7 @@ static long sock_ioctl(struct file *file, unsigned cmd, unsigned long arg)
- 			err = -EFAULT;
- 			if (get_user(pid, (int __user *)argp))
- 				break;
--			err = f_setown(sock->file, pid, 1);
-+			err = f_setown(sock->file, pid, FF_SETOWN_FORCE);
- 			break;
- 		case FIOGETOWN:
- 		case SIOCGPGRP:
+Imaginary example: broken BIOS has incorrect HPET freq and the TSCs are
+not in sync. Savvy IT dude finds the problem, copies the HPET driver,
+names it hpet-fix and hard codes the proper HPET freq in. Sets the
+rating higher then HPET, builds it as a module and loads it on the
+affected hardware.
+
+Suddenly there's a solution where otherwise none might be possible.
+
+thanks
+-john
 
 
