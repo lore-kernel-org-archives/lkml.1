@@ -1,184 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751814AbZGaT50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751608AbZGaUEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751814AbZGaT50 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 15:57:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbZGaT5Z
+	id S1751608AbZGaUEW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 16:04:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZGaUEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 15:57:25 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37475 "EHLO mx3.mail.elte.hu"
+	Fri, 31 Jul 2009 16:04:21 -0400
+Received: from smtp.witbe.net ([81.88.96.48]:48685 "EHLO smtp.witbe.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750945AbZGaT5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 15:57:24 -0400
-Date: Fri, 31 Jul 2009 21:57:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       John Stultz <johnstul@us.ibm.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Wei Chong Tan <wei.chong.tan@intel.com>
-Subject: Re: [GIT PULL] Additional x86 fixes for 2.6.31-rc5
-Message-ID: <20090731195705.GA12270@elte.hu>
-References: <200907311813.n6VIDe9S023442@voreg.hos.anvin.org> <alpine.LFD.2.01.0907311218080.3161@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0907311218080.3161@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751501AbZGaUEV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 16:04:21 -0400
+Date: Fri, 31 Jul 2009 22:03:56 +0200
+From: Paul Rolland <rol@as2917.net>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.31-rc4 - slab entry tak_delay_info leaking ???
+Message-ID: <20090731220356.4e5c8d0b@tux.DEF.witbe.net>
+In-Reply-To: <tnxeiry88w2.fsf@pc1117.cambridge.arm.com>
+References: <20090729082047.048ee1a8@tux.DEF.witbe.net>
+	<20090730120715.65bf01ff@tux.DEF.witbe.net>
+	<20090730122605.465d4f8b@tux.DEF.witbe.net>
+	<tnxeiry88w2.fsf@pc1117.cambridge.arm.com>
+Organization: AS2917.net
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.2; x86_64-unknown-linux-gnu)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Catalin,
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Thu, 30 Jul 2009 16:53:33 +0100
+Catalin Marinas <catalin.marinas@arm.com> wrote:
 
-> On Fri, 31 Jul 2009, H. Peter Anvin wrote:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
-> > 
-> > Tan, Wei Chong (1):
-> >       x86: SMI workaround for pit_expect_msb
+> Paul Rolland <rol@as2917.net> wrote:
+> >> On Wed, 29 Jul 2009 08:20:47 +0200
+> >> Paul Rolland <rol@as2917.net> wrote:
+> >> > Since I'm running 2.6.31-rc? (3 or 4 I think), I often find my
+> >> > machine with my X session killed in the morning, and the kdm login
+> >> > screen displayed.
+> [...]
+> > Well, I've killed my X session, and it stopped the "leak"... but
+> > didn't recover the "lost" task_delay_info...
 > 
-> I really think that last one (commit fb34a8ee86) is 
-> incorrect.
-> 
-> We do _not_ want to do that SMI workaround in the loop, 
-> and the logic of that patch is broken anyway.
-> 
-> If an SMI kicks in, then it's true that tscp will be off, 
-> but that's what the error term is there for. If the error 
-> term is sufficiently small, then we don't care.
-> 
-> Sure, we might want the error term to be even smaller, but 
-> in no way does it actually invalidate any of the logic - 
-> the 'tsc' reading is just a guess anyway. Also, I think 
-> that the real issue isn't even an SMI - but the fact that 
-> in the very last iteration of the loop, there's no 
-> serializing instruction _after_ the last 'rdtsc'. So even 
-> in the absense of SMI's, we do have a situation where the 
-> cycle counter was read without proper serialization.
-> 
-> So I think the patch does fix something, I just think it's 
-> done the wrong way.
-> 
-> The last check shouldn't be done the way that commit does 
-> it. It should be done outside the outer loop, since 
-> _inside_ the outer loop, we'll be testing that the PIT has 
-> the right MSB value has the right value in the next 
-> iteration.
-> 
-> So only the _last_ iteration is special, because that's 
-> the one that will not check the PIT MSB value any more, 
-> and because the final 'get_cycles()' isn't serialized.
-> 
-> In other words:
->  - I'd like to move the PIT MSB check to after the last 
->  iteration, rather
->    than in every iteration
-> 
->  - I think we should comment on the fact that it's also a 
->  serializing
->    instruction and so 'fences in' the TSC read.
-> 
-> Here's a suggested replacement - BUT NOTE THAT IT'S 
-> ENTIRELY UNTESTED!
-> 
-> (Ok, so the patch is bigger than it strictly needs to be - 
-> I hate repeating code, so I made that 'read PIT counter 
-> twice and compare MSB' be a new helper routine)
-> 
-> Hmm? What do you guys think?
-> 
-> 		Linus
-> 
-> ---
->  arch/x86/kernel/tsc.c |   29 ++++++++++++++++++++++-------
->  1 files changed, 22 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-> index 6e1a368..71f4368 100644
-> --- a/arch/x86/kernel/tsc.c
-> +++ b/arch/x86/kernel/tsc.c
-> @@ -275,15 +275,20 @@ static unsigned long pit_calibrate_tsc(u32 latch, unsigned long ms, int loopmin)
->   * use the TSC value at the transitions to calculate a pretty
->   * good value for the TSC frequencty.
->   */
-> +static inline int pit_verify_msb(unsigned char val)
-> +{
-> +	/* Ignore LSB */
-> +	inb(0x42);
-> +	return inb(0x42) == val;
-> +}
-> +
->  static inline int pit_expect_msb(unsigned char val, u64 *tscp, unsigned long *deltap)
->  {
->  	int count;
->  	u64 tsc = 0;
->  
->  	for (count = 0; count < 50000; count++) {
-> -		/* Ignore LSB */
-> -		inb(0x42);
-> -		if (inb(0x42) != val)
-> +		if (!pit_verify_msb(val))
->  			break;
->  		tsc = get_cycles();
->  	}
-> @@ -336,8 +341,7 @@ static unsigned long quick_pit_calibrate(void)
->  	 * to do that is to just read back the 16-bit counter
->  	 * once from the PIT.
->  	 */
-> -	inb(0x42);
-> -	inb(0x42);
-> +	pit_verify_msb(0);
->  
->  	if (pit_expect_msb(0xff, &tsc, &d1)) {
->  		for (i = 1; i <= MAX_QUICK_PIT_ITERATIONS; i++) {
-> @@ -348,8 +352,19 @@ static unsigned long quick_pit_calibrate(void)
->  			 * Iterate until the error is less than 500 ppm
->  			 */
->  			delta -= tsc;
-> -			if (d1+d2 < delta >> 11)
-> -				goto success;
-> +			if (d1+d2 >= delta >> 11)
-> +				continue;
-> +
-> +			/*
-> +			 * Check the PIT one more time to verify that
-> +			 * all TSC reads were stable wrt the PIT.
-> +			 *
-> +			 * This also guarantees serialization of the
-> +			 * last cycle read ('d2') in pit_expect_msb.
-> +			 */
-> +			if (!pit_verify_msb(0xfe - i))
-> +				break;
-> +			goto success;
+> You could try to enable CONFIG_KMEMLEAK and see if you get any leaks
+> reported for the "lost" task_delay_info (see Documentation/kmemleak.txt).
 
-Oh, this reminds me of a patch i saw from John(?) a couple 
-of months ago that added a magic final pit_verify_msb() 
-call, which solved PIT calibration instabilities.
+I'm now running a kmemleak-eanbled version of the kernel, and waiting for
+the same problem to happen again.
 
-(Or maybe i did that hack when i tried to write an 
-auto-error-boundary calibrator?)
+In the meantime, my machine is kmemleak-complaining a lot :
+Jul 31 20:57:35 tux kernel: kmemleak: 52 new suspected memory leaks
+(see /sys/kernel/debug/kmemleak) 
+Jul 31 21:07:41 tux kernel: kmemleak: 34 new suspected memory leaks
+(see /sys/kernel/debug/kmemleak) 
+Jul 31 21:17:47 tux kernel: kmemleak: 23 new suspected memory leaks
+(see /sys/kernel/debug/kmemleak) 
+Jul 31 21:27:54 tux kernel: kmemleak: 33 new suspected memory leaks
+(see /sys/kernel/debug/kmemleak) 
+Jul 31 21:38:01 tux kernel: kmemleak: 20 new suspected memory leaks
+(see /sys/kernel/debug/kmemleak) 
+Jul 31 21:48:07 tux kernel: kmemleak: 21 new suspected memory leaks
+(see /sys/kernel/debug/kmemleak) 
+Jul 31 21:58:15 tux kernel: kmemleak: 32 new suspected memory leaks 
+(see /sys/kernel/debug/kmemleak)
+ 
+What should I do with these reports ? Is there an easy way to check if they
+are normal (false-positive) ?
 
-I dont think we committed it because it was a 'black magic' 
-hack as per observation and nobody realized the side-effect 
-of the TSC synchronization which you mention above.
+Regards,
+Paul
 
-My memories are sketchy but i think the symptom was one 
-failed PIT loop every 10 bootups, and it was solved by a 
-patch very similar to yours.
+-- 
+Paul Rolland                                E-Mail : rol(at)witbe.net
+CTO - Witbe.net SA                          Tel. +33 (0)1 47 67 77 77
+Les Collines de l'Arche                     Fax. +33 (0)1 47 67 77 99
+F-92057 Paris La Defense                    RIPE : PR12-RIPE
 
-So with a proper changlog and testing i'd very much go for 
-this on those grounds ago - and if it also solves the 
-problem observed by Wei Chong Tan that would be perfect.
+Please no HTML, I'm not a browser - Pas d'HTML, je ne suis pas un
+navigateur "Some people dream of success... while others wake up and work
+hard at it" 
 
-[ Unfortunately Thomas (who too saw some PIT calibration
-  weirdnesses IIRC) wont be back for some time. ]
-
-	Ingo
+"I worry about my child and the Internet all the time, even though she's
+too young to have logged on yet. Here's what I worry about. I worry that 10
+or 15 years from now, she will come to me and say 'Daddy, where were you
+when they took freedom of the press away from the Internet?'"
+--Mike Godwin, Electronic Frontier Foundation 
