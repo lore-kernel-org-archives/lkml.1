@@ -1,507 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752119AbZGaKRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752239AbZGaK0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752119AbZGaKRN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 06:17:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbZGaKRM
+	id S1752239AbZGaK0a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 06:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752204AbZGaK0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 06:17:12 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:52722 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751630AbZGaKRK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 06:17:10 -0400
-Subject: Re: Possible memory leak via alloc_pid()
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-In-Reply-To: <20090730212956.GA26863@redhat.com>
-References: <b0943d9e0907081433y599e6d51j285c390f18d7b32c@mail.gmail.com>
-	 <20090729170315.f62066c0.akpm@linux-foundation.org>
-	 <20090730212956.GA26863@redhat.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 31 Jul 2009 11:16:38 +0100
-Message-Id: <1249035398.29967.8.camel@pc1117.cambridge.arm.com>
+	Fri, 31 Jul 2009 06:26:30 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:35137 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751828AbZGaK02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 06:26:28 -0400
+Date: Fri, 31 Jul 2009 12:26:23 +0200
+From: Pierre Ossman <pierre@ossman.eu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org, nico@cam.org,
+       nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com, tony@atomide.com,
+       david-b@pacbell.net, manuel.lauss@gmail.com, mirq-linux@rere.qmqm.pl,
+       ppisa@pikron.com, jarkko.lavinen@nokia.com, ben@fluff.org,
+       saschasommer@freenet.de, avorontsov@ru.mvista.com, oakad@yahoo.com,
+       ian@mnementh.co.uk, HaraldWelte@viatech.com, JosephChan@via.com.tw,
+       adrian.hunter@nokia.com
+Subject: Re: New MMC maintainer needed
+Message-ID: <20090731122623.254fd0f1@mjolnir.ossman.eu>
+In-Reply-To: <20090728222334.0c543c47@mjolnir.ossman.eu>
+References: <20090714153601.6dfe70ff@mjolnir.ossman.eu>
+	<20090722151744.fffd7bf5.akpm@linux-foundation.org>
+	<20090728222334.0c543c47@mjolnir.ossman.eu>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 31 Jul 2009 10:16:39.0097 (UTC) FILETIME=[FDFEAA90:01CA11C7]
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-2171-1249035986-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-07-30 at 23:29 +0200, Oleg Nesterov wrote:
-> On 07/29, Andrew Morton wrote:
-> > On Wed, 8 Jul 2009 22:33:31 +0100
-> > Catalin Marinas <catalin.marinas@arm.com> wrote:
-> > > This is the gdm fork for starting Xorg (with pid 2739). It first
-> > > logged me in automatically, after which I logged out and gdm started
-> > > another Xorg. The pid structure for the first Xorg is reported as a
-> > > leak. The Xorg with pid 2739 is no longer present on my system.
-> > >
-> > > Using gdb vmlinux /proc/kcore shows that the pid->count is 2, so
-> > > that's why it probably wasn't freed by put_pid():
-> > >
-> > > (gdb) print ({struct pid}0xc307aa00)
-> > > $20 = {count = {counter = 2}, level = 0, tasks = {{first = 0x0}, {
-> > >       first = 0x0}, {first = 0x0}}, rcu = {next = 0xc24bfd64,
-> > >     func = 0xc0154e90 <delayed_put_pid>}, numbers = {{nr = 2739,
-> > >       ns = 0xc0737540, pid_chain = {next = 0x0, pprev = 0x200200}}}}
-> > >
-> > > Note that kmemleak is aware of and scans pid_hash (which was recorded
-> > > in kmemleak as a 16KB object).
-> 
-> This pid is detached and unhanshed. God knows who did the unbalanced
-> get_pid().
-> 
-> Since you can reproduce the problem easily, perhaps you can use the
-> hack above to track get/put ?
-> 
-> 	$ echo pid_of_Xorg > /proc/sys/kernel/xxx
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Below is the minicom capture. By the time Xorg dies, the count is 2.
-When logging out, there are two counter incrementing events via
-sys_wait4 and sys_ioctl, thoush I'm not sure whether they are
-unbalanced.
+--=_freyr.ossman.eu-2171-1249035986-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-It was tested on an ARM platform.
+This things are currently lingering in my inbox:
+
+[PATCH 1/1] MMC: SDIO card reset support for Intel Moorestown  platform
+http://lkml.org/lkml/2009/6/16/269
+
+SDIO cards have a global reset that in theory might be useful. I'm not
+sure it is in practice though as it is a very blunt instrument and it
+has created some problems in the past.
+
+A PCI equivalent to this reset would be resetting an entire PCI card,
+making it and every subfunction fall off the bus and come back again.
+The complexity of handling this can be high since every subfunction
+needs to be involved.
+
+The patch above adds new callbacks to handle this, but I think it can
+proabably be handled as a normal removal/insertion. This reset should
+only be used as a last resort anyway.
+
+Lastly, using this reset method might not even be useful. The libertas
+guys tried using it to get back a wedged card, but they did not have
+much success.
+
+I recommend holding off on this functionality until someone can show
+that the added functionality is worth the complexity.
+
+[PATCH 1/2] MMC Agressive clocking framework
+http://marc.info/?l=3Dlinux-arm-kernel&m=3D124394660502578&w=3D2
+(and several subsequent versions)
+
+I like this idea and it should be merged. What I didn't like about the
+initial versions were that the MMC core was too involved with low level
+decisions in drivers. IMO (and the PM guys from what I can tell) the
+drivers should automatically do relevant PM stuff, only restricted by
+what the MMC core has told the driver should be going on on the bus.
+
+The missing piece here was that the core needed to tell the drivers
+when they could turn off the clock on the bus. This can be difficult as
+some cards need the clock to drive their internal logic for writes
+(although this is in violation of the specs). This means the clock
+needs to be left running some time after a request.
+
+There are also a bunch of drivers that tries to do this themselves, and
+often without the delay. These should be fixed to leave such decisions
+to the core.
+
+[PATCH] mmc: prevent dangling block device from accessing stale queues
+http://marc.info/?l=3Dlinux-kernel&m=3D124413857119112
+
+This one is more fun as it requires digging into the block layer. :/
+
+The thread above describes the problem so I'm not going to reiterate it
+here. The short summary of why I don't want the patch though is that I
+believe it papers over the problem and doesn't solve it. I've been
+meaning to look further into the issue, but if someone else has the
+time then please go digging.
+
+[PATCH 1/2] atmel-mci: Unified Atmel MCI drivers (AVR32 & AT91)
+http://marc.info/?l=3Dlinux-arm-kernel&m=3D124577578729455
+
+This is nice work and it's really up to Nicolas when he wants it merged.
+
+[PATCH] DaVinci: MMC: V5: MMC/SD controller driver for DaVinci family.
+(couldn't find an archive)
+
+This driver has undergone some reviews and should be more or less done.
+Please check the previous review comments to confirm that everything
+has been fixed.
+
+[PATCH] mmc_spi: fail gracefully if host or card do not support the switch =
+command
+http://marc.info/?l=3Dlinux-kernel&m=3D124473347118158
+
+This is to work around buggy cards. I'm not convinced the problem is
+fully understood yet though so I need to look more at this.
+
+MMC driver for HTC Dream
+http://marc.info/?t=3D124631240200002&r=3D1&w=3D2
+
+This is a new driver that needs a review. It seems to make the
+classical mistakes, so have a look at my earlier driver reviews to see
+what to look for.
+
+[PATCH] MMC Core: Drop initialization frequency floor to 50kHz
+http://lkml.org/lkml/2009/7/1/529
+
+The initial patch wasn't very good, but lowering the
+speed to 350 kHz should be okay. A new patch is needed and probably
+some testing in -next.
+
+[PATCH] MMCI: use AMBA bus accessors
+http://marc.info/?t=3D124689780400003&r=3D1&w=3D2
+http://marc.info/?t=3D124689978900001&r=3D1&w=3D2
+http://marc.info/?t=3D124689956700005&r=3D1&w=3D2
+http://marc.info/?t=3D124689959900002&r=3D1&w=3D2
+
+Should probably all be merged.
+
+[PATCH] Add support for debugging MMC channel individually.
+http://list.drzeus.cx/pipermail/sdhci-devel/2009-July/002713.html
+
+I agree with Marcel. This kind of fine grained control belongs in
+debugfs.
+
+[PATCH] sdio: do not ignore MMC_VDD_165_195
+http://marc.info/?t=3D124764000300001&r=3D1&w=3D2
+
+There has already been some discussions around this, and quite
+correctly the bit this patch wants to use is undefined.
+
+Restoring back the system state from MMC after a successful hibernation
+http://marc.info/?t=3D124818534700003&r=3D1&w=3D2
+
+I don't agree with this approach. The point of the workqueue is so that
+the kernel can do things in parallel, so this patch is a step back. The
+problem is really with how the kernel doesn't properly cope with
+asynchronous disk scanning during bootup. The root_delay parameter was
+added for this for the "normal" case, but it seems more work is needed.
+
+move mmci-omap-hs's probe function to .devinit.text
+http://marc.info/?t=3D124734613000001&r=3D1&w=3D2
+
+Second patch is probably okay, but the maintainers need to respond.
+
+[PATCH 0/32] mmc and omap_hsmmc patches
+http://marc.info/?t=3D124722953900010&r=3D1&w=3D2
+
+I haven't looked through these at all. The ones affecting the core
+probably need some thorough reviews.
+
+I did notice the patch to say which cards a controller supports though,
+and I'm very sceptical about that one. The scanning process should work
+anyway, and the performance impact should be negligible as it is only
+on init. So that patch only adds complexity and confusion IMO.
 
 
-pgrep Xorg
-1519
-10:~# pgrep Xorg > /proc/sys/kernel/xxx 
-XXXXX(1519) ==22
-XXXXX(1519) ++22
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c01234e9>] (tty_get_pgrp+0x29/0x4c)
-[<c01234e9>] (tty_get_pgrp+0x29/0x4c) from [<c009e7cb>] (do_task_stat+0xc3/0x3c4)
-[<c009e7cb>] (do_task_stat+0xc3/0x3c4) from [<c009ead7>] (proc_tgid_stat+0xb/0xc)
-[<c009ead7>] (proc_tgid_stat+0xb/0xc) from [<c009c6b5>] (proc_single_show+0x35/0x5c)
-[<c009c6b5>] (proc_single_show+0x35/0x5c) from [<c0085125>] (seq_read+0x125/0x294)
-[<c0085125>] (seq_read+0x125/0x294) from [<c00759c9>] (vfs_read+0x69/0x11c)
-[<c00759c9>] (vfs_read+0x69/0x11c) from [<c0075af5>] (sys_read+0x2d/0x48)
-[<c0075af5>] (sys_read+0x2d/0x48) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --23
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c009e7db>] (do_task_stat+0xd3/0x3c4)
-[<c009e7db>] (do_task_stat+0xd3/0x3c4) from [<c009ead7>] (proc_tgid_stat+0xb/0xc)
-[<c009ead7>] (proc_tgid_stat+0xb/0xc) from [<c009c6b5>] (proc_single_show+0x35/0x5c)
-[<c009c6b5>] (proc_single_show+0x35/0x5c) from [<c0085125>] (seq_read+0x125/0x294)
-[<c0085125>] (seq_read+0x125/0x294) from [<c00759c9>] (vfs_read+0x69/0x11c)
-[<c00759c9>] (vfs_read+0x69/0x11c) from [<c0075af5>] (sys_read+0x2d/0x48)
-[<c0075af5>] (sys_read+0x2d/0x48) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-10:~# ps -e
-  PID TTY          TIME CMD
-    1 ?        00:00:02 init
-    2 ?        00:00:00 kthreadd
-    3 ?        00:00:00 ksoftirqd/0
-    4 ?        00:00:00 watchdog/0
-    5 ?        00:00:00 rcu_sched_grace
-    6 ?        00:00:00 events/0
-    7 ?        0:00:00 khelper
-   10 ?        00:00:00 async/mgr
-  136 ?        00:00:00 kblockd/0
-  142 ?        00:00:00 ata/0
-  143 ?        00:00:00 ata_aux
-  147 ?        00:00:00 ksuspend_usbd
-  151 ?        00:00:00 khubd
-  154 ?        00:00:00 kseriod
-  160 ?        00:00:00 kmmcd
-  185 ?        00:00:00 khungtaskd
-  186 ?        00:00:00 pdflush
-  187 ?        00:00:00 pdflush
-  188 ?        00:00:00 kswapd0
-  275 ?        00:00:00 aio/0
-  294 ?        00:00:01 nfsiod
-  416 ?        00:00:00 kapmd
-  436 ?        00:00:00 scsi_eh_0
-  449 ?        00:00:00 mtdblockd
-  470 ?        00:00:00 kpsmoused
-  503 ?        00:00:00 usbhid_resumer
-  519 ?        00:00:04 rpciod/0
-  527 ?        00:00:25 kmemleak
-  607 ?        00:00:04 udevd
- 1141 ?        00:00:00 portmap
- 1154 ?        00:00:00 rpc.statd
- 1288 ?        00:00:00 dbus-daemon
- 1300 ?        00:00:00 lpd
- 1316 ?        00:00:00 ntpd
- 1330 ?        00:00:01 hald
- 1331 ?        00:00:00 hald-runner
- 1361 ?        00:00:00 gdm
- 1391 tty1     00:00:00 getty
- 1393 ttyAMA0  00:00:00 login
- 1395 ttyAMA1  00:00:00 getty
- 1405 ttyAMA0  00:01:02 bash
- 1419 ?        00:00:05 gdm
- 1426 tty2     00:00:00 getty
- 1519 tty3     00:00:01 Xorg
- 1527 ?        00:00:25 gdmgreeter
- 1535 ttyAMA0  00:00:00 ps
+I think that's it, but don't be afraid to search the archives for
+anything else that doesn't seem to have been getting any attention.
 
-#
-# CM: Xorg logout
-#
+Rgds
+--=20
+     -- Pierre Ossman
 
-10:~# XXXXX(1519) ++22
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c0042971>] (find_get_pid+0x25/0x44)
-[<c0042971>] (find_get_pid+0x25/0x44) from [<c00393f5>] (sys_wait4+0x55/0x84)
-[<c00393f5>] (sys_wait4+0x55/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --23
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c007605d>] (__fput+0xdd/0x160)
-[<c007605d>] (__fput+0xdd/0x160) from [<c00760ff>] (fput+0x1f/0x20)
-[<c00760ff>] (fput+0x1f/0x20) from [<c0073d51>] (filp_close+0x39/0x40)
-[<c0073d51>] (filp_close+0x39/0x40) from [<c0073dbd>] (sys_close+0x65/0x98)
-[<c0073dbd>] (sys_close+0x65/0x98) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --22
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c012a8c9>] (vt_ioctl+0xbb5/0x131c)
-[<c012a8c9>] (vt_ioctl+0xbb5/0x131c) from [<c0124d65>] (tty_ioctl+0x5d9/0x620)
-[<c0124d65>] (tty_ioctl+0x5d9/0x620) from [<c007d705>] (vfs_ioctl+0x15/0x50)
-[<c007d705>] (vfs_ioctl+0x15/0x50) from [<c007db8d>] (do_vfs_ioctl+0x3a1/0x3c8)
-[<c007db8d>] (do_vfs_ioctl+0x3a1/0x3c8) from [<c007dbd7>] (sys_ioctl+0x23/0x34)
-[<c007dbd7>] (sys_ioctl+0x23/0x34) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) ++21
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c012a8e3>] (vt_ioctl+0xbcf/0x131c)
-[<c012a8e3>] (vt_ioctl+0xbcf/0x131c) from [<c0124d65>] (tty_ioctl+0x5d9/0x620)
-[<c0124d65>] (tty_ioctl+0x5d9/0x620) from [<c007d705>] (vfs_ioctl+0x15/0x50)
-[<c007d705>] (vfs_ioctl+0x15/0x50) from [<c007db8d>] (do_vfs_ioctl+0x3a1/0x3c8)
-[<c007db8d>] (do_vfs_ioctl+0x3a1/0x3c8) from [<c007dbd7>] (sys_ioctl+0x23/0x34)
-[<c007dbd7>] (sys_ioctl+0x23/0x34) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --22
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c009b20d>] (proc_delete_inode+0x19/0x34)
-[<c009b20d>] (proc_delete_inode+0x19/0x34) from [<c0081843>] (generic_delete_inode+0x67/0xc4)
-[<c0081843>] (generic_delete_inode+0x67/0xc4) from [<c0080e6b>] (iput+0x3f/0x4c)
-[<c0080e6b>] (iput+0x3f/0x4c) from [<c007f205>] (dentry_iput+0x75/0x88)
-[<c007f205>] (dentry_iput+0x75/0x88) from [<c007f29d>] (d_kill+0x21/0x40)
-[<c007f29d>] (d_kill+0x21/0x40) from [<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4)
-[<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4) from [<c007f5e1>] (shrink_dcache_parent+0x25/0xb0)
-[<c007f5e1>] (shrink_dcache_parent+0x25/0xb0) from [<c009d8f9>] (proc_flush_task+0x79/0x19c)
-[<c009d8f9>] (proc_flush_task+0x79/0x19c) from [<c00386df>] (release_task+0x27/0x380)
-[<c00386df>] (release_task+0x27/0x380) from [<c0038f35>] (wait_consider_task+0x4fd/0x7b8)
-[<c0038f35>] (wait_consider_task+0x4fd/0x7b8) from [<c0039279>] (do_wait+0x89/0x1b0)
-[<c0039279>] (do_wait+0x89/0x1b0) from [<c0039413>] (sys_wait4+0x73/0x84)
-[<c0039413>] (sys_wait4+0x73/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --21
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c009b20d>] (proc_delete_inode+0x19/0x34)
-[<c009b20d>] (proc_delete_inode+0x19/0x34) from [<c0081843>] (generic_delete_inode+0x67/0xc4)
-[<c0081843>] (generic_delete_inode+0x67/0xc4) from [<c0080e6b>] (iput+0x3f/0x4c)
-[<c0080e6b>] (iput+0x3f/0x4c) from [<c007f205>] (dentry_iput+0x75/0x88)
-[<c007f205>] (dentry_iput+0x75/0x88) from [<c007f29d>] (d_kill+0x21/0x40)
-[<c007f29d>] (d_kill+0x21/0x40) from [<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4)
-[<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4) from [<c007f5e1>] (shrink_dcache_parent+0x25/0xb0)
-[<c007f5e1>] (shrink_dcache_parent+0x25/0xb0) from [<c009d8f9>] (proc_flush_task+0x79/0x19c)
-[<c009d8f9>] (proc_flush_task+0x79/0x19c) from [<c00386df>] (release_task+0x27/0x380)
-[<c00386df>] (release_task+0x27/0x380) from [<c0038f35>] (wait_consider_task+0x4fd/0x7b8)
-[<c0038f35>] (wait_consider_task+0x4fd/0x7b8) from [<c0039279>] (do_wait+0x89/0x1b0)
-[<c0039279>] (do_wait+0x89/0x1b0) from [<c0039413>] (sys_wait4+0x73/0x84)
-[<c0039413>] (sys_wait4+0x73/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --20
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c009b20d>] (proc_delete_inode+0x19/0x34)
-[<c009b20d>] (proc_delete_inode+0x19/0x34) from [<c0081843>] (generic_delete_inode+0x67/0xc4)
-[<c0081843>] (generic_delete_inode+0x67/0xc4) from [<c0080e6b>] (iput+0x3f/0x4c)
-[<c0080e6b>] (iput+0x3f/0x4c) from [<c007f205>] (dentry_iput+0x75/0x88)
-[<c007f205>] (dentry_iput+0x75/0x88) from [<c007f29d>] (d_kill+0x21/0x40)
-[<c007f29d>] (d_kill+0x21/0x40) from [<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4)
-[<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4) from [<c007f5e1>] (shrink_dcache_parent+0x25/0xb0)
-[<c007f5e1>] (shrink_dcache_parent+0x25/0xb0) from [<c009d8f9>] (proc_flush_task+0x79/0x19c)
-[<c009d8f9>] (proc_flush_task+0x79/0x19c) from [<c00386df>] (release_task+0x27/0x380)
-[<c00386df>] (release_task+0x27/0x380) from [<c0038f35>] (wait_consider_task+0x4fd/0x7b8)
-[<c0038f35>] (wait_consider_task+0x4fd/0x7b8) from [<c0039279>] (do_wait+0x89/0x1b0)
-[<c0039279>] (do_wait+0x89/0x1b0) from [<c0039413>] (sys_wait4+0x73/0x84)
-[<c0039413>] (sys_wait4+0x73/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --19
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c009b20d>] (proc_delete_inode+0x19/0x34)
-[<c009b20d>] (proc_delete_inode+0x19/0x34) from [<c0081843>] (generic_delete_inode+0x67/0xc4)
-[<c0081843>] (generic_delete_inode+0x67/0xc4) from [<c0080e6b>] (iput+0x3f/0x4c)
-[<c0080e6b>] (iput+0x3f/0x4c) from [<c007f205>] (dentry_iput+0x75/0x88)
-[<c007f205>] (dentry_iput+0x75/0x88) from [<c007f29d>] (d_kill+0x21/0x40)
-[<c007f29d>] (d_kill+0x21/0x40) from [<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4)
-[<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4) from [<c007f5e1>] (shrink_dcache_parent+0x25/0xb0)
-[<c007f5e1>] (shrink_dcache_parent+0x25/0xb0) from [<c009d8f9>] (proc_flush_task+0x79/0x19c)
-[<c009d8f9>] (proc_flush_task+0x79/0x19c) from [<c00386df>] (release_task+0x27/0x380)
-[<c00386df>] (release_task+0x27/0x380) from [<c0038f35>] (wait_consider_task+0x4fd/0x7b8)
-[<c0038f35>] (wait_consider_task+0x4fd/0x7b8) from [<c0039279>] (do_wait+0x89/0x1b0)
-[<c0039279>] (do_wait+0x89/0x1b0) from [<c0039413>] (sys_wait4+0x73/0x84)
-[<c0039413>] (sys_wait4+0x73/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --18
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c009b20d>] (proc_delete_inode+0x19/0x34)
-[<c009b20d>] (proc_delete_inode+0x19/0x34) from [<c0081843>] (generic_delete_inode+0x67/0xc4)
-[<c0081843>] (generic_delete_inode+0x67/0xc4) from [<c0080e6b>] (iput+0x3f/0x4c)
-[<c0080e6b>] (iput+0x3f/0x4c) from [<c007f205>] (dentry_iput+0x75/0x88)
-[<c007f205>] (dentry_iput+0x75/0x88) from [<c007f29d>] (d_kill+0x21/0x40)
-[<c007f29d>] (d_kill+0x21/0x40) from [<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4)
-[<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4) from [<c007f5e1>] (shrink_dcache_parent+0x25/0xb0)
-[<c007f5e1>] (shrink_dcache_parent+0x25/0xb0) from [<c009d8f9>] (proc_flush_task+0x79/0x19c)
-[<c009d8f9>] (proc_flush_task+0x79/0x19c) from [<c00386df>] (release_task+0x27/0x380)
-[<c00386df>] (release_task+0x27/0x380) from [<c0038f35>] (wait_consider_task+0x4fd/0x7b8)
-[<c0038f35>] (wait_consider_task+0x4fd/0x7b8) from [<c0039279>] (do_wait+0x89/0x1b0)
-[<c0039279>] (do_wait+0x89/0x1b0) from [<c0039413>] (sys_wait4+0x73/0x84)
-[<c0039413>] (sys_wait4+0x73/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --17
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c009b20d>] (proc_delete_inode+0x19/0x34)
-[<c009b20d>] (proc_delete_inode+0x19/0x34) from [<c0081843>] (generic_delete_inode+0x67/0xc4)
-[<c0081843>] (generic_delete_inode+0x67/0xc4) from [<c0080e6b>] (iput+0x3f/0x4c)
-[<c0080e6b>] (iput+0x3f/0x4c) from [<c007f205>] (dentry_iput+0x75/0x88)
-[<c007f205>] (dentry_iput+0x75/0x88) from [<c007f29d>] (d_kill+0x21/0x40)
-[<c007f29d>] (d_kill+0x21/0x40) from [<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4)
-[<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4) from [<c007f5e1>] (shrink_dcache_parent+0x25/0xb0)
-[<c007f5e1>] (shrink_dcache_parent+0x25/0xb0) from [<c009d8f9>] (proc_flush_task+0x79/0x19c)
-[<c009d8f9>] (proc_flush_task+0x79/0x19c) from [<c00386df>] (release_task+0x27/0x380)
-[<c00386df>] (release_task+0x27/0x380) from [<c0038f35>] (wait_consider_task+0x4fd/0x7b8)
-[<c0038f35>] (wait_consider_task+0x4fd/0x7b8) from [<c0039279>] (do_wait+0x89/0x1b0)
-[<c0039279>] (do_wait+0x89/0x1b0) from [<c0039413>] (sys_wait4+0x73/0x84)
-[<c0039413>] (sys_wait4+0x73/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --16
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c009b20d>] (proc_delete_inode+0x19/0x34)
-[<c009b20d>] (proc_delete_inode+0x19/0x34) from [<c0081843>] (generic_delete_inode+0x67/0xc4)
-[<c0081843>] (generic_delete_inode+0x67/0xc4) from [<c0080e6b>] (iput+0x3f/0x4c)
-[<c0080e6b>] (iput+0x3f/0x4c) from [<c007f205>] (dentry_iput+0x75/0x88)
-[<c007f205>] (dentry_iput+0x75/0x88) from [<c007f29d>] (d_kill+0x21/0x40)
-[<c007f29d>] (d_kill+0x21/0x40) from [<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4)
-[<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4) from [<c007f5e1>] (shrink_dcache_parent+0x25/0xb0)
-[<c007f5e1>] (shrink_dcache_parent+0x25/0xb0) from [<c009d8f9>] (proc_flush_task+0x79/0x19c)
-[<c009d8f9>] (proc_flush_task+0x79/0x19c) from [<c00386df>] (release_task+0x27/0x380)
-[<c00386df>] (release_task+0x27/0x380) from [<c0038f35>] (wait_consider_task+0x4fd/0x7b8)
-[<c0038f35>] (wait_consider_task+0x4fd/0x7b8) from [<c0039279>] (do_wait+0x89/0x1b0)
-[<c0039279>] (do_wait+0x89/0x1b0) from [<c0039413>] (sys_wait4+0x73/0x84)
-[<c0039413>] (sys_wait4+0x73/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --15
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c009b20d>] (proc_delete_inode+0x19/0x34)
-[<c009b20d>] (proc_delete_inode+0x19/0x34) from [<c0081843>] (generic_delete_inode+0x67/0xc4)
-[<c0081843>] (generic_delete_inode+0x67/0xc4) from [<c0080e6b>] (iput+0x3f/0x4c)
-[<c0080e6b>] (iput+0x3f/0x4c) from [<c007f205>] (dentry_iput+0x75/0x88)
-[<c007f205>] (dentry_iput+0x75/0x88) from [<c007f29d>] (d_kill+0x21/0x40)
-[<c007f29d>] (d_kill+0x21/0x40) from [<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4)
-[<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4) from [<c007f5e1>] (shrink_dcache_parent+0x25/0xb0)
-[<c007f5e1>] (shrink_dcache_parent+0x25/0xb0) from [<c009d8f9>] (proc_flush_task+0x79/0x19c)
-[<c009d8f9>] (proc_flush_task+0x79/0x19c) from [<c00386df>] (release_task+0x27/0x380)
-[<c00386df>] (release_task+0x27/0x380) from [<c0038f35>] (wait_consider_task+0x4fd/0x7b8)
-[<c0038f35>] (wait_consider_task+0x4fd/0x7b8) from [<c0039279>] (do_wait+0x89/0x1b0)
-[<c0039279>] (do_wait+0x89/0x1b0) from [<c0039413>] (sys_wait4+0x73/0x84)
-[<c0039413>] (sys_wait4+0x73/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --14
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c009b20d>] (proc_delete_inode+0x19/0x34)
-[<c009b20d>] (proc_delete_inode+0x19/0x34) from [<c0081843>] (generic_delete_inode+0x67/0xc4)
-[<c0081843>] (generic_delete_inode+0x67/0xc4) from [<c0080e6b>] (iput+0x3f/0x4c)
-[<c0080e6b>] (iput+0x3f/0x4c) from [<c007f205>] (dentry_iput+0x75/0x88)
-[<c007f205>] (dentry_iput+0x75/0x88) from [<c007f29d>] (d_kill+0x21/0x40)
-[<c007f29d>] (d_kill+0x21/0x40) from [<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4)
-[<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4) from [<c007f5e1>] (shrink_dcache_parent+0x25/0xb0)
-[<c007f5e1>] (shrink_dcache_parent+0x25/0xb0) from [<c009d8f9>] (proc_flush_task+0x79/0x19c)
-[<c009d8f9>] (proc_flush_task+0x79/0x19c) from [<c00386df>] (release_task+0x27/0x380)
-[<c00386df>] (release_task+0x27/0x380) from [<c0038f35>] (wait_consider_task+0x4fd/0x7b8)
-[<c0038f35>] (wait_consider_task+0x4fd/0x7b8) from [<c0039279>] (do_wait+0x89/0x1b0)
-[<c0039279>] (do_wait+0x89/0x1b0) from [<c0039413>] (sys_wait4+0x73/0x84)
-[<c0039413>] (sys_wait4+0x73/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --13
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c009b20d>] (proc_delete_inode+0x19/0x34)
-[<c009b20d>] (proc_delete_inode+0x19/0x34) from [<c0081843>] (generic_delete_inode+0x67/0xc4)
-[<c0081843>] (generic_delete_inode+0x67/0xc4) from [<c0080e6b>] (iput+0x3f/0x4c)
-[<c0080e6b>] (iput+0x3f/0x4c) from [<c007f205>] (dentry_iput+0x75/0x88)
-[<c007f205>] (dentry_iput+0x75/0x88) from [<c007f29d>] (d_kill+0x21/0x40)
-[<c007f29d>] (d_kill+0x21/0x40) from [<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4)
-[<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4) from [<c007f5e1>] (shrink_dcache_parent+0x25/0xb0)
-[<c007f5e1>] (shrink_dcache_parent+0x25/0xb0) from [<c009d8f9>] (proc_flush_task+0x79/0x19c)
-[<c009d8f9>] (proc_flush_task+0x79/0x19c) from [<c00386df>] (release_task+0x27/0x380)
-[<c00386df>] (release_task+0x27/0x380) from [<c0038f35>] (wait_consider_task+0x4fd/0x7b8)
-[<c0038f35>] (wait_consider_task+0x4fd/0x7b8) from [<c0039279>] (do_wait+0x89/0x1b0)
-[<c0039279>] (do_wait+0x89/0x1b0) from [<c0039413>] (sys_wait4+0x73/0x84)
-[<c0039413>] (sys_wait4+0x73/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --12
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c009b20d>] (proc_delete_inode+0x19/0x34)
-[<c009b20d>] (proc_delete_inode+0x19/0x34) from [<c0081843>] (generic_delete_inode+0x67/0xc4)
-[<c0081843>] (generic_delete_inode+0x67/0xc4) from [<c0080e6b>] (iput+0x3f/0x4c)
-[<c0080e6b>] (iput+0x3f/0x4c) from [<c007f205>] (dentry_iput+0x75/0x88)
-[<c007f205>] (dentry_iput+0x75/0x88) from [<c007f29d>] (d_kill+0x21/0x40)
-[<c007f29d>] (d_kill+0x21/0x40) from [<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4)
-[<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4) from [<c007f5e1>] (shrink_dcache_parent+0x25/0xb0)
-[<c007f5e1>] (shrink_dcache_parent+0x25/0xb0) from [<c009d8f9>] (proc_flush_task+0x79/0x19c)
-[<c009d8f9>] (proc_flush_task+0x79/0x19c) from [<c00386df>] (release_task+0x27/0x380)
-[<c00386df>] (release_task+0x27/0x380) from [<c0038f35>] (wait_consider_task+0x4fd/0x7b8)
-[<c0038f35>] (wait_consider_task+0x4fd/0x7b8) from [<c0039279>] (do_wait+0x89/0x1b0)
-[<c0039279>] (do_wait+0x89/0x1b0) from [<c0039413>] (sys_wait4+0x73/0x84)
-[<c0039413>] (sys_wait4+0x73/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --11
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c009b20d>] (proc_delete_inode+0x19/0x34)
-[<c009b20d>] (proc_delete_inode+0x19/0x34) from [<c0081843>] (generic_delete_inode+0x67/0xc4)
-[<c0081843>] (generic_delete_inode+0x67/0xc4) from [<c0080e6b>] (iput+0x3f/0x4c)
-[<c0080e6b>] (iput+0x3f/0x4c) from [<c007f205>] (dentry_iput+0x75/0x88)
-[<c007f205>] (dentry_iput+0x75/0x88) from [<c007f29d>] (d_kill+0x21/0x40)
-[<c007f29d>] (d_kill+0x21/0x40) from [<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4)
-[<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4) from [<c007f5e1>] (shrink_dcache_parent+0x25/0xb0)
-[<c007f5e1>] (shrink_dcache_parent+0x25/0xb0) from [<c009d8f9>] (proc_flush_task+0x79/0x19c)
-[<c009d8f9>] (proc_flush_task+0x79/0x19c) from [<c00386df>] (release_task+0x27/0x380)
-[<c00386df>] (release_task+0x27/0x380) from [<c0038f35>] (wait_consider_task+0x4fd/0x7b8)
-[<c0038f35>] (wait_consider_task+0x4fd/0x7b8) from [<c0039279>] (do_wait+0x89/0x1b0)
-[<c0039279>] (do_wait+0x89/0x1b0) from [<c0039413>] (sys_wait4+0x73/0x84)
-[<c0039413>] (sys_wait4+0x73/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --10
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c009b20d>] (proc_delete_inode+0x19/0x34)
-[<c009b20d>] (proc_delete_inode+0x19/0x34) from [<c0081843>] (generic_delete_inode+0x67/0xc4)
-[<c0081843>] (generic_delete_inode+0x67/0xc4) from [<c0080e6b>] (iput+0x3f/0x4c)
-[<c0080e6b>] (iput+0x3f/0x4c) from [<c007f205>] (dentry_iput+0x75/0x88)
-[<c007f205>] (dentry_iput+0x75/0x88) from [<c007f29d>] (d_kill+0x21/0x40)
-[<c007f29d>] (d_kill+0x21/0x40) from [<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4)
-[<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4) from [<c007f5e1>] (shrink_dcache_parent+0x25/0xb0)
-[<c007f5e1>] (shrink_dcache_parent+0x25/0xb0) from [<c009d8f9>] (proc_flush_task+0x79/0x19c)
-[<c009d8f9>] (proc_flush_task+0x79/0x19c) from [<c00386df>] (release_task+0x27/0x380)
-[<c00386df>] (release_task+0x27/0x380) from [<c0038f35>] (wait_consider_task+0x4fd/0x7b8)
-[<c0038f35>] (wait_consider_task+0x4fd/0x7b8) from [<c0039279>] (do_wait+0x89/0x1b0)
-[<c0039279>] (do_wait+0x89/0x1b0) from [<c0039413>] (sys_wait4+0x73/0x84)
-[<c0039413>] (sys_wait4+0x73/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --9
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c009b20d>] (proc_delete_inode+0x19/0x34)
-[<c009b20d>] (proc_delete_inode+0x19/0x34) from [<c0081843>] (generic_delete_inode+0x67/0xc4)
-[<c0081843>] (generic_delete_inode+0x67/0xc4) from [<c0080e6b>] (iput+0x3f/0x4c)
-[<c0080e6b>] (iput+0x3f/0x4c) from [<c007f205>] (dentry_iput+0x75/0x88)
-[<c007f205>] (dentry_iput+0x75/0x88) from [<c007f29d>] (d_kill+0x21/0x40)
-[<c007f29d>] (d_kill+0x21/0x40) from [<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4)
-[<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4) from [<c007f5e1>] (shrink_dcache_parent+0x25/0xb0)
-[<c007f5e1>] (shrink_dcache_parent+0x25/0xb0) from [<c009d8f9>] (proc_flush_task+0x79/0x19c)
-[<c009d8f9>] (proc_flush_task+0x79/0x19c) from [<c00386df>] (release_task+0x27/0x380)
-[<c00386df>] (release_task+0x27/0x380) from [<c0038f35>] (wait_consider_task+0x4fd/0x7b8)
-[<c0038f35>] (wait_consider_task+0x4fd/0x7b8) from [<c0039279>] (do_wait+0x89/0x1b0)
-[<c0039279>] (do_wait+0x89/0x1b0) from [<c0039413>] (sys_wait4+0x73/0x84)
-[<c0039413>] (sys_wait4+0x73/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --8
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c009b20d>] (proc_delete_inode+0x19/0x34)
-[<c009b20d>] (proc_delete_inode+0x19/0x34) from [<c0081843>] (generic_delete_inode+0x67/0xc4)
-[<c0081843>] (generic_delete_inode+0x67/0xc4) from [<c0080e6b>] (iput+0x3f/0x4c)
-[<c0080e6b>] (iput+0x3f/0x4c) from [<c007f205>] (dentry_iput+0x75/0x88)
-[<c007f205>] (dentry_iput+0x75/0x88) from [<c007f29d>] (d_kill+0x21/0x40)
-[<c007f29d>] (d_kill+0x21/0x40) from [<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4)
-[<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4) from [<c007f5e1>] (shrink_dcache_parent+0x25/0xb0)
-[<c007f5e1>] (shrink_dcache_parent+0x25/0xb0) from [<c009d8f9>] (proc_flush_task+0x79/0x19c)
-[<c009d8f9>] (proc_flush_task+0x79/0x19c) from [<c00386df>] (release_task+0x27/0x380)
-[<c00386df>] (release_task+0x27/0x380) from [<c0038f35>] (wait_consider_task+0x4fd/0x7b8)
-[<c0038f35>] (wait_consider_task+0x4fd/0x7b8) from [<c0039279>] (do_wait+0x89/0x1b0)
-[<c0039279>] (do_wait+0x89/0x1b0) from [<c0039413>] (sys_wait4+0x73/0x84)
-[<c0039413>] (sys_wait4+0x73/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --7
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c009b20d>] (proc_delete_inode+0x19/0x34)
-[<c009b20d>] (proc_delete_inode+0x19/0x34) from [<c0081843>] (generic_delete_inode+0x67/0xc4)
-[<c0081843>] (generic_delete_inode+0x67/0xc4) from [<c0080e6b>] (iput+0x3f/0x4c)
-[<c0080e6b>] (iput+0x3f/0x4c) from [<c007f205>] (dentry_iput+0x75/0x88)
-[<c007f205>] (dentry_iput+0x75/0x88) from [<c007f29d>] (d_kill+0x21/0x40)
-[<c007f29d>] (d_kill+0x21/0x40) from [<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4)
-[<c007f44d>] (__shrink_dcache_sb+0x191/0x1f4) from [<c007f5e1>] (shrink_dcache_parent+0x25/0xb0)
-[<c007f5e1>] (shrink_dcache_parent+0x25/0xb0) from [<c009d8f9>] (proc_flush_task+0x79/0x19c)
-[<c009d8f9>] (proc_flush_task+0x79/0x19c) from [<c00386df>] (release_task+0x27/0x380)
-[<c00386df>] (release_task+0x27/0x380) from [<c0038f35>] (wait_consider_task+0x4fd/0x7b8)
-[<c0038f35>] (wait_consider_task+0x4fd/0x7b8) from [<c0039279>] (do_wait+0x89/0x1b0)
-[<c0039279>] (do_wait+0x89/0x1b0) from [<c0039413>] (sys_wait4+0x73/0x84)
-[<c0039413>] (sys_wait4+0x73/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --6
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c009b20d>] (proc_delete_inode+0x19/0x34)
-[<c009b20d>] (proc_delete_inode+0x19/0x34) from [<c0081843>] (generic_delete_inode+0x67/0xc4)
-[<c0081843>] (generic_delete_inode+0x67/0xc4) from [<c0080e6b>] (iput+0x3f/0x4c)
-[<c0080e6b>] (iput+0x3f/0x4c) from [<c007f205>] (dentry_iput+0x75/0x88)
-[<c007f205>] (dentry_iput+0x75/0x88) from [<c007f29d>] (d_kill+0x21/0x40)
-[<c007f29d>] (d_kill+0x21/0x40) from [<c0080609>] (dput+0xd9/0xf0)
-[<c0080609>] (dput+0xd9/0xf0) from [<c009d937>] (proc_flush_task+0xb7/0x19c)
-[<c009d937>] (proc_flush_task+0xb7/0x19c) from [<c00386df>] (release_task+0x27/0x380)
-[<c00386df>] (release_task+0x27/0x380) from [<c0038f35>] (wait_consider_task+0x4fd/0x7b8)
-[<c0038f35>] (wait_consider_task+0x4fd/0x7b8) from [<c0039279>] (do_wait+0x89/0x1b0)
-[<c0039279>] (do_wait+0x89/0x1b0) from [<c0039413>] (sys_wait4+0x73/0x84)
-[<c0039413>] (sys_wait4+0x73/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --5
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c003941b>] (sys_wait4+0x7b/0x84)
-[<c003941b>] (sys_wait4+0x7b/0x84) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
-XXXXX(1519) --4
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c0042a2d>] (delayed_put_pid+0x9/0xc)
-[<c0042a2d>] (delayed_put_pid+0x9/0xc) from [<c0056ecb>] (rcu_process_callbacks+0x43/0x50)
-[<c0056ecb>] (rcu_process_callbacks+0x43/0x50) from [<c003aae1>] (__do_softirq+0x75/0xe8)
-[<c003aae1>] (__do_softirq+0x75/0xe8) from [<c003ab91>] (irq_exit+0x3d/0x4c)
-[<c003ab91>] (irq_exit+0x3d/0x4c) from [<c002703d>] (_text+0x3d/0x50)
-[<c002703d>] (_text+0x3d/0x50) from [<c002774d>] (__irq_svc+0x4d/0xbc)
-Exception stack(0xc02eff78 to 0xc02effc0)
-ff60:                                                       00000001 00000004 
-ff80: c02effa8 00249455 c02ee000 c0316f20 c0017c9c c02f2b98 70015e6c 411fc081 
-ffa0: 0000001f 00000000 c02ee040 c02effc0 c004c753 c0028c0e 00000033 ffffffff 
-[<c002774d>] (__irq_svc+0x4d/0xbc) from [<c0028c0e>] (default_idle+0x1e/0x20)
-[<c0028c0e>] (default_idle+0x1e/0x20) from [<c0028f6b>] (cpu_idle+0x33/0x7c)
-[<c0028f6b>] (cpu_idle+0x33/0x7c) from [<c01f9a19>] (rest_init+0x51/0x64)
-[<c01f9a19>] (rest_init+0x51/0x64) from [<c000881d>] (start_kernel+0x1b5/0x1f8)
-[<c000881d>] (start_kernel+0x1b5/0x1f8) from [<7000803b>] (0x7000803b)
-XXXXX(1519) --3
-[<c002c031>] (unwind_backtrace+0x1/0x80) from [<c01fc323>] (dump_stack+0xb/0xc)
-[<c01fc323>] (dump_stack+0xb/0xc) from [<c00429f5>] (put_pid+0x19/0x48)
-[<c00429f5>] (put_pid+0x19/0x48) from [<c012a8c9>] (vt_ioctl+0xbb5/0x131c)
-[<c012a8c9>] (vt_ioctl+0xbb5/0x131c) from [<c0124d65>] (tty_ioctl+0x5d9/0x620)
-[<c0124d65>] (tty_ioctl+0x5d9/0x620) from [<c007d705>] (vfs_ioctl+0x15/0x50)
-[<c007d705>] (vfs_ioctl+0x15/0x50) from [<c007db8d>] (do_vfs_ioctl+0x3a1/0x3c8)
-[<c007db8d>] (do_vfs_ioctl+0x3a1/0x3c8) from [<c007dbd7>] (sys_ioctl+0x23/0x34)
-[<c007dbd7>] (sys_ioctl+0x23/0x34) from [<c0027c41>] (ret_fast_syscall+0x1/0x40)
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
 
-10:~# echo scan > /sys/kernel/debug/kmemleak
-kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
-10:~# cat /sys/kernel/debug/kmemleak
-unreferenced object 0xdfa30de0 (size 48):
-  comm "gdm", pid 1419, jiffies 53918
-  hex dump (first 32 bytes):
-    02 00 00 00 01 00 00 00 00 00 00 00 00 00 00 00  ................
-    00 00 00 00 00 00 00 00 04 24 36 de 25 2a 04 c0  .........$6.%*..
-  backtrace:
-    [<c00737c3>] __save_stack_trace+0x17/0x1c
-    [<c0073895>] create_object+0xcd/0x188
-    [<c01f9dfb>] kmemleak_alloc+0x1b/0x3c
-    [<c007242d>] kmem_cache_alloc+0xa5/0xb4
-    [<c0042a6d>] alloc_pid+0x11/0x22c
-    [<c0036685>] copy_process+0x831/0xc90
-    [<c0036bcf>] do_fork+0xeb/0x228
-    [<c002a4a5>] sys_clone+0x1d/0x20
-    [<c0027c41>] ret_fast_syscall+0x1/0x40
-    [<ffffffff>] 0xffffffff
-10:~# 
+--=_freyr.ossman.eu-2171-1249035986-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
 
--- 
-Catalin
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
 
+iEYEARECAAYFAkpyxtMACgkQ7b8eESbyJLhCjgCgo49LNSsFERnoZOgD3WUmEyzK
+/3oAn230LPx7NNWWwupZu7rZa9/fcJNj
+=1MkV
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-2171-1249035986-0001-2--
