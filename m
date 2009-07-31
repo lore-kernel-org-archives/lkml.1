@@ -1,83 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751568AbZGaNnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751475AbZGaNtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751568AbZGaNnn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 09:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbZGaNnm
+	id S1751475AbZGaNtF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 09:49:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751356AbZGaNtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 09:43:42 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:63686 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751426AbZGaNnm convert rfc822-to-8bit (ORCPT
+	Fri, 31 Jul 2009 09:49:05 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36599 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750759AbZGaNtE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 09:43:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=PzXYDnxjzgvXr2p/h94KzwyojXtESZHLYoTUTWYIGNrFlxMOCIZnuIxrDgHG5v8H9d
-         phI8HO1YS05WnSzPfRFfpM2PTnjKtmg2Z0rXJNOeoxlMLd52uFWJAk4w0L5iZWUoZHlQ
-         NTvWgJr2pJZFaXmz5gQ+tIUzJ2y0clzIE3rUg=
-MIME-Version: 1.0
-In-Reply-To: <20090731133437.GF17091@sirena.org.uk>
-References: <1249044918-695-1-git-send-email-quadros.roger@gmail.com>
-	 <20090731131005.GE17091@sirena.org.uk>
-	 <74d0deb30907310625u128ea22cu6fecca53c4a23d40@mail.gmail.com>
-	 <20090731133437.GF17091@sirena.org.uk>
-Date: Fri, 31 Jul 2009 16:43:40 +0300
-Message-ID: <b90c0690907310643n432c4504i1df5abaf8118e0b7@mail.gmail.com>
-Subject: Re: [PATCH] regulator: Add GPIO enable control to fixed voltage 
-	regulator driver
-From: Roger Quadros <quadros.roger@gmail.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: pHilipp Zabel <philipp.zabel@gmail.com>, lrg@slimlogic.co.uk,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 31 Jul 2009 09:49:04 -0400
+Date: Fri, 31 Jul 2009 14:49:01 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Theodore Tso <tytso@mit.edu>, Greg KH <greg@kroah.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Ray Lee <ray-lk@madrabbit.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] kdesu broken
+Message-ID: <20090731144901.09ba9ad3@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090729004941.3a78d4b3@lxorguk.ukuu.org.uk>
+References: <20090728174213.5e927428@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907280944150.3186@localhost.localdomain>
+	<20090728180649.596c5412@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907281141070.3186@localhost.localdomain>
+	<20090728195651.3a402a31@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.01.0907281158120.3186@localhost.localdomain>
+	<20090728201553.0eb2d51d@lxorguk.ukuu.org.uk>
+	<20090728195648.GA4833@kroah.com>
+	<20090728204720.GF31679@mit.edu>
+	<20090728210121.GB12155@kroah.com>
+	<20090728220203.GI31679@mit.edu>
+	<20090729004941.3a78d4b3@lxorguk.ukuu.org.uk>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 31, 2009 at 4:34 PM, Mark
-Brown<broonie@opensource.wolfsonmicro.com> wrote:
-> On Fri, Jul 31, 2009 at 03:25:36PM +0200, pHilipp Zabel wrote:
->> On Fri, Jul 31, 2009 at 3:10 PM, Mark
->> Brown<broonie@opensource.wolfsonmicro.com> wrote:
->
->> > This isn't needed, just use an invalid GPIO value (zero or less).
->
->> Negative only, actually. Zero itself is a valid GPIO number (which is
->> a bit unfortunate because if you forget to initialize .gpio, it will
->> default to GPIO #0).
->
->> If you drop .use_gpio_control, use gpio_is_valid(data->gpio) for this check:
->
-> Feh, better print a warning for GPIO 0 for at least a kernel release.
-> Fortunately we've got no mainline users of fixed voltage regulators.
->
+tar ball at
 
-I think most architectures start their GPIO numbering from 0.
-By 'a release', do you mean next Kernel release will be indexing GPIOs from 1?
+http://zeniv.linux.org.uk/~alan/ttydev.tar.gz
 
->> > Same comment as above with regard to the error message. ?It would be
->> > nice to have the default state passed in as platform data if you can't
->> > read it back to help avoid bouncing supplies at startup. ?IIRC
->> > gpio_get_value() will generally take a good stab at giving the current
->> > state no matter if the GPIO is input our output but I'd need to check.
->
->> I think this is not clearly defined in the GPIO API document, so it
->> could be architecture dependent.
->
-> It's not particularly; having checked gpiolib just passes this straight
-> through to the underlying driver.  Since they'd have to go out of their
-> way to do something unconstructive it should be safe to do the read and
-> we can worry about problem cases if they crop up.
->
->> > If you mark the comments with /** they'll get picked up by kerneldoc.
->
->> Maybe following the style in Documentation/kernel-doc-nano-HOWTO.txt
->> would be worthwhile, then.
->
-> Indeed.
->
+Series is in order of degree of working. It should all be sane down to
+vt-lockactive. The stuff down to tty-usb-serial-termiosbits has had some
+basic testing.
 
-Taken other suggestions for v2. Thanks Mark and Philipp.
+tty-usb-cleanup-open hangs still on the second open and is a work in
+progress but shows where the tty close side interface was going in order
+to remove all the posix logic from drivers.
+
+beyond that is the last bits of the serial cleanup which are definitely
+"work in progress", and the f81216 helper which needs reworking into the
+drivers proper.
