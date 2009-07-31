@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752121AbZGaOka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751712AbZGaOty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752121AbZGaOka (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 10:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbZGaOk3
+	id S1751712AbZGaOty (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 10:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZGaOtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 10:40:29 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:41200 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751661AbZGaOk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 10:40:27 -0400
-From: Nicolas Palix <npalix@diku.dk>
-To: x86@kernel.org, Andreas Herrmann <andreas.herrmann3@amd.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix compilation error in amd.c when SMP is not set
-Date: Fri, 31 Jul 2009 16:40:25 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; i686; ; )
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
+	Fri, 31 Jul 2009 10:49:53 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:41847 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751389AbZGaOtw (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 10:49:52 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Will Newton <will.newton@gmail.com>, dwalker@fifo99.com,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
+Subject: Re: [RFC][patch 02/12] remove clocksource inline functions
+In-Reply-To: Your message of "Thu, 30 Jul 2009 17:48:36 EDT."
+             <20090730214836.GB15780@infradead.org>
+From: Valdis.Kletnieks@vt.edu
+References: <200907291457.n6TEvDAt003701@d06av06.portsmouth.uk.ibm.com> <20090729173231.012d0b89@skybase> <87a5b0800907290836n6bb6da36tb0124e6d4f0673ea@mail.gmail.com> <20090729182754.2361631b@skybase> <28082.1248956470@turing-police.cc.vt.edu>
+            <20090730214836.GB15780@infradead.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1249041022_20572P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200907311640.25585.npalix@diku.dk>
+Date: Fri, 31 Jul 2009 07:50:22 -0400
+Message-ID: <20746.1249041022@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The function amd_fixup_dcm requires SMP to be set
-but it is called only when CONFIG_X86_HT is set.
+--==_Exmh_1249041022_20572P
+Content-Type: text/plain; charset=us-ascii
 
-It thus defined only if CONFIG_X86_HT is set.
+On Thu, 30 Jul 2009 17:48:36 EDT, Christoph Hellwig said:
+> > You know that a priori because you're familiar with that code. But there's
+> > another use case: An idiot monkey like myself manages to break the kernel
+> > *again* in some part of the kernel they're totally unfamiliar with, and
+> > they need to discover for themselves that timekeeping.c is the only user.
+> > 
+> > (Of course, in another 5-6 years I'll probably have broken something in
+> > every part of the kernel and whinged at Andrew about it, and that argument
+> > won't apply anymore.. ;)
+> 
+> Andthe poor grepping monkey can be sure that everyone used the useless
+> wrapper exactly how?  If you want to help people with grepping rename
+> the method from read to clocksource_read..
 
-Signed-off-by: Nicolas Palix <npalix@diku.dk>
----
- arch/x86/kernel/cpu/amd.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-index e06fa7c..1c15916 100644
---- a/arch/x86/kernel/cpu/amd.c
-+++ b/arch/x86/kernel/cpu/amd.c
-@@ -256,6 +256,7 @@ static int __cpuinit nearby_node(int apicid)
-  * Assumption 2: Mixed systems with both single-node and dual-node
-  *               processors are not supported.
-  */
-+#ifdef CONFIG_X86_HT
- static void __cpuinit amd_fixup_dcm(struct cpuinfo_x86 *c)
- {
- 	u32 t, cpn;
-@@ -299,6 +300,7 @@ static void __cpuinit amd_fixup_dcm(struct cpuinfo_x86 *c)
- 	 /* fixup core id to be in range from 0 to cpn */
- 	c->cpu_core_id = c->cpu_core_id % cpn;
- }
-+#endif
- 
- /*
-  * On a AMD dual core setup the lower bits of the APIC id distingush the cores.
--- 
-1.6.0.4
+Even better. ;)
 
 
--- 
-Nicolas Palix
+--==_Exmh_1249041022_20572P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFKctp+cC3lWbTT17ARAlHhAKCLXtejq7xgjvBmWkH2ILNOc8jwhwCfUtx5
+0m2yTW4MP0uAkKcBAMTyG4o=
+=c8Cs
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1249041022_20572P--
