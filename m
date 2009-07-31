@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752926AbZGaU6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752982AbZGaU6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752926AbZGaU6P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 16:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbZGaU6O
+	id S1752982AbZGaU6b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 16:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbZGaU6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 16:58:14 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:53725 "EHLO
+	Fri, 31 Jul 2009 16:58:30 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:53832 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751917AbZGaU6N (ORCPT
+	by vger.kernel.org with ESMTP id S1752447AbZGaU63 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 16:58:13 -0400
+	Fri, 31 Jul 2009 16:58:29 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>, Anders Kaseorg <andersk@ksplice.com>,
        Nelson Elhage <nelhage@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [PATCH] avr32: clean up linker script using standard macros.
-Date: Fri, 31 Jul 2009 16:57:01 -0400
-Message-Id: <1249073821-29895-1-git-send-email-tabbott@ksplice.com>
+       Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org
+Subject: [PATCH 1/3] ia64: Use .ref.text, not .text.init for start_ap.
+Date: Fri, 31 Jul 2009 16:57:51 -0400
+Message-Id: <1249073873-30028-1-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
@@ -25,119 +25,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Nelson Elhage <nelhage@ksplice.com>
+It seems that start_ap doesn't need to be in a special location in the
+kernel, but it references some init code so it should be in .ref.text.
 
-As a side effect, this patch changes the .init.ramfs data to be
-PAGE_SIZE-aligned, instead of 32-byte aligned.  Also, the init data is
-moved into its own output sections rather than the .init output
-section.
+Since this is the only thing in the .text.head section, eliminate
+.text.head from the linker script.
 
-There should be no other changes to the resulting vmlinux as a result
-of this patch.
-
-Signed-off-by: Nelson Elhage <nelhage@ksplice.com>
 Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: linux-ia64@vger.kernel.org
 ---
- arch/avr32/kernel/vmlinux.lds.S |   64 +++++---------------------------------
- 1 files changed, 9 insertions(+), 55 deletions(-)
+ arch/ia64/kernel/head.S        |    2 +-
+ arch/ia64/kernel/vmlinux.lds.S |    2 --
+ 2 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/arch/avr32/kernel/vmlinux.lds.S b/arch/avr32/kernel/vmlinux.lds.S
-index 7910d41..8fe5b8f 100644
---- a/arch/avr32/kernel/vmlinux.lds.S
-+++ b/arch/avr32/kernel/vmlinux.lds.S
-@@ -39,30 +39,10 @@ SECTIONS
- 		__tagtable_begin = .;
- 			*(.taglist.init)
- 		__tagtable_end = .;
--			INIT_DATA
--		. = ALIGN(16);
--		__setup_start = .;
--			*(.init.setup)
--		__setup_end = .;
--		. = ALIGN(4);
--		__initcall_start = .;
--			INITCALLS
--		__initcall_end = .;
--		__con_initcall_start = .;
--			*(.con_initcall.init)
--		__con_initcall_end = .;
--		__security_initcall_start = .;
--			*(.security_initcall.init)
--		__security_initcall_end = .;
--#ifdef CONFIG_BLK_DEV_INITRD
--		. = ALIGN(32);
--		__initramfs_start = .;
--			*(.init.ramfs)
--		__initramfs_end = .;
--#endif
--		. = ALIGN(PAGE_SIZE);
--		__init_end = .;
- 	}
-+	INIT_DATA_SECTION(16)
-+	. = ALIGN(PAGE_SIZE);
-+	__init_end = .;
+diff --git a/arch/ia64/kernel/head.S b/arch/ia64/kernel/head.S
+index 23f846d..8239ff6 100644
+--- a/arch/ia64/kernel/head.S
++++ b/arch/ia64/kernel/head.S
+@@ -181,7 +181,7 @@ swapper_pg_dir:
+ halt_msg:
+ 	stringz "Halting kernel\n"
  
- 	.text		: AT(ADDR(.text) - LOAD_OFFSET) {
- 		_evba = .;
-@@ -78,34 +58,16 @@ SECTIONS
- 		_etext = .;
- 	} = 0xd703d703
+-	.section .text.head,"ax"
++	__REF
  
--	. = ALIGN(4);
--	__ex_table	: AT(ADDR(__ex_table) - LOAD_OFFSET) {
--		__start___ex_table = .;
--		*(__ex_table)
--		__stop___ex_table = .;
--	}
--
-+	EXCEPTION_TABLE(4)
- 	RODATA
+ 	.global start_ap
  
--	. = ALIGN(THREAD_SIZE);
--
- 	.data		: AT(ADDR(.data) - LOAD_OFFSET) {
- 		_data = .;
- 		_sdata = .;
--		/*
--		 * First, the init task union, aligned to an 8K boundary.
--		 */
--		*(.data.init_task)
- 
--		/* Then, the page-aligned data */
--		. = ALIGN(PAGE_SIZE);
--		*(.data.page_aligned)
--
--		/* Then, the cacheline aligned data */
--		. = ALIGN(L1_CACHE_BYTES);
--		*(.data.cacheline_aligned)
--
--		/* And the rest... */
-+		INIT_TASK_DATA(THREAD_SIZE)
-+		PAGE_ALIGNED_DATA(PAGE_SIZE);
-+		CACHELINE_ALIGNED_DATA(L1_CACHE_BYTES)
- 		*(.data.rel*)
- 		DATA_DATA
- 		CONSTRUCTORS
-@@ -113,16 +75,8 @@ SECTIONS
- 		_edata = .;
- 	}
- 
--
--	. = ALIGN(8);
--	.bss    	: AT(ADDR(.bss) - LOAD_OFFSET) {
--		__bss_start = .;
--		*(.bss)
--		*(COMMON)
--		. = ALIGN(8);
--		__bss_stop = .;
--		_end = .;
--	}
-+	BSS_SECTION(0, 8, 8)
-+	_end = .;
- 
- 	/* When something in the kernel is NOT compiled as a module, the module
- 	 * cleanup code and data are put into these segments. Both can then be
+diff --git a/arch/ia64/kernel/vmlinux.lds.S b/arch/ia64/kernel/vmlinux.lds.S
+index 4a95e86..fa3a558 100644
+--- a/arch/ia64/kernel/vmlinux.lds.S
++++ b/arch/ia64/kernel/vmlinux.lds.S
+@@ -51,8 +51,6 @@ SECTIONS
+ 	KPROBES_TEXT
+ 	*(.gnu.linkonce.t*)
+     }
+-  .text.head : AT(ADDR(.text.head) - LOAD_OFFSET)
+-	{ *(.text.head) }
+   .text2 : AT(ADDR(.text2) - LOAD_OFFSET)
+ 	{ *(.text2) }
+ #ifdef CONFIG_SMP
 -- 
 1.6.3.3
 
