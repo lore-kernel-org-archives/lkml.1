@@ -1,105 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753240AbZGaVEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbZGaVLJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753240AbZGaVEt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 17:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbZGaVEs
+	id S1753225AbZGaVLJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 17:11:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbZGaVLI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 17:04:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42993 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753109AbZGaVEq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 17:04:46 -0400
-Date: Fri, 31 Jul 2009 22:52:46 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: eranian@gmail.com, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Robert Richter <robert.richter@amd.com>,
-       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
-       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
-       Corey J Ashford <cjashfor@us.ibm.com>,
-       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
-       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       roland <roland@redhat.com>
-Subject: Re: [RFC][PATCH] fcntl: F_[SG]ETOWN_TID
-Message-ID: <20090731205246.GA3457@redhat.com>
-References: <7c86c4470907270951i48886d56g90bc198f26bb0716@mail.gmail.com> <1248869948.6987.3083.camel@twins> <20090729221703.GA25368@redhat.com> <1248953485.6391.41.camel@twins> <20090730192040.GA9503@redhat.com> <1248984003.4164.0.camel@laptop> <20090730202804.GA13675@redhat.com> <1249029320.6391.72.camel@twins>
+	Fri, 31 Jul 2009 17:11:08 -0400
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:34514 "EHLO
+	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753079AbZGaVLH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 17:11:07 -0400
+X-SpamScore: -21
+X-BigFish: VPS-21(z34a4jz146fK62a3L1432R98dN936eM873fizz1202hzz5a6ciz32i6bh203h43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KNO060-04-E54-01
+Date: Fri, 31 Jul 2009 23:10:53 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: jaswinder@kernel.org, mingo@elte.hu, x86@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip] x86: oprofile/op_model_amd.c set return values
+	for op_amd_handle_ibs()
+Message-ID: <20090731211053.GO14610@erda.amd.com>
+References: <1245325167.7189.9.camel@localhost.localdomain> <20090618144731.GX18016@erda.amd.com> <20090731132927.88c400cc.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <1249029320.6391.72.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090731132927.88c400cc.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 31 Jul 2009 21:10:54.0464 (UTC) FILETIME=[64045000:01CA1223]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/31, Peter Zijlstra wrote:
->
-> In order to direct the SIGIO signal to a particular thread of a
-> multi-threaded application we cannot, like suggested by the manpage, put
-> a TID into the regular fcntl(F_SETOWN) call. It will still be send to
-> the whole process of which that thread is part.
->
-> Since people do want to properly direct SIGIO we introduce F_SETOWN_TID,
-> which functions similarly to F_SETOWN, except positive arguments are
-> interpreted as TIDs and negative arguments are interpreted as PIDs.
+On 31.07.09 13:29:27, Andrew Morton wrote:
+> On Thu, 18 Jun 2009 16:47:31 +0200
+> Robert Richter <robert.richter@amd.com> wrote:
+> 
+> > On 18.06.09 17:09:27, Jaswinder Singh Rajput wrote:
+> > > 
+> > > op_amd_handle_ibs() should return 0 when IBS is not present or not defined.
+> > > 
+> > > Fix compilation warning:
+> > >  CC [M]  arch/x86/oprofile/op_model_amd.o
+> > >  arch/x86/oprofile/op_model_amd.c: In function ___op_amd_handle_ibs___:
+> > >  arch/x86/oprofile/op_model_amd.c:217: warning: no return statement in function returning non-void
+> > > 
+> > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > > ---
+> > >  arch/x86/oprofile/op_model_amd.c |    7 +++++--
+> > >  1 files changed, 5 insertions(+), 2 deletions(-)
+> > 
+> > Applied to:
+> > 
+> >  git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git master
+> > 
+> 
+> Something has gone badly wrong.  This patch took six weeks to turn up
+> in linux-next.
 
-I think this is correct. But,
+Yes, at that time it was not yet quite clear of how to send oprofile
+patches upstream and to linux-next. I was discussing this with Ingo
+and we finally agreed to send it over tip to linux-next. It took also
+some weeks to find the right workflow and types of branches for this.
 
-> @@ -431,6 +474,7 @@ static void send_sigio_to_task(struct task_struct *p,
->  			       int fd,
->  			       int reason)
->  {
-> +	int (*send_sig)(int, struct siginfo *, struct task_struct *);
->  	/*
->  	 * F_SETSIG can change ->signum lockless in parallel, make
->  	 * sure we read it once and use the same value throughout.
-> @@ -440,6 +484,8 @@ static void send_sigio_to_task(struct task_struct *p,
->  	if (!sigio_perm(p, fown, signum))
->  		return;
->
-> +	send_sig = fown->task_only ? send_sig_info : group_send_sig_info;
+All this is sorted out now. See also my current branches in the
+oprofile tree:
 
-this is ugly.
+ http://git.kernel.org/?p=linux/kernel/git/rric/oprofile.git;a=summary
 
-I do not blame your patch, I blame signal.c which has a lot of helpers
-to send a signal but it is never possible to find the right one.
+In the last days I added oprofile to linux-next as a backup until Ingo
+will be back. The oprofile for-next branch will work also as backup in
+the future to make sure, all oprofile patches will be in time in
+linux-next. I see the things working now.
 
-I think we need a new trivial helper,
+Again, I also was not happy with the workflow, but I have fixed it
+together with Ingo in the last weeks. That oprofile pops up in
+linux-next now is the result of this. So please, see this more as
+'things are working now' than 'it took 6 weeks into linux-next'. Also,
+it is not too late for this, there are some more weeks to got for the
+next merge window.
 
-	int xxx(int sig, struct siginfo *info, struct task_struct *p, bool group)
-	{
-		unsigned long flags;
-		int ret = -ESRCH;
+> 
+> Apart from anything else this led me to have to fix something which was
+> already fixed.
+> 
+> All you guys *saw* that fix and still this didn't prompt anyone to
+> wonder what had gone wrong.
 
-		if (lock_task_sighand(p, &flags)) {
-			ret = send_signal(sig, info, p, group);
-			unlock_task_sighand(p, &flags);
-		}
+This went wrong, since the fix didn't make it to tip as fast as the
+patch set itself. But things are fixed now and this shouln't happen
+again.
 
-		return ret;
-	}
+> 
+> My fix is better, too.  The op_amd_handle_ibs() return value is
+> ignored, so it should return void.
 
-send_sigio_to_task() can just do: send_signal(..., !fown->task_only).
+There are pros and cons, since the handler actually should tell it did
+handle the nmi, it should return something. But for some reason this
+has been activly deactivated (maybe a workaround for a bug). And I
+decided to not to change the code until I now the reason for it. So
+the return value is ignored for now. But anyway, there aren't much
+differences in the end. So I will apply your patch instead.
 
-group_send_sig_info(), send_sig_info() should use this helper too.
+-Robert
 
-
-Also. without the new helper, F_SETOWN does check_kill_permission()
-while F_SETOWN_TID does not. This doesn't really matter, but this
-looks a bit odd.
-
-Note that send_sigio_to_task() does not need check_kill_permission().
-We use either SEND_SIG_PRIV or SI_FROMKERNEL() signals, so we never
-actually check permissions. Even if we did, it would be just wrong
-to deny the signal here using current_cred().
-
-
-Peter, may I suggest to to re-diff your patch on top of the trivial
-patch I am going to send a bit later today?
-
-Oleg.
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
 
