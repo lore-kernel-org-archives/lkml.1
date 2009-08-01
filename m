@@ -1,94 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbZHAWok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751267AbZHAXQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752587AbZHAWok (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 18:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbZHAWoj
+	id S1751267AbZHAXQP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 19:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750794AbZHAXQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 18:44:39 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:51476 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752487AbZHAWoj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 18:44:39 -0400
-Date: Sun, 2 Aug 2009 04:14:26 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: memory-controller patch fails to boot in qemu [mmotm]
-Message-ID: <20090801224426.GD8514@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <4A744C2A.6040009@gmail.com>
- <20090801200200.GB8514@balbir.in.ibm.com>
- <Pine.LNX.4.64.0908012305260.4581@sister.anvils>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0908012305260.4581@sister.anvils>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Sat, 1 Aug 2009 19:16:14 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:45882 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750706AbZHAXQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Aug 2009 19:16:14 -0400
+Date: Sun, 2 Aug 2009 09:16:05 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: tty tree change for linux-next
+Message-Id: <20090802091605.eeebc7fa.sfr@canb.auug.org.au>
+In-Reply-To: <20090801171815.GA15259@kroah.com>
+References: <20090801043905.GA12779@kroah.com>
+	<20090801164104.5e9b2f17.sfr@canb.auug.org.au>
+	<20090801172245.1d3e8b31.sfr@canb.auug.org.au>
+	<20090801171815.GA15259@kroah.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sun__2_Aug_2009_09_16_05_+1000_dAA8fa83tMf0xnx1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Hugh Dickins <hugh.dickins@tiscali.co.uk> [2009-08-01 23:09:09]:
+--Signature=_Sun__2_Aug_2009_09_16_05_+1000_dAA8fa83tMf0xnx1
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> I've just finished chasing something similar (without qemu),
-> and was about to post this:
-> 
-> [PATCH mmotm] memory controller: soft limit organize cgroups v9 fix
-> 
-> CONFIG_CGROUP_MEM_RES_CTLR=y CONFIG_PREEMPT=y mmotm fails to boot:
-> Kernel panic - not syncing: No init found; after lots of scheduling
-> while atomics, starting from when async_thread does sd_probe_async.
-> 
-> mem_cgroup_soft_limit_check() was doing an unbalanced get_cpu():
-> don't get_cpu if we won't need it, and put_cpu if we did get_cpu.
-> 
-> Hmm, this a weird function, passed an argument just to tell it to do
-> nothing.  Perhaps a placeholder for something more sensible to come?
-> 
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> ---
-> Fix to memory-controller-soft-limit-organize-cgroups-v9.patch
-> 
->  mm/memcontrol.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> --- mmotm/mm/memcontrol.c	2009-08-01 05:48:08.000000000 +0100
-> +++ linux/mm/memcontrol.c	2009-08-01 21:45:37.000000000 +0100
-> @@ -375,19 +375,21 @@ static bool mem_cgroup_soft_limit_check(
->  					bool over_soft_limit)
->  {
->  	bool ret = false;
-> -	int cpu = get_cpu();
-> +	int cpu;
->  	s64 val;
->  	struct mem_cgroup_stat_cpu *cpustat;
-> 
->  	if (!over_soft_limit)
->  		return ret;
-> 
-> +	cpu = get_cpu();
->  	cpustat = &mem->stat.cpustat[cpu];
->  	val = __mem_cgroup_stat_read_local(cpustat, MEM_CGROUP_STAT_EVENTS);
->  	if (unlikely(val > SOFTLIMIT_EVENTS_THRESH)) {
->  		__mem_cgroup_stat_reset_safe(cpustat, MEM_CGROUP_STAT_EVENTS);
->  		ret = true;
->  	}
-> +	put_cpu();
->  	return ret;
->  }
+Hi Greg,
+
+On Sat, 1 Aug 2009 10:18:15 -0700 Greg KH <greg@kroah.com> wrote:
 >
+> Ok, that's not good at all, I just took the patches straight from Alan.
+> I'll edit them up this weekend to work better (i.e. in the format that
+> all of my other patches are in, pseudo-mbox headers, which both quilt
+> and git seem to like.)
 
-I can confirm that this fixes the problem with CONFIG_PREEMPT enabled.
+Thanks.
 
-Tested-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
- 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- 
-	Balbir
+--Signature=_Sun__2_Aug_2009_09_16_05_+1000_dAA8fa83tMf0xnx1
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkp0zLUACgkQjjKRsyhoI8xT2ACgm5nUrjT95+XG0plpITz1V5CP
+d1kAnjbWslpijwIfVYmJ/Jox2gpSzhRQ
+=LERz
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__2_Aug_2009_09_16_05_+1000_dAA8fa83tMf0xnx1--
