@@ -1,96 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752320AbZHAU1D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752387AbZHAUgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752320AbZHAU1D (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 16:27:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbZHAU1B
+	id S1752387AbZHAUgu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 16:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbZHAUgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 16:27:01 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:7206 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752071AbZHAU1B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 16:27:01 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=xrjaefK6tPmIqvZ0Ctyz3Tw0wXFuC75ei4/Sga1E/72bxwwrvN9NjCiI6m5cYjWSM
-	cmk6+zeJYYYwN1VdWB71g==
-Date: Sat, 1 Aug 2009 13:26:52 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Paul Menage <menage@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
-In-Reply-To: <77df8765230d9f83859fde3119a2d60a.squirrel@webmail-b.css.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0908011303050.22174@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0907282125260.554@chino.kir.corp.google.com> <20090730180029.c4edcc09.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0907300219580.13674@chino.kir.corp.google.com> <20090730190216.5aae685a.kamezawa.hiroyu@jp.fujitsu.com>
- <alpine.DEB.2.00.0907301157100.9652@chino.kir.corp.google.com> <20090731093305.50bcc58d.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0907310231370.25447@chino.kir.corp.google.com> <7f54310137837631f2526d4e335287fc.squirrel@webmail-b.css.fujitsu.com>
- <alpine.DEB.2.00.0907311212240.22732@chino.kir.corp.google.com> <77df8765230d9f83859fde3119a2d60a.squirrel@webmail-b.css.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sat, 1 Aug 2009 16:36:48 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:37548 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752203AbZHAUgr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Aug 2009 16:36:47 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] [RFC] ark3116: add IrDA support (for Gembird UIR-22)
+Date: Sat, 1 Aug 2009 22:36:27 +0200
+User-Agent: KMail/1.9.10
+Cc: gregkh@suse.de, linux-usb@vger.kernel.org,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <200907261419.50702.linux@rainbow-software.org> <20090727111515.7d5f359f@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090727111515.7d5f359f@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908012236.32133.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Aug 2009, KAMEZAWA Hiroyuki wrote:
+On Monday 27 July 2009 12:15:15 Alan Cox wrote:
+> > The next step was usbsnoop to find what windows driver does with the
+> > device. The result is the patch below. Now the device works after
+> > plugging and running "irattach /dev/ttyUSB0 -s".
+> >
+> > But how to make it appear as a real IrDA device by itself? Another
+> > problem is mixing IrDA with USB serial driver. Is a separate driver
+> > (something like ark3116-irda) needed?
+>
+> For standard devices using serial/tty then irattach is the right way to
+> do it. Nothing else should be needed.
+>
+> > +	irda = le16_to_cpu(serial->dev->descriptor.idProduct) == 0x3118;
+> > +	if (irda)
+> > +		dbg("IrDA mode");
+> > +
+>
+> I would split this out into
+>
+> static int is_irda(serial) { }
+>
+> just so that anyone who needs to add more irda adapters can find it
+> easily and do so neatly.
 
-> Summarizing I think now .....
->   - rename mm->oom_adj as mm->effective_oom_adj
->   - re-add per-thread oom_adj
->   - update mm->effective_oom_adj based on per-thread oom_adj
->   - if necessary, plz add read-only /proc/pid/effective_oom_adj file.
->     or show 2 values in /proc/pid/oom_adj
->   - rewrite documentation about oom_score.
->    " it's calclulated from  _process's_ memory usage and oom_adj of
->     all threads which shares a memor  context".
->    This behavior is not changed from old implemtation, anyway.
->  - If necessary, rewrite oom_kill itself to scan only thread group
->    leader. It's a way to go regardless of  vfork problem.
-> 
+Something like this?
 
-Ok, so you've abandoned the signal_struct proposal and now want to add it 
-back to task_struct with an effective member in mm_struct by changing the 
-documentation.  Hmm.
 
-This solves the livelock problem by adding additional tunables, but 
-doesn't match how the documentation describes the use case for 
-/proc/pid/oom_adj.  Your argument is that the behavior of that value can't 
-change: that it must be per-thread.  And that allowance leads to one of 
-two inconsistent scenarios:
 
- - /proc/pid/oom_score is inconsistent when tuning /proc/pid/oom_adj if it
-   relies on the per-thread oom_adj; it now really represents nothing but
-   an incorrect value if other threads share that memory and misleads the
-   user on how the oom killer chooses victims, or
+Add IrDA support to ark3116 driver. This makes Gembird UIR-22 USB to
+IrDA adapter work (vendor ID 0x18ec, device ID 0x3118). This adapter
+contains ARK3116T USB serial chip and an IrDA transceiver, thus
+a command like "irattach /dev/ttyUSB0 -s" is needed.
 
- - /proc/pid/oom_score is inconsistent when the thread that set the
-   effective per-mm oom_adj exits and it is now obsolete since you have
-   no way to determine what the next effective oom_adj value shall be.
+All magic numbers were captured using usbsnoop from windows driver
+that came with the device.
 
-Determining the next effective per-mm oom_adj isn't possible when the only 
-threads sharing the mm remaining have different per-thread oom_adj values.  
-That's a horribly inconsistent state to be getting into because it allows 
-oom_score to change when a thread exits, which is completely unknown to 
-userspace, OR is allows the effective per-mm oom_adj to be different from 
-all threads sharing the same memory (and, thus, /proc/pid/oom_score not 
-being representative of any thread's /proc/pid/oom_adj).
 
-> I think documentation is wrong. It should say "you should think of
-> multi-thread effect to oom_adj/oom_score".
-> 
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
-It's more likely than not that applications were probably written to the 
-way the documentation described the two files: that is, adjust 
-/proc/pid/oom_score by tuning /proc/pid/oom_adj instead of relying on an 
-undocumented implementation detail concerning the tuning of oom_adj for a 
-vfork'd child prior to exec().  The user is probably unaware of the oom 
-killer's implementation and simply interprets a higher oom_score as a more 
-likely candidate for oom kill.  My patches preserve that in all scenarios 
-without altering the documentation or adding additional files that would 
-be required to leave the oom_adj value itself in an inconsistent state as 
-you propose.
+--- linux-2.6.30-orig/drivers/usb/serial/ark3116.c	2009-07-19 19:21:54.000000000 +0200
++++ linux/drivers/usb/serial/ark3116.c	2009-08-01 22:04:48.000000000 +0200
+@@ -31,10 +31,20 @@
+ 
+ static struct usb_device_id id_table [] = {
+ 	{ USB_DEVICE(0x6547, 0x0232) },
++	{ USB_DEVICE(0x18ec, 0x3118) },		/* USB to IrDA adapter */
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(usb, id_table);
+ 
++static int is_irda(struct usb_serial *serial)
++{
++	struct usb_device *dev = serial->dev;
++	if (le16_to_cpu(dev->descriptor.idVendor) == 0x18ec &&
++			le16_to_cpu(dev->descriptor.idProduct) == 0x3118)
++		return 1;
++	return 0;
++}
++
+ struct ark3116_private {
+ 	spinlock_t lock;
+ 	u8 termios_initialized;
+@@ -100,11 +110,21 @@
+ 		goto cleanup;
+ 	}
+ 
++	if (is_irda(serial))
++		dbg("IrDA mode");
++
+ 	/* 3 */
+ 	ARK3116_SND(serial, 3, 0xFE, 0x40, 0x0008, 0x0002);
+ 	ARK3116_SND(serial, 4, 0xFE, 0x40, 0x0008, 0x0001);
+ 	ARK3116_SND(serial, 5, 0xFE, 0x40, 0x0000, 0x0008);
+-	ARK3116_SND(serial, 6, 0xFE, 0x40, 0x0000, 0x000B);
++	ARK3116_SND(serial, 6, 0xFE, 0x40, is_irda(serial) ? 0x0001 : 0x0000,
++		    0x000B);
++
++	if (is_irda(serial)) {
++		ARK3116_SND(serial, 1001, 0xFE, 0x40, 0x0000, 0x000C);
++		ARK3116_SND(serial, 1002, 0xFE, 0x40, 0x0041, 0x000D);
++		ARK3116_SND(serial, 1003, 0xFE, 0x40, 0x0001, 0x000A);
++	}
+ 
+ 	/* <-- seq7 */
+ 	ARK3116_RCV(serial,  7, 0xFE, 0xC0, 0x0000, 0x0003, 0x00, buf);
+@@ -141,6 +161,8 @@
+ 	ARK3116_SND(serial, 147, 0xFE, 0x40, 0x0083, 0x0003);
+ 	ARK3116_SND(serial, 148, 0xFE, 0x40, 0x0038, 0x0000);
+ 	ARK3116_SND(serial, 149, 0xFE, 0x40, 0x0001, 0x0001);
++	if (is_irda(serial))
++		ARK3116_SND(serial, 1004, 0xFE, 0x40, 0x0000, 0x0009);
+ 	ARK3116_SND(serial, 150, 0xFE, 0x40, 0x0003, 0x0003);
+ 	ARK3116_RCV(serial, 151, 0xFE, 0xC0, 0x0000, 0x0004, 0x03, buf);
+ 	ARK3116_SND(serial, 152, 0xFE, 0x40, 0x0000, 0x0003);
+
+
+
+-- 
+Ondrej Zary
