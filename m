@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752761AbZHAI6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752735AbZHAI6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752761AbZHAI6c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 04:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbZHAI6b
+	id S1752735AbZHAI6w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 04:58:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbZHAI6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 04:58:31 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:51139 "EHLO mgw1.diku.dk"
+	Sat, 1 Aug 2009 04:58:51 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:36764 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751835AbZHAI6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 04:58:30 -0400
-Date: Sat, 1 Aug 2009 10:55:53 +0200 (CEST)
+	id S1752407AbZHAI6u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Aug 2009 04:58:50 -0400
+Date: Sat, 1 Aug 2009 10:52:51 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: linville@tuxdriver.com, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: timur@freescale.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 10/10] drivers/net/wireless: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0908011055250.23408@ask.diku.dk>
+Subject: [PATCH 1/10] arch/powerpc/sysdev/qe_lib: introduce missing kfree
+Message-ID: <Pine.LNX.4.64.0908011052290.23408@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -68,18 +67,30 @@ print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- drivers/net/wireless/iwmc3200wifi/commands.c   |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ arch/powerpc/sysdev/qe_lib/qe_ic.c  |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/wireless/iwmc3200wifi/commands.c b/drivers/net/wireless/iwmc3200wifi/commands.c
-index 0d66370..2bf9ef9 100644
---- a/drivers/net/wireless/iwmc3200wifi/commands.c
-+++ b/drivers/net/wireless/iwmc3200wifi/commands.c
-@@ -233,6 +233,7 @@ int iwm_store_rxiq_calib_result(struct iwm_priv *iwm)
- 	eeprom_rxiq = iwm_eeprom_access(iwm, IWM_EEPROM_CALIB_RXIQ);
- 	if (IS_ERR(eeprom_rxiq)) {
- 		IWM_ERR(iwm, "Couldn't access EEPROM RX IQ entry\n");
-+		kfree(rxiq);
- 		return PTR_ERR(eeprom_rxiq);
+diff --git a/arch/powerpc/sysdev/qe_lib/qe_ic.c b/arch/powerpc/sysdev/qe_lib/qe_ic.c
+index 074905c..3faa42e 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe_ic.c
++++ b/arch/powerpc/sysdev/qe_lib/qe_ic.c
+@@ -339,8 +339,10 @@ void __init qe_ic_init(struct device_node *node, unsigned int flags,
+ 
+ 	qe_ic->irqhost = irq_alloc_host(node, IRQ_HOST_MAP_LINEAR,
+ 					NR_QE_IC_INTS, &qe_ic_host_ops, 0);
+-	if (qe_ic->irqhost == NULL)
++	if (qe_ic->irqhost == NULL) {
++		kfree(qe_ic);
+ 		return;
++	}
+ 
+ 	qe_ic->regs = ioremap(res.start, res.end - res.start + 1);
+ 
+@@ -352,6 +354,7 @@ void __init qe_ic_init(struct device_node *node, unsigned int flags,
+ 
+ 	if (qe_ic->virq_low == NO_IRQ) {
+ 		printk(KERN_ERR "Failed to map QE_IC low IRQ\n");
++		kfree(qe_ic);
+ 		return;
  	}
  
