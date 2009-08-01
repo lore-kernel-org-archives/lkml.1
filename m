@@ -1,68 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753204AbZHABkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751244AbZHACGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753204AbZHABkA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 21:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752995AbZHABj7
+	id S1751244AbZHACGb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 22:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750945AbZHACGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 21:39:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39892 "EHLO mx2.redhat.com"
+	Fri, 31 Jul 2009 22:06:30 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48648 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752344AbZHABj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 21:39:59 -0400
-Date: Sat, 1 Aug 2009 03:28:38 +0200
+	id S1750859AbZHACGa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 22:06:30 -0400
+Date: Sat, 1 Aug 2009 03:54:34 +0200
 From: Oleg Nesterov <oleg@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, eranian@gmail.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       robert.richter@amd.com, paulus@samba.org, andi@firstfloor.org,
-       mpjohn@us.ibm.com, cel@us.ibm.com, cjashfor@us.ibm.com,
-       mucci@eecs.utk.edu, terpstra@eecs.utk.edu,
-       perfmon2-devel@lists.sourceforge.net, mtk.manpages@googlemail.com,
-       roland@redhat.com
-Subject: [PATCH 2/2] signals: send_sigio: use do_send_sig_info() to avoid
-	check_kill_permission()
-Message-ID: <20090801012838.GC30259@redhat.com>
-References: <7c86c4470907270951i48886d56g90bc198f26bb0716@mail.gmail.com> <1248869948.6987.3083.camel@twins> <20090729221703.GA25368@redhat.com> <1248953485.6391.41.camel@twins> <20090730192040.GA9503@redhat.com> <1248984003.4164.0.camel@laptop> <20090730202804.GA13675@redhat.com> <1249029320.6391.72.camel@twins> <20090731141122.a1939712.akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, eric.dumazet@gmail.com,
+       drepper@redhat.com, jens@mcbone.net, mingo@elte.hu,
+       peterz@infradead.org, sonnyrao@us.ibm.com, stable@kernel.org,
+       tglx@linutronix.de
+Subject: [PATCH v2] execve: must clear current->clear_child_tid
+Message-ID: <20090801015434.GA755@redhat.com>
+References: <200907312142.n6VLgKfx021454@imap1.linux-foundation.org> <20090731222959.GA8195@redhat.com> <alpine.LFD.2.01.0907311732250.3304@localhost.localdomain> <20090731175101.1699d653.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090731141122.a1939712.akpm@linux-foundation.org>
+In-Reply-To: <20090731175101.1699d653.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-group_send_sig_info()->check_kill_permission() assumes that current
-is the sender and uses current_cred().
+On 07/31, Andrew Morton wrote:
+>
+> On Fri, 31 Jul 2009 17:38:14 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+> >
+> >
+> > On Sat, 1 Aug 2009, Oleg Nesterov wrote:
+> > >
+> > > Perhaps it is better to change mm_release() ? It has to play with
+> > > ->clear_child_tid anyway.
+> >
+> > Ahh. I take back my previous Ack. Your patch is better. I'll ack that
+> > instead.
+> >
+>
+> 'k, thanks.  I shall compulsively watch my inbox awaiting the signed-off
+> and tested version ;)
 
-This is not true in send_sigio_to_task() case. From the security pov
-the sender is not current, but the task which did fcntl(F_SETOWN),
-that is why we have sigio_perm() which uses the right creds to check.
+I did some testing, but didn't try to check if this patches fixes the
+origianal problem. It obviously should... Still I removed Tested-by tag.
+But added Linus's ack, the patch is the same.
 
-Fortunately, send_sigio() always sends either SEND_SIG_PRIV or
-SI_FROMKERNEL() signal, so check_kill_permission() does nothing. But
-still it would be tidier to avoid this bogus security check and save
-a couple of cycles.
+------------------------------------------------------------------------------
+[PATCH v2] execve: must clear current->clear_child_tid
 
+From: Eric Dumazet <eric.dumazet@gmail.com>
+
+While looking at Jens Rosenboom bug report
+(http://lkml.org/lkml/2009/7/27/35) about strange sys_futex call done from
+a dying "ps" program, we found following problem.
+
+clone() syscall has special support for TID of created threads.  This
+support includes two features.
+
+One (CLONE_CHILD_SETTID) is to set an integer into user memory with the
+TID value.
+
+One (CLONE_CHILD_CLEARTID) is to clear this same integer once the created
+thread dies.
+
+The integer location is a user provided pointer, provided at clone()
+time.
+
+kernel keeps this pointer value into current->clear_child_tid.
+
+At execve() time, we should make sure kernel doesnt keep this user
+provided pointer, as full user memory is replaced by a new one.
+
+As glibc fork() actually uses clone() syscall with CLONE_CHILD_SETTID and
+CLONE_CHILD_CLEARTID set, chances are high that we might corrupt user
+memory in forked processes.
+
+Following sequence could happen:
+
+1) bash (or any program) starts a new process, by a fork() call that
+   glibc maps to a clone( ...  CLONE_CHILD_SETTID | CLONE_CHILD_CLEARTID
+   ...) syscall
+
+2) When new process starts, its current->clear_child_tid is set to a
+   location that has a meaning only in bash (or initial program) context
+   (&THREAD_SELF->tid)
+
+3) This new process does the execve() syscall to start a new program. 
+   current->clear_child_tid is left unchanged (a non NULL value)
+
+4) If this new program creates some threads, and initial thread exits,
+   kernel will attempt to clear the integer pointed by
+   current->clear_child_tid from mm_release() :
+
+        if (tsk->clear_child_tid
+            && !(tsk->flags & PF_SIGNALED)
+            && atomic_read(&mm->mm_users) > 1) {
+                u32 __user * tidptr = tsk->clear_child_tid;
+                tsk->clear_child_tid = NULL;
+
+                /*
+                 * We don't check the error code - if userspace has
+                 * not set up a proper pointer then tough luck.
+                 */
+<< here >>      put_user(0, tidptr);
+                sys_futex(tidptr, FUTEX_WAKE, 1, NULL, NULL, 0);
+        }
+
+5) OR : if new program is not multi-threaded, but spied by /proc/pid
+   users (ps command for example), mm_users > 1, and the exiting program
+   could corrupt 4 bytes in a persistent memory area (shm or memory mapped
+   file)
+
+If current->clear_child_tid points to a writeable portion of memory of the
+new program, kernel happily and silently corrupts 4 bytes of memory, with
+unexpected effects.
+
+Fix is straightforward and should not break any sane program.
+
+Reported-by: Jens Rosenboom <jens@mcbone.net>
+Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
 Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 ---
 
- fs/fcntl.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ kernel/fork.c |   22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
---- WAIT/fs/fcntl.c~2_SIGIO	2009-06-17 14:11:26.000000000 +0200
-+++ WAIT/fs/fcntl.c	2009-08-01 02:40:41.000000000 +0200
-@@ -462,11 +462,11 @@ static void send_sigio_to_task(struct ta
- 			else
- 				si.si_band = band_table[reason - POLL_IN];
- 			si.si_fd    = fd;
--			if (!group_send_sig_info(signum, &si, p))
-+			if (!do_send_sig_info(signum, &si, p, true))
- 				break;
- 		/* fall-through: fall back on the old plain SIGIO signal */
- 		case 0:
--			group_send_sig_info(SIGIO, SEND_SIG_PRIV, p);
-+			do_send_sig_info(SIGIO, SEND_SIG_PRIV, p, true);
+--- WAIT/kernel/fork.c~CLEARTID	2009-07-02 19:27:36.000000000 +0200
++++ WAIT/kernel/fork.c	2009-08-01 03:36:59.000000000 +0200
+@@ -568,18 +568,18 @@ void mm_release(struct task_struct *tsk,
+ 	 * the value intact in a core dump, and to save the unnecessary
+ 	 * trouble otherwise.  Userland only wants this done for a sys_exit.
+ 	 */
+-	if (tsk->clear_child_tid
+-	    && !(tsk->flags & PF_SIGNALED)
+-	    && atomic_read(&mm->mm_users) > 1) {
+-		u32 __user * tidptr = tsk->clear_child_tid;
++	if (tsk->clear_child_tid) {
++		if (!(tsk->flags & PF_SIGNALED) &&
++		    atomic_read(&mm->mm_users) > 1) {
++			/*
++			 * We don't check the error code - if userspace has
++			 * not set up a proper pointer then tough luck.
++			 */
++			put_user(0, tsk->clear_child_tid);
++			sys_futex(tsk->clear_child_tid, FUTEX_WAKE,
++					1, NULL, NULL, 0);
++		}
+ 		tsk->clear_child_tid = NULL;
+-
+-		/*
+-		 * We don't check the error code - if userspace has
+-		 * not set up a proper pointer then tough luck.
+-		 */
+-		put_user(0, tidptr);
+-		sys_futex(tidptr, FUTEX_WAKE, 1, NULL, NULL, 0);
  	}
  }
  
