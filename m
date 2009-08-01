@@ -1,43 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751487AbZHAEk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751538AbZHAEuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751487AbZHAEk0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 00:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750753AbZHAEkZ
+	id S1751538AbZHAEuV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 00:50:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750753AbZHAEuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 00:40:25 -0400
-Received: from kroah.org ([198.145.64.141]:40702 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750698AbZHAEkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 00:40:25 -0400
-Date: Fri, 31 Jul 2009 21:39:05 -0700
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: tty tree change for linux-next
-Message-ID: <20090801043905.GA12779@kroah.com>
+	Sat, 1 Aug 2009 00:50:20 -0400
+Received: from mail-yw0-f183.google.com ([209.85.211.183]:59128 "EHLO
+	mail-yw0-f183.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750698AbZHAEuT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Aug 2009 00:50:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=OrNlLSnWaJNPr+SujLfm8My3wdzsHKtGzGaMgTcqi0dI9qqNI3mVHgNSf+VY6tBmMc
+         FU+V3gWCBfuAE7bL3BS5VpHAXWspph6+aefOa+C8gSELpxwLLcuNNlfii7pzx6wd6mWS
+         V9KYK+pczMBAHxqIFZdtZh15OPbtPJ1eW/WCQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1249037742-7862-1-git-send-email-jlayton@redhat.com>
+References: <1249037742-7862-1-git-send-email-jlayton@redhat.com>
+Date: Fri, 31 Jul 2009 23:50:19 -0500
+Message-ID: <4a4634330907312150t26518c33k32ce6e51c044c804@mail.gmail.com>
+Subject: Re: [linux-cifs-client] [PATCH] cifs: reinstate original behavior 
+	when uid=/gid= options are specified
+From: Shirish Pargaonkar <shirishpargaonkar@gmail.com>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
+acked;
 
-I've now merged Alan's tty tree into my patch trees, and I'd like to ask
-for linux-next to pick them up.
-
-They are contained within the same directory as my other trees (staging,
-usb, driver-core), and conviently named "tty.current" and "tty", and can
-be found at:
-	http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/
-As you can see by the nameing in the above directory, the usb and
-staging trees changed names by virtue of putting the tty tree ahead of
-them.  Your scripts might need adjusting for this.
-
-If there are any problems with the trees, please let me know.
-
-thanks,
-
-greg k-h
+On Fri, Jul 31, 2009 at 5:55 AM, Jeff Layton<jlayton@redhat.com> wrote:
+> This patch fixes the regression reported here:
+>
+> http://bugzilla.kernel.org/show_bug.cgi?id=13861
+>
+> commit 4ae1507f6d266d0cc3dd36e474d83aad70fec9e4 changed the default
+> behavior when the uid= or gid= option was specified for a mount. The
+> existing behavior was to always clobber the ownership information
+> provided by the server when these options were specified. The above
+> commit changed this behavior so that these options simply provided
+> defaults when the server did not provide this information.
+>
+> This patch reverts this change so that the default behavior is restored.
+> It also adds "noforceuid" and "noforcegid" options to make it so that
+> ownership information from the server is preserved, even when the mount
+> has uid= or gid= options specified.
+>
+> It also adds a couple of printk notices that pop up when forceuid or
+> forcegid options are specified without a uid= or gid= option.
+>
+> Reported-by: Tom Chiverton <bugzilla.kernel.org@falkensweb.com>
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> ---
+>  fs/cifs/connect.c |   42 ++++++++++++++++++++++++++++++------------
+>  1 files changed, 30 insertions(+), 12 deletions(-)
+>
+> diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
+> index f248688..1f3345d 100644
+> --- a/fs/cifs/connect.c
+> +++ b/fs/cifs/connect.c
+> @@ -803,6 +803,10 @@ cifs_parse_mount_options(char *options, const char *devname,
+>        char *data;
+>        unsigned int  temp_len, i, j;
+>        char separator[2];
+> +       short int override_uid = -1;
+> +       short int override_gid = -1;
+> +       bool uid_specified = false;
+> +       bool gid_specified = false;
+>
+>        separator[0] = ',';
+>        separator[1] = 0;
+> @@ -1093,18 +1097,20 @@ cifs_parse_mount_options(char *options, const char *devname,
+>                                                    "too long.\n");
+>                                return 1;
+>                        }
+> -               } else if (strnicmp(data, "uid", 3) == 0) {
+> -                       if (value && *value)
+> -                               vol->linux_uid =
+> -                                       simple_strtoul(value, &value, 0);
+> -               } else if (strnicmp(data, "forceuid", 8) == 0) {
+> -                               vol->override_uid = 1;
+> -               } else if (strnicmp(data, "gid", 3) == 0) {
+> -                       if (value && *value)
+> -                               vol->linux_gid =
+> -                                       simple_strtoul(value, &value, 0);
+> -               } else if (strnicmp(data, "forcegid", 8) == 0) {
+> -                               vol->override_gid = 1;
+> +               } else if (!strnicmp(data, "uid", 3) && value && *value) {
+> +                       vol->linux_uid = simple_strtoul(value, &value, 0);
+> +                       uid_specified = true;
+> +               } else if (!strnicmp(data, "forceuid", 8)) {
+> +                       override_uid = 1;
+> +               } else if (!strnicmp(data, "noforceuid", 10)) {
+> +                       override_uid = 0;
+> +               } else if (!strnicmp(data, "gid", 3) && value && *value) {
+> +                       vol->linux_gid = simple_strtoul(value, &value, 0);
+> +                       gid_specified = true;
+> +               } else if (!strnicmp(data, "forcegid", 8)) {
+> +                       override_gid = 1;
+> +               } else if (!strnicmp(data, "noforcegid", 10)) {
+> +                       override_gid = 0;
+>                } else if (strnicmp(data, "file_mode", 4) == 0) {
+>                        if (value && *value) {
+>                                vol->file_mode =
+> @@ -1355,6 +1361,18 @@ cifs_parse_mount_options(char *options, const char *devname,
+>        if (vol->UNCip == NULL)
+>                vol->UNCip = &vol->UNC[2];
+>
+> +       if (uid_specified)
+> +               vol->override_uid = override_uid;
+> +       else if (override_uid == 1)
+> +               printk(KERN_NOTICE "CIFS: ignoring forceuid mount option "
+> +                                  "specified with no uid= option.\n");
+> +
+> +       if (gid_specified)
+> +               vol->override_gid = override_gid;
+> +       else if (override_gid == 1)
+> +               printk(KERN_NOTICE "CIFS: ignoring forcegid mount option "
+> +                                  "specified with no gid= option.\n");
+> +
+>        return 0;
+>  }
+>
+> --
+> 1.6.0.6
+>
+> _______________________________________________
+> linux-cifs-client mailing list
+> linux-cifs-client@lists.samba.org
+> https://lists.samba.org/mailman/listinfo/linux-cifs-client
+>
