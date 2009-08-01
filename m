@@ -1,90 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752522AbZHAWfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752544AbZHAWh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752522AbZHAWfu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 18:35:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbZHAWft
+	id S1752544AbZHAWh5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 18:37:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZHAWh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 18:35:49 -0400
-Received: from th5.kapitza.ras.ru ([83.149.229.88]:43165 "EHLO ari.home"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752417AbZHAWft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 18:35:49 -0400
-X-Greylist: delayed 729 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Aug 2009 18:35:48 EDT
-Date: Sun, 2 Aug 2009 02:23:43 +0400 (MSD)
-From: "Lev A. Melnikovsky" <melnikovsky@mail.ru>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: reading errors on JMicron JM20337 USB-SATA
-Message-ID: <alpine.LFD.2.00.0908020135100.15267@nev.ubzr>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 1 Aug 2009 18:37:56 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:60965 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752423AbZHAWh4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Aug 2009 18:37:56 -0400
+Message-ID: <4A74C34F.9050406@zytor.com>
+Date: Sat, 01 Aug 2009 15:35:59 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Tejun Heo <tj@kernel.org>
+Subject: Re: [GIT PULL] Additional x86 fixes for 2.6.31-rc5
+References: <200907311813.n6VIDe9S023442@voreg.hos.anvin.org> <alpine.LFD.2.01.0907311218080.3161@localhost.localdomain> <20090731195705.GA12270@elte.hu> <alpine.LFD.2.01.0908011214330.3304@localhost.localdomain> <4A7499BA.2000405@zytor.com> <alpine.LFD.2.01.0908011501470.3352@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0908011501470.3352@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 08/01/2009 03:04 PM, Linus Torvalds wrote:
+> 
+> On Sat, 1 Aug 2009, H. Peter Anvin wrote:
+>> This is clearly better... now the semi-obvious question becomes if there
+>> is any way we can get compiler support to do better and migrate to that
+>> as the compiler allows.
+> 
+> Well, even if we had compiler support, we'd have to basically then wait 
+> forever to make sure everybody has a supported compiler. So I think we're 
+> better off not worrying too much about that - it's not going to happen any 
+> time in the near future.
+> 
 
-I have read through a year old thread on "JMicron JM20337 USB-SATA data 
-corruption bugfix" and it seems here's another aspect of the same problem. 
-The SATA disk has genuine errors (bad sectors, just in case: I am not 
-going to use it but to recover some data from it). Unfortunately when a 
-bad block is read no error is returned, instead a caller is blocked 
-indefinitely (until the USB cable is removed). The system log is filled 
-with repetitive
+Well, we'd have to do something like:
 
-sd 3:0:0:0: [sdf] Sense Key : 0x0 [current]
-sd 3:0:0:0: [sdf] ASC=0x0 ASCQ=0x0
+#if __GNUC__ < version
+/* current code */
+#else
+/* new code */
+#endif
 
-Is this difficult/possible to fix?
+> I've now tested my patch, and it seems to result in a working kernel too. 
+> 
+>> In particular, if I remember right the problem with using __thread for 
+>> percpu was exactly that the current cpuness can change almost anywhere, 
+>> unless preemption is disabled.
+> 
+> That shouldn't matter. If it uses '%gs', it should all just work 
+> automatically. But if gcc does something different for thread-local, it's 
+> basically useless.
+> 
 
-The kernel is 2.6.27.28, here's what I get with CONFIG_USB_STORAGE_DEBUG 
-set:
+gcc uses %fs by default for __thread (on x86-64) but that can be
+overridden.  I believe someone tried to use it, but found that gcc made
+the assumption that none of the values could change underneath it, which
+caused trouble.  That wouldn't be an issue for variables like "current".
 
-usb-storage: Status code -121; transferred 0/4096
-usb-storage: -- short read transfer
-usb-storage: Bulk data transfer result 0x1
-usb-storage: Attempting to get CSW...
-usb-storage: usb_stor_bulk_transfer_buf: xfer 13 bytes
-usb-storage: Status code 0; transferred 13/13
-usb-storage: -- transfer complete
-usb-storage: Bulk status result = 0
-usb-storage: Bulk Status S 0x53425355 T 0x39 R 4096 Stat 0x1
-usb-storage: -- transport indicates command failure
-usb-storage: -- unexpectedly short transfer
-usb-storage: Issuing auto-REQUEST_SENSE
-usb-storage: Bulk Command S 0x43425355 T 0x3a L 18 F 128 Trg 0 LUN 0 CL 6
-usb-storage: usb_stor_bulk_transfer_buf: xfer 31 bytes
-usb-storage: Status code 0; transferred 31/31
-usb-storage: -- transfer complete
-usb-storage: Bulk command transfer result=0
-usb-storage: usb_stor_bulk_transfer_sglist: xfer 18 bytes, 1 entries
-usb-storage: Status code 0; transferred 18/18
-usb-storage: -- transfer complete
-usb-storage: Bulk data transfer result 0x0
-usb-storage: Attempting to get CSW...
-usb-storage: usb_stor_bulk_transfer_buf: xfer 13 bytes
-usb-storage: Status code 0; transferred 13/13
-usb-storage: -- transfer complete
-usb-storage: Bulk status result = 0
-usb-storage: Bulk Status S 0x53425355 T 0x3a R 0 Stat 0x0
-usb-storage: -- Result from auto-sense is 0
-usb-storage: -- code: 0x70, key: 0x0, ASC: 0x0, ASCQ: 0x0
-usb-storage: (Unknown Key): (unknown ASC/ASCQ)
-usb-storage: scsi cmd done, result=0x2
-sd 3:0:0:0: [sdf] Sense Key : 0x0 [current]
-sd 3:0:0:0: [sdf] ASC=0x0 ASCQ=0x0
-usb-storage: queuecommand called
-usb-storage: *** thread sleeping.
-usb-storage: *** thread awakened.
-usb-storage: Command READ_10 (10 bytes)
-usb-storage:  28 00 03 a8 d0 b0 00 00 08 00
-usb-storage: Bulk Command S 0x43425355 T 0x3b L 4096 F 128 Trg 0 LUN 0 CL 10
-usb-storage: usb_stor_bulk_transfer_buf: xfer 31 bytes
-usb-storage: Status code 0; transferred 31/31
-usb-storage: -- transfer complete
-usb-storage: Bulk command transfer result=0
-usb-storage: usb_stor_bulk_transfer_sglist: xfer 4096 bytes, 1 entries
+As I said, in the meantime I really do like your patch.
 
-I'd be glad to supply additional information if needed.
-Thanks
--L
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
