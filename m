@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752381AbZHAID1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752363AbZHAILx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752381AbZHAID1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 04:03:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbZHAID0
+	id S1752363AbZHAILx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 04:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZHAILv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 04:03:26 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3609 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751498AbZHAIDZ (ORCPT
+	Sat, 1 Aug 2009 04:11:51 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60001 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751795AbZHAILp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 04:03:25 -0400
-Subject: Re: [PATCH] Moorestown RAR Handler driver, MRST 2.6.31-rc3
-From: Joe Perches <joe@perches.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ossama Othman <ossama.othman@intel.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090801073053.GA30389@merkur.ravnborg.org>
-References: <1249082419-27718-1-git-send-email-ossama.othman@intel.com>
-	 <20090801073053.GA30389@merkur.ravnborg.org>
-Content-Type: text/plain
-Date: Sat, 01 Aug 2009 01:03:02 -0700
-Message-Id: <1249113782.27999.14.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 1 Aug 2009 04:11:45 -0400
+Date: Sat, 1 Aug 2009 10:11:41 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
+       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Bron Gondwana <brong@fastmail.fm>,
+       Reiserfs <reiserfs-devel@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Andrea Gelmini <andrea.gelmini@gmail.com>,
+       "Trenton D. Adams" <trenton.d.adams@gmail.com>,
+       Thomas Meyer <thomas@m3y3r.de>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Andi Kleen <andi@firstfloor.org>,
+       Marcel Hilzinger <mhilzinger@linuxnewmedia.de>,
+       Edward Shishkin <edward.shishkin@gmail.com>
+Subject: Re: [ANNOUNCE] Reiserfs/kill-bkl tree v2
+Message-ID: <20090801081141.GA18036@basil.fritz.box>
+References: <20090731174642.GA6539@nowhere>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090731174642.GA6539@nowhere>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-08-01 at 09:30 +0200, Sam Ravnborg wrote:
-> > +#include "memrar_allocator.h"
-> > +#include <linux/slab.h>
-> > +#include <linux/bug.h>
-> 
-> <linux/...> comes _before_ you own includes.
+On Fri, Jul 31, 2009 at 07:46:43PM +0200, Frederic Weisbecker wrote:
+> IV) Testing and review
 
-The use of pr_fmt might change this guideline.
+You seem to have done a lot of benchmarks, but did you also do stress testing?
 
-> > +		WARN(capacity < block_size * 2,
-> > +		     "Memory allocator is only large enough to "
-> > +		     "hold one block.\n");
-> 
-> Try to avoid breaking your printable line.
-> It is much easier to grep for the line when it is on a single
-> line.
-> If you violate the 80 chars per line rule do to this then accept
-> that grepable lines is better than keeping them 80 or less wide.
+While a performance issue wouldn't be good, corrupting someone's file system
+would be really bad.
 
-Maybe it's better to ignore the indent guideline here as well.
-An outdent might be preferable to having the line exceed 80 chars.
+e.g. running all the file system stress tests from LTP would be a good 
+idea, ideally multiple at a time on a multi processor system on a ram
+disk or perhaps AIM9.
 
-Maybe:
-		WARN(capacity < block_size * 2,
-	"Memory allocator is only large enough to hold one block.\n");
-or
-		WARN(capacity < block_size * 2, 
-"Memory allocator is only large enough to hold one block.\n");
+-Andi
 
-Any format string longer than 80 chars is likely a poor log entry.
-
-
+-- 
+ak@linux.intel.com -- Speaking for myself only.
