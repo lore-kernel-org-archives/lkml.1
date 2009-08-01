@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752209AbZHATtJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752204AbZHATuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752209AbZHATtJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 15:49:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbZHATtH
+	id S1752204AbZHATuA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 15:50:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbZHATuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 15:49:07 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:54087 "EHLO mgw2.diku.dk"
+	Sat, 1 Aug 2009 15:50:00 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:52947 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752099AbZHATtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 15:49:06 -0400
-Date: Sat, 1 Aug 2009 21:49:04 +0200 (CEST)
+	id S1752093AbZHATt7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Aug 2009 15:49:59 -0400
+Date: Sat, 1 Aug 2009 21:49:55 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: laurent.pinchart@skynet.be, linux-media@vger.kernel.org,
-       linux-uvc-devel@lists.berlios.de, linux-kernel@vger.kernel.org,
+To: garloff@suse.de, g.liakhovetski@gmx.de, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/5] drivers/media/video/uvc: Use DIV_ROUND_CLOSEST
-Message-ID: <Pine.LNX.4.64.0908012148420.25693@ask.diku.dk>
+Subject: [PATCH 3/5] drivers/scsi: Use DIV_ROUND_CLOSEST
+Message-ID: <Pine.LNX.4.64.0908012149050.25693@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -47,19 +46,20 @@ expression x,__divisor;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/media/video/uvc/uvc_v4l2.c  |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/scsi/tmscsim.c              |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/media/video/uvc/uvc_v4l2.c b/drivers/media/video/uvc/uvc_v4l2.c
-index 87cb9cc..6edaaf6 100644
---- a/drivers/media/video/uvc/uvc_v4l2.c
-+++ b/drivers/media/video/uvc/uvc_v4l2.c
-@@ -95,7 +95,7 @@ static __u32 uvc_try_frame_interval(struct uvc_frame *frame, __u32 interval)
- 		const __u32 max = frame->dwFrameInterval[1];
- 		const __u32 step = frame->dwFrameInterval[2];
- 
--		interval = min + (interval - min + step/2) / step * step;
-+		interval = min + DIV_ROUND_CLOSEST(interval-min, step) * step;
- 		if (interval > max)
- 			interval = max;
- 	}
+Diff --git a/drivers/scsi/tmscsim.c b/drivers/scsi/tmscsim.c
+index 9a42734..7322f30 100644
+--- a/drivers/scsi/tmscsim.c
++++ b/drivers/scsi/tmscsim.c
+@@ -1125,7 +1125,8 @@ dc390_MsgIn_set_sync (struct dc390_acb* pACB, struct dc390_srb* pSRB)
+     {
+       if (! (bval & FAST_SCSI)) wval1++;
+       printk (KERN_INFO "DC390: Target %i: Sync transfer %i.%1i MHz, Offset %i\n", pDCB->TargetID, 
+-	      40/wval1, ((40%wval1)*10+wval1/2)/wval1, pDCB->SyncOffset & 0x0f);
++		40/wval1, DIV_ROUND_CLOSEST((40 % wval1) * 10, wval1),
++		pDCB->SyncOffset & 0x0f);
+     }
+   
+   dc390_reprog (pACB, pDCB);
