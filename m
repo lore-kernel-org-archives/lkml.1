@@ -1,101 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751805AbZHAOKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751786AbZHAO71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751805AbZHAOKy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 10:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751741AbZHAOKy
+	id S1751786AbZHAO71 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 10:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbZHAO70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 10:10:54 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:60761 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751737AbZHAOKx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 10:10:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=DeGhlRh3Nt7jRBjpg9QSbbf3L7VIe6hRuxrY0GaAmanTwzC8htkHBqAa+hk20HjK0U
-         EUebB6j6zxio5NSxYENp/Kpzqn7/qDKsLgDzxFNpW4Y7gHDZvnf4Yenszn9u9u6AAsZN
-         WgoWoZPF3WbTXc7QdB7KUWcKV0P81MC4ycXfU=
+	Sat, 1 Aug 2009 10:59:26 -0400
+Received: from rtr.ca ([76.10.145.34]:37763 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751574AbZHAO7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Aug 2009 10:59:25 -0400
+Message-ID: <4A74584D.2010300@rtr.ca>
+Date: Sat, 01 Aug 2009 10:59:25 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-In-Reply-To: <4A6F30AF.4000004@mnementh.co.uk>
-References: <Pine.LNX.4.64.0907280937000.4943@axis700.grange>
-	 <4A6F0123.9040809@mnementh.co.uk>
-	 <Pine.LNX.4.64.0907281556160.6219@axis700.grange>
-	 <4A6F30AF.4000004@mnementh.co.uk>
-Date: Sat, 1 Aug 2009 18:10:52 +0400
-Message-ID: <bc64b4640908010710w1a0d6344s3e810433c28aadd5@mail.gmail.com>
-Subject: Re: [PATCH] tmio_mmc: Optionally support using platform clock
-From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-To: Ian Molton <ian@mnementh.co.uk>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org, Magnus Damm <damm@opensource.se>,
-       akpm@linux-foundation.org, Matt Fleming <matt@console-pimps.org>,
-       Philip Langdale <philipl@overt.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linux Kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+Subject: [PATCH] fs/compat_ioctl.c: add missing FS_IOC_FIEMAP support
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Add support for the FIEMAP ioctl for 32-bit user on 64-bit kernel.
 
-Sorry for the delay,
+When using a 32-bit runtime on top of a 64-bit kernel,
+programs like "filefrag" and "hdparm --fibmap" do not work correctly.
 
-2009/7/28 Ian Molton <ian@mnementh.co.uk>:
-> Guennadi Liakhovetski wrote:
->
->> Hi Ian
->
-> Hi!
->
->> Thanks for the review.
->
-> No problem - I hope you dont feel that I am picking on you in particular
-> here, this problem is not isolated to your patches.
->
->> I understand your concerns. Of course, the _proper_ solution would be to
->> implement an architecture-independent clock API, something like what
->> clocklib was trying to do. So, yes, if clocklib were in place now, I
->> certainly would have used it.
->
-> Which is of course a chicken/egg situation. I dealt with this a number of
-> times during the e-series development, and every time, integration with
-> mainline has gone more swiftly and with better quality, when the job was
-> done properly to begin with.
->
->> I searched for those clocklib submission attempts (Dmitry added to CC).
->
-> Also adding RMK to the CC:
->
->> Last one I can find (maybe I missed some) is from July 2008 - more than a
->> year ago. So, looks like our options currently are:
->>
->> 1. wait for new submissions of clocklib - if any are planned
->
-> Dmitry: whats the current status of your clocklib work?
+This is because there's no compat ioctl entry for the FIEMAP call.
+FIEMAP returns file extent info, similar to FIBMAP (but better).
 
-It wasn't refreshed since last submission or so, since for ARM we do have
-rmk's clocks implementations and I other maintainers (except AVR32 IIRC)
-didn't care at all.
+Since FIBMAP itself is b0rked on ext4, this leaves no way for a 32-bit
+program to reliably get detailed block information for a file
+when run on top of a 64-bit kernel.  This patch addresses the issue.
 
->> 3. take over patches from Dmitry and bring them to a state acceptable for
->> mainline
->
-> Take over / collaborate with. I'll happily help people push these patches.
->
->> I personally don't have free (as in beer) time to work on 2 or 3. Anyone?
->
-> If I can find out what the current state of this stuff is, I'll help get it
-> working - I can test / update all the TC6x and T7x MFD devices (and probably
-> asic3 too)
+Once upstream, this patch could also be a candidate for -stable.
 
-I don't think I'll have time to work on/refresh clocklib patches. Feel
-free to continue
-where I've left them.
+Signed-off-by: Mark Lord <mlord@pobox.com>
 
-
--- 
-With best wishes
-Dmitry
+--- old/fs/compat_ioctl.c	2009-08-01 10:47:16.601066905 -0400
++++ linux/fs/compat_ioctl.c	2009-08-01 10:49:23.054387926 -0400
+@@ -35,6 +35,7 @@
+ #include <linux/falloc.h>
+ #include <linux/fs.h>
+ #include <linux/file.h>
++#include <linux/fiemap.h>
+ #include <linux/ppp_defs.h>
+ #include <linux/if_ppp.h>
+ #include <linux/if_pppox.h>
+@@ -1907,6 +1908,7 @@
+ COMPATIBLE_IOCTL(FIONREAD)  /* This is also TIOCINQ */
+ /* 0x00 */
+ COMPATIBLE_IOCTL(FIBMAP)
++COMPATIBLE_IOCTL(FS_IOC_FIEMAP)
+ COMPATIBLE_IOCTL(FIGETBSZ)
+ /* 'X' - originally XFS but some now in the VFS */
+ COMPATIBLE_IOCTL(FIFREEZE)
+@@ -2805,6 +2807,7 @@
+ 		goto out_fput;
+ #endif
+ 
++	case FS_IOC_FIEMAP:
+ 	case FIBMAP:
+ 	case FIGETBSZ:
+ 	case FIONREAD:
