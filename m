@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751719AbZHAReW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751814AbZHARhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751719AbZHAReW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 13:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbZHAReV
+	id S1751814AbZHARhU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 13:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZHARhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 13:34:21 -0400
-Received: from kroah.org ([198.145.64.141]:59861 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751150AbZHAReR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 13:34:17 -0400
-Date: Sat, 1 Aug 2009 10:18:15 -0700
-From: Greg KH <greg@kroah.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: tty tree change for linux-next
-Message-ID: <20090801171815.GA15259@kroah.com>
-References: <20090801043905.GA12779@kroah.com>
- <20090801164104.5e9b2f17.sfr@canb.auug.org.au>
- <20090801172245.1d3e8b31.sfr@canb.auug.org.au>
+	Sat, 1 Aug 2009 13:37:19 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:41121 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751150AbZHARhS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Aug 2009 13:37:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=oAvvhRVn4XgmoQImX2oPO6hyixDaOuf2Ff+0bXI70a7rxFM3bzcPCFwdm2rYQV5p9H
+         o6pLJlmXxo/gW7tuKSMt/hnOY3PUDQnKxiDddI8H0Q4f8Prx1yI/9OcobNgStEBKrw+K
+         TUi76s515NqB28x2ZIhpcUgqX7Np6j12XBuFU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090801172245.1d3e8b31.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Date: Sat, 1 Aug 2009 19:37:18 +0200
+Message-ID: <9b06e8d20908011037m6b0f72cch154ed1e15bdc8938@mail.gmail.com>
+Subject: Strange arch/mips/delay.c
+From: =?ISO-8859-1?Q?Lo=EFc_Greni=E9?= <loic.grenie@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       Ralf Baechle <ralf@linux-mips.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 01, 2009 at 05:22:45PM +1000, Stephen Rothwell wrote:
-> Hi Greg,
-> 
-> On Sat, 1 Aug 2009 16:41:04 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> > On Fri, 31 Jul 2009 21:39:05 -0700 Greg KH <greg@kroah.com> wrote:
-> > >
-> > > If there are any problems with the trees, please let me know.
-> > 
-> > Will do.
-> 
-> Just a small (but important) thing.  All the tty series patches look like this:
-> 
-> <summary>
-> 
-> From: <author>
-> 
-> <message>
-> .
-> .
-> 
-> 
-> When I import these, they will all look like they are authored by you and
-> use the file name as the one line summary :-( .  "Git quilt-import"
-> expects more mail-like patches like:
-> 
-> From: <author>
-> Subject: <summary>
-> 
-> ..
-> 
-> So if there is some easy transform you could do on these, it would be
-> good.  (There is only one patch that has "Subject:" at the start of the
-> <summary>.)  (Subject: followed by From: is ok as well, so 'prepend
-> "Subject: " to first line and remove following blank line' would probably
-> get you very close.)
+  I could not compile for mips without something similar to the
+following patch. As far as I can say __udelay and __ndelay
+are costly nops (with __ndelay not compiling at all) without
+the patch.
 
-Ok, that's not good at all, I just took the patches straight from Alan.
-I'll edit them up this weekend to work better (i.e. in the format that
-all of my other patches are in, pseudo-mbox headers, which both quilt
-and git seem to like.)
+  At that point, it might be interesting to change
+the 0x00000005uLL by 0x00000045uLL and the >> 32
+by >> 36 (the precision is much better and the cost
+should be the same -- obviously there is a slightly higher
+risk of overlow).
 
-Thanks for letting me know,
+    Thanks,
 
-greg k-h
+           Loïc Grenié
+
+Signed-off-by: Loic Grenie <loic.grenie@gmail.com>
+
+--- a/arch/mips/lib/delay.c
++++ b/arch/mips/lib/delay.c
+@@ -43,7 +43,7 @@ void __udelay(unsigned long us)
+ {
+        unsigned int lpj = current_cpu_data.udelay_val;
+
+-       __delay((us * 0x000010c7 * HZ * lpj) >> 32);
++       __delay((us * 0x000010c7uLL * HZ * lpj) >> 32);
+ }
+ EXPORT_SYMBOL(__udelay);
+
+@@ -51,6 +51,6 @@ void __ndelay(unsigned long ns)
+ {
+        unsigned int lpj = current_cpu_data.udelay_val;
+
+-       __delay((us * 0x00000005 * HZ * lpj) >> 32);
++       __delay((ns * 0x00000005uLL * HZ * lpj) >> 32);
+ }
+ EXPORT_SYMBOL(__ndelay);
