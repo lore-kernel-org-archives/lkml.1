@@ -1,129 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752387AbZHAUgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752363AbZHAV0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752387AbZHAUgu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 16:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbZHAUgs
+	id S1752363AbZHAV0Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 17:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbZHAV0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 16:36:48 -0400
-Received: from mail.atlantis.sk ([80.94.52.35]:37548 "EHLO mail.atlantis.sk"
+	Sat, 1 Aug 2009 17:26:23 -0400
+Received: from thunk.org ([69.25.196.29]:45889 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752203AbZHAUgr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 16:36:47 -0400
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] [RFC] ark3116: add IrDA support (for Gembird UIR-22)
-Date: Sat, 1 Aug 2009 22:36:27 +0200
-User-Agent: KMail/1.9.10
-Cc: gregkh@suse.de, linux-usb@vger.kernel.org,
-       "linux-kernel" <linux-kernel@vger.kernel.org>
-References: <200907261419.50702.linux@rainbow-software.org> <20090727111515.7d5f359f@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090727111515.7d5f359f@lxorguk.ukuu.org.uk>
+	id S1751439AbZHAV0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Aug 2009 17:26:22 -0400
+Date: Sat, 1 Aug 2009 17:26:16 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: linux-kernel@vger.kernel.org
+Cc: avi@redhat.com
+Subject: Problems with CONFIG_KVM_GUEST?
+Message-ID: <20090801212616.GD734@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	linux-kernel@vger.kernel.org, avi@redhat.com
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200908012236.32133.linux@rainbow-software.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 27 July 2009 12:15:15 Alan Cox wrote:
-> > The next step was usbsnoop to find what windows driver does with the
-> > device. The result is the patch below. Now the device works after
-> > plugging and running "irattach /dev/ttyUSB0 -s".
-> >
-> > But how to make it appear as a real IrDA device by itself? Another
-> > problem is mixing IrDA with USB serial driver. Is a separate driver
-> > (something like ark3116-irda) needed?
->
-> For standard devices using serial/tty then irattach is the right way to
-> do it. Nothing else should be needed.
->
-> > +	irda = le16_to_cpu(serial->dev->descriptor.idProduct) == 0x3118;
-> > +	if (irda)
-> > +		dbg("IrDA mode");
-> > +
->
-> I would split this out into
->
-> static int is_irda(serial) { }
->
-> just so that anyone who needs to add more irda adapters can find it
-> easily and do so neatly.
+Using the XFS QA regression test suites to test ext4, I reliably get
+lock-ups and OOPS's with I run a kernel using KVM with
+CONFIG_KVM_GUEST configured.  This is with 2.6.31-rc3 and 2.6.31-rc4.  
 
-Something like this?
+The problems disappear if I turn off CONFIG_KVM_GUEST; the XFS tests
+run without problem to completion once I turn this configuration
+option off.  That's what I'll do for now, but if someone could look
+into this, I'd appreciate it.
 
+The KVM command-line which I am using is:
 
+/usr/local/bin/qemu-system-x86_64 /kbuild/root_fs.img -net nic,model=ne2k_pci -net tap \
+	-hdb /dev/closure/test-4k -hdc /dev/closure/scratch \
+	-hdd /dev/closure/test-1k -serial telnet::4444,server -smp 2 -m 512 \
+	--kernel /kbuild/ext4/arch/x86/boot/bzImage \
+	--append "root=0800 console=ttyS0,115200 console=tty0"
 
-Add IrDA support to ark3116 driver. This makes Gembird UIR-22 USB to
-IrDA adapter work (vendor ID 0x18ec, device ID 0x3118). This adapter
-contains ARK3116T USB serial chip and an IrDA transceiver, thus
-a command like "irattach /dev/ttyUSB0 -s" is needed.
+... and here's a typical soft lockup report
 
-All magic numbers were captured using usbsnoop from windows driver
-that came with the device.
+[ 2666.103359] BUG: soft lockup - CPU#1 stuck for 61s! [sh:21485]
+[ 2666.103359] Modules linked in:
+[ 2666.112563] irq event stamp: 183767754
+[ 2666.112563] hardirqs last  enabled at (183767753): [<c011ce56>] restore_all_notrace+0x0/0x18
+[ 2666.112563] hardirqs last disabled at (183767754): [<c011d774>] apic_timer_interrupt+0x28/0x34
+[ 2666.112563] softirqs last  enabled at (183758120): [<c01515c8>] __do_softirq+0x162/0x16a
+[ 2666.112563] softirqs last disabled at (183758115): [<c011ed17>] do_softirq+0x68/0xc1
+[ 2666.112563] 
+[ 2666.112563] Pid: 21485, comm: sh Not tainted (2.6.31-rc3 #270) 
+[ 2666.112563] EIP: 0060:[<c01bb04f>] EFLAGS: 00010282 CPU: 1
+[ 2666.112563] EIP is at handle_mm_fault+0x102/0x82e
+[ 2666.112563] EAX: d5028110 EBX: 00000000 ECX: 00000110 EDX: d5028110
+[ 2666.112563] ESI: 00000007 EDI: c11a6000 EBP: d51d7f2c ESP: d51d7ed8
+[ 2666.112563]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+[ 2666.112563] CR0: 8005003b CR2: d5028110 CR3: 1f93d000 CR4: 000006f0
+[ 2666.112563] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+[ 2666.112563] DR6: ffff0ff0 DR7: 00000400
+[ 2666.112563] Call Trace:
+[ 2666.112563]  [<c0161f7e>] ? down_read_trylock+0x39/0x43
+[ 2666.112563]  [<c0625252>] do_page_fault+0x307/0x31d
+[ 2666.112563]  [<c0624f4b>] ? do_page_fault+0x0/0x31d
+[ 2666.112563]  [<c06235bb>] error_code+0x6b/0x70
+[ 2666.112563]  [<c0624f4b>] ? do_page_fault+0x0/0x31d
+[ 2666.112563]  [<c0345ca5>] ? __put_user_4+0x11/0x18
+[ 2666.112563]  [<c014610a>] ? schedule_tail+0x4f/0x52
+[ 2666.112563]  [<c011cc46>] ret_from_fork+0x6/0x1c
 
-
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-
---- linux-2.6.30-orig/drivers/usb/serial/ark3116.c	2009-07-19 19:21:54.000000000 +0200
-+++ linux/drivers/usb/serial/ark3116.c	2009-08-01 22:04:48.000000000 +0200
-@@ -31,10 +31,20 @@
- 
- static struct usb_device_id id_table [] = {
- 	{ USB_DEVICE(0x6547, 0x0232) },
-+	{ USB_DEVICE(0x18ec, 0x3118) },		/* USB to IrDA adapter */
- 	{ },
- };
- MODULE_DEVICE_TABLE(usb, id_table);
- 
-+static int is_irda(struct usb_serial *serial)
-+{
-+	struct usb_device *dev = serial->dev;
-+	if (le16_to_cpu(dev->descriptor.idVendor) == 0x18ec &&
-+			le16_to_cpu(dev->descriptor.idProduct) == 0x3118)
-+		return 1;
-+	return 0;
-+}
-+
- struct ark3116_private {
- 	spinlock_t lock;
- 	u8 termios_initialized;
-@@ -100,11 +110,21 @@
- 		goto cleanup;
- 	}
- 
-+	if (is_irda(serial))
-+		dbg("IrDA mode");
-+
- 	/* 3 */
- 	ARK3116_SND(serial, 3, 0xFE, 0x40, 0x0008, 0x0002);
- 	ARK3116_SND(serial, 4, 0xFE, 0x40, 0x0008, 0x0001);
- 	ARK3116_SND(serial, 5, 0xFE, 0x40, 0x0000, 0x0008);
--	ARK3116_SND(serial, 6, 0xFE, 0x40, 0x0000, 0x000B);
-+	ARK3116_SND(serial, 6, 0xFE, 0x40, is_irda(serial) ? 0x0001 : 0x0000,
-+		    0x000B);
-+
-+	if (is_irda(serial)) {
-+		ARK3116_SND(serial, 1001, 0xFE, 0x40, 0x0000, 0x000C);
-+		ARK3116_SND(serial, 1002, 0xFE, 0x40, 0x0041, 0x000D);
-+		ARK3116_SND(serial, 1003, 0xFE, 0x40, 0x0001, 0x000A);
-+	}
- 
- 	/* <-- seq7 */
- 	ARK3116_RCV(serial,  7, 0xFE, 0xC0, 0x0000, 0x0003, 0x00, buf);
-@@ -141,6 +161,8 @@
- 	ARK3116_SND(serial, 147, 0xFE, 0x40, 0x0083, 0x0003);
- 	ARK3116_SND(serial, 148, 0xFE, 0x40, 0x0038, 0x0000);
- 	ARK3116_SND(serial, 149, 0xFE, 0x40, 0x0001, 0x0001);
-+	if (is_irda(serial))
-+		ARK3116_SND(serial, 1004, 0xFE, 0x40, 0x0000, 0x0009);
- 	ARK3116_SND(serial, 150, 0xFE, 0x40, 0x0003, 0x0003);
- 	ARK3116_RCV(serial, 151, 0xFE, 0xC0, 0x0000, 0x0004, 0x03, buf);
- 	ARK3116_SND(serial, 152, 0xFE, 0x40, 0x0000, 0x0003);
-
-
-
--- 
-Ondrej Zary
+							- Ted
