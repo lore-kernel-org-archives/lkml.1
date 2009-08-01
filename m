@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752367AbZHAJs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752629AbZHAJt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752367AbZHAJs0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 05:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbZHAJsZ
+	id S1752629AbZHAJt2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 05:49:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbZHAJt1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 05:48:25 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:46789 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751505AbZHAJsZ (ORCPT
+	Sat, 1 Aug 2009 05:49:27 -0400
+Received: from www17.your-server.de ([213.133.104.17]:57280 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752071AbZHAJt0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 05:48:25 -0400
-Date: Sat, 1 Aug 2009 10:48:19 +0100
-From: Mark Brown <broonie@sirena.org.uk>
-To: Roger Quadros <quadros.roger@gmail.com>
-Cc: pHilipp Zabel <philipp.zabel@gmail.com>, linux-kernel@vger.kernel.org
-Message-ID: <20090801094818.GB7979@sirena.org.uk>
-References: <1249057189-11992-1-git-send-email-quadros.roger@gmail.com>
- <20090731172002.GA32578@rakim.wolfsonmicro.main>
- <74d0deb30907311038w1b6cdd23iec3cfb2175fdedd0@mail.gmail.com>
- <b90c0690907311332o958b7f4nd025aa7a8b273a88@mail.gmail.com>
- <20090731214401.GC6335@sirena.org.uk>
- <b90c0690907312257u7a2677f0ne20d85ebaabc3935@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b90c0690907312257u7a2677f0ne20d85ebaabc3935@mail.gmail.com>
-X-Cookie: VMS must die!
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [PATCH v2] regulator: Add GPIO enable control to fixed voltage
- regulator driver
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+	Sat, 1 Aug 2009 05:49:26 -0400
+Subject: Re: [ANNOUNCE] 2.6.31-rc4-rt1
+From: Thomas Meyer <thomas@m3y3r.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>
+In-Reply-To: <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+	 <alpine.LFD.2.00.0904081937191.21577@localhost.localdomain>
+	 <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain>
+	 <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain>
+	 <alpine.LFD.2.00  <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 01 Aug 2009 11:48:55 +0200
+Message-Id: <1249120135.14496.1.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 01, 2009 at 08:57:43AM +0300, Roger Quadros wrote:
+Thomas Gleixner wrote:
 
-> Do we need to check whether CONFIG_GPIOLIB is available? or do we need
-> to explicitly
-> select it in Kconfig?
+> Enough said. Get the code and have fun!
 
-Check but I think that all the APIs you are using are stubbed out if
-gpiolib is not available so you can just ignore it.  If not then ifdefs
-around the code are the way forward.
+BUG: scheduling while atomic: kjournald2/0x00000001/1128, CPU#1 
+Modules linked in: olympic forcedeth rndis_wlan floppy [last unloaded: scsi_wait_scan]
+Pid: 1128, comm: kjournald2 Tainted: G        W  2.6.31-rc4-rt1 #3
+Call Trace:
+ [<ffffffff81809a2d>] ? __schedule+0x88/0x76c
+ [<ffffffff8109baca>] ? task_blocks_on_rt_mutex+0x15b/0x1c4
+ [<ffffffff8180a45b>] ? schedule+0x1a/0x3e
+ [<ffffffff8180b22e>] ? rt_spin_lock_slowlock+0x149/0x21c
+ [<ffffffff810e630d>] ? lock_cpu_pcp+0x4b/0x85
+ [<ffffffff810e762b>] ? free_hot_cold_page+0x5a/0x216
+ [<ffffffff8110fe0a>] ? slab_irq_enable+0x9d/0xc1
+ [<ffffffff81110516>] ? kmem_cache_free+0x42/0xc3
+ [<ffffffff811df024>] ? jbd2_journal_remove_journal_head+0x2d/0x54
+ [<ffffffff811dbe56>] ? journal_clean_one_cp_list+0x82/0xed
+ [<ffffffff811dbf0a>] ? __jbd2_journal_clean_checkpoint_list+0x49/0xa0
+ [<ffffffff811d9e1d>] ? jbd2_journal_commit_transaction+0x2f3/0x125a
+ [<ffffffff8180a162>] ? thread_return+0x51/0xe4
+ [<ffffffff810884bd>] ? autoremove_wake_function+0x0/0x55
+ [<ffffffff810797d1>] ? try_to_del_timer_sync+0x59/0x77
+ [<ffffffff811e00f2>] ? kjournald2+0x106/0x27c
+ [<ffffffff810884bd>] ? autoremove_wake_function+0x0/0x55
+ [<ffffffff811dffec>] ? kjournald2+0x0/0x27c
+ [<ffffffff8108800e>] ? kthread+0x90/0x98
+ [<ffffffff8102cf8a>] ? child_rip+0xa/0x20
+ [<ffffffff81087f7e>] ? kthread+0x0/0x98
+ [<ffffffff8102cf80>] ? child_rip+0x0/0x20
+
+
+
+
