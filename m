@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752554AbZHAW0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752522AbZHAWfu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752554AbZHAW0v (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 18:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbZHAW0u
+	id S1752522AbZHAWfu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 18:35:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbZHAWft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 18:26:50 -0400
-Received: from thunk.org ([69.25.196.29]:49612 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752494AbZHAW0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 18:26:49 -0400
-Date: Sat, 1 Aug 2009 18:26:37 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: debian developer <debiandev@gmail.com>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, tux3@tux3.org,
-       LKML <linux-kernel@vger.kernel.org>, corbet@lwn.net
-Subject: Re: [Tux3] Current Activities?
-Message-ID: <20090801222637.GA8680@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Daniel Phillips <phillips@phunq.net>,
-	debian developer <debiandev@gmail.com>,
-	OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, tux3@tux3.org,
-	LKML <linux-kernel@vger.kernel.org>, corbet@lwn.net
-References: <6dcc37b30904291901m7abdd6d7q6f44b2c248ec48c4@mail.gmail.com> <200904302049.27235.phillips@phunq.net> <f24d23310907310210w4406f596nc5b85a7ff41ee40c@mail.gmail.com> <200908010942.52623.phillips@phunq.net>
+	Sat, 1 Aug 2009 18:35:49 -0400
+Received: from th5.kapitza.ras.ru ([83.149.229.88]:43165 "EHLO ari.home"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752417AbZHAWft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Aug 2009 18:35:49 -0400
+X-Greylist: delayed 729 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Aug 2009 18:35:48 EDT
+Date: Sun, 2 Aug 2009 02:23:43 +0400 (MSD)
+From: "Lev A. Melnikovsky" <melnikovsky@mail.ru>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: reading errors on JMicron JM20337 USB-SATA
+Message-ID: <alpine.LFD.2.00.0908020135100.15267@nev.ubzr>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908010942.52623.phillips@phunq.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 01, 2009 at 09:42:51AM -0700, Daniel Phillips wrote:
-> Shapor maintains our website, which does have a wiki.  Just ping him on
-> irc about it.
+Hello,
 
-Free hint: make a pointer to the wiki be much more prominent on the
-tux3.org web site.  I tried looking for it on the tux3 web site, and
-then on google, and the closest thing I could find was this empty wiki:
+I have read through a year old thread on "JMicron JM20337 USB-SATA data 
+corruption bugfix" and it seems here's another aspect of the same problem. 
+The SATA disk has genuine errors (bad sectors, just in case: I am not 
+going to use it but to recover some data from it). Unfortunately when a 
+bad block is read no error is returned, instead a caller is blocked 
+indefinitely (until the USB cable is removed). The system log is filled 
+with repetitive
 
-     http://bitbucket.org/shapor/tux3/wiki/Home
+sd 3:0:0:0: [sdf] Sense Key : 0x0 [current]
+sd 3:0:0:0: [sdf] ASC=0x0 ASCQ=0x0
 
-One thing which you might want to include is what makes the tux3 file
-system unique and why someone might want to use tux3 instead of some
-other file system?  The web site talks about "versioned pointer" which
-is a technical feature that might appeal to a computer scientist ---
-but what does that mean to an end user?
+Is this difficult/possible to fix?
 
-Performance?  Features?  If so, which features?  From what I can tell,
-the feature set of tux3 seems to be a subset of btrfs; is there some
-feature or features that tux3 have that other filesystems will not?
-Not that I advocate file system developers throwing elbows or
-otherwise being too competitive with each other, but the reality is
-that every file system design makes tradeoffs, giving it certain
-strengths, and some weaknesses.  So what *is* tux3's core design
-focus, in terms of workload, or user base?  Making a clear statement
-about what the goals of the tux3 filesystem on the web site is
-certainly one of those things that I would recommend.
+The kernel is 2.6.27.28, here's what I get with CONFIG_USB_STORAGE_DEBUG 
+set:
 
-Best regards,
+usb-storage: Status code -121; transferred 0/4096
+usb-storage: -- short read transfer
+usb-storage: Bulk data transfer result 0x1
+usb-storage: Attempting to get CSW...
+usb-storage: usb_stor_bulk_transfer_buf: xfer 13 bytes
+usb-storage: Status code 0; transferred 13/13
+usb-storage: -- transfer complete
+usb-storage: Bulk status result = 0
+usb-storage: Bulk Status S 0x53425355 T 0x39 R 4096 Stat 0x1
+usb-storage: -- transport indicates command failure
+usb-storage: -- unexpectedly short transfer
+usb-storage: Issuing auto-REQUEST_SENSE
+usb-storage: Bulk Command S 0x43425355 T 0x3a L 18 F 128 Trg 0 LUN 0 CL 6
+usb-storage: usb_stor_bulk_transfer_buf: xfer 31 bytes
+usb-storage: Status code 0; transferred 31/31
+usb-storage: -- transfer complete
+usb-storage: Bulk command transfer result=0
+usb-storage: usb_stor_bulk_transfer_sglist: xfer 18 bytes, 1 entries
+usb-storage: Status code 0; transferred 18/18
+usb-storage: -- transfer complete
+usb-storage: Bulk data transfer result 0x0
+usb-storage: Attempting to get CSW...
+usb-storage: usb_stor_bulk_transfer_buf: xfer 13 bytes
+usb-storage: Status code 0; transferred 13/13
+usb-storage: -- transfer complete
+usb-storage: Bulk status result = 0
+usb-storage: Bulk Status S 0x53425355 T 0x3a R 0 Stat 0x0
+usb-storage: -- Result from auto-sense is 0
+usb-storage: -- code: 0x70, key: 0x0, ASC: 0x0, ASCQ: 0x0
+usb-storage: (Unknown Key): (unknown ASC/ASCQ)
+usb-storage: scsi cmd done, result=0x2
+sd 3:0:0:0: [sdf] Sense Key : 0x0 [current]
+sd 3:0:0:0: [sdf] ASC=0x0 ASCQ=0x0
+usb-storage: queuecommand called
+usb-storage: *** thread sleeping.
+usb-storage: *** thread awakened.
+usb-storage: Command READ_10 (10 bytes)
+usb-storage:  28 00 03 a8 d0 b0 00 00 08 00
+usb-storage: Bulk Command S 0x43425355 T 0x3b L 4096 F 128 Trg 0 LUN 0 CL 10
+usb-storage: usb_stor_bulk_transfer_buf: xfer 31 bytes
+usb-storage: Status code 0; transferred 31/31
+usb-storage: -- transfer complete
+usb-storage: Bulk command transfer result=0
+usb-storage: usb_stor_bulk_transfer_sglist: xfer 4096 bytes, 1 entries
 
-					- Ted
+I'd be glad to supply additional information if needed.
+Thanks
+-L
