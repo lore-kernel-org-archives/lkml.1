@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752316AbZHATvL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752232AbZHAT5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752316AbZHATvL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 15:51:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbZHATvK
+	id S1752232AbZHAT5N (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 15:57:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbZHAT5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 15:51:10 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:48410 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752098AbZHATvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 15:51:08 -0400
-Date: Sat, 1 Aug 2009 21:51:06 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 5/5] drivers/net: Use DIV_ROUND_CLOSEST
-Message-ID: <Pine.LNX.4.64.0908012150340.25693@ask.diku.dk>
+	Sat, 1 Aug 2009 15:57:13 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:60035 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752093AbZHAT5M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Aug 2009 15:57:12 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=kqe5OzheadRsXr01nSnzoBrxAPB5Y9Hn+Gu2cba7thesslQNXnEZCcEIndd0Klutp
+	HsHVD29wzlot91E7wbAgQ==
+Date: Sat, 1 Aug 2009 12:56:59 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Christian Kujau <lists@nerdbynature.de>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
+Subject: Re: [Bug #13666] WARNING: at mm/page_alloc.c:1743
+ __alloc_pages_nodemask
+In-Reply-To: <alpine.DEB.2.01.0908010046430.5831@bogon.housecafe.de>
+Message-ID: <alpine.DEB.2.00.0908010231560.1019@chino.kir.corp.google.com>
+References: <Jya1GruKQpD.A.16.2GObKB@chimera> <3zAHs5O6maO.A.GwE.OIObKB@chimera> <alpine.DEB.2.00.0907261628180.17123@chino.kir.corp.google.com> <200907280021.26320.rjw@sisk.pl> <alpine.DEB.2.00.0907300021330.7540@chino.kir.corp.google.com>
+ <alpine.DEB.2.01.0908010046430.5831@bogon.housecafe.de>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Sat, 1 Aug 2009, Christian Kujau wrote:
 
-The kernel.h macro DIV_ROUND_CLOSEST performs the computation (x + d/2)/d
-but is perhaps more readable.
+> On Thu, 30 Jul 2009 at 00:21, David Rientjes wrote:
+> > These patches have made it to Linus' tree, so this issue is resolved.
+> 
+> I've pulled Linus' tree yesterday, booted, all fine - just now it was the 
+> first time I saw a similar WARNING on my box (running -rc kernels 
+> for a few months now), see below.
+> 
+> Is this related to the WARNING in #13666?
+> I'm pretty sure the kernel already includes the patches you 
+> mentioned, "git show" said "b592972493c38665efd7d429a01b23fcb21e331a". 
+> Also, I just pulled again and mm/ was not touched any more.
+> 
 
-The semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+Your kernel includes the fixes for the __alloc_pages_nodemask() warning 
+that was reported in http://bugzilla.kernel.org/show_bug.cgi?id=13666.
 
-// <smpl>
-@haskernel@
-@@
+> [69973.604263] ------------[ cut here ]------------
+> [69973.604340] WARNING: at mm/page_alloc.c:1749 __alloc_pages_nodemask+0x4c4/0x5a0()
+> [69973.604422] Hardware name: Lenovo          
+> [69973.604468] Modules linked in: fuse acpi_cpufreq nfsd lockd nfs_acl auth_rpcgss sunrpc lm75 hwmon b43 usb_storage usb_libusual mac80211 cfg80211 uhci_hcd tg3 ssb ehci_hcd usbcore libphy nls_base
+> [69973.604727] Pid: 15026, comm: mount Not tainted 2.6.31-rc4 #1
+> [69973.604781] Call Trace:
+> [69973.604831]  [<c1036dda>] ? warn_slowpath_common+0x7a/0xc0
+> [69973.604891]  [<c1076be4>] ? __alloc_pages_nodemask+0x4c4/0x5a0
+> [69973.604952]  [<c1036e40>] ? warn_slowpath_null+0x20/0x40
+> [69973.605072]  [<c1076be4>] ? __alloc_pages_nodemask+0x4c4/0x5a0
+> [69973.605152]  [<c106dc72>] ? delayacct_end+0xa2/0xd0
+> [69973.605212]  [<c10c6617>] ? __find_get_block+0xa7/0x180
+> [69973.605271]  [<c1076d41>] ? __get_free_pages+0x21/0x60
+> [69973.605330]  [<c11f02bd>] ? match_number+0x3d/0xc0
+> [69973.605387]  [<c1129512>] ? parse_options+0xe2/0x5d0
+> [69973.605444]  [<c135116b>] ? out_of_line_wait_on_bit+0xbb/0xf0
+> [69973.605506]  [<c10c6ff8>] ? __wait_on_buffer+0x28/0x50
+> [69973.605564]  [<c112b5b7>] ? ext4_fill_super+0x457/0x2670
 
-#include <linux/kernel.h>
+This is a different issue than bug 13666, this is in the ext4 mount code 
+(which can also probably happen with other filesystems as well).
 
-@depends on haskernel@
-expression x,__divisor;
-@@
-
-- (((x) + ((__divisor) / 2)) / (__divisor))
-+ DIV_ROUND_CLOSEST(x,__divisor)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/net/b44.c                   |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/b44.c b/drivers/net/b44.c
-index 1f7f015..07c92f3 100644
---- a/drivers/net/b44.c
-+++ b/drivers/net/b44.c
-@@ -1297,7 +1297,8 @@ static void b44_chip_reset(struct b44 *bp, int reset_kind)
- 	switch (sdev->bus->bustype) {
- 	case SSB_BUSTYPE_SSB:
- 		bw32(bp, B44_MDIO_CTRL, (MDIO_CTRL_PREAMBLE |
--		     (((ssb_clockspeed(sdev->bus) + (B44_MDC_RATIO / 2)) / B44_MDC_RATIO)
-+		     (DIV_ROUND_CLOSEST(ssb_clockspeed(sdev->bus),
-+					B44_MDC_RATIO)
- 		     & MDIO_CTRL_MAXF_MASK)));
- 		break;
- 	case SSB_BUSTYPE_PCI:
+What are your mount options?  It appears that they are causing the parser 
+to allocate far more memory than it should ever need.
