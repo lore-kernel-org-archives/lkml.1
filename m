@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752442AbZHAI4e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbZHAI4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752442AbZHAI4e (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 04:56:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbZHAI4d
+	id S1752619AbZHAI4s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 04:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbZHAI4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 04:56:33 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:50559 "EHLO mgw1.diku.dk"
+	Sat, 1 Aug 2009 04:56:47 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:50640 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751095AbZHAI4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 04:56:32 -0400
-Date: Sat, 1 Aug 2009 10:53:38 +0200 (CEST)
+	id S1752561AbZHAI4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Aug 2009 04:56:45 -0400
+Date: Sat, 1 Aug 2009 10:54:00 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: frank@zago.net, linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: p_gortmaker@yahoo.com, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/10] drivers/media/video/gspca: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0908011053140.23408@ask.diku.dk>
+Subject: [PATCH 5/10] drivers/rtc: introduce missing kfree
+Message-ID: <Pine.LNX.4.64.0908011053390.23408@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,7 +23,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-Error handling code following a kmalloc should free the allocated data.
+Error handling code following a kzalloc should free the allocated data.
 
 The semantic match that finds the problem is as follows:
 (http://www.emn.fr/x-info/coccinelle/)
@@ -67,22 +67,40 @@ print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- drivers/media/video/gspca/m5602/m5602_s5k83a.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ drivers/rtc/rtc-ep93xx.c            |   14 ++++++++++----
+ 1 files changed, 10 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/media/video/gspca/m5602/m5602_s5k83a.c b/drivers/media/video/gspca/m5602/m5602_s5k83a.c
-index 7127321..6b89f33 100644
---- a/drivers/media/video/gspca/m5602/m5602_s5k83a.c
-+++ b/drivers/media/video/gspca/m5602/m5602_s5k83a.c
-@@ -178,8 +178,10 @@ sensor_found:
- 
- 	sens_priv->settings =
- 	kmalloc(sizeof(s32)*ARRAY_SIZE(s5k83a_ctrls), GFP_KERNEL);
--	if (!sens_priv->settings)
-+	if (!sens_priv->settings) {
-+		kfree(sens_priv);
+diff --git a/drivers/rtc/rtc-ep93xx.c b/drivers/rtc/rtc-ep93xx.c
+index 551332e..9da02d1 100644
+--- a/drivers/rtc/rtc-ep93xx.c
++++ b/drivers/rtc/rtc-ep93xx.c
+@@ -128,12 +128,16 @@ static int __init ep93xx_rtc_probe(struct platform_device *pdev)
  		return -ENOMEM;
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+-	if (res == NULL)
+-		return -ENXIO;
++	if (res == NULL) {
++		err = -ENXIO;
++		goto fail_free;
 +	}
  
- 	sd->gspca_dev.cam.cam_mode = s5k83a_modes;
- 	sd->gspca_dev.cam.nmodes = ARRAY_SIZE(s5k83a_modes);
+ 	res = request_mem_region(res->start, resource_size(res), pdev->name);
+-	if (res == NULL)
+-		return -EBUSY;
++	if (res == NULL) {
++		err = -EBUSY;
++		goto fail_free;
++	}
+ 
+ 	ep93xx_rtc->mmio_base = ioremap(res->start, resource_size(res));
+ 	if (ep93xx_rtc->mmio_base == NULL) {
+@@ -169,6 +173,8 @@ fail:
+ 		pdev->dev.platform_data = NULL;
+ 	}
+ 	release_mem_region(res->start, resource_size(res));
++fail_free:
++	kfree(ep93xx_rtc);
+ 	return err;
+ }
+ 
