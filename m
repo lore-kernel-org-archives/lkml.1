@@ -1,79 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752232AbZHAT5N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbZHAUCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752232AbZHAT5N (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 15:57:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbZHAT5N
+	id S1752262AbZHAUCk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 16:02:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbZHAUCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 15:57:13 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:60035 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752093AbZHAT5M (ORCPT
+	Sat, 1 Aug 2009 16:02:39 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:52816 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752099AbZHAUCi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 15:57:12 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=kqe5OzheadRsXr01nSnzoBrxAPB5Y9Hn+Gu2cba7thesslQNXnEZCcEIndd0Klutp
-	HsHVD29wzlot91E7wbAgQ==
-Date: Sat, 1 Aug 2009 12:56:59 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Christian Kujau <lists@nerdbynature.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
-Subject: Re: [Bug #13666] WARNING: at mm/page_alloc.c:1743
- __alloc_pages_nodemask
-In-Reply-To: <alpine.DEB.2.01.0908010046430.5831@bogon.housecafe.de>
-Message-ID: <alpine.DEB.2.00.0908010231560.1019@chino.kir.corp.google.com>
-References: <Jya1GruKQpD.A.16.2GObKB@chimera> <3zAHs5O6maO.A.GwE.OIObKB@chimera> <alpine.DEB.2.00.0907261628180.17123@chino.kir.corp.google.com> <200907280021.26320.rjw@sisk.pl> <alpine.DEB.2.00.0907300021330.7540@chino.kir.corp.google.com>
- <alpine.DEB.2.01.0908010046430.5831@bogon.housecafe.de>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sat, 1 Aug 2009 16:02:38 -0400
+Date: Sun, 2 Aug 2009 01:32:00 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: memory-controller patch fails to boot in qemu [mmotm]
+Message-ID: <20090801200200.GB8514@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <4A744C2A.6040009@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <4A744C2A.6040009@gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Aug 2009, Christian Kujau wrote:
+* Jiri Slaby <jirislaby@gmail.com> [2009-08-01 16:07:38]:
 
-> On Thu, 30 Jul 2009 at 00:21, David Rientjes wrote:
-> > These patches have made it to Linus' tree, so this issue is resolved.
+> Hi,
 > 
-> I've pulled Linus' tree yesterday, booted, all fine - just now it was the 
-> first time I saw a similar WARNING on my box (running -rc kernels 
-> for a few months now), see below.
+> in mmotm-2009-07-30-05-01, the patch named
+> memory-controller-soft-limit-organize-cgroups-v9.patch
+> causes qemu fail to boot with tons of:
+> BUG: scheduling while atomic: async/2/480/0x10000002
+> Modules linked in:
+> Pid: 480, comm: async/2 Tainted: G       AW  2.6.31-rc4-mm1-bh #13
+> Call Trace:
+>  [<ffffffff81036b6c>] __schedule_bug+0x5c/0x70
+>  [<ffffffff8140491b>] thread_return+0x5c1/0x786
+>  [<ffffffff8103dd30>] __cond_resched+0x20/0x50
+>  [<ffffffff81404b9d>] _cond_resched+0x2d/0x40
+>  [<ffffffff81096694>] truncate_inode_pages_range+0x224/0x450
+>  [<ffffffff8106dfa1>] ? smp_call_function_many+0x1e1/0x210
+>  [<ffffffff810e50d0>] ? invalidate_bh_lru+0x0/0x90
+>  [<ffffffff810e514b>] ? invalidate_bh_lru+0x7b/0x90
+>  [<ffffffff810e50d0>] ? invalidate_bh_lru+0x0/0x90
+>  [<ffffffff810968d0>] truncate_inode_pages+0x10/0x20
+>  [<ffffffff810ea875>] kill_bdev+0x35/0x40
+>  [<ffffffff810eba18>] __blkdev_put+0xa8/0x190
+>  [<ffffffff810ebb0b>] blkdev_put+0xb/0x10
+>  [<ffffffff81116f62>] register_disk+0x172/0x180
+>  [<ffffffff8115bca5>] add_disk+0x85/0x150
+>  [<ffffffff812398cf>] sd_probe_async+0x12f/0x200
+>  [<ffffffff810616ca>] async_thread+0x10a/0x270
+>  [<ffffffff8103f7a0>] ? default_wake_function+0x0/0x10
+>  [<ffffffff810615c0>] ? async_thread+0x0/0x270
+>  [<ffffffff8105ac66>] kthread+0x96/0xa0
+>  [<ffffffff8100ceaa>] child_rip+0xa/0x20
+>  [<ffffffff8105abd0>] ? kthread+0x0/0xa0
+>  [<ffffffff8100cea0>] ? child_rip+0x0/0x20
 > 
-> Is this related to the WARNING in #13666?
-> I'm pretty sure the kernel already includes the patches you 
-> mentioned, "git show" said "b592972493c38665efd7d429a01b23fcb21e331a". 
-> Also, I just pulled again and mm/ was not touched any more.
-> 
+> Looks like an omitted unlock. I don't see anything suspicious in the
+> patch though.
 
-Your kernel includes the fixes for the __alloc_pages_nodemask() warning 
-that was reported in http://bugzilla.kernel.org/show_bug.cgi?id=13666.
 
-> [69973.604263] ------------[ cut here ]------------
-> [69973.604340] WARNING: at mm/page_alloc.c:1749 __alloc_pages_nodemask+0x4c4/0x5a0()
-> [69973.604422] Hardware name: Lenovo          
-> [69973.604468] Modules linked in: fuse acpi_cpufreq nfsd lockd nfs_acl auth_rpcgss sunrpc lm75 hwmon b43 usb_storage usb_libusual mac80211 cfg80211 uhci_hcd tg3 ssb ehci_hcd usbcore libphy nls_base
-> [69973.604727] Pid: 15026, comm: mount Not tainted 2.6.31-rc4 #1
-> [69973.604781] Call Trace:
-> [69973.604831]  [<c1036dda>] ? warn_slowpath_common+0x7a/0xc0
-> [69973.604891]  [<c1076be4>] ? __alloc_pages_nodemask+0x4c4/0x5a0
-> [69973.604952]  [<c1036e40>] ? warn_slowpath_null+0x20/0x40
-> [69973.605072]  [<c1076be4>] ? __alloc_pages_nodemask+0x4c4/0x5a0
-> [69973.605152]  [<c106dc72>] ? delayacct_end+0xa2/0xd0
-> [69973.605212]  [<c10c6617>] ? __find_get_block+0xa7/0x180
-> [69973.605271]  [<c1076d41>] ? __get_free_pages+0x21/0x60
-> [69973.605330]  [<c11f02bd>] ? match_number+0x3d/0xc0
-> [69973.605387]  [<c1129512>] ? parse_options+0xe2/0x5d0
-> [69973.605444]  [<c135116b>] ? out_of_line_wait_on_bit+0xbb/0xf0
-> [69973.605506]  [<c10c6ff8>] ? __wait_on_buffer+0x28/0x50
-> [69973.605564]  [<c112b5b7>] ? ext4_fill_super+0x457/0x2670
+Thanks for the report, did you bisect the mmotm series to identify the
+root cause? What does your .config look like? I tried kvm with the
+patches (mmotm 30th July) and qemu-kvm (30th-july) with a Fedora 11
+guest image and the system booted just fine for me.
 
-This is a different issue than bug 13666, this is in the ext4 mount code 
-(which can also probably happen with other filesystems as well).
+Could you share your command line as well?
 
-What are your mount options?  It appears that they are causing the parser 
-to allocate far more memory than it should ever need.
+
+-- 
+	Balbir
