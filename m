@@ -1,82 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752262AbZHAUCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752337AbZHAUWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752262AbZHAUCk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 16:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbZHAUCj
+	id S1752337AbZHAUWI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 16:22:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbZHAUWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 16:02:39 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:52816 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752099AbZHAUCi (ORCPT
+	Sat, 1 Aug 2009 16:22:08 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:39616 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752071AbZHAUWH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 16:02:38 -0400
-Date: Sun, 2 Aug 2009 01:32:00 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: memory-controller patch fails to boot in qemu [mmotm]
-Message-ID: <20090801200200.GB8514@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <4A744C2A.6040009@gmail.com>
+	Sat, 1 Aug 2009 16:22:07 -0400
+From: Laurent Pinchart <laurent.pinchart@skynet.be>
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH 2/5] drivers/media/video/uvc: Use DIV_ROUND_CLOSEST
+Date: Sat, 1 Aug 2009 22:23:51 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.30; KDE/4.2.4; x86_64; ; )
+Cc: linux-media@vger.kernel.org, linux-uvc-devel@lists.berlios.de,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+References: <Pine.LNX.4.64.0908012148420.25693@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0908012148420.25693@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4A744C2A.6040009@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <200908012223.52022.laurent.pinchart@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jiri Slaby <jirislaby@gmail.com> [2009-08-01 16:07:38]:
+On Saturday 01 August 2009 21:49:04 Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+>
+> The kernel.h macro DIV_ROUND_CLOSEST performs the computation (x + d/2)/d
+> but is perhaps more readable.
+>
+> The semantic patch that makes this change is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
+>
+> // <smpl>
+> @haskernel@
+> @@
+>
+> #include <linux/kernel.h>
+>
+> @depends on haskernel@
+> expression x,__divisor;
+> @@
+>
+> - (((x) + ((__divisor) / 2)) / (__divisor))
+> + DIV_ROUND_CLOSEST(x,__divisor)
+> // </smpl>
+>
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+>
+> ---
+>  drivers/media/video/uvc/uvc_v4l2.c  |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/media/video/uvc/uvc_v4l2.c
+> b/drivers/media/video/uvc/uvc_v4l2.c index 87cb9cc..6edaaf6 100644
+> --- a/drivers/media/video/uvc/uvc_v4l2.c
+> +++ b/drivers/media/video/uvc/uvc_v4l2.c
+> @@ -95,7 +95,7 @@ static __u32 uvc_try_frame_interval(struct uvc_frame
+> *frame, __u32 interval) const __u32 max = frame->dwFrameInterval[1];
+>  		const __u32 step = frame->dwFrameInterval[2];
+>
+> -		interval = min + (interval - min + step/2) / step * step;
+> +		interval = min + DIV_ROUND_CLOSEST(interval-min, step) * step;
+>  		if (interval > max)
+>  			interval = max;
+>  	}
 
-> Hi,
-> 
-> in mmotm-2009-07-30-05-01, the patch named
-> memory-controller-soft-limit-organize-cgroups-v9.patch
-> causes qemu fail to boot with tons of:
-> BUG: scheduling while atomic: async/2/480/0x10000002
-> Modules linked in:
-> Pid: 480, comm: async/2 Tainted: G       AW  2.6.31-rc4-mm1-bh #13
-> Call Trace:
->  [<ffffffff81036b6c>] __schedule_bug+0x5c/0x70
->  [<ffffffff8140491b>] thread_return+0x5c1/0x786
->  [<ffffffff8103dd30>] __cond_resched+0x20/0x50
->  [<ffffffff81404b9d>] _cond_resched+0x2d/0x40
->  [<ffffffff81096694>] truncate_inode_pages_range+0x224/0x450
->  [<ffffffff8106dfa1>] ? smp_call_function_many+0x1e1/0x210
->  [<ffffffff810e50d0>] ? invalidate_bh_lru+0x0/0x90
->  [<ffffffff810e514b>] ? invalidate_bh_lru+0x7b/0x90
->  [<ffffffff810e50d0>] ? invalidate_bh_lru+0x0/0x90
->  [<ffffffff810968d0>] truncate_inode_pages+0x10/0x20
->  [<ffffffff810ea875>] kill_bdev+0x35/0x40
->  [<ffffffff810eba18>] __blkdev_put+0xa8/0x190
->  [<ffffffff810ebb0b>] blkdev_put+0xb/0x10
->  [<ffffffff81116f62>] register_disk+0x172/0x180
->  [<ffffffff8115bca5>] add_disk+0x85/0x150
->  [<ffffffff812398cf>] sd_probe_async+0x12f/0x200
->  [<ffffffff810616ca>] async_thread+0x10a/0x270
->  [<ffffffff8103f7a0>] ? default_wake_function+0x0/0x10
->  [<ffffffff810615c0>] ? async_thread+0x0/0x270
->  [<ffffffff8105ac66>] kthread+0x96/0xa0
->  [<ffffffff8100ceaa>] child_rip+0xa/0x20
->  [<ffffffff8105abd0>] ? kthread+0x0/0xa0
->  [<ffffffff8100cea0>] ? child_rip+0x0/0x20
-> 
-> Looks like an omitted unlock. I don't see anything suspicious in the
-> patch though.
+The purpose of the above code is to clamp the interval value to the [min, max] 
+range at round it to the closest multiple of step. Other drivers might need 
+similar code. Do you think it might be useful to introduce a clamp_step macro 
+for this ?
 
+If not,
 
-Thanks for the report, did you bisect the mmotm series to identify the
-root cause? What does your .config look like? I tried kvm with the
-patches (mmotm 30th July) and qemu-kvm (30th-july) with a Fedora 11
-guest image and the system booted just fine for me.
+Acked-by: Laurent Pinchart <laurent.pinchart@skynet.be>
 
-Could you share your command line as well?
+Regards,
 
+Laurent Pinchart
 
--- 
-	Balbir
