@@ -1,57 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752039AbZHASl3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752054AbZHASmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752039AbZHASl3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 14:41:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbZHASl2
+	id S1752054AbZHASmT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 14:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbZHASmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 14:41:28 -0400
-Received: from mail-px0-f201.google.com ([209.85.216.201]:62420 "EHLO
-	mail-px0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751940AbZHASl2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 14:41:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=AHZuXRxFAY5qgpKmxJgaboJgFuYAPatf1FplzmN6+PulvntrrhywjvJ3h4d0e7Dg5J
-         LqFwjc1B/e1GxeTMl6PWgsINZKm0U9jtbAJB/mVmsB3B87PNQM74pS7+3fs5ES5sIsIq
-         6din9tUb6Qq3Cay66yi9LDxwM48YFLDVmD5+U=
-Message-ID: <4A748B27.3000902@gmail.com>
-Date: Sat, 01 Aug 2009 12:36:23 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Sat, 1 Aug 2009 14:42:19 -0400
+Received: from relay9.uol.com.br ([187.17.116.7]:34710 "EHLO relay9.uol.com.br"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751559AbZHASmS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Aug 2009 14:42:18 -0400
+X-Greylist: delayed 605 seconds by postgrey-1.27 at vger.kernel.org; Sat, 01 Aug 2009 14:42:18 EDT
+Date: Sat, 1 Aug 2009 15:30:36 -0300
+From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+To: Phil Dibowitz <phil@ipom.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Robert Hancock <hancockrwd@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: [PATCH] usb-storage: include USB drive in unusual_devs list
+Message-ID: <20090801183036.GA20335@ime.usp.br>
+References: <20090525151313.GA2246@ime.usp.br>
+ <Pine.LNX.4.44L0.0905251657100.27717-100000@netrider.rowland.org>
+ <20090525214104.GA14942@ime.usp.br>
 MIME-Version: 1.0
-To: Andrew Watts <akwatts@ymail.com>
-CC: linux-kernel@vger.kernel.org, bzolnier@gmail.com,
-       ide <linux-ide@vger.kernel.org>
-Subject: Re: Bug report (suspend to disk is broken in 2.6.29+ with EIDE drive)
-References: <937390.49428.qm@web111003.mail.gq1.yahoo.com>
-In-Reply-To: <937390.49428.qm@web111003.mail.gq1.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090525214104.GA14942@ime.usp.br>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SIG5: 3e8f3c8e955f68827777bdb25ae1d7f6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/31/2009 12:22 AM, Andrew Watts wrote:
-> Description: s2disk worked in 2.6.28 and no longer works in 2.6.30.2
-> (s2disk here means: echo disk>  /sys/power/state); screen blanks but
-> system hangs.
->
-> Bisection reveals that the problem commit has hash:
-> 295f00042aaf6b553b5f37348f89bab463d4a469.
+On May 25 2009, Alan Stern wrote:
+> This looks good.  Make those suggested changes and submit it to Phil 
+> Dibowitz <phil@ipom.com>; it might even get merged in time to appear 
+> in 2.6.30.
 
-That would be:
+Thanks, Alan. Here it goes:
 
-author	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-	Fri, 2 Jan 2009 15:12:48 +0000 (16:12 +0100)
-committer	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-	Fri, 2 Jan 2009 15:12:48 +0000 (16:12 +0100)
-commit	295f00042aaf6b553b5f37348f89bab463d4a469
-tree	cbd56955f148f0e175d5b6b779c2888bf2645382
-parent	ebdab07dad3d3a008e519b0a028e1e1ad5ecaef0
+This patch adds a quirk entry for the Leading Driver UD-11 usb flash
+drive.
 
-ide: don't execute the next queued command from the hard-IRQ context (v2)
+As Alan Stern told me, the device doesn't deal correctly with the
+locking media feature of the device, and this patch incorporates it.
 
-CCing Bart and linux-ide.
+Compiled, tested, working.
+
+
+Signed-off-by: Rogério Brito <rbrito@ime.usp.br>
+
+---
+
+It seems that his patch was missed in the previous release. I'm just
+returning and seeing which patches were missed.
+
+Please, apply.
+
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -838,6 +838,13 @@ UNUSUAL_DEV( 0x066f, 0x8000, 0x0001, 0x0
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_FIX_CAPACITY ),
+ 
++/* Reported by Rogerio Brito <rbrito@ime.usp.br> */
++UNUSUAL_DEV( 0x067b, 0x2317, 0x0001, 0x001,
++		"Prolific Technology, Inc.",
++		"Mass Storage Device",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		US_FL_NOT_LOCKABLE ),
++
+ /* Reported by Richard -=[]=- <micro_flyer@hotmail.com> */
+ /* Change to bcdDeviceMin (0x0100 to 0x0001) reported by
+  * Thomas Bartosik <tbartdev@gmx-topmail.de> */
+
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
