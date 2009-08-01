@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752033AbZHAHy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752289AbZHAHyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752033AbZHAHy0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 03:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZHAHyZ
+	id S1752289AbZHAHyt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 03:54:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbZHAHys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 03:54:25 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:37317 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751498AbZHAHyZ (ORCPT
+	Sat, 1 Aug 2009 03:54:48 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:51307 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751795AbZHAHyr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 03:54:25 -0400
-Message-ID: <4A73F44E.1010508@gmail.com>
-Date: Sat, 01 Aug 2009 09:52:46 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, drepper@redhat.com, jens@mcbone.net,
-       mingo@elte.hu, peterz@infradead.org, sonnyrao@us.ibm.com,
-       stable@kernel.org, tglx@linutronix.de
-Subject: Re: [PATCH v2] execve: must clear current->clear_child_tid
-References: <200907312142.n6VLgKfx021454@imap1.linux-foundation.org> <20090731222959.GA8195@redhat.com> <alpine.LFD.2.01.0907311732250.3304@localhost.localdomain> <20090731175101.1699d653.akpm@linux-foundation.org> <20090801015434.GA755@redhat.com> <4A73DCBE.7080309@gmail.com> <20090801064438.GA30800@redhat.com>
-In-Reply-To: <20090801064438.GA30800@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sat, 01 Aug 2009 09:52:48 +0200 (CEST)
+	Sat, 1 Aug 2009 03:54:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:user-agent:date:from:to:cc:subject;
+        b=unUVWZz44mlIh8TOtQpftU24p+oCxWxy+2hQi1I9BFHtAIUSv6DniTa2LcACnDI+bG
+         yDmDRyrp9AOxJjeiOd3BjY3eJ1zTHzYnV4dfrmU4TiQnJojh0J44QKyVgFUrEoluKB+6
+         g41TU7TqgAHbTYhvU88W1R+tpXgh6PnrV+x1g=
+Message-Id: <20090801074758.502095557@openvz.org>
+User-Agent: quilt/0.47-1
+Date: Sat, 01 Aug 2009 11:47:58 +0400
+From: Cyrill Gorcunov <gorcunov@openvz.org>
+To: yinghai@kernel.org, mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org
+Subject: [rfc 0/2] x86,ioapic simplification,bugfix
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov a écrit :
-> On 08/01, Eric Dumazet wrote:
->> I only wonder about core dumping, since mm_release() is also used by exiting tasks.
->>
->> Isnt clear_child_tid used by gdb or other debugger ?
-> 
-> Afaics it is not...
-> 
-> At least, I can't see how gdb (or any other user-space app) can figure
-> out the value of ->clear_child_tid.
-> 
+Hi,
 
-Yep, this was from old Unixes time, when core file included the 'u' structure ...
+the series has an idea to simplify io-apic list
+handling and prevent from one possible NULL
+dereference. See patches comments for details.
 
-Dont worry ;)
+Yinghai, please take a closer look on new body
+of add_pin_to_irq_node and __eoi_ioapic_irq.
 
+I hope I didn't miss anything.
 
-> 
-> 
-> Not that this really matters, but please note also that it is possible
-> that the coredumping task has ->clear_child_tid == NULL anyway, even
-> without this change. The PF_SIGNALED check in mm_release() is not 100&
-> reliable.
-> 
-> Suppose a thread T sleeps in do_exit()->ptrace_event(PT_TRACE_EXIT) path.
-> Another thread starts a coredump and kills T via zap_process(). This wakes
-> up T, it calls exit_mm()->mm_release() without PF_SIGNALED.
-> 
-> Oleg.
-> 
+Please review. Comments are highly appreciated.
 
+The patches on top of -tip tree commit
+
+	| commit 160bc9d163b0ba927770056783b79a684b74acc6
+	| Merge: d333597 d6c585a
+	| Author: Ingo Molnar <mingo@elte.hu>
+	| Date:   Sun Jul 26 14:32:39 2009 +0200
+	|
+	|    Merge branch 'x86/urgent'
+
+Cyrill
