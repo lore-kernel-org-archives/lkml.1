@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751277AbZHAXcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751549AbZHAXcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751277AbZHAXcU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 19:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750952AbZHAXcT
+	id S1751549AbZHAXcl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 19:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbZHAXcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 19:32:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36269 "EHLO mx1.redhat.com"
+	Sat, 1 Aug 2009 19:32:39 -0400
+Received: from h5.dl5rb.org.uk ([81.2.74.5]:35103 "EHLO h5.dl5rb.org.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750874AbZHAXcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 19:32:19 -0400
+	id S1751374AbZHAXcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Aug 2009 19:32:39 -0400
+Date: Sun, 2 Aug 2009 00:33:05 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: =?iso-8859-1?Q?Lo=EFc_Greni=E9?= <loic.grenie@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Strange arch/mips/delay.c
+Message-ID: <20090801233305.GA31392@linux-mips.org>
+References: <9b06e8d20908011037m6b0f72cch154ed1e15bdc8938@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: Oleg Nesterov <oleg@redhat.com>, utrace-devel@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] introduce tracehook_finish_jctl() helper
-In-Reply-To: Andrew Morton's message of  Wednesday, 29 July 2009 15:50:07 -0700 <20090729155007.f4f5a793.akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-References: <20090729020139.GA7381@redhat.com>
-	<20090729155007.f4f5a793.akpm@linux-foundation.org>
-X-Windows: some voids are better left unfilled.
-Message-Id: <20090801233207.E1FEB4C7FF@magilla.sf.frob.com>
-Date: Sat,  1 Aug 2009 16:32:07 -0700 (PDT)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <9b06e8d20908011037m6b0f72cch154ed1e15bdc8938@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Confused.  This patch has no effect.
+On Sat, Aug 01, 2009 at 07:37:18PM +0200, Loïc Grenié wrote:
 
-Indeed, the three patches changing do_signal_stop() have no immediate
-material effect.  They all just clean up the code and prepare the hooks
-that utrace (or something like it) needs to make tracing stops mesh well
-with job control stops.  I'd thought it might be simpler for review to just
-roll these three together and send you a single patch to replace
-signals-tracehook_notify_jctl-change.patch; but Oleg decided to keep it
-sliced smaller.
+>   I could not compile for mips without something similar to the
+> following patch. As far as I can say __udelay and __ndelay
+> are costly nops (with __ndelay not compiling at all) without
+> the patch.
+> 
+>   At that point, it might be interesting to change
+> the 0x00000005uLL by 0x00000045uLL and the >> 32
+> by >> 36 (the precision is much better and the cost
+> should be the same -- obviously there is a slightly higher
+> risk of overlow).
 
+Later versions of the kernel already contain a similar fix.  I've not
+propagated MIPS fixes into upstream -stable but the fixes are available
+in the -stable branches of the MIPS git repository at
+git://git.linux-mips.org/pub/scm/linux.git, the tarballs created from
+that repository available for download on {ftp,www}.linux-mips.org  or
+on git.kernel.org.
 
-Thanks,
-Roland
+  Ralf
