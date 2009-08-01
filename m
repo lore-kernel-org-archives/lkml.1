@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752642AbZHAI5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752693AbZHAI5X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752642AbZHAI5F (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 04:57:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbZHAI5E
+	id S1752693AbZHAI5X (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 04:57:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbZHAI5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 04:57:04 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:50734 "EHLO mgw1.diku.dk"
+	Sat, 1 Aug 2009 04:57:21 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:50836 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751835AbZHAI5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 04:57:01 -0400
-Date: Sat, 1 Aug 2009 10:54:21 +0200 (CEST)
+	id S1752660AbZHAI5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Aug 2009 04:57:19 -0400
+Date: Sat, 1 Aug 2009 10:54:43 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: yi.zhu@intel.com, reinette.chatre@intel.com,
-       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: jkosina@suse.cz, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 6/10] drivers/net/wireless/iwlwifi: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0908011054010.23408@ask.diku.dk>
+Subject: [PATCH 7/10] drivers/hid: introduce missing kfree
+Message-ID: <Pine.LNX.4.64.0908011054220.23408@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -69,18 +67,18 @@ print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- drivers/net/wireless/iwlwifi/iwl-debugfs.c     |    1 +
+ drivers/hid/hid-debug.c             |    1 +
  1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/net/wireless/iwlwifi/iwl-debugfs.c b/drivers/net/wireless/iwlwifi/iwl-debugfs.c
-index 7707a26..c2106d0 100644
---- a/drivers/net/wireless/iwlwifi/iwl-debugfs.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-debugfs.c
-@@ -320,6 +320,7 @@ static ssize_t iwl_dbgfs_nvm_read(struct file *file,
- 	ptr = priv->eeprom;
- 	if (!ptr) {
- 		IWL_ERR(priv, "Invalid EEPROM/OTP memory\n");
-+		kfree(buf);
- 		return -ENOMEM;
+diff --git a/drivers/hid/hid-debug.c b/drivers/hid/hid-debug.c
+index 3e425f7..6abd036 100644
+--- a/drivers/hid/hid-debug.c
++++ b/drivers/hid/hid-debug.c
+@@ -928,6 +928,7 @@ static int hid_debug_events_open(struct inode *inode, struct file *file)
+ 
+ 	if (!(list->hid_debug_buf = kzalloc(sizeof(char) * HID_DEBUG_BUFSIZE, GFP_KERNEL))) {
+ 		err = -ENOMEM;
++		kfree(list);
+ 		goto out;
  	}
- 	pos += scnprintf(buf + pos, buf_size - pos, "NVM Type: %s\n",
+ 	list->hdev = (struct hid_device *) inode->i_private;
