@@ -1,42 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751441AbZHAK4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751332AbZHALWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751441AbZHAK4Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 06:56:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbZHAK4P
+	id S1751332AbZHALWr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 07:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbZHALWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 06:56:15 -0400
-Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:52781 "EHLO
-	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751330AbZHAK4O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 06:56:14 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH v2] Remove Spurious PnP Memory Reserved Warning
-Date: Sat, 1 Aug 2009 12:56:10 +0200
-User-Agent: KMail/1.9.9
-Cc: David John <davidjon@xenontk.org>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, yinghai@kernel.org
-References: <1248505976-4952-1-BlackWidow-davidjon@xenontk.org> <1248753983-4334-1-BlackWidow-davidjon@xenontk.org> <20090728093137.52575d8c@jbarnes-g45>
-In-Reply-To: <20090728093137.52575d8c@jbarnes-g45>
+	Sat, 1 Aug 2009 07:22:47 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50563 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750863AbZHALWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Aug 2009 07:22:46 -0400
+Date: Sat, 1 Aug 2009 11:22:01 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/urgent] perf_counter tools: Fix link errors with older toolchains
+Message-ID: <tip-2d1b6949d2c855f195de0f5146625015ecca3944@git.kernel.org>
+Git-Commit-ID: 2d1b6949d2c855f195de0f5146625015ecca3944
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-Id: <200908011256.11628.elendil@planet.nl>
-X-OriginalArrivalTime: 01 Aug 2009 10:56:12.0108 (UTC) FILETIME=[AED528C0:01CA1296]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 01 Aug 2009 11:22:04 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 28 July 2009, Jesse Barnes wrote:
-> I'm inclined to keep the message, since it's just a dev_info and does
-> provide interesting info sometimes.  So unless Linus wants to kill
-> it...
+Commit-ID:  2d1b6949d2c855f195de0f5146625015ecca3944
+Gitweb:     http://git.kernel.org/tip/2d1b6949d2c855f195de0f5146625015ecca3944
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Sat, 1 Aug 2009 13:15:36 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 1 Aug 2009 13:15:36 +0200
 
-Jesse, what do you think of the less invasive patch I suggested in 
-http://lkml.org/lkml/2009/7/24/16?
+perf_counter tools: Fix link errors with older toolchains
 
-Cheers,
-FJP
+On older distros (F8 for example) the perf build could fail
+with such missing symbols:
+
+    LINK perf
+/usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../lib64/libbfd.a(bfd.o): In function `bfd_demangle':
+(.text+0x2b3): undefined reference to `cplus_demangle'
+/usr/lib/gcc/x86_64-redhat-linux/4.3.2/../../../../lib64/libbfd.a(bfd.o): In function `bfd_demangle':
+
+Link in -liberty too.
+
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ tools/perf/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index a5e9b87..4b20fa4 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -345,7 +345,7 @@ BUILTIN_OBJS += builtin-stat.o
+ BUILTIN_OBJS += builtin-top.o
+ 
+ PERFLIBS = $(LIB_FILE)
+-EXTLIBS = -lbfd
++EXTLIBS = -lbfd -liberty
+ 
+ #
+ # Platform specific tweaks
