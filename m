@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752099AbZHAHrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752033AbZHAHy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752099AbZHAHrd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 03:47:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbZHAHrd
+	id S1752033AbZHAHy0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 03:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751549AbZHAHyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 03:47:33 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:48900 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751803AbZHAHrc (ORCPT
+	Sat, 1 Aug 2009 03:54:25 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:37317 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751498AbZHAHyZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 03:47:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=NN7w1ujZEV/6OvwcNLnf44BqAVgtGdqSO+Y3A6teH+wA+Lexu2OrirGRKisyZweBF2
-         75NqeGyNcsxM7aSF+9bagFidxg2vPS7KmyRtwzT8bqoXSzRfLg/D1KKCCYOthBVp/6tl
-         obXVkIs3IuAiiAyWbrNL+wxn+KNdo3t2yPQcE=
-Date: Sat, 1 Aug 2009 09:47:27 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Nicolas Palix <npalix@diku.dk>
-Cc: x86@kernel.org, Andreas Herrmann <andreas.herrmann3@amd.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-       linux-kernel@vger.kernel.org, borislav.petkov@amd.com
-Subject: Re: [PATCH] Fix compilation error in amd.c when SMP is not set
-Message-ID: <20090801074727.GB26095@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	Nicolas Palix <npalix@diku.dk>, x86@kernel.org,
-	Andreas Herrmann <andreas.herrmann3@amd.com>,
-	"H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-	linux-kernel@vger.kernel.org, borislav.petkov@amd.com
-References: <200907311640.25585.npalix@diku.dk>
+	Sat, 1 Aug 2009 03:54:25 -0400
+Message-ID: <4A73F44E.1010508@gmail.com>
+Date: Sat, 01 Aug 2009 09:52:46 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200907311640.25585.npalix@diku.dk>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Oleg Nesterov <oleg@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, drepper@redhat.com, jens@mcbone.net,
+       mingo@elte.hu, peterz@infradead.org, sonnyrao@us.ibm.com,
+       stable@kernel.org, tglx@linutronix.de
+Subject: Re: [PATCH v2] execve: must clear current->clear_child_tid
+References: <200907312142.n6VLgKfx021454@imap1.linux-foundation.org> <20090731222959.GA8195@redhat.com> <alpine.LFD.2.01.0907311732250.3304@localhost.localdomain> <20090731175101.1699d653.akpm@linux-foundation.org> <20090801015434.GA755@redhat.com> <4A73DCBE.7080309@gmail.com> <20090801064438.GA30800@redhat.com>
+In-Reply-To: <20090801064438.GA30800@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sat, 01 Aug 2009 09:52:48 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 31, 2009 at 04:40:25PM +0200, Nicolas Palix wrote:
-> The function amd_fixup_dcm requires SMP to be set
-> but it is called only when CONFIG_X86_HT is set.
+Oleg Nesterov a écrit :
+> On 08/01, Eric Dumazet wrote:
+>> I only wonder about core dumping, since mm_release() is also used by exiting tasks.
+>>
+>> Isnt clear_child_tid used by gdb or other debugger ?
 > 
-> It thus defined only if CONFIG_X86_HT is set.
+> Afaics it is not...
 > 
-> Signed-off-by: Nicolas Palix <npalix@diku.dk>
+> At least, I can't see how gdb (or any other user-space app) can figure
+> out the value of ->clear_child_tid.
+> 
 
-Thanks, I'll integrate it into the original patch:
-29160dfe027e90532bd60a97db1dd158d996be8b.
+Yep, this was from old Unixes time, when core file included the 'u' structure ...
 
--- 
-Regards/Gruss,
-    Boris.
+Dont worry ;)
+
+
+> 
+> 
+> Not that this really matters, but please note also that it is possible
+> that the coredumping task has ->clear_child_tid == NULL anyway, even
+> without this change. The PF_SIGNALED check in mm_release() is not 100&
+> reliable.
+> 
+> Suppose a thread T sleeps in do_exit()->ptrace_event(PT_TRACE_EXIT) path.
+> Another thread starts a coredump and kills T via zap_process(). This wakes
+> up T, it calls exit_mm()->mm_release() without PF_SIGNALED.
+> 
+> Oleg.
+> 
+
