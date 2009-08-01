@@ -1,43 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751622AbZHAFOD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751917AbZHAFRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751622AbZHAFOD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 01:14:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbZHAFOD
+	id S1751917AbZHAFRY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 01:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZHAFRY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 01:14:03 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:44006 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751252AbZHAFOB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 01:14:01 -0400
-Message-ID: <4A73CF12.4040902@nortel.com>
-Date: Fri, 31 Jul 2009 23:13:54 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Sat, 1 Aug 2009 01:17:24 -0400
+Received: from yumi.tdiedrich.de ([85.10.210.183]:44834 "EHLO mx.tdiedrich.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751655AbZHAFRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Aug 2009 01:17:23 -0400
+Date: Sat, 1 Aug 2009 07:17:16 +0200
+From: Tobias Diedrich <ranma@tdiedrich.de>
+To: Pierre Ossman <pierre@ossman.eu>
+Cc: SDHCI development <sdhci-devel@lists.ossman.eu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: QUIRK_FORCE_HISPD (was: Re: Ricoh R5C822 and QUIRK_FORCE_DMA)
+Message-ID: <20090801051716.GA28791@yamamaya.is-a-geek.org>
+Mail-Followup-To: Tobias Diedrich <ranma@tdiedrich.de>,
+	Pierre Ossman <pierre@ossman.eu>,
+	SDHCI development <sdhci-devel@lists.ossman.eu>,
+	linux-kernel@vger.kernel.org
+References: <20090430224524.GA9487@yamamaya.is-a-geek.org> <20090513195956.30f78012@mjolnir.ossman.eu> <20090609224145.GA11001@yamamaya.is-a-geek.org> <20090613125322.750a1180@mjolnir.ossman.eu>
 MIME-Version: 1.0
-To: Jim Paradis <jparadis@redhat.com>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] Dirty page tracking & on-the-fly memory mirroring
-References: <4A738FFD.8020705@redhat.com>
-In-Reply-To: <4A738FFD.8020705@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Aug 2009 05:13:59.0331 (UTC) FILETIME=[E0580730:01CA1266]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090613125322.750a1180@mjolnir.ossman.eu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jim Paradis wrote:
-> Following are two patches against 2.6.31-rc3 which implement dirty page 
-> tracking and on-the-fly memory mirroring.  The idea is to be able to 
-> copy the entire physical memory over to another processor node or memory 
-> module while the system is running.  Stratus makes use of this 
-> functionality to bring a new partner node online.
+Pierre Ossman wrote:
+> > On a related note, I had a little time to play a bit more with my
+> > R5C822 and found that I can also force-enable HISPD mode, which
+> > boost performance further.
+> > 
+> 
+> This seems odd. What frequency is the controller reporting?
+> 
+> It could be that they originally wanted the controller to be
+> high-speed, but that they had stability problems and turned it off.
+> There is at least one other controller that went through that scenario.
 
-We've been using something like this to mirror specific applications.
-Our API is a bit different, it's per-process and lets the app specify
-memory regions to monitor.  Another task sharing the memory map can
-query the system for the addresses of pages that have been dirtied since
-it last asked.
+I assume thats host->max_clk?
+The controller seems to report 33MHz for that value.
 
-Chris
+[130484.232213] mmc0: Controller vendor_ver=02 sdhci_ver=00.
+[130484.232213] mmc0: Controller caps=018021a1.
+[130484.232213] SDHCI_INT_ENABLE: Can toggle bits e1ff01ff
+[130484.232213] SDHCI_HOST_CONTROL: Can toggle bits 06
+[130484.232213] DMA forced on (host quirk)
+[130484.232213] sdhci-pci 0000:04:00.1: Will use DMA mode even though HW doesn't fully claim to support it.
+[130484.232213] host->max_clk: 33000000
+[130484.232213] HISPD forced on (host quirk)
+[130484.232213] Verified that HOST_CONTROL bit SDHCI_CTRL_HISPD can be toggled
+[130484.232213] Could not set SDHCI_CTRL_LED to 1!
+
+
+-- 
+Tobias						PGP: http://9ac7e0bc.uguu.de
