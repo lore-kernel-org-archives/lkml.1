@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752742AbZHAI6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752761AbZHAI6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752742AbZHAI6B (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 04:58:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZHAI6A
+	id S1752761AbZHAI6c (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 04:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbZHAI6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 04:58:00 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:50996 "EHLO mgw1.diku.dk"
+	Sat, 1 Aug 2009 04:58:31 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:51139 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752681AbZHAI56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 04:57:58 -0400
-Date: Sat, 1 Aug 2009 10:55:24 +0200 (CEST)
+	id S1751835AbZHAI6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 1 Aug 2009 04:58:30 -0400
+Date: Sat, 1 Aug 2009 10:55:53 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: jgarzik@pobox.com, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: linville@tuxdriver.com, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 9/10] drivers/ata: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0908011055050.23408@ask.diku.dk>
+Subject: [PATCH 10/10] drivers/net/wireless: introduce missing kfree
+Message-ID: <Pine.LNX.4.64.0908011055250.23408@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -67,28 +68,18 @@ print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- drivers/ata/pata_at91.c             |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ drivers/net/wireless/iwmc3200wifi/commands.c   |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/ata/pata_at91.c b/drivers/ata/pata_at91.c
-index 5702aff..46fb883 100644
---- a/drivers/ata/pata_at91.c
-+++ b/drivers/ata/pata_at91.c
-@@ -261,7 +261,8 @@ static int __devinit pata_at91_probe(struct platform_device *pdev)
- 
- 	if (IS_ERR(info->mck)) {
- 		dev_err(dev, "failed to get access to mck clock\n");
--		return -ENODEV;
-+		ret = -ENODEV;
-+		goto err_clk_get;
+diff --git a/drivers/net/wireless/iwmc3200wifi/commands.c b/drivers/net/wireless/iwmc3200wifi/commands.c
+index 0d66370..2bf9ef9 100644
+--- a/drivers/net/wireless/iwmc3200wifi/commands.c
++++ b/drivers/net/wireless/iwmc3200wifi/commands.c
+@@ -233,6 +233,7 @@ int iwm_store_rxiq_calib_result(struct iwm_priv *iwm)
+ 	eeprom_rxiq = iwm_eeprom_access(iwm, IWM_EEPROM_CALIB_RXIQ);
+ 	if (IS_ERR(eeprom_rxiq)) {
+ 		IWM_ERR(iwm, "Couldn't access EEPROM RX IQ entry\n");
++		kfree(rxiq);
+ 		return PTR_ERR(eeprom_rxiq);
  	}
  
- 	info->cs    = board->chipselect;
-@@ -308,6 +309,7 @@ err_alt_ioremap:
- 
- err_ide_ioremap:
- 	clk_put(info->mck);
-+err_clk_get:
- 	kfree(info);
- 
- 	return ret;
