@@ -1,88 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752019AbZHASdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752039AbZHASl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752019AbZHASdc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 14:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbZHASdb
+	id S1752039AbZHASl3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 14:41:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbZHASl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 14:33:31 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:40061 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751479AbZHASda convert rfc822-to-8bit (ORCPT
+	Sat, 1 Aug 2009 14:41:28 -0400
+Received: from mail-px0-f201.google.com ([209.85.216.201]:62420 "EHLO
+	mail-px0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751940AbZHASl2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 14:33:30 -0400
+	Sat, 1 Aug 2009 14:41:28 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=jh1BsbhMlEQlriOOtI/7zFmUilfmawrG51ZjE1V9qHuCrpc7EQEduS1lMqgjlWgFmK
-         SrNmfGIY9LAj0AnbpBagwr1Pa2BNr0wmKHF+GEpr+3hfpwIFqclIcEljSWUp1f2PDgi/
-         61B6G6vt3x86EtzBMmg9pYvLXRIsprNqgMtvA=
-From: Diego Calleja <diegocg@gmail.com>
-To: Thomas Meyer <thomas@m3y3r.de>
-Subject: Re: kernel BUG at fs/btrfs/disk-io.c:2221!
-Date: Sat, 1 Aug 2009 20:34:00 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc4-dirty; KDE/4.2.2; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-btrfs" <linux-btrfs@vger.kernel.org>
-References: <1249120208.14496.3.camel@localhost>
-In-Reply-To: <1249120208.14496.3.camel@localhost>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=AHZuXRxFAY5qgpKmxJgaboJgFuYAPatf1FplzmN6+PulvntrrhywjvJ3h4d0e7Dg5J
+         LqFwjc1B/e1GxeTMl6PWgsINZKm0U9jtbAJB/mVmsB3B87PNQM74pS7+3fs5ES5sIsIq
+         6din9tUb6Qq3Cay66yi9LDxwM48YFLDVmD5+U=
+Message-ID: <4A748B27.3000902@gmail.com>
+Date: Sat, 01 Aug 2009 12:36:23 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200908012034.01055.diegocg@gmail.com>
+To: Andrew Watts <akwatts@ymail.com>
+CC: linux-kernel@vger.kernel.org, bzolnier@gmail.com,
+       ide <linux-ide@vger.kernel.org>
+Subject: Re: Bug report (suspend to disk is broken in 2.6.29+ with EIDE drive)
+References: <937390.49428.qm@web111003.mail.gq1.yahoo.com>
+In-Reply-To: <937390.49428.qm@web111003.mail.gq1.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You probably should have CC'ed the btrfs mailing list
-(I already did in this mail)
+On 07/31/2009 12:22 AM, Andrew Watts wrote:
+> Description: s2disk worked in 2.6.28 and no longer works in 2.6.30.2
+> (s2disk here means: echo disk>  /sys/power/state); screen blanks but
+> system hangs.
+>
+> Bisection reveals that the problem commit has hash:
+> 295f00042aaf6b553b5f37348f89bab463d4a469.
 
-On Sábado 01 Agosto 2009 11:50:08 Thomas Meyer escribió:
-> kernel BUG at fs/btrfs/disk-io.c:2221! 
-> invalid opcode: 0000 [#1] PREEMPT SMP 
-> last sysfs file: /sys/block/sdc/sdc1/start
-> CPU 1 
-> Modules linked in: btrfs olympic forcedeth rndis_wlan floppy [last unloaded: scsi_wait_scan]
-> Pid: 23806, comm: umount Tainted: G        W  2.6.31-rc4-rt1 #3 MS-7250
-> RIP: 0010:[<ffffffffa00589ad>]  [<ffffffffa00589ad>] write_all_supers+0x22f/0x259 [btrfs]
-> RSP: 0018:ffff88009e575ce8  EFLAGS: 00010292
-> RAX: 000000000000003a RBX: ffff8801980889f8 RCX: ffff88009e575ba8
-> RDX: 0000000000000000 RSI: 0000000000000202 RDI: 000000005661d985
-> RBP: 0000000000000001 R08: 0000000000000002 R09: 0000000000000000
-> R10: 0000000000000000 R11: ffff88009e575c88 R12: ffff88011e0b2000
-> R13: 0000000000000000 R14: ffff880198088980 R15: ffff88011e094ed6
-> FS:  00007fa0ba6ef740(0000) GS:ffff8800280ac000(0000) knlGS:00000000f49ffb70
-> CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: 0000000000be1858 CR3: 000000009204a000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process umount (pid: 23806, threadinfo ffff88009e574000, task ffff8801bbd3a760)
-> Stack:
->  ffff88009e575d10 ffff88011e094ee6 0000000100000000 ffff88011e094dcb
-> <0> ffff8801980889f8 000000008439bfff 000000008439c000 000000005661d985
-> <0> 00000000852b4000 ffff88011e0b2000 ffff88018024f8a0 ffff880091c92d70
-> Call Trace:
->  [<ffffffffa005c510>] ? btrfs_commit_transaction+0x5ff/0x6d7 [btrfs]
->  [<ffffffff810884bd>] ? autoremove_wake_function+0x0/0x55
->  [<ffffffff81166dfc>] ? sync_quota_sb+0x58/0x133
->  [<ffffffff8113a1a4>] ? __sync_filesystem+0x3b/0x82
->  [<ffffffff81118cd3>] ? generic_shutdown_super+0x31/0x10c
->  [<ffffffff81118e28>] ? kill_anon_super+0x1d/0x71
->  [<ffffffff81119691>] ? deactivate_super+0x63/0xa6
->  [<ffffffff81130949>] ? sys_umount+0x2e4/0x32a
->  [<ffffffff8102bf2b>] ? system_call_fastpath+0x16/0x1b
-> Code: 24 90 01 00 00 48 8b b8 b0 21 00 00 48 83 c7 48 e8 dd 30 7b e1 3b 6c 24 10 7e 14 89 ee 48 c7 c7 1a 39 09 a0 31 c0 e8 eb 09 7b e1 <0f> 0b eb fe 31 c0 48 8b 54 24 38 65 48 33 14 25 28 00 00 00 74 
-> RIP  [<ffffffffa00589ad>] write_all_supers+0x22f/0x259 [btrfs]
->  RSP <ffff88009e575ce8>
-> ---[ end trace 1e2f23bdcf389667 ]---
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+That would be:
+
+author	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+	Fri, 2 Jan 2009 15:12:48 +0000 (16:12 +0100)
+committer	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+	Fri, 2 Jan 2009 15:12:48 +0000 (16:12 +0100)
+commit	295f00042aaf6b553b5f37348f89bab463d4a469
+tree	cbd56955f148f0e175d5b6b779c2888bf2645382
+parent	ebdab07dad3d3a008e519b0a028e1e1ad5ecaef0
+
+ide: don't execute the next queued command from the hard-IRQ context (v2)
+
+CCing Bart and linux-ide.
