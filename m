@@ -1,90 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752479AbZHAHz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752381AbZHAID1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752479AbZHAHz1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 03:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752407AbZHAHzX
+	id S1752381AbZHAID1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 04:03:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbZHAID0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 03:55:23 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:60368 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752347AbZHAHyz (ORCPT
+	Sat, 1 Aug 2009 04:03:26 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:3609 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751498AbZHAIDZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 03:54:55 -0400
-Date: Sat, 1 Aug 2009 00:54:54 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: David Rientjes <rientjes@google.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
-Subject: Re: [Bug #13666] WARNING: at mm/page_alloc.c:1743
- __alloc_pages_nodemask
-In-Reply-To: <alpine.DEB.2.00.0907300021330.7540@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.2.01.0908010046430.5831@bogon.housecafe.de>
-References: <Jya1GruKQpD.A.16.2GObKB@chimera> <3zAHs5O6maO.A.GwE.OIObKB@chimera> <alpine.DEB.2.00.0907261628180.17123@chino.kir.corp.google.com> <200907280021.26320.rjw@sisk.pl> <alpine.DEB.2.00.0907300021330.7540@chino.kir.corp.google.com>
-User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX185gooSRP1DhwkfkDsdJEVLs7l/HXBdHNcutln
- 4te3kSF+DJ9dKF3ZoWA5R93RBk/EyIJgq4tclITtLBj3gigtJg
- aICXI9q08dVIeDCFvtRyw==
+	Sat, 1 Aug 2009 04:03:25 -0400
+Subject: Re: [PATCH] Moorestown RAR Handler driver, MRST 2.6.31-rc3
+From: Joe Perches <joe@perches.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Ossama Othman <ossama.othman@intel.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090801073053.GA30389@merkur.ravnborg.org>
+References: <1249082419-27718-1-git-send-email-ossama.othman@intel.com>
+	 <20090801073053.GA30389@merkur.ravnborg.org>
+Content-Type: text/plain
+Date: Sat, 01 Aug 2009 01:03:02 -0700
+Message-Id: <1249113782.27999.14.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Jul 2009 at 00:21, David Rientjes wrote:
-> These patches have made it to Linus' tree, so this issue is resolved.
+On Sat, 2009-08-01 at 09:30 +0200, Sam Ravnborg wrote:
+> > +#include "memrar_allocator.h"
+> > +#include <linux/slab.h>
+> > +#include <linux/bug.h>
+> 
+> <linux/...> comes _before_ you own includes.
 
-I've pulled Linus' tree yesterday, booted, all fine - just now it was the 
-first time I saw a similar WARNING on my box (running -rc kernels 
-for a few months now), see below.
+The use of pr_fmt might change this guideline.
 
-Is this related to the WARNING in #13666?
-I'm pretty sure the kernel already includes the patches you 
-mentioned, "git show" said "b592972493c38665efd7d429a01b23fcb21e331a". 
-Also, I just pulled again and mm/ was not touched any more.
+> > +		WARN(capacity < block_size * 2,
+> > +		     "Memory allocator is only large enough to "
+> > +		     "hold one block.\n");
+> 
+> Try to avoid breaking your printable line.
+> It is much easier to grep for the line when it is on a single
+> line.
+> If you violate the 80 chars per line rule do to this then accept
+> that grepable lines is better than keeping them 80 or less wide.
 
-Or maybe this is related to ext4 stuff? (I just mounted an ext4 partition 
-when this WARNING happened). Full dmesg & .config:
-   http://nerdbynature.de/bits/2.6.31-rc4/
+Maybe it's better to ignore the indent guideline here as well.
+An outdent might be preferable to having the line exceed 80 chars.
 
-Thanks,
-Christian.
+Maybe:
+		WARN(capacity < block_size * 2,
+	"Memory allocator is only large enough to hold one block.\n");
+or
+		WARN(capacity < block_size * 2, 
+"Memory allocator is only large enough to hold one block.\n");
 
-[69973.604263] ------------[ cut here ]------------
-[69973.604340] WARNING: at mm/page_alloc.c:1749 __alloc_pages_nodemask+0x4c4/0x5a0()
-[69973.604422] Hardware name: Lenovo          
-[69973.604468] Modules linked in: fuse acpi_cpufreq nfsd lockd nfs_acl auth_rpcgss sunrpc lm75 hwmon b43 usb_storage usb_libusual mac80211 cfg80211 uhci_hcd tg3 ssb ehci_hcd usbcore libphy nls_base
-[69973.604727] Pid: 15026, comm: mount Not tainted 2.6.31-rc4 #1
-[69973.604781] Call Trace:
-[69973.604831]  [<c1036dda>] ? warn_slowpath_common+0x7a/0xc0
-[69973.604891]  [<c1076be4>] ? __alloc_pages_nodemask+0x4c4/0x5a0
-[69973.604952]  [<c1036e40>] ? warn_slowpath_null+0x20/0x40
-[69973.605072]  [<c1076be4>] ? __alloc_pages_nodemask+0x4c4/0x5a0
-[69973.605152]  [<c106dc72>] ? delayacct_end+0xa2/0xd0
-[69973.605212]  [<c10c6617>] ? __find_get_block+0xa7/0x180
-[69973.605271]  [<c1076d41>] ? __get_free_pages+0x21/0x60
-[69973.605330]  [<c11f02bd>] ? match_number+0x3d/0xc0
-[69973.605387]  [<c1129512>] ? parse_options+0xe2/0x5d0
-[69973.605444]  [<c135116b>] ? out_of_line_wait_on_bit+0xbb/0xf0
-[69973.605506]  [<c10c6ff8>] ? __wait_on_buffer+0x28/0x50
-[69973.605564]  [<c112b5b7>] ? ext4_fill_super+0x457/0x2670
-[69973.605622]  [<c11ee136>] ? vsnprintf+0x516/0x820
-[69973.605679]  [<c11e7f1d>] ? kobject_get+0x1d/0x40
-[69973.605738]  [<c10ef5c7>] ? disk_name+0xd7/0xe0
-[69973.605795]  [<c10a37ca>] ? get_sb_bdev+0x15a/0x1a0
-[69973.605851]  [<c112b160>] ? ext4_fill_super+0x0/0x2670
-[69973.605909]  [<c112822d>] ? ext4_get_sb+0x2d/0x50
-[69973.605963]  [<c112b160>] ? ext4_fill_super+0x0/0x2670
-[69973.606020]  [<c10a24f8>] ? vfs_kern_mount+0x58/0xd0
-[69973.606078]  [<c10a2606>] ? do_kern_mount+0x56/0x120
-[69973.606135]  [<c10bb2da>] ? do_mount+0x23a/0x750
-[69973.606191]  [<c10b91c1>] ? copy_mount_options+0x61/0x160
-[69973.606249]  [<c10bb88f>] ? sys_mount+0x9f/0x100
-[69973.606306]  [<c1003304>] ? syscall_call+0x7/0xb
-[69973.606360] ---[ end trace 28ff7a9c4fbb8a1a ]---
+Any format string longer than 80 chars is likely a poor log entry.
 
 
-
--- 
-BOFH excuse #376:
-
-Budget cuts forced us to sell all the power cords for the servers.
