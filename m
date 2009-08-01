@@ -1,772 +1,647 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752559AbZHAAts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752697AbZHAAt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752559AbZHAAts (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Jul 2009 20:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752446AbZHAAtr
+	id S1752697AbZHAAt6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 31 Jul 2009 20:49:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZHAAt5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Jul 2009 20:49:47 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47003 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752443AbZHAAto (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Jul 2009 20:49:44 -0400
-Date: Fri, 31 Jul 2009 17:49:42 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Linux 2.6.31-rc5
-Message-ID: <alpine.LFD.2.01.0907311744060.3304@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Fri, 31 Jul 2009 20:49:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57052 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752607AbZHAAt4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 31 Jul 2009 20:49:56 -0400
+Message-ID: <4A7390F6.6080207@redhat.com>
+Date: Fri, 31 Jul 2009 20:48:54 -0400
+From: Jim Paradis <jparadis@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+To: linux-mm@kvack.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] Dirty Page Tracking & on-the-fly memory mirroring
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch implements dirty page tracking and re-dirty detection.  We 
+use one
+of the programmer bits in the PTE to implement a "soft dirty" bit.  In the
+VM subsystem, all tests for dirty pages check the logical OR of the 
+hardware
+dirty bit and the "soft dirty" bit; if either one is set the page is
+considered "dirty" for VM purposes.  To speed up the scanning passes this
+patch also implements a bitmapped side-list of dirty physical pages.
+
+
+
+ Kconfig                      |   11 ++
+ include/asm/hugetlb.h        |    3
+ include/asm/mm_track.h       |   98 ++++++++++++++++++++++++
+ include/asm/pgtable-2level.h |    4
+ include/asm/pgtable-3level.h |   12 ++
+ include/asm/pgtable.h        |    4
+ include/asm/pgtable_32.h     |    1
+ include/asm/pgtable_64.h     |    7 +
+ include/asm/pgtable_types.h  |    5 -
+ mm/Makefile                  |    1
+ mm/track.c                   |  174 
++++++++++++++++++++++++++++++++++++++++++++
+ 11 files changed, 317 insertions(+), 3 deletions(-)
+
+Signed-off-by: jparadis@redhat.com
+
+diff -up linux-2.6-git-track/arch/x86/include/asm/hugetlb.h.track 
+linux-2.6-git-track/arch/x86/include/asm/hugetlb.h
+--- linux-2.6-git-track/arch/x86/include/asm/hugetlb.h.track   
+ 2009-07-21 13:46:54.000000000 -0400
++++ linux-2.6-git-track/arch/x86/include/asm/hugetlb.h    2009-07-21 
+13:52:56.000000000 -0400
+@@ -2,6 +2,7 @@
+ #define _ASM_X86_HUGETLB_H
+ 
+ #include <asm/page.h>
++#include <asm/mm_track.h>
+ 
+ 
+ static inline int is_hugepage_only_range(struct mm_struct *mm,
+@@ -39,12 +40,14 @@ static inline void hugetlb_free_pgd_rang
+ static inline void set_huge_pte_at(struct mm_struct *mm, unsigned long 
+addr,
+                    pte_t *ptep, pte_t pte)
+ {
++    mm_track_pmd((pmd_t *)ptep);
+     set_pte_at(mm, addr, ptep, pte);
+ }
+ 
+ static inline pte_t huge_ptep_get_and_clear(struct mm_struct *mm,
+                         unsigned long addr, pte_t *ptep)
+ {
++    mm_track_pmd((pmd_t *)ptep);
+     return ptep_get_and_clear(mm, addr, ptep);
+ }
+ 
+diff -up linux-2.6-git-track/arch/x86/include/asm/mm_track.h.track 
+linux-2.6-git-track/arch/x86/include/asm/mm_track.h
+--- linux-2.6-git-track/arch/x86/include/asm/mm_track.h.track   
+ 2009-07-21 13:52:56.000000000 -0400
++++ linux-2.6-git-track/arch/x86/include/asm/mm_track.h    2009-07-21 
+13:52:56.000000000 -0400
+@@ -0,0 +1,98 @@
++/*
++ * Routines and structures for building a bitmap of
++ * dirty pages in a live system.  For use in memory mirroring
++ * or migration applications.
++ *
++ * Copyright (C) 2006,2009 Stratus Technologies Bermuda Ltd.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  
+02111-1307  USA
++ */
++#ifndef __X86_64_MMTRACK_H__
++#define __X86_64_MMTRACK_H__
++
++#ifndef CONFIG_TRACK_DIRTY_PAGES
++
++static inline void mm_track_pte(pte_t *ptep)    {}
++static inline void mm_track_pmd(pmd_t *pmdp)    {}
++static inline void mm_track_pud(pud_t *pudp)    {}
++static inline void mm_track_pgd(pgd_t *pgdp)     {}
++static inline void mm_track_phys(void *physp)    {}
++
++#else
++
++#include <asm/page.h>
++#include <asm/atomic.h>
++ /*
++  * For memory-tracking purposes, if active is true (non-zero), the other
++  * elements of the structure are available for use.  Each time 
+mm_track_pte
++  * is called, it increments count and sets a bit in the bitvector table.
++  * Each bit in the bitvector represents a physical page in memory.
++  *
++  * This is declared in arch/x86_64/mm/track.c.
++  *
++  * The in_use element is used in the code which drives the memory tracking
++  * environment.  When tracking is complete, the vector may be freed, but
++  * only after the active flag is set to zero and the in_use count goes to
++  * zero.
++  *
++  * The count element indicates how many pages have been stored in the
++  * bitvector.  This is an optimization to avoid counting the bits in the
++  * vector between harvest operations.
++  */
++struct mm_tracker {
++    int active;        /* non-zero if this structure in use */
++    atomic_t count;        /* number of pages tracked by mm_track() */
++    unsigned long *vector;    /* bit vector of modified pages */
++    unsigned long bitcnt;    /* number of bits in vector */
++};
++extern struct mm_tracker mm_tracking_struct;
++
++extern void do_mm_track_pte(void *);
++extern void do_mm_track_pmd(void *);
++extern void do_mm_track_pud(void *);
++extern void do_mm_track_pgd(void *);
++extern void do_mm_track_phys(void *);
++
++/*
++ * The mm_track routine is needed by macros in pgtable.h
++ */
++static inline void mm_track_pte(pte_t *ptep)
++{
++    if (unlikely(mm_tracking_struct.active))
++        do_mm_track_pte(ptep);
++}
++static inline void mm_track_pmd(pmd_t *pmdp)
++{
++    if (unlikely(mm_tracking_struct.active))
++        do_mm_track_pmd(pmdp);
++}
++static inline void mm_track_pud(pud_t *pudp)
++{
++    if (unlikely(mm_tracking_struct.active))
++        do_mm_track_pud(pudp);
++}
++static inline void mm_track_pgd(pgd_t *pgdp)
++{
++    if (unlikely(mm_tracking_struct.active))
++        do_mm_track_pgd(pgdp);
++}
++static inline void mm_track_phys(void *physp)
++{
++    if (unlikely(mm_tracking_struct.active))
++        do_mm_track_phys(physp);
++}
++#endif /* CONFIG_TRACK_DIRTY_PAGES */
++
++#endif /* __X86_64_MMTRACK_H__ */
+diff -up linux-2.6-git-track/arch/x86/include/asm/pgtable-2level.h.track 
+linux-2.6-git-track/arch/x86/include/asm/pgtable-2level.h
+--- linux-2.6-git-track/arch/x86/include/asm/pgtable-2level.h.track   
+ 2009-07-21 13:46:54.000000000 -0400
++++ linux-2.6-git-track/arch/x86/include/asm/pgtable-2level.h   
+ 2009-07-21 13:52:56.000000000 -0400
+@@ -13,11 +13,13 @@
+  */
+ static inline void native_set_pte(pte_t *ptep , pte_t pte)
+ {
++    mm_track_pte(ptep);
+     *ptep = pte;
+ }
+ 
+ static inline void native_set_pmd(pmd_t *pmdp, pmd_t pmd)
+ {
++    mm_track_pmd(pmdp);
+     *pmdp = pmd;
+ }
+ 
+@@ -34,12 +36,14 @@ static inline void native_pmd_clear(pmd_
+ static inline void native_pte_clear(struct mm_struct *mm,
+                     unsigned long addr, pte_t *xp)
+ {
++    mm_track_pte(xp);
+     *xp = native_make_pte(0);
+ }
+ 
+ #ifdef CONFIG_SMP
+ static inline pte_t native_ptep_get_and_clear(pte_t *xp)
+ {
++    mm_track_pte(xp);
+     return __pte(xchg(&xp->pte_low, 0));
+ }
+ #else
+diff -up linux-2.6-git-track/arch/x86/include/asm/pgtable_32.h.track 
+linux-2.6-git-track/arch/x86/include/asm/pgtable_32.h
+--- linux-2.6-git-track/arch/x86/include/asm/pgtable_32.h.track   
+ 2009-07-21 13:46:54.000000000 -0400
++++ linux-2.6-git-track/arch/x86/include/asm/pgtable_32.h    2009-07-21 
+13:52:56.000000000 -0400
+@@ -22,6 +22,7 @@
+ #include <linux/slab.h>
+ #include <linux/list.h>
+ #include <linux/spinlock.h>
++#include <asm/mm_track.h>
+ 
+ struct mm_struct;
+ struct vm_area_struct;
+diff -up linux-2.6-git-track/arch/x86/include/asm/pgtable-3level.h.track 
+linux-2.6-git-track/arch/x86/include/asm/pgtable-3level.h
+--- linux-2.6-git-track/arch/x86/include/asm/pgtable-3level.h.track   
+ 2009-07-21 13:46:54.000000000 -0400
++++ linux-2.6-git-track/arch/x86/include/asm/pgtable-3level.h   
+ 2009-07-21 13:52:56.000000000 -0400
+@@ -26,6 +26,7 @@
+  */
+ static inline void native_set_pte(pte_t *ptep, pte_t pte)
+ {
++    mm_track_pte(ptep);
+     ptep->pte_high = pte.pte_high;
+     smp_wmb();
+     ptep->pte_low = pte.pte_low;
+@@ -33,16 +34,19 @@ static inline void native_set_pte(pte_t
+ 
+ static inline void native_set_pte_atomic(pte_t *ptep, pte_t pte)
+ {
++    mm_track_pte(ptep);
+     set_64bit((unsigned long long *)(ptep), native_pte_val(pte));
+ }
+ 
+ static inline void native_set_pmd(pmd_t *pmdp, pmd_t pmd)
+ {
++    mm_track_pmd(pmdp);
+     set_64bit((unsigned long long *)(pmdp), native_pmd_val(pmd));
+ }
+ 
+ static inline void native_set_pud(pud_t *pudp, pud_t pud)
+ {
++    mm_track_pud(pudp);
+     set_64bit((unsigned long long *)(pudp), native_pud_val(pud));
+ }
+ 
+@@ -54,6 +58,7 @@ static inline void native_set_pud(pud_t
+ static inline void native_pte_clear(struct mm_struct *mm, unsigned long 
+addr,
+                     pte_t *ptep)
+ {
++    mm_track_pte(ptep);
+     ptep->pte_low = 0;
+     smp_wmb();
+     ptep->pte_high = 0;
+@@ -62,6 +67,9 @@ static inline void native_pte_clear(stru
+ static inline void native_pmd_clear(pmd_t *pmd)
+ {
+     u32 *tmp = (u32 *)pmd;
++
++    mm_track_pmd(pmd);
++
+     *tmp = 0;
+     smp_wmb();
+     *(tmp + 1) = 0;
+@@ -71,6 +79,8 @@ static inline void pud_clear(pud_t *pudp
+ {
+     unsigned long pgd;
+ 
++    mm_track_pud(pudp);
++
+     set_pud(pudp, __pud(0));
+ 
+     /*
+@@ -93,6 +103,8 @@ static inline pte_t native_ptep_get_and_
+ {
+     pte_t res;
+ 
++    mm_track_pte(ptep);
++
+     /* xchg acts as a barrier before the setting of the high bits */
+     res.pte_low = xchg(&ptep->pte_low, 0);
+     res.pte_high = ptep->pte_high;
+diff -up linux-2.6-git-track/arch/x86/include/asm/pgtable_64.h.track 
+linux-2.6-git-track/arch/x86/include/asm/pgtable_64.h
+--- linux-2.6-git-track/arch/x86/include/asm/pgtable_64.h.track   
+ 2009-07-21 13:46:54.000000000 -0400
++++ linux-2.6-git-track/arch/x86/include/asm/pgtable_64.h    2009-07-21 
+13:52:56.000000000 -0400
+@@ -13,6 +13,7 @@
+ #include <asm/processor.h>
+ #include <linux/bitops.h>
+ #include <linux/threads.h>
++#include <asm/mm_track.h>
+ 
+ extern pud_t level3_kernel_pgt[512];
+ extern pud_t level3_ident_pgt[512];
+@@ -46,11 +47,13 @@ void set_pte_vaddr_pud(pud_t *pud_page,
+ static inline void native_pte_clear(struct mm_struct *mm, unsigned long 
+addr,
+                     pte_t *ptep)
+ {
++    mm_track_pte(ptep);
+     *ptep = native_make_pte(0);
+ }
+ 
+ static inline void native_set_pte(pte_t *ptep, pte_t pte)
+ {
++    mm_track_pte(ptep);
+     *ptep = pte;
+ }
+ 
+@@ -61,6 +64,7 @@ static inline void native_set_pte_atomic
+ 
+ static inline pte_t native_ptep_get_and_clear(pte_t *xp)
+ {
++    mm_track_pte(xp);
+ #ifdef CONFIG_SMP
+     return native_make_pte(xchg(&xp->pte, 0));
+ #else
+@@ -74,6 +78,7 @@ static inline pte_t native_ptep_get_and_
+ 
+ static inline void native_set_pmd(pmd_t *pmdp, pmd_t pmd)
+ {
++    mm_track_pmd(pmdp);
+     *pmdp = pmd;
+ }
+ 
+@@ -84,6 +89,7 @@ static inline void native_pmd_clear(pmd_
+ 
+ static inline void native_set_pud(pud_t *pudp, pud_t pud)
+ {
++    mm_track_pud(pudp);
+     *pudp = pud;
+ }
+ 
+@@ -94,6 +100,7 @@ static inline void native_pud_clear(pud_
+ 
+ static inline void native_set_pgd(pgd_t *pgdp, pgd_t pgd)
+ {
++    mm_track_pgd(pgdp);
+     *pgdp = pgd;
+ }
+ 
+diff -up linux-2.6-git-track/arch/x86/include/asm/pgtable.h.track 
+linux-2.6-git-track/arch/x86/include/asm/pgtable.h
+--- linux-2.6-git-track/arch/x86/include/asm/pgtable.h.track   
+ 2009-07-21 13:46:54.000000000 -0400
++++ linux-2.6-git-track/arch/x86/include/asm/pgtable.h    2009-07-21 
+13:52:56.000000000 -0400
+@@ -91,7 +91,7 @@ static inline void __init paravirt_paget
+  */
+ static inline int pte_dirty(pte_t pte)
+ {
+-    return pte_flags(pte) & _PAGE_DIRTY;
++    return pte_flags(pte) & (_PAGE_DIRTY | _PAGE_SOFTDIRTY);
+ }
+ 
+ static inline int pte_young(pte_t pte)
+@@ -158,7 +158,7 @@ static inline pte_t pte_clear_flags(pte_
+ 
+ static inline pte_t pte_mkclean(pte_t pte)
+ {
+-    return pte_clear_flags(pte, _PAGE_DIRTY);
++    return pte_clear_flags(pte, (_PAGE_DIRTY | _PAGE_SOFTDIRTY));
+ }
+ 
+ static inline pte_t pte_mkold(pte_t pte)
+diff -up linux-2.6-git-track/arch/x86/include/asm/pgtable_types.h.track 
+linux-2.6-git-track/arch/x86/include/asm/pgtable_types.h
+--- linux-2.6-git-track/arch/x86/include/asm/pgtable_types.h.track   
+ 2009-07-21 13:46:54.000000000 -0400
++++ linux-2.6-git-track/arch/x86/include/asm/pgtable_types.h   
+ 2009-07-24 18:48:31.000000000 -0400
+@@ -22,6 +22,7 @@
+ #define _PAGE_BIT_PAT_LARGE    12    /* On 2MB or 1GB pages */
+ #define _PAGE_BIT_SPECIAL    _PAGE_BIT_UNUSED1
+ #define _PAGE_BIT_CPA_TEST    _PAGE_BIT_UNUSED1
++#define _PAGE_BIT_SOFTDIRTY    _PAGE_BIT_HIDDEN
+ #define _PAGE_BIT_NX           63       /* No execute: only valid after 
+cpuid check */
+ 
+ /* If _PAGE_BIT_PRESENT is clear, we use these: */
+@@ -45,6 +46,7 @@
+ #define _PAGE_PAT_LARGE (_AT(pteval_t, 1) << _PAGE_BIT_PAT_LARGE)
+ #define _PAGE_SPECIAL    (_AT(pteval_t, 1) << _PAGE_BIT_SPECIAL)
+ #define _PAGE_CPA_TEST    (_AT(pteval_t, 1) << _PAGE_BIT_CPA_TEST)
++#define _PAGE_SOFTDIRTY    (_AT(pteval_t, 1) << _PAGE_BIT_SOFTDIRTY)
+ #define __HAVE_ARCH_PTE_SPECIAL
+ 
+ #ifdef CONFIG_KMEMCHECK
+@@ -69,7 +71,8 @@
+ 
+ /* Set of bits not changed in pte_modify */
+ #define _PAGE_CHG_MASK    (PTE_PFN_MASK | _PAGE_PCD | _PAGE_PWT |        \
+-             _PAGE_SPECIAL | _PAGE_ACCESSED | _PAGE_DIRTY)
++             _PAGE_SPECIAL | _PAGE_ACCESSED | _PAGE_DIRTY | \
++             _PAGE_SOFTDIRTY)
+ 
+ #define _PAGE_CACHE_MASK    (_PAGE_PCD | _PAGE_PWT)
+ #define _PAGE_CACHE_WB        (0)
+diff -up linux-2.6-git-track/arch/x86/Kconfig.track 
+linux-2.6-git-track/arch/x86/Kconfig
+--- linux-2.6-git-track/arch/x86/Kconfig.track    2009-07-21 
+13:46:54.000000000 -0400
++++ linux-2.6-git-track/arch/x86/Kconfig    2009-07-28 
+16:54:36.000000000 -0400
+@@ -1128,6 +1128,17 @@ config DIRECT_GBPAGES
+       support it. This can improve the kernel's performance a tiny bit by
+       reducing TLB pressure. If in doubt, say "Y".
+ 
++config TRACK_DIRTY_PAGES
++    bool "Enable dirty page tracking"
++    default n
++    depends on !KMEMCHECK
++    ---help---
++      Turning this on allows third party modules to use a
++      kernel interface that can track dirty page generation
++      in the system.  This can be used to copy/mirror live
++      memory to another system or node.  Most users will
++      say n here.
++
+ # Common NUMA Features
+ config NUMA
+     bool "Numa Memory Allocation and Scheduler Support"
+diff -up linux-2.6-git-track/arch/x86/mm/Makefile.track 
+linux-2.6-git-track/arch/x86/mm/Makefile
+--- linux-2.6-git-track/arch/x86/mm/Makefile.track    2009-07-21 
+13:46:54.000000000 -0400
++++ linux-2.6-git-track/arch/x86/mm/Makefile    2009-07-21 
+18:37:41.000000000 -0400
+@@ -19,5 +19,6 @@ obj-$(CONFIG_MMIOTRACE_TEST)    += testmmio
+ obj-$(CONFIG_NUMA)        += numa.o numa_$(BITS).o
+ obj-$(CONFIG_K8_NUMA)        += k8topology_64.o
+ obj-$(CONFIG_ACPI_NUMA)        += srat_$(BITS).o
++obj-$(CONFIG_TRACK_DIRTY_PAGES)    += track.o
+ 
+ obj-$(CONFIG_MEMTEST)        += memtest.o
+diff -up linux-2.6-git-track/arch/x86/mm/track.c.track 
+linux-2.6-git-track/arch/x86/mm/track.c
+--- linux-2.6-git-track/arch/x86/mm/track.c.track    2009-07-21 
+13:52:56.000000000 -0400
++++ linux-2.6-git-track/arch/x86/mm/track.c    2009-07-21 
+18:28:38.000000000 -0400
+@@ -0,0 +1,174 @@
++/*
++ * Low-level routines for marking dirty pages of a running system in a
++ * bitmap.  Allows memory mirror or migration strategies to be implemented.
++ *
++ * Copyright (C) 2006,2009 Stratus Technologies Bermuda Ltd.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  
+02111-1307  USA
++ */
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/mm.h>
++#include <linux/vmalloc.h>
++#include <asm/atomic.h>
++#include <asm/mm_track.h>
++#include <asm/pgtable.h>
++
++/*
++ * For memory-tracking purposes, see mm_track.h for details.
++ */
++struct mm_tracker mm_tracking_struct = {0, ATOMIC_INIT(0), 0, 0};
++EXPORT_SYMBOL(mm_tracking_struct);
++
++void do_mm_track_pte(void *val)
++{
++    pte_t *ptep = (pte_t *)val;
++    unsigned long pfn;
++
++    if (!pte_present(*ptep))
++        return;
++
++    if (!pte_val(*ptep) & _PAGE_DIRTY)
++        return;
++
++    pfn = pte_pfn(*ptep);
++
++    if (pfn >= mm_tracking_struct.bitcnt)
++        return;
++
++#ifdef CONFIG_XEN
++    pfn = pfn_to_mfn(pfn);
++#endif
++
++    if (!test_and_set_bit(pfn, mm_tracking_struct.vector))
++        atomic_inc(&mm_tracking_struct.count);
++}
++EXPORT_SYMBOL(do_mm_track_pte);
++
++#define LARGE_PMD_SIZE    (1 << PMD_SHIFT)
++
++void do_mm_track_pmd(void *val)
++{
++    int i;
++    pte_t *pte;
++    pmd_t *pmd = (pmd_t *)val;
++
++    if (!pmd_present(*pmd))
++        return;
++
++    if (unlikely(pmd_large(*pmd))) {
++        unsigned long addr, end;
++
++        if (!pte_val(*(pte_t *)val) & _PAGE_DIRTY)
++            return;
++
++        addr = pte_pfn(*(pte_t *)val) << PAGE_SHIFT;
++        end = addr + LARGE_PMD_SIZE;
++
++        while (addr < end) {
++            do_mm_track_phys((void *)addr);
++            addr +=  PAGE_SIZE;
++        }
++        return;
++    }
++
++    pte = pte_offset_kernel(pmd, 0);
++
++    for (i = 0; i < PTRS_PER_PTE; i++, pte++)
++        do_mm_track_pte(pte);
++}
++EXPORT_SYMBOL(do_mm_track_pmd);
++
++static inline void track_as_pte(void *val)
++{
++    unsigned long pfn = pte_pfn(*(pte_t *)val);
++    if (pfn >= mm_tracking_struct.bitcnt)
++        return;
++
++#ifdef CONFIG_XEN
++    pfn = pfn_to_mfn(pfn);
++#endif
++
++    if (!test_and_set_bit(pfn, mm_tracking_struct.vector))
++        atomic_inc(&mm_tracking_struct.count);
++}
++
++void do_mm_track_pud(void *val)
++{
++    track_as_pte(val);
++}
++EXPORT_SYMBOL(do_mm_track_pud);
++
++void do_mm_track_pgd(void *val)
++{
++    track_as_pte(val);
++}
++EXPORT_SYMBOL(do_mm_track_pgd);
++
++void do_mm_track_phys(void *val)
++{
++    unsigned long pfn;
++
++    pfn = (unsigned long)val >> PAGE_SHIFT;
++
++    if (pfn >= mm_tracking_struct.bitcnt)
++        return;
++
++#ifdef CONFIG_XEN
++    pfn = pfn_to_mfn(pfn);
++#endif
++
++    if (!test_and_set_bit(pfn, mm_tracking_struct.vector))
++        atomic_inc(&mm_tracking_struct.count);
++}
++EXPORT_SYMBOL(do_mm_track_phys);
++
++
++/*
++ * Allocate enough space for the bit vector in the
++ * mm_tracking_struct.
++ */
++int mm_track_init(long num_pages)
++{
++    mm_tracking_struct.vector = vmalloc((num_pages + 7)/8);
++    if (mm_tracking_struct.vector == NULL) {
++        printk(KERN_WARNING
++               "%s: failed to allocate bit vector\n", __func__);
++        return -ENOMEM;
++    }
++
++    mm_tracking_struct.bitcnt = num_pages;
++
++    return 0;
++}
++EXPORT_SYMBOL(mm_track_init);
++
++/*
++ * Turn off tracking, free the bit vector memory.
++ */
++void mm_track_exit(void)
++{
++    /*
++     * Inhibit the use of the tracking functions.
++     * This should have already been done, but just in case.
++     */
++    mm_tracking_struct.active = 0;
++    mm_tracking_struct.bitcnt = 0;
++
++    if (mm_tracking_struct.vector != NULL)
++        vfree(mm_tracking_struct.vector);
++}
++EXPORT_SYMBOL(mm_track_exit);
++
 
-Ok, I've got some pending stuff, but I'm pushing out -rc5 now because it 
-does fix a lot of regressions, and some of the pending stuff I'm not 
-entirely sure about.
-
-Apart from various regression fixes, the diffstat shows a couple of new 
-drivers (at_hdmac, uc2322, gspca/sn9c20x, ds2782 battery driver), and some 
-big KMS radeon changes (the Radeon KMS source code may physically be under 
-drivers/gpu, but it's only enabled if CONFIG_STAGING is set, and is 
-considered unstable).
-
-The diffstat also shows some big power def_config updates and some lguest 
-cleanups (much of them whitespace).
-
-Oh, and the USB-3 xhci updates.
-
-Other than that it's mostly pretty small. Shortlog gives a reasonable 
-idea..
-
-		Linus
-
----
-Ajay Kumar Gupta (1):
-      USB: musb: fix CONFIGDATA register read issue
-
-Ajit Khaparde (1):
-      be2net: Bug fix in the non-lro path. Size of received packet was not updated in statistics properly.
-
-Alan Cox (3):
-      tty: Fix a USB serial crash/scribble
-      pty: quickfix for the pty ENXIO timing problems
-      usb_serial: Fix remaining ref count/lock bugs
-
-Alan Jenkins (4):
-      rfkill: fix rfkill_set_states() to set the hw state
-      rfkill: remove too-strict __must_check
-      acer-wmi: fix rfkill conversion
-      PM / Hibernate: Replace bdget call with simple atomic_inc of i_count
-
-Alan Stern (1):
-      USB: usbtest: no need for USB_DEVICEFS
-
-Albin Tonnerre (1):
-      drivers/serial/atmel_serial.c: fix compile when CONFIG_SERIAL_ATMEL=Y and CONFIG_SERIAL_ATMEL_CONSOLE=N
-
-Alessandro Rubini (1):
-      smc91x.h: add config for Nomadik evaluation kit
-
-Alex Deucher (5):
-      drm/radeon/kms: fix quirk for MSI laptop
-      drm/radeon/kms: get lvds info for DIG LVTMA and UNIPHY encoders
-      drm/radeon/kms: add PLL flag to prefer frequencies <= the target freq
-      drm/radeon/kms: enable frac fb divs on rs600/rs690/rs740
-      drm/radeon/kms: fix hotspot handling on pre-avivo chips
-
-Alexander Beregalov (1):
-      net: KS8851 needs to depend on MII
-
-Alexey Fisher (2):
-      x86: Add quirk for Intel DG45ID board to avoid low memory corruption
-      ALSA: usb-audio - Volume control quirk for QuickCam E 3500
-
-Amit Kucheria (2):
-      staging: udlfb: Add vmalloc.h include
-      USB: musb: Refer to musb_otg_timer_func under correct #ifdef
-
-Anand Gadiyar (1):
-      USB: OMAP: OHCI: hc_driver's stop method should call ohci_stop
-
-Andi Kleen (1):
-      x86-64: Fix bad_srat() to clear all state
-
-Andreas Eversberg (1):
-      mISDN: Fix handling of receive buffer size in L1oIP
-
-Andres Salomon (2):
-      olpc_battery: Fix up eeprom read function
-      olpc_battery: Ensure that the TRICKLE bit is checked
-
-Andy Gospodarek (1):
-      ixgbe: remove unnecessary call to device_init_wakeup
-
-Andy Whitcroft (1):
-      rt2x00: Fix chipset detection for rt2500usb
-
-Anton Vorontsov (8):
-      of/mdio: Add support function for Ethernet fixed-link property
-      fs_enet: Revive fixed link support
-      gianfar: Revive fixed link support
-      ucc_geth: Revive fixed link support
-      sdhci: get rid of "frequency too high" flood when using eSDHC
-      powerpc/85xx: Fix ethernet link detection on MPC8569E-MDS boards
-      powerpc/85xx: Don't scan for TBI PHY addresses on MPC8569E-MDS boards
-      powerpc/83xx: Fix PCI IO base address on MPC837xE-RDB boards
-
-Antti Palosaari (1):
-      V4L/DVB (12269): af9013: auto-detect parameters in case of garbage given by app
-
-Arnd Bergmann (1):
-      microblaze: remove sys_ipc
-
-Bartlomiej Zolnierkiewicz (4):
-      mg_disk: fix issue with data integrity on error in mg_write()
-      libata: add missing NULL pointer check to ata_eh_reset()
-      libata: remove superfluous NULL pointer checks
-      PM / ACPI: HP G7000 Notebook needs a SCI_EN resume quirk
-
-Benjamin Herrenschmidt (2):
-      mm: Pass virtual address to [__]p{te,ud,md}_free_tlb()
-      mm: Remove duplicate definitions in MIPS and SH
-
-Benjamin Marzinski (5):
-      GFS2: keep statfs info in sync on grows
-      GFS2: Fix panic in glock memory shrinker
-      GFS2: Don't put unlikely reclaim candidates on the reclaim list.
-      GFS2: Fix incorrent statfs consistency check
-      GFS2: remove dcache entries for remote deleted inodes
-
-Bill Pemberton (1):
-      Staging: serqt_usb2: add missing calls to tty_kref_put()
-
-Bob Copeland (1):
-      ath5k: temporarily disable crypto for AP mode
-
-Brian Johnson (2):
-      V4L/DVB (12282): gspca - main: Support for vidioc_g_chip_ident and vidioc_g/s_register.
-      V4L/DVB (12283): gspca - sn9c20x: New subdriver for sn9c201 and sn9c202 bridges.
-
-Carlos R. Mafra (1):
-      USB: option: Remove unused variable
-
-Catalin Marinas (3):
-      x86: Include all of .data.* sections in _edata on 64-bit
-      kmemleak: Protect the seq start/next/stop sequence by rcu_read_lock()
-      fs/ramfs/file-nommu.c needs include/linux/sched.h
-
-Chaithrika U S (1):
-      ASoC: tlv320aic3x: Enable PLL when not bypassed
-
-Chris Mason (3):
-      Btrfs: clear all space_info->full after removing a block group
-      Btrfs: find smallest available device extent during chunk allocation
-      Btrfs: be more polite in the async caching threads
-
-Christian Lamparter (1):
-      cfg80211: double free in __cfg80211_scan_done
-
-Craig Shelley (1):
-      USB: CP210x Add new device IDs
-
-Dan Carpenter (2):
-      p54spi: fix potential null deref in p54spi.c
-      lguest: dereferencing freed mem in add_eventfd()
-
-Dan Williams (1):
-      dmaengine: move HIGHMEM64G restriction to ASYNC_TX_DMA
-
-Daniel Cadete (1):
-      Btrfs: remove of redundant btrfs_header_level
-
-Daniel Mack (1):
-      ALSA: snd_usb_caiaq: add support for Audio2DJ
-
-Dave Airlie (17):
-      drm/radeon/kms: fix some GART table entry bugs.
-      drm/radeon/kms: mmio base/size should be resource_size_t.
-      drm/radeon/kms: remove IB flushing trick.
-      drm/radeon/kms: set crtc and cursor offsets correctly on legacy chips.
-      drm/radeon/kms: respect TOM on rs100->rs480 IGP variants.
-      drm/radeon: fix support for vline relocations.
-      drm/radeon/kms: fix vram vs aper size check.
-      drm/radeon/kms: drop zero length CS indirect buffers.
-      drm/radeon/kms: don't swap PCIEGART PTEs in VRAM.
-      drm/ttm/radeon: add dma32 support.
-      drm/radeon/kms: fix VRAM sizing like DDX does it.
-      drm/radeon/kms: block RN50 from using 3D engine.
-      drm/radeon/kms: add initial colortiling support.
-      drm/radeon/kms: vram sizing on certain r100 chips needs workaround.
-      drm/radeon/kms: allow interruptible waits for objects.
-      drm/ttm: fix highuser vs dma32 confusion.
-      drm/radeon: set fb aperture sizes for framebuffer handoff.
-
-Dave Hansen (1):
-      lib: flexible array implementation
-
-Dave Jones (1):
-      pps.h needs <linux/types.h>
-
-David Milburn (1):
-      ahci: add device IDs for Ibex Peak ahci controllers
-
-David Rientjes (2):
-      Staging: android: lowmemorykiller.c: fix it for "oom: move oom_adj value from task_struct to mm_struct"
-      mm: avoid endless looping for oom killed tasks
-
-David Woodhouse (2):
-      Btrfs: Remove broken sanity check from btrfs_rmap_block()
-      Btrfs: Fix crash on read failures at mount
-
-Deepak Saxena (1):
-      net: irda: init spinlock after memcpy
-
-Denis Turischev (1):
-      x86: Add reboot fixup for SBC-fitPC2
-
-Devin Heitmueller (7):
-      V4L/DVB (12257): em28xx: make tuning work for Terratec Cinergy T XS USB (mt352 variant)
-      V4L/DVB (12258): em28xx: fix typo in mt352 init sequence for Terratec Cinergy T XS USB
-      V4L/DVB (12260): em28xx: make support work for the Pinnacle Hybrid Pro (eb1a:2881)
-      V4L/DVB (12261): em28xx: set GPIO properly for Pinnacle Hybrid Pro analog support
-      V4L/DVB (12262): em28xx: Make sure the tuner is initialized if generic empia USB id was used
-      V4L/DVB (12263): em28xx: set demod profile for Pinnacle Hybrid Pro 320e
-      V4L/DVB (12265): em28xx: fix tuning problem in HVR-900 (R1)
-
-Dhananjay Phadke (1):
-      netxen: reset ring consumer during cleanup
-
-Diego Calleja (1):
-      Btrfs: Remove code duplication in comp_keys
-
-Don Skidmore (1):
-      ixgbe: fix for 82599 errata marking UDP checksum errors
-
-Eero Nurkkala (1):
-      spi: omap2_mcspi rxdma bugfix
-
-Eric Paris (7):
-      inotify: drop user watch count when a watch is removed
-      inotify: do not leak inode marks in inotify_add_watch
-      inotify: fix error paths in inotify_update_watch
-      fsnotify: use def_bool in kconfig instead of letting the user choose
-      inotify: check filename before dropping repeat events
-      fsnotify: fix inotify tail drop check with path entries
-      inotify: use GFP_NOFS under potential memory pressure
-
-Eric Sandeen (3):
-      hugetlbfs: fix i_blocks accounting
-      xfs: reduce bmv_count in xfs_vn_fiemap
-      xfs: bump up nr_to_write in xfs_vm_writepage
-
-Erik Andrén (4):
-      V4L/DVB (12221): gspca - stv06xx-hdcs: Actually update the sensor state
-      V4L/DVB (12222): gspca - stv06xx-hdcs: Fix sensor sequence bug
-      V4L/DVB (12223): gspca - stv06xx-hdcs: Correct the pixelformat
-      V4L/DVB (12224): gspca - m5602-s5k4aa: Remove erroneous register writes
-
-Felix Beck (1):
-      [S390] zcrypt: fix scheduling of hrtimer ap_poll_timer
-
-Giacomo Lozito (1):
-      USB: storage: raise timeout in usb_stor_Bulk_max_lun
-
-Greg Kroah-Hartman (1):
-      staging: remove aten2011 driver
-
-H. Peter Anvin (1):
-      x86: Fix movq immediate operand constraints in uaccess.h
-
-Hans Verkuil (1):
-      V4L/DVB (12300): bttv: fix regression: tvaudio must be loaded before tuner
-
-Heiko Carstens (3):
-      [S390] hibernation: fix lowcore handling
-      [S390] hibernation: fix register corruption on machine checks
-      [S390] vdso: fix per cpu area allocation
-
-Herton Ronaldo Krzesinski (1):
-      USB: option: add ZTE device ids and remove ONDA ids
-
-Hidehiro Kawai (1):
-      x86, mce: Rename incorrect macro name "CONFIG_X86_THRESHOLD"
-
-Hidetoshi Seto (2):
-      kexec: fix omitting offset in extended crashkernel syntax
-      sysrq, kdump: make sysrq-c consistent
-
-Huang Weiyi (1):
-      microblaze: remove duplicated #include
-
-Ira Snyder (2):
-      fsldma: enable external start for the 83xx controller
-      fsldma: do not clear bandwidth control bits on the 83xx controller
-
-Ira W. Snyder (1):
-      fsldma: use PCI Read Multiple command
-
-Jan Beulich (1):
-      x86, mce: Fix set_trigger() accessor
-
-Jan Kara (6):
-      jbd: Fail to load a journal if it is too short
-      ext3: Fix truncation of symlinks after failed write
-      jbd: Fix a race between checkpointing code and journal_get_write_access()
-      ext3: Get rid of extenddisksize parameter of ext3_get_blocks_handle()
-      udf: Fix loading of VAT inode when drive wrongly reports number of recorded blocks
-      quota: Silence lockdep on quota_on
-
-Javier Cardona (1):
-      mac80211: use correct address for mesh Path Error
-
-Javier Martin (1):
-      USB: option.c to support Alcatel X060S/X200 broadband modems
-
-Jean Delvare (1):
-      hwmon: (smsc47m1) Differentiate between LPC47M233 and LPC47M292
-
-Jean-Francois Moine (1):
-      V4L/DVB (12267): gspca - sonixj: Bad sensor init of non ov76xx sensors.
-
-Jeff Garzik (1):
-      Remove zero-length file drivers/char/vr41xx_giu.c
-
-Jeff Layton (2):
-      cifs: disable serverino if server doesn't support it
-      cifs: fix sb->s_maxbytes so that it casts properly to a signed value
-
-Jens Axboe (2):
-      block: always assign default lock to queues
-      block: make the end_io functions be non-GPL exports
-
-Jeremy Fitzhardinge (1):
-      x86, amd: Don't probe for extended APIC ID if APICs are disabled
-
-Jerome Glisse (1):
-      drm/radeon/kms: fix bandwidth computation on avivo hardware
-
-Jiri Slaby (1):
-      uio: mark uio.h functions __KERNEL__ only
-
-Joe Perches (22):
-      drivers/dma/fsldma.c: Remove unnecessary semicolons
-      drivers/dma: Remove unnecessary semicolons
-      MAINTAINERS: IA64 - pair P:/M: entries properly
-      MAINTAINERS: Remove ivtv-user lists, add CX18 url
-      MAINTAINERS: QLGE 10Gb ETHERNET - pair P:/M: entries properly
-      MAINTAINERS: Use tabs in ACER ASPIRE ONE
-      MAINTAINERS: Remove L: linux-kernel@vger.kernel.org
-      MAINTAINERS: Move ARPD to CREDITS
-      MAINTAINERS: Update KERNEL JANITORS
-      MAINTAINERS: Add PPS patterns
-      MAINTAINERS: USB Serial Digi Acceleport: use separate P: for Al Borchers
-      MAINTAINERS: INPUT: Add Dmitry's name to his email address
-      MAINTAINERS: Remove CS461x sound card section
-      MAINTAINERS: QLOGIC QLA2XXX - add Andrew Vasquez email address
-      MAINTAINERS: QLOGIC QLA3XXX - Add Ron Mercer email address
-      MAINTAINERS: Scott Murray is no longer with SomaNetworks
-      scripts/get_maintainer.pl: Add -f directory use
-      get_maintainer.pl: Add git-min-percent option
-      get_maintainerpl-add-git-min-percent-option-fix
-      MAINTAINERS: coalesce name and email address lines
-      MAINTAINERS: finish off the email address coalescing
-      imxmmc: Remove unnecessary semicolons
-
-Johannes Berg (4):
-      mac80211: disable mesh
-      rfkill: allow toggling soft state in sysfs again
-      mac80211_hwsim: fix unregistration
-      mac80211_hwsim: fix use after free
-
-John Williams (2):
-      microblaze: Final support for statically linked DTB
-      microblaze: Get module loading working
-
-John Youn (2):
-      USB: xhci: Scratchpad buffer allocation
-      USB: xhci: Support for 64-byte contexts
-
-Josef Bacik (3):
-      Btrfs: use hybrid extents+bitmap rb tree for free space
-      Btrfs: async block group caching
-      Btrfs: change how we unpin extents
-
-Jouni Hogander (1):
-      spi: omap2_mcspi supports wake events
-
-Julia Lawall (5):
-      Btrfs: convert nested spin_lock_irqsave to spin_lock
-      Btrfs: adjust NULL test
-      V4L/DVB (12284): gspca - jpeg subdrivers: Check the result of kmalloc(jpeg header).
-      Btrfs: Correct redundant test in add_inode_ref
-      ALSA: sound/aoa: Add kmalloc NULL tests
-
-KAMEZAWA Hiroyuki (1):
-      cgroup avoid permanent sleep at rmdir
-
-Kristoffer Ericson (2):
-      drivers/video/backlight/jornada720_bl.c: fix build
-      MAINTAINERS: update HP Jornada 700-series and Epson s1d13xxxfb support
-
-Kumar Gala (2):
-      powerpc/mm: Fix SMP issue with MMU context handling code
-      powerpc: Update defconfigs for embedded 6xx/7xxx, 8xx, 8{3,5,6}xxx
-
-Larry Finger (1):
-      rtl8187: Fix for kernel oops when unloading with LEDs enabled
-
-Li Zefan (5):
-      trace_stack: Fix seqfile memory leak
-      function-graph: Fix seqfile memory leak
-      tracing/stat: Fix seqfile memory leak
-      cgroups: fix pid namespace bug
-      io context: fix ref counting
-
-Linus Torvalds (2):
-      Alan doesn't want to maintain tty code any more
-      Linux 2.6.31-rc5
-
-Lu Zhihe (1):
-      edac: x38 fix mchbar high register addr
-
-Luca Tettamanti (1):
-      hwmon: (asus_atk0110) Fix upper limit readings
-
-Lucian Adrian Grijincu (1):
-      driver core: documentation: make it clear that sysfs is optional
-
-Lucy Liu (1):
-      ixgbe: Don't priority tag control frames in DCB mode
-
-Luis R. Rodriguez (2):
-      ath9k: Tune ANI function processing on AP mode during ANI reset
-      ath: add support for special 0x8000 regulatory domain
-
-Magnus Damm (2):
-      i2c-sh_mobile: change module_init() to subsys_initcall()
-      clocksource: Save mult_orig in clocksource_disable()
-
-Marek Vasut (1):
-      libertas: Fix problem with broken V4 firmware on CF8381
-
-Mark Ware (2):
-      net: Rework mdio-ofgpio driver to use of_mdio infrastructure
-      cpm_uart: Don't use alloc_bootmem in cpm_uart_cpm2.c
-
-Martin Schwidefsky (1):
-      [S390] vdso: clock_gettime of CLOCK_THREAD_CPUTIME_ID with noexec=on
-
-Martyn Welch (2):
-      powerpc/86xx: Update defconfig for GE Fanuc's PPC9A
-      powerpc/86xx: Update GE Fanuc sbc310 default configuration
-
-Masami Hiramatsu (1):
-      kprobes: Use kernel_text_address() for checking probe address
-
-Matthew Wilcox (1):
-      markup_oops: fix it with 32-bit userspace on a 64-bit kernel
-
-Mauro Carvalho Chehab (14):
-      V4L/DVB (12233): em28xx: rename is_27xx to is_webcam
-      V4L/DVB (12234): em28xx-cards: use is_webcam flag for devices that are known to be webcams
-      V4L/DVB (12235): em28xx: detects sensors also with the generic em2750/2750 entry
-      V4L/DVB (12236): em28xx: stop abusing of board->decoder for sensor information
-      V4L/DVB (12237): mt9v011: implement VIDIOC_QUERYCTRL
-      V4L/DVB (12238): em28xx: call sensor detection code for all webcam entries
-      V4L/DVB (12239): em28xx: fix webcam scaling
-      V4L/DVB (12240): mt9v011: add a function to calculate frames per second rate
-      V4L/DVB (12241): mt9v011: Fix vstart
-      V4L/DVB (12242): mt9v011: implement core->s_config to allow adjusting xtal frequency
-      V4L/DVB (12243): em28xx: allow specifying sensor xtal frequency
-      V4L/DVB (12244): em28xx: adjust vinmode/vinctl based on the stream input format
-      V4L/DVB (12245): em28xx: add support for mt9m001 webcams
-      V4L/DVB (12286): sn9c20x: reorder includes to be like other drivers
-
-Mel Gorman (5):
-      profile: Suppress warning about large allocations when profile=1 is specified
-      page-allocator: preserve PFN ordering when __GFP_COLD is set
-      page-allocator: allow too high-order warning messages to be suppressed with __GFP_NOWARN
-      profile: suppress warning about large allocations when profile=1 is specified
-      net-dccp: suppress warning about large allocations from DCCP
-
-Michael Chan (1):
-      cnic: Fix ISCSI_KEVENT_IF_DOWN message handling.
-
-Michael Krufky (2):
-      V4L/DVB (12302): cx23885-417: fix broken IOCTL handling
-      V4L/DVB (12303): cx23885: check pointers before dereferencing in dprintk macro
-
-Michael S. Tsirkin (3):
-      virtio: fix memory leak on device removal
-      virtio: delete vq from list
-      virtio: refactor find_vqs
-
-Michal Simek (11):
-      microblaze: Define tlb_flush macro
-      microblaze: Add messages about FDT blob
-      microblaze: Not to clear r7 after copying DTB to kernel
-      microblaze: Clear print messages for DTB passing via r7
-      microblaze: Fix put_user macro for 64bits arguments
-      microblaze: Add _PAGE_FILE macros to pgtable.h
-      microblaze: Fix do_page_fault for no context
-      microblaze: Detect new Microblaze 7.20 versions
-      microblaze: Support unaligned address for put/get_user macros
-      microblaze: Add support for R_MICROBLAZE_64_NONE
-      microblaze: Typo fix for cpu param inconsistency
-
-Michel Dänzer (6):
-      drm/radeon: Endianness fixes for radeondrmfb.
-      drm/radeon: Don't unreserve twice on failure to validate.
-      drm/radeon: Fall back to evicting BOs with memcpy if necessary.
-      drm/radeon: Pay more attention to object placement requested by userspace.
-      drm/radeon: Add radeon.test parameter for running BO GPU copy tests.
-      drm/radeon: Fix size used for benchmarking BO copies.
-
-Michele Jr De Candia (1):
-      i2c/tsl2550: Fix lux value in dark environment
-
-Mike Frysinger (1):
-      module: use MODULE_SYMBOL_PREFIX with module_layout
-
-Mike Snitzer (2):
-      dm: remove queue next_ordered workaround for barriers
-      dm table: pass correct dev area size to device_area_is_valid
-
-Mikulas Patocka (1):
-      dm raid1: wake kmirrord when requeueing delayed bios after remote recovery
-
-Ming Lei (1):
-      driver core: firmware_class:fix memory leak of page pointers array
-
-Nicolas Ferre (4):
-      dmaengine: dmatest: add a maximum number of test iterations
-      dmaengine: dmatest: correct thread_count while using multiple thread per channel
-      dmaengine: at_hdmac: new driver for the Atmel AHB DMA Controller
-      dmaengine: at_hdmac: add DMA slave transfers
-
-Niko Jokinen (1):
-      nl80211: Memory leak fixed
-
-OGAWA Hirofumi (1):
-      pty: avoid forcing 'low_latency' tty flag
-
-Oleg Nesterov (1):
-      update the comment in kthread_stop()
-
-Oliver Neukum (2):
-      Staging: serqt_usb2: fix memory leak in error case
-      USB: let the option driver compile without CONFIG_PM
-
-Pavel Roskin (1):
-      mac80211: fix injection in monitor mode
-
-Pawel Osciak (1):
-      s3c-fb: fix off-by-one bug in loop indexes
-
-Peng Huang (1):
-      USB: serial: option: Add ZTE AC8710 usb modem device.
-
-Peter Korsgaard (1):
-      i2c-s3c2410: s3c24xx_i2c_init: don't clobber IICLC value
-
-Peter Oberparleiter (1):
-      sysfs: fix hardlink count on device_move
-
-Pierre Ossman (1):
-      mmc: orphan subsystem
-
-Rafael J. Wysocki (1):
-      skge: Enable WoL by default if supported
-
-Ralf Baechle (1):
-      NET: ROSE: Don't use static buffer.
-
-Ramon de Carvalho Valle (1):
-      eCryptfs: parse_tag_3_packet check tag 3 packet encrypted key size
-
-Reinette Chatre (2):
-      iwlwifi: only show active power level via sysfs
-      iwlwifi: only update byte count table during aggregation
-
-Rik van Riel (1):
-      mm: copy over oom_adj value at fork time
-
-Roel Kluin (7):
-      eepro: Read buffer overflow
-      Dynamic debug: fix typo: -/->
-      USB: xhci: fix less- and greater than confusion
-      ALSA: hda: fix out-of-bound hdmi_eld.sad[] write
-      sound: aedsp16: Buffer overflow
-      sound: mpu401.c: Buffer overflow
-      i2c: strncpy does not null terminate string
-
-Roland Dreier (1):
-      lib: export generic atomic64_t functions
-
-Russell Lang (1):
-      USB: aten uc2324 is really a moschip 7840
-
-Rusty Russell (4):
-      lguest: fix descriptor corruption in example launcher
-      lguest: fix comment style
-      lguest: update commentry
-      lguest and virtio: cleanup struct definitions to Linux style.
-
-Ryan Mallon (1):
-      Add ds2782 battery gas gauge driver
-
-Sage Weil (1):
-      Btrfs: make flushoncommit mount option correctly wait on ordered_extents
-
-Sam Ravnborg (1):
-      microblaze: Makefile cleanup
-
-Sarah Sharp (15):
-      USB: xhci: Set TD size in transfer TRB.
-      USB: xhci: Deal with stalled endpoints.
-      USB: xhci: Use GFP_ATOMIC while holding spinlocks.
-      USB: xhci: Represent 64-bit addresses with one u64.
-      USB: xhci: Handle short control packets correctly.
-      USB: xhci: Correct Event Handler Busy flag usage.
-      USB: xhci: Make debugging more verbose.
-      USB: xhci: Don't oops if the host doesn't halt.
-      USB: xhci: Check if the host controller died in IRQ handler.
-      USB: xhci: Setup HW retries correctly.
-      USB: xhci: Handle babble errors on transfers.
-      USB: xhci: Fail gracefully if there's no SS ep companion descriptor.
-      USB: Fix parsing of SuperSpeed Endpoint Companion descriptor.
-      USB: xhci: Always align output device contexts to 64 bytes.
-      USB: xhci: Stall handling bug fixes.
-
-Sebastian Andrzej Siewior (3):
-      lib/scatterlist: add a flags to signalize mapping direction
-      sdhci: use SG_MITER_TO_SG/SG_MITER_FROM_SG
-      cb710: use SG_MITER_TO_SG/SG_MITER_FROM_SG
-
-Sebastian Heutling (1):
-      eeprom/at25: bugfix "not ready" timeout after write
-
-Sergei Shtylyov (1):
-      USB: musb_gadget_ep0: fix typo in service_zero_data_request()
-
-Sergey Matyukevich (1):
-      libata: Updates and fixes for pata_at91 driver
-
-Simon Kagstrom (1):
-      USB: ehci-orion: Call ehci_reset before ehci_halt
-
-Sonasath, Moiz (3):
-      i2c-omap: Bug in reading the RXSTAT/TXSTAT values from the I2C_BUFFSTAT register
-      i2c-omap: In case of a NACK|ARDY|AL return from the ISR
-      i2c-omap: OMAP3430 Silicon Errata 1.153
-
-Stefan Bader (1):
-      jfs: Fix early release of acl in jfs_get_acl
-
-Steve Conklin (2):
-      ata_piix: Add new laptop short cable IDs
-      ata_piix: Add new short cable ID
-
-Steve French (1):
-      [CIFS] fix sparse warning
-
-Steven Whitehouse (2):
-      GFS2: Shrink the shrinker
-      GFS2: Don't try and dealloc own inode
-
-Takashi Iwai (10):
-      ALSA: pcm - Fix regressions with VMware
-      ALSA: hda - Use snprintf() to be safer
-      ALSA: ctxfi - Fix uninitialized error checks
-      ALSA: hda - Restore GPIO1 properly at resume with AD1984A
-      ALSA: pcm - Add logging of hwptr updates and interrupt updates
-      ALSA: pcm - Fix warnings in debug loggings
-      ALSA: pcm - Fix hwptr buffer-size overlap bug
-      ALSA: hda - Fix mute control with some ALC262 models
-      ALSA: hda - Add quirk for Dell Studio 1555
-      ALSA: hda - Increase PCM stream name buf in patch_realtek.c
-
-Tejun Heo (1):
-      libata: accept late unlocking of HPA
-
-Thadeu Lima de Souza Cascardo (1):
-      rtc: mark if rtc-cmos drivers were successfully registered
-
-Thomas Gleixner (1):
-      x86: geode: Mark mfgpt irq IRQF_TIMER to prevent resume failure
-
-Thomas Hellstrom (6):
-      ttm: Make messages more readable.
-      ttm: Fix caching mode selection.
-      drm/ttm: Fix an oops and sync object leak.
-      drm/ttm: Fix ttm in-kernel copying of pages with non-standard caching attributes.
-      x86: Export kmap_atomic_prot() needed for TTM.
-      drm/ttm: powerpc: Fix Highmem cache flushing.
-
-Tim Gardner (1):
-      USB: option: Add USB ID for Novatel MC727/U727/USB727 refresh
-
-Trent Piepho (1):
-      V4L/DVB (12291): b2c2: fix frontends compiled into kernel
-
-Tyler Hicks (1):
-      eCryptfs: Check Tag 11 literal data buffer size
-
-Uros Bizjak (1):
-      x86: Fix movq immediate operand constraints in uaccess_64.h
-
-Uwe Kleine-König (1):
-      register at91_ether using platform_driver_probe
-
-Ville Sundberg (1):
-      USB: ftdi_sio: Add support for GN Otometrics Aurical USB Audiometer
-
-Wan Wei (1):
-      amd64_edac: read the right F2 maskoffset reg
-
-Wolfram Sang (1):
-      pata_pcmcia: add CNF-CDROM-ID
-
-Xiaotian Feng (3):
-      net/bridge: use kobject_put to release kobject in br_add_if error path
-      block: fix improper kobject release in blk_integrity_unregister
-      driver core: sysdev: do not send KOBJ_ADD uevent if kobject_init_and_add fails
-
-Yan Zheng (10):
-      Btrfs: fix definition of struct btrfs_extent_inline_ref
-      Btrfs: properly update space information after shrinking device.
-      Btrfs: fix double increment of path->slots[0] in btrfs_next_leaf
-      Btrfs: fix locking issue in btrfs_find_next_key
-      Btrfs: make sure all dirty blocks are written at commit time
-      Btrfs: find_free_dev_extent doesn't handle holes at the start of the device
-      Btrfs: Fix ordering of key field checks in btrfs_previous_item
-      Btrfs: Avoid delayed reference update looping
-      Btrfs: Fix async caching interaction with unmount
-      Btrfs: preserve commit_root for async caching
-
-Yi Zou (1):
-      ixgbe: Enable FCoE offload when DCB is enabled for 82599
-
-Zhu Yi (1):
-      iwmc3200wifi: fix NULL pointer dereference in iwm_if_free
-
-dingdinghua (1):
-      jbd: fix race between write_metadata_buffer and get_write_access
-
-françois romieu (1):
-      r8169: WakeOnLan fix for the 8168
-
-roel kluin (3):
-      fealnx: Write outside array bounds
-      at1700: Read buffer overflow
-      tokenring: Read buffer overflow
-
-unsik Kim (3):
-      mg_disk: remove prohibited sleep operation
-      mg_disk: fix reading invalid status when use polling driver
-      mg_disk: Add missing ready status check on mg_write()
