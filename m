@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751918AbZHAQct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751899AbZHAQtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751918AbZHAQct (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 12:32:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbZHAQcs
+	id S1751899AbZHAQtm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 12:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbZHAQtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 12:32:48 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:8346 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751711AbZHAQcr (ORCPT
+	Sat, 1 Aug 2009 12:49:41 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:52244 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751549AbZHAQtl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 12:32:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=HUdj/t2ZQwO2144v2WXrwMDUQOHBgji9lI6N7UEc+3Ulyq9SyQhE+pf5756UupxqC4
-         svRoDdjBu9J/cPA6U47Qcv/ulpGuu46AoimlPs5zZe1tjTm4pMhuzETMfnSzOcY4v2ke
-         BaH8DbU292EEaxWhmzNTfNPLRntvYf3gpeM4w=
-Message-ID: <4A746E24.1050401@gmail.com>
-Date: Sat, 01 Aug 2009 18:32:36 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Andrew Watts <akwatts@ymail.com>
-CC: linux-kernel@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Elias Oltmanns <eo@nebensachen.de>, linux-ide@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: Bug report (suspend to disk is broken in 2.6.29+ with EIDE drive)
-References: <937390.49428.qm@web111003.mail.gq1.yahoo.com>
-In-Reply-To: <937390.49428.qm@web111003.mail.gq1.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 1 Aug 2009 12:49:41 -0400
+Date: Sat, 1 Aug 2009 09:49:24 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Christian Kujau <lists@nerdbynature.de>
+Cc: Greg KH <gregkh@suse.de>, lkml <linux-kernel@vger.kernel.org>,
+       Lucian Adrian Grijincu <lgrijincu@ixiacom.com>
+Subject: Re: [PATCH] documentation: make it clear that sysfs is optional
+Message-Id: <20090801094924.ba245b4c.randy.dunlap@oracle.com>
+In-Reply-To: <alpine.DEB.2.01.0908010157150.5831@bogon.housecafe.de>
+References: <20090727090642.0e495919.randy.dunlap@oracle.com>
+	<20090727161031.GA15328@suse.de>
+	<20090727091824.38d55ea1.randy.dunlap@oracle.com>
+	<20090727162601.GA3632@suse.de>
+	<alpine.DEB.2.01.0908010157150.5831@bogon.housecafe.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt009.oracle.com [141.146.116.18]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4A74721D.0144:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Watts wrote:
-> Description: s2disk worked in 2.6.28 and no longer works in 2.6.30.2
-> (s2disk here means: echo disk > /sys/power/state); screen blanks but
-> system hangs.
-> 
-> Bisection reveals that the problem commit has hash:
-> 295f00042aaf6b553b5f37348f89bab463d4a469.
-> 
-> ~Andy
-> 
-> PS I wrote some months ago about a thermal problem on my HW with
-> 2.6.28 (needed noapic, nolapic to have it not run hot @ idle).
-> This problem has disappeared in 2.6.30.2. Any devs have an idea what
-> commit fixed this?
+On Sat, 1 Aug 2009 02:14:47 -0700 (PDT) Christian Kujau wrote:
 
-Adding CCs
+> On Mon, 27 Jul 2009 at 09:26, Greg KH wrote:
+> > Probably the same reason /proc is configurable.  No one ever turns it
+> > off, but hey, it's possible :)
+> 
+> Hm, it seems as we cannot turn off PROC_FS or SYSFS any more. At least on 
+> my system a "make allnoconfig" still selects both. While PROC_FS still 
+> shows up under Filesystems->Pseudo-Filesystem (but cannot be turned off), 
+> I don't see a menuconfig knob to turn off SYSFS.
+> However, "make allnoconfig" still selects quite a few options anyway:
+> 
+> # uname -m
+> x86_64
+> # make allnoconfig
+> # grep -c =y .config
+> 175
+> 
+> (manually editing .config gets reverted on another "make config").
+> 
+> So, it loks like SYSFS is just one of the things needed to build a kernel, 
+> along with the ~170 other things, at least on x86_64. Is this "make it 
+> clear that sysfs is optional" patch still valid? :-)
+
+
+It's no problem to disable PROC_FS and SYSFS if you first enable
+CONFIG_EMBEDDED>
+
+
+> sid$ find . -name Kconfig | xargs grep SYSFS  | egrep -v 'drivers/|fs/|net/'
+> ./arch/arm/mach-pxa/Kconfig:    select GPIO_SYSFS
+> ./arch/powerpc/kvm/Kconfig:     depends on KVM && MARKERS && SYSFS
+> ./arch/x86/kvm/Kconfig: depends on KVM && SYSFS
+> ./init/Kconfig:config SYSFS_DEPRECATED
+> ./init/Kconfig:config SYSFS_DEPRECATED_V2
+> ./init/Kconfig: depends on SYSFS
+> ./init/Kconfig: select SYSFS_DEPRECATED
+> ./init/Kconfig: depends on SLUB && SYSFS
+> ./kernel/trace/Kconfig: depends on SYSFS
+> ./security/Kconfig:     depends on SYSFS
+
+
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
