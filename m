@@ -1,39 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751940AbZHAPvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751887AbZHAPwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751940AbZHAPvP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 1 Aug 2009 11:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751897AbZHAPvO
+	id S1751887AbZHAPwT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 1 Aug 2009 11:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbZHAPwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 1 Aug 2009 11:51:14 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:36860 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751805AbZHAPvO (ORCPT
+	Sat, 1 Aug 2009 11:52:19 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:58817 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751712AbZHAPwS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 1 Aug 2009 11:51:14 -0400
-Date: Sat, 1 Aug 2009 11:51:12 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jim Paradis <jparadis@redhat.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] Dirty Page Tracking & on-the-fly memory mirroring
-Message-ID: <20090801155112.GA10888@infradead.org>
-References: <4A7390F6.6080207@redhat.com>
+	Sat, 1 Aug 2009 11:52:18 -0400
+Date: Sat, 1 Aug 2009 17:52:18 +0200
+From: Andreas Mohr <andi@lisas.de>
+To: Jack Byer <ojbyer@usa.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Extremely slow IO with a PCMCIA CompactFlash adapter
+Message-ID: <20090801155218.GA8921@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A7390F6.6080207@redhat.com>
+In-Reply-To: <h51hro$p6j$1@ger.gmane.org>
+X-Priority: none
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Where is the actual consumer of this?  You add a lot of infrastructure
-but no actualy code using it.  Working ar Red Hat should should more
-than know that we don't add hooks for out of tree junk.  Or maybe you
-should get a free bootcamp ticket from your manager..
+> Is this expected behavior? Is there any setup I am missing that would make this faster?
 
-Also your patch is extremly whitespace damaged, again quite sad for
-someone working at a Linux company.
+No, certainly not, I don't remember it to be this slow (it's been a
+while since I last tried though, still have hardware here).
+Possibly it's a DMA misdetection problem (keeps trying to use DMA
+despite it not being possible) which is common with CF type setups.
+Try fiddling with hdparm or blktool DMA-related or I/O setup settings.
+Other things would include libata.dma=0 (or other values!) for libata
+layer or ide-core.nodma= boot parameter (for IDE layer).
 
+And if this indeed is the problem, then it would be very useful to
+get automatic handling implemented properly.
+
+Andreas Mohr
