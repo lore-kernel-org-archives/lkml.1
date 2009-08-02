@@ -1,63 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752647AbZHBLkD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752668AbZHBL6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752647AbZHBLkD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 07:40:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751251AbZHBLkD
+	id S1752668AbZHBL6h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 07:58:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbZHBL6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 07:40:03 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:59866 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750918AbZHBLkB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 07:40:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=mtBtvXvlrrehUdKHXG/hS2NdVez7HHBK2kwCeB+kLVTnhX6LV4cT0z6n3iAYgwTll2
-         Dynxi/1iMMxXh2Q8Dba2pLdLBnxlthpOF9hMJ5c+WhDdsoS15QsjgugCoAOFdYgxLazm
-         MOJor2UrKSZI7fN+7qydH+mHhQ0DULI9xgaR0=
-Message-ID: <4A757BCF.40101@gmail.com>
-Date: Sun, 02 Aug 2009 13:43:11 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Sun, 2 Aug 2009 07:58:36 -0400
+Received: from mail.open.by ([193.232.92.17]:59018 "EHLO post.open.by"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751806AbZHBL6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 07:58:35 -0400
+X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
+X-SpamTest-Group-ID: 00000000
+X-SpamTest-Info: Profiles 9222 [Aug 2 2009]
+X-SpamTest-Info: {relay has no DNS name}
+X-SpamTest-Method: none
+X-SpamTest-Rate: 55
+X-SpamTest-SPF: softfail
+X-SpamTest-Status: Not detected
+X-SpamTest-Status-Extended: not_detected
+X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
+Date: Sun, 2 Aug 2009 15:01:20 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, linux-kernel@vger.kernel.org
+Subject: WARNING at: drivers/char/tty_ldisc.c
+Message-ID: <20090802120120.GA3097@localdomain.by>
 MIME-Version: 1.0
-To: a.p.zijlstra@chello.nl, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] perf: Read buffer overflow
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="AhhlLboLdkugWU4S"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check whether index is within bounds before testing the element.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+--AhhlLboLdkugWU4S
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+Hello Linus, Ogawa,
+Looks like we have one more bug in tty code:
+'shutdown -r now' in 'single' user mode gives following trace:
+
+WARNING at: drivers/char/tty_ldisc.c:209 tty_ldisc_put+0x95/0xa0
 ---
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index b20a4b6..edecdbe 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -252,7 +252,7 @@ static int strcommon(const char *pathname)
- {
- 	int n = 0;
- 
--	while (pathname[n] == cwd[n] && n < cwdlen)
-+	while (n < cwdlen && pathname[n] == cwd[n])
- 		++n;
- 
- 	return n;
-diff --git a/tools/perf/util/quote.c b/tools/perf/util/quote.c
-index c6e5dc0..2726fe4 100644
---- a/tools/perf/util/quote.c
-+++ b/tools/perf/util/quote.c
-@@ -318,7 +318,7 @@ char *quote_path_relative(const char *in, int len,
- 		strbuf_addch(out, '"');
- 	if (prefix) {
- 		int off = 0;
--		while (prefix[off] && off < len && prefix[off] == in[off])
-+		while (off < len && prefix[off] && prefix[off] == in[off])
- 			if (prefix[off] == '/') {
- 				prefix += off + 1;
- 				in += off + 1;
+?printk+0x23/0x36
+warn_slowpath_common+0x78/0xa0
+?tty_ldisc_put+0x95/0xa0
+?tty_ldisc_put+0x95/0xa0
+warn_slowpath_null+0x21/0x40
+tty_ldisc_put+0x95/0xa0
+tty_ldisc_hangup+0xfc/0x1f0
+do_tty_hangup+0x131/0x380
+disassociate_ctty+0x50/0x210
+do_exit+0x6b8/0x700
+?put_lock_stats+0x18/0x50
+?lock_release_holdtime+0xb2/0x190
+?_spin_unlock_irq+0x30/0x70
+?trace_hardirqs_on_caller+0x14c/0x1a0
+do_group_exit+0x45/0xb0
+get_signal_to_deliver+0x226/0x410
+do_notify_resume+0xc1+0xa90
+?trace_hardirqs_on+0x19/0x40
+?_spin_unlock_irqrestore+0x47/0x90
+?remove_wait_queue+0x47/0x70
+?do_wait+0x19d/0x310
+?defult_wake_function+0x0/0x40
+?sys_wait4+0xa1/0x100
+work_notifysig+0x13/0x19
+
+//There is no trace in syslog, so given one is 'copy-paste' from the paper.
+
+	Sergey
+--AhhlLboLdkugWU4S
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iJwEAQECAAYFAkp1gBAACgkQfKHnntdSXjRcfQQA0PfDUZwf7POayDdSPg59irZo
+LxjqwisgtyfggebIN98Pa8JxAxmn9zINtNx2ZWe9+/3lDGs/A/nlIj76QlHYhCxJ
+baBQgEI8UeRt/5tCNqJOwavF7t1LUcY5Xolbu1CfYnizsEpVqaTiQJE68eFu7uuc
+//5CUOQTXJtKlX6DJkI=
+=T1Vg
+-----END PGP SIGNATURE-----
+
+--AhhlLboLdkugWU4S--
