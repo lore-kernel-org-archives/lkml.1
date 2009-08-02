@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752492AbZHBIvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752643AbZHBIv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752492AbZHBIvx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 04:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbZHBIvv
+	id S1752643AbZHBIv5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 04:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZHBIvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 04:51:51 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:53281 "EHLO mgw2.diku.dk"
+	Sun, 2 Aug 2009 04:51:53 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:53372 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752013AbZHBIvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 04:51:50 -0400
-Date: Sun, 2 Aug 2009 10:49:54 +0200 (CEST)
+	id S1752492AbZHBIvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 04:51:51 -0400
+Date: Sun, 2 Aug 2009 10:44:32 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: petkovbb@gmail.com, linux-ide@vger.kernel.org,
+To: rth@twiddle.net, ink@jurassic.park.msu.ru, linux-alpha@vger.kernel.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 15/15] drivers/ide/ide-cd.c: Use DIV_ROUND_CLOSEST
-Message-ID: <Pine.LNX.4.64.0908021049350.15557@ask.diku.dk>
+Subject: [PATCH 1/15] arch/alpha: Use DIV_ROUND_CLOSEST
+Message-ID: <Pine.LNX.4.64.0908021044000.15557@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -46,21 +46,19 @@ expression x,__divisor;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/ide/ide-cd.c                |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ arch/alpha/kernel/sys_ruffian.c     |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index 6a9a769..1483a8d 100644
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -1146,8 +1146,8 @@ void ide_cdrom_update_speed(ide_drive_t *drive, u8 *buf)
- 	ide_debug_log(IDE_DBG_PROBE, "curspeed: %u, maxspeed: %u",
- 				     curspeed, maxspeed);
- 
--	cd->current_speed = (curspeed + (176/2)) / 176;
--	cd->max_speed = (maxspeed + (176/2)) / 176;
-+	cd->current_speed = DIV_ROUND_CLOSEST(curspeed, 176);
-+	cd->max_speed = DIV_ROUND_CLOSEST(maxspeed, 176);
+diff --git a/arch/alpha/kernel/sys_ruffian.c b/arch/alpha/kernel/sys_ruffian.c
+index d9f9cfe..8de1046 100644
+--- a/arch/alpha/kernel/sys_ruffian.c
++++ b/arch/alpha/kernel/sys_ruffian.c
+@@ -66,7 +66,7 @@ ruffian_init_irq(void)
+ 	common_init_isa_dma();
  }
  
- #define IDE_CD_CAPABILITIES \
+-#define RUFFIAN_LATCH	((PIT_TICK_RATE + HZ / 2) / HZ)
++#define RUFFIAN_LATCH	DIV_ROUND_CLOSEST(PIT_TICK_RATE, HZ)
+ 
+ static void __init
+ ruffian_init_rtc(void)
