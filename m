@@ -1,98 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753760AbZHBUxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbZHBUya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753760AbZHBUxa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 16:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbZHBUx3
+	id S1753826AbZHBUya (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 16:54:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753669AbZHBUy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 16:53:29 -0400
-Received: from moutng.kundenserver.de ([212.227.17.9]:54058 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753537AbZHBUx2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 16:53:28 -0400
-Date: Sun, 2 Aug 2009 13:53:21 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: David Rientjes <rientjes@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
-Subject: Re: [Bug #13666] WARNING: at mm/page_alloc.c:1743
- __alloc_pages_nodemask
-In-Reply-To: <alpine.DEB.2.01.0908021331350.5831@bogon.housecafe.de>
-Message-ID: <alpine.DEB.2.01.0908021348440.5831@bogon.housecafe.de>
-References: <Jya1GruKQpD.A.16.2GObKB@chimera> <alpine.DEB.2.01.0908011427270.5831@bogon.housecafe.de> <alpine.DEB.2.01.0908021314030.5831@bogon.housecafe.de> <200908022226.52228.rjw@sisk.pl> <alpine.DEB.2.01.0908021331350.5831@bogon.housecafe.de>
-User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
+	Sun, 2 Aug 2009 16:54:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43294 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753563AbZHBUy3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 16:54:29 -0400
+Date: Sun, 2 Aug 2009 17:47:01 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Kyle McMartin <kyle@mcmartin.ca>
+Cc: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Anton Blanchard <anton@samba.org>,
+       davem@davemloft.net, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, fweisbec@gmail.com, benh@kernel.crashing.org,
+       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, paulus@samba.org,
+       williams@redhat.com
+Subject: Re: [PATCH] basic perf support for sparc
+Message-ID: <20090802204701.GE25334@ghostprotocols.net>
+References: <20090729112509.GN4148@kernel.dk> <20090729192814.GT4148@kernel.dk> <20090801011429.GA4685@kryten> <20090801082048.GX12579@kernel.dk> <20090801182216.GA25334@ghostprotocols.net> <20090802184148.GB17241@elte.hu> <20090802194454.GC28572@bombadil.infradead.org> <20090802195043.GD24486@elte.hu> <20090802201132.GE28572@bombadil.infradead.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1+m9SWdWmOhvA1RsjqOltWmnCJtDBvBEhHU3r7
- 2xGrjiih7LX62mxrxt9n+YISkP0Ak9ZRyc4qA3eQgLLZlUWwth
- N5WwlT9vwlsCBymvtV6nw==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090802201132.GE28572@bombadil.infradead.org>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Aug 2009 at 13:35, Christian Kujau wrote:
->> Can you try to reproduce with -rc5?
+Em Sun, Aug 02, 2009 at 04:11:32PM -0400, Kyle McMartin escreveu:
+> On Sun, Aug 02, 2009 at 09:50:43PM +0200, Ingo Molnar wrote:
+> > We are sticking to a given version of the API. We could turn that 
+> > into a function pointer and fill it in during startup via dlopen(). 
+> > If it's NULL then we dont call it and assume a value of NULL.
+> > 
+> > Mind submitting such a version of your fix? It would nicely decrease 
+> > the build requirements cross section surface of perf.
+> > 
 > 
-> Yes, I'm building it right now (actually, I'm using current -git tree), 
-> will report back.
+> Assuming I remember how to use dlopen/dlsym, this might work.
+> Unfortunately I can't easily test anything this weekend, so
+> I don't actually know if it works... but it links ok.
+> 
+> cheers, Kyle
 
-Here it is, unfortunately:
+Doesn't seem to work, tried with firefox, with matching
+xulrunner-debuginfo package installed and symbols didn't got properly
+demangled, gotta be afk now, but will try to figure this out later.
 
-[  124.683454] ------------[ cut here ]------------
-[  124.683577] WARNING: at mm/page_alloc.c:1749 __alloc_pages_nodemask+0x4c4/0x5a0()
-[  124.683704] Hardware name: Lenovo          
-[  124.683795] Modules linked in: fuse acpi_cpufreq nfsd lockd nfs_acl auth_rpcgss sunrpc lm75 hwmon usb_storage usb_libusual b43 mac80211 uhci_hcd cfg80211 ehci_hcd tg3 usbcore libphy ssb nls_base
-[  124.685187] Pid: 2743, comm: mount Not tainted 2.6.31-rc5 #1
-[  124.685286] Call Trace:
-[  124.685383]  [<c1036dda>] ? warn_slowpath_common+0x7a/0xc0
-[  124.685489]  [<c1076be4>] ? __alloc_pages_nodemask+0x4c4/0x5a0
-[  124.685596]  [<c1036e40>] ? warn_slowpath_null+0x20/0x40
-[  124.685700]  [<c1076be4>] ? __alloc_pages_nodemask+0x4c4/0x5a0
-[  124.685808]  [<c106dc72>] ? delayacct_end+0xa2/0xd0
-[  124.685913]  [<c1076d41>] ? __get_free_pages+0x21/0x60
-[  124.686018]  [<c11f02cd>] ? match_number+0x3d/0xc0
-[  124.686122]  [<c1129512>] ? parse_options+0xe2/0x5d0
-[  124.686225]  [<c135118b>] ? out_of_line_wait_on_bit+0xbb/0xf0
-[  124.686334]  [<c10c6ff8>] ? __wait_on_buffer+0x28/0x50
-[  124.686438]  [<c112b5b7>] ? ext4_fill_super+0x457/0x2670
-[  124.686542]  [<c11ee146>] ? vsnprintf+0x516/0x820
-[  124.686646]  [<c11e7f2d>] ? kobject_get+0x1d/0x40
-[  124.686752]  [<c10ef5c7>] ? disk_name+0xd7/0xe0
-[  124.686855]  [<c10a37ca>] ? get_sb_bdev+0x15a/0x1a0
-[  124.686958]  [<c112b160>] ? ext4_fill_super+0x0/0x2670
-[  124.687062]  [<c112822d>] ? ext4_get_sb+0x2d/0x50
-[  124.687162]  [<c112b160>] ? ext4_fill_super+0x0/0x2670
-[  124.687265]  [<c10a24f8>] ? vfs_kern_mount+0x58/0xd0
-[  124.687369]  [<c10a2606>] ? do_kern_mount+0x56/0x120
-[  124.687474]  [<c10bb2da>] ? do_mount+0x23a/0x750
-[  124.687575]  [<c10b91c1>] ? copy_mount_options+0x61/0x160
-[  124.687679]  [<c10bb88f>] ? sys_mount+0x9f/0x100
-[  124.687783]  [<c1003304>] ? syscall_call+0x7/0xb
-[  124.687883] ---[ end trace e312a7d04db27a01 ]---
-[  124.981799] EXT4-fs (dm-8): barriers enabled
-[  125.002226] kjournald2 starting: pid 2744, dev dm-8:8, commit interval 5 seconds
-[  125.003346] EXT4-fs (dm-8): internal journal on dm-8:8
-[  125.003555] EXT4-fs (dm-8): delayed allocation enabled
-[  125.003751] EXT4-fs: file extents enabled
-[  125.343718] EXT4-fs: mballoc enabled
-[  125.343884] EXT4-fs (dm-8): mounted filesystem with ordered data mode
+[]s.
 
-
-Full dmesg and config: http://nerdbynature.de/bits/2.6.31-rc5/
-
-No mount options were passed on the commandline but read from fstab:
-
-$ grep ext4 /etc/fstab
-/dev/mapper/wdc0    /mnt/disk0 ext4 nosuid,nodev,noexec,noauto,barrier 0 0
-
-
-I'm in the process of creating an e2image of this partition, would this 
-help anyone?
-
-Thanks,
-Christian.
--- 
-BOFH excuse #6:
-
-global warming
+- Arnaldo
