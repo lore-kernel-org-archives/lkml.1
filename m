@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbZHBUCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753538AbZHBUCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753391AbZHBUCI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 16:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbZHBUCH
+	id S1753538AbZHBUCT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 16:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753104AbZHBUCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 16:02:07 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:8039 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752875AbZHBUCG convert rfc822-to-8bit (ORCPT
+	Sun, 2 Aug 2009 16:02:19 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46857
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753058AbZHBUCR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 16:02:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=UruKwR7glXcQ26JAEI2AJ6NBnJw1Uvkl3wZ65vjxI8nGcyuyKwqrAQh7Iz9UpiYceq
-         M8Qfce+CYbE67aX5cPS9cHo/GnsbEYR1HhaOQgBzsqV30I0eNXxijdlJYJfbexv5HzYD
-         j9EQ8lC9Dd4k/b8A6BrPj0z5nhU28Lh+p6Mrc=
-MIME-Version: 1.0
-In-Reply-To: <1249242398.32323.9.camel@wing-commander>
-References: <1249242398.32323.9.camel@wing-commander>
-Date: Sun, 2 Aug 2009 13:02:06 -0700
-Message-ID: <364299f40908021302m4e2d0d12kf8b985313fe1cb60@mail.gmail.com>
-Subject: Re: [ANNOUNCE] upstart 0.6.3 released
-From: Garrett Cooper <yanegomi@gmail.com>
-To: Scott James Remnant <scott@netsplit.com>
-Cc: upstart-devel@lists.ubuntu.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 2 Aug 2009 16:02:17 -0400
+Date: Sun, 02 Aug 2009 13:02:25 -0700 (PDT)
+Message-Id: <20090802.130225.53875200.davem@davemloft.net>
+To: keil@b1-systems.de
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
+       andreas@eversberg.eu, acme@redhat.com
+Subject: Re: [PATCH 0/1] mISDN: Fix handling of receive buffer size in L1oIP
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <cover.1248781021.git.keil@b1-systems.de>
+References: <cover.1248781021.git.keil@b1-systems.de>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 2, 2009 at 12:46 PM, Scott James Remnant<scott@netsplit.com> wrote:
-> The biggest disadvantage to people actually using your software is that
-> they find bugs, this one's a doozy because it looks like it affects
-> older 0.3 releases as well.  Now seems as good a time as any to repeat
-> my recommendation that distributions, mobile and embedded appliance
-> developers using Upstart consider using 0.6 in their next release rather
-> than sticking with 0.3
->
-> I've also today created the 0.6 stable branch in bzr, those following
-> stable releases with bzr will want to update their trees to
-> lp:~scott/upstart/0.6.  New stable releases will be made off this branch
-> while trunk receives more exciting developments.
->
->
-> 0.6.3  2009-08-02  "Our last, best hope for peace"
->
->        * Fixed an assertion when a job's main process is terminated
->          while in the stopping state.  (Bug: #406408)
+From: Karsten Keil <keil@b1-systems.de>
+Date: Tue, 28 Jul 2009 13:37:01 +0200
 
-Awesome -- that fixes a long outstanding bug that we've seen with
-0.5.0 -- thanks Scott!
--Garrett
+> This patch fix a regression introduced in 2.6.31 with the commit
+> 8c90e11e3543d7de612194a042a148caeaab5f1d "mISDN: Use kernel_{send,recv}msg instead of open coding".
+> 
+> Linus: you can pull the fix from
+> git://git.kernel.org/pub/scm/linux/kernel/git/kkeil/ISDN-2.6-net-next for_linus
+> 
+> David for net-next-2.6 you can get it from:
+> git://git.kernel.org/pub/scm/linux/kernel/git/kkeil/ISDN-2.6-net-next for_david
+
+Karsten, please don't send fix incusion requests like this.  Either
+send them via me always, or bypass me and go straight to Linus
+always.
+
+Asking two people to pull the fix in via two different means only
+will make for confusion.
+
+If it's a fix, get it into net-2.6 via me, otherwise submit it to
+net-next-2.6 if it is not an important fix.  Sending it to Linus
+and my net-next-2.6 at the same time makes %100 no sense.  One
+tree is for fixes, and the other is for new development.
+
+If you're worried about fixes propagating and merging properly,
+I take care of that completely.  When a fix gets into net-2.6
+eventually I will merge net-2.6 into net-next-2.6 and that's how
+it will show up there.  If there is a dependency on new work that
+this fix creates, tell me, and I'll do the merge more quickly
+for you.
