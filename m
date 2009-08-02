@@ -1,119 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753964AbZHBWYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754062AbZHBWnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753964AbZHBWYp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 18:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbZHBWYo
+	id S1754062AbZHBWnq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 18:43:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbZHBWnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 18:24:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33090 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753852AbZHBWYm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 18:24:42 -0400
-Date: Sun, 2 Aug 2009 15:22:01 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Linux Wireless List <linux-wireless@vger.kernel.org>,
-       DRI <dri-devel@lists.sourceforge.net>,
-       Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: 2.6.31-rc5: Reported regressions from 2.6.30
-In-Reply-To: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera>
-Message-ID: <alpine.LFD.2.01.0908021456430.3352@localhost.localdomain>
-References: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Sun, 2 Aug 2009 18:43:45 -0400
+Received: from mail.open.by ([193.232.92.17]:58076 "EHLO post.open.by"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753852AbZHBWno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 18:43:44 -0400
+X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
+X-SpamTest-Group-ID: 00000000
+X-SpamTest-Info: Profiles 9223 [Aug 2 2009]
+X-SpamTest-Info: {relay has no DNS name}
+X-SpamTest-Method: none
+X-SpamTest-Rate: 55
+X-SpamTest-SPF: softfail
+X-SpamTest-Status: Not detected
+X-SpamTest-Status-Extended: not_detected
+X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
+Date: Mon, 3 Aug 2009 01:46:33 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>
+Subject: Re: WARNING at: drivers/char/tty_ldisc.c
+Message-ID: <20090802224633.GA3200@localdomain.by>
+References: <20090802120120.GA3097@localdomain.by>
+ <alpine.LFD.2.01.0908020940530.3352@localhost.localdomain>
+ <20090802190514.GA3278@localdomain.by>
+ <alpine.LFD.2.01.0908021254580.3352@localhost.localdomain>
+ <87k51l9apo.fsf@devron.myhome.or.jp>
+ <alpine.LFD.2.01.0908021423490.3352@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="C7zPtVaVf+AK4Oqc"
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0908021423490.3352@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--C7zPtVaVf+AK4Oqc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Sun, 2 Aug 2009, Rafael J. Wysocki wrote:
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13896
-> Subject		: 2.6.31-rc4 broke expect and gcc's testsuite
-> Submitter	: Mikael Pettersson <mikpe@it.uu.se>
-> Date		: 2009-07-29 11:00 (5 days old)
-> References	: http://marc.info/?l=linux-kernel&m=124885806406520&w=4
+On (08/02/09 14:33), Linus Torvalds wrote:
+> > And another related point which I'm don't know is why we don't change
+> > console_fops to hung_up_tty_fops in do_tty_hangup() in the below.
+>=20
+> Yup, you're right. Because console_fops has=20
+>=20
+>         .write          =3D redirected_tty_write,
+>=20
+> we won't actually hang up the console due to that test for "write !=3D=20
+> tty_write".
+[...]
+> So exactly what _does_ happen if we get rid of that hack?
+>=20
+This solution looks like the right one. There is no trace
+on shutdown.
+I'll compile and test non-SMP kernel (and of course yet more testing for SM=
+P).
 
-I bet this is the same tty bug that got fixed by Ogawa in commit 
-e043e42bdb. -rc5 has that fix. Mikael?
+	Sergey
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13842
-> Subject		: Oops when writing to /sys/block/ram0/queue/max_sectors_kb
-> Submitter	: Jens Rosenboom <jens@mcbone.net>
-> Date		: 2009-07-23 15:30 (11 days old)
-> References	: http://marc.info/?l=linux-kernel&m=124836574403032&w=4
 
-Commit a4e7d46407d73f35d217013b363b79a8f8eafcaa fixed this one.
+>  drivers/char/tty_io.c |   19 +------------------
+>  1 files changed, 1 insertions(+), 18 deletions(-)
+>=20
+> diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+> index a3afa0c..80540ec 100644
+> --- a/drivers/char/tty_io.c
+> +++ b/drivers/char/tty_io.c
+> @@ -496,10 +496,8 @@ static void do_tty_hangup(struct work_struct *work)
+>  {
+>  	struct tty_struct *tty =3D
+>  		container_of(work, struct tty_struct, hangup_work);
+> -	struct file *cons_filp =3D NULL;
+>  	struct file *filp, *f =3D NULL;
+>  	struct task_struct *p;
+> -	int    closecount =3D 0, n;
+>  	unsigned long flags;
+>  	int refs =3D 0;
+> =20
+> @@ -520,11 +518,6 @@ static void do_tty_hangup(struct work_struct *work)
+>  	file_list_lock();
+>  	/* This breaks for file handles being sent over AF_UNIX sockets ? */
+>  	list_for_each_entry(filp, &tty->tty_files, f_u.fu_list) {
+> -		if (filp->f_op->write =3D=3D redirected_tty_write)
+> -			cons_filp =3D filp;
+> -		if (filp->f_op->write !=3D tty_write)
+> -			continue;
+> -		closecount++;
+>  		tty_fasync(-1, filp, 0);	/* can't block */
+>  		filp->f_op =3D &hung_up_tty_fops;
+>  	}
+> @@ -574,17 +567,7 @@ static void do_tty_hangup(struct work_struct *work)
+>  	while (refs--)
+>  		tty_kref_put(tty);
+> =20
+> -	/*
+> -	 * If one of the devices matches a console pointer, we
+> -	 * cannot just call hangup() because that will cause
+> -	 * tty->count and state->count to go out of sync.
+> -	 * So we just call close() the right number of times.
+> -	 */
+> -	if (cons_filp) {
+> -		if (tty->ops->close)
+> -			for (n =3D 0; n < closecount; n++)
+> -				tty->ops->close(tty, cons_filp);
+> -	} else if (tty->ops->hangup)
+> +	if (tty->ops->hangup)
+>  		(tty->ops->hangup)(tty);
+>  	/*
+>  	 * We don't want to have driver/ldisc interactions beyond
+>=20
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13826
-> Subject		: thinkpad boots with backlight low
-> Submitter	: Pavel Machek <pavel@ucw.cz>
-> Date		: 2009-07-15 15:13 (19 days old)
-> References	: http://marc.info/?l=linux-kernel&m=124756359126830&w=4
-> Handled-By	: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+--C7zPtVaVf+AK4Oqc
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-This should be commit 59fe4fe34d7afdf63208124f313be9056feaa2f4.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13815
-> Subject		: emacs -nw compilation doesn't show the error message
-> Submitter	: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> Date		: 2009-07-23 06:22 (11 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d945cb9cce20ac7143c2de8d88b187f62db99bdc
+iJwEAQECAAYFAkp2F0kACgkQfKHnntdSXjRrrwQAuTvsK6DBmefeUQHJLy4ApJF9
+eza4yHtK45IEr1ebgWN6yHaeJeEaWMLTdB0L51+3lZ9h8l3LB0AElgZuNQIk2Sfv
+aOofeygrA51fqYqIEdSltHDXOjY294T2DklalYkOvHd+Knrjwanj07u5/Np//TJY
+LUQ+W6k/NND8HLBDYFs=
+=Hpio
+-----END PGP SIGNATURE-----
 
-Same old pty bug, same fix: commit e043e42bdb.
-
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13813
-> Subject		: Hangups in n_tty_read()
-> Submitter	: Johannes Weiner <hannes@cmpxchg.org>
-> Date		: 2009-07-16 18:48 (18 days old)
-> References	: http://marc.info/?l=linux-kernel&m=124777019920579&w=4
-
-Hmm. Worth testing that same fix, although the symptoms here are not 
-exactly the same.
-
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13812
-> Subject		: Ooops on uplug
-> Submitter	: Daniel Mack <daniel@caiaq.de>
-> Date		: 2009-07-20 17:51 (14 days old)
-> References	: http://marc.info/?l=linux-kernel&m=124811234302786&w=4
-> Handled-By	: Alan Stern <stern@rowland.harvard.edu>
-> 		  Alan Cox <alan@linux.intel.com>
-
-Commit c56d3000861 should fix this.
-
-> Regressions with patches
-> ------------------------
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13891
-> Subject		: PCI resources allocation problem on HP nx6325
-> Submitter	: Rafael J. Wysocki <rjw@sisk.pl>
-> Date		: 2009-08-02 13:37 (1 days old)
-> Handled-By	: Linus Torvalds <torvalds@linux-foundation.org>
-> Patch		: http://patchwork.kernel.org/patch/38774/
-
-Ok, this is committed as 79896cf42f6a96d7e14f2dc3473443d68d74031d.
-
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13825
-> Subject		: eeepc-laptop: fix hot-unplug on resume
-> Submitter	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> Date		: 2009-06-29 13:12 (35 days old)
-> References	: http://lkml.org/lkml/2009/6/29/150
-> Handled-By	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> Patch		: http://patchwork.kernel.org/patch/32926/
-
-commit 7334546a52c6764df120459509b1f803a073eacc
-
-		Linus
+--C7zPtVaVf+AK4Oqc--
