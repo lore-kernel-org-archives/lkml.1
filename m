@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbZHBUBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbZHBUCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753289AbZHBUBA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 16:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbZHBUA7
+	id S1753391AbZHBUCI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 16:02:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbZHBUCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 16:00:59 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37316 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751283AbZHBUA7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 16:00:59 -0400
-Date: Sun, 2 Aug 2009 22:00:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] perf tools: allow top users to switch between weighted
-	and individual counter display
-Message-ID: <20090802200049.GF24486@elte.hu>
-References: <1248422990.28486.3.camel@marge.simson.net> <1248425937.6987.0.camel@twins> <1248431821.9722.4.camel@marge.simson.net>
+	Sun, 2 Aug 2009 16:02:07 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:8039 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752875AbZHBUCG convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 16:02:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=UruKwR7glXcQ26JAEI2AJ6NBnJw1Uvkl3wZ65vjxI8nGcyuyKwqrAQh7Iz9UpiYceq
+         M8Qfce+CYbE67aX5cPS9cHo/GnsbEYR1HhaOQgBzsqV30I0eNXxijdlJYJfbexv5HzYD
+         j9EQ8lC9Dd4k/b8A6BrPj0z5nhU28Lh+p6Mrc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248431821.9722.4.camel@marge.simson.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0001]
+In-Reply-To: <1249242398.32323.9.camel@wing-commander>
+References: <1249242398.32323.9.camel@wing-commander>
+Date: Sun, 2 Aug 2009 13:02:06 -0700
+Message-ID: <364299f40908021302m4e2d0d12kf8b985313fe1cb60@mail.gmail.com>
+Subject: Re: [ANNOUNCE] upstart 0.6.3 released
+From: Garrett Cooper <yanegomi@gmail.com>
+To: Scott James Remnant <scott@netsplit.com>
+Cc: upstart-devel@lists.ubuntu.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Aug 2, 2009 at 12:46 PM, Scott James Remnant<scott@netsplit.com> wrote:
+> The biggest disadvantage to people actually using your software is that
+> they find bugs, this one's a doozy because it looks like it affects
+> older 0.3 releases as well.  Now seems as good a time as any to repeat
+> my recommendation that distributions, mobile and embedded appliance
+> developers using Upstart consider using 0.6 in their next release rather
+> than sticking with 0.3
+>
+> I've also today created the 0.6 stable branch in bzr, those following
+> stable releases with bzr will want to update their trees to
+> lp:~scott/upstart/0.6.  New stable releases will be made off this branch
+> while trunk receives more exciting developments.
+>
+>
+> 0.6.3  2009-08-02  "Our last, best hope for peace"
+>
+>        * Fixed an assertion when a job's main process is terminated
+>          while in the stopping state.  (Bug: #406408)
 
-* Mike Galbraith <efault@gmx.de> wrote:
-
-> On Fri, 2009-07-24 at 10:58 +0200, Peter Zijlstra wrote:
-> > On Fri, 2009-07-24 at 10:09 +0200, Mike Galbraith wrote:
-> > > (depends on last resurrect annotation patch)
-> > > 
-> > > perf_counter tools: allow top users to switch between weighted and individual counter display.
-> > > 
-> > > Add [w]eighted hotkey.  Pressing [w] toggles between displaying weighted total of all counters,
-> > > and the counter selected via [E]vent select key.
-> > 
-> > /me stuck it next to that other one, let see what happens ;-)
-> 
-> (plugs in Bitwolf-9000 charger)
-
-seems to work well here.
-
-A few minor comments:
-
- - I had to guess that '?' gets me a help screen. Might make sense 
-   to display a line at the bottom (?) to give some hints.
-
- - Once i was on the help screen, i expected either <Enter> or '?' 
-   to make it vanish. Only setting an option got rid of it - i 
-   suspect this should be improved. (Also, a line in the help screen 
-   that tells us how to go back without changing anything would be 
-   helpful as well.)
-
- - I randomly tried the 's' option to do annotation. But it didnt do 
-   anything. Probably because i didnt start perf top via --vmlinux, 
-   right? This behavior is not intuitive in any case - it should 
-   probably display an error message at minimum - but if possible it 
-   should try to guess the position of the vmlinux file.
-
-	Ingo
+Awesome -- that fixes a long outstanding bug that we've seen with
+0.5.0 -- thanks Scott!
+-Garrett
