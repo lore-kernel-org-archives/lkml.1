@@ -1,110 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753798AbZHBUom@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753655AbZHBUrD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753798AbZHBUom (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 16:44:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbZHBUol
+	id S1753655AbZHBUrD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 16:47:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbZHBUrC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 16:44:41 -0400
-Received: from mail.gmx.net ([213.165.64.20]:47259 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753627AbZHBUok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 16:44:40 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1/ng5NyQs/n27UzTaLObqugYwaYqCbqqkW1ZJfunB
-	C+gX/ExwsSLg/J
-Date: Sun, 2 Aug 2009 22:44:42 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Julia Lawall <julia@diku.dk>
-cc: Kurt Garloff <garloff@suse.de>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 3/5] drivers/scsi: Use DIV_ROUND_CLOSEST
-In-Reply-To: <Pine.LNX.4.64.0908012149050.25693@ask.diku.dk>
-Message-ID: <Pine.LNX.4.64.0908022235310.12625@axis700.grange>
-References: <Pine.LNX.4.64.0908012149050.25693@ask.diku.dk>
+	Sun, 2 Aug 2009 16:47:02 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45630 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753636AbZHBUrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 16:47:01 -0400
+Date: Sun, 2 Aug 2009 22:46:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: paulmck@linux.vnet.ibm.com, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       torvalds@linux-foundation.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:core/debug] debug lockups: Improve lockup detection
+Message-ID: <20090802204647.GC3986@elte.hu>
+References: <tip-c1dc0b9c0c8979ce4d411caadff5c0d79dee58bc@git.kernel.org> <20090802114545.f1520c81.akpm@linux-foundation.org> <20090802192657.GA21882@elte.hu> <20090802123958.cbd497a0.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.45
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090802123958.cbd497a0.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Aug 2009, Julia Lawall wrote:
 
-> From: Julia Lawall <julia@diku.dk>
-> 
-> The kernel.h macro DIV_ROUND_CLOSEST performs the computation (x + d/2)/d
-> but is perhaps more readable.
-> 
-> The semantic patch that makes this change is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @haskernel@
-> @@
-> 
-> #include <linux/kernel.h>
-> 
-> @depends on haskernel@
-> expression x,__divisor;
-> @@
-> 
-> - (((x) + ((__divisor) / 2)) / (__divisor))
-> + DIV_ROUND_CLOSEST(x,__divisor)
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
-> ---
->  drivers/scsi/tmscsim.c              |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> Diff --git a/drivers/scsi/tmscsim.c b/drivers/scsi/tmscsim.c
-> index 9a42734..7322f30 100644
-> --- a/drivers/scsi/tmscsim.c
-> +++ b/drivers/scsi/tmscsim.c
-> @@ -1125,7 +1125,8 @@ dc390_MsgIn_set_sync (struct dc390_acb* pACB, struct dc390_srb* pSRB)
->      {
->        if (! (bval & FAST_SCSI)) wval1++;
->        printk (KERN_INFO "DC390: Target %i: Sync transfer %i.%1i MHz, Offset %i\n", pDCB->TargetID, 
-> -	      40/wval1, ((40%wval1)*10+wval1/2)/wval1, pDCB->SyncOffset & 0x0f);
-> +		40/wval1, DIV_ROUND_CLOSEST((40 % wval1) * 10, wval1),
-> +		pDCB->SyncOffset & 0x0f);
->      }
->    
->    dc390_reprog (pACB, pDCB);
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-With all my respect to these scripted clean-up efforts, I am not sure this 
-really improves anything. I.e., I am not sure, that
+>  #ifndef trigger_all_cpu_backtrace
+> +#ifdef CONFIG_SMP
+> +#warning This architecture is missing a trigger_all_cpu_backtrace() implementation
+> +#endif
+>  #define trigger_all_cpu_backtrace() do { } while (0)
+>  #endif
 
-	z = DIV_ROUND_CLOSEST(x, y);
+I think a better solution will be to make this function return 1 if 
+it generated a backtrace.
 
-is better readable than
+That way we can fall back to the generic schedule_work based 
+codepath.
 
-	z = (x + y / 2) / y;
+Albeit the best and cleanest solution would be to implement a 
+workqueue based trigger_all_cpu_backtrace() __weak variant and throw 
+away the workqueue bits from sysrq.c.
 
-Besides, I do realise, that tmscsim.c indentation is dreadful (legacy 
-code...) but this patch changes it further from
+	Ingo
 
-	printk("...",
-	       x,
-	       y);
-
-to
-
-	printk("...",
-		x,
-		y);
-
-which doesn't seem like an improvement to me either. That said, this does 
-compile, and I don't see why this shouldn't work, so, if we really want 
-this change here's the
-
-Acked-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
