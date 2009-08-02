@@ -1,225 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbZHBTbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbZHBTec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753522AbZHBTbR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 15:31:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbZHBTbP
+	id S1753478AbZHBTec (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 15:34:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbZHBTeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 15:31:15 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55093 "EHLO hera.kernel.org"
+	Sun, 2 Aug 2009 15:34:31 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46654 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753476AbZHBTbN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 15:31:13 -0400
-Date: Sun, 2 Aug 2009 19:30:36 GMT
-From: tip-bot for David Kilroy <kilroyd@googlemail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       kilroyd@googlemail.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       kilroyd@googlemail.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1249238465-4929-1-git-send-email-kilroyd@googlemail.com>
-References: <1249238465-4929-1-git-send-email-kilroyd@googlemail.com>
-Subject: [tip:core/locking] locking: Check spinlock_t/rwlock_t argument type on non-SMP builds too
-Message-ID: <tip-8d19bd347e1073e7f1ef9f8057c560a5f6be63d7@git.kernel.org>
-Git-Commit-ID: 8d19bd347e1073e7f1ef9f8057c560a5f6be63d7
-X-Mailer: tip-git-log-daemon
+	id S1753392AbZHBTeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 15:34:31 -0400
+Date: Sun, 2 Aug 2009 21:34:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [GIT PULL] tracing: Various cleanups for 2.6.32
+Message-ID: <20090802193416.GA24486@elte.hu>
+References: <1248887609-5147-1-git-send-email-fweisbec@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 02 Aug 2009 19:30:37 +0000 (UTC)
+In-Reply-To: <1248887609-5147-1-git-send-email-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8d19bd347e1073e7f1ef9f8057c560a5f6be63d7
-Gitweb:     http://git.kernel.org/tip/8d19bd347e1073e7f1ef9f8057c560a5f6be63d7
-Author:     David Kilroy <kilroyd@googlemail.com>
-AuthorDate: Sun, 2 Aug 2009 19:41:05 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 2 Aug 2009 21:29:07 +0200
 
-locking: Check spinlock_t/rwlock_t argument type on non-SMP builds too
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-When writing code for UP without CONFIG_DEBUG_SPINLOCK it's
-easy to get the first argument to the spinlock/rwlock functions
-wrong. This is because the parameter is not actually used in
-this configuration.
+> Hi Thomas, Ingo,
+> 
+> These patches are the result of various cleanups in the tracing
+> subsystem: algorithms simpifications, and various trace.c to tracer
+> files moving.
+> 
+> Thanks,
+> Frederic.
+> 
+> The following changes since commit d34a4debef933061924ee17c2ede33f5c44925fb:
+>   jolsa@redhat.com (1):
+>         tracing: Remove .globl in the scripts/recordmcount.pl doc
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git tracing/core
+> 
+> Frederic Weisbecker (5):
+>       tracing/function-graph-tracer: Drop the useless nmi protection
+>       tracing/function-tracer: Move trace_function() in the function tracer file
+>       tracing/core: Make the stack entry helpers global
+>       tracing: Move sched event insertion helpers in the sched switch tracer file
+>       tracing/function-graph-tracer: Move graph event insertion helpers in the graph tracer file
+> 
+> Lai Jiangshan (1):
+>       tracing: Simplify print_graph_cpu()
+> 
+>  arch/x86/kernel/ftrace.c             |    4 -
+>  kernel/trace/trace.c                 |  217 ++--------------------------------
+>  kernel/trace/trace.h                 |   30 ++++-
+>  kernel/trace/trace_functions.c       |   25 ++++
+>  kernel/trace/trace_functions_graph.c |  152 +++++++++++++++++++-----
+>  kernel/trace/trace_sched_switch.c    |   57 +++++++++
+>  kernel/trace/trace_selftest.c        |    1 +
+>  7 files changed, 242 insertions(+), 244 deletions(-)
 
-Typically you will only find out it's wrong:
+Pulled into tip:tracing/core, thanks a lot!
 
- * by rebuilding with CONFIG_SMP or CONFIG_DEBUG_SPINLOCK
- * after you've submitted your beautiful patch series
-
-The first means a long wait, and the latter is a bit late.
-
-Change the intermediate macros into inline functions.
-
--v2: Use C inlines instead of in-macro type-checks
--v3: Correct bug in _spin_trylock_bh
-
-Signed-off-by: David Kilroy <kilroyd@googlemail.com>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: akpm@linux-foundation.org
-LKML-Reference: <1249238465-4929-1-git-send-email-kilroyd@googlemail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- include/linux/spinlock.h        |    6 +-
- include/linux/spinlock_api_up.h |  118 +++++++++++++++++++++++++++++----------
- 2 files changed, 92 insertions(+), 32 deletions(-)
-
-diff --git a/include/linux/spinlock.h b/include/linux/spinlock.h
-index 4be57ab..3dd492f 100644
---- a/include/linux/spinlock.h
-+++ b/include/linux/spinlock.h
-@@ -249,17 +249,17 @@ static inline void smp_mb__after_lock(void) { smp_mb(); }
- #define spin_lock_irqsave(lock, flags)			\
- 	do {						\
- 		typecheck(unsigned long, flags);	\
--		_spin_lock_irqsave(lock, flags);	\
-+		_spin_lock_irqsave(lock, &flags);	\
- 	} while (0)
- #define read_lock_irqsave(lock, flags)			\
- 	do {						\
- 		typecheck(unsigned long, flags);	\
--		_read_lock_irqsave(lock, flags);	\
-+		_read_lock_irqsave(lock, &flags);	\
- 	} while (0)
- #define write_lock_irqsave(lock, flags)			\
- 	do {						\
- 		typecheck(unsigned long, flags);	\
--		_write_lock_irqsave(lock, flags);	\
-+		_write_lock_irqsave(lock, &flags);	\
- 	} while (0)
- #define spin_lock_irqsave_nested(lock, flags, subclass)	\
- 	spin_lock_irqsave(lock, flags)
-diff --git a/include/linux/spinlock_api_up.h b/include/linux/spinlock_api_up.h
-index 04e1d31..432d4b6 100644
---- a/include/linux/spinlock_api_up.h
-+++ b/include/linux/spinlock_api_up.h
-@@ -48,34 +48,94 @@
- #define __UNLOCK_IRQRESTORE(lock, flags) \
-   do { local_irq_restore(flags); __UNLOCK(lock); } while (0)
- 
--#define _spin_lock(lock)			__LOCK(lock)
--#define _spin_lock_nested(lock, subclass)	__LOCK(lock)
--#define _read_lock(lock)			__LOCK(lock)
--#define _write_lock(lock)			__LOCK(lock)
--#define _spin_lock_bh(lock)			__LOCK_BH(lock)
--#define _read_lock_bh(lock)			__LOCK_BH(lock)
--#define _write_lock_bh(lock)			__LOCK_BH(lock)
--#define _spin_lock_irq(lock)			__LOCK_IRQ(lock)
--#define _read_lock_irq(lock)			__LOCK_IRQ(lock)
--#define _write_lock_irq(lock)			__LOCK_IRQ(lock)
--#define _spin_lock_irqsave(lock, flags)		__LOCK_IRQSAVE(lock, flags)
--#define _read_lock_irqsave(lock, flags)		__LOCK_IRQSAVE(lock, flags)
--#define _write_lock_irqsave(lock, flags)	__LOCK_IRQSAVE(lock, flags)
--#define _spin_trylock(lock)			({ __LOCK(lock); 1; })
--#define _read_trylock(lock)			({ __LOCK(lock); 1; })
--#define _write_trylock(lock)			({ __LOCK(lock); 1; })
--#define _spin_trylock_bh(lock)			({ __LOCK_BH(lock); 1; })
--#define _spin_unlock(lock)			__UNLOCK(lock)
--#define _read_unlock(lock)			__UNLOCK(lock)
--#define _write_unlock(lock)			__UNLOCK(lock)
--#define _spin_unlock_bh(lock)			__UNLOCK_BH(lock)
--#define _write_unlock_bh(lock)			__UNLOCK_BH(lock)
--#define _read_unlock_bh(lock)			__UNLOCK_BH(lock)
--#define _spin_unlock_irq(lock)			__UNLOCK_IRQ(lock)
--#define _read_unlock_irq(lock)			__UNLOCK_IRQ(lock)
--#define _write_unlock_irq(lock)			__UNLOCK_IRQ(lock)
--#define _spin_unlock_irqrestore(lock, flags)	__UNLOCK_IRQRESTORE(lock, flags)
--#define _read_unlock_irqrestore(lock, flags)	__UNLOCK_IRQRESTORE(lock, flags)
--#define _write_unlock_irqrestore(lock, flags)	__UNLOCK_IRQRESTORE(lock, flags)
-+static inline void _spin_lock(spinlock_t *lock)
-+{ __LOCK(lock); }
-+
-+static inline void _spin_lock_nested(spinlock_t *lock, int subclass)
-+{ __LOCK(lock); }
-+
-+static inline void _read_lock(rwlock_t *lock)
-+{ __LOCK(lock); }
-+
-+static inline void _write_lock(rwlock_t *lock)
-+{ __LOCK(lock); }
-+
-+static inline void _spin_lock_bh(spinlock_t *lock)
-+{ __LOCK_BH(lock); }
-+
-+static inline void _read_lock_bh(rwlock_t *lock)
-+{ __LOCK_BH(lock); }
-+
-+static inline void _write_lock_bh(rwlock_t *lock)
-+{ __LOCK_BH(lock); }
-+
-+static inline void _spin_lock_irq(spinlock_t *lock)
-+{ __LOCK_IRQ(lock); }
-+
-+static inline void _read_lock_irq(rwlock_t *lock)
-+{ __LOCK_IRQ(lock); }
-+
-+static inline void _write_lock_irq(rwlock_t *lock)
-+{ __LOCK_IRQ(lock); }
-+
-+static inline void _spin_lock_irqsave(spinlock_t *lock, unsigned long *flags)
-+{ __LOCK_IRQSAVE(lock, *flags); }
-+
-+static inline void _read_lock_irqsave(rwlock_t *lock, unsigned long *flags)
-+{ __LOCK_IRQSAVE(lock, *flags); }
-+
-+static inline void _write_lock_irqsave(rwlock_t *lock, unsigned long *flags)
-+{ __LOCK_IRQSAVE(lock, *flags); }
-+
-+static inline int _spin_trylock(spinlock_t *lock)
-+{ __LOCK(lock); return 1; }
-+
-+static inline int _read_trylock(rwlock_t *lock)
-+{ __LOCK(lock); return 1; }
-+
-+static inline int _write_trylock(rwlock_t *lock)
-+{ __LOCK(lock); return 1; }
-+
-+static inline int _spin_trylock_bh(spinlock_t *lock)
-+{ __LOCK_BH(lock); return 1; }
-+
-+static inline void _spin_unlock(spinlock_t *lock)
-+{ __UNLOCK(lock); }
-+
-+static inline void _read_unlock(rwlock_t *lock)
-+{ __UNLOCK(lock); }
-+
-+static inline void _write_unlock(rwlock_t *lock)
-+{ __UNLOCK(lock); }
-+
-+static inline void _spin_unlock_bh(spinlock_t *lock)
-+{ __UNLOCK_BH(lock); }
-+
-+static inline void _read_unlock_bh(rwlock_t *lock)
-+{ __UNLOCK_BH(lock); }
-+
-+static inline void _write_unlock_bh(rwlock_t *lock)
-+{ __UNLOCK_BH(lock); }
-+
-+static inline void _spin_unlock_irq(spinlock_t *lock)
-+{ __UNLOCK_IRQ(lock); }
-+
-+static inline void _read_unlock_irq(rwlock_t *lock)
-+{ __UNLOCK_IRQ(lock); }
-+
-+static inline void _write_unlock_irq(rwlock_t *lock)
-+{ __UNLOCK_IRQ(lock); }
-+
-+static inline void _spin_unlock_irqrestore(spinlock_t *lock,
-+					   unsigned long flags)
-+{ __UNLOCK_IRQRESTORE(lock, flags); }
-+
-+static inline void _read_unlock_irqrestore(rwlock_t *lock,
-+					   unsigned long flags)
-+{ __UNLOCK_IRQRESTORE(lock, flags); }
-+
-+static inline void _write_unlock_irqrestore(rwlock_t *lock,
-+					    unsigned long flags)
-+{ __UNLOCK_IRQRESTORE(lock, flags); }
- 
- #endif /* __LINUX_SPINLOCK_API_UP_H */
+	Ingo
