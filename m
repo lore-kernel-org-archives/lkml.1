@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbZHBUZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbZHBU0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753575AbZHBUZd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 16:25:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZHBUZd
+	id S1753537AbZHBU0d (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 16:26:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbZHBU0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 16:25:33 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55137 "EHLO mx3.mail.elte.hu"
+	Sun, 2 Aug 2009 16:26:33 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37462 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752396AbZHBUZc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 16:25:32 -0400
-Date: Sun, 2 Aug 2009 22:25:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, fweisbec@gmail.com
-Subject: Re: [PATCH] basic perf support for sparc
-Message-ID: <20090802202522.GK24486@elte.hu>
-References: <20090729112509.GN4148@kernel.dk> <20090802.131705.81498579.davem@davemloft.net>
+	id S1752653AbZHBU0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 16:26:32 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Christian Kujau <lists@nerdbynature.de>
+Subject: Re: [Bug #13666] WARNING: at mm/page_alloc.c:1743 __alloc_pages_nodemask
+Date: Sun, 2 Aug 2009 22:26:51 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc5-rjw; KDE/4.2.4; x86_64; ; )
+Cc: David Rientjes <rientjes@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
+References: <Jya1GruKQpD.A.16.2GObKB@chimera> <alpine.DEB.2.01.0908011427270.5831@bogon.housecafe.de> <alpine.DEB.2.01.0908021314030.5831@bogon.housecafe.de>
+In-Reply-To: <alpine.DEB.2.01.0908021314030.5831@bogon.housecafe.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090802.131705.81498579.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200908022226.52228.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* David Miller <davem@davemloft.net> wrote:
-
-> From: Jens Axboe <jens.axboe@oracle.com>
-> Date: Wed, 29 Jul 2009 13:25:10 +0200
+On Sunday 02 August 2009, Christian Kujau wrote:
+> Hm,
 > 
-> > -#define NR_SYSCALLS		327
-> > +#define NR_SYSCALLS		328
+> looks like this *is* reproducible. After a reboot, mounting the very 
+> same ext4 filesystem triggers this WARNING again:
 > 
-> When you increase this value, you have to add entries to all of 
-> the syscall tables.  The syscall dispatch checks against this as a 
-> limit, so if you don't explicitly add an entry to all the tables, 
-> it's possible to deref garbage past the end of the table and try 
-> to jump to it as a syscall.
+> [  165.000603] ------------[ cut here ]------------
+> [  165.000726] WARNING: at mm/page_alloc.c:1749 __alloc_pages_nodemask+0x4c4/0x5a0()
+> [  165.000853] Hardware name: Lenovo          
+> [  165.000944] Modules linked in: fuse acpi_cpufreq nfsd lockd nfs_acl auth_rpcgss sunrpc lm75 hwmon b43 usb_storage usb_libusual mac80211 cfg80211 uhci_hcd ehci_hcd tg3 ssb usbcore libphy nls_base
+> [  165.002297] Pid: 2789, comm: mount Not tainted 2.6.31-rc4 #1
+> [  165.002397] Call Trace:
+> [  165.002494]  [<c1036dda>] ? warn_slowpath_common+0x7a/0xc0
+> [  165.002601]  [<c1076be4>] ? __alloc_pages_nodemask+0x4c4/0x5a0
+> [  165.002708]  [<c1036e40>] ? warn_slowpath_null+0x20/0x40
+> [  165.002812]  [<c1076be4>] ? __alloc_pages_nodemask+0x4c4/0x5a0
+> [  165.002921]  [<c106dc72>] ? delayacct_end+0xa2/0xd0
+> [  165.003027]  [<c1076d41>] ? __get_free_pages+0x21/0x60
+> [  165.003132]  [<c11f02bd>] ? match_number+0x3d/0xc0
+> [  165.003235]  [<c1129512>] ? parse_options+0xe2/0x5d0
+> [  165.003340]  [<c135116b>] ? out_of_line_wait_on_bit+0xbb/0xf0
+> [  165.003449]  [<c10c6ff8>] ? __wait_on_buffer+0x28/0x50
+> [  165.003552]  [<c112b5b7>] ? ext4_fill_super+0x457/0x2670
+> [  165.003657]  [<c11ee136>] ? vsnprintf+0x516/0x820
+> [  165.003759]  [<c11e7f1d>] ? kobject_get+0x1d/0x40
+> [  165.003865]  [<c10ef5c7>] ? disk_name+0xd7/0xe0
+> [  165.003967]  [<c10a37ca>] ? get_sb_bdev+0x15a/0x1a0
+> [  165.004107]  [<c112b160>] ? ext4_fill_super+0x0/0x2670
+> [  165.004216]  [<c112822d>] ? ext4_get_sb+0x2d/0x50
+> [  165.004315]  [<c112b160>] ? ext4_fill_super+0x0/0x2670
+> [  165.004419]  [<c10a24f8>] ? vfs_kern_mount+0x58/0xd0
+> [  165.004522]  [<c10a2606>] ? do_kern_mount+0x56/0x120
+> [  165.004625]  [<c10bb2da>] ? do_mount+0x23a/0x750
+> [  165.004727]  [<c10b91c1>] ? copy_mount_options+0x61/0x160
+> [  165.004831]  [<c10bb88f>] ? sys_mount+0x9f/0x100
+> [  165.004934]  [<c1003304>] ? syscall_call+0x7/0xb
+> [  165.005044] ---[ end trace d2227ca6268a916a ]---
+> [  165.287930] EXT4-fs (dm-7): barriers enabled
 > 
-> And if you somehow arrange for adding a compat syscall entry here 
-> for this, and build the perf tools 32-bit, you can forego all of 
-> these rediculious issues with trying to get a 64-bit BFD library.  
-> If the perf tools are written portably and use types like u64 etc. 
-> for holding addresses and similar things, this should not be an 
-> issue.
+> The whole dmesg and proc/meminfo is at:
+> http://nerdbynature.de/bits/2.6.31-rc4/
 > 
-> The 32-bit sparc BFD library has full support for all the 64-bit 
-> binary formats and whatnot.
+> Note: "dm-7" is a dm-crypt device, backed by an external disk which is 
+> connected via USB. The filesystem itself seems fine however, nothing 
+> unusual except this warning so far...
 
-That would work too. On x86 perf works all across the compatibility 
-spectrum, and we do use strict u32/u64 typing and ABIs.
+The patches supposed to fix this issue went in right before -rc5 AFAIC.
 
-Note that we'll also solve (remove) the binutils-devel dependency, 
-it creates a way too large set of external build constraints for 
-perf. But in any case both 32-bit and 64-bit perf should work just 
-fine.
+Can you try to reproduce with -rc5?
 
-	Ingo
+Rafael
