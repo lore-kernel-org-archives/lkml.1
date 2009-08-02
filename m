@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbZHBTec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbZHBTiG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753478AbZHBTec (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 15:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753394AbZHBTeb
+	id S1752875AbZHBTiG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 15:38:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbZHBTiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 15:34:31 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46654 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753392AbZHBTeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 15:34:31 -0400
-Date: Sun, 2 Aug 2009 21:34:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [GIT PULL] tracing: Various cleanups for 2.6.32
-Message-ID: <20090802193416.GA24486@elte.hu>
-References: <1248887609-5147-1-git-send-email-fweisbec@gmail.com>
+	Sun, 2 Aug 2009 15:38:06 -0400
+Received: from ganesha.gnumonks.org ([213.95.27.120]:54869 "EHLO
+	ganesha.gnumonks.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752375AbZHBTiF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 15:38:05 -0400
+X-Greylist: delayed 1670 seconds by postgrey-1.27 at vger.kernel.org; Sun, 02 Aug 2009 15:38:05 EDT
+Date: Sun, 2 Aug 2009 21:08:51 +0200
+From: Harald Welte <HaraldWelte@viatech.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Michael S. Zick" <lkml@morethan.org>, linux-kernel@vger.kernel.org
+Subject: Re: [VIA Support]  Instruction timing and cache coherency issues
+Message-ID: <20090802190851.GZ4216@prithivi.gnumonks.org>
+References: <200907250827.43400.lkml@morethan.org>
+ <20090730090804.GE1364@ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1248887609-5147-1-git-send-email-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090730090804.GE1364@ucw.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jul 30, 2009 at 11:08:04AM +0200, Pavel Machek wrote:
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> > Diddling with the things I have found that either "fix" or "work around"
+> > the various timing / cache coherency issues - - -
+> > Aw, so - found how to affect the timing issues sufficiently so that Linux
+> > would panic dump rather than deadlock on the troublesum combination - -
+> > *Functionally the same* panic backtrace that FreeBSD is showing.
+> > 
+> > @H.W.  Download the FreeBSD-8.0-beta2 and try running it on your Cloudbook
+> > and HP-2133, you can see what is happening.  Then you might have a word or
+> > two with the silicon growers.
+> > 
+> So... you believe you have pinpointed bug in their cpu design?
 
-> Hi Thomas, Ingo,
-> 
-> These patches are the result of various cleanups in the tracing
-> subsystem: algorithms simpifications, and various trace.c to tracer
-> files moving.
-> 
-> Thanks,
-> Frederic.
-> 
-> The following changes since commit d34a4debef933061924ee17c2ede33f5c44925fb:
->   jolsa@redhat.com (1):
->         tracing: Remove .globl in the scripts/recordmcount.pl doc
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git tracing/core
-> 
-> Frederic Weisbecker (5):
->       tracing/function-graph-tracer: Drop the useless nmi protection
->       tracing/function-tracer: Move trace_function() in the function tracer file
->       tracing/core: Make the stack entry helpers global
->       tracing: Move sched event insertion helpers in the sched switch tracer file
->       tracing/function-graph-tracer: Move graph event insertion helpers in the graph tracer file
-> 
-> Lai Jiangshan (1):
->       tracing: Simplify print_graph_cpu()
-> 
->  arch/x86/kernel/ftrace.c             |    4 -
->  kernel/trace/trace.c                 |  217 ++--------------------------------
->  kernel/trace/trace.h                 |   30 ++++-
->  kernel/trace/trace_functions.c       |   25 ++++
->  kernel/trace/trace_functions_graph.c |  152 +++++++++++++++++++-----
->  kernel/trace/trace_sched_switch.c    |   57 +++++++++
->  kernel/trace/trace_selftest.c        |    1 +
->  7 files changed, 242 insertions(+), 244 deletions(-)
+I would not preclude that, but I think what might be more likely is that there
+is some difference between how Intel and how VIA/Centaur behaves in a certain
+situation, or the compiler making a wrong assumption about what it can do or
+cannot do (remember e.g. for the VIA C3 there was no cmpxchg8, but gcc uses
+it in case you compile with i686 optiomization).
 
-Pulled into tip:tracing/core, thanks a lot!
+I have not yet tried FreeBSD 8 on the cloudbook, but expect to have time during
+the next days.  However, since I am not familiar with the FreeBSD kernel
+architecture, I would definitely prefer something where I can reproduce the
+problem on Linux.
 
-	Ingo
+Michael has indicated that he can now crash (oops) the kernel rather than deadlock.
+With which kernel is that?  I would love to give that one a try.
+
+-- 
+- Harald Welte <HaraldWelte@viatech.com>	    http://linux.via.com.tw/
+============================================================================
+VIA Free and Open Source Software Liaison
