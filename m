@@ -1,50 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932086AbZHBWJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbZHBWM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932086AbZHBWJq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 18:09:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932079AbZHBWJo
+	id S1754364AbZHBWM4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 18:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbZHBWMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 18:09:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38010 "EHLO ogre.sisk.pl"
+	Sun, 2 Aug 2009 18:12:55 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:34821 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754338AbZHBWA6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 18:00:58 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Dave Airlie" <airlied@redhat.com>,
-       "Jerome Glisse" <glisse@freedesktop.org>,
-       "Karsten Mehrhoff" <kawime@gmx.de>,
-       "=?utf-8?q?Michel=20D=C3=A4nzer?=" <michel@daenzer.net>,
-       "Shaohua Li" <shaohua.li@intel.com>
-References: <upey9ZSfnaF.A.-oE.rpgdKB@chimera>
-In-Reply-To: <upey9ZSfnaF.A.-oE.rpgdKB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	id S1753880AbZHBWMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 18:12:55 -0400
+Date: Mon, 3 Aug 2009 00:12:30 +0200
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: reinette chatre <reinette.chatre@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       rjw@sisk.pl
+Subject: Re: iwlwifi (4965) regression since 2.6.30
+Message-ID: <20090802221230.GP3382@ics.muni.cz>
+References: <20090726075738.GA21333@ics.muni.cz>
+ <1248710618.1216.452.camel@rc-desk>
+ <1248710775.9958.0.camel@johannes.local>
+ <20090728112102.GA3382@ics.muni.cz>
+ <1248785690.8113.9.camel@johannes.local>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <7ixSg7D88bK.A._jH.NsgdKB@chimera>
-Subject: [Bug #13318] AGP doesn't work anymore on nforce2
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun,  2 Aug 2009 21:09:24 +0200 (CEST)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1248785690.8113.9.camel@johannes.local>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Muni-Spam-TestIP: 81.31.45.161
+X-Muni-Envelope-From: xhejtman@anubis.ics.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Mon, 03 Aug 2009 00:12:31 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of regressions introduced between 2.6.29 and 2.6.30.
+Anything new on this? Didn't hear from Henriqe anything.
 
-The following bug entry is on the current list of known regressions
-introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-be listed and let me know (either way).
+On Tue, Jul 28, 2009 at 02:54:50PM +0200, Johannes Berg wrote:
+> Henrique, any ideas on this?
+> 
+> On Tue, 2009-07-28 at 13:21 +0200, Lukas Hejtmanek wrote:
+> > On Mon, Jul 27, 2009 at 06:06:15PM +0200, Johannes Berg wrote:
+> > > I'm not aware of any thinkpad-acpi rfkill problems, can you get the
+> > > rfkill tool and dump the status/list?
+> > > 
+> > > http://wireless.kernel.org/en/users/Documentation/rfkill
+> > 
+> > I figured it out.
+> > 
+> > I disable bluetooth usually just after system startup.
+> > 
+> > I disable bt using Fn+F5 which generates ACPI event: 
+> > ibm/hotkey HKEY 00000080 00001005
+> > 
+> > Which is OK.
+> > 
+> > But now (sinc 2.6.31-rcX), it silently toggles Soft block of WIFI. I have
+> > separate HW rfkill switch, it is only soft blocked. 
+> > 
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13318
-Subject		: AGP doesn't work anymore on nforce2
-Submitter	: Karsten Mehrhoff <kawime@gmx.de>
-Date		: 2009-04-30 8:51 (95 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=59de2bebabc5027f93df999d59cc65df591c3e6e
-References	: http://marc.info/?l=linux-kernel&m=124108156417560&w=4
-Handled-By	: Shaohua Li <shaohua.li@intel.com>
 
-
+-- 
+Luká¹ Hejtmánek
