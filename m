@@ -1,258 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752337AbZHBIV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752414AbZHBIYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752337AbZHBIV4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 04:21:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbZHBIVz
+	id S1752414AbZHBIYZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 04:24:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbZHBIYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 04:21:55 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:3137 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752227AbZHBIVx (ORCPT
+	Sun, 2 Aug 2009 04:24:24 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:55843 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752289AbZHBIYW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 04:21:53 -0400
+	Sun, 2 Aug 2009 04:24:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=OtjNrGnooIi6djdBFnlWcdrDlWIU+zh4Y9XrSyRpmHn/ZrTjfi/8m3g0qlPEOpbqUS
-         IuLoFTlDO5rcle9hab+Abs9OKaocuGc64U9Poz1/Em4k+Jsi8xSC+EEJmySnBB9kTnHP
-         zxWqhDRTi5/7aKD0kf1JC8MM5oDWPDPZV8fS4=
-Date: Sun, 2 Aug 2009 16:21:48 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: kmemleak reporting
-Message-ID: <20090802082148.GA14673@darkstar>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=q3Snsh/VIpyDrYHJW3cY9jq2q/BXnivK7G5U8+5m5esDLHZR6xUF03tugrBYxcDCqK
+         aYvzlX/wgD+zdzGU4GMj5akq1A4VYzRxoyjAvXJYjUi3hTAzb9Zz/9oLgrj7q7qa4YrE
+         QV+3AhpCDWuqXqLRLH9Y52KaRBza+SjyNmnAk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1249174159.3255.13.camel@pc07.localdom.local>
+References: <1249082438.18313.30.camel@odyssey.sc.user.nz.vpn>
+	 <d9def9db0907311845r259b129em3bd89b7915718cd5@mail.gmail.com>
+	 <1249174159.3255.13.camel@pc07.localdom.local>
+Date: Sun, 2 Aug 2009 10:24:21 +0200
+Message-ID: <d9def9db0908020124i26e2a6f2r972a98ae7b8bbe85@mail.gmail.com>
+Subject: Re: USB devices supporting raw or sliced VBI for closed captioning?
+From: Markus Rechberger <mrechberger@gmail.com>
+To: hermann pitton <hermann-pitton@arcor.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Steve Castellotti <sc@eyemagnet.com>, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Aug 2, 2009 at 2:49 AM, hermann pitton<hermann-pitton@arcor.de> wrote:
+>
+> Am Samstag, den 01.08.2009, 03:45 +0200 schrieb Markus Rechberger:
+>> Hi,
+>>
+>> On Sat, Aug 1, 2009 at 1:20 AM, Steve Castellotti<sc@eyemagnet.com> wrote:
+>> >
+>> >        I was wondering if anyone could please point me at a list or similar
+>> > resource for USB capture devices which support raw (or sliced) VBI
+>> > access for producing a closed caption transcript through software such
+>> > as zbvi-ntsc-cc or ccextractor? Specifically I'm wanting a device
+>> > capable of S-Video, Composite, or even Component input, not just ATSC,
+>> > as most USB devices seem focused around these days.
+>> >
+>> >        I've managed to get this working with various ivtv and saa713x based
+>> > PCI devices, but aren't aware of any USB implementations of chipsets
+>> > which use those drivers.
+>> >
+>> >
+>> >        Searching online, I found this archived message:
+>> >
+>> > http://lists.zerezo.com/video4linux/msg16402.html
+>> >
+>> > which states:
+>> >
+>> >> some em2840 and newer devices are able to capture raw vbi in
+>> >> linux (sliced vbi isn't possible yet)
+>> >> em2820, em2800, em2750 do not support vbi at all.
+>> >
+>> >
+>> >        Checking the em28xx driver homepage for recent models, I found this
+>> > entry:
+>> >
+>> > http://mcentral.de/wiki/index.php5/Em2880
+>> >
+>> >> officially the em2880 is em2840 + DVB_T
+>> >
+>> >
+>> >        which implies that not only is the "em2880" series a "newer" device,
+>> > but it should in fact already contain the "em2840" chip specifically
+>> > mentioned.
+>> >
+>> >
+>> >        Later on that same page, in the list of devices:
+>> >
+>> > ATI/AMD TV Wonder 600
+>> >
+>> >
+>> >        and on the manufacturer's page:
+>> >
+>> > http://ati.amd.com/products/tvwonder600/usb/index.html
+>> >
+>> >
+>> >        Under the list of "Input Connectors":
+>> >
+>> >> S-video input with adapter
+>> >
+>> >
+>> >
+>> >        Picking up one of these devices, I attempted to tune into the S-Video
+>> > feed and check the /dev/vbi0 device, but received the same error message
+>> > as I do with all other em28xx devices encountered thus far:
+>> >
+>> >> Cannot capture vbi data with v4l interface:
+>> >> /dev/vbi0 (AMD ATI TV Wonder HD 600) is not a raw vbi device.
+>> >
+>> >
+>> >
+>> >        Can anyone please point me in the right direction?
+>> >
+>> >        I would much prefer to be certain the next purchase is supported.
+>> >
+>> >
+>> >
+>> > Thanks!
+>> >
+>>
+>> we do support Raw VBI for our devices, Sundtek MediaTV Pro for closed
+>> captioning.
+>> Alternatively we also have full support for ATSC-analogTV USB devices
+>> for the US market ([em288x]-[AVFB4910]-[Trident drx-J]-[tda18271]) the
+>> european product which we are selling is also capable of decoding NTSC
+>> closed caption.
+>>
+>> http://sundtek.de/shop/Digital-TV-Sticks-oxid/Sundtek-MediaTV-Pro.html
+>> (this is just the information about the
+>> European/DVB-T/DVB-C/analogTV(raw VBI) device, we do not have the
+>> US/ATSC/analogTV(rawVBI) product listed there, although we do offer it
+>> to business customers) We support it from Linux 2.6.15 on.
+>>
+>> Best Regards,
+>> Markus Rechberger
+>
+> Hi,
+>
+> anything new about how to deal with commercial advertising on lists,
+> depending totally on our source?
+>
+> Please have a look.
 
-With kmemleak I got following leaking info. 2.6.31-rc5 with Johannes Weiner's patch applied for the vc_resize leaking issue. 
+The question was about a device, and I doubt that you can get a device
+for free anywhere. If so there shouldn't be any other company names in drivers,
+or named on the mailinglist (to be fair) which do not support Linux.
 
-[patch] fbcon: don't use vc_resize() on initialization 
-
-unreferenced object 0xf71aa0c0 (size 64):
-  comm "swapper", pid 1, jiffies 4294877648
-  backtrace:
-    [<c1097f31>] create_object+0x140/0x210
-    [<c1098026>] kmemleak_alloc+0x25/0x49
-    [<c10935e0>] kmemleak_alloc_recursive+0x11/0x14
-    [<c1094323>] __kmalloc+0x15d/0x183
-    [<c11593d1>] kzalloc+0xb/0xd
-    [<c11599c9>] acpi_add_single_object+0x58b/0xddb
-    [<c115a3ed>] acpi_bus_scan+0xff/0x170
-    [<c157c92f>] acpi_scan_init+0xb7/0xdc
-    [<c157c7f8>] acpi_init+0x218/0x25e
-    [<c1001137>] do_one_initcall+0x4a/0x11a
-    [<c155f530>] kernel_init+0x124/0x175
-    [<c1003dc7>] kernel_thread_helper+0x7/0x10
-    [<ffffffff>] 0xffffffff
-unreferenced object 0xf71aa280 (size 64):
-  comm "swapper", pid 1, jiffies 4294877650
-  backtrace:
-    [<c1097f31>] create_object+0x140/0x210
-    [<c1098026>] kmemleak_alloc+0x25/0x49
-    [<c10935e0>] kmemleak_alloc_recursive+0x11/0x14
-    [<c1094323>] __kmalloc+0x15d/0x183
-    [<c11593d1>] kzalloc+0xb/0xd
-    [<c11599c9>] acpi_add_single_object+0x58b/0xddb
-    [<c115a3ed>] acpi_bus_scan+0xff/0x170
-    [<c157c92f>] acpi_scan_init+0xb7/0xdc
-    [<c157c7f8>] acpi_init+0x218/0x25e
-    [<c1001137>] do_one_initcall+0x4a/0x11a
-    [<c155f530>] kernel_init+0x124/0x175
-    [<c1003dc7>] kernel_thread_helper+0x7/0x10
-    [<ffffffff>] 0xffffffff
-unreferenced object 0xf71aaec0 (size 64):
-  comm "swapper", pid 1, jiffies 4294877652
-  backtrace:
-    [<c1097f31>] create_object+0x140/0x210
-    [<c1098026>] kmemleak_alloc+0x25/0x49
-    [<c10935e0>] kmemleak_alloc_recursive+0x11/0x14
-    [<c1094323>] __kmalloc+0x15d/0x183
-    [<c11593d1>] kzalloc+0xb/0xd
-    [<c11599c9>] acpi_add_single_object+0x58b/0xddb
-    [<c115a3ed>] acpi_bus_scan+0xff/0x170
-    [<c157c92f>] acpi_scan_init+0xb7/0xdc
-    [<c157c7f8>] acpi_init+0x218/0x25e
-    [<c1001137>] do_one_initcall+0x4a/0x11a
-    [<c155f530>] kernel_init+0x124/0x175
-    [<c1003dc7>] kernel_thread_helper+0x7/0x10
-    [<ffffffff>] 0xffffffff
-unreferenced object 0xf6639100 (size 64):
-  comm "swapper", pid 1, jiffies 4294878947
-  backtrace:
-    [<c1097f31>] create_object+0x140/0x210
-    [<c1098026>] kmemleak_alloc+0x25/0x49
-    [<c10935e0>] kmemleak_alloc_recursive+0x11/0x14
-    [<c1094323>] __kmalloc+0x15d/0x183
-    [<c100fff6>] acpi_cpufreq_cpu_init+0x211/0x54b
-    [<c1288664>] cpufreq_add_dev+0x1b9/0x648
-    [<c11d6566>] sysdev_driver_register+0x96/0xe5
-    [<c1288d15>] cpufreq_register_driver+0xa1/0x168
-    [<c1567e20>] acpi_cpufreq_init+0xad/0xbf
-    [<c1001137>] do_one_initcall+0x4a/0x11a
-    [<c155f530>] kernel_init+0x124/0x175
-    [<c1003dc7>] kernel_thread_helper+0x7/0x10
-    [<ffffffff>] 0xffffffff
-unreferenced object 0xf45eb280 (size 64):
-  comm "pm-suspend", pid 2038, jiffies 372178
-  backtrace:
-    [<c1097f31>] create_object+0x140/0x210
-    [<c1098026>] kmemleak_alloc+0x25/0x49
-    [<c10935e0>] kmemleak_alloc_recursive+0x11/0x14
-    [<c1094323>] __kmalloc+0x15d/0x183
-    [<c100fff6>] acpi_cpufreq_cpu_init+0x211/0x54b
-    [<c1288664>] cpufreq_add_dev+0x1b9/0x648
-    [<c13389dc>] cpufreq_cpu_callback+0x5b/0x65
-    [<c133c6a4>] notifier_call_chain+0x2b/0x4a
-    [<c103ecd1>] __raw_notifier_call_chain+0xe/0x10
-    [<c103ecdf>] raw_notifier_call_chain+0xc/0xe
-    [<c133713a>] _cpu_up+0xbe/0xf3
-    [<c13238be>] enable_nonboot_cpus+0x37/0x83
-    [<c1052aa4>] suspend_devices_and_enter+0x122/0x17f
-    [<c1052bde>] enter_state+0xdd/0x11e
-    [<c10523f0>] state_store+0x96/0xac
-    [<c112c014>] kobj_attr_store+0x1a/0x22
-unreferenced object 0xc02ee448 (size 8):
-  comm "pm-suspend", pid 2038, jiffies 372178
-  backtrace:
-    [<c1097f31>] create_object+0x140/0x210
-    [<c1098026>] kmemleak_alloc+0x25/0x49
-    [<c10935e0>] kmemleak_alloc_recursive+0x11/0x14
-    [<c1094efd>] __kmalloc_track_caller+0x15b/0x181
-    [<c107f629>] kstrdup+0x2a/0x4c
-    [<c10d9044>] sysfs_new_dirent+0x28/0xd8
-    [<c10d941d>] create_dir+0x24/0x68
-    [<c10d948e>] sysfs_create_dir+0x2d/0x41
-    [<c112c332>] kobject_add_internal+0xb3/0x157
-    [<c112c48f>] kobject_add_varg+0x35/0x41
-    [<c112c4c1>] kobject_init_and_add+0x26/0x28
-    [<c1288836>] cpufreq_add_dev+0x38b/0x648
-    [<c13389dc>] cpufreq_cpu_callback+0x5b/0x65
-    [<c133c6a4>] notifier_call_chain+0x2b/0x4a
-    [<c103ecd1>] __raw_notifier_call_chain+0xe/0x10
-    [<c103ecdf>] raw_notifier_call_chain+0xc/0xe
-unreferenced object 0xe5b06900 (size 48):
-  comm "pm-suspend", pid 2038, jiffies 372178
-  backtrace:
-    [<c1097f31>] create_object+0x140/0x210
-    [<c1098026>] kmemleak_alloc+0x25/0x49
-    [<c10935e0>] kmemleak_alloc_recursive+0x11/0x14
-    [<c1094008>] kmem_cache_alloc+0xed/0x13a
-    [<c10d9062>] sysfs_new_dirent+0x46/0xd8
-    [<c10d941d>] create_dir+0x24/0x68
-    [<c10d948e>] sysfs_create_dir+0x2d/0x41
-    [<c112c332>] kobject_add_internal+0xb3/0x157
-    [<c112c48f>] kobject_add_varg+0x35/0x41
-    [<c112c4c1>] kobject_init_and_add+0x26/0x28
-    [<c1288836>] cpufreq_add_dev+0x38b/0x648
-    [<c13389dc>] cpufreq_cpu_callback+0x5b/0x65
-    [<c133c6a4>] notifier_call_chain+0x2b/0x4a
-    [<c103ecd1>] __raw_notifier_call_chain+0xe/0x10
-    [<c103ecdf>] raw_notifier_call_chain+0xc/0xe
-    [<c133713a>] _cpu_up+0xbe/0xf3
-unreferenced object 0xc02ee450 (size 8):
-  comm "pm-suspend", pid 2038, jiffies 372178
-  backtrace:
-    [<c1097f31>] create_object+0x140/0x210
-    [<c1098026>] kmemleak_alloc+0x25/0x49
-    [<c10935e0>] kmemleak_alloc_recursive+0x11/0x14
-    [<c1094efd>] __kmalloc_track_caller+0x15b/0x181
-    [<c107f629>] kstrdup+0x2a/0x4c
-    [<c10d9044>] sysfs_new_dirent+0x28/0xd8
-    [<c10d941d>] create_dir+0x24/0x68
-    [<c10d94b3>] sysfs_create_subdir+0x11/0x16
-    [<c10da536>] internal_create_group+0x3a/0x11a
-    [<c10da633>] sysfs_create_group+0xc/0x11
-    [<c12894de>] cpufreq_stat_notifier_policy+0x8f/0x195
-    [<c133c6a4>] notifier_call_chain+0x2b/0x4a
-    [<c103ee33>] __blocking_notifier_call_chain+0x37/0x4c
-    [<c103ee54>] blocking_notifier_call_chain+0xc/0xe
-    [<c12879d3>] __cpufreq_set_policy+0xb1/0x1c3
-    [<c12889d1>] cpufreq_add_dev+0x526/0x648
-unreferenced object 0xe5b06bd0 (size 48):
-  comm "pm-suspend", pid 2038, jiffies 372178
-  backtrace:
-    [<c1097f31>] create_object+0x140/0x210
-    [<c1098026>] kmemleak_alloc+0x25/0x49
-    [<c10935e0>] kmemleak_alloc_recursive+0x11/0x14
-    [<c1094008>] kmem_cache_alloc+0xed/0x13a
-    [<c10d9062>] sysfs_new_dirent+0x46/0xd8
-    [<c10d941d>] create_dir+0x24/0x68
-    [<c10d94b3>] sysfs_create_subdir+0x11/0x16
-    [<c10da536>] internal_create_group+0x3a/0x11a
-    [<c10da633>] sysfs_create_group+0xc/0x11
-    [<c12894de>] cpufreq_stat_notifier_policy+0x8f/0x195
-    [<c133c6a4>] notifier_call_chain+0x2b/0x4a
-    [<c103ee33>] __blocking_notifier_call_chain+0x37/0x4c
-    [<c103ee54>] blocking_notifier_call_chain+0xc/0xe
-    [<c12879d3>] __cpufreq_set_policy+0xb1/0x1c3
-    [<c12889d1>] cpufreq_add_dev+0x526/0x648
-    [<c13389dc>] cpufreq_cpu_callback+0x5b/0x65
-unreferenced object 0xe5b06c00 (size 48):
-  comm "pm-suspend", pid 2038, jiffies 372178
-  backtrace:
-    [<c1097f31>] create_object+0x140/0x210
-    [<c1098026>] kmemleak_alloc+0x25/0x49
-    [<c10935e0>] kmemleak_alloc_recursive+0x11/0x14
-    [<c1094008>] kmem_cache_alloc+0xed/0x13a
-    [<c10d9062>] sysfs_new_dirent+0x46/0xd8
-    [<c10d8883>] sysfs_add_file_mode+0x2a/0x67
-    [<c10da5b4>] internal_create_group+0xb8/0x11a
-    [<c10da633>] sysfs_create_group+0xc/0x11
-    [<c12894de>] cpufreq_stat_notifier_policy+0x8f/0x195
-    [<c133c6a4>] notifier_call_chain+0x2b/0x4a
-    [<c103ee33>] __blocking_notifier_call_chain+0x37/0x4c
-    [<c103ee54>] blocking_notifier_call_chain+0xc/0xe
-    [<c12879d3>] __cpufreq_set_policy+0xb1/0x1c3
-    [<c12889d1>] cpufreq_add_dev+0x526/0x648
-    [<c13389dc>] cpufreq_cpu_callback+0x5b/0x65
-    [<c133c6a4>] notifier_call_chain+0x2b/0x4a
-unreferenced object 0xe5b06c30 (size 48):
-  comm "pm-suspend", pid 2038, jiffies 372178
-  backtrace:
-    [<c1097f31>] create_object+0x140/0x210
-    [<c1098026>] kmemleak_alloc+0x25/0x49
-    [<c10935e0>] kmemleak_alloc_recursive+0x11/0x14
-    [<c1094008>] kmem_cache_alloc+0xed/0x13a
-    [<c10d9062>] sysfs_new_dirent+0x46/0xd8
-    [<c10d8883>] sysfs_add_file_mode+0x2a/0x67
-    [<c10da5b4>] internal_create_group+0xb8/0x11a
-    [<c10da633>] sysfs_create_group+0xc/0x11
-    [<c12894de>] cpufreq_stat_notifier_policy+0x8f/0x195
-    [<c133c6a4>] notifier_call_chain+0x2b/0x4a
-    [<c103ee33>] __blocking_notifier_call_chain+0x37/0x4c
-    [<c103ee54>] blocking_notifier_call_chain+0xc/0xe
-    [<c12879d3>] __cpufreq_set_policy+0xb1/0x1c3
-    [<c12889d1>] cpufreq_add_dev+0x526/0x648
-    [<c13389dc>] cpufreq_cpu_callback+0x5b/0x65
-    [<c133c6a4>] notifier_call_chain+0x2b/0x4a
-unreferenced object 0xe5b06c60 (size 48):
-  comm "pm-suspend", pid 2038, jiffies 372178
-  backtrace:
-    [<c1097f31>] create_object+0x140/0x210
-    [<c1098026>] kmemleak_alloc+0x25/0x49
-    [<c10935e0>] kmemleak_alloc_recursive+0x11/0x14
-    [<c1094008>] kmem_cache_alloc+0xed/0x13a
-    [<c10d9062>] sysfs_new_dirent+0x46/0xd8
-    [<c10d8883>] sysfs_add_file_mode+0x2a/0x67
-    [<c10da5b4>] internal_create_group+0xb8/0x11a
-    [<c10da633>] sysfs_create_group+0xc/0x11
-    [<c12894de>] cpufreq_stat_notifier_policy+0x8f/0x195
-    [<c133c6a4>] notifier_call_chain+0x2b/0x4a
-    [<c103ee33>] __blocking_notifier_call_chain+0x37/0x4c
-    [<c103ee54>] blocking_notifier_call_chain+0xc/0xe
-    [<c12879d3>] __cpufreq_set_policy+0xb1/0x1c3
-    [<c12889d1>] cpufreq_add_dev+0x526/0x648
-    [<c13389dc>] cpufreq_cpu_callback+0x5b/0x65
-    [<c133c6a4>] notifier_call_chain+0x2b/0x4a
-
---
-Regards
-dave
+Best Regards,
+Markus
