@@ -1,84 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbZHBRC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753184AbZHBREY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753188AbZHBRC0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 13:02:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753128AbZHBRCZ
+	id S1753184AbZHBREY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 13:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbZHBREX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 13:02:25 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48196 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753127AbZHBRCZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 13:02:25 -0400
-X-Authenticated: #1045983
-X-Provags-ID: V01U2FsdGVkX19HmqNm/xZHxihXuNjLigr1Z7yjAO+A4PX7fsr0ZU
-	4m/wnDW8vUp7Sz
-Message-ID: <4A75C69E.4060307@gmx.de>
-Date: Sun, 02 Aug 2009 19:02:22 +0200
-From: Helge Deller <deller@gmx.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Sun, 2 Aug 2009 13:04:23 -0400
+Received: from mail-px0-f201.google.com ([209.85.216.201]:48897 "EHLO
+	mail-px0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753128AbZHBREW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 13:04:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=WtP5ZzJPYreyV6Et+eZ1g128QZAxz1SQwyMHBRTWHmCcW9vaveD+NiGhZ4PR4dlB8s
+         FB4BErhOBDfghL/WvE/5y7fX5WlmJSjJaeT4SDVM/mIFaY1lpdbRa4Z8di1NYdh3nmXY
+         3F1AknZui1F5yi5M+qySAjQbVYX652ZimB2Lg=
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Kyle McMartin <kyle@mcmartin.ca>
-Subject: [GIT PULL] arch/parisc fixes for 2.6.31-rc6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20090802115826.0174f292@lxorguk.ukuu.org.uk>
+References: <h51hro$p6j$1@ger.gmane.org> <4A748A48.8020702@gmail.com>
+	 <cdb43e8a0908011544o69c2203dv39ce5a04840e0869@mail.gmail.com>
+	 <20090802115826.0174f292@lxorguk.ukuu.org.uk>
+Date: Sun, 2 Aug 2009 11:04:23 -0600
+Message-ID: <51f3faa70908021004q8ed8a92q6d67857d4731d45c@mail.gmail.com>
+Subject: Re: Extremely slow IO with a PCMCIA CompactFlash adapter
+From: Robert Hancock <hancockrwd@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jack Byer <ojbyer@usa.net>, Andreas Mohr <andi@lisas.de>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.59
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Sun, Aug 2, 2009 at 4:58 AM, Alan Cox<alan@lxorguk.ukuu.org.uk> wrote:
+>> irq 3: nobody cared (try booting with the "irqpoll" option)
+>> Pid: 23488, comm: modprobe Not tainted 2.6.31-rc4 #2
+>> Call Trace:
+>
+> Something is misrouting interrupts on your machine. COuld be an ACPI bug,
+> could be wrong tables in the BIOS etc.
+>
+>> Now I rebooted with irqpoll and everything looks good in dmesg:
+>
+> It will recover from the problem sort of
+>
+>> Now my transfer rate has increased to 20 kilobyte / second read, about
+>> 4 times faster than before but still pretty slow.
+>
+> You should see nearer 200K/sec (PIO 0) but if the device IRQ is being
+> lost due to misrouting then the device is being polled off the timer tick
+> and that will drastically reduce performance.
+>
+> So its a firmware/acpi/irq sort of problem not an IDE one. Try running
+> with acpi=off and without irqpoll just as a test.
 
-please pull the following changes for the HP parisc architecture.
-
-Thanks,
-Helge
-
-
-
-The following changes since commit ed680c4ad478d0fee9740f7d029087f181346564:
-   Linus Torvalds (1):
-         Linux 2.6.31-rc5
-
-are available in the git repository at:
-
-   git://git.kernel.org/pub/scm/linux/kernel/git/deller/parisc-2.6.git for-linus
-
-Helge Deller (5):
-       parisc: hp_sdc_mlc.c - check return value of down_trylock()
-       parisc: dino.c - check return value of pci_assign_resource()
-       parisc: sticore.c - check return values
-       parisc: parisc-agp.c - use correct page_mask function
-       parisc: hppb.c - fix printk format strings
-
-Jaswinder Singh Rajput (1):
-       parisc: includecheck fix for ccio-dma.c
-
-John David Anglin (2):
-       parisc: Fix GOT overflow during module load on 64bit kernel
-       parisc: Set correct bit in protection flags
-
-Michael Buesch (1):
-       parisc: isa-eeprom - Fix loff_t usage
-
-Roel Kluin (1):
-       parisc: Fix read buffer overflow in pdc_stable driver
-
-Stoyan Gaydarov (1):
-       parisc: fixed faulty check in lba_pci
-
-  arch/parisc/kernel/entry.S       |    2 +-
-  arch/parisc/kernel/module.c      |   50 ++++++++++++++++++++++++++++++++++----
-  drivers/char/agp/parisc-agp.c    |    2 +-
-  drivers/input/serio/hp_sdc_mlc.c |    2 +-
-  drivers/parisc/ccio-dma.c        |    1 -
-  drivers/parisc/dino.c            |    2 +-
-  drivers/parisc/eisa_eeprom.c     |    2 +-
-  drivers/parisc/hppb.c            |    9 ++++--
-  drivers/parisc/lba_pci.c         |    2 +-
-  drivers/parisc/pdc_stable.c      |    2 +-
-  drivers/video/console/sticore.c  |    9 +++++-
-  11 files changed, 65 insertions(+), 18 deletions(-)
-
+I'm kind of doubtful it's a misrouting, the driver thinks it should be
+on IRQ3 and we end up getting spurious interrupts on IRQ3, so I'm
+guessing that somehow that card is producing excess interrupts that
+we're not expecting, or something?
