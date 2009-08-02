@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbZHBWHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbZHBWIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754544AbZHBWHd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 18:07:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754397AbZHBWH3
+	id S1754701AbZHBWIb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 18:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbZHBWI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 18:07:29 -0400
-Received: from cantor.suse.de ([195.135.220.2]:50228 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754464AbZHBWHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 18:07:25 -0400
-From: Neil Brown <neilb@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 3 Aug 2009 08:07:27 +1000
+	Sun, 2 Aug 2009 18:08:29 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59210 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754434AbZHBWI0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 18:08:26 -0400
+Date: Mon, 3 Aug 2009 00:08:19 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Harald Welte <HaraldWelte@viatech.com>
+Cc: "Michael S. Zick" <lkml@morethan.org>, linux-kernel@vger.kernel.org
+Subject: Re: [VIA Support]  Instruction timing and cache coherency issues
+Message-ID: <20090802220819.GB22237@elf.ucw.cz>
+References: <200907250827.43400.lkml@morethan.org> <20090730090804.GE1364@ucw.cz> <20090802190851.GZ4216@prithivi.gnumonks.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19062.3615.711449.258305@notabene.brown>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: PULL REQUEST - md fixes for 2.6.31
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+In-Reply-To: <20090802190851.GZ4216@prithivi.gnumonks.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun 2009-08-02 21:08:51, Harald Welte wrote:
+> On Thu, Jul 30, 2009 at 11:08:04AM +0200, Pavel Machek wrote:
+> 
+> > > Diddling with the things I have found that either "fix" or "work around"
+> > > the various timing / cache coherency issues - - -
+> > > Aw, so - found how to affect the timing issues sufficiently so that Linux
+> > > would panic dump rather than deadlock on the troublesum combination - -
+> > > *Functionally the same* panic backtrace that FreeBSD is showing.
+> > > 
+> > > @H.W.  Download the FreeBSD-8.0-beta2 and try running it on your Cloudbook
+> > > and HP-2133, you can see what is happening.  Then you might have a word or
+> > > two with the silicon growers.
+> > > 
+> > So... you believe you have pinpointed bug in their cpu design?
+> 
+> I would not preclude that, but I think what might be more likely is that there
+> is some difference between how Intel and how VIA/Centaur behaves in a certain
+> situation, or the compiler making a wrong assumption about what it can do or
+> cannot do (remember e.g. for the VIA C3 there was no cmpxchg8, but gcc uses
+> it in case you compile with i686 optiomization).
 
-Hi Linus,
- Sorry that these are a little late, but I've had a few
- distractions...
+I'd expect any difference in behaviour (modulo timing, extensions, and
+cpuid) between Intel 486 and VIA C3 to be VIA bug, because VIA is
+supposed to be Intel 486 compatible, no?
 
- Anyway, please pull the 8 small updates for drivers/md in 2.6.31.
- Most are straight bug fixes (Some tagged for -stable).
- A couple ('Push down data integrity' and 'Use revalidate disk') are
- code cleanups that make the code more obviously correct.
+If not, where is behaviour of VIA cpus specified? Will we have to
+compare 1000s of pages of instruction manuals to see where the traps lie?
 
-Thanks,
-NeilBrown
-
-
-The following changes since commit 7d3e91b8a1f5179d56a7412d4b499f2d5fc6b25d:
-  Linus Torvalds (1):
-        Merge branch 'hwmon-for-linus' of git://git.kernel.org/.../jdelvare/staging
-
-are available in the git repository at:
-
-  git://neil.brown.name/md/ for-linus
-
-Andre Noll (1):
-      md: Push down data integrity code to personalities.
-
-Dan Williams (1):
-      md/raid6: release spare page at ->stop()
-
-NeilBrown (6):
-      md: when a level change reduces the number of devices, remove the excess.
-      md: avoid array overflow with bad v1.x metadata
-      md: Handle growth of v1.x metadata correctly.
-      md/raid5: set reshape_position correctly when reshape starts.
-      md: allow raid5_quiesce to work properly when reshape is happening.
-      md: Use revalidate_disk to effect changes in size of device.
-
- drivers/md/linear.c    |    2 +
- drivers/md/md.c        |  143 +++++++++++++++++++++++++++++------------------
- drivers/md/md.h        |    2 +
- drivers/md/multipath.c |    5 +-
- drivers/md/raid0.c     |    1 +
- drivers/md/raid1.c     |    7 ++-
- drivers/md/raid10.c    |    4 +
- drivers/md/raid5.c     |   51 ++++++++---------
- 8 files changed, 131 insertions(+), 84 deletions(-)
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
