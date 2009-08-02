@@ -1,79 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753362AbZHBSmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753346AbZHBSqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753362AbZHBSmG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 14:42:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbZHBSmG
+	id S1753346AbZHBSqW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 14:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbZHBSqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 14:42:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38235 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751234AbZHBSmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 14:42:05 -0400
-Date: Sun, 2 Aug 2009 20:41:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Anton Blanchard <anton@samba.org>,
-       davem@davemloft.net, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, fweisbec@gmail.com, benh@kernel.crashing.org,
-       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, paulus@samba.org,
-       williams@redhat.com
-Subject: Re: [PATCH] basic perf support for sparc
-Message-ID: <20090802184148.GB17241@elte.hu>
-References: <20090729112509.GN4148@kernel.dk> <20090729192814.GT4148@kernel.dk> <20090801011429.GA4685@kryten> <20090801082048.GX12579@kernel.dk> <20090801182216.GA25334@ghostprotocols.net>
+	Sun, 2 Aug 2009 14:46:21 -0400
+Received: from mail.gmx.net ([213.165.64.20]:48005 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753284AbZHBSqV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 14:46:21 -0400
+X-Authenticated: #1045983
+X-Provags-ID: V01U2FsdGVkX18nQYcQC+AnvRAB8gzQajT4qHXpRSxzRfhhnPQrqG
+	A/XCuWQ+4wt45H
+Message-ID: <4A75DEFA.1070009@gmx.de>
+Date: Sun, 02 Aug 2009 20:46:18 +0200
+From: Helge Deller <deller@gmx.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090801182216.GA25334@ghostprotocols.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Kyle McMartin <kyle@mcmartin.ca>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] arch/parisc fixes for 2.6.31-rc6
+References: <4A75C69E.4060307@gmx.de> <20090802172137.GA28572@bombadil.infradead.org> <4A75D221.1020902@gmx.de> <20090802180636.GB28572@bombadil.infradead.org>
+In-Reply-To: <20090802180636.GB28572@bombadil.infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/02/2009 08:06 PM, Kyle McMartin wrote:
+> On Sun, Aug 02, 2009 at 07:51:29PM +0200, Helge Deller wrote:
+>> On 08/02/2009 07:21 PM, Kyle McMartin wrote:
+>>> On Sun, Aug 02, 2009 at 07:02:22PM +0200, Helge Deller wrote:
+>>>> Hi Linus,
+>>>>
+>>>> please pull the following changes for the HP parisc architecture.
+>>> Uhm, I didn't authorize you to do this...
+>> I'm equally authorized like you.
+>>
+>> MAINTAINERS file shows:
+>> PARISC ARCHITECTURE
+>> M:      Kyle McMartin<kyle@mcmartin.ca>
+>> M:      Helge Deller<deller@gmx.de>
+>
+> That's not how this works.
 
-* Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
+Cool. Great argument!
 
-> Em Sat, Aug 01, 2009 at 10:20:48AM +0200, Jens Axboe escreveu:
-> > On Sat, Aug 01 2009, Anton Blanchard wrote:
-> > > 
-> > > Hi,
-> > > 
-> > > > > Building the perf tool is somewhat involved on sparc64
-> > > > > though, since 64-bit versions of zlib/libelf/bfd aren't
-> > > > > directly available (at least on debian 5.x). But once you
-> > > > > get there, it runs :-). Would it be easier/functional
-> > > > > to build 32-bit userland perf instead?
-> > > > 
-> > > > Same is true on ppc64, btw. How are others handling this?
-> > > 
-> > > The requirement for libz was removed, so up until recently we only needed
-> > > a 64bit version of elfutils which is easy to build.
-> > > 
-> > > It looks like we now have a requirement on binutils which is considerably
-> > > more painful to build. One option is to make the bfd requirement optional, all
-> > > you lose would be the ability to see c++ demangled names I think.
-> > 
-> > Right, binutils is the ugly one. I got a libbfd.so built for 
-> > both ppc and sparc, but it wasn't just a make && make install 
-> > job. Personally I could not care less about losing c++ demangled 
-> > name support, so that approach sounds fine to me :-)
-> 
-> Exactly, for a huge number of developers not being able to see 
-> demangled C++ is okay, so I agree on adding smarts to not demangle 
-> when binutils-devel is not available.
-> 
-> I thought about extracting the demangling bits out of binutils, 
-> ran away screaming. I also hoped elfutils would have that by now, 
-> but it doesn't.
+>>> WTF?
+>> During the development cycle of 2.6.26 up to 2.6.30, many
+>> patches were not pushed upstream by someone.
+>> Now I'm having a whole lot of work to push the missing patches
+>> back into the stable-kernel and debian kernel series.
+>> That's the reason I don't want that those patches miss 2.6.31 too...
+>>
+>
+> Then send *me* a pull request. Don't give me a bloody end-around, it's
+> simply unacceptable behaviour.
 
-Could we somehow define a weak symbol for those library functions 
-ourselves and thus just fall back to that (which does nothing) 
-instead of failing the link?
+I'm missing a very important thing here:
+Can you guarantee, that you will push things upstream in time?
+If yes, I'm fine with sending you a push request.
+If not, I don't see any other way.
 
-	Ingo
+Helge
