@@ -1,174 +1,337 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984AbZHBNNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753004AbZHBNNs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752984AbZHBNNh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 09:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbZHBNNg
+	id S1753004AbZHBNNs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 09:13:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbZHBNNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 09:13:36 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33819 "EHLO hera.kernel.org"
+	Sun, 2 Aug 2009 09:13:46 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33832 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752949AbZHBNNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 09:13:35 -0400
-Date: Sun, 2 Aug 2009 13:12:47 GMT
-From: tip-bot for Steven Rostedt <srostedt@redhat.com>
+	id S1752953AbZHBNNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 09:13:44 -0400
+Date: Sun, 2 Aug 2009 13:13:12 GMT
+From: tip-bot for Gregory Haskins <ghaskins@novell.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, srostedt@redhat.com, tglx@linutronix.de,
+       a.p.zijlstra@chello.nl, ghaskins@novell.com, tglx@linutronix.de,
        mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, srostedt@redhat.com, tglx@linutronix.de,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, ghaskins@novell.com,
        mingo@elte.hu
-In-Reply-To: <20090729042526.205923666@goodmis.org>
-References: <20090729042526.205923666@goodmis.org>
-Subject: [tip:sched/core] sched: Check for pushing rt tasks after all scheduling
-Message-ID: <tip-da19ab510343c6496fe8b8f890091296032025c9@git.kernel.org>
-Git-Commit-ID: da19ab510343c6496fe8b8f890091296032025c9
+In-Reply-To: <20090729150422.17691.55590.stgit@dev.haskins.net>
+References: <20090729150422.17691.55590.stgit@dev.haskins.net>
+Subject: [tip:sched/core] sched: Enhance the pre/post scheduling logic
+Message-ID: <tip-3f029d3c6d62068d59301d90c18dbde8ee402107@git.kernel.org>
+Git-Commit-ID: 3f029d3c6d62068d59301d90c18dbde8ee402107
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 02 Aug 2009 13:13:01 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 02 Aug 2009 13:13:13 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  da19ab510343c6496fe8b8f890091296032025c9
-Gitweb:     http://git.kernel.org/tip/da19ab510343c6496fe8b8f890091296032025c9
-Author:     Steven Rostedt <srostedt@redhat.com>
-AuthorDate: Wed, 29 Jul 2009 00:21:22 -0400
+Commit-ID:  3f029d3c6d62068d59301d90c18dbde8ee402107
+Gitweb:     http://git.kernel.org/tip/3f029d3c6d62068d59301d90c18dbde8ee402107
+Author:     Gregory Haskins <ghaskins@novell.com>
+AuthorDate: Wed, 29 Jul 2009 11:08:47 -0400
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 2 Aug 2009 14:26:08 +0200
+CommitDate: Sun, 2 Aug 2009 14:26:10 +0200
 
-sched: Check for pushing rt tasks after all scheduling
+sched: Enhance the pre/post scheduling logic
 
-The current method for pushing RT tasks after scheduling only
-happens after a context switch. But we found cases where a task
-is set up on a run queue to be pushed but the push never
-happens because the schedule chooses the same task.
+We currently have an explicit "needs_post" vtable method which
+returns a stack variable for whether we should later run
+post-schedule.  This leads to an awkward exchange of the
+variable as it bubbles back up out of the context switch. Peter
+Zijlstra observed that this information could be stored in the
+run-queue itself instead of handled on the stack.
 
-This bug was found with the help of Gregory Haskins and the use
-of ftrace (trace_printk). It tooks several days for both of us
-analyzing the code and the trace output to find this.
+Therefore, we revert to the method of having context_switch
+return void, and update an internal rq->post_schedule variable
+when we require further processing.
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+In addition, we fix a race condition where we try to access
+current->sched_class without holding the rq->lock.  This is
+technically racy, as the sched-class could change out from
+under us.  Instead, we reference the per-rq post_schedule
+variable with the runqueue unlocked, but with preemption
+disabled to see if we need to reacquire the rq->lock.
+
+Finally, we clean the code up slightly by removing the #ifdef
+CONFIG_SMP conditionals from the schedule() call, and implement
+some inline helper functions instead.
+
+This patch passes checkpatch, and rt-migrate.
+
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <20090729042526.205923666@goodmis.org>
+LKML-Reference: <20090729150422.17691.55590.stgit@dev.haskins.net>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/sched.c |   38 +++++++++++++++++++++++++++-----------
- 1 files changed, 27 insertions(+), 11 deletions(-)
+ include/linux/sched.h |    1 -
+ kernel/sched.c        |   82 ++++++++++++++++++++++++++++++-------------------
+ kernel/sched_rt.c     |   31 ++++++------------
+ 3 files changed, 61 insertions(+), 53 deletions(-)
 
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 2c35bc2..195d72d 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1047,7 +1047,6 @@ struct sched_class {
+ 			      struct rq *busiest, struct sched_domain *sd,
+ 			      enum cpu_idle_type idle);
+ 	void (*pre_schedule) (struct rq *this_rq, struct task_struct *task);
+-	int (*needs_post_schedule) (struct rq *this_rq);
+ 	void (*post_schedule) (struct rq *this_rq);
+ 	void (*task_wake_up) (struct rq *this_rq, struct task_struct *task);
+ 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index ca1f76b..a030d45 100644
+index a030d45..613fee5 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -2839,14 +2839,14 @@ prepare_task_switch(struct rq *rq, struct task_struct *prev,
+@@ -616,6 +616,7 @@ struct rq {
+ 
+ 	unsigned char idle_at_tick;
+ 	/* For active balancing */
++	int post_schedule;
+ 	int active_balance;
+ 	int push_cpu;
+ 	/* cpu of this runqueue: */
+@@ -2839,17 +2840,11 @@ prepare_task_switch(struct rq *rq, struct task_struct *prev,
   * with the lock held can cause deadlocks; see schedule() for
   * details.)
   */
--static void finish_task_switch(struct rq *rq, struct task_struct *prev)
-+static int finish_task_switch(struct rq *rq, struct task_struct *prev)
+-static int finish_task_switch(struct rq *rq, struct task_struct *prev)
++static void finish_task_switch(struct rq *rq, struct task_struct *prev)
  	__releases(rq->lock)
  {
  	struct mm_struct *mm = rq->prev_mm;
  	long prev_state;
+-	int post_schedule = 0;
+-
 -#ifdef CONFIG_SMP
- 	int post_schedule = 0;
+-	if (current->sched_class->needs_post_schedule)
+-		post_schedule = current->sched_class->needs_post_schedule(rq);
+-#endif
  
+ 	rq->prev_mm = NULL;
+ 
+@@ -2880,10 +2875,44 @@ static int finish_task_switch(struct rq *rq, struct task_struct *prev)
+ 		kprobe_flush_task(prev);
+ 		put_task_struct(prev);
+ 	}
++}
++
 +#ifdef CONFIG_SMP
- 	if (current->sched_class->needs_post_schedule)
- 		post_schedule = current->sched_class->needs_post_schedule(rq);
- #endif
-@@ -2868,10 +2868,6 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
- 	finish_arch_switch(prev);
- 	perf_counter_task_sched_in(current, cpu_of(rq));
- 	finish_lock_switch(rq, prev);
++
++/* assumes rq->lock is held */
++static inline void pre_schedule(struct rq *rq, struct task_struct *prev)
++{
++	if (prev->sched_class->pre_schedule)
++		prev->sched_class->pre_schedule(rq, prev);
++}
++
++/* rq->lock is NOT held, but preemption is disabled */
++static inline void post_schedule(struct rq *rq)
++{
++	if (rq->post_schedule) {
++		unsigned long flags;
++
++		spin_lock_irqsave(&rq->lock, flags);
++		if (rq->curr->sched_class->post_schedule)
++			rq->curr->sched_class->post_schedule(rq);
++		spin_unlock_irqrestore(&rq->lock, flags);
++
++		rq->post_schedule = 0;
++	}
++}
++
++#else
+ 
+-	return post_schedule;
++static inline void pre_schedule(struct rq *rq, struct task_struct *p)
++{
++}
++
++static inline void post_schedule(struct rq *rq)
++{
+ }
+ 
++#endif
++
+ /**
+  * schedule_tail - first thing a freshly forked thread must call.
+  * @prev: the thread we just switched away from.
+@@ -2892,14 +2921,14 @@ asmlinkage void schedule_tail(struct task_struct *prev)
+ 	__releases(rq->lock)
+ {
+ 	struct rq *rq = this_rq();
+-	int post_schedule;
+ 
+-	post_schedule = finish_task_switch(rq, prev);
++	finish_task_switch(rq, prev);
+ 
 -#ifdef CONFIG_SMP
 -	if (post_schedule)
 -		current->sched_class->post_schedule(rq);
 -#endif
++	/*
++	 * FIXME: do we need to worry about rq being invalidated by the
++	 * task_switch?
++	 */
++	post_schedule(rq);
  
- 	fire_sched_in_preempt_notifiers(current);
- 	if (mm)
-@@ -2884,6 +2880,8 @@ static void finish_task_switch(struct rq *rq, struct task_struct *prev)
- 		kprobe_flush_task(prev);
- 		put_task_struct(prev);
- 	}
-+
-+	return post_schedule;
- }
- 
- /**
-@@ -2894,8 +2892,15 @@ asmlinkage void schedule_tail(struct task_struct *prev)
- 	__releases(rq->lock)
- {
- 	struct rq *rq = this_rq();
-+	int post_schedule;
-+
-+	post_schedule = finish_task_switch(rq, prev);
-+
-+#ifdef CONFIG_SMP
-+	if (post_schedule)
-+		current->sched_class->post_schedule(rq);
-+#endif
- 
--	finish_task_switch(rq, prev);
  #ifdef __ARCH_WANT_UNLOCKED_CTXSW
  	/* In this case, finish_task_switch does not reenable preemption */
- 	preempt_enable();
-@@ -2908,7 +2913,7 @@ asmlinkage void schedule_tail(struct task_struct *prev)
+@@ -2913,7 +2942,7 @@ asmlinkage void schedule_tail(struct task_struct *prev)
   * context_switch - switch to the new MM and the new
   * thread's register state.
   */
--static inline void
-+static inline int
+-static inline int
++static inline void
  context_switch(struct rq *rq, struct task_struct *prev,
  	       struct task_struct *next)
  {
-@@ -2955,7 +2960,7 @@ context_switch(struct rq *rq, struct task_struct *prev,
+@@ -2960,7 +2989,7 @@ context_switch(struct rq *rq, struct task_struct *prev,
  	 * CPUs since it called schedule(), thus the 'rq' on its stack
  	 * frame will be invalid.
  	 */
--	finish_task_switch(this_rq(), prev);
-+	return finish_task_switch(this_rq(), prev);
+-	return finish_task_switch(this_rq(), prev);
++	finish_task_switch(this_rq(), prev);
  }
  
  /*
-@@ -5366,6 +5371,7 @@ asmlinkage void __sched schedule(void)
+@@ -5371,7 +5400,6 @@ asmlinkage void __sched schedule(void)
  {
  	struct task_struct *prev, *next;
  	unsigned long *switch_count;
-+	int post_schedule = 0;
+-	int post_schedule = 0;
  	struct rq *rq;
  	int cpu;
  
-@@ -5416,15 +5422,25 @@ need_resched_nonpreemptible:
+@@ -5403,10 +5431,7 @@ need_resched_nonpreemptible:
+ 		switch_count = &prev->nvcsw;
+ 	}
+ 
+-#ifdef CONFIG_SMP
+-	if (prev->sched_class->pre_schedule)
+-		prev->sched_class->pre_schedule(rq, prev);
+-#endif
++	pre_schedule(rq, prev);
+ 
+ 	if (unlikely(!rq->nr_running))
+ 		idle_balance(cpu, rq);
+@@ -5422,25 +5447,17 @@ need_resched_nonpreemptible:
  		rq->curr = next;
  		++*switch_count;
  
--		context_switch(rq, prev, next); /* unlocks the rq */
-+		post_schedule = context_switch(rq, prev, next); /* unlocks the rq */
+-		post_schedule = context_switch(rq, prev, next); /* unlocks the rq */
++		context_switch(rq, prev, next); /* unlocks the rq */
  		/*
  		 * the context switch might have flipped the stack from under
  		 * us, hence refresh the local variables.
  		 */
  		cpu = smp_processor_id();
  		rq = cpu_rq(cpu);
--	} else
-+	} else {
-+#ifdef CONFIG_SMP
-+		if (current->sched_class->needs_post_schedule)
-+			post_schedule = current->sched_class->needs_post_schedule(rq);
-+#endif
+-	} else {
+-#ifdef CONFIG_SMP
+-		if (current->sched_class->needs_post_schedule)
+-			post_schedule = current->sched_class->needs_post_schedule(rq);
+-#endif
++	} else
  		spin_unlock_irq(&rq->lock);
-+	}
-+
-+#ifdef CONFIG_SMP
-+	if (post_schedule)
-+		current->sched_class->post_schedule(rq);
-+#endif
+-	}
+ 
+-#ifdef CONFIG_SMP
+-	if (post_schedule)
+-		current->sched_class->post_schedule(rq);
+-#endif
++	post_schedule(rq);
  
  	if (unlikely(reacquire_kernel_lock(current) < 0))
  		goto need_resched_nonpreemptible;
+@@ -9403,6 +9420,7 @@ void __init sched_init(void)
+ #ifdef CONFIG_SMP
+ 		rq->sd = NULL;
+ 		rq->rd = NULL;
++		rq->post_schedule = 0;
+ 		rq->active_balance = 0;
+ 		rq->next_balance = jiffies;
+ 		rq->push_cpu = 0;
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index 3918e01..a8f89bc 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -1056,6 +1056,11 @@ static struct task_struct *_pick_next_task_rt(struct rq *rq)
+ 	return p;
+ }
+ 
++static inline int has_pushable_tasks(struct rq *rq)
++{
++	return !plist_head_empty(&rq->rt.pushable_tasks);
++}
++
+ static struct task_struct *pick_next_task_rt(struct rq *rq)
+ {
+ 	struct task_struct *p = _pick_next_task_rt(rq);
+@@ -1064,6 +1069,12 @@ static struct task_struct *pick_next_task_rt(struct rq *rq)
+ 	if (p)
+ 		dequeue_pushable_task(rq, p);
+ 
++	/*
++	 * We detect this state here so that we can avoid taking the RQ
++	 * lock again later if there is no need to push
++	 */
++	rq->post_schedule = has_pushable_tasks(rq);
++
+ 	return p;
+ }
+ 
+@@ -1262,11 +1273,6 @@ static struct rq *find_lock_lowest_rq(struct task_struct *task, struct rq *rq)
+ 	return lowest_rq;
+ }
+ 
+-static inline int has_pushable_tasks(struct rq *rq)
+-{
+-	return !plist_head_empty(&rq->rt.pushable_tasks);
+-}
+-
+ static struct task_struct *pick_next_pushable_task(struct rq *rq)
+ {
+ 	struct task_struct *p;
+@@ -1466,23 +1472,9 @@ static void pre_schedule_rt(struct rq *rq, struct task_struct *prev)
+ 		pull_rt_task(rq);
+ }
+ 
+-/*
+- * assumes rq->lock is held
+- */
+-static int needs_post_schedule_rt(struct rq *rq)
+-{
+-	return has_pushable_tasks(rq);
+-}
+-
+ static void post_schedule_rt(struct rq *rq)
+ {
+-	/*
+-	 * This is only called if needs_post_schedule_rt() indicates that
+-	 * we need to push tasks away
+-	 */
+-	spin_lock_irq(&rq->lock);
+ 	push_rt_tasks(rq);
+-	spin_unlock_irq(&rq->lock);
+ }
+ 
+ /*
+@@ -1758,7 +1750,6 @@ static const struct sched_class rt_sched_class = {
+ 	.rq_online              = rq_online_rt,
+ 	.rq_offline             = rq_offline_rt,
+ 	.pre_schedule		= pre_schedule_rt,
+-	.needs_post_schedule	= needs_post_schedule_rt,
+ 	.post_schedule		= post_schedule_rt,
+ 	.task_wake_up		= task_wake_up_rt,
+ 	.switched_from		= switched_from_rt,
