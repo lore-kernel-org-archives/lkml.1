@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbZHBWBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbZHBWB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754504AbZHBWBr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 18:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbZHBWBn
+	id S1754500AbZHBWB7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 18:01:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbZHBWB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 18:01:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38054 "EHLO ogre.sisk.pl"
+	Sun, 2 Aug 2009 18:01:57 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38065 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754461AbZHBWBl convert rfc822-to-8bit (ORCPT
+	id S1754467AbZHBWBx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 18:01:41 -0400
+	Sun, 2 Aug 2009 18:01:53 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "" <sveina@gmail.com>
+       "Daniel Smolik" <marvin@mydatex.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>
 References: <upey9ZSfnaF.A.-oE.rpgdKB@chimera>
 In-Reply-To: <upey9ZSfnaF.A.-oE.rpgdKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <7ixSg7D88bK.A.zQG._qgdKB@chimera>
-Subject: [Bug #13502] GPE storm causes polling mode, which causes /proc/acpi/battery read to take 4 seconds - MacBookPro4,1
+Message-ID: <7ixSg7D88bK.A.DPG.3qgdKB@chimera>
+Subject: [Bug #13512] D43 on 2.6.30 doesn't suspend anymore
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun,  2 Aug 2009 21:09:28 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,9 +35,9 @@ introduced between 2.6.29 and 2.6.30.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13502
-Subject		: GPE storm causes polling mode, which causes /proc/acpi/battery read to take 4 seconds - MacBookPro4,1
-Submitter	:  <sveina@gmail.com>
-Date		: 2009-06-10 20:04 (54 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13512
+Subject		: D43 on 2.6.30 doesn't suspend anymore
+Submitter	: Daniel Smolik <marvin@mydatex.cz>
+Date		: 2009-06-11 20:12 (53 days old)
 
 
