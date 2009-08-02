@@ -1,66 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752367AbZHBNpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752296AbZHBNuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752367AbZHBNpz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 09:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbZHBNpy
+	id S1752296AbZHBNuH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 09:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbZHBNuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 09:45:54 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:22756 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751990AbZHBNpx convert rfc822-to-8bit (ORCPT
+	Sun, 2 Aug 2009 09:50:07 -0400
+Received: from zelda.netsplit.com ([87.194.19.211]:41594 "EHLO
+	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751899AbZHBNuG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 09:45:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=qxIzFzKBA3N/ZGDYNe6PZOVc1jmpPR43wqmVsbNiKXJ2rs9HI3kR0w3YZWnoJBdaFb
-         3neJNJzZPv2srx1HgIsyGI0RH9ZQRl+KfXqxti0ZrbdeVQ2YORnMDDNsqJ18MNW0igms
-         xLmLyb44/V1v7ogv3ONgSg/vkm3LXnZxUWyzU=
-Date: Sun, 2 Aug 2009 15:45:46 +0200
-From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
-	<ariveira@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Chris Wright" <chrisw@sous-sol.org>,
-       "Johannes Berg" <johannes@sipsolutions.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [Bug #13362] rt2x00: slow wifi with correct basic rate bitmap
-Message-ID: <20090802154546.55418e52@varda>
-In-Reply-To: <H5-1lZIIeYK.A.cJ.jYObKB@chimera>
-References: <DizPU9GBfHF.A.kgF.iWObKB@chimera>
-	<H5-1lZIIeYK.A.cJ.jYObKB@chimera>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+	Sun, 2 Aug 2009 09:50:06 -0400
+Subject: Re: [PATCH] exec: Make do_coredump more robust and safer when
+ using pipes in core_pattern
+From: Scott James Remnant <scott@ubuntu.com>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       earl_chew@agilent.com
+In-Reply-To: <20090802002217.GA3012@localhost.localdomain>
+References: <20090622172818.GB14673@hmsreliant.think-freely.org>
+	 <1248880382.23840.78.camel@quest>
+	 <20090729201857.GC17410@hmsreliant.think-freely.org>
+	 <1249071610.4800.5.camel@wing-commander>
+	 <20090801134146.GA19910@localhost.localdomain>
+	 <1249151332.6731.5.camel@wing-commander>
+	 <20090802002217.GA3012@localhost.localdomain>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-V7aHLfzx1RL61kv/cPoH"
+Date: Sun, 02 Aug 2009 14:49:56 +0100
+Message-Id: <1249220996.3638.0.camel@wing-commander>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.27.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Sun, 26 Jul 2009 22:45:27 +0200 (CEST)
-"Rafael J. Wysocki" <rjw@sisk.pl> escribió:
 
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.29 and 2.6.30.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-> be listed and let me know (either way).
+--=-V7aHLfzx1RL61kv/cPoH
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
- Sorry for the delay i did not have the time to test 2.6.31-rc* until now.
-Tried 2.6.31-rc5 the problem persist. The revert still fixes the issue; so
-the bug should be still present.
+On Sat, 2009-08-01 at 20:22 -0400, Neil Horman wrote:
 
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13362
-> Subject		: rt2x00: slow wifi with correct basic rate bitmap
-> Submitter	: Alejandro Riveira <ariveira@gmail.com>
-> Date		: 2009-05-22 13:32 (66 days old)
-> 
-> 
+> On Sat, Aug 01, 2009 at 07:28:52PM +0100, Scott James Remnant wrote:
+> > On Sat, 2009-08-01 at 09:41 -0400, Neil Horman wrote:
+> >=20
+> > > > > Not without additional work.  If init crashed in the initramfs, I=
+ don't think
+> > > > > theres a way to handle that.  If it crashes at some later time, I=
+ think it just
+> > > > > gets restarted IIRC.  I'm sure you can change that behavior, but =
+this patch
+> > > > > doesn't address that.
+> > > > >=20
+> > > > When the system init daemon crashes, the kernel PANICs.  When not u=
+sing
+> > > > core_pattern, this is ok, we get a core file - when using apport, a=
+s far
+> > > > as I can tell it never waits for apport to finish so we don't get t=
+he
+> > > > crash.
+> > > >=20
+> > > This is non-sensical.  If init crashes, and the kernel panics, you'll=
+ only get a
+> > > core by sheer luck and good fortune.
+> > >=20
+> > Or by being a bit clever.  Upstart catches the SIGSEGV and the signal
+> > handler forks a child process, unmasking the signal in that child
+> > process with no signal handler installed.
+> >=20
+> I don't see how this works.  How is upstart (which by definition is a chi=
+ld of
+> init (pid 1)) going to catch a SIGSEGV from its parent?  How would any pr=
+ocess
+> catch a signal targeted to its parent?
+>=20
+Upstart *is* /sbin/init (pid 1)
 
-Thanks;
-Alejandro
+Scott
+--=20
+Scott James Remnant
+scott@ubuntu.com
+
+--=-V7aHLfzx1RL61kv/cPoH
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkp1mX8ACgkQSnQiFMl4yK6dWwCfWdhSXD6xN4zcn1Hdkhtlk1Da
+Ql8An0/RI98PFGVcgz5p13sssJutBAUL
+=tErN
+-----END PGP SIGNATURE-----
+
+--=-V7aHLfzx1RL61kv/cPoH--
+
