@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752289AbZHBIqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752385AbZHBIrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752289AbZHBIqe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 04:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbZHBIqd
+	id S1752385AbZHBIrN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 04:47:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbZHBIrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 04:46:33 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:53107 "EHLO mgw2.diku.dk"
+	Sun, 2 Aug 2009 04:47:12 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:53295 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751055AbZHBIqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 04:46:32 -0400
-Date: Sun, 2 Aug 2009 10:44:53 +0200 (CEST)
+	id S1750890AbZHBIrL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 04:47:11 -0400
+Date: Sun, 2 Aug 2009 10:45:39 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: benh@kernel.crashing.org, paulus@samba.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/10] arch/powerpc: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0908021044330.15557@ask.diku.dk>
+To: hsweeten@visionengravers.com, ryan@bluewatersys.com,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 4/15] arch/arm/mach-ep93xx: Use DIV_ROUND_CLOSEST
+Message-ID: <Pine.LNX.4.64.0908021045190.15557@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -23,66 +24,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-Error handling code following a kzalloc should free the allocated data.
+The kernel.h macro DIV_ROUND_CLOSEST performs the computation (x + d/2)/d
+but is perhaps more readable.
 
-The semantic match that finds the problem is as follows:
+The semantic patch that makes this change is as follows:
 (http://www.emn.fr/x-info/coccinelle/)
 
 // <smpl>
-@r exists@
-local idexpression x;
-statement S;
-expression E;
-identifier f,f1,l;
-position p1,p2;
-expression *ptr != NULL;
+@haskernel@
 @@
 
-x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
-...
-if (x == NULL) S
-<... when != x
-     when != if (...) { <+...x...+> }
-(
-x->f1 = E
-|
- (x->f1 == NULL || ...)
-|
- f(...,x->f1,...)
-)
-...>
-(
- return \(0\|<+...x...+>\|ptr\);
-|
- return@p2 ...;
-)
+#include <linux/kernel.h>
 
-@script:python@
-p1 << r.p1;
-p2 << r.p2;
+@depends on haskernel@
+expression x,__divisor;
 @@
 
-print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
+- (((x) + ((__divisor) / 2)) / (__divisor))
++ DIV_ROUND_CLOSEST(x,__divisor)
 // </smpl>
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
----
- arch/powerpc/sysdev/ipic.c          |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
-index 69e2630..040144e 100644
---- a/arch/powerpc/sysdev/ipic.c
-+++ b/arch/powerpc/sysdev/ipic.c
-@@ -735,8 +735,10 @@ struct ipic * __init ipic_init(struct device_node *node, unsigned int flags)
- 	ipic->irqhost = irq_alloc_host(node, IRQ_HOST_MAP_LINEAR,
- 				       NR_IPIC_INTS,
- 				       &ipic_host_ops, 0);
--	if (ipic->irqhost == NULL)
-+	if (ipic->irqhost == NULL) {
-+		kfree(ipic);
- 		return NULL;
-+	}
+---
+ arch/arm/mach-ep93xx/core.c         |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/arm/mach-ep93xx/core.c b/arch/arm/mach-ep93xx/core.c
+index 4075529..16b92c3 100644
+--- a/arch/arm/mach-ep93xx/core.c
++++ b/arch/arm/mach-ep93xx/core.c
+@@ -82,7 +82,7 @@ void __init ep93xx_map_io(void)
+  */
+ static unsigned int last_jiffy_time;
  
- 	ipic->regs = ioremap(res.start, res.end - res.start + 1);
+-#define TIMER4_TICKS_PER_JIFFY		((CLOCK_TICK_RATE + (HZ/2)) / HZ)
++#define TIMER4_TICKS_PER_JIFFY		DIV_ROUND_CLOSEST(CLOCK_TICK_RATE, HZ)
  
+ static irqreturn_t ep93xx_timer_interrupt(int irq, void *dev_id)
+ {
