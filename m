@@ -1,49 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753049AbZHBQVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753065AbZHBQY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753049AbZHBQVw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 12:21:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752983AbZHBQVw
+	id S1753065AbZHBQY1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 12:24:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbZHBQY0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 12:21:52 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:51591 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752907AbZHBQVv (ORCPT
+	Sun, 2 Aug 2009 12:24:26 -0400
+Received: from r9dm33.net.upc.cz ([78.102.116.33]:36252 "EHLO
+	bimbo.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752862AbZHBQY0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 12:21:51 -0400
-Message-ID: <4A75BD2A.9050404@vmware.com>
-Date: Sun, 02 Aug 2009 18:22:02 +0200
-From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thellstrom@vmware.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH] x86: Use clflush() instead of wbinvd() whenever	possible
- when changing mapping
-References: <1248421981-31865-1-git-send-email-thellstrom@vmware.com> <20090730090747.GD1364@ucw.cz>
-In-Reply-To: <20090730090747.GD1364@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 2 Aug 2009 12:24:26 -0400
+X-Greylist: delayed 581 seconds by postgrey-1.27 at vger.kernel.org; Sun, 02 Aug 2009 12:24:25 EDT
+From: Lubomir Rintel <lkundrak@v3.sk>
+To: linux-kernel@vger.kernel.org
+Cc: Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
+       Lennart Poettering <mzjro@0pointer.net>, stable@kernel.org,
+       alsa-devel@alsa-project.org, Lubomir Rintel <lkundrak@v3.sk>
+Subject: [PATCH] Tell user that stream to be rewound is suspended
+Date: Sun,  2 Aug 2009 18:14:44 +0200
+Message-Id: <1249229684-8292-1-git-send-email-lkundrak@v3.sk>
+X-Mailer: git-send-email 1.6.2.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek skrev:
-> On Fri 2009-07-24 09:53:01, Thomas Hellstrom wrote:
->   
->> The current code uses wbinvd() when the area to flush is > 4MB. Although this
->> may be faster than using clflush() the effect of wbinvd() on irq
->> latencies
->>     
->
-> You are slowing the kernel down, and you did not write down the
-> reasons. bad.
->
->   
-I may slow the kernel down or speed it up depending on your hardware 
-configuration. The reasons should be quite obvious if you read the 
-discussion following the patch.
+Return STRPIPE instead of EBADF when userspace attempts to rewind
+of forward a stream that was suspended in meanwhile, so that it
+can be recovered by snd_pcm_recover().
 
-/Thomas
+This was causing Pulseaudio to unload the ALSA sink module under a race
+condition when it attempted to rewind the stream right after resume from
+suspend, before writing to the stream which would cause it to revive the
+stream otherwise. Tested to work with Pulseaudio patched to attempt to
+snd_pcm_recover() upon receiving an error from snd_pcm_rewind().
+
+Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+---
+ sound/core/pcm_native.c |   12 ++++++++++++
+ 1 files changed, 12 insertions(+), 0 deletions(-)
+
+diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
+index ac2150e..d89c816 100644
+--- a/sound/core/pcm_native.c
++++ b/sound/core/pcm_native.c
+@@ -2208,6 +2208,9 @@ static snd_pcm_sframes_t snd_pcm_playback_rewind(struct snd_pcm_substream *subst
+ 	case SNDRV_PCM_STATE_XRUN:
+ 		ret = -EPIPE;
+ 		goto __end;
++	case SNDRV_PCM_STATE_SUSPENDED:
++		ret = -ESTRPIPE;
++		goto __end;
+ 	default:
+ 		ret = -EBADFD;
+ 		goto __end;
+@@ -2253,6 +2256,9 @@ static snd_pcm_sframes_t snd_pcm_capture_rewind(struct snd_pcm_substream *substr
+ 	case SNDRV_PCM_STATE_XRUN:
+ 		ret = -EPIPE;
+ 		goto __end;
++	case SNDRV_PCM_STATE_SUSPENDED:
++		ret = -ESTRPIPE;
++		goto __end;
+ 	default:
+ 		ret = -EBADFD;
+ 		goto __end;
+@@ -2299,6 +2305,9 @@ static snd_pcm_sframes_t snd_pcm_playback_forward(struct snd_pcm_substream *subs
+ 	case SNDRV_PCM_STATE_XRUN:
+ 		ret = -EPIPE;
+ 		goto __end;
++	case SNDRV_PCM_STATE_SUSPENDED:
++		ret = -ESTRPIPE;
++		goto __end;
+ 	default:
+ 		ret = -EBADFD;
+ 		goto __end;
+@@ -2345,6 +2354,9 @@ static snd_pcm_sframes_t snd_pcm_capture_forward(struct snd_pcm_substream *subst
+ 	case SNDRV_PCM_STATE_XRUN:
+ 		ret = -EPIPE;
+ 		goto __end;
++	case SNDRV_PCM_STATE_SUSPENDED:
++		ret = -ESTRPIPE;
++		goto __end;
+ 	default:
+ 		ret = -EBADFD;
+ 		goto __end;
+-- 
+1.6.2.5
 
