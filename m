@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198AbZHBVvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbZHBVuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754198AbZHBVvg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 17:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754167AbZHBVvf
+	id S1754052AbZHBVuk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 17:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbZHBVuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 17:51:35 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37870 "EHLO ogre.sisk.pl"
+	Sun, 2 Aug 2009 17:50:39 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37789 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754077AbZHBVvb convert rfc822-to-8bit (ORCPT
+	id S1753969AbZHBVuU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 17:51:31 -0400
+	Sun, 2 Aug 2009 17:50:20 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Duncan" <1i5t5.duncan@cox.net>
+       "Niel Lambrechts" <niel.lambrechts@gmail.com>
 References: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera>
 In-Reply-To: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <iZB3Pj-uj3M.A.TEC.vcgdKB@chimera>
-Subject: [Bug #13869] Radeon framebuffer (w/o KMS) corruption at boot.
+Message-ID: <iZB3Pj-uj3M.A.G7D.odgdKB@chimera>
+Subject: [Bug #13733] 2.6.31-rc2: irq 16: nobody cared
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun,  2 Aug 2009 20:58:32 +0200 (CEST)
+Date: Sun,  2 Aug 2009 20:58:25 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,9 +35,10 @@ from 2.6.30.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13869
-Subject		: Radeon framebuffer (w/o KMS) corruption at boot.
-Submitter	: Duncan <1i5t5.duncan@cox.net>
-Date		: 2009-07-29 16:44 (5 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13733
+Subject		: 2.6.31-rc2: irq 16: nobody cared
+Submitter	: Niel Lambrechts <niel.lambrechts@gmail.com>
+Date		: 2009-07-06 18:32 (28 days old)
+References	: http://marc.info/?l=linux-kernel&m=124690524027166&w=4
 
 
