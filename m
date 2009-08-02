@@ -1,131 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753873AbZHBVdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753867AbZHBVf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753873AbZHBVdT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 17:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbZHBVdT
+	id S1753867AbZHBVf1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 17:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbZHBVf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 17:33:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58508 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753760AbZHBVdS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 17:33:18 -0400
-Date: Sun, 2 Aug 2009 14:33:04 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-cc: Sergey Senozhatsky <sergey.senozhatsky@mail.by>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>
-Subject: Re: WARNING at: drivers/char/tty_ldisc.c
-In-Reply-To: <87k51l9apo.fsf@devron.myhome.or.jp>
-Message-ID: <alpine.LFD.2.01.0908021423490.3352@localhost.localdomain>
-References: <20090802120120.GA3097@localdomain.by> <alpine.LFD.2.01.0908020940530.3352@localhost.localdomain> <20090802190514.GA3278@localdomain.by> <alpine.LFD.2.01.0908021254580.3352@localhost.localdomain> <87k51l9apo.fsf@devron.myhome.or.jp>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Sun, 2 Aug 2009 17:35:26 -0400
+Received: from rtr.ca ([76.10.145.34]:39986 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753706AbZHBVfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 17:35:25 -0400
+Message-ID: <4A76069C.1010801@rtr.ca>
+Date: Sun, 02 Aug 2009 17:35:24 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linux Kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+Subject: ext4 ioctl(FIEMAP) bug? observed in 2.6.29.4 (32-bit x86)
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I have been stressing out the FIEMAP ioctl() quite a bit recently,
+while working on the wiper.sh SSD TRIM utility (part of the hdparm package).
 
+For an hour or so today, things got very confusing.
+My wiper.sh script stopped working correctly, and I narrowed
+it down to FIEMAP's incorrect use of the "LAST" flag.
 
-On Mon, 3 Aug 2009, OGAWA Hirofumi wrote:
-> 
-> In this case, what is happening seems to be simple.
-> 
-> 2735 tty1	Ss	0:0 init [S]          <- session leader
-> 2736 tty1	S	0:0  \_ bash
-> 
-> Sequence is,
-> 
->     bash        tty_read()
->                     tty_ldisc_ref_wait()               <- take refcount
->                     n_tty_read()
->                         schedule_timeout()
-> 
->     init [S]    do_exit()
->                     [...]
->                         do_tty_hangup()
->                             tty_ldisc_hangup()
->                                 wake_up_interruptible_poll(read_wait)
-> 
->     bash                /* n_tty_read() can't see the hangup state of tty,
->                          * because anybody don't teach it to tty or ldisc */
->                         schedule_timeout()             <- wait again
+Normally, FIEMAP signals the final extent of a file by
+setting the "LAST" bit (bit-0) in flags.
+When the application sees this flag, it knows it should
+not need to issue any more FIEMAP calls.
 
-Hmm. Wouldn't it trigger on tty_hung_up_p(file)?
+But suddenly, for a couple of hours today, FIEMAP began
+setting the "LAST" flag on every single FIEMAP call,
+tricking my code into thinking that the file being
+queried was a lot smaller than it really was.
 
-[ Reading further.. ]
+No strace(), because I still hadn't figured-out what was going on,
+but I did save this trace from debug code inside hdparm.
 
-> And another related point which I'm don't know is why we don't change
-> console_fops to hung_up_tty_fops in do_tty_hangup() in the below.
+The file being FIEMAP'd was a 50GB+ file, filling the ext4
+filesystem to near 100% capacity.  I have no idea what caused
+FIEMAP to misbehave, but after a couple of hours it suddenly
+started working correctly again.
 
-Yup, you're right. Because console_fops has 
+This was all observed on 32-bit x86 Linux-2.6.29.4,
+and no, it is not reproduceable.
 
-        .write          = redirected_tty_write,
+A command-line "sync" was done before the file was
+opened for FIEMAP.
 
-we won't actually hang up the console due to that test for "write != 
-tty_write".
+The output below shows the sequence of FIEMAP calls
+on the single massive file.  Notice that the first call
+returned the "LAST" flag set, despite there being many
+many more extents after that bunch.
 
-That's just a classic example of some of the crazy hacks we have in the 
-tty layers. I do wonder whether it's even necessary any more. Maybe we 
-could just hang things up forcefully now and get rid of that console 
-handling special case.
+Cheers
 
-But I guess that all does explain why it only happens in single-user mode. 
-
-So exactly what _does_ happen if we get rid of that hack?
-
-		Linus
-
----
- drivers/char/tty_io.c |   19 +------------------
- 1 files changed, 1 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index a3afa0c..80540ec 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -496,10 +496,8 @@ static void do_tty_hangup(struct work_struct *work)
- {
- 	struct tty_struct *tty =
- 		container_of(work, struct tty_struct, hangup_work);
--	struct file *cons_filp = NULL;
- 	struct file *filp, *f = NULL;
- 	struct task_struct *p;
--	int    closecount = 0, n;
- 	unsigned long flags;
- 	int refs = 0;
- 
-@@ -520,11 +518,6 @@ static void do_tty_hangup(struct work_struct *work)
- 	file_list_lock();
- 	/* This breaks for file handles being sent over AF_UNIX sockets ? */
- 	list_for_each_entry(filp, &tty->tty_files, f_u.fu_list) {
--		if (filp->f_op->write == redirected_tty_write)
--			cons_filp = filp;
--		if (filp->f_op->write != tty_write)
--			continue;
--		closecount++;
- 		tty_fasync(-1, filp, 0);	/* can't block */
- 		filp->f_op = &hung_up_tty_fops;
- 	}
-@@ -574,17 +567,7 @@ static void do_tty_hangup(struct work_struct *work)
- 	while (refs--)
- 		tty_kref_put(tty);
- 
--	/*
--	 * If one of the devices matches a console pointer, we
--	 * cannot just call hangup() because that will cause
--	 * tty->count and state->count to go out of sync.
--	 * So we just call close() the right number of times.
--	 */
--	if (cons_filp) {
--		if (tty->ops->close)
--			for (n = 0; n < closecount; n++)
--				tty->ops->close(tty, cons_filp);
--	} else if (tty->ops->hangup)
-+	if (tty->ops->hangup)
- 		(tty->ops->hangup)(tty);
- 	/*
- 	 * We don't want to have driver/ldisc interactions beyond
+ioctl(FIEMAP) returned 57 extents
+log=0 phy=6543114240 len=16777216 flags=0x800
+log=16777216 phy=48435822592 len=8388608 flags=0x800
+log=25165824 phy=48452599808 len=8388608 flags=0x800
+...
+log=3917479936 phy=70330089472 len=125829120 flags=0x800
+log=4043309056 phy=70455918592 len=125829120 flags=0x800
+log=4169138176 phy=70581747712 len=125829120 flags=0x801 <<== BUG!
+ioctl(FIEMAP) returned 204 extents
+log=4294967296 phy=70707576832 len=125829120 flags=0x800
+...
+log=29469179904 phy=100050927616 len=125829120 flags=0x800
+ioctl(FIEMAP) returned 204 extents
+log=29595009024 phy=100176756736 len=125829120 flags=0x800
+...
+log=45743718400 phy=73115267072 len=102400 flags=0x800
+ioctl(FIEMAP) returned 204 extents
+...
+...
+log=51256500224 phy=19321303040 len=4096 flags=0x800
+log=51256504320 phy=19321757696 len=4096 flags=0x800
+ioctl(FIEMAP) returned 176 extents
+log=51256508416 phy=19325272064 len=4096 flags=0x800
+...
+log=51262967808 phy=102504951808 len=36864 flags=0x800
+log=51263004672 phy=102518059008 len=36864 flags=0x800
+log=51263041536 phy=107746783232 len=20480 flags=0x801  << CORRECT
+ioctl(FIEMAP) returned 0 extents
