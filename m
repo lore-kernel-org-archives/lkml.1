@@ -1,33 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbZHBW5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbZHBXmD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753461AbZHBW5d (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 18:57:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbZHBW5c
+	id S1753968AbZHBXmD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 19:42:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbZHBXmC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 18:57:32 -0400
-Received: from exprod6og116.obsmtp.com ([64.18.1.37]:60366 "HELO
-	exprod6og116.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752895AbZHBW5c convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 18:57:32 -0400
+	Sun, 2 Aug 2009 19:42:02 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36528 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753303AbZHBXmB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 19:42:01 -0400
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Bron Gondwana <brong@fastmail.fm>,
+       Reiserfs <reiserfs-devel@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Andrea Gelmini <andrea.gelmini@gmail.com>,
+       "Trenton D. Adams" <trenton.d.adams@gmail.com>,
+       Thomas Meyer <thomas@m3y3r.de>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Marcel Hilzinger <mhilzinger@linuxnewmedia.de>,
+       Edward Shishkin <edward.shishkin@gmail.com>
+Subject: Re: [ANNOUNCE] Reiserfs/kill-bkl tree v2
+References: <20090731174642.GA6539@nowhere>
+	<20090801081141.GA18036@basil.fritz.box>
+	<20090801155335.GA4836@nowhere> <20090802142100.GA21160@elte.hu>
+From: fche@redhat.com (Frank Ch. Eigler)
+Date: Sun, 02 Aug 2009 19:41:01 -0400
+In-Reply-To: <20090802142100.GA21160@elte.hu> (Ingo Molnar's message of "Sun, 2 Aug 2009 16:21:00 +0200")
+Message-ID: <y0mzlah238y.fsf@fche.csb>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Message-ID: <13d601ca13c4$9ce3203f$760110ac@Mi8.com>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-Subject: RE: [PATCH 4/15] arch/arm/mach-ep93xx: Use DIV_ROUND_CLOSEST
-thread-topic: [PATCH 4/15] arch/arm/mach-ep93xx: Use DIV_ROUND_CLOSEST
-thread-index: AcoTxJzisxVRCEd5RqyfFlsapAlDEQ==
-Date: Sun, 2 Aug 2009 15:57:52 -0700
-Importance: normal
-X-Priority: 3
-To: "Ryan Mallon" <ryan@bluewatersys.com>, "Julia Lawall" <julia@diku.dk>
-Cc: <hsweeten@visionengravers.com>, <linux-arm-kernel@lists.arm.linux.org.uk>,
-       <linux-kernel@vger.kernel.org>, <kernel-janitors@vger.kernel.org>
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain;
-	charset="utf-8"
-X-OriginalArrivalTime: 02 Aug 2009 22:57:30.0659 (UTC) FILETIME=[9D45B730:01CA13C4]
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Ingo Molnar <mingo@elte.hu> writes:
+
+>> Yeah good idea. But again, I fear my laptop hasn't enough memory 
+>> to support big enough ramdisks mount points to host selftests.
+>
+> Well, dont waste too much time on it (beyond the due diligence 
+> level) - Andi forgot that the right way to stress-test patches is to 
+> get through the review process and then through the integration 
+> trees which have far more test exposure than any single contributor 
+> can test.
+
+What guideline can you offer as to what is "due diligence" level of
+stress testing, as compared to delegating this task to eyeballed
+reviews + incidental use on the integration trees?
+
+- FChE
