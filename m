@@ -1,96 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752296AbZHBNuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752554AbZHBNv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752296AbZHBNuH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 09:50:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbZHBNuH
+	id S1752554AbZHBNv3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 09:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbZHBNv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 09:50:07 -0400
-Received: from zelda.netsplit.com ([87.194.19.211]:41594 "EHLO
-	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751899AbZHBNuG (ORCPT
+	Sun, 2 Aug 2009 09:51:28 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:48983 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752017AbZHBNv1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 09:50:06 -0400
-Subject: Re: [PATCH] exec: Make do_coredump more robust and safer when
- using pipes in core_pattern
-From: Scott James Remnant <scott@ubuntu.com>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       earl_chew@agilent.com
-In-Reply-To: <20090802002217.GA3012@localhost.localdomain>
-References: <20090622172818.GB14673@hmsreliant.think-freely.org>
-	 <1248880382.23840.78.camel@quest>
-	 <20090729201857.GC17410@hmsreliant.think-freely.org>
-	 <1249071610.4800.5.camel@wing-commander>
-	 <20090801134146.GA19910@localhost.localdomain>
-	 <1249151332.6731.5.camel@wing-commander>
-	 <20090802002217.GA3012@localhost.localdomain>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-V7aHLfzx1RL61kv/cPoH"
-Date: Sun, 02 Aug 2009 14:49:56 +0100
-Message-Id: <1249220996.3638.0.camel@wing-commander>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.27.5 
+	Sun, 2 Aug 2009 09:51:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=k5/JhGdVmpe1Ihqs9yKP3qb08R/JrC1ce/seEh/uM/X2wdjWaHmGABfe38yIgDjDOm
+         mSGZkYxlHQlBWJ0QnkFwseWAdE7B7WX3HX3NM9zEwDU6FsN65Xagl6KkRQi1aozDUUtJ
+         DsZ2zk3PuPp9NVEmmdsb4aZWf4pMbu/vVMvKI=
+Date: Sun, 2 Aug 2009 15:51:22 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 15/15] drivers/ide/ide-cd.c: Use DIV_ROUND_CLOSEST
+Message-ID: <20090802135122.GA15279@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
+	Julia Lawall <julia@diku.dk>, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+References: <Pine.LNX.4.64.0908021049350.15557@ask.diku.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0908021049350.15557@ask.diku.dk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Aug 02, 2009 at 10:49:54AM +0200, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+> 
+> The kernel.h macro DIV_ROUND_CLOSEST performs the computation (x + d/2)/d
+> but is perhaps more readable.
+> 
+> The semantic patch that makes this change is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @haskernel@
+> @@
+> 
+> #include <linux/kernel.h>
+> 
+> @depends on haskernel@
+> expression x,__divisor;
+> @@
+> 
+> - (((x) + ((__divisor) / 2)) / (__divisor))
+> + DIV_ROUND_CLOSEST(x,__divisor)
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
---=-V7aHLfzx1RL61kv/cPoH
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Acked-by: Borislav Petkov <petkovbb@gmail.com>
 
-On Sat, 2009-08-01 at 20:22 -0400, Neil Horman wrote:
-
-> On Sat, Aug 01, 2009 at 07:28:52PM +0100, Scott James Remnant wrote:
-> > On Sat, 2009-08-01 at 09:41 -0400, Neil Horman wrote:
-> >=20
-> > > > > Not without additional work.  If init crashed in the initramfs, I=
- don't think
-> > > > > theres a way to handle that.  If it crashes at some later time, I=
- think it just
-> > > > > gets restarted IIRC.  I'm sure you can change that behavior, but =
-this patch
-> > > > > doesn't address that.
-> > > > >=20
-> > > > When the system init daemon crashes, the kernel PANICs.  When not u=
-sing
-> > > > core_pattern, this is ok, we get a core file - when using apport, a=
-s far
-> > > > as I can tell it never waits for apport to finish so we don't get t=
-he
-> > > > crash.
-> > > >=20
-> > > This is non-sensical.  If init crashes, and the kernel panics, you'll=
- only get a
-> > > core by sheer luck and good fortune.
-> > >=20
-> > Or by being a bit clever.  Upstart catches the SIGSEGV and the signal
-> > handler forks a child process, unmasking the signal in that child
-> > process with no signal handler installed.
-> >=20
-> I don't see how this works.  How is upstart (which by definition is a chi=
-ld of
-> init (pid 1)) going to catch a SIGSEGV from its parent?  How would any pr=
-ocess
-> catch a signal targeted to its parent?
->=20
-Upstart *is* /sbin/init (pid 1)
-
-Scott
---=20
-Scott James Remnant
-scott@ubuntu.com
-
---=-V7aHLfzx1RL61kv/cPoH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkp1mX8ACgkQSnQiFMl4yK6dWwCfWdhSXD6xN4zcn1Hdkhtlk1Da
-Ql8An0/RI98PFGVcgz5p13sssJutBAUL
-=tErN
------END PGP SIGNATURE-----
-
---=-V7aHLfzx1RL61kv/cPoH--
-
+-- 
+Regards/Gruss,
+    Boris.
