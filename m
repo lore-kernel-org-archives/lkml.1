@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703AbZHBOso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752798AbZHBPVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752703AbZHBOso (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 10:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbZHBOso
+	id S1752798AbZHBPVS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 11:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbZHBPVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 10:48:44 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:57828 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751938AbZHBOsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 10:48:43 -0400
-Date: Mon, 3 Aug 2009 00:48:36 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: mm/-next release on kernel.org web page?
-Message-Id: <20090803004836.12b2787f.sfr@canb.auug.org.au>
-In-Reply-To: <a8e1da0908020056mbf28eaw611c605693eb3eff@mail.gmail.com>
-References: <a8e1da0908020056mbf28eaw611c605693eb3eff@mail.gmail.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__3_Aug_2009_00_48_36_+1000_iBWULSZeBn.QUFnI"
+	Sun, 2 Aug 2009 11:21:18 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:58166 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752367AbZHBPVR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 11:21:17 -0400
+Date: Sun, 2 Aug 2009 11:21:14 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+cc: linux-kernel@vger.kernel.org, <linux-fsdevel@vger.kernel.org>
+Subject: Re: [review] fat/nls: Fix handling of utf8 invalid char
+In-Reply-To: <87iqh7wddt.fsf@devron.myhome.or.jp>
+Message-ID: <Pine.LNX.4.44L0.0908021117160.10433-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__3_Aug_2009_00_48_36_+1000_iBWULSZeBn.QUFnI
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sun, 2 Aug 2009, OGAWA Hirofumi wrote:
 
-Hi Dave,
+> Hi,
+> 
+> I'm going to send this patch at next merge window. This is including the
+> change of fs/nls_base.c, it's trivial though. And it seems you changed
+> the fs/nls_base.c last time.
+> 
+> So, to make sure, could you review this if you have time?
+> 
+> Thanks.
 
-On Sun, 2 Aug 2009 15:56:20 +0800 Dave Young <hidave.darkstar@gmail.com> wr=
-ote:
->
-> Could you consider put mmtom release there just like before? And even
-> -next tree patchset? It will be more convenient for users who test
-> kernel just by downloading from web. Now it's impossible for them to
-> test these patchsets because they normally do not subscribe to lkml.
+I don't know about the changes to namei_vfat.c, but the changes to 
+nls_base.c look fine.  And since, as you say, VFAT is the only user of 
+utf8s_to_utf16s(), it shouldn't cause any problems elsewhere.
 
-Each -next release appears as a patch relatively to Linus' at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/ .  They
-come out basically each work day.
+Alan Stern
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__3_Aug_2009_00_48_36_+1000_iBWULSZeBn.QUFnI
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkp1p0QACgkQjjKRsyhoI8yRewCcDqFyhzxMWwno+XXxAv6AAwJr
-fp8An2v2coXCFrqvMMxLv79krhEX1KYX
-=JUDE
------END PGP SIGNATURE-----
-
---Signature=_Mon__3_Aug_2009_00_48_36_+1000_iBWULSZeBn.QUFnI--
