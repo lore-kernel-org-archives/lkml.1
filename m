@@ -1,65 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752663AbZHBIyK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbZHBJKL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752663AbZHBIyK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 04:54:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZHBIyJ
+	id S1752500AbZHBJKL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 05:10:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbZHBJKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 04:54:09 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:53982 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752619AbZHBIyI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 04:54:08 -0400
-Date: Sun, 2 Aug 2009 10:46:45 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: kernel@wantstofly.org, dan.j.williams@intel.com,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 7/15] arch/arm/plat-iop: Use DIV_ROUND_CLOSEST
-Message-ID: <Pine.LNX.4.64.0908021046260.15557@ask.diku.dk>
+	Sun, 2 Aug 2009 05:10:10 -0400
+Received: from mail-gx0-f213.google.com ([209.85.217.213]:57017 "EHLO
+	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750711AbZHBJKI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 05:10:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=N14OvM//uzGlLqWcmUyWoFP6F6Vp7p0puEUI0rwXvUM7nx/qfniLhe+TbgiPKpfs1X
+         TVUnS9uFhax7z6IKRjWioY4V4KrfImqTEqOUt4hX+HLzEs2t9Fzi9ah4jQI0RrCa/mBS
+         BjJW91/+Wnkz97Y4w2+fvAeJtnYjVL0hL0Myc=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <efe7343f0907300306o44d0e718p2880b7406a38fc6a@mail.gmail.com>
+References: <1248945770.7910.24.camel@marge.simson.net>
+	 <1248946195.8925.9.camel@johannes.local>
+	 <1248947099.8396.6.camel@marge.simson.net>
+	 <1248947740.8925.12.camel@johannes.local>
+	 <efe7343f0907300306o44d0e718p2880b7406a38fc6a@mail.gmail.com>
+Date: Sun, 2 Aug 2009 17:10:07 +0800
+Message-ID: <804dabb00908020210r72a9a9c3p5c6d906a7f6b53db@mail.gmail.com>
+Subject: Re: [wireless] rt2870sta BUGs on shutdown, 2.6.30.2->git.today+git.wireless.today
+From: Peter Teoh <htmldeveloper@gmail.com>
+To: Luis Correia <luis.f.correia@gmail.com>
+Cc: Mike Galbraith <efault@gmx.de>, linux-wireless@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Johannes Berg <johannes@sipsolutions.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On 7/30/09, Luis Correia <luis.f.correia@gmail.com> wrote:
+> Hi Mike,
+>
+> On Thu, Jul 30, 2009 at 10:55, Johannes Berg<johannes@sipsolutions.net> wrote:
+> > On Thu, 2009-07-30 at 11:44 +0200, Mike Galbraith wrote:
+> >> On Thu, 2009-07-30 at 11:29 +0200, Johannes Berg wrote:
+> >> > On Thu, 2009-07-30 at 11:22 +0200, Mike Galbraith wrote:
+> >> >
+> >> > > drivers/staging/rt2870/../rt2860/sta_ioctl.c
+> >> >
+> >> > Sorry, but that '/staging/' thing in there means we cannot support this.
+> >> > If you must, take your query to the staging list,
+> >> > devel@driverdev.osuosl.org (according to MAINTAINERS).
+> >>
+> >> Forwarded, thanks.
+> >>
+> >> ....hm.  Does "If you must" mean reports aren't welcome?
+> >
+> > To be honest, I don't know. I'd rather see people use the rt2x00 code
+> > instead of spending time cleaning up that mess (the code you've pasted
+> > was pretty bad!). But you may or may not find somebody who cares about
+> > that, just rather unlikely on this list.
+>
+> What is appreciated is people with time to compare both code paths,
+> and report some inconsistancies, specially about card initialization
+> and general handling.
+>
+> To be hones, we, the rt2x00 team, find Ralink's code to be very
+> difficult to follow, and combersome most of the times.
+>
 
-The kernel.h macro DIV_ROUND_CLOSEST performs the computation (x + d/2)/d
-but is perhaps more readable.
+This is very true, I had too many questions about the different
+symbols, and task vs pid variations  etc etc....and so many macro
+usage :-)....
+But thank you for all the efforts of debugging!!!!
 
-The semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
 
-// <smpl>
-@haskernel@
-@@
 
-#include <linux/kernel.h>
 
-@depends on haskernel@
-expression x,__divisor;
-@@
 
-- (((x) + ((__divisor) / 2)) / (__divisor))
-+ DIV_ROUND_CLOSEST(x,__divisor)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- arch/arm/plat-iop/time.c            |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/arm/plat-iop/time.c b/arch/arm/plat-iop/time.c
-index 3695bbe..8da95d5 100644
---- a/arch/arm/plat-iop/time.c
-+++ b/arch/arm/plat-iop/time.c
-@@ -85,7 +85,7 @@ void __init iop_init_time(unsigned long tick_rate)
- {
- 	u32 timer_ctl;
- 
--	ticks_per_jiffy = (tick_rate + HZ/2) / HZ;
-+	ticks_per_jiffy = DIV_ROUND_CLOSEST(tick_rate, HZ);
- 	ticks_per_usec = tick_rate / 1000000;
- 	next_jiffy_time = 0xffffffff;
- 	iop_tick_rate = tick_rate;
+-- 
+Regards,
+Peter Teoh
