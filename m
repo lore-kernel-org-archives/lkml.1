@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbZHBUCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbZHBUE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753141AbZHBUCc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 16:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbZHBUCb
+	id S1753526AbZHBUE1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 16:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753214AbZHBUE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 16:02:31 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46864
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753047AbZHBUCa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 16:02:30 -0400
-Date: Sun, 02 Aug 2009 13:02:38 -0700 (PDT)
-Message-Id: <20090802.130238.264137595.davem@davemloft.net>
-To: keil@b1-systems.de
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, i4ldeveloper@listserv.isdn4linux.de,
-       andreas@eversberg.eu, acme@redhat.com
-Subject: Re: [PATCH 1/1] mISDN: Fix handling of receive buffer size in L1oIP
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <467d0b871314c60818f541024fcacca686f3e354.1248781021.git.keil@b1-systems.de>
-References: <cover.1248781021.git.keil@b1-systems.de>
-	<467d0b871314c60818f541024fcacca686f3e354.1248781021.git.keil@b1-systems.de>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 2 Aug 2009 16:04:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33041 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753047AbZHBUE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 16:04:26 -0400
+Date: Sun, 2 Aug 2009 16:59:45 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ray Lee <ray-lk@madrabbit.org>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1 tip] perf top: Move hard coded list to
+	/etc/perfconfig/symbols.skip
+Message-ID: <20090802195945.GD25334@ghostprotocols.net>
+References: <20090728001041.GG28349@ghostprotocols.net> <2c0942db0907272058h3e1fc583w77925d0cc761c47f@mail.gmail.com> <20090802195533.GE24486@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090802195533.GE24486@elte.hu>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Karsten Keil <keil@b1-systems.de>
-Date: Mon, 27 Jul 2009 19:24:04 +0200
-
-> From: Andreas Eversberg <andreas@eversberg.eu>
+Em Sun, Aug 02, 2009 at 09:55:33PM +0200, Ingo Molnar escreveu:
 > 
-> The size of receive buffer pointer was used to get size of
-> receive buffer instead of recvbuf_size itself, so only 4/8
-> bytes could be transfered.
+> * Ray Lee <ray-lk@madrabbit.org> wrote:
 > 
-> This is a regression to 2.6.30 introduced by commit 8c90e11e3543d7de612194a042a148caeaab5f1d
-> mISDN: Use kernel_{send,recv}msg instead of open coding
+> > On Mon, Jul 27, 2009 at 5:10 PM, Arnaldo Carvalho de
+> > Melo<acme@redhat.com> wrote:
+> > > This also paves the way to add more symbol lists to be filtered out,
+> > > spinlock anyone?
+> > 
+> > Generally, the way I've found is best to handle things like this is to either:
+> > 
+> > A. Have a fall-back list to use if the file isn't found, or
+> > B. Start with the fall-back list of symbols to filter, then add to
+> > them via /etc/... and ~/.perf/...
+> > 
+> > I like approaching things from the 'everything works even in a
+> > broken/hasty installation' point of view, and it's paid off for me.
+> > Sane defaults are a wonderfully useful thing.
 > 
-> Signed-off-by: Andreas Eversberg <andreas@eversberg.eu>
-> Signed-off-by: Karsten Keil <keil@b1-systems.de>
+> Agreed.
+> 
+> Also, i'd not pollute /etc just yet, please lets define a good 
+> default built-in list like we have now, and perhaps enable the 
+> extension of it via .perf/config.
+> 
+> Tools should work well by default.
 
-Applied to net-2.6, thanks.
+OK, I'll rework the patch and resubmit it.
 
+- Arnaldo
