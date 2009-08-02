@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752936AbZHBNnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752367AbZHBNpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752936AbZHBNnm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 09:43:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbZHBNnl
+	id S1752367AbZHBNpz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 09:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbZHBNpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 09:43:41 -0400
-Received: from mail-px0-f201.google.com ([209.85.216.201]:58819 "EHLO
-	mail-px0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752779AbZHBNnk (ORCPT
+	Sun, 2 Aug 2009 09:45:54 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:22756 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751990AbZHBNpx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 09:43:40 -0400
+	Sun, 2 Aug 2009 09:45:53 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=iME5c5hvpAoDw9zhOgdH1RxZN1YtDlaO03NhmwsJqt9s52+ZUhJs0Y5CfD0wWAUrP5
-         r/eJvvD3hXCDN8wIs5AWISXeCt0cSwajYXEoC6ZWjZkbW4ttMMvdjatQcSXEVSu7HOzC
-         Vfu4FdeSnpJcFwrlY5QHxUADn94mUBPCx1noA=
-From: tom.leiming@gmail.com
-To: a.p.zijlstra@chello.nl
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       torvalds@linux-foundation.org, davem@davemloft.net,
-       Ming Lei <tom.leiming@gmail.com>
-Subject: [tip:core/locking] lockdep: fix memory usage info of BFS
-Date: Sun,  2 Aug 2009 21:43:36 +0800
-Message-Id: <1249220616-7190-1-git-send-email-tom.leiming@gmail.com>
-X-Mailer: git-send-email 1.6.0.GIT
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=qxIzFzKBA3N/ZGDYNe6PZOVc1jmpPR43wqmVsbNiKXJ2rs9HI3kR0w3YZWnoJBdaFb
+         3neJNJzZPv2srx1HgIsyGI0RH9ZQRl+KfXqxti0ZrbdeVQ2YORnMDDNsqJ18MNW0igms
+         xLmLyb44/V1v7ogv3ONgSg/vkm3LXnZxUWyzU=
+Date: Sun, 2 Aug 2009 15:45:46 +0200
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Chris Wright" <chrisw@sous-sol.org>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [Bug #13362] rt2x00: slow wifi with correct basic rate bitmap
+Message-ID: <20090802154546.55418e52@varda>
+In-Reply-To: <H5-1lZIIeYK.A.cJ.jYObKB@chimera>
+References: <DizPU9GBfHF.A.kgF.iWObKB@chimera>
+	<H5-1lZIIeYK.A.cJ.jYObKB@chimera>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ming Lei <tom.leiming@gmail.com>
+El Sun, 26 Jul 2009 22:45:27 +0200 (CEST)
+"Rafael J. Wysocki" <rjw@sisk.pl> escribió:
 
-The unit is KB, so sizeof(struct circular_queue) should be divided by 1024.
-This patch fixes it.
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.29 and 2.6.30.
+> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> be listed and let me know (either way).
 
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
----
- kernel/lockdep.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ Sorry for the delay i did not have the time to test 2.6.31-rc* until now.
+Tried 2.6.31-rc5 the problem persist. The revert still fixes the issue; so
+the bug should be still present.
 
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 2b443b5..0843584 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -3603,10 +3603,11 @@ void __init lockdep_info(void)
- 		sizeof(struct list_head) * CLASSHASH_SIZE +
- 		sizeof(struct lock_list) * MAX_LOCKDEP_ENTRIES +
- 		sizeof(struct lock_chain) * MAX_LOCKDEP_CHAINS +
--		sizeof(struct list_head) * CHAINHASH_SIZE) / 1024
-+		sizeof(struct list_head) * CHAINHASH_SIZE
- #ifdef CONFIG_PROVE_LOCKING
- 		+ sizeof(struct circular_queue)
- #endif
-+		) / 1024
- 		);
- 
- 	printk(" per task-struct memory footprint: %lu bytes\n",
--- 
-1.6.0.GIT
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13362
+> Subject		: rt2x00: slow wifi with correct basic rate bitmap
+> Submitter	: Alejandro Riveira <ariveira@gmail.com>
+> Date		: 2009-05-22 13:32 (66 days old)
+> 
+> 
 
+Thanks;
+Alejandro
