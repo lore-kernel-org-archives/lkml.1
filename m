@@ -1,84 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbZHBJKL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbZHBJex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752500AbZHBJKL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 05:10:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbZHBJKK
+	id S1752623AbZHBJex (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 05:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbZHBJex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 05:10:10 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:57017 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750711AbZHBJKI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 05:10:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=N14OvM//uzGlLqWcmUyWoFP6F6Vp7p0puEUI0rwXvUM7nx/qfniLhe+TbgiPKpfs1X
-         TVUnS9uFhax7z6IKRjWioY4V4KrfImqTEqOUt4hX+HLzEs2t9Fzi9ah4jQI0RrCa/mBS
-         BjJW91/+Wnkz97Y4w2+fvAeJtnYjVL0hL0Myc=
+	Sun, 2 Aug 2009 05:34:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51241 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752568AbZHBJev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 05:34:51 -0400
+Message-ID: <4A755EB3.9080502@redhat.com>
+Date: Sun, 02 Aug 2009 12:38:59 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <efe7343f0907300306o44d0e718p2880b7406a38fc6a@mail.gmail.com>
-References: <1248945770.7910.24.camel@marge.simson.net>
-	 <1248946195.8925.9.camel@johannes.local>
-	 <1248947099.8396.6.camel@marge.simson.net>
-	 <1248947740.8925.12.camel@johannes.local>
-	 <efe7343f0907300306o44d0e718p2880b7406a38fc6a@mail.gmail.com>
-Date: Sun, 2 Aug 2009 17:10:07 +0800
-Message-ID: <804dabb00908020210r72a9a9c3p5c6d906a7f6b53db@mail.gmail.com>
-Subject: Re: [wireless] rt2870sta BUGs on shutdown, 2.6.30.2->git.today+git.wireless.today
-From: Peter Teoh <htmldeveloper@gmail.com>
-To: Luis Correia <luis.f.correia@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>, linux-wireless@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Johannes Berg <johannes@sipsolutions.net>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org
+CC: KVM list <kvm@vger.kernel.org>, Marcelo Tosatti <mtosatti@redhat.com>
+Subject: Re: Problems with CONFIG_KVM_GUEST?
+References: <20090801212616.GD734@mit.edu>
+In-Reply-To: <20090801212616.GD734@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/30/09, Luis Correia <luis.f.correia@gmail.com> wrote:
-> Hi Mike,
+(Adding ccs)
+
+On 08/02/2009 12:26 AM, Theodore Tso wrote:
+> Using the XFS QA regression test suites to test ext4, I reliably get
+> lock-ups and OOPS's with I run a kernel using KVM with
+> CONFIG_KVM_GUEST configured.  This is with 2.6.31-rc3 and 2.6.31-rc4.
 >
-> On Thu, Jul 30, 2009 at 10:55, Johannes Berg<johannes@sipsolutions.net> wrote:
-> > On Thu, 2009-07-30 at 11:44 +0200, Mike Galbraith wrote:
-> >> On Thu, 2009-07-30 at 11:29 +0200, Johannes Berg wrote:
-> >> > On Thu, 2009-07-30 at 11:22 +0200, Mike Galbraith wrote:
-> >> >
-> >> > > drivers/staging/rt2870/../rt2860/sta_ioctl.c
-> >> >
-> >> > Sorry, but that '/staging/' thing in there means we cannot support this.
-> >> > If you must, take your query to the staging list,
-> >> > devel@driverdev.osuosl.org (according to MAINTAINERS).
-> >>
-> >> Forwarded, thanks.
-> >>
-> >> ....hm.  Does "If you must" mean reports aren't welcome?
-> >
-> > To be honest, I don't know. I'd rather see people use the rt2x00 code
-> > instead of spending time cleaning up that mess (the code you've pasted
-> > was pretty bad!). But you may or may not find somebody who cares about
-> > that, just rather unlikely on this list.
+> The problems disappear if I turn off CONFIG_KVM_GUEST; the XFS tests
+> run without problem to completion once I turn this configuration
+> option off.  That's what I'll do for now, but if someone could look
+> into this, I'd appreciate it.
 >
-> What is appreciated is people with time to compare both code paths,
-> and report some inconsistancies, specially about card initialization
-> and general handling.
+> The KVM command-line which I am using is:
 >
-> To be hones, we, the rt2x00 team, find Ralink's code to be very
-> difficult to follow, and combersome most of the times.
+> /usr/local/bin/qemu-system-x86_64 /kbuild/root_fs.img -net nic,model=ne2k_pci -net tap \
+> 	-hdb /dev/closure/test-4k -hdc /dev/closure/scratch \
+> 	-hdd /dev/closure/test-1k -serial telnet::4444,server -smp 2 -m 512 \
+> 	--kernel /kbuild/ext4/arch/x86/boot/bzImage \
+> 	--append "root=0800 console=ttyS0,115200 console=tty0"
 >
+> ... and here's a typical soft lockup report
+>
+> [ 2666.103359] BUG: soft lockup - CPU#1 stuck for 61s! [sh:21485]
+> [ 2666.103359] Modules linked in:
+> [ 2666.112563] irq event stamp: 183767754
+> [ 2666.112563] hardirqs last  enabled at (183767753): [<c011ce56>] restore_all_notrace+0x0/0x18
+> [ 2666.112563] hardirqs last disabled at (183767754): [<c011d774>] apic_timer_interrupt+0x28/0x34
+> [ 2666.112563] softirqs last  enabled at (183758120): [<c01515c8>] __do_softirq+0x162/0x16a
+> [ 2666.112563] softirqs last disabled at (183758115): [<c011ed17>] do_softirq+0x68/0xc1
+> [ 2666.112563]
+> [ 2666.112563] Pid: 21485, comm: sh Not tainted (2.6.31-rc3 #270)
+> [ 2666.112563] EIP: 0060:[<c01bb04f>] EFLAGS: 00010282 CPU: 1
+> [ 2666.112563] EIP is at handle_mm_fault+0x102/0x82e
+> [ 2666.112563] EAX: d5028110 EBX: 00000000 ECX: 00000110 EDX: d5028110
+> [ 2666.112563] ESI: 00000007 EDI: c11a6000 EBP: d51d7f2c ESP: d51d7ed8
+> [ 2666.112563]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> [ 2666.112563] CR0: 8005003b CR2: d5028110 CR3: 1f93d000 CR4: 000006f0
+> [ 2666.112563] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+> [ 2666.112563] DR6: ffff0ff0 DR7: 00000400
+> [ 2666.112563] Call Trace:
+> [ 2666.112563]  [<c0161f7e>] ? down_read_trylock+0x39/0x43
+> [ 2666.112563]  [<c0625252>] do_page_fault+0x307/0x31d
+> [ 2666.112563]  [<c0624f4b>] ? do_page_fault+0x0/0x31d
+> [ 2666.112563]  [<c06235bb>] error_code+0x6b/0x70
+> [ 2666.112563]  [<c0624f4b>] ? do_page_fault+0x0/0x31d
+> [ 2666.112563]  [<c0345ca5>] ? __put_user_4+0x11/0x18
+> [ 2666.112563]  [<c014610a>] ? schedule_tail+0x4f/0x52
+> [ 2666.112563]  [<c011cc46>] ret_from_fork+0x6/0x1c
+> 							
+>    
 
-This is very true, I had too many questions about the different
-symbols, and task vs pid variations  etc etc....and so many macro
-usage :-)....
-But thank you for all the efforts of debugging!!!!
-
-
-
-
+Is this a PAE mode guest?
 
 -- 
-Regards,
-Peter Teoh
+error compiling committee.c: too many arguments to function
+
