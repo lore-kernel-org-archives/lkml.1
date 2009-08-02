@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753596AbZHBUde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753766AbZHBUfu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753596AbZHBUde (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 16:33:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbZHBUde
+	id S1753766AbZHBUfu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 16:35:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbZHBUfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 16:33:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60287 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752558AbZHBUdd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 16:33:33 -0400
-Date: Sun, 2 Aug 2009 22:33:14 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Anton Blanchard <anton@samba.org>,
-       davem@davemloft.net, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, fweisbec@gmail.com, benh@kernel.crashing.org,
-       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, paulus@samba.org,
-       williams@redhat.com
-Subject: Re: [PATCH] basic perf support for sparc
-Message-ID: <20090802203314.GA3986@elte.hu>
-References: <20090729112509.GN4148@kernel.dk> <20090729192814.GT4148@kernel.dk> <20090801011429.GA4685@kryten> <20090801082048.GX12579@kernel.dk> <20090801182216.GA25334@ghostprotocols.net> <20090802184148.GB17241@elte.hu> <20090802194454.GC28572@bombadil.infradead.org> <20090802195043.GD24486@elte.hu> <20090802201132.GE28572@bombadil.infradead.org>
+	Sun, 2 Aug 2009 16:35:50 -0400
+Received: from moutng.kundenserver.de ([212.227.17.10]:59512 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753295AbZHBUft (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 16:35:49 -0400
+Date: Sun, 2 Aug 2009 13:35:48 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: David Rientjes <rientjes@google.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
+Subject: Re: [Bug #13666] WARNING: at mm/page_alloc.c:1743
+ __alloc_pages_nodemask
+In-Reply-To: <200908022226.52228.rjw@sisk.pl>
+Message-ID: <alpine.DEB.2.01.0908021331350.5831@bogon.housecafe.de>
+References: <Jya1GruKQpD.A.16.2GObKB@chimera> <alpine.DEB.2.01.0908011427270.5831@bogon.housecafe.de> <alpine.DEB.2.01.0908021314030.5831@bogon.housecafe.de> <200908022226.52228.rjw@sisk.pl>
+User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090802201132.GE28572@bombadil.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX1/sFTYWWZ9Cw8JMPRSPAAH0uOB7xv6B2VaGnPf
+ 5h4lAQOIG8/3fHN4BUtrdYTw0C7Eew9Dsett4LO8RUqJoh/eFT
+ 588KXuZHIrVBSMgXjO4dw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Rafael,
 
-* Kyle McMartin <kyle@mcmartin.ca> wrote:
+On Sun, 2 Aug 2009 at 22:26, Rafael J. Wysocki wrote:
+> The patches supposed to fix this issue went in right before -rc5 AFAIC.
 
-> On Sun, Aug 02, 2009 at 09:50:43PM +0200, Ingo Molnar wrote:
-> > We are sticking to a given version of the API. We could turn that 
-> > into a function pointer and fill it in during startup via dlopen(). 
-> > If it's NULL then we dont call it and assume a value of NULL.
-> > 
-> > Mind submitting such a version of your fix? It would nicely decrease 
-> > the build requirements cross section surface of perf.
-> > 
-> 
-> Assuming I remember how to use dlopen/dlsym, this might work. 
-> Unfortunately I can't easily test anything this weekend, so I 
-> don't actually know if it works... but it links ok.
+Sorry, you fell off my Cc list, thanks for catching this. I've seen these 
+patches too, but David confirmed:
 
-looks good to me. Arnaldo, mind picking this up?
+---------------------------------------------------------------------
+> Is this related to the WARNING in #13666?
+> I'm pretty sure the kernel already includes the patches you
+> mentioned, "git show" said "b592972493c38665efd7d429a01b23fcb21e331a".
+> Also, I just pulled again and mm/ was not touched any more.
 
-	Ingo
+Your kernel includes the fixes for the __alloc_pages_nodemask() warning
+that was reported in http://bugzilla.kernel.org/show_bug.cgi?id=13666. 
+---------------------------------------------------------------------
+
+So, it looks like it's not related to #13666.
+
+> Can you try to reproduce with -rc5?
+
+Yes, I'm building it right now (actually, I'm using current -git tree), 
+will report back.
+
+
+Thanks,
+Christian.
+-- 
+BOFH excuse #6:
+
+global warming
