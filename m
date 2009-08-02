@@ -1,70 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752554AbZHBNv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbZHBNwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752554AbZHBNv3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 09:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbZHBNv2
+	id S1752623AbZHBNwY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 09:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbZHBNwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 09:51:28 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:48983 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752017AbZHBNv1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 09:51:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=k5/JhGdVmpe1Ihqs9yKP3qb08R/JrC1ce/seEh/uM/X2wdjWaHmGABfe38yIgDjDOm
-         mSGZkYxlHQlBWJ0QnkFwseWAdE7B7WX3HX3NM9zEwDU6FsN65Xagl6KkRQi1aozDUUtJ
-         DsZ2zk3PuPp9NVEmmdsb4aZWf4pMbu/vVMvKI=
-Date: Sun, 2 Aug 2009 15:51:22 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 15/15] drivers/ide/ide-cd.c: Use DIV_ROUND_CLOSEST
-Message-ID: <20090802135122.GA15279@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	Julia Lawall <julia@diku.dk>, linux-ide@vger.kernel.org,
-	linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-References: <Pine.LNX.4.64.0908021049350.15557@ask.diku.dk>
+	Sun, 2 Aug 2009 09:52:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50166 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752023AbZHBNwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 09:52:23 -0400
+Date: Sun, 2 Aug 2009 13:51:45 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1248096665.15751.8816.camel@twins>
+References: <1248096665.15751.8816.camel@twins>
+Subject: [tip:core/locking] lockdep: Fix backtraces
+Message-ID: <tip-4f84f4330a11b9eb828bf5af557f4c79c64614a3@git.kernel.org>
+Git-Commit-ID: 4f84f4330a11b9eb828bf5af557f4c79c64614a3
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0908021049350.15557@ask.diku.dk>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 02 Aug 2009 13:51:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 02, 2009 at 10:49:54AM +0200, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> The kernel.h macro DIV_ROUND_CLOSEST performs the computation (x + d/2)/d
-> but is perhaps more readable.
-> 
-> The semantic patch that makes this change is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @haskernel@
-> @@
-> 
-> #include <linux/kernel.h>
-> 
-> @depends on haskernel@
-> expression x,__divisor;
-> @@
-> 
-> - (((x) + ((__divisor) / 2)) / (__divisor))
-> + DIV_ROUND_CLOSEST(x,__divisor)
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+Commit-ID:  4f84f4330a11b9eb828bf5af557f4c79c64614a3
+Gitweb:     http://git.kernel.org/tip/4f84f4330a11b9eb828bf5af557f4c79c64614a3
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Mon, 20 Jul 2009 15:27:04 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 2 Aug 2009 15:41:31 +0200
 
-Acked-by: Borislav Petkov <petkovbb@gmail.com>
+lockdep: Fix backtraces
 
--- 
-Regards/Gruss,
-    Boris.
+Truncate stupid -1 entries in backtraces.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <1248096665.15751.8816.camel@twins>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/lockdep.c |   12 +++++++++++-
+ 1 files changed, 11 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 1cedb00..2f09702 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -367,11 +367,21 @@ static int save_trace(struct stack_trace *trace)
+ 
+ 	save_stack_trace(trace);
+ 
++	/*
++	 * Some daft arches put -1 at the end to indicate its a full trace.
++	 *
++	 * <rant> this is buggy anyway, since it takes a whole extra entry so a
++	 * complete trace that maxes out the entries provided will be reported
++	 * as incomplete, friggin useless </rant>
++	 */
++	if (trace->entries[trace->nr_entries-1] == ULONG_MAX)
++		trace->nr_entries--;
++
+ 	trace->max_entries = trace->nr_entries;
+ 
+ 	nr_stack_trace_entries += trace->nr_entries;
+ 
+-	if (nr_stack_trace_entries == MAX_STACK_TRACE_ENTRIES) {
++	if (nr_stack_trace_entries >= MAX_STACK_TRACE_ENTRIES-1) {
+ 		if (!debug_locks_off_graph_unlock())
+ 			return 0;
+ 
