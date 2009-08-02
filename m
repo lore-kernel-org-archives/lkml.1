@@ -1,17 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754105AbZHBVu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbZHBVvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754105AbZHBVu5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 17:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbZHBVu4
+	id S1754158AbZHBVvJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 17:51:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754114AbZHBVvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 17:50:56 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37825 "EHLO ogre.sisk.pl"
+	Sun, 2 Aug 2009 17:51:07 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37836 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754093AbZHBVuy convert rfc822-to-8bit (ORCPT
+	id S1754113AbZHBVvA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 17:50:54 -0400
+	Sun, 2 Aug 2009 17:51:00 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Alan Jenkins" <alan-jenkins@tuffmail.co.uk>
+       "David Brownell" <david-b@pacbell.net>,
+       "David Woodhouse" <David.Woodhouse@intel.com>,
+       "Eric Miao" <eric.y.miao@gmail.com>, "Pavel Machek" <pavel@ucw.cz>,
+       "Tobias Diedrich" <ranma@tdiedrich.de>
 References: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera>
 In-Reply-To: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,10 +22,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <iZB3Pj-uj3M.A.oLD.LdgdKB@chimera>
-Subject: [Bug #13825] eeepc-laptop: fix hot-unplug on resume
+Message-ID: <iZB3Pj-uj3M.A.I9C.FdgdKB@chimera>
+Subject: [Bug #13833] Kernel Oops when trying to suspend with ubifs mounted on block2mtd mtd device
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun,  2 Aug 2009 20:58:28 +0200 (CEST)
+Date: Sun,  2 Aug 2009 20:58:29 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,12 +38,12 @@ from 2.6.30.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13825
-Subject		: eeepc-laptop: fix hot-unplug on resume
-Submitter	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Date		: 2009-06-29 13:12 (35 days old)
-References	: http://lkml.org/lkml/2009/6/29/150
-Handled-By	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Patch		: http://patchwork.kernel.org/patch/32926/
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13833
+Subject		: Kernel Oops when trying to suspend with ubifs mounted on block2mtd mtd device
+Submitter	: Tobias Diedrich <ranma@tdiedrich.de>
+Date		: 2009-07-15 14:20 (19 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=15bce40cb3133bcc07d548013df97e4653d363c1
+References	: http://marc.info/?l=linux-kernel&m=124766049207807&w=4
+		  http://marc.info/?l=linux-kernel&m=124704927819769&w=4
 
 
