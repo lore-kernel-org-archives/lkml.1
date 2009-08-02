@@ -1,100 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753381AbZHBSqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbZHBTC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753381AbZHBSqf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 14:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753368AbZHBSqe
+	id S1753369AbZHBTC2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 15:02:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbZHBTC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 14:46:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51670 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753360AbZHBSqd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 14:46:33 -0400
-Date: Sun, 2 Aug 2009 11:45:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: paulmck@linux.vnet.ibm.com, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       a.p.zijlstra@chello.nl, torvalds@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu
-Cc: tip-bot for Ingo Molnar <mingo@elte.hu>, linux-tip-commits@vger.kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       paulmck@linux.vnet.ibm.com, tglx@linutronix.de
-Subject: Re: [tip:core/debug] debug lockups: Improve lockup detection
-Message-Id: <20090802114545.f1520c81.akpm@linux-foundation.org>
-In-Reply-To: <tip-c1dc0b9c0c8979ce4d411caadff5c0d79dee58bc@git.kernel.org>
-References: <new-submission>
-	<tip-c1dc0b9c0c8979ce4d411caadff5c0d79dee58bc@git.kernel.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 2 Aug 2009 15:02:27 -0400
+Received: from mail.open.by ([193.232.92.17]:53640 "EHLO post.open.by"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753302AbZHBTC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 15:02:27 -0400
+X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
+X-SpamTest-Group-ID: 00000000
+X-SpamTest-Info: Profiles 9223 [Aug 2 2009]
+X-SpamTest-Info: {relay has no DNS name}
+X-SpamTest-Method: none
+X-SpamTest-Rate: 55
+X-SpamTest-SPF: softfail
+X-SpamTest-Status: Not detected
+X-SpamTest-Status-Extended: not_detected
+X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
+Date: Sun, 2 Aug 2009 22:05:14 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>
+Subject: Re: WARNING at: drivers/char/tty_ldisc.c
+Message-ID: <20090802190514.GA3278@localdomain.by>
+References: <20090802120120.GA3097@localdomain.by>
+ <alpine.LFD.2.01.0908020940530.3352@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="3MwIy2ne0vdjdPXF"
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0908020940530.3352@localhost.localdomain>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Aug 2009 13:09:34 GMT tip-bot for Ingo Molnar <mingo@elte.hu> wrote:
 
-> Commit-ID:  c1dc0b9c0c8979ce4d411caadff5c0d79dee58bc
-> Gitweb:     http://git.kernel.org/tip/c1dc0b9c0c8979ce4d411caadff5c0d79dee58bc
-> Author:     Ingo Molnar <mingo@elte.hu>
-> AuthorDate: Sun, 2 Aug 2009 11:28:21 +0200
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Sun, 2 Aug 2009 13:27:17 +0200
-> 
-> --- a/drivers/char/sysrq.c
-> +++ b/drivers/char/sysrq.c
-> @@ -24,6 +24,7 @@
->  #include <linux/sysrq.h>
->  #include <linux/kbd_kern.h>
->  #include <linux/proc_fs.h>
-> +#include <linux/nmi.h>
->  #include <linux/quotaops.h>
->  #include <linux/perf_counter.h>
->  #include <linux/kernel.h>
-> @@ -222,12 +223,7 @@ static DECLARE_WORK(sysrq_showallcpus, sysrq_showregs_othercpus);
->  
->  static void sysrq_handle_showallcpus(int key, struct tty_struct *tty)
->  {
-> -	struct pt_regs *regs = get_irq_regs();
-> -	if (regs) {
-> -		printk(KERN_INFO "CPU%d:\n", smp_processor_id());
-> -		show_regs(regs);
-> -	}
-> -	schedule_work(&sysrq_showallcpus);
-> +	trigger_all_cpu_backtrace();
->  }
+--3MwIy2ne0vdjdPXF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I think this just broke all non-x86 non-sparc SMP architectures.
+On (08/02/09 10:16), Linus Torvalds wrote:
+> > Looks like we have one more bug in tty code:
+> > 'shutdown -r now' in 'single' user mode gives following trace:
+> >=20
+> > WARNING at: drivers/char/tty_ldisc.c:209 tty_ldisc_put+0x95/0xa0
+> > ---
+> > warn_slowpath_common+0x78/0xa0
+> > warn_slowpath_null+0x21/0x40
+> > tty_ldisc_put+0x95/0xa0
+> > tty_ldisc_hangup+0xfc/0x1f0
+> > do_tty_hangup+0x131/0x380
+> > disassociate_ctty+0x50/0x210
+> > do_exit+0x6b8/0x700
+> > do_group_exit+0x45/0xb0
+> > get_signal_to_deliver+0x226/0x410
+> > do_notify_resume+0xc1+0xa90
+> > work_notifysig+0x13/0x19
+> >=20
+> > //There is no trace in syslog, so given one is 'copy-paste' from the pa=
+per.
+>=20
+> We have that 'refcount' counter for the ldisc, but we don't actually use=
+=20
+> it for memory management like we should (ie "free the ldisc when count=20
+> goes to zero"), we just decrement it and free the thing.
+>=20
+> And it's quite possible that another CPU is doing some tty read thing or=
+=20
+> other that does
+>=20
+> 	tty_ldisc_try(..) // increments ld->refcount
+> 	...
+> 	tty_ldisc_deref(..) // decrements it.
+>=20
+> at the same time.=20
+>
 
->  static struct sysrq_key_op sysrq_showallcpus_op = {
-> diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-> index 7717b95..9c5fa9f 100644
-> --- a/kernel/rcutree.c
-> +++ b/kernel/rcutree.c
-> @@ -35,6 +35,7 @@
->  #include <linux/rcupdate.h>
->  #include <linux/interrupt.h>
->  #include <linux/sched.h>
-> +#include <linux/nmi.h>
->  #include <asm/atomic.h>
->  #include <linux/bitops.h>
->  #include <linux/module.h>
-> @@ -469,6 +470,8 @@ static void print_other_cpu_stall(struct rcu_state *rsp)
->  	}
->  	printk(" (detected by %d, t=%ld jiffies)\n",
->  	       smp_processor_id(), (long)(jiffies - rsp->gp_start));
-> +	trigger_all_cpu_backtrace();
+non-SMP system 'fails' as well.
 
-Be aware that trigger_all_cpu_backtrace() is a PITA when you have a lot
-of CPUs.
+=20
+> The ldisc refcounts are simply done wrong. They are more debugging aids=
+=20
+> (for the case where no races occur), than actual memory management=20
+> refcounts.
+>=20
+tty_ldisc.c:798  tty_ldisc_hangup
+	WARN_ON(tty_ldisc_wait_idle(tty) !=3D 0);
 
-If a callsite is careful to ensure that the most important information
-is emitted last then that might improve things.
+gave WARN_ON traces.
 
-otoh, log buffer overflow will truncate, I think.  So that info needs
-to be emitted first too ;)
+So, it seems refcount is wrong before
+	tty_ldisc_halt(tty);
+	tty_ldisc_wait_idle(tty);
 
-It's a PITA.
+	/* which is */
+	if (wait_event_timeout(tty_ldisc_wait,=20
+		tty->ldisc->refcount =3D=3D 0, 5 * HZ) =3D=3D 0)
+		return -EBUSY;
 
+	Sergey
 
+--3MwIy2ne0vdjdPXF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iJwEAQECAAYFAkp142oACgkQfKHnntdSXjQ1ZwQAp+aayhQXxpYZg+fIfcr37N8J
+4QGFlGI4ErOE6eHd/+c+I5pPymyeQGqBjH+jKUHMoh8/JEb2io5582xVO1Vwih3j
+c0vq5aC2ZDdH/DH6ZQCqfE1JK3ih2+m8xgrzOBiIzXvX8SRzf63Zc7GJgtwx9xMv
+6wP190rlI6FKtSy59eY=
+=q4u3
+-----END PGP SIGNATURE-----
+
+--3MwIy2ne0vdjdPXF--
