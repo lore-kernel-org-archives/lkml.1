@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753184AbZHBTlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbZHBTlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753184AbZHBTlN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 15:41:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbZHBTlN
+	id S1753248AbZHBTlc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 15:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbZHBTlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 15:41:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58946 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752810AbZHBTlM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 15:41:12 -0400
-Date: Sun, 2 Aug 2009 12:39:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: paulmck@linux.vnet.ibm.com, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       torvalds@linux-foundation.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:core/debug] debug lockups: Improve lockup detection
-Message-Id: <20090802123958.cbd497a0.akpm@linux-foundation.org>
-In-Reply-To: <20090802192657.GA21882@elte.hu>
-References: <tip-c1dc0b9c0c8979ce4d411caadff5c0d79dee58bc@git.kernel.org>
-	<20090802114545.f1520c81.akpm@linux-foundation.org>
-	<20090802192657.GA21882@elte.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 2 Aug 2009 15:41:31 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53277 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753034AbZHBTla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 15:41:30 -0400
+Date: Sun, 2 Aug 2009 19:40:56 GMT
+From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:core/rcu] rcu: Add diagnostic check for a possible CPU-hotplug race
+Message-ID: <tip-7256cf0e83bf018be8a81806593aaef7f2437f0b@git.kernel.org>
+Git-Commit-ID: 7256cf0e83bf018be8a81806593aaef7f2437f0b
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 02 Aug 2009 19:40:57 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Aug 2009 21:26:57 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+Commit-ID:  7256cf0e83bf018be8a81806593aaef7f2437f0b
+Gitweb:     http://git.kernel.org/tip/7256cf0e83bf018be8a81806593aaef7f2437f0b
+Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+AuthorDate: Sun, 2 Aug 2009 10:21:10 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 2 Aug 2009 21:31:28 +0200
 
-> > I think this just broke all non-x86 non-sparc SMP architectures.
-> 
-> Yeah - it 'broke' them in the sense of them not having a working 
-> trigger_all_cpu_backtrace() implementation to begin with.
+rcu: Add diagnostic check for a possible CPU-hotplug race
 
-c'mon.  It broke them in the sense that sysrq-l went from "works" to
-"doesn't work".
+Complain if the RCU softirq code ever runs on a CPU that has
+not yet been announced to RCU as being online.
 
-It would take months for the relevant arch maintainers to even find out
-about this, after which they're left with dud kernels out in the field.
-
-It's better to break the build or to emit warnings than to silently and
-secretly break their stuff.
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
---- a/include/linux/nmi.h~a
-+++ a/include/linux/nmi.h
-@@ -29,6 +29,9 @@ static inline void acpi_nmi_enable(void)
- #endif
+---
+ kernel/rcutree.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index 3313244..b9b1928 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -1132,6 +1132,8 @@ __rcu_process_callbacks(struct rcu_state *rsp, struct rcu_data *rdp)
+ {
+ 	unsigned long flags;
  
- #ifndef trigger_all_cpu_backtrace
-+#ifdef CONFIG_SMP
-+#warning This architecture is missing a trigger_all_cpu_backtrace() implementation
-+#endif
- #define trigger_all_cpu_backtrace() do { } while (0)
- #endif
- 
-_
-
++	WARN_ON_ONCE(rdp->beenonline == 0);
++
+ 	/*
+ 	 * If an RCU GP has gone long enough, go check for dyntick
+ 	 * idle CPUs and, if needed, send resched IPIs.
