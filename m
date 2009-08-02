@@ -1,223 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752775AbZHBNKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbZHBNL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752775AbZHBNKS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 09:10:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbZHBNKR
+	id S1752792AbZHBNL0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 09:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbZHBNLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 09:10:17 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33990 "EHLO hera.kernel.org"
+	Sun, 2 Aug 2009 09:11:25 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34094 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752159AbZHBNKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 09:10:15 -0400
-Date: Sun, 2 Aug 2009 13:09:34 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
+	id S1752713AbZHBNLY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 09:11:24 -0400
+Date: Sun, 2 Aug 2009 13:09:47 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
-       paulmck@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: paulmck@linux.vnet.ibm.com, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       a.p.zijlstra@chello.nl, torvalds@linux-foundation.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:core/debug] debug lockups: Improve lockup detection
-Message-ID: <tip-c1dc0b9c0c8979ce4d411caadff5c0d79dee58bc@git.kernel.org>
-Git-Commit-ID: c1dc0b9c0c8979ce4d411caadff5c0d79dee58bc
+       a.p.zijlstra@chello.nl, jeff@garzik.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, jeff@garzik.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1248856508.6987.3041.camel@twins>
+References: <1248856508.6987.3041.camel@twins>
+Subject: [tip:perfcounters/core] tracing, perf_counter: Add help text to CONFIG_EVENT_PROFILE
+Message-ID: <tip-470a1396c25c27b4aff08b14d5c9cd9b3da15e09@git.kernel.org>
+Git-Commit-ID: 470a1396c25c27b4aff08b14d5c9cd9b3da15e09
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 02 Aug 2009 13:09:35 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 02 Aug 2009 13:09:49 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c1dc0b9c0c8979ce4d411caadff5c0d79dee58bc
-Gitweb:     http://git.kernel.org/tip/c1dc0b9c0c8979ce4d411caadff5c0d79dee58bc
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Sun, 2 Aug 2009 11:28:21 +0200
+Commit-ID:  470a1396c25c27b4aff08b14d5c9cd9b3da15e09
+Gitweb:     http://git.kernel.org/tip/470a1396c25c27b4aff08b14d5c9cd9b3da15e09
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Wed, 29 Jul 2009 10:50:09 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 2 Aug 2009 13:27:17 +0200
+CommitDate: Sun, 2 Aug 2009 13:47:53 +0200
 
-debug lockups: Improve lockup detection
+tracing, perf_counter: Add help text to CONFIG_EVENT_PROFILE
 
-When debugging a recent lockup bug i found various deficiencies
-in how our current lockup detection helpers work:
+Explain what tracepoint profiling sources are about.
 
- - SysRq-L is not very efficient as it uses a workqueue, hence
-   it cannot punch through hard lockups and cannot see through
-   most soft lockups either.
-
- - The SysRq-L code depends on the NMI watchdog - which is off
-   by default.
-
- - We dont print backtraces from the RCU code's built-in
-   'RCU state machine is stuck' debug code. This debug
-   code tends to be one of the first (and only) mechanisms
-   that show that a lockup has occured.
-
-This patch changes the code so taht we:
-
- - Trigger the NMI backtrace code from SysRq-L instead of using
-   a workqueue (which cannot punch through hard lockups)
-
- - Trigger print-all-CPU-backtraces from the RCU lockup detection
-   code
-
-Also decouple the backtrace printing code from the NMI watchdog:
-
- - Dont use variable size cpumasks (it might not be initialized
-   and they are a bit more fragile anyway)
-
- - Trigger an NMI immediately via an IPI, instead of waiting
-   for the NMI tick to occur. This is a lot faster and can
-   produce more relevant backtraces. It will also work if the
-   NMI watchdog is disabled.
-
- - Dont print the 'dazed and confused' message when we print
-   a backtrace from the NMI
-
- - Do a show_regs() plus a dump_stack() to get maximum info
-   out of the dump. Worst-case we get two stacktraces - which
-   is not a big deal. Sometimes, if register content is
-   corrupted, the precise stack walker in show_regs() wont
-   give us a full backtrace - in this case dump_stack() will
-   do it.
-
-Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <new-submission>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Acked-by: Jeff Garzik <jeff@garzik.org>
+LKML-Reference: <1248856508.6987.3041.camel@twins>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/apic/nmi.c |   18 ++++++++++++------
- drivers/char/sysrq.c       |    8 ++------
- kernel/rcutree.c           |    7 ++++++-
- 3 files changed, 20 insertions(+), 13 deletions(-)
+ init/Kconfig |   10 +++++++++-
+ 1 files changed, 9 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/apic/nmi.c b/arch/x86/kernel/apic/nmi.c
-index b3025b4..1bb1ac2 100644
---- a/arch/x86/kernel/apic/nmi.c
-+++ b/arch/x86/kernel/apic/nmi.c
-@@ -39,7 +39,7 @@
- int unknown_nmi_panic;
- int nmi_watchdog_enabled;
+diff --git a/init/Kconfig b/init/Kconfig
+index cb2c092..823ee0a 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -961,9 +961,17 @@ config PERF_COUNTERS
+ 	  Say Y if unsure.
  
--static cpumask_var_t backtrace_mask;
-+static cpumask_t backtrace_mask __read_mostly;
- 
- /* nmi_active:
-  * >0: the lapic NMI watchdog is active, but can be disabled
-@@ -138,7 +138,6 @@ int __init check_nmi_watchdog(void)
- 	if (!prev_nmi_count)
- 		goto error;
- 
--	alloc_cpumask_var(&backtrace_mask, GFP_KERNEL|__GFP_ZERO);
- 	printk(KERN_INFO "Testing NMI watchdog ... ");
- 
- #ifdef CONFIG_SMP
-@@ -415,14 +414,17 @@ nmi_watchdog_tick(struct pt_regs *regs, unsigned reason)
- 	}
- 
- 	/* We can be called before check_nmi_watchdog, hence NULL check. */
--	if (backtrace_mask != NULL && cpumask_test_cpu(cpu, backtrace_mask)) {
-+	if (cpumask_test_cpu(cpu, &backtrace_mask)) {
- 		static DEFINE_SPINLOCK(lock);	/* Serialise the printks */
- 
- 		spin_lock(&lock);
- 		printk(KERN_WARNING "NMI backtrace for cpu %d\n", cpu);
-+		show_regs(regs);
- 		dump_stack();
- 		spin_unlock(&lock);
--		cpumask_clear_cpu(cpu, backtrace_mask);
-+		cpumask_clear_cpu(cpu, &backtrace_mask);
+ config EVENT_PROFILE
+-	bool "Tracepoint profile sources"
++	bool "Tracepoint profiling sources"
+ 	depends on PERF_COUNTERS && EVENT_TRACING
+ 	default y
++	help
++	 Allow the use of tracepoints as software performance counters.
 +
-+		rc = 1;
- 	}
++	 When this is enabled, you can create perf counters based on
++	 tracepoints using PERF_TYPE_TRACEPOINT and the tracepoint ID
++	 found in debugfs://tracing/events/*/*/id. (The -e/--events
++	 option to the perf tool can parse and interpret symbolic
++	 tracepoints, in the subsystem:tracepoint_name format.)
  
- 	/* Could check oops_in_progress here too, but it's safer not to */
-@@ -556,10 +558,14 @@ void __trigger_all_cpu_backtrace(void)
- {
- 	int i;
- 
--	cpumask_copy(backtrace_mask, cpu_online_mask);
-+	cpumask_copy(&backtrace_mask, cpu_online_mask);
-+
-+	printk(KERN_INFO "sending NMI to all CPUs:\n");
-+	apic->send_IPI_all(NMI_VECTOR);
-+
- 	/* Wait for up to 10 seconds for all CPUs to do the backtrace */
- 	for (i = 0; i < 10 * 1000; i++) {
--		if (cpumask_empty(backtrace_mask))
-+		if (cpumask_empty(&backtrace_mask))
- 			break;
- 		mdelay(1);
- 	}
-diff --git a/drivers/char/sysrq.c b/drivers/char/sysrq.c
-index 5d7a02f..165f307 100644
---- a/drivers/char/sysrq.c
-+++ b/drivers/char/sysrq.c
-@@ -24,6 +24,7 @@
- #include <linux/sysrq.h>
- #include <linux/kbd_kern.h>
- #include <linux/proc_fs.h>
-+#include <linux/nmi.h>
- #include <linux/quotaops.h>
- #include <linux/perf_counter.h>
- #include <linux/kernel.h>
-@@ -222,12 +223,7 @@ static DECLARE_WORK(sysrq_showallcpus, sysrq_showregs_othercpus);
- 
- static void sysrq_handle_showallcpus(int key, struct tty_struct *tty)
- {
--	struct pt_regs *regs = get_irq_regs();
--	if (regs) {
--		printk(KERN_INFO "CPU%d:\n", smp_processor_id());
--		show_regs(regs);
--	}
--	schedule_work(&sysrq_showallcpus);
-+	trigger_all_cpu_backtrace();
- }
- 
- static struct sysrq_key_op sysrq_showallcpus_op = {
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 7717b95..9c5fa9f 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -35,6 +35,7 @@
- #include <linux/rcupdate.h>
- #include <linux/interrupt.h>
- #include <linux/sched.h>
-+#include <linux/nmi.h>
- #include <asm/atomic.h>
- #include <linux/bitops.h>
- #include <linux/module.h>
-@@ -469,6 +470,8 @@ static void print_other_cpu_stall(struct rcu_state *rsp)
- 	}
- 	printk(" (detected by %d, t=%ld jiffies)\n",
- 	       smp_processor_id(), (long)(jiffies - rsp->gp_start));
-+	trigger_all_cpu_backtrace();
-+
- 	force_quiescent_state(rsp, 0);  /* Kick them all. */
- }
- 
-@@ -479,12 +482,14 @@ static void print_cpu_stall(struct rcu_state *rsp)
- 
- 	printk(KERN_ERR "INFO: RCU detected CPU %d stall (t=%lu jiffies)\n",
- 			smp_processor_id(), jiffies - rsp->gp_start);
--	dump_stack();
-+	trigger_all_cpu_backtrace();
-+
- 	spin_lock_irqsave(&rnp->lock, flags);
- 	if ((long)(jiffies - rsp->jiffies_stall) >= 0)
- 		rsp->jiffies_stall =
- 			jiffies + RCU_SECONDS_TILL_STALL_RECHECK;
- 	spin_unlock_irqrestore(&rnp->lock, flags);
-+
- 	set_need_resched();  /* kick ourselves to get things going. */
- }
+ endmenu
  
