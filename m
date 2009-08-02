@@ -1,74 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753295AbZHBTl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbZHBTpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753295AbZHBTl5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 15:41:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753205AbZHBTl4
+	id S1753112AbZHBTpO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 15:45:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbZHBTpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 15:41:56 -0400
-Received: from hera.kernel.org ([140.211.167.34]:32998 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752982AbZHBTlz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 15:41:55 -0400
-Date: Sun, 2 Aug 2009 19:41:08 GMT
-From: tip-bot for Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, julia@diku.dk, hpa@zytor.com,
-       mingo@redhat.com, bzolnier@gmail.com, eteo@redhat.com, corbet@lwn.net,
-       error27@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, julia@diku.dk,
-       linux-kernel@vger.kernel.org, bzolnier@gmail.com, eteo@redhat.com,
-       corbet@lwn.net, error27@gmail.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <200907302321.19086.bzolnier@gmail.com>
-References: <200907302321.19086.bzolnier@gmail.com>
-Subject: [tip:x86/apic] x86: Remove superfluous NULL pointer check in destroy_irq()
-Message-ID: <tip-25f6e89bedd29cc49bfa0d55497e91a671b9ae6e@git.kernel.org>
-Git-Commit-ID: 25f6e89bedd29cc49bfa0d55497e91a671b9ae6e
-X-Mailer: tip-git-log-daemon
+	Sun, 2 Aug 2009 15:45:13 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37118 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750786AbZHBTpM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 15:45:12 -0400
+Date: Sun, 2 Aug 2009 15:44:54 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>, Anton Blanchard <anton@samba.org>,
+       davem@davemloft.net, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, fweisbec@gmail.com, benh@kernel.crashing.org,
+       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, paulus@samba.org,
+       williams@redhat.com
+Subject: Re: [PATCH] basic perf support for sparc
+Message-ID: <20090802194454.GC28572@bombadil.infradead.org>
+References: <20090729112509.GN4148@kernel.dk> <20090729192814.GT4148@kernel.dk> <20090801011429.GA4685@kryten> <20090801082048.GX12579@kernel.dk> <20090801182216.GA25334@ghostprotocols.net> <20090802184148.GB17241@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 02 Aug 2009 19:41:22 +0000 (UTC)
+In-Reply-To: <20090802184148.GB17241@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  25f6e89bedd29cc49bfa0d55497e91a671b9ae6e
-Gitweb:     http://git.kernel.org/tip/25f6e89bedd29cc49bfa0d55497e91a671b9ae6e
-Author:     Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-AuthorDate: Thu, 30 Jul 2009 23:21:18 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 2 Aug 2009 21:37:00 +0200
+On Sun, Aug 02, 2009 at 08:41:48PM +0200, Ingo Molnar wrote:
+> Could we somehow define a weak symbol for those library functions 
+> ourselves and thus just fall back to that (which does nothing) 
+> instead of failing the link?
+> 
 
-x86: Remove superfluous NULL pointer check in destroy_irq()
+Well, you could just dlopen the object, but that's kind of gross...
 
-This takes care of the following entry from Dan's list:
+Why not abuse the perf Makefile, which already has this kind of
+portability gunk in it?
 
-  arch/x86/kernel/apic/io_apic.c +3241 destroy_irq(11) warning: variable derefenced before check 'desc'
+$ make NO_BFD_DEMANGLE=1
+succeeds with no libbfd.
 
-Reported-by: Dan Carpenter <error27@gmail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: Eugene Teo <eteo@redhat.com>
-Cc: Julia Lawall <julia@diku.dk>
-LKML-Reference: <200907302321.19086.bzolnier@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+$ make
+succeeds when libbfd is around.
 
-
----
- arch/x86/kernel/apic/io_apic.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index cf51b0b..7e92a92 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -3185,8 +3185,7 @@ void destroy_irq(unsigned int irq)
- 	cfg = desc->chip_data;
- 	dynamic_irq_cleanup(irq);
- 	/* connect back irq_cfg */
--	if (desc)
--		desc->chip_data = cfg;
-+	desc->chip_data = cfg;
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index a5e9b87..67ab097 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -345,7 +345,6 @@ BUILTIN_OBJS += builtin-stat.o
+ BUILTIN_OBJS += builtin-top.o
  
- 	free_irte(irq);
- 	spin_lock_irqsave(&vector_lock, flags);
+ PERFLIBS = $(LIB_FILE)
+-EXTLIBS = -lbfd
+ 
+ #
+ # Platform specific tweaks
+@@ -541,6 +540,11 @@ endif
+ ifdef NO_EXTERNAL_GREP
+ 	BASIC_CFLAGS += -DNO_EXTERNAL_GREP
+ endif
++ifdef NO_BFD_DEMANGLE
++	BASIC_CFLAGS += -DNO_BFD_DEMANGLE
++else
++	EXTLIBS += -lbfd
++endif
+ 
+ ifeq ($(PERL_PATH),)
+ NO_PERL=NoThanks
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index 2810605..736b8db 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -6,10 +6,20 @@
+ #include <libelf.h>
+ #include <gelf.h>
+ #include <elf.h>
++
++#ifndef NO_BFD_DEMANGLE
+ #include <bfd.h>
++#endif /* NO_BFD_DEMANGLE */
+ 
+ const char *sym_hist_filter;
+ 
++#ifdef NO_BFD_DEMANGLE
++static inline char *bfd_demangle(void __used *v, const char __used *c,
++				int __used i) {
++	return NULL;
++}
++#endif
++
+ #ifndef DMGL_PARAMS
+ #define DMGL_PARAMS      (1 << 0)       /* Include function args */
+ #define DMGL_ANSI        (1 << 1)       /* Include const, volatile, etc */
