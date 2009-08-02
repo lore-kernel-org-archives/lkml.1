@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbZHBVuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZHBV4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754032AbZHBVuf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 17:50:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbZHBVub
+	id S1754059AbZHBV4h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 17:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754004AbZHBVud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 17:50:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37780 "EHLO ogre.sisk.pl"
+	Sun, 2 Aug 2009 17:50:33 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37783 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753958AbZHBVuM convert rfc822-to-8bit (ORCPT
+	id S1753959AbZHBVuN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 17:50:12 -0400
+	Sun, 2 Aug 2009 17:50:13 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Johannes Weiner" <hannes@cmpxchg.org>
+       "Alan Cox" <alan@linux.intel.com>,
+       "Alan Stern" <stern@rowland.harvard.edu>,
+       "Daniel Mack" <daniel@caiaq.de>
 References: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera>
 In-Reply-To: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,8 +21,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <iZB3Pj-uj3M.A.xaD.RdgdKB@chimera>
-Subject: [Bug #13813] Hangups in n_tty_read()
+Message-ID: <iZB3Pj-uj3M.A.thD.TdgdKB@chimera>
+Subject: [Bug #13812] Ooops on uplug
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun,  2 Aug 2009 20:58:27 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,10 +37,12 @@ from 2.6.30.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13813
-Subject		: Hangups in n_tty_read()
-Submitter	: Johannes Weiner <hannes@cmpxchg.org>
-Date		: 2009-07-16 18:48 (18 days old)
-References	: http://marc.info/?l=linux-kernel&m=124777019920579&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13812
+Subject		: Ooops on uplug
+Submitter	: Daniel Mack <daniel@caiaq.de>
+Date		: 2009-07-20 17:51 (14 days old)
+References	: http://marc.info/?l=linux-kernel&m=124811234302786&w=4
+Handled-By	: Alan Stern <stern@rowland.harvard.edu>
+		  Alan Cox <alan@linux.intel.com>
 
 
