@@ -1,65 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753766AbZHBUfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbZHBUg5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753766AbZHBUfu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 16:35:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbZHBUfu
+	id S1753665AbZHBUg5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 16:36:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500AbZHBUg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 16:35:50 -0400
-Received: from moutng.kundenserver.de ([212.227.17.10]:59512 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753295AbZHBUft (ORCPT
+	Sun, 2 Aug 2009 16:36:57 -0400
+Received: from mail.bluewatersys.com ([202.124.120.130]:40475 "EHLO
+	hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753391AbZHBUg4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 16:35:49 -0400
-Date: Sun, 2 Aug 2009 13:35:48 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: David Rientjes <rientjes@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
-Subject: Re: [Bug #13666] WARNING: at mm/page_alloc.c:1743
- __alloc_pages_nodemask
-In-Reply-To: <200908022226.52228.rjw@sisk.pl>
-Message-ID: <alpine.DEB.2.01.0908021331350.5831@bogon.housecafe.de>
-References: <Jya1GruKQpD.A.16.2GObKB@chimera> <alpine.DEB.2.01.0908011427270.5831@bogon.housecafe.de> <alpine.DEB.2.01.0908021314030.5831@bogon.housecafe.de> <200908022226.52228.rjw@sisk.pl>
-User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
+	Sun, 2 Aug 2009 16:36:56 -0400
+Message-ID: <4A75F920.20101@bluewatersys.com>
+Date: Mon, 03 Aug 2009 08:37:52 +1200
+From: Ryan Mallon <ryan@bluewatersys.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX1/sFTYWWZ9Cw8JMPRSPAAH0uOB7xv6B2VaGnPf
- 5h4lAQOIG8/3fHN4BUtrdYTw0C7Eew9Dsett4LO8RUqJoh/eFT
- 588KXuZHIrVBSMgXjO4dw==
+To: Julia Lawall <julia@diku.dk>
+CC: hsweeten@visionengravers.com, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 4/15] arch/arm/mach-ep93xx: Use DIV_ROUND_CLOSEST
+References: <Pine.LNX.4.64.0908021045190.15557@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0908021045190.15557@ask.diku.dk>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rafael,
+Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+> 
+> The kernel.h macro DIV_ROUND_CLOSEST performs the computation (x + d/2)/d
+> but is perhaps more readable.
+> 
+> The semantic patch that makes this change is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
 
-On Sun, 2 Aug 2009 at 22:26, Rafael J. Wysocki wrote:
-> The patches supposed to fix this issue went in right before -rc5 AFAIC.
+I had a read through the website, that's a very neat tool.
 
-Sorry, you fell off my Cc list, thanks for catching this. I've seen these 
-patches too, but David confirmed:
+> 
+> // <smpl>
+> @haskernel@
+> @@
+> 
+> #include <linux/kernel.h>
+> 
+> @depends on haskernel@
+> expression x,__divisor;
+> @@
+> 
+> - (((x) + ((__divisor) / 2)) / (__divisor))
+> + DIV_ROUND_CLOSEST(x,__divisor)
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> 
+> ---
+>  arch/arm/mach-ep93xx/core.c         |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/arm/mach-ep93xx/core.c b/arch/arm/mach-ep93xx/core.c
+> index 4075529..16b92c3 100644
+> --- a/arch/arm/mach-ep93xx/core.c
+> +++ b/arch/arm/mach-ep93xx/core.c
+> @@ -82,7 +82,7 @@ void __init ep93xx_map_io(void)
+>   */
+>  static unsigned int last_jiffy_time;
+>  
+> -#define TIMER4_TICKS_PER_JIFFY		((CLOCK_TICK_RATE + (HZ/2)) / HZ)
+> +#define TIMER4_TICKS_PER_JIFFY		DIV_ROUND_CLOSEST(CLOCK_TICK_RATE, HZ)
+>  
+>  static irqreturn_t ep93xx_timer_interrupt(int irq, void *dev_id)
+>  {
 
----------------------------------------------------------------------
-> Is this related to the WARNING in #13666?
-> I'm pretty sure the kernel already includes the patches you
-> mentioned, "git show" said "b592972493c38665efd7d429a01b23fcb21e331a".
-> Also, I just pulled again and mm/ was not touched any more.
+Acked-by: Ryan Mallon <ryan@bluewatersys.com>
 
-Your kernel includes the fixes for the __alloc_pages_nodemask() warning
-that was reported in http://bugzilla.kernel.org/show_bug.cgi?id=13666. 
----------------------------------------------------------------------
+Can you please apply to the ARM patch system
+(http://www.arm.linux.org.uk/developer/patches/) unless someone else is
+picking this up.
 
-So, it looks like it's not related to #13666.
+~Ryan
 
-> Can you try to reproduce with -rc5?
-
-Yes, I'm building it right now (actually, I'm using current -git tree), 
-will report back.
-
-
-Thanks,
-Christian.
 -- 
-BOFH excuse #6:
+Bluewater Systems Ltd - ARM Technology Solution Centre
 
-global warming
+       Ryan Mallon                              Unit 5, Amuri Park
+       Phone: +64 3 3779127                     404 Barbadoes St
+       Fax:   +64 3 3779135                     PO Box 13 889
+       Email: ryan@bluewatersys.com             Christchurch, 8013
+       Web:   http://www.bluewatersys.com       New Zealand
+       Freecall Australia  1800 148 751         USA 1800 261 2934
