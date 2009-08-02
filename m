@@ -1,66 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753605AbZHBUII@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753612AbZHBUI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753605AbZHBUII (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 16:08:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753510AbZHBUIG
+	id S1753612AbZHBUI5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 16:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbZHBUI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 16:08:06 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:61829 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750718AbZHBUIF (ORCPT
+	Sun, 2 Aug 2009 16:08:56 -0400
+Received: from mail1-relais-roc.national.inria.fr ([192.134.164.82]:48894 "EHLO
+	mail1-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753112AbZHBUIz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 16:08:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=rsWsig604iJfQOErWces0DRy694D7pdh+dr2C5EmRSs5thGbYFqjbIsSUT4MNj1APa
-         oPPksaDkGYjLxIFMJfGXhF8xxUIoXTftjqFXVNGk7rpQr7SIzITMJygEPEFZN2MNPZlZ
-         gC6+fSGGCcQHGrhKIP3lUJuzuSkNoJvys1cj0=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] pcnet32: remove superfluous NULL pointer check in pcnet32_probe1()
-Date: Sun, 2 Aug 2009 22:07:29 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.31-rc4-next-20090731-05372-g784fb81; KDE/4.2.4; i686; ; )
-Cc: pcnet32@verizon.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       error27@gmail.com, corbet@lwn.net, eteo@redhat.com, julia@diku.dk
-References: <200907302319.18150.bzolnier@gmail.com> <20090802.123022.148176905.davem@davemloft.net>
-In-Reply-To: <20090802.123022.148176905.davem@davemloft.net>
+	Sun, 2 Aug 2009 16:08:55 -0400
+X-Greylist: delayed 597 seconds by postgrey-1.27 at vger.kernel.org; Sun, 02 Aug 2009 16:08:55 EDT
+X-IronPort-AV: E=Sophos;i="4.43,309,1246831200"; 
+   d="scan'208";a="33946476"
+Message-ID: <4A75F00D.7010400@inria.fr>
+Date: Sun, 02 Aug 2009 21:59:09 +0200
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200908022207.29942.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Roland Dreier <rdreier@cisco.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       jsquyres@cisco.com, rostedt@goodmis.org
+Subject: Re: [PATCH v3] ummunotify: Userspace support for MMU notifications
+References: <ada3a8oobis.fsf@cisco.com>	<20090722111538.58a126e3.akpm@linux-foundation.org>	<adad47smsb5.fsf@cisco.com>	<20090722124208.97d7d9d7.akpm@linux-foundation.org>	<adaeis53d2m.fsf_-_@cisco.com>	<20090727165329.4acfda1c.akpm@linux-foundation.org>	<adaws5szswf.fsf@cisco.com> <adaskgcptsz.fsf_-_@cisco.com>
+In-Reply-To: <adaskgcptsz.fsf_-_@cisco.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 02 August 2009 21:30:22 David Miller wrote:
-> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Date: Thu, 30 Jul 2009 23:19:17 +0200
-> 
-> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > Subject: [PATCH] pcnet32: remove superfluous NULL pointer check in pcnet32_probe1()
-> > 
-> > Move the debug printk() into the proper place and remove superfluous
-> > NULL pointer check in pcnet32_probe1().
-> > 
-> > This takes care of the following entry from Dan's list:
-> > 
-> > drivers/net/pcnet32.c +1889 pcnet32_probe1(298) warning: variable derefenced before check 'pdev'
-> > 
-> > Reported-by: Dan Carpenter <error27@gmail.com>
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> 
-> Applied, but please CC: netdev@vger.kernel.org for all future
-> network driver patches so that it gets properly tracked in
-> patchwork.  Thanks!
+Roland Dreier wrote:
+> As discussed in <http://article.gmane.org/gmane.linux.drivers.openib/61925>
+> and follow-up messages, libraries using RDMA would like to track
+> precisely when application code changes memory mapping via free(),
+> munmap(), etc.  Current pure-userspace solutions using malloc hooks
+> and other tricks are not robust, and the feeling among experts is that
+> the issue is unfixable without kernel help.
+>
+> We solve this not by implementing the full API proposed in the email
+> linked above but rather with a simpler and more generic interface,
+> which may be useful in other contexts.  Specifically, we implement a
+> new character device driver, ummunotify, that creates a /dev/ummunotify
+> node.  A userspace process can open this node read-only and use the fd
+> as follows:
+>
+>  1. ioctl() to register/unregister an address range to watch in the
+>     kernel (cf struct ummunotify_register_ioctl in <linux/ummunotify.h>).
+>
+>  2. read() to retrieve events generated when a mapping in a watched
+>     address range is invalidated (cf struct ummunotify_event in
+>     <linux/ummunotify.h>).  select()/poll()/epoll() and SIGIO are
+>     handled for this IO.
+>   
 
-netdev@vger.kernel.org was on cc: for all patches...
+Hello Roland,
 
-http://marc.info/?l=linux-netdev&m=124898901714229&w=2
-http://marc.info/?l=linux-netdev&m=124898901714236&w=2
+I like the interface but I have a couple questions:
 
-maybe there is some problem with a patchwork setup..
+1) Why does userspace have to register these address ranges? I would
+have just reported all invalidation evens and let user-space check which
+ones are interesting. My feeling is that the number of invalidation
+events will usually be lower than the number registered ranges, so
+you'll report more events through the file descriptor, but userspace
+will do a lot less ioctls.
+
+2) What happens in case of fork? If father+child keep reading from the
+previously-open /dev/ummunotify, each event will be delivered only to
+the first reader, right? Fork is always a mess in HPC, but maybe there's
+something to do here.
+
+3) What's userspace supposed to do if 2 libraries need such events in
+the same process? Should each of them open /dev/ummunotify separately?
+Doesn't matter much for performance, just wondering.
+
+thanks,
+Brice
+
