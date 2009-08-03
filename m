@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbZHCOCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755089AbZHCOW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180AbZHCOCr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 10:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755026AbZHCOCq
+	id S1755089AbZHCOW4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 10:22:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755064AbZHCOWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 10:02:46 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:38754 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754933AbZHCOCq (ORCPT
+	Mon, 3 Aug 2009 10:22:55 -0400
+Received: from viefep17-int.chello.at ([62.179.121.37]:65141 "EHLO
+	viefep17-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755059AbZHCOWz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 10:02:46 -0400
-Date: Mon, 3 Aug 2009 10:02:23 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: kernel BUG at fs/btrfs/disk-io.c:2221!
-Message-ID: <20090803140223.GB3765@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Thomas Meyer <thomas@m3y3r.de>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <1249120208.14496.3.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249120208.14496.3.camel@localhost>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: abhmt001.oracle.com [141.146.116.10]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010206.4A76EDF1.0156:SCFSTAT5015188,ss=1,fgs=0
+	Mon, 3 Aug 2009 10:22:55 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: I.1 - System calls - ioctl
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: eranian@gmail.com, Christoph Hellwig <hch@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Robert Richter <robert.richter@amd.com>,
+       Paul Mackerras <paulus@samba.org>, Andi Kleen <andi@firstfloor.org>,
+       Maynard Johnson <mpjohn@us.ibm.com>, Carl Love <cel@us.ibm.com>,
+       Corey J Ashford <cjashfor@us.ibm.com>,
+       Philip Mucci <mucci@eecs.utk.edu>, Dan Terpstra <terpstra@eecs.utk.edu>,
+       perfmon2-devel <perfmon2-devel@lists.sourceforge.net>
+In-Reply-To: <200907301920.52257.arnd@arndb.de>
+References: <7c86c4470906161042p7fefdb59y10f8ef4275793f0e@mail.gmail.com>
+	 <200907301840.50894.arnd@arndb.de>
+	 <7c86c4470907300953g255c6088t7caaa1188be164e3@mail.gmail.com>
+	 <200907301920.52257.arnd@arndb.de>
+Content-Type: text/plain
+Date: Mon, 03 Aug 2009 16:22:38 +0200
+Message-Id: <1249309358.7924.96.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 01, 2009 at 11:50:08AM +0200, Thomas Meyer wrote:
-> kernel BUG at fs/btrfs/disk-io.c:2221! 
-> invalid opcode: 0000 [#1] PREEMPT SMP 
-> last sysfs file: /sys/block/sdc/sdc1/start
+On Thu, 2009-07-30 at 19:20 +0200, Arnd Bergmann wrote:
+> On Thursday 30 July 2009, stephane eranian wrote:
+> > But that won't always work in the case of a 32-bit monitoring tool
+> > running on top of
+> > a 64-bit OS. Imagine the target id is indeed 64-bit, e.g., inode
+> > number (as suggested
+> > by Peter). It's not because you are a 32-bit tool than you cannot name
+> > a monitoring
+> > resource in a 64-bit OS.
+> 
+> Right, there are obviously things that you cannot address with 
+> a 'long', but there are potentially other things that you could
+> that you cannot address with an 'int', e.g. an opaque user
+> token (representing a user pointer) that you can get back in
+> the sample data.
+> 
+> In the worst case, you could still redefine the argument as a
+> transparent union to a long and pointer in the future if you
+> use a 'long' now. AFAICT, there are no advantages of using
+> an 'int' instead of a 'long', but there are disadvantages of
+> using a 'long long'.
 
-Could you please confirm that line 2221 in your disk-io.c looks like
-this:
-
-2219 int btrfs_free_fs_root(struct btrfs_fs_info *fs_info, struct
-btrfs_root *root)
-2220 {
-2221         WARN_ON(!RB_EMPTY_ROOT(&root->inode_tree));
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-2222         radix_tree_delete(&fs_info->fs_roots_radix,
-2223                           (unsigned long)root->root_key.objectid);
-2224         if (root->anon_super.s_dev) {
-2225                 down_write(&root->anon_super.s_umount);
-2226                 kill_anon_super(&root->anon_super);
-2227         }
-
-That's in the unmount path but not under write_ctree_supers, so I want
-to make sure I'm looking at the right bug ;)
-
--chris
+OK, so time is running out on this thing. Ingo, Paulus what would you
+prefer?
 
