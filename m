@@ -1,89 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752861AbZHCRsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbZHCRuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752861AbZHCRsS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 13:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbZHCRsR
+	id S1753183AbZHCRuG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 13:50:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbZHCRuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 13:48:17 -0400
-Received: from rtr.ca ([76.10.145.34]:50993 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751971AbZHCRsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 13:48:16 -0400
-Message-ID: <4A7722DF.80704@rtr.ca>
-Date: Mon, 03 Aug 2009 13:48:15 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
-MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
-Cc: Eric Sandeen <sandeen@sandeen.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fs/compat_ioctl.c: add missing FS_IOC_FIEMAP support
-References: <4A74584D.2010300@rtr.ca>
-In-Reply-To: <4A74584D.2010300@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Aug 2009 13:50:05 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:37458 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752742AbZHCRt7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 13:49:59 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: linux-kernel@vger.kernel.org,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH 5/5] regulator: regulator_enable() permission checking
+Date: Mon,  3 Aug 2009 18:49:57 +0100
+Message-Id: <1249321797-4582-5-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1249321797-4582-4-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1249321797-4582-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1249321797-4582-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1249321797-4582-3-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1249321797-4582-4-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(resending, no ack from anyone first time around).
+The regulator_enable() code wasn't actually checking that the
+machine constraints had given permission to enable the regulator.
+Add code to do that, but only if the regulator is not already on
+due to something like always_on or being left on at startup since
+in those cases there's no physical change being introduced and the
+constraint wouldn't make any sense.
 
-Add support for the FIEMAP ioctl for 32-bit user on 64-bit kernel.
+Also add matching code for disable(). We need to do less there since
+either regulator_enable() should have succeeded first or the board
+setup makes no sense.
 
-When using a 32-bit runtime on top of a 64-bit kernel,
-programs like "filefrag" and "hdparm --fibmap" do not work correctly.
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+---
+ drivers/regulator/core.c |   56 +++++++++++++++++++++++++++++----------------
+ 1 files changed, 36 insertions(+), 20 deletions(-)
 
-This is because there's no compat ioctl entry for the FIEMAP call.
-FIEMAP returns file extent info, similar to FIBMAP (but better).
-
-Since FIBMAP itself is b0rked on ext4, this leaves no way for a 32-bit
-program to reliably get detailed block information for a file
-when run on top of a 64-bit kernel.  This patch addresses the issue.
-
-Once upstream, this patch could also be a candidate for -stable.
-
-Signed-off-by: Mark Lord <mlord@pobox.com>
-
-Add support for the FIEMAP ioctl for 32-bit user on 64-bit kernel.
-
-When using a 32-bit runtime on top of a 64-bit kernel,
-programs like "filefrag" and "hdparm --fibmap" do not work correctly.
-
-This is because there's no compat ioctl entry for the FIEMAP call.
-FIEMAP returns file extent info, similar to FIBMAP (but better).
-
-Since FIBMAP itself is b0rked on ext4, this leaves no way for a 32-bit
-program to reliably get detailed block information for a file
-when run on top of a 64-bit kernel.  This patch addresses the issue.
-
-Once upstream, this patch could also be a candidate for -stable.
-
-Signed-off-by: Mark Lord <mlord@pobox.com> 
-
---- old/fs/compat_ioctl.c	2009-08-01 10:47:16.601066905 -0400
-+++ linux/fs/compat_ioctl.c	2009-08-01 10:49:23.054387926 -0400
-@@ -35,6 +35,7 @@
- #include <linux/falloc.h>
- #include <linux/fs.h>
- #include <linux/file.h>
-+#include <linux/fiemap.h>
- #include <linux/ppp_defs.h>
- #include <linux/if_ppp.h>
- #include <linux/if_pppox.h>
-@@ -1907,6 +1908,7 @@
- COMPATIBLE_IOCTL(FIONREAD)  /* This is also TIOCINQ */
- /* 0x00 */
- COMPATIBLE_IOCTL(FIBMAP)
-+COMPATIBLE_IOCTL(FS_IOC_FIEMAP)
- COMPATIBLE_IOCTL(FIGETBSZ)
- /* 'X' - originally XFS but some now in the VFS */
- COMPATIBLE_IOCTL(FIFREEZE)
-@@ -2805,6 +2807,7 @@
- 		goto out_fput;
- #endif
+diff --git a/drivers/regulator/core.c b/drivers/regulator/core.c
+index 60fcd98..dbf27bf 100644
+--- a/drivers/regulator/core.c
++++ b/drivers/regulator/core.c
+@@ -1191,16 +1191,21 @@ void regulator_put(struct regulator *regulator)
+ }
+ EXPORT_SYMBOL_GPL(regulator_put);
  
-+	case FS_IOC_FIEMAP:
- 	case FIBMAP:
- 	case FIGETBSZ:
- 	case FIONREAD:
++static int _regulator_can_change_status(struct regulator_dev *rdev)
++{
++	if (!rdev->constraints)
++		return 0;
++
++	if (rdev->constraints->valid_ops_mask & REGULATOR_CHANGE_STATUS)
++		return 1;
++	else
++		return 0;
++}
++
+ /* locks held by regulator_enable() */
+ static int _regulator_enable(struct regulator_dev *rdev)
+ {
+-	int ret = -EINVAL;
+-
+-	if (!rdev->constraints) {
+-		printk(KERN_ERR "%s: %s has no constraints\n",
+-		       __func__, rdev->desc->name);
+-		return ret;
+-	}
++	int ret;
+ 
+ 	/* do we need to enable the supply regulator first */
+ 	if (rdev->supply) {
+@@ -1213,24 +1218,34 @@ static int _regulator_enable(struct regulator_dev *rdev)
+ 	}
+ 
+ 	/* check voltage and requested load before enabling */
+-	if (rdev->desc->ops->enable) {
++	if (rdev->constraints &&
++	    (rdev->constraints->valid_ops_mask & REGULATOR_CHANGE_DRMS))
++		drms_uA_update(rdev);
+ 
+-		if (rdev->constraints &&
+-			(rdev->constraints->valid_ops_mask &
+-			REGULATOR_CHANGE_DRMS))
+-			drms_uA_update(rdev);
+-
+-		ret = rdev->desc->ops->enable(rdev);
+-		if (ret < 0) {
+-			printk(KERN_ERR "%s: failed to enable %s: %d\n",
++	if (rdev->use_count == 0) {
++		/* The regulator may on if it's not switchable or left on */
++		ret = _regulator_is_enabled(rdev);
++		if (ret == -EINVAL || ret == 0) {
++			if (!_regulator_can_change_status(rdev))
++				return -EPERM;
++
++			if (rdev->desc->ops->enable) {
++				ret = rdev->desc->ops->enable(rdev);
++				if (ret < 0)
++					return ret;
++			} else {
++				return -EINVAL;
++			}
++		} else {
++			printk(KERN_ERR "%s: is_enabled() failed for %s: %d\n",
+ 			       __func__, rdev->desc->name, ret);
+ 			return ret;
+ 		}
+-		rdev->use_count++;
+-		return ret;
+ 	}
+ 
+-	return ret;
++	rdev->use_count++;
++
++	return 0;
+ }
+ 
+ /**
+@@ -1270,7 +1285,8 @@ static int _regulator_disable(struct regulator_dev *rdev)
+ 	if (rdev->use_count == 1 && !rdev->constraints->always_on) {
+ 
+ 		/* we are last user */
+-		if (rdev->desc->ops->disable) {
++		if (_regulator_can_change_status(rdev) &&
++		    rdev->desc->ops->disable) {
+ 			ret = rdev->desc->ops->disable(rdev);
+ 			if (ret < 0) {
+ 				printk(KERN_ERR "%s: failed to disable %s\n",
+-- 
+1.6.3.3
+
