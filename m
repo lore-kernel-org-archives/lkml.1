@@ -1,47 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbZHCPSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbZHCPTP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755236AbZHCPSn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 11:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755187AbZHCPSm
+	id S1755253AbZHCPTP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 11:19:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755096AbZHCPTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 11:18:42 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:51506 "EHLO
+	Mon, 3 Aug 2009 11:19:14 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51513 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755138AbZHCPSl (ORCPT
+	with ESMTP id S1755187AbZHCPTN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 11:18:41 -0400
-Message-ID: <4A76FE36.7010603@zytor.com>
-Date: Mon, 03 Aug 2009 08:11:50 -0700
+	Mon, 3 Aug 2009 11:19:13 -0400
+Message-ID: <4A76FF8E.80507@zytor.com>
+Date: Mon, 03 Aug 2009 08:17:34 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-CC: sam@ravnborg.org, linux@arm.linux.org.uk, alain@knaff.lu,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 5/6] Add support for LZO-compressed kernels on x86
-References: <20090731093107.GA29704@merkur.ravnborg.org> <1249311501-23102-1-git-send-email-albin.tonnerre@free-electrons.com> <1249311501-23102-2-git-send-email-albin.tonnerre@free-electrons.com> <1249311501-23102-3-git-send-email-albin.tonnerre@free-electrons.com> <1249311501-23102-4-git-send-email-albin.tonnerre@free-electrons.com> <1249311501-23102-5-git-send-email-albin.tonnerre@free-electrons.com>
-In-Reply-To: <1249311501-23102-5-git-send-email-albin.tonnerre@free-electrons.com>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/asm] x86: Introduce GDT_ENTRY_INIT()
+References: <20090718151219.GD11294@localhost.localdomain>	 <tip-d520da1173abd1f918b7e690220e14ba0fc56cfc@git.kernel.org>	 <20090803062024.GA22365@elte.hu> <4A768339.9060904@zytor.com> <961aa3350908030811n6467b2d7hf42dfd58e3a438e7@mail.gmail.com>
+In-Reply-To: <961aa3350908030811n6467b2d7hf42dfd58e3a438e7@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/03/2009 07:58 AM, Albin Tonnerre wrote:
-> This is the third and last part of the patch, which contains the
-> necessary changes to the x86 Kconfig and boot/compressed to allow the
-> use of this new compression method
+On 08/03/2009 08:11 AM, Akinobu Mita wrote:
+>>>>
+>> OK, I spotted the following error, which certainly would explain a crash on
+>> an APM machine:
+>>
+>>        /* data */
+>> -       [GDT_ENTRY_APMBIOS_BASE+2]      = { { { 0x0000ffff, 0x00409200 } }
+>> },
+>> +       [GDT_ENTRY_APMBIOS_BASE+2]      = GDT_ENTRY_INIT(0x409a, 0, 0xffff),
 > 
-> Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-> ---
->  arch/x86/Kconfig                  |    1 +
->  arch/x86/boot/compressed/Makefile |    5 ++++-
->  arch/x86/boot/compressed/misc.c   |    4 ++++
->  3 files changed, 9 insertions(+), 1 deletions(-)
+> Oops, I really should have checked the binary because the compiler should
+> generate same code with this patch.
 > 
 
-Acked-by: H. Peter Anvin <hpa@zytor.com>
+Well, it doesn't even on the best of days, because the last hunk changes
+a dynamic initializer to a strange mix between static and dynamic:
+
+-static struct desc_struct bad_bios_desc;
++static struct desc_struct bad_bios_desc = GDT_ENTRY_INIT(0x4092, 0, 0);
+
+ /*
+  * At some point we want to use this stack frame pointer to unwind
+@@ -476,9 +476,6 @@ void pnpbios_calls_init(union
+pnp_bios_install_struct *header)
+        pnp_bios_callpoint.offset = header->fields.pm16offset;
+        pnp_bios_callpoint.segment = PNP_CS16;
+
+-       bad_bios_desc.a = 0;
+-       bad_bios_desc.b = 0x00409200;
+-
+        set_desc_base(&bad_bios_desc, (unsigned long)__va(0x40UL << 4));
+        set_desc_limit(&bad_bios_desc, 4095 - (0x40 << 4));
+
+This is about at strange as it comes; I think we could simply do:
+
+GDT_ENTRY_INIT(0x4092, (unsigned long)__va(0x400UL), 4095-0x400);
+
+Although perhaps the 4095 should really be PAGE_SIZE-1...
 
 	-hpa
 
