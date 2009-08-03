@@ -1,114 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbZHCVrD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754814AbZHCVrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754420AbZHCVrD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 17:47:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZHCVrC
+	id S1754814AbZHCVrn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 17:47:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZHCVrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 17:47:02 -0400
-Received: from mga01.intel.com ([192.55.52.88]:54164 "EHLO mga01.intel.com"
+	Mon, 3 Aug 2009 17:47:42 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44746 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752627AbZHCVrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 17:47:01 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,316,1246863600"; 
-   d="scan'208";a="480390707"
-Subject: Re: iwlwifi (4965) regression since 2.6.30
-From: reinette chatre <reinette.chatre@intel.com>
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090728112102.GA3382@ics.muni.cz>
-References: <20090726075738.GA21333@ics.muni.cz>
-	 <1248710618.1216.452.camel@rc-desk>
-	 <1248710775.9958.0.camel@johannes.local>
-	 <20090728112102.GA3382@ics.muni.cz>
-Content-Type: text/plain
-Date: Mon, 03 Aug 2009 14:47:01 -0700
-Message-Id: <1249336021.30019.4304.camel@rc-desk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1752006AbZHCVrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 17:47:42 -0400
+Date: Mon, 3 Aug 2009 21:47:02 GMT
+From: tip-bot for Paul Mackerras <paulus@samba.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de
+In-Reply-To: <19062.56420.501516.316181@cargo.ozlabs.ibm.com>
+References: <19062.56420.501516.316181@cargo.ozlabs.ibm.com>
+Subject: [tip:x86/urgent] x86: Add quirk to make Apple MacBook5,2 use reboot=pci
+Message-ID: <tip-6c6c51e4cc11a5456fb1172008f7c69d955af9f6@git.kernel.org>
+Git-Commit-ID: 6c6c51e4cc11a5456fb1172008f7c69d955af9f6
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 03 Aug 2009 21:47:16 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-07-28 at 04:21 -0700, Lukas Hejtmanek wrote:
-> On Mon, Jul 27, 2009 at 06:06:15PM +0200, Johannes Berg wrote:
-> > I'm not aware of any thinkpad-acpi rfkill problems, can you get the
-> > rfkill tool and dump the status/list?
-> > 
-> > http://wireless.kernel.org/en/users/Documentation/rfkill
-> 
-> I figured it out.
-> 
-> I disable bluetooth usually just after system startup.
-> 
-> I disable bt using Fn+F5 which generates ACPI event: 
-> ibm/hotkey HKEY 00000080 00001005
-> 
-> Which is OK.
-> 
-> But now (sinc 2.6.31-rcX), it silently toggles Soft block of WIFI. I have
-> separate HW rfkill switch, it is only soft blocked. 
+Commit-ID:  6c6c51e4cc11a5456fb1172008f7c69d955af9f6
+Gitweb:     http://git.kernel.org/tip/6c6c51e4cc11a5456fb1172008f7c69d955af9f6
+Author:     Paul Mackerras <paulus@samba.org>
+AuthorDate: Mon, 3 Aug 2009 22:47:32 +1000
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Mon, 3 Aug 2009 13:34:24 -0700
 
-I tried this on a T61.
+x86: Add quirk to make Apple MacBook5,2 use reboot=pci
 
-As you say, there are two "rfkill" related buttons on this platform, the
-actual rfkill switch on the front and the Fn+F5 buttons. Trying these
-out I saw the following (output annotated to be readable - index 0 is
-bluetooth and index 1 is wifi). It looks to me like things are behaving
-reasonably and I do not see that Fn+F5 changes wifi at all.
+The latest Apple MacBook (MacBook5,2) doesn't reboot successfully
+under Linux; neither the EFI reboot method nor the default method
+using the keyboard controller works (the system just hangs and doesn't
+reset).  However, the method using the "PCI reset register" at 0xcf9
+does work.
 
-Some things I learned: 
-- Fn+F5 does nothing if HW rfkill switch enabled
-- if bluetooth SW disabled with Fn+F5 and you then toggle the HW rfkill
-switch you will get bluetooth back.
+This adds a quirk to detect this machine via DMI and force the
+reboot_type to BOOT_CF9.  With this it reboots successfully without
+requiring a command-line option.  Note that the EFI code forces
+reboot_type to BOOT_EFI when the machine is booted via EFI, but this
+overrides that since the core_initcall runs after the EFI
+initialization code.
 
-# ./rfkill event
-RFKILL event: idx 0 type 2 op 0 soft 0 hard 0
-RFKILL event: idx 1 type 1 op 0 soft 0 hard 0
-#now enable HW rfkill switch
-RFKILL event: idx 1 type 1 op 2 soft 0 hard 1
-RFKILL event: idx 0 type 2 op 2 soft 0 hard 1
-RFKILL event: idx 0 type 2 op 2 soft 1 hard 1
-RFKILL event: idx 1 type 1 op 2 soft 1 hard 1
-#now disable HW rfkill switch
-RFKILL event: idx 1 type 1 op 2 soft 1 hard 0
-RFKILL event: idx 0 type 2 op 2 soft 1 hard 0
-RFKILL event: idx 1 type 1 op 2 soft 0 hard 0
-RFKILL event: idx 0 type 2 op 2 soft 0 hard 0
-#now Fn+F5
-RFKILL event: idx 0 type 2 op 2 soft 1 hard 0
-#now Fn+F5
-RFKILL event: idx 0 type 2 op 2 soft 0 hard 0
-#now enable HW rfkill switch
-RFKILL event: idx 1 type 1 op 2 soft 0 hard 1
-RFKILL event: idx 0 type 2 op 2 soft 0 hard 1
-RFKILL event: idx 0 type 2 op 2 soft 1 hard 1
-RFKILL event: idx 1 type 1 op 2 soft 1 hard 1
-#now Fn+F5
-<nothing>
-#now disable HW rfkill switch
-RFKILL event: idx 1 type 1 op 2 soft 1 hard 0
-RFKILL event: idx 0 type 2 op 2 soft 0 hard 0
-RFKILL event: idx 1 type 1 op 2 soft 0 hard 0
-RFKILL event: idx 0 type 2 op 2 soft 0 hard 0
-#now Fn+F5
-RFKILL event: idx 0 type 2 op 2 soft 1 hard 0
-#now enable HW rfkill switch
-RFKILL event: idx 1 type 1 op 2 soft 0 hard 1
-RFKILL event: idx 0 type 2 op 2 soft 1 hard 1
-RFKILL event: idx 0 type 2 op 2 soft 1 hard 1
-RFKILL event: idx 1 type 1 op 2 soft 1 hard 1
-#now Fn+F5
-<nothing>
-#now disable HW rfkill switch
-RFKILL event: idx 1 type 1 op 2 soft 1 hard 0
-RFKILL event: idx 0 type 2 op 2 soft 0 hard 0
-RFKILL event: idx 1 type 1 op 2 soft 0 hard 0
-RFKILL event: idx 0 type 2 op 2 soft 0 hard 0
-
-Reinette
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+LKML-Reference: <19062.56420.501516.316181@cargo.ozlabs.ibm.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 
 
+---
+ arch/x86/kernel/reboot.c |   34 +++++++++++++++++++++++++++++++++-
+ 1 files changed, 33 insertions(+), 1 deletions(-)
 
+diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+index 508e982..834c9da 100644
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -3,6 +3,7 @@
+ #include <linux/init.h>
+ #include <linux/pm.h>
+ #include <linux/efi.h>
++#include <linux/dmi.h>
+ #include <acpi/reboot.h>
+ #include <asm/io.h>
+ #include <asm/apic.h>
+@@ -17,7 +18,6 @@
+ #include <asm/cpu.h>
+ 
+ #ifdef CONFIG_X86_32
+-# include <linux/dmi.h>
+ # include <linux/ctype.h>
+ # include <linux/mc146818rtc.h>
+ #else
+@@ -404,6 +404,38 @@ EXPORT_SYMBOL(machine_real_restart);
+ 
+ #endif /* CONFIG_X86_32 */
+ 
++/*
++ * Apple MacBook5,2 (2009 MacBook) needs reboot=p
++ */
++static int __init set_pci_reboot(const struct dmi_system_id *d)
++{
++	if (reboot_type != BOOT_CF9) {
++		reboot_type = BOOT_CF9;
++		printk(KERN_INFO "%s series board detected. "
++		       "Selecting PCI-method for reboots.\n", d->ident);
++	}
++	return 0;
++}
++
++static struct dmi_system_id __initdata pci_reboot_dmi_table[] = {
++	{	/* Handle problems with rebooting on Apple MacBook5,2 */
++		.callback = set_pci_reboot,
++		.ident = "Apple MacBook",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "MacBook5,2"),
++		},
++	},
++	{ }
++};
++
++static int __init pci_reboot_init(void)
++{
++	dmi_check_system(pci_reboot_dmi_table);
++	return 0;
++}
++core_initcall(pci_reboot_init);
++
+ static inline void kb_wait(void)
+ {
+ 	int i;
