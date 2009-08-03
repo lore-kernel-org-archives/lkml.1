@@ -1,104 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932196AbZHCUqg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932238AbZHCUsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932196AbZHCUqg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 16:46:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbZHCUqf
+	id S932238AbZHCUsU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 16:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbZHCUsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 16:46:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45913 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753368AbZHCUqe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 16:46:34 -0400
-Date: Mon, 3 Aug 2009 13:46:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Julia Lawall <julia@diku.dk>
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       Ming Lei <tom.leiming@gmail.com>
-Subject: Re: [PATCH 1/5] drivers/video: Add kmalloc NULL tests
-Message-Id: <20090803134632.7cff1658.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0907301559530.8734@ask.diku.dk>
-References: <Pine.LNX.4.64.0907301559530.8734@ask.diku.dk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Aug 2009 16:48:19 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:37494 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753459AbZHCUsT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 16:48:19 -0400
+Date: Mon, 3 Aug 2009 13:48:18 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: ykzhao <yakui.zhao@intel.com>
+Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       "Zhang, Rui" <rui.zhang@intel.com>
+Subject: Re: [PATCH 2/2] acpi_power_meter: hwmon driver for ACPI 4.0 power
+	meters
+Message-ID: <20090803204817.GA14694@plum>
+Reply-To: djwong@us.ibm.com
+References: <20090725004322.20709.96804.stgit@elm3a70.beaverton.ibm.com> <20090725004335.20709.52288.stgit@elm3a70.beaverton.ibm.com> <1248659067.3556.70.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1248659067.3556.70.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 30 Jul 2009 16:00:33 +0200 (CEST)
-Julia Lawall <julia@diku.dk> wrote:
+On Mon, Jul 27, 2009 at 09:44:27AM +0800, ykzhao wrote:
+> On Sat, 2009-07-25 at 08:43 +0800, Darrick J. Wong wrote:
+> > This driver exposes ACPI 4.0 compliant power meters as hardware monitoring
+> > devices.
+> It seems OK to me. But it seems that some attributes can't be obtained
+> by using the hwmon sys I/F.
+>    a. Can we add a sys I/F that can exports the Power meter capability?
+> display all the content of _PMC as what we have done in battery
 
-> From: Julia Lawall <julia@diku.dk>
-> 
-> Check that the result of kmalloc is not NULL before passing it to other
-> functions.
-> 
-> The semantic match that finds this problem is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @@
-> expression *x;
-> identifier f;
-> constant char *C;
-> @@
-> 
-> x = \(kmalloc\|kcalloc\|kzalloc\)(...);
-> ... when != x == NULL
->     when != x != NULL
->     when != (x || ...)
-> (
-> kfree(x)
-> |
-> f(...,C,...,x,...)
-> |
-> *f(...,x,...)
-> |
-> *x->f
-> )
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
-> ---
->  drivers/video/au1100fb.c            |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
-> index 378f277..1766846 100644
-> --- a/drivers/video/au1100fb.c
-> +++ b/drivers/video/au1100fb.c
-> @@ -716,6 +716,10 @@ int au1100fb_setup(char *options)
->  			/* Mode option (only option that start with digit) */
->  			else if (isdigit(this_opt[0])) {
->  				mode = kmalloc(strlen(this_opt) + 1, GFP_KERNEL);
-> +				if (!mode) {
-> +					print_err("memory allocation failed");
-> +					return -ENOMEM;
-> +				}
->  				strncpy(mode, this_opt, strlen(this_opt) + 1);
->  			}
->  			/* Unsupported option */
+Are you talking about all 17 fields of the _PMC return value?  Or specifically
+the feature bit field "Supported Capabilities"?  The feature bits control
+whether or not the corresponding sysfs attributes even show up, and the other
+fields (except the string data) are all there.  I suppose it would be useful to
+display the OEM data too...
 
-We may as well clean up that open-coded kstrdup() too?
+>    b. Add a sys I/F that displays the name of device list measured by
+> the power meter if there exists the _PMD object.
 
---- a/drivers/video/au1100fb.c~drivers-video-add-kmalloc-null-tests-fix
-+++ a/drivers/video/au1100fb.c
-@@ -715,12 +715,11 @@ int au1100fb_setup(char *options)
- 			}
- 			/* Mode option (only option that start with digit) */
- 			else if (isdigit(this_opt[0])) {
--				mode = kmalloc(strlen(this_opt) + 1, GFP_KERNEL);
-+				mode = kstrdup(this_opt, GFP_KERNEL);
- 				if (!mode) {
- 					print_err("memory allocation failed");
- 					return -ENOMEM;
- 				}
--				strncpy(mode, this_opt, strlen(this_opt) + 1);
- 			}
- 			/* Unsupported option */
- 			else {
-_
+As soon as I figure out how to do that. :)
 
+Sorry for the slow response as I was mountain climbing = no Internet.
+
+--D
