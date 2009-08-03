@@ -1,90 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932318AbZHCPOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932323AbZHCPPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932318AbZHCPOp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 11:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932308AbZHCPOo
+	id S932323AbZHCPPR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 11:15:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932223AbZHCPPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 11:14:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42096 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932301AbZHCPOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 11:14:43 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH update] PM: Introduce core framework for run-time PM of I/O devices (rev. 11)
-Date: Mon, 3 Aug 2009 17:15:18 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc5-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
-       Pavel Machek <pavel@ucw.cz>
-References: <200907221701.50449.rjw@sisk.pl> <200907312053.17914.rjw@sisk.pl> <aec7e5c30908022026t2fa8f328s27424073c9ff560b@mail.gmail.com>
-In-Reply-To: <aec7e5c30908022026t2fa8f328s27424073c9ff560b@mail.gmail.com>
+	Mon, 3 Aug 2009 11:15:16 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58446 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932157AbZHCPPP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 11:15:15 -0400
+Date: Mon, 3 Aug 2009 11:14:20 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Dave Anderson <anderson@redhat.com>, crash-utility@redhat.com,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <clark.williams@gmail.com>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Christoph Hellwig <hch@infradead.org>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Jason Baron <jbaron@redhat.com>, srostedt@redhat.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [ANNOUNCE][RFC][PATCH] Crash-utility, tracing: enable crash to
+	analyze tracing from core-file (make tracing can act as a flight
+	recorder)
+Message-ID: <20090803151420.GA8712@infradead.org>
+References: <4A76F8A1.30503@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200908031715.19302.rjw@sisk.pl>
+In-Reply-To: <4A76F8A1.30503@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 August 2009, Magnus Damm wrote:
-> Hi again Rafael,
-
-Hi,
-
-> On Sat, Aug 1, 2009 at 3:53 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> > On Friday 31 July 2009, Magnus Damm wrote:
-> >> [Runtime PM v11]
+On Mon, Aug 03, 2009 at 10:48:01PM +0800, Lai Jiangshan wrote:
 > 
-> >> > @@ -202,7 +203,9 @@ int driver_probe_device(struct device_dr
-> >> >        pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
-> >> >                 drv->bus->name, __func__, dev_name(dev), drv->name);
-> >> >
-> >> > +       pm_runtime_get_noresume(dev);
-> >> >        ret = really_probe(dev, drv);
-> >> > +       pm_runtime_put_noidle(dev);
-> >> >
-> >> >        return ret;
-> >> >  }
-> >>
-> >> This creates problems when drivers want to performing runtime resume
-> >> from within probe(). For more details please have a look at "[PATCH
-> >> 04/04] video: Runtime PM hack for SuperH LCDC driver".
-> >
-> > Ah, I see.  You'd like to call pm_runtime_get_sync() from .probe(), but that
-> > sees the usage counter different from zero and exits immediately.
-> 
-> Exactly.
-> 
-> > OTOH, I think we should prevent suspends from racing with .probe() at the core
-> > level.  Hmm.
-> 
-> Doesn't it make more sense to allow runtime suspend and resume to
-> happen after the pm_runtime_enable() call? What case are you trying to
-> protect against?
+> We use tracing subsystem very well when kernel is alive.
+> But we also want to get help from tracing when kernel is core-dump.
+> This patch is for this purpose. It makes tracing can act as a
+> flight recorder, we can find what have happen from the events.
 
-If runtime PM is enabled before .probe() and then .probe() itself doesn't
-use pm_runtime_get_*(), then theory it is possible to have ->runtime_suspend()
-called while .probe() is running and there's no synchronization between the
-two.  So, we prevent ->runtime_suspend() from being called while .proble()
-is running with the help of the usage counter.
+Nice!  Now the only thing missing is gettind kdb in mainline and a trace
+reader in kdb ;-)
 
-> > One possible approach could be to call pm_runtime_resume() from
-> > sh_mobile_lcdc_probe() instead of pm_runtime_put_noidle().  Then, the platform
-> > code will have a chance to turn the device on and the later pm_runtime_get*()
-> > and pm_runtime_put*() calls will be balanced.  Of course, in that case the
-> > pm_runtime_get_noresume() in sh_mobile_lcdc_probe() won't be necessary any
-> > more.  Am I overlooking anything?
-> 
-> So for drivers that want to access hardware from .probe(), calling
-> pm_runtime_resume() after pm_runtime_enable() in should be enough?
+Any idea how easy it is to reuse the crash/gdb code for looking at crash
+dumps through kgdb?
 
-Yes, that should be sufficient (as long as the pm_runtime_resume() is
-successful).
+Btw, the Cc list here seems to be a very strong indicator that we
+should have a linux-trace@vger list, I already noticed this for tons
+of other tracing patches.
 
-Best,
-Rafael
