@@ -1,46 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932334AbZHCXAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932351AbZHCXAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932334AbZHCXAo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 19:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932243AbZHCXAn
+	id S932351AbZHCXAw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 19:00:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932338AbZHCXAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 19:00:43 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:46263 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932313AbZHCXAl (ORCPT
+	Mon, 3 Aug 2009 19:00:50 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:42669 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932336AbZHCXAr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 19:00:41 -0400
+	Mon, 3 Aug 2009 19:00:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
          :content-transfer-encoding;
-        b=FX5km1R0IZP8jB7Qlwt0mLZTGe3dhxMtpKuvKJioolJfM7ugZcRuWRX6PvvBGD1jZX
-         Tvyz7JMr/MlH02lCwQrEGagO1gxkB5w1+oAlF2LAr4UyxW6Rnpc+5SSLM9yT8YYIlx9y
-         NReD9il5HgeVCvicTbJy5JDJyGymqPh+fejrQ=
-Message-ID: <4A776C10.50409@gmail.com>
-Date: Tue, 04 Aug 2009 01:00:32 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.8 Thunderbird/3.0b3pre
+        b=gzSZMAiKaDxf9bk+E6rM+VIixFocIA9M8N46jzeM8FFWaAByh8DrvVVC5eh2uRVxZo
+         G+o3FCiLq+3+WJQsqQfpRkU0n0HxA5ws/Ssv/gCtHDKCv86pDuKnBUvOj3AEwC6gCRKB
+         IdW/zwO7fwJoK5jAFTS9x4XoRDEzIopXLpHGU=
 MIME-Version: 1.0
-To: martyn.welch@gefanuc.com
-CC: Greg K-H <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org
-Subject: Re: [patch 3/5] Staging: vme: add Universe I/II bridge driver
-References: <20090803205657.964064732@mini.kroah.org> <20090803210118.GD28430@kroah.com>
-In-Reply-To: <20090803210118.GD28430@kroah.com>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <cb0375e10908031501w610d1e27ya69d7c2011f93555@mail.gmail.com>
+References: <cb0375e10908031414g471bacf5lab685958b60bfdfa@mail.gmail.com>
+	 <20090803212015.GC28579@kroah.com>
+	 <cb0375e10908031449l2005a468v9683eb5a078cf226@mail.gmail.com>
+	 <cb0375e10908031501w610d1e27ya69d7c2011f93555@mail.gmail.com>
+Date: Mon, 3 Aug 2009 19:00:47 -0400
+X-Google-Sender-Auth: 568331a004e8c97c
+Message-ID: <cb0375e10908031600v4db81c51hd98094ef9a0a5a16@mail.gmail.com>
+Subject: Re: Is anyone maintaining (or even using) usbtmc?
+From: Andrew Lutomirski <luto@mit.edu>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, gregkh@suse.de
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/03/2009 11:01 PM, Greg K-H wrote:
-> +int uni_init(void)
-> +{
-...
-> +	result =
-> +	    request_irq(vmechip_irq, uni_irqhandler, IRQF_SHARED | IRQF_DISABLED,
+On Mon, Aug 3, 2009 at 6:01 PM, Andrew Lutomirski<luto@mit.edu> wrote:
+> On Mon, Aug 3, 2009 at 5:49 PM, Andrew Lutomirski<luto@mit.edu> wrote:
+>> On Mon, Aug 3, 2009 at 5:20 PM, Greg KH<greg@kroah.com> wrote:
+>>> On Mon, Aug 03, 2009 at 05:14:56PM -0400, Andrew Lutomirski wrote:
+>>>> Hi all-
+>>>>
+>>>> I'm trying to use usbtmc on an Aglient N9310A (The only TMC device I
+>>>> have), and it sort of works, but it seems to be both extremely buggy
+>>>> and missing a good deal of rather important functionality.  Is there
+>>>> anyone maintaining it?
+>>>
+>>> Yes, me.
+>>>
+>>>> If the answer is yes, I can describe the bugs (logspam, spurious
+>>>> errors, delayed messages, inability to read status, etc.) in greater
+>>>> detail.
+>>>
+>>> Please do, but also please use the latest version, in 2.6.30.3, we fixed
+>>> some bad problems in it recently.
+>>
+>> I am.
+>>
+>> Almost anything I do triggers this:
+>>
+>> usbtmc 3-1:1.0: Unable to read data, error -110
+>>
 
-DISABLED on SHARED is not guaranteed. You must specify one or the other.
+My N9310A is now totally wedged.  Anything I can think of doing (send
+queries, send *RST, or any of the CLEAR ioctls) fails and spews stuff
+like this:
+
+[360946.881771] usbtmc 3-1:1.0: Unable to send data, error -110
+[360946.890770] usbtmc 3-1:1.0: usb_bulk_msg returned -110
+[360965.303400] usb 3-1: usb_control_msg returned -110
+[360965.312404] usb 3-1: usb_control_msg returned -110
+[361052.364626] usbtmc 3-1:1.0: usb_bulk_msg returned -110
+[361055.114579] usbtmc 3-1:1.0: Unable to send data, error -110
+[361055.123574] usbtmc 3-1:1.0: usb_bulk_msg returned -110
+
+I'm going to leave it like this in case you want me to try something.
+
+--Andy
