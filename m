@@ -1,145 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752000AbZHCEj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751033AbZHCEzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752000AbZHCEj0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 00:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbZHCEj0
+	id S1751033AbZHCEzx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 00:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbZHCEzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 00:39:26 -0400
-Received: from nexus.x256.com ([8.10.77.184]:60011 "EHLO nexus.x256.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750854AbZHCEjZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 00:39:25 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Aug 2009 00:39:25 EDT
-Message-ID: <4A766864.40703@x256.org>
-Date: Mon, 03 Aug 2009 14:32:36 +1000
-From: Nicholas Vinen <hb@x256.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090712)
+	Mon, 3 Aug 2009 00:55:52 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:26764 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750701AbZHCEzv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 00:55:51 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAIMKdkqrR7PD/2dsb2JhbAC6EIgpjgMFhBg
+X-IronPort-AV: E=Sophos;i="4.43,312,1246838400"; 
+   d="scan'208";a="222404698"
+From: Roland Dreier <rdreier@cisco.com>
+To: Brice Goglin <Brice.Goglin@inria.fr>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       jsquyres@cisco.com, rostedt@goodmis.org
+Subject: Re: [PATCH v3] ummunotify: Userspace support for MMU notifications
+References: <ada3a8oobis.fsf@cisco.com>
+	<20090722111538.58a126e3.akpm@linux-foundation.org>
+	<adad47smsb5.fsf@cisco.com>
+	<20090722124208.97d7d9d7.akpm@linux-foundation.org>
+	<adaeis53d2m.fsf_-_@cisco.com>
+	<20090727165329.4acfda1c.akpm@linux-foundation.org>
+	<adaws5szswf.fsf@cisco.com> <adaskgcptsz.fsf_-_@cisco.com>
+	<4A75F00D.7010400@inria.fr>
+X-Message-Flag: Warning: May contain useful information
+Date: Sun, 02 Aug 2009 21:55:49 -0700
+In-Reply-To: <4A75F00D.7010400@inria.fr> (Brice Goglin's message of "Sun, 02
+	Aug 2009 21:59:09 +0200")
+Message-ID: <aday6q1o5re.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Possible kernel bug with SYS_clone / CLONE_PARENT
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 03 Aug 2009 04:55:51.0753 (UTC) FILETIME=[ACEC4B90:01CA13F6]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-I have a program where process A forks process B and process B forks
-process C. I want process A to be notified if/when process C terminates.
-(Process B terminates almost immediately after forking process C and a
-number of other siblings.)
+ > I like the interface but I have a couple questions:
 
-According to the manual page for clone() I should be able to do this
-with CLONE_PARENT:
+Thanks.
 
------------------
-    CLONE_PARENT (since Linux 2.3.12)
-    If CLONE_PARENT is set, then the parent of the new child (as
-returned by getppid(2)) will be the same as that of the calling process.
-    If CLONE_PARENT is not set, then (as with fork(2)) the child's
-parent is the calling process.
-    Note that it is the parent process, as returned by getppid(2), which
-is signaled when the child terminates, so that if CLONE_PARENT is set,
-then the parent of the calling process, rather than the calling process
-itself, will be signaled.
------------------
+ > 1) Why does userspace have to register these address ranges? I would
+ > have just reported all invalidation evens and let user-space check which
+ > ones are interesting. My feeling is that the number of invalidation
+ > events will usually be lower than the number registered ranges, so
+ > you'll report more events through the file descriptor, but userspace
+ > will do a lot less ioctls.
 
+A couple of reasons.  First, MMU notifier events may be delivered (in
+the kernel) in interrupt context so the amount of allocation we can do
+in a notifier hook is limited (and any allocation will fail sometimes).
+So if we just want to report all events to userspace then I don't see
+any was around having to sometimes deliver an event like "uh, some
+events got lost" and have userspace have to flush everything.
 
-I am using kernel 2.6.29-gentoo-r5 (not the most recent, I know, but
-relatively new), glibc 2.9_p20081201-r2 and gcc 4.3.2-r3. Here is my
-test program:
+I suspect that MPI workloads will hit the overflow case in practice,
+since they probably want to run as close to out-of-memory as possible,
+and the application may not enter the MPI library often enough to keep
+the queue of ummunotify events short -- I can imagine some codes that do
+a lot of memory management, enter MPI infrequently, and end up
+overflowing the queue and flushing all registrations over and over.
+Having userspace register ranges means I can preallocate a landing area
+for each event and make the MMU notifier hook pretty simple.
 
------------------
-#include <asm/unistd.h>
-#include <sys/syscall.h>
-#include <sched.h>
-#include <signal.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+Second, it turns out that having the filter does cut down quite a bit on
+the events.  From running some Open MPI tests that Jeff provided, I saw
+that there were often several times as many MMU notifier events
+delivered in the kernel than ended up being reported to userspace.
 
-int fork_but_keep_ppid() {
-  return syscall(SYS_clone, CLONE_PARENT, (void*)0);
-}
+ > 2) What happens in case of fork? If father+child keep reading from the
+ > previously-open /dev/ummunotify, each event will be delivered only to
+ > the first reader, right? Fork is always a mess in HPC, but maybe there's
+ > something to do here.
 
-void sigchld_handler(int signum, siginfo_t* info, void* ucontext) {
-  fprintf(stderr, "SIGCHLD (PID=%d)\n", info->si_pid);
-}
+It works just like any other file where fork results in two file
+descriptors in two processes... as you point out the two processes can
+step on each other.  (And in the ummunotify case the file remains
+associated with the original mm)  However this is the case for simpler
+stuff like sockets etc too, and I think uniformity of interface and
+least surprise say that ummunotify should follow the same model.
 
-int main(void) {
-  struct sigaction act;
-  memset(&act, 0, sizeof(act));
-  act.sa_sigaction = sigchld_handler;
-  act.sa_flags = SA_NOCLDSTOP|SA_NOCLDWAIT|SA_SIGINFO;
-  sigaction(SIGCHLD, &act, 0);
+ > 3) What's userspace supposed to do if 2 libraries need such events in
+ > the same process? Should each of them open /dev/ummunotify separately?
+ > Doesn't matter much for performance, just wondering.
 
-  fprintf(stderr, "Main PID = %d\n", syscall(SYS_getpid));
-
-  pid_t a = fork();
-  if( a == 0 ) {
-    fprintf(stderr, "first fork PID = %d, PPID = %d\n",
-syscall(SYS_getpid), syscall(SYS_getppid));
-    pid_t b = fork_but_keep_ppid();
-    if( b == 0 ) {
-      fprintf(stderr, "second fork PID = %d, PPID = %d\n",
-syscall(SYS_getpid), syscall(SYS_getppid));
-      exit(-2);
-    } else {
-      fprintf(stderr, "second fork returned %d\n", b);
-    }
-    exit(-1);
-  } else {
-    fprintf(stderr, "first fork returned %d\n", a);
-  }
-  sleep(1);
-  fprintf(stderr, "Creating & terminating another child to check
-SIGCHILD still works...\n");
-  pid_t c = fork();
-  if( c == 0 ) {
-    fprintf(stderr, "Child's PID is %d\n", syscall(SYS_getpid));
-    exit(-3);
-  }
-  sleep(1);
-
-  return 0;
-}
------------------
-
-Note that I am making the syscall directly because I want fork-like
-semantics and these are not provided by the clone() call. I also don't
-want to have to provide a separate stack for the child and it seems that
-(at least according to the man page) for clone() you have to, even if
-you don't use CLONE_VM.
-
-The output from this program is:
-
------------------
-Main PID = 13125
-first fork returned 13126
-first fork PID = 13126, PPID = 13125
-second fork PID = 13127, PPID = 13125
-second fork returned 13127
-SIGCHLD (PID=13126)
-Creating & terminating another child to check SIGCHILD still works...
-Child's PID is 13128
-SIGCHLD (PID=13128)
------------------
-
-
-There should be a SIGCHLD for the second fork's child PID but there
-isn't. ps shows the process is a zombie with PPID=13125 (in this case)
-while the test program is still running, yet the "parent" does not seem
-to receive the SIGCHLD.
-
-I could be doing something wrong but I can't see what it might be. Any
-suggestions? Please CC me on any reply as I am not currently subscribed
-to LKML.
-
-
+I guess the libraries could work out some way to share things, but that
+would require one library to pass events to the other or something like
+that.  It should work fine for 2 libraries to have independent
+ummunotify files open though (I've not tested but "what could go wrong"?).
 
 Thanks,
-
-Nicholas.
-
+  Roland
 
