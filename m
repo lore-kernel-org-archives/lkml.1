@@ -1,116 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbZHCTsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbZHCTtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754747AbZHCTsb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 15:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754676AbZHCTsa
+	id S1754759AbZHCTtF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 15:49:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754605AbZHCTtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 15:48:30 -0400
-Received: from www84.your-server.de ([213.133.104.84]:42976 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754659AbZHCTsa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 15:48:30 -0400
-Subject: Re: [RFC 0/2] new kfifo API
-From: Stefani Seibold <stefani@seibold.net>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200908032100.35892.arnd@arndb.de>
-References: <1249306755.8358.8.camel@wall-e>
-	 <200908032100.35892.arnd@arndb.de>
-Content-Type: text/plain
-Date: Mon, 03 Aug 2009 21:48:18 +0200
-Message-Id: <1249328898.5106.44.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Mon, 3 Aug 2009 15:49:05 -0400
+Received: from mail.windriver.com ([147.11.1.11]:39060 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754235AbZHCTtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 15:49:03 -0400
+Message-ID: <4A773EBD.3050707@windriver.com>
+Date: Mon, 03 Aug 2009 14:47:09 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Christoph Hellwig <hch@infradead.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Dave Anderson <anderson@redhat.com>, crash-utility@redhat.com,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <clark.williams@gmail.com>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Jason Baron <jbaron@redhat.com>, srostedt@redhat.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [ANNOUNCE][RFC][PATCH] Crash-utility, tracing: enable crash to
+ analyze tracing from core-file (make tracing can act as a flight recorder)
+References: <4A76F8A1.30503@cn.fujitsu.com>	 <20090803151420.GA8712@infradead.org> <1249312875.7924.106.camel@twins>
+In-Reply-To: <1249312875.7924.106.camel@twins>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+X-OriginalArrivalTime: 03 Aug 2009 19:47:11.0819 (UTC) FILETIME=[3186C1B0:01CA1473]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, den 03.08.2009, 21:00 +0200 schrieb Arnd Bergmann:
-> Going through your list again:
-> 
-> On Monday 03 August 2009, Stefani Seibold wrote:
-> > - Generic usage: For kernel internal use or device driver
-> 
-> no change here, right?
-> 
-> > - Linux style habit: DECLARE_KFIFO, DEFINE_KFIFO and INIT_KFIFO Macros
+Peter Zijlstra wrote:
+> On Mon, 2009-08-03 at 11:14 -0400, Christoph Hellwig wrote:
+>   
+>> Nice!  Now the only thing missing is gettind kdb in mainline and a trace
+>> reader in kdb ;-)
+>>
+>> Any idea how easy it is to reuse the crash/gdb code for looking at crash
+>> dumps through kgdb?
+>>     
+>
+> It was suggested a while ago to implement kdb as an in-kernel consumer
+> of kgdb or something. No idea what happened there..
+>   
 
-> DEFINE_KFIFO looks useful, but I probably wouldn't expose
-> the other macros, so you could define them as __KFIFO_* or
-> integrate them into a larger DEFINE_KFIFO.
-> 
+With respect to kdb for the mainline, this is still largely a work in
+progress, but there is a prototype implementation of kdb which is hooked
+up to the kdb backend.  There is a new prototype pushed to the kgdb
+development tree every couple of weeks.   The prototype #4 will be
+pushed sometime this week.
 
-DECLARE_KFIFO looks for me more useful, because i can use it inside a
-struct decalaration. And then i need INIT_KFIFO for initializing this.
+If there is a nice API to call for the trace piece, it is pretty trivial
+to add additional kdb commands which would allow you to print your trace
+buffers as needed.  The unified kdb/kgdb prototype also supports calling
+kdb commands through gdb's "monitor" command.  It is not clear if that
+satisfies the need that Christoph asked about, or if he had some other
+data analysis in mind.
 
-BTW: DECLARE_...., DEFINE_..... and INIT_..... are linux style. Habe a
-look at workqueue.h, wait.h, types.h, semaphore.h, rwsem-spinlock.h,
-interrupt.h, completion.h, seqlock.h and so on....
+In no particular order, tracing, kernel probes, profiling data display,
+kdump, disassembly and kernel mode setting were some of the pieces that
+are on the wish list for integration with the kdb prototype.  Kernel
+mode setting is presently the highest priority on the wish list for a
+new feature.
 
-> > - Ability to handle variable length records. Three type of records are
-> >   supported:
-> >   - Records between 0-255 bytes, with a record size field of 1 bytes
-> >   - Records between 0-65535 bytes, with a record size field of 2 bytes
-> >   - Byte stream, which no record size field
-> >   Inside a fifo this record types it is not a good idea to mix them together.
-> 
-> Not sure if having both 1 and 2 byte record lengths really helps.
-> If you want to avoid mixing the two, maybe just leave the existing
-> API for byte streams in a compatible, and provide extra functions
-> for records with a definite length.
-> 
+I will gladly accept patches into the kdb prototype if people have any. :-)
 
-Streams are only a specially case of a very huge record. I personally
-never needed records greater than 65535 byte. But i is easy to extend it
-to support 3 and 4 byte records length field too. 
+Jason.
 
-And mixing different record size fields makes no sense. If you know that
-your records can be create than 255 bytes then use a 2 byte record
-field. It is only the recsize parameter, which can be 0, 1 or 2.
+Prototype #3 is at:
 
-0 means byte stream mode, 1 means records size from 0 to 255, and 2
-means records size from 0 to 65535. 
+http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=shortlog;h=kdb_prototype3
 
-It is designed like any other container or lists in the linux kernel.
-The developer must know what she is doing ;-) Error checking wastes cpu
-rescources.
-
-> > - Direct copy_to_user from the fifo and copy_from_user into the fifo.
-> 
-> Sounds useful, as mentioned.
-> 
-> > - Single structure: The fifo structure contains the management variables and
-> >   the buffer. No extra indirection is needed to access the fifo buffer.
-> 
-> I see two problems here:
-> 
-> 1. you can no longer use preallocated buffers, which limits the possible
-> users to those that are unrestricted to the type of allocation.
-> 2. The size of the buffer is no longer power-of-two. In fact, it's guaranteed
-> to be non-power-of-two because kmalloc gives you a power-of-two allocation
-> but now you also put the struct kfifo in there.
-> 
-> Users that need a power-of-two buffer (the common case) now waste almost
-> 50% of the space.
-> 
-
-Okay, give me a thought about this....... yes you are right ;-( But what
-is with vmalloc? 128 MB should be enough?
-
-> The requirement for power-of-two also meant a much faster __kfifo_off
-> function on certain embedded platforms that don't have an integer division
-> instruction in hardware.
-> 
-
-Yes i know this argument, but since the day of the 6502 and Z80 i have
-never seen this kind of CPU. Okay i forgot to mention the stupid ARM
-CPU, but newer ARM cores have a hardware division support.
-
-Stefani <\_,
-         ^ ^
-
-
+There had not been any further posts about the kdb -> kgdb integration
+outside the first because the project is still pretty young and there is
+a significant amount of clean up required to the original kdb code base
+in order bring it closer to consideration for any kind of lkml
+scrutiny.  The nice thing about the kdb prototype is that it is almost
+entirely arch independent.  The goal of this project is to make such
+that any arch that makes use of the kgdb core today, could make use of
+the generic kdb interface.
