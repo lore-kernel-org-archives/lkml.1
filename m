@@ -1,56 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755263AbZHCP3G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755283AbZHCPdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755263AbZHCP3G (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 11:29:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754629AbZHCP3F
+	id S1755283AbZHCPdw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 11:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbZHCPdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 11:29:05 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42251 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753830AbZHCP3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 11:29:03 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: 2.6.31-rc5: Reported regressions from 2.6.30
-Date: Mon, 3 Aug 2009 17:29:37 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc5-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera> <alpine.LFD.2.01.0908021456430.3352@localhost.localdomain> <19062.48839.950183.569219@pilspetsen.it.uu.se>
-In-Reply-To: <19062.48839.950183.569219@pilspetsen.it.uu.se>
+	Mon, 3 Aug 2009 11:33:52 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:62127 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755127AbZHCPdv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 11:33:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=YberQdyAwMeSUtn1IJn/7iGd90cTlCuH8alBGGIzRz4GJW05Yr5yvPAbSzw9Lz4iKt
+         bjznnVSdhLv/I0Z1rKybBlAGS14ZZ9xPr7WUYneQtcJncxYE4+1bsej8vtuH8PJ7KbYr
+         4bIIs6eBB6qwkaw4NCZqlTH382rtld0aacZmA=
+Message-ID: <4A77035C.5090906@gmail.com>
+Date: Mon, 03 Aug 2009 17:33:48 +0200
+From: Artur Skawina <art.08.09@gmail.com>
+User-Agent: Thunderbird 2.0.0.22pre (X11/20090422)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: "Lev A. Melnikovsky" <melnikovsky@mail.ru>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
+Subject: Re: reading errors on JMicron JM20337 USB-SATA
+References: <Pine.LNX.4.44L0.0908031021370.16132-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0908031021370.16132-100000@iolanthe.rowland.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908031729.38467.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 August 2009, Mikael Pettersson wrote:
-> (cc:s trimmed)
-> 
-> Linus Torvalds writes:
->  > 
->  > 
->  > On Sun, 2 Aug 2009, Rafael J. Wysocki wrote:
->  > > 
->  > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13896
->  > > Subject		: 2.6.31-rc4 broke expect and gcc's testsuite
->  > > Submitter	: Mikael Pettersson <mikpe@it.uu.se>
->  > > Date		: 2009-07-29 11:00 (5 days old)
->  > > References	: http://marc.info/?l=linux-kernel&m=124885806406520&w=4
->  > 
->  > I bet this is the same tty bug that got fixed by Ogawa in commit 
->  > e043e42bdb. -rc5 has that fix. Mikael?
-> 
-> I didn't identify the actual commit, but yes, 2.6.31-rc5 makes
-> gcc's testsuite work again.
+Alan Stern wrote:
+> On Mon, 3 Aug 2009, Lev A. Melnikovsky wrote:
+>> AS> yes, jmicron bridges do not report errors properly and just stall pretty
+>> AS> much indefinitely; found out the hard way, when a disk started to develop
+>> My interpretation was different - the bridge firmware does not crash but 
+>> remains alive (it does not report the error properly but "zis iz probably 
+>> perfectly normal behaviour for a Vogon"). This is the Linux kernel that 
+>> indefinitely tries to re-read. Am I wrong?
 
-Great!  I've closed the bug.
+No, but that's arguably the right thing to do -- the device didn't
+report an error, so why should the kernel fail?..
 
-Thanks,
-Rafael
+> You are correct except for the term "indefinitely".  The retries _will_
+> stop if you wait long enough.  Unfortunately, because of all the nested
+> retry loops in the SCSI drivers and at the application level, you may
+> have to wait as long as half an hour.
+
+iirc, i had stalls _way_ longer than that, probably because the reads
+eventually succeeded, only to stall on the next ones.
+
+> I agree that this should be fixed.  But it is a SCSI issue, not a USB 
+> issue.  You could try bringing it up on the linux-scsi mailing list.
+
+actually, the number of retries should probably be configurable, but i
+wouldn't lower them by default; losing data because of recoverable errors
+is bad. In this case the bridge may be at fault (by not passing along the
+error), but to make a significant difference you'd have to reduce the number
+of retries to something like zero, maybe one at most, and that's just too
+low for a default. 
+
+artur
