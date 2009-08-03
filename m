@@ -1,69 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755283AbZHCPdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbZHCPgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755283AbZHCPdw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 11:33:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbZHCPdw
+	id S1755303AbZHCPgT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 11:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755194AbZHCPgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 11:33:52 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:62127 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755127AbZHCPdv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 11:33:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=YberQdyAwMeSUtn1IJn/7iGd90cTlCuH8alBGGIzRz4GJW05Yr5yvPAbSzw9Lz4iKt
-         bjznnVSdhLv/I0Z1rKybBlAGS14ZZ9xPr7WUYneQtcJncxYE4+1bsej8vtuH8PJ7KbYr
-         4bIIs6eBB6qwkaw4NCZqlTH382rtld0aacZmA=
-Message-ID: <4A77035C.5090906@gmail.com>
-Date: Mon, 03 Aug 2009 17:33:48 +0200
-From: Artur Skawina <art.08.09@gmail.com>
-User-Agent: Thunderbird 2.0.0.22pre (X11/20090422)
+	Mon, 3 Aug 2009 11:36:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42285 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754629AbZHCPgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 11:36:16 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.31-rc5: Reported regressions from 2.6.30
+Date: Mon, 3 Aug 2009 17:36:29 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc5-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       Linux Wireless List <linux-wireless@vger.kernel.org>,
+       DRI <dri-devel@lists.sourceforge.net>,
+       Mikael Pettersson <mikpe@it.uu.se>
+References: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera> <alpine.LFD.2.01.0908021456430.3352@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0908021456430.3352@localhost.localdomain>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: "Lev A. Melnikovsky" <melnikovsky@mail.ru>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linux-usb@vger.kernel.org
-Subject: Re: reading errors on JMicron JM20337 USB-SATA
-References: <Pine.LNX.4.44L0.0908031021370.16132-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908031021370.16132-100000@iolanthe.rowland.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908031736.30745.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
-> On Mon, 3 Aug 2009, Lev A. Melnikovsky wrote:
->> AS> yes, jmicron bridges do not report errors properly and just stall pretty
->> AS> much indefinitely; found out the hard way, when a disk started to develop
->> My interpretation was different - the bridge firmware does not crash but 
->> remains alive (it does not report the error properly but "zis iz probably 
->> perfectly normal behaviour for a Vogon"). This is the Linux kernel that 
->> indefinitely tries to re-read. Am I wrong?
+On Monday 03 August 2009, Linus Torvalds wrote:
+> 
+> On Sun, 2 Aug 2009, Rafael J. Wysocki wrote:
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13896
+> > Subject		: 2.6.31-rc4 broke expect and gcc's testsuite
+> > Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+> > Date		: 2009-07-29 11:00 (5 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=124885806406520&w=4
+> 
+> I bet this is the same tty bug that got fixed by Ogawa in commit 
+> e043e42bdb. -rc5 has that fix. Mikael?
+> 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13842
+> > Subject		: Oops when writing to /sys/block/ram0/queue/max_sectors_kb
+> > Submitter	: Jens Rosenboom <jens@mcbone.net>
+> > Date		: 2009-07-23 15:30 (11 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=124836574403032&w=4
+> 
+> Commit a4e7d46407d73f35d217013b363b79a8f8eafcaa fixed this one.
+> 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13826
+> > Subject		: thinkpad boots with backlight low
+> > Submitter	: Pavel Machek <pavel@ucw.cz>
+> > Date		: 2009-07-15 15:13 (19 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=124756359126830&w=4
+> > Handled-By	: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+> 
+> This should be commit 59fe4fe34d7afdf63208124f313be9056feaa2f4.
+> 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13815
+> > Subject		: emacs -nw compilation doesn't show the error message
+> > Submitter	: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> > Date		: 2009-07-23 06:22 (11 days old)
+> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d945cb9cce20ac7143c2de8d88b187f62db99bdc
+> 
+> Same old pty bug, same fix: commit e043e42bdb.
+> 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13813
+> > Subject		: Hangups in n_tty_read()
+> > Submitter	: Johannes Weiner <hannes@cmpxchg.org>
+> > Date		: 2009-07-16 18:48 (18 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=124777019920579&w=4
+> 
+> Hmm. Worth testing that same fix, although the symptoms here are not 
+> exactly the same.
+> 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13812
+> > Subject		: Ooops on uplug
+> > Submitter	: Daniel Mack <daniel@caiaq.de>
+> > Date		: 2009-07-20 17:51 (14 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=124811234302786&w=4
+> > Handled-By	: Alan Stern <stern@rowland.harvard.edu>
+> > 		  Alan Cox <alan@linux.intel.com>
+> 
+> Commit c56d3000861 should fix this.
+> 
+> > Regressions with patches
+> > ------------------------
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13891
+> > Subject		: PCI resources allocation problem on HP nx6325
+> > Submitter	: Rafael J. Wysocki <rjw@sisk.pl>
+> > Date		: 2009-08-02 13:37 (1 days old)
+> > Handled-By	: Linus Torvalds <torvalds@linux-foundation.org>
+> > Patch		: http://patchwork.kernel.org/patch/38774/
+> 
+> Ok, this is committed as 79896cf42f6a96d7e14f2dc3473443d68d74031d.
+> 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13825
+> > Subject		: eeepc-laptop: fix hot-unplug on resume
+> > Submitter	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+> > Date		: 2009-06-29 13:12 (35 days old)
+> > References	: http://lkml.org/lkml/2009/6/29/150
+> > Handled-By	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+> > Patch		: http://patchwork.kernel.org/patch/32926/
+> 
+> commit 7334546a52c6764df120459509b1f803a073eacc
 
-No, but that's arguably the right thing to do -- the device didn't
-report an error, so why should the kernel fail?..
+Thanks a lot!
 
-> You are correct except for the term "indefinitely".  The retries _will_
-> stop if you wait long enough.  Unfortunately, because of all the nested
-> retry loops in the SCSI drivers and at the application level, you may
-> have to wait as long as half an hour.
+All closed except for http://bugzilla.kernel.org/show_bug.cgi?id=13813.
 
-iirc, i had stalls _way_ longer than that, probably because the reads
-eventually succeeded, only to stall on the next ones.
-
-> I agree that this should be fixed.  But it is a SCSI issue, not a USB 
-> issue.  You could try bringing it up on the linux-scsi mailing list.
-
-actually, the number of retries should probably be configurable, but i
-wouldn't lower them by default; losing data because of recoverable errors
-is bad. In this case the bridge may be at fault (by not passing along the
-error), but to make a significant difference you'd have to reduce the number
-of retries to something like zero, maybe one at most, and that's just too
-low for a default. 
-
-artur
+Best,
+Rafael
