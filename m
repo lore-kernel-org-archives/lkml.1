@@ -1,111 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbZHCJhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbZHCJkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754748AbZHCJhz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 05:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbZHCJhy
+	id S1754741AbZHCJkG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 05:40:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbZHCJkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 05:37:54 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:49654 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753176AbZHCJhx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 05:37:53 -0400
-Date: Mon, 3 Aug 2009 11:37:53 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Chris Mason <chris.mason@oracle.com>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>, Neil Brown <neilb@suse.de>,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>
-Subject: Re: Why does __do_page_cache_readahead submit READ, not READA?
-Message-ID: <20090803093753.GL12579@kernel.dk>
-References: <20090729161456.GB8059@barkeeper1-xen.linbit> <20090729211845.GB4148@kernel.dk> <20090729225501.GH24801@think> <20090730060649.GC4148@kernel.dk> <20090803075202.GA13485@localhost> <20090803075933.GI12579@kernel.dk> <20090803082318.GA18731@localhost> <20090803092515.GK12579@kernel.dk> <20090803093426.GA25139@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090803093426.GA25139@localhost>
+	Mon, 3 Aug 2009 05:40:04 -0400
+Received: from smtp-out114.alice.it ([85.37.17.114]:1779 "EHLO
+	smtp-out114.alice.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753794AbZHCJkD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 05:40:03 -0400
+Date: Mon, 3 Aug 2009 11:39:07 +0200
+From: Antonio Ospite <ospite@studenti.unina.it>
+To: Daniel Ribeiro <drwyrm@gmail.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Samuel Ortiz <sameo@linux.intel.com>, eric.y.miao@gmail.com,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, openezx-devel@lists.openezx.org,
+       Ilya Petrov <ilya.muromec@gmail.com>
+Subject: Re: [PATCH v2] input: PCAP2 misc input driver
+Message-Id: <20090803113907.197fd27b.ospite@studenti.unina.it>
+In-Reply-To: <1249291759-15264-1-git-send-email-drwyrm@gmail.com>
+References: <1249291759-15264-1-git-send-email-drwyrm@gmail.com>
+X-Mailer: Sylpheed 2.7.0 (GTK+ 2.16.5; i686-pc-linux-gnu)
+X-Face: z*RaLf`X<@C75u6Ig9}{oW$H;1_\2t5)({*|jhM<pyWR#k60!#=#>/Vb;]yA5<GWI5`6u&+
+ ;6b'@y|8w"wB;4/e!7wYYrcqdJFY,~%Gk_4]cq$Ei/7<j&N3ah(m`ku?pX.&+~:_/wC~dwn^)MizBG !pE^+iDQQ1yC6^,)YDKkxDd!T>\I~93>J<_`<4)A{':UrE
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__3_Aug_2009_11_39_07_+0200_/hEok/g=81ZxAer1"
+X-OriginalArrivalTime: 03 Aug 2009 09:39:16.0340 (UTC) FILETIME=[44725B40:01CA141E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 03 2009, Wu Fengguang wrote:
-> On Mon, Aug 03, 2009 at 05:25:15PM +0800, Jens Axboe wrote:
-> > On Mon, Aug 03 2009, Wu Fengguang wrote:
-> > > On Mon, Aug 03, 2009 at 03:59:33PM +0800, Jens Axboe wrote:
-> > > > On Mon, Aug 03 2009, Wu Fengguang wrote:
-> > > > > On Thu, Jul 30, 2009 at 08:06:49AM +0200, Jens Axboe wrote:
-> > > > > > > > read at that level. I did some experimentation some time ago for
-> > > > > > > > flagging this, see:
-> > > > > > > > 
-> > > > > > > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=16cfe64e3568cda412b3cf6b7b891331946b595e
-> > > > > > > > 
-> > > > > > > > which should pass down READA properly.
-> > > > > > > 
-> > > > > > > One of the problems in the past was that reada would fail if there
-> > > > > > > wasn't a free request when we actually wanted it to go ahead and wait.
-> > > > > > > Or something.  We've switched it around a few times I think.
-> > > > > > 
-> > > > > > Yes, we did used to do that, whether it was 2.2 or 2.4 I
-> > > > > > don't recall :-)
-> > > > > > 
-> > > > > > It should be safe to enable know, whether there's a prettier way
-> > > > > > than the above, I don't know. It works by detecting the read-ahead
-> > > > > > marker, but it's a bit of a fragile design.
-> > > > > 
-> > > > > Another consideration is io-priority reversion and the overheads
-> > > > > required to avoid it:
-> > > > > 
-> > > > >         readahead(pages A-Z)    => READA IO for pages A-Z
-> > > > >         <short time later>
-> > > > >         read(page A) => blocked => find the request that contains page A
-> > > > >                                    and requeue/kick it as READ IO
-> > > > > 
-> > > > > The page-to-request lookups are not always required but nevertheless
-> > > > > the complexity and overheads won't be trivial.
-> > > > > 
-> > > > > The page-to-request lookup feature would be also useful for "advanced"
-> > > > > features like io-canceling (if implemented, hwpoison could be its
-> > > > > first user ;)
-> > > > 
-> > > > I added that 3-4 years ago or so, to experiment with in-kernel
-> > > > cancellation for things like truncate(). Tracking pages is not cheap,
-> > > > and since the write cancelling wasn't really very sucessful, I didn't go
-> > > > ahead with it.
-> > > 
-> > > Ah OK.
-> > > 
-> > > > So I'm not sure it's a viable alternative, even if we restricted it to
-> > > > just tracking READA's, for instance.
-> > > 
-> > > Kind of agreed. I guess it won't benefit too much workloads to default
-> > > to READA; for most workloads it would be pure overheads if considering
-> > > priority inversion.
-> > > 
-> > > > But I don't think we have any priority inversion to worry about, at
-> > > > least not from the CFQ perspective.
-> > > 
-> > > The priority inversion problem showed up in an early attempt to do
-> > > boot time prefetching. I guess this problem was somehow circumvented
-> > > by limiting the prefetch depth and do prefetches in original read
-> > > order instead of disk location order (Arjan cc'ed).
-> > 
-> > But was that not due to the prefetcher running at a lower cpu priority?
-> 
-> Yes, it is. Thus the priority inversion problem.
-> 
-> > Just flagging a reada hint will not change your priority in the IO
-> > scheduler, so we should have no priority inversion there.
-> 
-> Ah OK. So READA merely means "don't try hard on error" for now.
-> Sorry I implicitly associated it with some priority class..
+--Signature=_Mon__3_Aug_2009_11_39_07_+0200_/hEok/g=81ZxAer1
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Well not necessarily, it could also have some priority implications in
-the scheduler. My point is just that it need not be severe enough to
-introduce priority inversions, so that we need a specific tracking
-framework to graduate READA to READ.
+On Mon,  3 Aug 2009 11:29:19 +0200
+Daniel Ribeiro <drwyrm@gmail.com> wrote:
 
--- 
-Jens Axboe
+> From: Daniel Ribeiro <wyrm@gmail.com>
+>
 
+Please discard this From line, the email address is wrong here.
+The patch is actually from Daniel Ribeiro <drwyrm@gmail.com>
+
+Sorry for the mistake.
+
+Ciao,
+   Antonio
+
+--=20
+Antonio Ospite
+http://ao2.it
+
+PGP public key ID: 0x4553B001
+
+A: Because it messes up the order in which people normally read text.
+   See http://en.wikipedia.org/wiki/Posting_style
+Q: Why is top-posting such a bad thing?
+A: Top-posting.
+Q: What is the most annoying thing in e-mail?
+
+--Signature=_Mon__3_Aug_2009_11_39_07_+0200_/hEok/g=81ZxAer1
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkp2sDsACgkQ5xr2akVTsAHuqwCbBiMCg3okhs+7t4yzfvgzfD+J
+qG0An1T8PbSQ2cS7dZvvuvV7rYRrKjkH
+=Zs1F
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__3_Aug_2009_11_39_07_+0200_/hEok/g=81ZxAer1--
