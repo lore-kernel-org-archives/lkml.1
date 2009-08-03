@@ -1,42 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755424AbZHCQXM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437AbZHCQYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755424AbZHCQXM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 12:23:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755398AbZHCQXL
+	id S1755437AbZHCQYP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 12:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755418AbZHCQYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 12:23:11 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60607 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755394AbZHCQXK (ORCPT
+	Mon, 3 Aug 2009 12:24:14 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:64672 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755413AbZHCQYO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 12:23:10 -0400
-Date: Mon, 3 Aug 2009 12:23:03 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       malware-list@dmesg.printk.net, Valdis.Kletnieks@vt.edu, greg@kroah.com,
-       jcm@redhat.com, douglas.leeder@sophos.com, tytso@mit.edu,
-       arjan@infradead.org, david@lang.hm, jengelh@medozas.de,
-       aviro@redhat.com, mrkafk@gmail.com, alexl@redhat.com, jack@suse.cz,
-       tvrtko.ursulin@sophos.com, a.p.zijlstra@chello.nl, hch@infradead.org,
-       alan@lxorguk.ukuu.org.uk, mmorley@hcl.in, pavel@suse.cz
-Subject: Re: fanotify - overall design before I start sending patches
-Message-ID: <20090803162303.GA31058@infradead.org>
-References: <1248466429.3567.82.camel@localhost>
+	Mon, 3 Aug 2009 12:24:14 -0400
+From: Martin Rogge <marogge@onlinehome.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.30.1-4 kernels freezes dual pentium-3 system
+Date: Mon, 3 Aug 2009 18:25:27 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.30.4; KDE/4.2.1; i686; ; )
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1248466429.3567.82.camel@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Message-Id: <200908031825.28045.marogge@onlinehome.de>
+X-Provags-ID: V01U2FsdGVkX1/tK3xUiKOlB4gWpJgyJMvXUhLZOoY5yDmfcmm
+ Sfx8mARYge4vxBOv+VDVdjZgPunDfomJu/7Spowg/B0k6nPY/0
+ HJaLXtR7vpiIpWWyb1x7g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Before we get started:  You promised yo get rid of the dnotify and
-inotify fields in the inode when moving over those two to fsnotify.
-While the dnotify fields are gone the inotify_watches and inotify_mutex
-fields are still around.  I'd really like to see this done before we
-move on.
+Osipov Stanislav wrote:
+
+> I  have  a  dual  Pentium-3 system. It based on Asus CUR-DLS mainboard
+> with  2  Pentium-3EB  1000MHz (133 MHz FSB) installed. 
+> 
+> [...]
+> 
+> But  under 2.6.30.x kernels box freezes without any alerts. TTL before
+> freezing  is  about 5-30 mins.
+> 
+> [...]
+> 
+> Thanks in advance,
+> 
+> Osipov Stanislav
+> Linux System Administrator.
+
+I also observe system lockups after upgrading to 2.6.30.[34]. The mainboard is 
+an MSI-9105 with dual P-3 1400Mhz. TTL is a number of hours (which is going to 
+make bisecting hard). Since all lockups have occured with a tainted kernel 
+(nvidia) I am currently running a test with an untainted kernel. Should a 
+lockup re-occur I will post details.
+
+Martin
 
