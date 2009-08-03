@@ -1,24 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752333AbZHCGxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752347AbZHCGzo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752333AbZHCGxa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 02:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbZHCGx3
+	id S1752347AbZHCGzo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 02:55:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbZHCGzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 02:53:29 -0400
-Received: from cantor.suse.de ([195.135.220.2]:58711 "EHLO mx1.suse.de"
+	Mon, 3 Aug 2009 02:55:43 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:42887 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752026AbZHCGx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 02:53:29 -0400
-Date: Mon, 03 Aug 2009 08:53:29 +0200
-Message-ID: <s5hskg98k2e.wl%tiwai@suse.de>
+	id S1751629AbZHCGzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 02:55:43 -0400
+Date: Mon, 03 Aug 2009 08:55:42 +0200
+Message-ID: <s5hr5vt8jyp.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Lubomir Rintel <lkundrak@v3.sk>
-Cc: linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>,
-       Lennart Poettering <mzjro@0pointer.net>, stable@kernel.org,
-       alsa-devel@alsa-project.org
-Subject: Re: [PATCH] Tell user that stream to be rewound is suspended
-In-Reply-To: <1249229684-8292-1-git-send-email-lkundrak@v3.sk>
-References: <1249229684-8292-1-git-send-email-lkundrak@v3.sk>
+To: Denys Vlasenko <vda.linux@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: sound: -EPERM on first mplayer invocation
+In-Reply-To: <200908022336.48898.vda.linux@googlemail.com>
+References: <200908022336.48898.vda.linux@googlemail.com>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.3
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -28,80 +26,66 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Sun,  2 Aug 2009 18:14:44 +0200,
-Lubomir Rintel wrote:
+At Sun, 2 Aug 2009 23:36:48 +0200,
+Denys Vlasenko wrote:
 > 
-> Return STRPIPE instead of EBADF when userspace attempts to rewind
-> of forward a stream that was suspended in meanwhile, so that it
-> can be recovered by snd_pcm_recover().
+> Hi,
 > 
-> This was causing Pulseaudio to unload the ALSA sink module under a race
-> condition when it attempted to rewind the stream right after resume from
-> suspend, before writing to the stream which would cause it to revive the
-> stream otherwise. Tested to work with Pulseaudio patched to attempt to
-> snd_pcm_recover() upon receiving an error from snd_pcm_rewind().
+> For a long time I observe the following nuisance:
+> when I run mplayer for the very first time after boot,
+> I can't adjust the volume. mplayer spews this to stderr:
 > 
-> Signed-off-by: Lubomir Rintel <lkundrak@v3.sk>
+> alsa-control: error setting left channel, Operation not permitted
+> 
+> This happens even if I login as root and run mplayer as root.
+> 
+> I tracked it down to snd_ctl_elem_write in sound/core/control.c
+> 
+> static int snd_ctl_elem_write(struct snd_card *card, struct snd_ctl_file *file,
+>                               struct snd_ctl_elem_value *control)
+> {
+>         struct snd_kcontrol *kctl;
+>         struct snd_kcontrol_volatile *vd;
+>         unsigned int index_offset;
+>         int result;
+> 
+>         down_read(&card->controls_rwsem);
+>         kctl = snd_ctl_find_id(card, &control->id);
+>         if (kctl == NULL) {
+>                 result = -ENOENT;
+>         } else {
+>                 index_offset = snd_ctl_get_ioff(kctl, &control->id);
+>                 vd = &kctl->vd[index_offset];
+>                 if (!(vd->access & SNDRV_CTL_ELEM_ACCESS_WRITE) ||
+>                     kctl->put == NULL ||
+>                     (file && vd->owner && vd->owner != file)) {
+>  printk("EPERM:\n");
+>  printk("vd->access & SNDRV_CTL_ELEM_ACCESS_WRITE:%x\n", vd->access & SNDRV_CTL_ELEM_ACCESS_WRITE);
+>  printk("kctl->put:%p\n", kctl->put);
+>  printk("file:%p vd->owner:%p\n", file, vd->owner);
+>                         result = -EPERM;
+>                 } else {
+> 
+> The above printk triggers and prints:
+> 
+> EPERM:
+> vd->access & SNDRV_CTL_ELEM_ACCESS_WRITE:2
+> kctl->put:ffffffffa009e8de
+> file:ffff88007c56a5c0 vd->owner:ffff88007bc34740
+> 
+> Thus, vd->owner != file.
+> 
+> As I said, it only happens on very first run of mplayer,
+> and it isn't a recent change, I think I saw it at least
+> for one year with different kernels.
+> 
+> Takashi, any idea what might be happening here?
+> How can I help you more with tracking it down?
 
-The change looks fine, but I think this isn't for stable kernel since
-this is actually an ABI extension.
+This implies that another process (e.g. a sound daemon like PA)
+already opened the device and locked this specific control element.
+If so, this is no bug but the right behavior.
+Check "fuser /dev/snd/controlC*".
 
-For testing, I'm going to apply this to sound-unstable tree for the
-time being.  I'll merge to the main sound tree soon later, though.
-
-
-thanks,
 
 Takashi
-
-> ---
->  sound/core/pcm_native.c |   12 ++++++++++++
->  1 files changed, 12 insertions(+), 0 deletions(-)
-> 
-> diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
-> index ac2150e..d89c816 100644
-> --- a/sound/core/pcm_native.c
-> +++ b/sound/core/pcm_native.c
-> @@ -2208,6 +2208,9 @@ static snd_pcm_sframes_t snd_pcm_playback_rewind(struct snd_pcm_substream *subst
->  	case SNDRV_PCM_STATE_XRUN:
->  		ret = -EPIPE;
->  		goto __end;
-> +	case SNDRV_PCM_STATE_SUSPENDED:
-> +		ret = -ESTRPIPE;
-> +		goto __end;
->  	default:
->  		ret = -EBADFD;
->  		goto __end;
-> @@ -2253,6 +2256,9 @@ static snd_pcm_sframes_t snd_pcm_capture_rewind(struct snd_pcm_substream *substr
->  	case SNDRV_PCM_STATE_XRUN:
->  		ret = -EPIPE;
->  		goto __end;
-> +	case SNDRV_PCM_STATE_SUSPENDED:
-> +		ret = -ESTRPIPE;
-> +		goto __end;
->  	default:
->  		ret = -EBADFD;
->  		goto __end;
-> @@ -2299,6 +2305,9 @@ static snd_pcm_sframes_t snd_pcm_playback_forward(struct snd_pcm_substream *subs
->  	case SNDRV_PCM_STATE_XRUN:
->  		ret = -EPIPE;
->  		goto __end;
-> +	case SNDRV_PCM_STATE_SUSPENDED:
-> +		ret = -ESTRPIPE;
-> +		goto __end;
->  	default:
->  		ret = -EBADFD;
->  		goto __end;
-> @@ -2345,6 +2354,9 @@ static snd_pcm_sframes_t snd_pcm_capture_forward(struct snd_pcm_substream *subst
->  	case SNDRV_PCM_STATE_XRUN:
->  		ret = -EPIPE;
->  		goto __end;
-> +	case SNDRV_PCM_STATE_SUSPENDED:
-> +		ret = -ESTRPIPE;
-> +		goto __end;
->  	default:
->  		ret = -EBADFD;
->  		goto __end;
-> -- 
-> 1.6.2.5
-> 
