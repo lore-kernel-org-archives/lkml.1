@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754361AbZHCD2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754306AbZHCDcK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754361AbZHCD2c (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 23:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbZHCD2b
+	id S1754306AbZHCDcK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 23:32:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbZHCDcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 23:28:31 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38238 "EHLO mx2.redhat.com"
+	Sun, 2 Aug 2009 23:32:09 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34822 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752412AbZHCD2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 23:28:31 -0400
-From: Xiaotian Feng <dfeng@redhat.com>
-To: rdunlap@xenotime.net
-Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Xiaotian Feng <dfeng@redhat.com>
-Subject: [PATCH] Documentation: update stale definition of file-nr in fs.txt
-Date: Mon,  3 Aug 2009 11:27:41 +0800
-Message-Id: <1249270061-3237-1-git-send-email-dfeng@redhat.com>
+	id S1752831AbZHCDcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 23:32:08 -0400
+Date: Mon, 3 Aug 2009 13:32:03 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, Len Brown <len.brown@intel.com>
+Subject: linux-next: rr tree build failure
+Message-Id: <20090803133203.81174a8e.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__3_Aug_2009_13_32_03_+1000_ZN0O7xbHFyzTueXd"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit 760df9 merged /proc/sys/fs documentation in Documentation/sysctl/
-fs.txt and Documentation/filesystem/proc.txt, but stale file-nr definition
-is remained. This patch add back the right fs-nr definition for 2.6 kernel.
+--Signature=_Mon__3_Aug_2009_13_32_03_+1000_ZN0O7xbHFyzTueXd
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Xiaotian Feng<dfeng@redhat.com>
----
- Documentation/sysctl/fs.txt |   17 ++++++++++-------
- 1 files changed, 10 insertions(+), 7 deletions(-)
+Hi Rusty,
 
-diff --git a/Documentation/sysctl/fs.txt b/Documentation/sysctl/fs.txt
-index 1458448..6268250 100644
---- a/Documentation/sysctl/fs.txt
-+++ b/Documentation/sysctl/fs.txt
-@@ -96,13 +96,16 @@ handles that the Linux kernel will allocate. When you get lots
- of error messages about running out of file handles, you might
- want to increase this limit.
- 
--The three values in file-nr denote the number of allocated
--file handles, the number of unused file handles and the maximum
--number of file handles. When the allocated file handles come
--close to the maximum, but the number of unused file handles is
--significantly greater than 0, you've encountered a peak in your 
--usage of file handles and you don't need to increase the maximum.
--
-+Historically, the three values in file-nr denoted the number of
-+allocated file handles, the number of allocated but unused file
-+handles, and the maximum number of file handles. Linux 2.6 always
-+reports 0 as the number of free file handles -- this is not an
-+error, it just means that the number of allocated file handles
-+exactly matches the number of used file handles.
-+
-+Attempts to allocate more file descriptors than file-max are
-+reported with printk, look for "VFS: file-max limit <number>
-+reached".
- ==============================================================
- 
- nr_open:
--- 
-1.6.2.5
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
+drivers/acpi/osl.c: In function 'bind_to_cpu0':
+drivers/acpi/osl.c:194: error: implicit declaration of function 'set_cpus_a=
+llowed'
+
+Caused by commit 74b5820808215f65b70b05a099d6d3c969b82689 ("ACPI: bind
+workqueues to CPU 0 to avoid SMI corruption") (from the acpi tree but now
+in Linus' tree) interacting with commit
+17e249fb40c814a72f08c1356cb47ec9f87f81a8
+("cpumask:remove-set_cpus_allowed") from the rr tree.
+
+I have reverted that rr tree commit for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__3_Aug_2009_13_32_03_+1000_ZN0O7xbHFyzTueXd
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkp2WjMACgkQjjKRsyhoI8y79QCfRDGhK5rmcrdac/VU6imRSAHj
+hwMAn0yHVMMpVO7lfuwBIOYjhLbfguyt
+=/sKd
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__3_Aug_2009_13_32_03_+1000_ZN0O7xbHFyzTueXd--
