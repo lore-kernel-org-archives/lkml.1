@@ -1,186 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbZHCAPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbZHCAe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753878AbZHCAPy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 20:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753721AbZHCAPx
+	id S1753930AbZHCAe7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 20:34:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753815AbZHCAe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 20:15:53 -0400
-Received: from mail-in-08.arcor-online.net ([151.189.21.48]:35027 "EHLO
-	mail-in-08.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753687AbZHCAPw (ORCPT
+	Sun, 2 Aug 2009 20:34:58 -0400
+Received: from vms173019pub.verizon.net ([206.46.173.19]:47360 "EHLO
+	vms173019pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753146AbZHCAe5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 20:15:52 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-10.arcor-online.net 1671F28ECF4
-Subject: Re: USB devices supporting raw or sliced VBI for closed captioning?
-From: hermann pitton <hermann-pitton@arcor.de>
-To: Markus Rechberger <mrechberger@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Steve Castellotti <sc@eyemagnet.com>, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <d9def9db0908020124i26e2a6f2r972a98ae7b8bbe85@mail.gmail.com>
-References: <1249082438.18313.30.camel@odyssey.sc.user.nz.vpn>
-	 <d9def9db0907311845r259b129em3bd89b7915718cd5@mail.gmail.com>
-	 <1249174159.3255.13.camel@pc07.localdom.local>
-	 <d9def9db0908020124i26e2a6f2r972a98ae7b8bbe85@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 03 Aug 2009 02:02:10 +0200
-Message-Id: <1249257730.3451.53.camel@pc07.localdom.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-5.fc8) 
-Content-Transfer-Encoding: 7bit
+	Sun, 2 Aug 2009 20:34:57 -0400
+From: Gene Heskett <gene.heskett@verizon.net>
+Organization: Organization? Not detectable
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #13899] Oops from tar, 2.6.31-rc5, 32 bit on quad core phenom.
+Date: Sun, 02 Aug 2009 20:34:41 -0400
+User-Agent: KMail/1.11.4 (Linux/2.6.31-rc5; KDE/4.2.4; i686; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera>
+ <iZB3Pj-uj3M.A.TjB.lcgdKB@chimera>
+In-reply-to: <iZB3Pj-uj3M.A.TjB.lcgdKB@chimera>
+MIME-version: 1.0
+Content-type: Text/Plain; charset=utf-8
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+Message-id: <200908022034.41252.gene.heskett@verizon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 02 August 2009, Rafael J. Wysocki wrote:
+>This message has been generated automatically as a part of a report
+>of recent regressions.
+>
+>The following bug entry is on the current list of known regressions
+>from 2.6.30.  Please verify if it still should be listed and let me know
+>(either way).
+>
+>
+>Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13899
+>Subject		: Oops from tar, 2.6.31-rc5, 32 bit on quad core phenom.
+>Submitter	: Gene Heskett <gene.heskett@verizon.net>
+>Date		: 2009-08-01 13:04 (2 days old)
+>References	: http://marc.info/?l=linux-kernel&m=124913190304149&w=4
+At this time I am not sure about this one.  Amanda ran normally AFAIK this 
+morning.
 
-Am Sonntag, den 02.08.2009, 10:24 +0200 schrieb Markus Rechberger:
-> On Sun, Aug 2, 2009 at 2:49 AM, hermann pitton<hermann-pitton@arcor.de> wrote:
-> >
-> > Am Samstag, den 01.08.2009, 03:45 +0200 schrieb Markus Rechberger:
-> >> Hi,
-> >>
-> >> On Sat, Aug 1, 2009 at 1:20 AM, Steve Castellotti<sc@eyemagnet.com> wrote:
-> >> >
-> >> >        I was wondering if anyone could please point me at a list or similar
-> >> > resource for USB capture devices which support raw (or sliced) VBI
-> >> > access for producing a closed caption transcript through software such
-> >> > as zbvi-ntsc-cc or ccextractor? Specifically I'm wanting a device
-> >> > capable of S-Video, Composite, or even Component input, not just ATSC,
-> >> > as most USB devices seem focused around these days.
-> >> >
-> >> >        I've managed to get this working with various ivtv and saa713x based
-> >> > PCI devices, but aren't aware of any USB implementations of chipsets
-> >> > which use those drivers.
-> >> >
-> >> >
-> >> >        Searching online, I found this archived message:
-> >> >
-> >> > http://lists.zerezo.com/video4linux/msg16402.html
-> >> >
-> >> > which states:
-> >> >
-> >> >> some em2840 and newer devices are able to capture raw vbi in
-> >> >> linux (sliced vbi isn't possible yet)
-> >> >> em2820, em2800, em2750 do not support vbi at all.
-> >> >
-> >> >
-> >> >        Checking the em28xx driver homepage for recent models, I found this
-> >> > entry:
-> >> >
-> >> > http://mcentral.de/wiki/index.php5/Em2880
-> >> >
-> >> >> officially the em2880 is em2840 + DVB_T
-> >> >
-> >> >
-> >> >        which implies that not only is the "em2880" series a "newer" device,
-> >> > but it should in fact already contain the "em2840" chip specifically
-> >> > mentioned.
-> >> >
-> >> >
-> >> >        Later on that same page, in the list of devices:
-> >> >
-> >> > ATI/AMD TV Wonder 600
-> >> >
-> >> >
-> >> >        and on the manufacturer's page:
-> >> >
-> >> > http://ati.amd.com/products/tvwonder600/usb/index.html
-> >> >
-> >> >
-> >> >        Under the list of "Input Connectors":
-> >> >
-> >> >> S-video input with adapter
-> >> >
-> >> >
-> >> >
-> >> >        Picking up one of these devices, I attempted to tune into the S-Video
-> >> > feed and check the /dev/vbi0 device, but received the same error message
-> >> > as I do with all other em28xx devices encountered thus far:
-> >> >
-> >> >> Cannot capture vbi data with v4l interface:
-> >> >> /dev/vbi0 (AMD ATI TV Wonder HD 600) is not a raw vbi device.
-> >> >
-> >> >
-> >> >
-> >> >        Can anyone please point me in the right direction?
-> >> >
-> >> >        I would much prefer to be certain the next purchase is supported.
-> >> >
-> >> >
-> >> >
-> >> > Thanks!
-> >> >
-> >>
-> >> we do support Raw VBI for our devices, Sundtek MediaTV Pro for closed
-> >> captioning.
-> >> Alternatively we also have full support for ATSC-analogTV USB devices
-> >> for the US market ([em288x]-[AVFB4910]-[Trident drx-J]-[tda18271]) the
-> >> european product which we are selling is also capable of decoding NTSC
-> >> closed caption.
-> >>
-> >> http://sundtek.de/shop/Digital-TV-Sticks-oxid/Sundtek-MediaTV-Pro.html
-> >> (this is just the information about the
-> >> European/DVB-T/DVB-C/analogTV(raw VBI) device, we do not have the
-> >> US/ATSC/analogTV(rawVBI) product listed there, although we do offer it
-> >> to business customers) We support it from Linux 2.6.15 on.
-> >>
-> >> Best Regards,
-> >> Markus Rechberger
-> >
-> > Hi,
-> >
-> > anything new about how to deal with commercial advertising on lists,
-> > depending totally on our source?
-> >
-> > Please have a look.
-> 
-> The question was about a device, and I doubt that you can get a device
-> for free anywhere. If so there shouldn't be any other company names in drivers,
-> or named on the mailinglist (to be fair) which do not support Linux.
-> 
-> Best Regards,
-> Markus
+The machine does not appear to be affected, but I did just find this,
+in /var/log/messages: (I think this is the one I posted)
 
-Markus,
+Aug  1 01:15:01 coyote xinetd[2316]: START: amanda pid=18959 from=::ffff:192.168.71.3                                                  
+Aug  1 01:16:17 coyote kernel: [ 7423.221754] BUG: Bad page state in process tar  pfn:a1293                                            
+Aug  1 01:16:17 coyote kernel: [ 7423.221760] page:c28fc260 flags:80004000 count:0 mapcount:0 mapping:(null) index:0                   
+Aug  1 01:16:17 coyote kernel: [ 7423.221764] Pid: 19211, comm: tar Not tainted 2.6.31-rc5 #1                                          
+Aug  1 01:16:17 coyote kernel: [ 7423.221766] Call Trace:                                                                              
+Aug  1 01:16:17 coyote kernel: [ 7423.221774]  [<c130b0e3>] ? printk+0x23/0x40                                                         
+Aug  1 01:16:17 coyote kernel: [ 7423.221780]  [<c1083d6f>] bad_page+0xcf/0x150                                                        
+Aug  1 01:16:17 coyote kernel: [ 7423.221784]  [<c1084e0d>] get_page_from_freelist+0x37d/0x480                                         
+Aug  1 01:16:17 coyote kernel: [ 7423.221788]  [<c107ed54>] ? add_to_page_cache_lru+0x84/0x90                                          
+Aug  1 01:16:17 coyote kernel: [ 7423.221791]  [<c10850ef>] __alloc_pages_nodemask+0xdf/0x520                                          
+Aug  1 01:16:17 coyote kernel: [ 7423.221795]  [<c1087954>] __do_page_cache_readahead+0x104/0x220                                      
+Aug  1 01:16:17 coyote kernel: [ 7423.221798]  [<c1087aa4>] ra_submit+0x34/0x50                                                        
+Aug  1 01:16:17 coyote kernel: [ 7423.221801]  [<c1087d00>] ondemand_readahead+0x120/0x240                                             
+Aug  1 01:16:17 coyote kernel: [ 7423.221804]  [<c1087ebc>] page_cache_async_readahead+0x9c/0xb0                                       
+Aug  1 01:16:17 coyote kernel: [ 7423.221807]  [<c10806ac>] generic_file_aio_read+0x33c/0x6a0                                          
+Aug  1 01:16:17 coyote kernel: [ 7423.221830]  [<c10b09c9>] do_sync_read+0xe9/0x140                                                    
+Aug  1 01:16:17 coyote kernel: [ 7423.221835]  [<c104e400>] ? autoremove_wake_function+0x0/0x60                                        
+Aug  1 01:16:17 coyote kernel: [ 7423.221839]  [<c115211e>] ? security_file_permission+0x1e/0x40                                       
+Aug  1 01:16:17 coyote kernel: [ 7423.221842]  [<c10b0a80>] ? rw_verify_area+0x60/0xe0                                                 
+Aug  1 01:16:17 coyote kernel: [ 7423.221845]  [<c10b1827>] vfs_read+0xb7/0x180                                                        
+Aug  1 01:16:17 coyote kernel: [ 7423.221848]  [<c10b08e0>] ? do_sync_read+0x0/0x140                                                   
+Aug  1 01:16:17 coyote kernel: [ 7423.221850]  [<c10b19f8>] sys_read+0x58/0xa0                                                         
+Aug  1 01:16:17 coyote kernel: [ 7423.221854]  [<c10031b7>] sysenter_do_call+0x12/0x22                                                 
+Aug  1 01:16:17 coyote kernel: [ 7423.221856] Disabling lock debugging due to kernel taint                                             
+Aug  1 01:20:31 coyote xinetd[2316]: EXIT: amanda status=0 pid=18959 duration=330(sec)                                                 
+Aug  1 01:20:34 coyote xinetd[2316]: START: amanda pid=19523 from=::ffff:192.168.71.3         
 
-that is of course not the question at all.
+[snip extraneous stuff from my router that goes to syslog]
 
-All questions are about your above sundtek.de link, especially about
-what you announce in the user support forum for now.
+Aug  1 02:45:05 coyote xinetd[2316]: EXIT: amanda status=0 pid=19523 duration=5071(sec)                                                
+Aug  1 02:45:07 coyote xinetd[2316]: START: amanda pid=21465 from=::ffff:192.168.71.3                                                  
+Aug  1 02:46:07 coyote xinetd[2316]: EXIT: amanda status=0 pid=21465 duration=60(sec)                                                  
+Aug  1 02:46:19 coyote xinetd[2316]: START: amanda pid=21545 from=::ffff:192.168.71.3                                                  
+Aug  1 02:46:49 coyote xinetd[2316]: EXIT: amanda status=0 pid=21545 duration=30(sec)                                                  
+Aug  1 02:46:50 coyote xinetd[2316]: START: amanda pid=21572 from=::ffff:192.168.71.3                                                  
+Aug  1 02:47:20 coyote xinetd[2316]: EXIT: amanda status=0 pid=21572 duration=30(sec)                                                  
+Aug  1 02:47:21 coyote xinetd[2316]: START: amanda pid=21604 from=::ffff:192.168.71.3                                                  
+Aug  1 02:48:51 coyote xinetd[2316]: EXIT: amanda status=0 pid=21604 duration=90(sec)
+[then this morning]
+Aug  2 01:36:10 coyote xinetd[2316]: EXIT: amanda status=0 pid=11552 duration=540(sec)                                                 
+Aug  2 01:36:11 coyote xinetd[2316]: START: amanda pid=11801 from=::ffff:192.168.71.3
+Aug  2 01:54:41 coyote xinetd[2316]: EXIT: amanda status=0 pid=11801 duration=1110(sec)                                                
+Aug  2 01:54:46 coyote xinetd[2316]: START: amanda pid=12247 from=::ffff:192.168.71.3                                                  
+Aug  2 01:57:16 coyote xinetd[2316]: EXIT: amanda status=0 pid=12247 duration=150(sec)                                                 
+Aug  2 01:57:30 coyote xinetd[2316]: START: amanda pid=12360 from=::ffff:192.168.71.3                                                  
+Aug  2 01:58:00 coyote xinetd[2316]: EXIT: amanda status=0 pid=12360 duration=30(sec)                                                  
+Aug  2 01:58:00 coyote xinetd[2316]: START: amanda pid=12387 from=::ffff:192.168.71.3                                                  
+Aug  2 01:58:30 coyote xinetd[2316]: EXIT: amanda status=0 pid=12387 duration=30(sec)                                                  
+Aug  2 01:58:30 coyote xinetd[2316]: START: amanda pid=12414 from=::ffff:192.168.71.3                                                  
+Aug  2 01:59:30 coyote xinetd[2316]: EXIT: amanda status=0 pid=12414 duration=60(sec)                                                  
+Aug  2 01:59:45 coyote xinetd[2316]: START: amanda pid=12482 from=::ffff:192.168.71.3                                                  
+Aug  2 02:00:15 coyote xinetd[2316]: EXIT: amanda status=0 pid=12482 duration=30(sec)                                                  
+Aug  2 02:00:30 coyote xinetd[2316]: START: amanda pid=12535 from=::ffff:192.168.71.3                                                  
+Aug  2 02:01:00 coyote xinetd[2316]: EXIT: amanda status=0 pid=12535 duration=30(sec)
 
-Given, that Conexant did provide a GPLed driver for cx231xx USB devices
-recently, you are intentionally going into the other direction.
+So it did not repeat the Ooops this morning.  I wish I had more clues to offer.
+Let it ride as is for another 4 or 5 days, during which time I may have a good
+excuse to reboot & restart this -rc5 from scratch.  Or maybe someone else might also
+note it, but if not watching the log, I think its otherwise silent & may go by
+un-noticed.
 
-I don't even claim, that you should point to this driver too, if it goes
-about vbi and closed caption support on USB devices, it has it,
+Thanks Rafael.
 
-BUT you have gone closed source with your driver, deliver the linux
-driver to your customers only, if they are identified by the serial
-number of the device you did sell them.
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+The NRA is offering FREE Associate memberships to anyone who wants them.
+<https://www.nrahq.org/nrabonus/accept-membership.asp>
 
-I expect the worst for all further usage conditions.
-
-So, you do not only hide the vbi support you have on em28xx devices now
-to us, but likely made it even hard to "hack" such devices
-intentionally.
-
-In the same row is, that you announce advanced "direct" audio support
-with "tvtime" and soon more features with other GNU/Linux applications
-exclusively on your hardware and drivers and don't give back to all
-working on them over years.
-
-That is exactly what nobody wants and an abuse of all other
-contributors.
-
-Since you do all this intentionally, my vote is clear.
-
-Cheers,
-Hermann
-
-
-
-
-
+Q:	What is printed on the bottom of beer bottles in Minnesota?
+A:	Open other end.
 
