@@ -1,224 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751735AbZHCRP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751954AbZHCRRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751735AbZHCRP0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 13:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZHCRP0
+	id S1751954AbZHCRRn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 13:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZHCRRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 13:15:26 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:42719 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751236AbZHCRPZ (ORCPT
+	Mon, 3 Aug 2009 13:17:42 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:41671 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751318AbZHCRRm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 13:15:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=i1rlwcZruxasy/xEpUhGjjXpjBTC6jaLdefKOSCb9RE0SUQPaqeTKiAlXUC+FHbquC
-         7ZhK4KbT0cuOHdt4rnaKFZ6HIN/4hbytXLcMtiyoTFvP5Z1tO9JT0FSj5CkCLaG1an5R
-         jOUMsoMroBPIm8U3l3eGAmy9ZYhfb9OFSKnkk=
-From: Roger Quadros <quadros.roger@gmail.com>
-To: broonie@sirena.org.uk
-Cc: philipp.zabel@gmail.com, linux-kernel@vger.kernel.org
-Subject: [PATCH v4] regulator: Add GPIO enable control to fixed voltage regulator driver
-Date: Mon,  3 Aug 2009 20:15:16 +0300
-Message-Id: <1249319716-17825-1-git-send-email-quadros.roger@gmail.com>
-X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <quadros.roger@gmail.com>
-References: <quadros.roger@gmail.com>
+	Mon, 3 Aug 2009 13:17:42 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH 0/7] AlacrityVM guest drivers
+To: linux-kernel@vger.kernel.org
+Cc: alacrityvm-devel@lists.sourceforge.net, netdev@vger.kernel.org
+Date: Mon, 03 Aug 2009 13:17:30 -0400
+Message-ID: <20090803171030.17268.26962.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roger Quadros <ext-roger.quadros@nokia.com>
+(Applies to v2.6.31-rc5, proposed for linux-next after review is complete)
 
-Now fixed regulators that have their enable pin connected to a GPIO line
-can use the fixed regulator driver for regulator enable/disable control.
-The GPIO number and polarity information is passed through platform data.
-GPIO enable control is achieved using gpiolib.
+This series implements the guest-side drivers for accelerated IO
+when running on top of the AlacrityVM hypervisor, the details of
+which you can find here:
 
-Signed-off-by: Roger Quadros <ext-roger.quadros@nokia.com>
+http://developer.novell.com/wiki/index.php/AlacrityVM
+
+This series includes the basic plumbing, as well as the driver for
+accelerated 802.x (ethernet) networking.
+
+Regards,
+-Greg
+
 ---
- drivers/regulator/fixed.c       |   78 ++++++++++++++++++++++++++++++++++++++-
- include/linux/regulator/fixed.h |   21 ++++++++++
- 2 files changed, 97 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/regulator/fixed.c b/drivers/regulator/fixed.c
-index cdc674f..6cea02c 100644
---- a/drivers/regulator/fixed.c
-+++ b/drivers/regulator/fixed.c
-@@ -5,6 +5,9 @@
-  *
-  * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
-  *
-+ * Copyright (c) 2009 Nokia Corporation
-+ * Roger Quadros <ext-roger.quadros@nokia.com>
-+ *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public License as
-  * published by the Free Software Foundation; either version 2 of the
-@@ -20,20 +23,45 @@
- #include <linux/platform_device.h>
- #include <linux/regulator/driver.h>
- #include <linux/regulator/fixed.h>
-+#include <linux/gpio.h>
- 
- struct fixed_voltage_data {
- 	struct regulator_desc desc;
- 	struct regulator_dev *dev;
- 	int microvolts;
-+	int gpio;
-+	unsigned enable_high:1;
-+	unsigned is_enabled:1;
- };
- 
- static int fixed_voltage_is_enabled(struct regulator_dev *dev)
- {
--	return 1;
-+	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
-+
-+	return data->is_enabled;
- }
- 
- static int fixed_voltage_enable(struct regulator_dev *dev)
- {
-+	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
-+
-+	if (gpio_is_valid(data->gpio)) {
-+		gpio_set_value_cansleep(data->gpio, data->enable_high);
-+		data->is_enabled = 1;
-+	}
-+
-+	return 0;
-+}
-+
-+static int fixed_voltage_disable(struct regulator_dev *dev)
-+{
-+	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
-+
-+	if (gpio_is_valid(data->gpio)) {
-+		gpio_set_value_cansleep(data->gpio, !data->enable_high);
-+		data->is_enabled = 0;
-+	}
-+
- 	return 0;
- }
- 
-@@ -58,6 +86,7 @@ static int fixed_voltage_list_voltage(struct regulator_dev *dev,
- static struct regulator_ops fixed_voltage_ops = {
- 	.is_enabled = fixed_voltage_is_enabled,
- 	.enable = fixed_voltage_enable,
-+	.disable = fixed_voltage_disable,
- 	.get_voltage = fixed_voltage_get_voltage,
- 	.list_voltage = fixed_voltage_list_voltage,
- };
-@@ -85,12 +114,51 @@ static int regulator_fixed_voltage_probe(struct platform_device *pdev)
- 	drvdata->desc.n_voltages = 1;
- 
- 	drvdata->microvolts = config->microvolts;
-+	drvdata->gpio = config->gpio;
-+
-+	if (gpio_is_valid(config->gpio)) {
-+		drvdata->enable_high = config->enable_high;
-+
-+		/* FIXME: Remove this print warning */
-+		if (!config->gpio)
-+			dev_warn(&pdev->dev,
-+				"using GPIO 0 for regulator enable control\n");
-+
-+		ret = gpio_request(config->gpio, config->supply_name);
-+		if (ret) {
-+			dev_err(&pdev->dev,
-+			   "Could not obtain regulator enable GPIO %d: %d\n",
-+							config->gpio, ret);
-+			goto err_name;
-+		}
-+
-+		/* set output direction without changing state
-+		 * to prevent glitch
-+		 */
-+		drvdata->is_enabled = config->enabled_at_boot;
-+		ret = drvdata->is_enabled ?
-+				config->enable_high : !config->enable_high;
-+
-+		ret = gpio_direction_output(config->gpio, ret);
-+		if (ret) {
-+			dev_err(&pdev->dev,
-+			   "Could not configure regulator enable GPIO %d direction: %d\n",
-+							config->gpio, ret);
-+			goto err_gpio;
-+		}
-+
-+	} else {
-+		/* Regulator without GPIO control is considered
-+		 * always enabled
-+		 */
-+		drvdata->is_enabled = 1;
-+	}
- 
- 	drvdata->dev = regulator_register(&drvdata->desc, &pdev->dev,
- 					  config->init_data, drvdata);
- 	if (IS_ERR(drvdata->dev)) {
- 		ret = PTR_ERR(drvdata->dev);
--		goto err_name;
-+		goto err_gpio;
- 	}
- 
- 	platform_set_drvdata(pdev, drvdata);
-@@ -100,6 +168,9 @@ static int regulator_fixed_voltage_probe(struct platform_device *pdev)
- 
- 	return 0;
- 
-+err_gpio:
-+	if (gpio_is_valid(config->gpio))
-+		gpio_free(config->gpio);
- err_name:
- 	kfree(drvdata->desc.name);
- err:
-@@ -115,6 +186,9 @@ static int regulator_fixed_voltage_remove(struct platform_device *pdev)
- 	kfree(drvdata->desc.name);
- 	kfree(drvdata);
- 
-+	if (gpio_is_valid(drvdata->gpio))
-+		gpio_free(drvdata->gpio);
-+
- 	return 0;
- }
- 
-diff --git a/include/linux/regulator/fixed.h b/include/linux/regulator/fixed.h
-index 91b4da3..bd75b18 100644
---- a/include/linux/regulator/fixed.h
-+++ b/include/linux/regulator/fixed.h
-@@ -16,9 +16,30 @@
- 
- struct regulator_init_data;
- 
-+/**
-+ * struct fixed_voltage_config - fixed_voltage_config structure
-+ * @supply_name:	Name of the regulator supply
-+ * @microvolts:		Output voltage of regulator
-+ * @gpio:		GPIO to use for enable control
-+ * 			set to -EINVAL if not used
-+ * @enable_high:	Polarity of enable GPIO
-+ *			1 = Active high, 0 = Active low
-+ * @enabled_at_boot:	Whether regulator has been enabled at
-+ * 			boot or not. 1 = Yes, 0 = No
-+ * 			This is used to keep the regulator at
-+ * 			the default state
-+ * @init_data:		regulator_init_data
-+ *
-+ * This structure contains fixed voltage regulator configuration
-+ * information that must be passed by platform code to the fixed
-+ * voltage regulator driver.
-+ */
- struct fixed_voltage_config {
- 	const char *supply_name;
- 	int microvolts;
-+	int gpio;
-+	unsigned enable_high:1;
-+	unsigned enabled_at_boot:1;
- 	struct regulator_init_data *init_data;
- };
- 
+Gregory Haskins (7):
+      venet: add scatter-gather/GSO support
+      net: Add vbus_enet driver
+      ioq: add driver-side vbus helpers
+      vbus-proxy: add a pci-to-vbus bridge
+      vbus: add a "vbus-proxy" bus model for vbus_driver objects
+      ioq: Add basic definitions for a shared-memory, lockless queue
+      shm-signal: shared-memory signals
+
+
+ arch/x86/Kconfig            |    2 
+ drivers/Makefile            |    1 
+ drivers/net/Kconfig         |   14 +
+ drivers/net/Makefile        |    1 
+ drivers/net/vbus-enet.c     |  899 +++++++++++++++++++++++++++++++++++++++++++
+ drivers/vbus/Kconfig        |   24 +
+ drivers/vbus/Makefile       |    6 
+ drivers/vbus/bus-proxy.c    |  216 ++++++++++
+ drivers/vbus/pci-bridge.c   |  824 +++++++++++++++++++++++++++++++++++++++
+ include/linux/Kbuild        |    4 
+ include/linux/ioq.h         |  415 ++++++++++++++++++++
+ include/linux/shm_signal.h  |  189 +++++++++
+ include/linux/vbus_driver.h |   80 ++++
+ include/linux/vbus_pci.h    |  127 ++++++
+ include/linux/venet.h       |   84 ++++
+ lib/Kconfig                 |   21 +
+ lib/Makefile                |    2 
+ lib/ioq.c                   |  294 ++++++++++++++
+ lib/shm_signal.c            |  192 +++++++++
+ 19 files changed, 3395 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/net/vbus-enet.c
+ create mode 100644 drivers/vbus/Kconfig
+ create mode 100644 drivers/vbus/Makefile
+ create mode 100644 drivers/vbus/bus-proxy.c
+ create mode 100644 drivers/vbus/pci-bridge.c
+ create mode 100644 include/linux/ioq.h
+ create mode 100644 include/linux/shm_signal.h
+ create mode 100644 include/linux/vbus_driver.h
+ create mode 100644 include/linux/vbus_pci.h
+ create mode 100644 include/linux/venet.h
+ create mode 100644 lib/ioq.c
+ create mode 100644 lib/shm_signal.c
+
 -- 
-1.5.6.3
-
+Signature
