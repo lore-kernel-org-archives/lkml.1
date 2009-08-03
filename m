@@ -1,118 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932197AbZHCOtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932205AbZHCOum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932197AbZHCOtp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 10:49:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932157AbZHCOto
+	id S932205AbZHCOum (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 10:50:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932184AbZHCOum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 10:49:44 -0400
-Received: from mail.windriver.com ([147.11.1.11]:51834 "EHLO mail.wrs.com"
+	Mon, 3 Aug 2009 10:50:42 -0400
+Received: from rtr.ca ([76.10.145.34]:40055 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932124AbZHCOtn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 10:49:43 -0400
-Message-ID: <4A76F8A1.3020000@windriver.com>
-Date: Mon, 03 Aug 2009 09:48:01 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
+	id S932157AbZHCOul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 10:50:41 -0400
+Message-ID: <4A76F941.5060006@rtr.ca>
+Date: Mon, 03 Aug 2009 10:50:41 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
 User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dbrownell@users.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Yinghai Lu <yinghai@kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 07/10] ehci-dbgp,ehci: Allow early or late use of the
- dbgp device
-References: <Pine.LNX.4.44L0.0908011144110.20464-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908011144110.20464-100000@netrider.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+       sandeen@redhat.com
+Subject: Re: ext4 ioctl(FIEMAP) bug? observed in 2.6.29.4 (32-bit x86)
+References: <4A76069C.1010801@rtr.ca> <20090803074554.GA21042@skywalker>
+In-Reply-To: <20090803074554.GA21042@skywalker>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Aug 2009 14:48:02.0360 (UTC) FILETIME=[66D0AB80:01CA1449]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
-> On Fri, 31 Jul 2009, Jason Wessel wrote:
->
->   
->> Alan Stern wrote:
->>     
->>> What happens across a system suspend?
->>>
->>>   
->>>       
->> I assume you mean as a test case:
+Aneesh Kumar K.V wrote:
+> On Sun, Aug 02, 2009 at 05:35:24PM -0400, Mark Lord wrote:
+..
+>> 2.6.29.4:
+>> The output below shows the sequence of FIEMAP calls
+>> on the single massive file.  Notice that the first call
+>> returned the "LAST" flag set, despite there being many
+>> many more extents after that bunch.
 >>
->> echo -n mem > /sys/power/state
->>
->> The dbgp device goes away entirely, when used with
->> earlyprintk=dbgp,keep.  But there is a way to fix it reasonably
->> easily.  Perhaps you might ack this resume patch, if you agree?
->>
->> Jason.
->>
->> ---
->> From: Jason Wessel <jason.wessel@windriver.com>
->> Subject: [PATCH] ehci-dbgp,ehci: Allow dbpg to work with suspend/resume
->>
->> In order for the dbgp driver to survive suspend/resume, on every ehci
->> resume operation the debug controller must get re-initialized.
->>
->> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
->> Cc: Greg KH <gregkh@suse.de>
->> Cc: Alan Stern <stern@rowland.harvard.edu>
->> Cc: dbrownell@users.sourceforge.net
->> Cc: Ingo Molnar <mingo@elte.hu>
->> Cc: Andrew Morton <akpm@linux-foundation.org>
->> Cc: Yinghai Lu <yinghai@kernel.org>
->> Cc: "Eric W. Biederman" <ebiederm@xmission.com>
->>
->> ---
->>  drivers/usb/host/ehci-hub.c |    6 ++++++
->>  1 file changed, 6 insertions(+)
->>
->> --- a/drivers/usb/host/ehci-hub.c
->> +++ b/drivers/usb/host/ehci-hub.c
->> @@ -204,6 +204,13 @@ static int ehci_bus_resume (struct usb_h
->>  		return -ESHUTDOWN;
->>  	}
->>  
->> +	if (unlikely(ehci->debug)) {
->> +		if (ehci->debug && !dbgp_reset_prep())
->> +			ehci->debug = NULL;
->> +		else
->> +			dbgp_external_startup();
->> +	}
->> +
->>  	/* Ideally and we've got a real resume here, and no port's power
->>  	 * was lost.  (For PCI, that means Vaux was maintained.)  But we
->>  	 * could instead be restoring a swsusp snapshot -- so that BIOS was
->>     
->
-> It looks fine to me.  Would you perhaps want to make dbgp_reset_prep()
-> automatically call dbgp_external_startup() on success so that ehci-hcd
-> doesn't have to?
->   
+> 
+> Can you try with
+> 
+> commit c9877b205f6ce7943bb95281342f4001cc1c00ec
+> Author: Eric Sandeen <sandeen@redhat.com>
+> Date:   Fri May 1 23:32:06 2009 -0400
+> 
+>     ext4: fix for fiemap last-block test
+..
 
-Unfortunately the dbgp_reset_prep() and dbgp_external_startup() have to
-be separate for the hcd case because the ehci controller reset comes in
-between.  If you don't call dbgp_reset_prep() first, the ehci controller
-can hang the system for the "ehci debug controller timeout death
-period", or you can end up with undefined behavior if the ehci debug
-controller is accessed while the reset code is being processed.
+Ahh.. good to see it already upstream, thanks.
 
-The dbgp_reset_prep() puts the ehci debug controller/driver into a safe
-state until after the reset is done, and then the
-dbgp_external_startup() re-initializes the ehci debug controller.
+I cannot easily reproduce the bug, so no re-test here.
+And my app (hdparm) simply now ignores the LAST flag as a workaround.
 
-For the case of the power suspend, the ehci debug controller appeared to
-be usable all the way to the time the power got yanked.  For the resume
-operation, the debug controller driver sees that from the resume state
-that the enable bit is off and doesn't try to use the device until
-dbgp_reset_prep() and dbgp_external_reset() are called in sequence.
-
-The dbgp_reset_prep() has to get called in resume to handle the case
-where you remove the dbgp device while suspended and before you resumed
-such that it won't hang the kernel.
-
-Jason.
+Thanks
