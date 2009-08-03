@@ -1,128 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753397AbZHCIVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753489AbZHCIXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753397AbZHCIVX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 04:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbZHCIVX
+	id S1753489AbZHCIXY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 04:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbZHCIXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 04:21:23 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53675 "EHLO mx2.mail.elte.hu"
+	Mon, 3 Aug 2009 04:23:23 -0400
+Received: from mga14.intel.com ([143.182.124.37]:62219 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753185AbZHCIVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 04:21:22 -0400
-Date: Mon, 3 Aug 2009 10:20:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
-       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
-       josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
-       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org
-Subject: Re: [PATCH RFC -tip 0/4] v2 RCU cleanups and simplified
-	preemptable RCU
-Message-ID: <20090803082047.GA12498@elte.hu>
-References: <20090727181401.GA14120@linux.vnet.ibm.com>
+	id S1752729AbZHCIXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 04:23:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,312,1246863600"; 
+   d="scan'208";a="171619854"
+Date: Mon, 3 Aug 2009 16:23:18 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Chris Mason <chris.mason@oracle.com>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>, Neil Brown <neilb@suse.de>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>
+Subject: Re: Why does __do_page_cache_readahead submit READ, not READA?
+Message-ID: <20090803082318.GA18731@localhost>
+References: <20090729161456.GB8059@barkeeper1-xen.linbit> <20090729211845.GB4148@kernel.dk> <20090729225501.GH24801@think> <20090730060649.GC4148@kernel.dk> <20090803075202.GA13485@localhost> <20090803075933.GI12579@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090727181401.GA14120@linux.vnet.ibm.com>
+In-Reply-To: <20090803075933.GI12579@kernel.dk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Aug 03, 2009 at 03:59:33PM +0800, Jens Axboe wrote:
+> On Mon, Aug 03 2009, Wu Fengguang wrote:
+> > On Thu, Jul 30, 2009 at 08:06:49AM +0200, Jens Axboe wrote:
+> > > On Wed, Jul 29 2009, Chris Mason wrote:
+> > > > On Wed, Jul 29, 2009 at 11:18:45PM +0200, Jens Axboe wrote:
+> > > > > On Wed, Jul 29 2009, Lars Ellenberg wrote:
+> > > > > > I naively assumed, from the "readahead" in the name, that readahead
+> > > > > > would be submitting READA bios. It does not.
+> > > > > > 
+> > > > > > I recently did some statistics on how many READ and READA requests
+> > > > > > we actually see on the block device level.
+> > > > > > I was suprised that READA is basically only used for file system
+> > > > > > internal meta data (and not even for all file systems),
+> > > > > > but _never_ for file data.
+> > > > > > 
+> > > > > > A simple
+> > > > > > 	dd if=bigfile of=/dev/null bs=4k count=1
+> > > > > > will absolutely cause readahead of the configured amount, no problem.
+> > > > > > But on the block device level, these are READ requests, where I'd
+> > > > > > expected them to be READA requests, based on the name.
+> > > > > > 
+> > > > > > This is because __do_page_cache_readahead() calls read_pages(),
+> > > > > > which in turn is mapping->a_ops->readpages(), or, as fallback,
+> > > > > > mapping->a_ops->readpage().
+> > > > > > 
+> > > > > > On that level, all variants end up submitting as READ.
+> > > > > > 
+> > > > > > This may even be intentional.
+> > > > > > But if so, I'd like to understand that.
+> > > > > 
+> > > > > I don't think it's intentional, and if memory serves, we used to use
+> > > > > READA when submitting read-ahead. Not sure how best to improve the
+> > > > > situation, since (as you describe), we lose the read-ahead vs normal
+> > > > > read at that level. I did some experimentation some time ago for
+> > > > > flagging this, see:
+> > > > > 
+> > > > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=16cfe64e3568cda412b3cf6b7b891331946b595e
+> > > > > 
+> > > > > which should pass down READA properly.
+> > > > 
+> > > > One of the problems in the past was that reada would fail if there
+> > > > wasn't a free request when we actually wanted it to go ahead and wait.
+> > > > Or something.  We've switched it around a few times I think.
+> > > 
+> > > Yes, we did used to do that, whether it was 2.2 or 2.4 I
+> > > don't recall :-)
+> > > 
+> > > It should be safe to enable know, whether there's a prettier way
+> > > than the above, I don't know. It works by detecting the read-ahead
+> > > marker, but it's a bit of a fragile design.
+> > 
+> > Another consideration is io-priority reversion and the overheads
+> > required to avoid it:
+> > 
+> >         readahead(pages A-Z)    => READA IO for pages A-Z
+> >         <short time later>
+> >         read(page A) => blocked => find the request that contains page A
+> >                                    and requeue/kick it as READ IO
+> > 
+> > The page-to-request lookups are not always required but nevertheless
+> > the complexity and overheads won't be trivial.
+> > 
+> > The page-to-request lookup feature would be also useful for "advanced"
+> > features like io-canceling (if implemented, hwpoison could be its
+> > first user ;)
+> 
+> I added that 3-4 years ago or so, to experiment with in-kernel
+> cancellation for things like truncate(). Tracking pages is not cheap,
+> and since the write cancelling wasn't really very sucessful, I didn't go
+> ahead with it.
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+Ah OK.
 
-> [Not yet for inclusion, but making good progress.]
-> 
-> This patchset contains some RCU cleanups as follows:
-> 
-> o	Move private definitions from include/linux/rcutree.h to
-> 	kernel/rcutree.h
-> 
-> o	Rename variables and functions so that RCU-sched is an
-> 	underlying definition, along with RCU-bh and (when so
-> 	configured) RCU-preempt.  RCU then maps to either RCU-sched
-> 	or RCU-preempt, depending on configuration.
-> 
-> o	Consolidate sparse and lockdep into include/linux/rcupdate.h
-> 	so that all RCU implementations are set up properly.
-> 
-> With these in place, we add configurable preemptable-RCU functionality
-> to kernel/rcutree.c.  This new implementation has much faster and
-> simpler read-side primitives (roughly that of Classic RCU built with
-> CONFIG_PREEMPT), and has update-side performance equal to Classic RCU (at
-> least in absence of blocking/preemption of read-side critical sections).
-> This new implementation should eventually replace the old preemptable RCU,
-> which would remove 2099 lines of code from the kernel, for a net removal
-> of more than 1000 lines of code.
-> 
-> This patchset is undoubtably buggy, and does not have RCU priority
-> boosting, though it does have the necessary tracking of tasks blocked
-> in RCU read-side critical sections.
-> 
-> Changes from v1 (http://lkml.org/lkml/2009/7/23/294):
-> 
-> o	Fixes some locking problems detected by lockdep.
-> 
-> o	Disable irqs in quiescent-state-detection code, and fix handling
-> 	of scheduling-clock interrupt always occurring in RCU read-side
-> 	critical section.
-> 
-> o	Fix sparse annotations.
-> 
-> o	Apply feedback from Mathieu Desnoyers.
-> 
-> o	Fix x86 kernel-build errors.
-> 
-> o	Now passes moderate (multi-hour) rcutorture tests.
-> 
-> Shortcomings:
-> 
-> o	Only moderately tested, probably still quite buggy.  CPU hotplug
-> 	not yet tested heavily, for example.
-> 
-> o	Probably does not even compile for all of the relevant
-> 	combinations of kernel configuration variables.
-> 
-> o	Lacks RCU priority boosting.
-> 
->  b/Documentation/RCU/trace.txt |    7 
->  b/include/linux/init_task.h   |   15 +
->  b/include/linux/rcupdate.h    |   21 +-
->  b/include/linux/rcupreempt.h  |    4 
->  b/include/linux/rcutree.h     |  211 --------------------
->  b/include/linux/sched.h       |   37 +++
->  b/init/Kconfig                |   22 +-
->  b/kernel/Makefile             |    1 
->  b/kernel/exit.c               |    1 
->  b/kernel/fork.c               |    5 
->  b/kernel/rcupreempt.c         |    8 
->  b/kernel/rcutree.c            |    2 
->  b/kernel/rcutree.h            |  238 +++++++++++++++++++++++
->  b/kernel/rcutree_plugin.h     |  428 ++++++++++++++++++++++++++++++++++++++++++
->  b/kernel/rcutree_trace.c      |    2 
->  b/kernel/sched.c              |    2 
->  b/kernel/softirq.c            |    5 
->  include/linux/rcupdate.h      |   48 ++++
->  include/linux/rcupreempt.h    |    8 
->  include/linux/rcutree.h       |   43 ++--
->  kernel/rcutree.c              |  207 +++++++++++++-------
->  kernel/rcutree.h              |   13 +
->  kernel/rcutree_trace.c        |   40 ++-
->  23 files changed, 1018 insertions(+), 350 deletions(-)
+> So I'm not sure it's a viable alternative, even if we restricted it to
+> just tracking READA's, for instance.
 
-The structure looks really nice. If feasible i'd suggest to remove 
-preemptible-rcu in this same patch-set as well, to simplify the 
-testing matrix and to get the net code removal effect as well.
+Kind of agreed. I guess it won't benefit too much workloads to default
+to READA; for most workloads it would be pure overheads if considering
+priority inversion.
 
-An added benefit is that that way the -rt folks will test out the 
-new preemptible-rcu code with enthusiasm as well ;-)
+> But I don't think we have any priority inversion to worry about, at
+> least not from the CFQ perspective.
 
-	Ingo
+The priority inversion problem showed up in an early attempt to do
+boot time prefetching. I guess this problem was somehow circumvented
+by limiting the prefetch depth and do prefetches in original read
+order instead of disk location order (Arjan cc'ed).
+
+Thanks,
+Fengguang
