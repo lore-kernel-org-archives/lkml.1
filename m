@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbZHCOXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbZHCOZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755205AbZHCOXy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 10:23:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbZHCOXy
+	id S1755196AbZHCOZF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 10:25:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932077AbZHCOZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 10:23:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53356 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755064AbZHCOXx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 10:23:53 -0400
-Message-ID: <4A76F27E.5070407@redhat.com>
-Date: Mon, 03 Aug 2009 17:21:50 +0300
-From: Izik Eidus <ieidus@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Mon, 3 Aug 2009 10:25:04 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:47320 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755078AbZHCOZD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 10:25:03 -0400
+Date: Mon, 3 Aug 2009 10:25:02 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Lev A. Melnikovsky" <melnikovsky@mail.ru>
+cc: Artur Skawina <art.08.09@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: reading errors on JMicron JM20337 USB-SATA
+In-Reply-To: <alpine.LFD.2.00.0908030958570.31015@nev.ubzr>
+Message-ID: <Pine.LNX.4.44L0.0908031021370.16132-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-CC: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
-       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 1/12] ksm: rename kernel_pages_allocated
-References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils> <Pine.LNX.4.64.0908031308590.16754@sister.anvils>
-In-Reply-To: <Pine.LNX.4.64.0908031308590.16754@sister.anvils>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> We're not implementing swapping of KSM pages in its first release;
-> but when that follows, "kernel_pages_allocated" will be a very poor
-> name for the sysfs file showing number of nodes in the stable tree:
-> rename that to "pages_shared" throughout.
->
-> But we already have a "pages_shared", counting those page slots
-> sharing the shared pages: first rename that to... "pages_sharing".
->
-> What will become of "max_kernel_pages" when the pages shared can
-> be swapped?  I guess it will just be removed, so keep that name.
->
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> ---
->
->
->   
-ACK.
+On Mon, 3 Aug 2009, Lev A. Melnikovsky wrote:
+
+> AS> yes, jmicron bridges do not report errors properly and just stall pretty
+> AS> much indefinitely; found out the hard way, when a disk started to develop
+> My interpretation was different - the bridge firmware does not crash but 
+> remains alive (it does not report the error properly but "zis iz probably 
+> perfectly normal behaviour for a Vogon"). This is the Linux kernel that 
+> indefinitely tries to re-read. Am I wrong?
+
+You are correct except for the term "indefinitely".  The retries _will_
+stop if you wait long enough.  Unfortunately, because of all the nested
+retry loops in the SCSI drivers and at the application level, you may
+have to wait as long as half an hour.
+
+I agree that this should be fixed.  But it is a SCSI issue, not a USB 
+issue.  You could try bringing it up on the linux-scsi mailing list.
+
+Alan Stern
 
