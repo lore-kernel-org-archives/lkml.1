@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754379AbZHCVLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbZHCVME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754379AbZHCVLx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 17:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbZHCVLx
+	id S1754613AbZHCVME (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 17:12:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbZHCVMD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 17:11:53 -0400
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:41507 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753506AbZHCVLw (ORCPT
+	Mon, 3 Aug 2009 17:12:03 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2585 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754502AbZHCVMD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 17:11:52 -0400
-Subject: Re: [Regression] PCI resources allocation problem on HP nx6325
-From: Andrew Patterson <andrew.patterson@hp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Wilcox <willy@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <1249269055.4480.139.camel@grinch>
-References: <200908021619.48285.rjw@sisk.pl>
-	 <alpine.LFD.2.01.0908020927410.3352@localhost.localdomain>
-	 <1249269055.4480.139.camel@grinch>
+	Mon, 3 Aug 2009 17:12:03 -0400
+Subject: Re: MAINTAINERS: standardize James Bottomley's name
+From: Joe Perches <joe@perches.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1249332233.3943.211.camel@mulgrave.site>
+References: <1249331570.5149.48.camel@Joe-Laptop.home>
+	 <1249332233.3943.211.camel@mulgrave.site>
 Content-Type: text/plain
-Date: Mon, 03 Aug 2009 15:14:50 -0600
-Message-Id: <1249334090.31006.10260.camel@bluto.andrew>
+Date: Mon, 03 Aug 2009 14:11:03 -0700
+Message-Id: <1249333863.5149.58.camel@Joe-Laptop.home>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
@@ -31,106 +28,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-08-02 at 21:10 -0600, Andrew Patterson wrote:
-> On Sun, 2009-08-02 at 09:39 -0700, Linus Torvalds wrote:
+On Mon, 2009-08-03 at 20:43 +0000, James Bottomley wrote:
+> On Mon, 2009-08-03 at 13:32 -0700, Joe Perches wrote:
+> > His recent patches and sign-offs have not used "E.J."
 > > 
-> > On Sun, 2 Aug 2009, Rafael J. Wysocki wrote:
-> > >
-> > > Hi Matthew,
-> > > 
-> > > As reported at
-> > > 
-> > > http://bugzilla.kernel.org/show_bug.cgi?id=13891
-> > > 
-> > > there is a problem with allocating PCI resources on HP nx6325 introduced by
-> > > your commit a76117dfd687ec4be0a9a05214f3009cc5f73a42
-> > > (x86: Use pci_claim_resource).
-> > 
-> > Ooh, interesting. I thought that patch was a functionally equivalent 
-> > cleanup of
-> > 
-> > 	pr = pci_find_parent_resource(dev, r);
-> > 	if (!pr || request_resource(pr, r) < 0) {
-> > 
-> > to
-> > 
-> > 	if (pci_claim_resource(dev, idx) < 0) {
-> > 
-> > but yeah, it's not exactly the same. pci_claim_resource() uses 
-> > 'insert_resource()' rather than 'request_resource()'.
-> > 
-> > We could certainly revert the commit, but I also wonder whether we should 
-> > just change 'pci_claim_resource()' to use request_resource() instead.
-> > 
-> > I _think_ the use of "insert_resource()" is purely historical, and is 
-> > because that broken function _used_ to not look up the parent, but instead 
-> > do that crazy "pcibios_select_root()" thing, and then it really does need 
-> > to recurse down and "insert" the resource in the right place.
-> > 
-> > We should no longer _need_ to do the "insert_resource()" thing, since we 
-> > are inserting it into the exact parent that we want (as of commit 
-> > cebd78a8c: "Fix pci_claim_resource").
-> > 
-> > And if that "insert_resource()" in pci_claim_resource() ever does anything 
-> > fancier than the raw "request_resource()", then that's a problem anyway.
-> > 
-> > Willy, comments? x86 historically has never used pci_claim_resource() at 
-> > all (it always open-coded the above) except for some quirk handling. So 
-> > I'm pretty sure that a patch like the below should be safe and correct. 
-> > But it's parisc machines that always seem to break.
-> > 
-> > Added Andrew Patterson to the Cc, because his report was what caused us to 
-> > originally look at pci_claim_resource() and make it use 
-> > "pci_find_parent_resource()". We just never went whole hog, and we left 
-> > that broken "insert_resource()" around.
-> > 
-> > So Rafael and AndrewP, does this work for you? (I also moved the "dtype" 
-> > thing around, it bothered me).
+> > This reduces the likelihood that get_maintainers.pl will
+> > list his address twice.
 > 
-> It works fine for me on the original hardware where the problem was
-> reported. I don't see any change between iomem/ioport layout between the
-> kernel without this patch and the kernel with this patch. I don't have
-> the problem card I had in the same slot, so I would like to move it and
-> run another test.
-> 
+> It is standard:  I like my initials; which, per RFC requires the quotes
+> because it's a mailing address.
 
-This change also works with the original "problem" card. I don't see any
-issue with the serial port, but I have only tested on an rx6600.
+Then change the other entry.
 
-> Andrew
-> 
-> > 
-> > 			Linus
-> > 
-> > ---
-> >  drivers/pci/setup-res.c |    4 ++--
-> >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-> > index b711fb7..1898c7b 100644
-> > --- a/drivers/pci/setup-res.c
-> > +++ b/drivers/pci/setup-res.c
-> > @@ -100,16 +100,16 @@ int pci_claim_resource(struct pci_dev *dev, int resource)
-> >  {
-> >  	struct resource *res = &dev->resource[resource];
-> >  	struct resource *root;
-> > -	char *dtype = resource < PCI_BRIDGE_RESOURCES ? "device" : "bridge";
-> >  	int err;
-> >  
-> >  	root = pci_find_parent_resource(dev, res);
-> >  
-> >  	err = -EINVAL;
-> >  	if (root != NULL)
-> > -		err = insert_resource(root, res);
-> > +		err = request_resource(root, res);
-> >  
-> >  	if (err) {
-> > +		const char *dtype = resource < PCI_BRIDGE_RESOURCES ? "device" : "bridge";
-> >  		dev_err(&dev->dev, "BAR %d: %s of %s %pR\n",
-> >  			resource,
-> >  			root ? "address space collision on" :
-> > 
--- 
-Andrew Patterson
-Hewlett-Packard
+And if you really like your initials, you should probably change
+the email address format you're using right now and probably the
+mechanism you use to send your patches and acks as well.
+
+Look at the name I'm replying to: (no quotes)
+	"James Bottomley <James.Bottomley@HansenPartnership.com>"
+
+Right now, if somebody uses get_maintainers.pl on a patch for a
+file in drivers/scsi, git will find your signoffs as
+
+(no quotes)
+	"James Bottomley <James.Bottomley@HansenPartnership.com>"
+
+and the scripts/get_maintainers.pl will use MAINTAINERS entry of
+
+(with quotes)
+	"James E.J. Bottomley <James.Bottomley@HansenPartnership.com>"
+
+You'll be cc'd twice and .mailmap doesn't have enough information
+to select your preferred email address.
+
+cheers, Joe
 
