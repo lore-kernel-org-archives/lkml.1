@@ -1,96 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbZHCUVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753546AbZHCUWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753514AbZHCUVl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 16:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbZHCUVl
+	id S1753546AbZHCUWa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 16:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbZHCUW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 16:21:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51487 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752222AbZHCUVk (ORCPT
+	Mon, 3 Aug 2009 16:22:29 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:2002 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751673AbZHCUW2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 16:21:40 -0400
-Date: Mon, 3 Aug 2009 13:20:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sage Weil <sage@newdream.net>
-Cc: linux-kernel@vger.kernel.org, sage@newdream.net, neilb@suse.de,
-       linux-raid@vger.kernel.org, linux-mm@kvack.org, stable@kernel.org,
-       Matthew Dobson <colpatch@us.ibm.com>
-Subject: Re: [PATCH] mempool: launder reused items from kzalloc pool
-Message-Id: <20090803132011.5a84bc8a.akpm@linux-foundation.org>
-In-Reply-To: <1248813967-27448-1-git-send-email-sage@newdream.net>
-References: <1248813967-27448-1-git-send-email-sage@newdream.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 3 Aug 2009 16:22:28 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: linux-next: rr tree build failure
+Date: Mon, 3 Aug 2009 14:22:27 -0600
+User-Agent: KMail/1.9.10
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Len Brown <len.brown@intel.com>
+References: <20090803133203.81174a8e.sfr@canb.auug.org.au>
+In-Reply-To: <20090803133203.81174a8e.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908031422.28171.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 28 Jul 2009 13:46:07 -0700
-Sage Weil <sage@newdream.net> wrote:
-
-> The kzalloc pool created by mempool_create_kzalloc_pool() only zeros items
-> the first time they are allocated; it doesn't re-zero freed items that are
-> returned to the pool.  This only comes up when the pool is used in the
-> first place (when memory is very low).
+On Sunday 02 August 2009 09:32:03 pm Stephen Rothwell wrote:
+> Hi Rusty,
 > 
-> Fix this by adding a mempool_launder_t method that is called before
-> returning items to the pool, and set it in mempool_create_kzalloc_pool.
-> This preserves the use of __GFP_ZERO in the common case where the pool
-> isn't touched at all.
+> Today's linux-next build (x86_64 allmodconfig) failed like this:
 > 
-> There are currently two in-tree users of mempool_create_kzalloc_pool:
-> 	drivers/md/multipath.c
-> 	drivers/scsi/ibmvscsi/ibmvfc.c
-> The first appears to be affected by this bug.  The second manually zeros
-> each allocation, and can stop doing so after this is fixed.
+> drivers/acpi/osl.c: In function 'bind_to_cpu0':
+> drivers/acpi/osl.c:194: error: implicit declaration of function 'set_cpus_allowed'
 > 
-> Alternatively, mempool_create_kzalloc_pool() could be removed entirely and
-> the callers could zero allocations themselves.
+> Caused by commit 74b5820808215f65b70b05a099d6d3c969b82689 ("ACPI: bind
+> workqueues to CPU 0 to avoid SMI corruption") (from the acpi tree but now
+> in Linus' tree) interacting with commit
+> 17e249fb40c814a72f08c1356cb47ec9f87f81a8
+> ("cpumask:remove-set_cpus_allowed") from the rr tree.
+> 
+> I have reverted that rr tree commit for today.
 
-I must say that it does all seem a bit too fancy.  Removal of that code
-and changing the callers to zero the memory seems a nice and simple fix
-to me.
+Here's a patch to fix this.  Since Linus' tree still contains instances
+of set_cpus_allowed(), I'm guessing this patch should be added to the rr
+tree?
 
-> diff --git a/include/linux/mempool.h b/include/linux/mempool.h
-> index 9be484d..889c7e1 100644
-> --- a/include/linux/mempool.h
-> +++ b/include/linux/mempool.h
-> @@ -10,6 +10,7 @@ struct kmem_cache;
->  
->  typedef void * (mempool_alloc_t)(gfp_t gfp_mask, void *pool_data);
->  typedef void (mempool_free_t)(void *element, void *pool_data);
-> +typedef void (mempool_launder_t)(void *element, void *pool_data);
->  
->  typedef struct mempool_s {
->  	spinlock_t lock;
-> @@ -20,6 +21,7 @@ typedef struct mempool_s {
->  	void *pool_data;
->  	mempool_alloc_t *alloc;
->  	mempool_free_t *free;
-> +	mempool_launder_t *launder;
->  	wait_queue_head_t wait;
->  } mempool_t;
+Bjorn
 
-Yes, but we've added larger data structures and expensive indirect calls.
 
-Also, the code now zeroes the memory at deallocation time.  Slab used
-to do this but we ended up deciding it was a bad thing from a cache
-hotness POV and that it is better to zero the memory immediately before
-the caller starts to use it.
 
-So my vote would be to zap all that stuff.  We could perhaps do
+ACPI: remove cpumask_t usage
 
-static void *mempool_zalloc(mempool_t *pool, gfp_t gfp_mask, size_t size)
-{
-	void *ret = mempool_alloc(pool, gfp_mask);
+set_cpus_allowed() is on the way out; replace it with
+set_cpus_allowed_ptr().
 
-	if (ret)
-		memset(ret, 0, size);
-	return ret;
-}
+Reference: http://lkml.org/lkml/2008/11/6/448
 
-but it's unobvious that even this is worth doing.
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>
+
+diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
+index 5691f16..e196a75 100644
+--- a/drivers/acpi/osl.c
++++ b/drivers/acpi/osl.c
+@@ -191,7 +191,7 @@ acpi_status __init acpi_os_initialize(void)
+ 
+ static void bind_to_cpu0(struct work_struct *work)
+ {
+-	set_cpus_allowed(current, cpumask_of_cpu(0));
++	set_cpus_allowed_ptr(current, cpumask_of(0));
+ 	kfree(work);
+ }
+ 
 
