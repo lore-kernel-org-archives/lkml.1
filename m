@@ -1,89 +1,347 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753474AbZHCSKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZHCSLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753474AbZHCSKd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 14:10:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbZHCSKc
+	id S1753446AbZHCSLl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 14:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbZHCSLl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 14:10:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55243 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753355AbZHCSKb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 14:10:31 -0400
-Date: Mon, 3 Aug 2009 20:06:02 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, eranian@gmail.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       robert.richter@amd.com, paulus@samba.org, andi@firstfloor.org,
-       mpjohn@us.ibm.com, cel@us.ibm.com, cjashfor@us.ibm.com,
-       mucci@eecs.utk.edu, terpstra@eecs.utk.edu,
-       perfmon2-devel@lists.sourceforge.net, mtk.manpages@googlemail.com,
-       roland@redhat.com
-Subject: Re: [PATCH 3/2] fcntl: F_[SG]ETOWN_TID
-Message-ID: <20090803180602.GA19719@redhat.com>
-References: <1248953485.6391.41.camel@twins> <20090730192040.GA9503@redhat.com> <1248984003.4164.0.camel@laptop> <20090730202804.GA13675@redhat.com> <1249029320.6391.72.camel@twins> <20090731141122.a1939712.akpm@linux-foundation.org> <20090801012736.GA30259@redhat.com> <1249314498.7924.133.camel@twins> <20090803171619.GA17876@redhat.com> <1249321637.7924.163.camel@twins>
+	Mon, 3 Aug 2009 14:11:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37964 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752870AbZHCSLk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 14:11:40 -0400
+Date: Mon, 3 Aug 2009 11:11:19 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Sergey Senozhatsky <sergey.senozhatsky@mail.by>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>
+Subject: [PATCH 2/2] tty-ldisc: turn ldisc user count into a proper
+ refcount
+In-Reply-To: <alpine.LFD.2.01.0908031055400.3208@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0908031058330.3208@localhost.localdomain>
+References: <20090802120120.GA3097@localdomain.by> <alpine.LFD.2.01.0908020940530.3352@localhost.localdomain> <20090802190514.GA3278@localdomain.by> <alpine.LFD.2.01.0908021254580.3352@localhost.localdomain> <87k51l9apo.fsf@devron.myhome.or.jp>
+ <alpine.LFD.2.01.0908021423490.3352@localhost.localdomain> <20090802234851.3fd1ac2c@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0908021654010.3352@localhost.localdomain> <alpine.LFD.2.01.0908031047010.3208@localhost.localdomain>
+ <alpine.LFD.2.01.0908031055400.3208@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249321637.7924.163.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/03, Peter Zijlstra wrote:
->
-> On Mon, 2009-08-03 at 19:16 +0200, Oleg Nesterov wrote:
->
-> > Hmm, OK. so fcntl(F_SETOWN_TID, -666) <=> fcntl(F_SETOWN, +666).
-> >
-> > Not that I disagree, but I think this should be discussed. Perhaps
-> > F_SETOWN_TID can just reject who < 0.
->
-> Yeah, I considered that. Opinions?
 
-Yes, please ;)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 3 Aug 2009 10:38:46 -0700
+Subject: [PATCH 2/2] tty-ldisc: turn ldisc user count into a proper refcount
 
-> > but the caller of F_GETOWN can't know what the returned value actually
-> > means if F_GETOWN_TID was used.
->
-> Ah, I made GETOWN_TID deal with !PID but forgot the TID case in GETOWN.
-> Yeah, icky, esp since there is no room for errors in the return value :/
-> I guess I could make it return 0.
+By using the user count for the actual lifetime rules, we can get rid of
+the silly "wait_for_idle" logic, because any busy ldisc will
+automatically stay around until the last user releases it.  This avoids
+a host of odd issues, and simplifies the code.
 
-Yes, this is confusing too, but probably better.
+So now, when the last ldisc reference is dropped, we just release the
+ldisc operations struct reference, and free the ldisc.
 
-> > Perhaps we can just add
-> >
-> > 	#define F_PIDTYPE_THREAD	PIDTYPE_MAX
-> >
-> > into fcntl.c ? Then,
-> >
-> Right, I considered adding PIDTYPE_TID, but then I'd have to go through
-> the kernel and make everything consistent, which is where I gave up ;-)
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+---
 
-Note! we don't add the new PIDTYPE_TID actually. This F_PIDTYPE_THREAD
-is not visible outsie of fcntl.c, we just re-use ->pid_type. Instead
-we could add a bit, but using the impossible PIDTYPE_MAX is simpler.
+So this is obviously the real meat of the changes.
 
-> dunno if people will go for it though..
+It looks obvious enough, and it does work for me, but the counting _could_ 
+be off. It probably isn't (bad counting in the new version would generally 
+imply that the old code did something really bad, like free an ldisc with 
+a non-zero count), but it does need some testing, and preferably somebody 
+looking at it.
 
-Yes, I am not sure people will like it.
+With this change, both 'tty_ldisc_put()' and 'tty_ldisc_deref()' are just 
+aliases for the new ref-counting 'put_ldisc()'. Both of them decrement the 
+ldisc user count and free it if it goes down to zero. They're identical
+functions, in other words.
 
+But the reason they still exist as sepate functions is that one of them 
+was exported (tty_ldisc_deref) and had a stupid name (so I don't want to 
+use it as the main name), and the other one was used in multiple places 
+(and I didn't want to make the patch larger just to rename the users).
 
-As for F_XXXOWN/F_XXXWOWN_TID interaction. Another option, perhaps, is add
-F_{SET,GET}OWN_EX which accepts a use-visible
+In addition to the refcounting, I did do some minimal cleanup. For 
+example, now "tty_ldisc_try()" actually returns the ldisc it got under the 
+lock, rather than returning true/false and then the caller would look up 
+the ldisc again (now without the protection of the lock).
 
-	struct f_setown_struct {
-		int pid;		// > 0
-		int type;		// enumerates PIDTYPE_PID, PIDTYPE_PGID, F_PIDTYPE_THREAD
-	}
+That said, there's tons of dubious use of 'tty->ldisc' without obviously 
+proper locking or refcounting left. I expressly did _not_ want to try to 
+fix it all, keeping the patch minimal. There may or may not be bugs in 
+that kind of code, but they wouldn't be _new_ bugs.
 
-pointer via arg. Instead of F_XXXOWN_TID + int who.
+That said, even if the bugs aren't new, the timing and lifetime will 
+change. For example, some silly code may depend on the 'tty->ldisc' 
+pointer not changing because they hold a refcount on the 'ldisc'. And 
+that's no longer true - if you hold a ref on the ldisc, the 'ldisc' itself 
+is safe, but tty->ldisc may change. 
 
-This way at least the users of new api can't be confused.
+So the proper locking (remains) to hold tty->ldisc_mutex if you expect 
+tty->ldisc to be stable. That's not really a _new_ rule, but it's an 
+example of something that the old code might have unintentionally depended 
+on and hidden bugs.
 
-I dunno.
+Whatever. The patch _looks_ sensible to me. The only users of ldisc->users 
+are:
+ - get_ldisc() - atomically increment the count
 
-Oleg.
+ - put_ldisc() - atomically decrements the count and releases if zero
+
+ - tty_ldisc_try_get() - creates the ldisc, and sets the count to 1.
+   The ldisc should then either be released, or be attached to a tty.
+
+Comments? Testing?
+
+ drivers/char/tty_ldisc.c |  143 +++++++++++++++-------------------------------
+ 1 files changed, 46 insertions(+), 97 deletions(-)
+
+diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
+index fd175e6..be55dfc 100644
+--- a/drivers/char/tty_ldisc.c
++++ b/drivers/char/tty_ldisc.c
+@@ -48,6 +48,34 @@ static DECLARE_WAIT_QUEUE_HEAD(tty_ldisc_wait);
+ /* Line disc dispatch table */
+ static struct tty_ldisc_ops *tty_ldiscs[NR_LDISCS];
+ 
++static inline struct tty_ldisc *get_ldisc(struct tty_ldisc *ld)
++{
++	if (ld)
++		atomic_inc(&ld->users);
++	return ld;
++}
++
++static inline void put_ldisc(struct tty_ldisc *ld)
++{
++	if (WARN_ON_ONCE(!ld))
++		return;
++
++	/*
++	 * If this is the last user, free the ldisc, and
++	 * release the ldisc ops.
++	 */
++	if (atomic_dec_and_test(&ld->users)) {
++		unsigned long flags;
++		struct tty_ldisc_ops *ldo = ld->ops;
++
++		kfree(ld);
++		spin_lock_irqsave(&tty_ldisc_lock, flags);
++		ldo->refcount--;
++		module_put(ldo->owner);
++		spin_unlock_irqrestore(&tty_ldisc_lock, flags);
++	}
++}
++
+ /**
+  *	tty_register_ldisc	-	install a line discipline
+  *	@disc: ldisc number
+@@ -142,7 +170,7 @@ static struct tty_ldisc *tty_ldisc_try_get(int disc)
+ 			/* lock it */
+ 			ldops->refcount++;
+ 			ld->ops = ldops;
+-			atomic_set(&ld->users, 0);
++			atomic_set(&ld->users, 1);
+ 			err = 0;
+ 		}
+ 	}
+@@ -181,35 +209,6 @@ static struct tty_ldisc *tty_ldisc_get(int disc)
+ 	return ld;
+ }
+ 
+-/**
+- *	tty_ldisc_put		-	drop ldisc reference
+- *	@ld: ldisc
+- *
+- *	Drop a reference to a line discipline. Manage refcounts and
+- *	module usage counts. Free the ldisc once the recount hits zero.
+- *
+- *	Locking:
+- *		takes tty_ldisc_lock to guard against ldisc races
+- */
+-
+-static void tty_ldisc_put(struct tty_ldisc *ld)
+-{
+-	unsigned long flags;
+-	int disc = ld->ops->num;
+-	struct tty_ldisc_ops *ldo;
+-
+-	BUG_ON(disc < N_TTY || disc >= NR_LDISCS);
+-
+-	spin_lock_irqsave(&tty_ldisc_lock, flags);
+-	ldo = tty_ldiscs[disc];
+-	BUG_ON(ldo->refcount == 0);
+-	ldo->refcount--;
+-	module_put(ldo->owner);
+-	spin_unlock_irqrestore(&tty_ldisc_lock, flags);
+-	WARN_ON(atomic_read(&ld->users));
+-	kfree(ld);
+-}
+-
+ static void *tty_ldiscs_seq_start(struct seq_file *m, loff_t *pos)
+ {
+ 	return (*pos < NR_LDISCS) ? pos : NULL;
+@@ -234,7 +233,7 @@ static int tty_ldiscs_seq_show(struct seq_file *m, void *v)
+ 	if (IS_ERR(ld))
+ 		return 0;
+ 	seq_printf(m, "%-10s %2d\n", ld->ops->name ? ld->ops->name : "???", i);
+-	tty_ldisc_put(ld);
++	put_ldisc(ld);
+ 	return 0;
+ }
+ 
+@@ -288,20 +287,17 @@ static void tty_ldisc_assign(struct tty_struct *tty, struct tty_ldisc *ld)
+  *	Locking: takes tty_ldisc_lock
+  */
+ 
+-static int tty_ldisc_try(struct tty_struct *tty)
++static struct tty_ldisc *tty_ldisc_try(struct tty_struct *tty)
+ {
+ 	unsigned long flags;
+ 	struct tty_ldisc *ld;
+-	int ret = 0;
+ 
+ 	spin_lock_irqsave(&tty_ldisc_lock, flags);
+-	ld = tty->ldisc;
+-	if (test_bit(TTY_LDISC, &tty->flags)) {
+-		atomic_inc(&ld->users);
+-		ret = 1;
+-	}
++	ld = NULL;
++	if (test_bit(TTY_LDISC, &tty->flags))
++		ld = get_ldisc(tty->ldisc);
+ 	spin_unlock_irqrestore(&tty_ldisc_lock, flags);
+-	return ret;
++	return ld;
+ }
+ 
+ /**
+@@ -322,10 +318,11 @@ static int tty_ldisc_try(struct tty_struct *tty)
+ 
+ struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *tty)
+ {
++	struct tty_ldisc *ld;
++
+ 	/* wait_event is a macro */
+-	wait_event(tty_ldisc_wait, tty_ldisc_try(tty));
+-	WARN_ON(atomic_read(&tty->ldisc->users) == 0);
+-	return tty->ldisc;
++	wait_event(tty_ldisc_wait, (ld = tty_ldisc_try(tty)) != NULL);
++	return ld;
+ }
+ EXPORT_SYMBOL_GPL(tty_ldisc_ref_wait);
+ 
+@@ -342,9 +339,7 @@ EXPORT_SYMBOL_GPL(tty_ldisc_ref_wait);
+ 
+ struct tty_ldisc *tty_ldisc_ref(struct tty_struct *tty)
+ {
+-	if (tty_ldisc_try(tty))
+-		return tty->ldisc;
+-	return NULL;
++	return tty_ldisc_try(tty);
+ }
+ EXPORT_SYMBOL_GPL(tty_ldisc_ref);
+ 
+@@ -360,19 +355,15 @@ EXPORT_SYMBOL_GPL(tty_ldisc_ref);
+ 
+ void tty_ldisc_deref(struct tty_ldisc *ld)
+ {
+-	unsigned long flags;
+-
+-	BUG_ON(ld == NULL);
+-
+-	spin_lock_irqsave(&tty_ldisc_lock, flags);
+-	if (atomic_read(&ld->users) == 0)
+-		printk(KERN_ERR "tty_ldisc_deref: no references.\n");
+-	else if (atomic_dec_and_test(&ld->users))
+-		wake_up(&tty_ldisc_wait);
+-	spin_unlock_irqrestore(&tty_ldisc_lock, flags);
++	put_ldisc(ld);
+ }
+ EXPORT_SYMBOL_GPL(tty_ldisc_deref);
+ 
++static inline void tty_ldisc_put(struct tty_ldisc *ld)
++{
++	put_ldisc(ld);
++}
++
+ /**
+  *	tty_ldisc_enable	-	allow ldisc use
+  *	@tty: terminal to activate ldisc on
+@@ -521,31 +512,6 @@ static int tty_ldisc_halt(struct tty_struct *tty)
+ }
+ 
+ /**
+- *	tty_ldisc_wait_idle	-	wait for the ldisc to become idle
+- *	@tty: tty to wait for
+- *
+- *	Wait for the line discipline to become idle. The discipline must
+- *	have been halted for this to guarantee it remains idle.
+- *
+- *	tty_ldisc_lock protects the ref counts currently.
+- */
+-
+-static int tty_ldisc_wait_idle(struct tty_struct *tty)
+-{
+-	unsigned long flags;
+-	spin_lock_irqsave(&tty_ldisc_lock, flags);
+-	while (atomic_read(&tty->ldisc->users)) {
+-		spin_unlock_irqrestore(&tty_ldisc_lock, flags);
+-		if (wait_event_timeout(tty_ldisc_wait,
+-				atomic_read(&tty->ldisc->users) == 0, 5 * HZ) == 0)
+-			return -EBUSY;
+-		spin_lock_irqsave(&tty_ldisc_lock, flags);
+-	}
+-	spin_unlock_irqrestore(&tty_ldisc_lock, flags);
+-	return 0;
+-}
+-
+-/**
+  *	tty_set_ldisc		-	set line discipline
+  *	@tty: the terminal to set
+  *	@ldisc: the line discipline
+@@ -640,14 +606,6 @@ int tty_set_ldisc(struct tty_struct *tty, int ldisc)
+ 
+ 	flush_scheduled_work();
+ 
+-	/* Let any existing reference holders finish */
+-	retval = tty_ldisc_wait_idle(tty);
+-	if (retval < 0) {
+-		clear_bit(TTY_LDISC_CHANGING, &tty->flags);
+-		tty_ldisc_put(new_ldisc);
+-		return retval;
+-	}
+-
+ 	mutex_lock(&tty->ldisc_mutex);
+ 	if (test_bit(TTY_HUPPED, &tty->flags)) {
+ 		/* We were raced by the hangup method. It will have stomped
+@@ -793,7 +751,6 @@ void tty_ldisc_hangup(struct tty_struct *tty)
+ 		if (tty->ldisc) {	/* Not yet closed */
+ 			/* Switch back to N_TTY */
+ 			tty_ldisc_halt(tty);
+-			tty_ldisc_wait_idle(tty);
+ 			tty_ldisc_reinit(tty);
+ 			/* At this point we have a closed ldisc and we want to
+ 			   reopen it. We could defer this to the next open but
+@@ -858,14 +815,6 @@ void tty_ldisc_release(struct tty_struct *tty, struct tty_struct *o_tty)
+ 	tty_ldisc_halt(tty);
+ 	flush_scheduled_work();
+ 
+-	/*
+-	 * Wait for any short term users (we know they are just driver
+-	 * side waiters as the file is closing so user count on the file
+-	 * side is zero.
+-	 */
+-
+-	tty_ldisc_wait_idle(tty);
+-
+ 	mutex_lock(&tty->ldisc_mutex);
+ 	/*
+ 	 * Now kill off the ldisc
+-- 
+1.6.4.21.g73b866
 
