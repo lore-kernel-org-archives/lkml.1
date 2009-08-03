@@ -1,101 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752824AbZHCRcb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbZHCRfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752824AbZHCRcb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 13:32:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbZHCRca
+	id S1752842AbZHCRfJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 13:35:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbZHCRfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 13:32:30 -0400
-Received: from mga09.intel.com ([134.134.136.24]:26178 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751501AbZHCRc3 convert rfc822-to-8bit (ORCPT
+	Mon, 3 Aug 2009 13:35:08 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:20651 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750901AbZHCRfH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 13:32:29 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,315,1246863600"; 
-   d="scan'208";a="435737909"
-From: "Othman, Ossama" <ossama.othman@intel.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 3 Aug 2009 10:32:28 -0700
-Subject: RE: [PATCH] Moorestown RAR Handler driver, MRST 2.6.31-rc3
-Thread-Topic: [PATCH] Moorestown RAR Handler driver, MRST 2.6.31-rc3
-Thread-Index: AcoSegIByrRWy/lWS6aKpXQaEe8vXwB5JZdg
-Message-ID: <A5FE05C4C76E4C4CAB15D9962B96FC950C7957A872@orsmsx510.amr.corp.intel.com>
-References: <1249082419-27718-1-git-send-email-ossama.othman@intel.com>
- <20090801073053.GA30389@merkur.ravnborg.org>
-In-Reply-To: <20090801073053.GA30389@merkur.ravnborg.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 3 Aug 2009 13:35:07 -0400
+X-Trace: 240668101/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.36.44/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.36.44
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqYEACy8dkpPRSQs/2dsb2JhbACBUtFGhBgF
+X-IronPort-AV: E=Sophos;i="4.43,315,1246834800"; 
+   d="scan'208";a="240668101"
+Date: Mon, 3 Aug 2009 18:34:57 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Andrea Arcangeli <aarcange@redhat.com>
+cc: Izik Eidus <ieidus@redhat.com>, Rik van Riel <riel@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 2/12] ksm: move pages_sharing updates
+In-Reply-To: <20090803165315.GH23385@random.random>
+Message-ID: <Pine.LNX.4.64.0908031821040.6178@sister.anvils>
+References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils>
+ <Pine.LNX.4.64.0908031310060.16754@sister.anvils> <20090803165315.GH23385@random.random>
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam,
+On Mon, 3 Aug 2009, Andrea Arcangeli wrote:
+> 
+> If we stick to the subtraction semantics (that I think for users is
+> less intuitive as they need to understand more of the ksm code to
+> figure out what it means) sure ack...
+> 
+> I don't see the big deal of just printing total number of ksm pages in
+> stable tree, and the actual _total_ number of userland mappings that
+> are mapping those. The subtraction to see the actual sharing that is
+> the difference between the two numbers, can be done by the user
+> itself.
 
->Please use:
->+ memrar-y := memrar_allocator.o memrar_handler.o
->
->The foo-objs syntax is deprecated.
+Yes, I know just what you mean.  When I first came to this, I rather
+disliked that subtraction (though with this patch we have no actual
+subtraction - but as you indicate, yes, that's an accident of the
+internal implementation).  And it gets in the way of calculating
+the ratio of ptes serviced to pages used.
 
-Thanks!  I'll make that change.
+But something I always find bothersome with /proc/meminfo is the
+uncertainty about which numbers are included in which other numbers,
+and which are exclusive.
 
-The file `Documentation/kbuild/makefiles.txt' doesn't mention the deprecation, AFAICT.  Can you tell me where it is documented?
+So once I'd come to add the pages_unshared and pages_volatile,
+I was really appreciating that these numbers are all simply
+exclusive.
 
->> +
->> +
->> +#include "memrar_allocator.h"
->> +#include <linux/slab.h>
->> +#include <linux/bug.h>
->
-><linux/...> comes _before_ you own includes.
->And an empty line in between.
+> 
+> But then I'm fine if we stick to the substraction logic, this is a
+> minor detail, I just usually prefer "raw" values. (if removing the
+> inc/dec is beneficial at runtime as it seems then doing an addition
+> will provide the info I would find more intuitive in  a more efficient
+> way than before)
 
-Will do!
+If you're also okay to stick with the subtraction logic, I think
+let's continue to stick with it; but certainly it's something we
+can easily change before 2.6.32, if people keep questioning it.
 
-This guideline doesn't appear in Documentation/CodingStyle.  Should it?
- 
->> +
->> +
->> +struct memrar_allocator *memrar_create_allocator(unsigned long base,
->> +						 size_t capacity,
->> +						 size_t block_size)
->> +{
->> +	struct memrar_allocator *allocator = 0;
->
->It is recommended to separate definition,
->and assignment.
->So this should look like this:
->
->	struct memrar_allocator *allocator;
->
->	allocator = 0;
+(I've tried to make it clear in ksm.txt, but people are likely
+to question which way it is, whichever way it is - but it's
+easier to say "they're all exclusive" than "this includes that,
+but the others are exclusive").
 
-Okay, I'll fix that, too.  Should this go into Documentation/CodingStyle, too?
+> 
+> Acked-by: Andrea Arcangeli <aarcange@redhat.com>
 
->> +
->> +	/* Validate parameters. */
->> +	if (/*
->> +	     * Make sure we can allocate the entire memory allocator
->> +	     * space.
->> +	     */
->> +		ULONG_MAX - capacity >= base
->> +
->> +		/* Zero capacity or block size are obviously invalid. */
->> +		&& capacity != 0
->> +		&& block_size != 0) {
->
->Very ugly way to comment your if (..) IMHO
->Put the comment abvoe the if.
-
-You're not the only that has mentioned that :).  I'll fix this in the next revision, as well.
-
->I'm short on time - so this is the comments for today...
-
-Thanks a lot for the feedback, Sam!  I'll address all of your comments in the next revision!
-
--Ossama
+Thanks,
+Hugh
