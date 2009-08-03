@@ -1,45 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbZHCB3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754164AbZHCBbE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754134AbZHCB3u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 21:29:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754058AbZHCB3t
+	id S1754164AbZHCBbE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 21:31:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbZHCBbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 21:29:49 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33396
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754042AbZHCB3s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 21:29:48 -0400
-Date: Sun, 02 Aug 2009 18:29:56 -0700 (PDT)
-Message-Id: <20090802.182956.263159793.davem@davemloft.net>
-To: horms@verge.net.au
-Cc: heder@google.com, lvs-devel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, joe@perches.com, jengelh@medozas.de
-Subject: Re: [PATCH v4 2/2] IPVS: use pr_err and friends instead of
- IP_VS_ERR and friends
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090803003658.GQ6177@verge.net.au>
-References: <20090802210530.14843.62378.stgit@jazzy.zrh.corp.google.com>
-	<20090803003658.GQ6177@verge.net.au>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Sun, 2 Aug 2009 21:31:04 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:53272 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754059AbZHCBbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 21:31:03 -0400
+Date: Mon, 3 Aug 2009 11:30:58 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "NeilBrown" <neilb@suse.de>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       "Andre Noll" <maan@systemlinux.org>
+Subject: Re: linux-next:  tree build failure
+Message-Id: <20090803113058.3b6b59cf.sfr@canb.auug.org.au>
+In-Reply-To: <7f7d2d5828c15f1fe8221554f661903e.squirrel@neil.brown.name>
+References: <20090803103550.9b28900a.sfr@canb.auug.org.au>
+	<7f7d2d5828c15f1fe8221554f661903e.squirrel@neil.brown.name>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__3_Aug_2009_11_30_58_+1000_suSjTqgHdJiY6SxG"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Simon Horman <horms@verge.net.au>
-Date: Mon, 3 Aug 2009 10:36:59 +1000
+--Signature=_Mon__3_Aug_2009_11_30_58_+1000_suSjTqgHdJiY6SxG
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Sun, Aug 02, 2009 at 11:05:41PM +0200, Hannes Eder wrote:
->> Since pr_err and friends are used instead of printk there is no point
->> in keeping IP_VS_ERR and friends.  Furthermore make use of '__func__'
->> instead of hard coded function names.
->> 
->> Signed-off-by: Hannes Eder <heder@google.com>
-> 
-> Acked-by: Simon Horman <horms@verge.net.au>
+Hi Neil,
 
-Applied, thanks.
+On Mon, 3 Aug 2009 11:01:24 +1000 (EST) "NeilBrown" <neilb@suse.de> wrote:
+>
+> On Mon, August 3, 2009 10:35 am, Stephen Rothwell wrote:
+> >
+> > Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+> >
+> > ERROR: ".md_integrity_add_rdev" [drivers/md/multipath.ko] undefined!
+> >
+> > Caused by commit 66f4f3f41f5c334f399e920b2aaad9b82514acda ("md: Push do=
+wn
+> > data integrity code to personalities") from the md-current and md trees.
+> > Looks like md_integrity_add_rdev needs an EXPORT_SYMBOL.
+>=20
+> Yes, of course...
+> Thanks!
+> Fixed.
 
+OK, so I refetched the md tree and will use it today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__3_Aug_2009_11_30_58_+1000_suSjTqgHdJiY6SxG
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkp2PdIACgkQjjKRsyhoI8yoqgCcCkcjlK+RpREGY7jZr4ktGfH2
+KgoAn2jbX2tYD1XxbsFROGg99qD1scP4
+=f9aQ
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__3_Aug_2009_11_30_58_+1000_suSjTqgHdJiY6SxG--
