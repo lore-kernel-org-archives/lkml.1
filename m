@@ -1,52 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932288AbZHCWH4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932279AbZHCWLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932288AbZHCWH4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 18:07:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbZHCWHz
+	id S932279AbZHCWLj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 18:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbZHCWLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 18:07:55 -0400
-Received: from rtr.ca ([76.10.145.34]:44833 "EHLO mail.rtr.ca"
+	Mon, 3 Aug 2009 18:11:38 -0400
+Received: from mail-out1.uio.no ([129.240.10.57]:47305 "EHLO mail-out1.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754804AbZHCWHz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 18:07:55 -0400
-Message-ID: <4A775FB9.80600@rtr.ca>
-Date: Mon, 03 Aug 2009 18:07:53 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
-MIME-Version: 1.0
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
-       Eric Sandeen <sandeen@sandeen.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fs/compat_ioctl.c: add missing FS_IOC_FIEMAP support
-References: <4A74584D.2010300@rtr.ca> <4A7722DF.80704@rtr.ca> <4A7725AF.6090106@redhat.com>
-In-Reply-To: <4A7725AF.6090106@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1752628AbZHCWLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 18:11:37 -0400
+Subject: Re: nfs: __setup_str_nfs_root_setup causes a section type conflict
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
+       Helge Deller <deller@gmx.de>
+In-Reply-To: <20090803215237.GA956@merkur.ravnborg.org>
+References: <200907311446.33486.elendil@planet.nl>
+	 <200908032121.10635.elendil@planet.nl>
+	 <1249328851.18161.32.camel@heimdal.trondhjem.org>
+	 <200908032257.51739.elendil@planet.nl>
+	 <1249333643.18161.36.camel@heimdal.trondhjem.org>
+	 <20090803215237.GA956@merkur.ravnborg.org>
+Content-Type: text/plain
+Date: Mon, 03 Aug 2009 18:11:33 -0400
+Message-Id: <1249337493.18161.52.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 6 msgs/h 1 sum rcpts/h 10 sum msgs/h 1 total rcpts 985 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: 747252809D1B3796E2A7051DAD7CC8B6D93FC815
+X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 101 max/h 5 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
-> Mark Lord wrote:
->> (resending, no ack from anyone first time around).
+On Mon, 2009-08-03 at 23:52 +0200, Sam Ravnborg wrote:
+> On Mon, Aug 03, 2009 at 05:07:23PM -0400, Trond Myklebust wrote:
+> > On Mon, 2009-08-03 at 22:57 +0200, Frans Pop wrote:
+> > > $ make init/do_mounts.o
+> > >   CHK     include/linux/version.h
+> > >   CHK     include/linux/utsrelease.h
+> > >   SYMLINK include/asm -> include/asm-parisc
+> > >   CALL    scripts/checksyscalls.sh
+> > >   CC      init/do_mounts.o
+> > > 
+> > > while:
+> > > 
+> > > $ make fs/nfs/nfsroot.o
+> > >   CHK     include/linux/version.h
+> > >   CHK     include/linux/utsrelease.h
+> > >   SYMLINK include/asm -> include/asm-parisc
+> > >   CALL    scripts/checksyscalls.sh
+> > >   CC      fs/nfs/nfsroot.o
+> > > fs/nfs/nfsroot.c:403: error: __setup_str_nfs_root_setup causes a section type 
+> > > conflict
+> > 
+> > To me that looks like some kind of compiler bug.
 > 
-> I had previously sent a fix for this to the ext4 list as well, although
-> w/o the added case for compat_ioctl or the extra #include.
+> unspecified behaviour is a better name for it.
 > 
-> Because this ioctl should be 100% compat everywhere, I don't -think-
-> it's needed, and
+> We have two variables we have forced a section on.
+> One variable is marked RO by the compiler while the other is not.
+> This results in a section type conflict because all
+> symbols needs to have the same falgs.
 > 
-> http://marc.info/?l=linux-ext4&m=124872536713005&w=2
+> We usually triggers this with powerpc builds (64 bit IIRC),
+> and now with parisc too.
 > 
-> suffices....
-..
+> The only way to fix it is to move one of the offending
+> variables to __initdata.
+> There is two variales to consider - the compiler only
+> mention one of them.
+> 
+> Trying to declare the variables const etc usually has
+> no good effect.
 
-Well, whichever of the two works best for the maintainers.
+So why would it be happening in the NFSroot case, but not in
+do_mounts.c? They're both using the standard __setup() macro with a
+constant string, and an __init function argument.
 
-We need *something* for it upstream, and probably back in -stable too.
-Otherwise this prevents using 64-bit kernels on 32-bit userland,
-as Linus likes to recommend so often.  ;)
+Futhermore, when grepping for '__initconst', it seems that the
+combination with 'static const' is the norm rather than the exception.
 
-Cheers
+Trond
+
