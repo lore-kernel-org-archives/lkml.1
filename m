@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755253AbZHCPTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbZHCPUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755253AbZHCPTP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 11:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755096AbZHCPTO
+	id S1755242AbZHCPUd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 11:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755217AbZHCPUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 11:19:14 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:51513 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755187AbZHCPTN (ORCPT
+	Mon, 3 Aug 2009 11:20:32 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42165 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755096AbZHCPUb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 11:19:13 -0400
-Message-ID: <4A76FF8E.80507@zytor.com>
-Date: Mon, 03 Aug 2009 08:17:34 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Mon, 3 Aug 2009 11:20:31 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [Bug #13813] Hangups in n_tty_read()
+Date: Mon, 3 Aug 2009 17:20:59 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc5-rjw; KDE/4.2.4; x86_64; ; )
+Cc: =?utf-8?q?Fr=C3=A9d=C3=A9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera> <c62985530908021815s547ac3aavb0d7a70c683ae79b@mail.gmail.com> <20090803092029.GA2163@cmpxchg.org>
+In-Reply-To: <20090803092029.GA2163@cmpxchg.org>
 MIME-Version: 1.0
-To: Akinobu Mita <akinobu.mita@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/asm] x86: Introduce GDT_ENTRY_INIT()
-References: <20090718151219.GD11294@localhost.localdomain>	 <tip-d520da1173abd1f918b7e690220e14ba0fc56cfc@git.kernel.org>	 <20090803062024.GA22365@elte.hu> <4A768339.9060904@zytor.com> <961aa3350908030811n6467b2d7hf42dfd58e3a438e7@mail.gmail.com>
-In-Reply-To: <961aa3350908030811n6467b2d7hf42dfd58e3a438e7@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200908031721.00102.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/03/2009 08:11 AM, Akinobu Mita wrote:
->>>>
->> OK, I spotted the following error, which certainly would explain a crash on
->> an APM machine:
->>
->>        /* data */
->> -       [GDT_ENTRY_APMBIOS_BASE+2]      = { { { 0x0000ffff, 0x00409200 } }
->> },
->> +       [GDT_ENTRY_APMBIOS_BASE+2]      = GDT_ENTRY_INIT(0x409a, 0, 0xffff),
+On Monday 03 August 2009, Johannes Weiner wrote:
+> On Mon, Aug 03, 2009 at 03:15:10AM +0200, Frédéric Weisbecker wrote:
+> > 2009/8/2 Rafael J. Wysocki <rjw@sisk.pl>:
+> > > This message has been generated automatically as a part of a report
+> > > of recent regressions.
+> > >
+> > > The following bug entry is on the current list of known regressions
+> > > from 2.6.30.  Please verify if it still should be listed and let me know
+> > > (either way).
+> > >
+> > >
+> > > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13813
+> > > Subject         : Hangups in n_tty_read()
+> > > Submitter       : Johannes Weiner <hannes@cmpxchg.org>
+> > > Date            : 2009-07-16 18:48 (18 days old)
+> > > References      : http://marc.info/?l=linux-kernel&m=124777019920579&w=4
+> > 
+> > 
+> > Johannes,
+> > 
+> > Does it still happen with latest mainline?
+> > Also, could you send us your .config ?
 > 
-> Oops, I really should have checked the binary because the compiler should
-> generate same code with this patch.
+> I wanted to wait until confirming this as this bug could take a while
+> to trigger.
 > 
+> But v2.6.31-rc4-405-gb592972 seems to be okay, I have it running
+> stable for several days now.
 
-Well, it doesn't even on the best of days, because the last hunk changes
-a dynamic initializer to a strange mix between static and dynamic:
+Thanks, closed.
 
--static struct desc_struct bad_bios_desc;
-+static struct desc_struct bad_bios_desc = GDT_ENTRY_INIT(0x4092, 0, 0);
-
- /*
-  * At some point we want to use this stack frame pointer to unwind
-@@ -476,9 +476,6 @@ void pnpbios_calls_init(union
-pnp_bios_install_struct *header)
-        pnp_bios_callpoint.offset = header->fields.pm16offset;
-        pnp_bios_callpoint.segment = PNP_CS16;
-
--       bad_bios_desc.a = 0;
--       bad_bios_desc.b = 0x00409200;
--
-        set_desc_base(&bad_bios_desc, (unsigned long)__va(0x40UL << 4));
-        set_desc_limit(&bad_bios_desc, 4095 - (0x40 << 4));
-
-This is about at strange as it comes; I think we could simply do:
-
-GDT_ENTRY_INIT(0x4092, (unsigned long)__va(0x400UL), 4095-0x400);
-
-Although perhaps the 4095 should really be PAGE_SIZE-1...
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Rafael
