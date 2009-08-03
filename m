@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753727AbZHCVCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754051AbZHCVCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753727AbZHCVCc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 17:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbZHCVCa
+	id S1754051AbZHCVCn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 17:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbZHCVCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 17:02:30 -0400
-Received: from kroah.org ([198.145.64.141]:57319 "EHLO coco.kroah.org"
+	Mon, 3 Aug 2009 17:02:39 -0400
+Received: from kroah.org ([198.145.64.141]:57322 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752698AbZHCVC0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 17:02:26 -0400
-Date: Mon, 3 Aug 2009 14:01:16 -0700
+	id S1752120AbZHCVC2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 17:02:28 -0400
+Date: Mon, 3 Aug 2009 14:01:18 -0700
 From: Greg K-H <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
 Cc: Martyn Welch <martyn.welch@gefanuc.com>
-Subject: [patch 2/5] Staging: vme: add VME userspace driver
-Message-ID: <20090803210116.GC28430@kroah.com>
+Subject: [patch 3/5] Staging: vme: add Universe I/II bridge driver
+Message-ID: <20090803210118.GD28430@kroah.com>
 References: <20090803205657.964064732@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="staging-vme-add-vme-userspace-driver.patch"
+Content-Disposition: inline; filename="staging-vme-add-universe-i-ii-bridge-driver.patch"
 In-Reply-To: <20090803210054.GA28430@kroah.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,52 +27,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Martyn Welch <martyn.welch@gefanuc.com>
 
-Adds a VME userspace access driver
+Currently this code doesn't compile, so it is disabled.
+
+That should be fixed up...
 
 Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/staging/vme/Kconfig            |    4 
- drivers/staging/vme/Makefile           |    2 
- drivers/staging/vme/devices/Kconfig    |    8 
- drivers/staging/vme/devices/Makefile   |    5 
- drivers/staging/vme/devices/vme_user.c |  771 +++++++++++++++++++++++++++++++++
- drivers/staging/vme/devices/vme_user.h |   43 +
- 6 files changed, 830 insertions(+), 3 deletions(-)
+ drivers/staging/vme/Kconfig                |    2 
+ drivers/staging/vme/Makefile               |    2 
+ drivers/staging/vme/bridges/Kconfig        |    8 
+ drivers/staging/vme/bridges/Makefile       |    1 
+ drivers/staging/vme/bridges/vme_ca91cx42.c | 1811 +++++++++++++++++++++++++++++
+ drivers/staging/vme/bridges/vme_ca91cx42.h |  403 ++++++
+ 6 files changed, 2225 insertions(+), 2 deletions(-)
 
 --- /dev/null
-+++ b/drivers/staging/vme/devices/Kconfig
++++ b/drivers/staging/vme/bridges/Kconfig
 @@ -0,0 +1,8 @@
-+comment "VME Device Drivers"
++comment "VME Bridge Drivers"
 +
-+config VME_USER
-+	tristate "VME user space access driver"
++config VME_CA91CX42
++	tristate "Universe I/II"
++	depends on BROKEN
 +	help
-+	  If you say Y here you want to be able to access a limited number of
-+	  VME windows in a manner at least semi-compatible with the interface
-+	  provided with the original driver at http://vmelinux.org/.
++	 If you say Y here you get support for the Tundra CA91C042 (Universe I)
++	 and CA91C142 (Universe II) VME bridge chips.
 --- /dev/null
-+++ b/drivers/staging/vme/devices/Makefile
-@@ -0,0 +1,5 @@
-+#
-+# Makefile for the VME device drivers.
-+#
-+
-+obj-$(CONFIG_VME_USER)		+= vme_user.o
++++ b/drivers/staging/vme/bridges/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_VME_CA91CX42)	+= vme_ca91cx42.o
 --- /dev/null
-+++ b/drivers/staging/vme/devices/vme_user.c
-@@ -0,0 +1,771 @@
++++ b/drivers/staging/vme/bridges/vme_ca91cx42.c
+@@ -0,0 +1,1811 @@
 +/*
-+ * VMEbus User access driver
++ * Support for the Tundra Universe I/II VME-PCI Bridge Chips
 + *
 + * Author: Martyn Welch <martyn.welch@gefanuc.com>
 + * Copyright 2008 GE Fanuc Intelligent Platforms Embedded Systems, Inc.
 + *
-+ * Based on work by:
-+ *   Tom Armistead and Ajit Prem
-+ *     Copyright 2004 Motorola Inc.
++ * Based on work by Tom Armistead and Ajit Prem
++ * Copyright 2004 Motorola Inc.
 + *
++ * Derived from ca91c042.c by Michael Wyrick
 + *
 + * This program is free software; you can redistribute  it and/or modify it
 + * under  the terms of  the GNU General  Public License as published by the
@@ -80,824 +78,2224 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 + * option) any later version.
 + */
 +
-+#include <linux/cdev.h>
-+#include <linux/delay.h>
-+#include <linux/device.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/errno.h>
-+#include <linux/init.h>
-+#include <linux/ioctl.h>
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+#include <linux/module.h>
-+#include <linux/pagemap.h>
-+#include <linux/pci.h>
-+#include <linux/semaphore.h>
-+#include <linux/spinlock.h>
-+#include <linux/syscalls.h>
-+#include <linux/types.h>
 +#include <linux/version.h>
-+
++#include <linux/module.h>
++#include <linux/mm.h>
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <linux/proc_fs.h>
++#include <linux/pci.h>
++#include <linux/dma-mapping.h>
++#include <linux/poll.h>
++#include <linux/interrupt.h>
++#include <linux/spinlock.h>
++#include <asm/time.h>
 +#include <asm/io.h>
 +#include <asm/uaccess.h>
 +
 +#include "../vme.h"
-+#include "vme_user.h"
++#include "../vme_bridge.h"
++#include "vme_ca91cx42.h"
 +
-+/* Currently Documentation/devices.txt defines the following for VME:
-+ *
-+ * 221 char	VME bus
-+ * 		  0 = /dev/bus/vme/m0		First master image
-+ * 		  1 = /dev/bus/vme/m1		Second master image
-+ * 		  2 = /dev/bus/vme/m2		Third master image
-+ * 		  3 = /dev/bus/vme/m3		Fourth master image
-+ * 		  4 = /dev/bus/vme/s0		First slave image
-+ * 		  5 = /dev/bus/vme/s1		Second slave image
-+ * 		  6 = /dev/bus/vme/s2		Third slave image
-+ * 		  7 = /dev/bus/vme/s3		Fourth slave image
-+ * 		  8 = /dev/bus/vme/ctl		Control
-+ *
-+ * 		It is expected that all VME bus drivers will use the
-+ * 		same interface.  For interface documentation see
-+ * 		http://www.vmelinux.org/.
-+ *
-+ * However the VME driver at http://www.vmelinux.org/ is rather old and doesn't
-+ * even support the tsi148 chipset (which has 8 master and 8 slave windows).
-+ * We'll run with this or now as far as possible, however it probably makes
-+ * sense to get rid of the old mappings and just do everything dynamically.
-+ *
-+ * So for now, we'll restrict the driver to providing 4 masters and 4 slaves as
-+ * defined above and try to support at least some of the interface from
-+ * http://www.vmelinux.org/ as an alternative drive can be written providing a
-+ * saner interface later.
-+ */
-+#define VME_MAJOR	221	/* VME Major Device Number */
-+#define VME_DEVS	9	/* Number of dev entries */
++extern struct vmeSharedData *vmechip_interboard_data;
++extern dma_addr_t vmechip_interboard_datap;
++extern const int vmechip_revision;
++extern const int vmechip_devid;
++extern const int vmechip_irq;
++extern int vmechip_irq_overhead_ticks;
++extern char *vmechip_baseaddr;
++extern const int vme_slotnum;
++extern int vme_syscon;
++extern unsigned int out_image_va[];
++extern unsigned int vme_irqlog[8][0x100];
 +
-+#define MASTER_MINOR	0
-+#define MASTER_MAX	3
-+#define SLAVE_MINOR	4
-+#define SLAVE_MAX	7
-+#define CONTROL_MINOR	8
-+
-+#define PCI_BUF_SIZE  0x20000	/* Size of one slave image buffer */
-+
-+/*
-+ * Structure to handle image related parameters.
-+ */
-+typedef struct {
-+	void __iomem *kern_buf;	/* Buffer address in kernel space */
-+	dma_addr_t pci_buf;	/* Buffer address in PCI address space */
-+	unsigned long long size_buf;	/* Buffer size */
-+	struct semaphore sem;	/* Semaphore for locking image */
-+	struct device *device;	/* Sysfs device */
-+	struct vme_resource *resource;	/* VME resource */
-+	int users;		/* Number of current users */
-+} image_desc_t;
-+static image_desc_t image[VME_DEVS];
-+
-+typedef struct {
-+	unsigned long reads;
-+	unsigned long writes;
-+	unsigned long ioctls;
-+	unsigned long irqs;
-+	unsigned long berrs;
-+	unsigned long dmaErrors;
-+	unsigned long timeouts;
-+	unsigned long external;
-+} driver_stats_t;
-+static driver_stats_t statistics;
-+
-+struct cdev *vme_user_cdev;		/* Character device */
-+struct class *vme_user_sysfs_class;	/* Sysfs class */
-+struct device *vme_user_bridge;		/* Pointer to the bridge device */
-+
-+static char driver_name[] = "vme_user";
-+
-+static const int type[VME_DEVS] = {	MASTER_MINOR,	MASTER_MINOR,
-+					MASTER_MINOR,	MASTER_MINOR,
-+					SLAVE_MINOR,	SLAVE_MINOR,
-+					SLAVE_MINOR,	SLAVE_MINOR,
-+					CONTROL_MINOR
-+				};
-+
-+
-+static int vme_user_open(struct inode *, struct file *);
-+static int vme_user_release(struct inode *, struct file *);
-+static ssize_t vme_user_read(struct file *, char *, size_t, loff_t *);
-+static ssize_t vme_user_write(struct file *, const char *, size_t, loff_t *);
-+static loff_t vme_user_llseek(struct file *, loff_t, int);
-+static int vme_user_ioctl(struct inode *, struct file *, unsigned int,
-+	unsigned long);
-+
-+static int __init vme_user_probe(struct device *dev);
-+
-+static struct file_operations vme_user_fops = {
-+        .open = vme_user_open,
-+        .release = vme_user_release,
-+        .read = vme_user_read,
-+        .write = vme_user_write,
-+        .llseek = vme_user_llseek,
-+        .ioctl = vme_user_ioctl,
++static int outCTL[] = { LSI0_CTL, LSI1_CTL, LSI2_CTL, LSI3_CTL,
++	LSI4_CTL, LSI5_CTL, LSI6_CTL, LSI7_CTL
 +};
 +
-+
-+/*
-+ * Reset all the statistic counters
-+ */
-+static void reset_counters(void)
-+{
-+        statistics.reads = 0;
-+        statistics.writes = 0;
-+        statistics.ioctls = 0;
-+        statistics.irqs = 0;
-+        statistics.berrs = 0;
-+        statistics.dmaErrors = 0;
-+        statistics.timeouts = 0;
-+}
-+
-+void lmcall(int monitor)
-+{
-+	printk("Caught Location Monitor %d access\n", monitor);
-+}
-+
-+static void tests(void)
-+{
-+	struct vme_resource *dma_res;
-+	struct vme_dma_list *dma_list;
-+	struct vme_dma_attr *pattern_attr, *vme_attr;
-+
-+	int retval;
-+	unsigned int data;
-+
-+	printk("Running VME DMA test\n");
-+	dma_res = vme_request_dma(vme_user_bridge);
-+	dma_list = vme_new_dma_list(dma_res);
-+	pattern_attr = vme_dma_pattern_attribute(0x0,
-+		VME_DMA_PATTERN_WORD |
-+			VME_DMA_PATTERN_INCREMENT);
-+	vme_attr = vme_dma_vme_attribute(0x10000, VME_A32,
-+		VME_SCT, VME_D32);
-+	retval = vme_dma_list_add(dma_list, pattern_attr,
-+		vme_attr, 0x10000);
-+#if 0
-+	vme_dma_free_attribute(vme_attr);
-+	vme_attr = vme_dma_vme_attribute(0x20000, VME_A32,
-+		VME_SCT, VME_D32);
-+	retval = vme_dma_list_add(dma_list, pattern_attr,
-+		vme_attr, 0x10000);
-+#endif
-+	retval = vme_dma_list_exec(dma_list);
-+	vme_dma_free_attribute(pattern_attr);
-+	vme_dma_free_attribute(vme_attr);
-+	vme_dma_list_free(dma_list);
-+#if 0
-+	printk("Generating a VME interrupt\n");
-+	vme_generate_irq(dma_res, 0x3, 0xaa);
-+	printk("Interrupt returned\n");
-+#endif
-+	vme_dma_free(dma_res);
-+
-+	/* Attempt RMW */
-+	data = vme_master_rmw(image[0].resource, 0x80000000, 0x00000000,
-+		0x80000000, 0);
-+	printk("RMW returned 0x%8.8x\n", data);
-+
-+
-+	/* Location Monitor */
-+	printk("vme_lm_set:%d\n", vme_lm_set(vme_user_bridge, 0x60000, VME_A32, VME_SCT | VME_USER | VME_DATA));
-+	printk("vme_lm_attach:%d\n", vme_lm_attach(vme_user_bridge, 0, lmcall));
-+
-+	printk("Board in VME slot:%d\n", vme_slot_get(vme_user_bridge));
-+}
-+
-+static int vme_user_open(struct inode *inode, struct file *file)
-+{
-+	int err;
-+	unsigned int minor = MINOR(inode->i_rdev);
-+
-+	down(&image[minor].sem);
-+	/* Only allow device to be opened if a resource is allocated */
-+	if (image[minor].resource == NULL) {
-+		printk(KERN_ERR "No resources allocated for device\n");
-+		err = -EINVAL;
-+		goto err_res;
-+	}
-+
-+	/* Increment user count */
-+	image[minor].users++;
-+
-+	up(&image[minor].sem);
-+
-+	return 0;
-+
-+err_res:
-+	up(&image[minor].sem);
-+
-+	return err;
-+}
-+
-+static int vme_user_release(struct inode *inode, struct file *file)
-+{
-+	unsigned int minor = MINOR(inode->i_rdev);
-+
-+	down(&image[minor].sem);
-+
-+	/* Decrement user count */
-+	image[minor].users--;
-+
-+	up(&image[minor].sem);
-+
-+	return 0;
-+}
-+
-+/*
-+ * We are going ot alloc a page during init per window for small transfers.
-+ * Small transfers will go VME -> buffer -> user space. Larger (more than a
-+ * page) transfers will lock the user space buffer into memory and then
-+ * transfer the data directly into the user space buffers.
-+ */
-+static ssize_t resource_to_user(int minor, char __user *buf, size_t count,
-+	loff_t *ppos)
-+{
-+	ssize_t retval;
-+	ssize_t copied = 0;
-+
-+	if (count <= image[minor].size_buf) {
-+		/* We copy to kernel buffer */
-+		copied = vme_master_read(image[minor].resource,
-+			image[minor].kern_buf, count, *ppos);
-+		if (copied < 0) {
-+			return (int)copied;
-+		}
-+
-+		retval = __copy_to_user(buf, image[minor].kern_buf,
-+			(unsigned long)copied);
-+		if (retval != 0) {
-+			copied = (copied - retval);
-+			printk("User copy failed\n");
-+			return -EINVAL;
-+		}
-+
-+	} else {
-+		/* XXX Need to write this */
-+		printk("Currently don't support large transfers\n");
-+		/* Map in pages from userspace */
-+
-+		/* Call vme_master_read to do the transfer */
-+		return -EINVAL;
-+	}
-+
-+	return copied;
-+}
-+
-+/*
-+ * We are going ot alloc a page during init per window for small transfers.
-+ * Small transfers will go user space -> buffer -> VME. Larger (more than a
-+ * page) transfers will lock the user space buffer into memory and then
-+ * transfer the data directly from the user space buffers out to VME.
-+ */
-+static ssize_t resource_from_user(unsigned int minor, const char *buf,
-+	size_t count, loff_t *ppos)
-+{
-+	ssize_t retval;
-+	ssize_t copied = 0;
-+
-+	if (count <= image[minor].size_buf) {
-+		retval = __copy_from_user(image[minor].kern_buf, buf,
-+			(unsigned long)count);
-+		if (retval != 0)
-+			copied = (copied - retval);
-+		else
-+			copied = count;
-+
-+		copied = vme_master_write(image[minor].resource,
-+			image[minor].kern_buf, copied, *ppos);
-+	} else {
-+		/* XXX Need to write this */
-+		printk("Currently don't support large transfers\n");
-+		/* Map in pages from userspace */
-+
-+		/* Call vme_master_write to do the transfer */
-+		return -EINVAL;
-+	}
-+
-+	return copied;
-+}
-+
-+static ssize_t buffer_to_user(unsigned int minor, char __user *buf,
-+	size_t count, loff_t *ppos)
-+{
-+	void __iomem *image_ptr;
-+	ssize_t retval;
-+
-+	image_ptr = image[minor].kern_buf + *ppos;
-+
-+	retval = __copy_to_user(buf, image_ptr, (unsigned long)count);
-+	if (retval != 0) {
-+		retval = (count - retval);
-+		printk(KERN_WARNING "Partial copy to userspace\n");
-+	} else
-+		retval = count;
-+
-+	/* Return number of bytes successfully read */
-+	return retval;
-+}
-+
-+static ssize_t buffer_from_user(unsigned int minor, const char *buf,
-+	size_t count, loff_t *ppos)
-+{
-+	void __iomem *image_ptr;
-+	size_t retval;
-+
-+	image_ptr = image[minor].kern_buf + *ppos;
-+
-+	retval = __copy_from_user(image_ptr, buf, (unsigned long)count);
-+	if (retval != 0) {
-+		retval = (count - retval);
-+		printk(KERN_WARNING "Partial copy to userspace\n");
-+	} else
-+		retval = count;
-+
-+	/* Return number of bytes successfully read */
-+	return retval;
-+}
-+
-+static ssize_t vme_user_read(struct file *file, char *buf, size_t count,
-+			loff_t * ppos)
-+{
-+	unsigned int minor = MINOR(file->f_dentry->d_inode->i_rdev);
-+	ssize_t retval;
-+	size_t image_size;
-+	size_t okcount;
-+
-+	down(&image[minor].sem);
-+
-+	/* XXX Do we *really* want this helper - we can use vme_*_get ? */
-+	image_size = vme_get_size(image[minor].resource);
-+
-+	/* Ensure we are starting at a valid location */
-+	if ((*ppos < 0) || (*ppos > (image_size - 1))) {
-+		up(&image[minor].sem);
-+		return 0;
-+	}
-+
-+	/* Ensure not reading past end of the image */
-+	if (*ppos + count > image_size)
-+		okcount = image_size - *ppos;
-+	else
-+		okcount = count;
-+
-+	switch (type[minor]){
-+	case MASTER_MINOR:
-+		retval = resource_to_user(minor, buf, okcount, ppos);
-+		break;
-+	case SLAVE_MINOR:
-+		retval = buffer_to_user(minor, buf, okcount, ppos);
-+		break;
-+	default:
-+		retval = -EINVAL;
-+	}
-+
-+	up(&image[minor].sem);
-+
-+	if (retval > 0)
-+		*ppos += retval;
-+
-+	return retval;
-+}
-+
-+static ssize_t vme_user_write(struct file *file, const char *buf, size_t count,
-+			 loff_t *ppos)
-+{
-+	unsigned int minor = MINOR(file->f_dentry->d_inode->i_rdev);
-+	ssize_t retval;
-+	size_t image_size;
-+	size_t okcount;
-+
-+	down(&image[minor].sem);
-+
-+	image_size = vme_get_size(image[minor].resource);
-+
-+	/* Ensure we are starting at a valid location */
-+	if ((*ppos < 0) || (*ppos > (image_size - 1))) {
-+		up(&image[minor].sem);
-+		return 0;
-+	}
-+
-+	/* Ensure not reading past end of the image */
-+	if (*ppos + count > image_size)
-+		okcount = image_size - *ppos;
-+	else
-+		okcount = count;
-+
-+	switch (type[minor]){
-+	case MASTER_MINOR:
-+		retval = resource_from_user(minor, buf, okcount, ppos);
-+		break;
-+	case SLAVE_MINOR:
-+		retval = buffer_from_user(minor, buf, okcount, ppos);
-+		break;
-+	default:
-+		retval = -EINVAL;
-+	}
-+
-+	up(&image[minor].sem);
-+
-+	if (retval > 0)
-+		*ppos += retval;
-+
-+	return retval;
-+}
-+
-+static loff_t vme_user_llseek(struct file *file, loff_t off, int whence)
-+{
-+	printk(KERN_ERR "Llseek currently incomplete\n");
-+	return -EINVAL;
-+}
-+
-+static int vme_user_ioctl(struct inode *inode, struct file *file,
-+	unsigned int cmd, unsigned long arg)
-+{
-+	unsigned int minor = MINOR(inode->i_rdev);
-+#if 0
-+	int ret_val;
-+#endif
-+	unsigned long copyRet;
-+	vme_slave_t slave;
-+
-+	statistics.ioctls++;
-+	switch (type[minor]) {
-+	case CONTROL_MINOR:
-+		break;
-+	case MASTER_MINOR:
-+		break;
-+	case SLAVE_MINOR:
-+		switch (cmd) {
-+		case VME_SET_SLAVE:
-+
-+			copyRet = copy_from_user(&slave, (char *)arg,
-+				sizeof(slave));
-+			if (copyRet != 0) {
-+				printk(KERN_WARNING "Partial copy from "
-+					"userspace\n");
-+				return -EFAULT;
-+			}
-+
-+			return vme_slave_set(image[minor].resource,
-+				slave.enable, slave.vme_addr, slave.size,
-+				image[minor].pci_buf, slave.aspace,
-+				slave.cycle);
-+
-+			break;
-+#if 0
-+		case VME_GET_SLAVE:
-+			vme_slave_t slave;
-+
-+			ret_val = vme_slave_get(minor, &iRegs);
-+
-+			copyRet = copy_to_user((char *)arg, &slave,
-+				sizeof(slave));
-+			if (copyRet != 0) {
-+				printk(KERN_WARNING "Partial copy to "
-+					"userspace\n");
-+				return -EFAULT;
-+			}
-+
-+			return ret_val;
-+			break;
-+#endif
-+		}
-+		break;
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+
-+/*
-+ * Unallocate a previously allocated buffer
-+ */
-+static void buf_unalloc (int num)
-+{
-+	if (image[num].kern_buf) {
-+#ifdef VME_DEBUG
-+		printk(KERN_DEBUG "UniverseII:Releasing buffer at %p\n",
-+			image[num].pci_buf);
-+#endif
-+
-+		vme_free_consistent(image[num].resource, image[num].size_buf,
-+			image[num].kern_buf, image[num].pci_buf);
-+
-+		image[num].kern_buf = NULL;
-+		image[num].pci_buf = 0;
-+		image[num].size_buf = 0;
-+
-+#ifdef VME_DEBUG
-+	} else {
-+		printk(KERN_DEBUG "UniverseII: Buffer not allocated\n");
-+#endif
-+	}
-+}
-+
-+static struct vme_driver vme_user_driver = {
-+        .name = driver_name,
-+        .probe = vme_user_probe,
++static int outBS[] = { LSI0_BS, LSI1_BS, LSI2_BS, LSI3_BS,
++	LSI4_BS, LSI5_BS, LSI6_BS, LSI7_BS
 +};
 +
++static int outBD[] = { LSI0_BD, LSI1_BD, LSI2_BD, LSI3_BD,
++	LSI4_BD, LSI5_BD, LSI6_BD, LSI7_BD
++};
 +
-+/*
-+ * In this simple access driver, the old behaviour is being preserved as much
-+ * as practical. We will therefore reserve the buffers and request the images
-+ * here so that we don't have to do it later.
-+ */
-+static int __init vme_bridge_init(void)
++static int outTO[] = { LSI0_TO, LSI1_TO, LSI2_TO, LSI3_TO,
++	LSI4_TO, LSI5_TO, LSI6_TO, LSI7_TO
++};
++
++static int inCTL[] = { VSI0_CTL, VSI1_CTL, VSI2_CTL, VSI3_CTL,
++	VSI4_CTL, VSI5_CTL, VSI6_CTL, VSI7_CTL
++};
++
++static int inBS[] = { VSI0_BS, VSI1_BS, VSI2_BS, VSI3_BS,
++	VSI4_BS, VSI5_BS, VSI6_BS, VSI7_BS
++};
++
++static int inBD[] = { VSI0_BD, VSI1_BD, VSI2_BD, VSI3_BD,
++	VSI4_BD, VSI5_BD, VSI6_BD, VSI7_BD
++};
++
++static int inTO[] = { VSI0_TO, VSI1_TO, VSI2_TO, VSI3_TO,
++	VSI4_TO, VSI5_TO, VSI6_TO, VSI7_TO
++};
++static int vmevec[7] = { V1_STATID, V2_STATID, V3_STATID, V4_STATID,
++	V5_STATID, V6_STATID, V7_STATID
++};
++
++struct interrupt_counters {
++	unsigned int acfail;
++	unsigned int sysfail;
++	unsigned int sw_int;
++	unsigned int sw_iack;
++	unsigned int verr;
++	unsigned int lerr;
++	unsigned int lm;
++	unsigned int mbox;
++	unsigned int dma;
++	unsigned int virq[7];
++	unsigned int vown;
++};
++
++extern wait_queue_head_t dma_queue[];
++extern wait_queue_head_t lm_queue;
++extern wait_queue_head_t mbox_queue;
++
++extern int tb_speed;
++
++unsigned int uni_irq_time;
++unsigned int uni_dma_irq_time;
++unsigned int uni_lm_event;
++
++static spinlock_t lm_lock = SPIN_LOCK_UNLOCKED;
++
++static struct interrupt_counters Interrupt_counters = { 0, 0,
++	0, 0, 0, 0,
++	0, 0, 0,
++	{0, 0, 0, 0, 0, 0, 0},
++	0
++};
++
++#define read_register(offset) readl(vmechip_baseaddr + offset)
++#define write_register(value,offset) writel(value, vmechip_baseaddr + offset)
++#define read_register_word(offset) readw(vmechip_baseaddr + offset)
++#define write_register_word(value,offset) writew(value, vmechip_baseaddr + offset)
++
++int uni_procinfo(char *buf)
 +{
-+	int retval;
-+	printk(KERN_INFO "VME User Space Access Driver\n");
-+	printk("vme_user_driver:%p\n", &vme_user_driver);
-+	retval = vme_register_driver(&vme_user_driver);
-+	printk("vme_register_driver returned %d\n", retval);
-+	return retval;
-+}
++	char *p;
 +
-+/*
-+ * This structure gets passed a device, this should be the device created at
-+ * registration.
-+ */
-+static int __init vme_user_probe(struct device *dev)
-+{
-+	int i, err;
-+	char name[8];
++	p = buf;
 +
-+	printk("Running vme_user_probe()\n");
++	p += sprintf(p, "\n");
++	{
++		unsigned long misc_ctl;
 +
-+	/* Pointer to the bridge device */
-+	vme_user_bridge = dev;
-+
-+	/* Initialise descriptors */
-+	for (i = 0; i < VME_DEVS; i++) {
-+		image[i].kern_buf = NULL;
-+		image[i].pci_buf = 0;
-+		init_MUTEX(&(image[i].sem));
-+		image[i].device = NULL;
-+		image[i].resource = NULL;
-+		image[i].users = 0;
-+	}
-+
-+	/* Initialise statistics counters */
-+	reset_counters();
-+
-+	/* Assign major and minor numbers for the driver */
-+	err = register_chrdev_region(MKDEV(VME_MAJOR, 0), VME_DEVS,
-+		driver_name);
-+	if (err) {
-+		printk(KERN_WARNING "%s: Error getting Major Number %d for "
-+		"driver.\n", driver_name, VME_MAJOR);
-+		goto err_region;
-+	}
-+
-+	/* Register the driver as a char device */
-+	vme_user_cdev = cdev_alloc();
-+	vme_user_cdev->ops = &vme_user_fops;
-+	vme_user_cdev->owner = THIS_MODULE;
-+	err = cdev_add(vme_user_cdev, MKDEV(VME_MAJOR, 0), VME_DEVS);
-+	if (err) {
-+		printk(KERN_WARNING "%s: cdev_all failed\n", driver_name);
-+		goto err_char;
-+	}
-+
-+	/* Request slave resources and allocate buffers (128kB wide) */
-+	for (i = SLAVE_MINOR; i < (SLAVE_MAX + 1); i++) {
-+		/* XXX Need to properly request attributes */
-+		image[i].resource = vme_slave_request(vme_user_bridge,
-+			VME_A16, VME_SCT);
-+		if (image[i].resource == NULL) {
-+			printk(KERN_WARNING "Unable to allocate slave "
-+				"resource\n");
-+			goto err_buf;
-+		}
-+		image[i].size_buf = PCI_BUF_SIZE;
-+		image[i].kern_buf = vme_alloc_consistent(image[i].resource,
-+			image[i].size_buf, &(image[i].pci_buf));
-+		if (image[i].kern_buf == NULL) {
-+			printk(KERN_WARNING "Unable to allocate memory for "
-+				"buffer\n");
-+			image[i].pci_buf = 0;
-+			vme_slave_free(image[i].resource);
-+			err = -ENOMEM;
-+			goto err_buf;
-+		}
-+	}
-+
-+	/*
-+	 * Request master resources allocate page sized buffers for small
-+	 * reads and writes
-+	 */
-+	for (i = MASTER_MINOR; i < (MASTER_MAX + 1); i++) {
-+		/* XXX Need to properly request attributes */
-+		image[i].resource = vme_master_request(vme_user_bridge,
-+			VME_A32, VME_SCT, VME_D32);
-+		if (image[i].resource == NULL) {
-+			printk(KERN_WARNING "Unable to allocate master "
-+				"resource\n");
-+			goto err_buf;
-+		}
-+		image[i].size_buf = PAGE_SIZE;
-+		image[i].kern_buf = vme_alloc_consistent(image[i].resource,
-+			image[i].size_buf, &(image[i].pci_buf));
-+		if (image[i].kern_buf == NULL) {
-+			printk(KERN_WARNING "Unable to allocate memory for "
-+				"buffer\n");
-+			image[i].pci_buf = 0;
-+			vme_master_free(image[i].resource);
-+			err = -ENOMEM;
-+			goto err_buf;
-+		}
-+	}
-+
-+	/* Setup some debug windows */
-+	for (i = SLAVE_MINOR; i < (SLAVE_MAX + 1); i++) {
-+		err = vme_slave_set(image[i].resource, 1, 0x4000*(i-4),
-+			0x4000, image[i].pci_buf, VME_A16,
-+			VME_SCT | VME_SUPER | VME_USER | VME_PROG | VME_DATA);
-+		if (err != 0) {
-+			printk(KERN_WARNING "Failed to configure window\n");
-+			goto err_buf;
-+		}
-+	}
-+	for (i = MASTER_MINOR; i < (MASTER_MAX + 1); i++) {
-+		err = vme_master_set(image[i].resource, 1,
-+			(0x10000 + (0x10000*i)), 0x10000,
-+			VME_A32, VME_SCT | VME_USER | VME_DATA, VME_D32);
-+		if (err != 0) {
-+			printk(KERN_WARNING "Failed to configure window\n");
-+			goto err_buf;
-+		}
-+	}
-+
-+	/* Create sysfs entries - on udev systems this creates the dev files */
-+	vme_user_sysfs_class = class_create(THIS_MODULE, driver_name);
-+	if (IS_ERR(vme_user_sysfs_class)) {
-+		printk(KERN_ERR "Error creating vme_user class.\n");
-+		err = PTR_ERR(vme_user_sysfs_class);
-+		goto err_class;
-+	}
-+
-+	/* Add sysfs Entries */
-+	for (i=0; i<VME_DEVS; i++) {
-+		switch (type[i]) {
-+		case MASTER_MINOR:
-+			sprintf(name,"bus/vme/m%%d");
++		misc_ctl = read_register(MISC_CTL);
++		p += sprintf(p, "MISC_CTL:\t\t\t0x%08lx\n", misc_ctl);
++		p += sprintf(p, "VME Bus Time Out:\t\t");
++		switch ((misc_ctl & UNIV_BM_MISC_CTL_VBTO) >>
++			UNIV_OF_MISC_CTL_VBTO) {
++		case 0x0:
++			p += sprintf(p, "Disabled\n");
 +			break;
-+		case CONTROL_MINOR:
-+			sprintf(name,"bus/vme/ctl");
++		case 0x1:
++			p += sprintf(p, "16 us\n");
 +			break;
-+		case SLAVE_MINOR:
-+			sprintf(name,"bus/vme/s%%d");
++		case 0x2:
++			p += sprintf(p, "32 us\n");
++			break;
++		case 0x3:
++			p += sprintf(p, "64 us\n");
++			break;
++		case 0x4:
++			p += sprintf(p, "128 us\n");
++			break;
++		case 0x5:
++			p += sprintf(p, "256 us\n");
++			break;
++		case 0x6:
++			p += sprintf(p, "512 us\n");
++			break;
++		case 0x7:
++			p += sprintf(p, "1024 us\n");
 +			break;
 +		default:
-+			err = -EINVAL;
-+			goto err_sysfs;
++			p += sprintf(p, "Reserved Value, Undefined\n");
++		}
++		p += sprintf(p, "VME Arbitration Time Out:\t");
++		switch ((misc_ctl & UNIV_BM_MISC_CTL_VARBTO) >>
++			UNIV_OF_MISC_CTL_VARBTO) {
++		case 0x0:
++			p += sprintf(p, "Disabled");
++			break;
++		case 0x1:
++			p += sprintf(p, "16 us");
++			break;
++		case 0x2:
++			p += sprintf(p, "256 us");
++			break;
++		default:
++			p += sprintf(p, "Reserved Value, Undefined");
++		}
++		if (misc_ctl & UNIV_BM_MISC_CTL_VARB)
++			p += sprintf(p, ", Priority Arbitration\n");
++		else
++			p += sprintf(p, ", Round Robin Arbitration\n");
++		p += sprintf(p, "\n");
++	}
++
++	{
++		unsigned int lmisc;
++		unsigned int crt;
++		unsigned int cwt;
++
++		lmisc = read_register(LMISC);
++		p += sprintf(p, "LMISC:\t\t\t\t0x%08x\n", lmisc);
++		crt = (lmisc & UNIV_BM_LMISC_CRT) >> UNIV_OF_LMISC_CRT;
++		cwt = (lmisc & UNIV_BM_LMISC_CWT) >> UNIV_OF_LMISC_CWT;
++		p += sprintf(p, "Coupled Request Timer:\t\t");
++		switch (crt) {
++		case 0x0:
++			p += sprintf(p, "Disabled\n");
++			break;
++		case 0x1:
++			p += sprintf(p, "128 us\n");
++			break;
++		case 0x2:
++			p += sprintf(p, "256 us\n");
++			break;
++		case 0x3:
++			p += sprintf(p, "512 us\n");
++			break;
++		case 0x4:
++			p += sprintf(p, "1024 us\n");
++			break;
++		case 0x5:
++			p += sprintf(p, "2048 us\n");
++			break;
++		case 0x6:
++			p += sprintf(p, "4096 us\n");
++			break;
++		default:
++			p += sprintf(p, "Reserved\n");
++		}
++		p += sprintf(p, "Coupled Window Timer:\t\t");
++		switch (cwt) {
++		case 0x0:
++			p += sprintf(p, "Disabled\n");
++			break;
++		case 0x1:
++			p += sprintf(p, "16 PCI Clocks\n");
++			break;
++		case 0x2:
++			p += sprintf(p, "32 PCI Clocks\n");
++			break;
++		case 0x3:
++			p += sprintf(p, "64 PCI Clocks\n");
++			break;
++		case 0x4:
++			p += sprintf(p, "128 PCI Clocks\n");
++			break;
++		case 0x5:
++			p += sprintf(p, "256 PCI Clocks\n");
++			break;
++		case 0x6:
++			p += sprintf(p, "512 PCI Clocks\n");
++			break;
++		default:
++			p += sprintf(p, "Reserved\n");
++		}
++		p += sprintf(p, "\n");
++	}
++	{
++		unsigned int mast_ctl;
++
++		mast_ctl = read_register(MAST_CTL);
++		p += sprintf(p, "MAST_CTL:\t\t\t0x%08x\n", mast_ctl);
++		{
++			int retries;
++
++			retries = ((mast_ctl & UNIV_BM_MAST_CTL_MAXRTRY)
++				   >> UNIV_OF_MAST_CTL_MAXRTRY) * 64;
++			p += sprintf(p, "Max PCI Master Retries:\t\t");
++			if (retries)
++				p += sprintf(p, "%d\n", retries);
++			else
++				p += sprintf(p, "Forever\n");
++		}
++
++		p += sprintf(p, "Posted Write Transfer Count:\t");
++		switch ((mast_ctl & UNIV_BM_MAST_CTL_PWON) >>
++			UNIV_OF_MAST_CTL_PWON) {
++		case 0x0:
++			p += sprintf(p, "128 Bytes\n");
++			break;
++		case 0x1:
++			p += sprintf(p, "256 Bytes\n");
++			break;
++		case 0x2:
++			p += sprintf(p, "512 Bytes\n");
++			break;
++		case 0x3:
++			p += sprintf(p, "1024 Bytes\n");
++			break;
++		case 0x4:
++			p += sprintf(p, "2048 Bytes\n");
++			break;
++		case 0x5:
++			p += sprintf(p, "4096 Bytes\n");
++			break;
++		default:
++			p += sprintf(p, "Undefined\n");
++		}
++
++		p += sprintf(p, "VMEbus Request Level:\t\t");
++		switch ((mast_ctl & UNIV_BM_MAST_CTL_VRL) >>
++			UNIV_OF_MAST_CTL_VRL) {
++		case 0x0:
++			p += sprintf(p, "Level 0\n");
++		case 0x1:
++			p += sprintf(p, "Level 1\n");
++		case 0x2:
++			p += sprintf(p, "Level 2\n");
++		case 0x3:
++			p += sprintf(p, "Level 3\n");
++		}
++		p += sprintf(p, "VMEbus Request Mode:\t\t");
++		if (mast_ctl & UNIV_BM_MAST_CTL_VRM)
++			p += sprintf(p, "Fair Request Mode\n");
++		else
++			p += sprintf(p, "Demand Request Mode\n");
++		p += sprintf(p, "VMEbus Release Mode:\t\t");
++		if (mast_ctl & UNIV_BM_MAST_CTL_VREL)
++			p += sprintf(p, "Release on Request\n");
++		else
++			p += sprintf(p, "Release when Done\n");
++		p += sprintf(p, "VMEbus Ownership Bit:\t\t");
++		if (mast_ctl & UNIV_BM_MAST_CTL_VOWN)
++			p += sprintf(p, "Acquire and hold VMEbus\n");
++		else
++			p += sprintf(p, "Release VMEbus\n");
++		p += sprintf(p, "VMEbus Ownership Bit Ack:\t");
++		if (mast_ctl & UNIV_BM_MAST_CTL_VOWN_ACK)
++			p += sprintf(p, "Owning VMEbus\n");
++		else
++			p += sprintf(p, "Not Owning VMEbus\n");
++		p += sprintf(p, "\n");
++	}
++	{
++		unsigned int misc_stat;
++
++		misc_stat = read_register(MISC_STAT);
++		p += sprintf(p, "MISC_STAT:\t\t\t0x%08x\n", misc_stat);
++		p += sprintf(p, "Universe BBSY:\t\t\t");
++		if (misc_stat & UNIV_BM_MISC_STAT_MYBBSY)
++			p += sprintf(p, "Negated\n");
++		else
++			p += sprintf(p, "Asserted\n");
++		p += sprintf(p, "Transmit FIFO:\t\t\t");
++		if (misc_stat & UNIV_BM_MISC_STAT_TXFE)
++			p += sprintf(p, "Empty\n");
++		else
++			p += sprintf(p, "Not empty\n");
++		p += sprintf(p, "Receive FIFO:\t\t\t");
++		if (misc_stat & UNIV_BM_MISC_STAT_RXFE)
++			p += sprintf(p, "Empty\n");
++		else
++			p += sprintf(p, "Not Empty\n");
++		p += sprintf(p, "\n");
++	}
++
++	p += sprintf(p, "Latency Timer:\t\t\t%02d Clocks\n\n",
++		     (read_register(UNIV_PCI_MISC0) &
++		      UNIV_BM_PCI_MISC0_LTIMER) >> UNIV_OF_PCI_MISC0_LTIMER);
++
++	{
++		unsigned int lint_en;
++		unsigned int lint_stat;
++
++		lint_en = read_register(LINT_EN);
++		lint_stat = read_register(LINT_STAT);
++
++#define REPORT_IRQ(name,field)     \
++    p += sprintf(p, (lint_en & UNIV_BM_LINT_##name) ? "Enabled" : "Masked"); \
++    p += sprintf(p, ", triggered %d times", Interrupt_counters.field); \
++    p += sprintf(p, (lint_stat & UNIV_BM_LINT_##name) ? ", irq now active\n" : "\n");
++		p += sprintf(p, "ACFAIL Interrupt:\t\t");
++		REPORT_IRQ(ACFAIL, acfail);
++		p += sprintf(p, "SYSFAIL Interrupt:\t\t");
++		REPORT_IRQ(SYSFAIL, sysfail);
++		p += sprintf(p, "SW_INT Interrupt:\t\t");
++		REPORT_IRQ(SW_INT, sw_int);
++		p += sprintf(p, "SW_IACK Interrupt:\t\t");
++		REPORT_IRQ(SW_IACK, sw_iack);
++		p += sprintf(p, "VERR Interrupt:\t\t\t");
++		REPORT_IRQ(VERR, verr);
++		p += sprintf(p, "LERR Interrupt:\t\t\t");
++		REPORT_IRQ(LERR, lerr);
++		p += sprintf(p, "LM Interrupt:\t\t\t");
++		REPORT_IRQ(LM, lm);
++		p += sprintf(p, "MBOX Interrupt:\t\t\t");
++		REPORT_IRQ(MBOX, mbox);
++		p += sprintf(p, "DMA Interrupt:\t\t\t");
++		REPORT_IRQ(DMA, dma);
++		p += sprintf(p, "VIRQ7 Interrupt:\t\t");
++		REPORT_IRQ(VIRQ7, virq[7 - 1]);
++		p += sprintf(p, "VIRQ6 Interrupt:\t\t");
++		REPORT_IRQ(VIRQ6, virq[6 - 1]);
++		p += sprintf(p, "VIRQ5 Interrupt:\t\t");
++		REPORT_IRQ(VIRQ5, virq[5 - 1]);
++		p += sprintf(p, "VIRQ4 Interrupt:\t\t");
++		REPORT_IRQ(VIRQ4, virq[4 - 1]);
++		p += sprintf(p, "VIRQ3 Interrupt:\t\t");
++		REPORT_IRQ(VIRQ3, virq[3 - 1]);
++		p += sprintf(p, "VIRQ2 Interrupt:\t\t");
++		REPORT_IRQ(VIRQ2, virq[2 - 1]);
++		p += sprintf(p, "VIRQ1 Interrupt:\t\t");
++		REPORT_IRQ(VIRQ1, virq[1 - 1]);
++		p += sprintf(p, "VOWN Interrupt:\t\t\t");
++		REPORT_IRQ(VOWN, vown);
++		p += sprintf(p, "\n");
++#undef REPORT_IRQ
++	}
++	{
++		unsigned long vrai_ctl;
++
++		vrai_ctl = read_register(VRAI_CTL);
++		if (vrai_ctl & UNIV_BM_VRAI_CTL_EN) {
++			unsigned int vrai_bs;
++
++			vrai_bs = read_register(VRAI_BS);
++			p += sprintf(p,
++				     "VME Register Image:\t\tEnabled at VME-Address 0x%x\n",
++				     vrai_bs);
++		} else
++			p += sprintf(p, "VME Register Image:\t\tDisabled\n");
++	}
++	{
++		unsigned int slsi;
++
++		slsi = read_register(SLSI);
++		if (slsi & UNIV_BM_SLSI_EN) {
++			/* Not implemented */
++		} else {
++			p += sprintf(p, "Special PCI Slave Image:\tDisabled\n");
++		}
++	}
++	{
++		int i;
++
++		for (i = 0; i < (vmechip_revision > 0 ? 8 : 4); i++) {
++			unsigned int ctl, bs, bd, to, vstart, vend;
++
++			ctl = readl(vmechip_baseaddr + outCTL[i]);
++			bs = readl(vmechip_baseaddr + outBS[i]);
++			bd = readl(vmechip_baseaddr + outBD[i]);
++			to = readl(vmechip_baseaddr + outTO[i]);
++
++			vstart = bs + to;
++			vend = bd + to;
++
++			p += sprintf(p, "PCI Slave Image %d:\t\t", i);
++			if (ctl & UNIV_BM_LSI_CTL_EN) {
++				p += sprintf(p, "Enabled");
++				if (ctl & UNIV_BM_LSI_CTL_PWEN)
++					p += sprintf(p,
++						     ", Posted Write Enabled\n");
++				else
++					p += sprintf(p, "\n");
++				p += sprintf(p,
++					     "\t\t\t\tPCI Addresses from 0x%x to 0x%x\n",
++					     bs, bd);
++				p += sprintf(p,
++					     "\t\t\t\tVME Addresses from 0x%x to 0x%x\n",
++					     vstart, vend);
++			} else
++				p += sprintf(p, "Disabled\n");
++		}
++		p += sprintf(p, "\n");
++	}
++	{
++		int i;
++		for (i = 0; i < (vmechip_revision > 0 ? 8 : 4); i++) {
++			unsigned int ctl, bs, bd, to, vstart, vend;
++
++			ctl = readl(vmechip_baseaddr + inCTL[i]);
++			bs = readl(vmechip_baseaddr + inBS[i]);
++			bd = readl(vmechip_baseaddr + inBD[i]);
++			to = readl(vmechip_baseaddr + inTO[i]);
++			vstart = bs + to;
++			vend = bd + to;
++			p += sprintf(p, "VME Slave Image %d:\t\t", i);
++			if (ctl & UNIV_BM_LSI_CTL_EN) {
++				p += sprintf(p, "Enabled");
++				if (ctl & UNIV_BM_LSI_CTL_PWEN)
++					p += sprintf(p,
++						     ", Posted Write Enabled\n");
++				else
++					p += sprintf(p, "\n");
++				p += sprintf(p,
++					     "\t\t\t\tVME Addresses from 0x%x to 0x%x\n",
++					     bs, bd);
++				p += sprintf(p,
++					     "\t\t\t\tPCI Addresses from 0x%x to 0x%x\n",
++					     vstart, vend);
++			} else
++				p += sprintf(p, "Disabled\n");
++		}
++	}
++
++	return p - buf;
++}
++
++//----------------------------------------------------------------------------
++//  uni_bus_error_chk()
++//----------------------------------------------------------------------------
++int uni_bus_error_chk(int clrflag)
++{
++	int tmp;
++	tmp = readl(vmechip_baseaddr + PCI_COMMAND);
++	if (tmp & 0x08000000) {	// S_TA is Set
++		if (clrflag)
++			writel(tmp | 0x08000000,
++			       vmechip_baseaddr + PCI_COMMAND);
++		return (1);
++	}
++	return (0);
++}
++
++//-----------------------------------------------------------------------------
++// Function   : DMA_uni_irqhandler
++// Inputs     : void
++// Outputs    : void
++// Description: Saves DMA completion timestamp and then wakes up DMA queue
++//-----------------------------------------------------------------------------
++static void DMA_uni_irqhandler(void)
++{
++	uni_dma_irq_time = uni_irq_time;
++	wake_up(&dma_queue[0]);
++}
++
++//-----------------------------------------------------------------------------
++// Function   : LERR_uni_irqhandler
++// Inputs     : void
++// Outputs    : void
++// Description:
++//-----------------------------------------------------------------------------
++static void LERR_uni_irqhandler(void)
++{
++	int val;
++
++	val = readl(vmechip_baseaddr + DGCS);
++
++	if (!(val & 0x00000800)) {
++		printk(KERN_ERR
++		       "ca91c042: LERR_uni_irqhandler DMA Read Error DGCS=%08X\n",
++		       val);
++
++	}
++}
++
++//-----------------------------------------------------------------------------
++// Function   : VERR_uni_irqhandler
++// Inputs     : void
++// Outputs    : void
++// Description:
++//-----------------------------------------------------------------------------
++static void VERR_uni_irqhandler(void)
++{
++	int val;
++
++	val = readl(vmechip_baseaddr + DGCS);
++
++	if (!(val & 0x00000800)) {
++		printk(KERN_ERR
++		       "ca91c042: VERR_uni_irqhandler DMA Read Error DGCS=%08X\n",
++		       val);
++	}
++
++}
++
++//-----------------------------------------------------------------------------
++// Function   : MB_uni_irqhandler
++// Inputs     : void
++// Outputs    : void
++// Description:
++//-----------------------------------------------------------------------------
++static void MB_uni_irqhandler(int mbox_mask)
++{
++	if (vmechip_irq_overhead_ticks != 0) {
++		wake_up(&mbox_queue);
++	}
++}
++
++//-----------------------------------------------------------------------------
++// Function   : LM_uni_irqhandler
++// Inputs     : void
++// Outputs    : void
++// Description:
++//-----------------------------------------------------------------------------
++static void LM_uni_irqhandler(int lm_mask)
++{
++	uni_lm_event = lm_mask;
++	wake_up(&lm_queue);
++}
++
++//-----------------------------------------------------------------------------
++// Function   : VIRQ_uni_irqhandler
++// Inputs     : void
++// Outputs    : void
++// Description:
++//-----------------------------------------------------------------------------
++static void VIRQ_uni_irqhandler(int virq_mask)
++{
++	int iackvec, i;
++
++	for (i = 7; i > 0; i--) {
++		if (virq_mask & (1 << i)) {
++			Interrupt_counters.virq[i - 1]++;
++			iackvec = readl(vmechip_baseaddr + vmevec[i - 1]);
++			vme_irqlog[i][iackvec]++;
++		}
++	}
++}
++
++//-----------------------------------------------------------------------------
++// Function   : uni_irqhandler
++// Inputs     : int irq, void *dev_id, struct pt_regs *regs
++// Outputs    : void
++// Description:
++//-----------------------------------------------------------------------------
++static irqreturn_t uni_irqhandler(int irq, void *dev_id)
++{
++	long stat, enable;
++
++	if (dev_id != vmechip_baseaddr)
++		return IRQ_NONE;
++
++	uni_irq_time = get_tbl();
++
++	stat = readl(vmechip_baseaddr + LINT_STAT);
++	writel(stat, vmechip_baseaddr + LINT_STAT);	// Clear all pending ints
++	enable = readl(vmechip_baseaddr + LINT_EN);
++	stat = stat & enable;
++	if (stat & 0x0100) {
++		Interrupt_counters.dma++;
++		DMA_uni_irqhandler();
++	}
++	if (stat & 0x0200) {
++		Interrupt_counters.lerr++;
++		LERR_uni_irqhandler();
++	}
++	if (stat & 0x0400) {
++		Interrupt_counters.verr++;
++		VERR_uni_irqhandler();
++	}
++	if (stat & 0xF0000) {
++		Interrupt_counters.mbox++;
++		MB_uni_irqhandler((stat & 0xF0000) >> 16);
++	}
++	if (stat & 0xF00000) {
++		Interrupt_counters.lm++;
++		LM_uni_irqhandler((stat & 0xF00000) >> 20);
++	}
++	if (stat & 0x0000FE) {
++		VIRQ_uni_irqhandler(stat & 0x0000FE);
++	}
++	if (stat & UNIV_BM_LINT_ACFAIL) {
++		Interrupt_counters.acfail++;
++	}
++	if (stat & UNIV_BM_LINT_SYSFAIL) {
++		Interrupt_counters.sysfail++;
++	}
++	if (stat & UNIV_BM_LINT_SW_INT) {
++		Interrupt_counters.sw_int++;
++	}
++	if (stat & UNIV_BM_LINT_SW_IACK) {
++		Interrupt_counters.sw_iack++;
++	}
++	if (stat & UNIV_BM_LINT_VOWN) {
++		Interrupt_counters.vown++;
++	}
++
++	return IRQ_HANDLED;
++}
++
++//-----------------------------------------------------------------------------
++// Function   : uni_generate_irq
++// Description:
++//-----------------------------------------------------------------------------
++int uni_generate_irq(virqInfo_t * vmeIrq)
++{
++	int timeout;
++	int looptimeout;
++
++	timeout = vmeIrq->waitTime;
++	if (timeout == 0) {
++		timeout++;	// Wait at least 1 tick...
++	}
++	looptimeout = HZ / 20;	// try for 1/20 second
++
++	vmeIrq->timeOutFlag = 0;
++
++	// Validate & setup vector register.
++	if (vmeIrq->vector & 1) {	// Universe can only generate even vectors
++		return (-EINVAL);
++	}
++	writel(vmeIrq->vector << 24, vmechip_baseaddr + STATID);
++
++	// Assert VMEbus IRQ
++	writel(1 << (vmeIrq->level + 24), vmechip_baseaddr + VINT_EN);
++
++	// Wait for syscon to do iack
++	while (readl(vmechip_baseaddr + VINT_STAT) &
++	       (1 << (vmeIrq->level + 24))) {
++		set_current_state(TASK_INTERRUPTIBLE);
++		schedule_timeout(looptimeout);
++		timeout = timeout - looptimeout;
++		if (timeout <= 0) {
++			vmeIrq->timeOutFlag = 1;
 +			break;
 +		}
++	}
 +
-+		image[i].device =
-+			device_create(vme_user_sysfs_class, NULL,
-+				MKDEV(VME_MAJOR, i), NULL, name,
-+				(type[i] == SLAVE_MINOR)? i - (MASTER_MAX + 1) : i);
-+		if (IS_ERR(image[i].device)) {
-+			printk("%s: Error creating sysfs device\n",
-+				driver_name);
-+			err = PTR_ERR(image[i].device);
-+			goto err_sysfs;
++	// Clear VMEbus IRQ bit
++	writel(0, vmechip_baseaddr + VINT_EN);
++
++	return (0);
++}
++
++//-----------------------------------------------------------------------------
++// Function   : uni_set_arbiter
++// Description:
++//-----------------------------------------------------------------------------
++int uni_set_arbiter(vmeArbiterCfg_t * vmeArb)
++{
++	int temp_ctl = 0;
++	int vbto = 0;
++
++	temp_ctl = readl(vmechip_baseaddr + MISC_CTL);
++	temp_ctl &= 0x00FFFFFF;
++
++	if (vmeArb->globalTimeoutTimer == 0xFFFFFFFF) {
++		vbto = 7;
++	} else if (vmeArb->globalTimeoutTimer > 1024) {
++		return (-EINVAL);
++	} else if (vmeArb->globalTimeoutTimer == 0) {
++		vbto = 0;
++	} else {
++		vbto = 1;
++		while ((16 * (1 << (vbto - 1))) < vmeArb->globalTimeoutTimer) {
++			vbto += 1;
++		}
++	}
++	temp_ctl |= (vbto << 28);
++
++	if (vmeArb->arbiterMode == VME_PRIORITY_MODE) {
++		temp_ctl |= 1 << 26;
++	}
++
++	if (vmeArb->arbiterTimeoutFlag) {
++		temp_ctl |= 2 << 24;
++	}
++
++	writel(temp_ctl, vmechip_baseaddr + MISC_CTL);
++	return (0);
++}
++
++//-----------------------------------------------------------------------------
++// Function   : uni_get_arbiter
++// Description:
++//-----------------------------------------------------------------------------
++int uni_get_arbiter(vmeArbiterCfg_t * vmeArb)
++{
++	int temp_ctl = 0;
++	int vbto = 0;
++
++	temp_ctl = readl(vmechip_baseaddr + MISC_CTL);
++
++	vbto = (temp_ctl >> 28) & 0xF;
++	if (vbto != 0) {
++		vmeArb->globalTimeoutTimer = (16 * (1 << (vbto - 1)));
++	}
++
++	if (temp_ctl & (1 << 26)) {
++		vmeArb->arbiterMode = VME_PRIORITY_MODE;
++	} else {
++		vmeArb->arbiterMode = VME_R_ROBIN_MODE;
++	}
++
++	if (temp_ctl & (3 << 24)) {
++		vmeArb->arbiterTimeoutFlag = 1;
++	}
++	return (0);
++}
++
++//-----------------------------------------------------------------------------
++// Function   : uni_set_requestor
++// Description:
++//-----------------------------------------------------------------------------
++int uni_set_requestor(vmeRequesterCfg_t * vmeReq)
++{
++	int temp_ctl = 0;
++
++	temp_ctl = readl(vmechip_baseaddr + MAST_CTL);
++	temp_ctl &= 0xFF0FFFFF;
++
++	if (vmeReq->releaseMode == 1) {
++		temp_ctl |= (1 << 20);
++	}
++
++	if (vmeReq->fairMode == 1) {
++		temp_ctl |= (1 << 21);
++	}
++
++	temp_ctl |= (vmeReq->requestLevel << 22);
++
++	writel(temp_ctl, vmechip_baseaddr + MAST_CTL);
++	return (0);
++}
++
++//-----------------------------------------------------------------------------
++// Function   : uni_get_requestor
++// Description:
++//-----------------------------------------------------------------------------
++int uni_get_requestor(vmeRequesterCfg_t * vmeReq)
++{
++	int temp_ctl = 0;
++
++	temp_ctl = readl(vmechip_baseaddr + MAST_CTL);
++
++	if (temp_ctl & (1 << 20)) {
++		vmeReq->releaseMode = 1;
++	}
++
++	if (temp_ctl & (1 << 21)) {
++		vmeReq->fairMode = 1;
++	}
++
++	vmeReq->requestLevel = (temp_ctl & 0xC00000) >> 22;
++
++	return (0);
++}
++
++//-----------------------------------------------------------------------------
++// Function   : uni_set_in_bound
++// Description:
++//-----------------------------------------------------------------------------
++int uni_set_in_bound(vmeInWindowCfg_t * vmeIn)
++{
++	int temp_ctl = 0;
++
++	// Verify input data
++	if (vmeIn->windowNbr > 7) {
++		return (-EINVAL);
++	}
++	if ((vmeIn->vmeAddrU) || (vmeIn->windowSizeU) || (vmeIn->pciAddrU)) {
++		return (-EINVAL);
++	}
++	if ((vmeIn->vmeAddrL & 0xFFF) ||
++	    (vmeIn->windowSizeL & 0xFFF) || (vmeIn->pciAddrL & 0xFFF)) {
++		return (-EINVAL);
++	}
++
++	if (vmeIn->bcastRespond2esst) {
++		return (-EINVAL);
++	}
++	switch (vmeIn->addrSpace) {
++	case VME_A64:
++	case VME_CRCSR:
++	case VME_USER3:
++	case VME_USER4:
++		return (-EINVAL);
++	case VME_A16:
++		temp_ctl |= 0x00000;
++		break;
++	case VME_A24:
++		temp_ctl |= 0x10000;
++		break;
++	case VME_A32:
++		temp_ctl |= 0x20000;
++		break;
++	case VME_USER1:
++		temp_ctl |= 0x60000;
++		break;
++	case VME_USER2:
++		temp_ctl |= 0x70000;
++		break;
++	}
++
++	// Disable while we are mucking around
++	writel(0x00000000, vmechip_baseaddr + inCTL[vmeIn->windowNbr]);
++	writel(vmeIn->vmeAddrL, vmechip_baseaddr + inBS[vmeIn->windowNbr]);
++	writel(vmeIn->vmeAddrL + vmeIn->windowSizeL,
++	       vmechip_baseaddr + inBD[vmeIn->windowNbr]);
++	writel(vmeIn->pciAddrL - vmeIn->vmeAddrL,
++	       vmechip_baseaddr + inTO[vmeIn->windowNbr]);
++
++	// Setup CTL register.
++	if (vmeIn->wrPostEnable)
++		temp_ctl |= 0x40000000;
++	if (vmeIn->prefetchEnable)
++		temp_ctl |= 0x20000000;
++	if (vmeIn->rmwLock)
++		temp_ctl |= 0x00000040;
++	if (vmeIn->data64BitCapable)
++		temp_ctl |= 0x00000080;
++	if (vmeIn->userAccessType & VME_USER)
++		temp_ctl |= 0x00100000;
++	if (vmeIn->userAccessType & VME_SUPER)
++		temp_ctl |= 0x00200000;
++	if (vmeIn->dataAccessType & VME_DATA)
++		temp_ctl |= 0x00400000;
++	if (vmeIn->dataAccessType & VME_PROG)
++		temp_ctl |= 0x00800000;
++
++	// Write ctl reg without enable
++	writel(temp_ctl, vmechip_baseaddr + inCTL[vmeIn->windowNbr]);
++
++	if (vmeIn->windowEnable)
++		temp_ctl |= 0x80000000;
++
++	writel(temp_ctl, vmechip_baseaddr + inCTL[vmeIn->windowNbr]);
++	return (0);
++}
++
++//-----------------------------------------------------------------------------
++// Function   : uni_get_in_bound
++// Description:
++//-----------------------------------------------------------------------------
++int uni_get_in_bound(vmeInWindowCfg_t * vmeIn)
++{
++	int temp_ctl = 0;
++
++	// Verify input data
++	if (vmeIn->windowNbr > 7) {
++		return (-EINVAL);
++	}
++	// Get Window mappings.
++	vmeIn->vmeAddrL = readl(vmechip_baseaddr + inBS[vmeIn->windowNbr]);
++	vmeIn->pciAddrL = vmeIn->vmeAddrL +
++	    readl(vmechip_baseaddr + inTO[vmeIn->windowNbr]);
++	vmeIn->windowSizeL = readl(vmechip_baseaddr + inBD[vmeIn->windowNbr]) -
++	    vmeIn->vmeAddrL;
++
++	temp_ctl = readl(vmechip_baseaddr + inCTL[vmeIn->windowNbr]);
++
++	// Get Control & BUS attributes
++	if (temp_ctl & 0x40000000)
++		vmeIn->wrPostEnable = 1;
++	if (temp_ctl & 0x20000000)
++		vmeIn->prefetchEnable = 1;
++	if (temp_ctl & 0x00000040)
++		vmeIn->rmwLock = 1;
++	if (temp_ctl & 0x00000080)
++		vmeIn->data64BitCapable = 1;
++	if (temp_ctl & 0x00100000)
++		vmeIn->userAccessType |= VME_USER;
++	if (temp_ctl & 0x00200000)
++		vmeIn->userAccessType |= VME_SUPER;
++	if (temp_ctl & 0x00400000)
++		vmeIn->dataAccessType |= VME_DATA;
++	if (temp_ctl & 0x00800000)
++		vmeIn->dataAccessType |= VME_PROG;
++	if (temp_ctl & 0x80000000)
++		vmeIn->windowEnable = 1;
++
++	switch ((temp_ctl & 0x70000) >> 16) {
++	case 0x0:
++		vmeIn->addrSpace = VME_A16;
++		break;
++	case 0x1:
++		vmeIn->addrSpace = VME_A24;
++		break;
++	case 0x2:
++		vmeIn->addrSpace = VME_A32;
++		break;
++	case 0x6:
++		vmeIn->addrSpace = VME_USER1;
++		break;
++	case 0x7:
++		vmeIn->addrSpace = VME_USER2;
++		break;
++	}
++
++	return (0);
++}
++
++//-----------------------------------------------------------------------------
++// Function   : uni_set_out_bound
++// Description:
++//-----------------------------------------------------------------------------
++int uni_set_out_bound(vmeOutWindowCfg_t * vmeOut)
++{
++	int temp_ctl = 0;
++
++	// Verify input data
++	if (vmeOut->windowNbr > 7) {
++		return (-EINVAL);
++	}
++	if ((vmeOut->xlatedAddrU) || (vmeOut->windowSizeU)
++	    || (vmeOut->pciBusAddrU)) {
++		return (-EINVAL);
++	}
++	if ((vmeOut->xlatedAddrL & 0xFFF) ||
++	    (vmeOut->windowSizeL & 0xFFF) || (vmeOut->pciBusAddrL & 0xFFF)) {
++		return (-EINVAL);
++	}
++	if (vmeOut->bcastSelect2esst) {
++		return (-EINVAL);
++	}
++	switch (vmeOut->addrSpace) {
++	case VME_A64:
++	case VME_USER3:
++	case VME_USER4:
++		return (-EINVAL);
++	case VME_A16:
++		temp_ctl |= 0x00000;
++		break;
++	case VME_A24:
++		temp_ctl |= 0x10000;
++		break;
++	case VME_A32:
++		temp_ctl |= 0x20000;
++		break;
++	case VME_CRCSR:
++		temp_ctl |= 0x50000;
++		break;
++	case VME_USER1:
++		temp_ctl |= 0x60000;
++		break;
++	case VME_USER2:
++		temp_ctl |= 0x70000;
++		break;
++	}
++
++	// Disable while we are mucking around
++	writel(0x00000000, vmechip_baseaddr + outCTL[vmeOut->windowNbr]);
++	writel(vmeOut->pciBusAddrL,
++	       vmechip_baseaddr + outBS[vmeOut->windowNbr]);
++	writel(vmeOut->pciBusAddrL + vmeOut->windowSizeL,
++	       vmechip_baseaddr + outBD[vmeOut->windowNbr]);
++	writel(vmeOut->xlatedAddrL - vmeOut->pciBusAddrL,
++	       vmechip_baseaddr + outTO[vmeOut->windowNbr]);
++
++	// Sanity check.
++	if (vmeOut->pciBusAddrL !=
++	    readl(vmechip_baseaddr + outBS[vmeOut->windowNbr])) {
++		printk(KERN_ERR
++		       "ca91c042: out window: %x, failed to configure\n",
++		       vmeOut->windowNbr);
++		return (-EINVAL);
++	}
++
++	if (vmeOut->pciBusAddrL + vmeOut->windowSizeL !=
++	    readl(vmechip_baseaddr + outBD[vmeOut->windowNbr])) {
++		printk(KERN_ERR
++		       "ca91c042: out window: %x, failed to configure\n",
++		       vmeOut->windowNbr);
++		return (-EINVAL);
++	}
++
++	if (vmeOut->xlatedAddrL - vmeOut->pciBusAddrL !=
++	    readl(vmechip_baseaddr + outTO[vmeOut->windowNbr])) {
++		printk(KERN_ERR
++		       "ca91c042: out window: %x, failed to configure\n",
++		       vmeOut->windowNbr);
++		return (-EINVAL);
++	}
++	// Setup CTL register.
++	if (vmeOut->wrPostEnable)
++		temp_ctl |= 0x40000000;
++	if (vmeOut->userAccessType & VME_SUPER)
++		temp_ctl |= 0x001000;
++	if (vmeOut->dataAccessType & VME_PROG)
++		temp_ctl |= 0x004000;
++	if (vmeOut->maxDataWidth == VME_D16)
++		temp_ctl |= 0x00400000;
++	if (vmeOut->maxDataWidth == VME_D32)
++		temp_ctl |= 0x00800000;
++	if (vmeOut->maxDataWidth == VME_D64)
++		temp_ctl |= 0x00C00000;
++	if (vmeOut->xferProtocol & (VME_BLT | VME_MBLT))
++		temp_ctl |= 0x00000100;
++
++	// Write ctl reg without enable
++	writel(temp_ctl, vmechip_baseaddr + outCTL[vmeOut->windowNbr]);
++
++	if (vmeOut->windowEnable)
++		temp_ctl |= 0x80000000;
++
++	writel(temp_ctl, vmechip_baseaddr + outCTL[vmeOut->windowNbr]);
++	return (0);
++}
++
++//-----------------------------------------------------------------------------
++// Function   : uni_get_out_bound
++// Description:
++//-----------------------------------------------------------------------------
++int uni_get_out_bound(vmeOutWindowCfg_t * vmeOut)
++{
++	int temp_ctl = 0;
++
++	// Verify input data
++	if (vmeOut->windowNbr > 7) {
++		return (-EINVAL);
++	}
++	// Get Window mappings.
++	vmeOut->pciBusAddrL =
++	    readl(vmechip_baseaddr + outBS[vmeOut->windowNbr]);
++	vmeOut->xlatedAddrL =
++	    vmeOut->pciBusAddrL + readl(vmechip_baseaddr +
++					outTO[vmeOut->windowNbr]);
++	vmeOut->windowSizeL =
++	    readl(vmechip_baseaddr + outBD[vmeOut->windowNbr]) -
++	    vmeOut->pciBusAddrL;
++
++	temp_ctl = readl(vmechip_baseaddr + outCTL[vmeOut->windowNbr]);
++
++	// Get Control & BUS attributes
++	if (temp_ctl & 0x40000000)
++		vmeOut->wrPostEnable = 1;
++	if (temp_ctl & 0x001000)
++		vmeOut->userAccessType = VME_SUPER;
++	else
++		vmeOut->userAccessType = VME_USER;
++	if (temp_ctl & 0x004000)
++		vmeOut->dataAccessType = VME_PROG;
++	else
++		vmeOut->dataAccessType = VME_DATA;
++	if (temp_ctl & 0x80000000)
++		vmeOut->windowEnable = 1;
++
++	switch ((temp_ctl & 0x00C00000) >> 22) {
++	case 0:
++		vmeOut->maxDataWidth = VME_D8;
++		break;
++	case 1:
++		vmeOut->maxDataWidth = VME_D16;
++		break;
++	case 2:
++		vmeOut->maxDataWidth = VME_D32;
++		break;
++	case 3:
++		vmeOut->maxDataWidth = VME_D64;
++		break;
++	}
++	if (temp_ctl & 0x00000100)
++		vmeOut->xferProtocol = VME_BLT;
++	else
++		vmeOut->xferProtocol = VME_SCT;
++
++	switch ((temp_ctl & 0x70000) >> 16) {
++	case 0x0:
++		vmeOut->addrSpace = VME_A16;
++		break;
++	case 0x1:
++		vmeOut->addrSpace = VME_A24;
++		break;
++	case 0x2:
++		vmeOut->addrSpace = VME_A32;
++		break;
++	case 0x5:
++		vmeOut->addrSpace = VME_CRCSR;
++		break;
++	case 0x6:
++		vmeOut->addrSpace = VME_USER1;
++		break;
++	case 0x7:
++		vmeOut->addrSpace = VME_USER2;
++		break;
++	}
++
++	return (0);
++}
++
++//-----------------------------------------------------------------------------
++// Function   : uni_setup_lm
++// Description:
++//-----------------------------------------------------------------------------
++int uni_setup_lm(vmeLmCfg_t * vmeLm)
++{
++	int temp_ctl = 0;
++
++	if (vmeLm->addrU) {
++		return (-EINVAL);
++	}
++	switch (vmeLm->addrSpace) {
++	case VME_A64:
++	case VME_USER3:
++	case VME_USER4:
++		return (-EINVAL);
++	case VME_A16:
++		temp_ctl |= 0x00000;
++		break;
++	case VME_A24:
++		temp_ctl |= 0x10000;
++		break;
++	case VME_A32:
++		temp_ctl |= 0x20000;
++		break;
++	case VME_CRCSR:
++		temp_ctl |= 0x50000;
++		break;
++	case VME_USER1:
++		temp_ctl |= 0x60000;
++		break;
++	case VME_USER2:
++		temp_ctl |= 0x70000;
++		break;
++	}
++
++	// Disable while we are mucking around
++	writel(0x00000000, vmechip_baseaddr + LM_CTL);
++
++	writel(vmeLm->addr, vmechip_baseaddr + LM_BS);
++
++	// Setup CTL register.
++	if (vmeLm->userAccessType & VME_SUPER)
++		temp_ctl |= 0x00200000;
++	if (vmeLm->userAccessType & VME_USER)
++		temp_ctl |= 0x00100000;
++	if (vmeLm->dataAccessType & VME_PROG)
++		temp_ctl |= 0x00800000;
++	if (vmeLm->dataAccessType & VME_DATA)
++		temp_ctl |= 0x00400000;
++
++	uni_lm_event = 0;
++
++	// Write ctl reg and enable
++	writel(0x80000000 | temp_ctl, vmechip_baseaddr + LM_CTL);
++	temp_ctl = readl(vmechip_baseaddr + LM_CTL);
++
++	return (0);
++}
++
++//-----------------------------------------------------------------------------
++// Function   : uni_wait_lm
++// Description:
++//-----------------------------------------------------------------------------
++int uni_wait_lm(vmeLmCfg_t * vmeLm)
++{
++	unsigned long flags;
++	unsigned int tmp;
++
++	spin_lock_irqsave(&lm_lock, flags);
++	tmp = uni_lm_event;
++	spin_unlock_irqrestore(&lm_lock, flags);
++	if (tmp == 0) {
++		if (vmeLm->lmWait < 10)
++			vmeLm->lmWait = 10;
++		interruptible_sleep_on_timeout(&lm_queue, vmeLm->lmWait);
++	}
++	writel(0x00000000, vmechip_baseaddr + LM_CTL);
++	vmeLm->lmEvents = uni_lm_event;
++
++	return (0);
++}
++
++#define	SWIZZLE(X) ( ((X & 0xFF000000) >> 24) | ((X & 0x00FF0000) >>  8) | ((X & 0x0000FF00) <<  8) | ((X & 0x000000FF) << 24))
++
++//-----------------------------------------------------------------------------
++// Function   : uni_do_rmw
++// Description:
++//-----------------------------------------------------------------------------
++int uni_do_rmw(vmeRmwCfg_t * vmeRmw)
++{
++	int temp_ctl = 0;
++	int tempBS = 0;
++	int tempBD = 0;
++	int tempTO = 0;
++	int vmeBS = 0;
++	int vmeBD = 0;
++	int *rmw_pci_data_ptr = NULL;
++	int *vaDataPtr = NULL;
++	int i;
++	vmeOutWindowCfg_t vmeOut;
++	if (vmeRmw->maxAttempts < 1) {
++		return (-EINVAL);
++	}
++	if (vmeRmw->targetAddrU) {
++		return (-EINVAL);
++	}
++	// Find the PCI address that maps to the desired VME address
++	for (i = 0; i < 8; i++) {
++		temp_ctl = readl(vmechip_baseaddr + outCTL[i]);
++		if ((temp_ctl & 0x80000000) == 0) {
++			continue;
++		}
++		memset(&vmeOut, 0, sizeof(vmeOut));
++		vmeOut.windowNbr = i;
++		uni_get_out_bound(&vmeOut);
++		if (vmeOut.addrSpace != vmeRmw->addrSpace) {
++			continue;
++		}
++		tempBS = readl(vmechip_baseaddr + outBS[i]);
++		tempBD = readl(vmechip_baseaddr + outBD[i]);
++		tempTO = readl(vmechip_baseaddr + outTO[i]);
++		vmeBS = tempBS + tempTO;
++		vmeBD = tempBD + tempTO;
++		if ((vmeRmw->targetAddr >= vmeBS) &&
++		    (vmeRmw->targetAddr < vmeBD)) {
++			rmw_pci_data_ptr =
++			    (int *)(tempBS + (vmeRmw->targetAddr - vmeBS));
++			vaDataPtr =
++			    (int *)(out_image_va[i] +
++				    (vmeRmw->targetAddr - vmeBS));
++			break;
 +		}
 +	}
 +
-+	/* XXX Run tests */
-+	/*
-+	tests();
-+	*/
-+
-+	return 0;
-+
-+	/* Ensure counter set correcty to destroy all sysfs devices */
-+	i = VME_DEVS;
-+err_sysfs:
-+	while (i > 0){
-+		i--;
-+		device_destroy(vme_user_sysfs_class, MKDEV(VME_MAJOR, i));
++	// If no window - fail.
++	if (rmw_pci_data_ptr == NULL) {
++		return (-EINVAL);
 +	}
-+	class_destroy(vme_user_sysfs_class);
++	// Setup the RMW registers.
++	writel(0, vmechip_baseaddr + SCYC_CTL);
++	writel(SWIZZLE(vmeRmw->enableMask), vmechip_baseaddr + SCYC_EN);
++	writel(SWIZZLE(vmeRmw->compareData), vmechip_baseaddr + SCYC_CMP);
++	writel(SWIZZLE(vmeRmw->swapData), vmechip_baseaddr + SCYC_SWP);
++	writel((int)rmw_pci_data_ptr, vmechip_baseaddr + SCYC_ADDR);
++	writel(1, vmechip_baseaddr + SCYC_CTL);
 +
-+	/* Ensure counter set correcty to unalloc all slave buffers */
-+	i = SLAVE_MAX + 1;
-+err_buf:
-+	while (i > SLAVE_MINOR){
-+		i--;
-+		vme_slave_set(image[i].resource, 0, 0, 0, 0, VME_A32, 0);
-+		vme_slave_free(image[i].resource);
-+		buf_unalloc(i);
++	// Run the RMW cycle until either success or max attempts.
++	vmeRmw->numAttempts = 1;
++	while (vmeRmw->numAttempts <= vmeRmw->maxAttempts) {
++
++		if ((readl(vaDataPtr) & vmeRmw->enableMask) ==
++		    (vmeRmw->swapData & vmeRmw->enableMask)) {
++
++			writel(0, vmechip_baseaddr + SCYC_CTL);
++			break;
++
++		}
++		vmeRmw->numAttempts++;
 +	}
-+err_class:
-+	cdev_del(vme_user_cdev);
-+err_char:
-+	unregister_chrdev_region(MKDEV(VME_MAJOR, 0), VME_DEVS);
-+err_region:
-+	return err;
++
++	// If no success, set num Attempts to be greater than max attempts
++	if (vmeRmw->numAttempts > vmeRmw->maxAttempts) {
++		vmeRmw->numAttempts = vmeRmw->maxAttempts + 1;
++	}
++
++	return (0);
 +}
 +
-+static void __exit vme_bridge_exit(void)
++//-----------------------------------------------------------------------------
++// Function   : uniSetupDctlReg
++// Description:
++//-----------------------------------------------------------------------------
++int uniSetupDctlReg(vmeDmaPacket_t * vmeDma, int *dctlregreturn)
 +{
-+	int i;
++	unsigned int dctlreg = 0x80;
++	struct vmeAttr *vmeAttr;
 +
-+	/* Remove sysfs Entries */
-+	for(i=0; i<VME_DEVS; i++) {
-+		device_destroy(vme_user_sysfs_class, MKDEV(VME_MAJOR, i));
++	if (vmeDma->srcBus == VME_DMA_VME) {
++		dctlreg = 0;
++		vmeAttr = &vmeDma->srcVmeAttr;
++	} else {
++		dctlreg = 0x80000000;
++		vmeAttr = &vmeDma->dstVmeAttr;
 +	}
-+	class_destroy(vme_user_sysfs_class);
 +
-+	for (i = SLAVE_MINOR; i < (SLAVE_MAX + 1); i++) {
-+		buf_unalloc(i);
++	switch (vmeAttr->maxDataWidth) {
++	case VME_D8:
++		break;
++	case VME_D16:
++		dctlreg |= 0x00400000;
++		break;
++	case VME_D32:
++		dctlreg |= 0x00800000;
++		break;
++	case VME_D64:
++		dctlreg |= 0x00C00000;
++		break;
 +	}
 +
-+	/* Unregister device driver */
-+	cdev_del(vme_user_cdev);
++	switch (vmeAttr->addrSpace) {
++	case VME_A16:
++		break;
++	case VME_A24:
++		dctlreg |= 0x00010000;
++		break;
++	case VME_A32:
++		dctlreg |= 0x00020000;
++		break;
++	case VME_USER1:
++		dctlreg |= 0x00060000;
++		break;
++	case VME_USER2:
++		dctlreg |= 0x00070000;
++		break;
 +
-+	/* Unregiser the major and minor device numbers */
-+	unregister_chrdev_region(MKDEV(VME_MAJOR, 0), VME_DEVS);
++	case VME_A64:		// not supported in Universe DMA
++	case VME_CRCSR:
++	case VME_USER3:
++	case VME_USER4:
++		return (-EINVAL);
++		break;
++	}
++	if (vmeAttr->userAccessType == VME_PROG) {
++		dctlreg |= 0x00004000;
++	}
++	if (vmeAttr->dataAccessType == VME_SUPER) {
++		dctlreg |= 0x00001000;
++	}
++	if (vmeAttr->xferProtocol != VME_SCT) {
++		dctlreg |= 0x00000100;
++	}
++	*dctlregreturn = dctlreg;
++	return (0);
 +}
 +
-+MODULE_DESCRIPTION("VME User Space Access Driver");
-+MODULE_AUTHOR("Martyn Welch <martyn.welch@gefanuc.com");
-+MODULE_LICENSE("GPL");
++//-----------------------------------------------------------------------------
++// Function   : uni_start_dma
++// Description:
++//-----------------------------------------------------------------------------
++unsigned int
++uni_start_dma(int channel, unsigned int dgcsreg, TDMA_Cmd_Packet * vmeLL)
++{
++	unsigned int val;
 +
-+module_init(vme_bridge_init);
-+module_exit(vme_bridge_exit);
++	// Setup registers as needed for direct or chained.
++	if (dgcsreg & 0x8000000) {
++		writel(0, vmechip_baseaddr + DTBC);
++		writel((unsigned int)vmeLL, vmechip_baseaddr + DCPP);
++	} else {
++#if	0
++		printk("Starting: DGCS = %08x\n", dgcsreg);
++		printk("Starting: DVA  = %08x\n", readl(&vmeLL->dva));
++		printk("Starting: DLV  = %08x\n", readl(&vmeLL->dlv));
++		printk("Starting: DTBC = %08x\n", readl(&vmeLL->dtbc));
++		printk("Starting: DCTL = %08x\n", readl(&vmeLL->dctl));
++#endif
++		// Write registers
++		writel(readl(&vmeLL->dva), vmechip_baseaddr + DVA);
++		writel(readl(&vmeLL->dlv), vmechip_baseaddr + DLA);
++		writel(readl(&vmeLL->dtbc), vmechip_baseaddr + DTBC);
++		writel(readl(&vmeLL->dctl), vmechip_baseaddr + DCTL);
++		writel(0, vmechip_baseaddr + DCPP);
++	}
++
++	// Start the operation
++	writel(dgcsreg, vmechip_baseaddr + DGCS);
++	val = get_tbl();
++	writel(dgcsreg | 0x8000000F, vmechip_baseaddr + DGCS);
++	return (val);
++}
++
++//-----------------------------------------------------------------------------
++// Function   : uni_setup_dma
++// Description:
++//-----------------------------------------------------------------------------
++TDMA_Cmd_Packet *uni_setup_dma(vmeDmaPacket_t * vmeDma)
++{
++	vmeDmaPacket_t *vmeCur;
++	int maxPerPage;
++	int currentLLcount;
++	TDMA_Cmd_Packet *startLL;
++	TDMA_Cmd_Packet *currentLL;
++	TDMA_Cmd_Packet *nextLL;
++	unsigned int dctlreg = 0;
++
++	maxPerPage = PAGESIZE / sizeof(TDMA_Cmd_Packet) - 1;
++	startLL = (TDMA_Cmd_Packet *) __get_free_pages(GFP_KERNEL, 0);
++	if (startLL == 0) {
++		return (startLL);
++	}
++	// First allocate pages for descriptors and create linked list
++	vmeCur = vmeDma;
++	currentLL = startLL;
++	currentLLcount = 0;
++	while (vmeCur != 0) {
++		if (vmeCur->pNextPacket != 0) {
++			currentLL->dcpp = (unsigned int)(currentLL + 1);
++			currentLLcount++;
++			if (currentLLcount >= maxPerPage) {
++				currentLL->dcpp =
++				    __get_free_pages(GFP_KERNEL, 0);
++				currentLLcount = 0;
++			}
++			currentLL = (TDMA_Cmd_Packet *) currentLL->dcpp;
++		} else {
++			currentLL->dcpp = (unsigned int)0;
++		}
++		vmeCur = vmeCur->pNextPacket;
++	}
++
++	// Next fill in information for each descriptor
++	vmeCur = vmeDma;
++	currentLL = startLL;
++	while (vmeCur != 0) {
++		if (vmeCur->srcBus == VME_DMA_VME) {
++			writel(vmeCur->srcAddr, &currentLL->dva);
++			writel(vmeCur->dstAddr, &currentLL->dlv);
++		} else {
++			writel(vmeCur->srcAddr, &currentLL->dlv);
++			writel(vmeCur->dstAddr, &currentLL->dva);
++		}
++		uniSetupDctlReg(vmeCur, &dctlreg);
++		writel(dctlreg, &currentLL->dctl);
++		writel(vmeCur->byteCount, &currentLL->dtbc);
++
++		currentLL = (TDMA_Cmd_Packet *) currentLL->dcpp;
++		vmeCur = vmeCur->pNextPacket;
++	}
++
++	// Convert Links to PCI addresses.
++	currentLL = startLL;
++	while (currentLL != 0) {
++		nextLL = (TDMA_Cmd_Packet *) currentLL->dcpp;
++		if (nextLL == 0) {
++			writel(1, &currentLL->dcpp);
++		} else {
++			writel((unsigned int)virt_to_bus(nextLL),
++			       &currentLL->dcpp);
++		}
++		currentLL = nextLL;
++	}
++
++	// Return pointer to descriptors list
++	return (startLL);
++}
++
++//-----------------------------------------------------------------------------
++// Function   : uni_free_dma
++// Description:
++//-----------------------------------------------------------------------------
++int uni_free_dma(TDMA_Cmd_Packet * startLL)
++{
++	TDMA_Cmd_Packet *currentLL;
++	TDMA_Cmd_Packet *prevLL;
++	TDMA_Cmd_Packet *nextLL;
++	unsigned int dcppreg;
++
++	// Convert Links to virtual addresses.
++	currentLL = startLL;
++	while (currentLL != 0) {
++		dcppreg = readl(&currentLL->dcpp);
++		dcppreg &= ~6;
++		if (dcppreg & 1) {
++			currentLL->dcpp = 0;
++		} else {
++			currentLL->dcpp = (unsigned int)bus_to_virt(dcppreg);
++		}
++		currentLL = (TDMA_Cmd_Packet *) currentLL->dcpp;
++	}
++
++	// Free all pages associated with the descriptors.
++	currentLL = startLL;
++	prevLL = currentLL;
++	while (currentLL != 0) {
++		nextLL = (TDMA_Cmd_Packet *) currentLL->dcpp;
++		if (currentLL + 1 != nextLL) {
++			free_pages((int)prevLL, 0);
++			prevLL = nextLL;
++		}
++		currentLL = nextLL;
++	}
++
++	// Return pointer to descriptors list
++	return (0);
++}
++
++//-----------------------------------------------------------------------------
++// Function   : uni_do_dma
++// Description:
++//-----------------------------------------------------------------------------
++int uni_do_dma(vmeDmaPacket_t * vmeDma)
++{
++	unsigned int dgcsreg = 0;
++	unsigned int dctlreg = 0;
++	int val;
++	int channel, x;
++	vmeDmaPacket_t *curDma;
++	TDMA_Cmd_Packet *dmaLL;
++
++	// Sanity check the VME chain.
++	channel = vmeDma->channel_number;
++	if (channel > 0) {
++		return (-EINVAL);
++	}
++	curDma = vmeDma;
++	while (curDma != 0) {
++		if (curDma->byteCount == 0) {
++			return (-EINVAL);
++		}
++		if (curDma->byteCount >= 0x1000000) {
++			return (-EINVAL);
++		}
++		if ((curDma->srcAddr & 7) != (curDma->dstAddr & 7)) {
++			return (-EINVAL);
++		}
++		switch (curDma->srcBus) {
++		case VME_DMA_PCI:
++			if (curDma->dstBus != VME_DMA_VME) {
++				return (-EINVAL);
++			}
++			break;
++		case VME_DMA_VME:
++			if (curDma->dstBus != VME_DMA_PCI) {
++				return (-EINVAL);
++			}
++			break;
++		default:
++			return (-EINVAL);
++			break;
++		}
++		if (uniSetupDctlReg(curDma, &dctlreg) < 0) {
++			return (-EINVAL);
++		}
++
++		curDma = curDma->pNextPacket;
++		if (curDma == vmeDma) {	// Endless Loop!
++			return (-EINVAL);
++		}
++	}
++
++	// calculate control register
++	if (vmeDma->pNextPacket != 0) {
++		dgcsreg = 0x8000000;
++	} else {
++		dgcsreg = 0;
++	}
++
++	for (x = 0; x < 8; x++) {	// vme block size
++		if ((256 << x) >= vmeDma->maxVmeBlockSize) {
++			break;
++		}
++	}
++	if (x == 8)
++		x = 7;
++	dgcsreg |= (x << 20);
++
++	if (vmeDma->vmeBackOffTimer) {
++		for (x = 1; x < 8; x++) {	// vme timer
++			if ((16 << (x - 1)) >= vmeDma->vmeBackOffTimer) {
++				break;
++			}
++		}
++		if (x == 8)
++			x = 7;
++		dgcsreg |= (x << 16);
++	}
++	// Setup the dma chain
++	dmaLL = uni_setup_dma(vmeDma);
++
++	// Start the DMA
++	if (dgcsreg & 0x8000000) {
++		vmeDma->vmeDmaStartTick =
++		    uni_start_dma(channel, dgcsreg,
++				  (TDMA_Cmd_Packet *) virt_to_phys(dmaLL));
++	} else {
++		vmeDma->vmeDmaStartTick =
++		    uni_start_dma(channel, dgcsreg, dmaLL);
++	}
++
++	wait_event_interruptible(dma_queue[0],
++				 readl(vmechip_baseaddr + DGCS) & 0x800);
++
++	val = readl(vmechip_baseaddr + DGCS);
++	writel(val | 0xF00, vmechip_baseaddr + DGCS);
++
++	vmeDma->vmeDmaStatus = 0;
++	vmeDma->vmeDmaStopTick = uni_dma_irq_time;
++	if (vmeDma->vmeDmaStopTick < vmeDma->vmeDmaStartTick) {
++		vmeDma->vmeDmaElapsedTime =
++		    (0xFFFFFFFF - vmeDma->vmeDmaStartTick) +
++		    vmeDma->vmeDmaStopTick;
++	} else {
++		vmeDma->vmeDmaElapsedTime =
++		    vmeDma->vmeDmaStopTick - vmeDma->vmeDmaStartTick;
++	}
++	vmeDma->vmeDmaElapsedTime -= vmechip_irq_overhead_ticks;
++	vmeDma->vmeDmaElapsedTime /= (tb_speed / 1000000);
++
++	if (!(val & 0x00000800)) {
++		vmeDma->vmeDmaStatus = val & 0x700;
++		printk(KERN_ERR
++		       "ca91c042: DMA Error in DMA_uni_irqhandler DGCS=%08X\n",
++		       val);
++		val = readl(vmechip_baseaddr + DCPP);
++		printk(KERN_ERR "ca91c042: DCPP=%08X\n", val);
++		val = readl(vmechip_baseaddr + DCTL);
++		printk(KERN_ERR "ca91c042: DCTL=%08X\n", val);
++		val = readl(vmechip_baseaddr + DTBC);
++		printk(KERN_ERR "ca91c042: DTBC=%08X\n", val);
++		val = readl(vmechip_baseaddr + DLA);
++		printk(KERN_ERR "ca91c042: DLA=%08X\n", val);
++		val = readl(vmechip_baseaddr + DVA);
++		printk(KERN_ERR "ca91c042: DVA=%08X\n", val);
++
++	}
++	// Free the dma chain
++	uni_free_dma(dmaLL);
++
++	return (0);
++}
++
++//-----------------------------------------------------------------------------
++// Function   : uni_shutdown
++// Description: Put VME bridge in quiescent state.
++//-----------------------------------------------------------------------------
++void uni_shutdown(void)
++{
++	writel(0, vmechip_baseaddr + LINT_EN);	// Turn off Ints
++
++	// Turn off the windows
++	writel(0x00800000, vmechip_baseaddr + LSI0_CTL);
++	writel(0x00800000, vmechip_baseaddr + LSI1_CTL);
++	writel(0x00800000, vmechip_baseaddr + LSI2_CTL);
++	writel(0x00800000, vmechip_baseaddr + LSI3_CTL);
++	writel(0x00F00000, vmechip_baseaddr + VSI0_CTL);
++	writel(0x00F00000, vmechip_baseaddr + VSI1_CTL);
++	writel(0x00F00000, vmechip_baseaddr + VSI2_CTL);
++	writel(0x00F00000, vmechip_baseaddr + VSI3_CTL);
++	if (vmechip_revision >= 2) {
++		writel(0x00800000, vmechip_baseaddr + LSI4_CTL);
++		writel(0x00800000, vmechip_baseaddr + LSI5_CTL);
++		writel(0x00800000, vmechip_baseaddr + LSI6_CTL);
++		writel(0x00800000, vmechip_baseaddr + LSI7_CTL);
++		writel(0x00F00000, vmechip_baseaddr + VSI4_CTL);
++		writel(0x00F00000, vmechip_baseaddr + VSI5_CTL);
++		writel(0x00F00000, vmechip_baseaddr + VSI6_CTL);
++		writel(0x00F00000, vmechip_baseaddr + VSI7_CTL);
++	}
++}
++
++//-----------------------------------------------------------------------------
++// Function   : uni_init()
++// Description:
++//-----------------------------------------------------------------------------
++int uni_init(void)
++{
++	int result;
++	unsigned int tmp;
++	unsigned int crcsr_addr;
++	unsigned int irqOverHeadStart;
++	int overHeadTicks;
++
++	uni_shutdown();
++
++	// Write to Misc Register
++	// Set VME Bus Time-out
++	//   Arbitration Mode
++	//   DTACK Enable
++	tmp = readl(vmechip_baseaddr + MISC_CTL) & 0x0832BFFF;
++	tmp |= 0x76040000;
++	writel(tmp, vmechip_baseaddr + MISC_CTL);
++	if (tmp & 0x20000) {
++		vme_syscon = 1;
++	} else {
++		vme_syscon = 0;
++	}
++
++	// Clear DMA status log
++	writel(0x00000F00, vmechip_baseaddr + DGCS);
++	// Clear and enable error log
++	writel(0x00800000, vmechip_baseaddr + L_CMDERR);
++	// Turn off location monitor
++	writel(0x00000000, vmechip_baseaddr + LM_CTL);
++
++	// Initialize crcsr map
++	if (vme_slotnum != -1) {
++		writel(vme_slotnum << 27, vmechip_baseaddr + VCSR_BS);
++	}
++	crcsr_addr = readl(vmechip_baseaddr + VCSR_BS) >> 8;
++	writel((unsigned int)vmechip_interboard_datap - crcsr_addr,
++	       vmechip_baseaddr + VCSR_TO);
++	if (vme_slotnum != -1) {
++		writel(0x80000000, vmechip_baseaddr + VCSR_CTL);
++	}
++	// Turn off interrupts
++	writel(0x00000000, vmechip_baseaddr + LINT_EN);	// Disable interrupts in the Universe first
++	writel(0x00FFFFFF, vmechip_baseaddr + LINT_STAT);	// Clear Any Pending Interrupts
++	writel(0x00000000, vmechip_baseaddr + VINT_EN);	// Disable interrupts in the Universe first
++
++	result =
++	    request_irq(vmechip_irq, uni_irqhandler, IRQF_SHARED | IRQF_DISABLED,
++			"VMEBus (ca91c042)", vmechip_baseaddr);
++	if (result) {
++		printk(KERN_ERR
++		       "ca91c042: can't get assigned pci irq vector %02X\n",
++		       vmechip_irq);
++		return (0);
++	} else {
++		writel(0x0000, vmechip_baseaddr + LINT_MAP0);	// Map all ints to 0
++		writel(0x0000, vmechip_baseaddr + LINT_MAP1);	// Map all ints to 0
++		writel(0x0000, vmechip_baseaddr + LINT_MAP2);	// Map all ints to 0
++	}
++
++	// Enable DMA, mailbox, VIRQ & LM Interrupts
++	if (vme_syscon)
++		tmp = 0x00FF07FE;
++	else
++		tmp = 0x00FF0700;
++	writel(tmp, vmechip_baseaddr + LINT_EN);
++
++	// Do a quick sanity test of the bridge
++	if (readl(vmechip_baseaddr + LINT_EN) != tmp) {
++		return (0);
++	}
++	if (readl(vmechip_baseaddr + PCI_CLASS_REVISION) != 0x06800002) {
++		return (0);
++	}
++	for (tmp = 1; tmp < 0x80000000; tmp = tmp << 1) {
++		writel(tmp, vmechip_baseaddr + SCYC_EN);
++		writel(~tmp, vmechip_baseaddr + SCYC_CMP);
++		if (readl(vmechip_baseaddr + SCYC_EN) != tmp) {
++			return (0);
++		}
++		if (readl(vmechip_baseaddr + SCYC_CMP) != ~tmp) {
++			return (0);
++		}
++	}
++
++	// do a mail box interrupt to calibrate the interrupt overhead.
++
++	irqOverHeadStart = get_tbl();
++	writel(0, vmechip_baseaddr + MBOX1);
++	for (tmp = 0; tmp < 10; tmp++) {
++	}
++
++	irqOverHeadStart = get_tbl();
++	writel(0, vmechip_baseaddr + MBOX1);
++	for (tmp = 0; tmp < 10; tmp++) {
++	}
++
++	overHeadTicks = uni_irq_time - irqOverHeadStart;
++	if (overHeadTicks > 0) {
++		vmechip_irq_overhead_ticks = overHeadTicks;
++	} else {
++		vmechip_irq_overhead_ticks = 1;
++	}
++	return (1);
++}
 --- /dev/null
-+++ b/drivers/staging/vme/devices/vme_user.h
-@@ -0,0 +1,43 @@
-+
++++ b/drivers/staging/vme/bridges/vme_ca91cx42.h
+@@ -0,0 +1,403 @@
 +/*
-+ * VMEbus Master Window Configuration Structure
-+ */
-+typedef struct {
-+	char enable;			/* State of Window */
-+	unsigned long long vme_addr;	/* Starting Address on the VMEbus */
-+	unsigned long long size;	/* Window Size */
-+	vme_address_t aspace;		/* Address Space */
-+	vme_cycle_t cycle;		/* Cycle properties */
-+	vme_width_t dwidth;		/* Maximum Data Width */
-+#if 0
-+	char prefetchEnable;		/* Prefetch Read Enable State */
-+	int prefetchSize;		/* Prefetch Read Size (Cache Lines) */
-+	char wrPostEnable;		/* Write Post State */
-+#endif
-+} vme_master_t;
-+
-+
-+/*
-+ * IOCTL Commands and structures
++ * ca91c042.h
++ *
++ * Support for the Tundra Universe 1 and Universe II VME bridge chips
++ *
++ * Author: Tom Armistead
++ * Updated and maintained by Ajit Prem
++ * Copyright 2004 Motorola Inc.
++ *
++ * Derived from ca91c042.h by Michael Wyrick
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
 + */
 +
-+/* Magic number for use in ioctls */
-+#define VME_IOC_MAGIC 0xAE
++#ifndef _ca91c042_h
++#define _ca91c042_h
 +
-+
-+/* VMEbus Slave Window Configuration Structure */
-+typedef struct {
-+	char enable;			/* State of Window */
-+	unsigned long long vme_addr;	/* Starting Address on the VMEbus */
-+	unsigned long long size;	/* Window Size */
-+	vme_address_t aspace;		/* Address Space */
-+	vme_cycle_t cycle;		/* Cycle properties */
-+#if 0
-+	char wrPostEnable;		/* Write Post State */
-+	char rmwLock;			/* Lock PCI during RMW Cycles */
-+	char data64BitCapable;		/* non-VMEbus capable of 64-bit Data */
++#ifndef	PCI_VENDOR_ID_TUNDRA
++#define	PCI_VENDOR_ID_TUNDRA 0x10e3
 +#endif
-+} vme_slave_t;
 +
-+#define VME_SET_SLAVE _IOW(VME_IOC_MAGIC, 10, vme_slave_t)
++#ifndef	PCI_DEVICE_ID_TUNDRA_CA91C042
++#define	PCI_DEVICE_ID_TUNDRA_CA91C042 0x0000
++#endif
 +
++//-----------------------------------------------------------------------------
++// Public Functions
++//-----------------------------------------------------------------------------
++// This is the typedef for a VmeIrqHandler
++typedef void (*TirqHandler) (int vmeirq, int vector, void *dev_id,
++			     struct pt_regs * regs);
++// This is the typedef for a DMA Transfer Callback function
++typedef void (*TDMAcallback) (int status);
++
++//  Returns the PCI baseaddress of the Universe chip
++char *Universe_BaseAddr(void);
++//  Returns the PCI IRQ That the universe is using
++int Universe_IRQ(void);
++
++char *mapvme(unsigned int pci, unsigned int vme, unsigned int size,
++	     int image, int ctl);
++void unmapvme(char *ptr, int image);
++
++// Interrupt Stuff
++void enable_vmeirq(unsigned int irq);
++void disable_vmeirq(unsigned int irq);
++int request_vmeirq(unsigned int irq, TirqHandler);
++void free_vmeirq(unsigned int irq);
++
++// DMA Stuff
++
++int VME_Bus_Error(void);
++int uni_procinfo(char *);
++
++#define IRQ_VOWN    0x0001
++#define IRQ_VIRQ1   0x0002
++#define IRQ_VIRQ2   0x0004
++#define IRQ_VIRQ3   0x0008
++#define IRQ_VIRQ4   0x0010
++#define IRQ_VIRQ5   0x0020
++#define IRQ_VIRQ6   0x0040
++#define IRQ_VIRQ7   0x0080
++#define IRQ_DMA     0x0100
++#define IRQ_LERR    0x0200
++#define IRQ_VERR    0x0400
++#define IRQ_res     0x0800
++#define IRQ_IACK    0x1000
++#define IRQ_SWINT   0x2000
++#define IRQ_SYSFAIL 0x4000
++#define IRQ_ACFAIL  0x8000
++
++// See Page 2-77 in the Universe User Manual
++typedef struct {
++	unsigned int dctl;	// DMA Control
++	unsigned int dtbc;	// Transfer Byte Count
++	unsigned int dlv;	// PCI Address
++	unsigned int res1;	// Reserved
++	unsigned int dva;	// Vme Address
++	unsigned int res2;	// Reserved
++	unsigned int dcpp;	// Pointer to Numed Cmd Packet with rPN
++	unsigned int res3;	// Reserved
++} TDMA_Cmd_Packet;
++
++/*
++ * Below here is normaly not used by a user module
++ */
++#define  DMATIMEOUT 2*HZ;
++
++// Define for the Universe
++#define SEEK_SET 0
++#define SEEK_CUR 1
++
++#define CONFIG_REG_SPACE        0xA0000000
++
++/* Universe Register Offsets */
++/* general PCI configuration registers */
++#define UNIV_PCI_ID             0x000
++#define UNIV_PCI_CSR            0x004
++#define UNIV_PCI_CLASS          0x008
++#define UNIV_BM_PCI_CLASS_BASE          0xFF000000
++#define UNIV_OF_PCI_CLASS_BASE          24
++#define UNIV_BM_PCI_CLASS_SUB           0x00FF0000
++#define UNIV_OF_PCI_CLASS_SUB           16
++#define UNIV_BM_PCI_CLASS_PROG          0x0000FF00
++#define UNIV_OF_PCI_CLASS_PROG          8
++#define UNIV_BM_PCI_CLASS_RID           0x000000FF
++#define UNIV_OF_PCI_CLASS_RID           0
++
++#define UNIV_OF_PCI_CLASS_RID_UNIVERSE_I 0
++#define UNIV_OF_PCI_CLASS_RID_UNIVERSE_II 1
++
++#define UNIV_PCI_MISC0          0x00C
++#define UNIV_BM_PCI_MISC0_BISTC         0x80000000
++#define UNIV_BM_PCI_MISC0_SBIST         0x60000000
++#define UNIV_BM_PCI_MISC0_CCODE         0x0F000000
++#define UNIV_BM_PCI_MISC0_MFUNCT        0x00800000
++#define UNIV_BM_PCI_MISC0_LAYOUT        0x007F0000
++#define UNIV_BM_PCI_MISC0_LTIMER        0x0000FF00
++#define UNIV_OF_PCI_MISC0_LTIMER        8
++#define UNIV_PCI_BS             0x010
++#define UNIV_PCI_MISC1          0x03C
++
++#define UNIV_BM_LSI_CTL_EN      0x80000000
++#define UNIV_BM_LSI_CTL_PWEN    0x40000000
++#define UNIV_BM_LSI_CTL_VDW     0x00C00000
++#define UNIV_OF_LSI_CTL_VDW     22
++#define UNIV_BM_LSI_CTL_VAS     0x00070000
++#define UNIV_OF_LSI_CTL_VAS     16
++#define UNIV_BM_LSI_CTL_PGM     0x0000C000
++#define UNIV_OF_LSI_CTL_PGM     14
++#define UNIV_BM_LSI_CTL_SUPER   0x00003000
++#define UNIV_OF_LSI_CTL_SUPER   12
++#define UNIV_BM_LSI_CTL_VCT     0x00000100
++#define UNIV_BM_LSI_CTL_LAS     0x00000003
++#define UNIV_OF_LSI_CTL_LAS     0
++#define UNIV_BM_LSI_CTL_RESERVED (~ (UNIV_BM_LSI_CTL_EN | UNIV_BM_LSI_CTL_PWEN | UNIV_BM_LSI_CTL_VDW | UNIV_BM_LSI_CTL_VAS | UNIV_BM_LSI_CTL_PGM | UNIV_BM_LSI_CTL_SUPER | UNIV_BM_LSI_CTL_VCT | UNIV_BM_LSI_CTL_LAS))
++
++#define PCI_SIZE_8	    0x0001
++#define PCI_SIZE_16	    0x0002
++#define PCI_SIZE_32	    0x0003
++
++#define IOCTL_SET_CTL 	0xF001
++#define IOCTL_SET_BS	0xF002
++#define IOCTL_SET_BD	0xF003
++#define IOCTL_SET_TO	0xF004
++#define IOCTL_PCI_SIZE  0xF005
++#define IOCTL_SET_MODE 	0xF006
++#define IOCTL_SET_WINT  0xF007	// Wait for interrupt before read
++
++#define LSI0_CTL	0x0100
++#define LSI0_BS		0x0104
++#define LSI0_BD		0x0108
++#define LSI0_TO		0x010C
++
++#define LSI1_CTL	      0x0114
++#define LSI1_BS		      0x0118
++#define LSI1_BD		      0x011C
++#define LSI1_TO		      0x0120
++
++#define LSI2_CTL	      0x0128
++#define LSI2_BS		      0x012C
++#define LSI2_BD		      0x0130
++#define LSI2_TO		      0x0134
++
++#define LSI3_CTL	      0x013C
++#define LSI3_BS		      0x0140
++#define LSI3_BD		      0x0144
++#define LSI3_TO		      0x0148
++
++#define LSI4_CTL	      0x01A0
++#define LSI4_BS		      0x01A4
++#define LSI4_BD		      0x01A8
++#define LSI4_TO		      0x01AC
++
++#define LSI5_CTL	      0x01B4
++#define LSI5_BS		      0x01B8
++#define LSI5_BD		      0x01BC
++#define LSI5_TO		      0x01C0
++
++#define LSI6_CTL	      0x01C8
++#define LSI6_BS		      0x01CC
++#define LSI6_BD		      0x01D0
++#define LSI6_TO		      0x01D4
++
++#define LSI7_CTL	      0x01DC
++#define LSI7_BS		      0x01E0
++#define LSI7_BD		      0x01E4
++#define LSI7_TO		      0x01E8
++
++#define SCYC_CTL		0x0170
++#define SCYC_ADDR		0x0174
++#define SCYC_EN			0x0178
++#define SCYC_CMP		0x017C
++#define SCYC_SWP		0x0180
++#define LMISC			0x0184
++#define UNIV_BM_LMISC_CRT               0xF0000000
++#define UNIV_OF_LMISC_CRT               28
++#define UNIV_BM_LMISC_CWT               0x0F000000
++#define UNIV_OF_LMISC_CWT               24
++#define SLSI		        0x0188
++#define UNIV_BM_SLSI_EN                 0x80000000
++#define UNIV_BM_SLSI_PWEN               0x40000000
++#define UNIV_BM_SLSI_VDW                0x00F00000
++#define UNIV_OF_SLSI_VDW                20
++#define UNIV_BM_SLSI_PGM                0x0000F000
++#define UNIV_OF_SLSI_PGM                12
++#define UNIV_BM_SLSI_SUPER              0x00000F00
++#define UNIV_OF_SLSI_SUPER              8
++#define UNIV_BM_SLSI_BS                 0x000000F6
++#define UNIV_OF_SLSI_BS                 2
++#define UNIV_BM_SLSI_LAS                0x00000003
++#define UNIV_OF_SLSI_LAS                0
++#define UNIV_BM_SLSI_RESERVED           0x3F0F0000
++#define L_CMDERR		0x018C
++#define LAERR		        0x0190
++
++#define DCTL		        0x0200
++#define DTBC		        0x0204
++#define DLA			0x0208
++#define DVA			0x0210
++#define DCPP		        0x0218
++#define DGCS		        0x0220
++#define D_LLUE			0x0224
++
++#define LINT_EN		      0x0300
++#define UNIV_BM_LINT_ACFAIL             0x00008000
++#define UNIV_BM_LINT_SYSFAIL            0x00004000
++#define UNIV_BM_LINT_SW_INT             0x00002000
++#define UNIV_BM_LINT_SW_IACK            0x00001000
++#define UNIV_BM_LINT_VERR               0x00000400
++#define UNIV_BM_LINT_LERR               0x00000200
++#define UNIV_BM_LINT_DMA                0x00000100
++#define UNIV_BM_LINT_LM                 0x00F00000
++#define UNIV_BM_LINT_MBOX               0x000F0000
++#define UNIV_BM_LINT_VIRQ               0x000000FE
++#define UNIV_BM_LINT_VIRQ7              0x00000080
++#define UNIV_BM_LINT_VIRQ6              0x00000040
++#define UNIV_BM_LINT_VIRQ5              0x00000020
++#define UNIV_BM_LINT_VIRQ4              0x00000010
++#define UNIV_BM_LINT_VIRQ3              0x00000008
++#define UNIV_BM_LINT_VIRQ2              0x00000004
++#define UNIV_BM_LINT_VIRQ1              0x00000002
++#define UNIV_BM_LINT_VOWN               0x00000001
++#define LINT_STAT	      0x0304
++#define LINT_MAP0	      0x0308
++#define LINT_MAP1	      0x030C
++#define VINT_EN		      0x0310
++#define VINT_STAT	      0x0314
++#define VINT_MAP0	      0x0318
++#define VINT_MAP1	      0x031C
++#define STATID		      0x0320
++#define V1_STATID	      0x0324
++#define V2_STATID	      0x0328
++#define V3_STATID	      0x032C
++#define V4_STATID	      0x0330
++#define V5_STATID	      0x0334
++#define V6_STATID	      0x0338
++#define V7_STATID	      0x033C
++#define LINT_MAP2	      0x0340
++#define VINT_MAP2	      0x0344
++
++#define MBOX0	              0x0348
++#define MBOX1	              0x034C
++#define MBOX2		      0x0350
++#define MBOX3		      0x0354
++#define SEMA0		      0x0358
++#define SEMA1		      0x035C
++
++#define MAST_CTL	      0x0400
++#define UNIV_BM_MAST_CTL_MAXRTRY        0xF0000000
++#define UNIV_OF_MAST_CTL_MAXRTRY        28
++#define UNIV_BM_MAST_CTL_PWON           0x0F000000
++#define UNIV_OF_MAST_CTL_PWON           24
++#define UNIV_BM_MAST_CTL_VRL            0x00C00000
++#define UNIV_OF_MAST_CTL_VRL            22
++#define UNIV_BM_MAST_CTL_VRM            0x00200000
++#define UNIV_BM_MAST_CTL_VREL           0x00100000
++#define UNIV_BM_MAST_CTL_VOWN           0x00080000
++#define UNIV_BM_MAST_CTL_VOWN_ACK       0x00040000
++#define UNIV_BM_MAST_CTL_PABS           0x00001000
++#define UNIV_BM_MAST_CTL_BUS_NO         0x0000000F
++#define UNIV_OF_MAST_CTL_BUS_NO         0
++
++#define MISC_CTL	      0x0404
++#define UNIV_BM_MISC_CTL_VBTO           0xF0000000
++#define UNIV_OF_MISC_CTL_VBTO           28
++#define UNIV_BM_MISC_CTL_VARB           0x04000000
++#define UNIV_BM_MISC_CTL_VARBTO         0x03000000
++#define UNIV_OF_MISC_CTL_VARBTO         24
++#define UNIV_BM_MISC_CTL_SW_LRST        0x00800000
++#define UNIV_BM_MISC_CTL_SW_SRST        0x00400000
++#define UNIV_BM_MISC_CTL_BI             0x00100000
++#define UNIV_BM_MISC_CTL_ENGBI          0x00080000
++#define UNIV_BM_MISC_CTL_RESCIND        0x00040000
++#define UNIV_BM_MISC_CTL_SYSCON         0x00020000
++#define UNIV_BM_MISC_CTL_V64AUTO        0x00010000
++#define UNIV_BM_MISC_CTL_RESERVED       0x0820FFFF
++
++#define MISC_STAT	      0x0408
++#define UNIV_BM_MISC_STAT_ENDIAN        0x80000000
++#define UNIV_BM_MISC_STAT_LCLSIZE       0x40000000
++#define UNIV_BM_MISC_STAT_DY4AUTO       0x08000000
++#define UNIV_BM_MISC_STAT_MYBBSY        0x00200000
++#define UNIV_BM_MISC_STAT_DY4DONE       0x00080000
++#define UNIV_BM_MISC_STAT_TXFE          0x00040000
++#define UNIV_BM_MISC_STAT_RXFE          0x00020000
++#define UNIV_BM_MISC_STAT_DY4AUTOID     0x0000FF00
++#define UNIV_OF_MISC_STAT_DY4AUTOID     8
++
++#define USER_AM		      0x040C
++
++#define VSI0_CTL	      0x0F00
++#define VSI0_BS		      0x0F04
++#define VSI0_BD		      0x0F08
++#define VSI0_TO		      0x0F0C
++
++#define VSI1_CTL	      0x0F14
++#define VSI1_BS		      0x0F18
++#define VSI1_BD		      0x0F1C
++#define VSI1_TO		      0x0F20
++
++#define VSI2_CTL	      0x0F28
++#define VSI2_BS		      0x0F2C
++#define VSI2_BD		      0x0F30
++#define VSI2_TO		      0x0F34
++
++#define VSI3_CTL	      0x0F3C
++#define VSI3_BS		      0x0F40
++#define VSI3_BD		      0x0F44
++#define VSI3_TO		      0x0F48
++
++#define LM_CTL		      0x0F64
++#define LM_BS		      0x0F68
++
++#define VRAI_CTL	      0x0F70
++#define UNIV_BM_VRAI_CTL_EN             0x80000000
++#define UNIV_BM_VRAI_CTL_PGM            0x00C00000
++#define UNIV_OF_VRAI_CTL_PGM            22
++#define UNIV_BM_VRAI_CTL_SUPER          0x00300000
++#define UNIV_OF_VRAI_CTL_SUPER          20
++#define UNIV_BM_VRAI_CTL_VAS            0x00030000
++#define UNIV_OF_VRAI_CTL_VAS            16
++
++#define VRAI_BS		      0x0F74
++#define VCSR_CTL	      0x0F80
++#define VCSR_TO		      0x0F84
++#define V_AMERR		      0x0F88
++#define VAERR			0x0F8C
++
++#define VSI4_CTL	      0x0F90
++#define VSI4_BS		      0x0F94
++#define VSI4_BD		      0x0F98
++#define VSI4_TO		      0x0F9C
++
++#define VSI5_CTL	      0x0FA4
++#define VSI5_BS		      0x0FA8
++#define VSI5_BD		      0x0FAC
++#define VSI5_TO		      0x0FB0
++
++#define VSI6_CTL	      0x0FB8
++#define VSI6_BS		      0x0FBC
++#define VSI6_BD		      0x0FC0
++#define VSI6_TO		      0x0FC4
++
++#define VSI7_CTL	      0x0FCC
++#define VSI7_BS		      0x0FD0
++#define VSI7_BD		      0x0FD4
++#define VSI7_TO		      0x0FD8
++
++#define VCSR_CLR	      0x0FF4
++#define VCSR_SET	      0x0FF8
++#define VCSR_BS		      0x0FFC
++
++// DMA General Control/Status Register DGCS (0x220)
++// 32-24 ||  GO   | STOPR | HALTR |   0   || CHAIN |   0   |   0   |   0   ||
++// 23-16 ||              VON              ||             VOFF              ||
++// 15-08 ||  ACT  | STOP  | HALT  |   0   || DONE  | LERR  | VERR  | P_ERR ||
++// 07-00 ||   0   | INT_S | INT_H |   0   || I_DNE | I_LER | I_VER | I_PER ||
++
++// VON - Length Per DMA VMEBus Transfer
++//  0000 = None
++//  0001 = 256 Bytes
++//  0010 = 512
++//  0011 = 1024
++//  0100 = 2048
++//  0101 = 4096
++//  0110 = 8192
++//  0111 = 16384
++
++// VOFF - wait between DMA tenures
++//  0000 = 0    us
++//  0001 = 16
++//  0010 = 32
++//  0011 = 64
++//  0100 = 128
++//  0101 = 256
++//  0110 = 512
++//  0111 = 1024
++
++#endif				/* _ca91c042_h */
 --- a/drivers/staging/vme/Kconfig
 +++ b/drivers/staging/vme/Kconfig
-@@ -11,7 +11,7 @@ menuconfig VME
+@@ -10,7 +10,7 @@ menuconfig VME
+ 
  if VME
  
- #source "drivers/staging/vme/bridges/Kconfig"
--#
--#source "drivers/staging/vme/devices/Kconfig"
-+
-+source "drivers/staging/vme/devices/Kconfig"
+-#source "drivers/staging/vme/bridges/Kconfig"
++source "drivers/staging/vme/bridges/Kconfig"
  
- endif # VME
+ source "drivers/staging/vme/devices/Kconfig"
+ 
 --- a/drivers/staging/vme/Makefile
 +++ b/drivers/staging/vme/Makefile
-@@ -4,4 +4,4 @@
+@@ -3,5 +3,5 @@
+ #
  obj-$(CONFIG_VME)		+= vme.o
  
- #obj-y				+= bridges/
--#obj-y				+= devices/
-+obj-y				+= devices/
+-#obj-y				+= bridges/
++obj-y				+= bridges/
+ obj-y				+= devices/
 
