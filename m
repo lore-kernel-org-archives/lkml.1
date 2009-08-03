@@ -1,83 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932275AbZHCWEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932288AbZHCWH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932275AbZHCWEU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 18:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754798AbZHCWET
+	id S932288AbZHCWH4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 18:07:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbZHCWHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 18:04:19 -0400
-Received: from cantor.suse.de ([195.135.220.2]:60857 "EHLO mx1.suse.de"
+	Mon, 3 Aug 2009 18:07:55 -0400
+Received: from rtr.ca ([76.10.145.34]:44833 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752793AbZHCWES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 18:04:18 -0400
-From: "NeilBrown" <neilb@suse.de>
-To: "Sage Weil" <sage@newdream.net>
-Date: Tue, 4 Aug 2009 08:03:52 +1000 (EST)
-Message-ID: <8604b01355a1ff1ec6397d223c28b1d5.squirrel@neil.brown.name>
-In-Reply-To: <1249332888-13440-1-git-send-email-sage@newdream.net>
-References: <1249332888-13440-1-git-send-email-sage@newdream.net>
-Subject: Re: [PATCH] md: avoid use of broken kzalloc mempool
-Cc: linux-kernel@vger.kernel.org, "Sage Weil" <sage@newdream.net>,
-       linux-raid@vger.kernel.org, stable@kernel.org
-User-Agent: SquirrelMail/1.4.15
+	id S1754804AbZHCWHz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 18:07:55 -0400
+Message-ID: <4A775FB9.80600@rtr.ca>
+Date: Mon, 03 Aug 2009 18:07:53 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+       Eric Sandeen <sandeen@sandeen.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] fs/compat_ioctl.c: add missing FS_IOC_FIEMAP support
+References: <4A74584D.2010300@rtr.ca> <4A7722DF.80704@rtr.ca> <4A7725AF.6090106@redhat.com>
+In-Reply-To: <4A7725AF.6090106@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, August 4, 2009 6:54 am, Sage Weil wrote:
-> The kzalloc mempool does not re-zero items that have been used and then
-> returned to the pool.  Manually zero the allocated multipath_bh instead.
->
-> CC: linux-raid@vger.kernel.org
-> CC: Neil Brown <neilb@suse.de>
+Eric Sandeen wrote:
+> Mark Lord wrote:
+>> (resending, no ack from anyone first time around).
+> 
+> I had previously sent a fix for this to the ext4 list as well, although
+> w/o the added case for compat_ioctl or the extra #include.
+> 
+> Because this ioctl should be 100% compat everywhere, I don't -think-
+> it's needed, and
+> 
+> http://marc.info/?l=linux-ext4&m=124872536713005&w=2
+> 
+> suffices....
+..
 
-Acked-by: NeilBrown <neilb@suse.de>
+Well, whichever of the two works best for the maintainers.
 
-Thanks.
+We need *something* for it upstream, and probably back in -stable too.
+Otherwise this prevents using 64-bit kernels on 32-bit userland,
+as Linus likes to recommend so often.  ;)
 
-In fact, you don't even need the memset.  After allocation
-no assumptions are made about the content of the structure.
-Every field is immediately initialised except retry_list, which
-is never accessed until after the object is placed on a list.h list.
-
-So this code never needed kzalloc_pool.
-
-Thanks,
-NeilBrown
-
-> CC: <stable@kernel.org>
-> Signed-off-by: Sage Weil <sage@newdream.net>
-> ---
->  drivers/md/multipath.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/md/multipath.c b/drivers/md/multipath.c
-> index 237fe3f..151ce69 100644
-> --- a/drivers/md/multipath.c
-> +++ b/drivers/md/multipath.c
-> @@ -150,6 +150,7 @@ static int multipath_make_request (struct
-> request_queue *q, struct bio * bio)
->  	}
->
->  	mp_bh = mempool_alloc(conf->pool, GFP_NOIO);
-> +	memset(mp_bh, 0, sizeof(*mp_bh));
->
->  	mp_bh->master_bio = bio;
->  	mp_bh->mddev = mddev;
-> @@ -490,7 +491,7 @@ static int multipath_run (mddev_t *mddev)
->  	}
->  	mddev->degraded = conf->raid_disks - conf->working_disks;
->
-> -	conf->pool = mempool_create_kzalloc_pool(NR_RESERVED_BUFS,
-> +	conf->pool = mempool_create_kmalloc_pool(NR_RESERVED_BUFS,
->  						 sizeof(struct multipath_bh));
->  	if (conf->pool == NULL) {
->  		printk(KERN_ERR
-> --
-> 1.5.6.5
->
-
+Cheers
