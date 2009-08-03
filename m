@@ -1,67 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbZHCSbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754001AbZHCScb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753797AbZHCSbz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 14:31:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbZHCSbz
+	id S1754001AbZHCScb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 14:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbZHCScb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 14:31:55 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:49583 "EHLO e9.ny.us.ibm.com"
+	Mon, 3 Aug 2009 14:32:31 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:46257 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753312AbZHCSby (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 14:31:54 -0400
-Subject: Re: mnt_want_write_file() has problem?
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Al Viro <viro@zeniv.linux.org.uk>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <871vnt7vac.fsf@devron.myhome.or.jp>
-References: <871vnt7vac.fsf@devron.myhome.or.jp>
-Content-Type: text/plain
-Date: Mon, 03 Aug 2009 11:31:52 -0700
-Message-Id: <1249324312.26977.1336.camel@nimitz>
+	id S1753395AbZHCSca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 14:32:30 -0400
+Date: Mon, 3 Aug 2009 11:32:25 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: linux-kernel@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 7/7] venet: add scatter-gather/GSO support
+Message-ID: <20090803113225.4cd414ec@nehalam>
+In-Reply-To: <20090803171807.17268.49836.stgit@dev.haskins.net>
+References: <20090803171030.17268.26962.stgit@dev.haskins.net>
+	<20090803171807.17268.49836.stgit@dev.haskins.net>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-03 at 06:36 +0900, OGAWA Hirofumi wrote:
-> While I'm reading some code, I suspected that mnt_want_write_file() may
-> have wrong assumption.  I think mnt_want_write_file() is assuming it
-> increments ->mnt_writers if (file->f_mode & FMODE_WRITE). But, if it's
-> special_file(), it is false?
+On Mon, 03 Aug 2009 13:18:07 -0400
+Gregory Haskins <ghaskins@novell.com> wrote:
+
+> SG/GSO significantly enhance the performance of network traffic under
+> certain circumstances.  We implement this feature as a separate patch
+> to avoid intially complicating the baseline venet driver.  This will
+> presumably make the review process slightly easier, since we can
+> focus on the basic interface first.
 > 
-> Sorry, I'm still not checking all of those though. E.g. I'm thinking the
-> below.
-> 
-> static inline int __get_file_write_access(struct inode *inode,
-> 					  struct vfsmount *mnt)
-> {
-> [...]
-> 	if (!special_file(inode->i_mode)) {
-> 		/*
-> 		 * Balanced in __fput()
-> 		 */
-> 		error = mnt_want_write(mnt);
-> 		if (error)
-> 			put_write_access(inode);
-> 	}
-> 	return error;
-> }
+> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 
-In practice I don't think this is an issue.  We were never supposed to
-do mnt_want_write(mnt) for any 'struct file' that was a special_file(),
-specifically because of what you mention.
+Never mind, previous comment about adding TSO.  But it still would
+be good to have ethtool interface for this.
 
-Nick's use of mnt_want_write_file() was a 1:1 drop-in for
-mnt_want_write().  So, if all is well in the world, there should not be
-any call sites where mnt_want_write_file() gets called on a
-special_file().
-
-Future users of mnt_want_file_write() may not notice this fact, though.
-This is probably worth at least a note in the documentation or perhaps a
-WARN_ON().
-
--- Dave
-
+-- 
