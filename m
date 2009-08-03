@@ -1,142 +1,225 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbZHCREr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbZHCRHV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754771AbZHCREr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 13:04:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZHCREr
+	id S1755448AbZHCRHV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 13:07:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbZHCRHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 13:04:47 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:32934 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752941AbZHCREq (ORCPT
+	Mon, 3 Aug 2009 13:07:20 -0400
+Received: from fnoeppeil48.netpark.at ([217.175.205.176]:42705 "EHLO
+	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752952AbZHCRHS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 13:04:46 -0400
-Date: Mon, 3 Aug 2009 18:04:46 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: ben@fluff.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: Re: gpiolib: add export/unexport by gpio name
-Message-ID: <20090803170446.GA25100@fluff.org.uk>
-References: <20090803165544.286572916@fluff.org>
+	Mon, 3 Aug 2009 13:07:18 -0400
+Date: Mon, 3 Aug 2009 18:59:09 +0200
+From: Manuel Lauss <mano@roarinelk.homelinux.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Wilcox <willy@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andrew Patterson <andrew.patterson@hp.com>
+Subject: Re: [Regression] PCI resources allocation problem on HP nx6325
+Message-ID: <20090803165909.GA12824@roarinelk.homelinux.net>
+References: <200908021619.48285.rjw@sisk.pl> <alpine.LFD.2.01.0908020927410.3352@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090803165544.286572916@fluff.org>
-X-Disclaimer: These are my own opinions, so there!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.LFD.2.01.0908020927410.3352@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 03, 2009 at 05:55:44PM +0100, ben@fluff.org wrote:
-> Add the facility to export/unexport a gpio by the name assigned to it
-> as well as the number.
+Hello!
 
-sorry, forgot to update the patch before sending, please ignore this
-one.
- 
-> Signed-off-by: Ben Dooks <ben@simtec.co.uk>
-> Cc: David Brownell <dbrownell@users.sourceforge.net>
-> 
+On Sun, Aug 02, 2009 at 09:39:58AM -0700, Linus Torvalds wrote:
 > ---
->  drivers/gpio/gpiolib.c |   59 +++++++++++++++++++++++++++++++++++++++++++++----
->  1 file changed, 55 insertions(+), 4 deletions(-)
+>  drivers/pci/setup-res.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> Index: b/drivers/gpio/gpiolib.c
-> ===================================================================
-> --- a/drivers/gpio/gpiolib.c	2009-08-03 17:53:04.000000000 +0100
-> +++ b/drivers/gpio/gpiolib.c	2009-08-03 17:53:33.000000000 +0100
-> @@ -364,6 +364,53 @@ static const struct attribute_group gpio
->  	.attrs = (struct attribute **) gpiochip_attrs,
->  };
+> diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
+> index b711fb7..1898c7b 100644
+> --- a/drivers/pci/setup-res.c
+> +++ b/drivers/pci/setup-res.c
+> @@ -100,16 +100,16 @@ int pci_claim_resource(struct pci_dev *dev, int resource)
+>  {
+>  	struct resource *res = &dev->resource[resource];
+>  	struct resource *root;
+> -	char *dtype = resource < PCI_BRIDGE_RESOURCES ? "device" : "bridge";
+>  	int err;
 >  
-> +static int search_names(char **names, const char *match, int ngpio)
-> +{
-> +	int ptr;
-> +
-> +	if (names) {
-> +		for (ptr = 0; ptr < ngpio; ptr++) {
-> +			if (!names[ptr])
-> +				continue;
-> +
-> +			if (strcmp(names[ptr], match) == 0)
-> +				return ptr;
-> +		}
-> +	}
-> +
-> +	return -ENOENT;
-> +}
-> +
-> +static long gpio_from_string(const char *buf)
-> +{
-> +	struct gpio_chip *chip;
-> +	struct gpio_desc *desc;
-> +	long status;
-> +	long gpio;
-> +	int ptr, off;
-> +
-> +	status = strict_strtol(buf, 0, &gpio);
-> +	if (status < 0) {
-> +		for (ptr = 0; ptr < ARCH_NR_GPIOS && status < 0;) {
-> +			desc = gpio_desc + ptr;
-> +			chip = desc->chip;
-> +
-> +			if (!chip) {
-> +				ptr++;
-> +				continue;
-> +			}
-> +
-> +			off = search_names(chip->names, buf, chip->ngpio);
-> +			if (off >= 0)
-> +				status = ptr + off;
-> +
-> +			ptr += chip->ngpio;
-> +		}
-> +	}
-> +
-> +	return status;
-> +}
-> +
->  /*
->   * /sys/class/gpio/export ... write-only
->   *	integer N ... number of GPIO to export (full access)
-> @@ -375,9 +422,11 @@ static ssize_t export_store(struct class
->  	long	gpio;
->  	int	status;
+>  	root = pci_find_parent_resource(dev, res);
 >  
-> -	status = strict_strtol(buf, 0, &gpio);
-> -	if (status < 0)
-> +	gpio = gpio_from_string(buf);
-> +	if (gpio < 0) {
-> +		status = gpio;
->  		goto done;
-> +	}
+>  	err = -EINVAL;
+>  	if (root != NULL)
+> -		err = insert_resource(root, res);
+> +		err = request_resource(root, res);
 >  
->  	/* No extra locking here; FLAG_SYSFS just signifies that the
->  	 * request and export were done by on behalf of userspace, so
-> @@ -405,9 +454,11 @@ static ssize_t unexport_store(struct cla
->  	long	gpio;
->  	int	status;
->  
-> -	status = strict_strtol(buf, 0, &gpio);
-> -	if (status < 0)
-> +	gpio = gpio_from_string(buf);
-> +	if (gpio < 0) {
-> +		status = gpio;
->  		goto done;
-> +	}
->  
->  	status = -EINVAL;
->  
-> 
-> -- 
+>  	if (err) {
+> +		const char *dtype = resource < PCI_BRIDGE_RESOURCES ? "device" : "bridge";
+>  		dev_err(&dev->dev, "BAR %d: %s of %s %pR\n",
+>  			resource,
+>  			root ? "address space collision on" :
 > --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 
--- 
-Ben (ben@fluff.org, http://www.fluff.org/)
 
-  'a smiley only costs 4 bytes'
+This patch introduces a warning on my system:
+
+pci 0000:02:03.0: BAR 6: address space collision on of device [0xff680000-0xff69ffff]
+
+Below are iomem and pci dev info in the bad and good cases (good = patch reverted).
+This isn't fatal here:  the e1000's disabled expansion rom gets reassigned to elsewhere.
+
+warning case:
+
+00000000-0000ffff : reserved
+00010000-0009fbff : System RAM
+0009fc00-0009ffff : reserved  
+000a0000-000bffff : Video RAM area
+000c0000-000c7fff : Video ROM
+000e0000-000fffff : reserved 
+  000f0000-000fffff : System ROM
+00100000-3ff3ffff : System RAM  
+  01000000-013a4d48 : Kernel code
+  013a4d49-0155bb93 : Kernel data
+  0159c000-015f054b : Kernel bss 
+3ff40000-3ff4ffff : ACPI Tables  
+3ff50000-3fffffff : ACPI Non-volatile Storage
+40000000-400003ff : 0000:00:1f.1
+44000000-47ffffff : PCI CardBus 0000:03
+48000000-4bffffff : PCI CardBus 0000:03
+ce900000-de9fffff : PCI Bus 0000:01
+  d0000000-d7ffffff : 0000:01:00.0 
+dea00000-deafffff : PCI Bus 0000:02
+  dea00000-dea1ffff : 0000:02:03.0 
+e0000000-efffffff : 0000:00:00.0   
+fec00000-fec00fff : pnp 00:09      
+fee00000-fee00fff : pnp 00:09      
+ff500000-ff5fffff : PCI Bus 0000:01
+  ff5c0000-ff5dffff : 0000:01:00.0 
+  ff5f0000-ff5fffff : 0000:01:00.0 
+ff600000-ff6fffff : PCI Bus 0000:02
+  ff600000-ff600fff : 0000:02:01.0 
+    ff600000-ff600fff : yenta_socket
+  ff6a0000-ff6bffff : 0000:02:03.0  
+    ff6a0000-ff6bffff : e1000
+  ff6c0000-ff6dffff : 0000:02:03.0
+    ff6c0000-ff6dffff : e1000
+  ff6f7000-ff6f7fff : 0000:02:04.0
+    ff6f7000-ff6f7fff : ohci_hcd  
+  ff6f8000-ff6fbfff : 0000:02:01.2
+  ff6fc000-ff6fcfff : 0000:02:04.1
+    ff6fc000-ff6fcfff : ohci_hcd  
+  ff6fd000-ff6fdfff : 0000:02:02.0
+    ff6fd000-ff6fdfff : ipw2200   
+  ff6fe400-ff6fe4ff : 0000:02:04.2
+    ff6fe400-ff6fe4ff : ehci_hcd  
+  ff6fe800-ff6fefff : 0000:02:01.2
+    ff6fe800-ff6fefff : firewire_ohci
+  ff6ff000-ff6fffff : 0000:02:01.3   
+ff7ff400-ff7ff4ff : 0000:00:1f.5     
+  ff7ff400-ff7ff4ff : Intel 82801DB-ICH4
+ff7ff800-ff7ff9ff : 0000:00:1f.5
+  ff7ff800-ff7ff9ff : Intel 82801DB-ICH4
+ff7ffc00-ff7fffff : 0000:00:1d.7
+  ff7ffc00-ff7fffff : ehci_hcd  
+ff800000-ffbfffff : pnp 00:08   
+ffc00000-ffffffff : pnp 00:08
+
+02:03.0 Ethernet controller: Intel Corporation 82541GI Gigabit Ethernet Controller
+        Subsystem: Sony Corporation Device 818e
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 64 (63750ns min), Cache Line Size: 64 bytes
+        Interrupt: pin A routed to IRQ 9
+        Region 0: Memory at ff6c0000 (32-bit, non-prefetchable) [size=128K]
+        Region 1: Memory at ff6a0000 (32-bit, non-prefetchable) [size=128K]
+        Region 2: I/O ports at dc00 [size=64]
+        Expansion ROM at dea00000 [disabled] [size=128K]
+        Capabilities: [dc] Power Management version 2   
+                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+        Capabilities: [e4] PCI-X non-bridge device
+                Command: DPERE- ERO+ RBC=512 OST=1
+                Status: Dev=00:00.0 64bit- 133MHz- SCD- USC- DC=simple DMMRBC=2048 DMOST=1 DMCRS=8 RSCEM- 266MHz- 533MHz-
+        Kernel driver in use: e1000
+
+
+
+And in the working case (the patch reverted):
+
+00000000-0000ffff : reserved
+00010000-0009fbff : System RAM
+0009fc00-0009ffff : reserved  
+000a0000-000bffff : Video RAM area
+000c0000-000c7fff : Video ROM
+000e0000-000fffff : reserved 
+  000f0000-000fffff : System ROM
+00100000-3ff3ffff : System RAM  
+  01000000-013a4d48 : Kernel code
+  013a4d49-0155bb93 : Kernel data
+  0159c000-015f054b : Kernel bss 
+3ff40000-3ff4ffff : ACPI Tables  
+3ff50000-3fffffff : ACPI Non-volatile Storage
+40000000-400003ff : 0000:00:1f.1
+44000000-47ffffff : PCI CardBus 0000:03
+48000000-4bffffff : PCI CardBus 0000:03
+ce900000-de9fffff : PCI Bus 0000:01
+  d0000000-d7ffffff : 0000:01:00.0 
+dea00000-deafffff : PCI Bus 0000:02
+e0000000-efffffff : 0000:00:00.0   
+fec00000-fec00fff : pnp 00:09      
+fee00000-fee00fff : pnp 00:09      
+ff500000-ff5fffff : PCI Bus 0000:01
+  ff5c0000-ff5dffff : 0000:01:00.0 
+  ff5f0000-ff5fffff : 0000:01:00.0 
+ff600000-ff6fffff : PCI Bus 0000:02
+  ff600000-ff600fff : 0000:02:01.0 
+    ff600000-ff600fff : yenta_socket
+  ff680000-ff69ffff : 0000:02:03.0  
+  ff6a0000-ff6bffff : 0000:02:03.0  
+    ff6a0000-ff6bffff : e1000
+  ff6c0000-ff6dffff : 0000:02:03.0
+    ff6c0000-ff6dffff : e1000
+  ff6f7000-ff6f7fff : 0000:02:04.0
+    ff6f7000-ff6f7fff : ohci_hcd  
+  ff6f8000-ff6fbfff : 0000:02:01.2
+  ff6fc000-ff6fcfff : 0000:02:04.1
+    ff6fc000-ff6fcfff : ohci_hcd  
+  ff6fd000-ff6fdfff : 0000:02:02.0
+    ff6fd000-ff6fdfff : ipw2200   
+  ff6fe400-ff6fe4ff : 0000:02:04.2
+    ff6fe400-ff6fe4ff : ehci_hcd  
+  ff6fe800-ff6fefff : 0000:02:01.2
+    ff6fe800-ff6fefff : firewire_ohci
+  ff6ff000-ff6fffff : 0000:02:01.3   
+ff7ff400-ff7ff4ff : 0000:00:1f.5     
+  ff7ff400-ff7ff4ff : Intel 82801DB-ICH4
+ff7ff800-ff7ff9ff : 0000:00:1f.5
+  ff7ff800-ff7ff9ff : Intel 82801DB-ICH4
+ff7ffc00-ff7fffff : 0000:00:1d.7
+  ff7ffc00-ff7fffff : ehci_hcd  
+ff800000-ffbfffff : pnp 00:08   
+ffc00000-ffffffff : pnp 00:08
+
+02:03.0 Ethernet controller: Intel Corporation 82541GI Gigabit Ethernet Controller
+        Subsystem: Sony Corporation Device 818e
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 64 (63750ns min), Cache Line Size: 64 bytes
+        Interrupt: pin A routed to IRQ 9
+        Region 0: Memory at ff6c0000 (32-bit, non-prefetchable) [size=128K]
+        Region 1: Memory at ff6a0000 (32-bit, non-prefetchable) [size=128K]
+        Region 2: I/O ports at dc00 [size=64]
+        Expansion ROM at ff680000 [disabled] [size=128K]
+        Capabilities: [dc] Power Management version 2   
+                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+        Capabilities: [e4] PCI-X non-bridge device
+                Command: DPERE- ERO+ RBC=512 OST=1
+                Status: Dev=00:00.0 64bit- 133MHz- SCD- USC- DC=simple DMMRBC=2048 DMOST=1 DMCRS=8 RSCEM- 266MHz- 533MHz-
+        Kernel driver in use: e1000
+
+
+Thanks!
+	Manuel Lauss
