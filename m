@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751687AbZHCFzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751705AbZHCF4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751687AbZHCFzP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 01:55:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbZHCFzO
+	id S1751705AbZHCF4g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 01:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbZHCF4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 01:55:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60425 "EHLO mx2.mail.elte.hu"
+	Mon, 3 Aug 2009 01:56:35 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60552 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751338AbZHCFzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 01:55:13 -0400
-Date: Mon, 3 Aug 2009 07:54:41 +0200
+	id S1751447AbZHCF4e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 01:56:34 -0400
+Date: Mon, 3 Aug 2009 07:56:08 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: David Miller <davem@davemloft.net>
-Cc: a.p.zijlstra@chello.nl, joerg.roedel@amd.com,
-       fujita.tomonori@lab.ntt.co.jp, reif@earthlink.net,
+Cc: joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp, reif@earthlink.net,
        sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
        x86@kernel.org, tony.luck@intel.com, akpm@linux-foundation.org
 Subject: Re: [PATCH v2 0/8] sparc: use asm-generic/dma-mapping-common.h and
 	pci-dma-compat.h
-Message-ID: <20090803055441.GA19428@elte.hu>
-References: <20090714092354.GL19087@amd.com> <20090714.131224.205307048.davem@davemloft.net> <20090718110620.GC27287@elte.hu> <20090802.202135.63875488.davem@davemloft.net>
+Message-ID: <20090803055608.GB19428@elte.hu>
+References: <20090714092354.GL19087@amd.com> <20090714.131224.205307048.davem@davemloft.net> <20090721160538.GL25756@amd.com> <20090721.121519.239732131.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090802.202135.63875488.davem@davemloft.net>
+In-Reply-To: <20090721.121519.239732131.davem@davemloft.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -39,46 +38,23 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * David Miller <davem@davemloft.net> wrote:
 
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Sat, 18 Jul 2009 13:06:20 +0200
+> From: Joerg Roedel <joerg.roedel@amd.com>
+> Date: Tue, 21 Jul 2009 18:05:38 +0200
 > 
-> > I'm wondering why sparc32 frees from the middle of the kernel 
-> > image. The way architectures generally do it is to put freeable 
-> > pages into a separate section. That way it does not get mingled 
-> > with the kernel core image area (which stays nicely continuous).
+> > Hmm these checks sound specific and hard to maintain. I think 
+> > its best to give architectures the option whether to enable this 
+> > check or not.
 > 
-> It's conditionally free'able, we actually use the pages if the 
-> system is SMP and has more than cpu 0 installed.
+> No matter how the arch works in this area, there should be some 
+> kind of sanity check.
+> 
+> So, it probably makes sense to allow an arch to override the 
+> validation function rather than turn the test completely off.
 
-Sounds similar to the alternate instructions section on x86:
+I'm wondering how sparc32 handles core_kernel_text() & friends? 
 
- arch/x86/kernel/alternative.c:
-
-        if (smp_alt_once)
-                free_init_pages("SMP alternatives",
-                                (unsigned long)__smp_locks,
-                                (unsigned long)__smp_locks_end);
-
-It's in a separate section and linked + freed separately. The linker 
-script page-aligns it:
-
- arch/x86/kernel/vmlinux.lds.S:
-
-        /*
-         * smp_locks might be freed after init
-         * start/end must be page aligned
-         */
-        . = ALIGN(PAGE_SIZE);
-        .smp_locks : AT(ADDR(.smp_locks) - LOAD_OFFSET) {
-                __smp_locks = .;
-                *(.smp_locks)
-                __smp_locks_end = .;
-                . = ALIGN(PAGE_SIZE);
-        }
-
-So that it can be freed. It's also placed next to the regular init 
-section to not create too many holes. It also keeps the 'kernel text 
-area' continuous and things like core_kernel_text() & co still work 
-fine.
+Those functions already assume that the bits between _stext and 
+_etext are all core kernel text and not generic pages freed back to 
+the buddy.
 
 	Ingo
