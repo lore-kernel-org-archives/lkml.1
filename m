@@ -1,109 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753077AbZHCH7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752956AbZHCIAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753077AbZHCH7q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 03:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbZHCH7p
+	id S1752956AbZHCIAH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 04:00:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbZHCIAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 03:59:45 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:53530 "EHLO kernel.dk"
+	Mon, 3 Aug 2009 04:00:06 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51092 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752838AbZHCH7d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 03:59:33 -0400
-Date: Mon, 3 Aug 2009 09:59:33 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Chris Mason <chris.mason@oracle.com>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, dm-devel@redhat.com,
-       Neil Brown <neilb@suse.de>
-Subject: Re: Why does __do_page_cache_readahead submit READ, not READA?
-Message-ID: <20090803075933.GI12579@kernel.dk>
-References: <20090729161456.GB8059@barkeeper1-xen.linbit> <20090729211845.GB4148@kernel.dk> <20090729225501.GH24801@think> <20090730060649.GC4148@kernel.dk> <20090803075202.GA13485@localhost>
+	id S1751567AbZHCIAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 04:00:04 -0400
+Date: Mon, 3 Aug 2009 09:59:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: paulmck@linux.vnet.ibm.com, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       torvalds@linux-foundation.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:core/debug] debug lockups: Improve lockup detection
+Message-ID: <20090803075943.GA32258@elte.hu>
+References: <tip-c1dc0b9c0c8979ce4d411caadff5c0d79dee58bc@git.kernel.org> <20090802114545.f1520c81.akpm@linux-foundation.org> <20090802192657.GA21882@elte.hu> <20090802123958.cbd497a0.akpm@linux-foundation.org> <20090802204150.GB3986@elte.hu> <20090802140809.7ec4bb6b.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090803075202.GA13485@localhost>
+In-Reply-To: <20090802140809.7ec4bb6b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 03 2009, Wu Fengguang wrote:
-> On Thu, Jul 30, 2009 at 08:06:49AM +0200, Jens Axboe wrote:
-> > On Wed, Jul 29 2009, Chris Mason wrote:
-> > > On Wed, Jul 29, 2009 at 11:18:45PM +0200, Jens Axboe wrote:
-> > > > On Wed, Jul 29 2009, Lars Ellenberg wrote:
-> > > > > I naively assumed, from the "readahead" in the name, that readahead
-> > > > > would be submitting READA bios. It does not.
-> > > > > 
-> > > > > I recently did some statistics on how many READ and READA requests
-> > > > > we actually see on the block device level.
-> > > > > I was suprised that READA is basically only used for file system
-> > > > > internal meta data (and not even for all file systems),
-> > > > > but _never_ for file data.
-> > > > > 
-> > > > > A simple
-> > > > > 	dd if=bigfile of=/dev/null bs=4k count=1
-> > > > > will absolutely cause readahead of the configured amount, no problem.
-> > > > > But on the block device level, these are READ requests, where I'd
-> > > > > expected them to be READA requests, based on the name.
-> > > > > 
-> > > > > This is because __do_page_cache_readahead() calls read_pages(),
-> > > > > which in turn is mapping->a_ops->readpages(), or, as fallback,
-> > > > > mapping->a_ops->readpage().
-> > > > > 
-> > > > > On that level, all variants end up submitting as READ.
-> > > > > 
-> > > > > This may even be intentional.
-> > > > > But if so, I'd like to understand that.
-> > > > 
-> > > > I don't think it's intentional, and if memory serves, we used to use
-> > > > READA when submitting read-ahead. Not sure how best to improve the
-> > > > situation, since (as you describe), we lose the read-ahead vs normal
-> > > > read at that level. I did some experimentation some time ago for
-> > > > flagging this, see:
-> > > > 
-> > > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=16cfe64e3568cda412b3cf6b7b891331946b595e
-> > > > 
-> > > > which should pass down READA properly.
+
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Sun, 2 Aug 2009 22:41:50 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > On Sun, 2 Aug 2009 21:26:57 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 > > > 
-> > > One of the problems in the past was that reada would fail if there
-> > > wasn't a free request when we actually wanted it to go ahead and wait.
-> > > Or something.  We've switched it around a few times I think.
+> > > > > I think this just broke all non-x86 non-sparc SMP architectures.
+> > > > 
+> > > > Yeah - it 'broke' them in the sense of them not having a working 
+> > > > trigger_all_cpu_backtrace() implementation to begin with.
+> > > 
+> > > c'mon.  It broke them in the sense that sysrq-l went from "works" 
+> > > to "doesn't work".
 > > 
-> > Yes, we did used to do that, whether it was 2.2 or 2.4 I
-> > don't recall :-)
+> > You are right (i broke it with my patch) but the thing is, 
+> > sysrq-l almost useless currently: it uses schedule_work() which 
+> > assumes a mostly working system with full irqs and scheduling 
+> > working fine. Now, i dont need sysrq-l on mostly working 
+> > systems.
 > > 
-> > It should be safe to enable know, whether there's a prettier way
-> > than the above, I don't know. It works by detecting the read-ahead
-> > marker, but it's a bit of a fragile design.
+> > So the 'breakage' is of something that was largely useless: and 
+> > now you put the onus of implementing it for _all_ architectures 
+> > (which i dont use) on me?
 > 
-> Another consideration is io-priority reversion and the overheads
-> required to avoid it:
+> I never said that.
+>
+> It's appropriate that those architectures be left with their 
+> existing level of functionality/usefulness, as you're already 
+> discussing.
+
+Ok, agreed.
+
+> > > It's better to break the build or to emit warnings than to 
+> > > silently and secretly break their stuff.
+> > 
+> > But that warning will bounce the ball back to me, wont it? My 
+> > patch will be blamed for 'breaking' those architectures, right?
 > 
->         readahead(pages A-Z)    => READA IO for pages A-Z
->         <short time later>
->         read(page A) => blocked => find the request that contains page A
->                                    and requeue/kick it as READ IO
-> 
-> The page-to-request lookups are not always required but nevertheless
-> the complexity and overheads won't be trivial.
-> 
-> The page-to-request lookup feature would be also useful for "advanced"
-> features like io-canceling (if implemented, hwpoison could be its
-> first user ;)
+> It's a very crude and somewhat rude way of communicating 
+> information to other architecture maintainers.
+>
+> A better way would be to send them an email explaining the problem 
+> and outlining some solutions, no?
 
-I added that 3-4 years ago or so, to experiment with in-kernel
-cancellation for things like truncate(). Tracking pages is not cheap,
-and since the write cancelling wasn't really very sucessful, I didn't go
-ahead with it.
+I've restored the generic fallback code so there should be no change 
+in functionality. I'll test it and push it out - you can check that 
+patch via the commit notification email.
 
-So I'm not sure it's a viable alternative, even if we restricted it to
-just tracking READA's, for instance.
+Thanks,
 
-But I don't think we have any priority inversion to worry about, at
-least not from the CFQ perspective.
-
--- 
-Jens Axboe
-
+	Ingo
