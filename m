@@ -1,85 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753191AbZHCSIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753474AbZHCSKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753191AbZHCSIA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 14:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbZHCSIA
+	id S1753474AbZHCSKd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 14:10:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbZHCSKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 14:08:00 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:4548 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751885AbZHCSH7 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 14:07:59 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=DEd5OqoYkpS94TwJ6g/I5+TjHQAneDKRV7b8qwobdUW4OdfCVsYRfUyrCRl/EfHxW
-	Wm2dqwCYbO3FcWzIYlQ6A==
+	Mon, 3 Aug 2009 14:10:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55243 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753355AbZHCSKb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 14:10:31 -0400
+Date: Mon, 3 Aug 2009 20:06:02 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, eranian@gmail.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       robert.richter@amd.com, paulus@samba.org, andi@firstfloor.org,
+       mpjohn@us.ibm.com, cel@us.ibm.com, cjashfor@us.ibm.com,
+       mucci@eecs.utk.edu, terpstra@eecs.utk.edu,
+       perfmon2-devel@lists.sourceforge.net, mtk.manpages@googlemail.com,
+       roland@redhat.com
+Subject: Re: [PATCH 3/2] fcntl: F_[SG]ETOWN_TID
+Message-ID: <20090803180602.GA19719@redhat.com>
+References: <1248953485.6391.41.camel@twins> <20090730192040.GA9503@redhat.com> <1248984003.4164.0.camel@laptop> <20090730202804.GA13675@redhat.com> <1249029320.6391.72.camel@twins> <20090731141122.a1939712.akpm@linux-foundation.org> <20090801012736.GA30259@redhat.com> <1249314498.7924.133.camel@twins> <20090803171619.GA17876@redhat.com> <1249321637.7924.163.camel@twins>
 MIME-Version: 1.0
-In-Reply-To: <20090803175452.GA5481@us.ibm.com>
-References: <20090731012908.27908.62208.stgit@hastromil.mtv.corp.google.com>
-	 <20090731015154.27908.9639.stgit@hastromil.mtv.corp.google.com>
-	 <20090803175452.GA5481@us.ibm.com>
-Date: Mon, 3 Aug 2009 11:07:54 -0700
-Message-ID: <6599ad830908031107l4b924a86r423c4fedc06b0040@mail.gmail.com>
-Subject: Re: [PATCH 6/6] Makes procs file writable to move all threads by tgid 
-	at once
-From: Paul Menage <menage@google.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Ben Blum <bblum@google.com>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, akpm@linux-foundation.org,
-       lizf@cn.fujitsu.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249321637.7924.163.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 3, 2009 at 10:54 AM, Serge E. Hallyn<serue@us.ibm.com> wrote:
->> +     if (guarantee) {
->> +             /*
->> +              * our caller promises us that the css_set we want already
->> +              * exists, so we use find_existing_css_set directly.
->> +              */
->> +             struct cgroup_subsys_state *template[CGROUP_SUBSYS_COUNT];
->> +             read_lock(&css_set_lock);
->> +             newcg = find_existing_css_set(oldcg, cgrp, template);
->> +             BUG_ON(!newcg);
->> +             get_css_set(newcg);
->> +             read_unlock(&css_set_lock);
->> +     } else {
->> +             might_sleep();
+On 08/03, Peter Zijlstra wrote:
 >
-> So cgroup_task_migrate() might sleep, but
+> On Mon, 2009-08-03 at 19:16 +0200, Oleg Nesterov wrote:
 >
-
-might sleep if guarantee==0
-
->> +             retval = cgroup_task_migrate(cgrp, oldcgrp, tsk, 1);
+> > Hmm, OK. so fcntl(F_SETOWN_TID, -666) <=> fcntl(F_SETOWN, +666).
+> >
+> > Not that I disagree, but I think this should be discussed. Perhaps
+> > F_SETOWN_TID can just reject who < 0.
 >
-> Here it is called under rcu_read_lock().
+> Yeah, I considered that. Opinions?
 
-With guarantee==1
+Yes, please ;)
 
+> > but the caller of F_GETOWN can't know what the returned value actually
+> > means if F_GETOWN_TID was used.
 >
-> What *exactly* is it we are protecting with cgroup_fork_mutex?
-> 'fork' (as the name implies) is not a good answer, since we should be
-> protecting data, not code.  If it is solely tsk->cgroups, then perhaps
-> we should in fact try switching to (s?)rcu.  Then cgroup_fork() could
-> just do rcu_read_lock, while cgroup_task_migrate() would make the change
-> under a spinlock (to protect against concurrent cgroup_task_migrate()s),
-> and using rcu_assign_pointer to let cgroup_fork() see consistent data
-> either before or after the update...  That might mean that any checks done
-> before completing the migrate which involve the # of tasks might become
-> invalidated before the migration completes?
+> Ah, I made GETOWN_TID deal with !PID but forgot the TID case in GETOWN.
+> Yeah, icky, esp since there is no room for errors in the return value :/
+> I guess I could make it return 0.
 
-What's being protected is the ability to move an entire thread group
-to the new destination cgroup, even in the presence of concurrent
-thread clone operations. New threads aren't visible to other threads
-until the point when they're attached to the tasklist, so if any
-concurrent do_fork() operation is somewhere between the call to
-cgroup_fork() and the attachment to the tasklist when the "attach proc
-to new cgroup" operation occurs, it may get left behind.
+Yes, this is confusing too, but probably better.
 
-Paul
+> > Perhaps we can just add
+> >
+> > 	#define F_PIDTYPE_THREAD	PIDTYPE_MAX
+> >
+> > into fcntl.c ? Then,
+> >
+> Right, I considered adding PIDTYPE_TID, but then I'd have to go through
+> the kernel and make everything consistent, which is where I gave up ;-)
+
+Note! we don't add the new PIDTYPE_TID actually. This F_PIDTYPE_THREAD
+is not visible outsie of fcntl.c, we just re-use ->pid_type. Instead
+we could add a bit, but using the impossible PIDTYPE_MAX is simpler.
+
+> dunno if people will go for it though..
+
+Yes, I am not sure people will like it.
+
+
+As for F_XXXOWN/F_XXXWOWN_TID interaction. Another option, perhaps, is add
+F_{SET,GET}OWN_EX which accepts a use-visible
+
+	struct f_setown_struct {
+		int pid;		// > 0
+		int type;		// enumerates PIDTYPE_PID, PIDTYPE_PGID, F_PIDTYPE_THREAD
+	}
+
+pointer via arg. Instead of F_XXXOWN_TID + int who.
+
+This way at least the users of new api can't be confused.
+
+I dunno.
+
+Oleg.
+
