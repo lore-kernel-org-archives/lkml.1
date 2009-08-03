@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbZHCTNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbZHCTRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754424AbZHCTNn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 15:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbZHCTNn
+	id S1754559AbZHCTRA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 15:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbZHCTQ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 15:13:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43149 "EHLO ogre.sisk.pl"
+	Mon, 3 Aug 2009 15:16:59 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43168 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753708AbZHCTNm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 15:13:42 -0400
+	id S1754474AbZHCTQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 15:16:58 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Harald Dunkel <harald.dunkel@t-online.de>
-Subject: Re: [Bug #13374] reiserfs blocked for more than 120secs
-Date: Mon, 3 Aug 2009 21:13:46 +0200
+To: chris2553@googlemail.com
+Subject: Re: [Bug #13846] Possible regression in rt61pci driver
+Date: Mon, 3 Aug 2009 21:17:36 +0200
 User-Agent: KMail/1.11.2 (Linux/2.6.31-rc5-rjw; KDE/4.2.4; x86_64; ; )
-Cc: =?iso-8859-2?q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Jeff Mahoney <jeffm@suse.com>
-References: <upey9ZSfnaF.A.-oE.rpgdKB@chimera> <c62985530908021801r2e302dfel86f69f62143cabc0@mail.gmail.com> <4A7721B3.3060300@t-online.de>
-In-Reply-To: <4A7721B3.3060300@t-online.de>
+       linux-wireless@vger.kernel.org
+References: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera> <iZB3Pj-uj3M.A.pRC.1cgdKB@chimera> <200908031931.27427.chris2553@googlemail.com>
+In-Reply-To: <200908031931.27427.chris2553@googlemail.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 8BIT
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200908032113.46588.rjw@sisk.pl>
+Message-Id: <200908032117.36856.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 August 2009, Harald Dunkel wrote:
-> Frédéric Weisbecker wrote:
-> > Harald,
-> > 
-> > Does it still happen with 2.6.31-rc5 ?
-> > 
+On Monday 03 August 2009, Chris Clayton wrote:
+> Hi Rafael,
 > 
-> Using 2.6.30.x kernels (x>=0) I haven't seen this problem anymore.
-> If it is still in, then it seems to be very hard to reproduce.
+> On Sunday 02 August 2009, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> >
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.30.  Please verify if it still should be listed and let me know
+> > (either way).
+> >
 > 
-> As suggested I am moving to 2.6.31-rc5. I will mail immediately if
-> the problem comes back.
+> The folks on the wireless project have concluded that the problem I reported is down to a hardware 
+> problem when power saving is switched on on for my Belkin cardbus wireless adapter, so now I simply 
+> turn power-saving off when wlan0 comes up. I did, however, ask whether anyone was going to fix the 
+> fact that once power-saving turns the LEDs off, they never come back on again, but I haven't had an 
+> answer. Is that a regression? I guess the answer is no, because power saving in the rt61pci driver 
+> is feature that is new to 2.6.31.
 
-Please let us know either way.
+Well, IMO it is a regression, because it had worked before the power saving
+feature was added.
 
-Best,
+> Should it be fixed? I think the answer is yes, but being unable to do it
+> myself, I probably don't have a vote :-)
+
+Well, if you remind the developers about the issue from time to time, it may
+help. ;-)
+
+Thanks,
 Rafael
