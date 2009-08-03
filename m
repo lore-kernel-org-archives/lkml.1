@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752514AbZHCURy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752462AbZHCUTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752514AbZHCURy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 16:17:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751862AbZHCURy
+	id S1752462AbZHCUTd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 16:19:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbZHCUTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 16:17:54 -0400
-Received: from lider.uludag.org.tr ([193.140.100.216]:42350 "EHLO
-	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751183AbZHCURx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 16:17:53 -0400
-Message-ID: <4A7745EF.7000300@pardus.org.tr>
-Date: Mon, 03 Aug 2009 23:17:51 +0300
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: mingo@redhat.com, paulus@samba.org, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86: Add quirk to make Apple MacBook5,2 use
- reboot=pci
-References: <19062.56420.501516.316181@cargo.ozlabs.ibm.com> <tip-1961b971360c685e15dff59929c39ced6c46e171@git.kernel.org> <4A772105.6060101@pardus.org.tr> <4A772ED0.70208@zytor.com>
-In-Reply-To: <4A772ED0.70208@zytor.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Mon, 3 Aug 2009 16:19:32 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:51940 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751664AbZHCUTc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 16:19:32 -0400
+Date: Mon, 3 Aug 2009 13:19:27 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: linux-kernel@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 6/7] net: Add vbus_enet driver
+Message-ID: <20090803131927.6f653556@nehalam>
+In-Reply-To: <4A77443D.9020105@novell.com>
+References: <20090803171030.17268.26962.stgit@dev.haskins.net>
+	<20090803171801.17268.93846.stgit@dev.haskins.net>
+	<20090803113030.3092d5b0@nehalam>
+	<4A77443D.9020105@novell.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> On 08/03/2009 10:40 AM, Ozan Çağlayan wrote:
->   
->> MacBookPro5,1 has also this problem. I booted with reboot=pci on
->> 2.6.30.4 and now it rebooted without problem.
->> That would be nice if you could add another quirk entry for it:
->>
->> System Information
->>         Manufacturer: Apple Inc.
->>         Product Name: MacBookPro5,1
->>
->>     
->
-> Please write, test, and send a patch to do this.
->   
-Okay will do that way, thanks for your fast reply.
+On Mon, 03 Aug 2009 16:10:37 -0400
+Gregory Haskins <ghaskins@novell.com> wrote:
+
+> Stephen Hemminger wrote:
+> > On Mon, 03 Aug 2009 13:18:02 -0400
+> > Gregory Haskins <ghaskins@novell.com> wrote:
+> > 
+> >> +
+> >> +static const struct net_device_ops vbus_enet_netdev_ops = {
+> >> +	.ndo_open          = vbus_enet_open,
+> >> +	.ndo_stop          = vbus_enet_stop,
+> >> +	.ndo_set_config    = vbus_enet_config,
+> >> +	.ndo_start_xmit    = vbus_enet_tx_start,
+> >> +	.ndo_change_mtu	   = vbus_enet_change_mtu,
+> >> +	.ndo_tx_timeout    = vbus_enet_timeout,
+> >> +};
+> > 
+> > 
+> > Missing 
+> > 	.ndo_set_mac_address = eth_mac_addr,
+> > 	.ndo_validate_addr   = eth_validate_addr,
+> > 
+> 
+> Ack.
+> 
+> > Also, should have change_mtu.
+> 
+> note that I do have .ndo_change_mtu.  I assume this is what you are
+> referring to and just missed it.  If there is something else I need
+> there, let me know.
+
+If you don't have a change_mtu, then MTU is unlimited. Can the device
+handle 64K or larger transfers?
