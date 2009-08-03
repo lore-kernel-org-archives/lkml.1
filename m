@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932114AbZHCNxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932139AbZHCNxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932114AbZHCNxp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 09:53:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932098AbZHCNxo
+	id S932139AbZHCNxw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 09:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932122AbZHCNxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 09:53:44 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:59201 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932097AbZHCNxn (ORCPT
+	Mon, 3 Aug 2009 09:53:50 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:55571 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932121AbZHCNxs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 09:53:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=uM4bFcwZzotRZB2BALsr4T6oExHTFXqtjxsh6j7G0xA0+u0T0Kqkf+2XeJYuUArruK
-         ol4dqeBDgOGNki8ieFmF0FBfvlv74wUHHA63LE9Brzcnw1+5KKH6N/N1vvdXKLzgzwNk
-         inTG/wn96uUQpPnilwiTagQRjhMnXGS3KJAFo=
-Message-ID: <4A76EBD3.6010006@gmail.com>
-Date: Mon, 03 Aug 2009 21:53:23 +0800
-From: Eric Miao <eric.y.miao@gmail.com>
-Reply-To: eric.y.miao@gmail.com
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	Mon, 3 Aug 2009 09:53:48 -0400
+Message-ID: <4A76EBE4.5090102@novell.com>
+Date: Mon, 03 Aug 2009 09:53:40 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: Eric Miao <eric.y.miao@gmail.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Marek Vasut <marek.vasut@gmail.com>,
-       Joe Perches <joe@perches.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next: manual merge of the pxa tree with Linus' tree
-References: <20090803110314.1c2c3cca.sfr@canb.auug.org.au>
-In-Reply-To: <20090803110314.1c2c3cca.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+Subject: [ANNOUNCE] AlacrityVM hypervisor project
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigDA0BB35BDF06047D12E73334"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi Eric,
-> 
-> Today's linux-next merge of the pxa tree got a conflict in MAINTAINERS
-> between commit 8b58be884a9fd650abb7f7adf3f885fb9cecd79d ("MAINTAINERS:
-> coalesce name and email address lines") from Linus' tree and commit
-> 4ad9febe53347962225169c5bde2ec030e46ab1d ("Palm Tungsten|C initial
-> support") from the pxa tree.
-> 
-> Just context changes.  I fixed it up (see below) and can carry the fix as
-> necessary.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigDA0BB35BDF06047D12E73334
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Stephen,
+We are pleased to announce the formation of the AlacrityVM project and
+the availability of v0.1 of the code.  AlacrityVM is a hypervisor based
+on KVM targeted specifically at performance sensitive workloads such as
+HPC and real-time.
 
-Thanks for the fix.
+You can find more information on the AlacrityVM wiki, available here:
+
+http://developer.novell.com/wiki/index.php/AlacrityVM
+
+Anyone who may be interested in further developments surrounding this
+project is encouraged to subscribe to one or both of the following lists:=
+
+
+https://lists.sourceforge.net/lists/listinfo/alacrityvm-users
+https://lists.sourceforge.net/lists/listinfo/alacrityvm-devel
+
+Regards,
+-Greg
+
+
+--------------enigDA0BB35BDF06047D12E73334
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkp26+QACgkQP5K2CMvXmqGRkgCaAgCz4qqVSL/WwAANPHwf4qfP
+qTwAn2Ai2GTuiSrC0wDKyuirWmmPWJ1J
+=zQ/X
+-----END PGP SIGNATURE-----
+
+--------------enigDA0BB35BDF06047D12E73334--
