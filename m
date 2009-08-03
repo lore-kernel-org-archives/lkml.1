@@ -1,21 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751954AbZHCRRn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752579AbZHCRSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751954AbZHCRRn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 13:17:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZHCRRm
+	id S1752579AbZHCRSK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 13:18:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbZHCRSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 13:17:42 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:41671 "EHLO
+	Mon, 3 Aug 2009 13:18:08 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:42993 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751318AbZHCRRm (ORCPT
+	with ESMTP id S1752040AbZHCRR5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 13:17:42 -0400
+	Mon, 3 Aug 2009 13:17:57 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 0/7] AlacrityVM guest drivers
+Subject: [PATCH 3/7] vbus: add a "vbus-proxy" bus model for vbus_driver objects
 To: linux-kernel@vger.kernel.org
 Cc: alacrityvm-devel@lists.sourceforge.net, netdev@vger.kernel.org
-Date: Mon, 03 Aug 2009 13:17:30 -0400
-Message-ID: <20090803171030.17268.26962.stgit@dev.haskins.net>
+Date: Mon, 03 Aug 2009 13:17:46 -0400
+Message-ID: <20090803171745.17268.7015.stgit@dev.haskins.net>
+In-Reply-To: <20090803171030.17268.26962.stgit@dev.haskins.net>
+References: <20090803171030.17268.26962.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -24,64 +26,312 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Applies to v2.6.31-rc5, proposed for linux-next after review is complete)
+This will generally be used for hypervisors to publish any host-side
+virtual devices up to a guest.  The guest will have the opportunity
+to consume any devices present on the vbus-proxy as if they were
+platform devices, similar to existing buses like PCI.
 
-This series implements the guest-side drivers for accelerated IO
-when running on top of the AlacrityVM hypervisor, the details of
-which you can find here:
-
-http://developer.novell.com/wiki/index.php/AlacrityVM
-
-This series includes the basic plumbing, as well as the driver for
-accelerated 802.x (ethernet) networking.
-
-Regards,
--Greg
-
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
-Gregory Haskins (7):
-      venet: add scatter-gather/GSO support
-      net: Add vbus_enet driver
-      ioq: add driver-side vbus helpers
-      vbus-proxy: add a pci-to-vbus bridge
-      vbus: add a "vbus-proxy" bus model for vbus_driver objects
-      ioq: Add basic definitions for a shared-memory, lockless queue
-      shm-signal: shared-memory signals
-
-
- arch/x86/Kconfig            |    2 
+ arch/x86/Kconfig            |    2 +
  drivers/Makefile            |    1 
- drivers/net/Kconfig         |   14 +
- drivers/net/Makefile        |    1 
- drivers/net/vbus-enet.c     |  899 +++++++++++++++++++++++++++++++++++++++++++
- drivers/vbus/Kconfig        |   24 +
- drivers/vbus/Makefile       |    6 
- drivers/vbus/bus-proxy.c    |  216 ++++++++++
- drivers/vbus/pci-bridge.c   |  824 +++++++++++++++++++++++++++++++++++++++
- include/linux/Kbuild        |    4 
- include/linux/ioq.h         |  415 ++++++++++++++++++++
- include/linux/shm_signal.h  |  189 +++++++++
- include/linux/vbus_driver.h |   80 ++++
- include/linux/vbus_pci.h    |  127 ++++++
- include/linux/venet.h       |   84 ++++
- lib/Kconfig                 |   21 +
- lib/Makefile                |    2 
- lib/ioq.c                   |  294 ++++++++++++++
- lib/shm_signal.c            |  192 +++++++++
- 19 files changed, 3395 insertions(+), 0 deletions(-)
- create mode 100644 drivers/net/vbus-enet.c
+ drivers/vbus/Kconfig        |   14 ++++
+ drivers/vbus/Makefile       |    3 +
+ drivers/vbus/bus-proxy.c    |  152 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/vbus_driver.h |   73 +++++++++++++++++++++
+ 6 files changed, 245 insertions(+), 0 deletions(-)
  create mode 100644 drivers/vbus/Kconfig
  create mode 100644 drivers/vbus/Makefile
  create mode 100644 drivers/vbus/bus-proxy.c
- create mode 100644 drivers/vbus/pci-bridge.c
- create mode 100644 include/linux/ioq.h
- create mode 100644 include/linux/shm_signal.h
  create mode 100644 include/linux/vbus_driver.h
- create mode 100644 include/linux/vbus_pci.h
- create mode 100644 include/linux/venet.h
- create mode 100644 lib/ioq.c
- create mode 100644 lib/shm_signal.c
 
--- 
-Signature
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 738bdc6..72ff902 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -2037,6 +2037,8 @@ source "drivers/pcmcia/Kconfig"
+ 
+ source "drivers/pci/hotplug/Kconfig"
+ 
++source "drivers/vbus/Kconfig"
++
+ endmenu
+ 
+ 
+diff --git a/drivers/Makefile b/drivers/Makefile
+index bc4205d..d5bedb1 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -110,3 +110,4 @@ obj-$(CONFIG_VLYNQ)		+= vlynq/
+ obj-$(CONFIG_STAGING)		+= staging/
+ obj-y				+= platform/
+ obj-y				+= ieee802154/
++obj-y				+= vbus/
+diff --git a/drivers/vbus/Kconfig b/drivers/vbus/Kconfig
+new file mode 100644
+index 0000000..e1939f5
+--- /dev/null
++++ b/drivers/vbus/Kconfig
+@@ -0,0 +1,14 @@
++#
++# Virtual-Bus (VBus) driver configuration
++#
++
++config VBUS_PROXY
++       tristate "Virtual-Bus support"
++       select SHM_SIGNAL
++       default n
++       help
++       Adds support for a virtual-bus model drivers in a guest to connect
++	to host side virtual-bus resources.  If you are using this kernel
++	in a virtualization solution which implements virtual-bus devices
++	on the backend, say Y.  If unsure, say N.
++
+diff --git a/drivers/vbus/Makefile b/drivers/vbus/Makefile
+new file mode 100644
+index 0000000..a29a1e0
+--- /dev/null
++++ b/drivers/vbus/Makefile
+@@ -0,0 +1,3 @@
++
++vbus-proxy-objs += bus-proxy.o
++obj-$(CONFIG_VBUS_PROXY) += vbus-proxy.o
+diff --git a/drivers/vbus/bus-proxy.c b/drivers/vbus/bus-proxy.c
+new file mode 100644
+index 0000000..3177f9f
+--- /dev/null
++++ b/drivers/vbus/bus-proxy.c
+@@ -0,0 +1,152 @@
++/*
++ * Copyright 2009 Novell.  All Rights Reserved.
++ *
++ * Author:
++ *      Gregory Haskins <ghaskins@novell.com>
++ *
++ * This file is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
++ */
++
++#include <linux/module.h>
++#include <linux/vbus_driver.h>
++
++MODULE_AUTHOR("Gregory Haskins");
++MODULE_LICENSE("GPL");
++
++#define VBUS_PROXY_NAME "vbus-proxy"
++
++static struct vbus_device_proxy *to_dev(struct device *_dev)
++{
++	return _dev ? container_of(_dev, struct vbus_device_proxy, dev) : NULL;
++}
++
++static struct vbus_driver *to_drv(struct device_driver *_drv)
++{
++	return container_of(_drv, struct vbus_driver, drv);
++}
++
++/*
++ * This function is invoked whenever a new driver and/or device is added
++ * to check if there is a match
++ */
++static int vbus_dev_proxy_match(struct device *_dev, struct device_driver *_drv)
++{
++	struct vbus_device_proxy *dev = to_dev(_dev);
++	struct vbus_driver *drv = to_drv(_drv);
++
++	return !strcmp(dev->type, drv->type);
++}
++
++/*
++ * This function is invoked after the bus infrastructure has already made a
++ * match.  The device will contain a reference to the paired driver which
++ * we will extract.
++ */
++static int vbus_dev_proxy_probe(struct device *_dev)
++{
++	int ret = 0;
++	struct vbus_device_proxy *dev = to_dev(_dev);
++	struct vbus_driver *drv = to_drv(_dev->driver);
++
++	if (drv->ops->probe)
++		ret = drv->ops->probe(dev);
++
++	return ret;
++}
++
++static struct bus_type vbus_proxy = {
++	.name   = VBUS_PROXY_NAME,
++	.match  = vbus_dev_proxy_match,
++};
++
++static struct device vbus_proxy_rootdev = {
++	.parent    = NULL,
++	.init_name = VBUS_PROXY_NAME,
++};
++
++static int __init vbus_init(void)
++{
++	int ret;
++
++	ret = bus_register(&vbus_proxy);
++	BUG_ON(ret < 0);
++
++	ret = device_register(&vbus_proxy_rootdev);
++	BUG_ON(ret < 0);
++
++	return 0;
++}
++
++postcore_initcall(vbus_init);
++
++static void device_release(struct device *dev)
++{
++	struct vbus_device_proxy *_dev;
++
++	_dev = container_of(dev, struct vbus_device_proxy, dev);
++
++	_dev->ops->release(_dev);
++}
++
++int vbus_device_proxy_register(struct vbus_device_proxy *new)
++{
++	new->dev.parent  = &vbus_proxy_rootdev;
++	new->dev.bus     = &vbus_proxy;
++	new->dev.release = &device_release;
++
++	return device_register(&new->dev);
++}
++EXPORT_SYMBOL_GPL(vbus_device_proxy_register);
++
++void vbus_device_proxy_unregister(struct vbus_device_proxy *dev)
++{
++	device_unregister(&dev->dev);
++}
++EXPORT_SYMBOL_GPL(vbus_device_proxy_unregister);
++
++static int match_device_id(struct device *_dev, void *data)
++{
++	struct vbus_device_proxy *dev = to_dev(_dev);
++	u64 id = *(u64 *)data;
++
++	return dev->id == id;
++}
++
++struct vbus_device_proxy *vbus_device_proxy_find(u64 id)
++{
++	struct device *dev;
++
++	dev = bus_find_device(&vbus_proxy, NULL, &id, &match_device_id);
++
++	return to_dev(dev);
++}
++EXPORT_SYMBOL_GPL(vbus_device_proxy_find);
++
++int vbus_driver_register(struct vbus_driver *new)
++{
++	new->drv.bus   = &vbus_proxy;
++	new->drv.name  = new->type;
++	new->drv.owner = new->owner;
++	new->drv.probe = vbus_dev_proxy_probe;
++
++	return driver_register(&new->drv);
++}
++EXPORT_SYMBOL_GPL(vbus_driver_register);
++
++void vbus_driver_unregister(struct vbus_driver *drv)
++{
++	driver_unregister(&drv->drv);
++}
++EXPORT_SYMBOL_GPL(vbus_driver_unregister);
++
+diff --git a/include/linux/vbus_driver.h b/include/linux/vbus_driver.h
+new file mode 100644
+index 0000000..c53e13f
+--- /dev/null
++++ b/include/linux/vbus_driver.h
+@@ -0,0 +1,73 @@
++/*
++ * Copyright 2009 Novell.  All Rights Reserved.
++ *
++ * Mediates access to a host VBUS from a guest kernel by providing a
++ * global view of all VBUS devices
++ *
++ * Author:
++ *      Gregory Haskins <ghaskins@novell.com>
++ *
++ * This file is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
++ */
++
++#ifndef _LINUX_VBUS_DRIVER_H
++#define _LINUX_VBUS_DRIVER_H
++
++#include <linux/device.h>
++#include <linux/shm_signal.h>
++
++struct vbus_device_proxy;
++struct vbus_driver;
++
++struct vbus_device_proxy_ops {
++	int (*open)(struct vbus_device_proxy *dev, int version, int flags);
++	int (*close)(struct vbus_device_proxy *dev, int flags);
++	int (*shm)(struct vbus_device_proxy *dev, int id, int prio,
++		   void *ptr, size_t len,
++		   struct shm_signal_desc *sigdesc, struct shm_signal **signal,
++		   int flags);
++	int (*call)(struct vbus_device_proxy *dev, u32 func,
++		    void *data, size_t len, int flags);
++	void (*release)(struct vbus_device_proxy *dev);
++};
++
++struct vbus_device_proxy {
++	char                          *type;
++	u64                            id;
++	void                          *priv; /* Used by drivers */
++	struct vbus_device_proxy_ops  *ops;
++	struct device                  dev;
++};
++
++int vbus_device_proxy_register(struct vbus_device_proxy *dev);
++void vbus_device_proxy_unregister(struct vbus_device_proxy *dev);
++
++struct vbus_device_proxy *vbus_device_proxy_find(u64 id);
++
++struct vbus_driver_ops {
++	int (*probe)(struct vbus_device_proxy *dev);
++	int (*remove)(struct vbus_device_proxy *dev);
++};
++
++struct vbus_driver {
++	char                          *type;
++	struct module                 *owner;
++	struct vbus_driver_ops        *ops;
++	struct device_driver           drv;
++};
++
++int vbus_driver_register(struct vbus_driver *drv);
++void vbus_driver_unregister(struct vbus_driver *drv);
++
++#endif /* _LINUX_VBUS_DRIVER_H */
+
