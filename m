@@ -1,160 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754297AbZHCCAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753450AbZHCCIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754297AbZHCCAk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 22:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbZHCCAk
+	id S1753450AbZHCCIn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 22:08:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbZHCCIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 22:00:40 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59622 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754113AbZHCCAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 22:00:39 -0400
-Date: Sun, 2 Aug 2009 22:54:30 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Kyle McMartin <kyle@mcmartin.ca>, Ingo Molnar <mingo@elte.hu>,
-       Jens Axboe <jens.axboe@oracle.com>, Anton Blanchard <anton@samba.org>,
-       davem@davemloft.net, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, fweisbec@gmail.com, benh@kernel.crashing.org,
-       penberg@cs.helsinki.fi, vegard.nossum@gmail.com, paulus@samba.org,
-       williams@redhat.com
-Subject: Re: [PATCH] basic perf support for sparc
-Message-ID: <20090803015430.GG25334@ghostprotocols.net>
-References: <20090729112509.GN4148@kernel.dk> <20090729192814.GT4148@kernel.dk> <20090801011429.GA4685@kryten> <20090801082048.GX12579@kernel.dk> <20090801182216.GA25334@ghostprotocols.net> <20090802184148.GB17241@elte.hu> <20090802194454.GC28572@bombadil.infradead.org> <20090802195043.GD24486@elte.hu> <20090802201132.GE28572@bombadil.infradead.org> <20090802204701.GE25334@ghostprotocols.net>
+	Sun, 2 Aug 2009 22:08:42 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:56777 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751741AbZHCCIl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 22:08:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=iFAbdj0qQT1yZNOmZ6Xp+m7iuYwCO7LLkCHP7D4XftIsFNnFfCQEYBTuQkqHPttaL6
+         87yHsaEP/gi1psitS/bBY0eVdoMqYw9MdNl5nhr2XsX7+TUvUBTl/nDQX/Nm9BEo2AQs
+         tm5Tn+8+onh6jAJbvXLFq9VlPymzkQclG8OzU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090802204701.GE25334@ghostprotocols.net>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090802095523.e08166e3.rdunlap@xenotime.net>
+References: <a8e1da0908020056mbf28eaw611c605693eb3eff@mail.gmail.com>
+	 <20090802095523.e08166e3.rdunlap@xenotime.net>
+Date: Mon, 3 Aug 2009 10:08:40 +0800
+Message-ID: <a8e1da0908021908x8216693k7fb31bc5b58d6666@mail.gmail.com>
+Subject: Re: mm/-next release on kernel.org web page?
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: webmaster@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Sun, Aug 02, 2009 at 05:47:01PM -0300, Arnaldo Carvalho de Melo escreveu:
-> Em Sun, Aug 02, 2009 at 04:11:32PM -0400, Kyle McMartin escreveu:
-> > On Sun, Aug 02, 2009 at 09:50:43PM +0200, Ingo Molnar wrote:
-> > > We are sticking to a given version of the API. We could turn that 
-> > > into a function pointer and fill it in during startup via dlopen(). 
-> > > If it's NULL then we dont call it and assume a value of NULL.
-> > > 
-> > > Mind submitting such a version of your fix? It would nicely decrease 
-> > > the build requirements cross section surface of perf.
-> > > 
-> > 
-> > Assuming I remember how to use dlopen/dlsym, this might work.
-> > Unfortunately I can't easily test anything this weekend, so
-> > I don't actually know if it works... but it links ok.
-> > 
-> > cheers, Kyle
-> 
-> Doesn't seem to work, tried with firefox, with matching
-> xulrunner-debuginfo package installed and symbols didn't got properly
-> demangled, gotta be afk now, but will try to figure this out later.
+On Mon, Aug 3, 2009 at 12:55 AM, Randy Dunlap<rdunlap@xenotime.net> wrote:
+> On Sun, 2 Aug 2009 15:56:20 +0800 Dave Young wrote:
+>
+>> Hi,
+>>
+>> The last mm patchset is 2.6.28-rc2-mm1. We can not download -mm
+>> patchset from kernel.org web page since the -next tree born.
+>>
+>> Could you consider put mmtom release there just like before? And even
+>> -next tree patchset? It will be more convenient for users who test
+>> kernel just by downloading from web. Now it's impossible for them to
+>> test these patchsets because they normally do not subscribe to lkml.
+>
+>
+> from www.kernel.org:
+> For comments about the web pages, please send mail to webmaster@kernel.org.
+>
+> also from www.kernel.org:
+> Please don't use finger.kernel.org for any sort of automatic monitoring. The number of automatic bots hitting this port is causing the finger daemon to shut down more often than not. The same information is available from http://www.kernel.org/kdist/finger_banner.
+>
+> and of course the finger_banner file is not up to date.
+>
+> You may consider using my http://www.xenotime.net/linux/scripts/kcurrent script.
+> Its output (today) is:
+>
+> The latest stable version of the Linux kernel is:           2.6.30.4
+> The latest prepatch for the stable Linux kernel tree is:    2.6.31-rc5
+> The latest 2.4 version of the Linux kernel is:              2.4.37.4
+> The latest 2.2 version of the Linux kernel is:              2.2.26
+> The latest prepatch for the 2.2 Linux kernel tree is:       2.2.27-rc2
+> The latest -mm patch to the stable Linux kernels is:        2.6.28-rc2-mm1
+> mmotm-2009-0730-0501 ... applies to: 2.6.31-rc4
+> next-20090731 ... applies to: v2.6.31-rc4
 
-The problem is that at least on f11, libbfd.so is a... linker script,
-not an ELF shared library as the name seemed to imply.
+Thanks randy. Very helpful. But I still have same question. Normal
+users need a more convenient and straightforward  way to get what they
+want.  It will be better that we put them on www.kernel.org main page,
+not only the version info but also the download link.
 
-But if I cheat and do a dlopen on the full name, that includes the
-version, it works. Argh, I don't know why this has to be so contorted,
-does anybody here understands this?
+At least for me when I started my kernel hacking some years ago I
+always download kernel from www.kernel.org main page. I'm not sure
+whether others people do same thing. Current -next and mmtom are more
+like for us to do internal testing.
 
-Anyway, the reworked patch below works and additionally doesn't dlopens
-at each DSO, but just once and only if it finds a symbol starting with
-an underscore, an heuristic to avoid loading bfd if we don't need it.
+>
+>
+> ---
+> ~Randy
+> LPC 2009, Sept. 23-25, Portland, Oregon
+> http://linuxplumbersconf.org/2009/
+>
 
-Looking at each DW_AT_language attribute in the DW_TAG_compile_unit
-tags, trying to figure out if there is a C++ object in the mix seems too
-much, we would have to traverse all of the compile units, touching most
-of the debuginfo file :-\
 
-- Arnaldo
 
-diff --git a/tools/perf/Makefile b/tools/perf/Makefile
-index 4b20fa4..8fb2e12 100644
---- a/tools/perf/Makefile
-+++ b/tools/perf/Makefile
-@@ -345,7 +345,7 @@ BUILTIN_OBJS += builtin-stat.o
- BUILTIN_OBJS += builtin-top.o
- 
- PERFLIBS = $(LIB_FILE)
--EXTLIBS = -lbfd -liberty
-+EXTLIBS = -ldl
- 
- #
- # Platform specific tweaks
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index b4fe057..625f975 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -4,9 +4,9 @@
- #include "symbol.h"
- 
- #include <libelf.h>
-+#include <dlfcn.h>
- #include <gelf.h>
- #include <elf.h>
--#include <bfd.h>
- 
- const char *sym_hist_filter;
- 
-@@ -512,6 +512,30 @@ out:
- 	return 0;
- }
- 
-+static char *def_perf_bfd_demangle(void __used *v, const char __used *name,
-+				   int __used opt)
-+{
-+	return NULL;
-+}
-+
-+static char *(*perf_bfd_demangle)(void *v, const char *name, int opt);
-+
-+static void load_perf_bfd_demangle(void)
-+{
-+	void *handle = dlopen("libbfd-2.19.51.0.2-17.fc11.so", RTLD_NOW);
-+
-+	if (handle) {
-+		perf_bfd_demangle = dlsym(handle, "bfd_demangle");
-+		if (perf_bfd_demangle)
-+			return;
-+		dlclose(handle);
-+	} else
-+		fprintf(stderr, "%s: problems finding bfd_demangle: %s.\n",
-+			__func__, dlerror());
-+
-+	perf_bfd_demangle = def_perf_bfd_demangle;
-+}
-+
- static int dso__load_sym(struct dso *self, int fd, const char *name,
- 			 symbol_filter_t filter, int verbose, struct module *mod)
- {
-@@ -581,7 +605,7 @@ static int dso__load_sym(struct dso *self, int fd, const char *name,
- 	elf_symtab__for_each_symbol(syms, nr_syms, index, sym) {
- 		struct symbol *f;
- 		const char *name;
--		char *demangled;
-+		char *demangled = NULL;
- 		u64 obj_start;
- 		struct section *section = NULL;
- 		int is_label = elf_sym__is_label(&sym);
-@@ -626,9 +650,16 @@ static int dso__load_sym(struct dso *self, int fd, const char *name,
- 		 * to it...
- 		 */
- 		name = elf_sym__name(&sym, symstrs);
--		demangled = bfd_demangle(NULL, name, DMGL_PARAMS | DMGL_ANSI);
--		if (demangled != NULL)
--			name = demangled;
-+		if (name && name[0] == '_') {
-+			if (perf_bfd_demangle == NULL)
-+				load_perf_bfd_demangle();
-+
-+			if (perf_bfd_demangle != NULL) {
-+				demangled = perf_bfd_demangle(NULL, name, DMGL_PARAMS | DMGL_ANSI);
-+				if (demangled != NULL)
-+					name = demangled;
-+			}
-+		}
- 
- 		f = symbol__new(sym.st_value, sym.st_size, name,
- 				self->sym_priv_size, obj_start, verbose);
+-- 
+Regards
+dave
