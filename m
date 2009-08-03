@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbZHCVSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753835AbZHCVTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754128AbZHCVSX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 17:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbZHCVSW
+	id S1753835AbZHCVTv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 17:19:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbZHCVTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 17:18:22 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43696 "EHLO ogre.sisk.pl"
+	Mon, 3 Aug 2009 17:19:50 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:48455 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751925AbZHCVSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 17:18:21 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH V2 0/4] introduce device async actions mechanism
-Date: Mon, 3 Aug 2009 23:18:33 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc5-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       "linux-acpi" <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Arjan van de Ven <arjan@linux.intel.com>, dtor@mail.ru
-References: <1248404514.2670.107.camel@rzhang-dt>
-In-Reply-To: <1248404514.2670.107.camel@rzhang-dt>
+	id S1751520AbZHCVTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 17:19:49 -0400
+Message-ID: <4A775474.8000705@linux.vnet.ibm.com>
+Date: Mon, 03 Aug 2009 16:19:48 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: Sage Weil <sage@newdream.net>
+CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [PATCH] ibmvscsi: avoid unnecessary use of kzalloc_pool
+References: <1249332888-13440-1-git-send-email-sage@newdream.net> <1249332888-13440-2-git-send-email-sage@newdream.net>
+In-Reply-To: <1249332888-13440-2-git-send-email-sage@newdream.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908032318.35070.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 24 July 2009, Zhang Rui wrote:
-> Hi,
+Acked-by: Brian King <brking@linux.vnet.ibm.com>
 
-Hi,
-
-> this is the patch set I made to speed up the device
-> suspend/resume/shutdown process.
+Sage Weil wrote:
+> The allocated struct is manually zeroed after allocation, so avoid using
+> the (broken) kzalloc mempool (which does not re-zero previously used items
+> when they are returned to the pool).
 > 
-> A new mechanism called Device Async Actions is introduced
-> in this patch set.
+> CC: linux-scsi@vger.kernel.org
+> CC: James Bottomley <James.Bottomley@HansenPartnership.com>
+> Signed-off-by: Sage Weil <sage@newdream.net>
+> ---
+>  drivers/scsi/ibmvscsi/ibmvfc.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
+> index 166d964..bb2c696 100644
+> --- a/drivers/scsi/ibmvscsi/ibmvfc.c
+> +++ b/drivers/scsi/ibmvscsi/ibmvfc.c
+> @@ -4217,7 +4217,7 @@ static int ibmvfc_alloc_mem(struct ibmvfc_host *vhost)
+>  	if (!vhost->trace)
+>  		goto free_disc_buffer;
+> 
+> -	vhost->tgt_pool = mempool_create_kzalloc_pool(IBMVFC_TGT_MEMPOOL_SZ,
+> +	vhost->tgt_pool = mempool_create_kmalloc_pool(IBMVFC_TGT_MEMPOOL_SZ,
+>  						      sizeof(struct ibmvfc_target));
+> 
+>  	if (!vhost->tgt_pool) {
 
-Well, I'm not sure we'll need that.
 
-> The basic idea is that,
-> if the suspend/resume/shutdown process of a device group, including
-> a root device and its child devices, are independent of other devices,
-> we create an async domain for this device group,
-> and make them suspend/resume/shutdown asynchronously.    
+-- 
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
 
-I don't really think this is the right approach.  IMO, we should rather try to
-identify groups of devices for which the PM callbacks (forget about .shutdown()
-for now) can be executed in parallel.  One such group is leaf devices, ie.
-devices that have no children.  Of course, some of them will depend of the
-other indirectly, so we should make it possible to declare (in the driver)
-whether the device can be suspended/resumed asynchronously and use the
-following logic (at the core level), in pseudo code:
 
-if (has_no_children(dev) && asynchronous_suspend_resume_allowed(dev))
-    async_resume(dev);
-else
-    resume(dev);
-
-and analogously for suspend.  Then, we can easily use one async domain for all
-of these devices.
-
-Later, we can add async domains for devices that have children, but can be
-suspended and woken up in parallel with each other.  IOW, I think the async
-domains should span the levels rather than branches of the device tree.
-
-Thanks,
-Rafael
