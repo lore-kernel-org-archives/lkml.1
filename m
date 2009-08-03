@@ -1,64 +1,430 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754352AbZHCVDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932149AbZHCVDG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754352AbZHCVDw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 17:03:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbZHCVDv
+	id S932149AbZHCVDG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 17:03:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbZHCVDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 17:03:51 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:34259 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753601AbZHCVDt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 17:03:49 -0400
-Message-ID: <4A77509A.3010401@zytor.com>
-Date: Mon, 03 Aug 2009 14:03:22 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Mon, 3 Aug 2009 17:03:04 -0400
+Received: from kroah.org ([198.145.64.141]:57328 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753578AbZHCVCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 17:02:30 -0400
+Date: Mon, 3 Aug 2009 14:01:23 -0700
+From: Greg K-H <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
+Cc: Martyn Welch <martyn.welch@gefanuc.com>
+Subject: [patch 5/5] Staging: vme: add TODO file
+Message-ID: <20090803210123.GF28430@kroah.com>
+References: <20090803205657.964064732@mini.kroah.org>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: MAINTAINERS: standardize James Bottomley's name
-References: <1249331570.5149.48.camel@Joe-Laptop.home> <1249332233.3943.211.camel@mulgrave.site>
-In-Reply-To: <1249332233.3943.211.camel@mulgrave.site>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="staging-vme-add-todo-file.patch"
+In-Reply-To: <20090803210054.GA28430@kroah.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/03/2009 01:43 PM, James Bottomley wrote:
-> On Mon, 2009-08-03 at 13:32 -0700, Joe Perches wrote:
->> His recent patches and sign-offs have not used "E.J."
->>
->> This reduces the likelihood that get_maintainers.pl will
->> list his address twice.
-> 
-> It is standard:  I like my initials; which, per RFC requires the quotes
-> because it's a mailing address.
-> 
+From: Martyn Welch <martyn.welch@gefanuc.com>
 
-It's not actually required by RFC 2822.
+This describes the current vme api, along with a list of things
+that needs to be fixed up.
 
-The relevant productions are:
+Signed-off-by: Martyn Welch <martyn.welch@gefanuc.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/vme/TODO |  388 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 388 insertions(+)
 
-name-addr       =       [display-name] angle-addr
-display-name    =       phrase
-phrase          =       1*word / obs-phrase
-obs-phrase      =       word *(word / "." / CFWS)
+--- /dev/null
++++ b/drivers/staging/vme/TODO
+@@ -0,0 +1,388 @@
++			VME Device Driver API
++			=====================
++
++Driver registration
++===================
++
++As with other subsystems within the Linux kernel, VME device drivers register
++with the VME subsystem, typically called from the devices init routine.  This is
++achieved via a call to the follwoing function:
++
++	int vme_register_driver (struct vme_driver *driver);
++
++If driver registration is successful this function returns zero, if an error
++occurred a negative error code will be returned.
++
++A pointer to a structure of type ???vme_driver??? must be provided to the
++registration function. The structure is as follows:
++
++	struct vme_driver {
++		struct list_head node;
++		char *name;
++		const struct vme_device_id *bind_table;
++		int (*probe)  (struct device *, int, int);
++		int (*remove) (struct device *, int, int);
++		void (*shutdown) (void);
++		struct device_driver    driver;
++	};
++
++At the minimum, the ???.name???, ???.probe??? and ???.bind_table??? elements of this
++structure should be correctly set. The ???.name??? element is a pointer to a string
++holding the device driver???s name. The ???.probe??? element should contain a pointer
++to the probe routine.
++
++The arguments of the probe routine are as follows:
++
++	probe(struct device *dev, int bus, int slot);
++
++The ???.bind_table??? is a pointer to an array of type ???vme_device_id???:
++
++	struct vme_device_id {
++		int bus;
++		int slot;
++	};
++
++Each structure in this array should provide a bus and slot number where the core
++should probe, using the driver???s probe routine, for a device on the specified
++VME bus.
++
++The VME subsystem supports a single VME driver per ???slot???. There are considered
++to be 32 slots per bus, one for each slot-ID as defined in the ANSI/VITA 1-1994
++specification and are analogious to the physical slots on the VME backplane.
++
++A function is also provided to unregister the driver from the VME core and is
++usually called from the device driver???s exit routine:
++
++	void vme_unregister_driver (struct vme_driver *driver);
++
++
++Resource management
++===================
++
++Once a driver has registered with the VME core the provided probe routine will
++be called for each of the bus/slot combination that becomes valid as VME buses
++are themselves registered.  The probe routine is passed a pointer to the devices
++device structure. This pointer should be saved, it will be required for
++requesting VME resources.
++
++The driver can request ownership of one or more master windows, slave windows
++and/or dma channels. Rather than allowing the device driver to request a
++specific window or DMA channel (which may be used by a different driver) this
++driver allows a resource to be assigned based on the required attributes of the
++driver in question:
++
++	struct vme_resource * vme_master_request(struct device *dev,
++		vme_address_t aspace, vme_cycle_t cycle, vme_width_t width);
++
++	struct vme_resource * vme_slave_request(struct device *dev,
++		vme_address_t aspace, vme_cycle_t cycle);
++
++TODO:	DMA Resource Allocation incomplete. No attribute based selection.
++
++	struct vme_resource *vme_request_dma(struct device *dev);
++
++For slave windows these attributes are split into those of type ???vme_address_t???
++and ???vme_cycle_t???. Master windows add a further set of attributes ???vme_cycle_t???.
++These attributes are defined as bitmasks and as such any combination of the
++attributes can be requested for a single window, the core will assign a window
++that meets the requirements, returning a pointer of type vme_resource that
++should be used to identify the allocated resource when it is used. If an
++unallocated window fitting the requirements can not be found a NULL pointer will
++be returned.
++
++Functions are also provided to free window allocations once they are no longer
++required. These functions should be passed the pointer to the resource provided
++during resource allocation:
++
++	void vme_master_free(struct vme_resource *res);
++
++	void vme_slave_free(struct vme_resource *res);
++
++	void vme_dma_free(struct vme_resource *res);
++
++
++Master windows
++==============
++
++Master windows provide access from the local processor[s] out onto the VME bus.
++The number of windows available and the available access modes is dependant on
++the underlying chipset. A window must be configured before it can be used.
++
++
++Master window configuration
++---------------------------
++
++Once a master window has been assigned the following functions can be used to
++configure it and retrieve the current settings:
++
++	int vme_master_set (struct vme_resource *res, int enabled,
++		unsigned long long base, unsigned long long size,
++		vme_address_t aspace, vme_cycle_t cycle, vme_width_t width);
++
++	int vme_master_get (struct vme_resource *res, int *enabled,
++		unsigned long long *base, unsigned long long *size,
++		vme_address_t *aspace, vme_cycle_t *cycle, vme_width_t *width);
++
++The address spaces, transfer widths and cycle types are the same as described
++under resource management, however some of the options are mutually exclusive.
++For example, only one address space may be specified.
++
++These functions return 0 on success or an error code should the call fail.
++
++
++Master window broadcast select mask
++-----------------------------------
++
++TODO:	Add functions to set and get Broadcast Select mask:
++
++	int vme_master_bmsk_set (struct vme_resource *res, int mask);
++	int vme_master_bmsk_get (struct vme_resource *res, int *mask);
++
++
++Master window access
++--------------------
++
++The following functions can be used to read from and write to configured master
++windows. These functions return the number of bytes copied:
++
++	ssize_t vme_master_read(struct vme_resource *res, void *buf,
++		size_t count, loff_t offset);
++
++	ssize_t vme_master_write(struct vme_resource *res, void *buf,
++		size_t count, loff_t offset);
++
++In addition to simple reads and writes, a function is provided to do a
++read-modify-write transaction. This function returns the original value of the
++VME bus location :
++
++	unsigned int vme_master_rmw (struct vme_resource *res,
++		unsigned int mask, unsigned int compare, unsigned int swap,
++		loff_t offset);
++
++This functions by reading the offset, applying the mask. If the bits selected in
++the mask match with the values of the corresponding bits in the compare field,
++the value of swap is written the specified offset.
++
++
++Slave windows
++=============
++
++Slave windows provide devices on the VME bus access into mapped portions of the
++local memory. The number of windows available and the access modes that can be
++used is dependant on the underlying chipset. A window must be configured before
++it can be used.
++
++
++Slave window configuration
++--------------------------
++
++Once a slave window has been assigned the following functions can be used to
++configure it and retrieve the current settings:
++
++	int vme_slave_set (struct vme_resource *res, int enabled,
++		unsigned long long base, unsigned long long size,
++		dma_addr_t mem, vme_address_t aspace, vme_cycle_t cycle);
++
++	int vme_slave_get (struct vme_resource *res, int *enabled,
++		unsigned long long *base, unsigned long long *size,
++		dma_addr_t *mem, vme_address_t *aspace, vme_cycle_t *cycle);
++
++The address spaces, transfer widths and cycle types are the same as described
++under resource management, however some of the options are mutually exclusive.
++For example, only one address space may be specified.
++
++These functions return 0 on success or an error code should the call fail.
++
++
++Slave window buffer allocation
++------------------------------
++
++Functions are provided to allow the user to allocate and free a contiguous
++buffers which will be accessible by the VME bridge. These functions do not have
++to be used, other methods can be used to allocate a buffer, though care must be
++taken to ensure that they are contiguous and accessible by the VME bridge:
++
++	void * vme_alloc_consistent(struct vme_resource *res, size_t size,
++		dma_addr_t *mem);
++
++	void vme_free_consistent(struct vme_resource *res, size_t size,
++		void *virt,	dma_addr_t mem);
++
++
++Slave window access
++-------------------
++
++Slave windows map local memory onto the VME bus, the standard methods for
++accessing memory should be used.
++
++
++DMA channels
++============
++
++The VME DMA transfer provides the ability to run link-list DMA transfers. The
++API introduces the concept of DMA lists. Each DMA list is a link-list which can
++be passed to a DMA controller. Multiple lists can be created, extended,
++executed, reused and destroyed.
++
++
++List Management
++---------------
++
++The following functions are provided to create and destroy DMA lists. Execution
++of a list will not automatically destroy the list, thus enabling a list to be
++reused for repetitive tasks:
++
++	struct vme_dma_list *vme_new_dma_list(struct vme_resource *res);
++
++	int vme_dma_list_free(struct vme_dma_list *list);
++
++
++List Population
++---------------
++
++An item can be added to a list using the following function ( the source and
++destination attributes need to be created before calling this function, this is
++covered under "Transfer Attributes"):
++
++	int vme_dma_list_add(struct vme_dma_list *list,
++		struct vme_dma_attr *src, struct vme_dma_attr *dest,
++		size_t count);
++
++
++Transfer Attributes
++-------------------
++
++The attributes for the source and destination are handled separately from adding
++an item to a list. This is due to the diverse attributes required for each type
++of source and destination. There are functions to create attributes for PCI, VME
++and pattern sources and destinations (where appropriate):
++
++Pattern source:
++
++	struct vme_dma_attr *vme_dma_pattern_attribute(u32 pattern,
++		vme_pattern_t type);
++
++PCI source or destination:
++
++	struct vme_dma_attr *vme_dma_pci_attribute(dma_addr_t mem);
++
++VME source or destination:
++
++	struct vme_dma_attr *vme_dma_vme_attribute(unsigned long long base,
++		vme_address_t aspace, vme_cycle_t cycle, vme_width_t width);
++
++The following function should be used to free an attribute:
++
++	void vme_dma_free_attribute(struct vme_dma_attr *attr);
++
++
++List Execution
++--------------
++
++The following function queues a list for execution. The function will return
++once the list has been executed:
++
++	int vme_dma_list_exec(struct vme_dma_list *list);
++
++
++Interrupts
++==========
++
++The VME API provides functions to attach and detach callbacks to specific VME
++level and status ID combinations and for the generation of VME interrupts with
++specific VME level and status IDs.
++
++
++Attaching Interrupt Handlers
++----------------------------
++
++The following functions can be used to attach and free a specific VME level and
++status ID combination. Any given combination can only be assigned a single
++callback function. A void pointer parameter is provided, the value of which is
++passed to the callback function, the use of this pointer is user undefined:
++
++	int vme_request_irq(struct device *dev, int level, int statid,
++		void (*callback)(int, int, void *), void *priv);
++
++	void vme_free_irq(struct device *dev, int level, int statid);
++
++The callback parameters are as follows. Care must be taken in writing a callback
++function, callback functions run in interrupt context:
++
++	void callback(int level, int statid, void *priv);
++
++
++Interrupt Generation
++--------------------
++
++The following function can be used to generate a VME interrupt at a given VME
++level and VME status ID:
++
++	int vme_generate_irq(struct device *dev, int level, int statid);
++
++
++Location monitors
++=================
++
++The VME API provides the following functionality to configure the location
++monitor.
++
++
++Location Monitor Management
++---------------------------
++
++TODO:	Provide a mechanism to request use of the location monitor. The location
++	monitors can be moved and we only want one driver to be able to do that
++	at a time! We also need to be able to free the location monitor for
++	others to use.
++
++	struct vme_resource * vme_request_lm(struct device *dev);
++
++	void vme_free_lm(struct vme_resource * res);
++
++
++Location Monitor Configuration
++------------------------------
++
++TODO:	Change to struct "vme_resource *res" rather than "struct device *dev".
++
++The following functions are provided to configure the location and mode of the
++location monitor:
++
++	int vme_lm_set(struct device *dev, unsigned long long base,
++		vme_address_t aspace, vme_cycle_t cycle);
++
++	int vme_lm_get(struct device *dev, unsigned long long *base,
++		vme_address_t *aspace, vme_cycle_t *cycle);
++
++
++Location Monitor Use
++--------------------
++
++TODO:	Change to struct "vme_resource *res" rather than "struct device *dev".
++
++The following functions allow a callback to be attached and detached from each
++location monitor location. The API currently supports 4 location monitors,
++monitoring 4 adjacent locations:
++
++	int vme_lm_attach(struct device *dev, int num,
++		void (*callback)(int));
++
++	int vme_lm_detach(struct device *dev, int num);
++
++The callback function is declared as follows.
++
++	void callback(int num);
++
++
++CR/CSR
++======
++
++TODO:	The VME API needs functions to access the CR/CSR buffer.
++
++Slot Detection
++==============
++
++This function returns the slot ID of the provided bridge.
++
++	int vme_slot_get(struct device *dev);
 
-Now, obs- usually indicates an obsolete (deprecated
-backwards-compatibility) production, but the text states:
-
-   Note: The "period" (or "full stop") character (".") in obs-phrase is
-   not a form that was allowed in earlier versions of this or any other
-   standard.  Period (nor any other character from specials) was not
-   allowed in phrase because it introduced a parsing difficulty
-   distinguishing between phrases and portions of an addr-spec (see
-   section 4.4).  It appears here because the period character is
-   currently used in many messages in the display-name portion of
-   addresses, especially for initials in names, and therefore must be
-   interpreted properly.  In the future, period may appear in the
-   regular syntax of phrase.
-
-	-hpa
