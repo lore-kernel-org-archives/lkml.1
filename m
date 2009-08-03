@@ -1,125 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbZHCJN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbZHCJPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754631AbZHCJN3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 05:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbZHCJN2
+	id S1754602AbZHCJPe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 05:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbZHCJPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 05:13:28 -0400
-Received: from mga01.intel.com ([192.55.52.88]:56100 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752759AbZHCJN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 05:13:26 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,313,1246863600"; 
-   d="scan'208";a="713389596"
-Subject: Re: [PATCH 6/10] drivers/net/wireless/iwlwifi: introduce missing
- kfree
-From: Zhu Yi <yi.zhu@intel.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: "Chatre, Reinette" <reinette.chatre@intel.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0908031109590.8435@pc-004.diku.dk>
-References: <Pine.LNX.4.64.0908011054010.23408@ask.diku.dk>
-	 <1249260246.4069.26.camel@debian>
-	 <Pine.LNX.4.64.0908031109590.8435@pc-004.diku.dk>
-Content-Type: text/plain
-Date: Mon, 03 Aug 2009 17:13:25 +0800
-Message-Id: <1249290805.4069.46.camel@debian>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 3 Aug 2009 05:15:33 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:58006 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754459AbZHCJPc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 05:15:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=VQMW0Q3ORTzZxdcgyLQEVgfFR9LhwAbrX94onNjZJDF1v5VszysbgJeANVUSaSUNZv
+         BhC4cKd+qIQ6MlNyLsmP1EelsUi2iYdi4TEg6gtYFauBNPe/aanhUYTAZXocigyaG++n
+         rjZGODhRGTHAZhXZW1iqZ+EliN+9GGcZAufFo=
+MIME-Version: 1.0
+In-Reply-To: <4A7338AF.8010407@vlnb.net>
+References: <4A3CD62B.1020407@vlnb.net>
+	 <a0272b440907170715q72af7bb8l53c9dbd5e553fe2c@mail.gmail.com>
+	 <4A60C1A8.9020504@vlnb.net> <4A641AAC.9030300@vlnb.net>
+	 <a0272b440907220144i159baca4u1a1f1f2d0c36193a@mail.gmail.com>
+	 <4A6DA77B.7080600@vlnb.net>
+	 <a0272b440907280251g2dd38df6ja1bf10f3fa38d333@mail.gmail.com>
+	 <4A6F4C81.10600@vlnb.net>
+	 <a0272b440907290548k266a975br8c6bdf4d5d992d20@mail.gmail.com>
+	 <4A7338AF.8010407@vlnb.net>
+Date: Mon, 3 Aug 2009 11:15:32 +0200
+Message-ID: <a0272b440908030215t66309c1fo9a0894bdae4dec17@mail.gmail.com>
+Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
+From: Ronald Moesbergen <intercommit@gmail.com>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
+       Alan.Brunelle@hp.com, linux-fsdevel@vger.kernel.org,
+       jens.axboe@oracle.com, randy.dunlap@oracle.com,
+       Bart Van Assche <bart.vanassche@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-03 at 17:11 +0800, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> Move orthogonal error handling code up before a kzalloc, so that it 
-> doesn't have to free the allocated data.
+2009/7/31 Vladislav Bolkhovitin <vst@vlnb.net>:
+>
+> OK, as I expected, on the SCST level everything is clear and the forced
+> ordering change didn't change anything.
+>
+> But still, a single read stream must be the fastest from single thread.
+> Otherwise, there's something wrong somewhere in the I/O path: block layer,
+> RA, I/O scheduler. And, apparently, this is what we have and should find out
+> the cause.
+>
+> Can you check if noop on the target and/or initiator makes any difference?
+> Case 5 with 1 and 2 threads will be sufficient.
 
-Acked-by: Zhu Yi <yi.zhu@intel.com>
+That doesn't seem to help:
 
-Thanks,
--yi
+client kernel: 2.6.26-15lenny3 (debian)
+server kernel: 2.6.29.5 with readahead-context, blk_run_backing_dev
+and io_context, forced_order
 
-> The semantic match that finds the problem is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @r exists@
-> local idexpression x;
-> statement S;
-> expression E;
-> identifier f,f1,l;
-> position p1,p2;
-> expression *ptr != NULL;
-> @@
-> 
-> x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
-> ...
-> if (x == NULL) S
-> <... when != x
->      when != if (...) { <+...x...+> }
-> (
-> x->f1 = E
-> |
->  (x->f1 == NULL || ...)
-> |
->  f(...,x->f1,...)
-> )
-> ...>
-> (
->  return \(0\|<+...x...+>\|ptr\);
-> |
->  return@p2 ...;
-> )
-> 
-> @script:python@
-> p1 << r.p1;
-> p2 << r.p2;
-> @@
-> 
-> print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> ---
->  drivers/net/wireless/iwlwifi/iwl-debugfs.c     |   12 ++++++------
->  1 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/net/wireless/iwlwifi/iwl-debugfs.c b/drivers/net/wireless/iwlwifi/iwl-debugfs.c
-> index 7707a26..6748a3f 100644
-> --- a/drivers/net/wireless/iwlwifi/iwl-debugfs.c
-> +++ b/drivers/net/wireless/iwlwifi/iwl-debugfs.c
-> @@ -310,18 +310,18 @@ static ssize_t iwl_dbgfs_nvm_read(struct file *file,
->  		return -ENODATA;
->  	}
->  
-> +	ptr = priv->eeprom;
-> +	if (!ptr) {
-> +		IWL_ERR(priv, "Invalid EEPROM/OTP memory\n");
-> +		return -ENOMEM;
-> +	}
-> +
->  	/* 4 characters for byte 0xYY */
->  	buf = kzalloc(buf_size, GFP_KERNEL);
->  	if (!buf) {
->  		IWL_ERR(priv, "Can not allocate Buffer\n");
->  		return -ENOMEM;
->  	}
-> -
-> -	ptr = priv->eeprom;
-> -	if (!ptr) {
-> -		IWL_ERR(priv, "Invalid EEPROM/OTP memory\n");
-> -		return -ENOMEM;
-> -	}
->  	pos += scnprintf(buf + pos, buf_size - pos, "NVM Type: %s\n",
->  			(priv->nvm_device_type == NVM_DEVICE_TYPE_OTP)
->  			? "OTP" : "EEPROM");
+With one IO thread:
+5) client: default, server: default (server noop, client noop)
+blocksize       R        R        R   R(avg,    R(std        R
+  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
+ 67108864  17.612   21.113   21.355   51.532    4.680    0.805
+ 33554432  18.329   18.523   19.049   54.969    0.891    1.718
+ 16777216  18.497   18.219   17.042   57.217    2.059    3.576
 
+With two threads:
+5) client: default, server: default (server noop, client noop)
+blocksize       R        R        R   R(avg,    R(std        R
+  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
+ 67108864  17.436   18.376   20.493   54.807    3.634    0.856
+ 33554432  17.466   16.980   18.261   58.337    1.740    1.823
+ 16777216  18.222   17.567   18.077   57.045    0.901    3.565
+
+Ronald.
