@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbZHCSA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbZHCSBE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753304AbZHCSA5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 14:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZHCSA4
+	id S1753387AbZHCSBE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 14:01:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbZHCSBC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 14:00:56 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57292 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751935AbZHCSA4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 14:00:56 -0400
-Message-ID: <4A7725AF.6090106@redhat.com>
-Date: Mon, 03 Aug 2009 13:00:15 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
-MIME-Version: 1.0
+	Mon, 3 Aug 2009 14:01:02 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:58080 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753318AbZHCSA7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 14:00:59 -0400
+From: Arnd Bergmann <arnd@arndb.de>
 To: Mark Lord <lkml@rtr.ca>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
+Subject: Re: [PATCH] fs/compat_ioctl.c: add missing FS_IOC_FIEMAP support
+Date: Mon, 3 Aug 2009 20:00:11 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-3-generic; KDE/4.2.98; x86_64; ; )
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org,
        Eric Sandeen <sandeen@sandeen.net>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fs/compat_ioctl.c: add missing FS_IOC_FIEMAP support
 References: <4A74584D.2010300@rtr.ca> <4A7722DF.80704@rtr.ca>
 In-Reply-To: <4A7722DF.80704@rtr.ca>
-Content-Type: text/plain; charset=UTF-8
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908032000.12260.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19JxihBG6GQSqHo7AVfCUtUbi63hwPg4qtXDj4
+ O4KXRJhPyDIIm/1/VrDqaIN+0F3HQCfcwLmGYNCmG3Dw3gtRiU
+ 7y2hlS3u8q318iEEk0JZw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
+On Monday 03 August 2009, Mark Lord wrote:
 > (resending, no ack from anyone first time around).
 
-I had previously sent a fix for this to the ext4 list as well, although
-w/o the added case for compat_ioctl or the extra #include.
+I actually wrote a lengthy reply on how I think the code around it
+should be done differently and then realized why we had done it
+that way originally and did not send out my reply.
 
-Because this ioctl should be 100% compat everywhere, I don't -think-
-it's needed, and
-
-http://marc.info/?l=linux-ext4&m=124872536713005&w=2
-
-suffices....
-
-But if not, minor nitpick, you should move the COMPAT_IOCTL under the
-"little f" comment.
-
--Eric
-
+Your addition looks ok, the data structures are compatible
+on all architectures.
 
 > Add support for the FIEMAP ioctl for 32-bit user on 64-bit kernel.
 > 
@@ -61,51 +62,5 @@ But if not, minor nitpick, you should move the COMPAT_IOCTL under the
 > Once upstream, this patch could also be a candidate for -stable.
 > 
 > Signed-off-by: Mark Lord <mlord@pobox.com>
-> 
-> Add support for the FIEMAP ioctl for 32-bit user on 64-bit kernel.
-> 
-> When using a 32-bit runtime on top of a 64-bit kernel,
-> programs like "filefrag" and "hdparm --fibmap" do not work correctly.
-> 
-> This is because there's no compat ioctl entry for the FIEMAP call.
-> FIEMAP returns file extent info, similar to FIBMAP (but better).
-> 
-> Since FIBMAP itself is b0rked on ext4, this leaves no way for a 32-bit
-> program to reliably get detailed block information for a file
-> when run on top of a 64-bit kernel.  This patch addresses the issue.
-> 
-> Once upstream, this patch could also be a candidate for -stable.
-> 
-> Signed-off-by: Mark Lord <mlord@pobox.com> 
-> 
-> --- old/fs/compat_ioctl.c	2009-08-01 10:47:16.601066905 -0400
-> +++ linux/fs/compat_ioctl.c	2009-08-01 10:49:23.054387926 -0400
-> @@ -35,6 +35,7 @@
->  #include <linux/falloc.h>
->  #include <linux/fs.h>
->  #include <linux/file.h>
-> +#include <linux/fiemap.h>
->  #include <linux/ppp_defs.h>
->  #include <linux/if_ppp.h>
->  #include <linux/if_pppox.h>
-> @@ -1907,6 +1908,7 @@
->  COMPATIBLE_IOCTL(FIONREAD)  /* This is also TIOCINQ */
->  /* 0x00 */
->  COMPATIBLE_IOCTL(FIBMAP)
-> +COMPATIBLE_IOCTL(FS_IOC_FIEMAP)
->  COMPATIBLE_IOCTL(FIGETBSZ)
->  /* 'X' - originally XFS but some now in the VFS */
->  COMPATIBLE_IOCTL(FIFREEZE)
-> @@ -2805,6 +2807,7 @@
->  		goto out_fput;
->  #endif
->  
-> +	case FS_IOC_FIEMAP:
->  	case FIBMAP:
->  	case FIGETBSZ:
->  	case FIONREAD:
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
+Reviewed-by: Arnd Bergmann <arnd@arndb.de>
