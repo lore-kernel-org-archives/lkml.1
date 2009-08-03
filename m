@@ -1,156 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932154AbZHCO0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932146AbZHCOdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932154AbZHCO0f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 10:26:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932141AbZHCO0e
+	id S932146AbZHCOdk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 10:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932108AbZHCOdj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 10:26:34 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:36328 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932138AbZHCO0c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 10:26:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=cyzJW8K2ZCKNxJ3RxbnzeYsMYFb2201yTZaZugPet9DNgmw88+chOOFC0emnvva/EN
-         lxYEODu0CII2svspcIe2MZuM89ANbXSANQpgKZ5Q7xekFDgRgbWIzLqv8CWZz9YWkG+W
-         eoLuzo4848kIbaJ/nzibMutOUb0ijs78Tuvtg=
-Date: Mon, 3 Aug 2009 22:26:16 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: marcel@holtmann.org
-Cc: Oliver Hartkopp <oliver@hartkopp.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       netdev@vger.kernel.org, linux-bluetooth@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH]bluetooth: rfcomm_init bug fix
-Message-ID: <20090803142616.GA1973@darkstar>
+	Mon, 3 Aug 2009 10:33:39 -0400
+Received: from mx71.mail.ru ([94.100.176.85]:50607 "EHLO mx71.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932098AbZHCOdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 10:33:39 -0400
+X-Greylist: delayed 20949 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Aug 2009 10:33:38 EDT
+Date: Mon, 3 Aug 2009 18:33:36 +0400
+From: =?utf-8?B?0J7RgdC40L/QvtCyINCh0YLQsNC90LjRgdC70LDQsg==?= 
+	<demofly@mail.ru>
+Reply-To: =?utf-8?B?0J7RgdC40L/QvtCyINCh0YLQsNC90LjRgdC70LDQsg==?= 
+	  <demofly@mail.ru>
+X-Priority: 3 (Normal)
+Message-ID: <275001175.20090803183336@mail.ru>
+To: linux-kernel@vger.kernel.org
+Subject: Message limitations
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Spam: Not detected
+X-Mras: Ok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-rfcomm tty may be used before rfcomm_tty_driver initilized,
-The problem is that now socket layer init before tty layer, if userspace
-program do socket callback right here then oops will happen.
+Hi all
 
-reporting in:
-http://marc.info/?l=linux-bluetooth&m=124404919324542&w=2
+tell  me,  please, why my first email was not arrived to the maillist?
+It was about 200KB of size, and about 100KB of attachment.
 
-make 3 changes:
-1. remove #ifdef in rfcomm/core.c,
-make it blank function when rfcomm tty not selected in rfcomm.h
+What limitations used in this list?
 
-2. tune the rfcomm_init error patch to ensure
-tty driver initilized before rfcomm socket usage.
+Thanks in advance.
 
-3. remove __exit for rfcomm_cleanup_sockets
-because above change need call it in a __init function. 
+Stanislav Osipov
+Linux System Administrator.
 
-
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Reported-by: Oliver Hartkopp <oliver@hartkopp.net>
-Tested-by: Oliver Hartkopp <oliver@hartkopp.net>
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
---
-include/net/bluetooth/rfcomm.h |   12 +++++++++++-
-net/bluetooth/rfcomm/core.c    |   29 ++++++++++++++++++++---------
-net/bluetooth/rfcomm/sock.c    |    2 +-
-3 files changed, 32 insertions(+), 11 deletions(-)
-
---- linux-2.6.orig/include/net/bluetooth/rfcomm.h	2009-08-01 13:56:53.000000000 +0800
-+++ linux-2.6/include/net/bluetooth/rfcomm.h	2009-08-01 17:24:59.000000000 +0800
-@@ -355,7 +355,17 @@ struct rfcomm_dev_list_req {
- };
- 
- int  rfcomm_dev_ioctl(struct sock *sk, unsigned int cmd, void __user *arg);
-+
-+#ifdef CONFIG_BT_RFCOMM_TTY
- int  rfcomm_init_ttys(void);
- void rfcomm_cleanup_ttys(void);
--
-+#else
-+static inline int rfcomm_init_ttys(void)
-+{
-+	return 0;
-+}
-+static inline void rfcomm_cleanup_ttys(void)
-+{
-+}
-+#endif
- #endif /* __RFCOMM_H */
---- linux-2.6.orig/net/bluetooth/rfcomm/core.c	2009-08-01 13:56:53.000000000 +0800
-+++ linux-2.6/net/bluetooth/rfcomm/core.c	2009-08-01 13:57:18.000000000 +0800
-@@ -2080,28 +2080,41 @@ static CLASS_ATTR(rfcomm_dlc, S_IRUGO, r
- /* ---- Initialization ---- */
- static int __init rfcomm_init(void)
- {
-+	int ret;
-+
- 	l2cap_load();
- 
- 	hci_register_cb(&rfcomm_cb);
- 
- 	rfcomm_thread = kthread_run(rfcomm_run, NULL, "krfcommd");
- 	if (IS_ERR(rfcomm_thread)) {
--		hci_unregister_cb(&rfcomm_cb);
--		return PTR_ERR(rfcomm_thread);
-+		ret = PTR_ERR(rfcomm_thread);
-+		goto out_thread;
- 	}
- 
- 	if (class_create_file(bt_class, &class_attr_rfcomm_dlc) < 0)
- 		BT_ERR("Failed to create RFCOMM info file");
- 
--	rfcomm_init_sockets();
--
--#ifdef CONFIG_BT_RFCOMM_TTY
--	rfcomm_init_ttys();
--#endif
-+	ret = rfcomm_init_ttys();
-+	if (ret)
-+		goto out_tty;
-+
-+	ret = rfcomm_init_sockets();
-+	if (ret)
-+		goto out_sock;
- 
- 	BT_INFO("RFCOMM ver %s", VERSION);
- 
- 	return 0;
-+
-+out_sock:
-+	rfcomm_cleanup_ttys();
-+out_tty:
-+	kthread_stop(rfcomm_thread);
-+out_thread:
-+	hci_unregister_cb(&rfcomm_cb);
-+
-+	return ret;
- }
- 
- static void __exit rfcomm_exit(void)
-@@ -2112,9 +2125,7 @@ static void __exit rfcomm_exit(void)
- 
- 	kthread_stop(rfcomm_thread);
- 
--#ifdef CONFIG_BT_RFCOMM_TTY
- 	rfcomm_cleanup_ttys();
--#endif
- 
- 	rfcomm_cleanup_sockets();
- }
---- linux-2.6.orig/net/bluetooth/rfcomm/sock.c	2009-08-01 13:56:53.000000000 +0800
-+++ linux-2.6/net/bluetooth/rfcomm/sock.c	2009-08-01 13:57:18.000000000 +0800
-@@ -1132,7 +1132,7 @@ error:
- 	return err;
- }
- 
--void __exit rfcomm_cleanup_sockets(void)
-+void rfcomm_cleanup_sockets(void)
- {
- 	class_remove_file(bt_class, &class_attr_rfcomm);
- 
