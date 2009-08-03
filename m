@@ -1,53 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbZHCWD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932275AbZHCWEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754894AbZHCWD4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 18:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754667AbZHCWDz
+	id S932275AbZHCWEU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 18:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754798AbZHCWET
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 18:03:55 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:41983 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751048AbZHCWDz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 18:03:55 -0400
-Message-ID: <4A775EC5.6060003@zytor.com>
-Date: Mon, 03 Aug 2009 15:03:49 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Mon, 3 Aug 2009 18:04:19 -0400
+Received: from cantor.suse.de ([195.135.220.2]:60857 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752793AbZHCWES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 18:04:18 -0400
+From: "NeilBrown" <neilb@suse.de>
+To: "Sage Weil" <sage@newdream.net>
+Date: Tue, 4 Aug 2009 08:03:52 +1000 (EST)
+Message-ID: <8604b01355a1ff1ec6397d223c28b1d5.squirrel@neil.brown.name>
+In-Reply-To: <1249332888-13440-1-git-send-email-sage@newdream.net>
+References: <1249332888-13440-1-git-send-email-sage@newdream.net>
+Subject: Re: [PATCH] md: avoid use of broken kzalloc mempool
+Cc: linux-kernel@vger.kernel.org, "Sage Weil" <sage@newdream.net>,
+       linux-raid@vger.kernel.org, stable@kernel.org
+User-Agent: SquirrelMail/1.4.15
 MIME-Version: 1.0
-To: Frans Pop <elendil@planet.nl>
-CC: James.Bottomley@hansenpartnership.com, joe@perches.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: MAINTAINERS: standardize James Bottomley's name
-References: <1249331570.5149.48.camel@Joe-Laptop.home> <1249332233.3943.211.camel@mulgrave.site> <1249332233.3943.211.camel@mulgrave.site> <4A77509A.3010401@zytor.com> <200908032322.14549.elendil@planet.nl>
-In-Reply-To: <200908032322.14549.elendil@planet.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/03/2009 02:22 PM, Frans Pop wrote:
-> H. Peter Anvin wrote:
->> Now, obs- usually indicates an obsolete (deprecated
->> backwards-compatibility) production, but the text states:
->>
->> Note: The "period" (or "full stop") character (".") in obs-phrase is
->> not a form that was allowed in earlier versions of this or any other
->> standard.  Period (nor any other character from specials) was not
->> allowed in phrase because it introduced a parsing difficulty
->> distinguishing between phrases and portions of an addr-spec (see
->> section 4.4).  It appears here because the period character is
->> currently used in many messages in the display-name portion of
->> addresses, especially for initials in names, and therefore must be
->> interpreted properly.  In the future, period may appear in the
->> regular syntax of phrase.
->  
-> Interesting.
-> 
-> Does that mean that vger can stop refusing mails because they include an 
-> address that has an unquoted name with initials?
+On Tue, August 4, 2009 6:54 am, Sage Weil wrote:
+> The kzalloc mempool does not re-zero items that have been used and then
+> returned to the pool.  Manually zero the allocated multipath_bh instead.
+>
+> CC: linux-raid@vger.kernel.org
+> CC: Neil Brown <neilb@suse.de>
 
-If it does it's not RFC 2822 compliant.
+Acked-by: NeilBrown <neilb@suse.de>
 
-	-hpa
+Thanks.
+
+In fact, you don't even need the memset.  After allocation
+no assumptions are made about the content of the structure.
+Every field is immediately initialised except retry_list, which
+is never accessed until after the object is placed on a list.h list.
+
+So this code never needed kzalloc_pool.
+
+Thanks,
+NeilBrown
+
+> CC: <stable@kernel.org>
+> Signed-off-by: Sage Weil <sage@newdream.net>
+> ---
+>  drivers/md/multipath.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/md/multipath.c b/drivers/md/multipath.c
+> index 237fe3f..151ce69 100644
+> --- a/drivers/md/multipath.c
+> +++ b/drivers/md/multipath.c
+> @@ -150,6 +150,7 @@ static int multipath_make_request (struct
+> request_queue *q, struct bio * bio)
+>  	}
+>
+>  	mp_bh = mempool_alloc(conf->pool, GFP_NOIO);
+> +	memset(mp_bh, 0, sizeof(*mp_bh));
+>
+>  	mp_bh->master_bio = bio;
+>  	mp_bh->mddev = mddev;
+> @@ -490,7 +491,7 @@ static int multipath_run (mddev_t *mddev)
+>  	}
+>  	mddev->degraded = conf->raid_disks - conf->working_disks;
+>
+> -	conf->pool = mempool_create_kzalloc_pool(NR_RESERVED_BUFS,
+> +	conf->pool = mempool_create_kmalloc_pool(NR_RESERVED_BUFS,
+>  						 sizeof(struct multipath_bh));
+>  	if (conf->pool == NULL) {
+>  		printk(KERN_ERR
+> --
+> 1.5.6.5
+>
+
