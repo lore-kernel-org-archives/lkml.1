@@ -1,53 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753309AbZHCRze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753299AbZHCRz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753309AbZHCRze (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 13:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbZHCRzd
+	id S1753299AbZHCRz7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 13:55:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753200AbZHCRz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 13:55:33 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:8435 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753269AbZHCRzb (ORCPT
+	Mon, 3 Aug 2009 13:55:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59235 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751971AbZHCRz6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 13:55:31 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: rr tree build failure
-Date: Mon, 3 Aug 2009 11:55:27 -0600
-User-Agent: KMail/1.9.10
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>
-References: <20090803133203.81174a8e.sfr@canb.auug.org.au>
-In-Reply-To: <20090803133203.81174a8e.sfr@canb.auug.org.au>
+	Mon, 3 Aug 2009 13:55:58 -0400
+Date: Mon, 3 Aug 2009 10:55:34 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Sergey Senozhatsky <sergey.senozhatsky@mail.by>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>
+Subject: [PATCH 0/2] proper tty-ldisc refcounting (was Re: WARNING at:
+ drivers/char/tty_ldisc.c)
+In-Reply-To: <alpine.LFD.2.01.0908021654010.3352@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0908031047010.3208@localhost.localdomain>
+References: <20090802120120.GA3097@localdomain.by> <alpine.LFD.2.01.0908020940530.3352@localhost.localdomain> <20090802190514.GA3278@localdomain.by> <alpine.LFD.2.01.0908021254580.3352@localhost.localdomain> <87k51l9apo.fsf@devron.myhome.or.jp>
+ <alpine.LFD.2.01.0908021423490.3352@localhost.localdomain> <20090802234851.3fd1ac2c@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0908021654010.3352@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908031155.28386.bjorn.helgaas@hp.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 02 August 2009 09:32:03 pm Stephen Rothwell wrote:
-> Hi Rusty,
-> 
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
-> 
-> drivers/acpi/osl.c: In function 'bind_to_cpu0':
-> drivers/acpi/osl.c:194: error: implicit declaration of function 'set_cpus_allowed'
-> 
-> Caused by commit 74b5820808215f65b70b05a099d6d3c969b82689 ("ACPI: bind
-> workqueues to CPU 0 to avoid SMI corruption") (from the acpi tree but now
-> in Linus' tree) interacting with commit
-> 17e249fb40c814a72f08c1356cb47ec9f87f81a8
-> ("cpumask:remove-set_cpus_allowed") from the rr tree.
-> 
-> I have reverted that rr tree commit for today.
 
-Looks like I'm doing this the wrong way (by passing a cpumask on the
-stack).  I'll try to figure out the approved way of doing this and
-send a followup patch.
 
-Bjorn
+On Sun, 2 Aug 2009, Linus Torvalds wrote:
+> 
+> > You could just finish the ldisc refcounting. The last set of patches you
+> > had off me split tty->ldisc from struct tty ready to do exactly that and
+> > I don't think there is anything left that stops it happening now (It was
+> > just not ready in time)
+> 
+> I considered it, and it didn't look horrible (the thing really is pretty 
+> self-contained in tty_ldisc_try() and tty_ldisc_deref()).
 
+Here we are.
+
+It wasn't a straight conversion, because the old code really didn't think 
+of the refcounts as lifetimes, but it wasn't too bad either. And doing the 
+proper refcounting makes all the stupid "wait for idle" go away, so it 
+actually removes code:
+
+ drivers/char/tty_ldisc.c  |  145 ++++++++++++++------------------------------
+ include/linux/tty_ldisc.h |    2 +-
+ 2 files changed, 47 insertions(+), 100 deletions(-)
+
+and generally simplifies the logic.
+
+That said, looking through the code as I did this, I consciously avoided 
+doing some other cleanups that really should be done some day. The code is 
+chock-full of crazy stuff, where we just do
+
+	o_ldisc = tty->ldisc;
+
+with dubious locking. None of that is _new_ though, and most of it is in 
+the "replace one ldisc with another" code. And for all I know, maybe it's 
+all fine, it's just very much not _obviously_ correct.
+
+As far as I can tell, this short series should not introduce any new 
+problems, but hey, maybe it leaks ldisc references like mad because I made 
+some silly mistake. It's a _fairly_ straightforward cleanup, but it's a 
+big cnnceptual change to go from a model with a "wait until idle and then 
+free" to a model of "count users and free on last use", and I could easily 
+have screwed up something.
+
+"It works for me"(tm), including a shutdown/reboot cycle. 
+
+Sergey, mind testing? You seem to be very good at consistently triggering 
+odd things in the tty layer that few other people seem to ever hit.
+
+Greg - I've signed off on these, but I wasn't planning on committing them 
+to my master branch. So perhaps you could do these as the new tty 
+maintainer, assuming we get an ack from Alan and testing by Sergey.
+
+		Linus
