@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbZHCMON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbZHCMP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754866AbZHCMON (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 08:14:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbZHCMOM
+	id S1754874AbZHCMP0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 08:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbZHCMPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 08:14:12 -0400
-Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:34169 "EHLO
-	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754841AbZHCMOL (ORCPT
+	Mon, 3 Aug 2009 08:15:25 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:50911 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754649AbZHCMPZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 08:14:11 -0400
-X-Trace: 240114059/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.63.67/None/hugh.dickins@tiscali.co.uk
+	Mon, 3 Aug 2009 08:15:25 -0400
+X-Trace: 240512776/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.63.67/None/hugh.dickins@tiscali.co.uk
 X-SBRS: None
 X-RemoteIP: 79.69.63.67
 X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
@@ -18,10 +18,10 @@ X-SMTP-AUTH:
 X-MUA: 
 X-IP-BHB: Once
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqYEAK1xdkpPRT9D/2dsb2JhbACBUs4qhBgFgUo
+X-IronPort-Anti-Spam-Result: AqYEACtxdkpPRT9D/2dsb2JhbACBUs4qhBgFgUo
 X-IronPort-AV: E=Sophos;i="4.43,314,1246834800"; 
-   d="scan'208";a="240114059"
-Date: Mon, 3 Aug 2009 13:14:03 +0100 (BST)
+   d="scan'208";a="240512776"
+Date: Mon, 3 Aug 2009 13:15:15 +0100 (BST)
 From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 X-X-Sender: hugh@sister.anvils
 To: Izik Eidus <ieidus@redhat.com>
@@ -29,9 +29,9 @@ cc: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
        Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org
-Subject: [PATCH 5/12] ksm: keep quiet while list empty
+Subject: [PATCH 6/12] ksm: five little cleanups
 In-Reply-To: <Pine.LNX.4.64.0908031304430.16449@sister.anvils>
-Message-ID: <Pine.LNX.4.64.0908031313030.16754@sister.anvils>
+Message-ID: <Pine.LNX.4.64.0908031314070.16754@sister.anvils>
 References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -39,82 +39,212 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ksm_scan_thread already sleeps in wait_event_interruptible until setting
-ksm_run activates it; but if there's nothing on its list to look at, i.e.
-nobody has yet said madvise MADV_MERGEABLE, it's a shame to be clocking
-up system time and full_scans: ksmd_should_run added to check that too.
-
-And move the mutex_lock out around it: the new counts showed that when
-ksm_run is stopped, a little work often got done afterwards, because it
-had been read before taking the mutex.
+1. We don't use __break_cow entry point now: merge it into break_cow.
+2. remove_all_slot_rmap_items is just a special case of
+   remove_trailing_rmap_items: use the latter instead.
+3. Extend comment on unmerge_ksm_pages and rmap_items.
+4. try_to_merge_two_pages should use try_to_merge_with_ksm_page
+   instead of duplicating its code; and so swap them around.
+5. Comment on cmp_and_merge_page described last year's: update it.
 
 Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 ---
 
- mm/ksm.c |   28 ++++++++++++++++++++++------
- 1 file changed, 22 insertions(+), 6 deletions(-)
+ mm/ksm.c |  112 ++++++++++++++++++++---------------------------------
+ 1 file changed, 44 insertions(+), 68 deletions(-)
 
---- ksm4/mm/ksm.c	2009-08-02 13:49:59.000000000 +0100
-+++ ksm5/mm/ksm.c	2009-08-02 13:50:07.000000000 +0100
-@@ -1287,21 +1287,27 @@ static void ksm_do_scan(unsigned int sca
- 	}
+--- ksm5/mm/ksm.c	2009-08-02 13:50:07.000000000 +0100
++++ ksm6/mm/ksm.c	2009-08-02 13:50:15.000000000 +0100
+@@ -315,22 +315,18 @@ static void break_ksm(struct vm_area_str
+ 	/* Which leaves us looping there if VM_FAULT_OOM: hmmm... */
  }
  
-+static int ksmd_should_run(void)
-+{
-+	return (ksm_run & KSM_RUN_MERGE) && !list_empty(&ksm_mm_head.mm_list);
-+}
-+
- static int ksm_scan_thread(void *nothing)
+-static void __break_cow(struct mm_struct *mm, unsigned long addr)
++static void break_cow(struct mm_struct *mm, unsigned long addr)
  {
- 	set_user_nice(current, 5);
+ 	struct vm_area_struct *vma;
  
- 	while (!kthread_should_stop()) {
--		if (ksm_run & KSM_RUN_MERGE) {
--			mutex_lock(&ksm_thread_mutex);
-+		mutex_lock(&ksm_thread_mutex);
-+		if (ksmd_should_run())
- 			ksm_do_scan(ksm_thread_pages_to_scan);
--			mutex_unlock(&ksm_thread_mutex);
-+		mutex_unlock(&ksm_thread_mutex);
-+
-+		if (ksmd_should_run()) {
- 			schedule_timeout_interruptible(
- 				msecs_to_jiffies(ksm_thread_sleep_millisecs));
- 		} else {
- 			wait_event_interruptible(ksm_thread_wait,
--					(ksm_run & KSM_RUN_MERGE) ||
--					kthread_should_stop());
-+				ksmd_should_run() || kthread_should_stop());
++	down_read(&mm->mmap_sem);
+ 	vma = find_vma(mm, addr);
+ 	if (!vma || vma->vm_start > addr)
+-		return;
++		goto out;
+ 	if (!(vma->vm_flags & VM_MERGEABLE) || !vma->anon_vma)
+-		return;
++		goto out;
+ 	break_ksm(vma, addr);
+-}
+-
+-static void break_cow(struct mm_struct *mm, unsigned long addr)
+-{
+-	down_read(&mm->mmap_sem);
+-	__break_cow(mm, addr);
++out:
+ 	up_read(&mm->mmap_sem);
+ }
+ 
+@@ -439,17 +435,6 @@ static void remove_rmap_item_from_tree(s
+ 	cond_resched();		/* we're called from many long loops */
+ }
+ 
+-static void remove_all_slot_rmap_items(struct mm_slot *mm_slot)
+-{
+-	struct rmap_item *rmap_item, *node;
+-
+-	list_for_each_entry_safe(rmap_item, node, &mm_slot->rmap_list, link) {
+-		remove_rmap_item_from_tree(rmap_item);
+-		list_del(&rmap_item->link);
+-		free_rmap_item(rmap_item);
+-	}
+-}
+-
+ static void remove_trailing_rmap_items(struct mm_slot *mm_slot,
+ 				       struct list_head *cur)
+ {
+@@ -471,6 +456,11 @@ static void remove_trailing_rmap_items(s
+  * page and upping mmap_sem.  Nor does it fit with the way we skip dup'ing
+  * rmap_items from parent to child at fork time (so as not to waste time
+  * if exit comes before the next scan reaches it).
++ *
++ * Similarly, although we'd like to remove rmap_items (so updating counts
++ * and freeing memory) when unmerging an area, it's easier to leave that
++ * to the next pass of ksmd - consider, for example, how ksmd might be
++ * in cmp_and_merge_page on one of the rmap_items we would be removing.
+  */
+ static void unmerge_ksm_pages(struct vm_area_struct *vma,
+ 			      unsigned long start, unsigned long end)
+@@ -495,7 +485,7 @@ static void unmerge_and_remove_all_rmap_
+ 				continue;
+ 			unmerge_ksm_pages(vma, vma->vm_start, vma->vm_end);
  		}
+-		remove_all_slot_rmap_items(mm_slot);
++		remove_trailing_rmap_items(mm_slot, mm_slot->rmap_list.next);
+ 		up_read(&mm->mmap_sem);
  	}
- 	return 0;
-@@ -1346,10 +1352,16 @@ int ksm_madvise(struct vm_area_struct *v
  
- int __ksm_enter(struct mm_struct *mm)
- {
--	struct mm_slot *mm_slot = alloc_mm_slot();
-+	struct mm_slot *mm_slot;
-+	int needs_wakeup;
-+
-+	mm_slot = alloc_mm_slot();
- 	if (!mm_slot)
- 		return -ENOMEM;
- 
-+	/* Check ksm_run too?  Would need tighter locking */
-+	needs_wakeup = list_empty(&ksm_mm_head.mm_list);
-+
- 	spin_lock(&ksm_mmlist_lock);
- 	insert_to_mm_slots_hash(mm, mm_slot);
- 	/*
-@@ -1361,6 +1373,10 @@ int __ksm_enter(struct mm_struct *mm)
+@@ -533,7 +523,7 @@ static void remove_mm_from_lists(struct
+ 	list_del(&mm_slot->mm_list);
  	spin_unlock(&ksm_mmlist_lock);
  
- 	set_bit(MMF_VM_MERGEABLE, &mm->flags);
-+
-+	if (needs_wakeup)
-+		wake_up_interruptible(&ksm_thread_wait);
-+
- 	return 0;
+-	remove_all_slot_rmap_items(mm_slot);
++	remove_trailing_rmap_items(mm_slot, mm_slot->rmap_list.next);
+ 	free_mm_slot(mm_slot);
+ 	clear_bit(MMF_VM_MERGEABLE, &mm->flags);
+ }
+@@ -740,6 +730,29 @@ out:
  }
  
+ /*
++ * try_to_merge_with_ksm_page - like try_to_merge_two_pages,
++ * but no new kernel page is allocated: kpage must already be a ksm page.
++ */
++static int try_to_merge_with_ksm_page(struct mm_struct *mm1,
++				      unsigned long addr1,
++				      struct page *page1,
++				      struct page *kpage)
++{
++	struct vm_area_struct *vma;
++	int err = -EFAULT;
++
++	down_read(&mm1->mmap_sem);
++	vma = find_vma(mm1, addr1);
++	if (!vma || vma->vm_start > addr1)
++		goto out;
++
++	err = try_to_merge_one_page(vma, page1, kpage);
++out:
++	up_read(&mm1->mmap_sem);
++	return err;
++}
++
++/*
+  * try_to_merge_two_pages - take two identical pages and prepare them
+  * to be merged into one page.
+  *
+@@ -772,9 +785,8 @@ static int try_to_merge_two_pages(struct
+ 	down_read(&mm1->mmap_sem);
+ 	vma = find_vma(mm1, addr1);
+ 	if (!vma || vma->vm_start > addr1) {
+-		put_page(kpage);
+ 		up_read(&mm1->mmap_sem);
+-		return err;
++		goto out;
+ 	}
+ 
+ 	copy_user_highpage(kpage, page1, addr1, vma);
+@@ -782,56 +794,20 @@ static int try_to_merge_two_pages(struct
+ 	up_read(&mm1->mmap_sem);
+ 
+ 	if (!err) {
+-		down_read(&mm2->mmap_sem);
+-		vma = find_vma(mm2, addr2);
+-		if (!vma || vma->vm_start > addr2) {
+-			put_page(kpage);
+-			up_read(&mm2->mmap_sem);
+-			break_cow(mm1, addr1);
+-			return -EFAULT;
+-		}
+-
+-		err = try_to_merge_one_page(vma, page2, kpage);
+-		up_read(&mm2->mmap_sem);
+-
++		err = try_to_merge_with_ksm_page(mm2, addr2, page2, kpage);
+ 		/*
+-		 * If the second try_to_merge_one_page failed, we have a
+-		 * ksm page with just one pte pointing to it, so break it.
++		 * If that fails, we have a ksm page with only one pte
++		 * pointing to it: so break it.
+ 		 */
+ 		if (err)
+ 			break_cow(mm1, addr1);
+ 	}
+-
++out:
+ 	put_page(kpage);
+ 	return err;
+ }
+ 
+ /*
+- * try_to_merge_with_ksm_page - like try_to_merge_two_pages,
+- * but no new kernel page is allocated: kpage must already be a ksm page.
+- */
+-static int try_to_merge_with_ksm_page(struct mm_struct *mm1,
+-				      unsigned long addr1,
+-				      struct page *page1,
+-				      struct page *kpage)
+-{
+-	struct vm_area_struct *vma;
+-	int err = -EFAULT;
+-
+-	down_read(&mm1->mmap_sem);
+-	vma = find_vma(mm1, addr1);
+-	if (!vma || vma->vm_start > addr1) {
+-		up_read(&mm1->mmap_sem);
+-		return err;
+-	}
+-
+-	err = try_to_merge_one_page(vma, page1, kpage);
+-	up_read(&mm1->mmap_sem);
+-
+-	return err;
+-}
+-
+-/*
+  * stable_tree_search - search page inside the stable tree
+  * @page: the page that we are searching identical pages to.
+  * @page2: pointer into identical page that we are holding inside the stable
+@@ -1040,10 +1016,10 @@ static void stable_tree_append(struct rm
+ }
+ 
+ /*
+- * cmp_and_merge_page - take a page computes its hash value and check if there
+- * is similar hash value to different page,
+- * in case we find that there is similar hash to different page we call to
+- * try_to_merge_two_pages().
++ * cmp_and_merge_page - first see if page can be merged into the stable tree;
++ * if not, compare checksum to previous and if it's the same, see if page can
++ * be inserted into the unstable tree, or merged with a page already there and
++ * both transferred to the stable tree.
+  *
+  * @page: the page that we are searching identical page to.
+  * @rmap_item: the reverse mapping into the virtual address of this page
