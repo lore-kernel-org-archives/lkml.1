@@ -1,98 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbZHCIjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754398AbZHCIrK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754364AbZHCIjs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 04:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbZHCIjr
+	id S1754398AbZHCIrK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 04:47:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbZHCIrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 04:39:47 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:35950 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753324AbZHCIjq (ORCPT
+	Mon, 3 Aug 2009 04:47:09 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:55068 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752994AbZHCIrI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 04:39:46 -0400
-Subject: Re: [RFC] Make AGP work with IOMMU
-From: David Woodhouse <dwmw2@infradead.org>
-To: Zhenyu Wang <zhenyuw@linux.intel.com>
-Cc: Dave Airlie <airlied@gmail.com>, Keir Fraser <kier.fraser@eu.citrix.com>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
-       Joerg Roedel <joerg.roedel@amd.com>
-In-Reply-To: <20090803065030.GA32461@zhen-devel.sh.intel.com>
-References: <1248707041.6100.35.camel@macbook.infradead.org>
-	 <21d7e9970907282328l4a44b9a2of4500c5c84a3586b@mail.gmail.com>
-	 <1248851712.19733.214.camel@macbook.infradead.org>
-	 <21d7e9970907290143q6778511cvda1c6b915f61654a@mail.gmail.com>
-	 <1248860205.19733.238.camel@macbook.infradead.org>
-	 <20090803065030.GA32461@zhen-devel.sh.intel.com>
-Content-Type: text/plain
-Date: Mon, 03 Aug 2009 09:39:40 +0100
-Message-Id: <1249288780.7341.4.camel@macbook.infradead.org>
+	Mon, 3 Aug 2009 04:47:08 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 3 Aug 2009 17:45:19 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Paul Menage <menage@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
+Message-Id: <20090803174519.74673413.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.0908030107110.30778@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0907282125260.554@chino.kir.corp.google.com>
+	<20090730180029.c4edcc09.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0907300219580.13674@chino.kir.corp.google.com>
+	<20090730190216.5aae685a.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0907301157100.9652@chino.kir.corp.google.com>
+	<20090731093305.50bcc58d.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0907310231370.25447@chino.kir.corp.google.com>
+	<7f54310137837631f2526d4e335287fc.squirrel@webmail-b.css.fujitsu.com>
+	<alpine.DEB.2.00.0907311212240.22732@chino.kir.corp.google.com>
+	<77df8765230d9f83859fde3119a2d60a.squirrel@webmail-b.css.fujitsu.com>
+	<alpine.DEB.2.00.0908011303050.22174@chino.kir.corp.google.com>
+	<20090803104244.b58220ba.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0908030050160.30778@chino.kir.corp.google.com>
+	<20090803170217.e98b2e46.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0908030107110.30778@chino.kir.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-03 at 14:50 +0800, Zhenyu Wang wrote:
+On Mon, 3 Aug 2009 01:08:42 -0700 (PDT)
+David Rientjes <rientjes@google.com> wrote:
+
+> On Mon, 3 Aug 2009, KAMEZAWA Hiroyuki wrote:
 > 
-> The commits on that tree looks fine to me. Thanks David! 
-> I've also done some testing on G45 here, I've also seen the write
-> faults before graphics device init or after dma unmap pages. I tried
-> to look it up in my memo, which turns out one message like this should
-> be a BIOS bug that doesn't initialize the GTT table correctly. But I'm
-> quite sure about it now, better to ask our chipset people to verify if
-> this problem has been fixed or not.
+> > > You can't recalculate it if all the remaining threads have a different 
+> > > oom_adj value than the effective oom_adj value from the thread that is now 
+> > > exited.  
+> > 
+> > Then, crazy google apps pass different oom_adjs to each thread ?
+> > And, threads other than thread-group-leader modifies its oom_adj.
+> > 
+> 
+> Nope, but I'm afraid you've just made my point for me: it shows that 
+> oom_adj really isn't sanely used as a per-thread attribute and actually 
+> only represents a preference on oom killing a quantity of memory in all 
+> other cases other than vfork() -> change /proc/pid-of-child/oom_adj -> 
+> exec() for which we now appropriately have /proc/pid/oom_adj_child for.
+> 
+Maybe you're man I can't persuade. but making progress will be necessary.
 
-Thanks. I've rebased the tree so that it isn't based on my other iommu
-changes, which are largely irrelevant. Since the drm-2.6.git tree as
-advertised in MAINTAINERS seems to be a pristine 2.6.29-rc2, I've done
-it based on 2.6.31-rc5 instead.
+The most ugly thing which annoies me is this part. 
 
-Dave, please pull from
-	git://git.infradead.org/~dwmw2/iommu-agp.git
+@@ -679,6 +679,7 @@ good_mm:                    #  a label in copy_mm.
+ 
+ 	tsk->mm = mm;
+ 	tsk->active_mm = mm;
++	tsk->oom_adj_child = mm->oom_adj;
+ 	return 0;
 
-David Woodhouse (6):
-      agp: Switch mask_memory() method to take address argument again, not page
-      agp: tidy up handling of scratch pages w.r.t. DMA API
-      agp: Switch agp_{un,}map_page() to take struct page * argument
-      intel-agp: Move repeated sglist free into separate function
-      intel-agp: fix sglist allocation to avoid vmalloc()
-      agp: kill phys_to_gart() and gart_to_phys()
+Why ?
 
-Zhenyu Wang (2):
-      agp: Add generic support for graphics dma remapping
-      intel_agp: Use PCI DMA API correctly on chipsets new enough to have IOMMU
+I wonder oom_adj_exec "change oom_adj to this value when execve() is called"
+is much more straightforward, simple and easy to understand than oom_adj_child.
 
- arch/alpha/include/asm/agp.h    |    4 -
- arch/ia64/include/asm/agp.h     |    4 -
- arch/parisc/include/asm/agp.h   |    4 -
- arch/powerpc/include/asm/agp.h  |    4 -
- arch/sparc/include/asm/agp.h    |    4 -
- arch/x86/include/asm/agp.h      |    4 -
- drivers/char/agp/agp.h          |   15 ++--
- drivers/char/agp/ali-agp.c      |    4 +-
- drivers/char/agp/amd-k7-agp.c   |   10 ++-
- drivers/char/agp/amd64-agp.c    |    7 +-
- drivers/char/agp/ati-agp.c      |    7 +-
- drivers/char/agp/backend.c      |   32 ++++++-
- drivers/char/agp/efficeon-agp.c |    4 +-
- drivers/char/agp/generic.c      |   20 ++++-
- drivers/char/agp/hp-agp.c       |    8 +-
- drivers/char/agp/i460-agp.c     |   17 +---
- drivers/char/agp/intel-agp.c    |  167 +++++++++++++++++++++++++++++++++++----
- drivers/char/agp/nvidia-agp.c   |    2 +-
- drivers/char/agp/parisc-agp.c   |   12 +---
- drivers/char/agp/sgi-agp.c      |    8 +-
- drivers/char/agp/sworks-agp.c   |   10 ++-
- drivers/char/agp/uninorth-agp.c |    2 +-
- include/linux/agp_backend.h     |    5 +-
- 23 files changed, 247 insertions(+), 107 deletions(-)
+"just inherit at fork, change at exec" is an usual manner, I think.
+If oom_adj_exec rather than oom_adj_child, I won't complain, more.
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+
+Thanks,
+-Kame
+
+
 
