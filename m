@@ -1,122 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751599AbZHCRNF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751927AbZHCRNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751599AbZHCRNF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 13:13:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbZHCRNE
+	id S1751927AbZHCRNR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 13:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbZHCRNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 13:13:04 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53051 "EHLO hera.kernel.org"
+	Mon, 3 Aug 2009 13:13:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53056 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750767AbZHCRND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 13:13:03 -0400
-Date: Mon, 3 Aug 2009 17:12:38 GMT
+	id S1751752AbZHCRNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 13:13:12 -0400
+Date: Mon, 3 Aug 2009 17:12:50 GMT
 From: tip-bot for Paul Mackerras <paulus@samba.org>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, tglx@linutronix.de
+Cc: ying.huang@intel.com, linux-kernel@vger.kernel.org, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de
-In-Reply-To: <19062.56420.501516.316181@cargo.ozlabs.ibm.com>
-References: <19062.56420.501516.316181@cargo.ozlabs.ibm.com>
-Subject: [tip:x86/urgent] x86: Add quirk to make Apple MacBook5,2 use reboot=pci
-Message-ID: <tip-1961b971360c685e15dff59929c39ced6c46e171@git.kernel.org>
-Git-Commit-ID: 1961b971360c685e15dff59929c39ced6c46e171
+       linux-kernel@vger.kernel.org, ying.huang@intel.com, tglx@linutronix.de
+In-Reply-To: <19062.55858.533494.471153@cargo.ozlabs.ibm.com>
+References: <19062.55858.533494.471153@cargo.ozlabs.ibm.com>
+Subject: [tip:x86/urgent] x86: Make 64-bit efi_ioremap use ioremap on MMIO regions
+Message-ID: <tip-19157af82cf0575032386f60378527904dbb7b8f@git.kernel.org>
+Git-Commit-ID: 19157af82cf0575032386f60378527904dbb7b8f
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 03 Aug 2009 17:12:38 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 03 Aug 2009 17:12:51 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1961b971360c685e15dff59929c39ced6c46e171
-Gitweb:     http://git.kernel.org/tip/1961b971360c685e15dff59929c39ced6c46e171
+Commit-ID:  19157af82cf0575032386f60378527904dbb7b8f
+Gitweb:     http://git.kernel.org/tip/19157af82cf0575032386f60378527904dbb7b8f
 Author:     Paul Mackerras <paulus@samba.org>
-AuthorDate: Mon, 3 Aug 2009 22:47:32 +1000
+AuthorDate: Mon, 3 Aug 2009 22:38:10 +1000
 Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Mon, 3 Aug 2009 08:07:18 -0700
+CommitDate: Mon, 3 Aug 2009 08:09:59 -0700
 
-x86: Add quirk to make Apple MacBook5,2 use reboot=pci
+x86: Make 64-bit efi_ioremap use ioremap on MMIO regions
 
-The latest Apple MacBook (MacBook5,2) doesn't reboot successfully
-under Linux; neither the EFI reboot method nor the default method
-using the keyboard controller works (the system just hangs and doesn't
-reset).  However, the method using the "PCI reset register" at 0xcf9
-does work.
+Booting current 64-bit x86 kernels on the latest Apple MacBook
+(MacBook5,2) via EFI gives the following warning:
 
-This adds a quirk to detect this machine via DMI and force the
-reboot_type to BOOT_CF9.  With this it reboots successfully without
-requiring a command-line option.  Note that the EFI code forces
-reboot_type to BOOT_EFI when the machine is booted via EFI, but this
-overrides that since the core_initcall runs after the EFI
-initialization code.
+[    0.182209] ------------[ cut here ]------------
+[    0.182222] WARNING: at arch/x86/mm/pageattr.c:581 __cpa_process_fault+0x44/0xa0()
+[    0.182227] Hardware name: MacBook5,2
+[    0.182231] CPA: called for zero pte. vaddr = ffff8800ffe00000 cpa->vaddr = ffff8800ffe00000
+[    0.182236] Modules linked in:
+[    0.182242] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #6
+[    0.182246] Call Trace:
+[    0.182254]  [<ffffffff8102c754>] ? __cpa_process_fault+0x44/0xa0
+[    0.182261]  [<ffffffff81048668>] warn_slowpath_common+0x78/0xd0
+[    0.182266]  [<ffffffff81048744>] warn_slowpath_fmt+0x64/0x70
+[    0.182272]  [<ffffffff8102c7ec>] ? update_page_count+0x3c/0x50
+[    0.182280]  [<ffffffff818d25c5>] ? phys_pmd_init+0x140/0x22e
+[    0.182286]  [<ffffffff8102c754>] __cpa_process_fault+0x44/0xa0
+[    0.182292]  [<ffffffff8102ce60>] __change_page_attr_set_clr+0x5f0/0xb40
+[    0.182301]  [<ffffffff810d1035>] ? vm_unmap_aliases+0x175/0x190
+[    0.182307]  [<ffffffff8102d4ae>] change_page_attr_set_clr+0xfe/0x3d0
+[    0.182314]  [<ffffffff8102dcca>] _set_memory_uc+0x2a/0x30
+[    0.182319]  [<ffffffff8102dd4b>] set_memory_uc+0x7b/0xb0
+[    0.182327]  [<ffffffff818afe31>] efi_enter_virtual_mode+0x2ad/0x2c9
+[    0.182334]  [<ffffffff818a1c66>] start_kernel+0x2db/0x3f4
+[    0.182340]  [<ffffffff818a1289>] x86_64_start_reservations+0x99/0xb9
+[    0.182345]  [<ffffffff818a1389>] x86_64_start_kernel+0xe0/0xf2
+[    0.182357] ---[ end trace 4eaa2a86a8e2da22 ]---
+[    0.182982] init_memory_mapping: 00000000ffffc000-0000000100000000
+[    0.182993]  00ffffc000 - 0100000000 page 4k
+
+This happens because the 64-bit version of efi_ioremap calls
+init_memory_mapping for all addresses, regardless of whether they are
+RAM or MMIO.  The EFI tables on this machine ask for runtime access to
+some MMIO regions:
+
+[    0.000000] EFI: mem195: type=11, attr=0x8000000000000000, range=[0x0000000093400000-0x0000000093401000) (0MB)
+[    0.000000] EFI: mem196: type=11, attr=0x8000000000000000, range=[0x00000000ffc00000-0x00000000ffc40000) (0MB)
+[    0.000000] EFI: mem197: type=11, attr=0x8000000000000000, range=[0x00000000ffc40000-0x00000000ffc80000) (0MB)
+[    0.000000] EFI: mem198: type=11, attr=0x8000000000000000, range=[0x00000000ffc80000-0x00000000ffca4000) (0MB)
+[    0.000000] EFI: mem199: type=11, attr=0x8000000000000000, range=[0x00000000ffca4000-0x00000000ffcb4000) (0MB)
+[    0.000000] EFI: mem200: type=11, attr=0x8000000000000000, range=[0x00000000ffcb4000-0x00000000ffffc000) (3MB)
+[    0.000000] EFI: mem201: type=11, attr=0x8000000000000000, range=[0x00000000ffffc000-0x0000000100000000) (0MB)
+
+This arranges to pass the EFI memory type through to efi_ioremap, and
+makes efi_ioremap use ioremap rather than init_memory_mapping if the
+type is EFI_MEMORY_MAPPED_IO.  With this, the above warning goes away.
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <19062.56420.501516.316181@cargo.ozlabs.ibm.com>
+LKML-Reference: <19062.55858.533494.471153@cargo.ozlabs.ibm.com>
+Cc: Huang Ying <ying.huang@intel.com>
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 
 
 ---
- arch/x86/kernel/reboot.c |   34 +++++++++++++++++++++++++++++++++-
- 1 files changed, 33 insertions(+), 1 deletions(-)
+ arch/x86/include/asm/efi.h |    5 +++--
+ arch/x86/kernel/efi.c      |    2 +-
+ arch/x86/kernel/efi_64.c   |    6 +++++-
+ 3 files changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
-index 508e982..834c9da 100644
---- a/arch/x86/kernel/reboot.c
-+++ b/arch/x86/kernel/reboot.c
-@@ -3,6 +3,7 @@
- #include <linux/init.h>
- #include <linux/pm.h>
- #include <linux/efi.h>
-+#include <linux/dmi.h>
- #include <acpi/reboot.h>
- #include <asm/io.h>
- #include <asm/apic.h>
-@@ -17,7 +18,6 @@
- #include <asm/cpu.h>
+diff --git a/arch/x86/include/asm/efi.h b/arch/x86/include/asm/efi.h
+index edc90f2..8406ed7 100644
+--- a/arch/x86/include/asm/efi.h
++++ b/arch/x86/include/asm/efi.h
+@@ -33,7 +33,7 @@ extern unsigned long asmlinkage efi_call_phys(void *, ...);
+ #define efi_call_virt6(f, a1, a2, a3, a4, a5, a6)	\
+ 	efi_call_virt(f, a1, a2, a3, a4, a5, a6)
  
- #ifdef CONFIG_X86_32
--# include <linux/dmi.h>
- # include <linux/ctype.h>
- # include <linux/mc146818rtc.h>
- #else
-@@ -404,6 +404,38 @@ EXPORT_SYMBOL(machine_real_restart);
+-#define efi_ioremap(addr, size)			ioremap_cache(addr, size)
++#define efi_ioremap(addr, size, type)		ioremap_cache(addr, size)
+ 
+ #else /* !CONFIG_X86_32 */
+ 
+@@ -84,7 +84,8 @@ extern u64 efi_call6(void *fp, u64 arg1, u64 arg2, u64 arg3,
+ 	efi_call6((void *)(efi.systab->runtime->f), (u64)(a1), (u64)(a2), \
+ 		  (u64)(a3), (u64)(a4), (u64)(a5), (u64)(a6))
+ 
+-extern void __iomem *efi_ioremap(unsigned long addr, unsigned long size);
++extern void __iomem *efi_ioremap(unsigned long addr, unsigned long size,
++				 u32 type);
  
  #endif /* CONFIG_X86_32 */
  
-+/*
-+ * Apple MacBook5,2 (2009 MacBook) needs reboot=p
-+ */
-+static int __init set_pci_reboot(const struct dmi_system_id *d)
-+{
-+	if (reboot_type != BOOT_CF9) {
-+		reboot_type = BOOT_CF9;
-+		printk(KERN_INFO "%s series board detected. "
-+		       "Selecting PCI-method for reboots.\n", d->ident);
-+	}
-+	return 0;
-+}
-+
-+static struct dmi_system_id __initdata pci_reboot_dmi_table[] = {
-+	{	/* Handle problems with rebooting on Apple MacBook5,2 */
-+		.callback = set_pci_reboot,
-+		.ident = "Apple MacBook",
-+		.matches = {
-+			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
-+			DMI_MATCH(DMI_PRODUCT_NAME, "MacBook5,2"),
-+		},
-+	},
-+	{ }
-+};
-+
-+static int __init pci_reboot_init(void)
-+{
-+	dmi_check_system(pci_reboot_dmi_table);
-+	return 0;
-+}
-+core_initcall(pci_reboot_init);
-+
- static inline void kb_wait(void)
+diff --git a/arch/x86/kernel/efi.c b/arch/x86/kernel/efi.c
+index 96f7ac0..19ccf6d 100644
+--- a/arch/x86/kernel/efi.c
++++ b/arch/x86/kernel/efi.c
+@@ -512,7 +512,7 @@ void __init efi_enter_virtual_mode(void)
+ 			&& end_pfn <= max_pfn_mapped))
+ 			va = __va(md->phys_addr);
+ 		else
+-			va = efi_ioremap(md->phys_addr, size);
++			va = efi_ioremap(md->phys_addr, size, md->type);
+ 
+ 		md->virt_addr = (u64) (unsigned long) va;
+ 
+diff --git a/arch/x86/kernel/efi_64.c b/arch/x86/kernel/efi_64.c
+index 22c3b78..ac0621a 100644
+--- a/arch/x86/kernel/efi_64.c
++++ b/arch/x86/kernel/efi_64.c
+@@ -98,10 +98,14 @@ void __init efi_call_phys_epilog(void)
+ 	early_runtime_code_mapping_set_exec(0);
+ }
+ 
+-void __iomem *__init efi_ioremap(unsigned long phys_addr, unsigned long size)
++void __iomem *__init efi_ioremap(unsigned long phys_addr, unsigned long size,
++				 u32 type)
  {
- 	int i;
+ 	unsigned long last_map_pfn;
+ 
++	if (type == EFI_MEMORY_MAPPED_IO)
++		return ioremap(phys_addr, size);
++
+ 	last_map_pfn = init_memory_mapping(phys_addr, phys_addr + size);
+ 	if ((last_map_pfn << PAGE_SHIFT) < phys_addr + size)
+ 		return NULL;
