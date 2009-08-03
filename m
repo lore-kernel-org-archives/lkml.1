@@ -1,82 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754974AbZHCWOM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932284AbZHCWRd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754974AbZHCWOM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 18:14:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbZHCWOL
+	id S932284AbZHCWRd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 18:17:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbZHCWRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 18:14:11 -0400
-Received: from mail.open.by ([193.232.92.17]:55907 "EHLO post.open.by"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752567AbZHCWOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 18:14:10 -0400
-X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
-X-SpamTest-Group-ID: 00000000
-X-SpamTest-Info: Profiles 9235 [Aug 3 2009]
-X-SpamTest-Info: {relay has no DNS name}
-X-SpamTest-Method: none
-X-SpamTest-Rate: 55
-X-SpamTest-SPF: softfail
-X-SpamTest-Status: Not detected
-X-SpamTest-Status-Extended: not_detected
-X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
-Date: Tue, 4 Aug 2009 01:16:51 +0300
-From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
-To: Greg KH <greg@kroah.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] proper tty-ldisc refcounting (was Re: WARNING at:
- drivers/char/tty_ldisc.c)
-Message-ID: <20090803221651.GA3122@localdomain.by>
-References: <20090802120120.GA3097@localdomain.by>
- <alpine.LFD.2.01.0908020940530.3352@localhost.localdomain>
- <20090802190514.GA3278@localdomain.by>
- <alpine.LFD.2.01.0908021254580.3352@localhost.localdomain>
- <87k51l9apo.fsf@devron.myhome.or.jp>
- <alpine.LFD.2.01.0908021423490.3352@localhost.localdomain>
- <20090802234851.3fd1ac2c@lxorguk.ukuu.org.uk>
- <alpine.LFD.2.01.0908021654010.3352@localhost.localdomain>
- <alpine.LFD.2.01.0908031047010.3208@localhost.localdomain>
- <20090803181811.GA15848@kroah.com>
+	Mon, 3 Aug 2009 18:17:32 -0400
+Received: from exprod6og105.obsmtp.com ([64.18.1.189]:44273 "HELO
+	exprod6og105.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752884AbZHCWRc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 18:17:32 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="LZvS9be/3tNcYl/X"
-Content-Disposition: inline
-In-Reply-To: <20090803181811.GA15848@kroah.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH] gpio: include <linux/gpio.h> not <asm/gpio.h>
+Date: Mon, 3 Aug 2009 18:17:29 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901B77674@mi8nycmail19.Mi8.com>
+In-Reply-To: <20090803145050.8049bc20.akpm@linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] gpio: include <linux/gpio.h> not <asm/gpio.h>
+Thread-Index: AcoUhIQ7ZKA5396wRv+g/VlrptoTRAAA1i6w
+References: <200907311059.51142.hartleys@visionengravers.com> <20090803145050.8049bc20.akpm@linux-foundation.org>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>, <dbrownell@users.sourceforge.net>
+X-OriginalArrivalTime: 03 Aug 2009 22:17:30.0951 (UTC) FILETIME=[31591570:01CA1488]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday, August 03, 2009 2:51 PM, Andrew Morton wrote:
+>> Drivers should be including <linux/gpio.h> not <asm/gpio.h>.
+>> 
+>> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+>> 
+>> ---
+>> 
+>> diff --git a/drivers/gpio/bt8xxgpio.c b/drivers/gpio/bt8xxgpio.c
+>> index 984b587..fd1c54d 100644
+>> --- a/drivers/gpio/bt8xxgpio.c
+>> +++ b/drivers/gpio/bt8xxgpio.c
+>> @@ -46,8 +46,7 @@
+>>  #include <linux/module.h>
+>>  #include <linux/pci.h>
+>>  #include <linux/spinlock.h>
+>> -
+>> -#include <asm/gpio.h>
+>> +#include <linux/gpio.h>
+>
+> There's some potential for breakage here.  include/linux/gpio.h has
+>
+> #ifdef CONFIG_GENERIC_GPIO
+> #include <asm/gpio.h>
+>
+> #else
+> 
+> ...
+>
+> #endif
+>
+>
+> So if there's some configuration which forgot to set
+> CONFIG_GENERIC_GPIO, the driver will be switched over to use the
+> include/linux/gpio.h stubs and will break.
+>
+> Please convince me that this cannot happen ;)
 
---LZvS9be/3tNcYl/X
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Can't happen for these drivers.  Everything in drivers/gpio requires
+GPIOLIB which selects GENERIC_GPIO.  Please see drivers/gpio/Kconfig.
 
-On (08/03/09 11:18), Greg KH wrote:
-> Ok, I'll queue them up if they pass Sergey's testing.
->=20
+Thanks,
+Hartley
 
-I've been away. Sorry.
-Will test ASAP.
 
-	Sergey
-
---LZvS9be/3tNcYl/X
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iJwEAQECAAYFAkp3YdMACgkQfKHnntdSXjTxXQP9Hk8naW8HGyMcDq8Ad4zVwAUS
-OLEu7U7FqG5WUmXCjtC+QGgXdAaQWLYYjc1TSS0MDSHqpHS/YWwtGobL8/QQwplI
-iz3Y4Zqz3owd1/yjrTZI+pYbQ/EUh5EnbbLua/4qc1kTQ5+rDIIj0J//PkHJvqsV
-6MitBLkIdJ4x48iqk1g=
-=jT5P
------END PGP SIGNATURE-----
-
---LZvS9be/3tNcYl/X--
