@@ -1,125 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbZHCPgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755286AbZHCPn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755303AbZHCPgT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 11:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755194AbZHCPgS
+	id S1755286AbZHCPn3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 11:43:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbZHCPn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 11:36:18 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42285 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754629AbZHCPgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 11:36:16 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.31-rc5: Reported regressions from 2.6.30
-Date: Mon, 3 Aug 2009 17:36:29 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc5-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
+	Mon, 3 Aug 2009 11:43:28 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42888 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754629AbZHCPn2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 11:43:28 -0400
+Subject: Re: [ANNOUNCE][RFC][PATCH] Crash-utility, tracing: enable crash to
+ analyze tracing from core-file (make tracing can act as a flight recorder)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Dave Anderson <anderson@redhat.com>, crash-utility@redhat.com,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <clark.williams@gmail.com>,
+       Jon Masters <jonathan@jonmasters.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Linux Wireless List <linux-wireless@vger.kernel.org>,
-       DRI <dri-devel@lists.sourceforge.net>,
-       Mikael Pettersson <mikpe@it.uu.se>
-References: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera> <alpine.LFD.2.01.0908021456430.3352@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.01.0908021456430.3352@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Christoph Hellwig <hch@infradead.org>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Jason Baron <jbaron@redhat.com>, srostedt@redhat.com,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A76F8A1.30503@cn.fujitsu.com>
+References: <4A76F8A1.30503@cn.fujitsu.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908031736.30745.rjw@sisk.pl>
+Date: Mon, 03 Aug 2009 17:42:16 +0200
+Message-Id: <1249314136.7924.126.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 August 2009, Linus Torvalds wrote:
-> 
-> On Sun, 2 Aug 2009, Rafael J. Wysocki wrote:
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13896
-> > Subject		: 2.6.31-rc4 broke expect and gcc's testsuite
-> > Submitter	: Mikael Pettersson <mikpe@it.uu.se>
-> > Date		: 2009-07-29 11:00 (5 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=124885806406520&w=4
-> 
-> I bet this is the same tty bug that got fixed by Ogawa in commit 
-> e043e42bdb. -rc5 has that fix. Mikael?
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13842
-> > Subject		: Oops when writing to /sys/block/ram0/queue/max_sectors_kb
-> > Submitter	: Jens Rosenboom <jens@mcbone.net>
-> > Date		: 2009-07-23 15:30 (11 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=124836574403032&w=4
-> 
-> Commit a4e7d46407d73f35d217013b363b79a8f8eafcaa fixed this one.
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13826
-> > Subject		: thinkpad boots with backlight low
-> > Submitter	: Pavel Machek <pavel@ucw.cz>
-> > Date		: 2009-07-15 15:13 (19 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=124756359126830&w=4
-> > Handled-By	: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-> 
-> This should be commit 59fe4fe34d7afdf63208124f313be9056feaa2f4.
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13815
-> > Subject		: emacs -nw compilation doesn't show the error message
-> > Submitter	: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> > Date		: 2009-07-23 06:22 (11 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d945cb9cce20ac7143c2de8d88b187f62db99bdc
-> 
-> Same old pty bug, same fix: commit e043e42bdb.
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13813
-> > Subject		: Hangups in n_tty_read()
-> > Submitter	: Johannes Weiner <hannes@cmpxchg.org>
-> > Date		: 2009-07-16 18:48 (18 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=124777019920579&w=4
-> 
-> Hmm. Worth testing that same fix, although the symptoms here are not 
-> exactly the same.
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13812
-> > Subject		: Ooops on uplug
-> > Submitter	: Daniel Mack <daniel@caiaq.de>
-> > Date		: 2009-07-20 17:51 (14 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=124811234302786&w=4
-> > Handled-By	: Alan Stern <stern@rowland.harvard.edu>
-> > 		  Alan Cox <alan@linux.intel.com>
-> 
-> Commit c56d3000861 should fix this.
-> 
-> > Regressions with patches
-> > ------------------------
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13891
-> > Subject		: PCI resources allocation problem on HP nx6325
-> > Submitter	: Rafael J. Wysocki <rjw@sisk.pl>
-> > Date		: 2009-08-02 13:37 (1 days old)
-> > Handled-By	: Linus Torvalds <torvalds@linux-foundation.org>
-> > Patch		: http://patchwork.kernel.org/patch/38774/
-> 
-> Ok, this is committed as 79896cf42f6a96d7e14f2dc3473443d68d74031d.
-> 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13825
-> > Subject		: eeepc-laptop: fix hot-unplug on resume
-> > Submitter	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> > Date		: 2009-06-29 13:12 (35 days old)
-> > References	: http://lkml.org/lkml/2009/6/29/150
-> > Handled-By	: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-> > Patch		: http://patchwork.kernel.org/patch/32926/
-> 
-> commit 7334546a52c6764df120459509b1f803a073eacc
+On Mon, 2009-08-03 at 22:48 +0800, Lai Jiangshan wrote:
+> + /* SIGH, we cann't get "print fmt" from core-file */
 
-Thanks a lot!
+doesn't crash have a vmlinux around to look at?
 
-All closed except for http://bugzilla.kernel.org/show_bug.cgi?id=13813.
+> +/*
+> + * TODO: implement event_generic_print_fmt_print() when the print fmt
+> + * in tracing/events/$SYSTEM/$TRACE/format becomes a will-defined
+> + * language.
+> + */
 
-Best,
-Rafael
+(well-defined)
+
+That would require the running kernel to be the same as the one that
+generated the core file -- not very usable imho.
