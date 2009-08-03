@@ -1,93 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752792AbZHCH7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753077AbZHCH7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752792AbZHCH7a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 03:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbZHCH73
+	id S1753077AbZHCH7q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 03:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbZHCH7p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 03:59:29 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:41758 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751558AbZHCH72 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 03:59:28 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=k7uNMdLKJ0kKjmZecQtjOnZpk0nG9OH9lIwNWHc/5Lxne7Boj0SvicBxiExrRpLZD
-	vTQwcaig1CfyaYjsOp9og==
-Date: Mon, 3 Aug 2009 00:59:18 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Paul Menage <menage@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
-In-Reply-To: <20090803104244.b58220ba.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0908030050160.30778@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0907282125260.554@chino.kir.corp.google.com> <20090730180029.c4edcc09.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0907300219580.13674@chino.kir.corp.google.com> <20090730190216.5aae685a.kamezawa.hiroyu@jp.fujitsu.com>
- <alpine.DEB.2.00.0907301157100.9652@chino.kir.corp.google.com> <20090731093305.50bcc58d.kamezawa.hiroyu@jp.fujitsu.com> <alpine.DEB.2.00.0907310231370.25447@chino.kir.corp.google.com> <7f54310137837631f2526d4e335287fc.squirrel@webmail-b.css.fujitsu.com>
- <alpine.DEB.2.00.0907311212240.22732@chino.kir.corp.google.com> <77df8765230d9f83859fde3119a2d60a.squirrel@webmail-b.css.fujitsu.com> <alpine.DEB.2.00.0908011303050.22174@chino.kir.corp.google.com> <20090803104244.b58220ba.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 3 Aug 2009 03:59:45 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:53530 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752838AbZHCH7d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 03:59:33 -0400
+Date: Mon, 3 Aug 2009 09:59:33 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Chris Mason <chris.mason@oracle.com>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, dm-devel@redhat.com,
+       Neil Brown <neilb@suse.de>
+Subject: Re: Why does __do_page_cache_readahead submit READ, not READA?
+Message-ID: <20090803075933.GI12579@kernel.dk>
+References: <20090729161456.GB8059@barkeeper1-xen.linbit> <20090729211845.GB4148@kernel.dk> <20090729225501.GH24801@think> <20090730060649.GC4148@kernel.dk> <20090803075202.GA13485@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090803075202.GA13485@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Aug 2009, KAMEZAWA Hiroyuki wrote:
-
-> >  - /proc/pid/oom_score is inconsistent when tuning /proc/pid/oom_adj if it
-> >    relies on the per-thread oom_adj; it now really represents nothing but
-> >    an incorrect value if other threads share that memory and misleads the
-> >    user on how the oom killer chooses victims, or
-> 
-> What's why I said to show effective_oom_adj if necessary..
-> 
-
-Right, but which of the following two behaviors do you believe the 
-majority of today's user applications are written to use?
-
- (1) /proc/pid/oom_score represents the badness heuristic that the oom
-     killer uses to determine which task to kill, or
-
- (2) /proc/pid/oom_adj can be adjusted after vfork() and prior to exec()
-     to represent the oom preference of the child without simultaneously
-     changing the oom preference of the parent.
-
-The two are at a complete contrast and cannot co-exist.  I favor behavior 
-(1), which is why my patches make it consistent in _all_ cases, since it 
-is more likely than not that the majority of user applications use that 
-behavior if, for no other reason, than it is the DOCUMENTED reason.
-
-If you feel that's an unreasonable conclusion, then please say that so 
-your argument can be judged based on your interpretation of that behavior 
-which I believe most others would disagree with.  Otherwise, our 
-discussion will continue to go in circles.
-
-> >  - /proc/pid/oom_score is inconsistent when the thread that set the
-> >    effective per-mm oom_adj exits and it is now obsolete since you have
-> >    no way to determine what the next effective oom_adj value shall be.
+On Mon, Aug 03 2009, Wu Fengguang wrote:
+> On Thu, Jul 30, 2009 at 08:06:49AM +0200, Jens Axboe wrote:
+> > On Wed, Jul 29 2009, Chris Mason wrote:
+> > > On Wed, Jul 29, 2009 at 11:18:45PM +0200, Jens Axboe wrote:
+> > > > On Wed, Jul 29 2009, Lars Ellenberg wrote:
+> > > > > I naively assumed, from the "readahead" in the name, that readahead
+> > > > > would be submitting READA bios. It does not.
+> > > > > 
+> > > > > I recently did some statistics on how many READ and READA requests
+> > > > > we actually see on the block device level.
+> > > > > I was suprised that READA is basically only used for file system
+> > > > > internal meta data (and not even for all file systems),
+> > > > > but _never_ for file data.
+> > > > > 
+> > > > > A simple
+> > > > > 	dd if=bigfile of=/dev/null bs=4k count=1
+> > > > > will absolutely cause readahead of the configured amount, no problem.
+> > > > > But on the block device level, these are READ requests, where I'd
+> > > > > expected them to be READA requests, based on the name.
+> > > > > 
+> > > > > This is because __do_page_cache_readahead() calls read_pages(),
+> > > > > which in turn is mapping->a_ops->readpages(), or, as fallback,
+> > > > > mapping->a_ops->readpage().
+> > > > > 
+> > > > > On that level, all variants end up submitting as READ.
+> > > > > 
+> > > > > This may even be intentional.
+> > > > > But if so, I'd like to understand that.
+> > > > 
+> > > > I don't think it's intentional, and if memory serves, we used to use
+> > > > READA when submitting read-ahead. Not sure how best to improve the
+> > > > situation, since (as you describe), we lose the read-ahead vs normal
+> > > > read at that level. I did some experimentation some time ago for
+> > > > flagging this, see:
+> > > > 
+> > > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=16cfe64e3568cda412b3cf6b7b891331946b595e
+> > > > 
+> > > > which should pass down READA properly.
+> > > 
+> > > One of the problems in the past was that reada would fail if there
+> > > wasn't a free request when we actually wanted it to go ahead and wait.
+> > > Or something.  We've switched it around a few times I think.
 > > 
-> plz re-caluculate it. it's not a big job if done in lazy way.
+> > Yes, we did used to do that, whether it was 2.2 or 2.4 I
+> > don't recall :-)
+> > 
+> > It should be safe to enable know, whether there's a prettier way
+> > than the above, I don't know. It works by detecting the read-ahead
+> > marker, but it's a bit of a fragile design.
 > 
+> Another consideration is io-priority reversion and the overheads
+> required to avoid it:
+> 
+>         readahead(pages A-Z)    => READA IO for pages A-Z
+>         <short time later>
+>         read(page A) => blocked => find the request that contains page A
+>                                    and requeue/kick it as READ IO
+> 
+> The page-to-request lookups are not always required but nevertheless
+> the complexity and overheads won't be trivial.
+> 
+> The page-to-request lookup feature would be also useful for "advanced"
+> features like io-canceling (if implemented, hwpoison could be its
+> first user ;)
 
-You can't recalculate it if all the remaining threads have a different 
-oom_adj value than the effective oom_adj value from the thread that is now 
-exited.  There is no assumption that, for instance, the most negative 
-oom_adj value shall then be used.  Imagine the effective oom_adj value 
-being +15 and a thread sharing the same memory has an oom_adj value of 
--16.  Under no reasonable circumstance should the oom preference of the 
-entire thread then change to -16 just because its the side-effect of a 
-thread exiting.
+I added that 3-4 years ago or so, to experiment with in-kernel
+cancellation for things like truncate(). Tracking pages is not cheap,
+and since the write cancelling wasn't really very sucessful, I didn't go
+ahead with it.
 
-That's the _entire_ reason why we need consistency in oom_adj values so 
-that userspace is aware of how the oom killer really works and chooses 
-tasks.  I understand that it differs from the previously allowed behavior, 
-but those userspace applications need to be fixed if, for no other reason, 
-they are now consistent with how the oom killer kills tasks.  I think 
-that's a very worthwhile goal and the cost of moving to a new interface 
-such as /proc/pid/oom_adj_child to have the same inheritance property that 
-was available in the past is justified.
+So I'm not sure it's a viable alternative, even if we restricted it to
+just tracking READA's, for instance.
+
+But I don't think we have any priority inversion to worry about, at
+least not from the CFQ perspective.
+
+-- 
+Jens Axboe
+
