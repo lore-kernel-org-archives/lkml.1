@@ -1,92 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbZHCI15@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbZHCI3J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753532AbZHCI15 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 04:27:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbZHCI15
+	id S1754022AbZHCI3J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 04:29:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbZHCI3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 04:27:57 -0400
-Received: from mx03.syneticon.net ([78.111.66.105]:41942 "EHLO
-	mx03.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753270AbZHCI14 (ORCPT
+	Mon, 3 Aug 2009 04:29:08 -0400
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:58912 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753296AbZHCI3G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 04:27:56 -0400
-Message-ID: <4A769F6A.2090100@wpkg.org>
-Date: Mon, 03 Aug 2009 10:27:22 +0200
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090731)
+	Mon, 3 Aug 2009 04:29:06 -0400
+Date: Mon, 3 Aug 2009 13:58:55 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: rusty@rustcorp.com.au
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       lguest@ozlabs.org, sfr@canb.auug.org.au,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [RESEND-PATCH] next-20090730 lguest build breaks with pfn_pmd()
+Message-ID: <20090803082855.GA9621@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <20090729173611.b82478cd.sfr@canb.auug.org.au> <20090730120533.GB4955@linux.vnet.ibm.com> <20090731110356.cd0bc550.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-netdev@vger.kernel.org
-Subject: WARNING: at net/ipv4/af_inet.c:155 inet_sock_destruct+0x122/0x13a()
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090731110356.cd0bc550.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After upgrading from 2.6.29.1 to 2.6.30.4, I'm getting these warnings in dmesg.
+* Randy Dunlap <randy.dunlap@oracle.com> [2009-07-31 11:03:56]:
 
-Let me know if you need more info.
+> On Thu, 30 Jul 2009 17:35:33 +0530 Kamalesh Babulal wrote:
+> 
+> > Hi Rusty,
+> > 
+> > 	next-20090729 allmodconfig build breaks at
+> > 
+> > drivers/lguest/page_tables.c: In function 'setup_pagetables':
+> > drivers/lguest/page_tables.c:987: error: incompatible type for argument 2 of 'pfn_pmd'
+> > drivers/lguest/page_tables.c:994: error: expected ';' before ')' token
+> > drivers/lguest/page_tables.c:994: error: expected statement before ')' token
+> > make[2]: *** [drivers/lguest/page_tables.o] Error 1
+> > 
+> > build failure is introduced by commit e07dd6220a4bf81a2549e7e37523a2557547d9d7
+> > I have tested the patch for the build failure only.
+> > 
+> > Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> > --
+> >  drivers/lguest/page_tables.c |    4 ++--
+> >  1 files changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/lguest/page_tables.c b/drivers/lguest/page_tables.c
+> > index 8c86446..c610b82 100644
+> > --- a/drivers/lguest/page_tables.c
+> > +++ b/drivers/lguest/page_tables.c
+> > @@ -984,14 +984,14 @@ static unsigned long setup_pagetables(struct lguest *lg,
+> >  	for (i = j = 0; i < mapped_pages && j < PTRS_PER_PMD;
+> >  	     i += PTRS_PER_PTE, j++) {
+> >  		pmd = pfn_pmd(((unsigned long)&linear[i] - mem_base)/PAGE_SIZE,
+> > -			      _PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
+> > +			      __pgrot(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+> 
+> s/__pgrot/__pgprot/
+>
+Thanks randy, resending the patch after correcting the typo
 
-Other than that, the device seems to work stable.
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+--
+ drivers/lguest/page_tables.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
+diff --git a/drivers/lguest/page_tables.c b/drivers/lguest/page_tables.c
+index 8c86446..cf94326 100644
+--- a/drivers/lguest/page_tables.c
++++ b/drivers/lguest/page_tables.c
+@@ -984,14 +984,14 @@ static unsigned long setup_pagetables(struct lguest *lg,
+ 	for (i = j = 0; i < mapped_pages && j < PTRS_PER_PMD;
+ 	     i += PTRS_PER_PTE, j++) {
+ 		pmd = pfn_pmd(((unsigned long)&linear[i] - mem_base)/PAGE_SIZE,
+-			      _PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
++			      __pgprot(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
+ 
+ 		if (copy_to_user(&pmds[j], &pmd, sizeof(pmd)) != 0)
+ 			return -EFAULT;
+ 	}
+ 
+ 	/* One PGD entry, pointing to that PMD page. */
+-	pgd = __pgd(((unsigned long)pmds - mem_base) | _PAGE_PRESENT));
++	pgd = __pgd(((unsigned long)pmds - mem_base) | _PAGE_PRESENT);
+ 	/* Copy it in as the first PGD entry (ie. addresses 0-1G). */
+ 	if (copy_to_user(&pgdir[0], &pgd, sizeof(pgd)) != 0)
+ 		return -EFAULT;
 
-------------[ cut here ]------------
-WARNING: at net/ipv4/af_inet.c:155 inet_sock_destruct+0x122/0x13a()
-Hardware name: Altos G510
-Modules linked in: nfs nfsd lockd nfs_acl auth_rpcgss sunrpc exportfs tun bitrev crc32 bonding lm75 adm9240 adm1026 hwmon_vid hwmon i2c_piix4 i2c_core dm_crypt dm_mirror dm_region_hash dm_log dm_snapshot dm_mod e1000 tg3 libphy
-Pid: 2222, comm: openvpn Not tainted 2.6.30.4-1 #4
-Call Trace:
- [<4011f018>] ? warn_slowpath_common+0x5e/0x8a
- [<4011f04e>] ? warn_slowpath_null+0xa/0xc
- [<402b5d64>] ? inet_sock_destruct+0x122/0x13a
- [<402796a4>] ? sk_free+0x10/0xa7
- [<402b5964>] ? inet_release+0x3f/0x44
- [<4027751b>] ? sock_release+0x11/0x52
- [<40277575>] ? sock_close+0x19/0x1c
- [<40164026>] ? __fput+0xa6/0x149
- [<40161989>] ? filp_close+0x4e/0x54
- [<401619f5>] ? sys_close+0x66/0x9c
- [<401027c8>] ? sysenter_do_call+0x12/0x26
----[ end trace bdfe445acbab5307 ]---
-------------[ cut here ]------------
-WARNING: at net/ipv4/af_inet.c:155 inet_sock_destruct+0x122/0x13a()
-Hardware name: Altos G510
-Modules linked in: nfs nfsd lockd nfs_acl auth_rpcgss sunrpc exportfs tun bitrev crc32 bonding lm75 adm9240 adm1026 hwmon_vid hwmon i2c_piix4 i2c_core dm_crypt dm_mirror dm_region_hash dm_log dm_snapshot dm_mod e1000 tg3 libphy
-Pid: 2222, comm: openvpn Tainted: G        W  2.6.30.4-1 #4
-Call Trace:
- [<4011f018>] ? warn_slowpath_common+0x5e/0x8a
- [<4011f04e>] ? warn_slowpath_null+0xa/0xc
- [<402b5d64>] ? inet_sock_destruct+0x122/0x13a
- [<402796a4>] ? sk_free+0x10/0xa7
- [<402b5964>] ? inet_release+0x3f/0x44
- [<4027751b>] ? sock_release+0x11/0x52
- [<40277575>] ? sock_close+0x19/0x1c
- [<40164026>] ? __fput+0xa6/0x149
- [<40161989>] ? filp_close+0x4e/0x54
- [<401619f5>] ? sys_close+0x66/0x9c
- [<401027c8>] ? sysenter_do_call+0x12/0x26
----[ end trace bdfe445acbab5308 ]---
-------------[ cut here ]------------
-WARNING: at net/ipv4/af_inet.c:155 inet_sock_destruct+0x122/0x13a()
-Hardware name: Altos G510
-Modules linked in: nfs nfsd lockd nfs_acl auth_rpcgss sunrpc exportfs tun bitrev crc32 bonding lm75 adm9240 adm1026 hwmon_vid hwmon i2c_piix4 i2c_core dm_crypt dm_mirror dm_region_hash dm_log dm_snapshot dm_mod e1000 tg3 libphy
-Pid: 2222, comm: openvpn Tainted: G        W  2.6.30.4-1 #4
-Call Trace:
- [<4011f018>] ? warn_slowpath_common+0x5e/0x8a
- [<4011f04e>] ? warn_slowpath_null+0xa/0xc
- [<402b5d64>] ? inet_sock_destruct+0x122/0x13a
- [<402796a4>] ? sk_free+0x10/0xa7
- [<402b5964>] ? inet_release+0x3f/0x44
- [<4027751b>] ? sock_release+0x11/0x52
- [<40277575>] ? sock_close+0x19/0x1c
- [<40164026>] ? __fput+0xa6/0x149
- [<40161989>] ? filp_close+0x4e/0x54
- [<401619f5>] ? sys_close+0x66/0x9c
- [<401027c8>] ? sysenter_do_call+0x12/0x26
----[ end trace bdfe445acbab5309 ]---
-
-
-
--- 
-Tomasz Chmielewski
-http://wpkg.org
+			
+					Kamalesh
