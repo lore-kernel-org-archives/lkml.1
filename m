@@ -1,63 +1,57 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752607AbZHBKmQ (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sun, 2 Aug 2009 06:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbZHBKmP
+	id S932217AbZHCOut (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Mon, 3 Aug 2009 10:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932208AbZHCOus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 06:42:15 -0400
-Received: from mail.munimolina.gob.pe ([200.37.16.229]:19785 "EHLO
-	mail.munimolina.gob.pe" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751673AbZHBKmO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 06:42:14 -0400
-X-Greylist: delayed 1916 seconds by postgrey-1.27 at vger.kernel.org; Sun, 02 Aug 2009 06:42:14 EDT
-X-Squirrel-UserHash: UwQFXk1dC1VVQRo=
-X-Squirrel-FromHash: FAxSUQkLAFQ=
-X-Squirrel-ProxyHash: Q1kLCAkBA1M=
-Message-ID: <e929f8e18cc1c7bfe6cb7e50d3fbaa0e.squirrel@mail.munimolina.gob.pe>
-Date: Sun, 2 Aug 2009 06:18:31 -0400 (EDT)
-Subject: Dear Webmail/E-mail user
-From: "Webmail Administrator" <upgradeaccount@webmailcenter.com>
-Reply-To: accountaccess14@9.cn
-User-Agent: SquirrelMail/1.4.17
+	Mon, 3 Aug 2009 10:50:48 -0400
+Received: from z2.cat.iki.fi ([212.16.98.133]:51555 "EHLO z2.cat.iki.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932207AbZHCOur (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 10:50:47 -0400
+Date: Mon, 3 Aug 2009 17:50:44 +0300
+From: Matti Aarnio <matti.aarnio@zmailer.org>
+To: demofly@mail.ru
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Message limitations
+Message-ID: <20090803145044.GF13177@mea-ext.zmailer.org>
+References: <275001175.20090803183336@mail.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-To: undisclosed-recipients:;
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <275001175.20090803183336@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Webmail/E-mail user,
+On Mon, Aug 03, 2009 at 06:33:36PM +0400, ???????????? ?????????????????? wrote:
+> Date: Mon, 3 Aug 2009 18:33:36 +0400
+> From: ???????????? ?????????????????? <demofly@mail.ru>
+> To: linux-kernel@vger.kernel.org
+> Subject: Message limitations
+> Content-Type: text/plain; charset=utf-8
+> 
+> Hi all
 
-This message is from our Webmail Messaging Center to all our account
-owners.We
-are currently upgrading our data base and e-mail center.
+ALL are not able to help,  Postmasters perhaps.
+You did not even tell when the message was sent,
+not anything really identifying factors on it, like
+the message-id header value.
 
-We are deleting all unused webmail account to Create more space for new
-accounts.
+> tell  me,  please, why my first email was not arrived to the maillist?
+> It was about 200KB of size, and about 100KB of attachment.
+> 
+> What limitations used in this list?
 
-In order to ensure you do not experience service interruption during this
-period;
+See web pages at:
 
-you will have to confirm your webmail account details by providing the
-following:
+  http://vger.kernel.org/
 
-1.Username:....................................
-2.Password:...................................
-3.Date of Birth:...............................
+Follow the instructions in there for sending your question
+to postmaster.
 
-You will be sent a new confirmation alphanumerical password that will only be
-valid during this period and can be changed after this process.
+> Thanks in advance.
+> 
+> Stanislav Osipov
+> Linux System Administrator.
 
-We are very sorry for the inconvenience this may cost you.
-
-Please respond to this notice to enable us provide you better online services
-with our newly improved webmail features and enhancements.
-
-Warning Code:VX2G99AAJ
-Thanks,
-Webmail Administrator.
-Thank you for your continuous support!
-
+Best Regards,  Matti Aarnio
