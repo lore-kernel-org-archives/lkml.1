@@ -1,103 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754504AbZHCJJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754533AbZHCJK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754504AbZHCJJV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 05:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbZHCJJV
+	id S1754533AbZHCJK3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 05:10:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbZHCJK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 05:09:21 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:45590 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751658AbZHCJJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 05:09:19 -0400
-Date: Mon, 3 Aug 2009 11:09:14 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Zhu Yi <yi.zhu@intel.com>
-Cc: "Chatre, Reinette" <reinette.chatre@intel.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
-Subject: Re: [PATCH 6/10] drivers/net/wireless/iwlwifi: introduce missing
- kfree
-In-Reply-To: <1249260246.4069.26.camel@debian>
-Message-ID: <Pine.LNX.4.64.0908031109020.8435@pc-004.diku.dk>
-References: <Pine.LNX.4.64.0908011054010.23408@ask.diku.dk>
- <1249260246.4069.26.camel@debian>
+	Mon, 3 Aug 2009 05:10:29 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63813 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752281AbZHCJK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 05:10:28 -0400
+Message-ID: <4A76A96E.8070608@cn.fujitsu.com>
+Date: Mon, 03 Aug 2009 17:10:06 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Avi Kivity <avi@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
+       KVM list <kvm@vger.kernel.org>
+Subject: [PATCH] kvm: fix kvm_init()
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Aug 2009, Zhu Yi wrote:
+Remove debugfs file if kvm_arch_init() return error
 
-> On Sat, 2009-08-01 at 16:54 +0800, Julia Lawall wrote:
-> > From: Julia Lawall <julia@diku.dk>
-> > 
-> > Error handling code following a kzalloc should free the allocated data.
-> > 
-> > The semantic match that finds the problem is as follows:
-> > (http://www.emn.fr/x-info/coccinelle/)
-> > 
-> > // <smpl>
-> > @r exists@
-> > local idexpression x;
-> > statement S;
-> > expression E;
-> > identifier f,f1,l;
-> > position p1,p2;
-> > expression *ptr != NULL;
-> > @@
-> > 
-> > x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
-> > ...
-> > if (x == NULL) S
-> > <... when != x
-> >      when != if (...) { <+...x...+> }
-> > (
-> > x->f1 = E
-> > |
-> >  (x->f1 == NULL || ...)
-> > |
-> >  f(...,x->f1,...)
-> > )
-> > ...>
-> > (
-> >  return \(0\|<+...x...+>\|ptr\);
-> > |
-> >  return@p2 ...;
-> > )
-> > 
-> > @script:python@
-> > p1 << r.p1;
-> > p2 << r.p2;
-> > @@
-> > 
-> > print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
-> > // </smpl>
-> > 
-> > Signed-off-by: Julia Lawall <julia@diku.dk>
-> > ---
-> >  drivers/net/wireless/iwlwifi/iwl-debugfs.c     |    1 +
-> >  1 files changed, 1 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/drivers/net/wireless/iwlwifi/iwl-debugfs.c b/drivers/net/wireless/iwlwifi/iwl-debugfs.c
-> > index 7707a26..c2106d0 100644
-> > --- a/drivers/net/wireless/iwlwifi/iwl-debugfs.c
-> > +++ b/drivers/net/wireless/iwlwifi/iwl-debugfs.c
-> > @@ -320,6 +320,7 @@ static ssize_t iwl_dbgfs_nvm_read(struct file *file,
-> >  	ptr = priv->eeprom;
-> >  	if (!ptr) {
-> >  		IWL_ERR(priv, "Invalid EEPROM/OTP memory\n");
-> > +		kfree(buf);
-> >  		return -ENOMEM;
-> >  	}
-> >  	pos += scnprintf(buf + pos, buf_size - pos, "NVM Type: %s\n",
-> 
-> Probably moving !priv->eeprom check prior to buf kzalloc is better.
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+---
+ virt/kvm/kvm_main.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-OK, I will do that instead.
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 2884baf..6299208 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -2679,8 +2679,8 @@ out_free_0:
+ 	__free_page(bad_page);
+ out:
+ 	kvm_arch_exit();
+-	kvm_exit_debug();
+ out_fail:
++	kvm_exit_debug();
+ 	return r;
+ }
+ EXPORT_SYMBOL_GPL(kvm_init);
+-- 
+1.6.1.2
 
-julia
+
+
+
