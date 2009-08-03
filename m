@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbZHCPVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbZHCPWK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755269AbZHCPVv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 11:21:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbZHCPVv
+	id S1755292AbZHCPWK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 11:22:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755228AbZHCPWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 11:21:51 -0400
-Received: from viefep20-int.chello.at ([62.179.121.40]:49124 "EHLO
-	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755215AbZHCPVt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 11:21:49 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [RFC][PATCH] fcntl: F_[SG]ETOWN_TID
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: oleg@redhat.com, eranian@gmail.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       robert.richter@amd.com, paulus@samba.org, andi@firstfloor.org,
-       mpjohn@us.ibm.com, cel@us.ibm.com, cjashfor@us.ibm.com,
-       mucci@eecs.utk.edu, terpstra@eecs.utk.edu,
-       perfmon2-devel@lists.sourceforge.net, mtk.manpages@googlemail.com,
-       roland@redhat.com
-In-Reply-To: <20090731141122.a1939712.akpm@linux-foundation.org>
-References: <7c86c4470907270951i48886d56g90bc198f26bb0716@mail.gmail.com>
-	 <1248869948.6987.3083.camel@twins> <20090729221703.GA25368@redhat.com>
-	 <1248953485.6391.41.camel@twins> <20090730192040.GA9503@redhat.com>
-	 <1248984003.4164.0.camel@laptop> <20090730202804.GA13675@redhat.com>
-	 <1249029320.6391.72.camel@twins>
-	 <20090731141122.a1939712.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 03 Aug 2009 17:21:33 +0200
-Message-Id: <1249312893.7924.108.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 3 Aug 2009 11:22:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42182 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755274AbZHCPWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 11:22:07 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [Bug #13815] emacs -nw compilation doesn't show the error message
+Date: Mon, 3 Aug 2009 17:22:28 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc5-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Cox <alan@linux.intel.com>
+References: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera> <iZB3Pj-uj3M.A.EVD.QdgdKB@chimera> <20090803025548.GA4403@skywalker>
+In-Reply-To: <20090803025548.GA4403@skywalker>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908031722.29123.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-31 at 14:11 -0700, Andrew Morton wrote:
+On Monday 03 August 2009, Aneesh Kumar K.V wrote:
+> On Sun, Aug 02, 2009 at 08:58:27PM +0200, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.30.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13815
+> > Subject		: emacs -nw compilation doesn't show the error message
+> > Submitter	: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> > Date		: 2009-07-23 06:22 (11 days old)
+> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=d945cb9cce20ac7143c2de8d88b187f62db99bdc
+> > 
+> > 
 > 
-> 
-> > arch/parisc/include/asm/fcntl.h |    2 +
-> > fs/fcntl.c                      |   64 +++++++++++++++++++++++++++++++++-----
-> > include/asm-generic/fcntl.h     |    4 ++
-> > include/linux/fs.h              |   11 +++++-
-> > net/socket.c                    |    2 +-
-> 
-> OK.
-> 
-> 
-> 
-> Alpha has private definitions of F_SETSIG and F_GETSIG which are
-> identical to the generic ones.  That's somewhat logical, given that
-> alpha's F_SETOWN/F_GETOWN _differ_ from the asm-generic ones.
-> 
-> Alpha appears to have made the decision to spell out _all_ the F_*
-> flags, given that some of them are different.  That has some merit, I
-> guess.
-> 
-> But your patch broke that.
+> This is fixed upstream (Linus's tree) by e043e42bdb66885b3ac10d27a01ccb9972e2b0a3
 
-Right, all I did was validate that I didn't overlap with any of the
-existing fcntl numbers. I can explicitly add them to alpha if that makes
-people happy..
+Thanks, closed.
 
-
-
+Rafael
