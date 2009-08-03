@@ -1,79 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbZHCJRJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbZHCJTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754684AbZHCJRJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 05:17:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbZHCJRJ
+	id S1752725AbZHCJTO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 05:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbZHCJTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 05:17:09 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:48021 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752845AbZHCJRH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 05:17:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=LavY7JlAXeL+DIElNXjWgl1qkDw3ZCW3FRvWnBYemTbE+HgKprZTSOyOZ93cDHy+6N
-         9SwEgN9qiphyV/GKT3llHUfGc3BE+yS570DpMmkGbcGGslnht2Kvg94p78UP/q7+WI24
-         mz7DiE8i2d81UGmN7nJ3eWzLdAG91Z69Kgb50=
+	Mon, 3 Aug 2009 05:19:14 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51695 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751479AbZHCJTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 05:19:13 -0400
+Date: Mon, 3 Aug 2009 11:18:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dave Airlie <airlied@linux.ie>
+Cc: Thomas Hellstrom <thellstrom@vmware.com>,
+       Arjan van de Ven <arjan@infradead.org>, suresh.b.siddha@intel.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org,
+       venkatesh.pallipadi@intel.com, tglx@linutronix.de,
+       dri-devel@lists.sourceforge.net
+Subject: Re: [PATCH] x86: Fix CPA memtype reserving in the set_pages_array
+	cases
+Message-ID: <20090803091842.GA9074@elte.hu>
+References: <1249284345-7654-1-git-send-email-thellstrom@vmware.com> <20090803081110.GB32258@elte.hu> <alpine.DEB.2.00.0908030928280.496@skynet.skynet.ie>
 MIME-Version: 1.0
-In-Reply-To: <81b0412b0908021409h73fc2fcfo64c4ba9ee1f0d552@mail.gmail.com>
-References: <81b0412b0908021339s739c07edvd4d5eb4c21cfa167@mail.gmail.com>
-	 <Pine.LNX.4.44L0.0908021650020.14120-100000@netrider.rowland.org>
-	 <81b0412b0908021409h73fc2fcfo64c4ba9ee1f0d552@mail.gmail.com>
-Date: Mon, 3 Aug 2009 11:17:05 +0200
-Message-ID: <81b0412b0908030217o1e687c2ewf0191687a78d6166@mail.gmail.com>
-Subject: Re: Oops in CDC ACM after an Openmoko phone (neo1973) changes its usb 
-	interface from ACM to Ethernet
-From: Alex Riesen <raa.lkml@gmail.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Oliver Neukum <oliver@neukum.org>, linux-usb@vger.kernel.org,
-       Oliver Neukum <oliver@neukum.name>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <greg@kroah.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0908030928280.496@skynet.skynet.ie>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 2, 2009 at 23:09, Alex Riesen<raa.lkml@gmail.com> wrote:
-> BUG: unable to handle kernel NULL pointer dereference at 0000000000000003
-> IP: [<ffffffffa005ce38>] acm_rx_tasklet+0x24e/0x3a3 [cdc_acm]
 
-I tried to look a little around acm_rx_tasklet (cdc-acm.c, -rc5). I
-think it is this code:
+* Dave Airlie <airlied@linux.ie> wrote:
 
-0000000000001bea <acm_rx_tasklet>:
-...
-    1e27:	4d 8b 44 24 18       	mov    0x18(%r12),%r8
-    1e2c:	89 f8                	mov    %edi,%eax
-    1e2e:	c1 f8 0f             	sar    $0xf,%eax
-    1e31:	83 e0 0f             	and    $0xf,%eax
-    1e34:	48 8b 14 c2          	mov    (%rdx,%rax,8),%rdx
-    1e38:	0f b6 42 03          	movzbl 0x3(%rdx),%eax ; I think it crashed here
+> > hm, i'm missing a description about how this bug was triggered. 
+> > How did you end up getting highmem pages to a cpa call?
+> 
+> GEM and TTM both allocate page arrays and just pass them to cpa, 
+> we don't know what type of pages the allocator gives us back and 
+> we really shouldn't have to, so having cpa ignore highmem pages is 
+> certainly the right option.
+> 
+> GEM just uses shmem code to alloc the pages and TTM has its own 
+> allocator.
 
-which is this:
+Neither of my questions was answered though: do highmem pages ever 
+get passed in and what were the effects of the bug and how was it 
+noticed?
 
-	movq	24(%r12), %r8	# <variable>.base, temp.1149
-	movl	%edi, %eax	# D.22806, tmp117
-	sarl	$15, %eax	#, tmp117
-	andl	$15, %eax	#, tmp119
-	movq	(%rdx,%rax,8), %rdx	#, ep
-	movzbl	3(%rdx), %eax	# <variable>.desc.bmAttributes,
-<variable>.desc.bmAttributes
+If no highmem pages can be passed in then the right solution is not 
+to ignore them silently but to add a WARN_ONCE() to enforce that 
+they are not used in the future either.
 
-and correspondingly:
+If they are used today then i'd like to know where exactly and 
+double check that all the cache attributes are consistent: as a 
+highmem page might be visible to user-space as well or might be 
+mapped via the vmalloc space, etc.
 
-466		ep = (usb_pipein(acm->rx_endpoint) ? acm->dev->ep_in : acm->dev->ep_out)
-467				[usb_pipeendpoint(acm->rx_endpoint)];
-468		if (usb_endpoint_xfer_int(&ep->desc))
+And yes, if it happens and all the other mapping aliases are fine 
+then ignoring them is the right solution.
 
-So it looks like ep is NULL (usb_endpoint_xfer_int accesses desc.bmAttributes,
-which is 3 bytes off the beginning of struct usb_host_endpoint (desc being the
-first field in usb_host_endpoint).
-
-Any help with further debugging is very much appreciated (because
-I don't know where to continue yet).
+	Ingo
