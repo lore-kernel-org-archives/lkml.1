@@ -1,40 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbZHCUBM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751570AbZHCUJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755224AbZHCUBM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 16:01:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755152AbZHCUBM
+	id S1751570AbZHCUJY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 16:09:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbZHCUJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 16:01:12 -0400
-Received: from slimlogic.co.uk ([89.16.172.20]:51365 "EHLO slimlogic.co.uk"
+	Mon, 3 Aug 2009 16:09:23 -0400
+Received: from mx.ugf.br ([200.222.48.3]:53930 "EHLO mx.ugf.br"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755054AbZHCUBL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 16:01:11 -0400
-Subject: Re: [PATCH 1/5] regulator: More explict error reporting for fixed
- regulator
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1249321797-4582-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-References: <1249321797-4582-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-Content-Type: text/plain
-Date: Mon, 03 Aug 2009 20:29:52 +0100
-Message-Id: <1249327792.4248.139.camel@vega.slimlogic.co.uk>
+	id S1751005AbZHCUJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 16:09:23 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Aug 2009 16:09:21 EDT
+Subject: [PATCH 1/1] XFS: __xfs_get_blocks check pointer to the target
+ device
+From: Ramon de Carvalho Valle <ramon@risesecurity.org>
+To: linux-kernel@vger.kernel.org
+Cc: xfs@oss.sgi.com, hch@lst.de, mszeredi@novell.com
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-VTFjpbaH1EVlaQBVvifE"
+Date: Mon, 03 Aug 2009 17:03:28 -0300
+Message-Id: <1249329808.7686.26.camel@logos>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-03 at 18:49 +0100, Mark Brown wrote:
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
->  drivers/regulator/fixed.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
 
-Applied All.
+--=-VTFjpbaH1EVlaQBVvifE
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Thanks !
+The __xfs_get_blocks function does not check if the pointer to the target
+device is valid before dereferencing it.
 
-Liam
+Signed-off-by: Ramon de Carvalho Valle <ramon@risesecurity.org>
+Cc: stable <stable@kernel.org>
+---
+ fs/xfs/linux-2.6/xfs_aops.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
+
+diff --git a/fs/xfs/linux-2.6/xfs_aops.c b/fs/xfs/linux-2.6/xfs_aops.c
+index aecf251..bf482d5 100644
+--- a/fs/xfs/linux-2.6/xfs_aops.c
++++ b/fs/xfs/linux-2.6/xfs_aops.c
+@@ -1419,7 +1419,11 @@ __xfs_get_blocks(
+ 	 * If this is a realtime file, data may be on a different device.
+ 	 * to that pointed to from the buffer_head b_bdev currently.
+ 	 */
+-	bh_result->b_bdev =3D iomap.iomap_target->bt_bdev;
++	if (!iomap.iomap_target)
++		return -XFS_ERROR(EIO);
++
++	if (iomap.iomap_flags & IOMAP_REALTIME)
++		bh_result->b_bdev =3D iomap.iomap_target->bt_bdev;
+=20
+ 	/*
+ 	 * If we previously allocated a block out beyond eof and we are now
+--=20
+1.5.6.3
+
+
+--=-VTFjpbaH1EVlaQBVvifE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkp3QowACgkQGIS0iEuhp4PoBgCg3SOUddJ1Glh94VrZs1wDlc64
+YpEAn2JaNQZZQiiSpjDuFPivkiOy+7jl
+=FB/W
+-----END PGP SIGNATURE-----
+
+--=-VTFjpbaH1EVlaQBVvifE--
 
