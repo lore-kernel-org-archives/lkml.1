@@ -1,393 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203AbZHCNjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754996AbZHCNst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755203AbZHCNjl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 09:39:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbZHCNjk
+	id S1754996AbZHCNst (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 09:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754905AbZHCNss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 09:39:40 -0400
-Received: from www84.your-server.de ([213.133.104.84]:51248 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755177AbZHCNjc (ORCPT
+	Mon, 3 Aug 2009 09:48:48 -0400
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:54334 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754878AbZHCNsr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 09:39:32 -0400
-Subject: [RFC 2/2] new kfifo API
-From: Stefani Seibold <stefani@seibold.net>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 03 Aug 2009 15:39:23 +0200
-Message-Id: <1249306763.8358.11.camel@wall-e>
+	Mon, 3 Aug 2009 09:48:47 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqYEAMuCdkpMQWXi/2dsb2JhbACBUs8NhBgFgUqCTw
+Date: Mon, 3 Aug 2009 09:48:44 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Matthieu CASTET <matthieu.castet@parrot.com>
+Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, rostedt@goodmis.org
+Subject: Tracing thread name (was: ltt comm tracking)
+Message-ID: <20090803134843.GB23455@Krystal>
+References: <4A76E42D.7010908@parrot.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+Content-Disposition: inline
+In-Reply-To: <4A76E42D.7010908@parrot.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 09:37:41 up 156 days, 10:03,  5 users,  load average: 1.25, 0.92,
+	0.80
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-/*
- * A generic kernel FIFO implementation.
- *
- * Copyright (C) 2009 Stefani Seibold/Munich/Germany <stefani@seibold.net>
- *
- * base on work:
- * Copyright (C) 2004 Stelian Pop <stelian@popies.net>
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- *
- */
-
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/slab.h>
-#include <linux/err.h>
-#include <linux/uaccess.h>
-#include <linux/kfifo.h>
-
-struct kfifo *kfifo_alloc(unsigned long size, gfp_t gfp_mask)
-{
-	struct kfifo *fifo;
-
-	BUG_ON(size > 0x80000000);
-
-	fifo = kmalloc(sizeof(struct kfifo) + size, gfp_mask);
-	if (!fifo)
-		return ERR_PTR(-ENOMEM);
-
-	fifo->size = size;
-	fifo->in = fifo->out = 0;
-
-	return fifo;
-}
-EXPORT_SYMBOL(kfifo_alloc);
-
-void kfifo_free(struct kfifo *fifo)
-{
-	kfree(fifo);
-}
-EXPORT_SYMBOL(kfifo_free);
-
-static inline unsigned long __kfifo_put_data(struct kfifo *fifo,
-		const unsigned char *from, unsigned long n, unsigned long off)
-{
-	unsigned long	l;
-
-	/*
-	 * Ensure that we sample the fifo->out index -before- we
-	 * start putting bytes into the kfifo.
-	 */
-
-	smp_mb();
-
-	off += fifo->in;
-
-	/* first put the data starting from fifo->in to buffer end */
-	l = min(n, fifo->size - __kfifo_off(fifo, off));
-	memcpy(fifo->buf + __kfifo_off(fifo, off), from, l);
-
-	/* then put the rest (if any) at the beginning of the buffer */
-	memcpy(fifo->buf, from + l, n - l);
-
-	return 0;
-}
-
-/**
- * kfifo_put_notrim - puts data into the FIFO without cut off a record
- * @fifo: the fifo to be used.
- * @from: the data to be added.
- * @n: the size of the destination buffer.
- * @recsize: size of record field
- * @total: pointer where the total number of copied bytes should stored
- *
- * This function copies @n bytes from the @from into the FIFO
- * 
- * In case of an error, the function returns the number of bytes which cannot
- * be copied.
- */
-unsigned long __kfifo_put_notrim(struct kfifo *fifo,
-	const unsigned char *from, unsigned long n, unsigned long recsize,
-	unsigned long *total)
-{
-	if (kfifo_avail(fifo) < n + recsize) {
-		*total = n + 1;
-		return *total;
-	}
-
-	*total = n;
-
-	return __kfifo_put_data(fifo, from, n, recsize);
-}
-EXPORT_SYMBOL(__kfifo_put_notrim);
-
-unsigned long __kfifo_put_trim(struct kfifo *fifo,
-	const unsigned char *from, unsigned long n, unsigned long recsize,
-	unsigned long *total)
-{
-	unsigned long	l;
-
-	l = min(kfifo_avail(fifo), n + recsize);
-
-	if (l < recsize) {
-		*total = n + 1;
-		return *total;
-	}
-
-	*total = l - recsize;
-
-	return __kfifo_put_data(fifo, from, l - recsize, recsize);
-}
-EXPORT_SYMBOL(__kfifo_put_trim);
-
-unsigned long __kfifo_put_generic(struct kfifo *fifo,
-	const unsigned char *from, unsigned long n, unsigned long recsize,
-	unsigned long flags, unsigned long *total)
-{
-	if (!recsize)
-		return __kfifo_put(fifo, from, n, flags, total);
-	return __kfifo_put_n(fifo, from, n, recsize, flags, total);
-}
-EXPORT_SYMBOL(__kfifo_put_generic);
-
-static inline unsigned long __kfifo_get_data(struct kfifo *fifo,
-		unsigned char *to, unsigned long n, unsigned long off)
-{
-	unsigned long l;
-
-	/*
-	 * Ensure that we sample the fifo->in index -before- we
-	 * start removing bytes from the kfifo.
-	 */
-
-	smp_rmb();
-
-	off += fifo->out;
-
-	/* first get the data from fifo->out until the end of the buffer */
-	l = min(n, fifo->size - __kfifo_off(fifo, off));
-	memcpy(to, fifo->buf + __kfifo_off(fifo, off), l);
-
-	/* then get the rest (if any) from the beginning of the buffer */
-	memcpy(to + l, fifo->buf, n - l);
-
-	return 0;
-}
-
-unsigned long __kfifo_get_notrim(struct kfifo *fifo,
-	unsigned char *to, unsigned long n, unsigned long reclen,
-	unsigned long recsize, unsigned long *total)
-{
-	if (kfifo_used(fifo) < recsize) {
-		*total = 0;
-		return 0;
-	}
-
-	*total = n;
-
-	if (n < reclen)
-		return reclen;
-
-	return __kfifo_get_data(fifo, to, n, recsize);
-}
-EXPORT_SYMBOL(__kfifo_get_notrim);
-
-unsigned long __kfifo_get_trim(struct kfifo *fifo,
-	unsigned char *to, unsigned long n, unsigned long reclen,
-	unsigned long recsize, unsigned long *total)
-{
-	if (kfifo_used(fifo) < recsize) {
-		*total = 0;
-		return 0;
-	}
-
-	n = min(n, reclen);
-
-	*total = n;
-
-	return __kfifo_get_data(fifo, to, n, recsize);
-}
-EXPORT_SYMBOL(__kfifo_get_trim);
-
-unsigned long __kfifo_get_generic(struct kfifo *fifo,
-	unsigned char *to, unsigned long n, unsigned long recsize,
-	unsigned long flags, unsigned long *total)
-{
-	if (!recsize)
-		return __kfifo_get(fifo, to, n, flags, total);
-	return __kfifo_get_n(fifo, to, n, recsize, flags, total);
-}
-EXPORT_SYMBOL(__kfifo_get_generic);
-
-static inline unsigned long __kfifo_from_user_data(struct kfifo *fifo,
-	 const void __user *from, unsigned long n, unsigned long off)
-{
-	unsigned long l;
-	int ret;
-
-	/*
-	 * Ensure that we sample the fifo->out index -before- we
-	 * start putting bytes into the kfifo.
-	 */
-
-	smp_mb();
-
-	off += fifo->in;
-
-	/* first put the data starting from fifo->in to buffer end */
-	l = min(n, fifo->size - __kfifo_off(fifo, off));
-	ret = copy_from_user(fifo->buf + __kfifo_off(fifo, off), from, l);
-
-	if (unlikely(n))
-		return ret + n - l;
-
-	/* then put the rest (if any) at the beginning of the buffer */
-	ret = copy_from_user(fifo->buf, from + l, n - l);
-
-	if (unlikely(ret))
-		return ret;
-
-	return 0;
-}
-
-unsigned long __kfifo_from_user_notrim(struct kfifo *fifo,
-	const void __user *from, unsigned long n, unsigned long recsize,
-	unsigned long *total)
-{
-	if (kfifo_avail(fifo) < n + recsize) {
-		*total = n + 1;
-		return *total;
-	}
-
-	*total = n;
-
-	return __kfifo_from_user_data(fifo, from, n, recsize);
-}
-EXPORT_SYMBOL(__kfifo_from_user_notrim);
-
-unsigned long __kfifo_from_user_trim(struct kfifo *fifo,
-	const void __user *from, unsigned long n, unsigned long recsize,
-	unsigned long *total)
-{
-	unsigned long	l;
-
-	l = min(kfifo_avail(fifo), n + recsize);
-
-	if (l < recsize) {
-		*total = n + 1;
-		return *total;
-	}
-
-	*total = l - recsize;
-
-	return __kfifo_from_user_data(fifo, from, l - recsize, recsize);
-}
-EXPORT_SYMBOL(__kfifo_from_user_trim);
-
-unsigned long __kfifo_from_user_generic(struct kfifo *fifo,
-	const void __user *from, unsigned long n, unsigned long recsize,
-	unsigned long flags, unsigned long *total)
-{
-	if (!recsize)
-		return __kfifo_from_user(fifo, from, n, flags, total);
-	return __kfifo_from_user_n(fifo, from, n, recsize, flags, total);
-}
-EXPORT_SYMBOL(__kfifo_from_user_generic);
-
-static inline unsigned long __kfifo_to_user_data(struct kfifo *fifo,
-		void __user *to, unsigned long n, unsigned long off)
-{
-	unsigned long l;
-	int ret;
-
-	/*
-	 * Ensure that we sample the fifo->in index -before- we
-	 * start removing bytes from the kfifo.
-	 */
-
-	smp_rmb();
-
-	off += fifo->out;
-
-	/* first get the data from fifo->out until the end of the buffer */
-	l = min(n, fifo->size - __kfifo_off(fifo, off));
-	ret = copy_to_user(to, fifo->buf + __kfifo_off(fifo, off), l);
-
-	if (unlikely(ret))
-		return ret + n - l;
-
-	/* then get the rest (if any) from the beginning of the buffer */
-	ret = copy_to_user(to + l, fifo->buf, n - l);
-
-	if (unlikely(ret))
-		return ret;
-
-	return 0;
-}
-
-unsigned long __kfifo_to_user_notrim(struct kfifo *fifo,
-	void __user *to, unsigned long n, unsigned long reclen,
-	unsigned long recsize, unsigned long *total)
-{
-	if (kfifo_used(fifo) < recsize) {
-		*total = 0;
-		return 0;
-	}
-
-	*total = n;
-
-	if (n < reclen)
-		return reclen;
-
-	return __kfifo_to_user_data(fifo, to, n, recsize);
-}
-EXPORT_SYMBOL(__kfifo_to_user_notrim);
-
-unsigned long __kfifo_to_user_trim(struct kfifo *fifo,
-	void __user *to, unsigned long n, unsigned long reclen,
-	unsigned long recsize, unsigned long *total)
-{
-	if (kfifo_used(fifo) < recsize) {
-		*total = 0;
-		return 0;
-	}
-
-	n = min(n, reclen);
-
-	*total = n;
-
-	return __kfifo_to_user_data(fifo, to, n, recsize);
-}
-EXPORT_SYMBOL(__kfifo_to_user_trim);
-
-unsigned long __kfifo_to_user_generic(struct kfifo *fifo,
-	void __user *to, unsigned long n, unsigned long recsize,
-	unsigned long flags, unsigned long *total)
-{
-	if (!recsize)
-		return __kfifo_to_user(fifo, to, n, flags, total);
-	return __kfifo_to_user_n(fifo, to, n, recsize, flags, total);
-}
-EXPORT_SYMBOL(__kfifo_to_user_generic);
-
-unsigned long __kfifo_peek_generic(struct kfifo *fifo, unsigned long recsize)
-{
-	if (recsize == 0)
-		return kfifo_avail(fifo);
-
-	return __kfifo_peek_n(fifo, recsize);
-}
-EXPORT_SYMBOL(__kfifo_peek_generic);
-
-
-
+* Matthieu CASTET (matthieu.castet@parrot.com) wrote:
+> Hi,
+> 
+> I use ltt on a 2.6.27 on an arm architecture.
+> It works quite well, but I have a minor problem :
+> 
+> my application sets thread name with prctl PR_SET_NAME. But ltt viewer
+> doesn't seem to saw it.
+>
+
+Hrm, I guess we might want to instrument set_task_comm as you propose to
+get the correct process name, but if this gets us the thread name, I
+think it's only an implementation side-effect:
+
+If I look at the man page:
+
+PRCTL(2)
+
+       PR_SET_NAME (since Linux 2.6.9)
+              Set the process name for the calling process, using the value in
+              the location pointed to by (char *) arg2.  The name can be up to
+              16  bytes  long,  and  should  be null terminated if it contains
+              fewer bytes.
+
+It seems to officially set the process name, not thread name.
+
+The way LTTng handles thread names is by adding a userspace "thread
+branding" event. It should be executed at thread startup. The downside
+of the current LTTng approach is that we cannot know the name of threads
+already executing before we started tracing.
+
+Ideally, having something like prctl PR_SET/GET_THREAD_NAME would
+probably make sense.
+
+Mathieu
+
+> I don't know how/where ltt extracts the comm name, but may be a
+> tracepoint should be added in set_task_comm ?
+> 
+> Any idea how to make ltt use name set with prctl ?
+> This will make more easier to read trace for application with lot's of
+> threads.
+> 
+> 
+> Thanks
+> 
+> Matthieu CASTET
+> 
+> _______________________________________________
+> ltt-dev mailing list
+> ltt-dev@lists.casi.polymtl.ca
+> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
