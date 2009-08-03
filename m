@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbZHCTVN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754539AbZHCTWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501AbZHCTVN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 15:21:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754202AbZHCTVM
+	id S1754539AbZHCTWj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 15:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754271AbZHCTWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 15:21:12 -0400
-Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:58255 "EHLO
-	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752665AbZHCTVL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 15:21:11 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: Re: nfs: __setup_str_nfs_root_setup causes a section type conflict
-Date: Mon, 3 Aug 2009 21:21:08 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       parisc-linux@lists.parisc-linux.org, Helge Deller <deller@gmx.de>
-References: <200907311446.33486.elendil@planet.nl> <200908020010.30459.elendil@planet.nl> <1249323782.18161.2.camel@heimdal.trondhjem.org>
-In-Reply-To: <1249323782.18161.2.camel@heimdal.trondhjem.org>
+	Mon, 3 Aug 2009 15:22:39 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43210 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754211AbZHCTWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 15:22:38 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Subject: Re: [PATCH V2] au1xmmc: dev_pm_ops conversion
+Date: Mon, 3 Aug 2009 21:23:16 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc5-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>
+References: <20090803163304.GF5002@laptop>
+In-Reply-To: <20090803163304.GF5002@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200908032121.10635.elendil@planet.nl>
-X-OriginalArrivalTime: 03 Aug 2009 19:21:11.0455 (UTC) FILETIME=[8F7A1AF0:01CA146F]
+Message-Id: <200908032123.17069.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 August 2009, Trond Myklebust wrote:
-> > > /home/fjp/projects/kernel/linux-2.6/fs/nfs/nfsroot.c:403:
-> > >     error: __setup_str_nfs_root_setup causes a section type
-> > > conflict
->
-> If you do a 'make fs/nfs/nfsroot.i', and then look at the resulting
-> file fs/nfs/nfsroot.i, what does the line that defines
-> '__setup_str_nfs_root_setup' look like?
+On Monday 03 August 2009, Albin Tonnerre wrote:
+> On Sat, Jul 25, 2009, Frans Pop wrote:
+> > Yes, I see that in drivers/base/platform.c (legacy) .suspend resp. .resume
+> > also got called for those cases?
+> > Ouch :-(
+> 
+> This really looks like it's error-prone (I made this mistake for atmel_serial
+> and wouldn't have noticed if Frans hadn't told me), and AFAICS, for a number of
+> drivers we'll have suspend = freeze = poweroff and resume = thaw = restore.
+> Maybe putting something like this in pm.h would help ?
+> 
+> #define PM_OPS(name, suspend, resume) \
+> struct dev_pm_ops name = { \
+> 	.suspend = suspend, \
+> 	.resume = resume, \
+> 	.freeze = suspend, \
+> 	.thaw = resume, \
+> 	.poweroff = suspend, \
+> 	.restore = resume, \
+> };
 
-$ grep __setup_str_nfs_root_setup fs/nfs/nfsroot.i
+That looks like a good idea, but please call that macro SIMPLE_PM_OPS (or
+something similar) and submit a patch.
 
-static const char __setup_str_nfs_root_setup[] __attribute__ 
-((__section__(".init.rodata"))) __attribute__((aligned(1))) = "nfsroot="; 
-static struct obs_kernel_param __setup_nfs_root_setup 
-__attribute__((__used__)) __attribute__ ((__section__(".init.setup"))) 
-__attribute__((aligned((sizeof(long))))) = { __setup_str_nfs_root_setup, 
-nfs_root_setup, 0 };
+Best,
+Rafael
