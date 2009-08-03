@@ -1,91 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754028AbZHCL4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbZHCL6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754028AbZHCL4g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 07:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbZHCL4g
+	id S1754574AbZHCL6V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 07:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZHCL6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 07:56:36 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:60365 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752230AbZHCL4f (ORCPT
+	Mon, 3 Aug 2009 07:58:20 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44201 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752735AbZHCL6U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 07:56:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=p1xHjg4P1GOYtxVj+7d+WK+JcVHTxS6kgGAAhR0HkWkco7gspLDR1VnXQlq7/XAESM
-         0s4YTSTec8Hro1DxpURPji/aEg1si3dH8B+6VyqxljED1099Ez/nQxor+oQx0AZ8ZDBt
-         YOuIC5QMeTvJtX5bSXMzITEmGsp719NqyLv2k=
-Message-ID: <4A76D136.2040900@gmail.com>
-Date: Mon, 03 Aug 2009 13:59:50 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Mon, 3 Aug 2009 07:58:20 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Paul Menage <menage@google.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <alpine.DEB.2.00.0907310210460.25447@chino.kir.corp.google.com>
+References: <20090731091744.B6DE.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0907310210460.25447@chino.kir.corp.google.com>
+Message-Id: <20090803200639.CC1D.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] mwave: Read buffer overflow
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon,  3 Aug 2009 20:58:16 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check whether index is within bounds before grabbing the element.
+> On Fri, 31 Jul 2009, KOSAKI Motohiro wrote:
+> 
+> > > That's because the oom killer only really considers the highest oom_adj 
+> > > value amongst all threads that share the same mm.  Allowing those threads 
+> > > to each have different oom_adj values leads (i) to an inconsistency in 
+> > > reporting /proc/pid/oom_score for how the oom killer selects a task to 
+> > > kill and (ii) the oom killer livelock that it fixes when one thread 
+> > > happens to be OOM_DISABLE.
+> > 
+> > I agree both. again I only disagree ABI breakage regression and
+> > stupid new /proc interface.
+> 
+> Let's state the difference in behavior as of 2.6.31-rc1: applications can 
+> no longer change the oom_adj value of a vfork() child prior to exec() 
+> without it also affecting the parent.  I agree that was previously 
+> allowed.  And it was that very allowance that LEADS TO THE LIVELOCK 
+> because they both share a VM and it was possible for the oom killer to 
+> select the one of the threads while the other was OOM_DISABLE.
+> 
+> This is an extremely simple livelock to trigger, AND YOU DON'T EVEN NEED 
+> CAP_SYS_RESOURCE TO DO IT.  Consider a job scheduler that superuser has 
+> set to OOM_DISABLE because of its necessity to the system.  Imagine if 
+> that job scheduler vfork's a child and sets its inherited oom_adj value of 
+> OOM_DISABLE to something higher so that the machine doesn't panic on 
+> exec() when the child spikes in memory usage when the application first 
+> starts.
+> 
+> Now imagine that either there are no other user threads or the job 
+> scheduler itself has allocated more pages than any other thread.  Or, more 
+> simply, imagine that it sets the child's oom_adj value to a higher 
+> priority than other threads based on some heuristic.  Regardless, if the 
+> system becomes oom before the exec() can happen and before the new VM is 
+> attached to the child, the machine livelocks.
+> 
+> That happens because of two things:
+> 
+>  - the oom killer uses the oom_adj value to adjust the oom_score for a
+>    task, and that score is mainly based on the size of each thread's VM,
+>    and
+> 
+>  - the oom killer cannot kill a thread that shares a VM with an
+>    OOM_DISABLE thread because it will not lead to future memory freeing.
+> 
+> So the preferred solution for complete consistency and to fix the livelock 
+> is to make the oom_adj value a characteristic of the VM, because THAT'S 
+> WHAT IT ACTS ON.  The effective oom_adj value for a thread is always equal 
+> to the highest oom_adj value of any thread sharing its VM.
+> 
+> Do we really want to keep this inconsistency around forever in the kernel 
+> so that /proc/pid/oom_score actually means NOTHING because another thread 
+> sharing the memory has a different oom_adj?  Or do we want to take the 
+> opportunity to fix a broken userspace model that leads to a livelock to 
+> fix it and move on with a consistent interface and, with oom_adj_child, 
+> all the functionality you had before.
+> 
+> And you and KAMEZAWA-san can continue to call my patches stupid, but 
+> that's not adding anything to your argument.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/char/mwave/mwavedd.c b/drivers/char/mwave/mwavedd.c
-index 94ad2c3..c6e6345 100644
---- a/drivers/char/mwave/mwavedd.c
-+++ b/drivers/char/mwave/mwavedd.c
-@@ -281,12 +281,6 @@ static long mwave_ioctl(struct file *file, unsigned int iocmd,
- 		case IOCTL_MW_REGISTER_IPC: {
- 			unsigned int ipcnum = (unsigned int) ioarg;
- 	
--			PRINTK_3(TRACE_MWAVE,
--				"mwavedd::mwave_ioctl IOCTL_MW_REGISTER_IPC"
--				" ipcnum %x entry usIntCount %x\n",
--				ipcnum,
--				pDrvData->IPCs[ipcnum].usIntCount);
--	
- 			if (ipcnum >= ARRAY_SIZE(pDrvData->IPCs)) {
- 				PRINTK_ERROR(KERN_ERR_MWAVE
- 						"mwavedd::mwave_ioctl:"
-@@ -295,6 +289,12 @@ static long mwave_ioctl(struct file *file, unsigned int iocmd,
- 						ipcnum);
- 				return -EINVAL;
- 			}
-+			PRINTK_3(TRACE_MWAVE,
-+				"mwavedd::mwave_ioctl IOCTL_MW_REGISTER_IPC"
-+				" ipcnum %x entry usIntCount %x\n",
-+				ipcnum,
-+				pDrvData->IPCs[ipcnum].usIntCount);
-+	
- 			lock_kernel();
- 			pDrvData->IPCs[ipcnum].bIsHere = FALSE;
- 			pDrvData->IPCs[ipcnum].bIsEnabled = TRUE;
-@@ -310,11 +310,6 @@ static long mwave_ioctl(struct file *file, unsigned int iocmd,
- 		case IOCTL_MW_GET_IPC: {
- 			unsigned int ipcnum = (unsigned int) ioarg;
- 	
--			PRINTK_3(TRACE_MWAVE,
--				"mwavedd::mwave_ioctl IOCTL_MW_GET_IPC"
--				" ipcnum %x, usIntCount %x\n",
--				ipcnum,
--				pDrvData->IPCs[ipcnum].usIntCount);
- 			if (ipcnum >= ARRAY_SIZE(pDrvData->IPCs)) {
- 				PRINTK_ERROR(KERN_ERR_MWAVE
- 						"mwavedd::mwave_ioctl:"
-@@ -322,6 +317,11 @@ static long mwave_ioctl(struct file *file, unsigned int iocmd,
- 						" Invalid ipcnum %x\n", ipcnum);
- 				return -EINVAL;
- 			}
-+			PRINTK_3(TRACE_MWAVE,
-+				"mwavedd::mwave_ioctl IOCTL_MW_GET_IPC"
-+				" ipcnum %x, usIntCount %x\n",
-+				ipcnum,
-+				pDrvData->IPCs[ipcnum].usIntCount);
- 	
- 			lock_kernel();
- 			if (pDrvData->IPCs[ipcnum].bIsEnabled == TRUE) {
+Then, your patch will got full reverting ;)
+I wouldn't hope this... please.
+
+
+> 
+> > Paul already pointed out this issue can be fixed without ABI change.
+> > 
+> 
+> I'm unaware of any viable solution that has been proposed, sorry.
+
+Please see my another mail. it's contain the patch.
+
+
+> > if you feel my stand point is double standard, I need explain me more.
+> > So, I don't think per-process oom_adj makes any regression on _real_ world.
+> 
+> Wrong, our machines have livelocked because of the exact scenario I 
+> described above.
+
+Hua?
+David, per-process oom_adj was made _your_ patch. Do you propose
+NAK yourself patch?
+
+maybe, We made any miscommunication?
+
+> > but vfork()'s one is real world issue.
+> > 
+> 
+> And it's based on a broken assumption that oom_adj values actually mean 
+> anything independent of other threads sharing the same memory.  That's a 
+> completely false assumption.  Applications that are tuning oom_adj value 
+> will rely on oom_scores, which are currently false if oom_adj differs 
+> amongst those threads, and should be written to how the oom killer uses 
+> the value.
+
+No. another process have another process value is valid assumption.
+sharing struct_mm is deeply implementaion detail. it shouldn't be
+exposed userland.
+
+Why do you think false assumption? In UNIX/Linux programming
+is frequently used following idiom.
+
+	if (fork() == 0) {
+		setting_something_process_property();
+		execve("new-command");
+	}
+
+vfork() is also frequently used. It is allowed long time common practice.
+I don't think we can says "hey, you are silly!" to application developer.
+
+
+> 
+> > And, May I explay why I think your oom_adj_child is wrong idea?
+> > The fact is: new feature introducing never fix regression. yes, some
+> > application use new interface and disappear the problem. but other
+> > application still hit the problem. that's not correct development style
+> > in kernel.
+> > 
+> 
+> So you're proposing that we forever allow /proc/pid/oom_score to be 
+> completely wrong for pid without any knowledge to userspace?  That we 
+> falsely advertise what it represents and allow userspace to believe that 
+> changing oom_adj for a thread sharing memory with other threads actually 
+> changes how the oom killer selects tasks?
+
+No. perhaps no doublly.
+
+1) In my patch, oom_score is also per-process value. all thread have the same
+   oom_score.
+   It's clear meaning.
+2) In almost case, oom_score display collect value because oom_adj is per-process
+   value too. 
+   Yes, there is one exception. vfork() and change oom_adj'ed process might display 
+   wrong value. but I don't think it is serious problem because vfork() process call
+   exec() soon.
+   Administrator never recognize this difference.
+
+> Please.
+
+David, I hope you join to fix this regression. I can't believe we
+can't fix this issue honestly.
+
+
+
+
+
