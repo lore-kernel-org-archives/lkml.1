@@ -1,128 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbZHCJZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbZHCJ0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754705AbZHCJZR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 05:25:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbZHCJZR
+	id S1754721AbZHCJ0u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 05:26:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbZHCJ0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 05:25:17 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:42758 "EHLO kernel.dk"
+	Mon, 3 Aug 2009 05:26:50 -0400
+Received: from mga11.intel.com ([192.55.52.93]:56539 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753252AbZHCJZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 05:25:15 -0400
-Date: Mon, 3 Aug 2009 11:25:15 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Chris Mason <chris.mason@oracle.com>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "dm-devel@redhat.com" <dm-devel@redhat.com>, Neil Brown <neilb@suse.de>,
-       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>
-Subject: Re: Why does __do_page_cache_readahead submit READ, not READA?
-Message-ID: <20090803092515.GK12579@kernel.dk>
-References: <20090729161456.GB8059@barkeeper1-xen.linbit> <20090729211845.GB4148@kernel.dk> <20090729225501.GH24801@think> <20090730060649.GC4148@kernel.dk> <20090803075202.GA13485@localhost> <20090803075933.GI12579@kernel.dk> <20090803082318.GA18731@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090803082318.GA18731@localhost>
+	id S1754529AbZHCJ0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 05:26:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,313,1246863600"; 
+   d="scan'208";a="480201921"
+Subject: Re: [PATCH V2 4/4] i8042: support async suspend and shutdown
+From: Zhang Rui <rui.zhang@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Arjan van de Ven <arjan@linux.intel.com>, "dtor@mail.ru" <dtor@mail.ru>
+In-Reply-To: <20090724071411.GB10760@elf.ucw.cz>
+References: <1248404532.2670.112.camel@rzhang-dt>
+	 <20090724071411.GB10760@elf.ucw.cz>
+Content-Type: text/plain
+Date: Mon, 03 Aug 2009 17:26:30 +0800
+Message-Id: <1249291590.2670.263.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 03 2009, Wu Fengguang wrote:
-> On Mon, Aug 03, 2009 at 03:59:33PM +0800, Jens Axboe wrote:
-> > On Mon, Aug 03 2009, Wu Fengguang wrote:
-> > > On Thu, Jul 30, 2009 at 08:06:49AM +0200, Jens Axboe wrote:
-> > > > On Wed, Jul 29 2009, Chris Mason wrote:
-> > > > > On Wed, Jul 29, 2009 at 11:18:45PM +0200, Jens Axboe wrote:
-> > > > > > On Wed, Jul 29 2009, Lars Ellenberg wrote:
-> > > > > > > I naively assumed, from the "readahead" in the name, that readahead
-> > > > > > > would be submitting READA bios. It does not.
-> > > > > > > 
-> > > > > > > I recently did some statistics on how many READ and READA requests
-> > > > > > > we actually see on the block device level.
-> > > > > > > I was suprised that READA is basically only used for file system
-> > > > > > > internal meta data (and not even for all file systems),
-> > > > > > > but _never_ for file data.
-> > > > > > > 
-> > > > > > > A simple
-> > > > > > > 	dd if=bigfile of=/dev/null bs=4k count=1
-> > > > > > > will absolutely cause readahead of the configured amount, no problem.
-> > > > > > > But on the block device level, these are READ requests, where I'd
-> > > > > > > expected them to be READA requests, based on the name.
-> > > > > > > 
-> > > > > > > This is because __do_page_cache_readahead() calls read_pages(),
-> > > > > > > which in turn is mapping->a_ops->readpages(), or, as fallback,
-> > > > > > > mapping->a_ops->readpage().
-> > > > > > > 
-> > > > > > > On that level, all variants end up submitting as READ.
-> > > > > > > 
-> > > > > > > This may even be intentional.
-> > > > > > > But if so, I'd like to understand that.
-> > > > > > 
-> > > > > > I don't think it's intentional, and if memory serves, we used to use
-> > > > > > READA when submitting read-ahead. Not sure how best to improve the
-> > > > > > situation, since (as you describe), we lose the read-ahead vs normal
-> > > > > > read at that level. I did some experimentation some time ago for
-> > > > > > flagging this, see:
-> > > > > > 
-> > > > > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=16cfe64e3568cda412b3cf6b7b891331946b595e
-> > > > > > 
-> > > > > > which should pass down READA properly.
-> > > > > 
-> > > > > One of the problems in the past was that reada would fail if there
-> > > > > wasn't a free request when we actually wanted it to go ahead and wait.
-> > > > > Or something.  We've switched it around a few times I think.
-> > > > 
-> > > > Yes, we did used to do that, whether it was 2.2 or 2.4 I
-> > > > don't recall :-)
-> > > > 
-> > > > It should be safe to enable know, whether there's a prettier way
-> > > > than the above, I don't know. It works by detecting the read-ahead
-> > > > marker, but it's a bit of a fragile design.
-> > > 
-> > > Another consideration is io-priority reversion and the overheads
-> > > required to avoid it:
-> > > 
-> > >         readahead(pages A-Z)    => READA IO for pages A-Z
-> > >         <short time later>
-> > >         read(page A) => blocked => find the request that contains page A
-> > >                                    and requeue/kick it as READ IO
-> > > 
-> > > The page-to-request lookups are not always required but nevertheless
-> > > the complexity and overheads won't be trivial.
-> > > 
-> > > The page-to-request lookup feature would be also useful for "advanced"
-> > > features like io-canceling (if implemented, hwpoison could be its
-> > > first user ;)
+On Fri, 2009-07-24 at 15:14 +0800, Pavel Machek wrote:
+> On Fri 2009-07-24 11:02:12, Zhang Rui wrote:
 > > 
-> > I added that 3-4 years ago or so, to experiment with in-kernel
-> > cancellation for things like truncate(). Tracking pages is not cheap,
-> > and since the write cancelling wasn't really very sucessful, I didn't go
-> > ahead with it.
+> > i8042 controller support device async actions.
+> > 
+> > If boot option "dev_async_action" is added,
+> > i8042 controller and its child devices can be
+> > suspended/shutdown asynchronously.
+> > 
+> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> > ---
+> >  drivers/input/serio/i8042.c |   10 +++++++++-
+> >  1 file changed, 9 insertions(+), 1 deletion(-)
+> > 
+> > Index: linux-2.6/drivers/input/serio/i8042.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/input/serio/i8042.c
+> > +++ linux-2.6/drivers/input/serio/i8042.c
+> > @@ -1285,14 +1285,21 @@ static int __init i8042_init(void)
+> >  		goto err_unregister_driver;
+> >  	}
+> >  
+> > -	err = platform_device_add(i8042_platform_device);
+> > +	err = dev_async_register(&i8042_platform_device->dev,
+> > +			DEV_ASYNC_SUSPEND | DEV_ASYNC_SHUTDOWN);
+> >  	if (err)
+> >  		goto err_free_device;
+> >  
+> > +	err = platform_device_add(i8042_platform_device);
+> > +	if (err)
+> > +		goto err_dev_async_unregister;
+> > +
+> >  	panic_blink = i8042_panic_blink;
+> >  
+> >  	return 0;
+> >  
+> > + err_dev_async_unregister:
+> > +	dev_async_unregister(&i8042_platform_device->dev);
+> >   err_free_device:
+> >  	platform_device_put(i8042_platform_device);
+> >   err_unregister_driver:
 > 
-> Ah OK.
+> I still do not like the interface: manually unregistering seems to be
+> ugly & error prone.
 > 
-> > So I'm not sure it's a viable alternative, even if we restricted it to
-> > just tracking READA's, for instance.
-> 
-> Kind of agreed. I guess it won't benefit too much workloads to default
-> to READA; for most workloads it would be pure overheads if considering
-> priority inversion.
-> 
-> > But I don't think we have any priority inversion to worry about, at
-> > least not from the CFQ perspective.
-> 
-> The priority inversion problem showed up in an early attempt to do
-> boot time prefetching. I guess this problem was somehow circumvented
-> by limiting the prefetch depth and do prefetches in original read
-> order instead of disk location order (Arjan cc'ed).
+hmm, yes, we can check device->dev_async and unregister it in driver
+core, at device_unregister time.
 
-But was that not due to the prefetcher running at a lower cpu priority?
-Just flagging a reada hint will not change your priority in the IO
-scheduler, so we should have no priority inversion there.
+then I think we should rename the interfaces to:
+device_enable_async_action(dev, type),
+and device_disable_async_action(dev)
+so that they are more like driver core helper functions.
+what do you think?
 
--- 
-Jens Axboe
+thanks,
+rui
+> > @@ -1305,6 +1312,7 @@ static int __init i8042_init(void)
+> >  
+> >  static void __exit i8042_exit(void)
+> >  {
+> > +	dev_async_unregister(&i8042_platform_device->dev);
+> >  	platform_device_unregister(i8042_platform_device);
+> >  	platform_driver_unregister(&i8042_driver);
+> >  	i8042_platform_exit();
+> > 
+> 
 
