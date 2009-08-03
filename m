@@ -1,251 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752793AbZHCHpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753041AbZHCHqE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752793AbZHCHpg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 03:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbZHCHpf
+	id S1753041AbZHCHqE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 03:46:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbZHCHqD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 03:45:35 -0400
-Received: from mga09.intel.com ([134.134.136.24]:6657 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752660AbZHCHpe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 03:45:34 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,312,1246863600"; 
-   d="scan'208";a="538085010"
-From: Huang Ying <ying.huang@intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
-       Huang Ying <ying.huang@intel.com>
-Subject: [PATCH -v2 1/5] crypto: Add GHASH digest algorithm for GCM
-Date: Mon,  3 Aug 2009 15:45:27 +0800
-Message-Id: <1249285531-22422-1-git-send-email-ying.huang@intel.com>
-X-Mailer: git-send-email 1.6.3.3
+	Mon, 3 Aug 2009 03:46:03 -0400
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:35148 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753071AbZHCHqA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 03:46:00 -0400
+Date: Mon, 3 Aug 2009 13:15:54 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
+Subject: Re: ext4 ioctl(FIEMAP) bug? observed in 2.6.29.4 (32-bit x86)
+Message-ID: <20090803074554.GA21042@skywalker>
+References: <4A76069C.1010801@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A76069C.1010801@rtr.ca>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-GHASH is implemented as a shash algorithm. The actual implementation
-is copied from gcm.c. This makes it possible to add
-architecture/hardware accelerated GHASH implementation.
+On Sun, Aug 02, 2009 at 05:35:24PM -0400, Mark Lord wrote:
+> I have been stressing out the FIEMAP ioctl() quite a bit recently,
+> while working on the wiper.sh SSD TRIM utility (part of the hdparm package).
+>
+> For an hour or so today, things got very confusing.
+> My wiper.sh script stopped working correctly, and I narrowed
+> it down to FIEMAP's incorrect use of the "LAST" flag.
+>
+> Normally, FIEMAP signals the final extent of a file by
+> setting the "LAST" bit (bit-0) in flags.
+> When the application sees this flag, it knows it should
+> not need to issue any more FIEMAP calls.
+>
+> But suddenly, for a couple of hours today, FIEMAP began
+> setting the "LAST" flag on every single FIEMAP call,
+> tricking my code into thinking that the file being
+> queried was a lot smaller than it really was.
+>
+> No strace(), because I still hadn't figured-out what was going on,
+> but I did save this trace from debug code inside hdparm.
+>
+> The file being FIEMAP'd was a 50GB+ file, filling the ext4
+> filesystem to near 100% capacity.  I have no idea what caused
+> FIEMAP to misbehave, but after a couple of hours it suddenly
+> started working correctly again.
+>
+> This was all observed on 32-bit x86 Linux-2.6.29.4,
+> and no, it is not reproduceable.
+>
+> A command-line "sync" was done before the file was
+> opened for FIEMAP.
+>
+> The output below shows the sequence of FIEMAP calls
+> on the single massive file.  Notice that the first call
+> returned the "LAST" flag set, despite there being many
+> many more extents after that bunch.
+>
 
-v2:
- - Fix a bug in Makefile (Thanks Sebastian)
- - Some other minor fixes
+Can you try with
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
----
- crypto/Kconfig         |    7 ++
- crypto/Makefile        |    1 +
- crypto/ghash-generic.c |  170 ++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 178 insertions(+), 0 deletions(-)
- create mode 100644 crypto/ghash-generic.c
+commit c9877b205f6ce7943bb95281342f4001cc1c00ec
+Author: Eric Sandeen <sandeen@redhat.com>
+Date:   Fri May 1 23:32:06 2009 -0400
 
-diff --git a/crypto/Kconfig b/crypto/Kconfig
-index f2002d8..0ae170e 100644
---- a/crypto/Kconfig
-+++ b/crypto/Kconfig
-@@ -290,6 +290,13 @@ config CRYPTO_CRC32C_INTEL
- 	  gain performance compared with software implementation.
- 	  Module will be crc32c-intel.
- 
-+config CRYPTO_GHASH
-+	tristate "GHASH digest algorithm"
-+	select CRYPTO_SHASH
-+	select CRYPTO_GF128MUL
-+	help
-+	  GHASH is message digest algorithm for GCM (Galois/Counter Mode).
-+
- config CRYPTO_MD4
- 	tristate "MD4 digest algorithm"
- 	select CRYPTO_HASH
-diff --git a/crypto/Makefile b/crypto/Makefile
-index 3c961b4..c2ca721 100644
---- a/crypto/Makefile
-+++ b/crypto/Makefile
-@@ -82,6 +82,7 @@ obj-$(CONFIG_CRYPTO_RNG2) += rng.o
- obj-$(CONFIG_CRYPTO_RNG2) += krng.o
- obj-$(CONFIG_CRYPTO_ANSI_CPRNG) += ansi_cprng.o
- obj-$(CONFIG_CRYPTO_TEST) += tcrypt.o
-+obj-$(CONFIG_CRYPTO_GHASH) += ghash-generic.o
- 
- #
- # generic algorithms and the async_tx api
-diff --git a/crypto/ghash-generic.c b/crypto/ghash-generic.c
-new file mode 100644
-index 0000000..be44256
---- /dev/null
-+++ b/crypto/ghash-generic.c
-@@ -0,0 +1,170 @@
-+/*
-+ * GHASH: digest algorithm for GCM (Galois/Counter Mode).
-+ *
-+ * Copyright (c) 2007 Nokia Siemens Networks - Mikko Herranen <mh1@iki.fi>
-+ * Copyright (c) 2009 Intel Corp.
-+ *   Author: Huang Ying <ying.huang@intel.com>
-+ *
-+ * The algorithm implementation is copied from gcm.c.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ */
-+
-+#include <crypto/algapi.h>
-+#include <crypto/gf128mul.h>
-+#include <crypto/internal/hash.h>
-+#include <linux/crypto.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+
-+#define GHASH_BLOCK_SIZE	16
-+#define GHASH_DIGEST_SIZE	16
-+
-+struct ghash_ctx {
-+	struct gf128mul_4k *gf128;
-+};
-+
-+struct ghash_desc_ctx {
-+	u8 buffer[GHASH_BLOCK_SIZE];
-+	u32 bytes;
-+};
-+
-+static int ghash_init(struct shash_desc *desc)
-+{
-+	struct ghash_desc_ctx *dctx = shash_desc_ctx(desc);
-+
-+	memset(dctx, 0, sizeof(*dctx));
-+
-+	return 0;
-+}
-+
-+static int ghash_setkey(struct crypto_shash *tfm,
-+			const u8 *key, unsigned int keylen)
-+{
-+	struct ghash_ctx *ctx = crypto_shash_ctx(tfm);
-+
-+	if (keylen != GHASH_BLOCK_SIZE) {
-+		crypto_shash_set_flags(tfm, CRYPTO_TFM_RES_BAD_KEY_LEN);
-+		return -EINVAL;
-+	}
-+
-+	if (ctx->gf128)
-+		gf128mul_free_4k(ctx->gf128);
-+	ctx->gf128 = gf128mul_init_4k_lle((be128 *)key);
-+	if (!ctx->gf128)
-+		return -ENOMEM;
-+
-+	return 0;
-+}
-+
-+static int ghash_update(struct shash_desc *desc,
-+			 const u8 *src, unsigned int srclen)
-+{
-+	struct ghash_desc_ctx *dctx = shash_desc_ctx(desc);
-+	struct ghash_ctx *ctx = crypto_shash_ctx(desc->tfm);
-+	u8 *dst = dctx->buffer;
-+
-+	if (dctx->bytes) {
-+		int n = min(srclen, dctx->bytes);
-+		u8 *pos = dst + (GHASH_BLOCK_SIZE - dctx->bytes);
-+
-+		dctx->bytes -= n;
-+		srclen -= n;
-+
-+		while (n--)
-+			*pos++ ^= *src++;
-+
-+		if (!dctx->bytes)
-+			gf128mul_4k_lle((be128 *)dst, ctx->gf128);
-+	}
-+
-+	while (srclen >= GHASH_BLOCK_SIZE) {
-+		crypto_xor(dst, src, GHASH_BLOCK_SIZE);
-+		gf128mul_4k_lle((be128 *)dst, ctx->gf128);
-+		src += GHASH_BLOCK_SIZE;
-+		srclen -= GHASH_BLOCK_SIZE;
-+	}
-+
-+	if (srclen) {
-+		dctx->bytes = GHASH_BLOCK_SIZE - srclen;
-+		while (srclen--)
-+			*dst++ ^= *src++;
-+	}
-+
-+	return 0;
-+}
-+
-+static void ghash_flush(struct ghash_ctx *ctx, struct ghash_desc_ctx *dctx)
-+{
-+	u8 *dst = dctx->buffer;
-+
-+	if (dctx->bytes) {
-+		u8 *tmp = dst + (GHASH_BLOCK_SIZE - dctx->bytes);
-+
-+		while (dctx->bytes--)
-+			*tmp++ ^= 0;
-+
-+		gf128mul_4k_lle((be128 *)dst, ctx->gf128);
-+	}
-+
-+	dctx->bytes = 0;
-+}
-+
-+static int ghash_final(struct shash_desc *desc, u8 *dst)
-+{
-+	struct ghash_desc_ctx *dctx = shash_desc_ctx(desc);
-+	struct ghash_ctx *ctx = crypto_shash_ctx(desc->tfm);
-+	u8 *buf = dctx->buffer;
-+
-+	ghash_flush(ctx, dctx);
-+	memcpy(dst, buf, GHASH_BLOCK_SIZE);
-+
-+	return 0;
-+}
-+
-+static void ghash_exit_tfm(struct crypto_tfm *tfm)
-+{
-+	struct ghash_ctx *ctx = crypto_tfm_ctx(tfm);
-+	if (ctx->gf128)
-+		gf128mul_free_4k(ctx->gf128);
-+}
-+
-+static struct shash_alg ghash_alg = {
-+	.digestsize	= GHASH_DIGEST_SIZE,
-+	.init		= ghash_init,
-+	.update		= ghash_update,
-+	.final		= ghash_final,
-+	.setkey		= ghash_setkey,
-+	.descsize	= sizeof(struct ghash_desc_ctx),
-+	.base		= {
-+		.cra_name		= "ghash",
-+		.cra_driver_name	= "ghash-generic",
-+		.cra_priority		= 100,
-+		.cra_flags		= CRYPTO_ALG_TYPE_SHASH,
-+		.cra_blocksize		= GHASH_BLOCK_SIZE,
-+		.cra_ctxsize		= sizeof(struct ghash_ctx),
-+		.cra_module		= THIS_MODULE,
-+		.cra_list		= LIST_HEAD_INIT(ghash_alg.base.cra_list),
-+		.cra_exit		= ghash_exit_tfm,
-+	},
-+};
-+
-+static int __init ghash_mod_init(void)
-+{
-+	return crypto_register_shash(&ghash_alg);
-+}
-+
-+static void __exit ghash_mod_exit(void)
-+{
-+	crypto_unregister_shash(&ghash_alg);
-+}
-+
-+module_init(ghash_mod_init);
-+module_exit(ghash_mod_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("GHASH Message Digest Algorithm");
-+MODULE_ALIAS("ghash");
--- 
-1.6.3.3
+    ext4: fix for fiemap last-block test
 
+-aneesh
