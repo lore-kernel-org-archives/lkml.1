@@ -1,64 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752930AbZHCRkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753012AbZHCRka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752930AbZHCRkX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 13:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbZHCRkX
+	id S1753012AbZHCRka (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 13:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZHCRk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 13:40:23 -0400
-Received: from lider.uludag.org.tr ([193.140.100.216]:33124 "EHLO
-	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751339AbZHCRkW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 13:40:22 -0400
-Message-ID: <4A772105.6060101@pardus.org.tr>
-Date: Mon, 03 Aug 2009 20:40:21 +0300
-From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Mon, 3 Aug 2009 13:40:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51761 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752940AbZHCRk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 13:40:27 -0400
+Date: Mon, 3 Aug 2009 17:39:38 GMT
+From: tip-bot for Thomas Hellstrom <thellstrom@vmware.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       thellstrom@vmware.com, stable@kernel.org, suresh.b.siddha@intel.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       thellstrom@vmware.com, stable@kernel.org, suresh.b.siddha@intel.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1249284345-7654-1-git-send-email-thellstrom@vmware.com>
+References: <1249284345-7654-1-git-send-email-thellstrom@vmware.com>
+Subject: [tip:x86/urgent] x86: Fix CPA memtype reserving in the set_pages_array*() cases
+Message-ID: <tip-8523acfe40efc1a8d3da8f473ca67cb195b06f0c@git.kernel.org>
+Git-Commit-ID: 8523acfe40efc1a8d3da8f473ca67cb195b06f0c
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de
-CC: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/urgent] x86: Add quirk to make Apple MacBook5,2 use
- reboot=pci
-References: <19062.56420.501516.316181@cargo.ozlabs.ibm.com> <tip-1961b971360c685e15dff59929c39ced6c46e171@git.kernel.org>
-In-Reply-To: <tip-1961b971360c685e15dff59929c39ced6c46e171@git.kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 03 Aug 2009 17:39:50 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tip-bot for Paul Mackerras wrote:
-> Commit-ID:  1961b971360c685e15dff59929c39ced6c46e171
-> Gitweb:     http://git.kernel.org/tip/1961b971360c685e15dff59929c39ced6c46e171
-> Author:     Paul Mackerras <paulus@samba.org>
-> AuthorDate: Mon, 3 Aug 2009 22:47:32 +1000
-> Committer:  H. Peter Anvin <hpa@zytor.com>
-> CommitDate: Mon, 3 Aug 2009 08:07:18 -0700
->
-> x86: Add quirk to make Apple MacBook5,2 use reboot=pci
->
-> The latest Apple MacBook (MacBook5,2) doesn't reboot successfully
-> under Linux; neither the EFI reboot method nor the default method
-> using the keyboard controller works (the system just hangs and doesn't
-> reset).  However, the method using the "PCI reset register" at 0xcf9
-> does work.
->
-> This adds a quirk to detect this machine via DMI and force the
-> reboot_type to BOOT_CF9.  With this it reboots successfully without
-> requiring a command-line option.  Note that the EFI code forces
-> reboot_type to BOOT_EFI when the machine is booted via EFI, but this
-> overrides that since the core_initcall runs after the EFI
-> initialization code.
->   
+Commit-ID:  8523acfe40efc1a8d3da8f473ca67cb195b06f0c
+Gitweb:     http://git.kernel.org/tip/8523acfe40efc1a8d3da8f473ca67cb195b06f0c
+Author:     Thomas Hellstrom <thellstrom@vmware.com>
+AuthorDate: Mon, 3 Aug 2009 09:25:45 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 3 Aug 2009 19:36:09 +0200
 
-MacBookPro5,1 has also this problem. I booted with reboot=pci on
-2.6.30.4 and now it rebooted without problem.
-That would be nice if you could add another quirk entry for it:
+x86: Fix CPA memtype reserving in the set_pages_array*() cases
 
-System Information
-        Manufacturer: Apple Inc.
-        Product Name: MacBookPro5,1
+The code was incorrectly reserving memtypes using the page
+virtual address instead of the physical address. Furthermore,
+the code was not ignoring highmem pages as it ought to.
 
-Thanks!
-Ozan Caglayan
+( upstream does not pass in highmem pages yet - but upcoming
+  graphics code will do it and there's no reason to not handle
+  this properly in the CPA APIs.)
+
+Fixes: http://bugzilla.kernel.org/show_bug.cgi?id=13884
+
+Signed-off-by: Thomas Hellstrom <thellstrom@vmware.com>
+Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: <stable@kernel.org>
+Cc: dri-devel@lists.sourceforge.net
+Cc: venkatesh.pallipadi@intel.com
+LKML-Reference: <1249284345-7654-1-git-send-email-thellstrom@vmware.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/mm/pageattr.c |   30 +++++++++++++++++++++---------
+ 1 files changed, 21 insertions(+), 9 deletions(-)
+
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index 895d90e..7e600c1 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -591,9 +591,12 @@ static int __change_page_attr(struct cpa_data *cpa, int primary)
+ 	unsigned int level;
+ 	pte_t *kpte, old_pte;
+ 
+-	if (cpa->flags & CPA_PAGES_ARRAY)
+-		address = (unsigned long)page_address(cpa->pages[cpa->curpage]);
+-	else if (cpa->flags & CPA_ARRAY)
++	if (cpa->flags & CPA_PAGES_ARRAY) {
++		struct page *page = cpa->pages[cpa->curpage];
++		if (unlikely(PageHighMem(page)))
++			return 0;
++		address = (unsigned long)page_address(page);
++	} else if (cpa->flags & CPA_ARRAY)
+ 		address = cpa->vaddr[cpa->curpage];
+ 	else
+ 		address = *cpa->vaddr;
+@@ -697,9 +700,12 @@ static int cpa_process_alias(struct cpa_data *cpa)
+ 	 * No need to redo, when the primary call touched the direct
+ 	 * mapping already:
+ 	 */
+-	if (cpa->flags & CPA_PAGES_ARRAY)
+-		vaddr = (unsigned long)page_address(cpa->pages[cpa->curpage]);
+-	else if (cpa->flags & CPA_ARRAY)
++	if (cpa->flags & CPA_PAGES_ARRAY) {
++		struct page *page = cpa->pages[cpa->curpage];
++		if (unlikely(PageHighMem(page)))
++			return 0;
++		vaddr = (unsigned long)page_address(page);
++	} else if (cpa->flags & CPA_ARRAY)
+ 		vaddr = cpa->vaddr[cpa->curpage];
+ 	else
+ 		vaddr = *cpa->vaddr;
+@@ -1122,7 +1128,9 @@ int set_pages_array_uc(struct page **pages, int addrinarray)
+ 	int free_idx;
+ 
+ 	for (i = 0; i < addrinarray; i++) {
+-		start = (unsigned long)page_address(pages[i]);
++		if (PageHighMem(pages[i]))
++			continue;
++		start = page_to_pfn(pages[i]) << PAGE_SHIFT;
+ 		end = start + PAGE_SIZE;
+ 		if (reserve_memtype(start, end, _PAGE_CACHE_UC_MINUS, NULL))
+ 			goto err_out;
+@@ -1135,7 +1143,9 @@ int set_pages_array_uc(struct page **pages, int addrinarray)
+ err_out:
+ 	free_idx = i;
+ 	for (i = 0; i < free_idx; i++) {
+-		start = (unsigned long)page_address(pages[i]);
++		if (PageHighMem(pages[i]))
++			continue;
++		start = page_to_pfn(pages[i]) << PAGE_SHIFT;
+ 		end = start + PAGE_SIZE;
+ 		free_memtype(start, end);
+ 	}
+@@ -1164,7 +1174,9 @@ int set_pages_array_wb(struct page **pages, int addrinarray)
+ 		return retval;
+ 
+ 	for (i = 0; i < addrinarray; i++) {
+-		start = (unsigned long)page_address(pages[i]);
++		if (PageHighMem(pages[i]))
++			continue;
++		start = page_to_pfn(pages[i]) << PAGE_SHIFT;
+ 		end = start + PAGE_SIZE;
+ 		free_memtype(start, end);
+ 	}
