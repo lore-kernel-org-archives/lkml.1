@@ -1,83 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753035AbZHCKOQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752789AbZHCKSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753035AbZHCKOQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 06:14:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbZHCKOP
+	id S1752789AbZHCKSt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 06:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbZHCKSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 06:14:15 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:4577 "EHLO
-	IE1EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751323AbZHCKOO convert rfc822-to-8bit (ORCPT
+	Mon, 3 Aug 2009 06:18:48 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:49884 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751830AbZHCKSs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 06:14:14 -0400
-X-SpamScore: -13
-X-BigFish: VPS-13(zz1432R98dNzz1202hzzz32i6bh203h43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KNSPRG-03-IE2-01
-Date: Mon, 3 Aug 2009 12:14:01 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Sachin Sant <sachinp@in.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: Boot failure on x86_64 (OOPS set_cpu_sibling_map() )
-Message-ID: <20090803101401.GA14442@aftab>
-References: <20090730182143.eadf36e6.sfr@canb.auug.org.au>
- <4A718338.6050907@in.ibm.com>
- <20090730135623.GB16659@aftab>
- <20090803093144.GC9074@elte.hu>
+	Mon, 3 Aug 2009 06:18:48 -0400
+Message-ID: <4A76B985.40202@vmware.com>
+Date: Mon, 03 Aug 2009 12:18:45 +0200
+From: Thomas Hellstrom <thellstrom@vmware.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20060921)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <20090803093144.GC9074@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 03 Aug 2009 10:14:02.0413 (UTC) FILETIME=[1FD7D5D0:01CA1423]
-Content-Transfer-Encoding: 8BIT
+To: Ingo Molnar <mingo@elte.hu>
+CC: Dave Airlie <airlied@linux.ie>, Arjan van de Ven <arjan@infradead.org>,
+       "suresh.b.siddha@intel.com" <suresh.b.siddha@intel.com>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>
+Subject: Re: [PATCH] x86: Fix CPA memtype reserving in the set_pages_array
+ cases
+References: <1249284345-7654-1-git-send-email-thellstrom@vmware.com> <20090803081110.GB32258@elte.hu> <alpine.DEB.2.00.0908030928280.496@skynet.skynet.ie> <4A76A24F.1030505@vmware.com> <20090803091954.GB9074@elte.hu>
+In-Reply-To: <20090803091954.GB9074@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+Ingo Molnar wrote:
+> * Thomas Hellstrom <thellstrom@vmware.com> wrote:
+>
+>   
+>> Dave Airlie wrote:
+>>     
+>>>> hm, i'm missing a description about how this bug was triggered. How 
+>>>> did you end up getting highmem pages to a cpa call?
+>>>>     
+>>>>         
+>>> GEM and TTM both allocate page arrays and just pass them to cpa,
+>>> we don't know what type of pages the allocator gives us back and we 
+>>> really shouldn't have to, so having cpa ignore highmem pages is 
+>>> certainly the right option.
+>>>
+>>> GEM just uses shmem code to alloc the pages and TTM has its own allocator.
+>>>
+>>>   
+>>>       
+>> Yes, Dave is right.
+>>
+>> Although I'm not 100% sure the TTM code I was using that triggered this  
+>> has made it into 2.6.31.
+>> Old AGP uses (GFP_KERNEL | GFP_DMA32 | __GFP_ZERO), which (correct me if  
+>> I'm wrong) never hands back highmem pages. This means that Intel's GEM  
+>> is the only likely user for 2.6.31.
+>>     
+>
+> (please dont top-post) I'm not sure you folks noticed this bit of my 
+> mail:
+>
+>   
+>>>> ok, that's a bug introduced in .29 but which was latent until now:  
+>>>> drivers/char/agp/generic.c now uses it plus (indirectly) a number of  
+>>>> AGP drivers, since:
+>>>>
+>>>>  commit 07613ba2f464f59949266f4337b75b91eb610795
+>>>>  Author: Dave Airlie <airlied@redhat.com>
+>>>>  Date:   Fri Jun 12 14:11:41 2009 +1000
+>>>>
+>>>>      agp: switch AGP to use page array instead of unsigned long array
+>>>>
+>>>> I dont see how it can end up with highmem pages though. All the 
+>>>> graphics apperture allocations happen to lowmem AFAICS. Did GEM add 
+>>>> the possibility for user pages (highmem amongst them) ending up in 
+>>>> that pool? Which code does that?
+>>>>         
+>
+> 	Ingo
+>   
+Sorry, my bad.
 
-On Mon, Aug 03, 2009 at 11:31:44AM +0200, Ingo Molnar wrote:
-> Borislav, this patch:
-> 
->  From 4581c6313c16a38ffcef8bccd6ffbe9598d585b0 Mon Sep 17 00:00:00 2001
->  From: Andreas Herrmann <andreas.herrmann3@amd.com>
->  Date: Fri, 24 Jul 2009 10:21:06 +0200
->  Subject: [PATCH] x86: provide CPU topology information for multi-node processors
-> 
->  arch/x86/include/asm/processor.h |    2 ++
->  arch/x86/include/asm/smp.h       |    6 ++++++
->  arch/x86/include/asm/topology.h  |    2 ++
->  arch/x86/kernel/cpu/common.c     |    2 ++
->  arch/x86/kernel/cpu/proc.c       |    1 +
->  arch/x86/kernel/smpboot.c        |   20 ++++++++++++++++----
->  6 files changed, 29 insertions(+), 4 deletions(-)
-> 
-> has absolutely _ZERO_ place in the EDAC tree. It was submitted to 
-> the x86 tree and was under discussion - i requested changes to it so 
-> this current form has my NAK.
+The TTM code I tested is not in yet, and after double-checking it looks 
+like Intel's gem is not changing caching policy before binding to AGP.
 
-I know that, I'm following the discussion. I needed the functionality in
-EDAC and that's why I added them _temporarily_ to the mix so that the
-whole series (esp. the MCE bits) can see some testing. Which obviously
-caught some issues :).
+This means the highmem problems that I saw were triggered by a 
+combination of the virtual->physical bugfix and code that's not in the 
+kernel yet, and since it's an optimization of the current code it's not 
+likely to land in 2.6.31. The highmem fixes could thus, AFAICT be 
+stripped out of the patch, unless GFP_DMA32 on a highmem system can 
+actually hand back highmem pages, in which case AGP will not work correctly.
 
-But I'm very well aware that the patches are not final and they will go
-through x86 when done. This is what I told Stephen when upping them for
-linux-next.
+As for highmem use in the future, the TTM page arrays are populated 
+using fault(), which means that there will be an overhead ordering the 
+pages so that we can use the set_pages_array() interface instead of 
+set_memory() that we use today. Therefore, if possible, I'd prefer if we 
+could pass arrays containing highmem pages to the set_pages_array() 
+interface.
 
-Sorry if I've caused any misunderstanding.
+There are no aliased mappings since
 
--- 
-Regards/Gruss,
-Boris.
+1) Any user space mappings to these pages are killed before changing 
+caching policy.
+2) The pages are allocated and owned by the driver.
+3) kmap_atomic_prot() and vmap() are used to map these pages in kernel 
+space.
 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+Code is in ttm_tt.c ttm_bo.c and ttm_bo_util.c
 
+Thanks.
+/Thomas
