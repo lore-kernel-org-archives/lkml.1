@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbZHCPWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbZHCPWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755248AbZHCPWd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 11:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbZHCPWb
+	id S1755307AbZHCPWh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 11:22:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755296AbZHCPWd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 3 Aug 2009 11:22:33 -0400
+Received: from casper.infradead.org ([85.118.1.10]:44207 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755248AbZHCPWb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 3 Aug 2009 11:22:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42190 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754966AbZHCPWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 11:22:30 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Paul Rolland <rol@as2917.net>
-Subject: Re: [Bug #13895] 2.6.31-rc4 - slab entry tak_delay_info leaking ???
-Date: Mon, 3 Aug 2009 17:23:10 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc5-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera> <iZB3Pj-uj3M.A.tsB.ocgdKB@chimera> <20090803081916.4189bad4@tux.DEF.witbe.net>
-In-Reply-To: <20090803081916.4189bad4@tux.DEF.witbe.net>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Subject: Re: [ANNOUNCE][RFC][PATCH] Crash-utility, tracing: enable crash to
+ analyze tracing from core-file (make tracing can act as a flight recorder)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Dave Anderson <anderson@redhat.com>,
+       crash-utility@redhat.com, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <clark.williams@gmail.com>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Jason Baron <jbaron@redhat.com>, srostedt@redhat.com,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090803151420.GA8712@infradead.org>
+References: <4A76F8A1.30503@cn.fujitsu.com>
+	 <20090803151420.GA8712@infradead.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908031723.10649.rjw@sisk.pl>
+Date: Mon, 03 Aug 2009 17:21:15 +0200
+Message-Id: <1249312875.7924.106.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 August 2009, Paul Rolland wrote:
-> Hello Rafael,
+On Mon, 2009-08-03 at 11:14 -0400, Christoph Hellwig wrote:
+> Nice!  Now the only thing missing is gettind kdb in mainline and a trace
+> reader in kdb ;-)
 > 
-> On Sun,  2 Aug 2009 20:58:32 +0200 (CEST)
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.30.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13895
-> > Subject		: 2.6.31-rc4 - slab entry tak_delay_info
-> > leaking ??? Submitter	: Paul Rolland <rol@as2917.net>
-> > Date		: 2009-07-29 08:20 (5 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=124884847925375&w=4
-> 
-> Still trying to reproduce with kmemleak enabled, but so far no luck.
-> 
-> Will soon switch to 2.6.31-rc5-no-kmemleak to check if still present.
+> Any idea how easy it is to reuse the crash/gdb code for looking at crash
+> dumps through kgdb?
 
-Thanks for the update.
-
-Rafael
+It was suggested a while ago to implement kdb as an in-kernel consumer
+of kgdb or something. No idea what happened there..
