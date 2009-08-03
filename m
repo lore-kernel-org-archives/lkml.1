@@ -1,305 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755106AbZHCNbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbZHCNjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755106AbZHCNbx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 09:31:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753070AbZHCNbw
+	id S1755162AbZHCNjV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 09:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbZHCNjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 09:31:52 -0400
-Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:58388 "EHLO
-	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754639AbZHCNbw (ORCPT
+	Mon, 3 Aug 2009 09:39:20 -0400
+Received: from www84.your-server.de ([213.133.104.84]:51241 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754868AbZHCNjU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 09:31:52 -0400
-MIME-version: 1.0
-Content-type: multipart/mixed; boundary="Boundary_(ID_VJkt1VfTujdlWtzmEozBIw)"
-X-IronPort-AV: E=Sophos;i="4.43,314,1246831200";
- d="gz'50?scan'50,208,50";a="21330971"
-Message-id: <4A76E6AA.2040608@nets.rwth-aachen.de>
-Date: Mon, 03 Aug 2009 15:31:22 +0200
-From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
-To: "q-funk@iki.fi" <q-funk@iki.fi>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: x86 Geode issues in kernel >= 2.6.23 and >= 2.6.31-rc4
-References: <11fae7c70908030558r28773beatd1dca702d490a57d@mail.gmail.com>
- <4A76E3E8.30902@nets.rwth-aachen.de>
- <11fae7c70908030624q11ffd29ened3c77ec4c4ca79a@mail.gmail.com>
-In-reply-to: <11fae7c70908030624q11ffd29ened3c77ec4c4ca79a@mail.gmail.com>
+	Mon, 3 Aug 2009 09:39:20 -0400
+Subject: [RFC 0/2] new kfifo API
+From: Stefani Seibold <stefani@seibold.net>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 03 Aug 2009 15:39:15 +0200
+Message-Id: <1249306755.8358.8.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+This is a proposal of a new generic kernel FIFO implementation.
 
---Boundary_(ID_VJkt1VfTujdlWtzmEozBIw)
-Content-type: text/plain; charset=ISO-8859-1
-Content-transfer-encoding: 8BIT
+The current kernel fifo API is not very widely used, because it has to many
+constrains. Only 13 files in the current 2.6.30 used it. FIFO's are
+like list are a very basic thing and a kfifo API which handles the most use
+case would save a lot of time and memory resources.
 
-Hi,
+I think there are the following reasons why kfifo is not in use.
 
-Martin-Éric Racine wrote:
-> On Mon, Aug 3, 2009 at 4:19 PM, Arnd
-> Hannemann<hannemann@nets.rwth-aachen.de> wrote:
->> Martin-Éric Racine wrote:
->>> (non-subscriber post; please keep me in CC)
->>>
->>> Greetings,
->>>
->>> Having previously reported two issues via Ubuntu's bug tracker and not
->>> found any answer, I thought I'd approach the LKML with the issues at
->>> stake.
->>>
->>> 1) Since kernel 2.6.23, one cannot boot hardware based on the Geode
->>> SCx200 series. Partial answers about the most plausible cause have
->>> been found by the target hardware's manufacturer as explained at
->>> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/241307
->>>
->>> 2) Since kernel 2.6.31-rc4, one cannot boot hardware based on the
->>> Geode LX800 as described at
->>> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/396286
->>>
->>> In case either of these issues was already reported and there is a
->>> know fix or work-around, I'd love to hear more. Otherwise, please feel
->>> free to contact me for additional details.
->>>
->> Just to give a data point:
->> 2.6.31-rc1,2,3,4,5 were/are running all fine on my Geode LX800
->> (http://www.pcengines.ch/alix2d2.htm) so it seems something
->> board or .config specific.
-> 
-> Thank you for your answer, Arnd.
-> 
-> Could you please send me a copy of your .config so that I can compare
-> it with the one used on Ubuntu kernels?
+- There is a need of a spinlock despite you need it or not
+- A fifo can only allocated dynamically
+- There is no support for data records inside a fifo
+- The FIFO size can only a power of two
+- The API is to tall, some important functions are missing
 
-Sure. Config for 2.6.31-rc5 is attached.
+So i decided to extend the kfifo in a more generic way without blowing up
+the API to much. This was my design goals:
 
-Best regards,
-Arnd
+- Generic usage: For kernel internal use or device driver
+- Provide an API for the most use case
+- Preserve memory resource
+- Linux style habit: DECLARE_KFIFO, DEFINE_KFIFO and INIT_KFIFO Macros
+- Slim API: The whole API provides 13 functions.
+- Ability to handle variable length records. Three type of records are
+  supported:
+  - Records between 0-255 bytes, with a record size field of 1 bytes
+  - Records between 0-65535 bytes, with a record size field of 2 bytes
+  - Byte stream, which no record size field
+  Inside a fifo this record types it is not a good idea to mix them together.
+- Direct copy_to_user from the fifo and copy_from_user into the fifo.
+- Single structure: The fifo structure contains the management variables and
+  the buffer. No extra indirection is needed to access the fifo buffer.
+- Lockless access: if only one reader and one writer is active on the fifo,
+  which is the common use case, there is no additional locking necessary.
+- Performance
+- Easy to use
 
---Boundary_(ID_VJkt1VfTujdlWtzmEozBIw)
-Content-type: application/x-gzip; name=geode_lx800_config.gz
-Content-transfer-encoding: base64
-Content-disposition: inline; filename=geode_lx800_config.gz
+The API:
+--------
 
-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
+struct kfifo *kfifo_alloc(unsigned long size, gfp_t gfp_mask)
+ Dynamically allocates a new fifo and returns the address
+ @size: the size of the internal buffer to be allocated.
+ @gfp_mask: get_free_pages mask, passed to kmalloc()
 
---Boundary_(ID_VJkt1VfTujdlWtzmEozBIw)--
+void kfifo_free(struct kfifo *fifo)
+ frees a dynamic allocated FIFO
+ @fifo: the fifo to be freed.
+
+void kfifo_reset(struct kfifo *fifo)
+ removes the entire FIFO contents
+ @fifo: the fifo to be emptied.
+
+unsigned long kfifo_used(struct kfifo *fifo)
+ * kfifo_used - returns the number of bytes currently used in the FIFO
+ * @fifo: the fifo to be used.
+
+unsigned long kfifo_size(struct kfifo *fifo)
+ returns the size of the fifo in bytes
+ @fifo: the fifo to be used.
+
+kfifo_empty(struct kfifo *fifo)
+ returns true if the fifo is empty
+ @fifo: the fifo to be used.
+
+kfifo_is_full(struct kfifo *fifo)
+ returns true if the fifo is full
+ @fifo: the fifo to be used.
+
+unsigned long kfifo_avail(struct kfifo *fifo)
+ returns the number of bytes available in the FIFO
+ @fifo: the fifo to be used.
+
+unsigned long kfifo_put(struct kfifo *fifo,
+	unsigned char *from, unsigned long n, unsigned long recsize,
+	unsigned long flags, unsigned long *total)
+ puts some data into the FIFO without locking
+
+ This function copies at most @n bytes from the @from into
+ the FIFO depending @flags argument, and returns the number of
+ bytes which cannot be copied.
+
+ Note that with only one concurrent reader and one concurrent
+ writer, you don't need extra locking to use these functions.
+
+ @fifo: the fifo to be used.
+ @from: the data to be added.
+ @n: the length of the data to be added.
+ @recsize: size of record field
+ @flags: KFIFO_F_NOTRIM = do not cut off if the record is to long
+ @total: pointer where the total number of copied bytes should stored or NULL
+
+unsigned long kfifo_get(struct kfifo *fifo,
+	unsigned char *to, unsigned long n, unsigned long recsize,
+	unsigned long flags, unsigned long *total)
+ Gets some data from the FIFO without locking.
+
+ This function copies at most @n bytes from the @to into the FIFO depending
+ on @flags argument, and returns the number of bytes which cannot be copied.
+
+ Note that with only one concurrent reader and one concurrent
+ writer, you don't need extra locking to use these functions.
+
+ @fifo: the fifo to be used.
+ @to: where the data must be copied.
+ @n: the size of the destination buffer.
+ @recsize: size of record field
+ @flags: KFIFO_F_NOTRIM = do not cut off if the record is to long
+ @total: pointer where the total number of copied bytes should stored or NULL
+
+unsigned long kfifo_from_user(struct kfifo *fifo,
+	const void __user *from, unsigned long n, unsigned long recsize,
+	unsigned long flags, unsigned long *total)
+ Puts some data from user space into the FIFO.
+
+ This function copies at most @n bytes from the @from into the FIFO depending
+ on @flags argument, and returns the number of bytes which cannot be copied.
+
+ Note that with only one concurrent reader and one concurrent
+ writer, you don't need extra locking to use these functions.
+
+ @fifo: the fifo to be used.
+ @from: pointer to the data to be added.
+ @n: the length of the data to be added.
+ @recsize: size of record field
+ @flags: KFIFO_F_NOTRIM = do not cut off if the record is to long
+ @total: pointer where the total number of copied bytes should stored or NULL
+
+unsigned long kfifo_to_user(struct kfifo *fifo,
+		void __user *to, unsigned long n, unsigned long recsize,
+		unsigned long flags, unsigned long *total)
+ Gets data from the FIFO and write it to user space.
+
+ @fifo: the fifo to be used.
+ @to: where the data must be copied.
+ @n: the size of the destination buffer.
+ @recsize: size of record field
+ @flags: KFIFO_F_NOTRIM = do not cut off if the record is to long
+ @total: pointer where the total number of copied bytes should stored or NULL
+
+ This function copies at most @n bytes from the FIFO into the @to depending
+ on @flags argument.
+ In case of an error, the function returns the number of bytes which cannot
+ be copied.
+ - If the flags KFIFO_F_NOTRIM is set and the returned value is greater than
+   the n parameter this means that there is not enough space to copy the
+   whole record
+ - Otherwise this means that the copy_to_user() functions has failed.
+
+ Note that with only one concurrent reader and one concurrent writer, you don't
+ need extra locking to use these functions.
+
+unsigned long kfifo_peek(struct kfifo *fifo, unsigned long recsize)
+ Gets the size of the next FIFO record data.
+
+ This function returns the size of the next FIFO record in number of bytes
+ @fifo: the fifo to be used.
+ @recsize: size of record field
+
+
+Macros defined for kernel FIFO:
+-------------------------------
+
+KFIFO_F_NOTRIM 
+	flags argumet: do not cut of the record
+
+DECLARE_KFIFO(name, size)
+	declare a kernel fifo (can be used inside a struct declaration)
+
+DEFINE_KFIFO(name, size)
+	define a kernel fifo
+
+INIT_KFIFO(name)
+	initialize a FIFO
+
+
+One thing is that the new API is not compatible with the old one. I had
+a look at the current user of the old kfifo API and it is easy to adapt it to
+the new API. These are the files which use currently the kfifo API:
+
+/usr/src/linux/./drivers/char/nozomi.c
+/usr/src/linux/./drivers/char/sonypi.c
+/usr/src/linux/./drivers/infiniband/hw/cxgb3/cxio_resource.c
+/usr/src/linux/./drivers/media/video/meye.c
+/usr/src/linux/./drivers/net/wireless/libertas/main.c
+/usr/src/linux/./drivers/platform/x86/fujitsu-laptop.c
+/usr/src/linux/./drivers/platform/x86/sony-laptop.c
+/usr/src/linux/./drivers/scsi/libiscsi.c
+/usr/src/linux/./drivers/scsi/libiscsi_tcp.c
+/usr/src/linux/./drivers/scsi/libsrp.c
+/usr/src/linux/./drivers/usb/host/fhci.h
+/usr/src/linux/./net/dccp/probe.c
+
+I will do this job if there is a tendency for substitute the old API. So i ask
+for comments....
+
+Greetings,
+Stefani
+
+
+
