@@ -1,25 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754247AbZHCDTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754270AbZHCDV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754247AbZHCDTM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 23:19:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753177AbZHCDTM
+	id S1754270AbZHCDV2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 23:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbZHCDV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 23:19:12 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59798
+	Sun, 2 Aug 2009 23:21:28 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60136
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753130AbZHCDTL (ORCPT
+	by vger.kernel.org with ESMTP id S1752244AbZHCDV1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 23:19:11 -0400
-Date: Sun, 02 Aug 2009 20:19:19 -0700 (PDT)
-Message-Id: <20090802.201919.153551298.davem@davemloft.net>
-To: jaswinder@kernel.org
-Cc: bzolnier@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] IDE: ide-taskfile.c fix compilation warning and cleanup
+	Sun, 2 Aug 2009 23:21:27 -0400
+Date: Sun, 02 Aug 2009 20:21:35 -0700 (PDT)
+Message-Id: <20090802.202135.63875488.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: a.p.zijlstra@chello.nl, joerg.roedel@amd.com,
+       fujita.tomonori@lab.ntt.co.jp, reif@earthlink.net,
+       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+       x86@kernel.org, tony.luck@intel.com, akpm@linux-foundation.org
+Subject: Re: [PATCH v2 0/8] sparc: use asm-generic/dma-mapping-common.h and
+ pci-dma-compat.h
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1246094308.2961.15.camel@hpdv5.satnam>
-References: <1245986290.3568.1.camel@hpdv5.satnam>
-	<200906262142.43102.bzolnier@gmail.com>
-	<1246094308.2961.15.camel@hpdv5.satnam>
+In-Reply-To: <20090718110620.GC27287@elte.hu>
+References: <20090714092354.GL19087@amd.com>
+	<20090714.131224.205307048.davem@davemloft.net>
+	<20090718110620.GC27287@elte.hu>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,31 +32,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Date: Sat, 27 Jun 2009 14:48:28 +0530
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sat, 18 Jul 2009 13:06:20 +0200
 
-> Hello Bart, David,
-> 
-> On Fri, 2009-06-26 at 21:42 +0200, Bartlomiej Zolnierkiewicz wrote:
->> On Friday 26 June 2009 05:18:10 Jaswinder Singh Rajput wrote:
->> > On Mon, 2009-06-22 at 12:50 +0200, Bartlomiej Zolnierkiewicz wrote:
->> 
->> > > Besides I would suggest splitting the patch on fix and cleanup parts.
->> > 
->> > Here is the cleanup part:
->> > 
->> > [PATCH] IDE: ide-taskfile.c fix style problems
- ...
->> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
->> 
->> Acked-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> 
-> Thanks.
+> I'm wondering why sparc32 frees from the middle of the kernel image. 
+> The way architectures generally do it is to put freeable pages into 
+> a separate section. That way it does not get mingled with the kernel 
+> core image area (which stays nicely continuous).
 
-Applied to ide-next-2.6
-
-> If you want I can also fix another ide files.
-> 
-> David, is it OK.
-
-Just don't go overboard as IDE is in deep maintainence mode.
+It's conditionally free'able, we actually use the pages
+if the system is SMP and has more than cpu 0 installed.
