@@ -1,63 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754294AbZHCTHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754363AbZHCTI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754294AbZHCTHF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 15:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbZHCTHE
+	id S1754363AbZHCTI0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 15:08:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbZHCTIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 15:07:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43654 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754069AbZHCTHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 15:07:03 -0400
-Date: Mon, 3 Aug 2009 21:02:31 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, eranian@gmail.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       robert.richter@amd.com, paulus@samba.org, andi@firstfloor.org,
-       mpjohn@us.ibm.com, cel@us.ibm.com, cjashfor@us.ibm.com,
-       mucci@eecs.utk.edu, terpstra@eecs.utk.edu,
-       perfmon2-devel@lists.sourceforge.net, mtk.manpages@googlemail.com,
-       roland@redhat.com
-Subject: Re: [PATCH 3/2] fcntl: F_[SG]ETOWN_TID
-Message-ID: <20090803190231.GA22313@redhat.com>
-References: <1248984003.4164.0.camel@laptop> <20090730202804.GA13675@redhat.com> <1249029320.6391.72.camel@twins> <20090731141122.a1939712.akpm@linux-foundation.org> <20090801012736.GA30259@redhat.com> <1249314498.7924.133.camel@twins> <20090803171619.GA17876@redhat.com> <1249321637.7924.163.camel@twins> <20090803180602.GA19719@redhat.com> <1249324619.4842.1.camel@laptop>
+	Mon, 3 Aug 2009 15:08:25 -0400
+Received: from phoenix.slamd64.com ([217.10.145.2]:48317 "EHLO
+	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754216AbZHCTIZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 15:08:25 -0400
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: WMI module autoloading (for hp-wmi, dell-wmi, tc1100-wmi)
+Date: Mon, 3 Aug 2009 20:08:11 +0100
+User-Agent: KMail/1.11.4 (Linux/2.6.30; KDE/4.2.4; x86_64; ; )
+Cc: linux acpi <linux-acpi@vger.kernel.org>, linux-kernel@vger.kernel.org
+References: <4A76C1B8.6080000@tuffmail.co.uk>
+In-Reply-To: <4A76C1B8.6080000@tuffmail.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1249324619.4842.1.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200908032008.12387.carlos@strangeworlds.co.uk>
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Mon, 03 Aug 2009 19:08:19 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/03, Peter Zijlstra wrote:
->
-> On Mon, 2009-08-03 at 20:06 +0200, Oleg Nesterov wrote:
-> >
-> > As for F_XXXOWN/F_XXXWOWN_TID interaction. Another option, perhaps, is add
-> > F_{SET,GET}OWN_EX which accepts a use-visible
-> >
-> >         struct f_setown_struct {
-> >                 int pid;                // > 0
-> >                 int type;               // enumerates PIDTYPE_PID, PIDTYPE_PGID, F_PIDTYPE_THREAD
-> >         }
-> >
-> > pointer via arg. Instead of F_XXXOWN_TID + int who.
-> >
-> > This way at least the users of new api can't be confused.
->
-> This would expose PIDTYPE* to userspace,
+On Monday 03 August 2009 11:53:44 Alan Jenkins wrote:
+> Would it be possible to add the auto-load support on it's own?  Is it
+> just a matter of someone taking the time to cherry-pick the auto-loading
+> bits from the original patch, and test the result?
 
-No, no, we should not export them of course.
+Yes. I started on this a while ago, but never quite finished.
 
-f_setown_struct->type could be 0,1,2 (or whatever), fcntl() maps them
-to fown_struct->enum_type or ->enum_type + ->task_only.
-
-
-To clarify, I am not really sure this interface is better. Just for
-discussion. Because it will be very painful to change this api later.
-It is better to at least consider all options now.
-
-Oleg.
-
+-Carlos
+-- 
+E-Mail: carlos@strangeworlds.co.uk
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
