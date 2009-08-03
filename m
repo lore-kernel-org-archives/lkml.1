@@ -1,151 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbZHCIjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754364AbZHCIjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754422AbZHCIjx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 04:39:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbZHCIjs
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1754364AbZHCIjs (ORCPT <rfc822;w@1wt.eu>);
 	Mon, 3 Aug 2009 04:39:48 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:44004 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753410AbZHCIjq (ORCPT
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753441AbZHCIjr
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 3 Aug 2009 04:39:47 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35950 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753324AbZHCIjq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 3 Aug 2009 04:39:46 -0400
-Message-ID: <4A76A24F.1030505@vmware.com>
-Date: Mon, 03 Aug 2009 10:39:43 +0200
-From: Thomas Hellstrom <thellstrom@vmware.com>
-User-Agent: Thunderbird 1.5.0.7 (X11/20060921)
-MIME-Version: 1.0
-To: Dave Airlie <airlied@linux.ie>
-CC: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       "suresh.b.siddha@intel.com" <suresh.b.siddha@intel.com>,
-       "hpa@zytor.com" <hpa@zytor.com>,
+Subject: Re: [RFC] Make AGP work with IOMMU
+From: David Woodhouse <dwmw2@infradead.org>
+To: Zhenyu Wang <zhenyuw@linux.intel.com>
+Cc: Dave Airlie <airlied@gmail.com>, Keir Fraser <kier.fraser@eu.citrix.com>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>
-Subject: Re: [PATCH] x86: Fix CPA memtype reserving in the set_pages_array
- cases
-References: <1249284345-7654-1-git-send-email-thellstrom@vmware.com> <20090803081110.GB32258@elte.hu> <alpine.DEB.2.00.0908030928280.496@skynet.skynet.ie>
-In-Reply-To: <alpine.DEB.2.00.0908030928280.496@skynet.skynet.ie>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+       Joerg Roedel <joerg.roedel@amd.com>
+In-Reply-To: <20090803065030.GA32461@zhen-devel.sh.intel.com>
+References: <1248707041.6100.35.camel@macbook.infradead.org>
+	 <21d7e9970907282328l4a44b9a2of4500c5c84a3586b@mail.gmail.com>
+	 <1248851712.19733.214.camel@macbook.infradead.org>
+	 <21d7e9970907290143q6778511cvda1c6b915f61654a@mail.gmail.com>
+	 <1248860205.19733.238.camel@macbook.infradead.org>
+	 <20090803065030.GA32461@zhen-devel.sh.intel.com>
+Content-Type: text/plain
+Date: Mon, 03 Aug 2009 09:39:40 +0100
+Message-Id: <1249288780.7341.4.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Airlie wrote:
->> hm, i'm missing a description about how this bug was 
->> triggered. How did you end up getting highmem pages to a cpa 
->> call?
->>     
->
-> GEM and TTM both allocate page arrays and just pass them to cpa,
-> we don't know what type of pages the allocator gives us back and we really 
-> shouldn't have to, so having cpa ignore highmem pages is certainly the 
-> right option.
->
-> GEM just uses shmem code to alloc the pages and TTM has its own allocator.
->
->   
-Yes, Dave is right.
+On Mon, 2009-08-03 at 14:50 +0800, Zhenyu Wang wrote:
+> 
+> The commits on that tree looks fine to me. Thanks David! 
+> I've also done some testing on G45 here, I've also seen the write
+> faults before graphics device init or after dma unmap pages. I tried
+> to look it up in my memo, which turns out one message like this should
+> be a BIOS bug that doesn't initialize the GTT table correctly. But I'm
+> quite sure about it now, better to ask our chipset people to verify if
+> this problem has been fixed or not.
 
-Although I'm not 100% sure the TTM code I was using that triggered this 
-has made it into 2.6.31.
-Old AGP uses (GFP_KERNEL | GFP_DMA32 | __GFP_ZERO), which (correct me if 
-I'm wrong) never hands back highmem pages. This means that Intel's GEM 
-is the only likely user for 2.6.31.
+Thanks. I've rebased the tree so that it isn't based on my other iommu
+changes, which are largely irrelevant. Since the drm-2.6.git tree as
+advertised in MAINTAINERS seems to be a pristine 2.6.29-rc2, I've done
+it based on 2.6.31-rc5 instead.
 
-/Thomas
+Dave, please pull from
+	git://git.infradead.org/~dwmw2/iommu-agp.git
 
-> Dave.
->
->  > 
->   
->>>  	else
->>>  		address = *cpa->vaddr;
->>> @@ -696,9 +699,12 @@ static int cpa_process_alias(struct cpa_data *cpa)
->>>  	 * No need to redo, when the primary call touched the direct
->>>  	 * mapping already:
->>>  	 */
->>> -	if (cpa->flags & CPA_PAGES_ARRAY)
->>> -		vaddr = (unsigned long)page_address(cpa->pages[cpa->curpage]);
->>> -	else if (cpa->flags & CPA_ARRAY)
->>> +	if (cpa->flags & CPA_PAGES_ARRAY) {
->>> +		struct page *page = cpa->pages[cpa->curpage];
->>> +		if (unlikely(PageHighMem(page)))
->>> +			return 0;
->>> +		vaddr = (unsigned long)page_address(page);
->>> +	} else if (cpa->flags & CPA_ARRAY)
->>>  		vaddr = cpa->vaddr[cpa->curpage];
->>>  	else
->>>  		vaddr = *cpa->vaddr;
->>> @@ -1118,7 +1124,9 @@ int set_pages_array_uc(struct page **pages, int addrinarray)
->>>  	int free_idx;
->>>  
->>>  	for (i = 0; i < addrinarray; i++) {
->>> -		start = (unsigned long)page_address(pages[i]);
->>> +		if (PageHighMem(pages[i]))
->>> +			continue;
->>> +		start = page_to_pfn(pages[i]) << PAGE_SHIFT;
->>>  		end = start + PAGE_SIZE;
->>>  		if (reserve_memtype(start, end, _PAGE_CACHE_UC_MINUS, NULL))
->>>  			goto err_out;
->>>       
->> ok, that's a bug introduced in .29 but which was latent until now: 
->> drivers/char/agp/generic.c now uses it plus (indirectly) a number of 
->> AGP drivers, since:
->>
->>  commit 07613ba2f464f59949266f4337b75b91eb610795
->>  Author: Dave Airlie <airlied@redhat.com>
->>  Date:   Fri Jun 12 14:11:41 2009 +1000
->>
->>      agp: switch AGP to use page array instead of unsigned long array
->>
->> I dont see how it can end up with highmem pages though. All 
->> the graphics apperture allocations happen to lowmem AFAICS. 
->> Did GEM add the possibility for user pages (highmem amongst 
->> them) ending up in that pool? Which code does that?
->>
->>     
->>> @@ -1131,7 +1139,9 @@ int set_pages_array_uc(struct page **pages, int addrinarray)
->>>  err_out:
->>>  	free_idx = i;
->>>  	for (i = 0; i < free_idx; i++) {
->>> -		start = (unsigned long)page_address(pages[i]);
->>> +		if (PageHighMem(pages[i]))
->>> +			continue;
->>> +		start = page_to_pfn(pages[i]) << PAGE_SHIFT;
->>>  		end = start + PAGE_SIZE;
->>>  		free_memtype(start, end);
->>>  	}
->>> @@ -1160,7 +1170,9 @@ int set_pages_array_wb(struct page **pages, int addrinarray)
->>>  		return retval;
->>>  
->>>  	for (i = 0; i < addrinarray; i++) {
->>> -		start = (unsigned long)page_address(pages[i]);
->>> +		if (PageHighMem(pages[i]))
->>> +			continue;
->>> +		start = page_to_pfn(pages[i]) << PAGE_SHIFT;
->>>  		end = start + PAGE_SIZE;
->>>  		free_memtype(start, end);
->>>       
->> In any case it's a must-have fix for .31. Possibly even a backport 
->> tag is needed, in case a distro does a .30 kernel with more recent 
->> graphics bits.
->>
->> 	Ingo
->>
->> ------------------------------------------------------------------------------
->> Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
->> trial. Simplify your report design, integration and deployment - and focus on 
->> what you do best, core application coding. Discover what's new with 
->> Crystal Reports now.  http://p.sf.net/sfu/bobj-july
->> --
->> _______________________________________________
->> Dri-devel mailing list
->> Dri-devel@lists.sourceforge.net
->> https://lists.sourceforge.net/lists/listinfo/dri-devel
->>
->>
->>     
+David Woodhouse (6):
+      agp: Switch mask_memory() method to take address argument again, not page
+      agp: tidy up handling of scratch pages w.r.t. DMA API
+      agp: Switch agp_{un,}map_page() to take struct page * argument
+      intel-agp: Move repeated sglist free into separate function
+      intel-agp: fix sglist allocation to avoid vmalloc()
+      agp: kill phys_to_gart() and gart_to_phys()
+
+Zhenyu Wang (2):
+      agp: Add generic support for graphics dma remapping
+      intel_agp: Use PCI DMA API correctly on chipsets new enough to have IOMMU
+
+ arch/alpha/include/asm/agp.h    |    4 -
+ arch/ia64/include/asm/agp.h     |    4 -
+ arch/parisc/include/asm/agp.h   |    4 -
+ arch/powerpc/include/asm/agp.h  |    4 -
+ arch/sparc/include/asm/agp.h    |    4 -
+ arch/x86/include/asm/agp.h      |    4 -
+ drivers/char/agp/agp.h          |   15 ++--
+ drivers/char/agp/ali-agp.c      |    4 +-
+ drivers/char/agp/amd-k7-agp.c   |   10 ++-
+ drivers/char/agp/amd64-agp.c    |    7 +-
+ drivers/char/agp/ati-agp.c      |    7 +-
+ drivers/char/agp/backend.c      |   32 ++++++-
+ drivers/char/agp/efficeon-agp.c |    4 +-
+ drivers/char/agp/generic.c      |   20 ++++-
+ drivers/char/agp/hp-agp.c       |    8 +-
+ drivers/char/agp/i460-agp.c     |   17 +---
+ drivers/char/agp/intel-agp.c    |  167 +++++++++++++++++++++++++++++++++++----
+ drivers/char/agp/nvidia-agp.c   |    2 +-
+ drivers/char/agp/parisc-agp.c   |   12 +---
+ drivers/char/agp/sgi-agp.c      |    8 +-
+ drivers/char/agp/sworks-agp.c   |   10 ++-
+ drivers/char/agp/uninorth-agp.c |    2 +-
+ include/linux/agp_backend.h     |    5 +-
+ 23 files changed, 247 insertions(+), 107 deletions(-)
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
