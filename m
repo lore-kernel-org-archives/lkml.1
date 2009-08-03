@@ -1,56 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754817AbZHCTzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbZHCT4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754817AbZHCTzh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 15:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbZHCTzg
+	id S1754920AbZHCT4O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 15:56:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbZHCT4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 15:55:36 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:20799 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754641AbZHCTzg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 15:55:36 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=c46pVEQBDdrBZqLhUxzWAmk/wdlP/1T9TpMGuEb8mGKLmiESqHnCoG/Xgb21o5A56
-	j2NTyhTbHbtYvo/sqaVQw==
-MIME-Version: 1.0
-In-Reply-To: <20090803194555.GA10158@us.ibm.com>
-References: <20090731012908.27908.62208.stgit@hastromil.mtv.corp.google.com>
-	 <20090731015154.27908.9639.stgit@hastromil.mtv.corp.google.com>
-	 <20090803175452.GA5481@us.ibm.com>
-	 <2f86c2480908031113y525b6cbdhe418b8a0364c7760@mail.gmail.com>
-	 <20090803185556.GA8469@us.ibm.com> <20090803194555.GA10158@us.ibm.com>
-Date: Mon, 3 Aug 2009 12:55:33 -0700
-Message-ID: <6599ad830908031255j68ce047x7165bfefa62ed53c@mail.gmail.com>
-Subject: Re: [PATCH 6/6] Makes procs file writable to move all threads by tgid 
-	at once
-From: Paul Menage <menage@google.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Benjamin Blum <bblum@google.com>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Mon, 3 Aug 2009 15:56:13 -0400
+Received: from slimlogic.co.uk ([89.16.172.20]:55316 "EHLO slimlogic.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754723AbZHCT4M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 15:56:12 -0400
+Subject: Re: [PATCH v4] regulator: Add GPIO enable control to fixed voltage
+ regulator driver
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Roger Quadros <quadros.roger@gmail.com>
+Cc: broonie@sirena.org.uk, philipp.zabel@gmail.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1249319716-17825-1-git-send-email-quadros.roger@gmail.com>
+References: <quadros.roger@gmail.com>
+	 <1249319716-17825-1-git-send-email-quadros.roger@gmail.com>
+Content-Type: text/plain
+Date: Mon, 03 Aug 2009 20:32:47 +0100
+Message-Id: <1249327967.4248.144.camel@vega.slimlogic.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 3, 2009 at 12:45 PM, Serge E. Hallyn<serue@us.ibm.com> wrote:
->
-> This is probably a stupid idea, but...  what about having zero
-> overhead at clone(), and instead, at cgroup_task_migrate(),
-> dequeue_task()ing all of the affected threads for the duration of
-> the migrate?
+On Mon, 2009-08-03 at 20:15 +0300, Roger Quadros wrote:
+> From: Roger Quadros <ext-roger.quadros@nokia.com>
+> 
+> Now fixed regulators that have their enable pin connected to a GPIO line
+> can use the fixed regulator driver for regulator enable/disable control.
+> The GPIO number and polarity information is passed through platform data.
+> GPIO enable control is achieved using gpiolib.
+> 
+> Signed-off-by: Roger Quadros <ext-roger.quadros@nokia.com>
+> ---
+>  drivers/regulator/fixed.c       |   78 ++++++++++++++++++++++++++++++++++++++-
+>  include/linux/regulator/fixed.h |   21 ++++++++++
+>  2 files changed, 97 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/regulator/fixed.c b/drivers/regulator/fixed.c
+> index cdc674f..6cea02c 100644
+> --- a/drivers/regulator/fixed.c
+> +++ b/drivers/regulator/fixed.c
+> @@ -5,6 +5,9 @@
+>   *
+>   * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
+>   *
+> + * Copyright (c) 2009 Nokia Corporation
+> + * Roger Quadros <ext-roger.quadros@nokia.com>
+> + *
+>   * This program is free software; you can redistribute it and/or
+>   * modify it under the terms of the GNU General Public License as
+>   * published by the Free Software Foundation; either version 2 of the
+> @@ -20,20 +23,45 @@
+>  #include <linux/platform_device.h>
+>  #include <linux/regulator/driver.h>
+>  #include <linux/regulator/fixed.h>
+> +#include <linux/gpio.h>
+>  
+>  struct fixed_voltage_data {
+>  	struct regulator_desc desc;
+>  	struct regulator_dev *dev;
+>  	int microvolts;
+> +	int gpio;
+> +	unsigned enable_high:1;
+> +	unsigned is_enabled:1;
+>  };
+>  
+>  static int fixed_voltage_is_enabled(struct regulator_dev *dev)
+>  {
+> -	return 1;
+> +	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
+> +
+> +	return data->is_enabled;
+>  }
+>  
+>  static int fixed_voltage_enable(struct regulator_dev *dev)
+>  {
+> +	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
+> +
+> +	if (gpio_is_valid(data->gpio)) {
+> +		gpio_set_value_cansleep(data->gpio, data->enable_high);
+> +		data->is_enabled = 1;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +static int fixed_voltage_disable(struct regulator_dev *dev)
+> +{
+> +	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
+> +
+> +	if (gpio_is_valid(data->gpio)) {
+> +		gpio_set_value_cansleep(data->gpio, !data->enable_high);
+> +		data->is_enabled = 0;
+> +	}
+> +
+>  	return 0;
+>  }
+>  
+> @@ -58,6 +86,7 @@ static int fixed_voltage_list_voltage(struct regulator_dev *dev,
+>  static struct regulator_ops fixed_voltage_ops = {
+>  	.is_enabled = fixed_voltage_is_enabled,
+>  	.enable = fixed_voltage_enable,
+> +	.disable = fixed_voltage_disable,
+>  	.get_voltage = fixed_voltage_get_voltage,
+>  	.list_voltage = fixed_voltage_list_voltage,
+>  };
+> @@ -85,12 +114,51 @@ static int regulator_fixed_voltage_probe(struct platform_device *pdev)
+>  	drvdata->desc.n_voltages = 1;
+>  
+>  	drvdata->microvolts = config->microvolts;
+> +	drvdata->gpio = config->gpio;
+> +
+> +	if (gpio_is_valid(config->gpio)) {
+> +		drvdata->enable_high = config->enable_high;
+> +
+> +		/* FIXME: Remove this print warning */
 
-That doesn't sound too unreasonable, actually - it would certainly
-simplify things a fair bit. Is there a standard API for doing that?
-dequeue_task() itself doesn't really look like a public API. I guess
-that the task freezer would be one way to accomplish this?
+Sorry to nitpick. Please describe the reason for this warning in the
+comment and when it will likely be removed. Obvious from email thread
+but not by someone looking at code.
 
-I can imagine that the set of people who'd complain about the latency
-hit when migrating with your solution would be smaller than the people
-who'd complain about the increased overhead in the normal clone case.
+Thanks
 
-Paul
+Liam
+
