@@ -1,145 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754908AbZHCMTX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754918AbZHCMUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754908AbZHCMTX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 08:19:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754862AbZHCMTX
+	id S1754918AbZHCMUB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 08:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbZHCMUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 08:19:23 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:30460 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754844AbZHCMTW (ORCPT
+	Mon, 3 Aug 2009 08:20:00 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33585 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754863AbZHCMT7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 08:19:22 -0400
-X-Trace: 236588474/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.63.67/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.63.67
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqYEAM9ydkpPRT9D/2dsb2JhbACBUs4xhBgFgUo
-X-IronPort-AV: E=Sophos;i="4.43,314,1246834800"; 
-   d="scan'208";a="236588474"
-Date: Mon, 3 Aug 2009 13:19:13 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Izik Eidus <ieidus@redhat.com>
-cc: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
-       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: [PATCH 10/12] ksm: sysfs and defaults
-In-Reply-To: <Pine.LNX.4.64.0908031304430.16449@sister.anvils>
-Message-ID: <Pine.LNX.4.64.0908031318220.16754@sister.anvils>
-References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils>
+	Mon, 3 Aug 2009 08:19:59 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
+Cc: kosaki.motohiro@jp.fujitsu.com, David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Paul Menage <menage@google.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <20090803175557.645b9ca3.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090803174519.74673413.kamezawa.hiroyu@jp.fujitsu.com> <20090803175557.645b9ca3.kamezawa.hiroyu@jp.fujitsu.com>
+Message-Id: <20090803211812.CC29.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon,  3 Aug 2009 21:19:58 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At present KSM is just a waste of space if you don't have CONFIG_SYSFS=y
-to provide the /sys/kernel/mm/ksm files to tune and activate it.
+> On Mon, 3 Aug 2009 17:45:19 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > "just inherit at fork, change at exec" is an usual manner, I think.
+> > If oom_adj_exec rather than oom_adj_child, I won't complain, more.
+> > 
+> But this/(and yours) requires users to rewrite their apps.
+> Then, breaks current API.
+> please fight with other guardians.
 
-Make KSM depend on SYSFS?  Could do, but it might be better to provide
-some defaults so that KSM works out-of-the-box, ready for testers to
-madvise MADV_MERGEABLE, even without SYSFS.
+Definitely, I never agree regressionful ABI change ;)
+At least, I still think it can be fixable.
 
-Though anyone serious is likely to want to retune the numbers to their
-taste once they have experience; and whether these settings ever reach
-2.6.32 can be discussed along the way.  
 
-Save 1kB from tiny kernels by #ifdef'ing the SYSFS side of it.
 
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
----
 
- mm/ksm.c |   26 +++++++++++++++++++-------
- 1 file changed, 19 insertions(+), 7 deletions(-)
-
---- ksm9/mm/ksm.c	2009-08-02 13:50:41.000000000 +0100
-+++ ksm10/mm/ksm.c	2009-08-02 13:50:48.000000000 +0100
-@@ -163,18 +163,18 @@ static unsigned long ksm_pages_unshared;
- static unsigned long ksm_rmap_items;
- 
- /* Limit on the number of unswappable pages used */
--static unsigned long ksm_max_kernel_pages;
-+static unsigned long ksm_max_kernel_pages = 2000;
- 
- /* Number of pages ksmd should scan in one batch */
--static unsigned int ksm_thread_pages_to_scan;
-+static unsigned int ksm_thread_pages_to_scan = 200;
- 
- /* Milliseconds ksmd should sleep between batches */
--static unsigned int ksm_thread_sleep_millisecs;
-+static unsigned int ksm_thread_sleep_millisecs = 20;
- 
- #define KSM_RUN_STOP	0
- #define KSM_RUN_MERGE	1
- #define KSM_RUN_UNMERGE	2
--static unsigned int ksm_run;
-+static unsigned int ksm_run = KSM_RUN_MERGE;
- 
- static DECLARE_WAIT_QUEUE_HEAD(ksm_thread_wait);
- static DEFINE_MUTEX(ksm_thread_mutex);
-@@ -506,6 +506,10 @@ static int unmerge_ksm_pages(struct vm_a
- 	return err;
- }
- 
-+#ifdef CONFIG_SYSFS
-+/*
-+ * Only called through the sysfs control interface:
-+ */
- static int unmerge_and_remove_all_rmap_items(void)
- {
- 	struct mm_slot *mm_slot;
-@@ -563,6 +567,7 @@ error:
- 	spin_unlock(&ksm_mmlist_lock);
- 	return err;
- }
-+#endif /* CONFIG_SYSFS */
- 
- static u32 calc_checksum(struct page *page)
- {
-@@ -1464,6 +1469,11 @@ void __ksm_exit(struct mm_struct *mm,
- 	}
- }
- 
-+#ifdef CONFIG_SYSFS
-+/*
-+ * This all compiles without CONFIG_SYSFS, but is a waste of space.
-+ */
-+
- #define KSM_ATTR_RO(_name) \
- 	static struct kobj_attribute _name##_attr = __ATTR_RO(_name)
- #define KSM_ATTR(_name) \
-@@ -1646,6 +1656,7 @@ static struct attribute_group ksm_attr_g
- 	.attrs = ksm_attrs,
- 	.name = "ksm",
- };
-+#endif /* CONFIG_SYSFS */
- 
- static int __init ksm_init(void)
- {
-@@ -1667,16 +1678,17 @@ static int __init ksm_init(void)
- 		goto out_free2;
- 	}
- 
-+#ifdef CONFIG_SYSFS
- 	err = sysfs_create_group(mm_kobj, &ksm_attr_group);
- 	if (err) {
- 		printk(KERN_ERR "ksm: register sysfs failed\n");
--		goto out_free3;
-+		kthread_stop(ksm_thread);
-+		goto out_free2;
- 	}
-+#endif /* CONFIG_SYSFS */
- 
- 	return 0;
- 
--out_free3:
--	kthread_stop(ksm_thread);
- out_free2:
- 	mm_slots_hash_free();
- out_free1:
