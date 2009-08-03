@@ -1,87 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932076AbZHCTbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbZHCThT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932076AbZHCTbj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 15:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754508AbZHCTbi
+	id S1754622AbZHCThT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 15:37:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbZHCThS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 15:31:38 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:53680 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754345AbZHCTbi (ORCPT
+	Mon, 3 Aug 2009 15:37:18 -0400
+Received: from mail-px0-f201.google.com ([209.85.216.201]:47529 "EHLO
+	mail-px0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753399AbZHCThR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 15:31:38 -0400
-Message-ID: <4A773B26.20007@vmware.com>
-Date: Mon, 03 Aug 2009 21:31:50 +0200
-From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thellstrom@vmware.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Mon, 3 Aug 2009 15:37:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=xsibD7Oc2UarCnjeomJE52cQlKm/soRGHpF4qZiR8s9OkLFS6Mf7768FwAe4b/fIvR
+         5/ydqZ8GncfxBbjqW7Ab+T/3+65KQUOq0kQ1QTblVgPN4QzYaFoGOv9OX7b6gvUySenb
+         FkM1efPrr9/qnbz076YjSZyxujvjXeXpTLtkE=
+Message-ID: <4A773AC2.2080106@gmail.com>
+Date: Mon, 03 Aug 2009 15:30:10 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-To: "suresh.b.siddha@intel.com" <suresh.b.siddha@intel.com>
-CC: Ingo Molnar <mingo@elte.hu>, Dave Airlie <airlied@linux.ie>,
-       Arjan van de Ven <arjan@infradead.org>, "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>
-Subject: CPA interfaces WAS x86: Fix CPA memtype reserving in the set_pages_array
- cases
-References: <1249284345-7654-1-git-send-email-thellstrom@vmware.com>	 <20090803081110.GB32258@elte.hu>	 <alpine.DEB.2.00.0908030928280.496@skynet.skynet.ie>	 <4A76A24F.1030505@vmware.com> <20090803091954.GB9074@elte.hu>	 <4A76B985.40202@vmware.com>  <20090803104454.GB18165@elte.hu> <1249318705.27006.10777.camel@localhost.localdomain>
-In-Reply-To: <1249318705.27006.10777.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net, netdev@vger.kernel.org
+Subject: Re: [PATCH 7/7] venet: add scatter-gather/GSO support
+References: <20090803171030.17268.26962.stgit@dev.haskins.net>	<20090803171807.17268.49836.stgit@dev.haskins.net> <20090803113225.4cd414ec@nehalam>
+In-Reply-To: <20090803113225.4cd414ec@nehalam>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigBE4790AD4B3E23612DA70C1F"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh Siddha skrev:
->
-> Also, now that we have set_pages_array interface, do we still need the
-> set_memory_array_uc interface? Removing that should clean up the cpa
-> code a bit.
->
-> thanks,
-> suresh
->
->   
-This might be a good time to discuss how graphics drivers will use this 
-interface in the not too distant future. These are my thoughts.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigBE4790AD4B3E23612DA70C1F
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-1) A pool of uc / wc pages: Jerome Glisse and Dave Airlie have been 
-working on this. It will hugely speed up the allocation and freeing of 
-transient uc / wc buffers. Pages will be allocated and freed in chunks 
-of a couple of megabytes, and caching attributes are changed using the 
-set_pages_array() interface. The pool will sit in the TTM driver.
-1a) Using large pages: With such a pool it would be beneficial to 
-allocate and free large pages to avoid page splitting in the CPA code. 
-There is no code in the pool implementation for that yet, but I think 
-the set_memory_array_xx will be the best interface for that, although I 
-guess set_pages_array_xx would work.
-
-2) Optimize cache flushing:
-2a) I think both the TTM code and AGP code flushes the cache before 
-changing from wb, to make sure the device sees the data. Therefore with 
-these callers, I don't think the CPA code  needs to flush the cache 
-again, and it might be beneficial with a "cache_already_flushed" bool to 
-some of the function apis.
-2b) Use self-snooping where available regardless of the value of the 
-"cache_already_flushed" bool.
-
-3) set_pages_array_np():
-This is a bit controversial, but will enable a certain valuable class of 
-graphics optimizations. The idea is to, instead of marking the PTEs as 
-wc or uc, marking them as non-present, np. This means that the TTM code 
-does not need to bother with CPA if it wants to make quick cached reads 
-from graphics buffers. Just use kmap_atomic() and make sure to clflush 
-before unmap.
-The caveat is that all np pages must be marked wb before hibernation 
-since the hibernation code will try to read from the linear kernel map. 
-But we have to deal with that today for uc / wc highmem pages today as 
-well since the hibernation code will try to kmap() them with wb page 
-attributes.
-
-It would be nice to have some comments on these general ideas before 
-starting to work on them.
-
-/Thomas
+Stephen Hemminger wrote:
+> On Mon, 03 Aug 2009 13:18:07 -0400
+> Gregory Haskins <ghaskins@novell.com> wrote:
+>=20
+>> SG/GSO significantly enhance the performance of network traffic under
+>> certain circumstances.  We implement this feature as a separate patch
+>> to avoid intially complicating the baseline venet driver.  This will
+>> presumably make the review process slightly easier, since we can
+>> focus on the basic interface first.
+>>
+>> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+>=20
+> Never mind, previous comment about adding TSO.
 
 
+I should probably fold 6+7 together anyway, so this was my fault.  I
+think I was originally keeping them separate because the venet was
+serving as the canonical example for the vbus interface.  But Ill just
+come up with something simpler to demonstrate the interface and merge
+these two patches.
 
+> But it still would be good to have ethtool interface for this.
+
+Ack.  Will do.
+
+Thanks Stephen,
+-Greg
+
+
+--------------enigBE4790AD4B3E23612DA70C1F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkp3OsIACgkQP5K2CMvXmqGqYgCgh9VC2+3otM51psFaHNp8HUTe
+h6oAn2gmbKCnW5Ip/KC2EfEp7rvhIEX8
+=NES1
+-----END PGP SIGNATURE-----
+
+--------------enigBE4790AD4B3E23612DA70C1F--
