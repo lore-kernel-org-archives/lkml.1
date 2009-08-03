@@ -1,132 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754183AbZHCBod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbZHCBot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754183AbZHCBod (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 21:44:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754131AbZHCBoc
+	id S1754229AbZHCBot (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 21:44:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbZHCBos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 21:44:32 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36152 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754119AbZHCBob (ORCPT
+	Sun, 2 Aug 2009 21:44:48 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:47533 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754188AbZHCBop (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 21:44:31 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 3 Aug 2009 10:42:44 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Paul Menage <menage@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
-Message-Id: <20090803104244.b58220ba.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.2.00.0908011303050.22174@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0907282125260.554@chino.kir.corp.google.com>
-	<20090730180029.c4edcc09.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0907300219580.13674@chino.kir.corp.google.com>
-	<20090730190216.5aae685a.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0907301157100.9652@chino.kir.corp.google.com>
-	<20090731093305.50bcc58d.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0907310231370.25447@chino.kir.corp.google.com>
-	<7f54310137837631f2526d4e335287fc.squirrel@webmail-b.css.fujitsu.com>
-	<alpine.DEB.2.00.0907311212240.22732@chino.kir.corp.google.com>
-	<77df8765230d9f83859fde3119a2d60a.squirrel@webmail-b.css.fujitsu.com>
-	<alpine.DEB.2.00.0908011303050.22174@chino.kir.corp.google.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 2 Aug 2009 21:44:45 -0400
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
+References: <b0943d9e0907081433y599e6d51j285c390f18d7b32c@mail.gmail.com>
+	<20090729170315.f62066c0.akpm@linux-foundation.org>
+	<20090730212956.GA26863@redhat.com>
+	<1249035398.29967.8.camel@pc1117.cambridge.arm.com>
+	<20090802213528.GA18795@redhat.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Sun, 02 Aug 2009 18:44:37 -0700
+In-Reply-To: <20090802213528.GA18795@redhat.com> (Oleg Nesterov's message of "Sun\, 2 Aug 2009 23\:35\:28 +0200")
+Message-ID: <m1ws5lekmy.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: oleg@redhat.com, serue@us.ibm.com, sukadev@us.ibm.com, linux-kernel@vger.kernel.org, akpm@linux-foundation.org, catalin.marinas@arm.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Oleg Nesterov <oleg@redhat.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0004]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: Possible memory leak via alloc_pid()
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 1 Aug 2009 13:26:52 -0700 (PDT)
-David Rientjes <rientjes@google.com> wrote:
+Oleg Nesterov <oleg@redhat.com> writes:
 
-> On Sat, 1 Aug 2009, KAMEZAWA Hiroyuki wrote:
-> 
-> > Summarizing I think now .....
-> >   - rename mm->oom_adj as mm->effective_oom_adj
-> >   - re-add per-thread oom_adj
-> >   - update mm->effective_oom_adj based on per-thread oom_adj
-> >   - if necessary, plz add read-only /proc/pid/effective_oom_adj file.
-> >     or show 2 values in /proc/pid/oom_adj
-> >   - rewrite documentation about oom_score.
-> >    " it's calclulated from  _process's_ memory usage and oom_adj of
-> >     all threads which shares a memor  context".
-> >    This behavior is not changed from old implemtation, anyway.
-> >  - If necessary, rewrite oom_kill itself to scan only thread group
-> >    leader. It's a way to go regardless of  vfork problem.
-> > 
-> 
-> Ok, so you've abandoned the signal_struct proposal and now want to add it 
-per-signal is also ok, just I didn't write.
+> On 07/31, Catalin Marinas wrote:
+>>
+>> On Thu, 2009-07-30 at 23:29 +0200, Oleg Nesterov wrote:
+>> >
+>> > Since you can reproduce the problem easily, perhaps you can use the
+>> > hack above to track get/put ?
+>> >
+>> > 	$ echo pid_of_Xorg > /proc/sys/kernel/xxx
+>>
+>> Below is the minicom capture. By the time Xorg dies, the count is 2.
+>
+> Thanks a lot Catalin.
+>
+>> When logging out, there are two counter incrementing events via
+>> sys_wait4 and sys_ioctl, thoush I'm not sure whether they are
+>> unbalanced.
+>
+> wait4() is right, ioctl() looks fine too.
+>
+>> pgrep Xorg
+>> 1519
+>> 10:~# pgrep Xorg > /proc/sys/kernel/xxx 
+>> XXXXX(1519) ==22
+>
+> Unfortunately there is nothing which looks like a leak. I gueess it is
+> too late to start the tracking.
+>
+> I'm afraid this won't really help too, but since nobody has a better
+> idea for now, perhaps you can do another test?
+>
+> Pleas rename Xorg to Xorg.origin, and make a simple Xorg script which
+> does something like
+>
+> 	#!/bin/sh
+>
+> 	echo $$ >> /proc/sys/kernel/xxx
+> 	exec /path/to/Xorg.origin $*
+>
+> perhaps even this is too late, gdm can do a lot before execing.
+>
+> Please avoid pgrep/ps/etc, proc adds a lot of noise. Better yet, it
+> would be nice to start/stop Xorg with /proc unmounted, but I don't
+> know is this can work without /proc.
 
-> back to task_struct with an effective member in mm_struct by changing the 
-> documentation.  Hmm.
-> 
-> This solves the livelock problem by adding additional tunables, but 
-> doesn't match how the documentation describes the use case for 
-> /proc/pid/oom_adj.  Your argument is that the behavior of that value can't 
-> change: that it must be per-thread.  And that allowance leads to one of 
-> two inconsistent scenarios:
-> 
->  - /proc/pid/oom_score is inconsistent when tuning /proc/pid/oom_adj if it
->    relies on the per-thread oom_adj; it now really represents nothing but
->    an incorrect value if other threads share that memory and misleads the
->    user on how the oom killer chooses victims, or
+Hmm.  I'm starting to wonder if kmemleak is right.  I don't know how
+it works but something about the way pids are used might be confusing it.
 
-What's why I said to show effective_oom_adj if necessary..
-
-> 
->  - /proc/pid/oom_score is inconsistent when the thread that set the
->    effective per-mm oom_adj exits and it is now obsolete since you have
->    no way to determine what the next effective oom_adj value shall be.
-> 
-plz re-caluculate it. it's not a big job if done in lazy way.
-
-
-> Determining the next effective per-mm oom_adj isn't possible when the only 
-> threads sharing the mm remaining have different per-thread oom_adj values.  
-> That's a horribly inconsistent state to be getting into because it allows 
-> oom_score to change when a thread exits, which is completely unknown to 
-> userspace, OR is allows the effective per-mm oom_adj to be different from 
-> all threads sharing the same memory (and, thus, /proc/pid/oom_score not 
-> being representative of any thread's /proc/pid/oom_adj).
-> 
-A _sane_ user will just set oom_adj to thread-group-leader.
-Do you think users are too fool to set per-thread oom_adj independently ?
-No problems in real world.
-
-
-> > I think documentation is wrong. It should say "you should think of
-> > multi-thread effect to oom_adj/oom_score".
-> > 
-> 
-> It's more likely than not that applications were probably written to the 
-> way the documentation described the two files: that is, adjust 
-> /proc/pid/oom_score by tuning /proc/pid/oom_adj instead of relying on an 
-> undocumented implementation detail concerning the tuning of oom_adj for a 
-> vfork'd child prior to exec().  The user is probably unaware of the oom 
-> killer's implementation and simply interprets a higher oom_score as a more 
-> likely candidate for oom kill.  My patches preserve that in all scenarios 
-> without altering the documentation or adding additional files that would 
-> be required to leave the oom_adj value itself in an inconsistent state as 
-> you propose.
-> 
-No.  My understanding is this.
-
- - oom_adj is designed considering vfork(), of course. then. per-thread.
- - oom_score has been incorrect in multi-threaded system. The user will not
-   be affected.
- - you fixed livelock but breaks the feature.
-
-
-Thanks,
--Kame
-  
-
-
-
-
+Eric
