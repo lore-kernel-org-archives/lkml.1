@@ -1,60 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753056AbZHCRCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbZHCREr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753056AbZHCRCT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 13:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbZHCRCS
+	id S1754771AbZHCREr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 13:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZHCREr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 13:02:18 -0400
-Received: from mga09.intel.com ([134.134.136.24]:43297 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752840AbZHCRCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 13:02:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,315,1246863600"; 
-   d="scan'208";a="538210791"
-Subject: Re: [PATCH] x86: Fix CPA memtype reserving in the set_pages_array
- cases
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: suresh.b.siddha@intel.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Hellstrom <thellstrom@vmware.com>, Dave Airlie <airlied@linux.ie>,
-       Arjan van de Ven <arjan@infradead.org>, "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>
-In-Reply-To: <20090803104454.GB18165@elte.hu>
-References: <1249284345-7654-1-git-send-email-thellstrom@vmware.com>
-	 <20090803081110.GB32258@elte.hu>
-	 <alpine.DEB.2.00.0908030928280.496@skynet.skynet.ie>
-	 <4A76A24F.1030505@vmware.com> <20090803091954.GB9074@elte.hu>
-	 <4A76B985.40202@vmware.com>  <20090803104454.GB18165@elte.hu>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Mon, 03 Aug 2009 09:58:25 -0700
-Message-Id: <1249318705.27006.10777.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Aug 2009 13:04:47 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:32934 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752941AbZHCREq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 13:04:46 -0400
+Date: Mon, 3 Aug 2009 18:04:46 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: ben@fluff.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: Re: gpiolib: add export/unexport by gpio name
+Message-ID: <20090803170446.GA25100@fluff.org.uk>
+References: <20090803165544.286572916@fluff.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090803165544.286572916@fluff.org>
+X-Disclaimer: These are my own opinions, so there!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-03 at 03:44 -0700, Ingo Molnar wrote:
-> ok - thanks for the explanation. Since you intentionally want to use 
-> highmem pages (and your use is safe) i concur with your original 
-> patch in its entirety - even if that planned highmem use is not 
-> upstream yet. Will get it .31-wards ASAP.
+On Mon, Aug 03, 2009 at 05:55:44PM +0100, ben@fluff.org wrote:
+> Add the facility to export/unexport a gpio by the name assigned to it
+> as well as the number.
 
-Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
+sorry, forgot to update the patch before sending, please ignore this
+one.
+ 
+> Signed-off-by: Ben Dooks <ben@simtec.co.uk>
+> Cc: David Brownell <dbrownell@users.sourceforge.net>
+> 
+> ---
+>  drivers/gpio/gpiolib.c |   59 +++++++++++++++++++++++++++++++++++++++++++++----
+>  1 file changed, 55 insertions(+), 4 deletions(-)
+> 
+> Index: b/drivers/gpio/gpiolib.c
+> ===================================================================
+> --- a/drivers/gpio/gpiolib.c	2009-08-03 17:53:04.000000000 +0100
+> +++ b/drivers/gpio/gpiolib.c	2009-08-03 17:53:33.000000000 +0100
+> @@ -364,6 +364,53 @@ static const struct attribute_group gpio
+>  	.attrs = (struct attribute **) gpiochip_attrs,
+>  };
+>  
+> +static int search_names(char **names, const char *match, int ngpio)
+> +{
+> +	int ptr;
+> +
+> +	if (names) {
+> +		for (ptr = 0; ptr < ngpio; ptr++) {
+> +			if (!names[ptr])
+> +				continue;
+> +
+> +			if (strcmp(names[ptr], match) == 0)
+> +				return ptr;
+> +		}
+> +	}
+> +
+> +	return -ENOENT;
+> +}
+> +
+> +static long gpio_from_string(const char *buf)
+> +{
+> +	struct gpio_chip *chip;
+> +	struct gpio_desc *desc;
+> +	long status;
+> +	long gpio;
+> +	int ptr, off;
+> +
+> +	status = strict_strtol(buf, 0, &gpio);
+> +	if (status < 0) {
+> +		for (ptr = 0; ptr < ARCH_NR_GPIOS && status < 0;) {
+> +			desc = gpio_desc + ptr;
+> +			chip = desc->chip;
+> +
+> +			if (!chip) {
+> +				ptr++;
+> +				continue;
+> +			}
+> +
+> +			off = search_names(chip->names, buf, chip->ngpio);
+> +			if (off >= 0)
+> +				status = ptr + off;
+> +
+> +			ptr += chip->ngpio;
+> +		}
+> +	}
+> +
+> +	return status;
+> +}
+> +
+>  /*
+>   * /sys/class/gpio/export ... write-only
+>   *	integer N ... number of GPIO to export (full access)
+> @@ -375,9 +422,11 @@ static ssize_t export_store(struct class
+>  	long	gpio;
+>  	int	status;
+>  
+> -	status = strict_strtol(buf, 0, &gpio);
+> -	if (status < 0)
+> +	gpio = gpio_from_string(buf);
+> +	if (gpio < 0) {
+> +		status = gpio;
+>  		goto done;
+> +	}
+>  
+>  	/* No extra locking here; FLAG_SYSFS just signifies that the
+>  	 * request and export were done by on behalf of userspace, so
+> @@ -405,9 +454,11 @@ static ssize_t unexport_store(struct cla
+>  	long	gpio;
+>  	int	status;
+>  
+> -	status = strict_strtol(buf, 0, &gpio);
+> -	if (status < 0)
+> +	gpio = gpio_from_string(buf);
+> +	if (gpio < 0) {
+> +		status = gpio;
+>  		goto done;
+> +	}
+>  
+>  	status = -EINVAL;
+>  
+> 
+> -- 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-While none of the drivers in 2.6.30 use this interface, it will be good
-if we backport this to 2.6.30-stable aswell.
+-- 
+Ben (ben@fluff.org, http://www.fluff.org/)
 
-Also, now that we have set_pages_array interface, do we still need the
-set_memory_array_uc interface? Removing that should clean up the cpa
-code a bit.
-
-thanks,
-suresh
-
+  'a smiley only costs 4 bytes'
