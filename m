@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932118AbZHCNZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932128AbZHCNZm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932118AbZHCNZd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 09:25:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932108AbZHCNZc
+	id S932128AbZHCNZm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 09:25:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755096AbZHCNZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 09:25:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52072 "EHLO hera.kernel.org"
+	Mon, 3 Aug 2009 09:25:40 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52080 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932074AbZHCNZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 09:25:29 -0400
-Date: Mon, 3 Aug 2009 13:24:49 GMT
+	id S1753070AbZHCNZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 09:25:39 -0400
+Date: Mon, 3 Aug 2009 13:25:02 GMT
 From: tip-bot for Stanislaw Gruszka <sgruszka@redhat.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
@@ -20,38 +20,32 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
        benh@kernel.crashing.org, akpm@linux-foundation.org, tglx@linutronix.de,
        oleg@redhat.com, sgruszka@redhat.com, mingo@elte.hu
-In-Reply-To: <1248862529-6063-3-git-send-email-sgruszka@redhat.com>
-References: <1248862529-6063-3-git-send-email-sgruszka@redhat.com>
-Subject: [tip:timers/posixtimers] itimers: Fix periodic tics precision
-Message-ID: <tip-8356b5f9c424e5831715abbce747197c30d1fd71@git.kernel.org>
-Git-Commit-ID: 8356b5f9c424e5831715abbce747197c30d1fd71
+In-Reply-To: <1248862529-6063-4-git-send-email-sgruszka@redhat.com>
+References: <1248862529-6063-4-git-send-email-sgruszka@redhat.com>
+Subject: [tip:timers/posixtimers] itimers: Simplify arm_timer() code a bit
+Message-ID: <tip-d1e3b6d195770bd422e3229b88edfc154b6a27dd@git.kernel.org>
+Git-Commit-ID: d1e3b6d195770bd422e3229b88edfc154b6a27dd
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 03 Aug 2009 13:24:50 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 03 Aug 2009 13:25:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8356b5f9c424e5831715abbce747197c30d1fd71
-Gitweb:     http://git.kernel.org/tip/8356b5f9c424e5831715abbce747197c30d1fd71
+Commit-ID:  d1e3b6d195770bd422e3229b88edfc154b6a27dd
+Gitweb:     http://git.kernel.org/tip/d1e3b6d195770bd422e3229b88edfc154b6a27dd
 Author:     Stanislaw Gruszka <sgruszka@redhat.com>
-AuthorDate: Wed, 29 Jul 2009 12:15:27 +0200
+AuthorDate: Wed, 29 Jul 2009 12:15:28 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 3 Aug 2009 14:48:35 +0200
+CommitDate: Mon, 3 Aug 2009 14:48:36 +0200
 
-itimers: Fix periodic tics precision
+itimers: Simplify arm_timer() code a bit
 
-Measure ITIMER_PROF and ITIMER_VIRT timers interval error
-between real ticks and requested by user. Take it into account
-when scheduling next tick.
-
-This patch introduce possibility where time between two
-consecutive tics is smaller then requested interval, it
-preserve however dependency that n tick is generated not
-earlier than n*interval time - counting from the beginning of
-periodic signal generation.
+Don't update values in expiration cache when new ones are
+equal. Add expire_le() and expire_gt() helpers to simplify the
+code.
 
 Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
 Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
@@ -60,123 +54,95 @@ Cc: Oleg Nesterov <oleg@redhat.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-LKML-Reference: <1248862529-6063-3-git-send-email-sgruszka@redhat.com>
+LKML-Reference: <1248862529-6063-4-git-send-email-sgruszka@redhat.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- include/linux/sched.h     |    2 ++
- kernel/itimer.c           |   24 +++++++++++++++++++++---
- kernel/posix-cpu-timers.c |   20 +++++++++++++++++---
- 3 files changed, 40 insertions(+), 6 deletions(-)
+ kernel/posix-cpu-timers.c |   44 +++++++++++++++++++++++---------------------
+ 1 files changed, 23 insertions(+), 21 deletions(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 3b3efad..a069e65 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -473,6 +473,8 @@ struct pacct_struct {
- struct cpu_itimer {
- 	cputime_t expires;
- 	cputime_t incr;
-+	u32 error;
-+	u32 incr_error;
- };
- 
- /**
-diff --git a/kernel/itimer.c b/kernel/itimer.c
-index 852c88d..21adff7 100644
---- a/kernel/itimer.c
-+++ b/kernel/itimer.c
-@@ -42,7 +42,7 @@ static struct timeval itimer_get_remtime(struct hrtimer *timer)
- }
- 
- static void get_cpu_itimer(struct task_struct *tsk, unsigned int clock_id,
--			   struct itimerval *value)
-+			   struct itimerval *const value)
- {
- 	cputime_t cval, cinterval;
- 	struct cpu_itimer *it = &tsk->signal->it[clock_id];
-@@ -127,14 +127,32 @@ enum hrtimer_restart it_real_fn(struct hrtimer *timer)
- 	return HRTIMER_NORESTART;
- }
- 
-+static inline u32 cputime_sub_ns(cputime_t ct, s64 real_ns)
-+{
-+	struct timespec ts;
-+	s64 cpu_ns;
-+
-+	cputime_to_timespec(ct, &ts);
-+	cpu_ns = timespec_to_ns(&ts);
-+
-+	return (cpu_ns <= real_ns) ? 0 : cpu_ns - real_ns;
-+}
-+
- static void set_cpu_itimer(struct task_struct *tsk, unsigned int clock_id,
--			   struct itimerval *value, struct itimerval *ovalue)
-+			   const struct itimerval *const value,
-+			   struct itimerval *const ovalue)
- {
--	cputime_t cval, cinterval, nval, ninterval;
-+	cputime_t cval, nval, cinterval, ninterval;
-+	s64 ns_ninterval, ns_nval;
- 	struct cpu_itimer *it = &tsk->signal->it[clock_id];
- 
- 	nval = timeval_to_cputime(&value->it_value);
-+	ns_nval = timeval_to_ns(&value->it_value);
- 	ninterval = timeval_to_cputime(&value->it_interval);
-+	ns_ninterval = timeval_to_ns(&value->it_interval);
-+
-+	it->incr_error = cputime_sub_ns(ninterval, ns_ninterval);
-+	it->error = cputime_sub_ns(nval, ns_nval);
- 
- 	spin_lock_irq(&tsk->sighand->siglock);
- 
 diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
-index 9b2d5e4..b60d644 100644
+index b60d644..69c9237 100644
 --- a/kernel/posix-cpu-timers.c
 +++ b/kernel/posix-cpu-timers.c
-@@ -1070,6 +1070,8 @@ static void stop_process_timers(struct task_struct *tsk)
- 	spin_unlock_irqrestore(&cputimer->lock, flags);
+@@ -541,6 +541,17 @@ static void clear_dead_task(struct k_itimer *timer, union cpu_time_count now)
+ 					     now);
  }
  
-+static u32 onecputick;
++static inline int expires_gt(cputime_t expires, cputime_t new_exp)
++{
++	return cputime_eq(expires, cputime_zero) ||
++	       cputime_gt(expires, new_exp);
++}
 +
- static void check_cpu_itimer(struct task_struct *tsk, struct cpu_itimer *it,
- 			     cputime_t *expires, cputime_t cur_time, int signo)
- {
-@@ -1077,9 +1079,16 @@ static void check_cpu_itimer(struct task_struct *tsk, struct cpu_itimer *it,
- 		return;
++static inline int expires_le(cputime_t expires, cputime_t new_exp)
++{
++	return !cputime_eq(expires, cputime_zero) &&
++	       cputime_le(expires, new_exp);
++}
+ /*
+  * Insert the timer on the appropriate list before any timers that
+  * expire later.  This must be called with the tasklist_lock held
+@@ -585,31 +596,26 @@ static void arm_timer(struct k_itimer *timer, union cpu_time_count now)
+ 		 */
  
- 	if (cputime_ge(cur_time, it->expires)) {
--		it->expires = it->incr;
--		if (!cputime_eq(it->expires, cputime_zero))
--			it->expires = cputime_add(it->expires, cur_time);
-+		if (!cputime_eq(it->incr, cputime_zero)) {
-+			it->expires = cputime_add(it->expires, it->incr);
-+			it->error += it->incr_error;
-+			if (it->error >= onecputick) {
-+				it->expires = cputime_sub(it->expires,
-+							jiffies_to_cputime(1));
-+				it->error -= onecputick;
-+			}
-+		} else
-+			it->expires = cputime_zero;
- 
- 		__group_send_sig_info(signo, SEND_SIG_PRIV, tsk);
- 	}
-@@ -1696,10 +1705,15 @@ static __init int init_posix_cpu_timers(void)
- 		.nsleep = thread_cpu_nsleep,
- 		.nsleep_restart = thread_cpu_nsleep_restart,
- 	};
-+	struct timespec ts;
- 
- 	register_posix_clock(CLOCK_PROCESS_CPUTIME_ID, &process);
- 	register_posix_clock(CLOCK_THREAD_CPUTIME_ID, &thread);
- 
-+	cputime_to_timespec(jiffies_to_cputime(1), &ts);
-+	onecputick = ts.tv_nsec;
-+	WARN_ON(ts.tv_sec != 0);
+ 		if (CPUCLOCK_PERTHREAD(timer->it_clock)) {
++			union cpu_time_count *exp = &nt->expires;
 +
- 	return 0;
- }
- __initcall(init_posix_cpu_timers);
+ 			switch (CPUCLOCK_WHICH(timer->it_clock)) {
+ 			default:
+ 				BUG();
+ 			case CPUCLOCK_PROF:
+-				if (cputime_eq(p->cputime_expires.prof_exp,
+-					       cputime_zero) ||
+-				    cputime_gt(p->cputime_expires.prof_exp,
+-					       nt->expires.cpu))
+-					p->cputime_expires.prof_exp =
+-						nt->expires.cpu;
++				if (expires_gt(p->cputime_expires.prof_exp,
++					       exp->cpu))
++					p->cputime_expires.prof_exp = exp->cpu;
+ 				break;
+ 			case CPUCLOCK_VIRT:
+-				if (cputime_eq(p->cputime_expires.virt_exp,
+-					       cputime_zero) ||
+-				    cputime_gt(p->cputime_expires.virt_exp,
+-					       nt->expires.cpu))
+-					p->cputime_expires.virt_exp =
+-						nt->expires.cpu;
++				if (expires_gt(p->cputime_expires.virt_exp,
++					       exp->cpu))
++					p->cputime_expires.virt_exp = exp->cpu;
+ 				break;
+ 			case CPUCLOCK_SCHED:
+ 				if (p->cputime_expires.sched_exp == 0 ||
+-				    p->cputime_expires.sched_exp >
+-							nt->expires.sched)
++				    p->cputime_expires.sched_exp > exp->sched)
+ 					p->cputime_expires.sched_exp =
+-						nt->expires.sched;
++								exp->sched;
+ 				break;
+ 			}
+ 		} else {
+@@ -623,17 +629,13 @@ static void arm_timer(struct k_itimer *timer, union cpu_time_count now)
+ 			default:
+ 				BUG();
+ 			case CPUCLOCK_VIRT:
+-				if (!cputime_eq(sig->it[CPUCLOCK_VIRT].expires,
+-						cputime_zero) &&
+-				    cputime_lt(sig->it[CPUCLOCK_VIRT].expires,
++				if (expires_le(sig->it[CPUCLOCK_VIRT].expires,
+ 					       exp->cpu))
+ 					break;
+ 				sig->cputime_expires.virt_exp = exp->cpu;
+ 				break;
+ 			case CPUCLOCK_PROF:
+-				if (!cputime_eq(sig->it[CPUCLOCK_PROF].expires,
+-						cputime_zero) &&
+-				    cputime_lt(sig->it[CPUCLOCK_PROF].expires,
++				if (expires_le(sig->it[CPUCLOCK_PROF].expires,
+ 					       exp->cpu))
+ 					break;
+ 				i = sig->rlim[RLIMIT_CPU].rlim_cur;
