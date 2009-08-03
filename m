@@ -1,39 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755082AbZHCNDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbZHCNUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755082AbZHCNDp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 09:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755070AbZHCNDo
+	id S1755115AbZHCNUH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 09:20:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbZHCNUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 09:03:44 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:36913 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755063AbZHCNDm (ORCPT
+	Mon, 3 Aug 2009 09:20:06 -0400
+Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:55782 "EHLO
+	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755076AbZHCNUF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 09:03:42 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Alex Riesen <raa.lkml@gmail.com>
-Subject: Re: Oops in CDC ACM after an Openmoko phone (neo1973) changes its usb interface from ACM to Ethernet
-Date: Mon, 3 Aug 2009 15:04:19 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.31-rc4-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>, linux-usb@vger.kernel.org,
-       Oliver Neukum <oliver@neukum.name>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Greg Kroah-Hartman" <greg@kroah.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-References: <81b0412b0908021339s739c07edvd4d5eb4c21cfa167@mail.gmail.com> <81b0412b0908021409h73fc2fcfo64c4ba9ee1f0d552@mail.gmail.com> <81b0412b0908030217o1e687c2ewf0191687a78d6166@mail.gmail.com>
-In-Reply-To: <81b0412b0908030217o1e687c2ewf0191687a78d6166@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Disposition: inline
-Message-Id: <200908031504.20506.oliver@neukum.org>
+	Mon, 3 Aug 2009 09:20:05 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 8BIT
+Content-type: text/plain; charset=UTF-8
+X-IronPort-AV: E=Sophos;i="4.43,314,1246831200";   d="scan'208";a="21329232"
+Message-id: <4A76E3E8.30902@nets.rwth-aachen.de>
+Date: Mon, 03 Aug 2009 15:19:36 +0200
+From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+To: q-funk@iki.fi
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: x86 Geode issues in kernel >= 2.6.23 and >= 2.6.31-rc4
+References: <11fae7c70908030558r28773beatd1dca702d490a57d@mail.gmail.com>
+In-reply-to: <11fae7c70908030558r28773beatd1dca702d490a57d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n73D3s7T008997
 
-Am Montag, 3. August 2009 11:17:05 schrieb Alex Riesen:> 466Â Â Â Â Â Â Â Â Â Â Â Â Â ep = (usb_pipein(acm->rx_endpoint) ? acm->dev->ep_in :> acm->dev->ep_out)> 467Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â [usb_pipeendpoint(acm->rx_endpoint)];> 468Â Â Â Â Â Â Â Â Â Â Â Â Â if (usb_endpoint_xfer_int(&ep->desc))>> So it looks like ep is NULL (usb_endpoint_xfer_int accesses> desc.bmAttributes, which is 3 bytes off the beginning of struct> usb_host_endpoint (desc being the first field in usb_host_endpoint).
-This tells you that the device has been disconnected. The questionis not why this function fails, but why it is called even though thedevice has been disconnected.
-	Regards		Oliver
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Martin-Ã‰ric Racine wrote:
+> (non-subscriber post; please keep me in CC)
+> 
+> Greetings,
+> 
+> Having previously reported two issues via Ubuntu's bug tracker and not
+> found any answer, I thought I'd approach the LKML with the issues at
+> stake.
+> 
+> 1) Since kernel 2.6.23, one cannot boot hardware based on the Geode
+> SCx200 series. Partial answers about the most plausible cause have
+> been found by the target hardware's manufacturer as explained at
+> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/241307
+> 
+> 2) Since kernel 2.6.31-rc4, one cannot boot hardware based on the
+> Geode LX800 as described at
+> https://bugs.launchpad.net/ubuntu/+source/linux/+bug/396286
+> 
+> In case either of these issues was already reported and there is a
+> know fix or work-around, I'd love to hear more. Otherwise, please feel
+> free to contact me for additional details.
+> 
+
+Just to give a data point:
+2.6.31-rc1,2,3,4,5 were/are running all fine on my Geode LX800
+(http://www.pcengines.ch/alix2d2.htm) so it seems something
+board or .config specific.
+
+Best regards,
+Arnd
+
