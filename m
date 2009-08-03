@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754061AbZHCBP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754041AbZHCBQH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754061AbZHCBP2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 21:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbZHCBP0
+	id S1754041AbZHCBQH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 21:16:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752018AbZHCBQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 21:15:26 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:52117 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754007AbZHCBPL convert rfc822-to-8bit (ORCPT
+	Sun, 2 Aug 2009 21:16:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38535 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751750AbZHCBQF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 21:15:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=DSNbWxGOIeSvUvGlfzxk6i+ONuAKc0Q99dXXtrQSIQE9HuL7rfyyzekicIns6NdT3d
-         B7VM/1/QYNiOnCu5KRcmXq2U2Uq3jDyZ5PKWqYy2J1/R0/ruSIAmp7hM6V8eQFglaa4N
-         IHDfFOoWAbDV1b2e2CpfYiHAoGR0vXfh8fu3M=
+	Sun, 2 Aug 2009 21:16:05 -0400
+Date: Sun, 2 Aug 2009 18:14:40 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Tejun Heo <tj@kernel.org>
+cc: "H. Peter Anvin" <hpa@zytor.com>, Paul Mackerras <paulus@samba.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] Additional x86 fixes for 2.6.31-rc5
+In-Reply-To: <4A7636DF.8090201@kernel.org>
+Message-ID: <alpine.LFD.2.01.0908021811130.3352@localhost.localdomain>
+References: <200907311813.n6VIDe9S023442@voreg.hos.anvin.org> <alpine.LFD.2.01.0907311218080.3161@localhost.localdomain> <20090731195705.GA12270@elte.hu> <alpine.LFD.2.01.0908011214330.3304@localhost.localdomain> <4A7499BA.2000405@zytor.com>
+ <alpine.LFD.2.01.0908011501470.3352@localhost.localdomain> <19060.59896.983880.446901@cargo.ozlabs.ibm.com> <4A750D66.6050203@zytor.com> <4A7636DF.8090201@kernel.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-In-Reply-To: <iZB3Pj-uj3M.A.xaD.RdgdKB@chimera>
-References: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera>
-	 <iZB3Pj-uj3M.A.xaD.RdgdKB@chimera>
-Date: Mon, 3 Aug 2009 03:15:10 +0200
-Message-ID: <c62985530908021815s547ac3aavb0d7a70c683ae79b@mail.gmail.com>
-Subject: Re: [Bug #13813] Hangups in n_tty_read()
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, "Rafael J. Wysocki" <rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/8/2 Rafael J. Wysocki <rjw@sisk.pl>:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.30.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13813
-> Subject         : Hangups in n_tty_read()
-> Submitter       : Johannes Weiner <hannes@cmpxchg.org>
-> Date            : 2009-07-16 18:48 (18 days old)
-> References      : http://marc.info/?l=linux-kernel&m=124777019920579&w=4
 
 
-Johannes,
+On Mon, 3 Aug 2009, Tejun Heo wrote:
+> 
+> Yeap, this part is strange.  I can't understand why it was done that
+> way.  Interestingly, the segment override doesn't trigger any
+> exception, it just gets ignored.  Is there a way to retrieve %gs value
+> without accessing memory?  ie. other than %gs:identity_gs?
 
-Does it still happen with latest mainline?
-Also, could you send us your .config ?
+No. There's a "load segment limit" instruction, but not a base one. It's 
+intentional - segments are supposed to be "anonymous" in protected mode 
+(in real more of vm86 mode, the base is normally the segment register 
+shifted left by four of course, but even that isn't _strictly_ always 
+true).
 
-Thanks,
-Frederic.
+You're very much not supposed to look at the base.
 
-
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+			Linus
