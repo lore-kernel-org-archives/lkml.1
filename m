@@ -1,122 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932358AbZHCQzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932311AbZHCQ4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932358AbZHCQzv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 12:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932193AbZHCQzu
+	id S932311AbZHCQ4h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 12:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbZHCQ4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 12:55:50 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:37288 "EHLO
-	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754799AbZHCQzt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 12:55:49 -0400
-Subject: gpiolib: add export/unexport by gpio name
-Message-Id: <20090803165544.286572916@fluff.org>
-User-Agent: quilt/0.46-1
-From: ben@fluff.org
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Cc: David Brownell <dbrownell@users.sourceforge.net>
-Content-Disposition: inline; filename=gpio-export-by-name.patch
-Date: Mon, 03 Aug 2009 17:55:44 +0100
+	Mon, 3 Aug 2009 12:56:36 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37464 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754808AbZHCQ4f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 12:56:35 -0400
+Subject: Re: fanotify - overall design before I start sending patches
+From: Eric Paris <eparis@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       malware-list@dmesg.printk.net, Valdis.Kletnieks@vt.edu, greg@kroah.com,
+       jcm@redhat.com, douglas.leeder@sophos.com, tytso@mit.edu,
+       arjan@infradead.org, david@lang.hm, jengelh@medozas.de,
+       aviro@redhat.com, mrkafk@gmail.com, alexl@redhat.com, jack@suse.cz,
+       tvrtko.ursulin@sophos.com, a.p.zijlstra@chello.nl,
+       alan@lxorguk.ukuu.org.uk, mmorley@hcl.in, pavel@suse.cz
+In-Reply-To: <20090803162303.GA31058@infradead.org>
+References: <1248466429.3567.82.camel@localhost>
+	 <20090803162303.GA31058@infradead.org>
+Content-Type: text/plain
+Date: Mon, 03 Aug 2009 12:55:35 -0400
+Message-Id: <1249318535.2447.26.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the facility to export/unexport a gpio by the name assigned to it
-as well as the number.
+On Mon, 2009-08-03 at 12:23 -0400, Christoph Hellwig wrote:
+> Before we get started:  You promised yo get rid of the dnotify and
+> inotify fields in the inode when moving over those two to fsnotify.
+> While the dnotify fields are gone the inotify_watches and inotify_mutex
+> fields are still around.  I'd really like to see this done before we
+> move on.
 
-Signed-off-by: Ben Dooks <ben@simtec.co.uk>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
+In linux-next you will find that those fields are completely unused and
+the kernel can be compiled without them with 0 lose of functionality
+(they are still used in linus's kernel by the audit system)
 
----
- drivers/gpio/gpiolib.c |   59 +++++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 55 insertions(+), 4 deletions(-)
+The only reason I didn't remove them entirely is because the inotify
+kernel interface is EXPORT_SYMBOL.  I plan to leave it around for a
+little bit until I'm sure out of tree users don't exist or at least had
+enough time to realize they need to use fsnotify.
 
-Index: b/drivers/gpio/gpiolib.c
-===================================================================
---- a/drivers/gpio/gpiolib.c	2009-08-03 17:53:04.000000000 +0100
-+++ b/drivers/gpio/gpiolib.c	2009-08-03 17:53:33.000000000 +0100
-@@ -364,6 +364,53 @@ static const struct attribute_group gpio
- 	.attrs = (struct attribute **) gpiochip_attrs,
- };
- 
-+static int search_names(char **names, const char *match, int ngpio)
-+{
-+	int ptr;
-+
-+	if (names) {
-+		for (ptr = 0; ptr < ngpio; ptr++) {
-+			if (!names[ptr])
-+				continue;
-+
-+			if (strcmp(names[ptr], match) == 0)
-+				return ptr;
-+		}
-+	}
-+
-+	return -ENOENT;
-+}
-+
-+static long gpio_from_string(const char *buf)
-+{
-+	struct gpio_chip *chip;
-+	struct gpio_desc *desc;
-+	long status;
-+	long gpio;
-+	int ptr, off;
-+
-+	status = strict_strtol(buf, 0, &gpio);
-+	if (status < 0) {
-+		for (ptr = 0; ptr < ARCH_NR_GPIOS && status < 0;) {
-+			desc = gpio_desc + ptr;
-+			chip = desc->chip;
-+
-+			if (!chip) {
-+				ptr++;
-+				continue;
-+			}
-+
-+			off = search_names(chip->names, buf, chip->ngpio);
-+			if (off >= 0)
-+				status = ptr + off;
-+
-+			ptr += chip->ngpio;
-+		}
-+	}
-+
-+	return status;
-+}
-+
- /*
-  * /sys/class/gpio/export ... write-only
-  *	integer N ... number of GPIO to export (full access)
-@@ -375,9 +422,11 @@ static ssize_t export_store(struct class
- 	long	gpio;
- 	int	status;
- 
--	status = strict_strtol(buf, 0, &gpio);
--	if (status < 0)
-+	gpio = gpio_from_string(buf);
-+	if (gpio < 0) {
-+		status = gpio;
- 		goto done;
-+	}
- 
- 	/* No extra locking here; FLAG_SYSFS just signifies that the
- 	 * request and export were done by on behalf of userspace, so
-@@ -405,9 +454,11 @@ static ssize_t unexport_store(struct cla
- 	long	gpio;
- 	int	status;
- 
--	status = strict_strtol(buf, 0, &gpio);
--	if (status < 0)
-+	gpio = gpio_from_string(buf);
-+	if (gpio < 0) {
-+		status = gpio;
- 		goto done;
-+	}
- 
- 	status = -EINVAL;
- 
+For all situations I know of at least, those 2 fields can be safely
+compiled out.  (aka !CONFIG_INOTIFY)
 
--- 
+-Eric
+
