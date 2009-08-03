@@ -1,132 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753297AbZHCKwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753552AbZHCKw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753297AbZHCKwj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 06:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbZHCKwi
+	id S1753552AbZHCKw7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 06:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbZHCKw6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 06:52:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56111 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752281AbZHCKwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 06:52:37 -0400
-Date: Mon, 3 Aug 2009 10:51:57 GMT
-From: tip-bot for Thomas Hellstrom <thellstrom@vmware.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, mingo@elte.hu, thellstrom@vmware.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, thellstrom@vmware.com, mingo@elte.hu
-In-Reply-To: <1249284345-7654-1-git-send-email-thellstrom@vmware.com>
-References: <1249284345-7654-1-git-send-email-thellstrom@vmware.com>
-Subject: [tip:x86/urgent] x86: Fix CPA memtype reserving in the set_pages_array*() cases
-Message-ID: <tip-9e5b74fef5a7e8e408ba514db8dee5320e633d40@git.kernel.org>
-Git-Commit-ID: 9e5b74fef5a7e8e408ba514db8dee5320e633d40
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Mon, 3 Aug 2009 06:52:58 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:60808 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753332AbZHCKw6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 06:52:58 -0400
+Date: Mon, 3 Aug 2009 12:52:52 +0200
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Paul Menage <menage@google.com>
+Cc: Benjamin Blum <bblum@google.com>, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 5/6] Makes procs file writable to move all threads by
+	tgid at once
+Message-ID: <20090803105252.GA29252@hawkmoon.kerlabs.com>
+Mail-Followup-To: Paul Menage <menage@google.com>,
+	Benjamin Blum <bblum@google.com>,
+	containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
+References: <20090724032033.2463.79256.stgit@hastromil.mtv.corp.google.com> <20090724032200.2463.82408.stgit@hastromil.mtv.corp.google.com> <20090724100220.GF11101@hawkmoon.kerlabs.com> <2f86c2480907241452m74c50975k522c5a43a62e8459@mail.gmail.com> <6599ad830907241457x3d1380b6ne613eb5921d6c5a0@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-17497-1249296742-0001-2"
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 03 Aug 2009 10:52:10 +0000 (UTC)
+In-Reply-To: <6599ad830907241457x3d1380b6ne613eb5921d6c5a0@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9e5b74fef5a7e8e408ba514db8dee5320e633d40
-Gitweb:     http://git.kernel.org/tip/9e5b74fef5a7e8e408ba514db8dee5320e633d40
-Author:     Thomas Hellstrom <thellstrom@vmware.com>
-AuthorDate: Mon, 3 Aug 2009 09:25:45 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 3 Aug 2009 12:47:56 +0200
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-x86: Fix CPA memtype reserving in the set_pages_array*() cases
+--=_bohort-17497-1249296742-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The code was incorrectly reserving memtypes using the page
-virtual address instead of the physical address. Furthermore,
-the code was not ignoring highmem pages as it ought to.
+On 24/07/09 14:57 -0700, Paul Menage wrote:
+> On Fri, Jul 24, 2009 at 2:52 PM, Benjamin Blum<bblum@google.com> wrote:
+> >> I don't see how css_sets are guaranteed while cgroup_fork_mutex is not=
+ held and
+> >> thus does not prevent new threads from being created right now. Could =
+you
+> >> elaborate on that?
+> >
+> > Prefetching the css sets is independent of the fork lock/race issue.
+> > The idea is that we build a list, kept locally, that has references on
+> > all the css_sets we'll need to migrate each thread to the new cgroup.
+> > Since ordinarily we might need to malloc a new css_set for a thread
+> > before moving it, and it's possible that that could fail, we need to
+> > do allocations for all threads to be moved before committing any of
+> > them. As long as we have the list of prefetched css_sets, they'll stay
+> > there, and at the end, we drop the extra references we took on them to
+> > make that guarantee when tearing down the list.
+>=20
+> And more specifically, since only the holder of cgroup_mutex can move
+> a thread to a new cgroup (and hence a potentially new unique css_set),
+> we know that once we've run through all the threads in the
+> thread_group and verified that we have the appropriate pre-fetched
+> css_set objects for all of them, it doesn't matter if any new threads
+> are created - they'll share one of the pre-fetched css_sets.
 
-( upstream does not pass in highmem pages yet - but upcoming
-  graphics code will do it and there's no reason to not handle
-  this properly in the CPA APIs.)
+css_set sharing is the bit I was missing. Thanks!
 
-Fixes: http://bugzilla.kernel.org/show_bug.cgi?id=13884
+Louis
 
-Signed-off-by: Thomas Hellstrom <thellstrom@vmware.com>
-Cc: dri-devel@lists.sourceforge.net
-Cc: venkatesh.pallipadi@intel.com
-Cc: suresh.b.siddha@intel.com
-LKML-Reference: <1249284345-7654-1-git-send-email-thellstrom@vmware.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
 
+--=_bohort-17497-1249296742-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
 
----
- arch/x86/mm/pageattr.c |   30 +++++++++++++++++++++---------
- 1 files changed, 21 insertions(+), 9 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index 895d90e..7e600c1 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -591,9 +591,12 @@ static int __change_page_attr(struct cpa_data *cpa, int primary)
- 	unsigned int level;
- 	pte_t *kpte, old_pte;
- 
--	if (cpa->flags & CPA_PAGES_ARRAY)
--		address = (unsigned long)page_address(cpa->pages[cpa->curpage]);
--	else if (cpa->flags & CPA_ARRAY)
-+	if (cpa->flags & CPA_PAGES_ARRAY) {
-+		struct page *page = cpa->pages[cpa->curpage];
-+		if (unlikely(PageHighMem(page)))
-+			return 0;
-+		address = (unsigned long)page_address(page);
-+	} else if (cpa->flags & CPA_ARRAY)
- 		address = cpa->vaddr[cpa->curpage];
- 	else
- 		address = *cpa->vaddr;
-@@ -697,9 +700,12 @@ static int cpa_process_alias(struct cpa_data *cpa)
- 	 * No need to redo, when the primary call touched the direct
- 	 * mapping already:
- 	 */
--	if (cpa->flags & CPA_PAGES_ARRAY)
--		vaddr = (unsigned long)page_address(cpa->pages[cpa->curpage]);
--	else if (cpa->flags & CPA_ARRAY)
-+	if (cpa->flags & CPA_PAGES_ARRAY) {
-+		struct page *page = cpa->pages[cpa->curpage];
-+		if (unlikely(PageHighMem(page)))
-+			return 0;
-+		vaddr = (unsigned long)page_address(page);
-+	} else if (cpa->flags & CPA_ARRAY)
- 		vaddr = cpa->vaddr[cpa->curpage];
- 	else
- 		vaddr = *cpa->vaddr;
-@@ -1122,7 +1128,9 @@ int set_pages_array_uc(struct page **pages, int addrinarray)
- 	int free_idx;
- 
- 	for (i = 0; i < addrinarray; i++) {
--		start = (unsigned long)page_address(pages[i]);
-+		if (PageHighMem(pages[i]))
-+			continue;
-+		start = page_to_pfn(pages[i]) << PAGE_SHIFT;
- 		end = start + PAGE_SIZE;
- 		if (reserve_memtype(start, end, _PAGE_CACHE_UC_MINUS, NULL))
- 			goto err_out;
-@@ -1135,7 +1143,9 @@ int set_pages_array_uc(struct page **pages, int addrinarray)
- err_out:
- 	free_idx = i;
- 	for (i = 0; i < free_idx; i++) {
--		start = (unsigned long)page_address(pages[i]);
-+		if (PageHighMem(pages[i]))
-+			continue;
-+		start = page_to_pfn(pages[i]) << PAGE_SHIFT;
- 		end = start + PAGE_SIZE;
- 		free_memtype(start, end);
- 	}
-@@ -1164,7 +1174,9 @@ int set_pages_array_wb(struct page **pages, int addrinarray)
- 		return retval;
- 
- 	for (i = 0; i < addrinarray; i++) {
--		start = (unsigned long)page_address(pages[i]);
-+		if (PageHighMem(pages[i]))
-+			continue;
-+		start = page_to_pfn(pages[i]) << PAGE_SHIFT;
- 		end = start + PAGE_SIZE;
- 		free_memtype(start, end);
- 	}
+iEYEARECAAYFAkp2wYQACgkQVKcRuvQ9Q1QLHQCgsTi4Lz32y34zAgXCK0TqnP0j
+gpkAn38blVH/0+LMUB2p0EVojAJb+/gi
+=L/VL
+-----END PGP SIGNATURE-----
+
+--=_bohort-17497-1249296742-0001-2--
