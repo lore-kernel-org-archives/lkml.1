@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbZHCSfl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754091AbZHCShk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754087AbZHCSfl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 14:35:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbZHCSfk
+	id S1754091AbZHCShk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 14:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753488AbZHCShk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 14:35:40 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:61219 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753351AbZHCSfk (ORCPT
+	Mon, 3 Aug 2009 14:37:40 -0400
+Received: from casper.infradead.org ([85.118.1.10]:43378 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753409AbZHCShj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 14:35:40 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [RFC 0/2] new kfifo API
-Date: Mon, 3 Aug 2009 20:35:13 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-3-generic; KDE/4.2.98; x86_64; ; )
-Cc: Stefani Seibold <stefani@seibold.net>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <1249306755.8358.8.camel@wall-e> <87skg8u51n.fsf@basil.nowhere.org>
-In-Reply-To: <87skg8u51n.fsf@basil.nowhere.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Mon, 3 Aug 2009 14:37:39 -0400
+Subject: Re: [PATCH 3/2] fcntl: F_[SG]ETOWN_TID
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, eranian@gmail.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       robert.richter@amd.com, paulus@samba.org, andi@firstfloor.org,
+       mpjohn@us.ibm.com, cel@us.ibm.com, cjashfor@us.ibm.com,
+       mucci@eecs.utk.edu, terpstra@eecs.utk.edu,
+       perfmon2-devel@lists.sourceforge.net, mtk.manpages@googlemail.com,
+       roland@redhat.com
+In-Reply-To: <20090803180602.GA19719@redhat.com>
+References: <1248953485.6391.41.camel@twins>
+	 <20090730192040.GA9503@redhat.com> <1248984003.4164.0.camel@laptop>
+	 <20090730202804.GA13675@redhat.com> <1249029320.6391.72.camel@twins>
+	 <20090731141122.a1939712.akpm@linux-foundation.org>
+	 <20090801012736.GA30259@redhat.com> <1249314498.7924.133.camel@twins>
+	 <20090803171619.GA17876@redhat.com> <1249321637.7924.163.camel@twins>
+	 <20090803180602.GA19719@redhat.com>
+Content-Type: text/plain
+Date: Mon, 03 Aug 2009 20:36:59 +0200
+Message-Id: <1249324619.4842.1.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908032035.13874.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19BD0a7k0iapmnnqjRvYUzobsEvQRZ5/edkh0o
- 3SUfhTcobnTKudcvZwaA5LkQZJc6Dme+FwKZECfeD6ZIoZqf21
- YWDYwAvmyxJ2yg8SVPsYM4MtDQdIFM6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 03 August 2009, Andi Kleen wrote:
-> > struct kfifo *kfifo_alloc(unsigned long size, gfp_t gfp_mask)
-> >  Dynamically allocates a new fifo and returns the address
-> >  @size: the size of the internal buffer to be allocated.
-> >  @gfp_mask: get_free_pages mask, passed to kmalloc()
+On Mon, 2009-08-03 at 20:06 +0200, Oleg Nesterov wrote:
 > 
-> For the MCE use case this would need to be able to optionally use
-> bootmem because the first initialization happens too early.
+> As for F_XXXOWN/F_XXXWOWN_TID interaction. Another option, perhaps, is add
+> F_{SET,GET}OWN_EX which accepts a use-visible
+> 
+>         struct f_setown_struct {
+>                 int pid;                // > 0
+>                 int type;               // enumerates PIDTYPE_PID, PIDTYPE_PGID, F_PIDTYPE_THREAD
+>         }
+> 
+> pointer via arg. Instead of F_XXXOWN_TID + int who.
+> 
+> This way at least the users of new api can't be confused.
 
-The existing API has a kfifo_init for that purpose, so you can
-pass a preallocated (bootmem, static, coherent, aligned, ...) buffer
-into the FIFO.
+This would expose PIDTYPE* to userspace, and also fixes the value of
+F_PIDTYPE_THREAD.
 
-That might be nice to keep, by leaving the 'buffer' as pointer
-in struct kfifo, which could still point to a buffer that is
-allocated together with the structu kfifo.
+I'm not sure we want to go there (unless of course, PIDTYPE_* is already
+exposed somewhere).
 
-	Arnd <><
