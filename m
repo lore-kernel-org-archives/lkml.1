@@ -1,278 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754767AbZHCJkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754772AbZHCJoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754767AbZHCJkh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 05:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754315AbZHCJkh
+	id S1754772AbZHCJoT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 05:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754649AbZHCJoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 05:40:37 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:61329 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754030AbZHCJkg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 05:40:36 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH 04/13] ftrace: perf_counter intergration
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Jason Baron <jbaron@redhat.com>, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20090802144242.GB22659@elte.hu>
-References: <20090723191642.780643661@chello.nl>
-	 <20090723191956.941061118@chello.nl>
-	 <alpine.DEB.2.00.0907231741060.2498@gandalf.stny.rr.com>
-	 <20090802144242.GB22659@elte.hu>
-Content-Type: text/plain
-Date: Mon, 03 Aug 2009 11:40:24 +0200
-Message-Id: <1249292424.7924.16.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Aug 2009 05:44:18 -0400
+Received: from mga14.intel.com ([143.182.124.37]:35095 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754012AbZHCJoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 05:44:17 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,313,1246863600"; 
+   d="scan'208";a="171639841"
+Date: Mon, 3 Aug 2009 17:44:12 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Chris Mason <chris.mason@oracle.com>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>, Neil Brown <neilb@suse.de>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>
+Subject: Re: Why does __do_page_cache_readahead submit READ, not READA?
+Message-ID: <20090803094412.GA25786@localhost>
+References: <20090729161456.GB8059@barkeeper1-xen.linbit> <20090729211845.GB4148@kernel.dk> <20090729225501.GH24801@think> <20090730060649.GC4148@kernel.dk> <20090803075202.GA13485@localhost> <20090803075933.GI12579@kernel.dk> <20090803082318.GA18731@localhost> <20090803092515.GK12579@kernel.dk> <20090803093426.GA25139@localhost> <20090803093753.GL12579@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090803093753.GL12579@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-08-02 at 16:42 +0200, Ingo Molnar wrote:
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > 
-> > On Thu, 23 Jul 2009, Peter Zijlstra wrote:
-> > 
-> > > Adds possible second part to the assign argument of TP_EVENT().
+On Mon, Aug 03, 2009 at 05:37:53PM +0800, Jens Axboe wrote:
+> On Mon, Aug 03 2009, Wu Fengguang wrote:
+> > On Mon, Aug 03, 2009 at 05:25:15PM +0800, Jens Axboe wrote:
+> > > On Mon, Aug 03 2009, Wu Fengguang wrote:
+> > > > On Mon, Aug 03, 2009 at 03:59:33PM +0800, Jens Axboe wrote:
+> > > > > On Mon, Aug 03 2009, Wu Fengguang wrote:
+> > > > > > On Thu, Jul 30, 2009 at 08:06:49AM +0200, Jens Axboe wrote:
+> > > > > > > > > read at that level. I did some experimentation some time ago for
+> > > > > > > > > flagging this, see:
+> > > > > > > > > 
+> > > > > > > > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=16cfe64e3568cda412b3cf6b7b891331946b595e
+> > > > > > > > > 
+> > > > > > > > > which should pass down READA properly.
+> > > > > > > > 
+> > > > > > > > One of the problems in the past was that reada would fail if there
+> > > > > > > > wasn't a free request when we actually wanted it to go ahead and wait.
+> > > > > > > > Or something.  We've switched it around a few times I think.
+> > > > > > > 
+> > > > > > > Yes, we did used to do that, whether it was 2.2 or 2.4 I
+> > > > > > > don't recall :-)
+> > > > > > > 
+> > > > > > > It should be safe to enable know, whether there's a prettier way
+> > > > > > > than the above, I don't know. It works by detecting the read-ahead
+> > > > > > > marker, but it's a bit of a fragile design.
+> > > > > > 
+> > > > > > Another consideration is io-priority reversion and the overheads
+> > > > > > required to avoid it:
+> > > > > > 
+> > > > > >         readahead(pages A-Z)    => READA IO for pages A-Z
+> > > > > >         <short time later>
+> > > > > >         read(page A) => blocked => find the request that contains page A
+> > > > > >                                    and requeue/kick it as READ IO
+> > > > > > 
+> > > > > > The page-to-request lookups are not always required but nevertheless
+> > > > > > the complexity and overheads won't be trivial.
+> > > > > > 
+> > > > > > The page-to-request lookup feature would be also useful for "advanced"
+> > > > > > features like io-canceling (if implemented, hwpoison could be its
+> > > > > > first user ;)
+> > > > > 
+> > > > > I added that 3-4 years ago or so, to experiment with in-kernel
+> > > > > cancellation for things like truncate(). Tracking pages is not cheap,
+> > > > > and since the write cancelling wasn't really very sucessful, I didn't go
+> > > > > ahead with it.
+> > > > 
+> > > > Ah OK.
+> > > > 
+> > > > > So I'm not sure it's a viable alternative, even if we restricted it to
+> > > > > just tracking READA's, for instance.
+> > > > 
+> > > > Kind of agreed. I guess it won't benefit too much workloads to default
+> > > > to READA; for most workloads it would be pure overheads if considering
+> > > > priority inversion.
+> > > > 
+> > > > > But I don't think we have any priority inversion to worry about, at
+> > > > > least not from the CFQ perspective.
+> > > > 
+> > > > The priority inversion problem showed up in an early attempt to do
+> > > > boot time prefetching. I guess this problem was somehow circumvented
+> > > > by limiting the prefetch depth and do prefetches in original read
+> > > > order instead of disk location order (Arjan cc'ed).
 > > > 
-> > >   TP_perf_assign(
-> > > 	__perf_count(foo);
-> > > 	__perf_addr(bar);
-> > >   )
-> > > 
-> > > Which, when specified make the swcounter increment with @foo instead
-> > > of the usual 1, and report @bar for PERF_SAMPLE_ADDR (data address
-> > > associated with the event) when this triggers a counter overflow.
+> > > But was that not due to the prefetcher running at a lower cpu priority?
 > > 
-> > Looks good,
+> > Yes, it is. Thus the priority inversion problem.
 > > 
-> > Acked-by: Steven Rostedt <rostedt@goodmis.org>
+> > > Just flagging a reada hint will not change your priority in the IO
+> > > scheduler, so we should have no priority inversion there.
+> > 
+> > Ah OK. So READA merely means "don't try hard on error" for now.
+> > Sorry I implicitly associated it with some priority class..
 > 
-> looks good to me too - but i skipped it for now because it has build 
-> failures:
-> 
->  In file included from include/trace/ftrace.h:424,
->                   from include/trace/define_trace.h:57,
->                   from include/trace/events/ext4.h:678,
->                   from fs/ext4/super.c:51:
->  include/trace/events/ext4.h: In function ftrace_profile_ext4_discard_blocks:
->  include/trace/events/ext4.h:345: error: count redeclared as different kind of symbol
->  include/trace/events/ext4.h:345: error: previous definition of count was here
+> Well not necessarily, it could also have some priority implications in
+> the scheduler. My point is just that it need not be severe enough to
+> introduce priority inversions, so that we need a specific tracking
+> framework to graduate READA to READ.
 
-Hehe, obviously I'm not on the ext4 train...
+Right, that's a good point. 
 
-let me go fix that, the below seems to compile with ext4 enabled.
-
----
-Subject: ftrace: perf_counter intergration
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Tue Jul 21 17:34:57 CEST 2009
-
-Adds possible second part to the assign argument of TP_EVENT().
-
-  TP_perf_assign(
-	__perf_count(foo);
-	__perf_addr(bar);
-  )
-
-Which, when specified make the swcounter increment with @foo instead
-of the usual 1, and report @bar for PERF_SAMPLE_ADDR (data address
-associated with the event) when this triggers a counter overflow.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: Paul Mackerras <paulus@samba.org>
----
- include/trace/ftrace.h |  110 +++++++++++++++++++++++++++++++++++++------------
- kernel/perf_counter.c  |    6 +-
- 2 files changed, 88 insertions(+), 28 deletions(-)
-
-Index: linux-2.6/include/trace/ftrace.h
-===================================================================
---- linux-2.6.orig/include/trace/ftrace.h
-+++ linux-2.6/include/trace/ftrace.h
-@@ -144,6 +144,9 @@
- #undef TP_fast_assign
- #define TP_fast_assign(args...) args
- 
-+#undef TP_perf_assign
-+#define TP_perf_assign(args...)
-+
- #undef TRACE_EVENT
- #define TRACE_EVENT(call, proto, args, tstruct, func, print)		\
- static int								\
-@@ -345,6 +348,88 @@ static inline int ftrace_get_offsets_##c
- 
- #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
- 
-+#ifdef CONFIG_EVENT_PROFILE
-+
-+/*
-+ * Generate the functions needed for tracepoint perf_counter support.
-+ *
-+ * static void ftrace_profile_<call>(proto)
-+ * {
-+ * 	extern void perf_tpcounter_event(int, u64, u64);
-+ * 	u64 __addr = 0, __count = 1;
-+ *
-+ * 	<assign>   <-- here we expand the TP_perf_assign() macro
-+ *
-+ * 	perf_tpcounter_event(event_<call>.id, __addr, __count);
-+ * }
-+ *
-+ * static int ftrace_profile_enable_<call>(struct ftrace_event_call *event_call)
-+ * {
-+ * 	int ret = 0;
-+ *
-+ * 	if (!atomic_inc_return(&event_call->profile_count))
-+ * 		ret = register_trace_<call>(ftrace_profile_<call>);
-+ *
-+ * 	return ret;
-+ * }
-+ *
-+ * static void ftrace_profile_disable_<call>(struct ftrace_event_call *event_call)
-+ * {
-+ * 	if (atomic_add_negative(-1, &event->call->profile_count))
-+ * 		unregister_trace_<call>(ftrace_profile_<call>);
-+ * }
-+ *
-+ */
-+
-+#undef TP_fast_assign
-+#define TP_fast_assign(args...)
-+
-+#undef TP_perf_assign
-+#define TP_perf_assign(args...) args
-+
-+#undef __perf_addr
-+#define __perf_addr(a) __addr = (a)
-+
-+#undef __perf_count
-+#define __perf_count(c) __count = (c)
-+
-+#undef TRACE_EVENT
-+#define TRACE_EVENT(call, proto, args, tstruct, assign, print)		\
-+									\
-+static void ftrace_profile_##call(proto)				\
-+{									\
-+	extern void perf_tpcounter_event(int, u64, u64);		\
-+	u64 __addr = 0, __count = 1;					\
-+	{ assign; }							\
-+	perf_tpcounter_event(event_##call.id, __addr, __count);		\
-+}									\
-+									\
-+static int ftrace_profile_enable_##call(struct ftrace_event_call *event_call) \
-+{									\
-+	int ret = 0;							\
-+									\
-+	if (!atomic_inc_return(&event_call->profile_count))		\
-+		ret = register_trace_##call(ftrace_profile_##call);	\
-+									\
-+	return ret;							\
-+}									\
-+									\
-+static void ftrace_profile_disable_##call(struct ftrace_event_call *event_call)\
-+{									\
-+	if (atomic_add_negative(-1, &event_call->profile_count))	\
-+		unregister_trace_##call(ftrace_profile_##call);		\
-+}
-+
-+#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
-+
-+#undef TP_fast_assign
-+#define TP_fast_assign(args...) args
-+
-+#undef TP_perf_assign
-+#define TP_perf_assign(args...)
-+
-+#endif
-+
- /*
-  * Stage 4 of the trace events.
-  *
-@@ -447,28 +532,6 @@ static inline int ftrace_get_offsets_##c
- #define TP_FMT(fmt, args...)	fmt "\n", ##args
- 
- #ifdef CONFIG_EVENT_PROFILE
--#define _TRACE_PROFILE(call, proto, args)				\
--static void ftrace_profile_##call(proto)				\
--{									\
--	extern void perf_tpcounter_event(int);				\
--	perf_tpcounter_event(event_##call.id);				\
--}									\
--									\
--static int ftrace_profile_enable_##call(struct ftrace_event_call *event_call) \
--{									\
--	int ret = 0;							\
--									\
--	if (!atomic_inc_return(&event_call->profile_count))		\
--		ret = register_trace_##call(ftrace_profile_##call);	\
--									\
--	return ret;							\
--}									\
--									\
--static void ftrace_profile_disable_##call(struct ftrace_event_call *event_call)\
--{									\
--	if (atomic_add_negative(-1, &event_call->profile_count))	\
--		unregister_trace_##call(ftrace_profile_##call);		\
--}
- 
- #define _TRACE_PROFILE_INIT(call)					\
- 	.profile_count = ATOMIC_INIT(-1),				\
-@@ -476,7 +539,6 @@ static void ftrace_profile_disable_##cal
- 	.profile_disable = ftrace_profile_disable_##call,
- 
- #else
--#define _TRACE_PROFILE(call, proto, args)
- #define _TRACE_PROFILE_INIT(call)
- #endif
- 
-@@ -502,7 +564,6 @@ static void ftrace_profile_disable_##cal
- 
- #undef TRACE_EVENT
- #define TRACE_EVENT(call, proto, args, tstruct, assign, print)		\
--_TRACE_PROFILE(call, PARAMS(proto), PARAMS(args))			\
- 									\
- static struct ftrace_event_call event_##call;				\
- 									\
-@@ -586,6 +647,5 @@ __attribute__((section("_ftrace_events")
- 
- #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
- 
--#undef _TRACE_PROFILE
- #undef _TRACE_PROFILE_INIT
- 
-Index: linux-2.6/kernel/perf_counter.c
-===================================================================
---- linux-2.6.orig/kernel/perf_counter.c
-+++ linux-2.6/kernel/perf_counter.c
-@@ -3680,17 +3680,17 @@ static const struct pmu perf_ops_task_cl
- };
- 
- #ifdef CONFIG_EVENT_PROFILE
--void perf_tpcounter_event(int event_id)
-+void perf_tpcounter_event(int event_id, u64 addr, u64 count)
- {
- 	struct perf_sample_data data = {
- 		.regs = get_irq_regs(),
--		.addr = 0,
-+		.addr = addr,
- 	};
- 
- 	if (!data.regs)
- 		data.regs = task_pt_regs(current);
- 
--	do_perf_swcounter_event(PERF_TYPE_TRACEPOINT, event_id, 1, 1, &data);
-+	do_perf_swcounter_event(PERF_TYPE_TRACEPOINT, event_id, count, 1, &data);
- }
- EXPORT_SYMBOL_GPL(perf_tpcounter_event);
- 
-
-
+Thanks,
+Fengguang
