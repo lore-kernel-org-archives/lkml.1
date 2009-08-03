@@ -1,102 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751311AbZHCFCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751464AbZHCFEm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751311AbZHCFCp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 01:02:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751217AbZHCFCo
+	id S1751464AbZHCFEm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 01:04:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751189AbZHCFEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 01:02:44 -0400
-Received: from shards.monkeyblade.net ([198.137.202.13]:39274 "EHLO
-	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750932AbZHCFCn (ORCPT
+	Mon, 3 Aug 2009 01:04:41 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:40312 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750774AbZHCFEk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 01:02:43 -0400
-Message-ID: <4A766F39.7090903@kernel.org>
-Date: Sun, 02 Aug 2009 22:01:45 -0700
-From: "J.H." <warthog9@kernel.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 3 Aug 2009 01:04:40 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEANoMdkqrR7PE/2dsb2JhbAC6BogpjgAFhBg
+X-IronPort-AV: E=Sophos;i="4.43,312,1246838400"; 
+   d="scan'208";a="222407368"
+From: Roland Dreier <rdreier@cisco.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Bron Gondwana <brong@fastmail.fm>,
+       Reiserfs <reiserfs-devel@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Andrea Gelmini <andrea.gelmini@gmail.com>,
+       "Trenton D. Adams" <trenton.d.adams@gmail.com>,
+       Thomas Meyer <thomas@m3y3r.de>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Marcel Hilzinger <mhilzinger@linuxnewmedia.de>,
+       Edward Shishkin <edward.shishkin@gmail.com>
+Subject: Re: [ANNOUNCE] Reiserfs/kill-bkl tree v2
+References: <20090731174642.GA6539@nowhere>
+	<20090801081141.GA18036@basil.fritz.box>
+	<20090801155335.GA4836@nowhere> <20090802142100.GA21160@elte.hu>
+X-Message-Flag: Warning: May contain useful information
+Date: Sun, 02 Aug 2009 22:04:40 -0700
+In-Reply-To: <20090802142100.GA21160@elte.hu> (Ingo Molnar's message of "Sun,
+	2 Aug 2009 16:21:00 +0200")
+Message-ID: <adatz0po5cn.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-To: Randy Dunlap <rdunlap@xenotime.net>
-CC: Dave Young <hidave.darkstar@gmail.com>, webmaster@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: mm/-next release on kernel.org web page?
-References: <a8e1da0908020056mbf28eaw611c605693eb3eff@mail.gmail.com>	<20090802095523.e08166e3.rdunlap@xenotime.net>	<a8e1da0908021908x8216693k7fb31bc5b58d6666@mail.gmail.com> <20090802193045.c3f3195c.rdunlap@xenotime.net>
-In-Reply-To: <20090802193045.c3f3195c.rdunlap@xenotime.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.1.1 (shards.monkeyblade.net [198.137.202.13]); Sun, 02 Aug 2009 22:01:47 -0700 (PDT)
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 03 Aug 2009 05:04:40.0381 (UTC) FILETIME=[E80286D0:01CA13F7]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Mon, 3 Aug 2009 10:08:40 +0800 Dave Young wrote:
-> 
->> On Mon, Aug 3, 2009 at 12:55 AM, Randy Dunlap<rdunlap@xenotime.net> wrote:
->>> On Sun, 2 Aug 2009 15:56:20 +0800 Dave Young wrote:
->>>
->>>> Hi,
->>>>
->>>> The last mm patchset is 2.6.28-rc2-mm1. We can not download -mm
->>>> patchset from kernel.org web page since the -next tree born.
->>>>
->>>> Could you consider put mmtom release there just like before? And even
->>>> -next tree patchset? It will be more convenient for users who test
->>>> kernel just by downloading from web. Now it's impossible for them to
->>>> test these patchsets because they normally do not subscribe to lkml.
->>>
->>> from www.kernel.org:
->>> For comments about the web pages, please send mail to webmaster@kernel.org.
->>>
->>> also from www.kernel.org:
->>> Please don't use finger.kernel.org for any sort of automatic monitoring. The number of automatic bots hitting this port is causing the finger daemon to shut down more often than not. The same information is available from http://www.kernel.org/kdist/finger_banner.
->>>
->>> and of course the finger_banner file is not up to date.
->>>
->>> You may consider using my http://www.xenotime.net/linux/scripts/kcurrent script.
->>> Its output (today) is:
->>>
->>> The latest stable version of the Linux kernel is:           2.6.30.4
->>> The latest prepatch for the stable Linux kernel tree is:    2.6.31-rc5
->>> The latest 2.4 version of the Linux kernel is:              2.4.37.4
->>> The latest 2.2 version of the Linux kernel is:              2.2.26
->>> The latest prepatch for the 2.2 Linux kernel tree is:       2.2.27-rc2
->>> The latest -mm patch to the stable Linux kernels is:        2.6.28-rc2-mm1
->>> mmotm-2009-0730-0501 ... applies to: 2.6.31-rc4
->>> next-20090731 ... applies to: v2.6.31-rc4
->> Thanks randy. Very helpful. But I still have same question. Normal
->> users need a more convenient and straightforward  way to get what they
->> want.  It will be better that we put them on www.kernel.org main page,
->> not only the version info but also the download link.
->>
->> At least for me when I started my kernel hacking some years ago I
->> always download kernel from www.kernel.org main page. I'm not sure
->> whether others people do same thing. Current -next and mmtom are more
->> like for us to do internal testing.
-> 
-> Oh, I agree with you, but webmaster@kernel.org seems to be ignoring these
-> emails (this is the third such one in the last 3-4 months).
 
-In fact we have been responding to these inquiries both to the public 
-ones we have gotten (what we get added to on LKML), and to the private 
-inquires, the latest one from LKML being a bit more than a week ago:
+ > Well, dont waste too much time on it (beyond the due diligence 
+ > level) - Andi forgot that the right way to stress-test patches is to 
+ > get through the review process and then through the integration 
+ > trees which have far more test exposure than any single contributor 
+ > can test.
+ > 
+ > Patch submitters cannot possibly test every crazy possibility that 
+ > is out there - nor should they: it just doesnt scale. What we expect 
+ > people to do is to write clean patches, to test the bits on their 
+ > own boxes and submit them to lkml and address specific review 
+ > feedback.
 
-http://lkml.org/lkml/2009/7/24/334
+I respectfully disagree in this case.  For patches that touch, say,
+something hardware dependent where the patch submitter doesn't have all
+the variations on the hardware, yes, I agree, scale the testing by
+running the code on many machines.  But for the code in question, where
+some very fundamental and complex changes are being made to filesystem
+locking, I don't think that testing really scales -- after all, if there
+is some race then it's quite likely that testers will just see some rare
+filesystem corruption, which could easily waste weeks of debugging
+before the BKL/reiserfs patches were even implicated.
 
-We have been well aware of the problem for quite some time, the code 
-base has rotted horribly, and the way kernel trees are placed in the 
-hierarchy has changed from any reasonable assumption that was made many 
-years ago when the code was first put together.  We (meaning me) are, 
-literally, in the middle of revamping this code, however it's basically 
-a complete re-write of the code base at this point.
-
-And in the last few weeks we've been dealing with quite a lot on top of 
-trying to make forward progress on this code base, like the Bind DNS 
-vulnerabilities, OSCon, Linux Symposium and the plethora of other things 
-that need doing.  Really, we aren't ignoring the problem, there's just 
-one of me and a lot to do and I'm plugging away at it all.  Please be 
-patient, I'm trying to get it done and up and running.  Until then 
-*PLEASE* bear with us while we get through everything.
-
-- John 'Warthog9' Hawley
+ - R.
