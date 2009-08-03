@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932271AbZHCVyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754850AbZHCV5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932271AbZHCVyS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 17:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932242AbZHCVyR
+	id S1754850AbZHCV5w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 17:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbZHCV5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 17:54:17 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41637 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932234AbZHCVyR (ORCPT
+	Mon, 3 Aug 2009 17:57:51 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:54891 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752006AbZHCV5u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 17:54:17 -0400
-Date: Mon, 3 Aug 2009 17:53:26 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Dave Anderson <anderson@redhat.com>, crash-utility@redhat.com,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <clark.williams@gmail.com>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
-       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
-       Jason Baron <jbaron@redhat.com>, srostedt@redhat.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [ANNOUNCE][RFC][PATCH] Crash-utility, tracing: enable crash to
-	analyze tracing from core-file (make tracing can act as a flight
-	recorder)
-Message-ID: <20090803215326.GA8403@infradead.org>
-References: <4A76F8A1.30503@cn.fujitsu.com> <20090803151420.GA8712@infradead.org> <1249312875.7924.106.camel@twins> <4A773EBD.3050707@windriver.com>
+	Mon, 3 Aug 2009 17:57:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=imuBckrjdQblKJL9z17dy2i3wI/yKsYaLWRrGFIK9QaGJq4JJHYxnSr89LzV69sWmp
+         65PPlOTv/NYYegueNqeLygJ7bX2ZAUZIkq43tw3ShuYfcNDmS9Ss80hxj8L1HKktF6sn
+         62KMBoCPxBvEveoGgAtVjSRnaQcax6S/8wJS4=
+Date: Tue, 4 Aug 2009 01:57:26 +0400
+From: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
+To: Ian Molton <ian@mnementh.co.uk>
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       linux-kernel@vger.kernel.org, Magnus Damm <damm@opensource.se>,
+       akpm@linux-foundation.org, Matt Fleming <matt@console-pimps.org>,
+       Philip Langdale <philipl@overt.org>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH] tmio_mmc: Optionally support using platform clock
+Message-ID: <20090803215726.GA6450@doriath.ww600.siemens.net>
+References: <Pine.LNX.4.64.0907280937000.4943@axis700.grange>
+ <4A6F0123.9040809@mnementh.co.uk>
+ <Pine.LNX.4.64.0907281556160.6219@axis700.grange>
+ <4A6F30AF.4000004@mnementh.co.uk>
+ <bc64b4640908010710w1a0d6344s3e810433c28aadd5@mail.gmail.com>
+ <4A771EB2.70902@mnementh.co.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A773EBD.3050707@windriver.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <4A771EB2.70902@mnementh.co.uk>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 03, 2009 at 02:47:09PM -0500, Jason Wessel wrote:
-> If there is a nice API to call for the trace piece, it is pretty trivial
-> to add additional kdb commands which would allow you to print your trace
-> buffers as needed.  The unified kdb/kgdb prototype also supports calling
-> kdb commands through gdb's "monitor" command.  It is not clear if that
-> satisfies the need that Christoph asked about, or if he had some other
-> data analysis in mind.
+On Mon, Aug 03, 2009 at 06:30:26PM +0100, Ian Molton wrote:
+> Dmitry Eremin-Solenikov wrote:
+> 
+> >I don't think I'll have time to work on/refresh clocklib patches. Feel
+> >free to continue
+> >where I've left them.
+> 
+> Where is the latest version ?
 
-That sounds perfect.  
+Hmmm. I currently don't have access to the HDD I used at that moment.
+Please use the lastes patches I've sent to LKML/LAKML. I'm sorry that
+I'm not very helpful wrt these patches.
+
+-- 
+With best wishes
+Dmitry
 
