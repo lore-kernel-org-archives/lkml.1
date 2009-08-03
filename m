@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932074AbZHCVGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932162AbZHCVHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932074AbZHCVGm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 17:06:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbZHCVGl
+	id S932162AbZHCVHX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 17:07:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbZHCVHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 17:06:41 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:53776 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751701AbZHCVGj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 17:06:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=wbtuHVil+N9/XabBcUzzzQ5y8kaJ57g+ZP7dd6BT0pvmBQf2wZLj/Qd4gSYlo5MSIX
-         2cffRpx8NqM9n8zPiD6eGqt0SCDN4Ux6cTB5GxAptHEaBFja9bTCqS0+1bVtPGmRB+iM
-         ITQbLwjRSUKoY7AdQQjJCSunq+C59enr4VYd4=
+	Mon, 3 Aug 2009 17:07:22 -0400
+Received: from mail.windriver.com ([147.11.1.11]:53671 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751701AbZHCVHV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 17:07:21 -0400
+Message-ID: <4A7750DE.3090501@windriver.com>
+Date: Mon, 03 Aug 2009 16:04:30 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-In-Reply-To: <20090803205954.GE11441@tuxdriver.com>
-References: <20090803205954.GE11441@tuxdriver.com>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Mon, 3 Aug 2009 14:06:19 -0700
-Message-ID: <43e72e890908031406u1e15f074h173e4806daab343f@mail.gmail.com>
-Subject: Re: pull request: wireless-2.6 2009-08-03
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: davem@davemloft.net, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Andi Kleen <andi@firstfloor.org>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Dave Anderson <anderson@redhat.com>, crash-utility@redhat.com,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <clark.williams@gmail.com>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Jason Baron <jbaron@redhat.com>, srostedt@redhat.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [ANNOUNCE][RFC][PATCH] Crash-utility, tracing: enable crash to
+ analyze tracing from core-file (make tracing can act as a flight recorder)
+References: <4A76F8A1.30503@cn.fujitsu.com><20090803151420.GA8712@infradead.org><1249312875.7924.106.camel@twins> <4A773EBD.3050707@windriver.com> <87ljm0tyb7.fsf@basil.nowhere.org>
+In-Reply-To: <87ljm0tyb7.fsf@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Aug 2009 21:04:33.0704 (UTC) FILETIME=[004E3280:01CA147E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 3, 2009 at 1:59 PM, John W. Linville<linville@tuxdriver.com> wrote:
-> Dave,
+Andi Kleen wrote:
+> Jason Wessel <jason.wessel@windriver.com> writes:
+>   
+>> In no particular order, tracing, kernel probes, profiling data display,
+>> kdump, disassembly and kernel mode setting were some of the pieces that
+>> are on the wish list for integration with the kdb prototype.  Kernel
+>> mode setting is presently the highest priority on the wish list for a
+>> new feature.
+>>     
 >
-> Here is another round of fixes intended for 2.6.31.  The one from
-> Reinette fixes an rfkill-related bug described in bugzilla 13742.  The one
-> from Luis has a lengthy changelog, but boils down to correcting some
-> regulatory enforcement issues that would prevent some devices from
-> working in some localities.  The rest are simple and obvious.
+> I suspect for a lot of people the highest priority issue would be
+> a polled USB keybord driver. Or do you plan to use the one from
+> old kdb (iirc it was pretty crufty)
 >
-> Please let me know if there are problems!
->
-> Thanks,
->
-> John
->
-> ---
->
-> Individual patches are available here:
->
->        http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
+>   
 
-John, just noticed the patches in this link do not correspond.
+There is a working usb keyboard driver in the kdb prototype.  I am not
+certain about the degree to which the driver is robust or not.  I had
+added a uhci implementation to the kdb prototype because I had a uhci
+keyboard which didn't work at all.  The kdb usb code is quite complex
+and not necessarily the long term approach to the problem.  That means
+that if you have a uchi, ehci or ohci port on your board and typical usb
+keyboard it has at least the possibility of working.
 
-  Luis
+All these sorts of issues require a good deal of testing and review, 
+right now it is at the stage where somethings work, and having other
+people contribute to the project would be highly desired.
+
+Jason.
