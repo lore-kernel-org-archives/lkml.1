@@ -1,83 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754608AbZHCJhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbZHCJhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754608AbZHCJhd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 05:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbZHCJhd
+	id S1754748AbZHCJhz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 05:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbZHCJhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 05:37:33 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32849 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751241AbZHCJhc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 05:37:32 -0400
-Date: Mon, 3 Aug 2009 10:37:46 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Sergey Senozhatsky <sergey.senozhatsky@mail.by>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>
-Subject: Re: WARNING at: drivers/char/tty_ldisc.c
-Message-ID: <20090803103746.264c3acf@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.01.0908021654010.3352@localhost.localdomain>
-References: <20090802120120.GA3097@localdomain.by>
-	<alpine.LFD.2.01.0908020940530.3352@localhost.localdomain>
-	<20090802190514.GA3278@localdomain.by>
-	<alpine.LFD.2.01.0908021254580.3352@localhost.localdomain>
-	<87k51l9apo.fsf@devron.myhome.or.jp>
-	<alpine.LFD.2.01.0908021423490.3352@localhost.localdomain>
-	<20090802234851.3fd1ac2c@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.01.0908021654010.3352@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Aug 2009 05:37:54 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:49654 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753176AbZHCJhx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 05:37:53 -0400
+Date: Mon, 3 Aug 2009 11:37:53 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Chris Mason <chris.mason@oracle.com>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "dm-devel@redhat.com" <dm-devel@redhat.com>, Neil Brown <neilb@suse.de>,
+       "Van De Ven, Arjan" <arjan.van.de.ven@intel.com>
+Subject: Re: Why does __do_page_cache_readahead submit READ, not READA?
+Message-ID: <20090803093753.GL12579@kernel.dk>
+References: <20090729161456.GB8059@barkeeper1-xen.linbit> <20090729211845.GB4148@kernel.dk> <20090729225501.GH24801@think> <20090730060649.GC4148@kernel.dk> <20090803075202.GA13485@localhost> <20090803075933.GI12579@kernel.dk> <20090803082318.GA18731@localhost> <20090803092515.GK12579@kernel.dk> <20090803093426.GA25139@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090803093426.GA25139@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I wonder if the hack is strictly necessary, or could perhaps at least be 
-> moved down a bit. The comment around that area seems to imply there were 
-> other issues ("will cause tty->count and state->count to go out of sync"), 
-> and that whole tty->count thing is some seriously old code, and the tty 
-> layer has changed a lot since 1992.
+On Mon, Aug 03 2009, Wu Fengguang wrote:
+> On Mon, Aug 03, 2009 at 05:25:15PM +0800, Jens Axboe wrote:
+> > On Mon, Aug 03 2009, Wu Fengguang wrote:
+> > > On Mon, Aug 03, 2009 at 03:59:33PM +0800, Jens Axboe wrote:
+> > > > On Mon, Aug 03 2009, Wu Fengguang wrote:
+> > > > > On Thu, Jul 30, 2009 at 08:06:49AM +0200, Jens Axboe wrote:
+> > > > > > > > read at that level. I did some experimentation some time ago for
+> > > > > > > > flagging this, see:
+> > > > > > > > 
+> > > > > > > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=16cfe64e3568cda412b3cf6b7b891331946b595e
+> > > > > > > > 
+> > > > > > > > which should pass down READA properly.
+> > > > > > > 
+> > > > > > > One of the problems in the past was that reada would fail if there
+> > > > > > > wasn't a free request when we actually wanted it to go ahead and wait.
+> > > > > > > Or something.  We've switched it around a few times I think.
+> > > > > > 
+> > > > > > Yes, we did used to do that, whether it was 2.2 or 2.4 I
+> > > > > > don't recall :-)
+> > > > > > 
+> > > > > > It should be safe to enable know, whether there's a prettier way
+> > > > > > than the above, I don't know. It works by detecting the read-ahead
+> > > > > > marker, but it's a bit of a fragile design.
+> > > > > 
+> > > > > Another consideration is io-priority reversion and the overheads
+> > > > > required to avoid it:
+> > > > > 
+> > > > >         readahead(pages A-Z)    => READA IO for pages A-Z
+> > > > >         <short time later>
+> > > > >         read(page A) => blocked => find the request that contains page A
+> > > > >                                    and requeue/kick it as READ IO
+> > > > > 
+> > > > > The page-to-request lookups are not always required but nevertheless
+> > > > > the complexity and overheads won't be trivial.
+> > > > > 
+> > > > > The page-to-request lookup feature would be also useful for "advanced"
+> > > > > features like io-canceling (if implemented, hwpoison could be its
+> > > > > first user ;)
+> > > > 
+> > > > I added that 3-4 years ago or so, to experiment with in-kernel
+> > > > cancellation for things like truncate(). Tracking pages is not cheap,
+> > > > and since the write cancelling wasn't really very sucessful, I didn't go
+> > > > ahead with it.
+> > > 
+> > > Ah OK.
+> > > 
+> > > > So I'm not sure it's a viable alternative, even if we restricted it to
+> > > > just tracking READA's, for instance.
+> > > 
+> > > Kind of agreed. I guess it won't benefit too much workloads to default
+> > > to READA; for most workloads it would be pure overheads if considering
+> > > priority inversion.
+> > > 
+> > > > But I don't think we have any priority inversion to worry about, at
+> > > > least not from the CFQ perspective.
+> > > 
+> > > The priority inversion problem showed up in an early attempt to do
+> > > boot time prefetching. I guess this problem was somehow circumvented
+> > > by limiting the prefetch depth and do prefetches in original read
+> > > order instead of disk location order (Arjan cc'ed).
+> > 
+> > But was that not due to the prefetcher running at a lower cpu priority?
+> 
+> Yes, it is. Thus the priority inversion problem.
+> 
+> > Just flagging a reada hint will not change your priority in the IO
+> > scheduler, so we should have no priority inversion there.
+> 
+> Ah OK. So READA merely means "don't try hard on error" for now.
+> Sorry I implicitly associated it with some priority class..
 
-They will go out of sync for some hardware. Other stuff will get shut
-down. 
+Well not necessarily, it could also have some priority implications in
+the scheduler. My point is just that it need not be severe enough to
+introduce priority inversions, so that we need a specific tracking
+framework to graduate READA to READ.
 
-> So I do get the feeling that it may be just old code that simply nobody 
-> has dared remove - it may have made more sense back when then it does 
-> now, and has just been carried around.
+-- 
+Jens Axboe
 
-Alas not: eg
-
-->hangup
-uart_hangup
-uart_flush_buffer
-uart_shutdown
-	drops carrier and dtr
-	shuts down the port
-	frees the IRQ handler
-	kills off the transmit buffer & tasklet
-
-whether the resulting mess happens to still work with printk rather
-depends upon what ->ops->shutdown does. Even on x86 that will drop a
-remote console if the carrier is being used so you won't see printk
-messages after that point as you got a modem hangup.
-
-A re-open as a device isn't a problem (we cleared ASYNCB_INITIALIZED) -
-its the printk side that kills you, and someone is going to have to read
-all the embedded device consoles as they are both the most likely to
-break and most used 8(
-
-> If it actually were to cause problems with the tty->count thing, I think 
-> Sergey should have seen it thanks to us still doing that old 
-> CHECK_TTY_COUNT thing.
-
-Only if you get things like crossing open/close and the port bumps the
-counts internally for console uses (where hangup will then set it to zero
-and break). USB still does that but the last patches to USB also pushed
-hangup/console awareness into USB a bit so it knows at the hardware level
-not to shut down the console device entirely.
-
-Alan
