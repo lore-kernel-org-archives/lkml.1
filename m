@@ -1,146 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753317AbZHCIL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753348AbZHCIOL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753317AbZHCIL3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 04:11:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbZHCIL2
+	id S1753348AbZHCIOL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 04:14:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbZHCIOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 04:11:28 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35845 "EHLO mx3.mail.elte.hu"
+	Mon, 3 Aug 2009 04:14:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56365 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752706AbZHCIL1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 04:11:27 -0400
-Date: Mon, 3 Aug 2009 10:11:10 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Hellstrom <thellstrom@vmware.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net,
-       hpa@zytor.com, tglx@linutronix.de, venkatesh.pallipadi@intel.com,
-       suresh.b.siddha@intel.com
-Subject: Re: [PATCH] x86: Fix CPA memtype reserving in the set_pages_array
-	cases
-Message-ID: <20090803081110.GB32258@elte.hu>
-References: <1249284345-7654-1-git-send-email-thellstrom@vmware.com>
+	id S1752850AbZHCIOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 04:14:07 -0400
+Date: Mon, 3 Aug 2009 08:12:51 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       davem@davemloft.net, paulmck@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, torvalds@linux-foundation.org,
+       davem@davemloft.net, paulmck@linux.vnet.ibm.com,
+       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090802140809.7ec4bb6b.akpm@linux-foundation.org>
+References: <20090802140809.7ec4bb6b.akpm@linux-foundation.org>
+Subject: [tip:core/debug] debug lockups: Improve lockup detection, fix generic arch fallback
+Message-ID: <tip-47cab6a722d44c71c4f8224017ef548522243cf4@git.kernel.org>
+Git-Commit-ID: 47cab6a722d44c71c4f8224017ef548522243cf4
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1249284345-7654-1-git-send-email-thellstrom@vmware.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 03 Aug 2009 08:12:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  47cab6a722d44c71c4f8224017ef548522243cf4
+Gitweb:     http://git.kernel.org/tip/47cab6a722d44c71c4f8224017ef548522243cf4
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Mon, 3 Aug 2009 09:31:54 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 3 Aug 2009 09:56:52 +0200
 
-* Thomas Hellstrom <thellstrom@vmware.com> wrote:
+debug lockups: Improve lockup detection, fix generic arch fallback
 
-> Bug #13884
-> The code was incorrectly reserving memtypes using the page
-> virtual address instead of the physical address. Furthermore,
-> the code was not ignoring highmem pages as it ought to.
-> 
-> Signed-off-by: Thomas Hellstrom <thellstrom@vmware.com>
-> ---
->  arch/x86/mm/pageattr.c |   30 +++++++++++++++++++++---------
->  1 files changed, 21 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-> index d4327db..96dd4f6 100644
-> --- a/arch/x86/mm/pageattr.c
-> +++ b/arch/x86/mm/pageattr.c
-> @@ -590,9 +590,12 @@ static int __change_page_attr(struct cpa_data *cpa, int primary)
->  	unsigned int level;
->  	pte_t *kpte, old_pte;
->  
-> -	if (cpa->flags & CPA_PAGES_ARRAY)
-> -		address = (unsigned long)page_address(cpa->pages[cpa->curpage]);
-> -	else if (cpa->flags & CPA_ARRAY)
-> +	if (cpa->flags & CPA_PAGES_ARRAY) {
-> +		struct page *page = cpa->pages[cpa->curpage];
-> +		if (unlikely(PageHighMem(page)))
-> +			return 0;
-> +		address = (unsigned long)page_address(page);
-> +	} else if (cpa->flags & CPA_ARRAY)
->  		address = cpa->vaddr[cpa->curpage];
+As Andrew noted, my previous patch ("debug lockups: Improve lockup
+detection") broke/removed SysRq-L support from architecture that do
+not provide a __trigger_all_cpu_backtrace implementation.
 
-hm, i'm missing a description about how this bug was 
-triggered. How did you end up getting highmem pages to a cpa 
-call?
+Restore a fallback path and clean up the SysRq-L machinery a bit:
 
->  	else
->  		address = *cpa->vaddr;
-> @@ -696,9 +699,12 @@ static int cpa_process_alias(struct cpa_data *cpa)
->  	 * No need to redo, when the primary call touched the direct
->  	 * mapping already:
->  	 */
-> -	if (cpa->flags & CPA_PAGES_ARRAY)
-> -		vaddr = (unsigned long)page_address(cpa->pages[cpa->curpage]);
-> -	else if (cpa->flags & CPA_ARRAY)
-> +	if (cpa->flags & CPA_PAGES_ARRAY) {
-> +		struct page *page = cpa->pages[cpa->curpage];
-> +		if (unlikely(PageHighMem(page)))
-> +			return 0;
-> +		vaddr = (unsigned long)page_address(page);
-> +	} else if (cpa->flags & CPA_ARRAY)
->  		vaddr = cpa->vaddr[cpa->curpage];
->  	else
->  		vaddr = *cpa->vaddr;
-> @@ -1118,7 +1124,9 @@ int set_pages_array_uc(struct page **pages, int addrinarray)
->  	int free_idx;
->  
->  	for (i = 0; i < addrinarray; i++) {
-> -		start = (unsigned long)page_address(pages[i]);
-> +		if (PageHighMem(pages[i]))
-> +			continue;
-> +		start = page_to_pfn(pages[i]) << PAGE_SHIFT;
->  		end = start + PAGE_SIZE;
->  		if (reserve_memtype(start, end, _PAGE_CACHE_UC_MINUS, NULL))
->  			goto err_out;
+ - Rename the arch method to arch_trigger_all_cpu_backtrace()
 
-ok, that's a bug introduced in .29 but which was latent until now: 
-drivers/char/agp/generic.c now uses it plus (indirectly) a number of 
-AGP drivers, since:
+ - Simplify the define
 
- commit 07613ba2f464f59949266f4337b75b91eb610795
- Author: Dave Airlie <airlied@redhat.com>
- Date:   Fri Jun 12 14:11:41 2009 +1000
+ - Document the method a bit - in the hope of more architectures
+   adding support for it.
 
-     agp: switch AGP to use page array instead of unsigned long array
+[ The patch touches Sparc code for the rename. ]
 
-I dont see how it can end up with highmem pages though. All 
-the graphics apperture allocations happen to lowmem AFAICS. 
-Did GEM add the possibility for user pages (highmem amongst 
-them) ending up in that pool? Which code does that?
+Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "David S. Miller" <davem@davemloft.net>
+LKML-Reference: <20090802140809.7ec4bb6b.akpm@linux-foundation.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-> @@ -1131,7 +1139,9 @@ int set_pages_array_uc(struct page **pages, int addrinarray)
->  err_out:
->  	free_idx = i;
->  	for (i = 0; i < free_idx; i++) {
-> -		start = (unsigned long)page_address(pages[i]);
-> +		if (PageHighMem(pages[i]))
-> +			continue;
-> +		start = page_to_pfn(pages[i]) << PAGE_SHIFT;
->  		end = start + PAGE_SIZE;
->  		free_memtype(start, end);
->  	}
-> @@ -1160,7 +1170,9 @@ int set_pages_array_wb(struct page **pages, int addrinarray)
->  		return retval;
->  
->  	for (i = 0; i < addrinarray; i++) {
-> -		start = (unsigned long)page_address(pages[i]);
-> +		if (PageHighMem(pages[i]))
-> +			continue;
-> +		start = page_to_pfn(pages[i]) << PAGE_SHIFT;
->  		end = start + PAGE_SIZE;
->  		free_memtype(start, end);
 
-In any case it's a must-have fix for .31. Possibly even a backport 
-tag is needed, in case a distro does a .30 kernel with more recent 
-graphics bits.
+---
+ arch/sparc/include/asm/irq_64.h |    4 ++--
+ arch/sparc/kernel/process_64.c  |    4 ++--
+ arch/x86/include/asm/nmi.h      |    4 ++--
+ arch/x86/kernel/apic/nmi.c      |    2 +-
+ drivers/char/sysrq.c            |   15 ++++++++++++++-
+ include/linux/nmi.h             |   19 +++++++++++++++++--
+ 6 files changed, 38 insertions(+), 10 deletions(-)
 
-	Ingo
+diff --git a/arch/sparc/include/asm/irq_64.h b/arch/sparc/include/asm/irq_64.h
+index 1934f2c..a0b443c 100644
+--- a/arch/sparc/include/asm/irq_64.h
++++ b/arch/sparc/include/asm/irq_64.h
+@@ -89,8 +89,8 @@ static inline unsigned long get_softint(void)
+ 	return retval;
+ }
+ 
+-void __trigger_all_cpu_backtrace(void);
+-#define trigger_all_cpu_backtrace() __trigger_all_cpu_backtrace()
++void arch_trigger_all_cpu_backtrace(void);
++#define arch_trigger_all_cpu_backtrace arch_trigger_all_cpu_backtrace
+ 
+ extern void *hardirq_stack[NR_CPUS];
+ extern void *softirq_stack[NR_CPUS];
+diff --git a/arch/sparc/kernel/process_64.c b/arch/sparc/kernel/process_64.c
+index 4041f94..18d6785 100644
+--- a/arch/sparc/kernel/process_64.c
++++ b/arch/sparc/kernel/process_64.c
+@@ -251,7 +251,7 @@ static void __global_reg_poll(struct global_reg_snapshot *gp)
+ 	}
+ }
+ 
+-void __trigger_all_cpu_backtrace(void)
++void arch_trigger_all_cpu_backtrace(void)
+ {
+ 	struct thread_info *tp = current_thread_info();
+ 	struct pt_regs *regs = get_irq_regs();
+@@ -304,7 +304,7 @@ void __trigger_all_cpu_backtrace(void)
+ 
+ static void sysrq_handle_globreg(int key, struct tty_struct *tty)
+ {
+-	__trigger_all_cpu_backtrace();
++	arch_trigger_all_cpu_backtrace();
+ }
+ 
+ static struct sysrq_key_op sparc_globalreg_op = {
+diff --git a/arch/x86/include/asm/nmi.h b/arch/x86/include/asm/nmi.h
+index c86e5ed..e63cf7d 100644
+--- a/arch/x86/include/asm/nmi.h
++++ b/arch/x86/include/asm/nmi.h
+@@ -45,8 +45,8 @@ extern int proc_nmi_enabled(struct ctl_table *, int , struct file *,
+ 			void __user *, size_t *, loff_t *);
+ extern int unknown_nmi_panic;
+ 
+-void __trigger_all_cpu_backtrace(void);
+-#define trigger_all_cpu_backtrace() __trigger_all_cpu_backtrace()
++void arch_trigger_all_cpu_backtrace(void);
++#define arch_trigger_all_cpu_backtrace arch_trigger_all_cpu_backtrace
+ 
+ static inline void localise_nmi_watchdog(void)
+ {
+diff --git a/arch/x86/kernel/apic/nmi.c b/arch/x86/kernel/apic/nmi.c
+index 1bb1ac2..db72202 100644
+--- a/arch/x86/kernel/apic/nmi.c
++++ b/arch/x86/kernel/apic/nmi.c
+@@ -554,7 +554,7 @@ int do_nmi_callback(struct pt_regs *regs, int cpu)
+ 	return 0;
+ }
+ 
+-void __trigger_all_cpu_backtrace(void)
++void arch_trigger_all_cpu_backtrace(void)
+ {
+ 	int i;
+ 
+diff --git a/drivers/char/sysrq.c b/drivers/char/sysrq.c
+index 165f307..50eecfe 100644
+--- a/drivers/char/sysrq.c
++++ b/drivers/char/sysrq.c
+@@ -223,7 +223,20 @@ static DECLARE_WORK(sysrq_showallcpus, sysrq_showregs_othercpus);
+ 
+ static void sysrq_handle_showallcpus(int key, struct tty_struct *tty)
+ {
+-	trigger_all_cpu_backtrace();
++	/*
++	 * Fall back to the workqueue based printing if the
++	 * backtrace printing did not succeed or the
++	 * architecture has no support for it:
++	 */
++	if (!trigger_all_cpu_backtrace()) {
++		struct pt_regs *regs = get_irq_regs();
++
++		if (regs) {
++			printk(KERN_INFO "CPU%d:\n", smp_processor_id());
++			show_regs(regs);
++		}
++		schedule_work(&sysrq_showallcpus);
++	}
+ }
+ 
+ static struct sysrq_key_op sysrq_showallcpus_op = {
+diff --git a/include/linux/nmi.h b/include/linux/nmi.h
+index 29af2d5..b752e80 100644
+--- a/include/linux/nmi.h
++++ b/include/linux/nmi.h
+@@ -28,8 +28,23 @@ static inline void acpi_nmi_disable(void) { }
+ static inline void acpi_nmi_enable(void) { }
+ #endif
+ 
+-#ifndef trigger_all_cpu_backtrace
+-#define trigger_all_cpu_backtrace() do { } while (0)
++/*
++ * Create trigger_all_cpu_backtrace() out of the arch-provided
++ * base function. Return whether such support was available,
++ * to allow calling code to fall back to some other mechanism:
++ */
++#ifdef arch_trigger_all_cpu_backtrace
++static inline bool trigger_all_cpu_backtrace(void)
++{
++	arch_trigger_all_cpu_backtrace();
++
++	return true;
++}
++#else
++static inline bool trigger_all_cpu_backtrace(void)
++{
++	return false;
++}
+ #endif
+ 
+ #endif
