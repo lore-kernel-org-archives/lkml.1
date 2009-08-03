@@ -1,153 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754061AbZHCLAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754434AbZHCLDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754061AbZHCLAv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 07:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbZHCLAv
+	id S1754434AbZHCLDs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 07:03:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZHCLDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 07:00:51 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:43482 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753188AbZHCLAu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 07:00:50 -0400
-Date: Mon, 3 Aug 2009 13:00:48 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Benjamin Blum <bblum@google.com>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       akpm@linux-foundation.org, serue@us.ibm.com, lizf@cn.fujitsu.com,
-       menage@google.com
-Subject: Re: [PATCH 5/6] Makes procs file writable to move all threads by
-	tgid at once
-Message-ID: <20090803110048.GB29252@hawkmoon.kerlabs.com>
-Mail-Followup-To: Benjamin Blum <bblum@google.com>,
-	linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-	akpm@linux-foundation.org, serue@us.ibm.com, lizf@cn.fujitsu.com,
-	menage@google.com
-References: <20090724032033.2463.79256.stgit@hastromil.mtv.corp.google.com> <20090724032200.2463.82408.stgit@hastromil.mtv.corp.google.com> <20090724100220.GF11101@hawkmoon.kerlabs.com> <2f86c2480907241452m74c50975k522c5a43a62e8459@mail.gmail.com> <2f86c2480907281723n7452c7f5l5a475e8120dccd83@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-17655-1249297216-0001-2"
+	Mon, 3 Aug 2009 07:03:48 -0400
+Received: from yumi.tdiedrich.de ([85.10.210.183]:43666 "EHLO mx.tdiedrich.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753389AbZHCLDr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 07:03:47 -0400
+Date: Mon, 3 Aug 2009 13:03:42 +0200
+From: Tobias Diedrich <ranma+kernel@tdiedrich.de>
+To: linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
+Subject: [patch] Make block2mtd work with devices >=4GB
+Message-ID: <20090803110342.GA7489@yamamaya.is-a-geek.org>
+Mail-Followup-To: Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+	linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <2f86c2480907281723n7452c7f5l5a475e8120dccd83@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+block2mtd uses PAGE_MASK to mask the size and offset values, but
+this a 32bit mask and so devices >=4GB wrap around to <4GB.
+This adds a define MTD_PAGE_MASK, which casts PAGE_SIZE to loff_t
+before inverting it.
 
---=_bohort-17655-1249297216-0001-2
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Without the patch:
 
-On 28/07/09 17:23 -0700, Benjamin Blum wrote:
-> On Fri, Jul 24, 2009 at 2:52 PM, Benjamin Blum<bblum@google.com> wrote:
-> > On Fri, Jul 24, 2009 at 3:02 AM, Louis Rilling<Louis.Rilling@kerlabs.co=
-m> wrote:
-> >> On 23/07/09 20:22 -0700, Ben Blum wrote:
-> >>> @@ -408,6 +409,15 @@ You can attach the current shell task by echoing=
- 0:
-> >>>
-> >>> =A0# echo 0 > tasks
-> >>>
-> >>> +The cgroup.procs file is useful for managing all tasks in a threadgr=
-oup at
-> >>> +once. It works the same way as the tasks file, but moves all tasks i=
-n the
-> >>> +threadgroup with the specified tgid.
-> >>> +
-> >>> +Writing the pid of a task that's not the threadgroup leader (i.e., a=
- pid
-> >>> +that isn't a tgid) is treated as invalid. Writing a '0' to cgroup.pr=
-ocs will
-> >>> +attach the writing task and all tasks in its threadgroup, but is inv=
-alid if
-> >>> +the writing task is not the leader of the threadgroup.
-> >>> +
-> >>
-> >> This restriction sounds unfortunate and I'm not sure that there are go=
-od reasons
-> >> for it (see below).
-> >
-> > Would it be preferable to allow any thread in a threadgroup to move
-> > the whole group to a new cgroup? Would that undermine the desired
-> > restriction of the tasks file in which a thread needs to have
-> > sufficient perms to move a thread that's not itself, or is the task
-> > file's restriction there undesirable in the case of threadgroups?
->=20
-> Still wondering on what to do about this. Noting that this restriction
-> approximately parallels the behaviour you'd get from using the tasks
-> file, I think it'd be safer to leave it like this then possibly in the
-> future lift the restriction, rather than make it currently lifted then
-> decide in the future that we want to re-impose it.
+|# echo /dev/sdb3,$((1024 * 1024)) > /sys/module/block2mtd/parameters/block2mtd
+|# cat /proc/mtd
+|dev:    size   erasesize  name
+|mtd0: c0200000 00100000 "block2mtd: /dev/sdb2"
+|mtd1: 08e00000 00100000 "block2mtd: /dev/sdb3"
 
-Sorry, I was on vacations last week.
+With this patch:
 
-To me it looks like all threads should be treated equally, since AFAIK POSI=
-X has
-no notion of thread group leader. Moreover, a thread group (process) can li=
-ve an
-arbitrary long time after the death of its leader (that remains as a zombie=
-), so
-this restriction just prevents such processes to user the procs file.
+|# echo /dev/sdb3,$((1024 * 1024)) > /sys/module/block2mtd/parameters/block2mtd
+|# cat /proc/mtd
+|dev:    size   erasesize  name
+|mtd0: c0200000 00100000 "block2mtd: /dev/sdb2"
+|mtd1: 308e00000 00100000 "block2mtd: /dev/sdb3"
 
->=20
-> >>> + =A0 =A0 =A0* to move all tasks to the new cgroup. the only fail cas=
-e henceforth
-> >>> + =A0 =A0 =A0* is if the threadgroup leader has PF_EXITING set (in wh=
-ich case all
-> >>> + =A0 =A0 =A0* the other threads get killed) - if other threads happe=
-n to be
-> >>
-> >> This statement is wrong. A thread group leader can have PF_EXITING (an=
-d even
-> >> become zombie) while other sub-threads continue their execution. For i=
-nstance it
-> >> is perfectly valid for a thread group leader to call sys_exit(), and n=
-o other
-> >> thread will be affected.
-> >
-> > Is that the case? Then, what becomes of his task_struct when he's
-> > gone, since presumably all the sub-threads will need it. Does it just
-> > hang around?
+Creating an ubi volume works (but ubinfo seems to use 32bit math to
+calculate the size in bytes and MiB):
+|# ubinfo /dev/ubi1
+|ubi1
+|Volumes count:                           1
+|Logical eraseblock size:                 1048448 bytes, 1023.9 KiB
+|Total amount of logical eraseblocks:     12430 (147306752 bytes, 140.5 MiB)
+|Amount of available logical eraseblocks: 0 (0 bytes)
+|Maximum count of volumes                 128
+|Count of bad physical eraseblocks:       0
+|Count of reserved physical eraseblocks:  0
+|Current maximum erase counter value:     2
+|Minimum input/output unit size:          1 byte
+|Character device major/minor:            250:0
+|Present volumes:                         0
+|# ubinfo /dev/ubi1_0
+|Volume ID:   0 (on ubi1)
+|Type:        dynamic
+|Alignment:   1
+|Size:        12426 LEBs (143112960 bytes, 136.5 MiB)
+|State:       OK
+|Name:        home
+|Character device major/minor: 250:1
 
-Yes. The thread leader remains in zombie state (and cannot be reaped) until=
- all
-other threads have exited.
+mkfs.ubifs also claims to succeed, but the ubifs cannot be mounted:
+[10423.520009] UBIFS error (pid 7239): ubifs_scanned_corruption: corruption at LEB 1:512
+[10423.520009] 00000000: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 ................................
+[...]
+[10423.520009] 00001fe0: 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 ................................
+[10423.520009] UBIFS error (pid 7239): ubifs_scan: LEB 1 scanning failed
+[10423.520009] UBIFS error (pid 7239): ubifs_recover_master_node: failed to recover master node
 
-> >
-> > If so, would the desired behaviour be to proceed with moving all
-> > sub-threads if the leader is exiting? (That's not a very big change
-> > code-wise)
-> >
->=20
-> I've fixed this, and also implemented the rwsem as threadgroup-local.
-> If there's no more discussion on this version of the patch, I'll send
-> out the revised series soon.
 
-Ok. Thanks.
+Signed-off-by: Tobias Diedrich <ranma+kernel@tdiedrich.de>
 
-Louis
+Index: linux-2.6.31-rc5/drivers/mtd/devices/block2mtd.c
+===================================================================
+--- linux-2.6.31-rc5.orig/drivers/mtd/devices/block2mtd.c	2009-08-03 16:33:55.846298216 +0900
++++ linux-2.6.31-rc5/drivers/mtd/devices/block2mtd.c	2009-08-03 16:34:29.986318468 +0900
+@@ -24,6 +24,7 @@
+ #define ERROR(fmt, args...) printk(KERN_ERR "block2mtd: " fmt "\n" , ## args)
+ #define INFO(fmt, args...) printk(KERN_INFO "block2mtd: " fmt "\n" , ## args)
+ 
++#define MTD_PAGE_MASK (~((loff_t)(PAGE_SIZE-1)))
+ 
+ /* Info for the block device */
+ struct block2mtd_dev {
+@@ -149,7 +150,7 @@
+ 	struct page *page;
+ 	struct address_space *mapping = dev->blkdev->bd_inode->i_mapping;
+ 	int index = to >> PAGE_SHIFT;	// page index
+-	int offset = to & ~PAGE_MASK;	// page offset
++	int offset = to & ~MTD_PAGE_MASK;	// page offset
+ 	int cpylen;
+ 
+ 	if (retlen)
+@@ -286,7 +287,7 @@
+ 	sprintf(name, "block2mtd: %s", devname);
+ 	dev->mtd.name = name;
+ 
+-	dev->mtd.size = dev->blkdev->bd_inode->i_size & PAGE_MASK;
++	dev->mtd.size = dev->blkdev->bd_inode->i_size & MTD_PAGE_MASK;
+ 	dev->mtd.erasesize = erase_size;
+ 	dev->mtd.writesize = 1;
+ 	dev->mtd.type = MTD_RAM;
 
---=20
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
-
---=_bohort-17655-1249297216-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkp2w2AACgkQVKcRuvQ9Q1TWIwCg1bWplKyNNALh1Z+aBpXgYox3
-eLwAmwbn6GDKJZISMkfAUARfaDNktleT
-=y1QM
------END PGP SIGNATURE-----
-
---=_bohort-17655-1249297216-0001-2--
+-- 
+Tobias						PGP: http://9ac7e0bc.uguu.de
