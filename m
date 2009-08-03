@@ -1,417 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbZHCRSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752255AbZHCRUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752664AbZHCRSY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 13:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbZHCRSV
+	id S1752255AbZHCRUl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 13:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbZHCRUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 13:18:21 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:40696 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752616AbZHCRSR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 13:18:17 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 7/7] venet: add scatter-gather/GSO support
-To: linux-kernel@vger.kernel.org
-Cc: alacrityvm-devel@lists.sourceforge.net, netdev@vger.kernel.org
-Date: Mon, 03 Aug 2009 13:18:07 -0400
-Message-ID: <20090803171807.17268.49836.stgit@dev.haskins.net>
-In-Reply-To: <20090803171030.17268.26962.stgit@dev.haskins.net>
-References: <20090803171030.17268.26962.stgit@dev.haskins.net>
-User-Agent: StGIT/0.14.3
+	Mon, 3 Aug 2009 13:20:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42612 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751873AbZHCRUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 13:20:40 -0400
+Date: Mon, 3 Aug 2009 19:16:19 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, eranian@gmail.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       robert.richter@amd.com, paulus@samba.org, andi@firstfloor.org,
+       mpjohn@us.ibm.com, cel@us.ibm.com, cjashfor@us.ibm.com,
+       mucci@eecs.utk.edu, terpstra@eecs.utk.edu,
+       perfmon2-devel@lists.sourceforge.net, mtk.manpages@googlemail.com,
+       roland@redhat.com
+Subject: Re: [PATCH 3/2] fcntl: F_[SG]ETOWN_TID
+Message-ID: <20090803171619.GA17876@redhat.com>
+References: <1248869948.6987.3083.camel@twins> <20090729221703.GA25368@redhat.com> <1248953485.6391.41.camel@twins> <20090730192040.GA9503@redhat.com> <1248984003.4164.0.camel@laptop> <20090730202804.GA13675@redhat.com> <1249029320.6391.72.camel@twins> <20090731141122.a1939712.akpm@linux-foundation.org> <20090801012736.GA30259@redhat.com> <1249314498.7924.133.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249314498.7924.133.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SG/GSO significantly enhance the performance of network traffic under
-certain circumstances.  We implement this feature as a separate patch
-to avoid intially complicating the baseline venet driver.  This will
-presumably make the review process slightly easier, since we can
-focus on the basic interface first.
+On 08/03, Peter Zijlstra wrote:
+>
+> --- linux-2.6.orig/fs/fcntl.c
+> +++ linux-2.6/fs/fcntl.c
+> @@ -197,13 +197,15 @@ static int setfl(int fd, struct file * f
+>  }
+>
+>  static void f_modown(struct file *filp, struct pid *pid, enum pid_type type,
+> -                     int force)
+> +		     int flags)
+>  {
+>  	write_lock_irq(&filp->f_owner.lock);
+> -	if (force || !filp->f_owner.pid) {
+> +	if ((flags & FF_SETOWN_FORCE) || !filp->f_owner.pid) {
+>  		put_pid(filp->f_owner.pid);
+>  		filp->f_owner.pid = get_pid(pid);
+>  		filp->f_owner.pid_type = type;
+> +		filp->f_owner.task_only =
+> +			(type == PIDTYPE_PID && (flags & FF_SETOWN_TID));
 
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
----
+Do we need type == PIDTYPE_PID check? FF_SETOWN_TID must imply
+PIDTYPE_PID, it is only used by f_setown_tid().
 
- drivers/net/vbus-enet.c |  249 +++++++++++++++++++++++++++++++++++++++++++++--
- include/linux/venet.h   |   39 +++++++
- 2 files changed, 275 insertions(+), 13 deletions(-)
+Hmm. Actually I am not sure we should change f_modown() at all. I was
+going to suggest this as a subsequent cleanup, but now I am starting
+to think it is better to do from the very beginning. Please see below.
 
-diff --git a/drivers/net/vbus-enet.c b/drivers/net/vbus-enet.c
-index 8fcc2d6..5aa56ff 100644
---- a/drivers/net/vbus-enet.c
-+++ b/drivers/net/vbus-enet.c
-@@ -42,6 +42,8 @@ static int rx_ringlen = 256;
- module_param(rx_ringlen, int, 0444);
- static int tx_ringlen = 256;
- module_param(tx_ringlen, int, 0444);
-+static int sg_enabled = 1;
-+module_param(sg_enabled, int, 0444);
- 
- #define PDEBUG(_dev, fmt, args...) dev_dbg(&(_dev)->dev, fmt, ## args)
- 
-@@ -58,8 +60,17 @@ struct vbus_enet_priv {
- 	struct vbus_enet_queue     rxq;
- 	struct vbus_enet_queue     txq;
- 	struct tasklet_struct      txtask;
-+	struct {
-+		int                sg:1;
-+		int                tso:1;
-+		int                ufo:1;
-+		int                tso6:1;
-+		int                ecn:1;
-+	} flags;
- };
- 
-+static void vbus_enet_tx_reap(struct vbus_enet_priv *priv, int force);
-+
- static struct vbus_enet_priv *
- napi_to_priv(struct napi_struct *napi)
- {
-@@ -193,6 +204,93 @@ rx_teardown(struct vbus_enet_priv *priv)
- 	}
- }
- 
-+static int
-+tx_setup(struct vbus_enet_priv *priv)
-+{
-+	struct ioq *ioq = priv->txq.queue;
-+	struct ioq_iterator iter;
-+	int i;
-+	int ret;
-+
-+	if (!priv->flags.sg)
-+		/*
-+		 * There is nothing to do for a ring that is not using
-+		 * scatter-gather
-+		 */
-+		return 0;
-+
-+	ret = ioq_iter_init(ioq, &iter, ioq_idxtype_valid, 0);
-+	BUG_ON(ret < 0);
-+
-+	ret = ioq_iter_seek(&iter, ioq_seek_set, 0, 0);
-+	BUG_ON(ret < 0);
-+
-+	/*
-+	 * Now populate each descriptor with an empty SG descriptor
-+	 */
-+	for (i = 0; i < tx_ringlen; i++) {
-+		struct venet_sg *vsg;
-+		size_t iovlen = sizeof(struct venet_iov) * (MAX_SKB_FRAGS-1);
-+		size_t len = sizeof(*vsg) + iovlen;
-+
-+		vsg = kzalloc(len, GFP_KERNEL);
-+		if (!vsg)
-+			return -ENOMEM;
-+
-+		iter.desc->cookie = (u64)vsg;
-+		iter.desc->len    = len;
-+		iter.desc->ptr    = (u64)__pa(vsg);
-+
-+		ret = ioq_iter_seek(&iter, ioq_seek_next, 0, 0);
-+		BUG_ON(ret < 0);
-+	}
-+
-+	return 0;
-+}
-+
-+static void
-+tx_teardown(struct vbus_enet_priv *priv)
-+{
-+	struct ioq *ioq = priv->txq.queue;
-+	struct ioq_iterator iter;
-+	int ret;
-+
-+	/* forcefully free all outstanding transmissions */
-+	vbus_enet_tx_reap(priv, 1);
-+
-+	if (!priv->flags.sg)
-+		/*
-+		 * There is nothing else to do for a ring that is not using
-+		 * scatter-gather
-+		 */
-+		return;
-+
-+	ret = ioq_iter_init(ioq, &iter, ioq_idxtype_valid, 0);
-+	BUG_ON(ret < 0);
-+
-+	/* seek to position 0 */
-+	ret = ioq_iter_seek(&iter, ioq_seek_set, 0, 0);
-+	BUG_ON(ret < 0);
-+
-+	/*
-+	 * free each valid descriptor
-+	 */
-+	while (iter.desc->cookie) {
-+		struct venet_sg *vsg = (struct venet_sg *)iter.desc->cookie;
-+
-+		iter.desc->valid = 0;
-+		wmb();
-+
-+		iter.desc->ptr = 0;
-+		iter.desc->cookie = 0;
-+
-+		ret = ioq_iter_seek(&iter, ioq_seek_next, 0, 0);
-+		BUG_ON(ret < 0);
-+
-+		kfree(vsg);
-+	}
-+}
-+
- /*
-  * Open and close
-  */
-@@ -396,14 +494,67 @@ vbus_enet_tx_start(struct sk_buff *skb, struct net_device *dev)
- 	BUG_ON(ret < 0);
- 	BUG_ON(iter.desc->sown);
- 
--	/*
--	 * We simply put the skb right onto the ring.  We will get an interrupt
--	 * later when the data has been consumed and we can reap the pointers
--	 * at that time
--	 */
--	iter.desc->cookie = (u64)skb;
--	iter.desc->len = (u64)skb->len;
--	iter.desc->ptr = (u64)__pa(skb->data);
-+	if (priv->flags.sg) {
-+		struct venet_sg *vsg = (struct venet_sg *)iter.desc->cookie;
-+		struct scatterlist sgl[MAX_SKB_FRAGS+1];
-+		struct scatterlist *sg;
-+		int count, maxcount = ARRAY_SIZE(sgl);
-+
-+		sg_init_table(sgl, maxcount);
-+
-+		memset(vsg, 0, sizeof(*vsg));
-+
-+		vsg->cookie = (u64)skb;
-+		vsg->len    = skb->len;
-+
-+		if (skb->ip_summed == CHECKSUM_PARTIAL) {
-+			vsg->flags      |= VENET_SG_FLAG_NEEDS_CSUM;
-+			vsg->csum.start  = skb->csum_start - skb_headroom(skb);
-+			vsg->csum.offset = skb->csum_offset;
-+		}
-+
-+		if (skb_is_gso(skb)) {
-+			struct skb_shared_info *sinfo = skb_shinfo(skb);
-+
-+			vsg->flags |= VENET_SG_FLAG_GSO;
-+
-+			vsg->gso.hdrlen = skb_transport_header(skb) - skb->data;
-+			vsg->gso.size = sinfo->gso_size;
-+			if (sinfo->gso_type & SKB_GSO_TCPV4)
-+				vsg->gso.type = VENET_GSO_TYPE_TCPV4;
-+			else if (sinfo->gso_type & SKB_GSO_TCPV6)
-+				vsg->gso.type = VENET_GSO_TYPE_TCPV6;
-+			else if (sinfo->gso_type & SKB_GSO_UDP)
-+				vsg->gso.type = VENET_GSO_TYPE_UDP;
-+			else
-+				panic("Virtual-Ethernet: unknown GSO type " \
-+				      "0x%x\n", sinfo->gso_type);
-+
-+			if (sinfo->gso_type & SKB_GSO_TCP_ECN)
-+				vsg->flags |= VENET_SG_FLAG_ECN;
-+		}
-+
-+		count = skb_to_sgvec(skb, sgl, 0, skb->len);
-+
-+		BUG_ON(count > maxcount);
-+
-+		for (sg = &sgl[0]; sg; sg = sg_next(sg)) {
-+			struct venet_iov *iov = &vsg->iov[vsg->count++];
-+
-+			iov->len = sg->length;
-+			iov->ptr = (u64)sg_phys(sg);
-+		}
-+
-+	} else {
-+		/*
-+		 * non scatter-gather mode: simply put the skb right onto the
-+		 * ring.
-+		 */
-+		iter.desc->cookie = (u64)skb;
-+		iter.desc->len = (u64)skb->len;
-+		iter.desc->ptr = (u64)__pa(skb->data);
-+	}
-+
- 	iter.desc->valid  = 1;
- 
- 	priv->dev->stats.tx_packets++;
-@@ -459,7 +610,17 @@ vbus_enet_tx_reap(struct vbus_enet_priv *priv, int force)
- 	 * owned by the south-side
- 	 */
- 	while (iter.desc->valid && (!iter.desc->sown || force)) {
--		struct sk_buff *skb = (struct sk_buff *)iter.desc->cookie;
-+		struct sk_buff *skb;
-+
-+		if (priv->flags.sg) {
-+			struct venet_sg *vsg;
-+
-+			vsg = (struct venet_sg *)iter.desc->cookie;
-+			skb = (struct sk_buff *)vsg->cookie;
-+
-+		} else {
-+			skb = (struct sk_buff *)iter.desc->cookie;
-+		}
- 
- 		PDEBUG(priv->dev, "completed sending %d bytes\n", skb->len);
- 
-@@ -538,6 +699,47 @@ tx_isr(struct ioq_notifier *notifier)
-        tasklet_schedule(&priv->txtask);
- }
- 
-+static int
-+vbus_enet_negcap(struct vbus_enet_priv *priv)
-+{
-+	int ret;
-+	struct venet_capabilities caps;
-+
-+	memset(&caps, 0, sizeof(caps));
-+
-+	if (sg_enabled) {
-+		caps.gid = VENET_CAP_GROUP_SG;
-+		caps.bits |= (VENET_CAP_SG|VENET_CAP_TSO4|VENET_CAP_TSO6
-+			      |VENET_CAP_ECN);
-+		/* note: exclude UFO for now due to stack bug */
-+	}
-+
-+	ret = devcall(priv, VENET_FUNC_NEGCAP, &caps, sizeof(caps));
-+	if (ret < 0)
-+		return ret;
-+
-+	if (caps.bits & VENET_CAP_SG) {
-+		priv->flags.sg = true;
-+
-+		if (caps.bits & VENET_CAP_TSO4)
-+			priv->flags.tso = true;
-+		if (caps.bits & VENET_CAP_TSO6)
-+			priv->flags.tso6 = true;
-+		if (caps.bits & VENET_CAP_UFO)
-+			priv->flags.ufo = true;
-+		if (caps.bits & VENET_CAP_ECN)
-+			priv->flags.ecn = true;
-+
-+		dev_info(&priv->dev->dev, "Detected GSO features %s%s%s%s\n",
-+			 priv->flags.tso  ? "t" : "-",
-+			 priv->flags.tso6 ? "T" : "-",
-+			 priv->flags.ufo  ? "u" : "-",
-+			 priv->flags.ecn  ? "e" : "-");
-+	}
-+
-+	return 0;
-+}
-+
- static const struct net_device_ops vbus_enet_netdev_ops = {
- 	.ndo_open          = vbus_enet_open,
- 	.ndo_stop          = vbus_enet_stop,
-@@ -574,12 +776,21 @@ vbus_enet_probe(struct vbus_device_proxy *vdev)
- 	priv->dev  = dev;
- 	priv->vdev = vdev;
- 
-+	ret = vbus_enet_negcap(priv);
-+	if (ret < 0) {
-+		printk(KERN_INFO "VENET: Error negotiating capabilities for " \
-+		       "%lld\n",
-+		       priv->vdev->id);
-+		goto out_free;
-+	}
-+
- 	tasklet_init(&priv->txtask, deferred_tx_isr, (unsigned long)priv);
- 
- 	queue_init(priv, &priv->rxq, VENET_QUEUE_RX, rx_ringlen, rx_isr);
- 	queue_init(priv, &priv->txq, VENET_QUEUE_TX, tx_ringlen, tx_isr);
- 
- 	rx_setup(priv);
-+	tx_setup(priv);
- 
- 	ioq_notify_enable(priv->rxq.queue, 0);  /* enable interrupts */
- 	ioq_notify_enable(priv->txq.queue, 0);
-@@ -599,6 +810,22 @@ vbus_enet_probe(struct vbus_device_proxy *vdev)
- 
- 	dev->features |= NETIF_F_HIGHDMA;
- 
-+	if (priv->flags.sg) {
-+		dev->features |= NETIF_F_SG|NETIF_F_HW_CSUM|NETIF_F_FRAGLIST;
-+
-+		if (priv->flags.tso)
-+			dev->features |= NETIF_F_TSO;
-+
-+		if (priv->flags.ufo)
-+			dev->features |= NETIF_F_UFO;
-+
-+		if (priv->flags.tso6)
-+			dev->features |= NETIF_F_TSO6;
-+
-+		if (priv->flags.ecn)
-+			dev->features |= NETIF_F_TSO_ECN;
-+	}
-+
- 	ret = register_netdev(dev);
- 	if (ret < 0) {
- 		printk(KERN_INFO "VENET: error %i registering device \"%s\"\n",
-@@ -626,9 +853,9 @@ vbus_enet_remove(struct vbus_device_proxy *vdev)
- 	napi_disable(&priv->napi);
- 
- 	rx_teardown(priv);
--	vbus_enet_tx_reap(priv, 1);
--
- 	ioq_put(priv->rxq.queue);
-+
-+	tx_teardown(priv);
- 	ioq_put(priv->txq.queue);
- 
- 	dev->ops->close(dev, 0);
-diff --git a/include/linux/venet.h b/include/linux/venet.h
-index 586be40..47ed37d 100644
---- a/include/linux/venet.h
-+++ b/include/linux/venet.h
-@@ -37,8 +37,43 @@ struct venet_capabilities {
- 	__u32 bits;
- };
- 
--/* CAPABILITIES-GROUP 0 */
--/* #define VENET_CAP_FOO    0   (No capabilities defined yet, for now) */
-+#define VENET_CAP_GROUP_SG 0
-+
-+/* CAPABILITIES-GROUP SG */
-+#define VENET_CAP_SG     (1 << 0)
-+#define VENET_CAP_TSO4   (1 << 1)
-+#define VENET_CAP_TSO6   (1 << 2)
-+#define VENET_CAP_ECN    (1 << 3)
-+#define VENET_CAP_UFO    (1 << 4)
-+
-+struct venet_iov {
-+	__u32 len;
-+	__u64 ptr;
-+};
-+
-+#define VENET_SG_FLAG_NEEDS_CSUM (1 << 0)
-+#define VENET_SG_FLAG_GSO        (1 << 1)
-+#define VENET_SG_FLAG_ECN        (1 << 2)
-+
-+struct venet_sg {
-+	__u64            cookie;
-+	__u32            flags;
-+	__u32            len;     /* total length of all iovs */
-+	struct {
-+		__u16    start;	  /* csum starting position */
-+		__u16    offset;  /* offset to place csum */
-+	} csum;
-+	struct {
-+#define VENET_GSO_TYPE_TCPV4	0	/* IPv4 TCP (TSO) */
-+#define VENET_GSO_TYPE_UDP	1	/* IPv4 UDP (UFO) */
-+#define VENET_GSO_TYPE_TCPV6	2	/* IPv6 TCP */
-+		__u8     type;
-+		__u16    hdrlen;
-+		__u16    size;
-+	} gso;
-+	__u32            count;   /* nr of iovs */
-+	struct venet_iov iov[1];
-+};
- 
- #define VENET_FUNC_LINKUP   0
- #define VENET_FUNC_LINKDOWN 1
+> +static int f_setown_tid(struct file *filp, unsigned long arg)
+> +{
+> +	int flags = FF_SETOWN_FORCE;
+> +	struct pid *pid;
+> +	int who = arg;
+> +	int ret = 0;
+> +
+> +	if (who < 0)
+> +		who = -who;
+> +	else
+> +		flags |= FF_SETOWN_TID;
+
+Hmm, OK. so fcntl(F_SETOWN_TID, -666) <=> fcntl(F_SETOWN, +666).
+
+Not that I disagree, but I think this should be discussed. Perhaps
+F_SETOWN_TID can just reject who < 0.
+
+> +static pid_t f_getown_tid(struct file *filp)
+> +{
+> +	pid_t tid;
+> +
+> +	read_lock(&filp->f_owner.lock);
+> +	tid = pid_vnr(filp->f_owner.pid);
+> +	if (filp->f_owner.pid_type == PIDTYPE_PGID)
+> +		tid = 0;
+> +	if (!filp->f_owner.task_only)
+> +		tid = -tid;
+
+I didn't think about this before... What should F_GETOWN_TID return
+if we did F_GETOWN ? (and vice versa). f_getown_tid() returns < 0
+if !task_only and ->piD != 0, this helps.
+
+but the caller of F_GETOWN can't know what the returned value actually
+means if F_GETOWN_TID was used.
+
+
+Do we really need fown->task_only? Not only this enlarges fown_struct,
+we have to modify f_modown() and f_setown().
+
+Perhaps we can just add
+
+	#define F_PIDTYPE_THREAD	PIDTYPE_MAX
+
+into fcntl.c ? Then,
+
+	static int f_setown_xxx(struct file *filp, unsigned long arg, int force, bool group)
+	{
+		enum pid_type type;
+		struct pid *pid;
+		int who = arg;
+		int result;
+
+		type = PIDTYPE_PID;
+		if (!group)
+			type = F_PIDTYPE_THREAD
+		else if (who < 0) {
+			type = PIDTYPE_PGID;
+			who = -who;
+		}
+
+		rcu_read_lock();
+		pid = find_vpid(who);
+		result = __f_setown(filp, pid, type, force);
+		rcu_read_unlock();
+		return result;
+	}
+
+	int f_setown(struct file *filp, unsigned long arg, int force)
+	{
+		return f_setown_xxx(..., true);
+	}
+
+Now we should also change send_sigio/send_sigurg, but this is trivial
+
+		type = fown->pid_type;
+	+	if (type == F_PIDTYPE_THREAD)
+			type = PIDTYPE_PID;
+
+send_sigio_to_task() is trivial too.
+
+What do you think? I agree, this is a bit hackish, but otoh this lessens
+the changes outside of fcntl.h.
+
+Oleg.
 
