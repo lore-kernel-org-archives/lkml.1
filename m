@@ -1,73 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbZHCU3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932174AbZHCUdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754508AbZHCU3e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 16:29:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbZHCU3d
+	id S932174AbZHCUdo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 16:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932119AbZHCUdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 16:29:33 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:52589 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753964AbZHCU3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 16:29:32 -0400
-Date: Mon, 3 Aug 2009 13:29:27 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net, netdev@vger.kernel.org
-Subject: Re: [PATCH 6/7] net: Add vbus_enet driver
-Message-ID: <20090803132927.2818fee2@nehalam>
-In-Reply-To: <4A77476A.1030001@gmail.com>
-References: <20090803171030.17268.26962.stgit@dev.haskins.net>
-	<20090803171801.17268.93846.stgit@dev.haskins.net>
-	<20090803113030.3092d5b0@nehalam>
-	<4A77443D.9020105@novell.com>
-	<20090803131927.6f653556@nehalam>
-	<4A77476A.1030001@gmail.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+	Mon, 3 Aug 2009 16:33:44 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2532 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932106AbZHCUdn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 16:33:43 -0400
+Subject: MAINTAINERS: standardize James Bottomley's name
+From: Joe Perches <joe@perches.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 03 Aug 2009 13:32:50 -0700
+Message-Id: <1249331570.5149.48.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 03 Aug 2009 16:24:10 -0400
-Gregory Haskins <gregory.haskins@gmail.com> wrote:
+His recent patches and sign-offs have not used "E.J."
 
-> Stephen Hemminger wrote:
-> > On Mon, 03 Aug 2009 16:10:37 -0400
-> > Gregory Haskins <ghaskins@novell.com> wrote:
-> > 
-> >> Stephen Hemminger wrote:
-> >>> On Mon, 03 Aug 2009 13:18:02 -0400
-> >>> Gregory Haskins <ghaskins@novell.com> wrote:
-> >>>
-> >>>> +
-> >>>> +static const struct net_device_ops vbus_enet_netdev_ops = {
-> >>>> +	.ndo_open          = vbus_enet_open,
-> >>>> +	.ndo_stop          = vbus_enet_stop,
-> >>>> +	.ndo_set_config    = vbus_enet_config,
-> >>>> +	.ndo_start_xmit    = vbus_enet_tx_start,
-> >>>> +	.ndo_change_mtu	   = vbus_enet_change_mtu,
-> >>>> +	.ndo_tx_timeout    = vbus_enet_timeout,
-> >>>> +};
-> >>>
-> >>> Missing 
-> >>> 	.ndo_set_mac_address = eth_mac_addr,
-> >>> 	.ndo_validate_addr   = eth_validate_addr,
-> >>>
-> >> Ack.
-> >>
-> >>> Also, should have change_mtu.
-> >> note that I do have .ndo_change_mtu.  I assume this is what you are
-> >> referring to and just missed it.  If there is something else I need
-> >> there, let me know.
-> > 
-> > If you don't have a change_mtu, then MTU is unlimited.
-> 
-> Is "change_mtu" different from .ndo_change_mtu" on the ndo struct?
-> That's whats confusing me, as I have the .ndo one already.  Is there
-> something else I need in addition, or should I be ok as is?
+This reduces the likelihood that get_maintainers.pl will
+list his address twice.
 
-Never mind, it is same as .ndo_change_mtu
+Section "MISCELLANEOUS MCA-SUPPORT" already uses this style.
+
+Signed-off-by: Joe Perches <joe@perches.com>
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index b1114cf..a7288e5 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -137,7 +137,7 @@ S:	Supported
+ F:	drivers/scsi/3w-xxxx*
+ 
+ 53C700 AND 53C700-66 SCSI DRIVER
+-M:	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
++M:	James Bottomley <James.Bottomley@HansenPartnership.com>
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
+ F:	drivers/scsi/53c700*
+@@ -3033,7 +3033,7 @@ F:	include/*/lapb.h
+ F:	net/lapb/
+ 
+ LASI 53c700 driver for PARISC
+-M:	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
++M:	James Bottomley <James.Bottomley@HansenPartnership.com>
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
+ F:	Documentation/scsi/53c700.txt
+@@ -3469,7 +3469,7 @@ S:	Maintained
+ F:	fs/ncpfs/
+ 
+ NCR DUAL 700 SCSI DRIVER (MICROCHANNEL)
+-M:	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
++M:	James Bottomley <James.Bottomley@HansenPartnership.com>
+ L:	linux-scsi@vger.kernel.org
+ S:	Maintained
+ F:	drivers/scsi/NCR_D700.*
+@@ -4394,7 +4394,7 @@ F:	drivers/scsi/sg.c
+ F:	include/scsi/sg.h
+ 
+ SCSI SUBSYSTEM
+-M:	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
++M:	James Bottomley <James.Bottomley@HansenPartnership.com>
+ L:	linux-scsi@vger.kernel.org
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
+ T:	git git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+
+
+
