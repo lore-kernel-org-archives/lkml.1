@@ -1,112 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbZHCQ5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932364AbZHCQ6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755441AbZHCQ5O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 12:57:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754902AbZHCQ5N
+	id S932364AbZHCQ6H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 12:58:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755428AbZHCQ6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 12:57:13 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37485 "EHLO mx2.redhat.com"
+	Mon, 3 Aug 2009 12:58:06 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52988 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754836AbZHCQ5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 12:57:12 -0400
-Message-ID: <4A771676.6070200@redhat.com>
-Date: Mon, 03 Aug 2009 19:55:18 +0300
-From: Izik Eidus <ieidus@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-CC: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
-       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 5/12] ksm: keep quiet while list empty
-References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils> <Pine.LNX.4.64.0908031313030.16754@sister.anvils>
-In-Reply-To: <Pine.LNX.4.64.0908031313030.16754@sister.anvils>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1754902AbZHCQ6F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 12:58:05 -0400
+Subject: Re: [Patch] pipe: use file_update_time() when hold i_mutex
+From: Miklos Szeredi <mszeredi@suse.cz>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       heiko.carstens@de.ibm.com, linux-fsdevel@vger.kernel.org,
+       viro@zeniv.linux.org.uk
+In-Reply-To: <4A66DA2E.90601@redhat.com>
+References: <20090706053745.6338.50777.sendpatchset@localhost.localdomain>
+	 <20090720141150.e9d081ca.akpm@linux-foundation.org>
+	 <4A65934B.9050904@redhat.com> <1248174580.28516.595.camel@tucsk>
+	 <4A66DA2E.90601@redhat.com>
+Content-Type: text/plain
+Date: Mon, 03 Aug 2009 18:58:07 +0200
+Message-Id: <1249318687.29890.28.camel@tucsk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> ksm_scan_thread already sleeps in wait_event_interruptible until setting
-> ksm_run activates it; but if there's nothing on its list to look at, i.e.
-> nobody has yet said madvise MADV_MERGEABLE, it's a shame to be clocking
-> up system time and full_scans: ksmd_should_run added to check that too.
->
-> And move the mutex_lock out around it: the new counts showed that when
-> ksm_run is stopped, a little work often got done afterwards, because it
-> had been read before taking the mutex.
->
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> ---
->
->  mm/ksm.c |   28 ++++++++++++++++++++++------
->  1 file changed, 22 insertions(+), 6 deletions(-)
->
-> --- ksm4/mm/ksm.c	2009-08-02 13:49:59.000000000 +0100
-> +++ ksm5/mm/ksm.c	2009-08-02 13:50:07.000000000 +0100
-> @@ -1287,21 +1287,27 @@ static void ksm_do_scan(unsigned int sca
->  	}
->  }
->  
-> +static int ksmd_should_run(void)
-> +{
-> +	return (ksm_run & KSM_RUN_MERGE) && !list_empty(&ksm_mm_head.mm_list);
-> +}
-> +
->  static int ksm_scan_thread(void *nothing)
->  {
->  	set_user_nice(current, 5);
->  
->  	while (!kthread_should_stop()) {
-> -		if (ksm_run & KSM_RUN_MERGE) {
-> -			mutex_lock(&ksm_thread_mutex);
-> +		mutex_lock(&ksm_thread_mutex);
-> +		if (ksmd_should_run())
->  			ksm_do_scan(ksm_thread_pages_to_scan);
-> -			mutex_unlock(&ksm_thread_mutex);
-> +		mutex_unlock(&ksm_thread_mutex);
-> +
-> +		if (ksmd_should_run()) {
->  			schedule_timeout_interruptible(
->  				msecs_to_jiffies(ksm_thread_sleep_millisecs));
->  		} else {
->  			wait_event_interruptible(ksm_thread_wait,
-> -					(ksm_run & KSM_RUN_MERGE) ||
-> -					kthread_should_stop());
-> +				ksmd_should_run() || kthread_should_stop());
->  		}
->  	}
->  	return 0;
-> @@ -1346,10 +1352,16 @@ int ksm_madvise(struct vm_area_struct *v
->  
->  int __ksm_enter(struct mm_struct *mm)
->  {
-> -	struct mm_slot *mm_slot = alloc_mm_slot();
-> +	struct mm_slot *mm_slot;
-> +	int needs_wakeup;
-> +
-> +	mm_slot = alloc_mm_slot();
->  	if (!mm_slot)
->  		return -ENOMEM;
->  
-> +	/* Check ksm_run too?  Would need tighter locking */
-> +	needs_wakeup = list_empty(&ksm_mm_head.mm_list);
-> +
->  	spin_lock(&ksm_mmlist_lock);
->  	insert_to_mm_slots_hash(mm, mm_slot);
->  	/*
-> @@ -1361,6 +1373,10 @@ int __ksm_enter(struct mm_struct *mm)
->  	spin_unlock(&ksm_mmlist_lock);
->  
->  	set_bit(MMF_VM_MERGEABLE, &mm->flags);
-> +
-> +	if (needs_wakeup)
-> +		wake_up_interruptible(&ksm_thread_wait);
-> +
->  	return 0;
->  }
->  
->   
-ACK
+On Wed, 2009-07-22 at 17:21 +0800, Amerigo Wang wrote:
+> Miklos Szeredi wrote:
+> > On Tue, 2009-07-21 at 18:07 +0800, Amerigo Wang wrote:
+> >   
+> >> Andrew Morton wrote:
+> >>     
+> >>> On Mon, 6 Jul 2009 01:35:30 -0400
+> >>> Amerigo Wang <amwang@redhat.com> wrote:
+> >>>
+> >>>   
+> >>>       
+> >>>> file_update_time() should be called with i_mutex held,
+> >>>> move it before mutex_unlock().
+> >>>>
+> >>>>     
+> >>>>         
+> >>> Why do you believe that file_update_time() needs i_mutex?
+> >>>   
+> >>>       
+> >> file_update_time() modifies inode, no? :)
+> >>     
+> >
+> > So does touch_atime(), yet neither needs i_mutex.
+> >   
+> Yes?
+> 
+> Then how the inode is protected when file_update_time() modifies
+> it?
+
+Protected against what?
+
+For example the inode isn't protected against concurrent access by
+stat(2), since that doesn't take i_mutex.
+
+And indeed it looks like there are races there, since set/get operations
+are not atomic on the timestamp, so stat could return a garbled value if
+it races with file_update_time() or touch_atime().
+
+Possibly worth fixing, but I'm not sure how to do that without affecting
+the scalability of stat and friends and without adding too much
+complexity.
+
+Thanks,
+Miklos
+
