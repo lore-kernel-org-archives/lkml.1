@@ -1,87 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbZHCThT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbZHCTqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754622AbZHCThT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 15:37:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754332AbZHCThS
+	id S1754681AbZHCTqL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 15:46:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754638AbZHCTqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 15:37:18 -0400
-Received: from mail-px0-f201.google.com ([209.85.216.201]:47529 "EHLO
-	mail-px0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753399AbZHCThR (ORCPT
+	Mon, 3 Aug 2009 15:46:11 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:56168 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754442AbZHCTqK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 15:37:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=xsibD7Oc2UarCnjeomJE52cQlKm/soRGHpF4qZiR8s9OkLFS6Mf7768FwAe4b/fIvR
-         5/ydqZ8GncfxBbjqW7Ab+T/3+65KQUOq0kQ1QTblVgPN4QzYaFoGOv9OX7b6gvUySenb
-         FkM1efPrr9/qnbz076YjSZyxujvjXeXpTLtkE=
-Message-ID: <4A773AC2.2080106@gmail.com>
-Date: Mon, 03 Aug 2009 15:30:10 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Mon, 3 Aug 2009 15:46:10 -0400
+Date: Mon, 3 Aug 2009 14:45:55 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Benjamin Blum <bblum@google.com>
+Cc: menage@google.com, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 6/6] Makes procs file writable to move all threads by
+	tgid at once
+Message-ID: <20090803194555.GA10158@us.ibm.com>
+References: <20090731012908.27908.62208.stgit@hastromil.mtv.corp.google.com> <20090731015154.27908.9639.stgit@hastromil.mtv.corp.google.com> <20090803175452.GA5481@us.ibm.com> <2f86c2480908031113y525b6cbdhe418b8a0364c7760@mail.gmail.com> <20090803185556.GA8469@us.ibm.com>
 MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@vyatta.com>
-CC: Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
-       alacrityvm-devel@lists.sourceforge.net, netdev@vger.kernel.org
-Subject: Re: [PATCH 7/7] venet: add scatter-gather/GSO support
-References: <20090803171030.17268.26962.stgit@dev.haskins.net>	<20090803171807.17268.49836.stgit@dev.haskins.net> <20090803113225.4cd414ec@nehalam>
-In-Reply-To: <20090803113225.4cd414ec@nehalam>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigBE4790AD4B3E23612DA70C1F"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090803185556.GA8469@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigBE4790AD4B3E23612DA70C1F
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Quoting Serge E. Hallyn (serue@us.ibm.com):
+> Quoting Benjamin Blum (bblum@google.com):
+> > On Mon, Aug 3, 2009 at 1:54 PM, Serge E. Hallyn<serue@us.ibm.com> wrote:
+> > > Quoting Ben Blum (bblum@google.com):
+> > > What *exactly* is it we are protecting with cgroup_fork_mutex?
+> > > 'fork' (as the name implies) is not a good answer, since we should be
+> > > protecting data, not code.  If it is solely tsk->cgroups, then perhaps
+> > > we should in fact try switching to (s?)rcu.  Then cgroup_fork() could
+> > > just do rcu_read_lock, while cgroup_task_migrate() would make the change
+> > > under a spinlock (to protect against concurrent cgroup_task_migrate()s),
+> > > and using rcu_assign_pointer to let cgroup_fork() see consistent data
+> > > either before or after the update...  That might mean that any checks done
+> > > before completing the migrate which involve the # of tasks might become
+> > > invalidated before the migration completes?  Seems acceptable (since
+> > > it'll be a small overcharge at most and can be quickly remedied).
+> > 
+> > You'll notice where the rwsem is released - not until cgroup_post_fork
+> > or cgroup_fork_failed. It doesn't just protect the tsk->cgroups
+> > pointer, but rather guarantees atomicity between adjusting
+> > tsk->cgroups and attaching it to the cgroups lists with respect to the
+> > critical section in attach_proc. If you've a better name for the lock
+> > for such a race condition, do suggest.
+> 
+> No the name is pretty accurate - it's the lock itself I'm objecting
+> to.  Maybe it's the best we can do, though.
 
-Stephen Hemminger wrote:
-> On Mon, 03 Aug 2009 13:18:07 -0400
-> Gregory Haskins <ghaskins@novell.com> wrote:
->=20
->> SG/GSO significantly enhance the performance of network traffic under
->> certain circumstances.  We implement this feature as a separate patch
->> to avoid intially complicating the baseline venet driver.  This will
->> presumably make the review process slightly easier, since we can
->> focus on the basic interface first.
->>
->> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->=20
-> Never mind, previous comment about adding TSO.
+This is probably a stupid idea, but...  what about having zero
+overhead at clone(), and instead, at cgroup_task_migrate(),
+dequeue_task()ing all of the affected threads for the duration of
+the migrate?
 
+/me prepares to be hit by blunt objects
 
-I should probably fold 6+7 together anyway, so this was my fault.  I
-think I was originally keeping them separate because the venet was
-serving as the canonical example for the vbus interface.  But Ill just
-come up with something simpler to demonstrate the interface and merge
-these two patches.
-
-> But it still would be good to have ethtool interface for this.
-
-Ack.  Will do.
-
-Thanks Stephen,
--Greg
-
-
---------------enigBE4790AD4B3E23612DA70C1F
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkp3OsIACgkQP5K2CMvXmqGqYgCgh9VC2+3otM51psFaHNp8HUTe
-h6oAn2gmbKCnW5Ip/KC2EfEp7rvhIEX8
-=NES1
------END PGP SIGNATURE-----
-
---------------enigBE4790AD4B3E23612DA70C1F--
+-serge
