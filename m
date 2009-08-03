@@ -1,155 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932147AbZHCVrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbZHCVtM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932147AbZHCVrp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 17:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752717AbZHCVro
+	id S1754829AbZHCVtM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 17:49:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754040AbZHCVtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 17:47:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44748 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752204AbZHCVrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 17:47:42 -0400
-Date: Mon, 3 Aug 2009 21:47:16 GMT
-From: tip-bot for Paul Mackerras <paulus@samba.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: ying.huang@intel.com, linux-kernel@vger.kernel.org, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, ying.huang@intel.com, tglx@linutronix.de
-In-Reply-To: <19062.55858.533494.471153@cargo.ozlabs.ibm.com>
-References: <19062.55858.533494.471153@cargo.ozlabs.ibm.com>
-Subject: [tip:x86/urgent] x86: Make 64-bit efi_ioremap use ioremap on MMIO regions
-Message-ID: <tip-6a7bbd57ed50bb62c9a81ae5f2e202ca689e5964@git.kernel.org>
-Git-Commit-ID: 6a7bbd57ed50bb62c9a81ae5f2e202ca689e5964
-X-Mailer: tip-git-log-daemon
+	Mon, 3 Aug 2009 17:49:11 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:62692 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752204AbZHCVtJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 17:49:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=rU2i2j5p1CTJrsVbK1FJbnS/R/YOmNVKhYUcJYXXYw7juw0FCRbRDSIvW8WumPJ9hJ
+         L6xUfDlAf463UshgpqcwvzLBAm7mCm8B5LsTRVuO6IKjbxMzm7Ni5EgII8i1pw7AwkGk
+         K7YBSeRXuEM0dMPaxINeRbSBayKHzglwAGCwk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 03 Aug 2009 21:47:17 +0000 (UTC)
+In-Reply-To: <20090803212015.GC28579@kroah.com>
+References: <cb0375e10908031414g471bacf5lab685958b60bfdfa@mail.gmail.com>
+	 <20090803212015.GC28579@kroah.com>
+Date: Mon, 3 Aug 2009 17:49:09 -0400
+X-Google-Sender-Auth: 5fdcbf0d2c370e18
+Message-ID: <cb0375e10908031449l2005a468v9683eb5a078cf226@mail.gmail.com>
+Subject: Re: Is anyone maintaining (or even using) usbtmc?
+From: Andrew Lutomirski <luto@mit.edu>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, gregkh@suse.de
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6a7bbd57ed50bb62c9a81ae5f2e202ca689e5964
-Gitweb:     http://git.kernel.org/tip/6a7bbd57ed50bb62c9a81ae5f2e202ca689e5964
-Author:     Paul Mackerras <paulus@samba.org>
-AuthorDate: Mon, 3 Aug 2009 22:38:10 +1000
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Mon, 3 Aug 2009 13:34:25 -0700
+On Mon, Aug 3, 2009 at 5:20 PM, Greg KH<greg@kroah.com> wrote:
+> On Mon, Aug 03, 2009 at 05:14:56PM -0400, Andrew Lutomirski wrote:
+>> Hi all-
+>>
+>> I'm trying to use usbtmc on an Aglient N9310A (The only TMC device I
+>> have), and it sort of works, but it seems to be both extremely buggy
+>> and missing a good deal of rather important functionality.  Is there
+>> anyone maintaining it?
+>
+> Yes, me.
+>
+>> If the answer is yes, I can describe the bugs (logspam, spurious
+>> errors, delayed messages, inability to read status, etc.) in greater
+>> detail.
+>
+> Please do, but also please use the latest version, in 2.6.30.3, we fixed
+> some bad problems in it recently.
 
-x86: Make 64-bit efi_ioremap use ioremap on MMIO regions
+I am.
 
-Booting current 64-bit x86 kernels on the latest Apple MacBook
-(MacBook5,2) via EFI gives the following warning:
+Almost anything I do triggers this:
 
-[    0.182209] ------------[ cut here ]------------
-[    0.182222] WARNING: at arch/x86/mm/pageattr.c:581 __cpa_process_fault+0x44/0xa0()
-[    0.182227] Hardware name: MacBook5,2
-[    0.182231] CPA: called for zero pte. vaddr = ffff8800ffe00000 cpa->vaddr = ffff8800ffe00000
-[    0.182236] Modules linked in:
-[    0.182242] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #6
-[    0.182246] Call Trace:
-[    0.182254]  [<ffffffff8102c754>] ? __cpa_process_fault+0x44/0xa0
-[    0.182261]  [<ffffffff81048668>] warn_slowpath_common+0x78/0xd0
-[    0.182266]  [<ffffffff81048744>] warn_slowpath_fmt+0x64/0x70
-[    0.182272]  [<ffffffff8102c7ec>] ? update_page_count+0x3c/0x50
-[    0.182280]  [<ffffffff818d25c5>] ? phys_pmd_init+0x140/0x22e
-[    0.182286]  [<ffffffff8102c754>] __cpa_process_fault+0x44/0xa0
-[    0.182292]  [<ffffffff8102ce60>] __change_page_attr_set_clr+0x5f0/0xb40
-[    0.182301]  [<ffffffff810d1035>] ? vm_unmap_aliases+0x175/0x190
-[    0.182307]  [<ffffffff8102d4ae>] change_page_attr_set_clr+0xfe/0x3d0
-[    0.182314]  [<ffffffff8102dcca>] _set_memory_uc+0x2a/0x30
-[    0.182319]  [<ffffffff8102dd4b>] set_memory_uc+0x7b/0xb0
-[    0.182327]  [<ffffffff818afe31>] efi_enter_virtual_mode+0x2ad/0x2c9
-[    0.182334]  [<ffffffff818a1c66>] start_kernel+0x2db/0x3f4
-[    0.182340]  [<ffffffff818a1289>] x86_64_start_reservations+0x99/0xb9
-[    0.182345]  [<ffffffff818a1389>] x86_64_start_kernel+0xe0/0xf2
-[    0.182357] ---[ end trace 4eaa2a86a8e2da22 ]---
-[    0.182982] init_memory_mapping: 00000000ffffc000-0000000100000000
-[    0.182993]  00ffffc000 - 0100000000 page 4k
+usbtmc 3-1:1.0: Unable to read data, error -110
 
-This happens because the 64-bit version of efi_ioremap calls
-init_memory_mapping for all addresses, regardless of whether they are
-RAM or MMIO.  The EFI tables on this machine ask for runtime access to
-some MMIO regions:
+The easiest way is to write something that wasn't a query and then try
+to read.  Of course, the read should fail, but there's no reason it
+should spam the logs.
 
-[    0.000000] EFI: mem195: type=11, attr=0x8000000000000000, range=[0x0000000093400000-0x0000000093401000) (0MB)
-[    0.000000] EFI: mem196: type=11, attr=0x8000000000000000, range=[0x00000000ffc00000-0x00000000ffc40000) (0MB)
-[    0.000000] EFI: mem197: type=11, attr=0x8000000000000000, range=[0x00000000ffc40000-0x00000000ffc80000) (0MB)
-[    0.000000] EFI: mem198: type=11, attr=0x8000000000000000, range=[0x00000000ffc80000-0x00000000ffca4000) (0MB)
-[    0.000000] EFI: mem199: type=11, attr=0x8000000000000000, range=[0x00000000ffca4000-0x00000000ffcb4000) (0MB)
-[    0.000000] EFI: mem200: type=11, attr=0x8000000000000000, range=[0x00000000ffcb4000-0x00000000ffffc000) (3MB)
-[    0.000000] EFI: mem201: type=11, attr=0x8000000000000000, range=[0x00000000ffffc000-0x0000000100000000) (0MB)
+On occasion, sending garbage to the device will cause even a
+subsequent USBTMC_IOCTL_CLEAR to fail with ETIMEDOUT.  (Maybe I wanted
+USBTMC_IOCTL_ABORT_BULK_IN?  That seems wrong, though, since
+presumably the driver should manage pending Bulk-IN requests on its
+own.)
 
-This arranges to pass the EFI memory type through to efi_ioremap, and
-makes efi_ioremap use ioremap rather than init_memory_mapping if the
-type is EFI_MEMORY_MAPPED_IO.  With this, the above warning goes away.
+On other occasions (usually triggered by sending a garbage command,
+but, when this happens, the problem persists across several messages),
+every response will be delayed.  That is, if I send a query, I get
+back the previous query's answer or ETIMEDOUT if the previous command
+wasn't a query.  This persists across closing and reopening the
+device.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <19062.55858.533494.471153@cargo.ozlabs.ibm.com>
-Cc: Huang Ying <ying.huang@intel.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+Sometimes write() fails with ETIMEDOUT.  This failure happens with no
+perceivable delay and I have no idea why.
 
+An ioctl for GET_CAPABILITIES would be nice, but is not mandatory.
 
----
- arch/x86/include/asm/efi.h |    5 +++--
- arch/x86/kernel/efi.c      |    2 +-
- arch/x86/kernel/efi_64.c   |    6 +++++-
- 3 files changed, 9 insertions(+), 4 deletions(-)
+Finally, I see no way to read the USB488 status byte or detect a
+status interrupt.
 
-diff --git a/arch/x86/include/asm/efi.h b/arch/x86/include/asm/efi.h
-index edc90f2..8406ed7 100644
---- a/arch/x86/include/asm/efi.h
-+++ b/arch/x86/include/asm/efi.h
-@@ -33,7 +33,7 @@ extern unsigned long asmlinkage efi_call_phys(void *, ...);
- #define efi_call_virt6(f, a1, a2, a3, a4, a5, a6)	\
- 	efi_call_virt(f, a1, a2, a3, a4, a5, a6)
- 
--#define efi_ioremap(addr, size)			ioremap_cache(addr, size)
-+#define efi_ioremap(addr, size, type)		ioremap_cache(addr, size)
- 
- #else /* !CONFIG_X86_32 */
- 
-@@ -84,7 +84,8 @@ extern u64 efi_call6(void *fp, u64 arg1, u64 arg2, u64 arg3,
- 	efi_call6((void *)(efi.systab->runtime->f), (u64)(a1), (u64)(a2), \
- 		  (u64)(a3), (u64)(a4), (u64)(a5), (u64)(a6))
- 
--extern void __iomem *efi_ioremap(unsigned long addr, unsigned long size);
-+extern void __iomem *efi_ioremap(unsigned long addr, unsigned long size,
-+				 u32 type);
- 
- #endif /* CONFIG_X86_32 */
- 
-diff --git a/arch/x86/kernel/efi.c b/arch/x86/kernel/efi.c
-index 96f7ac0..19ccf6d 100644
---- a/arch/x86/kernel/efi.c
-+++ b/arch/x86/kernel/efi.c
-@@ -512,7 +512,7 @@ void __init efi_enter_virtual_mode(void)
- 			&& end_pfn <= max_pfn_mapped))
- 			va = __va(md->phys_addr);
- 		else
--			va = efi_ioremap(md->phys_addr, size);
-+			va = efi_ioremap(md->phys_addr, size, md->type);
- 
- 		md->virt_addr = (u64) (unsigned long) va;
- 
-diff --git a/arch/x86/kernel/efi_64.c b/arch/x86/kernel/efi_64.c
-index 22c3b78..ac0621a 100644
---- a/arch/x86/kernel/efi_64.c
-+++ b/arch/x86/kernel/efi_64.c
-@@ -98,10 +98,14 @@ void __init efi_call_phys_epilog(void)
- 	early_runtime_code_mapping_set_exec(0);
- }
- 
--void __iomem *__init efi_ioremap(unsigned long phys_addr, unsigned long size)
-+void __iomem *__init efi_ioremap(unsigned long phys_addr, unsigned long size,
-+				 u32 type)
- {
- 	unsigned long last_map_pfn;
- 
-+	if (type == EFI_MEMORY_MAPPED_IO)
-+		return ioremap(phys_addr, size);
-+
- 	last_map_pfn = init_memory_mapping(phys_addr, phys_addr + size);
- 	if ((last_map_pfn << PAGE_SHIFT) < phys_addr + size)
- 		return NULL;
+>
+>> Is anyone using usbtmc, or, more specifically, does anyone care about
+>> backward compatibility?
+>
+> What do you want to change in the driver interface?
+
+The main compatibility-breaking change is that I'd like to see
+close/reopen go through the whole resynchronization procedure so that
+the device starts in a sane state.  Currently I restore sanity by
+doing a bunch of reads and ignoring ETIMEDOUT.
+
+--Andy
