@@ -1,102 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbZHCCPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbZHCCQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753869AbZHCCPb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 22:15:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbZHCCPa
+	id S1754027AbZHCCQK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 22:16:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbZHCCQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 22:15:30 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54664 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752289AbZHCCP3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 22:15:29 -0400
-Message-ID: <4A7647DA.5050607@cn.fujitsu.com>
-Date: Mon, 03 Aug 2009 10:13:46 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Sun, 2 Aug 2009 22:16:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58703 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753099AbZHCCQJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 22:16:09 -0400
+Date: Sun, 2 Aug 2009 19:14:11 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Tejun Heo <tj@kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] Additional x86 fixes for 2.6.31-rc5
+In-Reply-To: <4A76421E.3040005@kernel.org>
+Message-ID: <alpine.LFD.2.01.0908021913130.3352@localhost.localdomain>
+References: <200907311813.n6VIDe9S023442@voreg.hos.anvin.org> <alpine.LFD.2.01.0907311218080.3161@localhost.localdomain> <20090731195705.GA12270@elte.hu> <alpine.LFD.2.01.0908011214330.3304@localhost.localdomain> <4A76421E.3040005@kernel.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
-       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org
-Subject: Re: [PATCH 20/25] io-controller: map async requests to appropriate
- cgroup
-References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <1246564917-19603-21-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1246564917-19603-21-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-...
-> +
-> +struct io_group *io_get_io_group_bio(struct request_queue *q, struct bio *bio,
-> +					int create)
-> +{
-> +	struct page *page = NULL;
-> +
-> +	/*
-> +	 * Determine the group from task context. Even calls from
-> +	 * blk_get_request() which don't have any bio info will be mapped
-> +	 * to the task's group
-> +	 */
-> +	if (!bio)
-> +		goto sync;
-> +
-> +	if (bio_barrier(bio)) {
-> +		/*
-> +		 * Map barrier requests to root group. May be more special
-> +		 * bio cases should come here
-> +		 */
-> +		return q->elevator->efqd.root_group;
-> +	}
-> +
-> +	/* Map the sync bio to the right group using task context */
-> +	if (elv_bio_sync(bio))
-> +		goto sync;
-> +
-> +#ifdef CONFIG_TRACK_ASYNC_CONTEXT
-> +	/* Determine the group from info stored in page */
-> +	page = bio_iovec_idx(bio, 0)->bv_page;
-> +	return io_get_io_group(q, page, create);
-> +#endif
-> +
-> +sync:
-> +	return io_get_io_group(q, NULL, create);
-
-Fix build warning.
-
-block/elevator-fq.c: In function ‘io_get_io_group_bio’:
-block/elevator-fq.c:2075: warning: unused variable ‘page’
-
----
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index 66b10eb..d304f79 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -2102,7 +2102,7 @@ struct io_group *io_get_io_group_bio(struct request_queue *q, struct bio *bio,
- #endif
- 
- sync:
--	return io_get_io_group(q, NULL, create);
-+	return io_get_io_group(q, page, create);
- }
- EXPORT_SYMBOL(io_get_io_group_bio);
 
 
-> +}
-> +EXPORT_SYMBOL(io_get_io_group_bio);
-> +
+On Mon, 3 Aug 2009, Tejun Heo wrote:
+> 
+> Do you want to queue it for 2.6.31?
 
+Yeah, no.
 
--- 
-Regards
-Gui Jianfeng
+>			 Given that the generated code
+> changes compared to the previous kernels (both pre and post percpu
+> stuff), I think it would be safer to queue it for 2.6.32 window.  I
+> would be happy to carry it in the percpu tree.
 
+Please do. I don't want it for 31, and I do want it to get more testing. I 
+ran with it for a few days, and saw no problems, and it looked obvious 
+enough, but there just isn't any overriding reason for it to be in 31.
+
+		Linus
