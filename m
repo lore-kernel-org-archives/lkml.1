@@ -1,105 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932341AbZHCXX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932372AbZHCXoL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932341AbZHCXX0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 19:23:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932286AbZHCXXZ
+	id S932372AbZHCXoL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 19:44:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932360AbZHCXoK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 19:23:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57144 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932267AbZHCXXY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 19:23:24 -0400
-Date: Mon, 3 Aug 2009 16:22:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mark Lord <lkml@rtr.ca>
-Cc: sandeen@redhat.com, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, sandeen@sandeen.net,
-       Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] fs/compat_ioctl.c: add missing FS_IOC_FIEMAP support
-Message-Id: <20090803162255.c6d12eda.akpm@linux-foundation.org>
-In-Reply-To: <4A775FB9.80600@rtr.ca>
-References: <4A74584D.2010300@rtr.ca>
-	<4A7722DF.80704@rtr.ca>
-	<4A7725AF.6090106@redhat.com>
-	<4A775FB9.80600@rtr.ca>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Aug 2009 19:44:10 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44709 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932357AbZHCXoJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 19:44:09 -0400
+Date: Mon, 3 Aug 2009 19:44:00 -0400
+From: Dave Jones <davej@redhat.com>
+To: Thomas Renninger <trenn@suse.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: cpufreq tree build failure
+Message-ID: <20090803234400.GA16934@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Thomas Renninger <trenn@suse.de>,
+	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20090803122819.6b738cad.sfr@canb.auug.org.au> <200908040122.15733.trenn@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200908040122.15733.trenn@suse.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 03 Aug 2009 18:07:53 -0400
-Mark Lord <lkml@rtr.ca> wrote:
+On Tue, Aug 04, 2009 at 01:22:14AM +0200, Thomas Renninger wrote:
+ > On Monday 03 August 2009 04:28:19 am Stephen Rothwell wrote:
+ > > Hi Dave,
+ > >
+ > > Today's linux-next build (x86_64 allmodconfig) failed like this:
+ > >
+ > > ERROR: "cpufreq_global_kobject" [drivers/cpufreq/cpufreq_ondemand.ko]
+ > > undefined!
+ > >
+ > > Caused by commit 35b104d88338e5eddb36c670fea4752f6c10c82f ("[CPUFREQ]
+ > > ondemand - Use global sysfs dir for tuning settings").  Presumably
+ > > cpufreq_global_kobject needs an EXPORT_SYMBOL.
+ > 
+ > Yep, that's it. Below is a fix.
+ > 
+ > Thanks a lot,
 
-> Eric Sandeen wrote:
-> > Mark Lord wrote:
-> >> (resending, no ack from anyone first time around).
-> > 
-> > I had previously sent a fix for this to the ext4 list as well, although
-> > w/o the added case for compat_ioctl or the extra #include.
-> > 
-> > Because this ioctl should be 100% compat everywhere, I don't -think-
-> > it's needed, and
-> > 
-> > http://marc.info/?l=linux-ext4&m=124872536713005&w=2
+I'll roll this in with the previous patch, so as not to introduce
+a bisect-regression, and rebase the tree. Will push something out
+soon.
 
-mutter. I don't read linux-fsdevel much.
+thanks.
 
-> > suffices....
-> ..
-> 
-> Well, whichever of the two works best for the maintainers.
-> 
-> We need *something* for it upstream, and probably back in -stable too.
-> Otherwise this prevents using 64-bit kernels on 32-bit userland,
-> as Linus likes to recommend so often.  ;)
-
-OK, here's what I have, with a somewhat reworked changelog.
-
-I assumed that "Josef" == josef@redhat.com.
-
-Arnd, could you please check that it still looks OK?
-
-Thanks.
-
-
-From: Eric Sandeen <sandeen@redhat.com>
-
-The FIEMAP_IOC_FIEMAP mapping ioctl was missing a 32-bit compat handler,
-which means that 32-bit suerspace on 64-bit kernels cannot use this ioctl
-command.
-
-The structure is nicely aligned, padded, and sized, so it is just this
-simple.
-
-Tested w/ 32-bit ioctl tester (from Josef) on a 64-bit kernel on ext4.
-
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-Cc: <linux-ext4@vger.kernel.org>
-Cc: Mark Lord <lkml@rtr.ca>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Josef Bacik <josef@redhat.com>
-Cc: Jan Kara <jack@suse.cz>
-Cc: <stable@kernel.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- fs/compat_ioctl.c |    1 +
- 1 file changed, 1 insertion(+)
-
-diff -puN fs/compat_ioctl.c~compat_ioctl-hook-up-compat-handler-for-fiemap-ioctl fs/compat_ioctl.c
---- a/fs/compat_ioctl.c~compat_ioctl-hook-up-compat-handler-for-fiemap-ioctl
-+++ a/fs/compat_ioctl.c
-@@ -1838,6 +1838,7 @@ COMPATIBLE_IOCTL(FIONCLEX)
- COMPATIBLE_IOCTL(FIOASYNC)
- COMPATIBLE_IOCTL(FIONBIO)
- COMPATIBLE_IOCTL(FIONREAD)  /* This is also TIOCINQ */
-+COMPATIBLE_IOCTL(FS_IOC_FIEMAP)
- /* 0x00 */
- COMPATIBLE_IOCTL(FIBMAP)
- COMPATIBLE_IOCTL(FIGETBSZ)
-_
-
+	Dave
