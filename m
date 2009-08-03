@@ -1,62 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbZHCPJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932263AbZHCPL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932255AbZHCPJz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 11:09:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755054AbZHCPJy
+	id S932263AbZHCPL0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 11:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbZHCPLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 11:09:54 -0400
-Received: from relay.atmel.no ([80.232.32.139]:61383 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755025AbZHCPJy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 11:09:54 -0400
-Date: Mon, 3 Aug 2009 17:09:47 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-Cc: nicolas.ferre@atmel.com, linux@maxim.org.za, linux-kernel@vger.kernel.org,
-       Albin Tonnerre <albin.tonnerre@free-electrons.com>
-Subject: Re: [PATCH] Switch atmel_serial to dev_pm_ops
-Message-ID: <20090803170947.2f199b93@hskinnemoen-d830>
-In-Reply-To: <1249310347-22291-1-git-send-email-albin.tonnerre@free-electrons.com>
-References: <1249310347-22291-1-git-send-email-albin.tonnerre@free-electrons.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Aug 2009 11:11:25 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:29096 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754586AbZHCPLY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 11:11:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=oy28OM85GnrDmeHZPERtdMFx04Cmuh5pAHAsDk9uB6iVWIaI+YChvGuzQ5ny4EEwgP
+         GL4RqB7S1TjsOoMrSTKDVFLhzn4sh5Kr91qTV0BDjVCGH1nCx/NxnIIYr+CphmlOv3w5
+         0aXjZ8cEdXxcstuuorJCGr1HNPqIwfzwh58O4=
+MIME-Version: 1.0
+In-Reply-To: <4A768339.9060904@zytor.com>
+References: <20090718151219.GD11294@localhost.localdomain>
+	 <tip-d520da1173abd1f918b7e690220e14ba0fc56cfc@git.kernel.org>
+	 <20090803062024.GA22365@elte.hu> <4A768339.9060904@zytor.com>
+Date: Tue, 4 Aug 2009 00:11:24 +0900
+Message-ID: <961aa3350908030811n6467b2d7hf42dfd58e3a438e7@mail.gmail.com>
+Subject: Re: [tip:x86/asm] x86: Introduce GDT_ENTRY_INIT()
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Albin Tonnerre wrote:
-> +static struct dev_pm_ops atmel_serial_pm_ops = {
-> +	.suspend = atmel_serial_suspend,
-> +	.resume = atmel_serial_resume,
-> +};
->  #else
-> -#define atmel_serial_suspend NULL
-> -#define atmel_serial_resume NULL
-> +static struct dev_pm_ops atmel_serial_pm_ops;
+2009/8/3 H. Peter Anvin <hpa@zytor.com>:
+> Ingo Molnar wrote:
+>>
+>> * tip-bot for Akinobu Mita <akinobu.mita@gmail.com> wrote:
+>>
+>>> Commit-ID:  d520da1173abd1f918b7e690220e14ba0fc56cfc
+>>> Gitweb:
+>>> http://git.kernel.org/tip/d520da1173abd1f918b7e690220e14ba0fc56cfc
+>>> Author:     Akinobu Mita <akinobu.mita@gmail.com>
+>>> AuthorDate: Sun, 19 Jul 2009 00:12:20 +0900
+>>> Committer:  Ingo Molnar <mingo@elte.hu>
+>>> CommitDate: Sun, 19 Jul 2009 18:27:53 +0200
+>>>
+>>> x86: Introduce GDT_ENTRY_INIT()
+>>>
+>>> GDT_ENTRY_INIT is static initializer of desc_struct.
+>>>
+>>> We already have similar macro GDT_ENTRY() but it's static
+>>> initializer for u64 and it cannot be used for desc_struct.
+>>>
+>>> Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
+>>> LKML-Reference: <20090718151219.GD11294@localhost.localdomain>
+>>> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>>>
+>
+> OK, I spotted the following error, which certainly would explain a crash on
+> an APM machine:
+>
+>        /* data */
+> -       [GDT_ENTRY_APMBIOS_BASE+2]      = { { { 0x0000ffff, 0x00409200 } }
+> },
+> +       [GDT_ENTRY_APMBIOS_BASE+2]      = GDT_ENTRY_INIT(0x409a, 0, 0xffff),
 
-Why not
+Oops, I really should have checked the binary because the compiler should
+generate same code with this patch.
 
-#define atmel_serial_pm_ops	NULL
+> Also, we shouldn't be initializing the A bits to clear unless we actually
+> plan to check the A (and D) bits... that's just a waste of CPU cycles.
 
->  #endif
->  
->  static int __devinit atmel_serial_probe(struct platform_device *pdev)
-> @@ -1603,11 +1607,10 @@ static int __devexit atmel_serial_remove(struct platform_device *pdev)
->  static struct platform_driver atmel_serial_driver = {
->  	.probe		= atmel_serial_probe,
->  	.remove		= __devexit_p(atmel_serial_remove),
-> -	.suspend	= atmel_serial_suspend,
-> -	.resume		= atmel_serial_resume,
->  	.driver		= {
->  		.name	= "atmel_usart",
->  		.owner	= THIS_MODULE,
-> +		.pm = &atmel_serial_pm_ops,
-
-Please use a TAB instead of space to make everything nice and
-consistent.
-
-Other than that,
-
-Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+I'll check it, too.
