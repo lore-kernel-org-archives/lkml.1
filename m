@@ -1,61 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754435AbZHCI5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbZHCI7O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754435AbZHCI5q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 04:57:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751323AbZHCI5q
+	id S1754500AbZHCI7O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 04:59:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbZHCI7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 04:57:46 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56945 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751131AbZHCI5p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 04:57:45 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 3 Aug 2009 17:55:57 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Paul Menage <menage@google.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
-Message-Id: <20090803175557.645b9ca3.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090803174519.74673413.kamezawa.hiroyu@jp.fujitsu.com>
-References: <alpine.DEB.2.00.0907282125260.554@chino.kir.corp.google.com>
-	<alpine.DEB.2.00.0907300219580.13674@chino.kir.corp.google.com>
-	<20090730190216.5aae685a.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0907301157100.9652@chino.kir.corp.google.com>
-	<20090731093305.50bcc58d.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0907310231370.25447@chino.kir.corp.google.com>
-	<7f54310137837631f2526d4e335287fc.squirrel@webmail-b.css.fujitsu.com>
-	<alpine.DEB.2.00.0907311212240.22732@chino.kir.corp.google.com>
-	<77df8765230d9f83859fde3119a2d60a.squirrel@webmail-b.css.fujitsu.com>
-	<alpine.DEB.2.00.0908011303050.22174@chino.kir.corp.google.com>
-	<20090803104244.b58220ba.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0908030050160.30778@chino.kir.corp.google.com>
-	<20090803170217.e98b2e46.kamezawa.hiroyu@jp.fujitsu.com>
-	<alpine.DEB.2.00.0908030107110.30778@chino.kir.corp.google.com>
-	<20090803174519.74673413.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 3 Aug 2009 04:59:13 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:32979 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753441AbZHCI7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 04:59:12 -0400
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH v2] [RFC] ark3116: add IrDA support (for Gembird UIR-22)
+Cc: gregkh@suse.de, linux-usb@vger.kernel.org,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Mon, 3 Aug 2009 10:59:06 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908031059.08681.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Aug 2009 17:45:19 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Add IrDA support to ark3116 driver. This makes Gembird UIR-22 USB to
+IrDA adapter work (vendor ID 0x18ec, device ID 0x3118). This adapter
+contains ARK3116T USB serial chip and an IrDA transceiver, thus
+a command like "irattach /dev/ttyUSB0 -s" is needed.
 
-> "just inherit at fork, change at exec" is an usual manner, I think.
-> If oom_adj_exec rather than oom_adj_child, I won't complain, more.
-> 
-But this/(and yours) requires users to rewrite their apps.
-Then, breaks current API.
-please fight with other guardians.
+All magic numbers were captured using usbsnoop from windows driver
+that came with the device.
 
-Thanks,
--Kame
 
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+
+--- linux-2.6.30-orig/drivers/usb/serial/ark3116.c	2009-07-19 19:21:54.000000000 +0200
++++ linux/drivers/usb/serial/ark3116.c	2009-08-01 22:04:48.000000000 +0200
+@@ -31,10 +31,20 @@
+ 
+ static struct usb_device_id id_table [] = {
+ 	{ USB_DEVICE(0x6547, 0x0232) },
++	{ USB_DEVICE(0x18ec, 0x3118) },		/* USB to IrDA adapter */
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(usb, id_table);
+ 
++static int is_irda(struct usb_serial *serial)
++{
++	struct usb_device *dev = serial->dev;
++	if (le16_to_cpu(dev->descriptor.idVendor) == 0x18ec &&
++			le16_to_cpu(dev->descriptor.idProduct) == 0x3118)
++		return 1;
++	return 0;
++}
++
+ struct ark3116_private {
+ 	spinlock_t lock;
+ 	u8 termios_initialized;
+@@ -100,11 +110,21 @@
+ 		goto cleanup;
+ 	}
+ 
++	if (is_irda(serial))
++		dbg("IrDA mode");
++
+ 	/* 3 */
+ 	ARK3116_SND(serial, 3, 0xFE, 0x40, 0x0008, 0x0002);
+ 	ARK3116_SND(serial, 4, 0xFE, 0x40, 0x0008, 0x0001);
+ 	ARK3116_SND(serial, 5, 0xFE, 0x40, 0x0000, 0x0008);
+-	ARK3116_SND(serial, 6, 0xFE, 0x40, 0x0000, 0x000B);
++	ARK3116_SND(serial, 6, 0xFE, 0x40, is_irda(serial) ? 0x0001 : 0x0000,
++		    0x000B);
++
++	if (is_irda(serial)) {
++		ARK3116_SND(serial, 1001, 0xFE, 0x40, 0x0000, 0x000C);
++		ARK3116_SND(serial, 1002, 0xFE, 0x40, 0x0041, 0x000D);
++		ARK3116_SND(serial, 1003, 0xFE, 0x40, 0x0001, 0x000A);
++	}
+ 
+ 	/* <-- seq7 */
+ 	ARK3116_RCV(serial,  7, 0xFE, 0xC0, 0x0000, 0x0003, 0x00, buf);
+@@ -141,6 +161,8 @@
+ 	ARK3116_SND(serial, 147, 0xFE, 0x40, 0x0083, 0x0003);
+ 	ARK3116_SND(serial, 148, 0xFE, 0x40, 0x0038, 0x0000);
+ 	ARK3116_SND(serial, 149, 0xFE, 0x40, 0x0001, 0x0001);
++	if (is_irda(serial))
++		ARK3116_SND(serial, 1004, 0xFE, 0x40, 0x0000, 0x0009);
+ 	ARK3116_SND(serial, 150, 0xFE, 0x40, 0x0003, 0x0003);
+ 	ARK3116_RCV(serial, 151, 0xFE, 0xC0, 0x0000, 0x0004, 0x03, buf);
+ 	ARK3116_SND(serial, 152, 0xFE, 0x40, 0x0000, 0x0003);
+
+
+
+-- 
+Ondrej Zary
