@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbZHCMMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbZHCMM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754851AbZHCMMM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 08:12:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbZHCMML
+	id S1754856AbZHCMM5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 08:12:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754742AbZHCMM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 08:12:11 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:39344 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754280AbZHCMMH (ORCPT
+	Mon, 3 Aug 2009 08:12:56 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35946 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754729AbZHCMM4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 08:12:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=VRB5+SSdMz5qOqJy5Lsyne2M0UYowDKp82a93vZBBJF7UdRUEKLlz6qq+wK7AsBhRB
-         I3MnA3vO+VNT2C8JXWP2PMYv3+WhSVKBw+CW07BdVIGPqKR484KL2T5HWKbmg7h6Jg17
-         jy1wL0h29DuB9DKFOmqGxhz+ZBWQkfZ5m21Ss=
-Message-ID: <4A76D4DA.8090905@gmail.com>
-Date: Mon, 03 Aug 2009 14:15:22 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Mon, 3 Aug 2009 08:12:56 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
+Cc: kosaki.motohiro@jp.fujitsu.com, David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, Paul Menage <menage@google.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <20090803200639.CC1D.A69D9226@jp.fujitsu.com>
+References: <alpine.DEB.2.00.0907310210460.25447@chino.kir.corp.google.com> <20090803200639.CC1D.A69D9226@jp.fujitsu.com>
+Message-Id: <20090803211112.CC23.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: alan@redhat.com, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] serial167: Read buffer overflow
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon,  3 Aug 2009 21:12:53 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check whether index is within bounds before grabbing the element.
-Also, since NR_PORTS is defined ARRAY_SIZE(cy_port),
-cy_port[NR_PORTS] is out of bounds as well. 
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/char/serial167.c b/drivers/char/serial167.c
-index 51e7a46..affa5e2 100644
---- a/drivers/char/serial167.c
-+++ b/drivers/char/serial167.c
-@@ -222,7 +222,7 @@ static inline int serial_paranoia_check(struct cyclades_port *info, char *name,
- 	}
- 
- 	if ((long)info < (long)(&cy_port[0])
--	    || (long)(&cy_port[NR_PORTS]) < (long)info) {
-+	    || (long)(&cy_port[NR_PORTS-1]) < (long)info) {
- 		printk("Warning: cyclades_port out of range for (%s) in %s\n",
- 				name, routine);
- 		return 1;
-@@ -521,15 +521,13 @@ static irqreturn_t cd2401_tx_interrupt(int irq, void *dev_id)
- 		panic("TxInt on debug port!!!");
- 	}
- #endif
--
--	info = &cy_port[channel];
--
- 	/* validate the port number (as configured and open) */
- 	if ((channel < 0) || (NR_PORTS <= channel)) {
- 		base_addr[CyIER] &= ~(CyTxMpty | CyTxRdy);
- 		base_addr[CyTEOIR] = CyNOTRANS;
- 		return IRQ_HANDLED;
- 	}
-+	info = &cy_port[channel];
- 	info->last_active = jiffies;
- 	if (info->tty == 0) {
- 		base_addr[CyIER] &= ~(CyTxMpty | CyTxRdy);
+One mistake.
+
+> > > And, May I explay why I think your oom_adj_child is wrong idea?
+> > > The fact is: new feature introducing never fix regression. yes, some
+> > > application use new interface and disappear the problem. but other
+> > > application still hit the problem. that's not correct development style
+> > > in kernel.
+> > > 
+> > 
+> > So you're proposing that we forever allow /proc/pid/oom_score to be 
+> > completely wrong for pid without any knowledge to userspace?  That we 
+> > falsely advertise what it represents and allow userspace to believe that 
+> > changing oom_adj for a thread sharing memory with other threads actually 
+> > changes how the oom killer selects tasks?
+> 
+> No. perhaps no doublly.
+> 
+> 1) In my patch, oom_score is also per-process value. all thread have the same
+>    oom_score.
+>    It's clear meaning.
+
+it's wrong explanation. oom_score is calculated from the same oom_adj.
+but it have each different oom_score. sorry my confused.
+
+
+
+> 2) In almost case, oom_score display collect value because oom_adj is per-process
+>    value too. 
+>    Yes, there is one exception. vfork() and change oom_adj'ed process might display 
+>    wrong value. but I don't think it is serious problem because vfork() process call
+>    exec() soon.
+>    Administrator never recognize this difference.
+> 
+> > Please.
+> 
+> David, I hope you join to fix this regression. I can't believe we
+> can't fix this issue honestly.
+> 
+> 
+> 
+
+
+
