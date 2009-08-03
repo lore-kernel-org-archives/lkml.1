@@ -1,29 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751757AbZHCGE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751905AbZHCGKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751757AbZHCGE6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 02:04:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbZHCGE6
+	id S1751905AbZHCGKS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 02:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbZHCGKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 02:04:58 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60619 "EHLO mx2.mail.elte.hu"
+	Mon, 3 Aug 2009 02:10:16 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52274 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750890AbZHCGE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 02:04:57 -0400
-Date: Mon, 3 Aug 2009 08:04:08 +0200
+	id S1751440AbZHCGKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 02:10:15 -0400
+Date: Mon, 3 Aug 2009 08:09:44 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] x86: Add 'percpu_read_stable()' interface for
-	cacheable accesses
-Message-ID: <20090803060408.GA20762@elte.hu>
-References: <200907311813.n6VIDe9S023442@voreg.hos.anvin.org> <alpine.LFD.2.01.0907311218080.3161@localhost.localdomain> <20090731195705.GA12270@elte.hu> <alpine.LFD.2.01.0908011214330.3304@localhost.localdomain> <4A76421E.3040005@kernel.org> <alpine.LFD.2.01.0908021913130.3352@localhost.localdomain> <4A7670E0.4030605@kernel.org> <4A767203.5090802@zytor.com> <4A767325.20604@kernel.org>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Bron Gondwana <brong@fastmail.fm>,
+       Reiserfs <reiserfs-devel@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Andrea Gelmini <andrea.gelmini@gmail.com>,
+       "Trenton D. Adams" <trenton.d.adams@gmail.com>,
+       Thomas Meyer <thomas@m3y3r.de>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Marcel Hilzinger <mhilzinger@linuxnewmedia.de>,
+       Edward Shishkin <edward.shishkin@gmail.com>
+Subject: Re: [ANNOUNCE] Reiserfs/kill-bkl tree v2
+Message-ID: <20090803060944.GB20762@elte.hu>
+References: <20090731174642.GA6539@nowhere> <20090801081141.GA18036@basil.fritz.box> <20090801155335.GA4836@nowhere> <20090802142100.GA21160@elte.hu> <y0mzlah238y.fsf@fche.csb>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A767325.20604@kernel.org>
+In-Reply-To: <y0mzlah238y.fsf@fche.csb>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -37,22 +45,27 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Tejun Heo <tj@kernel.org> wrote:
+* Frank Ch. Eigler <fche@redhat.com> wrote:
 
-> H. Peter Anvin wrote:
-> > Tejun Heo wrote:
-> >>
-> >> Ingo, these patches might as well go through x86 tree.  If you think
-> >> that would be better, please let me know.
-> >>
-> > 
-> > Makes sense to me.  I'll pull them into x86/percpu.
+> Ingo Molnar <mingo@elte.hu> writes:
 > 
-> Cool, dropping from my tree then.
+> >> Yeah good idea. But again, I fear my laptop hasn't enough 
+> >> memory to support big enough ramdisks mount points to host 
+> >> selftests.
+> >
+> > Well, dont waste too much time on it (beyond the due diligence 
+> > level) - Andi forgot that the right way to stress-test patches 
+> > is to get through the review process and then through the 
+> > integration trees which have far more test exposure than any 
+> > single contributor can test.
+> 
+> What guideline can you offer as to what is "due diligence" level 
+> of stress testing, as compared to delegating this task to 
+> eyeballed reviews + incidental use on the integration trees?
 
-We can delegate the contents of x86/percpu to you (the topic branch 
-contains no patches over mainline right now) - i.e. we can pull 
-those bits from you and they could also be in your tree to keep your 
-testing & integration consistent.
+The kind of testing the VFS tree itself gets is a good starting 
+point i suspect - and it is a far more critical tree as it can 
+affects all filesystems. AFAICS the VFS tree relies on linux-next 
+and -mm for testing mostly and that's a good model IMO.
 
 	Ingo
