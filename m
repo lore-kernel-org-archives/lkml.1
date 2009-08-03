@@ -1,79 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932258AbZHCQzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932358AbZHCQzv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932258AbZHCQzu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 12:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932160AbZHCQzt
+	id S932358AbZHCQzv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 12:55:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932193AbZHCQzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 12:55:49 -0400
-Received: from aeryn.fluff.org.uk ([87.194.8.8]:56672 "EHLO
+	Mon, 3 Aug 2009 12:55:50 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:37288 "EHLO
 	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754808AbZHCQzt (ORCPT
+	with ESMTP id S1754799AbZHCQzt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 3 Aug 2009 12:55:49 -0400
-Subject: gpiolib: add names file in gpio chip sysfs.
-Message-Id: <20090803165536.345974601@fluff.org>
+Subject: gpiolib: add export/unexport by gpio name
+Message-Id: <20090803165544.286572916@fluff.org>
 User-Agent: quilt/0.46-1
 From: ben@fluff.org
 To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
 Cc: David Brownell <dbrownell@users.sourceforge.net>
-Content-Disposition: inline; filename=gpio-export-names.patch
-Date: Mon, 03 Aug 2009 17:55:36 +0100
+Content-Disposition: inline; filename=gpio-export-by-name.patch
+Date: Mon, 03 Aug 2009 17:55:44 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a 'names' file to the sysfs entries for each chip to show which
-have names.
+Add the facility to export/unexport a gpio by the name assigned to it
+as well as the number.
 
 Signed-off-by: Ben Dooks <ben@simtec.co.uk>
-CC: David Brownell <dbrownell@users.sourceforge.net>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
 
 ---
- drivers/gpio/gpiolib.c |   21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+ drivers/gpio/gpiolib.c |   59 +++++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 55 insertions(+), 4 deletions(-)
 
 Index: b/drivers/gpio/gpiolib.c
 ===================================================================
---- a/drivers/gpio/gpiolib.c	2009-08-03 17:51:40.000000000 +0100
-+++ b/drivers/gpio/gpiolib.c	2009-08-03 17:53:04.000000000 +0100
-@@ -303,6 +303,7 @@ static const struct attribute_group gpio
-  *   /base ... matching gpio_chip.base (N)
-  *   /label ... matching gpio_chip.label
-  *   /ngpio ... matching gpio_chip.ngpio
-+ *   /names ... matching gpio_chip.names
-  */
- 
- static ssize_t chip_base_show(struct device *dev,
-@@ -332,10 +333,30 @@ static ssize_t chip_ngpio_show(struct de
- }
- static DEVICE_ATTR(ngpio, 0444, chip_ngpio_show, NULL);
- 
-+static ssize_t chip_names_show(struct device *dev,
-+			       struct device_attribute *attr, char *buf)
-+{
-+	const struct gpio_chip*chip = dev_get_drvdata(dev);
-+	char **names = chip->names;
-+	int ptr = 0;
-+	int name;
-+
-+	if (!names)
-+		return -EINVAL;
-+
-+	for (name = 0; name < chip->ngpio && ptr < PAGE_SIZE; name++)
-+		ptr += snprintf(buf + ptr, PAGE_SIZE - ptr,
-+				"%s\n", names[name] ? names[name] : "");
-+
-+	return ptr;
-+}
-+DEVICE_ATTR(names, 0444, chip_names_show, NULL);
-+
- static const struct attribute *gpiochip_attrs[] = {
- 	&dev_attr_base.attr,
- 	&dev_attr_label.attr,
- 	&dev_attr_ngpio.attr,
-+	&dev_attr_names.attr,
- 	NULL,
+--- a/drivers/gpio/gpiolib.c	2009-08-03 17:53:04.000000000 +0100
++++ b/drivers/gpio/gpiolib.c	2009-08-03 17:53:33.000000000 +0100
+@@ -364,6 +364,53 @@ static const struct attribute_group gpio
+ 	.attrs = (struct attribute **) gpiochip_attrs,
  };
+ 
++static int search_names(char **names, const char *match, int ngpio)
++{
++	int ptr;
++
++	if (names) {
++		for (ptr = 0; ptr < ngpio; ptr++) {
++			if (!names[ptr])
++				continue;
++
++			if (strcmp(names[ptr], match) == 0)
++				return ptr;
++		}
++	}
++
++	return -ENOENT;
++}
++
++static long gpio_from_string(const char *buf)
++{
++	struct gpio_chip *chip;
++	struct gpio_desc *desc;
++	long status;
++	long gpio;
++	int ptr, off;
++
++	status = strict_strtol(buf, 0, &gpio);
++	if (status < 0) {
++		for (ptr = 0; ptr < ARCH_NR_GPIOS && status < 0;) {
++			desc = gpio_desc + ptr;
++			chip = desc->chip;
++
++			if (!chip) {
++				ptr++;
++				continue;
++			}
++
++			off = search_names(chip->names, buf, chip->ngpio);
++			if (off >= 0)
++				status = ptr + off;
++
++			ptr += chip->ngpio;
++		}
++	}
++
++	return status;
++}
++
+ /*
+  * /sys/class/gpio/export ... write-only
+  *	integer N ... number of GPIO to export (full access)
+@@ -375,9 +422,11 @@ static ssize_t export_store(struct class
+ 	long	gpio;
+ 	int	status;
+ 
+-	status = strict_strtol(buf, 0, &gpio);
+-	if (status < 0)
++	gpio = gpio_from_string(buf);
++	if (gpio < 0) {
++		status = gpio;
+ 		goto done;
++	}
+ 
+ 	/* No extra locking here; FLAG_SYSFS just signifies that the
+ 	 * request and export were done by on behalf of userspace, so
+@@ -405,9 +454,11 @@ static ssize_t unexport_store(struct cla
+ 	long	gpio;
+ 	int	status;
+ 
+-	status = strict_strtol(buf, 0, &gpio);
+-	if (status < 0)
++	gpio = gpio_from_string(buf);
++	if (gpio < 0) {
++		status = gpio;
+ 		goto done;
++	}
+ 
+ 	status = -EINVAL;
  
 
 -- 
