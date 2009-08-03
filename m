@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbZHCJPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754669AbZHCJP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754602AbZHCJPe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 05:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbZHCJPd
+	id S1754669AbZHCJP6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 05:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510AbZHCJP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 05:15:33 -0400
+	Mon, 3 Aug 2009 05:15:58 -0400
 Received: from fg-out-1718.google.com ([72.14.220.156]:58006 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754459AbZHCJPc (ORCPT
+	with ESMTP id S1754492AbZHCJP5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 05:15:32 -0400
+	Mon, 3 Aug 2009 05:15:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=VQMW0Q3ORTzZxdcgyLQEVgfFR9LhwAbrX94onNjZJDF1v5VszysbgJeANVUSaSUNZv
-         BhC4cKd+qIQ6MlNyLsmP1EelsUi2iYdi4TEg6gtYFauBNPe/aanhUYTAZXocigyaG++n
-         rjZGODhRGTHAZhXZW1iqZ+EliN+9GGcZAufFo=
+        b=TYGn9cd/BihWOdbr68st07xvG63OMlsT/tPod2cctLdMglifs+F2pLvyjjyZp3RR5Q
+         aGPIseTNvEs4+Imi81nlS3XWWUMrYZNnnwYNByqGIC/KPkn8Dj/I5rESYNd53MyTaMIs
+         x4vP8J33fTjwuvoAU9vAVEcY7CEz0KrYQPN54=
 MIME-Version: 1.0
-In-Reply-To: <4A7338AF.8010407@vlnb.net>
-References: <4A3CD62B.1020407@vlnb.net>
-	 <a0272b440907170715q72af7bb8l53c9dbd5e553fe2c@mail.gmail.com>
-	 <4A60C1A8.9020504@vlnb.net> <4A641AAC.9030300@vlnb.net>
-	 <a0272b440907220144i159baca4u1a1f1f2d0c36193a@mail.gmail.com>
-	 <4A6DA77B.7080600@vlnb.net>
-	 <a0272b440907280251g2dd38df6ja1bf10f3fa38d333@mail.gmail.com>
-	 <4A6F4C81.10600@vlnb.net>
-	 <a0272b440907290548k266a975br8c6bdf4d5d992d20@mail.gmail.com>
-	 <4A7338AF.8010407@vlnb.net>
-Date: Mon, 3 Aug 2009 11:15:32 +0200
-Message-ID: <a0272b440908030215t66309c1fo9a0894bdae4dec17@mail.gmail.com>
-Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
-From: Ronald Moesbergen <intercommit@gmail.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       Alan.Brunelle@hp.com, linux-fsdevel@vger.kernel.org,
-       jens.axboe@oracle.com, randy.dunlap@oracle.com,
-       Bart Van Assche <bart.vanassche@gmail.com>
+In-Reply-To: <74d0deb30908021049u191b3f9fj5230193535965ff7@mail.gmail.com>
+References: <quadros.roger@gmail.com>
+	 <1249232208-22274-1-git-send-email-quadros.roger@gmail.com>
+	 <74d0deb30908021049u191b3f9fj5230193535965ff7@mail.gmail.com>
+Date: Mon, 3 Aug 2009 12:15:57 +0300
+Message-ID: <b90c0690908030215j3f0fb6a6u322a079795193652@mail.gmail.com>
+Subject: Re: [PATCH v3] regulator: Add GPIO enable control to fixed voltage 
+	regulator driver
+From: Roger Quadros <quadros.roger@gmail.com>
+To: pHilipp Zabel <philipp.zabel@gmail.com>
+Cc: broonie@sirena.org.uk, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/7/31 Vladislav Bolkhovitin <vst@vlnb.net>:
+On Sun, Aug 2, 2009 at 8:49 PM, pHilipp Zabel<philipp.zabel@gmail.com> wrote:
+> On Sun, Aug 2, 2009 at 6:56 PM, Roger Quadros<quadros.roger@gmail.com> wrote:
+>> From: Roger Quadros <ext-roger.quadros@nokia.com>
+>>
+>> +
+>> +               /* set output direction without changing state
+>> +                * to prevent glitch
+>> +                */
+>> +               drvdata->is_enabled = config->enabled_at_boot;
+>> +               if (!config->enable_high)
+>> +                       drvdata->is_enabled = !drvdata->is_enabled;
 >
-> OK, as I expected, on the SCST level everything is clear and the forced
-> ordering change didn't change anything.
+> Assume .enabled_at_boot = 1, .enable_high = 0. In this case we end up
+> with .is_enabled = 0, which does not represent the real state after
+> the following call:
 >
-> But still, a single read stream must be the fastest from single thread.
-> Otherwise, there's something wrong somewhere in the I/O path: block layer,
-> RA, I/O scheduler. And, apparently, this is what we have and should find out
-> the cause.
+>> +               ret = gpio_direction_output(config->gpio, drvdata->is_enabled);
 >
-> Can you check if noop on the target and/or initiator makes any difference?
-> Case 5 with 1 and 2 threads will be sufficient.
+> Maybe use a local variable here or (drvdata->is_enabled ?
+> config->enable_high : !config->enable_high).
+>
+> regards
+> Philipp
+>
 
-That doesn't seem to help:
-
-client kernel: 2.6.26-15lenny3 (debian)
-server kernel: 2.6.29.5 with readahead-context, blk_run_backing_dev
-and io_context, forced_order
-
-With one IO thread:
-5) client: default, server: default (server noop, client noop)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  17.612   21.113   21.355   51.532    4.680    0.805
- 33554432  18.329   18.523   19.049   54.969    0.891    1.718
- 16777216  18.497   18.219   17.042   57.217    2.059    3.576
-
-With two threads:
-5) client: default, server: default (server noop, client noop)
-blocksize       R        R        R   R(avg,    R(std        R
-  (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
- 67108864  17.436   18.376   20.493   54.807    3.634    0.856
- 33554432  17.466   16.980   18.261   58.337    1.740    1.823
- 16777216  18.222   17.567   18.077   57.045    0.901    3.565
-
-Ronald.
+Yes you are right.
