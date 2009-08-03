@@ -1,93 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753450AbZHCCIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753869AbZHCCPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753450AbZHCCIn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 22:08:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752500AbZHCCIm
+	id S1753869AbZHCCPb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 22:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753099AbZHCCPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 22:08:42 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:56777 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751741AbZHCCIl convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 22:08:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=iFAbdj0qQT1yZNOmZ6Xp+m7iuYwCO7LLkCHP7D4XftIsFNnFfCQEYBTuQkqHPttaL6
-         87yHsaEP/gi1psitS/bBY0eVdoMqYw9MdNl5nhr2XsX7+TUvUBTl/nDQX/Nm9BEo2AQs
-         tm5Tn+8+onh6jAJbvXLFq9VlPymzkQclG8OzU=
+	Sun, 2 Aug 2009 22:15:30 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54664 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752289AbZHCCP3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 22:15:29 -0400
+Message-ID: <4A7647DA.5050607@cn.fujitsu.com>
+Date: Mon, 03 Aug 2009 10:13:46 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-In-Reply-To: <20090802095523.e08166e3.rdunlap@xenotime.net>
-References: <a8e1da0908020056mbf28eaw611c605693eb3eff@mail.gmail.com>
-	 <20090802095523.e08166e3.rdunlap@xenotime.net>
-Date: Mon, 3 Aug 2009 10:08:40 +0800
-Message-ID: <a8e1da0908021908x8216693k7fb31bc5b58d6666@mail.gmail.com>
-Subject: Re: mm/-next release on kernel.org web page?
-From: Dave Young <hidave.darkstar@gmail.com>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: webmaster@kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH 20/25] io-controller: map async requests to appropriate
+ cgroup
+References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <1246564917-19603-21-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1246564917-19603-21-git-send-email-vgoyal@redhat.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 3, 2009 at 12:55 AM, Randy Dunlap<rdunlap@xenotime.net> wrote:
-> On Sun, 2 Aug 2009 15:56:20 +0800 Dave Young wrote:
->
->> Hi,
->>
->> The last mm patchset is 2.6.28-rc2-mm1. We can not download -mm
->> patchset from kernel.org web page since the -next tree born.
->>
->> Could you consider put mmtom release there just like before? And even
->> -next tree patchset? It will be more convenient for users who test
->> kernel just by downloading from web. Now it's impossible for them to
->> test these patchsets because they normally do not subscribe to lkml.
->
->
-> from www.kernel.org:
-> For comments about the web pages, please send mail to webmaster@kernel.org.
->
-> also from www.kernel.org:
-> Please don't use finger.kernel.org for any sort of automatic monitoring. The number of automatic bots hitting this port is causing the finger daemon to shut down more often than not. The same information is available from http://www.kernel.org/kdist/finger_banner.
->
-> and of course the finger_banner file is not up to date.
->
-> You may consider using my http://www.xenotime.net/linux/scripts/kcurrent script.
-> Its output (today) is:
->
-> The latest stable version of the Linux kernel is:           2.6.30.4
-> The latest prepatch for the stable Linux kernel tree is:    2.6.31-rc5
-> The latest 2.4 version of the Linux kernel is:              2.4.37.4
-> The latest 2.2 version of the Linux kernel is:              2.2.26
-> The latest prepatch for the 2.2 Linux kernel tree is:       2.2.27-rc2
-> The latest -mm patch to the stable Linux kernels is:        2.6.28-rc2-mm1
-> mmotm-2009-0730-0501 ... applies to: 2.6.31-rc4
-> next-20090731 ... applies to: v2.6.31-rc4
+Vivek Goyal wrote:
+...
+> +
+> +struct io_group *io_get_io_group_bio(struct request_queue *q, struct bio *bio,
+> +					int create)
+> +{
+> +	struct page *page = NULL;
+> +
+> +	/*
+> +	 * Determine the group from task context. Even calls from
+> +	 * blk_get_request() which don't have any bio info will be mapped
+> +	 * to the task's group
+> +	 */
+> +	if (!bio)
+> +		goto sync;
+> +
+> +	if (bio_barrier(bio)) {
+> +		/*
+> +		 * Map barrier requests to root group. May be more special
+> +		 * bio cases should come here
+> +		 */
+> +		return q->elevator->efqd.root_group;
+> +	}
+> +
+> +	/* Map the sync bio to the right group using task context */
+> +	if (elv_bio_sync(bio))
+> +		goto sync;
+> +
+> +#ifdef CONFIG_TRACK_ASYNC_CONTEXT
+> +	/* Determine the group from info stored in page */
+> +	page = bio_iovec_idx(bio, 0)->bv_page;
+> +	return io_get_io_group(q, page, create);
+> +#endif
+> +
+> +sync:
+> +	return io_get_io_group(q, NULL, create);
 
-Thanks randy. Very helpful. But I still have same question. Normal
-users need a more convenient and straightforward  way to get what they
-want.  It will be better that we put them on www.kernel.org main page,
-not only the version info but also the download link.
+Fix build warning.
 
-At least for me when I started my kernel hacking some years ago I
-always download kernel from www.kernel.org main page. I'm not sure
-whether others people do same thing. Current -next and mmtom are more
-like for us to do internal testing.
+block/elevator-fq.c: In function ‘io_get_io_group_bio’:
+block/elevator-fq.c:2075: warning: unused variable ‘page’
 
->
->
-> ---
-> ~Randy
-> LPC 2009, Sept. 23-25, Portland, Oregon
-> http://linuxplumbersconf.org/2009/
->
+---
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index 66b10eb..d304f79 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -2102,7 +2102,7 @@ struct io_group *io_get_io_group_bio(struct request_queue *q, struct bio *bio,
+ #endif
+ 
+ sync:
+-	return io_get_io_group(q, NULL, create);
++	return io_get_io_group(q, page, create);
+ }
+ EXPORT_SYMBOL(io_get_io_group_bio);
 
+
+> +}
+> +EXPORT_SYMBOL(io_get_io_group_bio);
+> +
 
 
 -- 
 Regards
-dave
+Gui Jianfeng
+
