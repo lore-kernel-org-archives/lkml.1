@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752944AbZHCUzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753165AbZHCUzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752944AbZHCUzc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 16:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752342AbZHCUzI
+	id S1753165AbZHCUzs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 16:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbZHCUzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 16:55:08 -0400
-Received: from cobra.newdream.net ([66.33.216.30]:34203 "EHLO
-	cobra.newdream.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751520AbZHCUzF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 16:55:05 -0400
-From: Sage Weil <sage@newdream.net>
-To: linux-kernel@vger.kernel.org
-Cc: Sage Weil <sage@newdream.net>, linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [PATCH] ibmvscsi: avoid unnecessary use of kzalloc_pool
-Date: Mon,  3 Aug 2009 13:54:47 -0700
-Message-Id: <1249332888-13440-2-git-send-email-sage@newdream.net>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1249332888-13440-1-git-send-email-sage@newdream.net>
-References: <1249332888-13440-1-git-send-email-sage@newdream.net>
+	Mon, 3 Aug 2009 16:55:47 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43570 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752554AbZHCUzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 16:55:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Christian Kujau <lists@nerdbynature.de>
+Subject: Re: [Bug #13770] System freeze on XFS filesystem recovery on an external disk
+Date: Mon, 3 Aug 2009 22:55:54 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc5-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Jean-Luc Coulon" <jean.luc.coulon@gmail.com>
+References: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera> <iZB3Pj-uj3M.A.OpD.ZdgdKB@chimera> <alpine.DEB.2.01.0908031331190.5831@bogon.housecafe.de>
+In-Reply-To: <alpine.DEB.2.01.0908031331190.5831@bogon.housecafe.de>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908032255.54907.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The allocated struct is manually zeroed after allocation, so avoid using
-the (broken) kzalloc mempool (which does not re-zero previously used items
-when they are returned to the pool).
+On Monday 03 August 2009, Christian Kujau wrote:
+> On Sun, 2 Aug 2009 at 20:58, Rafael J. Wysocki wrote:
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.30.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13770
+> > Subject		: System freeze on XFS filesystem recovery on an external disk
+> > Submitter	: Jean-Luc Coulon <jean.luc.coulon@gmail.com>
+> > Date		: 2009-07-14 10:31 (20 days old)
+> 
+> Jean-Luc points out in http://bugzilla.kernel.org/show_bug.cgi?id=13770#c4
+> 
+>   > I thought it was a regression but doing quite intensive tests, I had a
+>   > problem with 2.6.30 as well and eventually the system was frozen.
+> 
+> So, maybe it can be dropped from the regression list?
 
-CC: linux-scsi@vger.kernel.org
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>
-Signed-off-by: Sage Weil <sage@newdream.net>
----
- drivers/scsi/ibmvscsi/ibmvfc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+For now I moved it to the list of regressions introduced between 2.6.29 and
+2.6.30.
 
-diff --git a/drivers/scsi/ibmvscsi/ibmvfc.c b/drivers/scsi/ibmvscsi/ibmvfc.c
-index 166d964..bb2c696 100644
---- a/drivers/scsi/ibmvscsi/ibmvfc.c
-+++ b/drivers/scsi/ibmvscsi/ibmvfc.c
-@@ -4217,7 +4217,7 @@ static int ibmvfc_alloc_mem(struct ibmvfc_host *vhost)
- 	if (!vhost->trace)
- 		goto free_disc_buffer;
- 
--	vhost->tgt_pool = mempool_create_kzalloc_pool(IBMVFC_TGT_MEMPOOL_SZ,
-+	vhost->tgt_pool = mempool_create_kmalloc_pool(IBMVFC_TGT_MEMPOOL_SZ,
- 						      sizeof(struct ibmvfc_target));
- 
- 	if (!vhost->tgt_pool) {
--- 
-1.5.6.5
-
+Thanks,
+Rafael
