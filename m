@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751705AbZHCF4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751757AbZHCGE6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751705AbZHCF4g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 01:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbZHCF4f
+	id S1751757AbZHCGE6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 02:04:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbZHCGE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 01:56:35 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60552 "EHLO mx2.mail.elte.hu"
+	Mon, 3 Aug 2009 02:04:58 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60619 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751447AbZHCF4e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 01:56:34 -0400
-Date: Mon, 3 Aug 2009 07:56:08 +0200
+	id S1750890AbZHCGE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 02:04:57 -0400
+Date: Mon, 3 Aug 2009 08:04:08 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp, reif@earthlink.net,
-       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
-       x86@kernel.org, tony.luck@intel.com, akpm@linux-foundation.org
-Subject: Re: [PATCH v2 0/8] sparc: use asm-generic/dma-mapping-common.h and
-	pci-dma-compat.h
-Message-ID: <20090803055608.GB19428@elte.hu>
-References: <20090714092354.GL19087@amd.com> <20090714.131224.205307048.davem@davemloft.net> <20090721160538.GL25756@amd.com> <20090721.121519.239732131.davem@davemloft.net>
+To: Tejun Heo <tj@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] x86: Add 'percpu_read_stable()' interface for
+	cacheable accesses
+Message-ID: <20090803060408.GA20762@elte.hu>
+References: <200907311813.n6VIDe9S023442@voreg.hos.anvin.org> <alpine.LFD.2.01.0907311218080.3161@localhost.localdomain> <20090731195705.GA12270@elte.hu> <alpine.LFD.2.01.0908011214330.3304@localhost.localdomain> <4A76421E.3040005@kernel.org> <alpine.LFD.2.01.0908021913130.3352@localhost.localdomain> <4A7670E0.4030605@kernel.org> <4A767203.5090802@zytor.com> <4A767325.20604@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090721.121519.239732131.davem@davemloft.net>
+In-Reply-To: <4A767325.20604@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -36,25 +37,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David Miller <davem@davemloft.net> wrote:
+* Tejun Heo <tj@kernel.org> wrote:
 
-> From: Joerg Roedel <joerg.roedel@amd.com>
-> Date: Tue, 21 Jul 2009 18:05:38 +0200
+> H. Peter Anvin wrote:
+> > Tejun Heo wrote:
+> >>
+> >> Ingo, these patches might as well go through x86 tree.  If you think
+> >> that would be better, please let me know.
+> >>
+> > 
+> > Makes sense to me.  I'll pull them into x86/percpu.
 > 
-> > Hmm these checks sound specific and hard to maintain. I think 
-> > its best to give architectures the option whether to enable this 
-> > check or not.
-> 
-> No matter how the arch works in this area, there should be some 
-> kind of sanity check.
-> 
-> So, it probably makes sense to allow an arch to override the 
-> validation function rather than turn the test completely off.
+> Cool, dropping from my tree then.
 
-I'm wondering how sparc32 handles core_kernel_text() & friends? 
-
-Those functions already assume that the bits between _stext and 
-_etext are all core kernel text and not generic pages freed back to 
-the buddy.
+We can delegate the contents of x86/percpu to you (the topic branch 
+contains no patches over mainline right now) - i.e. we can pull 
+those bits from you and they could also be in your tree to keep your 
+testing & integration consistent.
 
 	Ingo
