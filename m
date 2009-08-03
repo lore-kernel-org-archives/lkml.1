@@ -1,66 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932225AbZHCVvK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932251AbZHCVwj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932225AbZHCVvK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 17:51:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbZHCVvJ
+	id S932251AbZHCVwj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 17:52:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754796AbZHCVwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 17:51:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53793 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753386AbZHCVvI (ORCPT
+	Mon, 3 Aug 2009 17:52:38 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:54392 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752688AbZHCVwi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 17:51:08 -0400
-Date: Mon, 3 Aug 2009 14:50:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: H Hartley Sweeten <hartleys@visionengravers.com>
-Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net
-Subject: Re: [PATCH] gpio: include <linux/gpio.h> not <asm/gpio.h>
-Message-Id: <20090803145050.8049bc20.akpm@linux-foundation.org>
-In-Reply-To: <200907311059.51142.hartleys@visionengravers.com>
-References: <200907311059.51142.hartleys@visionengravers.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Aug 2009 17:52:38 -0400
+Date: Mon, 3 Aug 2009 23:52:37 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
+       Helge Deller <deller@gmx.de>
+Subject: Re: nfs: __setup_str_nfs_root_setup causes a section type conflict
+Message-ID: <20090803215237.GA956@merkur.ravnborg.org>
+References: <200907311446.33486.elendil@planet.nl> <200908032121.10635.elendil@planet.nl> <1249328851.18161.32.camel@heimdal.trondhjem.org> <200908032257.51739.elendil@planet.nl> <1249333643.18161.36.camel@heimdal.trondhjem.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249333643.18161.36.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Jul 2009 10:59:50 -0700
-H Hartley Sweeten <hartleys@visionengravers.com> wrote:
-
-> Drivers should be including <linux/gpio.h> not <asm/gpio.h>.
+On Mon, Aug 03, 2009 at 05:07:23PM -0400, Trond Myklebust wrote:
+> On Mon, 2009-08-03 at 22:57 +0200, Frans Pop wrote:
+> > $ make init/do_mounts.o
+> >   CHK     include/linux/version.h
+> >   CHK     include/linux/utsrelease.h
+> >   SYMLINK include/asm -> include/asm-parisc
+> >   CALL    scripts/checksyscalls.sh
+> >   CC      init/do_mounts.o
+> > 
+> > while:
+> > 
+> > $ make fs/nfs/nfsroot.o
+> >   CHK     include/linux/version.h
+> >   CHK     include/linux/utsrelease.h
+> >   SYMLINK include/asm -> include/asm-parisc
+> >   CALL    scripts/checksyscalls.sh
+> >   CC      fs/nfs/nfsroot.o
+> > fs/nfs/nfsroot.c:403: error: __setup_str_nfs_root_setup causes a section type 
+> > conflict
 > 
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> 
-> ---
-> 
-> diff --git a/drivers/gpio/bt8xxgpio.c b/drivers/gpio/bt8xxgpio.c
-> index 984b587..fd1c54d 100644
-> --- a/drivers/gpio/bt8xxgpio.c
-> +++ b/drivers/gpio/bt8xxgpio.c
-> @@ -46,8 +46,7 @@
->  #include <linux/module.h>
->  #include <linux/pci.h>
->  #include <linux/spinlock.h>
-> -
-> -#include <asm/gpio.h>
-> +#include <linux/gpio.h>
+> To me that looks like some kind of compiler bug.
 
-There's some potential for breakage here.  include/linux/gpio.h has
+unspecified behaviour is a better name for it.
 
-#ifdef CONFIG_GENERIC_GPIO
-#include <asm/gpio.h>
+We have two variables we have forced a section on.
+One variable is marked RO by the compiler while the other is not.
+This results in a section type conflict because all
+symbols needs to have the same falgs.
 
-#else
+We usually triggers this with powerpc builds (64 bit IIRC),
+and now with parisc too.
 
-...
+The only way to fix it is to move one of the offending
+variables to __initdata.
+There is two variales to consider - the compiler only
+mention one of them.
 
-#endif
+Trying to declare the variables const etc usually has
+no good effect.
 
-
-So if there's some configuration which forgot to set
-CONFIG_GENERIC_GPIO, the driver will be switched over to use the
-include/linux/gpio.h stubs and will break.
-
-Please convince me that this cannot happen ;)
+	Sam
