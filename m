@@ -1,105 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753101AbZHCAoK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbZHCBBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753101AbZHCAoK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Aug 2009 20:44:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZHCAoK
+	id S1752500AbZHCBBZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 2 Aug 2009 21:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbZHCBBY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Aug 2009 20:44:10 -0400
-Received: from mga09.intel.com ([134.134.136.24]:32315 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750698AbZHCAoI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Aug 2009 20:44:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,310,1246863600"; 
-   d="scan'208";a="538011916"
-Subject: Re: [PATCH 6/10] drivers/net/wireless/iwlwifi: introduce missing
- kfree
-From: Zhu Yi <yi.zhu@intel.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: "Chatre, Reinette" <reinette.chatre@intel.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-janitors@vger.kernel.org" <kernel-janitors@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0908011054010.23408@ask.diku.dk>
-References: <Pine.LNX.4.64.0908011054010.23408@ask.diku.dk>
-Content-Type: text/plain
-Date: Mon, 03 Aug 2009 08:44:06 +0800
-Message-Id: <1249260246.4069.26.camel@debian>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 2 Aug 2009 21:01:24 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:52496 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750698AbZHCBBX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 2 Aug 2009 21:01:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=pRH0N8qhy/6e3hNC5LoezQ8FZ3Lg+TQFGG3Rau64uo11y4TQNZX6gxcqgbAKp0DNuu
+         rjS+PlKxgmoNA5mZwYc549pJPYb/QkQiE+iWZIFGc5Pgo+9nuLymFoDCN+Za/i5xZCVO
+         WsiFT2g2yJph1iH38b2TPwETmtOZcI8ABBFh0=
+MIME-Version: 1.0
+In-Reply-To: <7ixSg7D88bK.A.guG.mrgdKB@chimera>
+References: <upey9ZSfnaF.A.-oE.rpgdKB@chimera>
+	 <7ixSg7D88bK.A.guG.mrgdKB@chimera>
+Date: Mon, 3 Aug 2009 03:01:22 +0200
+Message-ID: <c62985530908021801r2e302dfel86f69f62143cabc0@mail.gmail.com>
+Subject: Re: [Bug #13374] reiserfs blocked for more than 120secs
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+To: Harald Dunkel <harald.dunkel@t-online.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Mahoney <jeffm@suse.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-08-01 at 16:54 +0800, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> Error handling code following a kzalloc should free the allocated data.
-> 
-> The semantic match that finds the problem is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @r exists@
-> local idexpression x;
-> statement S;
-> expression E;
-> identifier f,f1,l;
-> position p1,p2;
-> expression *ptr != NULL;
-> @@
-> 
-> x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
-> ...
-> if (x == NULL) S
-> <... when != x
->      when != if (...) { <+...x...+> }
-> (
-> x->f1 = E
-> |
->  (x->f1 == NULL || ...)
-> |
->  f(...,x->f1,...)
-> )
-> ...>
-> (
->  return \(0\|<+...x...+>\|ptr\);
-> |
->  return@p2 ...;
-> )
-> 
-> @script:python@
-> p1 << r.p1;
-> p2 << r.p2;
-> @@
-> 
-> print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> ---
->  drivers/net/wireless/iwlwifi/iwl-debugfs.c     |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/net/wireless/iwlwifi/iwl-debugfs.c b/drivers/net/wireless/iwlwifi/iwl-debugfs.c
-> index 7707a26..c2106d0 100644
-> --- a/drivers/net/wireless/iwlwifi/iwl-debugfs.c
-> +++ b/drivers/net/wireless/iwlwifi/iwl-debugfs.c
-> @@ -320,6 +320,7 @@ static ssize_t iwl_dbgfs_nvm_read(struct file *file,
->  	ptr = priv->eeprom;
->  	if (!ptr) {
->  		IWL_ERR(priv, "Invalid EEPROM/OTP memory\n");
-> +		kfree(buf);
->  		return -ENOMEM;
->  	}
->  	pos += scnprintf(buf + pos, buf_size - pos, "NVM Type: %s\n",
+Harald,
 
-Probably moving !priv->eeprom check prior to buf kzalloc is better.
+Does it still happen with 2.6.31-rc5 ?
+
+If so, do you have further informations that could help us reproducing it?
 
 Thanks,
--yi
+Frederic.
 
+2009/8/2 Rafael J. Wysocki <rjw@sisk.pl>:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.29 and 2.6.30.
+>
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> be listed and let me know (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13374
+> Subject         : reiserfs blocked for more than 120secs
+> Submitter       : Harald Dunkel <harald.dunkel@t-online.de>
+> Date            : 2009-05-23 8:52 (72 days old)
+> References      : http://marc.info/?l=linux-kernel&m=124306880410811&w=4
+>                  http://lkml.org/lkml/2009/5/29/389
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
