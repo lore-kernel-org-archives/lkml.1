@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbZHCUwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754463AbZHCUwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753635AbZHCUwb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 16:52:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbZHCUwb
+	id S1754463AbZHCUwf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 16:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbZHCUwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 3 Aug 2009 16:52:33 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:57117 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752886AbZHCUwb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 3 Aug 2009 16:52:31 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:58891 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751503AbZHCUwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 16:52:30 -0400
-Date: Mon, 3 Aug 2009 13:52:29 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>
-Subject: Re: [PATCH 2/2] acpi_power_meter: hwmon driver for ACPI 4.0 power
-	meters
-Message-ID: <20090803205229.GB14694@plum>
-Reply-To: djwong@us.ibm.com
-References: <20090725004322.20709.96804.stgit@elm3a70.beaverton.ibm.com> <20090725004335.20709.52288.stgit@elm3a70.beaverton.ibm.com> <1248677155.2670.132.camel@rzhang-dt>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Dave Anderson <anderson@redhat.com>, crash-utility@redhat.com,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <clark.williams@gmail.com>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Jason Baron <jbaron@redhat.com>, srostedt@redhat.com,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [ANNOUNCE][RFC][PATCH] Crash-utility, tracing: enable crash to analyze tracing from core-file (make tracing can act as a flight recorder)
+From: Andi Kleen <andi@firstfloor.org>
+References: <4A76F8A1.30503@cn.fujitsu.com>
+	<20090803151420.GA8712@infradead.org>
+	<1249312875.7924.106.camel@twins> <4A773EBD.3050707@windriver.com>
+Date: Mon, 03 Aug 2009 22:52:28 +0200
+In-Reply-To: <4A773EBD.3050707@windriver.com> (Jason Wessel's message of "Mon, 03 Aug 2009 14:47:09 -0500")
+Message-ID: <87ljm0tyb7.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1248677155.2670.132.camel@rzhang-dt>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 27, 2009 at 02:45:55PM +0800, Zhang Rui wrote:
-> Hi, Darrick,
-> 
-> great job. :)
+Jason Wessel <jason.wessel@windriver.com> writes:
+>
+> In no particular order, tracing, kernel probes, profiling data display,
+> kdump, disassembly and kernel mode setting were some of the pieces that
+> are on the wish list for integration with the kdb prototype.  Kernel
+> mode setting is presently the highest priority on the wish list for a
+> new feature.
 
-Thanks.
+I suspect for a lot of people the highest priority issue would be
+a polled USB keybord driver. Or do you plan to use the one from
+old kdb (iirc it was pretty crufty)
 
-> we should at least send a netlink event for an ACPI power meter
-> notification, shouldn't we?
+No i don't plan to contribute that. When I use debuggers I prefer
+source level.
 
-Yes, an event would be useful at the very least for when the system starts
-capping, though unfortunately there doesn't seem to be a Notify event for when
-capping ends.
+-Andi
 
-> we should create the hwmon sysfs I/F for the hwmon device,
-> i.e. add the hwmon attributes
-> under /sys/devices/LINUXSYS:00/.../ACPI000D:00/hwmon0/
-> rather than ﻿/sys/devices/LINUXSYS:00/.../ACPI000D:00/
-
-Hee, this is a tricky matter.  The other hwmon drivers create sysfs attributes
-under the sysfs object, not in a separate "hwmonX" object, and as I recall
-libsensors reads symlinks under the device object to figure out which bus the
-sensor device lives on.  If it can't figure that out, it ignores the hwmon
-device.
-
-> 	  if (acpi_disable)
-> 		return -ENODEV;
-
-Noted.
-
-> plus, _PMD is not supported in this driver, right?
-> I agree with Yakui that we can create some ACPI device sysfs attributes
-> besides the hwmon ones. e.g. exporting devices measured by the current
-> ACPI power meter device to user space.
-
-I agree.
-
---D
+-- 
+ak@linux.intel.com -- Speaking for myself only.
