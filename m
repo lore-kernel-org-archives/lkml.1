@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754777AbZHCTwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbZHCTwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754777AbZHCTwW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 15:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbZHCTwV
+	id S1754835AbZHCTwc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 15:52:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754798AbZHCTwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 15:52:21 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:40252 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754686AbZHCTwU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 15:52:20 -0400
-Date: Mon, 3 Aug 2009 15:52:21 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Lev A. Melnikovsky" <melnikovsky@mail.ru>
-cc: Artur Skawina <art.08.09@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       <linux-usb@vger.kernel.org>
-Subject: Re: reading errors on JMicron JM20337 USB-SATA
-In-Reply-To: <alpine.LFD.2.00.0908032046010.31015@nev.ubzr>
-Message-ID: <Pine.LNX.4.44L0.0908031539161.2888-100000@iolanthe.rowland.org>
+	Mon, 3 Aug 2009 15:52:32 -0400
+Received: from mail.tmr.com ([64.65.253.246]:40313 "EHLO partygirl.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754793AbZHCTwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 15:52:31 -0400
+Message-ID: <4A773FFD.4050709@tmr.com>
+Date: Mon, 03 Aug 2009 15:52:29 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 SeaMonkey/1.1.16
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Sherif Fadel <fahmy@vt.edu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: scheduling co-processors
+References: <1249312084.5762.17.camel@sherif-laptop>
+In-Reply-To: <1249312084.5762.17.camel@sherif-laptop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Aug 2009, Lev A. Melnikovsky wrote:
-
->   On Mon, 3 Aug 2009 at 6:25pm, Alan Stern wrote:
+Sherif Fadel wrote:
+> Hi,
 > 
-> AS> You are correct except for the term "indefinitely".  The retries _will_
-> AS> stop if you wait long enough.  Unfortunately, because of all the nested
-> AS> retry loops in the SCSI drivers and at the application level, you may
-> AS> have to wait as long as half an hour.
-> It was a simple test, I've plugged the USB cable off after two hours, this 
-> is apparently not long enough:
+> I have a dual-core system on which I would like to treat one processor
+> as a scheduling co-processor. I have already implemented some custom
+> scheduling policies and tested them with SMP disabled, I would not like
+> to see if it is possible to have the scheduling algorithm running on one
+> core and the scheduled tasks running on another.
 > 
-> [root ~]# time dd if=/dev/sdf of=/dev/null skip=61395120 count=1 bs=512
-> dd: reading `/dev/sdf': Input/output error
-> 0+0 records in
-> 0+0 records out
-> 0 bytes (0 B) copied, 7550.12 s, 0.0 kB/s
-> dd: closing input file `/dev/sdf': Bad file descriptor
+> I do not know if I can somehow use cpus_allowed to restrict the kernel
+> to one core and the running tasks to another. Is this possible? If so,
+> could you please inform me how one would go about this?
 > 
-> real    125m50.119s
-> user    0m0.000s
-> sys     0m0.000s
+You can look at cpu affinity and see if it does some of what you want.
 
-Okay, it looks like I was wrong and this particular kind of error will
-indeed cause unending retries.
+> In case you are wondering why I would need this, I am writing a bunch of
+> high-overhead distributed scheduling algorithms and I want to mitigate
+> their overhead in this way.
+> 
+> Thanks.
+> 
 
-Either way, like I said before, you should complain about this to the
-SCSI people.  They are the ones who can fix it.  (You can CC: linux-usb
-too, just to keep us in the loop.)
 
-Tell them that scsi_end_request() mustn't call scsi_requeue_command() 
-if bytes == 0.
-
-Alan Stern
-
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
