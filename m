@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753104AbZHCRx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbZHCRz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753104AbZHCRx3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 13:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZHCRx3
+	id S1753232AbZHCRz0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 13:55:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbZHCRzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 13:53:29 -0400
-Received: from mga03.intel.com ([143.182.124.21]:64650 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752963AbZHCRx2 convert rfc822-to-8bit (ORCPT
+	Mon, 3 Aug 2009 13:55:25 -0400
+Received: from mga06.intel.com ([134.134.136.21]:39227 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753173AbZHCRzZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 13:53:28 -0400
+	Mon, 3 Aug 2009 13:55:25 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.43,315,1246863600"; 
-   d="scan'208";a="171797095"
-From: "Othman, Ossama" <ossama.othman@intel.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 3 Aug 2009 10:53:27 -0700
-Subject: RE: [PATCH] Moorestown RAR Handler driver, MRST 2.6.31-rc3
-Thread-Topic: [PATCH] Moorestown RAR Handler driver, MRST 2.6.31-rc3
-Thread-Index: AcoUYjy49UGMcHxdRCijAYJLz/9eZgAALoxg
-Message-ID: <A5FE05C4C76E4C4CAB15D9962B96FC950C7957A892@orsmsx510.amr.corp.intel.com>
-References: <1249082419-27718-1-git-send-email-ossama.othman@intel.com>
-	 <20090801073053.GA30389@merkur.ravnborg.org>
-	 <A5FE05C4C76E4C4CAB15D9962B96FC950C7957A872@orsmsx510.amr.corp.intel.com>
- <1249321533.5149.21.camel@Joe-Laptop.home>
-In-Reply-To: <1249321533.5149.21.camel@Joe-Laptop.home>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+   d="scan'208";a="538225216"
+Date: Mon, 3 Aug 2009 19:57:34 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Paul Fertser <fercerpav@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pcf50633: revise locking for ADC
+Message-ID: <20090803175733.GD28606@sortiz.org>
+References: <200907281845.n6SIjdjC025315@home.pavel.comp>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200907281845.n6SIjdjC025315@home.pavel.comp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> >It is recommended to separate definition,
->> >and assignment.
->> >So this should look like this:
->> >	struct memrar_allocator *allocator;
->> >	allocator = 0;
->> Okay, I'll fix that, too.  Should this go into Documentation/CodingStyle,
->too?
->
->I don't agree with that at all, neither does a lot of the kernel source.
->
->Automatic structs with initializers:
->$ grep -rP --include=*.c "^\s+struct\s+\w+\s*\*\s*\w+\s*=\s*\w+\s*;" * | wc
->-l
->9498
->
->I think it should be struct memrar_allocator *allocator = NULL;
+Hi Paul,
 
-Got it.  I've already started changing all zero pointer initializations to NULL instead.  I'll also leave the declaration and initialization on the same line for now.
+On Tue, Jul 28, 2009 at 12:58:48AM +0400, Paul Fertser wrote:
+> Current implementation is prone to races, this patch attempts to remove all
+> but one (in pcf50633_adc_sync_read).
+> 
+> The idea is that we need to guard the queue access only on inserting and
+> removing items. If we insert and there're no more items in the queue it
+> means that the last irq already happened and we need to trigger ADC
+> manually. If not, then the next conversion will be triggered by the irq
+> handler upon completion of the previous.
 
-Thanks again!
--Ossama
+
+> @@ -136,9 +133,13 @@ int pcf50633_adc_sync_read(struct pcf50633 *pcf, int mux, int avg)
+>  	req->callback_param = req;
+>  
+>  	init_completion(&req->completion);
+> -	adc_enqueue_request(pcf, req);
+> +	err = adc_enqueue_request(pcf, req);
+> +	if (err)
+> +		return err;
+> +
+>  	wait_for_completion(&req->completion);
+>  
+> +	/* FIXME by this time req might be already freed */
+In fact, this is problematic.
+Shouldn't the request be freed by the callback (in the async request), or by
+sync_read() ?
+
+Your patch looks fine though, I applied it to my for-next branch.
+
+Cheers,
+Samuel.
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
