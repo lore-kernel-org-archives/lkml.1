@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752462AbZHCUTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbZHCUUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752462AbZHCUTd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 16:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751719AbZHCUTc
+	id S1752696AbZHCUUZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 16:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbZHCUUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 16:19:32 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:51940 "EHLO mail.vyatta.com"
+	Mon, 3 Aug 2009 16:20:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41457 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751664AbZHCUTc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 16:19:32 -0400
-Date: Mon, 3 Aug 2009 13:19:27 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: linux-kernel@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 6/7] net: Add vbus_enet driver
-Message-ID: <20090803131927.6f653556@nehalam>
-In-Reply-To: <4A77443D.9020105@novell.com>
-References: <20090803171030.17268.26962.stgit@dev.haskins.net>
-	<20090803171801.17268.93846.stgit@dev.haskins.net>
-	<20090803113030.3092d5b0@nehalam>
-	<4A77443D.9020105@novell.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751624AbZHCUUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 16:20:24 -0400
+Message-ID: <4A774858.6080106@redhat.com>
+Date: Mon, 03 Aug 2009 16:28:08 -0400
+From: Casey Dahlin <cdahlin@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Sherif Fadel <fahmy@vt.edu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: scheduling co-processors
+References: <1249312084.5762.17.camel@sherif-laptop>
+In-Reply-To: <1249312084.5762.17.camel@sherif-laptop>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 03 Aug 2009 16:10:37 -0400
-Gregory Haskins <ghaskins@novell.com> wrote:
+On 08/03/2009 11:08 AM, Sherif Fadel wrote:
+> Hi,
+> 
+> I have a dual-core system on which I would like to treat one processor
+> as a scheduling co-processor. I have already implemented some custom
+> scheduling policies and tested them with SMP disabled, I would not like
+> to see if it is possible to have the scheduling algorithm running on one
+> core and the scheduled tasks running on another.
+> 
+> I do not know if I can somehow use cpus_allowed to restrict the kernel
+> to one core and the running tasks to another. Is this possible? If so,
+> could you please inform me how one would go about this?
+> 
+> In case you are wondering why I would need this, I am writing a bunch of
+> high-overhead distributed scheduling algorithms and I want to mitigate
+> their overhead in this way.
+> 
+> Thanks.
+> 
 
-> Stephen Hemminger wrote:
-> > On Mon, 03 Aug 2009 13:18:02 -0400
-> > Gregory Haskins <ghaskins@novell.com> wrote:
-> > 
-> >> +
-> >> +static const struct net_device_ops vbus_enet_netdev_ops = {
-> >> +	.ndo_open          = vbus_enet_open,
-> >> +	.ndo_stop          = vbus_enet_stop,
-> >> +	.ndo_set_config    = vbus_enet_config,
-> >> +	.ndo_start_xmit    = vbus_enet_tx_start,
-> >> +	.ndo_change_mtu	   = vbus_enet_change_mtu,
-> >> +	.ndo_tx_timeout    = vbus_enet_timeout,
-> >> +};
-> > 
-> > 
-> > Missing 
-> > 	.ndo_set_mac_address = eth_mac_addr,
-> > 	.ndo_validate_addr   = eth_validate_addr,
-> > 
-> 
-> Ack.
-> 
-> > Also, should have change_mtu.
-> 
-> note that I do have .ndo_change_mtu.  I assume this is what you are
-> referring to and just missed it.  If there is something else I need
-> there, let me know.
+The design I would have for this would be to have a kthread that does whatever busy work your scheduler has as a separate process. You could then replace the existing scheduler with a sort of "schedulerlet" that would simply schedule according to directions queued up for it by the kthread task. From there cpu affinity should get you the "dedicated scheduler processor" you want.
 
-If you don't have a change_mtu, then MTU is unlimited. Can the device
-handle 64K or larger transfers?
+I can't even begin to envision the scheduling algorithm that would be able to operate this way, but I have to assume that if it makes sense for your scheduler to run on another CPU then it must be able to fit into this pattern.
+
+--CJD
