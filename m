@@ -1,45 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbZHCU3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754508AbZHCU3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754254AbZHCU3R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 16:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbZHCU3R
+	id S1754508AbZHCU3e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 16:29:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbZHCU3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 16:29:17 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33614
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751719AbZHCU3Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 16:29:16 -0400
-Date: Mon, 03 Aug 2009 13:29:24 -0700 (PDT)
-Message-Id: <20090803.132924.151782729.davem@davemloft.net>
-To: hidave.darkstar@gmail.com
-Cc: marcel@holtmann.org, oliver@hartkopp.net, alan@lxorguk.ukuu.org.uk,
-       netdev@vger.kernel.org, linux-bluetooth@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]bluetooth: rfcomm_init bug fix
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090803142616.GA1973@darkstar>
-References: <20090803142616.GA1973@darkstar>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 3 Aug 2009 16:29:33 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:52589 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753964AbZHCU3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 16:29:32 -0400
+Date: Mon, 3 Aug 2009 13:29:27 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org,
+       alacrityvm-devel@lists.sourceforge.net, netdev@vger.kernel.org
+Subject: Re: [PATCH 6/7] net: Add vbus_enet driver
+Message-ID: <20090803132927.2818fee2@nehalam>
+In-Reply-To: <4A77476A.1030001@gmail.com>
+References: <20090803171030.17268.26962.stgit@dev.haskins.net>
+	<20090803171801.17268.93846.stgit@dev.haskins.net>
+	<20090803113030.3092d5b0@nehalam>
+	<4A77443D.9020105@novell.com>
+	<20090803131927.6f653556@nehalam>
+	<4A77476A.1030001@gmail.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dave Young <hidave.darkstar@gmail.com>
-Date: Mon, 3 Aug 2009 22:26:16 +0800
+On Mon, 03 Aug 2009 16:24:10 -0400
+Gregory Haskins <gregory.haskins@gmail.com> wrote:
 
-> rfcomm tty may be used before rfcomm_tty_driver initilized,
-> The problem is that now socket layer init before tty layer, if userspace
-> program do socket callback right here then oops will happen.
+> Stephen Hemminger wrote:
+> > On Mon, 03 Aug 2009 16:10:37 -0400
+> > Gregory Haskins <ghaskins@novell.com> wrote:
+> > 
+> >> Stephen Hemminger wrote:
+> >>> On Mon, 03 Aug 2009 13:18:02 -0400
+> >>> Gregory Haskins <ghaskins@novell.com> wrote:
+> >>>
+> >>>> +
+> >>>> +static const struct net_device_ops vbus_enet_netdev_ops = {
+> >>>> +	.ndo_open          = vbus_enet_open,
+> >>>> +	.ndo_stop          = vbus_enet_stop,
+> >>>> +	.ndo_set_config    = vbus_enet_config,
+> >>>> +	.ndo_start_xmit    = vbus_enet_tx_start,
+> >>>> +	.ndo_change_mtu	   = vbus_enet_change_mtu,
+> >>>> +	.ndo_tx_timeout    = vbus_enet_timeout,
+> >>>> +};
+> >>>
+> >>> Missing 
+> >>> 	.ndo_set_mac_address = eth_mac_addr,
+> >>> 	.ndo_validate_addr   = eth_validate_addr,
+> >>>
+> >> Ack.
+> >>
+> >>> Also, should have change_mtu.
+> >> note that I do have .ndo_change_mtu.  I assume this is what you are
+> >> referring to and just missed it.  If there is something else I need
+> >> there, let me know.
+> > 
+> > If you don't have a change_mtu, then MTU is unlimited.
 > 
-> reporting in:
-> http://marc.info/?l=linux-bluetooth&m=124404919324542&w=2
- ...
-> Reported-by: Oliver Hartkopp <oliver@hartkopp.net>
-> Tested-by: Oliver Hartkopp <oliver@hartkopp.net>
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+> Is "change_mtu" different from .ndo_change_mtu" on the ndo struct?
+> That's whats confusing me, as I have the .ndo one already.  Is there
+> something else I need in addition, or should I be ok as is?
 
-Applied, thanks.
+Never mind, it is same as .ndo_change_mtu
