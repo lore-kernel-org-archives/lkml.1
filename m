@@ -1,66 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbZHCVHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754379AbZHCVLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753318AbZHCVHb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 17:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbZHCVH3
+	id S1754379AbZHCVLx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 17:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753594AbZHCVLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 17:07:29 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:58092 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753318AbZHCVH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 17:07:27 -0400
-Subject: Re: nfs: __setup_str_nfs_root_setup causes a section type conflict
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       parisc-linux@lists.parisc-linux.org, Helge Deller <deller@gmx.de>
-In-Reply-To: <200908032257.51739.elendil@planet.nl>
-References: <200907311446.33486.elendil@planet.nl>
-	 <200908032121.10635.elendil@planet.nl>
-	 <1249328851.18161.32.camel@heimdal.trondhjem.org>
-	 <200908032257.51739.elendil@planet.nl>
+	Mon, 3 Aug 2009 17:11:53 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:41507 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753506AbZHCVLw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 17:11:52 -0400
+Subject: Re: [Regression] PCI resources allocation problem on HP nx6325
+From: Andrew Patterson <andrew.patterson@hp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Wilcox <willy@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1249269055.4480.139.camel@grinch>
+References: <200908021619.48285.rjw@sisk.pl>
+	 <alpine.LFD.2.01.0908020927410.3352@localhost.localdomain>
+	 <1249269055.4480.139.camel@grinch>
 Content-Type: text/plain
-Date: Mon, 03 Aug 2009 17:07:23 -0400
-Message-Id: <1249333643.18161.36.camel@heimdal.trondhjem.org>
+Date: Mon, 03 Aug 2009 15:14:50 -0600
+Message-Id: <1249334090.31006.10260.camel@bluto.andrew>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 5 msgs/h 1 sum rcpts/h 9 sum msgs/h 1 total rcpts 979 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 58CFB2E11A5A46C2FAF7AF4D77667207E777B5D5
-X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 100 max/h 5 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-03 at 22:57 +0200, Frans Pop wrote:
-> $ make init/do_mounts.o
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   SYMLINK include/asm -> include/asm-parisc
->   CALL    scripts/checksyscalls.sh
->   CC      init/do_mounts.o
+On Sun, 2009-08-02 at 21:10 -0600, Andrew Patterson wrote:
+> On Sun, 2009-08-02 at 09:39 -0700, Linus Torvalds wrote:
+> > 
+> > On Sun, 2 Aug 2009, Rafael J. Wysocki wrote:
+> > >
+> > > Hi Matthew,
+> > > 
+> > > As reported at
+> > > 
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=13891
+> > > 
+> > > there is a problem with allocating PCI resources on HP nx6325 introduced by
+> > > your commit a76117dfd687ec4be0a9a05214f3009cc5f73a42
+> > > (x86: Use pci_claim_resource).
+> > 
+> > Ooh, interesting. I thought that patch was a functionally equivalent 
+> > cleanup of
+> > 
+> > 	pr = pci_find_parent_resource(dev, r);
+> > 	if (!pr || request_resource(pr, r) < 0) {
+> > 
+> > to
+> > 
+> > 	if (pci_claim_resource(dev, idx) < 0) {
+> > 
+> > but yeah, it's not exactly the same. pci_claim_resource() uses 
+> > 'insert_resource()' rather than 'request_resource()'.
+> > 
+> > We could certainly revert the commit, but I also wonder whether we should 
+> > just change 'pci_claim_resource()' to use request_resource() instead.
+> > 
+> > I _think_ the use of "insert_resource()" is purely historical, and is 
+> > because that broken function _used_ to not look up the parent, but instead 
+> > do that crazy "pcibios_select_root()" thing, and then it really does need 
+> > to recurse down and "insert" the resource in the right place.
+> > 
+> > We should no longer _need_ to do the "insert_resource()" thing, since we 
+> > are inserting it into the exact parent that we want (as of commit 
+> > cebd78a8c: "Fix pci_claim_resource").
+> > 
+> > And if that "insert_resource()" in pci_claim_resource() ever does anything 
+> > fancier than the raw "request_resource()", then that's a problem anyway.
+> > 
+> > Willy, comments? x86 historically has never used pci_claim_resource() at 
+> > all (it always open-coded the above) except for some quirk handling. So 
+> > I'm pretty sure that a patch like the below should be safe and correct. 
+> > But it's parisc machines that always seem to break.
+> > 
+> > Added Andrew Patterson to the Cc, because his report was what caused us to 
+> > originally look at pci_claim_resource() and make it use 
+> > "pci_find_parent_resource()". We just never went whole hog, and we left 
+> > that broken "insert_resource()" around.
+> > 
+> > So Rafael and AndrewP, does this work for you? (I also moved the "dtype" 
+> > thing around, it bothered me).
 > 
-> while:
+> It works fine for me on the original hardware where the problem was
+> reported. I don't see any change between iomem/ioport layout between the
+> kernel without this patch and the kernel with this patch. I don't have
+> the problem card I had in the same slot, so I would like to move it and
+> run another test.
 > 
-> $ make fs/nfs/nfsroot.o
->   CHK     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   SYMLINK include/asm -> include/asm-parisc
->   CALL    scripts/checksyscalls.sh
->   CC      fs/nfs/nfsroot.o
-> fs/nfs/nfsroot.c:403: error: __setup_str_nfs_root_setup causes a section type 
-> conflict
 
-To me that looks like some kind of compiler bug. There appears to be
-nothing incorrect about the c code generated by the preprocessor.
+This change also works with the original "problem" card. I don't see any
+issue with the serial port, but I have only tested on an rx6600.
 
-Just out of interest, could you do
-
-'make fs/nfs/nfsroot.s'
-
-and send us the resulting file?
-
-Cheers
-  Trond
+> Andrew
+> 
+> > 
+> > 			Linus
+> > 
+> > ---
+> >  drivers/pci/setup-res.c |    4 ++--
+> >  1 files changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
+> > index b711fb7..1898c7b 100644
+> > --- a/drivers/pci/setup-res.c
+> > +++ b/drivers/pci/setup-res.c
+> > @@ -100,16 +100,16 @@ int pci_claim_resource(struct pci_dev *dev, int resource)
+> >  {
+> >  	struct resource *res = &dev->resource[resource];
+> >  	struct resource *root;
+> > -	char *dtype = resource < PCI_BRIDGE_RESOURCES ? "device" : "bridge";
+> >  	int err;
+> >  
+> >  	root = pci_find_parent_resource(dev, res);
+> >  
+> >  	err = -EINVAL;
+> >  	if (root != NULL)
+> > -		err = insert_resource(root, res);
+> > +		err = request_resource(root, res);
+> >  
+> >  	if (err) {
+> > +		const char *dtype = resource < PCI_BRIDGE_RESOURCES ? "device" : "bridge";
+> >  		dev_err(&dev->dev, "BAR %d: %s of %s %pR\n",
+> >  			resource,
+> >  			root ? "address space collision on" :
+> > 
+-- 
+Andrew Patterson
+Hewlett-Packard
 
