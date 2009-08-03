@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754438AbZHCXzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbZHCX41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754438AbZHCXzW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 19:55:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753879AbZHCXzV
+	id S1754651AbZHCX41 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 19:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbZHCX40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 19:55:21 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:40414 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753944AbZHCXzU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 19:55:20 -0400
-X-Sasl-enc: ItZbYVsgoISf9HdlvhNLDGnU395PFPgbDn5znex5WSPD 1249343723
-Date: Mon, 3 Aug 2009 20:55:17 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Joerg Platte <jplatte@naasa.net>
-Subject: Re: [Bug #13669] Kernel bug with dock driver
-Message-ID: <20090803235517.GB3298@khazad-dum.debian.net>
-References: <upey9ZSfnaF.A.-oE.rpgdKB@chimera>
- <7ixSg7D88bK.A.BmF.KqgdKB@chimera>
+	Mon, 3 Aug 2009 19:56:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53384 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753976AbZHCX4Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 19:56:25 -0400
+Date: Tue, 4 Aug 2009 01:53:06 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, utrace-devel@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] introduce tracehook_finish_jctl() helper
+Message-ID: <20090803235306.GA6821@redhat.com>
+References: <20090729020139.GA7381@redhat.com> <20090729155007.f4f5a793.akpm@linux-foundation.org> <20090801233207.E1FEB4C7FF@magilla.sf.frob.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <7ixSg7D88bK.A.BmF.KqgdKB@chimera>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20090801233207.E1FEB4C7FF@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 02 Aug 2009, Rafael J. Wysocki wrote:
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13669
-> Subject		: Kernel bug with dock driver
-> Submitter	: Joerg Platte <jplatte@naasa.net>
-> Date		: 2009-06-14 21:00 (50 days old)
-> References	: http://lkml.org/lkml/2009/6/14/216
-> Handled-By	: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+On 08/01, Roland McGrath wrote:
+>
+> > Confused.  This patch has no effect.
+>
+> Indeed, the three patches changing do_signal_stop() have no immediate
+> material effect.  They all just clean up the code and prepare the hooks
+> that utrace (or something like it) needs to make tracing stops mesh well
+> with job control stops.  I'd thought it might be simpler for review to just
+> roll these three together and send you a single patch to replace
+> signals-tracehook_notify_jctl-change.patch; but Oleg decided to keep it
+> sliced smaller.
 
-Already fixed in mainline, data in bug report.
+But let me repeat, I would be happy if these 2 new patches are folded
+into signals-tracehook_notify_jctl-change.patch.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Oleg.
+
