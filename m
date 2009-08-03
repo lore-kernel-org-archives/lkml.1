@@ -1,225 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbZHCRHV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751599AbZHCRNF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755448AbZHCRHV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 13:07:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbZHCRHU
+	id S1751599AbZHCRNF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 13:13:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbZHCRNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 13:07:20 -0400
-Received: from fnoeppeil48.netpark.at ([217.175.205.176]:42705 "EHLO
-	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752952AbZHCRHS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 13:07:18 -0400
-Date: Mon, 3 Aug 2009 18:59:09 +0200
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Wilcox <willy@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andrew Patterson <andrew.patterson@hp.com>
-Subject: Re: [Regression] PCI resources allocation problem on HP nx6325
-Message-ID: <20090803165909.GA12824@roarinelk.homelinux.net>
-References: <200908021619.48285.rjw@sisk.pl> <alpine.LFD.2.01.0908020927410.3352@localhost.localdomain>
+	Mon, 3 Aug 2009 13:13:04 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53051 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750767AbZHCRND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 13:13:03 -0400
+Date: Mon, 3 Aug 2009 17:12:38 GMT
+From: tip-bot for Paul Mackerras <paulus@samba.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de
+In-Reply-To: <19062.56420.501516.316181@cargo.ozlabs.ibm.com>
+References: <19062.56420.501516.316181@cargo.ozlabs.ibm.com>
+Subject: [tip:x86/urgent] x86: Add quirk to make Apple MacBook5,2 use reboot=pci
+Message-ID: <tip-1961b971360c685e15dff59929c39ced6c46e171@git.kernel.org>
+Git-Commit-ID: 1961b971360c685e15dff59929c39ced6c46e171
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0908020927410.3352@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 03 Aug 2009 17:12:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+Commit-ID:  1961b971360c685e15dff59929c39ced6c46e171
+Gitweb:     http://git.kernel.org/tip/1961b971360c685e15dff59929c39ced6c46e171
+Author:     Paul Mackerras <paulus@samba.org>
+AuthorDate: Mon, 3 Aug 2009 22:47:32 +1000
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Mon, 3 Aug 2009 08:07:18 -0700
 
-On Sun, Aug 02, 2009 at 09:39:58AM -0700, Linus Torvalds wrote:
-> ---
->  drivers/pci/setup-res.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-> index b711fb7..1898c7b 100644
-> --- a/drivers/pci/setup-res.c
-> +++ b/drivers/pci/setup-res.c
-> @@ -100,16 +100,16 @@ int pci_claim_resource(struct pci_dev *dev, int resource)
->  {
->  	struct resource *res = &dev->resource[resource];
->  	struct resource *root;
-> -	char *dtype = resource < PCI_BRIDGE_RESOURCES ? "device" : "bridge";
->  	int err;
->  
->  	root = pci_find_parent_resource(dev, res);
->  
->  	err = -EINVAL;
->  	if (root != NULL)
-> -		err = insert_resource(root, res);
-> +		err = request_resource(root, res);
->  
->  	if (err) {
-> +		const char *dtype = resource < PCI_BRIDGE_RESOURCES ? "device" : "bridge";
->  		dev_err(&dev->dev, "BAR %d: %s of %s %pR\n",
->  			resource,
->  			root ? "address space collision on" :
-> --
+x86: Add quirk to make Apple MacBook5,2 use reboot=pci
+
+The latest Apple MacBook (MacBook5,2) doesn't reboot successfully
+under Linux; neither the EFI reboot method nor the default method
+using the keyboard controller works (the system just hangs and doesn't
+reset).  However, the method using the "PCI reset register" at 0xcf9
+does work.
+
+This adds a quirk to detect this machine via DMI and force the
+reboot_type to BOOT_CF9.  With this it reboots successfully without
+requiring a command-line option.  Note that the EFI code forces
+reboot_type to BOOT_EFI when the machine is booted via EFI, but this
+overrides that since the core_initcall runs after the EFI
+initialization code.
+
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+LKML-Reference: <19062.56420.501516.316181@cargo.ozlabs.ibm.com>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 
 
-This patch introduces a warning on my system:
+---
+ arch/x86/kernel/reboot.c |   34 +++++++++++++++++++++++++++++++++-
+ 1 files changed, 33 insertions(+), 1 deletions(-)
 
-pci 0000:02:03.0: BAR 6: address space collision on of device [0xff680000-0xff69ffff]
-
-Below are iomem and pci dev info in the bad and good cases (good = patch reverted).
-This isn't fatal here:  the e1000's disabled expansion rom gets reassigned to elsewhere.
-
-warning case:
-
-00000000-0000ffff : reserved
-00010000-0009fbff : System RAM
-0009fc00-0009ffff : reserved  
-000a0000-000bffff : Video RAM area
-000c0000-000c7fff : Video ROM
-000e0000-000fffff : reserved 
-  000f0000-000fffff : System ROM
-00100000-3ff3ffff : System RAM  
-  01000000-013a4d48 : Kernel code
-  013a4d49-0155bb93 : Kernel data
-  0159c000-015f054b : Kernel bss 
-3ff40000-3ff4ffff : ACPI Tables  
-3ff50000-3fffffff : ACPI Non-volatile Storage
-40000000-400003ff : 0000:00:1f.1
-44000000-47ffffff : PCI CardBus 0000:03
-48000000-4bffffff : PCI CardBus 0000:03
-ce900000-de9fffff : PCI Bus 0000:01
-  d0000000-d7ffffff : 0000:01:00.0 
-dea00000-deafffff : PCI Bus 0000:02
-  dea00000-dea1ffff : 0000:02:03.0 
-e0000000-efffffff : 0000:00:00.0   
-fec00000-fec00fff : pnp 00:09      
-fee00000-fee00fff : pnp 00:09      
-ff500000-ff5fffff : PCI Bus 0000:01
-  ff5c0000-ff5dffff : 0000:01:00.0 
-  ff5f0000-ff5fffff : 0000:01:00.0 
-ff600000-ff6fffff : PCI Bus 0000:02
-  ff600000-ff600fff : 0000:02:01.0 
-    ff600000-ff600fff : yenta_socket
-  ff6a0000-ff6bffff : 0000:02:03.0  
-    ff6a0000-ff6bffff : e1000
-  ff6c0000-ff6dffff : 0000:02:03.0
-    ff6c0000-ff6dffff : e1000
-  ff6f7000-ff6f7fff : 0000:02:04.0
-    ff6f7000-ff6f7fff : ohci_hcd  
-  ff6f8000-ff6fbfff : 0000:02:01.2
-  ff6fc000-ff6fcfff : 0000:02:04.1
-    ff6fc000-ff6fcfff : ohci_hcd  
-  ff6fd000-ff6fdfff : 0000:02:02.0
-    ff6fd000-ff6fdfff : ipw2200   
-  ff6fe400-ff6fe4ff : 0000:02:04.2
-    ff6fe400-ff6fe4ff : ehci_hcd  
-  ff6fe800-ff6fefff : 0000:02:01.2
-    ff6fe800-ff6fefff : firewire_ohci
-  ff6ff000-ff6fffff : 0000:02:01.3   
-ff7ff400-ff7ff4ff : 0000:00:1f.5     
-  ff7ff400-ff7ff4ff : Intel 82801DB-ICH4
-ff7ff800-ff7ff9ff : 0000:00:1f.5
-  ff7ff800-ff7ff9ff : Intel 82801DB-ICH4
-ff7ffc00-ff7fffff : 0000:00:1d.7
-  ff7ffc00-ff7fffff : ehci_hcd  
-ff800000-ffbfffff : pnp 00:08   
-ffc00000-ffffffff : pnp 00:08
-
-02:03.0 Ethernet controller: Intel Corporation 82541GI Gigabit Ethernet Controller
-        Subsystem: Sony Corporation Device 818e
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
-        Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 64 (63750ns min), Cache Line Size: 64 bytes
-        Interrupt: pin A routed to IRQ 9
-        Region 0: Memory at ff6c0000 (32-bit, non-prefetchable) [size=128K]
-        Region 1: Memory at ff6a0000 (32-bit, non-prefetchable) [size=128K]
-        Region 2: I/O ports at dc00 [size=64]
-        Expansion ROM at dea00000 [disabled] [size=128K]
-        Capabilities: [dc] Power Management version 2   
-                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
-                Status: D0 PME-Enable- DSel=0 DScale=1 PME-
-        Capabilities: [e4] PCI-X non-bridge device
-                Command: DPERE- ERO+ RBC=512 OST=1
-                Status: Dev=00:00.0 64bit- 133MHz- SCD- USC- DC=simple DMMRBC=2048 DMOST=1 DMCRS=8 RSCEM- 266MHz- 533MHz-
-        Kernel driver in use: e1000
-
-
-
-And in the working case (the patch reverted):
-
-00000000-0000ffff : reserved
-00010000-0009fbff : System RAM
-0009fc00-0009ffff : reserved  
-000a0000-000bffff : Video RAM area
-000c0000-000c7fff : Video ROM
-000e0000-000fffff : reserved 
-  000f0000-000fffff : System ROM
-00100000-3ff3ffff : System RAM  
-  01000000-013a4d48 : Kernel code
-  013a4d49-0155bb93 : Kernel data
-  0159c000-015f054b : Kernel bss 
-3ff40000-3ff4ffff : ACPI Tables  
-3ff50000-3fffffff : ACPI Non-volatile Storage
-40000000-400003ff : 0000:00:1f.1
-44000000-47ffffff : PCI CardBus 0000:03
-48000000-4bffffff : PCI CardBus 0000:03
-ce900000-de9fffff : PCI Bus 0000:01
-  d0000000-d7ffffff : 0000:01:00.0 
-dea00000-deafffff : PCI Bus 0000:02
-e0000000-efffffff : 0000:00:00.0   
-fec00000-fec00fff : pnp 00:09      
-fee00000-fee00fff : pnp 00:09      
-ff500000-ff5fffff : PCI Bus 0000:01
-  ff5c0000-ff5dffff : 0000:01:00.0 
-  ff5f0000-ff5fffff : 0000:01:00.0 
-ff600000-ff6fffff : PCI Bus 0000:02
-  ff600000-ff600fff : 0000:02:01.0 
-    ff600000-ff600fff : yenta_socket
-  ff680000-ff69ffff : 0000:02:03.0  
-  ff6a0000-ff6bffff : 0000:02:03.0  
-    ff6a0000-ff6bffff : e1000
-  ff6c0000-ff6dffff : 0000:02:03.0
-    ff6c0000-ff6dffff : e1000
-  ff6f7000-ff6f7fff : 0000:02:04.0
-    ff6f7000-ff6f7fff : ohci_hcd  
-  ff6f8000-ff6fbfff : 0000:02:01.2
-  ff6fc000-ff6fcfff : 0000:02:04.1
-    ff6fc000-ff6fcfff : ohci_hcd  
-  ff6fd000-ff6fdfff : 0000:02:02.0
-    ff6fd000-ff6fdfff : ipw2200   
-  ff6fe400-ff6fe4ff : 0000:02:04.2
-    ff6fe400-ff6fe4ff : ehci_hcd  
-  ff6fe800-ff6fefff : 0000:02:01.2
-    ff6fe800-ff6fefff : firewire_ohci
-  ff6ff000-ff6fffff : 0000:02:01.3   
-ff7ff400-ff7ff4ff : 0000:00:1f.5     
-  ff7ff400-ff7ff4ff : Intel 82801DB-ICH4
-ff7ff800-ff7ff9ff : 0000:00:1f.5
-  ff7ff800-ff7ff9ff : Intel 82801DB-ICH4
-ff7ffc00-ff7fffff : 0000:00:1d.7
-  ff7ffc00-ff7fffff : ehci_hcd  
-ff800000-ffbfffff : pnp 00:08   
-ffc00000-ffffffff : pnp 00:08
-
-02:03.0 Ethernet controller: Intel Corporation 82541GI Gigabit Ethernet Controller
-        Subsystem: Sony Corporation Device 818e
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
-        Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 64 (63750ns min), Cache Line Size: 64 bytes
-        Interrupt: pin A routed to IRQ 9
-        Region 0: Memory at ff6c0000 (32-bit, non-prefetchable) [size=128K]
-        Region 1: Memory at ff6a0000 (32-bit, non-prefetchable) [size=128K]
-        Region 2: I/O ports at dc00 [size=64]
-        Expansion ROM at ff680000 [disabled] [size=128K]
-        Capabilities: [dc] Power Management version 2   
-                Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
-                Status: D0 PME-Enable- DSel=0 DScale=1 PME-
-        Capabilities: [e4] PCI-X non-bridge device
-                Command: DPERE- ERO+ RBC=512 OST=1
-                Status: Dev=00:00.0 64bit- 133MHz- SCD- USC- DC=simple DMMRBC=2048 DMOST=1 DMCRS=8 RSCEM- 266MHz- 533MHz-
-        Kernel driver in use: e1000
-
-
-Thanks!
-	Manuel Lauss
+diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+index 508e982..834c9da 100644
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -3,6 +3,7 @@
+ #include <linux/init.h>
+ #include <linux/pm.h>
+ #include <linux/efi.h>
++#include <linux/dmi.h>
+ #include <acpi/reboot.h>
+ #include <asm/io.h>
+ #include <asm/apic.h>
+@@ -17,7 +18,6 @@
+ #include <asm/cpu.h>
+ 
+ #ifdef CONFIG_X86_32
+-# include <linux/dmi.h>
+ # include <linux/ctype.h>
+ # include <linux/mc146818rtc.h>
+ #else
+@@ -404,6 +404,38 @@ EXPORT_SYMBOL(machine_real_restart);
+ 
+ #endif /* CONFIG_X86_32 */
+ 
++/*
++ * Apple MacBook5,2 (2009 MacBook) needs reboot=p
++ */
++static int __init set_pci_reboot(const struct dmi_system_id *d)
++{
++	if (reboot_type != BOOT_CF9) {
++		reboot_type = BOOT_CF9;
++		printk(KERN_INFO "%s series board detected. "
++		       "Selecting PCI-method for reboots.\n", d->ident);
++	}
++	return 0;
++}
++
++static struct dmi_system_id __initdata pci_reboot_dmi_table[] = {
++	{	/* Handle problems with rebooting on Apple MacBook5,2 */
++		.callback = set_pci_reboot,
++		.ident = "Apple MacBook",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "MacBook5,2"),
++		},
++	},
++	{ }
++};
++
++static int __init pci_reboot_init(void)
++{
++	dmi_check_system(pci_reboot_dmi_table);
++	return 0;
++}
++core_initcall(pci_reboot_init);
++
+ static inline void kb_wait(void)
+ {
+ 	int i;
