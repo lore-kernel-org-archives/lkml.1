@@ -1,347 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZHCSLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753529AbZHCSN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbZHCSLl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 14:11:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbZHCSLl
+	id S1753529AbZHCSN7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 14:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753359AbZHCSN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 14:11:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37964 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752870AbZHCSLk (ORCPT
+	Mon, 3 Aug 2009 14:13:58 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:5476 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752966AbZHCSN6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 14:11:40 -0400
-Date: Mon, 3 Aug 2009 11:11:19 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Sergey Senozhatsky <sergey.senozhatsky@mail.by>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>
-Subject: [PATCH 2/2] tty-ldisc: turn ldisc user count into a proper
- refcount
-In-Reply-To: <alpine.LFD.2.01.0908031055400.3208@localhost.localdomain>
-Message-ID: <alpine.LFD.2.01.0908031058330.3208@localhost.localdomain>
-References: <20090802120120.GA3097@localdomain.by> <alpine.LFD.2.01.0908020940530.3352@localhost.localdomain> <20090802190514.GA3278@localdomain.by> <alpine.LFD.2.01.0908021254580.3352@localhost.localdomain> <87k51l9apo.fsf@devron.myhome.or.jp>
- <alpine.LFD.2.01.0908021423490.3352@localhost.localdomain> <20090802234851.3fd1ac2c@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0908021654010.3352@localhost.localdomain> <alpine.LFD.2.01.0908031047010.3208@localhost.localdomain>
- <alpine.LFD.2.01.0908031055400.3208@localhost.localdomain>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 3 Aug 2009 14:13:58 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=IofCCMdNN3Inx9ZVd96NLXddoV/o0xxGxRkyleAz/tppvHoNZlPvfsX/4pOWIpn/o
+	/pXJSmykvWAr2mNID+Upw==
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090803175452.GA5481@us.ibm.com>
+References: <20090731012908.27908.62208.stgit@hastromil.mtv.corp.google.com>
+	 <20090731015154.27908.9639.stgit@hastromil.mtv.corp.google.com>
+	 <20090803175452.GA5481@us.ibm.com>
+Date: Mon, 3 Aug 2009 14:13:55 -0400
+Message-ID: <2f86c2480908031113y525b6cbdhe418b8a0364c7760@mail.gmail.com>
+Subject: Re: [PATCH 6/6] Makes procs file writable to move all threads by tgid 
+	at once
+From: Benjamin Blum <bblum@google.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       akpm@linux-foundation.org, lizf@cn.fujitsu.com, menage@google.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Aug 3, 2009 at 1:54 PM, Serge E. Hallyn<serue@us.ibm.com> wrote:
+> Quoting Ben Blum (bblum@google.com):
+> ...
+>> +static int cgroup_task_migrate(struct cgroup *cgrp, struct cgroup *oldcgrp,
+>> +                            struct task_struct *tsk, int guarantee)
+>> +{
+>> +     struct css_set *oldcg;
+>> +     struct css_set *newcg;
+>> +
+>> +     /*
+>> +      * get old css_set. we need to take task_lock and refcount it, because
+>> +      * an exiting task can change its css_set to init_css_set and drop its
+>> +      * old one without taking cgroup_mutex.
+>> +      */
+>> +     task_lock(tsk);
+>> +     oldcg = tsk->cgroups;
+>> +     get_css_set(oldcg);
+>> +     task_unlock(tsk);
+>> +     /*
+>> +      * locate or allocate a new css_set for this task. 'guarantee' tells
+>> +      * us whether or not we are sure that a new css_set already exists;
+>> +      * in that case, we are not allowed to fail, as we won't need malloc.
+>> +      */
+>> +     if (guarantee) {
+>> +             /*
+>> +              * our caller promises us that the css_set we want already
+>> +              * exists, so we use find_existing_css_set directly.
+>> +              */
+>> +             struct cgroup_subsys_state *template[CGROUP_SUBSYS_COUNT];
+>> +             read_lock(&css_set_lock);
+>> +             newcg = find_existing_css_set(oldcg, cgrp, template);
+>> +             BUG_ON(!newcg);
+>> +             get_css_set(newcg);
+>> +             read_unlock(&css_set_lock);
+>> +     } else {
+>> +             might_sleep();
+>
+> So cgroup_task_migrate() might sleep, but
+>
+> ...
+>
+>
+>> +     down_write(&leader->cgroup_fork_mutex);
+>> +     rcu_read_lock();
+>> +     list_for_each_entry_rcu(tsk, &leader->thread_group, thread_group) {
+>> +             /* leave current thread as it is if it's already there */
+>> +             oldcgrp = task_cgroup(tsk, subsys_id);
+>> +             if (cgrp == oldcgrp)
+>> +                     continue;
+>> +             /* we don't care whether these threads are exiting */
+>> +             retval = cgroup_task_migrate(cgrp, oldcgrp, tsk, 1);
+>
+> Here it is called under rcu_read_lock().
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 3 Aug 2009 10:38:46 -0700
-Subject: [PATCH 2/2] tty-ldisc: turn ldisc user count into a proper refcount
+You'll notice the fourth argument, which tells cgroup_task_migrate
+whether the css_set is guaranteed or not. If we say we've already got
+it covered, the might_sleep section doesn't happen.
 
-By using the user count for the actual lifetime rules, we can get rid of
-the silly "wait_for_idle" logic, because any busy ldisc will
-automatically stay around until the last user releases it.  This avoids
-a host of odd issues, and simplifies the code.
+>> -void cgroup_fork(struct task_struct *child)
+>> +void cgroup_fork(struct task_struct *child, int clone_flags)
+>>  {
+>> +     if (clone_flags & CLONE_THREAD)
+>> +             down_read(&current->group_leader->cgroup_fork_mutex);
+>> +     else
+>> +             init_rwsem(&child->cgroup_fork_mutex);
+>
+> I'm also worried about the overhead here on what should be a
+> fast case, CLONE_THREAD.  Have you done any benchmarking of
+> one thread spawning a bunch of others?
 
-So now, when the last ldisc reference is dropped, we just release the
-ldisc operations struct reference, and free the ldisc.
+Should be strictly better as this is making the rwsem local to the
+threadgroup - at least in comparison to the previous edition of this
+patch which had it as a global lock.
 
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
----
+> What *exactly* is it we are protecting with cgroup_fork_mutex?
+> 'fork' (as the name implies) is not a good answer, since we should be
+> protecting data, not code.  If it is solely tsk->cgroups, then perhaps
+> we should in fact try switching to (s?)rcu.  Then cgroup_fork() could
+> just do rcu_read_lock, while cgroup_task_migrate() would make the change
+> under a spinlock (to protect against concurrent cgroup_task_migrate()s),
+> and using rcu_assign_pointer to let cgroup_fork() see consistent data
+> either before or after the update...  That might mean that any checks done
+> before completing the migrate which involve the # of tasks might become
+> invalidated before the migration completes?  Seems acceptable (since
+> it'll be a small overcharge at most and can be quickly remedied).
 
-So this is obviously the real meat of the changes.
-
-It looks obvious enough, and it does work for me, but the counting _could_ 
-be off. It probably isn't (bad counting in the new version would generally 
-imply that the old code did something really bad, like free an ldisc with 
-a non-zero count), but it does need some testing, and preferably somebody 
-looking at it.
-
-With this change, both 'tty_ldisc_put()' and 'tty_ldisc_deref()' are just 
-aliases for the new ref-counting 'put_ldisc()'. Both of them decrement the 
-ldisc user count and free it if it goes down to zero. They're identical
-functions, in other words.
-
-But the reason they still exist as sepate functions is that one of them 
-was exported (tty_ldisc_deref) and had a stupid name (so I don't want to 
-use it as the main name), and the other one was used in multiple places 
-(and I didn't want to make the patch larger just to rename the users).
-
-In addition to the refcounting, I did do some minimal cleanup. For 
-example, now "tty_ldisc_try()" actually returns the ldisc it got under the 
-lock, rather than returning true/false and then the caller would look up 
-the ldisc again (now without the protection of the lock).
-
-That said, there's tons of dubious use of 'tty->ldisc' without obviously 
-proper locking or refcounting left. I expressly did _not_ want to try to 
-fix it all, keeping the patch minimal. There may or may not be bugs in 
-that kind of code, but they wouldn't be _new_ bugs.
-
-That said, even if the bugs aren't new, the timing and lifetime will 
-change. For example, some silly code may depend on the 'tty->ldisc' 
-pointer not changing because they hold a refcount on the 'ldisc'. And 
-that's no longer true - if you hold a ref on the ldisc, the 'ldisc' itself 
-is safe, but tty->ldisc may change. 
-
-So the proper locking (remains) to hold tty->ldisc_mutex if you expect 
-tty->ldisc to be stable. That's not really a _new_ rule, but it's an 
-example of something that the old code might have unintentionally depended 
-on and hidden bugs.
-
-Whatever. The patch _looks_ sensible to me. The only users of ldisc->users 
-are:
- - get_ldisc() - atomically increment the count
-
- - put_ldisc() - atomically decrements the count and releases if zero
-
- - tty_ldisc_try_get() - creates the ldisc, and sets the count to 1.
-   The ldisc should then either be released, or be attached to a tty.
-
-Comments? Testing?
-
- drivers/char/tty_ldisc.c |  143 +++++++++++++++-------------------------------
- 1 files changed, 46 insertions(+), 97 deletions(-)
-
-diff --git a/drivers/char/tty_ldisc.c b/drivers/char/tty_ldisc.c
-index fd175e6..be55dfc 100644
---- a/drivers/char/tty_ldisc.c
-+++ b/drivers/char/tty_ldisc.c
-@@ -48,6 +48,34 @@ static DECLARE_WAIT_QUEUE_HEAD(tty_ldisc_wait);
- /* Line disc dispatch table */
- static struct tty_ldisc_ops *tty_ldiscs[NR_LDISCS];
- 
-+static inline struct tty_ldisc *get_ldisc(struct tty_ldisc *ld)
-+{
-+	if (ld)
-+		atomic_inc(&ld->users);
-+	return ld;
-+}
-+
-+static inline void put_ldisc(struct tty_ldisc *ld)
-+{
-+	if (WARN_ON_ONCE(!ld))
-+		return;
-+
-+	/*
-+	 * If this is the last user, free the ldisc, and
-+	 * release the ldisc ops.
-+	 */
-+	if (atomic_dec_and_test(&ld->users)) {
-+		unsigned long flags;
-+		struct tty_ldisc_ops *ldo = ld->ops;
-+
-+		kfree(ld);
-+		spin_lock_irqsave(&tty_ldisc_lock, flags);
-+		ldo->refcount--;
-+		module_put(ldo->owner);
-+		spin_unlock_irqrestore(&tty_ldisc_lock, flags);
-+	}
-+}
-+
- /**
-  *	tty_register_ldisc	-	install a line discipline
-  *	@disc: ldisc number
-@@ -142,7 +170,7 @@ static struct tty_ldisc *tty_ldisc_try_get(int disc)
- 			/* lock it */
- 			ldops->refcount++;
- 			ld->ops = ldops;
--			atomic_set(&ld->users, 0);
-+			atomic_set(&ld->users, 1);
- 			err = 0;
- 		}
- 	}
-@@ -181,35 +209,6 @@ static struct tty_ldisc *tty_ldisc_get(int disc)
- 	return ld;
- }
- 
--/**
-- *	tty_ldisc_put		-	drop ldisc reference
-- *	@ld: ldisc
-- *
-- *	Drop a reference to a line discipline. Manage refcounts and
-- *	module usage counts. Free the ldisc once the recount hits zero.
-- *
-- *	Locking:
-- *		takes tty_ldisc_lock to guard against ldisc races
-- */
--
--static void tty_ldisc_put(struct tty_ldisc *ld)
--{
--	unsigned long flags;
--	int disc = ld->ops->num;
--	struct tty_ldisc_ops *ldo;
--
--	BUG_ON(disc < N_TTY || disc >= NR_LDISCS);
--
--	spin_lock_irqsave(&tty_ldisc_lock, flags);
--	ldo = tty_ldiscs[disc];
--	BUG_ON(ldo->refcount == 0);
--	ldo->refcount--;
--	module_put(ldo->owner);
--	spin_unlock_irqrestore(&tty_ldisc_lock, flags);
--	WARN_ON(atomic_read(&ld->users));
--	kfree(ld);
--}
--
- static void *tty_ldiscs_seq_start(struct seq_file *m, loff_t *pos)
- {
- 	return (*pos < NR_LDISCS) ? pos : NULL;
-@@ -234,7 +233,7 @@ static int tty_ldiscs_seq_show(struct seq_file *m, void *v)
- 	if (IS_ERR(ld))
- 		return 0;
- 	seq_printf(m, "%-10s %2d\n", ld->ops->name ? ld->ops->name : "???", i);
--	tty_ldisc_put(ld);
-+	put_ldisc(ld);
- 	return 0;
- }
- 
-@@ -288,20 +287,17 @@ static void tty_ldisc_assign(struct tty_struct *tty, struct tty_ldisc *ld)
-  *	Locking: takes tty_ldisc_lock
-  */
- 
--static int tty_ldisc_try(struct tty_struct *tty)
-+static struct tty_ldisc *tty_ldisc_try(struct tty_struct *tty)
- {
- 	unsigned long flags;
- 	struct tty_ldisc *ld;
--	int ret = 0;
- 
- 	spin_lock_irqsave(&tty_ldisc_lock, flags);
--	ld = tty->ldisc;
--	if (test_bit(TTY_LDISC, &tty->flags)) {
--		atomic_inc(&ld->users);
--		ret = 1;
--	}
-+	ld = NULL;
-+	if (test_bit(TTY_LDISC, &tty->flags))
-+		ld = get_ldisc(tty->ldisc);
- 	spin_unlock_irqrestore(&tty_ldisc_lock, flags);
--	return ret;
-+	return ld;
- }
- 
- /**
-@@ -322,10 +318,11 @@ static int tty_ldisc_try(struct tty_struct *tty)
- 
- struct tty_ldisc *tty_ldisc_ref_wait(struct tty_struct *tty)
- {
-+	struct tty_ldisc *ld;
-+
- 	/* wait_event is a macro */
--	wait_event(tty_ldisc_wait, tty_ldisc_try(tty));
--	WARN_ON(atomic_read(&tty->ldisc->users) == 0);
--	return tty->ldisc;
-+	wait_event(tty_ldisc_wait, (ld = tty_ldisc_try(tty)) != NULL);
-+	return ld;
- }
- EXPORT_SYMBOL_GPL(tty_ldisc_ref_wait);
- 
-@@ -342,9 +339,7 @@ EXPORT_SYMBOL_GPL(tty_ldisc_ref_wait);
- 
- struct tty_ldisc *tty_ldisc_ref(struct tty_struct *tty)
- {
--	if (tty_ldisc_try(tty))
--		return tty->ldisc;
--	return NULL;
-+	return tty_ldisc_try(tty);
- }
- EXPORT_SYMBOL_GPL(tty_ldisc_ref);
- 
-@@ -360,19 +355,15 @@ EXPORT_SYMBOL_GPL(tty_ldisc_ref);
- 
- void tty_ldisc_deref(struct tty_ldisc *ld)
- {
--	unsigned long flags;
--
--	BUG_ON(ld == NULL);
--
--	spin_lock_irqsave(&tty_ldisc_lock, flags);
--	if (atomic_read(&ld->users) == 0)
--		printk(KERN_ERR "tty_ldisc_deref: no references.\n");
--	else if (atomic_dec_and_test(&ld->users))
--		wake_up(&tty_ldisc_wait);
--	spin_unlock_irqrestore(&tty_ldisc_lock, flags);
-+	put_ldisc(ld);
- }
- EXPORT_SYMBOL_GPL(tty_ldisc_deref);
- 
-+static inline void tty_ldisc_put(struct tty_ldisc *ld)
-+{
-+	put_ldisc(ld);
-+}
-+
- /**
-  *	tty_ldisc_enable	-	allow ldisc use
-  *	@tty: terminal to activate ldisc on
-@@ -521,31 +512,6 @@ static int tty_ldisc_halt(struct tty_struct *tty)
- }
- 
- /**
-- *	tty_ldisc_wait_idle	-	wait for the ldisc to become idle
-- *	@tty: tty to wait for
-- *
-- *	Wait for the line discipline to become idle. The discipline must
-- *	have been halted for this to guarantee it remains idle.
-- *
-- *	tty_ldisc_lock protects the ref counts currently.
-- */
--
--static int tty_ldisc_wait_idle(struct tty_struct *tty)
--{
--	unsigned long flags;
--	spin_lock_irqsave(&tty_ldisc_lock, flags);
--	while (atomic_read(&tty->ldisc->users)) {
--		spin_unlock_irqrestore(&tty_ldisc_lock, flags);
--		if (wait_event_timeout(tty_ldisc_wait,
--				atomic_read(&tty->ldisc->users) == 0, 5 * HZ) == 0)
--			return -EBUSY;
--		spin_lock_irqsave(&tty_ldisc_lock, flags);
--	}
--	spin_unlock_irqrestore(&tty_ldisc_lock, flags);
--	return 0;
--}
--
--/**
-  *	tty_set_ldisc		-	set line discipline
-  *	@tty: the terminal to set
-  *	@ldisc: the line discipline
-@@ -640,14 +606,6 @@ int tty_set_ldisc(struct tty_struct *tty, int ldisc)
- 
- 	flush_scheduled_work();
- 
--	/* Let any existing reference holders finish */
--	retval = tty_ldisc_wait_idle(tty);
--	if (retval < 0) {
--		clear_bit(TTY_LDISC_CHANGING, &tty->flags);
--		tty_ldisc_put(new_ldisc);
--		return retval;
--	}
--
- 	mutex_lock(&tty->ldisc_mutex);
- 	if (test_bit(TTY_HUPPED, &tty->flags)) {
- 		/* We were raced by the hangup method. It will have stomped
-@@ -793,7 +751,6 @@ void tty_ldisc_hangup(struct tty_struct *tty)
- 		if (tty->ldisc) {	/* Not yet closed */
- 			/* Switch back to N_TTY */
- 			tty_ldisc_halt(tty);
--			tty_ldisc_wait_idle(tty);
- 			tty_ldisc_reinit(tty);
- 			/* At this point we have a closed ldisc and we want to
- 			   reopen it. We could defer this to the next open but
-@@ -858,14 +815,6 @@ void tty_ldisc_release(struct tty_struct *tty, struct tty_struct *o_tty)
- 	tty_ldisc_halt(tty);
- 	flush_scheduled_work();
- 
--	/*
--	 * Wait for any short term users (we know they are just driver
--	 * side waiters as the file is closing so user count on the file
--	 * side is zero.
--	 */
--
--	tty_ldisc_wait_idle(tty);
--
- 	mutex_lock(&tty->ldisc_mutex);
- 	/*
- 	 * Now kill off the ldisc
--- 
-1.6.4.21.g73b866
-
+You'll notice where the rwsem is released - not until cgroup_post_fork
+or cgroup_fork_failed. It doesn't just protect the tsk->cgroups
+pointer, but rather guarantees atomicity between adjusting
+tsk->cgroups and attaching it to the cgroups lists with respect to the
+critical section in attach_proc. If you've a better name for the lock
+for such a race condition, do suggest.
