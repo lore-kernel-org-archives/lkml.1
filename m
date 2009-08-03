@@ -1,50 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbZHCPtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755338AbZHCPvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755333AbZHCPtd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 11:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755185AbZHCPtc
+	id S1755338AbZHCPvJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 11:51:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbZHCPvI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 11:49:32 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:44280 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753830AbZHCPtb (ORCPT
+	Mon, 3 Aug 2009 11:51:08 -0400
+Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:49973 "EHLO
+	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755185AbZHCPvH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 11:49:31 -0400
-Date: Mon, 3 Aug 2009 08:49:19 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, netdev <netdev@vger.kernel.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for August 3 (xfrm4)
-Message-Id: <20090803084919.e1af90d3.randy.dunlap@oracle.com>
-In-Reply-To: <20090803185203.a96063fd.sfr@canb.auug.org.au>
-References: <20090803185203.a96063fd.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 3 Aug 2009 11:51:07 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Subject: Re: [PATCH] Switch atmel_serial to dev_pm_ops
+Date: Mon, 3 Aug 2009 17:51:04 +0200
+User-Agent: KMail/1.9.9
+Cc: albin.tonnerre@free-electrons.com, nicolas.ferre@atmel.com,
+       linux@maxim.org.za, linux-kernel@vger.kernel.org,
+       albin.tonnerre@free-electrons.com
+References: <1249310347-22291-1-git-send-email-albin.tonnerre@free-electrons.com> <1249310347-22291-1-git-send-email-albin.tonnerre@free-electrons.com> <20090803170947.2f199b93@hskinnemoen-d830>
+In-reply-To: <20090803170947.2f199b93@hskinnemoen-d830>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt012.oracle.com [141.146.116.21]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010207.4A770702.004F:SCFSTAT5015188,ss=1,fgs=0
+Content-Disposition: inline
+Message-Id: <200908031751.06681.elendil@planet.nl>
+X-OriginalArrivalTime: 03 Aug 2009 15:51:07.0115 (UTC) FILETIME=[36B473B0:01CA1452]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Aug 2009 18:52:03 +1000 Stephen Rothwell wrote:
+Haavard Skinnemoen wrote:
+> Other than that,
+> Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 
-> Hi all,
-> 
-> Changes since 20090731:
+Just to make sure...
 
+Does this driver need to support hibernation (suspend to disk)? If it 
+does, the patch is incomplete; see http://lkml.org/lkml/2009/7/25/118.
 
-when PROC_FS=n, PROC_SYSCTL=n:
-
-(.init.text+0x41ed): undefined reference to `net_ipv4_ctl_path'
-(.init.text+0x420b): undefined reference to `register_net_sysctl_table'
-xfrm4_policy.c:(.exit.text+0x3c3): undefined reference to `unregister_net_sysctl_table'
-
-
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+Cheers,
+FJP
