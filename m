@@ -1,86 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbZHCMID@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754824AbZHCMIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754816AbZHCMID (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 08:08:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbZHCMIB
+	id S1754824AbZHCMIf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 08:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbZHCMIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 08:08:01 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47055 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754293AbZHCMIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 08:08:00 -0400
-Date: Mon, 3 Aug 2009 14:07:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Borislav Petkov <borislav.petkov@amd.com>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Sachin Sant <sachinp@in.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: Boot failure on x86_64 (OOPS set_cpu_sibling_map() )
-Message-ID: <20090803120739.GA29156@elte.hu>
-References: <20090730182143.eadf36e6.sfr@canb.auug.org.au> <4A718338.6050907@in.ibm.com> <20090730135623.GB16659@aftab> <20090803093144.GC9074@elte.hu> <20090803101401.GA14442@aftab>
+	Mon, 3 Aug 2009 08:08:34 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:9565 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754693AbZHCMId (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 08:08:33 -0400
+X-Trace: 237200519/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.63.67/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.63.67
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8GAMJvdkpPRT9D/2dsb2JhbACBUo4EAcAOhBgFgjE
+X-IronPort-AV: E=Sophos;i="4.43,314,1246834800"; 
+   d="scan'208";a="237200519"
+Date: Mon, 3 Aug 2009 13:08:23 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Izik Eidus <ieidus@redhat.com>
+cc: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: [PATCH 0/12] ksm: stats, oom, doc, misc
+Message-ID: <Pine.LNX.4.64.0908031304430.16449@sister.anvils>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090803101401.GA14442@aftab>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Izik,
 
-* Borislav Petkov <borislav.petkov@amd.com> wrote:
+Here's a set of twelve patches, which I think complete what I want
+to do with KSM for current mmotm and 2.6.32: it's as I sent you in
+a rollup last week, but with 1/12 and 10/12 added.  Patches apply
+to 2.6.31-rc5 plus our previous ten KSM patches, or to mmotm which
+already includes those.
 
-> Hi Ingo,
-> 
-> On Mon, Aug 03, 2009 at 11:31:44AM +0200, Ingo Molnar wrote:
-> > Borislav, this patch:
-> > 
-> >  From 4581c6313c16a38ffcef8bccd6ffbe9598d585b0 Mon Sep 17 00:00:00 2001
-> >  From: Andreas Herrmann <andreas.herrmann3@amd.com>
-> >  Date: Fri, 24 Jul 2009 10:21:06 +0200
-> >  Subject: [PATCH] x86: provide CPU topology information for multi-node processors
-> > 
-> >  arch/x86/include/asm/processor.h |    2 ++
-> >  arch/x86/include/asm/smp.h       |    6 ++++++
-> >  arch/x86/include/asm/topology.h  |    2 ++
-> >  arch/x86/kernel/cpu/common.c     |    2 ++
-> >  arch/x86/kernel/cpu/proc.c       |    1 +
-> >  arch/x86/kernel/smpboot.c        |   20 ++++++++++++++++----
-> >  6 files changed, 29 insertions(+), 4 deletions(-)
-> > 
-> > has absolutely _ZERO_ place in the EDAC tree. It was submitted to 
-> > the x86 tree and was under discussion - i requested changes to it so 
-> > this current form has my NAK.
-> 
-> I know that, I'm following the discussion. I needed the 
-> functionality in EDAC and that's why I added them _temporarily_ to 
-> the mix so that the whole series (esp. the MCE bits) can see some 
-> testing. Which obviously caught some issues :).
-> 
-> But I'm very well aware that the patches are not final and they 
-> will go through x86 when done. This is what I told Stephen when 
-> upping them for linux-next.
+[PATCH  1/12] ksm: rename kernel_pages_allocated
+[PATCH  2/12] ksm: move pages_sharing updates
+[PATCH  3/12] ksm: pages_unshared and pages_volatile
+[PATCH  4/12] ksm: break cow once unshared
+[PATCH  5/12] ksm: keep quiet while list empty
+[PATCH  6/12] ksm: five little cleanups
+[PATCH  7/12] ksm: fix endless loop on oom
+[PATCH  8/12] ksm: distribute remove_mm_from_lists
+[PATCH  9/12] ksm: fix oom deadlock
+[PATCH 10/12] ksm: sysfs and defaults
+[PATCH 11/12] ksm: add some documentation
+[PATCH 12/12] ksm: remove VM_MERGEABLE_FLAGS
 
-Next time please tell the x86 maintainers too ;-)
+ Documentation/vm/00-INDEX |    2 
+ Documentation/vm/ksm.txt  |   89 +++++
+ include/linux/ksm.h       |   31 +
+ kernel/fork.c             |    1 
+ mm/Kconfig                |    1 
+ mm/ksm.c                  |  574 ++++++++++++++++++++++--------------
+ mm/memory.c               |    5 
+ mm/mmap.c                 |   15 
+ 8 files changed, 498 insertions(+), 220 deletions(-)
 
-The thing that was blocking this commit is really the insufficient 
-sched-domains integration of said NUMA bits. I think the NUMA bits 
-look good and if the EDAC tree makes use of it we can merge it in 
-.32.
-
-Mind preparing a separate branch for it (.31-rc5 based) and send me 
-a pull request so that we can share the commit between the EDAC tree 
-and the x86 tree?
+If you and others are happy with these, please send them on to Andrew
+(or else just point him to them); if not, then let's fix them first.
 
 Thanks,
-
-	Ingo
+Hugh
