@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755286AbZHCPn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbZHCPp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755286AbZHCPn3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 11:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbZHCPn2
+	id S1755310AbZHCPp2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 11:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755174AbZHCPp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 11:43:28 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42888 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754629AbZHCPn2 (ORCPT
+	Mon, 3 Aug 2009 11:45:27 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:35446 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754891AbZHCPp1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 11:43:28 -0400
-Subject: Re: [ANNOUNCE][RFC][PATCH] Crash-utility, tracing: enable crash to
- analyze tracing from core-file (make tracing can act as a flight recorder)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Dave Anderson <anderson@redhat.com>, crash-utility@redhat.com,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <clark.williams@gmail.com>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Christoph Hellwig <hch@infradead.org>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
-       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
-       Jason Baron <jbaron@redhat.com>, srostedt@redhat.com,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A76F8A1.30503@cn.fujitsu.com>
-References: <4A76F8A1.30503@cn.fujitsu.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 03 Aug 2009 17:42:16 +0200
-Message-Id: <1249314136.7924.126.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 3 Aug 2009 11:45:27 -0400
+Date: Mon, 3 Aug 2009 11:45:26 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Artur Skawina <art.08.09@gmail.com>
+cc: "Lev A. Melnikovsky" <melnikovsky@mail.ru>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       <linux-usb@vger.kernel.org>
+Subject: Re: reading errors on JMicron JM20337 USB-SATA
+In-Reply-To: <4A77035C.5090906@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0908031142180.16208-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-03 at 22:48 +0800, Lai Jiangshan wrote:
-> + /* SIGH, we cann't get "print fmt" from core-file */
+On Mon, 3 Aug 2009, Artur Skawina wrote:
 
-doesn't crash have a vmlinux around to look at?
+> > You are correct except for the term "indefinitely".  The retries _will_
+> > stop if you wait long enough.  Unfortunately, because of all the nested
+> > retry loops in the SCSI drivers and at the application level, you may
+> > have to wait as long as half an hour.
+> 
+> iirc, i had stalls _way_ longer than that, probably because the reads
+> eventually succeeded, only to stall on the next ones.
+> 
+> > I agree that this should be fixed.  But it is a SCSI issue, not a USB 
+> > issue.  You could try bringing it up on the linux-scsi mailing list.
+> 
+> actually, the number of retries should probably be configurable, but i
+> wouldn't lower them by default; losing data because of recoverable errors
+> is bad. In this case the bridge may be at fault (by not passing along the
+> error), but to make a significant difference you'd have to reduce the number
+> of retries to something like zero, maybe one at most, and that's just too
+> low for a default. 
 
-> +/*
-> + * TODO: implement event_generic_print_fmt_print() when the print fmt
-> + * in tracing/events/$SYSTEM/$TRACE/format becomes a will-defined
-> + * language.
-> + */
+As I understand it, the SCSI and block layers conspire to keep retrying
+each command until a timeout expires, not until the number of retries 
+reaches a limit.
 
-(well-defined)
+But the situation is complicated, because some kinds of retries reset 
+the timer.  And if the application repeats the I/O request then of 
+course everything starts over again.
 
-That would require the running kernel to be the same as the one that
-generated the core file -- not very usable imho.
+Alan Stern
+
