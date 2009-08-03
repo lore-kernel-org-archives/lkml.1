@@ -1,59 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbZHCQxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932258AbZHCQzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755419AbZHCQxw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 12:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771AbZHCQxw
+	id S932258AbZHCQzu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 12:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932160AbZHCQzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 12:53:52 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37404 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752371AbZHCQxv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 12:53:51 -0400
-Date: Mon, 3 Aug 2009 18:53:15 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Izik Eidus <ieidus@redhat.com>, Rik van Riel <riel@redhat.com>,
-       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 2/12] ksm: move pages_sharing updates
-Message-ID: <20090803165315.GH23385@random.random>
-References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils>
- <Pine.LNX.4.64.0908031310060.16754@sister.anvils>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0908031310060.16754@sister.anvils>
+	Mon, 3 Aug 2009 12:55:49 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:56672 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754808AbZHCQzt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 12:55:49 -0400
+Subject: gpiolib: add names file in gpio chip sysfs.
+Message-Id: <20090803165536.345974601@fluff.org>
+User-Agent: quilt/0.46-1
+From: ben@fluff.org
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Cc: David Brownell <dbrownell@users.sourceforge.net>
+Content-Disposition: inline; filename=gpio-export-names.patch
+Date: Mon, 03 Aug 2009 17:55:36 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 03, 2009 at 01:11:00PM +0100, Hugh Dickins wrote:
-> The pages_shared count is incremented and decremented when adding a node
-> to and removing a node from the stable tree: easy to understand.  But the
-> pages_sharing count was hard to follow, being adjusted in various places:
-> increment and decrement it when adding to and removing from the stable tree.
-> 
-> And the pages_sharing variable used to include the pages_shared, then those
-> were subtracted when shown in the pages_sharing sysfs file: now keep it as
-> an exclusive count of leaves hanging off the stable tree nodes, throughout.
-> 
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Add a 'names' file to the sysfs entries for each chip to show which
+have names.
 
-If we stick to the subtraction semantics (that I think for users is
-less intuitive as they need to understand more of the ksm code to
-figure out what it means) sure ack...
+Signed-off-by: Ben Dooks <ben@simtec.co.uk>
+CC: David Brownell <dbrownell@users.sourceforge.net>
 
-I don't see the big deal of just printing total number of ksm pages in
-stable tree, and the actual _total_ number of userland mappings that
-are mapping those. The subtraction to see the actual sharing that is
-the difference between the two numbers, can be done by the user
-itself.
+---
+ drivers/gpio/gpiolib.c |   21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-But then I'm fine if we stick to the substraction logic, this is a
-minor detail, I just usually prefer "raw" values. (if removing the
-inc/dec is beneficial at runtime as it seems then doing an addition
-will provide the info I would find more intuitive in  a more efficient
-way than before)
+Index: b/drivers/gpio/gpiolib.c
+===================================================================
+--- a/drivers/gpio/gpiolib.c	2009-08-03 17:51:40.000000000 +0100
++++ b/drivers/gpio/gpiolib.c	2009-08-03 17:53:04.000000000 +0100
+@@ -303,6 +303,7 @@ static const struct attribute_group gpio
+  *   /base ... matching gpio_chip.base (N)
+  *   /label ... matching gpio_chip.label
+  *   /ngpio ... matching gpio_chip.ngpio
++ *   /names ... matching gpio_chip.names
+  */
+ 
+ static ssize_t chip_base_show(struct device *dev,
+@@ -332,10 +333,30 @@ static ssize_t chip_ngpio_show(struct de
+ }
+ static DEVICE_ATTR(ngpio, 0444, chip_ngpio_show, NULL);
+ 
++static ssize_t chip_names_show(struct device *dev,
++			       struct device_attribute *attr, char *buf)
++{
++	const struct gpio_chip*chip = dev_get_drvdata(dev);
++	char **names = chip->names;
++	int ptr = 0;
++	int name;
++
++	if (!names)
++		return -EINVAL;
++
++	for (name = 0; name < chip->ngpio && ptr < PAGE_SIZE; name++)
++		ptr += snprintf(buf + ptr, PAGE_SIZE - ptr,
++				"%s\n", names[name] ? names[name] : "");
++
++	return ptr;
++}
++DEVICE_ATTR(names, 0444, chip_names_show, NULL);
++
+ static const struct attribute *gpiochip_attrs[] = {
+ 	&dev_attr_base.attr,
+ 	&dev_attr_label.attr,
+ 	&dev_attr_ngpio.attr,
++	&dev_attr_names.attr,
+ 	NULL,
+ };
+ 
 
-Acked-by: Andrea Arcangeli <aarcange@redhat.com>
+-- 
