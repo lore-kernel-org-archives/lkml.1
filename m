@@ -1,75 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbZHCJUI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbZHCJUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754338AbZHCJUI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 05:20:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbZHCJUG
+	id S1754645AbZHCJUR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 05:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbZHCJUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 05:20:06 -0400
-Received: from moutng.kundenserver.de ([212.227.17.8]:56784 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752097AbZHCJUE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 05:20:04 -0400
-Message-ID: <4A76ABD5.9020808@vlnb.net>
-Date: Mon, 03 Aug 2009 13:20:21 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 3 Aug 2009 05:20:14 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37204 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754410AbZHCJUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 05:20:11 -0400
+Date: Mon, 3 Aug 2009 11:19:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Hellstrom <thellstrom@vmware.com>
+Cc: Dave Airlie <airlied@linux.ie>, Arjan van de Ven <arjan@infradead.org>,
+       "suresh.b.siddha@intel.com" <suresh.b.siddha@intel.com>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "dri-devel@lists.sourceforge.net" <dri-devel@lists.sourceforge.net>
+Subject: Re: [PATCH] x86: Fix CPA memtype reserving in the set_pages_array
+	cases
+Message-ID: <20090803091954.GB9074@elte.hu>
+References: <1249284345-7654-1-git-send-email-thellstrom@vmware.com> <20090803081110.GB32258@elte.hu> <alpine.DEB.2.00.0908030928280.496@skynet.skynet.ie> <4A76A24F.1030505@vmware.com>
 MIME-Version: 1.0
-To: Ronald Moesbergen <intercommit@gmail.com>
-CC: fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, kosaki.motohiro@jp.fujitsu.com,
-       Alan.Brunelle@hp.com, linux-fsdevel@vger.kernel.org,
-       jens.axboe@oracle.com, randy.dunlap@oracle.com,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: Re: [RESEND] [PATCH] readahead:add blk_run_backing_dev
-References: <4A3CD62B.1020407@vlnb.net>	 <a0272b440907170715q72af7bb8l53c9dbd5e553fe2c@mail.gmail.com>	 <4A60C1A8.9020504@vlnb.net> <4A641AAC.9030300@vlnb.net>	 <a0272b440907220144i159baca4u1a1f1f2d0c36193a@mail.gmail.com>	 <4A6DA77B.7080600@vlnb.net>	 <a0272b440907280251g2dd38df6ja1bf10f3fa38d333@mail.gmail.com>	 <4A6F4C81.10600@vlnb.net>	 <a0272b440907290548k266a975br8c6bdf4d5d992d20@mail.gmail.com>	 <4A7338AF.8010407@vlnb.net> <a0272b440908030215t66309c1fo9a0894bdae4dec17@mail.gmail.com>
-In-Reply-To: <a0272b440908030215t66309c1fo9a0894bdae4dec17@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/dmKB28mIdH1DolqHDl45BiGI6Klhr9lyjuD2
- PCPDlTMHvErp/c8GG6BNPKS1+GVLOA2oQSkg9u/uy3P8Y2Zqaz
- GkbVXChEue3Uvvns7JyhA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A76A24F.1030505@vmware.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ronald Moesbergen, on 08/03/2009 01:15 PM wrote:
-> 2009/7/31 Vladislav Bolkhovitin <vst@vlnb.net>:
->> OK, as I expected, on the SCST level everything is clear and the forced
->> ordering change didn't change anything.
+
+* Thomas Hellstrom <thellstrom@vmware.com> wrote:
+
+> Dave Airlie wrote:
+>>> hm, i'm missing a description about how this bug was triggered. How 
+>>> did you end up getting highmem pages to a cpa call?
+>>>     
 >>
->> But still, a single read stream must be the fastest from single thread.
->> Otherwise, there's something wrong somewhere in the I/O path: block layer,
->> RA, I/O scheduler. And, apparently, this is what we have and should find out
->> the cause.
+>> GEM and TTM both allocate page arrays and just pass them to cpa,
+>> we don't know what type of pages the allocator gives us back and we 
+>> really shouldn't have to, so having cpa ignore highmem pages is 
+>> certainly the right option.
 >>
->> Can you check if noop on the target and/or initiator makes any difference?
->> Case 5 with 1 and 2 threads will be sufficient.
-> 
-> That doesn't seem to help:
-> 
-> client kernel: 2.6.26-15lenny3 (debian)
-> server kernel: 2.6.29.5 with readahead-context, blk_run_backing_dev
-> and io_context, forced_order
-> 
-> With one IO thread:
-> 5) client: default, server: default (server noop, client noop)
-> blocksize       R        R        R   R(avg,    R(std        R
->   (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
->  67108864  17.612   21.113   21.355   51.532    4.680    0.805
->  33554432  18.329   18.523   19.049   54.969    0.891    1.718
->  16777216  18.497   18.219   17.042   57.217    2.059    3.576
-> 
-> With two threads:
-> 5) client: default, server: default (server noop, client noop)
-> blocksize       R        R        R   R(avg,    R(std        R
->   (bytes)     (s)      (s)      (s)    MB/s)   ,MB/s)   (IOPS)
->  67108864  17.436   18.376   20.493   54.807    3.634    0.856
->  33554432  17.466   16.980   18.261   58.337    1.740    1.823
->  16777216  18.222   17.567   18.077   57.045    0.901    3.565
+>> GEM just uses shmem code to alloc the pages and TTM has its own allocator.
+>>
+>>   
+> Yes, Dave is right.
+>
+> Although I'm not 100% sure the TTM code I was using that triggered this  
+> has made it into 2.6.31.
+> Old AGP uses (GFP_KERNEL | GFP_DMA32 | __GFP_ZERO), which (correct me if  
+> I'm wrong) never hands back highmem pages. This means that Intel's GEM  
+> is the only likely user for 2.6.31.
 
-And with client cfq, server noop?
+(please dont top-post) I'm not sure you folks noticed this bit of my 
+mail:
 
-> Ronald.
-> 
+>>> ok, that's a bug introduced in .29 but which was latent until now:  
+>>> drivers/char/agp/generic.c now uses it plus (indirectly) a number of  
+>>> AGP drivers, since:
+>>>
+>>>  commit 07613ba2f464f59949266f4337b75b91eb610795
+>>>  Author: Dave Airlie <airlied@redhat.com>
+>>>  Date:   Fri Jun 12 14:11:41 2009 +1000
+>>>
+>>>      agp: switch AGP to use page array instead of unsigned long array
+>>>
+>>> I dont see how it can end up with highmem pages though. All the 
+>>> graphics apperture allocations happen to lowmem AFAICS. Did GEM add 
+>>> the possibility for user pages (highmem amongst them) ending up in 
+>>> that pool? Which code does that?
 
+	Ingo
