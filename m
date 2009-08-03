@@ -1,34 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753182AbZHCICR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753216AbZHCIEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753182AbZHCICR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 04:02:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbZHCICP
+	id S1753216AbZHCIEI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 04:04:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbZHCIEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 04:02:15 -0400
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:48051 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752853AbZHCICO (ORCPT
+	Mon, 3 Aug 2009 04:04:07 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54119 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752505AbZHCIEF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 04:02:14 -0400
-Date: Mon, 3 Aug 2009 10:02:09 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: john stultz <johnstul@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Daniel Walker <dwalker@fifo99.com>
-Subject: Re: [RFC][patch 10/12] move NTP adjusted clock multiplier to struct
- timekeeper
-Message-ID: <20090803100209.29431638@skybase>
-In-Reply-To: <1249083178.9941.8.camel@work-vm>
-References: <20090729134125.313191633@de.ibm.com>
-	<20090729134231.515027738@de.ibm.com>
-	<1248991488.3374.14.camel@localhost>
-	<20090731095254.3ed0cb7d@skybase>
-	<1249027979.3333.8.camel@work-vm>
-	<20090731110003.44cc16a9@skybase>
-	<1249083178.9941.8.camel@work-vm>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
+	Mon, 3 Aug 2009 04:04:05 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 3 Aug 2009 17:02:17 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       Paul Menage <menage@google.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
+Message-Id: <20090803170217.e98b2e46.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.2.00.0908030050160.30778@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0907282125260.554@chino.kir.corp.google.com>
+	<20090730180029.c4edcc09.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0907300219580.13674@chino.kir.corp.google.com>
+	<20090730190216.5aae685a.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0907301157100.9652@chino.kir.corp.google.com>
+	<20090731093305.50bcc58d.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0907310231370.25447@chino.kir.corp.google.com>
+	<7f54310137837631f2526d4e335287fc.squirrel@webmail-b.css.fujitsu.com>
+	<alpine.DEB.2.00.0907311212240.22732@chino.kir.corp.google.com>
+	<77df8765230d9f83859fde3119a2d60a.squirrel@webmail-b.css.fujitsu.com>
+	<alpine.DEB.2.00.0908011303050.22174@chino.kir.corp.google.com>
+	<20090803104244.b58220ba.kamezawa.hiroyu@jp.fujitsu.com>
+	<alpine.DEB.2.00.0908030050160.30778@chino.kir.corp.google.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -36,54 +43,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Jul 2009 16:32:58 -0700
-john stultz <johnstul@us.ibm.com> wrote:
+On Mon, 3 Aug 2009 00:59:18 -0700 (PDT)
+David Rientjes <rientjes@google.com> wrote:
 
-> On Fri, 2009-07-31 at 11:00 +0200, Martin Schwidefsky wrote:
-> > How about this definition for struct timekeeper?
+> > >  - /proc/pid/oom_score is inconsistent when the thread that set the
+> > >    effective per-mm oom_adj exits and it is now obsolete since you have
+> > >    no way to determine what the next effective oom_adj value shall be.
+> > > 
+> > plz re-caluculate it. it's not a big job if done in lazy way.
 > > 
-> > /* Structure holding internal timekeeping values. */
-> > struct timekeeper {
-> >         /* Current clocksource used for timekeeping. */
-> >         struct clocksource *clock;
-> >         /* The shift value of the current clocksource. */
-> >         int     shift;
-> > 
-> >         /* Number of clock cycles in one NTP interval. */
-> >         cycle_t cycle_interval;
-> >         /* Number of clock shifted nano seconds in one NTP interval. */
-> >         u64     xtime_interval;
-> >         /* Raw nano seconds accumulated per NTP interval. */
 > 
-> I might just use the term "accumulation interval"  instead of NTP
-> interval. This isn't something that's strictly connected to NTP, other
-> then they both just need to have some chunk of time that we use as an
-> comparative interval.
+> You can't recalculate it if all the remaining threads have a different 
+> oom_adj value than the effective oom_adj value from the thread that is now 
+> exited.  
 
-Acuumulation interval is more generic but it IS the NTP interval, no?
-Do we plan to ever use something different than the NTP interval? 
+Then, crazy google apps pass different oom_adjs to each thread ?
+And, threads other than thread-group-leader modifies its oom_adj.
 
-> >         u32     raw_interval;
-> > 
-> >         /* Clock shifted nano seconds remainder not stored in xtime.tv_nsec. */
-> >         u64     xtime_nsec;
-> >         /* Difference between accumulated time and NTP time in ntp
-> >          * shifted nano seconds. */
-> >         s64     ntp_error;
-> >         /* Shift conversion between clock shifted nano seconds and
-> >          * ntp shifted nano seconds. */
-> >         int     ntp_error_shift;
-> >         /* NTP adjusted clock multiplier */
-> >         u32     mult;
-> > };
-> 
-> Other then that it looks good to me!
+Hmm, interesting.
 
-Ok, I'll update the patches.
 
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+Thanks,
+-Kame
 
