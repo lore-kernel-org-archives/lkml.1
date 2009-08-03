@@ -1,93 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932235AbZHCO6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932244AbZHCO7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932235AbZHCO6l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 10:58:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932213AbZHCO6l
+	id S932244AbZHCO7Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 10:59:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932226AbZHCO7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 10:58:41 -0400
-Received: from mail.free-electrons.com ([88.191.76.200]:42197 "EHLO
+	Mon, 3 Aug 2009 10:59:24 -0400
+Received: from mail.free-electrons.com ([88.191.76.200]:42222 "EHLO
 	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932211AbZHCO6k (ORCPT
+	with ESMTP id S932213AbZHCO7X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 10:58:40 -0400
+	Mon, 3 Aug 2009 10:59:23 -0400
 From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
 To: sam@ravnborg.org
 Cc: hpa@zytor.com, linux@arm.linux.org.uk, alain@knaff.lu,
        linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
        akpm@linux-foundation.org,
        Albin Tonnerre <albin.tonnerre@free-electrons.com>
-Subject: [PATCH 1/6] lib/decompress_*: only include <linux/slab.h> if STATIC is not defined
-Date: Mon,  3 Aug 2009 16:58:16 +0200
-Message-Id: <1249311501-23102-1-git-send-email-albin.tonnerre@free-electrons.com>
+Subject: [PATCH 2/6] include/linux/unaligned/{l,b}e_byteshift.h: Fix usage for compressed kernels
+Date: Mon,  3 Aug 2009 16:58:17 +0200
+Message-Id: <1249311501-23102-2-git-send-email-albin.tonnerre@free-electrons.com>
 X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <20090731093107.GA29704@merkur.ravnborg.org>
+In-Reply-To: <1249311501-23102-1-git-send-email-albin.tonnerre@free-electrons.com>
 References: <20090731093107.GA29704@merkur.ravnborg.org>
+ <1249311501-23102-1-git-send-email-albin.tonnerre@free-electrons.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These includes were added by 079effb6933f34b9b1b67b08bd4fd7fb672d16ef to
-fix the build when using kmemtrace. However this is not necessary when
-used to create a compressed kernel, and actually creates issues (brings
-a lot of things unavailable in the decompression environment), so don't
-include it if STATIC is defined.
+When unaligned accesses are required for uncompressing a kernel (such as
+for LZO decompression on ARM in a patch that follows), including
+<linux/kernel.h> causes issues as it brings in a lot of things that are
+not available in the decompression environment.
+However, those files apparently use nothing from <linux/kernel.h>, all
+they need is the declaration of types such as u32 or u64, so
+<linux/types.h> should be enough
 
 Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
 ---
- lib/decompress_bunzip2.c |    2 +-
- lib/decompress_inflate.c |    2 +-
- lib/decompress_unlzma.c  |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ include/linux/unaligned/be_byteshift.h |    2 +-
+ include/linux/unaligned/le_byteshift.h |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/lib/decompress_bunzip2.c b/lib/decompress_bunzip2.c
-index 708e2a8..14b0c7d 100644
---- a/lib/decompress_bunzip2.c
-+++ b/lib/decompress_bunzip2.c
-@@ -47,10 +47,10 @@
+diff --git a/include/linux/unaligned/be_byteshift.h b/include/linux/unaligned/be_byteshift.h
+index 46dd12c..9356b24 100644
+--- a/include/linux/unaligned/be_byteshift.h
++++ b/include/linux/unaligned/be_byteshift.h
+@@ -1,7 +1,7 @@
+ #ifndef _LINUX_UNALIGNED_BE_BYTESHIFT_H
+ #define _LINUX_UNALIGNED_BE_BYTESHIFT_H
  
- #ifndef STATIC
- #include <linux/decompress/bunzip2.h>
-+#include <linux/slab.h>
- #endif /* !STATIC */
+-#include <linux/kernel.h>
++#include <linux/types.h>
  
- #include <linux/decompress/mm.h>
--#include <linux/slab.h>
+ static inline u16 __get_unaligned_be16(const u8 *p)
+ {
+diff --git a/include/linux/unaligned/le_byteshift.h b/include/linux/unaligned/le_byteshift.h
+index 59777e9..be376fb 100644
+--- a/include/linux/unaligned/le_byteshift.h
++++ b/include/linux/unaligned/le_byteshift.h
+@@ -1,7 +1,7 @@
+ #ifndef _LINUX_UNALIGNED_LE_BYTESHIFT_H
+ #define _LINUX_UNALIGNED_LE_BYTESHIFT_H
  
- #ifndef INT_MAX
- #define INT_MAX 0x7fffffff
-diff --git a/lib/decompress_inflate.c b/lib/decompress_inflate.c
-index e36b296..fc30d50 100644
---- a/lib/decompress_inflate.c
-+++ b/lib/decompress_inflate.c
-@@ -19,11 +19,11 @@
- #include "zlib_inflate/inflate.h"
+-#include <linux/kernel.h>
++#include <linux/types.h>
  
- #include "zlib_inflate/infutil.h"
-+#include <linux/slab.h>
- 
- #endif /* STATIC */
- 
- #include <linux/decompress/mm.h>
--#include <linux/slab.h>
- 
- #define INBUF_LEN (16*1024)
- 
-diff --git a/lib/decompress_unlzma.c b/lib/decompress_unlzma.c
-index 32123a1..f078c88 100644
---- a/lib/decompress_unlzma.c
-+++ b/lib/decompress_unlzma.c
-@@ -31,10 +31,10 @@
- 
- #ifndef STATIC
- #include <linux/decompress/unlzma.h>
-+#include <linux/slab.h>
- #endif /* STATIC */
- 
- #include <linux/decompress/mm.h>
--#include <linux/slab.h>
- 
- #define	MIN(a, b) (((a) < (b)) ? (a) : (b))
- 
+ static inline u16 __get_unaligned_le16(const u8 *p)
+ {
 -- 
 1.6.3.3
 
