@@ -1,70 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbZHCJTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753633AbZHCJTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752725AbZHCJTO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 05:19:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbZHCJTO
+	id S1753633AbZHCJTh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 05:19:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbZHCJTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 05:19:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51695 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751479AbZHCJTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 05:19:13 -0400
-Date: Mon, 3 Aug 2009 11:18:42 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Dave Airlie <airlied@linux.ie>
-Cc: Thomas Hellstrom <thellstrom@vmware.com>,
-       Arjan van de Ven <arjan@infradead.org>, suresh.b.siddha@intel.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org,
-       venkatesh.pallipadi@intel.com, tglx@linutronix.de,
-       dri-devel@lists.sourceforge.net
-Subject: Re: [PATCH] x86: Fix CPA memtype reserving in the set_pages_array
-	cases
-Message-ID: <20090803091842.GA9074@elte.hu>
-References: <1249284345-7654-1-git-send-email-thellstrom@vmware.com> <20090803081110.GB32258@elte.hu> <alpine.DEB.2.00.0908030928280.496@skynet.skynet.ie>
+	Mon, 3 Aug 2009 05:19:36 -0400
+Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:49737 "EHLO
+	TX2EHSOBE009.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752322AbZHCJTf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 05:19:35 -0400
+X-SpamScore: -24
+X-BigFish: VPS-24(z34a4jz62a3L1432R98dN936eM4015Lzz1202hzzz32i6bh203h43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KNSN8E-01-480-02
+X-M-MSG: 
+Date: Mon, 3 Aug 2009 11:19:24 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jerome Marchand <jmarchan@redhat.com>
+Subject: Re: [Bug #13809] oprofile: possible circular locking dependency
+	detected
+Message-ID: <20090803091924.GB25478@erda.amd.com>
+References: <Jya1GruKQpD.A.16.2GObKB@chimera> <3zAHs5O6maO.A.YTD.eHObKB@chimera>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0908030928280.496@skynet.skynet.ie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <3zAHs5O6maO.A.YTD.eHObKB@chimera>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 03 Aug 2009 09:19:25.0553 (UTC) FILETIME=[7EAEAE10:01CA141B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I also tested v2.6.31-rc4 with prove-locking enabled and could not
+trigger the warning. My regression runs fine. Please provide more
+information (workloads, oprofile setup, cpu info, kernel config) to be
+able to reproduce this.
 
-* Dave Airlie <airlied@linux.ie> wrote:
+Thanks,
 
-> > hm, i'm missing a description about how this bug was triggered. 
-> > How did you end up getting highmem pages to a cpa call?
+-Robert
+
+On 26.07.09 22:28:24, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> GEM and TTM both allocate page arrays and just pass them to cpa, 
-> we don't know what type of pages the allocator gives us back and 
-> we really shouldn't have to, so having cpa ignore highmem pages is 
-> certainly the right option.
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me know
+> (either way).
 > 
-> GEM just uses shmem code to alloc the pages and TTM has its own 
-> allocator.
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13809
+> Subject		: oprofile: possible circular locking dependency detected
+> Submitter	: Jerome Marchand <jmarchan@redhat.com>
+> Date		: 2009-07-22 13:35 (5 days old)
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Neither of my questions was answered though: do highmem pages ever 
-get passed in and what were the effects of the bug and how was it 
-noticed?
+-- 
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
 
-If no highmem pages can be passed in then the right solution is not 
-to ignore them silently but to add a WARN_ONCE() to enforce that 
-they are not used in the future either.
-
-If they are used today then i'd like to know where exactly and 
-double check that all the cache attributes are consistent: as a 
-highmem page might be visible to user-space as well or might be 
-mapped via the vmalloc space, etc.
-
-And yes, if it happens and all the other mapping aliases are fine 
-then ignoring them is the right solution.
-
-	Ingo
