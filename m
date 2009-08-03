@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbZHCH36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752735AbZHCHos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752712AbZHCH36 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 03:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbZHCH35
+	id S1752735AbZHCHos (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 03:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbZHCHor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 03:29:57 -0400
-Received: from ozlabs.org ([203.10.76.45]:57654 "EHLO ozlabs.org"
+	Mon, 3 Aug 2009 03:44:47 -0400
+Received: from mga03.intel.com ([143.182.124.21]:15319 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752527AbZHCH35 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 03:29:57 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Fernando Luis =?utf-8?q?V=C3=A1zquez_Cao?= 
-	<fernando@oss.ntt.co.jp>
-Subject: Re: [PATCH] Add virtio IDs file
-Date: Mon, 3 Aug 2009 16:59:52 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; i686; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization@lists.linux-foundation.org
-References: <4A728E74.1070805@oss.ntt.co.jp>
-In-Reply-To: <4A728E74.1070805@oss.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200908031659.52527.rusty@rustcorp.com.au>
+	id S1752590AbZHCHoq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 03:44:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,312,1246863600"; 
+   d="scan'208";a="171607880"
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
+       Huang Ying <ying.huang@intel.com>
+Subject: [BUGFIX] crypto: Fix ctr(aes) testing by specifying geniv
+Date: Mon,  3 Aug 2009 15:44:43 +0800
+Message-Id: <1249285483-22286-1-git-send-email-ying.huang@intel.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Jul 2009 03:55:56 pm Fernando Luis Vázquez Cao wrote:
-> Virtio IDs are spread all over the tree which makes assigning new IDs
-> bothersome. Putting them together should make the process less error-prone.
-> 
-> Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+When doing "modeprobe tcrypt mode=10", the following error will show
+in dmesg.
 
-Seems like a good idea to me!  Applied.
+alg: skcipher: Failed to load transform for ctr(aes): -22
+alg: skcipher: Failed to load transform for ctr(aes): -22
+tcrypt: one or more tests failed!
 
-(I added a #ifndef _LINUX_VIRTIO_IDS_H wrapper around it, too).
+Because ctr(aes) testing code will allocate ctr(aes) with geniv, but
+defualt geniv mode may not work with ctr(aes). As that of rfc3686,
+this is fixed via specifying geniv mode to "seqiv".
 
-Thanks!
-Rusty.
-PS.  Whitespace damage in this and your previous patch?  Fixed.
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+---
+ crypto/ctr.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- a/crypto/ctr.c
++++ b/crypto/ctr.c
+@@ -219,6 +219,8 @@ static struct crypto_instance *crypto_ct
+ 	inst->alg.cra_blkcipher.encrypt = crypto_ctr_crypt;
+ 	inst->alg.cra_blkcipher.decrypt = crypto_ctr_crypt;
+ 
++	inst->alg.cra_blkcipher.geniv = "seqiv";
++
+ out:
+ 	crypto_mod_put(alg);
+ 	return inst;
