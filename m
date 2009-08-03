@@ -1,41 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752407AbZHCG4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752477AbZHCG5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752407AbZHCG4n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 02:56:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbZHCG4m
+	id S1752477AbZHCG5n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 02:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbZHCG5n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 02:56:42 -0400
-Received: from ozlabs.org ([203.10.76.45]:60834 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751991AbZHCG4m convert rfc822-to-8bit (ORCPT
+	Mon, 3 Aug 2009 02:57:43 -0400
+Received: from mail1-relais-roc.national.inria.fr ([192.134.164.82]:20676 "EHLO
+	mail1-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752150AbZHCG5m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 02:56:42 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Fernando Luis =?utf-8?q?V=C3=A1zquez_Cao?= 
-	<fernando@oss.ntt.co.jp>
-Subject: Re: [PATCH] Virtio 9p: get rid of redundant VIRTIO_ID_9P definition
-Date: Mon, 3 Aug 2009 16:26:38 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; i686; ; )
-Cc: ericvh@gmail.com, v9fs-developer@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <4A726051.8080705@oss.ntt.co.jp>
-In-Reply-To: <4A726051.8080705@oss.ntt.co.jp>
+	Mon, 3 Aug 2009 02:57:42 -0400
+X-IronPort-AV: E=Sophos;i="4.43,312,1246831200"; 
+   d="scan'208";a="33958697"
+Message-ID: <4A768A71.900@inria.fr>
+Date: Mon, 03 Aug 2009 08:57:53 +0200
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200908031626.38394.rusty@rustcorp.com.au>
+To: Roland Dreier <rdreier@cisco.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       jsquyres@cisco.com, rostedt@goodmis.org
+Subject: Re: [PATCH v3] ummunotify: Userspace support for MMU notifications
+References: <ada3a8oobis.fsf@cisco.com>	<20090722111538.58a126e3.akpm@linux-foundation.org>	<adad47smsb5.fsf@cisco.com>	<20090722124208.97d7d9d7.akpm@linux-foundation.org>	<adaeis53d2m.fsf_-_@cisco.com>	<20090727165329.4acfda1c.akpm@linux-foundation.org>	<adaws5szswf.fsf@cisco.com> <adaskgcptsz.fsf_-_@cisco.com>	<4A75F00D.7010400@inria.fr> <aday6q1o5re.fsf@cisco.com>
+In-Reply-To: <aday6q1o5re.fsf@cisco.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Jul 2009 12:39:05 pm Fernando Luis Vázquez Cao wrote:
-> VIRTIO_ID_9P is already defined in include/linux/virtio_9p.h
-> so use that definition instead.
-> 
-> Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+Roland Dreier wrote:
+> I suspect that MPI workloads will hit the overflow case in practice,
+> since they probably want to run as close to out-of-memory as possible,
+> and the application may not enter the MPI library often enough to keep
+> the queue of ummunotify events short -- I can imagine some codes that do
+> a lot of memory management, enter MPI infrequently, and end up
+> overflowing the queue and flushing all registrations over and over.
+> Having userspace register ranges means I can preallocate a landing area
+> for each event and make the MMU notifier hook pretty simple.
+>   
 
-Thanks, applied.
+Thanks, I see.
 
-Rusty.
+> Second, it turns out that having the filter does cut down quite a bit on
+> the events.  From running some Open MPI tests that Jeff provided, I saw
+> that there were often several times as many MMU notifier events
+> delivered in the kernel than ended up being reported to userspace.
+>   
+
+So maybe multiple invalidate_page are gathered into the same range
+event? If so, maybe it'd make sense to cache the last used rb_node in
+ummunotify_handle_notify()? (and if multiple ranges were invalidated at
+once, just don't cache anything, it shouldn't happen often anyway)
+
+>  > 2) What happens in case of fork? If father+child keep reading from the
+>  > previously-open /dev/ummunotify, each event will be delivered only to
+>  > the first reader, right? Fork is always a mess in HPC, but maybe there's
+>  > something to do here.
+>
+> It works just like any other file where fork results in two file
+> descriptors in two processes... as you point out the two processes can
+> step on each other.  (And in the ummunotify case the file remains
+> associated with the original mm)  However this is the case for simpler
+> stuff like sockets etc too, and I think uniformity of interface and
+> least surprise say that ummunotify should follow the same model.
+>   
+
+I was wondering if adding a special event such as "COWED" could help
+user-space. But maybe fork already invalidates all COW'ed ranges in
+copy_page_range() anyway?
+
+Brice
+
