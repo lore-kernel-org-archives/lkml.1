@@ -1,97 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbZHCI3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbZHCI3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754022AbZHCI3J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 04:29:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbZHCI3I
+	id S1754256AbZHCI3e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 04:29:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753886AbZHCI3d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 04:29:08 -0400
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:58912 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753296AbZHCI3G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 04:29:06 -0400
-Date: Mon, 3 Aug 2009 13:58:55 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: rusty@rustcorp.com.au
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       lguest@ozlabs.org, sfr@canb.auug.org.au,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [RESEND-PATCH] next-20090730 lguest build breaks with pfn_pmd()
-Message-ID: <20090803082855.GA9621@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20090729173611.b82478cd.sfr@canb.auug.org.au> <20090730120533.GB4955@linux.vnet.ibm.com> <20090731110356.cd0bc550.randy.dunlap@oracle.com>
+	Mon, 3 Aug 2009 04:29:33 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54504 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753334AbZHCI3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 04:29:33 -0400
+Date: Mon, 3 Aug 2009 10:29:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Subject: Re: NMI between switch_mm and switch_to
+Message-ID: <20090803082922.GB12498@elte.hu>
+References: <19054.33655.297932.261580@cargo.ozlabs.ibm.com> <1248767472.6987.2806.camel@twins>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090731110356.cd0bc550.randy.dunlap@oracle.com>
+In-Reply-To: <1248767472.6987.2806.camel@twins>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Randy Dunlap <randy.dunlap@oracle.com> [2009-07-31 11:03:56]:
 
-> On Thu, 30 Jul 2009 17:35:33 +0530 Kamalesh Babulal wrote:
-> 
-> > Hi Rusty,
-> > 
-> > 	next-20090729 allmodconfig build breaks at
-> > 
-> > drivers/lguest/page_tables.c: In function 'setup_pagetables':
-> > drivers/lguest/page_tables.c:987: error: incompatible type for argument 2 of 'pfn_pmd'
-> > drivers/lguest/page_tables.c:994: error: expected ';' before ')' token
-> > drivers/lguest/page_tables.c:994: error: expected statement before ')' token
-> > make[2]: *** [drivers/lguest/page_tables.o] Error 1
-> > 
-> > build failure is introduced by commit e07dd6220a4bf81a2549e7e37523a2557547d9d7
-> > I have tested the patch for the build failure only.
-> > 
-> > Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-> > --
-> >  drivers/lguest/page_tables.c |    4 ++--
-> >  1 files changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/drivers/lguest/page_tables.c b/drivers/lguest/page_tables.c
-> > index 8c86446..c610b82 100644
-> > --- a/drivers/lguest/page_tables.c
-> > +++ b/drivers/lguest/page_tables.c
-> > @@ -984,14 +984,14 @@ static unsigned long setup_pagetables(struct lguest *lg,
-> >  	for (i = j = 0; i < mapped_pages && j < PTRS_PER_PMD;
-> >  	     i += PTRS_PER_PTE, j++) {
-> >  		pmd = pfn_pmd(((unsigned long)&linear[i] - mem_base)/PAGE_SIZE,
-> > -			      _PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
-> > +			      __pgrot(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
-> 
-> s/__pgrot/__pgprot/
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+
+> On Tue, 2009-07-28 at 14:49 +1000, Paul Mackerras wrote:
 >
-Thanks randy, resending the patch after correcting the typo
+> > Ben H. suggested there might be a problem if we get a PMU 
+> > interrupt and try to do a stack trace of userspace in the 
+> > interval between when we call switch_mm() from 
+> > sched.c:context_switch() and when we call switch_to().  If we 
+> > get an NMI in that interval and do a stack trace of userspace, 
+> > we'll see the registers of the old task but when we peek at user 
+> > addresses we'll see the memory image for the new task, so the 
+> > stack trace we get will be completely bogus.
+> > 
+> > Is this in fact also a problem on x86, or is there some subtle 
+> > reason why it can't happen there?
+> 
+> I can't spot one, maybe Ingo can when he's back :-)
+> 
+> So I think this is very good spotting from Ben.
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
- drivers/lguest/page_tables.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Yeah.
 
-diff --git a/drivers/lguest/page_tables.c b/drivers/lguest/page_tables.c
-index 8c86446..cf94326 100644
---- a/drivers/lguest/page_tables.c
-+++ b/drivers/lguest/page_tables.c
-@@ -984,14 +984,14 @@ static unsigned long setup_pagetables(struct lguest *lg,
- 	for (i = j = 0; i < mapped_pages && j < PTRS_PER_PMD;
- 	     i += PTRS_PER_PTE, j++) {
- 		pmd = pfn_pmd(((unsigned long)&linear[i] - mem_base)/PAGE_SIZE,
--			      _PAGE_PRESENT | _PAGE_RW | _PAGE_USER);
-+			      __pgprot(_PAGE_PRESENT | _PAGE_RW | _PAGE_USER));
- 
- 		if (copy_to_user(&pmds[j], &pmd, sizeof(pmd)) != 0)
- 			return -EFAULT;
- 	}
- 
- 	/* One PGD entry, pointing to that PMD page. */
--	pgd = __pgd(((unsigned long)pmds - mem_base) | _PAGE_PRESENT));
-+	pgd = __pgd(((unsigned long)pmds - mem_base) | _PAGE_PRESENT);
- 	/* Copy it in as the first PGD entry (ie. addresses 0-1G). */
- 	if (copy_to_user(&pgdir[0], &pgd, sizeof(pgd)) != 0)
- 		return -EFAULT;
+> We could use preempt notifiers (or put in our own hooks) to 
+> disable callchains during the context switch I suppose.
 
-			
-					Kamalesh
+I think we should only disable user call-chains i think - the 
+in-kernel call-chain is still reliable.
+
+Also, i think we dont need preempt notifiers, we can use a simple 
+check like this:
+
+	if (current->mm &&
+		cpu_isset(smp_processor_id(), &current->mm->cpu_vm_mask) {
+
+		...
+	}
+
+In the user-call-chain code. We'd only touch the user memory image 
+if that bit is set. cpu_vm_mask is maintained atomically and before 
+we switch the MM, so it should be race-free.
+
+	Ingo
