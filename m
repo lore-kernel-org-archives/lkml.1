@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbZHCP7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755363AbZHCQBp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755355AbZHCP7u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 11:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbZHCP7t
+	id S1755363AbZHCQBp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 12:01:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755219AbZHCQBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 11:59:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39258 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755083AbZHCP7t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 11:59:49 -0400
-Subject: Re: scheduling co-processors
-From: Peter Zijlstra <peterz@infradead.org>
-To: Sherif Fadel <fahmy@vt.edu>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1249312084.5762.17.camel@sherif-laptop>
-References: <1249312084.5762.17.camel@sherif-laptop>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 03 Aug 2009 17:59:42 +0200
-Message-Id: <1249315182.7924.142.camel@twins>
+	Mon, 3 Aug 2009 12:01:45 -0400
+Received: from relay.atmel.no ([80.232.32.139]:56144 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755208AbZHCQBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 12:01:44 -0400
+Date: Mon, 3 Aug 2009 18:01:37 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Cc: nicolas.ferre@atmel.com, linux@maxim.org.za, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Switch atmel_serial to dev_pm_ops
+Message-ID: <20090803180137.6961a832@hskinnemoen-d830>
+In-Reply-To: <20090803155049.GD5002@laptop>
+References: <1249310347-22291-1-git-send-email-albin.tonnerre@free-electrons.com>
+	<20090803170947.2f199b93@hskinnemoen-d830>
+	<20090803155049.GD5002@laptop>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-03 at 18:08 +0300, Sherif Fadel wrote:
-> Hi,
+Albin Tonnerre wrote:
+> On Mon, Aug 03, 2009 at 05:09:47PM +0200, Haavard Skinnemoen wrote :
+> > Why not
 > 
-> I have a dual-core system on which I would like to treat one processor
-> as a scheduling co-processor. I have already implemented some custom
-> scheduling policies and tested them with SMP disabled, I would not like
-> to see if it is possible to have the scheduling algorithm running on one
-> core and the scheduled tasks running on another.
+> > #define atmel_serial_pm_ops	NULL
 > 
-> I do not know if I can somehow use cpus_allowed to restrict the kernel
-> to one core and the running tasks to another. Is this possible? 
+> Because the .pm field is set to the address of atmel_serial_pm_ops, and iirc
+> taking the address of NULL is not allowed.
 
-You'd have to hot-unplug the cpus to stop them from being used.
+Good point.
 
-> If so,
-> could you please inform me how one would go about this?
+> > >  		.name	= "atmel_usart",
+> > >  		.owner	= THIS_MODULE,
+> > > +		.pm = &atmel_serial_pm_ops,
+> 
+> > Please use a TAB instead of space to make everything nice and
+> > consistent.
+> 
+> That's weird, because my editor does show a TAB there, and applying the patch
+> with git am results in a TAB.
 
-Write code ;-), mind you that running stuff on a cpu without the
-scheduler present won't allow you to run regular linux stuff.
+Hmm, it doesn't show a TAB when I apply it here...
 
-> In case you are wondering why I would need this, I am writing a bunch of
-> high-overhead distributed scheduling algorithms and I want to mitigate
-> their overhead in this way.
+Oh well, it's not a big deal either way.
 
-Seems unlikely to work imho, most of the overhead is remote accesses and
-by moving everything to one cpu you'll incur those costs all the time.
+Haavard
