@@ -1,175 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbZHCL6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbZHCL6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754574AbZHCL6V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 07:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZHCL6U
+	id S1754784AbZHCL6f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 07:58:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbZHCL6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 07:58:20 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:44201 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752735AbZHCL6U (ORCPT
+	Mon, 3 Aug 2009 07:58:35 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:39854 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753438AbZHCL6e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 07:58:20 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [patch -mm v2] mm: introduce oom_adj_child
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, Paul Menage <menage@google.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <alpine.DEB.2.00.0907310210460.25447@chino.kir.corp.google.com>
-References: <20090731091744.B6DE.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0907310210460.25447@chino.kir.corp.google.com>
-Message-Id: <20090803200639.CC1D.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Mon, 3 Aug 2009 07:58:34 -0400
+Subject: Re: [PATCH 1/2] Create a DIV_ROUND_CLOSEST macro to do division
+ with rounding
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: Jean Delvare <khali@linux-fr.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>, Julia Lawall <julia@diku.dk>
+In-Reply-To: <20081111010132.1730.76566.stgit@elm3a70.beaverton.ibm.com>
+References: <20081111010132.1730.76566.stgit@elm3a70.beaverton.ibm.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon,  3 Aug 2009 20:58:16 +0900 (JST)
+Date: Mon, 03 Aug 2009 13:57:52 +0200
+Message-Id: <1249300672.7924.53.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, 31 Jul 2009, KOSAKI Motohiro wrote:
+On Mon, 2008-11-10 at 17:01 -0800, Darrick J. Wong wrote:
+> Create a helper macro to divide two numbers and round the result to the
+> nearest whole number.  This is a helper macro for hwmon drivers that
+> want to convert incoming sysfs values per standard hwmon practice, though
+> the macro itself can be used by anyone.
+
+Its too late to rename this now isn't it :-/
+
+DIV_ROUND_{UP,CEIL}
+DIV_ROUND_{DOWN,FLOOR}
+
+I get.
+
+The proposed thing is simply DIV_ROUND, but this DIV_ROUND_CLOSEST name
+is just wonky.
+
+Also, shouldn't it be something like ?
+
+  DIV_ROUND(x, y) (((x) + (((y)+1)/2)) / (y))
+
+Also, do we want the default rounding to be symmetric or asymmetric?
+
+I think round to half even or something would be nice, but would add an
+extra conditional, not sure its worth it (round away from zero only
+works for signed numbers and it would also cost one conditional).
+
+> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+> ---
 > 
-> > > That's because the oom killer only really considers the highest oom_adj 
-> > > value amongst all threads that share the same mm.  Allowing those threads 
-> > > to each have different oom_adj values leads (i) to an inconsistency in 
-> > > reporting /proc/pid/oom_score for how the oom killer selects a task to 
-> > > kill and (ii) the oom killer livelock that it fixes when one thread 
-> > > happens to be OOM_DISABLE.
-> > 
-> > I agree both. again I only disagree ABI breakage regression and
-> > stupid new /proc interface.
+>  include/linux/kernel.h |    6 ++++++
+>  1 files changed, 6 insertions(+), 0 deletions(-)
 > 
-> Let's state the difference in behavior as of 2.6.31-rc1: applications can 
-> no longer change the oom_adj value of a vfork() child prior to exec() 
-> without it also affecting the parent.  I agree that was previously 
-> allowed.  And it was that very allowance that LEADS TO THE LIVELOCK 
-> because they both share a VM and it was possible for the oom killer to 
-> select the one of the threads while the other was OOM_DISABLE.
-> 
-> This is an extremely simple livelock to trigger, AND YOU DON'T EVEN NEED 
-> CAP_SYS_RESOURCE TO DO IT.  Consider a job scheduler that superuser has 
-> set to OOM_DISABLE because of its necessity to the system.  Imagine if 
-> that job scheduler vfork's a child and sets its inherited oom_adj value of 
-> OOM_DISABLE to something higher so that the machine doesn't panic on 
-> exec() when the child spikes in memory usage when the application first 
-> starts.
-> 
-> Now imagine that either there are no other user threads or the job 
-> scheduler itself has allocated more pages than any other thread.  Or, more 
-> simply, imagine that it sets the child's oom_adj value to a higher 
-> priority than other threads based on some heuristic.  Regardless, if the 
-> system becomes oom before the exec() can happen and before the new VM is 
-> attached to the child, the machine livelocks.
-> 
-> That happens because of two things:
-> 
->  - the oom killer uses the oom_adj value to adjust the oom_score for a
->    task, and that score is mainly based on the size of each thread's VM,
->    and
-> 
->  - the oom killer cannot kill a thread that shares a VM with an
->    OOM_DISABLE thread because it will not lead to future memory freeing.
-> 
-> So the preferred solution for complete consistency and to fix the livelock 
-> is to make the oom_adj value a characteristic of the VM, because THAT'S 
-> WHAT IT ACTS ON.  The effective oom_adj value for a thread is always equal 
-> to the highest oom_adj value of any thread sharing its VM.
-> 
-> Do we really want to keep this inconsistency around forever in the kernel 
-> so that /proc/pid/oom_score actually means NOTHING because another thread 
-> sharing the memory has a different oom_adj?  Or do we want to take the 
-> opportunity to fix a broken userspace model that leads to a livelock to 
-> fix it and move on with a consistent interface and, with oom_adj_child, 
-> all the functionality you had before.
-> 
-> And you and KAMEZAWA-san can continue to call my patches stupid, but 
-> that's not adding anything to your argument.
-
-Then, your patch will got full reverting ;)
-I wouldn't hope this... please.
-
-
-> 
-> > Paul already pointed out this issue can be fixed without ABI change.
-> > 
-> 
-> I'm unaware of any viable solution that has been proposed, sorry.
-
-Please see my another mail. it's contain the patch.
-
-
-> > if you feel my stand point is double standard, I need explain me more.
-> > So, I don't think per-process oom_adj makes any regression on _real_ world.
-> 
-> Wrong, our machines have livelocked because of the exact scenario I 
-> described above.
-
-Hua?
-David, per-process oom_adj was made _your_ patch. Do you propose
-NAK yourself patch?
-
-maybe, We made any miscommunication?
-
-> > but vfork()'s one is real world issue.
-> > 
-> 
-> And it's based on a broken assumption that oom_adj values actually mean 
-> anything independent of other threads sharing the same memory.  That's a 
-> completely false assumption.  Applications that are tuning oom_adj value 
-> will rely on oom_scores, which are currently false if oom_adj differs 
-> amongst those threads, and should be written to how the oom killer uses 
-> the value.
-
-No. another process have another process value is valid assumption.
-sharing struct_mm is deeply implementaion detail. it shouldn't be
-exposed userland.
-
-Why do you think false assumption? In UNIX/Linux programming
-is frequently used following idiom.
-
-	if (fork() == 0) {
-		setting_something_process_property();
-		execve("new-command");
-	}
-
-vfork() is also frequently used. It is allowed long time common practice.
-I don't think we can says "hey, you are silly!" to application developer.
-
-
-> 
-> > And, May I explay why I think your oom_adj_child is wrong idea?
-> > The fact is: new feature introducing never fix regression. yes, some
-> > application use new interface and disappear the problem. but other
-> > application still hit the problem. that's not correct development style
-> > in kernel.
-> > 
-> 
-> So you're proposing that we forever allow /proc/pid/oom_score to be 
-> completely wrong for pid without any knowledge to userspace?  That we 
-> falsely advertise what it represents and allow userspace to believe that 
-> changing oom_adj for a thread sharing memory with other threads actually 
-> changes how the oom killer selects tasks?
-
-No. perhaps no doublly.
-
-1) In my patch, oom_score is also per-process value. all thread have the same
-   oom_score.
-   It's clear meaning.
-2) In almost case, oom_score display collect value because oom_adj is per-process
-   value too. 
-   Yes, there is one exception. vfork() and change oom_adj'ed process might display 
-   wrong value. but I don't think it is serious problem because vfork() process call
-   exec() soon.
-   Administrator never recognize this difference.
-
-> Please.
-
-David, I hope you join to fix this regression. I can't believe we
-can't fix this issue honestly.
-
-
-
+> diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+> index fba141d..fb02266 100644
+> --- a/include/linux/kernel.h
+> +++ b/include/linux/kernel.h
+> @@ -48,6 +48,12 @@ extern const char linux_proc_banner[];
+>  #define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
+>  #define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+>  #define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
+> +#define DIV_ROUND_CLOSEST(x, divisor)(			\
+> +{							\
+> +	typeof(divisor) __divisor = divisor;		\
+> +	(((x) + ((__divisor) / 2)) / (__divisor));	\
+> +}							\
+> +)
+>  
+>  #define _RET_IP_		(unsigned long)__builtin_return_address(0)
+>  #define _THIS_IP_  ({ __label__ __here; __here: (unsigned long)&&__here; })
 
 
