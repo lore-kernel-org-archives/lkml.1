@@ -1,75 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753041AbZHCHqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752903AbZHCHpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753041AbZHCHqE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 03:46:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbZHCHqD
+	id S1752903AbZHCHpm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 03:45:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbZHCHph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 03:46:03 -0400
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:35148 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753071AbZHCHqA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 03:46:00 -0400
-Date: Mon, 3 Aug 2009 13:15:54 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-ext4@vger.kernel.org
-Subject: Re: ext4 ioctl(FIEMAP) bug? observed in 2.6.29.4 (32-bit x86)
-Message-ID: <20090803074554.GA21042@skywalker>
-References: <4A76069C.1010801@rtr.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A76069C.1010801@rtr.ca>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 3 Aug 2009 03:45:37 -0400
+Received: from mga09.intel.com ([134.134.136.24]:6657 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752776AbZHCHpg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 03:45:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,312,1246863600"; 
+   d="scan'208";a="538085019"
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
+       Huang Ying <ying.huang@intel.com>
+Subject: [PATCH -v2 3/5] crypto: cryptd: Add support to access underlaying shash
+Date: Mon,  3 Aug 2009 15:45:29 +0800
+Message-Id: <1249285531-22422-3-git-send-email-ying.huang@intel.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1249285531-22422-2-git-send-email-ying.huang@intel.com>
+References: <1249285531-22422-1-git-send-email-ying.huang@intel.com>
+ <1249285531-22422-2-git-send-email-ying.huang@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 02, 2009 at 05:35:24PM -0400, Mark Lord wrote:
-> I have been stressing out the FIEMAP ioctl() quite a bit recently,
-> while working on the wiper.sh SSD TRIM utility (part of the hdparm package).
->
-> For an hour or so today, things got very confusing.
-> My wiper.sh script stopped working correctly, and I narrowed
-> it down to FIEMAP's incorrect use of the "LAST" flag.
->
-> Normally, FIEMAP signals the final extent of a file by
-> setting the "LAST" bit (bit-0) in flags.
-> When the application sees this flag, it knows it should
-> not need to issue any more FIEMAP calls.
->
-> But suddenly, for a couple of hours today, FIEMAP began
-> setting the "LAST" flag on every single FIEMAP call,
-> tricking my code into thinking that the file being
-> queried was a lot smaller than it really was.
->
-> No strace(), because I still hadn't figured-out what was going on,
-> but I did save this trace from debug code inside hdparm.
->
-> The file being FIEMAP'd was a 50GB+ file, filling the ext4
-> filesystem to near 100% capacity.  I have no idea what caused
-> FIEMAP to misbehave, but after a couple of hours it suddenly
-> started working correctly again.
->
-> This was all observed on 32-bit x86 Linux-2.6.29.4,
-> and no, it is not reproduceable.
->
-> A command-line "sync" was done before the file was
-> opened for FIEMAP.
->
-> The output below shows the sequence of FIEMAP calls
-> on the single massive file.  Notice that the first call
-> returned the "LAST" flag set, despite there being many
-> many more extents after that bunch.
->
+cryptd_alloc_ahash() will allocate a cryptd-ed ahash for specified
+algorithm name. The new allocated one is guaranteed to be cryptd-ed
+ahash, so the shash underlying can be gotten via cryptd_ahash_child().
 
-Can you try with
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+---
+ crypto/cryptd.c         |   35 +++++++++++++++++++++++++++++++++++
+ include/crypto/cryptd.h |   17 +++++++++++++++++
+ 2 files changed, 52 insertions(+), 0 deletions(-)
 
-commit c9877b205f6ce7943bb95281342f4001cc1c00ec
-Author: Eric Sandeen <sandeen@redhat.com>
-Date:   Fri May 1 23:32:06 2009 -0400
+diff --git a/crypto/cryptd.c b/crypto/cryptd.c
+index 2eb7058..3533582 100644
+--- a/crypto/cryptd.c
++++ b/crypto/cryptd.c
+@@ -682,6 +682,41 @@ void cryptd_free_ablkcipher(struct cryptd_ablkcipher *tfm)
+ }
+ EXPORT_SYMBOL_GPL(cryptd_free_ablkcipher);
+ 
++struct cryptd_ahash *cryptd_alloc_ahash(const char *alg_name,
++					u32 type, u32 mask)
++{
++	char cryptd_alg_name[CRYPTO_MAX_ALG_NAME];
++	struct crypto_ahash *tfm;
++
++	if (snprintf(cryptd_alg_name, CRYPTO_MAX_ALG_NAME,
++		     "cryptd(%s)", alg_name) >= CRYPTO_MAX_ALG_NAME)
++		return ERR_PTR(-EINVAL);
++	tfm = crypto_alloc_ahash(cryptd_alg_name, type, mask);
++	if (IS_ERR(tfm))
++		return ERR_CAST(tfm);
++	if (tfm->base.__crt_alg->cra_module != THIS_MODULE) {
++		crypto_free_ahash(tfm);
++		return ERR_PTR(-EINVAL);
++	}
++
++	return __cryptd_ahash_cast(tfm);
++}
++EXPORT_SYMBOL_GPL(cryptd_alloc_ahash);
++
++struct crypto_shash *cryptd_ahash_child(struct cryptd_ahash *tfm)
++{
++	struct cryptd_hash_ctx *ctx = crypto_ahash_ctx(&tfm->base);
++
++	return ctx->child;
++}
++EXPORT_SYMBOL_GPL(cryptd_ahash_child);
++
++void cryptd_free_ahash(struct cryptd_ahash *tfm)
++{
++	crypto_free_ahash(&tfm->base);
++}
++EXPORT_SYMBOL_GPL(cryptd_free_ahash);
++
+ static int __init cryptd_init(void)
+ {
+ 	int err;
+diff --git a/include/crypto/cryptd.h b/include/crypto/cryptd.h
+index 55fa7bb..2f65a6e 100644
+--- a/include/crypto/cryptd.h
++++ b/include/crypto/cryptd.h
+@@ -7,6 +7,7 @@
+ 
+ #include <linux/crypto.h>
+ #include <linux/kernel.h>
++#include <crypto/hash.h>
+ 
+ struct cryptd_ablkcipher {
+ 	struct crypto_ablkcipher base;
+@@ -24,4 +25,20 @@ struct cryptd_ablkcipher *cryptd_alloc_ablkcipher(const char *alg_name,
+ struct crypto_blkcipher *cryptd_ablkcipher_child(struct cryptd_ablkcipher *tfm);
+ void cryptd_free_ablkcipher(struct cryptd_ablkcipher *tfm);
+ 
++struct cryptd_ahash {
++	struct crypto_ahash base;
++};
++
++static inline struct cryptd_ahash *__cryptd_ahash_cast(
++	struct crypto_ahash *tfm)
++{
++	return (struct cryptd_ahash *)tfm;
++}
++
++/* alg_name should be algorithm to be cryptd-ed */
++struct cryptd_ahash *cryptd_alloc_ahash(const char *alg_name,
++					u32 type, u32 mask);
++struct crypto_shash *cryptd_ahash_child(struct cryptd_ahash *tfm);
++void cryptd_free_ahash(struct cryptd_ahash *tfm);
++
+ #endif
+-- 
+1.6.3.3
 
-    ext4: fix for fiemap last-block test
-
--aneesh
