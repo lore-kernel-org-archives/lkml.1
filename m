@@ -1,153 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932300AbZHCPOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932318AbZHCPOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932300AbZHCPOd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 11:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932157AbZHCPOc
+	id S932318AbZHCPOp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 11:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932308AbZHCPOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 11:14:32 -0400
-Received: from www84.your-server.de ([213.133.104.84]:54392 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932099AbZHCPOc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 11:14:32 -0400
-Subject: Re: [RFC 0/2] new kfifo API
-From: Stefani Seibold <stefani@seibold.net>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, open-iscsi@googlegroups.com,
-       Mike Christie <michaelc@cs.wisc.edu>
-In-Reply-To: <200908031642.15136.arnd@arndb.de>
-References: <1249306755.8358.8.camel@wall-e>
-	 <200908031642.15136.arnd@arndb.de>
-Content-Type: text/plain
-Date: Mon, 03 Aug 2009 17:14:18 +0200
-Message-Id: <1249312458.23559.25.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Mon, 3 Aug 2009 11:14:44 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42096 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932301AbZHCPOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 11:14:43 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Magnus Damm <magnus.damm@gmail.com>
+Subject: Re: [PATCH update] PM: Introduce core framework for run-time PM of I/O devices (rev. 11)
+Date: Mon, 3 Aug 2009 17:15:18 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc5-rjw; KDE/4.2.4; x86_64; ; )
+Cc: Alan Stern <stern@rowland.harvard.edu>, Greg KH <gregkh@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
+       Pavel Machek <pavel@ucw.cz>
+References: <200907221701.50449.rjw@sisk.pl> <200907312053.17914.rjw@sisk.pl> <aec7e5c30908022026t2fa8f328s27424073c9ff560b@mail.gmail.com>
+In-Reply-To: <aec7e5c30908022026t2fa8f328s27424073c9ff560b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+Content-Disposition: inline
+Message-Id: <200908031715.19302.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, den 03.08.2009, 16:42 +0200 schrieb Arnd Bergmann:
-> On Monday 03 August 2009, Stefani Seibold wrote:
-> > This is a proposal of a new generic kernel FIFO implementation.
-> > 
-> > The current kernel fifo API is not very widely used, because it has to many
-> > constrains. Only 13 files in the current 2.6.30 used it. FIFO's are
-> > like list are a very basic thing and a kfifo API which handles the most use
-> > case would save a lot of time and memory resources.
-> > 
-> > I think there are the following reasons why kfifo is not in use.
-> > 
-> > - There is a need of a spinlock despite you need it or not
-> > - A fifo can only allocated dynamically
-> > - There is no support for data records inside a fifo
-> > - The FIFO size can only a power of two
-> > - The API is to tall, some important functions are missing
+On Monday 03 August 2009, Magnus Damm wrote:
+> Hi again Rafael,
+
+Hi,
+
+> On Sat, Aug 1, 2009 at 3:53 AM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
+> > On Friday 31 July 2009, Magnus Damm wrote:
+> >> [Runtime PM v11]
 > 
-> My guess is that more importantly
+> >> > @@ -202,7 +203,9 @@ int driver_probe_device(struct device_dr
+> >> >        pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
+> >> >                 drv->bus->name, __func__, dev_name(dev), drv->name);
+> >> >
+> >> > +       pm_runtime_get_noresume(dev);
+> >> >        ret = really_probe(dev, drv);
+> >> > +       pm_runtime_put_noidle(dev);
+> >> >
+> >> >        return ret;
+> >> >  }
+> >>
+> >> This creates problems when drivers want to performing runtime resume
+> >> from within probe(). For more details please have a look at "[PATCH
+> >> 04/04] video: Runtime PM hack for SuperH LCDC driver".
+> >
+> > Ah, I see.  You'd like to call pm_runtime_get_sync() from .probe(), but that
+> > sees the usage counter different from zero and exits immediately.
 > 
-> - few people so far needed the functionality.
+> Exactly.
 > 
-
-This is not true, that is only your view. Don't speak for other people.
-A lot of device driver developer has its own implement of a fifo. I have
-written a lot of device drivers for embedded system and i always missed
-a clean designed and implemented fifo API subsystem.
- 
-> All of the existing users are in relatively obscure device drivers,
-> a total of 16 committers have touched code using it since 2.6.12
-> and almost all the changes were in iSCSI (cc:ing maintainer).
+> > OTOH, I think we should prevent suspends from racing with .probe() at the core
+> > level.  Hmm.
 > 
-> > So i decided to extend the kfifo in a more generic way without blowing up
-> > the API to much. This was my design goals:
-> > 
-> > - Generic usage: For kernel internal use or device driver
-> > - Provide an API for the most use case
-> > - Preserve memory resource
-> > - Linux style habit: DECLARE_KFIFO, DEFINE_KFIFO and INIT_KFIFO Macros
-> > - Slim API: The whole API provides 13 functions.
-> > - Ability to handle variable length records. Three type of records are
-> >   supported:
-> >   - Records between 0-255 bytes, with a record size field of 1 bytes
-> >   - Records between 0-65535 bytes, with a record size field of 2 bytes
-> >   - Byte stream, which no record size field
-> >   Inside a fifo this record types it is not a good idea to mix them together.
-> > - Direct copy_to_user from the fifo and copy_from_user into the fifo.
-> > - Single structure: The fifo structure contains the management variables and
-> >   the buffer. No extra indirection is needed to access the fifo buffer.
-> > - Lockless access: if only one reader and one writer is active on the fifo,
-> >   which is the common use case, there is no additional locking necessary.
-> > - Performance
-> > - Easy to use
+> Doesn't it make more sense to allow runtime suspend and resume to
+> happen after the pm_runtime_enable() call? What case are you trying to
+> protect against?
+
+If runtime PM is enabled before .probe() and then .probe() itself doesn't
+use pm_runtime_get_*(), then theory it is possible to have ->runtime_suspend()
+called while .probe() is running and there's no synchronization between the
+two.  So, we prevent ->runtime_suspend() from being called while .proble()
+is running with the help of the usage counter.
+
+> > One possible approach could be to call pm_runtime_resume() from
+> > sh_mobile_lcdc_probe() instead of pm_runtime_put_noidle().  Then, the platform
+> > code will have a chance to turn the device on and the later pm_runtime_get*()
+> > and pm_runtime_put*() calls will be balanced.  Of course, in that case the
+> > pm_runtime_get_noresume() in sh_mobile_lcdc_probe() won't be necessary any
+> > more.  Am I overlooking anything?
 > 
-> This sounds all nice, and your code looks clean and usable, but really,
-> what's your point?
-> 
-> If you have a new driver that will use all the new features, please
-> just tell us, that would make your point much clearer. Also, if
-> you can quantify an advantage (xxxx bytes code size reduce, yy%
-> performance improvement on Y benchmark) that would be really
-> helpful.
-> 
+> So for drivers that want to access hardware from .probe(), calling
+> pm_runtime_resume() after pm_runtime_enable() in should be enough?
 
-Yes, i have some drivers where i use a former version of the kfifo API.
-But the real advantage is not benchmarking.
+Yes, that should be sufficient (as long as the pm_runtime_resume() is
+successful).
 
-First if we have a useable kfifo API i think other developer will use
-it. And this will save memory.
-
-Second: The feature to store variable length records in the fifo is IMHO
-very nice. It save memory and give you a very flexible method to store
-datagrams. Especially many usb devices which works with variable data
-packages length. So the new API gives a very easy way to queue this kind
-of datagrams.
-
-Third: The old API did not have a kfifo_to_user oder a kfifo_from_user
-functionality, so everybody wo need to store userspace data must write
-it own version of this.
-
-Fourth: We don't discus about a havy API change, it is more subtle. And
-it doesn't blow up the kernel, okay, a little little bit. But i am sure
-that this well be gained back, if/when developer use this new API.    
-
-> > One thing is that the new API is not compatible with the old one. I had
-> > a look at the current user of the old kfifo API and it is easy to adapt it to
-> > the new API. These are the files which use currently the kfifo API:
-> > 
-> > /usr/src/linux/./drivers/char/nozomi.c
-> > /usr/src/linux/./drivers/char/sonypi.c
-> > /usr/src/linux/./drivers/infiniband/hw/cxgb3/cxio_resource.c
-> > /usr/src/linux/./drivers/media/video/meye.c
-> > /usr/src/linux/./drivers/net/wireless/libertas/main.c
-> > /usr/src/linux/./drivers/platform/x86/fujitsu-laptop.c
-> > /usr/src/linux/./drivers/platform/x86/sony-laptop.c
-> > /usr/src/linux/./drivers/scsi/libiscsi.c
-> > /usr/src/linux/./drivers/scsi/libiscsi_tcp.c
-> > /usr/src/linux/./drivers/scsi/libsrp.c
-> > /usr/src/linux/./drivers/usb/host/fhci.h
-> > /usr/src/linux/./net/dccp/probe.c
-> > 
-> > I will do this job if there is a tendency for substitute the old API. So i ask
-> > for comments....
-> 
-> I don't think we should risk introducing regressions if the only possible
-> benefit is to make an interface easy to use that almost nobody uses.
-
-I think this is a typical killer argument. Above you wrote the kfifo API
-is used only by some obscure device driver. Now you say it is to risky
-to change the API. The code is straightforward. If you don't use the new
-functionality, especially the variable records, there is only a minor
-difference between the old and the new API.
- 
-> We have also recently gained the include/linux/ring_buffer.h API which
-> appears to be a superset of the kfifo API.
-> 
-
-The ring_buffer API is in my opinion not the right thing for device
-drivers. I think the design goal for this was deep in kernel use.
-
-> 	Arnd <><
-
-
+Best,
+Rafael
