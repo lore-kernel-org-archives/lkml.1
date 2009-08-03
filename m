@@ -1,96 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbZHCSTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753608AbZHCSVD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753584AbZHCSTP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 14:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753542AbZHCSTO
+	id S1753608AbZHCSVD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 14:21:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZHCSVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 14:19:14 -0400
-Received: from kroah.org ([198.145.64.141]:53922 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752986AbZHCSTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 14:19:14 -0400
-Date: Mon, 3 Aug 2009 11:18:11 -0700
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Sergey Senozhatsky <sergey.senozhatsky@mail.by>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/2] proper tty-ldisc refcounting (was Re: WARNING at:
- drivers/char/tty_ldisc.c)
-Message-ID: <20090803181811.GA15848@kroah.com>
-References: <20090802120120.GA3097@localdomain.by>
- <alpine.LFD.2.01.0908020940530.3352@localhost.localdomain>
- <20090802190514.GA3278@localdomain.by>
- <alpine.LFD.2.01.0908021254580.3352@localhost.localdomain>
- <87k51l9apo.fsf@devron.myhome.or.jp>
- <alpine.LFD.2.01.0908021423490.3352@localhost.localdomain>
- <20090802234851.3fd1ac2c@lxorguk.ukuu.org.uk>
- <alpine.LFD.2.01.0908021654010.3352@localhost.localdomain>
- <alpine.LFD.2.01.0908031047010.3208@localhost.localdomain>
+	Mon, 3 Aug 2009 14:21:03 -0400
+Received: from mailout07.t-online.de ([194.25.134.83]:54595 "EHLO
+	mailout07.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753190AbZHCSVC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 14:21:02 -0400
+X-Greylist: delayed 2237 seconds by postgrey-1.27 at vger.kernel.org; Mon, 03 Aug 2009 14:21:01 EDT
+Message-ID: <4A7721B3.3060300@t-online.de>
+Date: Mon, 03 Aug 2009 19:43:15 +0200
+From: Harald Dunkel <harald.dunkel@t-online.de>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090623)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0908031047010.3208@localhost.localdomain>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Mahoney <jeffm@suse.com>
+Subject: Re: [Bug #13374] reiserfs blocked for more than 120secs
+References: <upey9ZSfnaF.A.-oE.rpgdKB@chimera>	 <7ixSg7D88bK.A.guG.mrgdKB@chimera> <c62985530908021801r2e302dfel86f69f62143cabc0@mail.gmail.com>
+In-Reply-To: <c62985530908021801r2e302dfel86f69f62143cabc0@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig60B127A1A9B5027D02397445"
+X-ID: VTo92aZA8heUFWWrExPFnhVHHCdqJfPgwk+3se-K2v4SQikaWNdb0JXm84Dwm7lg1w
+X-TOI-MSGID: d0974702-8bda-4772-a4c4-10467fedebcf
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 03, 2009 at 10:55:34AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Sun, 2 Aug 2009, Linus Torvalds wrote:
-> > 
-> > > You could just finish the ldisc refcounting. The last set of patches you
-> > > had off me split tty->ldisc from struct tty ready to do exactly that and
-> > > I don't think there is anything left that stops it happening now (It was
-> > > just not ready in time)
-> > 
-> > I considered it, and it didn't look horrible (the thing really is pretty 
-> > self-contained in tty_ldisc_try() and tty_ldisc_deref()).
-> 
-> Here we are.
-> 
-> It wasn't a straight conversion, because the old code really didn't think 
-> of the refcounts as lifetimes, but it wasn't too bad either. And doing the 
-> proper refcounting makes all the stupid "wait for idle" go away, so it 
-> actually removes code:
-> 
->  drivers/char/tty_ldisc.c  |  145 ++++++++++++++------------------------------
->  include/linux/tty_ldisc.h |    2 +-
->  2 files changed, 47 insertions(+), 100 deletions(-)
-> 
-> and generally simplifies the logic.
-> 
-> That said, looking through the code as I did this, I consciously avoided 
-> doing some other cleanups that really should be done some day. The code is 
-> chock-full of crazy stuff, where we just do
-> 
-> 	o_ldisc = tty->ldisc;
-> 
-> with dubious locking. None of that is _new_ though, and most of it is in 
-> the "replace one ldisc with another" code. And for all I know, maybe it's 
-> all fine, it's just very much not _obviously_ correct.
-> 
-> As far as I can tell, this short series should not introduce any new 
-> problems, but hey, maybe it leaks ldisc references like mad because I made 
-> some silly mistake. It's a _fairly_ straightforward cleanup, but it's a 
-> big cnnceptual change to go from a model with a "wait until idle and then 
-> free" to a model of "count users and free on last use", and I could easily 
-> have screwed up something.
-> 
-> "It works for me"(tm), including a shutdown/reboot cycle. 
-> 
-> Sergey, mind testing? You seem to be very good at consistently triggering 
-> odd things in the tty layer that few other people seem to ever hit.
-> 
-> Greg - I've signed off on these, but I wasn't planning on committing them 
-> to my master branch. So perhaps you could do these as the new tty 
-> maintainer, assuming we get an ack from Alan and testing by Sergey.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig60B127A1A9B5027D02397445
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Ok, I'll queue them up if they pass Sergey's testing.
+Fr=E9d=E9ric Weisbecker wrote:
+> Harald,
+>=20
+> Does it still happen with 2.6.31-rc5 ?
+>=20
 
-thanks,
+Using 2.6.30.x kernels (x>=3D0) I haven't seen this problem anymore.
+If it is still in, then it seems to be very hard to reproduce.
 
-greg k-h
+As suggested I am moving to 2.6.31-rc5. I will mail immediately if
+the problem comes back.
+
+
+Regards
+
+Harri
+
+
+
+--------------enig60B127A1A9B5027D02397445
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkp3IbgACgkQUTlbRTxpHjemEQCbBLiH7fQiOz+DhP2kBLNlBLwX
+GRgAmQHrFQ/qCkBYaxSLYaK6ecPKGopW
+=RpkA
+-----END PGP SIGNATURE-----
+
+--------------enig60B127A1A9B5027D02397445--
