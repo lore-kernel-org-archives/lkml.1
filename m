@@ -1,54 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932311AbZHCQ4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755441AbZHCQ5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932311AbZHCQ4h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 12:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbZHCQ4g
+	id S1755441AbZHCQ5O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 12:57:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754902AbZHCQ5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 12:56:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37464 "EHLO mx2.redhat.com"
+	Mon, 3 Aug 2009 12:57:13 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37485 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754808AbZHCQ4f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 12:56:35 -0400
-Subject: Re: fanotify - overall design before I start sending patches
-From: Eric Paris <eparis@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       malware-list@dmesg.printk.net, Valdis.Kletnieks@vt.edu, greg@kroah.com,
-       jcm@redhat.com, douglas.leeder@sophos.com, tytso@mit.edu,
-       arjan@infradead.org, david@lang.hm, jengelh@medozas.de,
-       aviro@redhat.com, mrkafk@gmail.com, alexl@redhat.com, jack@suse.cz,
-       tvrtko.ursulin@sophos.com, a.p.zijlstra@chello.nl,
-       alan@lxorguk.ukuu.org.uk, mmorley@hcl.in, pavel@suse.cz
-In-Reply-To: <20090803162303.GA31058@infradead.org>
-References: <1248466429.3567.82.camel@localhost>
-	 <20090803162303.GA31058@infradead.org>
-Content-Type: text/plain
-Date: Mon, 03 Aug 2009 12:55:35 -0400
-Message-Id: <1249318535.2447.26.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
+	id S1754836AbZHCQ5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 12:57:12 -0400
+Message-ID: <4A771676.6070200@redhat.com>
+Date: Mon, 03 Aug 2009 19:55:18 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+MIME-Version: 1.0
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 5/12] ksm: keep quiet while list empty
+References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils> <Pine.LNX.4.64.0908031313030.16754@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0908031313030.16754@sister.anvils>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-03 at 12:23 -0400, Christoph Hellwig wrote:
-> Before we get started:  You promised yo get rid of the dnotify and
-> inotify fields in the inode when moving over those two to fsnotify.
-> While the dnotify fields are gone the inotify_watches and inotify_mutex
-> fields are still around.  I'd really like to see this done before we
-> move on.
-
-In linux-next you will find that those fields are completely unused and
-the kernel can be compiled without them with 0 lose of functionality
-(they are still used in linus's kernel by the audit system)
-
-The only reason I didn't remove them entirely is because the inotify
-kernel interface is EXPORT_SYMBOL.  I plan to leave it around for a
-little bit until I'm sure out of tree users don't exist or at least had
-enough time to realize they need to use fsnotify.
-
-For all situations I know of at least, those 2 fields can be safely
-compiled out.  (aka !CONFIG_INOTIFY)
-
--Eric
-
+Hugh Dickins wrote:
+> ksm_scan_thread already sleeps in wait_event_interruptible until setting
+> ksm_run activates it; but if there's nothing on its list to look at, i.e.
+> nobody has yet said madvise MADV_MERGEABLE, it's a shame to be clocking
+> up system time and full_scans: ksmd_should_run added to check that too.
+>
+> And move the mutex_lock out around it: the new counts showed that when
+> ksm_run is stopped, a little work often got done afterwards, because it
+> had been read before taking the mutex.
+>
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> ---
+>
+>  mm/ksm.c |   28 ++++++++++++++++++++++------
+>  1 file changed, 22 insertions(+), 6 deletions(-)
+>
+> --- ksm4/mm/ksm.c	2009-08-02 13:49:59.000000000 +0100
+> +++ ksm5/mm/ksm.c	2009-08-02 13:50:07.000000000 +0100
+> @@ -1287,21 +1287,27 @@ static void ksm_do_scan(unsigned int sca
+>  	}
+>  }
+>  
+> +static int ksmd_should_run(void)
+> +{
+> +	return (ksm_run & KSM_RUN_MERGE) && !list_empty(&ksm_mm_head.mm_list);
+> +}
+> +
+>  static int ksm_scan_thread(void *nothing)
+>  {
+>  	set_user_nice(current, 5);
+>  
+>  	while (!kthread_should_stop()) {
+> -		if (ksm_run & KSM_RUN_MERGE) {
+> -			mutex_lock(&ksm_thread_mutex);
+> +		mutex_lock(&ksm_thread_mutex);
+> +		if (ksmd_should_run())
+>  			ksm_do_scan(ksm_thread_pages_to_scan);
+> -			mutex_unlock(&ksm_thread_mutex);
+> +		mutex_unlock(&ksm_thread_mutex);
+> +
+> +		if (ksmd_should_run()) {
+>  			schedule_timeout_interruptible(
+>  				msecs_to_jiffies(ksm_thread_sleep_millisecs));
+>  		} else {
+>  			wait_event_interruptible(ksm_thread_wait,
+> -					(ksm_run & KSM_RUN_MERGE) ||
+> -					kthread_should_stop());
+> +				ksmd_should_run() || kthread_should_stop());
+>  		}
+>  	}
+>  	return 0;
+> @@ -1346,10 +1352,16 @@ int ksm_madvise(struct vm_area_struct *v
+>  
+>  int __ksm_enter(struct mm_struct *mm)
+>  {
+> -	struct mm_slot *mm_slot = alloc_mm_slot();
+> +	struct mm_slot *mm_slot;
+> +	int needs_wakeup;
+> +
+> +	mm_slot = alloc_mm_slot();
+>  	if (!mm_slot)
+>  		return -ENOMEM;
+>  
+> +	/* Check ksm_run too?  Would need tighter locking */
+> +	needs_wakeup = list_empty(&ksm_mm_head.mm_list);
+> +
+>  	spin_lock(&ksm_mmlist_lock);
+>  	insert_to_mm_slots_hash(mm, mm_slot);
+>  	/*
+> @@ -1361,6 +1373,10 @@ int __ksm_enter(struct mm_struct *mm)
+>  	spin_unlock(&ksm_mmlist_lock);
+>  
+>  	set_bit(MMF_VM_MERGEABLE, &mm->flags);
+> +
+> +	if (needs_wakeup)
+> +		wake_up_interruptible(&ksm_thread_wait);
+> +
+>  	return 0;
+>  }
+>  
+>   
+ACK
