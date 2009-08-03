@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752352AbZHCRSG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbZHCRSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752352AbZHCRSG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 13:18:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbZHCRSD
+	id S1752664AbZHCRSY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 13:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbZHCRSV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 13:18:03 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:55182 "EHLO
+	Mon, 3 Aug 2009 13:18:21 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:40696 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752009AbZHCRR4 (ORCPT
+	with ESMTP id S1752616AbZHCRSR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 13:17:56 -0400
+	Mon, 3 Aug 2009 13:18:17 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH 1/7] shm-signal: shared-memory signals
+Subject: [PATCH 7/7] venet: add scatter-gather/GSO support
 To: linux-kernel@vger.kernel.org
 Cc: alacrityvm-devel@lists.sourceforge.net, netdev@vger.kernel.org
-Date: Mon, 03 Aug 2009 13:17:35 -0400
-Message-ID: <20090803171735.17268.37490.stgit@dev.haskins.net>
+Date: Mon, 03 Aug 2009 13:18:07 -0400
+Message-ID: <20090803171807.17268.49836.stgit@dev.haskins.net>
 In-Reply-To: <20090803171030.17268.26962.stgit@dev.haskins.net>
 References: <20090803171030.17268.26962.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -26,463 +26,392 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-shm-signal provides a generic shared-memory based bidirectional
-signaling mechanism.  It is used in conjunction with an existing
-signal transport (such as posix-signals, interrupts, pipes, etc) to
-increase the efficiency of the transport since the state information
-is directly accessible to both sides of the link.  The shared-memory
-design provides very cheap access to features such as event-masking
-and spurious delivery mititgation, and is useful implementing higher
-level shared-memory constructs such as rings.
-
-We will use this mechanism as the basis for a shared-memory interface
-later in the series.
+SG/GSO significantly enhance the performance of network traffic under
+certain circumstances.  We implement this feature as a separate patch
+to avoid intially complicating the baseline venet driver.  This will
+presumably make the review process slightly easier, since we can
+focus on the basic interface first.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- include/linux/Kbuild       |    1 
- include/linux/shm_signal.h |  189 +++++++++++++++++++++++++++++++++++++++++++
- lib/Kconfig                |    9 ++
- lib/Makefile               |    1 
- lib/shm_signal.c           |  192 ++++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 392 insertions(+), 0 deletions(-)
- create mode 100644 include/linux/shm_signal.h
- create mode 100644 lib/shm_signal.c
+ drivers/net/vbus-enet.c |  249 +++++++++++++++++++++++++++++++++++++++++++++--
+ include/linux/venet.h   |   39 +++++++
+ 2 files changed, 275 insertions(+), 13 deletions(-)
 
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index 334a359..01d67b6 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -331,6 +331,7 @@ unifdef-y += serial_core.h
- unifdef-y += serial.h
- unifdef-y += serio.h
- unifdef-y += shm.h
-+unifdef-y += shm_signal.h
- unifdef-y += signal.h
- unifdef-y += smb_fs.h
- unifdef-y += smb.h
-diff --git a/include/linux/shm_signal.h b/include/linux/shm_signal.h
-new file mode 100644
-index 0000000..21cf750
---- /dev/null
-+++ b/include/linux/shm_signal.h
-@@ -0,0 +1,189 @@
-+/*
-+ * Copyright 2009 Novell.  All Rights Reserved.
-+ *
-+ * Author:
-+ *      Gregory Haskins <ghaskins@novell.com>
-+ *
-+ * This file is free software; you can redistribute it and/or modify
-+ * it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
-+ */
-+
-+#ifndef _LINUX_SHM_SIGNAL_H
-+#define _LINUX_SHM_SIGNAL_H
-+
-+#include <linux/types.h>
-+
-+/*
-+ *---------
-+ * The following structures represent data that is shared across boundaries
-+ * which may be quite disparate from one another (e.g. Windows vs Linux,
-+ * 32 vs 64 bit, etc).  Therefore, care has been taken to make sure they
-+ * present data in a manner that is independent of the environment.
-+ *-----------
-+ */
-+
-+#define SHM_SIGNAL_MAGIC 0x58fa39df
-+#define SHM_SIGNAL_VER   1
-+
-+struct shm_signal_irq {
-+	__u8                  enabled;
-+	__u8                  pending;
-+	__u8                  dirty;
-+};
-+
-+enum shm_signal_locality {
-+	shm_locality_north,
-+	shm_locality_south,
-+};
-+
-+struct shm_signal_desc {
-+	__u32                 magic;
-+	__u32                 ver;
-+	struct shm_signal_irq irq[2];
-+};
-+
-+/* --- END SHARED STRUCTURES --- */
-+
-+#ifdef __KERNEL__
-+
-+#include <linux/kref.h>
-+#include <linux/interrupt.h>
-+
-+struct shm_signal_notifier {
-+	void (*signal)(struct shm_signal_notifier *);
-+};
-+
-+struct shm_signal;
-+
-+struct shm_signal_ops {
-+	int      (*inject)(struct shm_signal *s);
-+	void     (*fault)(struct shm_signal *s, const char *fmt, ...);
-+	void     (*release)(struct shm_signal *s);
-+};
-+
-+enum {
-+	shm_signal_in_wakeup,
-+};
-+
-+struct shm_signal {
-+	struct kref                 kref;
-+	spinlock_t                  lock;
-+	enum shm_signal_locality    locale;
-+	unsigned long               flags;
-+	struct shm_signal_ops      *ops;
-+	struct shm_signal_desc     *desc;
-+	struct shm_signal_notifier *notifier;
-+	struct tasklet_struct       deferred_notify;
-+};
-+
-+#define SHM_SIGNAL_FAULT(s, fmt, args...)  \
-+  ((s)->ops->fault ? (s)->ops->fault((s), fmt, ## args) : panic(fmt, ## args))
-+
-+ /*
-+  * These functions should only be used internally
-+  */
-+void _shm_signal_release(struct kref *kref);
-+void _shm_signal_wakeup(struct shm_signal *s);
-+
-+/**
-+ * shm_signal_init() - initialize an SHM_SIGNAL
-+ * @s:        SHM_SIGNAL context
-+ *
-+ * Initializes SHM_SIGNAL context before first use
-+ *
-+ **/
-+void shm_signal_init(struct shm_signal *s, enum shm_signal_locality locale,
-+		     struct shm_signal_ops *ops, struct shm_signal_desc *desc);
-+
-+/**
-+ * shm_signal_get() - acquire an SHM_SIGNAL context reference
-+ * @s:        SHM_SIGNAL context
-+ *
-+ **/
-+static inline struct shm_signal *shm_signal_get(struct shm_signal *s)
-+{
-+	kref_get(&s->kref);
-+
-+	return s;
-+}
-+
-+/**
-+ * shm_signal_put() - release an SHM_SIGNAL context reference
-+ * @s:        SHM_SIGNAL context
-+ *
-+ **/
-+static inline void shm_signal_put(struct shm_signal *s)
-+{
-+	kref_put(&s->kref, _shm_signal_release);
-+}
-+
-+/**
-+ * shm_signal_enable() - enables local notifications on an SHM_SIGNAL
-+ * @s:        SHM_SIGNAL context
-+ * @flags:      Reserved for future use, must be 0
-+ *
-+ * Enables/unmasks the registered notifier (if applicable) to receive wakeups
-+ * whenever the remote side performs an shm_signal() operation. A notification
-+ * will be dispatched immediately if any pending signals have already been
-+ * issued prior to invoking this call.
-+ *
-+ * This is synonymous with unmasking an interrupt.
-+ *
-+ * Returns: success = 0, <0 = ERRNO
-+ *
-+ **/
-+int shm_signal_enable(struct shm_signal *s, int flags);
-+
-+/**
-+ * shm_signal_disable() - disable local notifications on an SHM_SIGNAL
-+ * @s:        SHM_SIGNAL context
-+ * @flags:      Reserved for future use, must be 0
-+ *
-+ * Disables/masks the registered shm_signal_notifier (if applicable) from
-+ * receiving any further notifications.  Any subsequent calls to shm_signal()
-+ * by the remote side will update the shm as dirty, but will not traverse the
-+ * locale boundary and will not invoke the notifier callback.  Signals
-+ * delivered while masked will be deferred until shm_signal_enable() is
-+ * invoked.
-+ *
-+ * This is synonymous with masking an interrupt
-+ *
-+ * Returns: success = 0, <0 = ERRNO
-+ *
-+ **/
-+int shm_signal_disable(struct shm_signal *s, int flags);
-+
-+/**
-+ * shm_signal_inject() - notify the remote side about shm changes
-+ * @s:        SHM_SIGNAL context
-+ * @flags:      Reserved for future use, must be 0
-+ *
-+ * Marks the shm state as "dirty" and, if enabled, will traverse
-+ * a locale boundary to inject a remote notification.  The remote
-+ * side controls whether the notification should be delivered via
-+ * the shm_signal_enable/disable() interface.
-+ *
-+ * The specifics of how to traverse a locale boundary are abstracted
-+ * by the shm_signal_ops->signal() interface and provided by a particular
-+ * implementation.  However, typically going north to south would be
-+ * something like a syscall/hypercall, and going south to north would be
-+ * something like a posix-signal/guest-interrupt.
-+ *
-+ * Returns: success = 0, <0 = ERRNO
-+ *
-+ **/
-+int shm_signal_inject(struct shm_signal *s, int flags);
-+
-+#endif /* __KERNEL__ */
-+
-+#endif /* _LINUX_SHM_SIGNAL_H */
-diff --git a/lib/Kconfig b/lib/Kconfig
-index bb1326d..136da19 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -200,4 +200,13 @@ config NLATTR
- config GENERIC_ATOMIC64
-        bool
+diff --git a/drivers/net/vbus-enet.c b/drivers/net/vbus-enet.c
+index 8fcc2d6..5aa56ff 100644
+--- a/drivers/net/vbus-enet.c
++++ b/drivers/net/vbus-enet.c
+@@ -42,6 +42,8 @@ static int rx_ringlen = 256;
+ module_param(rx_ringlen, int, 0444);
+ static int tx_ringlen = 256;
+ module_param(tx_ringlen, int, 0444);
++static int sg_enabled = 1;
++module_param(sg_enabled, int, 0444);
  
-+config SHM_SIGNAL
-+	tristate "SHM Signal - Generic shared-memory signaling mechanism"
-+	default n
-+	help
-+	 Provides a shared-memory based signaling mechansim to indicate
-+         memory-dirty notifications between two end-points.
-+
-+	 If unsure, say N
-+
- endmenu
-diff --git a/lib/Makefile b/lib/Makefile
-index 2e78277..503bf7b 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -76,6 +76,7 @@ obj-$(CONFIG_TEXTSEARCH_BM) += ts_bm.o
- obj-$(CONFIG_TEXTSEARCH_FSM) += ts_fsm.o
- obj-$(CONFIG_SMP) += percpu_counter.o
- obj-$(CONFIG_AUDIT_GENERIC) += audit.o
-+obj-$(CONFIG_SHM_SIGNAL) += shm_signal.o
+ #define PDEBUG(_dev, fmt, args...) dev_dbg(&(_dev)->dev, fmt, ## args)
  
- obj-$(CONFIG_SWIOTLB) += swiotlb.o
- obj-$(CONFIG_IOMMU_HELPER) += iommu-helper.o
-diff --git a/lib/shm_signal.c b/lib/shm_signal.c
-new file mode 100644
-index 0000000..fbba74f
---- /dev/null
-+++ b/lib/shm_signal.c
-@@ -0,0 +1,192 @@
-+/*
-+ * Copyright 2009 Novell.  All Rights Reserved.
-+ *
-+ * See include/linux/shm_signal.h for documentation
-+ *
-+ * Author:
-+ *      Gregory Haskins <ghaskins@novell.com>
-+ *
-+ * This file is free software; you can redistribute it and/or modify
-+ * it under the terms of version 2 of the GNU General Public License
-+ * as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software Foundation,
-+ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
-+ */
+@@ -58,8 +60,17 @@ struct vbus_enet_priv {
+ 	struct vbus_enet_queue     rxq;
+ 	struct vbus_enet_queue     txq;
+ 	struct tasklet_struct      txtask;
++	struct {
++		int                sg:1;
++		int                tso:1;
++		int                ufo:1;
++		int                tso6:1;
++		int                ecn:1;
++	} flags;
+ };
+ 
++static void vbus_enet_tx_reap(struct vbus_enet_priv *priv, int force);
 +
-+#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/shm_signal.h>
-+
-+int shm_signal_enable(struct shm_signal *s, int flags)
+ static struct vbus_enet_priv *
+ napi_to_priv(struct napi_struct *napi)
+ {
+@@ -193,6 +204,93 @@ rx_teardown(struct vbus_enet_priv *priv)
+ 	}
+ }
+ 
++static int
++tx_setup(struct vbus_enet_priv *priv)
 +{
-+	struct shm_signal_irq *irq = &s->desc->irq[s->locale];
-+	unsigned long iflags;
++	struct ioq *ioq = priv->txq.queue;
++	struct ioq_iterator iter;
++	int i;
++	int ret;
 +
-+	spin_lock_irqsave(&s->lock, iflags);
++	if (!priv->flags.sg)
++		/*
++		 * There is nothing to do for a ring that is not using
++		 * scatter-gather
++		 */
++		return 0;
 +
-+	irq->enabled = 1;
-+	wmb();
++	ret = ioq_iter_init(ioq, &iter, ioq_idxtype_valid, 0);
++	BUG_ON(ret < 0);
 +
-+	if ((irq->dirty || irq->pending)
-+	    && !test_bit(shm_signal_in_wakeup, &s->flags)) {
-+		rmb();
-+		tasklet_schedule(&s->deferred_notify);
-+	}
-+
-+	spin_unlock_irqrestore(&s->lock, iflags);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(shm_signal_enable);
-+
-+int shm_signal_disable(struct shm_signal *s, int flags)
-+{
-+	struct shm_signal_irq *irq = &s->desc->irq[s->locale];
-+
-+	irq->enabled = 0;
-+	wmb();
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(shm_signal_disable);
-+
-+/*
-+ * signaling protocol:
-+ *
-+ * each side of the shm_signal has an "irq" structure with the following
-+ * fields:
-+ *
-+ *    - enabled: controlled by shm_signal_enable/disable() to mask/unmask
-+ *               the notification locally
-+ *    - dirty:   indicates if the shared-memory is dirty or clean.  This
-+ *               is updated regardless of the enabled/pending state so that
-+ *               the state is always accurately tracked.
-+ *    - pending: indicates if a signal is pending to the remote locale.
-+ *               This allows us to determine if a remote-notification is
-+ *               already in flight to optimize spurious notifications away.
-+ */
-+int shm_signal_inject(struct shm_signal *s, int flags)
-+{
-+	/* Load the irq structure from the other locale */
-+	struct shm_signal_irq *irq = &s->desc->irq[!s->locale];
++	ret = ioq_iter_seek(&iter, ioq_seek_set, 0, 0);
++	BUG_ON(ret < 0);
 +
 +	/*
-+	 * We always mark the remote side as dirty regardless of whether
-+	 * they need to be notified.
++	 * Now populate each descriptor with an empty SG descriptor
 +	 */
-+	irq->dirty = 1;
-+	wmb();   /* dirty must be visible before we test the pending state */
++	for (i = 0; i < tx_ringlen; i++) {
++		struct venet_sg *vsg;
++		size_t iovlen = sizeof(struct venet_iov) * (MAX_SKB_FRAGS-1);
++		size_t len = sizeof(*vsg) + iovlen;
 +
-+	if (irq->enabled && !irq->pending) {
-+		rmb();
++		vsg = kzalloc(len, GFP_KERNEL);
++		if (!vsg)
++			return -ENOMEM;
 +
-+		/*
-+		 * If the remote side has enabled notifications, and we do
-+		 * not see a notification pending, we must inject a new one.
-+		 */
-+		irq->pending = 1;
-+		wmb(); /* make it visible before we do the injection */
++		iter.desc->cookie = (u64)vsg;
++		iter.desc->len    = len;
++		iter.desc->ptr    = (u64)__pa(vsg);
 +
-+		s->ops->inject(s);
++		ret = ioq_iter_seek(&iter, ioq_seek_next, 0, 0);
++		BUG_ON(ret < 0);
 +	}
 +
 +	return 0;
 +}
-+EXPORT_SYMBOL_GPL(shm_signal_inject);
-+
-+void _shm_signal_wakeup(struct shm_signal *s)
-+{
-+	struct shm_signal_irq *irq = &s->desc->irq[s->locale];
-+	int dirty;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&s->lock, flags);
-+
-+	__set_bit(shm_signal_in_wakeup, &s->flags);
-+
-+	/*
-+	 * The outer loop protects against race conditions between
-+	 * irq->dirty and irq->pending updates
-+	 */
-+	while (irq->enabled && (irq->dirty || irq->pending)) {
-+
-+		/*
-+		 * Run until we completely exhaust irq->dirty (it may
-+		 * be re-dirtied by the remote side while we are in the
-+		 * callback).  We let "pending" remain untouched until we have
-+		 * processed them all so that the remote side knows we do not
-+		 * need a new notification (yet).
-+		 */
-+		do {
-+			irq->dirty = 0;
-+			/* the unlock is an implicit wmb() for dirty = 0 */
-+			spin_unlock_irqrestore(&s->lock, flags);
-+
-+			if (s->notifier)
-+				s->notifier->signal(s->notifier);
-+
-+			spin_lock_irqsave(&s->lock, flags);
-+			dirty = irq->dirty;
-+			rmb();
-+
-+		} while (irq->enabled && dirty);
-+
-+		barrier();
-+
-+		/*
-+		 * We can finally acknowledge the notification by clearing
-+		 * "pending" after all of the dirty memory has been processed
-+		 * Races against this clearing are handled by the outer loop.
-+		 * Subsequent iterations of this loop will execute with
-+		 * pending=0 potentially leading to future spurious
-+		 * notifications, but this is an acceptable tradeoff as this
-+		 * will be rare and harmless.
-+		 */
-+		irq->pending = 0;
-+		wmb();
-+
-+	}
-+
-+	__clear_bit(shm_signal_in_wakeup, &s->flags);
-+	spin_unlock_irqrestore(&s->lock, flags);
-+
-+}
-+EXPORT_SYMBOL_GPL(_shm_signal_wakeup);
-+
-+void _shm_signal_release(struct kref *kref)
-+{
-+	struct shm_signal *s = container_of(kref, struct shm_signal, kref);
-+
-+	s->ops->release(s);
-+}
-+EXPORT_SYMBOL_GPL(_shm_signal_release);
 +
 +static void
-+deferred_notify(unsigned long data)
++tx_teardown(struct vbus_enet_priv *priv)
 +{
-+	struct shm_signal *s = (struct shm_signal *)data;
++	struct ioq *ioq = priv->txq.queue;
++	struct ioq_iterator iter;
++	int ret;
 +
-+	_shm_signal_wakeup(s);
++	/* forcefully free all outstanding transmissions */
++	vbus_enet_tx_reap(priv, 1);
++
++	if (!priv->flags.sg)
++		/*
++		 * There is nothing else to do for a ring that is not using
++		 * scatter-gather
++		 */
++		return;
++
++	ret = ioq_iter_init(ioq, &iter, ioq_idxtype_valid, 0);
++	BUG_ON(ret < 0);
++
++	/* seek to position 0 */
++	ret = ioq_iter_seek(&iter, ioq_seek_set, 0, 0);
++	BUG_ON(ret < 0);
++
++	/*
++	 * free each valid descriptor
++	 */
++	while (iter.desc->cookie) {
++		struct venet_sg *vsg = (struct venet_sg *)iter.desc->cookie;
++
++		iter.desc->valid = 0;
++		wmb();
++
++		iter.desc->ptr = 0;
++		iter.desc->cookie = 0;
++
++		ret = ioq_iter_seek(&iter, ioq_seek_next, 0, 0);
++		BUG_ON(ret < 0);
++
++		kfree(vsg);
++	}
 +}
 +
-+void shm_signal_init(struct shm_signal *s, enum shm_signal_locality locale,
-+		     struct shm_signal_ops *ops, struct shm_signal_desc *desc)
+ /*
+  * Open and close
+  */
+@@ -396,14 +494,67 @@ vbus_enet_tx_start(struct sk_buff *skb, struct net_device *dev)
+ 	BUG_ON(ret < 0);
+ 	BUG_ON(iter.desc->sown);
+ 
+-	/*
+-	 * We simply put the skb right onto the ring.  We will get an interrupt
+-	 * later when the data has been consumed and we can reap the pointers
+-	 * at that time
+-	 */
+-	iter.desc->cookie = (u64)skb;
+-	iter.desc->len = (u64)skb->len;
+-	iter.desc->ptr = (u64)__pa(skb->data);
++	if (priv->flags.sg) {
++		struct venet_sg *vsg = (struct venet_sg *)iter.desc->cookie;
++		struct scatterlist sgl[MAX_SKB_FRAGS+1];
++		struct scatterlist *sg;
++		int count, maxcount = ARRAY_SIZE(sgl);
++
++		sg_init_table(sgl, maxcount);
++
++		memset(vsg, 0, sizeof(*vsg));
++
++		vsg->cookie = (u64)skb;
++		vsg->len    = skb->len;
++
++		if (skb->ip_summed == CHECKSUM_PARTIAL) {
++			vsg->flags      |= VENET_SG_FLAG_NEEDS_CSUM;
++			vsg->csum.start  = skb->csum_start - skb_headroom(skb);
++			vsg->csum.offset = skb->csum_offset;
++		}
++
++		if (skb_is_gso(skb)) {
++			struct skb_shared_info *sinfo = skb_shinfo(skb);
++
++			vsg->flags |= VENET_SG_FLAG_GSO;
++
++			vsg->gso.hdrlen = skb_transport_header(skb) - skb->data;
++			vsg->gso.size = sinfo->gso_size;
++			if (sinfo->gso_type & SKB_GSO_TCPV4)
++				vsg->gso.type = VENET_GSO_TYPE_TCPV4;
++			else if (sinfo->gso_type & SKB_GSO_TCPV6)
++				vsg->gso.type = VENET_GSO_TYPE_TCPV6;
++			else if (sinfo->gso_type & SKB_GSO_UDP)
++				vsg->gso.type = VENET_GSO_TYPE_UDP;
++			else
++				panic("Virtual-Ethernet: unknown GSO type " \
++				      "0x%x\n", sinfo->gso_type);
++
++			if (sinfo->gso_type & SKB_GSO_TCP_ECN)
++				vsg->flags |= VENET_SG_FLAG_ECN;
++		}
++
++		count = skb_to_sgvec(skb, sgl, 0, skb->len);
++
++		BUG_ON(count > maxcount);
++
++		for (sg = &sgl[0]; sg; sg = sg_next(sg)) {
++			struct venet_iov *iov = &vsg->iov[vsg->count++];
++
++			iov->len = sg->length;
++			iov->ptr = (u64)sg_phys(sg);
++		}
++
++	} else {
++		/*
++		 * non scatter-gather mode: simply put the skb right onto the
++		 * ring.
++		 */
++		iter.desc->cookie = (u64)skb;
++		iter.desc->len = (u64)skb->len;
++		iter.desc->ptr = (u64)__pa(skb->data);
++	}
++
+ 	iter.desc->valid  = 1;
+ 
+ 	priv->dev->stats.tx_packets++;
+@@ -459,7 +610,17 @@ vbus_enet_tx_reap(struct vbus_enet_priv *priv, int force)
+ 	 * owned by the south-side
+ 	 */
+ 	while (iter.desc->valid && (!iter.desc->sown || force)) {
+-		struct sk_buff *skb = (struct sk_buff *)iter.desc->cookie;
++		struct sk_buff *skb;
++
++		if (priv->flags.sg) {
++			struct venet_sg *vsg;
++
++			vsg = (struct venet_sg *)iter.desc->cookie;
++			skb = (struct sk_buff *)vsg->cookie;
++
++		} else {
++			skb = (struct sk_buff *)iter.desc->cookie;
++		}
+ 
+ 		PDEBUG(priv->dev, "completed sending %d bytes\n", skb->len);
+ 
+@@ -538,6 +699,47 @@ tx_isr(struct ioq_notifier *notifier)
+        tasklet_schedule(&priv->txtask);
+ }
+ 
++static int
++vbus_enet_negcap(struct vbus_enet_priv *priv)
 +{
-+	memset(s, 0, sizeof(*s));
-+	kref_init(&s->kref);
-+	spin_lock_init(&s->lock);
-+	tasklet_init(&s->deferred_notify,
-+		     deferred_notify,
-+		     (unsigned long)s);
-+	s->locale   = locale;
-+	s->ops      = ops;
-+	s->desc     = desc;
++	int ret;
++	struct venet_capabilities caps;
++
++	memset(&caps, 0, sizeof(caps));
++
++	if (sg_enabled) {
++		caps.gid = VENET_CAP_GROUP_SG;
++		caps.bits |= (VENET_CAP_SG|VENET_CAP_TSO4|VENET_CAP_TSO6
++			      |VENET_CAP_ECN);
++		/* note: exclude UFO for now due to stack bug */
++	}
++
++	ret = devcall(priv, VENET_FUNC_NEGCAP, &caps, sizeof(caps));
++	if (ret < 0)
++		return ret;
++
++	if (caps.bits & VENET_CAP_SG) {
++		priv->flags.sg = true;
++
++		if (caps.bits & VENET_CAP_TSO4)
++			priv->flags.tso = true;
++		if (caps.bits & VENET_CAP_TSO6)
++			priv->flags.tso6 = true;
++		if (caps.bits & VENET_CAP_UFO)
++			priv->flags.ufo = true;
++		if (caps.bits & VENET_CAP_ECN)
++			priv->flags.ecn = true;
++
++		dev_info(&priv->dev->dev, "Detected GSO features %s%s%s%s\n",
++			 priv->flags.tso  ? "t" : "-",
++			 priv->flags.tso6 ? "T" : "-",
++			 priv->flags.ufo  ? "u" : "-",
++			 priv->flags.ecn  ? "e" : "-");
++	}
++
++	return 0;
 +}
-+EXPORT_SYMBOL_GPL(shm_signal_init);
++
+ static const struct net_device_ops vbus_enet_netdev_ops = {
+ 	.ndo_open          = vbus_enet_open,
+ 	.ndo_stop          = vbus_enet_stop,
+@@ -574,12 +776,21 @@ vbus_enet_probe(struct vbus_device_proxy *vdev)
+ 	priv->dev  = dev;
+ 	priv->vdev = vdev;
+ 
++	ret = vbus_enet_negcap(priv);
++	if (ret < 0) {
++		printk(KERN_INFO "VENET: Error negotiating capabilities for " \
++		       "%lld\n",
++		       priv->vdev->id);
++		goto out_free;
++	}
++
+ 	tasklet_init(&priv->txtask, deferred_tx_isr, (unsigned long)priv);
+ 
+ 	queue_init(priv, &priv->rxq, VENET_QUEUE_RX, rx_ringlen, rx_isr);
+ 	queue_init(priv, &priv->txq, VENET_QUEUE_TX, tx_ringlen, tx_isr);
+ 
+ 	rx_setup(priv);
++	tx_setup(priv);
+ 
+ 	ioq_notify_enable(priv->rxq.queue, 0);  /* enable interrupts */
+ 	ioq_notify_enable(priv->txq.queue, 0);
+@@ -599,6 +810,22 @@ vbus_enet_probe(struct vbus_device_proxy *vdev)
+ 
+ 	dev->features |= NETIF_F_HIGHDMA;
+ 
++	if (priv->flags.sg) {
++		dev->features |= NETIF_F_SG|NETIF_F_HW_CSUM|NETIF_F_FRAGLIST;
++
++		if (priv->flags.tso)
++			dev->features |= NETIF_F_TSO;
++
++		if (priv->flags.ufo)
++			dev->features |= NETIF_F_UFO;
++
++		if (priv->flags.tso6)
++			dev->features |= NETIF_F_TSO6;
++
++		if (priv->flags.ecn)
++			dev->features |= NETIF_F_TSO_ECN;
++	}
++
+ 	ret = register_netdev(dev);
+ 	if (ret < 0) {
+ 		printk(KERN_INFO "VENET: error %i registering device \"%s\"\n",
+@@ -626,9 +853,9 @@ vbus_enet_remove(struct vbus_device_proxy *vdev)
+ 	napi_disable(&priv->napi);
+ 
+ 	rx_teardown(priv);
+-	vbus_enet_tx_reap(priv, 1);
+-
+ 	ioq_put(priv->rxq.queue);
++
++	tx_teardown(priv);
+ 	ioq_put(priv->txq.queue);
+ 
+ 	dev->ops->close(dev, 0);
+diff --git a/include/linux/venet.h b/include/linux/venet.h
+index 586be40..47ed37d 100644
+--- a/include/linux/venet.h
++++ b/include/linux/venet.h
+@@ -37,8 +37,43 @@ struct venet_capabilities {
+ 	__u32 bits;
+ };
+ 
+-/* CAPABILITIES-GROUP 0 */
+-/* #define VENET_CAP_FOO    0   (No capabilities defined yet, for now) */
++#define VENET_CAP_GROUP_SG 0
++
++/* CAPABILITIES-GROUP SG */
++#define VENET_CAP_SG     (1 << 0)
++#define VENET_CAP_TSO4   (1 << 1)
++#define VENET_CAP_TSO6   (1 << 2)
++#define VENET_CAP_ECN    (1 << 3)
++#define VENET_CAP_UFO    (1 << 4)
++
++struct venet_iov {
++	__u32 len;
++	__u64 ptr;
++};
++
++#define VENET_SG_FLAG_NEEDS_CSUM (1 << 0)
++#define VENET_SG_FLAG_GSO        (1 << 1)
++#define VENET_SG_FLAG_ECN        (1 << 2)
++
++struct venet_sg {
++	__u64            cookie;
++	__u32            flags;
++	__u32            len;     /* total length of all iovs */
++	struct {
++		__u16    start;	  /* csum starting position */
++		__u16    offset;  /* offset to place csum */
++	} csum;
++	struct {
++#define VENET_GSO_TYPE_TCPV4	0	/* IPv4 TCP (TSO) */
++#define VENET_GSO_TYPE_UDP	1	/* IPv4 UDP (UFO) */
++#define VENET_GSO_TYPE_TCPV6	2	/* IPv6 TCP */
++		__u8     type;
++		__u16    hdrlen;
++		__u16    size;
++	} gso;
++	__u32            count;   /* nr of iovs */
++	struct venet_iov iov[1];
++};
+ 
+ #define VENET_FUNC_LINKUP   0
+ #define VENET_FUNC_LINKDOWN 1
 
