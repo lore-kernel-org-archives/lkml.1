@@ -1,155 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751927AbZHCRNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751735AbZHCRP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751927AbZHCRNR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 13:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbZHCRNP
+	id S1751735AbZHCRP0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 13:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZHCRP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 13:13:15 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53056 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751752AbZHCRNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 13:13:12 -0400
-Date: Mon, 3 Aug 2009 17:12:50 GMT
-From: tip-bot for Paul Mackerras <paulus@samba.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: ying.huang@intel.com, linux-kernel@vger.kernel.org, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, ying.huang@intel.com, tglx@linutronix.de
-In-Reply-To: <19062.55858.533494.471153@cargo.ozlabs.ibm.com>
-References: <19062.55858.533494.471153@cargo.ozlabs.ibm.com>
-Subject: [tip:x86/urgent] x86: Make 64-bit efi_ioremap use ioremap on MMIO regions
-Message-ID: <tip-19157af82cf0575032386f60378527904dbb7b8f@git.kernel.org>
-Git-Commit-ID: 19157af82cf0575032386f60378527904dbb7b8f
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 03 Aug 2009 17:12:51 +0000 (UTC)
+	Mon, 3 Aug 2009 13:15:26 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:42719 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751236AbZHCRPZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 13:15:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=i1rlwcZruxasy/xEpUhGjjXpjBTC6jaLdefKOSCb9RE0SUQPaqeTKiAlXUC+FHbquC
+         7ZhK4KbT0cuOHdt4rnaKFZ6HIN/4hbytXLcMtiyoTFvP5Z1tO9JT0FSj5CkCLaG1an5R
+         jOUMsoMroBPIm8U3l3eGAmy9ZYhfb9OFSKnkk=
+From: Roger Quadros <quadros.roger@gmail.com>
+To: broonie@sirena.org.uk
+Cc: philipp.zabel@gmail.com, linux-kernel@vger.kernel.org
+Subject: [PATCH v4] regulator: Add GPIO enable control to fixed voltage regulator driver
+Date: Mon,  3 Aug 2009 20:15:16 +0300
+Message-Id: <1249319716-17825-1-git-send-email-quadros.roger@gmail.com>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <quadros.roger@gmail.com>
+References: <quadros.roger@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  19157af82cf0575032386f60378527904dbb7b8f
-Gitweb:     http://git.kernel.org/tip/19157af82cf0575032386f60378527904dbb7b8f
-Author:     Paul Mackerras <paulus@samba.org>
-AuthorDate: Mon, 3 Aug 2009 22:38:10 +1000
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Mon, 3 Aug 2009 08:09:59 -0700
+From: Roger Quadros <ext-roger.quadros@nokia.com>
 
-x86: Make 64-bit efi_ioremap use ioremap on MMIO regions
+Now fixed regulators that have their enable pin connected to a GPIO line
+can use the fixed regulator driver for regulator enable/disable control.
+The GPIO number and polarity information is passed through platform data.
+GPIO enable control is achieved using gpiolib.
 
-Booting current 64-bit x86 kernels on the latest Apple MacBook
-(MacBook5,2) via EFI gives the following warning:
-
-[    0.182209] ------------[ cut here ]------------
-[    0.182222] WARNING: at arch/x86/mm/pageattr.c:581 __cpa_process_fault+0x44/0xa0()
-[    0.182227] Hardware name: MacBook5,2
-[    0.182231] CPA: called for zero pte. vaddr = ffff8800ffe00000 cpa->vaddr = ffff8800ffe00000
-[    0.182236] Modules linked in:
-[    0.182242] Pid: 0, comm: swapper Not tainted 2.6.31-rc4 #6
-[    0.182246] Call Trace:
-[    0.182254]  [<ffffffff8102c754>] ? __cpa_process_fault+0x44/0xa0
-[    0.182261]  [<ffffffff81048668>] warn_slowpath_common+0x78/0xd0
-[    0.182266]  [<ffffffff81048744>] warn_slowpath_fmt+0x64/0x70
-[    0.182272]  [<ffffffff8102c7ec>] ? update_page_count+0x3c/0x50
-[    0.182280]  [<ffffffff818d25c5>] ? phys_pmd_init+0x140/0x22e
-[    0.182286]  [<ffffffff8102c754>] __cpa_process_fault+0x44/0xa0
-[    0.182292]  [<ffffffff8102ce60>] __change_page_attr_set_clr+0x5f0/0xb40
-[    0.182301]  [<ffffffff810d1035>] ? vm_unmap_aliases+0x175/0x190
-[    0.182307]  [<ffffffff8102d4ae>] change_page_attr_set_clr+0xfe/0x3d0
-[    0.182314]  [<ffffffff8102dcca>] _set_memory_uc+0x2a/0x30
-[    0.182319]  [<ffffffff8102dd4b>] set_memory_uc+0x7b/0xb0
-[    0.182327]  [<ffffffff818afe31>] efi_enter_virtual_mode+0x2ad/0x2c9
-[    0.182334]  [<ffffffff818a1c66>] start_kernel+0x2db/0x3f4
-[    0.182340]  [<ffffffff818a1289>] x86_64_start_reservations+0x99/0xb9
-[    0.182345]  [<ffffffff818a1389>] x86_64_start_kernel+0xe0/0xf2
-[    0.182357] ---[ end trace 4eaa2a86a8e2da22 ]---
-[    0.182982] init_memory_mapping: 00000000ffffc000-0000000100000000
-[    0.182993]  00ffffc000 - 0100000000 page 4k
-
-This happens because the 64-bit version of efi_ioremap calls
-init_memory_mapping for all addresses, regardless of whether they are
-RAM or MMIO.  The EFI tables on this machine ask for runtime access to
-some MMIO regions:
-
-[    0.000000] EFI: mem195: type=11, attr=0x8000000000000000, range=[0x0000000093400000-0x0000000093401000) (0MB)
-[    0.000000] EFI: mem196: type=11, attr=0x8000000000000000, range=[0x00000000ffc00000-0x00000000ffc40000) (0MB)
-[    0.000000] EFI: mem197: type=11, attr=0x8000000000000000, range=[0x00000000ffc40000-0x00000000ffc80000) (0MB)
-[    0.000000] EFI: mem198: type=11, attr=0x8000000000000000, range=[0x00000000ffc80000-0x00000000ffca4000) (0MB)
-[    0.000000] EFI: mem199: type=11, attr=0x8000000000000000, range=[0x00000000ffca4000-0x00000000ffcb4000) (0MB)
-[    0.000000] EFI: mem200: type=11, attr=0x8000000000000000, range=[0x00000000ffcb4000-0x00000000ffffc000) (3MB)
-[    0.000000] EFI: mem201: type=11, attr=0x8000000000000000, range=[0x00000000ffffc000-0x0000000100000000) (0MB)
-
-This arranges to pass the EFI memory type through to efi_ioremap, and
-makes efi_ioremap use ioremap rather than init_memory_mapping if the
-type is EFI_MEMORY_MAPPED_IO.  With this, the above warning goes away.
-
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <19062.55858.533494.471153@cargo.ozlabs.ibm.com>
-Cc: Huang Ying <ying.huang@intel.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-
-
+Signed-off-by: Roger Quadros <ext-roger.quadros@nokia.com>
 ---
- arch/x86/include/asm/efi.h |    5 +++--
- arch/x86/kernel/efi.c      |    2 +-
- arch/x86/kernel/efi_64.c   |    6 +++++-
- 3 files changed, 9 insertions(+), 4 deletions(-)
+ drivers/regulator/fixed.c       |   78 ++++++++++++++++++++++++++++++++++++++-
+ include/linux/regulator/fixed.h |   21 ++++++++++
+ 2 files changed, 97 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/include/asm/efi.h b/arch/x86/include/asm/efi.h
-index edc90f2..8406ed7 100644
---- a/arch/x86/include/asm/efi.h
-+++ b/arch/x86/include/asm/efi.h
-@@ -33,7 +33,7 @@ extern unsigned long asmlinkage efi_call_phys(void *, ...);
- #define efi_call_virt6(f, a1, a2, a3, a4, a5, a6)	\
- 	efi_call_virt(f, a1, a2, a3, a4, a5, a6)
+diff --git a/drivers/regulator/fixed.c b/drivers/regulator/fixed.c
+index cdc674f..6cea02c 100644
+--- a/drivers/regulator/fixed.c
++++ b/drivers/regulator/fixed.c
+@@ -5,6 +5,9 @@
+  *
+  * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
+  *
++ * Copyright (c) 2009 Nokia Corporation
++ * Roger Quadros <ext-roger.quadros@nokia.com>
++ *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License as
+  * published by the Free Software Foundation; either version 2 of the
+@@ -20,20 +23,45 @@
+ #include <linux/platform_device.h>
+ #include <linux/regulator/driver.h>
+ #include <linux/regulator/fixed.h>
++#include <linux/gpio.h>
  
--#define efi_ioremap(addr, size)			ioremap_cache(addr, size)
-+#define efi_ioremap(addr, size, type)		ioremap_cache(addr, size)
+ struct fixed_voltage_data {
+ 	struct regulator_desc desc;
+ 	struct regulator_dev *dev;
+ 	int microvolts;
++	int gpio;
++	unsigned enable_high:1;
++	unsigned is_enabled:1;
+ };
  
- #else /* !CONFIG_X86_32 */
- 
-@@ -84,7 +84,8 @@ extern u64 efi_call6(void *fp, u64 arg1, u64 arg2, u64 arg3,
- 	efi_call6((void *)(efi.systab->runtime->f), (u64)(a1), (u64)(a2), \
- 		  (u64)(a3), (u64)(a4), (u64)(a5), (u64)(a6))
- 
--extern void __iomem *efi_ioremap(unsigned long addr, unsigned long size);
-+extern void __iomem *efi_ioremap(unsigned long addr, unsigned long size,
-+				 u32 type);
- 
- #endif /* CONFIG_X86_32 */
- 
-diff --git a/arch/x86/kernel/efi.c b/arch/x86/kernel/efi.c
-index 96f7ac0..19ccf6d 100644
---- a/arch/x86/kernel/efi.c
-+++ b/arch/x86/kernel/efi.c
-@@ -512,7 +512,7 @@ void __init efi_enter_virtual_mode(void)
- 			&& end_pfn <= max_pfn_mapped))
- 			va = __va(md->phys_addr);
- 		else
--			va = efi_ioremap(md->phys_addr, size);
-+			va = efi_ioremap(md->phys_addr, size, md->type);
- 
- 		md->virt_addr = (u64) (unsigned long) va;
- 
-diff --git a/arch/x86/kernel/efi_64.c b/arch/x86/kernel/efi_64.c
-index 22c3b78..ac0621a 100644
---- a/arch/x86/kernel/efi_64.c
-+++ b/arch/x86/kernel/efi_64.c
-@@ -98,10 +98,14 @@ void __init efi_call_phys_epilog(void)
- 	early_runtime_code_mapping_set_exec(0);
+ static int fixed_voltage_is_enabled(struct regulator_dev *dev)
+ {
+-	return 1;
++	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
++
++	return data->is_enabled;
  }
  
--void __iomem *__init efi_ioremap(unsigned long phys_addr, unsigned long size)
-+void __iomem *__init efi_ioremap(unsigned long phys_addr, unsigned long size,
-+				 u32 type)
+ static int fixed_voltage_enable(struct regulator_dev *dev)
  {
- 	unsigned long last_map_pfn;
- 
-+	if (type == EFI_MEMORY_MAPPED_IO)
-+		return ioremap(phys_addr, size);
++	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
 +
- 	last_map_pfn = init_memory_mapping(phys_addr, phys_addr + size);
- 	if ((last_map_pfn << PAGE_SHIFT) < phys_addr + size)
- 		return NULL;
++	if (gpio_is_valid(data->gpio)) {
++		gpio_set_value_cansleep(data->gpio, data->enable_high);
++		data->is_enabled = 1;
++	}
++
++	return 0;
++}
++
++static int fixed_voltage_disable(struct regulator_dev *dev)
++{
++	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
++
++	if (gpio_is_valid(data->gpio)) {
++		gpio_set_value_cansleep(data->gpio, !data->enable_high);
++		data->is_enabled = 0;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -58,6 +86,7 @@ static int fixed_voltage_list_voltage(struct regulator_dev *dev,
+ static struct regulator_ops fixed_voltage_ops = {
+ 	.is_enabled = fixed_voltage_is_enabled,
+ 	.enable = fixed_voltage_enable,
++	.disable = fixed_voltage_disable,
+ 	.get_voltage = fixed_voltage_get_voltage,
+ 	.list_voltage = fixed_voltage_list_voltage,
+ };
+@@ -85,12 +114,51 @@ static int regulator_fixed_voltage_probe(struct platform_device *pdev)
+ 	drvdata->desc.n_voltages = 1;
+ 
+ 	drvdata->microvolts = config->microvolts;
++	drvdata->gpio = config->gpio;
++
++	if (gpio_is_valid(config->gpio)) {
++		drvdata->enable_high = config->enable_high;
++
++		/* FIXME: Remove this print warning */
++		if (!config->gpio)
++			dev_warn(&pdev->dev,
++				"using GPIO 0 for regulator enable control\n");
++
++		ret = gpio_request(config->gpio, config->supply_name);
++		if (ret) {
++			dev_err(&pdev->dev,
++			   "Could not obtain regulator enable GPIO %d: %d\n",
++							config->gpio, ret);
++			goto err_name;
++		}
++
++		/* set output direction without changing state
++		 * to prevent glitch
++		 */
++		drvdata->is_enabled = config->enabled_at_boot;
++		ret = drvdata->is_enabled ?
++				config->enable_high : !config->enable_high;
++
++		ret = gpio_direction_output(config->gpio, ret);
++		if (ret) {
++			dev_err(&pdev->dev,
++			   "Could not configure regulator enable GPIO %d direction: %d\n",
++							config->gpio, ret);
++			goto err_gpio;
++		}
++
++	} else {
++		/* Regulator without GPIO control is considered
++		 * always enabled
++		 */
++		drvdata->is_enabled = 1;
++	}
+ 
+ 	drvdata->dev = regulator_register(&drvdata->desc, &pdev->dev,
+ 					  config->init_data, drvdata);
+ 	if (IS_ERR(drvdata->dev)) {
+ 		ret = PTR_ERR(drvdata->dev);
+-		goto err_name;
++		goto err_gpio;
+ 	}
+ 
+ 	platform_set_drvdata(pdev, drvdata);
+@@ -100,6 +168,9 @@ static int regulator_fixed_voltage_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
++err_gpio:
++	if (gpio_is_valid(config->gpio))
++		gpio_free(config->gpio);
+ err_name:
+ 	kfree(drvdata->desc.name);
+ err:
+@@ -115,6 +186,9 @@ static int regulator_fixed_voltage_remove(struct platform_device *pdev)
+ 	kfree(drvdata->desc.name);
+ 	kfree(drvdata);
+ 
++	if (gpio_is_valid(drvdata->gpio))
++		gpio_free(drvdata->gpio);
++
+ 	return 0;
+ }
+ 
+diff --git a/include/linux/regulator/fixed.h b/include/linux/regulator/fixed.h
+index 91b4da3..bd75b18 100644
+--- a/include/linux/regulator/fixed.h
++++ b/include/linux/regulator/fixed.h
+@@ -16,9 +16,30 @@
+ 
+ struct regulator_init_data;
+ 
++/**
++ * struct fixed_voltage_config - fixed_voltage_config structure
++ * @supply_name:	Name of the regulator supply
++ * @microvolts:		Output voltage of regulator
++ * @gpio:		GPIO to use for enable control
++ * 			set to -EINVAL if not used
++ * @enable_high:	Polarity of enable GPIO
++ *			1 = Active high, 0 = Active low
++ * @enabled_at_boot:	Whether regulator has been enabled at
++ * 			boot or not. 1 = Yes, 0 = No
++ * 			This is used to keep the regulator at
++ * 			the default state
++ * @init_data:		regulator_init_data
++ *
++ * This structure contains fixed voltage regulator configuration
++ * information that must be passed by platform code to the fixed
++ * voltage regulator driver.
++ */
+ struct fixed_voltage_config {
+ 	const char *supply_name;
+ 	int microvolts;
++	int gpio;
++	unsigned enable_high:1;
++	unsigned enabled_at_boot:1;
+ 	struct regulator_init_data *init_data;
+ };
+ 
+-- 
+1.5.6.3
+
