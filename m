@@ -1,234 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932328AbZHCQbJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932349AbZHCQbL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932328AbZHCQbJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 12:31:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932288AbZHCQbI
+	id S932349AbZHCQbL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 12:31:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932288AbZHCQbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 12:31:08 -0400
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:52547 "EHLO
-	TX2EHSOBE010.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932130AbZHCQbG (ORCPT
+	Mon, 3 Aug 2009 12:31:09 -0400
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:12893 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932171AbZHCQbH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 12:31:06 -0400
-X-SpamScore: -25
-X-BigFish: VPS-25(zz62a3L1432R98dN936eM1442J14e1Izz1202hzzz32i203h6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KNT77E-03-TPG-01
-Date: Mon, 3 Aug 2009 18:30:49 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 0/26] oprofile: Performance counter multiplexing
-Message-ID: <20090803163048.GT14610@erda.amd.com>
-References: <1248800846-25422-1-git-send-email-robert.richter@amd.com> <20090803112220.GA22936@elte.hu>
+	Mon, 3 Aug 2009 12:31:07 -0400
+X-Trace: 240238535/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.91.151/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.91.151
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqYEACutdkpPRVuX/2dsb2JhbACBUtFMhBgF
+X-IronPort-AV: E=Sophos;i="4.43,315,1246834800"; 
+   d="scan'208";a="240238535"
+Date: Mon, 3 Aug 2009 17:30:58 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Leon Woestenberg <leon.woestenberg@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: get_user_pages() on an mmap()ed file allowed? What to do if 0
+ <  get_user_pages(..., nr_pages, ...) < nr_pages?
+In-Reply-To: <c384c5ea0908030823y494ee8bei85aa62c1470fa3ec@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0908031724200.2296@sister.anvils>
+References: <c384c5ea0908030823y494ee8bei85aa62c1470fa3ec@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <20090803112220.GA22936@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 03 Aug 2009 16:30:50.0089 (UTC) FILETIME=[C3116D90:01CA1457]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03.08.09 13:22:20, Ingo Molnar wrote:
-> Ok. The oprofile patches have been going upstream via -tip and i've
-> been pulling and testing/relaying them for upstream for more than a
-> year with pretty good results.
+On Mon, 3 Aug 2009, Leon Woestenberg wrote:
 > 
-> Now i'm also co-maintaining perfcounters and because it's a full 
-> oprofile replacement (which aspect Robert seems to disagree with ;-) 
-
-I can't imagine a full oprofile replacement. This would require a
-rewrite of all userland tools and also the complete port of all
-architectures (which has to be done for each architecture
-individually). And first of all, I don't think it is necessary to do
-this, why not keep different interfaces for different purposes? Why
-reimplement architectural code if the current implementation fits its
-need? We should reduce duplicate implementations such as hardware
-drivers, especially for x86 (I remember implementing the same pmu
-feature for three kinds of kernel profiling subsystems). And of
-course, future hardware implementations should support a generic
-perfcounter abstraction to only have a single implementation for all.
-
-> i'd like to make sure it's not seen by Robert as a conflict of 
-> interest so let me raise the following questions publicly:
+> I have a PCI device driver performing DMA to a scattered user-space buffer.
+> Given a malloc()ed buffer, get_user_pages(..., buffer, nr_pages, ...)
+> always returns to requested number of pages and everything works as
+> expected.
+> So far so good.
 > 
-> This new oprofile multiplexing mechanism really overlaps the PMU 
-> abstractions that perfcounters already provide, and i disagree with 
-> this general direction. The code you wrote is clean though so i've 
-> (reluctantly) pulled it into tip:oprofile and started testing it, 
-> and will send it Linus-wards in the .32 merge window - unless Linus 
-> agrees with my general objections against this oprofile direction.
+> Since that I changed userspace to mmap() a file, instead of
+> malloc()ing a buffer.
+> The mmap() in userspace works.
+> 
+> However, in the driver get_user_pages() starts to return less pages
+> than I requested, in an undeterministic fashion (most of the times I
+> get the expected number,
+> sometimes I get only a part of the requested pages).
+> 
+> Reading the get_user_pages() implementation dazzles me too much,
+> still.  I wonder if I am violating the kernel API?
+> 
+> - is it allowed to have a PCI device DMA-read from memory pages, that
+> belong to a file mmap()'d by userspace?
 
-I do not see this patch set as a step away from perfcounters, instead
-it is going towards perfcounters. Since it implements a feature for
-oprofile that is already available for perfcounters. This will make
-migration easier. Also, this multiplexing implementation is mainly an
-extension of the oprofile user/kernel i/f. I don't see much
-overlapping code with perfcounters.
+Yes.
 
-When talking about migration: I also would like to see one single pmu
-abstraction in the kernel and I already was thinking about the best
-way to do this. The current oprofile implementation does not allow an
-easy transition, since the internal data representation is very
-different to perfcounters and code is very model specific (x86). First
-there must be implemented a single generic abstraction layer including
-all models, then hardware access can be changed to use a perfcounter
-in-kernel api. In the end there would be one implementation for both
-profiling subsystems. I already started to rework oprofile with my
-recent update patch set for v2.6.32 and I already provided updates
-also for perfcounters.
+> - what are valid reasons for get_user_pages() to fail?
 
-The transition to perfcounters is not easy to make. There are many
-changes that can break much. Switching directly to perfcounters for
-multiplexing would have delayed the feature for oprofile for months,
-which is not acceptable for oprofile users. There would have been a
-higher risk having a reimplementation together with a feature
-implementation. So doing step by step is much more safe.
+I'd hesitate to give a complete answer to that: but main reasons
+would be SIGKILL, or running out of memory (-ENOMEM), or running
+off the end of a mapping or mapped object, or no permission to it
+(-EFAULT): with a short page count returned instead of error if
+some pages were successfully gotten before hitting the error.
 
-Perfcounters were merged for v2.6.31 in June, so less than 2 months
-ago. A long time it was not clear if and when it will go into the
-kernel. Still it has to be proved for production and stable usage. You
-can't expect that ongoing feature development for oprofile is stopped
-immediately and all efforts promptly are moved to perfcounters.
+> - what should a driver do when get_user_pages() returns less pages
+> than requested?
 
-Overall, I don't see oprofile going away from perfcounters, there will
-be a migration. This patch set simply documents ongoing development
-for oprofile in parallel of perfcounters. Stopping this is not an
-option, it is in the kernel for years and there are users that can
-expect ongoing support and feature extension for oprofile.
+Probably put_page the pages gotten then report the surprise;
+perhaps, before putting the pages gotten, try get_user_pages
+on the next alone, to see what error code is returned for that.
+
+Unless it's happy to work with fewer pages than requested,
+in which case work with them and ignore the surprise.
 
 > 
-> The reason for my disagreement is on the technical and on the policy 
-> level.
 > 
-> Here's the (rough) support comparison matrix:
+> A snippet of the code:
 > 
->                               perfcounters |         oprofile-mux
->                        ..........................................
->    granularity:        per task or per cpu |              per cpu
->                                            .
->    switch mechanism:             interrupt |            workqueue
->                                            .
->    limits:                 soft, unlimited |      hardcoded to 32
->                                            .
->    arch support:              generic, all |  AMD only, needs per
->                         perfcounter arches | cpu and arch changes
 > 
-> The perfcounters multiplexing is visibly more mature and more
-> capable: more generic, integrated into the scheduler, not hardcoded,
-> etc.
+> my user space does:
 > 
-> And the oprofile bits are for x86 (AMD) only, with every oprofile 
-> architecture having to do similarly invasive changes - so these 500 
-> lines of changes probably get multipled by a factor of 10 or so in 
-> the end, years down the line. A lot of work and i think it can and 
-> should all be avoided.
+>     int fd = open(filename, O_RDONLY);
+>     assert(fd >= 0);
 > 
-> So there are two technical/policy questions:
+>     /* map the file in memory */
+>     char *buffer = mmap(0, buffersize, PROT_READ, MAP_SHARED, fd, 0);
+>     assert(buffer != MAP_FAILED);
 > 
-> Would it be fair to require oprofile to implement a similarly
-> high-quality counter virtualization as perfcounters? If yes then i
-> think the end result would be oprofile based on perfcounters: i.e.
-> this particular oprofile-mux patchset becomes largely moot and we'd
-> not have to go through the (non-trivial) transition period of
-> updating every single oprofile driver for multiplexing.
+>     /* advice sequential access */
+>     int rc = madvise(buffer, buffersize, MADV_SEQUENTIAL);
+>     assert(rc == 0);
+> 
+> my driver does:
+> 
+>     const unsigned long first = (boe & PAGE_MASK) >> PAGE_SHIFT;
+>     const unsigned long last  = ((boe + count - 1) & PAGE_MASK) >> PAGE_SHIFT;
+>     const int nr_pages = last - first + 1;
+>     ...
+>     down_read(&current->mm->mmap_sem);
+>     rc = get_user_pages(current, current->mm, start & PAGE_MASK,
+> nr_pages, 0 /* do not write*/, 1 /* do force */, pages, NULL);
+>     up_read(&current->mm->mmap_sem);
+> 
+>     BUG_ON(rc < nr_pages);
 
-Oprofile will base on perfcounters, but porting oprofile to
-perfcounters should be done separately and not delay oprofile feature
-development. As soon as oprofile uses a perfcounter api for counter
-setup there will be only a single implementation. But until then it is
-a long way to go.
+When that BUG triggers, is rc a positive number of pages,
+or a negative error code - which?  (or even 0, but it shouldn't be).
+I assume from your Subject that you've already seen a positive number
+of pages.
 
-> 
-> The other question is: do we really want to have a constant
-> distraction via the overlapping oprofile space? I think a feasible
-> and sane looking approach would be to:
-> 
->  - Put oprofile into maintenance mode, fix all bugs that get
->    reported/found, perhaps add new hw enablement drivers in the
->    existing scheme (if they are submitted) but otherwise dont
->    complicate the code any more.
-> 
->  - Extend PMU and performance instrumentation support via
->    perfcounters primarily.
+Code doesn't look wrong to me (except you shouldn't BUG), though I am
+having to assume that buffer and boe and start are all the same address,
+and count fits within buffersize; or at least that the range to which you
+apply get_user_pages really does fit within the area you have mmap'ed.
 
-In my opinion it is too early for both. As said, perfcounters are out
-less than 2 months. We can consider this later approach when an
-in-kernel perfcounters api is in sight and oprofile is using
-perfcounters. At least ongoing development shouldn't be stopped.
+(I'd advise against using 1 /* do force */, I don't think you need
+that: the force is mysterious, and should only be called upon in direst
+need.  But it shouldn't actually be causing you any problem here.)
 
-> 
->  - Possibly base oprofile user-space on perfcounters syscalls
->    (with a fall-back to old oprofile syscalls on older kernels),
->    if there's interest from folks who want the oprofile tool-chain,
->    allowing the removal of the oprofile kernel code in the long run.
+Is the file you have mmap'ed big enough?  If it's not as long as the
+last page you're trying to get_user_pages on, or gets truncated, then
+indeed that will give -EFAULT or a short count - just as trying to
+access the end of the mapping in userspace would give you SIGBUS.
 
-This looks very intrusive. Tools base on the user/kernel i/f that is
-mainly controlled with oprofilefs. I don't see many options to change
-this. And as said, it is not necessary.
-
-> 
-> This series of steps seems to be the technically sanest approach to
-> me, and we are certainly willing to extend perfcounters in any
-> fashion to allow a fuller replacement for oprofile. (we already
-> think it's a worthy replacement and more - but we are open to all
-> enhancements.)
-> 
-> I'd not be against maintaining the code in its current form, but i'm
-> not sure whether we should extend the core oprofile code itself with
-> things like the multiplexing code above which is seriously
-> non-trivial and splits both developer attention and testing efforts.
-> 
-> Linus, Peter, Paul, do you have any preferences? I'm really on two
-> minds about whether to do this oprofile feature. The overlap of this
-> patch-set with perfcounters is serious, the induced complexity is
-> serious and the ongoing maintenance cost is non-trivial.
-> 
-> Since PMU developers is a more or less constant pool of people, 
-> these policy issues do matter IMO and affect perfcounters as well 
-> indirectly, not just oprofile. Hardware vendors generally want to 
-> enable all facilities that are in the kernel, regardless of which 
-> one we consider to be the best one. So by forcing development of a 
-> new oprofile driver variant, resources are taken away from 
-> perfcounters.
-> 
-> It's as if we continued maintaining and developing ipchains after 
-> iptables was merged upstream. Instead we used compatibility 
-> mechanisms and phased out ipchains rather gracefully. Robert is 
-> apparently of the opinion that oprofile needs to be developed 
-> further - hence these questions.
-> 
-> So on those grounds i'm (mildly) inclined to not do this and suggest 
-> that we work on achieving the same end result via other means: via 
-> the perfcounters enabling of oprofile userspace.
-> 
-> But if Linus/Peter/Paul thinks that pulling it was the right 
-> solution then i'll keep the bits - i wanted to have a public 
-> discussion of these questions first.
-
-I do not agree to stop oprofile development from one day to the
-other. As you, I also want to have one single pmu implementation in
-the kernel and we have to avoid writing duplicate code and having
-duplicate development efforts. But, a transition of oprofile to use
-perfcounters is not trivial and should be smooth. Mixing this
-transition with a feature implementation is also not a good idea. So
-lets narrow each other from both sides. Moving oprofile towards
-perfcounters and vice versa.
-
--Robert
-
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+Hugh
