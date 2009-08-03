@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753743AbZHCSwF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbZHCSyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753743AbZHCSwF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 14:52:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbZHCSwE
+	id S1754153AbZHCSyE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 14:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZHCSyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 14:52:04 -0400
-Received: from mail.mnementh.co.uk ([173.45.232.4]:43076 "EHLO mnementh.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752880AbZHCSwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 14:52:03 -0400
-Message-ID: <4A7731C8.9040407@mnementh.co.uk>
-Date: Mon, 03 Aug 2009 19:51:52 +0100
-From: Ian Molton <ian@mnementh.co.uk>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 3 Aug 2009 14:54:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33655 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753123AbZHCSyC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 14:54:02 -0400
+Date: Mon, 3 Aug 2009 11:53:43 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Greg KH <greg@kroah.com>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Sergey Senozhatsky <sergey.senozhatsky@mail.by>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/2] proper tty-ldisc refcounting (was Re: WARNING at:
+ drivers/char/tty_ldisc.c)
+In-Reply-To: <20090803181811.GA15848@kroah.com>
+Message-ID: <alpine.LFD.2.01.0908031152130.3208@localhost.localdomain>
+References: <20090802120120.GA3097@localdomain.by> <alpine.LFD.2.01.0908020940530.3352@localhost.localdomain> <20090802190514.GA3278@localdomain.by> <alpine.LFD.2.01.0908021254580.3352@localhost.localdomain> <87k51l9apo.fsf@devron.myhome.or.jp>
+ <alpine.LFD.2.01.0908021423490.3352@localhost.localdomain> <20090802234851.3fd1ac2c@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0908021654010.3352@localhost.localdomain> <alpine.LFD.2.01.0908031047010.3208@localhost.localdomain>
+ <20090803181811.GA15848@kroah.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-CC: pHilipp Zabel <philipp.zabel@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
-       Magnus Damm <magnus.damm@gmail.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
-       Magnus Damm <damm@opensource.se>
-Subject: Re: MMC: Make the configuration memory resource optional
-References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>  <aec7e5c30907281948s2a0dcd0csd3e580251d6c4f5a@mail.gmail.com>  <20090729115817.GA12223@rakim.wolfsonmicro.main>  <aec7e5c30907290527w39a89895n285e932459e6c953@mail.gmail.com>  <20090729124233.GA12802@rakim.wolfsonmicro.main>  <aec7e5c30907290551y77edc6d7qb7b3d787215c2b4@mail.gmail.com>  <4A704777.70001@mnementh.co.uk>  <aec7e5c30907290608i43a80fe1xe4ef0f3847855709@mail.gmail.com>  <4A7053E8.8050303@mnementh.co.uk>  <20090729201702.GA28202@linux-sh.org> <74d0deb30907291355n39df7db0v1d7afc93917adc14@mail.gmail.com> <4A716F1C.2050805@mnementh.co.uk> <Pine.LNX.4.64.0907301246330.4462@axis700.grange> <4A71F2A5.4060206@mnementh.co.uk> <Pine.LNX.4.64.0907310853470.4541@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.0907310853470.4541@axis700.grange>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guennadi Liakhovetski wrote:
 
->> I cant see _why_ this should be a problem, as this disables the card clock,
->> not HCLK. Could you debug further in tmio_mmc_clk_stop() please and see if
->> reordering only one of the two IO accesses cures this?
+
+On Mon, 3 Aug 2009, Greg KH wrote:
 > 
-> Not sure I understood the "reordering only one of the two IO accesses" 
-> correctly, but I swapped the two sd_ctrl_write16() calls in 
-> tmio_mmc_clk_stop() and no, it didn't cure the problem.
+> Ok, I'll queue them up if they pass Sergey's testing.
 
-I meant can you reorder them so that only one or the other is after the 
-reset. Thus eliminating one  (perhaps) as the cause of the problem.
+Btw, looking at my email, I think the commentary explanations I wrote for 
+you guys (under the "---") might as well be lifted up into the actual 
+commit comments. They're valid long-term commentary on some of the issues 
+that remain.
 
-Does your chip actually use the tmio-type reset, or has it a hard reset 
-line or something?
-
-Also is your issue that the driver doesnt work, or that you cant access 
-registers from something like userspace ?
+		Linus
