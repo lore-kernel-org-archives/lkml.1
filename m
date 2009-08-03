@@ -1,40 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbZHCVNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932189AbZHCVO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754475AbZHCVNr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 17:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753605AbZHCVNr
+	id S932189AbZHCVO6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 17:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbZHCVO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 17:13:47 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:56853 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753149AbZHCVNq (ORCPT
+	Mon, 3 Aug 2009 17:14:58 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:47266 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752736AbZHCVO5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 17:13:46 -0400
-To: Sage Weil <sage@newdream.net>
-Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       Neil Brown <neilb@suse.de>, <stable@kernel.org>
-Subject: Re: [PATCH] md: avoid use of broken kzalloc mempool
-From: Andi Kleen <andi@firstfloor.org>
-References: <1249332888-13440-1-git-send-email-sage@newdream.net>
-Date: Mon, 03 Aug 2009 23:13:46 +0200
-In-Reply-To: <1249332888-13440-1-git-send-email-sage@newdream.net> (Sage Weil's message of "Mon,  3 Aug 2009 13:54:46 -0700")
-Message-ID: <87prbcr46t.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Mon, 3 Aug 2009 17:14:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
+         :from:to:content-type:content-transfer-encoding;
+        b=ZGuOJquBP2+FCKHVdDLMuYLAMPxULrtxhpqkJGNbhIzaBWaZYpI8MJU7vgk5FL5tCv
+         Qr1V+nmAknrbo8tFZrwr+q/619L1LAKgl5LwWS3Hs+GpK50NoDh3MbrrGyhxLh7/8ogv
+         9i7iXldVhLiBieKuqmqlzuUAyWTnUM+01AERI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Mon, 3 Aug 2009 17:14:56 -0400
+X-Google-Sender-Auth: 0858c4a85ae1672c
+Message-ID: <cb0375e10908031414g471bacf5lab685958b60bfdfa@mail.gmail.com>
+Subject: Is anyone maintaining (or even using) usbtmc?
+From: Andrew Lutomirski <luto@mit.edu>
+To: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org, gregkh@suse.de
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sage Weil <sage@newdream.net> writes:
+Hi all-
 
-> The kzalloc mempool does not re-zero items that have been used and then
-> returned to the pool.  Manually zero the allocated multipath_bh instead.
+I'm trying to use usbtmc on an Aglient N9310A (The only TMC device I
+have), and it sort of works, but it seems to be both extremely buggy
+and missing a good deal of rather important functionality.  Is there
+anyone maintaining it?
 
-Why not fix that in mempool instead? That would seem like the right place
-to fix such a bug, instead of adding workarounds to all callers.
+If the answer is yes, I can describe the bugs (logspam, spurious
+errors, delayed messages, inability to read status, etc.) in greater
+detail.
 
--Andi
+If the answer is no (as I suspect it is), then I might give fixing it
+a shot the week after next, when I'll be camping out in Virginia with
+this thing for awhile.  In that case, I have another question:
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Is anyone using usbtmc, or, more specifically, does anyone care about
+backward compatibility?
+
+If not, then I'll be less careful to preserve the interface, even
+though I'm not really sure that there's much of interest to preserve.
+
+Thanks,
+Andy, who's happy that the driver at least works a little bit
