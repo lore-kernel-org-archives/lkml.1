@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932280AbZHCPEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbZHCPJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932280AbZHCPEY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 11:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932250AbZHCPEX
+	id S932255AbZHCPJz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 11:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755054AbZHCPJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 11:04:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35811 "EHLO mx2.redhat.com"
+	Mon, 3 Aug 2009 11:09:54 -0400
+Received: from relay.atmel.no ([80.232.32.139]:61383 "EHLO relay.atmel.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932212AbZHCPEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 11:04:22 -0400
-Message-ID: <4A76FDB2.7080706@redhat.com>
-Date: Mon, 03 Aug 2009 18:09:38 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
-MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: davidel@xmailserver.org, gleb@redhat.com, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH-RFC 2/2] eventfd: EFD_STATE flag
-References: <cover.1248803500.git.mst@redhat.com> <20090728175538.GC21549@redhat.com>
-In-Reply-To: <20090728175538.GC21549@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1755025AbZHCPJy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 11:09:54 -0400
+Date: Mon, 3 Aug 2009 17:09:47 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Cc: nicolas.ferre@atmel.com, linux@maxim.org.za, linux-kernel@vger.kernel.org,
+       Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Subject: Re: [PATCH] Switch atmel_serial to dev_pm_ops
+Message-ID: <20090803170947.2f199b93@hskinnemoen-d830>
+In-Reply-To: <1249310347-22291-1-git-send-email-albin.tonnerre@free-electrons.com>
+References: <1249310347-22291-1-git-send-email-albin.tonnerre@free-electrons.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/28/2009 08:55 PM, Michael S. Tsirkin wrote:
-> This implements a new EFD_STATE flag for eventfd.
-> When set, this flag changes eventfd behaviour in the following way:
-> - write simply stores the value written, and is always non-blocking
-> - read unblocks when the value written changes, and
->    returns the value written
->
-> Motivation: we'd like to use eventfd in qemu to pass interrupts from
-> (emulated or assigned) devices to guest. For level interrupts, the
-> counter supported currently by eventfd is not a good match: we really
-> need to set interrupt to a level, typically 0 or 1, and give the guest
-> ability to see the last value written.
->
->
-> @@ -31,37 +31,59 @@ struct eventfd_ctx {
->   	 * issue a wakeup.
->   	 */
->   	__u64 count;
-> +	/*
-> +	 * When EF_STATE flag is set, eventfd behaves differently:
-> +	 * value written gets stored in "count", read will copy
-> +	 * "count" to "state".
-> +	 */
-> +	__u64 state;
->   	unsigned int flags;
->   };
->    
+Albin Tonnerre wrote:
+> +static struct dev_pm_ops atmel_serial_pm_ops = {
+> +	.suspend = atmel_serial_suspend,
+> +	.resume = atmel_serial_resume,
+> +};
+>  #else
+> -#define atmel_serial_suspend NULL
+> -#define atmel_serial_resume NULL
+> +static struct dev_pm_ops atmel_serial_pm_ops;
 
-Why not write the new value into ->count directly?
+Why not
 
--- 
-error compiling committee.c: too many arguments to function
+#define atmel_serial_pm_ops	NULL
 
+>  #endif
+>  
+>  static int __devinit atmel_serial_probe(struct platform_device *pdev)
+> @@ -1603,11 +1607,10 @@ static int __devexit atmel_serial_remove(struct platform_device *pdev)
+>  static struct platform_driver atmel_serial_driver = {
+>  	.probe		= atmel_serial_probe,
+>  	.remove		= __devexit_p(atmel_serial_remove),
+> -	.suspend	= atmel_serial_suspend,
+> -	.resume		= atmel_serial_resume,
+>  	.driver		= {
+>  		.name	= "atmel_usart",
+>  		.owner	= THIS_MODULE,
+> +		.pm = &atmel_serial_pm_ops,
+
+Please use a TAB instead of space to make everything nice and
+consistent.
+
+Other than that,
+
+Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
