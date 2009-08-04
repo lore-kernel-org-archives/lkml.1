@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZHDOFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932093AbZHDOGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754630AbZHDOFS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 10:05:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbZHDOFS
+	id S932093AbZHDOGX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 10:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753561AbZHDOGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 10:05:18 -0400
-Received: from mga07.intel.com ([143.182.124.22]:27368 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753181AbZHDOFR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 10:05:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,321,1246863600"; 
-   d="scan'208";a="172126570"
-Date: Tue, 4 Aug 2009 16:07:18 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Richard Purdie <rpurdie@rpsys.net>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Dmitry Torokhov <dtor@mail.ru>, Jean Delvare <khali@linux-fr.org>,
-       Anton Vorontsov <cbouatmailru@gmail.com>,
-       Alessandro Zummo <a.zummo@towertech.it>,
-       Wim Van Sebroeck <wim@iguana.be>, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org, linux-input@vger.kernel.org,
-       rtc-linux@googlegroups.com
-Subject: Re: [PATCH 0/22] WM831x drivers
-Message-ID: <20090804140716.GD8601@sortiz.org>
-References: <20090727134527.GA12849@rakim.wolfsonmicro.main> <20090804113528.GB8601@sortiz.org> <1249386249.4248.159.camel@vega.slimlogic.co.uk>
+	Tue, 4 Aug 2009 10:06:23 -0400
+Received: from co203.xi-lite.net ([149.6.83.203]:46123 "EHLO co203.xi-lite.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754167AbZHDOGW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 10:06:22 -0400
+Message-ID: <4A784056.1020400@parrot.com>
+Date: Tue, 4 Aug 2009 16:06:14 +0200
+From: Matthieu CASTET <matthieu.castet@parrot.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1249386249.4248.159.camel@vega.slimlogic.co.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+CC: "ltt-dev@lists.casi.polymtl.ca" <ltt-dev@lists.casi.polymtl.ca>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "rostedt@goodmis.org" <rostedt@goodmis.org>
+Subject: Re: Tracing thread name
+References: <4A76E42D.7010908@parrot.com> <20090803134843.GB23455@Krystal> <4A78099B.4@parrot.com> <20090804130510.GA23396@Krystal>
+In-Reply-To: <20090804130510.GA23396@Krystal>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Liam
+Hi,
 
-On Tue, Aug 04, 2009 at 12:44:09PM +0100, Liam Girdwood wrote:
-> On Tue, 2009-08-04 at 13:35 +0200, Samuel Ortiz wrote:
-> > Hi Mark,
-> > 
-> > On Mon, Jul 27, 2009 at 02:45:27PM +0100, Mark Brown wrote:
-> > > The following patch series adds initial support for the WM813x series of
-> > > PMICs.
-> > > 
-> > > Since these devices have functionality that crosses many subsystems the
-> > > patches cross many kernel trees.  For clarity I'm presenting this
-> > > initial submission as a single series but I have endeavoured to split
-> > > things up so that the patches can be applied separately to the various
-> > > subsystems.  In order to avoid merge issues as patches are applied the
-> > > platform data for the devices is included in the core patches.
-> > > 
-> > > Due to Kconfig and Makefile collisons I've also included the patch adding
-> > > hwmon support for the WM835x series of PMICs to the series.  Other than
-> > > the build system updates there is no interdependence between those two
-> > > patches.
-> > I applied patches [1-8], the gpio one, the 2 hwmon ones and the input one.
-> > I'll now wait for some more feedback for the remaining patches.
-> > 
+Mathieu Desnoyers a écrit :
+> * Matthieu CASTET (matthieu.castet@parrot.com) wrote:
+>> Hi Mathieu,
+>>
+>> Mathieu Desnoyers a écrit :
+>> Do you know if it is possible to patch my version to add such feature ?
+>>
+>> I saw that the name already change in the trace before/after an exec.
+>> How lltv get the new name ?
+>> With "fs.exec" tracepoint ?
+>> In that case I could fake a "fs.exec" tracepoint in set_task_comm.
 > 
-> Regulator patches :-
+> A better solution : you add a new event in both lttng and lttv, and
+> modify state.c to support your new event. The current event to brand
+> thread is named "userspace.thread_brand". Look for this in LTTV to see
+> all the sites that need to support the new event (there are very few).
 > 
-> Acked-by Liam Girdwood <lrg@slimlogic.co.uk>
-Thanks Liam, I applied all 5 of them to my for-next branch
+Thanks, but I want to avoid to modify too much ltt (I use an old version
+for 2.6.27 and my modifications may be useless for upstream).
 
-Cheers,
-Samuel.
+I added "trace_fs_exec(tsk->comm);" at the end of set_task_comm and now
+the thread got the correct name :)
 
 
-> Thanks
-> 
-> Liam
-> 
-> 
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+Matthieu
