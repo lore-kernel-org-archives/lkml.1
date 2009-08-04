@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755091AbZHDOJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754973AbZHDOMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755091AbZHDOJY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 10:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbZHDOJX
+	id S1754973AbZHDOMK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 10:12:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbZHDOMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 10:09:23 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:35937 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754779AbZHDOJX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 10:09:23 -0400
-Date: Tue, 4 Aug 2009 09:01:58 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: Benjamin Blum <bblum@google.com>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 6/6] Makes procs file writable to move all threads by
-	tgid at once
-Message-ID: <20090804140158.GA663@us.ibm.com>
-References: <20090731012908.27908.62208.stgit@hastromil.mtv.corp.google.com> <20090731015154.27908.9639.stgit@hastromil.mtv.corp.google.com> <20090803175452.GA5481@us.ibm.com> <2f86c2480908031113y525b6cbdhe418b8a0364c7760@mail.gmail.com> <20090803185556.GA8469@us.ibm.com> <20090803194555.GA10158@us.ibm.com> <6599ad830908031255j68ce047x7165bfefa62ed53c@mail.gmail.com>
+	Tue, 4 Aug 2009 10:12:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55798 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752608AbZHDOMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 10:12:09 -0400
+Date: Tue, 4 Aug 2009 16:11:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Cyrill Gorcunov <gorcunov@openvz.org>
+Cc: yinghai@kernel.org, hpa@zytor.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [rfc 1/2] x86,ioapic: introduce for_each_irq_pin helper
+Message-ID: <20090804141106.GC7746@elte.hu>
+References: <20090801074758.502095557@openvz.org> <20090801075435.597863129@openvz.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <6599ad830908031255j68ce047x7165bfefa62ed53c@mail.gmail.com>
+In-Reply-To: <20090801075435.597863129@openvz.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Paul Menage (menage@google.com):
-> On Mon, Aug 3, 2009 at 12:45 PM, Serge E. Hallyn<serue@us.ibm.com> wrote:
-> >
-> > This is probably a stupid idea, but...  what about having zero
-> > overhead at clone(), and instead, at cgroup_task_migrate(),
-> > dequeue_task()ing all of the affected threads for the duration of
-> > the migrate?
-> 
-> That doesn't sound too unreasonable, actually - it would certainly
-> simplify things a fair bit. Is there a standard API for doing that?
-> dequeue_task() itself doesn't really look like a public API. I guess
-> that the task freezer would be one way to accomplish this?
 
-Actually if we wanted to try to avoid -EINTRs for the tasks, which
-they get with the freezer, we might want to code our own helpers
-in sched.c based on dequeue_task().  Instead of interrupting ongoing
-system calls, we'll want to set a flag saying if the syscall exits
-(before we unset the flag) then dequeue it real quick.
+* Cyrill Gorcunov <gorcunov@openvz.org> wrote:
 
-> I can imagine that the set of people who'd complain about the latency
-> hit when migrating with your solution would be smaller than the people
-> who'd complain about the increased overhead in the normal clone case.
+> This allow us to save a few lines of code.
 > 
-> Paul
+> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+> ---
+>  arch/x86/kernel/apic/io_apic.c |   43 ++++++++++++++---------------------------
+>  1 file changed, 15 insertions(+), 28 deletions(-)
+
+Nice cleanup! I'll queue it up and let you know if there's any 
+problems with it in testing.
+
+	Ingo
