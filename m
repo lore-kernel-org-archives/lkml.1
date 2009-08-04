@@ -1,59 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933043AbZHDQ1C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933007AbZHDQ3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933043AbZHDQ1C (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 12:27:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933027AbZHDQ1A
+	id S933007AbZHDQ3U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 12:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932972AbZHDQ3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 12:27:00 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48109 "EHLO ogre.sisk.pl"
+	Tue, 4 Aug 2009 12:29:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43125 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933025AbZHDQ06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 12:26:58 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [Regression] Hibernation failure on dual core Athlon 64 (64-bit)
-Date: Tue, 4 Aug 2009 18:27:37 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc5-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Dave Jones <davej@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Thomas Renninger <trenn@suse.de>
-References: <200908032303.57859.rjw@sisk.pl> <20090803222359.GA3770@Krystal>
-In-Reply-To: <20090803222359.GA3770@Krystal>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	id S932827AbZHDQ3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 12:29:18 -0400
+Subject: Re: fanotify - overall design before I start sending patches
+From: Eric Paris <eparis@redhat.com>
+To: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "malware-list@dmesg.printk.net" <malware-list@dmesg.printk.net>,
+       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
+       "greg@kroah.com" <greg@kroah.com>, "jcm@redhat.com" <jcm@redhat.com>,
+       Douglas Leeder <douglas.leeder@sophos.com>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "arjan@infradead.org" <arjan@infradead.org>,
+       "david@lang.hm" <david@lang.hm>,
+       "jengelh@medozas.de" <jengelh@medozas.de>,
+       "aviro@redhat.com" <aviro@redhat.com>,
+       "mrkafk@gmail.com" <mrkafk@gmail.com>,
+       "alexl@redhat.com" <alexl@redhat.com>, "jack@suse.cz" <jack@suse.cz>,
+       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       "mmorley@hcl.in" <mmorley@hcl.in>, "pavel@suse.cz" <pavel@suse.cz>
+In-Reply-To: <200908041709.51659.tvrtko.ursulin@sophos.com>
+References: <1248466429.3567.82.camel@localhost>
+	 <200908041709.51659.tvrtko.ursulin@sophos.com>
+Content-Type: text/plain
+Date: Tue, 04 Aug 2009 12:27:48 -0400
+Message-Id: <1249403268.2361.21.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908041827.38547.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 04 August 2009, Mathieu Desnoyers wrote:
-> * Rafael J. Wysocki (rjw@sisk.pl) wrote:
-> > Hi Mathieu,
-> > 
-> > As reported at
-> > 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=13903
-> > 
-> > one of my test systems suffers from a hibernation regression where the second
-> > attempt to hibernate in a row makes it hang solid right before creating the
-> > image.
-> > 
-> > Bisection turned up your commit 3f4a782b5ce2698b1870b5a7b573cd721d4fce33
-> > ([CPUFREQ] fix (utter) cpufreq_add_dev mess) as the first bad one.
-> > 
+On Tue, 2009-08-04 at 17:09 +0100, Tvrtko Ursulin wrote:
+> Hi Eric, all,
 > 
-> Can you try with the following patch applied ?
->
-> http://www.spinics.net/lists/cpufreq/msg00964.html
->
-> Subject: [PATCH 1/5] CPUFREQ: Fix a kobject reference bug related to managed CPUs
-> From: Thomas Renninger <trenn@suse.de>
+> On Friday 24 July 2009 21:13:49 Eric Paris wrote:
+> > If a FAN_ACCESS_PERM or FAN_OPEN_PERM event is received the listener
+> > must send a response before the 5 second timeout.  If no response is
+> > sent before the 5 second timeout the original operation is allowed.  If
+> > this happens too many times (10 in a row) the fanotify group is evicted
+> > from the kernel and will not get any new events.  Sending a response is
+> 
+> Would it make more sense to deny on timeouts and then evict? I am thinking it 
+> would be more secure with no significant drawbacks. Also for usages like HSM 
+> allowing it without data being in place might present wrong content to the 
+> user.
 
-Tested (/me hates mailing list archives where you can't download raw messages
-or at least raw patches) and it works.
- 
-Thanks a lot,
-Rafael
+I'd be willing to go that route as long as noone else complains.
+
+> > The only other current interface is the ability to ignore events by
+> > superblock magic number.  This makes it easy to ignore all events
+> > in /proc which can be difficult to accomplish firing FANOTIFY_SET_MARK
+> > with ignored_masks over and over as processes are created and destroyed.
+> 
+> Just to double-check, that would also work for any other filesystem and is 
+> controllable from userspace?
+
+Yes you set these in userspace using setsockopt().  It is based on
+superblock magic number as found in linux/magic.h.  So one could
+exclude, procfs, sysfs, selinuxfs, etc.  It does not provide a way to
+say 'this ext3 filesystem but not that ext3 filesystem' as ext3 has a
+single magic number.
+
