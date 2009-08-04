@@ -1,64 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932769AbZHDKcs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932801AbZHDKeF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932769AbZHDKcs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 06:32:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932757AbZHDKcr
+	id S932801AbZHDKeF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 06:34:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932791AbZHDKeE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 06:32:47 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:40787 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932540AbZHDKcq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 06:32:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=eT7kvx45wOEC+JKW54E+8DNDfAiW4Af8/ZdVLDZrEQ1IZ8YKqvZWfzV8FBxBgzaqIB
-         gha58oChUiFFdcOyNQiFj7m8hyg2qWdWtRNsuxFHQSFc/UUXUMN6gp8ZnBI+GxfFj0GM
-         UPn/EuGJlTDYT6iF7lKZLPZthX3rGg5nKCkt8=
+	Tue, 4 Aug 2009 06:34:04 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:41303 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932451AbZHDKeD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 06:34:03 -0400
+To: gregkh@suse.de
+Subject: [PATCH v2] [resend] ark3116: add IrDA support (for Gembird UIR-22)
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-usb@vger.kernel.org,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Tue, 4 Aug 2009 12:33:55 +0200
 MIME-Version: 1.0
-In-Reply-To: <20090804092540.GA29778@elte.hu>
-References: <20090729192814.GT4148@kernel.dk> <20090801082048.GX12579@kernel.dk> 
-	<20090801182216.GA25334@ghostprotocols.net> <20090802184148.GB17241@elte.hu> 
-	<20090802194454.GC28572@bombadil.infradead.org> <20090802195043.GD24486@elte.hu> 
-	<20090802201132.GE28572@bombadil.infradead.org> <20090802204701.GE25334@ghostprotocols.net> 
-	<20090803015430.GG25334@ghostprotocols.net> <20090804092540.GA29778@elte.hu>
-From: Frederic Riss <frederic.riss@gmail.com>
-Date: Tue, 4 Aug 2009 12:32:26 +0200
-Message-ID: <87d3b2040908040332i87bf211y8fc782d67b3157a3@mail.gmail.com>
-Subject: Re: [PATCH] basic perf support for sparc
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Kyle McMartin <kyle@mcmartin.ca>, Jens Axboe <jens.axboe@oracle.com>,
-       Anton Blanchard <anton@samba.org>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       fweisbec@gmail.com, benh@kernel.crashing.org, penberg@cs.helsinki.fi,
-       vegard.nossum@gmail.com, paulus@samba.org, williams@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908041233.56592.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/8/4 Ingo Molnar <mingo@elte.hu>:
->
-> * Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
->
->> +static void load_perf_bfd_demangle(void)
->> +{
->> +     void *handle = dlopen("libbfd-2.19.51.0.2-17.fc11.so", RTLD_NOW);
->
-> Hm, this does not look like a very generic solution. Is there some
-> way to do a library search to figure out the name? I guess a glob
-> match on /usr/lib/libbfd*.so?
+Add IrDA support to ark3116 driver. This makes Gembird UIR-22 USB to
+IrDA adapter work (vendor ID 0x18ec, device ID 0x3118). This adapter
+contains ARK3116T USB serial chip and an IrDA transceiver, thus
+a command like "irattach /dev/ttyUSB0 -s" is needed.
 
-If all you want is C++ symbols demangling, why not just look for the
-c++filt binary on the system? It accepts mangled names on its stdin
-and outputs the demangled name on stdout.  You can keep it running in
-the background, and communicate through pipes. Of course it's not as
-effective as a library call, but I guess that it'll be much more
-generic and also much more likely to be found on a developer's system
-than a libbfd shared library.
+All magic numbers were captured using usbsnoop from windows driver
+that came with the device.
 
-Fred.
+
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+
+--- linux-2.6.30-orig/drivers/usb/serial/ark3116.c	2009-07-19 19:21:54.000000000 +0200
++++ linux/drivers/usb/serial/ark3116.c	2009-08-01 22:04:48.000000000 +0200
+@@ -31,10 +31,20 @@
+ 
+ static struct usb_device_id id_table [] = {
+ 	{ USB_DEVICE(0x6547, 0x0232) },
++	{ USB_DEVICE(0x18ec, 0x3118) },		/* USB to IrDA adapter */
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(usb, id_table);
+ 
++static int is_irda(struct usb_serial *serial)
++{
++	struct usb_device *dev = serial->dev;
++	if (le16_to_cpu(dev->descriptor.idVendor) == 0x18ec &&
++			le16_to_cpu(dev->descriptor.idProduct) == 0x3118)
++		return 1;
++	return 0;
++}
++
+ struct ark3116_private {
+ 	spinlock_t lock;
+ 	u8 termios_initialized;
+@@ -100,11 +110,21 @@
+ 		goto cleanup;
+ 	}
+ 
++	if (is_irda(serial))
++		dbg("IrDA mode");
++
+ 	/* 3 */
+ 	ARK3116_SND(serial, 3, 0xFE, 0x40, 0x0008, 0x0002);
+ 	ARK3116_SND(serial, 4, 0xFE, 0x40, 0x0008, 0x0001);
+ 	ARK3116_SND(serial, 5, 0xFE, 0x40, 0x0000, 0x0008);
+-	ARK3116_SND(serial, 6, 0xFE, 0x40, 0x0000, 0x000B);
++	ARK3116_SND(serial, 6, 0xFE, 0x40, is_irda(serial) ? 0x0001 : 0x0000,
++		    0x000B);
++
++	if (is_irda(serial)) {
++		ARK3116_SND(serial, 1001, 0xFE, 0x40, 0x0000, 0x000C);
++		ARK3116_SND(serial, 1002, 0xFE, 0x40, 0x0041, 0x000D);
++		ARK3116_SND(serial, 1003, 0xFE, 0x40, 0x0001, 0x000A);
++	}
+ 
+ 	/* <-- seq7 */
+ 	ARK3116_RCV(serial,  7, 0xFE, 0xC0, 0x0000, 0x0003, 0x00, buf);
+@@ -141,6 +161,8 @@
+ 	ARK3116_SND(serial, 147, 0xFE, 0x40, 0x0083, 0x0003);
+ 	ARK3116_SND(serial, 148, 0xFE, 0x40, 0x0038, 0x0000);
+ 	ARK3116_SND(serial, 149, 0xFE, 0x40, 0x0001, 0x0001);
++	if (is_irda(serial))
++		ARK3116_SND(serial, 1004, 0xFE, 0x40, 0x0000, 0x0009);
+ 	ARK3116_SND(serial, 150, 0xFE, 0x40, 0x0003, 0x0003);
+ 	ARK3116_RCV(serial, 151, 0xFE, 0xC0, 0x0000, 0x0004, 0x03, buf);
+ 	ARK3116_SND(serial, 152, 0xFE, 0x40, 0x0000, 0x0003);
+
+
+
+-- 
+Ondrej Zary
