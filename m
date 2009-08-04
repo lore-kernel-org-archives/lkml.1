@@ -1,45 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbZHDBXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754943AbZHDB1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754887AbZHDBXi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 21:23:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbZHDBXh
+	id S1754943AbZHDB1y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 21:27:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932100AbZHDB1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 21:23:37 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:56180 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751355AbZHDBXg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 21:23:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=O1IUWJosGkDs5em8criYWfDDaFrU4JChefVJX15awzOG1rFK2k2rbR1RhJzzAkGvef
-         C3V9XDheh3tZ1OhA+j5yCkhyNOG6UbADFOs0hETw3V3zEYtlXZmP5B0iIY8Y+LtMmVho
-         y859P6jTkkEFYYQwuzq9IR314prRAyq7VIdEg=
+	Mon, 3 Aug 2009 21:27:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43752 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754390AbZHDB1w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 21:27:52 -0400
+Date: Mon, 3 Aug 2009 21:25:55 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, jbaron@redhat.com,
+       agk@redhat.com, snitzer@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org
+Subject: Re: [PATCH 20/25] io-controller: map async requests to appropriate
+	cgroup
+Message-ID: <20090804012555.GA2282@redhat.com>
+References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <1246564917-19603-21-git-send-email-vgoyal@redhat.com> <4A7647DA.5050607@cn.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <24959.1249348108@turing-police.cc.vt.edu>
-References: <24959.1249348108@turing-police.cc.vt.edu>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Mon, 3 Aug 2009 18:23:16 -0700
-Message-ID: <43e72e890908031823s6049d51cl1a0dc523fb03e6e1@mail.gmail.com>
-Subject: Re: 31-rc4-mmotm0730 - cfg80211 lockdep issues
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A7647DA.5050607@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 3, 2009 at 6:08 PM, <Valdis.Kletnieks@vt.edu> wrote:
-=======================================================
-> [   60.656592] [ INFO: possible circular locking dependency detected ]
+On Mon, Aug 03, 2009 at 10:13:46AM +0800, Gui Jianfeng wrote:
+> Vivek Goyal wrote:
+> ...
+> > +
+> > +struct io_group *io_get_io_group_bio(struct request_queue *q, struct bio *bio,
+> > +					int create)
+> > +{
+> > +	struct page *page = NULL;
+> > +
+> > +	/*
+> > +	 * Determine the group from task context. Even calls from
+> > +	 * blk_get_request() which don't have any bio info will be mapped
+> > +	 * to the task's group
+> > +	 */
+> > +	if (!bio)
+> > +		goto sync;
+> > +
+> > +	if (bio_barrier(bio)) {
+> > +		/*
+> > +		 * Map barrier requests to root group. May be more special
+> > +		 * bio cases should come here
+> > +		 */
+> > +		return q->elevator->efqd.root_group;
+> > +	}
+> > +
+> > +	/* Map the sync bio to the right group using task context */
+> > +	if (elv_bio_sync(bio))
+> > +		goto sync;
+> > +
+> > +#ifdef CONFIG_TRACK_ASYNC_CONTEXT
+> > +	/* Determine the group from info stored in page */
+> > +	page = bio_iovec_idx(bio, 0)->bv_page;
+> > +	return io_get_io_group(q, page, create);
+> > +#endif
+> > +
+> > +sync:
+> > +	return io_get_io_group(q, NULL, create);
+> 
+> Fix build warning.
+> 
+> block/elevator-fq.c: In function ‘io_get_io_group_bio’:
+> block/elevator-fq.c:2075: warning: unused variable ‘page’
+> 
 
-> [<ffffffff814a47ef>] regulatory_hint_11d+0x2b/0x574
+Thanks Gui. Will apply in next posting.
 
-Thanks for the report. I've sent patches for this, they are pending merge.
+Vivek
 
-  Luis
+> ---
+> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+> index 66b10eb..d304f79 100644
+> --- a/block/elevator-fq.c
+> +++ b/block/elevator-fq.c
+> @@ -2102,7 +2102,7 @@ struct io_group *io_get_io_group_bio(struct request_queue *q, struct bio *bio,
+>  #endif
+>  
+>  sync:
+> -	return io_get_io_group(q, NULL, create);
+> +	return io_get_io_group(q, page, create);
+>  }
+>  EXPORT_SYMBOL(io_get_io_group_bio);
+> 
+> 
+> > +}
+> > +EXPORT_SYMBOL(io_get_io_group_bio);
+> > +
+> 
+> 
+> -- 
+> Regards
+> Gui Jianfeng
