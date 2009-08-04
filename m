@@ -1,132 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932846AbZHDO6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932815AbZHDO5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932846AbZHDO6M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 10:58:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbZHDO6I
+	id S932815AbZHDO5Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 10:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932757AbZHDO5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 10:58:08 -0400
-Received: from www84.your-server.de ([213.133.104.84]:34917 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755573AbZHDO6G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 10:58:06 -0400
-Subject: Re: [RFC 0/2] new kfifo API
-From: Stefani Seibold <stefani@seibold.net>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, stelian@popies.net
-In-Reply-To: <200908041545.37329.arnd@arndb.de>
-References: <1249306755.8358.8.camel@wall-e>
-	 <200908041424.54472.arnd@arndb.de> <1249389877.11474.14.camel@wall-e>
-	 <200908041545.37329.arnd@arndb.de>
-Content-Type: text/plain
-Date: Tue, 04 Aug 2009 16:57:52 +0200
-Message-Id: <1249397872.18146.64.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Tue, 4 Aug 2009 10:57:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52394 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932763AbZHDO5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 10:57:19 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 6/6] KEYS: Do some whitespace cleanups
+To: torvalds@osdl.org, akpm@linux-foundation.org, jmorris@namei.org
+Cc: serue@us.ibm.com, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org,
+       David Howells <dhowells@redhat.com>
+Date: Tue, 04 Aug 2009 15:55:56 +0100
+Message-ID: <20090804145556.17676.80359.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20090804145530.17676.24656.stgit@warthog.procyon.org.uk>
+References: <20090804145530.17676.24656.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, den 04.08.2009, 15:45 +0200 schrieb Arnd Bergmann:
-> On Tuesday 04 August 2009, Stefani Seibold wrote:
-> > > Your second version is ok in this regard because it uses the original
-> > > size logic.
-> > 
-> > Does it mean you like it now ;-) ???? I think we are on a good way!
-> 
-> It looks much better now, but I still think you are doing too many
-> things at once, and I disagree about the locking changes.
-> 
+Do some whitespace cleanups in the key management code.
 
-I had a look at the user of the kfifo_put and kfifo_get, most did not
-really depend on the spinlock, because there are single read/single
-write users.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ security/keys/proc.c |   12 +++---------
+ 1 files changed, 3 insertions(+), 9 deletions(-)
+
+
+diff --git a/security/keys/proc.c b/security/keys/proc.c
+index 643ecf0..e4fde23 100644
+--- a/security/keys/proc.c
++++ b/security/keys/proc.c
+@@ -194,11 +194,9 @@ static int proc_keys_show(struct seq_file *m, void *v)
+ 	/* come up with a suitable timeout value */
+ 	if (key->expiry == 0) {
+ 		memcpy(xbuf, "perm", 5);
+-	}
+-	else if (now.tv_sec >= key->expiry) {
++	} else if (now.tv_sec >= key->expiry) {
+ 		memcpy(xbuf, "expd", 5);
+-	}
+-	else {
++	} else {
+ 		timo = key->expiry - now.tv_sec;
  
-> I think it would be best to have an incremental set of patches
-> to the original code, along the lines of
-> 
-> [PATCH 1/x] kfifo: preparation code reorg, no functional change
-
-This is not possible. You cannot cleanup functionality without changing
-and breaking anything.
-
-> [PATCH 2/x] kfifo: add DEFINE_KFIFO and friends
-> [PATCH 3/x] kfifo: add kfifo_{to,from}_user
-> [PATCH 4/x] kfifo: add kfifo_{get,put}_rec
-> [PATCH 5/x] kfifo: ...
-> 
-
-Thats will work... but the first patch will break something. Why is
-everybody depending on this stupid split patch dogma, beside it make
-sense or not?
-
-If i do this in that why, then the first patch will change 13 files, and
-modify about 70 lines.
+ 		if (timo < 60)
+@@ -238,9 +236,7 @@ static int proc_keys_show(struct seq_file *m, void *v)
+ 	seq_putc(m, '\n');
  
-> About the locking stuff, I think it should best be left in place.
-> The __kfifo_{get,put} functions should probably be declared part
-> of the official interface and documented as such -- people are
-> using them anyways. It's generally a good idea to have the obvious
-> interface work in an entirely safe way (kfifo_get doing all the
-> locking it might need), with a __foo variant of the same function
-> for people that want the extra performance and know what they are
-> doing.
-> 
-
-Believe me, nobody need this locking stuff. The common use case is one
-writer/one reader, so it is complete useless. Have a look on the current
-source file wich use it.
-
-But kfifo_put() and kfifo_put will() be in the next version static
-inlines to __kfifo_put() and __kfifo_get(). So we are compatible at this
-point. 
-
-> I would also leave out the recsize argument, using an 'unsigned short'
-> for the record length unconditionally won't waste any real space but
-> simplifies both the implementation and the interface.
-> 
-
-You are wrong. It is designed to be look free until one reader and one
-writer is in use. If i split the record operation i must introduce a
-lock, because between two kfifo_put a kfifo_get operation can happen (or
-visa verse).
-   
-> Finally, I don't see a reason for the optional KFIFO_F_NOTRIM argument.
-> If you have fixed records, I would guess that you always need it
-> anyway, so you could just make it the default and remove the function
-> argument.
-> 
-
-The design is to have variable length records, so it it not always true
-that the destination of an operation have enough space. Cutting of the
-record is not always what then is desired. It also does not cost any
-code or performance since it is handle by __build_constant_p and will be
-complete optimized away.
-
-I would get a little bit confused ... Why did you not say "please add
-only the kfifo_from_user() and kfifo_to_user() stuff and throw the rest
-away"?. I am thankful for your review and your objections, but if my
-idea is melt down in that way i would prefer not do the job.
-
-Why do you have so much fear to change an interfaces which is currently
-used by very few sources? Most of them are not critical.  
-
-I think it is a quiet clean interface, easy to use, easy to understand
-and handles 99 percent of the use cases.
-
-So my offer is to split it into 5 patches against the current 2.6.31
-tree:
-
-[PATCH 1/x] kfifo  code cleanup and preparation (includes for broken sources)
-[PATCH 2/x] kfifo: remove spinlock (includes fix for broken sources) 
-[PATCH 3/x] kfifo: add DEFINE_KFIFO and friends
-[PATCH 4/x] kfifo: add kfifo_{to,from}_user
-[PATCH 5/x] kfifo: add kfifo_{get,put}_rec
-
-Is this acceptable? It would be nice to have your support.
-
-Stefani
-
+ 	rcu_read_unlock();
+-
+ 	return 0;
+-
+ }
+ 
+ #endif /* CONFIG_KEYS_DEBUG_PROC_KEYS */
+@@ -266,6 +262,7 @@ static struct rb_node *key_user_first(struct rb_root *r)
+ 	struct rb_node *n = rb_first(r);
+ 	return __key_user_next(n);
+ }
++
+ /*****************************************************************************/
+ /*
+  * implement "/proc/key-users" to provides a list of the key users
+@@ -273,7 +270,6 @@ static struct rb_node *key_user_first(struct rb_root *r)
+ static int proc_key_users_open(struct inode *inode, struct file *file)
+ {
+ 	return seq_open(file, &proc_key_users_ops);
+-
+ }
+ 
+ static void *proc_key_users_start(struct seq_file *p, loff_t *_pos)
+@@ -290,14 +286,12 @@ static void *proc_key_users_start(struct seq_file *p, loff_t *_pos)
+ 	}
+ 
+ 	return _p;
+-
+ }
+ 
+ static void *proc_key_users_next(struct seq_file *p, void *v, loff_t *_pos)
+ {
+ 	(*_pos)++;
+ 	return key_user_next((struct rb_node *) v);
+-
+ }
+ 
+ static void proc_key_users_stop(struct seq_file *p, void *v)
 
