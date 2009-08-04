@@ -1,91 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932247AbZHDCEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755113AbZHDCFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932247AbZHDCEU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 22:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932168AbZHDCET
+	id S1755113AbZHDCFm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 22:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753770AbZHDCFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 22:04:19 -0400
-Received: from mga02.intel.com ([134.134.136.20]:52598 "EHLO mga02.intel.com"
+	Mon, 3 Aug 2009 22:05:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45786 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932112AbZHDCES (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 22:04:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,317,1246863600"; 
-   d="scan'208";a="538338813"
-Subject: Re: [tip:x86/urgent] x86: Make 64-bit efi_ioremap use ioremap on
- MMIO regions
-From: Huang Ying <ying.huang@intel.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-tip-commits@vger.kernel.org" 
-	<linux-tip-commits@vger.kernel.org>
-In-Reply-To: <19063.37940.634.400042@cargo.ozlabs.ibm.com>
-References: <19062.55858.533494.471153@cargo.ozlabs.ibm.com>
-	 <tip-19157af82cf0575032386f60378527904dbb7b8f@git.kernel.org>
-	 <1249348807.24238.24.camel@yhuang-dev.sh.intel.com>
-	 <19063.37940.634.400042@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Tue, 04 Aug 2009 10:04:15 +0800
-Message-Id: <1249351455.24238.52.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+	id S1753567AbZHDCFk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 22:05:40 -0400
+Message-ID: <4A7796D2.4030104@ds.jp.nec.com>
+Date: Mon, 03 Aug 2009 22:02:58 -0400
+From: Munehiro Ikeda <m-ikeda@ds.jp.nec.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+CC: Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, jbaron@redhat.com, agk@redhat.com,
+       snitzer@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
+Subject: Re: [PATCH] io-controller: implement per group request allocation
+ limitation
+References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <4A569FC5.7090801@cn.fujitsu.com>
+In-Reply-To: <4A569FC5.7090801@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-04 at 09:51 +0800, Paul Mackerras wrote:
-> Huang Ying writes:
-> 
-> > This patch does not really fix the issue. __cpa_process_fault will warn
-> > if target memory area is beyond max_pfn_mapped. EFI runtime RAM area
-> > beyond max_pfn_mapped will trigger the warning too.
-> 
-> I think we already have that situation on that MacBook, and there is
-> no warning.  From dmesg:
-> 
-> [    0.000000] EFI: mem190: type=9, attr=0xf, range=[0x000000007fedf000-0x000000007feef000) (0MB)
-> [    0.000000] EFI: mem191: type=7, attr=0xf, range=[0x000000007feef000-0x000000007fef9000) (0MB)
-> [    0.000000] EFI: mem192: type=0, attr=0xf, range=[0x000000007fef9000-0x000000007feff000) (0MB)
-> [    0.000000] EFI: mem193: type=6, attr=0x800000000000000f, range=[0x000000007feff000-0x000000007ff00000) (0MB)
-> ...
-> [    0.000000] last_pfn = 0x7fef9 max_arch_pfn = 0x400000000
-> ...
-> [    0.000000] initial memory mapped : 0 - 20000000
-> [    0.000000] init_memory_mapping: 0000000000000000-000000007fef9000
-> [    0.000000]  0000000000 - 007fe00000 page 2M
-> [    0.000000]  007fe00000 - 007fef9000 page 4k
-> [    0.000000] kernel direct mapping tables up to 7fef9000 @ 8000-c000
-> ...
-> [    0.001920] init_memory_mapping: 000000007feff000-000000007ff00000
-> [    0.001926]  007feff000 - 007ff00000 page 4k
-> 
-> So the initial mapping ends at 0x7fef9000, and I believe that
-> max_pfn_mapped is 0x7fef9, and then EFI asks for pfn 0x7feff to be
-> mapped.  But I freely admit this is not my area of expertise.  This
-> machine has 2GB of RAM, by the way.
+Gui Jianfeng wrote, on 07/09/2009 09:56 PM:
+> Hi Vivek,
+>
+> This patch exports a cgroup based per group request limits interface.
+> and removes the global one. Now we can use this interface to perform
+> different request allocation limitation for different groups.
+>
+> Signed-off-by: Gui Jianfeng<guijianfeng@cn.fujitsu.com>
+> ---
+(snip)
 
-If you specify "mem=<xxx>m" to a small value in kernel command line, I
-think the kernel warning will appear again. Because some EFI runtime
-memory area may be beyond max_pfn_mapped.
+Hi Jianfeng,
 
-> > To fix the issue. I think we can loose the restriction of
-> > __cpa_process_fault a little. Add a global variable max_pfn, which is
-> > max pfn of all memory type (including RAM, RESERVED, etc, mapped or
-> > unmapped), and __cpa_process_fault warns for memory area beyond max_pfn
-> > only.
-> 
-> It seemed cleaner to me to use ioremap() on areas that we are told are
-> MMIO.  Why would it be better to use init_memory_mapping for those
-> areas?
+If this helps.
 
-I prefer init_memory_mapping because it is more compatible with KEXEC
-support (not done yet). Because EFI runtime memory area should be mapped
-in exactly same position in original and kexeced kernel.
+If calling elv_io_group_congestion_threshold() before
+setting iog->iocg_id, iocg->nr_group_requests cannot be
+referred.  As a result of it, iog->nr_congestion_on is
+always misculculated as 0.
+This patch moves the calling of
+elv_io_group_congestion_threshold() after setting
+iog->iocg_id.
 
-Best Regards,
-Huang Ying
+Signed-off-by: Munehiro "Muuhh" Ikeda <m-ikeda@ds.jp.nec.com>
+---
+  block/elevator-fq.c |    3 ++-
+  1 files changed, 2 insertions(+), 1 deletions(-)
 
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index 7c83d1e..3368a7f 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -2195,7 +2195,6 @@ static struct io_group *io_alloc_root_group(struct request_queue *q,
+  		iog->sched_data.service_tree[i] = IO_SERVICE_TREE_INIT;
+  
+  	blk_init_request_list(&iog->rl);
+-	elv_io_group_congestion_threshold(q, iog);
+  
+  	iocg = &io_root_cgroup;
+  	spin_lock_irq(&iocg->lock);
+@@ -2204,6 +2203,8 @@ static struct io_group *io_alloc_root_group(struct request_queue *q,
+  	iog->iocg_id = css_id(&iocg->css);
+  	spin_unlock_irq(&iocg->lock);
+  
++	elv_io_group_congestion_threshold(q, iog);
++
+  #ifdef CONFIG_DEBUG_GROUP_IOSCHED
+  	io_group_path(iog, iog->path, sizeof(iog->path));
+  #endif
+-- 
+1.6.2.5
+
+
+
+
+-- 
+IKEDA, Munehiro
+   NEC Corporation of America
+     m-ikeda@ds.jp.nec.com
 
