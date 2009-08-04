@@ -1,105 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932665AbZHDPby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932829AbZHDPcD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932665AbZHDPby (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 11:31:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbZHDPbx
+	id S932829AbZHDPcD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 11:32:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755096AbZHDPcD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 11:31:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39755 "EHLO hera.kernel.org"
+	Tue, 4 Aug 2009 11:32:03 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39760 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753179AbZHDPbw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 11:31:52 -0400
-Date: Tue, 4 Aug 2009 15:31:11 GMT
+	id S1755271AbZHDPb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 11:31:59 -0400
+Date: Tue, 4 Aug 2009 15:31:24 GMT
 From: tip-bot for Jack Steiner <steiner@sgi.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        steiner@sgi.com, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        steiner@sgi.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090727143507.GA7006@sgi.com>
-References: <20090727143507.GA7006@sgi.com>
-Subject: [tip:x86/urgent] x86, UV: Handle missing blade-local memory correctly
-Message-ID: <tip-6c7184b77464261b7d55583a48accbd1350923a3@git.kernel.org>
-Git-Commit-ID: 6c7184b77464261b7d55583a48accbd1350923a3
+In-Reply-To: <20090727143656.GA7698@sgi.com>
+References: <20090727143656.GA7698@sgi.com>
+Subject: [tip:x86/urgent] x86, UV: Delete mapping of MMR rangs mapped by BIOS
+Message-ID: <tip-cc5e4fa1bd4d2f56da07f9092281afdcd2374ab9@git.kernel.org>
+Git-Commit-ID: cc5e4fa1bd4d2f56da07f9092281afdcd2374ab9
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 04 Aug 2009 15:31:12 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 04 Aug 2009 15:31:25 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6c7184b77464261b7d55583a48accbd1350923a3
-Gitweb:     http://git.kernel.org/tip/6c7184b77464261b7d55583a48accbd1350923a3
+Commit-ID:  cc5e4fa1bd4d2f56da07f9092281afdcd2374ab9
+Gitweb:     http://git.kernel.org/tip/cc5e4fa1bd4d2f56da07f9092281afdcd2374ab9
 Author:     Jack Steiner <steiner@sgi.com>
-AuthorDate: Mon, 27 Jul 2009 09:35:07 -0500
+AuthorDate: Mon, 27 Jul 2009 09:36:56 -0500
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 4 Aug 2009 16:18:01 +0200
+CommitDate: Tue, 4 Aug 2009 16:18:02 +0200
 
-x86, UV: Handle missing blade-local memory correctly
+x86, UV: Delete mapping of MMR rangs mapped by BIOS
 
-UV blades may not have any blade-local memory. Add a field
-(nid) to the UV blade structure to indicates whether the node
-has local memory. This is needed by the GRU driver (pushed
-separately).
+The UV BIOS has added additional MMR ranges that are mapped via
+EFI virtual mode mappings. These ranges should be deleted from
+ranges mapped by uv_system_init().
 
 Signed-off-by: Jack Steiner <steiner@sgi.com>
 Cc: linux-mm@kvack.org
-LKML-Reference: <20090727143507.GA7006@sgi.com>
+LKML-Reference: <20090727143656.GA7698@sgi.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/include/asm/uv/uv_hub.h   |    7 +++++++
- arch/x86/kernel/apic/x2apic_uv_x.c |    5 +++++
- 2 files changed, 12 insertions(+), 0 deletions(-)
+ arch/x86/kernel/apic/x2apic_uv_x.c |   31 +------------------------------
+ 1 files changed, 1 insertions(+), 30 deletions(-)
 
-diff --git a/arch/x86/include/asm/uv/uv_hub.h b/arch/x86/include/asm/uv/uv_hub.h
-index 341070f..a6dde05 100644
---- a/arch/x86/include/asm/uv/uv_hub.h
-+++ b/arch/x86/include/asm/uv/uv_hub.h
-@@ -327,6 +327,7 @@ struct uv_blade_info {
- 	unsigned short	nr_possible_cpus;
- 	unsigned short	nr_online_cpus;
- 	unsigned short	pnode;
-+	short		memory_nid;
- };
- extern struct uv_blade_info *uv_blade_info;
- extern short *uv_node_to_blade;
-@@ -363,6 +364,12 @@ static inline int uv_blade_to_pnode(int bid)
- 	return uv_blade_info[bid].pnode;
- }
- 
-+/* Nid of memory node on blade. -1 if no blade-local memory */
-+static inline int uv_blade_to_memory_nid(int bid)
-+{
-+	return uv_blade_info[bid].memory_nid;
-+}
-+
- /* Determine the number of possible cpus on a blade */
- static inline int uv_blade_nr_possible_cpus(int bid)
- {
 diff --git a/arch/x86/kernel/apic/x2apic_uv_x.c b/arch/x86/kernel/apic/x2apic_uv_x.c
-index 096d19a..ad3f0a9 100644
+index ad3f0a9..445c210 100644
 --- a/arch/x86/kernel/apic/x2apic_uv_x.c
 +++ b/arch/x86/kernel/apic/x2apic_uv_x.c
-@@ -591,6 +591,8 @@ void __init uv_system_init(void)
- 	bytes = sizeof(struct uv_blade_info) * uv_num_possible_blades();
- 	uv_blade_info = kmalloc(bytes, GFP_KERNEL);
- 	BUG_ON(!uv_blade_info);
-+	for (blade = 0; blade < uv_num_possible_blades(); blade++)
-+		uv_blade_info[blade].memory_nid = -1;
+@@ -362,12 +362,6 @@ static __init void get_lowmem_redirect(unsigned long *base, unsigned long *size)
+ 	BUG();
+ }
  
- 	get_lowmem_redirect(&lowmem_redir_base, &lowmem_redir_size);
+-static __init void map_low_mmrs(void)
+-{
+-	init_extra_mapping_uc(UV_GLOBAL_MMR32_BASE, UV_GLOBAL_MMR32_SIZE);
+-	init_extra_mapping_uc(UV_LOCAL_MMR_BASE, UV_LOCAL_MMR_SIZE);
+-}
+-
+ enum map_type {map_wb, map_uc};
  
-@@ -629,6 +631,9 @@ void __init uv_system_init(void)
- 		lcpu = uv_blade_info[blade].nr_possible_cpus;
- 		uv_blade_info[blade].nr_possible_cpus++;
+ static __init void map_high(char *id, unsigned long base, int shift,
+@@ -395,26 +389,6 @@ static __init void map_gru_high(int max_pnode)
+ 		map_high("GRU", gru.s.base, shift, max_pnode, map_wb);
+ }
  
-+		/* Any node on the blade, else will contain -1. */
-+		uv_blade_info[blade].memory_nid = nid;
-+
- 		uv_cpu_hub_info(cpu)->lowmem_remap_base = lowmem_redir_base;
- 		uv_cpu_hub_info(cpu)->lowmem_remap_top = lowmem_redir_size;
- 		uv_cpu_hub_info(cpu)->m_val = m_val;
+-static __init void map_config_high(int max_pnode)
+-{
+-	union uvh_rh_gam_cfg_overlay_config_mmr_u cfg;
+-	int shift = UVH_RH_GAM_CFG_OVERLAY_CONFIG_MMR_BASE_SHFT;
+-
+-	cfg.v = uv_read_local_mmr(UVH_RH_GAM_CFG_OVERLAY_CONFIG_MMR);
+-	if (cfg.s.enable)
+-		map_high("CONFIG", cfg.s.base, shift, max_pnode, map_uc);
+-}
+-
+-static __init void map_mmr_high(int max_pnode)
+-{
+-	union uvh_rh_gam_mmr_overlay_config_mmr_u mmr;
+-	int shift = UVH_RH_GAM_MMR_OVERLAY_CONFIG_MMR_BASE_SHFT;
+-
+-	mmr.v = uv_read_local_mmr(UVH_RH_GAM_MMR_OVERLAY_CONFIG_MMR);
+-	if (mmr.s.enable)
+-		map_high("MMR", mmr.s.base, shift, max_pnode, map_uc);
+-}
+-
+ static __init void map_mmioh_high(int max_pnode)
+ {
+ 	union uvh_rh_gam_mmioh_overlay_config_mmr_u mmioh;
+@@ -566,8 +540,6 @@ void __init uv_system_init(void)
+ 	unsigned long mmr_base, present, paddr;
+ 	unsigned short pnode_mask;
+ 
+-	map_low_mmrs();
+-
+ 	m_n_config.v = uv_read_local_mmr(UVH_SI_ADDR_MAP_CONFIG);
+ 	m_val = m_n_config.s.m_skt;
+ 	n_val = m_n_config.s.n_skt;
+@@ -667,11 +639,10 @@ void __init uv_system_init(void)
+ 		pnode = (paddr >> m_val) & pnode_mask;
+ 		blade = boot_pnode_to_blade(pnode);
+ 		uv_node_to_blade[nid] = blade;
++		max_pnode = max(pnode, max_pnode);
+ 	}
+ 
+ 	map_gru_high(max_pnode);
+-	map_mmr_high(max_pnode);
+-	map_config_high(max_pnode);
+ 	map_mmioh_high(max_pnode);
+ 
+ 	uv_cpu_init();
