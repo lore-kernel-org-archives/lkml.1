@@ -1,264 +1,314 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbZHDT5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbZHDT5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754551AbZHDT5f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 15:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbZHDT5e
+	id S1754890AbZHDT5w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 15:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754795AbZHDT5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 15:57:34 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47293
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754062AbZHDT5d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 15:57:33 -0400
-Date: Tue, 04 Aug 2009 12:57:42 -0700 (PDT)
-Message-Id: <20090804.125742.32009006.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Aug 2009 15:57:51 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46328 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754758AbZHDT5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 15:57:49 -0400
+Date: Tue, 4 Aug 2009 21:57:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Cc: Mel Gorman <mel@csn.ul.ie>, Larry Woodman <lwoodman@redhat.com>,
+       riel@redhat.com, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [PATCH 4/4] tracing, page-allocator: Add a postprocessing
+	script for page-allocator-related ftrace events
+Message-ID: <20090804195717.GA5998@elte.hu>
+References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie> <1249409546-6343-5-git-send-email-mel@csn.ul.ie> <20090804112246.4e6d0ab1.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090804112246.4e6d0ab1.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+3
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-1) IGBVF won't pass traffic due to mis-reading of MAC setting errors.
-   Fix from Alexander Duyck.
+> > This patch adds a simple post-processing script for the 
+> > page-allocator-related trace events. It can be used to give an 
+> > indication of who the most allocator-intensive processes are and 
+> > how often the zone lock was taken during the tracing period. 
+> > Example output looks like
+> > 
+> > find-2840
+> >  o pages allocd            = 1877
+> >  o pages allocd under lock = 1817
+> >  o pages freed directly    = 9
+> >  o pcpu refills            = 1078
+> >  o migrate fallbacks       = 48
+> >    - fragmentation causing = 48
+> >      - severe              = 46
+> >      - moderate            = 2
+> >    - changed migratetype   = 7
+> 
+> The usual way of accumulating and presenting such measurements is 
+> via /proc/vmstat.  How do we justify adding a completely new and 
+> different way of doing something which we already do?
 
-2) Regression in PPP-MP fragmentation handling, fix from Ben McKeegan.
+/proc/vmstat has a couple of technical and usage disadvantages:
 
-3) PPPOE procfs support can report the final hash chain's entry
-   "many times", fix from Eric Dumazet.
+ - it is pretty coarse - all-of-system, nothing else 
 
-4) EHEA interface down doesn't unregister the NAPI context --> crash.
-   Fix from Hannes Hering.
+ - expensive to read (have to read the full file with all fields)
 
-5) Transmits can happen when taking sky2 interfaces down, corrupting
-   state, fix from Mike McCormack.
+ - has to be polled, has no notion for events
 
-6) PCIe completion timeouts programmed incorrectly, and thus out
-   of spec for PCIe, in IXGBE driver.  Fix from Mallikarjuna R Chilakala.
+ - it does not offer sampling of workloads
 
-7) net_assign_generic() does memcpy(... count) instead of
-   memcpy(... count * object_size), fix from Eric Dumazet.
+ - it does not allow the separation of workloads: you cannot measure
+   just a single workload, you cannot measure just a single process, 
+   nor a single CPU.
 
-8) pppol2tp forgets to release per-net-namespace metadata during
-   module unload, leaking memory.  Fix from Eric Dumazet.
+Incidentally there's an upstream kernel instrumentation and 
+statistics framework that solves all the above disadvantages of 
+/proc/vmstat:
 
-9) Several reads past end-of-array boundary fixes from Roel Kluin
-   (airo, ath9k, iwlwifi, libertas, ARP, 3c515, eexpress, tulip,
-   s6gmac, mISDN).
+ - it is finegrained: per task or per workload or per cpu or full system
 
-10) NETPOLL support in IXGBE doesn't consider all queues, and thus
-    didn't work well.  Fix from Peter P Waskiewicz Jr.
+ - cheap to read - the counts can be accessed individually
 
-11) IXGBE was doing:
-    	adapter->flags & IXGBE_FLAG2_*
-    instead of:
-	adapter->flags2 & IXGBE_FLAG2_*
-    Fix also from Peter P Waskiewicz Jr.
+ - is event based, can be poll()ed
 
-12) Coherent DMA mask not set properly in netxen driver.  Fix from
-    Dhananjay Phadke.
+ - offers sampling of workloads, of any subset of these values
 
-13) MLX4 driver unmaps DMA twice by mistake, oops, fix from Yevgeny
-    Petrilin.
+ - it allows easy separation of workloads
 
-14) Fix mISDN receive buffer size usage regression, from
-    Andreas Eversberg.
+All that is needed are the patches form Mel and Rik and it's 
+plug-and-play.
 
-15) We thought we could rely upon RTNL mutex protection for unicast
-    address list changes throughout, but unfortunately ipv6 needs
-    to change these things from software interrupt, so a seperate
-    spinlock is needed.  Regression fixed by Jiri Pirko.
+Let me demonstrate these features in action (i've applied the 
+patches for testing to -tip):
 
-16) IP address printing docbook fix from Tobias Klauser.
+First, discovery/enumeration of available counters can be done via 
+'perf list':
 
-17) IPV4 route reverse path filter got broken when it was converted
-    into a trinary knob, fix from Stephen Hemminger.
+titan:~> perf list
+  [...]
+  kmem:kmalloc                             [Tracepoint event]
+  kmem:kmem_cache_alloc                    [Tracepoint event]
+  kmem:kmalloc_node                        [Tracepoint event]
+  kmem:kmem_cache_alloc_node               [Tracepoint event]
+  kmem:kfree                               [Tracepoint event]
+  kmem:kmem_cache_free                     [Tracepoint event]
+  kmem:mm_page_free_direct                 [Tracepoint event]
+  kmem:mm_pagevec_free                     [Tracepoint event]
+  kmem:mm_page_alloc                       [Tracepoint event]
+  kmem:mm_page_alloc_zone_locked           [Tracepoint event]
+  kmem:mm_page_pcpu_drain                  [Tracepoint event]
+  kmem:mm_page_alloc_extfrag               [Tracepoint event]
 
-18) ISCSI needs to use GFP_ATOMIC allocations in iscsi_offload_mesg().
-    Fix from Michael Chan.
+Then any (or all) of the above event sources can be activated and 
+measured. For example the page alloc/free properties of a 'hackbench 
+run' are:
 
-19) Missing kfree calls from Julia Lawall.
+ titan:~> perf stat -e kmem:mm_page_pcpu_drain -e kmem:mm_page_alloc 
+ -e kmem:mm_pagevec_free -e kmem:mm_page_free_direct ./hackbench 10
+ Time: 0.575
 
-20) 3c59x build fix for gcc-3.2
+ Performance counter stats for './hackbench 10':
 
-21) VLB and NULL pointer check fixes in pcnet32 by Bartlomiej Zolnierkiewicz
-    via Don Fry.
+          13857  kmem:mm_page_pcpu_drain 
+          27576  kmem:mm_page_alloc      
+           6025  kmem:mm_pagevec_free    
+          20934  kmem:mm_page_free_direct
 
-Please pull, thanks a lot!
+    0.613972165  seconds time elapsed
 
-The following changes since commit a33a052f19a21d727847391c8c1aff3fb221c472:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://neil.brown.name/md
+You can observe the statistical properties as well, by using the 
+'repeat the workload N times' feature of perf stat:
 
-are available in the git repository at:
+ titan:~> perf stat --repeat 5 -e kmem:mm_page_pcpu_drain -e 
+   kmem:mm_page_alloc -e kmem:mm_pagevec_free -e 
+   kmem:mm_page_free_direct ./hackbench 10
+ Time: 0.627
+ Time: 0.644
+ Time: 0.564
+ Time: 0.559
+ Time: 0.626
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+ Performance counter stats for './hackbench 10' (5 runs):
 
-Alexander Duyck (1):
-      igbvf: Allow VF driver to correctly recognize failure to set mac
+          12920  kmem:mm_page_pcpu_drain    ( +-   3.359% )
+          25035  kmem:mm_page_alloc         ( +-   3.783% )
+           6104  kmem:mm_pagevec_free       ( +-   0.934% )
+          18376  kmem:mm_page_free_direct   ( +-   4.941% )
 
-Andreas Eversberg (1):
-      mISDN: Fix handling of receive buffer size in L1oIP
+    0.643954516  seconds time elapsed   ( +-   2.363% )
 
-Ben McKeegan (1):
-      ppp: fix lost fragments in ppp_mp_explode() (resubmit)
+Furthermore, these tracepoints can be used to sample the workload as 
+well. For example the page allocations done by a 'git gc' can be 
+captured the following way:
 
-Dan Carpenter (1):
-      wireless: ERR_PTR vs null
+ titan:~/git> perf record -f -e kmem:mm_page_alloc -c 1 ./git gc
+ Counting objects: 1148, done.
+ Delta compression using up to 2 threads.
+ Compressing objects: 100% (450/450), done.
+ Writing objects: 100% (1148/1148), done.
+ Total 1148 (delta 690), reused 1148 (delta 690)
+ [ perf record: Captured and wrote 0.267 MB perf.data (~11679 samples) ]
 
-Dave Young (1):
-      bluetooth: rfcomm_init bug fix
+To check which functions generated page allocations:
 
-David S. Miller (2):
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
+ titan:~/git> perf report
+ # Samples: 10646
+ #
+ # Overhead          Command               Shared Object
+ # ........  ...............  ..........................
+ #
+    23.57%       git-repack  /lib64/libc-2.5.so        
+    21.81%              git  /lib64/libc-2.5.so        
+    14.59%              git  ./git                     
+    11.79%       git-repack  ./git                     
+     7.12%              git  /lib64/ld-2.5.so          
+     3.16%       git-repack  /lib64/libpthread-2.5.so  
+     2.09%       git-repack  /bin/bash                 
+     1.97%               rm  /lib64/libc-2.5.so        
+     1.39%               mv  /lib64/ld-2.5.so          
+     1.37%               mv  /lib64/libc-2.5.so        
+     1.12%       git-repack  /lib64/ld-2.5.so          
+     0.95%               rm  /lib64/ld-2.5.so          
+     0.90%  git-update-serv  /lib64/libc-2.5.so        
+     0.73%  git-update-serv  /lib64/ld-2.5.so          
+     0.68%             perf  /lib64/libpthread-2.5.so  
+     0.64%       git-repack  /usr/lib64/libz.so.1.2.3  
 
-Dhananjay Phadke (1):
-      netxen: fix coherent dma mask setting
+Or to see it on a more finegrained level:
 
-Don Fry (2):
-      pcnet32: remove superfluous NULL pointer check in pcnet32_probe1()
-      pcnet32: VLB support fixes
+titan:~/git> perf report --sort comm,dso,symbol
+# Samples: 10646
+#
+# Overhead          Command               Shared Object  Symbol
+# ........  ...............  ..........................  ......
+#
+     9.35%       git-repack  ./git                       [.] insert_obj_hash
+     9.12%              git  ./git                       [.] insert_obj_hash
+     7.31%              git  /lib64/libc-2.5.so          [.] memcpy
+     6.34%       git-repack  /lib64/libc-2.5.so          [.] _int_malloc
+     6.24%       git-repack  /lib64/libc-2.5.so          [.] memcpy
+     5.82%       git-repack  /lib64/libc-2.5.so          [.] __GI___fork
+     5.47%              git  /lib64/libc-2.5.so          [.] _int_malloc
+     2.99%              git  /lib64/libc-2.5.so          [.] memset
 
-Eric Dumazet (3):
-      pppoe: fix /proc/net/pppoe
-      pppol2tp: calls unregister_pernet_gen_device() at unload time
-      net: net_assign_generic() fix
+Furthermore, call-graph sampling can be done too, of page 
+allocations - to see precisely what kind of page allocations there 
+are:
 
-Hannes Hering (1):
-      ehea: Fix napi list corruption on ifconfig down
+ titan:~/git> perf record -f -g -e kmem:mm_page_alloc -c 1 ./git gc
+ Counting objects: 1148, done.
+ Delta compression using up to 2 threads.
+ Compressing objects: 100% (450/450), done.
+ Writing objects: 100% (1148/1148), done.
+ Total 1148 (delta 690), reused 1148 (delta 690)
+ [ perf record: Captured and wrote 0.963 MB perf.data (~42069 samples) ]
 
-Jean Delvare (1):
-      3c59x: Fix build failure with gcc 3.2
+ titan:~/git> perf report -g
+ # Samples: 10686
+ #
+ # Overhead          Command               Shared Object
+ # ........  ...............  ..........................
+ #
+    23.25%       git-repack  /lib64/libc-2.5.so        
+                |          
+                |--50.00%-- _int_free
+                |          
+                |--37.50%-- __GI___fork
+                |          make_child
+                |          
+                |--12.50%-- ptmalloc_unlock_all2
+                |          make_child
+                |          
+                 --6.25%-- __GI_strcpy
+    21.61%              git  /lib64/libc-2.5.so        
+                |          
+                |--30.00%-- __GI_read
+                |          |          
+                |           --83.33%-- git_config_from_file
+                |                     git_config
+                |                     |          
+   [...]
 
-Jiajun Wu (1):
-      gianfar: fix coalescing setup in ethtool support
+Or you can observe the whole system's page allocations for 10 
+seconds:
 
-Jiri Pirko (1):
-      net: restore the original spinlock to protect unicast list
+titan:~/git> perf stat -a -e kmem:mm_page_pcpu_drain -e 
+kmem:mm_page_alloc -e kmem:mm_pagevec_free -e 
+kmem:mm_page_free_direct sleep 10
 
-Johannes Berg (3):
-      iwlwifi: fix TX queue race
-      mac80211: fix suspend
-      cfg80211: add two missing NULL pointer checks
+ Performance counter stats for 'sleep 10':
 
-Julia Lawall (3):
-      net/netlabel: Add kmalloc NULL tests
-      drivers/net/wireless/iwlwifi: introduce missing kfree
-      drivers/net/wireless: introduce missing kfree
+         171585  kmem:mm_page_pcpu_drain 
+         322114  kmem:mm_page_alloc      
+          73623  kmem:mm_pagevec_free    
+         254115  kmem:mm_page_free_direct
 
-Luis R. Rodriguez (2):
-      mac80211: do not queue work after suspend in the dynamic ps timer
-      cfg80211: fix regression on beacon world roaming feature
+   10.000591410  seconds time elapsed
 
-Mallikarjuna R Chilakala (1):
-      ixgbe: Patch to modify 82598 PCIe completion timeout values
+Or observe how fluctuating the page allocations are, via statistical 
+analysis done over ten 1-second intervals:
 
-Michael Chan (1):
-      iscsi: Use GFP_ATOMIC in iscsi_offload_mesg().
+ titan:~/git> perf stat --repeat 10 -a -e kmem:mm_page_pcpu_drain -e 
+   kmem:mm_page_alloc -e kmem:mm_pagevec_free -e 
+   kmem:mm_page_free_direct sleep 1
 
-Mike McCormack (1):
-      sky2: Avoid transmits during sky2_down()
+ Performance counter stats for 'sleep 1' (10 runs):
 
-Patrick Simmons (1):
-      zd1211rw: fix unaligned access in zd_mac_rx
+          17254  kmem:mm_page_pcpu_drain    ( +-   3.709% )
+          34394  kmem:mm_page_alloc         ( +-   4.617% )
+           7509  kmem:mm_pagevec_free       ( +-   4.820% )
+          25653  kmem:mm_page_free_direct   ( +-   3.672% )
 
-Peter P Waskiewicz Jr (3):
-      ixgbe: Fix netpoll to be properly multiqueue aware
-      ixgbe: Fix usage of second flags bitmap when using LRO/RSC
-      ixgbe: Fix RSC completion delay causing Rx interrupts to stop
+    1.058135029  seconds time elapsed   ( +-   3.089% )
 
-Reinette Chatre (1):
-      iwlagn: do not send key clear commands when rfkill enabled
+Or you can annotate the recorded 'git gc' run on a per symbol basis 
+and check which instructions/source-code generated page allocations:
 
-Roel Kluin (6):
-      airo: Buffer overflow
-      ath9k: Read outside array bounds
-      iwlwifi: Read outside array bounds
-      libertas: Read outside array bounds
-      libertas: Read buffer overflow
-      libertas: Read buffer overflow
+ titan:~/git> perf annotate __GI___fork
+ ------------------------------------------------
+  Percent |      Source code & Disassembly of libc-2.5.so
+ ------------------------------------------------
+          :
+          :
+          :      Disassembly of section .plt:
+          :      Disassembly of section .text:
+          :
+          :      00000031a2e95560 <__fork>:
+ [...]
+     0.00 :        31a2e95602:   b8 38 00 00 00          mov    $0x38,%eax
+     0.00 :        31a2e95607:   0f 05                   syscall 
+    83.42 :        31a2e95609:   48 3d 00 f0 ff ff       cmp    $0xfffffffffffff000,%rax
+     0.00 :        31a2e9560f:   0f 87 4d 01 00 00       ja     31a2e95762 <__fork+0x202>
+     0.00 :        31a2e95615:   85 c0                   test   %eax,%eax
 
-Stephen Hemminger (1):
-      ip: fix logic of reverse path filter sysctl
+( this shows that 83.42% of __GI___fork's page allocations come from
+  the 0x38 system call it performs. )
 
-Tobias Klauser (1):
-      docbook: fix printk of ip address
+etc. etc. - a lot more is possible. I could list a dozen of 
+other different usecases straight away - neither of which is 
+possible via /proc/vmstat.
 
-Yevgeny Petrilin (1):
-      mlx4_en: Fix double pci unmapping.
+/proc/vmstat is not in the same league really, in terms of 
+expressive power of system analysis and performance 
+analysis.
 
-reinette chatre (1):
-      iwlagn: fix minimum number of queues setting
+All that the above results needed were those new tracepoints 
+in include/tracing/events/kmem.h.
 
-roel kluin (6):
-      3c515: Write outside array bounds
-      ipv4: ARP neigh procfs buffer overflow
-      eexpress: Read buffer overflow
-      tulip: Read buffer overflow
-      s6gmac: Read buffer overflow
-      mISDN: Read buffer overflow
-
- Documentation/DocBook/kernel-hacking.tmpl    |    4 +-
- drivers/isdn/mISDN/l1oip_core.c              |    6 +-
- drivers/net/3c515.c                          |    4 +-
- drivers/net/3c59x.c                          |   10 ++--
- drivers/net/eexpress.c                       |    6 +-
- drivers/net/ehea/ehea.h                      |    2 +-
- drivers/net/ehea/ehea_main.c                 |    3 +
- drivers/net/gianfar_ethtool.c                |   10 ++--
- drivers/net/igbvf/vf.c                       |    4 ++
- drivers/net/ixgbe/ixgbe.h                    |    2 +
- drivers/net/ixgbe/ixgbe_82598.c              |   67 +++++++++++++++++++++++++-
- drivers/net/ixgbe/ixgbe_ethtool.c            |   11 +++--
- drivers/net/ixgbe/ixgbe_main.c               |   25 ++++++----
- drivers/net/ixgbe/ixgbe_type.h               |    8 +++
- drivers/net/mlx4/en_tx.c                     |    1 +
- drivers/net/netxen/netxen_nic_main.c         |   37 ++++++++++-----
- drivers/net/pcnet32.c                        |   30 +++++------
- drivers/net/ppp_generic.c                    |   34 +++++++------
- drivers/net/pppoe.c                          |    1 +
- drivers/net/pppol2tp.c                       |    1 +
- drivers/net/s6gmac.c                         |    2 +-
- drivers/net/sky2.c                           |   14 +++++-
- drivers/net/sky2.h                           |    1 +
- drivers/net/tulip/de4x5.c                    |    6 +-
- drivers/net/wireless/airo.c                  |   13 ++---
- drivers/net/wireless/ath/ath9k/eeprom.c      |    4 +-
- drivers/net/wireless/iwlwifi/iwl-3945.h      |    2 +-
- drivers/net/wireless/iwlwifi/iwl-core.c      |    3 +
- drivers/net/wireless/iwlwifi/iwl-debugfs.c   |   12 ++--
- drivers/net/wireless/iwlwifi/iwl-dev.h       |    6 ++-
- drivers/net/wireless/iwlwifi/iwl-sta.c       |   12 +++++
- drivers/net/wireless/iwlwifi/iwl-tx.c        |   14 +++--
- drivers/net/wireless/iwlwifi/iwl3945-base.c  |    7 ++-
- drivers/net/wireless/iwmc3200wifi/commands.c |    1 +
- drivers/net/wireless/iwmc3200wifi/netdev.c   |    6 +--
- drivers/net/wireless/libertas/11d.c          |    2 +-
- drivers/net/wireless/libertas/assoc.c        |   18 +++----
- drivers/net/wireless/libertas/scan.c         |    3 +-
- drivers/net/wireless/zd1211rw/zd_mac.c       |    2 +-
- drivers/scsi/scsi_transport_iscsi.c          |    4 +-
- include/linux/inetdevice.h                   |    2 +-
- include/net/bluetooth/rfcomm.h               |   12 ++++-
- include/net/cfg80211.h                       |    5 ++
- net/bluetooth/rfcomm/core.c                  |   27 +++++++---
- net/bluetooth/rfcomm/sock.c                  |    2 +-
- net/core/dev.c                               |   25 ++++++----
- net/core/net_namespace.c                     |    2 +-
- net/ipv4/arp.c                               |    4 +-
- net/mac80211/mlme.c                          |    2 +-
- net/mac80211/pm.c                            |   24 ++++++----
- net/mac80211/rx.c                            |   12 +++++
- net/netlabel/netlabel_kapi.c                 |    2 +-
- net/wireless/reg.c                           |    9 ++--
- net/wireless/reg.h                           |    3 +-
- net/wireless/scan.c                          |    4 +-
- 55 files changed, 366 insertions(+), 167 deletions(-)
+	Ingo
