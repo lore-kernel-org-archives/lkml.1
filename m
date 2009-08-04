@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbZHDIiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbZHDImj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755291AbZHDIiB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 04:38:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754534AbZHDIiA
+	id S1755334AbZHDImj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 04:42:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755302AbZHDImi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 04:38:00 -0400
-Received: from smtp201.iad.emailsrvr.com ([207.97.245.201]:41623 "EHLO
-	smtp201.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750958AbZHDIh7 (ORCPT
+	Tue, 4 Aug 2009 04:42:38 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:33263 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755265AbZHDImh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 04:37:59 -0400
-Message-ID: <4A77F366.9020104@librato.com>
-Date: Tue, 04 Aug 2009 04:37:58 -0400
-From: Oren Laadan <orenl@librato.com>
-Organization: Librato
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
-MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@osdl.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-api@vger.kernel.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: [RFC v17][PATCH 16/60] pids 6/7: Define do_fork_with_pids()
-References: <1248256822-23416-1-git-send-email-orenl@librato.com> <1248256822-23416-17-git-send-email-orenl@librato.com> <20090803182640.GB7493@us.ibm.com>
-In-Reply-To: <20090803182640.GB7493@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Aug 2009 04:42:37 -0400
+Subject: Re: [PATCH take 2][RFC] fat: Save FAT root directory timestamps to
+	volume label
+From: =?ISO-8859-1?Q?J=F6rg?= Schummer <ext-jorg.2.schummer@nokia.com>
+To: ext OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <87ljmas5ym.fsf@devron.myhome.or.jp>
+References: <1248274841-3586-1-git-send-email-ext-jorg.2.schummer@nokia.com>
+	 <1248428635-26073-1-git-send-email-ext-jorg.2.schummer@nokia.com>
+	 <87fxclmhxy.fsf@devron.myhome.or.jp>
+	 <1248691635.4618.43.camel@jorg-desktop>
+	 <87ljmas5ym.fsf@devron.myhome.or.jp>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 04 Aug 2009 11:42:37 +0300
+Message-Id: <1249375357.5736.53.camel@jorg-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 04 Aug 2009 08:42:14.0638 (UTC) FILETIME=[775DD0E0:01CA14DF]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-07-27 at 13:47 +0200, ext OGAWA Hirofumi wrote:
+> Jörg Schummer <ext-jorg.2.schummer@nokia.com> writes:
 
+> BTW, the patch has several bugs. fat_get_label_entry() doesn't check
+> IS_FREE(), is it right? fat_create_label_entry() doesn't initialize all
+> timestamp in the case of msdos. spin_lock() usage is wrong. and more...
 
-Serge E. Hallyn wrote:
-> Quoting Oren Laadan (orenl@librato.com):
->> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> ...
->> +struct target_pid_set {
->> +	int num_pids;
->> +	pid_t *target_pids;
->> +};
-> 
-> Oren, I thought you had decided to add an extended flags field
-> here, to support additional CLONE_ flags - such as CLONE_TIMENS?
+After reviewing the patch again, I did notice some additional problems
+(I suppose that was the "and more..."). If and when I have time again, I
+might take a closer look at it again.
 
-Yes.
+Thanks for your help until now!
 
-> 
-> I mention it now because if you're still considering that
-> long-term, then IMO the syscall should not be called clone_with_pids(),
-> but clone_extended().  Otherwise, to support new clone flags we'll
-> either have to use unshare2 (without clone support), or add yet
-> another clone variant, OR use clone_with_pids() which is a poor name
-> for something which will likely be used in cases without specifying
-> pids, but specifying flags not support through any other interface.
+Jörg
 
-True.
-
-Also, Suka - any objections to rename 'struct target_pid_set' to
-simply 'struct pid_set' ?
-Actually, it could probably be (re)used internally in the patch that
-adds to cgroup a 'procs' file similar to 'tasks'
-(https://lists.linux-foundation.org/pipermail/containers/2009-July/019679.html)
-
-Oren.
 
