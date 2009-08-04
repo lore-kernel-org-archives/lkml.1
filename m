@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932747AbZHDKce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932769AbZHDKcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932747AbZHDKce (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 06:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932540AbZHDKce
+	id S932769AbZHDKcs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 06:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932757AbZHDKcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 06:32:34 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:34144 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932513AbZHDKcd (ORCPT
+	Tue, 4 Aug 2009 06:32:47 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:40787 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932540AbZHDKcq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 06:32:33 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: =?iso-8859-1?Q?J=F6rg?= Schummer <ext-jorg.2.schummer@nokia.com>
-Cc: "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel\@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH take 2][RFC] fat: Save FAT root directory timestamps to volume label
-References: <1248274841-3586-1-git-send-email-ext-jorg.2.schummer@nokia.com>
-	<1248428635-26073-1-git-send-email-ext-jorg.2.schummer@nokia.com>
-	<87fxclmhxy.fsf@devron.myhome.or.jp>
-	<1248691635.4618.43.camel@jorg-desktop>
-	<87ljmas5ym.fsf@devron.myhome.or.jp>
-	<1249375357.5736.53.camel@jorg-desktop>
-Date: Tue, 04 Aug 2009 19:32:29 +0900
-In-Reply-To: <1249375357.5736.53.camel@jorg-desktop> (=?iso-8859-1?Q?=22J?=
- =?iso-8859-1?Q?=F6rg?= Schummer"'s
-	message of "Tue, 04 Aug 2009 11:42:37 +0300")
-Message-ID: <87zlafswci.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	Tue, 4 Aug 2009 06:32:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=eT7kvx45wOEC+JKW54E+8DNDfAiW4Af8/ZdVLDZrEQ1IZ8YKqvZWfzV8FBxBgzaqIB
+         gha58oChUiFFdcOyNQiFj7m8hyg2qWdWtRNsuxFHQSFc/UUXUMN6gp8ZnBI+GxfFj0GM
+         UPn/EuGJlTDYT6iF7lKZLPZthX3rGg5nKCkt8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+In-Reply-To: <20090804092540.GA29778@elte.hu>
+References: <20090729192814.GT4148@kernel.dk> <20090801082048.GX12579@kernel.dk> 
+	<20090801182216.GA25334@ghostprotocols.net> <20090802184148.GB17241@elte.hu> 
+	<20090802194454.GC28572@bombadil.infradead.org> <20090802195043.GD24486@elte.hu> 
+	<20090802201132.GE28572@bombadil.infradead.org> <20090802204701.GE25334@ghostprotocols.net> 
+	<20090803015430.GG25334@ghostprotocols.net> <20090804092540.GA29778@elte.hu>
+From: Frederic Riss <frederic.riss@gmail.com>
+Date: Tue, 4 Aug 2009 12:32:26 +0200
+Message-ID: <87d3b2040908040332i87bf211y8fc782d67b3157a3@mail.gmail.com>
+Subject: Re: [PATCH] basic perf support for sparc
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Kyle McMartin <kyle@mcmartin.ca>, Jens Axboe <jens.axboe@oracle.com>,
+       Anton Blanchard <anton@samba.org>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       fweisbec@gmail.com, benh@kernel.crashing.org, penberg@cs.helsinki.fi,
+       vegard.nossum@gmail.com, paulus@samba.org, williams@redhat.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jörg Schummer <ext-jorg.2.schummer@nokia.com> writes:
+2009/8/4 Ingo Molnar <mingo@elte.hu>:
+>
+> * Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
+>
+>> +static void load_perf_bfd_demangle(void)
+>> +{
+>> +     void *handle = dlopen("libbfd-2.19.51.0.2-17.fc11.so", RTLD_NOW);
+>
+> Hm, this does not look like a very generic solution. Is there some
+> way to do a library search to figure out the name? I guess a glob
+> match on /usr/lib/libbfd*.so?
 
-> On Mon, 2009-07-27 at 13:47 +0200, ext OGAWA Hirofumi wrote:
->> Jörg Schummer <ext-jorg.2.schummer@nokia.com> writes:
->
->> BTW, the patch has several bugs. fat_get_label_entry() doesn't check
->> IS_FREE(), is it right? fat_create_label_entry() doesn't initialize all
->> timestamp in the case of msdos. spin_lock() usage is wrong. and more...
->
-> After reviewing the patch again, I did notice some additional problems
-> (I suppose that was the "and more..."). If and when I have time again, I
-> might take a closer look at it again.
->
-> Thanks for your help until now!
+If all you want is C++ symbols demangling, why not just look for the
+c++filt binary on the system? It accepts mangled names on its stdin
+and outputs the demangled name on stdout.  You can keep it running in
+the background, and communicate through pipes. Of course it's not as
+effective as a library call, but I guess that it'll be much more
+generic and also much more likely to be found on a developer's system
+than a libbfd shared library.
 
-No problem at all. Thanks for your work.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Fred.
