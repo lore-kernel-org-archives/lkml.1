@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932901AbZHDPdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932955AbZHDPe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932901AbZHDPdP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 11:33:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932890AbZHDPdN
+	id S932955AbZHDPe0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 11:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932947AbZHDPeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 11:33:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40009 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932856AbZHDPdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 11:33:11 -0400
-Date: Tue, 4 Aug 2009 15:32:28 GMT
-From: tip-bot for Jack Steiner <steiner@sgi.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       steiner@sgi.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       steiner@sgi.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090720142840.GA8885@sgi.com>
-References: <20090720142840.GA8885@sgi.com>
-Subject: [tip:x86/urgent] x86, UV: Complete IRQ interrupt migration in arch_enable_uv_irq()
-Message-ID: <tip-2a5ef41661b56cf4eee042a6967c4e14b63e8eac@git.kernel.org>
-Git-Commit-ID: 2a5ef41661b56cf4eee042a6967c4e14b63e8eac
-X-Mailer: tip-git-log-daemon
+	Tue, 4 Aug 2009 11:34:20 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:43186 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932934AbZHDPeS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 11:34:18 -0400
+Date: Tue, 4 Aug 2009 10:17:47 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, jmorris@namei.org,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 2/6] KEYS: Allow keyctl_revoke() on keys that have
+	SETATTR but not WRITE perm
+Message-ID: <20090804151747.GA3698@us.ibm.com>
+References: <20090804145530.17676.24656.stgit@warthog.procyon.org.uk> <20090804145535.17676.87650.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 04 Aug 2009 15:32:41 +0000 (UTC)
+In-Reply-To: <20090804145535.17676.87650.stgit@warthog.procyon.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  2a5ef41661b56cf4eee042a6967c4e14b63e8eac
-Gitweb:     http://git.kernel.org/tip/2a5ef41661b56cf4eee042a6967c4e14b63e8eac
-Author:     Jack Steiner <steiner@sgi.com>
-AuthorDate: Mon, 20 Jul 2009 09:28:41 -0500
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 4 Aug 2009 16:32:52 +0200
+Quoting David Howells (dhowells@redhat.com):
+> Allow keyctl_revoke() to operate on keys that have SETATTR but not WRITE
+> permission, rather than only on keys that have WRITE permission.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-x86, UV: Complete IRQ interrupt migration in arch_enable_uv_irq()
+Code seems to match the comment, and I see no docs saying this (SETATTR
+implies revoke) shouldn't be the case, so I guess that call is purely
+up to you :)
 
-In uv_setup_irq(), the call to create_irq() initially assigns
-IRQ vectors to cpu 0. The subsequent call to
-assign_irq_vector() in arch_enable_uv_irq() migrates the IRQ to
-another cpu and frees the cpu 0 vector - at least it will be
-freed as soon as the "IRQ move" completes.
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-arch_enable_uv_irq() needs to send a cleanup IPI to complete
-the IRQ move. Otherwise, assignment of GRU interrupts on large
-systems (>200 cpus) will exhaust the cpu 0 interrupt vectors
-and initialization of the GRU driver will fail.
-
-Signed-off-by: Jack Steiner <steiner@sgi.com>
-LKML-Reference: <20090720142840.GA8885@sgi.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/kernel/apic/io_apic.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 2284a48..d2ed6c5 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -3793,6 +3793,9 @@ int arch_enable_uv_irq(char *irq_name, unsigned int irq, int cpu, int mmr_blade,
- 	mmr_pnode = uv_blade_to_pnode(mmr_blade);
- 	uv_write_global_mmr64(mmr_pnode, mmr_offset, mmr_value);
- 
-+	if (cfg->move_in_progress)
-+		send_cleanup_vector(cfg);
-+
- 	return irq;
- }
- 
+> ---
+> 
+>  security/keys/keyctl.c |    8 +++++++-
+>  1 files changed, 7 insertions(+), 1 deletions(-)
+> 
+> 
+> diff --git a/security/keys/keyctl.c b/security/keys/keyctl.c
+> index b85ace2..1160b64 100644
+> --- a/security/keys/keyctl.c
+> +++ b/security/keys/keyctl.c
+> @@ -343,7 +343,13 @@ long keyctl_revoke_key(key_serial_t id)
+>  	key_ref = lookup_user_key(id, 0, KEY_WRITE);
+>  	if (IS_ERR(key_ref)) {
+>  		ret = PTR_ERR(key_ref);
+> -		goto error;
+> +		if (ret != -EACCES)
+> +			goto error;
+> +		key_ref = lookup_user_key(id, 0, KEY_SETATTR);
+> +		if (IS_ERR(key_ref)) {
+> +			ret = PTR_ERR(key_ref);
+> +			goto error;
+> +		}
+>  	}
+> 
+>  	key_revoke(key_ref_to_ptr(key_ref));
