@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbZHDCcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbZHDCi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755182AbZHDCcZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 22:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755139AbZHDCcZ
+	id S1755175AbZHDCi3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 22:38:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbZHDCi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 22:32:25 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39887
+	Mon, 3 Aug 2009 22:38:28 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49594
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754169AbZHDCcY (ORCPT
+	by vger.kernel.org with ESMTP id S1751229AbZHDCi1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 22:32:24 -0400
-Date: Mon, 03 Aug 2009 19:32:33 -0700 (PDT)
-Message-Id: <20090803.193233.170901476.davem@davemloft.net>
-To: jie.yang@atheros.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]atl1c:Do not call cancel_work_sync from the work itself
+	Mon, 3 Aug 2009 22:38:27 -0400
+Date: Mon, 03 Aug 2009 19:38:36 -0700 (PDT)
+Message-Id: <20090803.193836.248921133.davem@davemloft.net>
+To: ghaskins@novell.com
+Cc: linux-kernel@vger.kernel.org, alacrityvm-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org, shemminger@vyatta.com
+Subject: Re: [PATCH v2] net: Add vbus_enet driver
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <12493523461127-git-send-email-jie.yang@atheros.com>
-References: <12493523461127-git-send-email-jie.yang@atheros.com>
+In-Reply-To: <20090804010915.17855.2660.stgit@dev.haskins.net>
+References: <20090803171801.17268.93846.stgit@dev.haskins.net>
+	<20090804010915.17855.2660.stgit@dev.haskins.net>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -26,20 +28,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: <jie.yang@atheros.com>
-Date: Tue, 4 Aug 2009 10:19:06 +0800
+From: Gregory Haskins <ghaskins@novell.com>
+Date: Mon, 03 Aug 2009 21:14:04 -0400
 
-> Do not call cancel_work_sync from the work itself, for it my cause 
-> recursive locking.
+> net: Add vbus_enet driver
+> 
+> A virtualized 802.x network device based on the VBUS interface. It can be
+> used with any hypervisor/kernel that supports the virtual-ethernet/vbus
+> protocol.
+> 
+> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 
-Sorry, this won't work.
+I'm fine with this, it depends upon the vbus infrastructure so
+whoever pulls that in can pull this in as well:
 
-Your patches, all of them, are corrupted by your email client.  It
-turns tab characters into spaces as well as making other textual
-modifications to the patch, such that it will not apply.
-
-Please fix this up and resubmit all of your patches when the problem
-is corrected.
-
-If you have to, email the patches to yourself and try to apply them
-just to make sure.
+Acked-by: David S. Miller <davem@davemloft.net>
