@@ -1,268 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933360AbZHDVzD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933300AbZHDVzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933360AbZHDVzD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 17:55:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933245AbZHDVy7
+	id S933300AbZHDVzs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 17:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933085AbZHDVzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 17:54:59 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43944 "EHLO
+	Tue, 4 Aug 2009 17:55:46 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:43937 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933210AbZHDVxH (ORCPT
+	with ESMTP id S933133AbZHDVxD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 17:53:07 -0400
+	Tue, 4 Aug 2009 17:53:03 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200908041152.240876191@firstfloor.org>
 In-Reply-To: <200908041152.240876191@firstfloor.org>
-To: Lee.Schermerhorn@hp.com, npiggin@suse.de, akpm@linux-foundation.org,
-       linux-mm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       fengguang.wu@intel.com
-Subject: [PATCH] [8/15] HWPOISON: Use bitmask/action code for try_to_unmap behaviour
-Message-Id: <20090804215307.52A48B15D8@basil.firstfloor.org>
-Date: Tue,  4 Aug 2009 23:53:07 +0200 (CEST)
+To: akpm@linux-foundation.org, linux-mm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, fengguang.wu@intel.com
+Subject: [PATCH] [3/15] HWPOISON: Add support for poison swap entries v2
+Message-Id: <20090804215302.45E0CB15D8@basil.firstfloor.org>
+Date: Tue,  4 Aug 2009 23:53:02 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-try_to_unmap currently has multiple modi (migration, munlock, normal unmap)
-which are selected by magic flag variables. The logic is not very straight
-forward, because each of these flag change multiple behaviours (e.g.
-migration turns off aging, not only sets up migration ptes etc.)
-Also the different flags interact in magic ways.
+Memory migration uses special swap entry types to trigger special actions on 
+page faults. Extend this mechanism to also support poisoned swap entries, to 
+trigger poison handling on page faults. This allows follow-on patches to 
+prevent processes from faulting in poisoned pages again.
 
-A later patch in this series adds another mode to try_to_unmap, so 
-this becomes quickly unmanageable.
-
-Replace the different flags with a action code (migration, munlock, munmap)
-and some additional flags as modifiers (ignore mlock, ignore aging).
-This makes the logic more straight forward and allows easier extension
-to new behaviours. Change all the caller to declare what they want to 
-do.
-
-This patch is supposed to be a nop in behaviour. If anyone can prove 
-it is not that would be a bug.
-
-Cc: Lee.Schermerhorn@hp.com
-Cc: npiggin@suse.de
+v2: Fix overflow in MAX_SWAPFILES (Fengguang Wu)
+v3: Better overflow fix (Hidehiro Kawai)
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/linux/rmap.h |   13 ++++++++++++-
- mm/migrate.c         |    2 +-
- mm/rmap.c            |   40 ++++++++++++++++++++++------------------
- mm/vmscan.c          |    2 +-
- 4 files changed, 36 insertions(+), 21 deletions(-)
+ include/linux/swap.h    |   34 ++++++++++++++++++++++++++++------
+ include/linux/swapops.h |   38 ++++++++++++++++++++++++++++++++++++++
+ mm/swapfile.c           |    4 ++--
+ 3 files changed, 68 insertions(+), 8 deletions(-)
 
-Index: linux/include/linux/rmap.h
+Index: linux/include/linux/swap.h
 ===================================================================
---- linux.orig/include/linux/rmap.h
-+++ linux/include/linux/rmap.h
-@@ -85,7 +85,18 @@ static inline void page_dup_rmap(struct
+--- linux.orig/include/linux/swap.h
++++ linux/include/linux/swap.h
+@@ -34,16 +34,38 @@ static inline int current_is_kswapd(void
+  * the type/offset into the pte as 5/27 as well.
   */
- int page_referenced(struct page *, int is_locked,
- 			struct mem_cgroup *cnt, unsigned long *vm_flags);
--int try_to_unmap(struct page *, int ignore_refs);
-+enum ttu_flags {
-+	TTU_UNMAP = 0,			/* unmap mode */
-+	TTU_MIGRATION = 1,		/* migration mode */
-+	TTU_MUNLOCK = 2,		/* munlock mode */
-+	TTU_ACTION_MASK = 0xff,
+ #define MAX_SWAPFILES_SHIFT	5
+-#ifndef CONFIG_MIGRATION
+-#define MAX_SWAPFILES		(1 << MAX_SWAPFILES_SHIFT)
 +
-+	TTU_IGNORE_MLOCK = (1 << 8),	/* ignore mlock */
-+	TTU_IGNORE_ACCESS = (1 << 9),	/* don't age */
-+};
-+#define TTU_ACTION(x) ((x) & TTU_ACTION_MASK)
++/*
++ * Use some of the swap files numbers for other purposes. This
++ * is a convenient way to hook into the VM to trigger special
++ * actions on faults.
++ */
 +
-+int try_to_unmap(struct page *, enum ttu_flags flags);
++/*
++ * NUMA node memory migration support
++ */
++#ifdef CONFIG_MIGRATION
++#define SWP_MIGRATION_NUM 2
++#define SWP_MIGRATION_READ	(MAX_SWAPFILES + SWP_HWPOISON_NUM)
++#define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + SWP_HWPOISON_NUM + 1)
+ #else
+-/* Use last two entries for page migration swap entries */
+-#define MAX_SWAPFILES		((1 << MAX_SWAPFILES_SHIFT)-2)
+-#define SWP_MIGRATION_READ	MAX_SWAPFILES
+-#define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + 1)
++#define SWP_MIGRATION_NUM 0
+ #endif
  
  /*
-  * Called from mm/filemap_xip.c to unmap empty zero page
-Index: linux/mm/rmap.c
++ * Handling of hardware poisoned pages with memory corruption.
++ */
++#ifdef CONFIG_MEMORY_FAILURE
++#define SWP_HWPOISON_NUM 1
++#define SWP_HWPOISON		MAX_SWAPFILES
++#else
++#define SWP_HWPOISON_NUM 0
++#endif
++
++#define MAX_SWAPFILES \
++	((1 << MAX_SWAPFILES_SHIFT) - SWP_MIGRATION_NUM - SWP_HWPOISON_NUM)
++
++/*
+  * Magic header for a swap area. The first part of the union is
+  * what the swap magic looks like for the old (limited to 128MB)
+  * swap area format, the second part of the union adds - in the
+Index: linux/include/linux/swapops.h
 ===================================================================
---- linux.orig/mm/rmap.c
-+++ linux/mm/rmap.c
-@@ -773,7 +773,7 @@ void page_remove_rmap(struct page *page)
-  * repeatedly from either try_to_unmap_anon or try_to_unmap_file.
-  */
- static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
--				int migration)
-+				enum ttu_flags flags)
- {
- 	struct mm_struct *mm = vma->vm_mm;
- 	unsigned long address;
-@@ -795,11 +795,13 @@ static int try_to_unmap_one(struct page
- 	 * If it's recently referenced (perhaps page_referenced
- 	 * skipped over this mm) then we should reactivate it.
- 	 */
--	if (!migration) {
-+	if (!(flags & TTU_IGNORE_MLOCK)) {
- 		if (vma->vm_flags & VM_LOCKED) {
- 			ret = SWAP_MLOCK;
- 			goto out_unmap;
- 		}
-+	}
-+	if (!(flags & TTU_IGNORE_ACCESS)) {
- 		if (ptep_clear_flush_young_notify(vma, address, pte)) {
- 			ret = SWAP_FAIL;
- 			goto out_unmap;
-@@ -839,12 +841,12 @@ static int try_to_unmap_one(struct page
- 			 * pte. do_swap_page() will wait until the migration
- 			 * pte is removed and then restart fault handling.
- 			 */
--			BUG_ON(!migration);
-+			BUG_ON(TTU_ACTION(flags) != TTU_MIGRATION);
- 			entry = make_migration_entry(page, pte_write(pteval));
- 		}
- 		set_pte_at(mm, address, pte, swp_entry_to_pte(entry));
- 		BUG_ON(pte_file(*pte));
--	} else if (PAGE_MIGRATION && migration) {
-+	} else if (PAGE_MIGRATION && (TTU_ACTION(flags) == TTU_MIGRATION)) {
- 		/* Establish migration entry for a file page */
- 		swp_entry_t entry;
- 		entry = make_migration_entry(page, pte_write(pteval));
-@@ -1013,12 +1015,13 @@ static int try_to_mlock_page(struct page
-  * vm_flags for that VMA.  That should be OK, because that vma shouldn't be
-  * 'LOCKED.
-  */
--static int try_to_unmap_anon(struct page *page, int unlock, int migration)
-+static int try_to_unmap_anon(struct page *page, enum ttu_flags flags)
- {
- 	struct anon_vma *anon_vma;
- 	struct vm_area_struct *vma;
- 	unsigned int mlocked = 0;
- 	int ret = SWAP_AGAIN;
-+	int unlock = TTU_ACTION(flags) == TTU_MUNLOCK;
+--- linux.orig/include/linux/swapops.h
++++ linux/include/linux/swapops.h
+@@ -131,3 +131,41 @@ static inline int is_write_migration_ent
  
- 	if (MLOCK_PAGES && unlikely(unlock))
- 		ret = SWAP_SUCCESS;	/* default for try_to_munlock() */
-@@ -1034,7 +1037,7 @@ static int try_to_unmap_anon(struct page
- 				continue;  /* must visit all unlocked vmas */
- 			ret = SWAP_MLOCK;  /* saw at least one mlocked vma */
- 		} else {
--			ret = try_to_unmap_one(page, vma, migration);
-+			ret = try_to_unmap_one(page, vma, flags);
- 			if (ret == SWAP_FAIL || !page_mapped(page))
- 				break;
- 		}
-@@ -1058,8 +1061,7 @@ static int try_to_unmap_anon(struct page
- /**
-  * try_to_unmap_file - unmap/unlock file page using the object-based rmap method
-  * @page: the page to unmap/unlock
-- * @unlock:  request for unlock rather than unmap [unlikely]
-- * @migration:  unmapping for migration - ignored if @unlock
-+ * @flags: action and flags
-  *
-  * Find all the mappings of a page using the mapping pointer and the vma chains
-  * contained in the address_space struct it points to.
-@@ -1071,7 +1073,7 @@ static int try_to_unmap_anon(struct page
-  * vm_flags for that VMA.  That should be OK, because that vma shouldn't be
-  * 'LOCKED.
-  */
--static int try_to_unmap_file(struct page *page, int unlock, int migration)
-+static int try_to_unmap_file(struct page *page, enum ttu_flags flags)
- {
- 	struct address_space *mapping = page->mapping;
- 	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
-@@ -1083,6 +1085,7 @@ static int try_to_unmap_file(struct page
- 	unsigned long max_nl_size = 0;
- 	unsigned int mapcount;
- 	unsigned int mlocked = 0;
-+	int unlock = TTU_ACTION(flags) == TTU_MUNLOCK;
+ #endif
  
- 	if (MLOCK_PAGES && unlikely(unlock))
- 		ret = SWAP_SUCCESS;	/* default for try_to_munlock() */
-@@ -1095,7 +1098,7 @@ static int try_to_unmap_file(struct page
- 				continue;	/* must visit all vmas */
- 			ret = SWAP_MLOCK;
- 		} else {
--			ret = try_to_unmap_one(page, vma, migration);
-+			ret = try_to_unmap_one(page, vma, flags);
- 			if (ret == SWAP_FAIL || !page_mapped(page))
- 				goto out;
- 		}
-@@ -1120,7 +1123,8 @@ static int try_to_unmap_file(struct page
- 			ret = SWAP_MLOCK;	/* leave mlocked == 0 */
- 			goto out;		/* no need to look further */
- 		}
--		if (!MLOCK_PAGES && !migration && (vma->vm_flags & VM_LOCKED))
-+		if (!MLOCK_PAGES && !(flags & TTU_IGNORE_MLOCK) &&
-+			(vma->vm_flags & VM_LOCKED))
- 			continue;
- 		cursor = (unsigned long) vma->vm_private_data;
- 		if (cursor > max_nl_cursor)
-@@ -1154,7 +1158,7 @@ static int try_to_unmap_file(struct page
- 	do {
- 		list_for_each_entry(vma, &mapping->i_mmap_nonlinear,
- 						shared.vm_set.list) {
--			if (!MLOCK_PAGES && !migration &&
-+			if (!MLOCK_PAGES && !(flags & TTU_IGNORE_MLOCK) &&
- 			    (vma->vm_flags & VM_LOCKED))
- 				continue;
- 			cursor = (unsigned long) vma->vm_private_data;
-@@ -1194,7 +1198,7 @@ out:
- /**
-  * try_to_unmap - try to remove all page table mappings to a page
-  * @page: the page to get unmapped
-- * @migration: migration flag
-+ * @flags: action and flags
-  *
-  * Tries to remove all the page table entries which are mapping this
-  * page, used in the pageout path.  Caller must hold the page lock.
-@@ -1205,16 +1209,16 @@ out:
-  * SWAP_FAIL	- the page is unswappable
-  * SWAP_MLOCK	- page is mlocked.
-  */
--int try_to_unmap(struct page *page, int migration)
-+int try_to_unmap(struct page *page, enum ttu_flags flags)
- {
- 	int ret;
- 
- 	BUG_ON(!PageLocked(page));
- 
- 	if (PageAnon(page))
--		ret = try_to_unmap_anon(page, 0, migration);
-+		ret = try_to_unmap_anon(page, flags);
- 	else
--		ret = try_to_unmap_file(page, 0, migration);
-+		ret = try_to_unmap_file(page, flags);
- 	if (ret != SWAP_MLOCK && !page_mapped(page))
- 		ret = SWAP_SUCCESS;
- 	return ret;
-@@ -1239,8 +1243,8 @@ int try_to_munlock(struct page *page)
- 	VM_BUG_ON(!PageLocked(page) || PageLRU(page));
- 
- 	if (PageAnon(page))
--		return try_to_unmap_anon(page, 1, 0);
-+		return try_to_unmap_anon(page, TTU_MUNLOCK);
- 	else
--		return try_to_unmap_file(page, 1, 0);
-+		return try_to_unmap_file(page, TTU_MUNLOCK);
- }
- 
-Index: linux/mm/vmscan.c
++#ifdef CONFIG_MEMORY_FAILURE
++/*
++ * Support for hardware poisoned pages
++ */
++static inline swp_entry_t make_hwpoison_entry(struct page *page)
++{
++	BUG_ON(!PageLocked(page));
++	return swp_entry(SWP_HWPOISON, page_to_pfn(page));
++}
++
++static inline int is_hwpoison_entry(swp_entry_t entry)
++{
++	return swp_type(entry) == SWP_HWPOISON;
++}
++#else
++
++static inline swp_entry_t make_hwpoison_entry(struct page *page)
++{
++	return swp_entry(0, 0);
++}
++
++static inline int is_hwpoison_entry(swp_entry_t swp)
++{
++	return 0;
++}
++#endif
++
++#if defined(CONFIG_MEMORY_FAILURE) || defined(CONFIG_MIGRATION)
++static inline int non_swap_entry(swp_entry_t entry)
++{
++	return swp_type(entry) >= MAX_SWAPFILES;
++}
++#else
++static inline int non_swap_entry(swp_entry_t entry)
++{
++	return 0;
++}
++#endif
+Index: linux/mm/swapfile.c
 ===================================================================
---- linux.orig/mm/vmscan.c
-+++ linux/mm/vmscan.c
-@@ -654,7 +654,7 @@ static unsigned long shrink_page_list(st
- 		 * processes. Try to unmap it here.
- 		 */
- 		if (page_mapped(page) && mapping) {
--			switch (try_to_unmap(page, 0)) {
-+			switch (try_to_unmap(page, TTU_UNMAP)) {
- 			case SWAP_FAIL:
- 				goto activate_locked;
- 			case SWAP_AGAIN:
-Index: linux/mm/migrate.c
-===================================================================
---- linux.orig/mm/migrate.c
-+++ linux/mm/migrate.c
-@@ -669,7 +669,7 @@ static int unmap_and_move(new_page_t get
- 	}
+--- linux.orig/mm/swapfile.c
++++ linux/mm/swapfile.c
+@@ -697,7 +697,7 @@ int free_swap_and_cache(swp_entry_t entr
+ 	struct swap_info_struct *p;
+ 	struct page *page = NULL;
  
- 	/* Establish migration ptes or remove ptes */
--	try_to_unmap(page, 1);
-+	try_to_unmap(page, TTU_MIGRATION|TTU_IGNORE_MLOCK|TTU_IGNORE_ACCESS);
+-	if (is_migration_entry(entry))
++	if (non_swap_entry(entry))
+ 		return 1;
  
- 	if (!page_mapped(page))
- 		rc = move_to_new_page(newpage, page);
+ 	p = swap_info_get(entry);
+@@ -2083,7 +2083,7 @@ static int __swap_duplicate(swp_entry_t
+ 	int count;
+ 	bool has_cache;
+ 
+-	if (is_migration_entry(entry))
++	if (non_swap_entry(entry))
+ 		return -EINVAL;
+ 
+ 	type = swp_type(entry);
