@@ -1,66 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933158AbZHDVuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933176AbZHDVxD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933158AbZHDVuM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 17:50:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933107AbZHDVuL
+	id S933176AbZHDVxD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 17:53:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933111AbZHDVxB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 17:50:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42512 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933090AbZHDVuK (ORCPT
+	Tue, 4 Aug 2009 17:53:01 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:43927 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932920AbZHDVxA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 17:50:10 -0400
-Date: Tue, 4 Aug 2009 14:49:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: ieidus@redhat.com, aarcange@redhat.com, riel@redhat.com, chrisw@redhat.com,
-       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 3/12] ksm: pages_unshared and pages_volatile
-Message-Id: <20090804144920.bfc6a44f.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0908031311061.16754@sister.anvils>
-References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils>
-	<Pine.LNX.4.64.0908031311061.16754@sister.anvils>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Aug 2009 17:53:00 -0400
+From: Andi Kleen <andi@firstfloor.org>
+Message-Id: <200908041152.240876191@firstfloor.org>
+To: akpm@linux-foundation.org, linux-mm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, fengguang.wu@intel.com
+Subject: [PATCH] [0/15] HWPOISON: Intro
+Date: Tue,  4 Aug 2009 23:52:59 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Aug 2009 13:11:53 +0100 (BST)
-Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
 
-> The pages_shared and pages_sharing counts give a good picture of how
-> successful KSM is at sharing; but no clue to how much wasted work it's
-> doing to get there.  Add pages_unshared (count of unique pages waiting
-> in the unstable tree, hoping to find a mate) and pages_volatile.
-> 
-> pages_volatile is harder to define.  It includes those pages changing
-> too fast to get into the unstable tree, but also whatever other edge
-> conditions prevent a page getting into the trees: a high value may
-> deserve investigation.  Don't try to calculate it from the various
-> conditions: it's the total of rmap_items less those accounted for.
-> 
-> Also show full_scans: the number of completed scans of everything
-> registered in the mm list.
-> 
-> The locking for all these counts is simply ksm_thread_mutex.
-> 
-> ...
->
->  static inline struct rmap_item *alloc_rmap_item(void)
->  {
-> -	return kmem_cache_zalloc(rmap_item_cache, GFP_KERNEL);
-> +	struct rmap_item *rmap_item;
-> +
-> +	rmap_item = kmem_cache_zalloc(rmap_item_cache, GFP_KERNEL);
-> +	if (rmap_item)
-> +		ksm_rmap_items++;
-> +	return rmap_item;
->  }
+New version of the hwpoison patchkit. Various changes.
+Believed to address all earlier review comments.
 
-ksm_rmap_items was already available via /proc/slabinfo.  I guess that
-wasn't a particularly nice user interface ;)
+Active error truncate is enabled per file system now, so it adds
+a new VFS operation "error_remove_page" for this.
+This prevents any truncation on metadata pages, on those
+it just does invalidate.
 
+Also various bug fixes, most of them from Fengguang.
+
+Please see the individual patches for changelog.
+
+Should be good to go now.
+
+Passes the mce-test test suite.
+
+Andrew, Please consider for merging.
+
+Thanks,
+-Andi
+
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+
+---
+
+Upcoming Intel CPUs have support for recovering from some memory errors
+(``MCA recovery''). This requires the OS to declare a page "poisoned", 
+kill the processes associated with it and avoid using it in the future. 
+
+This patchkit implements the necessary infrastructure in the VM.
+
+To quote the overview comment:
+
+ * High level machine check handler. Handles pages reported by the
+ * hardware as being corrupted usually due to a 2bit ECC memory or cache
+ * failure.
+ *
+ * This focusses on pages detected as corrupted in the background.
+ * When the current CPU tries to consume corruption the currently
+ * running process can just be killed directly instead. This implies
+ * that if the error cannot be handled for some reason it's safe to
+ * just ignore it because no corruption has been consumed yet. Instead
+ * when that happens another machine check will happen.
+ *
+ * Handles page cache pages in various states. The tricky part
+ * here is that we can access any page asynchronous to other VM
+ * users, because memory failures could happen anytime and anywhere,
+ * possibly violating some of their assumptions. This is why this code
+ * has to be extremely careful. Generally it tries to use normal locking
+ * rules, as in get the standard locks, even if that means the
+ * error handling takes potentially a long time.
+ *
+ * Some of the operations here are somewhat inefficient and have non
+ * linear algorithmic complexity, because the data structures have not
+ * been optimized for this case. This is in particular the case
+ * for the mapping from a vma to a process. Since this case is expected
+ * to be rare we hope we can get away with this.
+
+The code consists of a the high level handler in mm/memory-failure.c, 
+a new page poison bit and various checks in the VM to handle poisoned
+pages.
+
+The main target right now is KVM guests, but it works for all kinds
+of applications.
+
+For the KVM use there was need for a new signal type so that
+KVM can inject the machine check into the guest with the proper
+address. This in theory allows other applications to handle
+memory failures too. The expection is that near all applications
+won't do that, but some very specialized ones might. 
+
+This is not fully complete yet, in particular there are still ways
+to access poison through various ways (crash dump, /proc/kcore etc.)
+that need to be plugged too.
+
+Also undoubtedly the high level handler still has bugs and cases
+it cannot recover from. For example nonlinear mappings deadlock right now
+and a few other cases lose references. Huge pages are not supported
+yet. Any additional testing, reviewing etc. welcome. 
+
+The patch series requires the earlier x86 MCE feature series for the x86
+specific action optional part. The code can be tested without the x86 specific
+part using the injector, this only requires to enable the Kconfig entry
+manually in some Kconfig file (by default it is implicitely enabled
+by the architecture)
+
+
+-Andi
