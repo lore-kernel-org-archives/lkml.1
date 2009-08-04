@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932884AbZHDUlF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbZHDUoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932884AbZHDUlF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 16:41:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932817AbZHDUlD
+	id S1755309AbZHDUoU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 16:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbZHDUoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 16:41:03 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:40198 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932792AbZHDUlA (ORCPT
+	Tue, 4 Aug 2009 16:44:19 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:30888 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753281AbZHDUoS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 16:41:00 -0400
-Date: Tue, 4 Aug 2009 21:40:54 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Roger Quadros <quadros.roger@gmail.com>
-Cc: lrg@slimlogic.co.uk, philipp.zabel@gmail.com, linux-kernel@vger.kernel.org
-Message-ID: <20090804204053.GA29518@sirena.org.uk>
-References: <quadros.roger@gmail.com>
- <1249408730-15430-1-git-send-email-quadros.roger@gmail.com>
+	Tue, 4 Aug 2009 16:44:18 -0400
+Date: Tue, 4 Aug 2009 14:44:17 -0600
+From: Alex Chiang <achiang@hp.com>
+To: lenb@kernel.org
+Cc: chad.smith@hp.com, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: [PATCH] ACPI: pci_slot.ko wants a 64-bit _SUN
+Message-ID: <20090804204417.GA26918@ldl.fc.hp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1249408730-15430-1-git-send-email-quadros.roger@gmail.com>
-X-Cookie: Are you sure the back door is locked?
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [PATCH v5] regulator: Add GPIO enable control to fixed voltage
- regulator driver
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 04, 2009 at 08:58:50PM +0300, Roger Quadros wrote:
-> From: Roger Quadros <ext-roger.quadros@nokia.com>
+Similar to commit b6adc195 (PCI hotplug: acpiphp wants a 64-bit
+_SUN), pci_slot.ko reads and creates sysfs directories based on
+the _SUN method.
 
-> Now fixed regulators that have their enable pin connected to a GPIO line
-> can use the fixed regulator driver for regulator enable/disable control.
-> The GPIO number and polarity information is passed through platform data.
-> GPIO enable control is achieved using gpiolib.
+Certain HP platforms return 64 bits in _SUN. This change to
+pci_slot.ko allows us to see the correct sysfs directories.
 
-> Signed-off-by: Roger Quadros <ext-roger.quadros@nokia.com>
+Reported-by: Chad Smith <chad.smith@hp.com>
+Cc: stable@kernel.org
+Signed-off-by: Alex Chiang <achiang@hp.com>
+---
+Stable team, this should be backported to all kernels in the
+stable series.
 
-Looks good, thanks for taking the time to do this and fixing up the
-review comments.
-
-Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-
-A couple of small notes that I don't see as blocking merge:
-
-> +
-> +		/* FIXME: Remove below print warning
-> +		 *
-> +		 * config->gpio must be set to -EINVAL by platform code if
-> +		 * GPIO control is not required. However, early adopters
-> +		 * not requiring GPIO control may forget to initialize
-> +		 * config->gpio to -EINVAL. This will cause GPIO 0 to be used
-> +		 * for GPIO control.
-> +		 *
-> +		 * This warning will be removed once there are a couple of users
-> +		 * for this driver.
-
-Probably just for 2.6.33 or something; the point here is that this is an
-incompatible change in the platform data which we can get away with here
-due to the fact that there aren't any current users.
-
-> +		drvdata->is_enabled = config->enabled_at_boot;
-> +		ret = drvdata->is_enabled ?
-> +				config->enable_high : !config->enable_high;
-
-Might be more legible without the ternery operator but no point spinning
-the patch for that.
+---
+diff --git a/drivers/acpi/pci_slot.c b/drivers/acpi/pci_slot.c
+index 12158e0..ab40e06 100644
+--- a/drivers/acpi/pci_slot.c
++++ b/drivers/acpi/pci_slot.c
+@@ -57,7 +57,7 @@ ACPI_MODULE_NAME("pci_slot");
+ 				MY_NAME , ## arg);		\
+ 	} while (0)
+ 
+-#define SLOT_NAME_SIZE 20		/* Inspired by #define in acpiphp.h */
++#define SLOT_NAME_SIZE 21		/* Inspired by #define in acpiphp.h */
+ 
+ struct acpi_pci_slot {
+ 	acpi_handle root_handle;	/* handle of the root bridge */
+@@ -149,7 +149,7 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
+ 		return AE_OK;
+ 	}
+ 
+-	snprintf(name, sizeof(name), "%u", (u32)sun);
++	snprintf(name, sizeof(name), "%llu", sun);
+ 	pci_slot = pci_create_slot(pci_bus, device, name, NULL);
+ 	if (IS_ERR(pci_slot)) {
+ 		err("pci_create_slot returned %ld\n", PTR_ERR(pci_slot));
