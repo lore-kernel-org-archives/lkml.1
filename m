@@ -1,84 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933366AbZHDT2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933386AbZHDT2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933366AbZHDT2L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 15:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933045AbZHDT2L
+	id S933386AbZHDT2y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 15:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932992AbZHDT2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 15:28:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44437 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932928AbZHDT2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 15:28:10 -0400
-Message-ID: <4A788CBE.7080100@redhat.com>
-Date: Tue, 04 Aug 2009 22:32:14 +0300
-From: Izik Eidus <ieidus@redhat.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
+	Tue, 4 Aug 2009 15:28:53 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:8797 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933045AbZHDT2x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 15:28:53 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=iolluoCMW62KZqfBNi/fBewlA3TD0kmV6xqjlIJGrt5+unVsgG0natN7EGQNckNxv
+	RCgp5KKmEssO4Jm3aAWiQ==
 MIME-Version: 1.0
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-CC: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
-       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 9/12] ksm: fix oom deadlock
-References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils> <Pine.LNX.4.64.0908031317190.16754@sister.anvils>
-In-Reply-To: <Pine.LNX.4.64.0908031317190.16754@sister.anvils>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <2f86c2480908041214r1f23c1b7q9a25b04e26c92a1a@mail.gmail.com>
+References: <20090731012908.27908.62208.stgit@hastromil.mtv.corp.google.com>
+	 <20090731015154.27908.9639.stgit@hastromil.mtv.corp.google.com>
+	 <20090803175452.GA5481@us.ibm.com>
+	 <2f86c2480908031113y525b6cbdhe418b8a0364c7760@mail.gmail.com>
+	 <20090803185556.GA8469@us.ibm.com> <20090803194555.GA10158@us.ibm.com>
+	 <6599ad830908041148h6d3f3e9bxfef9f3eedec0ab6d@mail.gmail.com>
+	 <2f86c2480908041214r1f23c1b7q9a25b04e26c92a1a@mail.gmail.com>
+Date: Tue, 4 Aug 2009 12:28:48 -0700
+Message-ID: <6599ad830908041228w67bc6f7fh57e28f244e1923b3@mail.gmail.com>
+Subject: Re: [PATCH 6/6] Makes procs file writable to move all threads by tgid 
+	at once
+From: Paul Menage <menage@google.com>
+To: Benjamin Blum <bblum@google.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> There's a now-obvious deadlock in KSM's out-of-memory handling:
-> imagine ksmd or KSM_RUN_UNMERGE handling, holding ksm_thread_mutex,
-> trying to allocate a page to break KSM in an mm which becomes the
-> OOM victim (quite likely in the unmerge case): it's killed and goes
-> to exit, and hangs there waiting to acquire ksm_thread_mutex.
+On Tue, Aug 4, 2009 at 12:14 PM, Benjamin Blum<bblum@google.com> wrote:
 >
-> Clearly we must not require ksm_thread_mutex in __ksm_exit, simple
-> though that made everything else: perhaps use mmap_sem somehow?
-> And part of the answer lies in the comments on unmerge_ksm_pages:
-> __ksm_exit should also leave all the rmap_item removal to ksmd.
+> Hmm, the tasklist_lock section in fork() is entirely inside the
+> read-lock. Presumably then iterating the threadgroup list to take all
+> rwsems is safe from a race in which one thread escapes?
 >
-> But there's a fundamental problem, that KSM relies upon mmap_sem to
-> guarantee the consistency of the mm it's dealing with, yet exit_mmap
-> tears down an mm without taking mmap_sem.  And bumping mm_users won't
-> help at all, that just ensures that the pages the OOM killer assumes
-> are on their way to being freed will not be freed.
->
-> The best answer seems to be, to move the ksm_exit callout from just
-> before exit_mmap, to the middle of exit_mmap: after the mm's pages
-> have been freed (if the mmu_gather is flushed), but before its page
-> tables and vma structures have been freed; and down_write,up_write
-> mmap_sem there to serialize with KSM's own reliance on mmap_sem.
->
-> But KSM then needs to be careful, whenever it downs mmap_sem, to
-> check that the mm is not already exiting: there's a danger of using
-> find_vma on a layout that's being torn apart, or writing into page
-> tables which have been freed for reuse; and even do_anonymous_page
-> and __do_fault need to check they're not being called by break_ksm
-> to reinstate a pte after zap_pte_range has zapped that page table.
->
-> Though it might be clearer to add an exiting flag, set while holding
-> mmap_sem in __ksm_exit, that wouldn't cover the issue of reinstating
-> a zapped pte.  All we need is to check whether mm_users is 0 - but
-> must remember that ksmd may detect that before __ksm_exit is reached.
-> So, ksm_test_exit(mm) added to comment such checks on mm->mm_users.
->
-> __ksm_exit now has to leave clearing up the rmap_items to ksmd,
-> that needs ksm_thread_mutex; but shift the exiting mm just after the
-> ksm_scan cursor so that it will soon be dealt with.  __ksm_enter raise
-> mm_count to hold the mm_struct, ksmd's exit processing (exactly like
-> its processing when it finds all VM_MERGEABLEs unmapped) mmdrop it,
-> similar procedure for KSM_RUN_UNMERGE (which has stopped ksmd).
->
-> But also give __ksm_exit a fast path: when there's no complication
-> (no rmap_items attached to mm and it's not at the ksm_scan cursor),
-> it can safely do all the exiting work itself.  This is not just an
-> optimization: when ksmd is not running, the raised mm_count would
-> otherwise leak mm_structs.
->
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> ---
->   
-Acked-by: Izik Eidus <ieidus@redhat.com>
+
+I think so - the write-side locking would be something like:
+
+again:
+  read_lock(&tasklist_lock);
+  find first not-yet-locked task t
+  while (t != group_leader) {
+    if (!down_write_trylock(&t->threadgroup_stability_mutex)) {
+      get_task_struct(t);
+      read_unlock(&tasklist_lock);
+      down_write(&t->threadgroup_stability_mutex);
+      put_task_struct(t);
+      goto again;
+    }
+    t = t->next_thread;
+  }
+  read_unlock(&tasklist_lock);
+
+  Paul
