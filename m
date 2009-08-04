@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932362AbZHDCTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932392AbZHDCZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932362AbZHDCTV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 22:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755163AbZHDCTT
+	id S932392AbZHDCZT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 22:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932250AbZHDCZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 22:19:19 -0400
-Received: from mail.atheros.com ([12.36.123.2]:10845 "EHLO mail.atheros.com"
+	Mon, 3 Aug 2009 22:25:18 -0400
+Received: from mail.atheros.com ([12.36.123.2]:11049 "EHLO mail.atheros.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755161AbZHDCTP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 22:19:15 -0400
+	id S932166AbZHDCZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 22:25:10 -0400
 From: <jie.yang@atheros.com>
 To: <davem@davemloft.net>
 CC: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
        jie yang <jie.yang@atheros.com>
-Subject: [PATCH]atl1c:Do not call cancel_work_sync from the work itself
-Date: Tue, 4 Aug 2009 10:19:06 +0800
-Message-ID: <12493523461127-git-send-email-jie.yang@atheros.com>
+Subject: [PATCH]atl1c:set MAX_TX_OFFLOAD_THRESH to 6k from 9k and fix spelling error
+Date: Tue, 4 Aug 2009 10:25:03 +0800
+Message-ID: <12493527032639-git-send-email-jie.yang@atheros.com>
 X-Mailer: git-send-email 1.5.2.2
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -23,88 +23,72 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do not call cancel_work_sync from the work itself, for it my cause 
-recursive locking.
-detail info:
-events/1/10 is trying to acquire lock:
-(&adapter->reset_task){+.+...}, at: [<c043e384>] __cancel_work_timer+0x80/0x187
+1. Set MAX_TX_OFFLOAD_THRESH to 6k from 9k, when mtu large then MAX_TX_OFFLOAD_THRESH
+    just disable NETIF_F_TSO6, NETIF_F_TSO, NETIF_F_HW_CSUM.
 
-but task is already holding lock:
-(&adapter->reset_task){+.+...}, at: [<c043ed6f>] worker_thread+0x127/0x234
-other info that might help us debug this:
-
-2 locks held by events/1/10:
-#0:  (events){+.+.+.}, at: [<c043ed6f>] worker_thread+0x127/0x234
-#1:  (&adapter->reset_task){+.+...}, at: [<c043ed6f>] worker_thread+0x127/0x234
-
-stack backtrace:
-Pid: 10, comm: events/1 Not tainted 2.6.31-rc2 #12
-Call Trace:
-[<c04519c9>] validate_chain+0x4ae/0xb26
-[<c0451e8d>] ? validate_chain+0x972/0xb26
-[<c0437f4b>] ? lock_timer_base+0x1f/0x3e
-[<c04526f8>] __lock_acquire+0x6b7/0x745
-[<c0452816>] lock_acquire+0x90/0xad
-[<c043e384>] ? __cancel_work_timer+0x80/0x187
-[<c043e3b1>] __cancel_work_timer+0xad/0x187
-[<c043e384>] ? __cancel_work_timer+0x80/0x187
-[<c044f6b3>] ? mark_held_locks+0x3d/0x58
-[<c0690855>] ? _spin_unlock_irqrestore+0x36/0x3c
-[<c044f7d5>] ? trace_hardirqs_on_caller+0x107/0x12f
-[<c044f808>] ? trace_hardirqs_on+0xb/0xd
-[<c0437fb2>] ? try_to_del_timer_sync+0x48/0x4f
-[<c043e4a2>] cancel_work_sync+0xa/0xc
-[<f8955f95>] atl1c_down+0x1f/0xde [atl1c]
-[<f8956955>] atl1c_reset_task+0x1f/0x31 [atl1c]
-[<c043edae>] worker_thread+0x166/0x234
-[<c043ed6f>] ? worker_thread+0x127/0x234
-[<f8956936>] ? atl1c_reset_task+0x0/0x31 [atl1c]
-[<c0441ac5>] ? autoremove_wake_function+0x0/0x33
-[<c043ec48>] ? worker_thread+0x0/0x234
-[<c0441a25>] kthread+0x69/0x70
-[<c04419bc>] ? kthread+0x0/0x70
-[<c04034b7>] kernel_thread_helper+0x7/0x10
-
-So when atl1c_reset_task be scheduled just set a flag in ctrl_flag, 
-to demonstrate it is in reset_task, when atl1c_down is call it will not call 
-cancel_work_sync(&adapter->reset_task) if it sees the flag.
+2. Fix spelling error, change REG_TWSI_CTRL to REG_TXQ_CTRL.
 
 Signed-off-by: jie yang <jie.yang@atheros.com>
 ---
+
 diff --git a/drivers/net/atl1c/atl1c.h b/drivers/net/atl1c/atl1c.h
-index 2a1120a..53242dc 100644
+index 2a1120a..07b2880 100644
 --- a/drivers/net/atl1c/atl1c.h
 +++ b/drivers/net/atl1c/atl1c.h
-@@ -427,6 +427,7 @@ struct atl1c_hw {
- #define ATL1C_ASPM_CTRL_MON        0x0200
- #define ATL1C_HIB_DISABLE      0x0400
- #define ATL1C_LINK_CAP_1000M       0x0800
-+#define ATL1C_RESET_IN_WORK        0x1000
- #define ATL1C_FPGA_VERSION     0x8000
-    u16 cmb_tpd;
-    u16 cmb_rrd;
+@@ -74,7 +74,7 @@
+ 
+ #define AT_RX_BUF_SIZE     (ETH_FRAME_LEN + VLAN_HLEN + ETH_FCS_LEN)
+ #define MAX_JUMBO_FRAME_SIZE   (9*1024)
+-#define MAX_TX_OFFLOAD_THRESH  (9*1024)
++#define MAX_TX_OFFLOAD_THRESH  (6*1024)
+ 
+ #define AT_MAX_RECEIVE_QUEUE    4
+ #define AT_DEF_RECEIVE_QUEUE   1
 diff --git a/drivers/net/atl1c/atl1c_main.c b/drivers/net/atl1c/atl1c_main.c
-index 1d601ce..dec88fa 100644
+index 1d601ce..13cb551 100644
 --- a/drivers/net/atl1c/atl1c_main.c
 +++ b/drivers/net/atl1c/atl1c_main.c
-@@ -321,7 +321,10 @@ static void atl1c_del_timer(struct atl1c_adapter *adapter)
+@@ -474,15 +474,19 @@ static int atl1c_change_mtu(struct net_device *netdev, int new_mtu)
+        netdev->mtu = new_mtu;
+        adapter->hw.max_frame_size = new_mtu;
+        atl1c_set_rxbufsize(adapter, netdev);
++       if (max_frame >= MAX_TX_OFFLOAD_THRESH)
++           netdev->features &= ~(NETIF_F_TSO6 | NETIF_F_TSO | NETIF_F_HW_CSUM);
++       else
++           netdev->features |= (NETIF_F_TSO6 | NETIF_F_TSO | NETIF_F_HW_CSUM);
+        atl1c_down(adapter);
+        atl1c_up(adapter);
+        clear_bit(__AT_RESETTING, &adapter->flags);
+        if (adapter->hw.ctrl_flags & ATL1C_FPGA_VERSION) {
+            u32 phy_data;
  
- static void atl1c_cancel_work(struct atl1c_adapter *adapter)
- {
--   cancel_work_sync(&adapter->reset_task);
-+   if (adapter->hw.ctrl_flags & ATL1C_RESET_IN_WORK)
-+       adapter->hw.ctrl_flags &= ~ATL1C_RESET_IN_WORK;/* clear the flag */
-+   else
-+       cancel_work_sync(&adapter->reset_task);
-    cancel_work_sync(&adapter->link_chg_task);
+-           AT_READ_REG(&adapter->hw, 0x1414, &phy_data);
+-           phy_data |= 0x10000000;
+-           AT_WRITE_REG(&adapter->hw, 0x1414, phy_data);
++           AT_READ_REG(&adapter->hw, REG_MDIO_CTRL, &phy_data);
++           phy_data |= MDIO_AP_EN;
++           AT_WRITE_REG(&adapter->hw, REG_MDIO_CTRL, phy_data);
+        }
+ 
+    }
+@@ -1132,7 +1136,7 @@ static int atl1c_stop_mac(struct atl1c_hw *hw)
+ 
+    AT_READ_REG(hw, REG_TXQ_CTRL, &data);
+    data &= ~TXQ_CTRL_EN;
+-   AT_WRITE_REG(hw, REG_TWSI_CTRL, data);
++   AT_WRITE_REG(hw, REG_TXQ_CTRL, data);
+ 
+    atl1c_wait_until_idle(hw);
+ 
+@@ -1265,8 +1269,9 @@ static void atl1c_set_aspm(struct atl1c_hw *hw, bool linkup)
+        else
+            pm_ctrl_data &= ~PM_CTRL_ASPM_L1_EN;
+    }
+-
+    AT_WRITE_REG(hw, REG_PM_CTRL, pm_ctrl_data);
++
++   return;
  }
  
-@@ -1544,6 +1547,7 @@ static irqreturn_t atl1c_intr(int irq, void *data)
-            /* reset MAC */
-            hw->intr_mask &= ~ISR_ERROR;
-            AT_WRITE_REG(hw, REG_IMR, hw->intr_mask);
-+           adapter->hw.ctrl_flags |= ATL1C_RESET_IN_WORK;
-            schedule_work(&adapter->reset_task);
-            break;
-        }
+ static void atl1c_setup_mac_ctrl(struct atl1c_adapter *adapter)
 
