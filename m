@@ -1,151 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932842AbZHDUlE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932884AbZHDUlF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932842AbZHDUlE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 16:41:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932723AbZHDUkq
+	id S932884AbZHDUlF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 16:41:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932817AbZHDUlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 16:40:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58473 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932682AbZHDUkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 16:40:42 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 5/6] KEYS: Make /proc/keys use keyid not numread as file
-	position [ver #2]
-To: torvalds@osdl.org, akpm@linux-foundation.org, jmorris@namei.org
-Cc: serue@us.ibm.com, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       David Howells <dhowells@redhat.com>
-Date: Tue, 04 Aug 2009 21:39:44 +0100
-Message-ID: <20090804203943.25094.68091.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20090804203923.25094.78702.stgit@warthog.procyon.org.uk>
-References: <20090804203923.25094.78702.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Tue, 4 Aug 2009 16:41:03 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:40198 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932792AbZHDUlA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 16:41:00 -0400
+Date: Tue, 4 Aug 2009 21:40:54 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Roger Quadros <quadros.roger@gmail.com>
+Cc: lrg@slimlogic.co.uk, philipp.zabel@gmail.com, linux-kernel@vger.kernel.org
+Message-ID: <20090804204053.GA29518@sirena.org.uk>
+References: <quadros.roger@gmail.com>
+ <1249408730-15430-1-git-send-email-quadros.roger@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249408730-15430-1-git-send-email-quadros.roger@gmail.com>
+X-Cookie: Are you sure the back door is locked?
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [PATCH v5] regulator: Add GPIO enable control to fixed voltage
+ regulator driver
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Serge E. Hallyn <serue@us.ibm.com>
+On Tue, Aug 04, 2009 at 08:58:50PM +0300, Roger Quadros wrote:
+> From: Roger Quadros <ext-roger.quadros@nokia.com>
 
-Make the file position maintained by /proc/keys represent the ID of the key
-just read rather than the number of keys read.  This should make it faster to
-perform a lookup as we don't have to scan the key ID tree from the beginning to
-find the current position.
+> Now fixed regulators that have their enable pin connected to a GPIO line
+> can use the fixed regulator driver for regulator enable/disable control.
+> The GPIO number and polarity information is passed through platform data.
+> GPIO enable control is achieved using gpiolib.
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+> Signed-off-by: Roger Quadros <ext-roger.quadros@nokia.com>
 
- security/keys/proc.c |   62 +++++++++++++++++++++++++++++++++-----------------
- 1 files changed, 41 insertions(+), 21 deletions(-)
+Looks good, thanks for taking the time to do this and fixing up the
+review comments.
 
+Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 
-diff --git a/security/keys/proc.c b/security/keys/proc.c
-index 769f9bd..643ecf0 100644
---- a/security/keys/proc.c
-+++ b/security/keys/proc.c
-@@ -91,8 +91,9 @@ __initcall(key_proc_init);
-  */
- #ifdef CONFIG_KEYS_DEBUG_PROC_KEYS
- 
--static struct rb_node *__key_serial_next(struct rb_node *n)
-+static struct rb_node *key_serial_next(struct rb_node *n)
- {
-+	n = rb_next(n);
- 	while (n) {
- 		struct key *key = rb_entry(n, struct key, serial_node);
- 		if (key->user->user_ns == current_user_ns())
-@@ -102,45 +103,64 @@ static struct rb_node *__key_serial_next(struct rb_node *n)
- 	return n;
- }
- 
--static struct rb_node *key_serial_next(struct rb_node *n)
-+static int proc_keys_open(struct inode *inode, struct file *file)
- {
--	return __key_serial_next(rb_next(n));
-+	return seq_open(file, &proc_keys_ops);
- }
- 
--static struct rb_node *key_serial_first(struct rb_root *r)
-+static struct key *find_ge_key(key_serial_t id)
- {
--	struct rb_node *n = rb_first(r);
--	return __key_serial_next(n);
--}
-+	struct rb_node *n = key_serial_tree.rb_node;
-+	struct key *minkey = NULL;
- 
--static int proc_keys_open(struct inode *inode, struct file *file)
--{
--	return seq_open(file, &proc_keys_ops);
-+	while (n) {
-+		struct key *key = rb_entry(n, struct key, serial_node);
-+		if (id < key->serial) {
-+			if (!minkey || minkey->serial > key->serial)
-+				minkey = key;
-+			n = n->rb_left;
-+		} else if (id > key->serial) {
-+			n = n->rb_right;
-+		} else {
-+			minkey = key;
-+			break;
-+		}
-+		key = NULL;
-+	}
- 
-+	return minkey;
- }
- 
- static void *proc_keys_start(struct seq_file *p, loff_t *_pos)
- {
--	struct rb_node *_p;
--	loff_t pos = *_pos;
-+	key_serial_t pos = *_pos;
-+	struct key *key;
- 
- 	spin_lock(&key_serial_lock);
- 
--	_p = key_serial_first(&key_serial_tree);
--	while (pos > 0 && _p) {
--		pos--;
--		_p = key_serial_next(_p);
--	}
--
--	return _p;
-+	if (*_pos > INT_MAX)
-+		return NULL;
-+	key = find_ge_key(pos);
-+	if (!key)
-+		return NULL;
-+	*_pos = key->serial;
-+	return &key->serial_node;
-+}
- 
-+static inline key_serial_t key_node_serial(struct rb_node *n)
-+{
-+	struct key *key = rb_entry(n, struct key, serial_node);
-+	return key->serial;
- }
- 
- static void *proc_keys_next(struct seq_file *p, void *v, loff_t *_pos)
- {
--	(*_pos)++;
--	return key_serial_next((struct rb_node *) v);
-+	struct rb_node *n;
- 
-+	n = key_serial_next(v);
-+	if (n)
-+		*_pos = key_node_serial(n);
-+	return n;
- }
- 
- static void proc_keys_stop(struct seq_file *p, void *v)
+A couple of small notes that I don't see as blocking merge:
 
+> +
+> +		/* FIXME: Remove below print warning
+> +		 *
+> +		 * config->gpio must be set to -EINVAL by platform code if
+> +		 * GPIO control is not required. However, early adopters
+> +		 * not requiring GPIO control may forget to initialize
+> +		 * config->gpio to -EINVAL. This will cause GPIO 0 to be used
+> +		 * for GPIO control.
+> +		 *
+> +		 * This warning will be removed once there are a couple of users
+> +		 * for this driver.
+
+Probably just for 2.6.33 or something; the point here is that this is an
+incompatible change in the platform data which we can get away with here
+due to the fact that there aren't any current users.
+
+> +		drvdata->is_enabled = config->enabled_at_boot;
+> +		ret = drvdata->is_enabled ?
+> +				config->enable_high : !config->enable_high;
+
+Might be more legible without the ternery operator but no point spinning
+the patch for that.
