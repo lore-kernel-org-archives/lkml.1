@@ -1,39 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755150AbZHDCTJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932362AbZHDCTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755150AbZHDCTJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 22:19:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755058AbZHDCTJ
+	id S932362AbZHDCTV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 22:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755163AbZHDCTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 22:19:09 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43953
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753704AbZHDCTI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 22:19:08 -0400
-Date: Mon, 03 Aug 2009 19:19:16 -0700 (PDT)
-Message-Id: <20090803.191916.75688176.davem@davemloft.net>
-To: marcel@holtmann.org
-Cc: hidave.darkstar@gmail.com, oliver@hartkopp.net, alan@lxorguk.ukuu.org.uk,
-       netdev@vger.kernel.org, linux-bluetooth@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]bluetooth: rfcomm_init bug fix
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1249343666.3094.12.camel@localhost.localdomain>
-References: <20090803142616.GA1973@darkstar>
-	<20090803.132924.151782729.davem@davemloft.net>
-	<1249343666.3094.12.camel@localhost.localdomain>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 3 Aug 2009 22:19:19 -0400
+Received: from mail.atheros.com ([12.36.123.2]:10845 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755161AbZHDCTP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 22:19:15 -0400
+From: <jie.yang@atheros.com>
+To: <davem@davemloft.net>
+CC: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       jie yang <jie.yang@atheros.com>
+Subject: [PATCH]atl1c:Do not call cancel_work_sync from the work itself
+Date: Tue, 4 Aug 2009 10:19:06 +0800
+Message-ID: <12493523461127-git-send-email-jie.yang@atheros.com>
+X-Mailer: git-send-email 1.5.2.2
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marcel Holtmann <marcel@holtmann.org>
-Date: Mon, 03 Aug 2009 16:54:26 -0700
+Do not call cancel_work_sync from the work itself, for it my cause 
+recursive locking.
+detail info:
+events/1/10 is trying to acquire lock:
+(&adapter->reset_task){+.+...}, at: [<c043e384>] __cancel_work_timer+0x80/0x187
 
-> do you mind at least waiting for an ACK from my side. I haven't even
-> looked at the final patch.
+but task is already holding lock:
+(&adapter->reset_task){+.+...}, at: [<c043ed6f>] worker_thread+0x127/0x234
+other info that might help us debug this:
 
-Sure, I haven't pushed it out yet, so now's your chance :)
+2 locks held by events/1/10:
+#0:  (events){+.+.+.}, at: [<c043ed6f>] worker_thread+0x127/0x234
+#1:  (&adapter->reset_task){+.+...}, at: [<c043ed6f>] worker_thread+0x127/0x234
+
+stack backtrace:
+Pid: 10, comm: events/1 Not tainted 2.6.31-rc2 #12
+Call Trace:
+[<c04519c9>] validate_chain+0x4ae/0xb26
+[<c0451e8d>] ? validate_chain+0x972/0xb26
+[<c0437f4b>] ? lock_timer_base+0x1f/0x3e
+[<c04526f8>] __lock_acquire+0x6b7/0x745
+[<c0452816>] lock_acquire+0x90/0xad
+[<c043e384>] ? __cancel_work_timer+0x80/0x187
+[<c043e3b1>] __cancel_work_timer+0xad/0x187
+[<c043e384>] ? __cancel_work_timer+0x80/0x187
+[<c044f6b3>] ? mark_held_locks+0x3d/0x58
+[<c0690855>] ? _spin_unlock_irqrestore+0x36/0x3c
+[<c044f7d5>] ? trace_hardirqs_on_caller+0x107/0x12f
+[<c044f808>] ? trace_hardirqs_on+0xb/0xd
+[<c0437fb2>] ? try_to_del_timer_sync+0x48/0x4f
+[<c043e4a2>] cancel_work_sync+0xa/0xc
+[<f8955f95>] atl1c_down+0x1f/0xde [atl1c]
+[<f8956955>] atl1c_reset_task+0x1f/0x31 [atl1c]
+[<c043edae>] worker_thread+0x166/0x234
+[<c043ed6f>] ? worker_thread+0x127/0x234
+[<f8956936>] ? atl1c_reset_task+0x0/0x31 [atl1c]
+[<c0441ac5>] ? autoremove_wake_function+0x0/0x33
+[<c043ec48>] ? worker_thread+0x0/0x234
+[<c0441a25>] kthread+0x69/0x70
+[<c04419bc>] ? kthread+0x0/0x70
+[<c04034b7>] kernel_thread_helper+0x7/0x10
+
+So when atl1c_reset_task be scheduled just set a flag in ctrl_flag, 
+to demonstrate it is in reset_task, when atl1c_down is call it will not call 
+cancel_work_sync(&adapter->reset_task) if it sees the flag.
+
+Signed-off-by: jie yang <jie.yang@atheros.com>
+---
+diff --git a/drivers/net/atl1c/atl1c.h b/drivers/net/atl1c/atl1c.h
+index 2a1120a..53242dc 100644
+--- a/drivers/net/atl1c/atl1c.h
++++ b/drivers/net/atl1c/atl1c.h
+@@ -427,6 +427,7 @@ struct atl1c_hw {
+ #define ATL1C_ASPM_CTRL_MON        0x0200
+ #define ATL1C_HIB_DISABLE      0x0400
+ #define ATL1C_LINK_CAP_1000M       0x0800
++#define ATL1C_RESET_IN_WORK        0x1000
+ #define ATL1C_FPGA_VERSION     0x8000
+    u16 cmb_tpd;
+    u16 cmb_rrd;
+diff --git a/drivers/net/atl1c/atl1c_main.c b/drivers/net/atl1c/atl1c_main.c
+index 1d601ce..dec88fa 100644
+--- a/drivers/net/atl1c/atl1c_main.c
++++ b/drivers/net/atl1c/atl1c_main.c
+@@ -321,7 +321,10 @@ static void atl1c_del_timer(struct atl1c_adapter *adapter)
+ 
+ static void atl1c_cancel_work(struct atl1c_adapter *adapter)
+ {
+-   cancel_work_sync(&adapter->reset_task);
++   if (adapter->hw.ctrl_flags & ATL1C_RESET_IN_WORK)
++       adapter->hw.ctrl_flags &= ~ATL1C_RESET_IN_WORK;/* clear the flag */
++   else
++       cancel_work_sync(&adapter->reset_task);
+    cancel_work_sync(&adapter->link_chg_task);
+ }
+ 
+@@ -1544,6 +1547,7 @@ static irqreturn_t atl1c_intr(int irq, void *data)
+            /* reset MAC */
+            hw->intr_mask &= ~ISR_ERROR;
+            AT_WRITE_REG(hw, REG_IMR, hw->intr_mask);
++           adapter->hw.ctrl_flags |= ATL1C_RESET_IN_WORK;
+            schedule_work(&adapter->reset_task);
+            break;
+        }
+
