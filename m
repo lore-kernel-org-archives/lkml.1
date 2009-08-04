@@ -1,85 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbZHDL3Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754291AbZHDL3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754149AbZHDL3Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 07:29:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbZHDL3X
+	id S1754291AbZHDL3t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 07:29:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754070AbZHDL3s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 07:29:23 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52071 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753448AbZHDL3W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 07:29:22 -0400
-Date: Tue, 4 Aug 2009 13:28:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Kyle McMartin <kyle@mcmartin.ca>, Jens Axboe <jens.axboe@oracle.com>,
-       Anton Blanchard <anton@samba.org>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       fweisbec@gmail.com, benh@kernel.crashing.org, penberg@cs.helsinki.fi,
-       vegard.nossum@gmail.com, paulus@samba.org, williams@redhat.com
-Subject: Re: [PATCH] basic perf support for sparc
-Message-ID: <20090804112859.GA26607@elte.hu>
-References: <20090801011429.GA4685@kryten> <20090801082048.GX12579@kernel.dk> <20090801182216.GA25334@ghostprotocols.net> <20090802184148.GB17241@elte.hu> <20090802194454.GC28572@bombadil.infradead.org> <20090802195043.GD24486@elte.hu> <20090802201132.GE28572@bombadil.infradead.org> <20090802204701.GE25334@ghostprotocols.net> <20090803015430.GG25334@ghostprotocols.net> <20090804092540.GA29778@elte.hu>
+	Tue, 4 Aug 2009 07:29:48 -0400
+Received: from lider.pardus.org.tr ([193.140.100.216]:35854 "EHLO
+	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753844AbZHDL3r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 07:29:47 -0400
+Message-ID: <4A781C6E.7040900@pardus.org.tr>
+Date: Tue, 04 Aug 2009 14:33:02 +0300
+From: =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>
+User-Agent: Thunderbird 2.0.0.22 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090804092540.GA29778@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Subject: Re: [Bug #13471] Loading parport_pc kills the keyboard if ACPI is
+ enabled
+References: <DizPU9GBfHF.A.kgF.iWObKB@chimera>	<H5-1lZIIeYK.A.dWH.9XObKB@chimera>	<20090731151417.568094e5@lxorguk.ukuu.org.uk>	<4A7308E8.1000200@pardus.org.tr> <20090731161735.6a94ad9c@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090731161735.6a94ad9c@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Cox wrote On 31-07-2009 18:17:
+> There have been few changes to parport_pc but one thing recent changed
+> the probe for SuperIO chips via low addresses and that could be
+> interfering.
+>
+> commit e2434dc1c19412639dd047a4d4eff8ed0e5d0d50
+> Author: Jens Rottmann <JRottmann@LiPPERTEmbedded.de>
+> Date:   Mon Jun 22 16:51:49 2009 +0100
+>
+> changed the behaviour slightly (hence asking about which release if it
+> was a recent breakage). Its also a code area with very few changes so if
+> you can find which one worked last, you should be able to transplant that
+> parport_pc into 2.6.current and see if its parport or acpi triggered
+> breakage.
+>   
 
-Btw., how about the solution below? Will the libbfd system library 
-version override this weak alias properly?
+I've tested on 2.6.30.4 which has apparently this commit, no changes.
 
-	Ingo
+I've booted into Ubuntu 8.10 which has 2.6.28. The keyboard was working
+correctly eventhough parport_pc was loaded. I removed and re-probed and
+the keyboard is gone.
 
--------------->
->From 238762507bb41689df191160ada1986b012b57df Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 4 Aug 2009 13:27:41 +0200
-Subject: [PATCH] perf_counter tools: Provide default bfd_demangle() function in case it's not around
+I've set BIOS settings to default, nope.
 
-Provide weak alias (which does nothing) in case the system does not
-offer one.
-
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- tools/perf/util/symbol.c |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
-
-diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
-index b4fe057..7bd5128 100644
---- a/tools/perf/util/symbol.c
-+++ b/tools/perf/util/symbol.c
-@@ -8,6 +8,17 @@
- #include <elf.h>
- #include <bfd.h>
- 
-+/*
-+ * Weak wrapper in case a library version is not available:
-+ */
-+extern char * __attribute__((weak)) bfd_demangle (bfd *, const char *, int);
-+
-+char * __attribute__((weak))
-+ bfd_demangle (bfd *bfd __used, const char *name __used, int flags __used)
-+{
-+	return NULL;
-+}
-+
- const char *sym_hist_filter;
- 
- #ifndef DMGL_PARAMS
+I'll try bisecting when I find the last-good/first-bad kernel version.
