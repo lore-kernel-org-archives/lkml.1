@@ -1,111 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbZHDMol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbZHDMqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755455AbZHDMol (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 08:44:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755436AbZHDMol
+	id S1755464AbZHDMqj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 08:46:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbZHDMqi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 08:44:41 -0400
-Received: from www84.your-server.de ([213.133.104.84]:48431 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755435AbZHDMok (ORCPT
+	Tue, 4 Aug 2009 08:46:38 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:59589 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755444AbZHDMqi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 08:44:40 -0400
-Subject: Re: [RFC 0/2] new kfifo API
-From: Stefani Seibold <stefani@seibold.net>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <200908041424.54472.arnd@arndb.de>
-References: <1249306755.8358.8.camel@wall-e>
-	 <200908032100.35892.arnd@arndb.de> <1249328898.5106.44.camel@wall-e>
-	 <200908041424.54472.arnd@arndb.de>
-Content-Type: text/plain
-Date: Tue, 04 Aug 2009 14:44:37 +0200
-Message-Id: <1249389877.11474.14.camel@wall-e>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Tue, 4 Aug 2009 08:46:38 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Timo Sirainen <tss@iki.fi>
+Subject: Re: rename() a directory over a symlink
+Date: Tue, 4 Aug 2009 14:46:35 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
+References: <1249338691.1216.136.camel@timo-desktop>
+In-Reply-To: <1249338691.1216.136.camel@timo-desktop>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
+Message-Id: <200908041446.35126.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+Z82WUSiuSRk4szuEzf9XQIdpVxC72unfi7v0
+ kC2Zk6r7Ei8Wl1uzmBaYlyR5qIcWOpEW7rD4Se1SQF2ear/VKQ
+ KNGT6IIi2FhcftfQRlJlA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, den 04.08.2009, 14:24 +0200 schrieb Arnd Bergmann:
-> On Monday 03 August 2009, Stefani Seibold wrote:
-> > Am Montag, den 03.08.2009, 21:00 +0200 schrieb Arnd Bergmann:
-> > 
-> > DECLARE_KFIFO looks for me more useful, because i can use it inside a
-> > struct decalaration. And then i need INIT_KFIFO for initializing this.
-> > 
-> > BTW: DECLARE_...., DEFINE_..... and INIT_..... are linux style. Habe a
-> > look at workqueue.h, wait.h, types.h, semaphore.h, rwsem-spinlock.h,
-> > interrupt.h, completion.h, seqlock.h and so on....
-> 
-> Yes, you are right. I realized that myself after I sent out my
-> comments.
-> 
-> > > 1. you can no longer use preallocated buffers, which limits the possible
-> > > users to those that are unrestricted to the type of allocation.
-> > > 2. The size of the buffer is no longer power-of-two. In fact, it's guaranteed
-> > > to be non-power-of-two because kmalloc gives you a power-of-two allocation
-> > > but now you also put the struct kfifo in there.
-> > > 
-> > > Users that need a power-of-two buffer (the common case) now waste almost
-> > > 50% of the space.
-> > > 
-> > 
-> > Okay, give me a thought about this....... yes you are right ;-( But what
-> > is with vmalloc? 128 MB should be enough?
-> 
-> vmalloc also has performance problems on some architectures that can
-> access the linear mapping faster than paged memory and it is
-> rather wasteful if you have 64kb pages.
-> 
-> I don't think the total size matters, the 128 MB limit only exists
-> if you have a 32 bit CPU and 1GB or more of memory, which is hopefully
-> getting rarer and already causes other problems (highmem...).
-> 
-> kmalloc currently limits the kfifo size to something like 128kb (arch
-> specific), if you need more than that, you need alloc_pages(), which
-> is limited to a power-of-two amount of pages.
-> 
+On Tuesday 04 August 2009, you wrote:
+> Is there a reason why it's not allowed? Would it be difficult to
+> implement it? Seems like it shouldn't be much different from renaming a
+> file over a symlink.
 
-You are right, i don't like vmalloc too. It was only a first thought ;-)
+It's in the standard we are following,
+http://www.opengroup.org/onlinepubs/009695399/functions/rename.html:
 
-> > > The requirement for power-of-two also meant a much faster __kfifo_off
-> > > function on certain embedded platforms that don't have an integer division
-> > > instruction in hardware.
-> >
-> > Yes i know this argument, but since the day of the 6502 and Z80 i have
-> > never seen this kind of CPU. Okay i forgot to mention the stupid ARM
-> > CPU, but newer ARM cores have a hardware division support.
-> 
-> I think this is actually more relevant than the vmalloc limit you mentioned,
-> demand for tiny processors will probably stay because of cost reasons.
-> Architectures that we support in Linux without integer divide include
-> arm, blackfin, h8300, ia64 (!), m68k, microblaze, sh and xtensa.
-> 
+"If the old argument points to the pathname of a directory, the new argument shall
+ not point to the pathname of a file that is not a directory."
 
-I'm embedded developer too... so i know what you mean. But for the fifo
-this is not really a problem, managing and copying the data will be the
-bigger amount. But with my new version i go back to the old power of two
-method.
+http://www.opengroup.org/onlinepubs/009695399/utilities/mv.html:
 
-> Your first version with the non-power-of-two buffers also had a bug
-> in the handling because it would not handle 32 bit integer overflows
-> correctly. To get those right, you need an extra branch every time you
-> add to the counter.
-> 
+"In the second synopsis form, mv shall move each file named by a source_file
+ operand to a destination file in the existing directory named by the target_dir
+ operand, or referenced if target_dir is a symbolic link referring to an existing
+ directory. The destination path for each source_file shall be the concatenation
+ of the target directory, a single slash character, and the last pathname
+ component of the source_file. This second form is assumed when the final operand
+ names an existing directory."
 
-Ooops, that was a real bug... Thanks.
-
-> Your second version is ok in this regard because it uses the original
-> size logic.
-
-Does it mean you like it now ;-) ???? I think we are on a good way!
-
-> 
-> 	Arnd <><
-
-Stefani <\_,
-
-
+	Arnd <><
