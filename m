@@ -1,60 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753346AbZHDLOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbZHDLPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753346AbZHDLOZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 07:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbZHDLOY
+	id S1753522AbZHDLPI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 07:15:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbZHDLPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 07:14:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34181 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752158AbZHDLOY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 07:14:24 -0400
-Date: Tue, 4 Aug 2009 13:14:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Markus Metzger <markus.t.metzger@intel.com>, tglx@linutronix.de,
-       hpa@zytor.com, markus.t.metzger@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch] x86, perf_counter, bts: add bts to perf_counter
-Message-ID: <20090804111412.GA20942@elte.hu>
-References: <20090721155648.A17047@sedona.ch.intel.com> <1249381489.7924.186.camel@twins>
+	Tue, 4 Aug 2009 07:15:07 -0400
+Received: from atreides.gradator.net ([212.85.155.42]:52622 "EHLO
+	atreides.gradator.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752530AbZHDLPG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 07:15:06 -0400
+Date: Tue, 4 Aug 2009 13:15:05 +0200
+From: Sylvain Rochet <gradator@gradator.net>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+Message-ID: <20090804111505.GA6433@gradator.net>
+References: <20090420162017.GA28079@gradator.net> <20090716172749.GC3740@atrey.karlin.mff.cuni.cz> <20090725151751.GA6419@gradator.net> <20090727154253.GB8332@duck.suse.cz> <20090728112715.GA8442@gradator.net> <20090728135226.GA21682@duck.suse.cz> <20090728164142.GA13662@gradator.net> <20090803222901.GB23162@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="GvXjxJ+pjyke8COw"
 Content-Disposition: inline
-In-Reply-To: <1249381489.7924.186.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090803222901.GB23162@duck.suse.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: gradator@atreides.gradator.net
+Subject: Re: 2.6.28.9: EXT3/NFS inodes corruption
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:51:29 +0000)
+X-SA-Exim-Scanned: Yes (on atreides.gradator.net)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+--GvXjxJ+pjyke8COw
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Tue, 2009-07-21 at 15:56 +0200, Markus Metzger wrote:
-> > Implement a performance counter with:
-> >     attr.type           = PERF_TYPE_HARDWARE
-> >     attr.config         = PERF_COUNT_HW_BRANCH_INSTRUCTIONS
-> >     attr.sample_period  = 1
-> > 
-> > using branch trace store (BTS) on x86 hardware, if available.
-> > 
-> > The from and to address for each branch can be sampled using:
-> >     PERF_SAMPLE_IP      for the from address
-> >     PERF_SAMPLE_ADDR    for the to address
-> > 
-> 
-> Over all looks very nice, some comments below (could be addressed 
-> in a delta patch).
+Hi,
 
-ok - thanks guys - i'll test this some and push it out into the 
-perfcounters tree. Will apply the delta patch too once it's done.
 
-Thanks,
+On Tue, Aug 04, 2009 at 12:29:01AM +0200, Jan Kara wrote:
+>=20
+>   OK, I've found some time and written the debugging patch. Hopefully it
+> will tell us more. It should output messages to the kernel log if it
+> finds something suspicious - like:
+> No dentry for unlinked inode...
+> Dentry ... for unlinked inode ... has no parent
+> Found directory entry ... for unlinked inode
+>=20
+>   When you see such messages in the log, send them to me please. Also
+> attach the System.map file so that I can translate the address where
+> i_nlink was dropped - for that ext3 should be compiled into the kernel
+> (should not be a module). Thanks a lot for testing.
 
-	Ingo
+Patch applied.
+
+And there is already a lot of output.
+
+http://edony.tuxfamily.org/~grad/bazooka/System.map-2.6.30.4
+http://edony.tuxfamily.org/~grad/bazooka/config-2.6.30.4
+http://edony.tuxfamily.org/~grad/bazooka/kern.log
+
+
+Sylvain
+
+--GvXjxJ+pjyke8COw
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFKeBg5DFub3qtEsS8RAgIWAKCsC2fadjouSls1EWuiVIEPh3lxpgCfZ4wG
+lgccIBouV30FqS6ou8zkxO8=
+=iyJr
+-----END PGP SIGNATURE-----
+
+--GvXjxJ+pjyke8COw--
