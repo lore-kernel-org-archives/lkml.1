@@ -1,125 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932489AbZHDGwD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932501AbZHDHJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932489AbZHDGwD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 02:52:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932462AbZHDGwD
+	id S932501AbZHDHJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 03:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932476AbZHDHJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 02:52:03 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58354 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S932250AbZHDGwB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 02:52:01 -0400
-Message-ID: <4A77DA98.6050509@cn.fujitsu.com>
-Date: Tue, 04 Aug 2009 14:52:08 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Dave Anderson <anderson@redhat.com>, crash-utility@redhat.com,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <clark.williams@gmail.com>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Christoph Hellwig <hch@infradead.org>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
-       Li Zefan <lizf@cn.fujitsu.com>, Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
-       Jason Baron <jbaron@redhat.com>, srostedt@redhat.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [ANNOUNCE][RFC][PATCH] Crash-utility, tracing: enable crash to
- analyze tracing from core-file (make tracing can act as a flight recorder)
-References: <4A76F8A1.30503@cn.fujitsu.com> <1249314136.7924.126.camel@twins>
-In-Reply-To: <1249314136.7924.126.camel@twins>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 4 Aug 2009 03:09:56 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50509 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932474AbZHDHJz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 03:09:55 -0400
+Subject: Re: [RFC patch] return early if all dmar HW unit ignored
+From: David Woodhouse <dwmw2@infradead.org>
+To: Luming Yu <luming.yu@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <3877989d0907310129p29dd5039p18563946b9be8099@mail.gmail.com>
+References: <3877989d0907310129p29dd5039p18563946b9be8099@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 04 Aug 2009 08:09:54 +0100
+Message-Id: <1249369794.9324.18.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Mon, 2009-08-03 at 22:48 +0800, Lai Jiangshan wrote:
->> + /* SIGH, we cann't get "print fmt" from core-file */
+On Fri, 2009-07-31 at 16:29 +0800, Luming Yu wrote:
+> Hello list,
 > 
-> doesn't crash have a vmlinux around to look at?
+> When debugging an IOMMU problem, I noticed it should be much more safe
+> to return early than late if all remapping HW unit are ignored.
+> To figure out what device causes the iommu problem on my linux box:
+> hp-compaq dc7800, I tried to mark all dmar HW
+> unit ignored,but still got a lot of unxepcted dmar_fault. So I think
+> the proposed patch make sense. The next step is to
+> add a boot option to make dmar HW units selectable enable/disable individually.
 
+Why were you seeing faults if all dmar units were ignored? Surely that
+shouldn't happen?
 
-I don't known how to look at it:
+This patch doesn't make a lot of sense on its own -- can you show what
+you were intending to do as the 'next step'?
 
-static int								\
-ftrace_format_##call(struct trace_seq *s)				\
-{									\
-	struct ftrace_raw_##call field __attribute__((unused));		\
-	int ret = 0;							\
-									\
-	tstruct;							\
-									\
-	trace_seq_printf(s, "\nprint fmt: " print);			\
-									\
-	return ret;							\
-}
-
-We need the address of the const string <"\nprint fmt: " print>,
-I don't know how to get it current from vmlinux.
-
-I have sent a patch which try to reduce the size of .txt in kernel
-and reduce coupling. This patch has a little side-effect:
-the "print fmt"'s address is saved in struct ftrace_event_call.
-
-[
-http://lkml.org/lkml/2009/7/30/30
-
-This patch is really useful for kernel. We don't change the kernel
-even a single line for the purpose of we can read the core-file easier.
-
-This patch is also helpful for crash more or less. So I mention it.
-]
-
-> 
->> +/*
->> + * TODO: implement event_generic_print_fmt_print() when the print fmt
->> + * in tracing/events/$SYSTEM/$TRACE/format becomes a will-defined
->> + * language.
->> + */
-> 
-> (well-defined)
-> 
-> That would require the running kernel to be the same as the one that
-> generated the core file -- not very usable imho.
-> 
-
-This "tracing/events/$SYSTEM/$TRACE/format" is core-file's(or the dead
-kernel's) "tracing/events/$SYSTEM/$TRACE/format", not the running kernel's.
-
-
-
-"print fmt" is generated by the macro TP_printk(), it is not a
-will-defined language. Any C-Language code and other weird statement
-can be embedded in it. I don't want to induce a C-Language in crash.
-
-A example:
-print fmt: "call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s node=%d", REC->call_site, REC->ptr, REC->bytes_req, REC->bytes_alloc, (REC->gfp_flags) ? __print_flags(REC->gfp_flags, "|", {(unsigned long)(((gfp_t)0x10u) | ((gfp_t)0x40u) | ((gfp_t)0x80u) | ((gfp_t)0x20000u) | ((gfp_t)0x02u) | ((gfp_t)0x08u)), "GFP_HIGHUSER_MOVABLE"}, {(unsigned long)(((gfp_t)0x10u) | ((gfp_t)0x40u) | ((gfp_t)0x80u) | ((gfp_t)0x20000u) | ((gfp_t)0x02u)), "GFP_HIGHUSER"}, {(unsigned long)(((gfp_t)0x10u) | ((gfp_t)0x40u) | ((gfp_t)0x80u) | ((gfp_t)0x20000u)), "GFP_USER"}, {(unsigned long)(((gfp_t)0x10u) | ((gfp_t)0x40u) | ((gfp_t)0x80u) | ((gfp_t)0x80000u)), "GFP_TEMPORARY"}, {(unsigned long)(((gfp_t)0x10u) | ((gfp_t)0x40u) | ((gfp_t)0x80u)), "GFP_KERNEL"}, {(unsigned long)(((gfp_t)0x10u) | ((gfp_t)0x40u)), "GFP_NOFS"}, {(unsigned long)(((gfp_t)0x20u)), "GFP_ATOMIC"}, {(unsigned long)(((gfp_t)0x10u)), "GFP_NOIO"}, {(unsigned long)((gfp_t)0x20u), "GFP_HIGH"}, {(unsigned long)((gfp_t)0
-x10u), "GFP_WAIT"}, {(unsigned long)((gfp_t)0x40u), "GFP_IO"}, {(unsigned long)((gfp_t)0x100u), "GFP_COLD"}, {(unsigned long)((gfp_t)0x200u), "GFP_NOWARN"}, {(unsigned long)((gfp_t)0x400u), "GFP_REPEAT"}, {(unsigned long)((gfp_t)0x800u), "GFP_NOFAIL"}, {(unsigned long)((gfp_t)0x1000u), "GFP_NORETRY"}, {(unsigned long)((gfp_t)0x4000u), "GFP_COMP"}, {(unsigned long)((gfp_t)0x8000u), "GFP_ZERO"}, {(unsigned long)((gfp_t)0x10000u), "GFP_NOMEMALLOC"}, {(unsigned long)((gfp_t)0x20000u), "GFP_HARDWALL"}, {(unsigned long)((gfp_t)0x40000u), "GFP_THISNODE"}, {(unsigned long)((gfp_t)0x80000u), "GFP_RECLAIMABLE"}, {(unsigned long)((gfp_t)0x08u), "GFP_MOVABLE"} ) : "GFP_NOWAIT", REC->node
-
-Yes, I can write a parser to parse them correctly.
-But it'll not work probably when new tracepoint is added to kernel.
-It's fragile.
-
-Not only crash tool, other tools also want to parse events in userspace.
-The fact that TP_printk() is not well-defined makes tracing
-is hard to be used at userspace side.
-
-In my code, I use several defined printer for every TRACE_EVENT().
-It's stupid, but it works well and it's simpler than a complicated parser.
-
-Thank you for the reviews and comments.
-
-Regards,
-
-Lai
-
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
