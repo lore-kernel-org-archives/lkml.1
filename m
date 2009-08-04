@@ -1,110 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933455AbZHDWPN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933498AbZHDWQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933455AbZHDWPN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 18:15:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933428AbZHDWPK
+	id S933498AbZHDWQJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 18:16:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932170AbZHDWQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 18:15:10 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:39391 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755266AbZHDWPF (ORCPT
+	Tue, 4 Aug 2009 18:16:07 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:37821 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755266AbZHDWPO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 18:15:05 -0400
+	Tue, 4 Aug 2009 18:15:14 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAP9PeEqrR7PE/2dsb2JhbAC8N4gpkBcFhBg
+X-IronPort-Anti-Spam-Result: ApoEAEtPeEqrR7MV/2dsb2JhbAC8RYgpkBcFhBg
 X-IronPort-AV: E=Sophos;i="4.43,324,1246838400"; 
-   d="scan'208";a="192519148"
-Date: Tue, 4 Aug 2009 15:15:06 -0700
+   d="scan'208";a="360440787"
+Date: Tue, 4 Aug 2009 15:15:15 -0700
 From: David VomLehn <dvomlehn@cisco.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, linux-usb@vger.kernel.org, greg@kroah.com,
        linux-scsi@vger.kernel.org, netdev@vger.kernel.org, arjan@infradead.org
-Subject: [PATCH 2/7 v3] initdev:kernel:USB init device discovery
+Subject: [PATCH 5/7 v4] initdev:kernel:USB and SCSI block init device
 	notification
-Message-ID: <20090804221506.GA9256@cuplxvomd02.corp.sa.net>
+Message-ID: <20090804221515.GA9335@cuplxvomd02.corp.sa.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-4; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Authentication-Results: sj-dkim-1; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Stern <stern@rowland.harvard.edu>
 
-Use init device discovery infrastructure to provide notification of
-availability of USB devices.
+Add notification of device discovery for USB and SCSI block devices.
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu
 Signed-off-by: David VomLehn <dvomlehn@cisco.com>
 ---
- drivers/usb/core/hub.c |   26 ++++++++++++++++++++++++++
- 1 files changed, 26 insertions(+), 0 deletions(-)
+ drivers/scsi/scsi_scan.c  |    2 ++
+ drivers/usb/storage/usb.c |    3 +++
+ 2 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/usb/core/hub.c b/drivers/usb/core/hub.c
-index be86ae3..08baee0 100644
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -37,6 +37,20 @@
- #endif
- #endif
- 
-+/* The mask of possible USB boot devices depends on what drivers and
-+ * options have been configured into the kernel.  There are too many
-+ * USB network config options to list here, so just assume it is always
-+ * possible to have a USB network device.
-+ */
-+static int usb_initdev_mask = 0
-+#ifdef CONFIG_USB_SERIAL_CONSOLE
-+				| INITDEV_CONSOLE_MASK
-+#endif
-+#if defined(CONFIG_USB_STORAGE) || defined(CONFIG_BLK_DEV_UB)
-+				| INITDEV_BLOCK_MASK
-+#endif
-+				| INITDEV_NETDEV_MASK;
-+
- struct usb_hub {
- 	struct device		*intfdev;	/* the "interface" device */
- 	struct usb_device	*hdev;
-@@ -73,6 +87,7 @@ struct usb_hub {
- 	unsigned		limited_power:1;
- 	unsigned		quiescing:1;
- 	unsigned		disconnected:1;
-+	unsigned		probing:1;
- 
- 	unsigned		has_indicators:1;
- 	u8			indicator[USB_MAXCHILDREN];
-@@ -1079,6 +1094,9 @@ static int hub_configure(struct usb_hub *hub,
- 	if (hub->has_indicators && blinkenlights)
- 		hub->indicator [0] = INDICATOR_CYCLE;
- 
-+	hub->probing = 1;
-+	initdev_found(usb_initdev_mask);
-+
- 	hub_activate(hub, HUB_INIT);
+diff --git a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
+index 6f51ca4..cb7b450 100644
+--- a/drivers/scsi/scsi_scan.c
++++ b/drivers/scsi/scsi_scan.c
+@@ -1834,6 +1834,7 @@ static int do_scan_async(void *_data)
+ 	struct async_scan_data *data = _data;
+ 	do_scsi_scan_host(data->shost);
+ 	scsi_finish_async_scan(data);
++	initdev_probe_done(INITDEV_BLOCK_MASK);
  	return 0;
- 
-@@ -1124,6 +1142,9 @@ static void hub_disconnect(struct usb_interface *intf)
- 	usb_buffer_free(hub->hdev, sizeof(*hub->buffer), hub->buffer,
- 			hub->buffer_dma);
- 
-+	if (hub->probing)
-+		initdev_probe_done(usb_initdev_mask);
-+
- 	kref_put(&hub->kref, hub_release);
  }
  
-@@ -3135,6 +3156,11 @@ static void hub_events(void)
- 						portstatus, portchange);
- 		} /* end for i */
+@@ -1855,6 +1856,7 @@ void scsi_scan_host(struct Scsi_Host *shost)
+ 		return;
+ 	}
  
-+		if (hub->probing) {
-+			hub->probing = 0;
-+			initdev_probe_done(usb_initdev_mask);
-+		}
-+
- 		/* deal with hub status changes */
- 		if (test_and_clear_bit(0, hub->event_bits) == 0)
- 			;	/* do nothing */
++	initdev_found(INITDEV_BLOCK_MASK);
+ 	p = kthread_run(do_scan_async, data, "scsi_scan_%d", shost->host_no);
+ 	if (IS_ERR(p))
+ 		do_scan_async(data);
+diff --git a/drivers/usb/storage/usb.c b/drivers/usb/storage/usb.c
+index 8060b85..6a78278 100644
+--- a/drivers/usb/storage/usb.c
++++ b/drivers/usb/storage/usb.c
+@@ -837,6 +837,7 @@ static int usb_stor_scan_thread(void * __us)
+ 		/* Should we unbind if no devices were detected? */
+ 	}
+ 
++	initdev_probe_done(INITDEV_BLOCK_MASK);
+ 	complete_and_exit(&us->scanning_done, 0);
+ }
+ 
+@@ -937,10 +938,12 @@ int usb_stor_probe2(struct us_data *us)
+ 	}
+ 
+ 	/* Start up the thread for delayed SCSI-device scanning */
++	initdev_found(INITDEV_BLOCK_MASK);
+ 	th = kthread_create(usb_stor_scan_thread, us, "usb-stor-scan");
+ 	if (IS_ERR(th)) {
+ 		printk(KERN_WARNING USB_STORAGE 
+ 		       "Unable to start the device-scanning thread\n");
++		initdev_probe_done(INITDEV_BLOCK_MASK);
+ 		complete(&us->scanning_done);
+ 		quiesce_and_remove_host(us);
+ 		result = PTR_ERR(th);
