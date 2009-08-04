@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755244AbZHDTbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932112AbZHDThq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755244AbZHDTbn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 15:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbZHDTbn
+	id S932112AbZHDThq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 15:37:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbZHDThq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 15:31:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44530 "EHLO mx2.redhat.com"
+	Tue, 4 Aug 2009 15:37:46 -0400
+Received: from vena.lwn.net ([206.168.112.25]:49362 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754903AbZHDTbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 15:31:41 -0400
-Message-ID: <4A788D95.9070107@redhat.com>
-Date: Tue, 04 Aug 2009 22:35:49 +0300
-From: Izik Eidus <ieidus@redhat.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
-MIME-Version: 1.0
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-CC: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
-       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 12/12] ksm: remove VM_MERGEABLE_FLAGS
-References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils> <Pine.LNX.4.64.0908031321380.16754@sister.anvils>
-In-Reply-To: <Pine.LNX.4.64.0908031321380.16754@sister.anvils>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751889AbZHDThp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 15:37:45 -0400
+Date: Tue, 4 Aug 2009 13:35:17 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH] flex_array: remove unneeded index calculation
+Message-ID: <20090804133517.58429f31@bike.lwn.net>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.2; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> KSM originally stood for Kernel Shared Memory: but the kernel has long
-> supported shared memory, and VM_SHARED and VM_MAYSHARE vmas, and KSM is
-> something else.  So we switched to saying "merge" instead of "share".
->
-> But Chris Wright points out that this is confusing where mmap.c merges
-> adjacent vmas: most especially in the name VM_MERGEABLE_FLAGS, used by
-> is_mergeable_vma() to let vmas be merged despite flags being different.
->
-> Call it VMA_MERGE_DESPITE_FLAGS?  Perhaps, but at present it consists
-> only of VM_CAN_NONLINEAR: so for now it's clearer on all sides to use
-> that directly, with a comment on it in is_mergeable_vma().
->
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> ---
->   
-Acked-by: Izik Eidus <ieidus@redhat.com>
+flex_array_get() calculates an index value, then drops it on the floor;
+simply remove it.
+
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+
+diff --git a/lib/flex_array.c b/lib/flex_array.c
+index 0e7894c..08f1636 100644
+--- a/lib/flex_array.c
++++ b/lib/flex_array.c
+@@ -254,7 +254,6 @@ void *flex_array_get(struct flex_array *fa, int element_nr)
+ {
+ 	int part_nr = fa_element_to_part_nr(fa, element_nr);
+ 	struct flex_array_part *part;
+-	int index;
+ 
+ 	if (element_nr >= fa->total_nr_elements)
+ 		return NULL;
+@@ -264,6 +263,5 @@ void *flex_array_get(struct flex_array *fa, int element_nr)
+ 		part = (struct flex_array_part *)&fa->parts[0];
+ 	else
+ 		part = fa->parts[part_nr];
+-	index = index_inside_part(fa, element_nr);
+ 	return &part->elements[index_inside_part(fa, element_nr)];
+ }
