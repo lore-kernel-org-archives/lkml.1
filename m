@@ -1,64 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933276AbZHDSo2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933279AbZHDSqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933276AbZHDSo2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 14:44:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933255AbZHDSo2
+	id S933279AbZHDSqd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 14:46:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933255AbZHDSqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 14:44:28 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48691 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932976AbZHDSo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 14:44:27 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH V2 0/4] introduce device async actions mechanism
-Date: Tue, 4 Aug 2009 20:44:40 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc5-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Zhang Rui <rui.zhang@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       "linux-acpi" <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
-       "dtor@mail.ru" <dtor@mail.ru>
-References: <Pine.LNX.4.44L0.0908041330040.3102-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0908041330040.3102-100000@iolanthe.rowland.org>
+	Tue, 4 Aug 2009 14:46:31 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:60170 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933215AbZHDSqa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 14:46:30 -0400
+Date: Tue, 4 Aug 2009 13:46:18 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, jmorris@namei.org,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 6/6] KEYS: Do some whitespace cleanups
+Message-ID: <20090804184618.GD8442@us.ibm.com>
+References: <20090804145530.17676.24656.stgit@warthog.procyon.org.uk> <20090804145556.17676.80359.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200908042044.41170.rjw@sisk.pl>
+In-Reply-To: <20090804145556.17676.80359.stgit@warthog.procyon.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 04 August 2009, Alan Stern wrote:
-> On Tue, 4 Aug 2009, Rafael J. Wysocki wrote:
+Quoting David Howells (dhowells@redhat.com):
+> Do some whitespace cleanups in the key management code.
 > 
-> > Not only that.  I'd like to simplify the design, because IMO using one async
-> > domain would be much more straightforward than using multiple ones.
-> 
-> > If I understand the async framework correctly, the domains are only used for
-> > synchronization, ie. if you want to wait for a group of async operations to
-> > complete, you can put them all into one domain and then call
-> > async_synchronize_full_domain() to wait for them all together.
-> > 
-> > You don't need multiple domains to run multiple things in parallel.
-> 
-> There's a basic confusion going on here.
-> 
-> Rui is using "async domain" to mean a collection of devices which 
-> will be suspended or resumed serially.  Different domains run in 
-> parallel.
-> 
-> Rafael is using "async domain" to mean a collection of devices which 
-> will be suspended or resumed in parallel.  Different domains run 
-> serially.
-> 
-> Once that is cleared up, you should be able to communicate a little 
-> better...  :-)
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-Well, I tried to follow the naming convention of kernel/async.c.
+(trivially correct of course)
 
-Best,
-Rafael
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+
+> ---
+> 
+>  security/keys/proc.c |   12 +++---------
+>  1 files changed, 3 insertions(+), 9 deletions(-)
+> 
+> 
+> diff --git a/security/keys/proc.c b/security/keys/proc.c
+> index 643ecf0..e4fde23 100644
+> --- a/security/keys/proc.c
+> +++ b/security/keys/proc.c
+> @@ -194,11 +194,9 @@ static int proc_keys_show(struct seq_file *m, void *v)
+>  	/* come up with a suitable timeout value */
+>  	if (key->expiry == 0) {
+>  		memcpy(xbuf, "perm", 5);
+> -	}
+> -	else if (now.tv_sec >= key->expiry) {
+> +	} else if (now.tv_sec >= key->expiry) {
+>  		memcpy(xbuf, "expd", 5);
+> -	}
+> -	else {
+> +	} else {
+>  		timo = key->expiry - now.tv_sec;
+> 
+>  		if (timo < 60)
+> @@ -238,9 +236,7 @@ static int proc_keys_show(struct seq_file *m, void *v)
+>  	seq_putc(m, '\n');
+> 
+>  	rcu_read_unlock();
+> -
+>  	return 0;
+> -
+>  }
+> 
+>  #endif /* CONFIG_KEYS_DEBUG_PROC_KEYS */
+> @@ -266,6 +262,7 @@ static struct rb_node *key_user_first(struct rb_root *r)
+>  	struct rb_node *n = rb_first(r);
+>  	return __key_user_next(n);
+>  }
+> +
+>  /*****************************************************************************/
+>  /*
+>   * implement "/proc/key-users" to provides a list of the key users
+> @@ -273,7 +270,6 @@ static struct rb_node *key_user_first(struct rb_root *r)
+>  static int proc_key_users_open(struct inode *inode, struct file *file)
+>  {
+>  	return seq_open(file, &proc_key_users_ops);
+> -
+>  }
+> 
+>  static void *proc_key_users_start(struct seq_file *p, loff_t *_pos)
+> @@ -290,14 +286,12 @@ static void *proc_key_users_start(struct seq_file *p, loff_t *_pos)
+>  	}
+> 
+>  	return _p;
+> -
+>  }
+> 
+>  static void *proc_key_users_next(struct seq_file *p, void *v, loff_t *_pos)
+>  {
+>  	(*_pos)++;
+>  	return key_user_next((struct rb_node *) v);
+> -
+>  }
+> 
+>  static void proc_key_users_stop(struct seq_file *p, void *v)
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
