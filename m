@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbZHDLx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbZHDL65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754009AbZHDLx1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 07:53:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbZHDLx1
+	id S1754812AbZHDL65 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 07:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbZHDL64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 07:53:27 -0400
-Received: from poutre.nerim.net ([62.4.16.124]:61496 "EHLO poutre.nerim.net"
+	Tue, 4 Aug 2009 07:58:56 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38919 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752708AbZHDLx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 07:53:26 -0400
-Date: Tue, 4 Aug 2009 13:53:21 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Samuel Ortiz <sameo@linux.intel.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
-Subject: Re: [PATCH] hwmon: WM831x PMIC hardware monitoring driver
-Message-ID: <20090804135321.4784f63d@hyperion.delvare>
-In-Reply-To: <20090804113314.GA8601@sortiz.org>
-References: <1248702372-29534-12-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<1248790260-26211-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	<20090728162658.0ac35362@hyperion.delvare>
-	<20090728145048.GB3013@sirena.org.uk>
-	<20090804113314.GA8601@sortiz.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753448AbZHDL64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 07:58:56 -0400
+Date: Tue, 4 Aug 2009 13:58:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 0/2] tracing/function_graph fixes for 2.6.31
+Message-ID: <20090804115851.GB29545@elte.hu>
+References: <1248818134-5231-1-git-send-email-fweisbec@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1248818134-5231-1-git-send-email-fweisbec@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Samuel,
 
-On Tue, 4 Aug 2009 13:33:15 +0200, Samuel Ortiz wrote:
-> Hi Jean, Mark,
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> Ingo, Thomas,
 > 
-> On Tue, Jul 28, 2009 at 03:50:49PM +0100, Mark Brown wrote:
-> > On Tue, Jul 28, 2009 at 04:26:58PM +0200, Jean Delvare wrote:
-> > > Acked-by: Jean Delvare <khali@linux-fr.org>
-> > >
-> > > And as I said before for the wm8350-hwmon driver: I can pick this patch
-> > > and push it to Linux in 2.6.32 if you want, but if you want it to take
-> > > a different route this is equally fine with me. Just tell me if you
-> > > want me to pick it.
-> > 
-> > I'm more than happy for you to take both - the only reason that I asked
-> > you to hold off on the wm8350 patch originally was that I knew I was
-> > going to be releasing this driver and there would be collisions with the
-> > Kconfig stuff which was due to be released very soon.
+> Those are two fixes for the function graph tracer for .31
 > 
-> I applied both patches to my for-next branch. Jean, if you prefer them to go
-> through your tree, please go ahead and I'll remove them from mine.
+> The first one fixes a possible race condition between a function 
+> graph trace reader and ring buffer writers, leading to a mixup 
+> inside an event entry, or worst.
+> 
+> The second one fixes some issues in the output of the function 
+> graph tracer while using splice on the trace_pipe file or 
+> ftrace_dump().
+> 
+> Both fixes should also be backported on .30 for the -stable 
+> branch.
+> 
+> Thanks,
+> Frederic.
+> 
+> The following changes since commit 4733fd328f14280900435d9dbae1487d110a4d56:
+>   Benjamin Herrenschmidt (1):
+>         mm: Remove duplicate definitions in MIPS and SH
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git tracing/fixes
+> 
+> Lai Jiangshan (2):
+>       tracing: Fix invalid function_graph entry
+>       tracing: Fix missing function_graph events when we splice_read from trace_pipe
+> 
+>  kernel/trace/trace.c                 |   10 +++++++---
+>  kernel/trace/trace_functions_graph.c |   11 +++++++++--
+>  2 files changed, 16 insertions(+), 5 deletions(-)
 
-This is totally fine with me, thanks for picking them. I've just moved
-to a new place and my backlog is big, so I am grateful for any work
-others may offload from me :)
+Pulled, thanks a lot Frederic!
 
--- 
-Jean Delvare
+	Ingo
