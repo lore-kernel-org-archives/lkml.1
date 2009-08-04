@@ -1,199 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754544AbZHDADl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754677AbZHDA1V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754544AbZHDADl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 20:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbZHDADk
+	id S1754677AbZHDA1V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 20:27:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754095AbZHDA1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 20:03:40 -0400
-Received: from smtp-out-065.synserver.de ([212.40.180.65]:1047 "HELO
-	smtp-out-065.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753678AbZHDADj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 20:03:39 -0400
-X-SynServer-TrustedSrc: 1
-X-SynServer-AuthUser: lars@laprican.de
-X-SynServer-PPID: 25114
-From: Lars-Peter Clausen <lars@metafoo.de>
-To: lrg@slimlogic.co.uk
-Cc: linux-kernel@vger.kernel.org, Lars-Peter Clausen <lars@metafoo.de>
-Subject: [PATCH] Regulator: Implement list_voltage for pcf50633 regulator driver.
-Date: Tue,  4 Aug 2009 02:03:52 +0200
-Message-Id: <1249344232-19784-1-git-send-email-lars@metafoo.de>
-X-Mailer: git-send-email 1.5.6.5
+	Mon, 3 Aug 2009 20:27:20 -0400
+Received: from mail.open.by ([193.232.92.17]:62730 "EHLO post.open.by"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753879AbZHDA1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 20:27:19 -0400
+X-SpamTest-Envelope-From: sergey.senozhatsky@mail.by
+X-SpamTest-Group-ID: 00000000
+X-SpamTest-Info: Profiles 9235 [Aug 3 2009]
+X-SpamTest-Info: {relay has no DNS name}
+X-SpamTest-Method: none
+X-SpamTest-Rate: 55
+X-SpamTest-SPF: softfail
+X-SpamTest-Status: Not detected
+X-SpamTest-Status-Extended: not_detected
+X-SpamTest-Version: SMTP-Filter Version 3.0.0 [0284], KAS30/Release
+Date: Tue, 4 Aug 2009 03:30:09 +0300
+From: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+To: Greg KH <greg@kroah.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: proper tty-ldisc refcounting (was Re: WARNING at:
+ drivers/char/tty_ldisc.c)
+Message-ID: <20090804003009.GA3121@localdomain.by>
+References: <20090802120120.GA3097@localdomain.by>
+ <alpine.LFD.2.01.0908020940530.3352@localhost.localdomain>
+ <20090802190514.GA3278@localdomain.by>
+ <alpine.LFD.2.01.0908021254580.3352@localhost.localdomain>
+ <87k51l9apo.fsf@devron.myhome.or.jp>
+ <alpine.LFD.2.01.0908021423490.3352@localhost.localdomain>
+ <20090802234851.3fd1ac2c@lxorguk.ukuu.org.uk>
+ <alpine.LFD.2.01.0908021654010.3352@localhost.localdomain>
+ <alpine.LFD.2.01.0908031047010.3208@localhost.localdomain>
+ <20090803181811.GA15848@kroah.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="vtzGhvizbBRQ85DL"
+Content-Disposition: inline
+In-Reply-To: <20090803181811.GA15848@kroah.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch implements list_voltage for the pcf50644 regulator driver.
-As the voltages are linearly scaled the code to convert register values to
-voltages can be reused and most of the code can be shared with get_voltage.
 
-Signed-off-by: Lars-Peter Clausen <lars@metafoo.de>
----
- drivers/regulator/pcf50633-regulator.c |   96 +++++++++++++++++++++-----------
- 1 files changed, 64 insertions(+), 32 deletions(-)
+--vtzGhvizbBRQ85DL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/regulator/pcf50633-regulator.c b/drivers/regulator/pcf50633-regulator.c
-index 8e14900..e19f451 100644
---- a/drivers/regulator/pcf50633-regulator.c
-+++ b/drivers/regulator/pcf50633-regulator.c
-@@ -24,11 +24,12 @@
- #include <linux/mfd/pcf50633/core.h>
- #include <linux/mfd/pcf50633/pmic.h>
- 
--#define PCF50633_REGULATOR(_name, _id) 		\
-+#define PCF50633_REGULATOR(_name, _id, _n) 		\
- 	{					\
- 		.name = _name, 			\
- 		.id = _id,			\
- 		.ops = &pcf50633_regulator_ops,	\
-+		.n_voltages = _n, \
- 		.type = REGULATOR_VOLTAGE, 	\
- 		.owner = THIS_MODULE, 		\
- 	}
-@@ -149,11 +150,42 @@ static int pcf50633_regulator_set_voltage(struct regulator_dev *rdev,
- 	return pcf50633_reg_write(pcf, regnr, volt_bits);
- }
- 
-+static int pcf50633_regulator_voltage_value(enum pcf50633_regulator_id id,
-+						u8 bits)
-+{
-+	int millivolts;
-+
-+	switch (id) {
-+	case PCF50633_REGULATOR_AUTO:
-+		millivolts = auto_voltage_value(bits);
-+		break;
-+	case PCF50633_REGULATOR_DOWN1:
-+		millivolts = down_voltage_value(bits);
-+		break;
-+	case PCF50633_REGULATOR_DOWN2:
-+		millivolts = down_voltage_value(bits);
-+		break;
-+	case PCF50633_REGULATOR_LDO1:
-+	case PCF50633_REGULATOR_LDO2:
-+	case PCF50633_REGULATOR_LDO3:
-+	case PCF50633_REGULATOR_LDO4:
-+	case PCF50633_REGULATOR_LDO5:
-+	case PCF50633_REGULATOR_LDO6:
-+	case PCF50633_REGULATOR_HCLDO:
-+		millivolts = ldo_voltage_value(bits);
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return millivolts * 1000;
-+}
-+
- static int pcf50633_regulator_get_voltage(struct regulator_dev *rdev)
- {
- 	struct pcf50633 *pcf;
--	int regulator_id, millivolts, volt_bits;
--	u8 regnr;
-+	int regulator_id;
-+	u8 volt_bits, regnr;
- 
- 	pcf = rdev_get_drvdata(rdev);
- 
-@@ -164,33 +196,32 @@ static int pcf50633_regulator_get_voltage(struct regulator_dev *rdev)
- 	regnr = pcf50633_regulator_registers[regulator_id];
- 
- 	volt_bits = pcf50633_reg_read(pcf, regnr);
--	if (volt_bits < 0)
--		return -1;
-+
-+	return pcf50633_regulator_voltage_value(regulator_id, volt_bits);
-+}
-+
-+static int pcf50633_regulator_list_voltage(struct regulator_dev *rdev,
-+						unsigned int index)
-+{
-+	struct pcf50633 *pcf;
-+	int regulator_id;
-+
-+	pcf = rdev_get_drvdata(rdev);;
-+
-+	regulator_id = rdev_get_id(rdev);
- 
- 	switch (regulator_id) {
- 	case PCF50633_REGULATOR_AUTO:
--		millivolts = auto_voltage_value(volt_bits);
--		break;
--	case PCF50633_REGULATOR_DOWN1:
--		millivolts = down_voltage_value(volt_bits);
--		break;
--	case PCF50633_REGULATOR_DOWN2:
--		millivolts = down_voltage_value(volt_bits);
-+		index += 0x2f;
- 		break;
--	case PCF50633_REGULATOR_LDO1:
--	case PCF50633_REGULATOR_LDO2:
--	case PCF50633_REGULATOR_LDO3:
--	case PCF50633_REGULATOR_LDO4:
--	case PCF50633_REGULATOR_LDO5:
--	case PCF50633_REGULATOR_LDO6:
- 	case PCF50633_REGULATOR_HCLDO:
--		millivolts = ldo_voltage_value(volt_bits);
-+		index += 0x01;
- 		break;
- 	default:
--		return -EINVAL;
-+		break;
- 	}
- 
--	return millivolts * 1000;
-+	return pcf50633_regulator_voltage_value(regulator_id, index);
- }
- 
- static int pcf50633_regulator_enable(struct regulator_dev *rdev)
-@@ -246,6 +277,7 @@ static int pcf50633_regulator_is_enabled(struct regulator_dev *rdev)
- static struct regulator_ops pcf50633_regulator_ops = {
- 	.set_voltage = pcf50633_regulator_set_voltage,
- 	.get_voltage = pcf50633_regulator_get_voltage,
-+	.list_voltage = pcf50633_regulator_list_voltage,
- 	.enable = pcf50633_regulator_enable,
- 	.disable = pcf50633_regulator_disable,
- 	.is_enabled = pcf50633_regulator_is_enabled,
-@@ -253,27 +285,27 @@ static struct regulator_ops pcf50633_regulator_ops = {
- 
- static struct regulator_desc regulators[] = {
- 	[PCF50633_REGULATOR_AUTO] =
--		PCF50633_REGULATOR("auto", PCF50633_REGULATOR_AUTO),
-+		PCF50633_REGULATOR("auto", PCF50633_REGULATOR_AUTO, 80),
- 	[PCF50633_REGULATOR_DOWN1] =
--		PCF50633_REGULATOR("down1", PCF50633_REGULATOR_DOWN1),
-+		PCF50633_REGULATOR("down1", PCF50633_REGULATOR_DOWN1, 95),
- 	[PCF50633_REGULATOR_DOWN2] =
--		PCF50633_REGULATOR("down2", PCF50633_REGULATOR_DOWN2),
-+		PCF50633_REGULATOR("down2", PCF50633_REGULATOR_DOWN2, 95),
- 	[PCF50633_REGULATOR_LDO1] =
--		PCF50633_REGULATOR("ldo1", PCF50633_REGULATOR_LDO1),
-+		PCF50633_REGULATOR("ldo1", PCF50633_REGULATOR_LDO1, 27),
- 	[PCF50633_REGULATOR_LDO2] =
--		PCF50633_REGULATOR("ldo2", PCF50633_REGULATOR_LDO2),
-+		PCF50633_REGULATOR("ldo2", PCF50633_REGULATOR_LDO2, 27),
- 	[PCF50633_REGULATOR_LDO3] =
--		PCF50633_REGULATOR("ldo3", PCF50633_REGULATOR_LDO3),
-+		PCF50633_REGULATOR("ldo3", PCF50633_REGULATOR_LDO3, 27),
- 	[PCF50633_REGULATOR_LDO4] =
--		PCF50633_REGULATOR("ldo4", PCF50633_REGULATOR_LDO4),
-+		PCF50633_REGULATOR("ldo4", PCF50633_REGULATOR_LDO4, 27),
- 	[PCF50633_REGULATOR_LDO5] =
--		PCF50633_REGULATOR("ldo5", PCF50633_REGULATOR_LDO5),
-+		PCF50633_REGULATOR("ldo5", PCF50633_REGULATOR_LDO5, 27),
- 	[PCF50633_REGULATOR_LDO6] =
--		PCF50633_REGULATOR("ldo6", PCF50633_REGULATOR_LDO6),
-+		PCF50633_REGULATOR("ldo6", PCF50633_REGULATOR_LDO6, 27),
- 	[PCF50633_REGULATOR_HCLDO] =
--		PCF50633_REGULATOR("hcldo", PCF50633_REGULATOR_HCLDO),
-+		PCF50633_REGULATOR("hcldo", PCF50633_REGULATOR_HCLDO, 26),
- 	[PCF50633_REGULATOR_MEMLDO] =
--		PCF50633_REGULATOR("memldo", PCF50633_REGULATOR_MEMLDO),
-+		PCF50633_REGULATOR("memldo", PCF50633_REGULATOR_MEMLDO, 0),
- };
- 
- static int __devinit pcf50633_regulator_probe(struct platform_device *pdev)
--- 
-1.5.6.5
+On (08/03/09 11:18), Greg KH wrote:
+> Ok, I'll queue them up if they pass Sergey's testing.
+>=20
+ =20
+patch -p1 < tty_patch_1_2=20
+patching file drivers/char/tty_ldisc.c
+patching file include/linux/tty_ldisc.h
+ =20
+patch -p1 < tty_patch_2_2=20
+patching file drivers/char/tty_ldisc.c
+ =20
+patch -p1 < tty_patch_3_2=20
+patching file drivers/char/tty_ldisc.c
+ =20
+patch -p1 < tty_patch_4_2
+patching file drivers/char/tty_ldisc.c
+ =20
+patch -p1 < tty_patch_5_2=20
+patching file drivers/char/tty_ldisc.c
+ =20
+Works for me (SMP/non-SMP x86 builds). Great job.
+ =20
+Tested-by: Sergey Senozhatsky <sergey.senozhatsky@mail.by>
+ =20
+ =20
 
+On (08/03/09 15:25), Linus Torvalds wrote:
+> Absolutely nothing to be sorry about - you've been an exemplary tester
+> with very low latency. Thanks a lot.
+Thanks a lot, Linus.
+
+
+        Sergey
+
+--vtzGhvizbBRQ85DL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iJwEAQECAAYFAkp3gREACgkQfKHnntdSXjQDXwP9G6KJ5IjwPhTU4a+PsUTue8jN
+8g9vcdiZeO88aHc+yjndH/pPTFUlZnSUEVslIlSeiZnC3Jp6nke+RISRedjGKFqs
+DAUWDrTQKQutsjSpiJlHmIEqB0Y8Asu5nxT9C315V7A795lit/QgL0dGfz+D+x/x
+2Sibzp86N0QEw5ChfRI=
+=8Dmi
+-----END PGP SIGNATURE-----
+
+--vtzGhvizbBRQ85DL--
