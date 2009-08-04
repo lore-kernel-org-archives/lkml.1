@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933084AbZHDRB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933092AbZHDRDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933084AbZHDRB7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 13:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932889AbZHDRB6
+	id S933092AbZHDRDg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 13:03:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932916AbZHDRDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 13:01:58 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:40827 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932851AbZHDRB5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 13:01:57 -0400
-Subject: Re: [PATCH]bluetooth: rfcomm_init bug fix
-From: Marcel Holtmann <marcel@holtmann.org>
-To: David Miller <davem@davemloft.net>
-Cc: hidave.darkstar@gmail.com, oliver@hartkopp.net, alan@lxorguk.ukuu.org.uk,
-       netdev@vger.kernel.org, linux-bluetooth@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090803.211136.00343745.davem@davemloft.net>
-References: <20090803.132924.151782729.davem@davemloft.net>
-	 <1249343666.3094.12.camel@localhost.localdomain>
-	 <20090803.191916.75688176.davem@davemloft.net>
-	 <20090803.211136.00343745.davem@davemloft.net>
-Content-Type: text/plain
-Date: Tue, 04 Aug 2009 10:01:46 -0700
-Message-Id: <1249405306.3094.18.camel@localhost.localdomain>
+	Tue, 4 Aug 2009 13:03:36 -0400
+Received: from sh.osrg.net ([192.16.179.4]:49534 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932888AbZHDRDf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 13:03:35 -0400
+Date: Wed, 05 Aug 2009 02:03:12 +0900 (JST)
+Message-Id: <20090805.020312.37207873.ryusuke@osrg.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Subject: [GIT PULL] nilfs2 fixes for 2.6.31-rc6
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 05 Aug 2009 02:03:12 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
+Hi Linus,
 
-> >> do you mind at least waiting for an ACK from my side. I haven't even
-> >> looked at the final patch.
-> > 
-> > Sure, I haven't pushed it out yet, so now's your chance :)
-> 
-> Grumble, I accidently pushed my net-2.6 queue out before you
-> had a chance to reply, sorry :-(
+please pull bug-fixes of nilfs from
 
-not a big deal. Just have to send a cleanup patch. The patch itself is
-fine, but from a style perspective it is different than everything else
-in the Bluetooth subsystem and I would have liked to fix that before
-pushing it. I wait with that for 2.6.32 since it is not important.
+ git://git.kernel.org/pub/scm/linux/kernel/git/ryusuke/nilfs2.git for-linus
 
-The other Dave, please send patches to linux-bluetooth only and lets
-follow the normal path to get them merged into Linus' tree. Skipping
-bluetooth-2.6 is not an option. You have to use the same process than
-everybody else.
+The following changes since commit ed680c4ad478d0fee9740f7d029087f181346564
+ Linus Torvalds (1):
+      Linux 2.6.31-rc5
 
-Regards
+Ryusuke Konishi (2):
+      nilfs2: fix oops due to inconsistent state in page with discrete b-tree nodes
+      nilfs2: fix missing unlock in error path of nilfs_mdt_write_page
 
-Marcel
+ fs/nilfs2/mdt.c     |    4 +++-
+ fs/nilfs2/segment.c |   16 +++++++++++++++-
+ 2 files changed, 18 insertions(+), 2 deletions(-)
+--
 
+The "nilfs2: fix oops due to inconsistent state in page with discrete
+b-tree nodes" fixes a reported kernel oops which can happen if block
+size is smaller than page size.
 
+The "nilfs2: fix missing unlock in error path of nilfs_mdt_write_page"
+adds a missing unlock operation.
+
+Thanks,
+Ryusuke Konishi
