@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932406AbZHDELa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753720AbZHDEVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932406AbZHDELa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 00:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZHDEL3
+	id S1753720AbZHDEVE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 00:21:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbZHDEVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 00:11:29 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52939
+	Tue, 4 Aug 2009 00:21:03 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38473
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751609AbZHDEL2 (ORCPT
+	by vger.kernel.org with ESMTP id S1750797AbZHDEVC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 00:11:28 -0400
-Date: Mon, 03 Aug 2009 21:11:36 -0700 (PDT)
-Message-Id: <20090803.211136.00343745.davem@davemloft.net>
-To: marcel@holtmann.org
-Cc: hidave.darkstar@gmail.com, oliver@hartkopp.net, alan@lxorguk.ukuu.org.uk,
-       netdev@vger.kernel.org, linux-bluetooth@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]bluetooth: rfcomm_init bug fix
+	Tue, 4 Aug 2009 00:21:02 -0400
+Date: Mon, 03 Aug 2009 21:21:10 -0700 (PDT)
+Message-Id: <20090803.212110.104970698.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: a.p.zijlstra@chello.nl, joerg.roedel@amd.com,
+       fujita.tomonori@lab.ntt.co.jp, reif@earthlink.net,
+       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+       x86@kernel.org, tony.luck@intel.com, akpm@linux-foundation.org
+Subject: Re: [PATCH v2 0/8] sparc: use asm-generic/dma-mapping-common.h and
+ pci-dma-compat.h
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090803.191916.75688176.davem@davemloft.net>
-References: <20090803.132924.151782729.davem@davemloft.net>
-	<1249343666.3094.12.camel@localhost.localdomain>
-	<20090803.191916.75688176.davem@davemloft.net>
+In-Reply-To: <20090803055441.GA19428@elte.hu>
+References: <20090718110620.GC27287@elte.hu>
+	<20090802.202135.63875488.davem@davemloft.net>
+	<20090803055441.GA19428@elte.hu>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -30,16 +32,12 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Mon, 03 Aug 2009 19:19:16 -0700 (PDT)
+From: Ingo Molnar <mingo@elte.hu>
+Date: Mon, 3 Aug 2009 07:54:41 +0200
 
-> From: Marcel Holtmann <marcel@holtmann.org>
-> Date: Mon, 03 Aug 2009 16:54:26 -0700
-> 
->> do you mind at least waiting for an ACK from my side. I haven't even
->> looked at the final patch.
-> 
-> Sure, I haven't pushed it out yet, so now's your chance :)
+> So that it can be freed. It's also placed next to the regular init 
+> section to not create too many holes. It also keeps the 'kernel text 
+> area' continuous and things like core_kernel_text() & co still work 
+> fine.
 
-Grumble, I accidently pushed my net-2.6 queue out before you
-had a chance to reply, sorry :-(
+Ok, I'll look into doing similar on sparc.
