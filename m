@@ -1,151 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932840AbZHDO5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932810AbZHDO7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932840AbZHDO5m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 10:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932291AbZHDO5V
+	id S932810AbZHDO7T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 10:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932291AbZHDO7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 10:57:21 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52390 "EHLO mx2.redhat.com"
+	Tue, 4 Aug 2009 10:59:18 -0400
+Received: from gw1.transmode.se ([213.115.205.20]:48711 "EHLO gw1.transmode.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932757AbZHDO5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 10:57:18 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 5/6] KEYS: Make /proc/keys use keyid not numread as file
-	position
-To: torvalds@osdl.org, akpm@linux-foundation.org, jmorris@namei.org
-Cc: serue@us.ibm.com, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       David Howells <dhowells@redhat.com>
-Date: Tue, 04 Aug 2009 15:55:51 +0100
-Message-ID: <20090804145551.17676.95701.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20090804145530.17676.24656.stgit@warthog.procyon.org.uk>
-References: <20090804145530.17676.24656.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	id S932290AbZHDO7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 10:59:17 -0400
+In-Reply-To: <20090804142250.GA17398@oksana.dev.rtsoft.ru>
+References: <20090713222005.GA19859@oksana.dev.rtsoft.ru> <20090713151911.GA28114@oksana.dev.rtsoft.ru> <OFF188389D.68E638A2-ONC12575F2.00568C5B-C12575F2.0057FC95@transmode.se> <20090713173455.GA9866@oksana.dev.rtsoft.ru> <OF9378E65D.FBBCCFD5-ONC12575F2.006B28D5-C12575F2.006DDAE5@transmode.se> <OF613F53BF.1FD77EDB-ONC12575F3.00753535-C12575F3.00753537@transmode.se> <20090714220931.GA11378@oksana.dev.rtsoft.ru> <OF9A2BDEDE.DC0DE0D4-ONC1257608.004A7A59-C1257608.004AF3BF@transmode.se> <20090804142250.GA17398@oksana.dev.rtsoft.ru>
+Subject: Re: Ang: Re: [PATCH 0/2] Setting GPIOs simultaneously
+X-KeepSent: C7025845:8BE60C98-C1257608:0051D318;
+ type=4; name=$KeepSent
+To: avorontsov@ru.mvista.com
+Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+X-Mailer: Lotus Notes Release 8.5 December 05, 2008
+Message-ID: <OFC7025845.8BE60C98-ONC1257608.0051D318-C1257608.00525388@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Tue, 4 Aug 2009 16:59:13 +0200
+X-MIMETrack: Serialize by Router on sesr04/Transmode(Release 8.5 HF407|May 07, 2009) at
+ 2009-08-04 16:59:15
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Serge E. Hallyn <serue@us.ibm.com>
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 04/08/2009 16:22:50:
+>
+> On Tue, Aug 04, 2009 at 03:38:40PM +0200, Joakim Tjernlund wrote:
+> > Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 15/07/2009 00:09:31:
+> > >
+> > > On Tue, Jul 14, 2009 at 11:20:13PM +0200, Joakim Tjernlund wrote:
+> > > [...]
+> > > > >But any users of the legacy bindings should be in-tree.
+> > > >
+> > > > ehh, it was working until you made it OF only. Why do call the native
+> > > > way legacy?  It is the method all non OF arch uses.
+> > >
+> > > It's legacy because there are no in-tree users anymore. Nowadays
+> > > we're trying to pass all needed information via OF, and we're
+> > > trying to avoid ugly platform-dependant hacks. Your SPI scheme
+> > > can be easily described via OF, but sure, it's hard to implement
+> > > it with the current SPI/OF subsystem.
+> >
+> > Sorry for the long delay, I have been on vaction and been busy with other stuff.
+> >
+> > Tell me, how does this new OF SPI device scheme work out if you want
+> > to use the bitbanged SPI driver?
+>
+> spi-controller {
+>    ...
+>    compatible = "generic-bitbang-spi";
+>    gpios = <GPIO_CLK GPIO_MOSI GPIO_MISO>;
+>    spi,chip-select-machines = <&gpio_csm &board_csm>;
+>
+>    gpio_csm: chip-select-machine {
+>       #address-cells = <1>;
+>       #size-cells = <0>;
+>       compatible = "generic-gpio-csm";
+>       gpios = <GPIO_CS1 GPIO_CS2>;
+>
+>       touchscreen@0 {
+>          reg = <0>; /* using GPIO CS1 */
+>       };
+>
+>       eeprom@1 {
+>          reg = <1>; /* using GPIO CS2 */
+>       };
+>    };
+> };
+>
+> localbus {
+>    ...
+>    board_csm: chip-select-machine {
+>       #address-cells = <1>;
+>       #size-cells = <0>;
+>       compatibe = "board-specific-csm";
+>
+>       light-sensor@0 {
+>          reg = <0>; /* using board-specific "CS3" */
+>       };
+>
+>       battery@1 {
+>          reg = <1>; /* using board-specific "CS4" */
+>       };
+>    };
+> };
 
-Make the file position maintained by /proc/keys represent the ID of the key
-just read rather than the number of keys read.  This should make it faster to
-perform a lookup as we don't have to scan the key ID tree from the beginning to
-find the current position.
+hmm, this looks promising. Can I write my own board-specific-csm
+and attach it to the SPI CS engine? I don't quite
+se how, the 8xxx SPI driver only looks for gpio functions.
+Perhaps this is something that you are working on?
 
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- security/keys/proc.c |   62 +++++++++++++++++++++++++++++++++-----------------
- 1 files changed, 41 insertions(+), 21 deletions(-)
-
-
-diff --git a/security/keys/proc.c b/security/keys/proc.c
-index 769f9bd..643ecf0 100644
---- a/security/keys/proc.c
-+++ b/security/keys/proc.c
-@@ -91,8 +91,9 @@ __initcall(key_proc_init);
-  */
- #ifdef CONFIG_KEYS_DEBUG_PROC_KEYS
- 
--static struct rb_node *__key_serial_next(struct rb_node *n)
-+static struct rb_node *key_serial_next(struct rb_node *n)
- {
-+	n = rb_next(n);
- 	while (n) {
- 		struct key *key = rb_entry(n, struct key, serial_node);
- 		if (key->user->user_ns == current_user_ns())
-@@ -102,45 +103,64 @@ static struct rb_node *__key_serial_next(struct rb_node *n)
- 	return n;
- }
- 
--static struct rb_node *key_serial_next(struct rb_node *n)
-+static int proc_keys_open(struct inode *inode, struct file *file)
- {
--	return __key_serial_next(rb_next(n));
-+	return seq_open(file, &proc_keys_ops);
- }
- 
--static struct rb_node *key_serial_first(struct rb_root *r)
-+static struct key *find_ge_key(key_serial_t id)
- {
--	struct rb_node *n = rb_first(r);
--	return __key_serial_next(n);
--}
-+	struct rb_node *n = key_serial_tree.rb_node;
-+	struct key *minkey = NULL;
- 
--static int proc_keys_open(struct inode *inode, struct file *file)
--{
--	return seq_open(file, &proc_keys_ops);
-+	while (n) {
-+		struct key *key = rb_entry(n, struct key, serial_node);
-+		if (id < key->serial) {
-+			if (!minkey || minkey->serial > key->serial)
-+				minkey = key;
-+			n = n->rb_left;
-+		} else if (id > key->serial) {
-+			n = n->rb_right;
-+		} else {
-+			minkey = key;
-+			break;
-+		}
-+		key = NULL;
-+	}
- 
-+	return minkey;
- }
- 
- static void *proc_keys_start(struct seq_file *p, loff_t *_pos)
- {
--	struct rb_node *_p;
--	loff_t pos = *_pos;
-+	key_serial_t pos = *_pos;
-+	struct key *key;
- 
- 	spin_lock(&key_serial_lock);
- 
--	_p = key_serial_first(&key_serial_tree);
--	while (pos > 0 && _p) {
--		pos--;
--		_p = key_serial_next(_p);
--	}
--
--	return _p;
-+	if (*_pos > INT_MAX)
-+		return NULL;
-+	key = find_ge_key(pos);
-+	if (!key)
-+		return NULL;
-+	*_pos = key->serial;
-+	return &key->serial_node;
-+}
- 
-+static inline key_serial_t key_node_serial(struct rb_node *n)
-+{
-+	struct key *key = rb_entry(n, struct key, serial_node);
-+	return key->serial;
- }
- 
- static void *proc_keys_next(struct seq_file *p, void *v, loff_t *_pos)
- {
--	(*_pos)++;
--	return key_serial_next((struct rb_node *) v);
-+	struct rb_node *n;
- 
-+	n = key_serial_next(v);
-+	if (n)
-+		*_pos = key_node_serial(n);
-+	return n;
- }
- 
- static void proc_keys_stop(struct seq_file *p, void *v)
+       Jocke
 
