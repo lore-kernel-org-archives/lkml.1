@@ -1,63 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932701AbZHDKA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932761AbZHDKBO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932701AbZHDKA7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 06:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932630AbZHDKA7
+	id S932761AbZHDKBO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 06:01:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932725AbZHDKBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 06:00:59 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36986 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932606AbZHDKA6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 06:00:58 -0400
-Date: Tue, 4 Aug 2009 12:00:51 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: linux-arm-kernel-bounces@lists.arm.linux.org.uk,
-       kernel list <linux-kernel@vger.kernel.org>
-Cc: Russell King <rmk@arm.linux.org.uk>
-Subject: linux-arm-kernel useless for development (was Re: Your message to
-	Linux-arm-kernel awaits moderator approval)
-Message-ID: <20090804100051.GA17106@elf.ucw.cz>
-References: <mailman.3653.1249217530.31043.linux-arm-kernel@lists.arm.linux.org.uk>
+	Tue, 4 Aug 2009 06:01:13 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56973 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932708AbZHDKBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 06:01:12 -0400
+Message-ID: <4A780828.4090203@redhat.com>
+Date: Tue, 04 Aug 2009 13:06:32 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <mailman.3653.1249217530.31043.linux-arm-kernel@lists.arm.linux.org.uk>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: Gleb Natapov <gleb@redhat.com>, davidel@xmailserver.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH-RFC 2/2] eventfd: EFD_STATE flag
+References: <20090803151426.GA3630@redhat.com> <4A770260.5000507@redhat.com> <20090803165708.GB3630@redhat.com> <4A77F6EF.8010002@redhat.com> <20090804085406.GA3311@redhat.com> <4A77FCB8.1000205@redhat.com> <20090804091755.GD4764@redhat.com> <4A77FE9D.3020505@redhat.com> <20090804092342.GE4764@redhat.com> <4A77FFB5.4060201@redhat.com> <20090804092621.GB3185@redhat.com>
+In-Reply-To: <20090804092621.GB3185@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/04/2009 12:26 PM, Michael S. Tsirkin wrote:
+> How is it an exception? It seems that one reader get the counter,
+> others will block until the next write.
+>    
 
-Please fix your mailinglist.
-
-You claimed that it is possible to crosspost between lkml and lakml,
-yet the lakml does everything to prevent that -- even in case as
-simple as reporting that regression that affects arm.
-
-Please fix it.
-
-								Pavel
-
-On Sun 2009-08-02 13:52:10, linux-arm-kernel-bounces@lists.arm.linux.org.uk wrote:
-> Your mail to 'Linux-arm-kernel' with the subject
-> 
->     Re: [Bug #13833] Kernel Oops when trying to suspend with ubifs
-> mounted on block2mtd mtd device
-> 
-> Is being held until the list moderator can review it for approval.
-> 
-> The reason it is being held:
-> 
->     Too many recipients to the message
-> 
-> Either the message will get posted to the list, or you will receive
-> notification of the moderator's decision.  If you would like to cancel
-> this posting, please visit the following URL:
-> 
->     http://lists.arm.linux.org.uk/mailman/confirm/linux-arm-kernel/f8f1b8bf951193aa673ceab3235d78c807c858da
+Right.  I retract my comments....
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+error compiling committee.c: too many arguments to function
+
