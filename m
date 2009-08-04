@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933329AbZHDTES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933335AbZHDTHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933329AbZHDTES (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 15:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933136AbZHDTES
+	id S933335AbZHDTHi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 15:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933162AbZHDTHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 15:04:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42842 "EHLO mx3.mail.elte.hu"
+	Tue, 4 Aug 2009 15:07:37 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43166 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933123AbZHDTER (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 15:04:17 -0400
-Date: Tue, 4 Aug 2009 21:04:09 +0200
+	id S933136AbZHDTHg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 15:07:36 -0400
+Date: Tue, 4 Aug 2009 21:07:27 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [GIT PULL] timer fix
-Message-ID: <20090804190409.GA980@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [GIT PULL] scheduler fixes
+Message-ID: <20090804190727.GA1318@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -33,44 +33,113 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest timers-fixes-for-linus git tree from:
+Please pull the latest sched-fixes-for-linus git tree from:
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git timers-fixes-for-linus
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
 
  Thanks,
 
 	Ingo
 
 ------------------>
-Hiroshi Shimamoto (1):
-      posix-timers: Fix oops in clock_nanosleep() with CLOCK_MONOTONIC_RAW
+Gregory Haskins (1):
+      sched: Fix race in cpupri introduced by cpumask_var changes
+
+Peter Zijlstra (1):
+      sched: Fix latencytop and sleep profiling vs group scheduling
 
 
- kernel/posix-timers.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ kernel/sched_cpupri.c |   15 ++++++++++++++-
+ kernel/sched_fair.c   |   32 +++++++++++++++++++-------------
+ 2 files changed, 33 insertions(+), 14 deletions(-)
 
-diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
-index 052ec4d..d089d05 100644
---- a/kernel/posix-timers.c
-+++ b/kernel/posix-timers.c
-@@ -202,6 +202,12 @@ static int no_timer_create(struct k_itimer *new_timer)
- 	return -EOPNOTSUPP;
- }
+diff --git a/kernel/sched_cpupri.c b/kernel/sched_cpupri.c
+index e6c2517..d014efb 100644
+--- a/kernel/sched_cpupri.c
++++ b/kernel/sched_cpupri.c
+@@ -81,8 +81,21 @@ int cpupri_find(struct cpupri *cp, struct task_struct *p,
+ 		if (cpumask_any_and(&p->cpus_allowed, vec->mask) >= nr_cpu_ids)
+ 			continue;
  
-+static int no_nsleep(const clockid_t which_clock, int flags,
-+		     struct timespec *tsave, struct timespec __user *rmtp)
-+{
-+	return -EOPNOTSUPP;
-+}
+-		if (lowest_mask)
++		if (lowest_mask) {
+ 			cpumask_and(lowest_mask, &p->cpus_allowed, vec->mask);
 +
- /*
-  * Return nonzero if we know a priori this clockid_t value is bogus.
-  */
-@@ -254,6 +260,7 @@ static __init int init_posix_timers(void)
- 		.clock_get = posix_get_monotonic_raw,
- 		.clock_set = do_posix_clock_nosettime,
- 		.timer_create = no_timer_create,
-+		.nsleep = no_nsleep,
- 	};
++			/*
++			 * We have to ensure that we have at least one bit
++			 * still set in the array, since the map could have
++			 * been concurrently emptied between the first and
++			 * second reads of vec->mask.  If we hit this
++			 * condition, simply act as though we never hit this
++			 * priority level and continue on.
++			 */
++			if (cpumask_any(lowest_mask) >= nr_cpu_ids)
++				continue;
++		}
++
+ 		return 1;
+ 	}
  
- 	register_posix_clock(CLOCK_REALTIME, &clock_realtime);
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 9ffb2b2..652e8bd 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -611,9 +611,13 @@ account_entity_dequeue(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ static void enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ {
+ #ifdef CONFIG_SCHEDSTATS
++	struct task_struct *tsk = NULL;
++
++	if (entity_is_task(se))
++		tsk = task_of(se);
++
+ 	if (se->sleep_start) {
+ 		u64 delta = rq_of(cfs_rq)->clock - se->sleep_start;
+-		struct task_struct *tsk = task_of(se);
+ 
+ 		if ((s64)delta < 0)
+ 			delta = 0;
+@@ -624,11 +628,11 @@ static void enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ 		se->sleep_start = 0;
+ 		se->sum_sleep_runtime += delta;
+ 
+-		account_scheduler_latency(tsk, delta >> 10, 1);
++		if (tsk)
++			account_scheduler_latency(tsk, delta >> 10, 1);
+ 	}
+ 	if (se->block_start) {
+ 		u64 delta = rq_of(cfs_rq)->clock - se->block_start;
+-		struct task_struct *tsk = task_of(se);
+ 
+ 		if ((s64)delta < 0)
+ 			delta = 0;
+@@ -639,17 +643,19 @@ static void enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ 		se->block_start = 0;
+ 		se->sum_sleep_runtime += delta;
+ 
+-		/*
+-		 * Blocking time is in units of nanosecs, so shift by 20 to
+-		 * get a milliseconds-range estimation of the amount of
+-		 * time that the task spent sleeping:
+-		 */
+-		if (unlikely(prof_on == SLEEP_PROFILING)) {
+-
+-			profile_hits(SLEEP_PROFILING, (void *)get_wchan(tsk),
+-				     delta >> 20);
++		if (tsk) {
++			/*
++			 * Blocking time is in units of nanosecs, so shift by
++			 * 20 to get a milliseconds-range estimation of the
++			 * amount of time that the task spent sleeping:
++			 */
++			if (unlikely(prof_on == SLEEP_PROFILING)) {
++				profile_hits(SLEEP_PROFILING,
++						(void *)get_wchan(tsk),
++						delta >> 20);
++			}
++			account_scheduler_latency(tsk, delta >> 10, 0);
+ 		}
+-		account_scheduler_latency(tsk, delta >> 10, 0);
+ 	}
+ #endif
+ }
