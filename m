@@ -1,142 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932324AbZHDUKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbZHDULn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932324AbZHDUKf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 16:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbZHDUKe
+	id S1754807AbZHDULn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 16:11:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753651AbZHDULn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 16:10:34 -0400
-Received: from mailrelay010.isp.belgacom.be ([195.238.6.177]:35304 "EHLO
-	mailrelay010.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752470AbZHDUKe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 16:10:34 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAA8xeEpR9dJI/2dsb2JhbADVSwmEDwU
-Date: Tue, 4 Aug 2009 22:10:32 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Wan ZongShun <mcuos.com@gmail.com>
-Cc: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add watchdog driver for w90p910
-Message-ID: <20090804201032.GB30892@infomag.iguana.be>
-References: <4A69CE00.10401@gmail.com>
+	Tue, 4 Aug 2009 16:11:43 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45078 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753089AbZHDULm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 16:11:42 -0400
+Date: Tue, 4 Aug 2009 22:11:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Robert Richter <robert.richter@amd.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 0/26] oprofile: Performance counter multiplexing
+Message-ID: <20090804201109.GA21386@elte.hu>
+References: <1248800846-25422-1-git-send-email-robert.richter@amd.com> <20090803112220.GA22936@elte.hu> <20090803072522.1d90f15c@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A69CE00.10401@gmail.com>
+In-Reply-To: <20090803072522.1d90f15c@infradead.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Wan,
 
-I reviewed your code and have some comments and questions.
+* Arjan van de Ven <arjan@infradead.org> wrote:
 
-...
+> On Mon, 3 Aug 2009 13:22:20 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > This new oprofile multiplexing mechanism really overlaps the PMU 
+> > abstractions that perfcounters already provide, and i disagree 
+> > with this general direction. The code you wrote is clean though 
+> > so i've
+> 
+> is there any way that the oprofile interfaces can be written on 
+> top of the low level perf infrastructure?
 
-> +struct w90p910_wdt {
-> +	struct resource  *res;
-> +	struct clk	 *wdt_clock;
-> +	struct platform_device *pdev;
-> +	unsigned int     open_lock;
-> +	unsigned int     wdt_irq;
-> +	void __iomem	 *wdt_base;
-> +	char		 expect_close;
-> +	spinlock_t       wdt_lock;
-> +};
+Everything 'can' be done - the question is, is that the best 
+approach? The technically best interface to utilize perfcounters is 
+not to whack it into the oprofile kernel code, but to minimally 
+update the oprofile user-space code (the sample collection daemon) 
+to use the sys_perf_counter_open() system call.
 
-Where is the spinlock initialized?
+It is by far the most elegant solution and needs no kernel changes 
+at all:
 
-...
+The oprofile daemon should open percpu sampling counters and create 
+oprofile-compatible sample files. That way the rest of the oprofile 
+user-space does not have to be touched at all. The raw event ids 
+that oprofile knows about can be used in perfcounter parameters 
+directly.
 
-> +static irqreturn_t w90p910_wdt_irq(int irq, void *dev_id)
-> +{
-> +	w90p910_wdt_keepalive();
-> +	return IRQ_HANDLED;
-> +}
+In such a mode of operation both oprofilefs and the dcookies syscall 
+can be omitted completely - all of the kernel side oprofile code 
+becomes mooted and pushed into legacy mode.
 
-How does the interrupt work? what does the watchdog do when it times out?
-(Is there a datasheet available somewhere?)
+Is there any reason or oprofile property that makes this impossible 
+or undesirable to do?
 
-...
-
-> +static int w90p910_wdt_settimeout(int new_time_level)
-> +{
-> +	unsigned int val;
-> +
-> +	if ((new_time_level < 0) || (new_time_level > WDT_MAX_TIME_LEVEL))
-> +		return -EINVAL;
-> +
-> +	val = __raw_readl(w90p910_wdt->wdt_base + REG_WTCR);
-> +	val &= ~WTIS;
-> +	val |= new_time_level;
-
-Shouldn't this be val |= (new_time_level << 0x04); ?
-The read-write cyclus to REG_WTCR should also be guarded with a spinlock.
-Can you incorporate the call to w90p910_wdt_start() in the ioctl code into this function?
-
-...
-
-> +static ssize_t w90p910_wdt_write(struct file *file, const char *data,
-> +						size_t len, loff_t *ppos)
-
-should be: ..., const char __user *data, ...
-
-...
-
-> +static int __devinit w90p910wdt_probe(struct platform_device *pdev)
-> +{
-> +	int ret;
-> +
-> +	w90p910_wdt = kzalloc(sizeof(struct w90p910_wdt), GFP_KERNEL);
-> +	if (!w90p910_wdt)
-> +		return -ENOMEM;
-> +
-> +	w90p910_wdt->pdev = pdev;
-> +
-> +	w90p910_wdt->res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	if (w90p910_wdt->res == NULL) {
-> +		dev_err(&pdev->dev, "no memory resource specified\n");
-> +		ret = -ENOENT;
-> +		goto err_get;
-> +	}
-> +
-> +	if (!request_mem_region(w90p910_wdt->res->start,
-> +				resource_size(w90p910_wdt->res), pdev->name)) {
-> +		dev_err(&pdev->dev, "failed to get memory region\n");
-> +		ret = -ENOENT;
-> +		goto err_req;
-
-This should be: goto err_get;
-
-...
-
-> +
-> +static int __devexit w90p910wdt_remove(struct platform_device *pdev)
-> +{
-
-The misc_deregister(&w90p910wdt_miscdev); should go first. We don't want userspace interactivity when we clean up all reservations.
-
-> +	free_irq(w90p910_wdt->wdt_irq, NULL);
-> +
-> +	clk_disable(w90p910_wdt->wdt_clock);
-> +	clk_put(w90p910_wdt->wdt_clock);
-> +
-> +	iounmap(w90p910_wdt->wdt_base);
-> +
-> +	release_mem_region(w90p910_wdt->res->start,
-> +					resource_size(w90p910_wdt->res));
-> +
-> +	kfree(w90p910_wdt);
-> +
-> +	misc_deregister(&w90p910wdt_miscdev);
-
-see comment about misc_deregister above.
-
-For the rest the code looks good to me.
-
-Kind regards,
-Wim.
-
+	Ingo
