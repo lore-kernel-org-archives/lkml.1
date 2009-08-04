@@ -1,73 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933124AbZHDRZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933151AbZHDR31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933124AbZHDRZd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 13:25:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933100AbZHDRZc
+	id S933151AbZHDR31 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 13:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933128AbZHDR31
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 13:25:32 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:55569 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932923AbZHDRZb (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 13:25:31 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Greg KH <greg@kroah.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Zhang Rui <rui.zhang@intel.com>,
-       linux-acpi <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Richard Purdie <rpurdie@rpsys.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH 0/3] Generic sysfs support for ACPI ALS and other ALS devices
-In-Reply-To: Your message of "Tue, 04 Aug 2009 08:10:42 PDT."
-             <20090804151042.GA20276@kroah.com>
-From: Valdis.Kletnieks@vt.edu
-References: <1249290657.2670.250.camel@rzhang-dt> <20090804132129.GH18974@elf.ucw.cz>
-            <20090804151042.GA20276@kroah.com>
+	Tue, 4 Aug 2009 13:29:27 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:46563 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933127AbZHDR30 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 13:29:26 -0400
+Date: Tue, 4 Aug 2009 19:29:24 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Laurent Vivier <Laurent.Vivier@bull.net>, Ingo Molnar <mingo@elte.hu>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH 0/4] Virtual Machine Time Accounting
+Message-ID: <20090804192924.217930fc@skybase>
+In-Reply-To: <1249403202.4762.12.camel@laptop>
+References: <46C99371.7070705@bull.net>
+	<1249395398.7924.223.camel@twins>
+	<20090804170747.11801f0a@skybase>
+	<1249403202.4762.12.camel@laptop>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1249406664_4151P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Tue, 04 Aug 2009 13:24:24 -0400
-Message-ID: <19631.1249406664@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1249406664_4151P
-Content-Type: text/plain; charset=us-ascii
+On Tue, 04 Aug 2009 18:26:41 +0200
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-On Tue, 04 Aug 2009 08:10:42 PDT, Greg KH said:
-> On Tue, Aug 04, 2009 at 03:21:29PM +0200, Pavel Machek wrote:
-> > On Mon 2009-08-03 17:10:57, Zhang Rui wrote:
-
-> > > 	cat /sys/class/als/als0/mappings
-> > > 	???Illuminance	Adjustment
-> > > 	          0	       70
-> > > 	         10	       73
-> > > 	         80	       85
-> > > 	        300	      100
-> > > 	       1000	      150
+> On Tue, 2009-08-04 at 17:07 +0200, Martin Schwidefsky wrote:
+> > On Tue, 04 Aug 2009 16:16:38 +0200
+> > Peter Zijlstra <peterz@infradead.org> wrote:
 > > 
-> > There's one value per file for sysfs... You should definitely have the
-> > header. 
+> > > These patches never seem to have made it onto LKML?!
+> > > 
+> > > On Mon, 2007-08-20 at 15:13 +0200, Laurent Vivier wrote:
+> > > > The aim of these four patches is to introduce Virtual Machine time accounting.
+> > > > 
+> > > > _Ingo_, as these patches modify files of the scheduler, could you have a look to
+> > > > them, please ?
+> > > > 
+> > > > [PATCH 1/4] as recent CPUs introduce a third running state, after "user" and
+> > > > "system", we need a new field, "guest", in cpustat to store the time used by
+> > > > the CPU to run virtual CPU. Modify /proc/stat to display this new field.
+> > > > 
+> > > > [PATCH 2/4] like for cpustat, introduce the "gtime" (guest time of the task) and
+> > > > "cgtime" (guest time of the task children) fields for the
+> > > > tasks. Modify signal_struct and task_struct. Modify /proc/<pid>/stat to display
+> > > > these new fields.
+> > > > 
+> > > > [PATCH 3/4] modify account_system_time() to add cputime to cpustat->guest if we
+> > > > are running a VCPU. We add this cputime to  cpustat->user instead of
+> > > > cpustat->system because this part of KVM code is in fact user code although it
+> > > > is executed in the kernel. We duplicate VCPU time between guest and user to
+> > > > allow an unmodified "top(1)" to display correct value. A modified "top(1)" is
+> > > > able to display good cpu user time and cpu guest time by subtracting cpu guest
+> > > > time from cpu user time. Update "gtime" and "cgtime" in signal_struct and
+> > > > task_struct accordingly.
+> > > > 
+> > > > [PATCH 4/4] Modify KVM to update guest time accounting.
+> > > 
+> > > Isn't this exactly what CONFIG_VIRT_CPU_ACCOUNTING is about?
+> > 
+> > Not really, CONFIG_VIRT_CPU_ACCOUNT is a mechanism to sort out the
+> > steal time in the >guest< and to increase the precision of the cpu
+> > accounting values in general. The patches from Laurent improve the
+> > code in the >host< that sorts out guest time vs. system time.
 > 
-> No, no "header", just don't do this, it's not allowed. Again,
-> one-value-per-sysfs-file is the rule, please do not violate it.
+> Ah, that wasn't clear, it keeps mentioning guest all over the place ;-)
+> 
+> So its going to split user time into user and guest. Does that really
+> make sense? For the host kernel it really is just another user process,
+> no?
 
-What's the intended sysfs solution here, then? Make 'mappings' a directory,
-and populate it with files called 0, 10, 80, 300, 1000, each with one number
-in them?
+The code (at least in parts) is already upstream. Look at the
+account_guest_time function:
 
---==_Exmh_1249406664_4151P
-Content-Type: application/pgp-signature
+static void account_guest_time(struct task_struct *p, cputime_t cputime,
+                               cputime_t cputime_scaled)
+{
+        cputime64_t tmp;
+        struct cpu_usage_stat *cpustat = &kstat_this_cpu.cpustat;
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+        tmp = cputime_to_cputime64(cputime);
 
-iD8DBQFKeG7IcC3lWbTT17ARAikQAJ9glOcEz+mjAUyhqyrpCnwzeceSCgCg5K00
-4mFzLaxtgxRvJascRwKWlyw=
-=Ko4l
------END PGP SIGNATURE-----
+        /* Add guest time to process. */
+        p->utime = cputime_add(p->utime, cputime);
+        p->utimescaled = cputime_add(p->utimescaled, cputime_scaled);
+        account_group_user_time(p, cputime);
+        p->gtime = cputime_add(p->gtime, cputime);
 
---==_Exmh_1249406664_4151P--
+        /* Add guest time to cpustat. */
+        cpustat->user = cputime64_add(cpustat->user, tmp);
+        cpustat->guest = cputime64_add(cpustat->guest, tmp);
+}
+
+The cpu time for a guest is added to p->utime AND p->gtime. That is
+done not to break existing tools that know nothing about guest time.
+A guest time aware tool can subtract the p->gtime from p->utime to
+get the time spent by the process outside of the guest context.
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
