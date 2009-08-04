@@ -1,64 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932786AbZHDKkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932782AbZHDKnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932786AbZHDKkl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 06:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932698AbZHDKkl
+	id S932782AbZHDKnr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 06:43:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932693AbZHDKnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 06:40:41 -0400
-Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:57030 "EHLO
-	TX2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932674AbZHDKkk convert rfc822-to-8bit (ORCPT
+	Tue, 4 Aug 2009 06:43:46 -0400
+Received: from aeryn.fluff.org.uk ([87.194.8.8]:37405 "EHLO
+	kira.home.fluff.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932638AbZHDKnq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 06:40:40 -0400
-X-SpamScore: -12
-X-BigFish: VPS-12(z21eWzzz1202hzzz32i6bh203h43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KNULN3-04-YT9-01
-Date: Tue, 4 Aug 2009 12:40:14 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Doug Thompson <norsk5@yahoo.com>, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] AMD64 EDAC fixes for 2.6.31-rc6
-Message-ID: <20090804104014.GA1870@aftab>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-OriginalArrivalTime: 04 Aug 2009 10:40:15.0524 (UTC) FILETIME=[F3E74640:01CA14EF]
-Content-Transfer-Encoding: 8BIT
+	Tue, 4 Aug 2009 06:43:46 -0400
+Subject: gpiolib: add export/unexport by gpio name
+Message-Id: <20090804104328.770414513@fluff.org>
+User-Agent: quilt/0.46-1
+From: ben@fluff.org
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Cc: David Brownell <dbrownell@users.sourceforge.net>
+Content-Disposition: inline; filename=gpio-export-by-name.patch
+Date: Tue, 04 Aug 2009 11:43:28 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Add the facility to export/unexport a gpio by the name assigned to it
+as well as the number.
 
-please pull the last two AMD64 EDAC fixes for .31:
+Signed-off-by: Ben Dooks <ben@simtec.co.uk>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
 
-The following changes since commit ed680c4ad478d0fee9740f7d029087f181346564:
-  Linus Torvalds (1):
-        Linux 2.6.31-rc5
+---
+ drivers/gpio/gpiolib.c |   59 +++++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 55 insertions(+), 4 deletions(-)
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/bp/bp.git for-linus
-
-Doug Thompson (2):
-      amd64_edac: fix ECC checking
-      amd64_edac: print debug statements only on error
-
- drivers/edac/amd64_edac.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
-
-
-Thanks.
+Index: b/drivers/gpio/gpiolib.c
+===================================================================
+--- a/drivers/gpio/gpiolib.c	2009-08-03 17:53:04.000000000 +0100
++++ b/drivers/gpio/gpiolib.c	2009-08-03 17:53:33.000000000 +0100
+@@ -364,6 +364,53 @@ static const struct attribute_group gpio
+ 	.attrs = (struct attribute **) gpiochip_attrs,
+ };
+ 
++static int search_names(char **names, const char *match, int ngpio)
++{
++	int ptr;
++
++	if (names) {
++		for (ptr = 0; ptr < ngpio; ptr++) {
++			if (!names[ptr])
++				continue;
++
++			if (strcmp(names[ptr], match) == 0)
++				return ptr;
++		}
++	}
++
++	return -ENOENT;
++}
++
++static long gpio_from_string(const char *buf)
++{
++	struct gpio_chip *chip;
++	struct gpio_desc *desc;
++	long status;
++	long gpio;
++	int ptr, off;
++
++	status = strict_strtol(buf, 0, &gpio);
++	if (status < 0) {
++		for (ptr = 0; ptr < ARCH_NR_GPIOS && status < 0;) {
++			desc = gpio_desc + ptr;
++			chip = desc->chip;
++
++			if (!chip) {
++				ptr++;
++				continue;
++			}
++
++			off = search_names(chip->names, buf, chip->ngpio);
++			if (off >= 0)
++				status = ptr + off;
++
++			ptr += chip->ngpio;
++		}
++	}
++
++	return status;
++}
++
+ /*
+  * /sys/class/gpio/export ... write-only
+  *	integer N ... number of GPIO to export (full access)
+@@ -375,9 +422,11 @@ static ssize_t export_store(struct class
+ 	long	gpio;
+ 	int	status;
+ 
+-	status = strict_strtol(buf, 0, &gpio);
+-	if (status < 0)
++	gpio = gpio_from_string(buf);
++	if (gpio < 0) {
++		status = gpio;
+ 		goto done;
++	}
+ 
+ 	/* No extra locking here; FLAG_SYSFS just signifies that the
+ 	 * request and export were done by on behalf of userspace, so
+@@ -405,9 +454,11 @@ static ssize_t unexport_store(struct cla
+ 	long	gpio;
+ 	int	status;
+ 
+-	status = strict_strtol(buf, 0, &gpio);
+-	if (status < 0)
++	gpio = gpio_from_string(buf);
++	if (gpio < 0) {
++		status = gpio;
+ 		goto done;
++	}
+ 
+ 	status = -EINVAL;
+ 
 
 -- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
