@@ -1,103 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932743AbZHDK2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932747AbZHDKce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932743AbZHDK2W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 06:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932693AbZHDK2W
+	id S932747AbZHDKce (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 06:32:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932540AbZHDKce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 06:28:22 -0400
-Received: from lennier.cc.vt.edu ([198.82.162.213]:52883 "EHLO
-	lennier.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932694AbZHDK2V (ORCPT
+	Tue, 4 Aug 2009 06:32:34 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:34144 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932513AbZHDKcd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 06:28:21 -0400
-From: "Sherif F. Fahmy" <fahmy@vt.edu>
-To: "'Casey Dahlin'" <cdahlin@redhat.com>
-Cc: <linux-kernel@vger.kernel.org>
-References: <1249312084.5762.17.camel@sherif-laptop> <4A774858.6080106@redhat.com>
-In-Reply-To: <4A774858.6080106@redhat.com>
-Subject: RE: scheduling co-processors
-Date: Tue, 4 Aug 2009 13:28:00 +0300
-Message-ID: <000301ca14ee$401f8560$c05e9020$@edu>
+	Tue, 4 Aug 2009 06:32:33 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: =?iso-8859-1?Q?J=F6rg?= Schummer <ext-jorg.2.schummer@nokia.com>
+Cc: "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel\@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Subject: Re: [PATCH take 2][RFC] fat: Save FAT root directory timestamps to volume label
+References: <1248274841-3586-1-git-send-email-ext-jorg.2.schummer@nokia.com>
+	<1248428635-26073-1-git-send-email-ext-jorg.2.schummer@nokia.com>
+	<87fxclmhxy.fsf@devron.myhome.or.jp>
+	<1248691635.4618.43.camel@jorg-desktop>
+	<87ljmas5ym.fsf@devron.myhome.or.jp>
+	<1249375357.5736.53.camel@jorg-desktop>
+Date: Tue, 04 Aug 2009 19:32:29 +0900
+In-Reply-To: <1249375357.5736.53.camel@jorg-desktop> (=?iso-8859-1?Q?=22J?=
+ =?iso-8859-1?Q?=F6rg?= Schummer"'s
+	message of "Tue, 04 Aug 2009 11:42:37 +0300")
+Message-ID: <87zlafswci.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AcoUd9rrVmP+XMexRxqFgj/EwdFB0AAdkVnQ
-Content-Language: en-us
-X-Mirapoint-Received-SPF: 198.82.161.152 auth3.smtp.vt.edu fahmy@vt.edu 2 pass
-X-Mirapoint-IP-Reputation: reputation=neutral-1,
-	source=Fixed,
-	refid=n/a,
-	actions=MAILHURDLE SPF TAG
-X-Junkmail-Info: (0) 
-X-Junkmail-Status: score=10/50, host=dagger.cc.vt.edu
-X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A020201.4A780D35.0050,ss=1,fgs=0,
-	ip=41.196.91.126,
-	so=2009-06-02 18:41:42,
-	dmn=2009-06-06 00:02:10,
-	mode=multiengine
-X-Junkmail-IWF: false
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-
-> owner@vger.kernel.org] On Behalf Of Casey Dahlin
-> Sent: Monday, August 03, 2009 11:28 PM
-> To: Sherif Fadel
-> Cc: linux-kernel@vger.kernel.org
-> Subject: Re: scheduling co-processors
-> 
-> On 08/03/2009 11:08 AM, Sherif Fadel wrote:
-> > Hi,
-> >
-> > I have a dual-core system on which I would like to treat one
-> processor
-> > as a scheduling co-processor. I have already implemented some custom
-> > scheduling policies and tested them with SMP disabled, I would not
-> like
-> > to see if it is possible to have the scheduling algorithm running on
-> one
-> > core and the scheduled tasks running on another.
-> >
-> > I do not know if I can somehow use cpus_allowed to restrict the
-> kernel
-> > to one core and the running tasks to another. Is this possible? If
-> so,
-> > could you please inform me how one would go about this?
-> >
-> > In case you are wondering why I would need this, I am writing a bunch
-> of
-> > high-overhead distributed scheduling algorithms and I want to
-> mitigate
-> > their overhead in this way.
-> >
-> > Thanks.
-> >
-> 
-> The design I would have for this would be to have a kthread that does
-> whatever busy work your scheduler has as a separate process. You could
-> then replace the existing scheduler with a sort of "schedulerlet" that
-> would simply schedule according to directions queued up for it by the
-> kthread task. From there cpu affinity should get you the "dedicated
-> scheduler processor" you want.
-> 
-> I can't even begin to envision the scheduling algorithm that would be
-> able to operate this way, but I have to assume that if it makes sense
-> for your scheduler to run on another CPU then it must be able to fit
-> into this pattern.
+Jörg Schummer <ext-jorg.2.schummer@nokia.com> writes:
 
-Thanks for the info. I think that this will do perfectly.
+> On Mon, 2009-07-27 at 13:47 +0200, ext OGAWA Hirofumi wrote:
+>> Jörg Schummer <ext-jorg.2.schummer@nokia.com> writes:
+>
+>> BTW, the patch has several bugs. fat_get_label_entry() doesn't check
+>> IS_FREE(), is it right? fat_create_label_entry() doesn't initialize all
+>> timestamp in the case of msdos. spin_lock() usage is wrong. and more...
+>
+> After reviewing the patch again, I did notice some additional problems
+> (I suppose that was the "and more..."). If and when I have time again, I
+> might take a closer look at it again.
+>
+> Thanks for your help until now!
 
-> 
-> --CJD
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+No problem at all. Thanks for your work.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
