@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933570AbZHDXA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933588AbZHDXFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933570AbZHDXA5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 19:00:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933517AbZHDXA5
+	id S933588AbZHDXFF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 19:05:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933437AbZHDXFE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 19:00:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41575 "EHLO
+	Tue, 4 Aug 2009 19:05:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50245 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933419AbZHDXA4 (ORCPT
+	by vger.kernel.org with ESMTP id S933363AbZHDXFD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 19:00:56 -0400
-Date: Tue, 4 Aug 2009 16:00:43 -0700
+	Tue, 4 Aug 2009 19:05:03 -0400
+Date: Tue, 4 Aug 2009 16:04:20 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
 Cc: sam@ravnborg.org, hpa@zytor.com, linux@arm.linux.org.uk, alain@knaff.lu,
        linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
        albin.tonnerre@free-electrons.com
 Subject: Re: [PATCH 3/6] Add support for LZO-compressed kernels
-Message-Id: <20090804160043.82b256d8.akpm@linux-foundation.org>
+Message-Id: <20090804160420.1e911623.akpm@linux-foundation.org>
 In-Reply-To: <1249311501-23102-3-git-send-email-albin.tonnerre@free-electrons.com>
 References: <20090731093107.GA29704@merkur.ravnborg.org>
 	<1249311501-23102-1-git-send-email-albin.tonnerre@free-electrons.com>
@@ -35,27 +35,8 @@ On Mon,  3 Aug 2009 16:58:18 +0200
 Albin Tonnerre <albin.tonnerre@free-electrons.com> wrote:
 
 > This is the first part of the lzo patch
-> The lzo compressor is worse than gzip at compression, but faster at
-> extraction. Here are some figures for an ARM board I'm working on:
-> 
-> Uncompressed size: 3.24Mo
-> gzip  1.61Mo 0.72s
-> lzo   1.75Mo 0.48s
-> 
-> So for a compression ratio that is still relatively close to gzip, it's
-> much faster to extract, at least in that case.
 
-Is 3.2Mb a typical kernel size for small systems?  It sounds large.
+Please pass this patch (and all others!) through scritps/checkpatch.pl.
 
-
-0.24 seconds booting speedup sounds pretty thin.  Adding a new
-decompression format will introduce more configuration/build/deployment
-complexities.  How do we justify this?
-
-Did anyone look into just speeding up the gzip decompressor?
-
-> +#ifdef STATIC
-
-What is this STATIC thing for?
-
-
+checkpatch reports a number of trivial errors which you wouldn't have included
+had you known about them.
