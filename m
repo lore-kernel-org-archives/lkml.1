@@ -1,156 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933513AbZHDWQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933476AbZHDWTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933513AbZHDWQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 18:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933193AbZHDWQt
+	id S933476AbZHDWTh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 18:19:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbZHDWTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 18:16:49 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:61209 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933436AbZHDWPL (ORCPT
+	Tue, 4 Aug 2009 18:19:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58560 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754867AbZHDWTf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 18:15:11 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAMNPeEqrR7PE/2dsb2JhbAC8N4gpkBcFhBiBUQ
-X-IronPort-AV: E=Sophos;i="4.43,324,1246838400"; 
-   d="scan'208";a="223420962"
-Date: Tue, 4 Aug 2009 15:15:12 -0700
-From: David VomLehn <dvomlehn@cisco.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, linux-usb@vger.kernel.org, greg@kroah.com,
-       linux-scsi@vger.kernel.org, netdev@vger.kernel.org, arjan@infradead.org
-Subject: [PATCH 4/7 v3] initdev:kernel:Await network init device discovery
-Message-ID: <20090804221512.GA9308@cuplxvomd02.corp.sa.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Authentication-Results: sj-dkim-4; header.From=dvomlehn@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+	Tue, 4 Aug 2009 18:19:35 -0400
+Date: Tue, 4 Aug 2009 15:18:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: alan@redhat.com, linux-kernel@vger.kernel.org,
+       Geert Uytterhoeven <geert@linux-m68k.org>, linux-next@vger.kernel.org
+Subject: Re: [PATCH] serial167: Read buffer overflow
+Message-Id: <20090804151838.c5cb362b.akpm@linux-foundation.org>
+In-Reply-To: <4A76D4DA.8090905@gmail.com>
+References: <4A76D4DA.8090905@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Delay IP autoconfiguration until network boot devices have been initialized.
-This depends on the boot device discovery code and on the asynchronous
-function call infrastructure.
+On Mon, 03 Aug 2009 14:15:22 +0200
+Roel Kluin <roel.kluin@gmail.com> wrote:
 
-Signed-off-by: David VomLehn <dvomlehn@cisco.com>
----
- net/core/dev.c      |    2 +
- net/ipv4/ipconfig.c |   55 ++++++++++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 56 insertions(+), 1 deletions(-)
+> @@ -222,7 +222,7 @@ static inline int serial_paranoia_check(struct cyclades_port *info, char *name,
+>  	}
+>  
+>  	if ((long)info < (long)(&cy_port[0])
+> -	    || (long)(&cy_port[NR_PORTS]) < (long)info) {
+> +	    || (long)(&cy_port[NR_PORTS-1]) < (long)info) {
+>  		printk("Warning: cyclades_port out of range for (%s) in %s\n",
+>  				name, routine);
 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index 308a7d0..2796764 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -93,6 +93,7 @@
- #include <linux/ethtool.h>
- #include <linux/notifier.h>
- #include <linux/skbuff.h>
-+#include <linux/device.h>
- #include <net/net_namespace.h>
- #include <net/sock.h>
- #include <linux/rtnetlink.h>
-@@ -4497,6 +4498,7 @@ int register_netdevice(struct net_device *dev)
- 		dev->reg_state = NETREG_UNREGISTERED;
- 	}
- 
-+	initdev_registered(INITDEV_NETDEV_TYPE);
- out:
- 	return ret;
- 
-diff --git a/net/ipv4/ipconfig.c b/net/ipv4/ipconfig.c
-index 90d22ae..3b1a381 100644
---- a/net/ipv4/ipconfig.c
-+++ b/net/ipv4/ipconfig.c
-@@ -53,6 +53,7 @@
- #include <linux/root_dev.h>
- #include <linux/delay.h>
- #include <linux/nfs_fs.h>
-+#include <linux/async.h>
- #include <net/net_namespace.h>
- #include <net/arp.h>
- #include <net/ip.h>
-@@ -182,12 +183,48 @@ struct ic_device {
- static struct ic_device *ic_first_dev __initdata = NULL;/* List of open device */
- static struct net_device *ic_dev __initdata = NULL;	/* Selected device */
- 
-+/*
-+ * Wait for required network devices to come up
-+ * If the networking device name was specified on the kernel command line
-+ * and that device is now registered, we have the device we want to configure
-+ * and we return true. Otherwise, we return false. So, if no device was
-+ * specified on the command line, we wait for all possible network devices to
-+ * be initialized.
-+ */
-+static bool have_all_netdevs(void)
-+{
-+	struct net_device *dev;
-+	bool	result = false;
-+
-+	rtnl_lock();
-+
-+	for_each_netdev(&init_net, dev) {
-+		if (dev->flags & IFF_LOOPBACK)
-+			continue;
-+
-+		/* If a specific device name was specified and that name is
-+		 * registered, we have the device we need. */
-+		if (user_dev_name[0] && !strcmp(dev->name, user_dev_name)) {
-+			result = true;
-+			break;
-+		}
-+	}
-+
-+	rtnl_unlock();
-+
-+	return result;
-+
-+}
-+
- static int __init ic_open_devs(void)
- {
- 	struct ic_device *d, **last;
- 	struct net_device *dev;
- 	unsigned short oflags;
- 
-+	/* Wait for networking devices */
-+	initdev_wait(INITDEV_NETDEV_TYPE, have_all_netdevs);
-+
- 	last = &ic_first_dev;
- 	rtnl_lock();
- 
-@@ -1263,6 +1300,7 @@ __be32 __init root_nfs_parse_addr(char *name)
- 
- /*
-  *	IP Autoconfig dispatcher.
-+ *	Return zero on success, negative one on failure
-  */
- 
- static int __init ip_auto_config(void)
-@@ -1397,7 +1435,22 @@ static int __init ip_auto_config(void)
- 	return 0;
- }
- 
--late_initcall(ip_auto_config);
-+static void __init ip_auto_config_async(void *data, async_cookie_t cookie)
-+{
-+	ip_auto_config();
-+}
-+
-+/*
-+ * Start a thread to do IP autoconfiguration
-+ */
-+static int __init ip_auto_configurator(void)
-+{
-+	async_schedule(ip_auto_config_async, NULL);
-+
-+	return 0;
-+}
-+
-+late_initcall(ip_auto_configurator);
- 
- 
- /*
+OK, that hurts my brain.  And all those casts are pointless.  How about this?
+
+	if (info < &cy_port[0] || info >= &cy_port[NR_PORTS]) {
+		printk("Warning: cyclades_port out of range for (%s) in %s\n",
+				name, routine);
+		return 1;
+	}
+
+
+
+btw, m68k allmodconfig in current mainline is sick:
+
+In file included from /usr/src/devel/arch/m68k/include/asm/pgtable.h:4,
+                 from include/linux/mm.h:40,
+                 from drivers/char/serial167.c:62:
+/usr/src/devel/arch/m68k/include/asm/pgtable_mm.h:148:1: warning: "pgprot_noncached" redefined
+In file included from /usr/src/devel/arch/m68k/include/asm/pgtable_mm.h:138,
+                 from /usr/src/devel/arch/m68k/include/asm/pgtable.h:4,
+                 from include/linux/mm.h:40,
+                 from drivers/char/serial167.c:62:
+include/asm-generic/pgtable.h:133:1: warning: this is the location of the previous definition
+
+
+And in linux-next m68k allmodconfig is dead as a doornail:
+
+drivers/staging/vme/Kconfig:5:warning: type of 'VME' redefined from 'boolean' to 'tristate'
+In file included from include/linux/irq.h:12,
+                 from include/asm-generic/hardirq.h:6,
+                 from /usr/src/devel/arch/m68k/include/asm/hardirq.h:4,
+                 from include/linux/hardirq.h:10,
+                 from /usr/src/devel/arch/m68k/include/asm/system_mm.h:69,
+                 from /usr/src/devel/arch/m68k/include/asm/system.h:4,
+                 from include/linux/list.h:7,
+                 from include/linux/preempt.h:11,
+                 from include/linux/spinlock.h:50,
+                 from include/linux/seqlock.h:29,
+                 from include/linux/time.h:8,
+                 from include/linux/timex.h:56,
+                 from include/linux/sched.h:56,
+                 from arch/m68k/kernel/asm-offsets.c:12:
+include/linux/smp.h:17: error: field 'list' has incomplete type
+In file included from include/linux/mmzone.h:9,
+                 from include/linux/gfp.h:4,
+                 from include/linux/irq.h:20,
+                 from include/asm-generic/hardirq.h:6,
+                 from /usr/src/devel/arch/m68k/include/asm/hardirq.h:4,
+                 from include/linux/hardirq.h:10,
+                 from /usr/src/devel/arch/m68k/include/asm/system_mm.h:69,
+                 from /usr/src/devel/arch/m68k/include/asm/system.h:4,
+                 from include/linux/list.h:7,
+                 from include/linux/preempt.h:11,
+                 from include/linux/spinlock.h:50,
+                 from include/linux/seqlock.h:29,
+                 from include/linux/time.h:8,
+                 from include/linux/timex.h:56,
+                 from include/linux/sched.h:56,
+                 from arch/m68k/kernel/asm-offsets.c:12:
+include/linux/wait.h:37: error: field 'task_list' has incomplete type
+include/linux/wait.h:51: error: expected specifier-qualifier-list before 'spinlock_t'
+include/linux/wait.h: In function 'waitqueue_active':
+include/linux/wait.h:108: error: implicit declaration of function 'list_empty'
+include/linux/wait.h:108: error: 'wait_queue_head_t' has no member named 'task_list'
+include/linux/wait.h: In function '__add_wait_queue':
+include/linux/wait.h:117: error: implicit declaration of function 'list_add'
+include/linux/wait.h:117: error: 'wait_queue_head_t' has no member named 'task_list'
+include/linux/wait.h: In function '__add_wait_queue_tail':
+include/linux/wait.h:126: error: implicit declaration of function 'list_add_tail'
+include/linux/wait.h:126: error: 'wait_queue_head_t' has no member named 'task_list'
+include/linux/wait.h: In function '__remove_wait_queue':
+include/linux/wait.h:132: error: implicit declaration of function 'list_del'
+
