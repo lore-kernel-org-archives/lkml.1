@@ -1,27 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbZHDJwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755370AbZHDJ5P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755361AbZHDJwp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 05:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932689AbZHDJwo
+	id S1755370AbZHDJ5P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 05:57:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932671AbZHDJ5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 05:52:44 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39593 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751998AbZHDJwn (ORCPT
+	Tue, 4 Aug 2009 05:57:14 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49174 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755320AbZHDJ5O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 05:52:43 -0400
+	Tue, 4 Aug 2009 05:57:14 -0400
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 4 Aug 2009 18:50:58 +0900
+Date: Tue, 4 Aug 2009 18:55:26 +0900
 From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Leon Woestenberg <leon.woestenberg@gmail.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, linux-kernel@vger.kernel.org
-Subject: Re: get_user_pages() on an mmap()ed file allowed? What to do if 0 <
-  get_user_pages(..., nr_pages, ...) < nr_pages?
-Message-Id: <20090804185058.09f79b37.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <c384c5ea0908040157g222f5408o52dd10f02da5a07d@mail.gmail.com>
-References: <c384c5ea0908030823y494ee8bei85aa62c1470fa3ec@mail.gmail.com>
-	<Pine.LNX.4.64.0908031724200.2296@sister.anvils>
-	<c384c5ea0908040157g222f5408o52dd10f02da5a07d@mail.gmail.com>
+To: Amerigo Wang <xiyou.wangcong@gmail.com>
+Cc: Mike Smith <scgtrp@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
+       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUGFIX][PATCH 2/3] kcore: fix vread/vwrite to be aware of
+ holes.
+Message-Id: <20090804185526.bf592ce1.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090804092316.GB6451@cr0.nay.redhat.com>
+References: <bug-13850-10286@http.bugzilla.kernel.org/>
+	<20090728160527.1da52682.akpm@linux-foundation.org>
+	<20090729084825.1363c880.kamezawa.hiroyu@jp.fujitsu.com>
+	<525c5a6c0907281946t249ef288v77ee94edd16f054@mail.gmail.com>
+	<20090803201418.040bb3ee.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090803201845.c3ae49b5.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090804092316.GB6451@cr0.nay.redhat.com>
 Organization: FUJITSU Co. LTD.
 X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
@@ -31,36 +37,158 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Aug 2009 10:57:33 +0200
-Leon Woestenberg <leon.woestenberg@gmail.com> wrote:
+On Tue, 4 Aug 2009 17:23:16 +0800
+Amerigo Wang <xiyou.wangcong@gmail.com> wrote:
 
-
-> >> - what should a driver do when get_user_pages() returns less pages
-> >> than requested?
+> On Mon, Aug 03, 2009 at 08:18:45PM +0900, KAMEZAWA Hiroyuki wrote:
+> >From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 > >
-> > Probably put_page the pages gotten then report the surprise;
-> > perhaps, before putting the pages gotten, try get_user_pages
-> > on the next alone, to see what error code is returned for that.
+> >vread/vwrite access vmalloc area without checking there is a page or not.
+> >In most case, this works well.
 > >
-> > Unless it's happy to work with fewer pages than requested,
-> > in which case work with them and ignore the surprise.
+> >In old ages, the caller of get_vm_ara() is only IOREMAP and there is no
+> >memory hole within vm_struct's [addr...addr + size - PAGE_SIZE]
+> >( -PAGE_SIZE is for a guard page.)
 > >
-> I expect a certain amount of data to be DMA'd from the PCI device to
-> the file mmap, so I'ld rather map the complete file before I start
-> DMA.
+> >After per-cpu-alloc patch, it uses get_vm_area() for reserve continuous
+> >virtual address but remap _later_. There tend to be a hole in valid vmalloc
+> >area in vm_struct lists.
+> >Then, skip the hole (not mapped page) is necessary.
+> >This patch updates vread/vwrite() for avoiding memory hole.
+> >
+> >Routines which access vmalloc area without knowing for which addr is used
+> >are
+> >  - /proc/kcore
+> >  - /dev/kmem
+> >
+> >kcore checks IOREMAP, /dev/kmem doesn't. After this patch, IOREMAP is
+> >checked and /dev/kmem will avoid to read/write it.
+> >Fixes to /proc/kcore will be in the next patch in series.
+> >
+> >Changelog v2->v3:
+> > - fixed typos.
+> > - use kmap. (if not using kmap, we have to add lock here.)
 > 
-I wonder.... If your device does DMA from-PCI-to-user, then,
+> 
+> Hmm.. I missed this.
+> 
+> 
+> > - fixed PAGE_MASK miss-use.
+> >Changelog v1->v2:
+> > - enhanced comments.
+> > - treat IOREMAP as hole always.
+> > - zero-fill memory hole if [addr...addr+size] includes valid pages.
+> > - returns 0 if [addr...addr+size) includes no valid pages.
+> >
+> >Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> 
+> This time it looks much better now, but it still has a small problem.
+> Please check it below.
+> 
+> 
+thanks.
 
-  rc = get_user_pages(current, current->mm, start & PAGE_MASK,
-nr_pages, 0 /* do not write*/, 1 /* do force */, pages, NULL);
 
-This is *write* access. isn't it ? (contents of pages got by this call
-will be overwritten by DMA ?) 
+> >---
+> > mm/vmalloc.c |  182 +++++++++++++++++++++++++++++++++++++++++++++++++++--------
+> > 1 file changed, 159 insertions(+), 23 deletions(-)
+> >
+> 
+> <snip>
+> 
+> 
+> >+
+> >+/**
+> >+ *	vread() -  read vmalloc area in a safe way.
+> >+ *	@buf:		buffer for reading data
+> >+ *	@addr:		vm address.
+> >+ *	@count:		number of bytes to be read.
+> >+ *
+> >+ *	Returns # of bytes which addr and buf should be increased.
+> >+ *	(same to count).
+> >+ *	If [addr...addr+count) doesn't includes any valid area, returns 0.
+> 
+> 
+> If I read it correctly, your code doesn't do what you described here,
+> it doesn't return 0 when there is no valid area.
+> 
 
-About (rc != nr_pages) case, I doubt there are difference between
-mmap region (or size of file) and [start, start+count) passed to you device.
+Hmm.. valid area is ambiguous, ok, how about this ?
+
+If [addr...addr+count) has no intersects with exisiting vm_struct, returns 0.
 
 Thanks,
 -Kame
 
+
+
+
+> 
+> >+ *
+> >+ *	This function checks that addr is a valid vmalloc'ed area, and
+> >+ *	copy data from that area to a given buffer. If the given memory range of
+> >+ *	[addr...addr+count) includes some valid address, data is copied to
+> >+ *	proper area of @buf. If there are memory holes, they'll be zero-filled.
+> >+ *	IOREMAP area is treated as memory hole and no copy is done.
+> >+ *
+> >+ *	Note: In usual ops, vread() is never necessary because the caller should
+> >+ *	know vmalloc() area is valid and can use memcpy(). This is for routines
+> >+ *	which have to access vmalloc area without any informaion, as /dev/kmem.
+> >+ *
+> >+ *	The caller should guarantee KM_USER1 is not used.
+> >+ */
+> >+
+> > long vread(char *buf, char *addr, unsigned long count)
+> > {
+> > 	struct vm_struct *tmp;
+> > 	char *vaddr, *buf_start = buf;
+> >+	unsigned long buflen = count;
+> > 	unsigned long n;
+> > 
+> > 	/* Don't allow overflow */
+> >@@ -1640,7 +1739,7 @@
+> > 		count = -(unsigned long) addr;
+> > 
+> > 	read_lock(&vmlist_lock);
+> >-	for (tmp = vmlist; tmp; tmp = tmp->next) {
+> >+	for (tmp = vmlist; count && tmp; tmp = tmp->next) {
+> > 		vaddr = (char *) tmp->addr;
+> > 		if (addr >= vaddr + tmp->size - PAGE_SIZE)
+> > 			continue;
+> >@@ -1653,32 +1752,66 @@
+> > 			count--;
+> > 		}
+> > 		n = vaddr + tmp->size - PAGE_SIZE - addr;
+> >-		do {
+> >-			if (count == 0)
+> >-				goto finished;
+> >-			*buf = *addr;
+> >-			buf++;
+> >-			addr++;
+> >-			count--;
+> >-		} while (--n > 0);
+> >+		if (n > count)
+> >+			n = count;
+> >+		if (!(tmp->flags & VM_IOREMAP))
+> >+			aligned_vread(buf, addr, n);
+> >+		else /* IOREMAP area is treated as memory hole */
+> >+			memset(buf, 0, n);
+> >+		buf += n;
+> >+		addr += n;
+> >+		count -= n;
+> > 	}
+> > finished:
+> > 	read_unlock(&vmlist_lock);
+> >-	return buf - buf_start;
+> >+
+> >+	if (buf == buf_start)
+> >+		return 0;
+> >+	/* zero-fill memory holes */
+> >+	if (buf != buf_start + buflen)
+> >+		memset(buf, 0, buflen - (buf - buf_start));
+> >+
+> >+	return buflen;
+> > }
+> 
 
