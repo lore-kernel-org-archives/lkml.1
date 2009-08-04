@@ -1,34 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933134AbZHDRya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933066AbZHDR6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933134AbZHDRya (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 13:54:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932897AbZHDRy3
+	id S933066AbZHDR6g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 13:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932978AbZHDR6g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 13:54:29 -0400
-Received: from h5.dl5rb.org.uk ([81.2.74.5]:33646 "EHLO h5.dl5rb.org.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932787AbZHDRy3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 13:54:29 -0400
-Date: Tue, 4 Aug 2009 18:54:57 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Tim Abbott <tabbott@ksplice.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Anders Kaseorg <andersk@ksplice.com>,
-       Nelson Elhage <nelhage@ksplice.com>, linux-mips@linux-mips.org
-Subject: Re: [PATCH 1/3] mips: make page.h constants available to assembly.
-Message-ID: <20090804175457.GA20889@linux-mips.org>
-References: <1249073899-30145-1-git-send-email-tabbott@ksplice.com>
+	Tue, 4 Aug 2009 13:58:36 -0400
+Received: from mga06.intel.com ([134.134.136.21]:51559 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932928AbZHDR6f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 13:58:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,322,1246863600"; 
+   d="scan'208";a="436078485"
+Date: Tue, 4 Aug 2009 20:00:46 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Amit Kucheria <amit.kucheria@verdurent.com>
+Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH 2/3] MFD: TWL4030: print warning for out-of-order
+	script loading
+Message-ID: <20090804180044.GH8601@sortiz.org>
+References: <1247050175-31163-1-git-send-email-amit.kucheria@verdurent.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1249073899-30145-1-git-send-email-tabbott@ksplice.com>
+In-Reply-To: <1247050175-31163-1-git-send-email-amit.kucheria@verdurent.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 31, 2009 at 04:58:17PM -0400, Tim Abbott wrote:
+Hi Amit,
 
-Thanks, whole series queued for 2.6.31.
+On Wed, Jul 08, 2009 at 01:49:35PM +0300, Amit Kucheria wrote:
+> When the sleep script is loaded before the wakeup script, there is a
+> chance that the system might go to sleep before the wakeup script
+> loading is completed. This will lead to a system that does not wakeup
+> and has been observed to cause non-booting boards.
+> 
+> Various options were considered to solve this problem, including
+> modification of the core twl4030 power code to be smart enough to
+> reorder the loading of the scripts. But it felt too over-engineered.
+> 
+> Hence this patch just warns the DPS script developer so that they may be
+> reordered in the board-code itself.
+> 
+> Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
+> ---
+>  drivers/mfd/twl4030-power.c |   11 +++++++++--
+>  1 files changed, 9 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/mfd/twl4030-power.c b/drivers/mfd/twl4030-power.c
+> index bb9e45f..ef4cc4e 100644
+> --- a/drivers/mfd/twl4030-power.c
+> +++ b/drivers/mfd/twl4030-power.c
+> @@ -315,6 +315,7 @@ static int __init load_triton_script(struct twl4030_script *tscript)
+>  {
+>  	u8 address = triton_next_free_address;
+>  	int err;
+> +	static u8 mask = 0;
+>  
+>  	/* Make sure the script isn't going beyond last valid address */
+>  	if ((address + tscript->size) > (END_OF_SCRIPT-1)) {
+> @@ -331,14 +332,20 @@ static int __init load_triton_script(struct twl4030_script *tscript)
+>  	if (tscript->flags & TRITON_WRST_SCRIPT)
+>  		err |= config_warmreset_sequence(address);
+>  
+> -	if (tscript->flags & TRITON_WAKEUP12_SCRIPT)
+> +	if (tscript->flags & TRITON_WAKEUP12_SCRIPT) {
+>  		err |= config_wakeup12_sequence(address);
+> +		mask |= TRITON_WAKEUP12_SCRIPT;
+> +	}
+>  
+>  	if (tscript->flags & TRITON_WAKEUP3_SCRIPT)
+>  		err |= config_wakeup3_sequence(address);
+>  
+> -	if (tscript->flags & TRITON_SLEEP_SCRIPT)
+> +	if (tscript->flags & TRITON_SLEEP_SCRIPT) {
+Wouldnt something like:
 
-  Ralf
+     if (tscript->flags & (TRITON_SLEEP_SCRIPT | TRITON_WAKEUP12_SCRIPT)) {
+
+save us from using an additional mask variable and simplify this patch ?
+
+Cheers,
+Samuel.
+
+
+> +		if (!(mask & TRITON_WAKEUP12_SCRIPT))
+> +			printk(KERN_WARNING
+> +			       "TWL4030: Wakeup script not yet loaded. Might lead to boot failure on some boards\n");
+>  		err |= config_sleep_sequence(address);
+> +	}
+>  
+>  	return err;
+>  }
+> -- 
+> 1.6.3.3
+> 
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
