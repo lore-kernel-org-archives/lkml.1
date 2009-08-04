@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbZHDOpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbZHDOsD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755211AbZHDOpg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 10:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbZHDOpf
+	id S1755463AbZHDOsD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 10:48:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754530AbZHDOsB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 10:45:35 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51010 "EHLO mx3.mail.elte.hu"
+	Tue, 4 Aug 2009 10:48:01 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50383 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753429AbZHDOpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 10:45:35 -0400
-Date: Tue, 4 Aug 2009 16:45:02 +0200
+	id S1753429AbZHDOsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 10:48:00 -0400
+Date: Tue, 4 Aug 2009 16:47:41 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Borislav Petkov <borislav.petkov@amd.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Doug Thompson <norsk5@yahoo.com>,
-       tglx@linutronix.de, aris@redhat.com, linux-kernel@vger.kernel.org,
-       x86@kernel.org
-Subject: Re: [PATCH 07/14] mce3: pass mce info to EDAC for decoding
-Message-ID: <20090804144502.GK7746@elte.hu>
-References: <20090720180446.GB16072@basil.fritz.box> <935428.51568.qm@web50110.mail.re2.yahoo.com> <20090720192229.GC16072@basil.fritz.box> <4A64D0F2.7050009@zytor.com> <4A6538EE.6000903@jp.fujitsu.com> <20090721065128.GA29028@basil.fritz.box> <20090721104924.GD32338@aftab>
+Cc: Andreas Herrmann <andreas.herrmann3@amd.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Sachin Sant <sachinp@in.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: Boot failure on x86_64 (OOPS set_cpu_sibling_map() )
+Message-ID: <20090804144741.GL7746@elte.hu>
+References: <20090730182143.eadf36e6.sfr@canb.auug.org.au> <4A718338.6050907@in.ibm.com> <20090730135623.GB16659@aftab> <20090803093144.GC9074@elte.hu> <20090803101401.GA14442@aftab> <20090803120739.GA29156@elte.hu> <20090803125059.GB14442@aftab> <20090804135029.GA6775@elte.hu> <20090804143150.GC1870@aftab>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090721104924.GD32338@aftab>
+In-Reply-To: <20090804143150.GC1870@aftab>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -39,47 +39,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Borislav Petkov <borislav.petkov@amd.com> wrote:
 
-> On Tue, Jul 21, 2009 at 08:51:28AM +0200, Andi Kleen wrote:
-> > On Tue, Jul 21, 2009 at 12:41:34PM +0900, Hidetoshi Seto wrote:
-> > > H. Peter Anvin wrote:
-> > > >  If you want modules to change the behavior, you're talking about a
-> > > > *dynamic* change -- the call will point to different things at different
-> > > > points in time -- so you need another mechanism, i.e. function pointers.
+> On Tue, Aug 04, 2009 at 03:50:29PM +0200, Ingo Molnar wrote:
+> > > > Mind preparing a separate branch for it (.31-rc5 based) and send me 
+> > > > a pull request so that we can share the commit between the EDAC tree 
+> > > > and the x86 tree?
 > > > 
-> > > Just FYI, machine check handler on ia64 has such function pointer.
-> > > 
-> > > [arch/ia64/kernel/mca.c]
-> > >     826 /* Function pointer for extra MCA recovery */
-> > >     827 int (*ia64_mca_ucmc_extension)
-> > >     828         (void*,struct ia64_sal_os_state*)
-> > >     829         = NULL;
+> > > Well, Andreas says the patches need a little polishing and he'll 
+> > > be sending updated versions soon so you can pick them up. And 
+> > > since the EDAC MCE stuff might still change before .32 merge 
+> > > window opens, let's synchronize our pull requests instead. In the 
+> > > meantime, I'll be rediffing the EDAC stuff against -tip for 
+> > > linux-next.
 > > 
-> > A notifier would be a much more flexible solution. Function 
-> > pointers don't really work well with multiple users, which might 
-> > well happen here.
-> > 
-> > However on the other hand I have some doubts it's really a good 
-> > idea to expose fatal MCEs to modules. MCE is a rather critical 
-> > code path (a bit similar to an oops), with the machine already 
-> > somewhat instable in many cases and if you allow arbitary 
-> > modules to hook into that you risk long term instability.
-> > 
-> > So if a notifier is done I would recommend to only limit it to 
-> > corrected MCEs (machine_check_poll), not fatal ones.
+> > Would you rebase just due to this commit?
 > 
-> However, the idea is to decode _all_ MCEs so we could look into 
-> moving the decoding bits into the EDAC core or some other more 
-> appropriate place. Ingo?
+> No, I wanted to keep the opportunity to be able to rebase the 
+> whole series until the very last minute before the merge window, 
+> should anything need to be changed...
+
+Note that's the wrong workflow. We dont rebase Git trees really just 
+because 'something needs to be changed' - we make sure all commits 
+make sense, we fix bugs and append new changes to the end. That 
+results in a far better end result than a constant rebasing 
+workflow. See various mails from Linus on lkml about this topic. (i 
+have no handy URL for this now - maybe someone else has)
+
+> > No need for that, feel free to carry it until Andreas sends an 
+> > updated version. Then i can put it into a separate .31-rc5 based 
+> > topic that you can pull into the EDAC tree.
 > 
-> We could then reroute the non fatals to EDAC for further decoding.
+> ... and this is basically what I had in mind: After you pull them 
+> in, I'll rebase my branch against yours for linux-next. I see that 
+> Stephen pulls edac before -tip in linux-next so I'll ask him 
+> nicely to reorder those. This approach makes most sense anyways 
+> since edac relies on a bunch of x86 facilities (topology bits, 
+> rd/wrmsr_on_cpus, mcheck etc) and it is only natural that it goes 
+> second in linux-next, right?
+> 
+> Then the pull requests will go out in the same order during the 
+> merge window and we should be fine.
 
-Yep, obviously the kernel entity with the wider view (which is EDAC 
-here) should interpret such errors and decide policy or do some good 
-default actions. The arch level MCE code is basically a lowlevel 
-platform driver to the EDAC code.
-
-And please dont do stupid notifiers. They are opaque and cause 
-various problems. Integrate the code for good - there's no technical 
-reason to keep it all separate.
+ok. I'll wait for Andreas's next version of the patch. Feel free to 
+carry the interim version - just please dont crash the x86 bootup 
+;-)
 
 	Ingo
