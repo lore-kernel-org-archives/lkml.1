@@ -1,86 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbZHDOsD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932363AbZHDOsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755463AbZHDOsD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 10:48:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754530AbZHDOsB
+	id S932363AbZHDOsc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 10:48:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754958AbZHDOsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 10:48:01 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50383 "EHLO mx3.mail.elte.hu"
+	Tue, 4 Aug 2009 10:48:32 -0400
+Received: from verein.lst.de ([213.95.11.210]:54608 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753429AbZHDOsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 10:48:00 -0400
-Date: Tue, 4 Aug 2009 16:47:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Borislav Petkov <borislav.petkov@amd.com>
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Sachin Sant <sachinp@in.ibm.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: Boot failure on x86_64 (OOPS set_cpu_sibling_map() )
-Message-ID: <20090804144741.GL7746@elte.hu>
-References: <20090730182143.eadf36e6.sfr@canb.auug.org.au> <4A718338.6050907@in.ibm.com> <20090730135623.GB16659@aftab> <20090803093144.GC9074@elte.hu> <20090803101401.GA14442@aftab> <20090803120739.GA29156@elte.hu> <20090803125059.GB14442@aftab> <20090804135029.GA6775@elte.hu> <20090804143150.GC1870@aftab>
-MIME-Version: 1.0
+	id S1754781AbZHDOsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 10:48:31 -0400
+Date: Tue, 4 Aug 2009 16:48:26 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: rth@twiddle.net, ink@jurassic.park.msu.ru
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] alpha: convert to asm-generic/hardirq.h
+Message-ID: <20090804144826.GA20487@lst.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090804143150.GC1870@aftab>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.001 () BAYES_44
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Borislav Petkov <borislav.petkov@amd.com> wrote:
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-> On Tue, Aug 04, 2009 at 03:50:29PM +0200, Ingo Molnar wrote:
-> > > > Mind preparing a separate branch for it (.31-rc5 based) and send me 
-> > > > a pull request so that we can share the commit between the EDAC tree 
-> > > > and the x86 tree?
-> > > 
-> > > Well, Andreas says the patches need a little polishing and he'll 
-> > > be sending updated versions soon so you can pick them up. And 
-> > > since the EDAC MCE stuff might still change before .32 merge 
-> > > window opens, let's synchronize our pull requests instead. In the 
-> > > meantime, I'll be rediffing the EDAC stuff against -tip for 
-> > > linux-next.
-> > 
-> > Would you rebase just due to this commit?
-> 
-> No, I wanted to keep the opportunity to be able to rebase the 
-> whole series until the very last minute before the merge window, 
-> should anything need to be changed...
-
-Note that's the wrong workflow. We dont rebase Git trees really just 
-because 'something needs to be changed' - we make sure all commits 
-make sense, we fix bugs and append new changes to the end. That 
-results in a far better end result than a constant rebasing 
-workflow. See various mails from Linus on lkml about this topic. (i 
-have no handy URL for this now - maybe someone else has)
-
-> > No need for that, feel free to carry it until Andreas sends an 
-> > updated version. Then i can put it into a separate .31-rc5 based 
-> > topic that you can pull into the EDAC tree.
-> 
-> ... and this is basically what I had in mind: After you pull them 
-> in, I'll rebase my branch against yours for linux-next. I see that 
-> Stephen pulls edac before -tip in linux-next so I'll ask him 
-> nicely to reorder those. This approach makes most sense anyways 
-> since edac relies on a bunch of x86 facilities (topology bits, 
-> rd/wrmsr_on_cpus, mcheck etc) and it is only natural that it goes 
-> second in linux-next, right?
-> 
-> Then the pull requests will go out in the same order during the 
-> merge window and we should be fine.
-
-ok. I'll wait for Andreas's next version of the patch. Feel free to 
-carry the interim version - just please dont crash the x86 bootup 
-;-)
-
-	Ingo
+Index: linux-2.6/arch/alpha/include/asm/hardirq.h
+===================================================================
+--- linux-2.6.orig/arch/alpha/include/asm/hardirq.h	2009-07-27 14:32:58.111917814 +0200
++++ linux-2.6/arch/alpha/include/asm/hardirq.h	2009-07-27 14:58:12.767913104 +0200
+@@ -1,17 +1,9 @@
+ #ifndef _ALPHA_HARDIRQ_H
+ #define _ALPHA_HARDIRQ_H
+ 
+-#include <linux/threads.h>
+-#include <linux/cache.h>
+-
+-
+-/* entry.S is sensitive to the offsets of these fields */
+-typedef struct {
+-	unsigned long __softirq_pending;
+-} ____cacheline_aligned irq_cpustat_t;
+-
+-#include <linux/irq_cpustat.h>	/* Standard mappings for irq_cpustat_t above */
+-
+ void ack_bad_irq(unsigned int irq);
++#define ack_bad_irq ack_bad_irq
++
++#include <asm-generic/hardirq.h>
+ 
+ #endif /* _ALPHA_HARDIRQ_H */
