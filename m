@@ -1,156 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933077AbZHDVbJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933100AbZHDVbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933077AbZHDVbJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 17:31:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932601AbZHDVbI
+	id S933100AbZHDVbj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 17:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932900AbZHDVbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 17:31:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50484 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932502AbZHDVbH (ORCPT
+	Tue, 4 Aug 2009 17:31:38 -0400
+Received: from shadow.wildlava.net ([67.40.138.81]:41062 "EHLO
+	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932950AbZHDVbi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 17:31:07 -0400
-Date: Tue, 4 Aug 2009 14:30:31 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: kamezawa.hiroyu@jp.fujitsu.com, scgtrp@gmail.com,
-       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       xiyou.wangcong@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [BUGFIX][PATCH 2/3] kcore: fix vread/vwrite to be aware of
- holes.
-Message-Id: <20090804143031.b9769a13.akpm@linux-foundation.org>
-In-Reply-To: <20090803201845.c3ae49b5.kamezawa.hiroyu@jp.fujitsu.com>
-References: <bug-13850-10286@http.bugzilla.kernel.org/>
-	<20090728160527.1da52682.akpm@linux-foundation.org>
-	<20090729084825.1363c880.kamezawa.hiroyu@jp.fujitsu.com>
-	<525c5a6c0907281946t249ef288v77ee94edd16f054@mail.gmail.com>
-	<20090803201418.040bb3ee.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090803201845.c3ae49b5.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 4 Aug 2009 17:31:38 -0400
+Message-ID: <4A78A8B7.7050300@skyrush.com>
+Date: Tue, 04 Aug 2009 15:31:35 -0600
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090616)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] n_tty: honor opost flag for echoes
+References: <4A789AA1.5070907@skyrush.com> <20090804212538.GA26478@suse.de>
+In-Reply-To: <20090804212538.GA26478@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Aug 2009 20:18:45 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Greg KH wrote:
+> On Tue, Aug 04, 2009 at 02:31:29PM -0600, Joe Peterson wrote:
 > 
-> vread/vwrite access vmalloc area without checking there is a page or not.
-> In most case, this works well.
+>> Fixes the following bug:
+>>
+>>       http://bugs.linuxbase.org/show_bug.cgi?id=2692
+>>
+>> Causes processing of echoed characters (output from the echo buffer) to
+>> honor the O_OPOST flag.  This re-establishes this behavior.
+>>
+>> Note that this and the next patch ("n_tty: move echoctl check and
+>> clean up logic") were verified together by the bug reporters, and
+>> all tty tests now pass.
 > 
-> In old ages, the caller of get_vm_ara() is only IOREMAP and there is no
-> memory hole within vm_struct's [addr...addr + size - PAGE_SIZE]
-> ( -PAGE_SIZE is for a guard page.)
-> 
-> After per-cpu-alloc patch, it uses get_vm_area() for reserve continuous
-> virtual address but remap _later_. There tend to be a hole in valid vmalloc
-> area in vm_struct lists.
-> Then, skip the hole (not mapped page) is necessary.
-> This patch updates vread/vwrite() for avoiding memory hole.
-> 
-> Routines which access vmalloc area without knowing for which addr is used
-> are
->   - /proc/kcore
->   - /dev/kmem
-> 
-> kcore checks IOREMAP, /dev/kmem doesn't. After this patch, IOREMAP is
-> checked and /dev/kmem will avoid to read/write it.
-> Fixes to /proc/kcore will be in the next patch in series.
-> 
-> Changelog v2->v3:
->  - fixed typos.
->  - use kmap. (if not using kmap, we have to add lock here.)
->  - fixed PAGE_MASK miss-use.
-> Changelog v1->v2:
->  - enhanced comments.
->  - treat IOREMAP as hole always.
->  - zero-fill memory hole if [addr...addr+size] includes valid pages.
->  - returns 0 if [addr...addr+size) includes no valid pages.
-> 
-> ...
->
-> +static int aligned_vread(char *buf, char *addr, unsigned long count)
-> +{
-> +	struct page *p;
-> +	int copied = 0;
-> +
-> +	while (count) {
-> +		unsigned long offset, length;
-> +
-> +		offset = (unsigned long)addr & ~PAGE_MASK;
-> +		length = PAGE_SIZE - offset;
-> +		if (length > count)
-> +			length = count;
-> +		p = vmalloc_to_page(addr);
-> +		/*
-> +		 * To do safe access to this _mapped_ area, we need
-> +		 * lock. But adding lock here means that we need to add
-> +		 * overhead of vmalloc()/vfree() calles for this _debug_
-> +		 * interface, rarely used. Instead of that, we'll use
-> +		 * kmap() and get small overhead in this access function.
-> +		 */
-> +		if (p) {
-> +			/* we can expect USR1 is not used */
+> What "tty tests" would that be?  Have a pointer to them?
 
-It would be nice if the comment were to explain _why_ KM_USER1 is known
-to be free here.
+It's the "Linux Standard Base" test suite:
+
+	http://www.linuxfoundation.org/collaborate/workgroups/lsb
+
+Here's a link to the specific code - got this from one of the reporters:
+
+http://bzr.linux-foundation.org/lsb/devel/runtime-test?cmd=content;rev=cyeoh-20020312084903-a08971416c59e5d5;pathrevid=stewb%40linux-foundation.org-20090626205411-sfb23cc0tjj7jzgm;path=modules/vsx-pcts/tset/POSIX.os/devclass/c_lflag/c_lflag.c
 
 
-> +			void *map = kmap_atomic(p, KM_USER1);
-> +			memcpy(buf, map + offset, length);
-> +			kunmap_atomic(map, KM_USER1);
-
-Can use clear_highpage().
-
-> +		} else
-> +			memset(buf, 0, length);
-> +
-> +		addr += length;
-> +		buf += length;
-> +		copied += length;
-> +		count -= length;
-> +	}
-> +	return copied;
-> +}
-> +
-> +static int aligned_vwrite(char *buf, char *addr, unsigned long count)
-> +{
-> +	struct page *p;
-> +	int copied = 0;
-> +
-> +	while (count) {
-> +		unsigned long offset, length;
-> +
-> +		offset = (unsigned long)addr & ~PAGE_MASK;
-> +		length = PAGE_SIZE - offset;
-> +		if (length > count)
-> +			length = count;
-> +		p = vmalloc_to_page(addr);
-> +		/*
-> +		 * To do safe access to this _mapped_ area, we need
-> +		 * lock. But adding lock here means that we need to add
-> +		 * overhead of vmalloc()/vfree() calles for this _debug_
-> +		 * interface, rarely used. Instead of that, we'll use
-> +		 * kmap() and get small overhead in this access function.
-> +		 */
-> +		if (p) {
-> +			/* we can expect USR1 is not used */
-> +			void *map = kmap_atomic(p, KM_USER1);
-> +			memcpy(map + offset, buf, length);
-> +			kunmap_atomic(map, KM_USER1);
-
-clear_highpage().
-
-> +		}
-> +		addr += length;
-> +		buf += length;
-> +		copied += length;
-> +		count -= length;
-> +	}
-> +	return copied;
-> +}
-
+						-Joe
