@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932850AbZHDO63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932840AbZHDO5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932850AbZHDO63 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 10:58:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755522AbZHDO5J
+	id S932840AbZHDO5m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 10:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932291AbZHDO5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 10:57:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52380 "EHLO mx2.redhat.com"
+	Tue, 4 Aug 2009 10:57:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52390 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755564AbZHDO5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 10:57:05 -0400
+	id S932757AbZHDO5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 10:57:18 -0400
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
 	Registered in England and Wales under Company Registration No. 3798903
 From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 1/6] KEYS: Deal with dead-type keys appropriately
+Subject: [PATCH 5/6] KEYS: Make /proc/keys use keyid not numread as file
+	position
 To: torvalds@osdl.org, akpm@linux-foundation.org, jmorris@namei.org
 Cc: serue@us.ibm.com, linux-kernel@vger.kernel.org,
        linux-security-module@vger.kernel.org,
+       "Serge E. Hallyn" <serue@us.ibm.com>,
        David Howells <dhowells@redhat.com>
-Date: Tue, 04 Aug 2009 15:55:30 +0100
-Message-ID: <20090804145530.17676.24656.stgit@warthog.procyon.org.uk>
+Date: Tue, 04 Aug 2009 15:55:51 +0100
+Message-ID: <20090804145551.17676.95701.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20090804145530.17676.24656.stgit@warthog.procyon.org.uk>
+References: <20090804145530.17676.24656.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -29,308 +33,119 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow keys for which the key type has been removed to be unlinked.  Currently
-dead-type keys can only be disposed of by completely clearing the keyrings
-that point to them.
+From: Serge E. Hallyn <serue@us.ibm.com>
 
+Make the file position maintained by /proc/keys represent the ID of the key
+just read rather than the number of keys read.  This should make it faster to
+perform a lookup as we don't have to scan the key ID tree from the beginning to
+find the current position.
+
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
 Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- security/keys/internal.h     |    5 +++-
- security/keys/key.c          |    6 ++---
- security/keys/keyctl.c       |   50 ++++++++++++++++++++++++------------------
- security/keys/process_keys.c |   18 +++++++++++----
- 4 files changed, 48 insertions(+), 31 deletions(-)
+ security/keys/proc.c |   62 +++++++++++++++++++++++++++++++++-----------------
+ 1 files changed, 41 insertions(+), 21 deletions(-)
 
 
-diff --git a/security/keys/internal.h b/security/keys/internal.h
-index 9fb679c..a7252e7 100644
---- a/security/keys/internal.h
-+++ b/security/keys/internal.h
-@@ -124,8 +124,11 @@ extern struct key *request_key_and_link(struct key_type *type,
- 					struct key *dest_keyring,
- 					unsigned long flags);
- 
--extern key_ref_t lookup_user_key(key_serial_t id, int create, int partial,
-+extern key_ref_t lookup_user_key(key_serial_t id, unsigned long flags,
- 				 key_perm_t perm);
-+#define KEY_LOOKUP_CREATE	0x01
-+#define KEY_LOOKUP_PARTIAL	0x02
-+#define KEY_LOOKUP_FOR_UNLINK	0x04
- 
- extern long join_session_keyring(const char *name);
- 
-diff --git a/security/keys/key.c b/security/keys/key.c
-index 4a1297d..3762d5b 100644
---- a/security/keys/key.c
-+++ b/security/keys/key.c
-@@ -642,10 +642,8 @@ struct key *key_lookup(key_serial_t id)
- 	goto error;
- 
-  found:
--	/* pretend it doesn't exist if it's dead */
--	if (atomic_read(&key->usage) == 0 ||
--	    test_bit(KEY_FLAG_DEAD, &key->flags) ||
--	    key->type == &key_type_dead)
-+	/* pretend it doesn't exist if it is awaiting deletion */
-+	if (atomic_read(&key->usage) == 0)
- 		goto not_found;
- 
- 	/* this races with key_put(), but that doesn't matter since key_put()
-diff --git a/security/keys/keyctl.c b/security/keys/keyctl.c
-index 7f09fb8..b85ace2 100644
---- a/security/keys/keyctl.c
-+++ b/security/keys/keyctl.c
-@@ -103,7 +103,7 @@ SYSCALL_DEFINE5(add_key, const char __user *, _type,
- 	}
- 
- 	/* find the target keyring (which must be writable) */
--	keyring_ref = lookup_user_key(ringid, 1, 0, KEY_WRITE);
-+	keyring_ref = lookup_user_key(ringid, KEY_LOOKUP_CREATE, KEY_WRITE);
- 	if (IS_ERR(keyring_ref)) {
- 		ret = PTR_ERR(keyring_ref);
- 		goto error3;
-@@ -185,7 +185,8 @@ SYSCALL_DEFINE4(request_key, const char __user *, _type,
- 	/* get the destination keyring if specified */
- 	dest_ref = NULL;
- 	if (destringid) {
--		dest_ref = lookup_user_key(destringid, 1, 0, KEY_WRITE);
-+		dest_ref = lookup_user_key(destringid, KEY_LOOKUP_CREATE,
-+					   KEY_WRITE);
- 		if (IS_ERR(dest_ref)) {
- 			ret = PTR_ERR(dest_ref);
- 			goto error3;
-@@ -233,9 +234,11 @@ SYSCALL_DEFINE4(request_key, const char __user *, _type,
- long keyctl_get_keyring_ID(key_serial_t id, int create)
- {
- 	key_ref_t key_ref;
-+	unsigned long lflags;
- 	long ret;
- 
--	key_ref = lookup_user_key(id, create, 0, KEY_SEARCH);
-+	lflags = create ? KEY_LOOKUP_CREATE : 0;
-+	key_ref = lookup_user_key(id, lflags, KEY_SEARCH);
- 	if (IS_ERR(key_ref)) {
- 		ret = PTR_ERR(key_ref);
- 		goto error;
-@@ -309,7 +312,7 @@ long keyctl_update_key(key_serial_t id,
- 	}
- 
- 	/* find the target key (which must be writable) */
--	key_ref = lookup_user_key(id, 0, 0, KEY_WRITE);
-+	key_ref = lookup_user_key(id, 0, KEY_WRITE);
- 	if (IS_ERR(key_ref)) {
- 		ret = PTR_ERR(key_ref);
- 		goto error2;
-@@ -337,7 +340,7 @@ long keyctl_revoke_key(key_serial_t id)
- 	key_ref_t key_ref;
- 	long ret;
- 
--	key_ref = lookup_user_key(id, 0, 0, KEY_WRITE);
-+	key_ref = lookup_user_key(id, 0, KEY_WRITE);
- 	if (IS_ERR(key_ref)) {
- 		ret = PTR_ERR(key_ref);
- 		goto error;
-@@ -363,7 +366,7 @@ long keyctl_keyring_clear(key_serial_t ringid)
- 	key_ref_t keyring_ref;
- 	long ret;
- 
--	keyring_ref = lookup_user_key(ringid, 1, 0, KEY_WRITE);
-+	keyring_ref = lookup_user_key(ringid, KEY_LOOKUP_CREATE, KEY_WRITE);
- 	if (IS_ERR(keyring_ref)) {
- 		ret = PTR_ERR(keyring_ref);
- 		goto error;
-@@ -389,13 +392,13 @@ long keyctl_keyring_link(key_serial_t id, key_serial_t ringid)
- 	key_ref_t keyring_ref, key_ref;
- 	long ret;
- 
--	keyring_ref = lookup_user_key(ringid, 1, 0, KEY_WRITE);
-+	keyring_ref = lookup_user_key(ringid, KEY_LOOKUP_CREATE, KEY_WRITE);
- 	if (IS_ERR(keyring_ref)) {
- 		ret = PTR_ERR(keyring_ref);
- 		goto error;
- 	}
- 
--	key_ref = lookup_user_key(id, 1, 0, KEY_LINK);
-+	key_ref = lookup_user_key(id, KEY_LOOKUP_CREATE, KEY_LINK);
- 	if (IS_ERR(key_ref)) {
- 		ret = PTR_ERR(key_ref);
- 		goto error2;
-@@ -423,13 +426,13 @@ long keyctl_keyring_unlink(key_serial_t id, key_serial_t ringid)
- 	key_ref_t keyring_ref, key_ref;
- 	long ret;
- 
--	keyring_ref = lookup_user_key(ringid, 0, 0, KEY_WRITE);
-+	keyring_ref = lookup_user_key(ringid, 0, KEY_WRITE);
- 	if (IS_ERR(keyring_ref)) {
- 		ret = PTR_ERR(keyring_ref);
- 		goto error;
- 	}
- 
--	key_ref = lookup_user_key(id, 0, 0, 0);
-+	key_ref = lookup_user_key(id, KEY_LOOKUP_FOR_UNLINK, 0);
- 	if (IS_ERR(key_ref)) {
- 		ret = PTR_ERR(key_ref);
- 		goto error2;
-@@ -465,7 +468,7 @@ long keyctl_describe_key(key_serial_t keyid,
- 	char *tmpbuf;
- 	long ret;
- 
--	key_ref = lookup_user_key(keyid, 0, 1, KEY_VIEW);
-+	key_ref = lookup_user_key(keyid, KEY_LOOKUP_PARTIAL, KEY_VIEW);
- 	if (IS_ERR(key_ref)) {
- 		/* viewing a key under construction is permitted if we have the
- 		 * authorisation token handy */
-@@ -474,7 +477,8 @@ long keyctl_describe_key(key_serial_t keyid,
- 			if (!IS_ERR(instkey)) {
- 				key_put(instkey);
- 				key_ref = lookup_user_key(keyid,
--							  0, 1, 0);
-+							  KEY_LOOKUP_PARTIAL,
-+							  0);
- 				if (!IS_ERR(key_ref))
- 					goto okay;
- 			}
-@@ -558,7 +562,7 @@ long keyctl_keyring_search(key_serial_t ringid,
- 	}
- 
- 	/* get the keyring at which to begin the search */
--	keyring_ref = lookup_user_key(ringid, 0, 0, KEY_SEARCH);
-+	keyring_ref = lookup_user_key(ringid, 0, KEY_SEARCH);
- 	if (IS_ERR(keyring_ref)) {
- 		ret = PTR_ERR(keyring_ref);
- 		goto error2;
-@@ -567,7 +571,8 @@ long keyctl_keyring_search(key_serial_t ringid,
- 	/* get the destination keyring if specified */
- 	dest_ref = NULL;
- 	if (destringid) {
--		dest_ref = lookup_user_key(destringid, 1, 0, KEY_WRITE);
-+		dest_ref = lookup_user_key(destringid, KEY_LOOKUP_CREATE,
-+					   KEY_WRITE);
- 		if (IS_ERR(dest_ref)) {
- 			ret = PTR_ERR(dest_ref);
- 			goto error3;
-@@ -637,7 +642,7 @@ long keyctl_read_key(key_serial_t keyid, char __user *buffer, size_t buflen)
- 	long ret;
- 
- 	/* find the key first */
--	key_ref = lookup_user_key(keyid, 0, 0, 0);
-+	key_ref = lookup_user_key(keyid, 0, 0);
- 	if (IS_ERR(key_ref)) {
- 		ret = -ENOKEY;
- 		goto error;
-@@ -700,7 +705,8 @@ long keyctl_chown_key(key_serial_t id, uid_t uid, gid_t gid)
- 	if (uid == (uid_t) -1 && gid == (gid_t) -1)
- 		goto error;
- 
--	key_ref = lookup_user_key(id, 1, 1, KEY_SETATTR);
-+	key_ref = lookup_user_key(id, KEY_LOOKUP_CREATE | KEY_LOOKUP_PARTIAL,
-+				  KEY_SETATTR);
- 	if (IS_ERR(key_ref)) {
- 		ret = PTR_ERR(key_ref);
- 		goto error;
-@@ -805,7 +811,8 @@ long keyctl_setperm_key(key_serial_t id, key_perm_t perm)
- 	if (perm & ~(KEY_POS_ALL | KEY_USR_ALL | KEY_GRP_ALL | KEY_OTH_ALL))
- 		goto error;
- 
--	key_ref = lookup_user_key(id, 1, 1, KEY_SETATTR);
-+	key_ref = lookup_user_key(id, KEY_LOOKUP_CREATE | KEY_LOOKUP_PARTIAL,
-+				  KEY_SETATTR);
- 	if (IS_ERR(key_ref)) {
- 		ret = PTR_ERR(key_ref);
- 		goto error;
-@@ -847,7 +854,7 @@ static long get_instantiation_keyring(key_serial_t ringid,
- 
- 	/* if a specific keyring is nominated by ID, then use that */
- 	if (ringid > 0) {
--		dkref = lookup_user_key(ringid, 1, 0, KEY_WRITE);
-+		dkref = lookup_user_key(ringid, KEY_LOOKUP_CREATE, KEY_WRITE);
- 		if (IS_ERR(dkref))
- 			return PTR_ERR(dkref);
- 		*_dest_keyring = key_ref_to_ptr(dkref);
-@@ -1083,7 +1090,8 @@ long keyctl_set_timeout(key_serial_t id, unsigned timeout)
- 	time_t expiry;
- 	long ret;
- 
--	key_ref = lookup_user_key(id, 1, 1, KEY_SETATTR);
-+	key_ref = lookup_user_key(id, KEY_LOOKUP_CREATE | KEY_LOOKUP_PARTIAL,
-+				  KEY_SETATTR);
- 	if (IS_ERR(key_ref)) {
- 		ret = PTR_ERR(key_ref);
- 		goto error;
-@@ -1170,7 +1178,7 @@ long keyctl_get_security(key_serial_t keyid,
- 	char *context;
- 	long ret;
- 
--	key_ref = lookup_user_key(keyid, 0, 1, KEY_VIEW);
-+	key_ref = lookup_user_key(keyid, KEY_LOOKUP_PARTIAL, KEY_VIEW);
- 	if (IS_ERR(key_ref)) {
- 		if (PTR_ERR(key_ref) != -EACCES)
- 			return PTR_ERR(key_ref);
-@@ -1182,7 +1190,7 @@ long keyctl_get_security(key_serial_t keyid,
- 			return PTR_ERR(key_ref);
- 		key_put(instkey);
- 
--		key_ref = lookup_user_key(keyid, 0, 1, 0);
-+		key_ref = lookup_user_key(keyid, KEY_LOOKUP_PARTIAL, 0);
- 		if (IS_ERR(key_ref))
- 			return PTR_ERR(key_ref);
- 	}
-diff --git a/security/keys/process_keys.c b/security/keys/process_keys.c
-index 276d278..349c315 100644
---- a/security/keys/process_keys.c
-+++ b/security/keys/process_keys.c
-@@ -487,7 +487,7 @@ static int lookup_user_key_possessed(const struct key *key, const void *target)
-  * - don't create special keyrings unless so requested
-  * - partially constructed keys aren't found unless requested
+diff --git a/security/keys/proc.c b/security/keys/proc.c
+index 769f9bd..643ecf0 100644
+--- a/security/keys/proc.c
++++ b/security/keys/proc.c
+@@ -91,8 +91,9 @@ __initcall(key_proc_init);
   */
--key_ref_t lookup_user_key(key_serial_t id, int create, int partial,
-+key_ref_t lookup_user_key(key_serial_t id, unsigned long lflags,
- 			  key_perm_t perm)
+ #ifdef CONFIG_KEYS_DEBUG_PROC_KEYS
+ 
+-static struct rb_node *__key_serial_next(struct rb_node *n)
++static struct rb_node *key_serial_next(struct rb_node *n)
  {
- 	struct request_key_auth *rka;
-@@ -503,7 +503,7 @@ try_again:
- 	switch (id) {
- 	case KEY_SPEC_THREAD_KEYRING:
- 		if (!cred->thread_keyring) {
--			if (!create)
-+			if (!(lflags & KEY_LOOKUP_CREATE))
- 				goto error;
++	n = rb_next(n);
+ 	while (n) {
+ 		struct key *key = rb_entry(n, struct key, serial_node);
+ 		if (key->user->user_ns == current_user_ns())
+@@ -102,45 +103,64 @@ static struct rb_node *__key_serial_next(struct rb_node *n)
+ 	return n;
+ }
  
- 			ret = install_thread_keyring();
-@@ -521,7 +521,7 @@ try_again:
+-static struct rb_node *key_serial_next(struct rb_node *n)
++static int proc_keys_open(struct inode *inode, struct file *file)
+ {
+-	return __key_serial_next(rb_next(n));
++	return seq_open(file, &proc_keys_ops);
+ }
  
- 	case KEY_SPEC_PROCESS_KEYRING:
- 		if (!cred->tgcred->process_keyring) {
--			if (!create)
-+			if (!(lflags & KEY_LOOKUP_CREATE))
- 				goto error;
+-static struct rb_node *key_serial_first(struct rb_root *r)
++static struct key *find_ge_key(key_serial_t id)
+ {
+-	struct rb_node *n = rb_first(r);
+-	return __key_serial_next(n);
+-}
++	struct rb_node *n = key_serial_tree.rb_node;
++	struct key *minkey = NULL;
  
- 			ret = install_process_keyring();
-@@ -642,7 +642,14 @@ try_again:
- 		break;
- 	}
- 
--	if (!partial) {
-+	/* unlink does not use the nominated key in any way, so can skip all
-+	 * the permission checks as it is only concerned with the keyring */
-+	if (lflags & KEY_LOOKUP_FOR_UNLINK) {
-+		ret = 0;
-+		goto error;
+-static int proc_keys_open(struct inode *inode, struct file *file)
+-{
+-	return seq_open(file, &proc_keys_ops);
++	while (n) {
++		struct key *key = rb_entry(n, struct key, serial_node);
++		if (id < key->serial) {
++			if (!minkey || minkey->serial > key->serial)
++				minkey = key;
++			n = n->rb_left;
++		} else if (id > key->serial) {
++			n = n->rb_right;
++		} else {
++			minkey = key;
++			break;
++		}
++		key = NULL;
 +	}
-+
-+	if (!(lflags & KEY_LOOKUP_PARTIAL)) {
- 		ret = wait_for_key_construction(key, true);
- 		switch (ret) {
- 		case -ERESTARTSYS:
-@@ -660,7 +667,8 @@ try_again:
- 	}
  
- 	ret = -EIO;
--	if (!partial && !test_bit(KEY_FLAG_INSTANTIATED, &key->flags))
-+	if (!(lflags & KEY_LOOKUP_PARTIAL) &&
-+	    !test_bit(KEY_FLAG_INSTANTIATED, &key->flags))
- 		goto invalid_key;
++	return minkey;
+ }
  
- 	/* check the permissions */
+ static void *proc_keys_start(struct seq_file *p, loff_t *_pos)
+ {
+-	struct rb_node *_p;
+-	loff_t pos = *_pos;
++	key_serial_t pos = *_pos;
++	struct key *key;
+ 
+ 	spin_lock(&key_serial_lock);
+ 
+-	_p = key_serial_first(&key_serial_tree);
+-	while (pos > 0 && _p) {
+-		pos--;
+-		_p = key_serial_next(_p);
+-	}
+-
+-	return _p;
++	if (*_pos > INT_MAX)
++		return NULL;
++	key = find_ge_key(pos);
++	if (!key)
++		return NULL;
++	*_pos = key->serial;
++	return &key->serial_node;
++}
+ 
++static inline key_serial_t key_node_serial(struct rb_node *n)
++{
++	struct key *key = rb_entry(n, struct key, serial_node);
++	return key->serial;
+ }
+ 
+ static void *proc_keys_next(struct seq_file *p, void *v, loff_t *_pos)
+ {
+-	(*_pos)++;
+-	return key_serial_next((struct rb_node *) v);
++	struct rb_node *n;
+ 
++	n = key_serial_next(v);
++	if (n)
++		*_pos = key_node_serial(n);
++	return n;
+ }
+ 
+ static void proc_keys_stop(struct seq_file *p, void *v)
 
