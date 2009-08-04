@@ -1,102 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932815AbZHDO5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932557AbZHDO5H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932815AbZHDO5Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 10:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932757AbZHDO5W
+	id S932557AbZHDO5H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 10:57:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755611AbZHDO5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 10:57:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52394 "EHLO mx2.redhat.com"
+	Tue, 4 Aug 2009 10:57:06 -0400
+Received: from verein.lst.de ([213.95.11.210]:60784 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932763AbZHDO5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 10:57:19 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 6/6] KEYS: Do some whitespace cleanups
-To: torvalds@osdl.org, akpm@linux-foundation.org, jmorris@namei.org
-Cc: serue@us.ibm.com, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org,
-       David Howells <dhowells@redhat.com>
-Date: Tue, 04 Aug 2009 15:55:56 +0100
-Message-ID: <20090804145556.17676.80359.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20090804145530.17676.24656.stgit@warthog.procyon.org.uk>
-References: <20090804145530.17676.24656.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	id S1753423AbZHDO5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 10:57:05 -0400
+Date: Tue, 4 Aug 2009 16:56:53 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: jdike@addtoit.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] um: convert to asm-generic/hardirq.h
+Message-ID: <20090804145653.GN20487@lst.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.349 () BAYES_30
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do some whitespace cleanups in the key management code.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 
- security/keys/proc.c |   12 +++---------
- 1 files changed, 3 insertions(+), 9 deletions(-)
-
-
-diff --git a/security/keys/proc.c b/security/keys/proc.c
-index 643ecf0..e4fde23 100644
---- a/security/keys/proc.c
-+++ b/security/keys/proc.c
-@@ -194,11 +194,9 @@ static int proc_keys_show(struct seq_file *m, void *v)
- 	/* come up with a suitable timeout value */
- 	if (key->expiry == 0) {
- 		memcpy(xbuf, "perm", 5);
--	}
--	else if (now.tv_sec >= key->expiry) {
-+	} else if (now.tv_sec >= key->expiry) {
- 		memcpy(xbuf, "expd", 5);
--	}
--	else {
-+	} else {
- 		timo = key->expiry - now.tv_sec;
- 
- 		if (timo < 60)
-@@ -238,9 +236,7 @@ static int proc_keys_show(struct seq_file *m, void *v)
- 	seq_putc(m, '\n');
- 
- 	rcu_read_unlock();
+Index: linux-2.6/arch/um/include/asm/hardirq.h
+===================================================================
+--- linux-2.6.orig/arch/um/include/asm/hardirq.h	2009-07-27 14:32:58.969148744 +0200
++++ linux-2.6/arch/um/include/asm/hardirq.h	2009-07-27 14:57:49.430900969 +0200
+@@ -1,25 +1 @@
+-/* (c) 2004 cw@f00f.org, GPLv2 blah blah */
 -
- 	return 0;
+-#ifndef __ASM_UM_HARDIRQ_H
+-#define __ASM_UM_HARDIRQ_H
 -
- }
- 
- #endif /* CONFIG_KEYS_DEBUG_PROC_KEYS */
-@@ -266,6 +262,7 @@ static struct rb_node *key_user_first(struct rb_root *r)
- 	struct rb_node *n = rb_first(r);
- 	return __key_user_next(n);
- }
-+
- /*****************************************************************************/
- /*
-  * implement "/proc/key-users" to provides a list of the key users
-@@ -273,7 +270,6 @@ static struct rb_node *key_user_first(struct rb_root *r)
- static int proc_key_users_open(struct inode *inode, struct file *file)
- {
- 	return seq_open(file, &proc_key_users_ops);
+-#include <linux/threads.h>
+-#include <linux/irq.h>
 -
- }
- 
- static void *proc_key_users_start(struct seq_file *p, loff_t *_pos)
-@@ -290,14 +286,12 @@ static void *proc_key_users_start(struct seq_file *p, loff_t *_pos)
- 	}
- 
- 	return _p;
+-/* NOTE: When SMP works again we might want to make this
+- * ____cacheline_aligned or maybe use per_cpu state? --cw */
+-typedef struct {
+-	unsigned int __softirq_pending;
+-} irq_cpustat_t;
 -
- }
- 
- static void *proc_key_users_next(struct seq_file *p, void *v, loff_t *_pos)
- {
- 	(*_pos)++;
- 	return key_user_next((struct rb_node *) v);
+-#include <linux/irq_cpustat.h>
 -
- }
- 
- static void proc_key_users_stop(struct seq_file *p, void *v)
-
+-/* As this would be very strange for UML to get we BUG() after the
+- * printk. */
+-static inline void ack_bad_irq(unsigned int irq)
+-{
+-	printk(KERN_ERR "unexpected IRQ %02x\n", irq);
+-	BUG();
+-}
+-
+-#endif /* __ASM_UM_HARDIRQ_H */
++#include <asm-generic/hardirq.h>
