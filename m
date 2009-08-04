@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933230AbZHDSMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933233AbZHDSNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933230AbZHDSMy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 14:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933216AbZHDSMw
+	id S933233AbZHDSNM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 14:13:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933190AbZHDSMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 14:12:52 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:37088 "EHLO gir.skynet.ie"
+	Tue, 4 Aug 2009 14:12:51 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:37086 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933186AbZHDSMb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S933187AbZHDSMb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 4 Aug 2009 14:12:31 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Larry Woodman <lwoodman@redhat.com>,
@@ -16,167 +16,67 @@ Cc: riel@redhat.com, Ingo Molnar <mingo@elte.hu>,
        Peter Zijlstra <peterz@infradead.org>,
        LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org,
        Mel Gorman <mel@csn.ul.ie>
-Subject: [PATCH 1/4] tracing, page-allocator: Add trace events for page allocation and page freeing
-Date: Tue,  4 Aug 2009 19:12:23 +0100
-Message-Id: <1249409546-6343-2-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 0/4] Add some trace events for the page allocator v3
+Date: Tue,  4 Aug 2009 19:12:22 +0100
+Message-Id: <1249409546-6343-1-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1249409546-6343-1-git-send-email-mel@csn.ul.ie>
-References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds trace events for the allocation and freeing of pages,
-including the freeing of pagevecs.  Using the events, it will be known what
-struct page and pfns are being allocated and freed and what the call site
-was in many cases.
+Changelog since V2
+  o Added Ack-ed By's from Rik
+  o Only call trace_mm_page_free_direct when page count reaches zero
+  o Rebase to 2.6.31-rc5
 
-The page alloc tracepoints be used as an indicator as to whether the workload
-was heavily dependant on the page allocator or not. You can make a guess based
+Changelog since V1
+  o Fix minor formatting error for the __rmqueue event
+  o Add event for __pagevec_free
+  o Bring naming more in line with Larry Woodman's tracing patch
+  o Add an example post-processing script for the trace events
+
+This is V3 of a patchset to add some trace points for the page allocator. This
+version adds some ACKs, drops the RFC from the headline and fixes one issue
+where trace_mm_page_free_direct triggered more than it should. The following
+four patches add some trace events for the page allocator under the heading
+of kmem.
+
+	Patch 1 adds events for plain old allocate and freeing of pages
+	Patch 2 gives information useful for analysing fragmentation avoidance
+	Patch 3 tracks pages going to and from the buddy lists as an indirect
+		indication of zone lock hotness
+	Patch 4 adds a post-processing script that aggegates the events to
+		give a higher-level view
+
+The first one could be used as an indicator as to whether the workload was
+heavily dependant on the page allocator or not. You can make a guess based
 on vmstat but you can't get a per-process breakdown. Depending on the call
 path, the call_site for page allocation may be __get_free_pages() instead
 of a useful callsite. Instead of passing down a return address similar to
 slab debugging, the user should enable the stacktrace and seg-addr options
 to get a proper stack trace.
 
-The pagevec free tracepoint has a different usecase. It can be used to get
-a idea of how many pages are being dumped off the LRU and whether it is
-kswapd doing the work or a process doing direct reclaim.
+The second patch would mainly be useful for users of hugepages and
+particularly dynamic hugepage pool resizing as it could be used to tune
+min_free_kbytes to a level that fragmentation was rarely a problem. My
+main concern is that maybe I'm trying to jam too much into the TP_printk
+that could be extrapolated after the fact if you were familiar with the
+implementation. I couldn't determine if it was best to hold the hand of
+the administrator even if it cost more to figure it out.
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Acked-by: Rik van Riel <riel@redhat.com>
----
- include/trace/events/kmem.h |   86 +++++++++++++++++++++++++++++++++++++++++++
- mm/page_alloc.c             |    6 ++-
- 2 files changed, 91 insertions(+), 1 deletions(-)
+The third patch is trickier to draw conclusions from but high activity on
+those events could explain why there were a large number of cache misses
+on a page-allocator-intensive workload. The coalescing and splitting of
+buddies involves a lot of writing of page metadata and cache line bounces
+not to mention the acquisition of an interrupt-safe lock necessary to enter
+this path.
 
-diff --git a/include/trace/events/kmem.h b/include/trace/events/kmem.h
-index 1493c54..57bf13c 100644
---- a/include/trace/events/kmem.h
-+++ b/include/trace/events/kmem.h
-@@ -225,6 +225,92 @@ TRACE_EVENT(kmem_cache_free,
- 
- 	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
- );
-+
-+TRACE_EVENT(mm_page_free_direct,
-+
-+	TP_PROTO(unsigned long call_site, const void *page, unsigned int order),
-+
-+	TP_ARGS(call_site, page, order),
-+
-+	TP_STRUCT__entry(
-+		__field(	unsigned long,	call_site	)
-+		__field(	const void *,	page		)
-+		__field(	unsigned int,	order		)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->call_site	= call_site;
-+		__entry->page		= page;
-+		__entry->order		= order;
-+	),
-+
-+	TP_printk("call_site=%lx page=%p pfn=%lu order=%d",
-+			__entry->call_site,
-+			__entry->page,
-+			page_to_pfn((struct page *)__entry->page),
-+			__entry->order)
-+);
-+
-+TRACE_EVENT(mm_pagevec_free,
-+
-+	TP_PROTO(unsigned long call_site, const void *page, int order, int cold),
-+
-+	TP_ARGS(call_site, page, order, cold),
-+
-+	TP_STRUCT__entry(
-+		__field(	unsigned long,	call_site	)
-+		__field(	const void *,	page		)
-+		__field(	int,		order		)
-+		__field(	int,		cold		)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->call_site	= call_site;
-+		__entry->page		= page;
-+		__entry->order		= order;
-+		__entry->cold		= cold;
-+	),
-+
-+	TP_printk("call_site=%lx page=%p pfn=%lu order=%d cold=%d",
-+			__entry->call_site,
-+			__entry->page,
-+			page_to_pfn((struct page *)__entry->page),
-+			__entry->order,
-+			__entry->cold)
-+);
-+
-+TRACE_EVENT(mm_page_alloc,
-+
-+	TP_PROTO(unsigned long call_site, const void *page, unsigned int order,
-+			gfp_t gfp_flags, int migratetype),
-+
-+	TP_ARGS(call_site, page, order, gfp_flags, migratetype),
-+
-+	TP_STRUCT__entry(
-+		__field(	unsigned long,	call_site	)
-+		__field(	const void *,	page		)
-+		__field(	unsigned int,	order		)
-+		__field(	gfp_t,		gfp_flags	)
-+		__field(	int,		migratetype	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->call_site	= call_site;
-+		__entry->page		= page;
-+		__entry->order		= order;
-+		__entry->gfp_flags	= gfp_flags;
-+		__entry->migratetype	= migratetype;
-+	),
-+
-+	TP_printk("call_site=%lx page=%p pfn=%lu order=%d migratetype=%d gfp_flags=%s",
-+		__entry->call_site,
-+		__entry->page,
-+		page_to_pfn((struct page *)__entry->page),
-+		__entry->order,
-+		__entry->migratetype,
-+		show_gfp_flags(__entry->gfp_flags))
-+);
-+
- #endif /* _TRACE_KMEM_H */
- 
- /* This part must be outside protection */
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index d052abb..843bdec 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1905,6 +1905,7 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
- 				zonelist, high_zoneidx, nodemask,
- 				preferred_zone, migratetype);
- 
-+	trace_mm_page_alloc(_RET_IP_, page, order, gfp_mask, migratetype);
- 	return page;
- }
- EXPORT_SYMBOL(__alloc_pages_nodemask);
-@@ -1945,13 +1946,16 @@ void __pagevec_free(struct pagevec *pvec)
- {
- 	int i = pagevec_count(pvec);
- 
--	while (--i >= 0)
-+	while (--i >= 0) {
-+		trace_mm_pagevec_free(_RET_IP_, pvec->pages[i], 0, pvec->cold);
- 		free_hot_cold_page(pvec->pages[i], pvec->cold);
-+	}
- }
- 
- void __free_pages(struct page *page, unsigned int order)
- {
- 	if (put_page_testzero(page)) {
-+		trace_mm_page_free_direct(_RET_IP_, page, order);
- 		if (order == 0)
- 			free_hot_page(page);
- 		else
--- 
-1.6.3.3
+The fourth patch parses the trace buffer to draw a higher-level picture of
+what is going on broken down on a per-process basis.
+
+ .../postprocess/trace-pagealloc-postprocess.pl     |  131 ++++++++++++++
+ include/trace/events/kmem.h                        |  184 ++++++++++++++++++++
+ mm/page_alloc.c                                    |   14 ++-
+ 3 files changed, 328 insertions(+), 1 deletions(-)
+ create mode 100755 Documentation/trace/postprocess/trace-pagealloc-postprocess.pl
 
