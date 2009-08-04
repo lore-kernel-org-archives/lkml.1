@@ -1,89 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933381AbZHDV4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933266AbZHDWAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933381AbZHDV4A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 17:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933130AbZHDVxC
+	id S933266AbZHDWAU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 18:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933191AbZHDWAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 17:53:02 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43929 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932992AbZHDVxA (ORCPT
+	Tue, 4 Aug 2009 18:00:19 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36920 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933186AbZHDWAS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 17:53:00 -0400
-From: Andi Kleen <andi@firstfloor.org>
-References: <200908041152.240876191@firstfloor.org>
-In-Reply-To: <200908041152.240876191@firstfloor.org>
-To: akpm@linux-foundation.org, linux-mm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, fengguang.wu@intel.com
-Subject: [PATCH] [1/15] HWPOISON: Add page flag for poisoned pages
-Message-Id: <20090804215300.40A86B15D8@basil.firstfloor.org>
-Date: Tue,  4 Aug 2009 23:53:00 +0200 (CEST)
+	Tue, 4 Aug 2009 18:00:18 -0400
+Date: Wed, 5 Aug 2009 00:00:10 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+Cc: arve@android.com
+Subject: synaptics touchscreen for dream: documentation
+Message-ID: <20090804220009.GA2077@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hardware poisoned pages need special handling in the VM and shouldn't be 
-touched again. This requires a new page flag. Define it here.
+This adds pointer to hardware documentation, and adds code comment
+from Arve.
 
-The page flags wars seem to be over, so it shouldn't be a problem
-to get a new one.
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-v2: Add TestSetHWPoison (suggested by Johannes Weiner)
-
-Acked-by: Christoph Lameter <cl@linux.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
----
- include/linux/page-flags.h |   17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
-
-Index: linux/include/linux/page-flags.h
-===================================================================
---- linux.orig/include/linux/page-flags.h
-+++ linux/include/linux/page-flags.h
-@@ -51,6 +51,9 @@
-  * PG_buddy is set to indicate that the page is free and in the buddy system
-  * (see mm/page_alloc.c).
+diff --git a/drivers/staging/dream/synaptics_i2c_rmi.c b/drivers/staging/dream/synaptics_i2c_rmi.c
+index 3770d2c..dc1e3c7 100644
+--- a/drivers/staging/dream/synaptics_i2c_rmi.c
++++ b/drivers/staging/dream/synaptics_i2c_rmi.c
+@@ -13,6 +13,7 @@
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
   *
-+ * PG_hwpoison indicates that a page got corrupted in hardware and contains
-+ * data with incorrect ECC bits that triggered a machine check. Accessing is
-+ * not safe since it may cause another machine check. Don't touch!
++ * http://www.synaptics.com/sites/default/files/511_000099_01F.pdf
   */
  
- /*
-@@ -102,6 +105,9 @@ enum pageflags {
- #ifdef CONFIG_IA64_UNCACHED_ALLOCATOR
- 	PG_uncached,		/* Page has been mapped as uncached */
- #endif
-+#ifdef CONFIG_MEMORY_FAILURE
-+	PG_hwpoison,		/* hardware poisoned page. Don't touch */
-+#endif
- 	__NR_PAGEFLAGS,
+ #include <linux/module.h>
+@@ -87,6 +88,22 @@ static int synaptics_init_panel(struct synaptics_ts_data *ts)
  
- 	/* Filesystems */
-@@ -263,6 +269,15 @@ PAGEFLAG(Uncached, uncached)
- PAGEFLAG_FALSE(Uncached)
- #endif
- 
-+#ifdef CONFIG_MEMORY_FAILURE
-+PAGEFLAG(HWPoison, hwpoison)
-+TESTSETFLAG(HWPoison, hwpoison)
-+#define __PG_HWPOISON (1UL << PG_hwpoison)
-+#else
-+PAGEFLAG_FALSE(HWPoison)
-+#define __PG_HWPOISON 0
-+#endif
-+
- static inline int PageUptodate(struct page *page)
+ static void decode_report(struct synaptics_ts_data *ts, u8 *buf)
  {
- 	int ret = test_bit(PG_uptodate, &(page)->flags);
-@@ -387,7 +402,7 @@ static inline void __ClearPageTail(struc
- 	 1 << PG_private | 1 << PG_private_2 | \
- 	 1 << PG_buddy	 | 1 << PG_writeback | 1 << PG_reserved | \
- 	 1 << PG_slab	 | 1 << PG_swapcache | 1 << PG_active | \
--	 1 << PG_unevictable | __PG_MLOCKED)
-+	 1 << PG_unevictable | __PG_MLOCKED | __PG_HWPOISON)
- 
- /*
-  * Flags checked when a page is prepped for return by the page allocator.
++/* 
++ * This sensor sends two 6-byte absolute finger reports, an optional
++ * 2-byte relative report followed by a status byte. This function
++ * reads the two finger reports and transforms the coordinates
++ * according the platform data so they can be aligned with the lcd
++ * behind the touchscreen. Typically we flip the y-axis since the
++ * sensor uses the bottom left corner as the origin, but if the sensor
++ * is mounted upside down the platform data will request that the
++ * x-axis should be flipped instead. The snap to inactive edge border
++ * are used to allow tapping the edges of the screen on the G1. The
++ * active area of the touchscreen is smaller than the lcd. When the
++ * finger gets close the edge of the screen we snap it to the
++ * edge. This allows ui elements at the edge of the screen to be hit,
++ * and it prevents hitting ui elements that are not at the edge of the
++ * screen when the finger is touching the edge.
++ */
+ 	int pos[2][2];
+ 	int f, a;
+ 	int base = 2;
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
