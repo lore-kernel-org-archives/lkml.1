@@ -1,59 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933259AbZHDSkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933269AbZHDSnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933259AbZHDSkP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 14:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933144AbZHDSkO
+	id S933269AbZHDSnw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 14:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933255AbZHDSnv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 14:40:14 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:43617 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933112AbZHDSkN (ORCPT
+	Tue, 4 Aug 2009 14:43:51 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:46981 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933221AbZHDSnu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 14:40:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=e/azYgiY/OsIIHiPsgEh0wLLo0eq7oVtF9eaCRUSdfBcZ6uJ3fN+59D44ZTZrO1nPc
-         MqCIwbC2u+YHRjHk0fdtivlhwn01mFdy9CnppGEZLSIInD60Hi/zWYGOiqfYOVRPYC6b
-         pUc+78LfftwQudJlZBdmg0adpRH+lIR6Oh8No=
+	Tue, 4 Aug 2009 14:43:50 -0400
+Date: Tue, 4 Aug 2009 13:43:34 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, jmorris@namei.org,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 4/6] KEYS: Add garbage collection for dead, revoked and
+	expired keys.
+Message-ID: <20090804184334.GC8442@us.ibm.com>
+References: <20090804145530.17676.24656.stgit@warthog.procyon.org.uk> <20090804145546.17676.98776.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
-Date: Tue, 4 Aug 2009 20:40:10 +0200
-Message-ID: <71cd59b00908041140j7bd814d2u90585864fe00415e@mail.gmail.com>
-Subject: Cleaning asus_oled
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Greg Kroah-Hartman <greg@kroah.com>
-Cc: Jakub Schmidtke <sjakub@gmail.com>, acpi4asus-user@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090804145546.17676.98776.stgit@warthog.procyon.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I'm trying to clean the asus_oled driver, here is my git tree with
-some trivial patchs.
-http://git.iksaif.net/?p=acpi4asus.git;a=shortlog;h=refs/heads/asus_oled
+Quoting David Howells (dhowells@redhat.com):
+> Add garbage collection for dead, revoked and expired keys.  This involved
+> erasing all links to such keys from keyrings that point to them.  At that
+> point, the key will be deleted in the normal manner.
+> 
+> Keyrings from which garbage collection occurs are shrunk and their quota
+> consumption reduced as appropriate.
+> 
+> Dead keys (for which the key type has been removed) will be garbage collected
+> immediately.
+> 
+> Revoked and expired keys will hang around for a number of seconds, as set in
+> /proc/sys/kernel/keys/gc_delay before being automatically removed.  The default
+> is 5 minutes.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
+> ---
 
-Before working deeper, I wanted to discuss about the userspace interface:
+...
 
-> TODO:
-> [...]
->        - audit the userspace interface
->                - sysfs vs. char?
+> diff --git a/security/keys/keyring.c b/security/keys/keyring.c
+> index 3dba81c..acbe0d5 100644
+> --- a/security/keys/keyring.c
+> +++ b/security/keys/keyring.c
+> @@ -1000,3 +1000,81 @@ static void keyring_revoke(struct key *keyring)
+>  	}
+> 
+>  } /* end keyring_revoke() */
+> +
+> +/*
+> + * Collect garbage from the contents of a keyring
+> + */
+> +void keyring_gc(struct key *keyring, time_t limit)
+> +{
+> +	struct keyring_list *klist, *new;
+> +	struct key *key;
+> +	int loop, keep, max;
+> +
+> +	kenter("%x", key_serial(keyring));
+> +
+> +	down_write(&keyring->sem);
+> +
+> +	klist = keyring->payload.subscriptions;
+> +	if (!klist)
+> +		goto just_return;
+> +
+> +	/* work out how many subscriptions we're keeping */
+> +	keep = 0;
+> +	for (loop = klist->nkeys - 1; loop >= 0; loop--) {
+> +		key = klist->keys[loop];
+> +		if (!test_bit(KEY_FLAG_DEAD, &key->flags) &&
+> +		    !(key->expiry > 0 && key->expiry <= limit))
+These two lines (repeated below) beg for a helper?
 
-First, should we move asus_oled functionalities in asus-laptop ?
-Then the interface would be in sysfs under
-/sys/devices/platform/asus-laptop/{picture|enable} ?
+> +	for (loop = klist->nkeys - 1; loop >= 0; loop--) {
+> +		key = klist->keys[loop];
+> +		if (!test_bit(KEY_FLAG_DEAD, &key->flags) &&
+> +		    !(key->expiry > 0 && key->expiry <= limit)) {
+> +			if (keep >= max)
+> +				goto discard_new;
 
-Else we can use /dev/asus_oled, with an ioctl (or a zero-size image)
-to switch the OLED off.
-But I don't think /sys/class/oled is a good place to be, because
-/sys/class is for generic things.
+Can this happen?  This implies that the number of live keys
+went up, but we're under keyring->sem?
 
-Thanks,
+> +			new->keys[keep++] = key_get(key);
+> +		}
+> +	}
+> +	new->nkeys = keep;
+> +
+> +	/* adjust the quota */
+> +	key_payload_reserve(keyring,
+> +			    sizeof(struct keyring_list) +
+> +			    KEYQUOTA_LINK_BYTES * keep);
+> +
+> +	if (keep == 0) {
+> +		rcu_assign_pointer(keyring->payload.subscriptions, NULL);
+> +		kfree(new);
+> +	} else {
+> +		rcu_assign_pointer(keyring->payload.subscriptions, new);
+> +	}
+> +
+> +	up_write(&keyring->sem);
+> +
+> +	call_rcu(&klist->rcu, keyring_clear_rcu_disposal);
+> +	kleave(" [yes]");
+> +	return;
+> +
+> +discard_new:
+> +	new->nkeys = keep;
+> +	keyring_clear_rcu_disposal(&new->rcu);
+> +just_return:
+> +	up_write(&keyring->sem);
+> +	kleave(" [no]");
+> +}
+> diff --git a/security/keys/sysctl.c b/security/keys/sysctl.c
+> index b611d49..5e05dc0 100644
+> --- a/security/keys/sysctl.c
+> +++ b/security/keys/sysctl.c
+> @@ -13,6 +13,8 @@
+>  #include <linux/sysctl.h>
+>  #include "internal.h"
+> 
+> +static const int zero, one = 1, max = INT_MAX;
+> +
+>  ctl_table key_sysctls[] = {
+>  	{
+>  		.ctl_name = CTL_UNNUMBERED,
+> @@ -20,7 +22,9 @@ ctl_table key_sysctls[] = {
+>  		.data = &key_quota_maxkeys,
+>  		.maxlen = sizeof(unsigned),
+>  		.mode = 0644,
+> -		.proc_handler = &proc_dointvec,
+> +		.proc_handler = &proc_dointvec_minmax,
+> +		.extra1 = (void *) &one,
+> +		.extra2 = (void *) &max,
+>  	},
+>  	{
+>  		.ctl_name = CTL_UNNUMBERED,
+> @@ -28,7 +32,9 @@ ctl_table key_sysctls[] = {
+>  		.data = &key_quota_maxbytes,
+>  		.maxlen = sizeof(unsigned),
+>  		.mode = 0644,
+> -		.proc_handler = &proc_dointvec,
+> +		.proc_handler = &proc_dointvec_minmax,
+> +		.extra1 = (void *) &one,
+> +		.extra2 = (void *) &max,
+>  	},
+>  	{
+>  		.ctl_name = CTL_UNNUMBERED,
+> @@ -36,7 +42,9 @@ ctl_table key_sysctls[] = {
+>  		.data = &key_quota_root_maxkeys,
+>  		.maxlen = sizeof(unsigned),
+>  		.mode = 0644,
+> -		.proc_handler = &proc_dointvec,
+> +		.proc_handler = &proc_dointvec_minmax,
+> +		.extra1 = (void *) &one,
+> +		.extra2 = (void *) &max,
+>  	},
+>  	{
+>  		.ctl_name = CTL_UNNUMBERED,
+> @@ -44,7 +52,19 @@ ctl_table key_sysctls[] = {
+>  		.data = &key_quota_root_maxbytes,
+>  		.maxlen = sizeof(unsigned),
+>  		.mode = 0644,
+> -		.proc_handler = &proc_dointvec,
+> +		.proc_handler = &proc_dointvec_minmax,
+> +		.extra1 = (void *) &one,
+> +		.extra2 = (void *) &max,
+> +	},
+> +	{
+> +		.ctl_name = CTL_UNNUMBERED,
+> +		.procname = "gc_delay",
+> +		.data = &key_gc_delay,
 
--- 
-Corentin Chary
-http://xf.iksaif.net - http://uffs.org
+I see where this variable is defined at top of the patch, but
+I don't see where it is actually used?
+
+> +		.maxlen = sizeof(unsigned),
+> +		.mode = 0644,
+> +		.proc_handler = &proc_dointvec_minmax,
+> +		.extra1 = (void *) &zero,
+> +		.extra2 = (void *) &max,
+>  	},
+>  	{ .ctl_name = 0 }
+>  };
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
