@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933242AbZHDSVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933239AbZHDSWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933242AbZHDSVx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 14:21:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933226AbZHDSVw
+	id S933239AbZHDSWz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 14:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933192AbZHDSWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 14:21:52 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:34146 "EHLO
-	mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933216AbZHDSVu (ORCPT
+	Tue, 4 Aug 2009 14:22:54 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:35604 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933160AbZHDSWx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 14:21:50 -0400
+	Tue, 4 Aug 2009 14:22:53 -0400
+Date: Tue, 4 Aug 2009 13:22:54 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org, jmorris@namei.org,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 3/6] KEYS: Flag dead keys to induce EKEYREVOKED
+Message-ID: <20090804182254.GB8442@us.ibm.com>
+References: <20090804145530.17676.24656.stgit@warthog.procyon.org.uk> <20090804145541.17676.99745.stgit@warthog.procyon.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19064.31705.491774.122207@stoffel.org>
-Date: Tue, 4 Aug 2009 14:20:09 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: Eric Paris <eparis@redhat.com>, Tvrtko Ursulin <tvrtko.ursulin@sophos.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "malware-list@dmesg.printk.net" <malware-list@dmesg.printk.net>,
-       "greg@kroah.com" <greg@kroah.com>, "jcm@redhat.com" <jcm@redhat.com>,
-       Douglas Leeder <douglas.leeder@sophos.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "arjan@infradead.org" <arjan@infradead.org>,
-       "david@lang.hm" <david@lang.hm>,
-       "jengelh@medozas.de" <jengelh@medozas.de>,
-       "aviro@redhat.com" <aviro@redhat.com>,
-       "mrkafk@gmail.com" <mrkafk@gmail.com>,
-       "alexl@redhat.com" <alexl@redhat.com>, "jack@suse.cz" <jack@suse.cz>,
-       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       "mmorley@hcl.in" <mmorley@hcl.in>, "pavel@suse.cz" <pavel@suse.cz>
-Subject: Re: fanotify - overall design before I start sending patches
-In-Reply-To: <19585.1249406551@turing-police.cc.vt.edu>
-References: <1248466429.3567.82.camel@localhost>
-	<200908041709.51659.tvrtko.ursulin@sophos.com>
-	<1249403268.2361.21.camel@dhcp231-106.rdu.redhat.com>
-	<19585.1249406551@turing-police.cc.vt.edu>
-X-Mailer: VM 8.0.9 under Emacs 22.3.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <20090804145541.17676.99745.stgit@warthog.procyon.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Valdis" == Valdis Kletnieks <Valdis.Kletnieks@vt.edu> writes:
+Quoting David Howells (dhowells@redhat.com):
+> Set the KEY_FLAG_DEAD flag on keys for which the type has been removed.  This
+> causes the key_permission() function to return EKEYREVOKED in response to
+> various commands.  It does not, however, prevent unlinking or clearing of
+> keyrings from detaching the key.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-Valdis> On Tue, 04 Aug 2009 12:27:48 EDT, Eric Paris said:
->> On Tue, 2009-08-04 at 17:09 +0100, Tvrtko Ursulin wrote:
->> > Would it make more sense to deny on timeouts and then evict? I am thinking it
->> > would be more secure with no significant drawbacks. Also for usages like HSM
->> > allowing it without data being in place might present wrong content to the
->> > user.
->> 
->> I'd be willing to go that route as long as noone else complains.
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-Valdis> Yes, in my world, "deny on timeout and evict" is the better
-Valdis> design decision.  For an HSM, you'd rather have a
-Valdis> quick-and-ugly death on a failed file open than an app
-Valdis> accidentally reading the HSM's stub data thinking it's the
-Valdis> original data.
-
-Speaking as somone who is working slowly to deploy an HSM service, one
-thing to note is that when you *do* see the stub file contents, you
-know that your HSM is busted somehow. 
-
-How will fanotify deal with this issue?  Sorry, I haven't paid enough
-attention to this thread though I know I should since it's up my $WORK
-alley.
-
-John
+> ---
+> 
+>  security/keys/key.c |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+> 
+> 
+> diff --git a/security/keys/key.c b/security/keys/key.c
+> index 3762d5b..bd9d267 100644
+> --- a/security/keys/key.c
+> +++ b/security/keys/key.c
+> @@ -956,8 +956,10 @@ void unregister_key_type(struct key_type *ktype)
+>  	for (_n = rb_first(&key_serial_tree); _n; _n = rb_next(_n)) {
+>  		key = rb_entry(_n, struct key, serial_node);
+> 
+> -		if (key->type == ktype)
+> +		if (key->type == ktype) {
+>  			key->type = &key_type_dead;
+> +			set_bit(KEY_FLAG_DEAD, &key->flags);
+> +		}
+>  	}
+> 
+>  	spin_unlock(&key_serial_lock);
