@@ -1,17 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933007AbZHDQ3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933017AbZHDQeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933007AbZHDQ3U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 12:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932972AbZHDQ3T
+	id S933017AbZHDQeK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 12:34:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932882AbZHDQeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 12:29:19 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43125 "EHLO mx2.redhat.com"
+	Tue, 4 Aug 2009 12:34:09 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:33545 "EHLO pmx1.sophos.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932827AbZHDQ3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 12:29:18 -0400
+	id S932865AbZHDQeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 12:34:08 -0400
+From: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
+Organization: Sophos Plc
+To: Eric Paris <eparis@redhat.com>
 Subject: Re: fanotify - overall design before I start sending patches
-From: Eric Paris <eparis@redhat.com>
-To: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
+Date: Tue, 4 Aug 2009 17:34:04 +0100
+User-Agent: KMail/1.9.10
 Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
        "malware-list@dmesg.printk.net" <malware-list@dmesg.printk.net>,
@@ -29,46 +32,50 @@ Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "hch@infradead.org" <hch@infradead.org>,
        "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
        "mmorley@hcl.in" <mmorley@hcl.in>, "pavel@suse.cz" <pavel@suse.cz>
-In-Reply-To: <200908041709.51659.tvrtko.ursulin@sophos.com>
 References: <1248466429.3567.82.camel@localhost>
-	 <200908041709.51659.tvrtko.ursulin@sophos.com>
-Content-Type: text/plain
-Date: Tue, 04 Aug 2009 12:27:48 -0400
-Message-Id: <1249403268.2361.21.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
+In-Reply-To: <1248466429.3567.82.camel@localhost>
+MIME-Version: 1.0
+Message-Id: <200908041734.05762.tvrtko.ursulin@sophos.com>
+X-MIMETrack: Itemize by SMTP Server on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 04/08/2009 17:34:06,
+	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 04/08/2009 17:34:06,
+	Serialize complete at 04/08/2009 17:34:06
+X-TNEFEvaluated: 1
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-04 at 17:09 +0100, Tvrtko Ursulin wrote:
-> Hi Eric, all,
-> 
-> On Friday 24 July 2009 21:13:49 Eric Paris wrote:
-> > If a FAN_ACCESS_PERM or FAN_OPEN_PERM event is received the listener
-> > must send a response before the 5 second timeout.  If no response is
-> > sent before the 5 second timeout the original operation is allowed.  If
-> > this happens too many times (10 in a row) the fanotify group is evicted
-> > from the kernel and will not get any new events.  Sending a response is
-> 
-> Would it make more sense to deny on timeouts and then evict? I am thinking it 
-> would be more secure with no significant drawbacks. Also for usages like HSM 
-> allowing it without data being in place might present wrong content to the 
-> user.
+On Friday 24 July 2009 21:13:49 Eric Paris wrote:
+> After the socket is bound events are attained using the read() syscall
+> (recv* probably also works haven't tested).  This will result in the
+> buffer being filled with one or more events like this:
+>
+> struct fanotify_event_metadata {
+>         __u32 event_len;
+>         __s32 fd;
+>         __u32 mask;
+>         __u32 f_flags;
+>         __s32 pid;
+>         __s32 tgid;
+>         __u64 cookie;
+> }  __attribute__((packed));
+>
+> fd specifies the new file descriptor that was created in the context of
+> the listener.  (readlink of /proc/self/fd will give you A pathname)
+> mask indicates the events type (bitwise OR of the event types listed
+> above).  f_flags here is the f_flags the ORIGINAL process has the file
+> open with.  pid and tgid are from the original process.  cookie is used
+> when the listener needs to allow, deny, or delay the operation.
 
-I'd be willing to go that route as long as noone else complains.
+One more thing. uid and gid (possibly whole set?) would be useful so we can 
+tell which user triggered an event without having to look at the process 
+which has maybe disappeared in the mean time. I _think_ uid was in the 
+original proposal/idea and don't remember if it was decided we cannot get it 
+deliberately, or it was omitted by accident?
 
-> > The only other current interface is the ability to ignore events by
-> > superblock magic number.  This makes it easy to ignore all events
-> > in /proc which can be difficult to accomplish firing FANOTIFY_SET_MARK
-> > with ignored_masks over and over as processes are created and destroyed.
-> 
-> Just to double-check, that would also work for any other filesystem and is 
-> controllable from userspace?
-
-Yes you set these in userspace using setsockopt().  It is based on
-superblock magic number as found in linux/magic.h.  So one could
-exclude, procfs, sysfs, selinuxfs, etc.  It does not provide a way to
-say 'this ext3 filesystem but not that ext3 filesystem' as ext3 has a
-single magic number.
-
+Tvrtko
