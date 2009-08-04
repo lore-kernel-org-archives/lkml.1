@@ -1,45 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932453AbZHDGUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbZHDGkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932453AbZHDGUU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 02:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932436AbZHDGUU
+	id S1754871AbZHDGkW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 02:40:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbZHDGkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 02:20:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47157 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932429AbZHDGUT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 02:20:19 -0400
-Date: Mon, 3 Aug 2009 23:19:53 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Greg KH <greg@kroah.com>
-cc: Sergey Senozhatsky <sergey.senozhatsky@mail.by>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: proper tty-ldisc refcounting (was Re: WARNING at:
- drivers/char/tty_ldisc.c)
-In-Reply-To: <20090804040834.GA16696@kroah.com>
-Message-ID: <alpine.LFD.2.01.0908032319290.3270@localhost.localdomain>
-References: <alpine.LFD.2.01.0908021254580.3352@localhost.localdomain> <87k51l9apo.fsf@devron.myhome.or.jp> <alpine.LFD.2.01.0908021423490.3352@localhost.localdomain> <20090802234851.3fd1ac2c@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0908021654010.3352@localhost.localdomain>
- <alpine.LFD.2.01.0908031047010.3208@localhost.localdomain> <20090803181811.GA15848@kroah.com> <20090804003009.GA3121@localdomain.by> <alpine.LFD.2.01.0908031751270.3270@localhost.localdomain> <20090804035319.GA7248@kroah.com>
- <20090804040834.GA16696@kroah.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 4 Aug 2009 02:40:21 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58914 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755050AbZHDGkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 02:40:20 -0400
+Message-ID: <4A77D76B.3090502@cn.fujitsu.com>
+Date: Tue, 04 Aug 2009 14:38:35 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Munehiro Ikeda <m-ikeda@ds.jp.nec.com>
+CC: Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, jbaron@redhat.com, agk@redhat.com,
+       snitzer@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
+Subject: Re: [PATCH] io-controller: implement per group request allocation
+ limitation
+References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <4A569FC5.7090801@cn.fujitsu.com> <20090713160352.GA3714@redhat.com> <4A5BA238.3030902@ds.jp.nec.com> <4A5C377F.4040105@cn.fujitsu.com> <4A77964A.7040602@ds.jp.nec.com>
+In-Reply-To: <4A77964A.7040602@ds.jp.nec.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 3 Aug 2009, Greg KH wrote:
+Munehiro Ikeda wrote:
+...
 > 
-> Oh wait, the original problem, single user mode.  Hm, we need all of
-> these to fix that problem?  Or just the first one?
+> Consideration and Conclusion
+> =============================
+> 
+>  From result(1), it is observed that it takes 1000~1200[ms] to rise P2
+> bandwidth.  In result(2), where both of g1 and g2 have
+> nr_group_requests=100, the delay gets longer as 1800~2000[ms].  In
+> addition to it, the average bandwidth becomes ~5% lower than result(1). 
+> This is supposed that P2 couldn't allocate enough requests.
+> Then, result(3) shows that bandwidth of P2 can rise quickly (~300[ms])
+> if nr_group_requests can be set per-cgroup.  Result(4) shows that the
+> delay can be shortened by setting g2 as RT class, however, the delay is
+> still longer than result(3).
+> 
+> I think it is confirmed that "per-cgroup nr_requests limitation is
+> useful in a certain situation".  Beyond that, the discussion topic is
+> the benefit pointed out above is eligible for the complication of the
+> implementation.  IMHO, I don't think the implementation of per-cgroup
+> request limitation is too complicated to accept.  On the other hand I
+> guess it suddenly gets complicated if we try to implement further more,
+> especially hierarchical support.  It is also true that I have a feeling
+> that implementation without per-device limitation and hierarchical
+> support is like "unfinished work".
+> 
+> So, my opinion so far is that, per-cgroup nr_requests limitation should
+> be merged only if hierarchical support is concluded "unnecessary" for
+> it.  If merging it tempts hierarchical support, it shouldn't be.
+> How about your opinion, all?
 
-Patches 1-3 should fix that one. 4-5 are just cleanups with no semantic 
-changes.
+  Hi Munehiro-san,
 
-		Linus
+  Thanks for the great job. It seems Per-cgroup requests allocation limits
+  has its value in some cases. IMHO, for the time being, we can just drop
+  the hierarchical support for "Per-cgroup requests allocation limits", and
+  see whether it can work well.
+
+> 
+> My considerations or verification method might be wrong.  Please correct
+> them if any.  And if you have any other idea of scenario to verify the
+> effect of per-cgroup nr_requests limitation, please let me know.  I'll
+> try it.
+> 
+> 
+> 
+> 
+> ------------------------------------------------------------------------
+> 
+
+-- 
+Regards
+Gui Jianfeng
+
