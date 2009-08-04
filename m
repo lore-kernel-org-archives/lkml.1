@@ -1,200 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933179AbZHDSA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933101AbZHDSHY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933179AbZHDSA6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 14:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933089AbZHDSA5
+	id S933101AbZHDSHY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 14:07:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932989AbZHDSHX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 14:00:57 -0400
-Received: from mga10.intel.com ([192.55.52.92]:57419 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933090AbZHDSA4 (ORCPT
+	Tue, 4 Aug 2009 14:07:23 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:57699 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932978AbZHDSHX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 14:00:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,322,1246863600"; 
-   d="scan'208";a="713851016"
-Date: Tue, 4 Aug 2009 20:03:05 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Amit Kucheria <amit.kucheria@verdurent.com>
-Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org
-Subject: Re: [PATCH 3/3] MFD: TWL4030: OMAP: Board-specifc DPS scripts for
-	RX51 board
-Message-ID: <20090804180304.GI8601@sortiz.org>
-References: <1247050179-31187-1-git-send-email-amit.kucheria@verdurent.com>
+	Tue, 4 Aug 2009 14:07:23 -0400
+Date: Tue, 4 Aug 2009 14:07:21 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Robert Richter <robert.richter@amd.com>
+cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ring-buffer: Fix advance of reader in rb_buffer_peek()
+In-Reply-To: <20090804164927.GZ14610@erda.amd.com>
+Message-ID: <alpine.DEB.2.00.0908041407020.21700@gandalf.stny.rr.com>
+References: <alpine.DEB.2.00.0907271601210.30108@gandalf.stny.rr.com> <1249044963-26878-1-git-send-email-robert.richter@amd.com> <20090804164927.GZ14610@erda.amd.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1247050179-31187-1-git-send-email-amit.kucheria@verdurent.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Amit,
 
-On Wed, Jul 08, 2009 at 01:49:39PM +0300, Amit Kucheria wrote:
-> Add support for Dynamic Power Switching (DPS) for the RX51 board.
-Could I have an Acked-by from Tony or someone from Nokia maintaining this
-board (e.g. Lauri) ?
+On Tue, 4 Aug 2009, Robert Richter wrote:
 
-Cheers,
-Samuel.
-
-> Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
-> ---
->  arch/arm/mach-omap2/board-rx51-peripherals.c |  122 +++++++++++++++++++++++++-
->  1 files changed, 120 insertions(+), 2 deletions(-)
+> On 31.07.09 14:56:03, Robert Richter wrote:
+> > When calling rb_buffer_peek() from ring_buffer_consume() and a padding
+> > event is returned, the function rb_advance_reader() is called
+> > twice. This may lead to missing samples or under high workloads to the
+> > warning below. This patch fixes this. If a padding event is returned
+> > by rb_buffer_peek() it will be consumed by the calling function now.
+> > 
+> > Also, I simplified some code in ring_buffer_consume().
+> > 
+> > ------------[ cut here ]------------
+> > WARNING: at /dev/shm/.source/linux/kernel/trace/ring_buffer.c:2289 rb_advance_reader+0x2e/0xc5()
+> > Hardware name: Anaheim
+> > Modules linked in:
+> > Pid: 29, comm: events/2 Tainted: G        W  2.6.31-rc3-oprofile-x86_64-standard-00059-g5050dc2 #1
+> > Call Trace:
+> > [<ffffffff8106776f>] ? rb_advance_reader+0x2e/0xc5
+> > [<ffffffff81039ffe>] warn_slowpath_common+0x77/0x8f
+> > [<ffffffff8103a025>] warn_slowpath_null+0xf/0x11
+> > [<ffffffff8106776f>] rb_advance_reader+0x2e/0xc5
+> > [<ffffffff81068bda>] ring_buffer_consume+0xa0/0xd2
+> > [<ffffffff81326933>] op_cpu_buffer_read_entry+0x21/0x9e
+> > [<ffffffff810be3af>] ? __find_get_block+0x4b/0x165
+> > [<ffffffff8132749b>] sync_buffer+0xa5/0x401
+> > [<ffffffff810be3af>] ? __find_get_block+0x4b/0x165
+> > [<ffffffff81326c1b>] ? wq_sync_buffer+0x0/0x78
+> > [<ffffffff81326c76>] wq_sync_buffer+0x5b/0x78
+> > [<ffffffff8104aa30>] worker_thread+0x113/0x1ac
+> > [<ffffffff8104dd95>] ? autoremove_wake_function+0x0/0x38
+> > [<ffffffff8104a91d>] ? worker_thread+0x0/0x1ac
+> > [<ffffffff8104dc9a>] kthread+0x88/0x92
+> > [<ffffffff8100bdba>] child_rip+0xa/0x20
+> > [<ffffffff8104dc12>] ? kthread+0x0/0x92
+> > [<ffffffff8100bdb0>] ? child_rip+0x0/0x20
+> > ---[ end trace f561c0a58fcc89bd ]---
+> > 
+> > Cc: Steven Rostedt <rostedt@goodmis.org>
+> > Cc: <stable@kernel.org>
+> > Signed-off-by: Robert Richter <robert.richter@amd.com>
 > 
-> diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
-> index 9a0bf67..f7ebec8 100644
-> --- a/arch/arm/mach-omap2/board-rx51-peripherals.c
-> +++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
-> @@ -1,5 +1,5 @@
->  /*
-> - * linux/arch/arm/mach-omap2/board-rx51-flash.c
-> + * linux/arch/arm/mach-omap2/board-rx51-peripherals.c
->   *
->   * Copyright (C) 2008-2009 Nokia
->   *
-> @@ -278,7 +278,124 @@ static struct twl4030_gpio_platform_data rx51_gpio_data = {
->  	.setup			= rx51_twlgpio_setup,
->  };
->  
-> -static struct twl4030_platform_data rx51_twldata = {
-> +static struct twl4030_ins sleep_on_seq[] __initdata = {
-> +/*
-> + * Turn off VDD1 and VDD2.
-> + */
-> +	{MSG_SINGULAR(DEV_GRP_P1, 0xf, RES_STATE_OFF), 4},
-> +	{MSG_SINGULAR(DEV_GRP_P1, 0x10, RES_STATE_OFF), 2},
-> +/*
-> + * And also turn off the OMAP3 PLLs and the sysclk output.
-> + */
-> +	{MSG_SINGULAR(DEV_GRP_P1, 0x7, RES_STATE_OFF), 3},
-> +	{MSG_SINGULAR(DEV_GRP_P1, 0x17, RES_STATE_OFF), 3},
-> +};
-> +
-> +static struct twl4030_script sleep_on_script __initdata = {
-> +	.script = sleep_on_seq,
-> +	.size   = ARRAY_SIZE(sleep_on_seq),
-> +	.flags  = TRITON_SLEEP_SCRIPT,
-> +};
-> +
-> +static struct twl4030_ins wakeup_seq[] __initdata = {
-> +/*
-> + * Reenable the OMAP3 PLLs.
-> + * Wakeup VDD1 and VDD2.
-> + * Reenable sysclk output.
-> + */
-> +	{MSG_SINGULAR(DEV_GRP_P1, 0x7, RES_STATE_ACTIVE), 0x30},
-> +	{MSG_SINGULAR(DEV_GRP_P1, 0xf, RES_STATE_ACTIVE), 0x30},
-> +	{MSG_SINGULAR(DEV_GRP_P1, 0x10, RES_STATE_ACTIVE), 0x37},
-> +	{MSG_SINGULAR(DEV_GRP_P1, 0x19, RES_STATE_ACTIVE), 3},
-> +};
-> +
-> +static struct twl4030_script wakeup_script __initdata = {
-> +	.script	= wakeup_seq,
-> +	.size	= ARRAY_SIZE(wakeup_seq),
-> +	.flags	= TRITON_WAKEUP12_SCRIPT,
-> +};
-> +
-> +static struct twl4030_ins wakeup_p3_seq[] __initdata = {
-> +/*
-> + * Wakeup VDD1 (dummy to be able to insert a delay)
-> + * Enable CLKEN
-> + */
-> +	{MSG_SINGULAR(DEV_GRP_P1, 0x17, RES_STATE_ACTIVE), 3},
-> +};
-> +
-> +static struct twl4030_script wakeup_p3_script __initdata = {
-> +	.script	= wakeup_p3_seq,
-> +	.size	= ARRAY_SIZE(wakeup_p3_seq),
-> +	.flags	= TRITON_WAKEUP3_SCRIPT,
-> +};
-> +
-> +static struct twl4030_ins wrst_seq[] __initdata = {
-> +/*
-> + * Reset twl4030.
-> + * Reset VDD1 regulator.
-> + * Reset VDD2 regulator.
-> + * Reset VPLL1 regulator.
-> + * Enable sysclk output.
-> + * Reenable twl4030.
-> + */
-> +	{MSG_SINGULAR(DEV_GRP_NULL, RES_RESET, RES_STATE_OFF), 2},
-> +	{MSG_BROADCAST(DEV_GRP_NULL, RES_GRP_ALL, 0, 1, RES_STATE_ACTIVE),
-> +		0x13},
-> +	{MSG_BROADCAST(DEV_GRP_NULL, RES_GRP_PP, 0, 2, RES_STATE_WRST), 0x13},
-> +	{MSG_BROADCAST(DEV_GRP_NULL, RES_GRP_PP, 0, 3, RES_STATE_OFF), 0x13},
-> +	{MSG_SINGULAR(DEV_GRP_NULL, RES_VDD1, RES_STATE_WRST), 0x13},
-> +	{MSG_SINGULAR(DEV_GRP_NULL, RES_VDD2, RES_STATE_WRST), 0x13},
-> +	{MSG_SINGULAR(DEV_GRP_NULL, RES_VPLL1, RES_STATE_WRST), 0x35},
-> +	{MSG_SINGULAR(DEV_GRP_P1, RES_HFCLKOUT, RES_STATE_ACTIVE), 2},
-> +	{MSG_SINGULAR(DEV_GRP_NULL, RES_RESET, RES_STATE_ACTIVE), 2},
-> +};
-> +
-> +static struct twl4030_script wrst_script __initdata = {
-> +	.script = wrst_seq,
-> +	.size   = ARRAY_SIZE(wrst_seq),
-> +	.flags  = TRITON_WRST_SCRIPT,
-> +};
-> +
-> +static struct twl4030_script *twl4030_scripts[] __initdata = {
-> +	/* wakeup12 script should be loaded before sleep script, otherwise a
-> +	   board might hit retention before loading of wakeup script is
-> +	   completed. This can cause boot failures depending on timing issues.
-> +	*/
-> +	&wakeup_script,
-> +	&sleep_on_script,
-> +	&wakeup_p3_script,
-> +	&wrst_script,
-> +};
-> +
-> +static struct twl4030_resconfig twl4030_rconfig[] __initdata = {
-> +	{ .resource = RES_VINTANA1, .devgroup = -1, .type = -1, .type2 = 1 },
-> +	{ .resource = RES_VINTANA2, .devgroup = -1, .type = -1, .type2 = 1 },
-> +	{ .resource = RES_VINTDIG, .devgroup = -1, .type = -1, .type2 = 1 },
-> +	{ .resource = RES_VMMC1, .devgroup = -1, .type = -1, .type2 = 3},
-> +	{ .resource = RES_VMMC2, .devgroup = DEV_GRP_NULL, .type = -1,
-> +	  .type2 = 3},
-> +	{ .resource = RES_VAUX1, .devgroup = -1, .type = -1, .type2 = 3},
-> +	{ .resource = RES_VAUX2, .devgroup = -1, .type = -1, .type2 = 3},
-> +	{ .resource = RES_VAUX3, .devgroup = -1, .type = -1, .type2 = 3},
-> +	{ .resource = RES_VAUX4, .devgroup = -1, .type = -1, .type2 = 3},
-> +	{ .resource = RES_VPLL2, .devgroup = -1, .type = -1, .type2 = 3},
-> +	{ .resource = RES_VDAC, .devgroup = -1, .type = -1, .type2 = 3},
-> +	{ .resource = RES_VSIM, .devgroup = DEV_GRP_NULL, .type = -1,
-> +	  .type2 = 3},
-> +	{ .resource = RES_CLKEN, .devgroup = DEV_GRP_P3, .type = -1,
-> +		.type2 = 1 },
-> +	{ 0, 0},
-> +};
-> +
-> +static struct twl4030_power_data rx51_t2scripts_data __initdata = {
-> +	.scripts        = twl4030_scripts,
-> +	.size   = ARRAY_SIZE(twl4030_scripts),
-> +	.resource_config = twl4030_rconfig,
-> +};
-> +
-> +
-> +
-> +static struct twl4030_platform_data rx51_twldata __initdata = {
->  	.irq_base		= TWL4030_IRQ_BASE,
->  	.irq_end		= TWL4030_IRQ_END,
->  
-> @@ -286,6 +403,7 @@ static struct twl4030_platform_data rx51_twldata = {
->  	.gpio			= &rx51_gpio_data,
->  	.keypad			= &rx51_kp_data,
->  	.madc			= &rx51_madc_data,
-> +	.power			= &rx51_t2scripts_data,
->  
->  	.vaux1			= &rx51_vaux1,
->  	.vaux2			= &rx51_vaux2,
-> -- 
-> 1.6.3.3
+> Steven, Ingo,
 > 
+> should I apply the patch to my tree? Or does somebody of you wants to
+> apply it? I got a bug report and want to have it in a tree.
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+I'll pull it in and start doing some of my own tests on it. Thanks!
+
+-- Steve
+
