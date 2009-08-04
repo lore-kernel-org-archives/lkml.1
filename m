@@ -1,180 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933068AbZHDQxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933081AbZHDQxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933068AbZHDQxX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 12:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932930AbZHDQxX
+	id S933081AbZHDQxm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 12:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932930AbZHDQxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 12:53:23 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55010 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932903AbZHDQxW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 12:53:22 -0400
-Subject: Re: [PATCH 3/2 -v3] fcntl: F_[SG]ETOWN_EX
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, eranian@gmail.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       robert.richter@amd.com, paulus@samba.org, andi@firstfloor.org,
-       mpjohn@us.ibm.com, cel@us.ibm.com, cjashfor@us.ibm.com,
-       mucci@eecs.utk.edu, terpstra@eecs.utk.edu,
-       perfmon2-devel@lists.sourceforge.net, mtk.manpages@googlemail.com,
-       roland@redhat.com
-In-Reply-To: <20090804162033.GB5211@redhat.com>
-References: <1249029320.6391.72.camel@twins>
-	 <20090731141122.a1939712.akpm@linux-foundation.org>
-	 <20090801012736.GA30259@redhat.com> <1249314498.7924.133.camel@twins>
-	 <20090803171619.GA17876@redhat.com> <1249321637.7924.163.camel@twins>
-	 <20090803180602.GA19719@redhat.com> <1249324619.4842.1.camel@laptop>
-	 <20090803190231.GA22313@redhat.com> <1249385966.7924.204.camel@twins>
-	 <20090804162033.GB5211@redhat.com>
-Content-Type: text/plain
-Date: Tue, 04 Aug 2009 18:52:43 +0200
-Message-Id: <1249404763.4762.26.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 4 Aug 2009 12:53:41 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42670 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932918AbZHDQxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 12:53:41 -0400
+Message-ID: <4A786802.5050305@redhat.com>
+Date: Tue, 04 Aug 2009 12:55:30 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+CC: Peter Zijlstra <peterz@infradead.org>, Dave Anderson <anderson@redhat.com>,
+       crash-utility@redhat.com, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
+       Clark Williams <clark.williams@gmail.com>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Christoph Hellwig <hch@infradead.org>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>, "Frank Ch. Eigler" <fche@redhat.com>,
+       Tom Zanussi <tzanussi@gmail.com>, Jason Baron <jbaron@redhat.com>,
+       srostedt@redhat.com, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [ANNOUNCE][RFC][PATCH] Crash-utility, tracing: enable crash to
+ analyze tracing from core-file (make tracing can act as a flight recorder)
+References: <4A76F8A1.30503@cn.fujitsu.com> <1249314136.7924.126.camel@twins> <4A77DA98.6050509@cn.fujitsu.com>
+In-Reply-To: <4A77DA98.6050509@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-04 at 18:20 +0200, Oleg Nesterov wrote:
-> On 08/04, Peter Zijlstra wrote:
-> >
-> > +static int f_setown_ex(struct file *filp, unsigned long arg)
-> > +{
-> > +	struct f_owner_ex * __user owner_p = (void * __user)arg;
-> > +	struct f_owner_ex owner;
-> > +	struct pid *pid;
-> > +	int type;
-> > +	int ret;
-> > +
-> > +	ret = copy_from_user(&owner, owner_p, sizeof(owner));
-> > +	if (ret)
-> > +		return ret;
-> > +
-> > +	switch (owner.type) {
-> > +	case F_OWNER_TID:
-> > +		type = PIDTYPE_MAX;
-> > +		break;
-> > +
-> > +	case F_OWNER_PID:
-> > +		type = PIDTYPE_PID;
-> > +		break;
-> > +
-> > +	case F_OWNER_GID:
-> > +		type = PIDTYPE_PGID;
-> > +		break;
-> > +	}
-> 
-> Note that send_sigio()->do_each_pid_task(type) must use the valid
-> type < PIDTYPE_MAX, or we can crash/etc.
-> 
-> This means f_setown_ex() should be careful with the wrong owner->type,
-> the switch() above needs
-> 
-> 	default:
-> 		return -EINVAL;
+Lai Jiangshan wrote:
+> [
+> http://lkml.org/lkml/2009/7/30/30
+>
+> This patch is really useful for kernel. We don't change the kernel
+> even a single line for the purpose of we can read the core-file easier.
+>
+> This patch is also helpful for crash more or less. So I mention it.
+> ]
 
-D'0h very true.
+Hmm, this patch can conflict with my patch.
 
-> > +	rcu_read_lock();
-> > +	pid = find_vpid(owner.pid);
-> > +	ret = __f_setown(filp, pid, type, 1);
-> > +	rcu_read_unlock();
-> > +
-> > +	return ret;
-> 
-> Perhaps it makes sense to return -ESRCH if owner.pid && !pid, not
-> sure.
+http://lkml.org/lkml/2009/7/24/234
 
-We'd need that case to unset/clear the owner, so returning -ESRCH might
-confuse users I think.
+However, this change seems reasonably good. I'll update
+my patch after that is merged.
 
-> > @@ -474,16 +540,23 @@ void send_sigio(struct fown_struct *fown
-> >  	struct task_struct *p;
-> >  	enum pid_type type;
-> >  	struct pid *pid;
-> > +	int group = 1;
-> >  	
-> >  	read_lock(&fown->lock);
-> > +
-> >  	type = fown->pid_type;
-> > +	if (type == PIDTYPE_MAX) {
-> > +		group = 0;
-> > +		type = PIDTYPE_PID;
-> > +	}
-> 
-> And send_sigurg() needs the same change. I am not sure we should teach
-> send_sigurg_to_task() to handle the F_OWNER_TID, but we must ensure
-> send_sigurg()->do_each_pid_task() won't be called with PIDTYPE_MAX.
+-- 
+Masami Hiramatsu
 
-How about the below delta, it changes send_sigurg_to_task() to also use
-do_send_sig_info() which looses the check_kill_permission() check, but
-your previous changes lost that same thing from SIGIO -- so I'm hoping
-that's ok.
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-> Otherwise, personally I think this is what we need to solve the problem.
-
-yay!
-
-I'll look over the bits again and send out a -v4 later today.
-
-----
-Index: linux-2.6/fs/fcntl.c
-===================================================================
---- linux-2.6.orig/fs/fcntl.c
-+++ linux-2.6/fs/fcntl.c
-@@ -287,6 +287,9 @@ static int f_setown_ex(struct file *filp
- 	case F_OWNER_GID:
- 		type = PIDTYPE_PGID;
- 		break;
-+
-+	default:
-+		return -EINVAL;
- 	}
- 
- 	rcu_read_lock();
-@@ -564,10 +567,10 @@ void send_sigio(struct fown_struct *fown
- }
- 
- static void send_sigurg_to_task(struct task_struct *p,
--                                struct fown_struct *fown)
-+                                struct fown_struct *fown, int group)
- {
- 	if (sigio_perm(p, fown, SIGURG))
--		group_send_sig_info(SIGURG, SEND_SIG_PRIV, p);
-+		do_send_sig_info(SIGURG, SEND_SIG_PRIV, p, group);
- }
- 
- int send_sigurg(struct fown_struct *fown)
-@@ -575,10 +578,17 @@ int send_sigurg(struct fown_struct *fown
- 	struct task_struct *p;
- 	enum pid_type type;
- 	struct pid *pid;
-+	int group = 1;
- 	int ret = 0;
- 	
- 	read_lock(&fown->lock);
-+
- 	type = fown->pid_type;
-+	if (type == PIDTYPE_MAX) {
-+		group = 0;
-+		type = PIDTYPE_PID;
-+	}
-+
- 	pid = fown->pid;
- 	if (!pid)
- 		goto out_unlock_fown;
-@@ -587,7 +597,7 @@ int send_sigurg(struct fown_struct *fown
- 	
- 	read_lock(&tasklist_lock);
- 	do_each_pid_task(pid, type, p) {
--		send_sigurg_to_task(p, fown);
-+		send_sigurg_to_task(p, fown, group);
- 	} while_each_pid_task(pid, type, p);
- 	read_unlock(&tasklist_lock);
-  out_unlock_fown:
-
-
+e-mail: mhiramat@redhat.com
 
