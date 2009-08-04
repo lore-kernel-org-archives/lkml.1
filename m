@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933560AbZHDW6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933570AbZHDXA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933560AbZHDW6e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 18:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933363AbZHDW6e
+	id S933570AbZHDXA5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 19:00:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933517AbZHDXA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 18:58:34 -0400
-Received: from claw.goop.org ([74.207.240.146]:49150 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933380AbZHDW6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 18:58:33 -0400
-Message-ID: <4A78BD1A.9050001@goop.org>
-Date: Tue, 04 Aug 2009 15:58:34 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Problem with percpu values when bringing up second CPU?
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=UTF-8
+	Tue, 4 Aug 2009 19:00:57 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41575 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933419AbZHDXA4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 19:00:56 -0400
+Date: Tue, 4 Aug 2009 16:00:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Cc: sam@ravnborg.org, hpa@zytor.com, linux@arm.linux.org.uk, alain@knaff.lu,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org,
+       albin.tonnerre@free-electrons.com
+Subject: Re: [PATCH 3/6] Add support for LZO-compressed kernels
+Message-Id: <20090804160043.82b256d8.akpm@linux-foundation.org>
+In-Reply-To: <1249311501-23102-3-git-send-email-albin.tonnerre@free-electrons.com>
+References: <20090731093107.GA29704@merkur.ravnborg.org>
+	<1249311501-23102-1-git-send-email-albin.tonnerre@free-electrons.com>
+	<1249311501-23102-2-git-send-email-albin.tonnerre@free-electrons.com>
+	<1249311501-23102-3-git-send-email-albin.tonnerre@free-electrons.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon,  3 Aug 2009 16:58:18 +0200
+Albin Tonnerre <albin.tonnerre@free-electrons.com> wrote:
 
-I just tracked down a bug I was having to a change where I changed one
-of my Xen event channel variables to a percpu variable, relating to
-masking an event channel.
+> This is the first part of the lzo patch
+> The lzo compressor is worse than gzip at compression, but faster at
+> extraction. Here are some figures for an ARM board I'm working on:
+> 
+> Uncompressed size: 3.24Mo
+> gzip  1.61Mo 0.72s
+> lzo   1.75Mo 0.48s
+> 
+> So for a compression ratio that is still relatively close to gzip, it's
+> much faster to extract, at least in that case.
 
-The symptom was that shortly after bringing up the second CPU, the first
-CPU's timer events stopped arriving, apparently because they had become
-masked.
-
-The event channels masks are declared as:
-
-#define NR_EVENT_CHANNEL_LONGS (NR_EVENT_CHANNELS/BITS_PER_LONG)
-static DEFINE_PER_CPU(unsigned long,
-                     cpu_evtchn_mask[NR_EVENT_CHANNEL_LONGS]) =
-       {[0 ... NR_EVENT_CHANNEL_LONGS-1] = ~0ul };	/* everything masked by default */
+Is 3.2Mb a typical kernel size for small systems?  It sounds large.
 
 
-My theory about what's happening is that when the second CPU comes up,
-it allocates separate percpu areas for each CPU, but it is somehow
-failing to accurately copy CPU 0's percpu data over; either it isn't
-copying it all (ie, using the initialized values rather than the current
-values), or failing to copy the values in an interrupt-atomic way.
+0.24 seconds booting speedup sounds pretty thin.  Adding a new
+decompression format will introduce more configuration/build/deployment
+complexities.  How do we justify this?
 
-Does this sound plausible?
+Did anyone look into just speeding up the gzip decompressor?
 
-When I convert this back to an ad-hoc percpu variable (an array indexed
-by cpu number), it goes back to working.  Also, if I boot with maxcpus=1
-it also works with percpu data.
+> +#ifdef STATIC
 
-Also, because we don't have large pages under Xen, it always allocates
-percpu as 4k pages:
+What is this STATIC thing for?
 
-PERCPU: Allocated 21 4k pages, static data 82080 bytes
 
-Thanks,
-    J
