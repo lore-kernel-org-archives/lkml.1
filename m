@@ -1,194 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933079AbZHDSAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933179AbZHDSA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933079AbZHDSAj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 14:00:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932978AbZHDSAi
+	id S933179AbZHDSA6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 14:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933089AbZHDSA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 14:00:38 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:52745 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932962AbZHDSAh (ORCPT
+	Tue, 4 Aug 2009 14:00:57 -0400
+Received: from mga10.intel.com ([192.55.52.92]:57419 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933090AbZHDSA4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 14:00:37 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Stefani Seibold <stefani@seibold.net>
-Subject: Re: [RFC 0/2] new kfifo API
-Date: Tue, 4 Aug 2009 20:00:30 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>, stelian@popies.net
-References: <1249306755.8358.8.camel@wall-e> <200908041545.37329.arnd@arndb.de> <1249397872.18146.64.camel@wall-e>
-In-Reply-To: <1249397872.18146.64.camel@wall-e>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 4 Aug 2009 14:00:56 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,322,1246863600"; 
+   d="scan'208";a="713851016"
+Date: Tue, 4 Aug 2009 20:03:05 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Amit Kucheria <amit.kucheria@verdurent.com>
+Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH 3/3] MFD: TWL4030: OMAP: Board-specifc DPS scripts for
+	RX51 board
+Message-ID: <20090804180304.GI8601@sortiz.org>
+References: <1247050179-31187-1-git-send-email-amit.kucheria@verdurent.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200908042000.30491.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18NIe/SMErvV86gEePvOqy3I4juLpnciTIA6LN
- Khkye4EKZ00o4wzQOoYr1ekZbIcR4CDgzPGG50hgouhg4JBipS
- IoMj2EsOge+YRJOxNyRlw==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247050179-31187-1-git-send-email-amit.kucheria@verdurent.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 04 August 2009, Stefani Seibold wrote:
-> Am Dienstag, den 04.08.2009, 15:45 +0200 schrieb Arnd Bergmann:
-> > On Tuesday 04 August 2009, Stefani Seibold wrote:
-> > > > Your second version is ok in this regard because it uses the original
-> > > > size logic.
-> > > 
-> > > Does it mean you like it now ;-) ???? I think we are on a good way!
-> > 
-> > It looks much better now, but I still think you are doing too many
-> > things at once, and I disagree about the locking changes.
-> > 
+Hi Amit,
+
+On Wed, Jul 08, 2009 at 01:49:39PM +0300, Amit Kucheria wrote:
+> Add support for Dynamic Power Switching (DPS) for the RX51 board.
+Could I have an Acked-by from Tony or someone from Nokia maintaining this
+board (e.g. Lauri) ?
+
+Cheers,
+Samuel.
+
+> Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
+> ---
+>  arch/arm/mach-omap2/board-rx51-peripherals.c |  122 +++++++++++++++++++++++++-
+>  1 files changed, 120 insertions(+), 2 deletions(-)
 > 
-> I had a look at the user of the kfifo_put and kfifo_get, most did not
-> really depend on the spinlock, because there are single read/single
-> write users.
-
-The question is not so much what the common use case is but what
-the safe one is. Except for Andi's NMI driver, everyone can use
-the locked version, even if many could use the unlocked version
-if they want it to be faster.
-
-You could of course change the existing users of the locked
-interface to use the unlocked one, but I wouldn't bother.
-Changing the behaviour of an existing interface without changing
-the name is not so nice though.
-
-If you read the original discussion about kfifo, a lot of
-it focused around how locking should be done:
-http://linux.derkeiler.com/Mailing-Lists/Kernel/2004-09/4195.html
-
-Of course I realize that the locking gets into the way if you
-want to do copy_{to,from}_user, but the last person that had
-this problem also worked around that by defining user access
-only for the unlocked versions:
-http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-06/msg04959.html
-
-No idea why this was never merged ;-)
-
-> > [PATCH 2/x] kfifo: add DEFINE_KFIFO and friends
-> > [PATCH 3/x] kfifo: add kfifo_{to,from}_user
-> > [PATCH 4/x] kfifo: add kfifo_{get,put}_rec
-> > [PATCH 5/x] kfifo: ...
-> > 
+> diff --git a/arch/arm/mach-omap2/board-rx51-peripherals.c b/arch/arm/mach-omap2/board-rx51-peripherals.c
+> index 9a0bf67..f7ebec8 100644
+> --- a/arch/arm/mach-omap2/board-rx51-peripherals.c
+> +++ b/arch/arm/mach-omap2/board-rx51-peripherals.c
+> @@ -1,5 +1,5 @@
+>  /*
+> - * linux/arch/arm/mach-omap2/board-rx51-flash.c
+> + * linux/arch/arm/mach-omap2/board-rx51-peripherals.c
+>   *
+>   * Copyright (C) 2008-2009 Nokia
+>   *
+> @@ -278,7 +278,124 @@ static struct twl4030_gpio_platform_data rx51_gpio_data = {
+>  	.setup			= rx51_twlgpio_setup,
+>  };
+>  
+> -static struct twl4030_platform_data rx51_twldata = {
+> +static struct twl4030_ins sleep_on_seq[] __initdata = {
+> +/*
+> + * Turn off VDD1 and VDD2.
+> + */
+> +	{MSG_SINGULAR(DEV_GRP_P1, 0xf, RES_STATE_OFF), 4},
+> +	{MSG_SINGULAR(DEV_GRP_P1, 0x10, RES_STATE_OFF), 2},
+> +/*
+> + * And also turn off the OMAP3 PLLs and the sysclk output.
+> + */
+> +	{MSG_SINGULAR(DEV_GRP_P1, 0x7, RES_STATE_OFF), 3},
+> +	{MSG_SINGULAR(DEV_GRP_P1, 0x17, RES_STATE_OFF), 3},
+> +};
+> +
+> +static struct twl4030_script sleep_on_script __initdata = {
+> +	.script = sleep_on_seq,
+> +	.size   = ARRAY_SIZE(sleep_on_seq),
+> +	.flags  = TRITON_SLEEP_SCRIPT,
+> +};
+> +
+> +static struct twl4030_ins wakeup_seq[] __initdata = {
+> +/*
+> + * Reenable the OMAP3 PLLs.
+> + * Wakeup VDD1 and VDD2.
+> + * Reenable sysclk output.
+> + */
+> +	{MSG_SINGULAR(DEV_GRP_P1, 0x7, RES_STATE_ACTIVE), 0x30},
+> +	{MSG_SINGULAR(DEV_GRP_P1, 0xf, RES_STATE_ACTIVE), 0x30},
+> +	{MSG_SINGULAR(DEV_GRP_P1, 0x10, RES_STATE_ACTIVE), 0x37},
+> +	{MSG_SINGULAR(DEV_GRP_P1, 0x19, RES_STATE_ACTIVE), 3},
+> +};
+> +
+> +static struct twl4030_script wakeup_script __initdata = {
+> +	.script	= wakeup_seq,
+> +	.size	= ARRAY_SIZE(wakeup_seq),
+> +	.flags	= TRITON_WAKEUP12_SCRIPT,
+> +};
+> +
+> +static struct twl4030_ins wakeup_p3_seq[] __initdata = {
+> +/*
+> + * Wakeup VDD1 (dummy to be able to insert a delay)
+> + * Enable CLKEN
+> + */
+> +	{MSG_SINGULAR(DEV_GRP_P1, 0x17, RES_STATE_ACTIVE), 3},
+> +};
+> +
+> +static struct twl4030_script wakeup_p3_script __initdata = {
+> +	.script	= wakeup_p3_seq,
+> +	.size	= ARRAY_SIZE(wakeup_p3_seq),
+> +	.flags	= TRITON_WAKEUP3_SCRIPT,
+> +};
+> +
+> +static struct twl4030_ins wrst_seq[] __initdata = {
+> +/*
+> + * Reset twl4030.
+> + * Reset VDD1 regulator.
+> + * Reset VDD2 regulator.
+> + * Reset VPLL1 regulator.
+> + * Enable sysclk output.
+> + * Reenable twl4030.
+> + */
+> +	{MSG_SINGULAR(DEV_GRP_NULL, RES_RESET, RES_STATE_OFF), 2},
+> +	{MSG_BROADCAST(DEV_GRP_NULL, RES_GRP_ALL, 0, 1, RES_STATE_ACTIVE),
+> +		0x13},
+> +	{MSG_BROADCAST(DEV_GRP_NULL, RES_GRP_PP, 0, 2, RES_STATE_WRST), 0x13},
+> +	{MSG_BROADCAST(DEV_GRP_NULL, RES_GRP_PP, 0, 3, RES_STATE_OFF), 0x13},
+> +	{MSG_SINGULAR(DEV_GRP_NULL, RES_VDD1, RES_STATE_WRST), 0x13},
+> +	{MSG_SINGULAR(DEV_GRP_NULL, RES_VDD2, RES_STATE_WRST), 0x13},
+> +	{MSG_SINGULAR(DEV_GRP_NULL, RES_VPLL1, RES_STATE_WRST), 0x35},
+> +	{MSG_SINGULAR(DEV_GRP_P1, RES_HFCLKOUT, RES_STATE_ACTIVE), 2},
+> +	{MSG_SINGULAR(DEV_GRP_NULL, RES_RESET, RES_STATE_ACTIVE), 2},
+> +};
+> +
+> +static struct twl4030_script wrst_script __initdata = {
+> +	.script = wrst_seq,
+> +	.size   = ARRAY_SIZE(wrst_seq),
+> +	.flags  = TRITON_WRST_SCRIPT,
+> +};
+> +
+> +static struct twl4030_script *twl4030_scripts[] __initdata = {
+> +	/* wakeup12 script should be loaded before sleep script, otherwise a
+> +	   board might hit retention before loading of wakeup script is
+> +	   completed. This can cause boot failures depending on timing issues.
+> +	*/
+> +	&wakeup_script,
+> +	&sleep_on_script,
+> +	&wakeup_p3_script,
+> +	&wrst_script,
+> +};
+> +
+> +static struct twl4030_resconfig twl4030_rconfig[] __initdata = {
+> +	{ .resource = RES_VINTANA1, .devgroup = -1, .type = -1, .type2 = 1 },
+> +	{ .resource = RES_VINTANA2, .devgroup = -1, .type = -1, .type2 = 1 },
+> +	{ .resource = RES_VINTDIG, .devgroup = -1, .type = -1, .type2 = 1 },
+> +	{ .resource = RES_VMMC1, .devgroup = -1, .type = -1, .type2 = 3},
+> +	{ .resource = RES_VMMC2, .devgroup = DEV_GRP_NULL, .type = -1,
+> +	  .type2 = 3},
+> +	{ .resource = RES_VAUX1, .devgroup = -1, .type = -1, .type2 = 3},
+> +	{ .resource = RES_VAUX2, .devgroup = -1, .type = -1, .type2 = 3},
+> +	{ .resource = RES_VAUX3, .devgroup = -1, .type = -1, .type2 = 3},
+> +	{ .resource = RES_VAUX4, .devgroup = -1, .type = -1, .type2 = 3},
+> +	{ .resource = RES_VPLL2, .devgroup = -1, .type = -1, .type2 = 3},
+> +	{ .resource = RES_VDAC, .devgroup = -1, .type = -1, .type2 = 3},
+> +	{ .resource = RES_VSIM, .devgroup = DEV_GRP_NULL, .type = -1,
+> +	  .type2 = 3},
+> +	{ .resource = RES_CLKEN, .devgroup = DEV_GRP_P3, .type = -1,
+> +		.type2 = 1 },
+> +	{ 0, 0},
+> +};
+> +
+> +static struct twl4030_power_data rx51_t2scripts_data __initdata = {
+> +	.scripts        = twl4030_scripts,
+> +	.size   = ARRAY_SIZE(twl4030_scripts),
+> +	.resource_config = twl4030_rconfig,
+> +};
+> +
+> +
+> +
+> +static struct twl4030_platform_data rx51_twldata __initdata = {
+>  	.irq_base		= TWL4030_IRQ_BASE,
+>  	.irq_end		= TWL4030_IRQ_END,
+>  
+> @@ -286,6 +403,7 @@ static struct twl4030_platform_data rx51_twldata = {
+>  	.gpio			= &rx51_gpio_data,
+>  	.keypad			= &rx51_kp_data,
+>  	.madc			= &rx51_madc_data,
+> +	.power			= &rx51_t2scripts_data,
+>  
+>  	.vaux1			= &rx51_vaux1,
+>  	.vaux2			= &rx51_vaux2,
+> -- 
+> 1.6.3.3
 > 
-> Thats will work... but the first patch will break something. Why is
-> everybody depending on this stupid split patch dogma, beside it make
-> sense or not?
 
-multiple reasons:
-
-- it makes reviews easier. You want the patches to get merged, so it's
-your job to make it easy to see how they help and don't cause bugs.
-
-- the patches with the separate changelogs become part of the
-bisectable git history. If something breaks, we can find the specific
-change that caused it and see the problem, potentially reverting
-the patch.
-
-- the patch description becomes part of the documentation of the code.
-if you don't understand why code is done in a specific way, you can
-look at the patch that introduced it. Your 0/2 mail contents are very
-detailed, but don't get anywhere, while a patch description lives
-forever.
-
-All of these are much more important for infrastructure changes than
-for device drivers.
-
-> If i do this in that why, then the first patch will change 13 files, and
-> modify about 70 lines.
-
-That doesn't sound too much.
-
-> > About the locking stuff, I think it should best be left in place.
-> > The __kfifo_{get,put} functions should probably be declared part
-> > of the official interface and documented as such -- people are
-> > using them anyways. It's generally a good idea to have the obvious
-> > interface work in an entirely safe way (kfifo_get doing all the
-> > locking it might need), with a __foo variant of the same function
-> > for people that want the extra performance and know what they are
-> > doing.
-> > 
-> 
-> Believe me, nobody need this locking stuff. The common use case is one
-> writer/one reader, so it is complete useless. Have a look on the current
-> source file wich use it.
-
-ok. Mostly true, but looking at it conservatively:
-
-sonypi.c: multiple readers: sonypi_misc_read can be called concurrently,
-	which is probably a driver bug
-
-meyeioc.c: ioctl can race with irq
-
-sony-laptop.c: sony_pic_irq can race with sony_nc_notify, sonypi_misc_read
-	can race with do_sony_laptop_release_key
-
-cxio_resource.c: I have no idea what that code does, do you?
-
-> > I would also leave out the recsize argument, using an 'unsigned short'
-> > for the record length unconditionally won't waste any real space but
-> > simplifies both the implementation and the interface.
-> > 
-> 
-> You are wrong. It is designed to be look free until one reader and one
-> writer is in use. If i split the record operation i must introduce a
-> lock, because between two kfifo_put a kfifo_get operation can happen (or
-> visa verse).
-
-I don't understand what you mean by that or what it has to do with
-the recsize argument.
-
-> > Finally, I don't see a reason for the optional KFIFO_F_NOTRIM argument.
-> > If you have fixed records, I would guess that you always need it
-> > anyway, so you could just make it the default and remove the function
-> > argument.
-> 
-> The design is to have variable length records, so it it not always true
-> that the destination of an operation have enough space. Cutting of the
-> record is not always what then is desired. It also does not cost any
-> code or performance since it is handle by __build_constant_p and will be
-> complete optimized away.
-
-I did not object to the implementation complexity but everybody having
-to specify an extra argument which is likely to be the same in all cases,
-just like you argue that we don't need both locked and unlocked versions
-when everyone could live with the unlocked API.
-
-> I would get a little bit confused ... Why did you not say "please add
-> only the kfifo_from_user() and kfifo_to_user() stuff and throw the rest
-> away"?. I am thankful for your review and your objections, but if my
-> idea is melt down in that way i would prefer not do the job.
-> 
-> Why do you have so much fear to change an interfaces which is currently
-> used by very few sources? Most of them are not critical.
-
-especially because it is so rarely used, any regressions would likely
-not get found early, so it would be better to only touch the code
-when the change is "obviously correct" and a significant improvement.
-
-Adding new interfaces obviously doesn't cause regressions, but counts
-as untested (or bitrotten) code until there are actual users in the
-tree, which you don't have.
-
-> So my offer is to split it into 5 patches against the current 2.6.31
-> tree:
-> 
-> [PATCH 1/x] kfifo  code cleanup and preparation (includes for broken sources)
-> [PATCH 2/x] kfifo: remove spinlock (includes fix for broken sources) 
-> [PATCH 3/x] kfifo: add DEFINE_KFIFO and friends
-> [PATCH 4/x] kfifo: add kfifo_{to,from}_user
-> [PATCH 5/x] kfifo: add kfifo_{get,put}_rec
-> 
-> Is this acceptable? It would be nice to have your support.
-
-Yes, that looks good.
-
-	Arnd <><
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
