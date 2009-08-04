@@ -1,125 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933341AbZHDTLM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933356AbZHDTPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933341AbZHDTLM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 15:11:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933308AbZHDTLL
+	id S933356AbZHDTPH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 15:15:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933106AbZHDTPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 15:11:11 -0400
-Received: from sandeen.net ([209.173.210.139]:17657 "EHLO mail.sandeen.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933294AbZHDTLK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 15:11:10 -0400
-Message-ID: <4A7887CE.2060300@sandeen.net>
-Date: Tue, 04 Aug 2009 14:11:10 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+	Tue, 4 Aug 2009 15:15:05 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:17955 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933308AbZHDTPD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 15:15:03 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=msR1SgiVjHc6cksNzFEeTw0fOT0jXez3W9L8Pekf6HnX4AW3e07QfudbKyk5o6uo+
+	EiAWFTi2WtlxOb3aVnloQ==
 MIME-Version: 1.0
-To: Ramon de Carvalho Valle <ramon@risesecurity.org>
-CC: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com, hch@lst.de,
-       linux-kernel@vger.kernel.org, mszeredi@novell.com
-Subject: Re: [PATCH 1/1] XFS: xfs_iformat realtime device target pointer check
-References: <1249329808.7686.26.camel@logos>	 <20090803214929.GB3167@infradead.org> <1249351241.7513.18.camel@logos>	 <4A786110.8090404@sandeen.net> <1249411898.7576.19.camel@logos>
-In-Reply-To: <1249411898.7576.19.camel@logos>
+In-Reply-To: <6599ad830908041148h6d3f3e9bxfef9f3eedec0ab6d@mail.gmail.com>
+References: <20090731012908.27908.62208.stgit@hastromil.mtv.corp.google.com>
+	 <20090731015154.27908.9639.stgit@hastromil.mtv.corp.google.com>
+	 <20090803175452.GA5481@us.ibm.com>
+	 <2f86c2480908031113y525b6cbdhe418b8a0364c7760@mail.gmail.com>
+	 <20090803185556.GA8469@us.ibm.com> <20090803194555.GA10158@us.ibm.com>
+	 <6599ad830908041148h6d3f3e9bxfef9f3eedec0ab6d@mail.gmail.com>
+Date: Tue, 4 Aug 2009 15:14:59 -0400
+Message-ID: <2f86c2480908041214r1f23c1b7q9a25b04e26c92a1a@mail.gmail.com>
+Subject: Re: [PATCH 6/6] Makes procs file writable to move all threads by tgid 
+	at once
+From: Benjamin Blum <bblum@google.com>
+To: Paul Menage <menage@google.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ramon de Carvalho Valle wrote:
-> The xfs_iformat function does not check if the realtime device target pointer
-> is valid when the XFS_DIFLAG_REALTIME flag is set on the ondisk inode
-> structure.
-> 
-> Signed-off-by: Christoph Hellwig <hch@infradead.org>
-> Signed-off-by: Ramon de Carvalho Valle <ramon@risesecurity.org>
-> Cc: stable <stable@kernel.org>
-> ---
->  fs/xfs/xfs_inode.c |   23 +++++++++++++++++------
->  1 files changed, 17 insertions(+), 6 deletions(-)
-> 
-> diff --git a/fs/xfs/xfs_inode.c b/fs/xfs/xfs_inode.c
-> index 1f22d65..37d3ee5 100644
-> --- a/fs/xfs/xfs_inode.c
-> +++ b/fs/xfs/xfs_inode.c
-> @@ -343,13 +343,24 @@ xfs_iformat(
->  		return XFS_ERROR(EFSCORRUPTED);
->  	}
->  
-> +	if (unlikely((ip->i_d.di_flags & XFS_DIFLAG_REALTIME) &&
-> +			!ip->i_mount->m_rtdev_targp)) {
-> +		xfs_fs_repair_cmn_err(CE_WARN, ip->i_mount,
-> +			"corrupt dinode %Lu, flags = 0x%x.",
-> +			(unsigned long long)ip->i_ino,
-> +			ip->i_d.di_flags);
-> +		XFS_CORRUPTION_ERROR("xfs_iformat(3)", XFS_ERRLEVEL_LOW,
-> +				     ip->i_mount, dip);
+On Tue, Aug 4, 2009 at 2:48 PM, Paul Menage<menage@google.com> wrote:
+> On Mon, Aug 3, 2009 at 12:45 PM, Serge E. Hallyn<serue@us.ibm.com> wrote:
+>>
+>> This is probably a stupid idea, but...  what about having zero
+>> overhead at clone(), and instead, at cgroup_task_migrate(),
+>> dequeue_task()ing all of the affected threads for the duration of
+>> the migrate?
+>>
+>
+> Or a simpler alternative - rather than taking the thread group
+> leader's rwsem in cgroup_fork(), always take current's rwsem. Then
+> you're always locking a (probably?) local rwsem and minimizing the
+> overhead. So not quite zero overhead in the fork path, but I'd be
+> surprised if it was measurable. In cgroup_attach_proc() you then have
+> to take the rwsem of every thread in the process. Kind of the
+> equivalent of a per-threadgroup big-reader lock.
 
-I think I'd rather not change all the corruption text tag ordering;
-it'll make it harder to track down any common occurrences of
-"xfs_iformat(X)" corruption in the future if they get renumbered now.
-
-I'd either make this xfs_iformat(2.1) ;) or just leave it as Christoph
-had.  "realtime" is a lot more informative than "3" anyway.
-
--Eric
-
-> +		return XFS_ERROR(EFSCORRUPTED);
-> +	}
-> +
->  	switch (ip->i_d.di_mode & S_IFMT) {
->  	case S_IFIFO:
->  	case S_IFCHR:
->  	case S_IFBLK:
->  	case S_IFSOCK:
->  		if (unlikely(dip->di_format != XFS_DINODE_FMT_DEV)) {
-> -			XFS_CORRUPTION_ERROR("xfs_iformat(3)", XFS_ERRLEVEL_LOW,
-> +			XFS_CORRUPTION_ERROR("xfs_iformat(4)", XFS_ERRLEVEL_LOW,
->  					      ip->i_mount, dip);
->  			return XFS_ERROR(EFSCORRUPTED);
->  		}
-> @@ -371,7 +382,7 @@ xfs_iformat(
->  					"corrupt inode %Lu "
->  					"(local format for regular file).",
->  					(unsigned long long) ip->i_ino);
-> -				XFS_CORRUPTION_ERROR("xfs_iformat(4)",
-> +				XFS_CORRUPTION_ERROR("xfs_iformat(5)",
->  						     XFS_ERRLEVEL_LOW,
->  						     ip->i_mount, dip);
->  				return XFS_ERROR(EFSCORRUPTED);
-> @@ -384,7 +395,7 @@ xfs_iformat(
->  					"(bad size %Ld for local inode).",
->  					(unsigned long long) ip->i_ino,
->  					(long long) di_size);
-> -				XFS_CORRUPTION_ERROR("xfs_iformat(5)",
-> +				XFS_CORRUPTION_ERROR("xfs_iformat(6)",
->  						     XFS_ERRLEVEL_LOW,
->  						     ip->i_mount, dip);
->  				return XFS_ERROR(EFSCORRUPTED);
-> @@ -400,14 +411,14 @@ xfs_iformat(
->  			error = xfs_iformat_btree(ip, dip, XFS_DATA_FORK);
->  			break;
->  		default:
-> -			XFS_ERROR_REPORT("xfs_iformat(6)", XFS_ERRLEVEL_LOW,
-> +			XFS_ERROR_REPORT("xfs_iformat(7)", XFS_ERRLEVEL_LOW,
->  					 ip->i_mount);
->  			return XFS_ERROR(EFSCORRUPTED);
->  		}
->  		break;
->  
->  	default:
-> -		XFS_ERROR_REPORT("xfs_iformat(7)", XFS_ERRLEVEL_LOW, ip->i_mount);
-> +		XFS_ERROR_REPORT("xfs_iformat(8)", XFS_ERRLEVEL_LOW, ip->i_mount);
->  		return XFS_ERROR(EFSCORRUPTED);
->  	}
->  	if (error) {
-> @@ -430,7 +441,7 @@ xfs_iformat(
->  				"(bad attr fork size %Ld).",
->  				(unsigned long long) ip->i_ino,
->  				(long long) size);
-> -			XFS_CORRUPTION_ERROR("xfs_iformat(8)",
-> +			XFS_CORRUPTION_ERROR("xfs_iformat(9)",
->  					     XFS_ERRLEVEL_LOW,
->  					     ip->i_mount, dip);
->  			return XFS_ERROR(EFSCORRUPTED);
-
+Hmm, the tasklist_lock section in fork() is entirely inside the
+read-lock. Presumably then iterating the threadgroup list to take all
+rwsems is safe from a race in which one thread escapes?
