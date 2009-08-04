@@ -1,75 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbZHDL65@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbZHDMAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812AbZHDL65 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 07:58:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbZHDL64
+	id S1754855AbZHDMAU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 08:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754530AbZHDMAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 07:58:56 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38919 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753448AbZHDL64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 07:58:56 -0400
-Date: Tue, 4 Aug 2009 13:58:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 0/2] tracing/function_graph fixes for 2.6.31
-Message-ID: <20090804115851.GB29545@elte.hu>
-References: <1248818134-5231-1-git-send-email-fweisbec@gmail.com>
+	Tue, 4 Aug 2009 08:00:20 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:49267 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753516AbZHDMAT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 08:00:19 -0400
+X-Trace: 237173315/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.71.197/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.71.197
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AuEEANu/d0pPRUfF/2dsb2JhbACBUtNJhBgFgjI
+X-IronPort-AV: E=Sophos;i="4.43,321,1246834800"; 
+   d="scan'208";a="237173315"
+Date: Tue, 4 Aug 2009 13:00:07 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Brice Goglin <Brice.Goglin@inria.fr>
+cc: Leon Woestenberg <leon.woestenberg@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: get_user_pages() stores ERR_PTR() in pages[i] on
+ failure
+In-Reply-To: <4A780FE6.9050704@inria.fr>
+Message-ID: <Pine.LNX.4.64.0908041245260.17734@sister.anvils>
+References: <c384c5ea0908030823y494ee8bei85aa62c1470fa3ec@mail.gmail.com> 
+ <Pine.LNX.4.64.0908031724200.2296@sister.anvils>  <4A77FCFB.9020001@inria.fr>
+ <c384c5ea0908040259k4295c986wdd45fe9e1e4315b1@mail.gmail.com>
+ <4A780FE6.9050704@inria.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248818134-5231-1-git-send-email-fweisbec@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 4 Aug 2009, Brice Goglin wrote:
+> 
+> >> I wonder if we should change get_user_pages to store ERR_PTR(ret)
+> >> in page[i] when it fails to get page #i.
+> >>     
+> > Yes, I would see that as an improvement in finding out why rc <
+> > nr_pages, in case rc > 0.
+> >
+> > Also I think it does not break existing users.
+> >   
+> 
+> Only compile-tested (and not in the nommu case).
+> 
+> 
+> 
+> 
+> When get_user_pages() fails to get a non-first page, it returns
+> the number of successfully gotten pages. The caller has to call
+> get_user_pages() again on the failed page to figure out the
+> error code.
+> 
+> Store the error code with ERR_PTR() in pages[i] when we fail
+> to get page #i.
+> 
+> The arch specific get_user_pages_fast() do not need to be changed
+> since they revert to the main get_user_pages() on failure.
+> 
+> Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+This is a nice idea, and it looks like a good patch to implement
+it, and I wish get_user_pages() had done that from the start, but...
 
-> Ingo, Thomas,
-> 
-> Those are two fixes for the function graph tracer for .31
-> 
-> The first one fixes a possible race condition between a function 
-> graph trace reader and ring buffer writers, leading to a mixup 
-> inside an event entry, or worst.
-> 
-> The second one fixes some issues in the output of the function 
-> graph tracer while using splice on the trace_pipe file or 
-> ftrace_dump().
-> 
-> Both fixes should also be backported on .30 for the -stable 
-> branch.
-> 
-> Thanks,
-> Frederic.
-> 
-> The following changes since commit 4733fd328f14280900435d9dbae1487d110a4d56:
->   Benjamin Herrenschmidt (1):
->         mm: Remove duplicate definitions in MIPS and SH
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git tracing/fixes
-> 
-> Lai Jiangshan (2):
->       tracing: Fix invalid function_graph entry
->       tracing: Fix missing function_graph events when we splice_read from trace_pipe
-> 
->  kernel/trace/trace.c                 |   10 +++++++---
->  kernel/trace/trace_functions_graph.c |   11 +++++++++--
->  2 files changed, 16 insertions(+), 5 deletions(-)
+... some callers of get_user_pages() might expect it not to touch
+entries in the page array beyond the fail point: for example, they
+might start off with a zeroed array, then when they come to put_page
+on the array afterwards, would skip any NULL entries found - without
+having to have noted the returned number of pages.  I don't think
+that way of working is supported by any guarantee in documentation,
+but it's not unreasonable to expect it to behave in that way.
 
-Pulled, thanks a lot Frederic!
+If there were nothing intree which worked that way, then I'd
+say let's go ahead with your nice patch.  But I soon reached
+drivers/gpu/drm/ttm/ttm_tt.c then drivers/gpu/drm/via/via_dmablit.c
+which both appear to work in that way.  I've not looked beyond them,
+but I suspect those two cases amount to a NAK on your patch, sadly.
+Of course we _could_ fix individual callers to work with it, but
+for me they sound a warning that it's too late to change now.
 
-	Ingo
+Hugh
