@@ -1,106 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932772AbZHDKHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932776AbZHDKMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932772AbZHDKHX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 06:07:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932742AbZHDKHW
+	id S932776AbZHDKMw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 06:12:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932742AbZHDKMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 06:07:22 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:48185 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932734AbZHDKHV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 06:07:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZjqBzegeHWP3LMKnGrse7KjF9jseaNTgQVET4bMvsG12/1vq0bhZZdhskeY1cA4b2o
-         pIRTz8lAIX808qJkA/lM9kjvNgQoqhYeAfEMnYL1wfh8OXfQXJUO90VBpNe3Rulgg6bO
-         17eH0RowYoyKfMRUb1LIhXsLNmVW+d4u1yUnE=
+	Tue, 4 Aug 2009 06:12:51 -0400
+Received: from co203.xi-lite.net ([149.6.83.203]:49036 "EHLO co203.xi-lite.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932718AbZHDKMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 06:12:51 -0400
+Message-ID: <4A78099B.4@parrot.com>
+Date: Tue, 4 Aug 2009 12:12:43 +0200
+From: Matthieu CASTET <matthieu.castet@parrot.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-In-Reply-To: <20090804185058.09f79b37.kamezawa.hiroyu@jp.fujitsu.com>
-References: <c384c5ea0908030823y494ee8bei85aa62c1470fa3ec@mail.gmail.com>
-	 <Pine.LNX.4.64.0908031724200.2296@sister.anvils>
-	 <c384c5ea0908040157g222f5408o52dd10f02da5a07d@mail.gmail.com>
-	 <20090804185058.09f79b37.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 4 Aug 2009 12:07:20 +0200
-Message-ID: <c384c5ea0908040307g7389f33alad0cdf14ec58e10b@mail.gmail.com>
-Subject: Re: get_user_pages() on an mmap()ed file allowed? What to do if 0 < 
-	get_user_pages(..., nr_pages, ...) < nr_pages?
-From: Leon Woestenberg <leon.woestenberg@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+CC: "ltt-dev@lists.casi.polymtl.ca" <ltt-dev@lists.casi.polymtl.ca>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "rostedt@goodmis.org" <rostedt@goodmis.org>
+Subject: Re: Tracing thread name
+References: <4A76E42D.7010908@parrot.com> <20090803134843.GB23455@Krystal>
+In-Reply-To: <20090803134843.GB23455@Krystal>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset="ISO-8859-1"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi Mathieu,
 
-On Tue, Aug 4, 2009 at 11:50 AM, KAMEZAWA
-Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Tue, 4 Aug 2009 10:57:33 +0200
-> Leon Woestenberg <leon.woestenberg@gmail.com> wrote:
->
->
->> >> - what should a driver do when get_user_pages() returns less pages
->> >> than requested?
->> >
->> > Probably put_page the pages gotten then report the surprise;
->> > perhaps, before putting the pages gotten, try get_user_pages
->> > on the next alone, to see what error code is returned for that.
->> >
->> > Unless it's happy to work with fewer pages than requested,
->> > in which case work with them and ignore the surprise.
->> >
->> I expect a certain amount of data to be DMA'd from the PCI device to
->> the file mmap, so I'ld rather map the complete file before I start
->> DMA.
+Mathieu Desnoyers a écrit :
+> * Matthieu CASTET (matthieu.castet@parrot.com) wrote:
+>> Hi,
 >>
-> I wonder.... If your device does DMA from-PCI-to-user, then,
->
->  rc = get_user_pages(current, current->mm, start & PAGE_MASK,
-> nr_pages, 0 /* do not write*/, 1 /* do force */, pages, NULL);
->
-> This is *write* access. isn't it ? (contents of pages got by this call
-> will be overwritten by DMA ?)
->
->From the header:
+>> I use ltt on a 2.6.27 on an arm architecture.
+>> It works quite well, but I have a minor problem :
+>>
+>> my application sets thread name with prctl PR_SET_NAME. But ltt viewer
+>> doesn't seem to saw it.
+>>
+> 
+> Hrm, I guess we might want to instrument set_task_comm as you propose to
+> get the correct process name, but if this gets us the thread name, I
+> think it's only an implementation side-effect:
 
-int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
-unsigned long start,
-int len, int write, int force, struct page **pages, struct
-vm_area_struct **vmas);
+> The way LTTng handles thread names is by adding a userspace "thread
+> branding" event. It should be executed at thread startup. The downside
+> of the current LTTng approach is that we cannot know the name of threads
+> already executing before we started tracing.
+> 
 
-So with write being 0, I think it is read access to user space pages.
+Do you know if it is possible to patch my version to add such feature ?
 
+I saw that the name already change in the trace before/after an exec.
+How lltv get the new name ?
+With "fs.exec" tracepoint ?
+In that case I could fake a "fs.exec" tracepoint in set_task_comm.
 
-The actual code looks like this:
+Thanks
 
-        /* is the PCI device (DMA) writing to user space? */
-        to_user = !dir_to_dev;
-
-        ...
-
-	/* to_user != 0 means read from device, write into user space buffer memory */
-	rc = get_user_pages(current, current->mm, (unsigned long)start &
-PAGE_MASK, nr_pages, to_user,
-
-
-
-> About (rc != nr_pages) case, I doubt there are difference between
-> mmap region (or size of file) and [start, start+count) passed to you device.
->
-I will tripple check this.
-
-My current test is rather static (fixed size files I read from, fixed
-mmap length etc) and rc varies wildly. As I said, I will check what
-get_user_pages() fails on internally.
-
-I will probably cook up a patch with Brice's idea (storing the error
-code in the page[i], where i = rc).
-
-Regards,
--- 
-Leon
+Matthieu
