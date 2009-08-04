@@ -1,82 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932111AbZHDA6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbZHDBFV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932111AbZHDA6v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 3 Aug 2009 20:58:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbZHDA6u
+	id S1753205AbZHDBFV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 3 Aug 2009 21:05:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbZHDBFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 3 Aug 2009 20:58:50 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:47813 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751382AbZHDA6t (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 3 Aug 2009 20:58:49 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>, "Theodore Ts'o" <tytso@mit.edu>,
-       Andreas Dilger <adilger@sun.com>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: 31-rc4-mmotm0730 - ext4 whinge at shutdown
-From: Valdis.Kletnieks@vt.edu
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1249347496_4761P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Mon, 3 Aug 2009 21:05:20 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:52316 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751460AbZHDBFU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 3 Aug 2009 21:05:20 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=YHmxN2J4SUrBE+UfRAzs/Y6DrQqrjiQHhOtiI2F0VS6Yv+h9Wk3oOw+lAUWkD65ZD
+	b/xJG2+wmC/Wg7qM8KZVg==
+MIME-Version: 1.0
+In-Reply-To: <2f86c2480908031756j557e7aebmbf7951da6a1aadb0@mail.gmail.com>
+References: <20090731012908.27908.62208.stgit@hastromil.mtv.corp.google.com>
+	 <20090731015154.27908.9639.stgit@hastromil.mtv.corp.google.com>
+	 <4A7652E7.4020206@cn.fujitsu.com>
+	 <2f86c2480908031756j557e7aebmbf7951da6a1aadb0@mail.gmail.com>
+Date: Mon, 3 Aug 2009 18:05:16 -0700
+Message-ID: <6599ad830908031805y31136eceqeff0bab455100d6c@mail.gmail.com>
+Subject: Re: [PATCH 6/6] Makes procs file writable to move all threads by tgid 
+	at once
+From: Paul Menage <menage@google.com>
+To: Benjamin Blum <bblum@google.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, akpm@linux-foundation.org,
+       serue@us.ibm.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Mon, 03 Aug 2009 20:58:16 -0400
-Message-ID: <24577.1249347496@turing-police.cc.vt.edu>
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1249347496_4761P
-Content-Type: text/plain; charset=us-ascii
+On Mon, Aug 3, 2009 at 5:56 PM, Benjamin Blum<bblum@google.com> wrote:
+> No, the idea is that even though we had a reference that we already
+> dropped, we in effect "traded" the newcg to the task for its oldcg,
+> giving it our reference on newcg and gaining its reference on oldcg. I
+> believe the cgroup_mutex guarantees that it'll still be there when we
+> do the trade - perhaps a BUG_ON(tsk->cgroups != oldcg) is wanted
+> inside the second task_lock section there?
 
-Got this at system shutdown, while trying to unmount one of three ext4 file
-system (note - the filesystems were all originally ext3, mounted as ext4, if
-that matters).
+I don't think that's safe, since the task could exit and drop its
+reference (and switch to init_css_set).
 
-RFE - if it's going to print the mballoc stats, it should at least dump
-a major/minor pair so that I can tell which of my 3 ext4 filesystems each
-one is talking about. :)
+>>
+>> I think it's more intuitive to return 1 if found and 0 if not found.
+>
+> I was sticking with the convention of nonzero return values indicating
+> failure, as is used everywhere else in this context.
+>
 
-[  297.865667] EXT4-fs: mballoc: 0 blocks 0 reqs (0 success)
-[  297.868397] EXT4-fs: mballoc: 0 extents scanned, 0 goal hits, 0 2^N hits, 0 breaks, 0 lost
-[  297.871459] EXT4-fs: mballoc: 0 generated and it took 0
-[  297.874532] EXT4-fs: mballoc: 0 preallocated, 0 discarded
-[  297.900378] ------------[ cut here ]------------
-[  297.903618] WARNING: at fs/namespace.c:611 mntput_no_expire+0xd8/0x145()
-[  297.906962] Hardware name: Latitude D820
-[  297.910231] Modules linked in: ext4 jbd2 crc16 [last unloaded: scsi_wait_scan]
-[  297.913357] Pid: 1783, comm: umount Not tainted 2.6.31-rc4-mmotm0730 #6
-[  297.916352] Call Trace:
-[  297.918164]  [<ffffffff8103fb1d>] warn_slowpath_common+0x77/0x8f
-[  297.919706]  [<ffffffff8103fb44>] warn_slowpath_null+0xf/0x11
-[  297.921172]  [<ffffffff810e80bf>] mntput_no_expire+0xd8/0x145
-[  297.922797]  [<ffffffff810e86d0>] sys_umount+0x2de/0x30d
-[  297.924312]  [<ffffffff810669d6>] ? trace_hardirqs_on_caller+0x121/0x145
-[  297.925776]  [<ffffffff8100b2ab>] system_call_fastpath+0x16/0x1b
-[  297.927343] ---[ end trace 6987d23c89c53046 ]---
-[  297.982931] EXT4-fs: mballoc: 0 blocks 0 reqs (0 success)
-[  297.984651] EXT4-fs: mballoc: 0 extents scanned, 0 goal hits, 0 2^N hits, 0 breaks, 0 lost
-[  297.986141] EXT4-fs: mballoc: 0 generated and it took 0
-[  297.987772] EXT4-fs: mballoc: 0 preallocated, 0 discarded
-[  297.993872] EXT4-fs: mballoc: 0 blocks 0 reqs (0 success)
-[  297.995383] EXT4-fs: mballoc: 0 extents scanned, 0 goal hits, 0 2^N hits, 0 breaks, 0 lost
-[  297.996974] EXT4-fs: mballoc: 0 generated and it took 0
-[  297.998595] EXT4-fs: mballoc: 0 preallocated, 0 discarded
-[  301.239272] sd 0:0:0:0: [sda] Synchronizing SCSI cache
-[  301.244884] Restarting system.
-[  301.247821] machine restart
+Make it a bool, so that it's intuitively more obvious that true==success?
 
-
---==_Exmh_1249347496_4761P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFKd4eocC3lWbTT17ARAgObAKDh4GjHJuEwwPUeMfDN0/fzqjdfYQCgj7PS
-P40E1fJmSU+bNgbgagMi0yM=
-=skUW
------END PGP SIGNATURE-----
-
---==_Exmh_1249347496_4761P--
+Paul
