@@ -1,127 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933318AbZHDVxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933205AbZHDVxG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933318AbZHDVxO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 17:53:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933244AbZHDVxL
+	id S933205AbZHDVxG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 17:53:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933165AbZHDVxD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 17:53:11 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43947 "EHLO
+	Tue, 4 Aug 2009 17:53:03 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:43931 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933199AbZHDVxJ (ORCPT
+	with ESMTP id S933085AbZHDVxB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 17:53:09 -0400
+	Tue, 4 Aug 2009 17:53:01 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200908041152.240876191@firstfloor.org>
 In-Reply-To: <200908041152.240876191@firstfloor.org>
-To: npiggin@suse.de, akpm@linux-foundation.org, linux-mm@vger.kernel.org,
+To: akpm@linux-foundation.org, linux-mm@vger.kernel.org,
        linux-kernel@vger.kernel.org, fengguang.wu@intel.com
-Subject: [PATCH] [11/15] HWPOISON: Refactor truncate to allow direct truncating of page v2
-Message-Id: <20090804215310.5A9A3B15D8@basil.firstfloor.org>
-Date: Tue,  4 Aug 2009 23:53:10 +0200 (CEST)
+Subject: [PATCH] [2/15] HWPOISON: Export some rmap vma locking to outside world
+Message-Id: <20090804215301.43345B15D8@basil.firstfloor.org>
+Date: Tue,  4 Aug 2009 23:53:01 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Nick Piggin <npiggin@suse.de>
+Needed for later patch that walks rmap entries on its own.
 
-Extract out truncate_inode_page() out of the truncate path so that
-it can be used by memory-failure.c
-
-[AK: description, headers, fix typos]
-v2: Some white space changes from Fengguang Wu 
+This used to be very frowned upon, but memory-failure.c does
+some rather specialized rmap walking and rmap has been stable
+for quite some time, so I think it's ok now to export it.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/linux/mm.h |    2 ++
- mm/truncate.c      |   29 +++++++++++++++--------------
- 2 files changed, 17 insertions(+), 14 deletions(-)
+ include/linux/rmap.h |    6 ++++++
+ mm/rmap.c            |    4 ++--
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-Index: linux/mm/truncate.c
+Index: linux/include/linux/rmap.h
 ===================================================================
---- linux.orig/mm/truncate.c
-+++ linux/mm/truncate.c
-@@ -93,11 +93,11 @@ EXPORT_SYMBOL(cancel_dirty_page);
-  * its lock, b) when a concurrent invalidate_mapping_pages got there first and
-  * c) when tmpfs swizzles a page between a tmpfs inode and swapper_space.
+--- linux.orig/include/linux/rmap.h
++++ linux/include/linux/rmap.h
+@@ -112,6 +112,12 @@ int page_mkclean(struct page *);
   */
--static void
-+static int
- truncate_complete_page(struct address_space *mapping, struct page *page)
- {
- 	if (page->mapping != mapping)
--		return;
-+		return -EIO;
+ int try_to_munlock(struct page *);
  
- 	if (page_has_private(page))
- 		do_invalidatepage(page, 0);
-@@ -108,6 +108,7 @@ truncate_complete_page(struct address_sp
- 	remove_from_page_cache(page);
- 	ClearPageMappedToDisk(page);
- 	page_cache_release(page);	/* pagecache ref */
-+	return 0;
- }
- 
- /*
-@@ -135,6 +136,16 @@ invalidate_complete_page(struct address_
- 	return ret;
- }
- 
-+int truncate_inode_page(struct address_space *mapping, struct page *page)
-+{
-+	if (page_mapped(page)) {
-+		unmap_mapping_range(mapping,
-+				   (loff_t)page->index << PAGE_CACHE_SHIFT,
-+				   PAGE_CACHE_SIZE, 0);
-+	}
-+	return truncate_complete_page(mapping, page);
-+}
++/*
++ * Called by memory-failure.c to kill processes.
++ */
++struct anon_vma *page_lock_anon_vma(struct page *page);
++void page_unlock_anon_vma(struct anon_vma *anon_vma);
 +
- /**
-  * truncate_inode_pages - truncate range of pages specified by start & end byte offsets
-  * @mapping: mapping to truncate
-@@ -196,12 +207,7 @@ void truncate_inode_pages_range(struct a
- 				unlock_page(page);
- 				continue;
- 			}
--			if (page_mapped(page)) {
--				unmap_mapping_range(mapping,
--				  (loff_t)page_index<<PAGE_CACHE_SHIFT,
--				  PAGE_CACHE_SIZE, 0);
--			}
--			truncate_complete_page(mapping, page);
-+			truncate_inode_page(mapping, page);
- 			unlock_page(page);
- 		}
- 		pagevec_release(&pvec);
-@@ -238,15 +244,10 @@ void truncate_inode_pages_range(struct a
- 				break;
- 			lock_page(page);
- 			wait_on_page_writeback(page);
--			if (page_mapped(page)) {
--				unmap_mapping_range(mapping,
--				  (loff_t)page->index<<PAGE_CACHE_SHIFT,
--				  PAGE_CACHE_SIZE, 0);
--			}
-+			truncate_inode_page(mapping, page);
- 			if (page->index > next)
- 				next = page->index;
- 			next++;
--			truncate_complete_page(mapping, page);
- 			unlock_page(page);
- 		}
- 		pagevec_release(&pvec);
-Index: linux/include/linux/mm.h
+ #else	/* !CONFIG_MMU */
+ 
+ #define anon_vma_init()		do {} while (0)
+Index: linux/mm/rmap.c
 ===================================================================
---- linux.orig/include/linux/mm.h
-+++ linux/include/linux/mm.h
-@@ -809,6 +809,8 @@ static inline void unmap_shared_mapping_
- extern int vmtruncate(struct inode * inode, loff_t offset);
- extern int vmtruncate_range(struct inode * inode, loff_t offset, loff_t end);
+--- linux.orig/mm/rmap.c
++++ linux/mm/rmap.c
+@@ -191,7 +191,7 @@ void __init anon_vma_init(void)
+  * Getting a lock on a stable anon_vma from a page off the LRU is
+  * tricky: page_lock_anon_vma rely on RCU to guard against the races.
+  */
+-static struct anon_vma *page_lock_anon_vma(struct page *page)
++struct anon_vma *page_lock_anon_vma(struct page *page)
+ {
+ 	struct anon_vma *anon_vma;
+ 	unsigned long anon_mapping;
+@@ -211,7 +211,7 @@ out:
+ 	return NULL;
+ }
  
-+int truncate_inode_page(struct address_space *mapping, struct page *page);
-+
- #ifdef CONFIG_MMU
- extern int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 			unsigned long address, unsigned int flags);
+-static void page_unlock_anon_vma(struct anon_vma *anon_vma)
++void page_unlock_anon_vma(struct anon_vma *anon_vma)
+ {
+ 	spin_unlock(&anon_vma->lock);
+ 	rcu_read_unlock();
