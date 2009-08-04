@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933017AbZHDQeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933040AbZHDQgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933017AbZHDQeK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 12:34:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932882AbZHDQeJ
+	id S933040AbZHDQgb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 12:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932990AbZHDQga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 12:34:09 -0400
-Received: from pmx1.sophos.com ([213.31.172.16]:33545 "EHLO pmx1.sophos.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932865AbZHDQeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 12:34:08 -0400
-From: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
-Organization: Sophos Plc
-To: Eric Paris <eparis@redhat.com>
-Subject: Re: fanotify - overall design before I start sending patches
-Date: Tue, 4 Aug 2009 17:34:04 +0100
-User-Agent: KMail/1.9.10
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "malware-list@dmesg.printk.net" <malware-list@dmesg.printk.net>,
-       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
-       "greg@kroah.com" <greg@kroah.com>, "jcm@redhat.com" <jcm@redhat.com>,
-       Douglas Leeder <douglas.leeder@sophos.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "arjan@infradead.org" <arjan@infradead.org>,
-       "david@lang.hm" <david@lang.hm>,
-       "jengelh@medozas.de" <jengelh@medozas.de>,
-       "aviro@redhat.com" <aviro@redhat.com>,
-       "mrkafk@gmail.com" <mrkafk@gmail.com>,
-       "alexl@redhat.com" <alexl@redhat.com>, "jack@suse.cz" <jack@suse.cz>,
-       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       "mmorley@hcl.in" <mmorley@hcl.in>, "pavel@suse.cz" <pavel@suse.cz>
-References: <1248466429.3567.82.camel@localhost>
-In-Reply-To: <1248466429.3567.82.camel@localhost>
+	Tue, 4 Aug 2009 12:36:30 -0400
+Received: from lider.pardus.org.tr ([193.140.100.216]:39762 "EHLO
+	lider.pardus.org.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932987AbZHDQg3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 12:36:29 -0400
+From: =?utf-8?q?Ozan=20=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>
+To: linux-kernel@vger.kernel.org
+Cc: hpa@zytor.com, mingo@elte.hu
+Subject: [PATCH] x86: Add quirk to make Apple MacBookPro5,1 use reboot=pci
+Date: Tue,  4 Aug 2009 19:39:31 +0300
+Message-Id: <1249403971-6543-1-git-send-email-ozan@pardus.org.tr>
+X-Mailer: git-send-email 1.6.3.4
 MIME-Version: 1.0
-Message-Id: <200908041734.05762.tvrtko.ursulin@sophos.com>
-X-MIMETrack: Itemize by SMTP Server on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 04/08/2009 17:34:06,
-	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 04/08/2009 17:34:06,
-	Serialize complete at 04/08/2009 17:34:06
-X-TNEFEvaluated: 1
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Disposition: inline
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 24 July 2009 21:13:49 Eric Paris wrote:
-> After the socket is bound events are attained using the read() syscall
-> (recv* probably also works haven't tested).  This will result in the
-> buffer being filled with one or more events like this:
->
-> struct fanotify_event_metadata {
->         __u32 event_len;
->         __s32 fd;
->         __u32 mask;
->         __u32 f_flags;
->         __s32 pid;
->         __s32 tgid;
->         __u64 cookie;
-> }  __attribute__((packed));
->
-> fd specifies the new file descriptor that was created in the context of
-> the listener.  (readlink of /proc/self/fd will give you A pathname)
-> mask indicates the events type (bitwise OR of the event types listed
-> above).  f_flags here is the f_flags the ORIGINAL process has the file
-> open with.  pid and tgid are from the original process.  cookie is used
-> when the listener needs to allow, deny, or delay the operation.
+MacBookPro5,1 is not able to reboot unless reboot=pci is set.
+This patch forces it through a DMI quirk specific to this device.
 
-One more thing. uid and gid (possibly whole set?) would be useful so we can 
-tell which user triggered an event without having to look at the process 
-which has maybe disappeared in the mean time. I _think_ uid was in the 
-original proposal/idea and don't remember if it was decided we cannot get it 
-deliberately, or it was omitted by accident?
+Tested-by: Ozan Çağlayan <ozan@pardus.org.tr>
+Signed-off-by: Ozan Çağlayan <ozan@pardus.org.tr>
+---
 
-Tvrtko
+Seen that the previous quirk by Paul Mackerras was committed to tip/x86/urgent,
+this is based on top of that patch which introduced the reboot=p quirk stuff.
+
+ arch/x86/kernel/reboot.c |   10 +++++++++-
+ 1 files changed, 9 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+index 834c9da..9eb8976 100644
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -405,7 +405,7 @@ EXPORT_SYMBOL(machine_real_restart);
+ #endif /* CONFIG_X86_32 */
+ 
+ /*
+- * Apple MacBook5,2 (2009 MacBook) needs reboot=p
++ * Some Apple MacBook and MacBookPro's needs reboot=p to be able to reboot
+  */
+ static int __init set_pci_reboot(const struct dmi_system_id *d)
+ {
+@@ -426,6 +426,14 @@ static struct dmi_system_id __initdata pci_reboot_dmi_table[] = {
+ 			DMI_MATCH(DMI_PRODUCT_NAME, "MacBook5,2"),
+ 		},
+ 	},
++	{	/* Handle problems with rebooting on Apple MacBookPro5,1 */
++		.callback = set_pci_reboot,
++		.ident = "Apple MacBookPro5,1",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "Apple Inc."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "MacBookPro5,1"),
++		},
++	},
+ 	{ }
+ };
+ 
+-- 
+1.6.3.4
+
