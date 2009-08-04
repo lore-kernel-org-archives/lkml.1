@@ -1,105 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933066AbZHDR6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933170AbZHDR66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933066AbZHDR6g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 13:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932978AbZHDR6g
+	id S933170AbZHDR66 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 13:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933036AbZHDR66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 13:58:36 -0400
-Received: from mga06.intel.com ([134.134.136.21]:51559 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932928AbZHDR6f (ORCPT
+	Tue, 4 Aug 2009 13:58:58 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:51257 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932897AbZHDR65 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 13:58:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,322,1246863600"; 
-   d="scan'208";a="436078485"
-Date: Tue, 4 Aug 2009 20:00:46 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Amit Kucheria <amit.kucheria@verdurent.com>
-Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org
-Subject: Re: [PATCH 2/3] MFD: TWL4030: print warning for out-of-order
-	script loading
-Message-ID: <20090804180044.GH8601@sortiz.org>
-References: <1247050175-31163-1-git-send-email-amit.kucheria@verdurent.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1247050175-31163-1-git-send-email-amit.kucheria@verdurent.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 4 Aug 2009 13:58:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=cTMDuOUmEKZyu1KbqmgQL+lDRxAeVB4MQhsCHadVJr9eofSGOotXV+MdoSRqofjlhM
+         0lcf60uhimj6mvqg0wdfrireQOpFs54y3ZoiplMOa1eCSSLrS5ruOfvlc4OOeTuSXHuA
+         LlF4gbC/Vv8P95/SfFC4j5gLcpCCGYJRzbC/Q=
+From: Roger Quadros <quadros.roger@gmail.com>
+To: broonie@sirena.org.uk
+Cc: lrg@slimlogic.co.uk, philipp.zabel@gmail.com, linux-kernel@vger.kernel.org
+Subject: [PATCH v5] regulator: Add GPIO enable control to fixed voltage regulator driver
+Date: Tue,  4 Aug 2009 20:58:50 +0300
+Message-Id: <1249408730-15430-1-git-send-email-quadros.roger@gmail.com>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <quadros.roger@gmail.com>
+References: <quadros.roger@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Amit,
+From: Roger Quadros <ext-roger.quadros@nokia.com>
 
-On Wed, Jul 08, 2009 at 01:49:35PM +0300, Amit Kucheria wrote:
-> When the sleep script is loaded before the wakeup script, there is a
-> chance that the system might go to sleep before the wakeup script
-> loading is completed. This will lead to a system that does not wakeup
-> and has been observed to cause non-booting boards.
-> 
-> Various options were considered to solve this problem, including
-> modification of the core twl4030 power code to be smart enough to
-> reorder the loading of the scripts. But it felt too over-engineered.
-> 
-> Hence this patch just warns the DPS script developer so that they may be
-> reordered in the board-code itself.
-> 
-> Signed-off-by: Amit Kucheria <amit.kucheria@verdurent.com>
-> ---
->  drivers/mfd/twl4030-power.c |   11 +++++++++--
->  1 files changed, 9 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/mfd/twl4030-power.c b/drivers/mfd/twl4030-power.c
-> index bb9e45f..ef4cc4e 100644
-> --- a/drivers/mfd/twl4030-power.c
-> +++ b/drivers/mfd/twl4030-power.c
-> @@ -315,6 +315,7 @@ static int __init load_triton_script(struct twl4030_script *tscript)
->  {
->  	u8 address = triton_next_free_address;
->  	int err;
-> +	static u8 mask = 0;
->  
->  	/* Make sure the script isn't going beyond last valid address */
->  	if ((address + tscript->size) > (END_OF_SCRIPT-1)) {
-> @@ -331,14 +332,20 @@ static int __init load_triton_script(struct twl4030_script *tscript)
->  	if (tscript->flags & TRITON_WRST_SCRIPT)
->  		err |= config_warmreset_sequence(address);
->  
-> -	if (tscript->flags & TRITON_WAKEUP12_SCRIPT)
-> +	if (tscript->flags & TRITON_WAKEUP12_SCRIPT) {
->  		err |= config_wakeup12_sequence(address);
-> +		mask |= TRITON_WAKEUP12_SCRIPT;
-> +	}
->  
->  	if (tscript->flags & TRITON_WAKEUP3_SCRIPT)
->  		err |= config_wakeup3_sequence(address);
->  
-> -	if (tscript->flags & TRITON_SLEEP_SCRIPT)
-> +	if (tscript->flags & TRITON_SLEEP_SCRIPT) {
-Wouldnt something like:
+Now fixed regulators that have their enable pin connected to a GPIO line
+can use the fixed regulator driver for regulator enable/disable control.
+The GPIO number and polarity information is passed through platform data.
+GPIO enable control is achieved using gpiolib.
 
-     if (tscript->flags & (TRITON_SLEEP_SCRIPT | TRITON_WAKEUP12_SCRIPT)) {
+Signed-off-by: Roger Quadros <ext-roger.quadros@nokia.com>
+---
+ drivers/regulator/fixed.c       |   88 ++++++++++++++++++++++++++++++++++++++-
+ include/linux/regulator/fixed.h |   21 +++++++++
+ 2 files changed, 107 insertions(+), 2 deletions(-)
 
-save us from using an additional mask variable and simplify this patch ?
-
-Cheers,
-Samuel.
-
-
-> +		if (!(mask & TRITON_WAKEUP12_SCRIPT))
-> +			printk(KERN_WARNING
-> +			       "TWL4030: Wakeup script not yet loaded. Might lead to boot failure on some boards\n");
->  		err |= config_sleep_sequence(address);
-> +	}
->  
->  	return err;
->  }
-> -- 
-> 1.6.3.3
-> 
-
+diff --git a/drivers/regulator/fixed.c b/drivers/regulator/fixed.c
+index cdc674f..205fb60 100644
+--- a/drivers/regulator/fixed.c
++++ b/drivers/regulator/fixed.c
+@@ -5,6 +5,9 @@
+  *
+  * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
+  *
++ * Copyright (c) 2009 Nokia Corporation
++ * Roger Quadros <ext-roger.quadros@nokia.com>
++ *
+  * This program is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU General Public License as
+  * published by the Free Software Foundation; either version 2 of the
+@@ -20,20 +23,45 @@
+ #include <linux/platform_device.h>
+ #include <linux/regulator/driver.h>
+ #include <linux/regulator/fixed.h>
++#include <linux/gpio.h>
+ 
+ struct fixed_voltage_data {
+ 	struct regulator_desc desc;
+ 	struct regulator_dev *dev;
+ 	int microvolts;
++	int gpio;
++	unsigned enable_high:1;
++	unsigned is_enabled:1;
+ };
+ 
+ static int fixed_voltage_is_enabled(struct regulator_dev *dev)
+ {
+-	return 1;
++	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
++
++	return data->is_enabled;
+ }
+ 
+ static int fixed_voltage_enable(struct regulator_dev *dev)
+ {
++	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
++
++	if (gpio_is_valid(data->gpio)) {
++		gpio_set_value_cansleep(data->gpio, data->enable_high);
++		data->is_enabled = 1;
++	}
++
++	return 0;
++}
++
++static int fixed_voltage_disable(struct regulator_dev *dev)
++{
++	struct fixed_voltage_data *data = rdev_get_drvdata(dev);
++
++	if (gpio_is_valid(data->gpio)) {
++		gpio_set_value_cansleep(data->gpio, !data->enable_high);
++		data->is_enabled = 0;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -58,6 +86,7 @@ static int fixed_voltage_list_voltage(struct regulator_dev *dev,
+ static struct regulator_ops fixed_voltage_ops = {
+ 	.is_enabled = fixed_voltage_is_enabled,
+ 	.enable = fixed_voltage_enable,
++	.disable = fixed_voltage_disable,
+ 	.get_voltage = fixed_voltage_get_voltage,
+ 	.list_voltage = fixed_voltage_list_voltage,
+ };
+@@ -85,12 +114,61 @@ static int regulator_fixed_voltage_probe(struct platform_device *pdev)
+ 	drvdata->desc.n_voltages = 1;
+ 
+ 	drvdata->microvolts = config->microvolts;
++	drvdata->gpio = config->gpio;
++
++	if (gpio_is_valid(config->gpio)) {
++		drvdata->enable_high = config->enable_high;
++
++		/* FIXME: Remove below print warning
++		 *
++		 * config->gpio must be set to -EINVAL by platform code if
++		 * GPIO control is not required. However, early adopters
++		 * not requiring GPIO control may forget to initialize
++		 * config->gpio to -EINVAL. This will cause GPIO 0 to be used
++		 * for GPIO control.
++		 *
++		 * This warning will be removed once there are a couple of users
++		 * for this driver.
++		 */
++		if (!config->gpio)
++			dev_warn(&pdev->dev,
++				"using GPIO 0 for regulator enable control\n");
++
++		ret = gpio_request(config->gpio, config->supply_name);
++		if (ret) {
++			dev_err(&pdev->dev,
++			   "Could not obtain regulator enable GPIO %d: %d\n",
++							config->gpio, ret);
++			goto err_name;
++		}
++
++		/* set output direction without changing state
++		 * to prevent glitch
++		 */
++		drvdata->is_enabled = config->enabled_at_boot;
++		ret = drvdata->is_enabled ?
++				config->enable_high : !config->enable_high;
++
++		ret = gpio_direction_output(config->gpio, ret);
++		if (ret) {
++			dev_err(&pdev->dev,
++			   "Could not configure regulator enable GPIO %d direction: %d\n",
++							config->gpio, ret);
++			goto err_gpio;
++		}
++
++	} else {
++		/* Regulator without GPIO control is considered
++		 * always enabled
++		 */
++		drvdata->is_enabled = 1;
++	}
+ 
+ 	drvdata->dev = regulator_register(&drvdata->desc, &pdev->dev,
+ 					  config->init_data, drvdata);
+ 	if (IS_ERR(drvdata->dev)) {
+ 		ret = PTR_ERR(drvdata->dev);
+-		goto err_name;
++		goto err_gpio;
+ 	}
+ 
+ 	platform_set_drvdata(pdev, drvdata);
+@@ -100,6 +178,9 @@ static int regulator_fixed_voltage_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ 
++err_gpio:
++	if (gpio_is_valid(config->gpio))
++		gpio_free(config->gpio);
+ err_name:
+ 	kfree(drvdata->desc.name);
+ err:
+@@ -115,6 +196,9 @@ static int regulator_fixed_voltage_remove(struct platform_device *pdev)
+ 	kfree(drvdata->desc.name);
+ 	kfree(drvdata);
+ 
++	if (gpio_is_valid(drvdata->gpio))
++		gpio_free(drvdata->gpio);
++
+ 	return 0;
+ }
+ 
+diff --git a/include/linux/regulator/fixed.h b/include/linux/regulator/fixed.h
+index 91b4da3..bd75b18 100644
+--- a/include/linux/regulator/fixed.h
++++ b/include/linux/regulator/fixed.h
+@@ -16,9 +16,30 @@
+ 
+ struct regulator_init_data;
+ 
++/**
++ * struct fixed_voltage_config - fixed_voltage_config structure
++ * @supply_name:	Name of the regulator supply
++ * @microvolts:		Output voltage of regulator
++ * @gpio:		GPIO to use for enable control
++ * 			set to -EINVAL if not used
++ * @enable_high:	Polarity of enable GPIO
++ *			1 = Active high, 0 = Active low
++ * @enabled_at_boot:	Whether regulator has been enabled at
++ * 			boot or not. 1 = Yes, 0 = No
++ * 			This is used to keep the regulator at
++ * 			the default state
++ * @init_data:		regulator_init_data
++ *
++ * This structure contains fixed voltage regulator configuration
++ * information that must be passed by platform code to the fixed
++ * voltage regulator driver.
++ */
+ struct fixed_voltage_config {
+ 	const char *supply_name;
+ 	int microvolts;
++	int gpio;
++	unsigned enable_high:1;
++	unsigned enabled_at_boot:1;
+ 	struct regulator_init_data *init_data;
+ };
+ 
 -- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+1.5.6.3
+
