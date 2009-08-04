@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755584AbZHDOiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbZHDOpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755584AbZHDOiX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 10:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755488AbZHDOiW
+	id S1755211AbZHDOpg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 10:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbZHDOpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 10:38:22 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35192 "EHLO mx3.mail.elte.hu"
+	Tue, 4 Aug 2009 10:45:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51010 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754958AbZHDOiV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 10:38:21 -0400
-Date: Tue, 4 Aug 2009 16:38:12 +0200
+	id S1753429AbZHDOpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 10:45:35 -0400
+Date: Tue, 4 Aug 2009 16:45:02 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/3] Add walltime support for ring-buffer
-Message-ID: <20090804143812.GJ7746@elte.hu>
-References: <20090728105931.D801.A69D9226@jp.fujitsu.com> <20090803072255.GB27581@elte.hu> <20090803182412.CC15.A69D9226@jp.fujitsu.com>
+To: Borislav Petkov <borislav.petkov@amd.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Doug Thompson <norsk5@yahoo.com>,
+       tglx@linutronix.de, aris@redhat.com, linux-kernel@vger.kernel.org,
+       x86@kernel.org
+Subject: Re: [PATCH 07/14] mce3: pass mce info to EDAC for decoding
+Message-ID: <20090804144502.GK7746@elte.hu>
+References: <20090720180446.GB16072@basil.fritz.box> <935428.51568.qm@web50110.mail.re2.yahoo.com> <20090720192229.GC16072@basil.fritz.box> <4A64D0F2.7050009@zytor.com> <4A6538EE.6000903@jp.fujitsu.com> <20090721065128.GA29028@basil.fritz.box> <20090721104924.GD32338@aftab>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090803182412.CC15.A69D9226@jp.fujitsu.com>
+In-Reply-To: <20090721104924.GD32338@aftab>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -35,39 +37,49 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+* Borislav Petkov <borislav.petkov@amd.com> wrote:
 
+> On Tue, Jul 21, 2009 at 08:51:28AM +0200, Andi Kleen wrote:
+> > On Tue, Jul 21, 2009 at 12:41:34PM +0900, Hidetoshi Seto wrote:
+> > > H. Peter Anvin wrote:
+> > > >  If you want modules to change the behavior, you're talking about a
+> > > > *dynamic* change -- the call will point to different things at different
+> > > > points in time -- so you need another mechanism, i.e. function pointers.
+> > > 
+> > > Just FYI, machine check handler on ia64 has such function pointer.
+> > > 
+> > > [arch/ia64/kernel/mca.c]
+> > >     826 /* Function pointer for extra MCA recovery */
+> > >     827 int (*ia64_mca_ucmc_extension)
+> > >     828         (void*,struct ia64_sal_os_state*)
+> > >     829         = NULL;
 > > 
-> > * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > A notifier would be a much more flexible solution. Function 
+> > pointers don't really work well with multiple users, which might 
+> > well happen here.
 > > 
-> > > It can. but I don't think it is sufficient. On flight recorder 
-> > > use-case, The tracing run more than one year. And, Administrator 
-> > > only see last N sec log. (previous logs were overwritten by 
-> > > ring-buffer go-around)
+> > However on the other hand I have some doubts it's really a good 
+> > idea to expose fatal MCEs to modules. MCE is a rather critical 
+> > code path (a bit similar to an oops), with the machine already 
+> > somewhat instable in many cases and if you allow arbitary 
+> > modules to hook into that you risk long term instability.
 > > 
-> > That's definitely something we want to enable ASAP.
-> > 
-> > I'm wondering why a single u64 timestamp is not enough to express 
-> > the full, absolute range of time elapsed since bootup, in 
-> > nanoseconds.
-> > 
-> > That would make walltime a matter of pretty-printing only - we'd 
-> > have to convert the u64 nsec timestamp into a walltime format, 
-> > right?
-> > 
-> > In fact we could change all the timestamps to be standardized along 
-> > 'nanoseconds elapsed since 1970' or so - not nanoseconds since the 
-> > last bootup. That still fits just fine within 64 bits - u64 
-> > nanoseconds has a scope of 500+ years.
+> > So if a notifier is done I would recommend to only limit it to 
+> > corrected MCEs (machine_check_poll), not fatal ones.
 > 
-> Ah, you are right. thanks correct me. but I think ntp updating 
-> time storing is necessary too.
+> However, the idea is to decode _all_ MCEs so we could look into 
+> moving the decoding bits into the EDAC core or some other more 
+> appropriate place. Ingo?
+> 
+> We could then reroute the non fatals to EDAC for further decoding.
 
-Yeah. As long as we only save a single u64 into the trace it should 
-all be fine.
+Yep, obviously the kernel entity with the wider view (which is EDAC 
+here) should interpret such errors and decide policy or do some good 
+default actions. The arch level MCE code is basically a lowlevel 
+platform driver to the EDAC code.
 
-There could be periodic samples of <walltime, sched_clock()> saved 
-on a per cpu basis, and thus converting sched_clock() values into 
-walltime unit?
+And please dont do stupid notifiers. They are opaque and cause 
+various problems. Integrate the code for good - there's no technical 
+reason to keep it all separate.
 
 	Ingo
