@@ -1,76 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755557AbZHDOv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbZHDOv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755557AbZHDOv1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 10:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754520AbZHDOv0
+	id S1755618AbZHDOv7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 10:51:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755538AbZHDOv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 10:51:26 -0400
-Received: from verein.lst.de ([213.95.11.210]:39705 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753414AbZHDOv0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 10:51:26 -0400
-Date: Tue, 4 Aug 2009 16:51:04 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: ysato@users.sourceforge.jp
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] h8300: convert to asm-generic/hardirq.h
-Message-ID: <20090804145104.GE20487@lst.de>
+	Tue, 4 Aug 2009 10:51:58 -0400
+Received: from casper.infradead.org ([85.118.1.10]:53863 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755594AbZHDOvz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 10:51:55 -0400
+Subject: Re: Incorrect circular locking dependency?
+From: Peter Zijlstra <peterz@infradead.org>
+To: David Howells <dhowells@redhat.com>
+Cc: Takashi Iwai <tiwai@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Linux filesystem caching discussion list 
+	<linux-cachefs@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Johannes Berg <johannes@sipsolutions.net>, oleg <oleg@redhat.com>
+In-Reply-To: <24075.1248705430@redhat.com>
+References: <s5hvdmos4i8.wl%tiwai@suse.de>
+	 <alpine.DEB.2.01.0906211926080.6439@bogon> <6950.1245661098@redhat.com>
+	 <24075.1248705430@redhat.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 04 Aug 2009 16:51:26 +0200
+Message-Id: <1249397486.7924.243.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_40
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-07-27 at 15:37 +0100, David Howells wrote:
+> Takashi Iwai <tiwai@suse.de> wrote:
+> 
+> > =======================================================
+> > [ INFO: possible circular locking dependency detected ]
+> > 2.6.30-test #7
+> > -------------------------------------------------------
+> > swapper/0 is trying to acquire lock:
+> >  (&cwq->lock){-.-...}, at: [<c01519f3>] __queue_work+0x1f/0x4e
+> > 
+> > but task is already holding lock:
+> >  (&q->lock){-.-.-.}, at: [<c012cc9c>] __wake_up+0x26/0x5c
+> > 
+> > which lock already depends on the new lock.
+> 
+> Okay.  I think I understand this:
+> 
+>  (1) cachefiles_read_waiter() intercepts wake up events, and, as such, is run
+>      inside the waitqueue spinlock for the page bit waitqueue.
+> 
+>  (2) cachefiles_read_waiter() calls fscache_enqueue_retrieval() which calls
+>      fscache_enqueue_operation() which calls schedule_work() for fast
+>      operations, thus taking a per-CPU workqueue spinlock.
+> 
+>  (3) queue_work(), which is called by many things, calls __queue_work(), which
+>      takes the per-CPU workqueue spinlock.
+> 
+>  (4) __queue_work() then calls insert_work(), which calls wake_up(), which
+>      takes the waitqueue spinlock for the per-CPU workqueue waitqueue.
+> 
+> Even though the two waitqueues are separate, I think lockdep sees them as
+> having the same lock.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
+Yeah, it looks like cwq->lock is always in the same lock class.
 
-Index: linux-2.6/arch/h8300/include/asm/hardirq.h
-===================================================================
---- linux-2.6.orig/arch/h8300/include/asm/hardirq.h	2009-07-27 14:32:58.383148670 +0200
-+++ linux-2.6/arch/h8300/include/asm/hardirq.h	2009-07-27 14:55:42.321901764 +0200
-@@ -1,18 +1,7 @@
- #ifndef __H8300_HARDIRQ_H
- #define __H8300_HARDIRQ_H
- 
--#include <linux/kernel.h>
--#include <linux/threads.h>
--#include <linux/interrupt.h>
--#include <linux/irq.h>
--
--typedef struct {
--	unsigned int __softirq_pending;
--} ____cacheline_aligned irq_cpustat_t;
--
--#include <linux/irq_cpustat.h>	/* Standard mappings for irq_cpustat_t above */
--
--extern void ack_bad_irq(unsigned int irq);
-+#include <asm/irq.h>
- 
- #define HARDIRQ_BITS	8
- 
-@@ -25,4 +14,6 @@ extern void ack_bad_irq(unsigned int irq
- # error HARDIRQ_BITS is too low!
- #endif
- 
-+#include <asm-generic/hardirq.h>
-+
- #endif
-Index: linux-2.6/arch/h8300/kernel/irq.c
-===================================================================
---- linux-2.6.orig/arch/h8300/kernel/irq.c	2009-07-27 14:53:45.658148907 +0200
-+++ linux-2.6/arch/h8300/kernel/irq.c	2009-07-27 14:55:35.116901397 +0200
-@@ -81,11 +81,6 @@ struct irq_chip h8300irq_chip = {
- 	.end		= h8300_end_irq,
- };
- 
--void ack_bad_irq(unsigned int irq)
--{
--	printk("unexpected IRQ trap at vector %02x\n", irq);
--}
--
- #if defined(CONFIG_RAMKERNEL)
- static unsigned long __init *get_vector_address(void)
- {
+Creating a new class for your second workqueue might help, we'd have to
+pass a second key through __create_workqueue_key() and pass that into
+init_cpu_workqueue() and apply it to cwq->lock using lockdep_set_class()
+and co.
+
+~ Peter
+
+> ---
+> > the existing dependency chain (in reverse order) is:
+> > 
+> > -> #1 (&q->lock){-.-.-.}:
+> >        [<c0168746>] __lock_acquire+0xfd6/0x12d5
+> >        [<c0168afc>] lock_acquire+0xb7/0xeb
+> >        [<c03d1249>] _spin_lock_irqsave+0x3d/0x5e
+> >        [<c012cc9c>] __wake_up+0x26/0x5c
+> >        [<c0151053>] insert_work+0x7b/0x95
+> >        [<c0151a02>] __queue_work+0x2e/0x4e
+> >        [<c0151a5e>] delayed_work_timer_fn+0x3c/0x4f
+> >        [<c014925b>] run_timer_softirq+0x180/0x206
+> >        [<c01445cb>] __do_softirq+0xc3/0x18d
+> >        [<c01446d9>] do_softirq+0x44/0x7a
+> >        [<c0144823>] irq_exit+0x43/0x87
+> >        [<c0117cbd>] smp_apic_timer_interrupt+0x7c/0x9b
+> >        [<c0103956>] apic_timer_interrupt+0x36/0x40
+> >        [<c0101ed0>] cpu_idle+0xa2/0xbe
+> >        [<c03bcef6>] rest_init+0x66/0x79
+> >        [<c0537a98>] start_kernel+0x396/0x3ae
+> >        [<c053707f>] __init_begin+0x7f/0x98
+> >        [<ffffffff>] 0xffffffff
+> > 
+> > -> #0 (&cwq->lock){-.-...}:
+> >        [<c0168496>] __lock_acquire+0xd26/0x12d5
+> >        [<c0168afc>] lock_acquire+0xb7/0xeb
+> >        [<c03d1249>] _spin_lock_irqsave+0x3d/0x5e
+> >        [<c01519f3>] __queue_work+0x1f/0x4e
+> >        [<c0151ab9>] queue_work_on+0x48/0x63
+> >        [<c0151c1d>] queue_work+0x23/0x38
+> >        [<c0151c50>] schedule_work+0x1e/0x31
+> >        [<f7f9ed69>] fscache_enqueue_operation+0xc5/0x102 [fscache]
+> >        [<f80b6142>] cachefiles_read_waiter+0xb3/0xcd [cachefiles]
+> >        [<c01292ae>] __wake_up_common+0x4c/0x85
+> >        [<c012ccae>] __wake_up+0x38/0x5c
+> >        [<c015568f>] __wake_up_bit+0x34/0x4b
+> >        [<c01ad459>] unlock_page+0x55/0x6a
+> >        [<c020fb6b>] mpage_end_io_read+0x4e/0x71
+> >        [<c020a4da>] bio_endio+0x31/0x44
+> >        [<c027759c>] req_bio_endio+0xab/0xde
+> >        [<c027774c>] blk_update_request+0x17d/0x321
+> >        [<c0277912>] blk_update_bidi_request+0x22/0x62
+> >        [<c02792c4>] blk_end_bidi_request+0x25/0x6e
+> >        [<c0279371>] blk_end_request+0x1a/0x30
+> >        [<f82811da>] scsi_io_completion+0x193/0x3bb [scsi_mod]
+> >        [<f827a888>] scsi_finish_command+0xd9/0xf2 [scsi_mod]
+> >        [<f8281522>] scsi_softirq_done+0xf4/0x10d [scsi_mod]
+> >        [<c027fcdf>] blk_done_softirq+0x6f/0x8e
+> >        [<c01445cb>] __do_softirq+0xc3/0x18d
+> >        [<c01446d9>] do_softirq+0x44/0x7a
+> >        [<c0144823>] irq_exit+0x43/0x87
+> >        [<c01049fd>] do_IRQ+0x8d/0xb2
+> >        [<c0103595>] common_interrupt+0x35/0x40
+> >        [<c0101ed0>] cpu_idle+0xa2/0xbe
+> >        [<c03bcef6>] rest_init+0x66/0x79
+> >        [<c0537a98>] start_kernel+0x396/0x3ae
+> >        [<c053707f>] __init_begin+0x7f/0x98
+> >        [<ffffffff>] 0xffffffff
+> > 
+> > other info that might help us debug this:
+> > 
+> > 1 lock held by swapper/0:
+> >  #0:  (&q->lock){-.-.-.}, at: [<c012cc9c>] __wake_up+0x26/0x5c
+> > 
+> > stack backtrace:
+> > Pid: 0, comm: swapper Not tainted 2.6.30-test #7
+> > Call Trace:
+> >  [<c03cde42>] ? printk+0x1d/0x33
+> >  [<c0167349>] print_circular_bug_tail+0xaf/0xcb
+> >  [<c0168496>] __lock_acquire+0xd26/0x12d5
+> >  [<c01519f3>] ? __queue_work+0x1f/0x4e
+> >  [<c0168afc>] lock_acquire+0xb7/0xeb
+> >  [<c01519f3>] ? __queue_work+0x1f/0x4e
+> >  [<c01519f3>] ? __queue_work+0x1f/0x4e
+> >  [<c03d1249>] _spin_lock_irqsave+0x3d/0x5e
+> >  [<c01519f3>] ? __queue_work+0x1f/0x4e
+> >  [<c01519f3>] __queue_work+0x1f/0x4e
+> >  [<c0151ab9>] queue_work_on+0x48/0x63
+> >  [<c0151c1d>] queue_work+0x23/0x38
+> >  [<c0151c50>] schedule_work+0x1e/0x31
+> >  [<f7f9ed69>] fscache_enqueue_operation+0xc5/0x102 [fscache]
+> >  [<f80b6142>] cachefiles_read_waiter+0xb3/0xcd [cachefiles]
+> >  [<c01292ae>] __wake_up_common+0x4c/0x85
+> >  [<c012ccae>] __wake_up+0x38/0x5c
+> >  [<c015568f>] __wake_up_bit+0x34/0x4b
+> >  [<c01ad459>] unlock_page+0x55/0x6a
+> >  [<c020fb6b>] mpage_end_io_read+0x4e/0x71
+> >  [<c020a4da>] bio_endio+0x31/0x44
+> >  [<c027759c>] req_bio_endio+0xab/0xde
+> >  [<c027774c>] blk_update_request+0x17d/0x321
+> >  [<c0277912>] blk_update_bidi_request+0x22/0x62
+> >  [<c02792c4>] blk_end_bidi_request+0x25/0x6e
+> >  [<c0279371>] blk_end_request+0x1a/0x30
+> >  [<f82811da>] scsi_io_completion+0x193/0x3bb [scsi_mod]
+> >  [<c0166b5b>] ? trace_hardirqs_on+0x19/0x2c
+> >  [<f8280f43>] ? scsi_device_unbusy+0x92/0xaa [scsi_mod]
+> >  [<f827a888>] scsi_finish_command+0xd9/0xf2 [scsi_mod]
+> >  [<f8281522>] scsi_softirq_done+0xf4/0x10d [scsi_mod]
+> >  [<c027fcdf>] blk_done_softirq+0x6f/0x8e
+> >  [<c01445cb>] __do_softirq+0xc3/0x18d
+> >  [<c01446d9>] do_softirq+0x44/0x7a
+> >  [<c0144823>] irq_exit+0x43/0x87
+> >  [<c01049fd>] do_IRQ+0x8d/0xb2
+> >  [<c0103595>] common_interrupt+0x35/0x40
+> >  [<c0109860>] ? mwait_idle+0x98/0xec
+> >  [<c0101ed0>] cpu_idle+0xa2/0xbe
+> >  [<c03bcef6>] rest_init+0x66/0x79
+> >  [<c0537a98>] start_kernel+0x396/0x3ae
+> >  [<c053707f>] __init_begin+0x7f/0x98
