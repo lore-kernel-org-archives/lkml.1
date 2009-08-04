@@ -1,69 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933081AbZHDQxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933076AbZHDQ5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933081AbZHDQxm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 12:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932930AbZHDQxl
+	id S933076AbZHDQ5T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 12:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932940AbZHDQ5S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 12:53:41 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42670 "EHLO mx2.redhat.com"
+	Tue, 4 Aug 2009 12:57:18 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42777 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932918AbZHDQxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 12:53:41 -0400
-Message-ID: <4A786802.5050305@redhat.com>
-Date: Tue, 04 Aug 2009 12:55:30 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	id S932916AbZHDQ5R convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 12:57:17 -0400
+Date: Tue, 4 Aug 2009 19:57:02 +0300
+From: Gleb Natapov <gleb@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       suresh.b.siddha@intel.com, tglx@linutronix.de, sheng@linux.intel.com,
+       avi@redhat.com, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/apic] x86/apic: Enable x2APIC without interrupt
+	remapping under KVM
+Message-ID: <20090804165702.GF4764@redhat.com>
+References: <20090720122417.GR5638@redhat.com> <tip-ee6a28296de295d62a3d8fad8bab58a8a48d006f@git.kernel.org> <20090804133715.GA29573@elte.hu>
 MIME-Version: 1.0
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-CC: Peter Zijlstra <peterz@infradead.org>, Dave Anderson <anderson@redhat.com>,
-       crash-utility@redhat.com, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       "Luis Claudio R. Goncalves" <lclaudio@uudg.org>,
-       Clark Williams <clark.williams@gmail.com>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Christoph Hellwig <hch@infradead.org>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       Zhaolei <zhaolei@cn.fujitsu.com>, kosaki.motohiro@jp.fujitsu.com,
-       Li Zefan <lizf@cn.fujitsu.com>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Jason Baron <jbaron@redhat.com>,
-       srostedt@redhat.com, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [ANNOUNCE][RFC][PATCH] Crash-utility, tracing: enable crash to
- analyze tracing from core-file (make tracing can act as a flight recorder)
-References: <4A76F8A1.30503@cn.fujitsu.com> <1249314136.7924.126.camel@twins> <4A77DA98.6050509@cn.fujitsu.com>
-In-Reply-To: <4A77DA98.6050509@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=cp1255
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090804133715.GA29573@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lai Jiangshan wrote:
-> [
-> http://lkml.org/lkml/2009/7/30/30
->
-> This patch is really useful for kernel. We don't change the kernel
-> even a single line for the purpose of we can read the core-file easier.
->
-> This patch is also helpful for crash more or less. So I mention it.
-> ]
+On Tue, Aug 04, 2009 at 03:37:15PM +0200, Ingo Molnar wrote:
+> 
+> * tip-bot for Gleb Natapov <gleb@redhat.com> wrote:
+> 
+> > Commit-ID:  ee6a28296de295d62a3d8fad8bab58a8a48d006f
+> > Gitweb:     http://git.kernel.org/tip/ee6a28296de295d62a3d8fad8bab58a8a48d006f
+> > Author:     Gleb Natapov <gleb@redhat.com>
+> > AuthorDate: Mon, 20 Jul 2009 15:24:17 +0300
+> > Committer:  Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Tue, 4 Aug 2009 14:44:10 +0200
+> > 
+> > x86/apic: Enable x2APIC without interrupt remapping under KVM
+> 
+> -tip testing found this build failure:
+> 
+> arch/x86/kernel/apic/apic.c: In function ‘enable_IR_x2apic’:
+> arch/x86/kernel/apic/apic.c:1431: error: ‘x2apic_phys’ undeclared (first use in this function)
+> arch/x86/kernel/apic/apic.c:1431: error: (Each undeclared identifier is reported only once
+> arch/x86/kernel/apic/apic.c:1431: error: for each function it appears in.)
+> 
+> with the attached config. (Please send a delta fix)
+> 
+> 	Ingo
 
-Hmm, this patch can conflict with my patch.
-
-http://lkml.org/lkml/2009/7/24/234
-
-However, this change seems reasonably good. I'll update
-my patch after that is merged.
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Signed-off-by: Gleb Natapov <gleb@redhat.com>
+diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
+index bb7d479..ebdbf54 100644
+--- a/arch/x86/include/asm/apic.h
++++ b/arch/x86/include/asm/apic.h
+@@ -183,6 +183,10 @@ static inline int x2apic_enabled(void)
+ }
+ 
+ #define x2apic_supported()	(cpu_has_x2apic)
++static inline void x2apic_force_phys(void)
++{
++	x2apic_phys = 1;
++}
+ #else
+ static inline void check_x2apic(void)
+ {
+@@ -194,6 +198,9 @@ static inline int x2apic_enabled(void)
+ {
+ 	return 0;
+ }
++static inline void x2apic_force_phys()
++{
++}
+ 
+ #define	x2apic_preenabled 0
+ #define	x2apic_supported()	0
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 1221f68..de039fc 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -1428,7 +1428,7 @@ void __init enable_IR_x2apic(void)
+ 		 * without IR all CPUs can be addressed by IOAPIC/MSI
+ 		 * only in physical mode
+ 		 */
+-		x2apic_phys = 1;
++		x2apic_force_phys();
+ 	}
+ 
+ 	x2apic_enabled = 1;
+--
+			Gleb.
