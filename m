@@ -1,170 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932771AbZHDUxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932789AbZHDUzB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932771AbZHDUxq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 16:53:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932700AbZHDUxp
+	id S932789AbZHDUzB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 16:55:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932459AbZHDUzB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 16:53:45 -0400
-Received: from smtp-out28.alice.it ([85.33.2.28]:3072 "EHLO
-	smtp-out28.alice.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932697AbZHDUxn (ORCPT
+	Tue, 4 Aug 2009 16:55:01 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46941 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932569AbZHDUzA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 16:53:43 -0400
-Date: Tue, 4 Aug 2009 22:52:47 +0200
-From: Antonio Ospite <ospite@studenti.unina.it>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Daniel Ribeiro <drwyrm@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>,
-       eric.y.miao@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       openezx-devel@lists.openezx.org,
-       Stefan Schmidt <stefan@datenfreihafen.org>
-Subject: Re: [PATCH v2] input: PCAP2 based touchscreen driver
-Message-Id: <20090804225247.8a0bf6d4.ospite@studenti.unina.it>
-In-Reply-To: <20090803172125.2A490526EA5@mailhub.coreip.homeip.net>
-References: <1249291800-15316-1-git-send-email-drwyrm@gmail.com>
-	<20090803172125.2A490526EA5@mailhub.coreip.homeip.net>
-X-Mailer: Sylpheed 2.7.0 (GTK+ 2.16.5; i686-pc-linux-gnu)
-X-Face: z*RaLf`X<@C75u6Ig9}{oW$H;1_\2t5)({*|jhM<pyWR#k60!#=#>/Vb;]yA5<GWI5`6u&+
- ;6b'@y|8w"wB;4/e!7wYYrcqdJFY,~%Gk_4]cq$Ei/7<j&N3ah(m`ku?pX.&+~:_/wC~dwn^)MizBG !pE^+iDQQ1yC6^,)YDKkxDd!T>\I~93>J<_`<4)A{':UrE
+	Tue, 4 Aug 2009 16:55:00 -0400
+Date: Tue, 4 Aug 2009 13:53:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: penberg@cs.helsinki.fi, a.p.zijlstra@chello.nl, fweisbec@gmail.com,
+       rostedt@goodmis.org, mel@csn.ul.ie, lwoodman@redhat.com,
+       riel@redhat.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 4/4] tracing, page-allocator: Add a postprocessing
+ script for page-allocator-related ftrace events
+Message-Id: <20090804135315.b2678e11.akpm@linux-foundation.org>
+In-Reply-To: <20090804203526.GA8699@elte.hu>
+References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie>
+	<1249409546-6343-5-git-send-email-mel@csn.ul.ie>
+	<20090804112246.4e6d0ab1.akpm@linux-foundation.org>
+	<20090804195717.GA5998@elte.hu>
+	<20090804131818.ee5d4696.akpm@linux-foundation.org>
+	<20090804203526.GA8699@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__4_Aug_2009_22_52_48_+0200_/tzF.SIunqwF18Dn"
-X-OriginalArrivalTime: 04 Aug 2009 20:53:10.0679 (UTC) FILETIME=[939A9A70:01CA1545]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__4_Aug_2009_22_52_48_+0200_/tzF.SIunqwF18Dn
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 4 Aug 2009 22:35:26 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-On Mon, 3 Aug 2009 10:21:19 -0700
-Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+> Did you never want to see whether firefox is leaking [any sort of] 
+> memory, and if yes, on what callsites? Try something like on an 
+> already running firefox context:
+> 
+>   perf stat -e kmem:mm_page_alloc \
+>             -e kmem:mm_pagevec_free \
+>             -e kmem:mm_page_free_direct \
+>      -p $(pidof firefox-bin) sleep 10
+> 
+> ... and "perf record" for the specific callsites.
 
-> Hi Daniel,
->
+OK, that would be useful.  What does the output look like?
 
-Hi Dmitry, I am handling this review round.
+In what way is it superior to existing ways of finding leaks?
 
-> > Please note that the driver depends on some changes from the for-next b=
-ranch
-> > in Samuel Ortiz's mfd tree:
-> > http://git.kernel.org/?p=3Dlinux/kernel/git/sameo/mfd-2.6.git;a=3Dshort=
-log;h=3Dfor-next
-> >=20
-> > should this be queued by Samuel or the input people will you take care
-> > to send this mainline only after Samuel's tree has been merged?
-> >=20
->=20
-> I don't mind it going through another tree once all the kinks are worked
-> out.
->
+> this perf stuff is immensely flexible and a very unixish 
+> abstraction. The perf.data contains timestamped trace entries of 
+> page allocations and freeing done.
+> 
+> [...]
+> > It would be nice to at least partially remove the vmstat/meminfo 
+> > infrastructure but I don't think we can do that?
+> 
+> at least meminfo is an ABI for sure - vmstat too really.
+> 
+> But we can stop adding new fields into obsolete, inflexible and 
+> clearly deficient interfaces, and we can standardize new 
+> instrumentation to use modern instrumentation facilities - i.e. 
+> tracepoints and perfcounters.
 
-Fine.
+That's bad.  Is there really no way in which we can consolidate _any_
+of that infrastructure?  We just pile in new stuff alongside the old?
 
-> > +static int pcap_ts_open(struct input_dev *dev)
-> > +{
-> > +	struct pcap_ts *pcap_ts =3D input_get_drvdata(dev);
-> > +	int err;
-> > +
-> > +	err =3D request_irq(pcap_to_irq(pcap_ts->pcap, PCAP_IRQ_TS),
-> > +			pcap_ts_event_touch, 0, "Touch Screen", pcap_ts);
-> > +	if (err)
-> > +		return err;
->=20
-> Normally we try to request IRQ in probe() methods instead of delaying it
-> till open. Open() is supposed to kick-start the device, but not allocate
-> resoirces.
->
+The worst part is needing two unrelated sets of userspace tools to
+access basically-identical things.
 
-Ok, will do.
 
-I must have misunderstood the description of the .open() method in
-linux/input.h:
- * @open: this method is called when the very first user calls
- *	input_open_device(). The driver must prepare the device
- *	to start generating events (start polling thread,
- *	request an IRQ, submit URB, etc.)
-
-Does the second sentence here intends that the preparation must be done
-in .probe()?
-
-> > +
-> > +	pcap_ts->read_state =3D PCAP_ADC_TS_M_STANDBY;
-> > +	schedule_delayed_work(&pcap_ts->work, 0);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static void pcap_ts_close(struct input_dev *dev)
-> > +{
-> > +	struct pcap_ts *pcap_ts =3D input_get_drvdata(dev);
-> > +
-> > +	cancel_delayed_work_sync(&pcap_ts->work);
->=20
-> So what happens if the device raises IRQ here?
->
-
-Swapping the line with the free_irq() should be ok?
-
-> > +	free_irq(pcap_to_irq(pcap_ts->pcap, PCAP_IRQ_TS), pcap_ts);
-> > +
-> > +	pcap_ts->read_state =3D PCAP_ADC_TS_M_NONTS;
-> > +	pcap_set_ts_bits(pcap_ts->pcap,
-> > +				pcap_ts->read_state << PCAP_ADC_TS_M_SHIFT);
-> > +}
-> > +
-> > +static int __devinit pcap_ts_probe(struct platform_device *pdev)
-> > +{
-> > +	struct input_dev *input_dev;
-> > +	struct pcap_ts *pcap_ts;
-> > +	int err =3D -ENOMEM;
-> > +
-> > +	pcap_ts =3D kzalloc(sizeof(*pcap_ts), GFP_KERNEL);
-> > +	if (!pcap_ts)
-> > +		return err;
-> > +
-> > +	pcap_ts->pcap =3D platform_get_drvdata(pdev);
-> > +	platform_set_drvdata(pdev, pcap_ts);
->=20
-> Ewww... Don't mess with data that does not belong to you. Also I don't
-> see where you restore it so after unloading the driver reload with
-> probably lead to "inetersting" results.
->
-
-Dmitry can you suggest a better way to make the pcap_ts pointer get to
-pcap_ts_remove()? We need it in order to remove the input device.
-Or keeping this hack, restoring the original value on remove, can be
-acceptable?
-
-We will have to fix this also in all other pcap subdrivers.
-
-Thanks,
-   Antonio
-
---=20
-Antonio Ospite
-http://ao2.it
-
-PGP public key ID: 0x4553B001
-
-A: Because it messes up the order in which people normally read text.
-   See http://en.wikipedia.org/wiki/Posting_style
-Q: Why is top-posting such a bad thing?
-A: Top-posting.
-Q: What is the most annoying thing in e-mail?
-
---Signature=_Tue__4_Aug_2009_22_52_48_+0200_/tzF.SIunqwF18Dn
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkp4n6AACgkQ5xr2akVTsAF3BwCfYRi4CwfFuWsq2eRMKReVZaB7
-ciMAnjkYuLxWTA8hkZV3cF2UxYVwZPt0
-=xwu/
------END PGP SIGNATURE-----
-
---Signature=_Tue__4_Aug_2009_22_52_48_+0200_/tzF.SIunqwF18Dn--
