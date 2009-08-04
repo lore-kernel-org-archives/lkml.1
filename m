@@ -1,55 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933888AbZHEA27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933855AbZHEA2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933888AbZHEA27 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 20:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933867AbZHEA24
+	id S933855AbZHEA2p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 20:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933846AbZHEA2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 20:28:56 -0400
-Received: from n22.bullet.mail.mud.yahoo.com ([68.142.206.161]:29994 "HELO
-	n22.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933338AbZHEA23 (ORCPT
+	Tue, 4 Aug 2009 20:28:37 -0400
+Received: from n12a.bullet.mail.mud.yahoo.com ([209.191.125.177]:40747 "HELO
+	n12a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933830AbZHEA2a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 20:28:29 -0400
-X-Yahoo-Newman-Id: 549658.3388.bm@omp402.mail.mud.yahoo.com
+	Tue, 4 Aug 2009 20:28:30 -0400
+X-Yahoo-Newman-Id: 138687.81000.bm@omp423.mail.mud.yahoo.com
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=pacbell.net;
   h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=BCBrEjvZ2Em5k+b57WnWaDkiSYrgXwbrhUBIk1Cdz3z/7W2V0gF8pFw///f+413PIVqJGtrTS5GjkON6TViB0bmFwFv89RYSXLslUUIhEp9DAMQ4DL3lJvNLMROVeKQRMLek3O1vAHTeUIpfVuVy/FWMWzLWR5tZqFM0BnF66RI=  ;
-X-YMail-OSG: Zf3JntAVM1l78pbPGhgJBfbGcnfwWvzGISjIzBhNTtsjmiVdWz8gsczUpqcfjtdK0BfaRJDfdsmxueI8DeMIexOYIodK3rFl1uEpfnZYUrd8ZDlVoAtv3uGZMWL4NnC96PdWlTRieGfugSdWmrKp8eJhqlEP7kvxXmATGGDgNRdqoW8BfcDocQ6Hvuec.8Ouq5wKKbxYcP.SuweCVJY1mUfnFT2NgtdvEOPRWX6yxON4TZcDgQ2K8uJIJPKgOwHG0dM7ZKDrc0ZosMo-
+  b=y81ViUycSxJB1yi/AKH93LYy9xGiq5jouZZnTtjCNz/8KGfHkHaw79OGvJ2UVV0q7PJl/PQ1gQNchNkXEvFGeHQewy7Dv7C58sNJHOcsmI1T+QiiMZqmWq3+wk9QohG3FxNjuZwMsum+4rQ5DT2DC5rpcHoHnaa8vLJaXSIrZkg=  ;
+X-YMail-OSG: isyOiA0VM1l6mej3oINHlSJcABXZx5yhbMDMUbGKLy3cJdb9Zikfp3eENFJK.3BJ2Z1Qavf_axOVAey7u_yESk_0CtN5wLolzBpckHP1BwOTzyw.EuFrfRGfpeAW2nggC013hPowIxJzUIDowh6aGuE5grWx7PD6s5hovKZ8AsiOJKdRBNn.As0vmNsQTlFN4M_M38ZwNy.0v.b6b1p5DD2nTAFERm5p25ZWwabMvxIOoV15eYedIP232w5cMzQE5kmQO1EaNcF.MF_k7.fM9XKpGl8z0c3MhGtYqqlDjvYB6Y2D
 X-Yahoo-Newman-Property: ymail-3
 From: David Brownell <david-b@pacbell.net>
-To: avorontsov@ru.mvista.com
-Subject: Re: [PATCH 0/7] Device table matching for SPI subsystem
-Date: Mon, 3 Aug 2009 19:16:02 -0700
+To: ben@fluff.org
+Subject: Re: gpiolib: add export/unexport by gpio name
+Date: Tue, 4 Aug 2009 13:58:29 -0700
 User-Agent: KMail/1.9.10
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Jean Delvare <khali@linux-fr.org>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
-       linuxppc-dev@ozlabs.org
-References: <20090729170345.GA26787@oksana.dev.rtsoft.ru>
-In-Reply-To: <20090729170345.GA26787@oksana.dev.rtsoft.ru>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+References: <20090804105459.960604743@fluff.org>
+In-Reply-To: <20090804105459.960604743@fluff.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200908031916.02880.david-b@pacbell.net>
+Message-Id: <200908041358.29400.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 29 July 2009, Anton Vorontsov wrote:
-> 	platform_data is overkill for m25p80 chips, the
-> driver only needs to know exact chip model, and that's what device
-> tables are for.
+On Tuesday 04 August 2009, ben@fluff.org wrote:
+> Add the facility to export/unexport a gpio by the name assigned to it
+> as well as the number.
 
-To be fair, the platform_data also supports partitioning
-and labeling e.g. for cmdlinepart ... though I'd tend to
-agree that most SPI flash chips are kind of small (so
-they're mostly just one smallish partition).
+I guess I'm still a bit puzzled by the notion of adding
+second/parallel naming scheme for GPIOs.  As a rule, such
+duplication is undesirable ...
+
+But assuming such things are OK, this patch has a couple
+technical problems.
+
+
+> Signed-off-by: Ben Dooks <ben@simtec.co.uk>
+> Cc: David Brownell <dbrownell@users.sourceforge.net>
+> 
+> ---
+>  drivers/gpio/gpiolib.c |   70 ++++++++++++++++++++++++++++++++++++++++++++++---
+>  1 file changed, 66 insertions(+), 4 deletions(-)
+> 
+> Index: b/drivers/gpio/gpiolib.c
+> ===================================================================
+> --- a/drivers/gpio/gpiolib.c	2009-08-04 11:53:53.000000000 +0100
+> +++ b/drivers/gpio/gpiolib.c	2009-08-04 11:54:12.000000000 +0100
+> @@ -364,6 +364,64 @@ static const struct attribute_group gpio
+>  	.attrs = (struct attribute **) gpiochip_attrs,
+>  };
+>  
+> +static int search_names(char **names, const char *match, int ngpio)
+> +{
+> +	int len = strlen(match);
+> +	char *m;
+> +	int ptr;
+> +
+> +	/* if cr terminated, remove */
+> +	if (match[len-1] == '\n')
+> +		len--;
+> +
+> +	if (names) {
+> +		for (ptr = 0; ptr < ngpio; ptr++) {
+> +			m = names[ptr];
+> +			if (!m)
+> +				continue;
+> +
+> +			if (strlen(m) != len)
+> +				continue;
+> +
+> +			if (strncmp(m, match, len) == 0)
+> +				return ptr;
+> +		}
+> +	}
+> +
+> +	return -ENOENT;
+> +}
+> +
+> +static long gpio_from_string(const char *buf)
+> +{
+> +	struct gpio_chip *chip;
+> +	struct gpio_desc *desc;
+> +	long status;
+> +	long gpio;
+> +	int ptr, off;
+> +
+> +	status = strict_strtol(buf, 0, &gpio);
+> +	if (status < 0) {
+> +		for (ptr = 0; ptr < ARCH_NR_GPIOS && status < 0;) {
+
+Nothing is guarding against
+ (a) duplicate chip->names[] entries within or between chips,
+ (b) concurrent addition/removal of gpio_chip instances
+
+For (a) maybe the answer is to detect them at chip registration
+time ... then either fail, or else warn then null out the dup.
+
+For (b) it seems that gpio_lock is required.
+
+> +			desc = gpio_desc + ptr;
+> +			chip = desc->chip;
+> +
+> +			if (!chip) {
+> +				ptr++;
+> +				continue;
+> +			}
+> +
+> +			off = search_names(chip->names, buf, chip->ngpio);
+> +			if (off >= 0)
+> +				status = ptr + off;
+> +
+> +			ptr += chip->ngpio;
+> +		}
+> +	} else
+> +		status = gpio;
+> +
+> +	return status;
+> +}
+> +
+>  /*
+>   * /sys/class/gpio/export ... write-only
+>   *	integer N ... number of GPIO to export (full access)
+> @@ -375,9 +433,11 @@ static ssize_t export_store(struct class
+>  	long	gpio;
+>  	int	status;
+>  
+> -	status = strict_strtol(buf, 0, &gpio);
+> -	if (status < 0)
+> +	gpio = gpio_from_string(buf);
+> +	if (gpio < 0) {
+> +		status = gpio;
+>  		goto done;
+> +	}
+>  
+>  	/* No extra locking here; FLAG_SYSFS just signifies that the
+>  	 * request and export were done by on behalf of userspace, so
+> @@ -405,9 +465,11 @@ static ssize_t unexport_store(struct cla
+>  	long	gpio;
+>  	int	status;
+>  
+> -	status = strict_strtol(buf, 0, &gpio);
+> -	if (status < 0)
+> +	gpio = gpio_from_string(buf);
+> +	if (gpio < 0) {
+> +		status = gpio;
+>  		goto done;
+> +	}
+>  
+>  	status = -EINVAL;
+>  
+> 
+> -- 
+> 
+> 
 
 
 
