@@ -1,139 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932402AbZHDFrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932418AbZHDGBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932402AbZHDFrS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 01:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932168AbZHDFrR
+	id S932418AbZHDGBS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 02:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932360AbZHDGBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 01:47:17 -0400
-Received: from e28smtp08.in.ibm.com ([59.145.155.8]:43516 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932167AbZHDFrQ (ORCPT
+	Tue, 4 Aug 2009 02:01:18 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37748 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932380AbZHDGBR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 01:47:16 -0400
-Date: Tue, 4 Aug 2009 11:17:04 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:core/rcu] rcu: Add diagnostic check for a possible
-	CPU-hotplug race
-Message-ID: <20090804054704.GA2706@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <tip-7256cf0e83bf018be8a81806593aaef7f2437f0b@git.kernel.org> <20090802202720.GA32360@elte.hu> <20090802221324.GP6854@linux.vnet.ibm.com>
+	Tue, 4 Aug 2009 02:01:17 -0400
+Message-ID: <4A77CEAB.4030909@np.css.fujitsu.com>
+Date: Tue, 04 Aug 2009 15:01:15 +0900
+From: Jin Dongming <jin.dongming@np.css.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090802221324.GP6854@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: "H.Peter Anvin" <hpa@zytor.com>
+Cc: LKLM <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@linux.intel.com>, Huang Ying <ying.huang@intel.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Subject: [PATCH] x86, mce: cleanup initcall of debugfs for mce
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 02, 2009 at 03:13:25PM -0700, Paul E. McKenney wrote:
-> > FYI, the new warning triggered in -tip testing:
-> 
-> Yow!!!  I never was able to get this to trigger...  Of course, I never
-> was able to reproduce the original problem, either.
-> 
-> Just so you know, one of the reasons it took me so long to come up with
-> the fix is that this just isn't supposed to happen.  Where I grew up, CPUs
-> were supposed to come online -before- starting to handle softirqs.  ;-)
-> 
-> Here is my reasoning:
-> 
-> o	rcu_init(), which is invoked before a second CPU can possibly
-> 	come online, calls hotplug_notifier(), which causes
-> 	rcu_barrier_cpu_hotplug() to be invoked in response to any
-> 	CPU-hotplug event.
-> 
-> o	We know rcu_init() really was called, because otherwise
-> 	open_softirq(RCU_SOFTIRQ) never gets called, so the softirq would
-> 	never have happened.  In addition, there should be a "Hierarchical
-> 	RCU implementation" message in your bootlog.  (Is there?)
-> 
-> o	rcu_barrier_cpu_hotplug() unconditionally invokes
-> 	rcu_cpu_notify() on every CPU-hotplug event.
-> 
-> o	rcu_cpu_notify() invokes rcu_online_cpu() in response to
-> 	any CPU_UP_PREPARE or CPU_UP_PREPARE_FROZEN CPU-hotplug
-> 	event.
-> 
-> o	The CPU_UP_PREPARE and CPU_UP_PREPARE_FROZEN CPU-hotplug events
-> 	happen before the CPU in question is capable of running any code.
-> 
-> o	This looks to be the first onlining of this CPU during boot
-> 	(right?).  So we cannot possibly have some strange situation
-> 	where the end of the prior CPU-offline event overlaps with
-> 	the current CPU-online event.  (Yes, this isn't supposed to
-> 	happen courtesy of CPU-hotplug locking, but impossibility
-> 	is clearly no reason to dismiss possible scenarios for -this-
-> 	particular bug.)
-> 
-> o	Therefore the WARN_ON_ONCE() cannot possibly trigger.
-> 
-> This would be a convincing argument, aside from the fact that you
-> really did make it trigger.  So first, anything I am missing in
-> the above?  If not, could you please help me with the following,
-> at least if the answers are readily available?
-> 
-> o	Is rcu_init()'s "Hierarchical RCU implementation" log message
-> 	in your bootlog?
-> 
-> o	Is _cpu_up() really being called, and, if so, is it really
-> 	invoking __raw_notifier_call_chain() with CPU_UP_PREPARE?
-> 
-> o	Is this really during initial boot, or am I misreading your
-> 	bootlog?  (The other reason I believe that this happened on
-> 	the first CPU-online for this CPU is that ->beenonline, once
-> 	set, is never cleared.)
-> 
-> Gautham, any thoughts on what might be happening here?
+(Send this patch again because I posted the patch as an attachment.
 
-Beats me. You're reasoning seems quite iron-clad, there's nothing that's
-obviously missing at least from the CPU-Hotplug point of view.
+This patch is made based on the v5 patches of Huangying for mce.
+Before using this patch, please apply the patches of Huangying.
+The patches' URLs of Huangying are listed as following:
+1.x86: MCE: Support specifying context for software mce injection
+  URL: http://marc.info/?l=linux-kernel&m=124900459100786&w=2
+2.x86: MCE: Support specifying raise mode for software MCE injection
+  URL: http://marc.info/?l=linux-kernel&m=124900459100795&w=2
+3.x86: MCE: Move debugfs mce dir creating to mce.c
+  URL: http://marc.info/?l=linux-kernel&m=124900459100790&w=2
+4.x86: MCE: Fake panic support for MCE testing
+  URL: http://marc.info/?l=linux-kernel&m=124900453800724&w=2
 
-I am trying to reproduce this on 2.6.31-rc5 tip-master + your patch with
-an added printk.
-Let me see if I can catch it.
+There are two initcall functions in the patches of Huangying,
+mce_debugfs_init() used in mce.c and severities_debugfs_init() used
+in mce-severity.c. I think an initcall function is enough for mce
+debug. So we make them into one initcall function.
 
+This version is based x86-tip/mce.
 
--->
-rcu: Check if the cpu has been initialized before handling callbacks
-
-From: Gautham R Shenoy <ego@in.ibm.com>
-
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
-Signed-off-by: Paul E.Mckenney <paulmck@linux.vnet.ibm.com>
+Signed-off-by: Jin Dongming <jin.dongming@np.css.fujitsu.com>
+Reviewed-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 ---
- kernel/rcutree.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ arch/x86/kernel/cpu/mcheck/mce-internal.h |    2 +-
+ arch/x86/kernel/cpu/mcheck/mce-severity.c |   13 +++----------
+ arch/x86/kernel/cpu/mcheck/mce.c          |   24 +++++++++++-------------
+ 3 files changed, 15 insertions(+), 24 deletions(-)
 
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index 0e40e61..1809cc8 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -1137,6 +1137,8 @@ __rcu_process_callbacks(struct rcu_state *rsp, struct rcu_data *rdp)
+diff --git a/arch/x86/kernel/cpu/mcheck/mce-internal.h
+b/arch/x86/kernel/cpu/mcheck/mce-internal.h
+index 32996f9..ca8421d 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce-internal.h
++++ b/arch/x86/kernel/cpu/mcheck/mce-internal.h
+@@ -22,7 +22,7 @@ struct mce_bank {
+ };
+
+ int mce_severity(struct mce *a, int tolerant, char **msg);
+-struct dentry *mce_get_debugfs_dir(void);
++int __init severities_debugfs_init(struct dentry *dmce);
+
+ extern int mce_ser;
+
+diff --git a/arch/x86/kernel/cpu/mcheck/mce-severity.c
+b/arch/x86/kernel/cpu/mcheck/mce-severity.c
+index bc35a07..49e57ab 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce-severity.c
++++ b/arch/x86/kernel/cpu/mcheck/mce-severity.c
+@@ -193,22 +193,15 @@ static const struct file_operations
+severities_coverage_fops = {
+ 	.write		= severities_coverage_write,
+ };
+
+-static int __init severities_debugfs_init(void)
++int __init severities_debugfs_init(struct dentry *dmce)
  {
- 	unsigned long flags;
- 
-+	WARN_ON_ONCE(rdp->beenonline == 0);
+-	struct dentry *dmce = NULL, *fseverities_coverage = NULL;
++	struct dentry *fseverities_coverage = NULL;
+
+-	dmce = mce_get_debugfs_dir();
+-	if (dmce == NULL)
+-		goto err_out;
+ 	fseverities_coverage = debugfs_create_file("severities-coverage",
+ 						   0444, dmce, NULL,
+ 						   &severities_coverage_fops);
+ 	if (fseverities_coverage == NULL)
+-		goto err_out;
++		return -ENOMEM;
+
+ 	return 0;
+-
+-err_out:
+-	return -ENOMEM;
+ }
+-late_initcall(severities_debugfs_init);
+diff --git a/arch/x86/kernel/cpu/mcheck/mce.c b/arch/x86/kernel/cpu/mcheck/mce.c
+index 54bd1b2..37b6526 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce.c
++++ b/arch/x86/kernel/cpu/mcheck/mce.c
+@@ -2018,16 +2018,6 @@ static int __init mcheck_disable(char *str)
+ __setup("nomce", mcheck_disable);
+
+ #ifdef CONFIG_DEBUG_FS
+-struct dentry *mce_get_debugfs_dir(void)
+-{
+-	static struct dentry *dmce;
+-
+-	if (!dmce)
+-		dmce = debugfs_create_dir("mce", NULL);
+-
+-	return dmce;
+-}
+-
+ static void mce_reset(void)
+ {
+ 	cpu_missing = 0;
+@@ -2055,17 +2045,25 @@ DEFINE_SIMPLE_ATTRIBUTE(fake_panic_fops, fake_panic_get,
+
+ static int __init mce_debugfs_init(void)
+ {
+-	struct dentry *dmce, *ffake_panic;
++	struct dentry *dmce = NULL, *ffake_panic = NULL;
+
+-	dmce = mce_get_debugfs_dir();
++	dmce = debugfs_create_dir("mce", NULL);
+ 	if (!dmce)
+ 		return -ENOMEM;
+ 	ffake_panic = debugfs_create_file("fake_panic", 0444, dmce, NULL,
+ 					  &fake_panic_fops);
+ 	if (!ffake_panic)
+-		return -ENOMEM;
++		goto err_out;
 +
- 	/*
- 	 * If an RCU GP has gone long enough, go check for dyntick
- 	 * idle CPUs and, if needed, send resched IPIs.
-@@ -1351,6 +1353,8 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp)
- 	struct rcu_data *rdp = rsp->rda[cpu];
- 	struct rcu_node *rnp = rcu_get_root(rsp);
- 
-+	printk(KERN_INFO "Initializing RCU for cpu %d\n", cpu);
++	if (severities_debugfs_init(dmce))
++		goto err_out;
+
+ 	return 0;
 +
- 	/* Set up local state, ensuring consistent view of global state. */
- 	spin_lock_irqsave(&rnp->lock, flags);
- 	lastcomp = rsp->completed;
-
-
-
++err_out:
++	debugfs_remove_recursive(dmce);
++
++	return -ENOMEM;
+ }
+ late_initcall(mce_debugfs_init);
+ #endif
 -- 
-Thanks and Regards
-gautham
+1.6.2.2
