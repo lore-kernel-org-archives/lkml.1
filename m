@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933478AbZHDWeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933494AbZHDWpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933478AbZHDWeX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 18:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933342AbZHDWeW
+	id S933494AbZHDWpj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 18:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933419AbZHDWpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 18:34:22 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:59337 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933307AbZHDWeW (ORCPT
+	Tue, 4 Aug 2009 18:45:38 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:38101 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933370AbZHDWpi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 18:34:22 -0400
-Subject: VMI fix for stack protector
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, stable@kernel.org
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Tue, 04 Aug 2009 15:34:22 -0700
-Message-Id: <1249425262.18955.40.camel@ank32.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Aug 2009 18:45:38 -0400
+Date: Tue, 4 Aug 2009 23:39:22 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Erik Mouw <mouw@nl.linux.org>
+Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: linux-arm-kernel useless for development (was Re: Your message
+	to Linux-arm-kernel awaits moderator approval)
+Message-ID: <20090804223922.GD18365@flint.arm.linux.org.uk>
+References: <mailman.3653.1249217530.31043.linux-arm-kernel@lists.arm.linux.org.uk> <20090804100051.GA17106@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090804100051.GA17106@elf.ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Erik,
 
-With CONFIG_STACK_PROTECTOR turned on, VMI doesn't boot with more than one
-processor. The problem is with the gs value not being initialized correctly
-when registering the secondary processor for VMI's case. 
+Since Pavel is incapable of copying you (and seemingly believes
+that I'm solely responsible for admin'ing these lists), maybe
+you'd like to respond to this, which is another of Pavel's
+spontaneous public community wide whinges about linux-arm-kernel?
 
-The patch below initializes the gs value for the AP to __KERNEL_STACK_CANARY.
-Without this the secondary processor keeps on taking a GP on every gs access.
+On Tue, Aug 04, 2009 at 12:00:51PM +0200, Pavel Machek wrote:
+> 
+> Please fix your mailinglist.
+> 
+> You claimed that it is possible to crosspost between lkml and lakml,
+> yet the lakml does everything to prevent that -- even in case as
+> simple as reporting that regression that affects arm.
+> 
+> Please fix it.
+> 
+> 								Pavel
+> 
+> On Sun 2009-08-02 13:52:10, linux-arm-kernel-bounces@lists.arm.linux.org.uk wrote:
+> > Your mail to 'Linux-arm-kernel' with the subject
+> > 
+> >     Re: [Bug #13833] Kernel Oops when trying to suspend with ubifs
+> > mounted on block2mtd mtd device
+> > 
+> > Is being held until the list moderator can review it for approval.
+> > 
+> > The reason it is being held:
+> > 
+> >     Too many recipients to the message
+> > 
+> > Either the message will get posted to the list, or you will receive
+> > notification of the moderator's decision.  If you would like to cancel
+> > this posting, please visit the following URL:
+> > 
+> >     http://lists.arm.linux.org.uk/mailman/confirm/linux-arm-kernel/f8f1b8bf951193aa673ceab3235d78c807c858da
+> 
+> -- 
+> (english) http://www.livejournal.com/~pavelmachek
+> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
-Needs to go in for 2.6.30.x too, since STACK_PROTECTOR for 32bit was
-introduced in 2.6.30.
-
-Patch on top of 2.6.31-rc5.
-
-Signed-off-by: Alok N Kataria <akataria@vmware.com>
-Cc: stable@kernel.org
-
-Index: linux-2.6/arch/x86/kernel/vmi_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/vmi_32.c	2009-08-03 13:55:41.000000000 -0700
-+++ linux-2.6/arch/x86/kernel/vmi_32.c	2009-08-04 14:13:22.000000000 -0700
-@@ -442,7 +442,7 @@ vmi_startup_ipi_hook(int phys_apicid, un
- 	ap.ds = __USER_DS;
- 	ap.es = __USER_DS;
- 	ap.fs = __KERNEL_PERCPU;
--	ap.gs = 0;
-+	ap.gs = __KERNEL_STACK_CANARY;
- 
- 	ap.eflags = 0;
- 
-
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
