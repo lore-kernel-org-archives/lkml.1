@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933320AbZHDS4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933327AbZHDS6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933320AbZHDS4y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 14:56:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755271AbZHDS4x
+	id S933327AbZHDS6w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 14:58:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933287AbZHDS6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 14:56:53 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38724
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751941AbZHDS4w (ORCPT
+	Tue, 4 Aug 2009 14:58:51 -0400
+Received: from mga07.intel.com ([143.182.124.22]:28642 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933285AbZHDS6v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 14:56:52 -0400
-Date: Tue, 04 Aug 2009 11:57:01 -0700 (PDT)
-Message-Id: <20090804.115701.250978139.davem@davemloft.net>
-To: chiachi@android.com
-Cc: john.dykstra1@gmail.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] net: Keep interface binding when sending packets with
- ipi_ifindex = 0
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <6c039e090908040036j38666152y2db1d4c55529eaff@mail.gmail.com>
-References: <1248912621.13447.12.camel@merlyn>
-	<20090803.212323.256579233.davem@davemloft.net>
-	<6c039e090908040036j38666152y2db1d4c55529eaff@mail.gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-2022-jp
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Aug 2009 14:58:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,323,1246863600"; 
+   d="scan'208";a="172247267"
+Date: Tue, 4 Aug 2009 21:01:02 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>,
+       Santosh Shilimkar <santosh.shilimkar@ti.com>,
+       Tony Lindgren <tony@atomide.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [GIT] mfd: bug fix
+Message-ID: <20090804190100.GK8601@sortiz.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chia-chi Yeh (葉家齊) <chiachi@android.com>
-Date: Tue, 4 Aug 2009 15:36:46 +0800
+Hi Linus,
 
-> After thinking more deeply, I believe that IPv6 does the right thing
-> and IPv4 does not. SO_BINDTODEVICE requires CAP_NET_RAW, so it is a
-> privileged operation. Therefore, it looks weird to me if one can
-> specify other interface than the bound one without the same
-> capability. The following patch makes the behavior in IPv4 and IPv6
-> identical. Thanks for your help.
+I have a twl4030 related bug fix, which can lead to a spinlock lock-up.
+It's already on my for-next branch, in case you dont think this is rc6
+material.
 
-I think we really cannot change behavior here.  If the user specifies
-"0" in ipi_ifindex we must respect that in ipc->oif.  This is an
-override, and the ability to override is the very purpose of this
-control message.
+Here is the pull request, thanks in advance:
 
-Even GLIBC makes use of that case of specifying "0" in ipi_ifindex.
-We must respect it.
+The following changes since commit a33a052f19a21d727847391c8c1aff3fb221c472:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://neil.brown.name/md
 
-I'm not applying any of these patches, sorry.
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/sameo/mfd-2.6.git for-linus
+
+Russell King (1):
+      mfd: twl4030 irq fixes
+
+ drivers/mfd/twl4030-irq.c |   55 +++++++++++++++++++-------------------------
+ 1 files changed, 24 insertions(+), 31 deletions(-)
+
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
