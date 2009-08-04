@@ -1,37 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933415AbZHDWD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933407AbZHDWJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933415AbZHDWD3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 18:03:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933403AbZHDWD1
+	id S933407AbZHDWJv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 18:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933194AbZHDWJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 18:03:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60199 "EHLO mx2.redhat.com"
+	Tue, 4 Aug 2009 18:09:50 -0400
+Received: from mga03.intel.com ([143.182.124.21]:50904 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933400AbZHDWD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 18:03:27 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090804210101.GB13499@us.ibm.com>
-References: <20090804210101.GB13499@us.ibm.com> <20090804184334.GC8442@us.ibm.com> <20090804145530.17676.24656.stgit@warthog.procyon.org.uk> <20090804145546.17676.98776.stgit@warthog.procyon.org.uk> <5007.1249417827@redhat.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@linux-foundation.org,
-       jmorris@namei.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 4/6] KEYS: Add garbage collection for dead, revoked and expired keys.
-Date: Tue, 04 Aug 2009 23:00:52 +0100
-Message-ID: <25511.1249423252@redhat.com>
+	id S933085AbZHDWJt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 18:09:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,324,1246863600"; 
+   d="scan'208";a="172314512"
+Date: Tue, 4 Aug 2009 15:09:37 -0700
+From: Fenghua Yu <fenghua.yu@intel.com>
+To: David Woodhouse <dwmw2@infradead.org>, Tony Luck <tony.luck@intel.com>
+Cc: iommu@lists.linux-foundation.org, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>
+Subject: [PATCH 1/4] Bug Fix drivers/pci/intel-iommu.c: correct sglist size calculation
+Message-ID: <20090804220937.GA17945@linux-os.sc.intel.com>
+References: <Pine.LNX.4.64.0908021044540.15557@ask.diku.dk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0908021044540.15557@ask.diku.dk>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Serge E. Hallyn <serue@us.ibm.com> wrote:
+When calculating a scatter gather list size in intel_map_sg(), the size of an sg
+entry should be based on sg->addr, sg->offset, and sg->length instead of just
+sg->offset and sg->length.
 
-> This won't require keyring->sem?
+And the size of a scatter gather list should be passed to domain_sg_mapping()
+directly because it has been aligned to VTD_PAGE_SIZE already.
 
-Why should it?  A keyring merely points at a key, and if you follow this line
-of argument, then every keyring pointing at a key would have to be locked.
+Because of the issue, system can not boot when PAGE_SIZE>VTD_PAGE_SIZE e.g.
+on ia64 platforms.
 
-David
+Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+
+---
+
+ drivers/pci/intel-iommu.c |   28 ++++++++++++++++------------
+ 1 files changed, 16 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index bec29ed..54ee63d 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -1645,6 +1645,15 @@ static int domain_context_mapped(struct pci_dev *pdev)
+ 					     tmp->devfn);
+ }
+ 
++/* Returns a number of VTD pages, but aligned to MM page size */
++static inline unsigned long aligned_nrpages(unsigned long host_addr,
++					    size_t size)
++{
++	host_addr &= ~PAGE_MASK;
++	return PAGE_ALIGN(host_addr + size) >> VTD_PAGE_SHIFT;
++}
++
++
+ static int __domain_mapping(struct dmar_domain *domain, unsigned long iov_pfn,
+ 			    struct scatterlist *sg, unsigned long phys_pfn,
+ 			    unsigned long nr_pages, int prot)
+@@ -1672,7 +1681,8 @@ static int __domain_mapping(struct dmar_domain *domain, unsigned long iov_pfn,
+ 		uint64_t tmp;
+ 
+ 		if (!sg_res) {
+-			sg_res = (sg->offset + sg->length + VTD_PAGE_SIZE - 1) >> VTD_PAGE_SHIFT;
++			dma_addr_t addr = sg_phys(sg);
++			sg_res = aligned_nrpages(addr, sg->length);
+ 			sg->dma_address = ((dma_addr_t)iov_pfn << VTD_PAGE_SHIFT) + sg->offset;
+ 			sg->dma_length = sg->length;
+ 			pteval = page_to_phys(sg_page(sg)) | prot;
+@@ -2411,14 +2425,6 @@ error:
+ 	return ret;
+ }
+ 
+-/* Returns a number of VTD pages, but aligned to MM page size */
+-static inline unsigned long aligned_nrpages(unsigned long host_addr,
+-					    size_t size)
+-{
+-	host_addr &= ~PAGE_MASK;
+-	return PAGE_ALIGN(host_addr + size) >> VTD_PAGE_SHIFT;
+-}
+-
+ /* This takes a number of _MM_ pages, not VTD pages */
+ static struct iova *intel_alloc_iova(struct device *dev,
+ 				     struct dmar_domain *domain,
+@@ -2861,8 +2868,10 @@ static int intel_map_sg(struct device *hwdev, struct scatterlist *sglist, int ne
+ 
+ 	iommu = domain_get_iommu(domain);
+ 
+-	for_each_sg(sglist, sg, nelems, i)
+-		size += aligned_nrpages(sg->offset, sg->length);
++	for_each_sg(sglist, sg, nelems, i) {
++		dma_addr_t addr = sg_phys(sg);
++		size += aligned_nrpages(addr, sg->length);
++	}
+ 
+ 	iova = intel_alloc_iova(hwdev, domain, dma_to_mm_pfn(size),
+ 				pdev->dma_mask);
+@@ -2883,7 +2892,7 @@ static int intel_map_sg(struct device *hwdev, struct scatterlist *sglist, int ne
+ 
+ 	start_vpfn = mm_to_dma_pfn(iova->pfn_lo);
+ 
+-	ret = domain_sg_mapping(domain, start_vpfn, sglist, mm_to_dma_pfn(size), prot);
++	ret = domain_sg_mapping(domain, start_vpfn, sglist, size, prot);
+ 	if (unlikely(ret)) {
+ 		/*  clear the page */
+ 		dma_pte_clear_range(domain, start_vpfn,
