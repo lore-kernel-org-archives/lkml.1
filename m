@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932501AbZHDHJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932523AbZHDHXL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932501AbZHDHJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 03:09:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932476AbZHDHJ4
+	id S932523AbZHDHXL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 03:23:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932514AbZHDHXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 03:09:56 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50509 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932474AbZHDHJz (ORCPT
+	Tue, 4 Aug 2009 03:23:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47828 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932512AbZHDHXK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 03:09:55 -0400
-Subject: Re: [RFC patch] return early if all dmar HW unit ignored
-From: David Woodhouse <dwmw2@infradead.org>
-To: Luming Yu <luming.yu@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <3877989d0907310129p29dd5039p18563946b9be8099@mail.gmail.com>
-References: <3877989d0907310129p29dd5039p18563946b9be8099@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 04 Aug 2009 08:09:54 +0100
-Message-Id: <1249369794.9324.18.camel@macbook.infradead.org>
+	Tue, 4 Aug 2009 03:23:10 -0400
+Date: Tue, 4 Aug 2009 00:22:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] posix-timers: fix oops in clock_nanosleep() with
+ CLOCK_MONOTONIC_RAW
+Message-Id: <20090804002226.2972cf47.akpm@linux-foundation.org>
+In-Reply-To: <4A764FF3.50607@ct.jp.nec.com>
+References: <4A764FF3.50607@ct.jp.nec.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-07-31 at 16:29 +0800, Luming Yu wrote:
-> Hello list,
+On Mon, 03 Aug 2009 11:48:19 +0900 Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 > 
-> When debugging an IOMMU problem, I noticed it should be much more safe
-> to return early than late if all remapping HW unit are ignored.
-> To figure out what device causes the iommu problem on my linux box:
-> hp-compaq dc7800, I tried to mark all dmar HW
-> unit ignored,but still got a lot of unxepcted dmar_fault. So I think
-> the proposed patch make sense. The next step is to
-> add a boot option to make dmar HW units selectable enable/disable individually.
+> Prevent calling do_nanosleep() with clockid CLOCK_MONOTONIC_RAW, it may
+> cause oops, such as NULL pointer dereference.
+> 
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> ---
+>  kernel/posix-timers.c |    7 +++++++
+>  1 files changed, 7 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
+> index 052ec4d..d089d05 100644
+> --- a/kernel/posix-timers.c
+> +++ b/kernel/posix-timers.c
+> @@ -202,6 +202,12 @@ static int no_timer_create(struct k_itimer *new_timer)
+>  	return -EOPNOTSUPP;
+>  }
+>  
+> +static int no_nsleep(const clockid_t which_clock, int flags,
+> +		     struct timespec *tsave, struct timespec __user *rmtp)
+> +{
+> +	return -EOPNOTSUPP;
+> +}
+> +
+>  /*
+>   * Return nonzero if we know a priori this clockid_t value is bogus.
+>   */
+> @@ -254,6 +260,7 @@ static __init int init_posix_timers(void)
+>  		.clock_get = posix_get_monotonic_raw,
+>  		.clock_set = do_posix_clock_nosettime,
+>  		.timer_create = no_timer_create,
+> +		.nsleep = no_nsleep,
+>  	};
+>  
+>  	register_posix_clock(CLOCK_REALTIME, &clock_realtime);
 
-Why were you seeing faults if all dmar units were ignored? Surely that
-shouldn't happen?
+Under which circumstances will this oops trigger?
 
-This patch doesn't make a lot of sense on its own -- can you show what
-you were intending to do as the 'next step'?
+What userspace setup/actions will trigger the oops?
 
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+Thanks.
 
+
+
+<spends 5 minutes trying to work out where k_clock.nsleep() even gets
+called from>
+
+OK, that CLOCK_DISPATCH() thing should be strangled and burnt...
