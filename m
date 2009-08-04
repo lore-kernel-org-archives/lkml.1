@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753720AbZHDEVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198AbZHDEWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753720AbZHDEVE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 00:21:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751450AbZHDEVD
+	id S1754198AbZHDEWZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 00:22:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751609AbZHDEWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 00:21:03 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38473
+	Tue, 4 Aug 2009 00:22:24 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38485
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750797AbZHDEVC (ORCPT
+	by vger.kernel.org with ESMTP id S1749667AbZHDEWX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 00:21:02 -0400
-Date: Mon, 03 Aug 2009 21:21:10 -0700 (PDT)
-Message-Id: <20090803.212110.104970698.davem@davemloft.net>
+	Tue, 4 Aug 2009 00:22:23 -0400
+Date: Mon, 03 Aug 2009 21:22:32 -0700 (PDT)
+Message-Id: <20090803.212232.259171216.davem@davemloft.net>
 To: mingo@elte.hu
-Cc: a.p.zijlstra@chello.nl, joerg.roedel@amd.com,
-       fujita.tomonori@lab.ntt.co.jp, reif@earthlink.net,
+Cc: joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp, reif@earthlink.net,
        sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
        x86@kernel.org, tony.luck@intel.com, akpm@linux-foundation.org
 Subject: Re: [PATCH v2 0/8] sparc: use asm-generic/dma-mapping-common.h and
  pci-dma-compat.h
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090803055441.GA19428@elte.hu>
-References: <20090718110620.GC27287@elte.hu>
-	<20090802.202135.63875488.davem@davemloft.net>
-	<20090803055441.GA19428@elte.hu>
+In-Reply-To: <20090803055608.GB19428@elte.hu>
+References: <20090721160538.GL25756@amd.com>
+	<20090721.121519.239732131.davem@davemloft.net>
+	<20090803055608.GB19428@elte.hu>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -33,11 +32,14 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ingo Molnar <mingo@elte.hu>
-Date: Mon, 3 Aug 2009 07:54:41 +0200
+Date: Mon, 3 Aug 2009 07:56:08 +0200
 
-> So that it can be freed. It's also placed next to the regular init 
-> section to not create too many holes. It also keeps the 'kernel text 
-> area' continuous and things like core_kernel_text() & co still work 
-> fine.
+> I'm wondering how sparc32 handles core_kernel_text() & friends? 
+> 
+> Those functions already assume that the bits between _stext and 
+> _etext are all core kernel text and not generic pages freed back to 
+> the buddy.
 
-Ok, I'll look into doing similar on sparc.
+They won't work for such pages obviously.  Shows how many sparc32
+users who trigger this case of actually freeing those pages and
+using such facilities there actually are :-)
