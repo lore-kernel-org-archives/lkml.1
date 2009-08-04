@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932696AbZHDJSM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932702AbZHDJU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932696AbZHDJSM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 05:18:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932686AbZHDJSL
+	id S932702AbZHDJU3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 05:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932650AbZHDJU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 05:18:11 -0400
-Received: from mga06.intel.com ([134.134.136.21]:42839 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932683AbZHDJSK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 05:18:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,320,1246863600"; 
-   d="scan'208";a="538419706"
-Message-ID: <4A77FCCC.7040608@linux.intel.com>
-Date: Tue, 04 Aug 2009 11:18:04 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Tue, 4 Aug 2009 05:20:28 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38845 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932527AbZHDJU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 05:20:28 -0400
+Message-ID: <4A77FE9D.3020505@redhat.com>
+Date: Tue, 04 Aug 2009 12:25:49 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Jin Dongming <jin.dongming@np.css.fujitsu.com>
-CC: "H.Peter Anvin" <hpa@zytor.com>, LKLM <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Huang Ying <ying.huang@intel.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [PATCH] x86, mce: cleanup initcall of debugfs for mce
-References: <4A77CEAB.4030909@np.css.fujitsu.com>
-In-Reply-To: <4A77CEAB.4030909@np.css.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+To: Gleb Natapov <gleb@redhat.com>
+CC: "Michael S. Tsirkin" <mst@redhat.com>, davidel@xmailserver.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH-RFC 2/2] eventfd: EFD_STATE flag
+References: <cover.1248803500.git.mst@redhat.com> <20090728175538.GC21549@redhat.com> <4A76FDB2.7080706@redhat.com> <20090803151426.GA3630@redhat.com> <4A770260.5000507@redhat.com> <20090803165708.GB3630@redhat.com> <4A77F6EF.8010002@redhat.com> <20090804085406.GA3311@redhat.com> <4A77FCB8.1000205@redhat.com> <20090804091755.GD4764@redhat.com>
+In-Reply-To: <20090804091755.GD4764@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/04/2009 12:17 PM, Gleb Natapov wrote:
+>> If a different read comes after the write but after our read, it will
+>> have transferred the value, resulting in the same situation.
+>>
+>> I think reads should never block with a state based mechanism.
+>>
+>>      
+> Reader may want to poll for the status change.
+>    
 
->  int mce_severity(struct mce *a, int tolerant, char **msg);
-> -struct dentry *mce_get_debugfs_dir(void);
-> +int __init severities_debugfs_init(struct dentry *dmce);
+Without epoll(), it's inherently racy since reads from other processes 
+can clear the status.
 
-__init is not needed on prototypes.
+The "last read value" needs to be maintained for each reader, which is 
+not possible with read().
 
-Sorry but I think it's better to have an own initcall per file,
-that makes everything more self contained and easier to read.
-
--Andi
+-- 
+error compiling committee.c: too many arguments to function
 
