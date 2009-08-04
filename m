@@ -1,57 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933446AbZHDWLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbZHDWPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933446AbZHDWLW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 18:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933438AbZHDWLV
+	id S1755331AbZHDWPF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 18:15:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbZHDWPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 18:11:21 -0400
-Received: from mga09.intel.com ([134.134.136.24]:39912 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933194AbZHDWLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 18:11:20 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,324,1246863600"; 
-   d="scan'208";a="538605630"
-Date: Tue, 4 Aug 2009 15:11:20 -0700
-From: Fenghua Yu <fenghua.yu@intel.com>
-To: David Woodhouse <dwmw2@infradead.org>, Tony Luck <tony.luck@intel.com>
-Cc: iommu@lists.linux-foundation.org, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>
-Subject: [PATCH 4/4] Bug Fix drivers/pci/intel-iommu.c: convert pfn_lo to VTD page address when calling iommu_flush_dev_iotlb()
-Message-ID: <20090804221119.GA21544@linux-os.sc.intel.com>
-References: <bug-504363-150293@bugzilla.redhat.com> <200908042017.n74KHsNw018095@bz-web1.app.phx.redhat.com>
-Mime-Version: 1.0
+	Tue, 4 Aug 2009 18:15:00 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:61134 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755237AbZHDWO6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 18:14:58 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAMNPeEqrR7O6/2dsb2JhbAC8N4gpkBcFhBg
+X-IronPort-AV: E=Sophos;i="4.43,324,1246838400"; 
+   d="scan'208";a="223420803"
+Date: Tue, 4 Aug 2009 15:14:59 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, linux-usb@vger.kernel.org, greg@kroah.com,
+       linux-scsi@vger.kernel.org, netdev@vger.kernel.org, arjan@infradead.org
+Subject: [PATCH 0/7] initdev:kernel:Introduction to initdev synchronization
+	patchset
+Message-ID: <20090804221459.GA9085@cuplxvomd02.corp.sa.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200908042017.n74KHsNw018095@bz-web1.app.phx.redhat.com>
-User-Agent: Mutt/1.4.1i
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The iova->pfn_lo should be converted to VTD page address before it's passed to
-iommu_flush_dev_iotlb().
+The kernel command line parameters "ip", "root", and "console" take devices
+as arguments. These are termed "init devices" since devices specified by
+these parameters are used during kernel initialization. Some init devices
+take a long time to be discovered and made ready for use, USB devices being
+a prime example. This patch provides two, related, functionalities:
 
-This issue may cause DMA failure on PAGE_SIZE>VTD_PAGE_SIZE platforms e.g. ia64
-platforms.
+o	Wait for device setup. Provides synchronization between use of
+	init devices and their setup so that attempts to use them can be
+	delayed until the devices are ready.
+o	Prompt device wait termination. Terminates waits for device
+	discovery as soon as it is know that no more devices remain to be
+	discovered. For example, consider an embedded device that may or
+	may not have a USB console. As soon as all USB devices have been
+	discovered, there is no more need to wait for a console that isn't
+	attached, and a headless system boot can continue.
 
-Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+This patch supports device discovery on USB and SCSI buses but provides a
+framework for other bus types. Where possible, specific device types can
+be specified so that, for example, waiting on a console does not prevent
+mounting a root filesystem.
 
+A secondary consequence of this patch is that the only remaining use of the
+rootwait kernel parameter is to wait for a root device that is not plugged
+in at boot.
+
+This introduction is followed by 7 small-ish patches. It would be possible
+to combine these but this patch touches the console, networking, and block
+device areas and it is hoped that splitting the changes into smaller,
+targeted chunks will make it easier for people in those areas to review it.
+1	Basic initdev infrastructure
+2	USB device discovery notification
+3	Wait for console
+4	Wait for network devices
+5	USB and SCSI block device notification
+6	Additional SCSI block device notification for asynchronous function
+7	Wait for block device used for root
+
+(Many thanks to Alan Stern, who said we could solve this without offensive
+timeouts and then set about doing the integration into core USB and SCSI
+code)
+
+Signed-off-by: David VomLehn <dvomlehn@cisco.com>
 ---
 
- drivers/pci/intel-iommu.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index bec29ed..54ee63d 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -2647,7 +2654,7 @@ static void flush_unmaps(void)
- 			mask = (iova->pfn_hi - iova->pfn_lo + 1) << PAGE_SHIFT;
- 			mask = ilog2(mask >> VTD_PAGE_SHIFT);
- 			iommu_flush_dev_iotlb(deferred_flush[i].domain[j],
--					iova->pfn_lo << PAGE_SHIFT, mask);
-+					iova->pfn_lo << VTD_PAGE_SHIFT, mask);
- 			__free_iova(&deferred_flush[i].domain[j]->iovad, iova);
- 		}
- 		deferred_flush[i].next = 0;
