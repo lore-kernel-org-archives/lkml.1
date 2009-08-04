@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932656AbZHDHfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932669AbZHDHgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932656AbZHDHfc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 03:35:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932509AbZHDHfc
+	id S932669AbZHDHgr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 03:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932658AbZHDHgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 03:35:32 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63163 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S932519AbZHDHfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 03:35:31 -0400
-Message-ID: <4A77E4D0.20900@cn.fujitsu.com>
-Date: Tue, 04 Aug 2009 15:35:44 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 4 Aug 2009 03:36:46 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:47581 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932645AbZHDHgq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 03:36:46 -0400
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       Li Zefan <lizf@cn.fujitsu.com>, Miao Xie <miaox@cn.fujitsu.com>,
-       Paul Menage <menage@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: [PATCH] cpusets: rework guarantee_online_cpus() to fix	deadlock
- with cpu_down()
-References: <20090729023302.GA8899@redhat.com> <20090729212125.GA16970@redhat.com> <20090729212216.GB16970@redhat.com> <20090729230043.GA28175@redhat.com> <4A70FD26.1010800@cn.fujitsu.com> <20090730175108.GC3617@redhat.com> <4A725594.8020205@cn.fujitsu.com> <20090801044236.GA23975@redhat.com> <4A74F767.7060401@cn.fujitsu.com> <20090802065504.GA27164@redhat.com>
-In-Reply-To: <20090802065504.GA27164@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090803.212323.256579233.davem@davemloft.net>
+References: <6c039e090907231439t1def08a4n10978733bee55bec@mail.gmail.com>
+	 <20090727144402.513369f1.akpm@linux-foundation.org>
+	 <1248912621.13447.12.camel@merlyn>
+	 <20090803.212323.256579233.davem@davemloft.net>
+Date: Tue, 4 Aug 2009 15:36:46 +0800
+Message-ID: <6c039e090908040036j38666152y2db1d4c55529eaff@mail.gmail.com>
+Subject: Re: [PATCH] net: Keep interface binding when sending packets with 
+	ipi_ifindex = 0
+From: =?UTF-8?B?Q2hpYS1jaGkgWWVoICjokYnlrrbpvYop?= <chiachi@android.com>
+To: David Miller <davem@davemloft.net>
+Cc: john.dykstra1@gmail.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> On 08/02, Lai Jiangshan wrote:
->> Oleg Nesterov wrote:
->>
->>> 	- do NOT scan cs->parent cpusets. If there are no online CPUs in
->>> 	  cs->cpus_allowed, we use cpu_online_mask. This is only possible
->>> 	  when we are called by cpu_down() hooks, in that case
->>> 	  cpuset_track_online_cpus(CPU_DEAD) will fix things later.
->>>
->>
->> We must scan cs->parent cpusets.
->> A task is constrained by a cpuset,
-> 
-> Yes, the task esacpes its cpuset. With or without this patch.
-> Because cs->cpus_allowed has no online CPUs.
-> 
->> it must be constrained
->> this cpuset's parent too.
-> 
-> It will be constained again, after scan_for_empty_cpusets(), no?
+After thinking more deeply, I believe that IPv6 does the right thing
+and IPv4 does not. SO_BINDTODEVICE requires CAP_NET_RAW, so it is a
+privileged operation. Therefore, it looks weird to me if one can
+specify other interface than the bound one without the same
+capability. The following patch makes the behavior in IPv4 and IPv6
+identical. Thanks for your help.
 
-cpuset_cpus_allowed() is not only  used for CPU offline.
+Chia-chi
 
-sched_setaffinity() also uses it. The task will not be constained again.
-Or I missed something.
+--- a/net/ipv4/ip_sockglue.c    2009-08-04 15:11:39.000000000 +0800
++++ b/net/ipv4/ip_sockglue.c    2009-08-04 15:17:05.000000000 +0800
+@@ -213,7 +213,11 @@
+                        if (cmsg->cmsg_len != CMSG_LEN(sizeof(struct
+in_pktinfo)))
+                                return -EINVAL;
+                        info = (struct in_pktinfo *)CMSG_DATA(cmsg);
+-                       ipc->oif = info->ipi_ifindex;
++                       if (info->ipi_ifindex) {
++                               if (ipc->oif && info->ipi_ifindex != ipc->oif)
++                                       return -EINVAL;
++                               ipc->oif = info->ipi_ifindex;
++                       }
+                        ipc->addr = info->ipi_spec_dst.s_addr;
+                        break;
+                }
 
-Lai
-
+On Tue, Aug 4, 2009 at 12:23 PM, David Miller<davem@davemloft.net> wrote:
+> From: John Dykstra <john.dykstra1@gmail.com>
+> Date: Wed, 29 Jul 2009 19:10:21 -0500
+>
+>> I guess Dave's letting this stand.  I'm posting this just to make sure
+>> this is an explicit decision.
+>
+> I'm still thinking about this.
+>
