@@ -1,77 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932983AbZHDQVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932985AbZHDQWd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932983AbZHDQVk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 12:21:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932970AbZHDQVk
+	id S932985AbZHDQWd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 12:22:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932903AbZHDQWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 12:21:40 -0400
-Received: from pmx1.sophos.com ([213.31.172.16]:59564 "EHLO pmx1.sophos.com"
+	Tue, 4 Aug 2009 12:22:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60529 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932913AbZHDQVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 12:21:38 -0400
-X-Greylist: delayed 706 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Aug 2009 12:21:38 EDT
-From: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
-Organization: Sophos Plc
-To: Eric Paris <eparis@redhat.com>
-Subject: Re: fanotify - overall design before I start sending patches
-Date: Tue, 4 Aug 2009 17:09:50 +0100
-User-Agent: KMail/1.9.10
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "malware-list@dmesg.printk.net" <malware-list@dmesg.printk.net>,
-       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
-       "greg@kroah.com" <greg@kroah.com>, "jcm@redhat.com" <jcm@redhat.com>,
-       Douglas Leeder <douglas.leeder@sophos.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "arjan@infradead.org" <arjan@infradead.org>,
-       "david@lang.hm" <david@lang.hm>,
-       "jengelh@medozas.de" <jengelh@medozas.de>,
-       "aviro@redhat.com" <aviro@redhat.com>,
-       "mrkafk@gmail.com" <mrkafk@gmail.com>,
-       "alexl@redhat.com" <alexl@redhat.com>, "jack@suse.cz" <jack@suse.cz>,
-       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       "mmorley@hcl.in" <mmorley@hcl.in>, "pavel@suse.cz" <pavel@suse.cz>
-References: <1248466429.3567.82.camel@localhost>
-In-Reply-To: <1248466429.3567.82.camel@localhost>
+	id S932860AbZHDQWb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 12:22:31 -0400
+Date: Tue, 4 Aug 2009 16:21:52 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/urgent] perf_counter tools: Provide default bfd_demangle() function in case it's not around
+Message-ID: <tip-08b6cb88eeb51fe267cb3847ba663a9558fe73cd@git.kernel.org>
+Git-Commit-ID: 08b6cb88eeb51fe267cb3847ba663a9558fe73cd
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Message-Id: <200908041709.51659.tvrtko.ursulin@sophos.com>
-X-MIMETrack: Itemize by SMTP Server on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 04/08/2009 17:09:52,
-	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 04/08/2009 17:09:52,
-	Serialize complete at 04/08/2009 17:09:52
-X-TNEFEvaluated: 1
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 04 Aug 2009 16:21:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  08b6cb88eeb51fe267cb3847ba663a9558fe73cd
+Gitweb:     http://git.kernel.org/tip/08b6cb88eeb51fe267cb3847ba663a9558fe73cd
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Tue, 4 Aug 2009 13:27:41 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 4 Aug 2009 18:19:33 +0200
 
-Hi Eric, all,
+perf_counter tools: Provide default bfd_demangle() function in case it's not around
 
-On Friday 24 July 2009 21:13:49 Eric Paris wrote:
-> If a FAN_ACCESS_PERM or FAN_OPEN_PERM event is received the listener
-> must send a response before the 5 second timeout.  If no response is
-> sent before the 5 second timeout the original operation is allowed.  If
-> this happens too many times (10 in a row) the fanotify group is evicted
-> from the kernel and will not get any new events.  Sending a response is
+Provide weak alias (which does nothing) in case the system does not
+offer one.
 
-Would it make more sense to deny on timeouts and then evict? I am thinking it 
-would be more secure with no significant drawbacks. Also for usages like HSM 
-allowing it without data being in place might present wrong content to the 
-user.
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-> The only other current interface is the ability to ignore events by
-> superblock magic number.  This makes it easy to ignore all events
-> in /proc which can be difficult to accomplish firing FANOTIFY_SET_MARK
-> with ignored_masks over and over as processes are created and destroyed.
 
-Just to double-check, that would also work for any other filesystem and is 
-controllable from userspace?
+---
+ tools/perf/util/symbol.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
 
-Tvrtko
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index b4fe057..7bd5128 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -8,6 +8,17 @@
+ #include <elf.h>
+ #include <bfd.h>
+ 
++/*
++ * Weak wrapper in case a library version is not available:
++ */
++extern char * __attribute__((weak)) bfd_demangle (bfd *, const char *, int);
++
++char * __attribute__((weak))
++ bfd_demangle (bfd *bfd __used, const char *name __used, int flags __used)
++{
++	return NULL;
++}
++
+ const char *sym_hist_filter;
+ 
+ #ifndef DMGL_PARAMS
