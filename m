@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933626AbZHDXq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933618AbZHDXwl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933626AbZHDXq3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 19:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933575AbZHDXq3
+	id S933618AbZHDXwl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 19:52:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932449AbZHDXwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 19:46:29 -0400
-Received: from tundra.namei.org ([65.99.196.166]:36810 "EHLO tundra.namei.org"
+	Tue, 4 Aug 2009 19:52:40 -0400
+Received: from claw.goop.org ([74.207.240.146]:37206 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933152AbZHDXq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 19:46:28 -0400
-Date: Wed, 5 Aug 2009 09:42:06 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Eric Paris <eparis@redhat.com>
-cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       selinux@tycho.nsa.gov, James Carter <jwcart2@tycho.nsa.gov>,
-       Stephen Smalley <sds@tycho.nsa.gov>, spender@grsecurity.net,
-       Daniel J Walsh <dwalsh@redhat.com>, cl@linux-foundation.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, kees@outflux.net,
-       Chad Sellers <csellers@tresys.com>,
-       Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -v4 1/3] Capabilities: move cap_file_mmap to
- commoncap.c
-In-Reply-To: <20090731165358.20992.14757.stgit@paris.rdu.redhat.com>
-Message-ID: <alpine.LRH.2.00.0908050938320.28805@tundra.namei.org>
-References: <20090731165358.20992.14757.stgit@paris.rdu.redhat.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	id S932435AbZHDXwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 19:52:39 -0400
+Message-ID: <4A78C9C6.6010103@goop.org>
+Date: Tue, 04 Aug 2009 16:52:38 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: David Woodhouse <dwmw2@infradead.org>
+CC: Dave Airlie <airlied@gmail.com>, Keir Fraser <kier.fraser@eu.citrix.com>,
+       xen-devel@lists.xensource.com, Joerg Roedel <joerg.roedel@amd.com>,
+       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Zhenyu Wang <zhenyu.z.wang@intel.com>
+Subject: Re: [Xen-devel] Re: [RFC] Make AGP work with IOMMU
+References: <1248707041.6100.35.camel@macbook.infradead.org>	<21d7e9970907282328l4a44b9a2of4500c5c84a3586b@mail.gmail.com>	<1248851712.19733.214.camel@macbook.infradead.org>	<21d7e9970907290143q6778511cvda1c6b915f61654a@mail.gmail.com> <1248860205.19733.238.camel@macbook.infradead.org>
+In-Reply-To: <1248860205.19733.238.camel@macbook.infradead.org>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 31 Jul 2009, Eric Paris wrote:
+On 07/29/09 02:36, David Woodhouse wrote:
+> On Wed, 2009-07-29 at 18:43 +1000, Dave Airlie wrote:
+>   
+>>>> don't suppose we want page_to_gart or is the double function nicer?
+>>>>         
+>>> I pondered that briefly. But then observed that phys_to_gart() and
+>>> gart_to_phys() _always_ describe an identity mapping, so perhaps they
+>>> could just be ditched completely?
+>>>       
+>> Yeah that could work too, no idea why they were introduced, well before my time.
+>>     
+>
+> http://git.infradead.org/users/dwmw2/iommu-agp.git?a=commitdiff;h=8bf2f3a9
+>
+> It was introduced by Keir in 2005 for Xen (commit 07eee78e). I suspect
+> it can die though, and that the right answer there is also to use the
+> DMA API correctly.
+>   
 
-> Currently we duplicate the mmap_min_addr test in cap_file_mmap and in
-> security_file_mmap if !CONFIG_SECURITY.  This patch moves cap_file_mmap
-> into commoncap.c and then calls that function directly from
-> security_file_mmap ifndef CONFIG_SECURITY like all of the other capability
-> checks are done.
+And just when I have patches to use them for their original purpose...
 
-These patches could do with more review / ack / signoff.  Anyone?  Bueller?
+Looking back over the thread, are you saying that most users are already
+using the DMA API correctly for AGP accesses?  If that's true then we
+should be just fine.
 
-However, if there are no further comments, I'll likely apply these to 
-security-testing#next.
-
-
-- James
--- 
-James Morris
-<jmorris@namei.org>
+    J
