@@ -1,92 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754855AbZHDMAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755018AbZHDMMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754855AbZHDMAU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 08:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754530AbZHDMAU
+	id S1755018AbZHDMMk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 08:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754971AbZHDMMj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 08:00:20 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:49267 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753516AbZHDMAT (ORCPT
+	Tue, 4 Aug 2009 08:12:39 -0400
+Received: from av8-1-sn3.vrr.skanova.net ([81.228.9.183]:58218 "EHLO
+	av8-1-sn3.vrr.skanova.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754936AbZHDMMi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 08:00:19 -0400
-X-Trace: 237173315/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.71.197/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.71.197
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuEEANu/d0pPRUfF/2dsb2JhbACBUtNJhBgFgjI
-X-IronPort-AV: E=Sophos;i="4.43,321,1246834800"; 
-   d="scan'208";a="237173315"
-Date: Tue, 4 Aug 2009 13:00:07 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Brice Goglin <Brice.Goglin@inria.fr>
-cc: Leon Woestenberg <leon.woestenberg@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: get_user_pages() stores ERR_PTR() in pages[i] on
- failure
-In-Reply-To: <4A780FE6.9050704@inria.fr>
-Message-ID: <Pine.LNX.4.64.0908041245260.17734@sister.anvils>
-References: <c384c5ea0908030823y494ee8bei85aa62c1470fa3ec@mail.gmail.com> 
- <Pine.LNX.4.64.0908031724200.2296@sister.anvils>  <4A77FCFB.9020001@inria.fr>
- <c384c5ea0908040259k4295c986wdd45fe9e1e4315b1@mail.gmail.com>
- <4A780FE6.9050704@inria.fr>
+	Tue, 4 Aug 2009 08:12:38 -0400
+Message-ID: <4A7825B3.1010806@mocean-labs.com>
+Date: Tue, 04 Aug 2009 14:12:35 +0200
+From: =?ISO-8859-1?Q?Richard_R=F6jfors?= 
+	<richard.rojfors.ext@mocean-labs.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-input@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, kwangwoo.lee@gmail.com,
+       Thierry Reding <thierry.reding@avionic-design.de>,
+       Trilok Soni <soni.trilok@gmail.com>
+Subject: Re: [PATCH 2/2] tsc2007: reduced number of I2C transfers
+References: <4A69DDED.50402@mocean-labs.com> <20090724180022.GA6477@dtor-d630.eng.vmware.com> <4A6A0D77.6000600@mocean-labs.com> <20090726080212.GA24365@dtor-d630.eng.vmware.com>
+In-Reply-To: <20090726080212.GA24365@dtor-d630.eng.vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Aug 2009, Brice Goglin wrote:
+Dmitry Torokhov wrote:
 > 
-> >> I wonder if we should change get_user_pages to store ERR_PTR(ret)
-> >> in page[i] when it fails to get page #i.
-> >>     
-> > Yes, I would see that as an improvement in finding out why rc <
-> > nr_pages, in case rc > 0.
-> >
-> > Also I think it does not break existing users.
-> >   
+> I modified the patch a bit before applying. In fact there were a few
+> changes to all the patces so it would be nice if you could take a look
+> at the 'next' branch of my tree:
 > 
-> Only compile-tested (and not in the nommu case).
+> 	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git next
 > 
-> 
-> 
-> 
-> When get_user_pages() fails to get a non-first page, it returns
-> the number of successfully gotten pages. The caller has to call
-> get_user_pages() again on the failed page to figure out the
-> error code.
-> 
-> Store the error code with ERR_PTR() in pages[i] when we fail
-> to get page #i.
-> 
-> The arch specific get_user_pages_fast() do not need to be changed
-> since they revert to the main get_user_pages() on failure.
-> 
-> Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
+> Also, I di dnot quite like the logic of the patch making
+> get_pendown_state callback optional; could you please try the patch
+> below and let me know of it works for you?
 
-This is a nice idea, and it looks like a good patch to implement
-it, and I wish get_user_pages() had done that from the start, but...
+I like your changes, there is just a small miss while checking the 
+platform data. You forgot to remove the check for get_pen_down_state in 
+the probe function, see the patch below (to be applied on top of yours):
 
-... some callers of get_user_pages() might expect it not to touch
-entries in the page array beyond the fail point: for example, they
-might start off with a zeroed array, then when they come to put_page
-on the array afterwards, would skip any NULL entries found - without
-having to have noted the returned number of pages.  I don't think
-that way of working is supported by any guarantee in documentation,
-but it's not unreasonable to expect it to behave in that way.
+I also would like a check if the power down failed or not during probe.
 
-If there were nothing intree which worked that way, then I'd
-say let's go ahead with your nice patch.  But I soon reached
-drivers/gpu/drm/ttm/ttm_tt.c then drivers/gpu/drm/via/via_dmablit.c
-which both appear to work in that way.  I've not looked beyond them,
-but I suspect those two cases amount to a NAK on your patch, sadly.
-Of course we _could_ fix individual callers to work with it, but
-for me they sound a warning that it's too late to change now.
+--Richard
 
-Hugh
+Input: tsc2007 - Check if I2C communication works during probe
+
+Check the result when sending the power down command to the controller.
+
+Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
+---
+Index: linux-2.6.31-rc2/drivers/input/touchscreen/tsc2007.c
+===================================================================
+--- linux-2.6.31-rc2/drivers/input/touchscreen/tsc2007.c	(revision 1071)
++++ linux-2.6.31-rc2/drivers/input/touchscreen/tsc2007.c	(revision 1073)
+@@ -269,7 +269,7 @@
+  	struct input_dev *input_dev;
+  	int err;
+
+-	if (!pdata || !pdata->get_pendown_state) {
++	if (!pdata) {
+  		dev_err(&client->dev, "platform data is required!\n");
+  		return -EINVAL;
+  	}
+@@ -326,10 +326,14 @@
+  	i2c_set_clientdata(client, ts);
+
+  	/* Prepare for touch readings - power down ADC and enable PENIRQ */
+-	tsc2007_xfer(ts, PWRDOWN);
++	err = tsc2007_xfer(ts, PWRDOWN);
++	if (err < 0)
++		goto err_unreg_dev;
+
+  	return 0;
+
++ err_unreg_dev:
++	input_unregister_device(ts->input);
+   err_free_irq:
+  	tsc2007_free_irq(ts);
+  	if (pdata->exit_platform_hw)
