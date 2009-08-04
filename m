@@ -1,83 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbZHDUgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932529AbZHDUig@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755176AbZHDUgL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 16:36:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932399AbZHDUgK
+	id S932529AbZHDUig (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 16:38:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932399AbZHDUif
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 16:36:10 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35925 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754923AbZHDUgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 16:36:09 -0400
-Date: Tue, 4 Aug 2009 22:35:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: penberg@cs.helsinki.fi, a.p.zijlstra@chello.nl, fweisbec@gmail.com,
-       rostedt@goodmis.org, mel@csn.ul.ie, lwoodman@redhat.com,
-       riel@redhat.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 4/4] tracing, page-allocator: Add a postprocessing
-	script for page-allocator-related ftrace events
-Message-ID: <20090804203526.GA8699@elte.hu>
-References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie> <1249409546-6343-5-git-send-email-mel@csn.ul.ie> <20090804112246.4e6d0ab1.akpm@linux-foundation.org> <20090804195717.GA5998@elte.hu> <20090804131818.ee5d4696.akpm@linux-foundation.org>
+	Tue, 4 Aug 2009 16:38:35 -0400
+Received: from shadow.wildlava.net ([67.40.138.81]:42135 "EHLO
+	shadow.wildlava.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932454AbZHDUie (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 16:38:34 -0400
+Message-ID: <4A789AB0.1000506@skyrush.com>
+Date: Tue, 04 Aug 2009 14:31:44 -0600
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090616)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090804131818.ee5d4696.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: gregkh@suse.de, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/2] n_tty: move echoctl check and clean up logic
+Content-Type: multipart/mixed;
+ boundary="------------030403000801010301090408"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------030403000801010301090408
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Tue, 4 Aug 2009 21:57:17 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > Let me demonstrate these features in action (i've applied the 
-> > patches for testing to -tip):
-> 
-> So?  The fact that certain things can be done doesn't mean that 
-> there's a demand for them, nor that anyone will _use_ this stuff.
+--------------030403000801010301090408
+Content-Type: text/plain;
+ name="n_tty-move-echoctl-check-and-clean-up-logic.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="n_tty-move-echoctl-check-and-clean-up-logic.patch"
 
-c'mon Andrew ...
+Check L_ECHOCTL before insertting a character in the echo buffer
+(rather than as the buffer is processed), to be more consistent with
+when all other L_ flags are checked.  Also cleaned up the related logic.
 
-Did you never want to see whether firefox is leaking [any sort of] 
-memory, and if yes, on what callsites? Try something like on an 
-already running firefox context:
+Note that this and the previous patch ("n_tty: honor opost flag for echoes")
+were verified together by the reporters of the bug that patch addresses
+(http://bugs.linuxbase.org/show_bug.cgi?id=2692), and all tty tests now pass.
 
-  perf stat -e kmem:mm_page_alloc \
-            -e kmem:mm_pagevec_free \
-            -e kmem:mm_page_free_direct \
-     -p $(pidof firefox-bin) sleep 10
+Signed-off-by: Joe Peterson <joe@skyrush.com>
+---
 
-... and "perf record" for the specific callsites.
+diff -Nurp a/drivers/char/n_tty.c b/drivers/char/n_tty.c
+--- a/drivers/char/n_tty.c	2009-08-04 12:41:27.445263301 -0600
++++ b/drivers/char/n_tty.c	2009-08-04 12:40:11.905246260 -0600
+@@ -578,33 +578,23 @@ static void process_echoes(struct tty_st
+ 				break;
+ 
+ 			default:
+-				if (iscntrl(op)) {
+-					if (L_ECHOCTL(tty)) {
+-						/*
+-						 * Ensure there is enough space
+-						 * for the whole ctrl pair.
+-						 */
+-						if (space < 2) {
+-							no_space_left = 1;
+-							break;
+-						}
+-						tty_put_char(tty, '^');
+-						tty_put_char(tty, op ^ 0100);
+-						tty->column += 2;
+-						space -= 2;
+-					} else {
+-						if (!space) {
+-							no_space_left = 1;
+-							break;
+-						}
+-						tty_put_char(tty, op);
+-						space--;
+-					}
+-				}
+ 				/*
+-				 * If above falls through, this was an
+-				 * undefined op.
++				 * If the op is not a special byte code,
++				 * it is a ctrl char tagged to be echoed
++				 * as "^X" (where X is the letter
++				 * representing the control char).
++				 * Note that we must ensure there is
++				 * enough space for the whole ctrl pair.
++				 *
+ 				 */
++				if (space < 2) {
++					no_space_left = 1;
++					break;
++				}
++				tty_put_char(tty, '^');
++				tty_put_char(tty, op ^ 0100);
++				tty->column += 2;
++				space -= 2;
+ 				cp += 2;
+ 				nr -= 2;
+ 			}
+@@ -805,8 +795,8 @@ static void echo_char_raw(unsigned char 
+  *	Echo user input back onto the screen. This must be called only when
+  *	L_ECHO(tty) is true. Called from the driver receive_buf path.
+  *
+- *	This variant tags control characters to be possibly echoed as
+- *	as "^X" (where X is the letter representing the control char).
++ *	This variant tags control characters to be echoed as "^X"
++ *	(where X is the letter representing the control char).
+  *
+  *	Locking: echo_lock to protect the echo buffer
+  */
+@@ -819,7 +809,7 @@ static void echo_char(unsigned char c, s
+ 		add_echo_byte(ECHO_OP_START, tty);
+ 		add_echo_byte(ECHO_OP_START, tty);
+ 	} else {
+-		if (iscntrl(c) && c != '\t')
++		if (L_ECHOCTL(tty) && iscntrl(c) && c != '\t')
+ 			add_echo_byte(ECHO_OP_START, tty);
+ 		add_echo_byte(c, tty);
+ 	}
 
-this perf stuff is immensely flexible and a very unixish 
-abstraction. The perf.data contains timestamped trace entries of 
-page allocations and freeing done.
-
-[...]
-> It would be nice to at least partially remove the vmstat/meminfo 
-> infrastructure but I don't think we can do that?
-
-at least meminfo is an ABI for sure - vmstat too really.
-
-But we can stop adding new fields into obsolete, inflexible and 
-clearly deficient interfaces, and we can standardize new 
-instrumentation to use modern instrumentation facilities - i.e. 
-tracepoints and perfcounters.
-
-I'm not saying to put a tracepoint on every second line of the 
-kernel, but obviously Mel and Rik wanted this kind of info because 
-they found it useful in practice.
-
-	Ingo
+--------------030403000801010301090408--
