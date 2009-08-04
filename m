@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932904AbZHDPuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932921AbZHDP6E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932904AbZHDPuh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 11:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932806AbZHDPug
+	id S932921AbZHDP6E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 11:58:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755271AbZHDP6D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 11:50:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41013 "EHLO mx2.redhat.com"
+	Tue, 4 Aug 2009 11:58:03 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51577 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932717AbZHDPug (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 11:50:36 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1249397486.7924.243.camel@twins>
-References: <1249397486.7924.243.camel@twins> <s5hvdmos4i8.wl%tiwai@suse.de> <alpine.DEB.2.01.0906211926080.6439@bogon> <6950.1245661098@redhat.com> <24075.1248705430@redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: dhowells@redhat.com, Takashi Iwai <tiwai@suse.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux filesystem caching discussion list 
-	<linux-cachefs@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>, oleg <oleg@redhat.com>
-Subject: Re: Incorrect circular locking dependency?
-Date: Tue, 04 Aug 2009 16:50:04 +0100
-Message-ID: <18723.1249401004@redhat.com>
+	id S1751966AbZHDP6C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 11:58:02 -0400
+Message-ID: <4A785A57.8050505@kernel.org>
+Date: Tue, 04 Aug 2009 08:57:11 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Yu Zhao <yu.zhao@intel.com>
+Subject: [PATCH] pci: dmar/intr_remapping/iov use physfn to search drhd
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra <peterz@infradead.org> wrote:
 
-> Creating a new class for your second workqueue might help,
+when virtfn is used, we should use physfn to find correct drhd
 
-I only have one workqueue.  The problem is there are two waitqueues, but
-init_waitqueue_head() always sets q->lock to the same class.
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-> we'd have to pass a second key through __create_workqueue_key() and pass
-> that into init_cpu_workqueue() and apply it to cwq->lock using
-> lockdep_set_class() and co.
+---
+ drivers/pci/dmar.c           |    5 +++++
+ 2 files changed, 12 insertions(+), 1 deletion(-)
 
-Actually, wouldn't just making init_cpu_workqueue() apply a class to
-cwq->more_work that's common to all workqueues suffice?  Or even, have
-init_waitqueue_head() apply an alternate class to q->lock?
-
-David
+Index: linux-2.6/drivers/pci/dmar.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/dmar.c
++++ linux-2.6/drivers/pci/dmar.c
+@@ -493,6 +493,11 @@ dmar_find_matched_drhd_unit(struct pci_d
+ 	struct dmar_drhd_unit *dmaru = NULL;
+ 	struct acpi_dmar_hardware_unit *drhd;
+ 
++#ifdef CONFIG_PCI_IOV
++	if (dev->is_virtfn)
++		dev = dev->physfn;
++#endif
++
+ 	list_for_each_entry(dmaru, &dmar_drhd_units, list) {
+ 		drhd = container_of(dmaru->hdr,
+ 				    struct acpi_dmar_hardware_unit,
