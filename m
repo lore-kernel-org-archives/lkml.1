@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbZHDM3N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbZHDMhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbZHDM3N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 08:29:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbZHDM3N
+	id S1755442AbZHDMhL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 08:37:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755425AbZHDMhL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 08:29:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36933 "EHLO mx2.mail.elte.hu"
+	Tue, 4 Aug 2009 08:37:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54386 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755322AbZHDM3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 08:29:12 -0400
-Date: Tue, 4 Aug 2009 14:28:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Rosenboom <jens@mcbone.net>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Yinghai Lu <yinghai@kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Len Brown <lenb@kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: Re: early_ioremap messages with old ASUS board
-Message-ID: <20090804122859.GD4367@elte.hu>
-References: <1248351634.7237.32.camel@fnki-nb00130> <86802c440907230739ufe30b4cocc4b16faacc009c4@mail.gmail.com> <1248773808.6757.4.camel@fnki-nb00130>
+	id S1755267AbZHDMhK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 08:37:10 -0400
+Message-ID: <4A782C61.4030809@redhat.com>
+Date: Tue, 04 Aug 2009 15:41:05 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248773808.6757.4.camel@fnki-nb00130>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -0.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-0.5 required=5.9 tests=BAYES_20 autolearn=no SpamAssassin version=3.2.5
-	-0.5 BAYES_20               BODY: Bayesian spam probability is 5 to 20%
-	[score: 0.1022]
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 6/12] ksm: five little cleanups
+References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils> <Pine.LNX.4.64.0908031314070.16754@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0908031314070.16754@sister.anvils>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hugh Dickins wrote:
+> 1. We don't use __break_cow entry point now: merge it into break_cow.
+> 2. remove_all_slot_rmap_items is just a special case of
+>    remove_trailing_rmap_items: use the latter instead.
+> 3. Extend comment on unmerge_ksm_pages and rmap_items.
+> 4. try_to_merge_two_pages should use try_to_merge_with_ksm_page
+>    instead of duplicating its code; and so swap them around.
+> 5. Comment on cmp_and_merge_page described last year's: update it.
+>
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> ---
+>
+>
+>   
+Acked-by: Izik Eidus <ieidus@redhat.com>
 
-* Jens Rosenboom <jens@mcbone.net> wrote:
-
-> On Thu, 2009-07-23 at 07:39 -0700, Yinghai Lu wrote:
-> > please try attached ...
-> 
-> No more leak messages when booting with this patch.
-
-Yinghai, please submit the patch to the right people if you have not 
-done so yet.
-
-	Ingo
