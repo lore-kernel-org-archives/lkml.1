@@ -1,91 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933346AbZHDTPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933369AbZHDTPd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933346AbZHDTPF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 15:15:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933106AbZHDTPE
+	id S933369AbZHDTPd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 15:15:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933361AbZHDTPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 15:15:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59465 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933256AbZHDTPC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 15:15:02 -0400
-Date: Tue, 4 Aug 2009 12:13:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rik van Riel <riel@redhat.com>
-Cc: mel@csn.ul.ie, lwoodman@redhat.com, mingo@elte.hu, peterz@infradead.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 4/4] tracing, page-allocator: Add a postprocessing
- script for page-allocator-related ftrace events
-Message-Id: <20090804121332.46df33a7.akpm@linux-foundation.org>
-In-Reply-To: <4A787D84.2030207@redhat.com>
-References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie>
-	<1249409546-6343-5-git-send-email-mel@csn.ul.ie>
-	<20090804112246.4e6d0ab1.akpm@linux-foundation.org>
-	<4A787D84.2030207@redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 4 Aug 2009 15:15:31 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:60799 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933359AbZHDTP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 15:15:28 -0400
+Subject: Re: mnt_want_write_file() has problem?
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Al Viro <viro@zeniv.linux.org.uk>, Nick Piggin <npiggin@suse.de>,
+       linux-kernel@vger.kernel.org, akpm <akpm@linuxfoundation.org>
+In-Reply-To: <871vnt7vac.fsf@devron.myhome.or.jp>
+References: <871vnt7vac.fsf@devron.myhome.or.jp>
+Content-Type: text/plain
+Date: Tue, 04 Aug 2009 12:15:19 -0700
+Message-Id: <1249413319.11056.131.camel@nimitz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 04 Aug 2009 14:27:16 -0400
-Rik van Riel <riel@redhat.com> wrote:
+On Mon, 2009-08-03 at 06:36 +0900, OGAWA Hirofumi wrote:
+> diff -puN fs/namespace.c~mnt_want_write-wrong-assume fs/namespace.c
+> ---
+> linux-2.6/fs/namespace.c~mnt_want_write-wrong-assume        2009-08-03
+> 04:33:35.000000000 +0900
+> +++ linux-2.6-hirofumi/fs/namespace.c   2009-08-03 04:31:34.000000000
+> +0900
+> @@ -316,7 +316,8 @@ EXPORT_SYMBOL_GPL(mnt_clone_write);
+>   */
+>  int mnt_want_write_file(struct file *file)
+>  {
+> -       if (!(file->f_mode & FMODE_WRITE))
+> +       struct inode *inode = file->f_dentry->d_inode;
+> +       if (!(file->f_mode & FMODE_WRITE) || special_file(inode->i_mode))
+>                 return mnt_want_write(file->f_path.mnt);
+>         else
+>                 return mnt_clone_write(file->f_path.mnt);
 
-> Andrew Morton wrote:
-> > On Tue,  4 Aug 2009 19:12:26 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
-> > 
-> >> This patch adds a simple post-processing script for the page-allocator-related
-> >> trace events. It can be used to give an indication of who the most
-> >> allocator-intensive processes are and how often the zone lock was taken
-> >> during the tracing period. Example output looks like
-> >>
-> >> find-2840
-> >>  o pages allocd            = 1877
-> >>  o pages allocd under lock = 1817
-> >>  o pages freed directly    = 9
-> >>  o pcpu refills            = 1078
-> >>  o migrate fallbacks       = 48
-> >>    - fragmentation causing = 48
-> >>      - severe              = 46
-> >>      - moderate            = 2
-> >>    - changed migratetype   = 7
-> > 
-> > The usual way of accumulating and presenting such measurements is via
-> > /proc/vmstat.  How do we justify adding a completely new and different
-> > way of doing something which we already do?
-> 
-> Mel's tracing is more akin to BSD process accounting,
-> where these statistics are kept on a per-process basis.
+I'm fine with this.  I'd like a debugging check in mnt_clone_write()
+since this bug is easy to detect, but such a check will also cost all of
+the performance gains that Nick added.  So, we can't have it
+unconditionally.
 
-Is that useful?  Any time I've wanted to find out things like this, I
-just don't run other stuff on the machine at the same time.
+-- 
 
-Maybe there are some scenarios where it's useful to filter out other
-processes, but are those scenarios sufficiently important to warrant
-creation of separate machinery like this?
+Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
 
-> Nothing in /proc allows us to see statistics on a per
-> process basis on process exit.
-
-Can this script be used to monitor the process while it's still running?
-
-
-
-Also, we have a counter for "moderate fragmentation causing migrate
-fallbacks".  There must be hundreds of MM statistics which can be
-accumulated once we get down to this level of detail.  Why choose these
-nine?
-
-
-Is there a plan to add the rest later on?
-
-
-Or are these nine more a proof-of-concept demonstration-code thing?  If
-so, is it expected that developers will do an ad-hoc copy-n-paste to
-solve a particular short-term problem and will then toss the tracepoint
-away?  I guess that could be useful, although you can do the same with
-vmstat.
+-- Dave
 
