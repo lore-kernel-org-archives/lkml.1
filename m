@@ -1,57 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbZHDNDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755511AbZHDNFP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755506AbZHDNDr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 09:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755461AbZHDNDq
+	id S1755511AbZHDNFP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 09:05:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbZHDNFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 09:03:46 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55417
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755452AbZHDNDq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 09:03:46 -0400
-Date: Tue, 04 Aug 2009 06:03:54 -0700 (PDT)
-Message-Id: <20090804.060354.66058154.davem@davemloft.net>
-To: bzolnier@gmail.com
-Cc: pcnet32@verizon.net, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       error27@gmail.com, corbet@lwn.net, eteo@redhat.com, julia@diku.dk
-Subject: Re: [PATCH] pcnet32: remove superfluous NULL pointer check in
- pcnet32_probe1()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200908041233.02016.bzolnier@gmail.com>
-References: <200908022207.29942.bzolnier@gmail.com>
-	<20090802.131256.210461366.davem@davemloft.net>
-	<200908041233.02016.bzolnier@gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Aug 2009 09:05:14 -0400
+Received: from tomts36.bellnexxia.net ([209.226.175.93]:34052 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755461AbZHDNFN convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 09:05:13 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AuEEADHOd0pMQWXi/2dsb2JhbACBUtMNhBgF
+Date: Tue, 4 Aug 2009 09:05:10 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Matthieu CASTET <matthieu.castet@parrot.com>
+Cc: "ltt-dev@lists.casi.polymtl.ca" <ltt-dev@lists.casi.polymtl.ca>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "rostedt@goodmis.org" <rostedt@goodmis.org>
+Subject: Re: Tracing thread name
+Message-ID: <20090804130510.GA23396@Krystal>
+References: <4A76E42D.7010908@parrot.com> <20090803134843.GB23455@Krystal> <4A78099B.4@parrot.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <4A78099B.4@parrot.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 09:02:52 up 157 days,  9:29,  3 users,  load average: 1.65, 1.24,
+	0.92
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Date: Tue, 4 Aug 2009 12:32:56 +0200
-
-> On Sunday 02 August 2009 22:12:56 David Miller wrote:
->> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->> Date: Sun, 2 Aug 2009 22:07:29 +0200
->> 
->> > netdev@vger.kernel.org was on cc: for all patches...
->> > 
->> > http://marc.info/?l=linux-netdev&m=124898901714229&w=2
->> > http://marc.info/?l=linux-netdev&m=124898901714236&w=2
->> > 
->> > maybe there is some problem with a patchwork setup..
->> 
->> My bad, I misread the CC: list, sorry.
+* Matthieu CASTET (matthieu.castet@parrot.com) wrote:
+> Hi Mathieu,
 > 
-> There still may be some netdev patchwork problem..
+> Mathieu Desnoyers a écrit :
+> > * Matthieu CASTET (matthieu.castet@parrot.com) wrote:
+> >> Hi,
+> >>
+> >> I use ltt on a 2.6.27 on an arm architecture.
+> >> It works quite well, but I have a minor problem :
+> >>
+> >> my application sets thread name with prctl PR_SET_NAME. But ltt viewer
+> >> doesn't seem to saw it.
+> >>
+> > 
+> > Hrm, I guess we might want to instrument set_task_comm as you propose to
+> > get the correct process name, but if this gets us the thread name, I
+> > think it's only an implementation side-effect:
 > 
-> These patches were applied with Don as an author:
+> > The way LTTng handles thread names is by adding a userspace "thread
+> > branding" event. It should be executed at thread startup. The downside
+> > of the current LTTng approach is that we cannot know the name of threads
+> > already executing before we started tracing.
+> > 
+> 
+> Do you know if it is possible to patch my version to add such feature ?
+> 
+> I saw that the name already change in the trace before/after an exec.
+> How lltv get the new name ?
+> With "fs.exec" tracepoint ?
+> In that case I could fake a "fs.exec" tracepoint in set_task_comm.
 
-It's because he forwarded them to netdev when he ACK'd them, and those
-are the ones the postings that actually showed up properly in
-patchwork, and thus the From: lines that got used for authorship.
+A better solution : you add a new event in both lttng and lttv, and
+modify state.c to support your new event. The current event to brand
+thread is named "userspace.thread_brand". Look for this in LTTV to see
+all the sites that need to support the new event (there are very few).
 
-Sorry, I should have caught that.
+Mathieu
+
+> 
+> Thanks
+> 
+> Matthieu
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
