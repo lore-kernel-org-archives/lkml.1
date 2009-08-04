@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755577AbZHDORO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755592AbZHDOR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755577AbZHDORO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 10:17:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755571AbZHDORL
+	id S1755592AbZHDOR3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 10:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754983AbZHDOR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 10:17:11 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55148 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755527AbZHDORJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 10:17:09 -0400
-Date: Tue, 4 Aug 2009 14:16:29 GMT
-From: tip-bot for Cyrill Gorcunov <gorcunov@openvz.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       gorcunov@openvz.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       gorcunov@openvz.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090801075435.769301745@openvz.org>
-References: <20090801075435.769301745@openvz.org>
-Subject: [tip:x86/apic] x86, ioapic: Throw BUG instead of NULL dereference
-Message-ID: <tip-460ba8dfa8decb3885256fc4cbb3d2ee46a6466f@git.kernel.org>
-Git-Commit-ID: 460ba8dfa8decb3885256fc4cbb3d2ee46a6466f
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 04 Aug 2009 14:16:30 +0000 (UTC)
+	Tue, 4 Aug 2009 10:17:27 -0400
+Received: from casper.infradead.org ([85.118.1.10]:35528 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755440AbZHDORZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 10:17:25 -0400
+Subject: Re: [PATCH 0/4] Virtual Machine Time Accounting
+From: Peter Zijlstra <peterz@infradead.org>
+To: Laurent Vivier <Laurent.Vivier@bull.net>
+Cc: Ingo Molnar <mingo@elte.hu>, kvm-devel <kvm-devel@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+In-Reply-To: <46C99371.7070705@bull.net>
+References: <46C99371.7070705@bull.net>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 04 Aug 2009 16:16:38 +0200
+Message-Id: <1249395398.7924.223.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  460ba8dfa8decb3885256fc4cbb3d2ee46a6466f
-Gitweb:     http://git.kernel.org/tip/460ba8dfa8decb3885256fc4cbb3d2ee46a6466f
-Author:     Cyrill Gorcunov <gorcunov@openvz.org>
-AuthorDate: Sat, 1 Aug 2009 11:48:00 +0400
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 4 Aug 2009 16:11:54 +0200
+These patches never seem to have made it onto LKML?!
 
-x86, ioapic: Throw BUG instead of NULL dereference
+On Mon, 2007-08-20 at 15:13 +0200, Laurent Vivier wrote:
+> The aim of these four patches is to introduce Virtual Machine time accounting.
+> 
+> _Ingo_, as these patches modify files of the scheduler, could you have a look to
+> them, please ?
+> 
+> [PATCH 1/4] as recent CPUs introduce a third running state, after "user" and
+> "system", we need a new field, "guest", in cpustat to store the time used by
+> the CPU to run virtual CPU. Modify /proc/stat to display this new field.
+> 
+> [PATCH 2/4] like for cpustat, introduce the "gtime" (guest time of the task) and
+> "cgtime" (guest time of the task children) fields for the
+> tasks. Modify signal_struct and task_struct. Modify /proc/<pid>/stat to display
+> these new fields.
+> 
+> [PATCH 3/4] modify account_system_time() to add cputime to cpustat->guest if we
+> are running a VCPU. We add this cputime to  cpustat->user instead of
+> cpustat->system because this part of KVM code is in fact user code although it
+> is executed in the kernel. We duplicate VCPU time between guest and user to
+> allow an unmodified "top(1)" to display correct value. A modified "top(1)" is
+> able to display good cpu user time and cpu guest time by subtracting cpu guest
+> time from cpu user time. Update "gtime" and "cgtime" in signal_struct and
+> task_struct accordingly.
+> 
+> [PATCH 4/4] Modify KVM to update guest time accounting.
 
-Instead of plain NULL deref we better throw error
-message with a backtrace. Actually we need more
-gracious error handling here. Meanwhile leave it
-as is.
-
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-Cc: yinghai@kernel.org
-LKML-Reference: <20090801075435.769301745@openvz.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/kernel/apic/io_apic.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index ffd8fdf..2a145d3 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -503,6 +503,10 @@ static void add_pin_to_irq_node(struct irq_cfg *cfg, int node, int apic, int pin
- 	}
- 
- 	entry = get_one_free_irq_2_pin(node);
-+	if (!entry) {
-+		printk(KERN_ERR "can not alloc irq_pin_list\n");
-+		BUG_ON(1);
-+	}
- 	entry->apic = apic;
- 	entry->pin = pin;
- 
+Isn't this exactly what CONFIG_VIRT_CPU_ACCOUNTING is about?
