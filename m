@@ -1,64 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755571AbZHDOUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755518AbZHDOWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755571AbZHDOUb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 10:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755479AbZHDOUa
+	id S1755518AbZHDOWy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 10:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbZHDOWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 10:20:30 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:60308 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755354AbZHDOU3 (ORCPT
+	Tue, 4 Aug 2009 10:22:53 -0400
+Received: from ru.mvista.com ([213.79.90.228]:46457 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754569AbZHDOWx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 10:20:29 -0400
-From: Hannes Hering <hannes.hering@linux.vnet.ibm.com>
-To: David Miller <davem@davemloft.net>
-Subject: [PATCH 2.6.31] ehea: Fix napi list corruption on ifconfig down
-Date: Tue, 4 Aug 2009 16:20:15 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.26-2-amd64; KDE/4.2.2; x86_64; ; )
-Organization: IBM
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org, ossrosch@linux.vnet.ibm.com,
-       ossthema@de.ibm.com, raisch@de.ibm.com, themann@de.ibm.com,
-       osstklei@de.ibm.com
+	Tue, 4 Aug 2009 10:22:53 -0400
+Date: Tue, 4 Aug 2009 18:22:50 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: Ang: Re: [PATCH 0/2] Setting GPIOs simultaneously
+Message-ID: <20090804142250.GA17398@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090713222005.GA19859@oksana.dev.rtsoft.ru>
+ <20090713151911.GA28114@oksana.dev.rtsoft.ru>
+ <OFF188389D.68E638A2-ONC12575F2.00568C5B-C12575F2.0057FC95@transmode.se>
+ <20090713173455.GA9866@oksana.dev.rtsoft.ru>
+ <OF9378E65D.FBBCCFD5-ONC12575F2.006B28D5-C12575F2.006DDAE5@transmode.se>
+ <OF613F53BF.1FD77EDB-ONC12575F3.00753535-C12575F3.00753537@transmode.se>
+ <20090714220931.GA11378@oksana.dev.rtsoft.ru>
+ <OF9A2BDEDE.DC0DE0D4-ONC1257608.004A7A59-C1257608.004AF3BF@transmode.se>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200908041620.16542.hannes.hering@linux.vnet.ibm.com>
+In-Reply-To: <OF9A2BDEDE.DC0DE0D4-ONC1257608.004A7A59-C1257608.004AF3BF@transmode.se>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the napi list handling when an ehea interface is shut down to
-avoid corruption of the napi list.
+On Tue, Aug 04, 2009 at 03:38:40PM +0200, Joakim Tjernlund wrote:
+> Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 15/07/2009 00:09:31:
+> >
+> > On Tue, Jul 14, 2009 at 11:20:13PM +0200, Joakim Tjernlund wrote:
+> > [...]
+> > > >But any users of the legacy bindings should be in-tree.
+> > >
+> > > ehh, it was working until you made it OF only. Why do call the native
+> > > way legacy?  It is the method all non OF arch uses.
+> >
+> > It's legacy because there are no in-tree users anymore. Nowadays
+> > we're trying to pass all needed information via OF, and we're
+> > trying to avoid ugly platform-dependant hacks. Your SPI scheme
+> > can be easily described via OF, but sure, it's hard to implement
+> > it with the current SPI/OF subsystem.
+> 
+> Sorry for the long delay, I have been on vaction and been busy with other stuff.
+> 
+> Tell me, how does this new OF SPI device scheme work out if you want
+> to use the bitbanged SPI driver?
 
-Signed-off-by: Hannes Hering <hering2@de.ibm.com>
+spi-controller {
+	...
+	compatible = "generic-bitbang-spi";
+	gpios = <GPIO_CLK GPIO_MOSI GPIO_MISO>;
+	spi,chip-select-machines = <&gpio_csm &board_csm>;
 
----
+	gpio_csm: chip-select-machine {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatible = "generic-gpio-csm";
+		gpios = <GPIO_CS1 GPIO_CS2>;
 
-diff -Nurp -X dontdiff linux-2.6.31-rc5/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
---- linux-2.6.31-rc5/drivers/net/ehea/ehea.h	2009-08-01 02:40:45.000000000 +0200
-+++ patched_kernel/drivers/net/ehea/ehea.h	2009-08-03 17:59:26.696079433 +0200
-@@ -40,7 +40,7 @@
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0101"
-+#define DRV_VERSION	"EHEA_0102"
- 
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
-diff -Nurp -X dontdiff linux-2.6.31-rc5/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
---- linux-2.6.31-rc5/drivers/net/ehea/ehea_main.c	2009-08-01 02:40:45.000000000 +0200
-+++ patched_kernel/drivers/net/ehea/ehea_main.c	2009-08-03 17:59:26.696079433 +0200
-@@ -1545,6 +1545,9 @@ static int ehea_clean_portres(struct ehe
- {
- 	int ret, i;
- 
-+	if (pr->qp)
-+		netif_napi_del(&pr->napi);
-+
- 	ret = ehea_destroy_qp(pr->qp);
- 
- 	if (!ret) {
+		touchscreen@0 {
+			reg = <0>; /* using GPIO CS1 */
+		};
+
+		eeprom@1 {
+			reg = <1>; /* using GPIO CS2 */
+		};
+	};
+};
+
+localbus {
+	...
+	board_csm: chip-select-machine {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		compatibe = "board-specific-csm";
+
+		light-sensor@0 {
+			reg = <0>; /* using board-specific "CS3" */
+		};
+
+		battery@1 {
+			reg = <1>; /* using board-specific "CS4" */
+		};
+	};
+};
+
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
