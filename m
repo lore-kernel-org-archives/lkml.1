@@ -1,57 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933369AbZHDTPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933353AbZHDTQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933369AbZHDTPd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 15:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933361AbZHDTPb
+	id S933353AbZHDTQv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 15:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933322AbZHDTQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 15:15:31 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:60799 "EHLO e5.ny.us.ibm.com"
+	Tue, 4 Aug 2009 15:16:50 -0400
+Received: from mga11.intel.com ([192.55.52.93]:14251 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933359AbZHDTP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 15:15:28 -0400
-Subject: Re: mnt_want_write_file() has problem?
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Al Viro <viro@zeniv.linux.org.uk>, Nick Piggin <npiggin@suse.de>,
-       linux-kernel@vger.kernel.org, akpm <akpm@linuxfoundation.org>
-In-Reply-To: <871vnt7vac.fsf@devron.myhome.or.jp>
-References: <871vnt7vac.fsf@devron.myhome.or.jp>
-Content-Type: text/plain
-Date: Tue, 04 Aug 2009 12:15:19 -0700
-Message-Id: <1249413319.11056.131.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	id S933106AbZHDTQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 15:16:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,323,1246863600"; 
+   d="scan'208";a="713871232"
+Message-Id: <20090804190729.630510000@intel.com>
+References: <20090804190729.477649000@intel.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 04 Aug 2009 12:07:09 -0700
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
+Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Jay Fenlason <fenlason@redhat.com>
+Subject: [patch 2/2] x86: arch specific support for remapping HPET MSIs
+Content-Disposition: inline; filename=add_x86_support_for_hpet_msi_intr_remap.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-03 at 06:36 +0900, OGAWA Hirofumi wrote:
-> diff -puN fs/namespace.c~mnt_want_write-wrong-assume fs/namespace.c
-> ---
-> linux-2.6/fs/namespace.c~mnt_want_write-wrong-assume        2009-08-03
-> 04:33:35.000000000 +0900
-> +++ linux-2.6-hirofumi/fs/namespace.c   2009-08-03 04:31:34.000000000
-> +0900
-> @@ -316,7 +316,8 @@ EXPORT_SYMBOL_GPL(mnt_clone_write);
->   */
->  int mnt_want_write_file(struct file *file)
->  {
-> -       if (!(file->f_mode & FMODE_WRITE))
-> +       struct inode *inode = file->f_dentry->d_inode;
-> +       if (!(file->f_mode & FMODE_WRITE) || special_file(inode->i_mode))
->                 return mnt_want_write(file->f_path.mnt);
->         else
->                 return mnt_clone_write(file->f_path.mnt);
+x86 arch support for remapping HPET MSI's by associating the HPET timer block
+with the interrupt-remapping HW unit and setting up appropriate irq_chip
 
-I'm fine with this.  I'd like a debugging check in mnt_clone_write()
-since this bug is easy to detect, but such a check will also cost all of
-the performance gains that Nick added.  So, we can't have it
-unconditionally.
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Jay Fenlason <fenlason@redhat.com>
+---
+
+Index: tip/arch/x86/include/asm/hpet.h
+===================================================================
+--- tip.orig/arch/x86/include/asm/hpet.h
++++ tip/arch/x86/include/asm/hpet.h
+@@ -65,6 +65,7 @@
+ /* hpet memory map physical address */
+ extern unsigned long hpet_address;
+ extern unsigned long force_hpet_address;
++extern u8 hpet_blockid;
+ extern int hpet_force_user;
+ extern int is_hpet_enabled(void);
+ extern int hpet_enable(void);
+@@ -78,9 +79,9 @@ extern void hpet_msi_write(unsigned int 
+ extern void hpet_msi_read(unsigned int irq, struct msi_msg *msg);
+ 
+ #ifdef CONFIG_PCI_MSI
+-extern int arch_setup_hpet_msi(unsigned int irq);
++extern int arch_setup_hpet_msi(unsigned int irq, unsigned int id);
+ #else
+-static inline int arch_setup_hpet_msi(unsigned int irq)
++static inline int arch_setup_hpet_msi(unsigned int irq, unsigned int id)
+ {
+ 	return -EINVAL;
+ }
+Index: tip/arch/x86/kernel/acpi/boot.c
+===================================================================
+--- tip.orig/arch/x86/kernel/acpi/boot.c
++++ tip/arch/x86/kernel/acpi/boot.c
+@@ -624,6 +624,7 @@ static int __init acpi_parse_hpet(struct
+ 	}
+ 
+ 	hpet_address = hpet_tbl->address.address;
++	hpet_blockid = hpet_tbl->sequence;
+ 
+ 	/*
+ 	 * Some broken BIOSes advertise HPET at 0x0. We really do not
+Index: tip/arch/x86/kernel/apic/io_apic.c
+===================================================================
+--- tip.orig/arch/x86/kernel/apic/io_apic.c
++++ tip/arch/x86/kernel/apic/io_apic.c
+@@ -3197,7 +3197,8 @@ void destroy_irq(unsigned int irq)
+  * MSI message composition
+  */
+ #ifdef CONFIG_PCI_MSI
+-static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq, struct msi_msg *msg)
++static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq,
++			   struct msi_msg *msg, u8 hpet_id)
+ {
+ 	struct irq_cfg *cfg;
+ 	int err;
+@@ -3231,7 +3232,10 @@ static int msi_compose_msg(struct pci_de
+ 		irte.dest_id = IRTE_DEST(dest);
+ 
+ 		/* Set source-id of interrupt request */
+-		set_msi_sid(&irte, pdev);
++		if (pdev)
++			set_msi_sid(&irte, pdev);
++		else
++			set_hpet_sid(&irte, hpet_id);
+ 
+ 		modify_irte(irq, &irte);
+ 
+@@ -3396,7 +3400,7 @@ static int setup_msi_irq(struct pci_dev 
+ 	int ret;
+ 	struct msi_msg msg;
+ 
+-	ret = msi_compose_msg(dev, irq, &msg);
++	ret = msi_compose_msg(dev, irq, &msg, -1);
+ 	if (ret < 0)
+ 		return ret;
+ 
+@@ -3529,7 +3533,7 @@ int arch_setup_dmar_msi(unsigned int irq
+ 	int ret;
+ 	struct msi_msg msg;
+ 
+-	ret = msi_compose_msg(NULL, irq, &msg);
++	ret = msi_compose_msg(NULL, irq, &msg, -1);
+ 	if (ret < 0)
+ 		return ret;
+ 	dmar_msi_write(irq, &msg);
+@@ -3569,6 +3573,19 @@ static int hpet_msi_set_affinity(unsigne
+ 
+ #endif /* CONFIG_SMP */
+ 
++static struct irq_chip ir_hpet_msi_type = {
++	.name = "IR-HPET_MSI",
++	.unmask = hpet_msi_unmask,
++	.mask = hpet_msi_mask,
++#ifdef CONFIG_INTR_REMAP
++	.ack = ir_ack_apic_edge,
++#ifdef CONFIG_SMP
++	.set_affinity = ir_set_msi_irq_affinity,
++#endif
++#endif
++	.retrigger = ioapic_retrigger_irq,
++};
++
+ static struct irq_chip hpet_msi_type = {
+ 	.name = "HPET_MSI",
+ 	.unmask = hpet_msi_unmask,
+@@ -3580,20 +3597,36 @@ static struct irq_chip hpet_msi_type = {
+ 	.retrigger = ioapic_retrigger_irq,
+ };
+ 
+-int arch_setup_hpet_msi(unsigned int irq)
++int arch_setup_hpet_msi(unsigned int irq, unsigned int id)
+ {
+ 	int ret;
+ 	struct msi_msg msg;
+ 	struct irq_desc *desc = irq_to_desc(irq);
+ 
+-	ret = msi_compose_msg(NULL, irq, &msg);
++	if (intr_remapping_enabled) {
++		struct intel_iommu *iommu = map_hpet_to_ir(id);
++		int index;
++
++		if (!iommu)
++			return -1;
++
++		index = alloc_irte(iommu, irq, 1);
++		if (index < 0)
++			return -1;
++	}
++
++	ret = msi_compose_msg(NULL, irq, &msg, id);
+ 	if (ret < 0)
+ 		return ret;
+ 
+ 	hpet_msi_write(irq, &msg);
+ 	desc->status |= IRQ_MOVE_PCNTXT;
+-	set_irq_chip_and_handler_name(irq, &hpet_msi_type, handle_edge_irq,
+-		"edge");
++	if (irq_remapped(irq))
++		set_irq_chip_and_handler_name(irq, &ir_hpet_msi_type,
++					      handle_edge_irq, "edge");
++	else
++		set_irq_chip_and_handler_name(irq, &hpet_msi_type,
++					      handle_edge_irq, "edge");
+ 
+ 	return 0;
+ }
+Index: tip/arch/x86/kernel/hpet.c
+===================================================================
+--- tip.orig/arch/x86/kernel/hpet.c
++++ tip/arch/x86/kernel/hpet.c
+@@ -33,6 +33,7 @@
+  * HPET address is set in acpi/boot.c, when an ACPI entry exists
+  */
+ unsigned long				hpet_address;
++u8					hpet_blockid; /* OS timer block num */
+ #ifdef CONFIG_PCI_MSI
+ static unsigned long			hpet_num_timers;
+ #endif
+@@ -467,7 +468,7 @@ static int hpet_msi_next_event(unsigned 
+ 
+ static int hpet_setup_msi_irq(unsigned int irq)
+ {
+-	if (arch_setup_hpet_msi(irq)) {
++	if (arch_setup_hpet_msi(irq, hpet_blockid)) {
+ 		destroy_irq(irq);
+ 		return -EINVAL;
+ 	}
 
 -- 
-
-Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
-
--- Dave
 
