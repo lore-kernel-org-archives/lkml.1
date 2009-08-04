@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932802AbZHDVB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932744AbZHDVD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932802AbZHDVB1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 17:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932652AbZHDVB0
+	id S932744AbZHDVD7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 17:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932582AbZHDVD6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 17:01:26 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:38835 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932648AbZHDVBZ (ORCPT
+	Tue, 4 Aug 2009 17:03:58 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:53956 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932573AbZHDVD5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 17:01:25 -0400
-Date: Tue, 4 Aug 2009 16:01:01 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org, jmorris@namei.org,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 4/6] KEYS: Add garbage collection for dead, revoked and
-	expired keys.
-Message-ID: <20090804210101.GB13499@us.ibm.com>
-References: <20090804184334.GC8442@us.ibm.com> <20090804145530.17676.24656.stgit@warthog.procyon.org.uk> <20090804145546.17676.98776.stgit@warthog.procyon.org.uk> <5007.1249417827@redhat.com>
+	Tue, 4 Aug 2009 17:03:57 -0400
+Date: Tue, 4 Aug 2009 22:03:42 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Antonio Ospite <ospite@studenti.unina.it>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Daniel Ribeiro <drwyrm@gmail.com>, Samuel Ortiz <sameo@linux.intel.com>,
+       eric.y.miao@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       openezx-devel@lists.openezx.org,
+       Stefan Schmidt <stefan@datenfreihafen.org>
+Message-ID: <20090804210342.GC29518@sirena.org.uk>
+References: <1249291800-15316-1-git-send-email-drwyrm@gmail.com>
+ <20090803172125.2A490526EA5@mailhub.coreip.homeip.net>
+ <20090804225247.8a0bf6d4.ospite@studenti.unina.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <5007.1249417827@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090804225247.8a0bf6d4.ospite@studenti.unina.it>
+X-Cookie: Are you sure the back door is locked?
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: Re: [PATCH v2] input: PCAP2 based touchscreen driver
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting David Howells (dhowells@redhat.com):
-> Serge E. Hallyn <serue@us.ibm.com> wrote:
-> 
-> > These two lines (repeated below) beg for a helper?
-> 
-> Yeah...  Seems reasonable.
-> 
-> > Can this happen?  This implies that the number of live keys
-> > went up, but we're under keyring->sem?
-> 
-> An expired key can be updated back to life:
-> 
-> 	[root@andromeda ~]# keyctl  add user a a @s
-> 	619170185
-> 	[root@andromeda ~]# keyctl timeout 619170185 5
-> 	[root@andromeda ~]# keyctl  show
-> 	Session Keyring
-> 	       -3 --alswrv      0     0  keyring: _ses
-> 	627083299 --alswrv      0    -1   \_ keyring: _uid.0
-> 	619170185 --alswrv      0     0   \_ user: a
-> 	[root@andromeda ~]# keyctl  show
-> 	Session Keyring
-> 	       -3 --alswrv      0     0  keyring: _ses
-> 	627083299 --alswrv      0    -1   \_ keyring: _uid.0
-> 	619170185: key inaccessible (Key has expired)
-> 	[root@andromeda ~]# keyctl  add user a a @s
-> 	619170185
-> 	[root@andromeda ~]# keyctl  show
-> 	Session Keyring
-> 	       -3 --alswrv      0     0  keyring: _ses
-> 	627083299 --alswrv      0    -1   \_ keyring: _uid.0
-> 	619170185 --alswrv      0     0   \_ user: a
+On Tue, Aug 04, 2009 at 10:52:47PM +0200, Antonio Ospite wrote:
+> Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
 
-This won't require keyring->sem?
+> > > +static int __devinit pcap_ts_probe(struct platform_device *pdev)
+> > > +{
+> > > +	struct input_dev *input_dev;
+> > > +	struct pcap_ts *pcap_ts;
+> > > +	int err = -ENOMEM;
+> > > +
+> > > +	pcap_ts = kzalloc(sizeof(*pcap_ts), GFP_KERNEL);
+> > > +	if (!pcap_ts)
+> > > +		return err;
+> > > +
+> > > +	pcap_ts->pcap = platform_get_drvdata(pdev);
+> > > +	platform_set_drvdata(pdev, pcap_ts);
 
-> > > +		.data = &key_gc_delay,
-> > 
-> > I see where this variable is defined at top of the patch, but
-> > I don't see where it is actually used?
-> 
-> Bah!  I forgot to add gc.c to the mix.  Sorry about that.
-> 
-> David
+> > Ewww... Don't mess with data that does not belong to you. Also I don't
+> > see where you restore it so after unloading the driver reload with
+> > probably lead to "inetersting" results.
+
+> Dmitry can you suggest a better way to make the pcap_ts pointer get to
+> pcap_ts_remove()? We need it in order to remove the input device.
+> Or keeping this hack, restoring the original value on remove, can be
+> acceptable?
+
+> We will have to fix this also in all other pcap subdrivers.
+
+Two options from other MFDs:
+
+ - Include the data for the input device in the main pcap data; this
+   removes the need to faff around with the 
+ - Always find the main pcap data by using dev_get_drvdata() on the
+   parent device of the child, perhaps keeping a copy of a pointer to
+   it in the local data for simplicity.
