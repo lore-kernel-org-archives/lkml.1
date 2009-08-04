@@ -1,159 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933253AbZHDSba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933259AbZHDSkP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933253AbZHDSba (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 14:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933184AbZHDSba
+	id S933259AbZHDSkP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 14:40:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933144AbZHDSkO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 14:31:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34859 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933160AbZHDSb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 14:31:29 -0400
-Date: Tue, 4 Aug 2009 18:30:54 GMT
-From: tip-bot for Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       johnstul@us.ibm.com, venkatesh.pallipadi@intel.com,
-       schwidefsky@de.ibm.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       johnstul@us.ibm.com, schwidefsky@de.ibm.com,
-       venkatesh.pallipadi@intel.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090721202505.7d56a079@skybase>
-References: <20090721202505.7d56a079@skybase>
-Subject: [tip:timers/core] timers: Cache __next_timer_interrupt result
-Message-ID: <tip-97fd9ed48ce2b807edc363bef3e817aeeb5cd5e6@git.kernel.org>
-Git-Commit-ID: 97fd9ed48ce2b807edc363bef3e817aeeb5cd5e6
-X-Mailer: tip-git-log-daemon
+	Tue, 4 Aug 2009 14:40:14 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:43617 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933112AbZHDSkN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 14:40:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=e/azYgiY/OsIIHiPsgEh0wLLo0eq7oVtF9eaCRUSdfBcZ6uJ3fN+59D44ZTZrO1nPc
+         MqCIwbC2u+YHRjHk0fdtivlhwn01mFdy9CnppGEZLSIInD60Hi/zWYGOiqfYOVRPYC6b
+         pUc+78LfftwQudJlZBdmg0adpRH+lIR6Oh8No=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 04 Aug 2009 18:30:55 +0000 (UTC)
+Date: Tue, 4 Aug 2009 20:40:10 +0200
+Message-ID: <71cd59b00908041140j7bd814d2u90585864fe00415e@mail.gmail.com>
+Subject: Cleaning asus_oled
+From: Corentin Chary <corentin.chary@gmail.com>
+To: Greg Kroah-Hartman <greg@kroah.com>
+Cc: Jakub Schmidtke <sjakub@gmail.com>, acpi4asus-user@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  97fd9ed48ce2b807edc363bef3e817aeeb5cd5e6
-Gitweb:     http://git.kernel.org/tip/97fd9ed48ce2b807edc363bef3e817aeeb5cd5e6
-Author:     Martin Schwidefsky <schwidefsky@de.ibm.com>
-AuthorDate: Tue, 21 Jul 2009 20:25:05 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 4 Aug 2009 20:28:25 +0200
+Hi,
+I'm trying to clean the asus_oled driver, here is my git tree with
+some trivial patchs.
+http://git.iksaif.net/?p=acpi4asus.git;a=shortlog;h=refs/heads/asus_oled
 
-timers: Cache __next_timer_interrupt result
+Before working deeper, I wanted to discuss about the userspace interface:
 
-Each time a cpu goes to sleep on a NOHZ=y system the timer
-wheel is searched for the next timer interrupt. It can take
-quite a few cycles to find the next pending timer.
+> TODO:
+> [...]
+>        - audit the userspace interface
+>                - sysfs vs. char?
 
-This patch adds a field to tvec_base that caches the result of
-__next_timer_interrupt.
+First, should we move asus_oled functionalities in asus-laptop ?
+Then the interface would be in sysfs under
+/sys/devices/platform/asus-laptop/{picture|enable} ?
 
-The hit ratio is around 80% on my thinkpad under normal use, on
-a server I've seen hit ratios from 5% to 95% dependent on the
-workload.
+Else we can use /dev/asus_oled, with an ioctl (or a zero-size image)
+to switch the OLED off.
+But I don't think /sys/class/oled is a good place to be, because
+/sys/class is for generic things.
 
--v2: jiffies wrap fixes
+Thanks,
 
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: john stultz <johnstul@us.ibm.com>
-Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-LKML-Reference: <20090721202505.7d56a079@skybase>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/timer.c |   24 +++++++++++++++++++++++-
- 1 files changed, 23 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/timer.c b/kernel/timer.c
-index 0b36b9e..5c1e49e 100644
---- a/kernel/timer.c
-+++ b/kernel/timer.c
-@@ -72,6 +72,7 @@ struct tvec_base {
- 	spinlock_t lock;
- 	struct timer_list *running_timer;
- 	unsigned long timer_jiffies;
-+	unsigned long next_timer;
- 	struct tvec_root tv1;
- 	struct tvec tv2;
- 	struct tvec tv3;
-@@ -622,6 +623,9 @@ __mod_timer(struct timer_list *timer, unsigned long expires,
- 
- 	if (timer_pending(timer)) {
- 		detach_timer(timer, 0);
-+		if (timer->expires == base->next_timer &&
-+		    !tbase_get_deferrable(timer->base))
-+			base->next_timer = base->timer_jiffies;
- 		ret = 1;
- 	} else {
- 		if (pending_only)
-@@ -663,6 +667,9 @@ __mod_timer(struct timer_list *timer, unsigned long expires,
- 	}
- 
- 	timer->expires = expires;
-+	if (time_before(timer->expires, base->next_timer) &&
-+	    !tbase_get_deferrable(timer->base))
-+		base->next_timer = timer->expires;
- 	internal_add_timer(base, timer);
- 
- out_unlock:
-@@ -781,6 +788,9 @@ void add_timer_on(struct timer_list *timer, int cpu)
- 	spin_lock_irqsave(&base->lock, flags);
- 	timer_set_base(timer, base);
- 	debug_timer_activate(timer);
-+	if (time_before(timer->expires, base->next_timer) &&
-+	    !tbase_get_deferrable(timer->base))
-+		base->next_timer = timer->expires;
- 	internal_add_timer(base, timer);
- 	/*
- 	 * Check whether the other CPU is idle and needs to be
-@@ -817,6 +827,9 @@ int del_timer(struct timer_list *timer)
- 		base = lock_timer_base(timer, &flags);
- 		if (timer_pending(timer)) {
- 			detach_timer(timer, 1);
-+			if (timer->expires == base->next_timer &&
-+			    !tbase_get_deferrable(timer->base))
-+				base->next_timer = base->timer_jiffies;
- 			ret = 1;
- 		}
- 		spin_unlock_irqrestore(&base->lock, flags);
-@@ -850,6 +863,9 @@ int try_to_del_timer_sync(struct timer_list *timer)
- 	ret = 0;
- 	if (timer_pending(timer)) {
- 		detach_timer(timer, 1);
-+		if (timer->expires == base->next_timer &&
-+		    !tbase_get_deferrable(timer->base))
-+			base->next_timer = base->timer_jiffies;
- 		ret = 1;
- 	}
- out:
-@@ -1134,7 +1150,9 @@ unsigned long get_next_timer_interrupt(unsigned long now)
- 	unsigned long expires;
- 
- 	spin_lock(&base->lock);
--	expires = __next_timer_interrupt(base);
-+	if (time_before_eq(base->next_timer, base->timer_jiffies))
-+		base->next_timer = __next_timer_interrupt(base);
-+	expires = base->next_timer;
- 	spin_unlock(&base->lock);
- 
- 	if (time_before_eq(expires, now))
-@@ -1523,6 +1541,7 @@ static int __cpuinit init_timers_cpu(int cpu)
- 		INIT_LIST_HEAD(base->tv1.vec + j);
- 
- 	base->timer_jiffies = jiffies;
-+	base->next_timer = base->timer_jiffies;
- 	return 0;
- }
- 
-@@ -1535,6 +1554,9 @@ static void migrate_timer_list(struct tvec_base *new_base, struct list_head *hea
- 		timer = list_first_entry(head, struct timer_list, entry);
- 		detach_timer(timer, 0);
- 		timer_set_base(timer, new_base);
-+		if (time_before(timer->expires, new_base->next_timer) &&
-+		    !tbase_get_deferrable(timer->base))
-+			new_base->next_timer = timer->expires;
- 		internal_add_timer(new_base, timer);
- 	}
- }
+-- 
+Corentin Chary
+http://xf.iksaif.net - http://uffs.org
