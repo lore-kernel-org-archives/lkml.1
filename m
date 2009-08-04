@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933142AbZHDRY2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933124AbZHDRZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933142AbZHDRY2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 13:24:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932896AbZHDRY1
+	id S933124AbZHDRZd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 13:25:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933100AbZHDRZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 13:24:27 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:56990 "EHLO
+	Tue, 4 Aug 2009 13:25:32 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:55569 "EHLO
 	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932915AbZHDRY0 (ORCPT
+	with ESMTP id S932923AbZHDRZb (ORCPT
 	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 13:24:26 -0400
+	Tue, 4 Aug 2009 13:25:31 -0400
 X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Eric Paris <eparis@redhat.com>
-Cc: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "malware-list@dmesg.printk.net" <malware-list@dmesg.printk.net>,
-       "greg@kroah.com" <greg@kroah.com>, "jcm@redhat.com" <jcm@redhat.com>,
-       Douglas Leeder <douglas.leeder@sophos.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "arjan@infradead.org" <arjan@infradead.org>,
-       "david@lang.hm" <david@lang.hm>,
-       "jengelh@medozas.de" <jengelh@medozas.de>,
-       "aviro@redhat.com" <aviro@redhat.com>,
-       "mrkafk@gmail.com" <mrkafk@gmail.com>,
-       "alexl@redhat.com" <alexl@redhat.com>, "jack@suse.cz" <jack@suse.cz>,
-       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       "mmorley@hcl.in" <mmorley@hcl.in>, "pavel@suse.cz" <pavel@suse.cz>
-Subject: Re: fanotify - overall design before I start sending patches
-In-Reply-To: Your message of "Tue, 04 Aug 2009 12:27:48 EDT."
-             <1249403268.2361.21.camel@dhcp231-106.rdu.redhat.com>
+To: Greg KH <greg@kroah.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Zhang Rui <rui.zhang@intel.com>,
+       linux-acpi <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, Richard Purdie <rpurdie@rpsys.net>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH 0/3] Generic sysfs support for ACPI ALS and other ALS devices
+In-Reply-To: Your message of "Tue, 04 Aug 2009 08:10:42 PDT."
+             <20090804151042.GA20276@kroah.com>
 From: Valdis.Kletnieks@vt.edu
-References: <1248466429.3567.82.camel@localhost> <200908041709.51659.tvrtko.ursulin@sophos.com>
-            <1249403268.2361.21.camel@dhcp231-106.rdu.redhat.com>
+References: <1249290657.2670.250.camel@rzhang-dt> <20090804132129.GH18974@elf.ucw.cz>
+            <20090804151042.GA20276@kroah.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1249406551_4151P";
+Content-Type: multipart/signed; boundary="==_Exmh_1249406664_4151P";
 	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Date: Tue, 04 Aug 2009 13:22:31 -0400
-Message-ID: <19585.1249406551@turing-police.cc.vt.edu>
+Date: Tue, 04 Aug 2009 13:24:24 -0400
+Message-ID: <19631.1249406664@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1249406551_4151P
+--==_Exmh_1249406664_4151P
 Content-Type: text/plain; charset=us-ascii
 
-On Tue, 04 Aug 2009 12:27:48 EDT, Eric Paris said:
-> On Tue, 2009-08-04 at 17:09 +0100, Tvrtko Ursulin wrote:
-> > Would it make more sense to deny on timeouts and then evict? I am thinking it
-> > would be more secure with no significant drawbacks. Also for usages like HSM
-> > allowing it without data being in place might present wrong content to the
-> > user.
->
-> I'd be willing to go that route as long as noone else complains.
+On Tue, 04 Aug 2009 08:10:42 PDT, Greg KH said:
+> On Tue, Aug 04, 2009 at 03:21:29PM +0200, Pavel Machek wrote:
+> > On Mon 2009-08-03 17:10:57, Zhang Rui wrote:
 
-Yes, in my world, "deny on timeout and evict" is the better design decision.
-For an HSM, you'd rather have a quick-and-ugly death on a failed file open than
-an app accidentally reading the HSM's stub data thinking it's the original data.
+> > > 	cat /sys/class/als/als0/mappings
+> > > 	???Illuminance	Adjustment
+> > > 	          0	       70
+> > > 	         10	       73
+> > > 	         80	       85
+> > > 	        300	      100
+> > > 	       1000	      150
+> > 
+> > There's one value per file for sysfs... You should definitely have the
+> > header. 
+> 
+> No, no "header", just don't do this, it's not allowed. Again,
+> one-value-per-sysfs-file is the rule, please do not violate it.
 
---==_Exmh_1249406551_4151P
+What's the intended sysfs solution here, then? Make 'mappings' a directory,
+and populate it with files called 0, 10, 80, 300, 1000, each with one number
+in them?
+
+--==_Exmh_1249406664_4151P
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.9 (GNU/Linux)
 Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFKeG5XcC3lWbTT17ARAgTaAJwMJpFQHwG6kpTzufnNGwkpaqFOxgCbBUnR
-ifyZGbthA+r4NEMya8+W3LE=
-=VEO0
+iD8DBQFKeG7IcC3lWbTT17ARAikQAJ9glOcEz+mjAUyhqyrpCnwzeceSCgCg5K00
+4mFzLaxtgxRvJascRwKWlyw=
+=Ko4l
 -----END PGP SIGNATURE-----
 
---==_Exmh_1249406551_4151P--
+--==_Exmh_1249406664_4151P--
