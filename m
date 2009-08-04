@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932326AbZHDNjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502AbZHDNp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932326AbZHDNjA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 09:39:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932241AbZHDNjA
+	id S1753502AbZHDNp4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 09:45:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZHDNpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 09:39:00 -0400
-Received: from gw1.transmode.se ([213.115.205.20]:54905 "EHLO gw1.transmode.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932236AbZHDNi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 09:38:59 -0400
-In-Reply-To: <20090714220931.GA11378@oksana.dev.rtsoft.ru>
-References: <20090713222005.GA19859@oksana.dev.rtsoft.ru> <20090713151911.GA28114@oksana.dev.rtsoft.ru> <OFF188389D.68E638A2-ONC12575F2.00568C5B-C12575F2.0057FC95@transmode.se> <20090713173455.GA9866@oksana.dev.rtsoft.ru> <OF9378E65D.FBBCCFD5-ONC12575F2.006B28D5-C12575F2.006DDAE5@transmode.se> <OF613F53BF.1FD77EDB-ONC12575F3.00753535-C12575F3.00753537@transmode.se> <20090714220931.GA11378@oksana.dev.rtsoft.ru>
-Subject: Re: Ang: Re: [PATCH 0/2] Setting GPIOs simultaneously
-X-KeepSent: 9A2BDEDE:DC0DE0D4-C1257608:004A7A59;
- type=4; name=$KeepSent
-To: avorontsov@ru.mvista.com
-Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-X-Mailer: Lotus Notes Release 8.5 December 05, 2008
-Message-ID: <OF9A2BDEDE.DC0DE0D4-ONC1257608.004A7A59-C1257608.004AF3BF@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 4 Aug 2009 15:38:40 +0200
-X-MIMETrack: Serialize by Router on sesr04/Transmode(Release 8.5 HF407|May 07, 2009) at
- 2009-08-04 15:38:42
+	Tue, 4 Aug 2009 09:45:55 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:54418 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752992AbZHDNpz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 09:45:55 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Stefani Seibold <stefani@seibold.net>
+Subject: Re: [RFC 0/2] new kfifo API
+Date: Tue, 4 Aug 2009 15:45:37 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <1249306755.8358.8.camel@wall-e> <200908041424.54472.arnd@arndb.de> <1249389877.11474.14.camel@wall-e>
+In-Reply-To: <1249389877.11474.14.camel@wall-e>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200908041545.37329.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18clICoe3s7quEF2WOYmppfYZg0+ulPLmTkwjS
+ JbT5bami8Y8pEvH21n/9eRoZf96c1C9i9dk3cfPLAoW0nXJvyM
+ v8fTt9/kJCP5zu1Ai/lKg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anton Vorontsov <avorontsov@ru.mvista.com> wrote on 15/07/2009 00:09:31:
->
-> On Tue, Jul 14, 2009 at 11:20:13PM +0200, Joakim Tjernlund wrote:
-> [...]
-> > >But any users of the legacy bindings should be in-tree.
-> >
-> > ehh, it was working until you made it OF only. Why do call the native
-> > way legacy?  It is the method all non OF arch uses.
->
-> It's legacy because there are no in-tree users anymore. Nowadays
-> we're trying to pass all needed information via OF, and we're
-> trying to avoid ugly platform-dependant hacks. Your SPI scheme
-> can be easily described via OF, but sure, it's hard to implement
-> it with the current SPI/OF subsystem.
+On Tuesday 04 August 2009, Stefani Seibold wrote:
+> > Your second version is ok in this regard because it uses the original
+> > size logic.
+> 
+> Does it mean you like it now ;-) ???? I think we are on a good way!
 
-Sorry for the long delay, I have been on vaction and been busy with other stuff.
+It looks much better now, but I still think you are doing too many
+things at once, and I disagree about the locking changes.
 
-Tell me, how does this new OF SPI device scheme work out if you want
-to use the bitbanged SPI driver?
+I think it would be best to have an incremental set of patches
+to the original code, along the lines of
 
->
-> [...]
-> > >http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg34738.html
-> > >^^^ I'm dreaming about this framework. I.e. true addressing
-> > >    for chip-selects. :-)
-> >
-> > This is probably needed to support most SPI users out there, but until
-> > such framework is in place I think the native methods need to stay, right?
->
-> I'm not the right person to ask. I can only express my opinions.
-> The maintainer make final decision.
->
-> But if you ask for my opinion, I don't think that they should stay
-> unless we'll see a user in the mainline.
->
-> > As is now, SPI has regressed w.r.t earlier releases.
->
-> Yes and no. Yes, it has "regressed" for out-of-tree code, and no,
-> I don't feel sorry about that. :-)
+[PATCH 1/x] kfifo: preparation code reorg, no functional change
+[PATCH 2/x] kfifo: add DEFINE_KFIFO and friends
+[PATCH 3/x] kfifo: add kfifo_{to,from}_user
+[PATCH 4/x] kfifo: add kfifo_{get,put}_rec
+[PATCH 5/x] kfifo: ...
 
-That is a Yes and some bla bla so the answer is yes.
+About the locking stuff, I think it should best be left in place.
+The __kfifo_{get,put} functions should probably be declared part
+of the official interface and documented as such -- people are
+using them anyways. It's generally a good idea to have the obvious
+interface work in an entirely safe way (kfifo_get doing all the
+locking it might need), with a __foo variant of the same function
+for people that want the extra performance and know what they are
+doing.
 
-   Jocke
+I would also leave out the recsize argument, using an 'unsigned short'
+for the record length unconditionally won't waste any real space but
+simplifies both the implementation and the interface.
 
+Finally, I don't see a reason for the optional KFIFO_F_NOTRIM argument.
+If you have fixed records, I would guess that you always need it
+anyway, so you could just make it the default and remove the function
+argument.
+
+	Arnd <><
