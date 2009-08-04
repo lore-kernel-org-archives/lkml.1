@@ -1,145 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933335AbZHDTHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933341AbZHDTLM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933335AbZHDTHi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 15:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933162AbZHDTHh
+	id S933341AbZHDTLM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 15:11:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933308AbZHDTLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 15:07:37 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43166 "EHLO mx3.mail.elte.hu"
+	Tue, 4 Aug 2009 15:11:11 -0400
+Received: from sandeen.net ([209.173.210.139]:17657 "EHLO mail.sandeen.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933136AbZHDTHg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 15:07:36 -0400
-Date: Tue, 4 Aug 2009 21:07:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [GIT PULL] scheduler fixes
-Message-ID: <20090804190727.GA1318@elte.hu>
+	id S933294AbZHDTLK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 15:11:10 -0400
+Message-ID: <4A7887CE.2060300@sandeen.net>
+Date: Tue, 04 Aug 2009 14:11:10 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ramon de Carvalho Valle <ramon@risesecurity.org>
+CC: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com, hch@lst.de,
+       linux-kernel@vger.kernel.org, mszeredi@novell.com
+Subject: Re: [PATCH 1/1] XFS: xfs_iformat realtime device target pointer check
+References: <1249329808.7686.26.camel@logos>	 <20090803214929.GB3167@infradead.org> <1249351241.7513.18.camel@logos>	 <4A786110.8090404@sandeen.net> <1249411898.7576.19.camel@logos>
+In-Reply-To: <1249411898.7576.19.camel@logos>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Ramon de Carvalho Valle wrote:
+> The xfs_iformat function does not check if the realtime device target pointer
+> is valid when the XFS_DIFLAG_REALTIME flag is set on the ondisk inode
+> structure.
+> 
+> Signed-off-by: Christoph Hellwig <hch@infradead.org>
+> Signed-off-by: Ramon de Carvalho Valle <ramon@risesecurity.org>
+> Cc: stable <stable@kernel.org>
+> ---
+>  fs/xfs/xfs_inode.c |   23 +++++++++++++++++------
+>  1 files changed, 17 insertions(+), 6 deletions(-)
+> 
+> diff --git a/fs/xfs/xfs_inode.c b/fs/xfs/xfs_inode.c
+> index 1f22d65..37d3ee5 100644
+> --- a/fs/xfs/xfs_inode.c
+> +++ b/fs/xfs/xfs_inode.c
+> @@ -343,13 +343,24 @@ xfs_iformat(
+>  		return XFS_ERROR(EFSCORRUPTED);
+>  	}
+>  
+> +	if (unlikely((ip->i_d.di_flags & XFS_DIFLAG_REALTIME) &&
+> +			!ip->i_mount->m_rtdev_targp)) {
+> +		xfs_fs_repair_cmn_err(CE_WARN, ip->i_mount,
+> +			"corrupt dinode %Lu, flags = 0x%x.",
+> +			(unsigned long long)ip->i_ino,
+> +			ip->i_d.di_flags);
+> +		XFS_CORRUPTION_ERROR("xfs_iformat(3)", XFS_ERRLEVEL_LOW,
+> +				     ip->i_mount, dip);
 
-Please pull the latest sched-fixes-for-linus git tree from:
+I think I'd rather not change all the corruption text tag ordering;
+it'll make it harder to track down any common occurrences of
+"xfs_iformat(X)" corruption in the future if they get renumbered now.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git sched-fixes-for-linus
+I'd either make this xfs_iformat(2.1) ;) or just leave it as Christoph
+had.  "realtime" is a lot more informative than "3" anyway.
 
- Thanks,
+-Eric
 
-	Ingo
+> +		return XFS_ERROR(EFSCORRUPTED);
+> +	}
+> +
+>  	switch (ip->i_d.di_mode & S_IFMT) {
+>  	case S_IFIFO:
+>  	case S_IFCHR:
+>  	case S_IFBLK:
+>  	case S_IFSOCK:
+>  		if (unlikely(dip->di_format != XFS_DINODE_FMT_DEV)) {
+> -			XFS_CORRUPTION_ERROR("xfs_iformat(3)", XFS_ERRLEVEL_LOW,
+> +			XFS_CORRUPTION_ERROR("xfs_iformat(4)", XFS_ERRLEVEL_LOW,
+>  					      ip->i_mount, dip);
+>  			return XFS_ERROR(EFSCORRUPTED);
+>  		}
+> @@ -371,7 +382,7 @@ xfs_iformat(
+>  					"corrupt inode %Lu "
+>  					"(local format for regular file).",
+>  					(unsigned long long) ip->i_ino);
+> -				XFS_CORRUPTION_ERROR("xfs_iformat(4)",
+> +				XFS_CORRUPTION_ERROR("xfs_iformat(5)",
+>  						     XFS_ERRLEVEL_LOW,
+>  						     ip->i_mount, dip);
+>  				return XFS_ERROR(EFSCORRUPTED);
+> @@ -384,7 +395,7 @@ xfs_iformat(
+>  					"(bad size %Ld for local inode).",
+>  					(unsigned long long) ip->i_ino,
+>  					(long long) di_size);
+> -				XFS_CORRUPTION_ERROR("xfs_iformat(5)",
+> +				XFS_CORRUPTION_ERROR("xfs_iformat(6)",
+>  						     XFS_ERRLEVEL_LOW,
+>  						     ip->i_mount, dip);
+>  				return XFS_ERROR(EFSCORRUPTED);
+> @@ -400,14 +411,14 @@ xfs_iformat(
+>  			error = xfs_iformat_btree(ip, dip, XFS_DATA_FORK);
+>  			break;
+>  		default:
+> -			XFS_ERROR_REPORT("xfs_iformat(6)", XFS_ERRLEVEL_LOW,
+> +			XFS_ERROR_REPORT("xfs_iformat(7)", XFS_ERRLEVEL_LOW,
+>  					 ip->i_mount);
+>  			return XFS_ERROR(EFSCORRUPTED);
+>  		}
+>  		break;
+>  
+>  	default:
+> -		XFS_ERROR_REPORT("xfs_iformat(7)", XFS_ERRLEVEL_LOW, ip->i_mount);
+> +		XFS_ERROR_REPORT("xfs_iformat(8)", XFS_ERRLEVEL_LOW, ip->i_mount);
+>  		return XFS_ERROR(EFSCORRUPTED);
+>  	}
+>  	if (error) {
+> @@ -430,7 +441,7 @@ xfs_iformat(
+>  				"(bad attr fork size %Ld).",
+>  				(unsigned long long) ip->i_ino,
+>  				(long long) size);
+> -			XFS_CORRUPTION_ERROR("xfs_iformat(8)",
+> +			XFS_CORRUPTION_ERROR("xfs_iformat(9)",
+>  					     XFS_ERRLEVEL_LOW,
+>  					     ip->i_mount, dip);
+>  			return XFS_ERROR(EFSCORRUPTED);
 
------------------->
-Gregory Haskins (1):
-      sched: Fix race in cpupri introduced by cpumask_var changes
-
-Peter Zijlstra (1):
-      sched: Fix latencytop and sleep profiling vs group scheduling
-
-
- kernel/sched_cpupri.c |   15 ++++++++++++++-
- kernel/sched_fair.c   |   32 +++++++++++++++++++-------------
- 2 files changed, 33 insertions(+), 14 deletions(-)
-
-diff --git a/kernel/sched_cpupri.c b/kernel/sched_cpupri.c
-index e6c2517..d014efb 100644
---- a/kernel/sched_cpupri.c
-+++ b/kernel/sched_cpupri.c
-@@ -81,8 +81,21 @@ int cpupri_find(struct cpupri *cp, struct task_struct *p,
- 		if (cpumask_any_and(&p->cpus_allowed, vec->mask) >= nr_cpu_ids)
- 			continue;
- 
--		if (lowest_mask)
-+		if (lowest_mask) {
- 			cpumask_and(lowest_mask, &p->cpus_allowed, vec->mask);
-+
-+			/*
-+			 * We have to ensure that we have at least one bit
-+			 * still set in the array, since the map could have
-+			 * been concurrently emptied between the first and
-+			 * second reads of vec->mask.  If we hit this
-+			 * condition, simply act as though we never hit this
-+			 * priority level and continue on.
-+			 */
-+			if (cpumask_any(lowest_mask) >= nr_cpu_ids)
-+				continue;
-+		}
-+
- 		return 1;
- 	}
- 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 9ffb2b2..652e8bd 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -611,9 +611,13 @@ account_entity_dequeue(struct cfs_rq *cfs_rq, struct sched_entity *se)
- static void enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
- {
- #ifdef CONFIG_SCHEDSTATS
-+	struct task_struct *tsk = NULL;
-+
-+	if (entity_is_task(se))
-+		tsk = task_of(se);
-+
- 	if (se->sleep_start) {
- 		u64 delta = rq_of(cfs_rq)->clock - se->sleep_start;
--		struct task_struct *tsk = task_of(se);
- 
- 		if ((s64)delta < 0)
- 			delta = 0;
-@@ -624,11 +628,11 @@ static void enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
- 		se->sleep_start = 0;
- 		se->sum_sleep_runtime += delta;
- 
--		account_scheduler_latency(tsk, delta >> 10, 1);
-+		if (tsk)
-+			account_scheduler_latency(tsk, delta >> 10, 1);
- 	}
- 	if (se->block_start) {
- 		u64 delta = rq_of(cfs_rq)->clock - se->block_start;
--		struct task_struct *tsk = task_of(se);
- 
- 		if ((s64)delta < 0)
- 			delta = 0;
-@@ -639,17 +643,19 @@ static void enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
- 		se->block_start = 0;
- 		se->sum_sleep_runtime += delta;
- 
--		/*
--		 * Blocking time is in units of nanosecs, so shift by 20 to
--		 * get a milliseconds-range estimation of the amount of
--		 * time that the task spent sleeping:
--		 */
--		if (unlikely(prof_on == SLEEP_PROFILING)) {
--
--			profile_hits(SLEEP_PROFILING, (void *)get_wchan(tsk),
--				     delta >> 20);
-+		if (tsk) {
-+			/*
-+			 * Blocking time is in units of nanosecs, so shift by
-+			 * 20 to get a milliseconds-range estimation of the
-+			 * amount of time that the task spent sleeping:
-+			 */
-+			if (unlikely(prof_on == SLEEP_PROFILING)) {
-+				profile_hits(SLEEP_PROFILING,
-+						(void *)get_wchan(tsk),
-+						delta >> 20);
-+			}
-+			account_scheduler_latency(tsk, delta >> 10, 0);
- 		}
--		account_scheduler_latency(tsk, delta >> 10, 0);
- 	}
- #endif
- }
