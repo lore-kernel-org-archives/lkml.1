@@ -1,102 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933254AbZHDVzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933360AbZHDVzD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933254AbZHDVzb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 17:55:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933191AbZHDVxF
+	id S933360AbZHDVzD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 17:55:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933245AbZHDVy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 17:53:05 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43941 "EHLO
+	Tue, 4 Aug 2009 17:54:59 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:43944 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933085AbZHDVxE (ORCPT
+	with ESMTP id S933210AbZHDVxH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 17:53:04 -0400
+	Tue, 4 Aug 2009 17:53:07 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200908041152.240876191@firstfloor.org>
 In-Reply-To: <200908041152.240876191@firstfloor.org>
-To: akpm@linux-foundation.org, linux-mm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, fengguang.wu@intel.com
-Subject: [PATCH] [5/15] HWPOISON: Add basic support for poisoned pages in fault handler v3
-Message-Id: <20090804215304.4AFB3B15D8@basil.firstfloor.org>
-Date: Tue,  4 Aug 2009 23:53:04 +0200 (CEST)
+To: Lee.Schermerhorn@hp.com, npiggin@suse.de, akpm@linux-foundation.org,
+       linux-mm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       fengguang.wu@intel.com
+Subject: [PATCH] [8/15] HWPOISON: Use bitmask/action code for try_to_unmap behaviour
+Message-Id: <20090804215307.52A48B15D8@basil.firstfloor.org>
+Date: Tue,  4 Aug 2009 23:53:07 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-- Add a new VM_FAULT_HWPOISON error code to handle_mm_fault. Right now
-architectures have to explicitely enable poison page support, so
-this is forward compatible to all architectures. They only need
-to add it when they enable poison page support.
-- Add poison page handling in swap in fault code
+try_to_unmap currently has multiple modi (migration, munlock, normal unmap)
+which are selected by magic flag variables. The logic is not very straight
+forward, because each of these flag change multiple behaviours (e.g.
+migration turns off aging, not only sets up migration ptes etc.)
+Also the different flags interact in magic ways.
 
-v2: Add missing delayacct_clear_flag (Hidehiro Kawai)
-v3: Really use delayacct_clear_flag (Hidehiro Kawai)
+A later patch in this series adds another mode to try_to_unmap, so 
+this becomes quickly unmanageable.
+
+Replace the different flags with a action code (migration, munlock, munmap)
+and some additional flags as modifiers (ignore mlock, ignore aging).
+This makes the logic more straight forward and allows easier extension
+to new behaviours. Change all the caller to declare what they want to 
+do.
+
+This patch is supposed to be a nop in behaviour. If anyone can prove 
+it is not that would be a bug.
+
+Cc: Lee.Schermerhorn@hp.com
+Cc: npiggin@suse.de
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/linux/mm.h |    3 ++-
- mm/memory.c        |   18 +++++++++++++++---
- 2 files changed, 17 insertions(+), 4 deletions(-)
+ include/linux/rmap.h |   13 ++++++++++++-
+ mm/migrate.c         |    2 +-
+ mm/rmap.c            |   40 ++++++++++++++++++++++------------------
+ mm/vmscan.c          |    2 +-
+ 4 files changed, 36 insertions(+), 21 deletions(-)
 
-Index: linux/mm/memory.c
+Index: linux/include/linux/rmap.h
 ===================================================================
---- linux.orig/mm/memory.c
-+++ linux/mm/memory.c
-@@ -1319,7 +1319,8 @@ int __get_user_pages(struct task_struct
- 				if (ret & VM_FAULT_ERROR) {
- 					if (ret & VM_FAULT_OOM)
- 						return i ? i : -ENOMEM;
--					else if (ret & VM_FAULT_SIGBUS)
-+					if (ret &
-+					    (VM_FAULT_HWPOISON|VM_FAULT_SIGBUS))
- 						return i ? i : -EFAULT;
- 					BUG();
- 				}
-@@ -2511,8 +2512,15 @@ static int do_swap_page(struct mm_struct
- 		goto out;
- 
- 	entry = pte_to_swp_entry(orig_pte);
--	if (is_migration_entry(entry)) {
--		migration_entry_wait(mm, pmd, address);
-+	if (unlikely(non_swap_entry(entry))) {
-+		if (is_migration_entry(entry)) {
-+			migration_entry_wait(mm, pmd, address);
-+		} else if (is_hwpoison_entry(entry)) {
-+			ret = VM_FAULT_HWPOISON;
-+		} else {
-+			print_bad_pte(vma, address, pte, NULL);
-+			ret = VM_FAULT_OOM;
-+		}
- 		goto out;
- 	}
- 	delayacct_set_flag(DELAYACCT_PF_SWAPIN);
-@@ -2536,6 +2544,10 @@ static int do_swap_page(struct mm_struct
- 		/* Had to read the page from swap area: Major fault */
- 		ret = VM_FAULT_MAJOR;
- 		count_vm_event(PGMAJFAULT);
-+	} else if (PageHWPoison(page)) {
-+		ret = VM_FAULT_HWPOISON;
-+		delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
-+		goto out;
- 	}
- 
- 	lock_page(page);
-Index: linux/include/linux/mm.h
-===================================================================
---- linux.orig/include/linux/mm.h
-+++ linux/include/linux/mm.h
-@@ -700,11 +700,12 @@ static inline int page_mapped(struct pag
- #define VM_FAULT_SIGBUS	0x0002
- #define VM_FAULT_MAJOR	0x0004
- #define VM_FAULT_WRITE	0x0008	/* Special case for get_user_pages */
-+#define VM_FAULT_HWPOISON 0x0010	/* Hit poisoned page */
- 
- #define VM_FAULT_NOPAGE	0x0100	/* ->fault installed the pte, not return page */
- #define VM_FAULT_LOCKED	0x0200	/* ->fault locked the returned page */
- 
--#define VM_FAULT_ERROR	(VM_FAULT_OOM | VM_FAULT_SIGBUS)
-+#define VM_FAULT_ERROR	(VM_FAULT_OOM | VM_FAULT_SIGBUS | VM_FAULT_HWPOISON)
+--- linux.orig/include/linux/rmap.h
++++ linux/include/linux/rmap.h
+@@ -85,7 +85,18 @@ static inline void page_dup_rmap(struct
+  */
+ int page_referenced(struct page *, int is_locked,
+ 			struct mem_cgroup *cnt, unsigned long *vm_flags);
+-int try_to_unmap(struct page *, int ignore_refs);
++enum ttu_flags {
++	TTU_UNMAP = 0,			/* unmap mode */
++	TTU_MIGRATION = 1,		/* migration mode */
++	TTU_MUNLOCK = 2,		/* munlock mode */
++	TTU_ACTION_MASK = 0xff,
++
++	TTU_IGNORE_MLOCK = (1 << 8),	/* ignore mlock */
++	TTU_IGNORE_ACCESS = (1 << 9),	/* don't age */
++};
++#define TTU_ACTION(x) ((x) & TTU_ACTION_MASK)
++
++int try_to_unmap(struct page *, enum ttu_flags flags);
  
  /*
-  * Can be called by the pagefault handler when it gets a VM_FAULT_OOM.
+  * Called from mm/filemap_xip.c to unmap empty zero page
+Index: linux/mm/rmap.c
+===================================================================
+--- linux.orig/mm/rmap.c
++++ linux/mm/rmap.c
+@@ -773,7 +773,7 @@ void page_remove_rmap(struct page *page)
+  * repeatedly from either try_to_unmap_anon or try_to_unmap_file.
+  */
+ static int try_to_unmap_one(struct page *page, struct vm_area_struct *vma,
+-				int migration)
++				enum ttu_flags flags)
+ {
+ 	struct mm_struct *mm = vma->vm_mm;
+ 	unsigned long address;
+@@ -795,11 +795,13 @@ static int try_to_unmap_one(struct page
+ 	 * If it's recently referenced (perhaps page_referenced
+ 	 * skipped over this mm) then we should reactivate it.
+ 	 */
+-	if (!migration) {
++	if (!(flags & TTU_IGNORE_MLOCK)) {
+ 		if (vma->vm_flags & VM_LOCKED) {
+ 			ret = SWAP_MLOCK;
+ 			goto out_unmap;
+ 		}
++	}
++	if (!(flags & TTU_IGNORE_ACCESS)) {
+ 		if (ptep_clear_flush_young_notify(vma, address, pte)) {
+ 			ret = SWAP_FAIL;
+ 			goto out_unmap;
+@@ -839,12 +841,12 @@ static int try_to_unmap_one(struct page
+ 			 * pte. do_swap_page() will wait until the migration
+ 			 * pte is removed and then restart fault handling.
+ 			 */
+-			BUG_ON(!migration);
++			BUG_ON(TTU_ACTION(flags) != TTU_MIGRATION);
+ 			entry = make_migration_entry(page, pte_write(pteval));
+ 		}
+ 		set_pte_at(mm, address, pte, swp_entry_to_pte(entry));
+ 		BUG_ON(pte_file(*pte));
+-	} else if (PAGE_MIGRATION && migration) {
++	} else if (PAGE_MIGRATION && (TTU_ACTION(flags) == TTU_MIGRATION)) {
+ 		/* Establish migration entry for a file page */
+ 		swp_entry_t entry;
+ 		entry = make_migration_entry(page, pte_write(pteval));
+@@ -1013,12 +1015,13 @@ static int try_to_mlock_page(struct page
+  * vm_flags for that VMA.  That should be OK, because that vma shouldn't be
+  * 'LOCKED.
+  */
+-static int try_to_unmap_anon(struct page *page, int unlock, int migration)
++static int try_to_unmap_anon(struct page *page, enum ttu_flags flags)
+ {
+ 	struct anon_vma *anon_vma;
+ 	struct vm_area_struct *vma;
+ 	unsigned int mlocked = 0;
+ 	int ret = SWAP_AGAIN;
++	int unlock = TTU_ACTION(flags) == TTU_MUNLOCK;
+ 
+ 	if (MLOCK_PAGES && unlikely(unlock))
+ 		ret = SWAP_SUCCESS;	/* default for try_to_munlock() */
+@@ -1034,7 +1037,7 @@ static int try_to_unmap_anon(struct page
+ 				continue;  /* must visit all unlocked vmas */
+ 			ret = SWAP_MLOCK;  /* saw at least one mlocked vma */
+ 		} else {
+-			ret = try_to_unmap_one(page, vma, migration);
++			ret = try_to_unmap_one(page, vma, flags);
+ 			if (ret == SWAP_FAIL || !page_mapped(page))
+ 				break;
+ 		}
+@@ -1058,8 +1061,7 @@ static int try_to_unmap_anon(struct page
+ /**
+  * try_to_unmap_file - unmap/unlock file page using the object-based rmap method
+  * @page: the page to unmap/unlock
+- * @unlock:  request for unlock rather than unmap [unlikely]
+- * @migration:  unmapping for migration - ignored if @unlock
++ * @flags: action and flags
+  *
+  * Find all the mappings of a page using the mapping pointer and the vma chains
+  * contained in the address_space struct it points to.
+@@ -1071,7 +1073,7 @@ static int try_to_unmap_anon(struct page
+  * vm_flags for that VMA.  That should be OK, because that vma shouldn't be
+  * 'LOCKED.
+  */
+-static int try_to_unmap_file(struct page *page, int unlock, int migration)
++static int try_to_unmap_file(struct page *page, enum ttu_flags flags)
+ {
+ 	struct address_space *mapping = page->mapping;
+ 	pgoff_t pgoff = page->index << (PAGE_CACHE_SHIFT - PAGE_SHIFT);
+@@ -1083,6 +1085,7 @@ static int try_to_unmap_file(struct page
+ 	unsigned long max_nl_size = 0;
+ 	unsigned int mapcount;
+ 	unsigned int mlocked = 0;
++	int unlock = TTU_ACTION(flags) == TTU_MUNLOCK;
+ 
+ 	if (MLOCK_PAGES && unlikely(unlock))
+ 		ret = SWAP_SUCCESS;	/* default for try_to_munlock() */
+@@ -1095,7 +1098,7 @@ static int try_to_unmap_file(struct page
+ 				continue;	/* must visit all vmas */
+ 			ret = SWAP_MLOCK;
+ 		} else {
+-			ret = try_to_unmap_one(page, vma, migration);
++			ret = try_to_unmap_one(page, vma, flags);
+ 			if (ret == SWAP_FAIL || !page_mapped(page))
+ 				goto out;
+ 		}
+@@ -1120,7 +1123,8 @@ static int try_to_unmap_file(struct page
+ 			ret = SWAP_MLOCK;	/* leave mlocked == 0 */
+ 			goto out;		/* no need to look further */
+ 		}
+-		if (!MLOCK_PAGES && !migration && (vma->vm_flags & VM_LOCKED))
++		if (!MLOCK_PAGES && !(flags & TTU_IGNORE_MLOCK) &&
++			(vma->vm_flags & VM_LOCKED))
+ 			continue;
+ 		cursor = (unsigned long) vma->vm_private_data;
+ 		if (cursor > max_nl_cursor)
+@@ -1154,7 +1158,7 @@ static int try_to_unmap_file(struct page
+ 	do {
+ 		list_for_each_entry(vma, &mapping->i_mmap_nonlinear,
+ 						shared.vm_set.list) {
+-			if (!MLOCK_PAGES && !migration &&
++			if (!MLOCK_PAGES && !(flags & TTU_IGNORE_MLOCK) &&
+ 			    (vma->vm_flags & VM_LOCKED))
+ 				continue;
+ 			cursor = (unsigned long) vma->vm_private_data;
+@@ -1194,7 +1198,7 @@ out:
+ /**
+  * try_to_unmap - try to remove all page table mappings to a page
+  * @page: the page to get unmapped
+- * @migration: migration flag
++ * @flags: action and flags
+  *
+  * Tries to remove all the page table entries which are mapping this
+  * page, used in the pageout path.  Caller must hold the page lock.
+@@ -1205,16 +1209,16 @@ out:
+  * SWAP_FAIL	- the page is unswappable
+  * SWAP_MLOCK	- page is mlocked.
+  */
+-int try_to_unmap(struct page *page, int migration)
++int try_to_unmap(struct page *page, enum ttu_flags flags)
+ {
+ 	int ret;
+ 
+ 	BUG_ON(!PageLocked(page));
+ 
+ 	if (PageAnon(page))
+-		ret = try_to_unmap_anon(page, 0, migration);
++		ret = try_to_unmap_anon(page, flags);
+ 	else
+-		ret = try_to_unmap_file(page, 0, migration);
++		ret = try_to_unmap_file(page, flags);
+ 	if (ret != SWAP_MLOCK && !page_mapped(page))
+ 		ret = SWAP_SUCCESS;
+ 	return ret;
+@@ -1239,8 +1243,8 @@ int try_to_munlock(struct page *page)
+ 	VM_BUG_ON(!PageLocked(page) || PageLRU(page));
+ 
+ 	if (PageAnon(page))
+-		return try_to_unmap_anon(page, 1, 0);
++		return try_to_unmap_anon(page, TTU_MUNLOCK);
+ 	else
+-		return try_to_unmap_file(page, 1, 0);
++		return try_to_unmap_file(page, TTU_MUNLOCK);
+ }
+ 
+Index: linux/mm/vmscan.c
+===================================================================
+--- linux.orig/mm/vmscan.c
++++ linux/mm/vmscan.c
+@@ -654,7 +654,7 @@ static unsigned long shrink_page_list(st
+ 		 * processes. Try to unmap it here.
+ 		 */
+ 		if (page_mapped(page) && mapping) {
+-			switch (try_to_unmap(page, 0)) {
++			switch (try_to_unmap(page, TTU_UNMAP)) {
+ 			case SWAP_FAIL:
+ 				goto activate_locked;
+ 			case SWAP_AGAIN:
+Index: linux/mm/migrate.c
+===================================================================
+--- linux.orig/mm/migrate.c
++++ linux/mm/migrate.c
+@@ -669,7 +669,7 @@ static int unmap_and_move(new_page_t get
+ 	}
+ 
+ 	/* Establish migration ptes or remove ptes */
+-	try_to_unmap(page, 1);
++	try_to_unmap(page, TTU_MIGRATION|TTU_IGNORE_MLOCK|TTU_IGNORE_ACCESS);
+ 
+ 	if (!page_mapped(page))
+ 		rc = move_to_new_page(newpage, page);
