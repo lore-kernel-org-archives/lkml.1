@@ -1,85 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933098AbZHDRU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933121AbZHDRXM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933098AbZHDRU4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 13:20:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932811AbZHDRU4
+	id S933121AbZHDRXM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 13:23:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932896AbZHDRXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 13:20:56 -0400
-Received: from ru.mvista.com ([213.79.90.228]:46806 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932832AbZHDRUz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 13:20:55 -0400
-Date: Tue, 4 Aug 2009 21:20:55 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Pierre Ossman <pierre@ossman.eu>
-Cc: akpm@linux-foundation.org, drzeus@drzeus.cx, ian@mnementh.co.uk,
-       matt@console-pimps.org, roberto.foglietta@gmail.com,
-       linux-kernel@vger.kernel.org, sdhci-devel@lists.ossman.eu
-Subject: [PATCH] sdhci: Be more strict with get_min_clock() usage
-Message-ID: <20090804172055.GA9271@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <200907292204.n6TM4GGQ019192@imap1.linux-foundation.org>
- <20090801100443.7a5c2f86@mjolnir.ossman.eu>
+	Tue, 4 Aug 2009 13:23:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57046 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932892AbZHDRXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 13:23:11 -0400
+Date: Tue, 4 Aug 2009 19:19:05 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, eranian@gmail.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       robert.richter@amd.com, paulus@samba.org, andi@firstfloor.org,
+       mpjohn@us.ibm.com, cel@us.ibm.com, cjashfor@us.ibm.com,
+       mucci@eecs.utk.edu, terpstra@eecs.utk.edu,
+       perfmon2-devel@lists.sourceforge.net, mtk.manpages@googlemail.com,
+       roland@redhat.com
+Subject: Re: [PATCH 3/2 -v3] fcntl: F_[SG]ETOWN_EX
+Message-ID: <20090804171905.GA9080@redhat.com>
+References: <20090801012736.GA30259@redhat.com> <1249314498.7924.133.camel@twins> <20090803171619.GA17876@redhat.com> <1249321637.7924.163.camel@twins> <20090803180602.GA19719@redhat.com> <1249324619.4842.1.camel@laptop> <20090803190231.GA22313@redhat.com> <1249385966.7924.204.camel@twins> <20090804162033.GB5211@redhat.com> <1249404763.4762.26.camel@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090801100443.7a5c2f86@mjolnir.ossman.eu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1249404763.4762.26.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-get_min_clock() makes sense only with NONSTANDARD_CLOCK quirk and when
-set_clock() callback is specified.
+On 08/04, Peter Zijlstra wrote:
+>
+> On Tue, 2009-08-04 at 18:20 +0200, Oleg Nesterov wrote:
+>
+> > > +	rcu_read_lock();
+> > > +	pid = find_vpid(owner.pid);
+> > > +	ret = __f_setown(filp, pid, type, 1);
+> > > +	rcu_read_unlock();
+> > > +
+> > > +	return ret;
+> >
+> > Perhaps it makes sense to return -ESRCH if owner.pid && !pid, not
+> > sure.
+>
+> We'd need that case to unset/clear the owner, so returning -ESRCH might
+> confuse users I think.
 
-The patch should cause no functional changes, it just makes the code
-self-documented and avoids any possible misuse of get_min_clock().
+Agreed. Perhaps we should do nothing but return -ESRCH if user passes
+owner->pid != 0 and it is not valid.
 
-Suggested-by: Pierre Ossman <pierre@ossman.eu>
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
+But this is minor and can be tweaked later. (and to clarify again, not
+that I really think we should do this, just a random thought).
 
-On Sat, Aug 01, 2009 at 10:04:43AM +0200, Pierre Ossman wrote:
-[...]
-> Hmm... I don't think this is quite right. Right now you kill the
-> warning without verifying that there is a mechanism to go lower.
-[...]
-> > -	mmc->f_min = host->max_clk / 256;
-> > +	if (host->ops->get_min_clock)
-> > +		mmc->f_min = host->ops->get_min_clock(host);
-> > +	else
-> > +		mmc->f_min = host->max_clk / 256;
-> >  	mmc->f_max = host->max_clk;
-> >  	mmc->caps = MMC_CAP_SDIO_IRQ;
-> 
-> You should be checking ops->set_clock and SDHCI_QUIRK_NONSTANDARD_CLOCK
-> here.
+> How about the below delta, it changes send_sigurg_to_task() to also use
+> do_send_sig_info() which looses the check_kill_permission() check, but
+> your previous changes lost that same thing from SIGIO -- so I'm hoping
+> that's ok.
 
-Well, it makes no sense to specify .get_min_clock() w/o .set_clock().
+Yes, I think this is fine!
 
-But okay, to make things self documented and to avoid misuses, we'd
-better add these checks.
-
-Thanks Pierre!
-
- drivers/mmc/host/sdhci.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index fc96f8c..7f7f45b 100644
---- a/drivers/mmc/host/sdhci.c
-+++ b/drivers/mmc/host/sdhci.c
-@@ -1772,7 +1772,8 @@ int sdhci_add_host(struct sdhci_host *host)
- 	 * Set host parameters.
- 	 */
- 	mmc->ops = &sdhci_ops;
--	if (host->ops->get_min_clock)
-+	if (host->quirks & SDHCI_QUIRK_NONSTANDARD_CLOCK &&
-+			host->ops->set_clock && host->ops->get_min_clock)
- 		mmc->f_min = host->ops->get_min_clock(host);
- 	else
- 		mmc->f_min = host->max_clk / 256;
--- 
-1.6.3.3
+Oleg.
 
