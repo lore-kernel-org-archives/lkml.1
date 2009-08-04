@@ -1,64 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933394AbZHDWAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933415AbZHDWD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933394AbZHDWAx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 18:00:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933193AbZHDWAw
+	id S933415AbZHDWD3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 18:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933403AbZHDWD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 18:00:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54194 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933191AbZHDWAv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 18:00:51 -0400
-Date: Tue, 4 Aug 2009 14:59:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: ieidus@redhat.com, aarcange@redhat.com, riel@redhat.com, chrisw@redhat.com,
-       nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 5/12] ksm: keep quiet while list empty
-Message-Id: <20090804145935.e258cd2f.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0908031313030.16754@sister.anvils>
-References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils>
-	<Pine.LNX.4.64.0908031313030.16754@sister.anvils>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Aug 2009 18:03:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60199 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933400AbZHDWD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 18:03:27 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090804210101.GB13499@us.ibm.com>
+References: <20090804210101.GB13499@us.ibm.com> <20090804184334.GC8442@us.ibm.com> <20090804145530.17676.24656.stgit@warthog.procyon.org.uk> <20090804145546.17676.98776.stgit@warthog.procyon.org.uk> <5007.1249417827@redhat.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: dhowells@redhat.com, torvalds@osdl.org, akpm@linux-foundation.org,
+       jmorris@namei.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 4/6] KEYS: Add garbage collection for dead, revoked and expired keys.
+Date: Tue, 04 Aug 2009 23:00:52 +0100
+Message-ID: <25511.1249423252@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 3 Aug 2009 13:14:03 +0100 (BST)
-Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
+Serge E. Hallyn <serue@us.ibm.com> wrote:
 
-> +		if (ksmd_should_run()) {
->  			schedule_timeout_interruptible(
->  				msecs_to_jiffies(ksm_thread_sleep_millisecs));
->  		} else {
->  			wait_event_interruptible(ksm_thread_wait,
-> -					(ksm_run & KSM_RUN_MERGE) ||
-> -					kthread_should_stop());
-> +				ksmd_should_run() || kthread_should_stop());
->  		}
+> This won't require keyring->sem?
 
-Yields
+Why should it?  A keyring merely points at a key, and if you follow this line
+of argument, then every keyring pointing at a key would have to be locked.
 
-
-		if (ksmd_should_run()) {
-			schedule_timeout_interruptible(
-				msecs_to_jiffies(ksm_thread_sleep_millisecs));
-		} else {
-			wait_event_interruptible(ksm_thread_wait,
-				ksmd_should_run() || kthread_should_stop());
-		}
-
-can it be something like
-
-		wait_event_interruptible_timeout(ksm_thread_wait,
-			ksmd_should_run() || kthread_should_stop(),
-			msecs_to_jiffies(ksm_thread_sleep_millisecs));
-
-?
-
-That would also reduce the latency in responding to kthread_should_stop().
+David
