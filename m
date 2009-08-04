@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbZHDMqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbZHDMv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755464AbZHDMqj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 08:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755446AbZHDMqi
+	id S1755472AbZHDMv6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 08:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755458AbZHDMv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 08:46:38 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:59589 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755444AbZHDMqi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 08:46:38 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Timo Sirainen <tss@iki.fi>
-Subject: Re: rename() a directory over a symlink
-Date: Tue, 4 Aug 2009 14:46:35 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-5-generic; KDE/4.2.98; x86_64; ; )
-References: <1249338691.1216.136.camel@timo-desktop>
-In-Reply-To: <1249338691.1216.136.camel@timo-desktop>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-Cc: linux-kernel@vger.kernel.org
+	Tue, 4 Aug 2009 08:51:58 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51085 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755397AbZHDMv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 08:51:57 -0400
+Message-ID: <4A782FDF.40908@redhat.com>
+Date: Tue, 04 Aug 2009 15:55:59 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
+       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 7/12] ksm: fix endless loop on oom
+References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils> <Pine.LNX.4.64.0908031315200.16754@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0908031315200.16754@sister.anvils>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200908041446.35126.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+Z82WUSiuSRk4szuEzf9XQIdpVxC72unfi7v0
- kC2Zk6r7Ei8Wl1uzmBaYlyR5qIcWOpEW7rD4Se1SQF2ear/VKQ
- KNGT6IIi2FhcftfQRlJlA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 04 August 2009, you wrote:
-> Is there a reason why it's not allowed? Would it be difficult to
-> implement it? Seems like it shouldn't be much different from renaming a
-> file over a symlink.
+Hugh Dickins wrote:
+> break_ksm has been looping endlessly ignoring VM_FAULT_OOM: that should
+> only be a problem for ksmd when a memory control group imposes limits
+> (normally the OOM killer will kill others with an mm until it succeeds);
+> but in general (especially for MADV_UNMERGEABLE and KSM_RUN_UNMERGE) we
+> do need to route the error (or kill) back to the caller (or sighandling).
+>
+> Test signal_pending in unmerge_ksm_pages, which could be a lengthy
+> procedure if it has to spill into swap: returning -ERESTARTSYS so that
+> trivial signals will restart but fatals will terminate (is that right?
+> we do different things in different places in mm, none exactly this).
+>
+> unmerge_and_remove_all_rmap_items was forgetting to lock when going
+> down the mm_list: fix that.  Whether it's successful or not, reset
+> ksm_scan cursor to head; but only if it's successful, reset seqnr
+> (shown in full_scans) - page counts will have gone down to zero.
+>
+> This patch leaves a significant OOM deadlock, but it's a good step
+> on the way, and that deadlock is fixed in a subsequent patch.
+>
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> ---
+>
+>
+>   
+Better than before for sure, And I dont have in mind better and yet 
+simple solution for the "failing to break the pages" then to just wait 
+and catch them in the next scan, so ACK.
 
-It's in the standard we are following,
-http://www.opengroup.org/onlinepubs/009695399/functions/rename.html:
+Acked-by: Izik Eidus <ieidus@redhat.com>
 
-"If the old argument points to the pathname of a directory, the new argument shall
- not point to the pathname of a file that is not a directory."
-
-http://www.opengroup.org/onlinepubs/009695399/utilities/mv.html:
-
-"In the second synopsis form, mv shall move each file named by a source_file
- operand to a destination file in the existing directory named by the target_dir
- operand, or referenced if target_dir is a symbolic link referring to an existing
- directory. The destination path for each source_file shall be the concatenation
- of the target directory, a single slash character, and the last pathname
- component of the source_file. This second form is assumed when the final operand
- names an existing directory."
-
-	Arnd <><
