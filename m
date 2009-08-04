@@ -1,61 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933356AbZHDTPH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933346AbZHDTPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933356AbZHDTPH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 15:15:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933106AbZHDTPF
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S933346AbZHDTPF (ORCPT <rfc822;w@1wt.eu>);
 	Tue, 4 Aug 2009 15:15:05 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:17955 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933308AbZHDTPD convert rfc822-to-8bit (ORCPT
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933106AbZHDTPE
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 4 Aug 2009 15:15:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59465 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933256AbZHDTPC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 15:15:03 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=msR1SgiVjHc6cksNzFEeTw0fOT0jXez3W9L8Pekf6HnX4AW3e07QfudbKyk5o6uo+
-	EiAWFTi2WtlxOb3aVnloQ==
-MIME-Version: 1.0
-In-Reply-To: <6599ad830908041148h6d3f3e9bxfef9f3eedec0ab6d@mail.gmail.com>
-References: <20090731012908.27908.62208.stgit@hastromil.mtv.corp.google.com>
-	 <20090731015154.27908.9639.stgit@hastromil.mtv.corp.google.com>
-	 <20090803175452.GA5481@us.ibm.com>
-	 <2f86c2480908031113y525b6cbdhe418b8a0364c7760@mail.gmail.com>
-	 <20090803185556.GA8469@us.ibm.com> <20090803194555.GA10158@us.ibm.com>
-	 <6599ad830908041148h6d3f3e9bxfef9f3eedec0ab6d@mail.gmail.com>
-Date: Tue, 4 Aug 2009 15:14:59 -0400
-Message-ID: <2f86c2480908041214r1f23c1b7q9a25b04e26c92a1a@mail.gmail.com>
-Subject: Re: [PATCH 6/6] Makes procs file writable to move all threads by tgid 
-	at once
-From: Benjamin Blum <bblum@google.com>
-To: Paul Menage <menage@google.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Tue, 4 Aug 2009 15:15:02 -0400
+Date: Tue, 4 Aug 2009 12:13:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: mel@csn.ul.ie, lwoodman@redhat.com, mingo@elte.hu, peterz@infradead.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 4/4] tracing, page-allocator: Add a postprocessing
+ script for page-allocator-related ftrace events
+Message-Id: <20090804121332.46df33a7.akpm@linux-foundation.org>
+In-Reply-To: <4A787D84.2030207@redhat.com>
+References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie>
+	<1249409546-6343-5-git-send-email-mel@csn.ul.ie>
+	<20090804112246.4e6d0ab1.akpm@linux-foundation.org>
+	<4A787D84.2030207@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 4, 2009 at 2:48 PM, Paul Menage<menage@google.com> wrote:
-> On Mon, Aug 3, 2009 at 12:45 PM, Serge E. Hallyn<serue@us.ibm.com> wrote:
->>
->> This is probably a stupid idea, but...  what about having zero
->> overhead at clone(), and instead, at cgroup_task_migrate(),
->> dequeue_task()ing all of the affected threads for the duration of
->> the migrate?
->>
->
-> Or a simpler alternative - rather than taking the thread group
-> leader's rwsem in cgroup_fork(), always take current's rwsem. Then
-> you're always locking a (probably?) local rwsem and minimizing the
-> overhead. So not quite zero overhead in the fork path, but I'd be
-> surprised if it was measurable. In cgroup_attach_proc() you then have
-> to take the rwsem of every thread in the process. Kind of the
-> equivalent of a per-threadgroup big-reader lock.
+On Tue, 04 Aug 2009 14:27:16 -0400
+Rik van Riel <riel@redhat.com> wrote:
 
-Hmm, the tasklist_lock section in fork() is entirely inside the
-read-lock. Presumably then iterating the threadgroup list to take all
-rwsems is safe from a race in which one thread escapes?
+> Andrew Morton wrote:
+> > On Tue,  4 Aug 2009 19:12:26 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
+> > 
+> >> This patch adds a simple post-processing script for the page-allocator-related
+> >> trace events. It can be used to give an indication of who the most
+> >> allocator-intensive processes are and how often the zone lock was taken
+> >> during the tracing period. Example output looks like
+> >>
+> >> find-2840
+> >>  o pages allocd            = 1877
+> >>  o pages allocd under lock = 1817
+> >>  o pages freed directly    = 9
+> >>  o pcpu refills            = 1078
+> >>  o migrate fallbacks       = 48
+> >>    - fragmentation causing = 48
+> >>      - severe              = 46
+> >>      - moderate            = 2
+> >>    - changed migratetype   = 7
+> > 
+> > The usual way of accumulating and presenting such measurements is via
+> > /proc/vmstat.  How do we justify adding a completely new and different
+> > way of doing something which we already do?
+> 
+> Mel's tracing is more akin to BSD process accounting,
+> where these statistics are kept on a per-process basis.
+
+Is that useful?  Any time I've wanted to find out things like this, I
+just don't run other stuff on the machine at the same time.
+
+Maybe there are some scenarios where it's useful to filter out other
+processes, but are those scenarios sufficiently important to warrant
+creation of separate machinery like this?
+
+> Nothing in /proc allows us to see statistics on a per
+> process basis on process exit.
+
+Can this script be used to monitor the process while it's still running?
+
+
+
+Also, we have a counter for "moderate fragmentation causing migrate
+fallbacks".  There must be hundreds of MM statistics which can be
+accumulated once we get down to this level of detail.  Why choose these
+nine?
+
+
+Is there a plan to add the rest later on?
+
+
+Or are these nine more a proof-of-concept demonstration-code thing?  If
+so, is it expected that developers will do an ad-hoc copy-n-paste to
+solve a particular short-term problem and will then toss the tracepoint
+away?  I guess that could be useful, although you can do the same with
+vmstat.
+
