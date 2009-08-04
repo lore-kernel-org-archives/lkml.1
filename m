@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933239AbZHDSWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933247AbZHDSXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933239AbZHDSWz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 14:22:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933192AbZHDSWy
+	id S933247AbZHDSXv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 14:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933184AbZHDSXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 14:22:54 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:35604 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933160AbZHDSWx (ORCPT
+	Tue, 4 Aug 2009 14:23:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41117 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933131AbZHDSXu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 14:22:53 -0400
-Date: Tue, 4 Aug 2009 13:22:54 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org, jmorris@namei.org,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 3/6] KEYS: Flag dead keys to induce EKEYREVOKED
-Message-ID: <20090804182254.GB8442@us.ibm.com>
-References: <20090804145530.17676.24656.stgit@warthog.procyon.org.uk> <20090804145541.17676.99745.stgit@warthog.procyon.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090804145541.17676.99745.stgit@warthog.procyon.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 4 Aug 2009 14:23:50 -0400
+Date: Tue, 4 Aug 2009 11:22:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Larry Woodman <lwoodman@redhat.com>, riel@redhat.com,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [PATCH 4/4] tracing, page-allocator: Add a postprocessing
+ script for page-allocator-related ftrace events
+Message-Id: <20090804112246.4e6d0ab1.akpm@linux-foundation.org>
+In-Reply-To: <1249409546-6343-5-git-send-email-mel@csn.ul.ie>
+References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie>
+	<1249409546-6343-5-git-send-email-mel@csn.ul.ie>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting David Howells (dhowells@redhat.com):
-> Set the KEY_FLAG_DEAD flag on keys for which the type has been removed.  This
-> causes the key_permission() function to return EKEYREVOKED in response to
-> various commands.  It does not, however, prevent unlinking or clearing of
-> keyrings from detaching the key.
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
+On Tue,  4 Aug 2009 19:12:26 +0100 Mel Gorman <mel@csn.ul.ie> wrote:
 
-Acked-by: Serge Hallyn <serue@us.ibm.com>
+> This patch adds a simple post-processing script for the page-allocator-related
+> trace events. It can be used to give an indication of who the most
+> allocator-intensive processes are and how often the zone lock was taken
+> during the tracing period. Example output looks like
+> 
+> find-2840
+>  o pages allocd            = 1877
+>  o pages allocd under lock = 1817
+>  o pages freed directly    = 9
+>  o pcpu refills            = 1078
+>  o migrate fallbacks       = 48
+>    - fragmentation causing = 48
+>      - severe              = 46
+>      - moderate            = 2
+>    - changed migratetype   = 7
 
-> ---
-> 
->  security/keys/key.c |    4 +++-
->  1 files changed, 3 insertions(+), 1 deletions(-)
-> 
-> 
-> diff --git a/security/keys/key.c b/security/keys/key.c
-> index 3762d5b..bd9d267 100644
-> --- a/security/keys/key.c
-> +++ b/security/keys/key.c
-> @@ -956,8 +956,10 @@ void unregister_key_type(struct key_type *ktype)
->  	for (_n = rb_first(&key_serial_tree); _n; _n = rb_next(_n)) {
->  		key = rb_entry(_n, struct key, serial_node);
-> 
-> -		if (key->type == ktype)
-> +		if (key->type == ktype) {
->  			key->type = &key_type_dead;
-> +			set_bit(KEY_FLAG_DEAD, &key->flags);
-> +		}
->  	}
-> 
->  	spin_unlock(&key_serial_lock);
+The usual way of accumulating and presenting such measurements is via
+/proc/vmstat.  How do we justify adding a completely new and different
+way of doing something which we already do?
