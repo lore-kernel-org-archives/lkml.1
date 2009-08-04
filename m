@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932447AbZHDGQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932453AbZHDGUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932447AbZHDGQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 02:16:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932428AbZHDGQ6
+	id S932453AbZHDGUU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 02:20:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932436AbZHDGUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 02:16:58 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47807 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932422AbZHDGQ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 02:16:58 -0400
-Date: Tue, 4 Aug 2009 16:16:40 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: linux-next: tip tree build warning
-Message-Id: <20090804161640.70817ee6.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__4_Aug_2009_16_16_40_+1000_nRUzz17sk77Zx5MW"
+	Tue, 4 Aug 2009 02:20:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47157 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932429AbZHDGUT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 02:20:19 -0400
+Date: Mon, 3 Aug 2009 23:19:53 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Greg KH <greg@kroah.com>
+cc: Sergey Senozhatsky <sergey.senozhatsky@mail.by>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: proper tty-ldisc refcounting (was Re: WARNING at:
+ drivers/char/tty_ldisc.c)
+In-Reply-To: <20090804040834.GA16696@kroah.com>
+Message-ID: <alpine.LFD.2.01.0908032319290.3270@localhost.localdomain>
+References: <alpine.LFD.2.01.0908021254580.3352@localhost.localdomain> <87k51l9apo.fsf@devron.myhome.or.jp> <alpine.LFD.2.01.0908021423490.3352@localhost.localdomain> <20090802234851.3fd1ac2c@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0908021654010.3352@localhost.localdomain>
+ <alpine.LFD.2.01.0908031047010.3208@localhost.localdomain> <20090803181811.GA15848@kroah.com> <20090804003009.GA3121@localdomain.by> <alpine.LFD.2.01.0908031751270.3270@localhost.localdomain> <20090804035319.GA7248@kroah.com>
+ <20090804040834.GA16696@kroah.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__4_Aug_2009_16_16_40_+1000_nRUzz17sk77Zx5MW
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
 
-Today's linux-next build (powerpc ppc64_defconfig) produced these warnings:
+On Mon, 3 Aug 2009, Greg KH wrote:
+> 
+> Oh wait, the original problem, single user mode.  Hm, we need all of
+> these to fix that problem?  Or just the first one?
 
-kernel/trace/ring_buffer.c: In function 'rb_head_page_set':
-kernel/trace/ring_buffer.c:704: warning: initialization makes pointer from =
-integer without a cast
-kernel/trace/ring_buffer.c:704: warning: initialization makes pointer from =
-integer without a cast
-kernel/trace/ring_buffer.c: In function 'rb_head_page_replace':
-kernel/trace/ring_buffer.c:797: warning: initialization makes integer from =
-pointer without a cast
+Patches 1-3 should fix that one. 4-5 are just cleanups with no semantic 
+changes.
 
-Introduced by commit 77ae365eca895061c8bf2b2e3ae1d9ea62869739
-("ring-buffer: make lockless").
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__4_Aug_2009_16_16_40_+1000_nRUzz17sk77Zx5MW
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkp30kgACgkQjjKRsyhoI8xEtACfbhHY2QITcpQ5syPmonYj79z5
-DMUAn29cABgIiqCNtiHpwAanNtBjb+CJ
-=1Ibt
------END PGP SIGNATURE-----
-
---Signature=_Tue__4_Aug_2009_16_16_40_+1000_nRUzz17sk77Zx5MW--
+		Linus
