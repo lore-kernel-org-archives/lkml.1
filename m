@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755486AbZHDM7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497AbZHDNCF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755486AbZHDM7v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 08:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755475AbZHDM7u
+	id S1755497AbZHDNCF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 09:02:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755478AbZHDNCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 08:59:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36682 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755372AbZHDM7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 08:59:49 -0400
-Message-ID: <4A78319D.9030002@redhat.com>
-Date: Tue, 04 Aug 2009 16:03:25 +0300
-From: Izik Eidus <ieidus@redhat.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
-MIME-Version: 1.0
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-CC: Andrea Arcangeli <aarcange@redhat.com>, Rik van Riel <riel@redhat.com>,
-       Chris Wright <chrisw@redhat.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 8/12] ksm: distribute remove_mm_from_lists
-References: <Pine.LNX.4.64.0908031304430.16449@sister.anvils> <Pine.LNX.4.64.0908031316180.16754@sister.anvils>
-In-Reply-To: <Pine.LNX.4.64.0908031316180.16754@sister.anvils>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 4 Aug 2009 09:02:05 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55407
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755477AbZHDNCE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 09:02:04 -0400
+Date: Tue, 04 Aug 2009 06:02:12 -0700 (PDT)
+Message-Id: <20090804.060212.01750529.davem@davemloft.net>
+To: a.p.zijlstra@chello.nl
+Cc: mingo@elte.hu, acme@redhat.com, kyle@mcmartin.ca, jens.axboe@oracle.com,
+       anton@samba.org, linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       benh@kernel.crashing.org, penberg@cs.helsinki.fi,
+       vegard.nossum@gmail.com, paulus@samba.org, williams@redhat.com
+Subject: Re: [PATCH] basic perf support for sparc
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1249378140.7924.168.camel@twins>
+References: <20090803015430.GG25334@ghostprotocols.net>
+	<20090804092540.GA29778@elte.hu>
+	<1249378140.7924.168.camel@twins>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> Do some housekeeping in ksm.c, to help make the next patch easier
-> to understand: remove the function remove_mm_from_lists, distributing
-> its code to its callsites scan_get_next_rmap_item and __ksm_exit.
->
-> That turns out to be a win in scan_get_next_rmap_item: move its
-> remove_trailing_rmap_items and cursor advancement up, and it becomes
-> simpler than before.  __ksm_exit becomes messier, but will change
-> again; and moving its remove_trailing_rmap_items up lets us strengthen
-> the unstable tree item's age condition in remove_rmap_item_from_tree.
->
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> ---
->
->   
-Acked-by: Izik Eidus <ieidus@redhat.com>
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Tue, 04 Aug 2009 11:29:00 +0200
+
+> On Tue, 2009-08-04 at 11:25 +0200, Ingo Molnar wrote:
+>> * Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
+>> 
+>> > +static void load_perf_bfd_demangle(void)
+>> > +{
+>> > +	void *handle = dlopen("libbfd-2.19.51.0.2-17.fc11.so", RTLD_NOW);
+>> 
+>> Hm, this does not look like a very generic solution. Is there some 
+>> way to do a library search to figure out the name? I guess a glob 
+>> match on /usr/lib/libbfd*.so?
+> 
+> I'd simply go for libbfd.so and raise a bug report against fedora. A
+> link archive named .so is just stupid.
+
+It really isn't, I find it surprising why people are so up in
+arms about this.  It's a quite common technique.
