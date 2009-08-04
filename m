@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932561AbZHDIHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932589AbZHDIIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932561AbZHDIHb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 04:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773AbZHDIHb
+	id S932589AbZHDIIE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 04:08:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754994AbZHDIIC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 04:07:31 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46634 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754351AbZHDIH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 04:07:29 -0400
-Date: Tue, 4 Aug 2009 10:07:23 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mundt <lethal@linux-sh.org>, Steven Rostedt <rostedt@goodmis.org>,
-       Matt Fleming <matt@console-pimps.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH -tip] ftrace: Correctly calculate the first function in
-	the .text section
-Message-ID: <20090804080723.GB18635@elte.hu>
-References: <1248342703-15758-1-git-send-email-matt@console-pimps.org> <alpine.DEB.2.00.0907231043330.20997@gandalf.stny.rr.com> <alpine.DEB.2.00.0907231052010.20997@gandalf.stny.rr.com> <20090727222935.GA22208@linux-sh.org> <alpine.DEB.2.00.0907271941360.30108@gandalf.stny.rr.com> <20090802081602.GB5011@linux-sh.org>
+	Tue, 4 Aug 2009 04:08:02 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:62505 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754980AbZHDIH7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 04:07:59 -0400
+Message-ID: <4A77EC0A.1040602@ct.jp.nec.com>
+Date: Tue, 04 Aug 2009 17:06:34 +0900
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090802081602.GB5011@linux-sh.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] posix-timers: fix oops in clock_nanosleep() with CLOCK_MONOTONIC_RAW
+References: <4A764FF3.50607@ct.jp.nec.com>	<20090804002226.2972cf47.akpm@linux-foundation.org>	<4A77E62D.8070803@ct.jp.nec.com> <20090804005753.99e21163.akpm@linux-foundation.org>
+In-Reply-To: <20090804005753.99e21163.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul Mundt <lethal@linux-sh.org> wrote:
-
-> > Could you push these off to Linus? My git pull request had:
-> > 
-> > Message-ID: <20090723210047.294710482@goodmis.org>
+Andrew Morton wrote:
+> On Tue, 04 Aug 2009 16:41:33 +0900 Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 > 
-> This is still outstanding. Should I just merge it in to my tree 
-> and send it to Linus instead?
+>> Userspace program is like this;
+>>
+>> #include <time.h>
+>>
+>> int main(void)
+>> {
+>> 	struct timespec ts;
+>>
+>> 	ts.tv_sec = 1;
+>> 	ts.tv_nsec = 0;
+>>
+>> 	return clock_nanosleep(4, 0, &ts, NULL);
+>> }
+>>
+>> and it will cause oops;
+>>
+>> BUG: unable to handle kernel NULL pointer dereference at 0000000000000001
+> 
+> Well that's not very good.
+> 
+> How far back does this go?  posix-timers.c hasn't changed in several
+> kernel versions.
 
-No need, i've picked them up for -rc6.
+Not sure the exact version is. I've just noticed it on the latest git and
+Fedora 11.
+I guess after the below commit;
+commit 2d42244ae71d6c7b0884b5664cf2eda30fb2ae68
+Author: John Stultz <johnstul@us.ibm.com>
+Date:   Wed Aug 20 16:37:30 2008 -0700
 
-Thanks,
+    clocksource: introduce CLOCK_MONOTONIC_RAW
 
-	Ingo
+thanks,
+Hiroshi
