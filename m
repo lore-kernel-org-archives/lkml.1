@@ -1,55 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933092AbZHDRDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933103AbZHDRGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933092AbZHDRDg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 13:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932916AbZHDRDg
+	id S933103AbZHDRGT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 13:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933087AbZHDRGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 13:03:36 -0400
-Received: from sh.osrg.net ([192.16.179.4]:49534 "EHLO sh.osrg.net"
+	Tue, 4 Aug 2009 13:06:19 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51435 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932888AbZHDRDf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 13:03:35 -0400
-Date: Wed, 05 Aug 2009 02:03:12 +0900 (JST)
-Message-Id: <20090805.020312.37207873.ryusuke@osrg.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [GIT PULL] nilfs2 fixes for 2.6.31-rc6
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 05 Aug 2009 02:03:12 +0900 (JST)
+	id S932889AbZHDRGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 13:06:18 -0400
+Date: Tue, 4 Aug 2009 19:05:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 0/26] oprofile: Performance counter multiplexing
+Message-ID: <20090804170545.GA29369@elte.hu>
+References: <1248800846-25422-1-git-send-email-robert.richter@amd.com> <20090803112220.GA22936@elte.hu> <20090803163048.GT14610@erda.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090803163048.GT14610@erda.amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
 
-please pull bug-fixes of nilfs from
+* Robert Richter <robert.richter@amd.com> wrote:
 
- git://git.kernel.org/pub/scm/linux/kernel/git/ryusuke/nilfs2.git for-linus
+> On 03.08.09 13:22:20, Ingo Molnar wrote:
+> > 
+> > Now i'm also co-maintaining perfcounters and because it's a full 
+> > oprofile replacement (which aspect Robert seems to disagree with 
+> > ;-)
+> 
+> I can't imagine a full oprofile replacement. This would require a 
+> rewrite of all userland tools and also the complete port of all 
+> architectures (which has to be done for each architecture 
+> individually). And first of all, I don't think it is necessary to 
+> do this, why not keep different interfaces for different purposes?
 
-The following changes since commit ed680c4ad478d0fee9740f7d029087f181346564
- Linus Torvalds (1):
-      Linux 2.6.31-rc5
+Perfcounters and tools/perf/ intends to be everything that oprofile 
+is - just implemented in a better way. What 'different purposes' do 
+you mean?
 
-Ryusuke Konishi (2):
-      nilfs2: fix oops due to inconsistent state in page with discrete b-tree nodes
-      nilfs2: fix missing unlock in error path of nilfs_mdt_write_page
+Lets admit it: the oprofile kernel-side code has been mis-designed 
+from the get go and it is unfixable in its current form. The 
+mis-design is hardcoded in the oprofile ABIs and into portions of 
+the oprofile tooling. If you wanted to fix that you'd have to 
+rewrite the whole thing from scratch.
 
- fs/nilfs2/mdt.c     |    4 +++-
- fs/nilfs2/segment.c |   16 +++++++++++++++-
- 2 files changed, 18 insertions(+), 2 deletions(-)
---
+And the thing is, we already did that: the 'fix' for oprofile is 
+perfcounters and the perf tool ;-) This is why we developed and 
+merged perfcounters upstream and did not extend oprofile to begin 
+with.
 
-The "nilfs2: fix oops due to inconsistent state in page with discrete
-b-tree nodes" fixes a reported kernel oops which can happen if block
-size is smaller than page size.
+All in one, Oprofile is largely obsolete and i dont see that 
+realization from your patches. I see a lot of ongoing churn coming 
+up on the oprofile kernel side and i'm not sure i want to assist 
+that, because i think it's stupid and i dont like doing or helping 
+stupid things.
 
-The "nilfs2: fix missing unlock in error path of nilfs_mdt_write_page"
-adds a missing unlock operation.
+So please either convince me that it's not obsolete, or lets state 
+it as a fundamental disagreement that you dont think that oprofile 
+is obsolete and that you still want to develop it.
 
-Thanks,
-Ryusuke Konishi
+	Ingo
