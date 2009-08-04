@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933034AbZHDQZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933038AbZHDQZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933034AbZHDQZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 12:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933024AbZHDQZ0
+	id S933038AbZHDQZy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 12:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932957AbZHDQZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 12:25:26 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58302 "EHLO mx2.redhat.com"
+	Tue, 4 Aug 2009 12:25:53 -0400
+Received: from sandeen.net ([209.173.210.139]:11536 "EHLO mail.sandeen.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932971AbZHDQZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 12:25:24 -0400
-Subject: Re: linux-next: tip tree build warning
-From: Steven Rostedt <srostedt@redhat.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090804161640.70817ee6.sfr@canb.auug.org.au>
-References: <20090804161640.70817ee6.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Tue, 04 Aug 2009 12:24:49 -0400
-Message-Id: <1249403089.4634.139.camel@localhost.localdomain>
-Mime-Version: 1.0
+	id S932954AbZHDQZx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 12:25:53 -0400
+Message-ID: <4A786110.8090404@sandeen.net>
+Date: Tue, 04 Aug 2009 11:25:52 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.22 (Macintosh/20090605)
+MIME-Version: 1.0
+To: Ramon de Carvalho Valle <ramon@risesecurity.org>
+CC: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com, hch@lst.de,
+       linux-kernel@vger.kernel.org, mszeredi@novell.com
+Subject: Re: [PATCH 1/1] XFS: __xfs_get_blocks check pointer to the target
+ device
+References: <1249329808.7686.26.camel@logos>	<20090803214929.GB3167@infradead.org> <1249351241.7513.18.camel@logos>
+In-Reply-To: <1249351241.7513.18.camel@logos>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-04 at 16:16 +1000, Stephen Rothwell wrote:
-> Hi all,
+Ramon de Carvalho Valle wrote:
+> On Mon, 2009-08-03 at 17:49 -0400, Christoph Hellwig wrote:
+>> On Mon, Aug 03, 2009 at 05:03:28PM -0300, Ramon de Carvalho Valle wrote:
+>>> The __xfs_get_blocks function does not check if the pointer to the target
+>>> device is valid before dereferencing it.
+>> It should never be zero.  It's set by xfs_imap_to_bmap to either
+>> mp->m_ddev_targp which is always allocated, or to mp->m_rtdev_targp
+>> which is always allocated if we have a realtime device, and
+>> XFS_IS_REALTIME_INODE should only be true in that case.
+>>
 > 
-> Today's linux-next build (powerpc ppc64_defconfig) produced these warnings:
+> While testing XFS code with a modified version of fsfuzzer on SLES 10
+> SP3 (Kernel 2.6.16.60-0.49.3.ramon-ppc64), I came across the following
+> Oops:
+
+...
+
+ahah, useful information that would have been great in the original
+patch submission.  :)
+
+> I added a printk() line just before the:
 > 
-> kernel/trace/ring_buffer.c: In function 'rb_head_page_set':
-> kernel/trace/ring_buffer.c:704: warning: initialization makes pointer from integer without a cast
-> kernel/trace/ring_buffer.c:704: warning: initialization makes pointer from integer without a cast
-> kernel/trace/ring_buffer.c: In function 'rb_head_page_replace':
-> kernel/trace/ring_buffer.c:797: warning: initialization makes integer from pointer without a cast
+> 	bh_result->b_bdev = iomap.iomap_target->bt_bdev;
 > 
-> Introduced by commit 77ae365eca895061c8bf2b2e3ae1d9ea62869739
-> ("ring-buffer: make lockless").
+> and as we can see iomap.iomap_target is NULL.
 > 
+> My guess is that the XFS_DIFLAG_REALTIME flag is being set incorrectly
+> on the xfs inode structure, setting iomapp->iomap_target to the wrong
+> device pointer (probably NULL).
+> 
+> I don't know if this is the best place to add a check, neither if
+> returning -XFS_ERROR(EIO) is correct at this point. Maybe doing:
+> 
+> 	if (iomap.iomap_target && omap.iomap_flags & IOMAP_REALTIME)
+> 		bh_result->b_bdev = iomap.iomap_target->bt_bdev;
+> 
+> would be a better solution.
 
-Thanks, I'll take a look at it.
+Can you test hch's patch w/ your fuzzed image?
 
--- Steve
-
-
+Thanks,
+-Eric
