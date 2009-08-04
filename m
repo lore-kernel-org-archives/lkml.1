@@ -1,67 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932669AbZHDHgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932546AbZHDHmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932669AbZHDHgr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 03:36:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932658AbZHDHgq
+	id S932546AbZHDHmk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 03:42:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932532AbZHDHmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 03:36:46 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:47581 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932645AbZHDHgq convert rfc822-to-8bit (ORCPT
+	Tue, 4 Aug 2009 03:42:40 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:55947 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932525AbZHDHmj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 03:36:46 -0400
+	Tue, 4 Aug 2009 03:42:39 -0400
+Message-ID: <4A77E62D.8070803@ct.jp.nec.com>
+Date: Tue, 04 Aug 2009 16:41:33 +0900
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
 MIME-Version: 1.0
-In-Reply-To: <20090803.212323.256579233.davem@davemloft.net>
-References: <6c039e090907231439t1def08a4n10978733bee55bec@mail.gmail.com>
-	 <20090727144402.513369f1.akpm@linux-foundation.org>
-	 <1248912621.13447.12.camel@merlyn>
-	 <20090803.212323.256579233.davem@davemloft.net>
-Date: Tue, 4 Aug 2009 15:36:46 +0800
-Message-ID: <6c039e090908040036j38666152y2db1d4c55529eaff@mail.gmail.com>
-Subject: Re: [PATCH] net: Keep interface binding when sending packets with 
-	ipi_ifindex = 0
-From: =?UTF-8?B?Q2hpYS1jaGkgWWVoICjokYnlrrbpvYop?= <chiachi@android.com>
-To: David Miller <davem@davemloft.net>
-Cc: john.dykstra1@gmail.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] posix-timers: fix oops in clock_nanosleep() with CLOCK_MONOTONIC_RAW
+References: <4A764FF3.50607@ct.jp.nec.com> <20090804002226.2972cf47.akpm@linux-foundation.org>
+In-Reply-To: <20090804002226.2972cf47.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After thinking more deeply, I believe that IPv6 does the right thing
-and IPv4 does not. SO_BINDTODEVICE requires CAP_NET_RAW, so it is a
-privileged operation. Therefore, it looks weird to me if one can
-specify other interface than the bound one without the same
-capability. The following patch makes the behavior in IPv4 and IPv6
-identical. Thanks for your help.
+Andrew Morton wrote:
+> On Mon, 03 Aug 2009 11:48:19 +0900 Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+> 
+>> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>>
+>> Prevent calling do_nanosleep() with clockid CLOCK_MONOTONIC_RAW, it may
+>> cause oops, such as NULL pointer dereference.
+>>
+>> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>> ---
+>>  kernel/posix-timers.c |    7 +++++++
+>>  1 files changed, 7 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
+>> index 052ec4d..d089d05 100644
+>> --- a/kernel/posix-timers.c
+>> +++ b/kernel/posix-timers.c
+>> @@ -202,6 +202,12 @@ static int no_timer_create(struct k_itimer *new_timer)
+>>  	return -EOPNOTSUPP;
+>>  }
+>>  
+>> +static int no_nsleep(const clockid_t which_clock, int flags,
+>> +		     struct timespec *tsave, struct timespec __user *rmtp)
+>> +{
+>> +	return -EOPNOTSUPP;
+>> +}
+>> +
+>>  /*
+>>   * Return nonzero if we know a priori this clockid_t value is bogus.
+>>   */
+>> @@ -254,6 +260,7 @@ static __init int init_posix_timers(void)
+>>  		.clock_get = posix_get_monotonic_raw,
+>>  		.clock_set = do_posix_clock_nosettime,
+>>  		.timer_create = no_timer_create,
+>> +		.nsleep = no_nsleep,
+>>  	};
+>>  
+>>  	register_posix_clock(CLOCK_REALTIME, &clock_realtime);
+> 
+> Under which circumstances will this oops trigger?
+> 
+> What userspace setup/actions will trigger the oops?
 
-Chia-chi
+Sorry for the lack of information.
+Userspace program is like this;
 
---- a/net/ipv4/ip_sockglue.c    2009-08-04 15:11:39.000000000 +0800
-+++ b/net/ipv4/ip_sockglue.c    2009-08-04 15:17:05.000000000 +0800
-@@ -213,7 +213,11 @@
-                        if (cmsg->cmsg_len != CMSG_LEN(sizeof(struct
-in_pktinfo)))
-                                return -EINVAL;
-                        info = (struct in_pktinfo *)CMSG_DATA(cmsg);
--                       ipc->oif = info->ipi_ifindex;
-+                       if (info->ipi_ifindex) {
-+                               if (ipc->oif && info->ipi_ifindex != ipc->oif)
-+                                       return -EINVAL;
-+                               ipc->oif = info->ipi_ifindex;
-+                       }
-                        ipc->addr = info->ipi_spec_dst.s_addr;
-                        break;
-                }
+#include <time.h>
 
-On Tue, Aug 4, 2009 at 12:23 PM, David Miller<davem@davemloft.net> wrote:
-> From: John Dykstra <john.dykstra1@gmail.com>
-> Date: Wed, 29 Jul 2009 19:10:21 -0500
->
->> I guess Dave's letting this stand.  I'm posting this just to make sure
->> this is an explicit decision.
->
-> I'm still thinking about this.
->
+int main(void)
+{
+	struct timespec ts;
+
+	ts.tv_sec = 1;
+	ts.tv_nsec = 0;
+
+	return clock_nanosleep(4, 0, &ts, NULL);
+}
+
+and it will cause oops;
+
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000001
+IP: [<ffffffff81029eb5>] __ticket_spin_lock+0x9/0x1a
+PGD 3dc6c067 PUD 3b519067 PMD 0 
+Oops: 0002 [#1] SMP 
+last sysfs file: /sys/devices/pci0000:00/0000:00:1c.0/0000:02:00.0/irq
+CPU 0 
+Modules linked in: sco bnep l2cap bluetooth sunrpc bridge stp llc ipv6 p4_clockmod speedstep_lib freq_table dm_multipath uinput iTCO_wdt iTCO_vendor_support tg3 i2c_i801 snd_intel8x0 snd_ac97_codec ac97_bus ppdev snd_pcm parport_pc snd_timer floppy parport snd soundcore snd_page_alloc pcspkr ata_generic pata_acpi nouveau drm i2c_algo_bit i2c_core [last unloaded: freq_table]
+Pid: 20114, comm: a.out Not tainted 2.6.29.6-213.fc11.x86_64 #1 PC-MY32EXZE78SG
+RIP: 0010:[<ffffffff81029eb5>]  [<ffffffff81029eb5>] __ticket_spin_lock+0x9/0x1a
+RSP: 0018:ffff88003e08bd88  EFLAGS: 00010046
+RAX: 0000000000000100 RBX: 0000000000000001 RCX: 0000000000000001
+RDX: 000000000000c350 RSI: 0000000000000286 RDI: 0000000000000001
+RBP: ffff88003e08bd88 R08: 0000000000000001 R09: 0000003ec680eec0
+R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000286
+R13: ffff88003e08be20 R14: 000000000000c350 R15: 000000000000c350
+FS:  00007fb6cd3996f0(0000) GS:ffffffff817b7000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 0000000000000001 CR3: 000000003a5c0000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process a.out (pid: 20114, threadinfo ffff88003e08a000, task ffff8800399e1700)
+Stack:
+ ffff88003e08bd98 ffffffff81029f7f ffff88003e08bdb8 ffffffff813ac07c
+ ffff880001011178 ffff88003e08be98 ffff88003e08bde8 ffffffff8105f3a1
+ ffff88003e08bdd8 ffff88003e08be98 0000000000000001 000000003b9aca00
+Call Trace:
+ [<ffffffff81029f7f>] default_spin_lock_flags+0x9/0xe
+ [<ffffffff813ac07c>] _spin_lock_irqsave+0x32/0x3b
+ [<ffffffff8105f3a1>] lock_hrtimer_base+0x2a/0x50
+ [<ffffffff8105f527>] __hrtimer_start_range_ns+0x2f/0x238
+ [<ffffffff8105f75e>] hrtimer_start_range_ns+0x14/0x16
+ [<ffffffff813aac8b>] do_nanosleep+0x4e/0xae
+ [<ffffffff8105f813>] hrtimer_nanosleep+0xb3/0x123
+ [<ffffffff8105edea>] ? hrtimer_wakeup+0x0/0x26
+ [<ffffffff8105b4ed>] sys_clock_nanosleep+0xc9/0xdf
+ [<ffffffff8101133a>] system_call_fastpath+0x16/0x1b
+Code: 9c 02 81 44 89 c6 48 89 c7 e8 0a fb ff ff eb 0f 0f b7 f6 40 0f b6 ff 48 89 c2 e8 1c fb ff ff c9 c3 90 55 b8 00 01 00 00 48 89 e5 <f0> 66 0f c1 07 38 e0 74 06 f3 90 8a 07 eb f6 c9 c3 55 48 89 e5 
+RIP  [<ffffffff81029eb5>] __ticket_spin_lock+0x9/0x1a
+ RSP <ffff88003e08bd88>
+CR2: 0000000000000001
+---[ end trace e83b583836779b24 ]---
+
+thanks,
+Hiroshi
