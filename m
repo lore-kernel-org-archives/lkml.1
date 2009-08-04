@@ -1,70 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932467AbZHDGmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932481AbZHDGmt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932467AbZHDGmp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 02:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932248AbZHDGmo
+	id S932481AbZHDGmt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 02:42:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932472AbZHDGms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 02:42:44 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56936 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S932239AbZHDGmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 02:42:44 -0400
-Message-ID: <4A77D809.1040906@cn.fujitsu.com>
-Date: Tue, 04 Aug 2009 14:41:13 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Tue, 4 Aug 2009 02:42:48 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:62515 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932248AbZHDGmq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 02:42:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=llS89dxFuaml3akC38kQqwgNq9/EE5bwxOtzK1SvEWdnnAmZTW4ItB+7UIsziWJmRL
+         EHvpVyB0RVAqo1+6dvUfzLlt4ockJTigl4tTTNfhsm2QHOQmOevoiG7f1VX9HcoYRR9x
+         74lxRghNh/LEK8MxZBLfD/qGhtrnpU/jeWgHY=
 MIME-Version: 1.0
-To: Munehiro Ikeda <m-ikeda@ds.jp.nec.com>
-CC: Vivek Goyal <vgoyal@redhat.com>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       jens.axboe@oracle.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, jbaron@redhat.com, agk@redhat.com,
-       snitzer@redhat.com, akpm@linux-foundation.org, peterz@infradead.org
-Subject: Re: [PATCH] io-controller: implement per group request allocation
- limitation
-References: <1246564917-19603-1-git-send-email-vgoyal@redhat.com> <4A569FC5.7090801@cn.fujitsu.com> <4A7796D2.4030104@ds.jp.nec.com>
-In-Reply-To: <4A7796D2.4030104@ds.jp.nec.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090804121259.d0c4e202.kamezawa.hiroyu@jp.fujitsu.com>
+References: <200907301204.n6UC4Saf019612@imap1.linux-foundation.org>
+	 <20090804121259.d0c4e202.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Tue, 4 Aug 2009 09:42:46 +0300
+X-Google-Sender-Auth: a6f55f7b1bdc2ce0
+Message-ID: <84144f020908032342w51337862m5879f98cf297f889@mail.gmail.com>
+Subject: Re: mmotm 2009-07-30-05-01 uploaded
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: npiggin@suse.de, linux-kernel@vger.kernel.org,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Kame,
 
-
-Munehiro Ikeda wrote:
-> Gui Jianfeng wrote, on 07/09/2009 09:56 PM:
->> Hi Vivek,
+On Tue, Aug 4, 2009 at 6:12 AM, KAMEZAWA
+Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Thu, 30 Jul 2009 05:04:28 -0700
+> akpm@linux-foundation.org wrote:
+>
+>> The mm-of-the-moment snapshot 2009-07-30-05-01 has been uploaded to
 >>
->> This patch exports a cgroup based per group request limits interface.
->> and removes the global one. Now we can use this interface to perform
->> different request allocation limitation for different groups.
+>>    http://userweb.kernel.org/~akpm/mmotm/
 >>
->> Signed-off-by: Gui Jianfeng<guijianfeng@cn.fujitsu.com>
->> ---
-> (snip)
-> 
-> Hi Jianfeng,
-> 
-> If this helps.
-> 
-> If calling elv_io_group_congestion_threshold() before
-> setting iog->iocg_id, iocg->nr_group_requests cannot be
-> referred.  As a result of it, iog->nr_congestion_on is
-> always misculculated as 0.
-> This patch moves the calling of
-> elv_io_group_congestion_threshold() after setting
-> iog->iocg_id.
-> 
-> Signed-off-by: Munehiro "Muuhh" Ikeda <m-ikeda@ds.jp.nec.com>
+>> and will soon be available at
+>>
+>>    git://git.zen-sources.org/zen/mmotm.git
+>>
+>
+> I'm sorry if already reported. When using SLQB, this warning is shown.
+>
+>
+> [    0.000000] ------------[ cut here ]------------
+> [    0.000000] WARNING: at kernel/lockdep.c:2131 trace_hardirqs_on_caller+0xb1/0x12f()
+> [    0.000000] Hardware name: VMware Virtual Platform
+> [    0.000000] Modules linked in:
+> [    0.000000] Pid: 0, comm: swapper Not tainted 2.6.31-rc4-mm1 #1
+> [    0.000000] Call Trace:
+> [    0.000000]  [<ffffffff81060189>] ? trace_hardirqs_on_caller+0xb1/0x12f
+> [    0.000000]  [<ffffffff8103e14a>] warn_slowpath_common+0x77/0xa4
+> [    0.000000]  [<ffffffff814c8f4c>] ? _spin_unlock_irq+0x2b/0x30
+> [    0.000000]  [<ffffffff8103e186>] warn_slowpath_null+0xf/0x11
+> [    0.000000]  [<ffffffff81060189>] trace_hardirqs_on_caller+0xb1/0x12f
+> [    0.000000]  [<ffffffff81060214>] trace_hardirqs_on+0xd/0xf
+> [    0.000000]  [<ffffffff814c8f4c>] _spin_unlock_irq+0x2b/0x30
+> [    0.000000]  [<ffffffff814c89f2>] ? __down_write_nested+0x1c/0xa9
+> [    0.000000]  [<ffffffff814c8a0f>] __down_write_nested+0x39/0xa9
+> [    0.000000]  [<ffffffff810b97f6>] ? kmem_cache_open+0x2b1/0x460
+> [    0.000000]  [<ffffffff814c8a8a>] __down_write+0xb/0xd
+> [    0.000000]  [<ffffffff814c802d>] down_write+0x4a/0x4e
+> [    0.000000]  [<ffffffff810b97f6>] ? kmem_cache_open+0x2b1/0x460
+> [    0.000000]  [<ffffffff810b97f6>] kmem_cache_open+0x2b1/0x460
+> [    0.000000]  [<ffffffff818247bc>] kmem_cache_init+0x4d/0x352
+> [    0.000000]  [<ffffffff8181b837>] ? mem_init+0x156/0x161
+> [    0.000000]  [<ffffffff81808adf>] start_kernel+0x1cd/0x3ab
+> [    0.000000]  [<ffffffff8180829a>] x86_64_start_reservations+0xaa/0xae
+> [    0.000000]  [<ffffffff8180837f>] x86_64_start_kernel+0xe1/0xe8
+> [    0.000000] ---[ end trace 4eaa2a86a8e2da22 ]---
+> [    0.000000] start_kernel(): bug: interrupts were enabled *very* early, fixing it
+>
+> This is because down_write() uses spin_lock_irq(), not spin_lock_irqsave().
+> I think this is sane because down_write() is not called under irq-disabled.
+> By this, irq is enabled before init_IRQ().
+>
+> SLUB don't have this bug because it uses special routine for initializing
+> kmalloc area. (See slub.c::create_kmalloc_cache(), it's commented.)
 
-  That's true, thanks.
+Should be fixed by this:
 
--- 
-Regards
-Gui Jianfeng
-
+http://git.kernel.org/?p=linux/kernel/git/penberg/slab-2.6.git;a=commitdiff;h=791738e83b97d2d4fc631d68483430200035bdf3
