@@ -1,91 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932490AbZHDUe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbZHDUgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932490AbZHDUe4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 16:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932399AbZHDUez
+	id S1755176AbZHDUgL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 16:36:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932399AbZHDUgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 16:34:55 -0400
-Received: from brmea-mail-4.Sun.COM ([192.18.98.36]:52159 "EHLO
-	brmea-mail-4.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932274AbZHDUey (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 16:34:54 -0400
-X-Greylist: delayed 1480 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Aug 2009 16:34:54 EDT
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; CHARSET=US-ASCII; format=flowed
-Date: Tue, 04 Aug 2009 16:10:05 -0400
-From: james puthukattukaran - Sun Microsystems - Burlington
-	 United States <James.Puthukattukaran@sun.com>
-Subject: [PATCH] ACPI: uninitialized static variable causes system to fault
- when loading acpiphp driver
-To: linux-kernel@vger.kernel.org
-Message-id: <4A78959D.6020300@sun.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080421)
+	Tue, 4 Aug 2009 16:36:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35925 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754923AbZHDUgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 16:36:09 -0400
+Date: Tue, 4 Aug 2009 22:35:26 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: penberg@cs.helsinki.fi, a.p.zijlstra@chello.nl, fweisbec@gmail.com,
+       rostedt@goodmis.org, mel@csn.ul.ie, lwoodman@redhat.com,
+       riel@redhat.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 4/4] tracing, page-allocator: Add a postprocessing
+	script for page-allocator-related ftrace events
+Message-ID: <20090804203526.GA8699@elte.hu>
+References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie> <1249409546-6343-5-git-send-email-mel@csn.ul.ie> <20090804112246.4e6d0ab1.akpm@linux-foundation.org> <20090804195717.GA5998@elte.hu> <20090804131818.ee5d4696.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090804131818.ee5d4696.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Initialize the static variable sub_driver to NULL.  This causes 
-acp_pci_register_driver to take a page fault when this routine is called 
-as part of loading the acpiphp driver. This patch applies to 2.6.30.
 
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
-Unable to handle kernel paging request at ffffffff886cd330 RIP:  
-[<ffffffff80192d7b>] acpi_pci_register_driver+0x13/0x58
-PGD 203067 PUD 205063 PMD 276f9b067 PTE 0
-Oops: 0000 [1] SMP
-last sysfs file: /block/ram0/dev
-CPU 9
-Modules linked in: acpiphp ipt_REJECT xt_tcpudp x_tables bridge autofs4 
-ipmi_devintf ipmi_si ipmi_msghandler hidp rfcomm l2cap bluetooth lockd 
-sunrpc ib_iser rdma_cm ib_cm iw_cm ib_sa ib_mad ib_core ib_addr 
-iscsi_tcp bnx2i cnic ipv6 xfrm_nalgo crypto_api uio cxgb3i cxgb3 
-libiscsi_tcp libiscsi2 scsi_transport_iscsi2 scsi_transport_iscsi 
-cpufreq_ondemand acpi_cpufreq freq_table dm_mirror dm_multipath scsi_dh 
-video hwmon backlight sbs i2c_ec button battery asus_acpi 
-acpi_memhotplug ac parport_pc lp parport joydev igb shpchp i2c_i801 
-8021q i2c_core sg pcspkr dm_raid45 dm_message dm_region_hash dm_log 
-dm_mod dm_mem_cache usb_storage mptsas mptscsih scsi_transport_sas 
-mptbase ahci libata sd_mod scsi_mod ext3 jbd uhci_hcd ohci_hcd ehci_hcd
-Pid: 15674, comm: modprobe Not tainted 2.6.18-160.el5 #1
-RIP: 0010:[<ffffffff80192d7b>]  [<ffffffff80192d7b>] 
-acpi_pci_register_driver+0x13/0x58
-RSP: 0018:ffff81037f98bf08  EFLAGS: 00010286
-RAX: ffffffff886cd330 RBX: ffffffff8864f380 RCX: ffff81027fbc5c40
-RDX: ffffffff886cd330 RSI: 0000000000000001 RDI: ffffffff8864f330
-RBP: ffffffff8864f330 R08: 0000000000000000 R09: ffffffffffffffff
-R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000012c20
-R13: 00002b5effbc7010 R14: 00000000191ef388 R15: 00002b5effbc7010
-FS:  00002b5effbc6240(0000) GS:ffff810283bca440(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: ffffffff886cd330 CR3: 000000027ffba000 CR4: 00000000000006e0
-Process modprobe (pid: 15674, threadinfo ffff81037f98a000, task 
-ffff81037fb36040)
-Stack:  ffffffff8864f380 00000000191ef0e0 0000000000012c20 ffffffff881fd088
- ffffffff8864f380 00000000191ef0e0 0000000200012c20 ffffffff881fd027
- ffffffff8864f380 ffffffff800a5a04 00002b5effbc7010 0000000000000000
-Call Trace:
- [<ffffffff881fd088>] :acpiphp:acpiphp_glue_init+0x42/0x49
- [<ffffffff881fd027>] :acpiphp:acpiphp_init+0x27/0x46
- [<ffffffff800a5a04>] sys_init_module+0xaf/0x1f2
- [<ffffffff8005d28d>] tracesys+0xd5/0xe0
+> On Tue, 4 Aug 2009 21:57:17 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > Let me demonstrate these features in action (i've applied the 
+> > patches for testing to -tip):
+> 
+> So?  The fact that certain things can be done doesn't mean that 
+> there's a demand for them, nor that anyone will _use_ this stuff.
 
+c'mon Andrew ...
 
+Did you never want to see whether firefox is leaking [any sort of] 
+memory, and if yes, on what callsites? Try something like on an 
+already running firefox context:
 
-Signed-off-by: James Puthukattukaran <james.puthukattukaran@sun.com>
+  perf stat -e kmem:mm_page_alloc \
+            -e kmem:mm_pagevec_free \
+            -e kmem:mm_page_free_direct \
+     -p $(pidof firefox-bin) sleep 10
 
---- drivers/acpi/pci_root.c.orig      2009-08-04 15:36:20.000000000 -0400
-+++ drivers/acpi/pci_root.c   2009-08-04 15:36:09.000000000 -0400
-@@ -76,7 +76,7 @@ struct acpi_pci_root {
- 
- static LIST_HEAD(acpi_pci_roots);
- 
--static struct acpi_pci_driver *sub_driver;
-+static struct acpi_pci_driver *sub_driver = NULL;
- static DEFINE_MUTEX(osc_lock);
- 
- int acpi_pci_register_driver(struct acpi_pci_driver *driver)
---
+... and "perf record" for the specific callsites.
 
+this perf stuff is immensely flexible and a very unixish 
+abstraction. The perf.data contains timestamped trace entries of 
+page allocations and freeing done.
+
+[...]
+> It would be nice to at least partially remove the vmstat/meminfo 
+> infrastructure but I don't think we can do that?
+
+at least meminfo is an ABI for sure - vmstat too really.
+
+But we can stop adding new fields into obsolete, inflexible and 
+clearly deficient interfaces, and we can standardize new 
+instrumentation to use modern instrumentation facilities - i.e. 
+tracepoints and perfcounters.
+
+I'm not saying to put a tracepoint on every second line of the 
+kernel, but obviously Mel and Rik wanted this kind of info because 
+they found it useful in practice.
+
+	Ingo
