@@ -1,98 +1,264 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932199AbZHDTon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbZHDT5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932199AbZHDTon (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 15:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZHDTom
+	id S1754551AbZHDT5f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 15:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbZHDT5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 15:44:42 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:49934 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753105AbZHDTol (ORCPT
+	Tue, 4 Aug 2009 15:57:34 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47293
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754062AbZHDT5d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 15:44:41 -0400
-Date: Tue, 4 Aug 2009 12:44:22 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: David Rientjes <rientjes@google.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-ext4@vger.kernel.org
-Subject: Re: [Bug #13666] WARNING: at mm/page_alloc.c:1743
- __alloc_pages_nodemask
-In-Reply-To: <alpine.DEB.2.01.0908021348440.5831@bogon.housecafe.de>
-Message-ID: <alpine.DEB.2.01.0908041241510.5831@bogon.housecafe.de>
-References: <Jya1GruKQpD.A.16.2GObKB@chimera> <alpine.DEB.2.01.0908011427270.5831@bogon.housecafe.de> <alpine.DEB.2.01.0908021314030.5831@bogon.housecafe.de> <200908022226.52228.rjw@sisk.pl> <alpine.DEB.2.01.0908021331350.5831@bogon.housecafe.de>
- <alpine.DEB.2.01.0908021348440.5831@bogon.housecafe.de>
-User-Agent: Alpine 2.01 (DEB 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Provags-ID: V01U2FsdGVkX19ZhxzFYmfe35cTRtZ3SyhwqKCnYs0puZLHGM7
- V8s/cfcP25BxC3oqYVyKfHrqljHnPgwxGXGBBUeccZ6X60L/dy
- iS5e19VCYjYY837y0Zbog==
+	Tue, 4 Aug 2009 15:57:33 -0400
+Date: Tue, 04 Aug 2009 12:57:42 -0700 (PDT)
+Message-Id: <20090804.125742.32009006.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2 Aug 2009 at 13:53, Christian Kujau wrote:
-> [  124.683454] ------------[ cut here ]------------
-> [  124.683577] WARNING: at mm/page_alloc.c:1749 __alloc_pages_nodemask+0x4c4/0x5a0()
 
-Hm, I just wonder: is this something to worry about? The filesystem itself 
-seems fine so far, but I don't want it to get (silently) corrupted with 
-each mount because of this warning...
+1) IGBVF won't pass traffic due to mis-reading of MAC setting errors.
+   Fix from Alexander Duyck.
 
-> [  124.683704] Hardware name: Lenovo          
-> [  124.683795] Modules linked in: fuse acpi_cpufreq nfsd lockd nfs_acl auth_rpcgss sunrpc lm75 hwmon usb_storage usb_libusual b43 mac80211 uhci_hcd cfg80211 ehci_hcd tg3 usbcore libphy ssb nls_base
-> [  124.685187] Pid: 2743, comm: mount Not tainted 2.6.31-rc5 #1
-> [  124.685286] Call Trace:
-> [  124.685383]  [<c1036dda>] ? warn_slowpath_common+0x7a/0xc0
-> [  124.685489]  [<c1076be4>] ? __alloc_pages_nodemask+0x4c4/0x5a0
-> [  124.685596]  [<c1036e40>] ? warn_slowpath_null+0x20/0x40
-> [  124.685700]  [<c1076be4>] ? __alloc_pages_nodemask+0x4c4/0x5a0
-> [  124.685808]  [<c106dc72>] ? delayacct_end+0xa2/0xd0
-> [  124.685913]  [<c1076d41>] ? __get_free_pages+0x21/0x60
-> [  124.686018]  [<c11f02cd>] ? match_number+0x3d/0xc0
-> [  124.686122]  [<c1129512>] ? parse_options+0xe2/0x5d0
-> [  124.686225]  [<c135118b>] ? out_of_line_wait_on_bit+0xbb/0xf0
-> [  124.686334]  [<c10c6ff8>] ? __wait_on_buffer+0x28/0x50
-> [  124.686438]  [<c112b5b7>] ? ext4_fill_super+0x457/0x2670
-> [  124.686542]  [<c11ee146>] ? vsnprintf+0x516/0x820
-> [  124.686646]  [<c11e7f2d>] ? kobject_get+0x1d/0x40
-> [  124.686752]  [<c10ef5c7>] ? disk_name+0xd7/0xe0
-> [  124.686855]  [<c10a37ca>] ? get_sb_bdev+0x15a/0x1a0
-> [  124.686958]  [<c112b160>] ? ext4_fill_super+0x0/0x2670
-> [  124.687062]  [<c112822d>] ? ext4_get_sb+0x2d/0x50
-> [  124.687162]  [<c112b160>] ? ext4_fill_super+0x0/0x2670
-> [  124.687265]  [<c10a24f8>] ? vfs_kern_mount+0x58/0xd0
-> [  124.687369]  [<c10a2606>] ? do_kern_mount+0x56/0x120
-> [  124.687474]  [<c10bb2da>] ? do_mount+0x23a/0x750
-> [  124.687575]  [<c10b91c1>] ? copy_mount_options+0x61/0x160
-> [  124.687679]  [<c10bb88f>] ? sys_mount+0x9f/0x100
-> [  124.687783]  [<c1003304>] ? syscall_call+0x7/0xb
-> [  124.687883] ---[ end trace e312a7d04db27a01 ]---
-> [  124.981799] EXT4-fs (dm-8): barriers enabled
-> [  125.002226] kjournald2 starting: pid 2744, dev dm-8:8, commit interval 5 seconds
-> [  125.003346] EXT4-fs (dm-8): internal journal on dm-8:8
-> [  125.003555] EXT4-fs (dm-8): delayed allocation enabled
-> [  125.003751] EXT4-fs: file extents enabled
-> [  125.343718] EXT4-fs: mballoc enabled
-> [  125.343884] EXT4-fs (dm-8): mounted filesystem with ordered data mode
-> 
-> 
-> Full dmesg and config: http://nerdbynature.de/bits/2.6.31-rc5/
-> 
-> No mount options were passed on the commandline but read from fstab:
-> 
-> $ grep ext4 /etc/fstab
-> /dev/mapper/wdc0    /mnt/disk0 ext4 nosuid,nodev,noexec,noauto,barrier 0 0
-> 
-> 
-> I'm in the process of creating an e2image of this partition, would this 
-> help anyone?
-> 
-> Thanks,
-> Christian.
+2) Regression in PPP-MP fragmentation handling, fix from Ben McKeegan.
 
--- 
-BOFH excuse #166:
+3) PPPOE procfs support can report the final hash chain's entry
+   "many times", fix from Eric Dumazet.
 
-/pub/lunch
+4) EHEA interface down doesn't unregister the NAPI context --> crash.
+   Fix from Hannes Hering.
+
+5) Transmits can happen when taking sky2 interfaces down, corrupting
+   state, fix from Mike McCormack.
+
+6) PCIe completion timeouts programmed incorrectly, and thus out
+   of spec for PCIe, in IXGBE driver.  Fix from Mallikarjuna R Chilakala.
+
+7) net_assign_generic() does memcpy(... count) instead of
+   memcpy(... count * object_size), fix from Eric Dumazet.
+
+8) pppol2tp forgets to release per-net-namespace metadata during
+   module unload, leaking memory.  Fix from Eric Dumazet.
+
+9) Several reads past end-of-array boundary fixes from Roel Kluin
+   (airo, ath9k, iwlwifi, libertas, ARP, 3c515, eexpress, tulip,
+   s6gmac, mISDN).
+
+10) NETPOLL support in IXGBE doesn't consider all queues, and thus
+    didn't work well.  Fix from Peter P Waskiewicz Jr.
+
+11) IXGBE was doing:
+    	adapter->flags & IXGBE_FLAG2_*
+    instead of:
+	adapter->flags2 & IXGBE_FLAG2_*
+    Fix also from Peter P Waskiewicz Jr.
+
+12) Coherent DMA mask not set properly in netxen driver.  Fix from
+    Dhananjay Phadke.
+
+13) MLX4 driver unmaps DMA twice by mistake, oops, fix from Yevgeny
+    Petrilin.
+
+14) Fix mISDN receive buffer size usage regression, from
+    Andreas Eversberg.
+
+15) We thought we could rely upon RTNL mutex protection for unicast
+    address list changes throughout, but unfortunately ipv6 needs
+    to change these things from software interrupt, so a seperate
+    spinlock is needed.  Regression fixed by Jiri Pirko.
+
+16) IP address printing docbook fix from Tobias Klauser.
+
+17) IPV4 route reverse path filter got broken when it was converted
+    into a trinary knob, fix from Stephen Hemminger.
+
+18) ISCSI needs to use GFP_ATOMIC allocations in iscsi_offload_mesg().
+    Fix from Michael Chan.
+
+19) Missing kfree calls from Julia Lawall.
+
+20) 3c59x build fix for gcc-3.2
+
+21) VLB and NULL pointer check fixes in pcnet32 by Bartlomiej Zolnierkiewicz
+    via Don Fry.
+
+Please pull, thanks a lot!
+
+The following changes since commit a33a052f19a21d727847391c8c1aff3fb221c472:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://neil.brown.name/md
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Alexander Duyck (1):
+      igbvf: Allow VF driver to correctly recognize failure to set mac
+
+Andreas Eversberg (1):
+      mISDN: Fix handling of receive buffer size in L1oIP
+
+Ben McKeegan (1):
+      ppp: fix lost fragments in ppp_mp_explode() (resubmit)
+
+Dan Carpenter (1):
+      wireless: ERR_PTR vs null
+
+Dave Young (1):
+      bluetooth: rfcomm_init bug fix
+
+David S. Miller (2):
+      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
+      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
+
+Dhananjay Phadke (1):
+      netxen: fix coherent dma mask setting
+
+Don Fry (2):
+      pcnet32: remove superfluous NULL pointer check in pcnet32_probe1()
+      pcnet32: VLB support fixes
+
+Eric Dumazet (3):
+      pppoe: fix /proc/net/pppoe
+      pppol2tp: calls unregister_pernet_gen_device() at unload time
+      net: net_assign_generic() fix
+
+Hannes Hering (1):
+      ehea: Fix napi list corruption on ifconfig down
+
+Jean Delvare (1):
+      3c59x: Fix build failure with gcc 3.2
+
+Jiajun Wu (1):
+      gianfar: fix coalescing setup in ethtool support
+
+Jiri Pirko (1):
+      net: restore the original spinlock to protect unicast list
+
+Johannes Berg (3):
+      iwlwifi: fix TX queue race
+      mac80211: fix suspend
+      cfg80211: add two missing NULL pointer checks
+
+Julia Lawall (3):
+      net/netlabel: Add kmalloc NULL tests
+      drivers/net/wireless/iwlwifi: introduce missing kfree
+      drivers/net/wireless: introduce missing kfree
+
+Luis R. Rodriguez (2):
+      mac80211: do not queue work after suspend in the dynamic ps timer
+      cfg80211: fix regression on beacon world roaming feature
+
+Mallikarjuna R Chilakala (1):
+      ixgbe: Patch to modify 82598 PCIe completion timeout values
+
+Michael Chan (1):
+      iscsi: Use GFP_ATOMIC in iscsi_offload_mesg().
+
+Mike McCormack (1):
+      sky2: Avoid transmits during sky2_down()
+
+Patrick Simmons (1):
+      zd1211rw: fix unaligned access in zd_mac_rx
+
+Peter P Waskiewicz Jr (3):
+      ixgbe: Fix netpoll to be properly multiqueue aware
+      ixgbe: Fix usage of second flags bitmap when using LRO/RSC
+      ixgbe: Fix RSC completion delay causing Rx interrupts to stop
+
+Reinette Chatre (1):
+      iwlagn: do not send key clear commands when rfkill enabled
+
+Roel Kluin (6):
+      airo: Buffer overflow
+      ath9k: Read outside array bounds
+      iwlwifi: Read outside array bounds
+      libertas: Read outside array bounds
+      libertas: Read buffer overflow
+      libertas: Read buffer overflow
+
+Stephen Hemminger (1):
+      ip: fix logic of reverse path filter sysctl
+
+Tobias Klauser (1):
+      docbook: fix printk of ip address
+
+Yevgeny Petrilin (1):
+      mlx4_en: Fix double pci unmapping.
+
+reinette chatre (1):
+      iwlagn: fix minimum number of queues setting
+
+roel kluin (6):
+      3c515: Write outside array bounds
+      ipv4: ARP neigh procfs buffer overflow
+      eexpress: Read buffer overflow
+      tulip: Read buffer overflow
+      s6gmac: Read buffer overflow
+      mISDN: Read buffer overflow
+
+ Documentation/DocBook/kernel-hacking.tmpl    |    4 +-
+ drivers/isdn/mISDN/l1oip_core.c              |    6 +-
+ drivers/net/3c515.c                          |    4 +-
+ drivers/net/3c59x.c                          |   10 ++--
+ drivers/net/eexpress.c                       |    6 +-
+ drivers/net/ehea/ehea.h                      |    2 +-
+ drivers/net/ehea/ehea_main.c                 |    3 +
+ drivers/net/gianfar_ethtool.c                |   10 ++--
+ drivers/net/igbvf/vf.c                       |    4 ++
+ drivers/net/ixgbe/ixgbe.h                    |    2 +
+ drivers/net/ixgbe/ixgbe_82598.c              |   67 +++++++++++++++++++++++++-
+ drivers/net/ixgbe/ixgbe_ethtool.c            |   11 +++--
+ drivers/net/ixgbe/ixgbe_main.c               |   25 ++++++----
+ drivers/net/ixgbe/ixgbe_type.h               |    8 +++
+ drivers/net/mlx4/en_tx.c                     |    1 +
+ drivers/net/netxen/netxen_nic_main.c         |   37 ++++++++++-----
+ drivers/net/pcnet32.c                        |   30 +++++------
+ drivers/net/ppp_generic.c                    |   34 +++++++------
+ drivers/net/pppoe.c                          |    1 +
+ drivers/net/pppol2tp.c                       |    1 +
+ drivers/net/s6gmac.c                         |    2 +-
+ drivers/net/sky2.c                           |   14 +++++-
+ drivers/net/sky2.h                           |    1 +
+ drivers/net/tulip/de4x5.c                    |    6 +-
+ drivers/net/wireless/airo.c                  |   13 ++---
+ drivers/net/wireless/ath/ath9k/eeprom.c      |    4 +-
+ drivers/net/wireless/iwlwifi/iwl-3945.h      |    2 +-
+ drivers/net/wireless/iwlwifi/iwl-core.c      |    3 +
+ drivers/net/wireless/iwlwifi/iwl-debugfs.c   |   12 ++--
+ drivers/net/wireless/iwlwifi/iwl-dev.h       |    6 ++-
+ drivers/net/wireless/iwlwifi/iwl-sta.c       |   12 +++++
+ drivers/net/wireless/iwlwifi/iwl-tx.c        |   14 +++--
+ drivers/net/wireless/iwlwifi/iwl3945-base.c  |    7 ++-
+ drivers/net/wireless/iwmc3200wifi/commands.c |    1 +
+ drivers/net/wireless/iwmc3200wifi/netdev.c   |    6 +--
+ drivers/net/wireless/libertas/11d.c          |    2 +-
+ drivers/net/wireless/libertas/assoc.c        |   18 +++----
+ drivers/net/wireless/libertas/scan.c         |    3 +-
+ drivers/net/wireless/zd1211rw/zd_mac.c       |    2 +-
+ drivers/scsi/scsi_transport_iscsi.c          |    4 +-
+ include/linux/inetdevice.h                   |    2 +-
+ include/net/bluetooth/rfcomm.h               |   12 ++++-
+ include/net/cfg80211.h                       |    5 ++
+ net/bluetooth/rfcomm/core.c                  |   27 +++++++---
+ net/bluetooth/rfcomm/sock.c                  |    2 +-
+ net/core/dev.c                               |   25 ++++++----
+ net/core/net_namespace.c                     |    2 +-
+ net/ipv4/arp.c                               |    4 +-
+ net/mac80211/mlme.c                          |    2 +-
+ net/mac80211/pm.c                            |   24 ++++++----
+ net/mac80211/rx.c                            |   12 +++++
+ net/netlabel/netlabel_kapi.c                 |    2 +-
+ net/wireless/reg.c                           |    9 ++--
+ net/wireless/reg.h                           |    3 +-
+ net/wireless/scan.c                          |    4 +-
+ 55 files changed, 366 insertions(+), 167 deletions(-)
