@@ -1,133 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932546AbZHDHmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932550AbZHDHpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932546AbZHDHmk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 03:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932532AbZHDHmk
+	id S932550AbZHDHpi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 03:45:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932510AbZHDHph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 03:42:40 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:55947 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932525AbZHDHmj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 03:42:39 -0400
-Message-ID: <4A77E62D.8070803@ct.jp.nec.com>
-Date: Tue, 04 Aug 2009 16:41:33 +0900
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Tue, 4 Aug 2009 03:45:37 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58801 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932493AbZHDHph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 03:45:37 -0400
+Date: Tue, 4 Aug 2009 09:45:10 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp, reif@earthlink.net,
+       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org,
+       x86@kernel.org, tony.luck@intel.com, akpm@linux-foundation.org
+Subject: Re: [PATCH v2 0/8] sparc: use asm-generic/dma-mapping-common.h and
+	pci-dma-compat.h
+Message-ID: <20090804074510.GA22900@elte.hu>
+References: <20090721160538.GL25756@amd.com> <20090721.121519.239732131.davem@davemloft.net> <20090803055608.GB19428@elte.hu> <20090803.212232.259171216.davem@davemloft.net>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] posix-timers: fix oops in clock_nanosleep() with CLOCK_MONOTONIC_RAW
-References: <4A764FF3.50607@ct.jp.nec.com> <20090804002226.2972cf47.akpm@linux-foundation.org>
-In-Reply-To: <20090804002226.2972cf47.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090803.212232.259171216.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 03 Aug 2009 11:48:19 +0900 Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
+
+* David Miller <davem@davemloft.net> wrote:
+
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Mon, 3 Aug 2009 07:56:08 +0200
 > 
->> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->>
->> Prevent calling do_nanosleep() with clockid CLOCK_MONOTONIC_RAW, it may
->> cause oops, such as NULL pointer dereference.
->>
->> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->> ---
->>  kernel/posix-timers.c |    7 +++++++
->>  1 files changed, 7 insertions(+), 0 deletions(-)
->>
->> diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
->> index 052ec4d..d089d05 100644
->> --- a/kernel/posix-timers.c
->> +++ b/kernel/posix-timers.c
->> @@ -202,6 +202,12 @@ static int no_timer_create(struct k_itimer *new_timer)
->>  	return -EOPNOTSUPP;
->>  }
->>  
->> +static int no_nsleep(const clockid_t which_clock, int flags,
->> +		     struct timespec *tsave, struct timespec __user *rmtp)
->> +{
->> +	return -EOPNOTSUPP;
->> +}
->> +
->>  /*
->>   * Return nonzero if we know a priori this clockid_t value is bogus.
->>   */
->> @@ -254,6 +260,7 @@ static __init int init_posix_timers(void)
->>  		.clock_get = posix_get_monotonic_raw,
->>  		.clock_set = do_posix_clock_nosettime,
->>  		.timer_create = no_timer_create,
->> +		.nsleep = no_nsleep,
->>  	};
->>  
->>  	register_posix_clock(CLOCK_REALTIME, &clock_realtime);
+> > I'm wondering how sparc32 handles core_kernel_text() & friends? 
+> > 
+> > Those functions already assume that the bits between _stext and 
+> > _etext are all core kernel text and not generic pages freed back 
+> > to the buddy.
 > 
-> Under which circumstances will this oops trigger?
-> 
-> What userspace setup/actions will trigger the oops?
+> They won't work for such pages obviously.  Shows how many sparc32 
+> users who trigger this case of actually freeing those pages and 
+> using such facilities there actually are :-)
 
-Sorry for the lack of information.
-Userspace program is like this;
+:)
 
-#include <time.h>
+I suspect the other bit is probably that core_kernel_text() really 
+didnt use to have any critical use at all - just debugging/lockdep 
+mostly. So no functionality broke for people to report.
 
-int main(void)
-{
-	struct timespec ts;
+Such bugs often have years of latency on x86 too - we recently fixed 
+one that was there for over a year and nobody noticed:
 
-	ts.tv_sec = 1;
-	ts.tv_nsec = 0;
+ 4a44bac: symbols, stacktrace: look up init symbols after module symbols
 
-	return clock_nanosleep(4, 0, &ts, NULL);
-}
-
-and it will cause oops;
-
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000001
-IP: [<ffffffff81029eb5>] __ticket_spin_lock+0x9/0x1a
-PGD 3dc6c067 PUD 3b519067 PMD 0 
-Oops: 0002 [#1] SMP 
-last sysfs file: /sys/devices/pci0000:00/0000:00:1c.0/0000:02:00.0/irq
-CPU 0 
-Modules linked in: sco bnep l2cap bluetooth sunrpc bridge stp llc ipv6 p4_clockmod speedstep_lib freq_table dm_multipath uinput iTCO_wdt iTCO_vendor_support tg3 i2c_i801 snd_intel8x0 snd_ac97_codec ac97_bus ppdev snd_pcm parport_pc snd_timer floppy parport snd soundcore snd_page_alloc pcspkr ata_generic pata_acpi nouveau drm i2c_algo_bit i2c_core [last unloaded: freq_table]
-Pid: 20114, comm: a.out Not tainted 2.6.29.6-213.fc11.x86_64 #1 PC-MY32EXZE78SG
-RIP: 0010:[<ffffffff81029eb5>]  [<ffffffff81029eb5>] __ticket_spin_lock+0x9/0x1a
-RSP: 0018:ffff88003e08bd88  EFLAGS: 00010046
-RAX: 0000000000000100 RBX: 0000000000000001 RCX: 0000000000000001
-RDX: 000000000000c350 RSI: 0000000000000286 RDI: 0000000000000001
-RBP: ffff88003e08bd88 R08: 0000000000000001 R09: 0000003ec680eec0
-R10: 0000000000000000 R11: 0000000000000246 R12: 0000000000000286
-R13: ffff88003e08be20 R14: 000000000000c350 R15: 000000000000c350
-FS:  00007fb6cd3996f0(0000) GS:ffffffff817b7000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 0000000000000001 CR3: 000000003a5c0000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process a.out (pid: 20114, threadinfo ffff88003e08a000, task ffff8800399e1700)
-Stack:
- ffff88003e08bd98 ffffffff81029f7f ffff88003e08bdb8 ffffffff813ac07c
- ffff880001011178 ffff88003e08be98 ffff88003e08bde8 ffffffff8105f3a1
- ffff88003e08bdd8 ffff88003e08be98 0000000000000001 000000003b9aca00
-Call Trace:
- [<ffffffff81029f7f>] default_spin_lock_flags+0x9/0xe
- [<ffffffff813ac07c>] _spin_lock_irqsave+0x32/0x3b
- [<ffffffff8105f3a1>] lock_hrtimer_base+0x2a/0x50
- [<ffffffff8105f527>] __hrtimer_start_range_ns+0x2f/0x238
- [<ffffffff8105f75e>] hrtimer_start_range_ns+0x14/0x16
- [<ffffffff813aac8b>] do_nanosleep+0x4e/0xae
- [<ffffffff8105f813>] hrtimer_nanosleep+0xb3/0x123
- [<ffffffff8105edea>] ? hrtimer_wakeup+0x0/0x26
- [<ffffffff8105b4ed>] sys_clock_nanosleep+0xc9/0xdf
- [<ffffffff8101133a>] system_call_fastpath+0x16/0x1b
-Code: 9c 02 81 44 89 c6 48 89 c7 e8 0a fb ff ff eb 0f 0f b7 f6 40 0f b6 ff 48 89 c2 e8 1c fb ff ff c9 c3 90 55 b8 00 01 00 00 48 89 e5 <f0> 66 0f c1 07 38 e0 74 06 f3 90 8a 07 eb f6 c9 c3 55 48 89 e5 
-RIP  [<ffffffff81029eb5>] __ticket_spin_lock+0x9/0x1a
- RSP <ffff88003e08bd88>
-CR2: 0000000000000001
----[ end trace e83b583836779b24 ]---
-
-thanks,
-Hiroshi
+	Ingo
