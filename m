@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933594AbZHDXHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933563AbZHDXQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933594AbZHDXHB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 19:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933510AbZHDXHB
+	id S933563AbZHDXQf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 19:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbZHDXQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 19:07:01 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55071 "EHLO
+	Tue, 4 Aug 2009 19:16:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40135 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933437AbZHDXHA (ORCPT
+	by vger.kernel.org with ESMTP id S1753569AbZHDXQe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 19:07:00 -0400
-Date: Tue, 4 Aug 2009 16:04:16 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Manuel Lauss <mano@roarinelk.homelinux.net>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Wilcox <willy@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andrew Patterson <andrew.patterson@hp.com>
-Subject: Re: [Regression] PCI resources allocation problem on HP nx6325
-In-Reply-To: <20090803165909.GA12824@roarinelk.homelinux.net>
-Message-ID: <alpine.LFD.2.01.0908041555120.3270@localhost.localdomain>
-References: <200908021619.48285.rjw@sisk.pl> <alpine.LFD.2.01.0908020927410.3352@localhost.localdomain> <20090803165909.GA12824@roarinelk.homelinux.net>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 4 Aug 2009 19:16:34 -0400
+Date: Tue, 4 Aug 2009 16:16:23 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, rolandd@cisco.com
+Subject: Re: mmotm 2009-08-04-14-22 uploaded (ummunotify)
+Message-Id: <20090804161623.c920596a.akpm@linux-foundation.org>
+In-Reply-To: <20090804155014.35d4597c.randy.dunlap@oracle.com>
+References: <200908042125.n74LP9qY018119@imap1.linux-foundation.org>
+	<20090804155014.35d4597c.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 4 Aug 2009 15:50:14 -0700
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-
-On Mon, 3 Aug 2009, Manuel Lauss wrote:
+> On Tue, 04 Aug 2009 14:25:09 -0700 akpm@linux-foundation.org wrote:
 > 
-> This patch introduces a warning on my system:
+> > The mm-of-the-moment snapshot 2009-08-04-14-22 has been uploaded to
+> > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> > 
+> > and will soon be available at
+> > 
+> >    git://git.zen-sources.org/zen/mmotm.git
+> > 
+> > It contains the following patches against 2.6.31-rc5:
 > 
-> pci 0000:02:03.0: BAR 6: address space collision on of device [0xff680000-0xff69ffff]
+> 
+> Seems odd to me, but I'm seeing:
+> 
+> ummunotify.c:(.text+0x8f217): undefined reference to `__get_user_X'
+> 
+> when building for i386.
+> 
+> The get_user() and put_user() in ummunotify_exchange_features()
+> are correctly converted to __get_user_4() and __put_user_4(),
+> but the get_user() in ummunotify_unregister_region() becomes
+> __get_user_X()  [as seen in objdump output].
+> 
+> toolchain issue or something else??
+> 
 
-Heh, that's funny. I suspect you have always had the error, it's just that 
-back before the commit that started using "pci_claim_resource()", we did 
-that "find_parent_resource()+request_resource()" by hand.
+yes, strange.
 
-So before commit a76117dfd687ec4be0a9a05214f3009cc5f73a42, the ROM 
-resources were done with:
+.config please?
 
-	pr = pci_find_parent_resource(dev, r);
-	if (!pr || request_resource(pr, r) < 0) {
-		r->end -= r->start;
-		r->start = 0;
-	}
-
-inside pcibios_assign_resources(), and it would never warn about it, it 
-would just silently mark the resource unregistered (and then we'd 
-re-allocate it later).
-
-So I _think_ that you actually are getting the same layout as with 2.6.30, 
-but with a warning that didn't exist in 2.6.30. Can you verify?
-
-With the change to use "pci_claim_resource()", it initially changed things 
-to use "insert_resource()", and that shouldn't have even succeeded, but 
-apparently did! That's a bit scary. The patch to make it use 
-pci_request_resource() should have made it have the same behavior as we 
-had in 2.6.30 - albeit with the warning (that we didn't use to have).
-
-I do wonder why the insert_resource() seems to have worked, though, so 
-maybe I'm misdiagnosing this. Can you post your /proc/iomem from 2.6.30?
-
-		Linus
+Try `make drivers/char/ummunotify.i' then have a poke around in ummunotify.i?
