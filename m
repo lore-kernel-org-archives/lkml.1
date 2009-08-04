@@ -1,57 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933283AbZHDVyg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933388AbZHDVxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933283AbZHDVyg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 17:54:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933225AbZHDVxI
+	id S933388AbZHDVxc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 17:53:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933348AbZHDVxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 17:53:08 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43937 "EHLO
+	Tue, 4 Aug 2009 17:53:19 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:43947 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933111AbZHDVxE (ORCPT
+	with ESMTP id S933277AbZHDVxM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 17:53:04 -0400
+	Tue, 4 Aug 2009 17:53:12 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200908041152.240876191@firstfloor.org>
 In-Reply-To: <200908041152.240876191@firstfloor.org>
 To: akpm@linux-foundation.org, linux-mm@vger.kernel.org,
        linux-kernel@vger.kernel.org, fengguang.wu@intel.com
-Subject: [PATCH] [6/15] HWPOISON: Add various poison checks in mm/memory.c v2
-Message-Id: <20090804215305.4D6D0B15D8@basil.firstfloor.org>
-Date: Tue,  4 Aug 2009 23:53:05 +0200 (CEST)
+Subject: [PATCH] [14/15] HWPOISON: Add madvise() based injector for hardware poisoned pages v3
+Message-Id: <20090804215313.626E8B15D8@basil.firstfloor.org>
+Date: Tue,  4 Aug 2009 23:53:13 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Bail out early when hardware poisoned pages are found in page fault handling.
-Since they are poisoned they should not be mapped freshly into processes,
-because that would cause another (potentially deadly) machine check
+Impact: optional, useful for debugging
 
-This is generally handled in the same way as OOM, just a different
-error code is returned to the architecture code.
+Add a new madvice sub command to inject poison for some
+pages in a process' address space.  This is useful for
+testing the poison page handling.
 
-v2: Do a page unlock if needed (Fengguang Wu)
+Open issues:
+
+- This patch allows root to tie up arbitary amounts of memory.
+Should this be disabled inside containers?
+- There's a small race window between getting the page and injecting.
+The patch drops the ref count because otherwise memory_failure
+complains about dangling references. In theory with a multi threaded
+injector one could inject poison for a process foreign page this way.
+Not a serious issue right now.
+
+v2: Use write flag for get_user_pages to make sure to always get
+a fresh page
+v3: Don't request write mapping (Fengguang Wu)
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- mm/memory.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ include/asm-generic/mman-common.h |    1 +
+ mm/madvise.c                      |   36 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 37 insertions(+)
 
-Index: linux/mm/memory.c
+Index: linux/mm/madvise.c
 ===================================================================
---- linux.orig/mm/memory.c
-+++ linux/mm/memory.c
-@@ -2711,6 +2711,12 @@ static int __do_fault(struct mm_struct *
- 	if (unlikely(ret & (VM_FAULT_ERROR | VM_FAULT_NOPAGE)))
- 		return ret;
+--- linux.orig/mm/madvise.c
++++ linux/mm/madvise.c
+@@ -207,6 +207,38 @@ static long madvise_remove(struct vm_are
+ 	return error;
+ }
  
-+	if (unlikely(PageHWPoison(vmf.page))) {
-+		if (ret & VM_FAULT_LOCKED)
-+			unlock_page(vmf.page);
-+		return VM_FAULT_HWPOISON;
++#ifdef CONFIG_MEMORY_FAILURE
++/*
++ * Error injection support for memory error handling.
++ */
++static int madvise_hwpoison(unsigned long start, unsigned long end)
++{
++	/*
++	 * RED-PEN
++	 * This allows to tie up arbitary amounts of memory.
++	 * Might be a good idea to disable it inside containers even for root.
++	 */
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++	for (; start < end; start += PAGE_SIZE) {
++		struct page *p;
++		int ret = get_user_pages(current, current->mm, start, 1,
++						0, 0, &p, NULL);
++		if (ret != 1)
++			return ret;
++		put_page(p);
++		/*
++		 * RED-PEN page can be reused in a short window, but otherwise
++		 * we'll have to fight with the reference count.
++		 */
++		printk(KERN_INFO "Injecting memory failure for page %lx at %lx\n",
++		       page_to_pfn(p), start);
++		memory_failure(page_to_pfn(p), 0);
 +	}
++	return 0;
++}
++#endif
 +
- 	/*
- 	 * For consistency in subsequent calls, make the faulted page always
- 	 * locked.
+ static long
+ madvise_vma(struct vm_area_struct *vma, struct vm_area_struct **prev,
+ 		unsigned long start, unsigned long end, int behavior)
+@@ -307,6 +339,10 @@ SYSCALL_DEFINE3(madvise, unsigned long,
+ 	int write;
+ 	size_t len;
+ 
++#ifdef CONFIG_MEMORY_FAILURE
++	if (behavior == MADV_HWPOISON)
++		return madvise_hwpoison(start, start+len_in);
++#endif
+ 	if (!madvise_behavior_valid(behavior))
+ 		return error;
+ 
+Index: linux/include/asm-generic/mman-common.h
+===================================================================
+--- linux.orig/include/asm-generic/mman-common.h
++++ linux/include/asm-generic/mman-common.h
+@@ -34,6 +34,7 @@
+ #define MADV_REMOVE	9		/* remove these pages & resources */
+ #define MADV_DONTFORK	10		/* don't inherit across fork */
+ #define MADV_DOFORK	11		/* do inherit across fork */
++#define MADV_HWPOISON	12		/* poison a page for testing */
+ 
+ /* compatibility flags */
+ #define MAP_FILE	0
