@@ -1,120 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932294AbZHDFd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932402AbZHDFrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932294AbZHDFd1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 01:33:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754740AbZHDFd0
+	id S932402AbZHDFrS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 01:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932168AbZHDFrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 01:33:26 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56806 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754731AbZHDFdZ (ORCPT
+	Tue, 4 Aug 2009 01:47:17 -0400
+Received: from e28smtp08.in.ibm.com ([59.145.155.8]:43516 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932167AbZHDFrQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 01:33:25 -0400
-Message-ID: <4A77C826.1050304@np.css.fujitsu.com>
-Date: Tue, 04 Aug 2009 14:33:26 +0900
-From: Jin Dongming <jin.dongming@np.css.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Tue, 4 Aug 2009 01:47:16 -0400
+Date: Tue, 4 Aug 2009 11:17:04 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:core/rcu] rcu: Add diagnostic check for a possible
+	CPU-hotplug race
+Message-ID: <20090804054704.GA2706@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <tip-7256cf0e83bf018be8a81806593aaef7f2437f0b@git.kernel.org> <20090802202720.GA32360@elte.hu> <20090802221324.GP6854@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: "H.Peter Anvin" <hpa@zytor.com>
-CC: LKLM <linux-kernel@vger.kernel.org>, Andi Kleen <ak@linux.intel.com>,
-       Huang Ying <ying.huang@intel.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: x86, mce: cleanup initcall of debugfs for mce
-Content-Type: multipart/mixed;
- boundary="------------080604000709070704050604"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090802221324.GP6854@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------080604000709070704050604
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+On Sun, Aug 02, 2009 at 03:13:25PM -0700, Paul E. McKenney wrote:
+> > FYI, the new warning triggered in -tip testing:
+> 
+> Yow!!!  I never was able to get this to trigger...  Of course, I never
+> was able to reproduce the original problem, either.
+> 
+> Just so you know, one of the reasons it took me so long to come up with
+> the fix is that this just isn't supposed to happen.  Where I grew up, CPUs
+> were supposed to come online -before- starting to handle softirqs.  ;-)
+> 
+> Here is my reasoning:
+> 
+> o	rcu_init(), which is invoked before a second CPU can possibly
+> 	come online, calls hotplug_notifier(), which causes
+> 	rcu_barrier_cpu_hotplug() to be invoked in response to any
+> 	CPU-hotplug event.
+> 
+> o	We know rcu_init() really was called, because otherwise
+> 	open_softirq(RCU_SOFTIRQ) never gets called, so the softirq would
+> 	never have happened.  In addition, there should be a "Hierarchical
+> 	RCU implementation" message in your bootlog.  (Is there?)
+> 
+> o	rcu_barrier_cpu_hotplug() unconditionally invokes
+> 	rcu_cpu_notify() on every CPU-hotplug event.
+> 
+> o	rcu_cpu_notify() invokes rcu_online_cpu() in response to
+> 	any CPU_UP_PREPARE or CPU_UP_PREPARE_FROZEN CPU-hotplug
+> 	event.
+> 
+> o	The CPU_UP_PREPARE and CPU_UP_PREPARE_FROZEN CPU-hotplug events
+> 	happen before the CPU in question is capable of running any code.
+> 
+> o	This looks to be the first onlining of this CPU during boot
+> 	(right?).  So we cannot possibly have some strange situation
+> 	where the end of the prior CPU-offline event overlaps with
+> 	the current CPU-online event.  (Yes, this isn't supposed to
+> 	happen courtesy of CPU-hotplug locking, but impossibility
+> 	is clearly no reason to dismiss possible scenarios for -this-
+> 	particular bug.)
+> 
+> o	Therefore the WARN_ON_ONCE() cannot possibly trigger.
+> 
+> This would be a convincing argument, aside from the fact that you
+> really did make it trigger.  So first, anything I am missing in
+> the above?  If not, could you please help me with the following,
+> at least if the answers are readily available?
+> 
+> o	Is rcu_init()'s "Hierarchical RCU implementation" log message
+> 	in your bootlog?
+> 
+> o	Is _cpu_up() really being called, and, if so, is it really
+> 	invoking __raw_notifier_call_chain() with CPU_UP_PREPARE?
+> 
+> o	Is this really during initial boot, or am I misreading your
+> 	bootlog?  (The other reason I believe that this happened on
+> 	the first CPU-online for this CPU is that ->beenonline, once
+> 	set, is never cleared.)
+> 
+> Gautham, any thoughts on what might be happening here?
+
+Beats me. You're reasoning seems quite iron-clad, there's nothing that's
+obviously missing at least from the CPU-Hotplug point of view.
+
+I am trying to reproduce this on 2.6.31-rc5 tip-master + your patch with
+an added printk.
+Let me see if I can catch it.
 
 
---------------080604000709070704050604
-Content-Type: text/plain;
- name="0001-x86-mce-cleanup-initcall-of-debugfs-for-mce.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename*0="0001-x86-mce-cleanup-initcall-of-debugfs-for-mce.patch"
+-->
+rcu: Check if the cpu has been initialized before handling callbacks
 
-RnJvbSAyYWFiNGU0MjdlNDJjZDg1YjNmMWI1ODc3NGUxZDA4YzU0YWU5ODgyIE1vbiBTZXAg
-MTcgMDA6MDA6MDAgMjAwMQpGcm9tOiBKaW4gRG9uZ21pbmcgPGppbi5kb25nbWluZ0BucC5j
-c3MuZnVqaXRzdS5jb20+CkRhdGU6IFR1ZSwgNCBBdWcgMjAwOSAxMjoxMToyMiArMDkwMApT
-dWJqZWN0OiBbUEFUQ0hdIHg4NixtY2U6IGNsZWFudXAgaW5pdGNhbGwgb2YgZGVidWdmcyBm
-b3IgbWNlLgoKVGhpcyBwYXRjaCBpcyBtYWRlIGJhc2VkIG9uIHRoZSB2NSBwYXRjaGVzIG9m
-IEh1YW5neWluZyBmb3IgbWNlLgpCZWZvcmUgdXNpbmcgdGhpcyBwYXRjaCwgcGxlYXNlIGFw
-cGx5IHRoZSBwYXRjaGVzIG9mIEh1YW5neWluZy4KVGhlIHBhdGNoZXMnIFVSTHMgb2YgSHVh
-bmd5aW5nIGFyZSBsaXN0ZWQgYXMgZm9sbG93aW5nOgoxLng4NjogTUNFOiBTdXBwb3J0IHNw
-ZWNpZnlpbmcgY29udGV4dCBmb3Igc29mdHdhcmUgbWNlIGluamVjdGlvbgogIFVSTDogaHR0
-cDovL21hcmMuaW5mby8/bD1saW51eC1rZXJuZWwmbT0xMjQ5MDA0NTkxMDA3ODYmdz0yCjIu
-eDg2OiBNQ0U6IFN1cHBvcnQgc3BlY2lmeWluZyByYWlzZSBtb2RlIGZvciBzb2Z0d2FyZSBN
-Q0UgaW5qZWN0aW9uCiAgVVJMOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtlcm5lbCZt
-PTEyNDkwMDQ1OTEwMDc5NSZ3PTIKMy54ODY6IE1DRTogTW92ZSBkZWJ1Z2ZzIG1jZSBkaXIg
-Y3JlYXRpbmcgdG8gbWNlLmMKICBVUkw6IGh0dHA6Ly9tYXJjLmluZm8vP2w9bGludXgta2Vy
-bmVsJm09MTI0OTAwNDU5MTAwNzkwJnc9Mgo0Lng4NjogTUNFOiBGYWtlIHBhbmljIHN1cHBv
-cnQgZm9yIE1DRSB0ZXN0aW5nCiAgVVJMOiBodHRwOi8vbWFyYy5pbmZvLz9sPWxpbnV4LWtl
-cm5lbCZtPTEyNDkwMDQ1MzgwMDcyNCZ3PTIKClRoZXJlIGFyZSB0d28gaW5pdGNhbGwgZnVu
-Y3Rpb25zIGluIHRoZSBwYXRjaGVzIG9mIEh1YW5neWluZywKbWNlX2RlYnVnZnNfaW5pdCgp
-IHVzZWQgaW4gbWNlLmMgYW5kIHNldmVyaXRpZXNfZGVidWdmc19pbml0KCkgdXNlZAppbiBt
-Y2Utc2V2ZXJpdHkuYy4gSSB0aGluayBhbiBpbml0Y2FsbCBmdW5jdGlvbiBpcyBlbm91Z2gg
-Zm9yIG1jZQpkZWJ1Zy4gU28gd2UgbWFrZSB0aGVtIGludG8gb25lIGluaXRjYWxsIGZ1bmN0
-aW9uLgoKVGhpcyB2ZXJzaW9uIGlzIGJhc2VkIHg4Ni10aXAvbWNlLgoKU2lnbmVkLW9mZi1i
-eTogSmluIERvbmdtaW5nIDxqaW4uZG9uZ21pbmdAbnAuY3NzLmZ1aml0c3UuY29tPgpSZXZp
-ZXdlZC1ieTogSGlkZXRvc2hpIFNldG8gPHNldG8uaGlkZXRvc2hpQGpwLmZ1aml0c3UuY29t
-PgotLS0KIGFyY2gveDg2L2tlcm5lbC9jcHUvbWNoZWNrL21jZS1pbnRlcm5hbC5oIHwgICAg
-MiArLQogYXJjaC94ODYva2VybmVsL2NwdS9tY2hlY2svbWNlLXNldmVyaXR5LmMgfCAgIDEz
-ICsrKy0tLS0tLS0tLS0KIGFyY2gveDg2L2tlcm5lbC9jcHUvbWNoZWNrL21jZS5jICAgICAg
-ICAgIHwgICAyNCArKysrKysrKysrKy0tLS0tLS0tLS0tLS0KIDMgZmlsZXMgY2hhbmdlZCwg
-MTUgaW5zZXJ0aW9ucygrKSwgMjQgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvYXJjaC94
-ODYva2VybmVsL2NwdS9tY2hlY2svbWNlLWludGVybmFsLmggYi9hcmNoL3g4Ni9rZXJuZWwv
-Y3B1L21jaGVjay9tY2UtaW50ZXJuYWwuaAppbmRleCAzMjk5NmY5Li5jYTg0MjFkIDEwMDY0
-NAotLS0gYS9hcmNoL3g4Ni9rZXJuZWwvY3B1L21jaGVjay9tY2UtaW50ZXJuYWwuaAorKysg
-Yi9hcmNoL3g4Ni9rZXJuZWwvY3B1L21jaGVjay9tY2UtaW50ZXJuYWwuaApAQCAtMjIsNyAr
-MjIsNyBAQCBzdHJ1Y3QgbWNlX2JhbmsgewogfTsKIAogaW50IG1jZV9zZXZlcml0eShzdHJ1
-Y3QgbWNlICphLCBpbnQgdG9sZXJhbnQsIGNoYXIgKiptc2cpOwotc3RydWN0IGRlbnRyeSAq
-bWNlX2dldF9kZWJ1Z2ZzX2Rpcih2b2lkKTsKK2ludCBfX2luaXQgc2V2ZXJpdGllc19kZWJ1
-Z2ZzX2luaXQoc3RydWN0IGRlbnRyeSAqZG1jZSk7CiAKIGV4dGVybiBpbnQgbWNlX3NlcjsK
-IApkaWZmIC0tZ2l0IGEvYXJjaC94ODYva2VybmVsL2NwdS9tY2hlY2svbWNlLXNldmVyaXR5
-LmMgYi9hcmNoL3g4Ni9rZXJuZWwvY3B1L21jaGVjay9tY2Utc2V2ZXJpdHkuYwppbmRleCBi
-YzM1YTA3Li40OWU1N2FiIDEwMDY0NAotLS0gYS9hcmNoL3g4Ni9rZXJuZWwvY3B1L21jaGVj
-ay9tY2Utc2V2ZXJpdHkuYworKysgYi9hcmNoL3g4Ni9rZXJuZWwvY3B1L21jaGVjay9tY2Ut
-c2V2ZXJpdHkuYwpAQCAtMTkzLDIyICsxOTMsMTUgQEAgc3RhdGljIGNvbnN0IHN0cnVjdCBm
-aWxlX29wZXJhdGlvbnMgc2V2ZXJpdGllc19jb3ZlcmFnZV9mb3BzID0gewogCS53cml0ZQkJ
-PSBzZXZlcml0aWVzX2NvdmVyYWdlX3dyaXRlLAogfTsKIAotc3RhdGljIGludCBfX2luaXQg
-c2V2ZXJpdGllc19kZWJ1Z2ZzX2luaXQodm9pZCkKK2ludCBfX2luaXQgc2V2ZXJpdGllc19k
-ZWJ1Z2ZzX2luaXQoc3RydWN0IGRlbnRyeSAqZG1jZSkKIHsKLQlzdHJ1Y3QgZGVudHJ5ICpk
-bWNlID0gTlVMTCwgKmZzZXZlcml0aWVzX2NvdmVyYWdlID0gTlVMTDsKKwlzdHJ1Y3QgZGVu
-dHJ5ICpmc2V2ZXJpdGllc19jb3ZlcmFnZSA9IE5VTEw7CiAKLQlkbWNlID0gbWNlX2dldF9k
-ZWJ1Z2ZzX2RpcigpOwotCWlmIChkbWNlID09IE5VTEwpCi0JCWdvdG8gZXJyX291dDsKIAlm
-c2V2ZXJpdGllc19jb3ZlcmFnZSA9IGRlYnVnZnNfY3JlYXRlX2ZpbGUoInNldmVyaXRpZXMt
-Y292ZXJhZ2UiLAogCQkJCQkJICAgMDQ0NCwgZG1jZSwgTlVMTCwKIAkJCQkJCSAgICZzZXZl
-cml0aWVzX2NvdmVyYWdlX2ZvcHMpOwogCWlmIChmc2V2ZXJpdGllc19jb3ZlcmFnZSA9PSBO
-VUxMKQotCQlnb3RvIGVycl9vdXQ7CisJCXJldHVybiAtRU5PTUVNOwogCiAJcmV0dXJuIDA7
-Ci0KLWVycl9vdXQ6Ci0JcmV0dXJuIC1FTk9NRU07CiB9Ci1sYXRlX2luaXRjYWxsKHNldmVy
-aXRpZXNfZGVidWdmc19pbml0KTsKZGlmZiAtLWdpdCBhL2FyY2gveDg2L2tlcm5lbC9jcHUv
-bWNoZWNrL21jZS5jIGIvYXJjaC94ODYva2VybmVsL2NwdS9tY2hlY2svbWNlLmMKaW5kZXgg
-NTRiZDFiMi4uMzdiNjUyNiAxMDA2NDQKLS0tIGEvYXJjaC94ODYva2VybmVsL2NwdS9tY2hl
-Y2svbWNlLmMKKysrIGIvYXJjaC94ODYva2VybmVsL2NwdS9tY2hlY2svbWNlLmMKQEAgLTIw
-MTgsMTYgKzIwMTgsNiBAQCBzdGF0aWMgaW50IF9faW5pdCBtY2hlY2tfZGlzYWJsZShjaGFy
-ICpzdHIpCiBfX3NldHVwKCJub21jZSIsIG1jaGVja19kaXNhYmxlKTsKIAogI2lmZGVmIENP
-TkZJR19ERUJVR19GUwotc3RydWN0IGRlbnRyeSAqbWNlX2dldF9kZWJ1Z2ZzX2Rpcih2b2lk
-KQotewotCXN0YXRpYyBzdHJ1Y3QgZGVudHJ5ICpkbWNlOwotCi0JaWYgKCFkbWNlKQotCQlk
-bWNlID0gZGVidWdmc19jcmVhdGVfZGlyKCJtY2UiLCBOVUxMKTsKLQotCXJldHVybiBkbWNl
-OwotfQotCiBzdGF0aWMgdm9pZCBtY2VfcmVzZXQodm9pZCkKIHsKIAljcHVfbWlzc2luZyA9
-IDA7CkBAIC0yMDU1LDE3ICsyMDQ1LDI1IEBAIERFRklORV9TSU1QTEVfQVRUUklCVVRFKGZh
-a2VfcGFuaWNfZm9wcywgZmFrZV9wYW5pY19nZXQsCiAKIHN0YXRpYyBpbnQgX19pbml0IG1j
-ZV9kZWJ1Z2ZzX2luaXQodm9pZCkKIHsKLQlzdHJ1Y3QgZGVudHJ5ICpkbWNlLCAqZmZha2Vf
-cGFuaWM7CisJc3RydWN0IGRlbnRyeSAqZG1jZSA9IE5VTEwsICpmZmFrZV9wYW5pYyA9IE5V
-TEw7CiAKLQlkbWNlID0gbWNlX2dldF9kZWJ1Z2ZzX2RpcigpOworCWRtY2UgPSBkZWJ1Z2Zz
-X2NyZWF0ZV9kaXIoIm1jZSIsIE5VTEwpOwogCWlmICghZG1jZSkKIAkJcmV0dXJuIC1FTk9N
-RU07CiAJZmZha2VfcGFuaWMgPSBkZWJ1Z2ZzX2NyZWF0ZV9maWxlKCJmYWtlX3BhbmljIiwg
-MDQ0NCwgZG1jZSwgTlVMTCwKIAkJCQkJICAmZmFrZV9wYW5pY19mb3BzKTsKIAlpZiAoIWZm
-YWtlX3BhbmljKQotCQlyZXR1cm4gLUVOT01FTTsKKwkJZ290byBlcnJfb3V0OworCisJaWYg
-KHNldmVyaXRpZXNfZGVidWdmc19pbml0KGRtY2UpKQorCQlnb3RvIGVycl9vdXQ7CiAKIAly
-ZXR1cm4gMDsKKworZXJyX291dDoKKwlkZWJ1Z2ZzX3JlbW92ZV9yZWN1cnNpdmUoZG1jZSk7
-CisKKwlyZXR1cm4gLUVOT01FTTsKIH0KIGxhdGVfaW5pdGNhbGwobWNlX2RlYnVnZnNfaW5p
-dCk7CiAjZW5kaWYKLS0gCjEuNi4yLjIKCg==
---------------080604000709070704050604--
+From: Gautham R Shenoy <ego@in.ibm.com>
+
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+Signed-off-by: Paul E.Mckenney <paulmck@linux.vnet.ibm.com>
+---
+ kernel/rcutree.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index 0e40e61..1809cc8 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -1137,6 +1137,8 @@ __rcu_process_callbacks(struct rcu_state *rsp, struct rcu_data *rdp)
+ {
+ 	unsigned long flags;
+ 
++	WARN_ON_ONCE(rdp->beenonline == 0);
++
+ 	/*
+ 	 * If an RCU GP has gone long enough, go check for dyntick
+ 	 * idle CPUs and, if needed, send resched IPIs.
+@@ -1351,6 +1353,8 @@ rcu_init_percpu_data(int cpu, struct rcu_state *rsp)
+ 	struct rcu_data *rdp = rsp->rda[cpu];
+ 	struct rcu_node *rnp = rcu_get_root(rsp);
+ 
++	printk(KERN_INFO "Initializing RCU for cpu %d\n", cpu);
++
+ 	/* Set up local state, ensuring consistent view of global state. */
+ 	spin_lock_irqsave(&rnp->lock, flags);
+ 	lastcomp = rsp->completed;
+
+
+
+-- 
+Thanks and Regards
+gautham
