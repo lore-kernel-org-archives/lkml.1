@@ -1,192 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755296AbZHDIYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755313AbZHDI2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755296AbZHDIYr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 04:24:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755259AbZHDIYq
+	id S1755313AbZHDI2g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 04:28:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbZHDI2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 04:24:46 -0400
-Received: from mail.gmx.net ([213.165.64.20]:36442 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755257AbZHDIYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 04:24:45 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/nQqxU5iDnNhMv+xc+Z4VnwEXLET94VzKXIWaD+P
-	LTMzf5HtIiB2Lq
-Subject: [patch] perf tools: update perf top man page
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1249374083.10069.18.camel@marge.simson.net>
-References: <1248422990.28486.3.camel@marge.simson.net>
-	 <1248425937.6987.0.camel@twins> <1248431821.9722.4.camel@marge.simson.net>
-	 <20090802200049.GF24486@elte.hu>
-	 <1249276178.17959.67.camel@marge.simson.net>
-	 <1249374083.10069.18.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Tue, 04 Aug 2009 10:24:41 +0200
-Message-Id: <1249374281.10069.22.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.51
+	Tue, 4 Aug 2009 04:28:35 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:9353 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755126AbZHDI2e convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 04:28:34 -0400
+MIME-Version: 1.0
+In-Reply-To: <4A77E9FA.7030503@bigtelecom.ru>
+References: <6c039e090907231439t1def08a4n10978733bee55bec@mail.gmail.com>
+	 <20090727144402.513369f1.akpm@linux-foundation.org>
+	 <1248912621.13447.12.camel@merlyn>
+	 <20090803.212323.256579233.davem@davemloft.net>
+	 <6c039e090908040036j38666152y2db1d4c55529eaff@mail.gmail.com>
+	 <4A77E9FA.7030503@bigtelecom.ru>
+Date: Tue, 4 Aug 2009 16:28:34 +0800
+Message-ID: <6c039e090908040128l7bdaf45j3305e5e392562b85@mail.gmail.com>
+Subject: Re: [PATCH] net: Keep interface binding when sending packets with 
+	ipi_ifindex = 0
+From: =?UTF-8?B?Q2hpYS1jaGkgWWVoICjokYnlrrbpvYop?= <chiachi@android.com>
+To: Badalian Vyacheslav <slavon@bigtelecom.ru>
+Cc: David Miller <davem@davemloft.net>, john.dykstra1@gmail.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 4, 2009 at 3:57 PM, Badalian Vyacheslav<slavon@bigtelecom.ru> wrote:
+>
+> Hello
+> Sorry if its my mistake or i someone not understand :)
+>
+> if (ipc->oif && info->ipi_ifindex != ipc->oif)
+>        // if match: info->ipi_ifindex != ipc->oif
+>        return ...
+> else
+>        // else match: info->ipi_ifindex == ipc->oif
+>        // but you do
+>        ipc->oif = info->ipi_ifindex;
+>        // why if you else match allready check for it?
+>
+> Thanks
 
-perf_counter tools: update perf top manual page to reflect current implementation.
+Hi Badalian,
 
+Consider ipc->oif = 0 before the if-condition. :)
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
-
----
- tools/perf/Documentation/perf-top.txt |  112 ++++++++++++++++++++++++++++++----
- 1 file changed, 99 insertions(+), 13 deletions(-)
-
-Index: linux-2.6/tools/perf/Documentation/perf-top.txt
-===================================================================
---- linux-2.6.orig/tools/perf/Documentation/perf-top.txt
-+++ linux-2.6/tools/perf/Documentation/perf-top.txt
-@@ -3,36 +3,122 @@ perf-top(1)
- 
- NAME
- ----
--perf-top - Run a command and profile it
-+perf-top - System profiling tool.
- 
- SYNOPSIS
- --------
- [verse]
--'perf top' [-e <EVENT> | --event=EVENT] [-l] [-a] <command>
-+'perf top' [-e <EVENT> | --event=EVENT] [<options>]
- 
- DESCRIPTION
- -----------
--This command runs a command and gathers a performance counter profile
--from it.
-+This command generates and displays a performance counter profile in realtime.
- 
- 
- OPTIONS
- -------
--<command>...::
--	Any command you can specify in a shell.
-+-a::
-+--all-cpus::
-+        System-wide collection.  (default)
-+
-+-c <count>::
-+--count=<count>::
-+	Event period to sample.
-+
-+-C <cpu>::
-+--CPU=<cpu>::
-+	CPU to profile.
-+
-+-d <seconds>::
-+--delay=<seconds>::
-+	Number of seconds to delay between refreshes.
- 
---e::
----event=::
-+-e <event>::
-+--event=<event>::
- 	Select the PMU event. Selection can be a symbolic event name
- 	(use 'perf list' to list all events) or a raw PMU
- 	event (eventsel+umask) in the form of rNNN where NNN is a
--	 hexadecimal event descriptor.
-+	hexadecimal event descriptor.
- 
---a::
--        system-wide collection
-+-E <entries>::
-+--entries=<entries>::
-+	Display this many functions.
-+
-+-f <count>::
-+--count-filter=<count>::
-+	Only display functions with more events than this.
-+
-+-F <freq>::
-+--freq=<freq>::
-+	Profile at this frequency.
-+
-+-i::
-+--inherit::
-+	Child tasks inherit counters, only makes sens with -p option.
-+
-+-k <path>::
-+--vmlinux=<path>::
-+	Path to vmlinux.  Required for annotation functionality.
-+
-+-m <pages>::
-+--mmap-pages=<pages>::
-+	Number of mmapped data pages.
-+
-+-p <pid>::
-+--pid=<pid>::
-+	Profile events on existing pid.
-+
-+-r <priority>::
-+--realtime=<priority>::
-+	Collect data with this RT SCHED_FIFO priority.
-+
-+-s <symbol>::
-+--sym-annotate=<symbol>::
-+        Annotate this symbol.  Requires -k option.
-+
-+-v::
-+--verbose::
-+	Be more verbose (show counter open errors, etc).
-+
-+-z::
-+--zero::
-+	Zero history across display updates.
-+
-+INTERACTIVE PROMPTING KEYS
-+--------------------------
-+
-+[d]::
-+	Display refresh delay.
-+
-+[e]::
-+	Number of entries to display.
-+
-+[E]::
-+	Event to display when multiple counters are active.
-+
-+[f]::
-+	Profile display filter (>= hit count).
-+
-+[F]::
-+	Annotation display filter (>= % of total).
-+
-+[s]::
-+	Annotate symbol.
-+
-+[S]::
-+	Stop annotation, return to full profile display.
-+
-+[w]::
-+	Toggle between weighted sum and individual count[E]r profile.
-+
-+[z]::
-+	Toggle event count zeroing across display updates.
-+
-+[qQ]::
-+	Quit.
-+
-+Pressing any unmapped key displays a menu, and prompts for input.
- 
---l::
--        scale counter values
- 
- SEE ALSO
- --------
-
-
+Chia-chi
