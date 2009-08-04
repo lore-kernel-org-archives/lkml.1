@@ -1,96 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932859AbZHDVkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933039AbZHDVoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932859AbZHDVkl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 17:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932664AbZHDVkl
+	id S933039AbZHDVoV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 17:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932728AbZHDVoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 17:40:41 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:45880 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932613AbZHDVkk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 17:40:40 -0400
-Date: Tue, 4 Aug 2009 14:40:38 -0700
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Paul Menage <menage@google.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Benjamin Blum <bblum@google.com>,
-       containers@lists.linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Rafael Wysocki <rjw@sisk.pl>,
-       Linux Power Management <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH 6/6] Makes procs file writable to move all threads by
-	tgid at once
-Message-ID: <20090804214038.GA5141@count0.beaverton.ibm.com>
-References: <20090731012908.27908.62208.stgit@hastromil.mtv.corp.google.com> <20090731015154.27908.9639.stgit@hastromil.mtv.corp.google.com> <20090803175452.GA5481@us.ibm.com> <2f86c2480908031113y525b6cbdhe418b8a0364c7760@mail.gmail.com> <20090803185556.GA8469@us.ibm.com> <20090803194555.GA10158@us.ibm.com> <6599ad830908031255j68ce047x7165bfefa62ed53c@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <6599ad830908031255j68ce047x7165bfefa62ed53c@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 4 Aug 2009 17:44:21 -0400
+Received: from mga02.intel.com ([134.134.136.20]:16868 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932700AbZHDVoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 17:44:20 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,323,1246863600"; 
+   d="scan'208";a="538597525"
+Subject: Re: regression IWl3945 - doesn't work with recent 2.6.30-rcX
+From: reinette chatre <reinette.chatre@intel.com>
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       johannes@sipsolutions.net
+In-Reply-To: <c4e36d110908040807s1778f392o941748fd2c373d4a@mail.gmail.com>
+References: <c4e36d110904220333u37304c79k6ab528f92b5f3718@mail.gmail.com>
+	 <20090422140107.GD3288@tuxdriver.com>
+	 <c4e36d110904241218x209a4b76kf271f7288f1a33da@mail.gmail.com>
+	 <c4e36d110904270059m3e43d6ccl18cc2ec6954e5649@mail.gmail.com>
+	 <1240959723.1207.104.camel@rc-desk>
+	 <c4e36d110908040807s1778f392o941748fd2c373d4a@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 04 Aug 2009 14:44:20 -0700
+Message-Id: <1249422260.30019.4553.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Cc'ing Rafael and linux-pm for more eyes on proposed freezer usage. ]
+Hi Zdenek,
 
-On Mon, Aug 03, 2009 at 12:55:33PM -0700, Paul Menage wrote:
-> On Mon, Aug 3, 2009 at 12:45 PM, Serge E. Hallyn<serue@us.ibm.com> wrote:
-> >
-> > This is probably a stupid idea, but...  what about having zero
-> > overhead at clone(), and instead, at cgroup_task_migrate(),
-> > dequeue_task()ing all of the affected threads for the duration of
-> > the migrate?
+>From what I can tell you have now recycled this thread for a third
+distinct issue. Please start a new thread when you encounter a new
+issue. 
+
+On Tue, 2009-08-04 at 08:07 -0700, Zdenek Kabelac wrote:
+> I'm not sure how it's related together - but this message I've got
+> today with 2.6.31-rc5.
+> Should I create a new report - or is it still the same not yet fixed issue ?
+
+If you are referring to the locking issue then please see
+http://bugzilla.kernel.org/show_bug.cgi?id=13224 Patch is in 2.6.31.
+
+
 > 
-> That doesn't sound too unreasonable, actually - it would certainly
-> simplify things a fair bit. Is there a standard API for doing that?
+> iwl3945 0000:03:00.0: Error sending REPLY_RXON: time out after 500ms.
+> iwl3945 0000:03:00.0: Error setting new configuration (-110).
+> iwl3945 0000:03:00.0: Error sending REPLY_SCAN_CMD: time out after 500ms.
+> iwl3945 0000:03:00.0: Error sending REPLY_RXON: time out after 500ms.
+> iwl3945 0000:03:00.0: Error setting new configuration (-110).
+> iwl3945 0000:03:00.0: Error sending REPLY_RXON: time out after 500ms.
+> iwl3945 0000:03:00.0: Error setting new configuration (-110).
+> iwl3945 0000:03:00.0: Error sending REPLY_TX_PWR_TABLE_CMD: time out
+> after 500ms.
 
-I'm all for simplifying cgroup locking. I doubt anybody's against
-it, given the "right" simplification.
+Your device stops responding here. How do you trigger this?
 
-I'm not sure if the freezer is actually the right thing to
-use for this though. Perhaps CFS/scheduler folks could advise?
+> ------------[ cut here ]------------
+> WARNING: at net/mac80211/scan.c:281
+> ieee80211_scan_completed+0xf1/0x4d0 [mac80211]()
+> Hardware name: 6464CTO
+> Modules linked in: oprofile fuse ipt_MASQUERADE iptable_nat nf_nat
+> nf_conntrack_ipv4 nf_defrag_ipv4 xt_state ipt_REJECT xt_tcpudp
+> iptable_filter ip_tables x_tables bridge stp llc sunrpc autofs4 ipv6
+> nf_conntrack_ftp nf_conntrack binfmt_misc dm_mirror dm_region_hash
+> dm_log dm_mod kvm_intel kvm i915 drm i2c_algo_bit uinput
+> snd_hda_codec_analog arc4 ecb dvb_core cryptomgr videodev aead
+> v4l1_compat v4l2_compat_ioctl32 snd_hda_intel snd_hda_codec
+> snd_seq_oss pcompress crypto_blkcipher crypto_hash crypto_algapi btusb
+> snd_seq_midi_event snd_seq iwl3945 sdhci_pci iwlcore snd_seq_device
+> sdhci bluetooth mac80211 snd_pcm_oss mmc_core cfg80211 snd_mixer_oss
+> snd_pcm snd_timer i2c_i801 snd sr_mod i2c_core psmouse iTCO_wdt video
+> cdrom soundcore usbhid hid evdev thinkpad_acpi led_class serio_raw
+> iTCO_vendor_support intel_agp snd_page_alloc rtc_cmos rtc_core rtc_lib
+> rfkill e1000e backlight output nvram battery button ac uhci_hcd
+> ohci_hcd ehci_hcd usbcore [last unloaded: microcode]
+> Pid: 1007, comm: iwl3945 Tainted: G        W  2.6.31-rc5-00002-g43e068f #79
+> Call Trace:
+>  [<ffffffff8104c4eb>] warn_slowpath_common+0x7b/0xc0
+>  [<ffffffffa0232040>] ? iwl_bg_scan_completed+0x0/0x100 [iwlcore]
+>  [<ffffffff8104c544>] warn_slowpath_null+0x14/0x20
+>  [<ffffffffa01c88f1>] ieee80211_scan_completed+0xf1/0x4d0 [mac80211]
+>  [<ffffffff8105904a>] ? del_timer_sync+0x7a/0xa0
+>  [<ffffffff81058fd0>] ? del_timer_sync+0x0/0xa0
+>  [<ffffffffa0232040>] ? iwl_bg_scan_completed+0x0/0x100 [iwlcore]
+>  [<ffffffffa023208f>] iwl_bg_scan_completed+0x4f/0x100 [iwlcore]
+>  [<ffffffff810613d8>] worker_thread+0x1e8/0x3a0
+>  [<ffffffff81061386>] ? worker_thread+0x196/0x3a0
+>  [<ffffffff8137c11b>] ? thread_return+0x3e/0x703
+>  [<ffffffff81066d60>] ? autoremove_wake_function+0x0/0x40
+>  [<ffffffff810611f0>] ? worker_thread+0x0/0x3a0
+>  [<ffffffff8106697e>] kthread+0x9e/0xb0
+>  [<ffffffff8100d1da>] child_rip+0xa/0x20
+>  [<ffffffff8100cb7c>] ? restore_args+0x0/0x30
+>  [<ffffffff810668e0>] ? kthread+0x0/0xb0
+>  [<ffffffff8100d1d0>] ? child_rip+0x0/0x20
+> ---[ end trace 6ac8f069d92dd485 ]---
 
-> dequeue_task() itself doesn't really look like a public API. I guess
-> that the task freezer would be one way to accomplish this?
- 
-The freezer won't actually remove the task from the runqueue -- just
-cause it to go into a schedule() loop until it's thawed.
+I think I can see how this could happen. From what I can tell there is
+no checking if a scan is in progress when userspace triggers a new scan.
+ieee80211_scan -> ieee80211_request_scan -> __ieee80211_start_scan
+without local->hw_scanning or local->sw_scanning being checked.
 
-[ Incidentally, sorry if this is a dumb question, but why don't frozen
-tasks go onto a special wait queue rather than loop around schedule() ? 
-At least for the cgroup freezer I can imagine keeping the wait queue
-with the cgroup subsystem... ]
+Considering this the above warning could happen in the following
+scenario:
+* userspace triggers scan, this sets local->hw_scanning and goes off
+scanning
+* userspace triggers another scan, even though local->hw_scanning is set
+it continues anyway and calls the drivers scanning function, this
+function returns error (which will cause ieee80211_scan_completed to be
+called) or calls ieee80211_scan_completed immediately because it is
+still busy with previous scan
+* now original scan completes and it tries to call
+ieee80211_scan_completed, but this triggers the warning because previous
+call of ieee80211_scan_completed cleared local->hw_scanning
 
-The freezer sends a fake signal to the task which will interrupt syscalls
-and userspace to handle the signal. So all of the frozen tasks would be
-looping around schedule() just inside the syscall entry layer "handling"
-the fake signal until they are thawed.
+Johannes, does this seem possible?
 
-This could interrupt a read of the cgroup pidlist for example.
+Reinette
 
-I don't think it's 100% reliable -- vfork-ing tasks could delay freezing
-the task "indefinitely" if the vfork'ing userspace tasks are 
-clueless/malicious.
 
-However the signaling code used there uses kick_process() which may be
-needed for this idea.
 
-So if I understand correctly it goes something like:
-
-for each thread
-	dequeue from runqueue onto ?what?
-	kick thread (I think this should ensure that the thread is no longer
-			"current" on any CPU since we dequeued..)
-
-<seems we'd need something to ensure that the previous operations on each
-thread have "completed" as far as all other cpus are concerned...>
-
-for each thread
-	cgroup migrate
-
-for each thread
-	enqueue back on runqueue from ?what? (is this still the right
-						queue?)
-
-Cheers,
-	-Matt Helsley
