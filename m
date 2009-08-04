@@ -1,216 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933224AbZHDSQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933200AbZHDSTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933224AbZHDSQx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 14:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933213AbZHDSQv
+	id S933200AbZHDSTU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 14:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933119AbZHDSTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 14:16:51 -0400
-Received: from mail.gmx.net ([213.165.64.20]:38965 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932940AbZHDSQr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 14:16:47 -0400
-X-Authenticated: #10250065
-X-Provags-ID: V01U2FsdGVkX1/lLlt2ei3lXmNHA6tvUkMtoC0iOn9cFk1hO/Io+Z
-	y8L1WAoxncOR4/
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       JosephChan@via.com.tw, ScottFang@viatech.com.cn,
-       Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: [PATCH 2/2] viafb: split viafb_set_start_addr up
-Date: Tue,  4 Aug 2009 18:18:29 +0000
-Message-Id: <1249409909-3500-2-git-send-email-FlorianSchandinat@gmx.de>
-X-Mailer: git-send-email 1.6.3.2
-In-Reply-To: <1249409909-3500-1-git-send-email-FlorianSchandinat@gmx.de>
-References: <1249409909-3500-1-git-send-email-FlorianSchandinat@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.43
+	Tue, 4 Aug 2009 14:19:19 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:52520 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933108AbZHDSTS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 14:19:18 -0400
+Date: Tue, 4 Aug 2009 14:19:17 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: John Reiser <jreiser@bitwagon.com>
+cc: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Sam Ravnborg <sam@ravnborg.org>, Tejun Heo <tj@kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: ftrace: __start_mcount_loc should be .init.rodata
+In-Reply-To: <4A6E4222.4080302@bitwagon.com>
+Message-ID: <alpine.DEB.2.00.0908041418370.21700@gandalf.stny.rr.com>
+References: <4A6DF0B6.7080402@bitwagon.com> <alpine.DEB.2.00.0907271641260.30108@gandalf.stny.rr.com> <4A6E4222.4080302@bitwagon.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-viafb: split viafb_set_start_addr up
 
-Move individual start address setting to viafb_set_primary_address and
-viafb_set_secondary_address and make it more flexible to reuse it for
-panning. Using central functions makes it easier to follow HW
-manipulations.
-Remove crt locking as it should be only needed for timing manipulation.
-Move iga_path manipulation to via_pci_probe.
-Remove memset for screen cleaning as it is currently done only for the
-second screen. This is not needed for normal operation but has a little
-chance of causing unwanted display artifacts. This can be fixed later
-more consistent and more efficient (using viafb_fillrect) if needed.
-This is a code clenup, no notable runtime changes expected.
 
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
----
- hw.c       |   80 ++++++++++++-----------------------------------------------
- hw.h       |    3 +-
- viafbdev.c |   15 +++++------
- 3 files changed, 26 insertions(+), 72 deletions(-)
+On Mon, 27 Jul 2009, John Reiser wrote:
 
-diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
-index 64a820c..5be4a67 100644
---- a/drivers/video/via/hw.c
-+++ b/drivers/video/via/hw.c
-@@ -629,70 +629,23 @@ void viafb_set_iga_path(void)
- 	}
- }
- 
--void viafb_set_start_addr(void)
-+void viafb_set_primary_address(u32 addr)
- {
--	unsigned long offset = 0, tmp = 0, size = 0;
--	unsigned long length;
--
--	DEBUG_MSG(KERN_INFO "viafb_set_start_addr!\n");
--	viafb_unlock_crt();
--	/* update starting address of IGA1 */
--	viafb_write_reg(CR0C, VIACR, 0x00);	/*initial starting address */
--	viafb_write_reg(CR0D, VIACR, 0x00);
--	viafb_write_reg(CR34, VIACR, 0x00);
--	viafb_write_reg_mask(CR48, VIACR, 0x00, 0x1F);
--
--	if (viafb_dual_fb) {
--		viaparinfo->iga_path = IGA1;
--		viaparinfo1->iga_path = IGA2;
--	}
--
--	if (viafb_SAMM_ON == 1) {
--		if (!viafb_dual_fb) {
--			if (viafb_second_size)
--				size = viafb_second_size * 1024 * 1024;
--			else
--				size = 8 * 1024 * 1024;
--		} else {
--
--			size = viaparinfo1->memsize;
--		}
--		offset = viafb_second_offset;
--		DEBUG_MSG(KERN_INFO
--			  "viafb_second_size=%lx, second start_adddress=%lx\n",
--			  size, offset);
--	}
--	if (viafb_SAMM_ON == 1) {
--		offset = offset >> 3;
--
--		tmp = viafb_read_reg(VIACR, 0x62) & 0x01;
--		tmp |= (offset & 0x7F) << 1;
--		viafb_write_reg(CR62, VIACR, tmp);
--		viafb_write_reg(CR63, VIACR, ((offset & 0x7F80) >> 7));
--		viafb_write_reg(CR64, VIACR, ((offset & 0x7F8000) >> 15));
--		viafb_write_reg(CRA3, VIACR, ((offset & 0x3800000) >> 23));
--	} else {
--		/* update starting address */
--		viafb_write_reg(CR62, VIACR, 0x00);
--		viafb_write_reg(CR63, VIACR, 0x00);
--		viafb_write_reg(CR64, VIACR, 0x00);
--		viafb_write_reg(CRA3, VIACR, 0x00);
--	}
--
--	if (viafb_SAMM_ON == 1) {
--		if (viafb_accel) {
--			if (!viafb_dual_fb)
--				length = size - viaparinfo->fbmem_used;
--			else
--				length = size - viaparinfo1->fbmem_used;
--		} else
--			length = size;
--		offset = (unsigned long)(void *)viafb_FB_MM +
--			viafb_second_offset;
--		memset((void *)offset, 0, length);
--	}
-+	DEBUG_MSG(KERN_DEBUG "viafb_set_primary_address(0x%08X)\n", addr);
-+	viafb_write_reg(CR0D, VIACR, addr & 0xFF);
-+	viafb_write_reg(CR0C, VIACR, (addr >> 8) & 0xFF);
-+	viafb_write_reg(CR34, VIACR, (addr >> 16) & 0xFF);
-+	viafb_write_reg_mask(CR48, VIACR, (addr >> 24) & 0x1F, 0x1F);
-+}
- 
--	viafb_lock_crt();
-+void viafb_set_secondary_address(u32 addr)
-+{
-+	DEBUG_MSG(KERN_DEBUG "viafb_set_secondary_address(0x%08X)\n", addr);
-+	/* secondary display supports only quadword aligned memory */
-+	viafb_write_reg_mask(CR62, VIACR, (addr >> 2) & 0xFE, 0xFE);
-+	viafb_write_reg(CR63, VIACR, (addr >> 10) & 0xFF);
-+	viafb_write_reg(CR64, VIACR, (addr >> 18) & 0xFF);
-+	viafb_write_reg_mask(CRA3, VIACR, (addr >> 26) & 0x07, 0x07);
- }
- 
- void viafb_set_output_path(int device, int set_iga, int output_interface)
-@@ -2288,7 +2241,8 @@ int viafb_setmode(int vmode_index, int hor_res, int ver_res, int video_bpp,
- 		outb(VPIT.SR[i - 1], VIASR + 1);
- 	}
- 
--	viafb_set_start_addr();
-+	viafb_set_primary_address(0);
-+	viafb_set_secondary_address(viafb_SAMM_ON ? viafb_second_offset : 0);
- 	viafb_set_iga_path();
- 
- 	/* Write CRTC */
-diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
-index 6ff38fa..874ea3f 100644
---- a/drivers/video/via/hw.h
-+++ b/drivers/video/via/hw.h
-@@ -927,7 +927,8 @@ void viafb_get_mmio_info(unsigned long *mmio_base,
- 	unsigned long *mmio_len);
- 
- void viafb_set_iga_path(void);
--void viafb_set_start_addr(void);
-+void viafb_set_primary_address(u32 addr);
-+void viafb_set_secondary_address(u32 addr);
- void viafb_get_fb_info(unsigned int *fb_base, unsigned int *fb_len);
- 
- #endif /* __HW_H__ */
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 6612ddc..743eed4 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -481,12 +481,7 @@ static int viafb_pan_display(struct fb_var_screeninfo *var,
- 	    var->bits_per_pixel / 16;
- 
- 	DEBUG_MSG(KERN_INFO "\nviafb_pan_display,offset =%d ", offset);
--
--	viafb_write_reg_mask(0x48, 0x3d4, ((offset >> 24) & 0x3), 0x3);
--	viafb_write_reg_mask(0x34, 0x3d4, ((offset >> 16) & 0xff), 0xff);
--	viafb_write_reg_mask(0x0c, 0x3d4, ((offset >> 8) & 0xff), 0xff);
--	viafb_write_reg_mask(0x0d, 0x3d4, (offset & 0xff), 0xff);
--
-+	viafb_set_primary_address(offset);
- 	return 0;
- }
- 
-@@ -1353,7 +1348,8 @@ static void viafb_set_device(struct device_t active_dev)
- 		viafb_SAMM_ON = active_dev.samm;
- 	viafb_primary_dev = active_dev.primary_dev;
- 
--	viafb_set_start_addr();
-+	viafb_set_primary_address(0);
-+	viafb_set_secondary_address(viafb_SAMM_ON ? viafb_second_offset : 0);
- 	viafb_set_iga_path();
- }
- 
-@@ -1537,7 +1533,8 @@ static int apply_device_setting(struct viafb_ioctl_setting setting_info,
- 			if (viafb_SAMM_ON)
- 				viafb_primary_dev = setting_info.primary_device;
- 
--			viafb_set_start_addr();
-+			viafb_set_primary_address(0);
-+			viafb_set_secondary_address(viafb_SAMM_ON ? viafb_second_offset : 0);
- 			viafb_set_iga_path();
- 		}
- 		need_set_mode = 1;
-@@ -2275,6 +2272,8 @@ static int __devinit via_pci_probe(void)
- 				viafb_second_offset;
- 		}
- 
-+		viaparinfo->iga_path = IGA1;
-+		viaparinfo1->iga_path = IGA2;
- 		memcpy(viafbinfo1, viafbinfo, sizeof(struct fb_info));
- 		viafbinfo1->screen_base = viafbinfo->screen_base +
- 			viafb_second_offset;
--- 
-1.6.3.2
+> Steven Rostedt wrote:
+> > 
+> > 
+> > On Mon, 27 Jul 2009, John Reiser wrote:
+> > 
+> >> __start_mcount_loc[] is unused after init, yet occupies RAM forever
+> >> as part of .rodata.  152kiB is typical on a 64-bit architecture.  Instead,
+> >> __start_mcount_loc should be in the interval [__init_begin, __init_end)
+> >> so that the space is reclaimed after init.
+> > 
+> > Are you sure about that?
+> 
+> Data follows from a direct A<->B comparison.
+> 
+> My .config is same as Fedora Project, except for CONFIG_DEBUG_PAGEALLOC=y.
+> ----- /var/log/messages
+> ftrace: allocating 18889 entries ...
+> 	    # 18889 * 8 = 151112 bytes (147kiB) for __start_mcount_loc[]
+> 		on 64-bit architecture
+> -----
+> 
+> With MCOUNT_REC() in original RO_DATA in include/asm-generic/vmlinux.lds.h:
+> ===================================
+> ----- /var/log/messages
+> kernel: Freeing initrd memory: 3134k freed
+> kernel: debug: unmapping init memory ffffffff8163d000..ffffffff81783000
+> 	## The only message about unmapping;  length is 0x146000 or 1335296 bytes
+> kernel: Write protecting the kernel read-only data: 1844k   ## 148kiB more than later
+> -----
+> 
+> ----- System.map
+> ffffffff8155c850 R __start_mcount_loc  # below unmapped range
+> ffffffff81581698 R __stop_mcount_loc
+> -----
+> 
+> ----- "readelf --sections vmlinux" has these "\.init" strings:
+>   [12] __init_rodata     PROGBITS         ffffffff8155c850  0075c850  # _below_ unmapped range
+>   [15] .init.rodata      PROGBITS         ffffffff815f01c0  007f01c0  # _below_ unmapped range
+>   [25] .data.init_task   PROGBITS         ffffffff81612000  00a12000
+>   [28] .init.text        PROGBITS         ffffffff8163d000  00a3d000  # low end of unmapped range
+>   [29] .init.data        PROGBITS         ffffffff81675620  00a75620
+>   [30] .init.setup       PROGBITS         ffffffff8175d980  00b5d980
+>   [31] .initcall.init    PROGBITS         ffffffff8175eca0  00b5eca0
+>   [33] .x86_cpu_dev.init PROGBITS         ffffffff8175fa00  00b5fa00
+>   [39] .init.ramfs       PROGBITS         ffffffff81776000  00b76000  # still in unmapped range
+>    01     .data .init.rodata .data.cacheline_aligned .data.read_mostly
+> ## Note that .init.rodata is in segment 1, with .data
+>    03     .data.init_task .data.page_aligned .smp_locks .init.text .init.data .init.setup .initcall.init .con_initcall.init .x86_cpu_dev.init .secu
+> rity_initcall.init .parainstructions .altinstructions .altinstr_replacement .exit.text .init.ramfs .data.percpu .data_nosave .bss
+> ## Note that .init.text and .init.data are in segment 3
+> -----
+> 
+> 
+> With MCOUNT_REC() moved to INIT_DATA as patched to include/asm-generic/vmlinux.lds.h:
+> ==================================
+> ----- /var/log/messages:
+> kernel: Freeing initrd memory: 3134k freed
+> kernel: debug: unmapping init memory ffffffff81619000..ffffffff81784000
+> 	## The only message about unmapping;  length is 0x16b000 or 1486848 bytes
+> kernel: Write protecting the kernel read-only data: 1696k   ## 148kiB less than before
+> -----
+> 
+> ----- System.map
+> ffffffff816a28d0 T __start_mcount_loc  # within unmapped range
+> ffffffff816c7718 T __stop_mcount_loc
+> -----
+> 
+> ----- "readelf --sections vmlinux" has these "\.init" strings:
+>   [14] .init.rodata      PROGBITS         ffffffff815cb1c0  007cb1c0  # _below_ unmapped range
+>   [24] .data.init_task   PROGBITS         ffffffff815ee000  009ee000
+>   [27] .init.text        PROGBITS         ffffffff81619000  00a19000  # low end of unmapped range
+>   [28] .init.data        PROGBITS         ffffffff81651620  00a51620
+>   [29] .init.setup       PROGBITS         ffffffff8175e7c0  00b5e7c0
+>   [30] .initcall.init    PROGBITS         ffffffff8175fae0  00b5fae0
+>   [32] .x86_cpu_dev.init PROGBITS         ffffffff81760840  00b60840
+>   [38] .init.ramfs       PROGBITS         ffffffff81777000  00b77000  # still in unmapped range
+>    01     .data .init.rodata .data.cacheline_aligned .data.read_mostly
+>    03     .data.init_task .data.page_aligned .smp_locks .init.text .init.data .init.setup .initcall.init .con_initcall.init .x86_cpu_dev.init .secu
+> rity_initcall.init .parainstructions .altinstructions .altinstr_replacement .exit.text .init.ramfs .data.percpu .data_nosave .bss
+> -----
+> 
+> Perusing the source:
+> arch/x86/mm/init_64.c: free_init_pages() called from
+>    ./arch/x86/kernel/alternative.c:		free_init_pages("SMP alternatives",
+>    ./arch/x86/mm/init_64.c:	free_init_pages("unused kernel memory",
+>    ./arch/x86/mm/init_64.c:	free_init_pages("initrd memory", start, end);
+> All other calls also are architecture-specific and in other architectures,
+> and also are similar to these.
+> 
+> 
+> >> @@ -331,7 +332,6 @@
+> >>  	/* __*init sections */						\
+> >>  	__init_rodata : AT(ADDR(__init_rodata) - LOAD_OFFSET) {		\
+> > 
+> > Isn't this in __init_rodata? Doesn't this get removed too?
+> 
+> In my vmlinux it is _not_ removed; it is with .rodata, not .init.rodata
+> (and not .init.data), and is outside (below) the removed range.
+
+Thanks for this detailed explanation, I'll pull your patch in an run it 
+through my tests, and then push it off.
+
+-- Steve
 
