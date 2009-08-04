@@ -1,83 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796AbZHDLic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754896AbZHDLie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754796AbZHDLic (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 07:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbZHDLib
+	id S1754896AbZHDLie (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 07:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbZHDLid
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 07:38:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44882 "EHLO hera.kernel.org"
+	Tue, 4 Aug 2009 07:38:33 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44885 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754476AbZHDLia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754520AbZHDLia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 4 Aug 2009 07:38:30 -0400
-Date: Tue, 4 Aug 2009 11:37:19 GMT
-From: tip-bot for Roel Kluin <roel.kluin@gmail.com>
+Date: Tue, 4 Aug 2009 11:37:56 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       akpm@linux-foundation.org, roel.kluin@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, roel.kluin@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <4A757BCF.40101@gmail.com>
-References: <4A757BCF.40101@gmail.com>
-Subject: [tip:perfcounters/urgent] perf: Fix read buffer overflow
-Message-ID: <tip-7e030655dda5b5efc4305e2a8f46c4967d32eb3d@git.kernel.org>
-Git-Commit-ID: 7e030655dda5b5efc4305e2a8f46c4967d32eb3d
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:perfcounters/urgent] perf_counter tools: Provide default bfd_demangle() function in case it's not around
+Message-ID: <tip-238762507bb41689df191160ada1986b012b57df@git.kernel.org>
+Git-Commit-ID: 238762507bb41689df191160ada1986b012b57df
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 04 Aug 2009 11:37:20 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 04 Aug 2009 11:37:57 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  7e030655dda5b5efc4305e2a8f46c4967d32eb3d
-Gitweb:     http://git.kernel.org/tip/7e030655dda5b5efc4305e2a8f46c4967d32eb3d
-Author:     Roel Kluin <roel.kluin@gmail.com>
-AuthorDate: Sun, 2 Aug 2009 13:43:11 +0200
+Commit-ID:  238762507bb41689df191160ada1986b012b57df
+Gitweb:     http://git.kernel.org/tip/238762507bb41689df191160ada1986b012b57df
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Tue, 4 Aug 2009 13:27:41 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 4 Aug 2009 11:09:56 +0200
+CommitDate: Tue, 4 Aug 2009 13:27:43 +0200
 
-perf: Fix read buffer overflow
+perf_counter tools: Provide default bfd_demangle() function in case it's not around
 
-Check whether index is within bounds before testing the element.
+Provide weak alias (which does nothing) in case the system does not
+offer one.
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-Cc: a.p.zijlstra@chello.nl
-Cc: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <4A757BCF.40101@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/builtin-report.c |    2 +-
- tools/perf/util/quote.c     |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ tools/perf/util/symbol.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
 
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index 95fd06c..ce4f286 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -253,7 +253,7 @@ static int strcommon(const char *pathname)
- {
- 	int n = 0;
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index b4fe057..7bd5128 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -8,6 +8,17 @@
+ #include <elf.h>
+ #include <bfd.h>
  
--	while (pathname[n] == cwd[n] && n < cwdlen)
-+	while (n < cwdlen && pathname[n] == cwd[n])
- 		++n;
++/*
++ * Weak wrapper in case a library version is not available:
++ */
++extern char * __attribute__((weak)) bfd_demangle (bfd *, const char *, int);
++
++char * __attribute__((weak))
++ bfd_demangle (bfd *bfd __used, const char *name __used, int flags __used)
++{
++	return NULL;
++}
++
+ const char *sym_hist_filter;
  
- 	return n;
-diff --git a/tools/perf/util/quote.c b/tools/perf/util/quote.c
-index c6e5dc0..2726fe4 100644
---- a/tools/perf/util/quote.c
-+++ b/tools/perf/util/quote.c
-@@ -318,7 +318,7 @@ char *quote_path_relative(const char *in, int len,
- 		strbuf_addch(out, '"');
- 	if (prefix) {
- 		int off = 0;
--		while (prefix[off] && off < len && prefix[off] == in[off])
-+		while (off < len && prefix[off] && prefix[off] == in[off])
- 			if (prefix[off] == '/') {
- 				prefix += off + 1;
- 				in += off + 1;
+ #ifndef DMGL_PARAMS
