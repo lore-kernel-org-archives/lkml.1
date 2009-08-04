@@ -1,70 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932891AbZHDPdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932919AbZHDPdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932891AbZHDPdM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 11:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932874AbZHDPdK
+	id S932919AbZHDPdg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 11:33:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932890AbZHDPde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 11:33:10 -0400
-Received: from ru.mvista.com ([213.79.90.228]:46604 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932808AbZHDPdK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 11:33:10 -0400
-Date: Tue, 4 Aug 2009 19:33:07 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Cc: dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: Ang: Re: [PATCH 0/2] Setting GPIOs simultaneously
-Message-ID: <20090804153307.GA27107@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090713222005.GA19859@oksana.dev.rtsoft.ru>
- <20090713151911.GA28114@oksana.dev.rtsoft.ru>
- <OFF188389D.68E638A2-ONC12575F2.00568C5B-C12575F2.0057FC95@transmode.se>
- <20090713173455.GA9866@oksana.dev.rtsoft.ru>
- <OF9378E65D.FBBCCFD5-ONC12575F2.006B28D5-C12575F2.006DDAE5@transmode.se>
- <OF613F53BF.1FD77EDB-ONC12575F3.00753535-C12575F3.00753537@transmode.se>
- <20090714220931.GA11378@oksana.dev.rtsoft.ru>
- <OF9A2BDEDE.DC0DE0D4-ONC1257608.004A7A59-C1257608.004AF3BF@transmode.se>
- <20090804142250.GA17398@oksana.dev.rtsoft.ru>
- <OFC7025845.8BE60C98-ONC1257608.0051D318-C1257608.00525388@transmode.se>
+	Tue, 4 Aug 2009 11:33:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40026 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932909AbZHDPdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 11:33:32 -0400
+Date: Tue, 4 Aug 2009 15:32:44 GMT
+From: tip-bot for Subrata Modak <subrata@linux.vnet.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       sachinp@linux.vnet.ibm.com, subrata@linux.vnet.ibm.com,
+       balbir@linux.vnet.ibm.com, dhowells@redhat.com, tglx@linutronix.de,
+       sfr@canb.auug.org.au, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       sachinp@linux.vnet.ibm.com, subrata@linux.vnet.ibm.com,
+       balbir@linux.vnet.ibm.com, dhowells@redhat.com, sfr@canb.auug.org.au,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090721023226.31855.67236.sendpatchset@subratamodak.linux.ibm.com>
+References: <20090721023226.31855.67236.sendpatchset@subratamodak.linux.ibm.com>
+Subject: [tip:x86/urgent] x86: Work around compilation warning in arch/x86/kernel/apm_32.c
+Message-ID: <tip-dc731fbbadf5d65c98fcd6c86472aa286c16458a@git.kernel.org>
+Git-Commit-ID: dc731fbbadf5d65c98fcd6c86472aa286c16458a
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <OFC7025845.8BE60C98-ONC1257608.0051D318-C1257608.00525388@transmode.se>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 04 Aug 2009 15:32:48 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 04, 2009 at 04:59:13PM +0200, Joakim Tjernlund wrote:
-[...]
-> hmm, this looks promising. Can I write my own board-specific-csm
-> and attach it to the SPI CS engine?
+Commit-ID:  dc731fbbadf5d65c98fcd6c86472aa286c16458a
+Gitweb:     http://git.kernel.org/tip/dc731fbbadf5d65c98fcd6c86472aa286c16458a
+Author:     Subrata Modak <subrata@linux.vnet.ibm.com>
+AuthorDate: Tue, 21 Jul 2009 08:02:27 +0530
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 4 Aug 2009 16:34:23 +0200
 
-Yes, you'd able to do it, but there is no such thing as SPI CS
-engine, yet.
+x86: Work around compilation warning in arch/x86/kernel/apm_32.c
 
-See the two options of how we can implement it:
-http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg34738.html
+The following fix was initially inspired by David Howells fix
+few days back:
 
-Grant said that he like option "2.", but also said that we might
-want to modify SPI requests (messages) before sending the data to
-the outside world. I think that the option "1." fits better for
-this task. Which means that implementation should be quite
-trivial -- just another spi master driver.
+  http://lkml.org/lkml/2009/7/9/109
 
-> [...] the 8xxx SPI driver only looks for gpio functions.
+However, Ingo disapproves such fixes as it's dangerous (it can
+hide future, relevant warnings) - in something as
+performance-uncritical.
 
-Yes, and we should consider removing the gpio stuff too.
+So, initialize 'err' to '0' to work around a GCC false positive
+warning:
 
-> Perhaps this is something that you are working on?
+  http://lkml.org/lkml/2009/7/18/89
 
-No, I don't need the feature right now (i.e. no board that I'm
-working on needs this). But I know how to implement it (see the
-link above).
+Signed-off-by: Subrata Modak<subrata@linux.vnet.ibm.com>
+Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>
+Cc: David Howells <dhowells@redhat.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+LKML-Reference: <20090721023226.31855.67236.sendpatchset@subratamodak.linux.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+
+---
+ arch/x86/kernel/apm_32.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/apm_32.c b/arch/x86/kernel/apm_32.c
+index 79302e9..442b550 100644
+--- a/arch/x86/kernel/apm_32.c
++++ b/arch/x86/kernel/apm_32.c
+@@ -811,7 +811,7 @@ static int apm_do_idle(void)
+ 	u8 ret = 0;
+ 	int idled = 0;
+ 	int polling;
+-	int err;
++	int err = 0;
+ 
+ 	polling = !!(current_thread_info()->status & TS_POLLING);
+ 	if (polling) {
