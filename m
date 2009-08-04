@@ -1,206 +1,253 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933353AbZHDTQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933376AbZHDTQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933353AbZHDTQv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 15:16:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933322AbZHDTQu
+	id S933376AbZHDTQw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 15:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933322AbZHDTQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 15:16:50 -0400
-Received: from mga11.intel.com ([192.55.52.93]:14251 "EHLO mga11.intel.com"
+	Tue, 4 Aug 2009 15:16:52 -0400
+Received: from mga09.intel.com ([134.134.136.24]:32845 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933106AbZHDTQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 15:16:49 -0400
+	id S932991AbZHDTQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 15:16:50 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.43,323,1246863600"; 
-   d="scan'208";a="713871232"
-Message-Id: <20090804190729.630510000@intel.com>
-References: <20090804190729.477649000@intel.com>
+   d="scan'208";a="538561421"
+Message-Id: <20090804190729.477649000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 04 Aug 2009 12:07:09 -0700
+Date: Tue, 04 Aug 2009 12:07:08 -0700
 From: Suresh Siddha <suresh.b.siddha@intel.com>
 To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
 Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
        David Woodhouse <dwmw2@infradead.org>,
        Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
        Jay Fenlason <fenlason@redhat.com>
-Subject: [patch 2/2] x86: arch specific support for remapping HPET MSIs
-Content-Disposition: inline; filename=add_x86_support_for_hpet_msi_intr_remap.patch
+Subject: [patch 1/2] intr-remap: generic support for remapping HPET MSIs
+Content-Disposition: inline; filename=add_support_for_hpet_msi_intr_remap.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-x86 arch support for remapping HPET MSI's by associating the HPET timer block
-with the interrupt-remapping HW unit and setting up appropriate irq_chip
+Generic support for remapping HPET MSI's by parsing the HPET timer block
+device scope in the ACPI DRHD tables. This is needed for platforms
+supporting interrupt-remapping and MSI capable HPET timer block.
 
 Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 Cc: David Woodhouse <dwmw2@infradead.org>
 Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 Cc: Jay Fenlason <fenlason@redhat.com>
 ---
 
-Index: tip/arch/x86/include/asm/hpet.h
+Index: tip/drivers/pci/intr_remapping.c
 ===================================================================
---- tip.orig/arch/x86/include/asm/hpet.h
-+++ tip/arch/x86/include/asm/hpet.h
-@@ -65,6 +65,7 @@
- /* hpet memory map physical address */
- extern unsigned long hpet_address;
- extern unsigned long force_hpet_address;
-+extern u8 hpet_blockid;
- extern int hpet_force_user;
- extern int is_hpet_enabled(void);
- extern int hpet_enable(void);
-@@ -78,9 +79,9 @@ extern void hpet_msi_write(unsigned int 
- extern void hpet_msi_read(unsigned int irq, struct msi_msg *msg);
+--- tip.orig/drivers/pci/intr_remapping.c
++++ tip/drivers/pci/intr_remapping.c
+@@ -2,6 +2,7 @@
+ #include <linux/dmar.h>
+ #include <linux/spinlock.h>
+ #include <linux/jiffies.h>
++#include <linux/hpet.h>
+ #include <linux/pci.h>
+ #include <linux/irq.h>
+ #include <asm/io_apic.h>
+@@ -14,7 +15,8 @@
+ #include "pci.h"
  
- #ifdef CONFIG_PCI_MSI
--extern int arch_setup_hpet_msi(unsigned int irq);
-+extern int arch_setup_hpet_msi(unsigned int irq, unsigned int id);
- #else
--static inline int arch_setup_hpet_msi(unsigned int irq)
-+static inline int arch_setup_hpet_msi(unsigned int irq, unsigned int id)
- {
- 	return -EINVAL;
+ static struct ioapic_scope ir_ioapic[MAX_IO_APICS];
+-static int ir_ioapic_num;
++static struct hpet_scope ir_hpet[MAX_HPET_TBS];
++static int ir_ioapic_num, ir_hpet_num;
+ int intr_remapping_enabled;
+ 
+ static int disable_intremap;
+@@ -351,6 +353,16 @@ int flush_irte(int irq)
+ 	return rc;
  }
-Index: tip/arch/x86/kernel/acpi/boot.c
-===================================================================
---- tip.orig/arch/x86/kernel/acpi/boot.c
-+++ tip/arch/x86/kernel/acpi/boot.c
-@@ -624,6 +624,7 @@ static int __init acpi_parse_hpet(struct
- 	}
  
- 	hpet_address = hpet_tbl->address.address;
-+	hpet_blockid = hpet_tbl->sequence;
- 
- 	/*
- 	 * Some broken BIOSes advertise HPET at 0x0. We really do not
-Index: tip/arch/x86/kernel/apic/io_apic.c
-===================================================================
---- tip.orig/arch/x86/kernel/apic/io_apic.c
-+++ tip/arch/x86/kernel/apic/io_apic.c
-@@ -3197,7 +3197,8 @@ void destroy_irq(unsigned int irq)
-  * MSI message composition
-  */
- #ifdef CONFIG_PCI_MSI
--static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq, struct msi_msg *msg)
-+static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq,
-+			   struct msi_msg *msg, u8 hpet_id)
++struct intel_iommu *map_hpet_to_ir(u8 hpet_id)
++{
++	int i;
++
++	for (i = 0; i < MAX_HPET_TBS; i++)
++		if (ir_hpet[i].id == hpet_id)
++			return ir_hpet[i].iommu;
++	return NULL;
++}
++
+ struct intel_iommu *map_ioapic_to_ir(int apic)
  {
- 	struct irq_cfg *cfg;
- 	int err;
-@@ -3231,7 +3232,10 @@ static int msi_compose_msg(struct pci_de
- 		irte.dest_id = IRTE_DEST(dest);
- 
- 		/* Set source-id of interrupt request */
--		set_msi_sid(&irte, pdev);
-+		if (pdev)
-+			set_msi_sid(&irte, pdev);
-+		else
-+			set_hpet_sid(&irte, hpet_id);
- 
- 		modify_irte(irq, &irte);
- 
-@@ -3396,7 +3400,7 @@ static int setup_msi_irq(struct pci_dev 
- 	int ret;
- 	struct msi_msg msg;
- 
--	ret = msi_compose_msg(dev, irq, &msg);
-+	ret = msi_compose_msg(dev, irq, &msg, -1);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -3529,7 +3533,7 @@ int arch_setup_dmar_msi(unsigned int irq
- 	int ret;
- 	struct msi_msg msg;
- 
--	ret = msi_compose_msg(NULL, irq, &msg);
-+	ret = msi_compose_msg(NULL, irq, &msg, -1);
- 	if (ret < 0)
- 		return ret;
- 	dmar_msi_write(irq, &msg);
-@@ -3569,6 +3573,19 @@ static int hpet_msi_set_affinity(unsigne
- 
- #endif /* CONFIG_SMP */
- 
-+static struct irq_chip ir_hpet_msi_type = {
-+	.name = "IR-HPET_MSI",
-+	.unmask = hpet_msi_unmask,
-+	.mask = hpet_msi_mask,
-+#ifdef CONFIG_INTR_REMAP
-+	.ack = ir_ack_apic_edge,
-+#ifdef CONFIG_SMP
-+	.set_affinity = ir_set_msi_irq_affinity,
-+#endif
-+#endif
-+	.retrigger = ioapic_retrigger_irq,
-+};
-+
- static struct irq_chip hpet_msi_type = {
- 	.name = "HPET_MSI",
- 	.unmask = hpet_msi_unmask,
-@@ -3580,20 +3597,36 @@ static struct irq_chip hpet_msi_type = {
- 	.retrigger = ioapic_retrigger_irq,
- };
- 
--int arch_setup_hpet_msi(unsigned int irq)
-+int arch_setup_hpet_msi(unsigned int irq, unsigned int id)
- {
- 	int ret;
- 	struct msi_msg msg;
- 	struct irq_desc *desc = irq_to_desc(irq);
- 
--	ret = msi_compose_msg(NULL, irq, &msg);
-+	if (intr_remapping_enabled) {
-+		struct intel_iommu *iommu = map_hpet_to_ir(id);
-+		int index;
-+
-+		if (!iommu)
-+			return -1;
-+
-+		index = alloc_irte(iommu, irq, 1);
-+		if (index < 0)
-+			return -1;
-+	}
-+
-+	ret = msi_compose_msg(NULL, irq, &msg, id);
- 	if (ret < 0)
- 		return ret;
- 
- 	hpet_msi_write(irq, &msg);
- 	desc->status |= IRQ_MOVE_PCNTXT;
--	set_irq_chip_and_handler_name(irq, &hpet_msi_type, handle_edge_irq,
--		"edge");
-+	if (irq_remapped(irq))
-+		set_irq_chip_and_handler_name(irq, &ir_hpet_msi_type,
-+					      handle_edge_irq, "edge");
-+	else
-+		set_irq_chip_and_handler_name(irq, &hpet_msi_type,
-+					      handle_edge_irq, "edge");
- 
+ 	int i;
+@@ -478,6 +490,36 @@ int set_ioapic_sid(struct irte *irte, in
  	return 0;
  }
-Index: tip/arch/x86/kernel/hpet.c
-===================================================================
---- tip.orig/arch/x86/kernel/hpet.c
-+++ tip/arch/x86/kernel/hpet.c
-@@ -33,6 +33,7 @@
-  * HPET address is set in acpi/boot.c, when an ACPI entry exists
-  */
- unsigned long				hpet_address;
-+u8					hpet_blockid; /* OS timer block num */
- #ifdef CONFIG_PCI_MSI
- static unsigned long			hpet_num_timers;
- #endif
-@@ -467,7 +468,7 @@ static int hpet_msi_next_event(unsigned 
  
- static int hpet_setup_msi_irq(unsigned int irq)
++int set_hpet_sid(struct irte *irte, u8 id)
++{
++	int i;
++	u16 sid = 0;
++
++	if (!irte)
++		return -1;
++
++	for (i = 0; i < MAX_HPET_TBS; i++) {
++		if (ir_hpet[i].id == id) {
++			sid = (ir_hpet[i].bus << 8) | ir_hpet[i].devfn;
++			break;
++		}
++	}
++
++	if (sid == 0) {
++		pr_warning("Failed to set source-id of HPET block (%d)\n", id);
++		return -1;
++	}
++
++	/*
++	 * Should really use SQ_ALL_16. Some platforms are broken.
++	 * While we figure out the right quirks for these broken platforms, use
++	 * SQ_13_IGNORE_3 for now.
++	 */
++	set_irte_sid(irte, SVT_VERIFY_SID_SQ, SQ_13_IGNORE_3, sid);
++
++	return 0;
++}
++
+ int set_msi_sid(struct irte *irte, struct pci_dev *dev)
  {
--	if (arch_setup_hpet_msi(irq)) {
-+	if (arch_setup_hpet_msi(irq, hpet_blockid)) {
- 		destroy_irq(irq);
- 		return -EINVAL;
+ 	struct pci_dev *bridge;
+@@ -711,6 +753,34 @@ error:
+ 	return -1;
+ }
+ 
++static void ir_parse_one_hpet_scope(struct acpi_dmar_device_scope *scope,
++				      struct intel_iommu *iommu)
++{
++	struct acpi_dmar_pci_path *path;
++	u8 bus;
++	int count;
++
++	bus = scope->bus;
++	path = (struct acpi_dmar_pci_path *)(scope + 1);
++	count = (scope->length - sizeof(struct acpi_dmar_device_scope))
++		/ sizeof(struct acpi_dmar_pci_path);
++
++	while (--count > 0) {
++		/*
++		 * Access PCI directly due to the PCI
++		 * subsystem isn't initialized yet.
++		 */
++		bus = read_pci_config_byte(bus, path->dev, path->fn,
++					   PCI_SECONDARY_BUS);
++		path++;
++	}
++	ir_hpet[ir_hpet_num].bus   = bus;
++	ir_hpet[ir_hpet_num].devfn = PCI_DEVFN(path->dev, path->fn);
++	ir_hpet[ir_hpet_num].iommu = iommu;
++	ir_hpet[ir_hpet_num].id    = scope->enumeration_id;
++	ir_hpet_num++;
++}
++
+ static void ir_parse_one_ioapic_scope(struct acpi_dmar_device_scope *scope,
+ 				      struct intel_iommu *iommu)
+ {
+@@ -740,8 +810,8 @@ static void ir_parse_one_ioapic_scope(st
+ 	ir_ioapic_num++;
+ }
+ 
+-static int ir_parse_ioapic_scope(struct acpi_dmar_header *header,
+-				 struct intel_iommu *iommu)
++static int ir_parse_ioapic_hpet_scope(struct acpi_dmar_header *header,
++				      struct intel_iommu *iommu)
+ {
+ 	struct acpi_dmar_hardware_unit *drhd;
+ 	struct acpi_dmar_device_scope *scope;
+@@ -765,6 +835,17 @@ static int ir_parse_ioapic_scope(struct 
+ 			       drhd->address);
+ 
+ 			ir_parse_one_ioapic_scope(scope, iommu);
++		} else if (scope->entry_type == ACPI_DMAR_SCOPE_TYPE_HPET) {
++			if (ir_hpet_num == MAX_HPET_TBS) {
++				printk(KERN_WARNING "Exceeded Max HPET blocks\n");
++				return -1;
++			}
++
++			printk(KERN_INFO "HPET id %d under DRHD base"
++			       " 0x%Lx\n", scope->enumeration_id,
++			       drhd->address);
++
++			ir_parse_one_hpet_scope(scope, iommu);
+ 		}
+ 		start += scope->length;
  	}
+@@ -785,7 +866,7 @@ int __init parse_ioapics_under_ir(void)
+ 		struct intel_iommu *iommu = drhd->iommu;
+ 
+ 		if (ecap_ir_support(iommu->ecap)) {
+-			if (ir_parse_ioapic_scope(drhd->hdr, iommu))
++			if (ir_parse_ioapic_hpet_scope(drhd->hdr, iommu))
+ 				return -1;
+ 
+ 			ir_supported = 1;
+Index: tip/drivers/pci/intr_remapping.h
+===================================================================
+--- tip.orig/drivers/pci/intr_remapping.h
++++ tip/drivers/pci/intr_remapping.h
+@@ -7,4 +7,11 @@ struct ioapic_scope {
+ 	unsigned int devfn;	/* PCI devfn number */
+ };
+ 
++struct hpet_scope {
++	struct intel_iommu *iommu;
++	u8 id;
++	unsigned int bus;
++	unsigned int devfn;
++};
++
+ #define IR_X2APIC_MODE(mode) (mode ? (1 << 11) : 0)
+Index: tip/include/linux/dmar.h
+===================================================================
+--- tip.orig/include/linux/dmar.h
++++ tip/include/linux/dmar.h
+@@ -126,7 +126,9 @@ extern int free_irte(int irq);
+ extern int irq_remapped(int irq);
+ extern struct intel_iommu *map_dev_to_ir(struct pci_dev *dev);
+ extern struct intel_iommu *map_ioapic_to_ir(int apic);
++extern struct intel_iommu *map_hpet_to_ir(u8 id);
+ extern int set_ioapic_sid(struct irte *irte, int apic);
++extern int set_hpet_sid(struct irte *irte, u8 id);
+ extern int set_msi_sid(struct irte *irte, struct pci_dev *dev);
+ #else
+ static inline int alloc_irte(struct intel_iommu *iommu, int irq, u16 count)
+@@ -158,10 +160,18 @@ static inline struct intel_iommu *map_io
+ {
+ 	return NULL;
+ }
++static inline struct intel_iommu *map_hpet_to_ir(unsigned int hpet_id)
++{
++	return NULL;
++}
+ static inline int set_ioapic_sid(struct irte *irte, int apic)
+ {
+ 	return 0;
+ }
++static inline int set_hpet_sid(struct irte *irte, u8 id)
++{
++	return -1;
++}
+ static inline int set_msi_sid(struct irte *irte, struct pci_dev *dev)
+ {
+ 	return 0;
+Index: tip/include/linux/hpet.h
+===================================================================
+--- tip.orig/include/linux/hpet.h
++++ tip/include/linux/hpet.h
+@@ -126,4 +126,6 @@ struct hpet_info {
+ #define	HPET_DPI	_IO('h', 0x05)	/* disable periodic */
+ #define	HPET_IRQFREQ	_IOW('h', 0x6, unsigned long)	/* IRQFREQ usec */
+ 
++#define MAX_HPET_TBS	8		/* maximum hpet timer blocks */
++
+ #endif				/* !__HPET__ */
 
 -- 
 
