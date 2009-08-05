@@ -1,40 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934597AbZHEO5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934603AbZHEO5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934597AbZHEO5Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 10:57:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934583AbZHEO5P
+	id S934603AbZHEO5v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 10:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934538AbZHEO5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 10:57:15 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38208 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934566AbZHEO5O (ORCPT
+	Wed, 5 Aug 2009 10:57:51 -0400
+Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:50847 "EHLO
+	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934534AbZHEO5u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 10:57:14 -0400
-Date: Wed, 5 Aug 2009 10:57:13 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Julia Lawall <julia@diku.dk>
-Cc: Helge Deller <deller@gmx.de>, Kyle McMartin <kyle@mcmartin.ca>,
-       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] arch/parisc: correct use of SHF_ALLOC
-Message-ID: <20090805145713.GP28572@bombadil.infradead.org>
-References: <Pine.LNX.4.64.0908042226231.3737@ask.diku.dk>
+	Wed, 5 Aug 2009 10:57:50 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Daniel Mack <daniel@caiaq.de>
+Subject: Re: [PATCH 1/2] ds2760: switch to new dev_pm_ops
+Date: Wed, 5 Aug 2009 16:57:47 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, daniel@caiaq.de, szabolcs.gyurko@tlt.hu,
+       mreimer@vpop.net, cbou@mail.ru
+References: <1249476387-27325-1-git-send-email-daniel@caiaq.de>
+In-reply-To: <1249476387-27325-1-git-send-email-daniel@caiaq.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0908042226231.3737@ask.diku.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200908051657.49810.elendil@planet.nl>
+X-OriginalArrivalTime: 05 Aug 2009 14:57:50.0485 (UTC) FILETIME=[1A30EC50:01CA15DD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 04, 2009 at 10:27:07PM +0200, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> SHF_ALLOC is suitable for testing against the sh_flags field, not the
-> sh_type field.
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
+Daniel Mack wrote:
+> +static struct dev_pm_ops ds2760_battery_pm_ops = {
+> +       .suspend        = ds2760_battery_suspend,
+> +       .resume         = ds2760_battery_resume,
+> +};
 
-Thanks Julia, applied.
+Just to make sure...
+
+Have you followed the earlier discussions on dev_pm_ops conversions and 
+are you aware that if done like this the driver no longer supports 
+hibernation?
+
+If omitting hibernation is intentional, it should probably be justified in 
+the commit log.
+
+See http://lkml.org/lkml/2009/7/25/118 for background.
+
+Same goes for your patch for w1_gpio of course.
+
+Cheers,
+FJP
