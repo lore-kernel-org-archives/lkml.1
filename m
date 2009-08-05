@@ -1,49 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752843AbZHEVvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752775AbZHEVva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752843AbZHEVvr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 17:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbZHEVvc
+	id S1752775AbZHEVva (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 17:51:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZHEVv3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 17:51:32 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42942 "EHLO
+	Wed, 5 Aug 2009 17:51:29 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:42932 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752779AbZHEVvb (ORCPT
+	with ESMTP id S1750855AbZHEVv2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 17:51:31 -0400
+	Wed, 5 Aug 2009 17:51:28 -0400
 From: Andi Kleen <andi@firstfloor.org>
-References: <200908051151.557035535@firstfloor.org>
-In-Reply-To: <200908051151.557035535@firstfloor.org>
+Message-Id: <200908051151.557035535@firstfloor.org>
 To: sam@ravnborg.org, linux-kbuild@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] [5/5] kbuild: Set -fconserve-stack option for gcc 4.5
-Message-Id: <20090805215131.BD7D2B15D8@basil.firstfloor.org>
-Date: Wed,  5 Aug 2009 23:51:31 +0200 (CEST)
+Subject: [PATCH] [0/5] kbuild: A couple of Kbuild fixes/improvements
+Date: Wed,  5 Aug 2009 23:51:26 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-The upcomming gcc 4.5 has a new -fconserve-stack option 
-that tells the inliner to take stack frame size in account.
-Set it if the compiler supports it.
+Some build system patches that accumulated in my tree:
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+- Fix mcount handling
+- Fix gold linker support
+- Add some gcc 4.5 support
 
----
- Makefile |    3 +++
- 1 file changed, 3 insertions(+)
+One will address the problem Dave A. reported earlier today.
 
-Index: linux-2.6.31-rc3-ak/Makefile
-===================================================================
---- linux-2.6.31-rc3-ak.orig/Makefile
-+++ linux-2.6.31-rc3-ak/Makefile
-@@ -575,6 +575,9 @@ KBUILD_CFLAGS	+= $(call cc-option,-fno-s
- # revert to pre-gcc-4.4 behaviour of .eh_frame
- KBUILD_CFLAGS	+= $(call cc-option,-fno-dwarf2-cfi-asm)
- 
-+# conserve stack if available
-+KBUILD_CFLAGS   += $(call cc-option,-fconserve-stack)
-+
- # Add user supplied CPPFLAGS, AFLAGS and CFLAGS as the last assignments
- # But warn user when we do so
- warn-assign = \
+-Andi
