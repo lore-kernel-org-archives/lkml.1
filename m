@@ -1,87 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755672AbZHEK6E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934059AbZHELKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755672AbZHEK6E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 06:58:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbZHEK6D
+	id S934059AbZHELKx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 07:10:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbZHELKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 06:58:03 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:49527 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751223AbZHEK6B (ORCPT
+	Wed, 5 Aug 2009 07:10:52 -0400
+Received: from mga11.intel.com ([192.55.52.93]:18765 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750964AbZHELKv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 06:58:01 -0400
-Date: Wed, 5 Aug 2009 12:57:58 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-s390 <linux-s390@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [GIT PULL] s390 patches for v2.6.31-rc5
-Message-ID: <20090805125758.4c05c4a0@skybase>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Aug 2009 07:10:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,328,1246863600"; 
+   d="scan'208";a="714089297"
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Wed, 5 Aug 2009 12:10:26 +0100
+Subject: RE: [patch] x86, perf_counter, bts: add bts to perf_counter
+Thread-Topic: [patch] x86, perf_counter, bts: add bts to perf_counter
+Thread-Index: AcoU98gcZfPZAe/3R+2NGBTqTkrCLQAxJ0IA
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77EC1B964FD@irsmsx504.ger.corp.intel.com>
+References: <20090721155648.A17047@sedona.ch.intel.com>
+ <1249381489.7924.186.camel@twins> <20090804111412.GA20942@elte.hu>
+ <20090804113555.GA28198@elte.hu>
+In-Reply-To: <20090804113555.GA28198@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
-I hope that this will be the last s390 update for 2.6.31.
-Please pull from 'for-linus' branch of
+>-----Original Message-----
+>From: Ingo Molnar [mailto:mingo@elte.hu]
+>Sent: Tuesday, August 04, 2009 1:36 PM
+>To: Peter Zijlstra
+>Cc: Metzger, Markus T; tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; linux-
+>kernel@vger.kernel.org
+>Subject: Re: [patch] x86, perf_counter, bts: add bts to perf_counter
+>
+>
+>* Ingo Molnar <mingo@elte.hu> wrote:
+>
+>> > Over all looks very nice, some comments below (could be
+>> > addressed in a delta patch).
+>>
+>> ok - thanks guys - i'll test this some and push it out into the
+>> perfcounters tree. Will apply the delta patch too once it's done.
+>
+>the kernel hard-locks if i try to use it:
+>
+> titan:~/tip/tools/perf> perf record -f -e branches -c 1 ~/hackbench 1
+>
+>with the attached 64-bit (def-)config, on a Core2 test-box, latest
+>-tip.
 
-	git://git390.marist.edu/pub/scm/linux-2.6.git for-linus
+I can reproduce the problem when tracing kernel branches.
 
-to receive the following updates:
+When I trace user-branches or when I disable overflow handling, it seems to work OK.
 
-Hendrik Brueckner (1):
-      [S390] kernel: Storing machine flags early in lowcore
+Please drop the patch. I'll resend the entire patch after I fixed that problem.
 
-Roel Kluin (1):
-      [S390] KVM: Read buffer overflow
+thanks and regards,
+markus.
 
- arch/s390/kernel/early.c |    3 +++
- arch/s390/kvm/sigp.c     |    7 ++++---
- 2 files changed, 7 insertions(+), 3 deletions(-)
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
-diff --git a/arch/s390/kernel/early.c b/arch/s390/kernel/early.c
-index 8d15314..cae14c4 100644
---- a/arch/s390/kernel/early.c
-+++ b/arch/s390/kernel/early.c
-@@ -208,6 +208,9 @@ static noinline __init void detect_machine_type(void)
- 		machine_flags |= MACHINE_FLAG_KVM;
- 	else
- 		machine_flags |= MACHINE_FLAG_VM;
-+
-+	/* Store machine flags for setting up lowcore early */
-+	S390_lowcore.machine_flags = machine_flags;
- }
- 
- static __init void early_pgm_check_handler(void)
-diff --git a/arch/s390/kvm/sigp.c b/arch/s390/kvm/sigp.c
-index 3667883..0ef81d6 100644
---- a/arch/s390/kvm/sigp.c
-+++ b/arch/s390/kvm/sigp.c
-@@ -169,7 +169,7 @@ static int __sigp_set_prefix(struct kvm_vcpu *vcpu, u16 cpu_addr, u32 address,
- 			     unsigned long *reg)
- {
- 	struct kvm_s390_float_interrupt *fi = &vcpu->kvm->arch.float_int;
--	struct kvm_s390_local_interrupt *li;
-+	struct kvm_s390_local_interrupt *li = NULL;
- 	struct kvm_s390_interrupt_info *inti;
- 	int rc;
- 	u8 tmp;
-@@ -189,9 +189,10 @@ static int __sigp_set_prefix(struct kvm_vcpu *vcpu, u16 cpu_addr, u32 address,
- 		return 2; /* busy */
- 
- 	spin_lock(&fi->lock);
--	li = fi->local_int[cpu_addr];
-+	if (cpu_addr < KVM_MAX_VCPUS)
-+		li = fi->local_int[cpu_addr];
- 
--	if ((cpu_addr >= KVM_MAX_VCPUS) || (li == NULL)) {
-+	if (li == NULL) {
- 		rc = 1; /* incorrect state */
- 		*reg &= SIGP_STAT_INCORRECT_STATE;
- 		kfree(inti);
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
