@@ -1,126 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934049AbZHEJhR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934044AbZHEJhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934049AbZHEJhR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 05:37:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934015AbZHEJgq
+	id S934044AbZHEJhB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 05:37:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934035AbZHEJg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 05:36:46 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49101 "EHLO
+	Wed, 5 Aug 2009 05:36:59 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49105 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933995AbZHEJgk (ORCPT
+	with ESMTP id S934018AbZHEJgq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 05:36:40 -0400
+	Wed, 5 Aug 2009 05:36:46 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200908051136.682859934@firstfloor.org>
 In-Reply-To: <200908051136.682859934@firstfloor.org>
 To: akpm@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, fengguang.wu@intel.com,
        hidehiro.kawai.ez@hitachi.com
-Subject: [PATCH] [13/19] HWPOISON: Define a new error_remove_page address space op for async truncation
-Message-Id: <20090805093640.D8856B15D8@basil.firstfloor.org>
-Date: Wed,  5 Aug 2009 11:36:40 +0200 (CEST)
+Subject: [PATCH] [19/19] HWPOISON: Add simple debugfs interface to inject hwpoison on arbitary PFNs
+Message-Id: <20090805093646.EE6F0B15D8@basil.firstfloor.org>
+Date: Wed,  5 Aug 2009 11:36:46 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Truncating metadata pages is not safe right now before
-we haven't audited all file systems.
+Useful for some testing scenarios, although specific testing is often
+done better through MADV_POISON
 
-To enable truncation only for data address space define
-a new address_space callback error_remove_page.
+This can be done with the x86 level MCE injector too, but this interface
+allows it to do independently from low level x86 changes.
 
-This is used for memory_failure.c memory error handling.
+Open issues: 
 
-This can be then set to truncate_inode_page()
-
-This patch just defines the new operation and adds documentation.
-
-Callers and users come in followon patches.
+Should be disabled for cgroups.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- Documentation/filesystems/vfs.txt |    7 +++++++
- include/linux/fs.h                |    1 +
- include/linux/mm.h                |    1 +
- mm/truncate.c                     |   17 +++++++++++++++++
- 4 files changed, 26 insertions(+)
+ mm/Kconfig           |    6 +++++-
+ mm/Makefile          |    1 +
+ mm/hwpoison-inject.c |   40 ++++++++++++++++++++++++++++++++++++++++
+ mm/madvise.c         |    2 +-
+ 4 files changed, 47 insertions(+), 2 deletions(-)
 
-Index: linux/include/linux/fs.h
+Index: linux/mm/hwpoison-inject.c
 ===================================================================
---- linux.orig/include/linux/fs.h
-+++ linux/include/linux/fs.h
-@@ -595,6 +595,7 @@ struct address_space_operations {
- 	int (*launder_page) (struct page *);
- 	int (*is_partially_uptodate) (struct page *, read_descriptor_t *,
- 					unsigned long);
-+	int (*error_remove_page)(struct address_space *, struct page *);
- };
- 
- /*
-Index: linux/Documentation/filesystems/vfs.txt
-===================================================================
---- linux.orig/Documentation/filesystems/vfs.txt
-+++ linux/Documentation/filesystems/vfs.txt
-@@ -536,6 +536,7 @@ struct address_space_operations {
- 	/* migrate the contents of a page to the specified target */
- 	int (*migratepage) (struct page *, struct page *);
- 	int (*launder_page) (struct page *);
-+	int (*error_remove_page) (struct mapping *mapping, struct page *page);
- };
- 
-   writepage: called by the VM to write a dirty page to backing store.
-@@ -694,6 +695,12 @@ struct address_space_operations {
-   	prevent redirtying the page, it is kept locked during the whole
- 	operation.
- 
-+  error_remove_page: normally set to generic_error_remove_page if truncation
-+	is ok for this address space. Used for memory failure handling.
-+	Setting this implies you deal with pages going away under you,
-+	unless you have them locked or reference counts increased.
+--- /dev/null
++++ linux/mm/hwpoison-inject.c
+@@ -0,0 +1,40 @@
++/* Inject a hwpoison memory failure on a arbitary pfn */
++#include <linux/module.h>
++#include <linux/debugfs.h>
++#include <linux/kernel.h>
++#include <linux/mm.h>
 +
++static struct dentry *hwpoison_dir, *corrupt_pfn;
 +
- The File Object
- ===============
- 
-Index: linux/mm/truncate.c
-===================================================================
---- linux.orig/mm/truncate.c
-+++ linux/mm/truncate.c
-@@ -147,6 +147,23 @@ int truncate_inode_page(struct address_s
- }
- 
- /*
-+ * Used to get rid of pages on hardware memory corruption.
-+ */
-+int generic_error_remove_page(struct address_space *mapping, struct page *page)
++static int hwpoison_inject(void *data, u64 val)
 +{
-+	if (!mapping)
-+		return -EINVAL;
-+	/*
-+	 * Only punch for normal data pages for now.
-+	 * Handling other types like directories would need more auditing.
-+	 */
-+	if (!S_ISREG(mapping->host->i_mode))
-+		return -EIO;
-+	return truncate_inode_page(mapping, page);
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++	printk(KERN_INFO "Injecting memory failure at pfn %Lx\n", val);
++	return __memory_failure(val, 18, 0);
 +}
-+EXPORT_SYMBOL(generic_error_remove_page);
 +
-+/*
-  * Safely invalidate one page from its pagecache mapping.
-  * It only drops clean, unused pages. The page must be locked.
-  *
-Index: linux/include/linux/mm.h
++DEFINE_SIMPLE_ATTRIBUTE(hwpoison_fops, NULL, hwpoison_inject, "%lli\n");
++
++static void pfn_inject_exit(void)
++{
++	if (hwpoison_dir)
++		debugfs_remove_recursive(hwpoison_dir);
++}
++
++static int pfn_inject_init(void)
++{
++	hwpoison_dir = debugfs_create_dir("hwpoison", NULL);
++	if (hwpoison_dir == NULL)
++		return -ENOMEM;
++	corrupt_pfn = debugfs_create_file("corrupt-pfn", 0600, hwpoison_dir,
++					  NULL, &hwpoison_fops);
++	if (corrupt_pfn == NULL) {
++		pfn_inject_exit();
++		return -ENOMEM;
++	}
++	return 0;
++}
++
++module_init(pfn_inject_init);
++module_exit(pfn_inject_exit);
+Index: linux/mm/Kconfig
 ===================================================================
---- linux.orig/include/linux/mm.h
-+++ linux/include/linux/mm.h
-@@ -810,6 +810,7 @@ extern int vmtruncate(struct inode * ino
- extern int vmtruncate_range(struct inode * inode, loff_t offset, loff_t end);
+--- linux.orig/mm/Kconfig
++++ linux/mm/Kconfig
+@@ -236,12 +236,16 @@ config DEFAULT_MMAP_MIN_ADDR
+ config MEMORY_FAILURE
+ 	depends on MMU
+ 	depends on X86_MCE
+-	bool "Enable memory failure recovery"
++	bool "Enable recovery from hardware memory errors"
+ 	help
+ 	  Enables code to recover from some memory failures on systems
+ 	  with MCA recovery. This allows a system to continue running
+ 	  even when some of its memory has uncorrected errors.
  
- int truncate_inode_page(struct address_space *mapping, struct page *page);
-+int generic_error_remove_page(struct address_space *mapping, struct page *page);
- 
- int invalidate_inode_page(struct page *page);
- 
++config HWPOISON_INJECT
++	tristate "Poison pages injector"
++	depends on MEMORY_FAILURE && DEBUG_KERNEL
++
+ config NOMMU_INITIAL_TRIM_EXCESS
+ 	int "Turn on mmap() excess space trimming before booting"
+ 	depends on !MMU
+Index: linux/mm/Makefile
+===================================================================
+--- linux.orig/mm/Makefile
++++ linux/mm/Makefile
+@@ -41,5 +41,6 @@ endif
+ obj-$(CONFIG_QUICKLIST) += quicklist.o
+ obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
+ obj-$(CONFIG_MEMORY_FAILURE) += memory-failure.o
++obj-$(CONFIG_HWPOISON_INJECT) += hwpoison-inject.o
+ obj-$(CONFIG_DEBUG_KMEMLEAK) += kmemleak.o
+ obj-$(CONFIG_DEBUG_KMEMLEAK_TEST) += kmemleak-test.o
+Index: linux/mm/madvise.c
+===================================================================
+--- linux.orig/mm/madvise.c
++++ linux/mm/madvise.c
+@@ -213,7 +213,7 @@ static long madvise_remove(struct vm_are
+  */
+ static int madvise_hwpoison(unsigned long start, unsigned long end)
+ {
+-	int ret = -EIO;
++	int ret = 0;
+ 	/*
+ 	 * RED-PEN
+ 	 * This allows to tie up arbitary amounts of memory.
