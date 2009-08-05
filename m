@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933035AbZHEBNF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933071AbZHEBW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933035AbZHEBNF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 21:13:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932956AbZHEBNC
+	id S933071AbZHEBW7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 21:22:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932998AbZHEBW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 21:13:02 -0400
-Received: from mail.dev.rtsoft.ru ([213.79.90.226]:44460 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S932796AbZHEBNB (ORCPT
+	Tue, 4 Aug 2009 21:22:57 -0400
+Received: from wg.visionengravers.com ([67.136.234.194]:17925 "EHLO
+	visionfs1.visionengravers.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S932956AbZHEBW4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 21:13:01 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Aug 2009 21:13:00 EDT
-Date: Wed, 5 Aug 2009 05:06:20 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Ben Dooks <ben-linux@fluff.org>, Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Jean Delvare <khali@linux-fr.org>, linux-mtd@lists.infradead.org,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/7] spi: Add support for device table matching
-Message-ID: <20090805010620.GB14451@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090729170345.GA26787@oksana.dev.rtsoft.ru>
- <20090729170457.GA4803@oksana.dev.rtsoft.ru>
- <20090729214446.GB1728@fluff.org.uk>
- <200908031921.23126.david-b@pacbell.net>
+	Tue, 4 Aug 2009 21:22:56 -0400
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] net/ipv4/raw.c: Fix sparse noise about context imbalance
+Date: Tue, 4 Aug 2009 18:23:00 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200908031921.23126.david-b@pacbell.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <200908041823.00511.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 03, 2009 at 07:21:22PM -0700, David Brownell wrote:
-> On Wednesday 29 July 2009, Ben Dooks wrote:
-> > >  struct spi_driver {
-> > > +     const struct spi_device_id *id_table;
-> > > +     int                     (*probe_id)(struct spi_device *spi,
-> > > +                                         const struct spi_device_id *id);
-> > 
-> > how about leaving it at just probe and have either a call or a field
-> > in the device that you can look at to see if this was a new style of
-> > call?
-> > 
-> > >       int                     (*probe)(struct spi_device *spi);
-> 
-> For the record, if this is going to happen I think the
-> appropriate long-term solution is to have probe() take
-> the device_id just as it does with other busses.
+Fix sparse noise due to context imbalance by annotating the functions.
 
-Just curious. Why you prefer another argument in the probe()
-instead of calling some helper function? Most drivers don't
-need the "id" argument, so why spend memory and cpu cycles
-for it?
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+---
+
+diff --git a/net/ipv4/raw.c b/net/ipv4/raw.c
+index 2979f14..e83f7c5 100644
+--- a/net/ipv4/raw.c
++++ b/net/ipv4/raw.c
+@@ -896,6 +896,7 @@ static struct sock *raw_get_idx(struct seq_file *seq, loff_t pos)
+ }
+ 
+ void *raw_seq_start(struct seq_file *seq, loff_t *pos)
++	__acquires(&state->h->lock)
+ {
+ 	struct raw_iter_state *state = raw_seq_private(seq);
+ 
+@@ -918,6 +919,7 @@ void *raw_seq_next(struct seq_file *seq, void *v, loff_t *pos)
+ EXPORT_SYMBOL_GPL(raw_seq_next);
+ 
+ void raw_seq_stop(struct seq_file *seq, void *v)
++	__releases(&state->h->lock)
+ {
+ 	struct raw_iter_state *state = raw_seq_private(seq);
+ 
