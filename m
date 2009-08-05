@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751572AbZHERnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751429AbZHERqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751572AbZHERnp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 13:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbZHERno
+	id S1751429AbZHERqJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 13:46:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750718AbZHERqI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 13:43:44 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35181 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751365AbZHERno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 13:43:44 -0400
-Message-ID: <4A79C486.1010809@redhat.com>
-Date: Wed, 05 Aug 2009 13:42:30 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Wed, 5 Aug 2009 13:46:08 -0400
+Received: from cluster-g.mailcontrol.com ([208.87.233.190]:35820 "EHLO
+	cluster-g.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750706AbZHERqI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 13:46:08 -0400
+Message-ID: <4A79C4A6.9000707@csr.com>
+Date: Wed, 05 Aug 2009 18:43:02 +0100
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-To: Andrea Arcangeli <aarcange@redhat.com>
-CC: Wu Fengguang <fengguang.wu@intel.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>, Avi Kivity <avi@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-References: <20090805024058.GA8886@localhost> <20090805155805.GC23385@random.random>
-In-Reply-To: <20090805155805.GC23385@random.random>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Greg KH <greg@kroah.com>
+CC: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Jan Blunck <jblunck@suse.de>, gregkh@suse.de,
+       Harald Hoyer <harald@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>
+Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
+ /dev
+References: <20090805171513.GA10443@kroah.com>
+In-Reply-To: <20090805171513.GA10443@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Aug 2009 17:43:02.0857 (UTC) FILETIME=[2E6CDB90:01CA15F4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Arcangeli wrote:
-> On Wed, Aug 05, 2009 at 10:40:58AM +0800, Wu Fengguang wrote:
->>  			 */
->> -			if ((vm_flags & VM_EXEC) && !PageAnon(page)) {
->> +			if ((vm_flags & VM_EXEC) || PageAnon(page)) {
->>  				list_add(&page->lru, &l_active);
->>  				continue;
->>  			}
->>
+Greg KH wrote:
 > 
-> Please nuke the whole check and do an unconditional list_add;
-> continue; there.
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -929,6 +929,8 @@ int device_add(struct device *dev)
+>  		error = device_create_sys_dev_entry(dev);
+>  		if (error)
+>  			goto devtattrError;
+> +
+> +		devtmpfs_create_node(dev);
+>  	}
+>  
+>  	error = device_add_class_symlinks(dev);
+[...]
+> --- /dev/null
+> +++ b/drivers/base/devtmpfs.c
+[...]
+> +int devtmpfs_create_node(struct device *dev)
 
-<riel> aa: so you're saying we should _never_ add pages to the active 
-list at this point in the code
-<aa> right
-<riel> aa: and remove the list_add and continue completely
-<aa> yes
-<riel> aa: your email says the opposite :)
+Returns an int that's never checked.  Is this intentional?
 
+> +int devtmpfs_delete_node(struct device *dev)
+
+Similarly.
+
+David
 -- 
-All rights reversed.
+David Vrabel, Senior Software Engineer, Drivers
+CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
+Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
+
+
+'member of the CSR plc group of companies. CSR plc registered in England and Wales, registered number 4187346, registered office Churchill House, Cambridge Business Park, Cowley Road, Cambridge, CB4 0WZ, United Kingdom'
