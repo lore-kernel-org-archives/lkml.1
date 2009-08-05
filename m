@@ -1,54 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934070AbZHEQMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbZHEQRs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934070AbZHEQMx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 12:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbZHEQMx
+	id S1755856AbZHEQRs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 12:17:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755828AbZHEQRr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 12:12:53 -0400
-Received: from mga11.intel.com ([192.55.52.93]:50678 "EHLO mga11.intel.com"
+	Wed, 5 Aug 2009 12:17:47 -0400
+Received: from kroah.org ([198.145.64.141]:47824 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755767AbZHEQMw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 12:12:52 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,329,1246863600"; 
-   d="scan'208";a="714165301"
-From: "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>
-To: Andrea Arcangeli <aarcange@redhat.com>, Avi Kivity <avi@redhat.com>
-CC: "Wu, Fengguang" <fengguang.wu@intel.com>, Rik van Riel <riel@redhat.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Date: Wed, 5 Aug 2009 09:12:39 -0700
-Subject: RE: [RFC] respect the referenced bit of KVM guest pages?
-Thread-Topic: [RFC] respect the referenced bit of KVM guest pages?
-Thread-Index: AcoV5oPAXC7tl5p4SyKpBRKjaVRkCQAAKmDw
-Message-ID: <9EECC02A4CC333418C00A85D21E89326B651C0BD@azsmsx502.amr.corp.intel.com>
-References: <20090805024058.GA8886@localhost> <4A793B92.9040204@redhat.com>
- <20090805160504.GD23385@random.random>
-In-Reply-To: <20090805160504.GD23385@random.random>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1751669AbZHEQRr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 12:17:47 -0400
+Date: Wed, 5 Aug 2009 09:06:52 -0700
+From: Greg KH <greg@kroah.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Dream in staging: separate Kconfig/Makefile into subdirectory
+Message-ID: <20090805160652.GA9474@kroah.com>
+References: <20090720103532.GD19341@elf.ucw.cz>
+ <20090727153711.GA4323@kroah.com>
+ <20090805152721.GA8337@elf.ucw.cz>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090805152721.GA8337@elf.ucw.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It can't distinguish. Besides the pages being refaulted (as minor
-> faults) implies they weren't collected yet. So the fact they are
-> allowed to stay on active list or not can't matter or alter the
-> refaulting issue.
+On Wed, Aug 05, 2009 at 05:27:21PM +0200, Pavel Machek wrote:
+> On Mon 2009-07-27 08:37:11, Greg KH wrote:
+> > On Mon, Jul 20, 2009 at 12:35:32PM +0200, Pavel Machek wrote:
+> > > Separate Kconfig/Makefile glue from dream into subdirectory. I plan to
+> > > add few more drivers, and changing staging/Makefile each time sounds
+> > > like inviting conflicts.
+> > >     
+> > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> > > 
+> > > diff --git a/drivers/staging/Kconfig b/drivers/staging/Kconfig
+> > > index 300b83e..50f9ab0 100644
+> > > --- a/drivers/staging/Kconfig
+> > > +++ b/drivers/staging/Kconfig
+> > > @@ -133,11 +133,9 @@ source "drivers/staging/cpc-usb/Kconfig"
+> > >  
+> > >  source "drivers/staging/pata_rdc/Kconfig"
+> > >  
+> > > -source "drivers/staging/dream/smd/Kconfig"
+> > > -
+> > > -source "drivers/staging/dream/camera/Kconfig"
+> > > -
+> > >  source "drivers/staging/udlfb/Kconfig"
+> > >  
+> > > +source "drivers/staging/dream/Kconfig"
+> > > +
+> > >  endif # !STAGING_EXCLUDE_BUILD
+> > >  endif # STAGING
+> > > diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
+> > > index 8d2e1c2..4fa2e07 100644
+> > > --- a/drivers/staging/Makefile
+> > > +++ b/drivers/staging/Makefile
+> > > @@ -1,7 +1,7 @@
+> > >  # Makefile for staging directory
+> > >  
+> > >  # fix for build system bug...
+> > > -obj-$(CONFIG_STAGING)		+= staging.o
+> > > +obj-$(CONFIG_STAGING)		+= staging.o dream/
+> > 
+> > Ick, no, you shouldn't have to do this.
+> > 
+> > Please jump into the dream subdir based on a Kconfig option, don't go
+> > there every single time.
+> > 
+> > Care to fix this up?
+> 
+> I'm afraid I don't quite have suitable config option. At least
+> synaptics touchpad should be usable outside dream.
+> 
+> OTOH Dream is still major user; and I guess I can just introduce
+> "CONFIG_DREAM". Should I?
 
-Sounds like there's some terminology confusion.  A refault is a page being discarded due to memory pressure and subsequently being faulted back in.  I was counting the number of faults between the discard and faulting back in for each affected page.  For a large number of predominately stack pages, that number was very small.
+What's wrong with using the CONFIG_ANDROID dependancy here?  Actually,
+why not use it for all of the dream files?
 
-					Jeff
+Or yes, you can create CONFIG_DREAM if you want, but there's probably a
+better, arch-specific config item that you want to use.
+
+thanks,
+
+greg k-h
