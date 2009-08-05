@@ -1,51 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbZHELfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933368AbZHELgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755567AbZHELfL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 07:35:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754861AbZHELfL
+	id S933368AbZHELgN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 07:36:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932900AbZHELgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 07:35:11 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43016 "EHLO mx2.suse.de"
+	Wed, 5 Aug 2009 07:36:13 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37085 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752826AbZHELfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 07:35:10 -0400
-Message-ID: <4A796E5D.2090707@suse.de>
-Date: Wed, 05 Aug 2009 20:34:53 +0900
-From: Tejun Heo <teheo@suse.de>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	id S932508AbZHELgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 07:36:12 -0400
+Message-ID: <4A796F27.9040003@redhat.com>
+Date: Wed, 05 Aug 2009 19:38:15 +0800
+From: Amerigo Wang <amwang@redhat.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Takashi Iwai <tiwai@suse.de>, Colin Guthrie <cguthrie@mandriva.org>,
-       Greg KH <greg@kroah.com>, Al Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] sound: make OSS device number claiming optional
-References: <4A79283E.7030202@kernel.org>	<4A79296A.4090600@suse.de>	<20090805101551.6ee053e5@lxorguk.ukuu.org.uk>	<4A794FB9.30403@mandriva.org>	<20090805105916.28f84a05@lxorguk.ukuu.org.uk>	<s5h63d2o9ds.wl%tiwai@suse.de>	<20090805112649.4a59ce70@lxorguk.ukuu.org.uk>	<s5hzlaemtdx.wl%tiwai@suse.de> <20090805121551.7449f748@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090805121551.7449f748@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [Patch 1/2] ia32: use generic sys_pipe()
+References: <20090722091051.6621.15184.sendpatchset@localhost.localdomain> <20090804122432.GB4367@elte.hu>
+In-Reply-To: <20090804122432.GB4367@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->>> This makes it worse.
->> Well, the only regression would be the case where you create static
->> /dev/dsp (or else) devices and let auto-loading through sound-slot-*
->> or sound-service-*-* aliases.  Of course, this still works if you
->> load soundcore in some way.
-> 
-> Unless some ugly cuse hack got there first.
-> 
->> What I suggested in the above is to cut off an unneeded dependency
->> between soundcore and ALSA-native stuff instead of hacking soundcore.
->> It won't change anything else, so everything else can coexist as
->> before.
-> 
-> Agreed - but that is really a separate issue to having something break
-> the soundcore by being rude.
+Ingo Molnar wrote:
+> * Amerigo Wang <amwang@redhat.com> wrote:
+>
+>   
+>> As suggested by Al, it's better to use the generic sys_pipe() for 
+>> ia32.
+>>
+>> Signed-off-by: WANG Cong <amwang@redhat.com>
+>> Cc: Ingo Molnar <mingo@elte.hu>
+>> Cc: Al Viro <viro@zeniv.linux.org.uk>
+>> CC: Linus Torvalds <torvalds@linux-foundation.org>
+>>     
+>
+>   
+>> --- a/arch/x86/ia32/sys_ia32.c
+>> +++ b/arch/x86/ia32/sys_ia32.c
+>> @@ -189,20 +189,6 @@ asmlinkage long sys32_mprotect(unsigned long start, size_t len,
+>>  	return sys_mprotect(start, len, prot);
+>>  }
+>>  
+>> -asmlinkage long sys32_pipe(int __user *fd)
+>> -{
+>> -	int retval;
+>> -	int fds[2];
+>> -
+>> -	retval = do_pipe_flags(fds, 0);
+>> -	if (retval)
+>> -		goto out;
+>> -	if (copy_to_user(fd, fds, sizeof(fds)))
+>> -		retval = -EFAULT;
+>> -out:
+>> -	return retval;
+>> -}
+>>     
+>
+> Please _ALWAYS_ mention the change in behavior in the changelog, 
+> just in case someone ends up bisecting it. I only found out when i 
+> reviewed the two syscalls out of caution.
+>
+> The syscall you remove kept stale fd's around in case of -EFAULT 
+> from copy_to_user(). The generic version does an explicit close of 
+> those files:
+>
+>                         sys_close(fd[0]);
+>                         sys_close(fd[1]);
+>                         error = -EFAULT;
+>
+> The generic version looks like the better choice to me but this 
+> difference should be mentioned in the changelog nevertheless, just 
+> in case some buggy app runs into this issue.
+>   
 
-Sigh, does the wording really have to be 'ugly' and 'rude'?
-sound_core.c itself is a strange hack at this point.  :-(
+Hi, yes, exactly.
+Thank you! I will be careful next time.
 
--- 
-tejun
