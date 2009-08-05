@@ -1,97 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934211AbZHEMqq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934283AbZHEMrD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934211AbZHEMqq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 08:46:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933169AbZHEMqp
+	id S934283AbZHEMrD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 08:47:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934257AbZHEMrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 08:46:45 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:55350 "EHLO
+	Wed, 5 Aug 2009 08:47:03 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:55364 "EHLO
 	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933122AbZHEMqo (ORCPT
+	with ESMTP id S934256AbZHEMrB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 08:46:44 -0400
+	Wed, 5 Aug 2009 08:47:01 -0400
 From: Daniel Mack <daniel@caiaq.de>
 To: linux-kernel@vger.kernel.org
-Cc: Daniel Mack <daniel@caiaq.de>, Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>,
-       Matt Reimer <mreimer@vpop.net>, Anton Vorontsov <cbou@mail.ru>
-Subject: [PATCH 1/2] ds2760: switch to new dev_pm_ops
-Date: Wed,  5 Aug 2009 14:46:27 +0200
-Message-Id: <1249476387-27325-1-git-send-email-daniel@caiaq.de>
+Cc: Daniel Mack <daniel@caiaq.de>, Ville Syrjala <syrjala@sci.fi>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: [PATCH 2/2] w1_gpio: switch to new dev_pm_ops
+Date: Wed,  5 Aug 2009 14:46:52 +0200
+Message-Id: <1249476412-27362-1-git-send-email-daniel@caiaq.de>
 X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Cc: Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
-Cc: Matt Reimer <mreimer@vpop.net>
-Cc: Anton Vorontsov <cbou@mail.ru>
+Cc: Ville Syrjala <syrjala@sci.fi>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 ---
- drivers/power/ds2760_battery.c |   25 ++++++++++++++-----------
- 1 files changed, 14 insertions(+), 11 deletions(-)
+ drivers/w1/masters/w1-gpio.c |   21 +++++++++++++--------
+ 1 files changed, 13 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/power/ds2760_battery.c b/drivers/power/ds2760_battery.c
-index ca43b1c..ad2d615 100644
---- a/drivers/power/ds2760_battery.c
-+++ b/drivers/power/ds2760_battery.c
-@@ -557,19 +557,18 @@ static int ds2760_battery_remove(struct platform_device *pdev)
+diff --git a/drivers/w1/masters/w1-gpio.c b/drivers/w1/masters/w1-gpio.c
+index 6f8866d..4a940fb 100644
+--- a/drivers/w1/masters/w1-gpio.c
++++ b/drivers/w1/masters/w1-gpio.c
+@@ -106,9 +106,9 @@ static int __exit w1_gpio_remove(struct platform_device *pdev)
  
  #ifdef CONFIG_PM
  
--static int ds2760_battery_suspend(struct platform_device *pdev,
--				  pm_message_t state)
-+static int ds2760_battery_suspend(struct device *dev)
+-static int w1_gpio_suspend(struct platform_device *pdev, pm_message_t state)
++static int w1_gpio_suspend(struct device *dev)
  {
--	struct ds2760_device_info *di = platform_get_drvdata(pdev);
-+	struct ds2760_device_info *di = dev_get_drvdata(dev);
+-	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
++	struct w1_gpio_platform_data *pdata = dev_get_drvdata(dev);
  
- 	di->charge_status = POWER_SUPPLY_STATUS_UNKNOWN;
- 
+ 	if (pdata->enable_external_pullup)
+ 		pdata->enable_external_pullup(0);
+@@ -116,9 +116,9 @@ static int w1_gpio_suspend(struct platform_device *pdev, pm_message_t state)
  	return 0;
  }
  
--static int ds2760_battery_resume(struct platform_device *pdev)
-+static int ds2760_battery_resume(struct device *dev)
+-static int w1_gpio_resume(struct platform_device *pdev)
++static int w1_gpio_resume(struct device *dev)
  {
--	struct ds2760_device_info *di = platform_get_drvdata(pdev);
-+	struct ds2760_device_info *di = dev_get_drvdata(dev);
+-	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
++	struct w1_gpio_platform_data *pdata = dev_get_drvdata(dev);
  
- 	di->charge_status = POWER_SUPPLY_STATUS_UNKNOWN;
- 	power_supply_changed(&di->bat);
-@@ -580,23 +579,27 @@ static int ds2760_battery_resume(struct platform_device *pdev)
+ 	if (pdata->enable_external_pullup)
+ 		pdata->enable_external_pullup(1);
+@@ -126,19 +126,24 @@ static int w1_gpio_resume(struct platform_device *pdev)
  	return 0;
  }
  
--#else
-+static struct dev_pm_ops ds2760_battery_pm_ops = {
-+	.suspend        = ds2760_battery_suspend,
-+	.resume         = ds2760_battery_resume,
++static struct dev_pm_ops w1_gpio_pm_ops = {
++	.suspend = w1_gpio_suspend,
++	.resume = w1_gpio_resume,
 +};
++
++#define W1_GPIO_PM_OPS (&w1_gpio_pm_ops)
++
+ #else
+-#define w1_gpio_suspend	NULL
+-#define w1_gpio_resume	NULL
++#define W1_GPIO_PM_OPS NULL
+ #endif
  
--#define ds2760_battery_suspend NULL
--#define ds2760_battery_resume NULL
-+#define DS2760_PM_OPS (&ds2760_battery_pm_ops)
- 
-+#else
-+#define DS2760_PM_OPS NULL
- #endif /* CONFIG_PM */
- 
- MODULE_ALIAS("platform:ds2760-battery");
- 
- static struct platform_driver ds2760_battery_driver = {
+ static struct platform_driver w1_gpio_driver = {
  	.driver = {
--		.name = "ds2760-battery",
-+		.owner	= THIS_MODULE,
-+		.name	= "ds2760-battery",
-+		.pm	= DS2760_PM_OPS,
+ 		.name	= "w1-gpio",
+ 		.owner	= THIS_MODULE,
++		.pm	= W1_GPIO_PM_OPS,
  	},
- 	.probe	  = ds2760_battery_probe,
- 	.remove   = ds2760_battery_remove,
--	.suspend  = ds2760_battery_suspend,
--	.resume	  = ds2760_battery_resume,
+ 	.remove	= __exit_p(w1_gpio_remove),
+-	.suspend = w1_gpio_suspend,
+-	.resume = w1_gpio_resume,
  };
  
- static int __init ds2760_battery_init(void)
+ static int __init w1_gpio_init(void)
 -- 
 1.6.3.3
 
