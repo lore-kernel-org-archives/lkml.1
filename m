@@ -1,177 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933048AbZHEBKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933035AbZHEBNF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933048AbZHEBKe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 21:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932703AbZHEBKc
+	id S933035AbZHEBNF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 21:13:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932956AbZHEBNC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 21:10:32 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56761 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932524AbZHEBKb (ORCPT
+	Tue, 4 Aug 2009 21:13:02 -0400
+Received: from mail.dev.rtsoft.ru ([213.79.90.226]:44460 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S932796AbZHEBNB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 21:10:31 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 5 Aug 2009 10:08:43 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: scgtrp@gmail.com, bugzilla-daemon@bugzilla.kernel.org,
-       bugme-daemon@bugzilla.kernel.org, xiyou.wangcong@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUGFIX][PATCH 2/3] kcore: fix vread/vwrite to be aware of
- holes.
-Message-Id: <20090805100843.dbdabcfa.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090804143031.b9769a13.akpm@linux-foundation.org>
-References: <bug-13850-10286@http.bugzilla.kernel.org/>
-	<20090728160527.1da52682.akpm@linux-foundation.org>
-	<20090729084825.1363c880.kamezawa.hiroyu@jp.fujitsu.com>
-	<525c5a6c0907281946t249ef288v77ee94edd16f054@mail.gmail.com>
-	<20090803201418.040bb3ee.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090803201845.c3ae49b5.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090804143031.b9769a13.akpm@linux-foundation.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Aug 2009 21:13:01 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 04 Aug 2009 21:13:00 EDT
+Date: Wed, 5 Aug 2009 05:06:20 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Ben Dooks <ben-linux@fluff.org>, Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       Jean Delvare <khali@linux-fr.org>, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/7] spi: Add support for device table matching
+Message-ID: <20090805010620.GB14451@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090729170345.GA26787@oksana.dev.rtsoft.ru>
+ <20090729170457.GA4803@oksana.dev.rtsoft.ru>
+ <20090729214446.GB1728@fluff.org.uk>
+ <200908031921.23126.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200908031921.23126.david-b@pacbell.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Aug 2009 14:30:31 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Mon, 3 Aug 2009 20:18:45 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
-> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+On Mon, Aug 03, 2009 at 07:21:22PM -0700, David Brownell wrote:
+> On Wednesday 29 July 2009, Ben Dooks wrote:
+> > >  struct spi_driver {
+> > > +     const struct spi_device_id *id_table;
+> > > +     int                     (*probe_id)(struct spi_device *spi,
+> > > +                                         const struct spi_device_id *id);
 > > 
-> > vread/vwrite access vmalloc area without checking there is a page or not.
-> > In most case, this works well.
+> > how about leaving it at just probe and have either a call or a field
+> > in the device that you can look at to see if this was a new style of
+> > call?
 > > 
-> > In old ages, the caller of get_vm_ara() is only IOREMAP and there is no
-> > memory hole within vm_struct's [addr...addr + size - PAGE_SIZE]
-> > ( -PAGE_SIZE is for a guard page.)
-> > 
-> > After per-cpu-alloc patch, it uses get_vm_area() for reserve continuous
-> > virtual address but remap _later_. There tend to be a hole in valid vmalloc
-> > area in vm_struct lists.
-> > Then, skip the hole (not mapped page) is necessary.
-> > This patch updates vread/vwrite() for avoiding memory hole.
-> > 
-> > Routines which access vmalloc area without knowing for which addr is used
-> > are
-> >   - /proc/kcore
-> >   - /dev/kmem
-> > 
-> > kcore checks IOREMAP, /dev/kmem doesn't. After this patch, IOREMAP is
-> > checked and /dev/kmem will avoid to read/write it.
-> > Fixes to /proc/kcore will be in the next patch in series.
-> > 
-> > Changelog v2->v3:
-> >  - fixed typos.
-> >  - use kmap. (if not using kmap, we have to add lock here.)
-> >  - fixed PAGE_MASK miss-use.
-> > Changelog v1->v2:
-> >  - enhanced comments.
-> >  - treat IOREMAP as hole always.
-> >  - zero-fill memory hole if [addr...addr+size] includes valid pages.
-> >  - returns 0 if [addr...addr+size) includes no valid pages.
-> > 
-> > ...
-> >
-> > +static int aligned_vread(char *buf, char *addr, unsigned long count)
-> > +{
-> > +	struct page *p;
-> > +	int copied = 0;
-> > +
-> > +	while (count) {
-> > +		unsigned long offset, length;
-> > +
-> > +		offset = (unsigned long)addr & ~PAGE_MASK;
-> > +		length = PAGE_SIZE - offset;
-> > +		if (length > count)
-> > +			length = count;
-> > +		p = vmalloc_to_page(addr);
-> > +		/*
-> > +		 * To do safe access to this _mapped_ area, we need
-> > +		 * lock. But adding lock here means that we need to add
-> > +		 * overhead of vmalloc()/vfree() calles for this _debug_
-> > +		 * interface, rarely used. Instead of that, we'll use
-> > +		 * kmap() and get small overhead in this access function.
-> > +		 */
-> > +		if (p) {
-> > +			/* we can expect USR1 is not used */
+> > >       int                     (*probe)(struct spi_device *spi);
 > 
-> It would be nice if the comment were to explain _why_ KM_USER1 is known
-> to be free here.
-> 
-ok, will do. Hmm, but KM_USR0 is better ?
-I'm not sure difference between KM_USR0/KM_USR1...
+> For the record, if this is going to happen I think the
+> appropriate long-term solution is to have probe() take
+> the device_id just as it does with other busses.
 
+Just curious. Why you prefer another argument in the probe()
+instead of calling some helper function? Most drivers don't
+need the "id" argument, so why spend memory and cpu cycles
+for it?
 
-
-> 
-> > +			void *map = kmap_atomic(p, KM_USER1);
-> > +			memcpy(buf, map + offset, length);
-> > +			kunmap_atomic(map, KM_USER1);
-> 
-> Can use clear_highpage().
-> 
-ah, "buf" is expected to be kmalloc'ed buffer. I'll explain it in Usage
-or adds comment.
-
-Thank you for review!
-
--Kame
-
-
-> > +		} else
-> > +			memset(buf, 0, length);
-> > +
-> > +		addr += length;
-> > +		buf += length;
-> > +		copied += length;
-> > +		count -= length;
-> > +	}
-> > +	return copied;
-> > +}
-> > +
-> > +static int aligned_vwrite(char *buf, char *addr, unsigned long count)
-> > +{
-> > +	struct page *p;
-> > +	int copied = 0;
-> > +
-> > +	while (count) {
-> > +		unsigned long offset, length;
-> > +
-> > +		offset = (unsigned long)addr & ~PAGE_MASK;
-> > +		length = PAGE_SIZE - offset;
-> > +		if (length > count)
-> > +			length = count;
-> > +		p = vmalloc_to_page(addr);
-> > +		/*
-> > +		 * To do safe access to this _mapped_ area, we need
-> > +		 * lock. But adding lock here means that we need to add
-> > +		 * overhead of vmalloc()/vfree() calles for this _debug_
-> > +		 * interface, rarely used. Instead of that, we'll use
-> > +		 * kmap() and get small overhead in this access function.
-> > +		 */
-> > +		if (p) {
-> > +			/* we can expect USR1 is not used */
-> > +			void *map = kmap_atomic(p, KM_USER1);
-> > +			memcpy(map + offset, buf, length);
-> > +			kunmap_atomic(map, KM_USER1);
-> 
-> clear_highpage().
-> 
-> > +		}
-> > +		addr += length;
-> > +		buf += length;
-> > +		copied += length;
-> > +		count -= length;
-> > +	}
-> > +	return copied;
-> > +}
-> 
-> 
-
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
