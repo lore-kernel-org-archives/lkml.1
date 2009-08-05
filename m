@@ -1,73 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755717AbZHEGjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933418AbZHEGkp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755717AbZHEGjx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 02:39:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755696AbZHEGjw
+	id S933418AbZHEGkp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 02:40:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbZHEGkp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 02:39:52 -0400
-Received: from rv-out-0506.google.com ([209.85.198.232]:35420 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755691AbZHEGjv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 02:39:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=HmXOCUWTjeQSd4ZgT7mpE6NY1aw521hXM63lCjUc79veID8lpOIx38OMarv8XcBGwu
-         G/TiR5LGt11CJfhumJjZ6FkjdhsuLE4gH1fKlXxYaKP2iaUbaf5vlYNWbbxhkVZC8u3u
-         ax9yKzg3Bc4kaZ10f7rjQ7Nn/DOKJzZRgdja0=
-Date: Wed, 5 Aug 2009 14:39:46 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-To: akpm@linux-foundation.org
-Cc: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2009-08-04-14-22 uploaded
-Message-ID: <20090805063946.GA1934@darkstar>
-References: <200908042125.n74LP9qY018119@imap1.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908042125.n74LP9qY018119@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Wed, 5 Aug 2009 02:40:45 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:56820 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755651AbZHEGko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 02:40:44 -0400
+Date: Wed, 5 Aug 2009 16:40:32 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Cc: Borislav Petkov <borislav.petkov@amd.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Rebasing the edac-amd tree (Was: Re: linux-next: manual merge of
+ the edac-amd tree with Linus' tree)
+Message-Id: <20090805164032.3cf9d95a.sfr@canb.auug.org.au>
+In-Reply-To: <20090805062215.GA7732@liondog.tnic>
+References: <20090805150933.103de233.sfr@canb.auug.org.au>
+	<20090805062215.GA7732@liondog.tnic>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__5_Aug_2009_16_40_32_+1000_P5l6ESaVPS6awTja"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi andrew,
+--Signature=_Wed__5_Aug_2009_16_40_32_+1000_P5l6ESaVPS6awTja
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I see following lockdep warning with this release:
+Hi Boris,
 
-[    0.474144] INFO: trying to register non-static key.
-[    0.474144] the code is fine but needs lockdep annotation.
-[    0.474144] turning off the locking correctness validator.
-[    0.474144] Pid: 1, comm: swapper Not tainted 2.6.31-rc5-mm1 #7
-[    0.474144] Call Trace:
-[    0.474144]  [<c1047f1e>] register_lock_class+0x58/0x241
-[    0.474144]  [<c1049ab1>] __lock_acquire+0xac/0xb73
-[    0.474144]  [<c1076eb5>] ? __alloc_pages_nodemask+0xe2/0x483
-[    0.474144]  [<c1048b64>] ? mark_lock+0x1e/0x1c7
-[    0.474144]  [<c1048b64>] ? mark_lock+0x1e/0x1c7
-[    0.474144]  [<c1048d50>] ? mark_held_locks+0x43/0x5b
-[    0.474144]  [<c10940a6>] ? kmem_cache_alloc+0xac/0x11b
-[    0.474144]  [<c104a615>] lock_acquire+0x9d/0xc0
-[    0.474144]  [<c12b8b96>] ? netif_addr_lock_bh+0xd/0xf
-[    0.474144]  [<c1330feb>] _spin_lock_bh+0x20/0x2f
-[    0.474144]  [<c12b8b96>] ? netif_addr_lock_bh+0xd/0xf
-[    0.474144]  [<c12b8b96>] netif_addr_lock_bh+0xd/0xf
-[    0.474144]  [<c12bc3c3>] alloc_netdev_mq+0xf9/0x1a5
-[    0.474144]  [<c121f016>] ? loopback_setup+0x0/0x74
-[    0.474144]  [<c1578d49>] loopback_net_init+0x20/0x5d
-[    0.474144]  [<c12b7907>] register_pernet_operations+0x13/0x15
-[    0.474144]  [<c12b7970>] register_pernet_device+0x1f/0x47
-[    0.474144]  [<c157ee8d>] net_dev_init+0xfe/0x14d
-[    0.474144]  [<c1001137>] do_one_initcall+0x4a/0x11a
-[    0.474144]  [<c157ed8f>] ? net_dev_init+0x0/0x14d
-[    0.474144]  [<c1067e00>] ? register_irq_proc+0x64/0xa8
-[    0.474144]  [<c1067e97>] ? init_irq_proc+0x53/0x60
-[    0.474144]  [<c1557535>] kernel_init+0x129/0x17a
-[    0.474144]  [<c155740c>] ? kernel_init+0x0/0x17a
-[    0.474144]  [<c1003d47>] kernel_thread_helper+0x7/0x10
+On Wed, 5 Aug 2009 08:22:15 +0200 Borislav Petkov <petkovbb@googlemail.com>=
+ wrote:
+>
+> thanks and yes, you're right. The former patch is less intrusive
+> and we opted for that one since it is really late in the -rc cycle
+> but the latter cleans up stuff so that code flow becomes much more
+> understandable. I'll rediff later and sorry for the inconvenience.
 
---
-Regards
-dave
+As an alternative to rebasing, you could merge Linus' current tree into
+yours and do the merge fixup there.  This is not particularly necessary,
+as the fixup is fairly simple.  Though you may want to do that sometime
+before you ask Linus to merge your tree.
+
+> By the way, I see that you're merging edac-amd before tip and I'm going
+> to need to rebase my tree against tip in the next couple of days since
+> it depends on a bunch of stuff in it, so could you please switch the
+> merge order of the two trees so that edac-amd goes after tip?
+
+Again, instead of rebasing, you could just merge in the branches from tip
+that you depend on. You need to make sure that you only depend on stable
+(i.e. non rebasing) branches in the tip tree, not on the branch
+(auto-latest) that is actually merged into linux-next.  Please discuss
+this with Ingo.
+
+I will move the edac-amd tree to after the tip tree tomorrow.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__5_Aug_2009_16_40_32_+1000_P5l6ESaVPS6awTja
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkp5KWAACgkQjjKRsyhoI8wH5ACggC+i84UNZLf39BaqWkYdRKys
+CjMAnjSDDInHj0Fq2x2DO2TGrYZybvBT
+=tlL+
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__5_Aug_2009_16_40_32_+1000_P5l6ESaVPS6awTja--
