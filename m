@@ -1,99 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933456AbZHEFDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933470AbZHEFEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933456AbZHEFDa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 01:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933237AbZHEFD1
+	id S933470AbZHEFEv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 01:04:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933368AbZHEFEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 01:03:27 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:35448 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753544AbZHEFD0 (ORCPT
+	Wed, 5 Aug 2009 01:04:49 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:22325 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933237AbZHEFEs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 01:03:26 -0400
-Subject: Re: regression IWl3945 - doesn't work with recent 2.6.30-rcX
-From: Johannes Berg <johannes@sipsolutions.net>
-To: reinette chatre <reinette.chatre@intel.com>
-Cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
+	Wed, 5 Aug 2009 01:04:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:references:mime-version:content-type
+         :content-disposition:content-transfer-encoding:in-reply-to
+         :user-agent:message-id;
+        b=UQbW+Fi6GrrEtKxSSgBgvJ92Eaa1KN6qyRhVPB2ncaEppCJEcfSet8o86ZsPqIGbyl
+         zA/4Guox2a25aHJYtSXYHs7ctIViY5ektNnDQgnROFLxPMkRv2pGTgEel7no+jm1GfnT
+         ck76EbwnMn4Nc7yKfbfW/iTMmwy2D3LH3tTpg=
+Date: Tue, 4 Aug 2009 22:04:43 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Richard =?iso-8859-1?Q?R=F6jfors?= 
+	<richard.rojfors.ext@mocean-labs.com>
+Cc: linux-input@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-In-Reply-To: <1249422260.30019.4553.camel@rc-desk>
-References: <c4e36d110904220333u37304c79k6ab528f92b5f3718@mail.gmail.com>
-	 <20090422140107.GD3288@tuxdriver.com>
-	 <c4e36d110904241218x209a4b76kf271f7288f1a33da@mail.gmail.com>
-	 <c4e36d110904270059m3e43d6ccl18cc2ec6954e5649@mail.gmail.com>
-	 <1240959723.1207.104.camel@rc-desk>
-	 <c4e36d110908040807s1778f392o941748fd2c373d4a@mail.gmail.com>
-	 <1249422260.30019.4553.camel@rc-desk>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-h3Kmlm/dTKtO+YYyFiwl"
-Date: Wed, 05 Aug 2009 07:03:19 +0200
-Message-Id: <1249448599.4168.6.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.27.4 
+       Andrew Morton <akpm@linux-foundation.org>, kwangwoo.lee@gmail.com,
+       Thierry Reding <thierry.reding@avionic-design.de>,
+       Trilok Soni <soni.trilok@gmail.com>
+Subject: Re: [PATCH 2/2] tsc2007: reduced number of I2C transfers
+References: <4A69DDED.50402@mocean-labs.com> <20090724180022.GA6477@dtor-d630.eng.vmware.com> <4A6A0D77.6000600@mocean-labs.com> <20090726080212.GA24365@dtor-d630.eng.vmware.com> <4A7825B3.1010806@mocean-labs.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A7825B3.1010806@mocean-labs.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <20090805050445.1C034526EA5@mailhub.coreip.homeip.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 04, 2009 at 02:12:35PM +0200, Richard Röjfors wrote:
+> Dmitry Torokhov wrote:
+>>
+>> I modified the patch a bit before applying. In fact there were a few
+>> changes to all the patces so it would be nice if you could take a look
+>> at the 'next' branch of my tree:
+>>
+>> 	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git next
+>>
+>> Also, I di dnot quite like the logic of the patch making
+>> get_pendown_state callback optional; could you please try the patch
+>> below and let me know of it works for you?
+>
+> I like your changes, there is just a small miss while checking the  
+> platform data. You forgot to remove the check for get_pen_down_state in  
+> the probe function, see the patch below (to be applied on top of yours):
+>
+> I also would like a check if the power down failed or not during probe.
+>
+> --Richard
+>
+> Input: tsc2007 - Check if I2C communication works during probe
+>
+> Check the result when sending the power down command to the controller.
+>
+> Signed-off-by: Richard Röjfors <richard.rojfors.ext@mocean-labs.com>
+> ---
+> Index: linux-2.6.31-rc2/drivers/input/touchscreen/tsc2007.c
+> ===================================================================
+> --- linux-2.6.31-rc2/drivers/input/touchscreen/tsc2007.c	(revision 1071)
+> +++ linux-2.6.31-rc2/drivers/input/touchscreen/tsc2007.c	(revision 1073)
+> @@ -269,7 +269,7 @@
+>  	struct input_dev *input_dev;
+>  	int err;
+>
+> -	if (!pdata || !pdata->get_pendown_state) {
+> +	if (!pdata) {
+>  		dev_err(&client->dev, "platform data is required!\n");
+>  		return -EINVAL;
+>  	}
 
---=-h3Kmlm/dTKtO+YYyFiwl
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
-Hi Reinette,
+Ah, yes, thanks.
 
-> I think I can see how this could happen. From what I can tell there is
-> no checking if a scan is in progress when userspace triggers a new scan.
+> @@ -326,10 +326,14 @@
+>  	i2c_set_clientdata(client, ts);
+>
+>  	/* Prepare for touch readings - power down ADC and enable PENIRQ */
+> -	tsc2007_xfer(ts, PWRDOWN);
+> +	err = tsc2007_xfer(ts, PWRDOWN);
+> +	if (err < 0)
+> +		goto err_unreg_dev;
+>
+>  	return 0;
+>
+> + err_unreg_dev:
+> +	input_unregister_device(ts->input);
 
-There isn't anywhere in mac80211, but all scans are now triggered by
-cfg80211, which does the checking.
+This will case double free.. I will adjust locally.
 
-> ieee80211_scan -> ieee80211_request_scan -> __ieee80211_start_scan
-> without local->hw_scanning or local->sw_scanning being checked.
->=20
-> Considering this the above warning could happen in the following
-> scenario:
-> * userspace triggers scan, this sets local->hw_scanning and goes off
-> scanning
-> * userspace triggers another scan, even though local->hw_scanning is set
-> it continues anyway and calls the drivers scanning function, this
-> function returns error (which will cause ieee80211_scan_completed to be
-> called) or calls ieee80211_scan_completed immediately because it is
-> still busy with previous scan
-> * now original scan completes and it tries to call
-> ieee80211_scan_completed, but this triggers the warning because previous
-> call of ieee80211_scan_completed cleared local->hw_scanning
+>   err_free_irq:
+>  	tsc2007_free_irq(ts);
+>  	if (pdata->exit_platform_hw)
 
-Due to the check in cfg80211, I don't see how this could possibly
-happen. But there are IWL_DEBUG_MAC80211 calls, so it should be easy to
-figure it out if reproducible.
-
-Zdenek, are you taking the interface down at the same time maybe? I
-could see a race condition here where mac80211 assumes the scan must
-have finished when the interface goes down, and maybe iwlwifi does that
-too or something. Haven't looked at the code right now.
-
-johannes
-
---=-h3Kmlm/dTKtO+YYyFiwl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKeRKTAAoJEODzc/N7+QmaUHwP/RKQDUWvmJXyoY5ic1b67VOL
-/zpMPcd36c7PuO00cucafobFtMkysfhIHorfgBSaC7ku58GtTWSHURcpf+vjhffJ
-VUcPmF28eoBBgxfRfYWmgFMywk5jguL6RIpA6MpyGZ0ighgtqvpZywjpahD6GAln
-x3sitX6swoFSaAH1byknlpZPDns7HfaC7Va5cX6Ti5kpl5klbUfSYTtP1lzm4fj6
-vLZX+Mhlk3g+BbcvPIeXwD6M1zgtlizylBIGNoc1BqAfyKHGY3GhuPNZCsGTrKxG
-YKHuRPAT7yZcaz5qCXOXC4uY85HAk9kxXYfcGUH5TtcY2Tw06SLT+wdJjv0MM/0N
-3lBsNQ6JB5MCkNFmL9/KBArPaZ7xBwdS8oRp82BOyBPzpslX035+pTOdQyoODRH2
-4z67DnWHb/VsEultZfVSxitCjYFOhnUV5SaExb6SzSjwKUOURyUz8F4ME60365uR
-DqTca+rrvAfwpE60OKnccinB6QeUqOEAkNPXwn4NHfRW/S3v8AG8V4BvYSEF+9Es
-Nlwi/RXRr/ZW4P1jc8Ey3jbkBQ9YKXI5rkKcA6vZov8365gL5u6Rrsxo7/uym3bL
-gBCv1gjirI1TrjH0Mhoq731pN0b6ghRFG05sju6asp7aX9qu2NwYs3iRFdH+XaVl
-I1c0EgM9Q6Gyk63pN88a
-=kYaw
------END PGP SIGNATURE-----
-
---=-h3Kmlm/dTKtO+YYyFiwl--
-
+-- 
+Dmitry
