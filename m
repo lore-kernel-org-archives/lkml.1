@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751961AbZHESkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752049AbZHESlN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751961AbZHESkc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 14:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbZHESkc
+	id S1752049AbZHESlN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 14:41:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbZHESlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 14:40:32 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:52130 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751005AbZHESkb (ORCPT
+	Wed, 5 Aug 2009 14:41:13 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47309 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751896AbZHESlM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 14:40:31 -0400
-Date: Wed, 5 Aug 2009 20:40:28 +0200
-From: Daniel Mack <daniel@caiaq.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: David Woodhouse <dwmw2@infradead.org>, Eric Miao <eric.y.miao@gmail.com>,
-       - Cortez - <omegamoon@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel@jasper.es
-Subject: Re: 2.6.31-rc1: zaurus suspend regressing
-Message-ID: <20090805184028.GN13236@buzzloop.caiaq.de>
-References: <20090704024416.GA1345@ucw.cz> <1249492113.9324.369.camel@macbook.infradead.org> <20090805172238.GM13236@buzzloop.caiaq.de> <200908052037.15066.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908052037.15066.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 5 Aug 2009 14:41:12 -0400
+Subject: [PATCH] ftrace: fix perf-tracepoint OOPS
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Chris Mason <chris.mason@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 05 Aug 2009 20:41:04 +0200
+Message-Id: <1249497664.5890.4.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 05, 2009 at 08:37:13PM +0200, Rafael J. Wysocki wrote:
-> On Wednesday 05 August 2009, Daniel Mack wrote:
-> > On Wed, Aug 05, 2009 at 06:08:33PM +0100, David Woodhouse wrote:
-> > > On Wed, 2009-08-05 at 18:30 +0200, Daniel Mack wrote:
-> > > > 
-> > > > That bug hit me as well, and as in Cortez' case, reverting 15bce40
-> > > > fixed
-> > > > it for me on a PXA3xx platform.
-> > > 
-> > > Can you confirm that the fix in the mtd-2.6.git tree is sufficient?
-> > 
-> > Yep, thanks!
-> 
-> Any pointer to the fix patch, please?
+Not all tracepoints are created equal, in specific the ftrace
+tracepoints are created with TRACE_EVENT_FORMAT() which does not
+generate the needed bits to tie them into perf counters.
 
-I merged the whole tree from
-http://git.infradead.org/?p=mtd-2.6.git;a=summary
+For those events, don't create the 'id' file and fail ->profile_enable
+when their ID is specified through other means.
 
-Haven't exactly bisected which specific fix was necessary, but (6afc4f:
-mtd: fix the conversion from dev to mtd_info) looks like it fixes a
-serious bug.
+Reported-by: Chris Mason <chris.mason@oracle.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/trace/trace_event_profile.c |    2 +-
+ kernel/trace/trace_events.c        |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Maybe David can elaborate some more?
+diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
+index 5b5895a..11ba5bb 100644
+--- a/kernel/trace/trace_event_profile.c
++++ b/kernel/trace/trace_event_profile.c
+@@ -14,7 +14,7 @@ int ftrace_profile_enable(int event_id)
+ 
+ 	mutex_lock(&event_mutex);
+ 	list_for_each_entry(event, &ftrace_events, list) {
+-		if (event->id == event_id) {
++		if (event->id == event_id && event->profile_enable) {
+ 			ret = event->profile_enable(event);
+ 			break;
+ 		}
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 90cdec5..e2b301d 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -971,7 +971,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+ 		entry = trace_create_file("enable", 0644, call->dir, call,
+ 					  enable);
+ 
+-	if (call->id)
++	if (call->id && call->profile_enable)
+ 		entry = trace_create_file("id", 0444, call->dir, call,
+ 					  id);
+ 
 
-Daniel
+
