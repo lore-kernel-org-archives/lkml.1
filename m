@@ -1,78 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755799AbZHEPgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755818AbZHEPhJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755799AbZHEPgF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 11:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755776AbZHEPgE
+	id S1755818AbZHEPhJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 11:37:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755783AbZHEPhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 11:36:04 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:48527 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755743AbZHEPgD (ORCPT
+	Wed, 5 Aug 2009 11:37:09 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39331
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754867AbZHEPhH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 11:36:03 -0400
-Subject: Re: [PATCH]bluetooth: rfcomm_init bug fix
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: David Miller <davem@davemloft.net>, oliver@hartkopp.net,
-       alan@lxorguk.ukuu.org.uk, netdev@vger.kernel.org,
-       linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <a8e1da0908042216u16037395k96cce0746baa504e@mail.gmail.com>
-References: <20090803.132924.151782729.davem@davemloft.net>
-	 <1249343666.3094.12.camel@localhost.localdomain>
-	 <20090803.191916.75688176.davem@davemloft.net>
-	 <20090803.211136.00343745.davem@davemloft.net>
-	 <1249405306.3094.18.camel@localhost.localdomain>
-	 <a8e1da0908042216u16037395k96cce0746baa504e@mail.gmail.com>
-Content-Type: text/plain
-Date: Wed, 05 Aug 2009 08:35:55 -0700
-Message-Id: <1249486555.3094.38.camel@localhost.localdomain>
+	Wed, 5 Aug 2009 11:37:07 -0400
+Date: Wed, 05 Aug 2009 08:37:16 -0700 (PDT)
+Message-Id: <20090805.083716.239931149.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
 
-> >> >> do you mind at least waiting for an ACK from my side. I haven't even
-> >> >> looked at the final patch.
-> >> >
-> >> > Sure, I haven't pushed it out yet, so now's your chance :)
-> >>
-> >> Grumble, I accidently pushed my net-2.6 queue out before you
-> >> had a chance to reply, sorry :-(
-> >
-> > not a big deal. Just have to send a cleanup patch. The patch itself is
-> > fine, but from a style perspective it is different than everything else
-> > in the Bluetooth subsystem and I would have liked to fix that before
-> > pushing it. I wait with that for 2.6.32 since it is not important.
-> 
-> Marcel, could you publish the bluetooth subsystem coding style
-> somewhere? People including me are confused about it. I remembered I
-> asked it from you, but it is still not very clear for me.
+Ingo found and fixed a lockdep regression added in yesterday's
+networking fixes that several people are hitting now.
 
-it is kernel coding style like everything else, but some variable naming
-should be consistent. And that is nothing that is published, that is
-something that has been done since Max wrote it. Check the rest of the
-code.
+Please pull, thanks a lot!
 
-> > The other Dave, please send patches to linux-bluetooth only and lets
-> > follow the normal path to get them merged into Linus' tree. Skipping
-> > bluetooth-2.6 is not an option. You have to use the same process than
-> > everybody else.
-> 
-> Why linux-bluetooth only? IMHO there could be more people to comment
-> and review  if I send patches to both lkml and subsystem mailing list.
+The following changes since commit 90bc1a658a53f8832ee799685703977a450e5af9:
+  Linus Torvalds (1):
+        Merge branch 'upstream' of git://ftp.linux-mips.org/pub/scm/upstream-linus
 
-Lets me make this perfectly clear here. Bluetooth patches are sent to
-the linux-bluetooth mailing list. There is no need to send them to
-netdev and/or LKML at the same time. Stop this cross-posting. They don't
-get more review there anyway. I take care of sending them for net-2.6
-inclusion if I feel that they are appropriate.
+are available in the git repository at:
 
-Regards
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
 
-Marcel
+Ingo Molnar (1):
+      net: Fix spinlock use in alloc_netdev_mq()
 
-
+ net/core/dev.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
