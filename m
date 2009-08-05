@@ -1,159 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934104AbZHEJkB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934089AbZHEJjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934104AbZHEJkB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 05:40:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933963AbZHEJj6
+	id S934089AbZHEJjR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 05:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933982AbZHEJjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 05:39:58 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49063 "EHLO
+	Wed, 5 Aug 2009 05:39:13 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49078 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933962AbZHEJgb (ORCPT
+	with ESMTP id S933974AbZHEJgc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 05:36:31 -0400
+	Wed, 5 Aug 2009 05:36:32 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200908051136.682859934@firstfloor.org>
 In-Reply-To: <200908051136.682859934@firstfloor.org>
 To: akpm@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, fengguang.wu@intel.com,
        hidehiro.kawai.ez@hitachi.com
-Subject: [PATCH] [3/19] HWPOISON: Add support for poison swap entries v2
-Message-Id: <20090805093630.BE26EB15D8@basil.firstfloor.org>
-Date: Wed,  5 Aug 2009 11:36:30 +0200 (CEST)
+Subject: [PATCH] [5/19] HWPOISON: Add basic support for poisoned pages in fault handler v3
+Message-Id: <20090805093632.C3860B15D8@basil.firstfloor.org>
+Date: Wed,  5 Aug 2009 11:36:32 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Memory migration uses special swap entry types to trigger special actions on 
-page faults. Extend this mechanism to also support poisoned swap entries, to 
-trigger poison handling on page faults. This allows follow-on patches to 
-prevent processes from faulting in poisoned pages again.
+- Add a new VM_FAULT_HWPOISON error code to handle_mm_fault. Right now
+architectures have to explicitely enable poison page support, so
+this is forward compatible to all architectures. They only need
+to add it when they enable poison page support.
+- Add poison page handling in swap in fault code
 
-v2: Fix overflow in MAX_SWAPFILES (Fengguang Wu)
-v3: Better overflow fix (Hidehiro Kawai)
+v2: Add missing delayacct_clear_flag (Hidehiro Kawai)
+v3: Really use delayacct_clear_flag (Hidehiro Kawai)
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/linux/swap.h    |   34 ++++++++++++++++++++++++++++------
- include/linux/swapops.h |   38 ++++++++++++++++++++++++++++++++++++++
- mm/swapfile.c           |    4 ++--
- 3 files changed, 68 insertions(+), 8 deletions(-)
+ include/linux/mm.h |    3 ++-
+ mm/memory.c        |   18 +++++++++++++++---
+ 2 files changed, 17 insertions(+), 4 deletions(-)
 
-Index: linux/include/linux/swap.h
+Index: linux/mm/memory.c
 ===================================================================
---- linux.orig/include/linux/swap.h
-+++ linux/include/linux/swap.h
-@@ -34,16 +34,38 @@ static inline int current_is_kswapd(void
-  * the type/offset into the pte as 5/27 as well.
-  */
- #define MAX_SWAPFILES_SHIFT	5
--#ifndef CONFIG_MIGRATION
--#define MAX_SWAPFILES		(1 << MAX_SWAPFILES_SHIFT)
-+
-+/*
-+ * Use some of the swap files numbers for other purposes. This
-+ * is a convenient way to hook into the VM to trigger special
-+ * actions on faults.
-+ */
-+
-+/*
-+ * NUMA node memory migration support
-+ */
-+#ifdef CONFIG_MIGRATION
-+#define SWP_MIGRATION_NUM 2
-+#define SWP_MIGRATION_READ	(MAX_SWAPFILES + SWP_HWPOISON_NUM)
-+#define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + SWP_HWPOISON_NUM + 1)
- #else
--/* Use last two entries for page migration swap entries */
--#define MAX_SWAPFILES		((1 << MAX_SWAPFILES_SHIFT)-2)
--#define SWP_MIGRATION_READ	MAX_SWAPFILES
--#define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + 1)
-+#define SWP_MIGRATION_NUM 0
- #endif
+--- linux.orig/mm/memory.c
++++ linux/mm/memory.c
+@@ -1319,7 +1319,8 @@ int __get_user_pages(struct task_struct
+ 				if (ret & VM_FAULT_ERROR) {
+ 					if (ret & VM_FAULT_OOM)
+ 						return i ? i : -ENOMEM;
+-					else if (ret & VM_FAULT_SIGBUS)
++					if (ret &
++					    (VM_FAULT_HWPOISON|VM_FAULT_SIGBUS))
+ 						return i ? i : -EFAULT;
+ 					BUG();
+ 				}
+@@ -2511,8 +2512,15 @@ static int do_swap_page(struct mm_struct
+ 		goto out;
+ 
+ 	entry = pte_to_swp_entry(orig_pte);
+-	if (is_migration_entry(entry)) {
+-		migration_entry_wait(mm, pmd, address);
++	if (unlikely(non_swap_entry(entry))) {
++		if (is_migration_entry(entry)) {
++			migration_entry_wait(mm, pmd, address);
++		} else if (is_hwpoison_entry(entry)) {
++			ret = VM_FAULT_HWPOISON;
++		} else {
++			print_bad_pte(vma, address, pte, NULL);
++			ret = VM_FAULT_OOM;
++		}
+ 		goto out;
+ 	}
+ 	delayacct_set_flag(DELAYACCT_PF_SWAPIN);
+@@ -2536,6 +2544,10 @@ static int do_swap_page(struct mm_struct
+ 		/* Had to read the page from swap area: Major fault */
+ 		ret = VM_FAULT_MAJOR;
+ 		count_vm_event(PGMAJFAULT);
++	} else if (PageHWPoison(page)) {
++		ret = VM_FAULT_HWPOISON;
++		delayacct_clear_flag(DELAYACCT_PF_SWAPIN);
++		goto out;
+ 	}
+ 
+ 	lock_page(page);
+Index: linux/include/linux/mm.h
+===================================================================
+--- linux.orig/include/linux/mm.h
++++ linux/include/linux/mm.h
+@@ -700,11 +700,12 @@ static inline int page_mapped(struct pag
+ #define VM_FAULT_SIGBUS	0x0002
+ #define VM_FAULT_MAJOR	0x0004
+ #define VM_FAULT_WRITE	0x0008	/* Special case for get_user_pages */
++#define VM_FAULT_HWPOISON 0x0010	/* Hit poisoned page */
+ 
+ #define VM_FAULT_NOPAGE	0x0100	/* ->fault installed the pte, not return page */
+ #define VM_FAULT_LOCKED	0x0200	/* ->fault locked the returned page */
+ 
+-#define VM_FAULT_ERROR	(VM_FAULT_OOM | VM_FAULT_SIGBUS)
++#define VM_FAULT_ERROR	(VM_FAULT_OOM | VM_FAULT_SIGBUS | VM_FAULT_HWPOISON)
  
  /*
-+ * Handling of hardware poisoned pages with memory corruption.
-+ */
-+#ifdef CONFIG_MEMORY_FAILURE
-+#define SWP_HWPOISON_NUM 1
-+#define SWP_HWPOISON		MAX_SWAPFILES
-+#else
-+#define SWP_HWPOISON_NUM 0
-+#endif
-+
-+#define MAX_SWAPFILES \
-+	((1 << MAX_SWAPFILES_SHIFT) - SWP_MIGRATION_NUM - SWP_HWPOISON_NUM)
-+
-+/*
-  * Magic header for a swap area. The first part of the union is
-  * what the swap magic looks like for the old (limited to 128MB)
-  * swap area format, the second part of the union adds - in the
-Index: linux/include/linux/swapops.h
-===================================================================
---- linux.orig/include/linux/swapops.h
-+++ linux/include/linux/swapops.h
-@@ -131,3 +131,41 @@ static inline int is_write_migration_ent
- 
- #endif
- 
-+#ifdef CONFIG_MEMORY_FAILURE
-+/*
-+ * Support for hardware poisoned pages
-+ */
-+static inline swp_entry_t make_hwpoison_entry(struct page *page)
-+{
-+	BUG_ON(!PageLocked(page));
-+	return swp_entry(SWP_HWPOISON, page_to_pfn(page));
-+}
-+
-+static inline int is_hwpoison_entry(swp_entry_t entry)
-+{
-+	return swp_type(entry) == SWP_HWPOISON;
-+}
-+#else
-+
-+static inline swp_entry_t make_hwpoison_entry(struct page *page)
-+{
-+	return swp_entry(0, 0);
-+}
-+
-+static inline int is_hwpoison_entry(swp_entry_t swp)
-+{
-+	return 0;
-+}
-+#endif
-+
-+#if defined(CONFIG_MEMORY_FAILURE) || defined(CONFIG_MIGRATION)
-+static inline int non_swap_entry(swp_entry_t entry)
-+{
-+	return swp_type(entry) >= MAX_SWAPFILES;
-+}
-+#else
-+static inline int non_swap_entry(swp_entry_t entry)
-+{
-+	return 0;
-+}
-+#endif
-Index: linux/mm/swapfile.c
-===================================================================
---- linux.orig/mm/swapfile.c
-+++ linux/mm/swapfile.c
-@@ -697,7 +697,7 @@ int free_swap_and_cache(swp_entry_t entr
- 	struct swap_info_struct *p;
- 	struct page *page = NULL;
- 
--	if (is_migration_entry(entry))
-+	if (non_swap_entry(entry))
- 		return 1;
- 
- 	p = swap_info_get(entry);
-@@ -2083,7 +2083,7 @@ static int __swap_duplicate(swp_entry_t
- 	int count;
- 	bool has_cache;
- 
--	if (is_migration_entry(entry))
-+	if (non_swap_entry(entry))
- 		return -EINVAL;
- 
- 	type = swp_type(entry);
+  * Can be called by the pagefault handler when it gets a VM_FAULT_OOM.
