@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934248AbZHELVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbZHEL0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934248AbZHELVZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 07:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934234AbZHELVX
+	id S1755524AbZHEL0K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 07:26:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbZHEL0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 07:21:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41996 "EHLO mx2.redhat.com"
+	Wed, 5 Aug 2009 07:26:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52471 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934147AbZHELVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 07:21:22 -0400
-Date: Wed, 5 Aug 2009 07:20:00 -0400
+	id S1752539AbZHEL0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 07:26:08 -0400
+Date: Wed, 5 Aug 2009 07:19:22 -0400
 From: Amerigo Wang <amwang@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
@@ -17,32 +17,83 @@ Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
        "Eric W. Biederman" <ebiederm@xmission.com>,
        Amerigo Wang <amwang@redhat.com>, akpm@linux-foundation.org,
        Ingo Molnar <mingo@elte.hu>, Anton Vorontsov <avorontsov@ru.mvista.com>
-Message-Id: <20090805112221.6552.34447.sendpatchset@localhost.localdomain>
+Message-Id: <20090805112142.6552.18373.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090805112123.6552.73574.sendpatchset@localhost.localdomain>
 References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain>
-Subject: [Patch 6/7] powerpc: implement crashkernel=auto
+Subject: [Patch 2/7] x86: implement crashkernel=auto
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Since in patch 2/7 we already implement the generic part, this will
-add the rest part for powerpc.
+Implement "crashkernel=auto" for x86 first, other arch will be added in the
+following patches.
 
 Signed-off-by: WANG Cong <amwang@redhat.com>
 
 ---
-Index: linux-2.6/arch/powerpc/include/asm/kexec.h
+Index: linux-2.6/kernel/kexec.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/include/asm/kexec.h
-+++ linux-2.6/arch/powerpc/include/asm/kexec.h
-@@ -39,6 +39,29 @@ typedef void (*crash_shutdown_t)(void);
+--- linux-2.6.orig/kernel/kexec.c
++++ linux-2.6/kernel/kexec.c
+@@ -37,6 +37,7 @@
+ #include <asm/io.h>
+ #include <asm/system.h>
+ #include <asm/sections.h>
++#include <asm/setup.h>
  
- #ifdef CONFIG_KEXEC
+ /* Per cpu memory for storing cpu states in case of system crash. */
+ note_buf_t* crash_notes;
+@@ -1297,6 +1298,38 @@ int __init parse_crashkernel(char 		 *cm
+ 
+ 	ck_cmdline += 12; /* strlen("crashkernel=") */
+ 
++#ifdef CONFIG_KEXEC_AUTO_RESERVE
++	if (strncmp(ck_cmdline, "auto", 4) == 0) {
++		unsigned long long size;
++		char tmp[32];
++
++		size = arch_default_crash_size(system_ram);
++		if (size != 0) {
++			*crash_size = size;
++			*crash_base = arch_default_crash_base();
++			size = scnprintf(tmp, sizeof(tmp), "%luM@%luM",
++					(unsigned long)(*crash_size)>>20,
++					(unsigned long)(*crash_base)>>20);
++			/* size can't be <= 4. */
++			if (likely((size - 4 + strlen(cmdline))
++					< COMMAND_LINE_SIZE - 1)) {
++				memmove(ck_cmdline + size, ck_cmdline + 4,
++					strlen(cmdline) - (ck_cmdline + 4 - cmdline) + 1);
++				memcpy(ck_cmdline, tmp, size);
++			}
++			return 0;
++		} else {
++			/*
++			 * We can't reserve memory auotmatcally,
++			 * remove "crashkernel=" from cmdline.
++			 */
++			ck_cmdline += 4; /* strlen("auto") */
++			memmove(ck_cmdline - 16, ck_cmdline,
++				strlen(cmdline) - (ck_cmdline - cmdline) + 1);
++			return -ENOMEM;
++		}
++	}
++#endif
+ 	/*
+ 	 * if the commandline contains a ':', then that's the extended
+ 	 * syntax -- if not, it must be the classic syntax
+Index: linux-2.6/arch/x86/include/asm/kexec.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/kexec.h
++++ linux-2.6/arch/x86/include/asm/kexec.h
+@@ -61,6 +61,29 @@
+ # define KEXEC_ARCH KEXEC_ARCH_X86_64
+ #endif
  
 +#ifdef CONFIG_KEXEC_AUTO_RESERVE
 +#ifndef KEXEC_AUTO_RESERVED_SIZE
-+#define KEXEC_AUTO_RESERVED_SIZE 1ULL<<28 /* 256M */
++#define KEXEC_AUTO_RESERVED_SIZE 1ULL<<27 /* 128M */
 +#endif
 +#ifndef KEXEC_AUTO_THRESHOLD
 +#define KEXEC_AUTO_THRESHOLD 1ULL<<32 /* 4G */
@@ -58,11 +109,11 @@ Index: linux-2.6/arch/powerpc/include/asm/kexec.h
 +static inline
 +unsigned long long arch_default_crash_base(void)
 +{
-+	/* On ppc, 0 means find the base address automatically. */
++	/* On x86, 0 means find the base address automatically. */
 +	return 0;
 +}
 +#endif
 +
  /*
-  * This function is responsible for capturing register states if coming
-  * via panic or invoking dump using sysrq-trigger.
+  * CPU does not save ss and sp on stack if execution is already
+  * running in kernel mode at the time of NMI occurrence. This code
