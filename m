@@ -1,132 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755585AbZHENox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934432AbZHENp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755585AbZHENox (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 09:44:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbZHENow
+	id S934432AbZHENp5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 09:45:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933555AbZHENp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 09:44:52 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51618 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755316AbZHENov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 09:44:51 -0400
-Date: Wed, 5 Aug 2009 09:43:42 -0400
-From: Neil Horman <nhorman@redhat.com>
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 2/7] x86: implement crashkernel=auto
-Message-ID: <20090805134342.GE7259@hmsreliant.think-freely.org>
-References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain> <20090805112142.6552.18373.sendpatchset@localhost.localdomain>
+	Wed, 5 Aug 2009 09:45:56 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:50763 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933527AbZHENp4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 09:45:56 -0400
+Date: Wed, 5 Aug 2009 15:45:52 +0200
+From: Daniel Mack <daniel@caiaq.de>
+To: linux-kernel@vger.kernel.org
+Cc: Ville Syrjala <syrjala@sci.fi>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: [PATCH 2/2] w1_gpio: switch to new dev_pm_ops
+Message-ID: <20090805134552.GH13236@buzzloop.caiaq.de>
+References: <1249476412-27362-1-git-send-email-daniel@caiaq.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090805112142.6552.18373.sendpatchset@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <1249476412-27362-1-git-send-email-daniel@caiaq.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 05, 2009 at 07:19:22AM -0400, Amerigo Wang wrote:
-> 
-> Implement "crashkernel=auto" for x86 first, other arch will be added in the
-> following patches.
-> 
-> Signed-off-by: WANG Cong <amwang@redhat.com>
-> 
+On Wed, Aug 05, 2009 at 02:46:52PM +0200, Daniel Mack wrote:
+> Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> Cc: Ville Syrjala <syrjala@sci.fi>
+> Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
 > ---
-> Index: linux-2.6/kernel/kexec.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/kexec.c
-> +++ linux-2.6/kernel/kexec.c
-> @@ -37,6 +37,7 @@
->  #include <asm/io.h>
->  #include <asm/system.h>
->  #include <asm/sections.h>
-> +#include <asm/setup.h>
+>  drivers/w1/masters/w1-gpio.c |   21 +++++++++++++--------
+>  1 files changed, 13 insertions(+), 8 deletions(-)
+> 
+> diff --git a/drivers/w1/masters/w1-gpio.c b/drivers/w1/masters/w1-gpio.c
+> index 6f8866d..4a940fb 100644
+> --- a/drivers/w1/masters/w1-gpio.c
+> +++ b/drivers/w1/masters/w1-gpio.c
+> @@ -106,9 +106,9 @@ static int __exit w1_gpio_remove(struct platform_device *pdev)
 >  
->  /* Per cpu memory for storing cpu states in case of system crash. */
->  note_buf_t* crash_notes;
-> @@ -1297,6 +1298,38 @@ int __init parse_crashkernel(char 		 *cm
+>  #ifdef CONFIG_PM
 >  
->  	ck_cmdline += 12; /* strlen("crashkernel=") */
->  
-> +#ifdef CONFIG_KEXEC_AUTO_RESERVE
-> +	if (strncmp(ck_cmdline, "auto", 4) == 0) {
-> +		unsigned long long size;
-> +		char tmp[32];
-> +
-> +		size = arch_default_crash_size(system_ram);
-> +		if (size != 0) {
-> +			*crash_size = size;
-> +			*crash_base = arch_default_crash_base();
-> +			size = scnprintf(tmp, sizeof(tmp), "%luM@%luM",
-> +					(unsigned long)(*crash_size)>>20,
-> +					(unsigned long)(*crash_base)>>20);
-> +			/* size can't be <= 4. */
-> +			if (likely((size - 4 + strlen(cmdline))
-> +					< COMMAND_LINE_SIZE - 1)) {
-> +				memmove(ck_cmdline + size, ck_cmdline + 4,
-> +					strlen(cmdline) - (ck_cmdline + 4 - cmdline) + 1);
-> +				memcpy(ck_cmdline, tmp, size);
-> +			}
-> +			return 0;
-> +		} else {
-> +			/*
-> +			 * We can't reserve memory auotmatcally,
-> +			 * remove "crashkernel=" from cmdline.
-> +			 */
-> +			ck_cmdline += 4; /* strlen("auto") */
-> +			memmove(ck_cmdline - 16, ck_cmdline,
-> +				strlen(cmdline) - (ck_cmdline - cmdline) + 1);
-> +			return -ENOMEM;
-> +		}
-> +	}
-> +#endif
->  	/*
->  	 * if the commandline contains a ':', then that's the extended
->  	 * syntax -- if not, it must be the classic syntax
-> Index: linux-2.6/arch/x86/include/asm/kexec.h
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/include/asm/kexec.h
-> +++ linux-2.6/arch/x86/include/asm/kexec.h
-> @@ -61,6 +61,29 @@
->  # define KEXEC_ARCH KEXEC_ARCH_X86_64
->  #endif
->  
-> +#ifdef CONFIG_KEXEC_AUTO_RESERVE
-> +#ifndef KEXEC_AUTO_RESERVED_SIZE
-> +#define KEXEC_AUTO_RESERVED_SIZE 1ULL<<27 /* 128M */
-> +#endif
-> +#ifndef KEXEC_AUTO_THRESHOLD
-> +#define KEXEC_AUTO_THRESHOLD 1ULL<<32 /* 4G */
-> +#endif
-> +static inline
-> +unsigned long long arch_default_crash_size(unsigned long long total_size)
-> +{
-> +	if (total_size < KEXEC_AUTO_THRESHOLD)
-> +		return 0;
-> +	else
-> +		return KEXEC_AUTO_RESERVED_SIZE;
-> +}
-> +static inline
-> +unsigned long long arch_default_crash_base(void)
-> +{
-> +	/* On x86, 0 means find the base address automatically. */
-> +	return 0;
-> +}
-> +#endif
-> +
->  /*
->   * CPU does not save ss and sp on stack if execution is already
->   * running in kernel mode at the time of NMI occurrence. This code
+> -static int w1_gpio_suspend(struct platform_device *pdev, pm_message_t state)
+> +static int w1_gpio_suspend(struct device *dev)
+>  {
+> -	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
+> +	struct w1_gpio_platform_data *pdata = dev_get_drvdata(dev);
 
+That was wrong, I apologize. Will send a new version soon.
 
-What about all the other arches that support kexec?  ia64/ppc[64]/s390/etc?
-Don't they need an implementation of arch_default_crash_size?  Or perhaps better
-still you should put this definition in asm-generic, so that it can be
-overridden per-arch if need be, but you always have something to fall back on.
-
-Neil
-
+Daniel
