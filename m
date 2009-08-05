@@ -1,73 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932980AbZHEBFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933027AbZHEBKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932980AbZHEBFX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 21:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932792AbZHEBFV
+	id S933027AbZHEBKX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 21:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932959AbZHEBKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 21:05:21 -0400
-Received: from mga01.intel.com ([192.55.52.88]:35439 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932632AbZHEBFT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 21:05:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,325,1246863600"; 
-   d="scan'208";a="713960588"
-Subject: Re: [PATCH 0/3] Generic sysfs support for ACPI ALS and other ALS
-	devices
-From: Zhang Rui <rui.zhang@intel.com>
-To: Greg KH <greg@kroah.com>
-Cc: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
-       Pavel Machek <pavel@ucw.cz>, linux-acpi <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Richard Purdie <rpurdie@rpsys.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-In-Reply-To: <20090804173627.GA23848@kroah.com>
-References: <1249290657.2670.250.camel@rzhang-dt>
-	 <20090804132129.GH18974@elf.ucw.cz> <20090804151042.GA20276@kroah.com>
-	 <19631.1249406664@turing-police.cc.vt.edu>
-	 <20090804173627.GA23848@kroah.com>
-Content-Type: text/plain
-Date: Wed, 05 Aug 2009 09:04:52 +0800
-Message-Id: <1249434292.2670.388.camel@rzhang-dt>
+	Tue, 4 Aug 2009 21:10:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37305 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932946AbZHEBKV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 21:10:21 -0400
+Date: Tue, 4 Aug 2009 18:08:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Phillip Lougher <phillip@lougher.demon.co.uk>
+Cc: Albin Tonnerre <albin.tonnerre@free-electrons.com>, sam@ravnborg.org,
+       hpa@zytor.com, linux@arm.linux.org.uk, alain@knaff.lu,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
+Subject: Re: [PATCH 1/6] lib/decompress_*: only include <linux/slab.h> if
+ STATIC is not defined
+Message-Id: <20090804180854.d5dbb07f.akpm@linux-foundation.org>
+In-Reply-To: <4A78D6BD.3030003@lougher.demon.co.uk>
+References: <20090731093107.GA29704@merkur.ravnborg.org>
+	<1249311501-23102-1-git-send-email-albin.tonnerre@free-electrons.com>
+	<20090804155500.db6c88fa.akpm@linux-foundation.org>
+	<4A78D6BD.3030003@lougher.demon.co.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-05 at 01:36 +0800, Greg KH wrote:
-> On Tue, Aug 04, 2009 at 01:24:24PM -0400, Valdis.Kletnieks@vt.edu wrote:
-> > On Tue, 04 Aug 2009 08:10:42 PDT, Greg KH said:
-> > > On Tue, Aug 04, 2009 at 03:21:29PM +0200, Pavel Machek wrote:
-> > > > On Mon 2009-08-03 17:10:57, Zhang Rui wrote:
-> > 
-> > > > > 	cat /sys/class/als/als0/mappings
-> > > > > 	???Illuminance	Adjustment
-> > > > > 	          0	       70
-> > > > > 	         10	       73
-> > > > > 	         80	       85
-> > > > > 	        300	      100
-> > > > > 	       1000	      150
-> > > > 
-> > > > There's one value per file for sysfs... You should definitely have the
-> > > > header. 
-> > > 
-> > > No, no "header", just don't do this, it's not allowed. Again,
-> > > one-value-per-sysfs-file is the rule, please do not violate it.
-> > 
-> > What's the intended sysfs solution here, then? Make 'mappings' a directory,
-> > and populate it with files called 0, 10, 80, 300, 1000, each with one number
-> > in them?
-> 
-> That's one acceptable solution.  Or how about files in this directory
-> called "mapping_0", "mapping_10", and so on, containing the adjustment
-> value?
-> 
-great. that's what I'm going to do.
-refreshed patch will be sent out later. :)
+On Wed, 05 Aug 2009 01:47:57 +0100 Phillip Lougher <phillip@lougher.demon.co.uk> wrote:
 
-thanks,
-rui
+> Andrew Morton wrote:
+> > On Mon,  3 Aug 2009 16:58:16 +0200
+> > Albin Tonnerre <albin.tonnerre@free-electrons.com> wrote:
+> > 
+> >> These includes were added by 079effb6933f34b9b1b67b08bd4fd7fb672d16ef to
+> >> fix the build when using kmemtrace. However this is not necessary when
+> >> used to create a compressed kernel, and actually creates issues (brings
+> >> a lot of things unavailable in the decompression environment), so don't
+> >> include it if STATIC is defined.
+> >>
+> > 
+> > The description "actually creates issues (brings a lot of things
+> > unavailable in the decompression environment)" is inadequate.  Please
+> > describe te problem this patch fixes more completely so that others
+> > (ie: me) can decide whether this patch is needed in 2.6.32, 2.6.31. 
+> > 2.6.30, ...
+> > 
+> > 
+> > This patch conflicts heavily with
+> > 
+> > http://userweb.kernel.org/~akpm/mmotm/broken-out/bzip2-lzma-remove-nasty-uncompressed-size-hack-in-pre-boot-environment.patch
+> > 
+> > 
+> > What should we do about that?
+> 
+> 
+> What do you normally do in this situation?
 
+I normally fix the rejects ;)
+
+But I'd like to confirm that the two patches don't fix the same thing
+via different means.  Lacking a full description of Albin's "issues",
+that's hard to determine.  They do appear to be unrelated.
+
+>  I'm happy to send a revised
+> bzip2-lzma-remove-nasty-uncompressed-size-hack-in-pre-boot-environment.patch
+> that would apply cleanly on-top of Alvin's patch, but, this will obviously
+> create dependencies on his patch being applied.
+
+Reworked
+lib-decompress_-only-include-linux-slabh-if-static-is-not-defined.patch:
+
+ lib/decompress_bunzip2.c |    2 +-
+ lib/decompress_inflate.c |    2 +-
+ lib/decompress_unlzma.c  |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff -puN lib/decompress_bunzip2.c~lib-decompress_-only-include-linux-slabh-if-static-is-not-defined lib/decompress_bunzip2.c
+--- a/lib/decompress_bunzip2.c~lib-decompress_-only-include-linux-slabh-if-static-is-not-defined
++++ a/lib/decompress_bunzip2.c
+@@ -49,10 +49,10 @@
+ #define PREBOOT
+ #else
+ #include <linux/decompress/bunzip2.h>
++#include <linux/slab.h>
+ #endif /* STATIC */
+ 
+ #include <linux/decompress/mm.h>
+-#include <linux/slab.h>
+ 
+ #ifndef INT_MAX
+ #define INT_MAX 0x7fffffff
+diff -puN lib/decompress_inflate.c~lib-decompress_-only-include-linux-slabh-if-static-is-not-defined lib/decompress_inflate.c
+--- a/lib/decompress_inflate.c~lib-decompress_-only-include-linux-slabh-if-static-is-not-defined
++++ a/lib/decompress_inflate.c
+@@ -19,11 +19,11 @@
+ #include "zlib_inflate/inflate.h"
+ 
+ #include "zlib_inflate/infutil.h"
++#include <linux/slab.h>
+ 
+ #endif /* STATIC */
+ 
+ #include <linux/decompress/mm.h>
+-#include <linux/slab.h>
+ 
+ #define GZIP_IOBUF_SIZE (16*1024)
+ 
+diff -puN lib/decompress_unlzma.c~lib-decompress_-only-include-linux-slabh-if-static-is-not-defined lib/decompress_unlzma.c
+--- a/lib/decompress_unlzma.c~lib-decompress_-only-include-linux-slabh-if-static-is-not-defined
++++ a/lib/decompress_unlzma.c
+@@ -33,10 +33,10 @@
+ #define PREBOOT
+ #else
+ #include <linux/decompress/unlzma.h>
++#include <linux/slab.h>
+ #endif /* STATIC */
+ 
+ #include <linux/decompress/mm.h>
+-#include <linux/slab.h>
+ 
+ #define	MIN(a, b) (((a) < (b)) ? (a) : (b))
+ 
+_
 
