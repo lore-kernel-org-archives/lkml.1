@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934663AbZHEQj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934701AbZHEQkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934663AbZHEQj2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 12:39:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934490AbZHEQj1
+	id S934701AbZHEQkT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 12:40:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934684AbZHEQkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 12:39:27 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42233 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933655AbZHEQj1 (ORCPT
+	Wed, 5 Aug 2009 12:40:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35357 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934490AbZHEQkR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 12:39:27 -0400
-Date: Wed, 5 Aug 2009 04:05:34 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       malware-list@dmesg.printk.net, Valdis.Kletnieks@vt.edu, greg@kroah.com,
-       jcm@redhat.com, douglas.leeder@sophos.com, tytso@mit.edu,
-       arjan@infradead.org, david@lang.hm, jengelh@medozas.de,
-       aviro@redhat.com, mrkafk@gmail.com, alexl@redhat.com, jack@suse.cz,
-       tvrtko.ursulin@sophos.com, a.p.zijlstra@chello.nl, hch@infradead.org,
-       alan@lxorguk.ukuu.org.uk, mmorley@hcl.in
-Subject: Re: fanotify - overall design before I start sending patches
-Message-ID: <20090805020534.GB1354@ucw.cz>
-References: <1248466429.3567.82.camel@localhost>
+	Wed, 5 Aug 2009 12:40:17 -0400
+Date: Wed, 5 Aug 2009 09:38:52 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Manuel Lauss <mano@roarinelk.homelinux.net>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Matthew Wilcox <willy@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andrew Patterson <andrew.patterson@hp.com>
+Subject: Re: [Regression] PCI resources allocation problem on HP nx6325
+In-Reply-To: <alpine.LFD.2.01.0908050902300.3390@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0908050931390.3390@localhost.localdomain>
+References: <200908021619.48285.rjw@sisk.pl> <alpine.LFD.2.01.0908020927410.3352@localhost.localdomain> <20090803165909.GA12824@roarinelk.homelinux.net> <alpine.LFD.2.01.0908041555120.3270@localhost.localdomain> <20090805155102.GA31646@roarinelk.homelinux.net>
+ <alpine.LFD.2.01.0908050902300.3390@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1248466429.3567.82.camel@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-BTW my -@suse.cz address no longer works. pavel@ucw.cz should be ok.
 
 
-> If a FAN_ACCESS_PERM or FAN_OPEN_PERM event is received the listener
-> must send a response before the 5 second timeout.  If no response is
-> sent before the 5 second timeout the original operation is allowed.  If
-> this happens too many times (10 in a row) the fanotify group is evicted
-> from the kernel and will not get any new events.  Sending a response is
-> done using the setsockopt() call with the socket options set to
-> FANOTIFY_ACCESS_RESPONSE.  The buffer should contain a structure like:
+On Wed, 5 Aug 2009, Linus Torvalds wrote:
+> 
+> So I think I understand the behavior on your box, and the warning was 
+> actually correct and useful - our PCI layer is being stupid. We should 
+> mark ROM resources as being prefetchable.
+> 
+> Hmm.. We do seem to _try_ do exactly that in pci_read_bases(). I wonder 
+> what I'm missing, and where that bit is then cleared. Or whether we're 
+> doing that ROM BAR probe somewhere else too..
 
-The timeout part of interface is very ugly. Will fanotify users have
-to be realtime/mlocked?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Manuel, could you compile your kernel with CONFIG_PCI_DEBUG enabled, and
+then boot it with "pci=earlydump", and send me the dmesg of a kernel boot? 
+
+You may need to make sure that CONFIG_LOG_BUF_SHIFT is big enough to get 
+it all, and perhaps use "dmesg -s 1000000" (some versions of dmesg will 
+truncate the result to 64kB or something by default, and depending on just 
+how verbose your boot ends up being, you migth lose things).
+
+			Linus
