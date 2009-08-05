@@ -1,58 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933083AbZHEBdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933069AbZHEBkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933083AbZHEBdA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 21:33:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932863AbZHEBc5
+	id S933069AbZHEBkN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 21:40:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932821AbZHEBkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 21:32:57 -0400
-Received: from ozlabs.org ([203.10.76.45]:47666 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932998AbZHEBc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 21:32:57 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: Problem with percpu values when bringing up second CPU?
-Date: Wed, 5 Aug 2009 11:01:19 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; i686; ; )
-Cc: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <4A78BD1A.9050001@goop.org>
-In-Reply-To: <4A78BD1A.9050001@goop.org>
+	Tue, 4 Aug 2009 21:40:10 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:39246 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932817AbZHEBkJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 21:40:09 -0400
+Message-ID: <4A78E229.2030309@zytor.com>
+Date: Tue, 04 Aug 2009 18:36:41 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Albin Tonnerre <albin.tonnerre@free-electrons.com>, sam@ravnborg.org,
+       linux@arm.linux.org.uk, alain@knaff.lu, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org
+Subject: Re: [PATCH 3/6] Add support for LZO-compressed kernels
+References: <20090731093107.GA29704@merkur.ravnborg.org>	<1249311501-23102-1-git-send-email-albin.tonnerre@free-electrons.com>	<1249311501-23102-2-git-send-email-albin.tonnerre@free-electrons.com>	<1249311501-23102-3-git-send-email-albin.tonnerre@free-electrons.com> <20090804160043.82b256d8.akpm@linux-foundation.org>
+In-Reply-To: <20090804160043.82b256d8.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908051101.20471.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Aug 2009 08:28:34 am Jeremy Fitzhardinge wrote:
-> Hi,
+On 08/04/2009 04:00 PM, Andrew Morton wrote:
 > 
-> I just tracked down a bug I was having to a change where I changed one
-> of my Xen event channel variables to a percpu variable, relating to
-> masking an event channel.
+> 0.24 seconds booting speedup sounds pretty thin.  Adding a new
+> decompression format will introduce more configuration/build/deployment
+> complexities.  How do we justify this?
 > 
-> The symptom was that shortly after bringing up the second CPU, the first
-> CPU's timer events stopped arriving, apparently because they had become
-> masked.
-> 
-> The event channels masks are declared as:
-> 
-> #define NR_EVENT_CHANNEL_LONGS (NR_EVENT_CHANNELS/BITS_PER_LONG)
-> static DEFINE_PER_CPU(unsigned long,
->                      cpu_evtchn_mask[NR_EVENT_CHANNEL_LONGS]) =
->        {[0 ... NR_EVENT_CHANNEL_LONGS-1] = ~0ul };	/* everything masked by default */
-> 
-> 
-> My theory about what's happening is that when the second CPU comes up,
-> it allocates separate percpu areas for each CPU, but it is somehow
-> failing to accurately copy CPU 0's percpu data over
 
-If you touch the per-cpu vars before setup_per_cpu_areas(), you will hit the
-master copy.
+Keep in mind this may be out of a 3-5 second boot budget.
 
-Is that possible?
-Rusty.
+	-hpa
