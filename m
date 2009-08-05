@@ -1,233 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934069AbZHEJka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934078AbZHEJiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934069AbZHEJka (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 05:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934014AbZHEJk0
+	id S934078AbZHEJiY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 05:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933817AbZHEJiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 05:40:26 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:48290 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933995AbZHEJkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 05:40:19 -0400
-Date: Wed, 5 Aug 2009 10:40:19 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Larry Woodman <lwoodman@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [PATCH 1/4] tracing, page-allocator: Add trace events for page
-	allocation and page freeing
-Message-ID: <20090805094019.GB21950@csn.ul.ie>
-References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie> <1249409546-6343-2-git-send-email-mel@csn.ul.ie> <20090805165302.5BC8.A69D9226@jp.fujitsu.com>
+	Wed, 5 Aug 2009 05:38:19 -0400
+Received: from mail.free-electrons.com ([88.191.76.200]:37973 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934017AbZHEJiL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 05:38:11 -0400
+Date: Wed, 5 Aug 2009 11:37:58 +0200
+From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org,
+       Linux PM List <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] Add SIMPLE_PM_OPS: make switching to dev_pm_ops less
+ error-prone
+Message-ID: <20090805093758.GE5854@laptop>
+References: <20090803163304.GF5002@laptop>
+ <200908032123.17069.rjw@sisk.pl>
+ <20090804093542.GA5854@laptop>
+ <20090805045533.C3574526EA5@mailhub.coreip.homeip.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090805165302.5BC8.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090805045533.C3574526EA5@mailhub.coreip.homeip.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 05, 2009 at 06:13:09PM +0900, KOSAKI Motohiro wrote:
-> Hi
-> 
-> sorry for the delayed review.
-> 
-> > This patch adds trace events for the allocation and freeing of pages,
-> > including the freeing of pagevecs.  Using the events, it will be known what
-> > struct page and pfns are being allocated and freed and what the call site
-> > was in many cases.
-> > 
-> > The page alloc tracepoints be used as an indicator as to whether the workload
-> > was heavily dependant on the page allocator or not. You can make a guess based
-> > on vmstat but you can't get a per-process breakdown. Depending on the call
-> > path, the call_site for page allocation may be __get_free_pages() instead
-> > of a useful callsite. Instead of passing down a return address similar to
-> > slab debugging, the user should enable the stacktrace and seg-addr options
-> > to get a proper stack trace.
-> > 
-> > The pagevec free tracepoint has a different usecase. It can be used to get
-> > a idea of how many pages are being dumped off the LRU and whether it is
-> > kswapd doing the work or a process doing direct reclaim.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > Acked-by: Rik van Riel <riel@redhat.com>
-> > ---
-> >  include/trace/events/kmem.h |   86 +++++++++++++++++++++++++++++++++++++++++++
-> >  mm/page_alloc.c             |    6 ++-
-> >  2 files changed, 91 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/include/trace/events/kmem.h b/include/trace/events/kmem.h
-> > index 1493c54..57bf13c 100644
-> > --- a/include/trace/events/kmem.h
-> > +++ b/include/trace/events/kmem.h
-> > @@ -225,6 +225,92 @@ TRACE_EVENT(kmem_cache_free,
-> >  
-> >  	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
-> >  );
-> > +
-> > +TRACE_EVENT(mm_page_free_direct,
-> > +
-> > +	TP_PROTO(unsigned long call_site, const void *page, unsigned int order),
-> > +
-> > +	TP_ARGS(call_site, page, order),
-> > +
-> > +	TP_STRUCT__entry(
-> > +		__field(	unsigned long,	call_site	)
-> > +		__field(	const void *,	page		)
-> 
-> Why void? Is there any benefit?
-> 
+On Tue, Aug 04, 2009 at 09:55:33PM -0700, Dmitry Torokhov wrote :
+> On Tue, Aug 04, 2009 at 11:36:12AM +0200, Albin Tonnerre wrote:
+> > In a number of cases, the .suspend, .freeze, .poweroff and .resume,
+> > .thaw, .restore functions are identical. However, they all need to be
+> > assigned to avoid regressionsm as the previous code called .suspend
+> > resp. .resume in all those cases. SIMPLE_PM_OPS allows to deal with
+> > this case.
 
-No real benefit, I'll switch to struct page *. I thought at one point it was
-failing to compile as struct page * was not in scope but that must have been
-my imagination.
 
-> > +		__field(	unsigned int,	order		)
-> > +	),
-> > +
-> > +	TP_fast_assign(
-> > +		__entry->call_site	= call_site;
-> > +		__entry->page		= page;
-> > +		__entry->order		= order;
-> > +	),
-> > +
-> > +	TP_printk("call_site=%lx page=%p pfn=%lu order=%d",
-> > +			__entry->call_site,
-> > +			__entry->page,
-> > +			page_to_pfn((struct page *)__entry->page),
-> > +			__entry->order)
-> > +);
-> > +
-> > +TRACE_EVENT(mm_pagevec_free,
-> > +
-> > +	TP_PROTO(unsigned long call_site, const void *page, int order, int cold),
-> > +
-> > +	TP_ARGS(call_site, page, order, cold),
-> > +
-> > +	TP_STRUCT__entry(
-> > +		__field(	unsigned long,	call_site	)
-> > +		__field(	const void *,	page		)
-> > +		__field(	int,		order		)
-> > +		__field(	int,		cold		)
-> > +	),
-> > +
-> > +	TP_fast_assign(
-> > +		__entry->call_site	= call_site;
-> > +		__entry->page		= page;
-> > +		__entry->order		= order;
-> > +		__entry->cold		= cold;
-> > +	),
-> > +
-> > +	TP_printk("call_site=%lx page=%p pfn=%lu order=%d cold=%d",
-> > +			__entry->call_site,
-> > +			__entry->page,
-> > +			page_to_pfn((struct page *)__entry->page),
-> > +			__entry->order,
-> > +			__entry->cold)
-> > +);
-> > +
-> > +TRACE_EVENT(mm_page_alloc,
-> > +
-> > +	TP_PROTO(unsigned long call_site, const void *page, unsigned int order,
-> > +			gfp_t gfp_flags, int migratetype),
-> > +
-> > +	TP_ARGS(call_site, page, order, gfp_flags, migratetype),
-> > +
-> > +	TP_STRUCT__entry(
-> > +		__field(	unsigned long,	call_site	)
-> > +		__field(	const void *,	page		)
-> > +		__field(	unsigned int,	order		)
-> > +		__field(	gfp_t,		gfp_flags	)
-> > +		__field(	int,		migratetype	)
-> > +	),
-> > +
-> > +	TP_fast_assign(
-> > +		__entry->call_site	= call_site;
-> > +		__entry->page		= page;
-> > +		__entry->order		= order;
-> > +		__entry->gfp_flags	= gfp_flags;
-> > +		__entry->migratetype	= migratetype;
-> > +	),
-> > +
-> > +	TP_printk("call_site=%lx page=%p pfn=%lu order=%d migratetype=%d gfp_flags=%s",
-> > +		__entry->call_site,
-> > +		__entry->page,
-> > +		page_to_pfn((struct page *)__entry->page),
-> > +		__entry->order,
-> > +		__entry->migratetype,
-> > +		show_gfp_flags(__entry->gfp_flags))
-> > +);
-> > +
-> >  #endif /* _TRACE_KMEM_H */
-> >  
-> >  /* This part must be outside protection */
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index d052abb..843bdec 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -1905,6 +1905,7 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
-> >  				zonelist, high_zoneidx, nodemask,
-> >  				preferred_zone, migratetype);
-> >  
-> > +	trace_mm_page_alloc(_RET_IP_, page, order, gfp_mask, migratetype);
-> >  	return page;
-> >  }
-> 
-> In almost case, __alloc_pages_nodemask() is called from alloc_pages_current().
-> Can you add call_site argument? (likes slab_alloc)
-> 
+> I'd much rather have conversions done with a bit more analysis now that
+> our framework is more flexible and we can have specialized routines for
+> hibernation and suspend.
 
-In the NUMA case, this will be true but addressing it involves passing down
-an additional argument in the non-tracing case which I wanted to avoid.
-As the stacktrace option is available to ftrace, I think I'll drop call_site
-altogether as anyone who really needs that information has options.
+I still think that even though they can, quite a number of drivers won't
+/need/ to have different functions for this, but maybe I'm mistaken.
 
-> >  EXPORT_SYMBOL(__alloc_pages_nodemask);
-> > @@ -1945,13 +1946,16 @@ void __pagevec_free(struct pagevec *pvec)
-> >  {
-> >  	int i = pagevec_count(pvec);
-> >  
-> > -	while (--i >= 0)
-> > +	while (--i >= 0) {
-> > +		trace_mm_pagevec_free(_RET_IP_, pvec->pages[i], 0, pvec->cold);
-> >  		free_hot_cold_page(pvec->pages[i], pvec->cold);
-> > +	}
-> >  }
-> 
-> This _RET_IP_ assume pagevec_free() is inlined function. Then,
-> pagevec_free() sould also change always_inline?
-> 
+> Maybe we should try changing from run-time to build time warning so that
+> users are not overly concerned with it?
 
-There is an assumption being made about the inlining all right.
+I'm not sure that solves the problem. The fact is that even for developers, it's
+easy to overlook that assiging only the .suspend and .resume fields is probably
+a mistake.
 
-> Yeah, I agree this is theoretical issue. but it improve readability and
-> studying author's intention. 
-> 
-
-If call_site persists, I'll do this but the next version of the patchset
-is likely to drop call_site.
-
-> >  void __free_pages(struct page *page, unsigned int order)
-> >  {
-> >  	if (put_page_testzero(page)) {
-> > +		trace_mm_page_free_direct(_RET_IP_, page, order);
-> >  		if (order == 0)
-> >  			free_hot_page(page);
-> >  		else
-> 
-> This patch covered free_pages() and __pagevec_free() case.
-> but it doesn't cover free_hot_page() direct call.
-> 
-> (Fortunately, there is no free_cold_page() caller)
-> 
-
-Good spot. free_cold_page() is dead code but I'll duplicate the
-trace_mm_page_free_direct event for now and look at cleaning out
-free_cold_page(). Thanks
-
+Regards,
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Albin Tonnerre, Free Electrons
+Kernel, drivers and embedded Linux development,
+consulting, training and support.
+http://free-electrons.com
