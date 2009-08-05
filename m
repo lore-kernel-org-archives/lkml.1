@@ -1,111 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934296AbZHENFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934232AbZHENFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934296AbZHENFI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 09:05:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933658AbZHENFI
+	id S934232AbZHENFS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 09:05:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934299AbZHENFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 09:05:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46625 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933480AbZHENFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 09:05:06 -0400
-Date: Wed, 5 Aug 2009 10:04:53 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
+	Wed, 5 Aug 2009 09:05:17 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:49110 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933658AbZHENFN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 09:05:13 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH 4/4] tracing, page-allocator: Add a postprocessing
+ script for page-allocator-related ftrace events
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/1] perf report: Add missing command line options to man
-	page
-Message-ID: <20090805130453.GC10688@ghostprotocols.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Cc: Andrew Morton <akpm@linux-foundation.org>, penberg@cs.helsinki.fi,
+       fweisbec@gmail.com, rostedt@goodmis.org, mel@csn.ul.ie,
+       lwoodman@redhat.com, riel@redhat.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <20090804203526.GA8699@elte.hu>
+References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie>
+	 <1249409546-6343-5-git-send-email-mel@csn.ul.ie>
+	 <20090804112246.4e6d0ab1.akpm@linux-foundation.org>
+	 <20090804195717.GA5998@elte.hu>
+	 <20090804131818.ee5d4696.akpm@linux-foundation.org>
+	 <20090804203526.GA8699@elte.hu>
+Content-Type: text/plain
+Date: Wed, 05 Aug 2009 15:04:54 +0200
+Message-Id: <1249477494.32113.4.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/perf/Documentation/perf-record.txt |   60 ++++++++++++++++++++++++++++-
- 1 files changed, 57 insertions(+), 3 deletions(-)
+On Tue, 2009-08-04 at 22:35 +0200, Ingo Molnar wrote:
 
-diff --git a/tools/perf/Documentation/perf-record.txt b/tools/perf/Documentation/perf-record.txt
-index 1dbc1ee..6be696b 100644
---- a/tools/perf/Documentation/perf-record.txt
-+++ b/tools/perf/Documentation/perf-record.txt
-@@ -29,13 +29,67 @@ OPTIONS
- 	Select the PMU event. Selection can be a symbolic event name
- 	(use 'perf list' to list all events) or a raw PMU
- 	event (eventsel+umask) in the form of rNNN where NNN is a
--	 hexadecimal event descriptor.
-+	hexadecimal event descriptor.
- 
- -a::
--        system-wide collection
-+        System-wide collection.
- 
- -l::
--        scale counter values
-+        Scale counter values.
-+
-+-p::
-+--pid=::
-+	Record events on existing pid.
-+
-+-r::
-+--realtime=::
-+	Collect data with this RT SCHED_FIFO priority.
-+-A::
-+--append::
-+	Append to the output file to do incremental profiling.
-+
-+-f::
-+--force::
-+	Overwrite existing data file.
-+
-+-c::
-+--count=::
-+	Event period to sample.
-+
-+-o::
-+--output=::
-+	Output file name.
-+
-+-i::
-+--inherit::
-+	Child tasks inherit counters.
-+-F::
-+--freq=::
-+	Profile at this frequency.
-+
-+-m::
-+--mmap-pages=::
-+	Number of mmap data pages.
-+
-+-g::
-+--call-graph::
-+	Do call-graph (stack chain/backtrace) recording.
-+
-+-v::
-+--verbose::
-+	Be more verbose (show counter open errors, etc).
-+
-+-s::
-+--stat::
-+	Per thread counts.
-+
-+-d::
-+--data::
-+	Sample addresses.
-+
-+-n::
-+--no-samples::
-+	Don't sample.
- 
- SEE ALSO
- --------
--- 
-1.6.2.5
+> Did you never want to see whether firefox is leaking [any sort of] 
+> memory, and if yes, on what callsites? Try something like on an 
+> already running firefox context:
+> 
+>   perf stat -e kmem:mm_page_alloc \
+>             -e kmem:mm_pagevec_free \
+>             -e kmem:mm_page_free_direct \
+>      -p $(pidof firefox-bin) sleep 10
+> 
+> .... and "perf record" for the specific callsites.
+
+If these tracepoints were to use something like (not yet in mainline)
+
+  TP_perf_assign(
+ 	__perf_data(obj);
+  ),
+
+Where obj was the thing being allocated/freed, you could, when using
+PERF_SAMPLE_ADDR even match up alloc/frees, combined with
+PERF_SAMPLE_CALLCHAIN you could then figure out where the unmatched
+entries came from.
+
+Might be useful, dunno.
+
 
