@@ -1,67 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933861AbZHEJIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933885AbZHEJNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933861AbZHEJIG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 05:08:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933794AbZHEJIF
+	id S933885AbZHEJNN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 05:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933832AbZHEJNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 05:08:05 -0400
-Received: from mga09.intel.com ([134.134.136.24]:25989 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933667AbZHEJID (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 05:08:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,327,1246863600"; 
-   d="scan'208";a="436292386"
-Message-ID: <4A794BF1.3060809@intel.com>
-Date: Wed, 05 Aug 2009 17:08:01 +0800
-From: "Zhai, Edwin" <edwin.zhai@intel.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Wed, 5 Aug 2009 05:13:13 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35455 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933825AbZHEJNL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 05:13:11 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 1/4] tracing, page-allocator: Add trace events for page allocation and page freeing
+Cc: kosaki.motohiro@jp.fujitsu.com, Larry Woodman <lwoodman@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+In-Reply-To: <1249409546-6343-2-git-send-email-mel@csn.ul.ie>
+References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie> <1249409546-6343-2-git-send-email-mel@csn.ul.ie>
+Message-Id: <20090805165302.5BC8.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-CC: Sheng Yang <sheng@linux.intel.com>, "Roedel, Joerg" <Joerg.Roedel@amd.com>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, "avi@redhat.com" <avi@redhat.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Zhai, Edwin" <edwin.zhai@intel.com>
-Subject: Re: [PATCH][KVM][retry 4] Add support for Pause Filtering to AMD
- SVM
-References: <200905050909.58583.mark.langsdorf@amd.com>	<200907081319.57307.sheng@linux.intel.com>	<6453C3CB8E2B3646B0D020C112613273036209F0@sausexmb4.amd.com>	<200907090950.06204.sheng@linux.intel.com> <6453C3CB8E2B3646B0D020C112613273036209FB@sausexmb4.amd.com>
-In-Reply-To: <6453C3CB8E2B3646B0D020C112613273036209FB@sausexmb4.amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed,  5 Aug 2009 18:13:09 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark,
-Do you have time to push the Linux scheduler changes for Pause Filtering 
-now?  It's almost done after your work. If needing any help, pls. let me 
-know.
+Hi
 
-Thanks,
-edwin
+sorry for the delayed review.
 
-Langsdorf, Mark wrote:
->> Um, I am afraid we have the different result... With your 
->> scheduler patch, we got 1% more performance improvement
->> in the quick test. Of course more tests are needed to
->> find a better value of delay.
->>     
->
-> What was your test case?  How many runs did you do?
-> My results had a lot of variance in them.
->
->   
->> Do you have time to work on it recently?
->>     
->
-> I've been working with the former VI guys on some scheduler
-> improvements for Xen, and hope to get back to this some
-> next week.
->
-> -Mark Langsdorf
-> Operating System Research Center
-> AMD
->
->   
+> This patch adds trace events for the allocation and freeing of pages,
+> including the freeing of pagevecs.  Using the events, it will be known what
+> struct page and pfns are being allocated and freed and what the call site
+> was in many cases.
+> 
+> The page alloc tracepoints be used as an indicator as to whether the workload
+> was heavily dependant on the page allocator or not. You can make a guess based
+> on vmstat but you can't get a per-process breakdown. Depending on the call
+> path, the call_site for page allocation may be __get_free_pages() instead
+> of a useful callsite. Instead of passing down a return address similar to
+> slab debugging, the user should enable the stacktrace and seg-addr options
+> to get a proper stack trace.
+> 
+> The pagevec free tracepoint has a different usecase. It can be used to get
+> a idea of how many pages are being dumped off the LRU and whether it is
+> kswapd doing the work or a process doing direct reclaim.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> Acked-by: Rik van Riel <riel@redhat.com>
+> ---
+>  include/trace/events/kmem.h |   86 +++++++++++++++++++++++++++++++++++++++++++
+>  mm/page_alloc.c             |    6 ++-
+>  2 files changed, 91 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/trace/events/kmem.h b/include/trace/events/kmem.h
+> index 1493c54..57bf13c 100644
+> --- a/include/trace/events/kmem.h
+> +++ b/include/trace/events/kmem.h
+> @@ -225,6 +225,92 @@ TRACE_EVENT(kmem_cache_free,
+>  
+>  	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
+>  );
+> +
+> +TRACE_EVENT(mm_page_free_direct,
+> +
+> +	TP_PROTO(unsigned long call_site, const void *page, unsigned int order),
+> +
+> +	TP_ARGS(call_site, page, order),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(	unsigned long,	call_site	)
+> +		__field(	const void *,	page		)
+
+Why void? Is there any benefit?
+
+> +		__field(	unsigned int,	order		)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->call_site	= call_site;
+> +		__entry->page		= page;
+> +		__entry->order		= order;
+> +	),
+> +
+> +	TP_printk("call_site=%lx page=%p pfn=%lu order=%d",
+> +			__entry->call_site,
+> +			__entry->page,
+> +			page_to_pfn((struct page *)__entry->page),
+> +			__entry->order)
+> +);
+> +
+> +TRACE_EVENT(mm_pagevec_free,
+> +
+> +	TP_PROTO(unsigned long call_site, const void *page, int order, int cold),
+> +
+> +	TP_ARGS(call_site, page, order, cold),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(	unsigned long,	call_site	)
+> +		__field(	const void *,	page		)
+> +		__field(	int,		order		)
+> +		__field(	int,		cold		)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->call_site	= call_site;
+> +		__entry->page		= page;
+> +		__entry->order		= order;
+> +		__entry->cold		= cold;
+> +	),
+> +
+> +	TP_printk("call_site=%lx page=%p pfn=%lu order=%d cold=%d",
+> +			__entry->call_site,
+> +			__entry->page,
+> +			page_to_pfn((struct page *)__entry->page),
+> +			__entry->order,
+> +			__entry->cold)
+> +);
+> +
+> +TRACE_EVENT(mm_page_alloc,
+> +
+> +	TP_PROTO(unsigned long call_site, const void *page, unsigned int order,
+> +			gfp_t gfp_flags, int migratetype),
+> +
+> +	TP_ARGS(call_site, page, order, gfp_flags, migratetype),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(	unsigned long,	call_site	)
+> +		__field(	const void *,	page		)
+> +		__field(	unsigned int,	order		)
+> +		__field(	gfp_t,		gfp_flags	)
+> +		__field(	int,		migratetype	)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->call_site	= call_site;
+> +		__entry->page		= page;
+> +		__entry->order		= order;
+> +		__entry->gfp_flags	= gfp_flags;
+> +		__entry->migratetype	= migratetype;
+> +	),
+> +
+> +	TP_printk("call_site=%lx page=%p pfn=%lu order=%d migratetype=%d gfp_flags=%s",
+> +		__entry->call_site,
+> +		__entry->page,
+> +		page_to_pfn((struct page *)__entry->page),
+> +		__entry->order,
+> +		__entry->migratetype,
+> +		show_gfp_flags(__entry->gfp_flags))
+> +);
+> +
+>  #endif /* _TRACE_KMEM_H */
+>  
+>  /* This part must be outside protection */
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index d052abb..843bdec 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1905,6 +1905,7 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+>  				zonelist, high_zoneidx, nodemask,
+>  				preferred_zone, migratetype);
+>  
+> +	trace_mm_page_alloc(_RET_IP_, page, order, gfp_mask, migratetype);
+>  	return page;
+>  }
+
+In almost case, __alloc_pages_nodemask() is called from alloc_pages_current().
+Can you add call_site argument? (likes slab_alloc)
+
+
+>  EXPORT_SYMBOL(__alloc_pages_nodemask);
+> @@ -1945,13 +1946,16 @@ void __pagevec_free(struct pagevec *pvec)
+>  {
+>  	int i = pagevec_count(pvec);
+>  
+> -	while (--i >= 0)
+> +	while (--i >= 0) {
+> +		trace_mm_pagevec_free(_RET_IP_, pvec->pages[i], 0, pvec->cold);
+>  		free_hot_cold_page(pvec->pages[i], pvec->cold);
+> +	}
+>  }
+
+This _RET_IP_ assume pagevec_free() is inlined function. Then,
+pagevec_free() sould also change always_inline?
+
+Yeah, I agree this is theoretical issue. but it improve readability and
+studying author's intention. 
+
+>  void __free_pages(struct page *page, unsigned int order)
+>  {
+>  	if (put_page_testzero(page)) {
+> +		trace_mm_page_free_direct(_RET_IP_, page, order);
+>  		if (order == 0)
+>  			free_hot_page(page);
+>  		else
+
+This patch covered free_pages() and __pagevec_free() case.
+but it doesn't cover free_hot_page() direct call.
+
+(Fortunately, there is no free_cold_page() caller)
+
+
