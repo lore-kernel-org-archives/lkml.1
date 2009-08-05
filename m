@@ -1,158 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933252AbZHED4C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751093AbZHEEMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933252AbZHED4C (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 23:56:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933023AbZHEDz5
+	id S1751093AbZHEEMZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 00:12:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbZHEEMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 23:55:57 -0400
-Received: from mx.ugf.br ([200.222.48.3]:42388 "EHLO mx.ugf.br"
+	Wed, 5 Aug 2009 00:12:21 -0400
+Received: from mga03.intel.com ([143.182.124.21]:21793 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933021AbZHEDz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 23:55:56 -0400
-Subject: Re: [PATCH 1/1] XFS: xfs_iformat realtime device target pointer
- check
-From: Ramon de Carvalho Valle <ramon@risesecurity.org>
-To: Eric Sandeen <sandeen@sandeen.net>
-Cc: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com, hch@lst.de,
-       linux-kernel@vger.kernel.org, mszeredi@novell.com
-In-Reply-To: <4A7887CE.2060300@sandeen.net>
-References: <1249329808.7686.26.camel@logos>
-	 <20090803214929.GB3167@infradead.org> <1249351241.7513.18.camel@logos>
-	 <4A786110.8090404@sandeen.net> <1249411898.7576.19.camel@logos>
-	 <4A7887CE.2060300@sandeen.net>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-sqR/+ZMHXkUM9NDWFAw7"
-Date: Wed, 05 Aug 2009 00:55:50 -0300
-Message-Id: <1249444550.7372.23.camel@logos>
+	id S1750731AbZHEEMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 00:12:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,324,1246863600"; 
+   d="scan'208";a="172382089"
+Subject: Re: [PATCH V2 0/4] introduce device async actions mechanism
+From: Zhang Rui <rui.zhang@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <lenb@kernel.org>, Alan Stern <stern@rowland.harvard.edu>,
+       Arjan van de Ven <arjan@linux.intel.com>, "dtor@mail.ru" <dtor@mail.ru>
+In-Reply-To: <200908041821.26578.rjw@sisk.pl>
+References: <1248404514.2670.107.camel@rzhang-dt>
+	 <200908032318.35070.rjw@sisk.pl> <1249356937.2670.335.camel@rzhang-dt>
+	 <200908041821.26578.rjw@sisk.pl>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 05 Aug 2009 10:24:08 +0800
+Message-Id: <1249439048.2670.454.camel@rzhang-dt>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-08-05 at 00:21 +0800, Rafael J. Wysocki wrote:
+> On Tuesday 04 August 2009, Zhang Rui wrote:
+> > On Tue, 2009-08-04 at 05:18 +0800, Rafael J. Wysocki wrote:
+> > > On Friday 24 July 2009, Zhang Rui wrote:
+> > > > Hi,
+> > > 
+> > > Hi,
+> > > 
+> > > > this is the patch set I made to speed up the device
+> > > > suspend/resume/shutdown process.
+> > > > 
+> > > > A new mechanism called Device Async Actions is introduced
+> > > > in this patch set.
+> > > 
+> > > Well, I'm not sure we'll need that.
+> > > 
+> > > > The basic idea is that,
+> > > > if the suspend/resume/shutdown process of a device group, including
+> > > > a root device and its child devices, are independent of other devices,
+> > > > we create an async domain for this device group,
+> > > > and make them suspend/resume/shutdown asynchronously.    
+> > > 
+> > > I don't really think this is the right approach.  IMO, we should rather try to
+> > > identify groups of devices for which the PM callbacks (forget about .shutdown()
+> > > for now) can be executed in parallel.
+> > 
+> > hah, I see.
+> > You want to execute as more PM callbacks﻿ at one time as possible,
+> > right?
+> 
+> Not only that.  I'd like to simplify the design, because IMO using one async
+> domain would be much more straightforward than using multiple ones.
+> 
+something like this?
 
---=-sqR/+ZMHXkUM9NDWFAw7
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+1. device suspend/resume are split into several stages. And the PM
+callbacks of every device should be put into one of these stage.
 
-On Tue, 2009-08-04 at 14:11 -0500, Eric Sandeen wrote:
-> Ramon de Carvalho Valle wrote:
-> > The xfs_iformat function does not check if the realtime device target p=
-ointer
-> > is valid when the XFS_DIFLAG_REALTIME flag is set on the ondisk inode
-> > structure.
-> >=20
-> > Signed-off-by: Christoph Hellwig <hch@infradead.org>
-> > Signed-off-by: Ramon de Carvalho Valle <ramon@risesecurity.org>
-> > Cc: stable <stable@kernel.org>
-> > ---
-> >  fs/xfs/xfs_inode.c |   23 +++++++++++++++++------
-> >  1 files changed, 17 insertions(+), 6 deletions(-)
-> >=20
-> > diff --git a/fs/xfs/xfs_inode.c b/fs/xfs/xfs_inode.c
-> > index 1f22d65..37d3ee5 100644
-> > --- a/fs/xfs/xfs_inode.c
-> > +++ b/fs/xfs/xfs_inode.c
-> > @@ -343,13 +343,24 @@ xfs_iformat(
-> >  		return XFS_ERROR(EFSCORRUPTED);
-> >  	}
-> > =20
-> > +	if (unlikely((ip->i_d.di_flags & XFS_DIFLAG_REALTIME) &&
-> > +			!ip->i_mount->m_rtdev_targp)) {
-> > +		xfs_fs_repair_cmn_err(CE_WARN, ip->i_mount,
-> > +			"corrupt dinode %Lu, flags =3D 0x%x.",
-> > +			(unsigned long long)ip->i_ino,
-> > +			ip->i_d.di_flags);
-> > +		XFS_CORRUPTION_ERROR("xfs_iformat(3)", XFS_ERRLEVEL_LOW,
-> > +				     ip->i_mount, dip);
->=20
-> I think I'd rather not change all the corruption text tag ordering;
-> it'll make it harder to track down any common occurrences of
-> "xfs_iformat(X)" corruption in the future if they get renumbered now.
->=20
-> I'd either make this xfs_iformat(2.1) ;) or just leave it as Christoph
-> had.  "realtime" is a lot more informative than "3" anyway.
+2. run all the PM callbacks in current stage asynchronously, in the
+global domain.
 
-I don't think this is a bad decision, because the corruption errors can
-be easily identified by the output of xfs_fs_repair_cmn_err and the
-source line. I think this is a reasonable change that will keep the code
-clean and consistent.
+3. run async_synchronize_full to finish the current state.
 
--Ramon
+4. stage++, and goto step 2.
 
->=20
-> -Eric
->=20
-> > +		return XFS_ERROR(EFSCORRUPTED);
-> > +	}
-> > +
-> >  	switch (ip->i_d.di_mode & S_IFMT) {
-> >  	case S_IFIFO:
-> >  	case S_IFCHR:
-> >  	case S_IFBLK:
-> >  	case S_IFSOCK:
-> >  		if (unlikely(dip->di_format !=3D XFS_DINODE_FMT_DEV)) {
-> > -			XFS_CORRUPTION_ERROR("xfs_iformat(3)", XFS_ERRLEVEL_LOW,
-> > +			XFS_CORRUPTION_ERROR("xfs_iformat(4)", XFS_ERRLEVEL_LOW,
-> >  					      ip->i_mount, dip);
-> >  			return XFS_ERROR(EFSCORRUPTED);
-> >  		}
-> > @@ -371,7 +382,7 @@ xfs_iformat(
-> >  					"corrupt inode %Lu "
-> >  					"(local format for regular file).",
-> >  					(unsigned long long) ip->i_ino);
-> > -				XFS_CORRUPTION_ERROR("xfs_iformat(4)",
-> > +				XFS_CORRUPTION_ERROR("xfs_iformat(5)",
-> >  						     XFS_ERRLEVEL_LOW,
-> >  						     ip->i_mount, dip);
-> >  				return XFS_ERROR(EFSCORRUPTED);
-> > @@ -384,7 +395,7 @@ xfs_iformat(
-> >  					"(bad size %Ld for local inode).",
-> >  					(unsigned long long) ip->i_ino,
-> >  					(long long) di_size);
-> > -				XFS_CORRUPTION_ERROR("xfs_iformat(5)",
-> > +				XFS_CORRUPTION_ERROR("xfs_iformat(6)",
-> >  						     XFS_ERRLEVEL_LOW,
-> >  						     ip->i_mount, dip);
-> >  				return XFS_ERROR(EFSCORRUPTED);
-> > @@ -400,14 +411,14 @@ xfs_iformat(
-> >  			error =3D xfs_iformat_btree(ip, dip, XFS_DATA_FORK);
-> >  			break;
-> >  		default:
-> > -			XFS_ERROR_REPORT("xfs_iformat(6)", XFS_ERRLEVEL_LOW,
-> > +			XFS_ERROR_REPORT("xfs_iformat(7)", XFS_ERRLEVEL_LOW,
-> >  					 ip->i_mount);
-> >  			return XFS_ERROR(EFSCORRUPTED);
-> >  		}
-> >  		break;
-> > =20
-> >  	default:
-> > -		XFS_ERROR_REPORT("xfs_iformat(7)", XFS_ERRLEVEL_LOW, ip->i_mount);
-> > +		XFS_ERROR_REPORT("xfs_iformat(8)", XFS_ERRLEVEL_LOW, ip->i_mount);
-> >  		return XFS_ERROR(EFSCORRUPTED);
-> >  	}
-> >  	if (error) {
-> > @@ -430,7 +441,7 @@ xfs_iformat(
-> >  				"(bad attr fork size %Ld).",
-> >  				(unsigned long long) ip->i_ino,
-> >  				(long long) size);
-> > -			XFS_CORRUPTION_ERROR("xfs_iformat(8)",
-> > +			XFS_CORRUPTION_ERROR("xfs_iformat(9)",
-> >  					     XFS_ERRLEVEL_LOW,
-> >  					     ip->i_mount, dip);
-> >  			return XFS_ERROR(EFSCORRUPTED);
->=20
+> > I'm afraid this won't bring as many benefits as it looks like because
+> > most of the suspend/resume time is cost on several specified devices.
+> 
+> That shouldn't matter.  As long as there's one driver that waits long enough
+> for the others' devices to be handled while it's waiting, we are not going
+> to be hurt by this and the design is going to be simpler IMO.
+> 
+> > Take the dmesg I attached for example.
+> > 
+> > total device suspend time is 1.532s.
+> > serio2		0.407s
+> > sd 0.0.0.0	0.452s
+> > serio0		0.103s
+> > 0b.4.2		0.114s
+> > 00.1f.2		0.080s
+> > 00.19.0		0.072s
+> > all the others	0.304s
+> > 
+> > total device resume time is 2.899s
+> > PNP0C0A:00(bat)	0.896s
+> > 00.19.0		0.056s
+> > 0b.4.0		0.139s
+> > 0b.1.1		0.064s
+> > usb1		0.052s
+> > usb2		0.051s
+> > usb3		0.042s
+> > usb8		0.248s
+> > sd 0.0.0.0	0.118s
+> > usb 3-1		0.261s
+> > usb 8-1		0.511s
+> > all the others	0.461s
+> > 
+> > We can see that these several devices take 80%~85% suspend/resume time,
+> > while all the other (nearly 500) devices take 20%.
+> 
+> OK, so it doesn't matter how we run the suspend/resume of the 500 'fast'
+> devices as long as it doesn't take more than 0.896s total.  In particular, it
+> seems we can do that in parallel just fine.
+> 
+> > Running a lot device PM callbacks at one time is not equal to saving a
+> > lot time if the devices listed above still run synchronously.
+> > 
+> > So I think the key point to speed up suspend/resume is to invoke the PM
+> > callbacks of these devices asynchronously.
+> > And I use the asynchronous functions for two reasons.
+> > 1. devices with dependency are in the same asynchronous domain so that
+> >    their PM callbacks run in-order.
+> > ﻿2. PM callbacks of the devices without any dependency run
+> > asynchronously
+> >    by using different asynchronous domains.
+> 
+> If I understand the async framework correctly, the domains are only used for
+> synchronization, ie. if you want to wait for a group of async operations to
+> complete, you can put them all into one domain and then call
+> async_synchronize_full_domain() to wait for them all together.
+> 
+yes, you're right.
+please ignore my previous reply in this thread.
 
---=-sqR/+ZMHXkUM9NDWFAw7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+> You don't need multiple domains to run multiple things in parallel.
+> 
+> > > One such group is leaf devices, ie.
+> > > devices that have no children.  Of course, some of them will depend of the
+> > > other indirectly, so we should make it possible to declare (in the driver)
+> > > whether the device can be suspended/resumed asynchronously and use the
+> > > following logic (at the core level), in pseudo code:
+> > > 
+> > > if (has_no_children(dev) && asynchronous_suspend_resume_allowed(dev))
+> > >     async_resume(dev);
+> > > else
+> > >     resume(dev);
+> > > 
+> > > and analogously for suspend.  Then, we can easily use one async domain for all
+> > > of these devices.
+> > 
+> > > Later, we can add async domains for devices that have children, but can be
+> > > suspended and woken up in parallel with each other.
+> > >   IOW, I think the async
+> > > domains should span the levels rather than branches of the device
+> > > tree.
+> > > 
+> > 
+> > Hmm, as I said above,
+> > this approach works only if we can make sure that the specified devices
+> > are put in the same async domain, i.e. run in parallel.
+> 
+> Sure and that's the point.
+> 
+> For starters, let's put all devices (or rather drivers) without any
+> dependencies
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+you still mean the leaf devices here, don't you?
 
-iEYEABECAAYFAkp5ArQACgkQGIS0iEuhp4OIFACgnIn5AM6D4kUsYhMoPd81Y+M2
-joMAoLxQk2mIM4fONHfg2nXmdm3Ipf+s
-=0uXB
------END PGP SIGNATURE-----
+>  into one async domain and call suspend/resume for them using the
+> async framework (they will be suspended/resumed in parallel with each other as
+> well as in parallel with the rest).  Then, let's call
+> async_synchronize_full_domain() for that domain when we've finished executing
+> all of the suspend/resume callbacks.
+> 
+right.
+but I'm afraid it's not easy to find a group of non-leaf devices without any
+dependency.
 
---=-sqR/+ZMHXkUM9NDWFAw7--
+> We can easily do such a thing for each phase of suspend/resume
+>  or hibernation
+> without causing any problems to happen IMO, as long as the 'async' drivers
+> really have no dependencies.
+> 
+sure, the proposal is good.
+But my concern is how to find out these async domains? i.e. how to find
+out groups of devices without dependency so that we can suspend/resume
+devices in the same group in parallel?
+
+You said that ﻿the async domains should span the levels rather than
+branches of the device tree.
+do you mean suspend/resume all the devices in the same level in
+parallel?
+
+> > are there any prototype patches available?
+> 
+> No, because I didn't have the time to prepare any.  If you give me a couple of
+> days, I can write something.  I think.
+> 
+Sure. don't forget to CC me when you send them out.
+
+thanks,
+rui
 
