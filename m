@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934163AbZHEKbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934180AbZHEKbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934163AbZHEKbf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 06:31:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933959AbZHEKbe
+	id S934180AbZHEKbp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 06:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934166AbZHEKbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 06:31:34 -0400
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:16996 "EHLO
-	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933956AbZHEKbd (ORCPT
+	Wed, 5 Aug 2009 06:31:44 -0400
+Received: from mail-qy0-f196.google.com ([209.85.221.196]:38628 "EHLO
+	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934165AbZHEKbn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 06:31:33 -0400
-X-Belgacom-Dynamic: yes
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAJL7eEpR9dzM/2dsb2JhbADUawmEDwU
-Date: Wed, 5 Aug 2009 12:31:27 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Wan ZongShun <mcuos.com@gmail.com>
-Cc: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Add watchdog driver for w90p910
-Message-ID: <20090805103127.GF30892@infomag.iguana.be>
-References: <4A69CE00.10401@gmail.com> <20090804201032.GB30892@infomag.iguana.be> <e68bb3470908041955t7e07929bv612a25e0bc0264c1@mail.gmail.com> <20090805070822.GC30892@infomag.iguana.be> <e68bb3470908050100n4f6f8ed3hbd227a13e038e55f@mail.gmail.com>
+	Wed, 5 Aug 2009 06:31:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=Z5oVOTTDfzXojN+hA51OIcZkN7NCMihuAG5DNHZ8KgA7Y4+SoiE/7c0OgCkfdUSMbn
+         bGl9TlZaHtZMgZMqobfFwPUjBIree0Sx0tUD6rNibhhavBlWifqcE2UAC8/CrZRUYoxh
+         L+vyuwdqWvR7j/16JdRAaMZv7O/MCYzAKHCj4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e68bb3470908050100n4f6f8ed3hbd227a13e038e55f@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Wed, 5 Aug 2009 19:31:43 +0900
+Message-ID: <90b950fc0908050331i7c98a008qc3e66ce849019cb3@mail.gmail.com>
+Subject: [PATCH] fixed distortedness situation for Samsung SoC Framebuffer 
+	Driver
+From: InKi Dae <daeinki@gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Cc: Kyungmin Park <kmpark@infradead.org>
+Content-Type: multipart/mixed; boundary=0015175cd6946afa7b04706282be
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Wan,
+--0015175cd6946afa7b04706282be
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-> > I have an additional question: which timeout values can you set? is it 0, 1, 2 and 3 seconds?
-> 
-> The 0, 1, 2 and 3 is not seconds, rather than 'level' , it means my
-> watchdog controller can only set four grades,
-> When WTIS bit of REG_WTCR was set one value of  the 0, 1, 2 and 3, the
->  real time interval can be calculated via following formula .
-> 
-> WTIS                 real time interval (formula)
-> 0x00                   ((2^ 14 ) * ((external crystal freq) / 256))seconds
-> 0x01                   ((2^ 16 ) * ((external crystal freq) / 256))seconds
-> 0x02                   ((2^ 18 ) * ((external crystal freq) / 256))seconds
-> 0x03                   ((2^ 20 ) * ((external crystal freq) / 256))seconds
-> 
-> The external crystal freq is 15Mhz in w90p910 evaluation board. so I
-> set the '0x00' as a default value, it means the real time interval is
-> 0.28 second approximately.
+This patch solves the problem that image is distorted in the mode more
+then 24bpp.
 
-Hmm, the watchdog API works in seconds.
-A timer will need to be used like in similar watchdog drivers (like at91sam9_wdt.c, pcwd.c).
+In 16bit mode, WINCON0[16] should be Swap Enable(HAWSWP_F) and in the
+mode more then 24bpp,
+WINCON0[15] should be Swap Enable(WSWP_F).
 
-Kind regards,
-Wim.
+For this, I added a MACRO in regs-fb.h file for 24bpp+ and modified
+s3c-fb.c file also.
+It was tested on s5pc100 and s5pc110 and worked fine.
 
+signed-off-by: InKi Dae <inki.dae@samsung.com>
+
+Thank you.
+
+--0015175cd6946afa7b04706282be
+Content-Type: application/octet-stream; name="s3cfb.patch"
+Content-Disposition: attachment; filename="s3cfb.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fxzwujqz0
+
+ZGlmZiAtLWdpdCBhL2FyY2gvYXJtL3BsYXQtczNjL2luY2x1ZGUvcGxhdC9yZWdzLWZiLmggYi9h
+cmNoL2FybS9wbGF0LXMzYy9pbmNsdWRlL3BsYXQvcmVncy1mYi5oCmluZGV4IGU5ZWU1OTkuLmFl
+NWViNWQgMTAwNjQ0Ci0tLSBhL2FyY2gvYXJtL3BsYXQtczNjL2luY2x1ZGUvcGxhdC9yZWdzLWZi
+LmgKKysrIGIvYXJjaC9hcm0vcGxhdC1zM2MvaW5jbHVkZS9wbGF0L3JlZ3MtZmIuaApAQCAtMTcz
+LDYgKzE3Myw3IEBACiAjZGVmaW5lIFdJTkNPTnhfQklUU1dQCQkJCSgxIDw8IDE4KQogI2RlZmlu
+ZSBXSU5DT054X0JZVFNXUAkJCQkoMSA8PCAxNykKICNkZWZpbmUgV0lOQ09OeF9IQVdTV1AJCQkJ
+KDEgPDwgMTYpCisjZGVmaW5lIFdJTkNPTnhfV1NXUAkJCQkoMSA8PCAxNSkKICNkZWZpbmUgV0lO
+Q09OeF9CVVJTVExFTl9NQVNLCQkJKDB4MyA8PCA5KQogI2RlZmluZSBXSU5DT054X0JVUlNUTEVO
+X1NISUZUCQkJKDkpCiAjZGVmaW5lIFdJTkNPTnhfQlVSU1RMRU5fMTZXT1JECQkJKDB4MCA8PCA5
+KQpkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9zM2MtZmIuYyBiL2RyaXZlcnMvdmlkZW8vczNj
+LWZiLmMKaW5kZXggNWE3MjA4My4uMjRkNTZlZCAxMDA2NDQKLS0tIGEvZHJpdmVycy92aWRlby9z
+M2MtZmIuYworKysgYi9kcml2ZXJzL3ZpZGVvL3MzYy1mYi5jCkBAIC00MjIsNiArNDIyLDcgQEAg
+c3RhdGljIGludCBzM2NfZmJfc2V0X3BhcihzdHJ1Y3QgZmJfaW5mbyAqaW5mbykKIAkJZWxzZQog
+CQkJZGF0YSB8PSBXSU5DT04wX0JQUE1PREVfMjRCUFBfODg4OwogCisJCWRhdGEgfD0gV0lOQ09O
+eF9XU1dQOwogCQlkYXRhIHw9IFdJTkNPTnhfQlVSU1RMRU5fMTZXT1JEOwogCQlicmVhazsKIAl9
+Cg==
+--0015175cd6946afa7b04706282be--
