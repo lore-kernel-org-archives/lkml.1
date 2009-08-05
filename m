@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934122AbZHEJ6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934118AbZHEJ7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934122AbZHEJ6j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 05:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934116AbZHEJ6j
+	id S934118AbZHEJ7w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 05:59:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933345AbZHEJ7w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 05:58:39 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36590 "EHLO
+	Wed, 5 Aug 2009 05:59:52 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36603 "EHLO
 	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933319AbZHEJ6h (ORCPT
+	with ESMTP id S933246AbZHEJ7v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 05:58:37 -0400
-Date: Wed, 5 Aug 2009 10:59:16 +0100
+	Wed, 5 Aug 2009 05:59:51 -0400
+Date: Wed, 5 Aug 2009 11:00:31 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Colin Guthrie <cguthrie@mandriva.org>
-Cc: Tejun Heo <teheo@suse.de>, Greg KH <greg@kroah.com>,
-       Al Viro <viro@ftp.linux.org.uk>, Takashi Iwai <tiwai@suse.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
+To: Tejun Heo <teheo@suse.de>
+Cc: Greg KH <greg@kroah.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Takashi Iwai <tiwai@suse.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, cguthrie@mandriva.org
 Subject: Re: [PATCH 2/2] sound: make OSS device number claiming optional
-Message-ID: <20090805105916.28f84a05@lxorguk.ukuu.org.uk>
-In-Reply-To: <4A794FB9.30403@mandriva.org>
+Message-ID: <20090805110031.51424dbe@lxorguk.ukuu.org.uk>
+In-Reply-To: <4A7951B0.10208@suse.de>
 References: <4A79283E.7030202@kernel.org>
 	<4A79296A.4090600@suse.de>
 	<20090805101551.6ee053e5@lxorguk.ukuu.org.uk>
-	<4A794FB9.30403@mandriva.org>
+	<4A7951B0.10208@suse.de>
 X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -31,46 +31,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> While I'm not familiar enough with the kernel itself to comment on *how* 
-> the patch works, the principle is quite important here.
+On Wed, 05 Aug 2009 18:32:32 +0900
+Tejun Heo <teheo@suse.de> wrote:
+
+> Hello, Alan.
 > 
-> As far as I know most distros enable snd-*-oss module loading via a 
-> modprobe trick (e.g. in user space) so the change here shouldn't affect 
-> this approach.
+> Alan Cox wrote:
+> > This looks like a random private devel hack sand
 > 
-> However, I certainly want to experiment with osspd and while I hope it's 
-> going to be a good solution generally, it'll only make sense if the user 
-> chooses to use pulseaudio.
+> Why so?
 > 
-> If the user decided they want to use pure alsa, then they'll have to 
-> drop back to using snd-*-oss for that instead.
+> > I don't see why it's appropriate for mainstream, especially as these
+> > "new things" don't exist mainstream either.
 > 
-> This is all something I'd like to enable without making the user change 
-> kernels based on a preference.
+> The new things is CUSE and it's already in mainstream.
 
-As you said "I'd like to experiment"
+Then fix it to use the sound interfaces properly. We have a multiplexor
+for sound devices so they can be shared between OSS/ALSA/whatever. Use it.
+Ditto if you want CUSE to handle miscdevices use the miscdevice interface
+properly.
 
-We don't put everyones random experiments in the kernel or we'd have a
-kernel that had a million unfinished project hacks.
-
-Suppose this doesn't work out - how do we get rid of the new hack,
-someone might by then have decided to depend upon it. More crud, more
-APIs we can't get rid of
-
-More importantly there is an API *in* soundcore for registering sound
-devices in the OSS category. You can use that.
-
-Not only was that interface written precisely to allow the kind of
-sharing in question but it will also let you mix OSS, ALSA *and* your own
-experimental device work at the same time because it hands out minor
-numbers properly.
-
-Given we have an existing proper interface for this I think this hack
-belongs in a private dev tree only. In fact I suspect it belongs in the
-bitbucket and experimental code should be using the proper provided and
-exported interfaces as it will need to if it is ever going to be accepted
-upstream.
-
-NAK
-
-Alan
