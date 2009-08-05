@@ -1,111 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933801AbZHEJBH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933807AbZHEJB6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933801AbZHEJBH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 05:01:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932688AbZHEJBD
+	id S933807AbZHEJB6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 05:01:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932781AbZHEJB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 05:01:03 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:34933 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932442AbZHEJBB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 05:01:01 -0400
-Message-ID: <4A794A4E.2060802@np.css.fujitsu.com>
-Date: Wed, 05 Aug 2009 18:01:02 +0900
-From: Jin Dongming <jin.dongming@np.css.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	Wed, 5 Aug 2009 05:01:58 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56141 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932688AbZHEJB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 05:01:57 -0400
+Message-ID: <4A794A7F.4090907@suse.de>
+Date: Wed, 05 Aug 2009 18:01:51 +0900
+From: Tejun Heo <teheo@suse.de>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-To: Andi Kleen <ak@linux.intel.com>
-CC: "H.Peter Anvin" <hpa@zytor.com>, LKLM <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Huang Ying <ying.huang@intel.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [PATCH] x86, mce: cleanup initcall of debugfs for mce
-References: <4A77CEAB.4030909@np.css.fujitsu.com> <4A77FCCC.7040608@linux.intel.com>
-In-Reply-To: <4A77FCCC.7040608@linux.intel.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Greg KH <greg@kroah.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, cguthrie@mandriva.org
+Subject: [PATCH 1/2 UPDATED] chrdev: implement __[un]register_chrdev()
+References: <4A79283E.7030202@kernel.org>	<s5hzlaed9me.wl%tiwai@suse.de>	<4A793099.1040704@kernel.org> <s5hy6pyd8vx.wl%tiwai@suse.de> <4A79350A.3020904@kernel.org>
+In-Reply-To: <4A79350A.3020904@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> 
-> Sorry but I think it's better to have an own initcall per file,
-> that makes everything more self contained and easier to read.
-> 
-> -Andi
-> 
-Thank you for your comment.
+[un]register_chrdev() assume minor range 0-255.  This patch adds __
+prefixed versions which take @minorbase and @count explicitly.  The
+original ones become inline wrappers around __ ones.
 
-That's OK, but this patch is also used for resolving compile error
-without CONFIG_DEBUG_FS.  Then how about this patch?
-
-Best regards,
-Jin Dongming
-
-
-===
-
-[PATCH] x86,mce: Add ifdef for severities_debugfs_init()
-
-This patch is made based on the v5 patches of Huangying for mce.
-Before using this patch, please apply the patches of Huangying.
-The patches' URLs of Huangying are listed as following:
-1.x86: MCE: Support specifying context for software mce injection
-  URL: http://marc.info/?l=linux-kernel&m=124900459100786&w=2
-2.x86: MCE: Support specifying raise mode for software MCE injection
-  URL: http://marc.info/?l=linux-kernel&m=124900459100795&w=2
-3.x86: MCE: Move debugfs mce dir creating to mce.c
-  URL: http://marc.info/?l=linux-kernel&m=124900459100790&w=2
-4.x86: MCE: Fake panic support for MCE testing
-  URL: http://marc.info/?l=linux-kernel&m=124900453800724&w=2
-
-When the kernel is compiled without CONFIG_DEBUG_FS, compiler could
-not find out mce_get_debugfs_dir() which is used by
-severities_debugfs_init() and output the error message.
-
-This version is based x86-tip/mce.
-
-Signed-off-by: Jin Dongming <jin.dongming@np.css.fujitsu.com>
-Reviewed-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/x86/kernel/cpu/mcheck/mce-internal.h |    3 +++
- arch/x86/kernel/cpu/mcheck/mce-severity.c |    2 ++
- 2 files changed, 5 insertions(+), 0 deletions(-)
+ fs/char_dev.c      |   39 ++++++++++++++++++++++++++-------------
+ include/linux/fs.h |   19 ++++++++++++++++---
+ 2 files changed, 42 insertions(+), 16 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/mcheck/mce-internal.h b/arch/x86/kernel/cpu/mcheck/mce-internal.h
-index 32996f9..58b01d4 100644
---- a/arch/x86/kernel/cpu/mcheck/mce-internal.h
-+++ b/arch/x86/kernel/cpu/mcheck/mce-internal.h
-@@ -22,7 +22,10 @@ struct mce_bank {
- };
- 
- int mce_severity(struct mce *a, int tolerant, char **msg);
-+
-+#ifdef CONFIG_DEBUG_FS
- struct dentry *mce_get_debugfs_dir(void);
-+#endif
- 
- extern int mce_ser;
- 
-diff --git a/arch/x86/kernel/cpu/mcheck/mce-severity.c b/arch/x86/kernel/cpu/mcheck/mce-severity.c
-index bc35a07..8a85dd1 100644
---- a/arch/x86/kernel/cpu/mcheck/mce-severity.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce-severity.c
-@@ -139,6 +139,7 @@ int mce_severity(struct mce *a, int tolerant, char **msg)
+Index: work/fs/char_dev.c
+===================================================================
+--- work.orig/fs/char_dev.c
++++ work/fs/char_dev.c
+@@ -237,8 +237,10 @@ int alloc_chrdev_region(dev_t *dev, unsi
+ }
+
+ /**
+- * register_chrdev() - Register a major number for character devices.
++ * __register_chrdev() - create and register a cdev occupying a range of minors
+  * @major: major device number or 0 for dynamic allocation
++ * @baseminor: first of the requested range of minor numbers
++ * @count: the number of minor numbers required
+  * @name: name of this range of devices
+  * @fops: file operations associated with this devices
+  *
+@@ -254,19 +256,17 @@ int alloc_chrdev_region(dev_t *dev, unsi
+  * /dev. It only helps to keep track of the different owners of devices. If
+  * your module name has only one type of devices it's ok to use e.g. the name
+  * of the module here.
+- *
+- * This function registers a range of 256 minor numbers. The first minor number
+- * is 0.
+  */
+-int register_chrdev(unsigned int major, const char *name,
+-		    const struct file_operations *fops)
++int __register_chrdev(unsigned int major, unsigned int baseminor,
++		      unsigned int count, const char *name,
++		      const struct file_operations *fops)
+ {
+ 	struct char_device_struct *cd;
+ 	struct cdev *cdev;
+ 	char *s;
+ 	int err = -ENOMEM;
+
+-	cd = __register_chrdev_region(major, 0, 256, name);
++	cd = __register_chrdev_region(major, baseminor, count, name);
+ 	if (IS_ERR(cd))
+ 		return PTR_ERR(cd);
+ 	
+@@ -280,7 +280,7 @@ int register_chrdev(unsigned int major,
+ 	for (s = strchr(kobject_name(&cdev->kobj),'/'); s; s = strchr(s, '/'))
+ 		*s = '!';
+ 		
+-	err = cdev_add(cdev, MKDEV(cd->major, 0), 256);
++	err = cdev_add(cdev, MKDEV(cd->major, baseminor), count);
+ 	if (err)
+ 		goto out;
+
+@@ -290,7 +290,7 @@ int register_chrdev(unsigned int major,
+ out:
+ 	kobject_put(&cdev->kobj);
+ out2:
+-	kfree(__unregister_chrdev_region(cd->major, 0, 256));
++	kfree(__unregister_chrdev_region(cd->major, baseminor, count));
+ 	return err;
+ }
+
+@@ -316,10 +316,23 @@ void unregister_chrdev_region(dev_t from
  	}
  }
- 
-+#ifdef CONFIG_DEBUG_FS
- static void *s_start(struct seq_file *f, loff_t *pos)
- {
- 	if (*pos >= ARRAY_SIZE(severities))
-@@ -212,3 +213,4 @@ err_out:
- 	return -ENOMEM;
- }
- late_initcall(severities_debugfs_init);
-+#endif
--- 
-1.6.2.2
 
+-void unregister_chrdev(unsigned int major, const char *name)
++/**
++ * __unregister_chrdev - unregister and destroy a cdev
++ * @major: major device number
++ * @baseminor: first of the range of minor numbers
++ * @count: the number of minor numbers this cdev is occupying
++ * @name: name of this range of devices
++ *
++ * Unregister and destroy the cdev occupying the region described by
++ * @major, @baseminor and @count.  This function undoes what
++ * __register_chrdev() did.
++ */
++void __unregister_chrdev(unsigned int major, unsigned int baseminor,
++			 unsigned int count, const char *name)
+ {
+ 	struct char_device_struct *cd;
+-	cd = __unregister_chrdev_region(major, 0, 256);
++
++	cd = __unregister_chrdev_region(major, baseminor, count);
+ 	if (cd && cd->cdev)
+ 		cdev_del(cd->cdev);
+ 	kfree(cd);
+@@ -568,6 +581,6 @@ EXPORT_SYMBOL(cdev_alloc);
+ EXPORT_SYMBOL(cdev_del);
+ EXPORT_SYMBOL(cdev_add);
+ EXPORT_SYMBOL(cdev_index);
+-EXPORT_SYMBOL(register_chrdev);
+-EXPORT_SYMBOL(unregister_chrdev);
++EXPORT_SYMBOL(__register_chrdev);
++EXPORT_SYMBOL(__unregister_chrdev);
+ EXPORT_SYMBOL(directly_mappable_cdev_bdi);
+Index: work/include/linux/fs.h
+===================================================================
+--- work.orig/include/linux/fs.h
++++ work/include/linux/fs.h
+@@ -1998,12 +1998,25 @@ extern void bd_release_from_disk(struct
+ #define CHRDEV_MAJOR_HASH_SIZE	255
+ extern int alloc_chrdev_region(dev_t *, unsigned, unsigned, const char *);
+ extern int register_chrdev_region(dev_t, unsigned, const char *);
+-extern int register_chrdev(unsigned int, const char *,
+-			   const struct file_operations *);
+-extern void unregister_chrdev(unsigned int, const char *);
++extern int __register_chrdev(unsigned int major, unsigned int baseminor,
++			     unsigned int count, const char *name,
++			     const struct file_operations *fops);
++extern void __unregister_chrdev(unsigned int major, unsigned int baseminor,
++				unsigned int count, const char *name);
+ extern void unregister_chrdev_region(dev_t, unsigned);
+ extern void chrdev_show(struct seq_file *,off_t);
+
++static inline int register_chrdev(unsigned int major, const char *name,
++				  const struct file_operations *fops)
++{
++	return __register_chrdev(major, 0, 256, name, fops);
++}
++
++static inline void unregister_chrdev(unsigned int major, const char *name)
++{
++	__unregister_chrdev(major, 0, 256, name);
++}
++
+ /* fs/block_dev.c */
+ #define BDEVNAME_SIZE	32	/* Largest string for a blockdev identifier */
+ #define BDEVT_SIZE	10	/* Largest string for MAJ:MIN for blkdev */
