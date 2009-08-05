@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933857AbZHEAgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932982AbZHEAid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933857AbZHEAgc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 20:36:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933844AbZHEAga
+	id S932982AbZHEAid (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 20:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932890AbZHEAib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 20:36:30 -0400
-Received: from wg.visionengravers.com ([67.136.234.194]:17037 "EHLO
-	visionfs1.visionengravers.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933309AbZHEAg3 (ORCPT
+	Tue, 4 Aug 2009 20:38:31 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:34396 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932853AbZHEAia (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 20:36:29 -0400
-From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] net/ipv4/fib_semantics.c: fix "symbol shadows an earlier one" noise
-Date: Tue, 4 Aug 2009 17:36:34 -0700
+	Tue, 4 Aug 2009 20:38:30 -0400
+X-IronPort-AV: E=Sophos;i="4.43,324,1246838400"; 
+   d="scan'208";a="360519039"
+From: Roland Dreier <rdreier@cisco.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Roland Dreier <rolandd@cisco.com>,
+       akpm@linux-foundation.org
+Subject: Re: mmotm 2009-08-04-14-22 uploaded (ummunotify)
+References: <200908042125.n74LP9qY018119@imap1.linux-foundation.org>
+	<20090804155014.35d4597c.randy.dunlap@oracle.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 04 Aug 2009 17:38:29 -0700
+In-Reply-To: <20090804155014.35d4597c.randy.dunlap@oracle.com> (Randy Dunlap's
+	message of "Tue, 4 Aug 2009 15:50:14 -0700")
+Message-ID: <adafxc7ksca.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908041736.34604.hartleys@visionengravers.com>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 05 Aug 2009 00:38:30.0507 (UTC) FILETIME=[0E0CA3B0:01CA1565]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fib_sync_down_dev() uses a variable named 'nh' when doing a
-hlist_for_each_entry loop.  Later the same variable name is used
-in a change_nexthops loop.  This results in a sparse warning and is
-potentially confusing.  Fix both issues by changing the name of
-the outer loop variable.  The sparse warning is:
 
-  warning: symbol 'nh' shadows an earlier one
+ > ummunotify.c:(.text+0x8f217): undefined reference to `__get_user_X'
+ > 
+ > when building for i386.
+ > 
+ > The get_user() and put_user() in ummunotify_exchange_features()
+ > are correctly converted to __get_user_4() and __put_user_4(),
+ > but the get_user() in ummunotify_unregister_region() becomes
+ > __get_user_X()  [as seen in objdump output].
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+Is 64-bit get_user() supposed to work portably?  Because it seems that
+arch/x86/include/asm/uaccess.h intentionally makes get_user((__u64))
+expand to __get_user_X() and then never defines __get_user_X().  And
+arm, say, expands it to __get_user_bad().  But on the other hand,
+powerpc and sparc seem to go to the trouble of defining a 64-bit
+get_user() for 32-bit builds...
 
----
+My fault for insufficient 32-bit compile testing.  Andrew, I'll send a
+patch to change to copy_from_user() instead.
 
-diff --git a/net/ipv4/fib_semantics.c b/net/ipv4/fib_semantics.c
-index 9b096d6..b0e485a 100644
---- a/net/ipv4/fib_semantics.c
-+++ b/net/ipv4/fib_semantics.c
-@@ -1065,17 +1065,17 @@ int fib_sync_down_dev(struct net_device *dev, int force)
- 	unsigned int hash = fib_devindex_hashfn(dev->ifindex);
- 	struct hlist_head *head = &fib_info_devhash[hash];
- 	struct hlist_node *node;
--	struct fib_nh *nh;
-+	struct fib_nh *this_nh;
- 
- 	if (force)
- 		scope = -1;
- 
--	hlist_for_each_entry(nh, node, head, nh_hash) {
--		struct fib_info *fi = nh->nh_parent;
-+	hlist_for_each_entry(this_nh, node, head, nh_hash) {
-+		struct fib_info *fi = this_nh->nh_parent;
- 		int dead;
- 
- 		BUG_ON(!fi->fib_nhs);
--		if (nh->nh_dev != dev || fi == prev_fi)
-+		if (this_nh->nh_dev != dev || fi == prev_fi)
- 			continue;
- 		prev_fi = fi;
- 		dead = 0;
+ - R.
