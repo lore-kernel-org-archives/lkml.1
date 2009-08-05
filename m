@@ -1,131 +1,191 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbZHEGao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbZHEGgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755575AbZHEGao (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 02:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755053AbZHEGam
+	id S1755664AbZHEGgR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 02:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbZHEGgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 02:30:42 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:46450 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754861AbZHEGam (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 02:30:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=eGcbvnef2dNGWla7tNn2rfLdsRGLcvUfdjQg+v/eD3g4JHcWOptzAeIWGoxnJcPtkT
-         5LMoIYF/3S1SShdHuS3dshIbfNvS8L1mEaxKLElohJmYtapySSdnApx6glSptlL+Zupn
-         w3B0xyV/53DQ3Po9TKtvCRPGAd6a7PbzQM8xc=
-Date: Wed, 5 Aug 2009 15:29:56 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Paul Menage <menage@google.com>, David Rientjes <rientjes@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@redhat.com>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH 1/4] oom: move oom_adj to signal_struct
-Message-Id: <20090805152956.faf52a5a.minchan.kim@barrios-desktop>
-In-Reply-To: <20090805150017.5BB9.A69D9226@jp.fujitsu.com>
-References: <20090805114650.5BA1.A69D9226@jp.fujitsu.com>
-	<20090805145516.b2129f81.minchan.kim@barrios-desktop>
-	<20090805150017.5BB9.A69D9226@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 5 Aug 2009 02:36:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:32909 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755634AbZHEGgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 02:36:14 -0400
+Message-ID: <4A79283E.7030202@kernel.org>
+Date: Wed, 05 Aug 2009 15:35:42 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Takashi Iwai <tiwai@suse.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+CC: cguthrie@mandriva.org
+Subject: [PATCH 1/2] chrdev: implement __[un]register_chrdev()
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 05 Aug 2009 06:35:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  5 Aug 2009 15:04:48 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+[un]register_chrdev() assume minor range 0-255.  This patch adds __
+prefixed versions which take @minorbase and @count explicitly.
 
-> > On Wed,  5 Aug 2009 11:51:31 +0900 (JST)
-> > KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> > 
-> > > > On Wed,  5 Aug 2009 11:29:34 +0900 (JST)
-> > > > KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> > > > 
-> > > > > Hi
-> > > > > 
-> > > > > > Hi, Kosaki. 
-> > > > > > 
-> > > > > > I am so late to invole this thread. 
-> > > > > > But let me have a question. 
-> > > > > > 
-> > > > > > What's advantage of placing oom_adj in singal rather than task ?
-> > > > > > I mean task->oom_adj and task->signal->oom_adj ?
-> > > > > > 
-> > > > > > I am sorry if you already discussed it at last threads. 
-> > > > > 
-> > > > > Not sorry. that's very good question.
-> > > > > 
-> > > > > I'm trying to explain the detailed intention of commit 2ff05b2b4eac
-> > > > > (move oom_adj to mm_struct).
-> > > > > 
-> > > > > In 2.6.30, OOM logic callflow is here.
-> > > > > 
-> > > > > __out_of_memory
-> > > > > 	select_bad_process		for each task
-> > > > > 		badness			calculate badness of one task
-> > > > > 	oom_kill_process		search child
-> > > > > 		oom_kill_task		kill target task and mm shared tasks with it
-> > > > > 
-> > > > > example, process-A have two thread, thread-A and thread-B and it 
-> > > > > have very fat memory.
-> > > > > And, each thread have following likes oom property.
-> > > > > 
-> > > > > 	thread-A: oom_adj = OOM_DISABLE, oom_score = 0
-> > > > > 	thread-B: oom_adj = 0,           oom_score = very-high
-> > > > > 
-> > > > > Then, select_bad_process() select thread-B, but oom_kill_task refuse
-> > > > > kill the task because thread-A have OOM_DISABLE.
-> > > > > __out_of_memory() call select_bad_process() again. but select_bad_process()
-> > > > > select the same task. It mean kernel fall in the livelock.
-> > > > > 
-> > > > > The fact is, select_bad_process() must select killable task. otherwise
-> > > > > OOM logic go into livelock.
-> > > > > 
-> > > > > Is this enough explanation? thanks.
-> > > > > 
-> > 
-> > The problem resulted from David patch.
-> > It can solve live lock problem but make a new problem like vfork problem. 
-> > I think both can be solved by different approach. 
-> > 
-> > It's just RFC. 
-> > 
-> > If some process is selected by OOM killer but it have a child of OOM immune,
-> > We just decrease point of process. It can affect selection of bad process. 
-> > After some trial, at last bad score is drastically low and another process is 
-> > selected by OOM killer. So I think Live lock don't happen. 
-> > 
-> > New variable adding in task struct is rather high cost. 
-> > But i think we can union it with oomkilladj 
-> > since oomkilladj is used to present just -17 ~ 15. 
-> > 
-> > What do you think about this approach ?
-> 
-> I can ack this. but please re-initialize oom_scale_down at fork and
-> exec time.
-> currently oom_scale_down makes too big affect.
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+---
+Hello,
 
+These two patches make sound_core grabbing OSS device number optional.
+If there's no objection, I think it would be easiest to push this
+through Takashi's tree.
 
-Thanks for carefult review. 
-In fact, I didn't care of it 
-since it just is RFC for making sure my idea. :)
+Thanks.
 
-> and, May I ask which you hate my approach? 
-> 
+ fs/char_dev.c      |   63 +++++++++++++++++++++++++++++++++++++++++++----------
+ include/linux/fs.h |   11 ++++++---
+ 2 files changed, 60 insertions(+), 14 deletions(-)
 
-Not at all. I never hate your approach. 
-This problem resulted form David's original patch.
-I thought if we will fix live lock with different approach, we can remove much pain.
+Index: work/fs/char_dev.c
+===================================================================
+--- work.orig/fs/char_dev.c
++++ work/fs/char_dev.c
+@@ -237,8 +237,10 @@ int alloc_chrdev_region(dev_t *dev, unsi
+ }
 
--- 
-Kind regards,
-Minchan Kim
+ /**
+- * register_chrdev() - Register a major number for character devices.
++ * __register_chrdev() - create and register a cdev occupying a range of minors
+  * @major: major device number or 0 for dynamic allocation
++ * @baseminor: first of the requested range of minor numbers
++ * @count: the number of minor numbers required
+  * @name: name of this range of devices
+  * @fops: file operations associated with this devices
+  *
+@@ -254,19 +256,17 @@ int alloc_chrdev_region(dev_t *dev, unsi
+  * /dev. It only helps to keep track of the different owners of devices. If
+  * your module name has only one type of devices it's ok to use e.g. the name
+  * of the module here.
+- *
+- * This function registers a range of 256 minor numbers. The first minor number
+- * is 0.
+  */
+-int register_chrdev(unsigned int major, const char *name,
+-		    const struct file_operations *fops)
++int __register_chrdev(unsigned int major, unsigned int baseminor,
++		      unsigned int count, const char *name,
++		      const struct file_operations *fops)
+ {
+ 	struct char_device_struct *cd;
+ 	struct cdev *cdev;
+ 	char *s;
+ 	int err = -ENOMEM;
+
+-	cd = __register_chrdev_region(major, 0, 256, name);
++	cd = __register_chrdev_region(major, baseminor, count, name);
+ 	if (IS_ERR(cd))
+ 		return PTR_ERR(cd);
+ 	
+@@ -280,7 +280,7 @@ int register_chrdev(unsigned int major,
+ 	for (s = strchr(kobject_name(&cdev->kobj),'/'); s; s = strchr(s, '/'))
+ 		*s = '!';
+ 		
+-	err = cdev_add(cdev, MKDEV(cd->major, 0), 256);
++	err = cdev_add(cdev, MKDEV(cd->major, baseminor), count);
+ 	if (err)
+ 		goto out;
+
+@@ -290,11 +290,26 @@ int register_chrdev(unsigned int major,
+ out:
+ 	kobject_put(&cdev->kobj);
+ out2:
+-	kfree(__unregister_chrdev_region(cd->major, 0, 256));
++	kfree(__unregister_chrdev_region(cd->major, baseminor, count));
+ 	return err;
+ }
+
+ /**
++ * register_chrdev() - create and register a cdev occupying a full major
++ * @major: major device number or 0 for dynamic allocation
++ * @name: name of this range of devices
++ * @fops: file operations associated with this devices
++ *
++ * Wrapper around __register_chrdev() which always allocates full
++ * minor range from 0 to 256.
++ */
++int register_chrdev(unsigned int major, const char *name,
++		    const struct file_operations *fops)
++{
++	return __register_chrdev(major, 0, 256, name, fops);
++}
++
++/**
+  * unregister_chrdev_region() - return a range of device numbers
+  * @from: the first in the range of numbers to unregister
+  * @count: the number of device numbers to unregister
+@@ -316,15 +331,41 @@ void unregister_chrdev_region(dev_t from
+ 	}
+ }
+
+-void unregister_chrdev(unsigned int major, const char *name)
++/**
++ * __unregister_chrdev - unregister and destroy a cdev
++ * @major: major device number
++ * @baseminor: first of the range of minor numbers
++ * @count: the number of minor numbers this cdev is occupying
++ * @name: name of this range of devices
++ *
++ * Unregister and destroy the cdev occupying the region described by
++ * @major, @baseminor and @count.  This function undoes what
++ * __register_chrdev() did.
++ */
++void __unregister_chrdev(unsigned int major, unsigned int baseminor,
++			 unsigned int count, const char *name)
+ {
+ 	struct char_device_struct *cd;
+-	cd = __unregister_chrdev_region(major, 0, 256);
++
++	cd = __unregister_chrdev_region(major, baseminor, count);
+ 	if (cd && cd->cdev)
+ 		cdev_del(cd->cdev);
+ 	kfree(cd);
+ }
+
++/**
++ * unregister_chrdev - unregister and destroy a cdev
++ * @major: major device number
++ * @name: name of this range of devices
++ *
++ * Wrapper around __unregister_chrdev() which assumes full minor range
++ * from 0 to 256.
++ */
++void unregister_chrdev(unsigned int major, const char *name)
++{
++	__unregister_chrdev(major, 0, 256, name);
++}
++
+ static DEFINE_SPINLOCK(cdev_lock);
+
+ static struct kobject *cdev_get(struct cdev *p)
+Index: work/include/linux/fs.h
+===================================================================
+--- work.orig/include/linux/fs.h
++++ work/include/linux/fs.h
+@@ -1998,9 +1998,14 @@ extern void bd_release_from_disk(struct
+ #define CHRDEV_MAJOR_HASH_SIZE	255
+ extern int alloc_chrdev_region(dev_t *, unsigned, unsigned, const char *);
+ extern int register_chrdev_region(dev_t, unsigned, const char *);
+-extern int register_chrdev(unsigned int, const char *,
+-			   const struct file_operations *);
+-extern void unregister_chrdev(unsigned int, const char *);
++extern int __register_chrdev(unsigned int major, unsigned int baseminor,
++			     unsigned int count, const char *name,
++			     const struct file_operations *fops);
++extern int register_chrdev(unsigned int major, const char *name,
++			   const struct file_operations *fops);
++extern void __unregister_chrdev(unsigned int major, unsigned int baseminor,
++				unsigned int count, const char *name);
++extern void unregister_chrdev(unsigned int major, const char *name);
+ extern void unregister_chrdev_region(dev_t, unsigned);
+ extern void chrdev_show(struct seq_file *,off_t);
+
