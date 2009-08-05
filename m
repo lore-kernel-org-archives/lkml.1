@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934680AbZHEQdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934691AbZHEQdM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934680AbZHEQdE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 12:33:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934641AbZHEQdD
+	id S934691AbZHEQdM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 12:33:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934685AbZHEQdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 12:33:03 -0400
-Received: from exprod5og104.obsmtp.com ([64.18.0.178]:36259 "EHLO
-	exprod5og104.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934639AbZHEQdC (ORCPT
+	Wed, 5 Aug 2009 12:33:10 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32953 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934682AbZHEQdI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 12:33:02 -0400
-From: Martyn Welch <martyn.welch@gefanuc.com>
-Subject: [PATCH] Staging: Correct tsi-148 VME interrupt free routine
-To: gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
-       jirislaby@gmail.com
-Date: Wed, 05 Aug 2009 17:33:44 +0100
-Message-ID: <20090805163219.4903.43629.stgit@ES-J7S4D2J.amer.consind.ge.com>
-In-Reply-To: <4A7769C6.50901@gmail.com>
-References: <4A7769C6.50901@gmail.com>
-User-Agent: StGIT/0.13
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Wed, 5 Aug 2009 12:33:08 -0400
+Date: Wed, 5 Aug 2009 17:33:46 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tejun Heo <teheo@suse.de>
+Cc: Greg KH <greg@kroah.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Takashi Iwai <tiwai@suse.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, cguthrie@mandriva.org
+Subject: Re: [PATCH 2/2] sound: make OSS device number claiming optional
+Message-ID: <20090805173346.130d80bb@lxorguk.ukuu.org.uk>
+In-Reply-To: <4A79AD2A.4060308@suse.de>
+References: <4A79283E.7030202@kernel.org>
+	<4A79296A.4090600@suse.de>
+	<20090805101551.6ee053e5@lxorguk.ukuu.org.uk>
+	<4A7951B0.10208@suse.de>
+	<20090805110031.51424dbe@lxorguk.ukuu.org.uk>
+	<4A796C94.5040301@suse.de>
+	<20090805134823.4409e197@lxorguk.ukuu.org.uk>
+	<4A799392.3000108@suse.de>
+	<20090805152942.42e785f3@lxorguk.ukuu.org.uk>
+	<4A79AD2A.4060308@suse.de>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As identified by Jiri, the VME interrupt free routine removes the service
-routine before disabling the interrupt. Re-order operations to be performed in
-the reverse of the request routine.
----
+> I don't see how I would be able to achieve the latter with one liner.
+> Can you please elaborate a little bit?
 
-Jiri: Thanks for the feedback.
+It depends how much of a hurry you are in, but for the mainstream we can
+do this
 
-Martyn
+1.	Make soundcore also issue the request_module() as if the char
+minor was unclaimed. Mark the old one as obsolete
 
- drivers/staging/vme/bridges/vme_tsi148.c |   15 ++++++++-------
- 1 files changed, 8 insertions(+), 7 deletions(-)
+2.	Wait a year while people adjust their scripts to trigger on the
+char event instead (and fix the ordering bits for ALSA if the soundcore
+docs are still valid on that)
 
-diff --git a/drivers/staging/vme/bridges/vme_tsi148.c b/drivers/staging/vme/bridges/vme_tsi148.c
-index ad6fc2d..cdc2919 100644
---- a/drivers/staging/vme/bridges/vme_tsi148.c
-+++ b/drivers/staging/vme/bridges/vme_tsi148.c
-@@ -484,21 +484,22 @@ void tsi148_free_irq(int level, int statid)
- 	/* Get semaphore */
- 	down(&(vme_irq));
- 
--	tsi148_bridge->irq[level - 1].callback[statid].func = NULL;
--	tsi148_bridge->irq[level - 1].callback[statid].priv_data = NULL;
- 	tsi148_bridge->irq[level - 1].count--;
- 
--	/* Disable IRQ level */
-+	/* Disable IRQ level if no more interrupts attached at this level*/
- 	if (tsi148_bridge->irq[level - 1].count == 0) {
--		tmp = ioread32be(tsi148_bridge->base + TSI148_LCSR_INTEO);
--		tmp &= ~TSI148_LCSR_INTEO_IRQEO[level - 1];
--		iowrite32be(tmp, tsi148_bridge->base + TSI148_LCSR_INTEO);
--
- 		tmp = ioread32be(tsi148_bridge->base + TSI148_LCSR_INTEN);
- 		tmp &= ~TSI148_LCSR_INTEN_IRQEN[level - 1];
- 		iowrite32be(tmp, tsi148_bridge->base + TSI148_LCSR_INTEN);
-+
-+		tmp = ioread32be(tsi148_bridge->base + TSI148_LCSR_INTEO);
-+		tmp &= ~TSI148_LCSR_INTEO_IRQEO[level - 1];
-+		iowrite32be(tmp, tsi148_bridge->base + TSI148_LCSR_INTEO);
- 	}
- 
-+	tsi148_bridge->irq[level - 1].callback[statid].func = NULL;
-+	tsi148_bridge->irq[level - 1].callback[statid].priv_data = NULL;
-+
- 	/* Release semaphore */
- 	up(&(vme_irq));
- }
+3.	Apply a patch which makes ALSA use char dev allocation directly
+for its OSS devices and dumps out soundcore, remove soundcore and switch
+any other code using it.
+
