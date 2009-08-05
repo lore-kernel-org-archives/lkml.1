@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934672AbZHEQgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964811AbZHEQhg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934672AbZHEQgN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 12:36:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934642AbZHEQgN
+	id S964811AbZHEQhg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 12:37:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934623AbZHEQhg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 12:36:13 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48220 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934643AbZHEQgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 12:36:12 -0400
-Date: Wed, 5 Aug 2009 18:35:37 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Rik van Riel <riel@redhat.com>, Wu Fengguang <fengguang.wu@intel.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-Message-ID: <20090805163537.GG23385@random.random>
-References: <20090805024058.GA8886@localhost>
- <4A793B92.9040204@redhat.com>
- <4A7993F4.9020008@redhat.com>
- <4A79A16A.1050401@redhat.com>
- <4A79A1FB.6010406@redhat.com>
- <4A79A468.2020200@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A79A468.2020200@redhat.com>
+	Wed, 5 Aug 2009 12:37:36 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49934 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934128AbZHEQhf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 12:37:35 -0400
+Date: Wed, 5 Aug 2009 17:38:09 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Tejun Heo <teheo@suse.de>, Greg KH <greg@kroah.com>,
+       Al Viro <viro@ftp.linux.org.uk>, Takashi Iwai <tiwai@suse.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, cguthrie@mandriva.org
+Subject: Re: [PATCH 2/2] sound: make OSS device number claiming optional
+Message-ID: <20090805173809.19022f3b@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090805173346.130d80bb@lxorguk.ukuu.org.uk>
+References: <4A79283E.7030202@kernel.org>
+	<4A79296A.4090600@suse.de>
+	<20090805101551.6ee053e5@lxorguk.ukuu.org.uk>
+	<4A7951B0.10208@suse.de>
+	<20090805110031.51424dbe@lxorguk.ukuu.org.uk>
+	<4A796C94.5040301@suse.de>
+	<20090805134823.4409e197@lxorguk.ukuu.org.uk>
+	<4A799392.3000108@suse.de>
+	<20090805152942.42e785f3@lxorguk.ukuu.org.uk>
+	<4A79AD2A.4060308@suse.de>
+	<20090805173346.130d80bb@lxorguk.ukuu.org.uk>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 05, 2009 at 06:25:28PM +0300, Avi Kivity wrote:
-> On 08/05/2009 06:15 PM, Rik van Riel wrote:
-> > Avi Kivity wrote:
-> >
-> >>> If so, we could unmap them when they get moved from the
-> >>> active to the inactive list, and soft fault them back in
-> >>> on access, emulating the referenced bit for EPT pages and
-> >>> making page replacement on them work like it should.
-> >>
-> >> It should be easy to implement via the mmu notifier callback: when 
-> >> the mm calls clear_flush_young(), mark it as young, and unmap it from 
-> >> the EPT pagetable.
-> >
-> > You mean "mark it as old"?
-> 
-> I meant 'return young, and drop it from the EPT pagetable'.
-> 
-> If we use the present bit as a replacement for the accessed bit, present 
-> means young, and clear_flush_young means "if present, return young and 
-> unmap, otherwise return old'.
+On Wed, 5 Aug 2009 17:33:46 +0100
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-This is the only way to provide accurate information, and it's still a
-minor fault so not very different than return young first time around
-and old second time around without invalidating the spte... but the
-only reason I like it more is that it is done at the right time, like
-for the ptes, so probably it's best to implement it this way to ensure
-total fairness of the VM regardless if it's guest or qemu-kvm touching
-the virtual memory.
+> > I don't see how I would be able to achieve the latter with one liner.
+> > Can you please elaborate a little bit?
+> 
+> It depends how much of a hurry you are in, but for the mainstream we can
+> do this
+
+
+and a PS to this
+
+If we have a clear plan on obsoleting sound_, a proper documented entry
+for it going obsolete and a clear roadmap which ends up with soundcore
+being recycled[1] then adding a temporary option to soundcore to make it
+shut up is much less of a problem because the option also clearly goes
+obsolete with soundcore so no mess is left when the process is over -
+which would let you get your CUSE stuff up as a hack in the meantime.
+
+Ala
+[1] 0 bits in the green bag, 1 bits in the black bag please
