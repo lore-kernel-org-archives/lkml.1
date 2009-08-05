@@ -1,55 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934285AbZHEMs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934296AbZHENFI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934285AbZHEMs0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 08:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933416AbZHEMsZ
+	id S934296AbZHENFI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 09:05:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933658AbZHENFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 08:48:25 -0400
-Received: from mga06.intel.com ([134.134.136.21]:26328 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933395AbZHEMsZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 08:48:25 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,328,1246863600"; 
-   d="scan'208";a="538774811"
-Message-ID: <4A797F95.30906@linux.intel.com>
-Date: Wed, 05 Aug 2009 14:48:21 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Wed, 5 Aug 2009 09:05:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46625 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933480AbZHENFG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 09:05:06 -0400
+Date: Wed, 5 Aug 2009 10:04:53 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/1] perf report: Add missing command line options to man
+	page
+Message-ID: <20090805130453.GC10688@ghostprotocols.net>
 MIME-Version: 1.0
-To: Jin Dongming <jin.dongming@np.css.fujitsu.com>
-CC: "H.Peter Anvin" <hpa@zytor.com>, LKLM <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Huang Ying <ying.huang@intel.com>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [PATCH] x86, mce: cleanup initcall of debugfs for mce
-References: <4A77CEAB.4030909@np.css.fujitsu.com> <4A77FCCC.7040608@linux.intel.com> <4A794A4E.2060802@np.css.fujitsu.com>
-In-Reply-To: <4A794A4E.2060802@np.css.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jin Dongming wrote:
-> Andi Kleen wrote:
->> Sorry but I think it's better to have an own initcall per file,
->> that makes everything more self contained and easier to read.
->>
->> -Andi
->>
-> Thank you for your comment.
-> 
-> That's OK, but this patch is also used for resolving compile error
-> without CONFIG_DEBUG_FS.  Then how about this patch?
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/Documentation/perf-record.txt |   60 ++++++++++++++++++++++++++++-
+ 1 files changed, 57 insertions(+), 3 deletions(-)
 
-
-Compiler errors should be always fixed of course. But did you check
-the compile error is still in the latest version of the x86/mce branch
-of
-git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-tip.git
-It might be fixed already.
-
--Andi
+diff --git a/tools/perf/Documentation/perf-record.txt b/tools/perf/Documentation/perf-record.txt
+index 1dbc1ee..6be696b 100644
+--- a/tools/perf/Documentation/perf-record.txt
++++ b/tools/perf/Documentation/perf-record.txt
+@@ -29,13 +29,67 @@ OPTIONS
+ 	Select the PMU event. Selection can be a symbolic event name
+ 	(use 'perf list' to list all events) or a raw PMU
+ 	event (eventsel+umask) in the form of rNNN where NNN is a
+-	 hexadecimal event descriptor.
++	hexadecimal event descriptor.
+ 
+ -a::
+-        system-wide collection
++        System-wide collection.
+ 
+ -l::
+-        scale counter values
++        Scale counter values.
++
++-p::
++--pid=::
++	Record events on existing pid.
++
++-r::
++--realtime=::
++	Collect data with this RT SCHED_FIFO priority.
++-A::
++--append::
++	Append to the output file to do incremental profiling.
++
++-f::
++--force::
++	Overwrite existing data file.
++
++-c::
++--count=::
++	Event period to sample.
++
++-o::
++--output=::
++	Output file name.
++
++-i::
++--inherit::
++	Child tasks inherit counters.
++-F::
++--freq=::
++	Profile at this frequency.
++
++-m::
++--mmap-pages=::
++	Number of mmap data pages.
++
++-g::
++--call-graph::
++	Do call-graph (stack chain/backtrace) recording.
++
++-v::
++--verbose::
++	Be more verbose (show counter open errors, etc).
++
++-s::
++--stat::
++	Per thread counts.
++
++-d::
++--data::
++	Sample addresses.
++
++-n::
++--no-samples::
++	Don't sample.
+ 
+ SEE ALSO
+ --------
+-- 
+1.6.2.5
 
