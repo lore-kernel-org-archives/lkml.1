@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752806AbZHEVvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752843AbZHEVvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752806AbZHEVvd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 17:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZHEVvb
+	id S1752843AbZHEVvr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 17:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbZHEVvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 17:51:31 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42935 "EHLO
+	Wed, 5 Aug 2009 17:51:32 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:42942 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752735AbZHEVv3 (ORCPT
+	with ESMTP id S1752779AbZHEVvb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 17:51:29 -0400
+	Wed, 5 Aug 2009 17:51:31 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200908051151.557035535@firstfloor.org>
 In-Reply-To: <200908051151.557035535@firstfloor.org>
 To: sam@ravnborg.org, linux-kbuild@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] [1/5] kbuild: Fix ld-option Makefile macro to really work
-Message-Id: <20090805215127.B3FF8B15D8@basil.firstfloor.org>
-Date: Wed,  5 Aug 2009 23:51:27 +0200 (CEST)
+Subject: [PATCH] [5/5] kbuild: Set -fconserve-stack option for gcc 4.5
+Message-Id: <20090805215131.BD7D2B15D8@basil.firstfloor.org>
+Date: Wed,  5 Aug 2009 23:51:31 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Needed for the next patch
+The upcomming gcc 4.5 has a new -fconserve-stack option 
+that tells the inliner to take stack frame size in account.
+Set it if the compiler supports it.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- scripts/Kbuild.include |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+ Makefile |    3 +++
+ 1 file changed, 3 insertions(+)
 
-Index: linux-2.6.31-rc1-ak/scripts/Kbuild.include
+Index: linux-2.6.31-rc3-ak/Makefile
 ===================================================================
---- linux-2.6.31-rc1-ak.orig/scripts/Kbuild.include
-+++ linux-2.6.31-rc1-ak/scripts/Kbuild.include
-@@ -83,11 +83,12 @@ TMPOUT := $(if $(KBUILD_EXTMOD),$(firstw
- # is automatically cleaned up.
- try-run = $(shell set -e;		\
- 	TMP="$(TMPOUT).$$$$.tmp";	\
-+	TMPO="$(TMPOUT).$$$$.o";	\
- 	if ($(1)) >/dev/null 2>&1;	\
- 	then echo "$(2)";		\
- 	else echo "$(3)";		\
- 	fi;				\
--	rm -f "$$TMP")
-+	rm -f "$$TMP" "$$TMPO")
+--- linux-2.6.31-rc3-ak.orig/Makefile
++++ linux-2.6.31-rc3-ak/Makefile
+@@ -575,6 +575,9 @@ KBUILD_CFLAGS	+= $(call cc-option,-fno-s
+ # revert to pre-gcc-4.4 behaviour of .eh_frame
+ KBUILD_CFLAGS	+= $(call cc-option,-fno-dwarf2-cfi-asm)
  
- # as-option
- # Usage: cflags-y += $(call as-option,-Wa$(comma)-isa=foo,)
-@@ -133,7 +134,7 @@ cc-ifversion = $(shell [ $(call cc-versi
- # ld-option
- # Usage: ldflags += $(call ld-option, -Wl$(comma)--hash-style=both)
- ld-option = $(call try-run,\
--	$(CC) $(1) -nostdlib -xc /dev/null -o "$$TMP",$(1),$(2))
-+	$(CC) /dev/null -c -o "$$TMPO" ; $(LD) $(1) "$$TMPO" -o "$$TMP",$(1),$(2))
- 
- ######
- 
++# conserve stack if available
++KBUILD_CFLAGS   += $(call cc-option,-fconserve-stack)
++
+ # Add user supplied CPPFLAGS, AFLAGS and CFLAGS as the last assignments
+ # But warn user when we do so
+ warn-assign = \
