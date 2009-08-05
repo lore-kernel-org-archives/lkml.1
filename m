@@ -1,1018 +1,1901 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752701AbZHEVoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbZHEVrB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752701AbZHEVoA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 17:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbZHEVn7
+	id S1752713AbZHEVrB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 17:47:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbZHEVrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 17:43:59 -0400
-Received: from mail-fx0-f228.google.com ([209.85.220.228]:49249 "EHLO
-	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751148AbZHEVn4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 17:43:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=lHyTC0qLyAyS+4RW1Mq/n1FqOX52xxg3JSUXl6yg25P/lAC6BJ3YQJQa682YHuR+Oy
-         XEmuKuFYRVWm7OGTiL17kAiuBCsxhzcYvi1AyCqY+3HcRbd4WuI09DdTcgDXVyoQEZKD
-         cgSDmkm0zgt2WK5RObiI9yjURBFx0KNitFULc=
-Date: Wed, 5 Aug 2009 23:43:51 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Laurent Riffard <laurent.riffard@free.fr>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       ReiserFS Mailing List <reiserfs-devel@vger.kernel.org>
-Subject: Re: linux-next: reiserfs lockout with xattr ?
-Message-ID: <20090805214348.GA5025@nowhere>
-References: <4A79CA90.8080101@free.fr>
+	Wed, 5 Aug 2009 17:47:01 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54848 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752634AbZHEVq6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 17:46:58 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: [PATCH update] PM: Introduce core framework for run-time PM of I/O devices (rev. 12)
+Date: Wed, 5 Aug 2009 23:47:34 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.31-rc5-rjw; KDE/4.2.4; x86_64; ; )
+Cc: "Linux-pm mailing list" <linux-pm@lists.linux-foundation.org>,
+       Magnus Damm <magnus.damm@gmail.com>, Greg KH <gregkh@suse.de>,
+       Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0908042208460.10693-100000@netrider.rowland.org> <200908051525.03666.rjw@sisk.pl>
+In-Reply-To: <200908051525.03666.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4A79CA90.8080101@free.fr>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200908052347.35334.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 05, 2009 at 08:08:16PM +0200, Laurent Riffard wrote:
-> Hello,
-> 
-> From times to times, my desktop freezes when I log in the Gnome Desktop. I'm able to switch to a text console, but I can't login. I must reboot using the magic sysrq keys.
-> 
-> Yesterday, I managed to get some logs of this situation:
-> 
-> 
-> SysRq : Show Blocked State
->   task                PC stack   pid father
-> sync_supers   D f7477230  2720    77      2 0x00000000
->  f74beeec 00000046 00000100 f7477230 004631a2 00000100 00001240 c0546200
->  c0546200 c0543284 f74beed0 f75372b0 f7537444 c1c52200 00000001 00000000
->  f74beedc 00000246 00000000 00000002 f7537444 ffff442e f9f900fa 00000000
-> Call Trace:
->  [<f9f900fa>] ? reiserfs_write_lock+0x1f/0x2e [reiserfs]
->  [<c03dd52a>] __mutex_lock_common+0x239/0x3ca
->  [<c0265518>] ? bdi_sync_supers+0x0/0x3a
->  [<c03dd74a>] mutex_lock_nested+0x2b/0x33
->  [<f9f900fa>] ? reiserfs_write_lock+0x1f/0x2e [reiserfs]
->  [<f9f900fa>] reiserfs_write_lock+0x1f/0x2e [reiserfs]
->  [<f9f7f6f8>] reiserfs_sync_fs+0x12/0x51 [reiserfs]
->  [<c027e24a>] ? sync_supers+0x40/0x8e
->  [<c03dd9a2>] ? down_read+0x2c/0x40
->  [<f9f7f744>] reiserfs_write_super+0xd/0xf [reiserfs]
->  [<c027e25e>] sync_supers+0x54/0x8e
->  [<c0265544>] bdi_sync_supers+0x2c/0x3a
->  [<c0237f65>] kthread+0x69/0x6e
->  [<c0237efc>] ? kthread+0x0/0x6e
->  [<c0203d8b>] kernel_thread_helper+0x7/0x10
-> gconfd-2      D f7477230  1416  4749      1 0x00000000
->  f759ea84 00000046 c1c52200 f7477230 c0244e0a f759ea30 c03de2a8 c0546200
->  c0546200 c0543284 f82335bb f75b5470 f75b5604 c1c52200 00000001 00000000
->  f759ea74 00000246 00000000 00000002 f75b5604 ffff3ebb f9f900fa 00000000
-> Call Trace:
->  [<c0244e0a>] ? trace_hardirqs_on+0xb/0xd
->  [<c03de2a8>] ? _read_unlock_irqrestore+0x5f/0x6c
->  [<f82335bb>] ? dm_get_table+0x2e/0x35 [dm_mod]
->  [<f9f900fa>] ? reiserfs_write_lock+0x1f/0x2e [reiserfs]
->  [<c03dd52a>] __mutex_lock_common+0x239/0x3ca
->  [<c03dd74a>] mutex_lock_nested+0x2b/0x33
->  [<f9f900fa>] ? reiserfs_write_lock+0x1f/0x2e [reiserfs]
->  [<f9f900fa>] reiserfs_write_lock+0x1f/0x2e [reiserfs]
->  [<f9f85bc4>] search_by_key+0x19e/0x738 [reiserfs]
->  [<c0244e0a>] ? trace_hardirqs_on+0xb/0xd
->  [<c03dd198>] ? __mutex_unlock_slowpath+0x112/0x121
->  [<c03dd1af>] ? mutex_unlock+0x8/0xa
->  [<f9f8b5f8>] ? do_journal_end+0xa5a/0xc34 [reiserfs]
->  [<f9f74ee2>] search_by_entry_key+0x17/0x198 [reiserfs]
->  [<f9f750c1>] reiserfs_find_entry+0x5e/0x21c [reiserfs]
->  [<c03dd1af>] ? mutex_unlock+0x8/0xa
->  [<f9f9015e>] ? reiserfs_write_unlock+0x55/0x5a [reiserfs]
->  [<f9f756f6>] reiserfs_lookup+0x6f/0xf7 [reiserfs]
->  [<c02833ef>] __lookup_hash+0xa4/0xbe
->  [<c0284e88>] lookup_one_len+0x8e/0x9d
->  [<f9f8f1e1>] open_xa_dir+0x111/0x18a [reiserfs]
->  [<c0244e0a>] ? trace_hardirqs_on+0xb/0xd
->  [<f9f8f88f>] reiserfs_for_each_xattr+0x57/0x1df [reiserfs]
->  [<f9f8ffe8>] ? delete_one_xattr+0x0/0x94 [reiserfs]
->  [<f9f8fa6a>] reiserfs_delete_xattrs+0x13/0x40 [reiserfs]
->  [<f9f7b3e2>] reiserfs_delete_inode+0x41/0xb7 [reiserfs]
->  [<f9f7b3a1>] ? reiserfs_delete_inode+0x0/0xb7 [reiserfs]
->  [<c028bff6>] generic_delete_inode+0x79/0xf1
->  [<c028c080>] generic_drop_inode+0x12/0x18d
->  [<c028b3b7>] iput+0x4b/0x4e
->  [<c0289052>] dentry_iput+0x9c/0xb7
->  [<c028910e>] d_kill+0x2d/0x47
->  [<c0289814>] dput+0x110/0x119
->  [<c0285831>] sys_renameat+0x176/0x1d3
->  [<c0289747>] ? dput+0x43/0x119
->  [<c028e6d6>] ? mntput_no_expire+0x19/0xad
->  [<c02858a0>] sys_rename+0x12/0x14
->  [<c0203228>] sysenter_do_call+0x12/0x3c
-> gnome-panel   D f0a34170  1996  4939   4534 0x00000000
->  f0ae6d74 00000046 c1c52200 f0a34170 00000005 000000c1 f0ae6d4c c0546200
->  c0546200 f4e2acb0 c0288adf f4e2acb0 f4e2ae44 c1c52200 00000001 f0ae6e6c
->  f0ae6d64 00000246 00000000 00000002 f4e2ae44 00000000 f9f900bf 00000000
-> Call Trace:
->  [<c0288adf>] ? pollwake+0x59/0x62
->  [<f9f900bf>] ? reiserfs_write_lock_once+0x1f/0x3b [reiserfs]
->  [<c03dd52a>] __mutex_lock_common+0x239/0x3ca
->  [<c03dd74a>] mutex_lock_nested+0x2b/0x33
->  [<f9f900bf>] ? reiserfs_write_lock_once+0x1f/0x3b [reiserfs]
->  [<f9f900bf>] reiserfs_write_lock_once+0x1f/0x3b [reiserfs]
->  [<f9f756ce>] reiserfs_lookup+0x47/0xf7 [reiserfs]
->  [<c02832db>] do_lookup+0xb4/0x124
->  [<c0283aa0>] __link_path_walk+0x33b/0x6ce
->  [<c0283ff4>] path_walk+0x50/0xa5
->  [<c02843ce>] do_path_lookup+0x21/0x42
->  [<c0285e39>] user_path_at+0x3c/0x67
->  [<c02771ac>] ? kmem_cache_alloc+0x11d/0x155
->  [<c023c21e>] ? prepare_creds+0x2b/0x72
->  [<c027be5f>] sys_faccessat+0x90/0x14a
->  [<c027bf29>] sys_access+0x10/0x12
->  [<c0203228>] sysenter_do_call+0x12/0x3c
-> trackerd      D f7477230  1756  4949   4534 0x00000000
->  f0a36da8 00000046 f0a36d40 f7477230 f0a36d7c c03dd66d 00000202 c0546200
->  c0546200 c0543284 f0a36de0 f0ac2a70 f0ac2c04 c1c52200 00000001 00000000
->  f0a36d98 00000246 00000000 00000002 f0ac2c04 ffff3ebb f9f8f1cf 00000000
-> Call Trace:
->  [<c03dd66d>] ? __mutex_lock_common+0x37c/0x3ca
->  [<f9f8f1cf>] ? open_xa_dir+0xff/0x18a [reiserfs]
->  [<c03dd52a>] __mutex_lock_common+0x239/0x3ca
->  [<c03dd74a>] mutex_lock_nested+0x2b/0x33
->  [<f9f8f1cf>] ? open_xa_dir+0xff/0x18a [reiserfs]
->  [<f9f8f1cf>] open_xa_dir+0xff/0x18a [reiserfs]
->  [<f9f8f88f>] reiserfs_for_each_xattr+0x57/0x1df [reiserfs]
->  [<f9f8ffe8>] ? delete_one_xattr+0x0/0x94 [reiserfs]
->  [<f9f8fa6a>] reiserfs_delete_xattrs+0x13/0x40 [reiserfs]
->  [<f9f7b3e2>] reiserfs_delete_inode+0x41/0xb7 [reiserfs]
->  [<f9f7b3a1>] ? reiserfs_delete_inode+0x0/0xb7 [reiserfs]
->  [<c028bff6>] generic_delete_inode+0x79/0xf1
->  [<c028c080>] generic_drop_inode+0x12/0x18d
->  [<c028b3b7>] iput+0x4b/0x4e
->  [<c0285965>] do_unlinkat+0xc3/0x107
->  [<c027da44>] ? fput+0x19/0x1b
->  [<c027b3d0>] ? filp_close+0x51/0x5b
->  [<c02859b9>] sys_unlink+0x10/0x12
->  [<c0203228>] sysenter_do_call+0x12/0x3c
-> gvfsd-trash   D c04c4160  2088  4971      1 0x00000000
->  f0ba2d28 00000046 ffffffff c04c4160 ed67f708 f0ba2dcb f0ba2cf0 c0546200
->  c0546200 c0543284 00000000 f64512f0 f6451484 c1c42200 00000000 00000000
->  f0ba2d18 00000246 00000000 00000002 f6451484 ffff3ea3 f9f900bf 00000000
-> Call Trace:
->  [<f9f900bf>] ? reiserfs_write_lock_once+0x1f/0x3b [reiserfs]
->  [<c03dd52a>] __mutex_lock_common+0x239/0x3ca
->  [<c03dd74a>] mutex_lock_nested+0x2b/0x33
->  [<f9f900bf>] ? reiserfs_write_lock_once+0x1f/0x3b [reiserfs]
->  [<f9f900bf>] reiserfs_write_lock_once+0x1f/0x3b [reiserfs]
->  [<f9f756ce>] reiserfs_lookup+0x47/0xf7 [reiserfs]
->  [<c02832db>] do_lookup+0xb4/0x124
->  [<c0283d0a>] __link_path_walk+0x5a5/0x6ce
->  [<c0283ff4>] path_walk+0x50/0xa5
->  [<c02843ce>] do_path_lookup+0x21/0x42
->  [<c0285e39>] user_path_at+0x3c/0x67
->  [<c029e5ec>] ? __fsnotify_update_child_dentry_flags+0x76/0xcf
->  [<c027f78e>] vfs_fstatat+0x2d/0x54
->  [<c027f7f9>] vfs_lstat+0x16/0x18
->  [<c027f80f>] sys_lstat64+0x14/0x28
->  [<c02a0d3f>] ? sys_inotify_add_watch+0x270/0x2c4
->  [<c02f9558>] ? trace_hardirqs_on_thunk+0xc/0x10
->  [<c0203228>] sysenter_do_call+0x12/0x3c
-> 
-> 
-> This is linux-next kernel with reiser4 patches. Full dmesg attached.
+Hi,
 
+The patch below should address all of your recent comments.
 
-But it happens on a reiser 3 partition, so reiser4 patches should be
-not involved in this issue.
-I'll try linux-next and see if I can manage to reproduce it.
+Additionally I changed a few bits that I thought could turn out to be
+problematic at one point.
 
-Thanks for this report!
+Thanks,
+Rafael
 
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PM: Introduce core framework for run-time PM of I/O devices (rev. 12)
 
+Introduce a core framework for run-time power management of I/O
+devices.  Add device run-time PM fields to 'struct dev_pm_info'
+and device run-time PM callbacks to 'struct dev_pm_ops'.  Introduce
+a run-time PM workqueue and define some device run-time PM helper
+functions at the core level.  Document all these things.
 
-> ~~
-> laurent
+Special thanks to Alan Stern for his help with the design and
+multiple detailed reviews of the pereceding versions of this patch
+and to Magnus Damm for testing feedback.
 
-> Inspecting /boot/System.map-2.6.31-rc5-next-20090804-05379-g031a6b0
-> Cannot find map file.
-> Loaded 45029 symbols from 72 modules.
-> [    0.000000] Linux version 2.6.31-rc5-next-20090804-05379-g031a6b0 (laurent@calimero) (gcc version 4.3.3 (Ubuntu 4.3.3-5ubuntu4) ) #230 SMP PREEMPT Tue Aug 4 21:26:56 CEST 2009
-> [    0.000000] KERNEL supported cpus:
-> [    0.000000]   AMD AuthenticAMD
-> [    0.000000] BIOS-provided physical RAM map:
-> [    0.000000]  BIOS-e820: 0000000000000000 - 000000000009f400 (usable)
-> [    0.000000]  BIOS-e820: 000000000009f800 - 00000000000a0000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
-> [    0.000000]  BIOS-e820: 0000000000100000 - 000000003bef0000 (usable)
-> [    0.000000]  BIOS-e820: 000000003bef0000 - 000000003bef3000 (ACPI NVS)
-> [    0.000000]  BIOS-e820: 000000003bef3000 - 000000003bf00000 (ACPI data)
-> [    0.000000]  BIOS-e820: 000000003c000000 - 0000000040000000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000f0000000 - 00000000f2000000 (reserved)
-> [    0.000000]  BIOS-e820: 00000000fec00000 - 0000000100000000 (reserved)
-> [    0.000000] DMI 2.4 present.
-> [    0.000000] last_pfn = 0x3bef0 max_arch_pfn = 0x1000000
-> [    0.000000] MTRR default type: uncachable
-> [    0.000000] MTRR fixed ranges enabled:
-> [    0.000000]   00000-9FFFF write-back
-> [    0.000000]   A0000-BFFFF uncachable
-> [    0.000000]   C0000-C7FFF write-protect
-> [    0.000000]   C8000-EFFFF uncachable
-> [    0.000000]   F0000-FFFFF write-through
-> [    0.000000] MTRR variable ranges enabled:
-> [    0.000000]   0 base 0000000000 mask FFE0000000 write-back
-> [    0.000000]   1 base 0020000000 mask FFF0000000 write-back
-> [    0.000000]   2 base 0030000000 mask FFF8000000 write-back
-> [    0.000000]   3 base 0038000000 mask FFFC000000 write-back
-> [    0.000000]   4 base 003BF00000 mask FFFFF00000 uncachable
-> [    0.000000]   5 disabled
-> [    0.000000]   6 disabled
-> [    0.000000]   7 disabled
-> [    0.000000] x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-> [    0.000000] initial memory mapped : 0 - 00e00000
-> [    0.000000] init_memory_mapping: 0000000000000000-00000000379fe000
-> [    0.000000] NX (Execute Disable) protection: active
-> [    0.000000]  0000000000 - 0000200000 page 4k
-> [    0.000000]  0000200000 - 0037800000 page 2M
-> [    0.000000]  0037800000 - 00379fe000 page 4k
-> [    0.000000] kernel direct mapping tables up to 379fe000 @ 7000-d000
-> [    0.000000] RAMDISK: 37bef000 - 37fef643
-> [    0.000000] Allocated new RAMDISK: 00a54000 - 00e54643
-> [    0.000000] Move RAMDISK from 0000000037bef000 - 0000000037fef642 to 00a54000 - 00e54642
-> [    0.000000] ACPI: RSDP 000f6340 00014 (v00 GBT   )
-> [    0.000000] ACPI: RSDT 3bef3000 00038 (v01 GBT    NVDAACPI 42302E31 NVDA 01010101)
-> [    0.000000] ACPI: FACP 3bef3040 00074 (v01 GBT    NVDAACPI 42302E31 NVDA 01010101)
-> [    0.000000] ACPI: DSDT 3bef30c0 05272 (v01 GBT    NVDAACPI 00001000 MSFT 03000000)
-> [    0.000000] ACPI: FACS 3bef1800 00040
-> [    0.000000] ACPI: SSDT 3bef8400 0028A (v01 PTLTD  POWERNOW 00000001  LTP 00000001)
-> [    0.000000] ACPI: HPET 3bef86c0 00038 (v01 GBT    NVDAACPI 42302E31 NVDA 00000098)
-> [    0.000000] ACPI: MCFG 3bef8700 0003C (v01 GBT    NVDAACPI 42302E31 NVDA 01010101)
-> [    0.000000] ACPI: APIC 3bef8340 0008E (v01 GBT    NVDAACPI 42302E31 NVDA 01010101)
-> [    0.000000] ACPI: Local APIC address 0xfee00000
-> [    0.000000] 68MB HIGHMEM available.
-> [    0.000000] 889MB LOWMEM available.
-> [    0.000000]   mapped low ram: 0 - 379fe000
-> [    0.000000]   low ram: 0 - 379fe000
-> [    0.000000]   node 0 low ram: 00000000 - 379fe000
-> [    0.000000]   node 0 bootmap 00009000 - 0000ff40
-> [    0.000000] (9 early reservations) ==> bootmem [0000000000 - 00379fe000]
-> [    0.000000]   #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
-> [    0.000000]   #1 [0000001000 - 0000002000]    EX TRAMPOLINE ==> [0000001000 - 0000002000]
-> [    0.000000]   #2 [0000006000 - 0000007000]       TRAMPOLINE ==> [0000006000 - 0000007000]
-> [    0.000000]   #3 [0000200000 - 0000a4bd28]    TEXT DATA BSS ==> [0000200000 - 0000a4bd28]
-> [    0.000000]   #4 [000009f400 - 0000100000]    BIOS reserved ==> [000009f400 - 0000100000]
-> [    0.000000]   #5 [0000a4c000 - 0000a530f6]              BRK ==> [0000a4c000 - 0000a530f6]
-> [    0.000000]   #6 [0000007000 - 0000009000]          PGTABLE ==> [0000007000 - 0000009000]
-> [    0.000000]   #7 [0000a54000 - 0000e54643]      NEW RAMDISK ==> [0000a54000 - 0000e54643]
-> [    0.000000]   #8 [0000009000 - 0000010000]          BOOTMAP ==> [0000009000 - 0000010000]
-> [    0.000000] found SMP MP-table at [c00f4970] f4970
-> [    0.000000] Zone PFN ranges:
-> [    0.000000]   DMA      0x00000000 -> 0x00001000
-> [    0.000000]   Normal   0x00001000 -> 0x000379fe
-> [    0.000000]   HighMem  0x000379fe -> 0x0003bef0
-> [    0.000000] Movable zone start PFN for each node
-> [    0.000000] early_node_map[2] active PFN ranges
-> [    0.000000]     0: 0x00000000 -> 0x0000009f
-> [    0.000000]     0: 0x00000100 -> 0x0003bef0
-> [    0.000000] On node 0 totalpages: 245391
-> [    0.000000] free_area_init_node: node 0, pgdat c04e4200, node_mem_map c1000000
-> [    0.000000]   DMA zone: 52 pages used for memmap
-> [    0.000000]   DMA zone: 0 pages reserved
-> [    0.000000]   DMA zone: 3947 pages, LIFO batch:0
-> [    0.000000]   Normal zone: 2841 pages used for memmap
-> [    0.000000]   Normal zone: 220901 pages, LIFO batch:31
-> [    0.000000]   HighMem zone: 225 pages used for memmap
-> [    0.000000]   HighMem zone: 17425 pages, LIFO batch:3
-> [    0.000000] Using APIC driver default
-> [    0.000000] Detected use of extended apic ids on hypertransport bus
-> [    0.000000] ACPI: PM-Timer IO Port: 0x1008
-> [    0.000000] ACPI: Local APIC address 0xfee00000
-> [    0.000000] ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
-> [    0.000000] ACPI: LAPIC (acpi_id[0x01] lapic_id[0x01] enabled)
-> [    0.000000] ACPI: LAPIC (acpi_id[0x02] lapic_id[0x02] disabled)
-> [    0.000000] ACPI: LAPIC (acpi_id[0x03] lapic_id[0x03] disabled)
-> [    0.000000] ACPI: LAPIC_NMI (acpi_id[0x00] dfl dfl lint[0x1])
-> [    0.000000] ACPI: LAPIC_NMI (acpi_id[0x01] dfl dfl lint[0x1])
-> [    0.000000] ACPI: LAPIC_NMI (acpi_id[0x02] dfl dfl lint[0x1])
-> [    0.000000] ACPI: LAPIC_NMI (acpi_id[0x03] dfl dfl lint[0x1])
-> [    0.000000] ACPI: IOAPIC (id[0x02] address[0xfec00000] gsi_base[0])
-> [    0.000000] IOAPIC[0]: apic_id 2, version 17, address 0xfec00000, GSI 0-23
-> [    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-> [    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
-> [    0.000000] ACPI: INT_SRC_OVR (bus 0 bus_irq 14 global_irq 14 high edge)
-> [    0.000000] ACPI: IRQ0 used by override.
-> [    0.000000] ACPI: IRQ2 used by override.
-> [    0.000000] ACPI: IRQ9 used by override.
-> [    0.000000] ACPI: IRQ14 used by override.
-> [    0.000000] Enabling APIC mode:  Flat.  Using 1 I/O APICs
-> [    0.000000] Using ACPI (MADT) for SMP configuration information
-> [    0.000000] ACPI: HPET id: 0x10de8201 base: 0xfeff0000
-> [    0.000000] SMP: Allowing 4 CPUs, 2 hotplug CPUs
-> [    0.000000] nr_irqs_gsi: 24
-> [    0.000000] PM: Registered nosave memory: 000000000009f000 - 00000000000a0000
-> [    0.000000] PM: Registered nosave memory: 00000000000a0000 - 00000000000f0000
-> [    0.000000] PM: Registered nosave memory: 00000000000f0000 - 0000000000100000
-> [    0.000000] Allocating PCI resources starting at 40000000 (gap: 40000000:b0000000)
-> [    0.000000] NR_CPUS:8 nr_cpumask_bits:8 nr_cpu_ids:4 nr_node_ids:1
-> [    0.000000] PERCPU: Embedded 13 pages at c1c3b000, static data 30532 bytes
-> [    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 242273
-> [    0.000000] Kernel command line: root=/dev/mapper/vglinux1-lv_ubuntu2 ro locale=fr_FR vga=795 resume=/dev/mapper/vglinux1-lvswap 
-> [    0.000000] PID hash table entries: 4096 (order: 12, 16384 bytes)
-> [    0.000000] Dentry cache hash table entries: 131072 (order: 7, 524288 bytes)
-> [    0.000000] Inode-cache hash table entries: 65536 (order: 6, 262144 bytes)
-> [    0.000000] Enabling fast FPU save and restore... done.
-> [    0.000000] Enabling unmasked SIMD FPU exception support... done.
-> [    0.000000] Initializing CPU#0
-> [    0.000000] Initializing HighMem for node 0 (000379fe:0003bef0)
-> [    0.000000] Memory: 955144k/981952k available (1917k kernel code, 26184k reserved, 1081k data, 340k init, 70600k highmem)
-> [    0.000000] virtual kernel memory layout:
-> [    0.000000]     fixmap  : 0xfff1e000 - 0xfffff000   ( 900 kB)
-> [    0.000000]     pkmap   : 0xffa00000 - 0xffc00000   (2048 kB)
-> [    0.000000]     vmalloc : 0xf81fe000 - 0xff9fe000   ( 120 MB)
-> [    0.000000]     lowmem  : 0xc0000000 - 0xf79fe000   ( 889 MB)
-> [    0.000000]       .init : 0xc04f2000 - 0xc0547000   ( 340 kB)
-> [    0.000000]       .data : 0xc03df52f - 0xc04ed970   (1081 kB)
-> [    0.000000]       .text : 0xc0200000 - 0xc03df52f   (1917 kB)
-> [    0.000000] Checking if this processor honours the WP bit even in supervisor mode...Ok.
-> [    0.000000] Preemptible RCU implementation.
-> [    0.000000] NR_IRQS:2304 nr_irqs:440
-> [    0.000000] CPU 0 irqstacks, hard=c1c3b000 soft=c1c3c000
-> [    0.000000] Fast TSC calibration using PIT
-> [    0.000000] Detected 2600.389 MHz processor.
-> [    0.000036] spurious 8259A interrupt: IRQ7.
-> [    0.000644] Console: colour dummy device 80x25
-> [    0.001591] console [tty0] enabled
-> [    0.001597] Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
-> [    0.001609] ... MAX_LOCKDEP_SUBCLASSES:  8
-> [    0.001616] ... MAX_LOCK_DEPTH:          48
-> [    0.001623] ... MAX_LOCKDEP_KEYS:        8191
-> [    0.001630] ... CLASSHASH_SIZE:          4096
-> [    0.001637] ... MAX_LOCKDEP_ENTRIES:     16384
-> [    0.001644] ... MAX_LOCKDEP_CHAINS:      32768
-> [    0.001651] ... CHAINHASH_SIZE:          16384
-> [    0.001658]  memory used by lock dependency info: 3567 kB
-> [    0.001666]  per task-struct memory footprint: 1152 bytes
-> [    0.001734] kmemleak: Early log buffer exceeded
-> [    0.001743] kmemleak: Kernel memory leak detector disabled
-> [    0.002012] hpet clockevent registered
-> [    0.002022] HPET: 3 timers in total, 0 timers will be used for per-cpu timer
-> [    0.002039] Calibrating delay loop (skipped), value calculated using timer frequency.. 5200.77 BogoMIPS (lpj=10401556)
-> [    0.002321] Mount-cache hash table entries: 512
-> [    0.003364] CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
-> [    0.003377] CPU: L2 Cache: 512K (64 bytes/line)
-> [    0.003387] CPU: Physical Processor ID: 0
-> [    0.003394] CPU: Processor Node ID: 0
-> [    0.003402] CPU: Processor Core ID: 0
-> [    0.003411] mce: CPU supports 5 MCE banks
-> [    0.003428] using C1E aware idle routine
-> [    0.003450] Checking 'hlt' instruction... OK.
-> [    0.016653] ACPI: Core revision 20090625
-> [    0.030444] ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
-> [    0.070151] CPU0: AMD Athlon(tm) 64 X2 Dual Core Processor 5000+ stepping 02
-> [    0.072001] lockdep: fixing up alternatives.
-> [    0.072001] CPU 1 irqstacks, hard=c1c4b000 soft=c1c4c000
-> [    0.072001] Booting processor 1 APIC 0x1 ip 0x6000
-> [    0.004000] Initializing CPU#1
-> [    0.004000] Calibrating delay using timer specific routine.. 5199.96 BogoMIPS (lpj=10399937)
-> [    0.004000] CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
-> [    0.004000] CPU: L2 Cache: 512K (64 bytes/line)
-> [    0.004000] CPU: Physical Processor ID: 0
-> [    0.004000] CPU: Processor Node ID: 0
-> [    0.004000] CPU: Processor Core ID: 1
-> [    0.004000] mce: CPU supports 5 MCE banks
-> [    0.004000] x86 PAT enabled: cpu 1, old 0x7040600070406, new 0x7010600070106
-> [    0.156535] CPU1: AMD Athlon(tm) 64 X2 Dual Core Processor 5000+ stepping 02
-> [    0.156661] Brought up 2 CPUs
-> [    0.156668] Total of 2 processors activated (10400.74 BogoMIPS).
-> [    0.156859] devtmpfs: initialized
-> [    0.156933] khelper used greatest stack depth: 2908 bytes left
-> [    0.157013] Booting paravirtualized kernel on bare hardware
-> [    0.157013] NET: Registered protocol family 16
-> [    0.157013] khelper used greatest stack depth: 2676 bytes left
-> [    0.160123] ACPI: bus type pci registered
-> [    0.160181] PCI: MCFG configuration 0: base f0000000 segment 0 buses 0 - 31
-> [    0.160181] PCI: MCFG area at f0000000 reserved in E820
-> [    0.160181] PCI: Using MMCONFIG for extended config space
-> [    0.160181] PCI: Using configuration type 1 for base access
-> [    0.164292] bio: create slab <bio-0> at 0
-> [    0.170087] ACPI: EC: Look up EC in DSDT
-> [    0.185051] ACPI: Interpreter enabled
-> [    0.185065] ACPI: (supports S0 S3 S4 S5)
-> [    0.185143] ACPI: Using IOAPIC for interrupt routing
-> [    0.208454] ACPI: No dock devices found.
-> [    0.208611] ACPI: PCI Root Bridge [PCI0] (0000:00)
-> [    0.208751] pci 0000:00:01.1: reg 10 io port: [0xc800-0xc83f]
-> [    0.208751] pci 0000:00:01.1: reg 20 io port: [0x1c00-0x1c3f]
-> [    0.208751] pci 0000:00:01.1: reg 24 io port: [0x1c40-0x1c7f]
-> [    0.208751] pci 0000:00:01.1: PME# supported from D3hot D3cold
-> [    0.208751] pci 0000:00:01.1: PME# disabled
-> [    0.208751] pci 0000:00:02.0: reg 10 32bit mmio: [0xf700a000-0xf700afff]
-> [    0.208751] pci 0000:00:02.0: supports D1 D2
-> [    0.208751] pci 0000:00:02.0: PME# supported from D0 D1 D2 D3hot D3cold
-> [    0.208751] pci 0000:00:02.0: PME# disabled
-> [    0.208751] pci 0000:00:02.1: reg 10 32bit mmio: [0xf700b000-0xf700b0ff]
-> [    0.208751] pci 0000:00:02.1: supports D1 D2
-> [    0.208751] pci 0000:00:02.1: PME# supported from D0 D1 D2 D3hot D3cold
-> [    0.208751] pci 0000:00:02.1: PME# disabled
-> [    0.208751] pci 0000:00:04.0: reg 10 32bit mmio: [0xf700c000-0xf700cfff]
-> [    0.208751] pci 0000:00:04.0: supports D1 D2
-> [    0.208751] pci 0000:00:04.0: PME# supported from D0 D1 D2 D3hot D3cold
-> [    0.208751] pci 0000:00:04.0: PME# disabled
-> [    0.208758] pci 0000:00:04.1: reg 10 32bit mmio: [0xf7009000-0xf70090ff]
-> [    0.208797] pci 0000:00:04.1: supports D1 D2
-> [    0.208799] pci 0000:00:04.1: PME# supported from D0 D1 D2 D3hot D3cold
-> [    0.208811] pci 0000:00:04.1: PME# disabled
-> [    0.208867] pci 0000:00:06.0: reg 20 io port: [0xf000-0xf00f]
-> [    0.208923] pci 0000:00:07.0: reg 10 32bit mmio: [0xf7000000-0xf7003fff]
-> [    0.208962] pci 0000:00:07.0: PME# supported from D3hot D3cold
-> [    0.208973] pci 0000:00:07.0: PME# disabled
-> [    0.209081] pci 0000:00:09.0: reg 10 io port: [0x9f0-0x9f7]
-> [    0.209086] pci 0000:00:09.0: reg 14 io port: [0xbf0-0xbf3]
-> [    0.209090] pci 0000:00:09.0: reg 18 io port: [0x970-0x977]
-> [    0.209095] pci 0000:00:09.0: reg 1c io port: [0xb70-0xb73]
-> [    0.209101] pci 0000:00:09.0: reg 20 io port: [0xdc00-0xdc0f]
-> [    0.209106] pci 0000:00:09.0: reg 24 32bit mmio: [0xf7004000-0xf7005fff]
-> [    0.209175] pci 0000:00:0a.0: reg 10 32bit mmio: [0xf7006000-0xf7006fff]
-> [    0.209180] pci 0000:00:0a.0: reg 14 io port: [0xe000-0xe007]
-> [    0.209185] pci 0000:00:0a.0: reg 18 32bit mmio: [0xf7007000-0xf70070ff]
-> [    0.209190] pci 0000:00:0a.0: reg 1c 32bit mmio: [0xf7008000-0xf700800f]
-> [    0.209220] pci 0000:00:0a.0: supports D1 D2
-> [    0.209222] pci 0000:00:0a.0: PME# supported from D0 D1 D2 D3hot D3cold
-> [    0.209236] pci 0000:00:0a.0: PME# disabled
-> [    0.209281] pci 0000:00:12.0: reg 10 32bit mmio: [0xf2000000-0xf2ffffff]
-> [    0.209288] pci 0000:00:12.0: reg 14 64bit mmio: [0xe0000000-0xefffffff]
-> [    0.209295] pci 0000:00:12.0: reg 1c 64bit mmio: [0xf5000000-0xf5ffffff]
-> [    0.209302] pci 0000:00:12.0: reg 30 32bit mmio: [0x000000-0x01ffff]
-> [    0.209511] pci 0000:01:07.0: reg 10 io port: [0xa000-0xa007]
-> [    0.209518] pci 0000:01:07.0: reg 14 io port: [0xa400-0xa403]
-> [    0.209524] pci 0000:01:07.0: reg 18 io port: [0xa800-0xa807]
-> [    0.209531] pci 0000:01:07.0: reg 1c io port: [0xac00-0xac03]
-> [    0.209537] pci 0000:01:07.0: reg 20 io port: [0xb000-0xb00f]
-> [    0.209544] pci 0000:01:07.0: reg 24 32bit mmio: [0xf4000000-0xf40000ff]
-> [    0.209551] pci 0000:01:07.0: reg 30 32bit mmio: [0x000000-0x07ffff]
-> [    0.209569] pci 0000:01:07.0: supports D1 D2
-> [    0.209605] pci 0000:00:08.0: transparent bridge
-> [    0.209615] pci 0000:00:08.0: bridge io port: [0xa000-0xbfff]
-> [    0.209619] pci 0000:00:08.0: bridge 32bit mmio: [0xf3000000-0xf4ffffff]
-> [    0.209627] pci_bus 0000:00: on NUMA node 0
-> [    0.209634] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
-> [    0.210362] ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.HUB0._PRT]
-> [    0.288287] ACPI: PCI Interrupt Link [LNK1] (IRQs 5 7 9 10 11 14 15) *0, disabled.
-> [    0.288455] ACPI: PCI Interrupt Link [LNK2] (IRQs 5 7 9 *10 11 14 15)
-> [    0.288654] ACPI: PCI Interrupt Link [LNK3] (IRQs 5 7 9 10 11 14 15) *0, disabled.
-> [    0.288856] ACPI: PCI Interrupt Link [LNK4] (IRQs 5 7 9 10 11 14 15) *0, disabled.
-> [    0.289075] ACPI: PCI Interrupt Link [LNK5] (IRQs 5 7 9 10 11 14 15) *0, disabled.
-> [    0.289277] ACPI: PCI Interrupt Link [LNK6] (IRQs 5 7 9 10 11 14 15) *0, disabled.
-> [    0.289478] ACPI: PCI Interrupt Link [LNK7] (IRQs 5 7 9 10 11 14 15) *0, disabled.
-> [    0.289681] ACPI: PCI Interrupt Link [LNK8] (IRQs 5 7 9 10 11 14 15) *0, disabled.
-> [    0.289883] ACPI: PCI Interrupt Link [LP2P] (IRQs 5 7 9 10 11 14 15) *0, disabled.
-> [    0.290088] ACPI: PCI Interrupt Link [LIGP] (IRQs 5 7 9 10 *11 14 15)
-> [    0.290291] ACPI: PCI Interrupt Link [LUBA] (IRQs *5 7 9 10 11 14 15)
-> [    0.290494] ACPI: PCI Interrupt Link [LUB2] (IRQs 5 7 9 *10 11 14 15)
-> [    0.290698] ACPI: PCI Interrupt Link [LU1B] (IRQs 5 7 9 10 *11 14 15)
-> [    0.290900] ACPI: PCI Interrupt Link [LU2B] (IRQs *5 7 9 10 11 14 15)
-> [    0.291103] ACPI: PCI Interrupt Link [LMAC] (IRQs 5 7 9 10 11 14 *15)
-> [    0.292082] ACPI: PCI Interrupt Link [LAZA] (IRQs 5 7 9 *10 11 14 15)
-> [    0.292282] ACPI: PCI Interrupt Link [LPMU] (IRQs 5 7 9 10 11 14 15) *0, disabled.
-> [    0.292488] ACPI: PCI Interrupt Link [LSMB] (IRQs 5 7 9 10 *11 14 15)
-> [    0.292687] ACPI: PCI Interrupt Link [LIDE] (IRQs 5 7 9 10 11 14 15) *0, disabled.
-> [    0.292894] ACPI: PCI Interrupt Link [LSID] (IRQs 5 7 9 10 *11 14 15)
-> [    0.293213] ACPI: PCI Interrupt Link [APC1] (IRQs 16) *0, disabled.
-> [    0.293526] ACPI: PCI Interrupt Link [APC2] (IRQs 17) *0
-> [    0.293832] ACPI: PCI Interrupt Link [APC3] (IRQs 18) *0, disabled.
-> [    0.294138] ACPI: PCI Interrupt Link [APC4] (IRQs 19) *0, disabled.
-> [    0.294444] ACPI: PCI Interrupt Link [APC5] (IRQs 16) *0, disabled.
-> [    0.294750] ACPI: PCI Interrupt Link [APC6] (IRQs 16) *0, disabled.
-> [    0.295057] ACPI: PCI Interrupt Link [APC7] (IRQs 16) *0, disabled.
-> [    0.295363] ACPI: PCI Interrupt Link [APC8] (IRQs 16) *0, disabled.
-> [    0.295670] ACPI: PCI Interrupt Link [AIGP] (IRQs 20 21 22 23) *0
-> [    0.295985] ACPI: PCI Interrupt Link [AUBA] (IRQs 20 21 22 23) *0
-> [    0.296307] ACPI: PCI Interrupt Link [AUB2] (IRQs 20 21 22 23) *0
-> [    0.296614] ACPI: PCI Interrupt Link [AU1B] (IRQs 20 21 22 23) *0
-> [    0.296922] ACPI: PCI Interrupt Link [AU2B] (IRQs 20 21 22 23) *0
-> [    0.297230] ACPI: PCI Interrupt Link [APCH] (IRQs 20 21 22 23) *0
-> [    0.297538] ACPI: PCI Interrupt Link [APMU] (IRQs 20 21 22 23) *0, disabled.
-> [    0.297848] ACPI: PCI Interrupt Link [AAZA] (IRQs 20 21 22 23) *0
-> [    0.298156] ACPI: PCI Interrupt Link [APCS] (IRQs 20 21 22 23) *0
-> [    0.298465] ACPI: PCI Interrupt Link [APCM] (IRQs 20 21 22 23) *0, disabled.
-> [    0.298774] ACPI: PCI Interrupt Link [APCZ] (IRQs 20 21 22 23) *0, disabled.
-> [    0.299082] ACPI: PCI Interrupt Link [APSI] (IRQs 20 21 22 23) *0
-> [    0.299176] PCI: Using ACPI for IRQ routing
-> [    0.300164] INFO: trying to register non-static key.
-> [    0.300164] the code is fine but needs lockdep annotation.
-> [    0.300164] turning off the locking correctness validator.
-> [    0.300164] Pid: 1, comm: swapper Not tainted 2.6.31-rc5-next-20090804-05379-g031a6b0 #230
-> [    0.300164] Call Trace:
-> [    0.300164]  [<c03dc37e>] ? printk+0xf/0x11
-> [    0.300164]  [<c0243e4f>] register_lock_class+0x5a/0x2a7
-> [    0.300164]  [<c02381c6>] ? autoremove_wake_function+0xf/0x33
-> [    0.300164]  [<c024571f>] __lock_acquire+0x97/0xb9e
-> [    0.300164]  [<c027725b>] ? cache_alloc_refill+0x77/0x5fb
-> [    0.300164]  [<c03de41e>] ? _spin_unlock+0x38/0x44
-> [    0.300164]  [<c027742a>] ? cache_alloc_refill+0x246/0x5fb
-> [    0.300174]  [<c0244972>] ? mark_lock+0x1e/0x1ea
-> [    0.300184]  [<c02762d9>] ? cache_alloc_debugcheck_after+0x2f/0x183
-> [    0.300196]  [<c024627b>] lock_acquire+0x55/0x77
-> [    0.300207]  [<c038a567>] ? alloc_netdev_mq+0x100/0x1bd
-> [    0.300218]  [<c03de546>] _spin_lock_bh+0x2a/0x39
-> [    0.300228]  [<c038a567>] ? alloc_netdev_mq+0x100/0x1bd
-> [    0.300238]  [<c038a567>] alloc_netdev_mq+0x100/0x1bd
-> [    0.300250]  [<c0367862>] ? loopback_setup+0x0/0x74
-> [    0.300263]  [<c050ed1c>] loopback_net_init+0x20/0x5d
-> [    0.300273]  [<c0385223>] register_pernet_device+0x23/0x4b
-> [    0.300285]  [<c0512986>] net_dev_init+0xfe/0x14d
-> [    0.300295]  [<c0201137>] do_one_initcall+0x4a/0x11a
-> [    0.300305]  [<c0512888>] ? net_dev_init+0x0/0x14d
-> [    0.300317]  [<c025565d>] ? register_irq_proc+0x8c/0xa8
-> [    0.300328]  [<c02556cc>] ? init_irq_proc+0x53/0x60
-> [    0.300340]  [<c04f22ee>] kernel_init+0x11e/0x16f
-> [    0.300350]  [<c04f21d0>] ? kernel_init+0x0/0x16f
-> [    0.300361]  [<c0203d8b>] kernel_thread_helper+0x7/0x10
-> [    0.300466] hpet0: at MMIO 0xfeff0000, IRQs 2, 8, 31
-> [    0.300466] hpet0: 3 comparators, 32-bit 25.000000 MHz counter
-> [    0.304128] pnp: PnP ACPI init
-> [    0.304149] ACPI: bus type pnp registered
-> [    0.308014] Switched to NOHz mode on CPU #0
-> [    0.308667] Switched to NOHz mode on CPU #1
-> [    0.311933] pnp: PnP ACPI: found 14 devices
-> [    0.311944] ACPI: ACPI bus type pnp unregistered
-> [    0.311965] system 00:01: ioport range 0x1000-0x107f has been reserved
-> [    0.311975] system 00:01: ioport range 0x1080-0x10ff has been reserved
-> [    0.311986] system 00:01: ioport range 0x1400-0x147f has been reserved
-> [    0.311997] system 00:01: ioport range 0x1480-0x14ff has been reserved
-> [    0.312016] system 00:01: ioport range 0x1800-0x187f has been reserved
-> [    0.312027] system 00:01: ioport range 0x1880-0x18ff has been reserved
-> [    0.312038] system 00:01: iomem range 0xfefe0000-0xfefe01ff has been reserved
-> [    0.312050] system 00:01: iomem range 0xfefe1000-0xfefe10ff has been reserved
-> [    0.312062] system 00:01: iomem range 0x3c000000-0x3fffffff has been reserved
-> [    0.312078] system 00:02: ioport range 0x4d0-0x4d1 has been reserved
-> [    0.312089] system 00:02: ioport range 0x800-0x87f has been reserved
-> [    0.312099] system 00:02: ioport range 0x295-0x314 has been reserved
-> [    0.312110] system 00:02: ioport range 0x290-0x294 has been reserved
-> [    0.312128] system 00:0c: iomem range 0xf0000000-0xf1ffffff has been reserved
-> [    0.312149] system 00:0d: iomem range 0xd4600-0xd7fff has been reserved
-> [    0.312160] system 00:0d: iomem range 0xf0000-0xf7fff could not be reserved
-> [    0.312171] system 00:0d: iomem range 0xf8000-0xfbfff could not be reserved
-> [    0.312182] system 00:0d: iomem range 0xfc000-0xfffff could not be reserved
-> [    0.312194] system 00:0d: iomem range 0x3bef0000-0x3befffff could not be reserved
-> [    0.312206] system 00:0d: iomem range 0xffff0000-0xffffffff has been reserved
-> [    0.312218] system 00:0d: iomem range 0x0-0x9ffff could not be reserved
-> [    0.312228] system 00:0d: iomem range 0x100000-0x3beeffff could not be reserved
-> [    0.312241] system 00:0d: iomem range 0xfec00000-0xfec00fff could not be reserved
-> [    0.312253] system 00:0d: iomem range 0xfee00000-0xfee00fff has been reserved
-> [    0.347926] pci 0000:00:08.0: PCI bridge, secondary bus 0000:01
-> [    0.347936] pci 0000:00:08.0:   IO window: 0xa000-0xbfff
-> [    0.347947] pci 0000:00:08.0:   MEM window: 0xf3000000-0xf4ffffff
-> [    0.347957] pci 0000:00:08.0:   PREFETCH window: 0x40000000-0x400fffff
-> [    0.347973] pci 0000:00:08.0: setting latency timer to 64
-> [    0.347983] pci_bus 0000:00: resource 0 io:  [0x00-0xffff]
-> [    0.347992] pci_bus 0000:00: resource 1 mem: [0x000000-0xffffffffffffffff]
-> [    0.348020] pci_bus 0000:01: resource 0 io:  [0xa000-0xbfff]
-> [    0.348028] pci_bus 0000:01: resource 1 mem: [0xf3000000-0xf4ffffff]
-> [    0.348038] pci_bus 0000:01: resource 2 pref mem [0x40000000-0x400fffff]
-> [    0.348048] pci_bus 0000:01: resource 3 io:  [0x00-0xffff]
-> [    0.348056] pci_bus 0000:01: resource 4 mem: [0x000000-0xffffffffffffffff]
-> [    0.348172] NET: Registered protocol family 2
-> [    0.348311] IP route cache hash table entries: 32768 (order: 5, 131072 bytes)
-> [    0.348856] TCP established hash table entries: 131072 (order: 8, 1048576 bytes)
-> [    0.349639] TCP bind hash table entries: 65536 (order: 9, 2097152 bytes)
-> [    0.351594] TCP: Hash tables configured (established 131072 bind 65536)
-> [    0.351609] TCP reno registered
-> [    0.351817] NET: Registered protocol family 1
-> [    0.352221] Unpacking initramfs...
-> [    0.482035] Freeing initrd memory: 4097k freed
-> [    0.487867] highmem bounce pool size: 64 pages
-> [    0.488329] msgmni has been set to 1736
-> [    0.488629] alg: No test for stdrng (krng)
-> [    0.488659] io scheduler noop registered
-> [    0.488670] io scheduler anticipatory registered
-> [    0.488678] io scheduler deadline registered
-> [    0.488720] io scheduler cfq registered (default)
-> [    0.488883] pci 0000:00:00.0: Found enabled HT MSI Mapping
-> [    0.488947] pci 0000:00:00.0: Found enabled HT MSI Mapping
-> [    0.489018] pci 0000:00:00.0: Found enabled HT MSI Mapping
-> [    0.489095] pci 0000:00:00.0: Found enabled HT MSI Mapping
-> [    0.489110] pci 0000:00:12.0: Boot video device
-> [    0.490148] vesafb: framebuffer at 0xe0000000, mapped to 0xf8280000, using 10240k, total 65536k
-> [    0.490164] vesafb: mode is 1280x1024x32, linelength=5120, pages=0
-> [    0.490174] vesafb: protected mode interface info at c000:cfb0
-> [    0.490185] vesafb: pmi: set display start = c00ccfe6, set palette = c00cd050
-> [    0.490196] vesafb: pmi: ports = b4c3 b503 ba03 c003 c103 c403 c503 c603 c703 c803 c903 cc03 ce03 cf03 d003 d103 d203 d303 d403 d503 da03 ff03 
-> [    0.490236] vesafb: scrolling: redraw
-> [    0.490245] vesafb: Truecolor: size=8:8:8:8, shift=24:16:8:0
-> [    0.514011] Console: switching to colour frame buffer device 160x64
-> [    0.535817] fb0: VESA VGA frame buffer device
-> [    0.550968] Linux agpgart interface v0.103
-> [    0.551580] PNP: PS/2 Controller [PNP0303:PS2K] at 0x60,0x64 irq 1
-> [    0.551750] PNP: PS/2 appears to have AUX port disabled, if this is incorrect please boot with i8042.nopnp
-> [    0.552313] serio: i8042 KBD port at 0x60,0x64 irq 1
-> [    0.552750] mice: PS/2 mouse device common for all mice
-> [    0.553171] cpuidle: using governor ladder
-> [    0.553287] cpuidle: using governor menu
-> [    0.553816] TCP cubic registered
-> [    0.553922] Using IPI No-Shortcut mode
-> [    0.572710] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input0
-> [    0.573354] BIOS EDD facility v0.16 2004-Jun-25, 3 devices found
-> [    0.573956] Freeing unused kernel memory: 340k freed
-> [    0.574395] Write protecting the kernel text: 1920k
-> [    0.574583] Write protecting the kernel read-only data: 912k
-> [    0.637239] setfont used greatest stack depth: 2432 bytes left
-> [    0.693188] console_setup used greatest stack depth: 2384 bytes left
-> [    0.704520] device-mapper: uevent: version 1.0.3
-> [    0.704867] device-mapper: ioctl: 4.15.0-ioctl (2009-04-01) initialised: dm-devel@redhat.com
-> [    0.723943] SCSI subsystem initialized
-> [    0.737654] libata version 3.00 loaded.
-> [    0.739651] pata_amd 0000:00:06.0: version 0.4.1
-> [    0.739925] pata_amd 0000:00:06.0: setting latency timer to 64
-> [    0.740267] scsi0 : pata_amd
-> [    0.740678] scsi1 : pata_amd
-> [    0.742151] ata1: PATA max UDMA/133 cmd 0x1f0 ctl 0x3f6 bmdma 0xf000 irq 14
-> [    0.742343] ata2: PATA max UDMA/133 cmd 0x170 ctl 0x376 bmdma 0xf008 irq 15
-> [    0.912467] ata1.00: HPA detected: current 78163247, native 78165360
-> [    0.912648] ata1.00: ATA-5: ST340016A, 3.75, max UDMA/100
-> [    0.912792] ata1.00: 78163247 sectors, multi 16: LBA 
-> [    0.912953] ata1.01: ATAPI: HL-DT-ST DVDRAM GSA-4165B, DL05, max UDMA/33
-> [    0.913156] ata1: nv_mode_filter: 0x3f39f&0x3f01f->0x3f01f, BIOS=0x3f000 (0xc6c00000) ACPI=0x3f01f (20:60:0x1f)
-> [    0.919907] ata1: nv_mode_filter: 0x739f&0x701f->0x701f, BIOS=0x7000 (0xc6c00000) ACPI=0x701f (20:60:0x1f)
-> [    0.940412] ata1.00: configured for UDMA/100
-> [    0.960240] ata1.01: configured for UDMA/33
-> [    0.969425] scsi 0:0:0:0: Direct-Access     ATA      ST340016A        3.75 PQ: 0 ANSI: 5
-> [    0.980665] scsi 0:0:1:0: CD-ROM            HL-DT-ST DVDRAM GSA-4165B DL05 PQ: 0 ANSI: 5
-> [    0.988299] ata2: port disabled. ignoring.
-> [    0.995553] modprobe used greatest stack depth: 2340 bytes left
-> [    1.007199] pata_sil680 0000:01:07.0: version 0.4.9
-> [    1.014983] ACPI: PCI Interrupt Link [APC2] enabled at IRQ 17
-> [    1.022349]   alloc irq_desc for 17 on node -1
-> [    1.026343]   alloc kstat_irqs on node -1
-> [    1.037025] pata_sil680 0000:01:07.0: PCI INT A -> Link[APC2] -> GSI 17 (level, low) -> IRQ 17
-> [    1.044619] sil680: 133MHz clock.
-> [    1.052363] scsi2 : pata_sil680
-> [    1.060229] scsi3 : pata_sil680
-> [    1.067856] ata3: PATA max UDMA/133 cmd 0xa000 ctl 0xa400 bmdma 0xb000 irq 17
-> [    1.075553] ata4: PATA max UDMA/133 cmd 0xa800 ctl 0xac00 bmdma 0xb008 irq 17
-> [    1.252513] ata3.01: ATA-7: Maxtor 6Y080L0, YAR41BW0, max UDMA/133
-> [    1.260326] ata3.01: 160086528 sectors, multi 16: LBA 
-> [    1.284376] ata3.01: configured for UDMA/133
-> [    1.292235] scsi 2:0:1:0: Direct-Access     ATA      Maxtor 6Y080L0   YAR4 PQ: 0 ANSI: 5
-> [    1.518814] ata4.01: ATA-7: MAXTOR STM3802110A, 3.AAJ, max UDMA/100
-> [    1.526635] ata4.01: 156301488 sectors, multi 16: LBA48 
-> [    1.593633] ata4.01: configured for UDMA/100
-> [    1.616146] scsi 3:0:1:0: Direct-Access     ATA      MAXTOR STM380211 3.AA PQ: 0 ANSI: 5
-> [    1.630282] sd 0:0:0:0: [sda] 78163247 512-byte logical blocks: (40.0 GB/37.2 GiB)
-> [    1.638237] sd 0:0:0:0: [sda] Write Protect is off
-> [    1.645958] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> [    1.653730] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> [    1.661765]  sda:
-> [    1.662116] sd 2:0:1:0: [sdb] 160086528 512-byte logical blocks: (81.9 GB/76.3 GiB)
-> [    1.677800] sd 2:0:1:0: [sdb] Write Protect is off
-> [    1.685724]  sda1
-> [    1.685728] sd 2:0:1:0: [sdb] Mode Sense: 00 3a 00 00
-> [    1.685761] sd 2:0:1:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> [    1.708919]  sda2 sda3 <
-> [    1.709206]  sdb:
-> [    1.717202] sd 3:0:1:0: [sdc] 156301488 512-byte logical blocks: (80.0 GB/74.5 GiB)
-> [    1.723684]  sda5 sdb1 sdb2 <
-> [    1.732958] sd 3:0:1:0: [sdc] Write Protect is off
-> [    1.741311]  sdb5 sda6 sda7 >
-> [    1.756391] sd 3:0:1:0: [sdc] Mode Sense: 00 3a 00 00
-> [    1.757228] sd 0:0:0:0: [sda] Attached SCSI disk
-> [    1.758273]  sdb6 >
-> [    1.779494] sd 3:0:1:0: [sdc] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-> [    1.780135] sd 2:0:1:0: [sdb] Attached SCSI disk
-> [    1.795401]  sdc: sdc1 sdc2 < sdc5 >
-> [    1.831759] sd 3:0:1:0: [sdc] Attached SCSI disk
-> [    1.847094] Loading Reiser4. See www.namesys.com for a description of Reiser4.
-> [    1.873543] fuse init (API version 7.13)
-> [    1.906651] md: linear personality registered for level -1
-> [    1.920388] md: raid0 personality registered for level 0
-> [    1.932927] md: raid1 personality registered for level 1
-> [    1.952741] md: raid10 personality registered for level 10
-> [    2.111026] scsi_id used greatest stack depth: 2244 bytes left
-> [    2.248678] udevd used greatest stack depth: 2200 bytes left
-> [    2.383976] md: bind<sdc5>
-> [    2.401562] mdadm used greatest stack depth: 2172 bytes left
-> [    2.484824] md: bind<sdb6>
-> [    2.503721] raid1: raid set md127 active with 2 out of 2 mirrors
-> [    2.511331] md127: detected capacity change from 0 to 42952228864
-> [    2.519040] mdadm used greatest stack depth: 1992 bytes left
-> [    2.528863]  md127: unknown partition table
-> [   10.103577] EXT3-fs: INFO: recovery required on readonly filesystem.
-> [   10.110868] EXT3-fs: write access will be enabled during recovery.
-> [   10.413732] kjournald starting.  Commit interval 5 seconds
-> [   10.413753] EXT3-fs: recovery complete.
-> [   10.414372] EXT3-fs: mounted filesystem with writeback data mode.
-> [   22.070300] udev: starting version 141
-> [   22.286745] input: PC Speaker as /devices/platform/pcspkr/input/input1
-> [   22.387157] processor LNXCPU:00: registered as cooling_device0
-> [   22.393760] processor LNXCPU:01: registered as cooling_device1
-> [   22.418946] forcedeth: Reverse Engineered nForce ethernet driver. Version 0.64.
-> [   22.425936] ACPI: PCI Interrupt Link [APCH] enabled at IRQ 23
-> [   22.432167]   alloc irq_desc for 23 on node -1
-> [   22.436661]   alloc kstat_irqs on node -1
-> [   22.444420] forcedeth 0000:00:0a.0: PCI INT A -> Link[APCH] -> GSI 23 (level, low) -> IRQ 23
-> [   22.450626] forcedeth 0000:00:0a.0: setting latency timer to 64
-> [   22.500229] rtc_cmos 00:05: RTC can wake from S4
-> [   22.506936] rtc_cmos 00:05: rtc core: registered rtc_cmos as rtc0
-> [   22.513102] rtc0: alarms up to one year, y3k, 242 bytes nvram, hpet irqs
-> [   22.607222] Floppy drive(s): fd0 is 1.44M
-> [   22.633443] FDC 0 is a post-1991 82077
-> [   22.875160] sd 0:0:0:0: Attached scsi generic sg0 type 0
-> [   22.881704] scsi 0:0:1:0: Attached scsi generic sg1 type 5
-> [   22.888292] sd 2:0:1:0: Attached scsi generic sg2 type 0
-> [   22.894752] sd 3:0:1:0: Attached scsi generic sg3 type 0
-> [   22.904006] input: Power Button as /devices/LNXSYSTM:00/LNXPWRBN:00/input/input2
-> [   22.910345] ACPI: Power Button [PWRF]
-> [   22.916802] input: Power Button as /devices/LNXSYSTM:00/device:00/PNP0C0C:00/input/input3
-> [   22.923438] ACPI: Power Button [PWRB]
-> [   22.978494] forcedeth 0000:00:0a.0: ifname eth0, PHY OUI 0x732 @ 1, addr 00:1f:d0:53:49:ae
-> [   22.985049] forcedeth 0000:00:0a.0: highdma pwrctl mgmt gbit lnktim msi desc-v3
-> [   22.991592] k8temp 0000:00:18.3: Temperature readouts might be wrong - check erratum #141
-> [   23.114959] sr0: scsi3-mmc drive: 48x/48x writer dvd-ram cd/rw xa/form2 cdda tray
-> [   23.121785] Uniform CD-ROM driver Revision: 3.20
-> [   23.132029] ahci 0000:00:09.0: version 3.0
-> [   23.139751] ACPI: PCI Interrupt Link [APSI] enabled at IRQ 22
-> [   23.149197] sr 0:0:1:0: Attached scsi CD-ROM sr0
-> [   23.156561]   alloc irq_desc for 22 on node -1
-> [   23.159952]   alloc kstat_irqs on node -1
-> [   23.170520] ahci 0000:00:09.0: PCI INT A -> Link[APSI] -> GSI 22 (level, low) -> IRQ 22
-> [   23.177762]   alloc irq_desc for 24 on node -1
-> [   23.181448]   alloc kstat_irqs on node -1
-> [   23.191649] ahci 0000:00:09.0: irq 24 for MSI/MSI-X
-> [   23.199003] ahci 0000:00:09.0: AHCI 0001.0100 32 slots 4 ports 3 Gbps 0xf impl SATA mode
-> [   23.207849] ahci 0000:00:09.0: flags: 64bit ncq sntf led clo pmp pio 
-> [   23.214602] ahci 0000:00:09.0: setting latency timer to 64
-> [   23.222319] scsi4 : ahci
-> [   23.229521] scsi5 : ahci
-> [   23.236202] md: bind<sdc1>
-> [   23.245104] scsi6 : ahci
-> [   23.252173] scsi7 : ahci
-> [   23.259237] ata5: SATA max UDMA/133 abar m8192@0xf7004000 port 0xf7004100 irq 24
-> [   23.267419] ata6: SATA max UDMA/133 abar m8192@0xf7004000 port 0xf7004180 irq 24
-> [   23.274202] ata7: SATA max UDMA/133 abar m8192@0xf7004000 port 0xf7004200 irq 24
-> [   23.280622] ata8: SATA max UDMA/133 abar m8192@0xf7004000 port 0xf7004280 irq 24
-> [   23.458862] usbcore: registered new interface driver usbfs
-> [   23.465633] usbcore: registered new interface driver hub
-> [   23.472651] usbcore: registered new device driver usb
-> [   23.489646] Serial: 8250/16550 driver, 4 ports, IRQ sharing disabled
-> [   23.496543] serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-> [   23.503692] Platform driver 'serial8250' needs updating - please use dev_pm_ops
-> [   23.512922] parport_pc 00:0a: reported by Plug and Play ACPI
-> [   23.520078] parport0: PC-style at 0x378 (0x778), irq 7 [PCSPP,TRISTATE]
-> [   23.567019] ehci_hcd: USB 2.0 'Enhanced' Host Controller (EHCI) Driver
-> [   23.574727] ACPI: PCI Interrupt Link [AUB2] enabled at IRQ 21
-> [   23.582583]   alloc irq_desc for 21 on node -1
-> [   23.585956]   alloc kstat_irqs on node -1
-> [   23.597410] ehci_hcd 0000:00:02.1: PCI INT B -> Link[AUB2] -> GSI 21 (level, low) -> IRQ 21
-> [   23.600531]   alloc irq_desc for 25 on node -1
-> [   23.600535]   alloc kstat_irqs on node -1
-> [   23.600547] forcedeth 0000:00:0a.0: irq 25 for MSI/MSI-X
-> [   23.600761] eth0: no link during initialization.
-> [   23.634631] ata6: SATA link down (SStatus 0 SControl 300)
-> [   23.637499] ata5: SATA link down (SStatus 0 SControl 300)
-> [   23.637561] ata8: SATA link down (SStatus 0 SControl 300)
-> [   23.657240] ata7: SATA link down (SStatus 0 SControl 300)
-> [   23.663171] ehci_hcd 0000:00:02.1: setting latency timer to 64
-> [   23.663175] ehci_hcd 0000:00:02.1: EHCI Host Controller
-> [   23.663317] ehci_hcd 0000:00:02.1: new USB bus registered, assigned bus number 1
-> [   23.663369] ehci_hcd 0000:00:02.1: debug port 1
-> [   23.663374] ehci_hcd 0000:00:02.1: cache line size of 64 is not supported
-> [   23.663404] ehci_hcd 0000:00:02.1: irq 21, io mem 0xf700b000
-> [   23.709490] ehci_hcd 0000:00:02.1: USB 2.0 started, EHCI 1.00
-> [   23.716643] usb usb1: configuration #1 chosen from 1 choice
-> [   23.725731] hub 1-0:1.0: USB hub found
-> [   23.732705] hub 1-0:1.0: 5 ports detected
-> [   23.740892] ACPI: PCI Interrupt Link [AU2B] disabled and referenced, BIOS bug
-> [   23.748080] ACPI: PCI Interrupt Link [AU2B] enabled at IRQ 20
-> [   23.755131]   alloc irq_desc for 20 on node -1
-> [   23.759042]   alloc kstat_irqs on node -1
-> [   23.769678] ehci_hcd 0000:00:04.1: PCI INT B -> Link[AU2B] -> GSI 20 (level, low) -> IRQ 20
-> [   23.783681] ehci_hcd 0000:00:04.1: setting latency timer to 64
-> [   23.794217] ehci_hcd 0000:00:04.1: EHCI Host Controller
-> [   23.803193] ehci_hcd 0000:00:04.1: new USB bus registered, assigned bus number 2
-> [   23.810073] ehci_hcd 0000:00:04.1: debug port 1
-> [   23.814869] 00:09: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-> [   23.828946] ehci_hcd 0000:00:04.1: cache line size of 64 is not supported
-> [   23.835527] ehci_hcd 0000:00:04.1: irq 20, io mem 0xf7009000
-> [   23.853530] ehci_hcd 0000:00:04.1: USB 2.0 started, EHCI 1.00
-> [   23.860425] usb usb2: configuration #1 chosen from 1 choice
-> [   23.867375] hub 2-0:1.0: USB hub found
-> [   23.875237] hub 2-0:1.0: 5 ports detected
-> [   23.990763] ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
-> [   23.997691] ACPI: PCI Interrupt Link [AUBA] enabled at IRQ 23
-> [   24.004665] ohci_hcd 0000:00:02.0: PCI INT A -> Link[AUBA] -> GSI 23 (level, low) -> IRQ 23
-> [   24.011374] ohci_hcd 0000:00:02.0: setting latency timer to 64
-> [   24.017884] ohci_hcd 0000:00:02.0: OHCI Host Controller
-> [   24.024262] ohci_hcd 0000:00:02.0: new USB bus registered, assigned bus number 3
-> [   24.030755] ohci_hcd 0000:00:02.0: irq 23, io mem 0xf700a000
-> [   24.095708] usb usb3: configuration #1 chosen from 1 choice
-> [   24.102277] hub 3-0:1.0: USB hub found
-> [   24.108723] hub 3-0:1.0: 5 ports detected
-> [   24.116780] ACPI: PCI Interrupt Link [AU1B] enabled at IRQ 22
-> [   24.123420] ohci_hcd 0000:00:04.0: PCI INT A -> Link[AU1B] -> GSI 22 (level, low) -> IRQ 22
-> [   24.130658] ohci_hcd 0000:00:04.0: setting latency timer to 64
-> [   24.137580] ohci_hcd 0000:00:04.0: OHCI Host Controller
-> [   24.144415] ohci_hcd 0000:00:04.0: new USB bus registered, assigned bus number 4
-> [   24.152524] ohci_hcd 0000:00:04.0: irq 22, io mem 0xf700c000
-> [   24.215782] usb usb4: configuration #1 chosen from 1 choice
-> [   24.222936] hub 4-0:1.0: USB hub found
-> [   24.229870] hub 4-0:1.0: 5 ports detected
-> [   24.237523] ACPI: PCI Interrupt Link [AAZA] enabled at IRQ 21
-> [   24.244804] HDA Intel 0000:00:07.0: PCI INT A -> Link[AAZA] -> GSI 21 (level, low) -> IRQ 21
-> [   24.252050] HDA Intel 0000:00:07.0: setting latency timer to 64
-> [   24.253525] usb 2-2: new high speed USB device using ehci_hcd and address 3
-> [   24.266198] NET: Registered protocol family 10
-> [   24.274937] ADDRCONF(NETDEV_UP): eth0: link is not ready
-> [   24.383492] usb 2-2: configuration #1 chosen from 1 choice
-> [   24.390781] hub 2-2:1.0: USB hub found
-> [   24.398880] hub 2-2:1.0: 4 ports detected
-> [   24.453646] eth0: link up.
-> [   24.460585] ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
-> [   24.600777] md: bind<sda1>
-> [   24.609555] usb 4-1: new low speed USB device using ohci_hcd and address 2
-> [   24.675892] raid1: raid set md0 active with 2 out of 2 mirrors
-> [   24.682908] md0: detected capacity change from 0 to 98656256
-> [   24.691941]  md0:
-> [   24.817710] usb 4-1: configuration #1 chosen from 1 choice
-> [   24.898353] usb 2-2.4: new full speed USB device using ehci_hcd and address 4
-> [   24.966939] input: PS/2+USB Mouse as /devices/pci0000:00/0000:00:04.0/usb4/4-1/4-1:1.0/input/input4
-> [   24.974546] generic-usb 0003:04F3:0210.0001: input: USB HID v1.11 Mouse [PS/2+USB Mouse] on usb-0000:00:04.0-1/input0
-> [   24.982653] usbcore: registered new interface driver usbhid
-> [   24.990438] usbhid: v2.6:USB HID core driver
-> [   25.019019] usb 2-2.4: configuration #1 chosen from 1 choice
-> [   25.079335] usbcore: registered new interface driver usbserial
-> [   25.088201] usbserial: USB Serial Driver core
-> [   25.128518] USB Serial support registered for pl2303
-> [   25.136269] pl2303 2-2.4:1.0: pl2303 converter detected
-> [   25.145744] usb 2-2.4: pl2303 converter now attached to ttyUSB0
-> [   25.153611] usbcore: registered new interface driver pl2303
-> [   25.161460] pl2303: Prolific PL2303 USB to serial adaptor driver
-> [   25.388823] it87: Found IT8716F chip at 0x290, revision 3
-> [   26.259741] EXT3 FS on dm-5, internal journal
-> [   27.023476] kjournald starting.  Commit interval 5 seconds
-> [   27.038390] EXT3 FS on md0, internal journal
-> [   27.038397] EXT3-fs: mounted filesystem with writeback data mode.
-> [   27.149622] REISERFS (device dm-0): found reiserfs format "3.6" with standard journal
-> [   27.149702] REISERFS (device dm-0): using ordered data mode
-> [   27.158849] REISERFS (device dm-0): journal params: device dm-0, size 8192, journal first block 18, max trans len 1024, max batch 900, max commit age 30, max trans age 30
-> [   27.159486] REISERFS (device dm-0): checking transaction log (dm-0)
-> [   27.509151] REISERFS (device dm-0): replayed 5 transactions in 1 seconds
-> [   27.555068] REISERFS (device dm-0): Using r5 hash to sort names
-> [   27.621851] reiser4: dm-4: found disk format 4.0.0.
-> [   28.207830] reiser4: dm-3: found disk format 4.0.0.
-> [   28.646877] EXT3-fs warning: maximal mount count reached, running e2fsck is recommended
-> [   28.646994] kjournald starting.  Commit interval 5 seconds
-> [   28.686721] EXT3 FS on dm-10, internal journal
-> [   28.686724] EXT3-fs: recovery complete.
-> [   28.686728] EXT3-fs: mounted filesystem with writeback data mode.
-> [   28.893578] REISERFS (device sda6): found reiserfs format "3.6" with standard journal
-> [   28.893652] REISERFS (device sda6): using ordered data mode
-> [   28.901904] REISERFS (device sda6): journal params: device sda6, size 8192, journal first block 18, max trans len 1024, max batch 900, max commit age 30, max trans age 30
-> [   28.902506] REISERFS (device sda6): checking transaction log (sda6)
-> [   28.912833] REISERFS (device sda6): replayed 1 transactions in 0 seconds
-> [   28.939669] REISERFS (device sda6): Using r5 hash to sort names
-> [   29.168471] umount used greatest stack depth: 1988 bytes left
-> [   29.305951] Unable to find swap-space signature
-> [   29.813402] ttyS1: LSR safety check engaged!
-> [   29.814456] ttyS1: LSR safety check engaged!
-> [   31.779652] pktcdvd: writer pktcdvd0 mapped to sr0
-> [   33.136499] ttyS1: LSR safety check engaged!
-> [   33.809780] lp0: using parport0 (interrupt-driven).
-> [   34.478157] eth0: no IPv6 routers present
-> [   45.264035] git used greatest stack depth: 1660 bytes left
-> [   85.272874] less used greatest stack depth: 1504 bytes left
-> [  110.821183] SysRq : Show Blocked State
-> [  110.825169]   task                PC stack   pid father
-> [  110.825169] sync_supers   D f7477230  2720    77      2 0x00000000
-> [  110.825169]  f74beeec 00000046 00000100 f7477230 004631a2 00000100 00001240 c0546200
-> [  110.825169]  c0546200 c0543284 f74beed0 f75372b0 f7537444 c1c52200 00000001 00000000
-> [  110.825169]  f74beedc 00000246 00000000 00000002 f7537444 ffff442e f9f900fa 00000000
-> [  110.825169] Call Trace:
-> [  110.825169]  [<f9f900fa>] ? reiserfs_write_lock+0x1f/0x2e [reiserfs]
-> [  110.825169]  [<c03dd52a>] __mutex_lock_common+0x239/0x3ca
-> [  110.825169]  [<c0265518>] ? bdi_sync_supers+0x0/0x3a
-> [  110.825169]  [<c03dd74a>] mutex_lock_nested+0x2b/0x33
-> [  110.825169]  [<f9f900fa>] ? reiserfs_write_lock+0x1f/0x2e [reiserfs]
-> [  110.825169]  [<f9f900fa>] reiserfs_write_lock+0x1f/0x2e [reiserfs]
-> [  110.825169]  [<f9f7f6f8>] reiserfs_sync_fs+0x12/0x51 [reiserfs]
-> [  110.825169]  [<c027e24a>] ? sync_supers+0x40/0x8e
-> [  110.825169]  [<c03dd9a2>] ? down_read+0x2c/0x40
-> [  110.825169]  [<f9f7f744>] reiserfs_write_super+0xd/0xf [reiserfs]
-> [  110.825169]  [<c027e25e>] sync_supers+0x54/0x8e
-> [  110.825169]  [<c0265544>] bdi_sync_supers+0x2c/0x3a
-> [  110.825169]  [<c0237f65>] kthread+0x69/0x6e
-> [  110.825169]  [<c0237efc>] ? kthread+0x0/0x6e
-> [  110.825169]  [<c0203d8b>] kernel_thread_helper+0x7/0x10
-> [  110.825169] gconfd-2      D f7477230  1416  4749      1 0x00000000
-> [  110.825169]  f759ea84 00000046 c1c52200 f7477230 c0244e0a f759ea30 c03de2a8 c0546200
-> [  110.825169]  c0546200 c0543284 f82335bb f75b5470 f75b5604 c1c52200 00000001 00000000
-> [  110.825169]  f759ea74 00000246 00000000 00000002 f75b5604 ffff3ebb f9f900fa 00000000
-> [  110.825169] Call Trace:
-> [  110.825169]  [<c0244e0a>] ? trace_hardirqs_on+0xb/0xd
-> [  110.825169]  [<c03de2a8>] ? _read_unlock_irqrestore+0x5f/0x6c
-> [  110.825169]  [<f82335bb>] ? dm_get_table+0x2e/0x35 [dm_mod]
-> [  110.825169]  [<f9f900fa>] ? reiserfs_write_lock+0x1f/0x2e [reiserfs]
-> [  110.825169]  [<c03dd52a>] __mutex_lock_common+0x239/0x3ca
-> [  110.825169]  [<c03dd74a>] mutex_lock_nested+0x2b/0x33
-> [  110.825169]  [<f9f900fa>] ? reiserfs_write_lock+0x1f/0x2e [reiserfs]
-> [  110.825169]  [<f9f900fa>] reiserfs_write_lock+0x1f/0x2e [reiserfs]
-> [  110.825169]  [<f9f85bc4>] search_by_key+0x19e/0x738 [reiserfs]
-> [  110.825169]  [<c0244e0a>] ? trace_hardirqs_on+0xb/0xd
-> [  110.825169]  [<c03dd198>] ? __mutex_unlock_slowpath+0x112/0x121
-> [  110.825169]  [<c03dd1af>] ? mutex_unlock+0x8/0xa
-> [  110.825169]  [<f9f8b5f8>] ? do_journal_end+0xa5a/0xc34 [reiserfs]
-> [  110.825169]  [<f9f74ee2>] search_by_entry_key+0x17/0x198 [reiserfs]
-> [  110.825169]  [<f9f750c1>] reiserfs_find_entry+0x5e/0x21c [reiserfs]
-> [  110.825169]  [<c03dd1af>] ? mutex_unlock+0x8/0xa
-> [  110.825169]  [<f9f9015e>] ? reiserfs_write_unlock+0x55/0x5a [reiserfs]
-> [  110.825169]  [<f9f756f6>] reiserfs_lookup+0x6f/0xf7 [reiserfs]
-> [  110.825169]  [<c02833ef>] __lookup_hash+0xa4/0xbe
-> [  110.825169]  [<c0284e88>] lookup_one_len+0x8e/0x9d
-> [  110.825169]  [<f9f8f1e1>] open_xa_dir+0x111/0x18a [reiserfs]
-> [  110.825169]  [<c0244e0a>] ? trace_hardirqs_on+0xb/0xd
-> [  110.825169]  [<f9f8f88f>] reiserfs_for_each_xattr+0x57/0x1df [reiserfs]
-> [  110.825169]  [<f9f8ffe8>] ? delete_one_xattr+0x0/0x94 [reiserfs]
-> [  110.825169]  [<f9f8fa6a>] reiserfs_delete_xattrs+0x13/0x40 [reiserfs]
-> [  110.825169]  [<f9f7b3e2>] reiserfs_delete_inode+0x41/0xb7 [reiserfs]
-> [  110.825169]  [<f9f7b3a1>] ? reiserfs_delete_inode+0x0/0xb7 [reiserfs]
-> [  110.825169]  [<c028bff6>] generic_delete_inode+0x79/0xf1
-> [  110.825169]  [<c028c080>] generic_drop_inode+0x12/0x18d
-> [  110.825169]  [<c028b3b7>] iput+0x4b/0x4e
-> [  110.825169]  [<c0289052>] dentry_iput+0x9c/0xb7
-> [  110.825169]  [<c028910e>] d_kill+0x2d/0x47
-> [  110.825169]  [<c0289814>] dput+0x110/0x119
-> [  110.825169]  [<c0285831>] sys_renameat+0x176/0x1d3
-> [  110.825169]  [<c0289747>] ? dput+0x43/0x119
-> [  110.825169]  [<c028e6d6>] ? mntput_no_expire+0x19/0xad
-> [  110.825169]  [<c02858a0>] sys_rename+0x12/0x14
-> [  110.825169]  [<c0203228>] sysenter_do_call+0x12/0x3c
-> [  110.825169] gnome-panel   D f0a34170  1996  4939   4534 0x00000000
-> [  110.825169]  f0ae6d74 00000046 c1c52200 f0a34170 00000005 000000c1 f0ae6d4c c0546200
-> [  110.825169]  c0546200 f4e2acb0 c0288adf f4e2acb0 f4e2ae44 c1c52200 00000001 f0ae6e6c
-> [  110.825169]  f0ae6d64 00000246 00000000 00000002 f4e2ae44 00000000 f9f900bf 00000000
-> [  110.825169] Call Trace:
-> [  110.825169]  [<c0288adf>] ? pollwake+0x59/0x62
-> [  110.825169]  [<f9f900bf>] ? reiserfs_write_lock_once+0x1f/0x3b [reiserfs]
-> [  110.825169]  [<c03dd52a>] __mutex_lock_common+0x239/0x3ca
-> [  110.825169]  [<c03dd74a>] mutex_lock_nested+0x2b/0x33
-> [  110.825169]  [<f9f900bf>] ? reiserfs_write_lock_once+0x1f/0x3b [reiserfs]
-> [  110.825169]  [<f9f900bf>] reiserfs_write_lock_once+0x1f/0x3b [reiserfs]
-> [  110.825169]  [<f9f756ce>] reiserfs_lookup+0x47/0xf7 [reiserfs]
-> [  110.825169]  [<c02832db>] do_lookup+0xb4/0x124
-> [  111.350948]  [<c0283aa0>] __link_path_walk+0x33b/0x6ce
-> [  111.350948]  [<c0283ff4>] path_walk+0x50/0xa5
-> [  111.350948]  [<c02843ce>] do_path_lookup+0x21/0x42
-> [  111.350948]  [<c0285e39>] user_path_at+0x3c/0x67
-> [  111.350948]  [<c02771ac>] ? kmem_cache_alloc+0x11d/0x155
-> [  111.350948]  [<c023c21e>] ? prepare_creds+0x2b/0x72
-> [  111.350948]  [<c027be5f>] sys_faccessat+0x90/0x14a
-> [  111.350948]  [<c027bf29>] sys_access+0x10/0x12
-> [  111.350948]  [<c0203228>] sysenter_do_call+0x12/0x3c
-> [  111.350948] trackerd      D f7477230  1756  4949   4534 0x00000000
-> [  111.350948]  f0a36da8 00000046 f0a36d40 f7477230 f0a36d7c c03dd66d 00000202 c0546200
-> [  111.350948]  c0546200 c0543284 f0a36de0 f0ac2a70 f0ac2c04 c1c52200 00000001 00000000
-> [  111.350948]  f0a36d98 00000246 00000000 00000002 f0ac2c04 ffff3ebb f9f8f1cf 00000000
-> [  111.350948] Call Trace:
-> [  111.350948]  [<c03dd66d>] ? __mutex_lock_common+0x37c/0x3ca
-> [  111.350948]  [<f9f8f1cf>] ? open_xa_dir+0xff/0x18a [reiserfs]
-> [  111.350948]  [<c03dd52a>] __mutex_lock_common+0x239/0x3ca
-> [  111.350948]  [<c03dd74a>] mutex_lock_nested+0x2b/0x33
-> [  111.350948]  [<f9f8f1cf>] ? open_xa_dir+0xff/0x18a [reiserfs]
-> [  111.350948]  [<f9f8f1cf>] open_xa_dir+0xff/0x18a [reiserfs]
-> [  111.350948]  [<f9f8f88f>] reiserfs_for_each_xattr+0x57/0x1df [reiserfs]
-> [  111.350948]  [<f9f8ffe8>] ? delete_one_xattr+0x0/0x94 [reiserfs]
-> [  111.350948]  [<f9f8fa6a>] reiserfs_delete_xattrs+0x13/0x40 [reiserfs]
-> [  111.350948]  [<f9f7b3e2>] reiserfs_delete_inode+0x41/0xb7 [reiserfs]
-> [  111.350948]  [<f9f7b3a1>] ? reiserfs_delete_inode+0x0/0xb7 [reiserfs]
-> [  111.350948]  [<c028bff6>] generic_delete_inode+0x79/0xf1
-> [  111.350948]  [<c028c080>] generic_drop_inode+0x12/0x18d
-> [  111.350948]  [<c028b3b7>] iput+0x4b/0x4e
-> [  111.350948]  [<c0285965>] do_unlinkat+0xc3/0x107
-> [  111.350948]  [<c027da44>] ? fput+0x19/0x1b
-> [  111.350948]  [<c027b3d0>] ? filp_close+0x51/0x5b
-> [  111.350948]  [<c02859b9>] sys_unlink+0x10/0x12
-> [  111.350948]  [<c0203228>] sysenter_do_call+0x12/0x3c
-> [  111.350948] gvfsd-trash   D c04c4160  2088  4971      1 0x00000000
-> [  111.350948]  f0ba2d28 00000046 ffffffff c04c4160 ed67f708 f0ba2dcb f0ba2cf0 c0546200
-> [  111.350948]  c0546200 c0543284 00000000 f64512f0 f6451484 c1c42200 00000000 00000000
-> [  111.350948]  f0ba2d18 00000246 00000000 00000002 f6451484 ffff3ea3 f9f900bf 00000000
-> [  111.350948] Call Trace:
-> [  111.350948]  [<f9f900bf>] ? reiserfs_write_lock_once+0x1f/0x3b [reiserfs]
-> [  111.350948]  [<c03dd52a>] __mutex_lock_common+0x239/0x3ca
-> [  111.350948]  [<c03dd74a>] mutex_lock_nested+0x2b/0x33
-> [  111.350948]  [<f9f900bf>] ? reiserfs_write_lock_once+0x1f/0x3b [reiserfs]
-> [  111.350948]  [<f9f900bf>] reiserfs_write_lock_once+0x1f/0x3b [reiserfs]
-> [  111.350948]  [<f9f756ce>] reiserfs_lookup+0x47/0xf7 [reiserfs]
-> [  111.350948]  [<c02832db>] do_lookup+0xb4/0x124
-> [  111.350948]  [<c0283d0a>] __link_path_walk+0x5a5/0x6ce
-> [  111.350948]  [<c0283ff4>] path_walk+0x50/0xa5
-> [  111.350948]  [<c02843ce>] do_path_lookup+0x21/0x42
-> [  111.350948]  [<c0285e39>] user_path_at+0x3c/0x67
-> [  111.350948]  [<c029e5ec>] ? __fsnotify_update_child_dentry_flags+0x76/0xcf
-> [  111.350948]  [<c027f78e>] vfs_fstatat+0x2d/0x54
-> [  111.350948]  [<c027f7f9>] vfs_lstat+0x16/0x18
-> [  111.350948]  [<c027f80f>] sys_lstat64+0x14/0x28
-> [  111.350948]  [<c02a0d3f>] ? sys_inotify_add_watch+0x270/0x2c4
-> [  111.350948]  [<c02f9558>] ? trace_hardirqs_on_thunk+0xc/0x10
-> [  111.350948]  [<c0203228>] sysenter_do_call+0x12/0x3c
-> [  111.707398] hda-intel: IRQ timing workaround is activated for card #0. Suggest a bigger bdl_pos_adj.
-> [  174.847555] pktcdvd: writer pktcdvd0 unmapped
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ Documentation/power/runtime_pm.txt |  382 +++++++++++++++
+ drivers/base/dd.c                  |   15 
+ drivers/base/power/Makefile        |    1 
+ drivers/base/power/main.c          |   20 
+ drivers/base/power/power.h         |   31 -
+ drivers/base/power/runtime.c       |  939 +++++++++++++++++++++++++++++++++++++
+ include/linux/pm.h                 |  102 +++-
+ include/linux/pm_runtime.h         |  115 ++++
+ kernel/power/Kconfig               |   14 
+ kernel/power/main.c                |   17 
+ 10 files changed, 1625 insertions(+), 11 deletions(-)
 
-
+Index: linux-2.6/kernel/power/Kconfig
+===================================================================
+--- linux-2.6.orig/kernel/power/Kconfig
++++ linux-2.6/kernel/power/Kconfig
+@@ -208,3 +208,17 @@ config APM_EMULATION
+ 	  random kernel OOPSes or reboots that don't seem to be related to
+ 	  anything, try disabling/enabling this option (or disabling/enabling
+ 	  APM in your BIOS).
++
++config PM_RUNTIME
++	bool "Run-time PM core functionality"
++	depends on PM
++	---help---
++	  Enable functionality allowing I/O devices to be put into energy-saving
++	  (low power) states at run time (or autosuspended) after a specified
++	  period of inactivity and woken up in response to a hardware-generated
++	  wake-up event or a driver's request.
++
++	  Hardware support is generally required for this functionality to work
++	  and the bus type drivers of the buses the devices are on are
++	  responsible for the actual handling of the autosuspend requests and
++	  wake-up events.
+Index: linux-2.6/kernel/power/main.c
+===================================================================
+--- linux-2.6.orig/kernel/power/main.c
++++ linux-2.6/kernel/power/main.c
+@@ -11,6 +11,7 @@
+ #include <linux/kobject.h>
+ #include <linux/string.h>
+ #include <linux/resume-trace.h>
++#include <linux/workqueue.h>
+ 
+ #include "power.h"
+ 
+@@ -217,8 +218,24 @@ static struct attribute_group attr_group
+ 	.attrs = g,
+ };
+ 
++#ifdef CONFIG_PM_RUNTIME
++struct workqueue_struct *pm_wq;
++
++static int __init pm_start_workqueue(void)
++{
++	pm_wq = create_freezeable_workqueue("pm");
++
++	return pm_wq ? 0 : -ENOMEM;
++}
++#else
++static inline int pm_start_workqueue(void) { return 0; }
++#endif
++
+ static int __init pm_init(void)
+ {
++	int error = pm_start_workqueue();
++	if (error)
++		return error;
+ 	power_kobj = kobject_create_and_add("power", NULL);
+ 	if (!power_kobj)
+ 		return -ENOMEM;
+Index: linux-2.6/include/linux/pm.h
+===================================================================
+--- linux-2.6.orig/include/linux/pm.h
++++ linux-2.6/include/linux/pm.h
+@@ -22,6 +22,10 @@
+ #define _LINUX_PM_H
+ 
+ #include <linux/list.h>
++#include <linux/workqueue.h>
++#include <linux/spinlock.h>
++#include <linux/wait.h>
++#include <linux/timer.h>
+ 
+ /*
+  * Callbacks for platform drivers to implement.
+@@ -165,6 +169,28 @@ typedef struct pm_message {
+  * It is allowed to unregister devices while the above callbacks are being
+  * executed.  However, it is not allowed to unregister a device from within any
+  * of its own callbacks.
++ *
++ * There also are the following callbacks related to run-time power management
++ * of devices:
++ *
++ * @runtime_suspend: Prepare the device for a condition in which it won't be
++ *	able to communicate with the CPU(s) and RAM due to power management.
++ *	This need not mean that the device should be put into a low power state.
++ *	For example, if the device is behind a link which is about to be turned
++ *	off, the device may remain at full power.  If the device does go to low
++ *	power and if device_may_wakeup(dev) is true, remote wake-up (i.e., a
++ *	hardware mechanism allowing the device to request a change of its power
++ *	state, such as PCI PME) should be enabled for it.
++ *
++ * @runtime_resume: Put the device into the fully active state in response to a
++ *	wake-up event generated by hardware or at the request of software.  If
++ *	necessary, put the device into the full power state and restore its
++ *	registers, so that it is fully operational.
++ *
++ * @runtime_idle: Device appears to be inactive and it might be put into a low
++ *	power state if all of the necessary conditions are satisfied.  Check
++ *	these conditions and handle the device as appropriate, possibly queueing
++ *	a suspend request for it.
+  */
+ 
+ struct dev_pm_ops {
+@@ -182,6 +208,9 @@ struct dev_pm_ops {
+ 	int (*thaw_noirq)(struct device *dev);
+ 	int (*poweroff_noirq)(struct device *dev);
+ 	int (*restore_noirq)(struct device *dev);
++	int (*runtime_suspend)(struct device *dev);
++	int (*runtime_resume)(struct device *dev);
++	void (*runtime_idle)(struct device *dev);
+ };
+ 
+ /*
+@@ -329,14 +358,81 @@ enum dpm_state {
+ 	DPM_OFF_IRQ,
+ };
+ 
++/**
++ * Device run-time power management status.
++ *
++ * These status labels are used internally by the PM core to indicate the
++ * current status of a device with respect to the PM core operations.  They do
++ * not reflect the actual power state of the device or its status as seen by the
++ * driver.
++ *
++ * RPM_ACTIVE		Device is fully operational.  Indicates that the device
++ *			bus type's ->runtime_resume() callback has completed
++ *			successfully.
++ *
++ * RPM_SUSPENDED	Device bus type's ->runtime_suspend() callback has
++ *			completed successfully.  The device is regarded as
++ *			suspended.
++ *
++ * RPM_RESUMING		Device bus type's ->runtime_resume() callback is being
++ *			executed.
++ *
++ * RPM_SUSPENDING	Device bus type's ->runtime_suspend() callback is being
++ *			executed.
++ */
++
++enum rpm_status {
++	RPM_ACTIVE = 0,
++	RPM_RESUMING,
++	RPM_SUSPENDED,
++	RPM_SUSPENDING,
++};
++
++/**
++ * Device run-time power management request types.
++ *
++ * RPM_REQ_NONE		Do nothing.
++ *
++ * RPM_REQ_IDLE		Run the device bus type's ->runtime_idle() callback
++ *
++ * RPM_REQ_SUSPEND	Run the device bus type's ->runtime_suspend() callback
++ *
++ * RPM_REQ_RESUME	Run the device bus type's ->runtime_resume() callback
++ */
++
++enum rpm_request {
++	RPM_REQ_NONE = 0,
++	RPM_REQ_IDLE,
++	RPM_REQ_SUSPEND,
++	RPM_REQ_RESUME,
++};
++
+ struct dev_pm_info {
+ 	pm_message_t		power_state;
+-	unsigned		can_wakeup:1;
+-	unsigned		should_wakeup:1;
++	unsigned int		can_wakeup:1;
++	unsigned int		should_wakeup:1;
+ 	enum dpm_state		status;		/* Owned by the PM core */
+-#ifdef	CONFIG_PM_SLEEP
++#ifdef CONFIG_PM_SLEEP
+ 	struct list_head	entry;
+ #endif
++#ifdef CONFIG_PM_RUNTIME
++	struct timer_list	suspend_timer;
++	unsigned long		timer_expires;
++	struct work_struct	work;
++	wait_queue_head_t	wait_queue;
++	spinlock_t		lock;
++	atomic_t		usage_count;
++	atomic_t		child_count;
++	unsigned int		disable_depth:3;
++	unsigned int		ignore_children:1;
++	unsigned int		runtime_failure:1;
++	unsigned int		idle_notification:1;
++	unsigned int		request_pending:1;
++	unsigned int		deferred_resume:1;
++	enum rpm_request	request;
++	enum rpm_status		runtime_status;
++	int			last_error;
++#endif
+ };
+ 
+ /*
+Index: linux-2.6/drivers/base/power/Makefile
+===================================================================
+--- linux-2.6.orig/drivers/base/power/Makefile
++++ linux-2.6/drivers/base/power/Makefile
+@@ -1,5 +1,6 @@
+ obj-$(CONFIG_PM)	+= sysfs.o
+ obj-$(CONFIG_PM_SLEEP)	+= main.o
++obj-$(CONFIG_PM_RUNTIME)	+= runtime.o
+ obj-$(CONFIG_PM_TRACE_RTC)	+= trace.o
+ 
+ ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
+Index: linux-2.6/drivers/base/power/runtime.c
+===================================================================
+--- /dev/null
++++ linux-2.6/drivers/base/power/runtime.c
+@@ -0,0 +1,939 @@
++/*
++ * drivers/base/power/runtime.c - Helper functions for device run-time PM
++ *
++ * Copyright (c) 2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
++ *
++ * This file is released under the GPLv2.
++ */
++
++#include <linux/sched.h>
++#include <linux/pm_runtime.h>
++#include <linux/jiffies.h>
++
++static int __pm_request_idle(struct device *dev);
++static int __pm_request_resume(struct device *dev);
++
++/**
++ * pm_runtime_deactivate_timer - Deactivate given device's suspend timer.
++ * @dev: Device to handle.
++ */
++static void pm_runtime_deactivate_timer(struct device *dev)
++{
++	if (dev->power.timer_expires > 0) {
++		del_timer(&dev->power.suspend_timer);
++		dev->power.timer_expires = 0;
++	}
++}
++
++/**
++ * pm_runtime_cancel_pending - Deactivate suspend timer and cancel requests.
++ * @dev: Device to handle.
++ */
++static void pm_runtime_cancel_pending(struct device *dev)
++{
++	pm_runtime_deactivate_timer(dev);
++	/*
++	 * In case there's a request pending, make sure its work function will
++	 * return without doing anything.
++	 */
++	dev->power.request = RPM_REQ_NONE;
++}
++
++/**
++ * __pm_runtime_idle - Notify device bus type if the device can be suspended.
++ * @dev: Device to notify the bus type about.
++ *
++ * This function must be called under dev->power.lock with interrupts disabled.
++ */
++static int __pm_runtime_idle(struct device *dev)
++	__releases(&dev->power.lock) __acquires(&dev->power.lock)
++{
++	int retval = 0;
++
++	if (dev->power.runtime_failure)
++		retval = -EINVAL;
++	else if (dev->power.idle_notification)
++		retval = -EINPROGRESS;
++	else if (atomic_read(&dev->power.usage_count) > 0
++	    || dev->power.disable_depth > 0
++	    || dev->power.runtime_status != RPM_ACTIVE)
++		retval = -EAGAIN;
++	else if (!pm_children_suspended(dev))
++		retval = -EBUSY;
++	if (retval)
++		return retval;
++
++	if (dev->power.request_pending) {
++		/*
++		 * If an idle notification request is pending, cancel it.  Any
++		 * other pending request takes precedence over us.
++		 */
++		if (dev->power.request == RPM_REQ_IDLE)
++			dev->power.request = RPM_REQ_NONE;
++		else if (dev->power.request != RPM_REQ_NONE)
++			return -EAGAIN;
++	}
++
++	dev->power.idle_notification = true;
++
++	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_idle) {
++		spin_unlock_irq(&dev->power.lock);
++
++		dev->bus->pm->runtime_idle(dev);
++
++		spin_lock_irq(&dev->power.lock);
++	}
++
++	dev->power.idle_notification = false;
++	wake_up_all(&dev->power.wait_queue);
++
++	return 0;
++}
++
++/**
++ * pm_runtime_idle - Notify device bus type if the device can be suspended.
++ * @dev: Device to notify the bus type about.
++ */
++int pm_runtime_idle(struct device *dev)
++{
++	int retval;
++
++	spin_lock_irq(&dev->power.lock);
++	retval = __pm_runtime_idle(dev);
++	spin_unlock_irq(&dev->power.lock);
++
++	return retval;
++}
++EXPORT_SYMBOL_GPL(pm_runtime_idle);
++
++/**
++ * __pm_runtime_suspend - Carry out run-time suspend of given device.
++ * @dev: Device to suspend.
++ * @from_wq: If set, the function has been called via pm_wq.
++ *
++ * Check if the device can be suspended and run the ->runtime_suspend() callback
++ * provided by its bus type.  If another suspend has been started earlier, wait
++ * for it to finish.  If there's an idle notification pending, cancel it.  If
++ * there's a suspend request scheduled while this function is running and @sync
++ * is 'true', cancel that request.
++ *
++ * This function must be called under dev->power.lock with interrupts disabled.
++ */
++int __pm_runtime_suspend(struct device *dev, bool from_wq)
++	__releases(&dev->power.lock) __acquires(&dev->power.lock)
++{
++	struct device *parent = NULL;
++	bool notify = false;
++	int retval = 0;
++
++ repeat:
++	if (dev->power.runtime_failure)
++		return -EINVAL;
++
++	pm_runtime_deactivate_timer(dev);
++
++	if (dev->power.request_pending) {
++		/* Pending resume requests take precedence over us. */
++		if (dev->power.request == RPM_REQ_RESUME)
++			return -EAGAIN;
++		/* Other pending requests need to be canceled. */
++		dev->power.request = RPM_REQ_NONE;
++	}
++
++	if (dev->power.runtime_status == RPM_SUSPENDED)
++		retval = 1;
++	else if (dev->power.runtime_status == RPM_RESUMING
++	    || dev->power.disable_depth > 0
++	    || atomic_read(&dev->power.usage_count) > 0)
++		retval = -EAGAIN;
++	else if (!pm_children_suspended(dev))
++		retval = -EBUSY;
++	if (retval)
++		return retval;
++
++	if (dev->power.runtime_status == RPM_SUSPENDING) {
++		DEFINE_WAIT(wait);
++
++		if (from_wq)
++			return -EINPROGRESS;
++
++		/* Wait for the other suspend running in parallel with us. */
++		for (;;) {
++			prepare_to_wait(&dev->power.wait_queue, &wait,
++					TASK_UNINTERRUPTIBLE);
++			if (dev->power.runtime_status != RPM_SUSPENDING)
++				break;
++
++			spin_unlock_irq(&dev->power.lock);
++
++			schedule();
++
++			spin_lock_irq(&dev->power.lock);
++		}
++		finish_wait(&dev->power.wait_queue, &wait);
++		goto repeat;
++	}
++
++	dev->power.runtime_status = RPM_SUSPENDING;
++
++	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_suspend) {
++		spin_unlock_irq(&dev->power.lock);
++
++		retval = dev->bus->pm->runtime_suspend(dev);
++
++		spin_lock_irq(&dev->power.lock);
++	} else {
++		retval = -ENOSYS;
++	}
++
++	if (retval) {
++		dev->power.runtime_status = RPM_ACTIVE;
++		pm_runtime_cancel_pending(dev);
++		dev->power.deferred_resume = false;
++
++		if (retval == -EAGAIN || retval == -EBUSY) {
++			notify = true;
++		} else {
++			dev->power.runtime_failure = true;
++			dev->power.last_error = retval;
++		}
++	} else {
++		dev->power.runtime_status = RPM_SUSPENDED;
++
++		if (dev->parent) {
++			parent = dev->parent;
++			atomic_add_unless(&parent->power.child_count, -1, 0);
++		}
++
++	}
++	wake_up_all(&dev->power.wait_queue);
++
++	if (dev->power.deferred_resume) {
++		__pm_request_resume(dev);
++		dev->power.deferred_resume = false;
++	}
++
++	if (notify)
++		__pm_runtime_idle(dev);
++
++	if (parent && !parent->power.ignore_children) {
++		spin_unlock_irq(&dev->power.lock);
++
++		pm_request_idle(parent);
++
++		spin_lock_irq(&dev->power.lock);
++	}
++
++	return retval;
++}
++
++/**
++ * pm_runtime_suspend - Carry out run-time suspend of given device.
++ * @dev: Device to suspend.
++ */
++int pm_runtime_suspend(struct device *dev)
++{
++	int retval;
++
++	spin_lock_irq(&dev->power.lock);
++	retval = __pm_runtime_suspend(dev, false);
++	spin_unlock_irq(&dev->power.lock);
++
++	return retval;
++}
++EXPORT_SYMBOL_GPL(pm_runtime_suspend);
++
++/**
++ * __pm_runtime_resume - Carry out run-time resume of given device.
++ * @dev: Device to resume.
++ * @from_wq: If set, the function has been called via pm_wq.
++ *
++ * Check if the device can be woken up and run the ->runtime_resume() callback
++ * provided by its bus type.  If another resume has been started earlier, wait
++ * for it to finish.  If there's a suspend running in parallel with this
++ * function, wait for it to finish and resume the device.  If there's a suspend
++ * request or idle notification pending, cancel it.  If there's a resume request
++ * scheduled while this function is running, cancel that request.
++ *
++ * This function must be called under dev->power.lock with interrupts disabled.
++ */
++int __pm_runtime_resume(struct device *dev, bool from_wq)
++	__releases(&dev->power.lock) __acquires(&dev->power.lock)
++{
++	struct device *parent = NULL;
++	int retval = 0;
++
++ repeat:
++	if (dev->power.runtime_failure)
++		return -EINVAL;
++
++	pm_runtime_cancel_pending(dev);
++
++	if (dev->power.runtime_status == RPM_ACTIVE)
++		retval = 1;
++	else if (dev->power.disable_depth > 0)
++		retval = -EAGAIN;
++	if (retval)
++		return retval;
++
++	if (dev->power.runtime_status == RPM_RESUMING
++	    || dev->power.runtime_status == RPM_SUSPENDING) {
++		DEFINE_WAIT(wait);
++
++		if (from_wq) {
++			if (dev->power.runtime_status == RPM_SUSPENDING)
++				dev->power.deferred_resume = true;
++			return -EINPROGRESS;
++		}
++
++		/* Wait for the operation carried out in parallel with us. */
++		for (;;) {
++			prepare_to_wait(&dev->power.wait_queue, &wait,
++					TASK_UNINTERRUPTIBLE);
++			if (dev->power.runtime_status != RPM_RESUMING
++			    && dev->power.runtime_status != RPM_SUSPENDING)
++				break;
++
++			spin_unlock_irq(&dev->power.lock);
++
++			schedule();
++
++			spin_lock_irq(&dev->power.lock);
++		}
++		finish_wait(&dev->power.wait_queue, &wait);
++		goto repeat;
++	}
++
++	if (!parent && dev->parent) {
++		/*
++		 * Increment the parent's resume counter and resume it if
++		 * necessary.
++		 */
++		parent = dev->parent;
++		spin_unlock_irq(&dev->power.lock);
++
++		retval = pm_runtime_get_sync(parent);
++
++		spin_lock_irq(&dev->power.lock);
++		/* We can resume if the parent's run-time PM is disabled. */
++		if (retval < 0 && retval != -EAGAIN)
++			goto out_parent;
++		retval = 0;
++		goto repeat;
++	}
++
++	dev->power.runtime_status = RPM_RESUMING;
++
++	if (dev->bus && dev->bus->pm && dev->bus->pm->runtime_resume) {
++		spin_unlock_irq(&dev->power.lock);
++
++		retval = dev->bus->pm->runtime_resume(dev);
++
++		spin_lock_irq(&dev->power.lock);
++	} else {
++		retval = -ENOSYS;
++	}
++
++	if (retval) {
++		dev->power.runtime_status = RPM_SUSPENDED;
++
++		dev->power.runtime_failure = true;
++		dev->power.last_error = retval;
++
++		pm_runtime_cancel_pending(dev);
++	} else {
++		dev->power.runtime_status = RPM_ACTIVE;
++
++		if (parent)
++			atomic_inc(&parent->power.child_count);
++	}
++	wake_up_all(&dev->power.wait_queue);
++
++	if (!retval)
++		__pm_request_idle(dev);
++
++ out_parent:
++	if (parent) {
++		spin_unlock_irq(&dev->power.lock);
++
++		pm_runtime_put(parent);
++
++		spin_lock_irq(&dev->power.lock);
++	}
++
++	return retval;
++}
++
++/**
++ * pm_runtime_resume - Carry out run-time resume of given device.
++ * @dev: Device to suspend.
++ */
++int pm_runtime_resume(struct device *dev)
++{
++	int retval;
++
++	spin_lock_irq(&dev->power.lock);
++	retval = __pm_runtime_resume(dev, false);
++	spin_unlock_irq(&dev->power.lock);
++
++	return retval;
++}
++EXPORT_SYMBOL_GPL(pm_runtime_resume);
++
++/**
++ * pm_runtime_work - Universal run-time PM work function.
++ * @work: Work structure used for scheduling the execution of this function.
++ *
++ * Use @work to get the device object the work is to be done for, determine what
++ * is to be done and execute the appropriate run-time PM function.
++ */
++static void pm_runtime_work(struct work_struct *work)
++{
++	struct device *dev = container_of(work, struct device, power.work);
++	enum rpm_request req;
++
++	spin_lock_irq(&dev->power.lock);
++
++	if (!dev->power.request_pending)
++		goto out;
++
++	req = dev->power.request;
++	dev->power.request = RPM_REQ_NONE;
++	dev->power.request_pending = false;
++
++	switch (req) {
++	case RPM_REQ_NONE:
++		break;
++	case RPM_REQ_IDLE:
++		__pm_runtime_idle(dev);
++		break;
++	case RPM_REQ_SUSPEND:
++		__pm_runtime_suspend(dev, true);
++		break;
++	case RPM_REQ_RESUME:
++		__pm_runtime_resume(dev, true);
++		break;
++	}
++
++ out:
++	spin_unlock_irq(&dev->power.lock);
++}
++
++/**
++ * __pm_request_idle - Submit an idle notification request for given device.
++ * @dev: Device to handle.
++ *
++ * Check if the device's run-time PM status is correct for suspending the device
++ * and queue up a request to run __pm_runtime_idle() for it.
++ *
++ * This function must be called under dev->power.lock with interrupts disabled.
++ */
++static int __pm_request_idle(struct device *dev)
++{
++	int retval = 0;
++
++	if (dev->power.runtime_failure)
++		retval = -EINVAL;
++	else if (atomic_read(&dev->power.usage_count) > 0
++	    || dev->power.disable_depth > 0
++	    || dev->power.timer_expires > 0
++	    || dev->power.runtime_status == RPM_SUSPENDED
++	    || dev->power.runtime_status == RPM_SUSPENDING)
++		retval = -EAGAIN;
++	else if (!pm_children_suspended(dev))
++		retval = -EBUSY;
++	if (retval)
++		return retval;
++
++	if (dev->power.request_pending && dev->power.request != RPM_REQ_NONE) {
++		/* Any requests other then RPM_REQ_IDLE take precedence. */
++		if (dev->power.request != RPM_REQ_IDLE)
++			retval = -EAGAIN;
++		return retval;
++	}
++
++	dev->power.request = RPM_REQ_IDLE;
++	if (dev->power.request_pending)
++		return retval;
++
++	dev->power.request_pending = true;
++	queue_work(pm_wq, &dev->power.work);
++
++	return retval;
++}
++
++/**
++ * pm_request_idle - Submit an idle notification request for given device.
++ * @dev: Device to handle.
++ */
++int pm_request_idle(struct device *dev)
++{
++	unsigned long flags;
++	int retval;
++
++	spin_lock_irqsave(&dev->power.lock, flags);
++	retval = __pm_request_idle(dev);
++	spin_unlock_irqrestore(&dev->power.lock, flags);
++
++	return retval;
++}
++EXPORT_SYMBOL_GPL(pm_request_idle);
++
++/**
++ * __pm_request_suspend - Submit a suspend request for given device.
++ * @dev: Device to suspend.
++ *
++ * This function must be called under dev->power.lock with interrupts disabled.
++ */
++static int __pm_request_suspend(struct device *dev)
++{
++	int retval = 0;
++
++	if (dev->power.runtime_failure)
++		return -EINVAL;
++
++	if (dev->power.runtime_status == RPM_SUSPENDED)
++		retval = 1;
++	else if (atomic_read(&dev->power.usage_count) > 0
++	    || dev->power.disable_depth > 0)
++		retval = -EAGAIN;
++	else if (dev->power.runtime_status == RPM_SUSPENDING)
++		retval = -EINPROGRESS;
++	else if (!pm_children_suspended(dev))
++		retval = -EBUSY;
++	if (retval < 0)
++		return retval;
++
++	pm_runtime_deactivate_timer(dev);
++
++	if (dev->power.request_pending) {
++		/*
++		 * Pending resume requests take precedence over us, but we can
++		 * overtake any other pending request.
++		 */
++		if (dev->power.request == RPM_REQ_RESUME)
++			retval = -EAGAIN;
++		else if (dev->power.request != RPM_REQ_SUSPEND)
++			dev->power.request = retval ?
++						RPM_REQ_NONE : RPM_REQ_SUSPEND;
++		return retval;
++	} else if (retval) {
++		return retval;
++	}
++
++	dev->power.request = RPM_REQ_SUSPEND;
++	dev->power.request_pending = true;
++	queue_work(pm_wq, &dev->power.work);
++
++	return 0;
++}
++
++/**
++ * pm_suspend_timer_fn - Timer function for pm_schedule_suspend().
++ * @data: Device pointer passed by pm_schedule_suspend().
++ *
++ * Check if the time is right and execute __pm_request_suspend() in that case.
++ */
++static void pm_suspend_timer_fn(unsigned long data)
++{
++	struct device *dev = (struct device *)data;
++	unsigned long flags;
++	unsigned long expires;
++
++	spin_lock_irqsave(&dev->power.lock, flags);
++
++	expires = dev->power.timer_expires;
++	/* If 'expire' is after 'jiffies' we've been called too early. */
++	if (expires > 0 && !time_after(expires, jiffies)) {
++		dev->power.timer_expires = 0;
++		__pm_request_suspend(dev);
++	}
++
++	spin_unlock_irqrestore(&dev->power.lock, flags);
++}
++
++/**
++ * pm_schedule_suspend - Set up a timer to submit a suspend request in future.
++ * @dev: Device to suspend.
++ * @delay: Time to wait before submitting a suspend request, in milliseconds.
++ */
++int pm_schedule_suspend(struct device *dev, unsigned int delay)
++{
++	unsigned long flags;
++	int retval = 0;
++
++	spin_lock_irqsave(&dev->power.lock, flags);
++
++	if (dev->power.runtime_failure) {
++		retval = -EINVAL;
++		goto out;
++	}
++
++	if (!delay) {
++		retval = __pm_request_suspend(dev);
++		goto out;
++	}
++
++	pm_runtime_deactivate_timer(dev);
++
++	if (dev->power.request_pending) {
++		/*
++		 * Pending resume requests take precedence over us, but any
++		 * other pending requests have to be canceled.
++		 */
++		if (dev->power.request == RPM_REQ_RESUME) {
++			retval = -EAGAIN;
++			goto out;
++		}
++		dev->power.request = RPM_REQ_NONE;
++	}
++
++	if (dev->power.runtime_status == RPM_SUSPENDED)
++		retval = 1;
++	else if (dev->power.runtime_status == RPM_SUSPENDING)
++		retval = -EINPROGRESS;
++	else if (atomic_read(&dev->power.usage_count) > 0
++	    || dev->power.disable_depth > 0)
++		retval = -EAGAIN;
++	else if (!pm_children_suspended(dev))
++		retval = -EBUSY;
++	if (retval)
++		goto out;
++
++	dev->power.timer_expires = jiffies + msecs_to_jiffies(delay);
++	mod_timer(&dev->power.suspend_timer, dev->power.timer_expires);
++
++ out:
++	spin_unlock_irqrestore(&dev->power.lock, flags);
++
++	return retval;
++}
++EXPORT_SYMBOL_GPL(pm_schedule_suspend);
++
++/**
++ * pm_request_resume - Submit a resume request for given device.
++ * @dev: Device to resume.
++ *
++ * This function must be called under dev->power.lock with interrupts disabled.
++ */
++static int __pm_request_resume(struct device *dev)
++{
++	int retval = 0;
++
++	if (dev->power.runtime_failure)
++		return -EINVAL;
++
++	if (dev->power.runtime_status == RPM_ACTIVE)
++		retval = 1;
++	else if (dev->power.runtime_status == RPM_RESUMING)
++		retval = -EINPROGRESS;
++	else if (dev->power.disable_depth > 0)
++		retval = -EAGAIN;
++	if (retval < 0)
++		return retval;
++
++	pm_runtime_deactivate_timer(dev);
++
++	if (dev->power.request_pending) {
++		/* If non-resume request is pending, we can overtake it. */
++		dev->power.request = retval ? RPM_REQ_NONE : RPM_REQ_RESUME;
++		return retval;
++	} else if (retval) {
++		return retval;
++	}
++
++	dev->power.request = RPM_REQ_RESUME;
++	dev->power.request_pending = true;
++	queue_work(pm_wq, &dev->power.work);
++
++	return retval;
++}
++
++/**
++ * pm_request_resume - Submit a resume request for given device.
++ * @dev: Device to resume.
++ */
++int pm_request_resume(struct device *dev)
++{
++	unsigned long flags;
++	int retval;
++
++	spin_lock_irqsave(&dev->power.lock, flags);
++	retval = __pm_request_resume(dev);
++	spin_unlock_irqrestore(&dev->power.lock, flags);
++
++	return retval;
++}
++EXPORT_SYMBOL_GPL(pm_request_resume);
++
++/**
++ * __pm_runtime_get - Reference count a device and wake it up, if necessary.
++ * @dev: Device to handle.
++ * @sync: If set and the device is suspended, resume it synchronously.
++ *
++ * Increment the usage count of the device and if it was zero previously,
++ * resume it or submit a resume request for it, depending on the value of @sync.
++ */
++int __pm_runtime_get(struct device *dev, bool sync)
++{
++	int retval = 1;
++
++	if (atomic_add_return(1, &dev->power.usage_count) == 1)
++		retval = sync ? pm_runtime_resume(dev) : pm_request_resume(dev);
++
++	return retval;
++}
++EXPORT_SYMBOL_GPL(__pm_runtime_get);
++
++/**
++ * __pm_runtime_put - Decrement the device's usage counter and notify its bus.
++ * @dev: Device to handle.
++ * @sync: If the device's bus type is to be notified, do that synchronously.
++ *
++ * Decrement the usage count of the device and if it reaches zero, carry out a
++ * synchronous idle notification or submit an idle notification request for it,
++ * depending on the value of @sync.
++ */
++int __pm_runtime_put(struct device *dev, bool sync)
++{
++	int retval = 0;
++
++	if (atomic_dec_and_test(&dev->power.usage_count))
++		retval = sync ? pm_runtime_idle(dev) : pm_request_idle(dev);
++
++	return retval;
++}
++EXPORT_SYMBOL_GPL(__pm_runtime_put);
++
++/**
++ * __pm_runtime_set_status - Set run-time PM status of a device.
++ * @dev: Device to handle.
++ * @status: New run-time PM status of the device.
++ *
++ * If run-time PM of the device is disabled or its power.runtime_failure flag is
++ * set, the status may be changed either to RPM_ACTIVE, or to RPM_SUSPENDED, as
++ * long as that reflects the actual state of the device.  However, if the device
++ * has a parent and the parent is not active, and the parent's
++ * power.ignore_children flag is unset, the device's status cannot be set to
++ * RPM_ACTIVE, so -EBUSY is returned in that case.
++ *
++ * If successful, __pm_runtime_set_status() clears the power.runtime_failure
++ * flag and the device parent's counter of unsuspended children is modified to
++ * reflect the new status.  If the new status is RPM_SUSPENDED, an idle
++ * notification request for the parent is submitted.
++ */
++int __pm_runtime_set_status(struct device *dev, unsigned int status)
++{
++	struct device *parent = dev->parent;
++	unsigned long flags;
++	bool notify_parent = false;
++	int error = 0;
++
++	if (status != RPM_ACTIVE && status != RPM_SUSPENDED)
++		return -EINVAL;
++
++	spin_lock_irqsave(&dev->power.lock, flags);
++
++	if (!dev->power.runtime_failure && !dev->power.disable_depth)
++		goto out;
++
++	if (dev->power.runtime_status == status)
++		goto out_set;
++
++	if (status == RPM_SUSPENDED) {
++		/* It always is possible to set the status to 'suspended'. */
++		if (parent) {
++			atomic_add_unless(&parent->power.child_count, -1, 0);
++			notify_parent = !parent->power.ignore_children;
++		}
++		goto out_set;
++	}
++
++	if (parent) {
++		spin_lock_irq(&parent->power.lock);
++
++		/*
++		 * It is invalid to put an active child under a parent that is
++		 * not active, has run-time PM enabled and the
++		 * 'power.ignore_children' flag unset.
++		 */
++		if (!parent->power.disable_depth
++		    && !parent->power.ignore_children
++		    && parent->power.runtime_status != RPM_ACTIVE) {
++			error = -EBUSY;
++		} else {
++			if (dev->power.runtime_status == RPM_SUSPENDED)
++				atomic_inc(&parent->power.child_count);
++		}
++
++		spin_unlock_irq(&parent->power.lock);
++
++		if (error)
++			goto out;
++	}
++
++ out_set:
++	dev->power.runtime_status = status;
++	dev->power.runtime_failure = false;
++ out:
++	spin_unlock_irqrestore(&dev->power.lock, flags);
++
++	if (notify_parent)
++		pm_request_idle(parent);
++
++	return error;
++}
++EXPORT_SYMBOL_GPL(__pm_runtime_set_status);
++
++/**
++ * pm_runtime_enable - Enable run-time PM of a device.
++ * @dev: Device to handle.
++ */
++void pm_runtime_enable(struct device *dev)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&dev->power.lock, flags);
++
++	if (dev->power.disable_depth > 0)
++		dev->power.disable_depth--;
++	else
++		dev_warn(dev, "Unbalanced %s!", __func__);
++
++	spin_unlock_irqrestore(&dev->power.lock, flags);
++}
++EXPORT_SYMBOL_GPL(pm_runtime_enable);
++
++/**
++ * __pm_runtime_disable - Disable run-time PM of a device.
++ * @dev: Device to handle.
++ * @check_resume: If set, check if there's a resume request for the device.
++ *
++ * Increment power.disable_depth for the device and if was zero previously,
++ * cancel all pending run-time PM requests for the device and wait for all
++ * operations in progress to complete.  The device can be either active or
++ * suspended after its run-time PM has been disabled.
++ *
++ * If @check_resume is set and there's a resume request pending when
++ * __pm_runtime_disable() is called and power.disable_depth is zero, the
++ * function will wake up the device before disabling its run-time PM and will
++ * return 1.  Otherwise, 0 is returned.
++ */
++int __pm_runtime_disable(struct device *dev, bool check_resume)
++{
++	int retval = 0;
++
++	spin_lock_irq(&dev->power.lock);
++
++	if (dev->power.disable_depth > 0) {
++		dev->power.disable_depth++;
++		goto out;
++	}
++
++	/*
++	 * Wake up the device if there's a resume request pending, because that
++	 * means there probably is some I/O to process and disabling run-time PM
++	 * shouldn't prevent the device from processing the I/O.
++	 */
++	if (check_resume && dev->power.request_pending
++	    && dev->power.request == RPM_REQ_RESUME) {
++		/*
++		 * Prevent suspends and idle notifications from being carried
++		 * out after we have woken up the device.
++		 */
++		pm_runtime_get_noresume(dev);
++
++		__pm_runtime_resume(dev, false);
++
++		pm_runtime_put_noidle(dev);
++		retval = 1;
++	}
++
++	if (dev->power.disable_depth++ > 0)
++		goto out;
++
++	pm_runtime_deactivate_timer(dev);
++
++	if (dev->power.request_pending) {
++		dev->power.request = RPM_REQ_NONE;
++		spin_unlock_irq(&dev->power.lock);
++
++		cancel_work_sync(&dev->power.work);
++
++		spin_lock_irq(&dev->power.lock);
++		dev->power.request_pending = false;
++	}
++
++	if (dev->power.runtime_status == RPM_SUSPENDING
++	    || dev->power.runtime_status == RPM_RESUMING
++	    || dev->power.idle_notification) {
++		DEFINE_WAIT(wait);
++
++		/* Suspend or wake-up in progress. */
++		for (;;) {
++			prepare_to_wait(&dev->power.wait_queue, &wait,
++					TASK_UNINTERRUPTIBLE);
++			if (dev->power.runtime_status != RPM_SUSPENDING
++			    && dev->power.runtime_status != RPM_RESUMING
++			    && !dev->power.idle_notification)
++				break;
++			spin_unlock_irq(&dev->power.lock);
++
++			schedule();
++
++			spin_lock_irq(&dev->power.lock);
++		}
++		finish_wait(&dev->power.wait_queue, &wait);
++	}
++
++ out:
++	spin_unlock_irq(&dev->power.lock);
++
++	return retval;
++}
++EXPORT_SYMBOL_GPL(pm_runtime_disable);
++
++/**
++ * pm_runtime_init - Initialize run-time PM fields in given device object.
++ * @dev: Device object to initialize.
++ */
++void pm_runtime_init(struct device *dev)
++{
++	spin_lock_init(&dev->power.lock);
++
++	dev->power.runtime_status = RPM_SUSPENDED;
++	dev->power.idle_notification = false;
++
++	dev->power.disable_depth = 1;
++	atomic_set(&dev->power.usage_count, 0);
++
++	dev->power.runtime_failure = false;
++	dev->power.last_error = 0;
++
++	atomic_set(&dev->power.child_count, 0);
++	pm_suspend_ignore_children(dev, false);
++
++	dev->power.request_pending = false;
++	dev->power.request = RPM_REQ_NONE;
++	dev->power.deferred_resume = false;
++	INIT_WORK(&dev->power.work, pm_runtime_work);
++
++	dev->power.timer_expires = 0;
++	setup_timer(&dev->power.suspend_timer, pm_suspend_timer_fn,
++			(unsigned long)dev);
++
++	init_waitqueue_head(&dev->power.wait_queue);
++}
++
++/**
++ * pm_runtime_remove - Prepare for removing a device from device hierarchy.
++ * @dev: Device object being removed from device hierarchy.
++ */
++void pm_runtime_remove(struct device *dev)
++{
++	__pm_runtime_disable(dev, false);
++
++	/* Change the status back to 'suspended' to match the initial status. */
++	if (dev->power.runtime_status == RPM_ACTIVE)
++		pm_runtime_set_suspended(dev);
++}
+Index: linux-2.6/include/linux/pm_runtime.h
+===================================================================
+--- /dev/null
++++ linux-2.6/include/linux/pm_runtime.h
+@@ -0,0 +1,115 @@
++/*
++ * pm_runtime.h - Device run-time power management helper functions.
++ *
++ * Copyright (C) 2009 Rafael J. Wysocki <rjw@sisk.pl>
++ *
++ * This file is released under the GPLv2.
++ */
++
++#ifndef _LINUX_PM_RUNTIME_H
++#define _LINUX_PM_RUNTIME_H
++
++#include <linux/device.h>
++#include <linux/pm.h>
++
++#ifdef CONFIG_PM_RUNTIME
++
++extern struct workqueue_struct *pm_wq;
++
++extern int pm_runtime_idle(struct device *dev);
++extern int pm_runtime_suspend(struct device *dev);
++extern int pm_runtime_resume(struct device *dev);
++extern int pm_request_idle(struct device *dev);
++extern int pm_schedule_suspend(struct device *dev, unsigned int delay);
++extern int pm_request_resume(struct device *dev);
++extern int __pm_runtime_get(struct device *dev, bool sync);
++extern int __pm_runtime_put(struct device *dev, bool sync);
++extern int __pm_runtime_set_status(struct device *dev, unsigned int status);
++extern void pm_runtime_enable(struct device *dev);
++extern int __pm_runtime_disable(struct device *dev, bool check_resume);
++
++static inline bool pm_children_suspended(struct device *dev)
++{
++	return dev->power.ignore_children
++		|| !atomic_read(&dev->power.child_count);
++}
++
++static inline void pm_suspend_ignore_children(struct device *dev, bool enable)
++{
++	dev->power.ignore_children = enable;
++}
++
++static inline void pm_runtime_get_noresume(struct device *dev)
++{
++	atomic_inc(&dev->power.usage_count);
++}
++
++static inline void pm_runtime_put_noidle(struct device *dev)
++{
++	atomic_add_unless(&dev->power.usage_count, -1, 0);
++}
++
++#else /* !CONFIG_PM_RUNTIME */
++
++static inline int pm_runtime_idle(struct device *dev) { return -ENOSYS; }
++static inline int pm_runtime_suspend(struct device *dev) { return -ENOSYS; }
++static inline int pm_runtime_resume(struct device *dev) { return 0; }
++static inline int pm_request_idle(struct device *dev) { return -ENOSYS; }
++static inline int pm_schedule_suspend(struct device *dev, unsigned int delay)
++{
++	return -ENOSYS;
++}
++static inline int pm_request_resume(struct device *dev) { return 0; }
++static inline int __pm_runtime_get(struct device *dev, bool sync) { return 1; }
++static inline int __pm_runtime_put(struct device *dev, bool sync) { return 0; }
++static inline int __pm_runtime_set_status(struct device *dev,
++					    unsigned int status) { return 0; }
++static inline void pm_runtime_enable(struct device *dev) {}
++static inline int __pm_runtime_disable(struct device *dev, bool check_resume)
++{
++	return 0;
++}
++
++static inline bool pm_children_suspended(struct device *dev) { return false; }
++static inline void pm_suspend_ignore_children(struct device *dev, bool en) {}
++static inline void pm_runtime_get_noresume(struct device *dev) {}
++static inline void pm_runtime_put_noidle(struct device *dev) {}
++
++#endif /* !CONFIG_PM_RUNTIME */
++
++static inline int pm_runtime_get(struct device *dev)
++{
++	return __pm_runtime_get(dev, false);
++}
++
++static inline int pm_runtime_get_sync(struct device *dev)
++{
++	return __pm_runtime_get(dev, true);
++}
++
++static inline int pm_runtime_put(struct device *dev)
++{
++	return __pm_runtime_put(dev, false);
++}
++
++static inline int pm_runtime_put_sync(struct device *dev)
++{
++	return __pm_runtime_put(dev, true);
++}
++
++static inline int pm_runtime_set_active(struct device *dev)
++{
++	return __pm_runtime_set_status(dev, RPM_ACTIVE);
++}
++
++static inline void pm_runtime_set_suspended(struct device *dev)
++{
++	__pm_runtime_set_status(dev, RPM_SUSPENDED);
++}
++
++static inline int pm_runtime_disable(struct device *dev)
++{
++	return __pm_runtime_disable(dev, true);
++}
++
++#endif
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -21,6 +21,7 @@
+ #include <linux/kallsyms.h>
+ #include <linux/mutex.h>
+ #include <linux/pm.h>
++#include <linux/pm_runtime.h>
+ #include <linux/resume-trace.h>
+ #include <linux/rwsem.h>
+ #include <linux/interrupt.h>
+@@ -49,6 +50,16 @@ static DEFINE_MUTEX(dpm_list_mtx);
+ static bool transition_started;
+ 
+ /**
++ * device_pm_init - Initialize the PM-related part of a device object
++ * @dev: Device object being initialized.
++ */
++void device_pm_init(struct device *dev)
++{
++	dev->power.status = DPM_ON;
++	pm_runtime_init(dev);
++}
++
++/**
+  *	device_pm_lock - lock the list of active devices used by the PM core
+  */
+ void device_pm_lock(void)
+@@ -105,6 +116,7 @@ void device_pm_remove(struct device *dev
+ 	mutex_lock(&dpm_list_mtx);
+ 	list_del_init(&dev->power.entry);
+ 	mutex_unlock(&dpm_list_mtx);
++	pm_runtime_remove(dev);
+ }
+ 
+ /**
+@@ -512,6 +524,7 @@ static void dpm_complete(pm_message_t st
+ 			mutex_unlock(&dpm_list_mtx);
+ 
+ 			device_complete(dev, state);
++			pm_runtime_enable(dev);
+ 
+ 			mutex_lock(&dpm_list_mtx);
+ 		}
+@@ -757,11 +770,16 @@ static int dpm_prepare(pm_message_t stat
+ 		dev->power.status = DPM_PREPARING;
+ 		mutex_unlock(&dpm_list_mtx);
+ 
+-		error = device_prepare(dev, state);
++		if (pm_runtime_disable(dev) && device_may_wakeup(dev))
++			/* Wake-up during suspend. */
++			error = -EBUSY;
++		else
++			error = device_prepare(dev, state);
+ 
+ 		mutex_lock(&dpm_list_mtx);
+ 		if (error) {
+ 			dev->power.status = DPM_ON;
++			pm_runtime_enable(dev);
+ 			if (error == -EAGAIN) {
+ 				put_device(dev);
+ 				error = 0;
+Index: linux-2.6/drivers/base/dd.c
+===================================================================
+--- linux-2.6.orig/drivers/base/dd.c
++++ linux-2.6/drivers/base/dd.c
+@@ -23,6 +23,7 @@
+ #include <linux/kthread.h>
+ #include <linux/wait.h>
+ #include <linux/async.h>
++#include <linux/pm_runtime.h>
+ 
+ #include "base.h"
+ #include "power/power.h"
+@@ -202,7 +203,17 @@ int driver_probe_device(struct device_dr
+ 	pr_debug("bus: '%s': %s: matched device %s with driver %s\n",
+ 		 drv->bus->name, __func__, dev_name(dev), drv->name);
+ 
++	/*
++	 * Wait for run-time PM calls to complete and prevent new suspend calls
++	 * until the probe is done.
++	 */
++	pm_runtime_disable(dev);
++	pm_runtime_get_noresume(dev);
++	pm_runtime_enable(dev);
+ 	ret = really_probe(dev, drv);
++	pm_runtime_put_noidle(dev);
++	if (!ret)
++		pm_runtime_idle(dev);
+ 
+ 	return ret;
+ }
+@@ -306,6 +317,8 @@ static void __device_release_driver(stru
+ 
+ 	drv = dev->driver;
+ 	if (drv) {
++		pm_runtime_disable(dev);
++
+ 		driver_sysfs_remove(dev);
+ 
+ 		if (dev->bus)
+@@ -324,6 +337,8 @@ static void __device_release_driver(stru
+ 			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+ 						     BUS_NOTIFY_UNBOUND_DRIVER,
+ 						     dev);
++
++		pm_runtime_enable(dev);
+ 	}
+ }
+ 
+Index: linux-2.6/drivers/base/power/power.h
+===================================================================
+--- linux-2.6.orig/drivers/base/power/power.h
++++ linux-2.6/drivers/base/power/power.h
+@@ -1,7 +1,14 @@
+-static inline void device_pm_init(struct device *dev)
+-{
+-	dev->power.status = DPM_ON;
+-}
++#ifdef CONFIG_PM_RUNTIME
++
++extern void pm_runtime_init(struct device *dev);
++extern void pm_runtime_remove(struct device *dev);
++
++#else /* !CONFIG_PM_RUNTIME */
++
++static inline void pm_runtime_init(struct device *dev) {}
++static inline void pm_runtime_remove(struct device *dev) {}
++
++#endif /* !CONFIG_PM_RUNTIME */
+ 
+ #ifdef CONFIG_PM_SLEEP
+ 
+@@ -16,23 +23,33 @@ static inline struct device *to_device(s
+ 	return container_of(entry, struct device, power.entry);
+ }
+ 
++extern void device_pm_init(struct device *dev);
+ extern void device_pm_add(struct device *);
+ extern void device_pm_remove(struct device *);
+ extern void device_pm_move_before(struct device *, struct device *);
+ extern void device_pm_move_after(struct device *, struct device *);
+ extern void device_pm_move_last(struct device *);
+ 
+-#else /* CONFIG_PM_SLEEP */
++#else /* !CONFIG_PM_SLEEP */
++
++static inline void device_pm_init(struct device *dev)
++{
++	pm_runtime_init(dev);
++}
++
++static inline void device_pm_remove(struct device *dev)
++{
++	pm_runtime_remove(dev);
++}
+ 
+ static inline void device_pm_add(struct device *dev) {}
+-static inline void device_pm_remove(struct device *dev) {}
+ static inline void device_pm_move_before(struct device *deva,
+ 					 struct device *devb) {}
+ static inline void device_pm_move_after(struct device *deva,
+ 					struct device *devb) {}
+ static inline void device_pm_move_last(struct device *dev) {}
+ 
+-#endif
++#endif /* !CONFIG_PM_SLEEP */
+ 
+ #ifdef CONFIG_PM
+ 
+Index: linux-2.6/Documentation/power/runtime_pm.txt
+===================================================================
+--- /dev/null
++++ linux-2.6/Documentation/power/runtime_pm.txt
+@@ -0,0 +1,382 @@
++Run-time Power Management Framework for I/O Devices
++
++(C) 2009 Rafael J. Wysocki <rjw@sisk.pl>, Novell Inc.
++
++1. Introduction
++
++Support for run-time power management (run-time PM) of I/O devices is provided
++at the power management core (PM core) level by means of:
++
++* The power management workqueue pm_wq in which bus types and device drivers can
++  put their PM-related work items.  It is strongly recommended that pm_wq be
++  used for queuing all work items related to run-time PM, because this allows
++  them to be synchronized with system-wide power transitions (suspend to RAM,
++  hibernation and resume from system sleep states).  pm_wq is declared in
++  include/linux/pm_runtime.h and defined in kernel/power/main.c.
++
++* A number of run-time PM fields in the 'power' member of 'struct device' (which
++  is of the type 'struct dev_pm_info', defined in include/linux/pm.h) that can
++  be used for synchronizing run-time PM operations with one another.
++
++* Three device run-time PM callbacks in 'struct dev_pm_ops' (defined in
++  include/linux/pm.h).
++
++* A set of helper functions defined in drivers/base/power/runtime.c that can be
++  used for carrying out run-time PM operations in such a way that the
++  synchronization between them is taken care of by the PM core.  Bus types and
++  device drivers are encouraged to use these functions.
++
++The run-time PM callbacks present in 'struct dev_pm_ops', the device run-time PM
++fields of 'struct dev_pm_info' and the core helper functions provided for
++run-time PM are described below.
++
++2. Device Run-time PM Callbacks
++
++There are three device run-time PM callbacks defined in 'struct dev_pm_ops':
++
++struct dev_pm_ops {
++	...
++	int (*runtime_suspend)(struct device *dev);
++	int (*runtime_resume)(struct device *dev);
++	void (*runtime_idle)(struct device *dev);
++	...
++};
++
++The ->runtime_suspend() callback is executed by the PM core for the bus type of
++the device being suspended.  The bus type's callback is then _entirely_
++_responsible_ for handling the device as appropriate, which may, but need not
++include executing the device driver's own ->runtime_suspend() callback (from the
++PM core's point of view it is not necessary to implement a ->runtime_suspend()
++callback in a device driver as long as the bus type's ->runtime_suspend() knows
++what to do to handle the device).
++
++  * Once the bus type's ->runtime_suspend() callback has completed successfully
++    for given device, the PM core regards the device as suspended, which need
++    not mean that the device has been put into a low power state.  It is
++    supposed to mean, however, that the device will not process data and will
++    not communicate with the CPU(s) and RAM until its bus type's
++    ->runtime_resume() callback is executed for it.  The run-time PM status of
++    a device after successful execution of its bus type's ->runtime_suspend()
++    callback is 'suspended'.
++
++  * If the bus type's ->runtime_suspend() callback returns -EBUSY or -EAGAIN,
++    the device's run-time PM status is supposed to be 'active', which means that
++    the device _must_ be fully operational afterwards.
++
++  * If the bus type's ->runtime_suspend() callback returns an error code
++    different from -EBUSY or -EAGAIN, the PM core regards this as a fatal
++    error and will refuse to run the helper functions described in Section 4
++    for the device, until the status of it is directly set either to 'active'
++    or to 'suspended' (the PM core provides special helper functions for this
++    purpose).
++
++In particular, if the driver requires remote wakeup capability for proper
++functioning and device_may_wakeup() returns 'false' for the device, then
++->runtime_suspend() should return -EBUSY.  On the other hand, if
++device_may_wakeup() returns 'true' for the device and the device is put
++into a low power state during the execution of its bus type's
++->runtime_suspend(), it is expected that remote wake-up (i.e. hardware mechanism
++allowing the device to request a change of its power state, such as PCI PME)
++will be enabled for the device.  Generally, remote wake-up should be enabled
++for all input devices put into a low power state at run time.
++
++The ->runtime_resume() callback is executed by the PM core for the bus type of
++the device being woken up.  The bus type's callback is then _entirely_
++_responsible_ for handling the device as appropriate, which may, but need not
++include executing the device driver's own ->runtime_resume() callback (from the
++PM core's point of view it is not necessary to implement a ->runtime_resume()
++callback in a device driver as long as the bus type's ->runtime_resume() knows
++what to do to handle the device).
++
++  * Once the bus type's ->runtime_resume() callback has completed successfully,
++    the PM core regards the device as fully operational, which means that the
++    device _must_ be able to complete I/O operations as needed.  The run-time
++    PM status of the device is then 'active'.
++
++  * If the bus type's ->runtime_resume() callback returns an error code, the PM
++    core regards this as a fatal error and will refuse to run the helper
++    functions described in Section 4 for the device, until its status is
++    directly set either to 'active' or to 'suspended' (the PM core provides
++    special helper functions for this purpose).
++
++The ->runtime_idle() callback is executed by the PM core for the bus type of
++given device whenever the device appears to be idle, which is indicated to the
++PM core by two counters, the device's usage counter and the counter of 'active'
++children of the device.
++
++  * If any of these counters is decreased using a helper function provided by
++    the PM core and it turns out to be equal to zero, the other counter is
++    checked.  If that counter also is equal to zero, the PM core executes the
++    device bus type's ->runtime_idle() callback (with the device as an
++    argument).
++
++The action performed by a bus type's ->runtime_idle() callback is totally
++dependent on the bus type in question, but the expected and recommended action
++is to check if the device can be suspended (i.e. if all of the conditions
++necessary for suspending the device are satisfied) and to queue up a suspend
++request for the device in that case.
++
++The helper functions provided by the PM core, described in Section 4, guarantee
++that the following constraints are met with respect to the bus type's run-time
++PM callbacks:
++
++(1) The callbacks are mutually exclusive (e.g. it is forbidden to execute
++    ->runtime_suspend() in parallel with ->runtime_resume() or with another
++    instance of ->runtime_suspend() for the same device) with the exception that
++    ->runtime_suspend() or ->runtime_resume() can be executed in parallel with
++    ->runtime_idle() (although ->runtime_idle() will not be started while any
++    of the other callbacks is being executed for the same device).
++
++(2) ->runtime_idle() and ->runtime_suspend() can only be executed for 'active'
++    devices (i.e. the PM core will only execute ->runtime_idle() or
++    ->runtime_suspend() for the devices the run-time PM status of which is
++    'active').
++
++(3) ->runtime_idle() and ->runtime_suspend() can only be executed for a device
++    the usage counter of which is equal to zero _and_ either the counter of
++    'active' children of which is equal to zero, or the 'power.ignore_children'
++    flag of which is set.
++
++(4) ->runtime_resume() can only be executed for 'suspended' devices  (i.e. the
++    PM core will only execute ->runtime_resume() for the devices the run-time
++    PM status of which is 'suspended').
++
++Additionally, the helper functions provided by the PM core obey the following
++rules:
++
++  * If ->runtime_suspend() is about to be executed or there's a pending request
++    to execute it, ->runtime_idle() will not be executed for the same device.
++
++  * A request to execute or to schedule the execution of ->runtime_suspend()
++    will cancel any pending requests to execute ->runtime_idle() for the same
++    device.
++
++  * If ->runtime_resume() is about to be executed or there's a pending request
++    to execute it, the other callbacks will not be executed for the same device.
++
++  * A request to execute ->runtime_resume() will cancel any pending or
++    scheduled requests to execute the other callbacks for the same device.
++
++3. Run-time PM Device Fields
++
++The following device run-time PM fields are present in 'struct dev_pm_info', as
++defined in include/linux/pm.h:
++
++  struct timer_list suspend_timer;
++    - timer used for scheduling (delayed) suspend request
++
++  unsigned long timer_expires;
++    - timer expiration time, in jiffies (if this is different from zero, the
++      timer is running and will expire at that time, otherwise the timer is not
++      running)
++
++  struct work_struct work;
++    - work structure used for queuing up requests (i.e. work items in pm_wq)
++
++  wait_queue_head_t wait_queue;
++    - wait queue used if any of the helper functions needs to wait for another
++      one to complete
++
++  spinlock_t lock;
++    - lock used for synchronisation
++
++  atomic_t usage_count;
++    - the usage counter of the device
++
++  atomic_t child_count;
++    - the count of 'active' children of the device
++
++  unsigned int ignore_children;
++    - if set, the value of child_count is ignored (but still updated)
++
++  unsigned int disable_depth;
++    - used for disabling the helper funcions (they work normally if this is
++      equal to zero); the initial value of it is 1 (i.e. run-time PM is
++      initially disabled for all devices)
++
++  unsigned int runtime_failure;
++    - if set, there was a fatal error (one of the callbacks returned error code
++      as described in Section 2), so the helper funtions will not work until
++      this flag is cleared
++
++  int last_error;
++    - if runtime_failure is set, this is the error code returned by the
++      failing callback
++
++  unsigned int idle_notification;
++    - if set, ->runtime_idle() is being executed
++
++  unsigned int request_pending;
++    - if set, there's a pending request (i.e. a work item queued up into pm_wq)
++
++  enum rpm_request request;
++    - type of request that's pending (valid if request_pending is set)
++
++  unsigned int deferred_resume;
++    - set if ->runtime_resume() is about to be run while ->runtime_suspend() is
++      being executed for that device and it is not practical to wait for the
++      suspend to complete; means "queue up a resume request as soon as you've
++      suspended"
++
++  enum rpm_status runtime_status;
++    - the run-time PM status of the device; this field's initial value is
++      RPM_SUSPENDED, which means that each device is initially regarded by the
++      PM core as 'suspended', regardless of its real hardware status
++
++All of the above fields are members of the 'power' member of 'struct device'.
++
++4. Run-time PM Device Helper Functions
++
++The following run-time PM helper functions are defined in
++drivers/base/power/runtime.c and include/linux/pm_runtime.h:
++
++  void pm_runtime_init(struct device *dev);
++    - initialize the device run-time PM fields in 'struct dev_pm_info'
++
++  void pm_runtime_remove(struct device *dev);
++    - make sure that the run-time PM of the device will be disabled after
++      removing the device from device hierarchy
++
++  int pm_runtime_idle(struct device *dev);
++    - execute ->runtime_idle() for the device's bus type; returns 0 on success
++      or error code on failure, where -EINPROGRESS means that ->runtime_idle()
++      is already being executed
++
++  int pm_runtime_suspend(struct device *dev);
++    - execute ->runtime_suspend() for the device's bus type; returns 0 on
++      success, 1 if the device's run-time PM status was already 'suspended', or
++      error code on failure, where -EAGAIN or -EBUSY means it is safe to attempt
++      to suspend the device again in future
++
++  int pm_runtime_resume(struct device *dev);
++    - execute ->runtime_resume() for the device's bus type; returns 0 on
++      success, 1 if the device's run-time PM status was already 'active' or
++      error code on failure, where -EAGAIN means it may be safe to attempt to
++      resume the device again in future, but 'power.runtime_failure' should be
++      checked additionally
++
++  int pm_request_idle(struct device *dev);
++    - submit a request to execute ->runtime_idle() for the device's bus type
++      (the request is represented by a work item in pm_wq); returns 0 on success
++      or error code if the request has not been queued up
++
++  int pm_schedule_suspend(struct device *dev, unsigned int delay);
++    - schedule the execution of ->runtime_suspend() for the device's bus type
++      in future, where 'delay' is the time to wait before queuing up a suspend
++      work item in pm_wq, in milliseconds (if 'delay' is zero, the work item is
++      queued up immediately); returns 0 on success, 1 if the device's PM
++      run-time status was already 'suspended', or error code if the request
++      hasn't been scheduled (or queued up if 'delay' is 0); if the execution of
++      ->runtime_suspend() is already scheduled and not yet expired, the new
++      value of 'delay' will be used as the time to wait
++
++  int pm_request_resume(struct device *dev);
++    - submit a request to execute ->runtime_resume() for the device's bus type
++      (the request is represented by a work item in pm_wq); returns 0 on
++      success, 1 if the device's run-time PM status was already 'active', or
++      error code if the request hasn't been queued up
++
++  void pm_runtime_get_noresume(struct device *dev);
++    - increment the device's usage counter
++
++  int pm_runtime_get(struct device *dev);
++    - increment the device's usage counter, run pm_request_resume(dev) and
++      return its result
++
++  int pm_runtime_get_sync(struct device *dev);
++    - increment the device's usage counter, run pm_runtime_resume(dev) and
++      return its result
++
++  void pm_runtime_put_noidle(struct device *dev);
++    - decrement the device's usage counter
++
++  int pm_runtime_put(struct device *dev);
++    - decrement the device's usage counter, run pm_request_idle(dev) and return
++      its result
++
++  int pm_runtime_put_sync(struct device *dev);
++    - decrement the device's usage counter, run pm_runtime_idle(dev) and return
++      its result
++
++  void pm_runtime_enable(struct device *dev);
++    - enable the run-time PM helper functions to run the device bus type's
++      run-time PM callbacks described in Section 2
++
++  int pm_runtime_disable(struct device *dev);
++    - prevent the run-time PM helper functions from running the device bus
++      type's run-time PM callbacks, make sure that all of the pending run-time
++      PM operations on the device are either completed or canceled; returns
++      1 if there was a resume request pending and it was necessary to execute
++      ->runtime_resume() for the device's bus type to satisfy that request,
++      otherwise 0 is returned
++
++  void pm_suspend_ignore_children(struct device *dev, bool enable);
++    - set/unset the power.ignore_children flag of the device
++
++  int pm_runtime_set_active(struct device *dev);
++    - clear the device's 'power.runtime_error' flag, set the device's run-time
++      PM status to 'active' and update its parent's counter of 'active'
++      children as appropriate (it is only valid to use this function if
++      'power.runtime_failure' is set or 'power.disable_depth' is greater than
++      zero); it will fail and return error code if the device has a parent
++      which is not active and the 'power.ignore_children' flag of which is unset
++
++  void pm_runtime_set_suspended(struct device *dev);
++    - clear the device's 'power.runtime_error' flag, set the device's run-time
++      PM status to 'suspended' and update its parent's counter of 'active'
++      children as appropriate (it is only valid to use this function if
++      'power.runtime_failure' is set or 'power.disable_depth' is greater than
++      zero)
++
++It is safe to execute the following helper functions from interrupt context:
++
++pm_request_idle()
++pm_schedule_suspend()
++pm_request_resume()
++pm_runtime_get_noresume()
++pm_runtime_get()
++pm_runtime_put_noidle()
++pm_runtime_put()
++pm_suspend_ignore_children()
++pm_runtime_set_active()
++pm_runtime_set_suspended()
++pm_runtime_enable()
++
++5. Run-time PM Initialization
++
++Initially, the run-time PM is disabled for all devices, which means that the
++majority of the run-time PM helper funtions described in Section 4 will return
++-EAGAIN until pm_runtime_enable() is called for the device.
++
++In addition to that, the initial run-time PM status of all devices is
++'suspended', but it need not reflect the actual physical state of the device.
++Thus, if the device is initially active (i.e. it is able to process I/O), its
++run-time PM status must be changed to 'active', with the help of
++pm_runtime_set_active(), before pm_runtime_enable() is called for the device.
++
++However, if the device has a parent and the parent's run-time PM is enabled,
++calling pm_runtime_set_active() for the device will affect the parent, unless
++the parent's 'power.ignore_children' flag is set.  Namely, in that case the
++parent won't be able to suspend at run time, using the PM core's helper
++functions, as long as the child's status is 'active', even if the child's
++run-time PM is still disabled (i.e. pm_runtime_enable() hasn't been called for
++the child yet or pm_runtime_disable() has been called for it).  For this reason,
++once pm_runtime_set_active() has been called for the device, pm_runtime_enable()
++should be called for it too as soon as reasonably possible or its run-time PM
++status should be changed back to 'suspended' with the help of
++pm_runtime_set_suspended().
++
++If the defaul initial run-time PM status of the device (i.e. 'suspended')
++reflects the actual state of the device, its bus type's or its driver's
++->probe() callback will likely need to wake it up using one of the PM core's
++helper functions described in Section 4.  In that case, pm_runtime_resume()
++should be used.  Of course, for this purpose the device's run-time PM has to be
++enabled earlier by calling pm_runtime_enable().
++
++If ->probe() calls pm_runtime_suspend() or pm_runtime_idle(), or their
++asynchronous counterparts, they will fail returning -EAGAIN, because the
++device's usage counter is incremented by the core before executing ->probe().
++Still, it may be desirable to suspend the device as soon as ->probe() has
++finished, so the core uses pm_runtime_idle() to invoke the device bus type's
++->runtime_idle() callback at that time, which only happens even if ->probe()
++is successful.
