@@ -1,90 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933978AbZHEJgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933993AbZHEJgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933978AbZHEJgd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 05:36:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933817AbZHEJgb
+	id S933993AbZHEJgi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 05:36:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933983AbZHEJgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 05:36:31 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49053 "EHLO
+	Wed, 5 Aug 2009 05:36:35 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49063 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933794AbZHEJg3 (ORCPT
+	with ESMTP id S933980AbZHEJge (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 05:36:29 -0400
+	Wed, 5 Aug 2009 05:36:34 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200908051136.682859934@firstfloor.org>
 In-Reply-To: <200908051136.682859934@firstfloor.org>
 To: akpm@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, fengguang.wu@intel.com,
        hidehiro.kawai.ez@hitachi.com
-Subject: [PATCH] [1/19] HWPOISON: Add page flag for poisoned pages
-Message-Id: <20090805093628.B90C3B15D8@basil.firstfloor.org>
-Date: Wed,  5 Aug 2009 11:36:28 +0200 (CEST)
+Subject: [PATCH] [7/19] HWPOISON: x86: Add VM_FAULT_HWPOISON handling to x86 page fault handler v2
+Message-Id: <20090805093634.C8C1DB15D8@basil.firstfloor.org>
+Date: Wed,  5 Aug 2009 11:36:34 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hardware poisoned pages need special handling in the VM and shouldn't be 
-touched again. This requires a new page flag. Define it here.
+Add VM_FAULT_HWPOISON handling to the x86 page fault handler. This is 
+very similar to VM_FAULT_OOM, the only difference is that a different
+si_code is passed to user space and the new addr_lsb field is initialized.
 
-The page flags wars seem to be over, so it shouldn't be a problem
-to get a new one.
+v2: Make the printk more verbose/unique
 
-v2: Add TestSetHWPoison (suggested by Johannes Weiner)
-
-Acked-by: Christoph Lameter <cl@linux.com>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/linux/page-flags.h |   17 ++++++++++++++++-
- 1 file changed, 16 insertions(+), 1 deletion(-)
+ arch/x86/mm/fault.c |   19 +++++++++++++++----
+ 1 file changed, 15 insertions(+), 4 deletions(-)
 
-Index: linux/include/linux/page-flags.h
+Index: linux/arch/x86/mm/fault.c
 ===================================================================
---- linux.orig/include/linux/page-flags.h
-+++ linux/include/linux/page-flags.h
-@@ -51,6 +51,9 @@
-  * PG_buddy is set to indicate that the page is free and in the buddy system
-  * (see mm/page_alloc.c).
-  *
-+ * PG_hwpoison indicates that a page got corrupted in hardware and contains
-+ * data with incorrect ECC bits that triggered a machine check. Accessing is
-+ * not safe since it may cause another machine check. Don't touch!
-  */
+--- linux.orig/arch/x86/mm/fault.c
++++ linux/arch/x86/mm/fault.c
+@@ -167,6 +167,7 @@ force_sig_info_fault(int si_signo, int s
+ 	info.si_errno	= 0;
+ 	info.si_code	= si_code;
+ 	info.si_addr	= (void __user *)address;
++	info.si_addr_lsb = si_code == BUS_MCEERR_AR ? PAGE_SHIFT : 0;
  
- /*
-@@ -102,6 +105,9 @@ enum pageflags {
- #ifdef CONFIG_IA64_UNCACHED_ALLOCATOR
- 	PG_uncached,		/* Page has been mapped as uncached */
- #endif
-+#ifdef CONFIG_MEMORY_FAILURE
-+	PG_hwpoison,		/* hardware poisoned page. Don't touch */
-+#endif
- 	__NR_PAGEFLAGS,
+ 	force_sig_info(si_signo, &info, tsk);
+ }
+@@ -799,10 +800,12 @@ out_of_memory(struct pt_regs *regs, unsi
+ }
  
- 	/* Filesystems */
-@@ -263,6 +269,15 @@ PAGEFLAG(Uncached, uncached)
- PAGEFLAG_FALSE(Uncached)
- #endif
- 
-+#ifdef CONFIG_MEMORY_FAILURE
-+PAGEFLAG(HWPoison, hwpoison)
-+TESTSETFLAG(HWPoison, hwpoison)
-+#define __PG_HWPOISON (1UL << PG_hwpoison)
-+#else
-+PAGEFLAG_FALSE(HWPoison)
-+#define __PG_HWPOISON 0
-+#endif
-+
- static inline int PageUptodate(struct page *page)
+ static void
+-do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address)
++do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address,
++	  unsigned int fault)
  {
- 	int ret = test_bit(PG_uptodate, &(page)->flags);
-@@ -387,7 +402,7 @@ static inline void __ClearPageTail(struc
- 	 1 << PG_private | 1 << PG_private_2 | \
- 	 1 << PG_buddy	 | 1 << PG_writeback | 1 << PG_reserved | \
- 	 1 << PG_slab	 | 1 << PG_swapcache | 1 << PG_active | \
--	 1 << PG_unevictable | __PG_MLOCKED)
-+	 1 << PG_unevictable | __PG_MLOCKED | __PG_HWPOISON)
+ 	struct task_struct *tsk = current;
+ 	struct mm_struct *mm = tsk->mm;
++	int code = BUS_ADRERR;
  
- /*
-  * Flags checked when a page is prepped for return by the page allocator.
+ 	up_read(&mm->mmap_sem);
+ 
+@@ -818,7 +821,15 @@ do_sigbus(struct pt_regs *regs, unsigned
+ 	tsk->thread.error_code	= error_code;
+ 	tsk->thread.trap_no	= 14;
+ 
+-	force_sig_info_fault(SIGBUS, BUS_ADRERR, address, tsk);
++#ifdef CONFIG_MEMORY_FAILURE
++	if (fault & VM_FAULT_HWPOISON) {
++		printk(KERN_ERR
++	"MCE: Killing %s:%d due to hardware memory corruption fault at %lx\n",
++			tsk->comm, tsk->pid, address);
++		code = BUS_MCEERR_AR;
++	}
++#endif
++	force_sig_info_fault(SIGBUS, code, address, tsk);
+ }
+ 
+ static noinline void
+@@ -828,8 +839,8 @@ mm_fault_error(struct pt_regs *regs, uns
+ 	if (fault & VM_FAULT_OOM) {
+ 		out_of_memory(regs, error_code, address);
+ 	} else {
+-		if (fault & VM_FAULT_SIGBUS)
+-			do_sigbus(regs, error_code, address);
++		if (fault & (VM_FAULT_SIGBUS|VM_FAULT_HWPOISON))
++			do_sigbus(regs, error_code, address, fault);
+ 		else
+ 			BUG();
+ 	}
