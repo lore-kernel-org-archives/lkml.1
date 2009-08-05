@@ -1,72 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752153AbZHETov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751871AbZHETsC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752153AbZHETov (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 15:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbZHETou
+	id S1751871AbZHETsC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 15:48:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbZHETsB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 15:44:50 -0400
-Received: from mail.gmx.net ([213.165.64.20]:58467 "HELO mail.gmx.net"
+	Wed, 5 Aug 2009 15:48:01 -0400
+Received: from mail.gmx.net ([213.165.64.20]:57588 "HELO mail.gmx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751398AbZHETou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 15:44:50 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX199SYFWhFt9RX0Sd2SkFwE698sFc7Im70TWlI7eLb
-	KFYWLPuw8YHgbm
-Date: Wed, 5 Aug 2009 21:44:48 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Ian Molton <ian@mnementh.co.uk>
-cc: Magnus Damm <magnus.damm@gmail.com>,
-       pHilipp Zabel <philipp.zabel@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
-       Magnus Damm <damm@opensource.se>
-Subject: Re: MMC: Make the configuration memory resource optional
-In-Reply-To: <4A798A4B.4000901@mnementh.co.uk>
-Message-ID: <Pine.LNX.4.64.0908051702180.5802@axis700.grange>
-References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange> 
- <aec7e5c30907290608i43a80fe1xe4ef0f3847855709@mail.gmail.com> 
- <4A7053E8.8050303@mnementh.co.uk>  <20090729201702.GA28202@linux-sh.org> 
- <74d0deb30907291355n39df7db0v1d7afc93917adc14@mail.gmail.com> 
- <4A716F1C.2050805@mnementh.co.uk>  <Pine.LNX.4.64.0907301246330.4462@axis700.grange>
-  <4A71F2A5.4060206@mnementh.co.uk>  <aec7e5c30908021952j7947b513w7d62f2c4d87bd3c5@mail.gmail.com>
-  <4A787C2C.5070000@mnementh.co.uk> <aec7e5c30908041908p568f413albef7dede3fd2cb83@mail.gmail.com>
- <4A798A4B.4000901@mnementh.co.uk>
+	id S1751246AbZHETsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 15:48:00 -0400
+X-Authenticated: #1045983
+X-Provags-ID: V01U2FsdGVkX19Nk84FjyZNI1GbVgBNYr2QFvqJx/FIP6AMjYpqMo
+	/C9spB6vlOtYqC
+Message-ID: <4A79E1EE.9070107@gmx.de>
+Date: Wed, 05 Aug 2009 21:47:58 +0200
+From: Helge Deller <deller@gmx.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+CC: Sam Ravnborg <sam@ravnborg.org>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       parisc-linux@lists.parisc-linux.org
+Subject: Re: nfs: __setup_str_nfs_root_setup causes a section type conflict
+References: <200907311446.33486.elendil@planet.nl>	 <200908032121.10635.elendil@planet.nl>	 <1249328851.18161.32.camel@heimdal.trondhjem.org>	 <200908032257.51739.elendil@planet.nl>	 <1249333643.18161.36.camel@heimdal.trondhjem.org>	 <20090803215237.GA956@merkur.ravnborg.org> <1249337493.18161.52.camel@heimdal.trondhjem.org>
+In-Reply-To: <1249337493.18161.52.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 X-Y-GMX-Trusted: 0
 X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Aug 2009, Ian Molton wrote:
+On 08/04/2009 12:11 AM, Trond Myklebust wrote:
+> On Mon, 2009-08-03 at 23:52 +0200, Sam Ravnborg wrote:
+>> On Mon, Aug 03, 2009 at 05:07:23PM -0400, Trond Myklebust wrote:
+>>> On Mon, 2009-08-03 at 22:57 +0200, Frans Pop wrote:
+>>>> $ make init/do_mounts.o
+>>>>    CHK     include/linux/version.h
+>>>>    CHK     include/linux/utsrelease.h
+>>>>    SYMLINK include/asm ->  include/asm-parisc
+>>>>    CALL    scripts/checksyscalls.sh
+>>>>    CC      init/do_mounts.o
+>>>>
+>>>> while:
+>>>>
+>>>> $ make fs/nfs/nfsroot.o
+>>>>    CHK     include/linux/version.h
+>>>>    CHK     include/linux/utsrelease.h
+>>>>    SYMLINK include/asm ->  include/asm-parisc
+>>>>    CALL    scripts/checksyscalls.sh
+>>>>    CC      fs/nfs/nfsroot.o
+>>>> fs/nfs/nfsroot.c:403: error: __setup_str_nfs_root_setup causes a section type
+>>>> conflict
+>>> To me that looks like some kind of compiler bug.
+>> unspecified behaviour is a better name for it.
+>>
+>> We have two variables we have forced a section on.
+>> One variable is marked RO by the compiler while the other is not.
+>> This results in a section type conflict because all
+>> symbols needs to have the same falgs.
+>>
+>> We usually triggers this with powerpc builds (64 bit IIRC),
+>> and now with parisc too.
+>>
+>> The only way to fix it is to move one of the offending
+>> variables to __initdata.
+>> There is two variales to consider - the compiler only
+>> mention one of them.
 
-> Hi all,
-> 
-> Could all non-MFD users of tmio-mmc please ensure that the following is
-> actually true on your hardware?
-> 
->   mmc->f_max = pdata->hclk;
->   mmc->f_min = mmc->f_max / 512;
+Yes.
+It seems this was already once described on the parisc mailing list:
+http://article.gmane.org/gmane.linux.ports.parisc/1816
 
-That's what I currently have in the driver, yes.
+Helge
 
-> According to all the data I have, the smallest divider setting of 0x100 is /2
-> and only MFD controllers with the CNF area can select no-divider mode.
-> 
-> this would mean that non-MFD chips should be doing:
-> 
->   mmc->f_max = pdata->hclk / 2;
->   mmc->f_min = pdata->hclk / 512;
 
-How do we verify this? Do I need some "very fast" card, so that sd would 
-try to drive the clock beyond pdata->hclk / 2, which should then fail? 
-Currently I'm using 24MHz (copied from the original driver), and the only 
-thing I know about the controller is its "Maximum operating frequency: 25 
-MHz."
+>>
+>> Trying to declare the variables const etc usually has
+>> no good effect.
+>
+> So why would it be happening in the NFSroot case, but not in
+> do_mounts.c? They're both using the standard __setup() macro with a
+> constant string, and an __init function argument.
+>
+> Futhermore, when grepping for '__initconst', it seems that the
+> combination with 'static const' is the norm rather than the exception.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
