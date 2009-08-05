@@ -1,91 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751392AbZHEUzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752119AbZHEVRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751392AbZHEUzv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 16:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbZHEUzu
+	id S1752119AbZHEVRm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 17:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbZHEVRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 16:55:50 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:59102 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751005AbZHEUzu (ORCPT
+	Wed, 5 Aug 2009 17:17:42 -0400
+Received: from mail-yx0-f175.google.com ([209.85.210.175]:47071 "EHLO
+	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751267AbZHEVRl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 16:55:50 -0400
+	Wed, 5 Aug 2009 17:17:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
+        d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=lk8YbX1vUyROLX3Qj+zIHPExsMrZn37/u6pFhEu948jzlXn0salTc/CbDUaWvzXpdT
-         UIoktkforNRoMgYy+EkwybtComyWrztD52hg5yBva2FSK8nwF5qR63KHEWDqh1IXy4Qt
-         fpqqdPtA7MGBF75c/tLyIid7EF9yBdkxPppiE=
+        b=qtx0V9qL/RX0zgz8aj5wvT7+r8jHNokBypsVrNW6HBxFbEOhKBD2/R19CarXPMzOma
+         lFwEpGPfXuoylbr7z5Tl29QWAmwSauOMpyXEylsg2AgGANu8GfkOKaTvGnLcZb7jbnU6
+         Bc+t/BhUCFUb9M9c5k5RGsa7V6FrHDFGY4k0A=
 MIME-Version: 1.0
-In-Reply-To: <20090805171513.GA10443@kroah.com>
-References: <20090805171513.GA10443@kroah.com>
-Date: Wed, 5 Aug 2009 21:55:49 +0100
-Message-ID: <9b2b86520908051355o79699e99ke045b635c6b443ad@mail.gmail.com>
-Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based 
-	/dev
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Jan Blunck <jblunck@suse.de>, gregkh@suse.de,
-       Harald Hoyer <harald@redhat.com>,
-       Scott James Remnant <scott@ubuntu.com>
+In-Reply-To: <alpine.DEB.2.00.0908050929460.21700@gandalf.stny.rr.com>
+References: <21d7e9970908050013m71ce7500x1d04a591de21ca30@mail.gmail.com>
+	 <alpine.DEB.2.00.0908050929460.21700@gandalf.stny.rr.com>
+Date: Thu, 6 Aug 2009 07:17:38 +1000
+Message-ID: <21d7e9970908051417p2560cc24w67a3cff8c6a6fc43@mail.gmail.com>
+Subject: Re: Please revert fc4c73554c9d93b3e495f2f7acae1323b0d5db84. Re: 
+	[PATCH 1/2] ftrace: Fix the conditional that updates $ref_func
+From: Dave Airlie <airlied@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Matt Fleming <matt@console-pimps.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@codemonkey.org.uk>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/5/09, Greg KH <greg@kroah.com> wrote:
-> Here's the devtmpfs patch again.  For .32 it's a simple and clean patch.
-> It's been tested and agreed by three major distros that this is a good
-> idea.  SuSE has been shipping this in their kernels for a while now with
-> no problems, and actual speedups measured on their boot times.  Gentoo
-> also has been testing it, but we haven't gotten a tested-by: line from
-> them yet, hopefully that will happen soon.
+On Wed, Aug 5, 2009 at 11:30 PM, Steven Rostedt<rostedt@goodmis.org> wrote:
 >
-> A number of embedded distros have also privately said they would be
-> using this patch, I really don't understand why they don't publically
-> want to state this, but oh well...
+> On Wed, 5 Aug 2009, Dave Airlie wrote:
 >
-> It's been in linux-next for many months now, with no reported
-> regressions at all as well.
+>> On Fri, Jul 24, 2009 at 2:16 AM, Matt Fleming<matt@console-pimps.org> wrote:
+>> > Fix the conditional that checks if we already have a $ref_func and that
+>> > the new function is weak. The code as previously checking whether either
+>> > condition was false, and we really need to only update $ref_func is both
+>> > cconditions are false.
+>> >
+>>
+>> This breaks the powerpc build on Fedora.
+>>
+>> When building on ppc64 this commit causes the links of drivers/hwmon/lm93.o
+>> to fail.
+>>
+>> It introduces an undefined symbol
+>>                  U .LM93_IN_FROM_REG
+>>
+>> that isn't produced when this patch is reverted
+>>
+>> This was found when the Fedora kernel failed to build when I pulled in
+>> -rc5-git3.
+>>
+>> can be seen at the end of:
+>> http://koji.fedoraproject.org/koji/getfile?taskID=1582002&name=build.log
+>>
+>> So can we revert this (at this stage in -rc5 or maybe fix it).
 >
-> thanks,
+> I'll boot up my PPC64 box and see if I can reproduce. In the mean time,
+> could you send me your config (privately)
 >
-> greg k-h
->
-> --------------
->
->
-> From: Kay Sievers <kay.sievers@vrfy.org>
->
-> Devtmpfs lets the kernel create a tmpfs instance called devtmpfs
-> very early at kernel initialization, before any driver-core device
-> is registered. Every device with a major/minor will provide a
-> device node in devtmpfs.
->
-> Devtmpfs can be changed and altered by userspace at any time,
-> and in any way needed - just like today's udev-mounted tmpfs.
-> Unmodified udev versions will run just fine on top of it, and will
-> recognize an already existing kernel-created device node and use it.
-> The default node permissions are root:root 0600. Proper permissions
-> and user/group ownership, meaningful symlinks, all other policy still
-> needs to be applied by userspace.
 
-> +	err = vfs_path_lookup(dev_mnt->mnt_root, dev_mnt,
-> +			      path, LOOKUP_PARENT, &nd);
-> +	if (err == 0) {
-> +		struct dentry *dentry;
-> +
-> +		/* create directory right away */
-> +		dentry = lookup_create(&nd, 1);
-> +		if (!IS_ERR(dentry)) {
-> +			err = vfs_mkdir(nd.path.dentry->d_inode,
-> +					dentry, 0775);
+http://people.freedesktop.org/~airlied/for_mfleming.tar.gz
 
-Is there a typo here?  I think the mode should be 0755.   0755 is used
-below, and that does fit better with the 0600 mode for device nodes.
+has my config along with the stuff produced.
 
-Thanks
-Alan
+Dave.
