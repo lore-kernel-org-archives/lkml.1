@@ -1,124 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934032AbZHEJgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934041AbZHEJhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934032AbZHEJgu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 05:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933983AbZHEJgs
+	id S934041AbZHEJhc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 05:37:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933973AbZHEJh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 05:36:48 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49105 "EHLO
+	Wed, 5 Aug 2009 05:37:29 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49151 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933998AbZHEJgl (ORCPT
+	with ESMTP id S933997AbZHEJgp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 05:36:41 -0400
+	Wed, 5 Aug 2009 05:36:45 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200908051136.682859934@firstfloor.org>
 In-Reply-To: <200908051136.682859934@firstfloor.org>
 To: akpm@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, fengguang.wu@intel.com,
        hidehiro.kawai.ez@hitachi.com
-Subject: [PATCH] [14/19] HWPOISON: Add PR_MCE_KILL prctl to control early kill behaviour per process
-Message-Id: <20090805093641.DB176B15D8@basil.firstfloor.org>
-Date: Wed,  5 Aug 2009 11:36:41 +0200 (CEST)
+Subject: [PATCH] [18/19] HWPOISON: Add madvise() based injector for hardware poisoned pages v3
+Message-Id: <20090805093645.E5F95B15D8@basil.firstfloor.org>
+Date: Wed,  5 Aug 2009 11:36:45 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This allows processes to override their early/late kill
-behaviour on hardware memory errors.
+Impact: optional, useful for debugging
 
-Typically applications which are memory error aware is
-better of with early kill (see the error as soon
-as possible), all others with late kill (only
-see the error when the error is really impacting execution)
+Add a new madvice sub command to inject poison for some
+pages in a process' address space.  This is useful for
+testing the poison page handling.
 
-There's a global sysctl, but this way an application
-can set its specific policy.
+Open issues:
 
-We're using two bits, one to signify that the process
-stated its intention and that 
+- This patch allows root to tie up arbitary amounts of memory.
+Should this be disabled inside containers?
+- There's a small race window between getting the page and injecting.
+The patch drops the ref count because otherwise memory_failure
+complains about dangling references. In theory with a multi threaded
+injector one could inject poison for a process foreign page this way.
+Not a serious issue right now.
 
-I also made the prctl future proof by enforcing
-the unused arguments are 0.
-
-The state is inherited to children for now. I've
-been considering to reset it on exec, but not done for
-now (TBD).
-
-Note this makes us officially run out of process flags
-on 32bit, but the next patch can easily add another field.
-
-Manpage patch will be supplied separately.
+v2: Use write flag for get_user_pages to make sure to always get
+a fresh page
+v3: Don't request write mapping (Fengguang Wu)
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/linux/prctl.h |    2 ++
- include/linux/sched.h |    2 ++
- kernel/sys.c          |   22 ++++++++++++++++++++++
- 3 files changed, 26 insertions(+)
+ include/asm-generic/mman-common.h |    1 +
+ mm/madvise.c                      |   34 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 35 insertions(+)
 
-Index: linux/include/linux/sched.h
+Index: linux/mm/madvise.c
 ===================================================================
---- linux.orig/include/linux/sched.h
-+++ linux/include/linux/sched.h
-@@ -1674,6 +1674,7 @@ extern cputime_t task_gtime(struct task_
- #define PF_EXITPIDONE	0x00000008	/* pi exit done on shut down */
- #define PF_VCPU		0x00000010	/* I'm a virtual CPU */
- #define PF_FORKNOEXEC	0x00000040	/* forked but didn't exec */
-+#define PF_MCE_PROCESS  0x00000080      /* process policy on mce errors */
- #define PF_SUPERPRIV	0x00000100	/* used super-user privileges */
- #define PF_DUMPCORE	0x00000200	/* dumped core */
- #define PF_SIGNALED	0x00000400	/* killed by a signal */
-@@ -1693,6 +1694,7 @@ extern cputime_t task_gtime(struct task_
- #define PF_SPREAD_PAGE	0x01000000	/* Spread page cache over cpuset */
- #define PF_SPREAD_SLAB	0x02000000	/* Spread some slab caches over cpuset */
- #define PF_THREAD_BOUND	0x04000000	/* Thread bound to specific cpu */
-+#define PF_MCE_EARLY    0x08000000      /* Early kill for mce process policy */
- #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
- #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
- #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
-Index: linux/kernel/sys.c
-===================================================================
---- linux.orig/kernel/sys.c
-+++ linux/kernel/sys.c
-@@ -1528,6 +1528,28 @@ SYSCALL_DEFINE5(prctl, int, option, unsi
- 				current->timer_slack_ns = arg2;
- 			error = 0;
- 			break;
-+		case PR_MCE_KILL:
-+			if (arg4 | arg5)
-+				return -EINVAL;
-+			switch (arg2) {
-+			case 0:
-+				if (arg3 != 0)
-+					return -EINVAL;
-+				current->flags &= ~PF_MCE_PROCESS;
-+				break;
-+			case 1:
-+				current->flags |= PF_MCE_PROCESS;
-+				if (arg3 != 0)
-+					current->flags |= PF_MCE_EARLY;
-+				else
-+					current->flags &= ~PF_MCE_EARLY;
-+				break;
-+			default:
-+				return -EINVAL;
-+			}
-+			error = 0;
-+			break;
-+
- 		default:
- 			error = -EINVAL;
- 			break;
-Index: linux/include/linux/prctl.h
-===================================================================
---- linux.orig/include/linux/prctl.h
-+++ linux/include/linux/prctl.h
-@@ -88,4 +88,6 @@
- #define PR_TASK_PERF_COUNTERS_DISABLE		31
- #define PR_TASK_PERF_COUNTERS_ENABLE		32
+--- linux.orig/mm/madvise.c
++++ linux/mm/madvise.c
+@@ -207,6 +207,36 @@ static long madvise_remove(struct vm_are
+ 	return error;
+ }
  
-+#define PR_MCE_KILL	33
++#ifdef CONFIG_MEMORY_FAILURE
++/*
++ * Error injection support for memory error handling.
++ */
++static int madvise_hwpoison(unsigned long start, unsigned long end)
++{
++	int ret = -EIO;
++	/*
++	 * RED-PEN
++	 * This allows to tie up arbitary amounts of memory.
++	 * Might be a good idea to disable it inside containers even for root.
++	 */
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++	for (; start < end; start += PAGE_SIZE) {
++		struct page *p;
++		int ret = get_user_pages(current, current->mm, start, 1,
++						0, 0, &p, NULL);
++		if (ret != 1)
++			return ret;
++		printk(KERN_INFO "Injecting memory failure for page %lx at %lx\n",
++		       page_to_pfn(p), start);
++		/* Ignore return value for now */
++		__memory_failure(page_to_pfn(p), 0, 1);
++		put_page(p);
++	}
++	return ret;
++}
++#endif
 +
- #endif /* _LINUX_PRCTL_H */
+ static long
+ madvise_vma(struct vm_area_struct *vma, struct vm_area_struct **prev,
+ 		unsigned long start, unsigned long end, int behavior)
+@@ -307,6 +337,10 @@ SYSCALL_DEFINE3(madvise, unsigned long,
+ 	int write;
+ 	size_t len;
+ 
++#ifdef CONFIG_MEMORY_FAILURE
++	if (behavior == MADV_HWPOISON)
++		return madvise_hwpoison(start, start+len_in);
++#endif
+ 	if (!madvise_behavior_valid(behavior))
+ 		return error;
+ 
+Index: linux/include/asm-generic/mman-common.h
+===================================================================
+--- linux.orig/include/asm-generic/mman-common.h
++++ linux/include/asm-generic/mman-common.h
+@@ -34,6 +34,7 @@
+ #define MADV_REMOVE	9		/* remove these pages & resources */
+ #define MADV_DONTFORK	10		/* don't inherit across fork */
+ #define MADV_DOFORK	11		/* do inherit across fork */
++#define MADV_HWPOISON	12		/* poison a page for testing */
+ 
+ /* compatibility flags */
+ #define MAP_FILE	0
