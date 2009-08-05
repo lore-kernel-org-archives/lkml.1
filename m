@@ -1,73 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934399AbZHENeG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934414AbZHENeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934399AbZHENeG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 09:34:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934359AbZHENeF
+	id S934414AbZHENeS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 09:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934376AbZHENeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 09:34:05 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:48655 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934324AbZHENeD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 09:34:03 -0400
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
-       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 05 Aug 2009 06:33:57 -0700
-In-Reply-To: <20090805112123.6552.73574.sendpatchset@localhost.localdomain> (Amerigo Wang's message of "Wed\, 5 Aug 2009 07\:19\:02 -0400")
-Message-ID: <m1eirqtmey.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 5 Aug 2009 09:34:17 -0400
+Received: from mail.mnementh.co.uk ([173.45.232.4]:49149 "EHLO mnementh.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934308AbZHENeO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 09:34:14 -0400
+Message-ID: <4A798A4B.4000901@mnementh.co.uk>
+Date: Wed, 05 Aug 2009 14:34:03 +0100
+From: Ian Molton <ian@mnementh.co.uk>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: amwang@redhat.com, avorontsov@ru.mvista.com, mingo@elte.hu, akpm@linux-foundation.org, nhorman@redhat.com, linux-ia64@vger.kernel.org, tony.luck@intel.com, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Amerigo Wang <amwang@redhat.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
-	*      [score: 0.0816]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.5 XM_Body_Dirty_Words Contains a dirty word
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [Patch 0/7] Implement crashkernel=auto
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+To: Magnus Damm <magnus.damm@gmail.com>
+CC: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       pHilipp Zabel <philipp.zabel@gmail.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
+       Magnus Damm <damm@opensource.se>
+Subject: Re: MMC: Make the configuration memory resource optional
+References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>	 <aec7e5c30907290608i43a80fe1xe4ef0f3847855709@mail.gmail.com>	 <4A7053E8.8050303@mnementh.co.uk>	 <20090729201702.GA28202@linux-sh.org>	 <74d0deb30907291355n39df7db0v1d7afc93917adc14@mail.gmail.com>	 <4A716F1C.2050805@mnementh.co.uk>	 <Pine.LNX.4.64.0907301246330.4462@axis700.grange>	 <4A71F2A5.4060206@mnementh.co.uk>	 <aec7e5c30908021952j7947b513w7d62f2c4d87bd3c5@mail.gmail.com>	 <4A787C2C.5070000@mnementh.co.uk> <aec7e5c30908041908p568f413albef7dede3fd2cb83@mail.gmail.com>
+In-Reply-To: <aec7e5c30908041908p568f413albef7dede3fd2cb83@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amerigo Wang <amwang@redhat.com> writes:
+Hi all,
 
-> This series of patch implements automatically reserved memory for crashkernel,
-> by introducing a new boot option "crashkernel=auto". This idea is from Neil.
->
-> In case of breaking user-space applications, it modifies this boot option after
-> it decides how much memory should be reserved.
->
-> On different arch, the threshold and reserved memory size is different. Please
-> refer patch 7/7 which contains an update for the documentation.
->
-> Note: This patchset was only tested on x86_64 with differernt memory sizes.
+Could all non-MFD users of tmio-mmc please ensure that the following is 
+actually true on your hardware?
 
-This seems like a silly hard code. Especially for a feature distros don't
-care enough about to implement a working initrd for.
+   mmc->f_max = pdata->hclk;
+   mmc->f_min = mmc->f_max / 512;
 
-Has anyone bothered to justify those large amounts of memory?
-Where does the 128M go?
+According to all the data I have, the smallest divider setting of 0x100 
+is /2 and only MFD controllers with the CNF area can select no-divider mode.
 
-Please pardon me for being a cynic but I don't see the command line option
-being the bottleneck for real users to make this work.
+this would mean that non-MFD chips should be doing:
 
-Eric
+   mmc->f_max = pdata->hclk / 2;
+   mmc->f_min = pdata->hclk / 512;
