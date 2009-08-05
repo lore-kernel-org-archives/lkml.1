@@ -1,93 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751901AbZHEEPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751771AbZHEE2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751901AbZHEEPp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 00:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbZHEEPo
+	id S1751771AbZHEE2j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 00:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751273AbZHEE2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 00:15:44 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35902 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751604AbZHEEPn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 00:15:43 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Andrea Arcangeli <aarcange@redhat.com>, Avi Kivity <avi@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-In-Reply-To: <20090805024058.GA8886@localhost>
-References: <20090805024058.GA8886@localhost>
-Message-Id: <20090805130936.5BAD.A69D9226@jp.fujitsu.com>
+	Wed, 5 Aug 2009 00:28:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35966 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750995AbZHEE2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 00:28:36 -0400
+Message-ID: <4A790A67.7020206@redhat.com>
+Date: Tue, 04 Aug 2009 21:28:23 -0700
+From: Josh Stone <jistone@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090721 Fedora/3.0-2.5.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed,  5 Aug 2009 13:15:40 +0900 (JST)
+To: SystemTap <systemtap@sourceware.org>
+CC: LKML <linux-kernel@vger.kernel.org>, LWN <lwn@lwn.net>
+Subject: SystemTap release 0.9.9
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+The SystemTap team proudly announces release 0.9.9.
 
-> Greetings,
-> 
-> Jeff Dike found that many KVM pages are being refaulted in 2.6.29:
-> 
-> "Lots of pages between discarded due to memory pressure only to be
-> faulted back in soon after. These pages are nearly all stack pages.
-> This is not consistent - sometimes there are relatively few such pages
-> and they are spread out between processes."
+  faster script compilation, improved userspace probing, support for new
+  DWARF_OPs, self-monitoring markers, enhanced variable access, new SNMP
+  tapset, new dentry tapset, bug fixes, and more!
 
-I suprise this result really.
+= Where to get it
 
-  - Why this issue happened only on kvm?
-  - Why shrink_inactive_list() can't find pte young bit?
-    Is this really unused stack?
+  http://sourceware.org/systemtap/ - our project page
+  http://sourceware.org/systemtap/ftp/releases/systemtap-0.9.9.tar.gz
+  http://koji.fedoraproject.org/koji/packageinfo?packageID=615
+  git tag release-0.9.9 (commit 1e9b189f)
 
-> 
-> The refaults can be drastically reduced by the following patch, which
-> respects the referenced bit of all anonymous pages (including the KVM
-> pages).
-> 
-> However it risks reintroducing the problem addressed by commit 7e9cd4842
-> (fix reclaim scalability problem by ignoring the referenced bit,
-> mainly the pte young bit). I wonder if there are better solutions?
-> 
-> Thanks,
-> Fengguang
-> 
-> ---
->  mm/vmscan.c |   10 +++++-----
->  1 file changed, 5 insertions(+), 5 deletions(-)
-> 
-> --- linux.orig/mm/vmscan.c
-> +++ linux/mm/vmscan.c
-> @@ -1288,12 +1288,12 @@ static void shrink_active_list(unsigned 
->  			 * Identify referenced, file-backed active pages and
->  			 * give them one more trip around the active list. So
->  			 * that executable code get better chances to stay in
-> -			 * memory under moderate memory pressure.  Anon pages
-> -			 * are not likely to be evicted by use-once streaming
-> -			 * IO, plus JVM can create lots of anon VM_EXEC pages,
-> -			 * so we ignore them here.
-> +			 * memory under moderate memory pressure.
-> +			 *
-> +			 * Also protect anon pages: swapping could be costly,
-> +			 * and KVM guest's referenced bit is helpful.
->  			 */
-> -			if ((vm_flags & VM_EXEC) && !PageAnon(page)) {
-> +			if ((vm_flags & VM_EXEC) || PageAnon(page)) {
->  				list_add(&page->lru, &l_active);
->  				continue;
->  			}
+= How to build it
 
+  See the README and NEWS files at
+  http://sourceware.org/git/?p=systemtap.git;a=tree
+  Further information at http://sourceware.org/systemtap/wiki/
 
+= SystemTap frontend (stap) changes
+
+- Translation pass 2 is significantly faster by avoiding unnecessary
+  searching through a kernel build/module directory tree.
+
+- SystemTap now has userspace markers in its own binaries, and the stap
+  tapset provides the available probepoints and local variables.
+
+- Systemwide kernel .function.return (kretprobe) maxactive defaults may
+  be overridden with the -DKRETACTIVE=nnn parameter.
+
+- When compiled against elfutils 0.142 systemtap now handles the new
+  DW_OP_call_frame_CFA generated by by GCC.
+
+- Dwarf probes now show parameters and local variables in the verbose
+  listing mode (-L).
+
+- User space PROBE marks are not always found with or without separate
+  debuginfo. The .probes section itself is now always put in the main
+  elf file and marked as allocated. When when building pic code the
+  section is marked writable.  fixes the selinux memory check problems
+  seen with programs using STAP_PROBES.
+
+- The stapgraph application can generate graphs of data and events
+  emitted by systemtap scripts in real time.  Run "stapgraph
+  testsuite/systemtap.examples/general/grapher.stp" for an example of
+  graphing the system load average and keyboard events.
+
+= SystemTap script language changes
+
+- The syntax for dereferencing $target variables and @cast() gained new
+  capabilities:
+  - Array indexes can now be arbitrary numeric expressions.
+  - Array subscripts are now supported on pointer types.
+  - An '&' operator before a @cast or $target returns the address of the
+    final component, especially useful for nested structures.
+
+= SystemTap tapset changes
+
+- statement() probes can now override "address not at start of statement"
+  errors in guru mode. They also provide alternative addresses to use
+  in non-guru mode.
+
+- Symbol aliases are now resolved to their canonical dwarf names.  For
+  example, probing "malloc" in libc resolves to "__libc_malloc".
+
+- For reading all probe variables, kernel.mark now supports $$vars and
+  $$parms, and process.syscall now supports $$vars.
+
+- The SNMP tapset provides probes and functions for many network
+  statistics.  See stapprobes.snmp(3stap) for more details.
+
+- The dentry tapset provides functions to map kernel VFS directory entries
+  to file or full path names: d_path(), d_name() and reverse_path_walk().
+
+- uprobes and ustack() are more robust when used on applications that
+  depend on prelinked/separate debuginfo shared libraries.
+
+- Miscellaneous new tapset functions:
+  - pgrp() returns the process group ID of the current process
+  - str_replace() performs string replacement
+
+= New script examples
+
+- locks/bkl.stp            Tracing contention on Big Kernel Lock
+- locks/bkl_stats.stp      Per-process statistics on Big Kernel Lock
+- memory/numa_faults.stp   Summarize process misses across NUMA nodes
+- network/autofs4.stp      Watch autofs4 operations
+- network/sk_stream_wait_memory.stp  Watch for filled network buffers
+- network/tcpipstat.stp    Display network statistics for TCP sockets
+- process/chng_cpu.stp     Monitor changes in processor executing a task
+- process/forktracker.stp  Trace creation of processes
+- process/migrate.stp      Track the migration of specific executables
+
+= Code contributors for this release
+
+  Dave Brolley, David J. Wilder, David Smith, Don Domingo, Eugeniy
+  Meshcheryakov, Frank Ch. Eigler, Jeff Moyer, Josh Stone, Kent
+  Sebastian, Mark Wielaard, Masami Hiramatsu, Przemysław Pawełczyk,
+  Robb Romans, Roland McGrath, Stan Cox, Tim Moore, Varun Chandramohan,
+  Wenji Huang, William Cohen
+
+= Examples of tested kernel versions
+
+  2.6.18 (el5/ia64/i686/x86_64)
+  2.6.27.25 (f10/i686/x86_64)
+  2.6.29.5 (f11/i686/x86_64)
+  2.6.31 (i686/x86_64)
+
+= Known issues with this release
+
+  Some kernel crashes continue to be reported when a script probes broad
+  kernel function wildcards.
+
+= Bugs fixed for this release
+
+   2049 revise $target->subfield syntax
+   3498 speed up pass-2/3 via elfutils report_..._offline predicate
+   4166 Should support array-like indexing on $pointer variables
+   5930 need construct for $context variable address
+   9908 uprobes-free user-space markers
+  10075 emit more error message details in probe registration logic
+  10182 systemtap.spec should clean up old leftover runtime/uprobes/
+  10185 stap uprobe script on rawhide causes system crash
+  10258 procfs probes should not put strings on kernel stack
+  10273 uprobes fail to insert on prelinked library
+  10274 exelib optimized builds don't work
+  10277 some utf-8 chars (in script path names etc.) not escaped
+  10279 allow general override of kretprobe maxactive
+  10285 user space PROBE marks aren't found with separate debuginfo
+  10298 bring back NULL
+  10305 mark probes fail on prelinked shared library
+  10307 beginning of statement check should be overridden in guru mode
+  10308 beginning of statement check should provide alternatives
+  10313 Build error due to a deprecation in elfutils
+  10323 some ustack exelib.exp tests fail with prelinked shared libs
+  10327 follow symbol aliases for debuginfo search
+  10329 fix sdt.h license
+  10335 systemtap.base/strftime.exp hangs
+  10348 Compilation failure with gcc snapshot: switch jumps over init
+  10381 sdt.h macros create relocatable addresses in non-writable sect.
+  10386 itrace tests fail on 2.6.31-rc2 unknown symbol find_task_by_vpid
+  10388 Support DW_OP_call_frame_cfa
+  10398 DW_OP_call_frame CFA support doesn't work for prelink so's
+  10399 dtrace should obey prefix install path
+  10410 Add jmoyer's autofs4 / dentry scripts
+  10421 task.stp pid2task tapset function fails on 2.6.31-0.67.rc2
+  10424 All tracepoints are unusable if any one header is bad
+  10427 Multiple tracepoint OKs!
+  10453 crash testcase always fail because testlog.stp has been removed
+  10458 uaddr() returns one past current instruction for uprobes
+  10459 -w should squelch all warnings
+  10475 pointer-array confused about array element size
+
+= Test results on various systems
+
+  After running "sudo make installcheck" from the test suite, on a
+  suitably equipped machine (kernel debugging data and other stuff
+  installed), you should see 1100-1200 passes and a small handful of
+  failures.
 
