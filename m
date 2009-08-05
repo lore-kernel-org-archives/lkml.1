@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934203AbZHEKzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934218AbZHEK4B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934203AbZHEKzt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 06:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934059AbZHEKzt
+	id S934218AbZHEK4B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 06:56:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934206AbZHEKz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 06:55:49 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57643 "EHLO hera.kernel.org"
+	Wed, 5 Aug 2009 06:55:59 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57650 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934196AbZHEKzq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 06:55:46 -0400
-Date: Wed, 5 Aug 2009 10:55:14 GMT
-From: tip-bot for Cyrill Gorcunov <gorcunov@openvz.org>
+	id S934207AbZHEKz6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 06:55:58 -0400
+Date: Wed, 5 Aug 2009 10:55:28 GMT
+From: tip-bot for Cyrill Gorcunov <gorcunov@gmail.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       gorcunov@openvz.org, tglx@linutronix.de, mingo@elte.hu
+       gorcunov@openvz.org, macro@linux-mips.org, tglx@linutronix.de,
+       gorcunov@gmail.com, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       gorcunov@openvz.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090801075435.769301745@openvz.org>
-References: <20090801075435.769301745@openvz.org>
-Subject: [tip:x86/apic] x86, ioapic: Throw BUG instead of NULL dereference
-Message-ID: <tip-a7428cd2ef77734465e36bceb43290e37e2a97c6@git.kernel.org>
-Git-Commit-ID: a7428cd2ef77734465e36bceb43290e37e2a97c6
+       gorcunov@openvz.org, macro@linux-mips.org, tglx@linutronix.de,
+       gorcunov@gmail.com, mingo@elte.hu
+In-Reply-To: <20090722205259.GE15805@lenovo>
+References: <20090722205259.GE15805@lenovo>
+Subject: [tip:x86/apic] x86, apic: Drop redundant bit assignment
+Message-ID: <tip-9910887af84e33ba98fd6792029470ae80166208@git.kernel.org>
+Git-Commit-ID: 9910887af84e33ba98fd6792029470ae80166208
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 05 Aug 2009 10:55:15 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 05 Aug 2009 10:55:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a7428cd2ef77734465e36bceb43290e37e2a97c6
-Gitweb:     http://git.kernel.org/tip/a7428cd2ef77734465e36bceb43290e37e2a97c6
-Author:     Cyrill Gorcunov <gorcunov@openvz.org>
-AuthorDate: Sat, 1 Aug 2009 11:48:00 +0400
+Commit-ID:  9910887af84e33ba98fd6792029470ae80166208
+Gitweb:     http://git.kernel.org/tip/9910887af84e33ba98fd6792029470ae80166208
+Author:     Cyrill Gorcunov <gorcunov@gmail.com>
+AuthorDate: Thu, 23 Jul 2009 00:52:59 +0400
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 5 Aug 2009 10:30:50 +0200
+CommitDate: Wed, 5 Aug 2009 10:30:52 +0200
 
-x86, ioapic: Throw BUG instead of NULL dereference
+x86, apic: Drop redundant bit assignment
 
-Instead of plain NULL deref we better throw error
-message with a backtrace. Actually we need more
-gracious error handling here. Meanwhile leave it
-as is.
+cpu_has_apic has already investigated boot_cpu_data
+X86_FEATURE_APIC bit for being clear if condition is
+triggered.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-Cc: yinghai@kernel.org
-LKML-Reference: <20090801075435.769301745@openvz.org>
+So there is no need to clear this bit second time.
+
+Signed-off-by: Cyrill Gorcuno v <gorcunov@openvz.org>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>
+LKML-Reference: <20090722205259.GE15805@lenovo>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/apic/io_apic.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ arch/x86/kernel/apic/apic.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index ffd8fdf..2a145d3 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -503,6 +503,10 @@ static void add_pin_to_irq_node(struct irq_cfg *cfg, int node, int apic, int pin
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index 0a1c283..0b021c5 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -1651,7 +1651,6 @@ int __init APIC_init_uniprocessor(void)
+ 	    APIC_INTEGRATED(apic_version[boot_cpu_physical_apicid])) {
+ 		pr_err("BIOS bug, local APIC 0x%x not detected!...\n",
+ 			boot_cpu_physical_apicid);
+-		clear_cpu_cap(&boot_cpu_data, X86_FEATURE_APIC);
+ 		return -1;
  	}
- 
- 	entry = get_one_free_irq_2_pin(node);
-+	if (!entry) {
-+		printk(KERN_ERR "can not alloc irq_pin_list\n");
-+		BUG_ON(1);
-+	}
- 	entry->apic = apic;
- 	entry->pin = pin;
- 
+ #endif
