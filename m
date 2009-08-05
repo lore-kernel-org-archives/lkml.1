@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751241AbZHERyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751131AbZHER4K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751241AbZHERyY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 13:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbZHERyY
+	id S1751131AbZHER4K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 13:56:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750821AbZHER4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 13:54:24 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51359 "EHLO mx2.redhat.com"
+	Wed, 5 Aug 2009 13:56:09 -0400
+Received: from kroah.org ([198.145.64.141]:53840 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750821AbZHERyX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 13:54:23 -0400
-Message-ID: <4A79C70C.6010200@redhat.com>
-Date: Wed, 05 Aug 2009 13:53:16 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	id S1750771AbZHER4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 13:56:08 -0400
+Date: Wed, 5 Aug 2009 10:55:05 -0700
+From: Greg KH <greg@kroah.com>
+To: David Vrabel <david.vrabel@csr.com>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Jan Blunck <jblunck@suse.de>, gregkh@suse.de,
+       Harald Hoyer <harald@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>
+Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
+ /dev
+Message-ID: <20090805175505.GA6968@kroah.com>
+References: <20090805171513.GA10443@kroah.com>
+ <4A79C4A6.9000707@csr.com>
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Andrea Arcangeli <aarcange@redhat.com>, Avi Kivity <avi@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-References: <20090805024058.GA8886@localhost>
-In-Reply-To: <20090805024058.GA8886@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A79C4A6.9000707@csr.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang wrote:
+On Wed, Aug 05, 2009 at 06:43:02PM +0100, David Vrabel wrote:
+> Greg KH wrote:
+> > 
+> > --- a/drivers/base/core.c
+> > +++ b/drivers/base/core.c
+> > @@ -929,6 +929,8 @@ int device_add(struct device *dev)
+> >  		error = device_create_sys_dev_entry(dev);
+> >  		if (error)
+> >  			goto devtattrError;
+> > +
+> > +		devtmpfs_create_node(dev);
+> >  	}
+> >  
+> >  	error = device_add_class_symlinks(dev);
+> [...]
+> > --- /dev/null
+> > +++ b/drivers/base/devtmpfs.c
+> [...]
+> > +int devtmpfs_create_node(struct device *dev)
+> 
+> Returns an int that's never checked.  Is this intentional?
+> 
+> > +int devtmpfs_delete_node(struct device *dev)
+> 
+> Similarly.
 
-> The refaults can be drastically reduced by the following patch, which
-> respects the referenced bit of all anonymous pages (including the KVM
-> pages).
+Probably not, Kay, care to respin this?
 
-The big question is, which referenced bit?
+thanks,
 
-All anonymous pages get the referenced bit set when they are
-initially created.  Acting on that bit is pretty useless, since
-it does not add any information at all.
-
-> However it risks reintroducing the problem addressed by commit 7e9cd4842
-> (fix reclaim scalability problem by ignoring the referenced bit,
-> mainly the pte young bit). I wonder if there are better solutions?
-
-Reintroducing that problem is disastrous for large systems
-running eg. JVMs or certain scientific computing workloads.
-
-When you have a 256GB system that is low on memory, you need
-to be able to find a page to swap out soon.  If all 64 million
-pages in your system are "recently referenced", you run into
-BIG trouble.
-
-I do not believe we can afford to reintroduce that problem.
-
-Also, the inactive list (where references to anonymous pages
-_do_ count) is pretty big.  Is it not big enough in Jeff's
-test case?
-
-Jeff, what kind of workloads are you running in the guests?
-
--- 
-All rights reversed.
+greg k-h
