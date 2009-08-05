@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933931AbZHEJRM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933943AbZHEJRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933931AbZHEJRM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 05:17:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933894AbZHEJRI
+	id S933943AbZHEJRY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 05:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933894AbZHEJRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 05:17:08 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:65502 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933810AbZHEJRH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 05:17:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=C5D1BSTDChY4KJmeniLtLD9a1M4kGSxuotiqINWV1+MDmMJV4JyoiEDs6RhCW5B889
-         v+PlUR0rLoE7SFYfjRt6zz5OkKxz6CoVokBW/qRHasxYeDVc4i7wmuhToEyjN+dGnKSo
-         57MfTYYjO/DwtCLK2hTLNSq3usc5txtA7Z+4I=
+	Wed, 5 Aug 2009 05:17:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34411 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933933AbZHEJRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 05:17:21 -0400
+Date: Wed, 5 Aug 2009 11:16:35 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
+       lwoodman@redhat.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Fr?d?ric Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 4/4] tracing, page-allocator: Add a postprocessing
+	script for page-allocator-related ftrace events
+Message-ID: <20090805091635.GA16718@elte.hu>
+References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie> <1249409546-6343-5-git-send-email-mel@csn.ul.ie> <20090804112246.4e6d0ab1.akpm@linux-foundation.org> <4A787D84.2030207@redhat.com> <20090804121332.46df33a7.akpm@linux-foundation.org> <20090804204857.GA32092@csn.ul.ie> <20090805074103.GD19322@elte.hu> <20090805090742.GA21950@csn.ul.ie>
 MIME-Version: 1.0
-In-Reply-To: <20090804151838.c5cb362b.akpm@linux-foundation.org>
-References: <4A76D4DA.8090905@gmail.com>
-	 <20090804151838.c5cb362b.akpm@linux-foundation.org>
-Date: Wed, 5 Aug 2009 11:17:05 +0200
-X-Google-Sender-Auth: f6487e437ca064cf
-Message-ID: <10f740e80908050217i3e207bdct54460103e171c9ae@mail.gmail.com>
-Subject: Re: [PATCH] serial167: Read buffer overflow
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roel Kluin <roel.kluin@gmail.com>, alan@redhat.com,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       "Linux/m68k" <linux-m68k@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090805090742.GA21950@csn.ul.ie>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 5, 2009 at 00:18, Andrew Morton<akpm@linux-foundation.org> wrote:
-> btw, m68k allmodconfig in current mainline is sick:
->
-> And in linux-next m68k allmodconfig is dead as a doornail:
 
-Will look at it (eventually)...
+* Mel Gorman <mel@csn.ul.ie> wrote:
 
-But recovering from a too-long absence and replacing the computer that
-died before the absence
-while keeping the mill of life running take its time...
+> > I.e. we'd have your patch in the end, but also with some 
+> > feel-good thoughts made about it on a higher level, so that we 
+> > can be reasonably sure that we have a meaningful set of 
+> > tracepoints.
+> 
+> Ok, I think I could put together such a description for the page 
+> allocator tracepoints using the leader and your mail as starting 
+> points. I reckon the best place for the end result would be 
+> Documentation/vm/tracepoints.txt
 
-Gr{oetje,eeting}s,
+The canonical place for that info is Documentation/trace/ - we 
+already have a collection of similar bits there:
 
-						Geert
+ events.txt  kmemtrace.txt  power.txt               tracepoints.txt
+ ftrace.txt  mmiotrace.txt  ring-buffer-design.txt
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	Ingo
