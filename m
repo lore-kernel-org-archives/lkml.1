@@ -1,163 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933234AbZHEBuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933238AbZHEBzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933234AbZHEBuQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 21:50:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933104AbZHEBuO
+	id S933238AbZHEBzO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 21:55:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933104AbZHEBzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 21:50:14 -0400
-Received: from sh.osrg.net ([192.16.179.4]:46850 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933008AbZHEBuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 21:50:12 -0400
-Date: Wed, 5 Aug 2009 10:48:14 +0900
-To: mingo@elte.hu
-Cc: davem@davemloft.net, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org, reif@earthlink.net, x86@kernel.org,
-       tony.luck@intel.com, akpm@linux-foundation.org, arnd@arndb.de
-Subject: Re: [PATCH 1/8] remove flush_write_buffers() in
- dma-mapping-common.h
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1247466360-13330-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-References: <1247466360-13330-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<1247466360-13330-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	Tue, 4 Aug 2009 21:55:13 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:60878 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933058AbZHEBzL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 21:55:11 -0400
+Date: Tue, 4 Aug 2009 18:54:30 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, netdev <netdev@vger.kernel.org>,
+       davem@davemloft.net
+Subject: [PATCH -mmotm] xfrm4: fix build when SYSCTLs are disabled
+Message-Id: <20090804185430.fb8e8561.randy.dunlap@oracle.com>
+In-Reply-To: <200908042125.n74LP9qY018119@imap1.linux-foundation.org>
+References: <200908042125.n74LP9qY018119@imap1.linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090805104735P.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 05 Aug 2009 10:48:16 +0900 (JST)
+X-Source-IP: abhmt004.oracle.com [141.146.116.13]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010203.4A78E654.0029:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 13 Jul 2009 15:25:53 +0900
-FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-> From: Arnd Bergmann <arnd@arndb.de>
-> 
-> This moves flush_write_buffers() in asm-generic/dma-mapping-common.h to
-> arch/x86/kernel/pci-nommu.c.
-> 
-> The purpose of this patch is that, we can avoid defining NULL
-> flush_write_buffers() on IA64 and SPARC.
-> 
-> dma-mapping-common.h is used by X86 and IA64 (and SPARC soon) but only
-> X86 with CONFIG_X86_OOSTORE or CONFIG_X86_PPRO_FENCE actually uses
-> flush_write_buffers(). CONFIG_X86_OOSTORE or CONFIG_X86_PPRO_FENCE is
-> usable with only kernel/pci-nommu.c (that is, not usable with other
-> X86 IOMMU implementations such as SWIOTLB, VT-d, etc) so we can safely
-> move flush_write_buffers() in asm-generic/dma-mapping-common.h to
-> arch/x86/kernel/pci-nommu.c.
-> 
-> The further discussion is:
-> 
-> http://lkml.org/lkml/2009/6/28/104
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Fix build errors when SYSCTLs are not enabled:
+(.init.text+0x5154): undefined reference to `net_ipv4_ctl_path'
+(.init.text+0x5176): undefined reference to `register_net_sysctl_table'
+xfrm4_policy.c:(.exit.text+0x573): undefined reference to `unregister_net_sysctl_table
 
-Ping?
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ net/ipv4/xfrm4_policy.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-> ---
->  arch/x86/kernel/pci-nommu.c              |   27 ++++++++++++++++++++++-----
->  include/asm-generic/dma-mapping-common.h |    6 ------
->  2 files changed, 22 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/pci-nommu.c b/arch/x86/kernel/pci-nommu.c
-> index 71d412a..f7eb967 100644
-> --- a/arch/x86/kernel/pci-nommu.c
-> +++ b/arch/x86/kernel/pci-nommu.c
-> @@ -79,12 +79,29 @@ static void nommu_free_coherent(struct device *dev, size_t size, void *vaddr,
->  	free_pages((unsigned long)vaddr, get_order(size));
->  }
->  
-> +static void nommu_sync_single_for_device(struct device *dev,
-> +			dma_addr_t addr, size_t size,
-> +			enum dma_data_direction dir)
-> +{
-> +	flush_write_buffers();
-> +}
-> +
-> +
-> +static void nommu_sync_sg_for_device(struct device *dev,
-> +			struct scatterlist *sg, int nelems,
-> +			enum dma_data_direction dir)
-> +{
-> +	flush_write_buffers();
-> +}
-> +
->  struct dma_map_ops nommu_dma_ops = {
-> -	.alloc_coherent	= dma_generic_alloc_coherent,
-> -	.free_coherent	= nommu_free_coherent,
-> -	.map_sg		= nommu_map_sg,
-> -	.map_page	= nommu_map_page,
-> -	.is_phys	= 1,
-> +	.alloc_coherent		= dma_generic_alloc_coherent,
-> +	.free_coherent		= nommu_free_coherent,
-> +	.map_sg			= nommu_map_sg,
-> +	.map_page		= nommu_map_page,
-> +	.sync_single_for_device = nommu_sync_single_for_device,
-> +	.sync_sg_for_device	= nommu_sync_sg_for_device,
-> +	.is_phys		= 1,
->  };
->  
->  void __init no_iommu_init(void)
-> diff --git a/include/asm-generic/dma-mapping-common.h b/include/asm-generic/dma-mapping-common.h
-> index 5406a60..e694263 100644
-> --- a/include/asm-generic/dma-mapping-common.h
-> +++ b/include/asm-generic/dma-mapping-common.h
-> @@ -103,7 +103,6 @@ static inline void dma_sync_single_for_cpu(struct device *dev, dma_addr_t addr,
->  	if (ops->sync_single_for_cpu)
->  		ops->sync_single_for_cpu(dev, addr, size, dir);
->  	debug_dma_sync_single_for_cpu(dev, addr, size, dir);
-> -	flush_write_buffers();
->  }
->  
->  static inline void dma_sync_single_for_device(struct device *dev,
-> @@ -116,7 +115,6 @@ static inline void dma_sync_single_for_device(struct device *dev,
->  	if (ops->sync_single_for_device)
->  		ops->sync_single_for_device(dev, addr, size, dir);
->  	debug_dma_sync_single_for_device(dev, addr, size, dir);
-> -	flush_write_buffers();
->  }
->  
->  static inline void dma_sync_single_range_for_cpu(struct device *dev,
-> @@ -132,7 +130,6 @@ static inline void dma_sync_single_range_for_cpu(struct device *dev,
->  		ops->sync_single_range_for_cpu(dev, addr, offset, size, dir);
->  		debug_dma_sync_single_range_for_cpu(dev, addr, offset, size, dir);
->  
-> -		flush_write_buffers();
->  	} else
->  		dma_sync_single_for_cpu(dev, addr, size, dir);
->  }
-> @@ -150,7 +147,6 @@ static inline void dma_sync_single_range_for_device(struct device *dev,
->  		ops->sync_single_range_for_device(dev, addr, offset, size, dir);
->  		debug_dma_sync_single_range_for_device(dev, addr, offset, size, dir);
->  
-> -		flush_write_buffers();
->  	} else
->  		dma_sync_single_for_device(dev, addr, size, dir);
->  }
-> @@ -165,7 +161,6 @@ dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
->  	if (ops->sync_sg_for_cpu)
->  		ops->sync_sg_for_cpu(dev, sg, nelems, dir);
->  	debug_dma_sync_sg_for_cpu(dev, sg, nelems, dir);
-> -	flush_write_buffers();
->  }
->  
->  static inline void
-> @@ -179,7 +174,6 @@ dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
->  		ops->sync_sg_for_device(dev, sg, nelems, dir);
->  	debug_dma_sync_sg_for_device(dev, sg, nelems, dir);
->  
-> -	flush_write_buffers();
->  }
->  
->  #define dma_map_single(d, a, s, r) dma_map_single_attrs(d, a, s, r, NULL)
-> -- 
-> 1.6.0.6
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+--- mmotm-2009-0804-1422.orig/net/ipv4/xfrm4_policy.c
++++ mmotm-2009-0804-1422/net/ipv4/xfrm4_policy.c
+@@ -264,6 +264,7 @@ static struct xfrm_policy_afinfo xfrm4_p
+ 	.fill_dst =		xfrm4_fill_dst,
+ };
+ 
++#ifdef CONFIG_SYSCTL
+ static struct ctl_table xfrm4_policy_table[] = {
+ 	{
+ 		.ctl_name       = CTL_UNNUMBERED,
+@@ -277,6 +278,7 @@ static struct ctl_table xfrm4_policy_tab
+ };
+ 
+ static struct ctl_table_header *sysctl_hdr;
++#endif
+ 
+ static void __init xfrm4_policy_init(void)
+ {
+@@ -285,8 +287,10 @@ static void __init xfrm4_policy_init(voi
+ 
+ static void __exit xfrm4_policy_fini(void)
+ {
++#ifdef CONFIG_SYSCTL
+ 	if (sysctl_hdr)
+ 		unregister_net_sysctl_table(sysctl_hdr);
++#endif
+ 	xfrm_policy_unregister_afinfo(&xfrm4_policy_afinfo);
+ }
+ 
+@@ -305,7 +309,9 @@ void __init xfrm4_init(int rt_max_size)
+ 	 * and start cleaning when were 1/2 full
+ 	 */
+ 	xfrm4_dst_ops.gc_thresh = rt_max_size/2;
++#ifdef CONFIG_SYSCTL
+ 	sysctl_hdr = register_net_sysctl_table(&init_net, net_ipv4_ctl_path,
+ 						xfrm4_policy_table);
++#endif
+ }
+ 
+
+
+
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
