@@ -1,68 +1,650 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934739AbZHERO1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964836AbZHERR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934739AbZHERO1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 13:14:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934703AbZHERO0
+	id S964836AbZHERR1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 13:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755828AbZHERR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 13:14:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50050 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934516AbZHEROZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 13:14:25 -0400
-Date: Wed, 5 Aug 2009 10:13:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Pirko <jpirko@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, torvalds@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net: Fix spinlock use in alloc_netdev_mq()
-Message-Id: <20090805101327.2c49cc62.akpm@linux-foundation.org>
-In-Reply-To: <20090805084746.GA3897@psychotron.englab.brq.redhat.com>
-References: <20090804.125742.32009006.davem@davemloft.net>
-	<20090805070205.GA8741@elte.hu>
-	<20090805071411.GA9217@elte.hu>
-	<20090805071658.GA14073@elte.hu>
-	<20090805084746.GA3897@psychotron.englab.brq.redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Aug 2009 13:17:27 -0400
+Received: from kroah.org ([198.145.64.141]:52378 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752332AbZHERRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 13:17:25 -0400
+Date: Wed, 5 Aug 2009 10:15:13 -0700
+From: Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Jan Blunck <jblunck@suse.de>,
+       gregkh@suse.de, Harald Hoyer <harald@redhat.com>,
+       Scott James Remnant <scott@ubuntu.com>
+Subject: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based /dev
+Message-ID: <20090805171513.GA10443@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Aug 2009 10:47:47 +0200 Jiri Pirko <jpirko@redhat.com> wrote:
+Here's the devtmpfs patch again.  For .32 it's a simple and clean patch.
+It's been tested and agreed by three major distros that this is a good
+idea.  SuSE has been shipping this in their kernels for a while now with
+no problems, and actual speedups measured on their boot times.  Gentoo
+also has been testing it, but we haven't gotten a tested-by: line from
+them yet, hopefully that will happen soon.
 
-> >it's using an zero-initialized spinlock. This is a side-effect of:
-> >
-> >        dev_unicast_init(dev);
-> >
-> >in alloc_netdev_mq() making use of dev->addr_list_lock.
-> >
-> >The device has just been allocated freshly, it's not accessible
-> >anywhere yet so no locking is needed at all - in fact it's wrong
-> >to lock it here (the lock isnt initialized yet).
-> 
-> Yes this looks like the right approach. Sorry for this bug :(
+A number of embedded distros have also privately said they would be
+using this patch, I really don't understand why they don't publically
+want to state this, but oh well...
 
-Really?
+It's been in linux-next for many months now, with no reported
+regressions at all as well.
 
-> >--- a/net/core/dev.c
-> >+++ b/net/core/dev.c
-> >@@ -4007,9 +4007,7 @@ static void dev_unicast_flush(struct net_device *dev)
-> > 
-> > static void dev_unicast_init(struct net_device *dev)
-> > {
-> >-	netif_addr_lock_bh(dev);
-> > 	__hw_addr_init(&dev->uc);
-> >-	netif_addr_unlock_bh(dev);
-> > }
+thanks,
 
-This means that the net_device is still floating around for quite a
-long time with an uninitialised spinlock, so it will be quite easy for
-the same problem to reoccur as the code evolves.
+greg k-h
 
-It would be more robust were we to initialise that lock close to the
-netdev's allocation site.
+--------------
 
+
+From: Kay Sievers <kay.sievers@vrfy.org>
+
+Devtmpfs lets the kernel create a tmpfs instance called devtmpfs
+very early at kernel initialization, before any driver-core device
+is registered. Every device with a major/minor will provide a
+device node in devtmpfs.
+
+Devtmpfs can be changed and altered by userspace at any time,
+and in any way needed - just like today's udev-mounted tmpfs.
+Unmodified udev versions will run just fine on top of it, and will
+recognize an already existing kernel-created device node and use it.
+The default node permissions are root:root 0600. Proper permissions
+and user/group ownership, meaningful symlinks, all other policy still
+needs to be applied by userspace.
+
+If a node is created by devtmps, devtmpfs will remove the device node
+when the device goes away. If the device node was created by
+userspace, or the devtmpfs created node was replaced by userspace, it
+will no longer be removed by devtmpfs.
+
+If it is requested to auto-mount it, it makes init=/bin/sh work
+without any further userspace support. /dev will be fully populated
+and dynamic, and always reflect the current device state of the kernel.
+With the commonly used dynamic device numbers, it solves the problem
+where static devices nodes may point to the wrong devices.
+
+It is intended to make the initial bootup logic simpler and more robust,
+by de-coupling the creation of the inital environment, to reliably run
+userspace processes, from a complex userspace bootstrap logic to provide
+a working /dev.
+
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Jan Blunck <jblunck@suse.de>
+Tested-By: Harald Hoyer <harald@redhat.com>
+Tested-By: Scott James Remnant <scott@ubuntu.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/base/Kconfig     |   25 +++
+ drivers/base/Makefile    |    1 
+ drivers/base/base.h      |    6 
+ drivers/base/core.c      |    3 
+ drivers/base/devtmpfs.c  |  367 +++++++++++++++++++++++++++++++++++++++++++++++
+ drivers/base/init.c      |    1 
+ include/linux/device.h   |   10 +
+ include/linux/shmem_fs.h |    3 
+ init/do_mounts.c         |    2 
+ init/main.c              |    2 
+ mm/shmem.c               |    9 -
+ 11 files changed, 422 insertions(+), 7 deletions(-)
+
+--- a/drivers/base/base.h
++++ b/drivers/base/base.h
+@@ -139,3 +139,9 @@ static inline void module_add_driver(str
+ 				     struct device_driver *drv) { }
+ static inline void module_remove_driver(struct device_driver *drv) { }
+ #endif
++
++#ifdef CONFIG_DEVTMPFS
++extern int devtmpfs_init(void);
++#else
++static inline int devtmpfs_init(void) { return 0; }
++#endif
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -929,6 +929,8 @@ int device_add(struct device *dev)
+ 		error = device_create_sys_dev_entry(dev);
+ 		if (error)
+ 			goto devtattrError;
++
++		devtmpfs_create_node(dev);
+ 	}
+ 
+ 	error = device_add_class_symlinks(dev);
+@@ -1075,6 +1077,7 @@ void device_del(struct device *dev)
+ 	if (parent)
+ 		klist_del(&dev->p->knode_parent);
+ 	if (MAJOR(dev->devt)) {
++		devtmpfs_delete_node(dev);
+ 		device_remove_sys_dev_entry(dev);
+ 		device_remove_file(dev, &devt_attr);
+ 	}
+--- /dev/null
++++ b/drivers/base/devtmpfs.c
+@@ -0,0 +1,367 @@
++/*
++ * devtmpfs - kernel-maintained tmpfs-based /dev
++ *
++ * Copyright (C) 2009, Kay Sievers <kay.sievers@vrfy.org>
++ *
++ * During bootup, before any driver core device is registered,
++ * devtmpfs, a tmpfs-based filesystem is created. Every driver-core
++ * device which requests a device node, will add a node in this
++ * filesystem. The node is named after the the name of the device,
++ * or the susbsytem can provide a custom name. All devices are
++ * owned by root and have a mode of 0600.
++ */
++
++#include <linux/kernel.h>
++#include <linux/syscalls.h>
++#include <linux/mount.h>
++#include <linux/device.h>
++#include <linux/genhd.h>
++#include <linux/namei.h>
++#include <linux/fs.h>
++#include <linux/shmem_fs.h>
++#include <linux/cred.h>
++#include <linux/init_task.h>
++
++static struct vfsmount *dev_mnt;
++
++#if defined CONFIG_DEVTMPFS_MOUNT
++static int dev_mount = 1;
++#else
++static int dev_mount;
++#endif
++
++static int __init mount_param(char *str)
++{
++	dev_mount = simple_strtoul(str, NULL, 0);
++	return 1;
++}
++__setup("devtmpfs.mount=", mount_param);
++
++static int dev_get_sb(struct file_system_type *fs_type, int flags,
++		      const char *dev_name, void *data, struct vfsmount *mnt)
++{
++	return get_sb_single(fs_type, flags, data, shmem_fill_super, mnt);
++}
++
++static struct file_system_type dev_fs_type = {
++	.name = "devtmpfs",
++	.get_sb = dev_get_sb,
++	.kill_sb = kill_litter_super,
++};
++
++#ifdef CONFIG_BLOCK
++static inline int is_blockdev(struct device *dev)
++{
++	return dev->class == &block_class;
++}
++#else
++static inline int is_blockdev(struct device *dev) { return 0; }
++#endif
++
++static int dev_mkdir(const char *name, mode_t mode)
++{
++	struct nameidata nd;
++	struct dentry *dentry;
++	int err;
++
++	err = vfs_path_lookup(dev_mnt->mnt_root, dev_mnt,
++			      name, LOOKUP_PARENT, &nd);
++	if (err)
++		return err;
++
++	dentry = lookup_create(&nd, 1);
++	if (!IS_ERR(dentry)) {
++		err = vfs_mkdir(nd.path.dentry->d_inode, dentry, mode);
++		dput(dentry);
++	} else {
++		err = PTR_ERR(dentry);
++	}
++	mutex_unlock(&nd.path.dentry->d_inode->i_mutex);
++
++	path_put(&nd.path);
++	return err;
++}
++
++static int create_path(const char *nodepath)
++{
++	char *path;
++	struct nameidata nd;
++	int err = 0;
++
++	path = kstrdup(nodepath, GFP_KERNEL);
++	if (!path)
++		return -ENOMEM;
++
++	err = vfs_path_lookup(dev_mnt->mnt_root, dev_mnt,
++			      path, LOOKUP_PARENT, &nd);
++	if (err == 0) {
++		struct dentry *dentry;
++
++		/* create directory right away */
++		dentry = lookup_create(&nd, 1);
++		if (!IS_ERR(dentry)) {
++			err = vfs_mkdir(nd.path.dentry->d_inode,
++					dentry, 0775);
++			dput(dentry);
++		}
++		mutex_unlock(&nd.path.dentry->d_inode->i_mutex);
++
++		path_put(&nd.path);
++	} else if (err == -ENOENT) {
++		char *s;
++
++		/* parent directories do not exist, create them */
++		s = path;
++		while (1) {
++			s = strchr(s, '/');
++			if (!s)
++				break;
++			s[0] = '\0';
++			err = dev_mkdir(path, 0755);
++			if (err && err != -EEXIST)
++				break;
++			s[0] = '/';
++			s++;
++		}
++	}
++
++	kfree(path);
++	return err;
++}
++
++int devtmpfs_create_node(struct device *dev)
++{
++	const char *tmp = NULL;
++	const char *nodename;
++	const struct cred *curr_cred;
++	mode_t mode;
++	struct nameidata nd;
++	struct dentry *dentry;
++	int err;
++
++	if (!dev_mnt)
++		return 0;
++
++	nodename = device_get_nodename(dev, &tmp);
++	if (!nodename)
++		return -ENOMEM;
++
++	if (is_blockdev(dev))
++		mode = S_IFBLK|0600;
++	else
++		mode = S_IFCHR|0600;
++
++	curr_cred = override_creds(&init_cred);
++	err = vfs_path_lookup(dev_mnt->mnt_root, dev_mnt,
++			      nodename, LOOKUP_PARENT, &nd);
++	if (err == -ENOENT) {
++		/* create missing parent directories */
++		create_path(nodename);
++		err = vfs_path_lookup(dev_mnt->mnt_root, dev_mnt,
++				      nodename, LOOKUP_PARENT, &nd);
++		if (err)
++			goto out;
++	}
++
++	dentry = lookup_create(&nd, 0);
++	if (!IS_ERR(dentry)) {
++		err = vfs_mknod(nd.path.dentry->d_inode,
++				dentry, mode, dev->devt);
++		/* mark as kernel created inode */
++		if (!err)
++			dentry->d_inode->i_private = &dev_mnt;
++		dput(dentry);
++	} else {
++		err = PTR_ERR(dentry);
++	}
++	mutex_unlock(&nd.path.dentry->d_inode->i_mutex);
++
++	path_put(&nd.path);
++out:
++	kfree(tmp);
++	revert_creds(curr_cred);
++	return err;
++}
++
++static int dev_rmdir(const char *name)
++{
++	struct nameidata nd;
++	struct dentry *dentry;
++	int err;
++
++	err = vfs_path_lookup(dev_mnt->mnt_root, dev_mnt,
++			      name, LOOKUP_PARENT, &nd);
++	if (err)
++		return err;
++
++	mutex_lock_nested(&nd.path.dentry->d_inode->i_mutex, I_MUTEX_PARENT);
++	dentry = lookup_one_len(nd.last.name, nd.path.dentry, nd.last.len);
++	if (!IS_ERR(dentry)) {
++		if (dentry->d_inode)
++			err = vfs_rmdir(nd.path.dentry->d_inode, dentry);
++		else
++			err = -ENOENT;
++		dput(dentry);
++	} else {
++		err = PTR_ERR(dentry);
++	}
++	mutex_unlock(&nd.path.dentry->d_inode->i_mutex);
++
++	path_put(&nd.path);
++	return err;
++}
++
++static int delete_path(const char *nodepath)
++{
++	const char *path;
++	int err = 0;
++
++	path = kstrdup(nodepath, GFP_KERNEL);
++	if (!path)
++		return -ENOMEM;
++
++	while (1) {
++		char *base;
++
++		base = strrchr(path, '/');
++		if (!base)
++			break;
++		base[0] = '\0';
++		err = dev_rmdir(path);
++		if (err)
++			break;
++	}
++
++	kfree(path);
++	return err;
++}
++
++static int dev_mynode(struct device *dev, struct inode *inode, struct kstat *stat)
++{
++	/* did we create it */
++	if (inode->i_private != &dev_mnt)
++		return 0;
++
++	/* does the dev_t match */
++	if (is_blockdev(dev)) {
++		if (!S_ISBLK(stat->mode))
++			return 0;
++	} else {
++		if (!S_ISCHR(stat->mode))
++			return 0;
++	}
++	if (stat->rdev != dev->devt)
++		return 0;
++
++	/* ours */
++	return 1;
++}
++
++int devtmpfs_delete_node(struct device *dev)
++{
++	const char *tmp = NULL;
++	const char *nodename;
++	const struct cred *curr_cred;
++	struct nameidata nd;
++	struct dentry *dentry;
++	struct kstat stat;
++	int deleted = 1;
++	int err;
++
++	if (!dev_mnt)
++		return 0;
++
++	nodename = device_get_nodename(dev, &tmp);
++	if (!nodename)
++		return -ENOMEM;
++
++	curr_cred = override_creds(&init_cred);
++	err = vfs_path_lookup(dev_mnt->mnt_root, dev_mnt,
++			      nodename, LOOKUP_PARENT, &nd);
++	if (err)
++		goto out;
++
++	mutex_lock_nested(&nd.path.dentry->d_inode->i_mutex, I_MUTEX_PARENT);
++	dentry = lookup_one_len(nd.last.name, nd.path.dentry, nd.last.len);
++	if (!IS_ERR(dentry)) {
++		if (dentry->d_inode) {
++			err = vfs_getattr(nd.path.mnt, dentry, &stat);
++			if (!err && dev_mynode(dev, dentry->d_inode, &stat)) {
++				err = vfs_unlink(nd.path.dentry->d_inode,
++						 dentry);
++				if (!err || err == -ENOENT)
++					deleted = 1;
++			}
++		} else {
++			err = -ENOENT;
++		}
++		dput(dentry);
++	} else {
++		err = PTR_ERR(dentry);
++	}
++	mutex_unlock(&nd.path.dentry->d_inode->i_mutex);
++
++	path_put(&nd.path);
++	if (deleted && strchr(nodename, '/'))
++		delete_path(nodename);
++out:
++	kfree(tmp);
++	revert_creds(curr_cred);
++	return err;
++}
++
++/*
++ * If configured, or requested by the commandline, devtmpfs will be
++ * auto-mounted after the kernel mounted the root filesystem.
++ */
++int devtmpfs_mount(const char *mountpoint)
++{
++	struct path path;
++	int err;
++
++	if (!dev_mount)
++		return 0;
++
++	if (!dev_mnt)
++		return 0;
++
++	err = kern_path(mountpoint, LOOKUP_FOLLOW, &path);
++	if (err)
++		return err;
++	err = do_add_mount(dev_mnt, &path, 0, NULL);
++	if (err)
++		printk(KERN_INFO "devtmpfs: error mounting %i\n", err);
++	else
++		printk(KERN_INFO "devtmpfs: mounted\n");
++	path_put(&path);
++	return err;
++}
++
++/*
++ * Create devtmpfs instance, driver-core devices will add their device
++ * nodes here.
++ */
++int __init devtmpfs_init(void)
++{
++	int err;
++	struct vfsmount *mnt;
++
++	err = register_filesystem(&dev_fs_type);
++	if (err) {
++		printk(KERN_ERR "devtmpfs: unable to register devtmpfs "
++		       "type %i\n", err);
++		return err;
++	}
++
++	mnt = kern_mount(&dev_fs_type);
++	if (IS_ERR(mnt)) {
++		err = PTR_ERR(mnt);
++		printk(KERN_ERR "devtmpfs: unable to create devtmpfs %i\n", err);
++		unregister_filesystem(&dev_fs_type);
++		return err;
++	}
++	dev_mnt = mnt;
++
++	printk(KERN_INFO "devtmpfs: initialized\n");
++	return 0;
++}
+--- a/drivers/base/init.c
++++ b/drivers/base/init.c
+@@ -20,6 +20,7 @@
+ void __init driver_init(void)
+ {
+ 	/* These are the core pieces */
++	devtmpfs_init();
+ 	devices_init();
+ 	buses_init();
+ 	classes_init();
+--- a/drivers/base/Kconfig
++++ b/drivers/base/Kconfig
+@@ -8,6 +8,31 @@ config UEVENT_HELPER_PATH
+ 	  Path to uevent helper program forked by the kernel for
+ 	  every uevent.
+ 
++config DEVTMPFS
++	bool "Create a kernel maintained /dev tmpfs (EXPERIMENTAL)"
++	depends on HOTPLUG && SHMEM && TMPFS
++	help
++	  This creates a tmpfs filesystem, and mounts it at bootup
++	  and mounts it at /dev. The kernel driver core creates device
++	  nodes for all registered devices in that filesystem. All device
++	  nodes are owned by root and have the default mode of 0600.
++	  Userspace can add and delete the nodes as needed. This is
++	  intended to simplify bootup, and make it possible to delay
++	  the initial coldplug at bootup done by udev in userspace.
++	  It should also provide a simpler way for rescue systems
++	  to bring up a kernel with dynamic major/minor numbers.
++	  Meaningful symlinks, permissions and device ownership must
++	  still be handled by userspace.
++	  If unsure, say N here.
++
++config DEVTMPFS_MOUNT
++	bool "Automount devtmpfs at /dev"
++	depends on DEVTMPFS
++	help
++	  This will mount devtmpfs at /dev if the kernel mounts the root
++	  filesystem. It will not affect initramfs based mounting.
++	  If unsure, say N here.
++
+ config STANDALONE
+ 	bool "Select only drivers that don't need compile-time external firmware" if EXPERIMENTAL
+ 	default y
+--- a/drivers/base/Makefile
++++ b/drivers/base/Makefile
+@@ -4,6 +4,7 @@ obj-y			:= core.o sys.o bus.o dd.o \
+ 			   driver.o class.o platform.o \
+ 			   cpu.o firmware.o init.o map.o devres.o \
+ 			   attribute_container.o transport_class.o
++obj-$(CONFIG_DEVTMPFS)	+= devtmpfs.o
+ obj-y			+= power/
+ obj-$(CONFIG_HAS_DMA)	+= dma-mapping.o
+ obj-$(CONFIG_HAVE_GENERIC_DMA_COHERENT) += dma-coherent.o
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -543,6 +543,16 @@ extern void put_device(struct device *de
+ 
+ extern void wait_for_device_probe(void);
+ 
++#ifdef CONFIG_DEVTMPFS
++extern int devtmpfs_create_node(struct device *dev);
++extern int devtmpfs_delete_node(struct device *dev);
++extern int devtmpfs_mount(const char *mountpoint);
++#else
++static inline int devtmpfs_create_node(struct device *dev) { return 0; }
++static inline int devtmpfs_delete_node(struct device *dev) { return 0; }
++static inline int devtmpfs_mount(const char *mountpoint) { return 0; }
++#endif
++
+ /* drivers/base/power/shutdown.c */
+ extern void device_shutdown(void);
+ 
+--- a/include/linux/shmem_fs.h
++++ b/include/linux/shmem_fs.h
+@@ -38,6 +38,9 @@ static inline struct shmem_inode_info *S
+ 	return container_of(inode, struct shmem_inode_info, vfs_inode);
+ }
+ 
++extern int init_tmpfs(void);
++extern int shmem_fill_super(struct super_block *sb, void *data, int silent);
++
+ #ifdef CONFIG_TMPFS_POSIX_ACL
+ int shmem_permission(struct inode *, int);
+ int shmem_acl_init(struct inode *, struct inode *);
+--- a/init/do_mounts.c
++++ b/init/do_mounts.c
+@@ -415,7 +415,7 @@ void __init prepare_namespace(void)
+ 
+ 	mount_root();
+ out:
++	devtmpfs_mount("dev");
+ 	sys_mount(".", "/", NULL, MS_MOVE, NULL);
+ 	sys_chroot(".");
+ }
+-
+--- a/init/main.c
++++ b/init/main.c
+@@ -68,6 +68,7 @@
+ #include <linux/async.h>
+ #include <linux/kmemcheck.h>
+ #include <linux/kmemtrace.h>
++#include <linux/shmem_fs.h>
+ #include <trace/boot.h>
+ 
+ #include <asm/io.h>
+@@ -808,6 +809,7 @@ static void __init do_basic_setup(void)
+ 	init_workqueues();
+ 	cpuset_init_smp();
+ 	usermodehelper_init();
++	init_tmpfs();
+ 	driver_init();
+ 	init_irq_proc();
+ 	do_ctors();
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -2298,8 +2298,7 @@ static void shmem_put_super(struct super
+ 	sb->s_fs_info = NULL;
+ }
+ 
+-static int shmem_fill_super(struct super_block *sb,
+-			    void *data, int silent)
++int shmem_fill_super(struct super_block *sb, void *data, int silent)
+ {
+ 	struct inode *inode;
+ 	struct dentry *root;
+@@ -2519,7 +2518,7 @@ static struct file_system_type tmpfs_fs_
+ 	.kill_sb	= kill_litter_super,
+ };
+ 
+-static int __init init_tmpfs(void)
++int __init init_tmpfs(void)
+ {
+ 	int error;
+ 
+@@ -2576,7 +2575,7 @@ static struct file_system_type tmpfs_fs_
+ 	.kill_sb	= kill_litter_super,
+ };
+ 
+-static int __init init_tmpfs(void)
++int __init init_tmpfs(void)
+ {
+ 	BUG_ON(register_filesystem(&tmpfs_fs_type) != 0);
+ 
+@@ -2687,5 +2686,3 @@ int shmem_zero_setup(struct vm_area_stru
+ 	vma->vm_ops = &shmem_vm_ops;
+ 	return 0;
+ }
+-
+-module_init(init_tmpfs)
