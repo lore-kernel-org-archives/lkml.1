@@ -1,91 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933638AbZHEHNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933651AbZHEHOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933638AbZHEHNh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 03:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933520AbZHEHNd
+	id S933651AbZHEHOa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 03:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933528AbZHEHO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 03:13:33 -0400
-Received: from mail-gx0-f213.google.com ([209.85.217.213]:63647 "EHLO
-	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933506AbZHEHNc convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 03:13:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=cyS/eNShpaFz+wgHZ69os8EvnvW3hZxORk0jfO0Cn+lNs/FZX+jbMeDfSJt4IddTZ1
-         ipxQe7258PXGuNL2GQHzH8KRwGyokP0XeCHRf73rLL1+ufpTOW62GBKinYf2B5revdHK
-         jcQnsE77OWCcuvsZ95ecD66eLousfs2EmMxxE=
+	Wed, 5 Aug 2009 03:14:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39623 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933520AbZHEHO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 03:14:28 -0400
+Date: Wed, 5 Aug 2009 09:14:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Jiri Pirko <jpirko@redhat.com>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Networking
+Message-ID: <20090805071411.GA9217@elte.hu>
+References: <20090804.125742.32009006.davem@davemloft.net> <20090805070205.GA8741@elte.hu>
 MIME-Version: 1.0
-Date: Wed, 5 Aug 2009 17:13:33 +1000
-Message-ID: <21d7e9970908050013m71ce7500x1d04a591de21ca30@mail.gmail.com>
-Subject: Please revert fc4c73554c9d93b3e495f2f7acae1323b0d5db84. Re: [PATCH 
-	1/2] ftrace: Fix the conditional that updates $ref_func
-From: Dave Airlie <airlied@gmail.com>
-To: Matt Fleming <matt@console-pimps.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Dave Jones <davej@codemonkey.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090805070205.GA8741@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 24, 2009 at 2:16 AM, Matt Fleming<matt@console-pimps.org> wrote:
-> Fix the conditional that checks if we already have a $ref_func and that
-> the new function is weak. The code as previously checking whether either
-> condition was false, and we really need to only update $ref_func is both
-> cconditions are false.
->
 
-This breaks the powerpc build on Fedora.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-When building on ppc64 this commit causes the links of drivers/hwmon/lm93.o
-to fail.
+> FYI, -tip testing found that these bits trigger a missing lockdep 
+> annotation warning:
 
-It introduces an undefined symbol
-                 U .LM93_IN_FROM_REG
+it's apparently using an zero-initialized spinlock. This is a 
+side-effect of:
 
-that isn't produced when this patch is reverted
+        dev_unicast_init(dev);
 
-This was found when the Fedora kernel failed to build when I pulled in
--rc5-git3.
+in alloc_netdev_mq() making use of dev->addr_list_lock.
 
-can be seen at the end of:
-http://koji.fedoraproject.org/koji/getfile?taskID=1582002&name=build.log
+Wouldnt the patch below be the right fix? The device has just been 
+allocated freshly, it's not accessible anywhere yet so no locking is 
+needed at all - in fact it's wrong to lock it here (the lock isnt 
+initialized yet).
 
-So can we revert this (at this stage in -rc5 or maybe fix it).
+This bug was apparently introduced via:
 
-Dave.
+| commit a6ac65db2329e7685299666f5f7b6093c7b0f3a0
+| Author: Jiri Pirko <jpirko@redhat.com>
+| Date:   Thu Jul 30 01:06:12 2009 +0000
+|
+|     net: restore the original spinlock to protect unicast list
 
-> Signed-off-by: Matt Fleming <matt@console-pimps.org>
-> ---
->  scripts/recordmcount.pl |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/scripts/recordmcount.pl b/scripts/recordmcount.pl
-> index 7109e2b..16c5563 100755
-> --- a/scripts/recordmcount.pl
-> +++ b/scripts/recordmcount.pl
-> @@ -414,7 +414,7 @@ while (<IN>) {
->            $read_function = 0;
->        } else {
->            # if we already have a function, and this is weak, skip it
-> -           if (!defined($ref_func) || !defined($weak{$text})) {
-> +           if (!defined($ref_func) && !defined($weak{$text})) {
->                $ref_func = $text;
->            }
->        }
-> --
-> 1.6.4.rc0
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+it needlessly added new locking and apparently nobody ran this patch 
+with lockdep.
+
+	Ingo
+
+Index: linux2/net/core/dev.c
+===================================================================
+--- linux2.orig/net/core/dev.c
++++ linux2/net/core/dev.c
+@@ -4007,9 +4007,7 @@ static void dev_unicast_flush(struct net
+ 
+ static void dev_unicast_init(struct net_device *dev)
+ {
+-	netif_addr_lock_bh(dev);
+ 	__hw_addr_init(&dev->uc);
+-	netif_addr_unlock_bh(dev);
+ }
+ 
+ 
