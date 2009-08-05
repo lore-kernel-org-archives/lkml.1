@@ -1,56 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933862AbZHEDon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933252AbZHED4C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933862AbZHEDon (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 23:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933023AbZHEDol
+	id S933252AbZHED4C (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 23:56:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933023AbZHEDz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 23:44:41 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:44883 "EHLO smtps.tip.net.au"
+	Tue, 4 Aug 2009 23:55:57 -0400
+Received: from mx.ugf.br ([200.222.48.3]:42388 "EHLO mx.ugf.br"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933021AbZHEDok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 23:44:40 -0400
-Date: Wed, 5 Aug 2009 13:44:35 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dave Airlie <airlied@linux.ie>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jakob Bornecrantz <jakob@vmware.com>, Zhao Yakui <yakui.zhao@intel.com>
-Subject: linux-next: manual merge of the drm tree with Linus' tree
-Message-Id: <20090805134435.1a5010fa.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+	id S933021AbZHEDz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 23:55:56 -0400
+Subject: Re: [PATCH 1/1] XFS: xfs_iformat realtime device target pointer
+ check
+From: Ramon de Carvalho Valle <ramon@risesecurity.org>
+To: Eric Sandeen <sandeen@sandeen.net>
+Cc: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com, hch@lst.de,
+       linux-kernel@vger.kernel.org, mszeredi@novell.com
+In-Reply-To: <4A7887CE.2060300@sandeen.net>
+References: <1249329808.7686.26.camel@logos>
+	 <20090803214929.GB3167@infradead.org> <1249351241.7513.18.camel@logos>
+	 <4A786110.8090404@sandeen.net> <1249411898.7576.19.camel@logos>
+	 <4A7887CE.2060300@sandeen.net>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-sqR/+ZMHXkUM9NDWFAw7"
+Date: Wed, 05 Aug 2009 00:55:50 -0300
+Message-Id: <1249444550.7372.23.camel@logos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave,
 
-Today's linux-next merge of the drm tree got a conflict in
-drivers/gpu/drm/drm_crtc.c between commit
-7781de74568bddfefbd2d32a934a8c791a2420cd ("drm: Small logic fix in
-drm_mode_setcrtc") from Linus' tree and commit
-58367ed65f30128d8b763bf4c1fb942da49ade15 ("drm: Add the debug info in
-generic drm mode by using DRM_DEBUG_KMS") from the drm tree.
+--=-sqR/+ZMHXkUM9NDWFAw7
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Just context changes.  I fixed it up (see below) and can carry the fix as
-necessary.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+On Tue, 2009-08-04 at 14:11 -0500, Eric Sandeen wrote:
+> Ramon de Carvalho Valle wrote:
+> > The xfs_iformat function does not check if the realtime device target p=
+ointer
+> > is valid when the XFS_DIFLAG_REALTIME flag is set on the ondisk inode
+> > structure.
+> >=20
+> > Signed-off-by: Christoph Hellwig <hch@infradead.org>
+> > Signed-off-by: Ramon de Carvalho Valle <ramon@risesecurity.org>
+> > Cc: stable <stable@kernel.org>
+> > ---
+> >  fs/xfs/xfs_inode.c |   23 +++++++++++++++++------
+> >  1 files changed, 17 insertions(+), 6 deletions(-)
+> >=20
+> > diff --git a/fs/xfs/xfs_inode.c b/fs/xfs/xfs_inode.c
+> > index 1f22d65..37d3ee5 100644
+> > --- a/fs/xfs/xfs_inode.c
+> > +++ b/fs/xfs/xfs_inode.c
+> > @@ -343,13 +343,24 @@ xfs_iformat(
+> >  		return XFS_ERROR(EFSCORRUPTED);
+> >  	}
+> > =20
+> > +	if (unlikely((ip->i_d.di_flags & XFS_DIFLAG_REALTIME) &&
+> > +			!ip->i_mount->m_rtdev_targp)) {
+> > +		xfs_fs_repair_cmn_err(CE_WARN, ip->i_mount,
+> > +			"corrupt dinode %Lu, flags =3D 0x%x.",
+> > +			(unsigned long long)ip->i_ino,
+> > +			ip->i_d.di_flags);
+> > +		XFS_CORRUPTION_ERROR("xfs_iformat(3)", XFS_ERRLEVEL_LOW,
+> > +				     ip->i_mount, dip);
+>=20
+> I think I'd rather not change all the corruption text tag ordering;
+> it'll make it harder to track down any common occurrences of
+> "xfs_iformat(X)" corruption in the future if they get renumbered now.
+>=20
+> I'd either make this xfs_iformat(2.1) ;) or just leave it as Christoph
+> had.  "realtime" is a lot more informative than "3" anyway.
 
-diff --cc drivers/gpu/drm/drm_crtc.c
-index 33be210,a8c8311..0000000
---- a/drivers/gpu/drm/drm_crtc.c
-+++ b/drivers/gpu/drm/drm_crtc.c
-@@@ -1461,8 -1484,8 +1484,8 @@@ int drm_mode_setcrtc(struct drm_device 
-  		goto out;
-  	}
-  
- -	if (crtc_req->count_connectors > 0 && !mode && !fb) {
- +	if (crtc_req->count_connectors > 0 && (!mode || !fb)) {
-- 		DRM_DEBUG("Count connectors is %d but no mode or fb set\n",
-+ 		DRM_DEBUG_KMS("Count connectors is %d but no mode or fb set\n",
-  			  crtc_req->count_connectors);
-  		ret = -EINVAL;
-  		goto out;
+I don't think this is a bad decision, because the corruption errors can
+be easily identified by the output of xfs_fs_repair_cmn_err and the
+source line. I think this is a reasonable change that will keep the code
+clean and consistent.
+
+-Ramon
+
+>=20
+> -Eric
+>=20
+> > +		return XFS_ERROR(EFSCORRUPTED);
+> > +	}
+> > +
+> >  	switch (ip->i_d.di_mode & S_IFMT) {
+> >  	case S_IFIFO:
+> >  	case S_IFCHR:
+> >  	case S_IFBLK:
+> >  	case S_IFSOCK:
+> >  		if (unlikely(dip->di_format !=3D XFS_DINODE_FMT_DEV)) {
+> > -			XFS_CORRUPTION_ERROR("xfs_iformat(3)", XFS_ERRLEVEL_LOW,
+> > +			XFS_CORRUPTION_ERROR("xfs_iformat(4)", XFS_ERRLEVEL_LOW,
+> >  					      ip->i_mount, dip);
+> >  			return XFS_ERROR(EFSCORRUPTED);
+> >  		}
+> > @@ -371,7 +382,7 @@ xfs_iformat(
+> >  					"corrupt inode %Lu "
+> >  					"(local format for regular file).",
+> >  					(unsigned long long) ip->i_ino);
+> > -				XFS_CORRUPTION_ERROR("xfs_iformat(4)",
+> > +				XFS_CORRUPTION_ERROR("xfs_iformat(5)",
+> >  						     XFS_ERRLEVEL_LOW,
+> >  						     ip->i_mount, dip);
+> >  				return XFS_ERROR(EFSCORRUPTED);
+> > @@ -384,7 +395,7 @@ xfs_iformat(
+> >  					"(bad size %Ld for local inode).",
+> >  					(unsigned long long) ip->i_ino,
+> >  					(long long) di_size);
+> > -				XFS_CORRUPTION_ERROR("xfs_iformat(5)",
+> > +				XFS_CORRUPTION_ERROR("xfs_iformat(6)",
+> >  						     XFS_ERRLEVEL_LOW,
+> >  						     ip->i_mount, dip);
+> >  				return XFS_ERROR(EFSCORRUPTED);
+> > @@ -400,14 +411,14 @@ xfs_iformat(
+> >  			error =3D xfs_iformat_btree(ip, dip, XFS_DATA_FORK);
+> >  			break;
+> >  		default:
+> > -			XFS_ERROR_REPORT("xfs_iformat(6)", XFS_ERRLEVEL_LOW,
+> > +			XFS_ERROR_REPORT("xfs_iformat(7)", XFS_ERRLEVEL_LOW,
+> >  					 ip->i_mount);
+> >  			return XFS_ERROR(EFSCORRUPTED);
+> >  		}
+> >  		break;
+> > =20
+> >  	default:
+> > -		XFS_ERROR_REPORT("xfs_iformat(7)", XFS_ERRLEVEL_LOW, ip->i_mount);
+> > +		XFS_ERROR_REPORT("xfs_iformat(8)", XFS_ERRLEVEL_LOW, ip->i_mount);
+> >  		return XFS_ERROR(EFSCORRUPTED);
+> >  	}
+> >  	if (error) {
+> > @@ -430,7 +441,7 @@ xfs_iformat(
+> >  				"(bad attr fork size %Ld).",
+> >  				(unsigned long long) ip->i_ino,
+> >  				(long long) size);
+> > -			XFS_CORRUPTION_ERROR("xfs_iformat(8)",
+> > +			XFS_CORRUPTION_ERROR("xfs_iformat(9)",
+> >  					     XFS_ERRLEVEL_LOW,
+> >  					     ip->i_mount, dip);
+> >  			return XFS_ERROR(EFSCORRUPTED);
+>=20
+
+--=-sqR/+ZMHXkUM9NDWFAw7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkp5ArQACgkQGIS0iEuhp4OIFACgnIn5AM6D4kUsYhMoPd81Y+M2
+joMAoLxQk2mIM4fONHfg2nXmdm3Ipf+s
+=0uXB
+-----END PGP SIGNATURE-----
+
+--=-sqR/+ZMHXkUM9NDWFAw7--
+
