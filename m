@@ -1,87 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933120AbZHEBla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933154AbZHEBmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933120AbZHEBla (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 21:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932927AbZHEBl2
+	id S933154AbZHEBmM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 21:42:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932967AbZHEBmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 21:41:28 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58145 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932821AbZHEBl1 (ORCPT
+	Tue, 4 Aug 2009 21:42:11 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:61308 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932927AbZHEBmK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 21:41:27 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 5 Aug 2009 10:39:38 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: scgtrp@gmail.com, bugzilla-daemon@bugzilla.kernel.org,
-       bugme-daemon@bugzilla.kernel.org, xiyou.wangcong@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUGFIX][PATCH 2/3] kcore: fix vread/vwrite to be aware of
- holes.
-Message-Id: <20090805103938.e3ff9cbb.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090804182457.8135110f.akpm@linux-foundation.org>
-References: <bug-13850-10286@http.bugzilla.kernel.org/>
-	<20090728160527.1da52682.akpm@linux-foundation.org>
-	<20090729084825.1363c880.kamezawa.hiroyu@jp.fujitsu.com>
-	<525c5a6c0907281946t249ef288v77ee94edd16f054@mail.gmail.com>
-	<20090803201418.040bb3ee.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090803201845.c3ae49b5.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090804143031.b9769a13.akpm@linux-foundation.org>
-	<20090805100843.dbdabcfa.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090804182457.8135110f.akpm@linux-foundation.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 4 Aug 2009 21:42:10 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AiYGAIOAeEqrR7O6/2dsb2JhbACDArkbiCmQMgWEGA
+X-IronPort-AV: E=Sophos;i="4.43,325,1246838400"; 
+   d="scan'208";a="360547264"
+Date: Tue, 4 Aug 2009 18:42:10 -0700
+From: David VomLehn <dvomlehn@cisco.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Pierre Ossman <pierre@ossman.eu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org, nico@cam.org,
+       nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com, tony@atomide.com,
+       manuel.lauss@gmail.com, mirq-linux@rere.qmqm.pl, ppisa@pikron.com,
+       jarkko.lavinen@nokia.com, ben@fluff.org, saschasommer@freenet.de,
+       avorontsov@ru.mvista.com, oakad@yahoo.com, ian@mnementh.co.uk,
+       HaraldWelte@viatech.com, JosephChan@via.com.tw, adrian.hunter@nokia.com
+Subject: Re: New MMC maintainer needed
+Message-ID: <20090805014210.GA402@cuplxvomd02.corp.sa.net>
+References: <20090714153601.6dfe70ff@mjolnir.ossman.eu> <20090728222334.0c543c47@mjolnir.ossman.eu> <20090731122623.254fd0f1@mjolnir.ossman.eu> <200908031851.24375.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200908031851.24375.david-b@pacbell.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Authentication-Results: sj-dkim-2; header.From=dvomlehn@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Aug 2009 18:24:57 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Wed, 5 Aug 2009 10:08:43 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
-> > > > +		/*
-> > > > +		 * To do safe access to this _mapped_ area, we need
-> > > > +		 * lock. But adding lock here means that we need to add
-> > > > +		 * overhead of vmalloc()/vfree() calles for this _debug_
-> > > > +		 * interface, rarely used. Instead of that, we'll use
-> > > > +		 * kmap() and get small overhead in this access function.
-> > > > +		 */
-> > > > +		if (p) {
-> > > > +			/* we can expect USR1 is not used */
-> > > 
-> > > It would be nice if the comment were to explain _why_ KM_USER1 is known
-> > > to be free here.
-> > > 
-> > ok, will do. Hmm, but KM_USR0 is better ?
-> > I'm not sure difference between KM_USR0/KM_USR1...
-> 
-> KM_USER0 is conventionally the first one to use.  We only use KM_USER1
-> if it is known that KM_USER0 is already used.
-> 
-Hmm, It sounds better to update this to use KM_USER0 when I applying Amerigo's comment.
-
-Thanks,
--Kame
-
-
+On Mon, Aug 03, 2009 at 06:51:23PM -0700, David Brownell wrote:
+> On Friday 31 July 2009, Pierre Ossman wrote:
+> > Restoring back the system state from MMC after a successful hibernation
+> > http://marc.info/?t=124818534700003&r=1&w=2
 > > 
-> > 
-> > > 
-> > > > +			void *map = kmap_atomic(p, KM_USER1);
-> > > > +			memcpy(buf, map + offset, length);
-> > > > +			kunmap_atomic(map, KM_USER1);
-> > > 
-> > > Can use clear_highpage().
-> > > 
-> > ah, "buf" is expected to be kmalloc'ed buffer. I'll explain it in Usage
-> > or adds comment.
-> > 
+> > I don't agree with this approach. The point of the workqueue is so that
+> > the kernel can do things in parallel, so this patch is a step back. The
+> > problem is really with how the kernel doesn't properly cope with
+> > asynchronous disk scanning during bootup. The root_delay parameter was
+> > added for this for the "normal" case, but it seems more work is needed.
 > 
-> argh, memcpy != memset.  I knew that ;)
+> Doesn't handing of resumes needs more attention overall?
 > 
+> Example, root on eMMC (e.g. a 32-MByte non-removable chip) wouldn't
+> resume at all well the last time I checked ... mounted file systems
+> (not just root) made trouble.  Hardware that reliably reports card
+> insert/remove was rude in the same ways.
+> 
+> - Dave
 
+I've been half- (or less) watching this discussion, but I'm sort of thinking
+that one piece of this might be a patch I just reposted that provides for
+synchronizing the discovery/initialization of devices during start up with
+their use. One thing I expect it to do is to largely eliminate the need for
+root_delay. It currently knows nothing about resuming, but perhaps it should.
+
+Since the patch touches USB and SCSI, as well as some core kernel pieces, it
+was posted to a bunch of places, but by tomorrow you should be able to find it
+by searching for "initdev" in the kernel mailing list archives.
+
+David VomLehn
