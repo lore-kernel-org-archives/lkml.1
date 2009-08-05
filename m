@@ -1,223 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934063AbZHEJim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934104AbZHEJkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934063AbZHEJim (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 05:38:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934070AbZHEJiR
+	id S934104AbZHEJkB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 05:40:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933963AbZHEJj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 05:38:17 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49105 "EHLO
+	Wed, 5 Aug 2009 05:39:58 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49063 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934002AbZHEJgo (ORCPT
+	with ESMTP id S933962AbZHEJgb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 05:36:44 -0400
+	Wed, 5 Aug 2009 05:36:31 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200908051136.682859934@firstfloor.org>
 In-Reply-To: <200908051136.682859934@firstfloor.org>
-To: tytso@mit.edu, hch@infradead.org, mfasheh@suse.com, aia21@cantab.net,
-       hugh.dickins@tiscali.co.uk, swhiteho@redhat.com,
-       akpm@linux-foundation.org, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com, hidehiro.kawai.ez@hitachi.com
-Subject: [PATCH] [16/19] HWPOISON: Enable .remove_error_page for migration aware file systems
-Message-Id: <20090805093643.E0C00B15D8@basil.firstfloor.org>
-Date: Wed,  5 Aug 2009 11:36:43 +0200 (CEST)
+To: akpm@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, fengguang.wu@intel.com,
+       hidehiro.kawai.ez@hitachi.com
+Subject: [PATCH] [3/19] HWPOISON: Add support for poison swap entries v2
+Message-Id: <20090805093630.BE26EB15D8@basil.firstfloor.org>
+Date: Wed,  5 Aug 2009 11:36:30 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Enable removing of corrupted pages through truncation
-for a bunch of file systems: ext*, xfs, gfs2, ocfs2, ntfs
-These should cover most server needs.
+Memory migration uses special swap entry types to trigger special actions on 
+page faults. Extend this mechanism to also support poisoned swap entries, to 
+trigger poison handling on page faults. This allows follow-on patches to 
+prevent processes from faulting in poisoned pages again.
 
-I chose the set of migration aware file systems for this
-for now, assuming they have been especially audited.
-But in general it should be safe for all file systems
-on the data area that support read/write and truncate.
+v2: Fix overflow in MAX_SWAPFILES (Fengguang Wu)
+v3: Better overflow fix (Hidehiro Kawai)
 
-Caveat: the hardware error handler does not take i_mutex
-for now before calling the truncate function. Is that ok?
-
-Cc: tytso@mit.edu
-Cc: hch@infradead.org
-Cc: mfasheh@suse.com
-Cc: aia21@cantab.net
-Cc: hugh.dickins@tiscali.co.uk
-Cc: swhiteho@redhat.com
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- fs/ext2/inode.c             |    2 ++
- fs/ext3/inode.c             |    3 +++
- fs/ext4/inode.c             |    4 ++++
- fs/gfs2/aops.c              |    3 +++
- fs/ntfs/aops.c              |    2 ++
- fs/ocfs2/aops.c             |    1 +
- fs/xfs/linux-2.6/xfs_aops.c |    1 +
- mm/shmem.c                  |    1 +
- 8 files changed, 17 insertions(+)
+ include/linux/swap.h    |   34 ++++++++++++++++++++++++++++------
+ include/linux/swapops.h |   38 ++++++++++++++++++++++++++++++++++++++
+ mm/swapfile.c           |    4 ++--
+ 3 files changed, 68 insertions(+), 8 deletions(-)
 
-Index: linux/fs/gfs2/aops.c
+Index: linux/include/linux/swap.h
 ===================================================================
---- linux.orig/fs/gfs2/aops.c
-+++ linux/fs/gfs2/aops.c
-@@ -1135,6 +1135,7 @@ static const struct address_space_operat
- 	.direct_IO = gfs2_direct_IO,
- 	.migratepage = buffer_migrate_page,
- 	.is_partially_uptodate = block_is_partially_uptodate,
-+	.error_remove_page = generic_error_remove_page,
- };
- 
- static const struct address_space_operations gfs2_ordered_aops = {
-@@ -1151,6 +1152,7 @@ static const struct address_space_operat
- 	.direct_IO = gfs2_direct_IO,
- 	.migratepage = buffer_migrate_page,
- 	.is_partially_uptodate = block_is_partially_uptodate,
-+	.error_remove_page = generic_error_remove_page,
- };
- 
- static const struct address_space_operations gfs2_jdata_aops = {
-@@ -1166,6 +1168,7 @@ static const struct address_space_operat
- 	.invalidatepage = gfs2_invalidatepage,
- 	.releasepage = gfs2_releasepage,
- 	.is_partially_uptodate = block_is_partially_uptodate,
-+	.error_remove_page = generic_error_remove_page,
- };
- 
- void gfs2_set_aops(struct inode *inode)
-Index: linux/fs/ntfs/aops.c
-===================================================================
---- linux.orig/fs/ntfs/aops.c
-+++ linux/fs/ntfs/aops.c
-@@ -1550,6 +1550,7 @@ const struct address_space_operations nt
- 	.migratepage	= buffer_migrate_page,	/* Move a page cache page from
- 						   one physical page to an
- 						   other. */
-+	.error_remove_page = generic_error_remove_page,
- };
- 
- /**
-@@ -1569,6 +1570,7 @@ const struct address_space_operations nt
- 	.migratepage	= buffer_migrate_page,	/* Move a page cache page from
- 						   one physical page to an
- 						   other. */
-+	.error_remove_page = generic_error_remove_page,
- };
- 
- #ifdef NTFS_RW
-Index: linux/fs/ocfs2/aops.c
-===================================================================
---- linux.orig/fs/ocfs2/aops.c
-+++ linux/fs/ocfs2/aops.c
-@@ -1968,4 +1968,5 @@ const struct address_space_operations oc
- 	.releasepage		= ocfs2_releasepage,
- 	.migratepage		= buffer_migrate_page,
- 	.is_partially_uptodate	= block_is_partially_uptodate,
-+	.error_remove_page	= generic_error_remove_page,
- };
-Index: linux/fs/xfs/linux-2.6/xfs_aops.c
-===================================================================
---- linux.orig/fs/xfs/linux-2.6/xfs_aops.c
-+++ linux/fs/xfs/linux-2.6/xfs_aops.c
-@@ -1636,4 +1636,5 @@ const struct address_space_operations xf
- 	.direct_IO		= xfs_vm_direct_IO,
- 	.migratepage		= buffer_migrate_page,
- 	.is_partially_uptodate  = block_is_partially_uptodate,
-+	.error_remove_page	= generic_error_remove_page,
- };
-Index: linux/mm/shmem.c
-===================================================================
---- linux.orig/mm/shmem.c
-+++ linux/mm/shmem.c
-@@ -2421,6 +2421,7 @@ static const struct address_space_operat
- 	.write_end	= shmem_write_end,
+--- linux.orig/include/linux/swap.h
++++ linux/include/linux/swap.h
+@@ -34,16 +34,38 @@ static inline int current_is_kswapd(void
+  * the type/offset into the pte as 5/27 as well.
+  */
+ #define MAX_SWAPFILES_SHIFT	5
+-#ifndef CONFIG_MIGRATION
+-#define MAX_SWAPFILES		(1 << MAX_SWAPFILES_SHIFT)
++
++/*
++ * Use some of the swap files numbers for other purposes. This
++ * is a convenient way to hook into the VM to trigger special
++ * actions on faults.
++ */
++
++/*
++ * NUMA node memory migration support
++ */
++#ifdef CONFIG_MIGRATION
++#define SWP_MIGRATION_NUM 2
++#define SWP_MIGRATION_READ	(MAX_SWAPFILES + SWP_HWPOISON_NUM)
++#define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + SWP_HWPOISON_NUM + 1)
+ #else
+-/* Use last two entries for page migration swap entries */
+-#define MAX_SWAPFILES		((1 << MAX_SWAPFILES_SHIFT)-2)
+-#define SWP_MIGRATION_READ	MAX_SWAPFILES
+-#define SWP_MIGRATION_WRITE	(MAX_SWAPFILES + 1)
++#define SWP_MIGRATION_NUM 0
  #endif
- 	.migratepage	= migrate_page,
-+	.error_remove_page = generic_error_remove_page,
- };
- 
- static const struct file_operations shmem_file_operations = {
-Index: linux/fs/ext2/inode.c
-===================================================================
---- linux.orig/fs/ext2/inode.c
-+++ linux/fs/ext2/inode.c
-@@ -819,6 +819,7 @@ const struct address_space_operations ex
- 	.writepages		= ext2_writepages,
- 	.migratepage		= buffer_migrate_page,
- 	.is_partially_uptodate	= block_is_partially_uptodate,
-+	.error_remove_page	= generic_error_remove_page,
- };
- 
- const struct address_space_operations ext2_aops_xip = {
-@@ -837,6 +838,7 @@ const struct address_space_operations ex
- 	.direct_IO		= ext2_direct_IO,
- 	.writepages		= ext2_writepages,
- 	.migratepage		= buffer_migrate_page,
-+	.error_remove_page	= generic_error_remove_page,
- };
  
  /*
-Index: linux/fs/ext3/inode.c
++ * Handling of hardware poisoned pages with memory corruption.
++ */
++#ifdef CONFIG_MEMORY_FAILURE
++#define SWP_HWPOISON_NUM 1
++#define SWP_HWPOISON		MAX_SWAPFILES
++#else
++#define SWP_HWPOISON_NUM 0
++#endif
++
++#define MAX_SWAPFILES \
++	((1 << MAX_SWAPFILES_SHIFT) - SWP_MIGRATION_NUM - SWP_HWPOISON_NUM)
++
++/*
+  * Magic header for a swap area. The first part of the union is
+  * what the swap magic looks like for the old (limited to 128MB)
+  * swap area format, the second part of the union adds - in the
+Index: linux/include/linux/swapops.h
 ===================================================================
---- linux.orig/fs/ext3/inode.c
-+++ linux/fs/ext3/inode.c
-@@ -1819,6 +1819,7 @@ static const struct address_space_operat
- 	.direct_IO		= ext3_direct_IO,
- 	.migratepage		= buffer_migrate_page,
- 	.is_partially_uptodate  = block_is_partially_uptodate,
-+	.error_remove_page	= generic_error_remove_page,
- };
+--- linux.orig/include/linux/swapops.h
++++ linux/include/linux/swapops.h
+@@ -131,3 +131,41 @@ static inline int is_write_migration_ent
  
- static const struct address_space_operations ext3_writeback_aops = {
-@@ -1834,6 +1835,7 @@ static const struct address_space_operat
- 	.direct_IO		= ext3_direct_IO,
- 	.migratepage		= buffer_migrate_page,
- 	.is_partially_uptodate  = block_is_partially_uptodate,
-+	.error_remove_page	= generic_error_remove_page,
- };
+ #endif
  
- static const struct address_space_operations ext3_journalled_aops = {
-@@ -1848,6 +1850,7 @@ static const struct address_space_operat
- 	.invalidatepage		= ext3_invalidatepage,
- 	.releasepage		= ext3_releasepage,
- 	.is_partially_uptodate  = block_is_partially_uptodate,
-+	.error_remove_page	= generic_error_remove_page,
- };
- 
- void ext3_set_aops(struct inode *inode)
-Index: linux/fs/ext4/inode.c
++#ifdef CONFIG_MEMORY_FAILURE
++/*
++ * Support for hardware poisoned pages
++ */
++static inline swp_entry_t make_hwpoison_entry(struct page *page)
++{
++	BUG_ON(!PageLocked(page));
++	return swp_entry(SWP_HWPOISON, page_to_pfn(page));
++}
++
++static inline int is_hwpoison_entry(swp_entry_t entry)
++{
++	return swp_type(entry) == SWP_HWPOISON;
++}
++#else
++
++static inline swp_entry_t make_hwpoison_entry(struct page *page)
++{
++	return swp_entry(0, 0);
++}
++
++static inline int is_hwpoison_entry(swp_entry_t swp)
++{
++	return 0;
++}
++#endif
++
++#if defined(CONFIG_MEMORY_FAILURE) || defined(CONFIG_MIGRATION)
++static inline int non_swap_entry(swp_entry_t entry)
++{
++	return swp_type(entry) >= MAX_SWAPFILES;
++}
++#else
++static inline int non_swap_entry(swp_entry_t entry)
++{
++	return 0;
++}
++#endif
+Index: linux/mm/swapfile.c
 ===================================================================
---- linux.orig/fs/ext4/inode.c
-+++ linux/fs/ext4/inode.c
-@@ -3373,6 +3373,7 @@ static const struct address_space_operat
- 	.direct_IO		= ext4_direct_IO,
- 	.migratepage		= buffer_migrate_page,
- 	.is_partially_uptodate  = block_is_partially_uptodate,
-+	.error_remove_page	= generic_error_remove_page,
- };
+--- linux.orig/mm/swapfile.c
++++ linux/mm/swapfile.c
+@@ -697,7 +697,7 @@ int free_swap_and_cache(swp_entry_t entr
+ 	struct swap_info_struct *p;
+ 	struct page *page = NULL;
  
- static const struct address_space_operations ext4_writeback_aops = {
-@@ -3388,6 +3389,7 @@ static const struct address_space_operat
- 	.direct_IO		= ext4_direct_IO,
- 	.migratepage		= buffer_migrate_page,
- 	.is_partially_uptodate  = block_is_partially_uptodate,
-+	.error_remove_page	= generic_error_remove_page,
- };
+-	if (is_migration_entry(entry))
++	if (non_swap_entry(entry))
+ 		return 1;
  
- static const struct address_space_operations ext4_journalled_aops = {
-@@ -3402,6 +3404,7 @@ static const struct address_space_operat
- 	.invalidatepage		= ext4_invalidatepage,
- 	.releasepage		= ext4_releasepage,
- 	.is_partially_uptodate  = block_is_partially_uptodate,
-+	.error_remove_page	= generic_error_remove_page,
- };
+ 	p = swap_info_get(entry);
+@@ -2083,7 +2083,7 @@ static int __swap_duplicate(swp_entry_t
+ 	int count;
+ 	bool has_cache;
  
- static const struct address_space_operations ext4_da_aops = {
-@@ -3418,6 +3421,7 @@ static const struct address_space_operat
- 	.direct_IO		= ext4_direct_IO,
- 	.migratepage		= buffer_migrate_page,
- 	.is_partially_uptodate  = block_is_partially_uptodate,
-+	.error_remove_page	= generic_error_remove_page,
- };
+-	if (is_migration_entry(entry))
++	if (non_swap_entry(entry))
+ 		return -EINVAL;
  
- void ext4_set_aops(struct inode *inode)
+ 	type = swp_type(entry);
