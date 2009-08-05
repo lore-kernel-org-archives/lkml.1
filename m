@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934676AbZHEQb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934680AbZHEQdE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934676AbZHEQb6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 12:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934641AbZHEQb5
+	id S934680AbZHEQdE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 12:33:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934641AbZHEQdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 12:31:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47815 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934386AbZHEQb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 12:31:57 -0400
-Date: Wed, 5 Aug 2009 18:31:43 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Avi Kivity <avi@redhat.com>, Wu Fengguang <fengguang.wu@intel.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-Message-ID: <20090805163143.GF23385@random.random>
-References: <20090805024058.GA8886@localhost>
- <4A793B92.9040204@redhat.com>
- <4A7993F4.9020008@redhat.com>
+	Wed, 5 Aug 2009 12:33:03 -0400
+Received: from exprod5og104.obsmtp.com ([64.18.0.178]:36259 "EHLO
+	exprod5og104.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934639AbZHEQdC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 12:33:02 -0400
+From: Martyn Welch <martyn.welch@gefanuc.com>
+Subject: [PATCH] Staging: Correct tsi-148 VME interrupt free routine
+To: gregkh@suse.de
+Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
+       jirislaby@gmail.com
+Date: Wed, 05 Aug 2009 17:33:44 +0100
+Message-ID: <20090805163219.4903.43629.stgit@ES-J7S4D2J.amer.consind.ge.com>
+In-Reply-To: <4A7769C6.50901@gmail.com>
+References: <4A7769C6.50901@gmail.com>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A7993F4.9020008@redhat.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 05, 2009 at 10:15:16AM -0400, Rik van Riel wrote:
-> Not having a hardware accessed bit would explain why
-> the VM is not reactivating the pages that were accessed
-> while on the inactive list.
+As identified by Jiri, the VME interrupt free routine removes the service
+routine before disabling the interrupt. Re-order operations to be performed in
+the reverse of the request routine.
+---
 
-Problem is, even with young bit functional the VM isn't reactivating
-those pages anyway because of that broken check... That check should
-be nuked entirely in my view as it fundamentally thinks it can
-outsmart the VM intelligence by checking a bit in the vma... quite
-absurd in my view.
+Jiri: Thanks for the feedback.
 
-> Can we find out which pages are EPT pages?
-> 
-> If so, we could unmap them when they get moved from the
-> active to the inactive list, and soft fault them back in
-> on access, emulating the referenced bit for EPT pages and
-> making page replacement on them work like it should.
-> 
-> Your approximation of pretending the page is accessed the
-> first time and pretending it's not the second time sounds
-> like it will just lead to less efficient FIFO replacement,
-> not to anything even vaguely approximating LRU.
+Martyn
 
-I think it'll still better than current situation, as young bit is
-always set for ptes. Otherwise EPT pages are too penalized, we need
-them to stay one round more in active list like everything else. They
-are too penalizied anyways because at second pass they'll be forced
-out of active list and unmapped.
+ drivers/staging/vme/bridges/vme_tsi148.c |   15 ++++++++-------
+ 1 files changed, 8 insertions(+), 7 deletions(-)
 
-This is what alpha and all other archs without young bit set in
-hardware have to do. They set young bit in software and clear it in
-software and then set it again in software if there's a page fault
-(hopefully a minor fault). Returning "not young" first time sounds
-worse to me.
+diff --git a/drivers/staging/vme/bridges/vme_tsi148.c b/drivers/staging/vme/bridges/vme_tsi148.c
+index ad6fc2d..cdc2919 100644
+--- a/drivers/staging/vme/bridges/vme_tsi148.c
++++ b/drivers/staging/vme/bridges/vme_tsi148.c
+@@ -484,21 +484,22 @@ void tsi148_free_irq(int level, int statid)
+ 	/* Get semaphore */
+ 	down(&(vme_irq));
+ 
+-	tsi148_bridge->irq[level - 1].callback[statid].func = NULL;
+-	tsi148_bridge->irq[level - 1].callback[statid].priv_data = NULL;
+ 	tsi148_bridge->irq[level - 1].count--;
+ 
+-	/* Disable IRQ level */
++	/* Disable IRQ level if no more interrupts attached at this level*/
+ 	if (tsi148_bridge->irq[level - 1].count == 0) {
+-		tmp = ioread32be(tsi148_bridge->base + TSI148_LCSR_INTEO);
+-		tmp &= ~TSI148_LCSR_INTEO_IRQEO[level - 1];
+-		iowrite32be(tmp, tsi148_bridge->base + TSI148_LCSR_INTEO);
+-
+ 		tmp = ioread32be(tsi148_bridge->base + TSI148_LCSR_INTEN);
+ 		tmp &= ~TSI148_LCSR_INTEN_IRQEN[level - 1];
+ 		iowrite32be(tmp, tsi148_bridge->base + TSI148_LCSR_INTEN);
++
++		tmp = ioread32be(tsi148_bridge->base + TSI148_LCSR_INTEO);
++		tmp &= ~TSI148_LCSR_INTEO_IRQEO[level - 1];
++		iowrite32be(tmp, tsi148_bridge->base + TSI148_LCSR_INTEO);
+ 	}
+ 
++	tsi148_bridge->irq[level - 1].callback[statid].func = NULL;
++	tsi148_bridge->irq[level - 1].callback[statid].priv_data = NULL;
++
+ 	/* Release semaphore */
+ 	up(&(vme_irq));
+ }
