@@ -1,94 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751624AbZHETjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752153AbZHETov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751624AbZHETjs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 15:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbZHETjr
+	id S1752153AbZHETov (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 15:44:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbZHETou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 15:39:47 -0400
-Received: from smtp101.prem.mail.ac4.yahoo.com ([76.13.13.40]:27299 "HELO
-	smtp101.prem.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751246AbZHETjr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 15:39:47 -0400
-X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
-X-YMail-OSG: Kj9LjyMVM1m4vJPRRXOvDKTH7nTlVnfaSGCq4gj47Sq4i_LqX3AJ.iDyqYwVpefZuy6OYbzsxlH1aDzKCGKVPwUwL7ZDjb6NTbjDd1haly9lz.WjSd9jDeIuR39C_ZpPZTnk6vKvFOEOHa0aLbHBP5V4iyP3lTL220Un1fBdUEg_rR0NeqZ7ZO81qSZFf6TXLC_Vh2RZSkUVnMA3Q68RrKwcfygQECxhESJv8tPl7O5Y2OUKjAKsbe4n4Jvv6nvVviga2py1R15Lsvqgkw--
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <4A79DFAF.2010605@schaufler-ca.com>
-Date: Wed, 05 Aug 2009 12:38:23 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	Wed, 5 Aug 2009 15:44:50 -0400
+Received: from mail.gmx.net ([213.165.64.20]:58467 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751398AbZHETou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 15:44:50 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX199SYFWhFt9RX0Sd2SkFwE698sFc7Im70TWlI7eLb
+	KFYWLPuw8YHgbm
+Date: Wed, 5 Aug 2009 21:44:48 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Ian Molton <ian@mnementh.co.uk>
+cc: Magnus Damm <magnus.damm@gmail.com>,
+       pHilipp Zabel <philipp.zabel@gmail.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>,
+       Magnus Damm <damm@opensource.se>
+Subject: Re: MMC: Make the configuration memory resource optional
+In-Reply-To: <4A798A4B.4000901@mnementh.co.uk>
+Message-ID: <Pine.LNX.4.64.0908051702180.5802@axis700.grange>
+References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange> 
+ <aec7e5c30907290608i43a80fe1xe4ef0f3847855709@mail.gmail.com> 
+ <4A7053E8.8050303@mnementh.co.uk>  <20090729201702.GA28202@linux-sh.org> 
+ <74d0deb30907291355n39df7db0v1d7afc93917adc14@mail.gmail.com> 
+ <4A716F1C.2050805@mnementh.co.uk>  <Pine.LNX.4.64.0907301246330.4462@axis700.grange>
+  <4A71F2A5.4060206@mnementh.co.uk>  <aec7e5c30908021952j7947b513w7d62f2c4d87bd3c5@mail.gmail.com>
+  <4A787C2C.5070000@mnementh.co.uk> <aec7e5c30908041908p568f413albef7dede3fd2cb83@mail.gmail.com>
+ <4A798A4B.4000901@mnementh.co.uk>
 MIME-Version: 1.0
-To: Julia Lawall <julia@diku.dk>
-CC: James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 2/2] security/smack: Use AF_INET for sin_family field
-References: <Pine.LNX.4.64.0908051434340.20453@pc-004.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0908051434340.20453@pc-004.diku.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
->
-> Elsewhere the sin_family field holds a value with a name of the form
-> AF_..., so it seems reasonable to do so here as well.  Also the values of
-> PF_INET and AF_INET are the same.
->
-> The semantic patch that makes this change is as follows:
-> (http://coccinelle.lip6.fr/)
->
-> // <smpl>
-> @@
-> struct sockaddr_in sip;
-> @@
->
-> (
-> sip.sin_family ==
-> - PF_INET
-> + AF_INET
-> |
-> sip.sin_family !=
-> - PF_INET
-> + AF_INET
-> |
-> sip.sin_family =
-> - PF_INET
-> + AF_INET
-> )
-> // </smpl>
->
-> Signed-off-by: Julia Lawall <julia@diku.dk>
->   
+On Wed, 5 Aug 2009, Ian Molton wrote:
 
-Acked-by: Casey Schaufler <casey@schaufler-ca.com>
+> Hi all,
+> 
+> Could all non-MFD users of tmio-mmc please ensure that the following is
+> actually true on your hardware?
+> 
+>   mmc->f_max = pdata->hclk;
+>   mmc->f_min = mmc->f_max / 512;
 
-Yes, this is a correction. Thank you.
+That's what I currently have in the driver, yes.
 
+> According to all the data I have, the smallest divider setting of 0x100 is /2
+> and only MFD controllers with the CNF area can select no-divider mode.
+> 
+> this would mean that non-MFD chips should be doing:
+> 
+>   mmc->f_max = pdata->hclk / 2;
+>   mmc->f_min = pdata->hclk / 512;
 
-> ---
->  security/smack/smack_lsm.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> diff -u -p a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-> --- a/security/smack/smack_lsm.c
-> +++ b/security/smack/smack_lsm.c
-> @@ -2464,7 +2464,7 @@ static int smack_socket_sendmsg(struct s
->  	/*
->  	 * Perfectly reasonable for this to be NULL
->  	 */
-> -	if (sip == NULL || sip->sin_family != PF_INET)
-> +	if (sip == NULL || sip->sin_family != AF_INET)
->  		return 0;
->  
->  	return smack_netlabel_send(sock->sk, sip);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
->
->   
+How do we verify this? Do I need some "very fast" card, so that sd would 
+try to drive the clock beyond pdata->hclk / 2, which should then fail? 
+Currently I'm using 24MHz (copied from the original driver), and the only 
+thing I know about the controller is its "Maximum operating frequency: 25 
+MHz."
 
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
