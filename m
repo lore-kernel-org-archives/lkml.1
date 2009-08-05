@@ -1,111 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752392AbZHEUEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752479AbZHEUGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752392AbZHEUEq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 16:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbZHEUEp
+	id S1752479AbZHEUGt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 16:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbZHEUGs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 16:04:45 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54477 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752295AbZHEUEo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 16:04:44 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-Subject: [PATCH] PM: Add convenience macro to make switching to dev_pm_ops less error-prone
-Date: Wed, 5 Aug 2009 22:05:13 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.31-rc5-rjw; KDE/4.2.4; x86_64; ; )
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, Frans Pop <elendil@planet.nl>,
-       linux-kernel@vger.kernel.org,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Daniel Mack <daniel@caiaq.de>
-References: <20090803163304.GF5002@laptop> <20090805093758.GE5854@laptop> <200908052047.26293.rjw@sisk.pl>
-In-Reply-To: <200908052047.26293.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908052205.14222.rjw@sisk.pl>
+	Wed, 5 Aug 2009 16:06:48 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:57069 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752377AbZHEUGr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 16:06:47 -0400
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: Steven Rostedt <rostedt@goodmis.org>, trivial@kernel.org
+Subject: [PATCH] Fix duplicated word "options" in comment
+Date: Wed,  5 Aug 2009 22:06:42 +0200
+Message-Id: <1249502802-15123-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.3.3
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 05 August 2009, Rafael J. Wysocki wrote:
-> On Wednesday 05 August 2009, Albin Tonnerre wrote:
-> > On Tue, Aug 04, 2009 at 09:55:33PM -0700, Dmitry Torokhov wrote :
-> > > On Tue, Aug 04, 2009 at 11:36:12AM +0200, Albin Tonnerre wrote:
-> > > > In a number of cases, the .suspend, .freeze, .poweroff and .resume,
-> > > > .thaw, .restore functions are identical. However, they all need to be
-> > > > assigned to avoid regressionsm as the previous code called .suspend
-> > > > resp. .resume in all those cases. SIMPLE_PM_OPS allows to deal with
-> > > > this case.
-> > 
-> > 
-> > > I'd much rather have conversions done with a bit more analysis now that
-> > > our framework is more flexible and we can have specialized routines for
-> > > hibernation and suspend.
-> > 
-> > I still think that even though they can, quite a number of drivers won't
-> > /need/ to have different functions for this, but maybe I'm mistaken.
-> > 
-> > > Maybe we should try changing from run-time to build time warning so that
-> > > users are not overly concerned with it?
-> > 
-> > I'm not sure that solves the problem. The fact is that even for developers, it's
-> > easy to overlook that assiging only the .suspend and .resume fields is probably
-> > a mistake.
-> 
-> I agree, so I'm going to take the patch.
-> 
-> I'll add a comment describing what the macro is for, though.
+this was introduced in
 
-Strictly speaking, I'm going to add the appended patch to the linux-next
-branch of the suspend-2.6 tree.
+	5e0a093 (tracing: fix config options to not show when automatically selected)
 
-Thanks,
-Rafael
-
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: trivial@kernel.org
 ---
-From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-Subject: PM: Add convenience macro to make switching to dev_pm_ops less error-prone
+ kernel/trace/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-In a number of cases, the .suspend, .freeze, .poweroff and .resume,
-.thaw, .restore functions are identical. However, they all need to be
-assigned to avoid regressionsm as the previous code called .suspend
-resp. .resume in all those cases. SIMPLE_DEV_PM_OPS helps to deal
-with this case.
-
-[rjw: Changed the name of the macro and added the comment explaining its
- purpose.]
-
-Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- include/linux/pm.h |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
-
-Index: linux-2.6/include/linux/pm.h
-===================================================================
---- linux-2.6.orig/include/linux/pm.h
-+++ linux-2.6/include/linux/pm.h
-@@ -184,6 +184,20 @@ struct dev_pm_ops {
- 	int (*restore_noirq)(struct device *dev);
- };
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index 019f380..6919357 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -68,7 +68,7 @@ config CONTEXT_SWITCH_TRACER
+ # This allows those options to appear when no other tracer is selected. But the
+ # options do not appear when something else selects it. We need the two options
+ # GENERIC_TRACER and TRACING to avoid circular dependencies to accomplish the
+-# hidding of the automatic options options.
++# hidding of the automatic options.
  
-+/*
-+ * Use this if you want to use the same suspend and resume callbacks for suspend
-+ * to RAM and hibernation.
-+ */
-+#define SIMPLE_DEV_PM_OPS(name, suspend_fn, resume_fn) \
-+struct dev_pm_ops name = { \
-+	.suspend = suspend_fn, \
-+	.resume = resume_fn, \
-+	.freeze = suspend_fn, \
-+	.thaw = resume_fn, \
-+	.poweroff = suspend_fn, \
-+	.resume = resume_fn, \
-+}
-+
- /**
-  * PM_EVENT_ messages
-  *
+ config TRACING
+ 	bool
+-- 
+tg: (90bc1a6..) t/trivial/optionsoptions (depends on: linus/master)
