@@ -1,43 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934281AbZHEMfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934229AbZHEMfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934281AbZHEMfh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 08:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933122AbZHEMfe
+	id S934229AbZHEMfY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 08:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934227AbZHEMfW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 08:35:34 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:45303 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934227AbZHEMfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 08:35:32 -0400
-Message-ID: <4A797C84.2050109@suse.de>
-Date: Wed, 05 Aug 2009 21:35:16 +0900
-From: Tejun Heo <teheo@suse.de>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Wed, 5 Aug 2009 08:35:22 -0400
+Received: from sg2ehsobe002.messaging.microsoft.com ([207.46.51.76]:23647 "EHLO
+	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S934230AbZHEMfS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 08:35:18 -0400
+X-SpamScore: -22
+X-BigFish: VPS-22(zz62a3L1432R98dN936eMzz1202hzzz32i6bh203h43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KNWLMD-04-WI1-01
+Date: Wed, 5 Aug 2009 14:35:01 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 0/26] oprofile: Performance counter multiplexing
+Message-ID: <20090805123501.GF14610@erda.amd.com>
+References: <1248800846-25422-1-git-send-email-robert.richter@amd.com> <20090803112220.GA22936@elte.hu> <20090803072522.1d90f15c@infradead.org> <20090804201109.GA21386@elte.hu>
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Colin Guthrie <cguthrie@mandriva.org>,
-       Greg KH <greg@kroah.com>, Al Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] sound: make OSS device number claiming optional
-References: <4A79283E.7030202@kernel.org>	<4A79296A.4090600@suse.de>	<20090805101551.6ee053e5@lxorguk.ukuu.org.uk>	<4A794FB9.30403@mandriva.org>	<20090805105916.28f84a05@lxorguk.ukuu.org.uk>	<s5h63d2o9ds.wl%tiwai@suse.de>	<20090805112649.4a59ce70@lxorguk.ukuu.org.uk> <s5hzlaemtdx.wl%tiwai@suse.de>
-In-Reply-To: <s5hzlaemtdx.wl%tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20090804201109.GA21386@elte.hu>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 05 Aug 2009 12:35:02.0685 (UTC) FILETIME=[276264D0:01CA15C9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Takashi Iwai wrote:
-> Well, the only regression would be the case where you create static
-> /dev/dsp (or else) devices and let auto-loading through sound-slot-*
-> or sound-service-*-* aliases.  Of course, this still works if you
-> load soundcore in some way.
+On 04.08.09 22:11:09, Ingo Molnar wrote:
+> 
+> * Arjan van de Ven <arjan@infradead.org> wrote:
+> 
+> > On Mon, 3 Aug 2009 13:22:20 +0200
+> > Ingo Molnar <mingo@elte.hu> wrote:
+> > > 
+> > > This new oprofile multiplexing mechanism really overlaps the PMU 
+> > > abstractions that perfcounters already provide, and i disagree 
+> > > with this general direction. The code you wrote is clean though 
+> > > so i've
+> > 
+> > is there any way that the oprofile interfaces can be written on 
+> > top of the low level perf infrastructure?
+> 
+> Everything 'can' be done - the question is, is that the best 
+> approach? The technically best interface to utilize perfcounters is 
+> not to whack it into the oprofile kernel code, but to minimally 
+> update the oprofile user-space code (the sample collection daemon) 
+> to use the sys_perf_counter_open() system call.
+> 
+> It is by far the most elegant solution and needs no kernel changes 
+> at all:
+> 
+> The oprofile daemon should open percpu sampling counters and create 
+> oprofile-compatible sample files. That way the rest of the oprofile 
+> user-space does not have to be touched at all. The raw event ids 
+> that oprofile knows about can be used in perfcounter parameters 
+> directly.
+> 
+> In such a mode of operation both oprofilefs and the dcookies syscall 
+> can be omitted completely - all of the kernel side oprofile code 
+> becomes mooted and pushed into legacy mode.
+> 
+> Is there any reason or oprofile property that makes this impossible 
+> or undesirable to do?
 
-If we're gonna do that, we might as well just rip off the pointless
-'claim everything so we can use our own module alises' code from
-sound_core.c and be done with it.  That really is the only problem.
+The question is more if it makes sense. It's new to me dropping
+user/kernel interfaces that are in use and forcing its developers to
+rewrite their code. Oprofile is actively developed and in many
+distros. It supports architectures perfcounters doesn't. So, what do
+you want?
 
-Thanks.
+And why not having more than one profiling subsystem in the kernel? I
+see also more than one type of car on the street though all of them
+have 4 wheels.
+
+-Robert
 
 -- 
-tejun
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
