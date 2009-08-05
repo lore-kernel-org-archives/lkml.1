@@ -1,80 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934152AbZHEKDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933980AbZHEKNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934152AbZHEKDh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 06:03:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934139AbZHEKDg
+	id S933980AbZHEKNo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 06:13:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933367AbZHEKNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 06:03:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56386 "EHLO mx2.redhat.com"
+	Wed, 5 Aug 2009 06:13:43 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:52236 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934138AbZHEKDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 06:03:33 -0400
-Date: Wed, 5 Aug 2009 12:03:29 +0200
-From: Jiri Pirko <jpirko@redhat.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: BUG: spinlock bad magic on CPU#1, swapper/1
-Message-ID: <20090805100329.GB3897@psychotron.englab.brq.redhat.com>
-References: <200908051136.44908.elendil@planet.nl> <200908051150.53301.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200908051150.53301.elendil@planet.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S933046AbZHEKNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 06:13:42 -0400
+Date: Wed, 5 Aug 2009 20:13:36 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: linux-next: Tree for August 5
+Message-Id: <20090805201336.fd2de2ad.sfr@canb.auug.org.au>
+In-Reply-To: <4A793EA8.50306@panasas.com>
+References: <20090805172337.b0688db1.sfr@canb.auug.org.au>
+	<4A793EA8.50306@panasas.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__5_Aug_2009_20_13_36_+1000_eSyC8LVwkK8CnzZl"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wed, Aug 05, 2009 at 11:50:52AM CEST, elendil@planet.nl wrote:
->On Wednesday 05 August 2009, Frans Pop wrote:
->> Current v2.6.31-rc5-246-g90bc1a6 gives me:
->>
->> BUG: spinlock bad magic on CPU#1, swapper/1
->>  lock: ffff88007e1889c8, .magic: 00000000, .owner: <none>/-1, .owner_cpu: 0
->> Pid: 1, comm: swapper Not tainted 2.6.31-rc5 #4 
->> Call Trace:
->>  [<ffffffff811345e8>] spin_bug+0xa2/0xaa
->>  [<ffffffff8113469e>] _raw_spin_lock+0x23/0x135
->>  [<ffffffff8125664e>] _spin_lock_bh+0x19/0x1e
->>  [<ffffffff811e3702>] alloc_netdev_mq+0x127/0x211
->>  [<ffffffff81433487>] ? netdev_init+0x6a/0xac
->>  [<ffffffff811a81eb>] ? loopback_setup+0x0/0x7b
->>  [<ffffffff8142e718>] loopback_net_init+0x30/0x7a
->>  [<ffffffff811dd62e>] register_pernet_device+0x2b/0x58
->>  [<ffffffff814336bd>] net_dev_init+0x13d/0x19b
->>  [<ffffffff81433580>] ? net_dev_init+0x0/0x19b
->>  [<ffffffff8100905c>] do_one_initcall+0x56/0x12b
->>  [<ffffffff8106f55b>] ? register_irq_proc+0xb0/0xcc
->>  [<ffffffff810e0000>] ? proc_pid_cmdline+0x5a/0xf9
->>  [<ffffffff8140f65d>] kernel_init+0x14d/0x1a3
->>  [<ffffffff8100ca7a>] child_rip+0xa/0x20
->>  [<ffffffff8140f510>] ? kernel_init+0x0/0x1a3
->>  [<ffffffff8100ca70>] ? child_rip+0x0/0x20
->>
->> Error occurs during early boot (between PCI/ACPI init and PnP init).
->
->Reverting the following commit fixes it:
+--Signature=_Wed__5_Aug_2009_20_13_36_+1000_eSyC8LVwkK8CnzZl
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Sure it fixes it but it also exposes the previous bug. I would rather suggest
-to go with Ingo's patch.
+Hi Boaz,
 
-Jirka
+On Wed, 05 Aug 2009 11:11:20 +0300 Boaz Harrosh <bharrosh@panasas.com> wrot=
+e:
+>
+> On 08/05/2009 10:23 AM, Stephen Rothwell wrote:
+> >=20
+> > This tree fails to build for powerpc allyesconfig (final link problem).
+>=20
+> Above is reported for a long time. Is it related to this:
+> http://www.spinics.net/lists/kernel/msg921978.html
 
->commit a6ac65db2329e7685299666f5f7b6093c7b0f3a0
->Author: Jiri Pirko <jpirko@redhat.com>
->Date:   Thu Jul 30 01:06:12 2009 +0000
->
->    net: restore the original spinlock to protect unicast list
->
->    There is a path when an assetion in dev_unicast_sync() appears.
->
->    igmp6_group_added -> dev_mc_add -> __dev_set_rx_mode ->
->    -> vlan_dev_set_rx_mode -> dev_unicast_sync
->
->    Therefore we cannot protect this list with rtnl. This patch restores the
->    original protecting this list with spinlock.
->
->    Signed-off-by: Jiri Pirko <jpirko@redhat.com>
->    Tested-by: Meelis Roos <mroos@linux.ee>
->    Signed-off-by: David S. Miller <davem@davemloft.net>
+No, it is this:
+
+powerpc-linux-ld: TOC section size exceeds 64k
+
+It is powerpc specific and the only way we can think of fixing it
+involves stopping building the built-in.o files and linking the entire
+kernel in one go at the end.  We just haven't had time (or the energy) to
+try to fix it properly while it only affects the final link of the
+allyesconfig kernel.=20
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__5_Aug_2009_20_13_36_+1000_eSyC8LVwkK8CnzZl
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkp5W1AACgkQjjKRsyhoI8zEFwCZARDlISc+5nnBI6y1rFTPKaE3
+6mEAnRGPk74YNqEwsbXPlIu+T3D1V1iX
+=C2Kf
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__5_Aug_2009_20_13_36_+1000_eSyC8LVwkK8CnzZl--
