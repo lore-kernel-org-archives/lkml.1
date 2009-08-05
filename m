@@ -1,95 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934229AbZHEMfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934262AbZHEMiD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934229AbZHEMfY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 08:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934227AbZHEMfW
+	id S934262AbZHEMiD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 08:38:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933610AbZHEMiC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 08:35:22 -0400
-Received: from sg2ehsobe002.messaging.microsoft.com ([207.46.51.76]:23647 "EHLO
-	SG2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S934230AbZHEMfS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 08:35:18 -0400
-X-SpamScore: -22
-X-BigFish: VPS-22(zz62a3L1432R98dN936eMzz1202hzzz32i6bh203h43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KNWLMD-04-WI1-01
-Date: Wed, 5 Aug 2009 14:35:01 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
-       oprofile-list <oprofile-list@lists.sourceforge.net>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 0/26] oprofile: Performance counter multiplexing
-Message-ID: <20090805123501.GF14610@erda.amd.com>
-References: <1248800846-25422-1-git-send-email-robert.richter@amd.com> <20090803112220.GA22936@elte.hu> <20090803072522.1d90f15c@infradead.org> <20090804201109.GA21386@elte.hu>
+	Wed, 5 Aug 2009 08:38:02 -0400
+Received: from mga14.intel.com ([143.182.124.37]:50581 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933564AbZHEMiB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 08:38:01 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,328,1246863600"; 
+   d="scan'208";a="172530828"
+Date: Wed, 5 Aug 2009 20:37:49 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hidehiro.kawai.ez@hitachi.com" <hidehiro.kawai.ez@hitachi.com>
+Subject: Re: [PATCH] [11/19] HWPOISON: Refactor truncate to allow direct
+	truncating of page v2
+Message-ID: <20090805123749.GA9443@localhost>
+References: <200908051136.682859934@firstfloor.org> <20090805093638.D3754B15D8@basil.firstfloor.org> <20090805102008.GB17190@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090804201109.GA21386@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 05 Aug 2009 12:35:02.0685 (UTC) FILETIME=[276264D0:01CA15C9]
+In-Reply-To: <20090805102008.GB17190@wotan.suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04.08.09 22:11:09, Ingo Molnar wrote:
-> 
-> * Arjan van de Ven <arjan@infradead.org> wrote:
-> 
-> > On Mon, 3 Aug 2009 13:22:20 +0200
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > > 
-> > > This new oprofile multiplexing mechanism really overlaps the PMU 
-> > > abstractions that perfcounters already provide, and i disagree 
-> > > with this general direction. The code you wrote is clean though 
-> > > so i've
+On Wed, Aug 05, 2009 at 06:20:08PM +0800, Nick Piggin wrote:
+> On Wed, Aug 05, 2009 at 11:36:38AM +0200, Andi Kleen wrote:
 > > 
-> > is there any way that the oprofile interfaces can be written on 
-> > top of the low level perf infrastructure?
+> > From: Nick Piggin <npiggin@suse.de>
+> > 
+> > Extract out truncate_inode_page() out of the truncate path so that
+> > it can be used by memory-failure.c
+> > 
+> > [AK: description, headers, fix typos]
+> > v2: Some white space changes from Fengguang Wu 
+> > 
+> > Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> > 
+> > ---
+> >  include/linux/mm.h |    2 ++
+> >  mm/truncate.c      |   29 +++++++++++++++--------------
+> >  2 files changed, 17 insertions(+), 14 deletions(-)
+> > 
+> > Index: linux/mm/truncate.c
+> > ===================================================================
+> > --- linux.orig/mm/truncate.c
+> > +++ linux/mm/truncate.c
+> > @@ -93,11 +93,11 @@ EXPORT_SYMBOL(cancel_dirty_page);
+> >   * its lock, b) when a concurrent invalidate_mapping_pages got there first and
+> >   * c) when tmpfs swizzles a page between a tmpfs inode and swapper_space.
+> >   */
+> > -static void
+> > +static int
+> >  truncate_complete_page(struct address_space *mapping, struct page *page)
+> >  {
+> >  	if (page->mapping != mapping)
+> > -		return;
+> > +		return -EIO;
 > 
-> Everything 'can' be done - the question is, is that the best 
-> approach? The technically best interface to utilize perfcounters is 
-> not to whack it into the oprofile kernel code, but to minimally 
-> update the oprofile user-space code (the sample collection daemon) 
-> to use the sys_perf_counter_open() system call.
-> 
-> It is by far the most elegant solution and needs no kernel changes 
-> at all:
-> 
-> The oprofile daemon should open percpu sampling counters and create 
-> oprofile-compatible sample files. That way the rest of the oprofile 
-> user-space does not have to be touched at all. The raw event ids 
-> that oprofile knows about can be used in perfcounter parameters 
-> directly.
-> 
-> In such a mode of operation both oprofilefs and the dcookies syscall 
-> can be omitted completely - all of the kernel side oprofile code 
-> becomes mooted and pushed into legacy mode.
-> 
-> Is there any reason or oprofile property that makes this impossible 
-> or undesirable to do?
+> Hmm, at this point, the page must have been removed from pagecache,
+> so I don't know if you need to pass an error back?
 
-The question is more if it makes sense. It's new to me dropping
-user/kernel interfaces that are in use and forcing its developers to
-rewrite their code. Oprofile is actively developed and in many
-distros. It supports architectures perfcounters doesn't. So, what do
-you want?
+Me think so too. When called from hwpoison, the page count and lock
+have both be taken, so at least _in this case_,
 
-And why not having more than one profiling subsystem in the kernel? I
-see also more than one type of car on the street though all of them
-have 4 wheels.
+        (page->mapping != mapping)
 
--Robert
+can be equally written as
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+        (page->mapping == NULL)
 
+But anyway, the return value is now ignored in upper layer :)
+
+Thanks,
+Fengguang
+
+>   
+> >  	if (page_has_private(page))
+> >  		do_invalidatepage(page, 0);
+> > @@ -108,6 +108,7 @@ truncate_complete_page(struct address_sp
+> >  	remove_from_page_cache(page);
+> >  	ClearPageMappedToDisk(page);
+> >  	page_cache_release(page);	/* pagecache ref */
+> > +	return 0;
+> >  }
+> >  
+> >  /*
+> > @@ -135,6 +136,16 @@ invalidate_complete_page(struct address_
+> >  	return ret;
+> >  }
+> >  
+> > +int truncate_inode_page(struct address_space *mapping, struct page *page)
+> > +{
+> > +	if (page_mapped(page)) {
+> > +		unmap_mapping_range(mapping,
+> > +				   (loff_t)page->index << PAGE_CACHE_SHIFT,
+> > +				   PAGE_CACHE_SIZE, 0);
+> > +	}
+> > +	return truncate_complete_page(mapping, page);
+> > +}
+> > +
+> >  /**
+> >   * truncate_inode_pages - truncate range of pages specified by start & end byte offsets
+> >   * @mapping: mapping to truncate
+> > @@ -196,12 +207,7 @@ void truncate_inode_pages_range(struct a
+> >  				unlock_page(page);
+> >  				continue;
+> >  			}
+> > -			if (page_mapped(page)) {
+> > -				unmap_mapping_range(mapping,
+> > -				  (loff_t)page_index<<PAGE_CACHE_SHIFT,
+> > -				  PAGE_CACHE_SIZE, 0);
+> > -			}
+> > -			truncate_complete_page(mapping, page);
+> > +			truncate_inode_page(mapping, page);
+> >  			unlock_page(page);
+> >  		}
+> >  		pagevec_release(&pvec);
+> > @@ -238,15 +244,10 @@ void truncate_inode_pages_range(struct a
+> >  				break;
+> >  			lock_page(page);
+> >  			wait_on_page_writeback(page);
+> > -			if (page_mapped(page)) {
+> > -				unmap_mapping_range(mapping,
+> > -				  (loff_t)page->index<<PAGE_CACHE_SHIFT,
+> > -				  PAGE_CACHE_SIZE, 0);
+> > -			}
+> > +			truncate_inode_page(mapping, page);
+> >  			if (page->index > next)
+> >  				next = page->index;
+> >  			next++;
+> > -			truncate_complete_page(mapping, page);
+> >  			unlock_page(page);
+> >  		}
+> >  		pagevec_release(&pvec);
+> > Index: linux/include/linux/mm.h
+> > ===================================================================
+> > --- linux.orig/include/linux/mm.h
+> > +++ linux/include/linux/mm.h
+> > @@ -809,6 +809,8 @@ static inline void unmap_shared_mapping_
+> >  extern int vmtruncate(struct inode * inode, loff_t offset);
+> >  extern int vmtruncate_range(struct inode * inode, loff_t offset, loff_t end);
+> >  
+> > +int truncate_inode_page(struct address_space *mapping, struct page *page);
+> > +
+> >  #ifdef CONFIG_MMU
+> >  extern int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+> >  			unsigned long address, unsigned int flags);
