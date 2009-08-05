@@ -1,83 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752583AbZHEE2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752428AbZHEE3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752583AbZHEE2w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 00:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZHEE2u
+	id S1752428AbZHEE3m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 00:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbZHEE3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 00:28:50 -0400
-Received: from mga14.intel.com ([143.182.124.37]:60056 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752153AbZHEE2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 00:28:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,324,1246863600"; 
-   d="scan'208";a="172368708"
-Subject: Re: [PATCH 0/3] Generic sysfs support for ACPI ALS and other ALS
-	devices
-From: Zhang Rui <rui.zhang@intel.com>
-To: Greg KH <greg@kroah.com>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-acpi <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Richard Purdie <rpurdie@rpsys.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-In-Reply-To: <20090804151042.GA20276@kroah.com>
-References: <1249290657.2670.250.camel@rzhang-dt>
-	 <20090804132129.GH18974@elf.ucw.cz>  <20090804151042.GA20276@kroah.com>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 05 Aug 2009 08:55:55 +0800
-Message-Id: <1249433755.2670.379.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Wed, 5 Aug 2009 00:29:38 -0400
+Received: from mail-gx0-f213.google.com ([209.85.217.213]:45959 "EHLO
+	mail-gx0-f213.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751151AbZHEE3i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 00:29:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=QVWWSq04m2+d1Un27NgwNCUy/j3bxGnm39kBujmSwkmbscvgv2SOm8LHORsMIwbydN
+         mKEiGz4gkqiT/9pEjNQ1CKOudXFaDEkdV0As60BypKmehoGdPRBRC4Urb3DcYDZX+86d
+         bNvDceB7tiBMiE/APxLiMJBJWuDr2idC9vWnQ=
+MIME-Version: 1.0
+Date: Wed, 5 Aug 2009 00:29:38 -0400
+Message-ID: <b4198de60908042129s5da611c7j5d859d9e914dae68@mail.gmail.com>
+Subject: Add linux-alpha@ to Patchwork?
+From: Matt Turner <mattst88@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-08-04 at 23:10 +0800, Greg KH wrote:
-> On Tue, Aug 04, 2009 at 03:21:29PM +0200, Pavel Machek wrote:
-> > On Mon 2009-08-03 17:10:57, Zhang Rui wrote:
-> > > Hi, all,
-> > > 
-> > > This is the patch set I made to introduce ACPI ALS device driver
-> > > and a generic sysfs I/F for all the ALS devices, like ACPI ALS,
-> > > platform ALS, etc.
-> > > 
-> > > Patch 01 introduces the ACPI ALS device driver.
-> > > 
-> > > Patch 02 introduces ALS sysfs class.
-> > > 	Two sysfs I/F are created for each ALS device.
-> > >   /sys/class/als/alsX/illuminance:
-> > > 	the amount of light incident upon a specified surface area.
-> > >   /sys/class/als/alsX/mappings:
-> > > 	ambient light illuminance to display luminance mappings
-> > > 	that can be used by an OS to calibrate its ambient light policy
-> > > 	this is what I got on a test box:
-> > > 	cat /sys/class/als/als0/mappings
-> > > 	???Illuminance	Adjustment
-> > > 	          0	       70
-> > > 	         10	       73
-> > > 	         80	       85
-> > > 	        300	      100
-> > > 	       1000	      150
-> > 
-> > There's one value per file for sysfs... You should definitely have the
-> > header. 
-> 
-> No, no "header", just don't do this, it's not allowed. Again,
-> one-value-per-sysfs-file is the rule, please do not violate it.
-> 
-Okay.
-how about 
-﻿/sys/class/als/als0/mapping{0, 1, ...}/illuminance
-and 
-﻿﻿/sys/class/als/als0/mapping{0, 1, ...}/adjustment
+Hi,
+What needs to be done to have linux-alpha@ added to Patchwork
+(http://patchwork.kernel.org/)?
 
-> > Plus I'd say Documentation/ file is needed.
-> 
-> It's required for any new sysfs file being added to the kernel.
-> 
-Okay, I'll add the document file.
+Please CC me on replies.
 
-thanks,
-rui
-
+Matt
