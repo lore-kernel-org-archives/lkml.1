@@ -1,88 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933565AbZHEG4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933577AbZHEG5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933565AbZHEG4y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 02:56:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932966AbZHEG4w
+	id S933577AbZHEG5w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 02:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933070AbZHEG5v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 02:56:52 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59145 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932939AbZHEG4v (ORCPT
+	Wed, 5 Aug 2009 02:57:51 -0400
+Received: from mail-yw0-f177.google.com ([209.85.211.177]:46789 "EHLO
+	mail-yw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932966AbZHEG5u convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 02:56:51 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 5 Aug 2009 15:55:00 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, Paul Menage <menage@google.com>,
-       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@redhat.com>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH 1/4] oom: move oom_adj to signal_struct
-Message-Id: <20090805155500.b4692b27.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090805153701.b4f4385e.minchan.kim@barrios-desktop>
-References: <20090805110107.5B97.A69D9226@jp.fujitsu.com>
-	<20090805114004.459a7deb.minchan.kim@barrios-desktop>
-	<20090805114650.5BA1.A69D9226@jp.fujitsu.com>
-	<20090805145516.b2129f81.minchan.kim@barrios-desktop>
-	<20090805150323.2624a68f.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090805153701.b4f4385e.minchan.kim@barrios-desktop>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Aug 2009 02:57:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=dAN36slg6zE6GChHr1Gn+0JX/fdEiHV6AFh9BGa2Taftq13Ftyoqv3c1PlyRRDsVr3
+         8RWA+152Z6WNVeGapqjE3zBhlZFsXymS2CbkzxoWrvL+JhvCCtX3CviTAMh0gWOGAABj
+         JSpV+ZLJ3gE8jAptFt3UOIq8dOT1B6BEUXVgE=
+MIME-Version: 1.0
+In-Reply-To: <1249454696.9324.325.camel@macbook.infradead.org>
+References: <1248707041.6100.35.camel@macbook.infradead.org>
+	 <21d7e9970907282328l4a44b9a2of4500c5c84a3586b@mail.gmail.com>
+	 <1248851712.19733.214.camel@macbook.infradead.org>
+	 <21d7e9970907290143q6778511cvda1c6b915f61654a@mail.gmail.com>
+	 <1248860205.19733.238.camel@macbook.infradead.org>
+	 <4A78C9C6.6010103@goop.org>
+	 <1249454696.9324.325.camel@macbook.infradead.org>
+Date: Wed, 5 Aug 2009 16:57:51 +1000
+Message-ID: <21d7e9970908042357m6080e88fyeaaad171888766f2@mail.gmail.com>
+Subject: Re: [Xen-devel] Re: [RFC] Make AGP work with IOMMU
+From: Dave Airlie <airlied@gmail.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Keir Fraser <kier.fraser@eu.citrix.com>, xen-devel@lists.xensource.com,
+       Joerg Roedel <joerg.roedel@amd.com>, iommu@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, Zhenyu Wang <zhenyu.z.wang@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Aug 2009 15:37:01 +0900
-Minchan Kim <minchan.kim@gmail.com> wrote:
-> Hmm. I can't understand why it is troublesome. 
-> I think it's related to moving oom_adj to singal_struct. 
-> Unfortunately, I can't understand why we have to put oom_adj 
-> in singal_struct?
-> 
-> That's why I have a question to Kosaki a while ago. 
-> I can't understand it still. :-(
-> 
-> Could you elaborate it ?
-> 
+On Wed, Aug 5, 2009 at 4:44 PM, David Woodhouse<dwmw2@infradead.org> wrote:
+> On Tue, 2009-08-04 at 16:52 -0700, Jeremy Fitzhardinge wrote:
+>> And just when I have patches to use them for their original purpose...
+>>
+>> Looking back over the thread, are you saying that most users are already
+>> using the DMA API correctly for AGP accesses?  If that's true then we
+>> should be just fine.
+>
+> No, not 'most users'. But perhaps we should.
+>
+> All we've done so far is make intel-agp use the DMA API correctly. And
+> that's conditional on CONFIG_DMAR. But we could make it unconditional,
+> and make the other drivers do it too. The code is all fairly generic.
+>
+> Without an IOMMU, the overhead would be fairly minimal.
+>
 
-Current code is as following
-==
-  do_each_thread(g,p) {
-	......
-	p = badness();
+I'm not sure how prevalent Xen is on AGP systems, I'm going to guess
+not enough that anyone cares. Intel integrated chips are the only AGP
+codebase user that are made any more, and they don't really use AGP
+its just a legacy of the previous designs.
 
-	record p of highest badness.
-  }
-  p = higest badness thread.
-
-  Scan all threads which shares mm_struct of p. and check oom_adj
-  
-==	
-Assume a process which has 20000 threads. And 1 of thread has OOM_DISABLE.
-
-Then, at worst, this scan will needs
-	(1+2+3+....+20000) * (20000-1) scan. (when ignoring other processes)
-even with your patch.
-
-This means the kernel wastes enough long time that Cluster-Management-Software can
-detetct this as livelock, and do reboot/cluster-fail-over.
-
-Fixing livelock is not the last goal. I (we) would like to reduct stall time
-to reasonable level. If we move oom_adj to signal_struct or mm_struct, scan-cost
-will be only 20000. No retry at all.
-
-And, if we can use for_each_process() rather than do_each_thread(),
-scan-cost will be 1.
-
-(BTW, "signal" struct is bad name I think, it should be "process" struct ;)
-
-
-Thanks,
--Kame
-
+Dave.
