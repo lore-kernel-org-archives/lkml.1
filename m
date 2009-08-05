@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752344AbZHETFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752398AbZHETJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752344AbZHETFZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 15:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752143AbZHETFY
+	id S1752398AbZHETJi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 15:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752220AbZHETJh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 15:05:24 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:40630 "EHLO e9.ny.us.ibm.com"
+	Wed, 5 Aug 2009 15:09:37 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48510 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752159AbZHETFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 15:05:24 -0400
-Message-ID: <4A79D7F1.4000405@us.ibm.com>
-Date: Wed, 05 Aug 2009 12:05:21 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+	id S1752195AbZHETJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 15:09:36 -0400
+Message-ID: <4A79D88E.2040005@redhat.com>
+Date: Wed, 05 Aug 2009 15:07:58 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-To: "lkml, " <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       John Stultz <johnstul@linux.vnet.ibm.com>
-Subject: [tip/urgent] Avoid deadlock in rt_mutex_start_proxy_lock()
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>
+CC: "Wu, Fengguang" <fengguang.wu@intel.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Andrea Arcangeli <aarcange@redhat.com>, Avi Kivity <avi@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+References: <20090805024058.GA8886@localhost> <4A79C70C.6010200@redhat.com> <9EECC02A4CC333418C00A85D21E89326B651C1FE@azsmsx502.amr.corp.intel.com>
+In-Reply-To: <9EECC02A4CC333418C00A85D21E89326B651C1FE@azsmsx502.amr.corp.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Darren Hart <dvhltc@us.ibm.com>
+Dike, Jeffrey G wrote:
+>> Also, the inactive list (where references to anonymous pages
+>> _do_ count) is pretty big.  Is it not big enough in Jeff's
+>> test case?
+> 
+>> Jeff, what kind of workloads are you running in the guests?
+> 
+> I'm looking at KVM on small systems.  My "small system" is a 128M memory compartment on a 4G server.
 
-In the event of a lock steal or owner died, rt_mutex_start_proxy_lock() will
-give the rt_mutex to the waiting task, but it fails to release the wait_lock.
-This leads to subsequent deadlocks when other tasks try to acquire the
-rt_mutex.
+How did you create that 128M memory compartment?
 
-I also removed a few extra blank lines that really spaced this routine out.
-I must have been high on the \n when I wrote this originally...
+Did you use cgroups on the host system?
 
-Note: This is the mainline version, a separate patch was sent for [RT]
+> The workload is boot up the instance, start Firefox and another app (whatever editor comes by default with Moblin), close them, and shut down the instance.
 
-Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-CC: Dinakar Guniguntala <dino@in.ibm.com>
-CC: John Stultz <johnstul@us.ibm.com>
----
+How much memory do you give your virtual machine?
 
- kernel/rtmutex.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+That is, how much memory does it think it has?
 
-
-diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
-index fec77e7..0f2b9bb 100644
---- a/kernel/rtmutex.c
-+++ b/kernel/rtmutex.c
-@@ -1039,16 +1039,14 @@ int rt_mutex_start_proxy_lock(struct rt_mutex *lock,
- 	if (!rt_mutex_owner(lock) || try_to_steal_lock(lock, task)) {
- 		/* We got the lock for task. */
- 		debug_rt_mutex_lock(lock);
--
- 		rt_mutex_set_owner(lock, task, 0);
--
-+		spin_unlock(&lock->wait_lock);
- 		rt_mutex_deadlock_account_lock(lock, task);
- 		return 1;
- 	}
- 
- 	ret = task_blocks_on_rt_mutex(lock, waiter, task, detect_deadlock);
- 
--
- 	if (ret && !waiter->task) {
- 		/*
- 		 * Reset the return value. We might have
 -- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
+All rights reversed.
