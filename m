@@ -1,71 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752780AbZHEVxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752810AbZHEVxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752780AbZHEVxa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 17:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbZHEVx3
+	id S1752810AbZHEVxn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 17:53:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752109AbZHEVxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 17:53:29 -0400
-Received: from mail-fx0-f228.google.com ([209.85.220.228]:40756 "EHLO
-	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752222AbZHEVx3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 17:53:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=EyEU+S3xBnrEWK5LfxxUmjrkAkWPABdHOdw/ZDQY9BvTsUilQaiFhmeptSU5VHBfTZ
-         3BZ6A7b/QW/R8xSnzg4RQFlaRCb44vpfe97w0LJXfmBnVHdmsAGh7iYnG74tLaOnP+dB
-         kFn4IaFtsJd+SvWPkJtV4wOF/d1gL0wGm4gdU=
-Message-ID: <4A79FF57.50902@gmail.com>
-Date: Wed, 05 Aug 2009 23:53:27 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1pre) Gecko/20090528 SUSE/3.0b2-11.8 Thunderbird/3.0b3pre
-MIME-Version: 1.0
-To: Martyn Welch <martyn.welch@gefanuc.com>
-CC: gregkh@suse.de, linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
-Subject: Re: [PATCH v2] Staging: Correct tsi-148 VME interrupt free routine
-References: <20090805163219.4903.43629.stgit@ES-J7S4D2J.amer.consind.ge.com> <20090805163802.28044.91999.stgit@ES-J7S4D2J.amer.consind.ge.com>
-In-Reply-To: <20090805163802.28044.91999.stgit@ES-J7S4D2J.amer.consind.ge.com>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=UTF-8
+	Wed, 5 Aug 2009 17:53:42 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:38498 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751267AbZHEVxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 17:53:42 -0400
+Cc: Ramon de Carvalho Valle <ramon@risesecurity.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       xfs mailing list <xfs@oss.sgi.com>, Christoph Hellwig <hch@lst.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       mszeredi@novell.com
+Message-Id: <041FE945-8CBD-476C-83CD-E57748251711@sgi.com>
+From: Felix Blyakher <felixb@sgi.com>
+To: Eric Sandeen <sandeen@sandeen.net>
+In-Reply-To: <4A790762.3010207@sandeen.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v926)
+Subject: Re: [PATCH 1/1] XFS: xfs_iformat realtime device target pointer check
+Date: Wed, 5 Aug 2009 16:53:40 -0500
+References: <1249329808.7686.26.camel@logos>	 <20090803214929.GB3167@infradead.org> <1249351241.7513.18.camel@logos>	 <4A786110.8090404@sandeen.net> <1249411898.7576.19.camel@logos>	 <4A7887CE.2060300@sandeen.net> <1249444550.7372.23.camel@logos> <4A790762.3010207@sandeen.net>
+X-Mailer: Apple Mail (2.926)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/05/2009 06:38 PM, Martyn Welch wrote:
->  	if (tsi148_bridge->irq[level - 1].count == 0) {
-> -		tmp = ioread32be(tsi148_bridge->base + TSI148_LCSR_INTEO);
-> -		tmp &= ~TSI148_LCSR_INTEO_IRQEO[level - 1];
-> -		iowrite32be(tmp, tsi148_bridge->base + TSI148_LCSR_INTEO);
-> -
->  		tmp = ioread32be(tsi148_bridge->base + TSI148_LCSR_INTEN);
->  		tmp &= ~TSI148_LCSR_INTEN_IRQEN[level - 1];
->  		iowrite32be(tmp, tsi148_bridge->base + TSI148_LCSR_INTEN);
-> +
-> +		tmp = ioread32be(tsi148_bridge->base + TSI148_LCSR_INTEO);
-> +		tmp &= ~TSI148_LCSR_INTEO_IRQEO[level - 1];
-> +		iowrite32be(tmp, tsi148_bridge->base + TSI148_LCSR_INTEO);
 
-I have no idea what the registers do and I suppose it's behind some PCI
-bridge anywhere. If it is not true, ignore the further.
+On Aug 4, 2009, at 11:15 PM, Eric Sandeen wrote:
 
-Is it OK that the second write to INTEO doesn't reach the device before
-you set func to NULL? I mean, is it enough to prevent the interrupt
-raising only by twiddling INTEN? Otherwise you need to put some read
-right here to push non-completed writes on bridges (flush posted
-writes). (I mentioned this in the former mail too.)
+> Ramon de Carvalho Valle wrote:
+>> On Tue, 2009-08-04 at 14:11 -0500, Eric Sandeen wrote:
+>>> Ramon de Carvalho Valle wrote:
+>>>> The xfs_iformat function does not check if the realtime device  
+>>>> target pointer
+>>>> is valid when the XFS_DIFLAG_REALTIME flag is set on the ondisk  
+>>>> inode
+>>>> structure.
+>>>>
+>>>> Signed-off-by: Christoph Hellwig <hch@infradead.org>
+>>>> Signed-off-by: Ramon de Carvalho Valle <ramon@risesecurity.org>
+>>>> Cc: stable <stable@kernel.org>
+>>>> ---
+>>>> fs/xfs/xfs_inode.c |   23 +++++++++++++++++------
+>>>> 1 files changed, 17 insertions(+), 6 deletions(-)
+>>>>
+>>>> diff --git a/fs/xfs/xfs_inode.c b/fs/xfs/xfs_inode.c
+>>>> index 1f22d65..37d3ee5 100644
+>>>> --- a/fs/xfs/xfs_inode.c
+>>>> +++ b/fs/xfs/xfs_inode.c
+>>>> @@ -343,13 +343,24 @@ xfs_iformat(
+>>>> 		return XFS_ERROR(EFSCORRUPTED);
+>>>> 	}
+>>>>
+>>>> +	if (unlikely((ip->i_d.di_flags & XFS_DIFLAG_REALTIME) &&
+>>>> +			!ip->i_mount->m_rtdev_targp)) {
+>>>> +		xfs_fs_repair_cmn_err(CE_WARN, ip->i_mount,
+>>>> +			"corrupt dinode %Lu, flags = 0x%x.",
+>>>> +			(unsigned long long)ip->i_ino,
+>>>> +			ip->i_d.di_flags);
+>>>> +		XFS_CORRUPTION_ERROR("xfs_iformat(3)", XFS_ERRLEVEL_LOW,
+>>>> +				     ip->i_mount, dip);
+>>> I think I'd rather not change all the corruption text tag ordering;
+>>> it'll make it harder to track down any common occurrences of
+>>> "xfs_iformat(X)" corruption in the future if they get renumbered  
+>>> now.
+>>>
+>>> I'd either make this xfs_iformat(2.1) ;) or just leave it as  
+>>> Christoph
+>>> had.  "realtime" is a lot more informative than "3" anyway.
+>>
+>> I don't think this is a bad decision, because the corruption errors  
+>> can
+>> be easily identified by the output of xfs_fs_repair_cmn_err and the
+>> source line. I think this is a reasonable change that will keep the  
+>> code
+>> clean and consistent.
+>
+> Until you wind up looking at a problem from some old kernel, or  
+> modified
+> vendor kernel, and you realize that now you really don't know which
+> error "xfs_iformat(6)" is anymore, and you either have to go digging
+> through trees that aren't handy, or you just give up and don't  
+> bother to
+> help because now it's too much of a pain.  ;)
+>
+> But I can leave it up to the folks @ sgi, I can see both sides of the
+> argument, and I won't care too much either way.
 
-Otherwise looks good.
+Agree with Eric, see the benefits of both approaches, but I think,
+it'll be cleaner without shifting the numbering of all messages.
+Otherwise, looks good.
 
->  	}
->  
-> +	tsi148_bridge->irq[level - 1].callback[statid].func = NULL;
-> +	tsi148_bridge->irq[level - 1].callback[statid].priv_data = NULL;
-> +
->  	/* Release semaphore */
->  	up(&(vme_irq));
->  }
+Felix
+
+>
+>
+> Thanks,
+> -Eric
+>
+>> -Ramon
+>>
+>>> -Eric
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux- 
+> kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
