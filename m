@@ -1,110 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752504AbZHEUJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752524AbZHEUPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752504AbZHEUJf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 16:09:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbZHEUJe
+	id S1752524AbZHEUPz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 16:15:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbZHEUPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 16:09:34 -0400
-Received: from mail-ew0-f214.google.com ([209.85.219.214]:34679 "EHLO
-	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751591AbZHEUJd (ORCPT
+	Wed, 5 Aug 2009 16:15:54 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:57156 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751604AbZHEUPx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 16:09:33 -0400
+	Wed, 5 Aug 2009 16:15:53 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=LFDIRIFRDeRoVfUeeoGYyoW9wsYAvFIkcCPbd9YpIn46U88IRUelCFgbd88Rtr6xwE
-         xzOWSR9RRy+MuEesNs9On9/o3wlY7/ZbzRGM7+S47zmH4DdDHcilcBYKSpzq6EFU/GkA
-         5qbfs89Qs1dCwRDK/P6tr8CH+1u9x9u+vffn4=
-Date: Thu, 6 Aug 2009 00:09:31 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [rfc] x86,ioapic: panic on irq-pin binding only if needed
-Message-ID: <20090805200931.GB5319@lenovo>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LNKvmudkpIGinZeU7qnTL225TuEsK+HvQ3f096b6goo5zVRkAreXVOguHSdSh+FDdK
+         WdloyNY5XLOIJsLIZpiUHak6xAgTA0vpoEuBJPs/aS/zOEnLpMVy52LFarLrjarCr64K
+         Ud+U8HrlkkWDp+z4gf6SUUEjqJUqpZ0vIQY7k=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1249496971-9019-4-git-send-email-daniel@caiaq.de>
+References: <1249496971-9019-1-git-send-email-daniel@caiaq.de>
+	 <1249496971-9019-2-git-send-email-daniel@caiaq.de>
+	 <1249496971-9019-3-git-send-email-daniel@caiaq.de>
+	 <1249496971-9019-4-git-send-email-daniel@caiaq.de>
+Date: Wed, 5 Aug 2009 22:15:52 +0200
+Message-ID: <74d0deb30908051315l43b00731yb79f7937707068ec@mail.gmail.com>
+Subject: Re: [PATCH 4/5] input: gpio-keys: switch to new dev_pm_ops
+From: pHilipp Zabel <philipp.zabel@gmail.com>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Phil Blundell <pb@handhelds.org>, linux-input@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Though the most time we are to panic on irq-pin allocation
-fails, for PCI interrupts it's not the case and we could
-continue operate even if irq-pin allocation failed.
+On Wed, Aug 5, 2009 at 8:29 PM, Daniel Mack<daniel@caiaq.de> wrote:
+> Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> Cc: Phil Blundell <pb@handhelds.org>
+> Cc: linux-input@vger.kernel.org
+> ---
+>  drivers/input/keyboard/gpio_keys.c |   28 ++++++++++++++++++----------
+>  1 files changed, 18 insertions(+), 10 deletions(-)
+>
+> diff --git a/drivers/input/keyboard/gpio_keys.c b/drivers/input/keyboard/gpio_keys.c
+> index efed0c9..bfb6fc3 100644
+> --- a/drivers/input/keyboard/gpio_keys.c
+> +++ b/drivers/input/keyboard/gpio_keys.c
+> @@ -216,12 +216,12 @@ static int __devexit gpio_keys_remove(struct platform_device *pdev)
+>
+>
+>  #ifdef CONFIG_PM
+> -static int gpio_keys_suspend(struct platform_device *pdev, pm_message_t state)
+> +static int gpio_keys_suspend(struct device *dev)
+>  {
+> -       struct gpio_keys_platform_data *pdata = pdev->dev.platform_data;
+> +       struct gpio_keys_platform_data *pdata = dev->platform_data;
+>        int i;
+>
+> -       if (device_may_wakeup(&pdev->dev)) {
+> +       if (device_may_wakeup(dev)) {
+>                for (i = 0; i < pdata->nbuttons; i++) {
+>                        struct gpio_keys_button *button = &pdata->buttons[i];
+>                        if (button->wakeup) {
+> @@ -234,12 +234,12 @@ static int gpio_keys_suspend(struct platform_device *pdev, pm_message_t state)
+>        return 0;
+>  }
+>
+> -static int gpio_keys_resume(struct platform_device *pdev)
+> +static int gpio_keys_resume(struct device *dev)
+>  {
+> -       struct gpio_keys_platform_data *pdata = pdev->dev.platform_data;
+> +       struct gpio_keys_platform_data *pdata = dev->platform_data;
+>        int i;
+>
+> -       if (device_may_wakeup(&pdev->dev)) {
+> +       if (device_may_wakeup(dev)) {
+>                for (i = 0; i < pdata->nbuttons; i++) {
+>                        struct gpio_keys_button *button = &pdata->buttons[i];
+>                        if (button->wakeup) {
+> @@ -251,19 +251,27 @@ static int gpio_keys_resume(struct platform_device *pdev)
+>
+>        return 0;
+>  }
+> +
+> +static struct dev_pm_ops gpio_keys_pm_ops = {
+> +       .suspend        = gpio_keys_suspend,
+> +       .freeze         = gpio_keys_suspend,
+> +       .resume         = gpio_keys_resume,
+> +       .thaw           = gpio_keys_resume,
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
----
+I'm not sure I understand hibernation correctly, but isn't
+.freeze/.thaw about saving state and halting/resuming the device
+operation only?
+It seems to me that enabling system wakeup functionality should go
+into .poweroff. (See <linux/pm.h>)
 
-Please review. Not sure that it's a best solution at all
-but allow us to not panic in case of PCI irq routing fails.
-
-But note that irq descriptor is allocated anyway in such
-a case. Perhaps we need to bring in irq_descr freeing
-function as well. Or what is more likelihood is that
-I'm missing something. Yinghai?
-
- arch/x86/kernel/apic/io_apic.c |   23 ++++++++++++++++++-----
- 1 file changed, 18 insertions(+), 5 deletions(-)
-
-Index: linux-2.6.git/arch/x86/kernel/apic/io_apic.c
-=====================================================================
---- linux-2.6.git.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-2.6.git/arch/x86/kernel/apic/io_apic.c
-@@ -490,7 +490,8 @@ static void ioapic_mask_entry(int apic, 
-  * shared ISA-space IRQs, so we have to support them. We are super
-  * fast in the common case, and fast for shared ISA-space IRQs.
-  */
--static void add_pin_to_irq_node(struct irq_cfg *cfg, int node, int apic, int pin)
-+static int
-+add_pin_to_irq_node_nopanic(struct irq_cfg *cfg, int node, int apic, int pin)
- {
- 	struct irq_pin_list **last, *entry;
- 
-@@ -498,19 +499,27 @@ static void add_pin_to_irq_node(struct i
- 	last = &cfg->irq_2_pin;
- 	for_each_irq_pin(entry, cfg->irq_2_pin) {
- 		if (entry->apic == apic && entry->pin == pin)
--			return;
-+			return 0;
- 		last = &entry->next;
- 	}
- 
- 	entry = get_one_free_irq_2_pin(node);
- 	if (!entry) {
--		printk(KERN_ERR "can not alloc irq_pin_list\n");
--		BUG_ON(1);
-+		printk(KERN_ERR "can not alloc irq_pin_list (%d,%d,%d)\n",
-+				node, apic, pin);
-+		return -ENOMEM;
- 	}
- 	entry->apic = apic;
- 	entry->pin = pin;
- 
- 	*last = entry;
-+	return 0;
-+}
-+
-+static void add_pin_to_irq_node(struct irq_cfg *cfg, int node, int apic, int pin)
-+{
-+	if (add_pin_to_irq_node_nopanic(cfg, node, apic, pin))
-+		panic("IO-APIC: failed to add irq-pin. Can not proceed\n");
- }
- 
- /*
-@@ -3846,7 +3855,11 @@ static int __io_apic_set_pci_routing(str
- 	 */
- 	if (irq >= NR_IRQS_LEGACY) {
- 		cfg = desc->chip_data;
--		add_pin_to_irq_node(cfg, node, ioapic, pin);
-+		if (add_pin_to_irq_node_nopanic(cfg, node, ioapic, pin)) {
-+			printk(KERN_INFO "can not add pin %d for irq %d\n",
-+				pin, irq);
-+			return 0;
-+		}
- 	}
- 
- 	setup_IO_APIC_irq(ioapic, pin, irq, desc, trigger, polarity);
+regards
+Philipp
