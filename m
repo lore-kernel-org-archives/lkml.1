@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933727AbZHEHaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933734AbZHEHat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933727AbZHEHaS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 03:30:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933705AbZHEHaQ
+	id S933734AbZHEHat (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 03:30:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933632AbZHEHas
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 03:30:16 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36920 "EHLO mx3.mail.elte.hu"
+	Wed, 5 Aug 2009 03:30:48 -0400
+Received: from hera.kernel.org ([140.211.167.34]:32875 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933685AbZHEHaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 03:30:14 -0400
-Date: Wed, 5 Aug 2009 09:29:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Dave Airlie <airlied@gmail.com>, Steven Rostedt <rostedt@goodmis.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: ftrace scripts and make V=1
-Message-ID: <20090805072952.GC19322@elte.hu>
-References: <21d7e9970908050023j2807ef3bi1321ac2a1fd9a743@mail.gmail.com>
+	id S933705AbZHEHas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 03:30:48 -0400
+Message-ID: <4A79350A.3020904@kernel.org>
+Date: Wed, 05 Aug 2009 16:30:18 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <21d7e9970908050023j2807ef3bi1321ac2a1fd9a743@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Takashi Iwai <tiwai@suse.de>
+CC: Greg KH <greg@kroah.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, cguthrie@mandriva.org
+Subject: Re: [PATCH 1/2] chrdev: implement __[un]register_chrdev()
+References: <4A79283E.7030202@kernel.org>	<s5hzlaed9me.wl%tiwai@suse.de>	<4A793099.1040704@kernel.org> <s5hy6pyd8vx.wl%tiwai@suse.de>
+In-Reply-To: <s5hy6pyd8vx.wl%tiwai@suse.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 05 Aug 2009 07:30:22 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Dave Airlie <airlied@gmail.com> wrote:
+Takashi Iwai wrote:
+> CONFIG_SOUND is tristate, so it can be a module.
+> Actually SUSE kernels have it as a module :)
 
-> Hey,
+Ah... crap.  I got confused.  I somehow thought it was always included
+in kernel.
+
+>> Adrian would be mighty unhappy about adding EXPORT_SYMBOL()
+>> there.
 > 
-> So I spent 3-4 hrs today (I'm stupid yes) tracking down a .o 
-> breakage by blaming rawhide gcc/binutils as I was using make 
-> V=1and seeing only the compiler chain running,
+> How about to replace the old *register_chrdev() with static inline,
+> instead?
 
-Hm, is this that powerpc related build bug you just reported?
+Will do so.
 
-> However some ftrace script was sneaking in afterwards and screwing 
-> up the .o without mentioning itself.
-> 
-> Surely V=1 should print all these shitty scripts its running?
+Thanks.
 
-Definitely, and it should print non-shitty scripts too,
-just in case ;-)
-
-	Ingo
+-- 
+tejun
