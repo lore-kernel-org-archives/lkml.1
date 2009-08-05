@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934254AbZHEMeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934266AbZHEMfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934254AbZHEMeq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 08:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933122AbZHEMep
+	id S934266AbZHEMfK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 08:35:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933122AbZHEMfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 08:34:45 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:50248 "EHLO mgw2.diku.dk"
+	Wed, 5 Aug 2009 08:35:09 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:50365 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934220AbZHEMeo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 08:34:44 -0400
-Date: Wed, 5 Aug 2009 14:34:34 +0200 (CEST)
+	id S934251AbZHEMfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 08:35:08 -0400
+Date: Wed, 5 Aug 2009 14:34:55 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: "David S. Miller" <davem@davemloft.net>,
-       Andy Grover <andy.grover@oracle.com>, netdev@vger.kernel.org,
-       rds-devel@oss.oracle.com, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/2] net/rds: Use AF_INET for sin_family field
-Message-ID: <Pine.LNX.4.64.0908051434110.20453@pc-004.diku.dk>
+To: James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/2] security/smack: Use AF_INET for sin_family field
+Message-ID: <Pine.LNX.4.64.0908051434340.20453@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -55,18 +53,18 @@ sip.sin_family =
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- net/rds/rdma_transport.c |    2 +-
+ security/smack/smack_lsm.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff -u -p a/net/rds/rdma_transport.c b/net/rds/rdma_transport.c
---- a/net/rds/rdma_transport.c
-+++ b/net/rds/rdma_transport.c
-@@ -137,7 +137,7 @@ static int __init rds_rdma_listen_init(v
- 		goto out;
- 	}
+diff -u -p a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
+--- a/security/smack/smack_lsm.c
++++ b/security/smack/smack_lsm.c
+@@ -2464,7 +2464,7 @@ static int smack_socket_sendmsg(struct s
+ 	/*
+ 	 * Perfectly reasonable for this to be NULL
+ 	 */
+-	if (sip == NULL || sip->sin_family != PF_INET)
++	if (sip == NULL || sip->sin_family != AF_INET)
+ 		return 0;
  
--	sin.sin_family = PF_INET,
-+	sin.sin_family = AF_INET,
- 	sin.sin_addr.s_addr = (__force u32)htonl(INADDR_ANY);
- 	sin.sin_port = (__force u16)htons(RDS_PORT);
- 
+ 	return smack_netlabel_send(sock->sk, sip);
