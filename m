@@ -1,80 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752177AbZHESxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752209AbZHESzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752177AbZHESxZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 14:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbZHESxY
+	id S1752209AbZHESzQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 14:55:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbZHESzP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 14:53:24 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:34344 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752011AbZHESxY (ORCPT
+	Wed, 5 Aug 2009 14:55:15 -0400
+Received: from mail-ew0-f214.google.com ([209.85.219.214]:35557 "EHLO
+	mail-ew0-f214.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751610AbZHESzN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 14:53:24 -0400
-Date: Wed, 5 Aug 2009 14:53:22 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Ingo Molnar <mingo@elte.hu>, Chris Mason <chris.mason@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ftrace: fix perf-tracepoint OOPS
-In-Reply-To: <1249497664.5890.4.camel@laptop>
-Message-ID: <alpine.DEB.2.00.0908051453080.23591@gandalf.stny.rr.com>
-References: <1249497664.5890.4.camel@laptop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 5 Aug 2009 14:55:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=H2DA9p4f8WQZdZd0RszxiWEooH3+gdOqsuUW2CU/cgt0a5goCH3Qas2ZQT8CqzuHty
+         6jhx8/zfVOa6rR7WjdDnoXp7Di1keOaRpKCL6ZMhF4k5lIHO16dm9ng2Jt+NM6tNOs5p
+         wavPUJkHxz/oAn4Be7LnupXEhAZK1z309uqv0=
+Date: Wed, 5 Aug 2009 20:53:34 +0200
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       LKML <linux-kernel@vger.kernel.org>, Valdis.Kletnieks@vt.edu
+Subject: perf: "Longum est iter per praecepta, breve et efficax per exempla"
+Message-ID: <20090805185334.GA4535@Pilar.aei.mpg.de>
+References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie> <1249409546-6343-5-git-send-email-mel@csn.ul.ie> <20090804112246.4e6d0ab1.akpm@linux-foundation.org> <20090804195717.GA5998@elte.hu> <16246.1249484030@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <16246.1249484030@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 5 Aug 2009, Peter Zijlstra wrote:
+A few examples of how 'perf' can be used, from an e-mail by
+Ingo Molnar http://lkml.org/lkml/2009/8/4/346.
 
-> Not all tracepoints are created equal, in specific the ftrace
-> tracepoints are created with TRACE_EVENT_FORMAT() which does not
-> generate the needed bits to tie them into perf counters.
-> 
-> For those events, don't create the 'id' file and fail ->profile_enable
-> when their ID is specified through other means.
-> 
-> Reported-by: Chris Mason <chris.mason@oracle.com>
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Carlos R. Mafra <crmafra2@gmail.com>
+---
 
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
+This "patch" is my way of _suggesting_ some "documentation by examples"
+of what 'perf' can do to the guys who can really write it :-)
 
--- Steve
 
-> ---
->  kernel/trace/trace_event_profile.c |    2 +-
->  kernel/trace/trace_events.c        |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
-> index 5b5895a..11ba5bb 100644
-> --- a/kernel/trace/trace_event_profile.c
-> +++ b/kernel/trace/trace_event_profile.c
-> @@ -14,7 +14,7 @@ int ftrace_profile_enable(int event_id)
->  
->  	mutex_lock(&event_mutex);
->  	list_for_each_entry(event, &ftrace_events, list) {
-> -		if (event->id == event_id) {
-> +		if (event->id == event_id && event->profile_enable) {
->  			ret = event->profile_enable(event);
->  			break;
->  		}
-> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-> index 90cdec5..e2b301d 100644
-> --- a/kernel/trace/trace_events.c
-> +++ b/kernel/trace/trace_events.c
-> @@ -971,7 +971,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
->  		entry = trace_create_file("enable", 0644, call->dir, call,
->  					  enable);
->  
-> -	if (call->id)
-> +	if (call->id && call->profile_enable)
->  		entry = trace_create_file("id", 0444, call->dir, call,
->  					  id);
->  
-> 
-> 
-> 
+ tools/perf/Documentation/perf-examples.txt |  225 ++++++++++++++++++++++++++++
+ 1 files changed, 225 insertions(+), 0 deletions(-)
+ create mode 100644 tools/perf/Documentation/perf-examples.txt
+
+diff --git a/tools/perf/Documentation/perf-examples.txt b/tools/perf/Documentation/perf-examples.txt
+new file mode 100644
+index 0000000..d7a861d
+--- /dev/null
++++ b/tools/perf/Documentation/perf-examples.txt
+@@ -0,0 +1,225 @@
++
++		------------------------------
++		****** perf by examples ******
++		------------------------------
++
++[ From an e-mail by Ingo Molnar, http://lkml.org/lkml/2009/8/4/346 ]
++
++
++First, discovery/enumeration of available counters can be done via 
++'perf list':
++
++titan:~> perf list
++  [...]
++  kmem:kmalloc                             [Tracepoint event]
++  kmem:kmem_cache_alloc                    [Tracepoint event]
++  kmem:kmalloc_node                        [Tracepoint event]
++  kmem:kmem_cache_alloc_node               [Tracepoint event]
++  kmem:kfree                               [Tracepoint event]
++  kmem:kmem_cache_free                     [Tracepoint event]
++  kmem:mm_page_free_direct                 [Tracepoint event]
++  kmem:mm_pagevec_free                     [Tracepoint event]
++  kmem:mm_page_alloc                       [Tracepoint event]
++  kmem:mm_page_alloc_zone_locked           [Tracepoint event]
++  kmem:mm_page_pcpu_drain                  [Tracepoint event]
++  kmem:mm_page_alloc_extfrag               [Tracepoint event]
++
++Then any (or all) of the above event sources can be activated and 
++measured. For example the page alloc/free properties of a 'hackbench 
++run' are:
++
++ titan:~> perf stat -e kmem:mm_page_pcpu_drain -e kmem:mm_page_alloc 
++ -e kmem:mm_pagevec_free -e kmem:mm_page_free_direct ./hackbench 10
++ Time: 0.575
++
++ Performance counter stats for './hackbench 10':
++
++          13857  kmem:mm_page_pcpu_drain 
++          27576  kmem:mm_page_alloc      
++           6025  kmem:mm_pagevec_free    
++          20934  kmem:mm_page_free_direct
++
++    0.613972165  seconds time elapsed
++
++You can observe the statistical properties as well, by using the 
++'repeat the workload N times' feature of perf stat:
++
++ titan:~> perf stat --repeat 5 -e kmem:mm_page_pcpu_drain -e 
++   kmem:mm_page_alloc -e kmem:mm_pagevec_free -e 
++   kmem:mm_page_free_direct ./hackbench 10
++ Time: 0.627
++ Time: 0.644
++ Time: 0.564
++ Time: 0.559
++ Time: 0.626
++
++ Performance counter stats for './hackbench 10' (5 runs):
++
++          12920  kmem:mm_page_pcpu_drain    ( +-   3.359% )
++          25035  kmem:mm_page_alloc         ( +-   3.783% )
++           6104  kmem:mm_pagevec_free       ( +-   0.934% )
++          18376  kmem:mm_page_free_direct   ( +-   4.941% )
++
++    0.643954516  seconds time elapsed   ( +-   2.363% )
++
++Furthermore, these tracepoints can be used to sample the workload as 
++well. For example the page allocations done by a 'git gc' can be 
++captured the following way:
++
++ titan:~/git> perf record -f -e kmem:mm_page_alloc -c 1 ./git gc
++ Counting objects: 1148, done.
++ Delta compression using up to 2 threads.
++ Compressing objects: 100% (450/450), done.
++ Writing objects: 100% (1148/1148), done.
++ Total 1148 (delta 690), reused 1148 (delta 690)
++ [ perf record: Captured and wrote 0.267 MB perf.data (~11679 samples) ]
++
++To check which functions generated page allocations:
++
++ titan:~/git> perf report
++ # Samples: 10646
++ #
++ # Overhead          Command               Shared Object
++ # ........  ...............  ..........................
++ #
++    23.57%       git-repack  /lib64/libc-2.5.so        
++    21.81%              git  /lib64/libc-2.5.so        
++    14.59%              git  ./git                     
++    11.79%       git-repack  ./git                     
++     7.12%              git  /lib64/ld-2.5.so          
++     3.16%       git-repack  /lib64/libpthread-2.5.so  
++     2.09%       git-repack  /bin/bash                 
++     1.97%               rm  /lib64/libc-2.5.so        
++     1.39%               mv  /lib64/ld-2.5.so          
++     1.37%               mv  /lib64/libc-2.5.so        
++     1.12%       git-repack  /lib64/ld-2.5.so          
++     0.95%               rm  /lib64/ld-2.5.so          
++     0.90%  git-update-serv  /lib64/libc-2.5.so        
++     0.73%  git-update-serv  /lib64/ld-2.5.so          
++     0.68%             perf  /lib64/libpthread-2.5.so  
++     0.64%       git-repack  /usr/lib64/libz.so.1.2.3  
++
++Or to see it on a more finegrained level:
++
++titan:~/git> perf report --sort comm,dso,symbol
++# Samples: 10646
++#
++# Overhead          Command               Shared Object  Symbol
++# ........  ...............  ..........................  ......
++#
++     9.35%       git-repack  ./git                       [.] insert_obj_hash
++     9.12%              git  ./git                       [.] insert_obj_hash
++     7.31%              git  /lib64/libc-2.5.so          [.] memcpy
++     6.34%       git-repack  /lib64/libc-2.5.so          [.] _int_malloc
++     6.24%       git-repack  /lib64/libc-2.5.so          [.] memcpy
++     5.82%       git-repack  /lib64/libc-2.5.so          [.] __GI___fork
++     5.47%              git  /lib64/libc-2.5.so          [.] _int_malloc
++     2.99%              git  /lib64/libc-2.5.so          [.] memset
++
++Furthermore, call-graph sampling can be done too, of page 
++allocations - to see precisely what kind of page allocations there 
++are:
++
++ titan:~/git> perf record -f -g -e kmem:mm_page_alloc -c 1 ./git gc
++ Counting objects: 1148, done.
++ Delta compression using up to 2 threads.
++ Compressing objects: 100% (450/450), done.
++ Writing objects: 100% (1148/1148), done.
++ Total 1148 (delta 690), reused 1148 (delta 690)
++ [ perf record: Captured and wrote 0.963 MB perf.data (~42069 samples) ]
++
++ titan:~/git> perf report -g
++ # Samples: 10686
++ #
++ # Overhead          Command               Shared Object
++ # ........  ...............  ..........................
++ #
++    23.25%       git-repack  /lib64/libc-2.5.so        
++                |          
++                |--50.00%-- _int_free
++                |          
++                |--37.50%-- __GI___fork
++                |          make_child
++                |          
++                |--12.50%-- ptmalloc_unlock_all2
++                |          make_child
++                |          
++                 --6.25%-- __GI_strcpy
++    21.61%              git  /lib64/libc-2.5.so        
++                |          
++                |--30.00%-- __GI_read
++                |          |          
++                |           --83.33%-- git_config_from_file
++                |                     git_config
++                |                     |          
++   [...]
++
++Or you can observe the whole system's page allocations for 10 
++seconds:
++
++titan:~/git> perf stat -a -e kmem:mm_page_pcpu_drain -e 
++kmem:mm_page_alloc -e kmem:mm_pagevec_free -e 
++kmem:mm_page_free_direct sleep 10
++
++ Performance counter stats for 'sleep 10':
++
++         171585  kmem:mm_page_pcpu_drain 
++         322114  kmem:mm_page_alloc      
++          73623  kmem:mm_pagevec_free    
++         254115  kmem:mm_page_free_direct
++
++   10.000591410  seconds time elapsed
++
++Or observe how fluctuating the page allocations are, via statistical 
++analysis done over ten 1-second intervals:
++
++ titan:~/git> perf stat --repeat 10 -a -e kmem:mm_page_pcpu_drain -e 
++   kmem:mm_page_alloc -e kmem:mm_pagevec_free -e 
++   kmem:mm_page_free_direct sleep 1
++
++ Performance counter stats for 'sleep 1' (10 runs):
++
++          17254  kmem:mm_page_pcpu_drain    ( +-   3.709% )
++          34394  kmem:mm_page_alloc         ( +-   4.617% )
++           7509  kmem:mm_pagevec_free       ( +-   4.820% )
++          25653  kmem:mm_page_free_direct   ( +-   3.672% )
++
++    1.058135029  seconds time elapsed   ( +-   3.089% )
++
++Or you can annotate the recorded 'git gc' run on a per symbol basis 
++and check which instructions/source-code generated page allocations:
++
++ titan:~/git> perf annotate __GI___fork
++ ------------------------------------------------
++  Percent |      Source code & Disassembly of libc-2.5.so
++ ------------------------------------------------
++          :
++          :
++          :      Disassembly of section .plt:
++          :      Disassembly of section .text:
++          :
++          :      00000031a2e95560 <__fork>:
++ [...]
++     0.00 :        31a2e95602:   b8 38 00 00 00          mov    $0x38,%eax
++     0.00 :        31a2e95607:   0f 05                   syscall 
++    83.42 :        31a2e95609:   48 3d 00 f0 ff ff       cmp    $0xfffffffffffff000,%rax
++     0.00 :        31a2e9560f:   0f 87 4d 01 00 00       ja     31a2e95762 <__fork+0x202>
++     0.00 :        31a2e95615:   85 c0                   test   %eax,%eax
++
++( this shows that 83.42% of __GI___fork's page allocations come from
++  the 0x38 system call it performs. )
++
++etc. etc. - a lot more is possible. I could list a dozen of 
++other different usecases straight away - neither of which is 
++possible via /proc/vmstat.
++
++/proc/vmstat is not in the same league really, in terms of 
++expressive power of system analysis and performance 
++analysis.
++
++All that the above results needed were those new tracepoints 
++in include/tracing/events/kmem.h.
++
++	Ingo
++
++
+-- 
+1.6.4.rc1.13.gec7b
+
+
+
