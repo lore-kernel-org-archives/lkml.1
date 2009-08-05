@@ -1,209 +1,720 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755685AbZHEGhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755703AbZHEGjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755685AbZHEGhu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 02:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755652AbZHEGhs
+	id S1755703AbZHEGjZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 02:39:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755688AbZHEGjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 02:37:48 -0400
-Received: from mail-pz0-f196.google.com ([209.85.222.196]:36392 "EHLO
-	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755601AbZHEGhr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 02:37:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=wRNy6noMoQKqJ3wdGzpx2pIKC5+KMBPsez5yESKCjGPN7klUGUtFPZkgntNWeZZJGD
-         Wjr9lm03adHlkl+tl7XfIO3fGq4Uu/HA8wY5SXtFu6JVFzXDYUnsQ3h/3GWDCEZmbqOg
-         C4o70+mnHsVQmzEIfD4GS/T1ouqGXsboVzSZ4=
-Date: Wed, 5 Aug 2009 15:37:01 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, Paul Menage <menage@google.com>,
-       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@redhat.com>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH 1/4] oom: move oom_adj to signal_struct
-Message-Id: <20090805153701.b4f4385e.minchan.kim@barrios-desktop>
-In-Reply-To: <20090805150323.2624a68f.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090805110107.5B97.A69D9226@jp.fujitsu.com>
-	<20090805114004.459a7deb.minchan.kim@barrios-desktop>
-	<20090805114650.5BA1.A69D9226@jp.fujitsu.com>
-	<20090805145516.b2129f81.minchan.kim@barrios-desktop>
-	<20090805150323.2624a68f.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 5 Aug 2009 02:39:23 -0400
+Received: from compulab.co.il ([67.18.134.219]:44884 "EHLO compulab.co.il"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755538AbZHEGjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 02:39:22 -0400
+Message-ID: <4A792913.8040006@compulab.co.il>
+Date: Wed, 05 Aug 2009 09:39:15 +0300
+From: Mike Rapoport <mike@compulab.co.il>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090712)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: Eric Miao <eric.y.miao@gmail.com>, linux-arm-kernel@lists.arm.linux.org.uk,
+       kernel list <linux-kernel@vger.kernel.org>,
+       linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: [PATCH] [ARM] pxa/em-x270: add synaptics_i2c touchpad
+References: <cover.1245156138.git.mike@compulab.co.il> <4A65207A.8070909@gmail.com> <20090729150859.GK1534@ucw.cz> <4A7071CD.9020303@compulab.co.il> <20090804131455.GG18974@elf.ucw.cz>
+In-Reply-To: <20090804131455.GG18974@elf.ucw.cz>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-ACL-Warn: {
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - compulab.site5.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - compulab.co.il
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Aug 2009 15:03:23 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Hi!
 
-> On Wed, 5 Aug 2009 14:55:16 +0900
-> Minchan Kim <minchan.kim@gmail.com> wrote:
+Pavel Machek wrote:
+> On Wed 2009-07-29 18:59:09, Mike Rapoport wrote:
+>>
+>> Pavel Machek wrote:
+>>> Hi!
+>>>
+>>>>> This patch set adds synaptics_i2c touchpad device registration for the exeda
+>>>>> platform together with voltage reulator glue needed to enable the touchpad
+>>>>> controller.
+>>>>>
+>>> Hmm, t-mobile g1 uses synaptics touchpad connected over i2c, too... Is
+>>> there chance they are compatible or at least similar?
+>> The touchpad controller I have uses the same RMI protocol that g1 does, but it
+>> supports different register set. Besides, g1 has a *touchscreen* and exeda has
+>> 1.5cm x 1.5cm  *touchpad*.
 > 
-> > On Wed,  5 Aug 2009 11:51:31 +0900 (JST)
-> > KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> > 
-> > > > On Wed,  5 Aug 2009 11:29:34 +0900 (JST)
-> > > > KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> > > > 
-> > > > > Hi
-> > > > > 
-> > > > > > Hi, Kosaki. 
-> > > > > > 
-> > > > > > I am so late to invole this thread. 
-> > > > > > But let me have a question. 
-> > > > > > 
-> > > > > > What's advantage of placing oom_adj in singal rather than task ?
-> > > > > > I mean task->oom_adj and task->signal->oom_adj ?
-> > > > > > 
-> > > > > > I am sorry if you already discussed it at last threads. 
-> > > > > 
-> > > > > Not sorry. that's very good question.
-> > > > > 
-> > > > > I'm trying to explain the detailed intention of commit 2ff05b2b4eac
-> > > > > (move oom_adj to mm_struct).
-> > > > > 
-> > > > > In 2.6.30, OOM logic callflow is here.
-> > > > > 
-> > > > > __out_of_memory
-> > > > > 	select_bad_process		for each task
-> > > > > 		badness			calculate badness of one task
-> > > > > 	oom_kill_process		search child
-> > > > > 		oom_kill_task		kill target task and mm shared tasks with it
-> > > > > 
-> > > > > example, process-A have two thread, thread-A and thread-B and it 
-> > > > > have very fat memory.
-> > > > > And, each thread have following likes oom property.
-> > > > > 
-> > > > > 	thread-A: oom_adj = OOM_DISABLE, oom_score = 0
-> > > > > 	thread-B: oom_adj = 0,           oom_score = very-high
-> > > > > 
-> > > > > Then, select_bad_process() select thread-B, but oom_kill_task refuse
-> > > > > kill the task because thread-A have OOM_DISABLE.
-> > > > > __out_of_memory() call select_bad_process() again. but select_bad_process()
-> > > > > select the same task. It mean kernel fall in the livelock.
-> > > > > 
-> > > > > The fact is, select_bad_process() must select killable task. otherwise
-> > > > > OOM logic go into livelock.
-> > > > > 
-> > > > > Is this enough explanation? thanks.
-> > > > > 
-> > 
-> > The problem resulted from David patch.
-> > It can solve live lock problem but make a new problem like vfork problem. 
-> > I think both can be solved by different approach. 
-> > 
-> > It's just RFC. 
-> > 
-> > If some process is selected by OOM killer but it have a child of OOM immune,
-> > We just decrease point of process. It can affect selection of bad process. 
-> > After some trial, at last bad score is drastically low and another process is 
-> > selected by OOM killer. So I think Live lock don't happen. 
-> > 
-> > New variable adding in task struct is rather high cost. 
-> > But i think we can union it with oomkilladj 
-> > since oomkilladj is used to present just -17 ~ 15. 
-> > 
-> > What do you think about this approach ?
-> > 
-> keeping this in "task" struct is troublesome.
-> It may not livelock but near-to-livelock state, in bad case.
+> Can we get some code shared? It still looks similar enough.
 
-Hmm. I can't understand why it is troublesome. 
-I think it's related to moving oom_adj to singal_struct. 
-Unfortunately, I can't understand why we have to put oom_adj 
-in singal_struct?
+The controller detection and basic initialization (report rate, filtering, Z
+Clip) seems to be the same. But afterwards things begin to diverge. For
+instance, g1 reads and parses 15 bytes of data, whilst my touchpad has only 9
+data registers.
+It seems to me that it should be possible to share initialization and basic
+register access, and have different work functions and input events reporting.
 
-That's why I have a question to Kosaki a while ago. 
-I can't understand it still. :-(
+Probably if we had full implementation of Synaptics RMI protocol we could have
+single driver for all RMI-compatible Synaptics devices. RMI states that device
+can report what functionality it supports and based on that it should be
+possible to provide appropriate event parsing and reporting.
 
-Could you elaborate it ?
+> Current driver for touchscreen is attached... (Can I get your latest
+> version?)
 
-> After applying Kosaki's , oom_kill will use
-> "for_each_process()" instead of "do_each_thread", I think it's a way to go.
+Sure, it's drivers/input/mouse/synaptics_i2c.c in the Linus' tree.
 
-I didn't review kosaki's approach entirely. 
-After reviewing, let's discuss it, again. 
 
-> But, yes, your "scale_down" idea itself is interesitng.
-> Then, hmm, merging two of yours ?
-
-If it is possible, I will do so. 
-
-Thnaks for good comment, kame.
-
-> Thanks,
-> -Kame
+> 									Pavel
+> 
+> /*
+>  * Support for synaptics touchscreen.
+>  *
+>  * Copyright (C) 2007 Google, Inc.
+>  * Author: Arve Hj?nnev?g <arve@android.com>
+>  *
+>  * This software is licensed under the terms of the GNU General Public
+>  * License version 2, as published by the Free Software Foundation, and
+>  * may be copied, distributed, and modified under those terms.
+>  *
+>  * This program is distributed in the hope that it will be useful,
+>  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+>  * GNU General Public License for more details.
+>  *
+>  */
+> 
+> #include <linux/module.h>
+> #include <linux/delay.h>
+> #ifdef CONFIG_HAS_EARLYSUSPEND
+> #include <linux/earlysuspend.h>
+> #endif
+> #include <linux/hrtimer.h>
+> #include <linux/i2c.h>
+> #include <linux/input.h>
+> #include <linux/interrupt.h>
+> #include <linux/io.h>
+> #include <linux/platform_device.h>
+> #include "synaptics_i2c_rmi.h"
+> 
+> static struct workqueue_struct *synaptics_wq;
+> 
+> struct synaptics_ts_data {
+> 	u16 addr;
+> 	struct i2c_client *client;
+> 	struct input_dev *input_dev;
+> 	int use_irq;
+> 	struct hrtimer timer;
+> 	struct work_struct  work;
+> 	u16 max[2];
+> 	int snap_state[2][2];
+> 	int snap_down_on[2];
+> 	int snap_down_off[2];
+> 	int snap_up_on[2];
+> 	int snap_up_off[2];
+> 	int snap_down[2];
+> 	int snap_up[2];
+> 	u32 flags;
+> 	int (*power)(bool on);
+> #ifdef CONFIG_HAS_EARLYSUSPEND
+> 	struct early_suspend early_suspend;
+> #endif
+> };
+> 
+> static int i2c_set(struct synaptics_ts_data *ts, u8 reg, u8 val, char *msg)
+> {
+> 	int ret = i2c_smbus_write_byte_data(ts->client, reg, val);
+> 	if (ret < 0)
+> 		pr_err("i2c_smbus_write_byte_data failed (%s)\n", msg);
+> 	return ret;
+> }
+> 
+> static int i2c_read(struct synaptics_ts_data *ts, u8 reg, char *msg)
+> {
+> 	int ret = i2c_smbus_read_byte_data(ts->client, reg);
+> 	if (ret < 0)
+> 		pr_err("i2c_smbus_read_byte_data failed (%s)\n", msg);
+> 	return ret;
+> }
+> #ifdef CONFIG_HAS_EARLYSUSPEND
+> static void synaptics_ts_early_suspend(struct early_suspend *h);
+> static void synaptics_ts_late_resume(struct early_suspend *h);
+> #endif
+> 
+> static int synaptics_init_panel(struct synaptics_ts_data *ts)
+> {
+> 	int ret;
+> 
+> 	ret = i2c_set(ts, 0xff, 0x10, "set page select");
+> 	if (ret == 0)
+> 		ret = i2c_set(ts, 0x41, 0x04, "set No Clip Z");
+> 
+> 	ret = i2c_set(ts, 0xff, 0x04, "fallback page select");
+> 	ret = i2c_set(ts, 0xf0, 0x81, "select 80 reports per second");
+> 	return ret;
+> }
+> 
+> static void decode_report(struct synaptics_ts_data *ts, u8 *buf)
+> {
+> 	int pos[2][2];
+> 	int f, a;
+> 	int base = 2;
+> 	int z = buf[1];
+> 	int w = buf[0] >> 4;
+> 	int finger = buf[0] & 7;
+> 	int finger2_pressed;
+> 
+> 	for (f = 0; f < 2; f++) {
+> 		u32 flip_flag = SYNAPTICS_FLIP_X;
+> 		for (a = 0; a < 2; a++) {
+> 			int p = buf[base + 1];
+> 			p |= (u16)(buf[base] & 0x1f) << 8;
+> 			if (ts->flags & flip_flag)
+> 				p = ts->max[a] - p;
+> 			if (ts->flags & SYNAPTICS_SNAP_TO_INACTIVE_EDGE) {
+> 				if (ts->snap_state[f][a]) {
+> 					if (p <= ts->snap_down_off[a])
+> 						p = ts->snap_down[a];
+> 					else if (p >= ts->snap_up_off[a])
+> 						p = ts->snap_up[a];
+> 					else
+> 						ts->snap_state[f][a] = 0;
+> 				} else {
+> 					if (p <= ts->snap_down_on[a]) {
+> 						p = ts->snap_down[a];
+> 						ts->snap_state[f][a] = 1;
+> 					} else if (p >= ts->snap_up_on[a]) {
+> 						p = ts->snap_up[a];
+> 						ts->snap_state[f][a] = 1;
+> 					}
+> 				}
+> 			}
+> 			pos[f][a] = p;
+> 			base += 2;
+> 			flip_flag <<= 1;
+> 		}
+> 		base += 2;
+> 		if (ts->flags & SYNAPTICS_SWAP_XY)
+> 			swap(pos[f][0], pos[f][1]);
+> 	}
+> 	if (z) {
+> 		input_report_abs(ts->input_dev, ABS_X, pos[0][0]);
+> 		input_report_abs(ts->input_dev, ABS_Y, pos[0][1]);
+> 	}
+> 	input_report_abs(ts->input_dev, ABS_PRESSURE, z);
+> 	input_report_abs(ts->input_dev, ABS_TOOL_WIDTH, w);
+> 	input_report_key(ts->input_dev, BTN_TOUCH, finger);
+> 	finger2_pressed = finger > 1 && finger != 7;
+> 	input_report_key(ts->input_dev, BTN_2, finger2_pressed);
+> 	if (finger2_pressed) {
+> 		input_report_abs(ts->input_dev, ABS_HAT0X, pos[1][0]);
+> 		input_report_abs(ts->input_dev, ABS_HAT0Y, pos[1][1]);
+> 	}
+> 	input_sync(ts->input_dev);
+> }
+> 
+> static void synaptics_ts_work_func(struct work_struct *work)
+> {
+> 	int i;
+> 	int ret;
+> 	int bad_data = 0;
+> 	struct i2c_msg msg[2];
+> 	u8 start_reg = 0;
+> 	u8 buf[15];
+> 	struct synaptics_ts_data *ts =
+> 		container_of(work, struct synaptics_ts_data, work);
+> 
+> 	msg[0].addr = ts->client->addr;
+> 	msg[0].flags = 0;
+> 	msg[0].len = 1;
+> 	msg[0].buf = &start_reg;
+> 	msg[1].addr = ts->client->addr;
+> 	msg[1].flags = I2C_M_RD;
+> 	msg[1].len = sizeof(buf);
+> 	msg[1].buf = buf;
+> 
+> 	for (i = 0; i < ((ts->use_irq && !bad_data) ? 1 : 10); i++) {
+> 		ret = i2c_transfer(ts->client->adapter, msg, 2);
+> 		if (ret < 0) {
+> 			pr_err("ts_work: i2c_transfer failed\n");
+> 			bad_data = 1;
+> 			continue;
+> 		}
+> 		if ((buf[14] & 0xc0) != 0x40) {
+> 			pr_warning("synaptics_ts_work_func:"
+> 			       " bad read %x %x %x %x %x %x %x %x %x"
+> 			       " %x %x %x %x %x %x, ret %d\n",
+> 			       buf[0], buf[1], buf[2], buf[3],
+> 			       buf[4], buf[5], buf[6], buf[7],
+> 			       buf[8], buf[9], buf[10], buf[11],
+> 			       buf[12], buf[13], buf[14], ret);
+> 			if (bad_data)
+> 				synaptics_init_panel(ts);
+> 			bad_data = 1;
+> 			continue;
+> 		}
+> 		bad_data = 0;
+> 		if ((buf[14] & 1) == 0)
+> 			break;
+> 
+> 		decode_report(ts, buf);
+> 	}
+> 	if (ts->use_irq)
+> 		enable_irq(ts->client->irq);
+> }
+> 
+> static enum hrtimer_restart synaptics_ts_timer_func(struct hrtimer *timer)
+> {
+> 	struct synaptics_ts_data *ts =
+> 		container_of(timer, struct synaptics_ts_data, timer);
+> 
+> 	queue_work(synaptics_wq, &ts->work);
+> 
+> 	hrtimer_start(&ts->timer, ktime_set(0, 12500000), HRTIMER_MODE_REL);
+> 	return HRTIMER_NORESTART;
+> }
+> 
+> static irqreturn_t synaptics_ts_irq_handler(int irq, void *dev_id)
+> {
+> 	struct synaptics_ts_data *ts = dev_id;
+> 
+> 	disable_irq_nosync(ts->client->irq);
+> 	queue_work(synaptics_wq, &ts->work);
+> 	return IRQ_HANDLED;
+> }
+> 
+> static int detect(struct synaptics_ts_data *ts, u32 *panel_version)
+> {
+> 	int ret;
+> 	int retry = 10;
+> 
+> 	ret = i2c_set(ts, 0xf4, 0x01, "reset device");
+> 
+> 	while (retry-- > 0) {
+> 		ret = i2c_smbus_read_byte_data(ts->client, 0xe4);
+> 		if (ret >= 0)
+> 			break;
+> 		msleep(100);
+> 	}
+> 	if (ret < 0) {
+> 		pr_err("i2c_smbus_read_byte_data failed\n");
+> 		return ret;
+> 	}
+> 
+> 	*panel_version = ret << 8;
+> 	ret = i2c_read(ts, 0xe5, "product minor");
+> 	if (ret < 0)
+> 		return ret;
+> 	*panel_version |= ret;
+> 
+> 	ret = i2c_read(ts, 0xe3, "property");
+> 	if (ret < 0)
+> 		return ret;
+> 
+> 	pr_info("synaptics: version %x, product property %x\n", 
+> 		*panel_version, ret);
+> 	return 0;
+> }
+> 
+> static void compute_areas(struct synaptics_ts_data *ts,	
+> 			  struct synaptics_i2c_rmi_platform_data *pdata,
+> 			  u16 max_x, u16 max_y)
+> {
+> 	int inactive_area_left;
+> 	int inactive_area_right;
+> 	int inactive_area_top;
+> 	int inactive_area_bottom;
+> 	int snap_left_on;
+> 	int snap_left_off;
+> 	int snap_right_on;
+> 	int snap_right_off;
+> 	int snap_top_on;
+> 	int snap_top_off;
+> 	int snap_bottom_on;
+> 	int snap_bottom_off;
+> 	int fuzz_x;
+> 	int fuzz_y;
+> 	int fuzz_p;
+> 	int fuzz_w;
+> 	int swapped = !!(ts->flags & SYNAPTICS_SWAP_XY);
+> 
+> 	inactive_area_left = pdata->inactive_left;
+> 	inactive_area_right = pdata->inactive_right;
+> 	inactive_area_top = pdata->inactive_top;
+> 	inactive_area_bottom = pdata->inactive_bottom;
+> 	snap_left_on = pdata->snap_left_on;
+> 	snap_left_off = pdata->snap_left_off;
+> 	snap_right_on = pdata->snap_right_on;
+> 	snap_right_off = pdata->snap_right_off;
+> 	snap_top_on = pdata->snap_top_on;
+> 	snap_top_off = pdata->snap_top_off;
+> 	snap_bottom_on = pdata->snap_bottom_on;
+> 	snap_bottom_off = pdata->snap_bottom_off;
+> 	fuzz_x = pdata->fuzz_x;
+> 	fuzz_y = pdata->fuzz_y;
+> 	fuzz_p = pdata->fuzz_p;
+> 	fuzz_w = pdata->fuzz_w;
+> 
+> 	inactive_area_left = inactive_area_left * max_x / 0x10000;
+> 	inactive_area_right = inactive_area_right * max_x / 0x10000;
+> 	inactive_area_top = inactive_area_top * max_y / 0x10000;
+> 	inactive_area_bottom = inactive_area_bottom * max_y / 0x10000;
+> 	snap_left_on = snap_left_on * max_x / 0x10000;
+> 	snap_left_off = snap_left_off * max_x / 0x10000;
+> 	snap_right_on = snap_right_on * max_x / 0x10000;
+> 	snap_right_off = snap_right_off * max_x / 0x10000;
+> 	snap_top_on = snap_top_on * max_y / 0x10000;
+> 	snap_top_off = snap_top_off * max_y / 0x10000;
+> 	snap_bottom_on = snap_bottom_on * max_y / 0x10000;
+> 	snap_bottom_off = snap_bottom_off * max_y / 0x10000;
+> 	fuzz_x = fuzz_x * max_x / 0x10000;
+> 	fuzz_y = fuzz_y * max_y / 0x10000;
+> 
+> 
+> 	ts->snap_down[swapped] = -inactive_area_left;
+> 	ts->snap_up[swapped] = max_x + inactive_area_right;
+> 	ts->snap_down[!swapped] = -inactive_area_top;
+> 	ts->snap_up[!swapped] = max_y + inactive_area_bottom;
+> 	ts->snap_down_on[swapped] = snap_left_on;
+> 	ts->snap_down_off[swapped] = snap_left_off;
+> 	ts->snap_up_on[swapped] = max_x - snap_right_on;
+> 	ts->snap_up_off[swapped] = max_x - snap_right_off;
+> 	ts->snap_down_on[!swapped] = snap_top_on;
+> 	ts->snap_down_off[!swapped] = snap_top_off;
+> 	ts->snap_up_on[!swapped] = max_y - snap_bottom_on;
+> 	ts->snap_up_off[!swapped] = max_y - snap_bottom_off;
+> 	pr_info("synaptics_ts_probe: max_x %d, max_y %d\n", max_x, max_y);
+> 	pr_info("synaptics_ts_probe: inactive_x %d %d, inactive_y %d %d\n",
+> 	       inactive_area_left, inactive_area_right,
+> 	       inactive_area_top, inactive_area_bottom);
+> 	pr_info("synaptics_ts_probe: snap_x %d-%d %d-%d, snap_y %d-%d %d-%d\n",
+> 	       snap_left_on, snap_left_off, snap_right_on, snap_right_off,
+> 	       snap_top_on, snap_top_off, snap_bottom_on, snap_bottom_off);
+> 
+> 	input_set_abs_params(ts->input_dev, ABS_X,
+> 			     -inactive_area_left, max_x + inactive_area_right, 
+> 			     fuzz_x, 0);
+> 	input_set_abs_params(ts->input_dev, ABS_Y,
+> 			     -inactive_area_top, max_y + inactive_area_bottom,
+> 			     fuzz_y, 0);
+> 	input_set_abs_params(ts->input_dev, ABS_PRESSURE, 0, 255, fuzz_p, 0);
+> 	input_set_abs_params(ts->input_dev, ABS_TOOL_WIDTH, 0, 15, fuzz_w, 0);
+> 	input_set_abs_params(ts->input_dev, ABS_HAT0X, -inactive_area_left,
+> 			     max_x + inactive_area_right, fuzz_x, 0);
+> 	input_set_abs_params(ts->input_dev, ABS_HAT0Y, -inactive_area_top,
+> 			     max_y + inactive_area_bottom, fuzz_y, 0);
+> }
+> 
+> static struct synaptics_i2c_rmi_platform_data fake_pdata;
+> 
+> static int __devinit synaptics_ts_probe(
+> 	struct i2c_client *client, const struct i2c_device_id *id)
+> {
+> 	struct synaptics_ts_data *ts;
+> 	u8 buf0[4];
+> 	u8 buf1[8];
+> 	struct i2c_msg msg[2];
+> 	int ret = 0;
+> 	struct synaptics_i2c_rmi_platform_data *pdata;
+> 	u32 panel_version = 0;
+> 	u16 max_x, max_y;
+> 
+> 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
+> 		pr_err("synaptics_ts_probe: need I2C_FUNC_I2C\n");
+> 		ret = -ENODEV;
+> 		goto err_check_functionality_failed;
+> 	}
+> 
+> 	ts = kzalloc(sizeof(*ts), GFP_KERNEL);
+> 	if (ts == NULL) {
+> 		ret = -ENOMEM;
+> 		goto err_alloc_data_failed;
+> 	}
+> 	INIT_WORK(&ts->work, synaptics_ts_work_func);
+> 	ts->client = client;
+> 	i2c_set_clientdata(client, ts);
+> 	pdata = client->dev.platform_data;
+> 	if (pdata)
+> 		ts->power = pdata->power;
+> 	else
+> 		pdata = &fake_pdata;
+> 
+> 	if (ts->power) {
+> 		ret = ts->power(1);
+> 		if (ret < 0) {
+> 			pr_err("synaptics_ts_probe power on failed\n");
+> 			goto err_power_failed;
+> 		}
+> 	}
+> 
+> 	ret = detect(ts, &panel_version);
+> 	if (ret)
+> 		goto err_detect_failed;
+> 
+> 	while (pdata->version > panel_version)
+> 		pdata++;
+> 	ts->flags = pdata->flags;
+> 
+> 	ret = i2c_read(ts, 0xf0, "device control");
+> 	if (ret < 0)
+> 		goto err_detect_failed;
+> 	pr_info("synaptics: device control %x\n", ret);
+> 
+> 	ret = i2c_read(ts, 0xf1, "interrupt enable");
+> 	if (ret < 0)
+> 		goto err_detect_failed;
+> 	pr_info("synaptics_ts_probe: interrupt enable %x\n", ret);
+> 
+> 	ret = i2c_set(ts, 0xf1, 0, "disable interrupt");
+> 	if (ret < 0)
+> 		goto err_detect_failed;
+> 
+> 	msg[0].addr = ts->client->addr;
+> 	msg[0].flags = 0;
+> 	msg[0].len = 1;
+> 	msg[0].buf = buf0;
+> 	buf0[0] = 0xe0;
+> 	msg[1].addr = ts->client->addr;
+> 	msg[1].flags = I2C_M_RD;
+> 	msg[1].len = 8;
+> 	msg[1].buf = buf1;
+> 	ret = i2c_transfer(ts->client->adapter, msg, 2);
+> 	if (ret < 0) {
+> 		pr_err("i2c_transfer failed\n");
+> 		goto err_detect_failed;
+> 	}
+> 	pr_info("synaptics_ts_probe: 0xe0: %x %x %x %x %x %x %x %x\n",
+> 	       buf1[0], buf1[1], buf1[2], buf1[3],
+> 	       buf1[4], buf1[5], buf1[6], buf1[7]);
+> 
+> 	ret = i2c_set(ts, 0xff, 0x10, "page select = 0x10");
+> 	if (ret < 0)
+> 		goto err_detect_failed;
+> 
+> 	ret = i2c_smbus_read_word_data(ts->client, 0x04);
+> 	if (ret < 0) {
+> 		pr_err("i2c_smbus_read_word_data failed\n");
+> 		goto err_detect_failed;
+> 	}
+> 	ts->max[0] = max_x = (ret >> 8 & 0xff) | ((ret & 0x1f) << 8);
+> 	ret = i2c_smbus_read_word_data(ts->client, 0x06);
+> 	if (ret < 0) {
+> 		pr_err("i2c_smbus_read_word_data failed\n");
+> 		goto err_detect_failed;
+> 	}
+> 	ts->max[1] = max_y = (ret >> 8 & 0xff) | ((ret & 0x1f) << 8);
+> 	if (ts->flags & SYNAPTICS_SWAP_XY)
+> 		swap(max_x, max_y);
+> 
+> 	/* will also switch back to page 0x04 */
+> 	ret = synaptics_init_panel(ts);
+> 	if (ret < 0) {
+> 		pr_err("synaptics_init_panel failed\n");
+> 		goto err_detect_failed;
+> 	}
+> 
+> 	ts->input_dev = input_allocate_device();
+> 	if (ts->input_dev == NULL) {
+> 		ret = -ENOMEM;
+> 		pr_err("synaptics: Failed to allocate input device\n");
+> 		goto err_input_dev_alloc_failed;
+> 	}
+> 	ts->input_dev->name = "synaptics-rmi-touchscreen";
+> 	ts->input_dev->phys = "msm/input0";
+> 	ts->input_dev->id.bustype = BUS_I2C;
+> 
+> 	__set_bit(EV_SYN, ts->input_dev->evbit);
+> 	__set_bit(EV_KEY, ts->input_dev->evbit);
+> 	__set_bit(BTN_TOUCH, ts->input_dev->keybit);
+> 	__set_bit(BTN_2, ts->input_dev->keybit);
+> 	__set_bit(EV_ABS, ts->input_dev->evbit);
+> 
+> 	compute_areas(ts, pdata, max_x, max_y);
+> 
+> 
+> 	ret = input_register_device(ts->input_dev);
+> 	if (ret) {
+> 		pr_err("synaptics: Unable to register %s input device\n", 
+> 		       ts->input_dev->name);
+> 		goto err_input_register_device_failed;
+> 	}
+> 	if (client->irq) {
+> 		ret = request_irq(client->irq, synaptics_ts_irq_handler,
+> 				  0, client->name, ts);
+> 		if (ret == 0) {
+> 			ret = i2c_set(ts, 0xf1, 0x01, "enable abs int");
+> 			if (ret)
+> 				free_irq(client->irq, ts);
+> 		}
+> 		if (ret == 0)
+> 			ts->use_irq = 1;
+> 		else
+> 			dev_err(&client->dev, "request_irq failed\n");
+> 	}
+> 	if (!ts->use_irq) {
+> 		hrtimer_init(&ts->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+> 		ts->timer.function = synaptics_ts_timer_func;
+> 		hrtimer_start(&ts->timer, ktime_set(1, 0), HRTIMER_MODE_REL);
+> 	}
+> #ifdef CONFIG_HAS_EARLYSUSPEND
+> 	ts->early_suspend.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN + 1;
+> 	ts->early_suspend.suspend = synaptics_ts_early_suspend;
+> 	ts->early_suspend.resume = synaptics_ts_late_resume;
+> 	register_early_suspend(&ts->early_suspend);
+> #endif
+> 
+> 	pr_info("synaptics: Start touchscreen %s in %s mode\n", 
+> 		ts->input_dev->name, ts->use_irq ? "interrupt" : "polling");
+> 
+> 	return 0;
+> 
+> err_input_register_device_failed:
+> 	input_free_device(ts->input_dev);
+> 
+> err_input_dev_alloc_failed:
+> err_detect_failed:
+> err_power_failed:
+> 	kfree(ts);
+> err_alloc_data_failed:
+> err_check_functionality_failed:
+> 	return ret;
+> }
+> 
+> static int synaptics_ts_remove(struct i2c_client *client)
+> {
+> 	struct synaptics_ts_data *ts = i2c_get_clientdata(client);
+> #ifdef CONFIG_HAS_EARLYSUSPEND
+> 	unregister_early_suspend(&ts->early_suspend);
+> #endif
+> 	if (ts->use_irq)
+> 		free_irq(client->irq, ts);
+> 	else
+> 		hrtimer_cancel(&ts->timer);
+> 	input_unregister_device(ts->input_dev);
+> 	kfree(ts);
+> 	return 0;
+> }
+> 
+> #ifdef CONFIG_PM
+> static int synaptics_ts_suspend(struct i2c_client *client, pm_message_t mesg)
+> {
+> 	int ret;
+> 	struct synaptics_ts_data *ts = i2c_get_clientdata(client);
+> 
+> 	if (ts->use_irq)
+> 		disable_irq(client->irq);
+> 	else
+> 		hrtimer_cancel(&ts->timer);
+> 	ret = cancel_work_sync(&ts->work);
+> 	if (ret && ts->use_irq) /* if work was pending disable-count is now 2 */
+> 		enable_irq(client->irq);
+> 	i2c_set(ts, 0xf1, 0, "disable interrupt");
+> 	i2c_set(ts, 0xf0, 0x86, "deep sleep");
+> 
+> 	if (ts->power) {
+> 		ret = ts->power(0);
+> 		if (ret < 0)
+> 			pr_err("synaptics_ts_suspend power off failed\n");
+> 	}
+> 	return 0;
+> }
+> 
+> static int synaptics_ts_resume(struct i2c_client *client)
+> {
+> 	int ret;
+> 	struct synaptics_ts_data *ts = i2c_get_clientdata(client);
+> 
+> 	if (ts->power) {
+> 		ret = ts->power(1);
+> 		if (ret < 0)
+> 			pr_err("synaptics_ts_resume power on failed\n");
+> 	}
+> 
+> 	synaptics_init_panel(ts);
+> 
+> 	if (ts->use_irq) {
+> 		enable_irq(client->irq);
+> 		i2c_set(ts, 0xf1, 0x01, "enable abs int");
+> 	} else
+> 		hrtimer_start(&ts->timer, ktime_set(1, 0), HRTIMER_MODE_REL);
+> 
+> 	return 0;
+> }
+> 
+> #ifdef CONFIG_HAS_EARLYSUSPEND
+> static void synaptics_ts_early_suspend(struct early_suspend *h)
+> {
+> 	struct synaptics_ts_data *ts;
+> 	ts = container_of(h, struct synaptics_ts_data, early_suspend);
+> 	synaptics_ts_suspend(ts->client, PMSG_SUSPEND);
+> }
+> 
+> static void synaptics_ts_late_resume(struct early_suspend *h)
+> {
+> 	struct synaptics_ts_data *ts;
+> 	ts = container_of(h, struct synaptics_ts_data, early_suspend);
+> 	synaptics_ts_resume(ts->client);
+> }
+> #endif
+> #else
+> #define synaptics_ts_suspend NULL
+> #define synaptics_ts_resume NULL
+> #endif
 > 
 > 
 > 
-> > ----
-> > 
-> > This is based on 2.6.30 which is kernel before applying David Patch. 
-> > 
-> > diff --git a/include/linux/sched.h b/include/linux/sched.h
-> > index b4c38bc..6e195f7 100644
-> > --- a/include/linux/sched.h
-> > +++ b/include/linux/sched.h
-> > @@ -1150,6 +1150,11 @@ struct task_struct {
-> >          */
-> >         unsigned char fpu_counter;
-> >         s8 oomkilladj; /* OOM kill score adjustment (bit shift). */
-> > +       /*
-> > +        * If OOM kill happens at one process repeately, 
-> > +        * oom_sacle_down will be increased to prevent OOM live lock 
-> > +        */
-> > +       unsigned int oom_scale_down;
-> >  #ifdef CONFIG_BLK_DEV_IO_TRACE
-> >         unsigned int btrace_seq;
-> >  #endif
-> > diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-> > index a7b2460..3592786 100644
-> > --- a/mm/oom_kill.c
-> > +++ b/mm/oom_kill.c
-> > @@ -159,6 +159,11 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
-> >                         points >>= -(p->oomkilladj);
-> >         }
-> >  
-> > +       /*
-> > +        * adjust the score by number of OOM kill retrial
-> > +        */
-> > +       points >>= p->oom_scale_down;
-> > +
-> >  #ifdef DEBUG
-> >         printk(KERN_DEBUG "OOMkill: task %d (%s) got %lu points\n",
-> >         p->pid, p->comm, points);
-> > @@ -367,8 +372,10 @@ static int oom_kill_task(struct task_struct *p)
-> >          * Don't kill the process if any threads are set to OOM_DISABLE
-> >          */
-> >         do_each_thread(g, q) {
-> > -               if (q->mm == mm && q->oomkilladj == OOM_DISABLE)
-> > +               if (q->mm == mm && q->oomkilladj == OOM_DISABLE) {
-> > +                       p->oom_scale_down++;
-> >                         return 1;
-> > +               }
-> >         } while_each_thread(g, q);
-> >  
-> >         __oom_kill_task(p, 1);
-> > 
-> > 
-> > 
-> > -- 
-> > Kind regards,
-> > Minchan Kim
-> > 
+> static const struct i2c_device_id synaptics_ts_id[] = {
+> 	{ SYNAPTICS_I2C_RMI_NAME, 0 },
+> 	{ }
+> };
 > 
-
+> static struct i2c_driver synaptics_ts_driver = {
+> 	.probe		= synaptics_ts_probe,
+> 	.remove		= synaptics_ts_remove,
+> #ifndef CONFIG_HAS_EARLYSUSPEND
+> 	.suspend	= synaptics_ts_suspend,
+> 	.resume		= synaptics_ts_resume,
+> #endif
+> 	.id_table	= synaptics_ts_id,
+> 	.driver = {
+> 		.name	= SYNAPTICS_I2C_RMI_NAME,
+> 	},
+> };
+> 
+> static int __devinit synaptics_ts_init(void)
+> {
+> 	synaptics_wq = create_singlethread_workqueue("synaptics_wq");
+> 	if (!synaptics_wq)
+> 		return -ENOMEM;
+> 	return i2c_add_driver(&synaptics_ts_driver);
+> }
+> 
+> static void __exit synaptics_ts_exit(void)
+> {
+> 	i2c_del_driver(&synaptics_ts_driver);
+> 	if (synaptics_wq)
+> 		destroy_workqueue(synaptics_wq);
+> }
+> 
+> module_init(synaptics_ts_init);
+> module_exit(synaptics_ts_exit);
+> 
+> MODULE_DESCRIPTION("Synaptics Touchscreen Driver");
+> MODULE_LICENSE("GPL");
+> MODULE_AUTHOR("Arve Hj?nnev?g <arve@android.com>");
+> 
+> 
 
 -- 
-Kind regards,
-Minchan Kim
+Sincerely yours,
+Mike.
+
