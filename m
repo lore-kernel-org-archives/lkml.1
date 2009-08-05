@@ -1,56 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934192AbZHEKuv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934194AbZHEKzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934192AbZHEKuv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 06:50:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934059AbZHEKuu
+	id S934194AbZHEKzk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 06:55:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934138AbZHEKzj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 06:50:50 -0400
-Received: from smtp6.welho.com ([213.243.153.40]:60032 "EHLO smtp6.welho.com"
+	Wed, 5 Aug 2009 06:55:39 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57632 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933995AbZHEKuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 06:50:50 -0400
-X-Greylist: delayed 1528 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Aug 2009 06:50:49 EDT
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, a.p.zijlstra@chello.nl
-Subject: [PATCH] perf report: Make --sort comm,dso,symbol the default
-Date: Wed,  5 Aug 2009 13:25:21 +0300
-Message-Id: <1249467921-10450-1-git-send-email-penberg@cs.helsinki.fi>
-X-Mailer: git-send-email 1.5.6.3
+	id S934011AbZHEKzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 06:55:38 -0400
+Date: Wed, 5 Aug 2009 10:55:01 GMT
+From: tip-bot for Cyrill Gorcunov <gorcunov@openvz.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       gorcunov@openvz.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       gorcunov@openvz.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090801075435.597863129@openvz.org>
+References: <20090801075435.597863129@openvz.org>
+Subject: [tip:x86/apic] x86, ioapic: Introduce for_each_irq_pin() helper
+Message-ID: <tip-2977fb3ffc8493a2f4f0a362e8660a6cde9f1bb9@git.kernel.org>
+Git-Commit-ID: 2977fb3ffc8493a2f4f0a362e8660a6cde9f1bb9
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 05 Aug 2009 10:55:02 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If you're doing performance testing, you're interested in the symbols
-anyway so lets make "--sort comm,dso,symbol" the default sort option.
+Commit-ID:  2977fb3ffc8493a2f4f0a362e8660a6cde9f1bb9
+Gitweb:     http://git.kernel.org/tip/2977fb3ffc8493a2f4f0a362e8660a6cde9f1bb9
+Author:     Cyrill Gorcunov <gorcunov@openvz.org>
+AuthorDate: Sat, 1 Aug 2009 11:47:59 +0400
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 5 Aug 2009 10:30:49 +0200
 
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+x86, ioapic: Introduce for_each_irq_pin() helper
+
+This allow us to save a few lines of code.
+
+Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+Cc: yinghai@kernel.org
+LKML-Reference: <20090801075435.597863129@openvz.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
 ---
- tools/perf/builtin-report.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ arch/x86/kernel/apic/io_apic.c |   43 ++++++++++++++--------------------------
+ 1 files changed, 15 insertions(+), 28 deletions(-)
 
-diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-index b20a4b6..181cef1 100644
---- a/tools/perf/builtin-report.c
-+++ b/tools/perf/builtin-report.c
-@@ -31,7 +31,7 @@
- static char		const *input_name = "perf.data";
- static char		*vmlinux = NULL;
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 7e92a92..ffd8fdf 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -66,6 +66,8 @@
+ #include <asm/apic.h>
  
--static char		default_sort_order[] = "comm,dso";
-+static char		default_sort_order[] = "comm,dso,symbol";
- static char		*sort_order = default_sort_order;
- static char		*dso_list_str, *comm_list_str, *sym_list_str,
- 			*col_width_list_str;
-@@ -1423,7 +1423,7 @@ print_entries:
- 	if (sort_order == default_sort_order &&
- 			parent_pattern == default_parent_pattern) {
- 		fprintf(fp, "#\n");
--		fprintf(fp, "# (For more details, try: perf report --sort comm,dso,symbol)\n");
-+		fprintf(fp, "# (For an high level overview, try: perf report --sort comm,dso)\n");
- 		fprintf(fp, "#\n");
+ #define __apicdebuginit(type) static type __init
++#define for_each_irq_pin(entry, head) \
++	for (entry = head; entry; entry = entry->next)
+ 
+ /*
+  *      Is the SiS APIC rmw bug present ?
+@@ -410,7 +412,7 @@ static bool io_apic_level_ack_pending(struct irq_cfg *cfg)
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&ioapic_lock, flags);
+-	for (entry = cfg->irq_2_pin; entry != NULL; entry = entry->next) {
++	for_each_irq_pin(entry, cfg->irq_2_pin) {
+ 		unsigned int reg;
+ 		int pin;
+ 
+@@ -490,22 +492,21 @@ static void ioapic_mask_entry(int apic, int pin)
+  */
+ static void add_pin_to_irq_node(struct irq_cfg *cfg, int node, int apic, int pin)
+ {
+-	struct irq_pin_list **entryp, *entry;
++	struct irq_pin_list **last, *entry;
+ 
+-	for (entryp = &cfg->irq_2_pin;
+-	     *entryp != NULL;
+-	     entryp = &(*entryp)->next) {
+-		entry = *entryp;
+-		/* not again, please */
++	/* don't allow duplicates */
++	last = &cfg->irq_2_pin;
++	for_each_irq_pin(entry, cfg->irq_2_pin) {
+ 		if (entry->apic == apic && entry->pin == pin)
+ 			return;
++		last = &entry->next;
  	}
- 	fprintf(fp, "\n");
--- 
-1.5.6.3
-
+ 
+ 	entry = get_one_free_irq_2_pin(node);
+ 	entry->apic = apic;
+ 	entry->pin = pin;
+ 
+-	*entryp = entry;
++	*last = entry;
+ }
+ 
+ /*
+@@ -517,7 +518,7 @@ static void __init replace_pin_at_irq_node(struct irq_cfg *cfg, int node,
+ {
+ 	struct irq_pin_list *entry;
+ 
+-	for (entry = cfg->irq_2_pin; entry != NULL; entry = entry->next) {
++	for_each_irq_pin(entry, cfg->irq_2_pin) {
+ 		if (entry->apic == oldapic && entry->pin == oldpin) {
+ 			entry->apic = newapic;
+ 			entry->pin = newpin;
+@@ -537,7 +538,7 @@ static void io_apic_modify_irq(struct irq_cfg *cfg,
+ 	int pin;
+ 	struct irq_pin_list *entry;
+ 
+-	for (entry = cfg->irq_2_pin; entry != NULL; entry = entry->next) {
++	for_each_irq_pin(entry, cfg->irq_2_pin) {
+ 		unsigned int reg;
+ 		pin = entry->pin;
+ 		reg = io_apic_read(entry->apic, 0x10 + pin * 2);
+@@ -1669,12 +1670,8 @@ __apicdebuginit(void) print_IO_APIC(void)
+ 		if (!entry)
+ 			continue;
+ 		printk(KERN_DEBUG "IRQ%d ", irq);
+-		for (;;) {
++		for_each_irq_pin(entry, cfg->irq_2_pin)
+ 			printk("-> %d:%d", entry->apic, entry->pin);
+-			if (!entry->next)
+-				break;
+-			entry = entry->next;
+-		}
+ 		printk("\n");
+ 	}
+ 
+@@ -2227,7 +2224,7 @@ static void __target_IO_APIC_irq(unsigned int irq, unsigned int dest, struct irq
+ 	struct irq_pin_list *entry;
+ 	u8 vector = cfg->vector;
+ 
+-	for (entry = cfg->irq_2_pin; entry != NULL; entry = entry->next) {
++	for_each_irq_pin(entry, cfg->irq_2_pin) {
+ 		unsigned int reg;
+ 
+ 		apic = entry->apic;
+@@ -2556,20 +2553,10 @@ static void ack_apic_level(unsigned int irq)
+ #ifdef CONFIG_INTR_REMAP
+ static void __eoi_ioapic_irq(unsigned int irq, struct irq_cfg *cfg)
+ {
+-	int apic, pin;
+ 	struct irq_pin_list *entry;
+ 
+-	entry = cfg->irq_2_pin;
+-	for (;;) {
+-
+-		if (!entry)
+-			break;
+-
+-		apic = entry->apic;
+-		pin = entry->pin;
+-		io_apic_eoi(apic, pin);
+-		entry = entry->next;
+-	}
++	for_each_irq_pin(entry, cfg->irq_2_pin)
++		io_apic_eoi(entry->apic, entry->pin);
+ }
+ 
+ static void
