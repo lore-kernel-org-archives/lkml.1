@@ -1,107 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933640AbZHEHyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933731AbZHEH7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933640AbZHEHyv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 03:54:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933305AbZHEHyt
+	id S933731AbZHEH7Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 03:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933694AbZHEH7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 03:54:49 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:41817 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932937AbZHEHys convert rfc822-to-8bit (ORCPT
+	Wed, 5 Aug 2009 03:59:14 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:52524 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933660AbZHEH7N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 03:54:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=EeMGE+002fERl4uksDza1YRgZosIhBGbXhmqCfl+51e+7sXvbYgrbl3motFO9Z2TdE
-         Ay9r3DRksdQf0FU7rArVNJ8+Z18h7pYvDWqABZShgp3BdPDB4tbC4XGcZKnKO2l6BW6V
-         dHfWkR4tcfXUgOQ36Vsxf6L0MfiyUT+QcameQ=
-MIME-Version: 1.0
-In-Reply-To: <20090804203549.GA25332@kroah.com>
-References: <71cd59b00908041140j7bd814d2u90585864fe00415e@mail.gmail.com>
-	 <20090804203549.GA25332@kroah.com>
-Date: Wed, 5 Aug 2009 09:54:47 +0200
-Message-ID: <71cd59b00908050054q49dabbe4vc8f53eddb4b4d33d@mail.gmail.com>
-Subject: Re: Cleaning asus_oled
-From: Corentin Chary <corentin.chary@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: Jakub Schmidtke <sjakub@gmail.com>, acpi4asus-user@lists.sourceforge.net,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 5 Aug 2009 03:59:13 -0400
+Subject: Re: [PATCH 1/4] Bug Fix drivers/pci/intel-iommu.c: correct sglist
+ size calculation
+From: David Woodhouse <dwmw2@infradead.org>
+To: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Tony Luck <tony.luck@intel.com>, iommu@lists.linux-foundation.org,
+       linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090804220937.GA17945@linux-os.sc.intel.com>
+References: <Pine.LNX.4.64.0908021044540.15557@ask.diku.dk>
+	 <20090804220937.GA17945@linux-os.sc.intel.com>
+Content-Type: text/plain
+Date: Wed, 05 Aug 2009 08:59:10 +0100
+Message-Id: <1249459150.9324.346.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 4, 2009 at 10:35 PM, Greg KH<greg@kroah.com> wrote:
-> On Tue, Aug 04, 2009 at 08:40:10PM +0200, Corentin Chary wrote:
->> Hi,
->> I'm trying to clean the asus_oled driver, here is my git tree with
->> some trivial patchs.
->> http://git.iksaif.net/?p=acpi4asus.git;a=shortlog;h=refs/heads/asus_oled
->
-> That's great!  But note, I need patches in email form, so you are going
-> to use git format-patch to dig them out for me, right?  :)
+On Tue, 2009-08-04 at 15:09 -0700, Fenghua Yu wrote:
+> 
+> -       for_each_sg(sglist, sg, nelems, i)
+> -               size += aligned_nrpages(sg->offset, sg->length);
+> +       for_each_sg(sglist, sg, nelems, i) {
+> +               dma_addr_t addr = sg_phys(sg);
+> +               size += aligned_nrpages(addr, sg->length);
+> +       }
 
-Yes, of course.
+What's the point in this part? We mask off the high bits of the first
+argument to aligned_nrpages() -- we're only interested in the offset
+within the (mm) page. So sg->offset is fine; we don't need to use
+sg_phys(), surely? And this is in code where we're desperately trying to
+shave off as many cycles as we can...
 
->> Before working deeper, I wanted to discuss about the userspace interface:
->>
->> > TODO:
->> > [...]
->> >        - audit the userspace interface
->> >                - sysfs vs. char?
->>
->> First, should we move asus_oled functionalities in asus-laptop ?
->> Then the interface would be in sysfs under
->> /sys/devices/platform/asus-laptop/{picture|enable} ?
->
-> Is that the way that other drivers of this kind of functionality work
-> today?  If so, yes, that would be good.
+This version of the patch should suffice, yes?
 
-Hum, actually I think it is not a good idea. It is just an USB device, and
-Asus may wan't to use it on motherboard on day. We should keep it
-a simple usb driver.
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index ebc9b8d..ed6109d 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -1648,6 +1648,15 @@ static int domain_context_mapped(struct pci_dev *pdev)
+ 					     tmp->devfn);
+ }
+ 
++/* Returns a number of VTD pages, but aligned to MM page size */
++static inline unsigned long aligned_nrpages(unsigned long host_addr,
++					    size_t size)
++{
++	host_addr &= ~PAGE_MASK;
++	return PAGE_ALIGN(host_addr + size) >> VTD_PAGE_SHIFT;
++}
++
++
+ static int __domain_mapping(struct dmar_domain *domain, unsigned long iov_pfn,
+ 			    struct scatterlist *sg, unsigned long phys_pfn,
+ 			    unsigned long nr_pages, int prot)
+@@ -1675,7 +1684,7 @@ static int __domain_mapping(struct dmar_domain *domain, unsigned long iov_pfn,
+ 		uint64_t tmp;
+ 
+ 		if (!sg_res) {
+-			sg_res = (sg->offset + sg->length + VTD_PAGE_SIZE - 1) >> VTD_PAGE_SHIFT;
++			sg_res = aligned_nrpages(sg->offset, sg->length);
+ 			sg->dma_address = ((dma_addr_t)iov_pfn << VTD_PAGE_SHIFT) + sg->offset;
+ 			sg->dma_length = sg->length;
+ 			pteval = page_to_phys(sg_page(sg)) | prot;
+@@ -2415,14 +2424,6 @@ error:
+ 	return ret;
+ }
+ 
+-/* Returns a number of VTD pages, but aligned to MM page size */
+-static inline unsigned long aligned_nrpages(unsigned long host_addr,
+-					    size_t size)
+-{
+-	host_addr &= ~PAGE_MASK;
+-	return PAGE_ALIGN(host_addr + size) >> VTD_PAGE_SHIFT;
+-}
+-
+ /* This takes a number of _MM_ pages, not VTD pages */
+ static struct iova *intel_alloc_iova(struct device *dev,
+ 				     struct dmar_domain *domain,
+@@ -2875,7 +2876,7 @@ static int intel_map_sg(struct device *hwdev, struct scatterlist *sglist, int ne
+ 
+ 	start_vpfn = mm_to_dma_pfn(iova->pfn_lo);
+ 
+-	ret = domain_sg_mapping(domain, start_vpfn, sglist, mm_to_dma_pfn(size), prot);
++	ret = domain_sg_mapping(domain, start_vpfn, sglist, size, prot);
+ 	if (unlikely(ret)) {
+ 		/*  clear the page */
+ 		dma_pte_clear_range(domain, start_vpfn,
 
->> Else we can use /dev/asus_oled, with an ioctl (or a zero-size image)
->> to switch the OLED off.
->> But I don't think /sys/class/oled is a good place to be, because
->> /sys/class is for generic things.
->
-> Like /sys/class/video_output?  There's got to be some other generic
-> backlight driver class already, oh, hey, look at /sys/class/backlight!
->
-> So, why not just use the backlight interface instead, that way you don't
-> have to write custom userspace code for this specific platform?
 
-backlight interface is only to change screen brightness, so we can't
-use that for an oled screen. There is an lcd class too, but it is used
-for contrast.
-
-After some grepping in the kernel, it seems that there is no generic
-lcd interface.
-For example :
-- drivers/parisc/led.c use a /proc/pdc/lcd file
-- drivers/ans-lcd.c  use a /dev/anslcd file
-
-If you look at http://ssl.bulix.org/projects/lcd4linux/browser/trunk
-
-You'll see a lot of drv_***.c files, and each of them are for a
-different kernel interface
-(although some of them might don't use any interface).
-
-It seems that http://lcd-linux.sourceforge.net/ try to implement a
-generic interface,
-but only for alphanumeric displays, and it is not in mainline.
-
-This also could be a classic frambuffer device, but I don't think it's
-the best way to
-go for this type of device.
-
-Time to write a generic oled/lcd pannel class ?
-
-Thanks,
 -- 
-Corentin Chary
-http://xf.iksaif.net - http://uffs.org
+dwmw2
+
