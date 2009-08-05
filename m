@@ -1,81 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933695AbZHEHUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933692AbZHEHVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933695AbZHEHUy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 03:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933647AbZHEHUx
+	id S933692AbZHEHVU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 03:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933576AbZHEHVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 03:20:53 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:33079 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933684AbZHEHUw (ORCPT
+	Wed, 5 Aug 2009 03:21:20 -0400
+Received: from mail-pz0-f196.google.com ([209.85.222.196]:42501 "EHLO
+	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933647AbZHEHVT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 03:20:52 -0400
-Message-ID: <4A793284.8000401@gmail.com>
-Date: Wed, 05 Aug 2009 09:19:32 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: David Miller <davem@davemloft.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Jiri Pirko <jpirko@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Networking
-References: <20090804.125742.32009006.davem@davemloft.net> <20090805070205.GA8741@elte.hu> <20090805071411.GA9217@elte.hu>
-In-Reply-To: <20090805071411.GA9217@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 05 Aug 2009 09:19:35 +0200 (CEST)
+	Wed, 5 Aug 2009 03:21:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=ACH45qrVRDrMj8FAQCpe8UY3L1QWFy3ZHLivQWUJT92EDO7SbF+cEAu3pBjzefI30E
+         XHLpR0fssK4p5cDjlT3psp9mpsTTERGGusg1F3clxWdSka8htTRcdO6m6kWDX/Q9M9Xw
+         MqRJKeLsToMWDzawHSeq1cnF++Yh/tDmjgFZ4=
+Date: Wed, 5 Aug 2009 16:20:33 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, Paul Menage <menage@google.com>,
+       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Oleg Nesterov <oleg@redhat.com>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH 1/4] oom: move oom_adj to signal_struct
+Message-Id: <20090805162033.b8c2c74d.minchan.kim@barrios-desktop>
+In-Reply-To: <20090805154759.5BC2.A69D9226@jp.fujitsu.com>
+References: <20090805150323.2624a68f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090805153701.b4f4385e.minchan.kim@barrios-desktop>
+	<20090805154759.5BC2.A69D9226@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar a écrit :
-> * Ingo Molnar <mingo@elte.hu> wrote:
+On Wed,  5 Aug 2009 15:53:31 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+
+> > On Wed, 5 Aug 2009 15:03:23 +0900
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > 
+> > > On Wed, 5 Aug 2009 14:55:16 +0900
+> > > Minchan Kim <minchan.kim@gmail.com> wrote:
+> > > 
+> > > > On Wed,  5 Aug 2009 11:51:31 +0900 (JST)
+> > > > KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > > > 
+> > > > > > On Wed,  5 Aug 2009 11:29:34 +0900 (JST)
+> > > > > > KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > > > > > 
+> > > > > > > Hi
+> > > > > > > 
+> > > > > > > > Hi, Kosaki. 
+> > > > > > > > 
+> > > > > > > > I am so late to invole this thread. 
+> > > > > > > > But let me have a question. 
+> > > > > > > > 
+> > > > > > > > What's advantage of placing oom_adj in singal rather than task ?
+> > > > > > > > I mean task->oom_adj and task->signal->oom_adj ?
+> > > > > > > > 
+> > > > > > > > I am sorry if you already discussed it at last threads. 
+> > > > > > > 
+> > > > > > > Not sorry. that's very good question.
+> > > > > > > 
+> > > > > > > I'm trying to explain the detailed intention of commit 2ff05b2b4eac
+> > > > > > > (move oom_adj to mm_struct).
+> > > > > > > 
+> > > > > > > In 2.6.30, OOM logic callflow is here.
+> > > > > > > 
+> > > > > > > __out_of_memory
+> > > > > > > 	select_bad_process		for each task
+> > > > > > > 		badness			calculate badness of one task
+> > > > > > > 	oom_kill_process		search child
+> > > > > > > 		oom_kill_task		kill target task and mm shared tasks with it
+> > > > > > > 
+> > > > > > > example, process-A have two thread, thread-A and thread-B and it 
+> > > > > > > have very fat memory.
+> > > > > > > And, each thread have following likes oom property.
+> > > > > > > 
+> > > > > > > 	thread-A: oom_adj = OOM_DISABLE, oom_score = 0
+> > > > > > > 	thread-B: oom_adj = 0,           oom_score = very-high
+> > > > > > > 
+> > > > > > > Then, select_bad_process() select thread-B, but oom_kill_task refuse
+> > > > > > > kill the task because thread-A have OOM_DISABLE.
+> > > > > > > __out_of_memory() call select_bad_process() again. but select_bad_process()
+> > > > > > > select the same task. It mean kernel fall in the livelock.
+> > > > > > > 
+> > > > > > > The fact is, select_bad_process() must select killable task. otherwise
+> > > > > > > OOM logic go into livelock.
+> > > > > > > 
+> > > > > > > Is this enough explanation? thanks.
+> > > > > > > 
+> > > > 
+> > > > The problem resulted from David patch.
+> > > > It can solve live lock problem but make a new problem like vfork problem. 
+> > > > I think both can be solved by different approach. 
+> > > > 
+> > > > It's just RFC. 
+> > > > 
+> > > > If some process is selected by OOM killer but it have a child of OOM immune,
+> > > > We just decrease point of process. It can affect selection of bad process. 
+> > > > After some trial, at last bad score is drastically low and another process is 
+> > > > selected by OOM killer. So I think Live lock don't happen. 
+> > > > 
+> > > > New variable adding in task struct is rather high cost. 
+> > > > But i think we can union it with oomkilladj 
+> > > > since oomkilladj is used to present just -17 ~ 15. 
+> > > > 
+> > > > What do you think about this approach ?
+> > > > 
+> > > keeping this in "task" struct is troublesome.
+> > > It may not livelock but near-to-livelock state, in bad case.
+> > 
+> > Hmm. I can't understand why it is troublesome. 
+> > I think it's related to moving oom_adj to singal_struct. 
+> > Unfortunately, I can't understand why we have to put oom_adj 
+> > in singal_struct?
+> > 
+> > That's why I have a question to Kosaki a while ago. 
+> > I can't understand it still. :-(
+> > 
+> > Could you elaborate it ?
 > 
->> FYI, -tip testing found that these bits trigger a missing lockdep 
->> annotation warning:
+> Maybe, It's because my explanation is still poor. sorry.
+> Please give me one more chance.
 > 
-> it's apparently using an zero-initialized spinlock. This is a 
-> side-effect of:
+> In my previous mail, I explained select_bad_process() must not
+> unkillable task, is this ok?
+> IOW, if all thread have the same oom_adj, the issue gone.
 > 
->         dev_unicast_init(dev);
+> signal_struct is shared all thread in the process. then, the issue gone.
 > 
-> in alloc_netdev_mq() making use of dev->addr_list_lock.
-> 
-> Wouldnt the patch below be the right fix? The device has just been 
-> allocated freshly, it's not accessible anywhere yet so no locking is 
-> needed at all - in fact it's wrong to lock it here (the lock isnt 
-> initialized yet).
-> 
-> This bug was apparently introduced via:
-> 
-> | commit a6ac65db2329e7685299666f5f7b6093c7b0f3a0
-> | Author: Jiri Pirko <jpirko@redhat.com>
-> | Date:   Thu Jul 30 01:06:12 2009 +0000
-> |
-> |     net: restore the original spinlock to protect unicast list
-> 
-> it needlessly added new locking and apparently nobody ran this patch 
-> with lockdep.
-> 
-> 	Ingo
-> 
-> Index: linux2/net/core/dev.c
-> ===================================================================
-> --- linux2.orig/net/core/dev.c
-> +++ linux2/net/core/dev.c
-> @@ -4007,9 +4007,7 @@ static void dev_unicast_flush(struct net
->  
->  static void dev_unicast_init(struct net_device *dev)
->  {
-> -	netif_addr_lock_bh(dev);
->  	__hw_addr_init(&dev->uc);
-> -	netif_addr_unlock_bh(dev);
->  }
->  
->  
+
+Your and Kame's good explanation opens my eyes. :)
+I realized your approach's benefit. 
+
+Yes. Let's wait to listen others's opinios.
 
 
-Indeed, this function is static and thus only called from alloc_netdev_mq()
 
+-- 
+Kind regards,
+Minchan Kim
