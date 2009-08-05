@@ -1,102 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751852AbZHES3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751883AbZHES3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751852AbZHES3x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 14:29:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbZHES3w
+	id S1751883AbZHES3z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 14:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbZHES3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 14:29:52 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:38143 "EHLO
+	Wed, 5 Aug 2009 14:29:54 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:38163 "EHLO
 	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751798AbZHES3v (ORCPT
+	with ESMTP id S1751862AbZHES3x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 14:29:51 -0400
+	Wed, 5 Aug 2009 14:29:53 -0400
 From: Daniel Mack <daniel@caiaq.de>
 To: linux-kernel@vger.kernel.org
 Cc: linux-pm@lists.linux-foundation.org, Daniel Mack <daniel@caiaq.de>,
-       Ian Molton <spyro@f2s.com>, Anton Vorontsov <cbou@mail.ru>,
-       Matt Reimer <mreimer@vpop.net>
-Subject: [PATCH 2/5] pda-power: switch to new dev_pm_ops
-Date: Wed,  5 Aug 2009 20:29:28 +0200
-Message-Id: <1249496971-9019-2-git-send-email-daniel@caiaq.de>
+       Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>,
+       Matt Reimer <mreimer@vpop.net>, Anton Vorontsov <cbou@mail.ru>
+Subject: [PATCH 3/5] ds2760: switch to new dev_pm_ops
+Date: Wed,  5 Aug 2009 20:29:29 +0200
+Message-Id: <1249496971-9019-3-git-send-email-daniel@caiaq.de>
 X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1249496971-9019-1-git-send-email-daniel@caiaq.de>
+In-Reply-To: <1249496971-9019-2-git-send-email-daniel@caiaq.de>
 References: <1249496971-9019-1-git-send-email-daniel@caiaq.de>
+ <1249496971-9019-2-git-send-email-daniel@caiaq.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Cc: Ian Molton <spyro@f2s.com>
-Cc: Anton Vorontsov <cbou@mail.ru>
+Cc: Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
 Cc: Matt Reimer <mreimer@vpop.net>
+Cc: Anton Vorontsov <cbou@mail.ru>
 ---
- drivers/power/pda_power.c |   27 ++++++++++++++++++---------
- 1 files changed, 18 insertions(+), 9 deletions(-)
+ drivers/power/ds2760_battery.c |   27 ++++++++++++++++-----------
+ 1 files changed, 16 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/power/pda_power.c b/drivers/power/pda_power.c
-index a232de6..34af275 100644
---- a/drivers/power/pda_power.c
-+++ b/drivers/power/pda_power.c
-@@ -402,9 +402,9 @@ static int pda_power_remove(struct platform_device *pdev)
- static int ac_wakeup_enabled;
- static int usb_wakeup_enabled;
+diff --git a/drivers/power/ds2760_battery.c b/drivers/power/ds2760_battery.c
+index ca43b1c..3c9d8cd 100644
+--- a/drivers/power/ds2760_battery.c
++++ b/drivers/power/ds2760_battery.c
+@@ -557,19 +557,18 @@ static int ds2760_battery_remove(struct platform_device *pdev)
  
--static int pda_power_suspend(struct platform_device *pdev, pm_message_t state)
-+static int pda_power_suspend(struct device *dev)
+ #ifdef CONFIG_PM
+ 
+-static int ds2760_battery_suspend(struct platform_device *pdev,
+-				  pm_message_t state)
++static int ds2760_battery_suspend(struct device *dev)
  {
--	if (device_may_wakeup(&pdev->dev)) {
-+	if (device_may_wakeup(dev)) {
- 		if (ac_irq)
- 			ac_wakeup_enabled = !enable_irq_wake(ac_irq->start);
- 		if (usb_irq)
-@@ -414,9 +414,9 @@ static int pda_power_suspend(struct platform_device *pdev, pm_message_t state)
+-	struct ds2760_device_info *di = platform_get_drvdata(pdev);
++	struct ds2760_device_info *di = dev_get_drvdata(dev);
+ 
+ 	di->charge_status = POWER_SUPPLY_STATUS_UNKNOWN;
+ 
  	return 0;
  }
  
--static int pda_power_resume(struct platform_device *pdev)
-+static int pda_power_resume(struct device *dev)
+-static int ds2760_battery_resume(struct platform_device *pdev)
++static int ds2760_battery_resume(struct device *dev)
  {
--	if (device_may_wakeup(&pdev->dev)) {
-+	if (device_may_wakeup(dev)) {
- 		if (usb_irq && usb_wakeup_enabled)
- 			disable_irq_wake(usb_irq->start);
- 		if (ac_irq && ac_wakeup_enabled)
-@@ -425,21 +425,30 @@ static int pda_power_resume(struct platform_device *pdev)
+-	struct ds2760_device_info *di = platform_get_drvdata(pdev);
++	struct ds2760_device_info *di = dev_get_drvdata(dev);
  
+ 	di->charge_status = POWER_SUPPLY_STATUS_UNKNOWN;
+ 	power_supply_changed(&di->bat);
+@@ -580,23 +579,29 @@ static int ds2760_battery_resume(struct platform_device *pdev)
  	return 0;
  }
-+
-+static struct dev_pm_ops pda_power_pm_ops = {
-+	.suspend	= pda_power_suspend,
-+	.freeze		= pda_power_freeze,
-+	.resume		= pda_power_resume,
-+	.thaw		= pda_power_resume,
+ 
+-#else
++static struct dev_pm_ops ds2760_battery_pm_ops = {
++	.suspend        = ds2760_battery_suspend,
++	.freeze		= ds2760_battery_suspend,
++	.resume         = ds2760_battery_resume,
++	.thaw		= ds2760_battery_resume,
 +};
-+
-+#define PDA_POWER_PM_OPS (&pda_power_pm_ops)
-+
- #else
--#define pda_power_suspend NULL
--#define pda_power_resume NULL
-+#define PDA_POWER_PM_OPS NULL
+ 
+-#define ds2760_battery_suspend NULL
+-#define ds2760_battery_resume NULL
++#define DS2760_PM_OPS (&ds2760_battery_pm_ops)
+ 
++#else
++#define DS2760_PM_OPS NULL
  #endif /* CONFIG_PM */
  
- MODULE_ALIAS("platform:pda-power");
+ MODULE_ALIAS("platform:ds2760-battery");
  
- static struct platform_driver pda_power_pdrv = {
+ static struct platform_driver ds2760_battery_driver = {
  	.driver = {
--		.name = "pda-power",
-+		.name	= "pda-power",
+-		.name = "ds2760-battery",
 +		.owner	= THIS_MODULE,
-+		.pm	= PDA_POWER_PM_OPS,
++		.name	= "ds2760-battery",
++		.pm	= DS2760_PM_OPS,
  	},
- 	.probe = pda_power_probe,
- 	.remove = pda_power_remove,
--	.suspend = pda_power_suspend,
--	.resume = pda_power_resume,
+ 	.probe	  = ds2760_battery_probe,
+ 	.remove   = ds2760_battery_remove,
+-	.suspend  = ds2760_battery_suspend,
+-	.resume	  = ds2760_battery_resume,
  };
  
- static int __init pda_power_init(void)
+ static int __init ds2760_battery_init(void)
 -- 
 1.6.3.3
 
