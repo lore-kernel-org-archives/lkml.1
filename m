@@ -1,98 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934170AbZHEK2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934163AbZHEKbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934170AbZHEK2k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 06:28:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933956AbZHEK2j
+	id S934163AbZHEKbf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 06:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933959AbZHEKbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 06:28:39 -0400
-Received: from cmpxchg.org ([85.214.51.133]:39497 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934035AbZHEK2j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 06:28:39 -0400
-Date: Wed, 5 Aug 2009 12:27:50 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, lwoodman@redhat.com,
-       peterz@infradead.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Fr?d?ric Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 4/4] tracing, page-allocator: Add a postprocessing script for page-allocator-related ftrace events
-Message-ID: <20090805102750.GA2488@cmpxchg.org>
-References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie> <1249409546-6343-5-git-send-email-mel@csn.ul.ie> <20090804112246.4e6d0ab1.akpm@linux-foundation.org> <4A787D84.2030207@redhat.com> <20090804121332.46df33a7.akpm@linux-foundation.org> <20090804204857.GA32092@csn.ul.ie> <20090805074103.GD19322@elte.hu> <20090805090742.GA21950@csn.ul.ie>
-Mime-Version: 1.0
+	Wed, 5 Aug 2009 06:31:34 -0400
+Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:16996 "EHLO
+	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933956AbZHEKbd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 06:31:33 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAJL7eEpR9dzM/2dsb2JhbADUawmEDwU
+Date: Wed, 5 Aug 2009 12:31:27 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Wan ZongShun <mcuos.com@gmail.com>
+Cc: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add watchdog driver for w90p910
+Message-ID: <20090805103127.GF30892@infomag.iguana.be>
+References: <4A69CE00.10401@gmail.com> <20090804201032.GB30892@infomag.iguana.be> <e68bb3470908041955t7e07929bv612a25e0bc0264c1@mail.gmail.com> <20090805070822.GC30892@infomag.iguana.be> <e68bb3470908050100n4f6f8ed3hbd227a13e038e55f@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090805090742.GA21950@csn.ul.ie>
+In-Reply-To: <e68bb3470908050100n4f6f8ed3hbd227a13e038e55f@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 05, 2009 at 10:07:43AM +0100, Mel Gorman wrote:
+Hi Wan,
 
-> I also decided to just deal with the page allocator and not the MM as a whole
-> figuring that reviewing all MM tracepoints at the same time would be too much
-> to chew on and decide "are these the right tracepoints?". My expectation is
-> that there would need to be at least one set per headings;
+> > I have an additional question: which timeout values can you set? is it 0, 1, 2 and 3 seconds?
 > 
-> page allocator
->   subsys: kmem
->   prefix: mm_page*
->   example use: estimate zone lock contention
+> The 0, 1, 2 and 3 is not seconds, rather than 'level' , it means my
+> watchdog controller can only set four grades,
+> When WTIS bit of REG_WTCR was set one value of  the 0, 1, 2 and 3, the
+>  real time interval can be calculated via following formula .
 > 
-> o slab allocator (already done)
->   subsys: kmem
->   prefix: kmem_* (although this wasn't consistent, e.g. kmalloc vs kmem_kmalloc)
->   example use: measure allocation times for slab, slub, slqb
+> WTIS                 real time interval (formula)
+> 0x00                   ((2^ 14 ) * ((external crystal freq) / 256))seconds
+> 0x01                   ((2^ 16 ) * ((external crystal freq) / 256))seconds
+> 0x02                   ((2^ 18 ) * ((external crystal freq) / 256))seconds
+> 0x03                   ((2^ 20 ) * ((external crystal freq) / 256))seconds
 > 
-> o high-level reclaim, kswapd wakeups, direct reclaim, lumpy triggers
->   subsys: vmscan
->   prefix: mm_vmscan*
->   example use: estimate memory pressure
-> 
-> o low-level reclaim, list rotations, pages scanned, types of pages moving etc.
->   subsys: vmscan
->   prefix: mm_vmscan*
->   (debugging VM tunables such as swappiness or why kswapd so active)
-> 
-> The following might also be useful for kernel developers but maybe less
-> useful in general so would be harder to justify.
-> 
-> o fault activity, anon, file, swap ins/outs 
-> o page cache activity
-> o readahead
-> o VM/FS, writeback, pdflush
-> o hugepage reservations, pool activity, faulting
-> o hotplug
+> The external crystal freq is 15Mhz in w90p910 evaluation board. so I
+> set the '0x00' as a default value, it means the real time interval is
+> 0.28 second approximately.
 
-Maybe if more people would tell how they currently use tracepoints in
-the MM we can find some common ground on what can be useful to more
-than one person and why?
+Hmm, the watchdog API works in seconds.
+A timer will need to be used like in similar watchdog drivers (like at91sam9_wdt.c, pcwd.c).
 
-FWIW, I recently started using tracepoints at the following places for
-looking at swap code behaviour:
+Kind regards,
+Wim.
 
-	o swap slot alloc/free	[type, offset]
-	o swap slot read/write	[type, offset]
-	o swapcache add/delete	[type, offset]
-	o swap fault/evict	[page->mapping, page->index, type, offset]
-
-This gives detail beyond vmstat's possibilities at the cost of 8 lines
-of trace_swap_foo() distributed over 5 files.
-
-I have not aggregated the output so far, just looked at the raw data
-and enjoyed reading how the swap slot allocator behaves in reality
-(you can probably integrate the traces into snapshots of the whole
-swap space layout), what load behaviour triggers insane swap IO
-patterns, in what context is readahead reading the wrong pages etc.,
-stuff you wouldn't see when starting out with statistical
-aggregations.
-
-Now, these data are pretty specialized and probably only few people
-will make use of them, but OTOH, the cost they impose on the traced
-code is so miniscule that it would be a much greater pain to 1) know
-about and find third party patches and 2) apply, possibly forward-port
-third party patches.
-
-	Hannes
