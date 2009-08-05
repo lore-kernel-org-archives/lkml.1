@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933635AbZHDX6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933834AbZHEAG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933635AbZHDX6p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 19:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933517AbZHDX6p
+	id S933834AbZHEAG0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 20:06:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933822AbZHEAGZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 19:58:45 -0400
-Received: from cantor.suse.de ([195.135.220.2]:45922 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932491AbZHDX6o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 19:58:44 -0400
-Date: Tue, 4 Aug 2009 16:52:52 -0700
-From: Greg KH <gregkh@suse.de>
-To: Joe Peterson <joe@skyrush.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] n_tty: honor opost flag for echoes
-Message-ID: <20090804235252.GB27573@suse.de>
-References: <4A789AA1.5070907@skyrush.com>
- <20090804212538.GA26478@suse.de>
- <4A78A8B7.7050300@skyrush.com>
+	Tue, 4 Aug 2009 20:06:25 -0400
+Received: from mail-qy0-f196.google.com ([209.85.221.196]:64937 "EHLO
+	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932530AbZHEAGZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 20:06:25 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A78A8B7.7050300@skyrush.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20090804.115701.250978139.davem@davemloft.net>
+References: <1248912621.13447.12.camel@merlyn>
+	 <20090803.212323.256579233.davem@davemloft.net>
+	 <6c039e090908040036j38666152y2db1d4c55529eaff@mail.gmail.com>
+	 <20090804.115701.250978139.davem@davemloft.net>
+Date: Wed, 5 Aug 2009 08:06:25 +0800
+Message-ID: <6c039e090908041706p6f06ac55ja796ac53855e829a@mail.gmail.com>
+Subject: Re: [PATCH] net: Keep interface binding when sending packets with 
+	ipi_ifindex = 0
+From: =?UTF-8?B?Q2hpYS1jaGkgWWVoICjokYnlrrbpvYop?= <chiachi@android.com>
+To: David Miller <davem@davemloft.net>
+Cc: john.dykstra1@gmail.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 04, 2009 at 03:31:35PM -0600, Joe Peterson wrote:
-> Greg KH wrote:
-> > On Tue, Aug 04, 2009 at 02:31:29PM -0600, Joe Peterson wrote:
-> > 
-> >> Fixes the following bug:
-> >>
-> >>       http://bugs.linuxbase.org/show_bug.cgi?id=2692
-> >>
-> >> Causes processing of echoed characters (output from the echo buffer) to
-> >> honor the O_OPOST flag.  This re-establishes this behavior.
-> >>
-> >> Note that this and the next patch ("n_tty: move echoctl check and
-> >> clean up logic") were verified together by the bug reporters, and
-> >> all tty tests now pass.
-> > 
-> > What "tty tests" would that be?  Have a pointer to them?
-> 
-> It's the "Linux Standard Base" test suite:
-> 
-> 	http://www.linuxfoundation.org/collaborate/workgroups/lsb
-> 
-> Here's a link to the specific code - got this from one of the reporters:
-> 
-> http://bzr.linux-foundation.org/lsb/devel/runtime-test?cmd=content;rev=cyeoh-20020312084903-a08971416c59e5d5;pathrevid=stewb%40linux-foundation.org-20090626205411-sfb23cc0tjj7jzgm;path=modules/vsx-pcts/tset/POSIX.os/devclass/c_lflag/c_lflag.c
-> 
+2009/8/5 David Miller <davem@davemloft.net>:
+> I think we really cannot change behavior here.  If the user specifies
+> "0" in ipi_ifindex we must respect that in ipc->oif.  This is an
+> override, and the ability to override is the very purpose of this
+> control message.
+>
+> Even GLIBC makes use of that case of specifying "0" in ipi_ifindex.
+> We must respect it.
+>
+> I'm not applying any of these patches, sorry.
+>
 
-Ah, thanks, I'll dig through it.
+If you treat ipi_ifindex as an override, do you want to do that in
+ipi6_ifindex as well? Also, CAP_NET_RAW check for SO_BINDTODEVICE
+becomes meaningless in this case.
 
-greg k-h
+I did not find the usage of ipi_ifindex in glibc. It would be great if
+you can give me some pointers. Thanks for your help.
+
+Chia-chi
