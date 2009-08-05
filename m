@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752853AbZHEXGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752808AbZHEXKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752853AbZHEXGa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 19:06:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZHEXGa
+	id S1752808AbZHEXKW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 19:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbZHEXKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 19:06:30 -0400
-Received: from mail.mnementh.co.uk ([173.45.232.4]:53509 "EHLO mnementh.co.uk"
+	Wed, 5 Aug 2009 19:10:21 -0400
+Received: from mga09.intel.com ([134.134.136.24]:30737 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752099AbZHEXG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 19:06:29 -0400
-Message-ID: <4A7A106B.2070809@mnementh.co.uk>
-Date: Thu, 06 Aug 2009 00:06:19 +0100
-From: Ian Molton <ian@mnementh.co.uk>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	id S1751706AbZHEXKV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 19:10:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,331,1246863600"; 
+   d="scan'208";a="436510211"
+From: "Tan, Wei Chong" <wei.chong.tan@intel.com>
+To: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       John Stultz <johnstul@us.ibm.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Date: Thu, 6 Aug 2009 07:10:00 +0800
+Subject: RE: [GIT PULL] Additional x86 fixes for 2.6.31-rc5
+Thread-Topic: [GIT PULL] Additional x86 fixes for 2.6.31-rc5
+Thread-Index: AcoSGR9GWg3pVW2XQ2ei4n7v/JhgbAEB2KKw
+Message-ID: <B28277FD4E0F9247A3D55704C440A140D5ADEC78@pgsmsx504.gar.corp.intel.com>
+References: <200907311813.n6VIDe9S023442@voreg.hos.anvin.org>
+ <alpine.LFD.2.01.0907311218080.3161@localhost.localdomain>
+ <20090731195705.GA12270@elte.hu>
+In-Reply-To: <20090731195705.GA12270@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-CC: Magnus Damm <magnus.damm@gmail.com>,
-       pHilipp Zabel <philipp.zabel@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>
-Subject: Re: MMC: Make the configuration memory resource optional
-References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange>  <aec7e5c30907290608i43a80fe1xe4ef0f3847855709@mail.gmail.com>  <4A7053E8.8050303@mnementh.co.uk>  <20090729201702.GA28202@linux-sh.org>  <74d0deb30907291355n39df7db0v1d7afc93917adc14@mail.gmail.com>  <4A716F1C.2050805@mnementh.co.uk>  <Pine.LNX.4.64.0907301246330.4462@axis700.grange>  <4A71F2A5.4060206@mnementh.co.uk>  <aec7e5c30908021952j7947b513w7d62f2c4d87bd3c5@mail.gmail.com>  <4A787C2C.5070000@mnementh.co.uk> <aec7e5c30908041908p568f413albef7dede3fd2cb83@mail.gmail.com> <4A798A4B.4000901@mnementh.co.uk> <Pine.LNX.4.64.0908051702180.5802@axis700.grange> <4A7A08FE.5000909@mnementh.co.uk> <Pine.LNX.4.64.0908060045320.9219@axis700.grange>
-In-Reply-To: <Pine.LNX.4.64.0908060045320.9219@axis700.grange>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guennadi Liakhovetski wrote:
-
->> Thats the HCLK frequency, not the card clock.
+> Sure, we might want the error term to be even smaller, but 
+> in no way does it actually invalidate any of the logic - 
+> the 'tsc' reading is just a guess anyway. Also, I think 
+> that the real issue isn't even an SMI - but the fact that 
+> in the very last iteration of the loop, there's no 
+> serializing instruction _after_ the last 'rdtsc'. So even 
+> in the absense of SMI's, we do have a situation where the 
+> cycle counter was read without proper serialization.
 > 
-> Sure, and the card clock is derived from the HCLK, as you describe below.
 
-Ok, so then your controller (unless it uses a different scheme 
-altogether for the card clock divider) probably has a max card clock of 
-12MHz and a min of 24/512MHz.
+Hi,
 
-I will change the driver so that it automatically alters the max 
-frequency based on the presence of a function to (en,dis)able the 1:1 bit.
+I just recall something which I cannot understand.  Earlier when we observed the wrong CPU frequency phenomenon (1666MHz being identified as 1800MHz), we use the same CPU and put them on 2 different boards.  On one board, the failure rate is high (about 1 out of every 20).  On the other, it almost never fails.
+We compare the 2 boards and they are quite close to each other with one very prominent difference.  The failing board has no PS/2 port and so is using all USB keyboard/mouse while the good board uses PS/2 keyboard/mouse.
+Thus, we plug in a USB keyboard on the good board and were then able produce the failure on the good board (despite at a lower failure rate, 1 out of every 100).
+Does this not point to SMI?
 
-> I think, even getting the driver work with half the maximum speed (without 
-> the 1:1 speed) would be a good progress for SH.
-
-I'm fine with that. If someone who _has_ this hardware could get a 
-'scope on the card clock and see what frequencies actually appear out 
-there, I'd _really_ appreciate it.
-
-In the meantime, I'm going to assume it follows the scheme above.
-
-> And I personally have no 
-> idea how I could "find" that divider-disable bit.
-
-Just how sure are you that your chip _doesnt_ have the cnf area, before 
-we go to far on this... how did you arrive at that conclusion?
-
-Have you checked to see if it appears at other offsets than it does in 
-the MFD chips ?
-
-> Please notice, that I'm 
-> away for a week starting tomorrow, hopefully, Magnus will be able to 
-> further work with you on this during this time.
-
-Hope so - It was aloways my goal to make tmio-mmc reuseable - thats why 
-I pushed for the MFD framework in the first place...
-
--Ian
+Regards,
+Wei Chong.
