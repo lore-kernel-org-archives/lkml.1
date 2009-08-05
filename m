@@ -1,87 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934463AbZHENu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934473AbZHENvD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934463AbZHENu7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 09:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934323AbZHENu7
+	id S934473AbZHENvD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 09:51:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934465AbZHENvB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 5 Aug 2009 09:51:01 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60866 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934460AbZHENu7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 5 Aug 2009 09:50:59 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:56756 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934456AbZHENu6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 09:50:58 -0400
-Date: Wed, 5 Aug 2009 15:50:57 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, tytso@mit.edu, mfasheh@suse.com,
-       aia21@cantab.net, hugh.dickins@tiscali.co.uk, swhiteho@redhat.com,
-       akpm@linux-foundation.org, npiggin@suse.de,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       fengguang.wu@intel.com, hidehiro.kawai.ez@hitachi.com
-Subject: Re: [PATCH] [16/19] HWPOISON: Enable .remove_error_page for
-	migration aware file systems
-Message-ID: <20090805135056.GI11385@basil.fritz.box>
-References: <200908051136.682859934@firstfloor.org> <20090805093643.E0C00B15D8@basil.firstfloor.org> <20090805111231.GA19532@infradead.org>
+Date: Wed, 5 Aug 2009 09:50:09 -0400
+From: Neil Horman <nhorman@redhat.com>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [Patch 6/7] powerpc: implement crashkernel=auto
+Message-ID: <20090805135009.GI7259@hmsreliant.think-freely.org>
+References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain> <20090805112221.6552.34447.sendpatchset@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090805111231.GA19532@infradead.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090805112221.6552.34447.sendpatchset@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 05, 2009 at 07:12:31AM -0400, Christoph Hellwig wrote:
-> On Wed, Aug 05, 2009 at 11:36:43AM +0200, Andi Kleen wrote:
-> > 
-> > Enable removing of corrupted pages through truncation
-> > for a bunch of file systems: ext*, xfs, gfs2, ocfs2, ntfs
-> > These should cover most server needs.
-> > 
-> > I chose the set of migration aware file systems for this
-> > for now, assuming they have been especially audited.
-> > But in general it should be safe for all file systems
-> > on the data area that support read/write and truncate.
-> > 
-> > Caveat: the hardware error handler does not take i_mutex
-> > for now before calling the truncate function. Is that ok?
+On Wed, Aug 05, 2009 at 07:20:00AM -0400, Amerigo Wang wrote:
 > 
-> It will probably need locking, e.g. the iolock in XFS.  I'll
-> need to take a look at the actual implementation of
-> generic_error_remove_page to make sense of this.
-
-Thanks for the review.
-
-It just calls the lower end of the truncate path.
-
-http://git.kernel.org/?p=linux/kernel/git/ak/linux-mce-2.6.git;a=commitdiff;h=b5d3322870b0f6e369809674d2c73857fd6ef480
-
-and
-
-http://git.kernel.org/?p=linux/kernel/git/ak/linux-mce-2.6.git;a=commitdiff;h=4c2df4fa9e4687bde815883fabc602ccc5961272
-
-Is that ok? It should be roughly the same as normal truncate does,
-except it doesn't take i_mutex currently.
-
-We're careful to not do it for non regular inodes.
-
+> Since in patch 2/7 we already implement the generic part, this will
+> add the rest part for powerpc.
 > 
-> Is there any way for us to test this functionality without introducing
-> real hardware problems?
+> Signed-off-by: WANG Cong <amwang@redhat.com>
+> 
+> ---
+> Index: linux-2.6/arch/powerpc/include/asm/kexec.h
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/include/asm/kexec.h
+> +++ linux-2.6/arch/powerpc/include/asm/kexec.h
+> @@ -39,6 +39,29 @@ typedef void (*crash_shutdown_t)(void);
+>  
+>  #ifdef CONFIG_KEXEC
+>  
+> +#ifdef CONFIG_KEXEC_AUTO_RESERVE
+> +#ifndef KEXEC_AUTO_RESERVED_SIZE
+> +#define KEXEC_AUTO_RESERVED_SIZE 1ULL<<28 /* 256M */
+> +#endif
+> +#ifndef KEXEC_AUTO_THRESHOLD
+> +#define KEXEC_AUTO_THRESHOLD 1ULL<<32 /* 4G */
+> +#endif
+> +static inline
+> +unsigned long long arch_default_crash_size(unsigned long long total_size)
+> +{
+> +	if (total_size < KEXEC_AUTO_THRESHOLD)
+> +		return 0;
+> +	else
+> +		return KEXEC_AUTO_RESERVED_SIZE;
+> +}
+> +static inline
+> +unsigned long long arch_default_crash_base(void)
+> +{
+> +	/* On ppc, 0 means find the base address automatically. */
+> +	return 0;
+> +}
+> +#endif
+> +
+>  /*
+>   * This function is responsible for capturing register states if coming
+>   * via panic or invoking dump using sysrq-trigger.
 
-Yes, there are three different injectors to chose from :)
+Same comment here, this looks like it really belongs in asm-generic to me.
+Neil
 
-The easiest one is usually the madvise(MADV_POISON) injector.
-
-Just map a suitable page and
-
-There's a test program in 
-
-http://git.kernel.org/?p=utils/cpu/mce/mce-test.git;a=blob;f=tsrc/tinjpage.c;h=954e1edab765d1c141f693ae9767ba9d5491c1aa;hb=HEAD
-
-that can be extended for new tests.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
