@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964816AbZHERAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964831AbZHERAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964816AbZHERAG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 13:00:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934694AbZHERAF
+	id S964831AbZHERAm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 13:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934703AbZHERAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 13:00:05 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55629 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934675AbZHERAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 13:00:04 -0400
-Message-ID: <4A79BB04.8000408@kernel.org>
-Date: Thu, 06 Aug 2009 02:01:56 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Al Viro <viro@ftp.linux.org.uk>, Takashi Iwai <tiwai@suse.de>,
+	Wed, 5 Aug 2009 13:00:41 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57115 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934694AbZHERAl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 13:00:41 -0400
+Date: Wed, 5 Aug 2009 18:01:20 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tejun Heo <teheo@suse.de>
+Cc: Greg KH <greg@kroah.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Takashi Iwai <tiwai@suse.de>,
        Linux Kernel <linux-kernel@vger.kernel.org>, cguthrie@mandriva.org
-Subject: Re: [PATCH 1/2] chrdev: implement __[un]register_chrdev()
-References: <4A79283E.7030202@kernel.org> <20090805161643.GA28436@kroah.com> <4A79B3A6.7090109@kernel.org> <20090805164919.GA27457@kroah.com>
-In-Reply-To: <20090805164919.GA27457@kroah.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [PATCH 2/2] sound: make OSS device number claiming optional
+Message-ID: <20090805180120.4c9e612f@lxorguk.ukuu.org.uk>
+In-Reply-To: <4A79B8CA.8050504@suse.de>
+References: <4A79283E.7030202@kernel.org>
+	<4A79296A.4090600@suse.de>
+	<20090805101551.6ee053e5@lxorguk.ukuu.org.uk>
+	<4A7951B0.10208@suse.de>
+	<20090805110031.51424dbe@lxorguk.ukuu.org.uk>
+	<4A796C94.5040301@suse.de>
+	<20090805134823.4409e197@lxorguk.ukuu.org.uk>
+	<4A799392.3000108@suse.de>
+	<20090805152942.42e785f3@lxorguk.ukuu.org.uk>
+	<4A79AD2A.4060308@suse.de>
+	<20090805173346.130d80bb@lxorguk.ukuu.org.uk>
+	<4A79B8CA.8050504@suse.de>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 05 Aug 2009 16:59:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Thu, Aug 06, 2009 at 01:30:30AM +0900, Tejun Heo wrote:
->> Greg KH wrote:
->>> On Wed, Aug 05, 2009 at 03:35:42PM +0900, Tejun Heo wrote:
->>>> [un]register_chrdev() assume minor range 0-255.  This patch adds __
->>>> prefixed versions which take @minorbase and @count explicitly.
->>> What's the difference between this and the existing
->>> register_chrdev_region() function?  Why doesn't that work for you?
->>>
->>> What am I missing here?
->> The function names in char_dev.c are quite confusing.
-> 
-> That's an understatement :)
+> 1. Merge the weird switch thing and the extra standard chrdev module
+>    alias patch
 
-Yeah, it sure is.  It should have used a different verb at the very
-least.
+Might as well fake the normal aliases in soundcore if loaded rather than
+pollute chardev with it but otherwise I think we agree.
 
->> register_chrdev_region() only registers chrdev region.
->> register_chrdev() registers chrdev region and creates a cdev for the
->> region.  :-)
-> 
-> Yes, but you can use register_chrdev_region() and then call cdev_alloc()
-> for the specific cdevs you need, right?  It's not the prettiest, but it
-> should work.
 
-Yeap, I can.  That's basically what register_chrdev() is.  If it had a
-better name, adding a new variant would have been much nicer.  Having
-the helper makes sense tho.  Names too confusing?
+> 2. Add to feature-removal that snd-slot/service-* are going away in a
+>    year along with the weird switches.  This allows people who wish to
+>    try or switch in the meantime to do so.
 
-Thanks.
+Yep
 
--- 
-tejun
+> 3. After a year, drop module loading related code from sound_core
+>    along with the weird config option and kernel parameter.
+
+Do we need soundcore at all at that point ? It seems phase 3 is "move any
+needed logic to ALSA oss emulation and kill it off"
+
+> In the end, the only choice we have to make is whether to keep
+> snd-slot/service-* aliases.  If we're gonna (I don't see why tho), the
+
+I think we need to for a year or so - and its trivial to do so.
+
+> cleanest way would be to teach chrdev about aliases.  If not, the best
+> way is to add a switch so that it can be phased out gradually.
+
+In the mean time if you are grabbing just some minors sound_core.c:chains
+also needs keeping in sync with direct character range grabs because your
+CUSE based device might grab some minors before sound_core, and then it
+appears tears will result ?
+
+
+
+
