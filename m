@@ -1,63 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934078AbZHEJiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934095AbZHEJji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934078AbZHEJiY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 05:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933817AbZHEJiT
+	id S934095AbZHEJji (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 05:39:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934071AbZHEJjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 05:38:19 -0400
-Received: from mail.free-electrons.com ([88.191.76.200]:37973 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934017AbZHEJiL (ORCPT
+	Wed, 5 Aug 2009 05:39:08 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49084 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933884AbZHEJgg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 05:38:11 -0400
-Date: Wed, 5 Aug 2009 11:37:58 +0200
-From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Frans Pop <elendil@planet.nl>,
-       linux-kernel@vger.kernel.org,
-       Linux PM List <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH] Add SIMPLE_PM_OPS: make switching to dev_pm_ops less
- error-prone
-Message-ID: <20090805093758.GE5854@laptop>
-References: <20090803163304.GF5002@laptop>
- <200908032123.17069.rjw@sisk.pl>
- <20090804093542.GA5854@laptop>
- <20090805045533.C3574526EA5@mailhub.coreip.homeip.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090805045533.C3574526EA5@mailhub.coreip.homeip.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 5 Aug 2009 05:36:36 -0400
+From: Andi Kleen <andi@firstfloor.org>
+References: <200908051136.682859934@firstfloor.org>
+In-Reply-To: <200908051136.682859934@firstfloor.org>
+To: ak@linux.intel.com, akpm@linux-foundation.org, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com, hidehiro.kawai.ez@hitachi.com
+Subject: [PATCH] [9/19] HWPOISON: Handle hardware poisoned pages in try_to_unmap
+Message-Id: <20090805093636.CDE6FB15D8@basil.firstfloor.org>
+Date: Wed,  5 Aug 2009 11:36:36 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 04, 2009 at 09:55:33PM -0700, Dmitry Torokhov wrote :
-> On Tue, Aug 04, 2009 at 11:36:12AM +0200, Albin Tonnerre wrote:
-> > In a number of cases, the .suspend, .freeze, .poweroff and .resume,
-> > .thaw, .restore functions are identical. However, they all need to be
-> > assigned to avoid regressionsm as the previous code called .suspend
-> > resp. .resume in all those cases. SIMPLE_PM_OPS allows to deal with
-> > this case.
 
+From: Andi Kleen <ak@linux.intel.com>
 
-> I'd much rather have conversions done with a bit more analysis now that
-> our framework is more flexible and we can have specialized routines for
-> hibernation and suspend.
+When a page has the poison bit set replace the PTE with a poison entry.
+This causes the right error handling to be done later when a process runs
+into it.
 
-I still think that even though they can, quite a number of drivers won't
-/need/ to have different functions for this, but maybe I'm mistaken.
+v2: add a new flag to not do that (needed for the memory-failure handler
+later) (Fengguang)
+v3: remove unnecessary is_migration_entry() test (Fengguang, Minchan)
 
-> Maybe we should try changing from run-time to build time warning so that
-> users are not overly concerned with it?
+Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
-I'm not sure that solves the problem. The fact is that even for developers, it's
-easy to overlook that assiging only the .suspend and .resume fields is probably
-a mistake.
+---
+ include/linux/rmap.h |    1 +
+ mm/rmap.c            |    9 ++++++++-
+ 2 files changed, 9 insertions(+), 1 deletion(-)
 
-Regards,
--- 
-Albin Tonnerre, Free Electrons
-Kernel, drivers and embedded Linux development,
-consulting, training and support.
-http://free-electrons.com
+Index: linux/mm/rmap.c
+===================================================================
+--- linux.orig/mm/rmap.c
++++ linux/mm/rmap.c
+@@ -819,7 +819,14 @@ static int try_to_unmap_one(struct page
+ 	/* Update high watermark before we lower rss */
+ 	update_hiwater_rss(mm);
+ 
+-	if (PageAnon(page)) {
++	if (PageHWPoison(page) && !(flags & TTU_IGNORE_HWPOISON)) {
++		if (PageAnon(page))
++			dec_mm_counter(mm, anon_rss);
++		else
++			dec_mm_counter(mm, file_rss);
++		set_pte_at(mm, address, pte,
++				swp_entry_to_pte(make_hwpoison_entry(page)));
++	} else if (PageAnon(page)) {
+ 		swp_entry_t entry = { .val = page_private(page) };
+ 
+ 		if (PageSwapCache(page)) {
+Index: linux/include/linux/rmap.h
+===================================================================
+--- linux.orig/include/linux/rmap.h
++++ linux/include/linux/rmap.h
+@@ -93,6 +93,7 @@ enum ttu_flags {
+ 
+ 	TTU_IGNORE_MLOCK = (1 << 8),	/* ignore mlock */
+ 	TTU_IGNORE_ACCESS = (1 << 9),	/* don't age */
++	TTU_IGNORE_HWPOISON = (1 << 10),/* corrupted page is recoverable */
+ };
+ #define TTU_ACTION(x) ((x) & TTU_ACTION_MASK)
+ 
