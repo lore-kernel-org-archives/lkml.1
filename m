@@ -1,77 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933988AbZHEJpL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934037AbZHEJuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933988AbZHEJpL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 05:45:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933063AbZHEJpJ
+	id S934037AbZHEJuz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 05:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933902AbZHEJuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 05:45:09 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:46568 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932956AbZHEJpI (ORCPT
+	Wed, 5 Aug 2009 05:50:55 -0400
+Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:55180 "EHLO
+	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933096AbZHEJuy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 05:45:08 -0400
-Date: Wed, 5 Aug 2009 19:45:06 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Huang Ying <ying.huang@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
-Subject: Re: [BUGFIX] crypto: Fix ctr(aes) testing by specifying geniv
-Message-ID: <20090805094506.GA12528@gondor.apana.org.au>
-References: <1249285483-22286-1-git-send-email-ying.huang@intel.com>
+	Wed, 5 Aug 2009 05:50:54 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: BUG: spinlock bad magic on CPU#1, swapper/1
+Date: Wed, 5 Aug 2009 11:50:52 +0200
+User-Agent: KMail/1.9.9
+Cc: netdev@vger.kernel.org, Jiri Pirko <jpirko@redhat.com>
+References: <200908051136.44908.elendil@planet.nl>
+In-Reply-To: <200908051136.44908.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1249285483-22286-1-git-send-email-ying.huang@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200908051150.53301.elendil@planet.nl>
+X-OriginalArrivalTime: 05 Aug 2009 09:50:54.0017 (UTC) FILETIME=[391EEB10:01CA15B2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 03, 2009 at 03:44:43PM +0800, Huang Ying wrote:
-> When doing "modeprobe tcrypt mode=10", the following error will show
-> in dmesg.
-> 
-> alg: skcipher: Failed to load transform for ctr(aes): -22
-> alg: skcipher: Failed to load transform for ctr(aes): -22
-> tcrypt: one or more tests failed!
+On Wednesday 05 August 2009, Frans Pop wrote:
+> Current v2.6.31-rc5-246-g90bc1a6 gives me:
+>
+> BUG: spinlock bad magic on CPU#1, swapper/1
+>  lock: ffff88007e1889c8, .magic: 00000000, .owner: <none>/-1, .owner_cpu: 0
+> Pid: 1, comm: swapper Not tainted 2.6.31-rc5 #4 
+> Call Trace:
+>  [<ffffffff811345e8>] spin_bug+0xa2/0xaa
+>  [<ffffffff8113469e>] _raw_spin_lock+0x23/0x135
+>  [<ffffffff8125664e>] _spin_lock_bh+0x19/0x1e
+>  [<ffffffff811e3702>] alloc_netdev_mq+0x127/0x211
+>  [<ffffffff81433487>] ? netdev_init+0x6a/0xac
+>  [<ffffffff811a81eb>] ? loopback_setup+0x0/0x7b
+>  [<ffffffff8142e718>] loopback_net_init+0x30/0x7a
+>  [<ffffffff811dd62e>] register_pernet_device+0x2b/0x58
+>  [<ffffffff814336bd>] net_dev_init+0x13d/0x19b
+>  [<ffffffff81433580>] ? net_dev_init+0x0/0x19b
+>  [<ffffffff8100905c>] do_one_initcall+0x56/0x12b
+>  [<ffffffff8106f55b>] ? register_irq_proc+0xb0/0xcc
+>  [<ffffffff810e0000>] ? proc_pid_cmdline+0x5a/0xf9
+>  [<ffffffff8140f65d>] kernel_init+0x14d/0x1a3
+>  [<ffffffff8100ca7a>] child_rip+0xa/0x20
+>  [<ffffffff8140f510>] ? kernel_init+0x0/0x1a3
+>  [<ffffffff8100ca70>] ? child_rip+0x0/0x20
+>
+> Error occurs during early boot (between PCI/ACPI init and PnP init).
 
-I can't reproduce it here:
+Reverting the following commit fixes it:
+commit a6ac65db2329e7685299666f5f7b6093c7b0f3a0
+Author: Jiri Pirko <jpirko@redhat.com>
+Date:   Thu Jul 30 01:06:12 2009 +0000
 
-etch1:~# modprobe tcrypt mode=10
-FATAL: Error inserting tcrypt (/lib/modules/2.6.30/kernel/crypto/tcrypt.ko): Resource temporarily unavailable
-etch1:~# dmesg|tail
-alg: No test for digest_null (digest_null-generic)
-alg: No test for compress_null (compress_null-generic)
-padlock: VIA PadLock Hash Engine not detected.
-padlock: VIA PadLock Hash Engine not detected.
-eth0: link up, 100Mbps, full-duplex, lpa 0x05E1
-Initializing XFRM netlink socket
-NET: Registered protocol family 17
-NET: Registered protocol family 10
-lo: Disabled Privacy Extensions
-eth0: no IPv6 routers present
-etch1:~# 
+    net: restore the original spinlock to protect unicast list
 
-The tcrypt test shouldn't use geniv at all.
+    There is a path when an assetion in dev_unicast_sync() appears.
 
-What kernel version was this?
+    igmp6_group_added -> dev_mc_add -> __dev_set_rx_mode ->
+    -> vlan_dev_set_rx_mode -> dev_unicast_sync
 
-> Because ctr(aes) testing code will allocate ctr(aes) with geniv, but
-> defualt geniv mode may not work with ctr(aes). As that of rfc3686,
-> this is fixed via specifying geniv mode to "seqiv".
-> 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
+    Therefore we cannot protect this list with rtnl. This patch restores the
+    original protecting this list with spinlock.
 
-I think this patch makes sense as the default IV generator is not
-designed to guarantee uniqueness (although repetitions would be
-very rare).
-
-But I'd like to get to the bottom of the failure that you were
-seeing so that we don't commit this with a potentially misleading
-message.
-
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+    Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+    Tested-by: Meelis Roos <mroos@linux.ee>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
