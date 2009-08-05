@@ -1,162 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933982AbZHEJnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933988AbZHEJpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933982AbZHEJnt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 05:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933018AbZHEJnq
+	id S933988AbZHEJpL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 05:45:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933063AbZHEJpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 05:43:46 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:48549 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933044AbZHEJnp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 05:43:45 -0400
-Date: Wed, 5 Aug 2009 10:43:46 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Larry Woodman <lwoodman@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, riel@redhat.com,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [PATCH 3/4] tracing, page-allocator: Add trace event for page
-	traffic related to the buddy lists
-Message-ID: <20090805094346.GC21950@csn.ul.ie>
-References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie> <1249409546-6343-4-git-send-email-mel@csn.ul.ie> <20090805182034.5BCD.A69D9226@jp.fujitsu.com>
+	Wed, 5 Aug 2009 05:45:09 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:46568 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932956AbZHEJpI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 05:45:08 -0400
+Date: Wed, 5 Aug 2009 19:45:06 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Huang Ying <ying.huang@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Subject: Re: [BUGFIX] crypto: Fix ctr(aes) testing by specifying geniv
+Message-ID: <20090805094506.GA12528@gondor.apana.org.au>
+References: <1249285483-22286-1-git-send-email-ying.huang@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090805182034.5BCD.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1249285483-22286-1-git-send-email-ying.huang@intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 05, 2009 at 06:24:40PM +0900, KOSAKI Motohiro wrote:
-> > The page allocation trace event reports that a page was successfully allocated
-> > but it does not specify where it came from. When analysing performance,
-> > it can be important to distinguish between pages coming from the per-cpu
-> > allocator and pages coming from the buddy lists as the latter requires the
-> > zone lock to the taken and more data structures to be examined.
-> > 
-> > This patch adds a trace event for __rmqueue reporting when a page is being
-> > allocated from the buddy lists. It distinguishes between being called
-> > to refill the per-cpu lists or whether it is a high-order allocation.
-> > Similarly, this patch adds an event to catch when the PCP lists are being
-> > drained a little and pages are going back to the buddy lists.
-> > 
-> > This is trickier to draw conclusions from but high activity on those
-> > events could explain why there were a large number of cache misses on a
-> > page-allocator-intensive workload. The coalescing and splitting of buddies
-> > involves a lot of writing of page metadata and cache line bounces not to
-> > mention the acquisition of an interrupt-safe lock necessary to enter this
-> > path.
-> > 
-> > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> > Acked-by: Rik van Riel <riel@redhat.com>
-> > ---
-> >  include/trace/events/kmem.h |   54 +++++++++++++++++++++++++++++++++++++++++++
-> >  mm/page_alloc.c             |    2 +
-> >  2 files changed, 56 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/include/trace/events/kmem.h b/include/trace/events/kmem.h
-> > index 0b4002e..3be3df3 100644
-> > --- a/include/trace/events/kmem.h
-> > +++ b/include/trace/events/kmem.h
-> > @@ -311,6 +311,60 @@ TRACE_EVENT(mm_page_alloc,
-> >  		show_gfp_flags(__entry->gfp_flags))
-> >  );
-> >  
-> > +TRACE_EVENT(mm_page_alloc_zone_locked,
-> > +
-> > +	TP_PROTO(const void *page, unsigned int order,
-> > +				int migratetype, int percpu_refill),
-> > +
-> > +	TP_ARGS(page, order, migratetype, percpu_refill),
-> > +
-> > +	TP_STRUCT__entry(
-> > +		__field(	const void *,	page		)
-> > +		__field(	unsigned int,	order		)
-> > +		__field(	int,		migratetype	)
-> > +		__field(	int,		percpu_refill	)
-> > +	),
-> > +
-> > +	TP_fast_assign(
-> > +		__entry->page		= page;
-> > +		__entry->order		= order;
-> > +		__entry->migratetype	= migratetype;
-> > +		__entry->percpu_refill	= percpu_refill;
-> > +	),
-> > +
-> > +	TP_printk("page=%p pfn=%lu order=%u migratetype=%d percpu_refill=%d",
-> > +		__entry->page,
-> > +		page_to_pfn((struct page *)__entry->page),
-> > +		__entry->order,
-> > +		__entry->migratetype,
-> > +		__entry->percpu_refill)
-> > +);
-> > +
-> > +TRACE_EVENT(mm_page_pcpu_drain,
-> > +
-> > +	TP_PROTO(const void *page, int order, int migratetype),
-> > +
-> > +	TP_ARGS(page, order, migratetype),
-> > +
-> > +	TP_STRUCT__entry(
-> > +		__field(	const void *,	page		)
-> > +		__field(	int,		order		)
-> > +		__field(	int,		migratetype	)
-> > +	),
-> > +
-> > +	TP_fast_assign(
-> > +		__entry->page		= page;
-> > +		__entry->order		= order;
-> > +		__entry->migratetype	= migratetype;
-> > +	),
-> > +
-> > +	TP_printk("page=%p pfn=%lu order=%d migratetype=%d",
-> > +		__entry->page,
-> > +		page_to_pfn((struct page *)__entry->page),
-> > +		__entry->order,
-> > +		__entry->migratetype)
-> > +);
-> > +
-> >  TRACE_EVENT(mm_page_alloc_extfrag,
-> >  
-> >  	TP_PROTO(const void *page,
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index c2c90cd..35b92a9 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -535,6 +535,7 @@ static void free_pages_bulk(struct zone *zone, int count,
-> >  		page = list_entry(list->prev, struct page, lru);
-> >  		/* have to delete it as __free_one_page list manipulates */
-> >  		list_del(&page->lru);
-> > +		trace_mm_page_pcpu_drain(page, order, page_private(page));
+On Mon, Aug 03, 2009 at 03:44:43PM +0800, Huang Ying wrote:
+> When doing "modeprobe tcrypt mode=10", the following error will show
+> in dmesg.
 > 
-> pcp refill (trace_mm_page_alloc_zone_locked) logged migratetype, but
-> this tracepoint doesn't. why?
-> 
+> alg: skcipher: Failed to load transform for ctr(aes): -22
+> alg: skcipher: Failed to load transform for ctr(aes): -22
+> tcrypt: one or more tests failed!
 
-It does log migratetype as migratetype is in page_private(page) in this
-context.
+I can't reproduce it here:
 
-> 
-> >  		__free_one_page(page, zone, order, page_private(page));
-> >  	}
-> >  	spin_unlock(&zone->lock);
-> > @@ -878,6 +879,7 @@ retry_reserve:
-> >  		}
-> >  	}
-> >  
-> > +	trace_mm_page_alloc_zone_locked(page, order, migratetype, order == 0);
-> >  	return page;
-> >  }
-> 
-> Umm, Can we assume order-0 always mean pcp refill?
-> 
+etch1:~# modprobe tcrypt mode=10
+FATAL: Error inserting tcrypt (/lib/modules/2.6.30/kernel/crypto/tcrypt.ko): Resource temporarily unavailable
+etch1:~# dmesg|tail
+alg: No test for digest_null (digest_null-generic)
+alg: No test for compress_null (compress_null-generic)
+padlock: VIA PadLock Hash Engine not detected.
+padlock: VIA PadLock Hash Engine not detected.
+eth0: link up, 100Mbps, full-duplex, lpa 0x05E1
+Initializing XFRM netlink socket
+NET: Registered protocol family 17
+NET: Registered protocol family 10
+lo: Disabled Privacy Extensions
+eth0: no IPv6 routers present
+etch1:~# 
 
-Right now, that assumption is accurate. Which callpath ends up here with
-order == 0 and it's not a PCP refill?
+The tcrypt test shouldn't use geniv at all.
 
+What kernel version was this?
+
+> Because ctr(aes) testing code will allocate ctr(aes) with geniv, but
+> defualt geniv mode may not work with ctr(aes). As that of rfc3686,
+> this is fixed via specifying geniv mode to "seqiv".
+> 
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
+
+I think this patch makes sense as the default IV generator is not
+designed to guarantee uniqueness (although repetitions would be
+very rare).
+
+But I'd like to get to the bottom of the failure that you were
+seeing so that we don't commit this with a potentially misleading
+message.
+
+Thanks,
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
