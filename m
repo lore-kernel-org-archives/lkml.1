@@ -1,51 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934552AbZHEOei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934570AbZHEOgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934552AbZHEOei (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 10:34:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934510AbZHEOeh
+	id S934570AbZHEOgL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 10:36:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934560AbZHEOgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 10:34:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51470 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934496AbZHEOeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 10:34:36 -0400
-Message-ID: <4A79984C.2010508@redhat.com>
-Date: Wed, 05 Aug 2009 10:33:48 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Wed, 5 Aug 2009 10:36:10 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:50828 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934539AbZHEOgJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 10:36:09 -0400
+From: Laurent Pinchart <laurent.pinchart@skynet.be>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Subject: Re: Is get_user_pages() enough to prevent pages from being swapped out ?
+Date: Wed, 5 Aug 2009 16:37:57 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.30.3; KDE/4.2.4; x86_64; ; )
+Cc: Robin Holt <holt@sgi.com>, linux-kernel@vger.kernel.org,
+       "v4l2_linux" <linux-media@vger.kernel.org>
+References: <200907291123.12811.laurent.pinchart@skynet.be> <20090730113951.GA2763@sgi.com> <Pine.LNX.4.64.0907301248090.27155@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0907301248090.27155@sister.anvils>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Wu Fengguang <fengguang.wu@intel.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, KVM list <kvm@vger.kernel.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-References: <20090805024058.GA8886@localhost> <4A793B92.9040204@redhat.com> <4A794008.6030204@redhat.com>
-In-Reply-To: <4A794008.6030204@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200908051637.58276.laurent.pinchart@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
+Hi Hugh,
 
-> The attached patch implements this.
+I've spent the last few days "playing" with get_user_pages() and mlock() and 
+got some interesting results. It turned out that cache coherency comes into 
+play at some point, making the overall problem more complex.
 
-The attached page requires each page to go around twice
-before it is evicted, but they will still get evicted in
-the order in which they were made present.
+Here's my current setup:
 
-FIFO page replacement was shown to be a bad idea in the
-1960's and it is still a terrible idea today.
+- OMAP processor, based on an ARMv7 core
+- MMU and IOMMU
+- VIPT non-aliasing data cache
+- video capture driver that transfers data to memory using DMA
+- video capture application that pass userspace pointers to video buffers to 
+the driver
 
--- 
-All rights reversed.
+My goal is to make sure that, upon DMA completion, the correct data will be 
+available to the userspace application.
+
+The first problem was to pin pages to memory, to make sure they will not be 
+freed when the DMA is in progress. videobug-dma-sg uses get_user_pages() for 
+that, and you nicely explained to me why this is enough.
+
+The second problem is to ensure cache coherency. As the userspace application 
+will read data from the video buffers, those buffers will end up being cached 
+in the processor's data cache. The driver does need to invalidate the cache 
+before starting the DMA operation (userspace could in theory write to the 
+buffers, but the data will be overwritten by DMA anyway, so there's no need to 
+clean the cache).
+
+As the cache is of the VIPT (Virtual Index Physical Tag) type, cache 
+invalidation can either be done globally (in which case the cache is flushed 
+instead of being invalidated) or based on virtual addresses. In the last case 
+the processor will need to look physical addresses up, either in the TLB or 
+through hardware table walk.
+
+I can see three solutions to the DMA/cache problem.
+
+1. Flushing the whole data cache right before starting the DMA transfer. 
+There's no API for that in the ARM architecture, so a whole I+D cache is 
+required. This is quite costly, we're talking about around 30 flushes per 
+second, but it doesn't involve the MMU. That's the solution that I currently 
+use.
+
+2. Invalidating only the cache lines that store video buffer data. This 
+requires a TLB lookup or a hardware table walk, so the userspace application 
+MM context needs to be available (no problem there as where's flushing in 
+userspace context) and all pages need to be mapped properly. This can be a 
+problem as, as you pointed out, pages can still be unmapped from the userspace 
+context after get_user_pages() returns. I have experienced one oops due to a 
+kernel paging request failure:
+
+	Unable to handle kernel paging request at virtual address 44e12000
+	pgd = c8698000
+	[44e12000] *pgd=8a4fd031, *pte=8cfda1cd, *ppte=00000000
+	Internal error: Oops: 817 [#1] PREEMPT
+	PC is at v7_dma_inv_range+0x2c/0x44
+
+Fixing this requires more investigation, and I'm not sure how to proceed to 
+find out if the page fault is really caused by pages being unmapped from the 
+userspace context. Help would be appreciated.
+
+3. Mark the pages as non-cacheable. Depending on how the buffers are then used 
+by userspace, the additional cache misses might destroy any benefit I would 
+get from not flushing the cache before DMA. I'm not sure how to mark a bunch 
+of pages as non-cacheable though. What usually happens is that video drivers 
+allocate DMA-coherent memory themselves, but in this case I need to deal with 
+an arbitrary buffer allocated by userspace. If someone has any experience with 
+this, it would be appreciated.
+
+Regards,
+
+Laurent Pinchart
+
