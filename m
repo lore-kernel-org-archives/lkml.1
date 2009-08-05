@@ -1,177 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933461AbZHEGFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933436AbZHEGGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933461AbZHEGFX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 02:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932579AbZHEGFU
+	id S933436AbZHEGGg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 02:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932459AbZHEGGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 02:05:20 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56804 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932594AbZHEGFS (ORCPT
+	Wed, 5 Aug 2009 02:06:34 -0400
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:42797 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932517AbZHEGGd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 02:05:18 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 5 Aug 2009 15:03:23 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, Paul Menage <menage@google.com>,
-       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@redhat.com>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH 1/4] oom: move oom_adj to signal_struct
-Message-Id: <20090805150323.2624a68f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090805145516.b2129f81.minchan.kim@barrios-desktop>
-References: <20090805110107.5B97.A69D9226@jp.fujitsu.com>
-	<20090805114004.459a7deb.minchan.kim@barrios-desktop>
-	<20090805114650.5BA1.A69D9226@jp.fujitsu.com>
-	<20090805145516.b2129f81.minchan.kim@barrios-desktop>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 5 Aug 2009 02:06:33 -0400
+Message-ID: <4A79214B.5070003@linux.vnet.ibm.com>
+Date: Wed, 05 Aug 2009 11:36:03 +0530
+From: gowrishankar <gowrishankar.m@linux.vnet.ibm.com>
+Reply-To: gowrishankar.m@linux.vnet.ibm.com
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>
+Subject: Re: [ANNOUNCE] 2.6.31-rc4-rt1
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain> <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain> <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain> <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain> <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain> <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain> <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain> <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain> <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain> <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Aug 2009 14:55:16 +0900
-Minchan Kim <minchan.kim@gmail.com> wrote:
+Thomas Gleixner wrote:
+> We are pleased to announce the next update to our new preempt-rt
+> series.
+> 
+>     - update to 2.6.31-rc4
 
-> On Wed,  5 Aug 2009 11:51:31 +0900 (JST)
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> 
-> > > On Wed,  5 Aug 2009 11:29:34 +0900 (JST)
-> > > KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> > > 
-> > > > Hi
-> > > > 
-> > > > > Hi, Kosaki. 
-> > > > > 
-> > > > > I am so late to invole this thread. 
-> > > > > But let me have a question. 
-> > > > > 
-> > > > > What's advantage of placing oom_adj in singal rather than task ?
-> > > > > I mean task->oom_adj and task->signal->oom_adj ?
-> > > > > 
-> > > > > I am sorry if you already discussed it at last threads. 
-> > > > 
-> > > > Not sorry. that's very good question.
-> > > > 
-> > > > I'm trying to explain the detailed intention of commit 2ff05b2b4eac
-> > > > (move oom_adj to mm_struct).
-> > > > 
-> > > > In 2.6.30, OOM logic callflow is here.
-> > > > 
-> > > > __out_of_memory
-> > > > 	select_bad_process		for each task
-> > > > 		badness			calculate badness of one task
-> > > > 	oom_kill_process		search child
-> > > > 		oom_kill_task		kill target task and mm shared tasks with it
-> > > > 
-> > > > example, process-A have two thread, thread-A and thread-B and it 
-> > > > have very fat memory.
-> > > > And, each thread have following likes oom property.
-> > > > 
-> > > > 	thread-A: oom_adj = OOM_DISABLE, oom_score = 0
-> > > > 	thread-B: oom_adj = 0,           oom_score = very-high
-> > > > 
-> > > > Then, select_bad_process() select thread-B, but oom_kill_task refuse
-> > > > kill the task because thread-A have OOM_DISABLE.
-> > > > __out_of_memory() call select_bad_process() again. but select_bad_process()
-> > > > select the same task. It mean kernel fall in the livelock.
-> > > > 
-> > > > The fact is, select_bad_process() must select killable task. otherwise
-> > > > OOM logic go into livelock.
-> > > > 
-> > > > Is this enough explanation? thanks.
-> > > > 
-> 
-> The problem resulted from David patch.
-> It can solve live lock problem but make a new problem like vfork problem. 
-> I think both can be solved by different approach. 
-> 
-> It's just RFC. 
-> 
-> If some process is selected by OOM killer but it have a child of OOM immune,
-> We just decrease point of process. It can affect selection of bad process. 
-> After some trial, at last bad score is drastically low and another process is 
-> selected by OOM killer. So I think Live lock don't happen. 
-> 
-> New variable adding in task struct is rather high cost. 
-> But i think we can union it with oomkilladj 
-> since oomkilladj is used to present just -17 ~ 15. 
-> 
-> What do you think about this approach ?
-> 
-keeping this in "task" struct is troublesome.
-It may not livelock but near-to-livelock state, in bad case.
+Hi,
+I am seeing below kernel panic on 8 way Intel and 4 way AMD blades.
 
-After applying Kosaki's , oom_kill will use
-"for_each_process()" instead of "do_each_thread", I think it's a way to go.
-
-But, yes, your "scale_down" idea itself is interesitng.
-Then, hmm, merging two of yours ?
+Kernel panic - not syncing: Attempted to kill init!
+Pid: 1, comm: init Not tainted 2.6.31-rc4-rt1-autotest #1
+Call Trace:
+  [<ffffffff8104c887>] panic+0xc1/0x171
+  [<ffffffff8104ec9a>] ? put_files_struct+0xc3/0xe6
+  [<ffffffff81394313>] ? rt_write_unlock+0x1c/0x32
+  [<ffffffff810582fd>] ? exit_ptrace+0xab/0x130
+  [<ffffffff81394313>] ? rt_write_unlock+0x1c/0x32
+  [<ffffffff810500af>] do_exit+0x88/0x726
+  [<ffffffff810507d5>] do_group_exit+0x88/0xbb
+  [<ffffffff8105082d>] sys_exit_group+0x25/0x3d
+  [<ffffffff8100be2b>] system_call_fastpath+0x16/0x1b
 
 Thanks,
--Kame
-
-
-
-> ----
-> 
-> This is based on 2.6.30 which is kernel before applying David Patch. 
-> 
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index b4c38bc..6e195f7 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -1150,6 +1150,11 @@ struct task_struct {
->          */
->         unsigned char fpu_counter;
->         s8 oomkilladj; /* OOM kill score adjustment (bit shift). */
-> +       /*
-> +        * If OOM kill happens at one process repeately, 
-> +        * oom_sacle_down will be increased to prevent OOM live lock 
-> +        */
-> +       unsigned int oom_scale_down;
->  #ifdef CONFIG_BLK_DEV_IO_TRACE
->         unsigned int btrace_seq;
->  #endif
-> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-> index a7b2460..3592786 100644
-> --- a/mm/oom_kill.c
-> +++ b/mm/oom_kill.c
-> @@ -159,6 +159,11 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
->                         points >>= -(p->oomkilladj);
->         }
->  
-> +       /*
-> +        * adjust the score by number of OOM kill retrial
-> +        */
-> +       points >>= p->oom_scale_down;
-> +
->  #ifdef DEBUG
->         printk(KERN_DEBUG "OOMkill: task %d (%s) got %lu points\n",
->         p->pid, p->comm, points);
-> @@ -367,8 +372,10 @@ static int oom_kill_task(struct task_struct *p)
->          * Don't kill the process if any threads are set to OOM_DISABLE
->          */
->         do_each_thread(g, q) {
-> -               if (q->mm == mm && q->oomkilladj == OOM_DISABLE)
-> +               if (q->mm == mm && q->oomkilladj == OOM_DISABLE) {
-> +                       p->oom_scale_down++;
->                         return 1;
-> +               }
->         } while_each_thread(g, q);
->  
->         __oom_kill_task(p, 1);
-> 
-> 
-> 
-> -- 
-> Kind regards,
-> Minchan Kim
-> 
-
+Gowri
