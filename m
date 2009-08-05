@@ -1,89 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933197AbZHEBs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933222AbZHEBtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933197AbZHEBs0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 21:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933008AbZHEBsX
+	id S933222AbZHEBtQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 21:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933104AbZHEBtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 21:48:23 -0400
-Received: from mga01.intel.com ([192.55.52.88]:46984 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932872AbZHEBsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 21:48:22 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,325,1246863600"; 
-   d="scan'208";a="480807861"
-Subject: Re: [PATCH V2 0/4] introduce device async actions mechanism
-From: Zhang Rui <rui.zhang@intel.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
-       "dtor@mail.ru" <dtor@mail.ru>
-In-Reply-To: <Pine.LNX.4.44L0.0908041330040.3102-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0908041330040.3102-100000@iolanthe.rowland.org>
-Content-Type: text/plain
-Date: Wed, 05 Aug 2009 09:47:31 +0800
-Message-Id: <1249436851.2670.422.camel@rzhang-dt>
+	Tue, 4 Aug 2009 21:49:11 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:55214 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933042AbZHEBtK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 21:49:10 -0400
+Date: Tue, 4 Aug 2009 18:48:59 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
+Subject: [PATCH -mmotm] staging/udlfb: fix printk format warning
+Message-Id: <20090804184859.2155e866.randy.dunlap@oracle.com>
+In-Reply-To: <200908042125.n74LP9qY018119@imap1.linux-foundation.org>
+References: <200908042125.n74LP9qY018119@imap1.linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt005.oracle.com [141.146.116.14]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010206.4A78E508.0138:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-05 at 01:33 +0800, Alan Stern wrote:
-> On Tue, 4 Aug 2009, Rafael J. Wysocki wrote:
-> 
-> > Not only that.  I'd like to simplify the design, because IMO using one async
-> > domain would be much more straightforward than using multiple ones.
-> 
-> > If I understand the async framework correctly, the domains are only used for
-> > synchronization, ie. if you want to wait for a group of async operations to
-> > complete, you can put them all into one domain and then call
-> > async_synchronize_full_domain() to wait for them all together.
-> > 
-> > You don't need multiple domains to run multiple things in parallel.
-> 
-> There's a basic confusion going on here.
-> 
-> Rui is using "async domain" to mean a collection of devices which 
-> will be suspended or resumed serially.  Different domains run in 
-> parallel.
-> 
-> Rafael is using "async domain" to mean a collection of devices which 
-> will be suspended or resumed in parallel.  Different domains run 
-> serially.
-> 
-cool, thanks for stating the confusion so clearly, Alan. :)
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Hi, Rafael,
+Fix printk format warning: use %td for ptrdiff:
 
-maybe there is still some confusions about my proposal.
+drivers/staging/udlfb/udlfb.h:209: warning: format '%d' expects type 'int', but argument 3 has type 'long int'
 
-I re-read kernel/async.c file, and notice that Arjan calls the domain as
-*_synchronization_* domain. sorry I use the wrong word before.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/staging/udlfb/udlfb.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-And I use the synchronization domains just to keep devices dependency.
+--- mmotm-2009-0804-1422.orig/drivers/staging/udlfb/udlfb.h
++++ mmotm-2009-0804-1422/drivers/staging/udlfb/udlfb.h
+@@ -205,7 +205,7 @@ static int dlfb_set_video_mode(struct dl
+ 
+ 			/* send */
+ 			ret = dlfb_bulk_msg(dev_info, bufptr - dev_info->buf);
+-			printk("ret bulk 2: %d %d\n", ret,
++			printk("ret bulk 2: %d %td\n", ret,
+ 			       bufptr - dev_info->buf);
+ 
+ 			/* flush */
 
-First, the general idea is to suspend/resume those slow devices in
-parallel. So we don't suspend/resume them synchronously, instead, we
-move these actions to the global domain.
 
-Then, I found that these actions can not be run asynchronously because
-they depend on other devices.
-For example, sd depends on SATA controller, we should make sure the PM
-callbacks of sd and ahci sata controller are run serially. so a
-synchronization domain is created for them.
-This is how multiple synchronization domains come from in this proposal.
 
-thanks,
-rui
 
-> Once that is cleared up, you should be able to communicate a little 
-> better...  :-)
-> 
-> Alan Stern
-> 
-
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
