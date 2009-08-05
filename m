@@ -1,92 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933993AbZHEJgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934009AbZHEJgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933993AbZHEJgi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 05:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933983AbZHEJgf
+	id S934009AbZHEJgp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 05:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933997AbZHEJgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 05:36:35 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:49063 "EHLO
+	Wed, 5 Aug 2009 05:36:42 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49078 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933980AbZHEJge (ORCPT
+	with ESMTP id S933983AbZHEJgj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 05:36:34 -0400
+	Wed, 5 Aug 2009 05:36:39 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200908051136.682859934@firstfloor.org>
 In-Reply-To: <200908051136.682859934@firstfloor.org>
-To: akpm@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, fengguang.wu@intel.com,
-       hidehiro.kawai.ez@hitachi.com
-Subject: [PATCH] [7/19] HWPOISON: x86: Add VM_FAULT_HWPOISON handling to x86 page fault handler v2
-Message-Id: <20090805093634.C8C1DB15D8@basil.firstfloor.org>
-Date: Wed,  5 Aug 2009 11:36:34 +0200 (CEST)
+To: fengguang.wu@intel.com, akpm@linux-foundation.org, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com, hidehiro.kawai.ez@hitachi.com
+Subject: [PATCH] [12/19] HWPOISON: Add invalidate_inode_page
+Message-Id: <20090805093639.D5FBEB15D8@basil.firstfloor.org>
+Date: Wed,  5 Aug 2009 11:36:39 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Add VM_FAULT_HWPOISON handling to the x86 page fault handler. This is 
-very similar to VM_FAULT_OOM, the only difference is that a different
-si_code is passed to user space and the new addr_lsb field is initialized.
+From: Wu Fengguang <fengguang.wu@intel.com>
 
-v2: Make the printk more verbose/unique
+Add a simple way to invalidate a single page
+This is just a refactoring of the truncate.c code.
+Originally from Fengguang, modified by Andi Kleen.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- arch/x86/mm/fault.c |   19 +++++++++++++++----
- 1 file changed, 15 insertions(+), 4 deletions(-)
+ include/linux/mm.h |    2 ++
+ mm/truncate.c      |   26 ++++++++++++++++++++------
+ 2 files changed, 22 insertions(+), 6 deletions(-)
 
-Index: linux/arch/x86/mm/fault.c
+Index: linux/include/linux/mm.h
 ===================================================================
---- linux.orig/arch/x86/mm/fault.c
-+++ linux/arch/x86/mm/fault.c
-@@ -167,6 +167,7 @@ force_sig_info_fault(int si_signo, int s
- 	info.si_errno	= 0;
- 	info.si_code	= si_code;
- 	info.si_addr	= (void __user *)address;
-+	info.si_addr_lsb = si_code == BUS_MCEERR_AR ? PAGE_SHIFT : 0;
+--- linux.orig/include/linux/mm.h
++++ linux/include/linux/mm.h
+@@ -811,6 +811,8 @@ extern int vmtruncate_range(struct inode
  
- 	force_sig_info(si_signo, &info, tsk);
- }
-@@ -799,10 +800,12 @@ out_of_memory(struct pt_regs *regs, unsi
- }
+ int truncate_inode_page(struct address_space *mapping, struct page *page);
  
- static void
--do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address)
-+do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address,
-+	  unsigned int fault)
- {
- 	struct task_struct *tsk = current;
- 	struct mm_struct *mm = tsk->mm;
-+	int code = BUS_ADRERR;
- 
- 	up_read(&mm->mmap_sem);
- 
-@@ -818,7 +821,15 @@ do_sigbus(struct pt_regs *regs, unsigned
- 	tsk->thread.error_code	= error_code;
- 	tsk->thread.trap_no	= 14;
- 
--	force_sig_info_fault(SIGBUS, BUS_ADRERR, address, tsk);
-+#ifdef CONFIG_MEMORY_FAILURE
-+	if (fault & VM_FAULT_HWPOISON) {
-+		printk(KERN_ERR
-+	"MCE: Killing %s:%d due to hardware memory corruption fault at %lx\n",
-+			tsk->comm, tsk->pid, address);
-+		code = BUS_MCEERR_AR;
-+	}
-+#endif
-+	force_sig_info_fault(SIGBUS, code, address, tsk);
++int invalidate_inode_page(struct page *page);
++
+ #ifdef CONFIG_MMU
+ extern int handle_mm_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 			unsigned long address, unsigned int flags);
+Index: linux/mm/truncate.c
+===================================================================
+--- linux.orig/mm/truncate.c
++++ linux/mm/truncate.c
+@@ -146,6 +146,24 @@ int truncate_inode_page(struct address_s
+ 	return truncate_complete_page(mapping, page);
  }
  
- static noinline void
-@@ -828,8 +839,8 @@ mm_fault_error(struct pt_regs *regs, uns
- 	if (fault & VM_FAULT_OOM) {
- 		out_of_memory(regs, error_code, address);
- 	} else {
--		if (fault & VM_FAULT_SIGBUS)
--			do_sigbus(regs, error_code, address);
-+		if (fault & (VM_FAULT_SIGBUS|VM_FAULT_HWPOISON))
-+			do_sigbus(regs, error_code, address, fault);
- 		else
- 			BUG();
- 	}
++/*
++ * Safely invalidate one page from its pagecache mapping.
++ * It only drops clean, unused pages. The page must be locked.
++ *
++ * Returns 1 if the page is successfully invalidated, otherwise 0.
++ */
++int invalidate_inode_page(struct page *page)
++{
++	struct address_space *mapping = page_mapping(page);
++	if (!mapping)
++		return 0;
++	if (PageDirty(page) || PageWriteback(page))
++		return 0;
++	if (page_mapped(page))
++		return 0;
++	return invalidate_complete_page(mapping, page);
++}
++
+ /**
+  * truncate_inode_pages - truncate range of pages specified by start & end byte offsets
+  * @mapping: mapping to truncate
+@@ -312,12 +330,8 @@ unsigned long invalidate_mapping_pages(s
+ 			if (lock_failed)
+ 				continue;
+ 
+-			if (PageDirty(page) || PageWriteback(page))
+-				goto unlock;
+-			if (page_mapped(page))
+-				goto unlock;
+-			ret += invalidate_complete_page(mapping, page);
+-unlock:
++			ret += invalidate_inode_page(page);
++
+ 			unlock_page(page);
+ 			if (next > end)
+ 				break;
