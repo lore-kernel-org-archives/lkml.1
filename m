@@ -1,86 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933970AbZHEJdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933957AbZHEJdE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933970AbZHEJdM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 05:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933960AbZHEJdL
+	id S933957AbZHEJdE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 05:33:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933925AbZHEJdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 05:33:11 -0400
-Received: from brent.tribalogic.net ([78.86.109.144]:63046 "EHLO
-	brent.tribalogic.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933925AbZHEJdI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 05:33:08 -0400
-X-Greylist: delayed 537 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Aug 2009 05:33:08 EDT
-Message-ID: <4A794FB9.30403@mandriva.org>
-Date: Wed, 05 Aug 2009 10:24:09 +0100
-From: Colin Guthrie <cguthrie@mandriva.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090731)
+	Wed, 5 Aug 2009 05:33:03 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:59048 "EHLO pmx1.sophos.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933678AbZHEJdB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 05:33:01 -0400
+From: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
+Organization: Sophos Plc
+To: John Stoffel <john@stoffel.org>
+Subject: Re: fanotify - overall design before I start sending patches
+Date: Wed, 5 Aug 2009 10:32:59 +0100
+User-Agent: KMail/1.9.10
+Cc: "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
+       Eric Paris <eparis@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "malware-list@dmesg.printk.net" <malware-list@dmesg.printk.net>,
+       "greg@kroah.com" <greg@kroah.com>, "jcm@redhat.com" <jcm@redhat.com>,
+       Douglas Leeder <douglas.leeder@sophos.com>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "arjan@infradead.org" <arjan@infradead.org>,
+       "david@lang.hm" <david@lang.hm>,
+       "jengelh@medozas.de" <jengelh@medozas.de>,
+       "aviro@redhat.com" <aviro@redhat.com>,
+       "mrkafk@gmail.com" <mrkafk@gmail.com>,
+       "alexl@redhat.com" <alexl@redhat.com>, "jack@suse.cz" <jack@suse.cz>,
+       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       "mmorley@hcl.in" <mmorley@hcl.in>, "pavel@suse.cz" <pavel@suse.cz>
+References: <1248466429.3567.82.camel@localhost> <19585.1249406551@turing-police.cc.vt.edu> <19064.31705.491774.122207@stoffel.org>
+In-Reply-To: <19064.31705.491774.122207@stoffel.org>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Tejun Heo <teheo@suse.de>, Greg KH <greg@kroah.com>,
-       Al Viro <viro@ftp.linux.org.uk>, Takashi Iwai <tiwai@suse.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] sound: make OSS device number claiming optional
-References: <4A79283E.7030202@kernel.org>	<4A79296A.4090600@suse.de> <20090805101551.6ee053e5@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090805101551.6ee053e5@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Message-Id: <200908051032.59866.tvrtko.ursulin@sophos.com>
+X-MIMETrack: Itemize by SMTP Server on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 05/08/2009 10:33:00,
+	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 05/08/2009 10:33:00,
+	Serialize complete at 05/08/2009 10:33:00
+X-TNEFEvaluated: 1
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-'Twas brillig, and Alan Cox at 05/08/09 10:15 did gyre and gimble:
-> On Wed, 05 Aug 2009 15:40:42 +0900
-> Tejun Heo <teheo@suse.de> wrote:
-> 
->> If any OSS support is enabled, regardless of built-in or module,
->> sound_core claims full OSS major number (that is, the old 0-255
->> region) to trap open attempts and request sound module automatically.
->> This feature is redundant as chrdev already has such mechanism and no
->> longer used by modern distros.  This preemptive claiming prevents
->> alternative OSS implementation.
->>
->> This patch makes the preclaiming optional and adds a config option
->> SOUND_OSS_CORE_PRECLAIM and kernel parameter soundcore.preclaim_oss to
->> control whether preclaim is enabled or not.  This allows distros and
->> developers to try new things without rebuilding kernel.
-> 
-> This looks like a random private devel hack sand I don't see why it's
-> appropriate for mainstream, especially as these "new things" don't exist
-> mainstream either.
+On Tuesday 04 August 2009 19:20:09 John Stoffel wrote:
+> >>>>> "Valdis" == Valdis Kletnieks <Valdis.Kletnieks@vt.edu> writes:
+>
+> Valdis> On Tue, 04 Aug 2009 12:27:48 EDT, Eric Paris said:
+> >> On Tue, 2009-08-04 at 17:09 +0100, Tvrtko Ursulin wrote:
+> >> > Would it make more sense to deny on timeouts and then evict? I am
+> >> > thinking it would be more secure with no significant drawbacks. Also
+> >> > for usages like HSM allowing it without data being in place might
+> >> > present wrong content to the user.
+> >>
+> >> I'd be willing to go that route as long as noone else complains.
+>
+> Valdis> Yes, in my world, "deny on timeout and evict" is the better
+> Valdis> design decision.  For an HSM, you'd rather have a
+> Valdis> quick-and-ugly death on a failed file open than an app
+> Valdis> accidentally reading the HSM's stub data thinking it's the
+> Valdis> original data.
+>
+> Speaking as somone who is working slowly to deploy an HSM service, one
+> thing to note is that when you *do* see the stub file contents, you
+> know that your HSM is busted somehow.
+>
+> How will fanotify deal with this issue?  Sorry, I haven't paid enough
+> attention to this thread though I know I should since it's up my $WORK
+> alley.
 
-While I'm not familiar enough with the kernel itself to comment on *how* 
-the patch works, the principle is quite important here.
+Would it make sense to allow the listener to pass in (on registration, maybe 
+also on response) the error code which will be received by userspace? In that 
+way HSM could set it to -ENODATA (or something), malware scanning to -EACCESS 
+etc. which would give userspace a clearer indication of what went wrong.
 
-As far as I know most distros enable snd-*-oss module loading via a 
-modprobe trick (e.g. in user space) so the change here shouldn't affect 
-this approach.
-
-However, I certainly want to experiment with osspd and while I hope it's 
-going to be a good solution generally, it'll only make sense if the user 
-chooses to use pulseaudio.
-
-If the user decided they want to use pure alsa, then they'll have to 
-drop back to using snd-*-oss for that instead.
-
-This is all something I'd like to enable without making the user change 
-kernels based on a preference.
-
-So if this patch is not accepted, I'd still like to see the kernel not 
-claim this device number, and leave it up to userspace to load the modules.
-
-Sorry if this is not all factually accurate, but I think i've got the 
-gist right! :)
-
--- 
-
-Colin Guthrie
-cguthrie(at)mandriva.org
-http://colin.guthr.ie/
-
-Day Job:
-   Tribalogic Limited [http://www.tribalogic.net/]
-Open Source:
-   Mandriva Linux Contributor [http://www.mandriva.com/]
-   PulseAudio Hacker [http://www.pulseaudio.org/]
-   Trac Hacker [http://trac.edgewall.org/]
+Tvrtko
