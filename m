@@ -1,111 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933797AbZHEIaN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933873AbZHEIcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933797AbZHEIaN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 04:30:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933730AbZHEIaL
+	id S933873AbZHEIcn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 04:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933751AbZHEIcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 04:30:11 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44937 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933355AbZHEIaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 04:30:08 -0400
-Date: Wed, 5 Aug 2009 10:29:42 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Jens Rosenboom <jens@mcbone.net>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: Re: [PATCH] acpi: don't call acpi_processor_init if acpi is
-	disabled
-Message-ID: <20090805082942.GE1810@elte.hu>
-References: <1248351634.7237.32.camel@fnki-nb00130> <86802c440907230739ufe30b4cocc4b16faacc009c4@mail.gmail.com> <1248773808.6757.4.camel@fnki-nb00130> <20090804122859.GD4367@elte.hu> <4A793BCF.8040001@kernel.org>
+	Wed, 5 Aug 2009 04:32:42 -0400
+Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:62823 "EHLO
+	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933730AbZHEIcl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 04:32:41 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Bug #13742] iwlagn (4965): regression when hardware rf switch is used
+Date: Wed, 5 Aug 2009 10:32:38 +0200
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Reinette Chatre" <reinette.chatre@intel.com>
+References: <Su1q3S6JjyO.A.jeB.hcgdKB@chimera> <iZB3Pj-uj3M.A.i0D.fdgdKB@chimera>
+In-Reply-To: <iZB3Pj-uj3M.A.i0D.fdgdKB@chimera>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4A793BCF.8040001@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200908051032.39357.elendil@planet.nl>
+X-OriginalArrivalTime: 05 Aug 2009 08:32:40.0528 (UTC) FILETIME=[4B955500:01CA15A7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 02 August 2009, Rafael J. Wysocki wrote:
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me
+> know (either way).
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13742
+> Subject	: iwlagn (4965): regression when hardware rf switch is used
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+Fix has just been included in mainline: 
+2833b17062536e962b60795ad6378ef5c0b7be09
 
-> 
-> Jens reported early_ioremap messages with old ASUS board...
-> 
-> > [    1.507461] pci 0000:00:09.0: Firmware left e100 interrupts enabled;
-> > disabling
-> > [    1.532778] early_ioremap(3fffd080, 0000005c) [0] => Pid: 1, comm:
-> > swapper Not tainted 2.6.31-rc4 #36
-> > [    1.561007] Call Trace:
-> > [    1.568638]  [<c136e48b>] ? printk+0x18/0x1d
-> > [    1.581734]  [<c15513ff>] __early_ioremap+0x74/0x1e9
-> > [    1.596898]  [<c15515aa>] early_ioremap+0x1a/0x1c
-> > [    1.611270]  [<c154a187>] __acpi_map_table+0x18/0x1a
-> > [    1.626451]  [<c135a7f8>] acpi_os_map_memory+0x1d/0x25
-> > [    1.642129]  [<c119459c>] acpi_tb_verify_table+0x20/0x49
-> > [    1.658321]  [<c1193e50>] acpi_get_table_with_size+0x53/0xa1
-> > [    1.675553]  [<c1193eae>] acpi_get_table+0x10/0x15
-> > [    1.690192]  [<c155cc19>] acpi_processor_init+0x23/0xab
-> > [    1.706126]  [<c1001043>] do_one_initcall+0x33/0x180
-> > [    1.721279]  [<c155cbf6>] ? acpi_processor_init+0x0/0xab
-> > [    1.737479]  [<c106893a>] ? register_irq_proc+0xaa/0xc0
-> > [    1.753411]  [<c10689b7>] ? init_irq_proc+0x67/0x80
-> > [    1.768316]  [<c15405e7>] kernel_init+0x120/0x176
-> > [    1.782678]  [<c15404c7>] ? kernel_init+0x0/0x176
-> > [    1.797062]  [<c10038b7>] kernel_thread_helper+0x7/0x10
-> > [    1.812984] 00000080 + ffe00000
-> 
-> that is rather later.
-> acpi_gbl_permanent_mmap should be set in acpi_early_init()
-> if acpi is not disabled
-> 
-> and we have
-> > [    0.000000] ASUS P2B-DS detected: force use of acpi=ht
-> 
-> just don't load acpi_processor_init...
-> 
-> Reported-and-tested-by: Jens Rosenboom <jens@leia.mcbone.net>
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> ---
->  drivers/acpi/processor_core.c |    6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> Index: linux-2.6/drivers/acpi/processor_core.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/acpi/processor_core.c
-> +++ linux-2.6/drivers/acpi/processor_core.c
-> @@ -1137,6 +1137,9 @@ static int __init acpi_processor_init(vo
->  {
->  	int result = 0;
->  
-> +	if (acpi_disabled)
-> +		return 0;
-> +
->  	memset(&errata, 0, sizeof(errata));
->  
->  #ifdef CONFIG_SMP
-> @@ -1185,6 +1188,9 @@ out_proc:
->  
->  static void __exit acpi_processor_exit(void)
->  {
-> +	if (acpi_disabled)
-> +		return;
-> +
->  	acpi_processor_ppc_exit();
->  
-
-Acked-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
+Cheers,
+FJP
