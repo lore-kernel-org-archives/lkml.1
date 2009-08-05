@@ -1,104 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934570AbZHEOgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934422AbZHEOlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934570AbZHEOgL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 10:36:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934560AbZHEOgK
+	id S934422AbZHEOlP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 10:41:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933724AbZHEOlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 10:36:10 -0400
-Received: from perceval.irobotique.be ([92.243.18.41]:50828 "EHLO
-	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934539AbZHEOgJ (ORCPT
+	Wed, 5 Aug 2009 10:41:14 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:44177 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933694AbZHEOlN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 10:36:09 -0400
-From: Laurent Pinchart <laurent.pinchart@skynet.be>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: Is get_user_pages() enough to prevent pages from being swapped out ?
-Date: Wed, 5 Aug 2009 16:37:57 +0200
-User-Agent: KMail/1.11.4 (Linux/2.6.30.3; KDE/4.2.4; x86_64; ; )
-Cc: Robin Holt <holt@sgi.com>, linux-kernel@vger.kernel.org,
-       "v4l2_linux" <linux-media@vger.kernel.org>
-References: <200907291123.12811.laurent.pinchart@skynet.be> <20090730113951.GA2763@sgi.com> <Pine.LNX.4.64.0907301248090.27155@sister.anvils>
-In-Reply-To: <Pine.LNX.4.64.0907301248090.27155@sister.anvils>
+	Wed, 5 Aug 2009 10:41:13 -0400
+Date: Wed, 5 Aug 2009 16:41:12 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com, hidehiro.kawai.ez@hitachi.com,
+       linux-arch@vger.kernel.org
+Subject: Re: [PATCH] [11/19] HWPOISON: Refactor truncate to allow direct
+	truncating of page v2
+Message-ID: <20090805144112.GM11385@basil.fritz.box>
+References: <200908051136.682859934@firstfloor.org> <20090805093638.D3754B15D8@basil.firstfloor.org> <20090805102008.GB17190@wotan.suse.de> <20090805134607.GH11385@basil.fritz.box> <20090805140145.GB28563@wotan.suse.de> <20090805141001.GJ11385@basil.fritz.box> <20090805141642.GB23992@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200908051637.58276.laurent.pinchart@skynet.be>
+In-Reply-To: <20090805141642.GB23992@wotan.suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Hugh,
+> One question I had for the others (Andrew? other mm guys?) what is the
+> feelings of merging this feature? Leaving aside exact implementation
+> and just considering the high level design and cost/benefit. Last time
+> there were some people objecting, so I wonder the situation now? So
+> does anybody need more convincing? :)
 
-I've spent the last few days "playing" with get_user_pages() and mlock() and 
-got some interesting results. It turned out that cache coherency comes into 
-play at some point, making the overall problem more complex.
+The main objection last time was that it was a bit too late in the 
+release schedule.
 
-Here's my current setup:
+I can't remember anyone really questioning the basic feature itself.
 
-- OMAP processor, based on an ARMv7 core
-- MMU and IOMMU
-- VIPT non-aliasing data cache
-- video capture driver that transfers data to memory using DMA
-- video capture application that pass userspace pointers to video buffers to 
-the driver
+> Also I will just cc linux-arch. It would be interesting to know whether
+> powerpc, ia64, or s390 or others would be interested to use this feature?
 
-My goal is to make sure that, upon DMA completion, the correct data will be 
-available to the userspace application.
+ia64 is interested (but no code so far) I talked to DaveM and he seems to be 
+interested for sparc too.  I would expect other server architectures to 
+eventually use it as they get around to writing the necessary architecture 
+specific glue.
 
-The first problem was to pin pages to memory, to make sure they will not be 
-freed when the DMA is in progress. videobug-dma-sg uses get_user_pages() for 
-that, and you nicely explained to me why this is enough.
+-Andi
 
-The second problem is to ensure cache coherency. As the userspace application 
-will read data from the video buffers, those buffers will end up being cached 
-in the processor's data cache. The driver does need to invalidate the cache 
-before starting the DMA operation (userspace could in theory write to the 
-buffers, but the data will be overwritten by DMA anyway, so there's no need to 
-clean the cache).
-
-As the cache is of the VIPT (Virtual Index Physical Tag) type, cache 
-invalidation can either be done globally (in which case the cache is flushed 
-instead of being invalidated) or based on virtual addresses. In the last case 
-the processor will need to look physical addresses up, either in the TLB or 
-through hardware table walk.
-
-I can see three solutions to the DMA/cache problem.
-
-1. Flushing the whole data cache right before starting the DMA transfer. 
-There's no API for that in the ARM architecture, so a whole I+D cache is 
-required. This is quite costly, we're talking about around 30 flushes per 
-second, but it doesn't involve the MMU. That's the solution that I currently 
-use.
-
-2. Invalidating only the cache lines that store video buffer data. This 
-requires a TLB lookup or a hardware table walk, so the userspace application 
-MM context needs to be available (no problem there as where's flushing in 
-userspace context) and all pages need to be mapped properly. This can be a 
-problem as, as you pointed out, pages can still be unmapped from the userspace 
-context after get_user_pages() returns. I have experienced one oops due to a 
-kernel paging request failure:
-
-	Unable to handle kernel paging request at virtual address 44e12000
-	pgd = c8698000
-	[44e12000] *pgd=8a4fd031, *pte=8cfda1cd, *ppte=00000000
-	Internal error: Oops: 817 [#1] PREEMPT
-	PC is at v7_dma_inv_range+0x2c/0x44
-
-Fixing this requires more investigation, and I'm not sure how to proceed to 
-find out if the page fault is really caused by pages being unmapped from the 
-userspace context. Help would be appreciated.
-
-3. Mark the pages as non-cacheable. Depending on how the buffers are then used 
-by userspace, the additional cache misses might destroy any benefit I would 
-get from not flushing the cache before DMA. I'm not sure how to mark a bunch 
-of pages as non-cacheable though. What usually happens is that video drivers 
-allocate DMA-coherent memory themselves, but in this case I need to deal with 
-an arbitrary buffer allocated by userspace. If someone has any experience with 
-this, it would be appreciated.
-
-Regards,
-
-Laurent Pinchart
-
+-- 
+ak@linux.intel.com -- Speaking for myself only.
