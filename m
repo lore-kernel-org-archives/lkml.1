@@ -1,87 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753375AbZHEWxH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752953AbZHEW5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753375AbZHEWxH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 18:53:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbZHEWxH
+	id S1752953AbZHEW5m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 18:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbZHEW5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 18:53:07 -0400
-Received: from mail.gmx.net ([213.165.64.20]:36743 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752099AbZHEWxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 18:53:06 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18mNWIeb1Emcepe0tNJBuCt3FWmpoFAeDjf6SM786
-	cY63BEx9eX7/Ug
-Date: Thu, 6 Aug 2009 00:53:07 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Ian Molton <ian@mnementh.co.uk>
-cc: Magnus Damm <magnus.damm@gmail.com>,
-       pHilipp Zabel <philipp.zabel@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel@vger.kernel.org, Pierre Ossman <drzeus@drzeus.cx>
-Subject: Re: MMC: Make the configuration memory resource optional
-In-Reply-To: <4A7A08FE.5000909@mnementh.co.uk>
-Message-ID: <Pine.LNX.4.64.0908060045320.9219@axis700.grange>
-References: <Pine.LNX.4.64.0907170842050.4731@axis700.grange> 
- <aec7e5c30907290608i43a80fe1xe4ef0f3847855709@mail.gmail.com> 
- <4A7053E8.8050303@mnementh.co.uk>  <20090729201702.GA28202@linux-sh.org> 
- <74d0deb30907291355n39df7db0v1d7afc93917adc14@mail.gmail.com> 
- <4A716F1C.2050805@mnementh.co.uk>  <Pine.LNX.4.64.0907301246330.4462@axis700.grange>
-  <4A71F2A5.4060206@mnementh.co.uk>  <aec7e5c30908021952j7947b513w7d62f2c4d87bd3c5@mail.gmail.com>
-  <4A787C2C.5070000@mnementh.co.uk> <aec7e5c30908041908p568f413albef7dede3fd2cb83@mail.gmail.com>
- <4A798A4B.4000901@mnementh.co.uk> <Pine.LNX.4.64.0908051702180.5802@axis700.grange>
- <4A7A08FE.5000909@mnementh.co.uk>
+	Wed, 5 Aug 2009 18:57:41 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:46473 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751039AbZHEW5k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 18:57:40 -0400
+To: Neil Horman <nhorman@redhat.com>
+Cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
+       tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain>
+	<m1eirqtmey.fsf@fess.ebiederm.org>
+	<20090805140408.GJ7259@hmsreliant.think-freely.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 05 Aug 2009 15:57:35 -0700
+In-Reply-To: <20090805140408.GJ7259@hmsreliant.think-freely.org> (Neil Horman's message of "Wed\, 5 Aug 2009 10\:04\:08 -0400")
+Message-ID: <m1skg5vpgg.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: nhorman@redhat.com, avorontsov@ru.mvista.com, mingo@elte.hu, akpm@linux-foundation.org, linux-ia64@vger.kernel.org, tony.luck@intel.com, linux-kernel@vger.kernel.org, amwang@redhat.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Neil Horman <nhorman@redhat.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.1379]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.5 XM_Body_Dirty_Words Contains a dirty word
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [Patch 0/7] Implement crashkernel=auto
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Aug 2009, Ian Molton wrote:
+Neil Horman <nhorman@redhat.com> writes:
 
-> Guennadi Liakhovetski wrote:
-> 
-> > How do we verify this? Do I need some "very fast" card, so that sd would try
-> > to drive the clock beyond pdata->hclk / 2, which should then fail? 
-> 
-> One way would be a 'scope on the card pins, but since you havent said I am
-> assuming you have not altered the clock-speed setting routine.
-> 
-> Here you can see why I didnt like the silently-drop-conf-accesses version of
-> the patch.  If you had not made conf area accesses silently succeed, you'd
-> have found one lurking in the set_clock function.
-> 
-> Since your controller has no CNF area, it was discarding the write to the 1:1
-> clock bit (that isnt  in its none-existant conf area) and thus you got the
-> next lowest clock as a result (/2)
-> 
-> > Currently I'm using 24MHz (copied from the original driver), and the only
-> > thing I know about the controller is its "Maximum operating frequency: 25
-> > MHz."
-> 
-> Thats the HCLK frequency, not the card clock.
+> On Wed, Aug 05, 2009 at 06:33:57AM -0700, Eric W. Biederman wrote:
+>> Amerigo Wang <amwang@redhat.com> writes:
+>> 
+>> > This series of patch implements automatically reserved memory for crashkernel,
+>> > by introducing a new boot option "crashkernel=auto". This idea is from Neil.
+>> >
+>> > In case of breaking user-space applications, it modifies this boot option after
+>> > it decides how much memory should be reserved.
+>> >
+>> > On different arch, the threshold and reserved memory size is different. Please
+>> > refer patch 7/7 which contains an update for the documentation.
+>> >
+>> > Note: This patchset was only tested on x86_64 with differernt memory sizes.
+>> 
+>> This seems like a silly hard code. Especially for a feature distros don't
+>> care enough about to implement a working initrd for.
+>> 
+>> Has anyone bothered to justify those large amounts of memory?
+>> Where does the 128M go?
+>> 
+>> Please pardon me for being a cynic but I don't see the command line option
+>> being the bottleneck for real users to make this work.
+>> 
+>> Eric
+>
+> Lots of the impetus behind this results from a desire to have kexec configured
+> and setup up during install.  Having the kernel allocate a default size block of
+> RAM lets you do that without the need for an interim reboot.
 
-Sure, and the card clock is derived from the HCLK, as you describe below.
+I assume you mean kexec on panic.  kexec should be fine and you can arguably
+solve this problem with a little bit of userspace glue and a kexec of yourself
+during bootup.
 
-> the TMIO MFD devices can divide this HCLK by anything from 512 to 2, and  MFD
-> devices have a facility to disable the divider, yielding full HCLK speed as
-> the card clock.
-> 
-> If you havent already found a 1:1 clock enable bit on your device, you might
-> try looking for it - it'd yield a near linear factor-of-two speed increase.
+> You could of
+> course boot the installer kernel with a crashkernel line pre-selected  suppose,
+> but then you have to go to the trouble of figuring that allocation size out each
+> time.  This gives you a nice convienent way to get a reasonable block of memory
+> without the need to do all that extra work.
 
-I think, even getting the driver work with half the maximum speed (without 
-the 1:1 speed) would be a good progress for SH. And I personally have no 
-idea how I could "find" that divider-disable bit. Please notice, that I'm 
-away for a week starting tomorrow, hopefully, Magnus will be able to 
-further work with you on this during this time.
+My big concern is that you are moving policy into the kernel, when it isn't at
+all clear that policy is the right thing to do, and the existing mechanisms give
+you enough rope to do this all in userspace.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+You also have to build (or at least load) the whole kdump image after
+the system boots, and configure someplace for this to be saved.
+
+What class of problems do you expect to catch with this?
+
+What has me puzzled is that the mkdumprd that ships with fedora isn't
+usable without patching, and it seems to be steadily getting worse.  If the
+concern was about getting better bug reports I would expect getting this
+functionality into fedora would be where you would be focusing your efforts.
+
+Am I missing something obvious?
+
+Eric
