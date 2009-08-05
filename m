@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932833AbZHEAsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbZHEAyH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932833AbZHEAsz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 20:48:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932633AbZHEAsy
+	id S932765AbZHEAyH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 20:54:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754520AbZHEAyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 20:48:54 -0400
-Received: from exprod6ob113.obsmtp.com ([64.18.1.30]:39410 "HELO psmtp.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S932403AbZHEAsx convert rfc822-to-8bit (ORCPT
+	Tue, 4 Aug 2009 20:54:05 -0400
+Received: from ru.mvista.com ([213.79.90.228]:47575 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753553AbZHEAyE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 20:48:53 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 4 Aug 2009 20:54:04 -0400
+Date: Wed, 5 Aug 2009 04:54:04 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       Jean Delvare <khali@linux-fr.org>, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 0/7] Device table matching for SPI subsystem
+Message-ID: <20090805005404.GA14451@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090729170345.GA26787@oksana.dev.rtsoft.ru>
+ <200908031916.02880.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH] gpiolib: introduce for_each_gpio_in_chip macro
-Date: Tue, 4 Aug 2009 20:48:49 -0400
-Message-ID: <BD79186B4FD85F4B8E60E381CAEE190901B7783E@mi8nycmail19.Mi8.com>
-In-Reply-To: <200908041414.26112.david-b@pacbell.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] gpiolib: introduce for_each_gpio_in_chip macro
-Thread-Index: AcoVY6pgwzlhMLXVQwuKWNNpG2nh8wAAfi2w
-References: <200907311027.06370.hartleys@visionengravers.com> <200908041414.26112.david-b@pacbell.net>
-From: "H Hartley Sweeten" <hartleys@visionengravers.com>
-To: "David Brownell" <david-b@pacbell.net>
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 05 Aug 2009 00:48:51.0702 (UTC) FILETIME=[804F7960:01CA1566]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200908031916.02880.david-b@pacbell.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, August 04, 2009 2:14 PM, David Brownell wrote:
-> On Friday 31 July 2009, H Hartley Sweeten wrote:
->> gpiolib: introduce for_each_gpio_in_chip macro
->> 
->> There are a number of places in gpiolib where all the gpio's handled by a
->> chip are walked thru using a for() loop.  This introduces a for_each_*
->> macro to clarify the code.
->
-> I'd rather not.  There are four such loops, and these are
-> really simple iterators.  Such a macro IMO just obfuscates,
-> when it's just hiding such trivial index ops.
->
-> NAK.
+On Mon, Aug 03, 2009 at 07:16:02PM -0700, David Brownell wrote:
+> On Wednesday 29 July 2009, Anton Vorontsov wrote:
+> > 	platform_data is overkill for m25p80 chips, the
+> > driver only needs to know exact chip model, and that's what device
+> > tables are for.
+> 
+> To be fair, the platform_data also supports partitioning
+> and labeling e.g. for cmdlinepart ...
 
-Ok.
+With OF we do partitioning and labling via drivers/mtd/ofpart.c.
 
-For the record. The reason I sent this is I'm trying to work out an
-extension to gpiolib that adds gpio_port_* access to the API.  Most
-of the gpiolib drivers already the necessary logic since the raw I/O
-is performed on the entire 'chip'.  The API just needs the extensions
-added to request/free the port, set the direction and get/set the value.
+Though, so far there is no support for OF partitions in the m25p80
+driver. I think we'd better put the OF partitions probing into
+parse_mtd_partitions(), and avoid calling of_mtd_parse_partitons()
+directly...
 
-Is this a worthwhile addition?
+Thanks,
 
-Regards,
-Hartley
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
