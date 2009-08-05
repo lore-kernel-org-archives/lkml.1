@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934691AbZHEQdM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934697AbZHEQeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934691AbZHEQdM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 12:33:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934685AbZHEQdK
+	id S934697AbZHEQeH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 12:34:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934641AbZHEQeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 12:33:10 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32953 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934682AbZHEQdI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 12:33:08 -0400
-Date: Wed, 5 Aug 2009 17:33:46 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Tejun Heo <teheo@suse.de>
-Cc: Greg KH <greg@kroah.com>, Al Viro <viro@ftp.linux.org.uk>,
-       Takashi Iwai <tiwai@suse.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, cguthrie@mandriva.org
-Subject: Re: [PATCH 2/2] sound: make OSS device number claiming optional
-Message-ID: <20090805173346.130d80bb@lxorguk.ukuu.org.uk>
-In-Reply-To: <4A79AD2A.4060308@suse.de>
-References: <4A79283E.7030202@kernel.org>
-	<4A79296A.4090600@suse.de>
-	<20090805101551.6ee053e5@lxorguk.ukuu.org.uk>
-	<4A7951B0.10208@suse.de>
-	<20090805110031.51424dbe@lxorguk.ukuu.org.uk>
-	<4A796C94.5040301@suse.de>
-	<20090805134823.4409e197@lxorguk.ukuu.org.uk>
-	<4A799392.3000108@suse.de>
-	<20090805152942.42e785f3@lxorguk.ukuu.org.uk>
-	<4A79AD2A.4060308@suse.de>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Wed, 5 Aug 2009 12:34:07 -0400
+Received: from mx.ugf.br ([200.222.48.3]:41150 "EHLO mx.ugf.br"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934638AbZHEQeG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 12:34:06 -0400
+Subject: Re: [PATCH 1/1] XFS: xfs_iformat realtime device target pointer
+ check
+From: Ramon de Carvalho Valle <ramon@risesecurity.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Eric Sandeen <sandeen@sandeen.net>, linux-kernel@vger.kernel.org,
+       mszeredi@novell.com, hch@lst.de, xfs@oss.sgi.com
+In-Reply-To: <20090805151750.GA16080@infradead.org>
+References: <1249329808.7686.26.camel@logos>
+	 <20090803214929.GB3167@infradead.org> <1249351241.7513.18.camel@logos>
+	 <4A786110.8090404@sandeen.net> <1249411898.7576.19.camel@logos>
+	 <20090805151750.GA16080@infradead.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-xqidu5ctlIFo7+IpVFyG"
+Date: Wed, 05 Aug 2009 13:34:02 -0300
+Message-Id: <1249490042.7725.16.camel@logos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I don't see how I would be able to achieve the latter with one liner.
-> Can you please elaborate a little bit?
 
-It depends how much of a hurry you are in, but for the mainstream we can
-do this
+--=-xqidu5ctlIFo7+IpVFyG
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-1.	Make soundcore also issue the request_module() as if the char
-minor was unclaimed. Mark the old one as obsolete
+On Wed, 2009-08-05 at 11:17 -0400, Christoph Hellwig wrote:
+> On Tue, Aug 04, 2009 at 03:51:38PM -0300, Ramon de Carvalho Valle wrote:
+> > The xfs_iformat function does not check if the realtime device target p=
+ointer
+> > is valid when the XFS_DIFLAG_REALTIME flag is set on the ondisk inode
+> > structure.
+>=20
+> Same as Eric I don't think there's much of a point renumbering the error
+> cases.  Instead I'll do another patch with a couple of cleanups in this
+> function replacing all the numbers with short alphabetic tags.
 
-2.	Wait a year while people adjust their scripts to trigger on the
-char event instead (and fix the ordering bits for ALSA if the soundcore
-docs are still valid on that)
+Great. Thanks.
 
-3.	Apply a patch which makes ALSA use char dev allocation directly
-for its OSS devices and dumps out soundcore, remove soundcore and switch
-any other code using it.
+>=20
+> I don't really see the point of printing the flags either, if we have
+> this bit flipped it's pretty clear that we had random corruption of this
+> dinode.
+>=20
+
+Printing the flags is just for debugging purposes and it keeps the code
+consistent with the other calls to xfs_fs_repair_cmn_err.
+
+-Ramon
+
+--=-xqidu5ctlIFo7+IpVFyG
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkp5tHcACgkQGIS0iEuhp4O3PQCeP/9dDXY3tVUkWpuijgipepol
+B5UAoJ7U1BRRR/vDmVy/0RUO8n7YItMF
+=g7j/
+-----END PGP SIGNATURE-----
+
+--=-xqidu5ctlIFo7+IpVFyG--
 
