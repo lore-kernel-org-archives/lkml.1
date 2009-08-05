@@ -1,30 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933027AbZHEBKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933048AbZHEBKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933027AbZHEBKX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 21:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932959AbZHEBKW
+	id S933048AbZHEBKe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 21:10:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932703AbZHEBKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 21:10:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37305 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932946AbZHEBKV (ORCPT
+	Tue, 4 Aug 2009 21:10:32 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56761 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932524AbZHEBKb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 21:10:21 -0400
-Date: Tue, 4 Aug 2009 18:08:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Phillip Lougher <phillip@lougher.demon.co.uk>
-Cc: Albin Tonnerre <albin.tonnerre@free-electrons.com>, sam@ravnborg.org,
-       hpa@zytor.com, linux@arm.linux.org.uk, alain@knaff.lu,
-       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
-Subject: Re: [PATCH 1/6] lib/decompress_*: only include <linux/slab.h> if
- STATIC is not defined
-Message-Id: <20090804180854.d5dbb07f.akpm@linux-foundation.org>
-In-Reply-To: <4A78D6BD.3030003@lougher.demon.co.uk>
-References: <20090731093107.GA29704@merkur.ravnborg.org>
-	<1249311501-23102-1-git-send-email-albin.tonnerre@free-electrons.com>
-	<20090804155500.db6c88fa.akpm@linux-foundation.org>
-	<4A78D6BD.3030003@lougher.demon.co.uk>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 4 Aug 2009 21:10:31 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 5 Aug 2009 10:08:43 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: scgtrp@gmail.com, bugzilla-daemon@bugzilla.kernel.org,
+       bugme-daemon@bugzilla.kernel.org, xiyou.wangcong@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUGFIX][PATCH 2/3] kcore: fix vread/vwrite to be aware of
+ holes.
+Message-Id: <20090805100843.dbdabcfa.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090804143031.b9769a13.akpm@linux-foundation.org>
+References: <bug-13850-10286@http.bugzilla.kernel.org/>
+	<20090728160527.1da52682.akpm@linux-foundation.org>
+	<20090729084825.1363c880.kamezawa.hiroyu@jp.fujitsu.com>
+	<525c5a6c0907281946t249ef288v77ee94edd16f054@mail.gmail.com>
+	<20090803201418.040bb3ee.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090803201845.c3ae49b5.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090804143031.b9769a13.akpm@linux-foundation.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -32,100 +37,141 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 05 Aug 2009 01:47:57 +0100 Phillip Lougher <phillip@lougher.demon.co.uk> wrote:
+On Tue, 4 Aug 2009 14:30:31 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> Andrew Morton wrote:
-> > On Mon,  3 Aug 2009 16:58:16 +0200
-> > Albin Tonnerre <albin.tonnerre@free-electrons.com> wrote:
+> On Mon, 3 Aug 2009 20:18:45 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 > > 
-> >> These includes were added by 079effb6933f34b9b1b67b08bd4fd7fb672d16ef to
-> >> fix the build when using kmemtrace. However this is not necessary when
-> >> used to create a compressed kernel, and actually creates issues (brings
-> >> a lot of things unavailable in the decompression environment), so don't
-> >> include it if STATIC is defined.
-> >>
+> > vread/vwrite access vmalloc area without checking there is a page or not.
+> > In most case, this works well.
 > > 
-> > The description "actually creates issues (brings a lot of things
-> > unavailable in the decompression environment)" is inadequate.  Please
-> > describe te problem this patch fixes more completely so that others
-> > (ie: me) can decide whether this patch is needed in 2.6.32, 2.6.31. 
-> > 2.6.30, ...
+> > In old ages, the caller of get_vm_ara() is only IOREMAP and there is no
+> > memory hole within vm_struct's [addr...addr + size - PAGE_SIZE]
+> > ( -PAGE_SIZE is for a guard page.)
 > > 
+> > After per-cpu-alloc patch, it uses get_vm_area() for reserve continuous
+> > virtual address but remap _later_. There tend to be a hole in valid vmalloc
+> > area in vm_struct lists.
+> > Then, skip the hole (not mapped page) is necessary.
+> > This patch updates vread/vwrite() for avoiding memory hole.
 > > 
-> > This patch conflicts heavily with
+> > Routines which access vmalloc area without knowing for which addr is used
+> > are
+> >   - /proc/kcore
+> >   - /dev/kmem
 > > 
-> > http://userweb.kernel.org/~akpm/mmotm/broken-out/bzip2-lzma-remove-nasty-uncompressed-size-hack-in-pre-boot-environment.patch
+> > kcore checks IOREMAP, /dev/kmem doesn't. After this patch, IOREMAP is
+> > checked and /dev/kmem will avoid to read/write it.
+> > Fixes to /proc/kcore will be in the next patch in series.
 > > 
+> > Changelog v2->v3:
+> >  - fixed typos.
+> >  - use kmap. (if not using kmap, we have to add lock here.)
+> >  - fixed PAGE_MASK miss-use.
+> > Changelog v1->v2:
+> >  - enhanced comments.
+> >  - treat IOREMAP as hole always.
+> >  - zero-fill memory hole if [addr...addr+size] includes valid pages.
+> >  - returns 0 if [addr...addr+size) includes no valid pages.
 > > 
-> > What should we do about that?
+> > ...
+> >
+> > +static int aligned_vread(char *buf, char *addr, unsigned long count)
+> > +{
+> > +	struct page *p;
+> > +	int copied = 0;
+> > +
+> > +	while (count) {
+> > +		unsigned long offset, length;
+> > +
+> > +		offset = (unsigned long)addr & ~PAGE_MASK;
+> > +		length = PAGE_SIZE - offset;
+> > +		if (length > count)
+> > +			length = count;
+> > +		p = vmalloc_to_page(addr);
+> > +		/*
+> > +		 * To do safe access to this _mapped_ area, we need
+> > +		 * lock. But adding lock here means that we need to add
+> > +		 * overhead of vmalloc()/vfree() calles for this _debug_
+> > +		 * interface, rarely used. Instead of that, we'll use
+> > +		 * kmap() and get small overhead in this access function.
+> > +		 */
+> > +		if (p) {
+> > +			/* we can expect USR1 is not used */
+> 
+> It would be nice if the comment were to explain _why_ KM_USER1 is known
+> to be free here.
+> 
+ok, will do. Hmm, but KM_USR0 is better ?
+I'm not sure difference between KM_USR0/KM_USR1...
+
+
+
+> 
+> > +			void *map = kmap_atomic(p, KM_USER1);
+> > +			memcpy(buf, map + offset, length);
+> > +			kunmap_atomic(map, KM_USER1);
+> 
+> Can use clear_highpage().
+> 
+ah, "buf" is expected to be kmalloc'ed buffer. I'll explain it in Usage
+or adds comment.
+
+Thank you for review!
+
+-Kame
+
+
+> > +		} else
+> > +			memset(buf, 0, length);
+> > +
+> > +		addr += length;
+> > +		buf += length;
+> > +		copied += length;
+> > +		count -= length;
+> > +	}
+> > +	return copied;
+> > +}
+> > +
+> > +static int aligned_vwrite(char *buf, char *addr, unsigned long count)
+> > +{
+> > +	struct page *p;
+> > +	int copied = 0;
+> > +
+> > +	while (count) {
+> > +		unsigned long offset, length;
+> > +
+> > +		offset = (unsigned long)addr & ~PAGE_MASK;
+> > +		length = PAGE_SIZE - offset;
+> > +		if (length > count)
+> > +			length = count;
+> > +		p = vmalloc_to_page(addr);
+> > +		/*
+> > +		 * To do safe access to this _mapped_ area, we need
+> > +		 * lock. But adding lock here means that we need to add
+> > +		 * overhead of vmalloc()/vfree() calles for this _debug_
+> > +		 * interface, rarely used. Instead of that, we'll use
+> > +		 * kmap() and get small overhead in this access function.
+> > +		 */
+> > +		if (p) {
+> > +			/* we can expect USR1 is not used */
+> > +			void *map = kmap_atomic(p, KM_USER1);
+> > +			memcpy(map + offset, buf, length);
+> > +			kunmap_atomic(map, KM_USER1);
+> 
+> clear_highpage().
+> 
+> > +		}
+> > +		addr += length;
+> > +		buf += length;
+> > +		copied += length;
+> > +		count -= length;
+> > +	}
+> > +	return copied;
+> > +}
 > 
 > 
-> What do you normally do in this situation?
-
-I normally fix the rejects ;)
-
-But I'd like to confirm that the two patches don't fix the same thing
-via different means.  Lacking a full description of Albin's "issues",
-that's hard to determine.  They do appear to be unrelated.
-
->  I'm happy to send a revised
-> bzip2-lzma-remove-nasty-uncompressed-size-hack-in-pre-boot-environment.patch
-> that would apply cleanly on-top of Alvin's patch, but, this will obviously
-> create dependencies on his patch being applied.
-
-Reworked
-lib-decompress_-only-include-linux-slabh-if-static-is-not-defined.patch:
-
- lib/decompress_bunzip2.c |    2 +-
- lib/decompress_inflate.c |    2 +-
- lib/decompress_unlzma.c  |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
-
-diff -puN lib/decompress_bunzip2.c~lib-decompress_-only-include-linux-slabh-if-static-is-not-defined lib/decompress_bunzip2.c
---- a/lib/decompress_bunzip2.c~lib-decompress_-only-include-linux-slabh-if-static-is-not-defined
-+++ a/lib/decompress_bunzip2.c
-@@ -49,10 +49,10 @@
- #define PREBOOT
- #else
- #include <linux/decompress/bunzip2.h>
-+#include <linux/slab.h>
- #endif /* STATIC */
- 
- #include <linux/decompress/mm.h>
--#include <linux/slab.h>
- 
- #ifndef INT_MAX
- #define INT_MAX 0x7fffffff
-diff -puN lib/decompress_inflate.c~lib-decompress_-only-include-linux-slabh-if-static-is-not-defined lib/decompress_inflate.c
---- a/lib/decompress_inflate.c~lib-decompress_-only-include-linux-slabh-if-static-is-not-defined
-+++ a/lib/decompress_inflate.c
-@@ -19,11 +19,11 @@
- #include "zlib_inflate/inflate.h"
- 
- #include "zlib_inflate/infutil.h"
-+#include <linux/slab.h>
- 
- #endif /* STATIC */
- 
- #include <linux/decompress/mm.h>
--#include <linux/slab.h>
- 
- #define GZIP_IOBUF_SIZE (16*1024)
- 
-diff -puN lib/decompress_unlzma.c~lib-decompress_-only-include-linux-slabh-if-static-is-not-defined lib/decompress_unlzma.c
---- a/lib/decompress_unlzma.c~lib-decompress_-only-include-linux-slabh-if-static-is-not-defined
-+++ a/lib/decompress_unlzma.c
-@@ -33,10 +33,10 @@
- #define PREBOOT
- #else
- #include <linux/decompress/unlzma.h>
-+#include <linux/slab.h>
- #endif /* STATIC */
- 
- #include <linux/decompress/mm.h>
--#include <linux/slab.h>
- 
- #define	MIN(a, b) (((a) < (b)) ? (a) : (b))
- 
-_
 
