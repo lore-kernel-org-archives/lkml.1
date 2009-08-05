@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934241AbZHEMdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934254AbZHEMeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934241AbZHEMdi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 08:33:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933704AbZHEMdh
+	id S934254AbZHEMeq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 08:34:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933122AbZHEMep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 08:33:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51668 "EHLO mx2.mail.elte.hu"
+	Wed, 5 Aug 2009 08:34:45 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:50248 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933701AbZHEMdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 08:33:37 -0400
-Date: Wed, 5 Aug 2009 14:33:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Kyle McMartin <kyle@mcmartin.ca>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Anton Blanchard <anton@samba.org>, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       benh@kernel.crashing.org, penberg@cs.helsinki.fi,
-       vegard.nossum@gmail.com, paulus@samba.org, williams@redhat.com
-Subject: Re: [PATCH] basic perf support for sparc
-Message-ID: <20090805123313.GA23485@elte.hu>
-References: <20090729112509.GN4148@kernel.dk> <20090729192814.GT4148@kernel.dk> <20090801011429.GA4685@kryten> <20090801082048.GX12579@kernel.dk> <20090801182216.GA25334@ghostprotocols.net> <20090802184148.GB17241@elte.hu> <20090802194454.GC28572@bombadil.infradead.org> <1249474256.7924.253.camel@twins> <20090805122120.GY12579@kernel.dk>
+	id S934220AbZHEMeo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 08:34:44 -0400
+Date: Wed, 5 Aug 2009 14:34:34 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: "David S. Miller" <davem@davemloft.net>,
+       Andy Grover <andy.grover@oracle.com>, netdev@vger.kernel.org,
+       rds-devel@oss.oracle.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/2] net/rds: Use AF_INET for sin_family field
+Message-ID: <Pine.LNX.4.64.0908051434110.20453@pc-004.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090805122120.GY12579@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Julia Lawall <julia@diku.dk>
 
-* Jens Axboe <jens.axboe@oracle.com> wrote:
+Elsewhere the sin_family field holds a value with a name of the form
+AF_..., so it seems reasonable to do so here as well.  Also the values of
+PF_INET and AF_INET are the same.
 
-> On Wed, Aug 05 2009, Peter Zijlstra wrote:
-> > On Sun, 2009-08-02 at 15:44 -0400, Kyle McMartin wrote:
-> > 
-> > > Why not abuse the perf Makefile, which already has this kind of
-> > > portability gunk in it?
-> > 
-> > Does this work for people?
-> 
-> Works for me, just tested it.
+The semantic patch that makes this change is as follows:
+(http://coccinelle.lip6.fr/)
 
-Thanks Jens - i've committed it and will push it Linus-wards.
+// <smpl>
+@@
+struct sockaddr_in sip;
+@@
 
-	Ingo
+(
+sip.sin_family ==
+- PF_INET
++ AF_INET
+|
+sip.sin_family !=
+- PF_INET
++ AF_INET
+|
+sip.sin_family =
+- PF_INET
++ AF_INET
+)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ net/rds/rdma_transport.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -u -p a/net/rds/rdma_transport.c b/net/rds/rdma_transport.c
+--- a/net/rds/rdma_transport.c
++++ b/net/rds/rdma_transport.c
+@@ -137,7 +137,7 @@ static int __init rds_rdma_listen_init(v
+ 		goto out;
+ 	}
+ 
+-	sin.sin_family = PF_INET,
++	sin.sin_family = AF_INET,
+ 	sin.sin_addr.s_addr = (__force u32)htonl(INADDR_ANY);
+ 	sin.sin_port = (__force u16)htons(RDS_PORT);
+ 
