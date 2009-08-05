@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934135AbZHEKlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934099AbZHEKm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934135AbZHEKlf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 06:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933284AbZHEKle
+	id S934099AbZHEKm4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 06:42:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933413AbZHEKmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 06:41:34 -0400
-Received: from viefep18-int.chello.at ([62.179.121.38]:64780 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933018AbZHEKle (ORCPT
+	Wed, 5 Aug 2009 06:42:55 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:40740 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933284AbZHEKmy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 06:41:34 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH] perf report: Make --sort comm,dso,symbol the default
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, acme@redhat.com
-In-Reply-To: <1249467921-10450-1-git-send-email-penberg@cs.helsinki.fi>
-References: <1249467921-10450-1-git-send-email-penberg@cs.helsinki.fi>
-Content-Type: text/plain
-Date: Wed, 05 Aug 2009 12:41:18 +0200
-Message-Id: <1249468878.7924.251.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 5 Aug 2009 06:42:54 -0400
+Message-ID: <4A7961DE.1090702@gmail.com>
+Date: Wed, 05 Aug 2009 12:41:34 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+MIME-Version: 1.0
+To: Mike Miller <mike.miller@hp.com>
+CC: linux kernel <linux-kernel@vger.kernel.org>, stable@kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] cciss: memory leak in cciss_init_one()
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 05 Aug 2009 12:41:35 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-08-05 at 13:25 +0300, Pekka Enberg wrote:
-> If you're doing performance testing, you're interested in the symbols
-> anyway so lets make "--sort comm,dso,symbol" the default sort option.
+commit 22bece00dc1f28dd3374c55e464c9f02eb642876
+(cciss: fix regression firmware not displayed in procfs)
+added a small memory leak in cciss_init_one()
 
-Seems sensible,
-
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> ---
->  tools/perf/builtin-report.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/tools/perf/builtin-report.c b/tools/perf/builtin-report.c
-> index b20a4b6..181cef1 100644
-> --- a/tools/perf/builtin-report.c
-> +++ b/tools/perf/builtin-report.c
-> @@ -31,7 +31,7 @@
->  static char		const *input_name = "perf.data";
->  static char		*vmlinux = NULL;
->  
-> -static char		default_sort_order[] = "comm,dso";
-> +static char		default_sort_order[] = "comm,dso,symbol";
->  static char		*sort_order = default_sort_order;
->  static char		*dso_list_str, *comm_list_str, *sym_list_str,
->  			*col_width_list_str;
-> @@ -1423,7 +1423,7 @@ print_entries:
->  	if (sort_order == default_sort_order &&
->  			parent_pattern == default_parent_pattern) {
->  		fprintf(fp, "#\n");
-> -		fprintf(fp, "# (For more details, try: perf report --sort comm,dso,symbol)\n");
-> +		fprintf(fp, "# (For an high level overview, try: perf report --sort comm,dso)\n");
->  		fprintf(fp, "#\n");
->  	}
->  	fprintf(fp, "\n");
-
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+---
+diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
+index a52cc7f..0589dfb 100644
+--- a/drivers/block/cciss.c
++++ b/drivers/block/cciss.c
+@@ -3889,7 +3889,7 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
+ 	int j = 0;
+ 	int rc;
+ 	int dac, return_code;
+-	InquiryData_struct *inq_buff = NULL;
++	InquiryData_struct *inq_buff;
+ 
+ 	if (reset_devices) {
+ 		/* Reset the controller with a PCI power-cycle */
+@@ -4029,6 +4029,7 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
+ 		printk(KERN_WARNING "cciss: unable to determine firmware"
+ 			" version of controller\n");
+ 	}
++	kfree(inq_buff);
+ 
+ 	cciss_procinit(i);
+ 
+@@ -4045,7 +4046,6 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
+ 	return 1;
+ 
+ clean4:
+-	kfree(inq_buff);
+ 	kfree(hba[i]->cmd_pool_bits);
+ 	if (hba[i]->cmd_pool)
+ 		pci_free_consistent(hba[i]->pdev,
