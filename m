@@ -1,90 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752895AbZHEWKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752967AbZHEWKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752895AbZHEWKM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 18:10:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbZHEWKL
+	id S1752967AbZHEWKU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 18:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbZHEWKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 18:10:11 -0400
-Received: from brmea-mail-2.Sun.COM ([192.18.98.43]:40031 "EHLO
-	brmea-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752698AbZHEWKK (ORCPT
+	Wed, 5 Aug 2009 18:10:16 -0400
+Received: from mail-fx0-f228.google.com ([209.85.220.228]:36968 "EHLO
+	mail-fx0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752808AbZHEWKM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 18:10:10 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; CHARSET=US-ASCII; format=flowed
-Date: Wed, 05 Aug 2009 18:10:06 -0400
-From: james puthukattukaran - Sun Microsystems - Burlington
-	 United States <James.Puthukattukaran@Sun.COM>
-Subject: [PATCH] ACPI: some issues managing the linked list in
- acpi_pci_register/unregister_driver
-To: lenb@kernel.org, linux-kernel@vger.kernel.org
-Message-id: <4A7A033E.2010508@sun.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090311)
+	Wed, 5 Aug 2009 18:10:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=xhqBvymBcVIwaM8xf8W5c4OFjCog8/amz2rnYOx5JvEyfWfjYCF9lpOVYRQuPci/Cv
+         Eitc5pMFvm4xw5BDurSolXL1aVbUzQXCpd5oZkwqLLgZrdzHuPq/J9vPGMXX5tI6PJaa
+         sa9TyX/nctLyc7NkND9s9JU/z9S9170X6iXhk=
+Date: Thu, 6 Aug 2009 00:10:09 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Al Viro <viro@zeniv.linux.org.uk>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Mahoney <jeffm@suse.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       Bron Gondwana <brong@fastmail.fm>,
+       Reiserfs <reiserfs-devel@vger.kernel.org>,
+       Andrea Gelmini <andrea.gelmini@gmail.com>,
+       "Trenton D. Adams" <trenton.d.adams@gmail.com>,
+       Thomas Meyer <thomas@m3y3r.de>,
+       Alessio Igor Bogani <abogani@texware.it>,
+       Marcel Hilzinger <mhilzinger@linuxnewmedia.de>,
+       Edward Shishkin <edward.shishkin@gmail.com>
+Subject: Re: [ANNOUNCE] Reiserfs/kill-bkl tree v2
+Message-ID: <20090805221008.GC5025@nowhere>
+References: <20090731174642.GA6539@nowhere> <20090801081141.GA18036@basil.fritz.box> <20090801155335.GA4836@nowhere> <20090802142100.GA21160@elte.hu> <y0mzlah238y.fsf@fche.csb> <20090803060944.GB20762@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090803060944.GB20762@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I submitted an earlier patch on this to lkml with just a single line 
-initializing the sub_driver variable to NULL. This was insufficient. 
-This patch fixes some  link list management issues in adding a new 
-acpi_pci_driver type to the sub_driver list. This is against  2.6.30
+On Mon, Aug 03, 2009 at 08:09:44AM +0200, Ingo Molnar wrote:
+> 
+> * Frank Ch. Eigler <fche@redhat.com> wrote:
+> 
+> > Ingo Molnar <mingo@elte.hu> writes:
+> > 
+> > >> Yeah good idea. But again, I fear my laptop hasn't enough 
+> > >> memory to support big enough ramdisks mount points to host 
+> > >> selftests.
+> > >
+> > > Well, dont waste too much time on it (beyond the due diligence 
+> > > level) - Andi forgot that the right way to stress-test patches 
+> > > is to get through the review process and then through the 
+> > > integration trees which have far more test exposure than any 
+> > > single contributor can test.
+> > 
+> > What guideline can you offer as to what is "due diligence" level 
+> > of stress testing, as compared to delegating this task to 
+> > eyeballed reviews + incidental use on the integration trees?
+> 
+> The kind of testing the VFS tree itself gets is a good starting 
+> point i suspect - and it is a far more critical tree as it can 
+> affects all filesystems. AFAICS the VFS tree relies on linux-next 
+> and -mm for testing mostly and that's a good model IMO.
+> 
 
-Signed-off-by: James Puthukattukaran <james.puthukattukaran@sun.com>
 
---- linux-2.6.30/drivers/acpi/pci_root.c.orig   2009-08-05 
-12:56:01.000000000 -0400
-+++ linux-2.6.30/drivers/acpi/pci_root.c        2009-08-05 
-14:28:01.000000000 -0400
-@@ -76,7 +76,7 @@ struct acpi_pci_root {
+I've asked Al Viro to integrate this branch in the VFS tree. He wasn't
+opposed to that. Then I sent him the individual patches for integration
+in VFS but hadn't any answer since then.
 
- static LIST_HEAD(acpi_pci_roots);
+I've kept him cc'ed for any further patches too.
 
--static struct acpi_pci_driver *sub_driver;
-+static struct acpi_pci_driver *sub_driver = NULL;
- static DEFINE_MUTEX(osc_lock);
+If Al still agrees about this integration, I would be pleased.
 
- int acpi_pci_register_driver(struct acpi_pci_driver *driver)
-@@ -84,10 +84,9 @@ int acpi_pci_register_driver(struct acpi
-        int n = 0;
-        struct list_head *entry;
+Frederic.
 
--       struct acpi_pci_driver **pptr = &sub_driver;
--       while (*pptr)
--               pptr = &(*pptr)->next;
--       *pptr = driver;
-+        /* Add to the head of the list */
-+        driver->next = sub_driver;
-+        sub_driver = driver;
-
-        if (!driver->add)
-                return 0;
-@@ -107,15 +106,21 @@ EXPORT_SYMBOL(acpi_pci_register_driver);
- void acpi_pci_unregister_driver(struct acpi_pci_driver *driver)
- {
-        struct list_head *entry;
-+       struct acpi_pci_driver *pptr, *prev;
-
--       struct acpi_pci_driver **pptr = &sub_driver;
--       while (*pptr) {
--               if (*pptr == driver)
-+       /* Remove driver from the sub_driver list */
-+       for (prev = NULL, pptr = sub_driver; pptr;
-+               prev = pptr, pptr=pptr->next)
-+       {
-+               if (pptr == driver) {
-+                       if (!prev)
-+                               sub_driver = driver->next;
-+                       else
-+                               prev->next = pptr->next;
-                        break;
--               pptr = &(*pptr)->next;
-+               }
-        }
--       BUG_ON(!*pptr);
--       *pptr = (*pptr)->next;
-+       BUG_ON(!pptr);
-
-        if (!driver->remove)
-                return;
---
