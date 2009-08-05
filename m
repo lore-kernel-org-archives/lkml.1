@@ -1,136 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934044AbZHEJhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934032AbZHEJgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934044AbZHEJhB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 05:37:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934035AbZHEJg7
+	id S934032AbZHEJgu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 05:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933983AbZHEJgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 05:36:59 -0400
+	Wed, 5 Aug 2009 05:36:48 -0400
 Received: from one.firstfloor.org ([213.235.205.2]:49105 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934018AbZHEJgq (ORCPT
+	with ESMTP id S933998AbZHEJgl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 05:36:46 -0400
+	Wed, 5 Aug 2009 05:36:41 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <200908051136.682859934@firstfloor.org>
 In-Reply-To: <200908051136.682859934@firstfloor.org>
 To: akpm@linux-foundation.org, npiggin@suse.de, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, fengguang.wu@intel.com,
        hidehiro.kawai.ez@hitachi.com
-Subject: [PATCH] [19/19] HWPOISON: Add simple debugfs interface to inject hwpoison on arbitary PFNs
-Message-Id: <20090805093646.EE6F0B15D8@basil.firstfloor.org>
-Date: Wed,  5 Aug 2009 11:36:46 +0200 (CEST)
+Subject: [PATCH] [14/19] HWPOISON: Add PR_MCE_KILL prctl to control early kill behaviour per process
+Message-Id: <20090805093641.DB176B15D8@basil.firstfloor.org>
+Date: Wed,  5 Aug 2009 11:36:41 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Useful for some testing scenarios, although specific testing is often
-done better through MADV_POISON
+This allows processes to override their early/late kill
+behaviour on hardware memory errors.
 
-This can be done with the x86 level MCE injector too, but this interface
-allows it to do independently from low level x86 changes.
+Typically applications which are memory error aware is
+better of with early kill (see the error as soon
+as possible), all others with late kill (only
+see the error when the error is really impacting execution)
 
-Open issues: 
+There's a global sysctl, but this way an application
+can set its specific policy.
 
-Should be disabled for cgroups.
+We're using two bits, one to signify that the process
+stated its intention and that 
+
+I also made the prctl future proof by enforcing
+the unused arguments are 0.
+
+The state is inherited to children for now. I've
+been considering to reset it on exec, but not done for
+now (TBD).
+
+Note this makes us officially run out of process flags
+on 32bit, but the next patch can easily add another field.
+
+Manpage patch will be supplied separately.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- mm/Kconfig           |    6 +++++-
- mm/Makefile          |    1 +
- mm/hwpoison-inject.c |   40 ++++++++++++++++++++++++++++++++++++++++
- mm/madvise.c         |    2 +-
- 4 files changed, 47 insertions(+), 2 deletions(-)
+ include/linux/prctl.h |    2 ++
+ include/linux/sched.h |    2 ++
+ kernel/sys.c          |   22 ++++++++++++++++++++++
+ 3 files changed, 26 insertions(+)
 
-Index: linux/mm/hwpoison-inject.c
+Index: linux/include/linux/sched.h
 ===================================================================
---- /dev/null
-+++ linux/mm/hwpoison-inject.c
-@@ -0,0 +1,40 @@
-+/* Inject a hwpoison memory failure on a arbitary pfn */
-+#include <linux/module.h>
-+#include <linux/debugfs.h>
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+
-+static struct dentry *hwpoison_dir, *corrupt_pfn;
-+
-+static int hwpoison_inject(void *data, u64 val)
-+{
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+	printk(KERN_INFO "Injecting memory failure at pfn %Lx\n", val);
-+	return __memory_failure(val, 18, 0);
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(hwpoison_fops, NULL, hwpoison_inject, "%lli\n");
-+
-+static void pfn_inject_exit(void)
-+{
-+	if (hwpoison_dir)
-+		debugfs_remove_recursive(hwpoison_dir);
-+}
-+
-+static int pfn_inject_init(void)
-+{
-+	hwpoison_dir = debugfs_create_dir("hwpoison", NULL);
-+	if (hwpoison_dir == NULL)
-+		return -ENOMEM;
-+	corrupt_pfn = debugfs_create_file("corrupt-pfn", 0600, hwpoison_dir,
-+					  NULL, &hwpoison_fops);
-+	if (corrupt_pfn == NULL) {
-+		pfn_inject_exit();
-+		return -ENOMEM;
-+	}
-+	return 0;
-+}
-+
-+module_init(pfn_inject_init);
-+module_exit(pfn_inject_exit);
-Index: linux/mm/Kconfig
+--- linux.orig/include/linux/sched.h
++++ linux/include/linux/sched.h
+@@ -1674,6 +1674,7 @@ extern cputime_t task_gtime(struct task_
+ #define PF_EXITPIDONE	0x00000008	/* pi exit done on shut down */
+ #define PF_VCPU		0x00000010	/* I'm a virtual CPU */
+ #define PF_FORKNOEXEC	0x00000040	/* forked but didn't exec */
++#define PF_MCE_PROCESS  0x00000080      /* process policy on mce errors */
+ #define PF_SUPERPRIV	0x00000100	/* used super-user privileges */
+ #define PF_DUMPCORE	0x00000200	/* dumped core */
+ #define PF_SIGNALED	0x00000400	/* killed by a signal */
+@@ -1693,6 +1694,7 @@ extern cputime_t task_gtime(struct task_
+ #define PF_SPREAD_PAGE	0x01000000	/* Spread page cache over cpuset */
+ #define PF_SPREAD_SLAB	0x02000000	/* Spread some slab caches over cpuset */
+ #define PF_THREAD_BOUND	0x04000000	/* Thread bound to specific cpu */
++#define PF_MCE_EARLY    0x08000000      /* Early kill for mce process policy */
+ #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
+ #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
+ #define PF_FREEZER_SKIP	0x40000000	/* Freezer should not count it as freezeable */
+Index: linux/kernel/sys.c
 ===================================================================
---- linux.orig/mm/Kconfig
-+++ linux/mm/Kconfig
-@@ -236,12 +236,16 @@ config DEFAULT_MMAP_MIN_ADDR
- config MEMORY_FAILURE
- 	depends on MMU
- 	depends on X86_MCE
--	bool "Enable memory failure recovery"
-+	bool "Enable recovery from hardware memory errors"
- 	help
- 	  Enables code to recover from some memory failures on systems
- 	  with MCA recovery. This allows a system to continue running
- 	  even when some of its memory has uncorrected errors.
+--- linux.orig/kernel/sys.c
++++ linux/kernel/sys.c
+@@ -1528,6 +1528,28 @@ SYSCALL_DEFINE5(prctl, int, option, unsi
+ 				current->timer_slack_ns = arg2;
+ 			error = 0;
+ 			break;
++		case PR_MCE_KILL:
++			if (arg4 | arg5)
++				return -EINVAL;
++			switch (arg2) {
++			case 0:
++				if (arg3 != 0)
++					return -EINVAL;
++				current->flags &= ~PF_MCE_PROCESS;
++				break;
++			case 1:
++				current->flags |= PF_MCE_PROCESS;
++				if (arg3 != 0)
++					current->flags |= PF_MCE_EARLY;
++				else
++					current->flags &= ~PF_MCE_EARLY;
++				break;
++			default:
++				return -EINVAL;
++			}
++			error = 0;
++			break;
++
+ 		default:
+ 			error = -EINVAL;
+ 			break;
+Index: linux/include/linux/prctl.h
+===================================================================
+--- linux.orig/include/linux/prctl.h
++++ linux/include/linux/prctl.h
+@@ -88,4 +88,6 @@
+ #define PR_TASK_PERF_COUNTERS_DISABLE		31
+ #define PR_TASK_PERF_COUNTERS_ENABLE		32
  
-+config HWPOISON_INJECT
-+	tristate "Poison pages injector"
-+	depends on MEMORY_FAILURE && DEBUG_KERNEL
++#define PR_MCE_KILL	33
 +
- config NOMMU_INITIAL_TRIM_EXCESS
- 	int "Turn on mmap() excess space trimming before booting"
- 	depends on !MMU
-Index: linux/mm/Makefile
-===================================================================
---- linux.orig/mm/Makefile
-+++ linux/mm/Makefile
-@@ -41,5 +41,6 @@ endif
- obj-$(CONFIG_QUICKLIST) += quicklist.o
- obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
- obj-$(CONFIG_MEMORY_FAILURE) += memory-failure.o
-+obj-$(CONFIG_HWPOISON_INJECT) += hwpoison-inject.o
- obj-$(CONFIG_DEBUG_KMEMLEAK) += kmemleak.o
- obj-$(CONFIG_DEBUG_KMEMLEAK_TEST) += kmemleak-test.o
-Index: linux/mm/madvise.c
-===================================================================
---- linux.orig/mm/madvise.c
-+++ linux/mm/madvise.c
-@@ -213,7 +213,7 @@ static long madvise_remove(struct vm_are
-  */
- static int madvise_hwpoison(unsigned long start, unsigned long end)
- {
--	int ret = -EIO;
-+	int ret = 0;
- 	/*
- 	 * RED-PEN
- 	 * This allows to tie up arbitary amounts of memory.
+ #endif /* _LINUX_PRCTL_H */
