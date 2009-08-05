@@ -1,62 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933222AbZHEBtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933234AbZHEBuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933222AbZHEBtQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 21:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933104AbZHEBtL
+	id S933234AbZHEBuQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 21:50:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933104AbZHEBuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 21:49:11 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:55214 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933042AbZHEBtK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 21:49:10 -0400
-Date: Tue, 4 Aug 2009 18:48:59 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
-Subject: [PATCH -mmotm] staging/udlfb: fix printk format warning
-Message-Id: <20090804184859.2155e866.randy.dunlap@oracle.com>
-In-Reply-To: <200908042125.n74LP9qY018119@imap1.linux-foundation.org>
-References: <200908042125.n74LP9qY018119@imap1.linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Tue, 4 Aug 2009 21:50:14 -0400
+Received: from sh.osrg.net ([192.16.179.4]:46850 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933008AbZHEBuM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 21:50:12 -0400
+Date: Wed, 5 Aug 2009 10:48:14 +0900
+To: mingo@elte.hu
+Cc: davem@davemloft.net, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org, reif@earthlink.net, x86@kernel.org,
+       tony.luck@intel.com, akpm@linux-foundation.org, arnd@arndb.de
+Subject: Re: [PATCH 1/8] remove flush_write_buffers() in
+ dma-mapping-common.h
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1247466360-13330-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1247466360-13330-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<1247466360-13330-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt005.oracle.com [141.146.116.14]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010206.4A78E508.0138:SCFSTAT5015188,ss=1,fgs=0
+Message-Id: <20090805104735P.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 05 Aug 2009 10:48:16 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Mon, 13 Jul 2009 15:25:53 +0900
+FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-Fix printk format warning: use %td for ptrdiff:
+> From: Arnd Bergmann <arnd@arndb.de>
+> 
+> This moves flush_write_buffers() in asm-generic/dma-mapping-common.h to
+> arch/x86/kernel/pci-nommu.c.
+> 
+> The purpose of this patch is that, we can avoid defining NULL
+> flush_write_buffers() on IA64 and SPARC.
+> 
+> dma-mapping-common.h is used by X86 and IA64 (and SPARC soon) but only
+> X86 with CONFIG_X86_OOSTORE or CONFIG_X86_PPRO_FENCE actually uses
+> flush_write_buffers(). CONFIG_X86_OOSTORE or CONFIG_X86_PPRO_FENCE is
+> usable with only kernel/pci-nommu.c (that is, not usable with other
+> X86 IOMMU implementations such as SWIOTLB, VT-d, etc) so we can safely
+> move flush_write_buffers() in asm-generic/dma-mapping-common.h to
+> arch/x86/kernel/pci-nommu.c.
+> 
+> The further discussion is:
+> 
+> http://lkml.org/lkml/2009/6/28/104
+> 
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-drivers/staging/udlfb/udlfb.h:209: warning: format '%d' expects type 'int', but argument 3 has type 'long int'
+Ping?
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/staging/udlfb/udlfb.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- mmotm-2009-0804-1422.orig/drivers/staging/udlfb/udlfb.h
-+++ mmotm-2009-0804-1422/drivers/staging/udlfb/udlfb.h
-@@ -205,7 +205,7 @@ static int dlfb_set_video_mode(struct dl
- 
- 			/* send */
- 			ret = dlfb_bulk_msg(dev_info, bufptr - dev_info->buf);
--			printk("ret bulk 2: %d %d\n", ret,
-+			printk("ret bulk 2: %d %td\n", ret,
- 			       bufptr - dev_info->buf);
- 
- 			/* flush */
-
-
-
-
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+> ---
+>  arch/x86/kernel/pci-nommu.c              |   27 ++++++++++++++++++++++-----
+>  include/asm-generic/dma-mapping-common.h |    6 ------
+>  2 files changed, 22 insertions(+), 11 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/pci-nommu.c b/arch/x86/kernel/pci-nommu.c
+> index 71d412a..f7eb967 100644
+> --- a/arch/x86/kernel/pci-nommu.c
+> +++ b/arch/x86/kernel/pci-nommu.c
+> @@ -79,12 +79,29 @@ static void nommu_free_coherent(struct device *dev, size_t size, void *vaddr,
+>  	free_pages((unsigned long)vaddr, get_order(size));
+>  }
+>  
+> +static void nommu_sync_single_for_device(struct device *dev,
+> +			dma_addr_t addr, size_t size,
+> +			enum dma_data_direction dir)
+> +{
+> +	flush_write_buffers();
+> +}
+> +
+> +
+> +static void nommu_sync_sg_for_device(struct device *dev,
+> +			struct scatterlist *sg, int nelems,
+> +			enum dma_data_direction dir)
+> +{
+> +	flush_write_buffers();
+> +}
+> +
+>  struct dma_map_ops nommu_dma_ops = {
+> -	.alloc_coherent	= dma_generic_alloc_coherent,
+> -	.free_coherent	= nommu_free_coherent,
+> -	.map_sg		= nommu_map_sg,
+> -	.map_page	= nommu_map_page,
+> -	.is_phys	= 1,
+> +	.alloc_coherent		= dma_generic_alloc_coherent,
+> +	.free_coherent		= nommu_free_coherent,
+> +	.map_sg			= nommu_map_sg,
+> +	.map_page		= nommu_map_page,
+> +	.sync_single_for_device = nommu_sync_single_for_device,
+> +	.sync_sg_for_device	= nommu_sync_sg_for_device,
+> +	.is_phys		= 1,
+>  };
+>  
+>  void __init no_iommu_init(void)
+> diff --git a/include/asm-generic/dma-mapping-common.h b/include/asm-generic/dma-mapping-common.h
+> index 5406a60..e694263 100644
+> --- a/include/asm-generic/dma-mapping-common.h
+> +++ b/include/asm-generic/dma-mapping-common.h
+> @@ -103,7 +103,6 @@ static inline void dma_sync_single_for_cpu(struct device *dev, dma_addr_t addr,
+>  	if (ops->sync_single_for_cpu)
+>  		ops->sync_single_for_cpu(dev, addr, size, dir);
+>  	debug_dma_sync_single_for_cpu(dev, addr, size, dir);
+> -	flush_write_buffers();
+>  }
+>  
+>  static inline void dma_sync_single_for_device(struct device *dev,
+> @@ -116,7 +115,6 @@ static inline void dma_sync_single_for_device(struct device *dev,
+>  	if (ops->sync_single_for_device)
+>  		ops->sync_single_for_device(dev, addr, size, dir);
+>  	debug_dma_sync_single_for_device(dev, addr, size, dir);
+> -	flush_write_buffers();
+>  }
+>  
+>  static inline void dma_sync_single_range_for_cpu(struct device *dev,
+> @@ -132,7 +130,6 @@ static inline void dma_sync_single_range_for_cpu(struct device *dev,
+>  		ops->sync_single_range_for_cpu(dev, addr, offset, size, dir);
+>  		debug_dma_sync_single_range_for_cpu(dev, addr, offset, size, dir);
+>  
+> -		flush_write_buffers();
+>  	} else
+>  		dma_sync_single_for_cpu(dev, addr, size, dir);
+>  }
+> @@ -150,7 +147,6 @@ static inline void dma_sync_single_range_for_device(struct device *dev,
+>  		ops->sync_single_range_for_device(dev, addr, offset, size, dir);
+>  		debug_dma_sync_single_range_for_device(dev, addr, offset, size, dir);
+>  
+> -		flush_write_buffers();
+>  	} else
+>  		dma_sync_single_for_device(dev, addr, size, dir);
+>  }
+> @@ -165,7 +161,6 @@ dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg,
+>  	if (ops->sync_sg_for_cpu)
+>  		ops->sync_sg_for_cpu(dev, sg, nelems, dir);
+>  	debug_dma_sync_sg_for_cpu(dev, sg, nelems, dir);
+> -	flush_write_buffers();
+>  }
+>  
+>  static inline void
+> @@ -179,7 +174,6 @@ dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg,
+>  		ops->sync_sg_for_device(dev, sg, nelems, dir);
+>  	debug_dma_sync_sg_for_device(dev, sg, nelems, dir);
+>  
+> -	flush_write_buffers();
+>  }
+>  
+>  #define dma_map_single(d, a, s, r) dma_map_single_attrs(d, a, s, r, NULL)
+> -- 
+> 1.6.0.6
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
