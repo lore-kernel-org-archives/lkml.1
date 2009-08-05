@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933897AbZHEA3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933857AbZHEAgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933897AbZHEA3K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 20:29:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933882AbZHEA26
+	id S933857AbZHEAgc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 20:36:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933844AbZHEAga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 20:28:58 -0400
-Received: from n14.bullet.mail.mud.yahoo.com ([68.142.206.41]:37297 "HELO
-	n14.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S932759AbZHEA23 (ORCPT
+	Tue, 4 Aug 2009 20:36:30 -0400
+Received: from wg.visionengravers.com ([67.136.234.194]:17037 "EHLO
+	visionfs1.visionengravers.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S933309AbZHEAg3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 20:28:29 -0400
-X-Yahoo-Newman-Id: 221967.62741.bm@omp418.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=nlGcLDpy1UiuHf88/GsxWJVsMIDygVxGEmVtq7E9rOpQhR5u2vvodvehSv7J2vW16qGnwctTJS4ZE4/dczWF0ORm559W5yFqsVaTAPVq1T0eM82l+RurnzlYcEutncGIRUo2pptWy7wbuqLJpuj/tEw07Er5qlT6CJTVFYe1x/4=  ;
-X-YMail-OSG: 6NFbw7wVM1lz4W0zUDtIKdjAwko2flnowB4JtS6v27y6yYPOi__F0_yIFdSXrh8ZSK4F4nYlKmyHVMAknRYm_3Hj8d_PXA0XDuI2FbzsTPKr_Lv0zQVzvMLw2cji6RXrLC0H4fUrgIiVyJHixyp4vGTKh22X1_6AjuKH4ZjKJXb4a6yHcH8QS6TOzt4bMnqmii.e8OjSN64.rUuerogwI3L1dlWPb5dMqz2GJEFtYaydEA5xymY7azu5Dbft6jgd62ofEkzH_W6KRJapTcazKl.9AsSq4EkMaQCZrlDPImybbByD
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Pierre Ossman <pierre@ossman.eu>
-Subject: Re: New MMC maintainer needed
-Date: Mon, 3 Aug 2009 18:51:23 -0700
-User-Agent: KMail/1.9.10
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, nico@cam.org,
-       nicolas.ferre@rfo.atmel.com, hskinnemoen@atmel.com, tony@atomide.com,
-       manuel.lauss@gmail.com, mirq-linux@rere.qmqm.pl, ppisa@pikron.com,
-       jarkko.lavinen@nokia.com, ben@fluff.org, saschasommer@freenet.de,
-       avorontsov@ru.mvista.com, oakad@yahoo.com, ian@mnementh.co.uk,
-       HaraldWelte@viatech.com, JosephChan@via.com.tw, adrian.hunter@nokia.com
-References: <20090714153601.6dfe70ff@mjolnir.ossman.eu> <20090728222334.0c543c47@mjolnir.ossman.eu> <20090731122623.254fd0f1@mjolnir.ossman.eu>
-In-Reply-To: <20090731122623.254fd0f1@mjolnir.ossman.eu>
+	Tue, 4 Aug 2009 20:36:29 -0400
+From: H Hartley Sweeten <hartleys@visionengravers.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] net/ipv4/fib_semantics.c: fix "symbol shadows an earlier one" noise
+Date: Tue, 4 Aug 2009 17:36:34 -0700
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200908031851.24375.david-b@pacbell.net>
+Message-Id: <200908041736.34604.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 31 July 2009, Pierre Ossman wrote:
-> Restoring back the system state from MMC after a successful hibernation
-> http://marc.info/?t=124818534700003&r=1&w=2
-> 
-> I don't agree with this approach. The point of the workqueue is so that
-> the kernel can do things in parallel, so this patch is a step back. The
-> problem is really with how the kernel doesn't properly cope with
-> asynchronous disk scanning during bootup. The root_delay parameter was
-> added for this for the "normal" case, but it seems more work is needed.
+fib_sync_down_dev() uses a variable named 'nh' when doing a
+hlist_for_each_entry loop.  Later the same variable name is used
+in a change_nexthops loop.  This results in a sparse warning and is
+potentially confusing.  Fix both issues by changing the name of
+the outer loop variable.  The sparse warning is:
 
-Doesn't handing of resumes needs more attention overall?
+  warning: symbol 'nh' shadows an earlier one
 
-Example, root on eMMC (e.g. a 32-MByte non-removable chip) wouldn't
-resume at all well the last time I checked ... mounted file systems
-(not just root) made trouble.  Hardware that reliably reports card
-insert/remove was rude in the same ways.
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
 
-- Dave
+---
 
-
+diff --git a/net/ipv4/fib_semantics.c b/net/ipv4/fib_semantics.c
+index 9b096d6..b0e485a 100644
+--- a/net/ipv4/fib_semantics.c
++++ b/net/ipv4/fib_semantics.c
+@@ -1065,17 +1065,17 @@ int fib_sync_down_dev(struct net_device *dev, int force)
+ 	unsigned int hash = fib_devindex_hashfn(dev->ifindex);
+ 	struct hlist_head *head = &fib_info_devhash[hash];
+ 	struct hlist_node *node;
+-	struct fib_nh *nh;
++	struct fib_nh *this_nh;
+ 
+ 	if (force)
+ 		scope = -1;
+ 
+-	hlist_for_each_entry(nh, node, head, nh_hash) {
+-		struct fib_info *fi = nh->nh_parent;
++	hlist_for_each_entry(this_nh, node, head, nh_hash) {
++		struct fib_info *fi = this_nh->nh_parent;
+ 		int dead;
+ 
+ 		BUG_ON(!fi->fib_nhs);
+-		if (nh->nh_dev != dev || fi == prev_fi)
++		if (this_nh->nh_dev != dev || fi == prev_fi)
+ 			continue;
+ 		prev_fi = fi;
+ 		dead = 0;
