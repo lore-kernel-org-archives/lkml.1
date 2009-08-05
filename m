@@ -1,97 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934086AbZHEKTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934103AbZHEKTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934086AbZHEKTN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 06:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934035AbZHEKTN
+	id S934103AbZHEKTm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 06:19:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933794AbZHEKTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 06:19:13 -0400
-Received: from pmx1.sophos.com ([213.31.172.16]:36489 "EHLO pmx1.sophos.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933297AbZHEKTL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 06:19:11 -0400
-X-Greylist: delayed 406 seconds by postgrey-1.27 at vger.kernel.org; Wed, 05 Aug 2009 06:19:11 EDT
-Message-ID: <4A795B07.4070708@sophos.com>
-Date: Wed, 05 Aug 2009 11:12:23 +0100
-From: Douglas Leeder <douglas.leeder@sophos.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
-CC: Eric Paris <eparis@redhat.com>,
+	Wed, 5 Aug 2009 06:19:41 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50602 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933046AbZHEKTl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 06:19:41 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 5 Aug 2009 19:17:50 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "malware-list@dmesg.printk.net" <malware-list@dmesg.printk.net>,
-       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
-       "greg@kroah.com" <greg@kroah.com>, "jcm@redhat.com" <jcm@redhat.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "arjan@infradead.org" <arjan@infradead.org>,
-       "david@lang.hm" <david@lang.hm>,
-       "jengelh@medozas.de" <jengelh@medozas.de>,
-       "aviro@redhat.com" <aviro@redhat.com>,
-       "mrkafk@gmail.com" <mrkafk@gmail.com>,
-       "alexl@redhat.com" <alexl@redhat.com>, "jack@suse.cz" <jack@suse.cz>,
-       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       "mmorley@hcl.in" <mmorley@hcl.in>, "pavel@suse.cz" <pavel@suse.cz>
-Subject: Re: fanotify - overall design before I start sending patches
-References: <1248466429.3567.82.camel@localhost> <200908041734.05762.tvrtko.ursulin@sophos.com>
-In-Reply-To: <200908041734.05762.tvrtko.ursulin@sophos.com>
-X-Enigmail-Version: 0.96.0
-OpenPGP: id=B1498EA3
-X-MIMETrack: Itemize by SMTP Server on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 05/08/2009 11:12:23,
-	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 05/08/2009 11:12:24,
-	Serialize complete at 05/08/2009 11:12:24
-X-TNEFEvaluated: 1
+       npiggin@suse.de, hugh.dickins@tiscali.co.uk,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org
+Subject: [PATCH 1/2] ZERO_PAGE config
+Message-Id: <20090805191750.a6d10776.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090805191643.2b11ae78.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090805191643.2b11ae78.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tvrtko Ursulin wrote:
-> On Friday 24 July 2009 21:13:49 Eric Paris wrote:
->> After the socket is bound events are attained using the read() syscall
->> (recv* probably also works haven't tested).  This will result in the
->> buffer being filled with one or more events like this:
->>
->> struct fanotify_event_metadata {
->>         __u32 event_len;
->>         __s32 fd;
->>         __u32 mask;
->>         __u32 f_flags;
->>         __s32 pid;
->>         __s32 tgid;
->>         __u64 cookie;
->> }  __attribute__((packed));
->>
->> fd specifies the new file descriptor that was created in the context of
->> the listener.  (readlink of /proc/self/fd will give you A pathname)
->> mask indicates the events type (bitwise OR of the event types listed
->> above).  f_flags here is the f_flags the ORIGINAL process has the file
->> open with.  pid and tgid are from the original process.  cookie is used
->> when the listener needs to allow, deny, or delay the operation.
-> 
-> One more thing. uid and gid (possibly whole set?) would be useful so we can 
-> tell which user triggered an event without having to look at the process 
-> which has maybe disappeared in the mean time. I _think_ uid was in the 
-> original proposal/idea and don't remember if it was decided we cannot get it 
-> deliberately, or it was omitted by accident?
+no changes from v4.
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Maybe it would be good to include in the documentation how to extract
-extra information that listeners might want?
+Kconfig for using ZERO_PAGE or not. Using ZERO_PAGE or not is depends on
+ - arch has pte_special() or not.
+ - arch allows to use ZERO_PAGE or not.
 
-e.g.
+In this patch, generic-config for /mm and arch-specific config for x86
+is added. Other archs ?
 
-To get the path (or an approximation), do readlink on the fd.
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ arch/x86/Kconfig |    3 +++
+ mm/Kconfig       |   18 ++++++++++++++++++
+ 2 files changed, 21 insertions(+)
 
-To get the UID/GID of the originator process, look in /proc/<PID>/????
+Index: mmotm-2.6.31-Aug4/mm/Kconfig
+===================================================================
+--- mmotm-2.6.31-Aug4.orig/mm/Kconfig
++++ mmotm-2.6.31-Aug4/mm/Kconfig
+@@ -225,6 +225,24 @@ config KSM
+ 	  saving memory until one or another app needs to modify the content.
+ 	  Recommended for use with KVM, or with other duplicative applications.
+ 
++config SUPPORT_ANON_ZERO_PAGE
++	bool "Use anon zero page"
++	default y if ARCH_SUPPORT_ANON_ZERO_PAGE
++	help
++	  In anonymous private mapping (MAP_ANONYMOUS and /dev/zero), a read
++	  page fault will allocate a new zero-cleared page. If the first page
++	  fault is write, allocating a new page is necessary. But if it is
++	  read, we can use ZERO_PAGE until a write comes. If you set this to y,
++	  the kernel use ZERO_PAGE and delays allocating new memory in private
++	  anon mapping until the first write. If applications use large mmap
++	  and most of accesses are read, this reduces memory usage and cache
++	  usage to some extent. To support this, your architecture should have
++	  _PAGE_SPECIAL bit in pte. And this will be no help to cpu cache if
++	  the arch's cache is virtually tagged.
++	  To developper:
++	  This ZERO_PAGE changes behavior of follow_page(). please check
++	  usage of follow_page() in your arch before supporting this.
++
+ config DEFAULT_MMAP_MIN_ADDR
+         int "Low address space to protect from user allocation"
+         default 4096
+Index: mmotm-2.6.31-Aug4/arch/x86/Kconfig
+===================================================================
+--- mmotm-2.6.31-Aug4.orig/arch/x86/Kconfig
++++ mmotm-2.6.31-Aug4/arch/x86/Kconfig
+@@ -158,6 +158,9 @@ config ARCH_HIBERNATION_POSSIBLE
+ config ARCH_SUSPEND_POSSIBLE
+ 	def_bool y
+ 
++config ARCH_SUPPORT_ANON_ZERO_PAGE
++	def_bool y
++
+ config ZONE_DMA32
+ 	bool
+ 	default X86_64
 
-etc.
-
-This would provide easier answers to the questions on including extra
-info in the fanotify events.
-
--- 
-Douglas Leeder
