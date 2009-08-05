@@ -1,123 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933630AbZHEHHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933633AbZHEHIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933630AbZHEHHF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 03:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933613AbZHEHHF
+	id S933633AbZHEHIZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 03:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933515AbZHEHIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 03:07:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52607 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933610AbZHEHHD (ORCPT
+	Wed, 5 Aug 2009 03:08:25 -0400
+Received: from mailrelay010.isp.belgacom.be ([195.238.6.177]:4602 "EHLO
+	mailrelay010.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933509AbZHEHIY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 03:07:03 -0400
-Date: Wed, 5 Aug 2009 00:06:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Jiri Pirko <jpirko@redhat.com>
-Subject: Re: mmotm 2009-08-04-14-22 uploaded
-Message-Id: <20090805000611.e8183608.akpm@linux-foundation.org>
-In-Reply-To: <20090805063946.GA1934@darkstar>
-References: <200908042125.n74LP9qY018119@imap1.linux-foundation.org>
-	<20090805063946.GA1934@darkstar>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 5 Aug 2009 03:08:24 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAL/LeEpR9dJI/2dsb2JhbADUUgmEDwU
+Date: Wed, 5 Aug 2009 09:08:22 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Wan ZongShun <mcuos.com@gmail.com>
+Cc: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Add watchdog driver for w90p910
+Message-ID: <20090805070822.GC30892@infomag.iguana.be>
+References: <4A69CE00.10401@gmail.com> <20090804201032.GB30892@infomag.iguana.be> <e68bb3470908041955t7e07929bv612a25e0bc0264c1@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <e68bb3470908041955t7e07929bv612a25e0bc0264c1@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 5 Aug 2009 14:39:46 +0800 Dave Young <hidave.darkstar@gmail.com> wrote:
+Hi Wan,
 
-> Hi andrew,
+>  I'm much obliged to you for helping me.
+
+With pleasure :-).
+
+> >> +static irqreturn_t w90p910_wdt_irq(int irq, void *dev_id)
+> >> +{
+> >> +     w90p910_wdt_keepalive();
+> >> +     return IRQ_HANDLED;
+> >> +}
+> >
+> > How does the interrupt work? what does the watchdog do when it times out?
+> > (Is there a datasheet available somewhere?)
+> >
 > 
-> I see following lockdep warning with this release:
+> The mechanism of watchdog of w90p910 is that the interrupt will occur
+> periodicity every a given time interval.
 > 
-> [    0.474144] INFO: trying to register non-static key.
-> [    0.474144] the code is fine but needs lockdep annotation.
-> [    0.474144] turning off the locking correctness validator.
-> [    0.474144] Pid: 1, comm: swapper Not tainted 2.6.31-rc5-mm1 #7
-> [    0.474144] Call Trace:
-> [    0.474144]  [<c1047f1e>] register_lock_class+0x58/0x241
-> [    0.474144]  [<c1049ab1>] __lock_acquire+0xac/0xb73
-> [    0.474144]  [<c1076eb5>] ? __alloc_pages_nodemask+0xe2/0x483
-> [    0.474144]  [<c1048b64>] ? mark_lock+0x1e/0x1c7
-> [    0.474144]  [<c1048b64>] ? mark_lock+0x1e/0x1c7
-> [    0.474144]  [<c1048d50>] ? mark_held_locks+0x43/0x5b
-> [    0.474144]  [<c10940a6>] ? kmem_cache_alloc+0xac/0x11b
-> [    0.474144]  [<c104a615>] lock_acquire+0x9d/0xc0
-> [    0.474144]  [<c12b8b96>] ? netif_addr_lock_bh+0xd/0xf
-> [    0.474144]  [<c1330feb>] _spin_lock_bh+0x20/0x2f
-> [    0.474144]  [<c12b8b96>] ? netif_addr_lock_bh+0xd/0xf
-> [    0.474144]  [<c12b8b96>] netif_addr_lock_bh+0xd/0xf
-> [    0.474144]  [<c12bc3c3>] alloc_netdev_mq+0xf9/0x1a5
-> [    0.474144]  [<c121f016>] ? loopback_setup+0x0/0x74
-> [    0.474144]  [<c1578d49>] loopback_net_init+0x20/0x5d
-> [    0.474144]  [<c12b7907>] register_pernet_operations+0x13/0x15
-> [    0.474144]  [<c12b7970>] register_pernet_device+0x1f/0x47
-> [    0.474144]  [<c157ee8d>] net_dev_init+0xfe/0x14d
-> [    0.474144]  [<c1001137>] do_one_initcall+0x4a/0x11a
-> [    0.474144]  [<c157ed8f>] ? net_dev_init+0x0/0x14d
-> [    0.474144]  [<c1067e00>] ? register_irq_proc+0x64/0xa8
-> [    0.474144]  [<c1067e97>] ? init_irq_proc+0x53/0x60
-> [    0.474144]  [<c1557535>] kernel_init+0x129/0x17a
-> [    0.474144]  [<c155740c>] ? kernel_init+0x0/0x17a
-> [    0.474144]  [<c1003d47>] kernel_thread_helper+0x7/0x10
+> Hmm, there are only two choices to confirm the system running, one to
+> clear this WTIF and  WTR bits in handler of interrupt, the other to
+> reset them in user application before interrupt occurs.
 
-At a guess I'd say that alloc_netdev_mq()->dev_unicast_init() is doing
-netif_addr_lock_bh()->spin_lock_bh(&dev->addr_list_lock) prior to
-initialising add_list_lock.
+Hmm, I'm confused now. how does the watchdog then reboot your system?
+The way we implement watchdog's in linux is that you start the watchdog and that userspace needs to trigger/ping/keep-the-watchdog-alive before the timeout period is finished/over. If the userspace daemon can keep doing this (or with other words: the system is healthy enough to operate normally without to much delay) your system doesn't get rebooted. If it doesn't manage to do it, then the watchdog knows that your system is not stable/healthy enough and will reboot your system.
 
-Something like this might shut it up:
+Here I think that the watchdog is started. Then userspace start pinging the watchdog and everything is OK. If userspace doesn't ping the watchdog in time an interrupt is being generated and instead of rebooting the system, the watchdog is being triggered... If this is indeed what it does then this is wrong.
 
---- a/net/core/dev.c~a
-+++ a/net/core/dev.c
-@@ -5111,7 +5111,7 @@ struct net_device *alloc_netdev_mq(int s
- 	if (dev_addr_init(dev))
- 		goto free_tx;
+> > The read-write cyclus to REG_WTCR should also be guarded with a spinlock.
+> > Can you incorporate the call to w90p910_wdt_start() in the ioctl code into this function?
+> >
+> 
+> Do you mean that I should merge the "w90p910_wdt_settimeout" to
+> "w90p910_wdt_start()"? or contrary?
+
+I mean the contrary.
+If your watchdog needs to be restarted when you set a new timeout, then it is best to have this in the settimeout function.
+It is also better to do a ping to the watchdog once the new timeout was set. It might however be that a ping is enough and that a restart is not needed.
+So something like the following diff could be it:
+--- w90p910_wdt.c	2009-08-05 06:44:14.286477908 +0000
++++ w90p910_wdt.c	2009-08-05 06:46:04.496353102 +0000
+@@ -144,6 +144,9 @@
+ 	__raw_writel(val, w90p910_wdt->wdt_base + REG_WTCR);
  
--	dev_unicast_init(dev);
-+	__hw_addr_init(&dev->uc);
+ 	wdt_time = new_time_level;
++
++	w90p910_wdt_start();
++
+ 	return 0;
+ }
  
- 	dev_net_set(dev, &init_net);
- 
+@@ -182,9 +185,7 @@
+ 			return -EFAULT;
+ 		if (w90p910_wdt_settimeout(new_value))
+ 			return -EINVAL;
+-
+-		w90p910_wdt_start();
+-
++		w90p910_wdt_keepalive();
+ 		return put_user(wdt_time, p);
+ 	case WDIOC_GETTIMEOUT:
+ 		return put_user(wdt_time, p);
+---
 
-but it'd be better to intialise this thing earlier like:
+I have an additional question: which timeout values can you set? is it 0, 1, 2 and 3 seconds?
 
---- a/net/core/dev.c~a
-+++ a/net/core/dev.c
-@@ -4730,8 +4730,6 @@ int register_netdevice(struct net_device
- 	BUG_ON(dev->reg_state != NETREG_UNINITIALIZED);
- 	BUG_ON(!net);
- 
--	spin_lock_init(&dev->addr_list_lock);
--	netdev_set_addr_lockdep_class(dev);
- 	netdev_init_queue_locks(dev);
- 
- 	dev->iflink = -1;
-@@ -5107,6 +5105,8 @@ struct net_device *alloc_netdev_mq(int s
- 
- 	dev = PTR_ALIGN(p, NETDEV_ALIGN);
- 	dev->padded = (char *)dev - (char *)p;
-+	spin_lock_init(&dev->addr_list_lock);
-+	netdev_set_addr_lockdep_class(dev);
- 
- 	if (dev_addr_init(dev))
- 		goto free_tx;
-_
+Kind regards,
+Wim.
 
-but that might break register_netdevice() for netdevs which were
-allocated via other means, dunno.
-
-I would be pointing fingers at
-
-: commit 31278e71471399beaff9280737e52b47db4dc345
-: Author:     Jiri Pirko <jpirko@redhat.com>
-: AuthorDate: Wed Jun 17 01:12:19 2009 +0000
-: Commit:     David S. Miller <davem@davemloft.net>
-: CommitDate: Thu Jun 18 00:29:08 2009 -0700
-: 
-:     net: group address list and its count
-    
-and politely suggesting that net developers enable lockdep when testing :)
