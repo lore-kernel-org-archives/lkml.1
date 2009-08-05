@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934405AbZHENdK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934399AbZHENeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934405AbZHENdK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 09:33:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934394AbZHENdI
+	id S934399AbZHENeG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 09:34:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934359AbZHENeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 09:33:08 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:54636 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934359AbZHENdF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 09:33:05 -0400
-Date: Wed, 5 Aug 2009 15:23:08 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Chris Zankel <chris@zankel.net>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/4] arch/xtensa: Use UPIO_MEM rather than SERIAL_IO_MEM
-Message-ID: <Pine.LNX.4.64.0908051522300.20453@pc-004.diku.dk>
+	Wed, 5 Aug 2009 09:34:05 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:48655 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934324AbZHENeD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 09:34:03 -0400
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
+       akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Wed, 05 Aug 2009 06:33:57 -0700
+In-Reply-To: <20090805112123.6552.73574.sendpatchset@localhost.localdomain> (Amerigo Wang's message of "Wed\, 5 Aug 2009 07\:19\:02 -0400")
+Message-ID: <m1eirqtmey.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: amwang@redhat.com, avorontsov@ru.mvista.com, mingo@elte.hu, akpm@linux-foundation.org, nhorman@redhat.com, linux-ia64@vger.kernel.org, tony.luck@intel.com, linux-kernel@vger.kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Amerigo Wang <amwang@redhat.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.0816]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.5 XM_Body_Dirty_Words Contains a dirty word
+	*  0.0 T_TooManySym_01 4+ unique symbols in subject
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [Patch 0/7] Implement crashkernel=auto
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Amerigo Wang <amwang@redhat.com> writes:
 
-As in the commit 9b4a1617772d6d5ab5eeda0cd95302fae119e359, use UPIO_MEM
-rather than SERIAL_IO_MEM.  Both have the same value.
+> This series of patch implements automatically reserved memory for crashkernel,
+> by introducing a new boot option "crashkernel=auto". This idea is from Neil.
+>
+> In case of breaking user-space applications, it modifies this boot option after
+> it decides how much memory should be reserved.
+>
+> On different arch, the threshold and reserved memory size is different. Please
+> refer patch 7/7 which contains an update for the documentation.
+>
+> Note: This patchset was only tested on x86_64 with differernt memory sizes.
 
-The semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
+This seems like a silly hard code. Especially for a feature distros don't
+care enough about to implement a working initrd for.
 
-// <smpl>
-@has_sc@
-@@
+Has anyone bothered to justify those large amounts of memory?
+Where does the 128M go?
 
-#include <linux/serial_core.h>
+Please pardon me for being a cynic but I don't see the command line option
+being the bottleneck for real users to make this work.
 
-@depends on has_sc@
-@@
-
-- SERIAL_IO_MEM
-+ UPIO_MEM
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- arch/xtensa/platforms/s6105/device.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff -u -p a/arch/xtensa/platforms/s6105/device.c b/arch/xtensa/platforms/s6105/device.c
---- a/arch/xtensa/platforms/s6105/device.c
-+++ b/arch/xtensa/platforms/s6105/device.c
-@@ -54,7 +54,7 @@ static struct plat_serial8250_port seria
- 		.irq = UART_INTNUM,
- 		.uartclk = S6_SCLK,
- 		.regshift = 2,
--		.iotype = SERIAL_IO_MEM,
-+		.iotype = UPIO_MEM,
- 		.flags = ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST,
- 	},
- 	{
-@@ -63,7 +63,7 @@ static struct plat_serial8250_port seria
- 		.irq = UART_INTNUM,
- 		.uartclk = S6_SCLK,
- 		.regshift = 2,
--		.iotype = SERIAL_IO_MEM,
-+		.iotype = UPIO_MEM,
- 		.flags = ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST,
- 	},
- 	{ },
+Eric
