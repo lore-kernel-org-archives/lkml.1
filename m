@@ -1,81 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933163AbZHEBpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933197AbZHEBs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933163AbZHEBpQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 21:45:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933008AbZHEBpO
+	id S933197AbZHEBs0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 21:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933008AbZHEBsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 21:45:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51162 "EHLO hera.kernel.org"
+	Tue, 4 Aug 2009 21:48:23 -0400
+Received: from mga01.intel.com ([192.55.52.88]:46984 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932967AbZHEBpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 21:45:13 -0400
-Message-ID: <4A78E406.8020605@kernel.org>
-Date: Wed, 05 Aug 2009 10:44:38 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Problem with percpu values when bringing up second CPU?
-References: <4A78BD1A.9050001@goop.org>
-In-Reply-To: <4A78BD1A.9050001@goop.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+	id S932872AbZHEBsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 21:48:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.43,325,1246863600"; 
+   d="scan'208";a="480807861"
+Subject: Re: [PATCH V2 0/4] introduce device async actions mechanism
+From: Zhang Rui <rui.zhang@intel.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <lenb@kernel.org>, Arjan van de Ven <arjan@linux.intel.com>,
+       "dtor@mail.ru" <dtor@mail.ru>
+In-Reply-To: <Pine.LNX.4.44L0.0908041330040.3102-100000@iolanthe.rowland.org>
+References: <Pine.LNX.4.44L0.0908041330040.3102-100000@iolanthe.rowland.org>
+Content-Type: text/plain
+Date: Wed, 05 Aug 2009 09:47:31 +0800
+Message-Id: <1249436851.2670.422.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 05 Aug 2009 01:44:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Jeremy Fitzhardinge wrote:
-> I just tracked down a bug I was having to a change where I changed one
-> of my Xen event channel variables to a percpu variable, relating to
-> masking an event channel.
+On Wed, 2009-08-05 at 01:33 +0800, Alan Stern wrote:
+> On Tue, 4 Aug 2009, Rafael J. Wysocki wrote:
 > 
-> The symptom was that shortly after bringing up the second CPU, the first
-> CPU's timer events stopped arriving, apparently because they had become
-> masked.
-
-Hmmmm...
-
-> The event channels masks are declared as:
+> > Not only that.  I'd like to simplify the design, because IMO using one async
+> > domain would be much more straightforward than using multiple ones.
 > 
-> #define NR_EVENT_CHANNEL_LONGS (NR_EVENT_CHANNELS/BITS_PER_LONG)
-> static DEFINE_PER_CPU(unsigned long,
->                      cpu_evtchn_mask[NR_EVENT_CHANNEL_LONGS]) =
->        {[0 ... NR_EVENT_CHANNEL_LONGS-1] = ~0ul };	/* everything masked by default */
+> > If I understand the async framework correctly, the domains are only used for
+> > synchronization, ie. if you want to wait for a group of async operations to
+> > complete, you can put them all into one domain and then call
+> > async_synchronize_full_domain() to wait for them all together.
+> > 
+> > You don't need multiple domains to run multiple things in parallel.
 > 
-> My theory about what's happening is that when the second CPU comes up,
-> it allocates separate percpu areas for each CPU, but it is somehow
-> failing to accurately copy CPU 0's percpu data over; either it isn't
-> copying it all (ie, using the initialized values rather than the current
-> values), or failing to copy the values in an interrupt-atomic way.
->
-> Does this sound plausible?
-
-Percpu areas aren't setup when the first cpu comes up.  They're
-allocated and copied from the master copy during early init when only
-the boot cpu is running.
-
-> When I convert this back to an ad-hoc percpu variable (an array indexed
-> by cpu number), it goes back to working.  Also, if I boot with maxcpus=1
-> it also works with percpu data.
-
-Hmmm... strange.  Can you try to print out the values along the boot
-process and see when things go wrong?
-
-> Also, because we don't have large pages under Xen, it always allocates
-> percpu as 4k pages:
+> There's a basic confusion going on here.
 > 
-> PERCPU: Allocated 21 4k pages, static data 82080 bytes
+> Rui is using "async domain" to mean a collection of devices which 
+> will be suspended or resumed serially.  Different domains run in 
+> parallel.
+> 
+> Rafael is using "async domain" to mean a collection of devices which 
+> will be suspended or resumed in parallel.  Different domains run 
+> serially.
+> 
+cool, thanks for stating the confusion so clearly, Alan. :)
 
-I don't think the choice of first chunk allocator would cause any
-difference.
+Hi, Rafael,
 
-Thanks.
+maybe there is still some confusions about my proposal.
 
--- 
-tejun
+I re-read kernel/async.c file, and notice that Arjan calls the domain as
+*_synchronization_* domain. sorry I use the wrong word before.
+
+And I use the synchronization domains just to keep devices dependency.
+
+First, the general idea is to suspend/resume those slow devices in
+parallel. So we don't suspend/resume them synchronously, instead, we
+move these actions to the global domain.
+
+Then, I found that these actions can not be run asynchronously because
+they depend on other devices.
+For example, sd depends on SATA controller, we should make sure the PM
+callbacks of sd and ahci sata controller are run serially. so a
+synchronization domain is created for them.
+This is how multiple synchronization domains come from in this proposal.
+
+thanks,
+rui
+
+> Once that is cleared up, you should be able to communicate a little 
+> better...  :-)
+> 
+> Alan Stern
+> 
+
