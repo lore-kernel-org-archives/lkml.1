@@ -1,66 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933577AbZHEG5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933586AbZHEHAD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933577AbZHEG5w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 02:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933070AbZHEG5v
+	id S933586AbZHEHAD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 03:00:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933088AbZHEHAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 02:57:51 -0400
-Received: from mail-yw0-f177.google.com ([209.85.211.177]:46789 "EHLO
-	mail-yw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932966AbZHEG5u convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 02:57:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=dAN36slg6zE6GChHr1Gn+0JX/fdEiHV6AFh9BGa2Taftq13Ftyoqv3c1PlyRRDsVr3
-         8RWA+152Z6WNVeGapqjE3zBhlZFsXymS2CbkzxoWrvL+JhvCCtX3CviTAMh0gWOGAABj
-         JSpV+ZLJ3gE8jAptFt3UOIq8dOT1B6BEUXVgE=
+	Wed, 5 Aug 2009 03:00:00 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36635 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933070AbZHEG77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 02:59:59 -0400
+Date: Wed, 5 Aug 2009 08:59:19 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Laurent Vivier <Laurent.Vivier@bull.net>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Avi Kivity <avi@redhat.com>
+Cc: kvm-devel <kvm-devel@lists.sourceforge.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH 2/4] Introduce a new fields "gtime" and "cgtime" in
+	task_struct and signal_struct
+Message-ID: <20090805065919.GA6305@elte.hu>
+References: <46C99392.3050205@bull.net>
 MIME-Version: 1.0
-In-Reply-To: <1249454696.9324.325.camel@macbook.infradead.org>
-References: <1248707041.6100.35.camel@macbook.infradead.org>
-	 <21d7e9970907282328l4a44b9a2of4500c5c84a3586b@mail.gmail.com>
-	 <1248851712.19733.214.camel@macbook.infradead.org>
-	 <21d7e9970907290143q6778511cvda1c6b915f61654a@mail.gmail.com>
-	 <1248860205.19733.238.camel@macbook.infradead.org>
-	 <4A78C9C6.6010103@goop.org>
-	 <1249454696.9324.325.camel@macbook.infradead.org>
-Date: Wed, 5 Aug 2009 16:57:51 +1000
-Message-ID: <21d7e9970908042357m6080e88fyeaaad171888766f2@mail.gmail.com>
-Subject: Re: [Xen-devel] Re: [RFC] Make AGP work with IOMMU
-From: Dave Airlie <airlied@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Keir Fraser <kier.fraser@eu.citrix.com>, xen-devel@lists.xensource.com,
-       Joerg Roedel <joerg.roedel@amd.com>, iommu@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Zhenyu Wang <zhenyu.z.wang@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46C99392.3050205@bull.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 5, 2009 at 4:44 PM, David Woodhouse<dwmw2@infradead.org> wrote:
-> On Tue, 2009-08-04 at 16:52 -0700, Jeremy Fitzhardinge wrote:
->> And just when I have patches to use them for their original purpose...
->>
->> Looking back over the thread, are you saying that most users are already
->> using the DMA API correctly for AGP accesses?  If that's true then we
->> should be just fine.
->
-> No, not 'most users'. But perhaps we should.
->
-> All we've done so far is make intel-agp use the DMA API correctly. And
-> that's conditional on CONFIG_DMAR. But we could make it unconditional,
-> and make the other drivers do it too. The code is all fairly generic.
->
-> Without an IOMMU, the overhead would be fairly minimal.
->
 
-I'm not sure how prevalent Xen is on AGP systems, I'm going to guess
-not enough that anyone cares. Intel integrated chips are the only AGP
-codebase user that are made any more, and they don't really use AGP
-its just a legacy of the previous designs.
+* Laurent Vivier <Laurent.Vivier@bull.net> wrote:
 
-Dave.
+> [PATCH 2/4] like for cpustat, introduce the "gtime" (guest time of 
+> the task) and "cgtime" (guest time of the task children) fields 
+> for the tasks. Modify signal_struct and task_struct. Modify 
+> /proc/<pid>/stat to display these new fields.
+
+> --- kvm.orig/include/linux/sched.h	2007-08-20 11:11:30.000000000 +0200
+> +++ kvm/include/linux/sched.h	2007-08-20 13:00:02.000000000 +0200
+> @@ -515,6 +515,10 @@ struct signal_struct {
+>  	 * in __exit_signal, except for the group leader.
+>  	 */
+>  	cputime_t utime, stime, cutime, cstime;
+> +#ifdef CONFIG_GUEST_ACCOUNTING
+> +	cputime_t gtime;
+> +	cputime_t cgtime;
+> +#endif
+
+A handful of general (and less general) observations about these 
+patches:
+
+ 1- The code is very ugly due to being an #ifdef fest. Please
+    always try to avoid them.
+
+ 2- cputime_t is very coarse on x86: measured in jiffies. This means
+    that with a default HZ of 250 we'll have units of 4 msecs. 
+    That's almost useless to rely on in new instrumentation: an irq 
+    can come in and out without accounting noticing it, etc. If we 
+    do some new statistics then it should be a lot better than 
+    jiffies granular.
+
+ 3- stime of vcpu tasks/threads already approximates 'guest time' 
+    adequately. (as Jeremy observed it as well) Yes, it mixes 'true 
+    guest mode' and 'host mode' system time, but then again due to 
+    the jiffies granularity we have a _far_ bigger skew going on 
+    already.
+
+ 4- namespace collision: 'gtime' is already used as 'group time' in 
+    a few places. One of the two things needs to be renamed.
+
+ 5- tracepoints and perfcounters could be used to measure guest time 
+    precisely, in a low-overhead mode.
+
+These issues need to be addressed in a meaningful way. #2 probably 
+means a revamping of cputime_t handling on x86 - of not just the 
+gtime. But #3 is worth keeping in mind as well.
+
+I think #5 is the most capable solution by a wide margin - we need 
+just a single tracepoint to emit 'nsecs spent in guest mode' 
+information and that's it. It would be a far smaller patch.
+
+The tracepoint might even sample the guest RIP and hence could be 
+used as a VM-exit profiler and 'perf record -e kvm:vm_exit + perf 
+report' could be used to examine/profile/trace guest exit reasons.
+
+	Ingo
