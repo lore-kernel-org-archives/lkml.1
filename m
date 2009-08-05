@@ -1,37 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933237AbZHEGEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933461AbZHEGFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933237AbZHEGEx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 02:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932579AbZHEGEv
+	id S933461AbZHEGFX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 02:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932579AbZHEGFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 02:04:51 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56782 "EHLO
+	Wed, 5 Aug 2009 02:05:20 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56804 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932498AbZHEGEu (ORCPT
+	with ESMTP id S932594AbZHEGFS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 02:04:50 -0400
+	Wed, 5 Aug 2009 02:05:18 -0400
 X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Date: Wed, 5 Aug 2009 15:03:23 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 To: Minchan Kim <minchan.kim@gmail.com>
-Subject: Re: [PATCH 1/4] oom: move oom_adj to signal_struct
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       Paul Menage <menage@google.com>, David Rientjes <rientjes@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, Paul Menage <menage@google.com>,
+       David Rientjes <rientjes@google.com>, Rik van Riel <riel@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Oleg Nesterov <oleg@redhat.com>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [PATCH 1/4] oom: move oom_adj to signal_struct
+Message-Id: <20090805150323.2624a68f.kamezawa.hiroyu@jp.fujitsu.com>
 In-Reply-To: <20090805145516.b2129f81.minchan.kim@barrios-desktop>
-References: <20090805114650.5BA1.A69D9226@jp.fujitsu.com> <20090805145516.b2129f81.minchan.kim@barrios-desktop>
-Message-Id: <20090805150017.5BB9.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+References: <20090805110107.5B97.A69D9226@jp.fujitsu.com>
+	<20090805114004.459a7deb.minchan.kim@barrios-desktop>
+	<20090805114650.5BA1.A69D9226@jp.fujitsu.com>
+	<20090805145516.b2129f81.minchan.kim@barrios-desktop>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed,  5 Aug 2009 15:04:48 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+On Wed, 5 Aug 2009 14:55:16 +0900
+Minchan Kim <minchan.kim@gmail.com> wrote:
 
 > On Wed,  5 Aug 2009 11:51:31 +0900 (JST)
 > KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
@@ -98,14 +104,21 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > since oomkilladj is used to present just -17 ~ 15. 
 > 
 > What do you think about this approach ?
-
-I can ack this. but please re-initialize oom_scale_down at fork and
-exec time.
-currently oom_scale_down makes too big affect.
-
-and, May I ask which you hate my approach? 
-
 > 
+keeping this in "task" struct is troublesome.
+It may not livelock but near-to-livelock state, in bad case.
+
+After applying Kosaki's , oom_kill will use
+"for_each_process()" instead of "do_each_thread", I think it's a way to go.
+
+But, yes, your "scale_down" idea itself is interesitng.
+Then, hmm, merging two of yours ?
+
+Thanks,
+-Kame
+
+
+
 > ----
 > 
 > This is based on 2.6.30 which is kernel before applying David Patch. 
@@ -160,11 +173,5 @@ and, May I ask which you hate my approach?
 > -- 
 > Kind regards,
 > Minchan Kim
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
-
+> 
 
