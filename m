@@ -1,167 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933807AbZHEJB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933814AbZHEJFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933807AbZHEJB6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 05:01:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932781AbZHEJB6
+	id S933814AbZHEJFz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 05:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933608AbZHEJFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 05:01:58 -0400
-Received: from cantor.suse.de ([195.135.220.2]:56141 "EHLO mx1.suse.de"
+	Wed, 5 Aug 2009 05:05:52 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49249 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932688AbZHEJB5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 05:01:57 -0400
-Message-ID: <4A794A7F.4090907@suse.de>
-Date: Wed, 05 Aug 2009 18:01:51 +0900
-From: Tejun Heo <teheo@suse.de>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	id S932781AbZHEJFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 05:05:51 -0400
+Message-ID: <4A794B65.5060802@garzik.org>
+Date: Wed, 05 Aug 2009 05:05:41 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Greg KH <greg@kroah.com>, Al Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, cguthrie@mandriva.org
-Subject: [PATCH 1/2 UPDATED] chrdev: implement __[un]register_chrdev()
-References: <4A79283E.7030202@kernel.org>	<s5hzlaed9me.wl%tiwai@suse.de>	<4A793099.1040704@kernel.org> <s5hy6pyd8vx.wl%tiwai@suse.de> <4A79350A.3020904@kernel.org>
-In-Reply-To: <4A79350A.3020904@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Matt Turner <mattst88@gmail.com>
+CC: linux-kernel@vger.kernel.org, Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: Add linux-alpha@ to Patchwork?
+References: <b4198de60908042129s5da611c7j5d859d9e914dae68@mail.gmail.com>
+In-Reply-To: <b4198de60908042129s5da611c7j5d859d9e914dae68@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[un]register_chrdev() assume minor range 0-255.  This patch adds __
-prefixed versions which take @minorbase and @count explicitly.  The
-original ones become inline wrappers around __ ones.
+Matt Turner wrote:
+> Hi,
+> What needs to be done to have linux-alpha@ added to Patchwork
+> (http://patchwork.kernel.org/)?
+> 
+> Please CC me on replies.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
----
- fs/char_dev.c      |   39 ++++++++++++++++++++++++++-------------
- include/linux/fs.h |   19 ++++++++++++++++---
- 2 files changed, 42 insertions(+), 16 deletions(-)
+Is there really a demonstrated need?
 
-Index: work/fs/char_dev.c
-===================================================================
---- work.orig/fs/char_dev.c
-+++ work/fs/char_dev.c
-@@ -237,8 +237,10 @@ int alloc_chrdev_region(dev_t *dev, unsi
- }
+	Jeff
 
- /**
-- * register_chrdev() - Register a major number for character devices.
-+ * __register_chrdev() - create and register a cdev occupying a range of minors
-  * @major: major device number or 0 for dynamic allocation
-+ * @baseminor: first of the requested range of minor numbers
-+ * @count: the number of minor numbers required
-  * @name: name of this range of devices
-  * @fops: file operations associated with this devices
-  *
-@@ -254,19 +256,17 @@ int alloc_chrdev_region(dev_t *dev, unsi
-  * /dev. It only helps to keep track of the different owners of devices. If
-  * your module name has only one type of devices it's ok to use e.g. the name
-  * of the module here.
-- *
-- * This function registers a range of 256 minor numbers. The first minor number
-- * is 0.
-  */
--int register_chrdev(unsigned int major, const char *name,
--		    const struct file_operations *fops)
-+int __register_chrdev(unsigned int major, unsigned int baseminor,
-+		      unsigned int count, const char *name,
-+		      const struct file_operations *fops)
- {
- 	struct char_device_struct *cd;
- 	struct cdev *cdev;
- 	char *s;
- 	int err = -ENOMEM;
 
--	cd = __register_chrdev_region(major, 0, 256, name);
-+	cd = __register_chrdev_region(major, baseminor, count, name);
- 	if (IS_ERR(cd))
- 		return PTR_ERR(cd);
- 	
-@@ -280,7 +280,7 @@ int register_chrdev(unsigned int major,
- 	for (s = strchr(kobject_name(&cdev->kobj),'/'); s; s = strchr(s, '/'))
- 		*s = '!';
- 		
--	err = cdev_add(cdev, MKDEV(cd->major, 0), 256);
-+	err = cdev_add(cdev, MKDEV(cd->major, baseminor), count);
- 	if (err)
- 		goto out;
 
-@@ -290,7 +290,7 @@ int register_chrdev(unsigned int major,
- out:
- 	kobject_put(&cdev->kobj);
- out2:
--	kfree(__unregister_chrdev_region(cd->major, 0, 256));
-+	kfree(__unregister_chrdev_region(cd->major, baseminor, count));
- 	return err;
- }
-
-@@ -316,10 +316,23 @@ void unregister_chrdev_region(dev_t from
- 	}
- }
-
--void unregister_chrdev(unsigned int major, const char *name)
-+/**
-+ * __unregister_chrdev - unregister and destroy a cdev
-+ * @major: major device number
-+ * @baseminor: first of the range of minor numbers
-+ * @count: the number of minor numbers this cdev is occupying
-+ * @name: name of this range of devices
-+ *
-+ * Unregister and destroy the cdev occupying the region described by
-+ * @major, @baseminor and @count.  This function undoes what
-+ * __register_chrdev() did.
-+ */
-+void __unregister_chrdev(unsigned int major, unsigned int baseminor,
-+			 unsigned int count, const char *name)
- {
- 	struct char_device_struct *cd;
--	cd = __unregister_chrdev_region(major, 0, 256);
-+
-+	cd = __unregister_chrdev_region(major, baseminor, count);
- 	if (cd && cd->cdev)
- 		cdev_del(cd->cdev);
- 	kfree(cd);
-@@ -568,6 +581,6 @@ EXPORT_SYMBOL(cdev_alloc);
- EXPORT_SYMBOL(cdev_del);
- EXPORT_SYMBOL(cdev_add);
- EXPORT_SYMBOL(cdev_index);
--EXPORT_SYMBOL(register_chrdev);
--EXPORT_SYMBOL(unregister_chrdev);
-+EXPORT_SYMBOL(__register_chrdev);
-+EXPORT_SYMBOL(__unregister_chrdev);
- EXPORT_SYMBOL(directly_mappable_cdev_bdi);
-Index: work/include/linux/fs.h
-===================================================================
---- work.orig/include/linux/fs.h
-+++ work/include/linux/fs.h
-@@ -1998,12 +1998,25 @@ extern void bd_release_from_disk(struct
- #define CHRDEV_MAJOR_HASH_SIZE	255
- extern int alloc_chrdev_region(dev_t *, unsigned, unsigned, const char *);
- extern int register_chrdev_region(dev_t, unsigned, const char *);
--extern int register_chrdev(unsigned int, const char *,
--			   const struct file_operations *);
--extern void unregister_chrdev(unsigned int, const char *);
-+extern int __register_chrdev(unsigned int major, unsigned int baseminor,
-+			     unsigned int count, const char *name,
-+			     const struct file_operations *fops);
-+extern void __unregister_chrdev(unsigned int major, unsigned int baseminor,
-+				unsigned int count, const char *name);
- extern void unregister_chrdev_region(dev_t, unsigned);
- extern void chrdev_show(struct seq_file *,off_t);
-
-+static inline int register_chrdev(unsigned int major, const char *name,
-+				  const struct file_operations *fops)
-+{
-+	return __register_chrdev(major, 0, 256, name, fops);
-+}
-+
-+static inline void unregister_chrdev(unsigned int major, const char *name)
-+{
-+	__unregister_chrdev(major, 0, 256, name);
-+}
-+
- /* fs/block_dev.c */
- #define BDEVNAME_SIZE	32	/* Largest string for a blockdev identifier */
- #define BDEVT_SIZE	10	/* Largest string for MAJ:MIN for blkdev */
