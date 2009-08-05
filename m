@@ -1,74 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752127AbZHESwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752177AbZHESxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752127AbZHESwf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 14:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbZHESwf
+	id S1752177AbZHESxZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 14:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbZHESxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 14:52:35 -0400
-Received: from kroah.org ([198.145.64.141]:58480 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751935AbZHESwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 14:52:34 -0400
-Date: Wed, 5 Aug 2009 11:51:36 -0700
-From: Greg KH <greg@kroah.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Jan Blunck <jblunck@suse.de>, gregkh@suse.de,
-       Harald Hoyer <harald@redhat.com>,
-       Scott James Remnant <scott@ubuntu.com>
-Subject: Re: [PATCH] Driver Core: devtmpfs - kernel-maintained tmpfs-based
- /dev
-Message-ID: <20090805185136.GA21442@kroah.com>
-References: <20090805171513.GA10443@kroah.com>
- <20090805192037.19c54c4d@lxorguk.ukuu.org.uk>
- <20090805182805.GA7534@kroah.com>
+	Wed, 5 Aug 2009 14:53:24 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:34344 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752011AbZHESxY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 14:53:24 -0400
+Date: Wed, 5 Aug 2009 14:53:22 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Ingo Molnar <mingo@elte.hu>, Chris Mason <chris.mason@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ftrace: fix perf-tracepoint OOPS
+In-Reply-To: <1249497664.5890.4.camel@laptop>
+Message-ID: <alpine.DEB.2.00.0908051453080.23591@gandalf.stny.rr.com>
+References: <1249497664.5890.4.camel@laptop>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090805182805.GA7534@kroah.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 05, 2009 at 11:28:05AM -0700, Greg KH wrote:
-> On Wed, Aug 05, 2009 at 07:20:37PM +0100, Alan Cox wrote:
-> > On Wed, 5 Aug 2009 10:15:13 -0700
-> > Greg KH <greg@kroah.com> wrote:
-> > 
-> > > Here's the devtmpfs patch again.  For .32 it's a simple and clean patch.
-> > 
-> > You seem to have reposted it rather than anyone addressing any of the
-> > complaints people made about ?
-> > 
-> > To quote Christoph
-> > 
-> > > What tree did you find with devtmpfs in it?  It was pretty clearly
-> > > rejected when it came up.
+
+On Wed, 5 Aug 2009, Peter Zijlstra wrote:
+
+> Not all tracepoints are created equal, in specific the ftrace
+> tracepoints are created with TRACE_EVENT_FORMAT() which does not
+> generate the needed bits to tie them into perf counters.
 > 
-> That's not anything to address, what do you want me to say, "maple"?  :)
+> For those events, don't create the 'id' file and fail ->profile_enable
+> when their ID is specified through other means.
 > 
-> > and Arjan (who is doing about the fastest Linux boot anyone has and has
-> > better data than anyone else)
+> Reported-by: Chris Mason <chris.mason@oracle.com>
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+
+-- Steve
+
+> ---
+>  kernel/trace/trace_event_profile.c |    2 +-
+>  kernel/trace/trace_events.c        |    2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> We did this work based on Arjan's work.  It solves a problem that Moblin
-> has as well, which is why Novell is using it for their Moblin-based
-> images they are shipping.  It makes things go faster, with a simpler
-> userspace codepath, and we have the numbers as have been previously
-> posted.
-
-And to expound on this a bit, it's not just about fast boot, although
-this is a great benefit of this patch.
-
-It makes the userspace boot process much simpler and easier to maintain,
-as well as providing a way to handle rescue disks and images trivially,
-and it makes the kernel _less_ dependant on the early userspace bootup
-scripts.
-
-And then there's the great reason Kay previously stated, "if sysfs has
-all the names, numbers, and device properties, why would we need complex
-userspace to have the nodes?"
-
-thanks,
-
-greg k-h
+> diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
+> index 5b5895a..11ba5bb 100644
+> --- a/kernel/trace/trace_event_profile.c
+> +++ b/kernel/trace/trace_event_profile.c
+> @@ -14,7 +14,7 @@ int ftrace_profile_enable(int event_id)
+>  
+>  	mutex_lock(&event_mutex);
+>  	list_for_each_entry(event, &ftrace_events, list) {
+> -		if (event->id == event_id) {
+> +		if (event->id == event_id && event->profile_enable) {
+>  			ret = event->profile_enable(event);
+>  			break;
+>  		}
+> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+> index 90cdec5..e2b301d 100644
+> --- a/kernel/trace/trace_events.c
+> +++ b/kernel/trace/trace_events.c
+> @@ -971,7 +971,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events,
+>  		entry = trace_create_file("enable", 0644, call->dir, call,
+>  					  enable);
+>  
+> -	if (call->id)
+> +	if (call->id && call->profile_enable)
+>  		entry = trace_create_file("id", 0444, call->dir, call,
+>  					  id);
+>  
+> 
+> 
+> 
