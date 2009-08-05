@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934493AbZHEOoG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934562AbZHEOpK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934493AbZHEOoG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 10:44:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934247AbZHEOoF
+	id S934562AbZHEOpK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 10:45:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934469AbZHEOpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 10:44:05 -0400
-Received: from cantor.suse.de ([195.135.220.2]:40873 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933707AbZHEOoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 10:44:03 -0400
-Date: Wed, 5 Aug 2009 16:44:02 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, fengguang.wu@intel.com,
-       hidehiro.kawai.ez@hitachi.com, linux-arch@vger.kernel.org
-Subject: Re: [PATCH] [11/19] HWPOISON: Refactor truncate to allow direct truncating of page v2
-Message-ID: <20090805144402.GD23992@wotan.suse.de>
-References: <200908051136.682859934@firstfloor.org> <20090805093638.D3754B15D8@basil.firstfloor.org> <20090805102008.GB17190@wotan.suse.de> <20090805134607.GH11385@basil.fritz.box> <20090805140145.GB28563@wotan.suse.de> <20090805141001.GJ11385@basil.fritz.box> <20090805141642.GB23992@wotan.suse.de> <20090805144112.GM11385@basil.fritz.box>
-Mime-Version: 1.0
+	Wed, 5 Aug 2009 10:45:09 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:45611 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934256AbZHEOpI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 10:45:08 -0400
+To: Amerigo Wang <amwang@redhat.com>
+Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [Patch 1/7] x86: add CONFIG_KEXEC_AUTO_RESERVE
+From: Andi Kleen <andi@firstfloor.org>
+References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain>
+	<20090805112133.6552.69619.sendpatchset@localhost.localdomain>
+Date: Wed, 05 Aug 2009 16:45:08 +0200
+In-Reply-To: <20090805112133.6552.69619.sendpatchset@localhost.localdomain> (Amerigo Wang's message of "Wed, 5 Aug 2009 07:19:12 -0400")
+Message-ID: <87zlaeiakr.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090805144112.GM11385@basil.fritz.box>
-User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 05, 2009 at 04:41:12PM +0200, Andi Kleen wrote:
-> > One question I had for the others (Andrew? other mm guys?) what is the
-> > feelings of merging this feature? Leaving aside exact implementation
-> > and just considering the high level design and cost/benefit. Last time
-> > there were some people objecting, so I wonder the situation now? So
-> > does anybody need more convincing? :)
-> 
-> The main objection last time was that it was a bit too late in the 
-> release schedule.
-> 
-> I can't remember anyone really questioning the basic feature itself.
+Amerigo Wang <amwang@redhat.com> writes:
 
-I can't exactly remember. Maybe it was in a thread with Alan and/or
-Arjan ;) I don't think the feature itself was questioned as much as
-cost/benefit. Maybe I was wrong...
+> Introduce a new config option KEXEC_AUTO_RESERVE for x86.
 
-I just want to see everyone is happy with the basic idea ;)
+The description of the feature belongs in the changelog.
 
+I like the basic idea, but:
 
-> > Also I will just cc linux-arch. It would be interesting to know whether
-> > powerpc, ia64, or s390 or others would be interested to use this feature?
-> 
-> ia64 is interested (but no code so far) I talked to DaveM and he seems to be 
-> interested for sparc too.  I would expect other server architectures to 
-> eventually use it as they get around to writing the necessary architecture 
-> specific glue.
+> +config KEXEC_AUTO_RESERVE
+> +	bool "automatically reserve memory for kexec kernel"
+> +	depends on KEXEC
+> +	default y
+> +	---help---
+> +	  Automatically reserve memory for a kexec kernel, so that you don't
+> +	  need to specify numbers for the "crashkernel=X@Y" boot option,
+> +	  instead you can use "crashkernel=auto".
+> +	  On x86, 128M is reserved.
+
+The obvious problem is the hardcoded 128MB (and 128MB is very large
+for a crash kernel anyways)
+
+More useful would seem a crashkernel=size@auto
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
