@@ -1,68 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbZHEPQL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbZHEPRx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754078AbZHEPQL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 11:16:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbZHEPQK
+	id S1755336AbZHEPRx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 11:17:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbZHEPRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 11:16:10 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43582 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751529AbZHEPQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 11:16:09 -0400
-Message-ID: <4A79A1FB.6010406@redhat.com>
-Date: Wed, 05 Aug 2009 11:15:07 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Wed, 5 Aug 2009 11:17:52 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60496 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751272AbZHEPRw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 11:17:52 -0400
+Date: Wed, 5 Aug 2009 11:17:50 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Ramon de Carvalho Valle <ramon@risesecurity.org>
+Cc: Eric Sandeen <sandeen@sandeen.net>, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org, mszeredi@novell.com, hch@lst.de,
+       xfs@oss.sgi.com
+Subject: Re: [PATCH 1/1] XFS: xfs_iformat realtime device target pointer
+	check
+Message-ID: <20090805151750.GA16080@infradead.org>
+References: <1249329808.7686.26.camel@logos> <20090803214929.GB3167@infradead.org> <1249351241.7513.18.camel@logos> <4A786110.8090404@sandeen.net> <1249411898.7576.19.camel@logos>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Wu Fengguang <fengguang.wu@intel.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-References: <20090805024058.GA8886@localhost> <4A793B92.9040204@redhat.com> <4A7993F4.9020008@redhat.com> <4A79A16A.1050401@redhat.com>
-In-Reply-To: <4A79A16A.1050401@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1249411898.7576.19.camel@logos>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
+On Tue, Aug 04, 2009 at 03:51:38PM -0300, Ramon de Carvalho Valle wrote:
+> The xfs_iformat function does not check if the realtime device target pointer
+> is valid when the XFS_DIFLAG_REALTIME flag is set on the ondisk inode
+> structure.
 
->> If so, we could unmap them when they get moved from the
->> active to the inactive list, and soft fault them back in
->> on access, emulating the referenced bit for EPT pages and
->> making page replacement on them work like it should.
-> 
-> It should be easy to implement via the mmu notifier callback: when the 
-> mm calls clear_flush_young(), mark it as young, and unmap it from the 
-> EPT pagetable.
+Same as Eric I don't think there's much of a point renumbering the error
+cases.  Instead I'll do another patch with a couple of cleanups in this
+function replacing all the numbers with short alphabetic tags.
 
-You mean "mark it as old"?
+I don't really see the point of printing the flags either, if we have
+this bit flipped it's pretty clear that we had random corruption of this
+dinode.
 
->> Your approximation of pretending the page is accessed the
->> first time and pretending it's not the second time sounds
->> like it will just lead to less efficient FIFO replacement,
->> not to anything even vaguely approximating LRU.
-> 
-> Right, it's just a hack that gives EPT pages higher priority, like the 
-> original patch suggested.  Note that LRU for VMs is not a good 
-> algorithm, since the VM will also reference the least recently used 
-> page, leading to thrashing.
-
-That is one of the reasons we use a very coarse two
-handed clock algorithm instead of true LRU.
-
-LRU has more overhead and more artifacts :)
-
--- 
-All rights reversed.
