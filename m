@@ -1,55 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933258AbZHECDD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933302AbZHECGm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933258AbZHECDD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 22:03:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933168AbZHECDC
+	id S933302AbZHECGm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 22:06:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933204AbZHECGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 22:03:02 -0400
-Received: from tundra.namei.org ([65.99.196.166]:41874 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933159AbZHECDB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 22:03:01 -0400
-Date: Wed, 5 Aug 2009 12:02:39 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Justin Banks <justinb@bakbone.com>
-cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Eric Paris <eparis@redhat.com>
-Subject: Re: security module question
-In-Reply-To: <20090804220632.GG26133@bleen>
-Message-ID: <alpine.LRH.2.00.0908051159100.29562@tundra.namei.org>
-References: <20090804220632.GG26133@bleen>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Tue, 4 Aug 2009 22:06:39 -0400
+Received: from lon1-post-2.mail.demon.net ([195.173.77.149]:50051 "EHLO
+	lon1-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933177AbZHECGj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 4 Aug 2009 22:06:39 -0400
+Message-ID: <4A78E931.6030308@lougher.demon.co.uk>
+Date: Wed, 05 Aug 2009 03:06:41 +0100
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Albin Tonnerre <albin.tonnerre@free-electrons.com>, sam@ravnborg.org,
+       hpa@zytor.com, linux@arm.linux.org.uk, alain@knaff.lu,
+       linux-kernel@vger.kernel.org, linux-embedded@vger.kernel.org
+Subject: Re: [PATCH 1/6] lib/decompress_*: only include <linux/slab.h> if
+ STATIC is not defined
+References: <20090731093107.GA29704@merkur.ravnborg.org>	<1249311501-23102-1-git-send-email-albin.tonnerre@free-electrons.com>	<20090804155500.db6c88fa.akpm@linux-foundation.org>	<4A78D6BD.3030003@lougher.demon.co.uk> <20090804180854.d5dbb07f.akpm@linux-foundation.org>
+In-Reply-To: <20090804180854.d5dbb07f.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 4 Aug 2009, Justin Banks wrote:
+Andrew Morton wrote:
+> On Wed, 05 Aug 2009 01:47:57 +0100 Phillip Lougher <phillip@lougher.demon.co.uk> wrote:
+> 
+>>
+>> What do you normally do in this situation?
+> 
+> I normally fix the rejects ;)
+> 
+> But I'd like to confirm that the two patches don't fix the same thing
+> via different means.  Lacking a full description of Albin's "issues",
+> that's hard to determine.  They do appear to be unrelated.
+> 
 
-> Hello - I'm trying to implement a security module that will allow or
-> disallow writes on files by byte ranges. Is there a way to use
-> inode_permission() to do this, or is there an alternative route I should
-> take? It doesn't look like inode_permission() will give me the data I
-> need (offset + length of write).
+No they're not fixing the same thing.
 
-This doesn't seem to fit with the LSM model, where access is mediated at 
-object-level granularity.  i.e. can user A read file B ?
+Albin's patch is moving #include <slab.h> inside the #ifndef STATIC ...
+#endif code segment.  This ensures that <slab.h>
+isn't included when the file is being built in the stripped down
+pre-boot environment.  I imagine Albin's issues is that slab.h
+pulls in a lot of definitions unnecessary in the pre-boot
+environment and which rely on things which are missing
+in the stripped down pre-boot environment.
 
-> Also, is there a security module that will examine data being written
-> for certain patterns or content?
+My changes to the #ifndef STATIC logic defines PREBOOT if
+STATIC is defined.  My patch uses the PREBOOT definition
+later to define the decompress wrapper function, which is only
+needed in the preboot environment.
 
-The fanotify / TALPA file access scanning work being done by Eric Paris 
-might be more appropriate.
+i.e.
 
-See http://lwn.net/Articles/339399/
+#ifdef STATIC
+#define PREBOOT
+#else
+#include <linux/decompress/unlzma.h>
+#endif
 
-> Please CC: me on responses. I used to be subscribed, but the traffic was
-> just too much.
+...
+Lots of code
+...
 
-You probably want the LSM mailing list (cc'd).
+#ifdef PREBOOT
+static int INIT decompress.....
+#endif
 
 
--- 
-James Morris
-<jmorris@namei.org>
+Obvious question, why doesn't my patch use STATIC here rather than
+PREBOOT?  The header file <linux/decompress/unlzma.h> defines STATIC, .i.e
+the #ifndef STATIC case defines STATIC via an include file, which makes
+decisions on STATIC later in the file impossible.
+
+>>  I'm happy to send a revised
+>> bzip2-lzma-remove-nasty-uncompressed-size-hack-in-pre-boot-environment.patch
+>> that would apply cleanly on-top of Alvin's patch, but, this will obviously
+>> create dependencies on his patch being applied.
+> 
+> Reworked
+> lib-decompress_-only-include-linux-slabh-if-static-is-not-defined.patch:
+
+The patch looks OK.
+
+Thanks
+
+Phillip
