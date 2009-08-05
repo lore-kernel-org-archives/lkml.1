@@ -1,52 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933071AbZHEBW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933061AbZHEBZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933071AbZHEBW7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 21:22:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932998AbZHEBW5
+	id S933061AbZHEBZG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 21:25:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932863AbZHEBZD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 21:22:57 -0400
-Received: from wg.visionengravers.com ([67.136.234.194]:17925 "EHLO
-	visionfs1.visionengravers.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932956AbZHEBW4 (ORCPT
+	Tue, 4 Aug 2009 21:25:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55915 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932756AbZHEBZB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 21:22:56 -0400
-From: H Hartley Sweeten <hartleys@visionengravers.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] net/ipv4/raw.c: Fix sparse noise about context imbalance
-Date: Tue, 4 Aug 2009 18:23:00 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 4 Aug 2009 21:25:01 -0400
+Date: Tue, 4 Aug 2009 18:24:57 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: scgtrp@gmail.com, bugzilla-daemon@bugzilla.kernel.org,
+       bugme-daemon@bugzilla.kernel.org, xiyou.wangcong@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUGFIX][PATCH 2/3] kcore: fix vread/vwrite to be aware of
+ holes.
+Message-Id: <20090804182457.8135110f.akpm@linux-foundation.org>
+In-Reply-To: <20090805100843.dbdabcfa.kamezawa.hiroyu@jp.fujitsu.com>
+References: <bug-13850-10286@http.bugzilla.kernel.org/>
+	<20090728160527.1da52682.akpm@linux-foundation.org>
+	<20090729084825.1363c880.kamezawa.hiroyu@jp.fujitsu.com>
+	<525c5a6c0907281946t249ef288v77ee94edd16f054@mail.gmail.com>
+	<20090803201418.040bb3ee.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090803201845.c3ae49b5.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090804143031.b9769a13.akpm@linux-foundation.org>
+	<20090805100843.dbdabcfa.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200908041823.00511.hartleys@visionengravers.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix sparse noise due to context imbalance by annotating the functions.
+On Wed, 5 Aug 2009 10:08:43 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> > > +		/*
+> > > +		 * To do safe access to this _mapped_ area, we need
+> > > +		 * lock. But adding lock here means that we need to add
+> > > +		 * overhead of vmalloc()/vfree() calles for this _debug_
+> > > +		 * interface, rarely used. Instead of that, we'll use
+> > > +		 * kmap() and get small overhead in this access function.
+> > > +		 */
+> > > +		if (p) {
+> > > +			/* we can expect USR1 is not used */
+> > 
+> > It would be nice if the comment were to explain _why_ KM_USER1 is known
+> > to be free here.
+> > 
+> ok, will do. Hmm, but KM_USR0 is better ?
+> I'm not sure difference between KM_USR0/KM_USR1...
 
----
+KM_USER0 is conventionally the first one to use.  We only use KM_USER1
+if it is known that KM_USER0 is already used.
 
-diff --git a/net/ipv4/raw.c b/net/ipv4/raw.c
-index 2979f14..e83f7c5 100644
---- a/net/ipv4/raw.c
-+++ b/net/ipv4/raw.c
-@@ -896,6 +896,7 @@ static struct sock *raw_get_idx(struct seq_file *seq, loff_t pos)
- }
- 
- void *raw_seq_start(struct seq_file *seq, loff_t *pos)
-+	__acquires(&state->h->lock)
- {
- 	struct raw_iter_state *state = raw_seq_private(seq);
- 
-@@ -918,6 +919,7 @@ void *raw_seq_next(struct seq_file *seq, void *v, loff_t *pos)
- EXPORT_SYMBOL_GPL(raw_seq_next);
- 
- void raw_seq_stop(struct seq_file *seq, void *v)
-+	__releases(&state->h->lock)
- {
- 	struct raw_iter_state *state = raw_seq_private(seq);
- 
+> 
+> 
+> > 
+> > > +			void *map = kmap_atomic(p, KM_USER1);
+> > > +			memcpy(buf, map + offset, length);
+> > > +			kunmap_atomic(map, KM_USER1);
+> > 
+> > Can use clear_highpage().
+> > 
+> ah, "buf" is expected to be kmalloc'ed buffer. I'll explain it in Usage
+> or adds comment.
+> 
+
+argh, memcpy != memset.  I knew that ;)
