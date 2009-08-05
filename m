@@ -1,75 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933918AbZHEMRG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934212AbZHEMRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933918AbZHEMRG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 08:17:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933634AbZHEMRF
+	id S934212AbZHEMRP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 08:17:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934117AbZHEMRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 08:17:05 -0400
-Received: from mga03.intel.com ([143.182.124.21]:31208 "EHLO mga03.intel.com"
+	Wed, 5 Aug 2009 08:17:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39302 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933701AbZHEMRE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 08:17:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.43,328,1246863600"; 
-   d="scan'208";a="172524717"
-Date: Wed, 5 Aug 2009 19:52:42 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, "tytso@mit.edu" <tytso@mit.edu>,
-       "mfasheh@suse.com" <mfasheh@suse.com>,
-       "aia21@cantab.net" <aia21@cantab.net>,
-       "hugh.dickins@tiscali.co.uk" <hugh.dickins@tiscali.co.uk>,
-       "swhiteho@redhat.com" <swhiteho@redhat.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "hidehiro.kawai.ez@hitachi.com" <hidehiro.kawai.ez@hitachi.com>
-Subject: Re: [PATCH] [16/19] HWPOISON: Enable .remove_error_page for
-	migration aware file systems
-Message-ID: <20090805115242.GB6737@localhost>
-References: <200908051136.682859934@firstfloor.org> <20090805093643.E0C00B15D8@basil.firstfloor.org> <20090805111231.GA19532@infradead.org>
+	id S933721AbZHEMRJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 08:17:09 -0400
+Date: Wed, 5 Aug 2009 12:16:30 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, kyle@mcmartin.ca,
+       jens.axboe@oracle.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       jens.axboe@oracle.com, kyle@mcmartin.ca, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <20090801082048.GX12579@kernel.dk>
+References: <20090801082048.GX12579@kernel.dk>
+Subject: [tip:perfcounters/urgent] perf: Auto-detect libbfd
+Message-ID: <tip-2cdbc46d7b2cb0acb68c3ecad93b000552121fa6@git.kernel.org>
+Git-Commit-ID: 2cdbc46d7b2cb0acb68c3ecad93b000552121fa6
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090805111231.GA19532@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 05 Aug 2009 12:16:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 05, 2009 at 07:12:31PM +0800, Christoph Hellwig wrote:
-> On Wed, Aug 05, 2009 at 11:36:43AM +0200, Andi Kleen wrote:
-> > 
-> > Enable removing of corrupted pages through truncation
-> > for a bunch of file systems: ext*, xfs, gfs2, ocfs2, ntfs
-> > These should cover most server needs.
-> > 
-> > I chose the set of migration aware file systems for this
-> > for now, assuming they have been especially audited.
-> > But in general it should be safe for all file systems
-> > on the data area that support read/write and truncate.
-> > 
-> > Caveat: the hardware error handler does not take i_mutex
-> > for now before calling the truncate function. Is that ok?
-> 
-> It will probably need locking, e.g. the iolock in XFS.  I'll
-> need to take a look at the actual implementation of
-> generic_error_remove_page to make sense of this.
+Commit-ID:  2cdbc46d7b2cb0acb68c3ecad93b000552121fa6
+Gitweb:     http://git.kernel.org/tip/2cdbc46d7b2cb0acb68c3ecad93b000552121fa6
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Wed, 5 Aug 2009 14:05:16 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 5 Aug 2009 14:12:08 +0200
 
-In patch 13, it simply calls truncate_inode_page() for S_ISREG inodes.
+perf: Auto-detect libbfd
 
-Nick suggests call truncate_inode_page() with i_mutex. Sure we can
-do mutex_trylock(i_mutex), but we'd appreciate it if some fs gurus
-can demonstrate some bad consequences of not doing so, thanks!
+Since the C++ demangling isn't needed for everybody and
+bfd/iberty aren't widely/easily available on all machines, make
+it optional.
 
-> Is there any way for us to test this functionality without introducing
-> real hardware problems?
+It also allows you to forcefully disable demangling by using
+NO_DEMANGLE=1 and otherwise tries to detect libbfd/libiberty
+combinations that result in a compiling demangler.
 
-We have some additional patches (ugly but works for now) that export
-interfaces for injecting hwpoison to selected types pages. It can
-guarantee only data/metadata pages of selected fs will be poisoned.
-Based on which we can do all kinds of stress testing in user space.
+Reported-by: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Kyle McMartin <kyle@mcmartin.ca>
+LKML-Reference: <20090801082048.GX12579@kernel.dk>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Thanks,
-Fengguang
+
+---
+ tools/perf/Makefile      |   18 +++++++++++++++++-
+ tools/perf/util/symbol.c |    9 +++++++++
+ 2 files changed, 26 insertions(+), 1 deletions(-)
+
+diff --git a/tools/perf/Makefile b/tools/perf/Makefile
+index 4b20fa4..ff905ac 100644
+--- a/tools/perf/Makefile
++++ b/tools/perf/Makefile
+@@ -345,7 +345,6 @@ BUILTIN_OBJS += builtin-stat.o
+ BUILTIN_OBJS += builtin-top.o
+ 
+ PERFLIBS = $(LIB_FILE)
+-EXTLIBS = -lbfd -liberty
+ 
+ #
+ # Platform specific tweaks
+@@ -374,6 +373,23 @@ ifeq ($(uname_S),Darwin)
+ 	PTHREAD_LIBS =
+ endif
+ 
++ifdef NO_DEMANGLE
++	BASIC_CFLAGS += -DNO_DEMANGLE
++else
++
++	has_bfd := $(shell sh -c "(echo '\#include <stdio.h>'; echo '\#include <bfd.h>'; echo '\#ifndef DMGL_PARAMS'; echo '\#define DMGL_PARAMS (1 << 0)'; echo '\#define DMGL_ANSI (1 << 1)'; echo '\#endif'; echo 'int main(int argc, char **argv) { bfd_demangle(NULL, argv[0], DMGL_PARAMS | DMGL_ANSI); return 0; }') | gcc -x c - -lbfd > /dev/null 2>&1 && echo y")
++
++	has_bfd_iberty := $(shell sh -c "(echo '\#include <stdio.h>'; echo '\#include <bfd.h>'; echo '\#ifndef DMGL_PARAMS'; echo '\#define DMGL_PARAMS (1 << 0)'; echo '\#define DMGL_ANSI (1 << 1)'; echo '\#endif'; echo 'int main(int argc, char **argv) { bfd_demangle(NULL, argv[0], DMGL_PARAMS | DMGL_ANSI); return 0; }') | gcc -x c - -lbfd -liberty > /dev/null 2>&1 && echo y")
++
++	ifeq ($(has_bfd),y)
++		EXTLIBS += -lbfd
++	else ifeq ($(has_bfd_iberty),y)
++		EXTLIBS += -lbfd -liberty
++	else
++		BASIC_CFLAGS += -DNO_DEMANGLE
++	endif
++endif
++
+ ifndef CC_LD_DYNPATH
+ 	ifdef NO_R_TO_GCC_LINKER
+ 		# Some gcc does not accept and pass -R to the linker to specify
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index b4fe057..0580b94 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -6,7 +6,16 @@
+ #include <libelf.h>
+ #include <gelf.h>
+ #include <elf.h>
++
++#ifndef NO_DEMANGLE
+ #include <bfd.h>
++#else
++static inline
++char *bfd_demangle(void __used *v, const char __used *c, int __used i)
++{
++	return NULL;
++}
++#endif
+ 
+ const char *sym_hist_filter;
+ 
