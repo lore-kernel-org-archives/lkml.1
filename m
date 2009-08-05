@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934619AbZHEQTj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934632AbZHEQU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934619AbZHEQTj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 12:19:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934023AbZHEQTi
+	id S934632AbZHEQU1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 12:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934023AbZHEQU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 12:19:38 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:41410 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933979AbZHEQTh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 12:19:37 -0400
-Date: Wed, 5 Aug 2009 18:19:31 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: linux-acpi <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Richard Purdie <rpurdie@rpsys.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 0/3] Generic sysfs support for ACPI ALS and other ALS
-	devices
-Message-ID: <20090805161931.GA9749@elf.ucw.cz>
-References: <1249290657.2670.250.camel@rzhang-dt> <20090804132129.GH18974@elf.ucw.cz> <1249434170.2670.386.camel@rzhang-dt>
+	Wed, 5 Aug 2009 12:20:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60064 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933961AbZHEQU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 12:20:26 -0400
+Date: Wed, 5 Aug 2009 18:19:49 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>
+Cc: Avi Kivity <avi@redhat.com>, "Wu, Fengguang" <fengguang.wu@intel.com>,
+       Rik van Riel <riel@redhat.com>, "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+Message-ID: <20090805161949.GE23385@random.random>
+References: <20090805024058.GA8886@localhost>
+ <4A793B92.9040204@redhat.com>
+ <20090805160504.GD23385@random.random>
+ <9EECC02A4CC333418C00A85D21E89326B651C0BD@azsmsx502.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1249434170.2670.386.camel@rzhang-dt>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <9EECC02A4CC333418C00A85D21E89326B651C0BD@azsmsx502.amr.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-08-05 09:02:50, Zhang Rui wrote:
-> On Tue, 2009-08-04 at 21:21 +0800, Pavel Machek wrote:
-> > On Mon 2009-08-03 17:10:57, Zhang Rui wrote:
-> > > Hi, all,
-> > > 
-> > > This is the patch set I made to introduce ACPI ALS device driver
-> > > and a generic sysfs I/F for all the ALS devices, like ACPI ALS,
-> > > platform ALS, etc.
-> > > 
-> > > Patch 01 introduces the ACPI ALS device driver.
-> > > 
-> > > Patch 02 introduces ALS sysfs class.
-> > > 	Two sysfs I/F are created for each ALS device.
-> > >   /sys/class/als/alsX/illuminance:
-> > > 	the amount of light incident upon a specified surface area.
-> > >   /sys/class/als/alsX/mappings:
-> > > 	ambient light illuminance to display luminance mappings
-> > > 	that can be used by an OS to calibrate its ambient light policy
-> > > 	this is what I got on a test box:
-> > > 	cat /sys/class/als/als0/mappings
-> > > 	???Illuminance	Adjustment
-> > > 	          0	       70
-> > > 	         10	       73
-> > > 	         80	       85
-> > > 	        300	      100
-> > > 	       1000	      150
-> > 
-> > There's one value per file for sysfs... You should definitely have the
-> > header. 
-> > 
-> > Is there chance to already return adjusted values, avoiding this
-> > uglyness?
-> 
-> No,
-> For a ALS policy, user space should set a brightness level as the base
-> point, i.e. the backlight when display adjustment is 100.
-> and then uses the adjustment values gotten from this mappings to
-> calculate the actual brightness level the display should be put in.
+On Wed, Aug 05, 2009 at 09:12:39AM -0700, Dike, Jeffrey G wrote:
+> Sounds like there's some terminology confusion.  A refault is a page
+> being discarded due to memory pressure and subsequently being
+> faulted back in.  I was counting the number of faults between the
+> discard and faulting back in for each affected page.  For a large
+> number of predominately stack pages, that number was very small.
 
-Ok, so just make the code return only the "adjustement" -- userspace
-does not really need to know "illuminance" and you can do the mapping
-in the kernel AFAICT.
-									Pavel
+Hmm ok, but if it's anonymous pages we're talking about here (I see
+KVM in the equation so it has to be!) normally we call that thing
+swapin to imply I/O is involved, not refault...  Refault to me sounds
+minor fault from swapcache (clean or dirty) and that's about it...
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Anon page becomes swapcache, it is unmapped if young bit permits, and
+then it's collected from lru eventually, if it is collected I/O will
+be generated as swapin during the next page fault.
+
+If it's too much swapin, then yes, it could be that patch that
+prevents young bit to keep the anon pages in active list. But fix is
+to remove the whole check, not just to enable list_add for anon pages.
