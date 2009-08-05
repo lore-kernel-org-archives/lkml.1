@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934374AbZHENZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934370AbZHEN2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934374AbZHENZM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 09:25:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934334AbZHENZL
+	id S934370AbZHEN2T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 09:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934347AbZHEN2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 09:25:11 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:52128 "EHLO mgw2.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934322AbZHENZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 09:25:10 -0400
-Date: Wed, 5 Aug 2009 15:25:08 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: grant.likely@secretlab.ca, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/4] drivers/serial/mpc52xx_uart.c: Use UPIO_MEM rather than
- SERIAL_IO_MEM
-Message-ID: <Pine.LNX.4.64.0908051524220.20453@pc-004.diku.dk>
+	Wed, 5 Aug 2009 09:28:18 -0400
+Received: from ip67-152-220-66.z220-152-67.customer.algx.net ([67.152.220.66]:9263
+	"EHLO daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S934340AbZHEN2S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 09:28:18 -0400
+Message-ID: <4A7988F0.2010208@panasas.com>
+Date: Wed, 05 Aug 2009 16:28:16 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090722 Remi/fc10 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: linux-next: Tree for August 5
+References: <20090805172337.b0688db1.sfr@canb.auug.org.au>	<4A793EA8.50306@panasas.com> <20090805201336.fd2de2ad.sfr@canb.auug.org.au>
+In-Reply-To: <20090805201336.fd2de2ad.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 05 Aug 2009 13:28:18.0718 (UTC) FILETIME=[985E53E0:01CA15D0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On 08/05/2009 01:13 PM, Stephen Rothwell wrote:
+> Hi Boaz,
+> 
+> On Wed, 05 Aug 2009 11:11:20 +0300 Boaz Harrosh <bharrosh@panasas.com> wrote:
+>>
+>> On 08/05/2009 10:23 AM, Stephen Rothwell wrote:
+>>>
+>>> This tree fails to build for powerpc allyesconfig (final link problem).
+>>
+>> Above is reported for a long time. Is it related to this:
+>> http://www.spinics.net/lists/kernel/msg921978.html
+> 
+> No, it is this:
+> 
+> powerpc-linux-ld: TOC section size exceeds 64k
+> 
+> It is powerpc specific and the only way we can think of fixing it
+> involves stopping building the built-in.o files and linking the entire
+> kernel in one go at the end.  We just haven't had time (or the energy) to
+> try to fix it properly while it only affects the final link of the
+> allyesconfig kernel. 
+> 
 
-As in the commit 9b4a1617772d6d5ab5eeda0cd95302fae119e359, use UPIO_MEM
-rather than SERIAL_IO_MEM.  Both have the same value.
+Ha, OK allyesconfig. Last time I attempted an allyesconfig for i386 I got
+me the OOM killer attack on my KDE, half way into the final link.
 
-The semantic patch that makes this change is as follows:
-(http://coccinelle.lip6.fr/)
+That's why I use allmodconfig for when I need "try to compile everything ++"
+I get just as much compilation coverage if not more. And is faster.
+It'll not show symbol conflicts if any exist, though.
 
-// <smpl>
-@has_sc@
-@@
-
-#include <linux/serial_core.h>
-
-@depends on has_sc@
-@@
-
-- SERIAL_IO_MEM
-+ UPIO_MEM
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- drivers/serial/mpc52xx_uart.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff -u -p a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
---- a/drivers/serial/mpc52xx_uart.c
-+++ b/drivers/serial/mpc52xx_uart.c
-@@ -705,7 +705,7 @@ mpc52xx_uart_verify_port(struct uart_por
- 		return -EINVAL;
- 
- 	if ((ser->irq != port->irq) ||
--	    (ser->io_type != SERIAL_IO_MEM) ||
-+	    (ser->io_type != UPIO_MEM) ||
- 	    (ser->baud_base != port->uartclk)  ||
- 	    (ser->iomem_base != (void *)port->mapbase) ||
- 	    (ser->hub6 != 0))
+Thanks
+Boaz
