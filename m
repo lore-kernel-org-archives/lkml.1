@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934505AbZHEO0B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934531AbZHEO0G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934505AbZHEO0B (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 10:26:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934290AbZHEO0A
+	id S934531AbZHEO0G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 10:26:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934290AbZHEO0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 10:26:00 -0400
-Received: from e23smtp07.au.ibm.com ([202.81.31.140]:54648 "EHLO
-	e23smtp07.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934240AbZHEOZ7 (ORCPT
+	Wed, 5 Aug 2009 10:26:05 -0400
+Received: from e28smtp08.in.ibm.com ([59.145.155.8]:37596 "EHLO
+	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934466AbZHEO0C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 10:25:59 -0400
-Subject: [PATCH 0/3] cpu: idle state framework for offline CPUs.
+	Wed, 5 Aug 2009 10:26:02 -0400
+Subject: [PATCH 1/3] cpu: Offline state Framework.
 To: Joel Schopp <jschopp@austin.ibm.com>, len.brown@intel.com,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Balbir Singh <balbir@in.ibm.com>,
@@ -22,8 +22,10 @@ To: Joel Schopp <jschopp@austin.ibm.com>, len.brown@intel.com,
        "Darrick J. Wong" <djwong@us.ibm.com>
 From: Gautham R Shenoy <ego@in.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Date: Wed, 05 Aug 2009 19:55:53 +0530
-Message-ID: <20090805142311.553.78286.stgit@sofia.in.ibm.com>
+Date: Wed, 05 Aug 2009 19:55:58 +0530
+Message-ID: <20090805142558.553.44602.stgit@sofia.in.ibm.com>
+In-Reply-To: <20090805142311.553.78286.stgit@sofia.in.ibm.com>
+References: <20090805142311.553.78286.stgit@sofia.in.ibm.com>
 User-Agent: StGit/0.14.3.384.g9ab0
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -32,92 +34,197 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Provide an interface by which the system administrator can decide what state
+should the CPU go to when it is offlined.
 
-**** RFC not for inclusion ****
+To query the available offline states, on needs to perform a read on:
+/sys/devices/system/cpu/cpu<number>/available_offline_states
 
-When we perform a CPU-Offline operation today, we do not put the CPU
-into the most energy efficient state. On x86, it loops in hlt as opposed to
-going to one of the low-power C-states. On pSeries, we call rtas_stop_self()
-and hand over the vCPU back to the resource pool, thereby deallocating
-the vCPU.
+To query or set the preferred offline state for a particular CPU, one needs to
+use the sysfs interface
 
-Thus, when applications or platforms desire to put a particular CPU
-to an extended low-power state for a short while, currently they have to
-piggy-back on scheduler heuristics such as sched_mc_powersavings or play with
-exclusive Cpusets. The former does a good job based on the workload, but fails
-to provide any guarentee that the CPU won't be used for the next <> seconds,
-while the latter might conflict with the existing CPUsets configurations.
+/sys/devices/system/cpu/cpu<number>/preferred_offline_state
 
-There were efforts to alleviate these problems and various proposals have been
-put forth. They include putting the CPU to the deepest possible idle-state
-when offlined [1], removing the desired CPU from the topmost-cpuset [2],
-a driver which forces a high-priority idle thread to run on the desired CPU
-thereby putting it to idle [3].
+This patch implements the architecture independent bits of the
+cpu-offline-state framework.
 
-In this patch-series, we propose to extend the CPU-Hotplug infrastructure
-and allow the system administrator to choose the desired state the CPU should
-go to when it is offlined. We think this approach addresses the concerns about
-determinism as well as transparency, since CPU-Hotplug already provides
-notification mechanism which the userspace can listen to for any change
-in the configuration and correspondingly readjust any previously set
-cpu-affinities. Also, approaches such as [1] can make use of this
-extended infrastructure instead of putting the CPU to an arbitrary C-state
-when it is offlined, thereby providing the system administrator a rope to hang
-himself with should he feel the need to do so.
+The architecture specific bits are expected to register the actual code which
+implements the callbacks when the above mentioned sysfs interfaces are read or
+written into. Thus the values provided by reading available_offline_states are
+expected to vary with the architecture.
 
-This patch-series tries to achieve this by implementing an architecture
-independent framework that exposes sysfs tunables to allow the
-system-adminstrator to choose the offline-state of a CPU.
-
-	/sys/devices/system/cpu/cpu<number>/available_offline_states
-and
-	/sys/devices/system/cpu/cpu<number>/preferred_offline_states
-
-For the purpose of proof-of-concept, we've implemented the backend for
-pSeries. For pSeries, we define two available_offline_states. They are:
-
-	deallocate: This is default behaviour which on an offline, deallocates
-	the vCPU by invoking rtas_stop_self() and hands it back to
-	the resource pool.
-
-	deactivate: This calls H_CEDE, which will request the hypervisor to
-	idle the vCPU in the lowest power mode and give it back as soon as
-	we need it.
-
-
-Any feedback on the patchset will be immensely valuable.
-
-References:
------------
-[1] Pallipadi, Venkatesh: x86: Make offline cpus to go to deepest idle state
-using mwait (URL: http://lkml.org/lkml/2009/5/22/431)
-
-[2] Li, Shaohua: cpuset: add new API to change cpuset top group's cpus
-(URL: http://lkml.org/lkml/2009/5/19/54)
-
-[3] Li, Shaohua: new ACPI processor driver to force CPUs idle
-(URL: http://www.spinics.net/lists/linux-acpi/msg22863.html)
-
-
-Changelog:
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
 ---
+ drivers/base/cpu.c  |  111 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/cpu.h |   15 +++++++
+ 2 files changed, 126 insertions(+), 0 deletions(-)
 
-Gautham R Shenoy (3):
-      pSeries: cpu: Cede CPU during a deactivate-offline
-      cpu: Implement cpu-offline-state callbacks for pSeries.
-      cpu: Offline state Framework.
+diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+index e62a4cc..1a63de0 100644
+--- a/drivers/base/cpu.c
++++ b/drivers/base/cpu.c
+@@ -56,26 +56,137 @@ static ssize_t __ref store_online(struct sys_device *dev, struct sysdev_attribut
+ }
+ static SYSDEV_ATTR(online, 0644, show_online, store_online);
+ 
++static struct cpu_offline_driver *cpu_offline_driver;
++static SYSDEV_ATTR(available_offline_states, 0444, NULL, NULL);
++static SYSDEV_ATTR(preferred_offline_state, 0644, NULL, NULL);
++
++/* Should be called with cpu_add_remove_lock held */
++void cpu_offline_driver_add_cpu(struct sys_device *cpu_sys_dev)
++{
++	if (!cpu_offline_driver)
++		return;
++
++	sysdev_create_file(cpu_sys_dev, &attr_available_offline_states);
++	sysdev_create_file(cpu_sys_dev, &attr_preferred_offline_state);
++}
++
++/* Should be called with cpu_add_remove_lock held */
++void cpu_offline_driver_remove_cpu(struct sys_device *cpu_sys_dev)
++{
++	if (!cpu_offline_driver)
++		return;
++
++	sysdev_remove_file(cpu_sys_dev, &attr_available_offline_states);
++	sysdev_remove_file(cpu_sys_dev, &attr_preferred_offline_state);
++
++}
++
+ static void __cpuinit register_cpu_control(struct cpu *cpu)
+ {
+ 	sysdev_create_file(&cpu->sysdev, &attr_online);
++	cpu_offline_driver_add_cpu(&cpu->sysdev);
+ }
++
+ void unregister_cpu(struct cpu *cpu)
+ {
+ 	int logical_cpu = cpu->sysdev.id;
+ 
+ 	unregister_cpu_under_node(logical_cpu, cpu_to_node(logical_cpu));
+ 
++	cpu_offline_driver_remove_cpu(&cpu->sysdev);
+ 	sysdev_remove_file(&cpu->sysdev, &attr_online);
+ 
+ 	sysdev_unregister(&cpu->sysdev);
+ 	per_cpu(cpu_sys_devices, logical_cpu) = NULL;
+ 	return;
+ }
++
++static int __cpuinit
++cpu_driver_callback(struct notifier_block *nfb, unsigned long action,
++								void *hcpu)
++{
++	struct sys_device *cpu_sysdev = per_cpu(cpu_sys_devices,
++						(unsigned long)(hcpu));
++
++	switch (action) {
++	case CPU_DEAD:
++	case CPU_DEAD_FROZEN:
++		cpu_offline_driver_remove_cpu(cpu_sysdev);
++		break;
++
++	case CPU_ONLINE:
++	case CPU_ONLINE_FROZEN:
++		cpu_offline_driver_add_cpu(cpu_sysdev);
++		break;
++	default:
++		break;
++	}
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block __cpuinitdata cpu_driver_notifier = {
++	.notifier_call = cpu_driver_callback,
++	.priority = 0
++};
++
++int register_cpu_offline_driver(struct cpu_offline_driver *arch_cpu_driver)
++{
++	int ret = 0;
++	cpu_maps_update_begin();
++
++	if (cpu_offline_driver != NULL) {
++		ret = -EEXIST;
++		goto out_unlock;
++	}
++
++	if (!(arch_cpu_driver->show_available_states &&
++	      arch_cpu_driver->show_preferred_state &&
++	      arch_cpu_driver->store_preferred_state)) {
++		ret = -EINVAL;
++		goto out_unlock;
++	}
++
++	attr_available_offline_states.show =
++		arch_cpu_driver->show_available_states;
++	attr_preferred_offline_state.show =
++		arch_cpu_driver->show_preferred_state;
++	attr_preferred_offline_state.store =
++		arch_cpu_driver->store_preferred_state;
++
++	cpu_offline_driver = arch_cpu_driver;
++
++out_unlock:
++	cpu_maps_update_done();
++	if (!ret)
++		register_cpu_notifier(&cpu_driver_notifier);
++	return ret;
++}
++
++void unregister_cpu_offline_driver(struct cpu_offline_driver *arch_cpu_driver)
++{
++	cpu_maps_update_begin();
++
++	if (!cpu_offline_driver) {
++		WARN_ON(1);
++		cpu_maps_update_done();
++		return;
++	}
++
++	cpu_offline_driver = NULL;
++	attr_available_offline_states.show = NULL;
++	attr_preferred_offline_state.show = NULL;
++	attr_preferred_offline_state.store = NULL;
++
++	cpu_maps_update_done();
++	unregister_cpu_notifier(&cpu_driver_notifier);
++}
++
+ #else /* ... !CONFIG_HOTPLUG_CPU */
+ static inline void register_cpu_control(struct cpu *cpu)
+ {
+ }
++
+ #endif /* CONFIG_HOTPLUG_CPU */
+ 
+ #ifdef CONFIG_KEXEC
+diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+index 4d668e0..e2150be 100644
+--- a/include/linux/cpu.h
++++ b/include/linux/cpu.h
+@@ -51,6 +51,21 @@ struct notifier_block;
+ #ifdef CONFIG_HOTPLUG_CPU
+ extern int register_cpu_notifier(struct notifier_block *nb);
+ extern void unregister_cpu_notifier(struct notifier_block *nb);
++
++struct cpu_offline_driver {
++	ssize_t (*show_available_states)(struct sys_device *dev,
++			struct sysdev_attribute *attr, char *buf);
++	ssize_t (*show_preferred_state)(struct sys_device *dev,
++			struct sysdev_attribute *attr, char *buf);
++
++	ssize_t (*store_preferred_state)(struct sys_device *dev,
++			struct sysdev_attribute *attr,
++			const char *buf, size_t count);
++};
++
++extern int register_cpu_offline_driver(struct cpu_offline_driver *driver);
++extern void unregister_cpu_offline_driver(struct cpu_offline_driver *driver);
++
+ #else
+ 
+ #ifndef MODULE
 
-
- arch/powerpc/platforms/pseries/hotplug-cpu.c    |  160 ++++++++++++++++++++++-
- arch/powerpc/platforms/pseries/offline_driver.h |   17 ++
- arch/powerpc/platforms/pseries/plpar_wrappers.h |    6 +
- arch/powerpc/platforms/pseries/smp.c            |   18 ++-
- drivers/base/cpu.c                              |  111 ++++++++++++++++
- include/linux/cpu.h                             |   15 ++
- 6 files changed, 319 insertions(+), 8 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/offline_driver.h
-
--- 
-Thanks and Regards
-gautham.
