@@ -1,108 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933550AbZHECrC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933493AbZHECdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933550AbZHECrC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 4 Aug 2009 22:47:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933389AbZHECrA
+	id S933493AbZHECdh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 4 Aug 2009 22:33:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933286AbZHECdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 4 Aug 2009 22:47:00 -0400
-Received: from mail-pz0-f196.google.com ([209.85.222.196]:40252 "EHLO
-	mail-pz0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933296AbZHECq7 (ORCPT
+	Tue, 4 Aug 2009 22:33:36 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35065
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933273AbZHECdf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 4 Aug 2009 22:46:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=BewfV7qE+K6K3QmbuZvjI7b/itP2UehP2/Y4kulILI2zAjIuT9afPO6BXlVfp2dmkV
-         RjpkPTQXXeJjI9SQxq09rYwEb5gjK67JFvYojZaN9z7x3OJsqovLEJKlo2x8pElM2GWT
-         2Hd4a5kyNdmNTRwAUlBzvSpuSij7Y56twZiBY=
-Date: Wed, 5 Aug 2009 11:40:04 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Paul Menage <menage@google.com>, David Rientjes <rientjes@google.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@redhat.com>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH 1/4] oom: move oom_adj to signal_struct
-Message-Id: <20090805114004.459a7deb.minchan.kim@barrios-desktop>
-In-Reply-To: <20090805110107.5B97.A69D9226@jp.fujitsu.com>
-References: <20090804192514.6A40.A69D9226@jp.fujitsu.com>
-	<20090805094534.35e64fbe.minchan.kim@barrios-desktop>
-	<20090805110107.5B97.A69D9226@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Tue, 4 Aug 2009 22:33:35 -0400
+Date: Tue, 04 Aug 2009 19:33:44 -0700 (PDT)
+Message-Id: <20090804.193344.71849943.davem@davemloft.net>
+To: chiachi@android.com
+Cc: john.dykstra1@gmail.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] net: Keep interface binding when sending packets with
+ ipi_ifindex = 0
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <6c039e090908041706p6f06ac55ja796ac53855e829a@mail.gmail.com>
+References: <6c039e090908040036j38666152y2db1d4c55529eaff@mail.gmail.com>
+	<20090804.115701.250978139.davem@davemloft.net>
+	<6c039e090908041706p6f06ac55ja796ac53855e829a@mail.gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n753UV8B003250
 
-On Wed,  5 Aug 2009 11:29:34 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+From: Chia-chi Yeh (è‘‰å®¶é½Š) <chiachi@android.com>
+Date: Wed, 5 Aug 2009 08:06:25 +0800
 
-> Hi
+> 2009/8/5 David Miller <davem@davemloft.net>:
+>> I think we really cannot change behavior here. Â If the user specifies
+>> "0" in ipi_ifindex we must respect that in ipc->oif. Â This is an
+>> override, and the ability to override is the very purpose of this
+>> control message.
+>>
+>> Even GLIBC makes use of that case of specifying "0" in ipi_ifindex.
+>> We must respect it.
+>>
+>> I'm not applying any of these patches, sorry.
+>>
 > 
-> > Hi, Kosaki. 
-> > 
-> > I am so late to invole this thread. 
-> > But let me have a question. 
-> > 
-> > What's advantage of placing oom_adj in singal rather than task ?
-> > I mean task->oom_adj and task->signal->oom_adj ?
-> > 
-> > I am sorry if you already discussed it at last threads. 
-> 
-> Not sorry. that's very good question.
-> 
-> I'm trying to explain the detailed intention of commit 2ff05b2b4eac
-> (move oom_adj to mm_struct).
-> 
-> In 2.6.30, OOM logic callflow is here.
-> 
-> __out_of_memory
-> 	select_bad_process		for each task
-> 		badness			calculate badness of one task
-> 	oom_kill_process		search child
-> 		oom_kill_task		kill target task and mm shared tasks with it
-> 
-> example, process-A have two thread, thread-A and thread-B and it 
-> have very fat memory.
-> And, each thread have following likes oom property.
-> 
-> 	thread-A: oom_adj = OOM_DISABLE, oom_score = 0
-> 	thread-B: oom_adj = 0,           oom_score = very-high
-> 
-> Then, select_bad_process() select thread-B, but oom_kill_task refuse
-> kill the task because thread-A have OOM_DISABLE.
-> __out_of_memory() call select_bad_process() again. but select_bad_process()
-> select the same task. It mean kernel fall in the livelock.
-> 
-> The fact is, select_bad_process() must select killable task. otherwise
-> OOM logic go into livelock.
-> 
-> Is this enough explanation? thanks.
-> 
+> If you treat ipi_ifindex as an override, do you want to do that in
+> ipi6_ifindex as well? Also, CAP_NET_RAW check for SO_BINDTODEVICE
+> becomes meaningless in this case.
 
-Thanks for good explanation. :)
+ipi_ifindex influences routing decisions, it doesn't also influence
+socket matching like SO_BINDTODEVICE does.
 
-It resulted from patch of David which moved task_struct->oom_ajd 
-to mm_struct. I understood it. 
+That's the crucial difference.
 
-It meant oom_adj was not per-process.
+This interface index gets passed into the routing lookup and that is
+completely harmless to allow users to do.
 
-AFAIU, you want to make oom_adj per-process, again. 
-And you selected the place with task->singal as per-process.
+About ipv6 it is indeed an important issue, because apps that work now
+with ipv4's behavior are going to break if they care about this case
+when they start using ipv6.  Probably the thing to do is make ipv6
+work the same as ipv4.
 
-What I have a question is that why do you select task_struct->signal 
-rather than task_struct like old?
+> I did not find the usage of ipi_ifindex in glibc. It would be great if
+> you can give me some pointers. Thanks for your help.
 
-What's benefit of using task_struct->signal ?
+If grep is broken on your system, I'm sorry to hear that:
 
+	find . -type f | xargs egrep IP_PKTINFO
 
--- 
-Kind regards,
-Minchan Kim
+Give that a try on your glibc tree.
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
