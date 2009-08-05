@@ -1,65 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753271AbZHEErc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753784AbZHEEyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753271AbZHEErc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 00:47:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751223AbZHEEra
+	id S1753784AbZHEEyE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 00:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbZHEEyB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 00:47:30 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:54582 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750896AbZHEEra (ORCPT
+	Wed, 5 Aug 2009 00:54:01 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:53103 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751019AbZHEEyA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 00:47:30 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAK2reEqrR7PD/2dsb2JhbAC8OogpkEMFhBg
-X-IronPort-AV: E=Sophos;i="4.43,326,1246838400"; 
-   d="scan'208";a="360642956"
-From: Roland Dreier <rdreier@cisco.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mmotm 2009-08-04-14-22 uploaded (ummunotify)
-References: <200908042125.n74LP9qY018119@imap1.linux-foundation.org>
-	<20090804155014.35d4597c.randy.dunlap@oracle.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 04 Aug 2009 21:47:30 -0700
-In-Reply-To: <20090804155014.35d4597c.randy.dunlap@oracle.com> (Randy Dunlap's
-	message of "Tue, 4 Aug 2009 15:50:14 -0700")
-Message-ID: <adabpmulvdp.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Wed, 5 Aug 2009 00:54:00 -0400
+Message-ID: <4A791067.3030405@snapgear.com>
+Date: Wed, 05 Aug 2009 14:53:59 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 05 Aug 2009 04:47:30.0754 (UTC) FILETIME=[D7216A20:01CA1587]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+To: Christoph Hellwig <hch@lst.de>
+CC: gerg@uclinux.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] m68knommu: convert to asm-generic/hardirq.h
+References: <20090804145244.GH20487@lst.de>
+In-Reply-To: <20090804145244.GH20487@lst.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew, can you add this into the ummunotify patch, or add it on top or whatever?
+Hi Christoph,
 
-Fix
+Christoph Hellwig wrote:
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-    ummunotify.c:(.text+0x8f217): undefined reference to `__get_user_X'
+Compile testing revealed:
 
-when building for i386 -- get_user() can't handle u64 on all
-architectures, so just use copy_from_user().
+   LD      vmlinux
+kernel/built-in.o: In function `ack_bad':
+handle.c:(.text+0x215f6): undefined reference to `ack_bad_irq'
+kernel/built-in.o: In function `handle_bad_irq':
+(.text+0x219dc): undefined reference to `ack_bad_irq'
+make[2]: *** [vmlinux] Error 1
 
-Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
----
- drivers/char/ummunotify.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/char/ummunotify.c b/drivers/char/ummunotify.c
-index 725fbb0..29de6ab 100644
---- a/drivers/char/ummunotify.c
-+++ b/drivers/char/ummunotify.c
-@@ -453,7 +453,7 @@ static long ummunotify_unregister_region(struct ummunotify_file *priv,
- 	struct ummunotify_reg *reg;
- 	int ret = -EINVAL;
- 
--	if (get_user(user_cookie, arg))
-+	if (copy_from_user(&user_cookie, arg, sizeof user_cookie))
- 		return -EFAULT;
- 
- 	spin_lock_irq(&priv->lock);
+I did this to fix it:
+
+--- a/arch/m68k/include/asm/hardirq_no.h
++++ b/arch/m68k/include/asm/hardirq_no.h
+@@ -14,9 +14,6 @@
+  # error HARDIRQ_BITS is too low!
+  #endif
+
+-void ack_bad_irq(unsigned int irq);
+-#define ack_bad_irq ack_bad_irq
+-
+  #include <asm-generic/hardirq.h>
+
+  #endif /* __M68K_HARDIRQ_H */
+
+What do you think?
+
+Regards
+Greg
+
+
+
+> Index: linux-2.6/arch/m68k/include/asm/hardirq_no.h
+> ===================================================================
+> --- linux-2.6.orig/arch/m68k/include/asm/hardirq_no.h	2009-07-27 14:35:39.630898799 +0200
+> +++ linux-2.6/arch/m68k/include/asm/hardirq_no.h	2009-07-27 14:56:09.546901120 +0200
+> @@ -1,16 +1,8 @@
+>  #ifndef __M68K_HARDIRQ_H
+>  #define __M68K_HARDIRQ_H
+>  
+> -#include <linux/cache.h>
+> -#include <linux/threads.h>
+>  #include <asm/irq.h>
+>  
+> -typedef struct {
+> -	unsigned int __softirq_pending;
+> -} ____cacheline_aligned irq_cpustat_t;
+> -
+> -#include <linux/irq_cpustat.h>	/* Standard mappings for irq_cpustat_t above */
+> -
+>  #define HARDIRQ_BITS	8
+>  
+>  /*
+> @@ -23,5 +15,8 @@ typedef struct {
+>  #endif
+>  
+>  void ack_bad_irq(unsigned int irq);
+> +#define ack_bad_irq ack_bad_irq
+> +
+> +#include <asm-generic/hardirq.h>
+>  
+>  #endif /* __M68K_HARDIRQ_H */
+> Index: linux-2.6/arch/m68knommu/kernel/irq.c
+> ===================================================================
+> --- linux-2.6.orig/arch/m68knommu/kernel/irq.c	2009-07-27 14:53:45.783148910 +0200
+> +++ linux-2.6/arch/m68knommu/kernel/irq.c	2009-07-27 14:56:18.687931620 +0200
+> @@ -29,11 +29,6 @@ asmlinkage void do_IRQ(int irq, struct p
+>  	set_irq_regs(oldregs);
+>  }
+>  
+> -void ack_bad_irq(unsigned int irq)
+> -{
+> -	printk(KERN_ERR "IRQ: unexpected irq=%d\n", irq);
+> -}
+> -
+>  static struct irq_chip m_irq_chip = {
+>  	.name		= "M68K-INTC",
+>  	.enable		= enable_vector,
+> 
+
+-- 
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
