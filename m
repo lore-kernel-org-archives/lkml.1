@@ -1,85 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933497AbZHEHmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933620AbZHEHx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933497AbZHEHmQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 03:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932993AbZHEHmP
+	id S933620AbZHEHx1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 03:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933305AbZHEHxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 03:42:15 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:64841 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932937AbZHEHmO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 03:42:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=ekuMLEtqwnXqUEWt/GRvU5yYRyJFISj+tsLQFOWlB+QogIu67fqGVwfeGiT/mGNfl/
-         peXGe5mTDY3/rVpV71UgCFKDjV5bUiucvYVshQwPNc6V0jsNARJbeLYsBELzkxcnEGVp
-         JEEhhVsLLz82MlIFhYKd+nlNTUjnnCtGBUJ0k=
-Date: Wed, 5 Aug 2009 09:42:08 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Borislav Petkov <borislav.petkov@amd.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Rebasing the edac-amd tree (Was: Re: linux-next: manual merge
- of the edac-amd tree with Linus' tree)
-Message-ID: <20090805074208.GD7732@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Borislav Petkov <borislav.petkov@amd.com>,
-	linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-	Ingo Molnar <mingo@elte.hu>
-References: <20090805150933.103de233.sfr@canb.auug.org.au>
- <20090805062215.GA7732@liondog.tnic>
- <20090805164032.3cf9d95a.sfr@canb.auug.org.au>
+	Wed, 5 Aug 2009 03:53:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34972 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933202AbZHEHxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 03:53:24 -0400
+Message-ID: <4A793B92.9040204@redhat.com>
+Date: Wed, 05 Aug 2009 10:58:10 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Lightning/1.0pre Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090805164032.3cf9d95a.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Rik van Riel <riel@redhat.com>,
+       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+References: <20090805024058.GA8886@localhost>
+In-Reply-To: <20090805024058.GA8886@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 08/05/2009 05:40 AM, Wu Fengguang wrote:
+> Greetings,
+>
+> Jeff Dike found that many KVM pages are being refaulted in 2.6.29:
+>
+> "Lots of pages between discarded due to memory pressure only to be
+> faulted back in soon after. These pages are nearly all stack pages.
+> This is not consistent - sometimes there are relatively few such pages
+> and they are spread out between processes."
+>
+> The refaults can be drastically reduced by the following patch, which
+> respects the referenced bit of all anonymous pages (including the KVM
+> pages).
+>
+> However it risks reintroducing the problem addressed by commit 7e9cd4842
+> (fix reclaim scalability problem by ignoring the referenced bit,
+> mainly the pte young bit). I wonder if there are better solutions?
+>    
 
-On Wed, Aug 05, 2009 at 04:40:32PM +1000, Stephen Rothwell wrote:
-> On Wed, 5 Aug 2009 08:22:15 +0200 Borislav Petkov <petkovbb@googlemail.com> wrote:
-> >
-> > thanks and yes, you're right. The former patch is less intrusive
-> > and we opted for that one since it is really late in the -rc cycle
-> > but the latter cleans up stuff so that code flow becomes much more
-> > understandable. I'll rediff later and sorry for the inconvenience.
-> 
-> As an alternative to rebasing, you could merge Linus' current tree into
-> yours and do the merge fixup there.  This is not particularly necessary,
-> as the fixup is fairly simple.  Though you may want to do that sometime
-> before you ask Linus to merge your tree.
+How do you distinguish between kvm pages and non-kvm anonymous pages?  
+More importantly, why should you?
 
-that's what I'd normally do but I'm carrying some more patches which
-have to go to -tip and I'd rather rebase to have a clean history and
-all.
+Jeff, do you see the refaults on Nehalem systems?  If so, that's likely 
+due to the lack of an accessed bit on EPT pagetables.  It would be 
+interesting to compare with Barcelona  (which does).
 
-> > By the way, I see that you're merging edac-amd before tip and I'm going
-> > to need to rebase my tree against tip in the next couple of days since
-> > it depends on a bunch of stuff in it, so could you please switch the
-> > merge order of the two trees so that edac-amd goes after tip?
-> 
-> Again, instead of rebasing, you could just merge in the branches from tip
-> that you depend on. You need to make sure that you only depend on stable
-> (i.e. non rebasing) branches in the tip tree, not on the branch
-> (auto-latest) that is actually merged into linux-next.  Please discuss
-> this with Ingo.
-
-Yep, it happened yesterday.
-
-> 
-> I will move the edac-amd tree to after the tip tree tomorrow.
-
-Thanks.
+If that's indeed the case, we can have the EPT ageing mechanism give 
+pages a bit more time around by using an available bit in the EPT PTEs 
+to return accessed on the first pass and not-accessed on the second.
 
 -- 
-Regards/Gruss,
-    Boris.
+error compiling committee.c: too many arguments to function
+
