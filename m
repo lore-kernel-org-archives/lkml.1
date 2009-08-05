@@ -1,58 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934562AbZHEOpK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934575AbZHEOqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934562AbZHEOpK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 10:45:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934469AbZHEOpJ
+	id S934575AbZHEOqG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 10:46:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934469AbZHEOqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 10:45:09 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:45611 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934256AbZHEOpI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 10:45:08 -0400
-To: Amerigo Wang <amwang@redhat.com>
-Cc: linux-kernel@vger.kernel.org, tony.luck@intel.com,
-       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>, Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Patch 1/7] x86: add CONFIG_KEXEC_AUTO_RESERVE
-From: Andi Kleen <andi@firstfloor.org>
-References: <20090805112123.6552.73574.sendpatchset@localhost.localdomain>
-	<20090805112133.6552.69619.sendpatchset@localhost.localdomain>
-Date: Wed, 05 Aug 2009 16:45:08 +0200
-In-Reply-To: <20090805112133.6552.69619.sendpatchset@localhost.localdomain> (Amerigo Wang's message of "Wed, 5 Aug 2009 07:19:12 -0400")
-Message-ID: <87zlaeiakr.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Wed, 5 Aug 2009 10:46:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54416 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934306AbZHEOqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 10:46:03 -0400
+Message-ID: <4A799B17.2080708@redhat.com>
+Date: Wed, 05 Aug 2009 16:45:43 +0200
+From: Jerome Marchand <jmarchan@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Robert Richter <robert.richter@amd.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #13809] oprofile: possible circular locking dependency	detected
+References: <Jya1GruKQpD.A.16.2GObKB@chimera> <3zAHs5O6maO.A.YTD.eHObKB@chimera> <20090803091924.GB25478@erda.amd.com>
+In-Reply-To: <20090803091924.GB25478@erda.amd.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amerigo Wang <amwang@redhat.com> writes:
+Robert Richter wrote:
+> I also tested v2.6.31-rc4 with prove-locking enabled and could not
+> trigger the warning. My regression runs fine. Please provide more
+> information (workloads, oprofile setup, cpu info, kernel config) to be
+> able to reproduce this.
+> 
+> Thanks,
+> 
+> -Robert
+> 
 
-> Introduce a new config option KEXEC_AUTO_RESERVE for x86.
+Hi Robert,
 
-The description of the feature belongs in the changelog.
+I hit the warning on a dual i686 box, with both v2.6.31-rc2 and v2.6.31-rc4.
+I can actually trigger it by just running opcontrol --start and then opreport.
+It happens with both --separate=none and --separate=all options (the oprofile
+deamon using otherwise default options).
+About the kernel config, prove_locking is on, oprofile is a module and
+oprofile_ibs is not set. For maor detail, I've attached the config file to
+the bugzilla.
 
-I like the basic idea, but:
+I've tried to reproduce it on 2.6.31-rc5 without success.
 
-> +config KEXEC_AUTO_RESERVE
-> +	bool "automatically reserve memory for kexec kernel"
-> +	depends on KEXEC
-> +	default y
-> +	---help---
-> +	  Automatically reserve memory for a kexec kernel, so that you don't
-> +	  need to specify numbers for the "crashkernel=X@Y" boot option,
-> +	  instead you can use "crashkernel=auto".
-> +	  On x86, 128M is reserved.
+Regards,
+Jerome
 
-The obvious problem is the hardcoded 128MB (and 128MB is very large
-for a crash kernel anyways)
+> On 26.07.09 22:28:24, Rafael J. Wysocki wrote:
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
+>>
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.30.  Please verify if it still should be listed and let me know
+>> (either way).
+>>
+>>
+>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13809
+>> Subject		: oprofile: possible circular locking dependency detected
+>> Submitter	: Jerome Marchand <jmarchan@redhat.com>
+>> Date		: 2009-07-22 13:35 (5 days old)
+>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+> 
 
-More useful would seem a crashkernel=size@auto
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
