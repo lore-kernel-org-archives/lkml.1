@@ -1,73 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934180AbZHEKbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755688AbZHEKfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934180AbZHEKbp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 06:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934166AbZHEKbo
+	id S1755688AbZHEKfl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 06:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbZHEKfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 06:31:44 -0400
-Received: from mail-qy0-f196.google.com ([209.85.221.196]:38628 "EHLO
-	mail-qy0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934165AbZHEKbn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 06:31:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=Z5oVOTTDfzXojN+hA51OIcZkN7NCMihuAG5DNHZ8KgA7Y4+SoiE/7c0OgCkfdUSMbn
-         bGl9TlZaHtZMgZMqobfFwPUjBIree0Sx0tUD6rNibhhavBlWifqcE2UAC8/CrZRUYoxh
-         L+vyuwdqWvR7j/16JdRAaMZv7O/MCYzAKHCj4=
+	Wed, 5 Aug 2009 06:35:40 -0400
+Received: from pmx1.sophos.com ([213.31.172.16]:38481 "EHLO pmx1.sophos.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751778AbZHEKfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 06:35:39 -0400
+Message-ID: <4A796078.30402@sophos.com>
+Date: Wed, 05 Aug 2009 11:35:36 +0100
+From: Douglas Leeder <douglas.leeder@sophos.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Date: Wed, 5 Aug 2009 19:31:43 +0900
-Message-ID: <90b950fc0908050331i7c98a008qc3e66ce849019cb3@mail.gmail.com>
-Subject: [PATCH] fixed distortedness situation for Samsung SoC Framebuffer 
-	Driver
-From: InKi Dae <daeinki@gmail.com>
-To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Cc: Kyungmin Park <kmpark@infradead.org>
-Content-Type: multipart/mixed; boundary=0015175cd6946afa7b04706282be
+To: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
+CC: Eric Paris <eparis@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "malware-list@dmesg.printk.net" <malware-list@dmesg.printk.net>,
+       "Valdis.Kletnieks@vt.edu" <Valdis.Kletnieks@vt.edu>,
+       "greg@kroah.com" <greg@kroah.com>, "jcm@redhat.com" <jcm@redhat.com>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "arjan@infradead.org" <arjan@infradead.org>,
+       "david@lang.hm" <david@lang.hm>,
+       "jengelh@medozas.de" <jengelh@medozas.de>,
+       "aviro@redhat.com" <aviro@redhat.com>,
+       "mrkafk@gmail.com" <mrkafk@gmail.com>,
+       "alexl@redhat.com" <alexl@redhat.com>,
+       "a.p.zijlstra@chello.nl" <a.p.zijlstra@chello.nl>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       "mmorley@hcl.in" <mmorley@hcl.in>, "pavel@suse.cz" <pavel@suse.cz>
+Subject: Re: fanotify - overall design before I start sending patches
+References: <1248466429.3567.82.camel@localhost> <200908041734.05762.tvrtko.ursulin@sophos.com>
+In-Reply-To: <200908041734.05762.tvrtko.ursulin@sophos.com>
+X-Enigmail-Version: 0.96.0
+OpenPGP: id=B1498EA3
+X-MIMETrack: Itemize by SMTP Server on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 05/08/2009 11:35:38,
+	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
+ 05/08/2009 11:35:39,
+	Serialize complete at 05/08/2009 11:35:39
+X-TNEFEvaluated: 1
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0015175cd6946afa7b04706282be
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+> On Friday 24 July 2009 21:13:49 Eric Paris wrote:
+>> After the socket is bound events are attained using the read() syscall
+>> (recv* probably also works haven't tested).  This will result in the
+>> buffer being filled with one or more events like this:
+>>
+>> struct fanotify_event_metadata {
+>>         __u32 event_len;
+>>         __s32 fd;
+>>         __u32 mask;
+>>         __u32 f_flags;
+>>         __s32 pid;
+>>         __s32 tgid;
+>>         __u64 cookie;
+>> }  __attribute__((packed));
+>>
+>> fd specifies the new file descriptor that was created in the context of
+>> the listener.  (readlink of /proc/self/fd will give you A pathname)
+>> mask indicates the events type (bitwise OR of the event types listed
+>> above).  f_flags here is the f_flags the ORIGINAL process has the file
+>> open with.  pid and tgid are from the original process.  cookie is used
+>> when the listener needs to allow, deny, or delay the operation.
+> 
 
-This patch solves the problem that image is distorted in the mode more
-then 24bpp.
+One thing that's come up recently that we can't detect with Talpa:
 
-In 16bit mode, WINCON0[16] should be Swap Enable(HAWSWP_F) and in the
-mode more then 24bpp,
-WINCON0[15] should be Swap Enable(WSWP_F).
+Can fanotify differentiate between an execute and a normal open for reading?
 
-For this, I added a MACRO in regs-fb.h file for 24bpp+ and modified
-s3c-fb.c file also.
-It was tested on s5pc100 and s5pc110 and worked fine.
+If it can differentiate, could it send that information in the
+event_metadata?
 
-signed-off-by: InKi Dae <inki.dae@samsung.com>
+-- 
+Douglas Leeder
 
-Thank you.
-
---0015175cd6946afa7b04706282be
-Content-Type: application/octet-stream; name="s3cfb.patch"
-Content-Disposition: attachment; filename="s3cfb.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fxzwujqz0
-
-ZGlmZiAtLWdpdCBhL2FyY2gvYXJtL3BsYXQtczNjL2luY2x1ZGUvcGxhdC9yZWdzLWZiLmggYi9h
-cmNoL2FybS9wbGF0LXMzYy9pbmNsdWRlL3BsYXQvcmVncy1mYi5oCmluZGV4IGU5ZWU1OTkuLmFl
-NWViNWQgMTAwNjQ0Ci0tLSBhL2FyY2gvYXJtL3BsYXQtczNjL2luY2x1ZGUvcGxhdC9yZWdzLWZi
-LmgKKysrIGIvYXJjaC9hcm0vcGxhdC1zM2MvaW5jbHVkZS9wbGF0L3JlZ3MtZmIuaApAQCAtMTcz
-LDYgKzE3Myw3IEBACiAjZGVmaW5lIFdJTkNPTnhfQklUU1dQCQkJCSgxIDw8IDE4KQogI2RlZmlu
-ZSBXSU5DT054X0JZVFNXUAkJCQkoMSA8PCAxNykKICNkZWZpbmUgV0lOQ09OeF9IQVdTV1AJCQkJ
-KDEgPDwgMTYpCisjZGVmaW5lIFdJTkNPTnhfV1NXUAkJCQkoMSA8PCAxNSkKICNkZWZpbmUgV0lO
-Q09OeF9CVVJTVExFTl9NQVNLCQkJKDB4MyA8PCA5KQogI2RlZmluZSBXSU5DT054X0JVUlNUTEVO
-X1NISUZUCQkJKDkpCiAjZGVmaW5lIFdJTkNPTnhfQlVSU1RMRU5fMTZXT1JECQkJKDB4MCA8PCA5
-KQpkaWZmIC0tZ2l0IGEvZHJpdmVycy92aWRlby9zM2MtZmIuYyBiL2RyaXZlcnMvdmlkZW8vczNj
-LWZiLmMKaW5kZXggNWE3MjA4My4uMjRkNTZlZCAxMDA2NDQKLS0tIGEvZHJpdmVycy92aWRlby9z
-M2MtZmIuYworKysgYi9kcml2ZXJzL3ZpZGVvL3MzYy1mYi5jCkBAIC00MjIsNiArNDIyLDcgQEAg
-c3RhdGljIGludCBzM2NfZmJfc2V0X3BhcihzdHJ1Y3QgZmJfaW5mbyAqaW5mbykKIAkJZWxzZQog
-CQkJZGF0YSB8PSBXSU5DT04wX0JQUE1PREVfMjRCUFBfODg4OwogCisJCWRhdGEgfD0gV0lOQ09O
-eF9XU1dQOwogCQlkYXRhIHw9IFdJTkNPTnhfQlVSU1RMRU5fMTZXT1JEOwogCQlicmVhazsKIAl9
-Cg==
---0015175cd6946afa7b04706282be--
