@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934481AbZHEOPt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934499AbZHEOQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934481AbZHEOPt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 10:15:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934373AbZHEOPs
+	id S934499AbZHEOQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 10:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934379AbZHEOQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 10:15:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53930 "EHLO mx2.redhat.com"
+	Wed, 5 Aug 2009 10:16:29 -0400
+Received: from cantor.suse.de ([195.135.220.2]:39776 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934363AbZHEOPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 10:15:47 -0400
-Message-ID: <4A7993F4.9020008@redhat.com>
-Date: Wed, 05 Aug 2009 10:15:16 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	id S933615AbZHEOQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 10:16:28 -0400
+Message-ID: <4A799436.9020409@suse.de>
+Date: Wed, 05 Aug 2009 23:16:22 +0900
+From: Tejun Heo <teheo@suse.de>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Wu Fengguang <fengguang.wu@intel.com>,
-       "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
-References: <20090805024058.GA8886@localhost> <4A793B92.9040204@redhat.com>
-In-Reply-To: <4A793B92.9040204@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Takashi Iwai <tiwai@suse.de>, Colin Guthrie <cguthrie@mandriva.org>,
+       Greg KH <greg@kroah.com>, Al Viro <viro@ftp.linux.org.uk>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] sound: make OSS device number claiming optional
+References: <4A79283E.7030202@kernel.org>	<4A79296A.4090600@suse.de>	<20090805101551.6ee053e5@lxorguk.ukuu.org.uk>	<4A794FB9.30403@mandriva.org>	<20090805105916.28f84a05@lxorguk.ukuu.org.uk>	<s5h63d2o9ds.wl%tiwai@suse.de>	<20090805112649.4a59ce70@lxorguk.ukuu.org.uk>	<s5hzlaemtdx.wl%tiwai@suse.de>	<4A797C84.2050109@suse.de> <20090805141157.6d6b857c@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090805141157.6d6b857c@lxorguk.ukuu.org.uk>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
+Hello,
 
->> However it risks reintroducing the problem addressed by commit 7e9cd4842
->> (fix reclaim scalability problem by ignoring the referenced bit,
->> mainly the pte young bit). I wonder if there are better solutions?
+Alan Cox wrote:
+>> If we're gonna do that, we might as well just rip off the pointless
+>> 'claim everything so we can use our own module alises' code from
+>> sound_core.c and be done with it.  That really is the only problem.
+> 
+> The interface expected is the sound_register_* interface and the sharing
+> is likewise expected so you could for example mix OSS. CUSE and ALSA oss
+> emulation drivers on the same system at the same time.
 
-Agreed, we need to figure out what the real problem is,
-and how to solve it better.
+If OSS behaves like a good chrdev and claims what it can really do,
+all that can be done so much easier at the chrdev level.
 
-> Jeff, do you see the refaults on Nehalem systems?  If so, that's likely 
-> due to the lack of an accessed bit on EPT pagetables.  It would be 
-> interesting to compare with Barcelona  (which does).
+> Rewriting sound_register* in terms of minor number allocations using the
+> fact modern kernels have better allocators for devices would also be
+> preferable to the weird module hacks initially proposed. I guess a
+> starting point would be to tweak soundcore to generate both message sets
+> itself for a year and then pull the old stuff out.
 
-Not having a hardware accessed bit would explain why
-the VM is not reactivating the pages that were accessed
-while on the inactive list.
+I don't disagree with you in that the above would be the perfect
+technical solution but I just don't think the balance sheet is right.
 
-> If that's indeed the case, we can have the EPT ageing mechanism give 
-> pages a bit more time around by using an available bit in the EPT PTEs 
-> to return accessed on the first pass and not-accessed on the second.
-
-Can we find out which pages are EPT pages?
-
-If so, we could unmap them when they get moved from the
-active to the inactive list, and soft fault them back in
-on access, emulating the referenced bit for EPT pages and
-making page replacement on them work like it should.
-
-Your approximation of pretending the page is accessed the
-first time and pretending it's not the second time sounds
-like it will just lead to less efficient FIFO replacement,
-not to anything even vaguely approximating LRU.
+Thanks.
 
 -- 
-All rights reversed.
+tejun
