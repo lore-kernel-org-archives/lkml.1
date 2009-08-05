@@ -1,114 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933668AbZHEHxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933640AbZHEHyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933668AbZHEHxj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 03:53:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933305AbZHEHxh
+	id S933640AbZHEHyv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 03:54:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933305AbZHEHyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 03:53:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36786 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933632AbZHEHxg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 03:53:36 -0400
-Date: Wed, 5 Aug 2009 09:53:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: penberg@cs.helsinki.fi, a.p.zijlstra@chello.nl, fweisbec@gmail.com,
-       rostedt@goodmis.org, mel@csn.ul.ie, lwoodman@redhat.com,
-       riel@redhat.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 4/4] tracing, page-allocator: Add a postprocessing
-	script for page-allocator-related ftrace events
-Message-ID: <20090805075303.GG19322@elte.hu>
-References: <1249409546-6343-1-git-send-email-mel@csn.ul.ie> <1249409546-6343-5-git-send-email-mel@csn.ul.ie> <20090804112246.4e6d0ab1.akpm@linux-foundation.org> <20090804195717.GA5998@elte.hu> <20090804131818.ee5d4696.akpm@linux-foundation.org> <20090804203526.GA8699@elte.hu> <20090804135315.b2678e11.akpm@linux-foundation.org>
+	Wed, 5 Aug 2009 03:54:49 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:41817 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932937AbZHEHys convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 5 Aug 2009 03:54:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=EeMGE+002fERl4uksDza1YRgZosIhBGbXhmqCfl+51e+7sXvbYgrbl3motFO9Z2TdE
+         Ay9r3DRksdQf0FU7rArVNJ8+Z18h7pYvDWqABZShgp3BdPDB4tbC4XGcZKnKO2l6BW6V
+         dHfWkR4tcfXUgOQ36Vsxf6L0MfiyUT+QcameQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090804135315.b2678e11.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090804203549.GA25332@kroah.com>
+References: <71cd59b00908041140j7bd814d2u90585864fe00415e@mail.gmail.com>
+	 <20090804203549.GA25332@kroah.com>
+Date: Wed, 5 Aug 2009 09:54:47 +0200
+Message-ID: <71cd59b00908050054q49dabbe4vc8f53eddb4b4d33d@mail.gmail.com>
+Subject: Re: Cleaning asus_oled
+From: Corentin Chary <corentin.chary@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: Jakub Schmidtke <sjakub@gmail.com>, acpi4asus-user@lists.sourceforge.net,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 4, 2009 at 10:35 PM, Greg KH<greg@kroah.com> wrote:
+> On Tue, Aug 04, 2009 at 08:40:10PM +0200, Corentin Chary wrote:
+>> Hi,
+>> I'm trying to clean the asus_oled driver, here is my git tree with
+>> some trivial patchs.
+>> http://git.iksaif.net/?p=acpi4asus.git;a=shortlog;h=refs/heads/asus_oled
+>
+> That's great!  But note, I need patches in email form, so you are going
+> to use git format-patch to dig them out for me, right?  :)
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Yes, of course.
 
-> On Tue, 4 Aug 2009 22:35:26 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > Did you never want to see whether firefox is leaking [any sort of] 
-> > memory, and if yes, on what callsites? Try something like on an 
-> > already running firefox context:
-> > 
-> >   perf stat -e kmem:mm_page_alloc \
-> >             -e kmem:mm_pagevec_free \
-> >             -e kmem:mm_page_free_direct \
-> >      -p $(pidof firefox-bin) sleep 10
-> > 
-> > ... and "perf record" for the specific callsites.
-> 
-> OK, that would be useful.  What does the output look like?
+>> Before working deeper, I wanted to discuss about the userspace interface:
+>>
+>> > TODO:
+>> > [...]
+>> >        - audit the userspace interface
+>> >                - sysfs vs. char?
+>>
+>> First, should we move asus_oled functionalities in asus-laptop ?
+>> Then the interface would be in sysfs under
+>> /sys/devices/platform/asus-laptop/{picture|enable} ?
+>
+> Is that the way that other drivers of this kind of functionality work
+> today?  If so, yes, that would be good.
 
-I suspect Mel's output is an even better example.
+Hum, actually I think it is not a good idea. It is just an USB device, and
+Asus may wan't to use it on motherboard on day. We should keep it
+a simple usb driver.
 
-> In what way is it superior to existing ways of finding leaks?
+>> Else we can use /dev/asus_oled, with an ioctl (or a zero-size image)
+>> to switch the OLED off.
+>> But I don't think /sys/class/oled is a good place to be, because
+>> /sys/class is for generic things.
+>
+> Like /sys/class/video_output?  There's got to be some other generic
+> backlight driver class already, oh, hey, look at /sys/class/backlight!
+>
+> So, why not just use the backlight interface instead, that way you don't
+> have to write custom userspace code for this specific platform?
 
-It's barely useful in this form - i just demoed the capability. perf 
-stat is not a 'leak finding' special-purpose tool, but a generic 
-tool that i used for this purpose as well, on an ad-hoc basis.
+backlight interface is only to change screen brightness, so we can't
+use that for an oled screen. There is an lcd class too, but it is used
+for contrast.
 
-Tools that can be used in unexpected but still useful ways tend to 
-be the best ones.
+After some grepping in the kernel, it seems that there is no generic
+lcd interface.
+For example :
+- drivers/parisc/led.c use a /proc/pdc/lcd file
+- drivers/ans-lcd.c  use a /dev/anslcd file
 
-The kind of information these tracepoints expose, combined with the 
-sampling and analysis features of perfcounters is the most 
-high-quality information one can get about the page allocator IMO.
+If you look at http://ssl.bulix.org/projects/lcd4linux/browser/trunk
 
-This is my general point: instead of wasting time and effort 
-extending derived information, why not expose the core information? 
-When the tracepoints are off there is essentially no overhead. 
-(which is an added benefit - all the /proc/vmstat bits are collected 
-unconditionally and then have to be summed up from all cpus when 
-read out.)
+You'll see a lot of drv_***.c files, and each of them are for a
+different kernel interface
+(although some of them might don't use any interface).
 
-> > this perf stuff is immensely flexible and a very unixish 
-> > abstraction. The perf.data contains timestamped trace entries of 
-> > page allocations and freeing done.
-> > 
-> > [...]
-> > > It would be nice to at least partially remove the vmstat/meminfo 
-> > > infrastructure but I don't think we can do that?
-> > 
-> > at least meminfo is an ABI for sure - vmstat too really.
-> > 
-> > But we can stop adding new fields into obsolete, inflexible and 
-> > clearly deficient interfaces, and we can standardize new 
-> > instrumentation to use modern instrumentation facilities - i.e. 
-> > tracepoints and perfcounters.
-> 
-> That's bad.  Is there really no way in which we can consolidate 
-> _any_ of that infrastructure?  We just pile in new stuff alongside 
-> the old?
-> 
-> The worst part is needing two unrelated sets of userspace tools to 
-> access basically-identical things.
+It seems that http://lcd-linux.sourceforge.net/ try to implement a
+generic interface,
+but only for alphanumeric displays, and it is not in mainline.
 
-We certainly should expose the full set of information to the new 
-facility, so that it's self-sufficient and does not have to go 
-digging in /proc for odd bits here and there (in various ad-hoc 
-formats).
+This also could be a classic frambuffer device, but I don't think it's
+the best way to
+go for this type of device.
 
-Above i'm arguing that since the old bits are an ABI, they should be 
-kept but not extended.
+Time to write a generic oled/lcd pannel class ?
 
-btw., this is why i was resisting ad-hoc hacks like kpageflags. 
-Those special-purpose instrumentation ABIs are hard to get rid of, 
-and they come nowhere close to the utility of the real thing.
-
-	Ingo
+Thanks,
+-- 
+Corentin Chary
+http://xf.iksaif.net - http://uffs.org
