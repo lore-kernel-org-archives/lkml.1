@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934432AbZHENp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934447AbZHENqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934432AbZHENp5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 5 Aug 2009 09:45:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933555AbZHENp4
+	id S934447AbZHENqM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 5 Aug 2009 09:46:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933803AbZHENqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 5 Aug 2009 09:45:56 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:50763 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933527AbZHENp4 (ORCPT
+	Wed, 5 Aug 2009 09:46:11 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:48460 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933662AbZHENqL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 5 Aug 2009 09:45:56 -0400
-Date: Wed, 5 Aug 2009 15:45:52 +0200
-From: Daniel Mack <daniel@caiaq.de>
-To: linux-kernel@vger.kernel.org
-Cc: Ville Syrjala <syrjala@sci.fi>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [PATCH 2/2] w1_gpio: switch to new dev_pm_ops
-Message-ID: <20090805134552.GH13236@buzzloop.caiaq.de>
-References: <1249476412-27362-1-git-send-email-daniel@caiaq.de>
+	Wed, 5 Aug 2009 09:46:11 -0400
+Date: Wed, 5 Aug 2009 15:46:08 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       fengguang.wu@intel.com, hidehiro.kawai.ez@hitachi.com
+Subject: Re: [PATCH] [11/19] HWPOISON: Refactor truncate to allow direct
+	truncating of page v2
+Message-ID: <20090805134607.GH11385@basil.fritz.box>
+References: <200908051136.682859934@firstfloor.org> <20090805093638.D3754B15D8@basil.firstfloor.org> <20090805102008.GB17190@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1249476412-27362-1-git-send-email-daniel@caiaq.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090805102008.GB17190@wotan.suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 05, 2009 at 02:46:52PM +0200, Daniel Mack wrote:
-> Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> Cc: Ville Syrjala <syrjala@sci.fi>
-> Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-> ---
->  drivers/w1/masters/w1-gpio.c |   21 +++++++++++++--------
->  1 files changed, 13 insertions(+), 8 deletions(-)
+On Wed, Aug 05, 2009 at 12:20:08PM +0200, Nick Piggin wrote:
+> >  truncate_complete_page(struct address_space *mapping, struct page *page)
+> >  {
+> >  	if (page->mapping != mapping)
+> > -		return;
+> > +		return -EIO;
 > 
-> diff --git a/drivers/w1/masters/w1-gpio.c b/drivers/w1/masters/w1-gpio.c
-> index 6f8866d..4a940fb 100644
-> --- a/drivers/w1/masters/w1-gpio.c
-> +++ b/drivers/w1/masters/w1-gpio.c
-> @@ -106,9 +106,9 @@ static int __exit w1_gpio_remove(struct platform_device *pdev)
->  
->  #ifdef CONFIG_PM
->  
-> -static int w1_gpio_suspend(struct platform_device *pdev, pm_message_t state)
-> +static int w1_gpio_suspend(struct device *dev)
->  {
-> -	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
-> +	struct w1_gpio_platform_data *pdata = dev_get_drvdata(dev);
+> Hmm, at this point, the page must have been removed from pagecache,
+> so I don't know if you need to pass an error back?
 
-That was wrong, I apologize. Will send a new version soon.
+It could be reused, which would be bad for us?
 
-Daniel
+The final check is the page error count in the end anyways.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
